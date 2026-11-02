@@ -1,0 +1,19 @@
+@use '../mixins' as *;
+
+.self-actions {
+  @include flex(row, center, space-between, var(--space-3));
+  flex-wrap: wrap;
+  padding-block-start: var(--space-2);
+}
+
+.self-actions__hint {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.self-actions__buttons {
+  @include flex(row, center, flex-end, var(--space-3));
+  flex-wrap: wrap;
+  margin-inline-start: auto;
+}

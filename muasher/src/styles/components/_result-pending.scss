@@ -1,0 +1,12 @@
+@use '../mixins' as *;
+
+.result-pending__status {
+  @include flex(row, center, center, var(--space-2));
+  flex-wrap: wrap;
+  font-size: var(--fs-sm);
+  color: var(--theme-text);
+}
+
+.result-pending .empty-state__action {
+  @include flex(column, center, center, var(--space-3));
+}

@@ -1,0 +1,16 @@
+.datepicker__control {
+  &::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: var(--opacity-backdrop);
+    transition: opacity var(--t-fast) var(--ease);
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+[data-theme='dark'] .datepicker__control::-webkit-calendar-picker-indicator,
+:root:not([data-theme='light']) .datepicker__control::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}

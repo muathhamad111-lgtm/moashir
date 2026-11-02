@@ -1,0 +1,29 @@
+.tooltip {
+  position: relative;
+  display: inline-flex;
+}
+
+.tooltip__bubble {
+  position: absolute;
+  inset-block-end: 100%;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  margin-block-end: var(--space-2);
+  padding-block: var(--space-1);
+  padding-inline: var(--space-3);
+  max-inline-size: var(--size-tooltip-max);
+  inline-size: max-content;
+  border-radius: var(--radius-md);
+  background-color: var(--color-dark);
+  color: var(--color-secondary);
+  border: var(--border-width) solid var(--theme-border);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-base);
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  z-index: var(--z-tooltip);
+}
+
+[dir='rtl'] .tooltip__bubble {
+  transform: translateX(50%);
+}

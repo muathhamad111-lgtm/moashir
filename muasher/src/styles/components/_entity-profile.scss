@@ -1,0 +1,111 @@
+@use '../mixins' as *;
+
+.entity-profile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding-block: var(--space-4);
+  padding-inline: var(--space-4);
+  max-inline-size: var(--size-content-max);
+  margin-inline: auto;
+}
+
+.entity-profile__loading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.entity-profile__header {
+  @include flex(row, center, space-between, var(--space-4));
+  flex-wrap: wrap;
+}
+
+.entity-profile__heading {
+  @include flex(row, center, flex-start, var(--space-3));
+  flex-wrap: wrap;
+}
+
+.entity-profile__title {
+  margin: 0;
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  color: var(--theme-heading);
+}
+
+.entity-profile__summary {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  margin: 0;
+
+  @include respond-to('sm') {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.entity-profile__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.entity-profile__term {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.entity-profile__desc {
+  margin: 0;
+  font-weight: var(--fw-medium);
+  color: var(--theme-heading);
+}
+
+.entity-profile__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.entity-profile__fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+
+.entity-profile__legend {
+  padding: 0;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.entity-profile__legend-hint {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.entity-profile__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+
+  @include respond-to('sm') {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @include respond-to('lg') {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.entity-profile__actions {
+  @include flex(row, center, flex-end, var(--space-3));
+  flex-wrap: wrap;
+}

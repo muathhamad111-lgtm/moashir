@@ -1,0 +1,76 @@
+@use '../mixins' as *;
+
+.receipt-card {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.receipt-card__header {
+  @include flex(row, flex-start, space-between, var(--space-3));
+  flex-wrap: wrap;
+}
+
+.receipt-card__eyebrow {
+  margin: 0;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-text-muted);
+}
+
+.receipt-card__number {
+  margin: var(--space-1) 0 0;
+  font-size: var(--fs-xl);
+  font-variant-numeric: tabular-nums;
+  color: var(--theme-heading);
+}
+
+.receipt-card__badges {
+  @include flex(row, center, flex-end, var(--space-2));
+}
+
+.receipt-card__watermark {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width) dashed var(--color-warning);
+  border-radius: var(--radius-md);
+  color: var(--theme-text);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+
+.receipt-card__watermark--void {
+  border-color: var(--color-danger);
+  color: var(--theme-danger-text);
+}
+
+.receipt-card__facts {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  margin: 0;
+}
+
+.receipt-card__fact {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: var(--space-3);
+  font-size: var(--fs-sm);
+
+  dt {
+    color: var(--theme-text-muted);
+  }
+
+  dd {
+    margin: 0;
+    color: var(--theme-text);
+  }
+}
+
+.receipt-card__hijri,
+.receipt-card__muted {
+  display: block;
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}
+
+.receipt-card__actions {
+  @include flex(row, center, flex-start, var(--space-3));
+  flex-wrap: wrap;
+}

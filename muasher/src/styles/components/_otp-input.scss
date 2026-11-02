@@ -1,0 +1,42 @@
+@use '../mixins' as *;
+
+.otp-input {
+  @include flex(row, center, center, var(--space-2));
+  flex-wrap: wrap;
+  direction: ltr;
+}
+
+.otp-input__box {
+  inline-size: var(--size-touch-target);
+  block-size: var(--size-touch-target);
+  padding: 0;
+  text-align: center;
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  color: var(--theme-heading);
+  background-color: var(--theme-surface);
+  border: var(--border-width-thick) solid var(--theme-border);
+  border-radius: var(--radius-md);
+  transition:
+    border-color var(--t-fast) var(--ease),
+    background-color var(--t-fast) var(--ease);
+
+  &:focus-visible {
+    @include focus-ring;
+    border-color: var(--theme-accent);
+  }
+
+  &.is-filled {
+    border-color: var(--theme-accent);
+    background-color: var(--theme-surface-raised);
+  }
+
+  &.is-invalid {
+    border-color: var(--color-danger);
+  }
+
+  &:disabled {
+    opacity: var(--opacity-disabled);
+    cursor: not-allowed;
+  }
+}

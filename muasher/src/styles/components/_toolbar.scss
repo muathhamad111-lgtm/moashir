@@ -1,0 +1,28 @@
+@use '../mixins' as *;
+
+.toolbar {
+  @include flex(row, center, space-between, var(--space-3));
+  flex-wrap: wrap;
+  padding-block: var(--space-3);
+}
+
+.toolbar__search {
+  flex: 1;
+  min-inline-size: 12rem;
+}
+
+.toolbar__filters {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.toolbar__actions {
+  @include flex(row, center, flex-end, var(--space-2));
+}
+
+.toolbar__search .field__control {
+  &::placeholder {
+    color: var(--theme-text-secondary);
+    opacity: 1;
+  }
+}

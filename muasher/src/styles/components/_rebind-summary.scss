@@ -1,0 +1,36 @@
+@use '../mixins' as *;
+
+.rebind-summary {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+
+  @include respond-to(md) {
+    grid-template-columns: repeat(auto-fit, minmax(var(--size-control-min), 1fr));
+  }
+}
+
+.rebind-summary__title {
+  margin-block: 0 var(--space-2);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.rebind-summary__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  @include flex(column, stretch, flex-start, var(--space-1));
+  font-size: var(--fs-sm);
+}
+
+.rebind-summary__item {
+  @include flex(row, baseline, flex-start, var(--space-2));
+}
+
+.rebind-summary__code {
+  font-weight: var(--fw-semibold);
+  color: var(--theme-accent-text);
+  font-variant-numeric: tabular-nums;
+}

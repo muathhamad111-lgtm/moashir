@@ -1,0 +1,48 @@
+@use '../mixins' as *;
+
+.email-sender {
+  @include flex(column, stretch, flex-start, var(--space-3));
+}
+
+.dns-checklist {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  padding: var(--space-5);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-surface);
+  min-inline-size: 0;
+}
+
+.dns-checklist__title {
+  @include flex(row, center, flex-start, var(--space-2));
+  margin: 0;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.dns-checklist__list {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dns-checklist__item {
+  display: grid;
+  gap: var(--space-1) var(--space-3);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.dns-checklist__name {
+  font-weight: var(--fw-semibold);
+  color: var(--theme-text);
+}
+
+.dns-checklist__desc {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-secondary);
+}

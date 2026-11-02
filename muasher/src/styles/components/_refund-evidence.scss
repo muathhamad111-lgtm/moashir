@@ -1,0 +1,47 @@
+@use '../mixins' as *;
+
+.refund-evidence {
+  @include flex(column, stretch, flex-start, var(--space-3));
+}
+
+.refund-evidence__file {
+  @include flex(row, center, flex-start, var(--space-3));
+  padding: var(--space-3);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface-raised);
+}
+
+.refund-evidence__icon {
+  color: var(--color-primary);
+}
+
+.refund-evidence__meta {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.refund-evidence__name {
+  overflow-wrap: anywhere;
+  color: var(--theme-heading);
+}
+
+.refund-evidence__size {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}
+
+.refund-evidence__refusal {
+  @include flex(row, flex-start, flex-start, var(--space-2));
+  margin: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--color-danger-soft);
+  color: var(--theme-danger-text);
+  font-size: var(--fs-sm);
+}
+
+.refund-evidence__status {
+  @include visually-hidden;
+}

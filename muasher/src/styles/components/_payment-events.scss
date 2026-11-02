@@ -1,0 +1,18 @@
+@use '../mixins' as *;
+
+.payment-events__type {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.payment-events__error {
+  display: block;
+  margin-block-start: var(--space-1);
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}
+
+.payment-events__ref {
+  font-size: var(--fs-xs);
+  color: var(--theme-text-secondary);
+}

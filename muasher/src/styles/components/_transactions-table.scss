@@ -1,0 +1,50 @@
+@use '../mixins' as *;
+
+.transactions-table__reference {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.transactions-table__nowrap,
+.transactions-table__reference bdi {
+  white-space: nowrap;
+}
+
+.transactions-table__entity {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+}
+
+.transactions-table__entity-name {
+  color: var(--theme-heading);
+  font-weight: var(--fw-medium);
+}
+
+.transactions-table__entity-email,
+.transactions-table__muted,
+.transactions-table__date {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-sm);
+}
+
+.transactions-table__date {
+  white-space: nowrap;
+}
+
+.transactions-table__link {
+  font-weight: var(--fw-semibold);
+  color: var(--theme-accent-text);
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.transactions-table__link-context {
+  @include visually-hidden;
+}
+
+.refunds-table__evidence {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+}

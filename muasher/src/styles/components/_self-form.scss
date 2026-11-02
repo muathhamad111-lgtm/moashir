@@ -1,0 +1,54 @@
+@use '../mixins' as *;
+
+.self-form {
+  @include flex(column, stretch, flex-start, var(--space-6));
+  max-inline-size: var(--size-content-max);
+  margin-inline: auto;
+}
+
+.self-form__header {
+  @include flex(row, flex-start, space-between, var(--space-4));
+  flex-wrap: wrap;
+}
+
+.self-form__eyebrow {
+  margin-block-end: var(--space-1);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--theme-accent-text);
+}
+
+.self-form__title {
+  margin: 0;
+  font-size: var(--fs-3xl);
+  color: var(--theme-heading);
+}
+
+.self-form__subtitle {
+  margin-block-start: var(--space-2);
+  color: var(--theme-text-muted);
+  max-inline-size: var(--size-prose-max);
+}
+
+.self-form__note {
+  @include flex(row, flex-start, flex-start, var(--space-3));
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-info-soft);
+  color: var(--theme-text);
+
+  i {
+    color: var(--color-info);
+    margin-block-start: var(--space-1);
+  }
+
+  p {
+    margin: 0;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+  }
+}
+
+.self-form__loading {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}

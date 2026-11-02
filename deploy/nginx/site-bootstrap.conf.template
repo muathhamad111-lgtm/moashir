@@ -1,0 +1,18 @@
+server {
+    listen 80;
+    server_name {{DOMAIN}};
+    server_tokens off;
+
+    access_log /var/log/nginx/moashir-{{ENVIRONMENT}}.access.log moashir_privacy;
+    error_log /var/log/nginx/moashir-{{ENVIRONMENT}}.error.log warn;
+
+    location ^~ /.well-known/acme-challenge/ {
+        root {{ACME_ROOT}};
+        default_type text/plain;
+        try_files $uri =404;
+    }
+
+    location / {
+        return 404;
+    }
+}

@@ -1,0 +1,112 @@
+@use '../mixins' as *;
+
+.connection-test {
+  @include flex(column, stretch, flex-start, var(--space-3));
+}
+
+.connection-test__actions {
+  @include flex(row, center, flex-start, var(--space-3));
+  flex-wrap: wrap;
+}
+
+.connection-test__hint {
+  font-size: var(--fs-sm);
+  color: var(--theme-text-secondary);
+}
+
+.test-result {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--color-success);
+  border-radius: var(--radius-md);
+  background-color: var(--color-success-soft);
+}
+
+.test-result__summary {
+  @include flex(row, center, flex-start, var(--space-2));
+  margin: 0;
+  font-weight: var(--fw-semibold);
+  color: var(--theme-text);
+}
+
+.test-result__latency {
+  font-weight: var(--fw-regular);
+  color: var(--theme-text-secondary);
+}
+
+.test-result__checks {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.test-result__check {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  font-size: var(--fs-sm);
+  color: var(--theme-text);
+}
+
+.test-result__check-state {
+  font-weight: var(--fw-semibold);
+}
+
+.test-result__check--warn .test-result__check-state {
+  color: var(--theme-text);
+  text-decoration: underline;
+}
+
+.test-result__detail {
+  flex-basis: 100%;
+  padding-inline-start: var(--space-6);
+  color: var(--theme-text-secondary);
+}
+
+.test-result__facts {
+  display: grid;
+  gap: var(--space-2) var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(var(--size-control-min), 1fr));
+  margin: 0;
+}
+
+.test-result__fact {
+  @include flex(column, stretch, flex-start, var(--space-1));
+
+  dt {
+    font-size: var(--fs-xs);
+    color: var(--theme-text-secondary);
+  }
+
+  dd {
+    margin: 0;
+    font-weight: var(--fw-semibold);
+    color: var(--theme-text);
+  }
+}
+
+.provider-feedback {
+  @include flex(row, flex-start, flex-start, var(--space-2));
+  margin: 0;
+  padding: var(--space-3);
+  border: var(--border-width) solid var(--theme-danger-text);
+  border-radius: var(--radius-md);
+  background-color: var(--color-danger-soft);
+  font-size: var(--fs-sm);
+  color: var(--theme-text);
+}
+
+.provider-feedback--rate_limited {
+  border-color: var(--color-warning);
+  background-color: var(--color-warning-soft);
+}
+
+.provider-feedback--success {
+  border-color: var(--color-success);
+  background-color: var(--color-success-soft);
+}
+
+.test-result--failed {
+  border-color: var(--theme-danger-text);
+  background-color: var(--color-danger-soft);
+}

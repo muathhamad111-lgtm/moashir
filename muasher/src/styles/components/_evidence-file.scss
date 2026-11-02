@@ -1,0 +1,55 @@
+@use '../mixins' as *;
+
+.evidence-file {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  background-color: var(--theme-surface-raised);
+}
+
+.evidence-file--refused {
+  background-color: var(--color-danger-soft);
+}
+
+.evidence-file__icon {
+  color: var(--theme-text-muted);
+}
+
+.evidence-file__meta {
+  @include flex(column, flex-start, flex-start, var(--space-0));
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.evidence-file__name {
+  @include truncate;
+  max-inline-size: 100%;
+  font-size: var(--fs-sm);
+  color: var(--theme-text);
+}
+
+.evidence-file__size {
+  font-size: var(--fs-xs);
+  color: var(--theme-text-muted);
+}
+
+.evidence-file__actions {
+  @include flex(row, center, flex-end, var(--space-1));
+  margin-inline-start: auto;
+}
+
+.evidence-file__refusal {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--theme-danger-text);
+}
+
+.evidence-upload__input {
+  display: none;
+}
+
+.scan-status {
+  @include flex(row, center, flex-start, var(--space-1));
+}

@@ -1,0 +1,176 @@
+@use '../mixins' as *;
+
+.select2-search {
+  position: relative;
+}
+
+.select2-search__label {
+  position: absolute;
+  inset-block-start: var(--space-3);
+  inset-inline-start: var(--space-3);
+  z-index: 1;
+  margin: 0;
+  padding-inline: var(--space-1);
+  max-inline-size: calc(100% - var(--space-6));
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-regular);
+  color: var(--theme-text-muted);
+  background-color: var(--theme-surface);
+  pointer-events: none;
+  transition:
+    inset-block-start var(--t-fast) var(--ease),
+    font-size var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+
+  .select2-search.is-floated & {
+    inset-block-start: calc(var(--space-2) * -1);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-medium);
+  }
+
+  .select2-search.is-open & {
+    color: var(--theme-accent-text);
+  }
+}
+
+.select2-search__control {
+  @include flex(row, center, flex-start, var(--space-1));
+  flex-wrap: wrap;
+  min-block-size: var(--size-touch-target);
+  padding-block: var(--space-1);
+  padding-inline: var(--space-3);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface);
+  cursor: text;
+
+  .select2-search__label + & {
+    padding-block-start: var(--space-3);
+  }
+
+  .select2-search.is-open & {
+    border-color: var(--theme-accent);
+  }
+
+  .select2-search.is-disabled & {
+    opacity: var(--opacity-disabled);
+    pointer-events: none;
+  }
+}
+
+.select2-search__input {
+  flex: 1;
+  min-inline-size: var(--space-16);
+  border: none;
+  background: transparent;
+  color: var(--theme-text);
+  padding-block: var(--space-1);
+
+  &:focus {
+    outline: none;
+  }
+
+  &::placeholder {
+    color: var(--theme-text-muted);
+  }
+}
+
+.select2-search__value {
+  color: var(--theme-text);
+}
+
+.select2-search__placeholder {
+  color: var(--theme-text-muted);
+}
+
+.select2-search__caret {
+  margin-inline-start: auto;
+  color: var(--theme-text-muted);
+  transition: transform var(--t-fast) var(--ease);
+
+  .select2-search.is-open & {
+    transform: rotate(180deg);
+  }
+}
+
+.select2-search__menu {
+  position: absolute;
+  inset-block-start: 100%;
+  inset-inline: 0;
+  margin-block-start: var(--space-1);
+  padding: var(--space-1);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-bg);
+  box-shadow: var(--shadow-md);
+  z-index: var(--z-dropdown);
+  max-block-size: var(--size-menu-max-block);
+  overflow-y: auto;
+}
+
+.select2-search__option {
+  inline-size: 100%;
+  padding-block: var(--space-2);
+  padding-inline: var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--theme-text);
+  text-align: start;
+  transition: background-color var(--t-fast) var(--ease);
+  cursor: pointer;
+
+  &:hover,
+  &.is-highlighted {
+    background-color: var(--theme-surface-raised);
+  }
+
+  &.is-selected {
+    color: var(--theme-accent-text);
+    font-weight: var(--fw-semibold);
+  }
+}
+
+.select2-search__empty {
+  padding-block: var(--space-3);
+  padding-inline: var(--space-3);
+  color: var(--theme-text-muted);
+  font-size: var(--fs-sm);
+  text-align: center;
+}
+
+.select2-search__tag {
+  @include flex(row, center, center, var(--space-1));
+  padding-block: var(--space-0);
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-pill);
+  background-color: var(--theme-surface-raised);
+  font-size: var(--fs-sm);
+}
+
+.select2-search__tag-remove {
+  @include flex-center;
+  color: var(--theme-text-muted);
+  border-radius: var(--radius-circle);
+  transition: color var(--t-fast) var(--ease);
+
+  &:hover {
+    color: var(--color-danger);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.select2-search__badge {
+  display: inline-block;
+  margin-inline-start: var(--space-2);
+  padding-inline: var(--space-2);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-text);
+}

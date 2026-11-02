@@ -1,0 +1,23 @@
+.card {
+  background-color: var(--theme-surface);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.card__header {
+  padding: var(--space-4) var(--space-5);
+  border-block-end: var(--border-width) solid var(--theme-border);
+  font-family: var(--font-heading);
+  font-weight: var(--fw-bold);
+  color: var(--theme-heading);
+}
+
+.card__body {
+  padding: var(--space-5);
+}
+
+.card__footer {
+  padding: var(--space-4) var(--space-5);
+  border-block-start: var(--border-width) solid var(--theme-border);
+}

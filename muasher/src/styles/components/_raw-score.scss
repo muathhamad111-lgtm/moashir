@@ -1,0 +1,11 @@
+.raw-score {
+  max-inline-size: var(--size-panel);
+
+  .field__control {
+    font-variant-numeric: tabular-nums;
+  }
+
+  &--saved .field__hint {
+    color: var(--theme-text-secondary);
+  }
+}

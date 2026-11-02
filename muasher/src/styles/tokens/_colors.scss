@@ -1,0 +1,32 @@
+$color-primary: #3de9ad;
+$color-secondary: #d9f7f7;
+$color-dark: #022426;
+$color-dark-deep: #011416;
+$color-primary-600: #17c78e;
+$color-primary-800: #0a7d57;
+
+$color-success: #1fb57a;
+$color-warning: #f5a524;
+$color-danger: #e5484d;
+$color-danger-strong: #b4232a;
+$color-danger-light: #f87176;
+$color-info: #3aafc9;
+
+$color-white: #ffffff;
+$color-gray-50: #f5f8f8;
+$color-gray-100: #e6eded;
+$color-gray-300: #b9c6c6;
+$color-gray-500: #6b7b7b;
+$color-gray-600: #4a5c5c;
+$color-gray-700: #334444;
+$color-gray-900: #022426;
+
+$gradient-brand: linear-gradient(135deg, $color-primary 0%, $color-dark 100%);
+
+$opacity-disabled: 0.5;
+$opacity-backdrop: 0.6;
+
+$color-success-soft: rgba($color-success, 0.12);
+$color-warning-soft: rgba($color-warning, 0.12);
+$color-danger-soft: rgba($color-danger, 0.12);
+$color-info-soft: rgba($color-info, 0.12);

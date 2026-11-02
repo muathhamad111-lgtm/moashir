@@ -1,0 +1,12 @@
+root {{ENV_DIR}}/current/backend/public;
+fastcgi_pass unix:{{FPM_SOCKET}};
+include fastcgi_params;
+fastcgi_param SCRIPT_FILENAME $realpath_root/index.php;
+fastcgi_param SCRIPT_NAME /index.php;
+fastcgi_param DOCUMENT_ROOT $realpath_root;
+fastcgi_param HTTPS on;
+fastcgi_param HTTP_PROXY "";
+fastcgi_hide_header X-Powered-By;
+fastcgi_read_timeout 120s;
+fastcgi_buffer_size 32k;
+fastcgi_buffers 16 16k;

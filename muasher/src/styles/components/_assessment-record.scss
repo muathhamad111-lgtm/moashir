@@ -1,0 +1,82 @@
+@use '../mixins' as *;
+
+.assessment-record {
+  @include flex(column, stretch, flex-start, var(--space-5));
+  max-inline-size: var(--size-content-max);
+  margin-inline: auto;
+}
+
+.assessment-record__loading {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.assessment-record__back {
+  @include flex(row, center, flex-start, var(--space-2));
+  align-self: flex-start;
+  color: var(--theme-accent-text);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.assessment-record__header {
+  @include flex(row, flex-start, space-between, var(--space-4));
+  flex-wrap: wrap;
+}
+
+.assessment-record__eyebrow {
+  margin-block: 0 var(--space-1);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--theme-accent-text);
+}
+
+.assessment-record__title {
+  margin: 0;
+  font-size: var(--fs-2xl);
+  color: var(--theme-heading);
+}
+
+.assessment-record__badges {
+  @include flex(row, center, flex-end, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.assessment-record__grid {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: 1fr;
+
+  @include respond-to(lg) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.assessment-record__details {
+  margin: 0;
+  @include flex(column, stretch, flex-start, var(--space-3));
+}
+
+.assessment-record__detail {
+  @include flex(column, stretch, flex-start, var(--space-1));
+
+  dt {
+    font-size: var(--fs-sm);
+    color: var(--theme-text-muted);
+  }
+
+  dd {
+    margin: 0;
+    color: var(--theme-heading);
+  }
+}
+
+.assessment-record__reference {
+  margin-inline-start: var(--space-2);
+  color: var(--theme-text-muted);
+  font-size: var(--fs-sm);
+}

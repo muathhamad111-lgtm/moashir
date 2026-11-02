@@ -1,0 +1,27 @@
+@use '../tokens' as *;
+
+[data-theme='light'] {
+  color-scheme: light;
+  --theme-bg: var(--color-gray-50);
+  --theme-surface: var(--color-white);
+  --theme-surface-raised: var(--color-white);
+  --theme-text: var(--color-gray-700);
+  --theme-text-muted: var(--color-gray-500);
+  --theme-text-secondary: var(--color-gray-600);
+  --theme-danger-text: var(--color-danger-strong);
+  --theme-heading: var(--color-gray-900);
+  --theme-border: var(--color-gray-100);
+  --theme-accent: var(--accent-fill, var(--color-primary));
+  --theme-accent-text: var(--accent-text-on-light, var(--color-primary-800));
+  --theme-on-accent: var(--color-dark);
+  --theme-accent-soft: color-mix(in srgb, var(--theme-accent-text) 12%, transparent);
+  --content-bg: var(--theme-bg);
+  --sidebar-bg: var(--color-secondary);
+  --sidebar-text: var(--color-gray-700);
+  --sidebar-caption: var(--color-gray-600);
+  --sidebar-hover-bg: #{rgba($color-dark, 0.06)};
+  --sidebar-hover-text: var(--color-dark);
+  --sidebar-active-text: var(--theme-accent-text);
+  --sidebar-focus-ring: var(--theme-accent-text);
+  --navbar-bg: var(--content-bg);
+}

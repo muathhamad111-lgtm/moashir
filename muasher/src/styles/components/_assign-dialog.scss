@@ -1,0 +1,105 @@
+@use '../mixins' as *;
+
+.assign-dialog,
+.override-dialog,
+.completion-dialog {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.assign-dialog__lead,
+.completion-dialog__lead,
+.assign-dialog__empty {
+  margin: 0;
+  color: var(--theme-text);
+}
+
+.assign-dialog__options {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  max-block-size: var(--size-panel);
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.assign-dialog__legend,
+.completion-dialog__legend {
+  margin-block-end: var(--space-2);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.assign-dialog__option {
+  @include flex(row, center, flex-start, var(--space-3));
+  min-block-size: var(--size-touch-target);
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+
+  &:has(.assign-dialog__radio:checked) {
+    border-color: var(--theme-accent);
+    background-color: var(--color-info-soft);
+  }
+}
+
+.assign-dialog__radio {
+  accent-color: var(--theme-accent);
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.assign-dialog__name {
+  flex: 1;
+  color: var(--theme-heading);
+}
+
+.assign-dialog__load {
+  font-size: var(--fs-xs);
+  color: var(--theme-text-muted);
+}
+
+.override-dialog__warning,
+.completion-dialog__outcome-hint {
+  @include flex(row, flex-start, flex-start, var(--space-2));
+  margin: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--color-warning-soft);
+  font-size: var(--fs-sm);
+  color: var(--theme-text);
+}
+
+.override-dialog__grid {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fill, minmax(var(--size-control-min), 1fr));
+}
+
+.completion-dialog__items {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  max-block-size: var(--size-panel);
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.completion-dialog__group {
+  @include flex(column, stretch, flex-start, var(--space-2));
+}
+
+.completion-dialog__main {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.completion-dialog__option {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  padding-inline-start: var(--space-3);
+}

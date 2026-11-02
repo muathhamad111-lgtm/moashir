@@ -1,0 +1,39 @@
+@use '../mixins' as *;
+
+.accredited-price {
+  @include flex(column, stretch, flex-start, var(--space-3));
+}
+
+.accredited-price__title {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.accredited-price__description,
+.accredited-price__vat-note {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
+  color: var(--theme-text-muted);
+}
+
+.accredited-price__note {
+  @include flex(row, flex-start, flex-start, var(--space-2));
+  margin: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--color-info-soft);
+  font-size: var(--fs-sm);
+  color: var(--theme-text);
+
+  i {
+    margin-block-start: var(--space-1);
+    color: var(--color-info);
+  }
+}
+
+.accredited-price__action {
+  @include flex(column, stretch, flex-start, var(--space-2));
+}

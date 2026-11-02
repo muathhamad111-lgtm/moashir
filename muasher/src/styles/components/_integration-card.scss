@@ -1,0 +1,66 @@
+@use '../mixins' as *;
+
+.integration-card {
+  @include flex(column, stretch, flex-start, var(--space-4));
+  padding: var(--space-5);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-surface);
+  min-inline-size: 0;
+}
+
+.integration-card__header {
+  @include flex(column, stretch, flex-start, var(--space-2));
+}
+
+.integration-card__heading {
+  @include flex(row, center, space-between, var(--space-3));
+  flex-wrap: wrap;
+}
+
+.integration-card__title {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.integration-card__desc {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-secondary);
+}
+
+.integration-card__body {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.integration-card__footer {
+  @include flex(row, center, flex-end, var(--space-2));
+}
+
+.integration-badges {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+
+  .badge {
+    @include flex(row, center, flex-start, var(--space-1));
+  }
+}
+
+.last-test {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-secondary);
+}
+
+.last-test__outcome {
+  font-weight: var(--fw-semibold);
+  color: var(--theme-text);
+}
+
+.last-test--failed .last-test__outcome {
+  color: var(--theme-danger-text);
+}

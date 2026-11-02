@@ -1,0 +1,47 @@
+body {
+  font-family: var(--font-latin);
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
+  font-weight: var(--fw-regular);
+}
+
+html[lang='ar'] body {
+  font-family: var(--font-arabic);
+  line-height: var(--lh-relaxed);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  line-height: var(--lh-tight);
+  color: var(--theme-heading);
+}
+
+h1 {
+  font-size: var(--fs-3xl);
+}
+
+h2 {
+  font-size: var(--fs-2xl);
+}
+
+h3 {
+  font-size: var(--fs-xl);
+}
+
+h4 {
+  font-size: var(--fs-lg);
+}
+
+h5,
+h6 {
+  font-size: var(--fs-base);
+}
+
+small {
+  font-size: var(--fs-sm);
+}

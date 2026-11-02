@@ -1,0 +1,103 @@
+@use '../mixins' as *;
+
+.score-input {
+  @include flex(column, stretch, flex-start, var(--space-2));
+
+  &.is-disabled {
+    opacity: var(--opacity-disabled);
+  }
+}
+
+.score-input__label {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--theme-text);
+  line-height: var(--lh-base);
+}
+
+.score-input__control {
+  @include flex(row, stretch, flex-start, var(--space-2));
+  inline-size: fit-content;
+}
+
+.score-input__step {
+  @include flex-center;
+  inline-size: var(--size-touch-target);
+  block-size: var(--size-touch-target);
+  flex-shrink: 0;
+  color: var(--theme-text);
+  background-color: var(--theme-surface-raised);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+  transition:
+    background-color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease);
+
+  &:hover:not(:disabled) {
+    border-color: var(--theme-accent);
+    color: var(--theme-accent-text);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &:disabled {
+    opacity: var(--opacity-disabled);
+    cursor: not-allowed;
+  }
+}
+
+.score-input__field {
+  @include flex(row, center, center, var(--space-1));
+  padding-inline: var(--space-3);
+  min-inline-size: var(--size-control-min);
+  background-color: var(--theme-surface);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+
+  &:focus-within {
+    border-color: var(--theme-accent);
+  }
+}
+
+.score-input__number {
+  inline-size: var(--space-12);
+  padding-block: var(--space-2);
+  text-align: center;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+  background-color: transparent;
+  border: 0;
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+
+  &:focus {
+    outline: none;
+  }
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    appearance: none;
+    margin: 0;
+  }
+}
+
+.score-input__unit {
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.score-input__percent {
+  @include flex(row, center, flex-start, var(--space-1));
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--theme-text-muted);
+}
+
+.score-input__percent-icon {
+  font-size: var(--fs-xs);
+  color: var(--theme-accent-text);
+}

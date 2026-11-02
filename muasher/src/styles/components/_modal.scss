@@ -1,0 +1,75 @@
+@use '../mixins' as *;
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: none;
+  padding: var(--space-4);
+
+  &.is-open {
+    @include flex-center;
+  }
+}
+
+.modal__backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: var(--color-dark);
+  opacity: var(--opacity-backdrop);
+  z-index: var(--z-modal-backdrop);
+}
+
+.modal__panel {
+  position: relative;
+  z-index: var(--z-modal);
+  inline-size: min(90vw, var(--size-modal-md));
+  max-block-size: 85vh;
+  overflow-y: auto;
+  background-color: var(--theme-bg);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+
+  .modal--sm & {
+    inline-size: min(90vw, var(--size-modal-sm));
+  }
+
+  .modal--lg & {
+    inline-size: min(90vw, var(--size-modal-lg));
+  }
+}
+
+.modal__header {
+  @include flex(row, center, space-between, var(--space-4));
+  padding: var(--space-4);
+  border-block-end: var(--border-width) solid var(--theme-border);
+}
+
+.modal__title {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+}
+
+.modal__close {
+  color: var(--theme-text-muted);
+  transition: color var(--t-fast) var(--ease);
+
+  &:hover {
+    color: var(--theme-text);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.modal__body {
+  padding: var(--space-4);
+}
+
+.modal__footer {
+  @include flex(row, center, flex-end, var(--space-3));
+  padding: var(--space-4);
+  border-block-start: var(--border-width) solid var(--theme-border);
+}

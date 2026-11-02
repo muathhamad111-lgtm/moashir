@@ -1,0 +1,255 @@
+export const assessmentMessages = {
+  unauthenticated: { ar: 'يرجى تسجيل الدخول للمتابعة.', en: 'Please sign in to continue.' },
+  forbidden: {
+    ar: 'ليست لديك صلاحية لتنفيذ هذا الإجراء.',
+    en: 'You do not have permission to perform this action.',
+  },
+  not_found: { ar: 'المورد المطلوب غير موجود.', en: 'The requested resource was not found.' },
+  validation_failed: { ar: 'البيانات المرسلة غير صالحة.', en: 'The submitted data is invalid.' },
+  reason_required: { ar: 'يجب كتابة سبب لهذا الإجراء.', en: 'A reason is required for this action.' },
+  'state.transition_illegal': {
+    ar: 'هذا الإجراء غير مسموح به في الحالة الحالية.',
+    en: 'This action is not allowed in the current state.',
+  },
+  'entity.deleted': {
+    ar: 'هذه الجهة محذوفة، وسجلاتها مجمّدة حتى تُستعاد الجهة.',
+    en: 'This entity was deleted. Its records are frozen until the entity is restored.',
+  },
+  'criteria.no_published_version': {
+    ar: 'لا يوجد إصدار منشور من المعايير.',
+    en: 'No published criteria version is available.',
+  },
+  'self.draft_exists': {
+    ar: 'لديك مسودة تقييم ذاتي مفتوحة. أكملها أو أرسلها قبل بدء تقييم جديد.',
+    en: 'You already have an open self-assessment draft. Continue it or submit it before starting a new one.',
+  },
+  'scores.incomplete': {
+    ar: 'قيّم جميع البنود قبل إرسال التقييم الذاتي.',
+    en: 'Score every item before submitting the self assessment.',
+  },
+  'scores.item_missing': { ar: 'البند :code لم يُقيَّم بعد.', en: 'The item :code has no score yet.' },
+  'score.use_points': {
+    ar: 'يُقيَّم هذا المعيار الفرعي من خلال نقاطه الاسترشادية.',
+    en: 'This sub-criterion is scored through its guiding points.',
+  },
+  'score.item_not_in_version': {
+    ar: 'هذا البند ليس ضمن إصدار المعايير المرتبط بهذا التقييم.',
+    en: 'This item is not part of the criteria version of this assessment.',
+  },
+  'score.out_of_range': {
+    ar: 'يجب أن تكون الدرجة رقمًا بين الصفر والحد الأعلى لمقياس التقييم، بمنزلتين عشريتين على الأكثر.',
+    en: 'The score must be a number between zero and the maximum of the assessment scale, with at most two decimal places.',
+  },
+  'assessment.entity_required': {
+    ar: 'يقتصر بدء التقييم الذاتي على حساب الجهة.',
+    en: 'Only an entity account can start a self assessment.',
+  },
+  'assessment.entity_not_active': {
+    ar: 'يجب أن يكون حساب الجهة نشطًا للمشاركة في التقييمات.',
+    en: 'The entity account must be active to take part in assessments.',
+  },
+  'assessment.criteria_update_in_progress': {
+    ar: 'يجري تحديث معايير التقييم لهذه المسودة بعد استعادة حساب الجهة. أعد محاولة الإرسال بعد قليل.',
+    en: 'The assessment criteria of this draft are being updated after the entity account was restored. Try submitting again shortly.',
+  },
+  'validation.required': { ar: 'حقل :attribute مطلوب.', en: 'The :attribute field is required.' },
+  'validation.invalid': {
+    ar: 'القيمة المختارة في حقل :attribute غير صالحة.',
+    en: 'The selected :attribute is invalid.',
+  },
+  'validation.numeric': { ar: 'يجب أن يكون حقل :attribute رقمًا.', en: 'The :attribute field must be a number.' },
+  'validation.decimal': {
+    ar: 'يجب أن يحتوي حقل :attribute على :decimal منازل عشرية.',
+    en: 'The :attribute field must have :decimal decimal places.',
+  },
+  'validation.min': { ar: 'يجب ألا تقل قيمة حقل :attribute عن :min.', en: 'The :attribute field must be at least :min.' },
+  'validation.max': {
+    ar: 'يجب ألا تزيد قيمة حقل :attribute على :max.',
+    en: 'The :attribute field must not be greater than :max.',
+  },
+  'validation.integer': { ar: 'يجب أن يكون حقل :attribute عددًا صحيحًا.', en: 'The :attribute field must be an integer.' },
+  'validation.reason_length': {
+    ar: 'يجب أن يتراوح طول حقل :attribute بين 10 و1000 حرف.',
+    en: 'The :attribute field must be between 10 and 1000 characters.',
+  },
+  'validation.between_chars': {
+    ar: 'يجب أن يتراوح طول حقل :attribute بين :min و:max حرف.',
+    en: 'The :attribute field must be between :min and :max characters.',
+  },
+  'validation.max_chars': {
+    ar: 'يجب ألا يزيد طول حقل :attribute على :max حرف.',
+    en: 'The :attribute field must not be greater than :max characters.',
+  },
+  'validation.between': {
+    ar: 'يجب أن تكون قيمة حقل :attribute بين :min و:max.',
+    en: 'The :attribute field must be between :min and :max.',
+  },
+  'validation.after_now': {
+    ar: 'يجب أن يكون حقل :attribute تاريخًا لاحقًا للوقت الحالي.',
+    en: 'The :attribute field must be a date after now.',
+  },
+  'validation.before_or_equal': {
+    ar: 'يجب ألا يتجاوز حقل :attribute :days يومًا من اليوم.',
+    en: 'The :attribute field must be within :days days from today.',
+  },
+  'validation.file_max': {
+    ar: 'يجب ألا يزيد حجم الملف على :max ميجابايت.',
+    en: 'The file must not be greater than :max megabytes.',
+  },
+  'accredited.request_open': {
+    ar: 'لدى جهتكم طلب تقييم معتمد مفتوح. أكملوه قبل سداد رسوم طلب جديد.',
+    en: 'Your entity already has an open accredited assessment request. Complete it before paying for a new one.',
+  },
+  'accredited.payment_being_processed': {
+    ar: 'تجري معالجة سداد رسوم التقييم المعتمد، وسيُفتح طلبكم خلال وقت قصير.',
+    en: 'Your accredited assessment payment is being processed. Your request will open shortly.',
+  },
+  'assessment.sub_not_in_version': {
+    ar: 'هذا المعيار الفرعي ليس ضمن نسخة المعايير المعتمدة لهذا التقييم.',
+    en: 'This sub-criterion is not part of the criteria version of this assessment.',
+  },
+  'assessment.not_assignee': {
+    ar: 'لا يقوم بهذا الإجراء إلا المقيّم المسند إليه الطلب.',
+    en: 'Only the assessor assigned to this request can do this.',
+  },
+  'assessment.assignment_required': { ar: 'لا يوجد مقيّم مسند إليه هذا الطلب.', en: 'This request has no assigned assessor.' },
+  'assessment.result_required': { ar: 'لم تُحتسب نتيجة لهذا الطلب بعد.', en: 'This request has no computed result yet.' },
+  'cv.not_allowed': { ar: 'لا يتطلب هذا المعيار الفرعي إدخال سيرة.', en: 'This sub-criterion does not take a CV entry.' },
+  'completion.item_not_requested': {
+    ar: 'لم يطلب المقيّم تعديل هذا البند. يمكن تعديل البنود المطلوبة فقط.',
+    en: 'The assessor did not ask for changes to this item. Only the requested items can be edited.',
+  },
+  'completion.deadline_passed': {
+    ar: 'انتهت مهلة استكمال هذا الطلب، ويمضي الطلب الآن وفق الإجراء الذي حدده المقيّم عند انتهاء المهلة.',
+    en: 'The completion deadline of this request has passed. The request now follows the outcome set by the assessor.',
+  },
+  'attachment.key_invalid': {
+    ar: 'نوع المرفق هذا غير معرّف لهذا المعيار الفرعي.',
+    en: 'This attachment type is not defined for the sub-criterion.',
+  },
+  'attachment.sub_full': {
+    ar: 'بلغ هذا المعيار الفرعي الحد الأقصى من ملفات الشواهد وهو :max.',
+    en: 'This sub-criterion already has the maximum of :max evidence files.',
+  },
+  'submission.incomplete': {
+    ar: 'أكمل السير والمرفقات المطلوبة قبل إرسال الطلب.',
+    en: 'Complete the required CV entries and attachments before submitting the request.',
+  },
+  'submission.cv_missing': { ar: 'سيرة المعيار :code مطلوبة.', en: 'The CV entry of :code is required.' },
+  'submission.attachment_missing': { ar: 'ينقص مرفق مطلوب في المعيار :code.', en: 'A required attachment of :code is missing.' },
+  'file.content_mismatch': {
+    ar: 'نوع الملف غير مسموح أو أن محتواه لا يطابق امتداده.',
+    en: 'The file type is not allowed or its content does not match its extension.',
+  },
+  'file.not_clean': { ar: 'هذا الملف غير متاح للتنزيل.', en: 'This file is not available for download.' },
+  'assessor.invalid': { ar: 'اختر حساب مقيّم نشطًا.', en: 'Choose an active assessor account.' },
+  'assessor.same': { ar: 'الطلب مسند بالفعل إلى هذا المقيّم.', en: 'The request is already assigned to this assessor.' },
+  sod_self_assignment: { ar: 'لا يمكنك إسناد طلب إلى نفسك.', en: 'You cannot assign a request to yourself.' },
+  'evidence.bundle_empty': {
+    ar: 'لا يوجد في هذا الطلب ملف شواهد متاح للتنزيل.',
+    en: 'This request has no evidence file available for download.',
+  },
+  'evidence.bundle_not_ready': {
+    ar: 'حزمة الشواهد غير جاهزة أو انتهت صلاحيتها. اطلب حزمة جديدة.',
+    en: 'This evidence bundle is not ready or has expired. Request a new one.',
+  },
+  sod_conflict: { ar: 'يتعارض هذا الإجراء مع قواعد الفصل بين المهام.', en: 'This action conflicts with the segregation-of-duties rules.' },
+  'assessor.not_in_cycle': {
+    ar: 'هذا المقيّم ليس من المقيّمين الأوليين في دورة الجائزة لهذا الطلب.',
+    en: 'This assessor is not an initial assessor of the award cycle of this request.',
+  },
+  'completion.deadline_after_committee_start': {
+    ar: 'لا يمكن أن تتجاوز مهلة الاستكمال موعد بداية تقييم اللجنة في الدورة (:date).',
+    en: 'The completion deadline cannot be later than the committee assessment start of the cycle (:date).',
+  },
+  'cycle.another_open': {
+    ar: 'توجد دورة جائزة أخرى قيد التشغيل. أغلقها قبل فتح دورة جديدة.',
+    en: 'Another award cycle is already running. Close it before opening a new one.',
+  },
+  'cycle.dates_unordered': {
+    ar: 'يجب أن تتتابع تواريخ الدورة: بداية التقديم ثم نهايته ثم بداية تقييم اللجنة ثم نهايته ثم موعد الإعلان. وأثناء فتح التقديم يجب أن تكون نهاية التقديم في المستقبل.',
+    en: 'The cycle dates must follow each other: submission start, submission end, committee assessment start, committee assessment end, then the announcement date. While submissions are open, the submission end must be in the future.',
+  },
+  'cycle.field_locked': {
+    ar: 'لم يعد بالإمكان تعديل هذا الحقل في المرحلة الحالية من الدورة.',
+    en: 'This field can no longer be changed at the current stage of the cycle.',
+  },
+  'cycle.region_has_requests': { ar: 'لا يمكن إزالة منطقة لديها طلبات في هذه الدورة.', en: 'A region that already has requests in this cycle cannot be removed.' },
+  'cycle.criteria_version_not_published': { ar: 'اختر إصدار المعايير المنشور.', en: 'Choose the published criteria version.' },
+  'cycle.participation_setting_reserved': {
+    ar: 'لا يفعّل شهادة المشاركة في الدورة أو يوقفها إلا مدير النظام.',
+    en: 'Only the System Administrator turns the participation certificate of a cycle on or off.',
+  },
+  'cycle.submission_window_passed': { ar: 'انتهت فترة التقديم في هذه الدورة.', en: 'The submission period of this cycle has already ended.' },
+  'cycle.requests_pending': {
+    ar: 'لا يمكن إغلاق الدورة ما دامت بعض طلباتها قيد الإجراء.',
+    en: 'The cycle cannot be closed while some of its requests are still in progress.',
+  },
+  'cycle.submission_closed': { ar: 'فترة التقديم في دورة الجائزة غير مفتوحة.', en: 'The submission period of the award cycle is not open.' },
+  'cycle.conditions_failed': {
+    ar: 'لا تستوفي جهتكم شروط الدخول في دورة الجائزة.',
+    en: 'Your entity does not meet the entry conditions of the award cycle.',
+  },
+  'cycle.member_invalid': { ar: 'اختر حسابات موظفين نشطة تحمل الدور المطلوب.', en: 'Choose active staff accounts that hold the required role.' },
+  'cycle.initial_assessor_invalid': { ar: 'اختر حسابات مقيّمين نشطة.', en: 'Choose active assessor accounts.' },
+  'cycle.filtering_not_open': {
+    ar: 'لا يمكن اتخاذ قرارات التصفية إلا بعد إغلاق فترة التقديم في الدورة.',
+    en: 'Filtering decisions can be taken only after the submission period of the cycle has closed.',
+  },
+  'advanced.request_exists': { ar: 'لدى جهتكم طلب في دورة الجائزة هذه.', en: 'Your entity already has a request in this award cycle.' },
+  'advanced.conditions.min_entity_age': {
+    ar: 'يجب ألا يقل عمر الجهة عن :required سنوات للتقديم (عمرها الحالي :actual سنوات).',
+    en: 'The entity must be at least :required years old to apply (current age: :actual years).',
+  },
+  'advanced.conditions.region': { ar: 'منطقة الجهة غير مشمولة في دورة الجائزة هذه.', en: 'The region of the entity is not covered by this award cycle.' },
+  'filtering.override_reason_required': {
+    ar: 'نتيجة التقييم الأولي أقل من درجة الاستبعاد. اذكر سبب الاستثناء لتأهيل هذا الطلب.',
+    en: 'The initial assessment result is below the disqualification score. Give the reason of the exception to qualify this request.',
+  },
+  'validation.date_order': { ar: 'يجب أن يأتي :attribute بعد التاريخ السابق له.', en: 'The :attribute must come after the previous date.' },
+  'validation.boolean': { ar: 'قيمة :attribute غير صالحة.', en: 'The :attribute value is invalid.' },
+}
+
+export const assessmentAttributes = {
+  path: { ar: 'مسار التقييم', en: 'assessment path' },
+  reason: { ar: 'السبب', en: 'reason' },
+  scores: { ar: 'الدرجات', en: 'scores' },
+  'scores.subs': { ar: 'درجة المعيار الفرعي', en: 'sub-criterion score' },
+  'scores.points': { ar: 'درجة النقطة الاسترشادية', en: 'guiding point score' },
+  filter: { ar: 'عوامل التصفية', en: 'filter' },
+  sort: { ar: 'الترتيب', en: 'sort' },
+  page: { ar: 'الصفحة', en: 'page' },
+  perPage: { ar: 'عدد العناصر في الصفحة', en: 'per page' },
+  cv: { ar: 'السيرة', en: 'CV entry' },
+  file: { ar: 'الملف', en: 'file' },
+  subCriterionId: { ar: 'المعيار الفرعي', en: 'sub-criterion' },
+  attachmentKey: { ar: 'نوع المرفق', en: 'attachment type' },
+  feedback: { ar: 'التغذية الراجعة', en: 'feedback' },
+  notes: { ar: 'الملاحظات', en: 'notes' },
+  items: { ar: 'البنود المطلوبة', en: 'requested items' },
+  deadlineAt: { ar: 'الموعد النهائي', en: 'deadline' },
+  expiryOutcome: { ar: 'الإجراء عند انتهاء المهلة', en: 'expiry outcome' },
+  assessorId: { ar: 'المقيّم', en: 'assessor' },
+  toStatus: { ar: 'الحالة المستهدفة', en: 'target status' },
+  settings: { ar: 'الإعداد', en: 'setting' },
+  name: { ar: 'اسم الدورة', en: 'cycle name' },
+  year: { ar: 'السنة', en: 'year' },
+  submissionStart: { ar: 'بداية التقديم', en: 'submission start' },
+  submissionEnd: { ar: 'نهاية التقديم', en: 'submission end' },
+  committeeStart: { ar: 'بداية تقييم اللجنة', en: 'committee assessment start' },
+  committeeEnd: { ar: 'نهاية تقييم اللجنة', en: 'committee assessment end' },
+  announcementAt: { ar: 'موعد الإعلان', en: 'announcement date' },
+  regionIds: { ar: 'المناطق', en: 'regions' },
+  criteriaVersionId: { ar: 'إصدار المعايير', en: 'criteria version' },
+  scaleKind: { ar: 'مقياس التقييم', en: 'assessment scale' },
+  minEntityAgeYears: { ar: 'الحد الأدنى لعمر الجهة', en: 'minimum entity age' },
+  disqualificationScore: { ar: 'درجة الاستبعاد', en: 'disqualification score' },
+  initialReviewSlaDays: { ar: 'مهلة التقييم الأولي', en: 'initial assessment deadline' },
+  participationCertificateEnabled: { ar: 'شهادة المشاركة', en: 'participation certificate' },
+  members: { ar: 'أعضاء الدورة', en: 'cycle members' },
+  assessorIds: { ar: 'المقيّمون الأوليون', en: 'initial assessors' },
+  awardCycleId: { ar: 'دورة الجائزة', en: 'award cycle' },
+  role: { ar: 'الدور', en: 'role' },
+  note: { ar: 'الملاحظة', en: 'note' },
+  overrideReason: { ar: 'سبب الاستثناء', en: 'exception reason' },
+}

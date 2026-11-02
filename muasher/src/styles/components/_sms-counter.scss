@@ -1,0 +1,25 @@
+@use '../mixins' as *;
+
+.sms-counter {
+  @include flex(row, center, flex-start, var(--space-3));
+  flex-wrap: wrap;
+  font-size: var(--fs-xs);
+  color: var(--theme-text-secondary);
+}
+
+.sms-counter__summary {
+  font-weight: var(--fw-semibold);
+  color: var(--theme-text);
+}
+
+.sms-counter__warning,
+.sms-counter__match {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--theme-text);
+}
+
+.sms-counter__match.is-unapproved {
+  color: var(--theme-danger-text);
+}

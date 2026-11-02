@@ -1,0 +1,151 @@
+{
+    "source": "The 13 administrative regions of the Kingdom of Saudi Arabia (ISO 3166-2:SA order) with their main cities; the city list is maintained by the System Administrator after installation.",
+    "regions": [
+        {
+            "code": "riyadh",
+            "name": { "ar": "منطقة الرياض", "en": "Riyadh Region" },
+            "cities": [
+                { "code": "riyadh", "name": { "ar": "الرياض", "en": "Riyadh" } },
+                { "code": "diriyah", "name": { "ar": "الدرعية", "en": "Diriyah" } },
+                { "code": "kharj", "name": { "ar": "الخرج", "en": "Al-Kharj" } },
+                { "code": "majmaah", "name": { "ar": "المجمعة", "en": "Al-Majmaah" } },
+                { "code": "dawadmi", "name": { "ar": "الدوادمي", "en": "Al-Dawadmi" } },
+                { "code": "wadi_aldawasir", "name": { "ar": "وادي الدواسر", "en": "Wadi Al-Dawasir" } },
+                { "code": "zulfi", "name": { "ar": "الزلفي", "en": "Al-Zulfi" } },
+                { "code": "shaqra", "name": { "ar": "شقراء", "en": "Shaqra" } },
+                { "code": "afif", "name": { "ar": "عفيف", "en": "Afif" } },
+                { "code": "quwayiyah", "name": { "ar": "القويعية", "en": "Al-Quwayiyah" } }
+            ]
+        },
+        {
+            "code": "makkah",
+            "name": { "ar": "منطقة مكة المكرمة", "en": "Makkah Region" },
+            "cities": [
+                { "code": "makkah", "name": { "ar": "مكة المكرمة", "en": "Makkah" } },
+                { "code": "jeddah", "name": { "ar": "جدة", "en": "Jeddah" } },
+                { "code": "taif", "name": { "ar": "الطائف", "en": "Taif" } },
+                { "code": "rabigh", "name": { "ar": "رابغ", "en": "Rabigh" } },
+                { "code": "qunfudhah", "name": { "ar": "القنفذة", "en": "Al-Qunfudhah" } },
+                { "code": "lith", "name": { "ar": "الليث", "en": "Al-Lith" } },
+                { "code": "jumum", "name": { "ar": "الجموم", "en": "Al-Jumum" } },
+                { "code": "khulais", "name": { "ar": "خليص", "en": "Khulais" } }
+            ]
+        },
+        {
+            "code": "madinah",
+            "name": { "ar": "منطقة المدينة المنورة", "en": "Madinah Region" },
+            "cities": [
+                { "code": "madinah", "name": { "ar": "المدينة المنورة", "en": "Madinah" } },
+                { "code": "yanbu", "name": { "ar": "ينبع", "en": "Yanbu" } },
+                { "code": "ula", "name": { "ar": "العلا", "en": "AlUla" } },
+                { "code": "badr", "name": { "ar": "بدر", "en": "Badr" } },
+                { "code": "khaybar", "name": { "ar": "خيبر", "en": "Khaybar" } },
+                { "code": "henakiyah", "name": { "ar": "الحناكية", "en": "Al-Henakiyah" } },
+                { "code": "mahd_aldhahab", "name": { "ar": "مهد الذهب", "en": "Mahd Al-Dhahab" } }
+            ]
+        },
+        {
+            "code": "eastern",
+            "name": { "ar": "المنطقة الشرقية", "en": "Eastern Province" },
+            "cities": [
+                { "code": "dammam", "name": { "ar": "الدمام", "en": "Dammam" } },
+                { "code": "khobar", "name": { "ar": "الخبر", "en": "Al-Khobar" } },
+                { "code": "dhahran", "name": { "ar": "الظهران", "en": "Dhahran" } },
+                { "code": "ahsa", "name": { "ar": "الأحساء", "en": "Al-Ahsa" } },
+                { "code": "qatif", "name": { "ar": "القطيف", "en": "Al-Qatif" } },
+                { "code": "jubail", "name": { "ar": "الجبيل", "en": "Al-Jubail" } },
+                { "code": "hafr_albatin", "name": { "ar": "حفر الباطن", "en": "Hafar Al-Batin" } },
+                { "code": "khafji", "name": { "ar": "الخفجي", "en": "Al-Khafji" } },
+                { "code": "ras_tanura", "name": { "ar": "رأس تنورة", "en": "Ras Tanura" } }
+            ]
+        },
+        {
+            "code": "qassim",
+            "name": { "ar": "منطقة القصيم", "en": "Al-Qassim Region" },
+            "cities": [
+                { "code": "buraidah", "name": { "ar": "بريدة", "en": "Buraidah" } },
+                { "code": "unaizah", "name": { "ar": "عنيزة", "en": "Unaizah" } },
+                { "code": "rass", "name": { "ar": "الرس", "en": "Al-Rass" } },
+                { "code": "bukayriyah", "name": { "ar": "البكيرية", "en": "Al-Bukayriyah" } },
+                { "code": "mithnab", "name": { "ar": "المذنب", "en": "Al-Mithnab" } }
+            ]
+        },
+        {
+            "code": "hail",
+            "name": { "ar": "منطقة حائل", "en": "Hail Region" },
+            "cities": [
+                { "code": "hail", "name": { "ar": "حائل", "en": "Hail" } },
+                { "code": "baqaa", "name": { "ar": "بقعاء", "en": "Baqaa" } },
+                { "code": "ghazalah", "name": { "ar": "الغزالة", "en": "Al-Ghazalah" } }
+            ]
+        },
+        {
+            "code": "tabuk",
+            "name": { "ar": "منطقة تبوك", "en": "Tabuk Region" },
+            "cities": [
+                { "code": "tabuk", "name": { "ar": "تبوك", "en": "Tabuk" } },
+                { "code": "wajh", "name": { "ar": "الوجه", "en": "Al-Wajh" } },
+                { "code": "duba", "name": { "ar": "ضباء", "en": "Duba" } },
+                { "code": "tayma", "name": { "ar": "تيماء", "en": "Tayma" } },
+                { "code": "umluj", "name": { "ar": "أملج", "en": "Umluj" } },
+                { "code": "haql", "name": { "ar": "حقل", "en": "Haql" } }
+            ]
+        },
+        {
+            "code": "northern_borders",
+            "name": { "ar": "منطقة الحدود الشمالية", "en": "Northern Borders Region" },
+            "cities": [
+                { "code": "arar", "name": { "ar": "عرعر", "en": "Arar" } },
+                { "code": "rafha", "name": { "ar": "رفحاء", "en": "Rafha" } },
+                { "code": "turaif", "name": { "ar": "طريف", "en": "Turaif" } }
+            ]
+        },
+        {
+            "code": "jazan",
+            "name": { "ar": "منطقة جازان", "en": "Jazan Region" },
+            "cities": [
+                { "code": "jazan", "name": { "ar": "جازان", "en": "Jazan" } },
+                { "code": "sabya", "name": { "ar": "صبيا", "en": "Sabya" } },
+                { "code": "abu_arish", "name": { "ar": "أبو عريش", "en": "Abu Arish" } },
+                { "code": "samtah", "name": { "ar": "صامطة", "en": "Samtah" } }
+            ]
+        },
+        {
+            "code": "najran",
+            "name": { "ar": "منطقة نجران", "en": "Najran Region" },
+            "cities": [
+                { "code": "najran", "name": { "ar": "نجران", "en": "Najran" } },
+                { "code": "sharurah", "name": { "ar": "شرورة", "en": "Sharurah" } }
+            ]
+        },
+        {
+            "code": "bahah",
+            "name": { "ar": "منطقة الباحة", "en": "Al-Bahah Region" },
+            "cities": [
+                { "code": "bahah", "name": { "ar": "الباحة", "en": "Al-Bahah" } },
+                { "code": "baljurashi", "name": { "ar": "بلجرشي", "en": "Baljurashi" } },
+                { "code": "mandaq", "name": { "ar": "المندق", "en": "Al-Mandaq" } }
+            ]
+        },
+        {
+            "code": "jouf",
+            "name": { "ar": "منطقة الجوف", "en": "Al-Jouf Region" },
+            "cities": [
+                { "code": "sakaka", "name": { "ar": "سكاكا", "en": "Sakaka" } },
+                { "code": "dumat_aljandal", "name": { "ar": "دومة الجندل", "en": "Dumat Al-Jandal" } },
+                { "code": "qurayyat", "name": { "ar": "القريات", "en": "Al-Qurayyat" } }
+            ]
+        },
+        {
+            "code": "asir",
+            "name": { "ar": "منطقة عسير", "en": "Asir Region" },
+            "cities": [
+                { "code": "abha", "name": { "ar": "أبها", "en": "Abha" } },
+                { "code": "khamis_mushait", "name": { "ar": "خميس مشيط", "en": "Khamis Mushait" } },
+                { "code": "bisha", "name": { "ar": "بيشة", "en": "Bisha" } },
+                { "code": "namas", "name": { "ar": "النماص", "en": "Al-Namas" } },
+                { "code": "muhayil", "name": { "ar": "محايل عسير", "en": "Muhayil Asir" } }
+            ]
+        }
+    ]
+}

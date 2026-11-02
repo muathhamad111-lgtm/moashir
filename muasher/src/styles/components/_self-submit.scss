@@ -1,0 +1,30 @@
+@use '../mixins' as *;
+
+.self-submit {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.self-submit__lead {
+  margin: 0;
+  color: var(--theme-heading);
+  font-weight: var(--fw-medium);
+}
+
+.self-submit__facts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  @include flex(column, stretch, flex-start, var(--space-3));
+}
+
+.self-submit__fact {
+  @include flex(row, flex-start, flex-start, var(--space-3));
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
+  color: var(--theme-text);
+
+  i {
+    margin-block-start: var(--space-1);
+    color: var(--theme-accent-text);
+  }
+}

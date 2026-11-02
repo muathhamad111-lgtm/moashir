@@ -1,0 +1,30 @@
+@use '../mixins' as *;
+
+.pagination {
+  @include flex(row, center, center, var(--space-1));
+}
+
+.pagination__item {
+  @include flex-center;
+  min-inline-size: var(--space-8);
+  min-block-size: var(--space-8);
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-md);
+  color: var(--theme-text);
+  transition: background-color var(--t-fast) var(--ease);
+
+  &:hover {
+    background-color: var(--theme-surface-raised);
+  }
+
+  &.is-active {
+    background-color: var(--theme-accent);
+    color: var(--theme-on-accent);
+    font-weight: var(--fw-semibold);
+  }
+
+  &.is-disabled {
+    opacity: var(--opacity-disabled);
+    pointer-events: none;
+  }
+}

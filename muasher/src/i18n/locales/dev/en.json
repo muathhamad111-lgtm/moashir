@@ -1,0 +1,8 @@
+{
+  "auth": {
+    "demo": {
+      "title": "Demo login",
+      "hint": "Development only. Sign in instantly as any role to explore its screens."
+    }
+  }
+}

@@ -1,0 +1,46 @@
+@use '../mixins' as *;
+
+.app-layout {
+  @include flex(row, stretch, flex-start);
+  min-block-size: 100vh;
+  flex: 1;
+  background-color: var(--content-bg);
+}
+
+.app-layout__main {
+  @include flex(column, stretch, flex-start);
+  flex: 1;
+  min-inline-size: 0;
+  background-color: var(--content-bg);
+}
+
+.app-layout__content {
+  flex: 1;
+  min-inline-size: 0;
+  padding: var(--space-4);
+
+  @include respond-to('md') {
+    padding: var(--space-6);
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.app-layout__skip {
+  position: absolute;
+  inset-inline-start: var(--space-4);
+  inset-block-start: var(--space-4);
+  z-index: var(--z-toast);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-accent);
+  color: var(--theme-on-accent);
+  transform: translateY(-200%);
+  transition: transform var(--t-fast) var(--ease);
+
+  &:focus {
+    transform: translateY(0);
+  }
+}

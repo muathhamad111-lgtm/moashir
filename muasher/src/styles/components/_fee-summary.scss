@@ -1,0 +1,89 @@
+@use '../mixins' as *;
+
+.fee-summary {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.fee-summary__head {
+  @include flex(row, flex-start, space-between, var(--space-3));
+  flex-wrap: wrap;
+}
+
+.fee-summary__eyebrow {
+  margin-block-end: var(--space-1);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  color: var(--theme-accent-text);
+}
+
+.fee-summary__title {
+  margin: 0;
+  font-size: var(--fs-lg);
+  color: var(--theme-heading);
+}
+
+.fee-summary__description {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+  line-height: var(--lh-relaxed);
+}
+
+.fee-summary__lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  @include flex(column, stretch, flex-start, var(--space-2));
+}
+
+.fee-summary__line {
+  @include flex(row, center, space-between, var(--space-3));
+  font-size: var(--fs-sm);
+  color: var(--theme-text);
+}
+
+.fee-summary__line-value {
+  font-variant-numeric: tabular-nums;
+}
+
+.fee-summary__total {
+  @include flex(row, center, space-between, var(--space-3));
+  padding-block: var(--space-3);
+  border-block: var(--border-width) solid var(--theme-border);
+}
+
+.fee-summary__total-label {
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.fee-summary__total-amount {
+  @include flex(row, baseline, flex-end, var(--space-2));
+}
+
+.fee-summary__amount-value {
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  color: var(--theme-accent-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.fee-summary__amount-currency {
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.fee-summary__vat-note {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--theme-text-muted);
+}
+
+.fee-summary__action {
+  @include flex(column, stretch, flex-start, var(--space-2));
+
+  .btn {
+    inline-size: 100%;
+  }
+}

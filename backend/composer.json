@@ -1,0 +1,132 @@
+{
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "moashir/backend",
+    "type": "project",
+    "description": "Moashir platform API (Laravel).",
+    "keywords": [
+        "moashir",
+        "api"
+    ],
+    "license": "proprietary",
+    "require": {
+        "php": "^8.4",
+        "laravel/fortify": "1.41.0",
+        "laravel/framework": "13.39.0",
+        "laravel/horizon": "5.50.1",
+        "laravel/sanctum": "4.3.3",
+        "laravel/tinker": "3.0.2",
+        "owen-it/laravel-auditing": "14.0.6",
+        "sentry/sentry-laravel": "4.29.0",
+        "spatie/laravel-backup": "10.3.3",
+        "spatie/laravel-csp": "3.30.1",
+        "spatie/laravel-permission": "8.3.2"
+    },
+    "require-dev": {
+        "fakerphp/faker": "1.24.1",
+        "larastan/larastan": "3.13.2",
+        "laravel/boost": "2.10.4",
+        "laravel/pail": "1.2.7",
+        "laravel/pao": "1.1.5",
+        "laravel/pint": "1.32.1",
+        "laravel/sail": "1.69.0",
+        "mockery/mockery": "1.6.15",
+        "nunomaduro/collision": "8.9.5",
+        "pestphp/pest": "5.3.4",
+        "pestphp/pest-plugin-laravel": "5.0.1",
+        "rector/rector": "2.8.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "setup": [
+            "composer install",
+            "@php artisan key:generate",
+            "@php artisan migrate --seed --force"
+        ],
+        "dev": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php artisan serve"
+        ],
+        "test": [
+            "@php artisan config:clear --ansi",
+            "PAO_DISABLE=1 ./vendor/bin/pest"
+        ],
+        "test:parallel": [
+            "@php artisan config:clear --ansi",
+            "PAO_DISABLE=1 ./vendor/bin/pest --parallel"
+        ],
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ],
+        "post-update-cmd": [
+            "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
+        ],
+        "pre-package-uninstall": [
+            "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
+        ],
+        "lint": [
+            "PAO_DISABLE=1 ./vendor/bin/pint --test"
+        ],
+        "lint:fix": [
+            "./vendor/bin/pint"
+        ],
+        "analyse": [
+            "PAO_DISABLE=1 ./vendor/bin/phpstan analyse --memory-limit=1G --no-progress"
+        ],
+        "refactor:check": [
+            "PAO_DISABLE=1 ./vendor/bin/rector process --dry-run"
+        ],
+        "test:coverage": [
+            "@php artisan config:clear --ansi",
+            "PAO_DISABLE=1 XDEBUG_MODE=coverage ./vendor/bin/pest --coverage"
+        ],
+        "security": [
+            "@composer audit --locked"
+        ],
+        "quality": [
+            "@lint",
+            "@analyse",
+            "@refactor:check",
+            "@test",
+            "@test:parallel",
+            "@security"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": []
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "process-timeout": 1200,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "scripts-descriptions": {
+        "lint": "Check the code style with Laravel Pint.",
+        "analyse": "Run Larastan at level max.",
+        "refactor:check": "Show pending Rector refactors without applying them.",
+        "test": "Run the Pest suite (architecture, unit and feature tests).",
+        "test:parallel": "Run the Pest suite in parallel processes, each on its own moashir_testing_test_<token> database.",
+        "security": "Audit the locked dependencies for known vulnerabilities.",
+        "quality": "Run every quality gate in order."
+    }
+}

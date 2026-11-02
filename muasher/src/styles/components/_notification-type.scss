@@ -1,0 +1,72 @@
+@use '../mixins' as *;
+
+.notification-type__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.notification-type__head {
+  @include flex(row, center, space-between, var(--space-3));
+  inline-size: 100%;
+  flex-wrap: wrap;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  text-align: start;
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.notification-type__title-wrap {
+  @include flex(row, center, flex-start, var(--space-3));
+  flex-wrap: wrap;
+  min-inline-size: 0;
+}
+
+.notification-type__label {
+  font-weight: var(--fw-medium);
+  color: var(--theme-heading);
+}
+
+.notification-type__channels {
+  @include flex(row, center, flex-end, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.notification-type__chevron {
+  color: var(--theme-text-muted);
+  transition: transform var(--t-fast) var(--ease);
+
+  &.is-open {
+    transform: rotate(180deg);
+  }
+}
+
+.notification-type__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-block-start: var(--space-4);
+  margin-block-start: var(--space-3);
+  border-block-start: var(--border-width) solid var(--theme-border);
+}
+
+.notification-type__toggles {
+  display: grid;
+  gap: var(--space-3);
+
+  @include respond-to(md) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.notification-type__actions {
+  @include flex(row, center, flex-end, var(--space-3));
+}

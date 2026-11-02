@@ -1,0 +1,61 @@
+@use '../mixins' as *;
+
+.values-to-copy {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  padding: var(--space-5);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-surface-raised);
+}
+
+.values-to-copy__title {
+  @include flex(row, center, flex-start, var(--space-2));
+  margin: 0;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.values-to-copy__hint {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-secondary);
+}
+
+.values-to-copy__list {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  margin: 0;
+}
+
+.copy-value {
+  @include flex(column, stretch, flex-start, var(--space-1));
+}
+
+.copy-value__label {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--theme-text);
+}
+
+.copy-value__body {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+.copy-value__text {
+  flex: 1 1 var(--size-control-min);
+  padding-block: var(--space-2);
+  padding-inline: var(--space-3);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+  font-size: var(--fs-sm);
+  overflow-wrap: anywhere;
+}
+
+.copy-value__status {
+  font-size: var(--fs-xs);
+  color: var(--theme-text-secondary);
+}

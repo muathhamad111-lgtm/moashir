@@ -1,0 +1,72 @@
+@use '../mixins' as *;
+
+.transaction-detail__back {
+  @include flex(row, center, flex-start, var(--space-2));
+  align-self: flex-start;
+  font-size: var(--fs-sm);
+  color: var(--theme-accent-text);
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.transaction-detail__loading {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.transaction-detail__header {
+  @include flex(row, flex-end, space-between, var(--space-3));
+  flex-wrap: wrap;
+}
+
+.transaction-detail__eyebrow {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-accent-text);
+}
+
+.transaction-detail__title {
+  margin: 0;
+  font-size: var(--fs-2xl);
+  color: var(--theme-heading);
+}
+
+.transaction-detail__badges,
+.transaction-detail__actions {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.transaction-detail__late {
+  margin: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--color-danger-soft);
+  color: var(--theme-text);
+  font-size: var(--fs-sm);
+}
+
+.transaction-detail__layout {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: 1fr;
+
+  @include respond-to('lg') {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.transaction-detail__side {
+  @include flex(column, stretch, flex-start, var(--space-5));
+  min-inline-size: 0;
+}
+
+.refund-record__reason {
+  white-space: pre-line;
+}
+
+.refund-record__evidence {
+  overflow-wrap: anywhere;
+}

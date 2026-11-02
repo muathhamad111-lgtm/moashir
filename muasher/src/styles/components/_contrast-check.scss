@@ -1,0 +1,32 @@
+@use '../mixins' as *;
+
+.contrast-check {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.contrast-check__row {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  padding-block: var(--space-2);
+  border-block-end: var(--border-width) solid var(--theme-border);
+
+  &:last-child {
+    border-block-end: 0;
+  }
+}
+
+.contrast-check__name {
+  font-size: var(--fs-sm);
+  color: var(--theme-text);
+}
+
+.contrast-check__ratio {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}

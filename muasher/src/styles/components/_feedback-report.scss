@@ -1,0 +1,94 @@
+@use '../mixins' as *;
+
+.feedback-report {
+  @include flex(column, stretch, flex-start, var(--space-5));
+  max-inline-size: var(--size-content-max);
+  margin-inline: auto;
+}
+
+.feedback-report__header {
+  @include flex(row, flex-start, space-between, var(--space-4));
+  flex-wrap: wrap;
+}
+
+.feedback-report__eyebrow {
+  margin-block-end: var(--space-1);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--theme-accent-text);
+}
+
+.feedback-report__title {
+  margin: 0;
+  font-size: var(--fs-3xl);
+  color: var(--theme-heading);
+}
+
+.feedback-report__subtitle {
+  margin-block-start: var(--space-2);
+  color: var(--theme-text-muted);
+  max-inline-size: var(--size-prose-max);
+}
+
+.feedback-report__loading {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.feedback-report__toolbar {
+  @include flex(row, center, space-between, var(--space-4));
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-surface);
+  border: var(--border-width) solid var(--theme-border);
+}
+
+.feedback-report__confidentiality {
+  @include flex(row, center, flex-start, var(--space-2));
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+
+  i {
+    color: var(--theme-accent-text);
+  }
+}
+
+.feedback-report__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.feedback-report__item-head {
+  @include flex(row, center, space-between, var(--space-3));
+  flex-wrap: wrap;
+  margin-block-end: var(--space-3);
+}
+
+.feedback-report__item-title {
+  margin: 0;
+  font-size: var(--fs-lg);
+  color: var(--theme-heading);
+}
+
+.feedback-report__comment {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text);
+  line-height: var(--lh-relaxed);
+}
+
+.feedback-report__comment-label {
+  display: block;
+  margin-block-end: var(--space-1);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-text-muted);
+}
+
+.feedback-report__footer {
+  @include flex(row, center, flex-start, var(--space-3));
+  flex-wrap: wrap;
+}

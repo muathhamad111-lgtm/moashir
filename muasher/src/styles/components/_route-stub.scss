@@ -1,0 +1,18 @@
+@use '../mixins' as *;
+
+.route-stub {
+  @include flex(column, center, center, var(--space-4));
+  flex: 1;
+  block-size: 100%;
+  padding: var(--space-8);
+  text-align: center;
+}
+
+.route-stub__title {
+  font-size: var(--fs-3xl);
+}
+
+.route-stub__note {
+  color: var(--theme-text-muted);
+  max-inline-size: var(--size-prose-max);
+}

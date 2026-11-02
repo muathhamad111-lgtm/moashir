@@ -1,0 +1,45 @@
+@mixin curved-tab-shape($radius: var(--r)) {
+  border-start-start-radius: $radius;
+  border-end-start-radius: $radius;
+}
+
+@mixin curved-tab-active($surface: var(--content-bg), $radius: var(--r), $curve-x: var(--sidebar-curve-x)) {
+  z-index: 1;
+  background-color: $surface;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    inset-inline-end: 0;
+    inline-size: $radius;
+    block-size: $radius;
+    pointer-events: none;
+  }
+
+  &::before {
+    inset-block-start: calc(#{$radius} * -1);
+    background: radial-gradient(
+      circle at #{$curve-x} 0,
+      transparent $radius,
+      #{$surface} calc(#{$radius} + var(--border-width))
+    );
+  }
+
+  &::after {
+    inset-block-end: calc(#{$radius} * -1);
+    background: radial-gradient(
+      circle at #{$curve-x} 100%,
+      transparent $radius,
+      #{$surface} calc(#{$radius} + var(--border-width))
+    );
+  }
+}
+
+@mixin curved-tab-direction {
+  --sidebar-curve-x: 100%;
+
+  [dir='ltr'] & {
+    --sidebar-curve-x: 0%;
+  }
+}

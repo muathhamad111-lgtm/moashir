@@ -1,0 +1,53 @@
+@use '../mixins' as *;
+
+.checkbox {
+  @include flex(row, flex-start, flex-start, var(--space-2));
+  cursor: pointer;
+
+  &.is-disabled {
+    opacity: var(--opacity-disabled);
+    cursor: not-allowed;
+  }
+}
+
+.checkbox__input {
+  appearance: none;
+  inline-size: var(--space-5);
+  block-size: var(--space-5);
+  flex-shrink: 0;
+  margin-block-start: var(--space-0);
+  border: var(--border-width-thick) solid var(--theme-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--theme-surface);
+  cursor: inherit;
+  transition:
+    background-color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease);
+
+  &:checked {
+    background-color: var(--theme-accent);
+    border-color: var(--theme-accent);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.checkbox__check {
+  position: absolute;
+  color: var(--theme-on-accent);
+  font-size: var(--fs-xs);
+  inline-size: var(--space-5);
+  text-align: center;
+  pointer-events: none;
+}
+
+.checkbox__box {
+  position: relative;
+  @include flex-center;
+}
+
+.checkbox__label {
+  line-height: var(--lh-base);
+}

@@ -1,0 +1,70 @@
+@use '../mixins' as *;
+
+.branding-page {
+  max-inline-size: var(--size-content-max);
+}
+
+.branding-page__back {
+  @include flex(row, center, flex-start, var(--space-2));
+  font-size: var(--fs-sm);
+  color: var(--theme-accent-text);
+  text-decoration: none;
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.branding-page__lock {
+  @include flex(row, center, flex-start, var(--space-2));
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--color-info-soft);
+  font-size: var(--fs-sm);
+  color: var(--theme-text);
+}
+
+.branding-page__layout {
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: 1fr;
+  align-items: start;
+
+  @include respond-to('xl') {
+    grid-template-columns: 3fr 2fr;
+  }
+}
+
+.branding-page__form {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.branding-page__hint {
+  margin: 0 0 var(--space-4);
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.branding-page__actions {
+  @include flex(row, center, flex-start, var(--space-3));
+  flex-wrap: wrap;
+}
+
+.branding-page__preview {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  padding: var(--space-5);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-xl);
+  background-color: var(--theme-surface);
+
+  @include respond-to('xl') {
+    position: sticky;
+    inset-block-start: calc(var(--size-navbar) + var(--space-4));
+  }
+}
+
+.branding-page__preview-title {
+  margin: 0;
+  @include heading(var(--fs-lg));
+}

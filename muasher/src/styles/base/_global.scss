@@ -1,0 +1,29 @@
+@use '../mixins' as *;
+
+body {
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+  transition:
+    background-color var(--t-base) var(--ease),
+    color var(--t-base) var(--ease);
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a {
+  color: var(--theme-accent-text);
+  transition: opacity var(--t-fast) var(--ease);
+}
+
+:focus-visible {
+  @include focus-ring;
+}
+
+::selection {
+  background-color: var(--theme-accent);
+  color: var(--theme-on-accent);
+}

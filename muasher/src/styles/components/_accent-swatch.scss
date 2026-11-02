@@ -1,0 +1,72 @@
+@use '../mixins' as *;
+
+.accent-swatches {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+
+.accent-swatches__legend {
+  padding: 0;
+  margin-block-end: var(--space-3);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.accent-swatches__grid {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fill, minmax(var(--size-swatch-min), 1fr));
+}
+
+.accent-swatch {
+  position: relative;
+  @include flex(row, center, flex-start, var(--space-3));
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width-thick) solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-surface);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease);
+
+  &:hover {
+    border-color: var(--theme-text-muted);
+  }
+
+  &.is-selected {
+    border-color: var(--theme-heading);
+  }
+
+  &:has(.accent-swatch__input:focus-visible) {
+    @include focus-ring;
+  }
+}
+
+.accent-swatch__input {
+  position: absolute;
+  opacity: 0;
+  inline-size: var(--space-0);
+  block-size: var(--space-0);
+}
+
+.accent-swatch__chip {
+  @include flex-center;
+  inline-size: var(--size-swatch);
+  block-size: var(--size-swatch);
+  flex-shrink: 0;
+  border-radius: var(--radius-circle);
+  background-color: var(--accent-fill, var(--color-primary));
+  color: var(--color-dark);
+}
+
+.accent-swatch__label {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--theme-text);
+}
+
+.accent-swatches:disabled .accent-swatch {
+  cursor: not-allowed;
+  opacity: var(--opacity-disabled);
+}

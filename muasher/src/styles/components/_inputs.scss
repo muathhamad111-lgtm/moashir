@@ -1,0 +1,85 @@
+@use '../mixins' as *;
+
+.field {
+  @include flex(column, stretch, flex-start, var(--space-1));
+  position: relative;
+}
+
+.field__label {
+  position: absolute;
+  inset-block-start: var(--space-3);
+  inset-inline-start: var(--space-3);
+  margin: 0;
+  padding-inline: var(--space-1);
+  max-inline-size: calc(100% - var(--space-6));
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-regular);
+  color: var(--theme-text-secondary);
+  background-color: var(--theme-surface);
+  pointer-events: none;
+  transition:
+    inset-block-start var(--t-fast) var(--ease),
+    font-size var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+}
+
+.field__control {
+  padding-block: var(--space-4) var(--space-2);
+  padding-inline: var(--space-3);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+  transition: border-color var(--t-fast) var(--ease);
+
+  &:focus-visible {
+    @include focus-ring;
+    border-color: var(--theme-accent);
+  }
+
+  &::placeholder {
+    color: transparent;
+  }
+}
+
+.field--floated .field__label,
+.field:has(.datepicker__control) .field__label {
+  inset-block-start: calc(var(--space-2) * -1);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+}
+
+.field--floated.field--focused .field__label {
+  color: var(--theme-accent-text);
+}
+
+.field__error {
+  font-size: var(--fs-xs);
+  color: var(--theme-danger-text);
+}
+
+.field__hint {
+  font-size: var(--fs-xs);
+  color: var(--theme-text-secondary);
+}
+
+.field--error .field__control {
+  border-color: var(--color-danger);
+}
+
+.field--error .field__label {
+  color: var(--color-danger);
+}
+
+.field--disabled {
+  opacity: var(--opacity-disabled);
+  pointer-events: none;
+}
+
+.field--required .field__label::after {
+  content: ' *';
+  color: var(--color-danger);
+}

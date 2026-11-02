@@ -1,0 +1,148 @@
+@use '../mixins' as *;
+
+.lenses-page {
+  display: flex;
+  flex-direction: column;
+}
+
+.lenses-page__hero {
+  padding-block: var(--space-12) var(--space-10);
+  padding-inline: var(--space-4);
+  background: var(--gradient-brand);
+  color: var(--color-secondary);
+}
+
+.lenses-page__hero-inner {
+  max-inline-size: var(--size-content-max);
+  margin-inline: auto;
+  text-align: start;
+}
+
+.lenses-page__eyebrow {
+  @include flex(row, center, center, var(--space-2));
+  display: inline-flex;
+  margin-block-end: var(--space-2);
+  padding-block: var(--space-1);
+  padding-inline: var(--space-3);
+  border-radius: var(--radius-pill);
+  background-color: var(--color-dark);
+  color: var(--color-primary);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+}
+
+.lenses-page__title {
+  margin: 0;
+  font-size: var(--fs-4xl);
+  font-weight: var(--fw-black);
+  color: var(--color-white);
+}
+
+.lenses-page__subtitle {
+  margin-block: var(--space-3) 0;
+  max-inline-size: var(--size-prose-max);
+  font-size: var(--fs-lg);
+  color: var(--color-secondary);
+  line-height: var(--lh-relaxed);
+}
+
+.lenses-page__body {
+  inline-size: 100%;
+  max-inline-size: var(--size-content-max);
+  margin-inline: auto;
+  padding-block: var(--space-10);
+  padding-inline: var(--space-4);
+}
+
+.lenses-page__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  @include respond-to('sm') {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include respond-to('lg') {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.lens-card {
+  @include flex(column, flex-start, flex-start, var(--space-3));
+  block-size: 100%;
+  padding: var(--space-6);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-surface);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--t-base) var(--ease), box-shadow var(--t-base) var(--ease),
+    border-color var(--t-base) var(--ease);
+
+  &:hover {
+    transform: translateY(calc(-1 * var(--space-1)));
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-primary);
+  }
+}
+
+.lens-card__icon {
+  @include flex-center;
+  flex-shrink: 0;
+  inline-size: var(--space-12);
+  block-size: var(--space-12);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-xl);
+  background: var(--gradient-brand);
+  color: var(--color-white);
+}
+
+.lens-card__title {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  color: var(--theme-heading);
+}
+
+.lens-card__desc {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+  line-height: var(--lh-relaxed);
+}
+
+.lenses-page__rule {
+  @include flex(row, flex-start, flex-start, var(--space-3));
+  margin-block-start: var(--space-8);
+  padding: var(--space-5);
+  border: var(--border-width) solid var(--color-info-soft);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-info-soft);
+}
+
+.lenses-page__rule-icon {
+  flex-shrink: 0;
+  color: var(--color-primary);
+  font-size: var(--fs-2xl);
+  margin-block-start: var(--space-1);
+}
+
+.lenses-page__rule-body {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+}
+
+.lenses-page__rule-title {
+  margin: 0;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-bold);
+  color: var(--theme-heading);
+}
+
+.lenses-page__rule-text {
+  margin: 0;
+  color: var(--theme-text);
+  line-height: var(--lh-relaxed);
+}

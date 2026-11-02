@@ -1,0 +1,122 @@
+import { FIXTURE_ENTITY_ID } from './assessments'
+import { ACCREDITED_FIXTURE_IDS } from './accreditedRequests'
+
+const COMPLETED_ACCREDITED_ID = ACCREDITED_FIXTURE_IDS.completedOwn
+
+const assessorNotes = {
+  103: {
+    ar: 'تُظهر الجهة ثقافة تميز راسخة تنعكس في السلوك اليومي للقيادة، مع أدلة واضحة على القيادة بالقدوة. يُوصى بتوثيق مبادرات التميز الداخلية بشكل أكثر منهجية وربطها بمؤشرات قياس دورية.',
+    en: 'The organization shows a well-rooted excellence culture reflected in leadership’s daily behavior, with clear evidence of leading by example. It is recommended to document internal excellence initiatives more systematically and link them to periodic measurement indicators.',
+  },
+  101: {
+    ar: 'التوجه الاستراتيجي واضح ومعلن، وترتبط الأهداف بالرؤية بمؤشرات مناسبة. الفجوة الأبرز في دورية مراجعة التوجه وتحديثه وفق المتغيرات؛ يُنصح باعتماد آلية مراجعة نصف سنوية موثقة.',
+    en: 'The strategic direction is clear and published, and goals are linked to the vision through suitable indicators. The main gap is the periodicity of reviewing and updating the direction; a documented semi-annual review mechanism is advised.',
+  },
+  102: {
+    ar: 'اعتمدت الجهة لائحة حوكمة جيدة تحدد الأدوار وتعارض المصالح، مع إفصاح دوري مقبول. يُوصى بتعزيز شفافية التقارير المالية ونشرها للمستفيدين وأصحاب المصلحة.',
+    en: 'The entity has adopted a solid governance charter defining roles and conflicts of interest, with acceptable periodic disclosure. Strengthening the transparency of financial reports and publishing them to beneficiaries and stakeholders is recommended.',
+  },
+  201: {
+    ar: 'تعتمد الاستراتيجية على دراسة موثقة لاحتياجات المستفيدين خلال العامين الماضيين، وتحليل بيئي جيد. يُقترح تحديث الدراسة سنويًا وربط نتائجها مباشرة بالمبادرات.',
+    en: 'The strategy rests on a documented beneficiary needs study over the past two years and a good environmental analysis. Updating the study annually and linking its findings directly to initiatives is suggested.',
+  },
+  202: {
+    ar: 'الخطة الاستراتيجية معتمدة وواضحة، وخطة النشر متوفرة لكنها بحاجة إلى مؤشرات تنفيذ أدق على مستوى الإدارات. مستوى الأداء جيد بشكل عام.',
+    en: 'The strategic plan is approved and clear, and a deployment plan exists but needs sharper execution indicators at the department level. Overall performance is good.',
+  },
+  301: {
+    ar: 'خطة التدريب السنوية مبنية على تحليل فجوات المهارات، وبرنامج المتطوعين منظم. يُوصى بقياس أثر التدريب على الأداء بشكل كمّي.',
+    en: 'The annual training plan is based on a skills gap analysis, and the volunteer program is well organized. Quantitatively measuring the impact of training on performance is recommended.',
+  },
+  302: {
+    ar: 'بيئة العمل محفزة وسياسات الرعاية موجودة، غير أن مؤشرات رضا الموظفين تحتاج إلى قياس أكثر انتظامًا وربطها بخطط التحسين.',
+    en: 'The workplace is motivating and wellbeing policies exist, yet employee satisfaction indicators need more regular measurement and linkage to improvement plans.',
+  },
+  401: {
+    ar: 'سجل الشراكات موثق واتفاقياتها معتمدة، مع قيمة مضافة واضحة من بعض الشراكات. يُقترح تقييم أثر كل شراكة سنويًا.',
+    en: 'The partnership register is documented and agreements are approved, with clear added value from several partnerships. Assessing the impact of each partnership annually is suggested.',
+  },
+  402: {
+    ar: 'القوائم المالية مدققة والاستدامة المالية جيدة، لكن تنويع مصادر الدخل ما زال محدودًا؛ يُوصى بتفعيل خطة تنويع الدخل المعتمدة.',
+    en: 'Financial statements are audited and financial sustainability is good, but income-source diversification remains limited; activating the approved income diversification plan is recommended.',
+  },
+  501: {
+    ar: 'منهجية تصميم البرامج واضحة ومبنية على احتياجات المستفيدين، مع دليل معتمد للبرامج والخدمات. مستوى جيد جدًا.',
+    en: 'The program design methodology is clear and grounded in beneficiary needs, with an approved programs and services manual. A very good level.',
+  },
+  502: {
+    ar: 'خرائط العمليات متوفرة ويتم تحسينها، غير أن التحسين المستمر بحاجة إلى دورية موثقة ومؤشرات كفاءة أوضح.',
+    en: 'Process maps exist and are being improved, yet continuous improvement needs a documented cadence and clearer efficiency indicators.',
+  },
+  503: {
+    ar: 'خطة التحول الرقمي معتمدة ومرتبطة بالأهداف التشغيلية، مع تقدم ملموس. يُوصى بتسريع رقمنة خدمات المستفيدين.',
+    en: 'The digital transformation plan is approved and linked to operational goals, with tangible progress. Accelerating the digitization of beneficiary services is recommended.',
+  },
+  601: {
+    ar: 'مؤشرات رضا المستفيدين مرتفعة وموثقة عبر استبيانات دورية، مع ولاء واضح. أداء متميز في هذا المعيار.',
+    en: 'Beneficiary satisfaction indicators are high and documented through periodic surveys, with clear loyalty. Distinguished performance on this criterion.',
+  },
+  602: {
+    ar: 'تقارير قياس الأثر تُظهر نتائج إيجابية على المستفيدين، مع منهجية قياس سليمة يمكن تعزيزها بمقارنات مرجعية.',
+    en: 'Impact measurement reports show positive results for beneficiaries, with a sound methodology that could be reinforced with benchmarking.',
+  },
+  701: {
+    ar: 'نتائج رضا الموظفين والمتطوعين جيدة ومعدلات الاستبقاء مستقرة. يُوصى بتحليل أسباب المغادرة لتقليلها.',
+    en: 'Employee and volunteer satisfaction results are good and retention rates are stable. Analyzing departure reasons to reduce them is recommended.',
+  },
+  702: {
+    ar: 'برامج التطوير المهني قائمة وأثرها إيجابي، لكن توثيق مسارات التطور الوظيفي بحاجة إلى تحسين.',
+    en: 'Professional development programs are in place with a positive impact, but documenting career development paths needs improvement.',
+  },
+  801: {
+    ar: 'الأثر المجتمعي موثق ومرتبط بمستهدفات رؤية 2030، مع مبادرات نوعية. يُقترح توسيع نطاق قياس الأثر ليشمل الاستدامة طويلة المدى.',
+    en: 'Community impact is documented and linked to Vision 2030 targets, with quality initiatives. Broadening impact measurement to include long-term sustainability is suggested.',
+  },
+}
+
+const completedSubRatios = {
+  101: 0.82,
+  102: 0.75,
+  103: 0.9,
+  201: 0.78,
+  202: 0.8,
+  301: 0.76,
+  302: 0.7,
+  401: 0.72,
+  402: 0.68,
+  501: 0.85,
+  502: 0.65,
+  503: 0.6,
+  601: 0.88,
+  602: 0.82,
+  701: 0.74,
+  702: 0.7,
+  801: 0.8,
+}
+
+export const certificatesFixture = [
+  {
+    id: 'cert-acc-9102',
+    entityId: FIXTURE_ENTITY_ID,
+    assessmentId: COMPLETED_ACCREDITED_ID,
+    kind: 'accredited',
+    entityName: { ar: 'جمعية البر بالرياض', en: 'Al-Birr Charity — Riyadh' },
+    scorePercent: 78,
+    issuedAt: '2026-06-22T12:00:00+03:00',
+    downloadUrl: '/assets/certificates/issued/cert-acc-9102.pdf',
+  },
+]
+
+export const feedbackReportsFixture = [
+  {
+    assessmentId: COMPLETED_ACCREDITED_ID,
+    entityId: FIXTURE_ENTITY_ID,
+    status: 'available',
+    generatedAt: '2026-06-22T11:30:00+03:00',
+    items: Object.entries(completedSubRatios).map(([subCriterionId, ratio]) => ({
+      subCriterionId: Number(subCriterionId),
+      scorePercent: Math.round(ratio * 100),
+      comment: assessorNotes[subCriterionId] ?? { ar: '', en: '' },
+    })),
+  },
+]

@@ -1,0 +1,125 @@
+@use '../tokens' as *;
+
+:root {
+  --color-primary: #{$color-primary};
+  --color-secondary: #{$color-secondary};
+  --color-dark: #{$color-dark};
+  --color-dark-deep: #{$color-dark-deep};
+  --color-primary-600: #{$color-primary-600};
+  --color-primary-800: #{$color-primary-800};
+  --color-success: #{$color-success};
+  --color-warning: #{$color-warning};
+  --color-danger: #{$color-danger};
+  --color-danger-strong: #{$color-danger-strong};
+  --color-danger-light: #{$color-danger-light};
+  --color-info: #{$color-info};
+  --color-success-soft: #{$color-success-soft};
+  --color-warning-soft: #{$color-warning-soft};
+  --color-danger-soft: #{$color-danger-soft};
+  --color-info-soft: #{$color-info-soft};
+  --color-white: #{$color-white};
+  --color-gray-50: #{$color-gray-50};
+  --color-gray-100: #{$color-gray-100};
+  --color-gray-300: #{$color-gray-300};
+  --color-gray-500: #{$color-gray-500};
+  --color-gray-600: #{$color-gray-600};
+  --color-gray-700: #{$color-gray-700};
+  --color-gray-900: #{$color-gray-900};
+  --gradient-brand: #{$gradient-brand};
+  --opacity-disabled: #{$opacity-disabled};
+  --opacity-backdrop: #{$opacity-backdrop};
+
+  --font-arabic: #{$font-arabic};
+  --font-latin: #{$font-latin};
+  --font-heading: #{$font-heading};
+  --fw-regular: #{$fw-regular};
+  --fw-medium: #{$fw-medium};
+  --fw-semibold: #{$fw-semibold};
+  --fw-bold: #{$fw-bold};
+  --fw-black: #{$fw-black};
+  --fs-xs: #{$fs-xs};
+  --fs-sm: #{$fs-sm};
+  --fs-base: #{$fs-base};
+  --fs-lg: #{$fs-lg};
+  --fs-xl: #{$fs-xl};
+  --fs-2xl: #{$fs-2xl};
+  --fs-3xl: #{$fs-3xl};
+  --fs-4xl: #{$fs-4xl};
+  --fs-5xl: #{$fs-5xl};
+  --lh-tight: #{$lh-tight};
+  --lh-base: #{$lh-base};
+  --lh-relaxed: #{$lh-relaxed};
+
+  --space-0: #{$space-0};
+  --space-1: #{$space-1};
+  --space-2: #{$space-2};
+  --space-3: #{$space-3};
+  --space-4: #{$space-4};
+  --space-5: #{$space-5};
+  --space-6: #{$space-6};
+  --space-8: #{$space-8};
+  --space-10: #{$space-10};
+  --space-12: #{$space-12};
+  --space-16: #{$space-16};
+
+  --radius-sm: #{$radius-sm};
+  --radius-md: #{$radius-md};
+  --radius-lg: #{$radius-lg};
+  --radius-xl: #{$radius-xl};
+  --radius-pill: #{$radius-pill};
+  --radius-circle: #{$radius-circle};
+  --radius-tab: #{$radius-tab};
+
+  --shadow-sm: #{$shadow-sm};
+  --shadow-md: #{$shadow-md};
+  --shadow-lg: #{$shadow-lg};
+
+  --border-width: #{$border-width};
+  --border-color: #{$border-color};
+  --border-color-strong: #{$border-color-strong};
+  --border-width-thick: #{$border-width-thick};
+  --focus-ring-width: #{$focus-ring-width};
+  --focus-ring-offset: #{$focus-ring-offset};
+
+  --z-dropdown: #{$z-dropdown};
+  --z-sticky: #{$z-sticky};
+  --z-fixed: #{$z-fixed};
+  --z-modal-backdrop: #{$z-modal-backdrop};
+  --z-modal: #{$z-modal};
+  --z-popover: #{$z-popover};
+  --z-tooltip: #{$z-tooltip};
+  --z-toast: #{$z-toast};
+
+  --t-fast: #{$t-fast};
+  --t-tab: #{$t-tab};
+  --t-base: #{$t-base};
+  --t-slow: #{$t-slow};
+  --ease: #{$ease};
+
+  --size-sidebar: #{$size-sidebar};
+  --size-sidebar-collapsed: #{$size-sidebar-collapsed};
+  --size-modal-sm: #{$size-modal-sm};
+  --size-modal-md: #{$size-modal-md};
+  --size-modal-lg: #{$size-modal-lg};
+  --size-menu-max-block: #{$size-menu-max-block};
+  --size-panel: #{$size-panel};
+  --size-control-min: #{$size-control-min};
+  --size-content-max: #{$size-content-max};
+  --size-prose-max: #{$size-prose-max};
+  --size-auth-card: #{$size-auth-card};
+  --size-tooltip-max: #{$size-tooltip-max};
+  --size-touch-target: #{$size-touch-target};
+  --size-swatch-min: #{$size-swatch-min};
+  --size-navbar: #{$size-navbar};
+  --size-sidebar-logo: #{$size-sidebar-logo};
+  --size-sidebar-logo-collapsed: #{$size-sidebar-logo-collapsed};
+  --size-swatch: #{$size-swatch};
+  --size-preview-sidebar: #{$size-preview-sidebar};
+  --size-logo-preview: #{$size-logo-preview};
+  --size-maintenance-art: #{$size-maintenance-art};
+  --size-search: #{$size-search};
+  --size-search-popup: #{$size-search-popup};
+  --size-search-popup-max-block: #{$size-search-popup-max-block};
+  --size-qr-code: #{$size-qr-code};
+  --size-weight-input: #{$size-weight-input};
+}

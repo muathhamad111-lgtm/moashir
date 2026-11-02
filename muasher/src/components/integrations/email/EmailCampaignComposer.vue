@@ -1,0 +1,51 @@
+<script setup>
+import { onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import SegmentPicker from '@/components/messaging/SegmentPicker.vue'
+import BaseInput from '@/components/form/BaseInput.vue'
+import BaseTextarea from '@/components/form/BaseTextarea.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
+import { useEmailCampaign } from '@/composables/useEmailCampaign'
+import DemoDataNotice from '@/components/ui/DemoDataNotice.vue'
+import { MOCK_MODULES } from '@/constants/mockModules'
+
+const { t } = useI18n()
+const { segments, recipients, recipientsLoading, compose, errors, sending, valid, loadSegments, searchRecipients, send } = useEmailCampaign()
+
+onMounted(loadSegments)
+
+const DEMO_MODULES = [MOCK_MODULES.MESSAGING]
+</script>
+
+<template>
+  <section class="settings-form__group" aria-labelledby="email-compose-title">
+    <h2 id="email-compose-title" class="settings-form__legend">{{ t('settings.email.composeTitle') }}</h2>
+    <DemoDataNotice scope="section" :modules="DEMO_MODULES" />
+    <p class="settings-form__note" role="note">
+      <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+      {{ t('settings.email.composeNote') }}
+    </p>
+    <BaseInput
+      v-model="compose.subject"
+      name="composeSubject"
+      :label="t('settings.email.subject')"
+      :placeholder="t('settings.email.subjectPlaceholder')"
+      :error="errors.subject"
+      required
+    />
+    <BaseTextarea v-model="compose.body" name="composeBody" :rows="6" :label="t('settings.email.body')" :placeholder="t('settings.email.bodyPlaceholder')" />
+    <SegmentPicker
+      v-model="compose.audience"
+      :segments="segments"
+      :recipients="recipients"
+      :recipients-loading="recipientsLoading"
+      :error="errors.segment || errors.recipient"
+      @search-recipients="searchRecipients"
+    />
+    <div class="settings-form__inline">
+      <BaseButton variant="primary" icon="fa-solid fa-envelope-circle-check" :loading="sending" :disabled="!valid" @click="send">
+        {{ t('settings.email.send') }}
+      </BaseButton>
+    </div>
+  </section>
+</template>

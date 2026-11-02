@@ -1,0 +1,62 @@
+@use '../mixins' as *;
+
+.radio-group {
+  border: none;
+  padding: var(--space-0);
+  margin: var(--space-0);
+  @include flex(column, stretch, flex-start, var(--space-2));
+}
+
+.radio-group__legend {
+  padding: var(--space-0);
+  margin-block-end: var(--space-1);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--theme-text);
+}
+
+.radio-group--inline .radio-group__options {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.radio-group__options {
+  @include flex(column, stretch, flex-start, var(--space-2));
+}
+
+.radio {
+  @include flex(row, center, flex-start, var(--space-2));
+  cursor: pointer;
+
+  &.is-disabled {
+    opacity: var(--opacity-disabled);
+    cursor: not-allowed;
+  }
+}
+
+.radio__input {
+  appearance: none;
+  inline-size: var(--space-5);
+  block-size: var(--space-5);
+  flex-shrink: 0;
+  border: var(--border-width-thick) solid var(--theme-border);
+  border-radius: var(--radius-circle);
+  background-color: var(--theme-surface);
+  cursor: inherit;
+  transition: border-color var(--t-fast) var(--ease);
+
+  &:checked {
+    border-color: var(--theme-accent);
+    background-color: var(--theme-accent);
+    box-shadow: inset 0 0 0 var(--border-width-thick) var(--theme-surface);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.radio__label {
+  line-height: var(--lh-base);
+}

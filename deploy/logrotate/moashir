@@ -1,0 +1,10 @@
+/var/log/moashir/*/*.log {
+    su moashir moashir
+    daily
+    rotate 14
+    missingok
+    notifempty
+    compress
+    delaycompress
+    copytruncate
+}

@@ -1,0 +1,15 @@
+[program:moashir-{{ENVIRONMENT}}-horizon]
+command={{PHP_BIN}} {{ENV_DIR}}/current/backend/artisan horizon
+directory={{ENV_DIR}}
+user={{APP_USER}}
+environment=HOME="{{APP_HOME}}"
+autostart=true
+autorestart=true
+startsecs=5
+startretries=10
+stopasgroup=true
+killasgroup=true
+stopwaitsecs=3600
+redirect_stderr=true
+stdout_logfile={{LOG_DIR}}/horizon.log
+stdout_logfile_maxbytes=0

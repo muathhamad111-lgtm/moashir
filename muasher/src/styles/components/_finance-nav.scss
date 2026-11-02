@@ -1,0 +1,32 @@
+@use '../mixins' as *;
+
+.finance-nav {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  padding-block-end: var(--space-2);
+  border-block-end: var(--border-width) solid var(--theme-border);
+}
+
+.finance-nav__link {
+  @include flex(row, center, flex-start, var(--space-2));
+  min-block-size: var(--size-touch-target);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill);
+  color: var(--theme-text-secondary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  text-decoration: none;
+
+  &:hover {
+    background-color: var(--theme-surface-raised);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.finance-nav__link--active {
+  background-color: var(--theme-accent-soft);
+  color: var(--theme-accent-text);
+}

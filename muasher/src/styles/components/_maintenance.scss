@@ -1,0 +1,42 @@
+@use '../mixins' as *;
+
+.maintenance {
+  @include flex(column, center, center, var(--space-4));
+  text-align: center;
+}
+
+.maintenance__icon {
+  @include flex-center;
+  inline-size: var(--size-maintenance-art);
+  block-size: var(--size-maintenance-art);
+  border-radius: var(--radius-circle);
+  background-color: var(--theme-surface-raised);
+  color: var(--theme-accent-text);
+  font-size: var(--fs-4xl);
+}
+
+.maintenance__loading {
+  inline-size: 100%;
+}
+
+.maintenance__title {
+  margin: 0;
+  @include heading(var(--fs-2xl));
+}
+
+.maintenance__message {
+  margin: 0;
+  max-inline-size: var(--size-prose-max);
+  color: var(--theme-text);
+}
+
+.maintenance__hint {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.maintenance__actions {
+  @include flex(row, center, center, var(--space-3));
+  flex-wrap: wrap;
+}

@@ -1,0 +1,107 @@
+@use '../mixins' as *;
+
+.accredited-feedback__title {
+  margin: 0;
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.accredited-feedback__hint {
+  margin-block: var(--space-2) var(--space-4);
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.accredited-feedback__list {
+  @include flex(column, stretch, flex-start, var(--space-4));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.accredited-feedback__item {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  padding-block-end: var(--space-4);
+
+  &:not(:last-child) {
+    border-block-end: var(--border-width) solid var(--theme-border);
+  }
+}
+
+.accredited-feedback__head {
+  @include flex(row, center, space-between, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.accredited-feedback__sub {
+  margin: 0;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.accredited-feedback__code {
+  margin-inline-end: var(--space-2);
+  color: var(--theme-accent-text);
+}
+
+.accredited-feedback__percent {
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+  font-variant-numeric: tabular-nums;
+}
+
+.accredited-feedback__fields {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: 1fr;
+  margin: 0;
+
+  @include respond-to(md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.accredited-feedback__field {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface-raised);
+
+  dt {
+    margin-block-end: var(--space-1);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    color: var(--theme-text-muted);
+  }
+
+  dd {
+    margin: 0;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    color: var(--theme-text);
+    white-space: pre-line;
+  }
+}
+
+.accredited-feedback__field--strengths {
+  border-inline-start: var(--border-width-thick) solid var(--color-success);
+}
+
+.accredited-feedback__field--improvement {
+  border-inline-start: var(--border-width-thick) solid var(--color-warning);
+}
+
+.accredited-feedback__field--notes {
+  border-inline-start: var(--border-width-thick) solid var(--color-info);
+}
+
+.accredited-feedback__empty {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}

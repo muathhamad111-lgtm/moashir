@@ -1,0 +1,12 @@
+@use 'sass:map';
+@use '../tokens' as *;
+
+@mixin respond-to($breakpoint) {
+  $size: map.get($breakpoints, $breakpoint);
+  @if $size == null {
+    @error 'Unknown breakpoint: #{$breakpoint}. Known: #{map.keys($breakpoints)}';
+  }
+  @media (min-width: $size) {
+    @content;
+  }
+}

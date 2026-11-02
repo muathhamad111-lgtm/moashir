@@ -1,0 +1,92 @@
+@use '../mixins' as *;
+
+.sms-general {
+  @include flex(column, stretch, flex-start, var(--space-3));
+}
+
+.sms-sender {
+  @include flex(row, flex-end, flex-start, var(--space-3));
+  flex-wrap: wrap;
+
+  > .field {
+    flex: 1 1 var(--size-control-min);
+  }
+}
+
+.sms-sender__empty,
+.msegat-templates__empty {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text);
+}
+
+.msegat-templates {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  padding: var(--space-4);
+  border: var(--border-width) dashed var(--theme-border);
+  border-radius: var(--radius-md);
+}
+
+.msegat-templates__head {
+  @include flex(row, center, space-between, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.msegat-templates__title {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.msegat-templates__list {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  margin: 0;
+  padding-inline-start: var(--space-5);
+  font-size: var(--fs-sm);
+  color: var(--theme-text);
+}
+
+.sms-templates {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.sms-templates__check {
+  @include flex(row, flex-start, flex-start, var(--space-2));
+  margin: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--color-info-soft);
+  font-size: var(--fs-sm);
+  color: var(--theme-text);
+}
+
+.msegat-templates__item {
+  @include flex(column, stretch, flex-start, var(--space-1));
+}
+
+.msegat-templates__name {
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.msegat-templates__body {
+  color: var(--theme-text);
+}
+
+.sms-templates__check.is-pending {
+  background-color: var(--color-warning-soft);
+}
+
+.sms-template {
+  @include flex(column, stretch, flex-start, var(--space-2));
+}
+
+.sms-template__footer {
+  @include flex(row, center, space-between, var(--space-2));
+  flex-wrap: wrap;
+
+  .field__hint {
+    margin: 0;
+  }
+}

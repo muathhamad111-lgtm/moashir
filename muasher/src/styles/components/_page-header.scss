@@ -1,0 +1,17 @@
+@use '../mixins' as *;
+
+.page-header {
+  @include flex(column, flex-start, flex-start, var(--space-2));
+  margin-block-end: var(--space-6);
+}
+
+.page-header__title {
+  margin: 0;
+  @include heading(var(--fs-2xl));
+}
+
+.page-header__subtitle {
+  margin: 0;
+  max-inline-size: var(--size-prose-max);
+  color: var(--theme-text-muted);
+}

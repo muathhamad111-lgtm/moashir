@@ -1,0 +1,80 @@
+@use '../mixins' as *;
+
+.ai-models,
+.ai-assistant,
+.ai-answer {
+  @include flex(column, stretch, flex-start, var(--space-3));
+}
+
+.ai-models__select,
+.ai-answer__actions {
+  @include flex(row, flex-end, flex-start, var(--space-3));
+  flex-wrap: wrap;
+
+  > .field {
+    flex: 1 1 var(--size-control-min);
+  }
+}
+
+.ai-models__empty {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text);
+}
+
+.data-transfer {
+  @include flex(column, stretch, flex-start, var(--space-3));
+}
+
+.data-transfer__warning {
+  @include flex(row, flex-start, flex-start, var(--space-3));
+  margin: 0;
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--color-warning);
+  border-inline-start-width: var(--space-1);
+  border-radius: var(--radius-md);
+  background-color: var(--color-warning-soft);
+  color: var(--theme-text);
+}
+
+.data-transfer__controls {
+  @include flex(column, stretch, flex-start, var(--space-1));
+  margin: 0;
+  padding-inline-start: var(--space-5);
+  font-size: var(--fs-sm);
+  color: var(--theme-text);
+}
+
+.ai-answer__result {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  margin: 0;
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--color-success);
+  border-radius: var(--radius-md);
+  background-color: var(--color-success-soft);
+}
+
+.ai-answer__text {
+  margin: 0;
+  color: var(--theme-text);
+  line-height: var(--lh-relaxed);
+}
+
+.ai-answer__usage {
+  font-size: var(--fs-xs);
+  color: var(--theme-text-secondary);
+}
+
+.ai-acknowledgement {
+  @include flex(column, stretch, flex-start, var(--space-2));
+}
+
+.ai-answer__reference {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  margin-block-start: var(--space-1);
+
+  code {
+    overflow-wrap: anywhere;
+  }
+}

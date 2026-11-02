@@ -1,0 +1,63 @@
+@use '../mixins' as *;
+
+.illustration-slot {
+  display: block;
+  inline-size: 100%;
+  margin: 0;
+}
+
+.illustration-slot__image {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  border-radius: var(--radius-lg);
+  object-fit: cover;
+  box-shadow: var(--shadow-md);
+}
+
+.illustration-slot__placeholder {
+  display: block;
+  inline-size: 100%;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.illustration-slot__art {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  aspect-ratio: 4 / 3;
+}
+
+.illustration-slot__stop--from {
+  stop-color: var(--theme-accent);
+}
+
+.illustration-slot__stop--to {
+  stop-color: var(--color-dark);
+}
+
+.illustration-slot__accent {
+  fill: var(--color-secondary);
+  stroke: var(--color-secondary);
+  opacity: var(--opacity-disabled);
+}
+
+.illustration-slot__accent-soft {
+  fill: var(--color-secondary);
+  opacity: var(--opacity-backdrop);
+}
+
+.illustration-slot--hero .illustration-slot__image,
+.illustration-slot--hero .illustration-slot__placeholder {
+  border-radius: var(--radius-xl);
+}
+
+.illustration-slot--compact .illustration-slot__art {
+  aspect-ratio: 3 / 2;
+}
+
+.illustration-slot--banner .illustration-slot__art {
+  aspect-ratio: 16 / 9;
+}

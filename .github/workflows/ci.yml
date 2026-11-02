@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (Pint, Larastan, Rector, Pest, audit)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: moashir_testing
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      COMPOSER_PROCESS_TIMEOUT: 1200
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: ""
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Raise max_locks_per_transaction for the parallel-capable suite
+        working-directory: .
+        run: |
+          docker exec ${{ job.services.postgres.id }} psql -U postgres -c "ALTER SYSTEM SET max_locks_per_transaction = 256"
+          docker restart ${{ job.services.postgres.id }}
+          for attempt in $(seq 1 30); do
+            docker exec ${{ job.services.postgres.id }} pg_isready -U postgres && break
+            sleep 2
+          done
+          docker exec ${{ job.services.postgres.id }} psql -U postgres -tAc "SHOW max_locks_per_transaction" | grep -qx 256
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: pdo_pgsql, pgsql, intl, zip, mbstring, fileinfo, pcntl, posix
+          coverage: none
+          tools: composer:v2
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache/files
+          key: composer-${{ hashFiles('backend/composer.lock') }}
+
+      - run: composer install --no-interaction --no-progress --prefer-dist
+      - run: composer lint
+      - run: composer analyse
+      - run: composer refactor:check
+      - run: composer test
+      - run: composer security
+
+  frontend:
+    name: Frontend (lint, unit, build, audit)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: muasher
+    env:
+      FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: muasher/package-lock.json
+
+      - run: npm ci --no-fund
+      - run: npm run lint
+      - name: Lint left the tree unchanged
+        run: git diff --exit-code
+      - run: npm run test:unit
+      - run: npm run build
+      - run: npm audit
+
+  deploy-kit:
+    name: Deployment kit (bash -n, shellcheck, secrets scan)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: for script in deploy/*.sh deploy/lib/*.sh deploy/remote/*.sh; do bash -n "$script"; done
+      - run: shellcheck --severity=warning --exclude=SC1091 deploy/*.sh deploy/lib/*.sh deploy/remote/*.sh
+      - run: bash deploy/secrets-scan.sh

@@ -1,0 +1,76 @@
+@use '../mixins' as *;
+
+.branding-preview {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.branding-preview__frame {
+  margin: 0;
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--content-bg);
+  color: var(--theme-text);
+}
+
+.branding-preview__caption {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-text-muted);
+}
+
+.branding-preview__shell {
+  display: grid;
+  grid-template-columns: var(--size-preview-sidebar) 1fr;
+  border-end-start-radius: var(--radius-lg);
+  border-end-end-radius: var(--radius-lg);
+}
+
+.branding-preview__sidebar {
+  --r: var(--radius-lg);
+  @include curved-tab-direction;
+  @include flex(column, stretch, flex-start, var(--space-1));
+  padding-block: var(--space-3) var(--space-5);
+  padding-inline-start: var(--space-2);
+  background-color: var(--sidebar-bg);
+  border-end-start-radius: var(--radius-lg);
+}
+
+.branding-preview__logo {
+  inline-size: var(--space-16);
+  block-size: auto;
+  margin-inline-start: var(--space-2);
+  margin-block-end: var(--space-2);
+}
+
+.branding-preview__item {
+  position: relative;
+  @include flex(row, center, flex-start, var(--space-2));
+  @include curved-tab-shape;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--fs-xs);
+  color: var(--sidebar-text);
+
+  &.is-active {
+    @include curved-tab-active;
+    color: var(--sidebar-active-text);
+    font-weight: var(--fw-bold);
+  }
+}
+
+.branding-preview__content {
+  @include flex(column, flex-start, flex-start, var(--space-3));
+  padding: var(--space-4);
+}
+
+.branding-preview__heading {
+  font-family: var(--font-heading);
+  font-weight: var(--fw-bold);
+  color: var(--theme-heading);
+}
+
+.branding-preview__link {
+  font-size: var(--fs-sm);
+  color: var(--theme-accent-text);
+  text-decoration: underline;
+}

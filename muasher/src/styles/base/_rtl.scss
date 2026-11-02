@@ -1,0 +1,9 @@
+[dir='rtl'] .u-flip-in-rtl {
+  transform: scaleX(-1);
+}
+
+.u-ltr {
+  direction: ltr;
+  text-align: start;
+  unicode-bidi: plaintext;
+}

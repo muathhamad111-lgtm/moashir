@@ -1,0 +1,101 @@
+@use '../mixins' as *;
+
+.weight-budget {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: var(--border-width) solid var(--theme-border);
+  background-color: var(--theme-surface);
+}
+
+.weight-budget__figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  margin: 0;
+}
+
+.weight-budget__figure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+
+  dt {
+    font-size: var(--fs-xs);
+    color: var(--theme-text-muted);
+  }
+
+  dd {
+    margin: 0;
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-bold);
+    color: var(--theme-heading);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.weight-budget__bar {
+  inline-size: 100%;
+  block-size: var(--space-2);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background-color: var(--theme-surface-raised);
+  overflow: hidden;
+  appearance: none;
+
+  &::-webkit-progress-bar {
+    background-color: var(--theme-surface-raised);
+    border-radius: var(--radius-pill);
+  }
+
+  &::-webkit-progress-value {
+    background-color: var(--theme-accent);
+    border-radius: var(--radius-pill);
+  }
+
+  &::-moz-progress-bar {
+    background-color: var(--theme-accent);
+    border-radius: var(--radius-pill);
+  }
+}
+
+.weight-budget__status,
+.weight-budget__note {
+  @include flex(row, center, flex-start, var(--space-2));
+  margin: 0;
+  font-size: var(--fs-sm);
+}
+
+.weight-budget__status {
+  padding-block: var(--space-2);
+  padding-inline: var(--space-3);
+  border-radius: var(--radius-md);
+  font-weight: var(--fw-medium);
+}
+
+.weight-budget__note {
+  color: var(--theme-text-muted);
+}
+
+.weight-budget--balanced .weight-budget__status {
+  color: var(--color-success);
+  background-color: var(--color-success-soft);
+}
+
+.weight-budget--under .weight-budget__status {
+  color: var(--color-warning);
+  background-color: var(--color-warning-soft);
+}
+
+.weight-budget--over {
+  .weight-budget__status {
+    color: var(--color-danger);
+    background-color: var(--color-danger-soft);
+  }
+
+  .weight-budget__remaining {
+    color: var(--color-danger);
+  }
+}

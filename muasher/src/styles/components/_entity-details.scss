@@ -1,0 +1,32 @@
+@use '../mixins' as *;
+
+.entity-details {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  margin: 0;
+
+  @include respond-to('sm') {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.entity-details__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-inline-size: 0;
+}
+
+.entity-details__term {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.entity-details__value {
+  margin: 0;
+  font-weight: var(--fw-medium);
+  color: var(--theme-heading);
+  overflow-wrap: anywhere;
+}

@@ -1,0 +1,102 @@
+@use '../mixins' as *;
+
+.btn {
+  @include flex(row, center, center, var(--space-2));
+  display: inline-flex;
+  padding-block: var(--space-2);
+  padding-inline: var(--space-4);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-base);
+  transition:
+    background-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease);
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &:hover:not(:disabled) {
+    box-shadow: var(--shadow-sm);
+  }
+
+  &:disabled {
+    opacity: var(--opacity-disabled);
+    cursor: not-allowed;
+  }
+}
+
+.btn--primary {
+  background-color: var(--theme-accent);
+  color: var(--theme-on-accent);
+}
+
+.btn--secondary {
+  background-color: transparent;
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+
+  &:hover:not(:disabled) {
+    border-color: var(--theme-accent);
+    color: var(--theme-accent-text);
+  }
+}
+
+.btn--ghost {
+  background-color: transparent;
+  color: var(--theme-accent-text);
+
+  &:hover:not(:disabled) {
+    background-color: var(--theme-surface-raised);
+    box-shadow: none;
+  }
+}
+
+.btn--danger {
+  background-color: var(--color-danger);
+  color: var(--color-white);
+}
+
+.btn--sm {
+  padding-block: var(--space-1);
+  padding-inline: var(--space-3);
+  font-size: var(--fs-sm);
+}
+
+.btn--lg {
+  padding-block: var(--space-3);
+  padding-inline: var(--space-6);
+  font-size: var(--fs-lg);
+}
+
+.btn--icon {
+  padding: var(--space-2);
+}
+
+.btn--loading {
+  pointer-events: none;
+}
+
+.btn__spinner {
+  inline-size: 1em;
+  block-size: 1em;
+  border: var(--border-width-thick) solid currentcolor;
+  border-inline-start-color: transparent;
+  border-radius: var(--radius-circle);
+  animation: btn-spin calc(var(--t-slow) * 2) linear infinite;
+}
+
+.btn__icon {
+  font-size: 1em;
+}
+
+@keyframes btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

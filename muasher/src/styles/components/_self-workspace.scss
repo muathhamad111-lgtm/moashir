@@ -1,0 +1,28 @@
+@use '../mixins' as *;
+
+.self-workspace {
+  @include flex(column, stretch, flex-start, var(--space-5));
+}
+
+.self-workspace__loading,
+.self-notices {
+  @include flex(column, stretch, flex-start, var(--space-3));
+}
+
+.self-workspace__layout {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: 1fr;
+
+  @include respond-to(lg) {
+    grid-template-columns: minmax(0, var(--size-panel)) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.self-workspace__nav {
+  @include respond-to(lg) {
+    position: sticky;
+    inset-block-start: var(--space-4);
+  }
+}

@@ -1,0 +1,3 @@
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+* * * * * {{APP_USER}} test -f {{ENV_DIR}}/current/backend/artisan && cd {{ENV_DIR}}/current/backend && {{PHP_BIN}} artisan schedule:run >> {{LOG_DIR}}/scheduler.log 2>&1

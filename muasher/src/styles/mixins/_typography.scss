@@ -1,0 +1,10 @@
+@mixin text($size, $line-height: var(--lh-base), $weight: var(--fw-regular)) {
+  font-size: $size;
+  line-height: $line-height;
+  font-weight: $weight;
+}
+
+@mixin heading($size) {
+  @include text($size, var(--lh-tight), var(--fw-bold));
+  color: var(--theme-heading);
+}

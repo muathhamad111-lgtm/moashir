@@ -1,0 +1,84 @@
+@use '../mixins' as *;
+
+.wizard {
+  @include flex(row, flex-start, flex-start, var(--space-2));
+  overflow-x: auto;
+  padding-block: var(--space-2);
+}
+
+.wizard__step {
+  @include flex(column, center, flex-start, var(--space-2));
+  flex: 1;
+  min-inline-size: var(--space-16);
+  position: relative;
+  text-align: center;
+
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    inset-block-start: var(--space-4);
+    inset-inline-start: 50%;
+    inline-size: 100%;
+    border-block-start: var(--border-width-thick) solid var(--theme-border);
+  }
+
+  &.is-complete:not(:last-child)::after {
+    border-block-start-color: var(--theme-accent);
+  }
+}
+
+.wizard__marker {
+  @include flex-center;
+  position: relative;
+  z-index: var(--z-dropdown);
+  inline-size: var(--space-8);
+  block-size: var(--space-8);
+  border-radius: var(--radius-circle);
+  border: var(--border-width-thick) solid var(--theme-border);
+  background-color: var(--theme-surface);
+  color: var(--theme-text-muted);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  transition:
+    background-color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease);
+
+  .wizard__step.is-active & {
+    border-color: var(--theme-accent);
+    color: var(--theme-accent-text);
+  }
+
+  .wizard__step.is-complete & {
+    background-color: var(--theme-accent);
+    border-color: var(--theme-accent);
+    color: var(--theme-on-accent);
+  }
+
+  .wizard__step.is-invalid & {
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+  }
+}
+
+.wizard__label {
+  font-size: var(--fs-xs);
+  color: var(--theme-text-muted);
+
+  .wizard__step.is-active & {
+    color: var(--theme-text);
+    font-weight: var(--fw-semibold);
+  }
+}
+
+.wizard__button {
+  @include flex(column, center, flex-start, var(--space-2));
+  inline-size: 100%;
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}

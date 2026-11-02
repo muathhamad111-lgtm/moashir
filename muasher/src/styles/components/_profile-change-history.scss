@@ -1,0 +1,43 @@
+@use '../mixins' as *;
+
+.profile-history__scroll {
+  overflow-x: auto;
+}
+
+.profile-history__table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+
+  th,
+  td {
+    padding-block: var(--space-2);
+    padding-inline: var(--space-3);
+    border-block-end: var(--border-width) solid var(--theme-border);
+    text-align: start;
+    vertical-align: top;
+    color: var(--theme-text);
+  }
+
+  thead th {
+    font-weight: var(--fw-semibold);
+    color: var(--theme-heading);
+  }
+
+  tbody th {
+    font-weight: var(--fw-medium);
+  }
+}
+
+.profile-history__caption {
+  @include visually-hidden;
+}
+
+.profile-history__date {
+  white-space: nowrap;
+}
+
+.profile-history__empty {
+  margin: 0;
+  color: var(--theme-text-secondary);
+}

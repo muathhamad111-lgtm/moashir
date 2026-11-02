@@ -1,0 +1,22 @@
+.money-amount {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--theme-text);
+}
+
+.money-amount--strong {
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.money-amount__currency {
+  font-size: var(--fs-xs);
+  color: var(--theme-text-muted);
+}
+
+.money-amount__empty {
+  color: var(--theme-text-muted);
+}

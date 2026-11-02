@@ -1,0 +1,9 @@
+@use 'sass:map';
+@use '../tokens' as *;
+
+@each $token, $values in $accent-palette {
+  [data-accent='#{$token}'] {
+    --accent-fill: #{map.get($values, 'fill')};
+    --accent-text-on-light: #{map.get($values, 'text-on-light')};
+  }
+}

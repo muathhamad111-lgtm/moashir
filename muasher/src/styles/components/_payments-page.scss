@@ -1,0 +1,40 @@
+@use '../mixins' as *;
+
+.payments-page {
+  @include flex(column, stretch, flex-start, var(--space-5));
+  inline-size: 100%;
+}
+
+.payments-page__header {
+  @include flex(column, stretch, flex-start, var(--space-1));
+}
+
+.payments-page__eyebrow {
+  margin: 0;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-text-muted);
+}
+
+.payments-page__title {
+  margin: 0;
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  color: var(--theme-heading);
+}
+
+.payments-page__subtitle,
+.payments-page__note {
+  margin: 0;
+  color: var(--theme-text-muted);
+}
+
+.payments-page__note {
+  font-size: var(--fs-sm);
+}
+
+.payments-page__filters {
+  @include flex(row, center, flex-start, var(--space-3));
+  flex-wrap: wrap;
+  margin-block-end: var(--space-4);
+}

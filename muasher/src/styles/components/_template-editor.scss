@@ -1,0 +1,93 @@
+@use '../mixins' as *;
+
+.template-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-3);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface);
+  min-inline-size: 0;
+}
+
+.template-editor__legend {
+  padding-inline: var(--space-1);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.template-editor__palette {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.template-editor__palette-label {
+  font-size: var(--fs-xs);
+  color: var(--theme-text-secondary);
+}
+
+.template-editor__chip {
+  @include flex(row, center, flex-start, var(--space-1));
+  padding-block: var(--space-1);
+  padding-inline: var(--space-2);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-pill);
+  background-color: var(--theme-surface-raised);
+  color: var(--theme-text);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease);
+
+  &:hover {
+    border-color: var(--theme-accent);
+    background-color: var(--color-info-soft);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &:disabled {
+    opacity: var(--opacity-disabled);
+    cursor: not-allowed;
+  }
+}
+
+.template-editor__chip-token {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-accent-text);
+}
+
+.template-editor__chip-label {
+  font-size: var(--fs-xs);
+  color: var(--theme-text-secondary);
+}
+
+.template-editor__fields {
+  display: grid;
+  gap: var(--space-3);
+
+  @include respond-to(md) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.template-editor__field {
+  min-inline-size: 0;
+
+  .field__label {
+    position: static;
+    padding-inline: 0;
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-medium);
+    color: var(--theme-text);
+    background-color: transparent;
+  }
+
+  .field__control {
+    padding-block: var(--space-2);
+  }
+}

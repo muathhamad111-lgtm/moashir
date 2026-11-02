@@ -1,0 +1,32 @@
+@use '../tokens' as *;
+
+@mixin theme-dark {
+  color-scheme: dark;
+  --theme-bg: var(--color-dark);
+  --theme-surface: #{rgba($color-secondary, 0.04)};
+  --theme-surface-raised: #{rgba($color-secondary, 0.08)};
+  --theme-text: var(--color-secondary);
+  --theme-text-muted: var(--color-gray-300);
+  --theme-text-secondary: var(--color-gray-300);
+  --theme-danger-text: var(--color-danger-light);
+  --theme-heading: var(--color-secondary);
+  --theme-border: #{rgba($color-secondary, 0.16)};
+  --theme-accent: var(--accent-fill, var(--color-primary));
+  --theme-accent-text: var(--accent-fill, var(--color-primary));
+  --theme-on-accent: var(--color-dark);
+  --theme-accent-soft: color-mix(in srgb, var(--theme-accent) 16%, transparent);
+  --content-bg: var(--theme-bg);
+  --sidebar-bg: var(--color-dark-deep);
+  --sidebar-text: #{rgba($color-secondary, 0.82)};
+  --sidebar-caption: #{rgba($color-secondary, 0.6)};
+  --sidebar-hover-bg: #{rgba($color-secondary, 0.08)};
+  --sidebar-hover-text: var(--color-secondary);
+  --sidebar-active-text: var(--theme-accent-text);
+  --sidebar-focus-ring: var(--theme-accent);
+  --navbar-bg: var(--content-bg);
+}
+
+:root,
+[data-theme='dark'] {
+  @include theme-dark;
+}

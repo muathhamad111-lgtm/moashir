@@ -1,0 +1,19 @@
+@use '../mixins' as *;
+
+.date-stamp {
+  @include flex(column, flex-start, flex-start, var(--space-0));
+}
+
+.date-stamp__gregorian {
+  font-variant-numeric: tabular-nums;
+}
+
+.date-stamp__hijri,
+.date-stamp__empty {
+  font-size: var(--fs-xs);
+  color: var(--theme-text-muted);
+}
+
+.overdue-badge {
+  @include flex(row, center, flex-start, var(--space-1));
+}

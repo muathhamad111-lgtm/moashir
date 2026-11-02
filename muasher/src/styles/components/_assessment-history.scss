@@ -1,0 +1,42 @@
+@use '../mixins' as *;
+
+.history {
+  @include flex(column, stretch, flex-start, var(--space-5));
+  max-inline-size: var(--size-content-max);
+  margin-inline: auto;
+}
+
+.history__eyebrow {
+  margin-block-end: var(--space-1);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--theme-accent-text);
+}
+
+.history__title {
+  margin: 0;
+  font-size: var(--fs-3xl);
+  color: var(--theme-heading);
+}
+
+.history__subtitle {
+  margin-block-start: var(--space-2);
+  color: var(--theme-text-muted);
+}
+
+.history__loading {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.history__count {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.history__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  @include flex(column, stretch, flex-start, var(--space-3));
+}
