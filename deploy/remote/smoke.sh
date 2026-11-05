@@ -89,8 +89,8 @@ posture_is_consistent() {
 }
 
 horizon_runs_as_environment_user() {
-    local pid attempt
-    for attempt in 1 2 3 4 5 6; do
+    local pid _
+    for _ in 1 2 3 4 5 6; do
         if supervisorctl status "moashir-${ENVIRONMENT}-horizon" | grep -q RUNNING; then
             pid="$(supervisorctl pid "moashir-${ENVIRONMENT}-horizon")"
             [[ "$(ps -o user= -p "${pid}" | tr -d ' ')" == "${USER_NAME}" ]]
