@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseInput from '@/components/form/BaseInput.vue'
-import BaseSelect from '@/components/form/BaseSelect.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import { SITE_SETTINGS_LIMITS, SOCIAL_PLATFORM_KEYS } from '@/constants/cms'
 
 const rows = defineModel('rows', { type: Array, required: true })
@@ -38,7 +38,7 @@ function add() {
     <legend class="site-settings__legend">{{ t('settings.homepage.siteSettings.social') }}</legend>
     <ul v-if="rows.length" class="site-settings__rows">
       <li v-for="(row, index) in rows" :key="`social-${index}`" class="site-settings__row">
-        <BaseSelect
+        <AppSelect
           v-model="row.platform"
           :name="`socialPlatform-${index}`"
           :label="t('settings.homepage.siteSettings.platform')"

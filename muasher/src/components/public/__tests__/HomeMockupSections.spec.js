@@ -1,6 +1,9 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { nextTick } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createTestGlobals } from '@/test-utils'
+import { stubMatchMedia } from '@/test-utils/matchMedia'
+import { TOUR_STEP_MS } from '@/constants/homeSections'
 import { contentService } from '@/services/contentService'
 import HomeTour from '@/components/public/HomeTour.vue'
 import HomeJourney from '@/components/public/HomeJourney.vue'
@@ -10,7 +13,14 @@ import HomeSectionHead from '@/components/public/HomeSectionHead.vue'
 import HomeFastKit from '@/components/public/HomeFastKit.vue'
 import HomeLeadership from '@/components/public/HomeLeadership.vue'
 
-vi.stubGlobal('matchMedia', () => ({ matches: true }))
+const DESKTOP_WIDTH = 1440
+const PHONE_WIDTH = 390
+
+beforeEach(() => stubMatchMedia({ width: DESKTOP_WIDTH, reducedMotion: true }))
+afterEach(() => {
+  vi.useRealTimers()
+  vi.unstubAllGlobals()
+})
 
 vi.mock('@/services/contentService', () => ({
   contentService: { getCertificateLevels: vi.fn() },
@@ -100,6 +110,42 @@ describe('HomeTour', () => {
     await toggle.trigger('click')
     expect(toggle.text()).toBe('إيقاف التشغيل التلقائي')
     expect(toggle.attributes('aria-pressed')).toBe('true')
+  })
+
+  it('renders no pause / play control on phones and still advances by itself', async () => {
+    vi.useFakeTimers()
+    stubMatchMedia({ width: PHONE_WIDTH })
+    const { wrapper } = mountWith(HomeTour, { section })
+    expect(wrapper.find('.home-tour__toggle').exists()).toBe(false)
+    expect(wrapper.classes()).toContain('is-running')
+    vi.advanceTimersByTime(TOUR_STEP_MS)
+    await nextTick()
+    expect(wrapper.findAll('.home-tour__step')[1].attributes('aria-current')).toBe('step')
+    wrapper.unmount()
+  })
+
+  it('keeps the tour still on phones when reduced motion is requested', async () => {
+    vi.useFakeTimers()
+    stubMatchMedia({ width: PHONE_WIDTH, reducedMotion: true })
+    const { wrapper } = mountWith(HomeTour, { section })
+    expect(wrapper.find('.home-tour__toggle').exists()).toBe(false)
+    vi.advanceTimersByTime(TOUR_STEP_MS * 2)
+    await nextTick()
+    expect(wrapper.findAll('.home-tour__step')[0].attributes('aria-current')).toBe('step')
+    wrapper.unmount()
+  })
+
+  it('adds and removes the control when the viewport crosses the tablet breakpoint', async () => {
+    const media = stubMatchMedia({ width: PHONE_WIDTH })
+    const { wrapper } = mountWith(HomeTour, { section })
+    media.resize(DESKTOP_WIDTH)
+    await nextTick()
+    expect(wrapper.find('.home-tour__toggle').attributes('aria-pressed')).toBe('true')
+    media.resize(PHONE_WIDTH)
+    await nextTick()
+    expect(wrapper.find('.home-tour__toggle').exists()).toBe(false)
+    wrapper.unmount()
+    expect(media.listenerCount()).toBe(0)
   })
 })
 

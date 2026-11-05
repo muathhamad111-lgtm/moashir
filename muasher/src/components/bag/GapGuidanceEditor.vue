@@ -1,7 +1,7 @@
 <script setup>
 import { computed, reactive, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import BaseSelect from '@/components/form/BaseSelect.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import BaseTextarea from '@/components/form/BaseTextarea.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 
@@ -76,7 +76,7 @@ function onSave() {
     </div>
 
     <div class="gap-guidance__row">
-      <BaseSelect
+      <AppSelect
         v-model="form.priority"
         :label="t('bag.manage.guidance.priorityLabel')"
         :name="`gap-priority-${gap.id}`"
@@ -84,7 +84,7 @@ function onSave() {
         :placeholder="t('bag.manage.guidance.priorityPlaceholder')"
         :disabled="saving"
       />
-      <BaseSelect
+      <AppSelect
         v-model="form.status"
         :label="t('bag.manage.guidance.statusLabel')"
         :name="`gap-status-${gap.id}`"

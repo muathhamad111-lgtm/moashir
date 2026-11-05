@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import { KPI_ADMIN_SORTS } from '@/constants/kpis'
 
@@ -44,28 +44,32 @@ const sortOptions = computed(() =>
     @update:search="emit('update:search', $event)"
   >
     <template #filters>
-      <DropdownList
+      <AppSelect
+        variant="filter"
         :model-value="values.published"
         :options="flagOptions('published')"
-        :placeholder="t('kpis.admin.filters.published.label')"
+        :label="t('kpis.admin.filters.published.label')"
         @update:model-value="emit('filter', 'published', $event)"
       />
-      <DropdownList
+      <AppSelect
+        variant="filter"
         :model-value="values.featured"
         :options="flagOptions('featured')"
-        :placeholder="t('kpis.admin.filters.featured.label')"
+        :label="t('kpis.admin.filters.featured.label')"
         @update:model-value="emit('filter', 'featured', $event)"
       />
-      <DropdownList
+      <AppSelect
+        variant="filter"
         :model-value="values.categoryId"
         :options="categoryOptions"
-        :placeholder="t('kpis.admin.filters.allCategories')"
+        :label="t('kpis.admin.fields.category')"
         @update:model-value="emit('filter', 'categoryId', $event)"
       />
-      <DropdownList
+      <AppSelect
+        variant="filter"
         :model-value="sort || 'order'"
         :options="sortOptions"
-        :placeholder="t('kpis.admin.sort.label')"
+        :label="t('kpis.admin.sort.label')"
         @update:model-value="emit('sort', $event)"
       />
     </template>

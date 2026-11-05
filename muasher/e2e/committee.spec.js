@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { seedScenario, seedSignedIn } from './support/session'
+import { chooseNamed, chooseValue } from './support/dropdown'
 
 const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d/i
 
@@ -68,8 +69,8 @@ test.describe('Award committee roster and start', () => {
     for (const name of ['David Nguyen', text(testInfo, 'د. منال بنت سعيد الحارثي', 'د. منال بنت سعيد الحارثي')]) {
       await page.locator('.award-page-header__actions .btn--primary').click()
       const dialog = page.locator('.modal__panel')
-      await dialog.locator('.select2-search__input').click()
-      await dialog.locator('.select2-search__option', { hasText: name }).click()
+      await dialog.locator('.dropdown-combobox__input').click()
+      await page.getByRole('option', { name }).click()
       await dialog.locator('button[type="submit"]').click()
       await expect(dialog).toBeHidden()
     }
@@ -161,7 +162,7 @@ test.describe('Results and announcement', () => {
     await page.goto('/admin/award/results')
     await page.locator('.cycle-table__link').first().click()
     const riyadh = page.locator('.region-results').filter({ hasText: text(testInfo, 'Riyadh', 'الرياض') })
-    await riyadh.locator('select').selectOption('1')
+    await chooseValue(riyadh.locator('button[role="combobox"]'), '1')
     await expect(riyadh.locator('.region-results__actions .btn--primary')).toBeEnabled()
     await expect(riyadh).toContainText(text(testInfo, '1 of 1 ranked', 'رُتّب 1 من 1'))
     await shot(page, 'results-regional', testInfo)
@@ -170,9 +171,9 @@ test.describe('Results and announcement', () => {
     await expect(riyadh).toContainText(text(testInfo, 'Approved', 'معتمدة'))
     await page.locator('.results-tabs__link').nth(1).click()
     await expect(rows(page)).toHaveCount(3)
-    await rows(page).first().locator('select').selectOption('1')
+    await chooseValue(rows(page).first().locator('button[role="combobox"]'), '1')
     await expect(page.locator('.region-results__actions .btn--primary')).toBeEnabled()
-    await rows(page).nth(1).locator('select').selectOption('2')
+    await chooseValue(rows(page).nth(1).locator('button[role="combobox"]'), '2')
     await expect(page.locator('.region-results__actions .btn--primary')).toBeEnabled()
     await page.locator('.region-results__actions .btn--primary').click()
     await page.locator('.modal .btn--primary').click()
@@ -206,8 +207,8 @@ test.describe('Users, settings and criteria alignment', () => {
     await page.locator('.toolbar__search input').fill('munira')
     await expect(rows(page)).toHaveCount(1)
     const row = rows(page).filter({ hasText: 'munira.alotaibi' })
-    await row.locator('.actions-dropdown button').first().click()
-    await page.locator('.actions-dropdown__item', { hasText: text(testInfo, 'Suspend', 'إيقاف') }).click()
+    await row.locator('.dropdown-menu > button').click()
+    await page.getByRole('menuitem', { name: text(testInfo, 'Suspend', 'إيقاف') }).click()
     await page.locator('.modal__panel textarea').fill(SUSPEND_REASON)
     await page.locator('.modal__panel button[type="submit"]').click()
     await expect(row).toContainText(text(testInfo, 'Suspended', 'موقوف'))
@@ -221,7 +222,7 @@ test.describe('Users, settings and criteria alignment', () => {
     await page.goto('/admin/settings/assessment?tab=general')
     await expect(page.locator('input[name="advancedDisqualificationScore"]')).toHaveValue('60.00')
     await page.locator('input[name="advancedDisqualificationScore"]').fill('65.5')
-    await page.locator('select[name="committeeEntityDataVisibility"]').selectOption('code_only')
+    await chooseNamed(page, 'committeeEntityDataVisibility', 'code_only')
     await page.locator('#assessment-settings-form button[type="submit"]').click()
     await expect(page.locator('input[name="advancedDisqualificationScore"]')).toHaveValue('65.50')
     await shot(page, 'settings-award-defaults', testInfo)

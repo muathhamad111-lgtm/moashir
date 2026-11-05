@@ -93,7 +93,7 @@ describe('Permissions screen — matrix and labels only (C-05)', () => {
 
   it('hides the edit action from a user without roles.matrix.manage', async () => {
     const wrapper = await mountPage([])
-    expect(wrapper.find('.actions-dropdown').exists()).toBe(false)
+    expect(wrapper.find('.dropdown-menu').exists()).toBe(false)
   })
 
   it('saves labels and replaces only the changed role rows of the matrix', async () => {

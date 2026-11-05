@@ -77,20 +77,17 @@
 
 .account-menu__panel {
   @include flex(column, stretch, flex-start, var(--space-1));
-  position: absolute;
-  inset-block-start: calc(100% + var(--space-2));
-  inset-inline-end: 0;
-  z-index: var(--z-popover);
-  inline-size: var(--size-account-menu);
+  inline-size: min(var(--size-account-menu), calc(100vw - var(--space-4)));
   padding: var(--space-2);
-  border: var(--border-width) solid var(--theme-border);
-  border-radius: var(--radius-xl);
-  background-color: var(--theme-surface-raised);
-  box-shadow: var(--shadow-float);
 
-  [data-theme='dark'] & {
-    background-color: var(--color-dark-deep);
+  .dropdown-sheet & {
+    inline-size: auto;
+    padding: var(--space-0);
   }
+}
+
+.account-menu__title {
+  @include visually-hidden;
 }
 
 .account-menu__header {

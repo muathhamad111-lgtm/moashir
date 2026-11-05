@@ -6,10 +6,10 @@ import { useHead } from '@unhead/vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
-import ActionsDropdown from '@/components/data-list/ActionsDropdown.vue'
+import AppMenu from '@/components/ui/AppMenu.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import Badge from '@/components/ui/Badge.vue'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import { useTable } from '@/composables/useTable'
 import { useFilters } from '@/composables/useFilters'
 import { usePagination } from '@/composables/usePagination'
@@ -83,10 +83,11 @@ function openManage(row) {
       :search-placeholder="t('bagRequests.evaluator.searchPlaceholder')"
     >
       <template #filters>
-        <DropdownList
+        <AppSelect
+          variant="filter"
           :model-value="filters.filters.status"
           :options="statusFilterOptions"
-          :placeholder="t('bagRequests.filters.status')"
+          :label="t('bagRequests.filters.status')"
           @update:model-value="filters.setFilter('status', $event)"
         />
       </template>
@@ -134,7 +135,11 @@ function openManage(row) {
         <span class="bag-requests__date">{{ dateLabel(item.assignedAt) }}</span>
       </template>
       <template #cell-actions="{ item }">
-        <ActionsDropdown :actions="rowActions(item)" @select="openManage(item)" />
+        <AppMenu
+          :actions="rowActions(item)"
+          :label="t('components.actions.menuFor', { name: localized(item.entityName) })"
+          @select="openManage(item)"
+        />
       </template>
     </DataTable>
 

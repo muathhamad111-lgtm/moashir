@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import BaseSelect from '@/components/form/BaseSelect.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
@@ -133,7 +133,7 @@ function exportPdf() {
             </div>
           </dl>
           <div class="feedback-report__export">
-            <BaseSelect
+            <AppSelect
               v-model="exportLocale"
               name="report-locale"
               :label="t('feedback.report.locale')"

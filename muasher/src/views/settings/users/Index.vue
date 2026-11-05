@@ -5,10 +5,10 @@ import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
-import ActionsDropdown from '@/components/data-list/ActionsDropdown.vue'
+import AppMenu from '@/components/ui/AppMenu.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import Badge from '@/components/ui/Badge.vue'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import UserForm from '@/components/users/UserForm.vue'
 import UserStatusBadge from '@/components/users/UserStatusBadge.vue'
@@ -117,16 +117,18 @@ function onAction(key, row) {
 
     <ListToolbar v-model:search="search" :search-placeholder="t('users.index.searchPlaceholder')">
       <template #filters>
-        <DropdownList
+        <AppSelect
+          variant="filter"
           :model-value="filters.filters.role"
           :options="roleFilterOptions"
-          :placeholder="t('users.filters.role')"
+          :label="t('users.filters.role')"
           @update:model-value="filters.setFilter('role', $event)"
         />
-        <DropdownList
+        <AppSelect
+          variant="filter"
           :model-value="filters.filters.status"
           :options="statusFilterOptions"
-          :placeholder="t('users.filters.status')"
+          :label="t('users.filters.status')"
           @update:model-value="filters.setFilter('status', $event)"
         />
       </template>
@@ -177,7 +179,11 @@ function onAction(key, row) {
         <span class="users-page__last-login">{{ lastLoginLabel(item.lastLoginAt) }}</span>
       </template>
       <template #cell-actions="{ item }">
-        <ActionsDropdown :actions="actions.actionsFor(item)" @select="onAction($event, item)" />
+        <AppMenu
+          :actions="actions.actionsFor(item)"
+          :label="t('components.actions.menuFor', { name: item.name })"
+          @select="onAction($event, item)"
+        />
       </template>
     </DataTable>
 

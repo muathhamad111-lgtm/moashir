@@ -72,8 +72,8 @@ test('transactions are searched, filtered, sorted and exported as a CSV', async 
   await page.locator('.toolbar__search input').fill('')
   await expect(page.locator('.table__row')).toHaveCount(10)
 
-  const filters = page.locator('.transaction-filters .dropdown')
-  await filters.nth(0).locator('button').first().click()
+  const filters = page.locator('.transaction-filters .dropdown-filter__trigger')
+  await filters.nth(0).click()
   await page.getByRole('option', { name: isEn(testInfo) ? 'Failed' : 'لم تكتمل' }).click()
   await expect(page.locator('.table__row')).toHaveCount(2)
   const download = page.waitForEvent('download')

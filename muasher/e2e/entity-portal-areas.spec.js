@@ -6,6 +6,7 @@ import { seedPreferences, seedSignedIn } from './support/session'
 import { forceMockFault } from './support/mockFaults'
 import { guardMoyasar } from './support/moyasarGuard'
 import { settleFonts } from './support/screenshots'
+import { chooseNamed, namedSelect, openOption } from './support/dropdown'
 
 const SHOTS = 'e2e/__screenshots__/37b'
 const VIEWPORTS = {
@@ -136,7 +137,8 @@ test.describe('assessments area', () => {
       'step',
     )
     await page.locator('.guide-aside__card .btn--secondary').click()
-    await expect(page.locator('.modal__panel select[name="enquiryType"]')).toHaveValue(
+    await expect(namedSelect(page.locator('.modal__panel'), 'enquiryType')).toHaveAttribute(
+      'data-value',
       'accredited_assessment',
     )
     await page.keyboard.press('Escape')
@@ -223,7 +225,7 @@ test.describe('messages area', () => {
     await expect(page.locator('.message-thread textarea')).toHaveCount(0)
     await page.locator('.message-thread__closed .btn').click()
     const dialog = page.locator('.modal__panel')
-    await dialog.locator('select[name="enquiryType"]').selectOption('privacy_request')
+    await chooseNamed(dialog, 'enquiryType', 'privacy_request')
     await dialog
       .locator('textarea[name="message"]')
       .fill('نرجو تزويدنا بنسخة من البيانات المحفوظة لحساب الجهة.')
@@ -370,9 +372,8 @@ test.describe('legal pages', () => {
     await expect(page.locator('.legal-consent a')).toHaveCount(2)
     await open(page, '/', '.contact-form__form')
     await expect(page.locator('.contact-form .legal-consent a')).toHaveAttribute('href', '/privacy')
-    await expect(
-      page.locator('.contact-form select[name="enquiryType"] option[value="privacy_request"]'),
-    ).toHaveCount(1)
+    await namedSelect(page.locator('.contact-form'), 'enquiryType').click()
+    await expect(openOption(page, 'privacy_request')).toHaveCount(1)
   })
 })
 

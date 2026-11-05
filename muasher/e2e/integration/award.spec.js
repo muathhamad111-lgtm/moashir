@@ -6,6 +6,7 @@ import { STAFF, rememberPassword, signInStaff } from './support/accounts'
 import { FOOTER_LEGAL_PROBES, GUEST_SESSION_PROBE, watchApi } from './support/apiWatch'
 import { registerEntity } from './support/entities'
 import { EVIDENCE_PDF, api, apiOk, scoreSheetOf } from './support/api'
+import { chooseValue } from '../support/dropdown'
 
 const RUN = Date.now().toString(36)
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -183,8 +184,8 @@ test('the administrator appoints the committee assessor and starts the committee
   await page.goto(`/admin/award/cycles/${flow.cycleId}/committee`)
   await page.locator('.award-page-header__actions .btn--primary').click()
   const dialog = page.locator('.modal__panel')
-  await dialog.locator('.select2-search__input').click()
-  await dialog.locator('.select2-search__option', { hasText: COMMITTEE_ASSESSOR.name }).click()
+  await dialog.locator('.dropdown-combobox__input').click()
+  await page.getByRole('option', { name: COMMITTEE_ASSESSOR.name }).click()
   await dialog.locator('button[type="submit"]').click()
   await expect(dialog).toBeHidden()
   await expect(rows(page)).toHaveCount(1)
@@ -224,13 +225,13 @@ test('the Award Secretary approves the average, ranks, approves the results and 
   await expect(page.locator('.secretary-facts')).toContainText('معتمد')
   await page.goto(`/admin/award/cycles/${flow.cycleId}/results`)
   const region = page.locator('.region-results').first()
-  await region.locator('select').selectOption('1')
+  await chooseValue(region.locator('button[role="combobox"]'), '1')
   await expect(region.locator('.region-results__actions .btn--primary')).toBeEnabled()
   await region.locator('.region-results__actions .btn--primary').click()
   await page.locator('.modal .btn--primary').click()
   await expect(region).toContainText('معتمدة')
   await page.locator('.results-tabs__link').nth(1).click()
-  await rows(page).first().locator('select').selectOption('1')
+  await chooseValue(rows(page).first().locator('button[role="combobox"]'), '1')
   await expect(page.locator('.region-results__actions .btn--primary')).toBeEnabled()
   await page.locator('.region-results__actions .btn--primary').click()
   await page.locator('.modal .btn--primary').click()

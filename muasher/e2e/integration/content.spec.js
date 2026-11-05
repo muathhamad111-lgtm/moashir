@@ -4,6 +4,7 @@ import { test, expect } from '@playwright/test'
 import { assertMailLogsConfigured } from './support/mailbox'
 import { STAFF, signInStaff } from './support/accounts'
 import { FOOTER_LEGAL_PROBES, GUEST_SESSION_PROBE, PAGE_NOT_PUBLISHED, SOURCES, watchApi } from './support/apiWatch'
+import { chooseNamed } from '../support/dropdown'
 
 const RUN = Date.now().toString(36)
 const HERO = {
@@ -73,7 +74,7 @@ test('the Content Officer builds the hero with an uploaded image and publishes t
   await page.locator('.cms-page-editor__toolbar .btn--primary').click()
   const dialog = page.locator('.modal').last()
   await dialog.locator('input[name="key"]').fill(HERO.key)
-  await dialog.locator('select[name="type"]').selectOption('hero')
+  await chooseNamed(dialog, 'type', 'hero')
   await dialog.locator('input[name="title.ar"]').fill(HERO.titleAr)
   await dialog.locator('input[name="title.en"]').fill(HERO.titleEn)
   await dialog.locator('textarea[name="description.ar"]').fill(HERO.descriptionAr)
@@ -122,7 +123,7 @@ test('the Content Officer creates, values and publishes a KPI', async () => {
   const row = page.locator('.table__row', { hasText: KPI.nameAr })
   await expect(row).toBeVisible()
 
-  await row.locator('.actions-dropdown > button').click()
+  await row.locator('.dropdown-menu > button').click()
   await page.locator('[role="menuitem"]').nth(1).click()
   const values = page.locator('.modal', { has: page.locator('.kpi-values') })
   await values.locator('input[name="value"]').fill('402')
@@ -132,7 +133,7 @@ test('the Content Officer creates, values and publishes a KPI', async () => {
   await values.locator('.modal__backdrop').click({ position: { x: 8, y: 8 } })
   await expect(values).toBeHidden()
 
-  await row.locator('.actions-dropdown > button').click()
+  await row.locator('.dropdown-menu > button').click()
   await page.locator('[role="menuitem"]').nth(2).click()
   await confirmDialog(page)
   await expect(row.locator('.badge--success')).toBeVisible()

@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import { FILTERING_SORTS, FILTERING_STATUSES } from '@/constants/advanced'
 import { statusLabelKey } from '@/utils/canonicalStatus'
 import { localizedText } from '@/utils/localizedText'
@@ -36,23 +36,26 @@ const sortOptions = computed(() =>
 
 <template>
   <div class="cycle-filters">
-    <DropdownList
+    <AppSelect
+      variant="filter"
       :model-value="filters.status"
       :options="statusOptions"
-      :placeholder="t('filtering.filters.status')"
+      :label="t('filtering.filters.status')"
       @update:model-value="emit('filter', 'status', $event)"
     />
-    <DropdownList
+    <AppSelect
+      variant="filter"
       v-if="regions.length"
       :model-value="filters.regionId"
       :options="regionOptions"
-      :placeholder="t('filtering.filters.region')"
+      :label="t('filtering.filters.region')"
       @update:model-value="emit('filter', 'regionId', $event)"
     />
-    <DropdownList
+    <AppSelect
+      variant="filter"
       :model-value="sort"
       :options="sortOptions"
-      :placeholder="t('filtering.filters.sort')"
+      :label="t('filtering.filters.sort')"
       @update:model-value="emit('sort', $event)"
     />
   </div>

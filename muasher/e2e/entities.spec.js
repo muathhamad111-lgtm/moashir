@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { seedLocale, seedSignedIn } from './support/session'
 import { clearMockFault, forceMockFault } from './support/mockFaults'
+import { chooseNamed, namedSelect } from './support/dropdown'
 
 const DEV_OTP_CODE = '482913'
 const ENTITY = {
@@ -39,13 +40,13 @@ async function fillRegistration(page) {
   await page.locator('[name="name.en"]').fill('Al-Wafa Charity')
   await page.locator('[name="unifiedNumber"]').fill('7000000911')
   await page.locator('[name="authorizedPersonName"]').fill('سلمان بن فهد الحربي')
-  await page.locator('[name="entityType"]').selectOption('civil_association')
-  await page.locator('[name="developmentSector"]').selectOption('social')
-  await page.locator('[name="orgSize"]').selectOption('medium')
+  await chooseNamed(page, 'entityType', 'civil_association')
+  await chooseNamed(page, 'developmentSector', 'social')
+  await chooseNamed(page, 'orgSize', 'medium')
   await page.locator('[name="foundingYear"]').fill('2016')
   await expect(page.locator('[name="cityId"]')).toBeDisabled()
-  await page.locator('[name="regionId"]').selectOption('2')
-  await page.locator('[name="cityId"]').selectOption('12')
+  await chooseNamed(page, 'regionId', '2')
+  await chooseNamed(page, 'cityId', '12')
   await page.locator('[name="governanceGrade"]').fill('84.5')
 }
 
@@ -53,7 +54,9 @@ test('an entity registers with terms, verifies the OTP and lands on its profile'
   await seedLocale(page, localeOf(testInfo))
   await page.goto('/auth/register')
   await expect(page.locator('[name="officialEmail"]')).toBeVisible()
-  await expect(page.locator('[name="entityType"] option[value]:not([value=""])')).toHaveCount(3)
+  await namedSelect(page, 'entityType').click()
+  await expect(page.locator('[role="listbox"] [role="option"]')).toHaveCount(3)
+  await page.keyboard.press('Escape')
   await fillRegistration(page)
   await expect(page.locator('[name="marketingConsent"]')).not.toBeChecked()
 

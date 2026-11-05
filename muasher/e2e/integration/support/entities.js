@@ -1,6 +1,7 @@
 import { expect } from '@playwright/test'
 import { mailMark, waitForCode } from './mailbox'
 import { typeCode } from './accounts'
+import { chooseFirstNamed } from '../../support/dropdown'
 
 let sequence = 0
 
@@ -19,13 +20,13 @@ export async function registerEntity(page, entity) {
   await page.locator('[name="name.ar"]').fill(entity.nameAr)
   await page.locator('[name="name.en"]').fill(entity.nameEn)
   await page.locator('[name="authorizedPersonName"]').fill(entity.person)
-  await page.locator('[name="entityType"]').selectOption({ index: 1 })
-  await page.locator('[name="developmentSector"]').selectOption({ index: 1 })
-  await page.locator('[name="orgSize"]').selectOption({ index: 1 })
+  await chooseFirstNamed(page, 'entityType')
+  await chooseFirstNamed(page, 'developmentSector')
+  await chooseFirstNamed(page, 'orgSize')
   await page.locator('[name="foundingYear"]').fill('2012')
-  await page.locator('[name="regionId"]').selectOption({ index: 1 })
+  await chooseFirstNamed(page, 'regionId')
   await expect(page.locator('[name="cityId"]')).toBeEnabled()
-  await page.locator('[name="cityId"]').selectOption({ index: 1 })
+  await chooseFirstNamed(page, 'cityId')
   await page.locator('[name="governanceGrade"]').fill('88.5')
   await page.locator('label.checkbox:has([name="termsAccepted"])').click()
   const mark = mailMark(entity.email)

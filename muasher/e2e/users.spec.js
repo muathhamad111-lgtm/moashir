@@ -38,8 +38,8 @@ test('shows the stats cards for the users summary', async ({ page }) => {
 test('filters the list by role', async ({ page }) => {
   await page.goto('/admin/settings/users')
   await retryTable(page)
-  await page.locator('.toolbar__filters .dropdown__toggle').first().click()
-  await page.locator('.toolbar__filters .dropdown__item').nth(1).click()
+  await page.locator('.toolbar__filters .dropdown-filter__trigger').first().click()
+  await page.locator('.toolbar__filters [role="option"]').nth(1).click()
   await retryTable(page)
   await expect(page.locator('.table:not(.table--loading) tbody .table__row').first()).toBeVisible()
 })
@@ -61,8 +61,8 @@ test('capture users screens for the design review', async ({ page }, testInfo) =
   await page.waitForTimeout(600)
   await page.screenshot({ path: `test-results/users-index-${suffix}.png`, fullPage: true })
 
-  await page.locator('.toolbar__filters .dropdown__toggle').first().click()
-  await page.locator('.toolbar__filters .dropdown__item').nth(1).click()
+  await page.locator('.toolbar__filters .dropdown-filter__trigger').first().click()
+  await page.locator('.toolbar__filters [role="option"]').nth(1).click()
   await retryTable(page)
   await page.waitForTimeout(600)
   await page.screenshot({ path: `test-results/users-filter-${suffix}.png`, fullPage: true })

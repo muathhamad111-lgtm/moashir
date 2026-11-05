@@ -1,8 +1,9 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import NotificationBell from '@/components/notifications/NotificationBell.vue'
 import { notificationsService } from '@/services/notificationsService'
 import { createTestGlobals } from '@/test-utils'
+import { stubMatchMedia } from '@/test-utils/matchMedia'
 
 vi.mock('@/services/notificationsService', () => ({
   notificationsService: {
@@ -25,6 +26,8 @@ const item = {
   isRead: false,
   createdAt: '2026-07-06T11:20:00+03:00',
 }
+
+afterEach(() => vi.unstubAllGlobals())
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -62,5 +65,34 @@ describe('NotificationBell (staff top bar)', () => {
     await flushPromises()
     expect(notificationsService.markRead).toHaveBeenCalledWith(ID)
     expect(push).toHaveBeenCalledWith('/admin/requests/9108/review')
+  })
+
+  it('names the panel dialog by its heading on desktop', async () => {
+    const wrapper = mount(NotificationBell, {
+      global: createTestGlobals(),
+      attachTo: document.body,
+    })
+    await flushPromises()
+    await wrapper.find('button').trigger('click')
+    await flushPromises()
+    const dialog = wrapper.find('[role="dialog"]')
+    expect(wrapper.find(`#${dialog.attributes('aria-labelledby')}`).text()).toBe('الإشعارات')
+    expect(wrapper.find('button').attributes('aria-haspopup')).toBe('dialog')
+    wrapper.unmount()
+  })
+
+  it('opens the panel as a full-width bottom sheet on a 390 px phone', async () => {
+    stubMatchMedia({ width: 390 })
+    const wrapper = mount(NotificationBell, {
+      global: createTestGlobals(),
+      attachTo: document.body,
+    })
+    await flushPromises()
+    await wrapper.find('button').trigger('click')
+    await flushPromises()
+    expect(wrapper.find('.dropdown-sheet .notification-panel').exists()).toBe(true)
+    expect(wrapper.find('.dropdown-sheet__title').text()).toBe('الإشعارات')
+    expect(wrapper.find('.notification-panel__title').exists()).toBe(false)
+    wrapper.unmount()
   })
 })

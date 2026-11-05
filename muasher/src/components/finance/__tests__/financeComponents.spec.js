@@ -116,11 +116,11 @@ describe('TransactionFilters', () => {
       filters: { status: '', purpose: '', method: '', mode: '', from: '', to: '' },
       sort: '-created_at',
     })
-    await wrapper.findAll('.dropdown__toggle')[3].trigger('click')
-    await wrapper.findAll('.dropdown__item')[1].trigger('click')
+    await wrapper.findAll('.dropdown-filter__trigger')[3].trigger('click')
+    await wrapper.findAll('[role="option"]')[1].trigger('click')
     expect(wrapper.emitted('filter')).toEqual([['mode', 'test']])
-    await wrapper.findAll('.dropdown__toggle')[4].trigger('click')
-    await wrapper.findAll('.dropdown__item')[2].trigger('click')
+    await wrapper.findAll('.dropdown-filter__trigger')[4].trigger('click')
+    await wrapper.findAll('[role="option"]')[2].trigger('click')
     expect(wrapper.emitted('sort')).toEqual([['-total']])
   })
 })

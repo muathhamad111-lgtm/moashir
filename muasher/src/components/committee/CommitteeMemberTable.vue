@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DataTable from '@/components/data-list/DataTable.vue'
-import ActionsDropdown from '@/components/data-list/ActionsDropdown.vue'
+import AppMenu from '@/components/ui/AppMenu.vue'
 import DateStamp from '@/components/accredited/DateStamp.vue'
 import AwardStateBadge from './AwardStateBadge.vue'
 
@@ -63,9 +63,10 @@ const columns = computed(() => [
       ><DateStamp :value="item.appointedAt" :with-time="false"
     /></template>
     <template #cell-actions="{ item }">
-      <ActionsDropdown
+      <AppMenu
         v-if="actionsFor(item).length"
         :actions="actionsFor(item)"
+        :label="t('components.actions.menuFor', { name: item.user.name })"
         @select="emit('action', $event, item)"
       />
     </template>

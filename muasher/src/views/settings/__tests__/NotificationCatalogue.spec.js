@@ -3,6 +3,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import Notifications from '@/views/settings/Notifications.vue'
 import { notificationTypesService } from '@/services/notificationTypesService'
 import { createTestGlobals } from '@/test-utils'
+import { chooseLabelledOption } from '@/test-utils/dropdown'
 
 vi.mock('@/services/notificationTypesService', () => ({
   notificationTypesService: { list: vi.fn() },
@@ -62,10 +63,8 @@ describe('notification types catalogue (read-only)', () => {
 
   it('filters by module, category and audience on the server', async () => {
     const wrapper = await mountView('en')
-    const dropdowns = wrapper.findAllComponents({ name: 'DropdownList' })
-    dropdowns[0].vm.$emit('update:modelValue', 'CNT')
-    dropdowns[2].vm.$emit('update:modelValue', 'contact_handler')
-    await flushPromises()
+    await chooseLabelledOption(wrapper, 'Module', 'CNT')
+    await chooseLabelledOption(wrapper, 'Audience', 'contact_handler')
     expect(notificationTypesService.list).toHaveBeenLastCalledWith({
       module: 'CNT',
       category: '',

@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import SearchSelect from '@/components/form/SearchSelect.vue'
+import AppCombobox from '@/components/form/AppCombobox.vue'
 import { useSettings } from '@/composables/useSettings'
 
 const props = defineProps({
@@ -76,8 +76,9 @@ function segmentLabel(segment) {
     </fieldset>
 
     <div v-if="isIndividual" class="segment-picker__individual">
-      <SearchSelect
+      <AppCombobox
         :model-value="modelValue.recipientEntityId"
+        name="recipientEntityId"
         :options="recipientOptions"
         remote
         :loading="recipientsLoading"

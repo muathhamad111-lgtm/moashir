@@ -4,6 +4,7 @@ import HomeContactForm from '@/components/public/HomeContactForm.vue'
 import { contactMessagesService } from '@/services/contactMessagesService'
 import { useAuthStore } from '@/stores/auth'
 import { createTestGlobals } from '@/test-utils'
+import { chooseNamedOption, findSelect } from '@/test-utils/dropdown'
 
 vi.mock('@/services/contactMessagesService', () => ({
   contactMessagesService: { submit: vi.fn() },
@@ -30,7 +31,7 @@ async function fill(wrapper, { guest = true } = {}) {
     await wrapper.find('input[name="organization"]').setValue('جمعية الأمل الخيرية')
   }
   await wrapper.find('input[name="mobile"]').setValue('0551234567')
-  await wrapper.find('select[name="enquiryType"]').setValue('payments')
+  await chooseNamedOption(wrapper, 'enquiryType', 'payments')
   await wrapper.find('textarea[name="message"]').setValue(MESSAGE)
   await wrapper.find('input[type="checkbox"]').setValue(true)
 }
@@ -52,8 +53,8 @@ beforeEach(() => vi.clearAllMocks())
 describe('HomeContactForm', () => {
   it('lists the seven enquiry types with the approved payments and privacy labels', () => {
     const wrapper = mountForm()
-    const options = wrapper.findAll('select[name="enquiryType"] option').slice(1)
-    expect(options.map((option) => option.attributes('value'))).toEqual([
+    const options = findSelect(wrapper, { name: 'enquiryType' }).props('options')
+    expect(options.map((option) => option.value)).toEqual([
       'general',
       'self_assessment',
       'accredited_assessment',
@@ -62,8 +63,8 @@ describe('HomeContactForm', () => {
       'privacy_request',
       'other',
     ])
-    expect(options[3].text()).toBe('الدفع والإيصالات')
-    expect(options[5].text()).toBe('طلب يتعلق بالبيانات الشخصية')
+    expect(options[3].label).toBe('الدفع والإيصالات')
+    expect(options[5].label).toBe('طلب يتعلق بالبيانات الشخصية')
     expect(wrapper.text()).not.toMatch(/فاتور|فواتير/)
     wrapper.unmount()
   })

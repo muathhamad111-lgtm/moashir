@@ -110,3 +110,20 @@
     @include focus-ring;
   }
 }
+
+.navbar__user-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.navbar__user-name {
+  font-weight: var(--fw-semibold);
+  color: var(--theme-text);
+}
+
+.navbar__user-roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}

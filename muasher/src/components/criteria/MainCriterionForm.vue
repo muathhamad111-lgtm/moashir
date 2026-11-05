@@ -6,7 +6,7 @@ import FormModal from '@/components/modal/FormModal.vue'
 import BaseInput from '@/components/form/BaseInput.vue'
 import BaseTextarea from '@/components/form/BaseTextarea.vue'
 import BaseCheckbox from '@/components/form/BaseCheckbox.vue'
-import BaseSelect from '@/components/form/BaseSelect.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import { useValidatedForm } from '@/composables/useValidatedForm'
 import { renameFieldErrors } from '@/services/mappers/fieldErrors'
 import { pairedText, requiredText, weightText } from '@/utils/criteriaSchemas'
@@ -148,7 +148,7 @@ const [active] = form.defineField('active')
           :error="form.errors.value.weight"
           required
         />
-        <BaseSelect
+        <AppSelect
           v-model="group"
           name="group"
           :label="t('criteria.fields.group')"

@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import Card from '@/components/ui/Card.vue'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
@@ -105,22 +105,25 @@ const sortOptions = computed(() =>
         :search-placeholder="t('award.secretary.searchPlaceholder')"
       >
         <template #filters>
-          <DropdownList
+          <AppSelect
+            variant="filter"
             :model-value="filters.filters.status"
             :options="statusOptions"
-            :placeholder="t('award.secretary.filters.status')"
+            :label="t('award.secretary.filters.status')"
             @update:model-value="setFilter('status', $event)"
           />
-          <DropdownList
+          <AppSelect
+            variant="filter"
             :model-value="filters.filters.regionId"
             :options="regionOptions"
-            :placeholder="t('award.secretary.filters.region')"
+            :label="t('award.secretary.filters.region')"
             @update:model-value="setFilter('regionId', $event)"
           />
-          <DropdownList
+          <AppSelect
+            variant="filter"
             :model-value="filters.sort.value"
             :options="sortOptions"
-            :placeholder="t('award.secretary.filters.sort')"
+            :label="t('award.secretary.filters.sort')"
             @update:model-value="setSort($event)"
           />
         </template>

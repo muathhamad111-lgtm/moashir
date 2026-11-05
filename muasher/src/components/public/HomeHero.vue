@@ -7,6 +7,7 @@ import { ROUTE_NAMES } from '@/constants/routeNames'
 import { HOME_ANCHORS } from '@/constants/homeSections'
 import { useAuthStore } from '@/stores/auth'
 import { useAmbientMotion } from '@/composables/useAmbientMotion'
+import { useMotionControls } from '@/composables/useMotionControls'
 import { splitWords } from '@/utils/splitWords'
 import starMark from '@/assets/logos/moashir-star.svg'
 import BaseButton from '@/components/ui/BaseButton.vue'
@@ -23,6 +24,7 @@ const router = useRouter()
 const auth = useAuthStore()
 const { t } = useI18n()
 const { paused, toggle: toggleMotion } = useAmbientMotion()
+const { isVisible: isMotionControlVisible } = useMotionControls()
 
 const items = computed(() => props.section.items ?? [])
 const secondaryCta = computed(
@@ -97,6 +99,7 @@ function scrollToSecondary() {
       <div v-if="preview" class="home-hero__media">
         <HeroPreviewCard :preview="preview" :localized="localized" />
         <button
+          v-if="isMotionControlVisible"
           type="button"
           class="home-hero__motion"
           :aria-pressed="paused"

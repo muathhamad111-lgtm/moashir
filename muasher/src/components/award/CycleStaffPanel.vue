@@ -3,7 +3,7 @@ import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Card from '@/components/ui/Card.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import SearchSelect from '@/components/form/SearchSelect.vue'
+import AppCombobox from '@/components/form/AppCombobox.vue'
 import { CANDIDATE_ROLES, MEMBER_ROLES } from '@/constants/advanced'
 
 const props = defineProps({
@@ -24,7 +24,7 @@ onMounted(() => {
     <p class="cycle-staff__hint">{{ t('cycles.staff.segregation') }}</p>
     <section class="cycle-staff__group" :aria-label="t('cycles.staff.members.title')">
       <h3 class="cycle-staff__subtitle">{{ t('cycles.staff.members.title') }}</h3>
-      <SearchSelect
+      <AppCombobox
         v-for="role in MEMBER_FIELDS"
         :key="role"
         multiple
@@ -48,7 +48,7 @@ onMounted(() => {
     </section>
     <section class="cycle-staff__group" :aria-label="t('cycles.staff.assessors.title')">
       <h3 class="cycle-staff__subtitle">{{ t('cycles.staff.assessors.title') }}</h3>
-      <SearchSelect
+      <AppCombobox
         multiple
         :label="t(`cycles.staff.roles.${CANDIDATE_ROLES.INITIAL_ASSESSOR}`)"
         :placeholder="t('cycles.staff.choose')"

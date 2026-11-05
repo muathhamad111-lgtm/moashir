@@ -3,8 +3,8 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
-import ActionsDropdown from '@/components/data-list/ActionsDropdown.vue'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppMenu from '@/components/ui/AppMenu.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
@@ -78,16 +78,18 @@ async function onCreated() {
     </header>
 
     <div class="entities-admin__filters">
-      <DropdownList
+      <AppSelect
+        variant="filter"
         :model-value="filters.filters.status"
         :options="statusOptions"
-        :placeholder="t('entities.filters.status')"
+        :label="t('entities.filters.status')"
         @update:model-value="filters.setFilter('status', $event)"
       />
-      <DropdownList
+      <AppSelect
+        variant="filter"
         :model-value="filters.filters.kind"
         :options="kindOptions"
-        :placeholder="t('entities.privacy.kind')"
+        :label="t('entities.privacy.kind')"
         @update:model-value="filters.setFilter('kind', $event)"
       />
     </div>
@@ -118,9 +120,14 @@ async function onCreated() {
       <template #cell-createdAt="{ item }">{{ dateTime(item.createdAt) }}</template>
       <template #cell-status="{ item }"><StatusBadge :status="item.status" /></template>
       <template #cell-actions="{ item }">
-        <ActionsDropdown
+        <AppMenu
           v-if="decisionsFor(item).length"
           :actions="decisionsFor(item)"
+          :label="
+            item.entity
+              ? t('components.actions.menuFor', { name: localized(item.entity.name) })
+              : ''
+          "
           @select="startDecision($event, item)"
         />
       </template>

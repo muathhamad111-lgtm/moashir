@@ -11,6 +11,7 @@ import {
 import { registerEntity } from './support/entities'
 import { api as callApi } from './support/api'
 import { squarePng } from './support/images'
+import { chooseNamed } from '../support/dropdown'
 
 const RUN = Date.now().toString(36)
 const LICENSE = String(Date.now()).slice(-9)
@@ -90,7 +91,7 @@ test('a signed-in message opens its thread and the follow-up reaches the backend
   await expect(page.locator('[role="tab"]')).toHaveCount(2)
   await page.locator('.portal-area__actions .btn--primary').click()
   const dialog = page.locator('.modal__panel')
-  await dialog.locator('select[name="enquiryType"]').selectOption('privacy_request')
+  await chooseNamed(dialog, 'enquiryType', 'privacy_request')
   await dialog
     .locator('textarea[name="message"]')
     .fill('نرجو تزويدنا بنسخة من البيانات المحفوظة في حساب الجهة.')

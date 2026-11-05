@@ -80,7 +80,7 @@ test.describe('entity portal shell', () => {
     await expect(page.locator('[data-testid="attention-strip"]')).toHaveCount(0)
   })
 
-  test('opens the account menu as an overlay, traps focus and closes with Escape', async ({
+  test('opens the account menu as a popover, moves focus inside and closes with Escape', async ({
     page,
   }) => {
     await open(page, '/dashboard', '.account-menu__chip')

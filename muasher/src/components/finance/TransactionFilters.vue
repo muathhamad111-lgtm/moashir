@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import BaseDatePicker from '@/components/form/BaseDatePicker.vue'
 import {
   PAYMENT_METHOD_VALUES,
@@ -48,34 +48,39 @@ const sortOptions = computed(() =>
 
 <template>
   <div class="transaction-filters">
-    <DropdownList
+    <AppSelect
+      variant="filter"
       :model-value="filters.status"
       :options="statusOptions"
-      :placeholder="t('finance.filters.status')"
+      :label="t('finance.filters.status')"
       @update:model-value="emit('filter', 'status', $event)"
     />
-    <DropdownList
+    <AppSelect
+      variant="filter"
       :model-value="filters.purpose"
       :options="purposeOptions"
-      :placeholder="t('finance.filters.service')"
+      :label="t('finance.filters.service')"
       @update:model-value="emit('filter', 'purpose', $event)"
     />
-    <DropdownList
+    <AppSelect
+      variant="filter"
       :model-value="filters.method"
       :options="methodOptions"
-      :placeholder="t('finance.filters.method')"
+      :label="t('finance.filters.method')"
       @update:model-value="emit('filter', 'method', $event)"
     />
-    <DropdownList
+    <AppSelect
+      variant="filter"
       :model-value="filters.mode"
       :options="modeOptions"
-      :placeholder="t('finance.filters.mode')"
+      :label="t('finance.filters.mode')"
       @update:model-value="emit('filter', 'mode', $event)"
     />
-    <DropdownList
+    <AppSelect
+      variant="filter"
       :model-value="sort"
       :options="sortOptions"
-      :placeholder="t('finance.filters.sort')"
+      :label="t('finance.filters.sort')"
       @update:model-value="emit('sort', $event)"
     />
     <BaseDatePicker

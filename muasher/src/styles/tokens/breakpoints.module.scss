@@ -1,0 +1,5 @@
+@use 'breakpoints' as *;
+
+:export {
+  md: $bp-md;
+}

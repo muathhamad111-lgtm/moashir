@@ -4,9 +4,9 @@ import { useI18n } from 'vue-i18n'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
-import ActionsDropdown from '@/components/data-list/ActionsDropdown.vue'
+import AppMenu from '@/components/ui/AppMenu.vue'
 import Badge from '@/components/ui/Badge.vue'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import PermissionForm from '@/components/permissions/PermissionForm.vue'
 import { useToast } from '@/composables/useToast'
 import { usePermissions } from '@/composables/usePermissions'
@@ -115,10 +115,11 @@ async function onSaved(changes) {
       :search-placeholder="t('permissions.index.searchPlaceholder')"
     >
       <template #filters>
-        <DropdownList
+        <AppSelect
+          variant="filter"
           :model-value="groupFilter"
           :options="groupFilterOptions"
-          :placeholder="t('permissions.filters.group')"
+          :label="t('permissions.filters.group')"
           @update:model-value="groupFilter = $event"
         />
       </template>
@@ -160,7 +161,11 @@ async function onSaved(changes) {
         </div>
       </template>
       <template #cell-actions="{ item }">
-        <ActionsDropdown :actions="rowActions" @select="openEdit(item)" />
+        <AppMenu
+          :actions="rowActions"
+          :label="t('components.actions.menuFor', { name: localized(item.label) })"
+          @select="openEdit(item)"
+        />
       </template>
     </DataTable>
 

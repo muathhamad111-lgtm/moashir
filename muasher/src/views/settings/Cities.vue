@@ -4,8 +4,8 @@ import { useI18n } from 'vue-i18n'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
-import ActionsDropdown from '@/components/data-list/ActionsDropdown.vue'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppMenu from '@/components/ui/AppMenu.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import CityForm from '@/components/entities/admin/CityForm.vue'
@@ -72,16 +72,18 @@ function onAction(key, city) {
       :search-placeholder="t('entities.cities.searchPlaceholder')"
     >
       <template #filters>
-        <DropdownList
+        <AppSelect
+          variant="filter"
           :model-value="filters.filters.regionId"
           :options="regionFilterOptions"
-          :placeholder="t('entities.filters.region')"
+          :label="t('entities.filters.region')"
           @update:model-value="filters.setFilter('regionId', $event)"
         />
-        <DropdownList
+        <AppSelect
+          variant="filter"
           :model-value="filters.filters.active"
           :options="activeOptions"
-          :placeholder="t('entities.filters.status')"
+          :label="t('entities.filters.status')"
           @update:model-value="filters.setFilter('active', $event)"
         />
       </template>
@@ -109,7 +111,11 @@ function onAction(key, city) {
         ><StatusBadge :status="item.isActive ? 'active' : 'inactive'"
       /></template>
       <template #cell-actions="{ item }">
-        <ActionsDropdown :actions="cityActions(item)" @select="onAction($event, item)" />
+        <AppMenu
+          :actions="cityActions(item)"
+          :label="t('components.actions.menuFor', { name: localizedText(item.name, locale) })"
+          @select="onAction($event, item)"
+        />
       </template>
     </DataTable>
 

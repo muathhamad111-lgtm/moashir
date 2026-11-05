@@ -126,14 +126,14 @@ describe('AssignmentHistoryList and filters', () => {
       sort: '-submitted_at',
       cycles,
     })
-    expect(accredited.findAll('.dropdown')).toHaveLength(3)
+    expect(accredited.findAll('.dropdown-filter')).toHaveLength(3)
     const advanced = render(RequestQueueFilters, {
       path: 'advanced',
       filters: { ...filters, path: 'advanced' },
       sort: '-submitted_at',
       cycles,
     })
-    expect(advanced.findAll('.dropdown')).toHaveLength(4)
+    expect(advanced.findAll('.dropdown-filter')).toHaveLength(4)
   })
 })
 

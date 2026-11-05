@@ -3,7 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { number, object, string } from 'yup'
 import FormModal from '@/components/modal/FormModal.vue'
-import SearchSelect from '@/components/form/SearchSelect.vue'
+import AppCombobox from '@/components/form/AppCombobox.vue'
 import FieldTextarea from '@/components/form/FieldTextarea.vue'
 import { useValidatedForm } from '@/composables/useValidatedForm'
 import { useAuthStore } from '@/stores/auth'
@@ -111,18 +111,18 @@ onMounted(() => {
       <p class="committee-candidate__lead">
         {{ isSubstitute ? t('award.roster.substitute.lead') : t('award.roster.appoint.lead') }}
       </p>
-      <SearchSelect
+      <AppCombobox
         v-model="candidate"
         :options="options"
         :loading="loading"
         remote
+        :name="field"
         :label="t('award.roster.candidate')"
         :placeholder="t('award.roster.candidatePlaceholder')"
+        :error="form.errors.value[field]"
+        required
         @search="search"
       />
-      <p v-if="form.errors.value[field]" class="field__error" role="alert">
-        {{ form.errors.value[field] }}
-      </p>
       <p class="committee-candidate__hint">{{ t('award.roster.sodHint') }}</p>
       <FieldTextarea
         name="reason"

@@ -7,6 +7,12 @@ import { regionsService } from '@/services/regionsService'
 import { authService } from '@/services/authService'
 import { useAuthFlowStore } from '@/stores/authFlow'
 import { createTestGlobals } from '@/test-utils'
+import {
+  chooseNamedOption,
+  findSelect,
+  optionLabelsOf,
+  optionValuesOf,
+} from '@/test-utils/dropdown'
 
 vi.mock('@/services/termsService', () => ({ termsService: { current: vi.fn() } }))
 vi.mock('@/services/regionsService', () => ({ regionsService: { listRegions: vi.fn() } }))
@@ -63,12 +69,11 @@ async function fill(wrapper) {
   }
   for (const [name, value] of Object.entries(values))
     await wrapper.find(`[name="${name}"]`).setValue(value)
-  await wrapper.find('[name="entityType"]').setValue('waqf')
-  await wrapper.find('[name="developmentSector"]').setValue('health')
-  await wrapper.find('[name="orgSize"]').setValue('small')
-  await wrapper.find('[name="regionId"]').setValue('2')
-  await flushPromises()
-  await wrapper.find('[name="cityId"]').setValue('12')
+  await chooseNamedOption(wrapper, 'entityType', 'waqf')
+  await chooseNamedOption(wrapper, 'developmentSector', 'health')
+  await chooseNamedOption(wrapper, 'orgSize', 'small')
+  await chooseNamedOption(wrapper, 'regionId', '2')
+  await chooseNamedOption(wrapper, 'cityId', '12')
 }
 
 beforeEach(() => {
@@ -83,19 +88,14 @@ beforeEach(() => {
 describe('Register', () => {
   it('offers the three entity types, lists the cities of the chosen region and leaves marketing unticked', async () => {
     const { wrapper } = await mountRegister()
-    expect(
-      wrapper
-        .findAll('[name="entityType"] option[value]:not([value=""])')
-        .map((option) => option.element.value),
-    ).toEqual(['civil_association', 'civil_foundation', 'waqf'])
+    expect(optionValuesOf(findSelect(wrapper, { name: 'entityType' }))).toEqual([
+      'civil_association',
+      'civil_foundation',
+      'waqf',
+    ])
     expect(wrapper.find('[name="cityId"]').element.disabled).toBe(true)
-    await wrapper.find('[name="regionId"]').setValue('1')
-    await flushPromises()
-    expect(
-      wrapper
-        .findAll('[name="cityId"] option[value]:not([value=""])')
-        .map((option) => option.text()),
-    ).toEqual(['Riyadh'])
+    await chooseNamedOption(wrapper, 'regionId', '1')
+    expect(optionLabelsOf(findSelect(wrapper, { name: 'cityId' }))).toEqual(['Riyadh'])
     expect(wrapper.find('[name="marketingConsent"]').element.checked).toBe(false)
   })
 

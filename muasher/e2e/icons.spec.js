@@ -2,6 +2,7 @@ import { mkdirSync, readdirSync, readFileSync } from 'node:fs'
 import { test, expect } from '@playwright/test'
 import { seedPreferences, seedSignedIn } from './support/session'
 import { settleFonts } from './support/screenshots'
+import { openOption } from './support/dropdown'
 
 const SHOTS = 'e2e/__screenshots__/icons'
 const ICON_DIR = 'src/assets/icons/tts'
@@ -119,14 +120,14 @@ test.describe('TTS icons', () => {
     const hero = page.locator('.sortable-list__row').filter({ hasText: /hero/ }).first()
     await hero.locator('.cms-section-row__actions .btn--secondary').click()
     const dialog = page.locator('.modal').last()
-    await dialog.locator('.icon-field .select2-search__input').click()
-    const options = dialog.locator('.icon-field .select2-search__option')
+    await dialog.locator('.icon-field .dropdown-combobox__input').click()
+    const options = page.locator('[role="listbox"] [role="option"]')
     await expect(options).toHaveCount(PICKABLE.length + 1)
-    const icons = options.locator('svg.app-icon')
+    const icons = options.locator('svg.dropdown-option__icon')
     const drawn = await drawnIcons(icons)
     expect(drawn.map((icon) => icon.name).sort()).toEqual(PICKABLE)
     await expectDrawn(icons)
-    await dialog.locator('.select2-search__option', { hasText: /^\s*award\s*$/ }).click()
+    await openOption(page, 'award').click()
     await expect(dialog.locator('.icon-field__preview svg')).toHaveAttribute('data-icon', 'award')
   })
 

@@ -22,6 +22,7 @@
   --theme-success-text: var(--color-success);
   --theme-info-text: var(--color-info);
   --theme-border-strong: #{rgba($color-secondary, 0.32)};
+  --theme-input-border: var(--theme-text-muted);
   --pattern-opacity: var(--opacity-pattern-dark);
   --content-bg: var(--theme-bg);
   --sidebar-bg: var(--color-dark-deep);

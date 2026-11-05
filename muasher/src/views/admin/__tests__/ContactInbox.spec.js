@@ -6,6 +6,7 @@ import { contactInboxService } from '@/services/contactInboxService'
 import { useAuthStore } from '@/stores/auth'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { createTestGlobals } from '@/test-utils'
+import { chooseNamedOption } from '@/test-utils/dropdown'
 import { sessionUserFor } from '@/test-utils/session'
 
 vi.mock('@/services/contactInboxService', () => ({
@@ -146,8 +147,8 @@ describe('back-office contact inbox', () => {
     expect(contactInboxService.reply).toHaveBeenCalledWith(ID, {
       body: 'شكرًا لتواصلكم، أرفقنا الإرشادات.',
     })
-    await wrapper.find('select').setValue('31')
-    await wrapper.find('.contact-assign button').trigger('click')
+    await chooseNamedOption(wrapper, 'assigneeId', '31')
+    await wrapper.find('.contact-assign .btn').trigger('click')
     await flushPromises()
     expect(contactInboxService.assign).toHaveBeenCalledWith(ID, { assigneeId: 31 })
     const close = wrapper.findAll('button').find((button) => button.text() === 'إغلاق الرسالة')

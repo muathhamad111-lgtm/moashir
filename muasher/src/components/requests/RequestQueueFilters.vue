@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import { QUEUE_SORTS } from '@/constants/accredited'
 import { ASSESSMENT_PATHS } from '@/constants/assessment'
 import { statusLabelKey } from '@/utils/canonicalStatus'
@@ -57,36 +57,41 @@ function setCycle(value) {
 
 <template>
   <div class="request-filters">
-    <DropdownList
+    <AppSelect
+      variant="filter"
       :model-value="filters.status"
       :options="statusOptions"
-      :placeholder="t('requests.filters.status')"
+      :label="t('requests.filters.status')"
       @update:model-value="emit('filter', 'status', $event)"
     />
-    <DropdownList
+    <AppSelect
+      variant="filter"
       v-if="showsCycles"
       :model-value="filters.cycleId"
       :options="cycleOptions"
-      :placeholder="t('requests.filters.cycle')"
+      :label="t('requests.filters.cycle')"
       @update:model-value="setCycle"
     />
-    <DropdownList
+    <AppSelect
+      variant="filter"
       :model-value="filters.overdue"
       :options="overdueOptions"
-      :placeholder="t('requests.filters.overdue')"
+      :label="t('requests.filters.overdue')"
       @update:model-value="emit('filter', 'overdue', $event)"
     />
-    <DropdownList
+    <AppSelect
+      variant="filter"
       v-if="assessors.length"
       :model-value="filters.assessorId"
       :options="assessorOptions"
-      :placeholder="t('requests.filters.assessor')"
+      :label="t('requests.filters.assessor')"
       @update:model-value="emit('filter', 'assessorId', $event)"
     />
-    <DropdownList
+    <AppSelect
+      variant="filter"
       :model-value="sort"
       :options="sortOptions"
-      :placeholder="t('requests.filters.sort')"
+      :label="t('requests.filters.sort')"
       @update:model-value="emit('sort', $event)"
     />
   </div>

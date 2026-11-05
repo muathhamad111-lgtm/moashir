@@ -2,6 +2,7 @@
 import { mkdirSync } from 'node:fs'
 import { test, expect } from '@playwright/test'
 import { seedPreferences, seedSignedIn } from './support/session'
+import { chooseNamed, namedSelect } from './support/dropdown'
 
 const SHOTS = 'e2e/__screenshots__/home'
 const FRAMES = `${SHOTS}/motion`
@@ -164,10 +165,10 @@ test.describe('home page — contact form (Task-42 contract)', () => {
     await form
       .locator('input[name="organization"]')
       .fill(locale === 'en' ? 'Al-Amal Charity' : 'جمعية الأمل الخيرية')
-    await form.locator('select[name="enquiryType"]').selectOption('payments')
+    await chooseNamed(form, 'enquiryType', 'payments')
     await form.locator('textarea[name="message"]').fill(MESSAGE[locale])
     await form.locator('input[type="checkbox"]').check()
-    await expect(form.locator('select[name="enquiryType"] option[value="payments"]')).toHaveText(
+    await expect(namedSelect(form, 'enquiryType')).toHaveText(
       locale === 'en' ? 'Payments & receipts' : 'الدفع والإيصالات',
     )
     await form.locator('button[type="submit"]').click()

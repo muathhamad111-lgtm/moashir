@@ -7,10 +7,10 @@ import { siteSettingsService } from '@/services/siteSettingsService'
 import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
 import BaseInput from '@/components/form/BaseInput.vue'
-import BaseSelect from '@/components/form/BaseSelect.vue'
 import FormModal from '@/components/modal/FormModal.vue'
 import { useSiteStatusStore } from '@/stores/siteStatus'
 import { createTestGlobals } from '@/test-utils'
+import { chooseNamedOption } from '@/test-utils/dropdown'
 
 vi.mock('@/services/cmsService', () => ({
   cmsService: {
@@ -177,7 +177,7 @@ describe('Public site content editor (Content Officer)', () => {
     const dialog = wrapper.findComponent(SectionFormDialog)
     const input = (name) => dialog.findAllComponents(BaseInput).find((field) => field.props('name') === name)
     await input('key').find('input').setValue('faq_block')
-    await dialog.findAllComponents(BaseSelect).find((field) => field.props('name') === 'type').find('select').setValue('faq')
+    await chooseNamedOption(dialog, 'type', 'faq')
     await input('title.ar').find('input').setValue('الأسئلة الشائعة')
     dialog.findComponent(FormModal).vm.$emit('submit')
     await flushPromises()
@@ -201,7 +201,7 @@ describe('Public site content editor (Content Officer)', () => {
     const { wrapper } = await mountView()
     await wrapper.findAll('.tabs__tab')[9].trigger('click')
     await flushPromises()
-    await wrapper.find('select[name="featuredKpiLimit"]').setValue('4')
+    await chooseNamedOption(wrapper, 'featuredKpiLimit', 4)
     await wrapper.find('.site-settings__form').trigger('submit')
     await flushPromises()
     expect(siteSettingsService.update).toHaveBeenCalledWith(expect.objectContaining({ featuredKpiLimit: 4, showFeaturedKpis: true }))

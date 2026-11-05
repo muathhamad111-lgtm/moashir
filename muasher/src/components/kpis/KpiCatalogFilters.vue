@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import { KPI_PUBLIC_SORTS, KPI_STATUS_KEYS, KPI_YEAR_FILTER_SPAN } from '@/constants/kpis'
 import { ALL } from '@/composables/useKpiFilters'
 
@@ -44,30 +44,28 @@ const sortOptions = computed(() =>
 
 <template>
   <div class="kpis-page__filters">
-    <label class="kpis-page__filter">
-      <span class="kpis-page__filter-label">{{ t('kpis.page.filters.status') }}</span>
-      <DropdownList
-        :model-value="filters.status"
-        :options="statusOptions"
-        @update:model-value="emit('change', 'status', $event)"
-      />
-    </label>
-    <label v-if="types.length" class="kpis-page__filter">
-      <span class="kpis-page__filter-label">{{ t('kpis.page.filters.type') }}</span>
-      <DropdownList
-        :model-value="filters.type"
-        :options="typeOptions"
-        @update:model-value="emit('change', 'type', $event)"
-      />
-    </label>
-    <label class="kpis-page__filter">
-      <span class="kpis-page__filter-label">{{ t('kpis.page.filters.year') }}</span>
-      <DropdownList
-        :model-value="filters.year"
-        :options="yearOptions"
-        @update:model-value="emit('change', 'year', $event)"
-      />
-    </label>
+    <AppSelect
+      variant="filter"
+      :label="t('kpis.page.filters.status')"
+      :model-value="filters.status"
+      :options="statusOptions"
+      @update:model-value="emit('change', 'status', $event)"
+    />
+    <AppSelect
+      v-if="types.length"
+      variant="filter"
+      :label="t('kpis.page.filters.type')"
+      :model-value="filters.type"
+      :options="typeOptions"
+      @update:model-value="emit('change', 'type', $event)"
+    />
+    <AppSelect
+      variant="filter"
+      :label="t('kpis.page.filters.year')"
+      :model-value="filters.year"
+      :options="yearOptions"
+      @update:model-value="emit('change', 'year', $event)"
+    />
     <label class="kpis-page__filter">
       <span class="kpis-page__filter-label">{{ t('kpis.page.filters.owner') }}</span>
       <input
@@ -79,13 +77,12 @@ const sortOptions = computed(() =>
         @input="emit('change', 'owner', $event.target.value)"
       />
     </label>
-    <label class="kpis-page__filter">
-      <span class="kpis-page__filter-label">{{ t('kpis.page.sort.label') }}</span>
-      <DropdownList
-        :model-value="filters.sort"
-        :options="sortOptions"
-        @update:model-value="emit('change', 'sort', $event)"
-      />
-    </label>
+    <AppSelect
+      variant="filter"
+      :label="t('kpis.page.sort.label')"
+      :model-value="filters.sort"
+      :options="sortOptions"
+      @update:model-value="emit('change', 'sort', $event)"
+    />
   </div>
 </template>

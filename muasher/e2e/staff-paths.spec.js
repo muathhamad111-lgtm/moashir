@@ -86,7 +86,7 @@ test.describe('per-path queues', () => {
     await expect(page.locator(ROWS).first()).toContainText('ACC-2026-000005')
     await page.locator('.path-switch__link').nth(1).click()
     await expect(page).toHaveURL(/path=advanced/)
-    await expect(page.locator('.request-filters .dropdown__toggle').first()).toContainText(
+    await expect(page.locator('.request-filters .dropdown-filter__trigger').first()).toContainText(
       text(testInfo, 'Awaiting assignment', 'بانتظار'),
     )
     await open(page, '/admin/requests?overdue=true', ROWS)
@@ -147,9 +147,9 @@ test.describe('users path access', () => {
     await expect(row).toContainText(
       text(testInfo, 'Not qualified for any path', 'غير مؤهل لأي مسار'),
     )
-    await row.locator('.actions-dropdown button').first().click()
+    await row.locator('.dropdown-menu > button').click()
     await page
-      .locator('.actions-dropdown__item', {
+      .locator('[role="menuitem"]', {
         hasText: text(testInfo, 'Qualified paths', 'مسارات التأهيل'),
       })
       .click()
@@ -160,9 +160,9 @@ test.describe('users path access', () => {
     await page.locator('.toolbar__search input').fill('Laura')
     const follower = page.locator(ROWS).filter({ hasText: 'Laura Bennett' })
     await expect(follower).toContainText(text(testInfo, 'All paths', 'كل المسارات'))
-    await follower.locator('.actions-dropdown button').first().click()
+    await follower.locator('.dropdown-menu > button').click()
     await page
-      .locator('.actions-dropdown__item', {
+      .locator('[role="menuitem"]', {
         hasText: text(testInfo, 'Follow-up scope', 'نطاق المتابعة'),
       })
       .click()
@@ -423,9 +423,9 @@ test.describe('staff paths screenshots', () => {
     await open(page, '/admin/settings/users', ROWS)
     await page.locator('.toolbar__search input').fill('David')
     const row = page.locator(ROWS).filter({ hasText: 'David Nguyen' })
-    await row.locator('.actions-dropdown button').first().click()
+    await row.locator('.dropdown-menu > button').click()
     await page
-      .locator('.actions-dropdown__item', {
+      .locator('[role="menuitem"]', {
         hasText: text(testInfo, 'Qualified paths', 'مسارات التأهيل'),
       })
       .click()

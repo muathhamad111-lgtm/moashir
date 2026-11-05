@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import BaseSelect from '@/components/form/BaseSelect.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 
 const UNASSIGNED = 'none'
@@ -39,7 +39,7 @@ function assign() {
 
 <template>
   <div class="contact-assign">
-    <BaseSelect
+    <AppSelect
       v-model="choice"
       name="assigneeId"
       :label="t('contactInbox.assign.label')"

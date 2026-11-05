@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import BaseSelect from '@/components/form/BaseSelect.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import { AWARD_RANKS, RANK_KEYS, RANK_NONE } from '@/constants/committee'
 
 defineProps({
@@ -22,12 +22,13 @@ const options = computed(() => [
 </script>
 
 <template>
-  <BaseSelect
+  <AppSelect
     :model-value="rank === null ? RANK_NONE : String(rank)"
     :name="name"
     :label="t('award.results.rank.label')"
     :options="options"
     :disabled="disabled"
+    hide-label
     @update:model-value="emit('change', $event)"
   />
 </template>

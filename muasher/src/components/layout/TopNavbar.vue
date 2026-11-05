@@ -13,7 +13,7 @@ import { canUseGlobalSearch } from '@/constants/globalSearch'
 import LocaleSwitcher from '@/components/ui/LocaleSwitcher.vue'
 import ThemeToggle from '@/components/ui/ThemeToggle.vue'
 import NotificationBell from '@/components/notifications/NotificationBell.vue'
-import ActionsDropdown from '@/components/data-list/ActionsDropdown.vue'
+import AppMenu from '@/components/ui/AppMenu.vue'
 import Badge from '@/components/ui/Badge.vue'
 import GlobalSearch from '@/components/search/GlobalSearch.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
@@ -102,10 +102,10 @@ function onUserAction(key) {
       </router-link>
       <NotificationBell />
       <div class="navbar__user">
-        <ActionsDropdown
+        <AppMenu
           :actions="userActions"
           :label="t('nav.userMenu', { name: displayName })"
-          toggle-class="navbar__avatar"
+          trigger="avatar"
           @select="onUserAction"
         >
           <template #trigger>
@@ -119,7 +119,7 @@ function onUserAction(key) {
               </span>
             </div>
           </template>
-        </ActionsDropdown>
+        </AppMenu>
       </div>
     </div>
   </header>

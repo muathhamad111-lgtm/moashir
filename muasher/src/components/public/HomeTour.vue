@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTourStepper } from '@/composables/useTourStepper'
 import { useInView } from '@/composables/useInView'
+import { useMotionControls } from '@/composables/useMotionControls'
 import { contentImageUrl } from '@/utils/contentImage'
 import { TOUR_SCREEN_PATHS, TOUR_SCREENS } from '@/constants/tourScreens'
 import HomeSectionHead from '@/components/public/HomeSectionHead.vue'
@@ -21,6 +22,7 @@ const { inView } = useInView(rootRef)
 const steps = computed(() => props.section.items ?? [])
 const count = computed(() => steps.value.length)
 const { active, playing, running, select, toggle } = useTourStepper(count, { visible: inView })
+const { isVisible: isMotionControlVisible } = useMotionControls()
 const current = computed(() => steps.value[active.value] ?? null)
 const currentShot = computed(() => contentImageUrl(current.value?.image))
 const host = typeof window !== 'undefined' ? window.location.host : ''
@@ -66,7 +68,13 @@ const screenPath = computed(
               </button>
             </li>
           </ol>
-          <button type="button" class="home-tour__toggle" :aria-pressed="playing" @click="toggle">
+          <button
+            v-if="isMotionControlVisible"
+            type="button"
+            class="home-tour__toggle"
+            :aria-pressed="playing"
+            @click="toggle"
+          >
             <AppIcon :name="playing ? 'pause' : 'play'" />
             {{ playing ? t('public.home.tour.pause') : t('public.home.tour.play') }}
           </button>

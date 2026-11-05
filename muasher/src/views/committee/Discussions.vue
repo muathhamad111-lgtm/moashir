@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
 import Pagination from '@/components/data-list/Pagination.vue'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
@@ -36,10 +36,11 @@ const statusOptions = computed(() => [
         <h1 class="cycles-page__title">{{ t('award.discussion.title') }}</h1>
         <p class="cycles-page__subtitle">{{ t('award.discussion.subtitle') }}</p>
       </div>
-      <DropdownList
+      <AppSelect
+        variant="filter"
         :model-value="filters.filters.status"
         :options="statusOptions"
-        :placeholder="t('award.work.filters.status')"
+        :label="t('award.work.filters.status')"
         @update:model-value="setFilter('status', $event)"
       />
     </header>

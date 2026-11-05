@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
 import Card from '@/components/ui/Card.vue'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import BaseDatePicker from '@/components/form/BaseDatePicker.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import FinanceNav from '@/components/finance/FinanceNav.vue'
@@ -44,10 +44,11 @@ function downloadEvidence(refund) {
     <FinanceNav />
     <Card>
       <div class="finance-page__range">
-        <DropdownList
+        <AppSelect
+          variant="filter"
           :model-value="filters.filters.purpose"
           :options="purposeOptions"
-          :placeholder="t('finance.filters.service')"
+          :label="t('finance.filters.service')"
           @update:model-value="setFilter('purpose', $event)"
         />
         <BaseDatePicker

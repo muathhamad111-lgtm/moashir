@@ -1,0 +1,7 @@
+@mixin popup-surface {
+  border: var(--border-width) solid var(--theme-border-strong);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-bg);
+  background-image: linear-gradient(var(--theme-surface-raised), var(--theme-surface-raised));
+  box-shadow: var(--shadow-lg);
+}

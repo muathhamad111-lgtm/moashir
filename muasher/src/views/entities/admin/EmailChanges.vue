@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
@@ -45,10 +45,11 @@ const columns = computed(() =>
         <h1 class="entities-admin__title">{{ t('entities.emailChanges.title') }}</h1>
         <p class="entities-admin__subtitle">{{ t('entities.emailChanges.subtitle') }}</p>
       </div>
-      <DropdownList
+      <AppSelect
+        variant="filter"
         :model-value="filters.filters.status"
         :options="statusOptions"
-        :placeholder="t('entities.filters.status')"
+        :label="t('entities.filters.status')"
         @update:model-value="filters.setFilter('status', $event)"
       />
     </header>

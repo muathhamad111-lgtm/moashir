@@ -9,22 +9,21 @@ import Card from '@/components/ui/Card.vue'
 import Tabs from '@/components/ui/Tabs.vue'
 import Accordion from '@/components/ui/Accordion.vue'
 import Tooltip from '@/components/ui/Tooltip.vue'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import LocaleSwitcher from '@/components/ui/LocaleSwitcher.vue'
 import ThemeToggle from '@/components/ui/ThemeToggle.vue'
 import BaseInput from '@/components/form/BaseInput.vue'
 import BaseTextarea from '@/components/form/BaseTextarea.vue'
-import BaseSelect from '@/components/form/BaseSelect.vue'
 import BaseDatePicker from '@/components/form/BaseDatePicker.vue'
 import BaseCheckbox from '@/components/form/BaseCheckbox.vue'
 import BaseRadio from '@/components/form/BaseRadio.vue'
 import BaseFileUpload from '@/components/form/BaseFileUpload.vue'
-import SearchSelect from '@/components/form/SearchSelect.vue'
+import AppCombobox from '@/components/form/AppCombobox.vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
-import ActionsDropdown from '@/components/data-list/ActionsDropdown.vue'
+import AppMenu from '@/components/ui/AppMenu.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import FormModal from '@/components/modal/FormModal.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
@@ -336,46 +335,46 @@ const notifications = useNotifications({ perPage: 3 })
     <section class="gallery__section" aria-labelledby="gallery-dropdowns">
       <h2 id="gallery-dropdowns" class="gallery__heading">{{ t('gallery.sections.dropdowns') }}</h2>
       <div class="gallery__row">
-        <DropdownList
+        <AppSelect
+          variant="filter"
           v-model="dropdownValue"
           :options="dropdownOptions"
-          :placeholder="t('gallery.demo.selectStatus')"
+          :label="t('gallery.demo.columnStatus')"
         />
-        <DropdownList
+        <AppSelect
+          variant="filter"
           :model-value="null"
           :options="dropdownOptions"
-          :placeholder="t('gallery.labels.disabled')"
+          :label="t('gallery.demo.columnStatus')"
           disabled
         />
-        <ActionsDropdown :actions="rowActions" />
+        <AppMenu :actions="rowActions" />
       </div>
       <div class="gallery__grid">
-        <SearchSelect
+        <AppCombobox
           v-model="singleSelectValue"
           :options="regionOptions"
           :placeholder="t('gallery.demo.selectRegion')"
-          :label="t('gallery.demo.selectRegion')"
+          :label="t('entities.fields.region')"
         />
-        <SearchSelect
+        <AppCombobox
           v-model="multiSelectValue"
           :options="regionOptions"
           multiple
           :placeholder="t('gallery.demo.selectRegion')"
-          :label="t('gallery.demo.selectRegion')"
+          :label="t('entities.fields.region')"
         />
-        <SearchSelect
+        <AppCombobox
           :model-value="null"
           :options="[]"
           loading
-          :placeholder="t('components.searchSelect.loading')"
-          :label="t('components.searchSelect.loading')"
+          :label="t('entities.fields.region')"
         />
-        <SearchSelect
+        <AppCombobox
           :model-value="null"
           :options="regionOptions"
           disabled
-          :placeholder="t('gallery.labels.disabled')"
-          :label="t('gallery.labels.disabled')"
+          :label="t('entities.fields.region')"
         />
       </div>
     </section>
@@ -396,7 +395,7 @@ const notifications = useNotifications({ perPage: 3 })
           type="email"
           :error="t('validation.email')"
         />
-        <BaseSelect
+        <AppSelect
           v-model="selectValue"
           :label="t('gallery.form.entityType')"
           name="demoType"
@@ -449,7 +448,7 @@ const notifications = useNotifications({ perPage: 3 })
           :error="demoForm.errors.value.email"
           required
         />
-        <BaseSelect
+        <AppSelect
           v-model="entityType"
           :label="t('gallery.form.entityType')"
           name="entityType"
@@ -505,10 +504,11 @@ const notifications = useNotifications({ perPage: 3 })
         :search-placeholder="t('gallery.demo.searchEntities')"
       >
         <template #filters>
-          <DropdownList
+          <AppSelect
+            variant="filter"
             v-model="dropdownValue"
             :options="dropdownOptions"
-            :placeholder="t('gallery.demo.selectStatus')"
+            :label="t('gallery.demo.columnStatus')"
           />
         </template>
         <template #actions>
@@ -529,7 +529,7 @@ const notifications = useNotifications({ perPage: 3 })
           <StatusBadge :status="item.status" />
         </template>
         <template #cell-actions>
-          <ActionsDropdown :actions="rowActions" />
+          <AppMenu :actions="rowActions" />
         </template>
       </DataTable>
       <Pagination v-model:page="tablePage" :last-page="7" />

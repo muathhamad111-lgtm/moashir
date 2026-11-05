@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import FormModal from '@/components/modal/FormModal.vue'
-import BaseSelect from '@/components/form/BaseSelect.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import BaseTextarea from '@/components/form/BaseTextarea.vue'
 import { useToast } from '@/composables/useToast'
 import { assessmentOverridesService } from '@/services/assessmentOverridesService'
@@ -90,7 +90,7 @@ watch(
         <AppIcon name="warning-triangle" />
         {{ t('requests.overrides.forceWarning') }}
       </p>
-      <BaseSelect
+      <AppSelect
         v-model="target"
         name="toStatus"
         :label="t('requests.overrides.target')"

@@ -10,10 +10,10 @@
 
 @use 'components/app-icon';
 @use 'components/buttons';
-@use 'components/dropdown';
-@use 'components/actions-dropdown';
-@use 'components/select2-search';
 @use 'components/inputs';
+@use 'components/dropdown-surface';
+@use 'components/dropdown-option';
+@use 'components/dropdown-field';
 @use 'components/icon-field';
 @use 'components/datepicker';
 @use 'components/checkbox';

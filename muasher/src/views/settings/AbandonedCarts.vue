@@ -5,8 +5,8 @@ import SettingsSection from '@/components/settings/SettingsSection.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
-import ActionsDropdown from '@/components/data-list/ActionsDropdown.vue'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppMenu from '@/components/ui/AppMenu.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import Badge from '@/components/ui/Badge.vue'
 import FinanceNav from '@/components/finance/FinanceNav.vue'
 import { useFinanceList } from '@/composables/useFinanceList'
@@ -111,16 +111,18 @@ const DEMO_MODULES = [MOCK_MODULES.MESSAGING]
       :search-placeholder="t('settings.carts.searchPlaceholder')"
     >
       <template #filters>
-        <DropdownList
+        <AppSelect
+          variant="filter"
           :model-value="filters.filters.purpose"
           :options="purposeOptions"
-          :placeholder="t('settings.carts.filterPurpose')"
+          :label="t('settings.carts.filterPurpose')"
           @update:model-value="setFilter('purpose', $event)"
         />
-        <DropdownList
+        <AppSelect
+          variant="filter"
           :model-value="filters.filters.contacted"
           :options="contactedOptions"
-          :placeholder="t('settings.carts.filterContacted')"
+          :label="t('settings.carts.filterContacted')"
           @update:model-value="setFilter('contacted', $event)"
         />
       </template>
@@ -163,9 +165,10 @@ const DEMO_MODULES = [MOCK_MODULES.MESSAGING]
         ><span class="settings-form__nowrap">{{ dateOf(item.contactedAt) }}</span></template
       >
       <template #cell-actions="{ item }">
-        <ActionsDropdown
+        <AppMenu
           v-if="item.marketingConsent"
           :actions="rowActions(item)"
+          :label="t('components.actions.menuFor', { name: nameOf(item.entity) })"
           @select="runCampaign($event, item)"
         />
         <span v-else class="settings-form__muted">{{ t('settings.carts.noConsent') }}</span>

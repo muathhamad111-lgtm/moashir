@@ -8,6 +8,8 @@ import ErrorState from '@/components/feedback/ErrorState.vue'
 import NotificationItem from './NotificationItem.vue'
 
 defineProps({
+  headingId: { type: String, default: '' },
+  showTitle: { type: Boolean, default: true },
   items: { type: Array, default: () => [] },
   status: { type: String, default: 'loading' },
   unreadCount: { type: Number, default: 0 },
@@ -20,8 +22,10 @@ const notificationsRoute = { name: ROUTE_NAMES.NOTIFICATIONS_INDEX }
 
 <template>
   <div class="notification-panel">
-    <header class="notification-panel__header">
-      <span>{{ t('components.notifications.title') }}</span>
+    <header v-if="showTitle || unreadCount > 0" class="notification-panel__header">
+      <h2 v-if="showTitle" :id="headingId" class="notification-panel__title" tabindex="-1">
+        {{ t('components.notifications.title') }}
+      </h2>
       <BaseButton v-if="unreadCount > 0" variant="ghost" size="sm" @click="emit('mark-all-read')">
         {{ t('components.notifications.markAllRead') }}
       </BaseButton>

@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import { CYCLE_SORTS, CYCLE_STATUS_LIST } from '@/constants/advanced'
 
 defineProps({
@@ -23,16 +23,18 @@ const sortOptions = computed(() =>
 
 <template>
   <div class="cycle-filters">
-    <DropdownList
+    <AppSelect
+      variant="filter"
       :model-value="filters.status"
       :options="statusOptions"
-      :placeholder="t('cycles.filters.status')"
+      :label="t('cycles.filters.status')"
       @update:model-value="emit('filter', 'status', $event)"
     />
-    <DropdownList
+    <AppSelect
+      variant="filter"
       :model-value="sort"
       :options="sortOptions"
-      :placeholder="t('cycles.filters.sort')"
+      :label="t('cycles.filters.sort')"
       @update:model-value="emit('sort', $event)"
     />
   </div>

@@ -2,6 +2,7 @@ import { mkdirSync } from 'node:fs'
 import { test, expect } from '@playwright/test'
 import { seedSignedIn, seedScenario } from './support/session'
 import { settleFonts } from './support/screenshots'
+import { chooseNamed } from './support/dropdown'
 
 const SHOTS = 'e2e/__screenshots__/37d'
 const VIEWPORTS = {
@@ -146,7 +147,7 @@ test.describe('notification types catalogue', () => {
     await signIn(page, testInfo, USERS.systemAdmin)
     await open(page, '/admin/settings/notifications', ROWS)
     await expect(page.locator('.notification-catalogue textarea')).toHaveCount(0)
-    await page.locator('.notification-catalogue__filters .dropdown__toggle').first().click()
+    await page.locator('.notification-catalogue__filters .dropdown-filter__trigger').first().click()
     await page.getByRole('option', { name: text(testInfo, 'Contact us', 'تواصل معنا') }).click()
     await expect(page.locator(ROWS).first()).toContainText('CNT-')
     await expect(page.locator(`${ROWS}:not(:has-text("CNT-"))`)).toHaveCount(0)
@@ -167,8 +168,8 @@ test.describe('contact inbox', () => {
     ).toBeVisible()
     await page.locator(`${ROWS} .contact-inbox__reference`).first().click()
     await expect(page).toHaveURL(new RegExp(`/admin/contact-messages/${NEW_MESSAGE}$`))
-    await page.locator('.contact-assign select').selectOption('31')
-    await page.locator('.contact-assign button').click()
+    await chooseNamed(page.locator('.contact-assign'), 'assigneeId', '31')
+    await page.locator('.contact-assign .btn').click()
     await expect(page.locator('.contact-thread__meta .badge')).toContainText(
       text(testInfo, 'In progress', 'قيد المعالجة'),
     )

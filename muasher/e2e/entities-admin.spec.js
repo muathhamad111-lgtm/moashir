@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
 import { clearMockFault, forceMockFault } from './support/mockFaults'
+import { chooseNamed } from './support/dropdown'
 
 const SYSTEM_ADMIN = { id: 2, roles: ['system_admin'], name: { ar: 'منيرة بنت خالد العتيبي', en: 'Munira Al-Otaibi' } }
 const SUPER_ADMIN = { id: 1, roles: [], superAdmin: true, name: { ar: 'مدير النظام الرئيسي', en: 'Super Admin' } }
@@ -33,7 +34,7 @@ function checkbox(scope, name) {
 }
 
 async function rowAction(page, rowText, actionName) {
-  await rows(page).filter({ hasText: rowText }).first().locator('.actions-dropdown > button').click()
+  await rows(page).filter({ hasText: rowText }).first().locator('.dropdown-menu > button').click()
   await page.getByRole('menuitem', { name: actionName }).click()
 }
 
@@ -169,11 +170,11 @@ test('a data-subject request is recorded and fulfilled', async ({ page }, testIn
   await page.goto('/admin/privacy-requests')
   await expect(rows(page)).toHaveCount(1)
   await page.getByRole('button', { name: /New request|طلب جديد/ }).click()
-  await dialog(page).locator('.select2-search__input').click()
-  await expect(dialog(page).locator('.select2-search__badge').first()).toBeVisible()
-  await dialog(page).locator('.select2-search__input').fill('ENT-006005')
+  await dialog(page).locator('.dropdown-combobox__input').click()
+  await expect(page.locator('[role="listbox"] .dropdown-option__badge').first()).toBeVisible()
+  await dialog(page).locator('.dropdown-combobox__input').fill('ENT-006005')
   await page.getByRole('option', { name: /ENT-006005/ }).click()
-  await dialog(page).locator('[name="kind"]').selectOption('access')
+  await chooseNamed(dialog(page), 'kind', 'access')
   await dialog(page).locator('[name="details"]').fill('Formal letter asking for a copy of the personal data held by the platform.')
   await dialog(page).locator('button[type="submit"]').click()
   await expect(page.locator('.toast--success')).toBeVisible()
@@ -188,7 +189,7 @@ test('cities are added under a region and deactivated instead of deleted', async
   await page.goto('/admin/settings/cities')
   await expect(rows(page).first()).toBeVisible()
   await page.getByRole('button', { name: /Add city|إضافة مدينة/ }).click()
-  await dialog(page).locator('[name="regionId"]').selectOption('7')
+  await chooseNamed(dialog(page), 'regionId', '7')
   await dialog(page).locator('[name="name.ar"]').fill('البدع')
   await dialog(page).locator('[name="name.en"]').fill('Al-Bad')
   await dialog(page).locator('button[type="submit"]').click()

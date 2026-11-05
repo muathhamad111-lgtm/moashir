@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test'
 import { seedPreferences, seedSignedIn } from './support/session'
 import { settleFonts } from './support/screenshots'
 import { DEV_OTP_CODE, fillSignIn, openSignIn, submitSignIn, typeCode } from './support/signIn'
+import { chooseNamed } from './support/dropdown'
 
 const SHOTS = 'e2e/__screenshots__/signin'
 const VIEWPORTS = {
@@ -121,7 +122,7 @@ test.describe('simplified sign-in', () => {
     await dialog.locator('.btn--danger').click()
     await expect(page.locator('.toast').first()).toBeVisible()
     await page.locator('.navbar__avatar').click()
-    await page.locator('.actions-dropdown__item.is-danger').click()
+    await page.locator('[role="menuitem"].is-danger').click()
     await expect(page.locator('[name="identifier"]')).toBeVisible()
     await submitSignIn(page, ALBIRR.unifiedNumber)
     await expect(page.locator('.portal-top-bar')).toBeVisible()
@@ -156,12 +157,12 @@ test.describe('unified national number and mobile verification', () => {
     await page.locator('[name="passwordConfirmation"]').fill('Wafa-Charity-Account-2026')
     await page.locator('[name="name.ar"]').fill('جمعية الوفاء الخيرية')
     await page.locator('[name="authorizedPersonName"]').fill('سلمان بن فهد الحربي')
-    await page.locator('[name="entityType"]').selectOption('civil_association')
-    await page.locator('[name="developmentSector"]').selectOption('social')
-    await page.locator('[name="orgSize"]').selectOption('medium')
+    await chooseNamed(page, 'entityType', 'civil_association')
+    await chooseNamed(page, 'developmentSector', 'social')
+    await chooseNamed(page, 'orgSize', 'medium')
     await page.locator('[name="foundingYear"]').fill('2016')
-    await page.locator('[name="regionId"]').selectOption('2')
-    await page.locator('[name="cityId"]').selectOption('12')
+    await chooseNamed(page, 'regionId', '2')
+    await chooseNamed(page, 'cityId', '12')
     await page.locator('label.checkbox:has([name="termsAccepted"])').click()
     await page.locator('form button[type="submit"]').click()
     await expect(page.locator('.field:has([name="unifiedNumber"]) .field__error')).toContainText(

@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DataTable from '@/components/data-list/DataTable.vue'
-import ActionsDropdown from '@/components/data-list/ActionsDropdown.vue'
+import AppMenu from '@/components/ui/AppMenu.vue'
 import Badge from '@/components/ui/Badge.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
@@ -137,7 +137,7 @@ function moveDisabled(kpi, direction) {
       ><StatusBadge :status="item.published ? 'published' : 'unpublished'"
     /></template>
     <template #cell-actions="{ item }">
-      <ActionsDropdown
+      <AppMenu
         :actions="actionsOf(item)"
         :label="t('kpis.admin.actions.menu', { name: localized(item.name) })"
         @select="emit('action', $event, item)"

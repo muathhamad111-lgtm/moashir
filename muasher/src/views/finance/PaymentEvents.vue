@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
 import Card from '@/components/ui/Card.vue'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import FinanceNav from '@/components/finance/FinanceNav.vue'
@@ -56,22 +56,25 @@ const modeOptions = computed(() =>
         :search-placeholder="t('finance.events.searchPlaceholder')"
       >
         <template #filters>
-          <DropdownList
+          <AppSelect
+            variant="filter"
             :model-value="filters.filters.source"
             :options="sourceOptions"
-            :placeholder="t('finance.events.source')"
+            :label="t('finance.events.source')"
             @update:model-value="setFilter('source', $event)"
           />
-          <DropdownList
+          <AppSelect
+            variant="filter"
             :model-value="filters.filters.result"
             :options="resultOptions"
-            :placeholder="t('finance.events.result')"
+            :label="t('finance.events.result')"
             @update:model-value="setFilter('result', $event)"
           />
-          <DropdownList
+          <AppSelect
+            variant="filter"
             :model-value="filters.filters.mode"
             :options="modeOptions"
-            :placeholder="t('finance.events.mode')"
+            :label="t('finance.events.mode')"
             @update:model-value="setFilter('mode', $event)"
           />
         </template>

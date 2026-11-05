@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseInput from '@/components/form/BaseInput.vue'
 import BaseTextarea from '@/components/form/BaseTextarea.vue'
-import BaseSelect from '@/components/form/BaseSelect.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import ToggleSwitch from '@/components/ui/ToggleSwitch.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
@@ -165,7 +165,7 @@ async function onSubmit() {
           :label="t('settings.homepage.siteSettings.showFeaturedKpis')"
           :description="t('settings.homepage.siteSettings.showFeaturedKpisHint')"
         />
-        <BaseSelect
+        <AppSelect
           v-model="draft.featuredKpiLimit"
           name="featuredKpiLimit"
           :label="t('settings.homepage.siteSettings.featuredKpiLimit')"

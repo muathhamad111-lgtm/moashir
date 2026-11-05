@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import Manage from '@/views/kpis/Manage.vue'
-import ActionsDropdown from '@/components/data-list/ActionsDropdown.vue'
+import AppMenu from '@/components/ui/AppMenu.vue'
 import FormModal from '@/components/modal/FormModal.vue'
 import BaseInput from '@/components/form/BaseInput.vue'
 import KpiFormDialog from '@/components/kpis/KpiFormDialog.vue'
@@ -66,7 +66,7 @@ async function mountView() {
 }
 
 function rowActions(wrapper, index) {
-  return wrapper.findAllComponents(ActionsDropdown)[index]
+  return wrapper.findAllComponents(AppMenu)[index]
 }
 
 beforeEach(() => {

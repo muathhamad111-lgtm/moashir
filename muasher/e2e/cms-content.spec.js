@@ -128,7 +128,7 @@ test('KPI administration: create, record a value and reorder everything by drag 
   await expect(form).toBeHidden()
   await expect(page.locator('.stats-card__value').first()).toHaveText('32')
 
-  await page.locator('.table .actions-dropdown > button').first().click()
+  await page.locator('.table .dropdown-menu > button').first().click()
   await page.locator('[role="menuitem"]').nth(1).click()
   const values = page.locator('.modal').last()
   await values.locator('input[name="value"]').fill('488')

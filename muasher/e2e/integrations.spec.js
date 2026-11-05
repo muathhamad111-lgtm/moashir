@@ -2,6 +2,7 @@ import { Buffer } from 'node:buffer'
 import { test, expect } from '@playwright/test'
 import config from '../playwright.config.js'
 import { seedSignedIn } from './support/session'
+import { chooseNamed, namedSelect, openOption } from './support/dropdown'
 
 const SYSTEM_ADMIN = { id: 2, roles: ['system_admin'], name: { ar: 'منيرة بنت خالد العتيبي', en: 'Munira Al-Otaibi' } }
 const CONTENT_OFFICER = { id: 40, roles: ['content_officer'], name: 'Content Officer' }
@@ -176,7 +177,7 @@ test('sms providers, Saudi test numbers, test send and the Msegat template check
   await page.goto('/admin/settings/sms')
   await button(page, /Load senders|تحميل أسماء المرسلين/).click()
   await expect(card(page, 1)).toContainText(/2 active senders loaded|حُمّل 2/)
-  await page.locator('select[name="providers.taqnyat.senderName"]').selectOption('MoashirInfo')
+  await chooseNamed(page, 'providers.taqnyat.senderName', 'MoashirInfo')
   await page.locator('.phone-list__input').fill('+201000000003')
   await button(page, /Add number|إضافة الرقم/).click()
   await expect(page.locator('.phone-list')).toContainText(/Saudi mobile number|رقم جوال سعوديًا/)
@@ -248,8 +249,9 @@ test('an ai provider needs a key, a model and its own data transfer acknowledgem
   await expectNoSecretAnywhere(page, FAKE.aiKey)
 
   await button(openai, /Load models|تحميل النماذج/).click()
-  await expect(page.locator('select[name="providers.openai.model"] option')).toHaveCount(4)
-  await page.locator('select[name="providers.openai.model"]').selectOption('gpt-4.1-mini')
+  await namedSelect(page, 'providers.openai.model').click()
+  await expect(page.locator('[role="listbox"] [role="option"]')).toHaveCount(3)
+  await openOption(page, 'gpt-4.1-mini').click()
   await radio(page, 'activeProvider', 'openai').click()
   await saveButton(page).click()
   await expect(card(page, 0)).toContainText(/Tick the data transfer acknowledgement|حدّد الإقرار بنقل البيانات/)

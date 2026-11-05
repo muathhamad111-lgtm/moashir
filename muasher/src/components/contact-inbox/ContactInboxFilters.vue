@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import BaseDatePicker from '@/components/form/BaseDatePicker.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
@@ -71,22 +71,30 @@ function update(key, value) {
       @update:search="emit('update:search', $event)"
     >
       <template #filters>
-        <DropdownList
+        <AppSelect
+          variant="filter"
+          :label="t('contactInbox.columns.status')"
           :model-value="filters.status"
           :options="statusOptions"
           @update:model-value="update('status', $event)"
         />
-        <DropdownList
+        <AppSelect
+          variant="filter"
+          :label="t('contactInbox.columns.enquiryType')"
           :model-value="filters.enquiryType"
           :options="typeOptions"
           @update:model-value="update('enquiryType', $event)"
         />
-        <DropdownList
+        <AppSelect
+          variant="filter"
+          :label="t('contactInbox.columns.sender')"
           :model-value="filters.linked"
           :options="linkedOptions"
           @update:model-value="update('linked', $event)"
         />
-        <DropdownList
+        <AppSelect
+          variant="filter"
+          :label="t('contactInbox.columns.assignee')"
           :model-value="filters.assignee"
           :options="assigneeOptions"
           @update:model-value="update('assignee', $event)"

@@ -9,7 +9,7 @@ function mountModal(props = {}) {
     attachTo: document.body,
     global: {
       ...createTestGlobals({ locale: 'en' }),
-      stubs: { teleport: true, SearchSelect: true },
+      stubs: { teleport: true },
     },
   })
 }

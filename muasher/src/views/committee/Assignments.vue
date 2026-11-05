@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
 import Card from '@/components/ui/Card.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import AssessmentNotice from '@/components/assessment/AssessmentNotice.vue'
 import CommitteeAssignmentTable from '@/components/committee/CommitteeAssignmentTable.vue'
 import { useCommitteeAssignments } from '@/composables/useCommitteeAssignments'
@@ -54,16 +54,18 @@ const overdue = computed(() => items.value.filter((row) => row.isOverdue).length
     <Card>
       <div class="toolbar">
         <div class="toolbar__filters">
-          <DropdownList
+          <AppSelect
+            variant="filter"
             :model-value="filters.filters.cycleId"
             :options="cycleOptions"
-            :placeholder="t('award.work.filters.cycle')"
+            :label="t('award.work.filters.cycle')"
             @update:model-value="setFilter('cycleId', $event)"
           />
-          <DropdownList
+          <AppSelect
+            variant="filter"
             :model-value="filters.filters.status"
             :options="statusOptions"
-            :placeholder="t('award.work.filters.status')"
+            :label="t('award.work.filters.status')"
             @update:model-value="setFilter('status', $event)"
           />
         </div>

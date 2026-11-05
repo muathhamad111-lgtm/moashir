@@ -134,7 +134,7 @@ test('unified workspace: module groups, no role switcher, profile lists roles an
   await expect(page.getByRole('combobox', { name: /role|دور/i })).toHaveCount(0)
 
   await page.locator('.navbar__avatar').click()
-  await page.locator('.actions-dropdown__item').first().click()
+  await page.getByRole('menuitem').first().click()
   await expect(page).toHaveURL(/\/account$/)
   await expect(page.locator('.account-page__role-list .badge')).toHaveCount(2)
   await expect(page.locator('.permission-module').first()).toBeVisible()
@@ -179,7 +179,7 @@ test('branding: System Administrator picks an accent, the back office applies it
   await page.screenshot({ path: `${SHOTS}/branding-${suffix(testInfo)}.png`, fullPage: true })
 
   await page.locator('.navbar__avatar').click()
-  await page.locator('.actions-dropdown__item.is-danger').click()
+  await page.locator('[role="menuitem"].is-danger').click()
   await expect(page).toHaveURL(/\/auth\/login/)
   await expect(page.locator('html')).not.toHaveAttribute('data-accent', /.+/)
   expect(errors).toEqual([])
@@ -231,7 +231,7 @@ test('maintenance page blocks visitors but keeps sign-in reachable (Q-96)', asyn
   await expect(page.locator('.publication-control--off')).toBeVisible()
 
   await page.locator('.navbar__avatar').click()
-  await page.locator('.actions-dropdown__item.is-danger').click()
+  await page.locator('[role="menuitem"].is-danger').click()
   await expect(page).toHaveURL(/\/auth\/login/)
 
   await page.locator('.auth-layout__link').click()

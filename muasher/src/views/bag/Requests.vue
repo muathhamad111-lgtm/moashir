@@ -6,10 +6,10 @@ import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
-import ActionsDropdown from '@/components/data-list/ActionsDropdown.vue'
+import AppMenu from '@/components/ui/AppMenu.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import Badge from '@/components/ui/Badge.vue'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import AssignEvaluatorModal from '@/components/bag/AssignEvaluatorModal.vue'
 import { useTable } from '@/composables/useTable'
 import { useFilters } from '@/composables/useFilters'
@@ -160,10 +160,11 @@ function onAction(key, row) {
       :search-placeholder="t('bagRequests.index.searchPlaceholder')"
     >
       <template #filters>
-        <DropdownList
+        <AppSelect
+          variant="filter"
           :model-value="filters.filters.status"
           :options="statusFilterOptions"
-          :placeholder="t('bagRequests.filters.status')"
+          :label="t('bagRequests.filters.status')"
           @update:model-value="filters.setFilter('status', $event)"
         />
       </template>
@@ -205,9 +206,10 @@ function onAction(key, row) {
         <span v-else class="bag-requests__unassigned">{{ t('bagRequests.unassigned') }}</span>
       </template>
       <template #cell-actions="{ item }">
-        <ActionsDropdown
+        <AppMenu
           v-if="rowActions(item).length"
           :actions="rowActions(item)"
+          :label="t('components.actions.menuFor', { name: localized(item.entityName) })"
           @select="onAction($event, item)"
         />
         <span v-else class="bag-requests__no-actions">—</span>
