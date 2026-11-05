@@ -85,11 +85,7 @@ const accreditedIntroPage = {
       type: 'pricing_box',
       order: 3,
       icon: 'fa-solid fa-receipt',
-      title: { ar: 'الرسوم والضريبة', en: 'Fees and tax' },
-      description: {
-        ar: 'تظهر الرسوم قبل ضريبة القيمة المضافة ثم مبلغ الضريبة ثم الإجمالي، ويظهر الإجمالي النهائي قبل الدفع مباشرة.',
-        en: 'The fee is shown before VAT, then the VAT amount, then the total; the final total is shown right before payment.',
-      },
+      title: { ar: 'أكمل الدفع', en: 'Complete payment' },
       ctaLabel: { ar: 'ادفع وابدأ التقييم', en: 'Pay and start the assessment' },
       ctaUrl: '/assessment/accredited/pay',
     }),

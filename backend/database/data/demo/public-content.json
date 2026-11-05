@@ -668,12 +668,8 @@
           "type": "pricing_box",
           "icon": "fa-solid fa-receipt",
           "title": {
-            "ar": "الرسوم وآلية الدفع",
-            "en": "Fees and payment"
-          },
-          "description": {
-            "ar": "تظهر الرسوم قبل ضريبة القيمة المضافة ثم مبلغ الضريبة ثم الإجمالي، ويتم الدفع إلكترونيًا عبر بوابة آمنة، ويصدر إيصال دفع بعد نجاح العملية.",
-            "en": "The fee is shown before VAT, then the VAT amount, then the total. Payment is made online through a secure gateway and a payment receipt is issued after a successful payment."
+            "ar": "أكمل الدفع",
+            "en": "Complete payment"
           },
           "cta_label": {
             "ar": "ادفع وابدأ التقييم",

@@ -3393,8 +3393,7 @@
       "howItWorksTitle": "How the accredited assessment works",
       "benefitsTitle": "Key benefits of the accredited assessment",
       "evidenceNote": "Evidence is uploaded at the sub-criterion level. Guiding points are shown as guidance; their attachment types are uploaded under their sub-criterion.",
-      "feesTitle": "Accredited assessment fees",
-      "feesDescription": "A one-time fee for a full documented assessment by an accredited assessor.",
+      "payTitle": "Complete payment",
       "actions": {
         "login": "Sign in to start",
         "pay": "Pay and start",

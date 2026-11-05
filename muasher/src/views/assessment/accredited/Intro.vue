@@ -128,8 +128,8 @@ const DEMO_MODULES = [MOCK_MODULES.CMS]
 
       <aside class="accredited-intro__aside">
         <AccreditedPriceCard
-          :title="feesCopy?.title || t('accredited.intro.feesTitle')"
-          :description="feesCopy?.body || t('accredited.intro.feesDescription')"
+          :title="feesCopy?.title || t('accredited.intro.payTitle')"
+          :description="feesCopy?.body"
           :price="price"
           :status="priceStatus"
         >
