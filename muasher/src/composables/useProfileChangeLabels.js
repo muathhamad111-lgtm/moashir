@@ -28,7 +28,8 @@ export function useProfileChangeLabels({ regionOptions, cityOptionsFor, regionId
   }
 
   function valueLabel(field, value, side) {
-    if (value === '' || value === null || value === undefined) return t('entities.display.notProvided')
+    if (value === '' || value === null || value === undefined)
+      return t('entities.display.notProvided')
     if (ENUM_GROUPS[field]) return t(`entities.enums.${ENUM_GROUPS[field]}.${value}`)
     if (field === 'regionId') return labelOf(regionOptions.value, value)
     if (field === 'cityId') return labelOf(cityOptionsFor(regionIdOf(side)), value)

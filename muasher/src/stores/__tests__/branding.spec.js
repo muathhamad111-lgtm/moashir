@@ -20,7 +20,13 @@ describe('branding store', () => {
   })
 
   it('loads the shared theme once', async () => {
-    brandingService.get.mockResolvedValue({ data: { accentToken: 'coral', logos: { dark: 'blob:on-dark', light: 'blob:on-light' }, palette: [] } })
+    brandingService.get.mockResolvedValue({
+      data: {
+        accentToken: 'coral',
+        logos: { dark: 'blob:on-dark', light: 'blob:on-light' },
+        palette: [],
+      },
+    })
     const store = useBrandingStore()
     await store.ensureLoaded()
     await store.ensureLoaded()

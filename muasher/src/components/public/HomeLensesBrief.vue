@@ -10,9 +10,7 @@ const props = defineProps({
 
 const router = useRouter()
 
-const lenses = computed(() =>
-  [...(props.section.items ?? [])].sort((a, b) => a.order - b.order),
-)
+const lenses = computed(() => [...(props.section.items ?? [])].sort((a, b) => a.order - b.order))
 
 const ruleNote = computed(() => props.section.meta?.rule ?? null)
 
@@ -41,11 +39,7 @@ function goToCta() {
       </header>
 
       <ul class="home-lenses__grid">
-        <li
-          v-for="lens in lenses"
-          :key="lens.id"
-          class="home-lens"
-        >
+        <li v-for="lens in lenses" :key="lens.id" class="home-lens">
           <span class="home-lens__icon" aria-hidden="true">
             <i :class="lens.icon || 'fa-solid fa-chart-pie'"></i>
           </span>
@@ -64,11 +58,7 @@ function goToCta() {
       </p>
 
       <div v-if="section.ctaLabel" class="home-lenses__cta">
-        <BaseButton
-          variant="primary"
-          icon="fa-solid fa-arrow-right"
-          @click="goToCta"
-        >
+        <BaseButton variant="primary" icon="fa-solid fa-arrow-right" @click="goToCta">
           {{ localized(section.ctaLabel) }}
         </BaseButton>
       </div>

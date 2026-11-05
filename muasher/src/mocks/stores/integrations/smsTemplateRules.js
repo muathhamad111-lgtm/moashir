@@ -19,7 +19,8 @@ function fitsOneSegment(text) {
 export function templateRuleError(definition, body) {
   const used = usedPlaceholders(body)
   if (used.some((name) => !definition.placeholders.includes(name))) return 'unknown_placeholder'
-  if (definition.requiredPlaceholders.some((name) => !used.includes(name))) return 'missing_placeholder'
+  if (definition.requiredPlaceholders.some((name) => !used.includes(name)))
+    return 'missing_placeholder'
   if (definition.singleSegment && !fitsOneSegment(filled(body))) return 'too_long'
   return null
 }

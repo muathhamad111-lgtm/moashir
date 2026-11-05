@@ -13,14 +13,23 @@ import {
   registerPurchaseEligibilityCheck,
 } from '../finance/paymentHooks'
 import { STATES, isRefundable } from './accreditedStates'
-import { activeAssignment, nowIso, openAccreditedOf, openCompletionOf, recordOfPayment } from './accreditedRecords'
+import {
+  activeAssignment,
+  nowIso,
+  openAccreditedOf,
+  openCompletionOf,
+  recordOfPayment,
+} from './accreditedRecords'
 
 const ACCREDITED = 'accredited'
 const duplicatePayments = new Set()
 
 function paidAccreditedPayments(entityId = null) {
   return financeState().payments.filter(
-    (payment) => payment.purpose === ACCREDITED && payment.status === 'paid' && (entityId === null || payment.entityId === entityId),
+    (payment) =>
+      payment.purpose === ACCREDITED &&
+      payment.status === 'paid' &&
+      (entityId === null || payment.entityId === entityId),
   )
 }
 
@@ -84,7 +93,8 @@ function assertMayBuyAccredited(entity, purpose) {
   if (purpose !== ACCREDITED) return
   const open = openAccreditedOf(entity.id)
   if (open) throw assessmentReject.requestOpen(open.id)
-  if (paidAccreditedPayments(entity.id).some((payment) => !recordOfPayment(payment.id))) throw assessmentReject.paymentBeingProcessed()
+  if (paidAccreditedPayments(entity.id).some((payment) => !recordOfPayment(payment.id)))
+    throw assessmentReject.paymentBeingProcessed()
 }
 
 function closeOnRefund(payment, refund) {
@@ -95,10 +105,21 @@ function closeOnRefund(payment, refund) {
   if (active) Object.assign(active, { status: 'ended', endedAt: at, endReason: 'refunded' })
   const completion = openCompletionOf(record)
   if (completion) Object.assign(completion, { status: 'cancelled', resolvedAt: at })
-  record.transitions.push(transition(record.status, STATES.REFUNDED, 'refund', at, ACTORS.STAFF, refund.recordedBy?.id ?? null))
+  record.transitions.push(
+    transition(
+      record.status,
+      STATES.REFUNDED,
+      'refund',
+      at,
+      ACTORS.STAFF,
+      refund.recordedBy?.id ?? null,
+    ),
+  )
   Object.assign(record, { status: STATES.REFUNDED, refundedAt: at, updatedAt: at })
 }
 
-registerPaymentPaidListener((payment) => dispatchQueuedJob(() => openPaidAccreditedRequest(payment)))
+registerPaymentPaidListener((payment) =>
+  dispatchQueuedJob(() => openPaidAccreditedRequest(payment)),
+)
 registerPaymentRefundedListener(closeOnRefund)
 registerPurchaseEligibilityCheck(assertMayBuyAccredited)

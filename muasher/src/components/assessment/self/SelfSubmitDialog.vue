@@ -47,10 +47,19 @@ const { t } = useI18n()
       </ul>
     </div>
     <template #footer>
-      <BaseButton variant="secondary" :disabled="submitting" @click="emit('update:modelValue', false)">
+      <BaseButton
+        variant="secondary"
+        :disabled="submitting"
+        @click="emit('update:modelValue', false)"
+      >
         {{ t('actions.cancel') }}
       </BaseButton>
-      <BaseButton variant="primary" icon="fa-solid fa-paper-plane" :loading="submitting" @click="emit('confirm')">
+      <BaseButton
+        variant="primary"
+        icon="fa-solid fa-paper-plane"
+        :loading="submitting"
+        @click="emit('confirm')"
+      >
         {{ t('assessment.self.confirm.confirm') }}
       </BaseButton>
     </template>

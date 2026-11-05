@@ -32,7 +32,10 @@ const showEligibility = computed(() => Boolean(props.current?.cycle) && !props.c
       <template v-if="current.cycle">
         <div v-if="showEligibility" class="advanced-entity__eligibility">
           <h3 class="advanced-entity__subtitle">{{ t('advanced.eligibility.title') }}</h3>
-          <AdvancedEligibilityList :conditions="current.eligibility.conditions" :window-open="current.eligibility.windowOpen" />
+          <AdvancedEligibilityList
+            :conditions="current.eligibility.conditions"
+            :window-open="current.eligibility.windowOpen"
+          />
         </div>
         <AdvancedRequestCard
           :request="current.request"

@@ -1,6 +1,11 @@
 import { http } from '../contract/http'
 import { envelope, noContent } from '../contract/responses'
-import { assessmentReject, assessmentRoute, fieldMessage, readJson } from '../stores/assessments/assessmentRejection'
+import {
+  assessmentReject,
+  assessmentRoute,
+  fieldMessage,
+  readJson,
+} from '../stores/assessments/assessmentRejection'
 import { signedInActor } from '../stores/assessments/assessmentAccess'
 import { findAssessment } from '../stores/assessments/assessmentsStore'
 import { assessmentResource } from '../stores/assessments/selfSerializers'
@@ -17,9 +22,19 @@ import {
 } from '../stores/accredited/accreditedAccess'
 import { accreditedOf, boundSubsOf } from '../stores/accredited/accreditedRecords'
 import { isAccreditedOpen } from '../stores/accredited/accreditedStates'
-import { bundleResource, cvResource, evidenceItem, evidenceList, visibleEvidence } from '../stores/accredited/accreditedSerializers'
+import {
+  bundleResource,
+  cvResource,
+  evidenceItem,
+  evidenceList,
+  visibleEvidence,
+} from '../stores/accredited/accreditedSerializers'
 import { saveAccreditedCv } from '../stores/accredited/entityWorkflow'
-import { evidenceDownload, removeEvidence, uploadEvidence } from '../stores/accredited/evidenceFiles'
+import {
+  evidenceDownload,
+  removeEvidence,
+  uploadEvidence,
+} from '../stores/accredited/evidenceFiles'
 import { bundleDownload, bundleOf, requestBundle } from '../stores/accredited/evidenceBundles'
 import { isPositiveInteger } from '../stores/accredited/accreditedValidation'
 import { runAccreditedSchedule } from '../stores/accredited/scheduler'
@@ -49,9 +64,19 @@ function uuidRoute(key, resolve) {
 function awaitingPaymentOf(entityId) {
   expireDueOrders()
   const order = financeState().payments.find(
-    (payment) => payment.entityId === entityId && payment.purpose === 'accredited' && OPEN_ORDER.includes(payment.status),
+    (payment) =>
+      payment.entityId === entityId &&
+      payment.purpose === 'accredited' &&
+      OPEN_ORDER.includes(payment.status),
   )
-  return order ? { paymentId: order.id, reference: order.reference, status: order.status, expiresAt: order.expiresAt } : null
+  return order
+    ? {
+        paymentId: order.id,
+        reference: order.reference,
+        status: order.status,
+        expiresAt: order.expiresAt,
+      }
+    : null
 }
 
 function latestClosedOf(records) {
@@ -75,9 +100,14 @@ function currentResource(user) {
 
 function evidenceFilterOf(request) {
   const query = new URL(request.url).searchParams
-  const unknown = [...query.keys()].some((key) => key.startsWith('filter[') && key !== 'filter[subCriterionId]')
+  const unknown = [...query.keys()].some(
+    (key) => key.startsWith('filter[') && key !== 'filter[subCriterionId]',
+  )
   const subId = query.get('filter[subCriterionId]')
-  if (unknown || (subId && !isPositiveInteger(subId))) throw assessmentReject.validation({ filter: [fieldMessage('validation.invalid', {}, 'filter')] })
+  if (unknown || (subId && !isPositiveInteger(subId)))
+    throw assessmentReject.validation({
+      filter: [fieldMessage('validation.invalid', {}, 'filter')],
+    })
   return subId ? Number(subId) : null
 }
 
@@ -115,7 +145,9 @@ export const accreditedHandlers = [
       authorizeViewEvidence(user, record)
       const subId = evidenceFilterOf(request)
       const subs = boundSubsOf(record)
-      const rows = visibleEvidence(record, user).filter((row) => subId === null || subs.find((sub) => sub.code === row.subCode)?.id === subId)
+      const rows = visibleEvidence(record, user).filter(
+        (row) => subId === null || subs.find((sub) => sub.code === row.subCode)?.id === subId,
+      )
       return envelope(evidenceList(rows, record))
     }),
   ),

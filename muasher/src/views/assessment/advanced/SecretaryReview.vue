@@ -83,7 +83,10 @@ function backToApprovals() {
     <header class="secretary-review__header">
       <div>
         <button type="button" class="secretary-review__back" @click="backToApprovals">
-          <i class="fa-solid fa-arrow-right-long secretary-review__back-icon" aria-hidden="true"></i>
+          <i
+            class="fa-solid fa-arrow-right-long secretary-review__back-icon"
+            aria-hidden="true"
+          ></i>
           {{ t('advanced.secretary.review.backToApprovals') }}
         </button>
         <p class="secretary-review__eyebrow">{{ t('advanced.title') }}</p>
@@ -99,7 +102,9 @@ function backToApprovals() {
 
     <div class="secretary-review__layout">
       <div class="secretary-review__entities">
-        <h2 class="secretary-review__section-title">{{ t('advanced.secretary.review.entities') }}</h2>
+        <h2 class="secretary-review__section-title">
+          {{ t('advanced.secretary.review.entities') }}
+        </h2>
         <Card>
           <DataTable
             :columns="entityColumns"
@@ -116,7 +121,12 @@ function backToApprovals() {
             </template>
             <template #cell-committee-assessors="{ item }">
               <span class="secretary-review__committee-assessors">
-                {{ t('advanced.secretary.review.completedOf', { completed: item.completedCount, total: item.committeeAssessorCount }) }}
+                {{
+                  t('advanced.secretary.review.completedOf', {
+                    completed: item.completedCount,
+                    total: item.committeeAssessorCount,
+                  })
+                }}
               </span>
             </template>
             <template #cell-average="{ item }">
@@ -140,7 +150,9 @@ function backToApprovals() {
       </div>
 
       <div class="secretary-review__committee-assessors-panel">
-        <h2 class="secretary-review__section-title">{{ t('advanced.secretary.review.committeeAssessors') }}</h2>
+        <h2 class="secretary-review__section-title">
+          {{ t('advanced.secretary.review.committeeAssessors') }}
+        </h2>
         <Card>
           <div v-if="!selected" class="secretary-review__hint">
             <i class="fa-solid fa-hand-pointer" aria-hidden="true"></i>
@@ -150,17 +162,15 @@ function backToApprovals() {
           <template v-else>
             <div class="secretary-review__selected">
               <div>
-                <h3 class="secretary-review__selected-name">{{ localized(selected.entityName) }}</h3>
+                <h3 class="secretary-review__selected-name">
+                  {{ localized(selected.entityName) }}
+                </h3>
                 <p v-if="entityMeta" class="secretary-review__selected-meta">
-                  {{ t('advanced.secretary.review.average') }}: {{ averageLabel(entityMeta.average) }}
+                  {{ t('advanced.secretary.review.average') }}:
+                  {{ averageLabel(entityMeta.average) }}
                 </p>
               </div>
-              <BaseButton
-                variant="ghost"
-                size="sm"
-                icon="fa-solid fa-xmark"
-                @click="clearEntity"
-              >
+              <BaseButton variant="ghost" size="sm" icon="fa-solid fa-xmark" @click="clearEntity">
                 {{ t('advanced.secretary.review.close') }}
               </BaseButton>
             </div>
@@ -222,12 +232,19 @@ function backToApprovals() {
     <BaseModal
       v-model="detailOpen"
       size="lg"
-      :title="detail
-        ? t('advanced.secretary.review.detailTitle', { name: localized(detail.committeeAssessorName), entity: localized(detail.entityName) })
-        : t('advanced.secretary.review.viewDetail')"
+      :title="
+        detail
+          ? t('advanced.secretary.review.detailTitle', {
+              name: localized(detail.committeeAssessorName),
+              entity: localized(detail.entityName),
+            })
+          : t('advanced.secretary.review.viewDetail')
+      "
     >
       <div class="secretary-review__detail">
-        <p class="secretary-review__detail-sub">{{ t('advanced.secretary.review.detailSubtitle') }}</p>
+        <p class="secretary-review__detail-sub">
+          {{ t('advanced.secretary.review.detailSubtitle') }}
+        </p>
         <div v-if="detailStatus === 'loading'" class="secretary-review__loading">
           <Skeleton variant="block" :count="4" />
         </div>

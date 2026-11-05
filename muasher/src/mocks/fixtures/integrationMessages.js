@@ -1,10 +1,19 @@
 export const integrationMessages = {
   unauthenticated: { ar: 'يرجى تسجيل الدخول للمتابعة.', en: 'Please sign in to continue.' },
-  forbidden: { ar: 'ليست لديك صلاحية لتنفيذ هذا الإجراء.', en: 'You do not have permission to perform this action.' },
+  forbidden: {
+    ar: 'ليست لديك صلاحية لتنفيذ هذا الإجراء.',
+    en: 'You do not have permission to perform this action.',
+  },
   not_found: { ar: 'المورد المطلوب غير موجود.', en: 'The requested resource was not found.' },
   validation_failed: { ar: 'البيانات المرسلة غير صالحة.', en: 'The submitted data is invalid.' },
-  reason_required: { ar: 'يجب كتابة سبب لهذا الإجراء.', en: 'A reason is required for this action.' },
-  rate_limited: { ar: 'طلبات كثيرة. يرجى المحاولة لاحقًا.', en: 'Too many requests. Please try again later.' },
+  reason_required: {
+    ar: 'يجب كتابة سبب لهذا الإجراء.',
+    en: 'A reason is required for this action.',
+  },
+  rate_limited: {
+    ar: 'طلبات كثيرة. يرجى المحاولة لاحقًا.',
+    en: 'Too many requests. Please try again later.',
+  },
   provider_error: {
     ar: 'رفض مزوّد الخدمة الطلب أو تعذّر الوصول إليه. راجع الإعدادات ثم أعد المحاولة.',
     en: 'The provider rejected the request or could not be reached. Review the settings and try again.',
@@ -64,14 +73,26 @@ export const integrationMessages = {
   'field.required': { ar: 'هذا الحقل مطلوب.', en: 'This field is required.' },
   'field.invalid': { ar: 'القيمة غير صالحة.', en: 'The value is not valid.' },
   'field.prefix': { ar: 'يجب أن تبدأ القيمة بـ :prefix', en: 'The value must start with :prefix.' },
-  'field.length': { ar: 'يجب أن يكون الطول بين :min و :max حرفًا.', en: 'The length must be between :min and :max characters.' },
+  'field.length': {
+    ar: 'يجب أن يكون الطول بين :min و :max حرفًا.',
+    en: 'The length must be between :min and :max characters.',
+  },
   'field.saudi_mobile': {
     ar: 'استخدم رقم جوال سعوديًا بالصيغة الدولية مثل +9665XXXXXXXX.',
     en: 'Use a Saudi mobile number in the international format +9665XXXXXXXX.',
   },
-  'field.reason_min': { ar: 'يجب ألا يقل السبب عن :min أحرف.', en: 'The reason must be at least :min characters.' },
-  'field.file_type': { ar: 'يجب أن يكون الملف نصيًا عاديًا.', en: 'The file must be a plain text file.' },
-  'field.file_size': { ar: 'يجب ألا يتجاوز حجم الملف :max كيلوبايت.', en: 'The file must not be larger than :max kilobytes.' },
+  'field.reason_min': {
+    ar: 'يجب ألا يقل السبب عن :min أحرف.',
+    en: 'The reason must be at least :min characters.',
+  },
+  'field.file_type': {
+    ar: 'يجب أن يكون الملف نصيًا عاديًا.',
+    en: 'The file must be a plain text file.',
+  },
+  'field.file_size': {
+    ar: 'يجب ألا يتجاوز حجم الملف :max كيلوبايت.',
+    en: 'The file must not be larger than :max kilobytes.',
+  },
   'sms_template.unknown_placeholder': {
     ar: 'يستخدم النص متغيرًا غير مسموح به لهذه الرسالة.',
     en: 'The text uses a placeholder that is not allowed for this message.',

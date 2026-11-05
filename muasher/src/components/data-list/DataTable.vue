@@ -29,7 +29,12 @@ function keyOf(item, index) {
 
 <template>
   <div class="table-wrap">
-    <table v-if="status === 'loading' || status === 'success'" class="table" :class="{ 'table--loading': status === 'loading' }" :aria-busy="status === 'loading' || undefined">
+    <table
+      v-if="status === 'loading' || status === 'success'"
+      class="table"
+      :class="{ 'table--loading': status === 'loading' }"
+      :aria-busy="status === 'loading' || undefined"
+    >
       <thead class="table__head">
         <tr>
           <th v-for="column in columns" :key="column.key" class="table__cell" scope="col">

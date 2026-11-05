@@ -18,7 +18,11 @@ export function useEmailChangeApprovals() {
   const { confirm } = useConfirm()
   const filters = useFilters({ status: S.AWAITING_APPROVAL })
   const paginator = usePagination({ perPage: 10 })
-  const table = useTable({ fetcher: (params) => entityEmailChangesService.list(params), filters, pagination: paginator })
+  const table = useTable({
+    fetcher: (params) => entityEmailChangesService.list(params),
+    filters,
+    pagination: paginator,
+  })
   const rejection = reactive({ open: false, change: null })
 
   const statusOptions = computed(() => [
@@ -33,7 +37,10 @@ export function useEmailChangeApprovals() {
   async function approve(change) {
     const accepted = await confirm({
       title: t('entities.emailChanges.approveTitle'),
-      message: t('entities.emailChanges.approveMessage', { name: entityName(change), email: change.newEmail }),
+      message: t('entities.emailChanges.approveMessage', {
+        name: entityName(change),
+        email: change.newEmail,
+      }),
       confirmLabel: t('entities.emailChanges.approve'),
     })
     if (!accepted) return
@@ -60,5 +67,16 @@ export function useEmailChangeApprovals() {
     await table.load()
   }
 
-  return { ...table, filters, paginator, statusOptions, rejection, entityName, approve, startReject, reject, afterReject }
+  return {
+    ...table,
+    filters,
+    paginator,
+    statusOptions,
+    rejection,
+    entityName,
+    approve,
+    startReject,
+    reject,
+    afterReject,
+  }
 }

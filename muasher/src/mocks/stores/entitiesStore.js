@@ -63,7 +63,14 @@ export function findEntity(id) {
 }
 
 function sameEmail(left, right) {
-  return String(left ?? '').trim().toLowerCase() === String(right ?? '').trim().toLowerCase()
+  return (
+    String(left ?? '')
+      .trim()
+      .toLowerCase() ===
+    String(right ?? '')
+      .trim()
+      .toLowerCase()
+  )
 }
 
 export function findEntityByOwnerEmail(email) {
@@ -116,7 +123,12 @@ export function markVerified(entity) {
 export function anonymize(entity) {
   const pseudonym = `ERASED-${String(entity.id).padStart(6, '0')}`
   entity.name = { ar: pseudonym, en: pseudonym }
-  entity.owner = { id: entity.owner.id, name: pseudonym, email: `${pseudonym.toLowerCase()}@${ANONYMIZED_DOMAIN}`, phone: null }
+  entity.owner = {
+    id: entity.owner.id,
+    name: pseudonym,
+    email: `${pseudonym.toLowerCase()}@${ANONYMIZED_DOMAIN}`,
+    phone: null,
+  }
   entity.marketingConsentAt = null
   entity.deletionReason = null
   entity.deactivationReason = null

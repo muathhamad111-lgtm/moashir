@@ -60,14 +60,24 @@ describe('award committee pipeline (mock)', () => {
     expect(blocked.status).toBe(422)
     expect(blocked.body.errors.status).toBe('committee-assessors-incomplete')
 
-    await retrySend('PUT', `${C}/committee-assessors/${COMMITTEE_ASSESSOR_NOT_STARTED}/score/${QUALIFIED_ASSESSMENT_B}/sub`, {
-      subCriterionId: 101,
-      ratio: 0.8,
-    })
-    await retrySend('POST', `${C}/committee-assessors/${COMMITTEE_ASSESSOR_NOT_STARTED}/score/${QUALIFIED_ASSESSMENT_B}/complete`)
+    await retrySend(
+      'PUT',
+      `${C}/committee-assessors/${COMMITTEE_ASSESSOR_NOT_STARTED}/score/${QUALIFIED_ASSESSMENT_B}/sub`,
+      {
+        subCriterionId: 101,
+        ratio: 0.8,
+      },
+    )
+    await retrySend(
+      'POST',
+      `${C}/committee-assessors/${COMMITTEE_ASSESSOR_NOT_STARTED}/score/${QUALIFIED_ASSESSMENT_B}/complete`,
+    )
     const still = await retrySend('POST', `${C}/averages/${QUALIFIED_ASSESSMENT_B}/compute`)
     expect(still.status).toBe(422)
-    await retrySend('POST', `${C}/committee-assessors/jur-9403/score/${QUALIFIED_ASSESSMENT_B}/complete`)
+    await retrySend(
+      'POST',
+      `${C}/committee-assessors/jur-9403/score/${QUALIFIED_ASSESSMENT_B}/complete`,
+    )
     const ok = await retrySend('POST', `${C}/averages/${QUALIFIED_ASSESSMENT_B}/compute`)
     expect(ok.ok).toBe(true)
     expect(ok.body.data.average).toBeGreaterThan(0)
@@ -90,21 +100,30 @@ describe('award committee pipeline (mock)', () => {
 
   it('returns an average to ALL committee assessors with a general note, reverting their completed status', async () => {
     const returned = await retrySend('POST', `${C}/secretary/${QUALIFIED_ASSESSMENT_B}/return`, {
-      generalNote: { ar: 'يرجى إعادة النظر في المعيار الأول.', en: 'Please revisit the first criterion.' },
+      generalNote: {
+        ar: 'يرجى إعادة النظر في المعيار الأول.',
+        en: 'Please revisit the first criterion.',
+      },
     })
     expect(returned.ok).toBe(true)
     expect(returned.body.data.secretaryStatus).toBe('returned')
     expect(returned.body.data.generalNote.en).toContain('first criterion')
 
-    const scoreView = await retryGet(`${C}/committee-assessors/${COMMITTEE_ASSESSOR_NOT_STARTED}/score/${QUALIFIED_ASSESSMENT_B}`)
+    const scoreView = await retryGet(
+      `${C}/committee-assessors/${COMMITTEE_ASSESSOR_NOT_STARTED}/score/${QUALIFIED_ASSESSMENT_B}`,
+    )
     expect(scoreView.body.data.record.status).toBe('in-progress')
   })
 })
 
 describe('committee assessor blindness (Note 12)', () => {
-  it('a committee assessor score endpoint returns ONLY that committee assessor\'s own record — no other committeeAssessor\'s scores or notes', async () => {
-    const aView = await retryGet(`${C}/committee-assessors/${COMMITTEE_ASSESSOR_COMPLETED_A}/score/${QUALIFIED_ASSESSMENT_A}`)
-    const bView = await retryGet(`${C}/committee-assessors/${COMMITTEE_ASSESSOR_COMPLETED_B}/score/${QUALIFIED_ASSESSMENT_A}`)
+  it("a committee assessor score endpoint returns ONLY that committee assessor's own record — no other committeeAssessor's scores or notes", async () => {
+    const aView = await retryGet(
+      `${C}/committee-assessors/${COMMITTEE_ASSESSOR_COMPLETED_A}/score/${QUALIFIED_ASSESSMENT_A}`,
+    )
+    const bView = await retryGet(
+      `${C}/committee-assessors/${COMMITTEE_ASSESSOR_COMPLETED_B}/score/${QUALIFIED_ASSESSMENT_A}`,
+    )
 
     expect(aView.body.data.record).toBeTruthy()
     expect(bView.body.data.record).toBeTruthy()
@@ -112,12 +131,20 @@ describe('committee assessor blindness (Note 12)', () => {
     expect(aView.body.data).not.toHaveProperty('otherScores')
 
     const marker = `blind-marker-${Date.now()}`
-    await retrySend('PUT', `${C}/committee-assessors/${COMMITTEE_ASSESSOR_COMPLETED_A}/score/${QUALIFIED_ASSESSMENT_A}/notes`, {
-      subCriterionId: 101,
-      text: marker,
-    })
-    const aAfter = await retryGet(`${C}/committee-assessors/${COMMITTEE_ASSESSOR_COMPLETED_A}/score/${QUALIFIED_ASSESSMENT_A}`)
-    const bAfter = await retryGet(`${C}/committee-assessors/${COMMITTEE_ASSESSOR_COMPLETED_B}/score/${QUALIFIED_ASSESSMENT_A}`)
+    await retrySend(
+      'PUT',
+      `${C}/committee-assessors/${COMMITTEE_ASSESSOR_COMPLETED_A}/score/${QUALIFIED_ASSESSMENT_A}/notes`,
+      {
+        subCriterionId: 101,
+        text: marker,
+      },
+    )
+    const aAfter = await retryGet(
+      `${C}/committee-assessors/${COMMITTEE_ASSESSOR_COMPLETED_A}/score/${QUALIFIED_ASSESSMENT_A}`,
+    )
+    const bAfter = await retryGet(
+      `${C}/committee-assessors/${COMMITTEE_ASSESSOR_COMPLETED_B}/score/${QUALIFIED_ASSESSMENT_A}`,
+    )
     const aNotes = JSON.stringify(aAfter.body.data.record.notes)
     const bBlob = JSON.stringify(bAfter.body.data)
     expect(aNotes).toContain(marker)
@@ -144,7 +171,9 @@ describe('committee management (Note 11)', () => {
     const candidate = before.body.data.available[0]
     expect(candidate).toBeTruthy()
 
-    const added = await retrySend('POST', `${C}/roster/committee-assessors`, { committeeAssessorId: candidate.id })
+    const added = await retrySend('POST', `${C}/roster/committee-assessors`, {
+      committeeAssessorId: candidate.id,
+    })
     expect(added.ok).toBe(true)
     expect(added.body.data.assignmentCount).toBe(before.body.meta.qualifiedCount)
 
@@ -168,9 +197,13 @@ describe('committee management (Note 11)', () => {
     expect(res.ok).toBe(true)
     expect(res.body.data.moved).toBe(true)
 
-    const source = await retryGet(`${C}/committee-assessors/${COMMITTEE_ASSESSOR_IN_PROGRESS}/assignments`)
+    const source = await retryGet(
+      `${C}/committee-assessors/${COMMITTEE_ASSESSOR_IN_PROGRESS}/assignments`,
+    )
     expect(source.body.data.some((a) => a.assessmentId === QUALIFIED_ASSESSMENT_B)).toBe(false)
-    const target = await retryGet(`${C}/committee-assessors/${COMMITTEE_ASSESSOR_NOT_STARTED}/score/${QUALIFIED_ASSESSMENT_B}`)
+    const target = await retryGet(
+      `${C}/committee-assessors/${COMMITTEE_ASSESSOR_NOT_STARTED}/score/${QUALIFIED_ASSESSMENT_B}`,
+    )
     expect(target.body.data.record.status).toBe('not-started')
     expect(Object.keys(target.body.data.record.scores.subs)).toHaveLength(0)
   })
@@ -209,8 +242,10 @@ describe('secretary review-all (Note 13)', () => {
     expect(res.body.meta).toHaveProperty('entityName')
   })
 
-  it('returns ONE committee assessor\'s full read-only detail (sub/point scores + per-sub notes)', async () => {
-    const res = await retryGet(`${C}/secretary/${QUALIFIED_ASSESSMENT_A}/committee-assessors/${COMMITTEE_ASSESSOR_COMPLETED_A}/detail`)
+  it("returns ONE committee assessor's full read-only detail (sub/point scores + per-sub notes)", async () => {
+    const res = await retryGet(
+      `${C}/secretary/${QUALIFIED_ASSESSMENT_A}/committee-assessors/${COMMITTEE_ASSESSOR_COMPLETED_A}/detail`,
+    )
     expect(res.ok).toBe(true)
     expect(res.body.data).toHaveProperty('tree')
     expect(res.body.data).toHaveProperty('scores')

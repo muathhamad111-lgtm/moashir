@@ -25,8 +25,30 @@ const MODES = [INTEGRATION_MODES.TEST, INTEGRATION_MODES.LIVE]
 const { t } = useI18n()
 const { can } = usePermissions()
 const payment = usePaymentIntegration()
-const { status, errorMessage, resource, fromEnvironment, form, saving, reasonOpen, load, refresh, submit, confirmReason } = payment
-const { webhook, fileUpload, fileRemoval, fileCheck, liveReady, testModeBanner, copyItems, clientSteps, cardStatus } = payment
+const {
+  status,
+  errorMessage,
+  resource,
+  fromEnvironment,
+  form,
+  saving,
+  reasonOpen,
+  load,
+  refresh,
+  submit,
+  confirmReason,
+} = payment
+const {
+  webhook,
+  fileUpload,
+  fileRemoval,
+  fileCheck,
+  liveReady,
+  testModeBanner,
+  copyItems,
+  clientSteps,
+  cardStatus,
+} = payment
 const { reasonOpen: webhookReasonOpen, confirmReason: confirmWebhookReason } = webhook
 const fileActions = { fileUpload, fileRemoval, fileCheck }
 
@@ -41,10 +63,19 @@ onMounted(load)
     :error-message="errorMessage"
     @retry="load"
   >
-    <form id="payment-integration-form" class="integration-form" novalidate @submit.prevent="submit">
+    <form
+      id="payment-integration-form"
+      class="integration-form"
+      novalidate
+      @submit.prevent="submit"
+    >
       <TestModeBanner v-if="testModeBanner" />
       <EnvironmentSourceNote v-if="fromEnvironment" />
-      <IntegrationCard :title="t('integrations.payment.gatewayTitle')" :description="t('integrations.payment.gatewayDesc')" :status="cardStatus">
+      <IntegrationCard
+        :title="t('integrations.payment.gatewayTitle')"
+        :description="t('integrations.payment.gatewayDesc')"
+        :status="cardStatus"
+      >
         <PaymentEnvironmentFields :live-ready="liveReady" />
         <div class="integration-form__pairs">
           <PaymentKeyPairCard
@@ -69,11 +100,16 @@ onMounted(load)
       </div>
 
       <ValuesToCopyPanel :items="copyItems" />
-      <ProviderStepsChecklist :title="t('integrations.payment.clientStepsTitle')" :steps="clientSteps" />
+      <ProviderStepsChecklist
+        :title="t('integrations.payment.clientStepsTitle')"
+        :steps="clientSteps"
+      />
     </form>
 
     <p v-if="can(PERMISSIONS.SETTINGS_PAYMENT_MANAGE)" class="integration-form__events-link">
-      <RouterLink :to="{ name: ROUTE_NAMES.FINANCE_PAYMENT_EVENTS }">{{ t('finance.events.openLog') }}</RouterLink>
+      <RouterLink :to="{ name: ROUTE_NAMES.FINANCE_PAYMENT_EVENTS }">{{
+        t('finance.events.openLog')
+      }}</RouterLink>
     </p>
 
     <ReasonDialog
@@ -94,7 +130,13 @@ onMounted(load)
     />
 
     <template #actions>
-      <BaseButton type="submit" form="payment-integration-form" variant="primary" :loading="saving" icon="fa-solid fa-floppy-disk">
+      <BaseButton
+        type="submit"
+        form="payment-integration-form"
+        variant="primary"
+        :loading="saving"
+        icon="fa-solid fa-floppy-disk"
+      >
         {{ t('actions.save') }}
       </BaseButton>
     </template>

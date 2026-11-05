@@ -3,7 +3,11 @@ import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
 
 function seed(page, locale) {
-  return seedSignedIn(page, { roles: ['system_admin', 'content_officer'], name: 'Admin' }, { locale })
+  return seedSignedIn(
+    page,
+    { roles: ['system_admin', 'content_officer'], name: 'Admin' },
+    { locale },
+  )
 }
 
 test.beforeEach(async ({ page }, testInfo) => {
@@ -33,7 +37,9 @@ test('opens the OTP settings screen with login-mode toggles', async ({ page }) =
   await expect(page.locator('.toggle-switch')).toHaveCount(3)
 })
 
-test('payment screen shows stored secrets as metadata only and empty write-only inputs', async ({ page }) => {
+test('payment screen shows stored secrets as metadata only and empty write-only inputs', async ({
+  page,
+}) => {
   await page.goto('/admin/settings/payment')
   await retrySection(page, '.secret-input__status')
   await expect(page.locator('.secret-input__status').first()).toContainText('••••')
@@ -43,10 +49,14 @@ test('payment screen shows stored secrets as metadata only and empty write-only 
     await expect(input).toHaveAttribute('autocomplete', 'off')
     await expect(input).toHaveValue('')
   }
-  await expect(page.getByRole('button', { name: /test connection|اختبار الاتصال/i }).first()).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: /test connection|اختبار الاتصال/i }).first(),
+  ).toBeVisible()
 })
 
-test('assessment screen exposes the review deadline and the evidence upload limits', async ({ page }) => {
+test('assessment screen exposes the review deadline and the evidence upload limits', async ({
+  page,
+}) => {
   await page.goto('/admin/settings/assessment')
   await retrySection(page, 'input[name="accreditedReviewSlaDays"]')
   await expect(page.locator('input[name="accreditedReviewSlaDays"]')).toHaveValue('14')
@@ -72,9 +82,11 @@ test('capture settings screens for the design review', async ({ page }, testInfo
   await page.waitForTimeout(400)
   await page.screenshot({ path: `test-results/settings-assessment-${suffix}.png`, fullPage: true })
 
-
   await page.goto('/admin/settings/notifications')
   await retrySection(page, '.notification-type')
   await page.waitForTimeout(400)
-  await page.screenshot({ path: `test-results/settings-notifications-${suffix}.png`, fullPage: true })
+  await page.screenshot({
+    path: `test-results/settings-notifications-${suffix}.png`,
+    fullPage: true,
+  })
 })

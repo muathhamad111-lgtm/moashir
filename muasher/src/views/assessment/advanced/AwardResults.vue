@@ -120,17 +120,27 @@ function goToNational() {
 
         <ul class="award-results__list">
           <li v-for="row in group.results" :key="row.assessmentId" class="award-results__row">
-            <span v-if="row.regionalRank" class="award-results__medal" :class="rankMedal(row.regionalRank)">
+            <span
+              v-if="row.regionalRank"
+              class="award-results__medal"
+              :class="rankMedal(row.regionalRank)"
+            >
               <i class="fa-solid fa-medal" aria-hidden="true"></i>
               <span class="award-results__medal-label">{{ rankLabel(row.regionalRank) }}</span>
             </span>
-            <span v-else class="award-results__medal award-results__medal--empty" aria-hidden="true">—</span>
+            <span v-else class="award-results__medal award-results__medal--empty" aria-hidden="true"
+              >—</span
+            >
 
             <span class="award-results__entity">{{ localized(row.entityName) }}</span>
 
             <span class="award-results__scores">
-              <span class="award-results__avg">{{ t('award.results.average', { value: n(row.average, 'default') }) }}</span>
-              <span class="award-results__initial">{{ t('award.results.initial', { value: n(row.initialScore, 'default') }) }}</span>
+              <span class="award-results__avg">{{
+                t('award.results.average', { value: n(row.average, 'default') })
+              }}</span>
+              <span class="award-results__initial">{{
+                t('award.results.initial', { value: n(row.initialScore, 'default') })
+              }}</span>
             </span>
 
             <StatusBadge v-if="group.approved" :status="row.status" class="award-results__status" />

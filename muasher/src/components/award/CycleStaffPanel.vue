@@ -36,7 +36,13 @@ onMounted(() => {
         :disabled="!editable"
         @update:model-value="staff.select(role, $event)"
       />
-      <BaseButton v-if="editable" variant="secondary" icon="fa-solid fa-user-check" :loading="staff.saving.value === 'members'" @click="staff.saveMembers">
+      <BaseButton
+        v-if="editable"
+        variant="secondary"
+        icon="fa-solid fa-user-check"
+        :loading="staff.saving.value === 'members'"
+        @click="staff.saveMembers"
+      >
         {{ t('cycles.staff.members.save') }}
       </BaseButton>
     </section>
@@ -52,7 +58,13 @@ onMounted(() => {
         :disabled="!editable"
         @update:model-value="staff.select(CANDIDATE_ROLES.INITIAL_ASSESSOR, $event)"
       />
-      <BaseButton v-if="editable" variant="secondary" icon="fa-solid fa-user-check" :loading="staff.saving.value === 'assessors'" @click="staff.saveInitialAssessors">
+      <BaseButton
+        v-if="editable"
+        variant="secondary"
+        icon="fa-solid fa-user-check"
+        :loading="staff.saving.value === 'assessors'"
+        @click="staff.saveInitialAssessors"
+      >
         {{ t('cycles.staff.assessors.save') }}
       </BaseButton>
     </section>

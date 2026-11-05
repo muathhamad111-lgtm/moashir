@@ -40,7 +40,9 @@ describe('navigation constants', () => {
 
   it('gates every sidebar item by a permission key, never by a role name', () => {
     expect(APP_NAV_ITEMS.filter((item) => item.roles !== undefined)).toEqual([])
-    expect(APP_NAV_ITEMS.filter((item) => !navAccessOf(item)?.anyOf?.length).map((item) => item.id)).toEqual([])
+    expect(
+      APP_NAV_ITEMS.filter((item) => !navAccessOf(item)?.anyOf?.length).map((item) => item.id),
+    ).toEqual([])
     expect(accessFor('admin.branding').anyOf).toEqual([PERMISSIONS.SETTINGS_BRANDING_MANAGE])
   })
 })

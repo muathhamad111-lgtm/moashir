@@ -18,7 +18,11 @@ export const aiIntegrationService = {
   },
   testConnection(provider) {
     const payload = { provider }
-    return write('testConnection', () => apiClient.post(`${PATH}/test-connection`, payload), payload)
+    return write(
+      'testConnection',
+      () => apiClient.post(`${PATH}/test-connection`, payload),
+      payload,
+    )
   },
   testAnswer(provider) {
     const payload = { provider }

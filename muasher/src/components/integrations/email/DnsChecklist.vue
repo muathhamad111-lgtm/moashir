@@ -10,12 +10,22 @@ const props = defineProps({
 const { t } = useI18n()
 
 function foundLabel(record) {
-  return record.value ? t('integrations.email.dns.foundPolicy', { policy: record.value }) : t('integrations.email.dns.found')
+  return record.value
+    ? t('integrations.email.dns.foundPolicy', { policy: record.value })
+    : t('integrations.email.dns.found')
 }
 
 function stateOf(record) {
-  if (!record.checked) return { variant: 'muted', label: t(`integrations.email.dns.${record.record === 'dkim' ? 'providerCheck' : 'notChecked'}`) }
-  return record.ok ? { variant: 'success', label: foundLabel(record) } : { variant: 'warning', label: t('integrations.email.dns.missing') }
+  if (!record.checked)
+    return {
+      variant: 'muted',
+      label: t(
+        `integrations.email.dns.${record.record === 'dkim' ? 'providerCheck' : 'notChecked'}`,
+      ),
+    }
+  return record.ok
+    ? { variant: 'success', label: foundLabel(record) }
+    : { variant: 'warning', label: t('integrations.email.dns.missing') }
 }
 
 const rows = computed(() => props.records.map((record) => ({ ...record, state: stateOf(record) })))
@@ -30,8 +40,12 @@ const rows = computed(() => props.records.map((record) => ({ ...record, state: s
     <p class="field__hint">{{ t('integrations.email.dns.hint') }}</p>
     <ul class="dns-checklist__list">
       <li v-for="row in rows" :key="row.record" class="dns-checklist__item">
-        <span class="dns-checklist__name">{{ t(`integrations.email.dns.records.${row.record}.name`) }}</span>
-        <span class="dns-checklist__desc">{{ t(`integrations.email.dns.records.${row.record}.desc`) }}</span>
+        <span class="dns-checklist__name">{{
+          t(`integrations.email.dns.records.${row.record}.name`)
+        }}</span>
+        <span class="dns-checklist__desc">{{
+          t(`integrations.email.dns.records.${row.record}.desc`)
+        }}</span>
         <Badge :variant="row.state.variant">{{ row.state.label }}</Badge>
       </li>
     </ul>

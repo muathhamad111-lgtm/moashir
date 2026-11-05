@@ -23,7 +23,10 @@ describe('CommitteeAssessorDetailPanel', () => {
 
   it('shows the committee assessor status when the detail carries it', () => {
     const wrapper = mount(CommitteeAssessorDetailPanel, {
-      props: { detail: { ...DETAIL, committeeAssessorStatus: 'completed' }, localized: (value) => value?.en ?? '' },
+      props: {
+        detail: { ...DETAIL, committeeAssessorStatus: 'completed' },
+        localized: (value) => value?.en ?? '',
+      },
       global: { plugins: createTestGlobals({ locale: 'en' }).plugins },
     })
     expect(wrapper.find('.badge').text()).toBe('Completed')

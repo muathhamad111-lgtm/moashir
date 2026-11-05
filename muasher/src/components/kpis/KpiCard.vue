@@ -25,9 +25,7 @@ const cardColor = computed(() =>
 
 const statusVariant = computed(() => KPI_STATUS_VARIANTS[props.kpi.status] ?? 'muted')
 
-const statusLabel = computed(() =>
-  props.kpi.status ? t(`kpis.statuses.${props.kpi.status}`) : '',
-)
+const statusLabel = computed(() => (props.kpi.status ? t(`kpis.statuses.${props.kpi.status}`) : ''))
 
 const progress = computed(() => {
   const target = Number(props.kpi.target) || 0

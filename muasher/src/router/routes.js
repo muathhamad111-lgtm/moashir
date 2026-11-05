@@ -56,7 +56,12 @@ export const routes = [
     path: '/dashboard',
     name: ROUTE_NAMES.APP_DASHBOARD,
     component: () => import('@/views/dashboard/Index.vue'),
-    meta: { layout: 'app', titleKey: 'routes.app.dashboard.title', requiresAuth: true, demoModules: [M.DASHBOARDS] },
+    meta: {
+      layout: 'app',
+      titleKey: 'routes.app.dashboard.title',
+      requiresAuth: true,
+      demoModules: [M.DASHBOARDS],
+    },
   },
   {
     path: '/entity/profile',
@@ -492,7 +497,12 @@ export const routes = [
     path: '/notifications',
     name: ROUTE_NAMES.NOTIFICATIONS_INDEX,
     component: () => import('@/views/notifications/Index.vue'),
-    meta: { layout: 'app', titleKey: 'routes.notifications.index.title', requiresAuth: true, demoModules: [M.NOTIFICATIONS] },
+    meta: {
+      layout: 'app',
+      titleKey: 'routes.notifications.index.title',
+      requiresAuth: true,
+      demoModules: [M.NOTIFICATIONS],
+    },
   },
   {
     path: '/admin/operations',
@@ -825,19 +835,31 @@ export const routes = [
     path: '/maintenance',
     name: ROUTE_NAMES.PUBLIC_MAINTENANCE,
     component: () => import('@/views/public/Maintenance.vue'),
-    meta: { layout: 'auth', titleKey: 'routes.public.maintenance.title', allowDuringMaintenance: true },
+    meta: {
+      layout: 'auth',
+      titleKey: 'routes.public.maintenance.title',
+      allowDuringMaintenance: true,
+    },
   },
   {
     path: '/403',
     name: ROUTE_NAMES.ERRORS_FORBIDDEN,
     component: () => import('@/views/errors/Forbidden.vue'),
-    meta: { layout: 'public', titleKey: 'routes.errors.forbidden.title', allowDuringMaintenance: true },
+    meta: {
+      layout: 'public',
+      titleKey: 'routes.errors.forbidden.title',
+      allowDuringMaintenance: true,
+    },
   },
   {
     path: '/500',
     name: ROUTE_NAMES.ERRORS_SERVER,
     component: () => import('@/views/errors/ServerError.vue'),
-    meta: { layout: 'public', titleKey: 'routes.errors.server.title', allowDuringMaintenance: true },
+    meta: {
+      layout: 'public',
+      titleKey: 'routes.errors.server.title',
+      allowDuringMaintenance: true,
+    },
   },
   {
     path: '/:pathMatch(.*)*',

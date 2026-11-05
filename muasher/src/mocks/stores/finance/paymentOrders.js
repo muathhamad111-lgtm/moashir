@@ -31,7 +31,9 @@ export function authorizeKnownPurpose(user, body) {
 }
 
 export function replayOf(user, purpose, key) {
-  const payment = financeState().payments.find((item) => item.initiatedByUserId === user.id && item.idempotencyKey === key)
+  const payment = financeState().payments.find(
+    (item) => item.initiatedByUserId === user.id && item.idempotencyKey === key,
+  )
   if (payment && payment.purpose !== purpose) throw financeReject.idempotencyKeyReused()
   return payment ?? null
 }
@@ -64,7 +66,10 @@ export function quoteFor(purpose) {
 export function openOrderOf(entityId, purpose) {
   return (
     financeState().payments.find(
-      (payment) => payment.entityId === entityId && payment.purpose === purpose && OPEN_STATUSES.includes(payment.status),
+      (payment) =>
+        payment.entityId === entityId &&
+        payment.purpose === purpose &&
+        OPEN_STATUSES.includes(payment.status),
     ) ?? null
   )
 }

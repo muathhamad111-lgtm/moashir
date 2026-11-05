@@ -1,5 +1,8 @@
 export const KPI_CATEGORIES = [
-  { key: 'institutional-excellence', label: { ar: 'التميز المؤسسي', en: 'Institutional excellence' } },
+  {
+    key: 'institutional-excellence',
+    label: { ar: 'التميز المؤسسي', en: 'Institutional excellence' },
+  },
   { key: 'performance', label: { ar: 'الأداء', en: 'Performance' } },
   { key: 'beneficiaries', label: { ar: 'المستفيدون', en: 'Beneficiaries' } },
   { key: 'human-resources', label: { ar: 'الموارد البشرية', en: 'Human resources' } },
@@ -14,7 +17,11 @@ export const KPI_CATEGORY_KEYS = KPI_CATEGORIES.map((category) => category.key)
 export const KPI_STATUSES = [
   { key: 'excellent', label: { ar: 'متميز', en: 'Excellent' }, variant: 'success' },
   { key: 'good', label: { ar: 'جيد', en: 'Good' }, variant: 'info' },
-  { key: 'needs-improvement', label: { ar: 'يحتاج إلى تحسين', en: 'Needs improvement' }, variant: 'warning' },
+  {
+    key: 'needs-improvement',
+    label: { ar: 'يحتاج إلى تحسين', en: 'Needs improvement' },
+    variant: 'warning',
+  },
   { key: 'behind-target', label: { ar: 'دون المستهدف', en: 'Behind target' }, variant: 'danger' },
 ]
 

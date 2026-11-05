@@ -81,15 +81,26 @@ export function scoresResource(record) {
 
 export function recordResource(record, viewer) {
   const visible = { ...record, transitions: visibleTransitions(record, viewer) }
-  return { ...assessmentResource(record), statusHistory: statusHistoryOf(visible, { staffView: readsEveryAssessment(viewer) }) }
+  return {
+    ...assessmentResource(record),
+    statusHistory: statusHistoryOf(visible, { staffView: readsEveryAssessment(viewer) }),
+  }
 }
 
 export function formResource(record) {
-  return { ...scoresResource(record), criteria: boundTree(record), criteriaUpdate: criteriaUpdateOf(record) }
+  return {
+    ...scoresResource(record),
+    criteria: boundTree(record),
+    criteriaUpdate: criteriaUpdateOf(record),
+  }
 }
 
 function figures(node) {
-  return { weight: decimalWeight(node.weight), earned: displayEarned(node.earned), percent: displayPercent(node.percent) }
+  return {
+    weight: decimalWeight(node.weight),
+    earned: displayEarned(node.earned),
+    percent: displayPercent(node.percent),
+  }
 }
 
 function nullableRaw(raw) {
@@ -135,7 +146,13 @@ function pointRows(result) {
 }
 
 function resultIdentity(record) {
-  return { id: record.id, number: record.number, path: record.path, status: maskedStatus(record), isFrozen: isFrozen(record) }
+  return {
+    id: record.id,
+    number: record.number,
+    path: record.path,
+    status: maskedStatus(record),
+    isFrozen: isFrozen(record),
+  }
 }
 
 export function resultResource(record) {

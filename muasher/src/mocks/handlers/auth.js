@@ -21,7 +21,12 @@ import {
   findChallenge,
   isExpired,
 } from '../stores/otpChallenges'
-import { ENTITY_STANDING, completeVerification, registerEntity, standingOf } from '../stores/entityRegistration'
+import {
+  ENTITY_STANDING,
+  completeVerification,
+  registerEntity,
+  standingOf,
+} from '../stores/entityRegistration'
 import { entityRoute, readJson } from '../stores/entityRejection'
 import { findEntity } from '../stores/entitiesStore'
 import { failsRandomly } from '../contract/faults'
@@ -59,7 +64,12 @@ function isStaff(account) {
 }
 
 function otpRequired(challenge, extra = {}) {
-  return envelope({ step: STEPS.OTP_REQUIRED, requiresOtp: true, otp: challengePayload(challenge), ...extra })
+  return envelope({
+    step: STEPS.OTP_REQUIRED,
+    requiresOtp: true,
+    otp: challengePayload(challenge),
+    ...extra,
+  })
 }
 
 function signIn(account, extra = {}) {
@@ -74,12 +84,16 @@ function continueSignIn(account) {
   const step = account.record.mfaEnrolled === false ? STEPS.MFA_ENROLLMENT : STEPS.MFA_CHALLENGE
   pendingSignIn = { account, step }
   return envelope(
-    step === STEPS.MFA_CHALLENGE ? { step, mfaRequired: true } : { step, mfaEnrollmentRequired: true },
+    step === STEPS.MFA_CHALLENGE
+      ? { step, mfaRequired: true }
+      : { step, mfaEnrollmentRequired: true },
   )
 }
 
 function isStaffBlocked(account) {
-  return isStaff(account) && ['deactivated', 'inactive', 'suspended'].includes(account.record.status)
+  return (
+    isStaff(account) && ['deactivated', 'inactive', 'suspended'].includes(account.record.status)
+  )
 }
 
 function canReceiveCode(account) {
@@ -128,7 +142,11 @@ export const authHandlers = [
       const account = created ? { kind: 'entity', record: created } : null
       const message = entityNotices.registrationOtpSent[requestLocale(request)]
       const otp = challengePayload(createChallenge(account, 'email'))
-      return envelope({ step: STEPS.OTP_REQUIRED, requiresOtp: true, otp, message }, {}, { status: 201 })
+      return envelope(
+        { step: STEPS.OTP_REQUIRED, requiresOtp: true, otp, message },
+        {},
+        { status: 201 },
+      )
     }),
   ),
 
@@ -138,7 +156,8 @@ export const authHandlers = [
     const body = await request.json()
     if (body.mode === 'otp') return requestOtp(body.email, body.channel)
     const account = findAccountByEmail(body.email)
-    if (!account || body.password !== MOCK_PASSWORD || isStaffBlocked(account)) return invalidCredentials()
+    if (!account || body.password !== MOCK_PASSWORD || isStaffBlocked(account))
+      return invalidCredentials()
     return passwordSignIn(account)
   }),
 
@@ -151,11 +170,13 @@ export const authHandlers = [
 
   http.post('/api/v1/auth/otp/verify', async ({ request }) => {
     await delay(360)
-    if (maybeFail(0.05)) return errorResponse(500, 'server_error', 'Verification failed, please try again')
+    if (maybeFail(0.05))
+      return errorResponse(500, 'server_error', 'Verification failed, please try again')
     const body = await request.json()
     const challenge = findChallenge(body.challengeId)
     if (!challenge) return invalidCode()
-    if (isExpired(challenge)) return invalidCode('The verification code has expired.', 'otp.expired')
+    if (isExpired(challenge))
+      return invalidCode('The verification code has expired.', 'otp.expired')
     if (!acceptsCode(challenge, body.code)) return invalidCode()
     consumeChallenge(challenge.id)
     return continueSignIn(verifiedAccount(challenge))
@@ -201,7 +222,8 @@ export const authHandlers = [
       return errorResponse(401, 'unauthenticated', 'Unauthenticated.')
     }
     const body = await request.json()
-    if (String(body.code) !== DEV_TOTP_CODE) return invalidCode('The verification code is incorrect.', 'mfa.invalid')
+    if (String(body.code) !== DEV_TOTP_CODE)
+      return invalidCode('The verification code is incorrect.', 'mfa.invalid')
     return signIn(pendingSignIn.account, { recoveryCodes: [...MOCK_RECOVERY_CODES] })
   }),
 

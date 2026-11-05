@@ -18,14 +18,37 @@ const { pagination, setPage } = paginator
 useHead({ title: () => t('finance.mine.title') })
 
 function money(value) {
-  return t('finance.money', { amount: formatAmount(value ?? '0.00', locale.value), currency: t('finance.currency.SAR') })
+  return t('finance.money', {
+    amount: formatAmount(value ?? '0.00', locale.value),
+    currency: t('finance.currency.SAR'),
+  })
 }
 
 const statCards = computed(() => [
-  { id: 'count', icon: 'fa-solid fa-receipt', value: stats.value?.count ?? 0, label: t('finance.mine.stats.count') },
-  { id: 'paid', icon: 'fa-solid fa-circle-check', value: stats.value?.paidCount ?? 0, label: t('finance.mine.stats.paid') },
-  { id: 'total', icon: 'fa-solid fa-sack-dollar', value: money(stats.value?.totalPaid), label: t('finance.mine.stats.totalPaid') },
-  { id: 'vat', icon: 'fa-solid fa-percent', value: money(stats.value?.totalVat), label: t('finance.mine.stats.totalVat') },
+  {
+    id: 'count',
+    icon: 'fa-solid fa-receipt',
+    value: stats.value?.count ?? 0,
+    label: t('finance.mine.stats.count'),
+  },
+  {
+    id: 'paid',
+    icon: 'fa-solid fa-circle-check',
+    value: stats.value?.paidCount ?? 0,
+    label: t('finance.mine.stats.paid'),
+  },
+  {
+    id: 'total',
+    icon: 'fa-solid fa-sack-dollar',
+    value: money(stats.value?.totalPaid),
+    label: t('finance.mine.stats.totalPaid'),
+  },
+  {
+    id: 'vat',
+    icon: 'fa-solid fa-percent',
+    value: money(stats.value?.totalVat),
+    label: t('finance.mine.stats.totalVat'),
+  },
 ])
 
 const statusOptions = computed(() => [

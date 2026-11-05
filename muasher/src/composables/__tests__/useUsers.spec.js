@@ -43,7 +43,9 @@ describe('useUsers', () => {
 
   it('returns read-only capability hints derived per role', () => {
     const { roleCapabilities } = withComposable('en')
-    expect(roleCapabilities('system_admin')).toEqual(['Administer users, settings, content and integrations within the granted permissions'])
+    expect(roleCapabilities('system_admin')).toEqual([
+      'Administer users, settings, content and integrations within the granted permissions',
+    ])
     expect(roleCapabilities('assessor').length).toBe(2)
     expect(roleCapabilities('')).toEqual([])
   })

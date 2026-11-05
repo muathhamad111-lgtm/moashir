@@ -16,7 +16,9 @@ const nextCycle = computed(() => content.value?.meta?.nextCycle ?? null)
 const groups = computed(() =>
   GROUPS.map((group) => ({
     group,
-    items: (content.value?.items ?? []).filter((item) => item.meta?.group === group).sort((a, b) => a.order - b.order),
+    items: (content.value?.items ?? [])
+      .filter((item) => item.meta?.group === group)
+      .sort((a, b) => a.order - b.order),
   })).filter((entry) => entry.items.length),
 )
 
@@ -24,9 +26,15 @@ const DEMO_MODULES = [MOCK_MODULES.CMS]
 </script>
 
 <template>
-  <section v-if="status === 'success' && content" class="advanced-content" :aria-label="t('advanced.content.label')">
+  <section
+    v-if="status === 'success' && content"
+    class="advanced-content"
+    :aria-label="t('advanced.content.label')"
+  >
     <DemoDataNotice scope="section" :modules="DEMO_MODULES" />
-    <p v-if="content.description" class="advanced-content__description">{{ localized(content.description) }}</p>
+    <p v-if="content.description" class="advanced-content__description">
+      {{ localized(content.description) }}
+    </p>
     <div class="advanced-content__highlights">
       <article v-if="award" class="advanced-content__card">
         <h2 class="advanced-content__title">{{ localized(award.title) }}</h2>

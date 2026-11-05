@@ -11,7 +11,9 @@ export function usePaymentDetail(paymentId) {
   const errorMessage = ref('')
 
   async function loadReceipt() {
-    receipt.value = payment.value.receipt ? (await paymentsService.getReceipt(paymentId)).data : null
+    receipt.value = payment.value.receipt
+      ? (await paymentsService.getReceipt(paymentId)).data
+      : null
   }
 
   async function load() {

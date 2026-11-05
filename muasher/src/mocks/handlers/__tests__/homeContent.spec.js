@@ -100,9 +100,9 @@ describe('home content mock — model integrity', () => {
       id: added.id,
       title: { ar: 'شريك محدث', en: 'Updated partner' },
     })
-    expect(
-      updated.body.data.items.find((entry) => entry.id === added.id).title.en,
-    ).toBe('Updated partner')
+    expect(updated.body.data.items.find((entry) => entry.id === added.id).title.en).toBe(
+      'Updated partner',
+    )
 
     const ordered = updated.body.data.items.map((entry) => entry.id)
     const reordered = [ordered[ordered.length - 1], ...ordered.slice(0, -1)]

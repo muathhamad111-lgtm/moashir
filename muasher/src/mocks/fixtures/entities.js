@@ -50,7 +50,9 @@ export const entitiesFixture = [
     hasStrategicPlan: true,
     marketingConsentAt: '2026-06-28T06:15:00Z',
     owner: owner(5001, 'أحمد بن سالم القحطاني', 'info@albirr-riyadh.example.sa'),
-    openRequests: [{ id: 14, number: 'ACC-2026-000014', path: 'accredited', status: 'under-review' }],
+    openRequests: [
+      { id: 14, number: 'ACC-2026-000014', path: 'accredited', status: 'under-review' },
+    ],
   }),
   record({
     id: 6001,
@@ -86,7 +88,12 @@ export const entitiesFixture = [
       { id: 31, number: 'ADV-2026-000031', path: 'advanced', status: 'under-initial-assessment' },
       { id: 7, number: 'BAG-2026-000007', path: 'bag', status: 'stage-active' },
     ],
-    incomingOpenRequest: { id: 52, number: 'ACC-2026-000052', path: 'accredited', status: 'submitted' },
+    incomingOpenRequest: {
+      id: 52,
+      number: 'ACC-2026-000052',
+      path: 'accredited',
+      status: 'submitted',
+    },
   }),
   record({
     id: 6003,
@@ -123,7 +130,9 @@ export const entitiesFixture = [
     createdAt: '2026-04-22T10:00:00Z',
     verifiedAt: '2026-04-22T10:04:00Z',
     owner: owner(6004, 'سارة بنت محمد الحربي', 'info@ataa-madinah.example.sa'),
-    openRequests: [{ id: 19, number: 'ACC-2026-000019', path: 'accredited', status: 'awaiting-assignment' }],
+    openRequests: [
+      { id: 19, number: 'ACC-2026-000019', path: 'accredited', status: 'awaiting-assignment' },
+    ],
   }),
   record({
     id: 6005,

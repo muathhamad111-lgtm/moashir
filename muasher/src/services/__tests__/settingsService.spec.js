@@ -27,12 +27,17 @@ describe('settingsService', () => {
 
   it('updates a section via PUT and logs only the payload SHAPE (never a value)', async () => {
     apiClient.put.mockResolvedValue({ data: envelope })
-    await settingsService.updateGeneral({ platformName: { ar: 'منصة مؤشر', en: 'Moashir' }, contactEmail: 'info@moashir.example.sa' })
+    await settingsService.updateGeneral({
+      platformName: { ar: 'منصة مؤشر', en: 'Moashir' },
+      contactEmail: 'info@moashir.example.sa',
+    })
     expect(apiClient.put).toHaveBeenCalledWith('/settings/general', {
       platformName: { ar: 'منصة مؤشر', en: 'Moashir' },
       contactEmail: 'info@moashir.example.sa',
     })
-    const breadcrumb = logger.breadcrumb.mock.calls.find((call) => call[1] === 'settings.updateGeneral')
+    const breadcrumb = logger.breadcrumb.mock.calls.find(
+      (call) => call[1] === 'settings.updateGeneral',
+    )
     expect(breadcrumb[2].payloadShape).toEqual(['platformName', 'contactEmail'])
     expect(JSON.stringify(breadcrumb[2])).not.toContain('example.sa')
   })
@@ -57,7 +62,9 @@ describe('settingsService', () => {
     await settingsService.retrainKb()
     expect(apiClient.get).toHaveBeenCalledWith('/settings/ai/kb-files', { params: {} })
     expect(apiClient.post).toHaveBeenCalledWith('/settings/ai/kb-files', { name: 'f.pdf' })
-    expect(apiClient.patch).toHaveBeenCalledWith('/settings/ai/kb-files/kb-1/approved', { approved: true })
+    expect(apiClient.patch).toHaveBeenCalledWith('/settings/ai/kb-files/kb-1/approved', {
+      approved: true,
+    })
     expect(apiClient.delete).toHaveBeenCalledWith('/settings/ai/kb-files/kb-1')
     expect(apiClient.post).toHaveBeenCalledWith('/settings/ai/retrain')
   })

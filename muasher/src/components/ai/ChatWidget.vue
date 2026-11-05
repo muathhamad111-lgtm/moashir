@@ -147,12 +147,20 @@ const DEMO_MODULES = [MOCK_MODULES.AI]
           {{ $t('ai.checking') }}
         </div>
 
-        <div v-else-if="availability === 'inactive'" class="chat-widget__status chat-widget__status--inactive" role="status">
+        <div
+          v-else-if="availability === 'inactive'"
+          class="chat-widget__status chat-widget__status--inactive"
+          role="status"
+        >
           <i class="fa-solid fa-power-off" aria-hidden="true"></i>
           {{ $t('ai.inactive') }}
         </div>
 
-        <div v-else-if="availability === 'error'" class="chat-widget__status chat-widget__status--error" role="alert">
+        <div
+          v-else-if="availability === 'error'"
+          class="chat-widget__status chat-widget__status--error"
+          role="alert"
+        >
           <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
           <span>{{ $t('ai.unavailable') }}</span>
           <button type="button" class="chat-widget__inline-retry" @click="retry">
@@ -196,7 +204,12 @@ const DEMO_MODULES = [MOCK_MODULES.AI]
           <div v-if="lastError" class="chat-widget__turn-error" role="alert">
             <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
             <span>{{ $t('ai.turnError') }}</span>
-            <button type="button" class="chat-widget__inline-retry" :disabled="sending" @click="retry">
+            <button
+              type="button"
+              class="chat-widget__inline-retry"
+              :disabled="sending"
+              @click="retry"
+            >
               {{ $t('common.retry') }}
             </button>
           </div>

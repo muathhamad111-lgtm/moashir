@@ -59,7 +59,10 @@ function findSection(id) {
 }
 
 function publicSections() {
-  return store.sections.filter((section) => section.enabled).sort(byOrder).map(cloneSection)
+  return store.sections
+    .filter((section) => section.enabled)
+    .sort(byOrder)
+    .map(cloneSection)
 }
 
 function landingShim() {
@@ -78,13 +81,16 @@ function landingShim() {
       title: { ar: 'عن المنصة', en: 'About the platform' },
       body: hero ? hero.description : { ar: '', en: '' },
     },
-    pathCards: (paths ? paths.items : []).slice().sort(byOrder).map((entry, index) => ({
-      key: entry.id,
-      icon: entry.icon,
-      title: entry.title,
-      summary: entry.description,
-      order: index + 1,
-    })),
+    pathCards: (paths ? paths.items : [])
+      .slice()
+      .sort(byOrder)
+      .map((entry, index) => ({
+        key: entry.id,
+        icon: entry.icon,
+        title: entry.title,
+        summary: entry.description,
+        order: index + 1,
+      })),
     modelCriteria: modelCriteriaFixture,
     sections: {
       bag: bag
@@ -225,20 +231,17 @@ export const contentHandlers = [
     return envelope(cloneSection(section))
   }),
 
-  http.delete(
-    '/api/v1/admin/content/sections/:sectionId/items/:itemId',
-    async ({ params }) => {
-      await delay(300)
-      if (maybeFail()) return errorResponse('Could not remove the item', 500)
-      const section = findSection(params.sectionId)
-      if (!section) return errorResponse('Section not found', 404)
-      const index = section.items.findIndex((entry) => entry.id === params.itemId)
-      if (index === -1) return errorResponse('Item not found', 404)
-      section.items.splice(index, 1)
-      normalizeItemOrder(section)
-      return envelope(cloneSection(section))
-    },
-  ),
+  http.delete('/api/v1/admin/content/sections/:sectionId/items/:itemId', async ({ params }) => {
+    await delay(300)
+    if (maybeFail()) return errorResponse('Could not remove the item', 500)
+    const section = findSection(params.sectionId)
+    if (!section) return errorResponse('Section not found', 404)
+    const index = section.items.findIndex((entry) => entry.id === params.itemId)
+    if (index === -1) return errorResponse('Item not found', 404)
+    section.items.splice(index, 1)
+    normalizeItemOrder(section)
+    return envelope(cloneSection(section))
+  }),
 
   http.patch(
     '/api/v1/admin/content/sections/:sectionId/items/reorder',

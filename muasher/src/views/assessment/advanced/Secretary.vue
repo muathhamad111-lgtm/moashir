@@ -32,16 +32,8 @@ function goToResults() {
   router.push({ name: ROUTE_NAMES.AWARD_RESULTS })
 }
 
-const {
-  status,
-  errorMessage,
-  pending,
-  deciding,
-  localized,
-  load,
-  approve,
-  returnToCommittee,
-} = useSecretary(COMMITTEE_CYCLE_ID)
+const { status, errorMessage, pending, deciding, localized, load, approve, returnToCommittee } =
+  useSecretary(COMMITTEE_CYCLE_ID)
 
 onMounted(load)
 
@@ -74,8 +66,12 @@ const activeRow = ref(null)
 
 const schema = computed(() =>
   yupObject({
-    noteAr: yupString().required(t('validation.required')).min(4, t('validation.minChars', { min: 4 })),
-    noteEn: yupString().required(t('validation.required')).min(4, t('validation.minChars', { min: 4 })),
+    noteAr: yupString()
+      .required(t('validation.required'))
+      .min(4, t('validation.minChars', { min: 4 })),
+    noteEn: yupString()
+      .required(t('validation.required'))
+      .min(4, t('validation.minChars', { min: 4 })),
   }),
 )
 
@@ -110,18 +106,10 @@ function openReturn(row) {
         <p class="secretary__subtitle">{{ t('advanced.secretary.subtitle') }}</p>
       </div>
       <div class="secretary__toolbar">
-        <BaseButton
-          variant="secondary"
-          icon="fa-solid fa-users-viewfinder"
-          @click="goToReview"
-        >
+        <BaseButton variant="secondary" icon="fa-solid fa-users-viewfinder" @click="goToReview">
           {{ t('advanced.secretary.review.openReview') }}
         </BaseButton>
-        <BaseButton
-          variant="primary"
-          icon="fa-solid fa-trophy"
-          @click="goToResults"
-        >
+        <BaseButton variant="primary" icon="fa-solid fa-trophy" @click="goToResults">
           {{ t('advanced.secretary.openResults') }}
         </BaseButton>
       </div>
@@ -149,7 +137,11 @@ function openReturn(row) {
               <p class="secretary__meta">
                 <span class="secretary__committee-assessors">
                   <i class="fa-solid fa-users" aria-hidden="true"></i>
-                  {{ t('advanced.secretary.committeeAssessorCount', { count: row.committeeAssessorCount }) }}
+                  {{
+                    t('advanced.secretary.committeeAssessorCount', {
+                      count: row.committeeAssessorCount,
+                    })
+                  }}
                 </span>
                 <span class="secretary__computed">
                   <i class="fa-solid fa-calendar-check" aria-hidden="true"></i>
@@ -158,7 +150,11 @@ function openReturn(row) {
               </p>
             </div>
 
-            <div class="secretary__average" role="group" :aria-label="t('advanced.secretary.average')">
+            <div
+              class="secretary__average"
+              role="group"
+              :aria-label="t('advanced.secretary.average')"
+            >
               <span class="secretary__average-value">{{ row.average }}</span>
               <span class="secretary__average-label">{{ t('advanced.secretary.average') }}</span>
             </div>

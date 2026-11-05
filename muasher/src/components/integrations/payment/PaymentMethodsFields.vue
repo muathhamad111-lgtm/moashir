@@ -26,18 +26,46 @@ const methodOptions = computed(() => [
     disabled: lockedUntil(PAYMENT_METHODS.STC_PAY, values.value.confirmations?.stcpayActivation),
   },
 ])
-const networkOptions = computed(() => CARD_NETWORKS.map((value) => ({ value, label: t(`integrations.payment.networks.${value}`) })))
-const pathOptions = computed(() => PAYMENT_LINKED_PATHS.map((value) => ({ value, label: t(`integrations.payment.linkedPaths.${value}`) })))
+const networkOptions = computed(() =>
+  CARD_NETWORKS.map((value) => ({ value, label: t(`integrations.payment.networks.${value}`) })),
+)
+const pathOptions = computed(() =>
+  PAYMENT_LINKED_PATHS.map((value) => ({
+    value,
+    label: t(`integrations.payment.linkedPaths.${value}`),
+  })),
+)
 </script>
 
 <template>
   <div class="payment-methods">
-    <FieldCheckboxGroup name="methods" :label="t('integrations.payment.fields.methods')" :options="methodOptions" :hint="t('integrations.payment.fields.methodsHint')" />
-    <FieldCheckboxGroup name="supportedNetworks" :label="t('integrations.payment.fields.networks')" :options="networkOptions" />
+    <FieldCheckboxGroup
+      name="methods"
+      :label="t('integrations.payment.fields.methods')"
+      :options="methodOptions"
+      :hint="t('integrations.payment.fields.methodsHint')"
+    />
+    <FieldCheckboxGroup
+      name="supportedNetworks"
+      :label="t('integrations.payment.fields.networks')"
+      :options="networkOptions"
+    />
     <div class="payment-methods__label">
-      <FieldInput name="applePayLabel.ar" :label="t('integrations.payment.fields.applePayLabelAr')" input-dir="rtl" />
-      <FieldInput name="applePayLabel.en" :label="t('integrations.payment.fields.applePayLabelEn')" input-dir="ltr" />
+      <FieldInput
+        name="applePayLabel.ar"
+        :label="t('integrations.payment.fields.applePayLabelAr')"
+        input-dir="rtl"
+      />
+      <FieldInput
+        name="applePayLabel.en"
+        :label="t('integrations.payment.fields.applePayLabelEn')"
+        input-dir="ltr"
+      />
     </div>
-    <FieldCheckboxGroup name="linkedPaths" :label="t('integrations.payment.fields.linkedPaths')" :options="pathOptions" />
+    <FieldCheckboxGroup
+      name="linkedPaths"
+      :label="t('integrations.payment.fields.linkedPaths')"
+      :options="pathOptions"
+    />
   </div>
 </template>

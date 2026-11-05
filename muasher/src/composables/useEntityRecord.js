@@ -36,5 +36,14 @@ export function useEntityRecord(entityId) {
 
   const isFullRecord = computed(() => Boolean(entity.value && 'entityType' in entity.value))
 
-  return { entity, status, errorMessage, frozenRequests, frozenStatus, isFullRecord, load, loadFrozenRequests }
+  return {
+    entity,
+    status,
+    errorMessage,
+    frozenRequests,
+    frozenStatus,
+    isFullRecord,
+    load,
+    loadFrozenRequests,
+  }
 }

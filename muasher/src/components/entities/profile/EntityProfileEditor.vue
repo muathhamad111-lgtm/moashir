@@ -33,7 +33,11 @@ const { fieldLabel, valueLabel } = useProfileChangeLabels({
 
 <template>
   <form class="entity-form" novalidate @submit.prevent="form.onSubmit">
-    <fieldset v-show="step === EDITOR_STEPS.EDIT" class="entity-form__sections" :disabled="form.submitting.value">
+    <fieldset
+      v-show="step === EDITOR_STEPS.EDIT"
+      class="entity-form__sections"
+      :disabled="form.submitting.value"
+    >
       <EntityIdentityFields />
       <EntityClassificationFields />
       <EntityLocationFields :region-options="regionOptions" :city-options-for="cityOptionsFor" />
@@ -64,7 +68,12 @@ const { fieldLabel, valueLabel } = useProfileChangeLabels({
       <BaseButton v-else variant="ghost" :disabled="form.submitting.value" @click="backToEdit">
         {{ t('entities.profile.backToEdit') }}
       </BaseButton>
-      <BaseButton v-if="step === EDITOR_STEPS.EDIT" type="submit" variant="primary" :loading="form.submitting.value">
+      <BaseButton
+        v-if="step === EDITOR_STEPS.EDIT"
+        type="submit"
+        variant="primary"
+        :loading="form.submitting.value"
+      >
         {{ t('entities.profile.reviewChanges') }}
       </BaseButton>
       <BaseButton v-else variant="primary" :loading="form.submitting.value" @click="confirmSave">

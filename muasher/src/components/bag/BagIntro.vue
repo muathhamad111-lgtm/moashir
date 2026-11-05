@@ -25,11 +25,17 @@ const lineItems = computed(() => {
   return [
     {
       label: t('bag.intro.price.beforeTax'),
-      value: t('bag.intro.price.amount', { amount: n(props.pricing.priceBeforeTax, 'default'), currency: currency.value }),
+      value: t('bag.intro.price.amount', {
+        amount: n(props.pricing.priceBeforeTax, 'default'),
+        currency: currency.value,
+      }),
     },
     {
       label: t('bag.intro.price.vat', { pct: n(pct, 'id') }),
-      value: t('bag.intro.price.amount', { amount: n(props.pricing.taxAmount, 'default'), currency: currency.value }),
+      value: t('bag.intro.price.amount', {
+        amount: n(props.pricing.taxAmount, 'default'),
+        currency: currency.value,
+      }),
     },
   ]
 })
@@ -65,7 +71,11 @@ const faqItems = computed(() =>
     <section v-reveal class="bag-intro__how" aria-labelledby="bag-intro-how">
       <h2 id="bag-intro-how" class="bag-intro__section-title">{{ t('bag.intro.how.title') }}</h2>
       <ol class="bag-intro__steps">
-        <li v-for="(step, index) in marketing.howItWorks ?? []" :key="index" class="bag-intro__step">
+        <li
+          v-for="(step, index) in marketing.howItWorks ?? []"
+          :key="index"
+          class="bag-intro__step"
+        >
           <span class="bag-intro__step-num">{{ n(index + 1, 'id') }}</span>
           <span class="bag-intro__step-label">{{ localized(step) }}</span>
         </li>
@@ -73,7 +83,9 @@ const faqItems = computed(() =>
     </section>
 
     <section v-reveal class="bag-intro__outputs" aria-labelledby="bag-intro-outputs">
-      <h2 id="bag-intro-outputs" class="bag-intro__section-title">{{ t('bag.intro.outputs.title') }}</h2>
+      <h2 id="bag-intro-outputs" class="bag-intro__section-title">
+        {{ t('bag.intro.outputs.title') }}
+      </h2>
       <ul class="bag-intro__output-list">
         <li v-for="(out, index) in marketing.outputs ?? []" :key="index" class="bag-intro__output">
           <i class="fa-solid fa-circle-check bag-intro__output-icon" aria-hidden="true"></i>
@@ -83,7 +95,9 @@ const faqItems = computed(() =>
     </section>
 
     <section v-reveal class="bag-intro__pricing" aria-labelledby="bag-intro-pricing">
-      <h2 id="bag-intro-pricing" class="bag-intro__section-title">{{ t('bag.intro.price.title') }}</h2>
+      <h2 id="bag-intro-pricing" class="bag-intro__section-title">
+        {{ t('bag.intro.price.title') }}
+      </h2>
       <FeeSummary
         v-if="pricing"
         :amount="pricing.total"
@@ -102,7 +116,11 @@ const faqItems = computed(() =>
               <span>{{ localized(marketing.eligibilityNote) }}</span>
             </p>
 
-            <router-link v-if="eligible" class="bag-intro__pay-link" :to="{ name: ROUTE_NAMES.BAG_PAY }">
+            <router-link
+              v-if="eligible"
+              class="bag-intro__pay-link"
+              :to="{ name: ROUTE_NAMES.BAG_PAY }"
+            >
               <BaseButton variant="primary" icon="fa-solid fa-credit-card" tabindex="-1">
                 {{ t('bag.intro.cta.subscribe') }}
               </BaseButton>

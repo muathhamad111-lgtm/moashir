@@ -1,7 +1,11 @@
 import { HttpResponse, delay } from 'msw'
 import { http } from '../contract/http'
 import { subCriteriaFixture } from '../fixtures/criteria'
-import { advancedCertificatesFixture, advancedFeedbackReportsFixture, advancedResultsFixture } from '../fixtures/advancedResults'
+import {
+  advancedCertificatesFixture,
+  advancedFeedbackReportsFixture,
+  advancedResultsFixture,
+} from '../fixtures/advancedResults'
 import { failsRandomly } from '../contract/faults'
 
 const ANNOUNCED = ['announced', 'certificate-issued']
@@ -26,12 +30,23 @@ function feedbackOf(assessmentId) {
     source: report.source,
     status: report.status,
     generatedAt: report.generatedAt,
-    items: report.items.map((item) => ({ subCriterionId: item.subCriterionId, name: subName(item.subCriterionId), scorePercent: item.scorePercent, comment: item.comment })),
+    items: report.items.map((item) => ({
+      subCriterionId: item.subCriterionId,
+      name: subName(item.subCriterionId),
+      scorePercent: item.scorePercent,
+      comment: item.comment,
+    })),
   }
 }
 
 function resultOf(assessment) {
-  if (!ANNOUNCED.includes(assessment.status)) return { id: assessment.id, status: assessment.status, cycleId: assessment.cycleId, available: false }
+  if (!ANNOUNCED.includes(assessment.status))
+    return {
+      id: assessment.id,
+      status: assessment.status,
+      cycleId: assessment.cycleId,
+      available: false,
+    }
   return {
     id: assessment.id,
     status: assessment.status,

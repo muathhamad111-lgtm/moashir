@@ -69,7 +69,9 @@ function isActive(committeeAssessor) {
 }
 
 const addOpen = ref(false)
-const addOptions = computed(() => available.value.map((c) => ({ value: c.id, label: localized(c.name) })))
+const addOptions = computed(() =>
+  available.value.map((c) => ({ value: c.id, label: localized(c.name) })),
+)
 
 async function onAdd(committeeAssessorId) {
   try {
@@ -83,7 +85,9 @@ async function onAdd(committeeAssessorId) {
 
 async function onRemove(committeeAssessor) {
   const accepted = await confirm({
-    title: t('advanced.committeeManagement.removeTitle', { name: localized(committeeAssessor.name) }),
+    title: t('advanced.committeeManagement.removeTitle', {
+      name: localized(committeeAssessor.name),
+    }),
     message: t('advanced.committeeManagement.removeMessage'),
     confirmLabel: t('advanced.committeeManagement.remove'),
     variant: 'danger',
@@ -179,7 +183,9 @@ async function onRedistribute() {
           <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
           {{ t('advanced.committeeManagement.forCycle', { cycle: localized(cycleName) }) }}
         </p>
-        <p class="committee-management__subtitle">{{ t('advanced.committeeManagement.subtitle') }}</p>
+        <p class="committee-management__subtitle">
+          {{ t('advanced.committeeManagement.subtitle') }}
+        </p>
       </div>
       <div v-if="canManage && status === 'success'" class="committee-management__toolbar">
         <BaseButton
@@ -224,7 +230,10 @@ async function onRedistribute() {
       >
         <template #cell-name="{ item }">
           <span class="committee-management__committee-assessor">
-            <i class="fa-solid fa-user-tie committee-management__committee-assessor-icon" aria-hidden="true"></i>
+            <i
+              class="fa-solid fa-user-tie committee-management__committee-assessor-icon"
+              aria-hidden="true"
+            ></i>
             {{ localized(item.name) }}
             <Badge v-if="item.substituteFor" variant="muted">
               {{ t('advanced.secretary.review.substituteOf') }}
@@ -242,7 +251,12 @@ async function onRedistribute() {
               {{ t('advanced.committeeManagement.assignments', { count: item.assignmentCount }) }}
             </span>
             <span class="committee-management__load-detail">
-              {{ t('advanced.committeeManagement.completedOf', { completed: item.completedCount, total: item.assignmentCount }) }}
+              {{
+                t('advanced.committeeManagement.completedOf', {
+                  completed: item.completedCount,
+                  total: item.assignmentCount,
+                })
+              }}
             </span>
           </span>
         </template>
@@ -295,7 +309,11 @@ async function onRedistribute() {
     >
       <div class="committee-management-reassign">
         <p class="committee-management-reassign__lead">
-          {{ t('advanced.committeeManagement.reassignLead', { from: localized(reassignSource?.name) }) }}
+          {{
+            t('advanced.committeeManagement.reassignLead', {
+              from: localized(reassignSource?.name),
+            })
+          }}
         </p>
         <div class="committee-management-reassign__field">
           <span id="reassign-entity-label" class="committee-management-reassign__label">

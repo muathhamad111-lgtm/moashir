@@ -3,8 +3,18 @@ import { paymentSchema } from '@/utils/integrations/paymentSchema'
 import { smsSchema } from '@/utils/integrations/smsSchema'
 import { emailSchema } from '@/utils/integrations/emailSchema'
 import { aiSchema } from '@/utils/integrations/aiSchema'
-import { paymentFormValues, paymentPayload, paymentSecretsChanged, isLiveReady } from '@/utils/integrations/paymentForm'
-import { smsFormValues, smsPayload, smsSecretsChanged, templateErrorPath } from '@/utils/integrations/smsForm'
+import {
+  paymentFormValues,
+  paymentPayload,
+  paymentSecretsChanged,
+  isLiveReady,
+} from '@/utils/integrations/paymentForm'
+import {
+  smsFormValues,
+  smsPayload,
+  smsSecretsChanged,
+  templateErrorPath,
+} from '@/utils/integrations/smsForm'
 import { emailFormValues, emailPayload } from '@/utils/integrations/emailForm'
 import { aiFormValues, aiPayload, aiSecretsChanged } from '@/utils/integrations/aiForm'
 import { SECRET_ACTIONS } from '@/utils/integrations/secretValue'
@@ -27,7 +37,12 @@ const paymentResource = {
   mode: 'test',
   active: true,
   source: 'settings',
-  test: { configured: true, publishableKey: 'pk_test_fake_example_moashir01', secretKey: { set: true }, lastTest: { ok: true } },
+  test: {
+    configured: true,
+    publishableKey: 'pk_test_fake_example_moashir01',
+    secretKey: { set: true },
+    lastTest: { ok: true },
+  },
   live: { configured: false, publishableKey: null, secretKey: { set: false }, lastTest: null },
   methods: ['creditcard'],
   supportedNetworks: ['mada'],
@@ -53,7 +68,10 @@ describe('payment schema and payload', () => {
     expect(payload).toEqual({
       mode: 'live',
       confirmations: { applePayDomain: true },
-      live: { publishableKey: 'pk_live_fake_example_moashir02', secretKey: 'sk_live_fake_example_replacement_5432' },
+      live: {
+        publishableKey: 'pk_live_fake_example_moashir02',
+        secretKey: 'sk_live_fake_example_replacement_5432',
+      },
     })
     expect(paymentSecretsChanged(payload)).toBe(true)
   })
@@ -61,7 +79,19 @@ describe('payment schema and payload', () => {
   it('writes every field when the values come from the environment bootstrap', () => {
     const resource = { ...paymentResource, source: 'environment' }
     const payload = paymentPayload(paymentFormValues(resource), resource)
-    expect(Object.keys(payload)).toEqual(expect.arrayContaining(['mode', 'active', 'methods', 'supportedNetworks', 'applePayLabel', 'linkedPaths', 'confirmations', 'test', 'live']))
+    expect(Object.keys(payload)).toEqual(
+      expect.arrayContaining([
+        'mode',
+        'active',
+        'methods',
+        'supportedNetworks',
+        'applePayLabel',
+        'linkedPaths',
+        'confirmations',
+        'test',
+        'live',
+      ]),
+    )
     expect(payload.test).toEqual({ publishableKey: 'pk_test_fake_example_moashir01' })
   })
 
@@ -74,7 +104,14 @@ describe('payment schema and payload', () => {
     values.supportedNetworks = []
     values.applePayLabel.en = ''
     expect(await errorsOf(paymentSchema(t), values)).toEqual(
-      expect.arrayContaining(['live.publishableKey', 'live.secretKey', 'test.webhookSecret', 'methods', 'supportedNetworks', 'applePayLabel.en']),
+      expect.arrayContaining([
+        'live.publishableKey',
+        'live.secretKey',
+        'test.webhookSecret',
+        'methods',
+        'supportedNetworks',
+        'applePayLabel.en',
+      ]),
     )
   })
 
@@ -91,7 +128,10 @@ describe('sms schema and payload', () => {
     mode: 'test',
     source: 'settings',
     testRecipients: ['+966500000001'],
-    providers: { taqnyat: { senderName: 'Moashir' }, msegat: { username: '', senderName: 'Moashir Platform', templateRestricted: false } },
+    providers: {
+      taqnyat: { senderName: 'Moashir' },
+      msegat: { username: '', senderName: 'Moashir Platform', templateRestricted: false },
+    },
     templates: [{ key: 'otp_code', body: { ar: 'رمز التحقق {code}', en: 'Code {code}' } }],
   }
 
@@ -100,7 +140,12 @@ describe('sms schema and payload', () => {
     values.testRecipients = ['+201000000001']
     values.templates[0].body.en = ''
     expect(await errorsOf(smsSchema(t), values)).toEqual(
-      expect.arrayContaining(['testRecipients[0]', 'providers.msegat.username', 'providers.msegat.senderName', 'templates[0].body.en']),
+      expect.arrayContaining([
+        'testRecipients[0]',
+        'providers.msegat.username',
+        'providers.msegat.senderName',
+        'templates[0].body.en',
+      ]),
     )
   })
 
@@ -114,7 +159,9 @@ describe('sms schema and payload', () => {
     expect(payload).toEqual({
       activeProvider: 'taqnyat',
       providers: { taqnyat: { bearerToken: 'taqnyat_fake_example_bearer_token_0001' } },
-      templates: [{ key: 'otp_code', body: { ar: 'رمز التحقق في منصة مؤشر هو {code}', en: 'Code {code}' } }],
+      templates: [
+        { key: 'otp_code', body: { ar: 'رمز التحقق في منصة مؤشر هو {code}', en: 'Code {code}' } },
+      ],
     })
     expect(smsSecretsChanged(payload)).toBe(true)
     values.activeProvider = 'none'
@@ -122,10 +169,16 @@ describe('sms schema and payload', () => {
   })
 
   it('places a template error keyed by the template key on its form field', () => {
-    expect(templateErrorPath('templates.otpCode.body.ar', resource.templates)).toBe('templates.0.body.ar')
-    expect(templateErrorPath('templates.otp_code.body.en', resource.templates)).toBe('templates.0.body.en')
+    expect(templateErrorPath('templates.otpCode.body.ar', resource.templates)).toBe(
+      'templates.0.body.ar',
+    )
+    expect(templateErrorPath('templates.otp_code.body.en', resource.templates)).toBe(
+      'templates.0.body.en',
+    )
     expect(templateErrorPath('templates.0.body.ar', resource.templates)).toBe('templates.0.body.ar')
-    expect(templateErrorPath('providers.msegat.senderName', resource.templates)).toBe('providers.msegat.senderName')
+    expect(templateErrorPath('providers.msegat.senderName', resource.templates)).toBe(
+      'providers.msegat.senderName',
+    )
   })
 })
 
@@ -150,15 +203,38 @@ describe('email schema and payload', () => {
   it('requires the test mailbox in test mode, a host name and the password when asked', async () => {
     const values = emailFormValues(resource)
     values.host = 'not a host'
-    expect(await errorsOf(emailSchema(t), values)).toEqual(expect.arrayContaining(['host', 'testAddress']))
-    expect(await errorsOf(emailSchema(t, { passwordRequired: () => true }), emailFormValues(resource))).toContain('password')
+    expect(await errorsOf(emailSchema(t), values)).toEqual(
+      expect.arrayContaining(['host', 'testAddress']),
+    )
+    expect(
+      await errorsOf(emailSchema(t, { passwordRequired: () => true }), emailFormValues(resource)),
+    ).toContain('password')
   })
 
   it('sends flat changed fields only, with numbers cast and empty optionals as null', () => {
-    const values = { ...emailFormValues(resource), testAddress: 'it-team@moashir.example.sa', port: '465', password: replace('fake example mailbox passphrase') }
-    expect(emailPayload(values, resource)).toEqual({ port: 465, testAddress: 'it-team@moashir.example.sa', password: 'fake example mailbox passphrase' })
-    const full = emailPayload(emailFormValues({ ...resource, source: 'environment' }), { ...resource, source: 'environment' })
-    expect(full).toMatchObject({ host: 'smtp.mail.example.sa', port: 587, replyTo: null, ehloDomain: null, timeoutSeconds: 15, active: true })
+    const values = {
+      ...emailFormValues(resource),
+      testAddress: 'it-team@moashir.example.sa',
+      port: '465',
+      password: replace('fake example mailbox passphrase'),
+    }
+    expect(emailPayload(values, resource)).toEqual({
+      port: 465,
+      testAddress: 'it-team@moashir.example.sa',
+      password: 'fake example mailbox passphrase',
+    })
+    const full = emailPayload(emailFormValues({ ...resource, source: 'environment' }), {
+      ...resource,
+      source: 'environment',
+    })
+    expect(full).toMatchObject({
+      host: 'smtp.mail.example.sa',
+      port: 587,
+      replyTo: null,
+      ehloDomain: null,
+      timeoutSeconds: 15,
+      active: true,
+    })
     expect(full).not.toHaveProperty('smtp')
   })
 })
@@ -178,7 +254,10 @@ describe('ai schema and payload', () => {
     mode: 'test',
     source: 'none',
     placement: 'public_only',
-    notice: { ar: 'يجيب المساعد من قاعدة المعرفة فقط.', en: 'The assistant answers from the knowledge base only.' },
+    notice: {
+      ar: 'يجيب المساعد من قاعدة المعرفة فقط.',
+      en: 'The assistant answers from the knowledge base only.',
+    },
     providers: {
       openai: provider({ region: 'global', organizationId: null, projectId: null }),
       anthropic: provider({ workspaceId: null, inferenceGeo: 'global' }),
@@ -190,7 +269,9 @@ describe('ai schema and payload', () => {
     values.activeProvider = 'anthropic'
     values.providers.anthropic.workspaceId = 'workspace-1'
     values.notice.en = ''
-    expect(await errorsOf(aiSchema(t), values)).toEqual(expect.arrayContaining(['activeProvider', 'providers.anthropic.workspaceId', 'notice.en']))
+    expect(await errorsOf(aiSchema(t), values)).toEqual(
+      expect.arrayContaining(['activeProvider', 'providers.anthropic.workspaceId', 'notice.en']),
+    )
     values.providers.anthropic.dataTransferAcknowledged = true
     expect(await errorsOf(aiSchema(t), values)).not.toContain('activeProvider')
   })
@@ -201,7 +282,11 @@ describe('ai schema and payload', () => {
     values.providers.anthropic.timeoutSeconds = '2'
     values.providers.openai.model = 'gpt 4'
     expect(await errorsOf(aiSchema(t), values)).toEqual(
-      expect.arrayContaining(['providers.openai.maxOutputTokens', 'providers.anthropic.timeoutSeconds', 'providers.openai.model']),
+      expect.arrayContaining([
+        'providers.openai.maxOutputTokens',
+        'providers.anthropic.timeoutSeconds',
+        'providers.openai.model',
+      ]),
     )
   })
 
@@ -217,7 +302,11 @@ describe('ai schema and payload', () => {
     expect(payload).toEqual({
       activeProvider: 'openai',
       providers: {
-        openai: { model: 'gpt-4.1-mini', dataTransferAcknowledged: true, apiKey: 'openai_fake_example_project_key_0001' },
+        openai: {
+          model: 'gpt-4.1-mini',
+          dataTransferAcknowledged: true,
+          apiKey: 'openai_fake_example_project_key_0001',
+        },
         anthropic: { apiKey: { clear: true } },
       },
     })

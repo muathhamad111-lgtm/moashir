@@ -65,7 +65,8 @@ export function entityRoute(resolve) {
     try {
       return await resolve(info)
     } catch (error) {
-      if (error instanceof MockRejection) return rejectionResponse(error, info.request, entityMessages)
+      if (error instanceof MockRejection)
+        return rejectionResponse(error, info.request, entityMessages)
       throw error
     }
   }

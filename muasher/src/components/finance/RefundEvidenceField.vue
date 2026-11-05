@@ -21,7 +21,11 @@ const { t, locale } = useI18n()
 const STATE_VARIANTS = { idle: 'muted', pending: 'warning', clean: 'success', refused: 'danger' }
 
 const stateLabel = computed(() => t(`finance.refund.evidence.states.${props.uploadState}`))
-const sizeLabel = computed(() => (props.file ? t('finance.common.sizeKb', { size: formatFileSize(props.file.size, locale.value) }) : ''))
+const sizeLabel = computed(() =>
+  props.file
+    ? t('finance.common.sizeKb', { size: formatFileSize(props.file.size, locale.value) })
+    : '',
+)
 const isPending = computed(() => props.uploadState === UPLOAD_STATES.PENDING)
 </script>
 

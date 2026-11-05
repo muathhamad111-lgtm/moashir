@@ -8,7 +8,9 @@ const MOCK_APP_ENV = 'local'
 export function gatewayRow() {
   const gateway = paymentState()
   const row = gateway.rows[gateway.mode]
-  return row?.publishableKey && row.secretKey?.set && row.isActive ? { mode: gateway.mode, row } : null
+  return row?.publishableKey && row.secretKey?.set && row.isActive
+    ? { mode: gateway.mode, row }
+    : null
 }
 
 export function linkedPaths() {
@@ -42,7 +44,11 @@ function applePayOf(gateway, locale) {
 }
 
 function presentable(payment) {
-  return payment.status === 'created' && payment.providerIntentId && new Date(payment.expiresAt).getTime() > Date.now()
+  return (
+    payment.status === 'created' &&
+    payment.providerIntentId &&
+    new Date(payment.expiresAt).getTime() > Date.now()
+  )
 }
 
 export function checkoutOf(payment, locale) {
@@ -62,7 +68,10 @@ export function checkoutOf(payment, locale) {
     methods: [...gateway.methods],
     supportedNetworks: [...gateway.supportedNetworks],
     metadata: metadataOf(payment),
-    paymentIntent: { id: payment.providerIntentId, clientSecret: clientSecretOf(payment.providerIntentId) },
+    paymentIntent: {
+      id: payment.providerIntentId,
+      clientSecret: clientSecretOf(payment.providerIntentId),
+    },
     applePay: applePayOf(gateway, locale),
     expiresAt: payment.expiresAt,
   }

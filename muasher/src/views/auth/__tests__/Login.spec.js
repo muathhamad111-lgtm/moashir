@@ -7,7 +7,9 @@ import { createTestGlobals } from '@/test-utils'
 vi.mock('@/services/authService', () => ({
   UNAUTHENTICATED_STATUS: 401,
   authService: {
-    getLoginModes: vi.fn(() => Promise.resolve({ data: { emailPassword: true, emailOtp: true, smsOtp: false } })),
+    getLoginModes: vi.fn(() =>
+      Promise.resolve({ data: { emailPassword: true, emailOtp: true, smsOtp: false } }),
+    ),
   },
 }))
 

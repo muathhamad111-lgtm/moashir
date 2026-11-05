@@ -18,7 +18,10 @@ function enumLabel(prefix, value) {
 const facts = computed(() =>
   [
     { key: 'entityType', value: enumLabel('entities.enums.entityType', props.entity.entityType) },
-    { key: 'developmentSector', value: enumLabel('entities.enums.developmentSector', props.entity.developmentSector) },
+    {
+      key: 'developmentSector',
+      value: enumLabel('entities.enums.developmentSector', props.entity.developmentSector),
+    },
     { key: 'orgSize', value: enumLabel('entities.enums.orgSize', props.entity.orgSize) },
     { key: 'foundingYear', value: props.entity.foundingYear },
     { key: 'region', value: localizedText(props.entity.region?.name, locale.value) },
@@ -31,7 +34,9 @@ const facts = computed(() =>
 
 <template>
   <Card class="review-entity">
-    <template #header><h2 class="card__title-text">{{ t('review.entityTitle') }}</h2></template>
+    <template #header
+      ><h2 class="card__title-text">{{ t('review.entityTitle') }}</h2></template
+    >
     <dl class="review-entity__facts">
       <div v-for="fact in facts" :key="fact.key" class="review-entity__fact">
         <dt>{{ t(`review.entity.${fact.key}`) }}</dt>

@@ -18,9 +18,13 @@ const props = defineProps({
 const emit = defineEmits(['download', 'remove', 'replace'])
 const { t, locale } = useI18n()
 
-const size = computed(() => t('accredited.evidence.sizeKb', { size: formatFileSize(props.file.sizeBytes, locale.value) }))
+const size = computed(() =>
+  t('accredited.evidence.sizeKb', { size: formatFileSize(props.file.sizeBytes, locale.value) }),
+)
 const isClean = computed(() => props.file.scanStatus === SCAN_STATUSES.CLEAN)
-const isRefused = computed(() => [SCAN_STATUSES.INFECTED, SCAN_STATUSES.FAILED].includes(props.file.scanStatus))
+const isRefused = computed(() =>
+  [SCAN_STATUSES.INFECTED, SCAN_STATUSES.FAILED].includes(props.file.scanStatus),
+)
 </script>
 
 <template>
@@ -61,6 +65,8 @@ const isRefused = computed(() => [SCAN_STATUSES.INFECTED, SCAN_STATUSES.FAILED].
         @click="emit('remove', file)"
       />
     </span>
-    <p v-if="isRefused && editable" class="evidence-file__refusal" role="alert">{{ t('accredited.evidence.refusedHint') }}</p>
+    <p v-if="isRefused && editable" class="evidence-file__refusal" role="alert">
+      {{ t('accredited.evidence.refusedHint') }}
+    </p>
   </li>
 </template>

@@ -23,7 +23,12 @@ const { submitting, submit } = useManualSettle(props.transaction.id, {
   },
 })
 
-const statusOptions = computed(() => MANUAL_SETTLE_RULES.STATUSES.map((value) => ({ value, label: t(`finance.settle.statuses.${value}`) })))
+const statusOptions = computed(() =>
+  MANUAL_SETTLE_RULES.STATUSES.map((value) => ({
+    value,
+    label: t(`finance.settle.statuses.${value}`),
+  })),
+)
 </script>
 
 <template>
@@ -41,7 +46,12 @@ const statusOptions = computed(() => MANUAL_SETTLE_RULES.STATUSES.map((value) =>
         {{ t('finance.settle.lead', { reference: transaction.reference }) }}
       </p>
       <FieldRadio name="status" :label="t('finance.settle.status')" :options="statusOptions" />
-      <FieldInput name="providerPaymentId" :label="t('finance.settle.providerPaymentId')" :hint="t('finance.settle.providerPaymentIdHint')" input-dir="ltr" />
+      <FieldInput
+        name="providerPaymentId"
+        :label="t('finance.settle.providerPaymentId')"
+        :hint="t('finance.settle.providerPaymentIdHint')"
+        input-dir="ltr"
+      />
       <FieldTextarea
         name="reason"
         :label="t('finance.settle.reason')"

@@ -74,7 +74,9 @@ describe('auth store — cookie session, nothing in browser storage', () => {
   })
 
   it('retries the session check on the next navigation after a network failure', async () => {
-    authService.session.mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce({ data: user })
+    authService.session
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValueOnce({ data: user })
     const auth = useAuthStore()
     await auth.ensureSession()
     expect(auth.isAuthenticated).toBe(false)
@@ -101,9 +103,14 @@ describe('auth store — cookie session, nothing in browser storage', () => {
   })
 
   it('opens the session only when the step is authenticated', async () => {
-    authService.loginWithPassword.mockResolvedValue({ data: { step: LOGIN_STEPS.AUTHENTICATED, user } })
+    authService.loginWithPassword.mockResolvedValue({
+      data: { step: LOGIN_STEPS.AUTHENTICATED, user },
+    })
     const auth = useAuthStore()
-    const outcome = await auth.loginWithPassword({ officialEmail: 'x@example.sa', password: 'secret' })
+    const outcome = await auth.loginWithPassword({
+      officialEmail: 'x@example.sa',
+      password: 'secret',
+    })
     expect(outcome.step).toBe(LOGIN_STEPS.AUTHENTICATED)
     expect(auth.user).toEqual(user)
   })
@@ -119,8 +126,12 @@ describe('auth store — cookie session, nothing in browser storage', () => {
   )
 
   it('completes password → OTP → TOTP and only then holds the user', async () => {
-    authService.requestLoginOtp.mockResolvedValue({ data: { step: LOGIN_STEPS.OTP_REQUIRED, otp: { challengeId: '11' } } })
-    authService.verifyOtp.mockResolvedValue({ data: { step: LOGIN_STEPS.MFA_CHALLENGE, user: null } })
+    authService.requestLoginOtp.mockResolvedValue({
+      data: { step: LOGIN_STEPS.OTP_REQUIRED, otp: { challengeId: '11' } },
+    })
+    authService.verifyOtp.mockResolvedValue({
+      data: { step: LOGIN_STEPS.MFA_CHALLENGE, user: null },
+    })
     authService.challengeMfa.mockResolvedValue({ data: { step: LOGIN_STEPS.AUTHENTICATED, user } })
     const auth = useAuthStore()
     await auth.requestLoginOtp({ officialEmail: 'x@example.sa', channel: 'email' })

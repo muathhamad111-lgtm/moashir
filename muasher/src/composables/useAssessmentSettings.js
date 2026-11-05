@@ -6,7 +6,11 @@ import { useAuthStore } from '@/stores/auth'
 import { assessmentSettingsService } from '@/services/assessmentSettingsService'
 import { logger } from '@/utils/logger'
 import { firstFieldErrors } from '@/utils/payments/financeErrors'
-import { assessmentSettingsSchema, changedAssessmentSettings, settingsFormValues } from '@/utils/accredited/assessmentSettingsForm'
+import {
+  assessmentSettingsSchema,
+  changedAssessmentSettings,
+  settingsFormValues,
+} from '@/utils/accredited/assessmentSettingsForm'
 
 const REASON_REQUIRED = 'reason_required'
 const DEFAULT_LIMITS = { min: 1, max: 120 }
@@ -23,7 +27,9 @@ export function useAssessmentSettings() {
   const pending = ref(null)
 
   const limits = computed(() => settings.value?.accreditedReviewSlaLimits ?? DEFAULT_LIMITS)
-  const form = useForm({ validationSchema: computed(() => assessmentSettingsSchema(t, limits.value)) })
+  const form = useForm({
+    validationSchema: computed(() => assessmentSettingsSchema(t, limits.value)),
+  })
 
   function apply(data) {
     settings.value = data
@@ -56,7 +62,8 @@ export function useAssessmentSettings() {
       toast.success(t('settings.assessment.saved'))
       return true
     } catch (error) {
-      if (error?.normalized?.code === REASON_REQUIRED && !payload.reason) return askForReason(payload)
+      if (error?.normalized?.code === REASON_REQUIRED && !payload.reason)
+        return askForReason(payload)
       form.setErrors(firstFieldErrors(error))
       toast.error(error?.normalized?.message || t('errors.unexpected'))
       return false
@@ -77,5 +84,16 @@ export function useAssessmentSettings() {
     return saved
   }
 
-  return { status, errorMessage, settings, limits, form, saving, reasonOpen, load, submit, confirmReason }
+  return {
+    status,
+    errorMessage,
+    settings,
+    limits,
+    form,
+    saving,
+    reasonOpen,
+    load,
+    submit,
+    confirmReason,
+  }
 }

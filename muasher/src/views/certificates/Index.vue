@@ -14,7 +14,8 @@ import { withLatinNumerals } from '@/utils/numerals'
 const { t, locale } = useI18n()
 const toast = useToast()
 
-const { status, errorMessage, certificates, downloading, localized, load, download } = useCertificates()
+const { status, errorMessage, certificates, downloading, localized, load, download } =
+  useCertificates()
 
 onMounted(load)
 

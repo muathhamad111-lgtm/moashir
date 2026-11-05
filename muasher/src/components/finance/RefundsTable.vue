@@ -29,7 +29,10 @@ const columns = computed(() => [
 ])
 
 function dayOf(value) {
-  return formatDate(`${value}T12:00:00+03:00`, locale.value, { dateStyle: 'medium', timeZone: 'Asia/Riyadh' })
+  return formatDate(`${value}T12:00:00+03:00`, locale.value, {
+    dateStyle: 'medium',
+    timeZone: 'Asia/Riyadh',
+  })
 }
 </script>
 
@@ -44,24 +47,35 @@ function dayOf(value) {
     @retry="emit('retry')"
   >
     <template #cell-payment="{ item }">
-      <RouterLink class="transactions-table__link" :to="{ name: ROUTE_NAMES.FINANCE_TRANSACTION, params: { id: item.payment.id } }">
+      <RouterLink
+        class="transactions-table__link"
+        :to="{ name: ROUTE_NAMES.FINANCE_TRANSACTION, params: { id: item.payment.id } }"
+      >
         <bdi dir="ltr">{{ item.payment.reference }}</bdi>
       </RouterLink>
     </template>
-    <template #cell-amount="{ item }"><MoneyAmount :value="item.amount" :currency="item.currency" strong /></template>
+    <template #cell-amount="{ item }"
+      ><MoneyAmount :value="item.amount" :currency="item.currency" strong
+    /></template>
     <template #cell-refundedOn="{ item }">{{ dayOf(item.refundedOn) }}</template>
-    <template #cell-transferReference="{ item }"><bdi dir="ltr">{{ item.transferReference }}</bdi></template>
+    <template #cell-transferReference="{ item }"
+      ><bdi dir="ltr">{{ item.transferReference }}</bdi></template
+    >
     <template #cell-recordedBy="{ item }">{{ item.recordedBy.name }}</template>
     <template #cell-evidence="{ item }">
       <span class="refunds-table__evidence">
-        <Badge :variant="item.evidence.scanStatus === SCAN_STATUSES.CLEAN ? 'success' : 'danger'">{{ t(`finance.scan.${item.evidence.scanStatus}`) }}</Badge>
+        <Badge :variant="item.evidence.scanStatus === SCAN_STATUSES.CLEAN ? 'success' : 'danger'">{{
+          t(`finance.scan.${item.evidence.scanStatus}`)
+        }}</Badge>
         <BaseButton
           variant="ghost"
           size="sm"
           icon="fa-solid fa-file-arrow-down"
           :disabled="item.evidence.scanStatus !== SCAN_STATUSES.CLEAN"
           :loading="busy[item.id] === true"
-          :aria-label="t('finance.refund.downloadEvidenceOf', { reference: item.payment.reference })"
+          :aria-label="
+            t('finance.refund.downloadEvidenceOf', { reference: item.payment.reference })
+          "
           @click="emit('download', item)"
         >
           {{ t('finance.refund.downloadEvidence') }}

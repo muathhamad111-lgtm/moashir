@@ -55,7 +55,10 @@ watch(
       <fieldset v-else class="entity-form__sections" :disabled="form.submitting.value">
         <EntityIdentityFields />
         <EntityClassificationFields />
-        <EntityLocationFields :region-options="regions.regionOptions.value" :city-options-for="regions.cityOptionsFor" />
+        <EntityLocationFields
+          :region-options="regions.regionOptions.value"
+          :city-options-for="regions.cityOptionsFor"
+        />
         <EntityMetricsFields />
         <FieldTextarea
           name="reason"

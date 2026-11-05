@@ -21,7 +21,10 @@ const YEAR_PATTERN = /^\d{4}$/
 const CITY_NAME_MAX = 120
 
 function requiredText(t, max) {
-  return yupString().trim().required(t('validation.required')).max(max, t('entities.validation.maxChars', { max }))
+  return yupString()
+    .trim()
+    .required(t('validation.required'))
+    .max(max, t('entities.validation.maxChars', { max }))
 }
 
 function choice(t, values) {
@@ -39,17 +42,27 @@ function foundingYear(t) {
   const currentYear = new Date().getFullYear()
   return yupString()
     .required(t('validation.required'))
-    .test('year', t('entities.validation.foundingYear', { min: FOUNDING_YEAR_MIN, max: currentYear }), (value) => {
-      const text = toWesternDigits(value)
-      return YEAR_PATTERN.test(text) && Number(text) >= FOUNDING_YEAR_MIN && Number(text) <= currentYear
-    })
+    .test(
+      'year',
+      t('entities.validation.foundingYear', { min: FOUNDING_YEAR_MIN, max: currentYear }),
+      (value) => {
+        const text = toWesternDigits(value)
+        return (
+          YEAR_PATTERN.test(text) &&
+          Number(text) >= FOUNDING_YEAR_MIN &&
+          Number(text) <= currentYear
+        )
+      },
+    )
 }
 
 export function entityProfileShape(t) {
   return {
     name: yupObject({
       ar: requiredText(t, NAME_MAX),
-      en: yupString().trim().max(NAME_MAX, t('entities.validation.maxChars', { max: NAME_MAX })),
+      en: yupString()
+        .trim()
+        .max(NAME_MAX, t('entities.validation.maxChars', { max: NAME_MAX })),
     }),
     authorizedPersonName: requiredText(t, PERSON_NAME.MAX).min(
       PERSON_NAME.MIN,
@@ -57,14 +70,22 @@ export function entityProfileShape(t) {
     ),
     phone: yupString()
       .trim()
-      .test('phone', t('entities.validation.phone'), (value) => !value || PHONE_PATTERN.test(toWesternDigits(value))),
+      .test(
+        'phone',
+        t('entities.validation.phone'),
+        (value) => !value || PHONE_PATTERN.test(toWesternDigits(value)),
+      ),
     entityType: choice(t, ENTITY_TYPES),
     developmentSector: choice(t, DEVELOPMENT_SECTORS),
     orgSize: choice(t, ORG_SIZES),
     foundingYear: foundingYear(t),
     regionId: yupString().required(t('validation.required')),
     cityId: yupString().required(t('validation.required')),
-    governanceGrade: yupString().test('grade', t('entities.validation.governanceGrade'), isValidGovernanceGrade),
+    governanceGrade: yupString().test(
+      'grade',
+      t('entities.validation.governanceGrade'),
+      isValidGovernanceGrade,
+    ),
     employeesCount: optionalCount(t),
     annualBeneficiariesCount: optionalCount(t),
     hasStrategicPlan: choice(t, ['yes', 'no']),
@@ -82,7 +103,11 @@ export function staffProfileSchema(t) {
 export function registrationSchema(t) {
   return yupObject({
     ...entityProfileShape(t),
-    officialEmail: yupString().trim().required(t('validation.required')).email(t('validation.email')).max(EMAIL_MAX),
+    officialEmail: yupString()
+      .trim()
+      .required(t('validation.required'))
+      .email(t('validation.email'))
+      .max(EMAIL_MAX),
     password: yupString()
       .required(t('validation.required'))
       .min(PASSWORD_LENGTH.MIN, t('entities.validation.passwordMin', { min: PASSWORD_LENGTH.MIN }))
@@ -113,24 +138,40 @@ export function optionalReasonSchema(t) {
   return yupObject({
     reason: yupString()
       .trim()
-      .test('min', t('validation.minChars', { min: REASON_LENGTH.MIN }), (value) => !value || value.length >= REASON_LENGTH.MIN),
+      .test(
+        'min',
+        t('validation.minChars', { min: REASON_LENGTH.MIN }),
+        (value) => !value || value.length >= REASON_LENGTH.MIN,
+      ),
   })
 }
 
 export function emailChangeSchema(t) {
   return yupObject({
-    newEmail: yupString().trim().required(t('validation.required')).email(t('validation.email')).max(EMAIL_MAX),
+    newEmail: yupString()
+      .trim()
+      .required(t('validation.required'))
+      .email(t('validation.email'))
+      .max(EMAIL_MAX),
   })
 }
 
 export function permanentDeletionSchema(t, reference) {
   return yupObject({
-    disclaimerAcknowledged: yupBoolean().oneOf([true], t('entities.permanent.validation.disclaimer')),
+    disclaimerAcknowledged: yupBoolean().oneOf(
+      [true],
+      t('entities.permanent.validation.disclaimer'),
+    ),
     confirmation: yupString()
       .trim()
       .required(t('validation.required'))
-      .test('reference', t('entities.permanent.validation.reference', { reference }), (value) =>
-        String(value ?? '').trim().toUpperCase() === reference,
+      .test(
+        'reference',
+        t('entities.permanent.validation.reference', { reference }),
+        (value) =>
+          String(value ?? '')
+            .trim()
+            .toUpperCase() === reference,
       ),
     reason: reasonText(t, REASON_LENGTH.PERMANENT_MIN),
   })
@@ -151,7 +192,13 @@ export function privacyRequestSchema(t) {
     details: yupString()
       .trim()
       .required(t('validation.required'))
-      .min(PRIVACY_DETAILS_LENGTH.MIN, t('validation.minChars', { min: PRIVACY_DETAILS_LENGTH.MIN }))
-      .max(PRIVACY_DETAILS_LENGTH.MAX, t('entities.validation.maxChars', { max: PRIVACY_DETAILS_LENGTH.MAX })),
+      .min(
+        PRIVACY_DETAILS_LENGTH.MIN,
+        t('validation.minChars', { min: PRIVACY_DETAILS_LENGTH.MIN }),
+      )
+      .max(
+        PRIVACY_DETAILS_LENGTH.MAX,
+        t('entities.validation.maxChars', { max: PRIVACY_DETAILS_LENGTH.MAX }),
+      ),
   })
 }

@@ -35,7 +35,9 @@ function noteDate(at) {
     <div class="role-dashboard__two-col">
       <Card :title="t('dashboard.assessor.averageDuration')">
         <div class="role-dashboard__metric">
-          <span class="role-dashboard__metric-value">{{ n(summary.averageDurationDays, 'default') }}</span>
+          <span class="role-dashboard__metric-value">{{
+            n(summary.averageDurationDays, 'default')
+          }}</span>
           <span class="role-dashboard__metric-unit">{{ t('dashboard.assessor.days') }}</span>
         </div>
         <p class="role-dashboard__metric-note">{{ t('dashboard.assessor.averageDurationNote') }}</p>
@@ -50,7 +52,9 @@ function noteDate(at) {
         <li v-for="note in summary.latestNotes" :key="note.id" class="role-dashboard__note">
           <div class="role-dashboard__note-head">
             <span class="role-dashboard__note-entity">{{ localized(note.entity) }}</span>
-            <time class="role-dashboard__note-date" :datetime="note.at">{{ noteDate(note.at) }}</time>
+            <time class="role-dashboard__note-date" :datetime="note.at">{{
+              noteDate(note.at)
+            }}</time>
           </div>
           <p class="role-dashboard__note-text">{{ localized(note.note) }}</p>
         </li>

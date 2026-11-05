@@ -61,7 +61,11 @@ const address = computed(() =>
             </span>
             <span class="home-contact__item-body">
               <span class="home-contact__item-label">{{ t('public.home.contact.phone') }}</span>
-              <a class="home-contact__item-value" :href="`tel:${phone.replace(/\s+/g, '')}`" dir="ltr">
+              <a
+                class="home-contact__item-value"
+                :href="`tel:${phone.replace(/\s+/g, '')}`"
+                dir="ltr"
+              >
                 {{ phone }}
               </a>
             </span>
@@ -77,7 +81,11 @@ const address = computed(() =>
           </li>
         </ul>
 
-        <ul v-if="social.length" class="home-contact__social" :aria-label="t('public.home.contact.social')">
+        <ul
+          v-if="social.length"
+          class="home-contact__social"
+          :aria-label="t('public.home.contact.social')"
+        >
           <li v-for="link in social" :key="link.platform">
             <a
               class="home-contact__social-link"

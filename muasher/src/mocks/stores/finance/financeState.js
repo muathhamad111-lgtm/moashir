@@ -18,7 +18,10 @@ const PERSISTED = import.meta.env.MODE !== 'test'
 let state = null
 
 function seededState() {
-  const payments = paymentsSeed().map((payment) => ({ ...payment, entityName: { ...financeEntitiesSeed[payment.entityId] } }))
+  const payments = paymentsSeed().map((payment) => ({
+    ...payment,
+    entityName: { ...financeEntitiesSeed[payment.entityId] },
+  }))
   const refunds = refundsSeed()
   const { receipts, issued } = issueSeedReceipts(payments, refunds)
   return {

@@ -1,6 +1,12 @@
 import { http } from '../contract/http'
 import { envelope, noContent } from '../contract/responses'
-import { actorWith, entityReject, entityRoute, readJson, signedInUser } from '../stores/entityRejection'
+import {
+  actorWith,
+  entityReject,
+  entityRoute,
+  readJson,
+  signedInUser,
+} from '../stores/entityRejection'
 import { ENTITY_PERMISSIONS as P, accessOf, boundEntity } from '../stores/entityAccess'
 import { deletionImpactResource, entityResourceFor } from '../stores/entitySerializers'
 import { ERASURE_KEPT_RECORDS } from '@/constants/entityEnums'
@@ -52,7 +58,11 @@ export const entityLifecycleHandlers = [
     entityRoute(({ params }) => {
       actorWith(P.VERIFICATION_RESEND)
       const entity = resendVerification(boundEntity(params.id))
-      return envelope({ verificationRemindedAt: entity.verificationRemindedAt }, {}, { status: 202 })
+      return envelope(
+        { verificationRemindedAt: entity.verificationRemindedAt },
+        {},
+        { status: 202 },
+      )
     }),
   ),
 
@@ -62,7 +72,9 @@ export const entityLifecycleHandlers = [
       actorWith(P.DELETE)
       const entity = boundEntity(params.id)
       const openRequests = deletionImpactOf(entity)
-      return envelope(deletionImpactResource(openRequests, ERASURE_KEPT_RECORDS, { frozen: isDeleted(entity) }))
+      return envelope(
+        deletionImpactResource(openRequests, ERASURE_KEPT_RECORDS, { frozen: isDeleted(entity) }),
+      )
     }),
   ),
 

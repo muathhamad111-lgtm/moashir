@@ -4,11 +4,9 @@ import { serviceRequest } from './serviceRequest'
 
 export const awardResultsService = {
   listResults() {
-    return serviceRequest(
-      'awardResults.listResults',
-      () => apiClient.get('/award/results'),
-      { entity: 'award-results' },
-    )
+    return serviceRequest('awardResults.listResults', () => apiClient.get('/award/results'), {
+      entity: 'award-results',
+    })
   },
 
   setRegionalRank(assessmentId, rank) {
@@ -29,11 +27,9 @@ export const awardResultsService = {
   },
 
   listNational() {
-    return serviceRequest(
-      'awardResults.listNational',
-      () => apiClient.get('/award/national'),
-      { entity: 'award-results' },
-    )
+    return serviceRequest('awardResults.listNational', () => apiClient.get('/award/national'), {
+      entity: 'award-results',
+    })
   },
 
   setNationalRank(assessmentId, rank) {

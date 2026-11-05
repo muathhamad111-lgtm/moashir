@@ -3,7 +3,11 @@ import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
 
 function seed(page, locale, roles = ['entity']) {
-  return seedSignedIn(page, { id: 5001, roles, entityId: roles.includes('entity') ? 5001 : null, name: 'Entity' }, { locale })
+  return seedSignedIn(
+    page,
+    { id: 5001, roles, entityId: roles.includes('entity') ? 5001 : null, name: 'Entity' },
+    { locale },
+  )
 }
 
 test.beforeEach(async ({ page }, testInfo) => {
@@ -26,7 +30,10 @@ test('shows the six filter tabs and switches to unread', async ({ page }) => {
   await page.goto('/notifications')
   await waitForList(page)
   await expect(page.locator('.tabs__tab')).toHaveCount(6)
-  await page.getByRole('tab', { name: /unread|غير مقروء/i }).first().click()
+  await page
+    .getByRole('tab', { name: /unread|غير مقروء/i })
+    .first()
+    .click()
   await expect(page.locator('.notification-center-item.is-unread').first()).toBeVisible({
     timeout: 10000,
   })
@@ -46,7 +53,10 @@ test('marks a single notification as read', async ({ page }) => {
 test('opens the audit-log modal with the delivery entries', async ({ page }) => {
   await page.goto('/notifications')
   await waitForList(page)
-  await page.getByRole('button', { name: /audit log|سجل التدقيق/i }).first().click()
+  await page
+    .getByRole('button', { name: /audit log|سجل التدقيق/i })
+    .first()
+    .click()
   await expect(page.locator('.modal__panel')).toBeVisible()
   await expect(page.locator('.notification-audit')).toBeVisible()
 })
@@ -59,16 +69,25 @@ test('capture notifications center screens for the design review', async ({ page
   await page.waitForTimeout(500)
   await page.screenshot({ path: `test-results/notifications-center-${suffix}.png`, fullPage: true })
 
-  await page.getByRole('tab', { name: /unread|غير مقروء/i }).first().click()
+  await page
+    .getByRole('tab', { name: /unread|غير مقروء/i })
+    .first()
+    .click()
   await page.waitForTimeout(600)
   await page.screenshot({
     path: `test-results/notifications-center-unread-${suffix}.png`,
     fullPage: true,
   })
 
-  await page.getByRole('tab', { name: /^all$|الكل/i }).first().click()
+  await page
+    .getByRole('tab', { name: /^all$|الكل/i })
+    .first()
+    .click()
   await waitForList(page)
-  await page.getByRole('button', { name: /audit log|سجل التدقيق/i }).first().click()
+  await page
+    .getByRole('button', { name: /audit log|سجل التدقيق/i })
+    .first()
+    .click()
   await expect(page.locator('.modal__panel')).toBeVisible()
   await page.waitForTimeout(600)
   await page.screenshot({

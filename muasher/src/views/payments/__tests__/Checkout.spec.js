@@ -32,7 +32,11 @@ async function settle(rounds = 30) {
 function mountCheckout(purpose) {
   const globals = createTestGlobals({ locale: 'en' })
   setActivePinia(globals.pinia)
-  return mount(Checkout, { props: { purpose }, global: { ...globals, stubs: { teleport: true } }, attachTo: document.body })
+  return mount(Checkout, {
+    props: { purpose },
+    global: { ...globals, stubs: { teleport: true } },
+    attachTo: document.body,
+  })
 }
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
@@ -69,9 +73,13 @@ describe('checkout view', () => {
     const wrapper = mountCheckout('accredited')
     await wrapper.find('.checkout__start .btn--primary').trigger('click')
     await settle()
-    wrapper.find('[data-fake-moyasar="form"]').element.dispatchEvent(new Event('submit', { cancelable: true }))
+    wrapper
+      .find('[data-fake-moyasar="form"]')
+      .element.dispatchEvent(new Event('submit', { cancelable: true }))
     await settle()
-    expect(assign).toHaveBeenCalledWith(expect.stringMatching(/\/payments\/[0-9a-f-]{36}\/return\?id=mock_pay_/))
+    expect(assign).toHaveBeenCalledWith(
+      expect.stringMatching(/\/payments\/[0-9a-f-]{36}\/return\?id=mock_pay_/),
+    )
     wrapper.unmount()
   })
 

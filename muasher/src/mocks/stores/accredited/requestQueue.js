@@ -5,7 +5,13 @@ import { activeAssignment, isOverdue, reviewedRecords } from './accreditedRecord
 import { REVIEWED_PATHS, pathRules } from '../assessments/reviewedPaths'
 import { isPositiveInteger, throwIfErrors } from './accreditedValidation'
 
-const FILTER_KEYS = ['filter[path]', 'filter[status]', 'filter[overdue]', 'filter[assessorId]', 'filter[cycleId]']
+const FILTER_KEYS = [
+  'filter[path]',
+  'filter[status]',
+  'filter[overdue]',
+  'filter[assessorId]',
+  'filter[cycleId]',
+]
 const ADVANCED = 'advanced'
 const SORTABLE = ['submittedAt', 'dueAt', 'status', 'createdAt']
 const OVERDUE_VALUES = { true: true, 1: true, false: false, 0: false }
@@ -32,25 +38,30 @@ function statesOf(paths) {
 }
 
 function checkFilters(query, errors) {
-  if ([...query.keys()].some((key) => key.startsWith('filter[') && !FILTER_KEYS.includes(key))) invalid(errors, 'filter')
+  if ([...query.keys()].some((key) => key.startsWith('filter[') && !FILTER_KEYS.includes(key)))
+    invalid(errors, 'filter')
   const path = query.get('filter[path]')
   if (path && !REVIEWED_PATHS.includes(path)) invalid(errors, 'filter.path')
   const status = query.get('filter[status]')
   if (status && !statesOf(pathsOf(query)).includes(status)) invalid(errors, 'filter.status')
   const cycleId = query.get('filter[cycleId]')
-  if (cycleId && !isPositiveInteger(cycleId)) errors['filter.cycleId'] = [fieldMessage('validation.integer', {}, 'filter')]
+  if (cycleId && !isPositiveInteger(cycleId))
+    errors['filter.cycleId'] = [fieldMessage('validation.integer', {}, 'filter')]
   const overdue = query.get('filter[overdue]')
   if (overdue && !(overdue in OVERDUE_VALUES)) invalid(errors, 'filter.overdue')
   const assessorId = query.get('filter[assessorId]')
-  if (assessorId && !isPositiveInteger(assessorId)) errors['filter.assessorId'] = [fieldMessage('validation.integer', {}, 'filter')]
+  if (assessorId && !isPositiveInteger(assessorId))
+    errors['filter.assessorId'] = [fieldMessage('validation.integer', {}, 'filter')]
 }
 
 function checkPaging(query, errors) {
   const sort = query.get('sort')
   if (sort && !sortFieldOf(sort)) invalid(errors, 'sort', 'sort')
-  if ((query.get('search') ?? '').length > SEARCH_MAX) errors.search = [fieldMessage('validation.max_chars', { max: SEARCH_MAX }, 'filter')]
+  if ((query.get('search') ?? '').length > SEARCH_MAX)
+    errors.search = [fieldMessage('validation.max_chars', { max: SEARCH_MAX }, 'filter')]
   const page = query.get('page')
-  if (page && !isPositiveInteger(page)) errors.page = [fieldMessage('validation.integer', {}, 'page')]
+  if (page && !isPositiveInteger(page))
+    errors.page = [fieldMessage('validation.integer', {}, 'page')]
   const perPage = query.get('perPage')
   if (perPage && (!isPositiveInteger(perPage) || Number(perPage) > MAX_PER_PAGE)) {
     errors.perPage = [fieldMessage('validation.max', { max: MAX_PER_PAGE }, 'perPage')]
@@ -78,7 +89,9 @@ function matchesSearch(record, needle, normalize) {
   if (!needle) return true
   const entity = entityOf(record)
   const target = normalize(needle)
-  return [record.number, entity.name.ar, entity.name.en, entity.owner.email].some((value) => normalize(value ?? '').includes(target))
+  return [record.number, entity.name.ar, entity.name.en, entity.owner.email].some((value) =>
+    normalize(value ?? '').includes(target),
+  )
 }
 
 function compareBy(field, descending) {
@@ -104,7 +117,10 @@ function matchesFilters(record, filters) {
 export function queueRecords(filters, normalize) {
   return reviewedRecords()
     .filter((record) => pathRules(record.path).inQueue(record.status) && !isFrozen(record))
-    .filter((record) => matchesFilters(record, filters) && matchesSearch(record, filters.search, normalize))
+    .filter(
+      (record) =>
+        matchesFilters(record, filters) && matchesSearch(record, filters.search, normalize),
+    )
     .sort(compareBy(sortFieldOf(filters.sort), filters.sort.startsWith('-')))
 }
 
@@ -116,7 +132,10 @@ export function queueStats(records, filters) {
   return {
     total: records.length,
     byStatus: Object.fromEntries(
-      statesOf(filters.paths).map((status) => [wireKeyOf(status), records.filter((record) => record.status === status).length]),
+      statesOf(filters.paths).map((status) => [
+        wireKeyOf(status),
+        records.filter((record) => record.status === status).length,
+      ]),
     ),
     overdue: records.filter((record) => isOverdue(record)).length,
   }

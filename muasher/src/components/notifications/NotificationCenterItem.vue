@@ -2,10 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Badge from '@/components/ui/Badge.vue'
-import {
-  NOTIFICATION_TYPE_ICONS,
-  NOTIFICATION_TYPE_VARIANTS,
-} from '@/constants/notifications'
+import { NOTIFICATION_TYPE_ICONS, NOTIFICATION_TYPE_VARIANTS } from '@/constants/notifications'
 import { formatRelativeTime, formatDate } from '@/utils/datetime'
 
 const props = defineProps({
@@ -20,15 +17,11 @@ const { t, locale } = useI18n()
 const icon = computed(
   () => NOTIFICATION_TYPE_ICONS[props.notification.type] ?? NOTIFICATION_TYPE_ICONS.info,
 )
-const variant = computed(
-  () => NOTIFICATION_TYPE_VARIANTS[props.notification.type] ?? 'info',
-)
+const variant = computed(() => NOTIFICATION_TYPE_VARIANTS[props.notification.type] ?? 'info')
 const typeLabel = computed(() => t(`notifications.types.${props.notification.type}`))
 const title = computed(() => props.notification.title?.[locale.value] ?? '')
 const body = computed(() => props.notification.body?.[locale.value] ?? '')
-const relativeTime = computed(() =>
-  formatRelativeTime(props.notification.createdAt, locale.value),
-)
+const relativeTime = computed(() => formatRelativeTime(props.notification.createdAt, locale.value))
 const absoluteTime = computed(() =>
   formatDate(props.notification.createdAt, locale.value, {
     dateStyle: 'medium',
@@ -40,10 +33,7 @@ const absoluteTime = computed(() =>
 <template>
   <li
     class="notification-center-item"
-    :class="[
-      `notification-center-item--${notification.type}`,
-      { 'is-unread': !notification.read },
-    ]"
+    :class="[`notification-center-item--${notification.type}`, { 'is-unread': !notification.read }]"
   >
     <span class="notification-center-item__icon" aria-hidden="true">
       <i :class="icon"></i>
@@ -52,11 +42,7 @@ const absoluteTime = computed(() =>
       <div class="notification-center-item__meta">
         <Badge :variant="variant">{{ typeLabel }}</Badge>
         <span class="notification-center-item__code">{{ notification.code }}</span>
-        <span
-          v-if="!notification.read"
-          class="notification-center-item__unread"
-          role="status"
-        >
+        <span v-if="!notification.read" class="notification-center-item__unread" role="status">
           <span class="notification-center-item__dot" aria-hidden="true"></span>
           {{ t('notifications.center.unread') }}
         </span>

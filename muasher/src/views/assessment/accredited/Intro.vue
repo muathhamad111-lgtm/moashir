@@ -21,25 +21,55 @@ const PAY_PATH = '/assessment/accredited/pay'
 const { t } = useI18n()
 const router = useRouter()
 const { canAll } = usePermissions()
-const { status, errorMessage, current, price, priceStatus, isAuthenticated, isEntity, load } = useAccreditedIntro()
+const { status, errorMessage, current, price, priceStatus, isAuthenticated, isEntity, load } =
+  useAccreditedIntro()
 const { sectionByKey, localized } = usePublicHome()
 
 const content = computed(() => sectionByKey('accredited-intro'))
 const benefits = computed(() => [...(content.value?.items ?? [])].sort((a, b) => a.order - b.order))
-const introTitle = computed(() => (content.value?.title ? localized(content.value.title) : '') || t('accredited.intro.title'))
-const introSubtitle = computed(() => (content.value?.subtitle ? localized(content.value.subtitle) : '') || t('accredited.intro.subtitle'))
-const introDescription = computed(() => (content.value?.description ? localized(content.value.description) : ''))
+const introTitle = computed(
+  () => (content.value?.title ? localized(content.value.title) : '') || t('accredited.intro.title'),
+)
+const introSubtitle = computed(
+  () =>
+    (content.value?.subtitle ? localized(content.value.subtitle) : '') ||
+    t('accredited.intro.subtitle'),
+)
+const introDescription = computed(() =>
+  content.value?.description ? localized(content.value.description) : '',
+)
 const feesCopy = computed(() => content.value?.meta?.fees ?? null)
 const whyRecommended = computed(() => content.value?.meta?.whyRecommended ?? null)
 const paymentCopy = computed(() => content.value?.meta?.payment ?? null)
-const canPay = computed(() => canAll([PERMISSIONS.PAYMENTS_OWN_CREATE, PERMISSIONS.ASSESSMENT_ACCREDITED_MANAGE]))
+const canPay = computed(() =>
+  canAll([PERMISSIONS.PAYMENTS_OWN_CREATE, PERMISSIONS.ASSESSMENT_ACCREDITED_MANAGE]),
+)
 
 const action = computed(() => {
-  if (!isAuthenticated.value) return { key: 'login', icon: 'fa-solid fa-arrow-right-to-bracket', to: { name: ROUTE_NAMES.AUTH_LOGIN, query: { redirect: PAY_PATH } } }
-  if (current.value?.active) return { key: 'resume', icon: 'fa-solid fa-file-pen', to: { name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_FORM, params: { id: current.value.active.id } } }
+  if (!isAuthenticated.value)
+    return {
+      key: 'login',
+      icon: 'fa-solid fa-arrow-right-to-bracket',
+      to: { name: ROUTE_NAMES.AUTH_LOGIN, query: { redirect: PAY_PATH } },
+    }
+  if (current.value?.active)
+    return {
+      key: 'resume',
+      icon: 'fa-solid fa-file-pen',
+      to: { name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_FORM, params: { id: current.value.active.id } },
+    }
   if (!isEntity.value || !canPay.value) return null
-  if (current.value?.awaitingPayment) return { key: 'continuePayment', icon: 'fa-solid fa-credit-card', to: { name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_PAY } }
-  return { key: 'pay', icon: 'fa-solid fa-credit-card', to: { name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_PAY } }
+  if (current.value?.awaitingPayment)
+    return {
+      key: 'continuePayment',
+      icon: 'fa-solid fa-credit-card',
+      to: { name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_PAY },
+    }
+  return {
+    key: 'pay',
+    icon: 'fa-solid fa-credit-card',
+    to: { name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_PAY },
+  }
 })
 
 onMounted(load)
@@ -82,10 +112,14 @@ const DEMO_MODULES = [MOCK_MODULES.CMS]
           </template>
           <ul class="accredited-intro__benefits">
             <li v-for="benefit in benefits" :key="benefit.id" class="accredited-intro__benefit">
-              <span class="accredited-intro__benefit-icon" aria-hidden="true"><i :class="benefit.icon || 'fa-solid fa-check'"></i></span>
+              <span class="accredited-intro__benefit-icon" aria-hidden="true"
+                ><i :class="benefit.icon || 'fa-solid fa-check'"></i
+              ></span>
               <span class="accredited-intro__benefit-body">
                 <span class="accredited-intro__benefit-title">{{ localized(benefit.title) }}</span>
-                <span class="accredited-intro__benefit-desc">{{ localized(benefit.description) }}</span>
+                <span class="accredited-intro__benefit-desc">{{
+                  localized(benefit.description)
+                }}</span>
               </span>
             </li>
           </ul>

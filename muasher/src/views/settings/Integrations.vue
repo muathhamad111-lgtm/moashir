@@ -27,7 +27,11 @@ onMounted(load)
       <p class="integrations-overview__desc">{{ t('integrations.overview.description') }}</p>
     </header>
 
-    <div v-if="status === OVERVIEW_STATES.LOADING" class="integrations-overview__grid" aria-busy="true">
+    <div
+      v-if="status === OVERVIEW_STATES.LOADING"
+      class="integrations-overview__grid"
+      aria-busy="true"
+    >
       <Skeleton v-for="index in 4" :key="index" variant="block" />
     </div>
     <EmptyState
@@ -36,8 +40,17 @@ onMounted(load)
       :title="t('integrations.forbidden.title')"
       :message="t('integrations.forbidden.message')"
     />
-    <ErrorState v-else-if="status === OVERVIEW_STATES.ERROR" :message="errorMessage" @retry="load" />
-    <EmptyState v-else-if="status === OVERVIEW_STATES.EMPTY" icon="fa-solid fa-plug" :title="t('integrations.overview.emptyTitle')" :message="t('integrations.overview.emptyMessage')" />
+    <ErrorState
+      v-else-if="status === OVERVIEW_STATES.ERROR"
+      :message="errorMessage"
+      @retry="load"
+    />
+    <EmptyState
+      v-else-if="status === OVERVIEW_STATES.EMPTY"
+      icon="fa-solid fa-plug"
+      :title="t('integrations.overview.emptyTitle')"
+      :message="t('integrations.overview.emptyMessage')"
+    />
     <template v-else>
       <TestModeBanner v-if="paymentTestInProduction" />
       <div class="integrations-overview__grid">

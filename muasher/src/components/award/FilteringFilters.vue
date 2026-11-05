@@ -15,15 +15,45 @@ const props = defineProps({
 const emit = defineEmits(['filter', 'sort'])
 const { t, locale } = useI18n()
 
-const statusOptions = computed(() => [{ value: '', label: t('filtering.filters.allStatuses') }, ...FILTERING_STATUSES.map((value) => ({ value, label: t(statusLabelKey(value)) }))])
-const regionOptions = computed(() => [{ value: '', label: t('filtering.filters.allRegions') }, ...props.regions.map((region) => ({ value: String(region.id), label: localizedText(region.name, locale.value) }))])
-const sortOptions = computed(() => FILTERING_SORTS.map((value) => ({ value, label: t(`filtering.sorts.${value.replace('-', 'desc_')}`) })))
+const statusOptions = computed(() => [
+  { value: '', label: t('filtering.filters.allStatuses') },
+  ...FILTERING_STATUSES.map((value) => ({ value, label: t(statusLabelKey(value)) })),
+])
+const regionOptions = computed(() => [
+  { value: '', label: t('filtering.filters.allRegions') },
+  ...props.regions.map((region) => ({
+    value: String(region.id),
+    label: localizedText(region.name, locale.value),
+  })),
+])
+const sortOptions = computed(() =>
+  FILTERING_SORTS.map((value) => ({
+    value,
+    label: t(`filtering.sorts.${value.replace('-', 'desc_')}`),
+  })),
+)
 </script>
 
 <template>
   <div class="cycle-filters">
-    <DropdownList :model-value="filters.status" :options="statusOptions" :placeholder="t('filtering.filters.status')" @update:model-value="emit('filter', 'status', $event)" />
-    <DropdownList v-if="regions.length" :model-value="filters.regionId" :options="regionOptions" :placeholder="t('filtering.filters.region')" @update:model-value="emit('filter', 'regionId', $event)" />
-    <DropdownList :model-value="sort" :options="sortOptions" :placeholder="t('filtering.filters.sort')" @update:model-value="emit('sort', $event)" />
+    <DropdownList
+      :model-value="filters.status"
+      :options="statusOptions"
+      :placeholder="t('filtering.filters.status')"
+      @update:model-value="emit('filter', 'status', $event)"
+    />
+    <DropdownList
+      v-if="regions.length"
+      :model-value="filters.regionId"
+      :options="regionOptions"
+      :placeholder="t('filtering.filters.region')"
+      @update:model-value="emit('filter', 'regionId', $event)"
+    />
+    <DropdownList
+      :model-value="sort"
+      :options="sortOptions"
+      :placeholder="t('filtering.filters.sort')"
+      @update:model-value="emit('sort', $event)"
+    />
   </div>
 </template>

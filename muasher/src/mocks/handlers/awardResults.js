@@ -57,7 +57,11 @@ export const awardResultsHandlers = [
     }
     if (rank !== null) {
       for (const r of results) {
-        if (r.region === entry.region && r.assessmentId !== entry.assessmentId && r.regionalRank === rank) {
+        if (
+          r.region === entry.region &&
+          r.assessmentId !== entry.assessmentId &&
+          r.regionalRank === rank
+        ) {
           r.regionalRank = null
         }
       }

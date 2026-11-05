@@ -23,7 +23,9 @@ const { t } = useI18n()
       <PricingBreakdown v-else-if="price" :pricing="price" />
       <p v-else class="accredited-price__note" role="note">
         <i class="fa-solid fa-calculator" aria-hidden="true"></i>
-        <span>{{ status === 'unset' ? t('accredited.price.unset') : t('finance.checkout.feesAtCheckout') }}</span>
+        <span>{{
+          status === 'unset' ? t('accredited.price.unset') : t('finance.checkout.feesAtCheckout')
+        }}</span>
       </p>
       <p v-if="price" class="accredited-price__vat-note">{{ t('accredited.price.note') }}</p>
       <div v-if="$slots.action" class="accredited-price__action">

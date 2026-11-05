@@ -61,9 +61,7 @@ export function useHomeAdmin({ auto = false } = {}) {
     return resolve(value, locale.value)
   }
 
-  const orderedSections = computed(() =>
-    [...sections.value].sort((a, b) => a.order - b.order),
-  )
+  const orderedSections = computed(() => [...sections.value].sort((a, b) => a.order - b.order))
 
   function applySection(updated) {
     const index = sections.value.findIndex((section) => section.id === updated.id)

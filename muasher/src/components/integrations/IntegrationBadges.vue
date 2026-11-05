@@ -15,14 +15,23 @@ const props = defineProps({
 })
 
 const { t } = useI18n()
-const status = computed(() => integrationStatusOf({ configured: props.configured, active: props.active, lastTest: props.lastTest }))
+const status = computed(() =>
+  integrationStatusOf({
+    configured: props.configured,
+    active: props.active,
+    lastTest: props.lastTest,
+  }),
+)
 const showSource = computed(() => props.source !== CREDENTIAL_SOURCES.NONE)
 </script>
 
 <template>
   <span class="integration-badges">
     <IntegrationStatusBadge :status="status" />
-    <Badge v-if="showSource" :variant="source === CREDENTIAL_SOURCES.ENVIRONMENT ? 'warning' : 'muted'">
+    <Badge
+      v-if="showSource"
+      :variant="source === CREDENTIAL_SOURCES.ENVIRONMENT ? 'warning' : 'muted'"
+    >
       <i class="fa-solid fa-database" aria-hidden="true"></i>
       {{ t(`integrations.source.${source}`) }}
     </Badge>

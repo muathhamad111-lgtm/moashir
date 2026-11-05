@@ -16,12 +16,16 @@ describe('useAggregatedActions (unified Action Center — Q-42)', () => {
         ? Promise.reject(new Error('offline'))
         : Promise.resolve({ data: { actions: [{ id: 'kpi-drafts', severity: 'info' }] } }),
     )
-    const { actions, load } = useAggregatedActions(ref(['content-officer', 'finance']), { auto: false })
+    const { actions, load } = useAggregatedActions(ref(['content-officer', 'finance']), {
+      auto: false,
+    })
     await load()
     expect(actions.value).toEqual([
       { id: 'content-officer:kpi-drafts', severity: 'info', source: 'content-officer' },
     ])
-    expect(dashboardService.getSummary.mock.calls.filter(([key]) => key === 'finance')).toHaveLength(2)
+    expect(
+      dashboardService.getSummary.mock.calls.filter(([key]) => key === 'finance'),
+    ).toHaveLength(2)
   })
 
   it('retries a transient failure once before giving up on a board', async () => {

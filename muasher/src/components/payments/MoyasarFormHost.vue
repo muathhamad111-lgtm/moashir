@@ -32,7 +32,11 @@ onMounted(mountForm)
       <Skeleton variant="text" :count="4" />
       <span class="moyasar-host__loading-label">{{ t('finance.checkout.formLoading') }}</span>
     </div>
-    <ErrorState v-if="state === FORM_STATES.ERROR" :message="t('finance.checkout.formUnavailable')" @retry="mountForm" />
+    <ErrorState
+      v-if="state === FORM_STATES.ERROR"
+      :message="t('finance.checkout.formUnavailable')"
+      @retry="mountForm"
+    />
     <p v-if="verifying" class="moyasar-host__verifying" role="status">
       <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
       {{ t('finance.checkout.verifying') }}

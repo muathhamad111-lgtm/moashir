@@ -47,16 +47,28 @@ watch(
       <div class="permanent-delete__warning" role="alert">
         <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
         <p class="permanent-delete__warning-text">
-          {{ t('entities.permanent.disclaimer', { name: localized(entity.name), reference: entity.reference }) }}
+          {{
+            t('entities.permanent.disclaimer', {
+              name: localized(entity.name),
+              reference: entity.reference,
+            })
+          }}
         </p>
       </div>
       <section class="permanent-delete__kept" aria-labelledby="permanent-delete-kept">
-        <h3 id="permanent-delete-kept" class="permanent-delete__heading">{{ t('entities.permanent.keptTitle') }}</h3>
+        <h3 id="permanent-delete-kept" class="permanent-delete__heading">
+          {{ t('entities.permanent.keptTitle') }}
+        </h3>
         <ul class="permanent-delete__list">
-          <li v-for="record in ERASURE_KEPT_RECORDS" :key="record">{{ t(`entities.enums.kept.${record}`) }}</li>
+          <li v-for="record in ERASURE_KEPT_RECORDS" :key="record">
+            {{ t(`entities.enums.kept.${record}`) }}
+          </li>
         </ul>
       </section>
-      <FieldCheckbox name="disclaimerAcknowledged" :label="t('entities.permanent.disclaimerLabel')" />
+      <FieldCheckbox
+        name="disclaimerAcknowledged"
+        :label="t('entities.permanent.disclaimerLabel')"
+      />
       <FieldInput
         name="confirmation"
         input-dir="ltr"
@@ -71,10 +83,19 @@ watch(
         required
       />
       <footer class="modal__footer">
-        <BaseButton variant="secondary" :disabled="form.submitting.value" @click="emit('update:modelValue', false)">
+        <BaseButton
+          variant="secondary"
+          :disabled="form.submitting.value"
+          @click="emit('update:modelValue', false)"
+        >
           {{ t('actions.cancel') }}
         </BaseButton>
-        <BaseButton type="submit" variant="danger" icon="fa-solid fa-dumpster-fire" :loading="form.submitting.value">
+        <BaseButton
+          type="submit"
+          variant="danger"
+          icon="fa-solid fa-dumpster-fire"
+          :loading="form.submitting.value"
+        >
           {{ t('entities.permanent.submit') }}
         </BaseButton>
       </footer>

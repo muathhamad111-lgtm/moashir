@@ -58,7 +58,9 @@ onMounted(load)
 
       <header class="assessment-record__header">
         <div>
-          <p class="assessment-record__eyebrow">{{ t(`assessment.paths.${assessment.path}.title`) }}</p>
+          <p class="assessment-record__eyebrow">
+            {{ t(`assessment.paths.${assessment.path}.title`) }}
+          </p>
           <h1 class="assessment-record__title">
             {{ t('assessment.staff.recordTitle') }}
             <span class="u-ltr">{{ assessment.number }}</span>
@@ -76,7 +78,12 @@ onMounted(load)
         :title="t('assessment.staff.frozenTitle')"
         :message="t('assessment.staff.frozenMessage')"
       />
-      <AssessmentNotice v-else variant="info" :title="t('assessment.staff.readOnlyTitle')" :message="t('assessment.staff.readOnlyMessage')" />
+      <AssessmentNotice
+        v-else
+        variant="info"
+        :title="t('assessment.staff.readOnlyTitle')"
+        :message="t('assessment.staff.readOnlyMessage')"
+      />
 
       <div class="assessment-record__grid">
         <Card :title="t('assessment.staff.detailsTitle')">
@@ -85,7 +92,9 @@ onMounted(load)
               <dt>{{ t('assessment.staff.entity') }}</dt>
               <dd>
                 {{ entityName }}
-                <span class="assessment-record__reference u-ltr">{{ assessment.entity?.reference }}</span>
+                <span class="assessment-record__reference u-ltr">{{
+                  assessment.entity?.reference
+                }}</span>
               </dd>
             </div>
             <div class="assessment-record__detail">

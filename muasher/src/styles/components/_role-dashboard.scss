@@ -176,4 +176,6 @@
   color: var(--theme-text);
   line-height: var(--lh-relaxed);
 }
-.role-dashboard__reveal { display: contents; }
+.role-dashboard__reveal {
+  display: contents;
+}

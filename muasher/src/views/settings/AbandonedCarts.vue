@@ -24,10 +24,11 @@ const CHANNELS = ['email', 'sms']
 const { t, locale } = useI18n()
 const { confirm } = useConfirm()
 const toast = useToast()
-const { items, status, errorMessage, load, filters, paginator, searchInput, setFilter } = useFinanceList({
-  fetcher: (params) => messagingService.listAbandonedCarts(params),
-  initialFilters: { purpose: '', contacted: '' },
-})
+const { items, status, errorMessage, load, filters, paginator, searchInput, setFilter } =
+  useFinanceList({
+    fetcher: (params) => messagingService.listAbandonedCarts(params),
+    initialFilters: { purpose: '', contacted: '' },
+  })
 const { pagination, setPage } = paginator
 
 const purposeOptions = computed(() => [
@@ -36,7 +37,10 @@ const purposeOptions = computed(() => [
 ])
 const contactedOptions = computed(() => [
   { value: '', label: t('settings.carts.allContacts') },
-  ...ABANDONED_CART_CONTACTED.map((value) => ({ value, label: t(`settings.carts.contacted.${value}`) })),
+  ...ABANDONED_CART_CONTACTED.map((value) => ({
+    value,
+    label: t(`settings.carts.contacted.${value}`),
+  })),
 ])
 
 const columns = computed(() => [
@@ -54,18 +58,31 @@ function nameOf(entity) {
 }
 
 function dateOf(value) {
-  return value ? formatDate(value, locale.value, { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Riyadh' }) : t('finance.common.none')
+  return value
+    ? formatDate(value, locale.value, {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+        timeZone: 'Asia/Riyadh',
+      })
+    : t('finance.common.none')
 }
 
 function rowActions(cart) {
   if (!cart.marketingConsent) return []
-  return CHANNELS.map((channel) => ({ key: channel, label: t(`settings.carts.actions.${channel}`), icon: channel === 'email' ? 'fa-solid fa-envelope' : 'fa-solid fa-comment-sms' }))
+  return CHANNELS.map((channel) => ({
+    key: channel,
+    label: t(`settings.carts.actions.${channel}`),
+    icon: channel === 'email' ? 'fa-solid fa-envelope' : 'fa-solid fa-comment-sms',
+  }))
 }
 
 async function runCampaign(channel, cart) {
   const accepted = await confirm({
     title: t('settings.carts.confirmTitle'),
-    message: t('settings.carts.confirmMessage', { entity: nameOf(cart.entity), channel: t(`settings.carts.channels.${channel}`) }),
+    message: t('settings.carts.confirmMessage', {
+      entity: nameOf(cart.entity),
+      channel: t(`settings.carts.channels.${channel}`),
+    }),
     confirmLabel: t('settings.carts.send'),
     variant: 'primary',
   })
@@ -82,13 +99,30 @@ const DEMO_MODULES = [MOCK_MODULES.MESSAGING]
 </script>
 
 <template>
-  <SettingsSection :title="t('settings.carts.title')" :description="t('settings.carts.description')" status="success">
+  <SettingsSection
+    :title="t('settings.carts.title')"
+    :description="t('settings.carts.description')"
+    status="success"
+  >
     <FinanceNav />
     <DemoDataNotice scope="actions" :modules="DEMO_MODULES" />
-    <ListToolbar v-model:search="searchInput" :search-placeholder="t('settings.carts.searchPlaceholder')">
+    <ListToolbar
+      v-model:search="searchInput"
+      :search-placeholder="t('settings.carts.searchPlaceholder')"
+    >
       <template #filters>
-        <DropdownList :model-value="filters.filters.purpose" :options="purposeOptions" :placeholder="t('settings.carts.filterPurpose')" @update:model-value="setFilter('purpose', $event)" />
-        <DropdownList :model-value="filters.filters.contacted" :options="contactedOptions" :placeholder="t('settings.carts.filterContacted')" @update:model-value="setFilter('contacted', $event)" />
+        <DropdownList
+          :model-value="filters.filters.purpose"
+          :options="purposeOptions"
+          :placeholder="t('settings.carts.filterPurpose')"
+          @update:model-value="setFilter('purpose', $event)"
+        />
+        <DropdownList
+          :model-value="filters.filters.contacted"
+          :options="contactedOptions"
+          :placeholder="t('settings.carts.filterContacted')"
+          @update:model-value="setFilter('contacted', $event)"
+        />
       </template>
     </ListToolbar>
 
@@ -110,20 +144,39 @@ const DEMO_MODULES = [MOCK_MODULES.MESSAGING]
         <div class="settings-form__contact">
           <bdi dir="ltr">{{ item.email ?? t('finance.common.none') }}</bdi>
           <Badge :variant="item.marketingConsent ? 'success' : 'muted'">
-            {{ t(item.marketingConsent ? 'settings.carts.consent.yes' : 'settings.carts.consent.no') }}
+            {{
+              t(item.marketingConsent ? 'settings.carts.consent.yes' : 'settings.carts.consent.no')
+            }}
           </Badge>
         </div>
       </template>
-      <template #cell-purpose="{ item }"><Badge variant="info">{{ t(`finance.purposes.${item.purpose}`) }}</Badge></template>
-      <template #cell-startedAt="{ item }"><span class="settings-form__nowrap">{{ dateOf(item.startedAt) }}</span></template>
-      <template #cell-lastSeenAt="{ item }"><span class="settings-form__nowrap">{{ dateOf(item.lastSeenAt) }}</span></template>
-      <template #cell-contactedAt="{ item }"><span class="settings-form__nowrap">{{ dateOf(item.contactedAt) }}</span></template>
+      <template #cell-purpose="{ item }"
+        ><Badge variant="info">{{ t(`finance.purposes.${item.purpose}`) }}</Badge></template
+      >
+      <template #cell-startedAt="{ item }"
+        ><span class="settings-form__nowrap">{{ dateOf(item.startedAt) }}</span></template
+      >
+      <template #cell-lastSeenAt="{ item }"
+        ><span class="settings-form__nowrap">{{ dateOf(item.lastSeenAt) }}</span></template
+      >
+      <template #cell-contactedAt="{ item }"
+        ><span class="settings-form__nowrap">{{ dateOf(item.contactedAt) }}</span></template
+      >
       <template #cell-actions="{ item }">
-        <ActionsDropdown v-if="item.marketingConsent" :actions="rowActions(item)" @select="runCampaign($event, item)" />
+        <ActionsDropdown
+          v-if="item.marketingConsent"
+          :actions="rowActions(item)"
+          @select="runCampaign($event, item)"
+        />
         <span v-else class="settings-form__muted">{{ t('settings.carts.noConsent') }}</span>
       </template>
     </DataTable>
 
-    <Pagination v-if="status === 'success' && pagination.lastPage > 1" :page="pagination.page" :last-page="pagination.lastPage" @update:page="setPage($event)" />
+    <Pagination
+      v-if="status === 'success' && pagination.lastPage > 1"
+      :page="pagination.page"
+      :last-page="pagination.lastPage"
+      @update:page="setPage($event)"
+    />
   </SettingsSection>
 </template>

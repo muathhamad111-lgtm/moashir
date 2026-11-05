@@ -8,7 +8,10 @@ const notification = {
   code: 'ACC-05',
   type: 'action',
   title: { ar: 'إسناد طلب تقييم معتمد إليكم', en: 'Accredited assessment assigned to you' },
-  body: { ar: 'تم إسناد طلب تقييم معتمد جديد إليكم.', en: 'A new request has been assigned to you.' },
+  body: {
+    ar: 'تم إسناد طلب تقييم معتمد جديد إليكم.',
+    en: 'A new request has been assigned to you.',
+  },
   link: '/admin/requests/9108/review',
   read: false,
   createdAt: '2026-07-06T11:20:00+03:00',

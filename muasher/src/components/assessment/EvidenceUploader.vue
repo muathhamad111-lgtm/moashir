@@ -75,7 +75,11 @@ function sizeLabel(file) {
             {{ att.name }}
             <span
               class="evidence-uploader__req"
-              :class="att.required ? 'evidence-uploader__req--required' : 'evidence-uploader__req--optional'"
+              :class="
+                att.required
+                  ? 'evidence-uploader__req--required'
+                  : 'evidence-uploader__req--optional'
+              "
             >
               {{ att.required ? t('evidence.required') : t('evidence.optional') }}
             </span>
@@ -95,7 +99,9 @@ function sizeLabel(file) {
           <li v-for="file in filesForKey(att.key)" :key="file.id" class="evidence-uploader__file">
             <i class="fa-solid fa-file-lines evidence-uploader__file-icon" aria-hidden="true"></i>
             <span class="evidence-uploader__file-name">{{ file.fileName }}</span>
-            <span v-if="sizeLabel(file)" class="evidence-uploader__file-size">{{ sizeLabel(file) }}</span>
+            <span v-if="sizeLabel(file)" class="evidence-uploader__file-size">{{
+              sizeLabel(file)
+            }}</span>
             <BaseButton
               variant="ghost"
               size="sm"
@@ -115,7 +121,9 @@ function sizeLabel(file) {
           @click="openPicker(att.key)"
         >
           <i
-            :class="uploading[att.key] ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-cloud-arrow-up'"
+            :class="
+              uploading[att.key] ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-cloud-arrow-up'
+            "
             aria-hidden="true"
           ></i>
           <span>{{ uploading[att.key] ? t('evidence.uploading') : t('evidence.add') }}</span>

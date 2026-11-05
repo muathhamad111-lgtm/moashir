@@ -21,21 +21,39 @@ const enError = useFieldError(computed(() => `${path.value}.en`))
 const errors = computed(() => ({ ar: arError.value ?? '', en: enError.value ?? '' }))
 const label = computed(() => localizedText(props.definition.label, locale.value))
 const placeholders = computed(() =>
-  props.definition.placeholders.map((name) => ({ token: `{${name}}`, label: { [locale.value]: t(`integrations.sms.placeholders.${name}`) } })),
+  props.definition.placeholders.map((name) => ({
+    token: `{${name}}`,
+    label: { [locale.value]: t(`integrations.sms.placeholders.${name}`) },
+  })),
 )
-const requiredTokens = computed(() => props.definition.requiredPlaceholders.map((name) => `{${name}}`).join(' '))
+const requiredTokens = computed(() =>
+  props.definition.requiredPlaceholders.map((name) => `{${name}}`).join(' '),
+)
 const restoreDefault = () => setValue({ ...props.definition.defaultBody })
 </script>
 
 <template>
   <div class="sms-template">
-    <TemplateEditor v-model="value" :name="`sms-template-${definition.key}`" :label="label" :placeholders="placeholders" :rows="3" :error="errors">
+    <TemplateEditor
+      v-model="value"
+      :name="`sms-template-${definition.key}`"
+      :label="label"
+      :placeholders="placeholders"
+      :rows="3"
+      :error="errors"
+    >
       <template #field-footer="{ value: text }">
-        <SmsSegmentCounter :text="text" :single-segment="definition.singleSegment" :approved-bodies="approvedBodies" />
+        <SmsSegmentCounter
+          :text="text"
+          :single-segment="definition.singleSegment"
+          :approved-bodies="approvedBodies"
+        />
       </template>
     </TemplateEditor>
     <div class="sms-template__footer">
-      <p class="field__hint">{{ t('integrations.sms.requiredPlaceholders', { tokens: requiredTokens }) }}</p>
+      <p class="field__hint">
+        {{ t('integrations.sms.requiredPlaceholders', { tokens: requiredTokens }) }}
+      </p>
       <BaseButton variant="ghost" size="sm" icon="fa-solid fa-rotate-left" @click="restoreDefault">
         {{ t('integrations.sms.restoreDefault') }}
       </BaseButton>

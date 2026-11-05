@@ -16,10 +16,18 @@ const { t } = useI18n()
       {{ title }}
     </h3>
     <ol class="provider-steps__list">
-      <li v-for="step in steps" :key="step.key" class="provider-steps__item" :class="{ 'is-done': step.done === true }">
+      <li
+        v-for="step in steps"
+        :key="step.key"
+        class="provider-steps__item"
+        :class="{ 'is-done': step.done === true }"
+      >
         <span class="provider-steps__text">{{ step.label }}</span>
         <span v-if="step.done !== undefined" class="provider-steps__state">
-          <i :class="step.done ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'" aria-hidden="true"></i>
+          <i
+            :class="step.done ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'"
+            aria-hidden="true"
+          ></i>
           {{ t(step.done ? 'integrations.steps.done' : 'integrations.steps.pending') }}
         </span>
       </li>

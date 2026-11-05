@@ -16,7 +16,9 @@ const { t } = useI18n()
   <dl class="accredited-summary">
     <div class="accredited-summary__item">
       <dt>{{ t('accredited.form.number') }}</dt>
-      <dd><bdi dir="ltr">{{ assessment.number }}</bdi></dd>
+      <dd>
+        <bdi dir="ltr">{{ assessment.number }}</bdi>
+      </dd>
     </div>
     <div class="accredited-summary__item">
       <dt>{{ t('accredited.form.status') }}</dt>

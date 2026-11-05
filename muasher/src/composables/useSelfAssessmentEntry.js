@@ -3,7 +3,11 @@ import { useI18n } from 'vue-i18n'
 import { assessmentsService } from '@/services/assessmentsService'
 import { useToast } from '@/composables/useToast'
 import { logger } from '@/utils/logger'
-import { ASSESSMENT_PATHS, SELF_ASSESSMENT_CODES as CODES, SELF_STATUSES } from '@/constants/assessment'
+import {
+  ASSESSMENT_PATHS,
+  SELF_ASSESSMENT_CODES as CODES,
+  SELF_STATUSES,
+} from '@/constants/assessment'
 
 export const ENTRY_STATES = {
   LOADING: 'loading',
@@ -15,7 +19,11 @@ export const ENTRY_STATES = {
 }
 
 const BLOCKING_CODES = [CODES.ENTITY_NOT_ACTIVE, CODES.ENTITY_REQUIRED, CODES.ENTITY_DELETED]
-const OPEN_DRAFT_QUERY = { 'filter[path]': ASSESSMENT_PATHS.SELF, 'filter[status]': SELF_STATUSES.DRAFT, perPage: 1 }
+const OPEN_DRAFT_QUERY = {
+  'filter[path]': ASSESSMENT_PATHS.SELF,
+  'filter[status]': SELF_STATUSES.DRAFT,
+  perPage: 1,
+}
 
 export function useSelfAssessmentEntry() {
   const { t } = useI18n()

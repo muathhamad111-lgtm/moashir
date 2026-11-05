@@ -137,18 +137,32 @@ function goToHistory() {
                     {{ t(`dashboard.entity.subscription.${summary.subscription.status}`) }}
                   </Badge>
                   <p class="role-dashboard__panel-note">
-                    {{ t('dashboard.entity.subscription.remaining', { days: n(summary.subscription.daysRemaining, 'default') }) }}
+                    {{
+                      t('dashboard.entity.subscription.remaining', {
+                        days: n(summary.subscription.daysRemaining, 'default'),
+                      })
+                    }}
                   </p>
                   <dl class="role-dashboard__facts">
                     <div class="role-dashboard__fact">
-                      <dt class="role-dashboard__fact-label">{{ t('dashboard.entity.maturityStage') }}</dt>
+                      <dt class="role-dashboard__fact-label">
+                        {{ t('dashboard.entity.maturityStage') }}
+                      </dt>
                       <dd class="role-dashboard__fact-value">
-                        {{ t('dashboard.entity.stage', { stage: n(summary.maturityStage, 'default') }) }}
+                        {{
+                          t('dashboard.entity.stage', {
+                            stage: n(summary.maturityStage, 'default'),
+                          })
+                        }}
                       </dd>
                     </div>
                     <div class="role-dashboard__fact">
-                      <dt class="role-dashboard__fact-label">{{ t('dashboard.entity.reassessment') }}</dt>
-                      <dd class="role-dashboard__fact-value">{{ fmtDate(summary.reassessmentAt) }}</dd>
+                      <dt class="role-dashboard__fact-label">
+                        {{ t('dashboard.entity.reassessment') }}
+                      </dt>
+                      <dd class="role-dashboard__fact-value">
+                        {{ fmtDate(summary.reassessmentAt) }}
+                      </dd>
                     </div>
                   </dl>
                 </div>
@@ -170,15 +184,25 @@ function goToHistory() {
             <Card :title="t('dashboard.entity.lastAssessment.title')">
               <dl class="role-dashboard__facts">
                 <div class="role-dashboard__fact">
-                  <dt class="role-dashboard__fact-label">{{ t('dashboard.entity.lastAssessment.date') }}</dt>
-                  <dd class="role-dashboard__fact-value">{{ fmtDate(summary.lastAssessment.date, 'medium') }}</dd>
+                  <dt class="role-dashboard__fact-label">
+                    {{ t('dashboard.entity.lastAssessment.date') }}
+                  </dt>
+                  <dd class="role-dashboard__fact-value">
+                    {{ fmtDate(summary.lastAssessment.date, 'medium') }}
+                  </dd>
                 </div>
                 <div class="role-dashboard__fact">
-                  <dt class="role-dashboard__fact-label">{{ t('dashboard.entity.lastAssessment.score') }}</dt>
-                  <dd class="role-dashboard__fact-value">{{ n(summary.lastAssessment.percent, 'default') }}%</dd>
+                  <dt class="role-dashboard__fact-label">
+                    {{ t('dashboard.entity.lastAssessment.score') }}
+                  </dt>
+                  <dd class="role-dashboard__fact-value">
+                    {{ n(summary.lastAssessment.percent, 'default') }}%
+                  </dd>
                 </div>
                 <div class="role-dashboard__fact">
-                  <dt class="role-dashboard__fact-label">{{ t('dashboard.entity.lastAssessment.path') }}</dt>
+                  <dt class="role-dashboard__fact-label">
+                    {{ t('dashboard.entity.lastAssessment.path') }}
+                  </dt>
                   <dd class="role-dashboard__fact-value">
                     {{ t(`dashboard.paths.${summary.lastAssessment.path}.title`) }}
                   </dd>
@@ -189,23 +213,36 @@ function goToHistory() {
             <Card :title="t('dashboard.entity.bag.title')">
               <dl class="role-dashboard__facts">
                 <div class="role-dashboard__fact">
-                  <dt class="role-dashboard__fact-label">{{ t('dashboard.entity.bag.current') }}</dt>
-                  <dd class="role-dashboard__fact-value">{{ localized(summary.bag.currentStage) }}</dd>
+                  <dt class="role-dashboard__fact-label">
+                    {{ t('dashboard.entity.bag.current') }}
+                  </dt>
+                  <dd class="role-dashboard__fact-value">
+                    {{ localized(summary.bag.currentStage) }}
+                  </dd>
                 </div>
                 <div class="role-dashboard__fact">
                   <dt class="role-dashboard__fact-label">{{ t('dashboard.entity.bag.next') }}</dt>
                   <dd class="role-dashboard__fact-value">{{ localized(summary.bag.nextStage) }}</dd>
                 </div>
                 <div class="role-dashboard__fact">
-                  <dt class="role-dashboard__fact-label">{{ t('dashboard.entity.bag.opensAt') }}</dt>
-                  <dd class="role-dashboard__fact-value">{{ fmtDate(summary.bag.opensAt, 'medium') }}</dd>
+                  <dt class="role-dashboard__fact-label">
+                    {{ t('dashboard.entity.bag.opensAt') }}
+                  </dt>
+                  <dd class="role-dashboard__fact-value">
+                    {{ fmtDate(summary.bag.opensAt, 'medium') }}
+                  </dd>
                 </div>
               </dl>
             </Card>
           </div>
 
           <Card :title="t('dashboard.entity.criteriaTitle')">
-            <MiniBarChart :series="summary.criteria" :localized="localized" color="primary" unit="%" />
+            <MiniBarChart
+              :series="summary.criteria"
+              :localized="localized"
+              color="primary"
+              unit="%"
+            />
           </Card>
 
           <section class="role-dashboard__section" aria-labelledby="entity-paths">
@@ -263,8 +300,12 @@ function goToHistory() {
                 class="entity-dashboard__history-item"
               >
                 <div class="entity-dashboard__history-info">
-                  <span class="entity-dashboard__history-path">{{ assessmentPathLabel(item) }}</span>
-                  <span class="entity-dashboard__history-date">{{ fmtDate(item.createdAt, 'medium') }}</span>
+                  <span class="entity-dashboard__history-path">{{
+                    assessmentPathLabel(item)
+                  }}</span>
+                  <span class="entity-dashboard__history-date">{{
+                    fmtDate(item.createdAt, 'medium')
+                  }}</span>
                 </div>
                 <div class="entity-dashboard__history-meta">
                   <StatusBadge :status="item.status" />
@@ -293,7 +334,9 @@ function goToHistory() {
                     <i class="fa-solid fa-lightbulb" aria-hidden="true"></i>
                     {{ t('dashboard.entity.recommendationTag') }}
                   </span>
-                  <time class="role-dashboard__note-date" :datetime="rec.at">{{ fmtDate(rec.at, 'medium') }}</time>
+                  <time class="role-dashboard__note-date" :datetime="rec.at">{{
+                    fmtDate(rec.at, 'medium')
+                  }}</time>
                 </div>
                 <p class="role-dashboard__note-text">{{ localized(rec.text) }}</p>
               </li>

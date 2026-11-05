@@ -36,7 +36,11 @@ function nameOf(entity) {
 }
 
 function dateOf(value) {
-  return formatDate(value, locale.value, { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Riyadh' })
+  return formatDate(value, locale.value, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'Asia/Riyadh',
+  })
 }
 </script>
 
@@ -54,12 +58,18 @@ function dateOf(value) {
       <span class="transactions-table__reference">
         <bdi dir="ltr">{{ item.reference }}</bdi>
         <Badge v-if="item.isTest" variant="warning">{{ t('finance.testMode.badge') }}</Badge>
-        <Badge v-if="item.latePaid" variant="danger">{{ t('finance.transactions.latePaid') }}</Badge>
-        <Badge v-if="item.manuallySettled" variant="info">{{ t('finance.transactions.manuallySettled') }}</Badge>
+        <Badge v-if="item.latePaid" variant="danger">{{
+          t('finance.transactions.latePaid')
+        }}</Badge>
+        <Badge v-if="item.manuallySettled" variant="info">{{
+          t('finance.transactions.manuallySettled')
+        }}</Badge>
       </span>
     </template>
     <template #cell-receiptNumber="{ item }">
-      <bdi v-if="item.receiptNumber" class="transactions-table__nowrap" dir="ltr">{{ item.receiptNumber }}</bdi>
+      <bdi v-if="item.receiptNumber" class="transactions-table__nowrap" dir="ltr">{{
+        item.receiptNumber
+      }}</bdi>
       <span v-else class="transactions-table__muted">{{ t('finance.common.none') }}</span>
     </template>
     <template #cell-purpose="{ item }">{{ t(`finance.purposes.${item.purpose}`) }}</template>
@@ -69,14 +79,27 @@ function dateOf(value) {
         <bdi class="transactions-table__entity-email" dir="ltr">{{ item.entity.email }}</bdi>
       </span>
     </template>
-    <template #cell-method="{ item }">{{ item.method ? t(`finance.methods.${item.method}`) : t('finance.common.none') }}</template>
+    <template #cell-method="{ item }">{{
+      item.method ? t(`finance.methods.${item.method}`) : t('finance.common.none')
+    }}</template>
     <template #cell-status="{ item }"><PaymentStatusBadge :status="item.status" /></template>
-    <template #cell-beforeVat="{ item }"><MoneyAmount :value="item.pricing.priceBeforeVat" :currency="item.pricing.currency" /></template>
-    <template #cell-vat="{ item }"><MoneyAmount :value="item.pricing.vatAmount" :currency="item.pricing.currency" /></template>
-    <template #cell-total="{ item }"><MoneyAmount :value="item.pricing.total" :currency="item.pricing.currency" strong /></template>
-    <template #cell-updatedAt="{ item }"><span class="transactions-table__date">{{ dateOf(item.updatedAt) }}</span></template>
+    <template #cell-beforeVat="{ item }"
+      ><MoneyAmount :value="item.pricing.priceBeforeVat" :currency="item.pricing.currency"
+    /></template>
+    <template #cell-vat="{ item }"
+      ><MoneyAmount :value="item.pricing.vatAmount" :currency="item.pricing.currency"
+    /></template>
+    <template #cell-total="{ item }"
+      ><MoneyAmount :value="item.pricing.total" :currency="item.pricing.currency" strong
+    /></template>
+    <template #cell-updatedAt="{ item }"
+      ><span class="transactions-table__date">{{ dateOf(item.updatedAt) }}</span></template
+    >
     <template #cell-actions="{ item }">
-      <RouterLink class="transactions-table__link" :to="{ name: ROUTE_NAMES.FINANCE_TRANSACTION, params: { id: item.id } }">
+      <RouterLink
+        class="transactions-table__link"
+        :to="{ name: ROUTE_NAMES.FINANCE_TRANSACTION, params: { id: item.id } }"
+      >
         {{ t('finance.transactions.details') }}
         <span class="transactions-table__link-context">{{ item.reference }}</span>
       </RouterLink>

@@ -52,7 +52,10 @@ async function onOpenSelected() {
   if (!selectedCount.value) return
   const ok = await confirm({
     title: t('bag.manage.openSelected.confirmTitle'),
-    message: t('bag.manage.openSelected.confirmMessage', { count: selectedCount.value, stage: activeStageTitle.value }),
+    message: t('bag.manage.openSelected.confirmMessage', {
+      count: selectedCount.value,
+      stage: activeStageTitle.value,
+    }),
     confirmLabel: t('bag.manage.openSelected.confirmAction'),
   })
   if (!ok) return
@@ -114,18 +117,24 @@ async function onSaveGuidance(gap, payload) {
       <BagContextTracks v-if="tracks" :tracks="tracks" />
 
       <section class="bag-manage__stages" aria-labelledby="bag-stages-title">
-        <h2 id="bag-stages-title" class="bag-manage__section-title">{{ t('bag.manage.stages.title') }}</h2>
+        <h2 id="bag-stages-title" class="bag-manage__section-title">
+          {{ t('bag.manage.stages.title') }}
+        </h2>
         <ul class="bag-manage__stage-list">
           <li v-for="s in stages" :key="s.id" class="bag-manage__stage">
             <Card>
               <div class="bag-manage__stage-head">
                 <div>
-                  <p class="bag-manage__stage-order">{{ t('bag.manage.stages.order', { order: s.order }) }}</p>
+                  <p class="bag-manage__stage-order">
+                    {{ t('bag.manage.stages.order', { order: s.order }) }}
+                  </p>
                   <h3 class="bag-manage__stage-name">{{ localized(s.title) }}</h3>
                 </div>
                 <StatusBadge :status="s.status" />
               </div>
-              <p v-if="s.description" class="bag-manage__stage-desc">{{ localized(s.description) }}</p>
+              <p v-if="s.description" class="bag-manage__stage-desc">
+                {{ localized(s.description) }}
+              </p>
             </Card>
           </li>
         </ul>

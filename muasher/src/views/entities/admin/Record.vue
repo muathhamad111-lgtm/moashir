@@ -26,16 +26,46 @@ const props = defineProps({
   id: { type: String, required: true },
 })
 
-const DETAIL_ROWS = ['nameAr', 'nameEn', 'entityType', 'developmentSector', 'orgSize', 'foundingYear', 'region', 'city', 'governanceGrade', 'employeesCount', 'annualBeneficiariesCount', 'hasStrategicPlan']
+const DETAIL_ROWS = [
+  'nameAr',
+  'nameEn',
+  'entityType',
+  'developmentSector',
+  'orgSize',
+  'foundingYear',
+  'region',
+  'city',
+  'governanceGrade',
+  'employeesCount',
+  'annualBeneficiariesCount',
+  'hasStrategicPlan',
+]
 const CONTACT_ROWS = ['authorizedPersonName', 'officialEmail', 'phone']
-const LIFECYCLE_ROWS = ['createdAt', 'verifiedAt', 'marketingConsent', 'verificationRemindedAt', 'deactivatedAt', 'deactivationReason', 'restoredAt']
+const LIFECYCLE_ROWS = [
+  'createdAt',
+  'verifiedAt',
+  'marketingConsent',
+  'verificationRemindedAt',
+  'deactivatedAt',
+  'deactivationReason',
+  'restoredAt',
+]
 const DELETION_ROWS = ['deletedAt', 'deletionReason']
 
 const { t } = useI18n()
 const router = useRouter()
 const { rowsOf, localized } = useEntityDisplay()
 const { can } = usePermissions()
-const { entity, status, errorMessage, frozenRequests, frozenStatus, isFullRecord, load, loadFrozenRequests } = useEntityRecord(toRef(props, 'id'))
+const {
+  entity,
+  status,
+  errorMessage,
+  frozenRequests,
+  frozenStatus,
+  isFullRecord,
+  load,
+  loadFrozenRequests,
+} = useEntityRecord(toRef(props, 'id'))
 const actionsHost = ref(null)
 const historyVersion = ref(0)
 const loadHistory = (params) => profileChangesService.listForEntity(props.id, params)
@@ -44,15 +74,28 @@ const sections = computed(() => {
   if (!entity.value) return []
   const contact = { key: 'contact', rows: rowsOf(entity.value, CONTACT_ROWS) }
   if (!isFullRecord.value) return [contact]
-  const deletion = entity.value.isDeleted ? [{ key: 'deletion', rows: rowsOf(entity.value, DELETION_ROWS) }] : []
-  const lifecycle = { key: 'lifecycle', rows: rowsOf(entity.value, LIFECYCLE_ROWS, { skipEmpty: true }) }
-  return [...deletion, { key: 'details', rows: rowsOf(entity.value, DETAIL_ROWS) }, contact, lifecycle]
+  const deletion = entity.value.isDeleted
+    ? [{ key: 'deletion', rows: rowsOf(entity.value, DELETION_ROWS) }]
+    : []
+  const lifecycle = {
+    key: 'lifecycle',
+    rows: rowsOf(entity.value, LIFECYCLE_ROWS, { skipEmpty: true }),
+  }
+  return [
+    ...deletion,
+    { key: 'details', rows: rowsOf(entity.value, DETAIL_ROWS) },
+    contact,
+    lifecycle,
+  ]
 })
 
-const backRoute = computed(() => (entity.value?.isDeleted ? ROUTE_NAMES.ADMIN_ENTITIES_DELETED : ROUTE_NAMES.ADMIN_ENTITIES))
+const backRoute = computed(() =>
+  entity.value?.isDeleted ? ROUTE_NAMES.ADMIN_ENTITIES_DELETED : ROUTE_NAMES.ADMIN_ENTITIES,
+)
 
 function onDone({ key }) {
-  if (key === ENTITY_ACTIONS.PERMANENT_DELETE) return router.push({ name: ROUTE_NAMES.ADMIN_ENTITIES_DELETED })
+  if (key === ENTITY_ACTIONS.PERMANENT_DELETE)
+    return router.push({ name: ROUTE_NAMES.ADMIN_ENTITIES_DELETED })
   historyVersion.value += 1
   return load()
 }
@@ -67,7 +110,11 @@ onMounted(load)
       <Skeleton variant="text" :count="6" />
     </div>
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
-    <EmptyState v-else-if="status === 'missing'" :title="t('entities.record.missingTitle')" :message="t('entities.record.missingMessage')" />
+    <EmptyState
+      v-else-if="status === 'missing'"
+      :title="t('entities.record.missingTitle')"
+      :message="t('entities.record.missingMessage')"
+    />
 
     <template v-else-if="entity">
       <router-link class="entity-record__back" :to="{ name: backRoute }">
@@ -90,14 +137,32 @@ onMounted(load)
       </aside>
 
       <div class="entity-record__grid">
-        <Card v-for="section in sections" :key="section.key" :title="t(`entities.record.sections.${section.key}`)">
+        <Card
+          v-for="section in sections"
+          :key="section.key"
+          :title="t(`entities.record.sections.${section.key}`)"
+        >
           <EntityDetailsList :rows="section.rows" />
         </Card>
-        <FrozenRequestsCard v-if="entity.isDeleted" :requests="frozenRequests" :status="frozenStatus" @retry="loadFrozenRequests" />
-        <EntityAssessmentsCard v-if="can(PERMISSIONS.ASSESSMENT_HISTORY_VIEW)" :key="`assessments-${historyVersion}`" :entity-id="entity.id" />
+        <FrozenRequestsCard
+          v-if="entity.isDeleted"
+          :requests="frozenRequests"
+          :status="frozenStatus"
+          @retry="loadFrozenRequests"
+        />
+        <EntityAssessmentsCard
+          v-if="can(PERMISSIONS.ASSESSMENT_HISTORY_VIEW)"
+          :key="`assessments-${historyVersion}`"
+          :entity-id="entity.id"
+        />
       </div>
 
-      <ProfileChangeHistory v-if="isFullRecord" :key="historyVersion" :loader="loadHistory" show-staff-identity />
+      <ProfileChangeHistory
+        v-if="isFullRecord"
+        :key="historyVersion"
+        :loader="loadHistory"
+        show-staff-identity
+      />
 
       <EntityActionsHost ref="actionsHost" @done="onDone" />
     </template>

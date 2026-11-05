@@ -98,7 +98,9 @@
   font-size: var(--fs-base);
   background-color: var(--theme-surface-raised);
   color: var(--theme-text);
-  transition: background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+  transition:
+    background-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
 
   &:hover {
     background-color: var(--theme-accent);

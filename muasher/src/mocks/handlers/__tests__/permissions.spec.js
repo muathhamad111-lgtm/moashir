@@ -48,7 +48,9 @@ describe('permissions mock — code-defined catalog + role matrix', () => {
   })
 
   it('exposes no create or delete endpoint for permission keys', () => {
-    const routes = permissionsHandlers.map((handler) => `${handler.info.method} ${handler.info.path}`)
+    const routes = permissionsHandlers.map(
+      (handler) => `${handler.info.method} ${handler.info.path}`,
+    )
     expect(routes.some((route) => route.startsWith('POST /api/v1/permissions'))).toBe(false)
     expect(routes.some((route) => route.startsWith('DELETE'))).toBe(false)
   })
@@ -62,7 +64,9 @@ describe('permissions mock — code-defined catalog + role matrix', () => {
       description: { ar: 'وصف', en: 'Read staff users.' },
     })
     expect(ok.body.data.label.en).toBe('View staff users')
-    expect((await retry('PUT', '/permissions/unknown.key', { label: { ar: 'عرض', en: 'View' } })).status).toBe(404)
+    expect(
+      (await retry('PUT', '/permissions/unknown.key', { label: { ar: 'عرض', en: 'View' } })).status,
+    ).toBe(404)
   })
 
   it('replaces a role row, rejecting unknown and locked keys and the entity role', async () => {
@@ -70,9 +74,13 @@ describe('permissions mock — code-defined catalog + role matrix', () => {
       permissionKeys: ['dashboard.view', 'requests.queue.view'],
     })
     expect(ok.body.data.permissionKeys).toEqual(['dashboard.view', 'requests.queue.view'])
-    const unknown = await retry('PUT', '/roles/request_follower/permissions', { permissionKeys: ['committeeManagement.manage'] })
+    const unknown = await retry('PUT', '/roles/request_follower/permissions', {
+      permissionKeys: ['committeeManagement.manage'],
+    })
     expect(unknown.body.code).toBe('permission.unknown')
-    const locked = await retry('PUT', '/roles/request_follower/permissions', { permissionKeys: ['settings.branding.manage'] })
+    const locked = await retry('PUT', '/roles/request_follower/permissions', {
+      permissionKeys: ['settings.branding.manage'],
+    })
     expect(locked.body.code).toBe('permission.locked')
     const entity = await retry('PUT', '/roles/entity/permissions', { permissionKeys: [] })
     expect(entity.body.code).toBe('role.not_editable')

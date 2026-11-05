@@ -17,31 +17,70 @@ const props = defineProps({
 })
 
 const { t } = useI18n()
-const form = useForm({ validationSchema: testRecipientSchema(t), initialValues: { recipient: '', provider: props.defaultProvider } })
+const form = useForm({
+  validationSchema: testRecipientSchema(t),
+  initialValues: { recipient: '', provider: props.defaultProvider },
+})
 const sending = useProviderAction((payload) => smsIntegrationService.sendTest(payload))
-const providerOptions = computed(() => Object.values(SMS_PROVIDERS).map((value) => ({ value, label: t(`integrations.providers.${value}`) })))
+const providerOptions = computed(() =>
+  Object.values(SMS_PROVIDERS).map((value) => ({
+    value,
+    label: t(`integrations.providers.${value}`),
+  })),
+)
 const sentThrough = computed(() => {
   const provider = sending.result.value?.provider
-  return provider ? t('integrations.sms.testSent', { provider: t(`integrations.providers.${provider}`) }) : ''
+  return provider
+    ? t('integrations.sms.testSent', { provider: t(`integrations.providers.${provider}`) })
+    : ''
 })
-const send = form.handleSubmit((values) => sending.execute({ recipient: values.recipient.trim(), provider: values.provider }))
+const send = form.handleSubmit((values) =>
+  sending.execute({ recipient: values.recipient.trim(), provider: values.provider }),
+)
 </script>
 
 <template>
-  <IntegrationCard :title="t('integrations.sms.testSendTitle')" :description="t('integrations.sms.testSendDesc')">
+  <IntegrationCard
+    :title="t('integrations.sms.testSendTitle')"
+    :description="t('integrations.sms.testSendDesc')"
+  >
     <form class="integration-form__grid" novalidate @submit.prevent="send">
-      <FieldInput name="recipient" type="tel" inputmode="tel" input-dir="ltr" autocomplete="off" :label="t('integrations.sms.fields.recipient')" :hint="t('integrations.sms.recipientHint')" />
-      <FieldSelect name="provider" :label="t('integrations.sms.fields.provider')" :options="providerOptions" />
+      <FieldInput
+        name="recipient"
+        type="tel"
+        inputmode="tel"
+        input-dir="ltr"
+        autocomplete="off"
+        :label="t('integrations.sms.fields.recipient')"
+        :hint="t('integrations.sms.recipientHint')"
+      />
+      <FieldSelect
+        name="provider"
+        :label="t('integrations.sms.fields.provider')"
+        :options="providerOptions"
+      />
       <div class="integration-form__inline">
-        <BaseButton type="submit" variant="secondary" icon="fa-solid fa-paper-plane" :loading="sending.state.value === PROVIDER_ACTION_STATES.PENDING">
+        <BaseButton
+          type="submit"
+          variant="secondary"
+          icon="fa-solid fa-paper-plane"
+          :loading="sending.state.value === PROVIDER_ACTION_STATES.PENDING"
+        >
           {{ t('integrations.sms.sendTest') }}
         </BaseButton>
       </div>
     </form>
-    <p v-if="sending.state.value === PROVIDER_ACTION_STATES.SUCCESS" class="provider-feedback provider-feedback--success" role="status">
+    <p
+      v-if="sending.state.value === PROVIDER_ACTION_STATES.SUCCESS"
+      class="provider-feedback provider-feedback--success"
+      role="status"
+    >
       <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
       {{ sentThrough }}
     </p>
-    <ProviderActionFeedback v-if="sending.state.value === PROVIDER_ACTION_STATES.FAILED" :failure="sending.failure.value" />
+    <ProviderActionFeedback
+      v-if="sending.state.value === PROVIDER_ACTION_STATES.FAILED"
+      :failure="sending.failure.value"
+    />
   </IntegrationCard>
 </template>

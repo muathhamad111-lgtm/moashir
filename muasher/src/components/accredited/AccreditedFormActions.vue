@@ -21,10 +21,22 @@ const { t } = useI18n()
     </p>
     <div class="accredited-actions__buttons">
       <slot name="extra" />
-      <BaseButton variant="secondary" icon="fa-regular fa-floppy-disk" :loading="saving" :disabled="!dirty || submitting" @click="emit('save')">
+      <BaseButton
+        variant="secondary"
+        icon="fa-regular fa-floppy-disk"
+        :loading="saving"
+        :disabled="!dirty || submitting"
+        @click="emit('save')"
+      >
         {{ t('accredited.form.saveCv') }}
       </BaseButton>
-      <BaseButton variant="primary" icon="fa-solid fa-paper-plane" :loading="submitting" :disabled="saving || submitBlocked" @click="emit('submit')">
+      <BaseButton
+        variant="primary"
+        icon="fa-solid fa-paper-plane"
+        :loading="submitting"
+        :disabled="saving || submitBlocked"
+        @click="emit('submit')"
+      >
         {{ resubmission ? t('accredited.form.resubmit') : t('accredited.form.submit') }}
       </BaseButton>
     </div>

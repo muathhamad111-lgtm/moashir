@@ -38,8 +38,13 @@ export function useEmailCampaign() {
     }
   }
 
-  const needsRecipient = computed(() => compose.audience.segment === INDIVIDUAL_SEGMENT && !compose.audience.recipientEntityId)
-  const valid = computed(() => Boolean(compose.subject.trim()) && Boolean(compose.audience.segment) && !needsRecipient.value)
+  const needsRecipient = computed(
+    () => compose.audience.segment === INDIVIDUAL_SEGMENT && !compose.audience.recipientEntityId,
+  )
+  const valid = computed(
+    () =>
+      Boolean(compose.subject.trim()) && Boolean(compose.audience.segment) && !needsRecipient.value,
+  )
 
   function validate() {
     errors.subject = compose.subject.trim() ? '' : t('validation.required')
@@ -67,5 +72,16 @@ export function useEmailCampaign() {
     }
   }
 
-  return { segments, recipients, recipientsLoading, compose, errors, sending, valid, loadSegments, searchRecipients, send }
+  return {
+    segments,
+    recipients,
+    recipientsLoading,
+    compose,
+    errors,
+    sending,
+    valid,
+    loadSegments,
+    searchRecipients,
+    send,
+  }
 }

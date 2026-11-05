@@ -68,8 +68,14 @@ function fmt(value) {
 
             <template v-if="sub.evaluationType === 'guiding-points' && sub.points.length">
               <ul class="committee-assessor-detail__points">
-                <li v-for="point in sub.points" :key="point.id" class="committee-assessor-detail__point">
-                  <span class="committee-assessor-detail__point-desc">{{ localized(point.description) }}</span>
+                <li
+                  v-for="point in sub.points"
+                  :key="point.id"
+                  class="committee-assessor-detail__point"
+                >
+                  <span class="committee-assessor-detail__point-desc">{{
+                    localized(point.description)
+                  }}</span>
                   <span class="committee-assessor-detail__score">
                     <template v-if="pointPercent(point.id) != null">
                       {{ t('advanced.secretary.review.scoreLabel') }}:
@@ -80,7 +86,10 @@ function fmt(value) {
                 </li>
               </ul>
             </template>
-            <p v-else class="committee-assessor-detail__score committee-assessor-detail__score--direct">
+            <p
+              v-else
+              class="committee-assessor-detail__score committee-assessor-detail__score--direct"
+            >
               <template v-if="subPercent(sub.id) != null">
                 {{ t('advanced.secretary.review.scoreLabel') }}:
                 <strong>{{ fmt(subPercent(sub.id)) }}%</strong>
@@ -89,9 +98,16 @@ function fmt(value) {
             </p>
 
             <div class="committee-assessor-detail__note">
-              <span class="committee-assessor-detail__note-label">{{ t('advanced.secretary.review.noteLabel') }}</span>
-              <p v-if="noteFor(sub.id)" class="committee-assessor-detail__note-text">{{ noteFor(sub.id) }}</p>
-              <p v-else class="committee-assessor-detail__note-text committee-assessor-detail__note-text--empty">
+              <span class="committee-assessor-detail__note-label">{{
+                t('advanced.secretary.review.noteLabel')
+              }}</span>
+              <p v-if="noteFor(sub.id)" class="committee-assessor-detail__note-text">
+                {{ noteFor(sub.id) }}
+              </p>
+              <p
+                v-else
+                class="committee-assessor-detail__note-text committee-assessor-detail__note-text--empty"
+              >
                 {{ t('advanced.secretary.review.noNote') }}
               </p>
             </div>

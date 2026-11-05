@@ -22,23 +22,95 @@ const sections = computed(() => [
     icon: 'fa-solid fa-palette',
     group: 'platform',
   },
-  { key: 'otp', to: ROUTE_NAMES.ADMIN_SETTINGS_OTP, icon: 'fa-solid fa-shield-halved', group: 'platform' },
-  { key: 'assessment', to: ROUTE_NAMES.ADMIN_SETTINGS_ASSESSMENT, icon: 'fa-solid fa-list-check', group: 'platform' },
-  { key: 'finance', to: ROUTE_NAMES.ADMIN_SETTINGS_FINANCE, icon: 'fa-solid fa-coins', group: 'platform' },
-  { key: 'certificates', to: ROUTE_NAMES.ADMIN_SETTINGS_CERTIFICATES, icon: 'fa-solid fa-award', group: 'platform' },
-  { key: 'notifications', to: ROUTE_NAMES.ADMIN_SETTINGS_NOTIFICATIONS, icon: 'fa-solid fa-bell', group: 'platform' },
-  { key: 'cities', to: ROUTE_NAMES.ADMIN_SETTINGS_CITIES, icon: 'fa-solid fa-city', group: 'platform' },
-  { key: 'integrations', to: ROUTE_NAMES.ADMIN_SETTINGS_INTEGRATIONS, icon: 'fa-solid fa-plug', group: 'integrations' },
-  { key: 'payment', to: ROUTE_NAMES.ADMIN_SETTINGS_PAYMENT, icon: 'fa-solid fa-credit-card', group: 'integrations' },
-  { key: 'sms', to: ROUTE_NAMES.ADMIN_SETTINGS_SMS, icon: 'fa-solid fa-comment-sms', group: 'integrations' },
-  { key: 'email', to: ROUTE_NAMES.ADMIN_SETTINGS_EMAIL, icon: 'fa-solid fa-envelope', group: 'integrations' },
-  { key: 'abandonedCarts', to: ROUTE_NAMES.ADMIN_SETTINGS_ABANDONED_CARTS, icon: 'fa-solid fa-cart-arrow-down', group: 'integrations' },
-  { key: 'ai', to: ROUTE_NAMES.ADMIN_SETTINGS_AI, icon: 'fa-solid fa-robot', group: 'integrations' },
-  { key: 'homepage', to: ROUTE_NAMES.ADMIN_SETTINGS_HOMEPAGE, icon: 'fa-solid fa-house-chimney', group: 'content' },
-  { key: 'aiKnowledgeBase', to: ROUTE_NAMES.ADMIN_SETTINGS_AI_KNOWLEDGE_BASE, icon: 'fa-solid fa-book-open', group: 'content' },
+  {
+    key: 'otp',
+    to: ROUTE_NAMES.ADMIN_SETTINGS_OTP,
+    icon: 'fa-solid fa-shield-halved',
+    group: 'platform',
+  },
+  {
+    key: 'assessment',
+    to: ROUTE_NAMES.ADMIN_SETTINGS_ASSESSMENT,
+    icon: 'fa-solid fa-list-check',
+    group: 'platform',
+  },
+  {
+    key: 'finance',
+    to: ROUTE_NAMES.ADMIN_SETTINGS_FINANCE,
+    icon: 'fa-solid fa-coins',
+    group: 'platform',
+  },
+  {
+    key: 'certificates',
+    to: ROUTE_NAMES.ADMIN_SETTINGS_CERTIFICATES,
+    icon: 'fa-solid fa-award',
+    group: 'platform',
+  },
+  {
+    key: 'notifications',
+    to: ROUTE_NAMES.ADMIN_SETTINGS_NOTIFICATIONS,
+    icon: 'fa-solid fa-bell',
+    group: 'platform',
+  },
+  {
+    key: 'cities',
+    to: ROUTE_NAMES.ADMIN_SETTINGS_CITIES,
+    icon: 'fa-solid fa-city',
+    group: 'platform',
+  },
+  {
+    key: 'integrations',
+    to: ROUTE_NAMES.ADMIN_SETTINGS_INTEGRATIONS,
+    icon: 'fa-solid fa-plug',
+    group: 'integrations',
+  },
+  {
+    key: 'payment',
+    to: ROUTE_NAMES.ADMIN_SETTINGS_PAYMENT,
+    icon: 'fa-solid fa-credit-card',
+    group: 'integrations',
+  },
+  {
+    key: 'sms',
+    to: ROUTE_NAMES.ADMIN_SETTINGS_SMS,
+    icon: 'fa-solid fa-comment-sms',
+    group: 'integrations',
+  },
+  {
+    key: 'email',
+    to: ROUTE_NAMES.ADMIN_SETTINGS_EMAIL,
+    icon: 'fa-solid fa-envelope',
+    group: 'integrations',
+  },
+  {
+    key: 'abandonedCarts',
+    to: ROUTE_NAMES.ADMIN_SETTINGS_ABANDONED_CARTS,
+    icon: 'fa-solid fa-cart-arrow-down',
+    group: 'integrations',
+  },
+  {
+    key: 'ai',
+    to: ROUTE_NAMES.ADMIN_SETTINGS_AI,
+    icon: 'fa-solid fa-robot',
+    group: 'integrations',
+  },
+  {
+    key: 'homepage',
+    to: ROUTE_NAMES.ADMIN_SETTINGS_HOMEPAGE,
+    icon: 'fa-solid fa-house-chimney',
+    group: 'content',
+  },
+  {
+    key: 'aiKnowledgeBase',
+    to: ROUTE_NAMES.ADMIN_SETTINGS_AI_KNOWLEDGE_BASE,
+    icon: 'fa-solid fa-book-open',
+    group: 'content',
+  },
 ])
 
-const accessibleSections = computed(() => sections.value.filter((section) => canAccess(accessFor(section.to))))
+const accessibleSections = computed(() =>
+  sections.value.filter((section) => canAccess(accessFor(section.to))),
+)
 
 const groups = computed(() =>
   [
@@ -77,7 +149,10 @@ const groups = computed(() =>
                 {{ t(`settings.hub.sections.${section.key}.desc`) }}
               </span>
             </span>
-            <i class="fa-solid fa-chevron-right u-flip-in-rtl settings-hub__card-arrow" aria-hidden="true"></i>
+            <i
+              class="fa-solid fa-chevron-right u-flip-in-rtl settings-hub__card-arrow"
+              aria-hidden="true"
+            ></i>
           </RouterLink>
         </li>
       </ul>

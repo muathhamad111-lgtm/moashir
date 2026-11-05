@@ -11,7 +11,13 @@ const state = reactive({
 
 let resolver = null
 
-function confirm({ title = '', message = '', confirmLabel = '', cancelLabel = '', variant = 'primary' }) {
+function confirm({
+  title = '',
+  message = '',
+  confirmLabel = '',
+  cancelLabel = '',
+  variant = 'primary',
+}) {
   state.title = title
   state.message = message
   state.confirmLabel = confirmLabel

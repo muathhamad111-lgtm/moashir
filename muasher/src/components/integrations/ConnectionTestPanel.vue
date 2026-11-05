@@ -18,7 +18,10 @@ const { t } = useI18n()
 const { state, result, failure, execute } = useProviderAction(() => props.run(), {
   onSettled: () => emit('settled', result.value ?? failure.value?.result ?? null),
 })
-const shownResult = computed(() => (state.value === PROVIDER_ACTION_STATES.SUCCESS ? result.value : failure.value?.result) ?? null)
+const shownResult = computed(
+  () =>
+    (state.value === PROVIDER_ACTION_STATES.SUCCESS ? result.value : failure.value?.result) ?? null,
+)
 </script>
 
 <template>

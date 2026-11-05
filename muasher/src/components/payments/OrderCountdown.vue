@@ -18,6 +18,8 @@ const minutesLeft = computed(() => Math.ceil(props.remaining / 60))
     <i class="fa-solid fa-hourglass-half" aria-hidden="true"></i>
     <span>{{ t('finance.checkout.expiresIn') }}</span>
     <time class="order-countdown__time" dir="ltr" aria-hidden="true">{{ label }}</time>
-    <span class="order-countdown__live" aria-live="polite">{{ t('finance.checkout.minutesLeft', { minutes: minutesLeft }) }}</span>
+    <span class="order-countdown__live" aria-live="polite">{{
+      t('finance.checkout.minutesLeft', { minutes: minutesLeft })
+    }}</span>
   </p>
 </template>

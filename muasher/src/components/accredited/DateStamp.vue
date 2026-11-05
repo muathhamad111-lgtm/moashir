@@ -10,8 +10,14 @@ const props = defineProps({
 })
 
 const { t, locale } = useI18n()
-const gregorian = computed(() => (props.withTime ? formatRiyadhDateTime(props.value, locale.value) : formatRiyadhDate(props.value, locale.value)))
-const hijri = computed(() => (props.withHijri && props.value ? formatHijriDate(props.value, locale.value) : ''))
+const gregorian = computed(() =>
+  props.withTime
+    ? formatRiyadhDateTime(props.value, locale.value)
+    : formatRiyadhDate(props.value, locale.value),
+)
+const hijri = computed(() =>
+  props.withHijri && props.value ? formatHijriDate(props.value, locale.value) : '',
+)
 </script>
 
 <template>

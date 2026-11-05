@@ -2,11 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent } from 'vue'
 import { createTestGlobals } from '@/test-utils'
-import {
-  useKpisAdmin,
-  KPI_COLOR_TOKENS,
-  KPI_ICON_OPTIONS,
-} from '@/composables/useKpisAdmin'
+import { useKpisAdmin, KPI_COLOR_TOKENS, KPI_ICON_OPTIONS } from '@/composables/useKpisAdmin'
 
 function withComposable(locale = 'en') {
   let api

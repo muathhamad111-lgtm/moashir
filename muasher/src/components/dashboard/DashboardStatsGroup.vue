@@ -14,7 +14,11 @@ const stats = computed(() =>
   props.items.map((item) => ({
     id: item.id,
     icon: item.icon,
-    value: formatNumber(n, Number(item.value) || 0, item.format === 'currency' ? 'currency' : 'default'),
+    value: formatNumber(
+      n,
+      Number(item.value) || 0,
+      item.format === 'currency' ? 'currency' : 'default',
+    ),
     label: item.labelKey ? t(item.labelKey) : item.label,
   })),
 )

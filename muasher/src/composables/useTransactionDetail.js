@@ -18,10 +18,18 @@ export function useTransactionDetail(paymentId) {
   const receipt = computed(() => transaction.value?.receipt ?? null)
   const refund = computed(() => transaction.value?.refund ?? null)
   const canRecordRefund = computed(
-    () => can(PERMISSIONS.FINANCE_REFUNDS_MANAGE) && transaction.value?.status === PAYMENT_STATUSES.PAID && !refund.value,
+    () =>
+      can(PERMISSIONS.FINANCE_REFUNDS_MANAGE) &&
+      transaction.value?.status === PAYMENT_STATUSES.PAID &&
+      !refund.value,
   )
-  const canReissue = computed(() => can(PERMISSIONS.FINANCE_RECEIPTS_MANAGE) && receipt.value?.status === RECEIPT_STATUSES.ISSUED)
-  const canSettle = computed(() => auth.isSuperAdmin && OPEN_PAYMENT_STATUSES.includes(transaction.value?.status))
+  const canReissue = computed(
+    () =>
+      can(PERMISSIONS.FINANCE_RECEIPTS_MANAGE) && receipt.value?.status === RECEIPT_STATUSES.ISSUED,
+  )
+  const canSettle = computed(
+    () => auth.isSuperAdmin && OPEN_PAYMENT_STATUSES.includes(transaction.value?.status),
+  )
 
   async function load() {
     status.value = 'loading'

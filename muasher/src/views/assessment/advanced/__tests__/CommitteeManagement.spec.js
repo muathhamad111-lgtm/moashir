@@ -53,7 +53,9 @@ function seedRoster() {
       assignmentCount: 2,
       completedCount: 1,
       substituteFor: null,
-      assignments: [{ assessmentId: 9401, entityName: { ar: 'جهة', en: 'Entity' }, status: 'in-progress' }],
+      assignments: [
+        { assessmentId: 9401, entityName: { ar: 'جهة', en: 'Entity' }, status: 'in-progress' },
+      ],
     },
   ]
   state.available.value = [{ id: 'jur-9501', name: { ar: 'مرشح', en: 'Candidate' } }]

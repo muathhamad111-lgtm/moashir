@@ -22,7 +22,12 @@ export function toEvidenceList(items) {
 }
 
 function toCompletionItem(raw) {
-  return { subCriterionId: raw.subCriterionId ?? null, code: raw.code ?? '', kind: raw.kind ?? null, note: raw.note ?? null }
+  return {
+    subCriterionId: raw.subCriterionId ?? null,
+    code: raw.code ?? '',
+    kind: raw.kind ?? null,
+    note: raw.note ?? null,
+  }
 }
 
 export function toCompletionRequest(raw) {
@@ -48,7 +53,11 @@ function toUploadLimits(raw) {
 }
 
 function toMissingItem(raw) {
-  return { subCriterionId: raw.subCriterionId ?? null, code: raw.code ?? '', attachmentKey: raw.attachmentKey ?? null }
+  return {
+    subCriterionId: raw.subCriterionId ?? null,
+    code: raw.code ?? '',
+    attachmentKey: raw.attachmentKey ?? null,
+  }
 }
 
 function toMissing(raw) {
@@ -81,7 +90,12 @@ export function toCvSaved(raw = {}) {
 
 function toAwaitingPayment(raw) {
   if (!raw) return null
-  return { paymentId: raw.paymentId ?? null, reference: raw.reference ?? '', status: raw.status ?? null, expiresAt: raw.expiresAt ?? null }
+  return {
+    paymentId: raw.paymentId ?? null,
+    reference: raw.reference ?? '',
+    status: raw.status ?? null,
+    expiresAt: raw.expiresAt ?? null,
+  }
 }
 
 export function toAccreditedCurrent(raw = {}) {
@@ -144,7 +158,10 @@ export function toServicePrices(raw = {}) {
 export function toAssessmentSettings(raw = {}) {
   return {
     accreditedReviewSlaDays: raw.accreditedReviewSlaDays ?? null,
-    accreditedReviewSlaLimits: { min: raw.accreditedReviewSlaLimits?.min ?? 1, max: raw.accreditedReviewSlaLimits?.max ?? 120 },
+    accreditedReviewSlaLimits: {
+      min: raw.accreditedReviewSlaLimits?.min ?? 1,
+      max: raw.accreditedReviewSlaLimits?.max ?? 120,
+    },
     uploadMaxFileMb: raw.uploadMaxFileMb ?? null,
     evidenceAllowedTypes: raw.evidenceAllowedTypes ?? [],
     evidenceMaxFilesPerSub: raw.evidenceMaxFilesPerSub ?? null,

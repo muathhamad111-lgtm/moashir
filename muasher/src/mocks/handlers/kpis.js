@@ -14,7 +14,10 @@ function nextId() {
 }
 
 function slugFor(source, excludeId = null) {
-  const taken = kpis.filter((kpi) => kpi.id !== excludeId).map((kpi) => kpi.slug).filter(Boolean)
+  const taken = kpis
+    .filter((kpi) => kpi.id !== excludeId)
+    .map((kpi) => kpi.slug)
+    .filter(Boolean)
   return uniqueSlug(source, taken)
 }
 
@@ -129,7 +132,10 @@ export const kpisHandlers = [
       slug: slugFor(body.slug || body.name?.en || body.name?.ar),
       value: Number(body.value) || 0,
       target: body.target === '' || body.target === null ? null : Number(body.target),
-      baseline: body.baseline === '' || body.baseline === null || body.baseline === undefined ? null : Number(body.baseline),
+      baseline:
+        body.baseline === '' || body.baseline === null || body.baseline === undefined
+          ? null
+          : Number(body.baseline),
       unit: body.unit,
       description: body.description,
       category: body.category || null,

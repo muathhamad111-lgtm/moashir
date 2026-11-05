@@ -25,7 +25,10 @@ describe('Sidebar', () => {
   })
 
   it('ignores role names and follows the permission keys only', async () => {
-    const { wrapper } = factory({ roles: [ROLES.SYSTEM_ADMIN], extra: { permissions: ['notifications.view'] } })
+    const { wrapper } = factory({
+      roles: [ROLES.SYSTEM_ADMIN],
+      extra: { permissions: ['notifications.view'] },
+    })
     await wrapper.vm.$nextTick()
     const labels = wrapper.findAll('.sidebar__label').map((el) => el.text())
     expect(labels).toEqual(['الإشعارات'])
@@ -46,17 +49,24 @@ describe('Sidebar', () => {
     await wrapper.vm.$nextTick()
     const labels = wrapper.findAll('.sidebar__label').map((el) => el.text())
     expect(wrapper.findAll('.sidebar__item')).toHaveLength(23)
-    expect(labels).toEqual(expect.arrayContaining(['الملخص المالي', 'العمليات المالية', 'الاستردادات', 'أحداث الدفع']))
+    expect(labels).toEqual(
+      expect.arrayContaining(['الملخص المالي', 'العمليات المالية', 'الاستردادات', 'أحداث الدفع']),
+    )
     expect(labels).not.toContain('التقييم الذاتي')
     expect(labels).not.toContain('لجنة المقيّمين')
   })
 
   it('shows the committee queue only with an active committee appointment', async () => {
     const plain = factory({ roles: [ROLES.ASSESSOR] })
-    const appointed = factory({ roles: [ROLES.ASSESSOR], extra: { committeeAppointments: [{ cycleId: 'c-1' }] } })
+    const appointed = factory({
+      roles: [ROLES.ASSESSOR],
+      extra: { committeeAppointments: [{ cycleId: 'c-1' }] },
+    })
     await plain.wrapper.vm.$nextTick()
     await appointed.wrapper.vm.$nextTick()
-    expect(appointed.wrapper.findAll('.sidebar__item').length).toBe(plain.wrapper.findAll('.sidebar__item').length + 1)
+    expect(appointed.wrapper.findAll('.sidebar__item').length).toBe(
+      plain.wrapper.findAll('.sidebar__item').length + 1,
+    )
   })
 
   it('groups items by module with a caption per group', async () => {
@@ -124,7 +134,10 @@ describe('Sidebar', () => {
   it('prefers the custom logo uploaded for the active background', async () => {
     const { wrapper, globals } = factory()
     useUiStore(globals.pinia).setTheme('light')
-    useBrandingStore(globals.pinia).apply({ accentToken: 'brand_default', logos: { dark: null, light: 'blob:on-light' } })
+    useBrandingStore(globals.pinia).apply({
+      accentToken: 'brand_default',
+      logos: { dark: null, light: 'blob:on-light' },
+    })
     await wrapper.vm.$nextTick()
     expect(wrapper.find('.sidebar__logo').attributes('src')).toBe('blob:on-light')
   })

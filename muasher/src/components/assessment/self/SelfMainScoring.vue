@@ -38,7 +38,9 @@ function unit(level, node) {
           <span class="self-main__code u-ltr">{{ main.code }}</span>
           {{ text(main.name) }}
         </h2>
-        <Badge variant="info">{{ t('assessment.self.tree.mainMeta', { weight: main.weight }) }}</Badge>
+        <Badge variant="info">{{
+          t('assessment.self.tree.mainMeta', { weight: main.weight })
+        }}</Badge>
       </div>
     </template>
 
@@ -52,7 +54,11 @@ function unit(level, node) {
             {{ text(sub.name) }}
           </h3>
           <Badge :variant="usesPoints(sub) ? 'info' : 'muted'">
-            {{ usesPoints(sub) ? t('assessment.self.tree.points', { count: sub.points.length }) : t('assessment.self.tree.direct') }}
+            {{
+              usesPoints(sub)
+                ? t('assessment.self.tree.points', { count: sub.points.length })
+                : t('assessment.self.tree.direct')
+            }}
           </Badge>
         </div>
         <p v-if="sub.description" class="self-main__sub-description">{{ text(sub.description) }}</p>

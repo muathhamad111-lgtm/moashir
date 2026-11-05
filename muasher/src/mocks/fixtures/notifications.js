@@ -801,7 +801,10 @@ export const notificationAuditFixture = {
     },
     {
       id: 'aud-15-3',
-      recipient: { ar: 'خالد المطيري — متابع الطلبات', en: 'Khalid Al-Mutairi — Requests Follower' },
+      recipient: {
+        ar: 'خالد المطيري — متابع الطلبات',
+        en: 'Khalid Al-Mutairi — Requests Follower',
+      },
       recipientRole: 'request_follower',
       channel: 'in-app',
       receivedAt: '2026-07-06T11:20:05+03:00',
@@ -812,7 +815,10 @@ export const notificationAuditFixture = {
   27: [
     {
       id: 'aud-27-1',
-      recipient: { ar: 'أ. نورة الحربي — أمين الجائزة', en: 'Ms. Noura Al-Harbi — Award Secretary' },
+      recipient: {
+        ar: 'أ. نورة الحربي — أمين الجائزة',
+        en: 'Ms. Noura Al-Harbi — Award Secretary',
+      },
       recipientRole: 'award_secretary',
       channel: 'in-app',
       receivedAt: '2026-07-07T07:15:03+03:00',
@@ -821,7 +827,10 @@ export const notificationAuditFixture = {
     },
     {
       id: 'aud-27-2',
-      recipient: { ar: 'أ. نورة الحربي — أمين الجائزة', en: 'Ms. Noura Al-Harbi — Award Secretary' },
+      recipient: {
+        ar: 'أ. نورة الحربي — أمين الجائزة',
+        en: 'Ms. Noura Al-Harbi — Award Secretary',
+      },
       recipientRole: 'award_secretary',
       channel: 'email',
       receivedAt: '2026-07-07T07:15:05+03:00',

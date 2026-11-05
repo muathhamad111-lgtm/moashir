@@ -17,7 +17,12 @@ const { t } = useI18n()
     </div>
     <p class="error-state__message">{{ message || t('common.error') }}</p>
     <div class="error-state__retry">
-      <BaseButton variant="secondary" size="sm" icon="fa-solid fa-rotate-right" @click="emit('retry')">
+      <BaseButton
+        variant="secondary"
+        size="sm"
+        icon="fa-solid fa-rotate-right"
+        @click="emit('retry')"
+      >
         {{ t('common.retry') }}
       </BaseButton>
     </div>

@@ -15,8 +15,44 @@ const FORMULA_START = /^[=+\-@\t\r]/
 const BYTE_ORDER_MARK = '\uFEFF'
 
 const COLUMN_LABELS = {
-  ar: ['المرجع', 'رقم الإيصال', 'تاريخ الإنشاء', 'تاريخ الدفع', 'الخدمة', 'مرجع الجهة', 'اسم الجهة', 'بريد الجهة', 'وسيلة الدفع', 'الحالة', 'السعر قبل الضريبة', 'نسبة الضريبة', 'مبلغ الضريبة', 'الإجمالي', 'العملة', 'تاريخ الاسترداد', 'مبلغ الاسترداد'],
-  en: ['Reference', 'Receipt number', 'Created at', 'Paid at', 'Service', 'Entity reference', 'Entity name', 'Entity e-mail', 'Payment method', 'Status', 'Price before VAT', 'VAT rate', 'VAT amount', 'Total', 'Currency', 'Refunded at', 'Refund amount'],
+  ar: [
+    'المرجع',
+    'رقم الإيصال',
+    'تاريخ الإنشاء',
+    'تاريخ الدفع',
+    'الخدمة',
+    'مرجع الجهة',
+    'اسم الجهة',
+    'بريد الجهة',
+    'وسيلة الدفع',
+    'الحالة',
+    'السعر قبل الضريبة',
+    'نسبة الضريبة',
+    'مبلغ الضريبة',
+    'الإجمالي',
+    'العملة',
+    'تاريخ الاسترداد',
+    'مبلغ الاسترداد',
+  ],
+  en: [
+    'Reference',
+    'Receipt number',
+    'Created at',
+    'Paid at',
+    'Service',
+    'Entity reference',
+    'Entity name',
+    'Entity e-mail',
+    'Payment method',
+    'Status',
+    'Price before VAT',
+    'VAT rate',
+    'VAT amount',
+    'Total',
+    'Currency',
+    'Refunded at',
+    'Refund amount',
+  ],
 }
 
 function neutralized(value) {
@@ -78,7 +114,8 @@ function exportRecord(user, rows, status, locale) {
 export function exportTransactions(user, filters, request) {
   const locale = requestLocale(request)
   const rows = filteredTransactions(filters, 'live')
-  if (rows.length > MOCK_QUEUE_THRESHOLD) return { queued: exportRecord(user, rows, 'queued', locale) }
+  if (rows.length > MOCK_QUEUE_THRESHOLD)
+    return { queued: exportRecord(user, rows, 'queued', locale) }
   const record = exportRecord(user, rows, 'streamed', locale)
   return {
     stream: new HttpResponse(csvOf(rows, locale), {
@@ -93,9 +130,17 @@ export function exportTransactions(user, filters, request) {
 }
 
 function completeExport(record) {
-  const payments = record.paymentIds.map((id) => financeState().payments.find((payment) => payment.id === id)).filter(Boolean)
+  const payments = record.paymentIds
+    .map((id) => financeState().payments.find((payment) => payment.id === id))
+    .filter(Boolean)
   const content = csvOf(payments, record.locale)
-  const file = storeFile({ purpose: 'finance_export', name: exportFileName(), mimeType: 'text/csv', sizeBytes: content.length, content })
+  const file = storeFile({
+    purpose: 'finance_export',
+    name: exportFileName(),
+    mimeType: 'text/csv',
+    sizeBytes: content.length,
+    content,
+  })
   record.status = 'ready'
   record.completedAt = nowIso()
   record.fileId = file.id
@@ -104,7 +149,10 @@ function completeExport(record) {
     code: 'FIN-01',
     type: 'info',
     title: { ar: 'ملف التصدير جاهز', en: 'Export ready' },
-    body: { ar: 'اكتمل تصدير العمليات المالية وأصبح جاهزًا للتنزيل.', en: 'The financial transactions export is complete and ready to download.' },
+    body: {
+      ar: 'اكتمل تصدير العمليات المالية وأصبح جاهزًا للتنزيل.',
+      en: 'The financial transactions export is complete and ready to download.',
+    },
     link: `/finance/exports/${record.id}`,
   })
   persistFinanceState()

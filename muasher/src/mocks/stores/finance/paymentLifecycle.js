@@ -1,5 +1,11 @@
 import { FINANCE_YEAR } from '../../fixtures/finance'
-import { financeState, nextEventId, nextSequence, persistFinanceState, receiptOf } from './financeState'
+import {
+  financeState,
+  nextEventId,
+  nextSequence,
+  persistFinanceState,
+  receiptOf,
+} from './financeState'
 import { financeReject } from './financeRejection'
 import { receiptNumberOf, receiptSnapshotOf } from './receiptSnapshot'
 
@@ -12,7 +18,12 @@ const TRANSITIONS = {
   refunded: [],
 }
 
-const STAMPS = { paid: 'paidAt', failed: 'failedAt', cancelled: 'cancelledAt', refunded: 'refundedAt' }
+const STAMPS = {
+  paid: 'paidAt',
+  failed: 'failedAt',
+  cancelled: 'cancelledAt',
+  refunded: 'refundedAt',
+}
 
 export const OPEN_STATUSES = ['created', 'pending']
 export const CONCLUDED_STATUSES = ['paid', 'failed', 'refunded']
@@ -22,7 +33,8 @@ export function nowIso() {
 }
 
 export function assertTransition(payment, target, verb) {
-  if (!TRANSITIONS[payment.status].includes(target)) throw financeReject.illegalTransition(payment.status, verb)
+  if (!TRANSITIONS[payment.status].includes(target))
+    throw financeReject.illegalTransition(payment.status, verb)
 }
 
 export function transition(payment, target, verb) {
@@ -73,7 +85,9 @@ export function voidReceipt(payment) {
 }
 
 function providerIdInUse(payment, providerPaymentId) {
-  return financeState().payments.some((other) => other.id !== payment.id && other.providerPaymentId === providerPaymentId)
+  return financeState().payments.some(
+    (other) => other.id !== payment.id && other.providerPaymentId === providerPaymentId,
+  )
 }
 
 export function bindProvider(payment, providerPaymentId) {

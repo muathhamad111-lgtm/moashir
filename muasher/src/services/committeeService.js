@@ -14,7 +14,10 @@ export const committeeService = {
   listAssignments(cycleId, committeeAssessorId) {
     return serviceRequest(
       'committee.listAssignments',
-      () => apiClient.get(`/award/committee/${cycleId}/committee-assessors/${committeeAssessorId}/assignments`),
+      () =>
+        apiClient.get(
+          `/award/committee/${cycleId}/committee-assessors/${committeeAssessorId}/assignments`,
+        ),
       { entity: 'committee' },
     )
   },
@@ -22,7 +25,10 @@ export const committeeService = {
   getCommitteeAssessorScore(cycleId, committeeAssessorId, assessmentId) {
     return serviceRequest(
       'committee.getCommitteeAssessorScore',
-      () => apiClient.get(`/award/committee/${cycleId}/committee-assessors/${committeeAssessorId}/score/${assessmentId}`),
+      () =>
+        apiClient.get(
+          `/award/committee/${cycleId}/committee-assessors/${committeeAssessorId}/score/${assessmentId}`,
+        ),
       { entity: 'committee' },
     )
   },
@@ -30,7 +36,11 @@ export const committeeService = {
   scoreSub(cycleId, committeeAssessorId, assessmentId, payload) {
     return serviceRequest(
       'committee.scoreSub',
-      () => apiClient.put(`/award/committee/${cycleId}/committee-assessors/${committeeAssessorId}/score/${assessmentId}/sub`, payload),
+      () =>
+        apiClient.put(
+          `/award/committee/${cycleId}/committee-assessors/${committeeAssessorId}/score/${assessmentId}/sub`,
+          payload,
+        ),
       { entity: 'committee', payloadShape: payloadShape(payload) },
     )
   },
@@ -38,7 +48,11 @@ export const committeeService = {
   scorePoint(cycleId, committeeAssessorId, assessmentId, payload) {
     return serviceRequest(
       'committee.scorePoint',
-      () => apiClient.put(`/award/committee/${cycleId}/committee-assessors/${committeeAssessorId}/score/${assessmentId}/point`, payload),
+      () =>
+        apiClient.put(
+          `/award/committee/${cycleId}/committee-assessors/${committeeAssessorId}/score/${assessmentId}/point`,
+          payload,
+        ),
       { entity: 'committee', payloadShape: payloadShape(payload) },
     )
   },
@@ -46,7 +60,11 @@ export const committeeService = {
   saveNotes(cycleId, committeeAssessorId, assessmentId, payload) {
     return serviceRequest(
       'committee.saveNotes',
-      () => apiClient.put(`/award/committee/${cycleId}/committee-assessors/${committeeAssessorId}/score/${assessmentId}/notes`, payload),
+      () =>
+        apiClient.put(
+          `/award/committee/${cycleId}/committee-assessors/${committeeAssessorId}/score/${assessmentId}/notes`,
+          payload,
+        ),
       { entity: 'committee', payloadShape: payloadShape(payload) },
     )
   },
@@ -54,7 +72,11 @@ export const committeeService = {
   complete(cycleId, committeeAssessorId, assessmentId, payload = {}) {
     return serviceRequest(
       'committee.complete',
-      () => apiClient.post(`/award/committee/${cycleId}/committee-assessors/${committeeAssessorId}/score/${assessmentId}/complete`, payload),
+      () =>
+        apiClient.post(
+          `/award/committee/${cycleId}/committee-assessors/${committeeAssessorId}/score/${assessmentId}/complete`,
+          payload,
+        ),
       { entity: 'committee', payloadShape: payloadShape(payload) },
     )
   },
@@ -62,7 +84,11 @@ export const committeeService = {
   disableCommitteeAssessor(cycleId, committeeAssessorId, payload) {
     return serviceRequest(
       'committee.disableCommitteeAssessor',
-      () => apiClient.post(`/award/committee/${cycleId}/committee-assessors/${committeeAssessorId}/disable`, payload),
+      () =>
+        apiClient.post(
+          `/award/committee/${cycleId}/committee-assessors/${committeeAssessorId}/disable`,
+          payload,
+        ),
       { entity: 'committee', payloadShape: payloadShape(payload) },
     )
   },
@@ -118,7 +144,10 @@ export const committeeService = {
   removeCommitteeAssessor(cycleId, committeeAssessorId) {
     return serviceRequest(
       'committee.removeCommitteeAssessor',
-      () => apiClient.delete(`/award/committee/${cycleId}/roster/committee-assessors/${committeeAssessorId}`),
+      () =>
+        apiClient.delete(
+          `/award/committee/${cycleId}/roster/committee-assessors/${committeeAssessorId}`,
+        ),
       { entity: 'committee' },
     )
   },
@@ -150,7 +179,8 @@ export const committeeService = {
   listEntityCommitteeAssessors(cycleId, assessmentId) {
     return serviceRequest(
       'committee.listEntityCommitteeAssessors',
-      () => apiClient.get(`/award/committee/${cycleId}/secretary/${assessmentId}/committee-assessors`),
+      () =>
+        apiClient.get(`/award/committee/${cycleId}/secretary/${assessmentId}/committee-assessors`),
       { entity: 'committee' },
     )
   },
@@ -158,7 +188,10 @@ export const committeeService = {
   getEntityCommitteeAssessorDetail(cycleId, assessmentId, committeeAssessorId) {
     return serviceRequest(
       'committee.getEntityCommitteeAssessorDetail',
-      () => apiClient.get(`/award/committee/${cycleId}/secretary/${assessmentId}/committee-assessors/${committeeAssessorId}/detail`),
+      () =>
+        apiClient.get(
+          `/award/committee/${cycleId}/secretary/${assessmentId}/committee-assessors/${committeeAssessorId}/detail`,
+        ),
       { entity: 'committee' },
     )
   },

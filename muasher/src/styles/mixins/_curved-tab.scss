@@ -3,7 +3,11 @@
   border-end-start-radius: $radius;
 }
 
-@mixin curved-tab-active($surface: var(--content-bg), $radius: var(--r), $curve-x: var(--sidebar-curve-x)) {
+@mixin curved-tab-active(
+  $surface: var(--content-bg),
+  $radius: var(--r),
+  $curve-x: var(--sidebar-curve-x)
+) {
   z-index: 1;
   background-color: $surface;
 

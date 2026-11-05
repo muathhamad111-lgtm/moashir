@@ -5,7 +5,11 @@ import { showsDemoData } from '@/utils/mockPlan'
 
 const props = defineProps({
   modules: { type: Array, default: () => [] },
-  scope: { type: String, default: 'page', validator: (value) => ['page', 'section', 'actions'].includes(value) },
+  scope: {
+    type: String,
+    default: 'page',
+    validator: (value) => ['page', 'section', 'actions'].includes(value),
+  },
 })
 
 const { t } = useI18n()

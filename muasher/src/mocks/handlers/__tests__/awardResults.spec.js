@@ -104,14 +104,18 @@ describe('award results — national ranking', () => {
     const ids = body.data.map((r) => r.assessmentId)
     expect(ids).toContain(9401)
     expect(ids).toContain(9411)
-    expect(body.data.every((r) => r.status === 'regional-winner' || r.status === 'national-winner')).toBe(true)
+    expect(
+      body.data.every((r) => r.status === 'regional-winner' || r.status === 'national-winner'),
+    ).toBe(true)
   })
 
   it('ranks + approves national winners', async () => {
     await approveRiyadhWinners()
     await retryPost('/award/national/9401/rank', { rank: 1 })
     const approved = await retryPost('/award/national/approve', {})
-    expect(approved.body.data.some((r) => r.assessmentId === 9401 && r.status === 'national-winner')).toBe(true)
+    expect(
+      approved.body.data.some((r) => r.assessmentId === 9401 && r.status === 'national-winner'),
+    ).toBe(true)
     const locked = await postResolved('/award/national/9411/rank', { rank: 2 })
     expect(locked.status).toBe(422)
   })

@@ -47,7 +47,11 @@ const ruleNote = computed(() => {
           {{ section ? localized(section.title) : $t('lenses.title') }}
         </h1>
         <p class="lenses-page__subtitle">
-          {{ section && localized(section.description) ? localized(section.description) : $t('lenses.lead') }}
+          {{
+            section && localized(section.description)
+              ? localized(section.description)
+              : $t('lenses.lead')
+          }}
         </p>
       </div>
     </header>

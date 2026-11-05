@@ -1,5 +1,12 @@
 import { ASSESSMENT_PATHS } from '@/constants/assessment'
-import { QUEUE_STATES, STATES, hasAssessor, isAccreditedOpen, isInQueue, runsReviewClock } from '../accredited/accreditedStates'
+import {
+  QUEUE_STATES,
+  STATES,
+  hasAssessor,
+  isAccreditedOpen,
+  isInQueue,
+  runsReviewClock,
+} from '../accredited/accreditedStates'
 import {
   ADVANCED_QUEUE_STATES,
   ADVANCED_STATES,
@@ -11,7 +18,12 @@ import {
 
 const PATHS = {
   [ASSESSMENT_PATHS.ACCREDITED]: {
-    stages: { awaiting: STATES.SUBMITTED, assigned: STATES.ASSIGNED, reviewing: STATES.UNDER_REVIEW, done: STATES.COMPLETED },
+    stages: {
+      awaiting: STATES.SUBMITTED,
+      assigned: STATES.ASSIGNED,
+      reviewing: STATES.UNDER_REVIEW,
+      done: STATES.COMPLETED,
+    },
     queueStates: QUEUE_STATES,
     isOpen: isAccreditedOpen,
     inQueue: isInQueue,

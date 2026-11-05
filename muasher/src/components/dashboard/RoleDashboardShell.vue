@@ -21,11 +21,7 @@ const allActions = computed(() => [...props.actions, ...additionalActions.value]
 
 <template>
   <div class="role-dashboard">
-    <ActionCenter
-      :actions="allActions"
-      :loading="status === 'loading'"
-      :localized="localized"
-    />
+    <ActionCenter :actions="allActions" :loading="status === 'loading'" :localized="localized" />
 
     <div v-if="status === 'loading'" class="role-dashboard__loading">
       <div class="role-dashboard__loading-grid">

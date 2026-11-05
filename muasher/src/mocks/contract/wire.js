@@ -1,5 +1,11 @@
 import { HttpResponse } from 'msw'
-import { formDataFromWire, fromWire, toCamelKey, toWire, hasCanonicalValue } from '@/api/caseMapping'
+import {
+  formDataFromWire,
+  fromWire,
+  toCamelKey,
+  toWire,
+  hasCanonicalValue,
+} from '@/api/caseMapping'
 import { fromCanonicalStatus } from '@/utils/canonicalStatus'
 
 const JSON_TYPE = /application\/json/i
@@ -31,7 +37,10 @@ async function decodeBody(request) {
   }
   if (FORM_TYPE.test(type)) {
     const form = formDataFromWire(await request.formData())
-    return { body: form, headers: headersWithout(request.headers, ['content-type', 'content-length']) }
+    return {
+      body: form,
+      headers: headersWithout(request.headers, ['content-type', 'content-length']),
+    }
   }
   return { body: await request.arrayBuffer(), headers: request.headers }
 }

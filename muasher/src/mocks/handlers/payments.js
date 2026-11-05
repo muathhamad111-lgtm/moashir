@@ -26,7 +26,11 @@ import {
   replayOf,
   validatedPurpose,
 } from '../stores/finance/paymentOrders'
-import { VERIFICATION, validatedProviderId, verifyPayment } from '../stores/finance/paymentVerification'
+import {
+  VERIFICATION,
+  validatedProviderId,
+  verifyPayment,
+} from '../stores/finance/paymentVerification'
 import { receiptFileOf } from '../stores/finance/receiptOperations'
 import { fileDownloadResponse, signedDownloadOf } from '../stores/finance/signedFiles'
 import { assertMayPurchase } from '../stores/finance/paymentHooks'

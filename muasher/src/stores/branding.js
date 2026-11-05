@@ -14,7 +14,9 @@ export const useBrandingStore = defineStore('branding', {
   }),
   actions: {
     apply(theme) {
-      this.accentToken = isKnownAccent(theme?.accentToken) ? theme.accentToken : DEFAULT_ACCENT_TOKEN
+      this.accentToken = isKnownAccent(theme?.accentToken)
+        ? theme.accentToken
+        : DEFAULT_ACCENT_TOKEN
       this.logos = { ...emptyLogos(), ...theme?.logos }
     },
     async load() {

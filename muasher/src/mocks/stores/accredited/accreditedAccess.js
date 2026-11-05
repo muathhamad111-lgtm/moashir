@@ -18,7 +18,9 @@ export const ACCREDITED_PERMISSIONS = {
 }
 
 function denyFor(user, record) {
-  return accessOf(user, record) === ACCESS.NONE ? assessmentReject.notFound() : assessmentReject.forbidden()
+  return accessOf(user, record) === ACCESS.NONE
+    ? assessmentReject.notFound()
+    : assessmentReject.forbidden()
 }
 
 function requireReviewed(record) {
@@ -26,7 +28,9 @@ function requireReviewed(record) {
 }
 
 function permissionFor(record, permission) {
-  return permission === ACCREDITED_PERMISSIONS.ACCREDITED_MANAGE ? pathRules(record.path).permission : permission
+  return permission === ACCREDITED_PERMISSIONS.ACCREDITED_MANAGE
+    ? pathRules(record.path).permission
+    : permission
 }
 
 function isActiveAssignee(user, record) {
@@ -35,13 +39,15 @@ function isActiveAssignee(user, record) {
 
 export function authorizeAccreditedCurrent(user) {
   if (user.superAdmin) return
-  if (user.entityId === null || !sessionCan(ACCREDITED_PERMISSIONS.ACCREDITED_MANAGE)) throw assessmentReject.forbidden()
+  if (user.entityId === null || !sessionCan(ACCREDITED_PERMISSIONS.ACCREDITED_MANAGE))
+    throw assessmentReject.forbidden()
 }
 
 export function authorizeManageOwn(user, record, permission) {
   if (user.superAdmin) return
   if (!isOwner(user, record)) throw denyFor(user, record)
-  if (!isReviewedPath(record.path) || !sessionCan(permissionFor(record, permission))) throw assessmentReject.forbidden()
+  if (!isReviewedPath(record.path) || !sessionCan(permissionFor(record, permission)))
+    throw assessmentReject.forbidden()
 }
 
 export function authorizeViewEvidence(user, record) {
@@ -53,20 +59,24 @@ export function authorizeViewEvidence(user, record) {
 
 export function authorizeRequestBundle(user, record) {
   authorizeViewEvidence(user, record)
-  if (!user.superAdmin && accessOf(user, record) === ACCESS.OWNER) throw assessmentReject.forbidden()
+  if (!user.superAdmin && accessOf(user, record) === ACCESS.OWNER)
+    throw assessmentReject.forbidden()
 }
 
 export function authorizeViewBundle(user, record, bundle) {
-  if (!bundle || (!user.superAdmin && bundle.requesterId !== user.id)) throw assessmentReject.notFound()
+  if (!bundle || (!user.superAdmin && bundle.requesterId !== user.id))
+    throw assessmentReject.notFound()
   authorizeRequestBundle(user, record)
 }
 
 export function authorizeQueue(user) {
-  if (!user.superAdmin && !sessionCan(ACCREDITED_PERMISSIONS.QUEUE_VIEW)) throw assessmentReject.forbidden()
+  if (!user.superAdmin && !sessionCan(ACCREDITED_PERMISSIONS.QUEUE_VIEW))
+    throw assessmentReject.forbidden()
 }
 
 export function authorizeAssignedList(user) {
-  if (!user.superAdmin && !sessionCan(ACCREDITED_PERMISSIONS.ASSIGNED_VIEW)) throw assessmentReject.forbidden()
+  if (!user.superAdmin && !sessionCan(ACCREDITED_PERMISSIONS.ASSIGNED_VIEW))
+    throw assessmentReject.forbidden()
 }
 
 export function authorizeViewRequest(user, record) {
@@ -77,7 +87,8 @@ export function authorizeViewRequest(user, record) {
 }
 
 export function authorizeListAssessors(user) {
-  if (!user.superAdmin && !sessionCan(ACCREDITED_PERMISSIONS.ASSIGN)) throw assessmentReject.forbidden()
+  if (!user.superAdmin && !sessionCan(ACCREDITED_PERMISSIONS.ASSIGN))
+    throw assessmentReject.forbidden()
 }
 
 export function authorizeAssign(user, record) {
@@ -107,5 +118,6 @@ export function authorizeOverride(user, record) {
 }
 
 export function authorizeSettings(user) {
-  if (!user.superAdmin && !sessionCan(ACCREDITED_PERMISSIONS.SETTINGS_MANAGE)) throw assessmentReject.forbidden()
+  if (!user.superAdmin && !sessionCan(ACCREDITED_PERMISSIONS.SETTINGS_MANAGE))
+    throw assessmentReject.forbidden()
 }

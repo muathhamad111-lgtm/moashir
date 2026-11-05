@@ -17,13 +17,43 @@ const { t } = useI18n()
 
 <template>
   <div class="review-actions" role="group" :aria-label="t('review.actionsLabel')">
-    <p class="review-actions__status" aria-live="polite">{{ dirty ? t('review.unsaved') : t('review.allSaved') }}</p>
+    <p class="review-actions__status" aria-live="polite">
+      {{ dirty ? t('review.unsaved') : t('review.allSaved') }}
+    </p>
     <div class="review-actions__buttons">
-      <BaseButton v-if="canStart" variant="primary" icon="fa-solid fa-play" :loading="busy === 'start'" @click="emit('start')">{{ t('review.start') }}</BaseButton>
+      <BaseButton
+        v-if="canStart"
+        variant="primary"
+        icon="fa-solid fa-play"
+        :loading="busy === 'start'"
+        @click="emit('start')"
+        >{{ t('review.start') }}</BaseButton
+      >
       <template v-if="canScore">
-        <BaseButton variant="secondary" icon="fa-regular fa-floppy-disk" :loading="busy === 'save'" :disabled="!dirty || Boolean(busy)" @click="emit('save')">{{ t('review.save') }}</BaseButton>
-        <BaseButton v-if="canRequestCompletion" variant="secondary" icon="fa-solid fa-reply" :disabled="Boolean(busy)" @click="emit('requestCompletion')">{{ t('review.requestCompletion') }}</BaseButton>
-        <BaseButton variant="primary" icon="fa-solid fa-flag-checkered" :loading="busy === 'complete'" :disabled="Boolean(busy)" @click="emit('complete')">{{ t('review.complete') }}</BaseButton>
+        <BaseButton
+          variant="secondary"
+          icon="fa-regular fa-floppy-disk"
+          :loading="busy === 'save'"
+          :disabled="!dirty || Boolean(busy)"
+          @click="emit('save')"
+          >{{ t('review.save') }}</BaseButton
+        >
+        <BaseButton
+          v-if="canRequestCompletion"
+          variant="secondary"
+          icon="fa-solid fa-reply"
+          :disabled="Boolean(busy)"
+          @click="emit('requestCompletion')"
+          >{{ t('review.requestCompletion') }}</BaseButton
+        >
+        <BaseButton
+          variant="primary"
+          icon="fa-solid fa-flag-checkered"
+          :loading="busy === 'complete'"
+          :disabled="Boolean(busy)"
+          @click="emit('complete')"
+          >{{ t('review.complete') }}</BaseButton
+        >
       </template>
     </div>
     <p v-if="canScore && !complete" class="review-actions__hint">{{ t('review.completeHint') }}</p>

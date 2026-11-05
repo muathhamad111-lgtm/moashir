@@ -12,9 +12,7 @@ const props = defineProps({
 
 const { t } = useI18n()
 
-const cards = computed(() =>
-  [...(props.section.items ?? [])].sort((a, b) => a.order - b.order),
-)
+const cards = computed(() => [...(props.section.items ?? [])].sort((a, b) => a.order - b.order))
 
 const howItWorks = computed(() => props.section.meta?.howItWorks ?? null)
 
@@ -44,11 +42,7 @@ const kitAlt = computed(() => props.localized(props.section.title) || t('illustr
       />
 
       <div class="home-kit__grid">
-        <article
-          v-for="card in cards"
-          :key="card.id"
-          class="home-kit__card"
-        >
+        <article v-for="card in cards" :key="card.id" class="home-kit__card">
           <span class="home-kit__icon" aria-hidden="true">
             <i :class="card.icon || 'fa-solid fa-bolt'"></i>
           </span>
@@ -59,11 +53,7 @@ const kitAlt = computed(() => props.localized(props.section.title) || t('illustr
         </article>
       </div>
 
-      <aside
-        v-if="howItWorks"
-        class="home-kit__note"
-        aria-labelledby="home-kit-note-title"
-      >
+      <aside v-if="howItWorks" class="home-kit__note" aria-labelledby="home-kit-note-title">
         <span class="home-kit__note-icon" aria-hidden="true">
           <i class="fa-solid fa-circle-info"></i>
         </span>

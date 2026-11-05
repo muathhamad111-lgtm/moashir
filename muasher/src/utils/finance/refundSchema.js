@@ -9,7 +9,10 @@ export function riyadhDate(value = new Date()) {
 }
 
 function extensionOf(file) {
-  return String(file?.name ?? '').split('.').pop().toLowerCase()
+  return String(file?.name ?? '')
+    .split('.')
+    .pop()
+    .toLowerCase()
 }
 
 export function evidenceProblem(file) {
@@ -31,8 +34,16 @@ function refundDate(t, paidOn) {
   return yupString()
     .required(t('validation.required'))
     .matches(DATE_PATTERN, t('finance.validation.date'))
-    .test('not-future', t('finance.validation.dateFuture'), (value) => !value || value <= riyadhDate())
-    .test('after-payment', t('finance.validation.dateBeforePayment'), (value) => !value || !paidOn || value >= paidOn)
+    .test(
+      'not-future',
+      t('finance.validation.dateFuture'),
+      (value) => !value || value <= riyadhDate(),
+    )
+    .test(
+      'after-payment',
+      t('finance.validation.dateBeforePayment'),
+      (value) => !value || !paidOn || value >= paidOn,
+    )
 }
 
 function evidence(t) {
@@ -50,13 +61,16 @@ function evidence(t) {
 
 export function refundSchema(t, { total, paidOn }) {
   return yupObject({
-    amount: yupString().required(t('validation.required')).oneOf([total], t('finance.refund.amountFixed', { total })),
+    amount: yupString()
+      .required(t('validation.required'))
+      .oneOf([total], t('finance.refund.amountFixed', { total })),
     refundedOn: refundDate(t, paidOn),
     reason: boundedText(t, REFUND_RULES.REASON_MIN, REFUND_RULES.REASON_MAX),
-    transferReference: boundedText(t, REFUND_RULES.TRANSFER_REFERENCE_MIN, REFUND_RULES.TRANSFER_REFERENCE_MAX).matches(
-      REFUND_RULES.TRANSFER_REFERENCE_PATTERN,
-      t('finance.validation.transferReference'),
-    ),
+    transferReference: boundedText(
+      t,
+      REFUND_RULES.TRANSFER_REFERENCE_MIN,
+      REFUND_RULES.TRANSFER_REFERENCE_MAX,
+    ).matches(REFUND_RULES.TRANSFER_REFERENCE_PATTERN, t('finance.validation.transferReference')),
     evidence: evidence(t),
   })
 }

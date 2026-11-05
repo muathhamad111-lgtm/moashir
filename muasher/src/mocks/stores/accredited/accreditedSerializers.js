@@ -1,11 +1,24 @@
 import { boundTree, entityOf, isFrozen } from '../assessments/assessmentsStore'
-import { assessmentResource, resultResource, scoresResource, subRows } from '../assessments/selfSerializers'
+import {
+  assessmentResource,
+  resultResource,
+  scoresResource,
+  subRows,
+} from '../assessments/selfSerializers'
 import { criteriaUpdateOf } from '../assessments/criteriaMoves'
 import { ACCESS, accessOf } from '../assessments/assessmentAccess'
 import { entityProfileOf, entitySummary } from '../entitySerializers'
 import { findRegion } from '../regionsStore'
 import { uploadLimits } from './assessmentSettingsStore'
-import { activeAssignment, boundSubsOf, gapsOf, idOfCode, isOverdue, openCompletionOf, presentEvidence } from './accreditedRecords'
+import {
+  activeAssignment,
+  boundSubsOf,
+  gapsOf,
+  idOfCode,
+  isOverdue,
+  openCompletionOf,
+  presentEvidence,
+} from './accreditedRecords'
 import { findCycle } from '../award/cycleStore'
 import { maskedStatus } from '../award/statusMask'
 
@@ -45,7 +58,9 @@ export function evidenceItem(row, subs) {
 
 export function visibleEvidence(record, viewer) {
   const present = presentEvidence(record)
-  return accessOf(viewer, record) === ACCESS.OWNER ? present : present.filter((row) => row.scanStatus === 'clean')
+  return accessOf(viewer, record) === ACCESS.OWNER
+    ? present
+    : present.filter((row) => row.scanStatus === 'clean')
 }
 
 export function evidenceList(rows, record) {
@@ -74,7 +89,9 @@ export function completionResource(completion, subs) {
 
 function cvBySubId(record, subs) {
   return Object.fromEntries(
-    subs.filter((sub) => record.cv[sub.code] !== undefined).map((sub) => [String(sub.id), record.cv[sub.code]]),
+    subs
+      .filter((sub) => record.cv[sub.code] !== undefined)
+      .map((sub) => [String(sub.id), record.cv[sub.code]]),
   )
 }
 
@@ -83,7 +100,9 @@ export function cvResource(record) {
 }
 
 function feedbackFieldsOf(record, code) {
-  return Object.fromEntries(FEEDBACK_FIELDS.map((field) => [field, record.feedback[code]?.[field] ?? null]))
+  return Object.fromEntries(
+    FEEDBACK_FIELDS.map((field) => [field, record.feedback[code]?.[field] ?? null]),
+  )
 }
 
 function feedbackBySubId(record, subs) {
@@ -91,7 +110,10 @@ function feedbackBySubId(record, subs) {
 }
 
 export function feedbackResource(record) {
-  return { assessment: assessmentResource(record), feedback: feedbackBySubId(record, boundSubsOf(record)) }
+  return {
+    assessment: assessmentResource(record),
+    feedback: feedbackBySubId(record, boundSubsOf(record)),
+  }
 }
 
 export function accreditedFormResource(record, viewer) {
@@ -150,7 +172,8 @@ export function queueRow(record, staffName) {
 }
 
 export function assignedRow(record, viewer) {
-  const assignment = [...record.assignments].reverse().find((item) => item.assessorId === viewer.id) ?? null
+  const assignment =
+    [...record.assignments].reverse().find((item) => item.assessorId === viewer.id) ?? null
   const entity = entityOf(record)
   return {
     id: record.id,

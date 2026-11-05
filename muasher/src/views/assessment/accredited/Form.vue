@@ -29,6 +29,10 @@ function onSubmitted() {
       <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
       <p>{{ t('accredited.form.note') }}</p>
     </div>
-    <AccreditedFormWorkspace :key="assessmentId" :assessment-id="assessmentId" @submitted="onSubmitted" />
+    <AccreditedFormWorkspace
+      :key="assessmentId"
+      :assessment-id="assessmentId"
+      @submitted="onSubmitted"
+    />
   </section>
 </template>

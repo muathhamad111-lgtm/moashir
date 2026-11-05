@@ -47,12 +47,17 @@ const refreshing = ref(false)
 const accept = computed(() => acceptOf(form.value?.uploadLimits.allowedTypes ?? []))
 const workspace = { formState, cvDrafts, uploads, accept }
 const mains = computed(() => form.value?.criteria?.mains ?? [])
-const activeMain = computed(() => mains.value.find((main) => main.id === activeMainId.value) ?? mains.value[0] ?? null)
+const activeMain = computed(
+  () => mains.value.find((main) => main.id === activeMainId.value) ?? mains.value[0] ?? null,
+)
 const treeNodes = computed(() =>
   mains.value.map((main) => ({
     id: main.id,
     label: `${main.code} ${localizedText(main.name, locale.value)}`,
-    children: main.subs.map((sub) => ({ id: sub.id, label: `${sub.code} ${localizedText(sub.name, locale.value)}` })),
+    children: main.subs.map((sub) => ({
+      id: sub.id,
+      label: `${sub.code} ${localizedText(sub.name, locale.value)}`,
+    })),
   })),
 )
 
@@ -76,7 +81,12 @@ function selectNode({ node, parent }) {
 }
 
 async function onRemove(row) {
-  const accepted = await confirm({ title: t('accredited.evidence.removeTitle'), message: t('accredited.evidence.removeMessage', { name: row.fileName }), variant: 'danger', confirmLabel: t('accredited.evidence.removeConfirm') })
+  const accepted = await confirm({
+    title: t('accredited.evidence.removeTitle'),
+    message: t('accredited.evidence.removeMessage', { name: row.fileName }),
+    variant: 'danger',
+    confirmLabel: t('accredited.evidence.removeConfirm'),
+  })
   if (accepted) uploads.remove(row)
 }
 
@@ -102,15 +112,41 @@ onMounted(async () => {
       <Skeleton variant="text" :count="6" />
     </div>
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="formState.load" />
-    <EmptyState v-else-if="status === 'missing'" icon="fa-regular fa-folder-open" :title="t('accredited.form.missing.title')" :message="t('accredited.form.missing.message')" />
-    <EmptyState v-else-if="status === 'blocked'" icon="fa-solid fa-lock" :title="t('accredited.form.blocked.title')" :message="errorMessage || t('accredited.form.blocked.message')" />
+    <EmptyState
+      v-else-if="status === 'missing'"
+      icon="fa-regular fa-folder-open"
+      :title="t('accredited.form.missing.title')"
+      :message="t('accredited.form.missing.message')"
+    />
+    <EmptyState
+      v-else-if="status === 'blocked'"
+      icon="fa-solid fa-lock"
+      :title="t('accredited.form.blocked.title')"
+      :message="errorMessage || t('accredited.form.blocked.message')"
+    />
     <template v-else-if="form">
       <AccreditedFormSummary :assessment="assessment" :criteria="form.criteria" />
-      <AccreditedNotices :assessment="assessment" :completion-request="form.completionRequest" :conflict-code="rejection.conflictCode.value" :refreshing="refreshing" @refresh="refresh" />
-      <AccreditedCompleteness v-if="isEditable" ref="completeness" :missing="form.missing" :criteria="form.criteria" @reveal="revealSub" />
+      <AccreditedNotices
+        :assessment="assessment"
+        :completion-request="form.completionRequest"
+        :conflict-code="rejection.conflictCode.value"
+        :refreshing="refreshing"
+        @refresh="refresh"
+      />
+      <AccreditedCompleteness
+        v-if="isEditable"
+        ref="completeness"
+        :missing="form.missing"
+        :criteria="form.criteria"
+        @reveal="revealSub"
+      />
       <div class="accredited-workspace__layout">
         <aside class="accredited-workspace__nav" :aria-label="t('accredited.form.navLabel')">
-          <CriteriaTree :nodes="treeNodes" :active-id="activeMain?.id ?? null" @select="selectNode" />
+          <CriteriaTree
+            :nodes="treeNodes"
+            :active-id="activeMain?.id ?? null"
+            @select="selectNode"
+          />
         </aside>
         <AccreditedMainPanel
           v-if="activeMain"

@@ -1,7 +1,12 @@
 import { http } from '../contract/http'
 import { envelope } from '../contract/responses'
 import { paginate } from '../contract/pagination'
-import { assessmentReject, assessmentRoute, fieldMessage, readJson } from '../stores/assessments/assessmentRejection'
+import {
+  assessmentReject,
+  assessmentRoute,
+  fieldMessage,
+  readJson,
+} from '../stores/assessments/assessmentRejection'
 import { readsEveryAssessment, signedInActor } from '../stores/assessments/assessmentAccess'
 import { findAssessment, isFrozen } from '../stores/assessments/assessmentsStore'
 import { recordResource } from '../stores/assessments/selfSerializers'
@@ -17,9 +22,22 @@ import {
 import { reviewedRecords } from '../stores/accredited/accreditedRecords'
 import { returnForCompletion, withdrawRequest } from '../stores/award/followerWork'
 import { authorizeFollowAdvanced } from '../stores/award/cycleAccess'
-import { assignedRow, completionResource, queueRow } from '../stores/accredited/accreditedSerializers'
-import { queueFiltersFrom, queuePage, queueRecords, queueStats } from '../stores/accredited/requestQueue'
-import { assignAssessor, eligibleAssessors, reassignAssessor } from '../stores/accredited/assignments'
+import {
+  assignedRow,
+  completionResource,
+  queueRow,
+} from '../stores/accredited/accreditedSerializers'
+import {
+  queueFiltersFrom,
+  queuePage,
+  queueRecords,
+  queueStats,
+} from '../stores/accredited/requestQueue'
+import {
+  assignAssessor,
+  eligibleAssessors,
+  reassignAssessor,
+} from '../stores/accredited/assignments'
 import { staffNameOf } from '../stores/accredited/staffDirectory'
 import { runAccreditedSchedule } from '../stores/accredited/scheduler'
 
@@ -54,19 +72,26 @@ function assignmentItem(assignment, revealsIdentities) {
     endedAt: assignment.endedAt,
   }
   if (!revealsIdentities) return item
-  const assignedBy = assignment.assignedById === null ? null : { id: assignment.assignedById, name: staffNameOf(assignment.assignedById) }
+  const assignedBy =
+    assignment.assignedById === null
+      ? null
+      : { id: assignment.assignedById, name: staffNameOf(assignment.assignedById) }
   return { ...item, assignedBy, reason: assignment.reason, endReason: assignment.endReason }
 }
 
 function detailResource(record, viewer) {
   const reveals = readsEveryAssessment(viewer)
-  const assignments = reveals ? record.assignments : record.assignments.filter((assignment) => assignment.assessorId === viewer.id)
+  const assignments = reveals
+    ? record.assignments
+    : record.assignments.filter((assignment) => assignment.assessorId === viewer.id)
   return {
     ...queueRow(record, staffNameOf),
     payment: { paid: findPayment(record.paymentId)?.status === 'paid' },
     record: recordResource(record, viewer),
     assignmentHistory: assignments.map((assignment) => assignmentItem(assignment, reveals)),
-    completionRequests: record.completionRequests.map((completion) => completionResource(completion, null)),
+    completionRequests: record.completionRequests.map((completion) =>
+      completionResource(completion, null),
+    ),
   }
 }
 
@@ -74,11 +99,17 @@ function assignedFor(user, query) {
   const keys = [...query.keys()].filter((key) => key.startsWith('filter['))
   const tab = query.get('filter[tab]')
   if (keys.some((key) => key !== 'filter[tab]') || (tab && !TABS[tab])) {
-    throw assessmentReject.validation({ 'filter.tab': [fieldMessage('validation.invalid', {}, 'filter')] })
+    throw assessmentReject.validation({
+      'filter.tab': [fieldMessage('validation.invalid', {}, 'filter')],
+    })
   }
   return reviewedRecords()
     .filter((record) => !isFrozen(record))
-    .filter((record) => record.assignments.some((assignment) => assignment.assessorId === user.id && REVIEWING.includes(assignment.status)))
+    .filter((record) =>
+      record.assignments.some(
+        (assignment) => assignment.assessorId === user.id && REVIEWING.includes(assignment.status),
+      ),
+    )
     .filter((record) => !tab || TABS[tab].includes(record.status))
     .sort((a, b) => ((a.dueAt ?? '') < (b.dueAt ?? '') ? -1 : 1))
 }
@@ -94,7 +125,10 @@ export const requestsHandlers = [
       const filters = queueFiltersFrom(query)
       const records = queueRecords(filters, normalizeSearchText)
       const { items, pagination } = queuePage(records, query)
-      return envelope(items.map((record) => queueRow(record, staffNameOf)), { pagination, stats: queueStats(records, filters) })
+      return envelope(
+        items.map((record) => queueRow(record, staffNameOf)),
+        { pagination, stats: queueStats(records, filters) },
+      )
     }),
   ),
 
@@ -106,7 +140,10 @@ export const requestsHandlers = [
       runAccreditedSchedule()
       const query = new URL(request.url).searchParams
       const { items, pagination } = paginate(assignedFor(user, query), query)
-      return envelope(items.map((record) => assignedRow(record, user)), { pagination })
+      return envelope(
+        items.map((record) => assignedRow(record, user)),
+        { pagination },
+      )
     }),
   ),
 
@@ -145,7 +182,9 @@ export const requestsHandlers = [
       const user = signedInActor()
       const record = boundRecord(params)
       authorizeFollowAdvanced(user, record)
-      return envelope(detailResource(returnForCompletion(user, record, await readJson(request)), user))
+      return envelope(
+        detailResource(returnForCompletion(user, record, await readJson(request)), user),
+      )
     }),
   ),
 

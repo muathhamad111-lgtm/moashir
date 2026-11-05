@@ -13,7 +13,11 @@ defineProps({
 </script>
 
 <template>
-  <section class="payment-notice" :class="`payment-notice--${tone}`" :role="live ? 'status' : undefined">
+  <section
+    class="payment-notice"
+    :class="`payment-notice--${tone}`"
+    :role="live ? 'status' : undefined"
+  >
     <span class="payment-notice__icon" aria-hidden="true"><i :class="icon"></i></span>
     <div class="payment-notice__body">
       <h2 class="payment-notice__title">{{ title }}</h2>

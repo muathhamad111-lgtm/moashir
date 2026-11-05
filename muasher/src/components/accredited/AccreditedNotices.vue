@@ -30,23 +30,43 @@ const conflictKey = computed(() => CONFLICT_KEYS[props.conflictCode] ?? 'conflic
 const isAdvanced = computed(() => props.assessment.path === ASSESSMENT_PATHS.ADVANCED)
 
 function noticeKey(name, part) {
-  const root = isAdvanced.value && ADVANCED_OVERRIDES.includes(name) ? 'advanced.notices' : 'accredited.notices'
+  const root =
+    isAdvanced.value && ADVANCED_OVERRIDES.includes(name)
+      ? 'advanced.notices'
+      : 'accredited.notices'
   return `${root}.${name}.${part}`
 }
 </script>
 
 <template>
   <div class="accredited-notices">
-    <AssessmentNotice v-if="assessment.isFrozen" variant="frozen" :title="t('accredited.notices.frozen.title')" :message="t('accredited.notices.frozen.message')" />
+    <AssessmentNotice
+      v-if="assessment.isFrozen"
+      variant="frozen"
+      :title="t('accredited.notices.frozen.title')"
+      :message="t('accredited.notices.frozen.message')"
+    />
     <AssessmentNotice
       v-if="assessment.criteriaUpdateInProgress"
       variant="warning"
       :title="t('accredited.notices.criteriaUpdate.title')"
       :message="t('accredited.notices.criteriaUpdate.message')"
     />
-    <AssessmentNotice v-if="conflictCode" variant="danger" live :title="t(noticeKey(conflictKey, 'title'))" :message="t(noticeKey(conflictKey, 'message'))">
+    <AssessmentNotice
+      v-if="conflictCode"
+      variant="danger"
+      live
+      :title="t(noticeKey(conflictKey, 'title'))"
+      :message="t(noticeKey(conflictKey, 'message'))"
+    >
       <template #action>
-        <BaseButton variant="secondary" size="sm" icon="fa-solid fa-rotate" :loading="refreshing" @click="emit('refresh')">
+        <BaseButton
+          variant="secondary"
+          size="sm"
+          icon="fa-solid fa-rotate"
+          :loading="refreshing"
+          @click="emit('refresh')"
+        >
           {{ t('accredited.notices.refresh') }}
         </BaseButton>
       </template>
@@ -57,8 +77,16 @@ function noticeKey(name, part) {
       :title="t(noticeKey('readOnly', 'title'))"
       :message="t(noticeKey('readOnly', 'message'))"
     />
-    <AssessmentNotice v-if="completionRequest" variant="warning" :title="t(noticeKey('completion', 'title'))" :message="t(noticeKey('completion', 'message'))">
-      <CompletionRequestCard :request="completionRequest" :title-key="isAdvanced ? 'advanced.completion.title' : 'accredited.completion.title'" />
+    <AssessmentNotice
+      v-if="completionRequest"
+      variant="warning"
+      :title="t(noticeKey('completion', 'title'))"
+      :message="t(noticeKey('completion', 'message'))"
+    >
+      <CompletionRequestCard
+        :request="completionRequest"
+        :title-key="isAdvanced ? 'advanced.completion.title' : 'accredited.completion.title'"
+      />
     </AssessmentNotice>
   </div>
 </template>

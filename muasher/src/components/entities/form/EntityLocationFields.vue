@@ -24,7 +24,12 @@ watch(regionId, () => {
   <fieldset class="entity-form__group">
     <legend class="entity-form__legend">{{ t('entities.sections.location') }}</legend>
     <div class="entity-form__grid">
-      <FieldSelect name="regionId" :label="t('entities.fields.region')" :options="regionOptions" required />
+      <FieldSelect
+        name="regionId"
+        :label="t('entities.fields.region')"
+        :options="regionOptions"
+        required
+      />
       <FieldSelect
         name="cityId"
         :label="t('entities.fields.city')"

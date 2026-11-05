@@ -14,7 +14,13 @@ function pricingOf(payment) {
 
 function receiptSummaryOf(receipt) {
   if (!receipt) return null
-  return { id: receipt.id, number: receipt.number, status: receipt.status, isTest: receipt.isTest, issuedAt: receipt.issuedAt }
+  return {
+    id: receipt.id,
+    number: receipt.number,
+    status: receipt.status,
+    isTest: receipt.isTest,
+    issuedAt: receipt.issuedAt,
+  }
 }
 
 export function ownPaymentResource(payment) {

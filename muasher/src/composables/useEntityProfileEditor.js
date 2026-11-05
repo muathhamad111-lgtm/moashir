@@ -4,7 +4,12 @@ import { useValidatedForm } from '@/composables/useValidatedForm'
 import { useToast } from '@/composables/useToast'
 import { useEntityStore } from '@/stores/entity'
 import { ownProfileSchema } from '@/utils/entitySchemas'
-import { PROFILE_FIELDS, profileChanges, profileFormValues, profilePayload } from '@/utils/entityPayload'
+import {
+  PROFILE_FIELDS,
+  profileChanges,
+  profileFormValues,
+  profilePayload,
+} from '@/utils/entityPayload'
 
 const REVIEWED_FIELDS = [...PROFILE_FIELDS, 'marketingConsent']
 
@@ -17,7 +22,10 @@ export function useEntityProfileEditor({ profile, onSaved }) {
   const step = ref(EDITOR_STEPS.EDIT)
   const changes = ref([])
   const saveConfirmed = ref(false)
-  const initialValues = { ...profileFormValues(profile), marketingConsent: profile.marketingConsent === true }
+  const initialValues = {
+    ...profileFormValues(profile),
+    marketingConsent: profile.marketingConsent === true,
+  }
 
   function review(values) {
     const found = profileChanges(initialValues, values, REVIEWED_FIELDS)
@@ -30,7 +38,10 @@ export function useEntityProfileEditor({ profile, onSaved }) {
   }
 
   async function save(values) {
-    await entityStore.updateProfile({ ...profilePayload(values), marketingConsent: values.marketingConsent === true })
+    await entityStore.updateProfile({
+      ...profilePayload(values),
+      marketingConsent: values.marketingConsent === true,
+    })
     toast.success(t('entities.profile.saved'))
     onSaved()
   }

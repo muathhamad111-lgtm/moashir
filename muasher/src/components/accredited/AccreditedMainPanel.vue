@@ -21,7 +21,9 @@ const { locale } = useI18n()
         {{ localizedText(main.name, locale) }}
       </h2>
     </template>
-    <p v-if="main.description" class="accredited-main__description">{{ localizedText(main.description, locale) }}</p>
+    <p v-if="main.description" class="accredited-main__description">
+      {{ localizedText(main.description, locale) }}
+    </p>
     <ul class="accredited-main__subs">
       <AccreditedSubPanel
         v-for="sub in main.subs"

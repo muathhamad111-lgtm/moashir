@@ -52,7 +52,8 @@ function toLinkedAssessor(raw) {
 
 export function toCycleDetail(raw = {}) {
   const detail = { ...toCycle(raw), canManage: raw.canManage === true }
-  if (!Object.hasOwn(raw, 'members')) return { ...detail, revealsStaff: false, members: [], initialAssessors: [] }
+  if (!Object.hasOwn(raw, 'members'))
+    return { ...detail, revealsStaff: false, members: [], initialAssessors: [] }
   return {
     ...detail,
     revealsStaff: true,
@@ -97,7 +98,12 @@ export function toCandidate(raw = {}) {
 }
 
 export function toConditionCheck(raw = {}) {
-  return { rule: raw.rule ?? null, passed: raw.passed === true, required: raw.required ?? null, actual: raw.actual ?? null }
+  return {
+    rule: raw.rule ?? null,
+    passed: raw.passed === true,
+    required: raw.required ?? null,
+    actual: raw.actual ?? null,
+  }
 }
 
 function toAdvancedRequest(raw) {

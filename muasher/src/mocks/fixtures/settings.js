@@ -47,7 +47,10 @@ export const certificatesFixture = [
   },
   {
     kind: 'advanced-winner',
-    templateFile: { name: 'advanced-winner-template.pdf', url: '/assets/certificates/advanced-winner.pdf' },
+    templateFile: {
+      name: 'advanced-winner-template.pdf',
+      url: '/assets/certificates/advanced-winner.pdf',
+    },
     entityNamePosition: { x: 50, y: 40 },
     scorePosition: { x: 50, y: 60 },
     fontColor: '#1FB57A',
@@ -70,11 +73,46 @@ export const certificatesFixture = [
 export const CERTIFICATE_FONTS = ['iwanzaza', 'montserrat', 'tajawal', 'cairo']
 
 export const kbFilesFixture = [
-  { id: 'kb-1', name: 'دليل استخدام المنصة.pdf', sizeKb: 1840, status: 'processed', approved: true, uploadedAt: '2026-06-28T10:00:00Z' },
-  { id: 'kb-2', name: 'شرح معايير التقييم.pdf', sizeKb: 3120, status: 'processed', approved: true, uploadedAt: '2026-06-29T14:30:00Z' },
-  { id: 'kb-3', name: 'دليل نموذج التميز.pdf', sizeKb: 2540, status: 'processed', approved: true, uploadedAt: '2026-06-30T09:15:00Z' },
-  { id: 'kb-4', name: 'الأسئلة الشائعة.docx', sizeKb: 420, status: 'processing', approved: false, uploadedAt: '2026-07-06T08:40:00Z' },
-  { id: 'kb-5', name: 'سياسة الخصوصية.pdf', sizeKb: 680, status: 'failed', approved: false, uploadedAt: '2026-07-06T09:05:00Z' },
+  {
+    id: 'kb-1',
+    name: 'دليل استخدام المنصة.pdf',
+    sizeKb: 1840,
+    status: 'processed',
+    approved: true,
+    uploadedAt: '2026-06-28T10:00:00Z',
+  },
+  {
+    id: 'kb-2',
+    name: 'شرح معايير التقييم.pdf',
+    sizeKb: 3120,
+    status: 'processed',
+    approved: true,
+    uploadedAt: '2026-06-29T14:30:00Z',
+  },
+  {
+    id: 'kb-3',
+    name: 'دليل نموذج التميز.pdf',
+    sizeKb: 2540,
+    status: 'processed',
+    approved: true,
+    uploadedAt: '2026-06-30T09:15:00Z',
+  },
+  {
+    id: 'kb-4',
+    name: 'الأسئلة الشائعة.docx',
+    sizeKb: 420,
+    status: 'processing',
+    approved: false,
+    uploadedAt: '2026-07-06T08:40:00Z',
+  },
+  {
+    id: 'kb-5',
+    name: 'سياسة الخصوصية.pdf',
+    sizeKb: 680,
+    status: 'failed',
+    approved: false,
+    uploadedAt: '2026-07-06T09:05:00Z',
+  },
 ]
 
 export const notificationTypesFixture = [
@@ -191,9 +229,49 @@ export const notificationTypesFixture = [
 ]
 
 export const notificationAuditFixture = [
-  { id: 'aud-1', code: 'PAY-02', recipient: { ar: 'جمعية البر بالرياض', en: 'Al-Birr Charity — Riyadh' }, channel: 'email', receivedAt: '2026-07-05T09:15:00Z', openedAt: '2026-07-05T09:22:00Z', actionedAt: '2026-07-05T09:40:00Z' },
-  { id: 'aud-2', code: 'ACC-08', recipient: { ar: 'مؤسسة إنسان الأهلية', en: 'Insan Foundation' }, channel: 'in-app', receivedAt: '2026-07-05T12:00:00Z', openedAt: '2026-07-05T12:05:00Z', actionedAt: null },
-  { id: 'aud-3', code: 'REG-02', recipient: { ar: 'وقف الرحمة الخيري', en: 'Al-Rahma Waqf' }, channel: 'sms', receivedAt: '2026-07-06T08:10:00Z', openedAt: null, actionedAt: null },
-  { id: 'aud-4', code: 'ADV-02', recipient: { ar: 'جمعية تنمية الأسرة', en: 'Family Development Association' }, channel: 'email', receivedAt: '2026-07-04T16:30:00Z', openedAt: '2026-07-04T17:00:00Z', actionedAt: '2026-07-04T17:20:00Z' },
-  { id: 'aud-5', code: 'INT-01', recipient: { ar: 'مسؤول التكامل', en: 'Integrations Officer' }, channel: 'in-app', receivedAt: '2026-07-06T09:00:00Z', openedAt: '2026-07-06T09:03:00Z', actionedAt: null },
+  {
+    id: 'aud-1',
+    code: 'PAY-02',
+    recipient: { ar: 'جمعية البر بالرياض', en: 'Al-Birr Charity — Riyadh' },
+    channel: 'email',
+    receivedAt: '2026-07-05T09:15:00Z',
+    openedAt: '2026-07-05T09:22:00Z',
+    actionedAt: '2026-07-05T09:40:00Z',
+  },
+  {
+    id: 'aud-2',
+    code: 'ACC-08',
+    recipient: { ar: 'مؤسسة إنسان الأهلية', en: 'Insan Foundation' },
+    channel: 'in-app',
+    receivedAt: '2026-07-05T12:00:00Z',
+    openedAt: '2026-07-05T12:05:00Z',
+    actionedAt: null,
+  },
+  {
+    id: 'aud-3',
+    code: 'REG-02',
+    recipient: { ar: 'وقف الرحمة الخيري', en: 'Al-Rahma Waqf' },
+    channel: 'sms',
+    receivedAt: '2026-07-06T08:10:00Z',
+    openedAt: null,
+    actionedAt: null,
+  },
+  {
+    id: 'aud-4',
+    code: 'ADV-02',
+    recipient: { ar: 'جمعية تنمية الأسرة', en: 'Family Development Association' },
+    channel: 'email',
+    receivedAt: '2026-07-04T16:30:00Z',
+    openedAt: '2026-07-04T17:00:00Z',
+    actionedAt: '2026-07-04T17:20:00Z',
+  },
+  {
+    id: 'aud-5',
+    code: 'INT-01',
+    recipient: { ar: 'مسؤول التكامل', en: 'Integrations Officer' },
+    channel: 'in-app',
+    receivedAt: '2026-07-06T09:00:00Z',
+    openedAt: '2026-07-06T09:03:00Z',
+    actionedAt: null,
+  },
 ]

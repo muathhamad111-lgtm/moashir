@@ -15,7 +15,15 @@ export const kbEntriesFixture = [
     id: 'kb-paths',
     keywords: {
       ar: ['مسارات', 'أنواع التقييم', 'الفرق بين', 'ذاتي', 'معتمد', 'متقدم', 'تقييم'],
-      en: ['paths', 'assessment types', 'difference', 'self', 'accredited', 'advanced', 'assessment'],
+      en: [
+        'paths',
+        'assessment types',
+        'difference',
+        'self',
+        'accredited',
+        'advanced',
+        'assessment',
+      ],
     },
     question: { ar: 'ما مسارات التقييم المتاحة؟', en: 'What assessment paths are available?' },
     answer: {

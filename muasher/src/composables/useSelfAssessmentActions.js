@@ -59,7 +59,9 @@ export function useSelfAssessmentActions({ formState, scoreSheet, onMissing, onS
     if (missing.length) {
       await onMissing(missing)
       scoreSheet.markMissing(missing)
-      return toast.error(t('assessment.self.toasts.incomplete', { count: missing.length }, missing.length))
+      return toast.error(
+        t('assessment.self.toasts.incomplete', { count: missing.length }, missing.length),
+      )
     }
     confirmOpen.value = true
   }
@@ -84,5 +86,14 @@ export function useSelfAssessmentActions({ formState, scoreSheet, onMissing, onS
     conflictCode.value = ''
   }
 
-  return { saving, submitting, confirmOpen, conflictCode, save, requestSubmit, confirmSubmit, clearConflict }
+  return {
+    saving,
+    submitting,
+    confirmOpen,
+    conflictCode,
+    save,
+    requestSubmit,
+    confirmSubmit,
+    clearConflict,
+  }
 }

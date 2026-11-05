@@ -7,7 +7,11 @@ import { publishedTree, versionTree } from '../stores/criteriaSerializers'
 import { reject } from '../stores/criteriaRejection'
 import { CRITERIA_PERMISSIONS, actorWith, criteriaRoute, found } from './criteriaSupport'
 import { failsRandomly } from '../contract/faults'
-import { assessmentReject, assessmentRoute, readJson } from '../stores/assessments/assessmentRejection'
+import {
+  assessmentReject,
+  assessmentRoute,
+  readJson,
+} from '../stores/assessments/assessmentRejection'
 import {
   authorizeCreateSelf,
   authorizeManageSelf,
@@ -17,11 +21,24 @@ import {
 } from '../stores/assessments/assessmentAccess'
 import { findAssessment } from '../stores/assessments/assessmentsStore'
 import { listAssessments, listFiltersFrom } from '../stores/assessments/assessmentQueries'
-import { assessmentResource, formResource, recordResource, resultResource, scoresResource } from '../stores/assessments/selfSerializers'
-import { saveSelfDraft, startSelfAssessment, submitSelfAssessment } from '../stores/assessments/selfWorkflow'
+import {
+  assessmentResource,
+  formResource,
+  recordResource,
+  resultResource,
+  scoresResource,
+} from '../stores/assessments/selfSerializers'
+import {
+  saveSelfDraft,
+  startSelfAssessment,
+  submitSelfAssessment,
+} from '../stores/assessments/selfWorkflow'
 import '../stores/assessments/criteriaRebind'
 import { ACCREDITED_PERMISSIONS, authorizeManageOwn } from '../stores/accredited/accreditedAccess'
-import { accreditedFormResource, accreditedResultResource } from '../stores/accredited/accreditedSerializers'
+import {
+  accreditedFormResource,
+  accreditedResultResource,
+} from '../stores/accredited/accreditedSerializers'
 import { submitReviewedRequest } from '../stores/accredited/entityWorkflow'
 import { isReviewedPath } from '../stores/assessments/reviewedPaths'
 import { runAccreditedSchedule } from '../stores/accredited/scheduler'
@@ -49,7 +66,13 @@ function requestedTree(request) {
 
 function unavailable() {
   return HttpResponse.json(
-    { data: null, meta: {}, message: 'The service is temporarily unavailable.', code: 'service_unavailable', errors: {} },
+    {
+      data: null,
+      meta: {},
+      message: 'The service is temporarily unavailable.',
+      code: 'service_unavailable',
+      errors: {},
+    },
     { status: 503 },
   )
 }
@@ -67,7 +90,8 @@ function numericRoute(resolve) {
 }
 
 function perPath(selfSerializer, reviewedSerializer) {
-  return (record, user) => (isReviewedPath(record.path) ? reviewedSerializer(record, user) : selfSerializer(record, user))
+  return (record, user) =>
+    isReviewedPath(record.path) ? reviewedSerializer(record, user) : selfSerializer(record, user)
 }
 
 function readRoute(serialize) {
@@ -81,7 +105,10 @@ function readRoute(serialize) {
 }
 
 export const assessmentsHandlers = [
-  http.get('/api/v1/assessments/criteria', criteriaRoute(({ request }) => envelope(requestedTree(request)))),
+  http.get(
+    '/api/v1/assessments/criteria',
+    criteriaRoute(({ request }) => envelope(requestedTree(request))),
+  ),
 
   http.get(
     '/api/v1/assessments',
@@ -130,7 +157,9 @@ export const assessmentsHandlers = [
       const record = boundRecord(params)
       if (isReviewedPath(record.path)) {
         authorizeManageOwn(user, record, ACCREDITED_PERMISSIONS.ACCREDITED_MANAGE)
-        return envelope(assessmentResource(submitReviewedRequest(user, record, await readJson(request))))
+        return envelope(
+          assessmentResource(submitReviewedRequest(user, record, await readJson(request))),
+        )
       }
       authorizeManageSelf(user, record)
       return envelope(resultResource(submitSelfAssessment(user, record, await readJson(request))))

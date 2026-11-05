@@ -109,5 +109,9 @@ function valueAt(values, path) {
 export function profileChanges(before, after, fields = PROFILE_FIELDS) {
   return fields
     .filter((field) => text(valueAt(before, field)).trim() !== text(valueAt(after, field)).trim())
-    .map((field) => ({ field, before: text(valueAt(before, field)), after: text(valueAt(after, field)) }))
+    .map((field) => ({
+      field,
+      before: text(valueAt(before, field)),
+      after: text(valueAt(after, field)),
+    }))
 }

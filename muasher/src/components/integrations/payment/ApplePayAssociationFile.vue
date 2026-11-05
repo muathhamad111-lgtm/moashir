@@ -21,16 +21,27 @@ const sizeError = ref('')
 const stored = computed(() => props.file?.set === true)
 
 const sizeLine = computed(() =>
-  stored.value ? t('integrations.payment.applePay.fileSize', { size: formatNumber(n, props.file.sizeBytes, 'integer') }) : t('integrations.payment.applePay.fileMissing'),
+  stored.value
+    ? t('integrations.payment.applePay.fileSize', {
+        size: formatNumber(n, props.file.sizeBytes, 'integer'),
+      })
+    : t('integrations.payment.applePay.fileMissing'),
 )
 
 const checkState = computed(() => {
   const result = props.checkResult
   if (!result) return null
-  if (result.reachable && result.matches) return { variant: 'success', label: t('integrations.payment.applePay.reachable') }
-  if (result.reachable) return { variant: 'warning', label: t('integrations.payment.applePay.contentDiffers') }
-  const status = result.status ? t('integrations.payment.applePay.httpStatus', { status: result.status }) : ''
-  return { variant: 'danger', label: `${t('integrations.payment.applePay.unreachable')} ${status}`.trim() }
+  if (result.reachable && result.matches)
+    return { variant: 'success', label: t('integrations.payment.applePay.reachable') }
+  if (result.reachable)
+    return { variant: 'warning', label: t('integrations.payment.applePay.contentDiffers') }
+  const status = result.status
+    ? t('integrations.payment.applePay.httpStatus', { status: result.status })
+    : ''
+  return {
+    variant: 'danger',
+    label: `${t('integrations.payment.applePay.unreachable')} ${status}`.trim(),
+  }
 })
 
 function onPick(event) {
@@ -48,9 +59,14 @@ function onPick(event) {
 
 <template>
   <div class="association-file">
-    <span :id="inputId" class="association-file__label">{{ t('integrations.payment.applePay.fileLabel') }}</span>
+    <span :id="inputId" class="association-file__label">{{
+      t('integrations.payment.applePay.fileLabel')
+    }}</span>
     <p class="association-file__state">
-      <i :class="stored ? 'fa-solid fa-file-circle-check' : 'fa-solid fa-file-circle-question'" aria-hidden="true"></i>
+      <i
+        :class="stored ? 'fa-solid fa-file-circle-check' : 'fa-solid fa-file-circle-question'"
+        aria-hidden="true"
+      ></i>
       {{ sizeLine }}
     </p>
     <RecordedStamp v-if="stored" kind="uploaded" :at="file.uploadedAt" :by="file.uploadedBy" />
@@ -58,15 +74,49 @@ function onPick(event) {
       <span>{{ t('integrations.payment.applePay.fingerprint') }}</span>
       <code dir="ltr">{{ file.sha256 }}</code>
     </p>
-    <input ref="inputRef" type="file" hidden accept="text/plain,.txt" :aria-labelledby="inputId" :disabled="busy" @change="onPick" />
+    <input
+      ref="inputRef"
+      type="file"
+      hidden
+      accept="text/plain,.txt"
+      :aria-labelledby="inputId"
+      :disabled="busy"
+      @change="onPick"
+    />
     <div class="association-file__actions">
-      <BaseButton variant="secondary" size="sm" icon="fa-solid fa-upload" :disabled="busy" @click="inputRef.click()">
-        {{ t(stored ? 'integrations.payment.applePay.replaceFile' : 'integrations.payment.applePay.uploadFile') }}
+      <BaseButton
+        variant="secondary"
+        size="sm"
+        icon="fa-solid fa-upload"
+        :disabled="busy"
+        @click="inputRef.click()"
+      >
+        {{
+          t(
+            stored
+              ? 'integrations.payment.applePay.replaceFile'
+              : 'integrations.payment.applePay.uploadFile',
+          )
+        }}
       </BaseButton>
-      <BaseButton v-if="stored" variant="ghost" size="sm" icon="fa-solid fa-trash-can" :disabled="busy" @click="emit('remove')">
+      <BaseButton
+        v-if="stored"
+        variant="ghost"
+        size="sm"
+        icon="fa-solid fa-trash-can"
+        :disabled="busy"
+        @click="emit('remove')"
+      >
         {{ t('integrations.payment.applePay.removeFile') }}
       </BaseButton>
-      <BaseButton v-if="stored" variant="ghost" size="sm" icon="fa-solid fa-globe" :disabled="busy" @click="emit('check')">
+      <BaseButton
+        v-if="stored"
+        variant="ghost"
+        size="sm"
+        icon="fa-solid fa-globe"
+        :disabled="busy"
+        @click="emit('check')"
+      >
         {{ t('integrations.payment.applePay.checkReachable') }}
       </BaseButton>
       <Badge v-if="checkState" :variant="checkState.variant">{{ checkState.label }}</Badge>

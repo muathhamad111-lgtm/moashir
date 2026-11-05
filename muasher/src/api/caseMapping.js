@@ -69,7 +69,10 @@ function createConverter({ convertIdentifier, convertStatus, internalKeyOf }) {
   function convertFieldErrors(errors) {
     if (!isPlainObject(errors)) return errors
     return Object.fromEntries(
-      Object.entries(errors).map(([path, messages]) => [convertFieldPath(path, convertIdentifier), messages]),
+      Object.entries(errors).map(([path, messages]) => [
+        convertFieldPath(path, convertIdentifier),
+        messages,
+      ]),
     )
   }
 
@@ -79,7 +82,10 @@ function createConverter({ convertIdentifier, convertStatus, internalKeyOf }) {
     if (FIELD_PATH_CONTAINERS.has(key)) return [nextKey, convertFieldErrors(child)]
     const converted = convert(child)
     const internalKey = internalKeyOf(key, nextKey)
-    return [nextKey, hasCanonicalValue(internalKey) ? mapStatusValue(converted, convertStatus) : converted]
+    return [
+      nextKey,
+      hasCanonicalValue(internalKey) ? mapStatusValue(converted, convertStatus) : converted,
+    ]
   }
 
   function convert(value) {

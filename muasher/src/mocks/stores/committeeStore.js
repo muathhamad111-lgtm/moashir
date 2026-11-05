@@ -26,7 +26,10 @@ export const filteringResults = filteringResultsFixture.map((item) => ({
   entityName: { ...item.entityName },
 }))
 
-export const committeeAssessors = committeeAssessorsFixture.map((item) => ({ ...item, name: { ...item.name } }))
+export const committeeAssessors = committeeAssessorsFixture.map((item) => ({
+  ...item,
+  name: { ...item.name },
+}))
 
 export const committeeScores = committeeScoresFixture.map(cloneScore)
 
@@ -50,7 +53,9 @@ export function findCommitteeAssessor(committeeAssessorId) {
 
 export function findCommitteeAssessorScore(committeeAssessorId, assessmentId) {
   return committeeScores.find(
-    (item) => item.committeeAssessorId === committeeAssessorId && item.assessmentId === Number(assessmentId),
+    (item) =>
+      item.committeeAssessorId === committeeAssessorId &&
+      item.assessmentId === Number(assessmentId),
   )
 }
 
@@ -173,7 +178,9 @@ export function addCommitteeAssessorToCommittee(candidate) {
 }
 
 export function removeCommitteeAssessorFromCommittee(committeeAssessorId) {
-  const affected = [...new Set(scoresForCommitteeAssessor(committeeAssessorId).map((s) => s.assessmentId))]
+  const affected = [
+    ...new Set(scoresForCommitteeAssessor(committeeAssessorId).map((s) => s.assessmentId)),
+  ]
   removeCommitteeAssessorScores(committeeAssessorId)
   const index = committeeAssessors.findIndex((j) => j.id === committeeAssessorId)
   if (index !== -1) committeeAssessors.splice(index, 1)
@@ -224,12 +231,18 @@ export function redistributeAssignments() {
     }
   }
   active.forEach((committeeAssessor) => syncCommitteeAssessorStatus(committeeAssessor.id))
-  return { balanced: true, assignmentsPerCommitteeAssessor: targets.length, committeeAssessorCount: active.length }
+  return {
+    balanced: true,
+    assignmentsPerCommitteeAssessor: targets.length,
+    committeeAssessorCount: active.length,
+  }
 }
 
 function removeAssignmentRecord(committeeAssessorId, assessmentId) {
   const id = Number(assessmentId)
-  const index = committeeScores.findIndex((s) => s.committeeAssessorId === committeeAssessorId && s.assessmentId === id)
+  const index = committeeScores.findIndex(
+    (s) => s.committeeAssessorId === committeeAssessorId && s.assessmentId === id,
+  )
   if (index === -1) return false
   committeeScores.splice(index, 1)
   return true
@@ -237,7 +250,12 @@ function removeAssignmentRecord(committeeAssessorId, assessmentId) {
 
 function syncCommitteeAssessorStatus(committeeAssessorId) {
   const committeeAssessor = findCommitteeAssessor(committeeAssessorId)
-  if (!committeeAssessor || committeeAssessor.status === 'excluded' || committeeAssessor.status === 'disabled') return
+  if (
+    !committeeAssessor ||
+    committeeAssessor.status === 'excluded' ||
+    committeeAssessor.status === 'disabled'
+  )
+    return
   const records = scoresForCommitteeAssessor(committeeAssessorId)
   if (!records.length) {
     committeeAssessor.status = 'not-started'

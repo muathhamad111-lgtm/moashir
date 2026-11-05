@@ -1,7 +1,11 @@
 import { http } from '../contract/http'
 import { envelope, noContent } from '../contract/responses'
 import { paginate } from '../contract/pagination'
-import { assessmentReject, assessmentRoute, readJson } from '../stores/assessments/assessmentRejection'
+import {
+  assessmentReject,
+  assessmentRoute,
+  readJson,
+} from '../stores/assessments/assessmentRejection'
 import { signedInActor } from '../stores/assessments/assessmentAccess'
 import { findAssessment } from '../stores/assessments/assessmentsStore'
 import { assessmentResource } from '../stores/assessments/selfSerializers'
@@ -20,14 +24,33 @@ import {
   authorizeViewCycle,
   authorizeViewFiltering,
 } from '../stores/award/cycleAccess'
-import { cycleDetailResource, cycleResource, publicCycleResource } from '../stores/award/cycleSerializers'
+import {
+  cycleDetailResource,
+  cycleResource,
+  publicCycleResource,
+} from '../stores/award/cycleSerializers'
 import { cycleDefaultsResource } from '../stores/award/cycleDefaults'
 import { cycleFiltersFrom, cycleStats, listedCycles } from '../stores/award/cycleQueries'
 import { createCycle, updateCycle } from '../stores/award/cycleEditing'
 import { listCandidates, syncInitialAssessors, syncMembers } from '../stores/award/cycleStaff'
-import { closeCycle, closeCycleSubmissions, openCycle, reopenCycle } from '../stores/award/cycleTransitions'
-import { disqualifyRequest, filteringDetail, filteringQueue, filteringRow, qualifyRequest } from '../stores/award/filtering'
-import { advancedCurrentResource, applyForAdvanced, deleteAdvancedDraft } from '../stores/award/advancedEntity'
+import {
+  closeCycle,
+  closeCycleSubmissions,
+  openCycle,
+  reopenCycle,
+} from '../stores/award/cycleTransitions'
+import {
+  disqualifyRequest,
+  filteringDetail,
+  filteringQueue,
+  filteringRow,
+  qualifyRequest,
+} from '../stores/award/filtering'
+import {
+  advancedCurrentResource,
+  applyForAdvanced,
+  deleteAdvancedDraft,
+} from '../stores/award/advancedEntity'
 
 const CYCLES = '/api/v1/award/cycles'
 const CYCLE = `${CYCLES}/:cycle`
@@ -36,7 +59,11 @@ const NUMERIC_ID = /^\d+$/
 
 function cycleRoute(resolve) {
   const route = assessmentRoute(resolve)
-  return (info) => (NUMERIC_ID.test(info.params.cycle) && (!info.params.assessment || NUMERIC_ID.test(info.params.assessment)) ? route(info) : undefined)
+  return (info) =>
+    NUMERIC_ID.test(info.params.cycle) &&
+    (!info.params.assessment || NUMERIC_ID.test(info.params.assessment))
+      ? route(info)
+      : undefined
 }
 
 function boundCycle(params) {
@@ -99,8 +126,14 @@ export const awardHandlers = [
       runAccreditedSchedule()
       const query = new URL(request.url).searchParams
       const filters = cycleFiltersFrom(query)
-      const { items, pagination } = paginate(listedCycles(user, filters, normalizeSearchText), query)
-      return envelope(items.map((cycle) => cycleResource(cycle, { withCounts: true })), { pagination, stats: cycleStats(user, filters, normalizeSearchText) })
+      const { items, pagination } = paginate(
+        listedCycles(user, filters, normalizeSearchText),
+        query,
+      )
+      return envelope(
+        items.map((cycle) => cycleResource(cycle, { withCounts: true })),
+        { pagination, stats: cycleStats(user, filters, normalizeSearchText) },
+      )
     }),
   ),
 
@@ -109,7 +142,11 @@ export const awardHandlers = [
     assessmentRoute(async ({ request }) => {
       const user = signedInActor()
       authorizeCreateCycle(user)
-      return envelope(cycleDetailResource(createCycle(user, await readJson(request)), user), {}, { status: 201 })
+      return envelope(
+        cycleDetailResource(createCycle(user, await readJson(request)), user),
+        {},
+        { status: 201 },
+      )
     }),
   ),
 
@@ -146,7 +183,11 @@ export const awardHandlers = [
       const user = signedInActor()
       const cycle = boundCycle(params)
       authorizeViewFiltering(user, cycle)
-      const { items, meta } = filteringQueue(cycle, new URL(request.url).searchParams, normalizeSearchText)
+      const { items, meta } = filteringQueue(
+        cycle,
+        new URL(request.url).searchParams,
+        normalizeSearchText,
+      )
       return envelope(items, meta)
     }),
   ),

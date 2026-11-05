@@ -24,9 +24,7 @@ const emit = defineEmits(['update:modelValue', 'upsert', 'remove', 'reorder'])
 const { t } = useI18n()
 const { confirm } = useConfirm()
 
-const orderedItems = computed(() =>
-  [...props.items].sort((a, b) => a.order - b.order),
-)
+const orderedItems = computed(() => [...props.items].sort((a, b) => a.order - b.order))
 
 function close() {
   emit('update:modelValue', false)
@@ -52,8 +50,15 @@ const schema = computed(() =>
 const form = useValidatedForm({
   schema,
   initialValues: {
-    titleAr: '', titleEn: '', descriptionAr: '', descriptionEn: '',
-    ctaLabelAr: '', ctaLabelEn: '', ctaUrl: '', icon: '', image: '',
+    titleAr: '',
+    titleEn: '',
+    descriptionAr: '',
+    descriptionEn: '',
+    ctaLabelAr: '',
+    ctaLabelEn: '',
+    ctaUrl: '',
+    icon: '',
+    image: '',
   },
   action: 'homepage.item.upsert',
   submit: async (values) => {
@@ -89,8 +94,15 @@ function openCreate() {
   activeItem.value = null
   form.resetForm({
     values: {
-      titleAr: '', titleEn: '', descriptionAr: '', descriptionEn: '',
-      ctaLabelAr: '', ctaLabelEn: '', ctaUrl: '', icon: '', image: '',
+      titleAr: '',
+      titleEn: '',
+      descriptionAr: '',
+      descriptionEn: '',
+      ctaLabelAr: '',
+      ctaLabelEn: '',
+      ctaUrl: '',
+      icon: '',
+      image: '',
     },
   })
   editOpen.value = true
@@ -142,7 +154,14 @@ function move(entry, direction) {
   <BaseModal
     :model-value="modelValue"
     size="lg"
-    :title="section ? t('settings.homepage.items.title', { section: localized(section.title) || t(`settings.homepage.keys.${section.key}`, section.key) }) : ''"
+    :title="
+      section
+        ? t('settings.homepage.items.title', {
+            section:
+              localized(section.title) || t(`settings.homepage.keys.${section.key}`, section.key),
+          })
+        : ''
+    "
     @update:model-value="emit('update:modelValue', $event)"
   >
     <div class="homepage-items" :aria-busy="busy || undefined">
@@ -151,10 +170,16 @@ function move(entry, direction) {
       <ul v-if="orderedItems.length" class="homepage-items__list">
         <li v-for="(entry, index) in orderedItems" :key="entry.id" class="homepage-items__row">
           <span class="homepage-items__order">{{ index + 1 }}</span>
-          <span v-if="entry.icon" class="homepage-items__icon"><i :class="entry.icon" aria-hidden="true"></i></span>
+          <span v-if="entry.icon" class="homepage-items__icon"
+            ><i :class="entry.icon" aria-hidden="true"></i
+          ></span>
           <div class="homepage-items__body">
-            <span class="homepage-items__name">{{ localized(entry.title) || t('settings.homepage.items.untitled') }}</span>
-            <span v-if="localized(entry.description)" class="homepage-items__summary">{{ localized(entry.description) }}</span>
+            <span class="homepage-items__name">{{
+              localized(entry.title) || t('settings.homepage.items.untitled')
+            }}</span>
+            <span v-if="localized(entry.description)" class="homepage-items__summary">{{
+              localized(entry.description)
+            }}</span>
           </div>
           <div class="homepage-items__row-actions">
             <BaseButton
@@ -224,7 +249,9 @@ function move(entry, direction) {
       v-model="editOpen"
       size="lg"
       :busy="busy || form.submitting.value"
-      :title="activeItem ? t('settings.homepage.items.editTitle') : t('settings.homepage.items.addTitle')"
+      :title="
+        activeItem ? t('settings.homepage.items.editTitle') : t('settings.homepage.items.addTitle')
+      "
       :submit-label="t('actions.save')"
       @submit="form.onSubmit"
     >
@@ -232,27 +259,79 @@ function move(entry, direction) {
         <fieldset class="homepage-items__group">
           <legend class="homepage-items__legend">{{ t('settings.homepage.groups.text') }}</legend>
           <div class="homepage-items__grid">
-            <BaseInput v-model="titleAr" name="itemTitleAr" :label="t('settings.homepage.fields.titleAr')" :error="form.errors.value.titleAr" required />
-            <BaseInput v-model="titleEn" name="itemTitleEn" :label="t('settings.homepage.fields.titleEn')" :error="form.errors.value.titleEn" required />
+            <BaseInput
+              v-model="titleAr"
+              name="itemTitleAr"
+              :label="t('settings.homepage.fields.titleAr')"
+              :error="form.errors.value.titleAr"
+              required
+            />
+            <BaseInput
+              v-model="titleEn"
+              name="itemTitleEn"
+              :label="t('settings.homepage.fields.titleEn')"
+              :error="form.errors.value.titleEn"
+              required
+            />
           </div>
-          <BaseTextarea v-model="descriptionAr" name="itemDescriptionAr" :rows="3" :label="t('settings.homepage.fields.descriptionAr')" :error="form.errors.value.descriptionAr" />
-          <BaseTextarea v-model="descriptionEn" name="itemDescriptionEn" :rows="3" :label="t('settings.homepage.fields.descriptionEn')" :error="form.errors.value.descriptionEn" />
+          <BaseTextarea
+            v-model="descriptionAr"
+            name="itemDescriptionAr"
+            :rows="3"
+            :label="t('settings.homepage.fields.descriptionAr')"
+            :error="form.errors.value.descriptionAr"
+          />
+          <BaseTextarea
+            v-model="descriptionEn"
+            name="itemDescriptionEn"
+            :rows="3"
+            :label="t('settings.homepage.fields.descriptionEn')"
+            :error="form.errors.value.descriptionEn"
+          />
         </fieldset>
 
         <fieldset class="homepage-items__group">
           <legend class="homepage-items__legend">{{ t('settings.homepage.groups.cta') }}</legend>
           <div class="homepage-items__grid">
-            <BaseInput v-model="ctaLabelAr" name="itemCtaLabelAr" :label="t('settings.homepage.fields.ctaLabelAr')" :error="form.errors.value.ctaLabelAr" />
-            <BaseInput v-model="ctaLabelEn" name="itemCtaLabelEn" :label="t('settings.homepage.fields.ctaLabelEn')" :error="form.errors.value.ctaLabelEn" />
+            <BaseInput
+              v-model="ctaLabelAr"
+              name="itemCtaLabelAr"
+              :label="t('settings.homepage.fields.ctaLabelAr')"
+              :error="form.errors.value.ctaLabelAr"
+            />
+            <BaseInput
+              v-model="ctaLabelEn"
+              name="itemCtaLabelEn"
+              :label="t('settings.homepage.fields.ctaLabelEn')"
+              :error="form.errors.value.ctaLabelEn"
+            />
           </div>
-          <BaseInput v-model="ctaUrl" name="itemCtaUrl" :label="t('settings.homepage.fields.ctaUrl')" :hint="t('settings.homepage.fields.ctaUrlHint')" :error="form.errors.value.ctaUrl" />
+          <BaseInput
+            v-model="ctaUrl"
+            name="itemCtaUrl"
+            :label="t('settings.homepage.fields.ctaUrl')"
+            :hint="t('settings.homepage.fields.ctaUrlHint')"
+            :error="form.errors.value.ctaUrl"
+          />
         </fieldset>
 
         <fieldset class="homepage-items__group">
           <legend class="homepage-items__legend">{{ t('settings.homepage.groups.media') }}</legend>
           <div class="homepage-items__grid">
-            <BaseInput v-model="icon" name="itemIcon" :label="t('settings.homepage.fields.icon')" :hint="t('settings.homepage.fields.iconHint')" :error="form.errors.value.icon" />
-            <BaseInput v-model="image" name="itemImage" :label="t('settings.homepage.fields.image')" :hint="t('settings.homepage.fields.imageHint')" :error="form.errors.value.image" />
+            <BaseInput
+              v-model="icon"
+              name="itemIcon"
+              :label="t('settings.homepage.fields.icon')"
+              :hint="t('settings.homepage.fields.iconHint')"
+              :error="form.errors.value.icon"
+            />
+            <BaseInput
+              v-model="image"
+              name="itemImage"
+              :label="t('settings.homepage.fields.image')"
+              :hint="t('settings.homepage.fields.imageHint')"
+              :error="form.errors.value.image"
+            />
           </div>
         </fieldset>
       </div>

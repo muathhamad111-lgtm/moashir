@@ -31,7 +31,12 @@ describe('notificationsService', () => {
 
   it('lists notifications with a role-scoped filter and reports the params shape', async () => {
     apiClient.get.mockResolvedValue({ data: envelope })
-    const params = { 'filter[recipientRole]': 'entity', 'filter[type]': 'action', page: 2, perPage: 8 }
+    const params = {
+      'filter[recipientRole]': 'entity',
+      'filter[type]': 'action',
+      page: 2,
+      perPage: 8,
+    }
     await notificationsService.list(params)
     expect(apiClient.get).toHaveBeenCalledWith('/notifications', { params })
     expect(logger.breadcrumb).toHaveBeenCalledWith(

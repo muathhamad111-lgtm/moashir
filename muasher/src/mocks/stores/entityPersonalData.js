@@ -39,11 +39,18 @@ export function personalDataPackage(entity) {
     consents: { marketingConsentAt: entity.marketingConsentAt },
     emailChanges: listEmailChanges('all')
       .filter((change) => change.entityId === entity.id)
-      .map(({ oldEmail, newEmail, status, requestedAt }) => ({ oldEmail, newEmail, status, requestedAt })),
-    privacyRequests: listPrivacyRequests({ entityId: entity.id }).map(({ kind, status, createdAt }) => ({
-      kind,
-      status,
-      createdAt,
-    })),
+      .map(({ oldEmail, newEmail, status, requestedAt }) => ({
+        oldEmail,
+        newEmail,
+        status,
+        requestedAt,
+      })),
+    privacyRequests: listPrivacyRequests({ entityId: entity.id }).map(
+      ({ kind, status, createdAt }) => ({
+        kind,
+        status,
+        createdAt,
+      }),
+    ),
   }
 }

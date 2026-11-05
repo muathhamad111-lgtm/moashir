@@ -26,14 +26,28 @@ const route = useRoute()
 const router = useRouter()
 const cycleId = computed(() => (route.params.id ? Number(route.params.id) : null))
 const editor = useCycleEditor(cycleId)
-const { status, errorMessage, cycle, published, regions, blockingCycle, isNew, initialValues, locked } = editor
+const {
+  status,
+  errorMessage,
+  cycle,
+  published,
+  regions,
+  blockingCycle,
+  isNew,
+  initialValues,
+  locked,
+} = editor
 const { prompt: reasonPrompt, reasonExtra } = useSuperAdminReason()
 const transitions = useCycleTransitions({ editor, reasonExtra })
 const staff = useCycleStaff({ editor, reasonExtra })
 const { isSystemAdministrator, canCreate, canReopen } = useCycleAuthority()
 const reopenOpen = ref(false)
 
-const title = computed(() => (isNew.value ? t('cycles.editor.newTitle') : `${localizedText(cycle.value?.name, locale.value)} ${cycle.value?.year ?? ''}`.trim()))
+const title = computed(() =>
+  isNew.value
+    ? t('cycles.editor.newTitle')
+    : `${localizedText(cycle.value?.name, locale.value)} ${cycle.value?.year ?? ''}`.trim(),
+)
 const editable = computed(() => (isNew.value ? canCreate.value : Boolean(cycle.value?.canManage)))
 
 useHead({ title: () => title.value || t('cycles.editor.title') })
@@ -54,7 +68,9 @@ watch(cycleId, editor.load)
         {{ t('cycles.editor.back') }}
       </RouterLink>
       <div class="cycle-editor__title-row">
-        <h1 class="cycle-editor__title">{{ status === 'ready' ? title : t('cycles.editor.title') }}</h1>
+        <h1 class="cycle-editor__title">
+          {{ status === 'ready' ? title : t('cycles.editor.title') }}
+        </h1>
         <CycleStatusBadge v-if="cycle" :status="cycle.status" />
       </div>
     </header>
@@ -63,8 +79,18 @@ watch(cycleId, editor.load)
       <Skeleton variant="text" :count="6" />
     </div>
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="editor.load" />
-    <EmptyState v-else-if="status === 'missing'" icon="fa-regular fa-folder-open" :title="t('cycles.editor.missingTitle')" :message="t('cycles.editor.missingMessage')" />
-    <EmptyState v-else-if="status === 'blocked'" icon="fa-solid fa-lock" :title="t('cycles.editor.blockedTitle')" :message="errorMessage || t('cycles.editor.blockedMessage')" />
+    <EmptyState
+      v-else-if="status === 'missing'"
+      icon="fa-regular fa-folder-open"
+      :title="t('cycles.editor.missingTitle')"
+      :message="t('cycles.editor.missingMessage')"
+    />
+    <EmptyState
+      v-else-if="status === 'blocked'"
+      icon="fa-solid fa-lock"
+      :title="t('cycles.editor.blockedTitle')"
+      :message="errorMessage || t('cycles.editor.blockedMessage')"
+    />
     <div v-else class="cycle-editor__layout">
       <Card class="cycle-editor__main" :title="t('cycles.editor.settings')">
         <CycleForm
@@ -92,10 +118,21 @@ watch(cycleId, editor.load)
           @run="transitions.confirmAndRun"
           @reopen="reopenOpen = true"
         />
-        <CycleStaffPanel v-if="cycle.revealsStaff" :staff="staff" :editable="cycle.canManage && cycle.status !== 'closed'" />
+        <CycleStaffPanel
+          v-if="cycle.revealsStaff"
+          :staff="staff"
+          :editable="cycle.canManage && cycle.status !== 'closed'"
+        />
       </aside>
     </div>
-    <ReasonDialog v-model="reasonPrompt.open.value" :title="t('cycles.reason.title')" :message="t('cycles.reason.message')" :submit-label="t('actions.confirm')" :action="reasonPrompt.provide" action-name="cycles.superAdminReason" />
+    <ReasonDialog
+      v-model="reasonPrompt.open.value"
+      :title="t('cycles.reason.title')"
+      :message="t('cycles.reason.message')"
+      :submit-label="t('actions.confirm')"
+      :action="reasonPrompt.provide"
+      action-name="cycles.superAdminReason"
+    />
     <ReasonDialog
       v-model="reopenOpen"
       :title="t('cycles.actions.reopen.title')"

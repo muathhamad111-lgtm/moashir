@@ -21,9 +21,15 @@ export function useAccreditedForm(assessmentId) {
 
   const assessment = computed(() => form.value?.assessment ?? null)
   const completionRequest = computed(() => form.value?.completionRequest ?? null)
-  const isResubmission = computed(() => assessment.value?.status === ACCREDITED_STATUSES.NEEDS_COMPLETION)
+  const isResubmission = computed(
+    () => assessment.value?.status === ACCREDITED_STATUSES.NEEDS_COMPLETION,
+  )
   const isEditable = computed(
-    () => Boolean(assessment.value) && ENTITY_EDITABLE_STATUSES.includes(assessment.value.status) && !assessment.value.isFrozen && !lockedCode.value,
+    () =>
+      Boolean(assessment.value) &&
+      ENTITY_EDITABLE_STATUSES.includes(assessment.value.status) &&
+      !assessment.value.isFrozen &&
+      !lockedCode.value,
   )
 
   function canEdit(subId, kind) {
@@ -57,5 +63,19 @@ export function useAccreditedForm(assessmentId) {
     lockedCode.value = code
   }
 
-  return { status, errorMessage, form, assessment, completionRequest, isResubmission, isEditable, lockedCode, canEdit, load, patch, patchAssessment, lock }
+  return {
+    status,
+    errorMessage,
+    form,
+    assessment,
+    completionRequest,
+    isResubmission,
+    isEditable,
+    lockedCode,
+    canEdit,
+    load,
+    patch,
+    patchAssessment,
+    lock,
+  }
 }

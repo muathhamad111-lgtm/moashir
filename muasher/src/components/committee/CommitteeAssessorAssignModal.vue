@@ -64,7 +64,10 @@ function onConfirm() {
           :label="fieldLabel"
           :placeholder="placeholder"
           :disabled="busy"
-          @update:model-value="selected = $event; showError = false"
+          @update:model-value="
+            selected = $event
+            showError = false
+          "
         />
         <p v-if="showError" class="committee-assessor-assign__error" role="alert">
           <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
@@ -80,12 +83,7 @@ function onConfirm() {
       <BaseButton variant="secondary" :disabled="busy" @click="isOpen = false">
         {{ t('actions.cancel') }}
       </BaseButton>
-      <BaseButton
-        variant="primary"
-        :loading="busy"
-        :disabled="!hasOptions"
-        @click="onConfirm"
-      >
+      <BaseButton variant="primary" :loading="busy" :disabled="!hasOptions" @click="onConfirm">
         {{ confirmLabel }}
       </BaseButton>
     </template>

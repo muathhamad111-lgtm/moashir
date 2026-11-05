@@ -52,6 +52,8 @@ describe('GapGuidanceEditor', () => {
       props: { gap, saving: true, localized },
       global: createTestGlobals({ locale: 'en' }),
     })
-    expect(wrapper.find(`select[name="gap-priority-${gap.id}"]`).attributes('disabled')).toBeDefined()
+    expect(
+      wrapper.find(`select[name="gap-priority-${gap.id}"]`).attributes('disabled'),
+    ).toBeDefined()
   })
 })

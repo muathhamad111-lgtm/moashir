@@ -85,7 +85,9 @@ const atMax = computed(() => props.modelValue >= 1)
           @input="onInput"
         />
         <span class="score-input__unit" aria-hidden="true">
-          {{ isRelative ? t('assessment.score.percentUnit') : t('assessment.score.ofTen', { max }) }}
+          {{
+            isRelative ? t('assessment.score.percentUnit') : t('assessment.score.ofTen', { max })
+          }}
         </span>
       </div>
       <button

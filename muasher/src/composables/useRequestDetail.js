@@ -3,7 +3,12 @@ import { requestsService } from '@/services/requestsService'
 import { usePermissions } from '@/composables/usePermissions'
 import { useAuthStore } from '@/stores/auth'
 import { PERMISSIONS } from '@/constants/permissionKeys'
-import { isAssignable, isReassignable, isReturnable, isWithdrawable } from '@/utils/assessments/reviewStages'
+import {
+  isAssignable,
+  isReassignable,
+  isReturnable,
+  isWithdrawable,
+} from '@/utils/assessments/reviewStages'
 
 const NOT_FOUND = 404
 
@@ -19,7 +24,9 @@ export function useRequestDetail(requestId) {
   const canAssign = computed(() => active.value && isAssignable(detail.value))
   const canReassign = computed(() => active.value && isReassignable(detail.value))
   const canReturn = computed(() => active.value && follows.value && isReturnable(detail.value))
-  const canWithdraw = computed(() => Boolean(detail.value) && follows.value && isWithdrawable(detail.value))
+  const canWithdraw = computed(
+    () => Boolean(detail.value) && follows.value && isWithdrawable(detail.value),
+  )
 
   async function load({ silent = false } = {}) {
     if (!silent) status.value = 'loading'
@@ -38,5 +45,15 @@ export function useRequestDetail(requestId) {
     detail.value = next
   }
 
-  return { status, errorMessage, detail, canAssign, canReassign, canReturn, canWithdraw, load, apply }
+  return {
+    status,
+    errorMessage,
+    detail,
+    canAssign,
+    canReassign,
+    canReturn,
+    canWithdraw,
+    load,
+    apply,
+  }
 }

@@ -19,9 +19,7 @@ function altOf(item) {
 
 const ACCENTS = ['calm', 'accredited', 'award']
 
-const paths = computed(() =>
-  [...(props.section.items ?? [])].sort((a, b) => a.order - b.order),
-)
+const paths = computed(() => [...(props.section.items ?? [])].sort((a, b) => a.order - b.order))
 
 function accentOf(item) {
   const accent = item.meta?.accent
@@ -86,22 +84,14 @@ function activate(item) {
             class="home-path__points"
             :aria-label="$t('public.home.paths.features')"
           >
-            <li
-              v-for="(point, index) in pointsOf(path)"
-              :key="index"
-              class="home-path__point"
-            >
+            <li v-for="(point, index) in pointsOf(path)" :key="index" class="home-path__point">
               <i class="home-path__point-icon fa-solid fa-check" aria-hidden="true"></i>
               <span>{{ localized(point) }}</span>
             </li>
           </ul>
 
           <div v-if="path.ctaLabel" class="home-path__cta">
-            <BaseButton
-              variant="primary"
-              icon="fa-solid fa-arrow-right"
-              @click="activate(path)"
-            >
+            <BaseButton variant="primary" icon="fa-solid fa-arrow-right" @click="activate(path)">
               {{ localized(path.ctaLabel) }}
             </BaseButton>
           </div>

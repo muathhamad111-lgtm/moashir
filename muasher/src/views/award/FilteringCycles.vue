@@ -43,11 +43,18 @@ const columns = computed(() => [
         :empty-message="t('filtering.cycles.emptyMessage')"
         @retry="load"
       >
-        <template #cell-name="{ item }">{{ localizedText(item.name, locale) }} <bdi class="u-ltr">{{ item.year }}</bdi></template>
+        <template #cell-name="{ item }"
+          >{{ localizedText(item.name, locale) }} <bdi class="u-ltr">{{ item.year }}</bdi></template
+        >
         <template #cell-status="{ item }"><CycleStatusBadge :status="item.status" /></template>
-        <template #cell-submissionEnd="{ item }"><DateStamp :value="item.submissionEnd" :with-time="false" /></template>
+        <template #cell-submissionEnd="{ item }"
+          ><DateStamp :value="item.submissionEnd" :with-time="false"
+        /></template>
         <template #cell-open="{ item }">
-          <RouterLink class="cycle-table__link" :to="{ name: ROUTE_NAMES.AWARD_FILTERING_QUEUE, params: { id: item.id } }">
+          <RouterLink
+            class="cycle-table__link"
+            :to="{ name: ROUTE_NAMES.AWARD_FILTERING_QUEUE, params: { id: item.id } }"
+          >
             {{ t('filtering.cycles.openQueue') }}
           </RouterLink>
         </template>

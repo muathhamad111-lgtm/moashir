@@ -24,36 +24,84 @@ const props = defineProps({
 const emit = defineEmits(['tested'])
 const { t } = useI18n()
 const ownsWebhookAction = computed(() => props.webhook.mode.value === props.mode)
-const registering = computed(() => ownsWebhookAction.value && props.webhook.action.state.value === PROVIDER_ACTION_STATES.PENDING)
-const webhookFailure = computed(() => (ownsWebhookAction.value && props.webhook.action.state.value === PROVIDER_ACTION_STATES.FAILED ? props.webhook.action.failure.value : null))
+const registering = computed(
+  () =>
+    ownsWebhookAction.value && props.webhook.action.state.value === PROVIDER_ACTION_STATES.PENDING,
+)
+const webhookFailure = computed(() =>
+  ownsWebhookAction.value && props.webhook.action.state.value === PROVIDER_ACTION_STATES.FAILED
+    ? props.webhook.action.failure.value
+    : null,
+)
 const status = computed(() => integrationStatusOf(props.pair))
 const runTest = () => paymentIntegrationService.testConnection(props.mode)
 </script>
 
 <template>
-  <section class="key-pair" :class="{ 'is-selected': selected }" :aria-labelledby="`key-pair-${mode}`">
+  <section
+    class="key-pair"
+    :class="{ 'is-selected': selected }"
+    :aria-labelledby="`key-pair-${mode}`"
+  >
     <header class="key-pair__header">
-      <h3 :id="`key-pair-${mode}`" class="key-pair__title">{{ t(`integrations.payment.pairs.${mode}`) }}</h3>
+      <h3 :id="`key-pair-${mode}`" class="key-pair__title">
+        {{ t(`integrations.payment.pairs.${mode}`) }}
+      </h3>
       <IntegrationStatusBadge :status="status" />
       <Badge v-if="selected" variant="success">{{ t('integrations.payment.selectedMode') }}</Badge>
     </header>
     <LastTestLine :last-test="pair.lastTest" />
     <div class="key-pair__fields">
-      <FieldInput :name="`${mode}.publishableKey`" :label="t(`integrations.payment.fields.publishableKey.${mode}`)" input-dir="ltr" autocomplete="off" />
-      <FieldSecret :name="`${mode}.secretKey`" :meta="pair.secretKey" :label="t(`integrations.payment.fields.secretKey.${mode}`)" />
-      <FieldSecret :name="`${mode}.webhookSecret`" :meta="pair.webhookSecret" :label="t('integrations.payment.fields.webhookSecret')" :hint="t('integrations.payment.fields.webhookSecretHint')" />
+      <FieldInput
+        :name="`${mode}.publishableKey`"
+        :label="t(`integrations.payment.fields.publishableKey.${mode}`)"
+        input-dir="ltr"
+        autocomplete="off"
+      />
+      <FieldSecret
+        :name="`${mode}.secretKey`"
+        :meta="pair.secretKey"
+        :label="t(`integrations.payment.fields.secretKey.${mode}`)"
+      />
+      <FieldSecret
+        :name="`${mode}.webhookSecret`"
+        :meta="pair.webhookSecret"
+        :label="t('integrations.payment.fields.webhookSecret')"
+        :hint="t('integrations.payment.fields.webhookSecretHint')"
+      />
     </div>
     <div class="key-pair__webhook">
       <Badge :variant="pair.webhook ? 'success' : 'warning'">
-        <i :class="pair.webhook ? 'fa-solid fa-link' : 'fa-solid fa-link-slash'" aria-hidden="true"></i>
-        {{ t(pair.webhook ? 'integrations.payment.webhook.registered' : 'integrations.payment.webhook.notRegistered') }}
+        <i
+          :class="pair.webhook ? 'fa-solid fa-link' : 'fa-solid fa-link-slash'"
+          aria-hidden="true"
+        ></i>
+        {{
+          t(
+            pair.webhook
+              ? 'integrations.payment.webhook.registered'
+              : 'integrations.payment.webhook.notRegistered',
+          )
+        }}
       </Badge>
-      <BaseButton variant="ghost" size="sm" icon="fa-solid fa-satellite-dish" :loading="registering" :disabled="!pair.configured" @click="webhook.register(mode)">
+      <BaseButton
+        variant="ghost"
+        size="sm"
+        icon="fa-solid fa-satellite-dish"
+        :loading="registering"
+        :disabled="!pair.configured"
+        @click="webhook.register(mode)"
+      >
         {{ t('integrations.payment.webhook.register') }}
       </BaseButton>
     </div>
     <RecordedStamp v-if="pair.webhook" kind="registered" :at="pair.webhook.registeredAt" />
     <ProviderActionFeedback :failure="webhookFailure" />
-    <ConnectionTestPanel :run="runTest" :disabled="!pair.configured" :disabled-hint="t('integrations.feedback.saveKeysFirst')" @settled="emit('tested')" />
+    <ConnectionTestPanel
+      :run="runTest"
+      :disabled="!pair.configured"
+      :disabled-hint="t('integrations.feedback.saveKeysFirst')"
+      @settled="emit('tested')"
+    />
   </section>
 </template>

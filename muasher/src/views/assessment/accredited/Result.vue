@@ -38,16 +38,27 @@ onMounted(async () => {
     <header class="accredited-result__header">
       <p class="accredited-result__eyebrow">{{ t('accredited.intro.eyebrow') }}</p>
       <h1 class="accredited-result__title">{{ t('accredited.result.title') }}</h1>
-      <p v-if="result" class="accredited-result__number"><bdi dir="ltr">{{ result.number }}</bdi></p>
+      <p v-if="result" class="accredited-result__number">
+        <bdi dir="ltr">{{ result.number }}</bdi>
+      </p>
     </header>
     <div v-if="status === 'loading'" class="accredited-result__loading" aria-busy="true">
       <Skeleton variant="block" />
       <Skeleton variant="text" :count="4" />
     </div>
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
-    <EmptyState v-else-if="status === 'missing'" icon="fa-regular fa-folder-open" :title="t('accredited.result.missing.title')" :message="t('accredited.result.missing.message')" />
+    <EmptyState
+      v-else-if="status === 'missing'"
+      icon="fa-regular fa-folder-open"
+      :title="t('accredited.result.missing.title')"
+      :message="t('accredited.result.missing.message')"
+    />
     <ResultPendingNotice v-else-if="!result.available" :result="result">
-      <RouterLink class="accredited-result__back" :to="{ name: ROUTE_NAMES.ASSESSMENT_ACCREDITED }">{{ t('accredited.result.back') }}</RouterLink>
+      <RouterLink
+        class="accredited-result__back"
+        :to="{ name: ROUTE_NAMES.ASSESSMENT_ACCREDITED }"
+        >{{ t('accredited.result.back') }}</RouterLink
+      >
     </ResultPendingNotice>
     <template v-else>
       <AccreditedResultSummary :result="result" />

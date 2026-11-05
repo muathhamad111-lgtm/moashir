@@ -36,16 +36,49 @@ function downloadEvidence(refund) {
 
 <template>
   <section class="finance-page">
-    <FinancePageHeader :eyebrow="t('finance.eyebrow')" :title="t('finance.refunds.title')" :subtitle="t('finance.refunds.subtitle')" />
+    <FinancePageHeader
+      :eyebrow="t('finance.eyebrow')"
+      :title="t('finance.refunds.title')"
+      :subtitle="t('finance.refunds.subtitle')"
+    />
     <FinanceNav />
     <Card>
       <div class="finance-page__range">
-        <DropdownList :model-value="filters.filters.purpose" :options="purposeOptions" :placeholder="t('finance.filters.service')" @update:model-value="setFilter('purpose', $event)" />
-        <BaseDatePicker :model-value="filters.filters.from" name="refunds-from" :label="t('finance.filters.from')" :max="filters.filters.to" @update:model-value="setFilter('from', $event)" />
-        <BaseDatePicker :model-value="filters.filters.to" name="refunds-to" :label="t('finance.filters.to')" :min="filters.filters.from" @update:model-value="setFilter('to', $event)" />
+        <DropdownList
+          :model-value="filters.filters.purpose"
+          :options="purposeOptions"
+          :placeholder="t('finance.filters.service')"
+          @update:model-value="setFilter('purpose', $event)"
+        />
+        <BaseDatePicker
+          :model-value="filters.filters.from"
+          name="refunds-from"
+          :label="t('finance.filters.from')"
+          :max="filters.filters.to"
+          @update:model-value="setFilter('from', $event)"
+        />
+        <BaseDatePicker
+          :model-value="filters.filters.to"
+          name="refunds-to"
+          :label="t('finance.filters.to')"
+          :min="filters.filters.from"
+          @update:model-value="setFilter('to', $event)"
+        />
       </div>
-      <RefundsTable :items="items" :status="status" :error-message="errorMessage" :busy="downloads.busy" @retry="load" @download="downloadEvidence" />
-      <Pagination v-if="status === 'success' && pagination.lastPage > 1" :page="pagination.page" :last-page="pagination.lastPage" @update:page="setPage($event)" />
+      <RefundsTable
+        :items="items"
+        :status="status"
+        :error-message="errorMessage"
+        :busy="downloads.busy"
+        @retry="load"
+        @download="downloadEvidence"
+      />
+      <Pagination
+        v-if="status === 'success' && pagination.lastPage > 1"
+        :page="pagination.page"
+        :last-page="pagination.lastPage"
+        @update:page="setPage($event)"
+      />
     </Card>
   </section>
 </template>

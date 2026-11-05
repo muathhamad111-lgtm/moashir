@@ -20,12 +20,27 @@ const props = defineProps({
 const i18n = useI18n()
 const { t } = i18n
 const toast = useToast()
-const { phase, payment, checkout, failure, existingOrder, countdown, isStarting, isTest, start, applyVerified } = useCheckout(props.purpose)
+const {
+  phase,
+  payment,
+  checkout,
+  failure,
+  existingOrder,
+  countdown,
+  isStarting,
+  isTest,
+  start,
+  applyVerified,
+} = useCheckout(props.purpose)
 
 useHead({ title: () => t(`finance.checkout.title.${props.purpose}`) })
 
-const backRoute = computed(() => (props.purpose === 'bag' ? ROUTE_NAMES.BAG_DETAILS : ROUTE_NAMES.ASSESSMENT_ACCREDITED))
-const showStart = computed(() => [CHECKOUT_PHASES.IDLE, CHECKOUT_PHASES.STARTING].includes(phase.value))
+const backRoute = computed(() =>
+  props.purpose === 'bag' ? ROUTE_NAMES.BAG_DETAILS : ROUTE_NAMES.ASSESSMENT_ACCREDITED,
+)
+const showStart = computed(() =>
+  [CHECKOUT_PHASES.IDLE, CHECKOUT_PHASES.STARTING].includes(phase.value),
+)
 const showForm = computed(() => phase.value === CHECKOUT_PHASES.READY)
 
 function onVerifyFailed(error) {
@@ -56,24 +71,51 @@ function onVerifyFailed(error) {
               {{ t('finance.checkout.cardNote') }}
             </p>
             <div class="checkout__actions">
-              <BaseButton variant="primary" icon="fa-solid fa-credit-card" :loading="isStarting" :disabled="isStarting" @click="start">
+              <BaseButton
+                variant="primary"
+                icon="fa-solid fa-credit-card"
+                :loading="isStarting"
+                :disabled="isStarting"
+                @click="start"
+              >
                 {{ t('finance.checkout.start') }}
               </BaseButton>
-              <RouterLink class="checkout__back" :to="{ name: backRoute }">{{ t('finance.checkout.back') }}</RouterLink>
+              <RouterLink class="checkout__back" :to="{ name: backRoute }">{{
+                t('finance.checkout.back')
+              }}</RouterLink>
             </div>
           </div>
 
           <template v-else-if="showForm">
-            <p v-if="existingOrder" class="checkout__existing" role="note">{{ t('finance.checkout.existingOrder') }}</p>
-            <MoyasarFormHost :key="payment.id" :payment="payment" :checkout="checkout" @verified="applyVerified" @verify-failed="onVerifyFailed" />
+            <p v-if="existingOrder" class="checkout__existing" role="note">
+              {{ t('finance.checkout.existingOrder') }}
+            </p>
+            <MoyasarFormHost
+              :key="payment.id"
+              :payment="payment"
+              :checkout="checkout"
+              @verified="applyVerified"
+              @verify-failed="onVerifyFailed"
+            />
           </template>
 
-          <CheckoutStateNotice v-else :phase="phase" :payment="payment" :failure="failure" :busy="isStarting" @restart="start" />
+          <CheckoutStateNotice
+            v-else
+            :phase="phase"
+            :payment="payment"
+            :failure="failure"
+            :busy="isStarting"
+            @restart="start"
+          />
         </Card>
       </div>
 
       <aside class="checkout__aside">
-        <CheckoutSummary :purpose="purpose" :payment="payment" :countdown="showForm ? countdown : null" />
+        <CheckoutSummary
+          :purpose="purpose"
+          :payment="payment"
+          :countdown="showForm ? countdown : null"
+        />
       </aside>
     </div>
   </section>

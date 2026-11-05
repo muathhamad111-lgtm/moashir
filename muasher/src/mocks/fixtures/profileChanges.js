@@ -12,8 +12,14 @@ export const PROFILE_FIELD_LABELS = Object.freeze({
   has_strategic_plan: { ar: 'الخطة الاستراتيجية', en: 'Strategic plan' },
 })
 
-const SYSTEM_ADMIN_ROLE = { key: 'system_admin', label: { ar: 'مدير النظام', en: 'System Administrator' } }
-const FOLLOWER_ROLE = { key: 'request_follower', label: { ar: 'متابع طلبات التقييم', en: 'Assessment Requests Follower' } }
+const SYSTEM_ADMIN_ROLE = {
+  key: 'system_admin',
+  label: { ar: 'مدير النظام', en: 'System Administrator' },
+}
+const FOLLOWER_ROLE = {
+  key: 'request_follower',
+  label: { ar: 'متابع طلبات التقييم', en: 'Assessment Requests Follower' },
+}
 
 export const profileChangesFixture = [
   {

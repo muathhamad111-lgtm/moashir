@@ -64,14 +64,19 @@ function sameNumbers(left, right) {
 
 function acknowledges(instruction, openNumbers) {
   if (!openNumbers.length) return true
-  return instruction.confirmOpenRequests === true && sameNumbers(instruction.acknowledgedRequestNumbers ?? [], openNumbers)
+  return (
+    instruction.confirmOpenRequests === true &&
+    sameNumbers(instruction.acknowledgedRequestNumbers ?? [], openNumbers)
+  )
 }
 
 export function softDelete(entity, instruction) {
   if (isDeleted(entity)) throw entityReject.illegalTransition()
   const openNumbers = entity.openRequests.map((request) => request.number)
   if (!acknowledges(instruction, openNumbers)) {
-    throw entityReject.openRequestsConfirmationRequired(entity.openRequests.map((request) => ({ ...request, cycleId: null, isFrozen: false })))
+    throw entityReject.openRequestsConfirmationRequired(
+      entity.openRequests.map((request) => ({ ...request, cycleId: null, isFrozen: false })),
+    )
   }
   entity.deletedAt = new Date().toISOString()
   entity.deletionReason = instruction.reason
@@ -88,7 +93,11 @@ export function restore(entity) {
 }
 
 function referenceMatches(entity, confirmation) {
-  return String(confirmation ?? '').trim().toUpperCase() === referenceOf(entity)
+  return (
+    String(confirmation ?? '')
+      .trim()
+      .toUpperCase() === referenceOf(entity)
+  )
 }
 
 export function permanentlyDelete(entity, { confirmation, disclaimerAcknowledged }) {

@@ -16,9 +16,7 @@ const listId = useId()
 const highlightedIndex = ref(-1)
 const toggleRef = ref(null)
 
-const selected = computed(() =>
-  props.options.find((option) => option.value === props.modelValue),
-)
+const selected = computed(() => props.options.find((option) => option.value === props.modelValue))
 
 watch(isOpen, (open) => {
   if (open) {
@@ -81,7 +79,11 @@ function onKeydown(event) {
 </script>
 
 <template>
-  <div ref="rootRef" class="dropdown" :class="{ 'is-open': isOpen, 'dropdown--disabled': disabled }">
+  <div
+    ref="rootRef"
+    class="dropdown"
+    :class="{ 'is-open': isOpen, 'dropdown--disabled': disabled }"
+  >
     <button
       ref="toggleRef"
       type="button"

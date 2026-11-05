@@ -55,7 +55,12 @@ describe('GapCard — enriched gap model', () => {
   })
 
   it('omits the note/action/priority blocks when absent', () => {
-    const wrapper = mountCard({ ...baseGap, priority: null, consultantNote: null, recommendedAction: null })
+    const wrapper = mountCard({
+      ...baseGap,
+      priority: null,
+      consultantNote: null,
+      recommendedAction: null,
+    })
     expect(wrapper.find('.gap-card__note').exists()).toBe(false)
     expect(wrapper.find('.gap-card__action').exists()).toBe(false)
     expect(wrapper.find('.badge--danger').exists()).toBe(false)

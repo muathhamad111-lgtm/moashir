@@ -1,7 +1,13 @@
 import { assessmentReject, fieldMessage } from '../assessments/assessmentRejection'
 import { isOpen } from '../assessments/assessmentsStore'
 import { dispatchQueuedJob } from '../mockQueue'
-import { EVIDENCE_TYPE_CATALOG, SLA_LIMITS, UPLOAD_LIMITS, assessmentSettings, writeAssessmentSettings } from './assessmentSettingsStore'
+import {
+  EVIDENCE_TYPE_CATALOG,
+  SLA_LIMITS,
+  UPLOAD_LIMITS,
+  assessmentSettings,
+  writeAssessmentSettings,
+} from './assessmentSettingsStore'
 import { accreditedRecords } from './accreditedRecords'
 import { addDays } from './dates'
 import { reasonError, throwIfErrors, trimmed } from './accreditedValidation'
@@ -13,11 +19,17 @@ const INTEGER_RULES = {
 }
 
 function integerError(value, { min, max }) {
-  return Number.isInteger(value) && value >= min && value <= max ? null : [fieldMessage('validation.between', { min, max }, 'settings')]
+  return Number.isInteger(value) && value >= min && value <= max
+    ? null
+    : [fieldMessage('validation.between', { min, max }, 'settings')]
 }
 
 function typesError(value) {
-  const valid = Array.isArray(value) && value.length > 0 && new Set(value).size === value.length && value.every((type) => EVIDENCE_TYPE_CATALOG.includes(type))
+  const valid =
+    Array.isArray(value) &&
+    value.length > 0 &&
+    new Set(value).size === value.length &&
+    value.every((type) => EVIDENCE_TYPE_CATALOG.includes(type))
   return valid ? null : [fieldMessage('validation.invalid', {}, 'settings')]
 }
 
@@ -56,7 +68,8 @@ export function updateAssessmentSettings(user, body) {
   if (user.superAdmin && !trimmed(body.reason)) throw assessmentReject.reasonRequired()
   const before = assessmentSettings().accreditedReviewSlaDays
   const after = writeAssessmentSettings(changes)
-  if (after.accreditedReviewSlaDays !== before) dispatchQueuedJob(() => recomputeDueDates(after.accreditedReviewSlaDays))
+  if (after.accreditedReviewSlaDays !== before)
+    dispatchQueuedJob(() => recomputeDueDates(after.accreditedReviewSlaDays))
   return after
 }
 

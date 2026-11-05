@@ -20,7 +20,16 @@ const emit = defineEmits(['save', 'retry'])
 const { t } = useI18n()
 const toast = useToast()
 
-const PLATFORMS = ['x', 'linkedin', 'youtube', 'facebook', 'instagram', 'snapchat', 'tiktok', 'whatsapp']
+const PLATFORMS = [
+  'x',
+  'linkedin',
+  'youtube',
+  'facebook',
+  'instagram',
+  'snapchat',
+  'tiktok',
+  'whatsapp',
+]
 
 const platformOptions = computed(() =>
   PLATFORMS.map((platform) => ({
@@ -57,7 +66,10 @@ function hydrate(source) {
       phone: source.contact?.phone ?? '',
       address: { ...base.contact.address, ...clone(source.contact?.address ?? {}) },
     },
-    social: clone(source.social ?? []).map((row) => ({ platform: row.platform ?? 'x', url: row.url ?? '' })),
+    social: clone(source.social ?? []).map((row) => ({
+      platform: row.platform ?? 'x',
+      url: row.url ?? '',
+    })),
     quickLinks: clone(source.quickLinks ?? []).map((row) => ({
       label: { ar: row.label?.ar ?? '', en: row.label?.en ?? '' },
       url: row.url ?? '',
@@ -112,7 +124,9 @@ function onSubmit() {
 <template>
   <section class="site-settings" aria-labelledby="site-settings-heading">
     <header class="site-settings__header">
-      <h2 id="site-settings-heading" class="site-settings__title">{{ t('settings.homepage.siteSettings.title') }}</h2>
+      <h2 id="site-settings-heading" class="site-settings__title">
+        {{ t('settings.homepage.siteSettings.title') }}
+      </h2>
       <p class="site-settings__desc">{{ t('settings.homepage.siteSettings.description') }}</p>
     </header>
 
@@ -127,17 +141,36 @@ function onSubmit() {
       @retry="emit('retry')"
     />
 
-    <form v-else-if="draft" class="site-settings__form" :aria-busy="busy || undefined" @submit.prevent="onSubmit">
+    <form
+      v-else-if="draft"
+      class="site-settings__form"
+      :aria-busy="busy || undefined"
+      @submit.prevent="onSubmit"
+    >
       <fieldset class="site-settings__group">
-        <legend class="site-settings__legend">{{ t('settings.homepage.siteSettings.footerNote') }}</legend>
+        <legend class="site-settings__legend">
+          {{ t('settings.homepage.siteSettings.footerNote') }}
+        </legend>
         <div class="site-settings__grid">
-          <BaseTextarea v-model="draft.footerNote.ar" name="footerNoteAr" :rows="2" :label="t('settings.homepage.siteSettings.footerNoteAr')" />
-          <BaseTextarea v-model="draft.footerNote.en" name="footerNoteEn" :rows="2" :label="t('settings.homepage.siteSettings.footerNoteEn')" />
+          <BaseTextarea
+            v-model="draft.footerNote.ar"
+            name="footerNoteAr"
+            :rows="2"
+            :label="t('settings.homepage.siteSettings.footerNoteAr')"
+          />
+          <BaseTextarea
+            v-model="draft.footerNote.en"
+            name="footerNoteEn"
+            :rows="2"
+            :label="t('settings.homepage.siteSettings.footerNoteEn')"
+          />
         </div>
       </fieldset>
 
       <fieldset class="site-settings__group">
-        <legend class="site-settings__legend">{{ t('settings.homepage.siteSettings.contact') }}</legend>
+        <legend class="site-settings__legend">
+          {{ t('settings.homepage.siteSettings.contact') }}
+        </legend>
         <div class="site-settings__grid">
           <BaseInput
             v-model="draft.contact.email"
@@ -146,16 +179,34 @@ function onSubmit() {
             :label="t('settings.homepage.siteSettings.email')"
             :error="emailInvalid ? t('settings.homepage.siteSettings.emailInvalid') : ''"
           />
-          <BaseInput v-model="draft.contact.phone" name="contactPhone" :label="t('settings.homepage.siteSettings.phone')" />
-          <BaseInput v-model="draft.contact.address.ar" name="contactAddressAr" :label="t('settings.homepage.siteSettings.addressAr')" />
-          <BaseInput v-model="draft.contact.address.en" name="contactAddressEn" :label="t('settings.homepage.siteSettings.addressEn')" />
+          <BaseInput
+            v-model="draft.contact.phone"
+            name="contactPhone"
+            :label="t('settings.homepage.siteSettings.phone')"
+          />
+          <BaseInput
+            v-model="draft.contact.address.ar"
+            name="contactAddressAr"
+            :label="t('settings.homepage.siteSettings.addressAr')"
+          />
+          <BaseInput
+            v-model="draft.contact.address.en"
+            name="contactAddressEn"
+            :label="t('settings.homepage.siteSettings.addressEn')"
+          />
         </div>
       </fieldset>
 
       <fieldset class="site-settings__group">
-        <legend class="site-settings__legend">{{ t('settings.homepage.siteSettings.social') }}</legend>
+        <legend class="site-settings__legend">
+          {{ t('settings.homepage.siteSettings.social') }}
+        </legend>
         <ul v-if="draft.social.length" class="site-settings__rows">
-          <li v-for="(row, index) in draft.social" :key="`social-${index}`" class="site-settings__row">
+          <li
+            v-for="(row, index) in draft.social"
+            :key="`social-${index}`"
+            class="site-settings__row"
+          >
             <BaseSelect
               v-model="row.platform"
               :name="`socialPlatform-${index}`"
@@ -179,19 +230,41 @@ function onSubmit() {
             />
           </li>
         </ul>
-        <p v-else class="site-settings__empty">{{ t('settings.homepage.siteSettings.noSocial') }}</p>
-        <BaseButton variant="secondary" size="sm" icon="fa-solid fa-plus" :disabled="busy" @click="addSocial">
+        <p v-else class="site-settings__empty">
+          {{ t('settings.homepage.siteSettings.noSocial') }}
+        </p>
+        <BaseButton
+          variant="secondary"
+          size="sm"
+          icon="fa-solid fa-plus"
+          :disabled="busy"
+          @click="addSocial"
+        >
           {{ t('settings.homepage.siteSettings.addSocial') }}
         </BaseButton>
       </fieldset>
 
       <fieldset class="site-settings__group">
-        <legend class="site-settings__legend">{{ t('settings.homepage.siteSettings.quickLinks') }}</legend>
+        <legend class="site-settings__legend">
+          {{ t('settings.homepage.siteSettings.quickLinks') }}
+        </legend>
         <ul v-if="draft.quickLinks.length" class="site-settings__rows">
-          <li v-for="(row, index) in draft.quickLinks" :key="`quick-${index}`" class="site-settings__row site-settings__row--stack">
+          <li
+            v-for="(row, index) in draft.quickLinks"
+            :key="`quick-${index}`"
+            class="site-settings__row site-settings__row--stack"
+          >
             <div class="site-settings__grid">
-              <BaseInput v-model="row.label.ar" :name="`quickLabelAr-${index}`" :label="t('settings.homepage.siteSettings.linkLabelAr')" />
-              <BaseInput v-model="row.label.en" :name="`quickLabelEn-${index}`" :label="t('settings.homepage.siteSettings.linkLabelEn')" />
+              <BaseInput
+                v-model="row.label.ar"
+                :name="`quickLabelAr-${index}`"
+                :label="t('settings.homepage.siteSettings.linkLabelAr')"
+              />
+              <BaseInput
+                v-model="row.label.en"
+                :name="`quickLabelEn-${index}`"
+                :label="t('settings.homepage.siteSettings.linkLabelEn')"
+              />
             </div>
             <div class="site-settings__row site-settings__row--inline">
               <BaseInput
@@ -233,7 +306,13 @@ function onSubmit() {
           </li>
         </ul>
         <p v-else class="site-settings__empty">{{ t('settings.homepage.siteSettings.noLinks') }}</p>
-        <BaseButton variant="secondary" size="sm" icon="fa-solid fa-plus" :disabled="busy" @click="addQuickLink">
+        <BaseButton
+          variant="secondary"
+          size="sm"
+          icon="fa-solid fa-plus"
+          :disabled="busy"
+          @click="addQuickLink"
+        >
           {{ t('settings.homepage.siteSettings.addLink') }}
         </BaseButton>
       </fieldset>

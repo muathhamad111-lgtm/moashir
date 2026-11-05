@@ -17,13 +17,19 @@ const { t, locale } = useI18n()
   <dl class="request-facts">
     <div class="request-facts__item">
       <dt>{{ t('requests.columns.entity') }}</dt>
-      <dd>{{ localizedText(detail.entity?.name, locale) }} <bdi dir="ltr" class="request-facts__reference">{{ detail.entity?.reference }}</bdi></dd>
+      <dd>
+        {{ localizedText(detail.entity?.name, locale) }}
+        <bdi dir="ltr" class="request-facts__reference">{{ detail.entity?.reference }}</bdi>
+      </dd>
     </div>
     <div class="request-facts__item">
       <dt>{{ t('requests.columns.status') }}</dt>
       <dd class="request-facts__badges">
         <StatusBadge :status="detail.status" />
-        <Badge v-if="detail.isFrozen" variant="danger"><i class="fa-solid fa-snowflake" aria-hidden="true"></i> {{ t('accredited.form.frozen') }}</Badge>
+        <Badge v-if="detail.isFrozen" variant="danger"
+          ><i class="fa-solid fa-snowflake" aria-hidden="true"></i>
+          {{ t('accredited.form.frozen') }}</Badge
+        >
       </dd>
     </div>
     <div v-if="detail.awardCycle" class="request-facts__item">
@@ -60,7 +66,9 @@ const { t, locale } = useI18n()
     <div class="request-facts__item">
       <dt>{{ t('requests.detail.payment') }}</dt>
       <dd>
-        <Badge :variant="detail.payment.paid ? 'success' : 'warning'">{{ detail.payment.paid ? t('requests.detail.paid') : t('requests.detail.notPaid') }}</Badge>
+        <Badge :variant="detail.payment.paid ? 'success' : 'warning'">{{
+          detail.payment.paid ? t('requests.detail.paid') : t('requests.detail.notPaid')
+        }}</Badge>
       </dd>
     </div>
   </dl>

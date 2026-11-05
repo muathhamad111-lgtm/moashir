@@ -52,7 +52,11 @@ import { devSessionHandlers } from './devSession'
 export const CORE_MOCK_KEYS = Object.freeze({ SESSION: 'session', AUTH: 'auth' })
 
 export const mockModules = [
-  { key: CORE_MOCK_KEYS.SESSION, core: true, handlers: [...sanctumHandlers, ...(import.meta.env.DEV ? devSessionHandlers() : [])] },
+  {
+    key: CORE_MOCK_KEYS.SESSION,
+    core: true,
+    handlers: [...sanctumHandlers, ...(import.meta.env.DEV ? devSessionHandlers() : [])],
+  },
   { key: M.KPIS, handlers: kpisHandlers },
   { key: M.NOTIFICATIONS, handlers: notificationsHandlers },
   { key: M.CRITERIA, handlers: criteriaHandlers },
@@ -86,11 +90,19 @@ export const mockModules = [
   { key: M.PLATFORM_SETTINGS, handlers: platformSettingsHandlers },
   { key: M.NOTIFICATIONS_ADMIN, handlers: notificationSettingsHandlers },
   { key: M.PAYMENTS, handlers: [...paymentsHandlers, ...moyasarSandboxHandlers] },
-  { key: M.FINANCE, handlers: [...financeHandlers, ...financeSettingsHandlers, ...servicePricesHandlers] },
+  {
+    key: M.FINANCE,
+    handlers: [...financeHandlers, ...financeSettingsHandlers, ...servicePricesHandlers],
+  },
   { key: M.MESSAGING, handlers: messagingHandlers },
   {
     key: M.ACCREDITED,
-    handlers: [...accreditedHandlers, ...requestsHandlers, ...assessorReviewHandlers, ...assessmentSettingsHandlers],
+    handlers: [
+      ...accreditedHandlers,
+      ...requestsHandlers,
+      ...assessorReviewHandlers,
+      ...assessmentSettingsHandlers,
+    ],
   },
   { key: M.CERTIFICATES, handlers: [...certificatesHandlers, ...certificateSettingsHandlers] },
   { key: M.BAG, handlers: [...bagHandlers, ...bagRequestsHandlers] },
@@ -106,7 +118,9 @@ export const mockModules = [
 
 export function handlersOfModules(keys) {
   const selected = new Set(keys)
-  return mockModules.filter((module) => !module.core && selected.has(module.key)).flatMap((module) => module.handlers)
+  return mockModules
+    .filter((module) => !module.core && selected.has(module.key))
+    .flatMap((module) => module.handlers)
 }
 
 export const handlers = mockModules.flatMap((module) => module.handlers)

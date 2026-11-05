@@ -26,14 +26,31 @@ const emit = defineEmits(['created', 'updated', 'locked'])
 const { t } = useI18n()
 const toast = useToast()
 
-const allLocked = computed(() => (props.editable ? props.locked : new Set(Object.keys(props.initialValues))))
+const allLocked = computed(() =>
+  props.editable ? props.locked : new Set(Object.keys(props.initialValues)),
+)
 
 async function send(values, extra) {
   const includeParticipation = props.canSetParticipation
-  if (!props.cycleId) return { created: true, data: (await awardCycleService.create({ ...cyclePayload(values, { includeParticipation }), ...extra })).data }
-  const changes = changedCyclePayload(values, props.initialValues, { includeParticipation, locked: props.locked })
+  if (!props.cycleId)
+    return {
+      created: true,
+      data: (
+        await awardCycleService.create({
+          ...cyclePayload(values, { includeParticipation }),
+          ...extra,
+        })
+      ).data,
+    }
+  const changes = changedCyclePayload(values, props.initialValues, {
+    includeParticipation,
+    locked: props.locked,
+  })
   if (!Object.keys(changes).length) return { created: false, data: null }
-  return { created: false, data: (await awardCycleService.update(props.cycleId, { ...changes, ...extra })).data }
+  return {
+    created: false,
+    data: (await awardCycleService.update(props.cycleId, { ...changes, ...extra })).data,
+  }
 }
 
 const cycleForm = useValidatedForm({
@@ -52,7 +69,8 @@ const cycleForm = useValidatedForm({
       toast.success(t(created ? 'cycles.form.created' : 'cycles.form.updated'))
       emit(created ? 'created' : 'updated', data)
     } catch (error) {
-      if (error?.normalized?.code === AWARD_CODES.FIELD_LOCKED) emit('locked', error.normalized.meta?.lockedFields ?? [])
+      if (error?.normalized?.code === AWARD_CODES.FIELD_LOCKED)
+        emit('locked', error.normalized.meta?.lockedFields ?? [])
       throw error
     }
   },
@@ -63,16 +81,31 @@ watch(
   (values) => cycleForm.resetForm({ values }),
 )
 
-const versionId = computed(() => (cycleForm.values.criteriaVersionId === null || cycleForm.values.criteriaVersionId === undefined ? null : Number(cycleForm.values.criteriaVersionId)))
+const versionId = computed(() =>
+  cycleForm.values.criteriaVersionId === null || cycleForm.values.criteriaVersionId === undefined
+    ? null
+    : Number(cycleForm.values.criteriaVersionId),
+)
 </script>
 
 <template>
   <form class="cycle-form" novalidate @submit.prevent="cycleForm.onSubmit">
     <CycleBasicsFields :locked="allLocked" />
     <CycleWindowFields :locked="allLocked" />
-    <CycleConditionFields :locked="allLocked" :regions="regions" :published="published" :version-id="versionId" :can-set-participation="canSetParticipation && editable" />
+    <CycleConditionFields
+      :locked="allLocked"
+      :regions="regions"
+      :published="published"
+      :version-id="versionId"
+      :can-set-participation="canSetParticipation && editable"
+    />
     <div v-if="editable" class="cycle-form__actions">
-      <BaseButton type="submit" variant="primary" icon="fa-regular fa-floppy-disk" :loading="cycleForm.submitting.value">
+      <BaseButton
+        type="submit"
+        variant="primary"
+        icon="fa-regular fa-floppy-disk"
+        :loading="cycleForm.submitting.value"
+      >
         {{ cycleId ? t('cycles.form.save') : t('cycles.form.create') }}
       </BaseButton>
     </div>

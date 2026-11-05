@@ -27,9 +27,22 @@ function seedRole(page, roles, locale, { committee = false } = {}) {
 async function gotoDashboard(page, marker) {
   await page.goto('/dashboard')
   for (let attempt = 0; attempt < 16; attempt += 1) {
-    if (await page.locator(marker).first().isVisible().catch(() => false)) return
+    if (
+      await page
+        .locator(marker)
+        .first()
+        .isVisible()
+        .catch(() => false)
+    )
+      return
     const retry = page.locator('.error-state__retry')
-    if (await retry.first().isVisible().catch(() => false)) await retry.first().click()
+    if (
+      await retry
+        .first()
+        .isVisible()
+        .catch(() => false)
+    )
+      await retry.first().click()
     await page.waitForTimeout(500)
   }
 }
@@ -38,7 +51,12 @@ const ROLES = [
   { key: 'admin', roles: ['system_admin'], marker: '#admin-summary' },
   { key: 'follower', roles: ['request_follower'], marker: '#follower-requests' },
   { key: 'assessor', roles: ['assessor'], marker: '#assessor-tasks' },
-  { key: 'committee-assessor', roles: ['assessor'], committee: true, marker: '#committee-assessor-stats' },
+  {
+    key: 'committee-assessor',
+    roles: ['assessor'],
+    committee: true,
+    marker: '#committee-assessor-stats',
+  },
   { key: 'secretary', roles: ['award_secretary'], marker: '#secretary-summary' },
   { key: 'entity', roles: ['entity'], marker: '#entity-status' },
   { key: 'finance', roles: ['finance_officer'], marker: '#finance-summary' },

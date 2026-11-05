@@ -32,7 +32,11 @@ onMounted(load)
       <Skeleton variant="text" :count="6" />
     </div>
 
-    <ErrorState v-else-if="status === 'error'" :message="t('entities.registration.loadFailed')" @retry="load" />
+    <ErrorState
+      v-else-if="status === 'error'"
+      :message="t('entities.registration.loadFailed')"
+      @retry="load"
+    />
 
     <EmptyState
       v-else-if="status === 'unavailable'"
@@ -46,7 +50,10 @@ onMounted(load)
         <AccountCredentialsFields />
         <EntityIdentityFields />
         <EntityClassificationFields />
-        <EntityLocationFields :region-options="regions.regionOptions.value" :city-options-for="regions.cityOptionsFor" />
+        <EntityLocationFields
+          :region-options="regions.regionOptions.value"
+          :city-options-for="regions.cityOptionsFor"
+        />
         <EntityMetricsFields :hint="t('entities.hints.metricsLater')" />
         <TermsConsentFields :terms="terms" />
       </fieldset>

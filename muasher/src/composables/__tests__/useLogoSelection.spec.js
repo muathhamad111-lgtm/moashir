@@ -8,7 +8,9 @@ describe('logoErrorKey', () => {
   })
 
   it('rejects other types and oversized files', () => {
-    expect(logoErrorKey(new File(['x'], 'a.jpg', { type: 'image/jpeg' }))).toBe('branding.logo.invalidType')
+    expect(logoErrorKey(new File(['x'], 'a.jpg', { type: 'image/jpeg' }))).toBe(
+      'branding.logo.invalidType',
+    )
     const big = new File([new Uint8Array(1048577)], 'a.png', { type: 'image/png' })
     expect(logoErrorKey(big)).toBe('branding.logo.tooLarge')
   })

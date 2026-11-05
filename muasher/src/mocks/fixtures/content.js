@@ -1,8 +1,18 @@
 export const CONTENT_PLACEHOLDER = true
 
 export const modelCriteriaFixture = [
-  { order: 1, weight: 1000, type: 'enabler', name: { ar: 'القيادة الإدارية', en: 'Administrative Leadership' } },
-  { order: 2, weight: 900, type: 'enabler', name: { ar: 'التخطيط الاستراتيجي', en: 'Strategic Planning' } },
+  {
+    order: 1,
+    weight: 1000,
+    type: 'enabler',
+    name: { ar: 'القيادة الإدارية', en: 'Administrative Leadership' },
+  },
+  {
+    order: 2,
+    weight: 900,
+    type: 'enabler',
+    name: { ar: 'التخطيط الاستراتيجي', en: 'Strategic Planning' },
+  },
   {
     order: 3,
     weight: 800,
@@ -27,9 +37,24 @@ export const modelCriteriaFixture = [
     type: 'enabler',
     name: { ar: 'الابتكار وإدارة المعرفة', en: 'Innovation & Knowledge Management' },
   },
-  { order: 7, weight: 700, type: 'result', name: { ar: 'نتائج الموارد البشرية', en: 'People Results' } },
-  { order: 8, weight: 1200, type: 'result', name: { ar: 'نتائج المستفيدين', en: 'Beneficiary Results' } },
-  { order: 9, weight: 1100, type: 'result', name: { ar: 'نتائج الأداء الرئيسية', en: 'Key Performance Results' } },
+  {
+    order: 7,
+    weight: 700,
+    type: 'result',
+    name: { ar: 'نتائج الموارد البشرية', en: 'People Results' },
+  },
+  {
+    order: 8,
+    weight: 1200,
+    type: 'result',
+    name: { ar: 'نتائج المستفيدين', en: 'Beneficiary Results' },
+  },
+  {
+    order: 9,
+    weight: 1100,
+    type: 'result',
+    name: { ar: 'نتائج الأداء الرئيسية', en: 'Key Performance Results' },
+  },
 ]
 
 function emptyBilingual() {
@@ -215,7 +240,10 @@ const excellenceModelSection = section({
     item({
       id: 'model-c3',
       order: 3,
-      title: { ar: 'إدارة الموارد البشرية والمتطوعين', en: 'Human Resources & Volunteers Management' },
+      title: {
+        ar: 'إدارة الموارد البشرية والمتطوعين',
+        en: 'Human Resources & Volunteers Management',
+      },
       description: {
         ar: 'استقطاب الكفاءات والمتطوعين وتنميتهم والحفاظ على تفاعلهم.',
         en: 'Attracting, developing, and retaining talent and volunteers and sustaining their engagement.',
@@ -354,7 +382,10 @@ const fastExcellenceKitSection = section({
   key: 'fast-excellence-kit',
   order: 5,
   title: { ar: 'حقيبة التميز السريع', en: 'Quick Excellence Kit' },
-  subtitle: { ar: 'خدمة موجهة للتحسين المستمر', en: 'A service dedicated to continuous improvement' },
+  subtitle: {
+    ar: 'خدمة موجهة للتحسين المستمر',
+    en: 'A service dedicated to continuous improvement',
+  },
   description: {
     ar: 'رحلة تطوير مؤسسي مبنية على نتائج تقييمك، تفتح مراحل تحسين تدريجية تساعد الجهة على معالجة الفجوات ورفع مستوى النضج بشكل عملي ومستدام.',
     en: 'An institutional-development journey built on your assessment results, unlocking progressive improvement stages that help the organization close gaps and raise its maturity practically and sustainably.',
@@ -589,7 +620,10 @@ const footerSection = section({
   },
   meta: {
     developedBy: {
-      label: { ar: 'تم التطوير بواسطة شركة التحول التقني', en: 'Developed by Technical Transformation Company' },
+      label: {
+        ar: 'تم التطوير بواسطة شركة التحول التقني',
+        en: 'Developed by Technical Transformation Company',
+      },
       url: 'https://tts.sa',
     },
   },
@@ -611,7 +645,10 @@ const accreditedIntroSection = section({
   icon: 'fa-solid fa-clipboard-check',
   meta: {
     whyRecommended: {
-      title: { ar: 'لماذا نوصي بالتقييم المعتمد؟', en: 'Why we recommend the accredited assessment' },
+      title: {
+        ar: 'لماذا نوصي بالتقييم المعتمد؟',
+        en: 'Why we recommend the accredited assessment',
+      },
       body: {
         ar: 'يمنح التقييم المعتمد جهتك قراءة دقيقة وموثوقة لمستوى نضجها المؤسسي، ويؤهلها للحصول على شهادة معتمدة، ويفتح لها لاحقًا حقيبة التميز السريع لمعالجة الفجوات.',
         en: 'The accredited assessment gives your organization an accurate, trusted reading of its institutional maturity, qualifies it for an accredited certificate, and later unlocks the Quick Excellence Kit to close gaps.',
@@ -740,7 +777,10 @@ const advancedIntroSection = section({
       id: 'advanced-partner-1',
       order: 4,
       icon: 'fa-solid fa-handshake-angle',
-      title: { ar: 'المركز الوطني لتنمية القطاع غير الربحي', en: 'National Center for Non-Profit Sector Development' },
+      title: {
+        ar: 'المركز الوطني لتنمية القطاع غير الربحي',
+        en: 'National Center for Non-Profit Sector Development',
+      },
       description: { ar: 'شريك نجاح', en: 'Success partner' },
       meta: { group: 'partner' },
     }),
@@ -801,7 +841,10 @@ export const siteSettingsFixture = {
   quickLinks: [
     { label: { ar: 'الرئيسية', en: 'Home' }, url: '/' },
     { label: { ar: 'مسارات التقييم', en: 'Assessment paths' }, url: '#evaluation-paths' },
-    { label: { ar: 'حقيبة التميز السريع', en: 'Quick Excellence Kit' }, url: '#fast-excellence-kit' },
+    {
+      label: { ar: 'حقيبة التميز السريع', en: 'Quick Excellence Kit' },
+      url: '#fast-excellence-kit',
+    },
     { label: { ar: 'مؤشرات الأداء', en: 'Performance indicators' }, url: '/kpis' },
     { label: { ar: 'تواصل معنا', en: 'Contact us' }, url: '#contact' },
   ],

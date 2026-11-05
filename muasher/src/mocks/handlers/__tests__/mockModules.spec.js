@@ -12,23 +12,33 @@ describe('mock module registry', () => {
   it('names every switchable module exactly once and keeps the core apart', () => {
     const keys = mockModules.filter((module) => !module.core).map((module) => module.key)
     expect([...keys].sort()).toEqual(Object.values(MOCK_MODULES).sort())
-    expect(mockModules.filter((module) => module.core).map((module) => module.key)).toEqual(Object.values(CORE_MOCK_KEYS))
+    expect(mockModules.filter((module) => module.core).map((module) => module.key)).toEqual(
+      Object.values(CORE_MOCK_KEYS),
+    )
   })
 
   it('builds the full mock layer from every module without a duplicated route', () => {
     const all = headersOf(handlers)
-    expect(all.length).toBe(mockModules.reduce((total, module) => total + module.handlers.length, 0))
+    expect(all.length).toBe(
+      mockModules.reduce((total, module) => total + module.handlers.length, 0),
+    )
     expect(new Set(all).size).toBe(all.length)
   })
 
   it('selects only the handlers of the listed demo modules', () => {
-    expect(headersOf(handlersOfModules([MOCK_MODULES.BAG]))).toEqual(headersOf([...bagHandlers, ...bagRequestsHandlers]))
+    expect(headersOf(handlersOfModules([MOCK_MODULES.BAG]))).toEqual(
+      headersOf([...bagHandlers, ...bagRequestsHandlers]),
+    )
     expect(handlersOfModules([])).toEqual([])
   })
 
   it('never serves the session or sign-in mocks in hybrid mode', () => {
-    const selected = headersOf(handlersOfModules([...Object.values(CORE_MOCK_KEYS), MOCK_MODULES.KPIS]))
-    expect(selected.some((header) => header.includes('/sanctum/') || header.includes('/auth/'))).toBe(false)
+    const selected = headersOf(
+      handlersOfModules([...Object.values(CORE_MOCK_KEYS), MOCK_MODULES.KPIS]),
+    )
+    expect(
+      selected.some((header) => header.includes('/sanctum/') || header.includes('/auth/')),
+    ).toBe(false)
     expect(selected.length).toBeGreaterThan(0)
   })
 

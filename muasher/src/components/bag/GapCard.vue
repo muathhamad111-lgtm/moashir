@@ -16,7 +16,10 @@ const { n } = useI18n()
 const gapPercent = computed(() => {
   const target = Number(props.gap.target) || 0
   if (!target) return 0
-  const raw = props.gap.gapPercent != null ? props.gap.gapPercent : ((Number(props.gap.gap) || 0) / target) * 100
+  const raw =
+    props.gap.gapPercent != null
+      ? props.gap.gapPercent
+      : ((Number(props.gap.gap) || 0) / target) * 100
   return Math.min(100, Math.max(0, Math.round(raw)))
 })
 
@@ -69,7 +72,9 @@ const priorityVariant = computed(() => PRIORITY_VARIANTS[props.gap.priority] ?? 
       <span class="gap-card__bar-fill" :style="{ '--gap-fill': `${gapPercent}%` }"></span>
     </div>
     <p class="gap-card__bar-caption">
-      {{ $t('bag.gap.gapOfTarget', { gap: n(gap.gap, 'default'), target: n(gap.target, 'default') }) }}
+      {{
+        $t('bag.gap.gapOfTarget', { gap: n(gap.gap, 'default'), target: n(gap.target, 'default') })
+      }}
     </p>
 
     <div v-if="gap.consultantNote" class="gap-card__note">
@@ -108,7 +113,8 @@ const priorityVariant = computed(() => PRIORITY_VARIANTS[props.gap.priority] ?? 
             class="gap-card__file-link"
             :href="file.url"
             :download="file.fileName"
-          >{{ localized(file.name) }}</a>
+            >{{ localized(file.name) }}</a
+          >
           <span v-else class="gap-card__file-name">{{ localized(file.name) }}</span>
           <span class="gap-card__file-size">
             {{ $t('bag.gap.fileSize', { size: n(file.sizeKb, 'default') }) }}

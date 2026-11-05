@@ -3,7 +3,15 @@ import config from '../../playwright.config.js'
 export const MOCK_SESSION_COOKIE = 'moashir_mock_session'
 const APP_URL = config.use.baseURL
 
-function descriptorOf({ id = 7000, roles = [], entityId = null, name, committeeCycles, locale, superAdmin }) {
+function descriptorOf({
+  id = 7000,
+  roles = [],
+  entityId = null,
+  name,
+  committeeCycles,
+  locale,
+  superAdmin,
+}) {
   return {
     id,
     roles,

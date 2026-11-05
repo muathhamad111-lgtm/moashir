@@ -22,8 +22,23 @@ function onChange(event) {
 
 <template>
   <span class="evidence-upload">
-    <input ref="input" type="file" class="evidence-upload__input" :accept="accept || undefined" :disabled="disabled" hidden @change="onChange" />
-    <BaseButton variant="secondary" size="sm" :icon="icon" :loading="loading" :disabled="disabled" @click="input?.click()">
+    <input
+      ref="input"
+      type="file"
+      class="evidence-upload__input"
+      :accept="accept || undefined"
+      :disabled="disabled"
+      hidden
+      @change="onChange"
+    />
+    <BaseButton
+      variant="secondary"
+      size="sm"
+      :icon="icon"
+      :loading="loading"
+      :disabled="disabled"
+      @click="input?.click()"
+    >
       {{ label }}
     </BaseButton>
   </span>

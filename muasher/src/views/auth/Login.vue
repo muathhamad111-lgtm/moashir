@@ -67,7 +67,10 @@ const schema = computed(() =>
 
 function signIn(values) {
   if (isPasswordMode.value) {
-    return auth.loginWithPassword({ officialEmail: values.officialEmail, password: values.password })
+    return auth.loginWithPassword({
+      officialEmail: values.officialEmail,
+      password: values.password,
+    })
   }
   const channel = mode.value === LOGIN_MODES.SMS_OTP ? OTP_CHANNELS.SMS : OTP_CHANNELS.EMAIL
   return auth.requestLoginOtp({ officialEmail: values.officialEmail, channel })
@@ -79,7 +82,10 @@ const form = useValidatedForm({
   action: 'auth.login.submit',
   submit: async (values) => {
     const outcome = await signIn(values)
-    await continueAfter(outcome, { officialEmail: values.officialEmail, intent: AUTH_FLOW_INTENTS.LOGIN })
+    await continueAfter(outcome, {
+      officialEmail: values.officialEmail,
+      intent: AUTH_FLOW_INTENTS.LOGIN,
+    })
   },
 })
 

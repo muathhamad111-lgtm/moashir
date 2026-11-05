@@ -11,9 +11,13 @@ export function useEntityDisplay() {
   const { t, locale } = useI18n()
 
   const yesNo = (value) => t(value ? 'common.yes' : 'common.no')
-  const count = (value) => (value === null || value === undefined ? '' : new Intl.NumberFormat(withLatinNumerals(locale.value)).format(value))
+  const count = (value) =>
+    value === null || value === undefined
+      ? ''
+      : new Intl.NumberFormat(withLatinNumerals(locale.value)).format(value)
   const date = (value) => (value ? formatDate(value, locale.value, { dateStyle: 'medium' }) : '')
-  const dateTime = (value) => (value ? formatDate(value, locale.value, { dateStyle: 'medium', timeStyle: 'short' }) : '')
+  const dateTime = (value) =>
+    value ? formatDate(value, locale.value, { dateStyle: 'medium', timeStyle: 'short' }) : ''
   const enumLabel = (group, value) => (value ? t(`entities.enums.${group}.${value}`) : '')
 
   const FORMATTERS = {
@@ -57,5 +61,11 @@ export function useEntityDisplay() {
       }))
   }
 
-  return { rowsOf, date, dateTime, enumLabel, localized: (content) => localizedText(content, locale.value) }
+  return {
+    rowsOf,
+    date,
+    dateTime,
+    enumLabel,
+    localized: (content) => localizedText(content, locale.value),
+  }
 }

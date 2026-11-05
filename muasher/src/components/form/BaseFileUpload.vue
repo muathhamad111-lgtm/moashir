@@ -42,7 +42,8 @@ function onInputChange(event) {
 }
 
 function statusLabel(file) {
-  if (file.status === 'uploading') return t('components.fileUpload.uploading', { progress: file.progress ?? 0 })
+  if (file.status === 'uploading')
+    return t('components.fileUpload.uploading', { progress: file.progress ?? 0 })
   if (file.status === 'failed') return t('components.fileUpload.failed')
   return t('components.fileUpload.done')
 }

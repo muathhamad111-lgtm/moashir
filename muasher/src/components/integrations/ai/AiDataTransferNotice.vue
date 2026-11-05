@@ -16,7 +16,9 @@ const { t } = useI18n()
       </span>
     </p>
     <ul class="data-transfer__controls">
-      <li v-for="control in CONTROLS" :key="control">{{ t(`integrations.ai.transfer.controls.${control}`) }}</li>
+      <li v-for="control in CONTROLS" :key="control">
+        {{ t(`integrations.ai.transfer.controls.${control}`) }}
+      </li>
     </ul>
   </section>
 </template>

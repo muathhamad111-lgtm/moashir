@@ -11,7 +11,8 @@ import DataTable from '@/components/data-list/DataTable.vue'
 import Card from '@/components/ui/Card.vue'
 
 const { t, n, locale } = useI18n()
-const { summary, actions, status, errorMessage, load, localized } = useDashboard('committee-assessor')
+const { summary, actions, status, errorMessage, load, localized } =
+  useDashboard('committee-assessor')
 
 const columns = computed(() => [
   { key: 'entity', label: t('dashboard.committeeAssessor.tasks.entity') },
@@ -57,11 +58,15 @@ function cycleDate(at) {
           />
           <dl class="role-dashboard__facts">
             <div class="role-dashboard__fact">
-              <dt class="role-dashboard__fact-label">{{ t('dashboard.committeeAssessor.averageScore') }}</dt>
+              <dt class="role-dashboard__fact-label">
+                {{ t('dashboard.committeeAssessor.averageScore') }}
+              </dt>
               <dd class="role-dashboard__fact-value">{{ n(summary.averageScore, 'default') }}%</dd>
             </div>
             <div class="role-dashboard__fact">
-              <dt class="role-dashboard__fact-label">{{ t('dashboard.committeeAssessor.cycleEnds') }}</dt>
+              <dt class="role-dashboard__fact-label">
+                {{ t('dashboard.committeeAssessor.cycleEnds') }}
+              </dt>
               <dd class="role-dashboard__fact-value">{{ cycleDate(summary.cycleEndsAt) }}</dd>
             </div>
           </dl>

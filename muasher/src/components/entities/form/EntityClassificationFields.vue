@@ -12,10 +12,30 @@ const { entityTypeOptions, sectorOptions, orgSizeOptions } = useEntityOptions()
   <fieldset class="entity-form__group">
     <legend class="entity-form__legend">{{ t('entities.sections.classification') }}</legend>
     <div class="entity-form__grid">
-      <FieldSelect name="entityType" :label="t('entities.fields.entityType')" :options="entityTypeOptions" required />
-      <FieldSelect name="developmentSector" :label="t('entities.fields.developmentSector')" :options="sectorOptions" required />
-      <FieldSelect name="orgSize" :label="t('entities.fields.orgSize')" :options="orgSizeOptions" required />
-      <FieldInput name="foundingYear" inputmode="numeric" :label="t('entities.fields.foundingYear')" required />
+      <FieldSelect
+        name="entityType"
+        :label="t('entities.fields.entityType')"
+        :options="entityTypeOptions"
+        required
+      />
+      <FieldSelect
+        name="developmentSector"
+        :label="t('entities.fields.developmentSector')"
+        :options="sectorOptions"
+        required
+      />
+      <FieldSelect
+        name="orgSize"
+        :label="t('entities.fields.orgSize')"
+        :options="orgSizeOptions"
+        required
+      />
+      <FieldInput
+        name="foundingYear"
+        inputmode="numeric"
+        :label="t('entities.fields.foundingYear')"
+        required
+      />
     </div>
   </fieldset>
 </template>

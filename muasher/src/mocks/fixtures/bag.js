@@ -18,23 +18,103 @@ export function seedReference() {
 }
 
 const SUB_MIRROR = {
-  101: { weight: 400, mainCriterionId: 1, name: { ar: 'التوجه الاستراتيجي والرؤية', en: 'Strategic Direction & Vision' } },
-  102: { weight: 350, mainCriterionId: 1, name: { ar: 'الحوكمة والامتثال', en: 'Governance & Compliance' } },
-  103: { weight: 250, mainCriterionId: 1, name: { ar: 'ثقافة التميز والقيادة بالقدوة', en: 'Excellence Culture & Leading by Example' } },
-  201: { weight: 500, mainCriterionId: 2, name: { ar: 'تحليل البيئة واحتياجات المستفيدين', en: 'Environment & Beneficiary Needs Analysis' } },
-  202: { weight: 400, mainCriterionId: 2, name: { ar: 'صياغة الخطة الاستراتيجية ونشرها', en: 'Strategy Formulation & Deployment' } },
-  301: { weight: 400, mainCriterionId: 3, name: { ar: 'استقطاب الكفاءات وتنميتها', en: 'Talent Attraction & Development' } },
-  302: { weight: 400, mainCriterionId: 3, name: { ar: 'التمكين والرعاية وبيئة العمل', en: 'Empowerment, Wellbeing & Workplace' } },
-  401: { weight: 400, mainCriterionId: 4, name: { ar: 'إدارة الشراكات الاستراتيجية', en: 'Strategic Partnership Management' } },
-  402: { weight: 300, mainCriterionId: 4, name: { ar: 'الاستدامة المالية وإدارة الموارد', en: 'Financial Sustainability & Resource Management' } },
-  501: { weight: 500, mainCriterionId: 5, name: { ar: 'تصميم البرامج والخدمات', en: 'Program & Service Design' } },
-  502: { weight: 350, mainCriterionId: 5, name: { ar: 'إدارة العمليات وتحسينها', en: 'Process Management & Improvement' } },
-  503: { weight: 250, mainCriterionId: 5, name: { ar: 'التحول الرقمي وإدارة المعرفة', en: 'Digital Transformation & Knowledge Management' } },
-  601: { weight: 600, mainCriterionId: 6, name: { ar: 'رضا المستفيدين وولاؤهم', en: 'Beneficiary Satisfaction & Loyalty' } },
-  602: { weight: 500, mainCriterionId: 6, name: { ar: 'أثر البرامج على المستفيدين', en: 'Program Impact on Beneficiaries' } },
-  701: { weight: 300, mainCriterionId: 7, name: { ar: 'رضا الموظفين والمتطوعين', en: 'Employee & Volunteer Satisfaction' } },
-  702: { weight: 300, mainCriterionId: 7, name: { ar: 'نتائج التطوير المهني', en: 'Professional Development Results' } },
-  801: { weight: 600, mainCriterionId: 8, name: { ar: 'الأثر المجتمعي والإسهام في رؤية 2030', en: 'Community Impact & Vision 2030 Contribution' } },
+  101: {
+    weight: 400,
+    mainCriterionId: 1,
+    name: { ar: 'التوجه الاستراتيجي والرؤية', en: 'Strategic Direction & Vision' },
+  },
+  102: {
+    weight: 350,
+    mainCriterionId: 1,
+    name: { ar: 'الحوكمة والامتثال', en: 'Governance & Compliance' },
+  },
+  103: {
+    weight: 250,
+    mainCriterionId: 1,
+    name: { ar: 'ثقافة التميز والقيادة بالقدوة', en: 'Excellence Culture & Leading by Example' },
+  },
+  201: {
+    weight: 500,
+    mainCriterionId: 2,
+    name: {
+      ar: 'تحليل البيئة واحتياجات المستفيدين',
+      en: 'Environment & Beneficiary Needs Analysis',
+    },
+  },
+  202: {
+    weight: 400,
+    mainCriterionId: 2,
+    name: { ar: 'صياغة الخطة الاستراتيجية ونشرها', en: 'Strategy Formulation & Deployment' },
+  },
+  301: {
+    weight: 400,
+    mainCriterionId: 3,
+    name: { ar: 'استقطاب الكفاءات وتنميتها', en: 'Talent Attraction & Development' },
+  },
+  302: {
+    weight: 400,
+    mainCriterionId: 3,
+    name: { ar: 'التمكين والرعاية وبيئة العمل', en: 'Empowerment, Wellbeing & Workplace' },
+  },
+  401: {
+    weight: 400,
+    mainCriterionId: 4,
+    name: { ar: 'إدارة الشراكات الاستراتيجية', en: 'Strategic Partnership Management' },
+  },
+  402: {
+    weight: 300,
+    mainCriterionId: 4,
+    name: {
+      ar: 'الاستدامة المالية وإدارة الموارد',
+      en: 'Financial Sustainability & Resource Management',
+    },
+  },
+  501: {
+    weight: 500,
+    mainCriterionId: 5,
+    name: { ar: 'تصميم البرامج والخدمات', en: 'Program & Service Design' },
+  },
+  502: {
+    weight: 350,
+    mainCriterionId: 5,
+    name: { ar: 'إدارة العمليات وتحسينها', en: 'Process Management & Improvement' },
+  },
+  503: {
+    weight: 250,
+    mainCriterionId: 5,
+    name: {
+      ar: 'التحول الرقمي وإدارة المعرفة',
+      en: 'Digital Transformation & Knowledge Management',
+    },
+  },
+  601: {
+    weight: 600,
+    mainCriterionId: 6,
+    name: { ar: 'رضا المستفيدين وولاؤهم', en: 'Beneficiary Satisfaction & Loyalty' },
+  },
+  602: {
+    weight: 500,
+    mainCriterionId: 6,
+    name: { ar: 'أثر البرامج على المستفيدين', en: 'Program Impact on Beneficiaries' },
+  },
+  701: {
+    weight: 300,
+    mainCriterionId: 7,
+    name: { ar: 'رضا الموظفين والمتطوعين', en: 'Employee & Volunteer Satisfaction' },
+  },
+  702: {
+    weight: 300,
+    mainCriterionId: 7,
+    name: { ar: 'نتائج التطوير المهني', en: 'Professional Development Results' },
+  },
+  801: {
+    weight: 600,
+    mainCriterionId: 8,
+    name: {
+      ar: 'الأثر المجتمعي والإسهام في رؤية 2030',
+      en: 'Community Impact & Vision 2030 Contribution',
+    },
+  },
 }
 
 export const MAIN_MIRROR = {
@@ -49,39 +129,84 @@ export const MAIN_MIRROR = {
 }
 
 const SUB_RATIO_MIRROR = {
-  101: 0.82, 102: 0.75, 103: 0.9,
-  201: 0.78, 202: 0.8,
-  301: 0.76, 302: 0.7,
-  401: 0.72, 402: 0.68,
-  501: 0.85, 502: 0.65, 503: 0.6,
-  601: 0.88, 602: 0.82,
-  701: 0.74, 702: 0.7,
+  101: 0.82,
+  102: 0.75,
+  103: 0.9,
+  201: 0.78,
+  202: 0.8,
+  301: 0.76,
+  302: 0.7,
+  401: 0.72,
+  402: 0.68,
+  501: 0.85,
+  502: 0.65,
+  503: 0.6,
+  601: 0.88,
+  602: 0.82,
+  701: 0.74,
+  702: 0.7,
   801: 0.8,
 }
 
 const UNMET_POINTS = {
   503: [
-    { id: 'gp-503-1', ar: 'خطة تحول رقمي معتمدة مرتبطة بأهداف الجهة التشغيلية.', en: 'An approved digital transformation plan linked to operational goals.' },
-    { id: 'gp-503-2', ar: 'رقمنة الخدمات الأساسية المقدمة للمستفيدين.', en: 'Digitizing the core services provided to beneficiaries.' },
+    {
+      id: 'gp-503-1',
+      ar: 'خطة تحول رقمي معتمدة مرتبطة بأهداف الجهة التشغيلية.',
+      en: 'An approved digital transformation plan linked to operational goals.',
+    },
+    {
+      id: 'gp-503-2',
+      ar: 'رقمنة الخدمات الأساسية المقدمة للمستفيدين.',
+      en: 'Digitizing the core services provided to beneficiaries.',
+    },
   ],
   502: [
-    { id: 'gp-502-1', ar: 'دورية موثقة للتحسين المستمر للعمليات.', en: 'A documented cadence for continuous process improvement.' },
-    { id: 'gp-502-2', ar: 'مؤشرات كفاءة أوضح على مستوى العمليات التشغيلية.', en: 'Clearer efficiency indicators at the operational-process level.' },
+    {
+      id: 'gp-502-1',
+      ar: 'دورية موثقة للتحسين المستمر للعمليات.',
+      en: 'A documented cadence for continuous process improvement.',
+    },
+    {
+      id: 'gp-502-2',
+      ar: 'مؤشرات كفاءة أوضح على مستوى العمليات التشغيلية.',
+      en: 'Clearer efficiency indicators at the operational-process level.',
+    },
   ],
   402: [
-    { id: 'gp-402-1', ar: 'تفعيل خطة معتمدة لتنويع مصادر الدخل.', en: 'Activating an approved income-source diversification plan.' },
+    {
+      id: 'gp-402-1',
+      ar: 'تفعيل خطة معتمدة لتنويع مصادر الدخل.',
+      en: 'Activating an approved income-source diversification plan.',
+    },
   ],
   302: [
-    { id: 'gp-302-1', ar: 'قياس منتظم لرضا الموظفين وربطه بخطط التحسين.', en: 'Regular employee-satisfaction measurement linked to improvement plans.' },
+    {
+      id: 'gp-302-1',
+      ar: 'قياس منتظم لرضا الموظفين وربطه بخطط التحسين.',
+      en: 'Regular employee-satisfaction measurement linked to improvement plans.',
+    },
   ],
   702: [
-    { id: 'gp-702-1', ar: 'توثيق مسارات التطور الوظيفي وربطها بالأداء.', en: 'Documenting career-development paths and linking them to performance.' },
+    {
+      id: 'gp-702-1',
+      ar: 'توثيق مسارات التطور الوظيفي وربطها بالأداء.',
+      en: 'Documenting career-development paths and linking them to performance.',
+    },
   ],
   401: [
-    { id: 'gp-401-1', ar: 'تقييم أثر كل شراكة سنويًا بمنهجية موثقة.', en: 'Assessing the impact of each partnership annually with a documented method.' },
+    {
+      id: 'gp-401-1',
+      ar: 'تقييم أثر كل شراكة سنويًا بمنهجية موثقة.',
+      en: 'Assessing the impact of each partnership annually with a documented method.',
+    },
   ],
   301: [
-    { id: 'gp-301-1', ar: 'قياس أثر التدريب على الأداء بشكل كمّي.', en: 'Quantitatively measuring the impact of training on performance.' },
+    {
+      id: 'gp-301-1',
+      ar: 'قياس أثر التدريب على الأداء بشكل كمّي.',
+      en: 'Quantitatively measuring the impact of training on performance.',
+    },
   ],
 }
 
@@ -218,7 +343,10 @@ const stage1HelperFiles = {
       subCriterionId: 502,
       guidingPointId: 'gp-502-1',
       kind: 'procedure',
-      name: { ar: 'إجراء التحسين المستمر للعمليات', en: 'Continuous process improvement procedure' },
+      name: {
+        ar: 'إجراء التحسين المستمر للعمليات',
+        en: 'Continuous process improvement procedure',
+      },
       fileName: 'continuous-improvement-procedure.pdf',
       sizeKb: 540,
       url: '/assets/bag/helpers/continuous-improvement-procedure.pdf',
@@ -246,7 +374,12 @@ export const STAGE_1_OPEN_GAP_IDS = ['gap-503', 'gap-502', 'gap-402']
 export function seedGaps() {
   return buildGaps().map((g) => {
     if (STAGE_1_OPEN_GAP_IDS.includes(g.id)) {
-      return { ...g, open: true, stageId: 'stage-1', helperFiles: (stage1HelperFiles[g.id] ?? []).map((f) => ({ ...f })) }
+      return {
+        ...g,
+        open: true,
+        stageId: 'stage-1',
+        helperFiles: (stage1HelperFiles[g.id] ?? []).map((f) => ({ ...f })),
+      }
     }
     return { ...g }
   })

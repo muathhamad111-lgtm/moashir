@@ -15,7 +15,11 @@ const numbers = computed(() => new Intl.NumberFormat(withLatinNumerals(locale.va
 <template>
   <div class="table-wrap">
     <table class="table purpose-breakdown">
-      <caption class="purpose-breakdown__caption">{{ t('finance.overview.byPurpose') }}</caption>
+      <caption class="purpose-breakdown__caption">
+        {{
+          t('finance.overview.byPurpose')
+        }}
+      </caption>
       <thead class="table__head">
         <tr>
           <th class="table__cell" scope="col">{{ t('finance.fields.service') }}</th>
@@ -31,9 +35,15 @@ const numbers = computed(() => new Intl.NumberFormat(withLatinNumerals(locale.va
           <th class="table__cell" scope="row">{{ t(`finance.purposes.${row.purpose}`) }}</th>
           <td class="table__cell">{{ numbers.format(row.completedCount) }}</td>
           <td class="table__cell">{{ numbers.format(row.incompleteCount) }}</td>
-          <td class="table__cell"><MoneyAmount :value="row.totalIncome" :currency="row.currency" strong /></td>
-          <td class="table__cell"><MoneyAmount :value="row.totalVat" :currency="row.currency" /></td>
-          <td class="table__cell"><MoneyAmount :value="row.totalRefunded" :currency="row.currency" /></td>
+          <td class="table__cell">
+            <MoneyAmount :value="row.totalIncome" :currency="row.currency" strong />
+          </td>
+          <td class="table__cell">
+            <MoneyAmount :value="row.totalVat" :currency="row.currency" />
+          </td>
+          <td class="table__cell">
+            <MoneyAmount :value="row.totalRefunded" :currency="row.currency" />
+          </td>
         </tr>
       </tbody>
     </table>

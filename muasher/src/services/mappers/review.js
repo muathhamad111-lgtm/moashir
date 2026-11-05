@@ -20,11 +20,19 @@ function toReviewEntity(raw) {
 }
 
 function toFeedbackSheet(raw) {
-  return Object.fromEntries(Object.entries(raw ?? {}).map(([subId, fields]) => [subId, toFeedbackFields(fields)]))
+  return Object.fromEntries(
+    Object.entries(raw ?? {}).map(([subId, fields]) => [subId, toFeedbackFields(fields)]),
+  )
 }
 
 function toContextItem(raw) {
-  return { id: raw.id ?? null, number: raw.number ?? '', path: raw.path ?? null, completedAt: raw.completedAt ?? null, percent: raw.percent ?? null }
+  return {
+    id: raw.id ?? null,
+    number: raw.number ?? '',
+    path: raw.path ?? null,
+    completedAt: raw.completedAt ?? null,
+    percent: raw.percent ?? null,
+  }
 }
 
 export function toAssessorReview(raw = {}) {

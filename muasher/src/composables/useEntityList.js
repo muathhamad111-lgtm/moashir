@@ -4,7 +4,13 @@ import { useFilters } from '@/composables/useFilters'
 import { usePagination } from '@/composables/usePagination'
 import { entitiesService } from '@/services/entitiesService'
 
-const LIST_FILTERS = { status: '', regionId: '', entityType: '', developmentSector: '', orgSize: '' }
+const LIST_FILTERS = {
+  status: '',
+  regionId: '',
+  entityType: '',
+  developmentSector: '',
+  orgSize: '',
+}
 const DELETED_FILTER = { 'filter[trashed]': 'only' }
 const PER_PAGE = 10
 
@@ -15,7 +21,9 @@ export function useEntityList({ deleted = false } = {}) {
 
   const table = useTable({
     fetcher: async (params) => {
-      const envelope = await entitiesService.list(deleted ? { ...params, ...DELETED_FILTER } : params)
+      const envelope = await entitiesService.list(
+        deleted ? { ...params, ...DELETED_FILTER } : params,
+      )
       stats.value = envelope.meta?.stats ?? null
       return envelope
     },

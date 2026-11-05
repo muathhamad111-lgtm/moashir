@@ -77,11 +77,7 @@ const email = computed(() => auth.user?.email ?? auth.user?.officialEmail ?? '')
       <div v-if="status === 'loading'" class="account-page__module-grid">
         <Skeleton v-for="i in 3" :key="i" variant="block" />
       </div>
-      <ErrorState
-        v-else-if="status === 'error'"
-        :message="t('account.loadError')"
-        @retry="load"
-      />
+      <ErrorState v-else-if="status === 'error'" :message="t('account.loadError')" @retry="load" />
       <EmptyState
         v-else-if="modules.length === 0"
         icon="fa-solid fa-shield-halved"

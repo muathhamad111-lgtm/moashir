@@ -38,7 +38,12 @@ describe('usersService', () => {
 
   it('creates a user via POST and logs only the payload shape (no PII)', async () => {
     apiClient.post.mockResolvedValue({ data: envelope })
-    await usersService.create({ name: 'فهد', email: 'fahad@moashir.example.sa', roles: ['system_admin'], status: 'active' })
+    await usersService.create({
+      name: 'فهد',
+      email: 'fahad@moashir.example.sa',
+      roles: ['system_admin'],
+      status: 'active',
+    })
     expect(apiClient.post).toHaveBeenCalledWith('/users', {
       name: 'فهد',
       email: 'fahad@moashir.example.sa',

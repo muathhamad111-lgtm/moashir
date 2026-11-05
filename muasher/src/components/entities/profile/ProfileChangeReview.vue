@@ -25,8 +25,12 @@ const { t } = useI18n()
       <tbody>
         <tr v-for="change in changes" :key="change.field" class="change-review__row">
           <th scope="row">{{ fieldLabel(change.field) }}</th>
-          <td class="change-review__before">{{ valueLabel(change.field, change.before, 'before') }}</td>
-          <td class="change-review__after">{{ valueLabel(change.field, change.after, 'after') }}</td>
+          <td class="change-review__before">
+            {{ valueLabel(change.field, change.before, 'before') }}
+          </td>
+          <td class="change-review__after">
+            {{ valueLabel(change.field, change.after, 'after') }}
+          </td>
         </tr>
       </tbody>
     </table>

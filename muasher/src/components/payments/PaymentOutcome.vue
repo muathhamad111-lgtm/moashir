@@ -30,7 +30,9 @@ const presentation = computed(() => PRESENTATION[props.state])
 
 const reasonText = computed(() => {
   const reason = props.payment?.failureReason
-  return reason && te(`finance.failureReasons.${reason}`) ? t(`finance.failureReasons.${reason}`) : ''
+  return reason && te(`finance.failureReasons.${reason}`)
+    ? t(`finance.failureReasons.${reason}`)
+    : ''
 })
 
 const message = computed(() => {

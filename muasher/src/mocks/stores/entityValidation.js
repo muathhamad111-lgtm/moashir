@@ -36,14 +36,19 @@ function checkRequired(errors, body, keys) {
 }
 
 function checkChoices(errors, body) {
-  const choices = { entityType: ENTITY_TYPES, developmentSector: DEVELOPMENT_SECTORS, orgSize: ORG_SIZES }
+  const choices = {
+    entityType: ENTITY_TYPES,
+    developmentSector: DEVELOPMENT_SECTORS,
+    orgSize: ORG_SIZES,
+  }
   Object.entries(choices)
     .filter(([key, allowed]) => !blank(body[key]) && !allowed.includes(body[key]))
     .forEach(([key]) => errors.add(key, 'field.invalid_choice'))
 }
 
 function checkPlace(errors, body) {
-  if (!blank(body.regionId) && !findRegion(body.regionId)) errors.add('regionId', 'field.invalid_choice')
+  if (!blank(body.regionId) && !findRegion(body.regionId))
+    errors.add('regionId', 'field.invalid_choice')
   if (!blank(body.cityId) && !activeCityOf(body.regionId, body.cityId)) {
     errors.add('cityId', 'field.city_not_in_region')
   }
@@ -52,12 +57,16 @@ function checkPlace(errors, body) {
 function checkGrade(errors, value) {
   if (blank(value)) return
   const text = String(value)
-  if (!GRADE_PATTERN.test(text) || Number(text) > 100) errors.add('governanceGrade', 'field.governance_grade')
+  if (!GRADE_PATTERN.test(text) || Number(text) > 100)
+    errors.add('governanceGrade', 'field.governance_grade')
 }
 
 function checkNumbers(errors, body) {
   const year = Number(body.foundingYear)
-  if (!blank(body.foundingYear) && (!Number.isInteger(year) || year < MIN_FOUNDING_YEAR || year > new Date().getFullYear())) {
+  if (
+    !blank(body.foundingYear) &&
+    (!Number.isInteger(year) || year < MIN_FOUNDING_YEAR || year > new Date().getFullYear())
+  ) {
     errors.add('foundingYear', 'field.founding_year')
   }
   ;['employeesCount', 'annualBeneficiariesCount']
@@ -67,13 +76,23 @@ function checkNumbers(errors, body) {
 
 function checkContact(errors, body) {
   if (blank(body.name?.ar)) errors.add('name.ar', 'field.required')
-  if (!blank(body.phone) && !PHONE_PATTERN.test(String(body.phone))) errors.add('phone', 'field.phone')
+  if (!blank(body.phone) && !PHONE_PATTERN.test(String(body.phone)))
+    errors.add('phone', 'field.phone')
 }
 
 function profileErrors(body) {
   const errors = collector()
-  checkRequired(errors, body, ['authorizedPersonName', 'entityType', 'developmentSector', 'orgSize', 'foundingYear', 'regionId', 'cityId'])
-  if (body.hasStrategicPlan === undefined || body.hasStrategicPlan === null) errors.add('hasStrategicPlan', 'field.required')
+  checkRequired(errors, body, [
+    'authorizedPersonName',
+    'entityType',
+    'developmentSector',
+    'orgSize',
+    'foundingYear',
+    'regionId',
+    'cityId',
+  ])
+  if (body.hasStrategicPlan === undefined || body.hasStrategicPlan === null)
+    errors.add('hasStrategicPlan', 'field.required')
   checkContact(errors, body)
   checkChoices(errors, body)
   checkPlace(errors, body)
@@ -88,7 +107,10 @@ function optionalCount(value) {
 
 export function profileFrom(body) {
   return {
-    name: { ar: String(body.name.ar).trim(), en: blank(body.name.en) ? null : String(body.name.en).trim() },
+    name: {
+      ar: String(body.name.ar).trim(),
+      en: blank(body.name.en) ? null : String(body.name.en).trim(),
+    },
     entityType: body.entityType,
     developmentSector: body.developmentSector,
     orgSize: body.orgSize,
@@ -122,11 +144,16 @@ export function assertOwnProfile(body) {
 
 export function assertRegistration(body, terms) {
   const errors = profileErrors(body)
-  if (blank(body.officialEmail) || !EMAIL_PATTERN.test(String(body.officialEmail))) errors.add('officialEmail', 'field.email')
-  if (String(body.password ?? '').length < PASSWORD_MIN) errors.add('password', 'field.password_min')
-  else if (body.password !== body.passwordConfirmation) errors.add('password', 'field.password_confirmed')
-  if (Number(body.termsVersionId) !== terms.terms.id) errors.add('termsVersionId', 'field.terms_not_current')
-  if (terms.privacy && Number(body.privacyVersionId) !== terms.privacy.id) errors.add('privacyVersionId', 'field.terms_not_current')
+  if (blank(body.officialEmail) || !EMAIL_PATTERN.test(String(body.officialEmail)))
+    errors.add('officialEmail', 'field.email')
+  if (String(body.password ?? '').length < PASSWORD_MIN)
+    errors.add('password', 'field.password_min')
+  else if (body.password !== body.passwordConfirmation)
+    errors.add('password', 'field.password_confirmed')
+  if (Number(body.termsVersionId) !== terms.terms.id)
+    errors.add('termsVersionId', 'field.terms_not_current')
+  if (terms.privacy && Number(body.privacyVersionId) !== terms.privacy.id)
+    errors.add('privacyVersionId', 'field.terms_not_current')
   if (body.termsAccepted !== true) errors.add('termsAccepted', 'field.terms_accepted')
   errors.assertValid()
 }

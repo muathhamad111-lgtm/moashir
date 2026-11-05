@@ -10,7 +10,18 @@ import DemoDataNotice from '@/components/ui/DemoDataNotice.vue'
 import { MOCK_MODULES } from '@/constants/mockModules'
 
 const { t } = useI18n()
-const { segments, recipients, recipientsLoading, compose, errors, sending, valid, loadSegments, searchRecipients, send } = useEmailCampaign()
+const {
+  segments,
+  recipients,
+  recipientsLoading,
+  compose,
+  errors,
+  sending,
+  valid,
+  loadSegments,
+  searchRecipients,
+  send,
+} = useEmailCampaign()
 
 onMounted(loadSegments)
 
@@ -19,7 +30,9 @@ const DEMO_MODULES = [MOCK_MODULES.MESSAGING]
 
 <template>
   <section class="settings-form__group" aria-labelledby="email-compose-title">
-    <h2 id="email-compose-title" class="settings-form__legend">{{ t('settings.email.composeTitle') }}</h2>
+    <h2 id="email-compose-title" class="settings-form__legend">
+      {{ t('settings.email.composeTitle') }}
+    </h2>
     <DemoDataNotice scope="section" :modules="DEMO_MODULES" />
     <p class="settings-form__note" role="note">
       <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
@@ -33,7 +46,13 @@ const DEMO_MODULES = [MOCK_MODULES.MESSAGING]
       :error="errors.subject"
       required
     />
-    <BaseTextarea v-model="compose.body" name="composeBody" :rows="6" :label="t('settings.email.body')" :placeholder="t('settings.email.bodyPlaceholder')" />
+    <BaseTextarea
+      v-model="compose.body"
+      name="composeBody"
+      :rows="6"
+      :label="t('settings.email.body')"
+      :placeholder="t('settings.email.bodyPlaceholder')"
+    />
     <SegmentPicker
       v-model="compose.audience"
       :segments="segments"
@@ -43,7 +62,13 @@ const DEMO_MODULES = [MOCK_MODULES.MESSAGING]
       @search-recipients="searchRecipients"
     />
     <div class="settings-form__inline">
-      <BaseButton variant="primary" icon="fa-solid fa-envelope-circle-check" :loading="sending" :disabled="!valid" @click="send">
+      <BaseButton
+        variant="primary"
+        icon="fa-solid fa-envelope-circle-check"
+        :loading="sending"
+        :disabled="!valid"
+        @click="send"
+      >
         {{ t('settings.email.send') }}
       </BaseButton>
     </div>

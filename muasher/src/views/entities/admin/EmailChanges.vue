@@ -14,8 +14,21 @@ import { ROUTE_NAMES } from '@/constants/routeNames'
 
 const { t } = useI18n()
 const { dateTime } = useEntityDisplay()
-const { items, status, errorMessage, load, filters, paginator, statusOptions, rejection, entityName, approve, startReject, reject, afterReject } =
-  useEmailChangeApprovals()
+const {
+  items,
+  status,
+  errorMessage,
+  load,
+  filters,
+  paginator,
+  statusOptions,
+  rejection,
+  entityName,
+  approve,
+  startReject,
+  reject,
+  afterReject,
+} = useEmailChangeApprovals()
 
 const columns = computed(() =>
   ['entity', 'oldEmail', 'newEmail', 'requestedAt', 'status', 'actions'].map((key) => ({
@@ -50,24 +63,42 @@ const columns = computed(() =>
       @retry="load"
     >
       <template #cell-entity="{ item }">
-        <router-link v-if="item.entity" class="entity-table__name" :to="{ name: ROUTE_NAMES.ADMIN_ENTITY, params: { id: item.entity.id } }">
+        <router-link
+          v-if="item.entity"
+          class="entity-table__name"
+          :to="{ name: ROUTE_NAMES.ADMIN_ENTITY, params: { id: item.entity.id } }"
+        >
           {{ entityName(item) }}
         </router-link>
       </template>
-      <template #cell-oldEmail="{ item }"><span class="u-ltr">{{ item.oldEmail }}</span></template>
-      <template #cell-newEmail="{ item }"><span class="u-ltr">{{ item.newEmail }}</span></template>
+      <template #cell-oldEmail="{ item }"
+        ><span class="u-ltr">{{ item.oldEmail }}</span></template
+      >
+      <template #cell-newEmail="{ item }"
+        ><span class="u-ltr">{{ item.newEmail }}</span></template
+      >
       <template #cell-requestedAt="{ item }">{{ dateTime(item.requestedAt) }}</template>
       <template #cell-status="{ item }"><StatusBadge :status="item.status" /></template>
       <template #cell-actions="{ item }">
-        <span v-if="item.status === EMAIL_CHANGE_STATUSES.AWAITING_APPROVAL" class="entities-admin__row-actions">
+        <span
+          v-if="item.status === EMAIL_CHANGE_STATUSES.AWAITING_APPROVAL"
+          class="entities-admin__row-actions"
+        >
           <BaseButton size="sm" variant="primary" icon="fa-solid fa-check" @click="approve(item)">
             {{ t('entities.emailChanges.approve') }}
           </BaseButton>
-          <BaseButton size="sm" variant="danger" icon="fa-solid fa-xmark" @click="startReject(item)">
+          <BaseButton
+            size="sm"
+            variant="danger"
+            icon="fa-solid fa-xmark"
+            @click="startReject(item)"
+          >
             {{ t('entities.emailChanges.reject') }}
           </BaseButton>
         </span>
-        <span v-else-if="item.decisionReason" class="entities-admin__muted">{{ item.decisionReason }}</span>
+        <span v-else-if="item.decisionReason" class="entities-admin__muted">{{
+          item.decisionReason
+        }}</span>
       </template>
     </DataTable>
 

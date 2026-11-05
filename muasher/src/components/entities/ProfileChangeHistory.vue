@@ -14,7 +14,9 @@ const props = defineProps({
 })
 
 const { t } = useI18n()
-const { changes, status, errorMessage, pagination, load, goTo } = useProfileChanges((params) => props.loader(params))
+const { changes, status, errorMessage, pagination, load, goTo } = useProfileChanges((params) =>
+  props.loader(params),
+)
 const { valueLabel, fieldLabel, actorLabel, changedAt } = useProfileChangeFormat()
 
 onMounted(load)
@@ -23,13 +25,21 @@ onMounted(load)
 <template>
   <Card :title="t('entities.history.title')" class="profile-history">
     <Skeleton v-if="status === 'loading'" variant="text" :count="4" />
-    <p v-else-if="status === 'forbidden'" class="profile-history__empty" role="status">{{ t('entities.history.forbidden') }}</p>
+    <p v-else-if="status === 'forbidden'" class="profile-history__empty" role="status">
+      {{ t('entities.history.forbidden') }}
+    </p>
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
-    <p v-else-if="status === 'empty'" class="profile-history__empty" role="status">{{ t('entities.history.empty') }}</p>
+    <p v-else-if="status === 'empty'" class="profile-history__empty" role="status">
+      {{ t('entities.history.empty') }}
+    </p>
     <template v-else>
       <div class="profile-history__scroll">
         <table class="profile-history__table">
-          <caption class="profile-history__caption">{{ t('entities.history.caption') }}</caption>
+          <caption class="profile-history__caption">
+            {{
+              t('entities.history.caption')
+            }}
+          </caption>
           <thead>
             <tr>
               <th scope="col">{{ t('entities.history.columns.field') }}</th>
@@ -50,7 +60,12 @@ onMounted(load)
           </tbody>
         </table>
       </div>
-      <Pagination v-if="pagination.lastPage > 1" :page="pagination.page" :last-page="pagination.lastPage" @update:page="goTo" />
+      <Pagination
+        v-if="pagination.lastPage > 1"
+        :page="pagination.page"
+        :last-page="pagination.lastPage"
+        @update:page="goTo"
+      />
     </template>
   </Card>
 </template>

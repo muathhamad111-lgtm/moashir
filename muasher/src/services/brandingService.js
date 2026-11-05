@@ -34,7 +34,10 @@ function variantOf(surface) {
 }
 
 async function themeRequest(action, execute, context) {
-  const envelope = await serviceRequest(action, execute, { entity: 'settings-branding', ...context })
+  const envelope = await serviceRequest(action, execute, {
+    entity: 'settings-branding',
+    ...context,
+  })
   return { ...envelope, data: toTheme(envelope.data) }
 }
 
@@ -61,6 +64,9 @@ export const brandingService = {
       () => apiClient.post('/settings/branding/logo', form),
       { entity: 'settings-branding', variant },
     )
-    return { ...envelope, data: { fileId: envelope.data?.fileId ?? null, url: envelope.data?.url ?? null } }
+    return {
+      ...envelope,
+      data: { fileId: envelope.data?.fileId ?? null, url: envelope.data?.url ?? null },
+    }
   },
 }

@@ -44,7 +44,12 @@ export const financeEntitiesSeed = {
 }
 
 const PRICES = {
-  accredited: { priceBeforeVat: '1000.00', vatRate: '15.00', vatAmount: '150.00', total: '1150.00' },
+  accredited: {
+    priceBeforeVat: '1000.00',
+    vatRate: '15.00',
+    vatAmount: '150.00',
+    total: '1150.00',
+  },
   bag: { priceBeforeVat: '2500.00', vatRate: '15.00', vatAmount: '375.00', total: '2875.00' },
 }
 
@@ -73,7 +78,13 @@ function payment(fields) {
     failureCode: null,
     failureMessage: null,
     ...fields,
-    updatedAt: fields.updatedAt ?? fields.refundedAt ?? fields.paidAt ?? fields.failedAt ?? fields.cancelledAt ?? fields.createdAt,
+    updatedAt:
+      fields.updatedAt ??
+      fields.refundedAt ??
+      fields.paidAt ??
+      fields.failedAt ??
+      fields.cancelledAt ??
+      fields.createdAt,
   }
 }
 
@@ -81,7 +92,17 @@ function minutesAfter(iso, minutes) {
   return new Date(new Date(iso).getTime() + minutes * 60000).toISOString()
 }
 
-function paidPayment({ id, reference, entityId, purpose, createdAt, method, cardLast4, mode = 'live', providerPaymentId }) {
+function paidPayment({
+  id,
+  reference,
+  entityId,
+  purpose,
+  createdAt,
+  method,
+  cardLast4,
+  mode = 'live',
+  providerPaymentId,
+}) {
   const paidAt = minutesAfter(createdAt, 4)
   return payment({
     id,
@@ -296,7 +317,12 @@ export function providerPaymentsSeed() {
       status: 'initiated',
       amount: 287500,
       currency: 'SAR',
-      metadata: { moashir_payment_id: SEEDED_IDS.ownPending, moashir_reference: 'PAY-2026-000011', purpose: 'bag', app_env: 'local' },
+      metadata: {
+        moashir_payment_id: SEEDED_IDS.ownPending,
+        moashir_reference: 'PAY-2026-000011',
+        purpose: 'bag',
+        app_env: 'local',
+      },
       source: { type: 'creditcard', company: 'mada', number: '4201-32XX-XXXX-4821' },
       responseCode: null,
       checksUntilSettled: 2,
@@ -307,7 +333,12 @@ export function providerPaymentsSeed() {
       status: 'initiated',
       amount: 287500,
       currency: 'SAR',
-      metadata: { moashir_payment_id: SEEDED_IDS.pendingLive, moashir_reference: 'PAY-2026-000008', purpose: 'bag', app_env: 'local' },
+      metadata: {
+        moashir_payment_id: SEEDED_IDS.pendingLive,
+        moashir_reference: 'PAY-2026-000008',
+        purpose: 'bag',
+        app_env: 'local',
+      },
       source: { type: 'creditcard', company: 'visa', number: '4012-88XX-XXXX-0091' },
       responseCode: null,
       checksUntilSettled: null,
@@ -352,25 +383,181 @@ export function storedFilesSeed() {
 
 export function paymentEventsSeed() {
   return [
-    { id: 1, paymentId: SEEDED_IDS.paidAccredited, source: 'checkout', eventType: 'intent_created', mode: 'live', signatureValid: null, result: 'applied', errorCode: null, providerPaymentId: null, createdAt: '2026-08-12T08:10:02Z', processedAt: '2026-08-12T08:10:02Z' },
-    { id: 2, paymentId: SEEDED_IDS.paidAccredited, source: 'verification', eventType: 'payment_fetched', mode: 'live', signatureValid: null, result: 'applied', errorCode: null, providerPaymentId: 'mock_pay_paid_0001', createdAt: '2026-08-12T08:14:00Z', processedAt: '2026-08-12T08:14:00Z' },
-    { id: 3, paymentId: SEEDED_IDS.paidAccredited, source: 'webhook', eventType: 'payment_paid', mode: 'live', signatureValid: true, result: 'ignored', errorCode: null, providerPaymentId: 'mock_pay_paid_0001', createdAt: '2026-08-12T08:14:05Z', processedAt: '2026-08-12T08:14:06Z' },
-    { id: 4, paymentId: SEEDED_IDS.failedLive, source: 'webhook', eventType: 'payment_failed', mode: 'live', signatureValid: true, result: 'applied', errorCode: null, providerPaymentId: 'mock_pay_failed_0004', createdAt: '2026-09-01T12:03:04Z', processedAt: '2026-09-01T12:03:05Z' },
-    { id: 5, paymentId: SEEDED_IDS.cancelledExpired, source: 'expiry', eventType: 'order_expired', mode: 'live', signatureValid: null, result: 'applied', errorCode: null, providerPaymentId: null, createdAt: '2026-09-06T08:30:01Z', processedAt: '2026-09-06T08:30:01Z' },
-    { id: 6, paymentId: SEEDED_IDS.refunded, source: 'admin', eventType: 'refund_recorded', mode: 'live', signatureValid: null, result: 'applied', errorCode: null, providerPaymentId: null, createdAt: '2026-09-02T09:20:00Z', processedAt: '2026-09-02T09:20:00Z' },
-    { id: 7, paymentId: SEEDED_IDS.latePaid, source: 'webhook', eventType: 'payment_paid', mode: 'live', signatureValid: true, result: 'late_payment', errorCode: null, providerPaymentId: 'mock_pay_paid_0007', createdAt: '2026-09-12T14:52:00Z', processedAt: '2026-09-12T14:52:02Z' },
-    { id: 8, paymentId: null, source: 'webhook', eventType: 'payment_paid', mode: 'live', signatureValid: true, result: 'unmatched', errorCode: null, providerPaymentId: 'mock_pay_paid_9921', createdAt: '2026-10-02T06:41:00Z', processedAt: '2026-10-02T06:41:01Z' },
-    { id: 9, paymentId: SEEDED_IDS.pendingLive, source: 'reconciliation', eventType: 'payment_fetched', mode: 'live', signatureValid: null, result: 'pending', errorCode: null, providerPaymentId: SEEDED_PROVIDER_IDS.pendingLive, createdAt: '2026-10-30T10:10:00Z', processedAt: '2026-10-30T10:10:00Z' },
-    { id: 10, paymentId: null, source: 'verification', eventType: 'payment_fetched', mode: 'test', signatureValid: null, result: 'rejected', errorCode: 'payment.verification_rejected', providerPaymentId: 'mock_pay_foreign_3310', createdAt: '2026-10-21T11:05:00Z', processedAt: '2026-10-21T11:05:00Z' },
+    {
+      id: 1,
+      paymentId: SEEDED_IDS.paidAccredited,
+      source: 'checkout',
+      eventType: 'intent_created',
+      mode: 'live',
+      signatureValid: null,
+      result: 'applied',
+      errorCode: null,
+      providerPaymentId: null,
+      createdAt: '2026-08-12T08:10:02Z',
+      processedAt: '2026-08-12T08:10:02Z',
+    },
+    {
+      id: 2,
+      paymentId: SEEDED_IDS.paidAccredited,
+      source: 'verification',
+      eventType: 'payment_fetched',
+      mode: 'live',
+      signatureValid: null,
+      result: 'applied',
+      errorCode: null,
+      providerPaymentId: 'mock_pay_paid_0001',
+      createdAt: '2026-08-12T08:14:00Z',
+      processedAt: '2026-08-12T08:14:00Z',
+    },
+    {
+      id: 3,
+      paymentId: SEEDED_IDS.paidAccredited,
+      source: 'webhook',
+      eventType: 'payment_paid',
+      mode: 'live',
+      signatureValid: true,
+      result: 'ignored',
+      errorCode: null,
+      providerPaymentId: 'mock_pay_paid_0001',
+      createdAt: '2026-08-12T08:14:05Z',
+      processedAt: '2026-08-12T08:14:06Z',
+    },
+    {
+      id: 4,
+      paymentId: SEEDED_IDS.failedLive,
+      source: 'webhook',
+      eventType: 'payment_failed',
+      mode: 'live',
+      signatureValid: true,
+      result: 'applied',
+      errorCode: null,
+      providerPaymentId: 'mock_pay_failed_0004',
+      createdAt: '2026-09-01T12:03:04Z',
+      processedAt: '2026-09-01T12:03:05Z',
+    },
+    {
+      id: 5,
+      paymentId: SEEDED_IDS.cancelledExpired,
+      source: 'expiry',
+      eventType: 'order_expired',
+      mode: 'live',
+      signatureValid: null,
+      result: 'applied',
+      errorCode: null,
+      providerPaymentId: null,
+      createdAt: '2026-09-06T08:30:01Z',
+      processedAt: '2026-09-06T08:30:01Z',
+    },
+    {
+      id: 6,
+      paymentId: SEEDED_IDS.refunded,
+      source: 'admin',
+      eventType: 'refund_recorded',
+      mode: 'live',
+      signatureValid: null,
+      result: 'applied',
+      errorCode: null,
+      providerPaymentId: null,
+      createdAt: '2026-09-02T09:20:00Z',
+      processedAt: '2026-09-02T09:20:00Z',
+    },
+    {
+      id: 7,
+      paymentId: SEEDED_IDS.latePaid,
+      source: 'webhook',
+      eventType: 'payment_paid',
+      mode: 'live',
+      signatureValid: true,
+      result: 'late_payment',
+      errorCode: null,
+      providerPaymentId: 'mock_pay_paid_0007',
+      createdAt: '2026-09-12T14:52:00Z',
+      processedAt: '2026-09-12T14:52:02Z',
+    },
+    {
+      id: 8,
+      paymentId: null,
+      source: 'webhook',
+      eventType: 'payment_paid',
+      mode: 'live',
+      signatureValid: true,
+      result: 'unmatched',
+      errorCode: null,
+      providerPaymentId: 'mock_pay_paid_9921',
+      createdAt: '2026-10-02T06:41:00Z',
+      processedAt: '2026-10-02T06:41:01Z',
+    },
+    {
+      id: 9,
+      paymentId: SEEDED_IDS.pendingLive,
+      source: 'reconciliation',
+      eventType: 'payment_fetched',
+      mode: 'live',
+      signatureValid: null,
+      result: 'pending',
+      errorCode: null,
+      providerPaymentId: SEEDED_PROVIDER_IDS.pendingLive,
+      createdAt: '2026-10-30T10:10:00Z',
+      processedAt: '2026-10-30T10:10:00Z',
+    },
+    {
+      id: 10,
+      paymentId: null,
+      source: 'verification',
+      eventType: 'payment_fetched',
+      mode: 'test',
+      signatureValid: null,
+      result: 'rejected',
+      errorCode: 'payment.verification_rejected',
+      providerPaymentId: 'mock_pay_foreign_3310',
+      createdAt: '2026-10-21T11:05:00Z',
+      processedAt: '2026-10-21T11:05:00Z',
+    },
   ]
 }
 
 export function abandonedCartsSeed() {
   return [
-    { id: 41, entityId: 6003, email: 'info@alkhair-waqf.example.sa', marketingConsent: true, purpose: 'accredited', startedAt: '2026-10-27T08:15:00Z', lastSeenAt: '2026-10-28T10:02:00Z', contactedAt: null },
-    { id: 42, entityId: 6004, email: 'contact@ataa-orphans.example.sa', marketingConsent: false, purpose: 'bag', startedAt: '2026-10-25T12:40:00Z', lastSeenAt: '2026-10-25T12:55:00Z', contactedAt: null },
-    { id: 43, entityId: 6005, email: 'hello@ruwad-education.example.sa', marketingConsent: true, purpose: 'bag', startedAt: '2026-10-20T07:00:00Z', lastSeenAt: '2026-10-21T09:30:00Z', contactedAt: '2026-10-23T08:00:00Z' },
-    { id: 44, entityId: 6006, email: 'office@tamkeen.example.sa', marketingConsent: true, purpose: 'accredited', startedAt: '2026-10-18T15:20:00Z', lastSeenAt: '2026-10-19T06:45:00Z', contactedAt: null },
+    {
+      id: 41,
+      entityId: 6003,
+      email: 'info@alkhair-waqf.example.sa',
+      marketingConsent: true,
+      purpose: 'accredited',
+      startedAt: '2026-10-27T08:15:00Z',
+      lastSeenAt: '2026-10-28T10:02:00Z',
+      contactedAt: null,
+    },
+    {
+      id: 42,
+      entityId: 6004,
+      email: 'contact@ataa-orphans.example.sa',
+      marketingConsent: false,
+      purpose: 'bag',
+      startedAt: '2026-10-25T12:40:00Z',
+      lastSeenAt: '2026-10-25T12:55:00Z',
+      contactedAt: null,
+    },
+    {
+      id: 43,
+      entityId: 6005,
+      email: 'hello@ruwad-education.example.sa',
+      marketingConsent: true,
+      purpose: 'bag',
+      startedAt: '2026-10-20T07:00:00Z',
+      lastSeenAt: '2026-10-21T09:30:00Z',
+      contactedAt: '2026-10-23T08:00:00Z',
+    },
+    {
+      id: 44,
+      entityId: 6006,
+      email: 'office@tamkeen.example.sa',
+      marketingConsent: true,
+      purpose: 'accredited',
+      startedAt: '2026-10-18T15:20:00Z',
+      lastSeenAt: '2026-10-19T06:45:00Z',
+      contactedAt: null,
+    },
   ]
 }
 

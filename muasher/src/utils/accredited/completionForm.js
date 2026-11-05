@@ -7,21 +7,41 @@ const DAY_MS = 24 * 60 * 60 * 1000
 export function deadlineBounds(now = new Date()) {
   return {
     min: riyadhDateKey(now),
-    max: riyadhDateKey(new Date(now.getTime() + (ACCREDITED_LIMITS.COMPLETION_DEADLINE_MAX_DAYS - 1) * DAY_MS)),
+    max: riyadhDateKey(
+      new Date(now.getTime() + (ACCREDITED_LIMITS.COMPLETION_DEADLINE_MAX_DAYS - 1) * DAY_MS),
+    ),
   }
 }
 
-export function completionSchema(t, bounds, deadlineMessage = t('review.completion.validation.deadline', { days: ACCREDITED_LIMITS.COMPLETION_DEADLINE_MAX_DAYS })) {
+export function completionSchema(
+  t,
+  bounds,
+  deadlineMessage = t('review.completion.validation.deadline', {
+    days: ACCREDITED_LIMITS.COMPLETION_DEADLINE_MAX_DAYS,
+  }),
+) {
   return object({
     notes: string()
       .trim()
       .required(t('validation.required'))
-      .min(ACCREDITED_LIMITS.COMPLETION_NOTES_MIN, t('validation.minChars', { min: ACCREDITED_LIMITS.COMPLETION_NOTES_MIN }))
-      .max(ACCREDITED_LIMITS.COMPLETION_NOTES_MAX, t('entities.validation.maxChars', { max: ACCREDITED_LIMITS.COMPLETION_NOTES_MAX })),
+      .min(
+        ACCREDITED_LIMITS.COMPLETION_NOTES_MIN,
+        t('validation.minChars', { min: ACCREDITED_LIMITS.COMPLETION_NOTES_MIN }),
+      )
+      .max(
+        ACCREDITED_LIMITS.COMPLETION_NOTES_MAX,
+        t('entities.validation.maxChars', { max: ACCREDITED_LIMITS.COMPLETION_NOTES_MAX }),
+      ),
     deadline: string()
       .required(t('validation.required'))
-      .test('window', deadlineMessage, (value) => !value || (value >= bounds.min && value <= bounds.max)),
-    expiryOutcome: string().required(t('validation.required')).oneOf(Object.values(EXPIRY_OUTCOMES)),
+      .test(
+        'window',
+        deadlineMessage,
+        (value) => !value || (value >= bounds.min && value <= bounds.max),
+      ),
+    expiryOutcome: string()
+      .required(t('validation.required'))
+      .oneOf(Object.values(EXPIRY_OUTCOMES)),
     items: array().min(1, t('review.completion.validation.items')),
   })
 }
@@ -46,8 +66,14 @@ export function completionPayload(values, notesByItem) {
 export function itemOptions(criteria) {
   return (criteria?.mains ?? []).flatMap((main) =>
     main.subs.flatMap((sub) => [
-      ...(sub.hasCv ? [{ key: itemKey(sub.id, COMPLETION_ITEM_KINDS.CV), sub, kind: COMPLETION_ITEM_KINDS.CV }] : []),
-      { key: itemKey(sub.id, COMPLETION_ITEM_KINDS.EVIDENCE), sub, kind: COMPLETION_ITEM_KINDS.EVIDENCE },
+      ...(sub.hasCv
+        ? [{ key: itemKey(sub.id, COMPLETION_ITEM_KINDS.CV), sub, kind: COMPLETION_ITEM_KINDS.CV }]
+        : []),
+      {
+        key: itemKey(sub.id, COMPLETION_ITEM_KINDS.EVIDENCE),
+        sub,
+        kind: COMPLETION_ITEM_KINDS.EVIDENCE,
+      },
     ]),
   )
 }

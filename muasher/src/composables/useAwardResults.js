@@ -64,7 +64,18 @@ export function useAwardResults() {
     }
   }
 
-  return { status, errorMessage, results, regions, regionGroups, busy, localized, load, setRank, approveRegion }
+  return {
+    status,
+    errorMessage,
+    results,
+    regions,
+    regionGroups,
+    busy,
+    localized,
+    load,
+    setRank,
+    approveRegion,
+  }
 }
 
 export function useNationalAward() {

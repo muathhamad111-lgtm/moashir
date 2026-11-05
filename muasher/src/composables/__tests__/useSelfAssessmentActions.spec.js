@@ -12,7 +12,9 @@ vi.mock('@/services/assessmentsService', () => ({
 const SHEET = { subs: { 102: '7' }, points: { 1001: '8', 1002: null } }
 
 function rejection(status, code, fieldErrors = {}) {
-  return Object.assign(new Error(code), { normalized: { status, code, meta: {}, message: `message ${code}`, fieldErrors } })
+  return Object.assign(new Error(code), {
+    normalized: { status, code, meta: {}, message: `message ${code}`, fieldErrors },
+  })
 }
 
 function setup({ valid = true, missing = [] } = {}) {
@@ -33,7 +35,9 @@ function setup({ valid = true, missing = [] } = {}) {
   }
   const onMissing = vi.fn()
   const onSubmitted = vi.fn()
-  const { api } = withSetup(() => useSelfAssessmentActions({ formState, scoreSheet, onMissing, onSubmitted }))
+  const { api } = withSetup(() =>
+    useSelfAssessmentActions({ formState, scoreSheet, onMissing, onSubmitted }),
+  )
   return { api, formState, scoreSheet, onMissing, onSubmitted, assessment }
 }
 
@@ -94,7 +98,9 @@ describe('useSelfAssessmentActions', () => {
   })
 
   it('marks the criteria update hold on 409 assessment.criteria_update_in_progress', async () => {
-    assessmentsService.submit.mockRejectedValue(rejection(409, 'assessment.criteria_update_in_progress'))
+    assessmentsService.submit.mockRejectedValue(
+      rejection(409, 'assessment.criteria_update_in_progress'),
+    )
     const { api, assessment } = setup()
     await api.confirmSubmit()
     expect(assessment.value.criteriaUpdateInProgress).toBe(true)

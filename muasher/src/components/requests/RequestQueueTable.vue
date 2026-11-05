@@ -41,20 +41,33 @@ const columns = computed(() => [
     @retry="emit('retry')"
   >
     <template #cell-number="{ item }">
-      <RouterLink class="request-queue__link" :to="{ name: ROUTE_NAMES.REQUESTS_DETAIL, params: { id: item.id } }">
+      <RouterLink
+        class="request-queue__link"
+        :to="{ name: ROUTE_NAMES.REQUESTS_DETAIL, params: { id: item.id } }"
+      >
         <bdi dir="ltr">{{ item.number }}</bdi>
       </RouterLink>
     </template>
     <template #cell-entity="{ item }">{{ localizedText(item.entity?.name, locale) }}</template>
     <template #cell-cycle="{ item }">
-      <span :class="{ 'request-queue__muted': !item.awardCycle }">{{ item.awardCycle ? localizedText(item.awardCycle.name, locale) : t('requests.paths.accredited') }}</span>
+      <span :class="{ 'request-queue__muted': !item.awardCycle }">{{
+        item.awardCycle
+          ? localizedText(item.awardCycle.name, locale)
+          : t('requests.paths.accredited')
+      }}</span>
     </template>
-    <template #cell-region="{ item }">{{ item.region ? localizedText(item.region.name, locale) : '' }}</template>
+    <template #cell-region="{ item }">{{
+      item.region ? localizedText(item.region.name, locale) : ''
+    }}</template>
     <template #cell-status="{ item }"><StatusBadge :status="item.status" /></template>
     <template #cell-assessor="{ item }">
-      <span :class="{ 'request-queue__muted': !item.assessor }">{{ item.assessor?.name ?? t('requests.unassigned') }}</span>
+      <span :class="{ 'request-queue__muted': !item.assessor }">{{
+        item.assessor?.name ?? t('requests.unassigned')
+      }}</span>
     </template>
-    <template #cell-submittedAt="{ item }"><DateStamp :value="item.submittedAt" :with-time="false" /></template>
+    <template #cell-submittedAt="{ item }"
+      ><DateStamp :value="item.submittedAt" :with-time="false"
+    /></template>
     <template #cell-dueAt="{ item }">
       <span class="request-queue__due">
         <DateStamp :value="item.dueAt" :with-time="false" />

@@ -84,7 +84,12 @@ function rowActions(row) {
   return [
     { key: 'edit', label: t('users.actions.edit'), icon: 'fa-solid fa-pen' },
     row.status === 'active'
-      ? { key: 'deactivate', label: t('users.actions.deactivate'), icon: 'fa-solid fa-user-slash', variant: 'danger' }
+      ? {
+          key: 'deactivate',
+          label: t('users.actions.deactivate'),
+          icon: 'fa-solid fa-user-slash',
+          variant: 'danger',
+        }
       : { key: 'activate', label: t('users.actions.activate'), icon: 'fa-solid fa-user-check' },
   ]
 }

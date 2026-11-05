@@ -24,9 +24,7 @@ const maybeFail = failsRandomly(0.1)
 
 function emailTaken(email, exceptId = null) {
   const needle = String(email).trim().toLowerCase()
-  return users.some(
-    (user) => user.email.toLowerCase() === needle && user.id !== exceptId,
-  )
+  return users.some((user) => user.email.toLowerCase() === needle && user.id !== exceptId)
 }
 
 function statsOf(all) {
@@ -58,8 +56,7 @@ export const usersHandlers = [
     if (search) {
       items = items.filter(
         (user) =>
-          user.name.toLowerCase().includes(search) ||
-          user.email.toLowerCase().includes(search),
+          user.name.toLowerCase().includes(search) || user.email.toLowerCase().includes(search),
       )
     }
     if (roleFilter) items = items.filter((user) => (user.roles ?? []).includes(roleFilter))

@@ -55,7 +55,9 @@ function dateLabel(value) {
 
 function rowActions(row) {
   if (row.status === 'assigned') {
-    return [{ key: 'analyze', label: t('bagRequests.actions.startAnalysis'), icon: 'fa-solid fa-play' }]
+    return [
+      { key: 'analyze', label: t('bagRequests.actions.startAnalysis'), icon: 'fa-solid fa-play' },
+    ]
   }
   if (row.status !== 'completed' && row.status !== 'cancelled') {
     return [{ key: 'open', label: t('bagRequests.actions.open'), icon: 'fa-solid fa-folder-open' }]
@@ -78,7 +80,10 @@ function openManage(row) {
       </div>
     </header>
 
-    <ListToolbar v-model:search="search" :search-placeholder="t('bagRequests.evaluator.searchPlaceholder')">
+    <ListToolbar
+      v-model:search="search"
+      :search-placeholder="t('bagRequests.evaluator.searchPlaceholder')"
+    >
       <template #filters>
         <DropdownList
           :model-value="filters.filters.status"
@@ -104,7 +109,11 @@ function openManage(row) {
       </template>
       <template #cell-reference="{ item }">
         <span class="bag-requests__reference">
-          {{ t('bagRequests.referenceValue', { score: n(item.referenceSnapshot.scorePercent, 'default') }) }}
+          {{
+            t('bagRequests.referenceValue', {
+              score: n(item.referenceSnapshot.scorePercent, 'default'),
+            })
+          }}
         </span>
       </template>
       <template #cell-context="{ item }">
@@ -113,7 +122,9 @@ function openManage(row) {
             {{ t('bagRequests.contextSelf', { score: n(item.selfScorePercent, 'default') }) }}
           </span>
           <span v-if="item.advancedScorePercent != null" class="bag-requests__context-chip">
-            {{ t('bagRequests.contextAdvanced', { score: n(item.advancedScorePercent, 'default') }) }}
+            {{
+              t('bagRequests.contextAdvanced', { score: n(item.advancedScorePercent, 'default') })
+            }}
           </span>
           <span v-if="item.selfScorePercent == null && item.advancedScorePercent == null">—</span>
         </span>

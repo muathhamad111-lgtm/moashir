@@ -47,7 +47,9 @@ function valueOf(item) {
           :style="{ inlineSize: widthOf(item) }"
         ></span>
       </span>
-      <span class="mini-bar__value">{{ valueOf(item) }}<template v-if="unit"> {{ unit }}</template></span>
+      <span class="mini-bar__value"
+        >{{ valueOf(item) }}<template v-if="unit"> {{ unit }}</template></span
+      >
     </li>
   </ul>
 </template>

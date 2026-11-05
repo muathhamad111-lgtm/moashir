@@ -40,9 +40,24 @@ describe('DemoDataNotice', () => {
   })
 
   it('stays hidden on real modules, in the full mock layer and with the real API only', async () => {
-    expect((await mountNotice(HYBRID, { modules: ['criteria'] })).find('[role="note"]').exists()).toBe(false)
+    expect(
+      (await mountNotice(HYBRID, { modules: ['criteria'] })).find('[role="note"]').exists(),
+    ).toBe(false)
     expect((await mountNotice(HYBRID, {})).find('[role="note"]').exists()).toBe(false)
-    expect((await mountNotice({ VITE_API_BASE_URL: '' }, { modules: ['kpis'] })).find('[role="note"]').exists()).toBe(false)
-    expect((await mountNotice({ VITE_API_BASE_URL: '/api/v1', VITE_DEMO_MODULES: '' }, { modules: ['kpis'] })).find('[role="note"]').exists()).toBe(false)
+    expect(
+      (await mountNotice({ VITE_API_BASE_URL: '' }, { modules: ['kpis'] }))
+        .find('[role="note"]')
+        .exists(),
+    ).toBe(false)
+    expect(
+      (
+        await mountNotice(
+          { VITE_API_BASE_URL: '/api/v1', VITE_DEMO_MODULES: '' },
+          { modules: ['kpis'] },
+        )
+      )
+        .find('[role="note"]')
+        .exists(),
+    ).toBe(false)
   })
 })

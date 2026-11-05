@@ -28,7 +28,9 @@ export function useCheckout(purpose) {
   const failure = ref(null)
   const existingOrder = ref(false)
 
-  const deadline = computed(() => (phase.value === CHECKOUT_PHASES.READY ? checkout.value?.expiresAt : null))
+  const deadline = computed(() =>
+    phase.value === CHECKOUT_PHASES.READY ? checkout.value?.expiresAt : null,
+  )
   const countdown = useCountdown(deadline)
   const isStarting = computed(() => phase.value === CHECKOUT_PHASES.STARTING)
   const isTest = computed(() => checkout.value?.mode === 'test' || payment.value?.isTest === true)
@@ -64,5 +66,16 @@ export function useCheckout(purpose) {
     payment.value = verified
   }
 
-  return { phase, payment, checkout, failure, existingOrder, countdown, isStarting, isTest, start, applyVerified }
+  return {
+    phase,
+    payment,
+    checkout,
+    failure,
+    existingOrder,
+    countdown,
+    isStarting,
+    isTest,
+    start,
+    applyVerified,
+  }
 }

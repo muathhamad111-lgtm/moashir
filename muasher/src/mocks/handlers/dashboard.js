@@ -46,9 +46,6 @@ export const dashboardHandlers = [
     if (!summary) {
       return errorResponse('No dashboard is configured for this role', 404)
     }
-    return envelope(
-      { role, ...summary },
-      { requestedRole, resolvedRole: role },
-    )
+    return envelope({ role, ...summary }, { requestedRole, resolvedRole: role })
   }),
 ]

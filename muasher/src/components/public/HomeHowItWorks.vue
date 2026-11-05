@@ -6,9 +6,7 @@ const props = defineProps({
   localized: { type: Function, required: true },
 })
 
-const steps = computed(() =>
-  [...(props.section.items ?? [])].sort((a, b) => a.order - b.order),
-)
+const steps = computed(() => [...(props.section.items ?? [])].sort((a, b) => a.order - b.order))
 </script>
 
 <template>
@@ -25,11 +23,7 @@ const steps = computed(() =>
       </header>
 
       <ol class="home-steps__list">
-        <li
-          v-for="(step, index) in steps"
-          :key="step.id"
-          class="home-step"
-        >
+        <li v-for="(step, index) in steps" :key="step.id" class="home-step">
           <span class="home-step__marker" aria-hidden="true">
             <span class="home-step__number">{{ index + 1 }}</span>
           </span>

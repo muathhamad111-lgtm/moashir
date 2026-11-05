@@ -46,7 +46,9 @@ const singleLabel = computed(() =>
   !props.multiple && selectedOptions.value.length ? selectedOptions.value[0].label : '',
 )
 
-const floated = computed(() => isOpen.value || selectedOptions.value.length > 0 || Boolean(query.value))
+const floated = computed(
+  () => isOpen.value || selectedOptions.value.length > 0 || Boolean(query.value),
+)
 
 watch(query, (value) => {
   if (props.remote) emit('search', value)
@@ -135,7 +137,11 @@ function onInputKeydown(event) {
   >
     <label v-if="label" class="select2-search__label" :for="inputId">{{ label }}</label>
     <div class="select2-search__control" @click="focusControl">
-      <span v-for="option in multiple ? selectedOptions : []" :key="option.value" class="select2-search__tag">
+      <span
+        v-for="option in multiple ? selectedOptions : []"
+        :key="option.value"
+        class="select2-search__tag"
+      >
         {{ option.label }}
         <button
           type="button"
@@ -168,18 +174,31 @@ function onInputKeydown(event) {
       />
       <i class="fa-solid fa-chevron-down select2-search__caret" aria-hidden="true"></i>
     </div>
-    <ul v-if="isOpen" :id="listId" class="select2-search__menu" role="listbox" :aria-multiselectable="multiple || undefined">
+    <ul
+      v-if="isOpen"
+      :id="listId"
+      class="select2-search__menu"
+      role="listbox"
+      :aria-multiselectable="multiple || undefined"
+    >
       <li v-if="loading" class="select2-search__empty" role="presentation">
         {{ t('components.searchSelect.loading') }}
       </li>
       <li v-else-if="!filteredOptions.length" class="select2-search__empty" role="presentation">
         {{ t('components.searchSelect.noResults') }}
       </li>
-      <li v-for="(option, index) in loading ? [] : filteredOptions" :key="option.value" role="presentation">
+      <li
+        v-for="(option, index) in loading ? [] : filteredOptions"
+        :key="option.value"
+        role="presentation"
+      >
         <button
           type="button"
           class="select2-search__option"
-          :class="{ 'is-selected': isSelected(option), 'is-highlighted': index === highlightedIndex }"
+          :class="{
+            'is-selected': isSelected(option),
+            'is-highlighted': index === highlightedIndex,
+          }"
           role="option"
           :aria-selected="isSelected(option)"
           tabindex="-1"

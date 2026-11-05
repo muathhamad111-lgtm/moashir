@@ -15,7 +15,9 @@ export const paymentsService = {
   create(purpose, idempotencyKey) {
     const payload = { purpose }
     const headers = { [IDEMPOTENCY_HEADER]: idempotencyKey }
-    return write('create', () => apiClient.post('/payments', payload, { headers }), payload, [UNAVAILABLE])
+    return write('create', () => apiClient.post('/payments', payload, { headers }), payload, [
+      UNAVAILABLE,
+    ])
   },
 
   get(paymentId) {
@@ -24,14 +26,26 @@ export const paymentsService = {
 
   verify(paymentId, providerPaymentId) {
     const payload = { providerPaymentId }
-    return write('verify', () => apiClient.post(`/payments/${paymentId}/verify`, payload), payload, [NOT_FOUND, UNAVAILABLE])
+    return write(
+      'verify',
+      () => apiClient.post(`/payments/${paymentId}/verify`, payload),
+      payload,
+      [NOT_FOUND, UNAVAILABLE],
+    )
   },
 
   getReceipt(paymentId) {
-    return read('getReceipt', () => apiClient.get(`/payments/${paymentId}/receipt`), null, [NOT_FOUND])
+    return read('getReceipt', () => apiClient.get(`/payments/${paymentId}/receipt`), null, [
+      NOT_FOUND,
+    ])
   },
 
   requestReceiptDownload(paymentId) {
-    return write('requestReceiptDownload', () => apiClient.post(`/payments/${paymentId}/receipt/download`), {}, [UNAVAILABLE])
+    return write(
+      'requestReceiptDownload',
+      () => apiClient.post(`/payments/${paymentId}/receipt/download`),
+      {},
+      [UNAVAILABLE],
+    )
   },
 }

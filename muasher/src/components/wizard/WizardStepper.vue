@@ -42,7 +42,11 @@ function select(index) {
       >
         <span class="wizard__marker" aria-hidden="true">
           <i v-if="index < currentIndex" class="fa-solid fa-check" aria-hidden="true"></i>
-          <i v-else-if="step.valid === false" class="fa-solid fa-exclamation" aria-hidden="true"></i>
+          <i
+            v-else-if="step.valid === false"
+            class="fa-solid fa-exclamation"
+            aria-hidden="true"
+          ></i>
           <template v-else>{{ index + 1 }}</template>
         </span>
         <span class="wizard__label">{{ step.label }}</span>

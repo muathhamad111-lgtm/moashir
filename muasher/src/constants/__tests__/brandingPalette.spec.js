@@ -12,7 +12,11 @@ function readStyle(relative) {
 
 function scssPalette() {
   const source = readStyle('tokens/_palette.scss')
-  const entries = [...source.matchAll(/'([a-z_]+)': \(\s*'fill': (#[0-9a-f]{6}),\s*'text-on-light': (#[0-9a-f]{6}),/g)]
+  const entries = [
+    ...source.matchAll(
+      /'([a-z_]+)': \(\s*'fill': (#[0-9a-f]{6}),\s*'text-on-light': (#[0-9a-f]{6}),/g,
+    ),
+  ]
   return entries.map(([, token, fill, textOnLight]) => ({ token, fill, textOnLight }))
 }
 
@@ -34,7 +38,12 @@ describe('controlled accent palette', () => {
 
   it('passes WCAG 2.1 AA for every color in dark and light mode', () => {
     const failing = brandingPaletteFixture
-      .filter((entry) => !passesAllContrast(accentContrastPairs({ hex: entry.hex, textOnLightHex: entry.textOnLightHex })))
+      .filter(
+        (entry) =>
+          !passesAllContrast(
+            accentContrastPairs({ hex: entry.hex, textOnLightHex: entry.textOnLightHex }),
+          ),
+      )
       .map((entry) => entry.token)
     expect(failing).toEqual([])
   })

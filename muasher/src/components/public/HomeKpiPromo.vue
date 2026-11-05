@@ -16,9 +16,7 @@ const router = useRouter()
 
 const featured = ref([])
 
-const stats = computed(() =>
-  [...(props.section.items ?? [])].sort((a, b) => a.order - b.order),
-)
+const stats = computed(() => [...(props.section.items ?? [])].sort((a, b) => a.order - b.order))
 
 function cardLocalized(content) {
   if (content === null || content === undefined) return ''

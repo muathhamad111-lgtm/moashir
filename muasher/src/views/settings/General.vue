@@ -90,7 +90,9 @@ function onSave() {
         <p class="settings-form__note">
           <i class="fa-solid fa-palette" aria-hidden="true"></i>
           {{ t('settings.general.brandingMoved') }}
-          <RouterLink :to="{ name: ROUTE_NAMES.ADMIN_BRANDING }">{{ t('nav.branding') }}</RouterLink>
+          <RouterLink :to="{ name: ROUTE_NAMES.ADMIN_BRANDING }">{{
+            t('nav.branding')
+          }}</RouterLink>
         </p>
       </fieldset>
 
@@ -139,7 +141,12 @@ function onSave() {
     </div>
 
     <template #actions>
-      <BaseButton variant="primary" :loading="saving" icon="fa-solid fa-floppy-disk" @click="onSave">
+      <BaseButton
+        variant="primary"
+        :loading="saving"
+        icon="fa-solid fa-floppy-disk"
+        @click="onSave"
+      >
         {{ t('actions.save') }}
       </BaseButton>
     </template>

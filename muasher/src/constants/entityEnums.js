@@ -10,7 +10,14 @@ export const ENTITY_STATUSES = {
 
 export const ENTITY_REQUEST_PATHS = ['accredited', 'advanced', 'bag']
 
-export const ENTITY_SORTS = ['-created_at', 'created_at', 'name', '-name', '-governance_grade', 'governance_grade']
+export const ENTITY_SORTS = [
+  '-created_at',
+  'created_at',
+  'name',
+  '-name',
+  '-governance_grade',
+  'governance_grade',
+]
 
 export const EMAIL_CHANGE_STATUSES = {
   AWAITING_OTP: 'awaiting-otp',

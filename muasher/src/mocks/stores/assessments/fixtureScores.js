@@ -6,6 +6,9 @@ export function fixtureScores(tree, { pattern, count }) {
   const units = scorableUnits(tree)
   const scored = count === null ? units : units.slice(0, count)
   return Object.fromEntries(
-    scored.map((unit, index) => [unitKey(unit.level, unit.id), parseRawHundredths(values[index % values.length])]),
+    scored.map((unit, index) => [
+      unitKey(unit.level, unit.id),
+      parseRawHundredths(values[index % values.length]),
+    ]),
   )
 }

@@ -84,7 +84,9 @@ async function onToggle(section, enabled) {
   togglingId.value = section.id
   try {
     await toggleSection(section.id, enabled)
-    toast.success(enabled ? t('settings.homepage.toasts.enabled') : t('settings.homepage.toasts.disabled'))
+    toast.success(
+      enabled ? t('settings.homepage.toasts.enabled') : t('settings.homepage.toasts.disabled'),
+    )
   } catch {
     toast.error(t('settings.homepage.toasts.toggleFailed'))
   } finally {
@@ -110,7 +112,11 @@ async function onPublicationChange(next) {
   try {
     const result = await setPublished(next)
     siteStatus.markPublished(result)
-    toast.success(result ? t('settings.homepage.publication.publishedToast') : t('settings.homepage.publication.unpublishedToast'))
+    toast.success(
+      result
+        ? t('settings.homepage.publication.publishedToast')
+        : t('settings.homepage.publication.unpublishedToast'),
+    )
   } catch {
     toast.error(t('settings.homepage.publication.failed'))
   } finally {
@@ -156,9 +162,18 @@ const schema = computed(() =>
 const form = useValidatedForm({
   schema,
   initialValues: {
-    titleAr: '', titleEn: '', subtitleAr: '', subtitleEn: '',
-    descriptionAr: '', descriptionEn: '', ctaLabelAr: '', ctaLabelEn: '',
-    ctaUrl: '', image: '', icon: '', background: '',
+    titleAr: '',
+    titleEn: '',
+    subtitleAr: '',
+    subtitleEn: '',
+    descriptionAr: '',
+    descriptionEn: '',
+    ctaLabelAr: '',
+    ctaLabelEn: '',
+    ctaUrl: '',
+    image: '',
+    icon: '',
+    background: '',
   },
   action: 'homepage.section.update',
   submit: async (values) => {
@@ -215,8 +230,8 @@ function openEdit(section) {
 const itemsOpen = ref(false)
 const itemsSectionId = ref('')
 
-const itemsSection = computed(() =>
-  orderedSections.value.find((section) => section.id === itemsSectionId.value) ?? null,
+const itemsSection = computed(
+  () => orderedSections.value.find((section) => section.id === itemsSectionId.value) ?? null,
 )
 
 function openItems(section) {
@@ -291,7 +306,6 @@ async function onSaveSettings(patch) {
       @change="onPublicationChange"
     />
 
-
     <div v-if="status === 'loading'" class="homepage-cms__loading">
       <Skeleton variant="block" />
       <Skeleton variant="text" :count="4" />
@@ -361,12 +375,7 @@ async function onSaveSettings(patch) {
           >
             {{ t('settings.homepage.items.manage') }}
           </BaseButton>
-          <BaseButton
-            variant="secondary"
-            size="sm"
-            icon="fa-solid fa-pen"
-            @click="openEdit(item)"
-          >
+          <BaseButton variant="secondary" size="sm" icon="fa-solid fa-pen" @click="openEdit(item)">
             {{ t('actions.edit') }}
           </BaseButton>
         </div>
@@ -377,7 +386,11 @@ async function onSaveSettings(patch) {
       v-model="editOpen"
       size="lg"
       :busy="form.submitting.value"
-      :title="activeSection ? t('settings.homepage.editTitle', { section: sectionName(activeSection) }) : ''"
+      :title="
+        activeSection
+          ? t('settings.homepage.editTitle', { section: sectionName(activeSection) })
+          : ''
+      "
       :submit-label="t('actions.save')"
       @submit="form.onSubmit"
     >
@@ -385,30 +398,98 @@ async function onSaveSettings(patch) {
         <fieldset class="homepage-cms__group">
           <legend class="homepage-cms__legend">{{ t('settings.homepage.groups.text') }}</legend>
           <div class="homepage-cms__grid">
-            <BaseInput v-model="titleAr" name="titleAr" :label="t('settings.homepage.fields.titleAr')" :error="form.errors.value.titleAr" required />
-            <BaseInput v-model="titleEn" name="titleEn" :label="t('settings.homepage.fields.titleEn')" :error="form.errors.value.titleEn" required />
-            <BaseInput v-model="subtitleAr" name="subtitleAr" :label="t('settings.homepage.fields.subtitleAr')" :error="form.errors.value.subtitleAr" />
-            <BaseInput v-model="subtitleEn" name="subtitleEn" :label="t('settings.homepage.fields.subtitleEn')" :error="form.errors.value.subtitleEn" />
+            <BaseInput
+              v-model="titleAr"
+              name="titleAr"
+              :label="t('settings.homepage.fields.titleAr')"
+              :error="form.errors.value.titleAr"
+              required
+            />
+            <BaseInput
+              v-model="titleEn"
+              name="titleEn"
+              :label="t('settings.homepage.fields.titleEn')"
+              :error="form.errors.value.titleEn"
+              required
+            />
+            <BaseInput
+              v-model="subtitleAr"
+              name="subtitleAr"
+              :label="t('settings.homepage.fields.subtitleAr')"
+              :error="form.errors.value.subtitleAr"
+            />
+            <BaseInput
+              v-model="subtitleEn"
+              name="subtitleEn"
+              :label="t('settings.homepage.fields.subtitleEn')"
+              :error="form.errors.value.subtitleEn"
+            />
           </div>
-          <BaseTextarea v-model="descriptionAr" name="descriptionAr" :rows="3" :label="t('settings.homepage.fields.descriptionAr')" :error="form.errors.value.descriptionAr" />
-          <BaseTextarea v-model="descriptionEn" name="descriptionEn" :rows="3" :label="t('settings.homepage.fields.descriptionEn')" :error="form.errors.value.descriptionEn" />
+          <BaseTextarea
+            v-model="descriptionAr"
+            name="descriptionAr"
+            :rows="3"
+            :label="t('settings.homepage.fields.descriptionAr')"
+            :error="form.errors.value.descriptionAr"
+          />
+          <BaseTextarea
+            v-model="descriptionEn"
+            name="descriptionEn"
+            :rows="3"
+            :label="t('settings.homepage.fields.descriptionEn')"
+            :error="form.errors.value.descriptionEn"
+          />
         </fieldset>
 
         <fieldset class="homepage-cms__group">
           <legend class="homepage-cms__legend">{{ t('settings.homepage.groups.cta') }}</legend>
           <div class="homepage-cms__grid">
-            <BaseInput v-model="ctaLabelAr" name="ctaLabelAr" :label="t('settings.homepage.fields.ctaLabelAr')" :error="form.errors.value.ctaLabelAr" />
-            <BaseInput v-model="ctaLabelEn" name="ctaLabelEn" :label="t('settings.homepage.fields.ctaLabelEn')" :error="form.errors.value.ctaLabelEn" />
+            <BaseInput
+              v-model="ctaLabelAr"
+              name="ctaLabelAr"
+              :label="t('settings.homepage.fields.ctaLabelAr')"
+              :error="form.errors.value.ctaLabelAr"
+            />
+            <BaseInput
+              v-model="ctaLabelEn"
+              name="ctaLabelEn"
+              :label="t('settings.homepage.fields.ctaLabelEn')"
+              :error="form.errors.value.ctaLabelEn"
+            />
           </div>
-          <BaseInput v-model="ctaUrl" name="ctaUrl" :label="t('settings.homepage.fields.ctaUrl')" :hint="t('settings.homepage.fields.ctaUrlHint')" :error="form.errors.value.ctaUrl" />
+          <BaseInput
+            v-model="ctaUrl"
+            name="ctaUrl"
+            :label="t('settings.homepage.fields.ctaUrl')"
+            :hint="t('settings.homepage.fields.ctaUrlHint')"
+            :error="form.errors.value.ctaUrl"
+          />
         </fieldset>
 
         <fieldset class="homepage-cms__group">
           <legend class="homepage-cms__legend">{{ t('settings.homepage.groups.media') }}</legend>
           <div class="homepage-cms__grid">
-            <BaseInput v-model="image" name="image" :label="t('settings.homepage.fields.image')" :hint="t('settings.homepage.fields.imageHint')" :error="form.errors.value.image" />
-            <BaseInput v-model="icon" name="icon" :label="t('settings.homepage.fields.icon')" :hint="t('settings.homepage.fields.iconHint')" :error="form.errors.value.icon" />
-            <BaseInput v-model="background" name="background" :label="t('settings.homepage.fields.background')" :hint="t('settings.homepage.fields.backgroundHint')" :error="form.errors.value.background" />
+            <BaseInput
+              v-model="image"
+              name="image"
+              :label="t('settings.homepage.fields.image')"
+              :hint="t('settings.homepage.fields.imageHint')"
+              :error="form.errors.value.image"
+            />
+            <BaseInput
+              v-model="icon"
+              name="icon"
+              :label="t('settings.homepage.fields.icon')"
+              :hint="t('settings.homepage.fields.iconHint')"
+              :error="form.errors.value.icon"
+            />
+            <BaseInput
+              v-model="background"
+              name="background"
+              :label="t('settings.homepage.fields.background')"
+              :hint="t('settings.homepage.fields.backgroundHint')"
+              :error="form.errors.value.background"
+            />
           </div>
         </fieldset>
       </div>

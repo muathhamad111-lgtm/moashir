@@ -19,7 +19,9 @@ describe('BaseCheckbox', () => {
     })
     const input = wrapper.find('input')
     expect(input.attributes('aria-invalid')).toBe('true')
-    expect(input.attributes('aria-describedby')).toBe(wrapper.find('.field__error').attributes('id'))
+    expect(input.attributes('aria-describedby')).toBe(
+      wrapper.find('.field__error').attributes('id'),
+    )
   })
 
   it('marks the wrapper disabled', () => {

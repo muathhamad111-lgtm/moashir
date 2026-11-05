@@ -52,7 +52,9 @@ const status = ref('loading')
 const errorMessage = ref('')
 const editing = ref(false)
 const profile = computed(() => entityStore.profile)
-const historyKey = computed(() => `${profile.value?.id ?? 'none'}-${editing.value ? 'editing' : 'viewing'}`)
+const historyKey = computed(
+  () => `${profile.value?.id ?? 'none'}-${editing.value ? 'editing' : 'viewing'}`,
+)
 const rows = computed(() => (profile.value ? rowsOf(profile.value, PROFILE_ROWS) : []))
 const canEdit = computed(() => can(PERMISSIONS.ENTITY_PROFILE_EDIT))
 const loadHistory = (params) => profileChangesService.listMine(params)
@@ -95,7 +97,12 @@ onMounted(load)
           <h1 class="entity-profile__title">{{ localized(profile.name) }}</h1>
           <StatusBadge :status="profile.status" />
         </div>
-        <BaseButton v-if="canEdit && !editing" variant="secondary" icon="fa-solid fa-pen" @click="editing = true">
+        <BaseButton
+          v-if="canEdit && !editing"
+          variant="secondary"
+          icon="fa-solid fa-pen"
+          @click="editing = true"
+        >
           {{ t('entities.profile.edit') }}
         </BaseButton>
       </header>

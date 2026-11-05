@@ -17,7 +17,11 @@ export async function typeCode(page, code) {
 async function chooseEmailCodeMode(page) {
   const modes = page.locator('.auth-form__mode')
   await expect(page.locator('[name="officialEmail"]')).toBeVisible()
-  if ((await modes.count()) > 1) await modes.filter({ hasText: /code|رمز/i }).first().click()
+  if ((await modes.count()) > 1)
+    await modes
+      .filter({ hasText: /code|رمز/i })
+      .first()
+      .click()
 }
 
 export async function requestEmailCode(page, email) {
@@ -32,7 +36,10 @@ export async function requestEmailCode(page, email) {
 
 async function freshTotp(email) {
   const authenticator = authenticators.get(email)
-  if (!authenticator) throw new Error(`${email} already has an authenticator; run scripts/integration/backend.sh reset first.`)
+  if (!authenticator)
+    throw new Error(
+      `${email} already has an authenticator; run scripts/integration/backend.sh reset first.`,
+    )
   if (authenticator.lastStep === timeStepOf()) {
     await new Promise((resolve) => setTimeout(resolve, millisecondsToNextStep() + 500))
   }

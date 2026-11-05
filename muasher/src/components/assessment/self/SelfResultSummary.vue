@@ -14,7 +14,11 @@ const { t } = useI18n()
   <div class="self-result__summary">
     <Card>
       <div class="self-result__score">
-        <div class="self-result__gauge" role="img" :aria-label="t('assessment.self.result.percentAria', { percent: result.percent })">
+        <div
+          class="self-result__gauge"
+          role="img"
+          :aria-label="t('assessment.self.result.percentAria', { percent: result.percent })"
+        >
           <span class="self-result__gauge-value u-ltr">{{ result.percent }}%</span>
         </div>
         <div class="self-result__score-detail">

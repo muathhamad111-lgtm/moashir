@@ -44,10 +44,30 @@ const { items, status, errorMessage, load } = useTable({
 })
 
 const statCards = computed(() => [
-  { id: 'total', icon: 'fa-solid fa-inbox', value: stats.value?.total ?? 0, label: t('bagRequests.stats.total') },
-  { id: 'awaiting', icon: 'fa-solid fa-user-clock', value: stats.value?.awaiting ?? 0, label: t('bagRequests.stats.awaiting') },
-  { id: 'active', icon: 'fa-solid fa-briefcase', value: stats.value?.byStatus?.active ?? 0, label: t('bagRequests.stats.active') },
-  { id: 'completed', icon: 'fa-solid fa-flag-checkered', value: stats.value?.byStatus?.completed ?? 0, label: t('bagRequests.stats.completed') },
+  {
+    id: 'total',
+    icon: 'fa-solid fa-inbox',
+    value: stats.value?.total ?? 0,
+    label: t('bagRequests.stats.total'),
+  },
+  {
+    id: 'awaiting',
+    icon: 'fa-solid fa-user-clock',
+    value: stats.value?.awaiting ?? 0,
+    label: t('bagRequests.stats.awaiting'),
+  },
+  {
+    id: 'active',
+    icon: 'fa-solid fa-briefcase',
+    value: stats.value?.byStatus?.active ?? 0,
+    label: t('bagRequests.stats.active'),
+  },
+  {
+    id: 'completed',
+    icon: 'fa-solid fa-flag-checkered',
+    value: stats.value?.byStatus?.completed ?? 0,
+    label: t('bagRequests.stats.completed'),
+  },
 ])
 
 const columns = computed(() => [
@@ -69,9 +89,17 @@ const CLOSED = ['completed', 'cancelled']
 function rowActions(row) {
   const actions = []
   if (row.status === 'awaiting-assignment') {
-    actions.push({ key: 'assign', label: t('bagRequests.actions.assign'), icon: 'fa-solid fa-user-plus' })
+    actions.push({
+      key: 'assign',
+      label: t('bagRequests.actions.assign'),
+      icon: 'fa-solid fa-user-plus',
+    })
   } else if (!CLOSED.includes(row.status)) {
-    actions.push({ key: 'reassign', label: t('bagRequests.actions.reassign'), icon: 'fa-solid fa-user-pen' })
+    actions.push({
+      key: 'reassign',
+      label: t('bagRequests.actions.reassign'),
+      icon: 'fa-solid fa-user-pen',
+    })
   }
   return actions
 }
@@ -126,7 +154,10 @@ function onAction(key, row) {
 
     <StatsCards :stats="statCards" :loading="status === 'loading' && !stats" />
 
-    <ListToolbar v-model:search="search" :search-placeholder="t('bagRequests.index.searchPlaceholder')">
+    <ListToolbar
+      v-model:search="search"
+      :search-placeholder="t('bagRequests.index.searchPlaceholder')"
+    >
       <template #filters>
         <DropdownList
           :model-value="filters.filters.status"
@@ -152,7 +183,11 @@ function onAction(key, row) {
       </template>
       <template #cell-reference="{ item }">
         <span class="bag-requests__reference">
-          {{ t('bagRequests.referenceValue', { score: n(item.referenceSnapshot.scorePercent, 'default') }) }}
+          {{
+            t('bagRequests.referenceValue', {
+              score: n(item.referenceSnapshot.scorePercent, 'default'),
+            })
+          }}
         </span>
       </template>
       <template #cell-paidAt="{ item }">
@@ -169,7 +204,11 @@ function onAction(key, row) {
         <span v-else class="bag-requests__unassigned">{{ t('bagRequests.unassigned') }}</span>
       </template>
       <template #cell-actions="{ item }">
-        <ActionsDropdown v-if="rowActions(item).length" :actions="rowActions(item)" @select="onAction($event, item)" />
+        <ActionsDropdown
+          v-if="rowActions(item).length"
+          :actions="rowActions(item)"
+          @select="onAction($event, item)"
+        />
         <span v-else class="bag-requests__no-actions">—</span>
       </template>
     </DataTable>

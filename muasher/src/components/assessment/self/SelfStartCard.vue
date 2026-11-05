@@ -17,7 +17,10 @@ const { t, locale } = useI18n()
 const itemsCount = computed(() => scorableUnits(props.version).length)
 const publishedOn = computed(() =>
   props.version.publishedAt
-    ? formatDate(props.version.publishedAt, locale.value, { dateStyle: 'medium', timeZone: 'Asia/Riyadh' })
+    ? formatDate(props.version.publishedAt, locale.value, {
+        dateStyle: 'medium',
+        timeZone: 'Asia/Riyadh',
+      })
     : '',
 )
 </script>
@@ -30,7 +33,14 @@ const publishedOn = computed(() =>
         <h2 class="self-start__title">{{ t('assessment.self.start.title') }}</h2>
         <p class="self-start__message">{{ t('assessment.self.start.message') }}</p>
         <ul class="self-start__facts">
-          <li>{{ t('assessment.self.start.version', { number: version.versionNumber, date: publishedOn }) }}</li>
+          <li>
+            {{
+              t('assessment.self.start.version', {
+                number: version.versionNumber,
+                date: publishedOn,
+              })
+            }}
+          </li>
           <li>{{ t(`assessment.self.scaleNames.${version.scaleKind}`) }}</li>
           <li>{{ t('assessment.self.start.items', { count: itemsCount }, itemsCount) }}</li>
         </ul>
@@ -38,7 +48,12 @@ const publishedOn = computed(() =>
     </div>
     <template #footer>
       <div class="self-start__actions">
-        <BaseButton variant="primary" icon="fa-solid fa-play" :loading="starting" @click="emit('start')">
+        <BaseButton
+          variant="primary"
+          icon="fa-solid fa-play"
+          :loading="starting"
+          @click="emit('start')"
+        >
           {{ t('assessment.self.start.action') }}
         </BaseButton>
       </div>

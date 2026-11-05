@@ -42,10 +42,18 @@ const { summary, actions, status, errorMessage, load, localized } = useDashboard
 
     <div class="role-dashboard__two-col">
       <Card :title="t('dashboard.admin.distribution.byRegion')">
-        <MiniBarChart :series="summary.distribution.byRegion" :localized="localized" color="primary" />
+        <MiniBarChart
+          :series="summary.distribution.byRegion"
+          :localized="localized"
+          color="primary"
+        />
       </Card>
       <Card :title="t('dashboard.admin.distribution.byGovernance')">
-        <MiniBarChart :series="summary.distribution.byGovernance" :localized="localized" color="info" />
+        <MiniBarChart
+          :series="summary.distribution.byGovernance"
+          :localized="localized"
+          color="info"
+        />
       </Card>
     </div>
 

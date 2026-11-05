@@ -82,7 +82,10 @@ function onKeydown(event) {
         <button
           type="button"
           class="dropdown__item actions-dropdown__item"
-          :class="{ 'is-danger': action.variant === 'danger', 'is-highlighted': index === highlightedIndex }"
+          :class="{
+            'is-danger': action.variant === 'danger',
+            'is-highlighted': index === highlightedIndex,
+          }"
           role="menuitem"
           tabindex="-1"
           :disabled="action.disabled || undefined"

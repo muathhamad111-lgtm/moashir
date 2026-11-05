@@ -17,10 +17,19 @@ const emit = defineEmits(['upload', 'remove', 'replace', 'download'])
 const { t, locale } = useI18n()
 
 const form = computed(() => props.workspace.formState.form.value)
-const cvEditable = computed(() => props.workspace.formState.canEdit(props.sub.id, COMPLETION_ITEM_KINDS.CV))
-const evidenceEditable = computed(() => props.workspace.formState.canEdit(props.sub.id, COMPLETION_ITEM_KINDS.EVIDENCE))
-const isRequested = computed(() => props.workspace.formState.isResubmission.value && (cvEditable.value || evidenceEditable.value))
-const cvMissing = computed(() => form.value.missing.missingCv.some((item) => item.subCriterionId === props.sub.id))
+const cvEditable = computed(() =>
+  props.workspace.formState.canEdit(props.sub.id, COMPLETION_ITEM_KINDS.CV),
+)
+const evidenceEditable = computed(() =>
+  props.workspace.formState.canEdit(props.sub.id, COMPLETION_ITEM_KINDS.EVIDENCE),
+)
+const isRequested = computed(
+  () =>
+    props.workspace.formState.isResubmission.value && (cvEditable.value || evidenceEditable.value),
+)
+const cvMissing = computed(() =>
+  form.value.missing.missingCv.some((item) => item.subCriterionId === props.sub.id),
+)
 const subEvidence = computed(() => evidenceOfSub(form.value.evidence, props.sub.id))
 
 function text(content) {
@@ -29,7 +38,12 @@ function text(content) {
 </script>
 
 <template>
-  <li :id="`accredited-sub-${sub.id}`" class="accredited-sub" :class="{ 'accredited-sub--requested': isRequested }" tabindex="-1">
+  <li
+    :id="`accredited-sub-${sub.id}`"
+    class="accredited-sub"
+    :class="{ 'accredited-sub--requested': isRequested }"
+    tabindex="-1"
+  >
     <div class="accredited-sub__head">
       <h3 class="accredited-sub__title">
         <span class="accredited-sub__code u-ltr">{{ sub.code }}</span>

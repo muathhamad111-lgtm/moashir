@@ -13,17 +13,30 @@ function templateValue(file, name) {
 
 describe('mock plan', () => {
   it('keeps the whole mock layer when no API base URL is set', () => {
-    expect(mockPlanOf({ VITE_DEMO_MODULES: 'bag' })).toEqual({ mode: MOCK_MODES.FULL, modules: [], unknown: [] })
+    expect(mockPlanOf({ VITE_DEMO_MODULES: 'bag' })).toEqual({
+      mode: MOCK_MODES.FULL,
+      modules: [],
+      unknown: [],
+    })
   })
 
   it('turns the mocks off for a real API without demo modules', () => {
     expect(mockPlanOf({ VITE_API_BASE_URL: '/api/v1' }).mode).toBe(MOCK_MODES.OFF)
-    expect(mockPlanOf({ VITE_API_BASE_URL: '/api/v1', VITE_DEMO_MODULES: ' , ' }).mode).toBe(MOCK_MODES.OFF)
+    expect(mockPlanOf({ VITE_API_BASE_URL: '/api/v1', VITE_DEMO_MODULES: ' , ' }).mode).toBe(
+      MOCK_MODES.OFF,
+    )
   })
 
   it('starts hybrid mode with the listed modules only, normalised and deduplicated', () => {
-    const plan = mockPlanOf({ VITE_API_BASE_URL: '/api/v1', VITE_DEMO_MODULES: ' Bag, kpis ,bag,unknown-module' })
-    expect(plan).toEqual({ mode: MOCK_MODES.HYBRID, modules: ['bag', 'kpis'], unknown: ['unknown-module'] })
+    const plan = mockPlanOf({
+      VITE_API_BASE_URL: '/api/v1',
+      VITE_DEMO_MODULES: ' Bag, kpis ,bag,unknown-module',
+    })
+    expect(plan).toEqual({
+      mode: MOCK_MODES.HYBRID,
+      modules: ['bag', 'kpis'],
+      unknown: ['unknown-module'],
+    })
   })
 
   it('ignores a list made of unknown keys only', () => {
@@ -42,17 +55,22 @@ describe('mock plan', () => {
     expect(showsDemoData(['kpis'], mockPlanOf({}))).toBe(false)
   })
 
-  it.each(['.env.staging.example', '.env.production.example'])('%s lists known modules, a same-origin API and no demo login', (file) => {
-    const { modules, unknown } = parseDemoModules(templateValue(file, 'VITE_DEMO_MODULES'))
-    expect(unknown).toEqual([])
-    expect(modules.length).toBeGreaterThan(0)
-    expect(modules).not.toContain(MOCK_MODULES.CRITERIA)
-    expect(templateValue(file, 'VITE_API_BASE_URL')).toBe('/api/v1')
-    expect(templateValue(file, 'VITE_DEMO_LOGIN')).toBe('false')
-    expect(templateValue(file, 'VITE_SENTRY_DSN')).toBe('')
-  })
+  it.each(['.env.staging.example', '.env.production.example'])(
+    '%s lists known modules, a same-origin API and no demo login',
+    (file) => {
+      const { modules, unknown } = parseDemoModules(templateValue(file, 'VITE_DEMO_MODULES'))
+      expect(unknown).toEqual([])
+      expect(modules.length).toBeGreaterThan(0)
+      expect(modules).not.toContain(MOCK_MODULES.CRITERIA)
+      expect(templateValue(file, 'VITE_API_BASE_URL')).toBe('/api/v1')
+      expect(templateValue(file, 'VITE_DEMO_LOGIN')).toBe('false')
+      expect(templateValue(file, 'VITE_SENTRY_DSN')).toBe('')
+    },
+  )
 
   it('uses the same demo list for staging and production', () => {
-    expect(templateValue('.env.staging.example', 'VITE_DEMO_MODULES')).toBe(templateValue('.env.production.example', 'VITE_DEMO_MODULES'))
+    expect(templateValue('.env.staging.example', 'VITE_DEMO_MODULES')).toBe(
+      templateValue('.env.production.example', 'VITE_DEMO_MODULES'),
+    )
   })
 })

@@ -3,6 +3,8 @@ import { serviceRequest } from './serviceRequest'
 
 export const termsService = {
   current() {
-    return serviceRequest('terms.current', () => apiClient.get('/terms/current'), { entity: 'terms' })
+    return serviceRequest('terms.current', () => apiClient.get('/terms/current'), {
+      entity: 'terms',
+    })
   },
 }

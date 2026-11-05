@@ -106,7 +106,11 @@ function goToDetail(kpi) {
             </label>
             <label class="kpis-page__filter">
               <span class="kpis-page__filter-label">{{ $t('kpis.page.sort.label') }}</span>
-              <DropdownList :model-value="sort" :options="sortOptions" @update:model-value="setSort" />
+              <DropdownList
+                :model-value="sort"
+                :options="sortOptions"
+                @update:model-value="setSort"
+              />
             </label>
           </template>
         </ListToolbar>

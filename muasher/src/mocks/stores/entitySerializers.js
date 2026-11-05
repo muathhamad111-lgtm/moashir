@@ -98,7 +98,11 @@ export function entityResourceFor(access) {
 
 export function deletionImpactResource(openRequests, kept, { frozen = false } = {}) {
   return {
-    openRequests: openRequests.map((request) => ({ ...request, cycleId: request.cycleId ?? null, isFrozen: frozen })),
+    openRequests: openRequests.map((request) => ({
+      ...request,
+      cycleId: request.cycleId ?? null,
+      isFrozen: frozen,
+    })),
     openRequestsCount: openRequests.length,
     requiresConfirmation: openRequests.length > 0,
     keptOnPermanentDeletion: [...kept],

@@ -10,7 +10,9 @@ const FILTER_KEYS = ['filter[path]', 'filter[status]', 'filter[entityId]']
 const POSITIVE_INTEGER = /^[1-9]\d*$/
 const MAX_PER_PAGE = 100
 const KNOWN_PATHS = Object.values(ASSESSMENT_PATHS)
-const KNOWN_STATUSES = [...new Set([...Object.values(SELF_STATUSES), ...Object.values(ACCREDITED_STATES)])]
+const KNOWN_STATUSES = [
+  ...new Set([...Object.values(SELF_STATUSES), ...Object.values(ACCREDITED_STATES)]),
+]
 
 function sortFieldOf(raw) {
   const field = raw.replace(/^-/, '').replace(/_([a-z])/g, (match, letter) => letter.toUpperCase())
@@ -22,7 +24,9 @@ function invalid(errors, field, attribute = field) {
 }
 
 function checkFilters(query, errors) {
-  const unknown = [...query.keys()].some((key) => key.startsWith('filter[') && !FILTER_KEYS.includes(key))
+  const unknown = [...query.keys()].some(
+    (key) => key.startsWith('filter[') && !FILTER_KEYS.includes(key),
+  )
   if (unknown) invalid(errors, 'filter')
   const path = query.get('filter[path]')
   if (path && !KNOWN_PATHS.includes(path)) invalid(errors, 'filter.path', 'filter')
@@ -38,7 +42,8 @@ function checkPaging(query, errors) {
   const sort = query.get('sort')
   if (sort && !sortFieldOf(sort)) invalid(errors, 'sort')
   const page = query.get('page')
-  if (page && !POSITIVE_INTEGER.test(page)) errors.page = [fieldMessage('validation.integer', {}, 'page')]
+  if (page && !POSITIVE_INTEGER.test(page))
+    errors.page = [fieldMessage('validation.integer', {}, 'page')]
   const perPage = query.get('perPage')
   if (perPage && (!POSITIVE_INTEGER.test(perPage) || Number(perPage) > MAX_PER_PAGE)) {
     errors.perPage = [fieldMessage('validation.max', { max: MAX_PER_PAGE }, 'perPage')]
@@ -73,7 +78,9 @@ function compareBy(field, descending) {
 export function listAssessments(user, filters, query) {
   const rows = allAssessments()
     .filter((record) => inRecordScope(user, record))
-    .filter((record) => (filters.entityId === null ? !isFrozen(record) : record.entityId === filters.entityId))
+    .filter((record) =>
+      filters.entityId === null ? !isFrozen(record) : record.entityId === filters.entityId,
+    )
     .filter((record) => !filters.path || record.path === filters.path)
     .filter((record) => !filters.status || record.status === filters.status)
     .sort(compareBy(sortFieldOf(filters.sort), filters.sort.startsWith('-')))
@@ -88,7 +95,9 @@ function matchesNeedle(record, needle, normalize) {
 }
 
 export function searchAssessmentRequests(user, needle, normalize) {
-  const scoped = readsEveryAssessment(user) ? allAssessments() : allAssessments().filter((record) => isReviewedBy(user, record))
+  const scoped = readsEveryAssessment(user)
+    ? allAssessments()
+    : allAssessments().filter((record) => isReviewedBy(user, record))
   return scoped
     .filter((record) => !isFrozen(record) && matchesNeedle(record, needle, normalize))
     .sort(compareBy('createdAt', true))

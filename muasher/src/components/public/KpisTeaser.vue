@@ -15,7 +15,9 @@ const featured = computed(() => kpis.value.slice(0, 4))
 <template>
   <section class="kpis-teaser" aria-labelledby="kpis-teaser-title">
     <header class="section-heading">
-      <h2 id="kpis-teaser-title" class="section-heading__title">{{ $t('public.kpisTeaser.title') }}</h2>
+      <h2 id="kpis-teaser-title" class="section-heading__title">
+        {{ $t('public.kpisTeaser.title') }}
+      </h2>
       <p class="section-heading__subtitle">{{ $t('public.kpisTeaser.subtitle') }}</p>
     </header>
 

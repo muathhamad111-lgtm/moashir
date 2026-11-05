@@ -28,7 +28,11 @@ const ICONS = {
   exportPersonalData: 'fa-solid fa-file-export',
 }
 
-const DANGEROUS = new Set([ENTITY_ACTIONS.DEACTIVATE, ENTITY_ACTIONS.DELETE, ENTITY_ACTIONS.PERMANENT_DELETE])
+const DANGEROUS = new Set([
+  ENTITY_ACTIONS.DEACTIVATE,
+  ENTITY_ACTIONS.DELETE,
+  ENTITY_ACTIONS.PERMANENT_DELETE,
+])
 
 export function useEntityActions() {
   const { t } = useI18n()
@@ -40,14 +44,20 @@ export function useEntityActions() {
   }
 
   const RULES = {
-    [ENTITY_ACTIONS.EDIT]: (entity) => can(P.ENTITIES_MANAGE) && isFullRecord(entity) && !entity.isDeleted,
-    [ENTITY_ACTIONS.DEACTIVATE]: (entity) => can(P.ENTITIES_DEACTIVATE) && !entity.isDeleted && entity.status === S.ACTIVE,
-    [ENTITY_ACTIONS.REACTIVATE]: (entity) => can(P.ENTITIES_REACTIVATE) && !entity.isDeleted && entity.status === S.DEACTIVATED,
+    [ENTITY_ACTIONS.EDIT]: (entity) =>
+      can(P.ENTITIES_MANAGE) && isFullRecord(entity) && !entity.isDeleted,
+    [ENTITY_ACTIONS.DEACTIVATE]: (entity) =>
+      can(P.ENTITIES_DEACTIVATE) && !entity.isDeleted && entity.status === S.ACTIVE,
+    [ENTITY_ACTIONS.REACTIVATE]: (entity) =>
+      can(P.ENTITIES_REACTIVATE) && !entity.isDeleted && entity.status === S.DEACTIVATED,
     [ENTITY_ACTIONS.RESEND_VERIFICATION]: (entity) =>
-      can(P.ENTITIES_VERIFICATION_RESEND) && !entity.isDeleted && entity.status === S.PENDING_VERIFICATION,
+      can(P.ENTITIES_VERIFICATION_RESEND) &&
+      !entity.isDeleted &&
+      entity.status === S.PENDING_VERIFICATION,
     [ENTITY_ACTIONS.DELETE]: (entity) => can(P.ENTITIES_DELETE) && !entity.isDeleted,
     [ENTITY_ACTIONS.RESTORE]: (entity) => can(P.ENTITIES_DELETE) && entity.isDeleted === true,
-    [ENTITY_ACTIONS.PERMANENT_DELETE]: (entity) => auth.user?.isSuperAdmin === true && entity.isDeleted === true,
+    [ENTITY_ACTIONS.PERMANENT_DELETE]: (entity) =>
+      auth.user?.isSuperAdmin === true && entity.isDeleted === true,
     [ENTITY_ACTIONS.EXPORT_PERSONAL_DATA]: () => can(P.PRIVACY_REQUESTS_MANAGE),
   }
 

@@ -8,7 +8,9 @@ const { t } = useI18n()
   <p class="test-mode-banner" role="status">
     <i class="fa-solid fa-flask" aria-hidden="true"></i>
     <span>
-      <strong class="test-mode-banner__title">{{ t('integrations.payment.testBanner.title') }}</strong>
+      <strong class="test-mode-banner__title">{{
+        t('integrations.payment.testBanner.title')
+      }}</strong>
       {{ t('integrations.payment.testBanner.body') }}
     </span>
   </p>

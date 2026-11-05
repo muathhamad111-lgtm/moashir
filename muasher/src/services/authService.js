@@ -81,9 +81,13 @@ export const authService = {
   },
 
   logout() {
-    return serviceRequest('auth.logout', () => apiClient.post('/auth/logout', {}, AUTH_FLOW_CONFIG), {
-      entity: 'session',
-    })
+    return serviceRequest(
+      'auth.logout',
+      () => apiClient.post('/auth/logout', {}, AUTH_FLOW_CONFIG),
+      {
+        entity: 'session',
+      },
+    )
   },
 
   async session() {

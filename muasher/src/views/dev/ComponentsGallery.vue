@@ -64,9 +64,21 @@ const tabItems = computed(() => [
 ])
 
 const accordionItems = computed(() => [
-  { id: 'leadership', title: t('gallery.demo.accordion1'), content: t('gallery.demo.accordion1Body') },
-  { id: 'strategy', title: t('gallery.demo.accordion2'), content: t('gallery.demo.accordion2Body') },
-  { id: 'beneficiaries', title: t('gallery.demo.accordion3'), content: t('gallery.demo.accordion3Body') },
+  {
+    id: 'leadership',
+    title: t('gallery.demo.accordion1'),
+    content: t('gallery.demo.accordion1Body'),
+  },
+  {
+    id: 'strategy',
+    title: t('gallery.demo.accordion2'),
+    content: t('gallery.demo.accordion2Body'),
+  },
+  {
+    id: 'beneficiaries',
+    title: t('gallery.demo.accordion3'),
+    content: t('gallery.demo.accordion3Body'),
+  },
 ])
 
 const dropdownValue = ref(null)
@@ -114,7 +126,9 @@ function removeUpload(id) {
 
 const demoSchema = computed(() =>
   yupObject({
-    entityName: yupString().required(t('validation.required')).min(3, t('validation.minChars', { min: 3 })),
+    entityName: yupString()
+      .required(t('validation.required'))
+      .min(3, t('validation.minChars', { min: 3 })),
     email: yupString().required(t('validation.required')).email(t('validation.email')),
     entityType: yupString().required(t('validation.required')),
     about: yupString().required(t('validation.required')),
@@ -486,7 +500,10 @@ const notifications = useNotifications({ perPage: 3 })
           {{ candidate }}
         </BaseButton>
       </div>
-      <ListToolbar v-model:search="tableSearch" :search-placeholder="t('gallery.demo.searchEntities')">
+      <ListToolbar
+        v-model:search="tableSearch"
+        :search-placeholder="t('gallery.demo.searchEntities')"
+      >
         <template #filters>
           <DropdownList
             v-model="dropdownValue"
@@ -563,7 +580,10 @@ const notifications = useNotifications({ perPage: 3 })
           <Skeleton variant="circle" />
           <Skeleton variant="block" />
         </div>
-        <EmptyState :title="t('common.empty')" :message="t('components.notifications.emptyMessage')">
+        <EmptyState
+          :title="t('common.empty')"
+          :message="t('components.notifications.emptyMessage')"
+        >
           <template #action>
             <BaseButton variant="primary" size="sm">{{ t('actions.reload') }}</BaseButton>
           </template>
@@ -580,10 +600,20 @@ const notifications = useNotifications({ perPage: 3 })
         @select="wizard.goTo"
       />
       <div class="gallery__row">
-        <BaseButton variant="secondary" size="sm" :disabled="wizard.isFirst.value" @click="wizard.previous">
+        <BaseButton
+          variant="secondary"
+          size="sm"
+          :disabled="wizard.isFirst.value"
+          @click="wizard.previous"
+        >
           {{ t('gallery.labels.previous') }}
         </BaseButton>
-        <BaseButton variant="primary" size="sm" :disabled="wizard.isLast.value" @click="wizard.next">
+        <BaseButton
+          variant="primary"
+          size="sm"
+          :disabled="wizard.isLast.value"
+          @click="wizard.next"
+        >
           {{ t('gallery.labels.next') }}
         </BaseButton>
       </div>
@@ -595,7 +625,10 @@ const notifications = useNotifications({ perPage: 3 })
       </h2>
       <div class="gallery__stack">
         <Skeleton v-if="notifications.status.value === 'loading'" variant="text" :count="3" />
-        <ErrorState v-else-if="notifications.status.value === 'error'" @retry="notifications.load" />
+        <ErrorState
+          v-else-if="notifications.status.value === 'error'"
+          @retry="notifications.load"
+        />
         <EmptyState
           v-else-if="notifications.status.value === 'empty'"
           :title="t('components.notifications.emptyTitle')"

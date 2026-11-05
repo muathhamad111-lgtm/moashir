@@ -18,19 +18,43 @@ import { ROUTE_NAMES } from '@/constants/routeNames'
 const { t } = useI18n()
 const toast = useToast()
 const { localized, dateTime } = useEntityDisplay()
-const { items, status, errorMessage, load, filters, paginator, statusOptions, kindOptions, decision, startDecision, decide, afterDecision } =
-  usePrivacyRequests()
+const {
+  items,
+  status,
+  errorMessage,
+  load,
+  filters,
+  paginator,
+  statusOptions,
+  kindOptions,
+  decision,
+  startDecision,
+  decide,
+  afterDecision,
+} = usePrivacyRequests()
 const formOpen = ref(false)
 
 const columns = computed(() =>
-  ['entity', 'kind', 'details', 'createdAt', 'status', 'actions'].map((key) => ({ key, label: t(`entities.privacy.columns.${key}`) })),
+  ['entity', 'kind', 'details', 'createdAt', 'status', 'actions'].map((key) => ({
+    key,
+    label: t(`entities.privacy.columns.${key}`),
+  })),
 )
 
 function decisionsFor(request) {
   if (request.status !== PRIVACY_REQUEST_STATUSES.OPEN) return []
   return [
-    { key: PRIVACY_DECISIONS.FULFIL, label: t('entities.privacy.fulfil'), icon: 'fa-solid fa-check' },
-    { key: PRIVACY_DECISIONS.REJECT, label: t('entities.privacy.reject'), icon: 'fa-solid fa-xmark', variant: 'danger' },
+    {
+      key: PRIVACY_DECISIONS.FULFIL,
+      label: t('entities.privacy.fulfil'),
+      icon: 'fa-solid fa-check',
+    },
+    {
+      key: PRIVACY_DECISIONS.REJECT,
+      label: t('entities.privacy.reject'),
+      icon: 'fa-solid fa-xmark',
+      variant: 'danger',
+    },
   ]
 }
 
@@ -47,12 +71,24 @@ async function onCreated() {
         <h1 class="entities-admin__title">{{ t('entities.privacy.title') }}</h1>
         <p class="entities-admin__subtitle">{{ t('entities.privacy.subtitle') }}</p>
       </div>
-      <BaseButton variant="primary" size="sm" icon="fa-solid fa-plus" @click="formOpen = true">{{ t('entities.privacy.add') }}</BaseButton>
+      <BaseButton variant="primary" size="sm" icon="fa-solid fa-plus" @click="formOpen = true">{{
+        t('entities.privacy.add')
+      }}</BaseButton>
     </header>
 
     <div class="entities-admin__filters">
-      <DropdownList :model-value="filters.filters.status" :options="statusOptions" :placeholder="t('entities.filters.status')" @update:model-value="filters.setFilter('status', $event)" />
-      <DropdownList :model-value="filters.filters.kind" :options="kindOptions" :placeholder="t('entities.privacy.kind')" @update:model-value="filters.setFilter('kind', $event)" />
+      <DropdownList
+        :model-value="filters.filters.status"
+        :options="statusOptions"
+        :placeholder="t('entities.filters.status')"
+        @update:model-value="filters.setFilter('status', $event)"
+      />
+      <DropdownList
+        :model-value="filters.filters.kind"
+        :options="kindOptions"
+        :placeholder="t('entities.privacy.kind')"
+        @update:model-value="filters.setFilter('kind', $event)"
+      />
     </div>
 
     <DataTable
@@ -65,7 +101,11 @@ async function onCreated() {
       @retry="load"
     >
       <template #cell-entity="{ item }">
-        <router-link v-if="item.entity" class="entity-table__name" :to="{ name: ROUTE_NAMES.ADMIN_ENTITY, params: { id: item.entity.id } }">
+        <router-link
+          v-if="item.entity"
+          class="entity-table__name"
+          :to="{ name: ROUTE_NAMES.ADMIN_ENTITY, params: { id: item.entity.id } }"
+        >
           {{ localized(item.entity.name) }}
         </router-link>
       </template>
@@ -77,7 +117,11 @@ async function onCreated() {
       <template #cell-createdAt="{ item }">{{ dateTime(item.createdAt) }}</template>
       <template #cell-status="{ item }"><StatusBadge :status="item.status" /></template>
       <template #cell-actions="{ item }">
-        <ActionsDropdown v-if="decisionsFor(item).length" :actions="decisionsFor(item)" @select="startDecision($event, item)" />
+        <ActionsDropdown
+          v-if="decisionsFor(item).length"
+          :actions="decisionsFor(item)"
+          @select="startDecision($event, item)"
+        />
       </template>
     </DataTable>
 

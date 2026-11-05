@@ -19,7 +19,9 @@ export const entityLifecycleService = {
     return reasonAction('restore', id, 'restore', reason)
   },
   resendVerification(id) {
-    return write('resendVerification', () => apiClient.post(`/entities/${id}/verification/resend`, {}))
+    return write('resendVerification', () =>
+      apiClient.post(`/entities/${id}/verification/resend`, {}),
+    )
   },
   deletionImpact(id) {
     return read('deletionImpact', () => apiClient.get(`/entities/${id}/deletion-impact`))
@@ -30,11 +32,19 @@ export const entityLifecycleService = {
       confirmOpenRequests: acknowledgedRequestNumbers.length > 0,
       acknowledgedRequestNumbers,
     }
-    return write('softDelete', () => apiClient.delete(`/entities/${id}`, { data: payload }), payload)
+    return write(
+      'softDelete',
+      () => apiClient.delete(`/entities/${id}`, { data: payload }),
+      payload,
+    )
   },
   permanentlyDelete(id, { reason, confirmation, disclaimerAcknowledged }) {
     const payload = { reason, confirmation, disclaimerAcknowledged }
-    return write('permanentlyDelete', () => apiClient.delete(`/entities/${id}/permanent`, { data: payload }), payload)
+    return write(
+      'permanentlyDelete',
+      () => apiClient.delete(`/entities/${id}/permanent`, { data: payload }),
+      payload,
+    )
   },
   exportPersonalData(id, reason) {
     return reasonAction('exportPersonalData', id, 'export', reason)

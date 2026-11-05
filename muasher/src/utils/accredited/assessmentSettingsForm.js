@@ -1,6 +1,9 @@
 import { array, object, string } from 'yup'
 
-export const UPLOAD_BOUNDS = { maxFileMb: { min: 1, max: 100 }, maxFilesPerSub: { min: 1, max: 50 } }
+export const UPLOAD_BOUNDS = {
+  maxFileMb: { min: 1, max: 100 },
+  maxFilesPerSub: { min: 1, max: 50 },
+}
 
 const INTEGER_FIELDS = ['accreditedReviewSlaDays', 'uploadMaxFileMb', 'evidenceMaxFilesPerSub']
 const INTEGER = /^\d+$/
@@ -9,7 +12,11 @@ function integerField(t, { min, max }) {
   return string()
     .trim()
     .required(t('validation.required'))
-    .test('range', t('settings.assessment.validation.range', { min, max }), (value) => INTEGER.test(value ?? '') && Number(value) >= min && Number(value) <= max)
+    .test(
+      'range',
+      t('settings.assessment.validation.range', { min, max }),
+      (value) => INTEGER.test(value ?? '') && Number(value) >= min && Number(value) <= max,
+    )
 }
 
 export function assessmentSettingsSchema(t, slaLimits) {
@@ -34,8 +41,12 @@ function sameTypes(left, right) {
 
 export function changedAssessmentSettings(settings, values) {
   const changes = Object.fromEntries(
-    INTEGER_FIELDS.filter((field) => Number(values[field]) !== settings[field]).map((field) => [field, Number(values[field])]),
+    INTEGER_FIELDS.filter((field) => Number(values[field]) !== settings[field]).map((field) => [
+      field,
+      Number(values[field]),
+    ]),
   )
-  if (!sameTypes(values.evidenceAllowedTypes, settings.evidenceAllowedTypes)) changes.evidenceAllowedTypes = [...values.evidenceAllowedTypes]
+  if (!sameTypes(values.evidenceAllowedTypes, settings.evidenceAllowedTypes))
+    changes.evidenceAllowedTypes = [...values.evidenceAllowedTypes]
   return changes
 }

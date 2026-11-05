@@ -4,7 +4,9 @@ import { test, expect } from '@playwright/test'
 import { isFontAwesomeProInstalled } from '../vite-plugins/fontAwesome'
 
 const KIT_HOST = 'kit.fontawesome.com'
-const kitConfigured = Boolean(loadEnv('development', process.cwd(), 'VITE_').VITE_FONTAWESOME_KIT_ID)
+const kitConfigured = Boolean(
+  loadEnv('development', process.cwd(), 'VITE_').VITE_FONTAWESOME_KIT_ID,
+)
 
 function trackKit(page) {
   const kitRequests = []
@@ -15,11 +17,14 @@ function trackKit(page) {
 }
 
 if (isFontAwesomeProInstalled()) {
-  test('icons render from the bundled Pro webfonts without any request to the kit CDN', async ({ page }) => {
+  test('icons render from the bundled Pro webfonts without any request to the kit CDN', async ({
+    page,
+  }) => {
     const kitRequests = trackKit(page)
     const consoleErrors = []
     page.on('console', (message) => {
-      if (message.type() === 'error' && /font awesome/i.test(message.text())) consoleErrors.push(message.text())
+      if (message.type() === 'error' && /font awesome/i.test(message.text()))
+        consoleErrors.push(message.text())
     })
     await page.goto('/')
     const icon = page.locator('i.fa-solid').first()
@@ -28,7 +33,8 @@ if (isFontAwesomeProInstalled()) {
     const fontState = await icon.evaluate((element) => ({
       family: getComputedStyle(element).fontFamily,
       loaded: [...document.fonts].some(
-        (face) => face.family.replaceAll('"', '').startsWith('Font Awesome') && face.status === 'loaded',
+        (face) =>
+          face.family.replaceAll('"', '').startsWith('Font Awesome') && face.status === 'loaded',
       ),
     }))
     expect(fontState.family).toMatch(/Font Awesome/)

@@ -37,7 +37,10 @@ const DESTINATIONS = {
   }),
   [SEARCH_TYPES.requests]: (item) => ({
     to: {
-      name: item.path === ASSESSMENT_PATHS.SELF ? ROUTE_NAMES.ADMIN_ASSESSMENT : ROUTE_NAMES.REQUESTS_DETAIL,
+      name:
+        item.path === ASSESSMENT_PATHS.SELF
+          ? ROUTE_NAMES.ADMIN_ASSESSMENT
+          : ROUTE_NAMES.REQUESTS_DETAIL,
       params: { id: item.id },
     },
     prefill: '',

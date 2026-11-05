@@ -93,21 +93,13 @@ function isBusy(id) {
       </div>
     </div>
 
-    <Tabs
-      :model-value="activeFilter"
-      :tabs="filterTabs"
-      @update:model-value="onFilter"
-    >
+    <Tabs :model-value="activeFilter" :tabs="filterTabs" @update:model-value="onFilter">
       <div class="notifications-center__panel">
         <div v-if="status === 'loading'" class="notifications-center__loading">
           <Skeleton v-for="row in 4" :key="row" variant="block" />
         </div>
 
-        <ErrorState
-          v-else-if="status === 'error'"
-          :message="errorMessage"
-          @retry="load"
-        />
+        <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
 
         <EmptyState
           v-else-if="status === 'empty'"
@@ -139,9 +131,6 @@ function isBusy(id) {
       </div>
     </Tabs>
 
-    <NotificationAuditModal
-      v-model="auditOpen"
-      :notification="auditTarget"
-    />
+    <NotificationAuditModal v-model="auditOpen" :notification="auditTarget" />
   </section>
 </template>

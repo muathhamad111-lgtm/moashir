@@ -122,7 +122,11 @@ function goToScore() {
         :class="allCompleted ? 'fa-solid fa-circle-check' : 'fa-solid fa-hourglass-half'"
         aria-hidden="true"
       ></i>
-      <span>{{ allCompleted ? t('advanced.committee.allCompleted') : t('advanced.committee.awaitingCommitteeAssessors') }}</span>
+      <span>{{
+        allCompleted
+          ? t('advanced.committee.allCompleted')
+          : t('advanced.committee.awaitingCommitteeAssessors')
+      }}</span>
     </div>
 
     <Card>
@@ -138,7 +142,10 @@ function goToScore() {
       >
         <template #cell-name="{ item }">
           <span class="committee-queue__committee-assessor">
-            <i class="fa-solid fa-user-tie committee-queue__committee-assessor-icon" aria-hidden="true"></i>
+            <i
+              class="fa-solid fa-user-tie committee-queue__committee-assessor-icon"
+              aria-hidden="true"
+            ></i>
             {{ localized(item.name) }}
           </span>
         </template>
@@ -177,11 +184,7 @@ function goToScore() {
       </DataTable>
     </Card>
 
-    <BaseModal
-      v-model="modalOpen"
-      size="md"
-      :title="t('advanced.committee.disableTitle')"
-    >
+    <BaseModal v-model="modalOpen" size="md" :title="t('advanced.committee.disableTitle')">
       <div class="committee-disable">
         <p class="committee-disable__intro">
           {{ t('advanced.committee.disableMessage') }}
@@ -192,7 +195,9 @@ function goToScore() {
         </p>
 
         <fieldset class="committee-disable__modes">
-          <legend class="committee-disable__legend">{{ t('advanced.committee.disableMode') }}</legend>
+          <legend class="committee-disable__legend">
+            {{ t('advanced.committee.disableMode') }}
+          </legend>
           <label class="committee-disable__mode">
             <input
               v-model="mode"
@@ -201,7 +206,9 @@ function goToScore() {
               name="disable-mode"
               class="committee-disable__radio"
             />
-            <span class="committee-disable__mode-title">{{ t('advanced.committee.modeExclude') }}</span>
+            <span class="committee-disable__mode-title">{{
+              t('advanced.committee.modeExclude')
+            }}</span>
           </label>
           <label class="committee-disable__mode">
             <input
@@ -211,7 +218,9 @@ function goToScore() {
               name="disable-mode"
               class="committee-disable__radio"
             />
-            <span class="committee-disable__mode-title">{{ t('advanced.committee.modeSubstitute') }}</span>
+            <span class="committee-disable__mode-title">{{
+              t('advanced.committee.modeSubstitute')
+            }}</span>
           </label>
         </fieldset>
 

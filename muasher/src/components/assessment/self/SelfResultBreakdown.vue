@@ -25,7 +25,9 @@ function pointsOf(subId) {
 
 <template>
   <section class="self-breakdown" :aria-labelledby="`breakdown-${result.id}`">
-    <h2 :id="`breakdown-${result.id}`" class="self-result__section-title">{{ t('assessment.self.result.breakdownTitle') }}</h2>
+    <h2 :id="`breakdown-${result.id}`" class="self-result__section-title">
+      {{ t('assessment.self.result.breakdownTitle') }}
+    </h2>
     <ul class="self-result__mains">
       <li v-for="main in result.main" :key="main.criterionId" class="self-result__main">
         <Card>
@@ -35,9 +37,13 @@ function pointsOf(subId) {
               {{ text(main.name) }}
             </h3>
             <div class="self-result__main-score">
-              <Badge variant="info"><span class="u-ltr">{{ main.percent }}%</span></Badge>
+              <Badge variant="info"
+                ><span class="u-ltr">{{ main.percent }}%</span></Badge
+              >
               <span class="self-result__main-earned u-ltr">
-                {{ t('assessment.self.result.earnedOf', { earned: main.earned, weight: main.weight }) }}
+                {{
+                  t('assessment.self.result.earnedOf', { earned: main.earned, weight: main.weight })
+                }}
               </span>
             </div>
           </div>
@@ -61,18 +67,29 @@ function pointsOf(subId) {
                   </span>
                   <span class="self-result__sub-percent u-ltr">{{ sub.percent }}%</span>
                   <span class="self-result__sub-earned u-ltr">
-                    {{ t('assessment.self.result.earnedOf', { earned: sub.earned, weight: sub.weight }) }}
+                    {{
+                      t('assessment.self.result.earnedOf', {
+                        earned: sub.earned,
+                        weight: sub.weight,
+                      })
+                    }}
                   </span>
                 </span>
               </div>
               <ul v-if="pointsOf(sub.subId).length" class="self-result__points">
-                <li v-for="point in pointsOf(sub.subId)" :key="point.pointId" class="self-result__point">
+                <li
+                  v-for="point in pointsOf(sub.subId)"
+                  :key="point.pointId"
+                  class="self-result__point"
+                >
                   <span class="self-result__point-name">
                     <span class="u-ltr">{{ point.code }}</span>
                     {{ text(point.description) }}
                   </span>
                   <span class="self-result__sub-score">
-                    <span v-if="point.rawValue" class="self-result__sub-raw">{{ t('assessment.self.result.rawValue', { raw: point.rawValue }) }}</span>
+                    <span v-if="point.rawValue" class="self-result__sub-raw">{{
+                      t('assessment.self.result.rawValue', { raw: point.rawValue })
+                    }}</span>
                     <span class="self-result__sub-percent u-ltr">{{ point.percent }}%</span>
                   </span>
                 </li>

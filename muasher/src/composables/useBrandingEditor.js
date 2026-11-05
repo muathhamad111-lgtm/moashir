@@ -40,7 +40,9 @@ export function useBrandingEditor({ auto = true } = {}) {
   const isDirty = computed(() => draftToken.value !== savedToken.value || hasPendingLogo.value)
   const canSave = computed(() => isDirty.value && contrastOk.value && !busy.value)
   const previewLogos = computed(() =>
-    bySurface((surface) => logos[surface].previewUrl.value || logoForSurface(savedLogos.value, surface)),
+    bySurface(
+      (surface) => logos[surface].previewUrl.value || logoForSurface(savedLogos.value, surface),
+    ),
   )
   const customLogos = computed(() => bySurface((surface) => Boolean(savedLogos.value[surface])))
 

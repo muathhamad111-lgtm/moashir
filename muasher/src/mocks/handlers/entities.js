@@ -3,12 +3,30 @@ import { http } from '../contract/http'
 import { envelope } from '../contract/responses'
 import { requestLocale } from '../contract/locale'
 import { paginate } from '../contract/pagination'
-import { actorWith, entityReject, entityRoute, readJson, signedInUser } from '../stores/entityRejection'
-import { ENTITY_PERMISSIONS as P, accessOf, hasFullAccess, ownEntityOf, viewableEntity } from '../stores/entityAccess'
+import {
+  actorWith,
+  entityReject,
+  entityRoute,
+  readJson,
+  signedInUser,
+} from '../stores/entityRejection'
+import {
+  ENTITY_PERMISSIONS as P,
+  accessOf,
+  hasFullAccess,
+  ownEntityOf,
+  viewableEntity,
+} from '../stores/entityAccess'
 import { ENTITY_ACCESS, entityResourceFor, ownEntityResource } from '../stores/entitySerializers'
 import { entityStats, filtersFrom, queryEntities } from '../stores/entityQueries'
 import { applyProfile, isDeleted, setMarketingConsent } from '../stores/entitiesStore'
-import { assertOwnProfile, assertProfile, assertReason, contactFrom, profileFrom } from '../stores/entityValidation'
+import {
+  assertOwnProfile,
+  assertProfile,
+  assertReason,
+  contactFrom,
+  profileFrom,
+} from '../stores/entityValidation'
 import { awaitingChangeOf } from '../stores/entityEmailChanges'
 import { sessionCan } from '../stores/sessionPermissions'
 import { entitiesCsv, exportFileName } from '../stores/entityCsv'
@@ -77,9 +95,15 @@ export const entitiesHandlers = [
     entityRoute(({ request }) => {
       const user = actorWith(P.VIEW)
       const filters = listFilters(request)
-      const { items, pagination } = paginate(visibleTo(user, filters), new URL(request.url).searchParams)
+      const { items, pagination } = paginate(
+        visibleTo(user, filters),
+        new URL(request.url).searchParams,
+      )
       const stats = statsFor(user, filters)
-      return envelope(items.map((entity) => staffResource(user, entity)), { pagination, stats })
+      return envelope(
+        items.map((entity) => staffResource(user, entity)),
+        { pagination, stats },
+      )
     }),
   ),
 

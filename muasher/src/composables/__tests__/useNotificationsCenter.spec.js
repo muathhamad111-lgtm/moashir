@@ -16,8 +16,22 @@ vi.mock('@/services/notificationsService', () => ({
 }))
 
 const rows = [
-  { id: 1, type: 'action', read: false, recipientRole: 'entity', title: { ar: 'أ', en: 'a' }, link: '/x' },
-  { id: 2, type: 'info', read: true, recipientRole: 'entity', title: { ar: 'ب', en: 'b' }, link: '/y' },
+  {
+    id: 1,
+    type: 'action',
+    read: false,
+    recipientRole: 'entity',
+    title: { ar: 'أ', en: 'a' },
+    link: '/x',
+  },
+  {
+    id: 2,
+    type: 'info',
+    read: true,
+    recipientRole: 'entity',
+    title: { ar: 'ب', en: 'b' },
+    link: '/y',
+  },
 ]
 
 function meta(total = rows.length, lastPage = 1, page = 1) {

@@ -45,7 +45,12 @@ const userActions = computed(() => [
   ...(canViewEntityProfile.value
     ? [{ key: 'profile', label: t('nav.entityProfile'), icon: 'fa-solid fa-user' }]
     : []),
-  { key: 'logout', label: t('actions.logout'), icon: 'fa-solid fa-arrow-right-from-bracket', variant: 'danger' },
+  {
+    key: 'logout',
+    label: t('actions.logout'),
+    icon: 'fa-solid fa-arrow-right-from-bracket',
+    variant: 'danger',
+  },
 ])
 
 const ROUTES_BY_ACTION = {

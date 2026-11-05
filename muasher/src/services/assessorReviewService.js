@@ -11,31 +11,54 @@ function mapData(request, mapper) {
 
 export const assessorReviewService = {
   getReview(assessmentId) {
-    return mapData(read('getReview', () => apiClient.get(`/assessments/${assessmentId}/review`)), toAssessorReview)
+    return mapData(
+      read('getReview', () => apiClient.get(`/assessments/${assessmentId}/review`)),
+      toAssessorReview,
+    )
   },
 
   startReview(assessmentId, payload = {}) {
-    const request = write('startReview', () => apiClient.post(`/assessments/${assessmentId}/start-review`, payload), payload)
+    const request = write(
+      'startReview',
+      () => apiClient.post(`/assessments/${assessmentId}/start-review`, payload),
+      payload,
+    )
     return mapData(request, toAssessment)
   },
 
   saveScores(assessmentId, payload) {
-    const request = write('saveScores', () => apiClient.put(`/assessments/${assessmentId}/review/scores`, payload), payload)
+    const request = write(
+      'saveScores',
+      () => apiClient.put(`/assessments/${assessmentId}/review/scores`, payload),
+      payload,
+    )
     return mapData(request, toAssessmentScores)
   },
 
   saveFeedback(assessmentId, payload) {
-    const request = write('saveFeedback', () => apiClient.put(`/assessments/${assessmentId}/review/feedback`, payload), payload)
+    const request = write(
+      'saveFeedback',
+      () => apiClient.put(`/assessments/${assessmentId}/review/feedback`, payload),
+      payload,
+    )
     return mapData(request, toFeedbackSaved)
   },
 
   requestCompletion(assessmentId, payload) {
-    const request = write('requestCompletion', () => apiClient.post(`/assessments/${assessmentId}/request-completion`, payload), payload)
+    const request = write(
+      'requestCompletion',
+      () => apiClient.post(`/assessments/${assessmentId}/request-completion`, payload),
+      payload,
+    )
     return mapData(request, toAssessment)
   },
 
   complete(assessmentId, payload = {}) {
-    const request = write('complete', () => apiClient.post(`/assessments/${assessmentId}/complete`, payload), payload)
+    const request = write(
+      'complete',
+      () => apiClient.post(`/assessments/${assessmentId}/complete`, payload),
+      payload,
+    )
     return mapData(request, toAssessment)
   },
 }

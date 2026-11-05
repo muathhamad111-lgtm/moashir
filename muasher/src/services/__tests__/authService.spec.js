@@ -53,7 +53,10 @@ describe('authService', () => {
         },
       }),
     )
-    const result = await authService.loginWithPassword({ officialEmail: 'a@example.sa', password: 'x' })
+    const result = await authService.loginWithPassword({
+      officialEmail: 'a@example.sa',
+      password: 'x',
+    })
     expect(apiClient.post).toHaveBeenCalledWith(
       '/auth/login',
       { email: 'a@example.sa', mode: 'password', password: 'x' },
@@ -67,7 +70,10 @@ describe('authService', () => {
 
   it('requests an OTP sign-in through the login endpoint', async () => {
     apiClient.post.mockResolvedValue(respond({ step: 'otp_required', otp: { challengeId: 'c-1' } }))
-    const result = await authService.requestLoginOtp({ officialEmail: 'a@example.sa', channel: 'sms' })
+    const result = await authService.requestLoginOtp({
+      officialEmail: 'a@example.sa',
+      channel: 'sms',
+    })
     expect(apiClient.post).toHaveBeenCalledWith(
       '/auth/login',
       { email: 'a@example.sa', mode: 'otp', channel: 'sms' },
@@ -80,14 +86,20 @@ describe('authService', () => {
   it('maps the e-mail field error back to the form field name', async () => {
     const error = { normalized: { fieldErrors: { email: ['Invalid'] } } }
     apiClient.post.mockRejectedValue(error)
-    await expect(authService.loginWithPassword({ officialEmail: 'a@example.sa', password: 'x' })).rejects.toBe(error)
+    await expect(
+      authService.loginWithPassword({ officialEmail: 'a@example.sa', password: 'x' }),
+    ).rejects.toBe(error)
     expect(error.normalized.fieldErrors).toEqual({ officialEmail: ['Invalid'] })
   })
 
   it('verifies an OTP without leaking the code value', async () => {
     apiClient.post.mockResolvedValue(respond({ step: 'mfa_challenge' }))
     const result = await authService.verifyOtp({ challengeId: '900', code: '482913' })
-    expect(apiClient.post).toHaveBeenCalledWith('/auth/otp/verify', { challengeId: '900', code: '482913' }, AUTH_FLOW)
+    expect(apiClient.post).toHaveBeenCalledWith(
+      '/auth/otp/verify',
+      { challengeId: '900', code: '482913' },
+      AUTH_FLOW,
+    )
     expect(result.data.step).toBe('mfa_challenge')
     expect(JSON.stringify(logger.breadcrumb.mock.calls)).not.toContain('482913')
   })
@@ -96,13 +108,25 @@ describe('authService', () => {
     apiClient.post.mockResolvedValue(respond({ step: 'authenticated', user: { id: 1, roles: [] } }))
     await authService.challengeMfa({ code: '123456' })
     await authService.challengeMfa({ recoveryCode: 'ABCD-1234' })
-    expect(apiClient.post).toHaveBeenNthCalledWith(1, '/auth/mfa/challenge', { code: '123456' }, AUTH_FLOW)
-    expect(apiClient.post).toHaveBeenNthCalledWith(2, '/auth/mfa/challenge', { recoveryCode: 'ABCD-1234' }, AUTH_FLOW)
+    expect(apiClient.post).toHaveBeenNthCalledWith(
+      1,
+      '/auth/mfa/challenge',
+      { code: '123456' },
+      AUTH_FLOW,
+    )
+    expect(apiClient.post).toHaveBeenNthCalledWith(
+      2,
+      '/auth/mfa/challenge',
+      { recoveryCode: 'ABCD-1234' },
+      AUTH_FLOW,
+    )
   })
 
   it('starts and confirms the MFA enrolment with POST', async () => {
     apiClient.post.mockResolvedValueOnce(respond({ qrSvg: '<svg/>', manualEntryKey: 'KEY' }))
-    apiClient.post.mockResolvedValueOnce(respond({ step: 'authenticated', user: { id: 1 }, recoveryCodes: ['R-1'] }))
+    apiClient.post.mockResolvedValueOnce(
+      respond({ step: 'authenticated', user: { id: 1 }, recoveryCodes: ['R-1'] }),
+    )
     const enrollment = await authService.startMfaEnrollment()
     const confirmed = await authService.confirmMfaEnrollment({ code: '123456' })
     expect(apiClient.post).toHaveBeenNthCalledWith(1, '/auth/mfa/enroll', {}, AUTH_FLOW)

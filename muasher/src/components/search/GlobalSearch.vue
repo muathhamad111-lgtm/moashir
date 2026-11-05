@@ -44,7 +44,11 @@ const recent = useRecentSearches(userId)
 const showRecent = computed(() => !term.value && recent.items.value.length > 0)
 const visibleGroups = computed(() => {
   if (showRecent.value) {
-    const items = recent.items.value.map((text) => ({ type: RECENT, key: `${RECENT}:${text}`, title: text }))
+    const items = recent.items.value.map((text) => ({
+      type: RECENT,
+      key: `${RECENT}:${text}`,
+      title: text,
+    }))
     return [{ type: RECENT, total: items.length, items }]
   }
   return status.value === 'success' ? groups.value : []
@@ -85,7 +89,9 @@ function indexOf(item) {
 }
 
 function groupTitle(group) {
-  return group.type === RECENT ? t('globalSearch.recentTitle') : t(`globalSearch.groups.${group.type}`)
+  return group.type === RECENT
+    ? t('globalSearch.recentTitle')
+    : t(`globalSearch.groups.${group.type}`)
 }
 
 function localizedTitle(item) {
@@ -249,7 +255,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onGlobalKeydown))
       >
         <i class="fa-solid fa-xmark" aria-hidden="true"></i>
       </button>
-      <kbd v-else class="global-search__shortcut" aria-hidden="true">{{ t('globalSearch.shortcut') }}</kbd>
+      <kbd v-else class="global-search__shortcut" aria-hidden="true">{{
+        t('globalSearch.shortcut')
+      }}</kbd>
     </div>
 
     <div v-show="isOpen" class="global-search__popup">
@@ -297,12 +305,20 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onGlobalKeydown))
           <i class="fa-solid fa-magnifying-glass-minus" aria-hidden="true"></i>
           {{ t('globalSearch.empty', { query: term }) }}
         </p>
-        <div v-else-if="status === 'error'" class="global-search__state global-search__state--error">
+        <div
+          v-else-if="status === 'error'"
+          class="global-search__state global-search__state--error"
+        >
           <p class="global-search__error">
             <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
             {{ t('globalSearch.error') }}
           </p>
-          <BaseButton variant="secondary" size="sm" icon="fa-solid fa-rotate-right" @click="onRetry">
+          <BaseButton
+            variant="secondary"
+            size="sm"
+            icon="fa-solid fa-rotate-right"
+            @click="onRetry"
+          >
             {{ t('globalSearch.retry') }}
           </BaseButton>
         </div>

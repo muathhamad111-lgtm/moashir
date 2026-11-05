@@ -39,11 +39,7 @@ const { orderedSections, siteSettings, status, load, localized } = usePublicHome
       </div>
     </div>
 
-    <ErrorState
-      v-else-if="status === 'error'"
-      :message="$t('public.loadError')"
-      @retry="load"
-    />
+    <ErrorState v-else-if="status === 'error'" :message="$t('public.loadError')" @retry="load" />
 
     <EmptyState
       v-else-if="status === 'empty'"

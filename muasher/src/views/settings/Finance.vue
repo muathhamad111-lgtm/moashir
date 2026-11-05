@@ -9,7 +9,18 @@ import FinanceSettingsPreview from '@/components/finance/FinanceSettingsPreview.
 import { useFinanceSettings } from '@/composables/useFinanceSettings'
 
 const { t } = useI18n()
-const { status, errorMessage, settings, editable, limits, saving, reasonOpen, load, submit, confirmReason } = useFinanceSettings()
+const {
+  status,
+  errorMessage,
+  settings,
+  editable,
+  limits,
+  saving,
+  reasonOpen,
+  load,
+  submit,
+  confirmReason,
+} = useFinanceSettings()
 
 const currency = computed(() => t('finance.currency.SAR'))
 
@@ -21,8 +32,20 @@ onMounted(load)
 </script>
 
 <template>
-  <SettingsSection :title="t('finance.settings.title')" :description="t('finance.settings.description')" :status="status" :error-message="errorMessage" @retry="load">
-    <form v-if="settings" id="finance-settings-form" class="settings-form" novalidate @submit.prevent="submit">
+  <SettingsSection
+    :title="t('finance.settings.title')"
+    :description="t('finance.settings.description')"
+    :status="status"
+    :error-message="errorMessage"
+    @retry="load"
+  >
+    <form
+      v-if="settings"
+      id="finance-settings-form"
+      class="settings-form"
+      novalidate
+      @submit.prevent="submit"
+    >
       <fieldset class="settings-form__group">
         <legend class="settings-form__legend">{{ t('finance.settings.pricesTitle') }}</legend>
         <p class="settings-form__note" role="note">
@@ -77,7 +100,14 @@ onMounted(load)
     </form>
 
     <template #actions>
-      <BaseButton v-if="editable.size" type="submit" form="finance-settings-form" variant="primary" :loading="saving" icon="fa-solid fa-floppy-disk">
+      <BaseButton
+        v-if="editable.size"
+        type="submit"
+        form="finance-settings-form"
+        variant="primary"
+        :loading="saving"
+        icon="fa-solid fa-floppy-disk"
+      >
         {{ t('actions.save') }}
       </BaseButton>
     </template>

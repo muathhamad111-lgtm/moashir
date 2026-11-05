@@ -24,7 +24,11 @@ export function findEmailChange(id) {
 }
 
 export function awaitingChangeOf(entityId) {
-  return changes.find((change) => change.entityId === entityId && change.status === S.AWAITING_APPROVAL) ?? null
+  return (
+    changes.find(
+      (change) => change.entityId === entityId && change.status === S.AWAITING_APPROVAL,
+    ) ?? null
+  )
 }
 
 export function listEmailChanges(status) {
@@ -71,7 +75,10 @@ function apply(change) {
 
 export function confirmChange(entity, challengeId) {
   const change = changes.find(
-    (item) => item.entityId === entity.id && item.challengeId === challengeId && item.status === S.AWAITING_OTP,
+    (item) =>
+      item.entityId === entity.id &&
+      item.challengeId === challengeId &&
+      item.status === S.AWAITING_OTP,
   )
   if (!change) throw entityReject.otpInvalid()
   change.otpVerifiedAt = new Date().toISOString()

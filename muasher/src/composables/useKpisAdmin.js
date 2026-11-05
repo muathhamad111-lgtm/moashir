@@ -62,9 +62,7 @@ export function useKpisAdmin() {
     })),
   )
 
-  const iconOptions = computed(() =>
-    KPI_ICON_OPTIONS.map((icon) => ({ value: icon, label: icon })),
-  )
+  const iconOptions = computed(() => KPI_ICON_OPTIONS.map((icon) => ({ value: icon, label: icon })))
 
   const publishedFilterOptions = computed(() => [
     { value: '', label: t('kpis.admin.filters.all') },

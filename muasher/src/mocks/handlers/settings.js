@@ -123,7 +123,10 @@ export const knowledgeBaseHandlers = [
     kbFiles = kbFiles.map((item) =>
       item.status === 'failed' ? { ...item } : { ...item, status: 'processed' },
     )
-    return envelope({ retrained: true, processedCount: kbFiles.filter((f) => f.status === 'processed').length })
+    return envelope({
+      retrained: true,
+      processedCount: kbFiles.filter((f) => f.status === 'processed').length,
+    })
   }),
 ]
 

@@ -24,7 +24,11 @@ const { t } = useI18n()
           <bdi dir="ltr">{{ payment.reference }}</bdi>
         </p>
         <PricingBreakdown :pricing="payment.pricing" />
-        <OrderCountdown v-if="countdown" :label="countdown.label.value" :remaining="countdown.remaining.value" />
+        <OrderCountdown
+          v-if="countdown"
+          :label="countdown.label.value"
+          :remaining="countdown.remaining.value"
+        />
       </template>
       <p v-else class="checkout-summary__pending">{{ t('finance.checkout.amountPending') }}</p>
     </div>

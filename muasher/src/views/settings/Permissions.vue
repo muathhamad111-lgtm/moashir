@@ -33,7 +33,10 @@ const filteredRows = computed(() => {
   return rows.value.filter((item) => {
     if (groupFilter.value && item.module !== groupFilter.value) return false
     if (!term) return true
-    const haystack = [item.key, item.label?.ar, item.label?.en].filter(Boolean).join(' ').toLowerCase()
+    const haystack = [item.key, item.label?.ar, item.label?.en]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
     return haystack.includes(term)
   })
 })
@@ -45,7 +48,12 @@ const tableStatus = computed(() => {
 })
 
 const statCards = computed(() => [
-  { id: 'total', icon: 'fa-solid fa-shield-halved', value: rows.value.length, label: t('permissions.stats.total') },
+  {
+    id: 'total',
+    icon: 'fa-solid fa-shield-halved',
+    value: rows.value.length,
+    label: t('permissions.stats.total'),
+  },
   {
     id: 'locked',
     icon: 'fa-solid fa-lock',
@@ -102,7 +110,10 @@ async function onSaved(changes) {
 
     <StatsCards :stats="statCards" :loading="tableStatus === 'loading' && !rows.length" />
 
-    <ListToolbar v-model:search="search" :search-placeholder="t('permissions.index.searchPlaceholder')">
+    <ListToolbar
+      v-model:search="search"
+      :search-placeholder="t('permissions.index.searchPlaceholder')"
+    >
       <template #filters>
         <DropdownList
           :model-value="groupFilter"
@@ -137,9 +148,15 @@ async function onSaved(changes) {
       </template>
       <template #cell-roles="{ item }">
         <div class="permissions-page__roles">
-          <Badge v-if="item.lockedToRoles?.length" variant="warning">{{ t('permissions.lockedBadge') }}</Badge>
-          <Badge v-for="role in item.roles" :key="role" variant="muted">{{ roleLabel(role) }}</Badge>
-          <span v-if="!item.roles.length" class="permissions-page__roles-empty">{{ t('permissions.rolesNone') }}</span>
+          <Badge v-if="item.lockedToRoles?.length" variant="warning">{{
+            t('permissions.lockedBadge')
+          }}</Badge>
+          <Badge v-for="role in item.roles" :key="role" variant="muted">{{
+            roleLabel(role)
+          }}</Badge>
+          <span v-if="!item.roles.length" class="permissions-page__roles-empty">{{
+            t('permissions.rolesNone')
+          }}</span>
         </div>
       </template>
       <template #cell-actions="{ item }">
@@ -147,6 +164,11 @@ async function onSaved(changes) {
       </template>
     </DataTable>
 
-    <PermissionForm v-model="formOpen" :permission="editing" :editable-roles="editableRoles" @saved="onSaved" />
+    <PermissionForm
+      v-model="formOpen"
+      :permission="editing"
+      :editable-roles="editableRoles"
+      @saved="onSaved"
+    />
   </section>
 </template>

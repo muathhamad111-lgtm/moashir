@@ -19,7 +19,11 @@ useHead({ title: () => t('finance.overview.title') })
 
 <template>
   <section class="finance-page">
-    <FinancePageHeader :eyebrow="t('finance.eyebrow')" :title="t('finance.overview.title')" :subtitle="t('finance.overview.subtitle')">
+    <FinancePageHeader
+      :eyebrow="t('finance.eyebrow')"
+      :title="t('finance.overview.title')"
+      :subtitle="t('finance.overview.subtitle')"
+    >
       <template #actions>
         <RouterLink class="finance-page__link" :to="{ name: ROUTE_NAMES.FINANCE_TRANSACTIONS }">
           {{ t('finance.overview.allTransactions') }}
@@ -30,8 +34,18 @@ useHead({ title: () => t('finance.overview.title') })
 
     <Card>
       <div class="finance-page__range">
-        <BaseDatePicker v-model="range.from" name="summary-from" :label="t('finance.filters.from')" :max="range.to" />
-        <BaseDatePicker v-model="range.to" name="summary-to" :label="t('finance.filters.to')" :min="range.from" />
+        <BaseDatePicker
+          v-model="range.from"
+          name="summary-from"
+          :label="t('finance.filters.from')"
+          :max="range.to"
+        />
+        <BaseDatePicker
+          v-model="range.to"
+          name="summary-to"
+          :label="t('finance.filters.to')"
+          :min="range.from"
+        />
       </div>
       <p class="finance-page__note" role="note">{{ t('finance.overview.liveOnly') }}</p>
     </Card>

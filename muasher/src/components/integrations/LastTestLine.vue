@@ -12,7 +12,10 @@ const { t, locale } = useI18n()
 
 const summary = computed(() => {
   if (!props.lastTest) return t('integrations.lastTest.never')
-  const at = formatDate(props.lastTest.at, locale.value, { dateStyle: 'medium', timeStyle: 'short' })
+  const at = formatDate(props.lastTest.at, locale.value, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  })
   const by = props.lastTest.by?.name
   return by ? t('integrations.lastTest.atBy', { at, by }) : t('integrations.lastTest.at', { at })
 })
@@ -20,7 +23,9 @@ const summary = computed(() => {
 const outcome = computed(() => {
   if (!props.lastTest) return ''
   if (props.lastTest.ok) return t('integrations.lastTest.passed')
-  return t('integrations.lastTest.failed', { reason: t(`integrations.errorKinds.${knownErrorKind(props.lastTest.errorKind)}`) })
+  return t('integrations.lastTest.failed', {
+    reason: t(`integrations.errorKinds.${knownErrorKind(props.lastTest.errorKind)}`),
+  })
 })
 </script>
 

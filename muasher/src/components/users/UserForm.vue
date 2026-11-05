@@ -1,7 +1,12 @@
 <script setup>
 import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { object as yupObject, string as yupString, boolean as yupBoolean, array as yupArray } from 'yup'
+import {
+  object as yupObject,
+  string as yupString,
+  boolean as yupBoolean,
+  array as yupArray,
+} from 'yup'
 import FormModal from '@/components/modal/FormModal.vue'
 import BaseInput from '@/components/form/BaseInput.vue'
 import BaseCheckbox from '@/components/form/BaseCheckbox.vue'

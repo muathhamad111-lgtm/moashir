@@ -13,11 +13,17 @@ const { t } = useI18n()
 <template>
   <Card class="accredited-result-summary">
     <div class="accredited-result-summary__score">
-      <div class="accredited-result-summary__gauge" role="img" :aria-label="t('accredited.result.percentAria', { percent: result.percent })">
+      <div
+        class="accredited-result-summary__gauge"
+        role="img"
+        :aria-label="t('accredited.result.percentAria', { percent: result.percent })"
+      >
         <span class="accredited-result-summary__value u-ltr">{{ result.percent }}%</span>
       </div>
       <div class="accredited-result-summary__detail">
-        <p class="accredited-result-summary__total">{{ t('accredited.result.totalOf', { total: result.total, max: result.maxTotal }) }}</p>
+        <p class="accredited-result-summary__total">
+          {{ t('accredited.result.totalOf', { total: result.total, max: result.maxTotal }) }}
+        </p>
         <p class="accredited-result-summary__meta">
           {{ t('accredited.result.completedAt') }}
           <DateStamp :value="result.completedAt" with-hijri />

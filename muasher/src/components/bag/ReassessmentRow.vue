@@ -41,7 +41,9 @@ const diffClass = computed(() => {
         <h3 class="reassessment-row__sub">{{ localized(row.subName) }}</h3>
       </div>
       <div class="reassessment-row__badges">
-        <span v-if="row.inKitScope" class="reassessment-row__scope">{{ $t('bag.comparison.inKit') }}</span>
+        <span v-if="row.inKitScope" class="reassessment-row__scope">{{
+          $t('bag.comparison.inKit')
+        }}</span>
         <StatusBadge :status="row.outcome" />
       </div>
     </div>
@@ -64,15 +66,26 @@ const diffClass = computed(() => {
 
     <div class="reassessment-row__bars">
       <div class="reassessment-row__bar" role="presentation">
-        <span class="reassessment-row__bar-fill reassessment-row__bar-fill--before" :style="{ '--bar-fill': `${beforePct}%` }"></span>
+        <span
+          class="reassessment-row__bar-fill reassessment-row__bar-fill--before"
+          :style="{ '--bar-fill': `${beforePct}%` }"
+        ></span>
       </div>
       <div class="reassessment-row__bar" role="presentation">
-        <span class="reassessment-row__bar-fill reassessment-row__bar-fill--after" :style="{ '--bar-fill': `${afterPct}%` }"></span>
+        <span
+          class="reassessment-row__bar-fill reassessment-row__bar-fill--after"
+          :style="{ '--bar-fill': `${afterPct}%` }"
+        ></span>
       </div>
     </div>
 
     <p class="reassessment-row__caption">
-      {{ $t('bag.comparison.remaining', { gap: n(row.gapAfter, 'default'), target: n(row.weight, 'default') }) }}
+      {{
+        $t('bag.comparison.remaining', {
+          gap: n(row.gapAfter, 'default'),
+          target: n(row.weight, 'default'),
+        })
+      }}
     </p>
   </div>
 </template>

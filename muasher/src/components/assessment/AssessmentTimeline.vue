@@ -32,13 +32,17 @@ function actorLabel(change) {
   if (!staff?.name) return t('assessment.timeline.actors.staff')
   const roles = staff.roles.map((role) => localizedText(role.label, locale.value)).filter(Boolean)
   if (!roles.length) return staff.name
-  const list = new Intl.ListFormat(locale.value, { style: 'long', type: 'conjunction' }).format(roles)
+  const list = new Intl.ListFormat(locale.value, { style: 'long', type: 'conjunction' }).format(
+    roles,
+  )
   return t('assessment.timeline.actors.staffWithRole', { name: staff.name, roles: list })
 }
 
 function verbLabel(change) {
   const key = `assessment.timeline.verbs.${change.verb}`
-  return te(key) ? t(key) : t('assessment.timeline.changedTo', { status: t(statusLabelKey(change.to)) })
+  return te(key)
+    ? t(key)
+    : t('assessment.timeline.changedTo', { status: t(statusLabelKey(change.to)) })
 }
 
 const steps = computed(() =>
@@ -55,7 +59,11 @@ const steps = computed(() =>
 
 <template>
   <ol v-if="steps.length" class="assessment-timeline" :aria-label="t('assessment.timeline.label')">
-    <li v-for="step in steps" :key="step.key" class="assessment-timeline__step assessment-timeline__step--done">
+    <li
+      v-for="step in steps"
+      :key="step.key"
+      class="assessment-timeline__step assessment-timeline__step--done"
+    >
       <i :class="step.icon" class="assessment-timeline__icon" aria-hidden="true"></i>
       <span class="assessment-timeline__name">{{ step.verb }}</span>
       <span class="assessment-timeline__actor">{{ step.actor }}</span>

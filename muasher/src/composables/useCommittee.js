@@ -37,7 +37,11 @@ export function useCommitteeQueue(cycleId) {
   async function disable(committeeAssessorId, options) {
     disabling.value = committeeAssessorId
     try {
-      const { data } = await committeeService.disableCommitteeAssessor(cycleId, committeeAssessorId, options)
+      const { data } = await committeeService.disableCommitteeAssessor(
+        cycleId,
+        committeeAssessorId,
+        options,
+      )
       await load()
       return data
     } finally {
@@ -46,11 +50,23 @@ export function useCommitteeQueue(cycleId) {
   }
 
   const allCompleted = computed(() => {
-    const active = committeeAssessors.value.filter((j) => j.status !== 'excluded' && j.status !== 'disabled')
+    const active = committeeAssessors.value.filter(
+      (j) => j.status !== 'excluded' && j.status !== 'disabled',
+    )
     return active.length > 0 && active.every((j) => j.status === 'completed')
   })
 
-  return { status, errorMessage, committeeAssessors, cycleName, disabling, allCompleted, localized, load, disable }
+  return {
+    status,
+    errorMessage,
+    committeeAssessors,
+    cycleName,
+    disabling,
+    allCompleted,
+    localized,
+    load,
+    disable,
+  }
 }
 
 export function useCommitteeScore(cycleId, committeeAssessorId, assessmentId) {
@@ -73,7 +89,11 @@ export function useCommitteeScore(cycleId, committeeAssessorId, assessmentId) {
     status.value = 'loading'
     errorMessage.value = ''
     try {
-      const { data } = await committeeService.getCommitteeAssessorScore(cycleId, committeeAssessorId, assessmentId)
+      const { data } = await committeeService.getCommitteeAssessorScore(
+        cycleId,
+        committeeAssessorId,
+        assessmentId,
+      )
       tree.value = data?.tree ?? []
       scaleKind.value = data?.scaleKind ?? 'of-10'
       committeeAssessorStatus.value = data?.committeeAssessorStatus ?? 'not-started'
@@ -100,7 +120,10 @@ export function useCommitteeScore(cycleId, committeeAssessorId, assessmentId) {
     try {
       if (unit.pointId != null) {
         scores.points[unit.pointId] = ratio
-        await committeeService.scorePoint(cycleId, committeeAssessorId, assessmentId, { pointId: unit.pointId, ratio })
+        await committeeService.scorePoint(cycleId, committeeAssessorId, assessmentId, {
+          pointId: unit.pointId,
+          ratio,
+        })
       } else {
         scores.subs[unit.subCriterionId] = ratio
         await committeeService.scoreSub(cycleId, committeeAssessorId, assessmentId, {
@@ -117,7 +140,10 @@ export function useCommitteeScore(cycleId, committeeAssessorId, assessmentId) {
     saving.value = true
     try {
       notes[subCriterionId] = text
-      await committeeService.saveNotes(cycleId, committeeAssessorId, assessmentId, { subCriterionId, text })
+      await committeeService.saveNotes(cycleId, committeeAssessorId, assessmentId, {
+        subCriterionId,
+        text,
+      })
     } finally {
       saving.value = false
     }
@@ -199,7 +225,9 @@ export function useSecretary(cycleId) {
   async function returnToCommittee(assessmentId, generalNote) {
     deciding.value = assessmentId
     try {
-      const { data } = await committeeService.secretaryReturn(cycleId, assessmentId, { generalNote })
+      const { data } = await committeeService.secretaryReturn(cycleId, assessmentId, {
+        generalNote,
+      })
       removePending(assessmentId)
       return data
     } finally {
@@ -207,7 +235,17 @@ export function useSecretary(cycleId) {
     }
   }
 
-  return { status, errorMessage, pending, cycleName, deciding, localized, load, approve, returnToCommittee }
+  return {
+    status,
+    errorMessage,
+    pending,
+    cycleName,
+    deciding,
+    localized,
+    load,
+    approve,
+    returnToCommittee,
+  }
 }
 
 export function useCommitteeManagement(cycleId) {
@@ -356,7 +394,10 @@ export function useSecretaryReview(cycleId) {
     committeeAssessorsStatus.value = 'loading'
     committeeAssessorsError.value = ''
     try {
-      const { data, meta } = await committeeService.listEntityCommitteeAssessors(cycleId, row.assessmentId)
+      const { data, meta } = await committeeService.listEntityCommitteeAssessors(
+        cycleId,
+        row.assessmentId,
+      )
       committeeAssessors.value = data ?? []
       entityMeta.value = meta ?? null
       committeeAssessorsStatus.value = committeeAssessors.value.length ? 'success' : 'empty'

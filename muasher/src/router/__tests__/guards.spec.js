@@ -97,7 +97,9 @@ describe('router guards — self assessment and staff assessment record', () => 
 
   it('opens the result route to the entity and refuses the staff record without the permission', async () => {
     signIn([ROLES.ENTITY])
-    expect((await visit('/assessment/self/result/9001')).name).toBe(ROUTE_NAMES.ASSESSMENT_SELF_RESULT)
+    expect((await visit('/assessment/self/result/9001')).name).toBe(
+      ROUTE_NAMES.ASSESSMENT_SELF_RESULT,
+    )
     signIn([ROLES.CRITERIA_OFFICER])
     expect((await visit('/admin/assessments/9001')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
   })
@@ -110,24 +112,34 @@ describe('router guards — payments and finance', () => {
     signIn([ROLES.ENTITY])
     expect((await visit('/payments')).name).toBe(ROUTE_NAMES.PAYMENTS_MINE)
     expect((await visit(`/payments/${PAYMENT}`)).name).toBe(ROUTE_NAMES.PAYMENTS_DETAIL)
-    expect((await visit(`/payments/${PAYMENT}/return?id=mock_pay_1`)).name).toBe(ROUTE_NAMES.PAYMENTS_RETURN)
-    expect((await visit('/assessment/accredited/pay')).name).toBe(ROUTE_NAMES.ASSESSMENT_ACCREDITED_PAY)
+    expect((await visit(`/payments/${PAYMENT}/return?id=mock_pay_1`)).name).toBe(
+      ROUTE_NAMES.PAYMENTS_RETURN,
+    )
+    expect((await visit('/assessment/accredited/pay')).name).toBe(
+      ROUTE_NAMES.ASSESSMENT_ACCREDITED_PAY,
+    )
     expect((await visit('/bag/pay')).name).toBe(ROUTE_NAMES.BAG_PAY)
-    signIn([], { permissions: ['payments.own.view', 'payments.own.create', 'assessment.accredited.manage'] })
+    signIn([], {
+      permissions: ['payments.own.view', 'payments.own.create', 'assessment.accredited.manage'],
+    })
     expect((await visit('/payments')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
     expect((await visit('/assessment/accredited/pay')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
   })
 
   it('needs the purpose permission next to payments.own.create for each checkout', async () => {
     signIn([ROLES.ENTITY], { permissions: ['payments.own.create', 'assessment.accredited.manage'] })
-    expect((await visit('/assessment/accredited/pay')).name).toBe(ROUTE_NAMES.ASSESSMENT_ACCREDITED_PAY)
+    expect((await visit('/assessment/accredited/pay')).name).toBe(
+      ROUTE_NAMES.ASSESSMENT_ACCREDITED_PAY,
+    )
     expect((await visit('/bag/pay')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
   })
 
   it('gates the finance screens by permission key, events for settings.payment.manage only', async () => {
     signIn([ROLES.FINANCE_OFFICER])
     expect((await visit('/finance')).name).toBe(ROUTE_NAMES.FINANCE_OVERVIEW)
-    expect((await visit(`/finance/transactions/${PAYMENT}`)).name).toBe(ROUTE_NAMES.FINANCE_TRANSACTION)
+    expect((await visit(`/finance/transactions/${PAYMENT}`)).name).toBe(
+      ROUTE_NAMES.FINANCE_TRANSACTION,
+    )
     expect((await visit('/finance/refunds')).name).toBe(ROUTE_NAMES.FINANCE_REFUNDS)
     expect((await visit('/finance/payment-events')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
     expect((await visit('/admin/settings/finance')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
@@ -140,7 +152,12 @@ describe('router guards — payments and finance', () => {
 
   it('denies unknown permission keys on every finance route', async () => {
     signIn([], { permissions: ['finance.anything', 'payments.any'] })
-    for (const path of ['/finance', '/finance/transactions', '/finance/refunds', '/finance/payment-events']) {
+    for (const path of [
+      '/finance',
+      '/finance/transactions',
+      '/finance/refunds',
+      '/finance/payment-events',
+    ]) {
       expect((await visit(path)).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
     }
   })

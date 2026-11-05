@@ -7,10 +7,18 @@ import { ROUTE_NAMES } from '@/constants/routeNames'
 
 const LINKS = [
   { key: 'overview', name: ROUTE_NAMES.FINANCE_OVERVIEW, icon: 'fa-solid fa-chart-pie' },
-  { key: 'transactions', name: ROUTE_NAMES.FINANCE_TRANSACTIONS, icon: 'fa-solid fa-money-bill-transfer' },
+  {
+    key: 'transactions',
+    name: ROUTE_NAMES.FINANCE_TRANSACTIONS,
+    icon: 'fa-solid fa-money-bill-transfer',
+  },
   { key: 'refunds', name: ROUTE_NAMES.FINANCE_REFUNDS, icon: 'fa-solid fa-rotate-left' },
   { key: 'paymentEvents', name: ROUTE_NAMES.FINANCE_PAYMENT_EVENTS, icon: 'fa-solid fa-list-ul' },
-  { key: 'abandonedCarts', name: ROUTE_NAMES.ADMIN_SETTINGS_ABANDONED_CARTS, icon: 'fa-solid fa-cart-arrow-down' },
+  {
+    key: 'abandonedCarts',
+    name: ROUTE_NAMES.ADMIN_SETTINGS_ABANDONED_CARTS,
+    icon: 'fa-solid fa-cart-arrow-down',
+  },
   { key: 'settings', name: ROUTE_NAMES.ADMIN_SETTINGS_FINANCE, icon: 'fa-solid fa-coins' },
 ]
 

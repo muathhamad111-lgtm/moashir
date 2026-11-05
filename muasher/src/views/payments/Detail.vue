@@ -22,10 +22,15 @@ const props = defineProps({
 })
 
 const RECEIPT_KEY = 'receipt'
-const CHECKOUT_ROUTES = { accredited: ROUTE_NAMES.ASSESSMENT_ACCREDITED_PAY, bag: ROUTE_NAMES.BAG_PAY }
+const CHECKOUT_ROUTES = {
+  accredited: ROUTE_NAMES.ASSESSMENT_ACCREDITED_PAY,
+  bag: ROUTE_NAMES.BAG_PAY,
+}
 
 const { t } = useI18n()
-const { status, payment, receipt, errorMessage, load, requestReceiptLink } = usePaymentDetail(props.id)
+const { status, payment, receipt, errorMessage, load, requestReceiptLink } = usePaymentDetail(
+  props.id,
+)
 const downloads = useSignedDownload()
 
 useHead({ title: () => t('finance.detail.title') })
@@ -48,13 +53,19 @@ onMounted(load)
       <Skeleton variant="text" :count="5" />
     </div>
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
-    <EmptyState v-else-if="status === 'not-found'" icon="fa-solid fa-receipt" :title="t('finance.detail.notFound')" />
+    <EmptyState
+      v-else-if="status === 'not-found'"
+      icon="fa-solid fa-receipt"
+      :title="t('finance.detail.notFound')"
+    />
 
     <template v-else>
       <header class="payment-detail__header">
         <div>
           <p class="payment-detail__eyebrow">{{ t('finance.detail.eyebrow') }}</p>
-          <h1 class="payment-detail__title"><bdi dir="ltr">{{ payment.reference }}</bdi></h1>
+          <h1 class="payment-detail__title">
+            <bdi dir="ltr">{{ payment.reference }}</bdi>
+          </h1>
         </div>
         <PaymentStatusBadge :status="payment.status" />
       </header>
@@ -68,9 +79,19 @@ onMounted(load)
         :title="t('finance.detail.pendingTitle')"
         :message="t('finance.detail.pendingMessage')"
       />
-      <PaymentNotice v-if="isOpen" tone="info" icon="fa-solid fa-credit-card" :title="t('finance.detail.openTitle')" :message="t('finance.detail.openMessage')">
+      <PaymentNotice
+        v-if="isOpen"
+        tone="info"
+        icon="fa-solid fa-credit-card"
+        :title="t('finance.detail.openTitle')"
+        :message="t('finance.detail.openMessage')"
+      >
         <template #actions>
-          <RouterLink class="payment-notice__link" :to="{ name: CHECKOUT_ROUTES[payment.purpose] }">{{ t('finance.detail.continue') }}</RouterLink>
+          <RouterLink
+            class="payment-notice__link"
+            :to="{ name: CHECKOUT_ROUTES[payment.purpose] }"
+            >{{ t('finance.detail.continue') }}</RouterLink
+          >
         </template>
       </PaymentNotice>
 

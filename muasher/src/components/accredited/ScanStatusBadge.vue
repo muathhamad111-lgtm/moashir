@@ -16,7 +16,9 @@ const PRESENTATION = {
 }
 
 const { t } = useI18n()
-const presentation = computed(() => PRESENTATION[props.status] ?? PRESENTATION[SCAN_STATUSES.PENDING])
+const presentation = computed(
+  () => PRESENTATION[props.status] ?? PRESENTATION[SCAN_STATUSES.PENDING],
+)
 </script>
 
 <template>

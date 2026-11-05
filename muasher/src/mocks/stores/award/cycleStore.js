@@ -4,12 +4,27 @@ import { versionWithStatus } from '../criteriaStore'
 import { addDays } from '../accredited/dates'
 
 const RUNNING_EXCLUDED = ['draft', 'closed']
-const DATE_FIELDS = ['submissionStart', 'submissionEnd', 'committeeStart', 'committeeEnd', 'announcementAt', 'announcedAt', 'closedAt']
+const DATE_FIELDS = [
+  'submissionStart',
+  'submissionEnd',
+  'committeeStart',
+  'committeeEnd',
+  'announcementAt',
+  'announcedAt',
+  'closedAt',
+]
 
 const state = { cycles: [], nextId: 100 }
 
 function datesOf(offsets, anchor) {
-  return Object.fromEntries(DATE_FIELDS.map((field) => [field, offsets[field] === null || offsets[field] === undefined ? null : addDays(anchor, offsets[field])]))
+  return Object.fromEntries(
+    DATE_FIELDS.map((field) => [
+      field,
+      offsets[field] === null || offsets[field] === undefined
+        ? null
+        : addDays(anchor, offsets[field]),
+    ]),
+  )
 }
 
 function seededCycle(fixture, version, anchor) {
@@ -31,7 +46,9 @@ function seededCycle(fixture, version, anchor) {
     initialAssessors: fixture.initialAssessors.map((link) => ({ ...link })),
     createdById: 1,
     openedAt: fixture.status === 'draft' ? null : dates.submissionStart,
-    submissionsClosedAt: ['draft', 'submission-open'].includes(fixture.status) ? null : dates.submissionEnd,
+    submissionsClosedAt: ['draft', 'submission-open'].includes(fixture.status)
+      ? null
+      : dates.submissionEnd,
     closedFromStatus: fixture.closedFromStatus,
     createdAt: addDays(dates.submissionStart, -20),
     updatedAt: addDays(dates.submissionStart, -20),

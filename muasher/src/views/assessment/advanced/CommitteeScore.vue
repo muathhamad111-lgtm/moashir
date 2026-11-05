@@ -69,7 +69,9 @@ const treeNodes = computed(() =>
     children: main.subs.map((sub) => ({
       id: sub.id,
       label: localized(sub.name),
-      meta: hasNote(sub.id) ? t('advanced.committee.score.scored') : t('advanced.committee.score.pending'),
+      meta: hasNote(sub.id)
+        ? t('advanced.committee.score.scored')
+        : t('advanced.committee.score.pending'),
     })),
   })),
 )
@@ -190,8 +192,12 @@ function backToQueue() {
       <div v-if="hasPrior" class="committee-score__prior-banner" role="note">
         <i class="fa-solid fa-eye" aria-hidden="true"></i>
         <div>
-          <p class="committee-score__prior-title">{{ t('advanced.committee.score.readOnlyPrior') }}</p>
-          <p class="committee-score__prior-hint">{{ t('advanced.committee.priorScoresViewOnly') }}</p>
+          <p class="committee-score__prior-title">
+            {{ t('advanced.committee.score.readOnlyPrior') }}
+          </p>
+          <p class="committee-score__prior-hint">
+            {{ t('advanced.committee.priorScoresViewOnly') }}
+          </p>
         </div>
       </div>
 
@@ -232,14 +238,18 @@ function backToQueue() {
                     }}
                   </Badge>
                 </div>
-                <p v-if="sub.description" class="committee-score__sub-desc">{{ localized(sub.description) }}</p>
+                <p v-if="sub.description" class="committee-score__sub-desc">
+                  {{ localized(sub.description) }}
+                </p>
 
                 <div v-if="hasPrior" class="committee-score__prior">
                   <p class="committee-score__prior-label">
                     <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
                     {{ t('advanced.committee.score.readOnlyPrior') }}
                   </p>
-                  <p v-if="priorNote(sub.id)" class="committee-score__prior-note">{{ priorNote(sub.id) }}</p>
+                  <p v-if="priorNote(sub.id)" class="committee-score__prior-note">
+                    {{ priorNote(sub.id) }}
+                  </p>
                 </div>
 
                 <div class="committee-score__scoring">
@@ -249,8 +259,14 @@ function backToQueue() {
                       {{ t('advanced.form.guidance') }}
                     </p>
                     <ul class="committee-score__points">
-                      <li v-for="point in sub.points" :key="point.id" class="committee-score__point">
-                        <p class="committee-score__point-desc">{{ localized(point.description) }}</p>
+                      <li
+                        v-for="point in sub.points"
+                        :key="point.id"
+                        class="committee-score__point"
+                      >
+                        <p class="committee-score__point-desc">
+                          {{ localized(point.description) }}
+                        </p>
                         <ScoreInput
                           :model-value="pointRatio(point.id)"
                           :scale-kind="point.scaleKind || scaleKind"

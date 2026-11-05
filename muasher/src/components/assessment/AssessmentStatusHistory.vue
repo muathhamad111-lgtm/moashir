@@ -23,7 +23,13 @@ function toggle() {
 
 <template>
   <div class="status-history">
-    <button type="button" class="status-history__toggle" :aria-expanded="expanded" :aria-controls="panelId" @click="toggle">
+    <button
+      type="button"
+      class="status-history__toggle"
+      :aria-expanded="expanded"
+      :aria-controls="panelId"
+      @click="toggle"
+    >
       <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
       {{ expanded ? t('assessment.timeline.hide') : t('assessment.timeline.show') }}
     </button>

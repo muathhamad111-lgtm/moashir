@@ -21,10 +21,14 @@ const emit = defineEmits(['restart'])
 const i18n = useI18n()
 const { t } = i18n
 
-const blockedMessage = computed(() => financeErrorMessage(i18n, props.failure?.error, 'finance.checkout.startFailed'))
+const blockedMessage = computed(() =>
+  financeErrorMessage(i18n, props.failure?.error, 'finance.checkout.startFailed'),
+)
 const canRetry = computed(() => RETRYABLE_CODES.includes(props.failure?.code ?? null))
 const openRequestId = computed(() =>
-  props.failure?.code === ACCREDITED_CODES.REQUEST_OPEN ? (props.failure.error?.normalized?.meta?.assessmentId ?? null) : null,
+  props.failure?.code === ACCREDITED_CODES.REQUEST_OPEN
+    ? (props.failure.error?.normalized?.meta?.assessmentId ?? null)
+    : null,
 )
 </script>
 
@@ -37,7 +41,10 @@ const openRequestId = computed(() =>
     :message="t('finance.checkout.inProgressMessage')"
   >
     <template #actions>
-      <RouterLink class="payment-notice__link" :to="{ name: ROUTE_NAMES.PAYMENTS_DETAIL, params: { id: payment.id } }">
+      <RouterLink
+        class="payment-notice__link"
+        :to="{ name: ROUTE_NAMES.PAYMENTS_DETAIL, params: { id: payment.id } }"
+      >
         {{ t('finance.checkout.viewPayment') }}
       </RouterLink>
     </template>
@@ -52,7 +59,12 @@ const openRequestId = computed(() =>
     live
   >
     <template #actions>
-      <BaseButton variant="primary" icon="fa-solid fa-rotate-right" :loading="busy" @click="emit('restart')">
+      <BaseButton
+        variant="primary"
+        icon="fa-solid fa-rotate-right"
+        :loading="busy"
+        @click="emit('restart')"
+      >
         {{ t('finance.checkout.startAgain') }}
       </BaseButton>
     </template>
@@ -67,10 +79,20 @@ const openRequestId = computed(() =>
     live
   >
     <template v-if="canRetry || openRequestId" #actions>
-      <BaseButton v-if="canRetry" variant="primary" icon="fa-solid fa-rotate-right" :loading="busy" @click="emit('restart')">
+      <BaseButton
+        v-if="canRetry"
+        variant="primary"
+        icon="fa-solid fa-rotate-right"
+        :loading="busy"
+        @click="emit('restart')"
+      >
         {{ t('finance.checkout.retry') }}
       </BaseButton>
-      <RouterLink v-if="openRequestId" class="payment-notice__link" :to="{ name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_FORM, params: { id: openRequestId } }">
+      <RouterLink
+        v-if="openRequestId"
+        class="payment-notice__link"
+        :to="{ name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_FORM, params: { id: openRequestId } }"
+      >
         {{ t('accredited.current.openRequest') }}
       </RouterLink>
     </template>

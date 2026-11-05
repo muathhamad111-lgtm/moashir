@@ -37,9 +37,19 @@ async function onDelete(assessment) {
       <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
       <p>{{ t('advanced.form.note') }}</p>
     </div>
-    <AccreditedFormWorkspace :key="assessmentId" :assessment-id="assessmentId" @submitted="backToIntro">
+    <AccreditedFormWorkspace
+      :key="assessmentId"
+      :assessment-id="assessmentId"
+      @submitted="backToIntro"
+    >
       <template #extra-actions="{ assessment }">
-        <BaseButton v-if="assessment.status === ADVANCED_STATUSES.DRAFT" variant="danger" icon="fa-solid fa-trash-can" :loading="deleting" @click="onDelete(assessment)">
+        <BaseButton
+          v-if="assessment.status === ADVANCED_STATUSES.DRAFT"
+          variant="danger"
+          icon="fa-solid fa-trash-can"
+          :loading="deleting"
+          @click="onDelete(assessment)"
+        >
           {{ t('advanced.draft.delete') }}
         </BaseButton>
       </template>

@@ -12,7 +12,11 @@ const props = defineProps({
 
 const { t } = useI18n()
 const title = computed(() => t(`integrations.kinds.${props.row.kind}`))
-const providerName = computed(() => (props.row.provider ? t(`integrations.providers.${props.row.provider}`) : t('integrations.overview.noProvider')))
+const providerName = computed(() =>
+  props.row.provider
+    ? t(`integrations.providers.${props.row.provider}`)
+    : t('integrations.overview.noProvider'),
+)
 </script>
 
 <template>
@@ -23,10 +27,18 @@ const providerName = computed(() => (props.row.provider ? t(`integrations.provid
       </span>
       <div class="overview-card__heading">
         <h2 :id="`overview-${row.kind}`" class="overview-card__title">{{ title }}</h2>
-        <p class="overview-card__provider">{{ t('integrations.overview.provider', { provider: providerName }) }}</p>
+        <p class="overview-card__provider">
+          {{ t('integrations.overview.provider', { provider: providerName }) }}
+        </p>
       </div>
     </header>
-    <IntegrationBadges :source="row.source" :configured="row.configured" :active="row.active" :mode="row.mode" :last-test="row.lastTest" />
+    <IntegrationBadges
+      :source="row.source"
+      :configured="row.configured"
+      :active="row.active"
+      :mode="row.mode"
+      :last-test="row.lastTest"
+    />
     <LastTestLine :last-test="row.lastTest" />
     <RouterLink class="overview-card__link" :to="{ name: INTEGRATION_KIND_ROUTES[row.kind] }">
       {{ t('integrations.overview.manage', { kind: title }) }}

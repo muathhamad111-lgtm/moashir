@@ -17,8 +17,20 @@ const selectEntity = vi.fn(async (row) => {
   selected.value = row
   committeeAssessorsStatus.value = 'success'
   committeeAssessors.value = [
-    { committeeAssessorId: 'jur-9401', committeeAssessorName: { ar: 'مقيّم أ', en: 'Assessor A' }, status: 'completed', total: 90, substituteFor: null },
-    { committeeAssessorId: 'jur-9402', committeeAssessorName: { ar: 'مقيّم ب', en: 'Assessor B' }, status: 'completed', total: 86, substituteFor: null },
+    {
+      committeeAssessorId: 'jur-9401',
+      committeeAssessorName: { ar: 'مقيّم أ', en: 'Assessor A' },
+      status: 'completed',
+      total: 90,
+      substituteFor: null,
+    },
+    {
+      committeeAssessorId: 'jur-9402',
+      committeeAssessorName: { ar: 'مقيّم ب', en: 'Assessor B' },
+      status: 'completed',
+      total: 86,
+      substituteFor: null,
+    },
   ]
   entityMeta.value = { average: 88 }
 })
@@ -35,9 +47,7 @@ const openCommitteeAssessor = vi.fn(async (committeeAssessorId) => {
       {
         id: 1,
         name: { ar: 'معيار', en: 'Main' },
-        subs: [
-          { id: 101, name: { ar: 'فرعي', en: 'Sub' }, evaluationType: 'direct', points: [] },
-        ],
+        subs: [{ id: 101, name: { ar: 'فرعي', en: 'Sub' }, evaluationType: 'direct', points: [] }],
       },
     ],
     scores: { subs: { 101: 0.9 }, points: {} },
@@ -123,7 +133,7 @@ describe('SecretaryReview.vue drill-down (Note 13)', () => {
     expect(text).toContain('Assessor B')
   })
 
-  it('opens ONE assessor\'s full read-only detail with its private note', async () => {
+  it("opens ONE assessor's full read-only detail with its private note", async () => {
     const wrapper = mountView()
     await flushPromises()
     await wrapper.find('.secretary-review__entities button').trigger('click')

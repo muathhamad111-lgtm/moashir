@@ -32,8 +32,12 @@ const isEdit = computed(() => Boolean(props.kpi))
 
 const schema = computed(() =>
   yupObject({
-    nameAr: yupString().required(t('validation.required')).min(2, t('validation.minChars', { min: 2 })),
-    nameEn: yupString().required(t('validation.required')).min(2, t('validation.minChars', { min: 2 })),
+    nameAr: yupString()
+      .required(t('validation.required'))
+      .min(2, t('validation.minChars', { min: 2 })),
+    nameEn: yupString()
+      .required(t('validation.required'))
+      .min(2, t('validation.minChars', { min: 2 })),
     descriptionAr: yupString().default(''),
     descriptionEn: yupString().default(''),
     value: yupNumber()
@@ -184,7 +188,10 @@ const form = useValidatedForm({
       badgeColor: values.badgeColor,
       cardColor: values.cardColor,
       showOnHomepage: Boolean(values.showOnHomepage),
-      order: values.displayOrder === '' || values.displayOrder === null ? undefined : Number(values.displayOrder),
+      order:
+        values.displayOrder === '' || values.displayOrder === null
+          ? undefined
+          : Number(values.displayOrder),
       published: Boolean(values.published),
     }
     emit('saved', { id: props.kpi?.id ?? null, payload })
@@ -506,7 +513,10 @@ function previewLocalized(content) {
                 :key="option.value"
                 type="button"
                 class="kpi-form__swatch"
-                :class="[`kpi-form__swatch--${option.value}`, { 'is-selected': color === option.value }]"
+                :class="[
+                  `kpi-form__swatch--${option.value}`,
+                  { 'is-selected': color === option.value },
+                ]"
                 role="radio"
                 :aria-checked="color === option.value"
                 :aria-label="option.label"
@@ -538,7 +548,10 @@ function previewLocalized(content) {
                 :key="option.value"
                 type="button"
                 class="kpi-form__swatch"
-                :class="[`kpi-form__swatch--${option.value}`, { 'is-selected': cardColor === option.value }]"
+                :class="[
+                  `kpi-form__swatch--${option.value}`,
+                  { 'is-selected': cardColor === option.value },
+                ]"
                 role="radio"
                 :aria-checked="cardColor === option.value"
                 :aria-label="option.label"
@@ -570,7 +583,10 @@ function previewLocalized(content) {
                 :key="option.value"
                 type="button"
                 class="kpi-form__swatch"
-                :class="[`kpi-form__swatch--${option.value}`, { 'is-selected': badgeColor === option.value }]"
+                :class="[
+                  `kpi-form__swatch--${option.value}`,
+                  { 'is-selected': badgeColor === option.value },
+                ]"
                 role="radio"
                 :aria-checked="badgeColor === option.value"
                 :aria-label="option.label"

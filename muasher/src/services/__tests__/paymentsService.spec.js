@@ -25,7 +25,11 @@ describe('paymentsService', () => {
   it('opens a checkout with the purpose only and the attempt Idempotency-Key header', async () => {
     apiClient.post.mockResolvedValue({ data: envelope })
     await paymentsService.create('accredited', KEY)
-    expect(apiClient.post).toHaveBeenCalledWith('/payments', { purpose: 'accredited' }, { headers: { 'Idempotency-Key': KEY } })
+    expect(apiClient.post).toHaveBeenCalledWith(
+      '/payments',
+      { purpose: 'accredited' },
+      { headers: { 'Idempotency-Key': KEY } },
+    )
     const breadcrumb = logger.breadcrumb.mock.calls.find((call) => call[1] === 'payments.create')
     expect(breadcrumb[2]).toEqual({ entity: 'payment', payloadShape: ['purpose'] })
   })
@@ -33,7 +37,9 @@ describe('paymentsService', () => {
   it('verifies with the gateway payment id only', async () => {
     apiClient.post.mockResolvedValue({ data: envelope })
     await paymentsService.verify('p-1', 'mock_pay_1')
-    expect(apiClient.post).toHaveBeenCalledWith('/payments/p-1/verify', { providerPaymentId: 'mock_pay_1' })
+    expect(apiClient.post).toHaveBeenCalledWith('/payments/p-1/verify', {
+      providerPaymentId: 'mock_pay_1',
+    })
   })
 
   it('reads the own list, a payment, its receipt and asks for a signed receipt link', async () => {
@@ -43,7 +49,11 @@ describe('paymentsService', () => {
     await paymentsService.get('p-1')
     await paymentsService.getReceipt('p-1')
     await paymentsService.requestReceiptDownload('p-1')
-    expect(apiClient.get.mock.calls.map((call) => call[0])).toEqual(['/payments/mine', '/payments/p-1', '/payments/p-1/receipt'])
+    expect(apiClient.get.mock.calls.map((call) => call[0])).toEqual([
+      '/payments/mine',
+      '/payments/p-1',
+      '/payments/p-1/receipt',
+    ])
     expect(apiClient.post).toHaveBeenCalledWith('/payments/p-1/receipt/download')
   })
 
@@ -55,6 +65,9 @@ describe('paymentsService', () => {
     expect(logger.error).not.toHaveBeenCalled()
     apiClient.post.mockRejectedValueOnce(rejection(500))
     await expect(paymentsService.verify('p-1', 'x')).rejects.toThrow('rejected')
-    expect(logger.error).toHaveBeenCalledWith(expect.any(Error), expect.objectContaining({ action: 'payments.verify' }))
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({ action: 'payments.verify' }),
+    )
   })
 })

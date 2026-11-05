@@ -45,11 +45,7 @@ const { t } = useI18n()
       :message="t('integrations.forbidden.message')"
     />
 
-    <ErrorState
-      v-else-if="status === 'error'"
-      :message="errorMessage"
-      @retry="emit('retry')"
-    />
+    <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="emit('retry')" />
 
     <template v-else>
       <div class="settings-section__body">

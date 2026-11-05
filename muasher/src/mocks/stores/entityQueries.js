@@ -7,7 +7,8 @@ const SORT_KEYS = {
   name: (entity) => normalizeSearchText(entity.name.ar),
   created_at: (entity) => entity.createdAt,
   founding_year: (entity) => entity.foundingYear,
-  governance_grade: (entity) => (entity.governanceGrade === null ? -1 : Number(entity.governanceGrade)),
+  governance_grade: (entity) =>
+    entity.governanceGrade === null ? -1 : Number(entity.governanceGrade),
 }
 
 export const SORTABLE = Object.keys(SORT_KEYS).flatMap((key) => [key, `-${key}`])
@@ -28,7 +29,9 @@ export function filtersFrom(query) {
 
 function matchesSearch(entity, needle) {
   if (!needle) return true
-  return [entity.name.ar, entity.name.en, entity.owner.email].some((value) => normalizeSearchText(value).includes(needle))
+  return [entity.name.ar, entity.name.en, entity.owner.email].some((value) =>
+    normalizeSearchText(value).includes(needle),
+  )
 }
 
 function matchesFilters(entity, filters) {

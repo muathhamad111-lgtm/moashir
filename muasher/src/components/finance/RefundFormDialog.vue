@@ -51,7 +51,14 @@ const evidence = useField('evidence')
         <MoneyAmount :value="total" :currency="transaction.pricing.currency" strong />
       </p>
       <div class="refund-form__grid">
-        <FieldInput name="amount" :label="t('finance.refund.amount')" :hint="t('finance.refund.amountHint')" input-dir="ltr" disabled required />
+        <FieldInput
+          name="amount"
+          :label="t('finance.refund.amount')"
+          :hint="t('finance.refund.amountHint')"
+          input-dir="ltr"
+          disabled
+          required
+        />
         <BaseDatePicker
           v-model="refundedOn.value.value"
           name="refundedOn"
@@ -65,12 +72,23 @@ const evidence = useField('evidence')
         <FieldInput
           name="transferReference"
           :label="t('finance.refund.transferReference')"
-          :hint="t('finance.refund.transferReferenceHint', { min: REFUND_RULES.TRANSFER_REFERENCE_MIN, max: REFUND_RULES.TRANSFER_REFERENCE_MAX })"
+          :hint="
+            t('finance.refund.transferReferenceHint', {
+              min: REFUND_RULES.TRANSFER_REFERENCE_MIN,
+              max: REFUND_RULES.TRANSFER_REFERENCE_MAX,
+            })
+          "
           input-dir="ltr"
           required
         />
       </div>
-      <FieldTextarea name="reason" :label="t('finance.refund.reason')" :hint="t('finance.refund.reasonHint', { min: REFUND_RULES.REASON_MIN })" :rows="4" required />
+      <FieldTextarea
+        name="reason"
+        :label="t('finance.refund.reason')"
+        :hint="t('finance.refund.reasonHint', { min: REFUND_RULES.REASON_MIN })"
+        :rows="4"
+        required
+      />
       <RefundEvidenceField
         :file="evidence.value.value"
         :upload-state="uploadState"

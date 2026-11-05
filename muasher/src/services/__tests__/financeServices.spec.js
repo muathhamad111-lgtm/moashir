@@ -22,21 +22,51 @@ describe('financeService', () => {
     apiClient.post.mockResolvedValue({
       status: 200,
       data: new Blob(['reference\n']),
-      headers: { 'content-disposition': 'attachment; filename="transactions-20261101-101500.csv"', 'x-export-row-count': '7' },
+      headers: {
+        'content-disposition': 'attachment; filename="transactions-20261101-101500.csv"',
+        'x-export-row-count': '7',
+      },
     })
     const result = await financeService.exportTransactions({ 'filter[status]': 'paid' })
     expect(apiClient.post).toHaveBeenCalledWith('/finance/transactions/export', null, {
       params: { 'filter[status]': 'paid' },
       responseType: 'blob',
     })
-    expect(result).toMatchObject({ kind: 'file', fileName: 'transactions-20261101-101500.csv', rowCount: 7 })
+    expect(result).toMatchObject({
+      kind: 'file',
+      fileName: 'transactions-20261101-101500.csv',
+      rowCount: 7,
+    })
   })
 
   it('decodes a queued export answer from the blob body', async () => {
-    const body = { data: { id: 'e-1', status: 'queued', row_count: 6200, created_at: '2026-11-01T10:00:00Z', completed_at: null }, meta: {}, errors: null }
-    apiClient.post.mockResolvedValue({ status: 202, data: new Blob([JSON.stringify(body)]), headers: {} })
+    const body = {
+      data: {
+        id: 'e-1',
+        status: 'queued',
+        row_count: 6200,
+        created_at: '2026-11-01T10:00:00Z',
+        completed_at: null,
+      },
+      meta: {},
+      errors: null,
+    }
+    apiClient.post.mockResolvedValue({
+      status: 202,
+      data: new Blob([JSON.stringify(body)]),
+      headers: {},
+    })
     const result = await financeService.exportTransactions({})
-    expect(result).toEqual({ kind: 'queued', export: { id: 'e-1', status: 'queued', rowCount: 6200, createdAt: '2026-11-01T10:00:00Z', completedAt: null } })
+    expect(result).toEqual({
+      kind: 'queued',
+      export: {
+        id: 'e-1',
+        status: 'queued',
+        rowCount: 6200,
+        createdAt: '2026-11-01T10:00:00Z',
+        completedAt: null,
+      },
+    })
   })
 
   it('records a refund as multipart without logging any value', async () => {
@@ -61,7 +91,10 @@ describe('financeService', () => {
     await financeService.requestEvidenceDownload('r-1')
     await financeService.requestReceiptDownload('c-1')
     await financeService.reissueReceipt('c-1', 'The entity asked for a corrected copy.')
-    await financeService.manualSettle('p-1', { status: 'paid', reason: 'Confirmed in the gateway dashboard today.' })
+    await financeService.manualSettle('p-1', {
+      status: 'paid',
+      reason: 'Confirmed in the gateway dashboard today.',
+    })
     expect(apiClient.get.mock.calls.map((call) => call[0])).toEqual([
       '/finance/summary',
       '/finance/transactions',
@@ -91,18 +124,28 @@ describe('financeService', () => {
 
 describe('filesService', () => {
   it('follows a same-origin signed link through the API client, keeping its query untouched', async () => {
-    apiClient.get.mockResolvedValue({ data: new Blob(['%PDF']), headers: { 'content-disposition': 'attachment; filename="RCP-2026-000001.pdf"' } })
+    apiClient.get.mockResolvedValue({
+      data: new Blob(['%PDF']),
+      headers: { 'content-disposition': 'attachment; filename="RCP-2026-000001.pdf"' },
+    })
     const url = `${window.location.origin}/api/v1/files/${FILE_ID}/download?expires=1&signature=abc&user=22`
     const result = await filesService.fetchSignedFile({ url, fileName: 'fallback.pdf' })
-    expect(apiClient.get).toHaveBeenCalledWith(`/files/${FILE_ID}/download?expires=1&signature=abc&user=22`, { responseType: 'blob' })
+    expect(apiClient.get).toHaveBeenCalledWith(
+      `/files/${FILE_ID}/download?expires=1&signature=abc&user=22`,
+      { responseType: 'blob' },
+    )
     expect(result.fileName).toBe('RCP-2026-000001.pdf')
   })
 
   it('refuses a link to another origin or another path', async () => {
-    await expect(filesService.fetchSignedFile({ url: `https://elsewhere.example.sa/api/v1/files/${FILE_ID}/download` })).rejects.toBeInstanceOf(
-      UntrustedDownloadLink,
-    )
-    await expect(filesService.fetchSignedFile({ url: `${window.location.origin}/api/v1/users/22` })).rejects.toBeInstanceOf(UntrustedDownloadLink)
+    await expect(
+      filesService.fetchSignedFile({
+        url: `https://elsewhere.example.sa/api/v1/files/${FILE_ID}/download`,
+      }),
+    ).rejects.toBeInstanceOf(UntrustedDownloadLink)
+    await expect(
+      filesService.fetchSignedFile({ url: `${window.location.origin}/api/v1/users/22` }),
+    ).rejects.toBeInstanceOf(UntrustedDownloadLink)
     expect(apiClient.get).not.toHaveBeenCalled()
   })
 })

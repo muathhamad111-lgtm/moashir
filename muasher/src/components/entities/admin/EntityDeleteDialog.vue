@@ -52,17 +52,30 @@ watch(
       <div v-if="impactStatus === 'loading'" class="entity-delete__loading" aria-busy="true">
         <Skeleton variant="text" :count="3" />
       </div>
-      <ErrorState v-else-if="impactStatus === 'error'" :message="t('entities.delete.impactFailed')" @retry="loadImpact" />
+      <ErrorState
+        v-else-if="impactStatus === 'error'"
+        :message="t('entities.delete.impactFailed')"
+        @retry="loadImpact"
+      />
 
       <template v-else-if="impactStatus === 'success'">
-        <section v-if="openRequests.length" class="entity-delete__requests" aria-labelledby="entity-delete-requests">
-          <p v-if="stale" class="entity-delete__stale" role="alert">{{ t('entities.delete.staleNotice') }}</p>
+        <section
+          v-if="openRequests.length"
+          class="entity-delete__requests"
+          aria-labelledby="entity-delete-requests"
+        >
+          <p v-if="stale" class="entity-delete__stale" role="alert">
+            {{ t('entities.delete.staleNotice') }}
+          </p>
           <h3 id="entity-delete-requests" class="entity-delete__heading">
             {{ t('entities.delete.openRequestsTitle', { count: openRequests.length }) }}
           </h3>
           <p class="entity-delete__hint">{{ t('entities.delete.openRequestsHint') }}</p>
           <OpenRequestsList :requests="openRequests" />
-          <FieldCheckbox name="confirmed" :label="t('entities.delete.confirmLabel', { count: openRequests.length })" />
+          <FieldCheckbox
+            name="confirmed"
+            :label="t('entities.delete.confirmLabel', { count: openRequests.length })"
+          />
         </section>
         <p v-else class="entity-delete__none">{{ t('entities.delete.noOpenRequests') }}</p>
 
@@ -75,7 +88,11 @@ watch(
       </template>
 
       <footer class="modal__footer">
-        <BaseButton variant="secondary" :disabled="form.submitting.value" @click="emit('update:modelValue', false)">
+        <BaseButton
+          variant="secondary"
+          :disabled="form.submitting.value"
+          @click="emit('update:modelValue', false)"
+        >
           {{ t('actions.cancel') }}
         </BaseButton>
         <BaseButton

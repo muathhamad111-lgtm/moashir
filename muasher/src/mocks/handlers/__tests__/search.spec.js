@@ -51,7 +51,12 @@ describe('global search mock (GET /search)', () => {
       path: 'accredited',
       status: 'under-review',
       isFrozen: false,
-      entity: { id: 6002, reference: 'ENT-006002', name: { ar: 'جمعية إحسان الخيرية', en: 'Ehsan Charitable Society' }, status: 'active' },
+      entity: {
+        id: 6002,
+        reference: 'ENT-006002',
+        name: { ar: 'جمعية إحسان الخيرية', en: 'Ehsan Charitable Society' },
+        status: 'active',
+      },
     })
     expect(body.meta).toEqual({ limit: 5 })
   })
@@ -88,7 +93,9 @@ describe('global search mock (GET /search)', () => {
     const { body } = await search('slf-2026-000004')
     expect(groupOf(body, 'requests').items).toEqual([])
     const byNumber = await search('SLF-2026-000001')
-    expect(groupOf(byNumber.body, 'requests').items.map((item) => item.number)).toEqual(['SLF-2026-000001'])
+    expect(groupOf(byNumber.body, 'requests').items.map((item) => item.number)).toEqual([
+      'SLF-2026-000001',
+    ])
   })
 
   it('answers 403 to a role without any searchable provider', async () => {

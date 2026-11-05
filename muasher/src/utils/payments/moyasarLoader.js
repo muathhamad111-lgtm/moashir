@@ -36,7 +36,9 @@ function injectScript({ scriptUrl, integrity }) {
       script.integrity = integrity
       script.crossOrigin = 'anonymous'
     }
-    script.addEventListener('load', () => (window.Moyasar ? resolve(window.Moyasar) : reject(new MoyasarUnavailable())))
+    script.addEventListener('load', () =>
+      window.Moyasar ? resolve(window.Moyasar) : reject(new MoyasarUnavailable()),
+    )
     script.addEventListener('error', () => reject(new MoyasarUnavailable()))
     document.head.append(script)
   })

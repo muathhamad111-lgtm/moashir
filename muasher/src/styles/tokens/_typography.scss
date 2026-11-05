@@ -5,7 +5,8 @@ $font-fallback: system-ui, sans-serif;
 
 $font-arabic: $font-family-latin, $font-family-arabic-body, $font-fallback;
 $font-latin: $font-family-latin, $font-family-arabic-body, $font-fallback;
-$font-heading: $font-family-latin, $font-family-arabic-heading, $font-family-arabic-body, $font-fallback;
+$font-heading:
+  $font-family-latin, $font-family-arabic-heading, $font-family-arabic-body, $font-fallback;
 
 $fw-regular: 400;
 $fw-medium: 500;

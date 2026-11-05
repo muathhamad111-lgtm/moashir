@@ -22,13 +22,8 @@ import { kpisService } from '@/services/kpisService'
 const { t, n } = useI18n()
 const { confirm } = useConfirm()
 const toast = useToast()
-const {
-  localized,
-  publishedFilterOptions,
-  colorLabel,
-  categoryLabel,
-  statusVariant,
-} = useKpisAdmin()
+const { localized, publishedFilterOptions, colorLabel, categoryLabel, statusVariant } =
+  useKpisAdmin()
 
 const filters = useFilters({ published: '' })
 const { search } = filters
@@ -83,9 +78,7 @@ function statusLabel(key) {
   return key ? t(`kpis.statuses.${key}`) : ''
 }
 
-const isFiltered = computed(
-  () => Boolean(search.value) || Boolean(filters.filters.published),
-)
+const isFiltered = computed(() => Boolean(search.value) || Boolean(filters.filters.published))
 
 const canReorder = computed(() => !isFiltered.value)
 
@@ -156,7 +149,9 @@ async function togglePublished(row) {
   if (!accepted) return
   try {
     await kpisService.setPublished(row.id, publishing)
-    toast.success(publishing ? t('kpis.admin.toasts.published') : t('kpis.admin.toasts.unpublished'))
+    toast.success(
+      publishing ? t('kpis.admin.toasts.published') : t('kpis.admin.toasts.unpublished'),
+    )
     await load()
   } catch {
     toast.error(t('kpis.admin.toasts.publishFailed'))
@@ -290,7 +285,11 @@ function onAction(key, row) {
 
       <template #cell-name="{ item }">
         <div class="kpis-admin__name">
-          <span class="kpis-admin__name-icon" :class="`kpis-admin__name-icon--${item.color}`" aria-hidden="true">
+          <span
+            class="kpis-admin__name-icon"
+            :class="`kpis-admin__name-icon--${item.color}`"
+            aria-hidden="true"
+          >
             <i :class="item.icon"></i>
           </span>
           <div class="kpis-admin__name-text">
@@ -309,7 +308,9 @@ function onAction(key, row) {
       </template>
 
       <template #cell-target="{ item }">
-        <span class="kpis-admin__number">{{ item.target === null || item.target === undefined ? '—' : fmt(item.target) }}</span>
+        <span class="kpis-admin__number">{{
+          item.target === null || item.target === undefined ? '—' : fmt(item.target)
+        }}</span>
       </template>
 
       <template #cell-status="{ item }">

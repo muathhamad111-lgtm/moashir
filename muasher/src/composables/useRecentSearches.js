@@ -21,7 +21,9 @@ function read(userId) {
   if (!userId) return []
   try {
     const parsed = JSON.parse(localStorage.getItem(storageKey(userId)) ?? '[]')
-    return Array.isArray(parsed) ? parsed.filter(isStorableSearch).slice(0, RECENT_SEARCHES_LIMIT) : []
+    return Array.isArray(parsed)
+      ? parsed.filter(isStorableSearch).slice(0, RECENT_SEARCHES_LIMIT)
+      : []
   } catch {
     return []
   }
@@ -42,7 +44,9 @@ export function useRecentSearches(userId) {
   function remember(text) {
     if (!userId.value || !isStorableSearch(text)) return
     const term = text.trim()
-    const others = items.value.filter((item) => item.toLocaleLowerCase() !== term.toLocaleLowerCase())
+    const others = items.value.filter(
+      (item) => item.toLocaleLowerCase() !== term.toLocaleLowerCase(),
+    )
     persist([term, ...others].slice(0, RECENT_SEARCHES_LIMIT))
   }
 

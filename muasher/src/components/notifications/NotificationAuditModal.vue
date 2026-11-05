@@ -20,9 +20,7 @@ const emit = defineEmits(['update:modelValue'])
 const { t, locale } = useI18n()
 const { status, errorMessage, entries, load, reset } = useNotificationAudit()
 
-const notificationTitle = computed(
-  () => props.notification?.title?.[locale.value] ?? '',
-)
+const notificationTitle = computed(() => props.notification?.title?.[locale.value] ?? '')
 
 function roleLabel(role) {
   const key = `notifications.roleLabels.${role}`
@@ -109,10 +107,7 @@ watch(
                 <span class="notification-audit__stamp">{{ stamp(entry.receivedAt) }}</span>
               </td>
               <td>
-                <span
-                  class="notification-audit__stamp"
-                  :class="{ 'is-pending': !entry.openedAt }"
-                >
+                <span class="notification-audit__stamp" :class="{ 'is-pending': !entry.openedAt }">
                   {{ stamp(entry.openedAt) }}
                 </span>
               </td>

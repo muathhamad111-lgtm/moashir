@@ -4,7 +4,13 @@ import { requestLocale } from '../contract/locale'
 import { paginate } from '../contract/pagination'
 import { EMAIL_CHANGE_STATUSES } from '@/constants/entityEnums'
 import { entityNotices } from '../fixtures/entityMessages'
-import { actorWith, entityReject, entityRoute, readJson, signedInUser } from '../stores/entityRejection'
+import {
+  actorWith,
+  entityReject,
+  entityRoute,
+  readJson,
+  signedInUser,
+} from '../stores/entityRejection'
 import { ENTITY_PERMISSIONS as P, ownEntityOf } from '../stores/entityAccess'
 import { emailChangeResource, ownEmailChangeResource } from '../stores/entitySerializers'
 import { assertEmail, assertReason, rejectField } from '../stores/entityValidation'
@@ -54,7 +60,11 @@ export const entityEmailChangesHandlers = [
     entityRoute(async ({ request }) => {
       const entity = ownEntity()
       const email = assertNewEmail(entity, (await readJson(request)).newEmail)
-      const challenge = createChallenge({ kind: 'entity', record: entity }, 'email', OTP_PURPOSES.EMAIL_CHANGE)
+      const challenge = createChallenge(
+        { kind: 'entity', record: entity },
+        'email',
+        OTP_PURPOSES.EMAIL_CHANGE,
+      )
       requestChange(entity, email, challenge.id)
       const message = entityNotices.emailChangeOtpSent[requestLocale(request)]
       return envelope({ otp: challengePayload(challenge), message })

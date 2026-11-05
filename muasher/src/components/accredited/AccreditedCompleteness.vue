@@ -14,16 +14,27 @@ const emit = defineEmits(['reveal'])
 const { t, locale } = useI18n()
 const heading = ref(null)
 
-const subs = computed(() => new Map(props.criteria.mains.flatMap((main) => main.subs.map((sub) => [sub.id, sub]))))
-const count = computed(() => props.missing.missingCv.length + props.missing.missingAttachments.length)
+const subs = computed(
+  () => new Map(props.criteria.mains.flatMap((main) => main.subs.map((sub) => [sub.id, sub]))),
+)
+const count = computed(
+  () => props.missing.missingCv.length + props.missing.missingAttachments.length,
+)
 
 function slotName(item) {
-  const slot = slotsOf(subs.value.get(item.subCriterionId) ?? {}).find((entry) => entry.key === item.attachmentKey)
+  const slot = slotsOf(subs.value.get(item.subCriterionId) ?? {}).find(
+    (entry) => entry.key === item.attachmentKey,
+  )
   return slot ? localizedText(slot.name, locale.value) : item.attachmentKey
 }
 
 const items = computed(() => [
-  ...props.missing.missingCv.map((item) => ({ key: `cv-${item.subCriterionId}`, subId: item.subCriterionId, code: item.code, label: t('accredited.completeness.cv') })),
+  ...props.missing.missingCv.map((item) => ({
+    key: `cv-${item.subCriterionId}`,
+    subId: item.subCriterionId,
+    code: item.code,
+    label: t('accredited.completeness.cv'),
+  })),
   ...props.missing.missingAttachments.map((item) => ({
     key: `att-${item.subCriterionId}-${item.attachmentKey}`,
     subId: item.subCriterionId,
@@ -42,13 +53,24 @@ defineExpose({ focus })
 <template>
   <Card class="accredited-completeness" :class="{ 'accredited-completeness--done': !count }">
     <h2 ref="heading" class="accredited-completeness__title" tabindex="-1">
-      <i :class="count ? 'fa-solid fa-list-check' : 'fa-solid fa-circle-check'" aria-hidden="true"></i>
-      {{ count ? t('accredited.completeness.title', { count }, count) : t('accredited.completeness.done') }}
+      <i
+        :class="count ? 'fa-solid fa-list-check' : 'fa-solid fa-circle-check'"
+        aria-hidden="true"
+      ></i>
+      {{
+        count
+          ? t('accredited.completeness.title', { count }, count)
+          : t('accredited.completeness.done')
+      }}
     </h2>
     <p class="accredited-completeness__hint">{{ t('accredited.completeness.hint') }}</p>
     <ul v-if="count" class="accredited-completeness__list">
       <li v-for="item in items" :key="item.key" class="accredited-completeness__item">
-        <button type="button" class="accredited-completeness__link" @click="emit('reveal', item.subId)">
+        <button
+          type="button"
+          class="accredited-completeness__link"
+          @click="emit('reveal', item.subId)"
+        >
           <span class="accredited-completeness__code u-ltr">{{ item.code }}</span>
           {{ item.label }}
         </button>

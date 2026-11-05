@@ -49,7 +49,11 @@ export function toQueueRow(raw = {}) {
 
 export function toQueueStats(raw) {
   if (!raw) return null
-  return { total: raw.total ?? 0, byStatus: toStatusCounts(raw.byStatus, STATS_STATUSES), overdue: raw.overdue ?? 0 }
+  return {
+    total: raw.total ?? 0,
+    byStatus: toStatusCounts(raw.byStatus, STATS_STATUSES),
+    overdue: raw.overdue ?? 0,
+  }
 }
 
 function toAssignment(raw) {
@@ -62,7 +66,12 @@ function toAssignment(raw) {
     endedAt: raw.endedAt ?? null,
   }
   if (!Object.hasOwn(raw, 'reason')) return assignment
-  return { ...assignment, assignedBy: toPerson(raw.assignedBy), reason: raw.reason ?? null, endReason: raw.endReason ?? null }
+  return {
+    ...assignment,
+    assignedBy: toPerson(raw.assignedBy),
+    reason: raw.reason ?? null,
+    endReason: raw.endReason ?? null,
+  }
 }
 
 export function toRequestDetail(raw = {}) {
@@ -85,7 +94,9 @@ export function toAssignedRow(raw = {}) {
     number: raw.number ?? '',
     path: raw.path ?? null,
     status: toRequestStatus(raw.status),
-    entity: raw.entity ? { ...toEntitySummary(raw.entity), region: toPlace(raw.entity.region) } : null,
+    entity: raw.entity
+      ? { ...toEntitySummary(raw.entity), region: toPlace(raw.entity.region) }
+      : null,
     assignedAt: raw.assignedAt ?? null,
     startedAt: raw.startedAt ?? null,
     completionDeadline: raw.completionDeadline ?? null,

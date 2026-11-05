@@ -3,7 +3,10 @@ import { envelope } from '../contract/responses'
 import { assessmentRoute, readJson } from '../stores/assessments/assessmentRejection'
 import { signedInActor } from '../stores/assessments/assessmentAccess'
 import { authorizeSettings } from '../stores/accredited/accreditedAccess'
-import { assessmentSettingsResource, updateAssessmentSettings } from '../stores/accredited/assessmentSettingsUpdate'
+import {
+  assessmentSettingsResource,
+  updateAssessmentSettings,
+} from '../stores/accredited/assessmentSettingsUpdate'
 
 export const assessmentSettingsHandlers = [
   http.get(

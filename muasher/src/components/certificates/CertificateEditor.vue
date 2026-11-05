@@ -77,7 +77,9 @@ function onSave() {
       />
 
       <fieldset class="certificate-editor__positions">
-        <legend class="certificate-editor__legend">{{ t('settings.certificates.positions') }}</legend>
+        <legend class="certificate-editor__legend">
+          {{ t('settings.certificates.positions') }}
+        </legend>
         <div class="certificate-editor__grid">
           <BaseInput
             :model-value="form.entityNamePosition.x"
@@ -143,14 +145,21 @@ function onSave() {
       />
 
       <div class="certificate-editor__actions">
-        <BaseButton variant="primary" :loading="saving" icon="fa-solid fa-floppy-disk" @click="onSave">
+        <BaseButton
+          variant="primary"
+          :loading="saving"
+          icon="fa-solid fa-floppy-disk"
+          @click="onSave"
+        >
           {{ t('actions.save') }}
         </BaseButton>
       </div>
     </div>
 
     <div class="certificate-editor__preview" aria-hidden="true">
-      <span class="certificate-editor__preview-label">{{ t('settings.certificates.preview') }}</span>
+      <span class="certificate-editor__preview-label">{{
+        t('settings.certificates.preview')
+      }}</span>
       <div class="certificate-editor__canvas">
         <span class="certificate-editor__marker" :style="namePreviewVars">
           {{ t('settings.certificates.sampleName') }}

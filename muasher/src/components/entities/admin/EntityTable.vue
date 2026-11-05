@@ -51,7 +51,10 @@ const columns = computed(() => {
       <span class="entity-table__reference u-ltr">{{ item.reference }}</span>
     </template>
     <template #cell-name="{ item }">
-      <router-link class="entity-table__name" :to="{ name: ROUTE_NAMES.ADMIN_ENTITY, params: { id: item.id } }">
+      <router-link
+        class="entity-table__name"
+        :to="{ name: ROUTE_NAMES.ADMIN_ENTITY, params: { id: item.id } }"
+      >
         {{ localized(item.name) }}
       </router-link>
     </template>

@@ -15,7 +15,13 @@ import {
   versionWithStatus,
 } from './criteriaStore'
 import { consistencyProblems, problemFieldKey } from './criteriaRules'
-import { assertDraft, changeCount, editEffect, markPublished, scoreAffectingCodes } from './criteriaVersions'
+import {
+  assertDraft,
+  changeCount,
+  editEffect,
+  markPublished,
+  scoreAffectingCodes,
+} from './criteriaVersions'
 import { announceCriteriaEdit, openAssessmentsBoundTo } from './criteriaEditHooks'
 import { criteriaNotices } from './criteriaNotices'
 import { CriteriaRejection, fieldMessage, reject } from './criteriaRejection'
@@ -84,7 +90,8 @@ export function publishVersion(actor, version, body) {
   const count = previous ? changeCount(previous, version) : 0
   const rescoredCodes = previous ? scoreAffectingCodes(previous, version) : []
   const effect = editEffect('structural', instruction.scope)
-  const affectedOpenCount = previous && effect.rebindsOpenAssessments ? openAssessmentsBoundTo(previous.id) : 0
+  const affectedOpenCount =
+    previous && effect.rebindsOpenAssessments ? openAssessmentsBoundTo(previous.id) : 0
   markPublished(version, previous)
   version.problems = []
   if (!previous)

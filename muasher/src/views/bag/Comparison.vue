@@ -59,14 +59,21 @@ onMounted(load)
       <Card v-if="overall" class="bag-comparison__overall">
         <div class="bag-comparison__overall-scores">
           <div class="bag-comparison__overall-score">
-            <span class="bag-comparison__overall-label">{{ t('bag.comparison.overallBefore') }}</span>
+            <span class="bag-comparison__overall-label">{{
+              t('bag.comparison.overallBefore')
+            }}</span>
             <span class="bag-comparison__overall-value">
               {{ t('bag.comparison.percent', { value: n(overall.beforePercent, 'default') }) }}
             </span>
           </div>
-          <i class="fa-solid fa-arrow-right-long bag-comparison__overall-arrow" aria-hidden="true"></i>
+          <i
+            class="fa-solid fa-arrow-right-long bag-comparison__overall-arrow"
+            aria-hidden="true"
+          ></i>
           <div class="bag-comparison__overall-score">
-            <span class="bag-comparison__overall-label">{{ t('bag.comparison.overallAfter') }}</span>
+            <span class="bag-comparison__overall-label">{{
+              t('bag.comparison.overallAfter')
+            }}</span>
             <span class="bag-comparison__overall-value bag-comparison__overall-value--after">
               {{ t('bag.comparison.percent', { value: n(overall.afterPercent, 'default') }) }}
             </span>
@@ -99,8 +106,14 @@ onMounted(load)
         </ul>
       </Card>
 
-      <section v-if="kitCriteria.length" class="bag-comparison__group" aria-labelledby="bag-cmp-kit">
-        <h2 id="bag-cmp-kit" class="bag-comparison__group-title">{{ t('bag.comparison.kitScope.title') }}</h2>
+      <section
+        v-if="kitCriteria.length"
+        class="bag-comparison__group"
+        aria-labelledby="bag-cmp-kit"
+      >
+        <h2 id="bag-cmp-kit" class="bag-comparison__group-title">
+          {{ t('bag.comparison.kitScope.title') }}
+        </h2>
         <p class="bag-comparison__group-lead">{{ t('bag.comparison.kitScope.lead') }}</p>
         <ul class="bag-comparison__rows">
           <li v-for="row in kitCriteria" :key="row.subCriterionId" class="bag-comparison__row">
@@ -109,8 +122,14 @@ onMounted(load)
         </ul>
       </section>
 
-      <section v-if="otherCriteria.length" class="bag-comparison__group" aria-labelledby="bag-cmp-rest">
-        <h2 id="bag-cmp-rest" class="bag-comparison__group-title">{{ t('bag.comparison.rest.title') }}</h2>
+      <section
+        v-if="otherCriteria.length"
+        class="bag-comparison__group"
+        aria-labelledby="bag-cmp-rest"
+      >
+        <h2 id="bag-cmp-rest" class="bag-comparison__group-title">
+          {{ t('bag.comparison.rest.title') }}
+        </h2>
         <p class="bag-comparison__group-lead">{{ t('bag.comparison.rest.lead') }}</p>
         <ul class="bag-comparison__rows">
           <li v-for="row in otherCriteria" :key="row.subCriterionId" class="bag-comparison__row">

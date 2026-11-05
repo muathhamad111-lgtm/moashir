@@ -26,12 +26,7 @@ const DEMO_MODULES = [MOCK_MODULES.NOTIFICATIONS]
   <div class="notification-panel">
     <header class="notification-panel__header">
       <span>{{ t('components.notifications.title') }}</span>
-      <BaseButton
-        v-if="unreadCount > 0"
-        variant="ghost"
-        size="sm"
-        @click="emit('mark-all-read')"
-      >
+      <BaseButton v-if="unreadCount > 0" variant="ghost" size="sm" @click="emit('mark-all-read')">
         {{ t('components.notifications.markAllRead') }}
       </BaseButton>
     </header>

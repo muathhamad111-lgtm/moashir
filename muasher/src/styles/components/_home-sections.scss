@@ -173,7 +173,9 @@
   border-block-start-color: var(--theme-border);
   border-radius: var(--radius-lg);
   background-color: var(--theme-surface-raised);
-  transition: transform var(--t-base) var(--ease), box-shadow var(--t-base) var(--ease);
+  transition:
+    transform var(--t-base) var(--ease),
+    box-shadow var(--t-base) var(--ease);
 
   &:hover {
     transform: translateY(calc(-1 * var(--space-1)));
@@ -338,7 +340,9 @@
   border: var(--border-width) solid transparent;
   background-color: var(--theme-surface-raised);
   cursor: default;
-  transition: transform var(--t-base) var(--ease), box-shadow var(--t-base) var(--ease);
+  transition:
+    transform var(--t-base) var(--ease),
+    box-shadow var(--t-base) var(--ease);
 
   &:hover,
   &:focus-within {
@@ -401,7 +405,9 @@
   font-size: var(--fs-sm);
   color: var(--theme-text-muted);
   line-height: var(--lh-relaxed);
-  transition: opacity var(--t-base) var(--ease), max-block-size var(--t-base) var(--ease);
+  transition:
+    opacity var(--t-base) var(--ease),
+    max-block-size var(--t-base) var(--ease);
 
   .home-model__chip:hover &,
   .home-model__chip:focus-within & {
@@ -531,7 +537,9 @@
   border: var(--border-width) solid var(--theme-border);
   border-radius: var(--radius-lg);
   background-color: var(--theme-surface-raised);
-  transition: transform var(--t-base) var(--ease), box-shadow var(--t-base) var(--ease);
+  transition:
+    transform var(--t-base) var(--ease),
+    box-shadow var(--t-base) var(--ease);
 
   &:hover {
     transform: translateY(calc(-1 * var(--space-1)));
@@ -664,7 +672,9 @@
   border: var(--border-width) solid var(--theme-border);
   border-radius: var(--radius-md);
   background-color: var(--theme-surface-raised);
-  transition: transform var(--t-base) var(--ease), box-shadow var(--t-base) var(--ease);
+  transition:
+    transform var(--t-base) var(--ease),
+    box-shadow var(--t-base) var(--ease);
 
   &:hover {
     transform: translateY(calc(-1 * var(--space-1)));
@@ -861,7 +871,9 @@
   object-fit: contain;
   filter: grayscale(1);
   opacity: var(--opacity-disabled);
-  transition: filter var(--t-base) var(--ease), opacity var(--t-base) var(--ease);
+  transition:
+    filter var(--t-base) var(--ease),
+    opacity var(--t-base) var(--ease);
 
   .home-partner:hover & {
     filter: grayscale(0);
@@ -969,7 +981,9 @@
   font-size: var(--fs-lg);
   background-color: var(--theme-surface);
   color: var(--theme-text);
-  transition: background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+  transition:
+    background-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
 
   &:hover {
     background-color: var(--theme-accent);

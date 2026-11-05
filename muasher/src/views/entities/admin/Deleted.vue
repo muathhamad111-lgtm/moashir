@@ -20,7 +20,8 @@ const actionsHost = ref(null)
 const { search } = filters
 
 function onAction(key, entity) {
-  if (key === ENTITY_ACTIONS.VIEW) return router.push({ name: ROUTE_NAMES.ADMIN_ENTITY, params: { id: entity.id } })
+  if (key === ENTITY_ACTIONS.VIEW)
+    return router.push({ name: ROUTE_NAMES.ADMIN_ENTITY, params: { id: entity.id } })
   return actionsHost.value.run(key, entity)
 }
 
@@ -41,7 +42,10 @@ onMounted(regions.load)
       <p>{{ t('entities.deleted.frozenNotice') }}</p>
     </aside>
 
-    <ListToolbar v-model:search="search" :search-placeholder="t('entities.admin.searchPlaceholder')">
+    <ListToolbar
+      v-model:search="search"
+      :search-placeholder="t('entities.admin.searchPlaceholder')"
+    >
       <template #filters>
         <EntityListFilters :filters="filters" :region-options="regions.regionOptions.value" />
       </template>

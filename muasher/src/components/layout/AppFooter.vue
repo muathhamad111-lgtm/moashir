@@ -40,7 +40,8 @@ const email = computed(() => contact.value?.email ?? '')
 const phone = computed(() => contact.value?.phone ?? '')
 
 function onQuickLink(event, url) {
-  if (!url || /^https?:\/\//.test(url) || url.startsWith('mailto:') || url.startsWith('tel:')) return
+  if (!url || /^https?:\/\//.test(url) || url.startsWith('mailto:') || url.startsWith('tel:'))
+    return
   if (url.startsWith('#')) {
     const target = document.getElementById(url.slice(1))
     if (target) {
@@ -67,11 +68,7 @@ const DEMO_MODULES = [MOCK_MODULES.CMS]
           <p v-if="footerNote" class="footer__note">{{ footerNote }}</p>
         </div>
 
-        <nav
-          v-if="quickLinks.length"
-          class="footer__nav"
-          :aria-label="t('nav.footerLabel')"
-        >
+        <nav v-if="quickLinks.length" class="footer__nav" :aria-label="t('nav.footerLabel')">
           <span class="footer__col-title">{{ t('footer.quickLinks') }}</span>
           <a
             v-for="link in quickLinks"
@@ -87,12 +84,7 @@ const DEMO_MODULES = [MOCK_MODULES.CMS]
         <div v-if="contact" class="footer__contact">
           <span class="footer__col-title">{{ t('footer.contactTitle') }}</span>
           <a v-if="email" class="footer__link" :href="`mailto:${email}`">{{ email }}</a>
-          <a
-            v-if="phone"
-            class="footer__link"
-            :href="`tel:${phone.replace(/\s+/g, '')}`"
-            dir="ltr"
-          >
+          <a v-if="phone" class="footer__link" :href="`tel:${phone.replace(/\s+/g, '')}`" dir="ltr">
             {{ phone }}
           </a>
           <ul

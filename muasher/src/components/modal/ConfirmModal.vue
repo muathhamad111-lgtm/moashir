@@ -17,13 +17,20 @@ const isOpen = computed({
 </script>
 
 <template>
-  <BaseModal v-model="isOpen" size="sm" :title="confirmState.title || t('components.confirm.title')">
+  <BaseModal
+    v-model="isOpen"
+    size="sm"
+    :title="confirmState.title || t('components.confirm.title')"
+  >
     <p>{{ confirmState.message }}</p>
     <template #footer>
       <BaseButton variant="secondary" @click="dismiss">
         {{ confirmState.cancelLabel || t('actions.cancel') }}
       </BaseButton>
-      <BaseButton :variant="confirmState.variant === 'danger' ? 'danger' : 'primary'" @click="accept">
+      <BaseButton
+        :variant="confirmState.variant === 'danger' ? 'danger' : 'primary'"
+        @click="accept"
+      >
         {{ confirmState.confirmLabel || t('actions.confirm') }}
       </BaseButton>
     </template>

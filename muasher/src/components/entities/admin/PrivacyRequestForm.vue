@@ -19,7 +19,12 @@ const emit = defineEmits(['update:modelValue', 'created'])
 const EMPTY_VALUES = { entityId: '', kind: '', details: '' }
 
 const { t } = useI18n()
-const kindOptions = computed(() => PRIVACY_REQUEST_KINDS.map((value) => ({ value, label: t(`entities.enums.privacyKind.${value}`) })))
+const kindOptions = computed(() =>
+  PRIVACY_REQUEST_KINDS.map((value) => ({
+    value,
+    label: t(`entities.enums.privacyKind.${value}`),
+  })),
+)
 
 const form = useValidatedForm({
   schema: computed(() => privacyRequestSchema(t)),
@@ -54,8 +59,17 @@ watch(
     @submit="form.onSubmit"
   >
     <div class="entity-form">
-      <EntityPickerField v-if="modelValue" :label="t('entities.privacy.form.entity')" :placeholder="t('entities.privacy.form.entitySearch')" />
-      <FieldSelect name="kind" :label="t('entities.privacy.form.kind')" :options="kindOptions" required />
+      <EntityPickerField
+        v-if="modelValue"
+        :label="t('entities.privacy.form.entity')"
+        :placeholder="t('entities.privacy.form.entitySearch')"
+      />
+      <FieldSelect
+        name="kind"
+        :label="t('entities.privacy.form.kind')"
+        :options="kindOptions"
+        required
+      />
       <FieldTextarea
         name="details"
         :label="t('entities.privacy.form.details')"

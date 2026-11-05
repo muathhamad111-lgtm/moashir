@@ -11,13 +11,23 @@ import { createTestGlobals } from '@/test-utils'
 import { sessionUserFor } from '@/test-utils/session'
 
 vi.mock('@/services/entitiesService', () => ({
-  entitiesService: { requestEmailChange: vi.fn(), confirmEmailChange: vi.fn(), updateMine: vi.fn() },
+  entitiesService: {
+    requestEmailChange: vi.fn(),
+    confirmEmailChange: vi.fn(),
+    updateMine: vi.fn(),
+  },
 }))
 vi.mock('@/services/entityLifecycleService', () => ({
   entityLifecycleService: { permanentlyDelete: vi.fn() },
 }))
 
-const OTP = { challengeId: 'c-1', channel: 'email', length: 6, expiresAt: '2099-01-01T00:00:00Z', resendAvailableAt: '2099-01-01T00:00:00Z' }
+const OTP = {
+  challengeId: 'c-1',
+  channel: 'email',
+  length: 6,
+  expiresAt: '2099-01-01T00:00:00Z',
+  resendAvailableAt: '2099-01-01T00:00:00Z',
+}
 const PROFILE = {
   id: 5001,
   reference: 'ENT-005001',
@@ -49,17 +59,33 @@ function mountWith(component, props) {
   const globals = createTestGlobals({ locale: 'en' })
   setActivePinia(globals.pinia)
   useAuthStore().setUser(sessionUserFor(['entity']))
-  return mount(component, { props, global: { ...globals, stubs: { teleport: true } }, attachTo: document.body })
+  return mount(component, {
+    props,
+    global: { ...globals, stubs: { teleport: true } },
+    attachTo: document.body,
+  })
 }
 
 beforeEach(() => vi.clearAllMocks())
 
 describe('EmailChangeDialog', () => {
   it('sends the code to the new address, verifies it and shows the awaiting-approval outcome', async () => {
-    entitiesService.requestEmailChange.mockResolvedValue({ data: { otp: OTP, message: 'Code sent' } })
+    entitiesService.requestEmailChange.mockResolvedValue({
+      data: { otp: OTP, message: 'Code sent' },
+    })
     entitiesService.confirmEmailChange
-      .mockRejectedValueOnce(Object.assign(new Error('invalid'), { normalized: { fieldErrors: { code: ['The verification code is incorrect.'] } } }))
-      .mockResolvedValueOnce({ data: { status: 'awaiting-approval', policy: 'requires_approval', newEmail: 'o***@albirr.example.sa' } })
+      .mockRejectedValueOnce(
+        Object.assign(new Error('invalid'), {
+          normalized: { fieldErrors: { code: ['The verification code is incorrect.'] } },
+        }),
+      )
+      .mockResolvedValueOnce({
+        data: {
+          status: 'awaiting-approval',
+          policy: 'requires_approval',
+          newEmail: 'o***@albirr.example.sa',
+        },
+      })
     const wrapper = mountWith(EmailChangeDialog, { modelValue: true })
     await wrapper.find('[name="newEmail"]').setValue('office@albirr.example.sa')
     await wrapper.find('form').trigger('submit')
@@ -72,7 +98,10 @@ describe('EmailChangeDialog', () => {
     expect(wrapper.find('.email-change__error').text()).toBe('The verification code is incorrect.')
     wrapper.vm.$.setupState.verify('482913')
     await settle()
-    expect(entitiesService.confirmEmailChange).toHaveBeenLastCalledWith({ challengeId: 'c-1', code: '482913' })
+    expect(entitiesService.confirmEmailChange).toHaveBeenLastCalledWith({
+      challengeId: 'c-1',
+      code: '482913',
+    })
     expect(wrapper.find('.email-change--done').text()).toContain('o***@albirr.example.sa')
     expect(wrapper.emitted('completed')).toHaveLength(1)
     wrapper.unmount()
@@ -92,14 +121,30 @@ describe('PermanentDeleteDialog', () => {
     entityLifecycleService.permanentlyDelete
       .mockRejectedValueOnce(
         Object.assign(new Error('mismatch'), {
-          normalized: { code: 'confirmation.mismatch', message: 'Mismatch', fieldErrors: { confirmation: ['The typed confirmation does not match the entity reference.'] } },
+          normalized: {
+            code: 'confirmation.mismatch',
+            message: 'Mismatch',
+            fieldErrors: {
+              confirmation: ['The typed confirmation does not match the entity reference.'],
+            },
+          },
         }),
       )
-      .mockResolvedValueOnce({ data: { reference: 'ENT-007003', pseudonym: 'ERASED-007003', kept: [] } })
+      .mockResolvedValueOnce({
+        data: { reference: 'ENT-007003', pseudonym: 'ERASED-007003', kept: [] },
+      })
     const globals = createTestGlobals({ locale: 'en' })
     setActivePinia(globals.pinia)
-    const entity = { id: 7003, reference: 'ENT-007003', name: { ar: 'وقف النور التعليمي', en: 'Al-Noor Educational Waqf' } }
-    const wrapper = mount(PermanentDeleteDialog, { props: { modelValue: false, entity }, global: globals, attachTo: document.body })
+    const entity = {
+      id: 7003,
+      reference: 'ENT-007003',
+      name: { ar: 'وقف النور التعليمي', en: 'Al-Noor Educational Waqf' },
+    }
+    const wrapper = mount(PermanentDeleteDialog, {
+      props: { modelValue: false, entity },
+      global: globals,
+      attachTo: document.body,
+    })
     await wrapper.setProps({ modelValue: true })
     expect(document.body.querySelectorAll('.permanent-delete__list li')).toHaveLength(6)
     const disclaimer = body('[name="disclaimerAcknowledged"]')
@@ -115,7 +160,9 @@ describe('PermanentDeleteDialog', () => {
       confirmation: 'ent-007003',
       disclaimerAcknowledged: true,
     })
-    expect(body('.permanent-delete').textContent).toContain('The typed confirmation does not match the entity reference.')
+    expect(body('.permanent-delete').textContent).toContain(
+      'The typed confirmation does not match the entity reference.',
+    )
     body('.permanent-delete').dispatchEvent(new Event('submit'))
     await settle()
     expect(wrapper.emitted('erased')[0][0]).toMatchObject({ pseudonym: 'ERASED-007003' })
@@ -131,7 +178,9 @@ describe('EntityProfileEditor', () => {
   }
 
   it('reviews only the changed fields before an explicit save with the marketing choice', async () => {
-    entitiesService.updateMine.mockResolvedValue({ data: { ...PROFILE, governanceGrade: '91.25', marketingConsent: false } })
+    entitiesService.updateMine.mockResolvedValue({
+      data: { ...PROFILE, governanceGrade: '91.25', marketingConsent: false },
+    })
     const wrapper = mountWith(EntityProfileEditor, props)
     await wrapper.find('form').trigger('submit')
     await settle()
@@ -150,7 +199,12 @@ describe('EntityProfileEditor', () => {
     await wrapper.find('.entity-form__actions .btn--primary').trigger('click')
     await settle()
     expect(entitiesService.updateMine).toHaveBeenCalledWith(
-      expect.objectContaining({ governanceGrade: '91.25', marketingConsent: false, regionId: 1, cityId: 1 }),
+      expect.objectContaining({
+        governanceGrade: '91.25',
+        marketingConsent: false,
+        regionId: 1,
+        cityId: 1,
+      }),
     )
     expect(wrapper.emitted('saved')).toHaveLength(1)
     wrapper.unmount()

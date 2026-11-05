@@ -15,10 +15,15 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 const { t } = useI18n()
 
-const hint = computed(() => t('accredited.cv.hint', { count: props.modelValue.length, max: ACCREDITED_LIMITS.CV_MAX }))
+const hint = computed(() =>
+  t('accredited.cv.hint', { count: props.modelValue.length, max: ACCREDITED_LIMITS.CV_MAX }),
+)
 const error = computed(() => {
-  if (props.modelValue.length > ACCREDITED_LIMITS.CV_MAX) return t('accredited.cv.tooLong', { max: ACCREDITED_LIMITS.CV_MAX })
-  return props.missing && props.editable && !props.modelValue.trim() ? t('accredited.cv.required') : ''
+  if (props.modelValue.length > ACCREDITED_LIMITS.CV_MAX)
+    return t('accredited.cv.tooLong', { max: ACCREDITED_LIMITS.CV_MAX })
+  return props.missing && props.editable && !props.modelValue.trim()
+    ? t('accredited.cv.required')
+    : ''
 })
 </script>
 

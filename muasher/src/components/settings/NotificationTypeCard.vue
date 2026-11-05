@@ -98,7 +98,13 @@ function onSave() {
         :rows="3"
       />
       <div class="notification-type__actions">
-        <BaseButton variant="primary" size="sm" :loading="saving" icon="fa-solid fa-floppy-disk" @click="onSave">
+        <BaseButton
+          variant="primary"
+          size="sm"
+          :loading="saving"
+          icon="fa-solid fa-floppy-disk"
+          @click="onSave"
+        >
           {{ t('actions.save') }}
         </BaseButton>
       </div>

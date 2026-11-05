@@ -83,12 +83,7 @@ onBeforeUnmount(() => {
 
 <template>
   <Teleport to="body">
-    <div
-      v-if="modelValue"
-      class="modal is-open"
-      :class="`modal--${size}`"
-      @keydown="onKeydown"
-    >
+    <div v-if="modelValue" class="modal is-open" :class="`modal--${size}`" @keydown="onKeydown">
       <div class="modal__backdrop" @click="onBackdropClick"></div>
       <div
         ref="panelRef"

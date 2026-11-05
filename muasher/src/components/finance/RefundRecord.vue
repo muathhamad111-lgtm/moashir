@@ -20,8 +20,19 @@ const { t, locale } = useI18n()
 const SCAN_VARIANTS = { pending: 'warning', clean: 'success', infected: 'danger', failed: 'danger' }
 
 const isClean = computed(() => props.refund.evidence.scanStatus === SCAN_STATUSES.CLEAN)
-const refundedOn = computed(() => formatDate(`${props.refund.refundedOn}T12:00:00+03:00`, locale.value, { dateStyle: 'long', timeZone: 'Asia/Riyadh' }))
-const recordedAt = computed(() => formatDate(props.refund.createdAt, locale.value, { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Riyadh' }))
+const refundedOn = computed(() =>
+  formatDate(`${props.refund.refundedOn}T12:00:00+03:00`, locale.value, {
+    dateStyle: 'long',
+    timeZone: 'Asia/Riyadh',
+  }),
+)
+const recordedAt = computed(() =>
+  formatDate(props.refund.createdAt, locale.value, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'Asia/Riyadh',
+  }),
+)
 </script>
 
 <template>
@@ -37,7 +48,9 @@ const recordedAt = computed(() => formatDate(props.refund.createdAt, locale.valu
       </div>
       <div class="payment-facts__row">
         <dt>{{ t('finance.refund.transferReference') }}</dt>
-        <dd><bdi dir="ltr">{{ refund.transferReference }}</bdi></dd>
+        <dd>
+          <bdi dir="ltr">{{ refund.transferReference }}</bdi>
+        </dd>
       </div>
       <div class="payment-facts__row">
         <dt>{{ t('finance.refund.reason') }}</dt>
@@ -45,20 +58,32 @@ const recordedAt = computed(() => formatDate(props.refund.createdAt, locale.valu
       </div>
       <div class="payment-facts__row">
         <dt>{{ t('finance.refund.recordedBy') }}</dt>
-        <dd>{{ refund.recordedBy.name }} <span class="payment-facts__muted">{{ recordedAt }}</span></dd>
+        <dd>
+          {{ refund.recordedBy.name }} <span class="payment-facts__muted">{{ recordedAt }}</span>
+        </dd>
       </div>
       <div class="payment-facts__row">
         <dt>{{ t('finance.refund.evidence.label') }}</dt>
         <dd class="refund-record__evidence">
           <i class="fa-solid fa-file-shield" aria-hidden="true"></i>
           <bdi dir="ltr">{{ refund.evidence.name }}</bdi>
-          <span class="payment-facts__muted">{{ t('finance.common.sizeKb', { size: formatFileSize(refund.evidence.sizeBytes, locale) }) }}</span>
-          <Badge :variant="SCAN_VARIANTS[refund.evidence.scanStatus] ?? 'muted'">{{ t(`finance.scan.${refund.evidence.scanStatus}`) }}</Badge>
+          <span class="payment-facts__muted">{{
+            t('finance.common.sizeKb', { size: formatFileSize(refund.evidence.sizeBytes, locale) })
+          }}</span>
+          <Badge :variant="SCAN_VARIANTS[refund.evidence.scanStatus] ?? 'muted'">{{
+            t(`finance.scan.${refund.evidence.scanStatus}`)
+          }}</Badge>
         </dd>
       </div>
     </dl>
     <template #footer>
-      <BaseButton variant="secondary" icon="fa-solid fa-file-arrow-down" :disabled="!isClean" :loading="downloading" @click="emit('download')">
+      <BaseButton
+        variant="secondary"
+        icon="fa-solid fa-file-arrow-down"
+        :disabled="!isClean"
+        :loading="downloading"
+        @click="emit('download')"
+      >
         {{ t('finance.refund.downloadEvidence') }}
       </BaseButton>
     </template>

@@ -1,4 +1,10 @@
-export const SANDBOX_OUTCOME_ORDER = ['paid', 'declined', 'insufficient_funds', 'three_ds_completes', 'three_ds_pending']
+export const SANDBOX_OUTCOME_ORDER = [
+  'paid',
+  'declined',
+  'insufficient_funds',
+  'three_ds_completes',
+  'three_ds_pending',
+]
 
 export const moyasarSandboxTexts = {
   ar: {
@@ -16,10 +22,15 @@ export const moyasarSandboxTexts = {
       three_ds_completes: 'تحقق 3-D Secure يكتمل بعد لحظات',
       three_ds_pending: 'تحقق 3-D Secure لم يكتمل',
     },
-    methods: { creditcard: 'بطاقة مدى أو بطاقة ائتمانية', applepay: 'Apple Pay', stcpay: 'STC Pay' },
+    methods: {
+      creditcard: 'بطاقة مدى أو بطاقة ائتمانية',
+      applepay: 'Apple Pay',
+      stcpay: 'STC Pay',
+    },
   },
   en: {
-    notice: 'A local sandbox form that simulates the Moyasar form. Enter no card details; nothing is charged.',
+    notice:
+      'A local sandbox form that simulates the Moyasar form. Enter no card details; nothing is charged.',
     outcomeLabel: 'Sandbox payment outcome',
     methodLabel: 'Payment method',
     pay: 'Pay',

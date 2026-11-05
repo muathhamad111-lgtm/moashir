@@ -21,7 +21,17 @@ import { PERMISSIONS } from '@/constants/permissionKeys'
 const { t } = useI18n()
 const { can } = usePermissions()
 const email = useEmailIntegration()
-const { status, errorMessage, resource, fromEnvironment, saving, reasonOpen, load, submit, confirmReason } = email
+const {
+  status,
+  errorMessage,
+  resource,
+  fromEnvironment,
+  saving,
+  reasonOpen,
+  load,
+  submit,
+  confirmReason,
+} = email
 const { onTested, dnsRecords, cardStatus, clientSteps } = email
 const runTest = () => emailIntegrationService.testConnection()
 
@@ -29,12 +39,32 @@ onMounted(load)
 </script>
 
 <template>
-  <SettingsSection :title="t('integrations.email.title')" :description="t('integrations.email.description')" :status="status" :error-message="errorMessage" @retry="load">
+  <SettingsSection
+    :title="t('integrations.email.title')"
+    :description="t('integrations.email.description')"
+    :status="status"
+    :error-message="errorMessage"
+    @retry="load"
+  >
     <form id="email-integration-form" class="integration-form" novalidate @submit.prevent="submit">
       <EnvironmentSourceNote v-if="fromEnvironment" />
-      <IntegrationCard :title="t('integrations.email.smtpTitle')" :description="t('integrations.email.smtpDesc')" :status="cardStatus">
-        <SmtpFields :password-meta="resource.password" :password-hint="fromEnvironment ? t('integrations.email.fields.passwordFromEnvironment') : ''" />
-        <ConnectionTestPanel :run="runTest" :disabled="!resource.configured" :disabled-hint="t('integrations.feedback.saveDetailsFirst')" @settled="onTested" />
+      <IntegrationCard
+        :title="t('integrations.email.smtpTitle')"
+        :description="t('integrations.email.smtpDesc')"
+        :status="cardStatus"
+      >
+        <SmtpFields
+          :password-meta="resource.password"
+          :password-hint="
+            fromEnvironment ? t('integrations.email.fields.passwordFromEnvironment') : ''
+          "
+        />
+        <ConnectionTestPanel
+          :run="runTest"
+          :disabled="!resource.configured"
+          :disabled-hint="t('integrations.feedback.saveDetailsFirst')"
+          @settled="onTested"
+        />
       </IntegrationCard>
       <IntegrationCard :title="t('integrations.email.senderTitle')">
         <EmailSenderFields />
@@ -58,7 +88,13 @@ onMounted(load)
     />
 
     <template #actions>
-      <BaseButton type="submit" form="email-integration-form" variant="primary" :loading="saving" icon="fa-solid fa-floppy-disk">
+      <BaseButton
+        type="submit"
+        form="email-integration-form"
+        variant="primary"
+        :loading="saving"
+        icon="fa-solid fa-floppy-disk"
+      >
         {{ t('actions.save') }}
       </BaseButton>
     </template>

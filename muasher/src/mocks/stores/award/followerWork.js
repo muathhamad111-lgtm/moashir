@@ -4,7 +4,12 @@ import { ACTORS, transition, visibleActorId } from '../assessments/statusHistory
 import { activeAssignment, nowIso, openCompletionOf, touch } from '../accredited/accreditedRecords'
 import { assertNotFrozen } from '../accredited/entityWorkflow'
 import { completionItem, itemErrors } from '../accredited/assessorWork'
-import { lengthError, reasonError, throwIfErrors, trimmed } from '../accredited/accreditedValidation'
+import {
+  lengthError,
+  reasonError,
+  throwIfErrors,
+  trimmed,
+} from '../accredited/accreditedValidation'
 import { ADVANCED_STATES, isWithdrawable } from './advancedStates'
 import { findCycle } from './cycleStore'
 import { awardReject } from './awardRejection'
@@ -29,7 +34,8 @@ function validateReturn(body) {
   itemErrors(body.items, errors)
   const deadline = deadlineError(body.deadlineAt)
   if (deadline) errors.deadlineAt = deadline
-  if (!EXPIRY_OUTCOMES.includes(body.expiryOutcome)) errors.expiryOutcome = [fieldMessage('validation.required', {}, 'expiryOutcome')]
+  if (!EXPIRY_OUTCOMES.includes(body.expiryOutcome))
+    errors.expiryOutcome = [fieldMessage('validation.required', {}, 'expiryOutcome')]
   const reason = reasonError(body.reason)
   if (reason) errors.reason = reason
   throwIfErrors(errors)
@@ -38,23 +44,46 @@ function validateReturn(body) {
 
 function assertBeforeCommittee(record, deadlineAt) {
   const cycle = findCycle(record.awardCycleId)
-  if (new Date(deadlineAt).getTime() > new Date(cycle.committeeStart).getTime()) throw awardReject.deadlineAfterCommittee(cycle.committeeStart)
+  if (new Date(deadlineAt).getTime() > new Date(cycle.committeeStart).getTime())
+    throw awardReject.deadlineAfterCommittee(cycle.committeeStart)
 }
 
 export function returnForCompletion(user, record, body) {
   const reason = validateReturn(body)
   assertNotFrozen(record)
   if (user.superAdmin && !reason) throw assessmentReject.reasonRequired()
-  if (record.status !== ADVANCED_STATES.AWAITING_ASSIGNMENT) throw assessmentReject.illegalTransition(toCanonicalStatus(record.status), 'return_for_completion')
+  if (record.status !== ADVANCED_STATES.AWAITING_ASSIGNMENT)
+    throw assessmentReject.illegalTransition(
+      toCanonicalStatus(record.status),
+      'return_for_completion',
+    )
   const deadlineAt = new Date(body.deadlineAt).toISOString()
   assertBeforeCommittee(record, deadlineAt)
   const items = body.items.map((item, index) => completionItem(record, item, index))
   const at = nowIso()
   returnSequence += 1
-  const completion = { id: returnSequence, status: 'open', notes: body.notes.trim(), items, deadlineAt, expiryOutcome: body.expiryOutcome, createdAt: at, resolvedAt: null }
+  const completion = {
+    id: returnSequence,
+    status: 'open',
+    notes: body.notes.trim(),
+    items,
+    deadlineAt,
+    expiryOutcome: body.expiryOutcome,
+    createdAt: at,
+    resolvedAt: null,
+  }
   record.completionRequests.push(completion)
   record.status = ADVANCED_STATES.NEEDS_COMPLETION
-  record.transitions.push(transition(ADVANCED_STATES.AWAITING_ASSIGNMENT, ADVANCED_STATES.NEEDS_COMPLETION, 'return_for_completion', at, ACTORS.STAFF, visibleActorId(user)))
+  record.transitions.push(
+    transition(
+      ADVANCED_STATES.AWAITING_ASSIGNMENT,
+      ADVANCED_STATES.NEEDS_COMPLETION,
+      'return_for_completion',
+      at,
+      ACTORS.STAFF,
+      visibleActorId(user),
+    ),
+  )
   touch(record)
   announceReturned(record, completion)
   return record
@@ -63,15 +92,24 @@ export function returnForCompletion(user, record, body) {
 export function withdrawRequest(user, record, body) {
   const reasonFault = reasonError(body.reason, { required: true })
   if (reasonFault) throw assessmentReject.validation({ reason: reasonFault })
-  if (!isWithdrawable(record.status)) throw assessmentReject.illegalTransition(toCanonicalStatus(record.status), 'withdraw')
+  if (!isWithdrawable(record.status))
+    throw assessmentReject.illegalTransition(toCanonicalStatus(record.status), 'withdraw')
   const at = nowIso()
   const assignment = activeAssignment(record)
-  if (assignment) Object.assign(assignment, { status: 'ended', endedAt: at, endReason: 'withdrawn' })
+  if (assignment)
+    Object.assign(assignment, { status: 'ended', endedAt: at, endReason: 'withdrawn' })
   const completion = openCompletionOf(record)
   if (completion) Object.assign(completion, { status: 'cancelled', resolvedAt: at })
   const from = record.status
-  Object.assign(record, { status: ADVANCED_STATES.WITHDRAWN, withdrawnAt: at, withdrawalReason: trimmed(body.reason), updatedAt: at })
-  record.transitions.push(transition(from, ADVANCED_STATES.WITHDRAWN, 'withdraw', at, ACTORS.STAFF, visibleActorId(user)))
+  Object.assign(record, {
+    status: ADVANCED_STATES.WITHDRAWN,
+    withdrawnAt: at,
+    withdrawalReason: trimmed(body.reason),
+    updatedAt: at,
+  })
+  record.transitions.push(
+    transition(from, ADVANCED_STATES.WITHDRAWN, 'withdraw', at, ACTORS.STAFF, visibleActorId(user)),
+  )
   announceWithdrawn(record)
   return record
 }

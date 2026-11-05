@@ -22,12 +22,18 @@ const { roleLabel, groupLabel } = usePermissionsCatalog()
 const selectedRoles = ref([])
 
 const isLocked = computed(() => (props.permission?.lockedToRoles ?? []).length > 0)
-const roleItems = computed(() => props.editableRoles.map((role) => ({ value: role, label: roleLabel(role) })))
+const roleItems = computed(() =>
+  props.editableRoles.map((role) => ({ value: role, label: roleLabel(role) })),
+)
 
 const schema = computed(() =>
   yupObject({
-    nameAr: yupString().required(t('validation.required')).min(2, t('validation.minChars', { min: 2 })),
-    nameEn: yupString().required(t('validation.required')).min(2, t('validation.minChars', { min: 2 })),
+    nameAr: yupString()
+      .required(t('validation.required'))
+      .min(2, t('validation.minChars', { min: 2 })),
+    nameEn: yupString()
+      .required(t('validation.required'))
+      .min(2, t('validation.minChars', { min: 2 })),
     descriptionAr: yupString().default(''),
     descriptionEn: yupString().default(''),
   }),
@@ -55,7 +61,10 @@ const form = useValidatedForm({
   submit: async (values) => {
     emit('saved', {
       label: { ar: values.nameAr.trim(), en: values.nameEn.trim() },
-      description: { ar: (values.descriptionAr ?? '').trim(), en: (values.descriptionEn ?? '').trim() },
+      description: {
+        ar: (values.descriptionAr ?? '').trim(),
+        en: (values.descriptionEn ?? '').trim(),
+      },
       roles: [...selectedRoles.value],
     })
   },
@@ -99,7 +108,9 @@ function toggleRole(value, checked) {
         <dl class="permission-form__facts">
           <div class="permission-form__fact">
             <dt>{{ t('permissions.fields.key') }}</dt>
-            <dd><code class="permissions-page__key">{{ permission?.key }}</code></dd>
+            <dd>
+              <code class="permissions-page__key">{{ permission?.key }}</code>
+            </dd>
           </div>
           <div class="permission-form__fact">
             <dt>{{ t('permissions.fields.group') }}</dt>
@@ -152,7 +163,11 @@ function toggleRole(value, checked) {
           <i class="fa-solid fa-lock" aria-hidden="true"></i>
           {{ t('permissions.lockedHint') }}
         </p>
-        <div class="permission-form__matrix" role="group" :aria-label="t('permissions.fields.roles')">
+        <div
+          class="permission-form__matrix"
+          role="group"
+          :aria-label="t('permissions.fields.roles')"
+        >
           <BaseCheckbox
             v-for="item in roleItems"
             :key="item.value"

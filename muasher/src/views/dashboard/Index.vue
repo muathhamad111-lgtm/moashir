@@ -2,7 +2,11 @@
 import { computed, provide } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
-import { heldDashboardKeys, resolveDashboardKey, resolvePrimaryRole } from '@/constants/dashboardRoles'
+import {
+  heldDashboardKeys,
+  resolveDashboardKey,
+  resolvePrimaryRole,
+} from '@/constants/dashboardRoles'
 import { useAggregatedActions } from '@/composables/useAggregatedActions'
 import { ADDITIONAL_ACTIONS_KEY } from '@/constants/dashboardInjection'
 import AdminDashboard from '@/components/dashboard/roles/AdminDashboard.vue'
@@ -28,7 +32,9 @@ const REGISTRY = {
 const { t } = useI18n()
 const auth = useAuthStore()
 
-const boardOptions = computed(() => ({ hasCommitteeAppointment: auth.committeeAppointments.length > 0 }))
+const boardOptions = computed(() => ({
+  hasCommitteeAppointment: auth.committeeAppointments.length > 0,
+}))
 const dashboardKey = computed(() => resolveDashboardKey(auth.roles, boardOptions.value))
 const primaryRole = computed(() => resolvePrimaryRole(auth.roles))
 const activeDashboard = computed(() => REGISTRY[dashboardKey.value] ?? EntityDashboard)
@@ -45,7 +51,9 @@ function localizedName(name) {
   return name.ar || name.en || ''
 }
 
-const greetingName = computed(() => localizedName(auth.user?.name) || t('dashboard.greetingFallback'))
+const greetingName = computed(
+  () => localizedName(auth.user?.name) || t('dashboard.greetingFallback'),
+)
 const roleLabel = computed(() => t(`users.roleLabels.${primaryRole.value}`))
 </script>
 

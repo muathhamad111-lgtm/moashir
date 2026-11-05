@@ -66,7 +66,12 @@ function onSave() {
     <div class="gap-guidance__head">
       <h4 class="gap-guidance__title">{{ t('bag.manage.guidance.title') }}</h4>
       <p class="gap-guidance__indicators">
-        {{ t('bag.manage.guidance.indicators', { gap: n(gap.gap, 'default'), weight: n(gap.target, 'default') }) }}
+        {{
+          t('bag.manage.guidance.indicators', {
+            gap: n(gap.gap, 'default'),
+            weight: n(gap.target, 'default'),
+          })
+        }}
       </p>
     </div>
 
@@ -107,7 +112,12 @@ function onSave() {
     />
 
     <div class="gap-guidance__footer">
-      <BaseButton type="submit" variant="secondary" icon="fa-solid fa-floppy-disk" :loading="saving">
+      <BaseButton
+        type="submit"
+        variant="secondary"
+        icon="fa-solid fa-floppy-disk"
+        :loading="saving"
+      >
         {{ t('bag.manage.guidance.save') }}
       </BaseButton>
     </div>

@@ -11,7 +11,10 @@ export function useAssignAssessor({ requestId }) {
   async function loadAssessors() {
     status.value = 'loading'
     try {
-      const params = { assessmentId: requestId.value, ...(search.value.trim() ? { search: search.value.trim() } : {}) }
+      const params = {
+        assessmentId: requestId.value,
+        ...(search.value.trim() ? { search: search.value.trim() } : {}),
+      }
       const { data } = await requestsService.listAssessors(params)
       assessors.value = data
       status.value = data.length ? 'ready' : 'empty'
@@ -26,7 +29,9 @@ export function useAssignAssessor({ requestId }) {
   })
 
   function submit(mode, payload) {
-    return mode === 'reassign' ? requestsService.reassign(requestId.value, payload) : requestsService.assign(requestId.value, payload)
+    return mode === 'reassign'
+      ? requestsService.reassign(requestId.value, payload)
+      : requestsService.assign(requestId.value, payload)
   }
 
   onBeforeUnmount(() => clearTimeout(timer))

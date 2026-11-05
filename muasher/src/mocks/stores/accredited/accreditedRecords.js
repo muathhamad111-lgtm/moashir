@@ -67,7 +67,12 @@ export function activeAssignment(record) {
 }
 
 export function isOverdue(record, now = Date.now()) {
-  return isReviewedPath(record.path) && pathRules(record.path).runsClock(record.status) && record.dueAt !== null && new Date(record.dueAt).getTime() < now
+  return (
+    isReviewedPath(record.path) &&
+    pathRules(record.path).runsClock(record.status) &&
+    record.dueAt !== null &&
+    new Date(record.dueAt).getTime() < now
+  )
 }
 
 export function gapsOf(record) {
@@ -78,7 +83,9 @@ export function gapsOf(record) {
       .map((row) => `${row.subCode}|${row.attachmentKey}`),
   )
   return {
-    missingCv: subs.filter((sub) => sub.hasCv && !String(record.cv[sub.code] ?? '').trim()).map((sub) => ({ subCriterionId: sub.id, code: sub.code })),
+    missingCv: subs
+      .filter((sub) => sub.hasCv && !String(record.cv[sub.code] ?? '').trim())
+      .map((sub) => ({ subCriterionId: sub.id, code: sub.code })),
     missingAttachments: subs.flatMap((sub) =>
       sub.requiredKeys
         .filter((key) => !provided.has(`${sub.code}|${key}`))

@@ -27,9 +27,14 @@ export function enterEntityGate(user, record, { verb, reason }) {
   assertNotFrozen(record)
   if (entityOf(record).status !== ACTIVE_ENTITY) throw assessmentReject.entityNotActive()
   if (user.superAdmin && !reason) throw assessmentReject.reasonRequired()
-  if (!acceptsEntityContent(record.status)) throw assessmentReject.illegalTransition(toCanonicalStatus(record.status), verb)
+  if (!acceptsEntityContent(record.status))
+    throw assessmentReject.illegalTransition(toCanonicalStatus(record.status), verb)
   if (deadlinePassed(record)) throw assessmentReject.coded(409, 'completion.deadline_passed')
-  if (isAdvanced(record) && record.status === STATES.DRAFT && !acceptsApplications(findCycle(record.awardCycleId))) {
+  if (
+    isAdvanced(record) &&
+    record.status === STATES.DRAFT &&
+    !acceptsApplications(findCycle(record.awardCycleId))
+  ) {
     throw assessmentReject.coded(409, 'cycle.submission_closed')
   }
 }
@@ -48,7 +53,8 @@ export function isRequestedItem(record, sub, kind) {
 function validateCvBody(body) {
   const errors = {}
   const entries = isPlainObject(body.cv) ? Object.entries(body.cv) : null
-  if (!entries || !entries.length || entries.length > CV_MAX_ITEMS) errors.cv = [fieldMessage('validation.required', {}, 'cv')]
+  if (!entries || !entries.length || entries.length > CV_MAX_ITEMS)
+    errors.cv = [fieldMessage('validation.required', {}, 'cv')]
   ;(entries ?? []).forEach(([subId, text]) => {
     if (text !== null && (typeof text !== 'string' || text.length > CV_MAX)) {
       errors[`cv.${subId}`] = [fieldMessage('validation.max_chars', { max: CV_MAX }, 'cv')]
@@ -65,7 +71,8 @@ function cvChange(record, subId, text) {
   const field = `cv.${subId}`
   if (!sub) throw assessmentReject.coded(422, 'assessment.sub_not_in_version', field)
   if (!sub.hasCv) throw assessmentReject.coded(422, 'cv.not_allowed', field)
-  if (!isRequestedItem(record, sub, 'cv')) throw assessmentReject.coded(422, 'completion.item_not_requested', field)
+  if (!isRequestedItem(record, sub, 'cv'))
+    throw assessmentReject.coded(422, 'completion.item_not_requested', field)
   return { code: sub.code, text: typeof text === 'string' && text.trim() ? text : null }
 }
 
@@ -84,7 +91,12 @@ export function saveAccreditedCv(user, record, body) {
 
 function submissionFields(gaps) {
   return {
-    ...Object.fromEntries(gaps.missingCv.map((item) => [`cv.${item.subCriterionId}`, [fieldMessage('submission.cv_missing', { code: item.code })]])),
+    ...Object.fromEntries(
+      gaps.missingCv.map((item) => [
+        `cv.${item.subCriterionId}`,
+        [fieldMessage('submission.cv_missing', { code: item.code })],
+      ]),
+    ),
     ...Object.fromEntries(
       gaps.missingAttachments.map((item) => [
         `attachments.${item.subCriterionId}.${item.attachmentKey}`,
@@ -96,8 +108,23 @@ function submissionFields(gaps) {
 
 function firstSubmission(user, record, at) {
   const slaDays = assessmentSettings().accreditedReviewSlaDays
-  Object.assign(record, { status: STATES.SUBMITTED, submittedAt: at, dueAt: addDays(at, slaDays), reviewSlaDays: slaDays, updatedAt: at })
-  record.transitions.push(transition(STATES.DRAFT, STATES.SUBMITTED, 'submit', at, actorOf(user, record), visibleActorId(user)))
+  Object.assign(record, {
+    status: STATES.SUBMITTED,
+    submittedAt: at,
+    dueAt: addDays(at, slaDays),
+    reviewSlaDays: slaDays,
+    updatedAt: at,
+  })
+  record.transitions.push(
+    transition(
+      STATES.DRAFT,
+      STATES.SUBMITTED,
+      'submit',
+      at,
+      actorOf(user, record),
+      visibleActorId(user),
+    ),
+  )
 }
 
 function resubmission(user, record, at) {
@@ -106,7 +133,14 @@ function resubmission(user, record, at) {
   completion.resolvedAt = at
   Object.assign(record, { status: STATES.UNDER_REVIEW, updatedAt: at })
   record.transitions.push(
-    transition(STATES.NEEDS_COMPLETION, STATES.UNDER_REVIEW, 'resubmit', at, user.superAdmin ? ACTORS.STAFF : ACTORS.ENTITY, visibleActorId(user)),
+    transition(
+      STATES.NEEDS_COMPLETION,
+      STATES.UNDER_REVIEW,
+      'resubmit',
+      at,
+      user.superAdmin ? ACTORS.STAFF : ACTORS.ENTITY,
+      visibleActorId(user),
+    ),
   )
 }
 
@@ -122,7 +156,16 @@ function advancedSubmission(user, record, at) {
     updatedAt: at,
   })
   const verb = from === STATES.DRAFT ? 'submit' : 'resubmit'
-  record.transitions.push(transition(from, ADVANCED_STATES.AWAITING_ASSIGNMENT, verb, at, actorOf(user, record), visibleActorId(user)))
+  record.transitions.push(
+    transition(
+      from,
+      ADVANCED_STATES.AWAITING_ASSIGNMENT,
+      verb,
+      at,
+      actorOf(user, record),
+      visibleActorId(user),
+    ),
+  )
   announceSubmitted(record, { resubmission: from !== STATES.DRAFT })
 }
 
@@ -138,7 +181,8 @@ export function submitReviewedRequest(user, record, body) {
   if (record.criteriaUpdatePendingSince !== null) throw assessmentReject.criteriaUpdateInProgress()
   if (isAdvanced(record)) assertAdvancedConditions(record)
   const gaps = gapsOf(record)
-  if (gaps.missingCv.length || gaps.missingAttachments.length) throw assessmentReject.submissionIncomplete(gaps, submissionFields(gaps))
+  if (gaps.missingCv.length || gaps.missingAttachments.length)
+    throw assessmentReject.submissionIncomplete(gaps, submissionFields(gaps))
   const at = nowIso()
   if (isAdvanced(record)) advancedSubmission(user, record, at)
   else if (record.status === STATES.DRAFT) firstSubmission(user, record, at)

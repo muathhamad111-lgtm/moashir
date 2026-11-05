@@ -17,13 +17,25 @@ const { fields } = useFieldArray('templates')
 const definitionOf = (key) => props.definitions.find((definition) => definition.key === key)
 const notice = computed(() => {
   if (!props.templateRestricted) return ''
-  return t(props.templatesLoaded ? 'integrations.sms.templateCheckActive' : 'integrations.sms.templateCheckNeedsTemplates')
+  return t(
+    props.templatesLoaded
+      ? 'integrations.sms.templateCheckActive'
+      : 'integrations.sms.templateCheckNeedsTemplates',
+  )
 })
 </script>
 
 <template>
-  <IntegrationCard :title="t('integrations.sms.templatesTitle')" :description="t('integrations.sms.templatesDesc')">
-    <p v-if="notice" class="sms-templates__check" :class="{ 'is-pending': !templatesLoaded }" role="note">
+  <IntegrationCard
+    :title="t('integrations.sms.templatesTitle')"
+    :description="t('integrations.sms.templatesDesc')"
+  >
+    <p
+      v-if="notice"
+      class="sms-templates__check"
+      :class="{ 'is-pending': !templatesLoaded }"
+      role="note"
+    >
       <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
       {{ notice }}
     </p>

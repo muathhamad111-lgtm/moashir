@@ -67,10 +67,26 @@ export const filteringResultsFixture = [
 ]
 
 export const committeeAssessorsFixture = [
-  { id: COMMITTEE_ASSESSOR_COMPLETED_A, name: { ar: 'د. سارة الحربي', en: 'Dr. Sara Al-Harbi' }, status: 'completed' },
-  { id: COMMITTEE_ASSESSOR_COMPLETED_B, name: { ar: 'أ. خالد العتيبي', en: 'Mr. Khalid Al-Otaibi' }, status: 'completed' },
-  { id: COMMITTEE_ASSESSOR_IN_PROGRESS, name: { ar: 'د. منى الشمري', en: 'Dr. Muna Al-Shammari' }, status: 'in-progress' },
-  { id: COMMITTEE_ASSESSOR_NOT_STARTED, name: { ar: 'أ. فهد القحطاني', en: 'Mr. Fahd Al-Qahtani' }, status: 'not-started' },
+  {
+    id: COMMITTEE_ASSESSOR_COMPLETED_A,
+    name: { ar: 'د. سارة الحربي', en: 'Dr. Sara Al-Harbi' },
+    status: 'completed',
+  },
+  {
+    id: COMMITTEE_ASSESSOR_COMPLETED_B,
+    name: { ar: 'أ. خالد العتيبي', en: 'Mr. Khalid Al-Otaibi' },
+    status: 'completed',
+  },
+  {
+    id: COMMITTEE_ASSESSOR_IN_PROGRESS,
+    name: { ar: 'د. منى الشمري', en: 'Dr. Muna Al-Shammari' },
+    status: 'in-progress',
+  },
+  {
+    id: COMMITTEE_ASSESSOR_NOT_STARTED,
+    name: { ar: 'أ. فهد القحطاني', en: 'Mr. Fahd Al-Qahtani' },
+    status: 'not-started',
+  },
 ]
 
 export const committeeScoresFixture = [

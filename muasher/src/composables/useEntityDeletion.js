@@ -45,7 +45,10 @@ export function useEntityDeletion({ entity, onDeleted }) {
   async function submitDeletion({ reason }) {
     const acknowledgedRequestNumbers = openRequests.value.map((request) => request.number)
     try {
-      await entityLifecycleService.softDelete(entity.value.id, { reason: reason.trim(), acknowledgedRequestNumbers })
+      await entityLifecycleService.softDelete(entity.value.id, {
+        reason: reason.trim(),
+        acknowledgedRequestNumbers,
+      })
       onDeleted()
     } catch (error) {
       if (error?.normalized?.code !== STALE_OPEN_REQUESTS) throw error

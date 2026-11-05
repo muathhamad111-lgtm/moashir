@@ -22,7 +22,8 @@ const BLOCKED_KEYS = {
 const { t } = useI18n()
 const router = useRouter()
 const handoff = useAssessmentResultHandoffStore()
-const { state, draftId, publishedVersion, blockedCode, errorMessage, starting, locate, start } = useSelfAssessmentEntry()
+const { state, draftId, publishedVersion, blockedCode, errorMessage, starting, locate, start } =
+  useSelfAssessmentEntry()
 
 const blockedKey = computed(() => BLOCKED_KEYS[blockedCode.value] ?? 'entityNotActive')
 

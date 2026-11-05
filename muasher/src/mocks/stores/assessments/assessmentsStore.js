@@ -109,13 +109,17 @@ export function isOpen(record) {
 
 export function exposesResult(record) {
   if (record.path === ASSESSMENT_PATHS.ADVANCED) return false
-  if (record.path === ASSESSMENT_PATHS.ACCREDITED) return record.status === 'completed' && record.result !== null
+  if (record.path === ASSESSMENT_PATHS.ACCREDITED)
+    return record.status === 'completed' && record.result !== null
   return record.result !== null
 }
 
 export function openSelfDraftsOf(entityId) {
   return allAssessments().filter(
-    (record) => record.path === ASSESSMENT_PATHS.SELF && record.entityId === Number(entityId) && isOpen(record),
+    (record) =>
+      record.path === ASSESSMENT_PATHS.SELF &&
+      record.entityId === Number(entityId) &&
+      isOpen(record),
   )
 }
 

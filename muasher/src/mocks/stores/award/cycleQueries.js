@@ -3,7 +3,16 @@ import { isPositiveInteger, throwIfErrors } from '../accredited/accreditedValida
 import { allCycles } from './cycleStore'
 import { canView } from './cycleAccess'
 
-const STATUSES = ['draft', 'submission-open', 'submission-closed', 'committee-assessment', 'awaiting-secretary', 'approved', 'announced', 'closed']
+const STATUSES = [
+  'draft',
+  'submission-open',
+  'submission-closed',
+  'committee-assessment',
+  'awaiting-secretary',
+  'approved',
+  'announced',
+  'closed',
+]
 const SORTABLE = ['submissionStart', 'announcementAt', 'createdAt']
 const SEARCH_MAX = 100
 const MAX_PER_PAGE = 100
@@ -19,16 +28,23 @@ function invalid(errors, field, attribute = 'filter') {
 
 export function cycleFiltersFrom(query) {
   const errors = {}
-  if ([...query.keys()].some((key) => key.startsWith('filter[') && key !== 'filter[status]')) invalid(errors, 'filter')
+  if ([...query.keys()].some((key) => key.startsWith('filter[') && key !== 'filter[status]'))
+    invalid(errors, 'filter')
   const status = query.get('filter[status]')
   if (status && !STATUSES.includes(status)) invalid(errors, 'filter.status')
   const sort = query.get('sort')
   if (sort && !sortFieldOf(sort)) invalid(errors, 'sort', 'sort')
-  if ((query.get('search') ?? '').length > SEARCH_MAX) errors.search = [fieldMessage('validation.max_chars', { max: SEARCH_MAX }, 'filter')]
+  if ((query.get('search') ?? '').length > SEARCH_MAX)
+    errors.search = [fieldMessage('validation.max_chars', { max: SEARCH_MAX }, 'filter')]
   const perPage = query.get('perPage')
-  if (perPage && (!isPositiveInteger(perPage) || Number(perPage) > MAX_PER_PAGE)) errors.perPage = [fieldMessage('validation.max', { max: MAX_PER_PAGE }, 'perPage')]
+  if (perPage && (!isPositiveInteger(perPage) || Number(perPage) > MAX_PER_PAGE))
+    errors.perPage = [fieldMessage('validation.max', { max: MAX_PER_PAGE }, 'perPage')]
   throwIfErrors(errors)
-  return { status: status || null, search: (query.get('search') ?? '').trim(), sort: sort || '-submission_start' }
+  return {
+    status: status || null,
+    search: (query.get('search') ?? '').trim(),
+    sort: sort || '-submission_start',
+  }
 }
 
 function matchesSearch(cycle, needle, normalize) {
@@ -66,6 +82,11 @@ function wireKeyOf(status) {
 
 export function cycleStats(user, filters, normalize) {
   const cycles = visibleCycles(user, filters, normalize)
-  const byStatus = Object.fromEntries(STATUSES.map((status) => [wireKeyOf(status), cycles.filter((cycle) => cycle.status === status).length]))
+  const byStatus = Object.fromEntries(
+    STATUSES.map((status) => [
+      wireKeyOf(status),
+      cycles.filter((cycle) => cycle.status === status).length,
+    ]),
+  )
   return { total: cycles.length, byStatus }
 }

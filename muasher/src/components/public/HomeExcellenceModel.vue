@@ -94,11 +94,7 @@ const bands = computed(() =>
             </ul>
           </section>
 
-          <div
-            v-if="index < bands.length - 1"
-            class="home-model__arrow"
-            aria-hidden="true"
-          >
+          <div v-if="index < bands.length - 1" class="home-model__arrow" aria-hidden="true">
             <i class="fa-solid fa-arrow-right-long"></i>
           </div>
         </template>

@@ -2,7 +2,9 @@ import { useSiteStatusStore } from '@/stores/siteStatus'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 
 export function isPublicVisitorRoute(route) {
-  return route.meta.layout === 'public' && !route.meta.requiresAuth && !route.meta.allowDuringMaintenance
+  return (
+    route.meta.layout === 'public' && !route.meta.requiresAuth && !route.meta.allowDuringMaintenance
+  )
 }
 
 export async function maintenanceRedirect(to) {

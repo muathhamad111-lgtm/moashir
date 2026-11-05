@@ -2,10 +2,17 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Badge from '@/components/ui/Badge.vue'
-import { INTEGRATION_STATUS_ICONS, INTEGRATION_STATUS_VARIANTS } from '@/utils/integrations/integrationStatus'
+import {
+  INTEGRATION_STATUS_ICONS,
+  INTEGRATION_STATUS_VARIANTS,
+} from '@/utils/integrations/integrationStatus'
 
 const props = defineProps({
-  status: { type: String, required: true, validator: (value) => value in INTEGRATION_STATUS_VARIANTS },
+  status: {
+    type: String,
+    required: true,
+    validator: (value) => value in INTEGRATION_STATUS_VARIANTS,
+  },
 })
 
 const { t } = useI18n()

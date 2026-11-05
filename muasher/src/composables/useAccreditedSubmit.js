@@ -3,7 +3,13 @@ import { useI18n } from 'vue-i18n'
 import { submissionService } from '@/services/submissionService'
 import { useToast } from '@/composables/useToast'
 
-export function useAccreditedSubmit({ formState, cvDrafts, onRejected, onSubmitted, onIncomplete }) {
+export function useAccreditedSubmit({
+  formState,
+  cvDrafts,
+  onRejected,
+  onSubmitted,
+  onIncomplete,
+}) {
   const { t } = useI18n()
   const toast = useToast()
   const submitting = ref(false)
@@ -32,7 +38,13 @@ export function useAccreditedSubmit({ formState, cvDrafts, onRejected, onSubmitt
     try {
       const { data } = await submissionService.submit(formState.assessment.value.id)
       confirmOpen.value = false
-      toast.success(t(formState.isResubmission.value ? 'accredited.form.toasts.resubmitted' : 'accredited.form.toasts.submitted'))
+      toast.success(
+        t(
+          formState.isResubmission.value
+            ? 'accredited.form.toasts.resubmitted'
+            : 'accredited.form.toasts.submitted',
+        ),
+      )
       onSubmitted(data)
     } catch (error) {
       confirmOpen.value = false

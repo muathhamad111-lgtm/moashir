@@ -29,7 +29,10 @@ const columns = computed(() => [
 ])
 
 function detailRoute(item) {
-  return { name: ROUTE_NAMES.AWARD_FILTERING_DETAIL, params: { id: props.cycleId, assessment: item.id } }
+  return {
+    name: ROUTE_NAMES.AWARD_FILTERING_DETAIL,
+    params: { id: props.cycleId, assessment: item.id },
+  }
 }
 </script>
 
@@ -44,18 +47,26 @@ function detailRoute(item) {
     @retry="emit('retry')"
   >
     <template #cell-number="{ item }">
-      <RouterLink class="cycle-table__link" :to="detailRoute(item)"><bdi dir="ltr">{{ item.number }}</bdi></RouterLink>
+      <RouterLink class="cycle-table__link" :to="detailRoute(item)"
+        ><bdi dir="ltr">{{ item.number }}</bdi></RouterLink
+      >
     </template>
     <template #cell-entity="{ item }">{{ localizedText(item.entity?.name, locale) }}</template>
     <template #cell-region="{ item }">{{ localizedText(item.region?.name, locale) }}</template>
     <template #cell-percent="{ item }">
-      <bdi class="filtering-table__percent u-ltr">{{ item.initialResult ? t('filtering.percent', { value: item.initialResult.percent }) : t('accredited.common.notSet') }}</bdi>
+      <bdi class="filtering-table__percent u-ltr">{{
+        item.initialResult
+          ? t('filtering.percent', { value: item.initialResult.percent })
+          : t('accredited.common.notSet')
+      }}</bdi>
     </template>
     <template #cell-threshold="{ item }"><ThresholdBadge :meets="item.meetsThreshold" /></template>
     <template #cell-status="{ item }">
       <span class="filtering-table__status">
         <StatusBadge :status="item.status" />
-        <Badge v-if="item.decision?.isOverride" variant="warning">{{ t('filtering.override.badge') }}</Badge>
+        <Badge v-if="item.decision?.isOverride" variant="warning">{{
+          t('filtering.override.badge')
+        }}</Badge>
       </span>
     </template>
   </DataTable>
