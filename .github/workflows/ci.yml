@@ -56,6 +56,10 @@ jobs:
           done
           docker exec ${{ job.services.postgres.id }} psql -U postgres -tAc "SHOW max_locks_per_transaction" | grep -qx 256
 
+      # CI has no .env: without a key the session guard cannot be built, and Larastan loses its type.
+      - name: Provide an ephemeral application key
+        run: echo "APP_KEY=base64:$(openssl rand -base64 32)" >> "$GITHUB_ENV"
+
       - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
         with:
           php-version: "8.4"

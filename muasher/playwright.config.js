@@ -25,6 +25,8 @@ export default defineConfig({
     '**/integration/**',
     '**/posture/**',
     ...(process.env.MOASHIR_CHECK_MOYASAR_CDN ? [] : ['**/moyasar-cdn.spec.js']),
+    // CI tests the production build, which has no dev-only component gallery route.
+    ...(process.env.CI ? ['**/gallery.spec.js'] : []),
   ],
   timeout: 30 * 1000,
   expect: {
