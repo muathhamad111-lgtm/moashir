@@ -35,3 +35,18 @@ it('never sends default personal data', function (): void {
     expect(config('sentry.send_default_pii'))->toBeFalse()
         ->and(config('sentry.before_send'))->toBe([SentryEventScrubber::class, 'scrub']);
 });
+
+it('removes single-use tokens from request paths, messages and breadcrumbs', function (): void {
+    $token = str_repeat('Ab3', 22);
+    $event = Event::createEvent();
+    $event->setMessage('Invitation failed at /api/v1/auth/invitations/'.$token.'/accept');
+    $event->setRequest(['method' => 'POST', 'url' => 'https://moashir.ttshub.live/api/v1/auth/invitations/'.$token.'/accept']);
+    $event->setBreadcrumb([new Breadcrumb(Breadcrumb::LEVEL_INFO, Breadcrumb::TYPE_HTTP, 'http', null, ['url' => 'https://moashir.ttshub.live/auth/reset-password/'.$token])]);
+
+    $scrubbed = SentryEventScrubber::scrub($event);
+
+    expect($scrubbed->getRequest()['url'])->toBe('https://moashir.ttshub.live/api/v1/auth/invitations/[redacted]/accept')
+        ->and($scrubbed->getMessage())->not->toContain($token)
+        ->and($scrubbed->getBreadcrumbs()[0]->getMetadata()['url'])->toBe('https://moashir.ttshub.live/auth/reset-password/[redacted]')
+        ->and(config('sentry.before_send_transaction'))->toBe([SentryEventScrubber::class, 'scrub']);
+});

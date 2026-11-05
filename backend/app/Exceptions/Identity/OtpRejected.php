@@ -10,6 +10,13 @@ use Illuminate\Http\Response;
 
 final class OtpRejected extends ApiException
 {
+    private const array WRONG_CODE = ['otp.invalid', 'otp.attempts_exceeded'];
+
+    public function isWrongCode(): bool
+    {
+        return in_array($this->error()->code, self::WRONG_CODE, true);
+    }
+
     public static function invalidCode(): self
     {
         return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'otp.invalid'));

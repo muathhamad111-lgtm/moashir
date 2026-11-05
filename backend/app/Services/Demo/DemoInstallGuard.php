@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Services\Demo;
 
 use App\Exceptions\Console\DemoDataRefused;
+use App\Services\Platform\DemoPosture;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Support\Facades\Log;
 
 final readonly class DemoInstallGuard
 {
-    public function __construct(private Repository $config, private DemoRecords $records) {}
+    public function __construct(private Repository $config, private DemoRecords $records, private DemoPosture $posture) {}
 
     public function assertMayInstall(): void
     {
@@ -27,6 +28,11 @@ final readonly class DemoInstallGuard
         }
     }
 
+    public function assertMayInstallContent(): void
+    {
+        $this->assertMayRotate();
+    }
+
     public function assertMayRotate(): void
     {
         $this->assertEnabled();
@@ -40,6 +46,10 @@ final readonly class DemoInstallGuard
     {
         if ($this->config->get('moashir.demo.enabled') !== true) {
             $this->refuse(DemoDataRefused::flagNotSet());
+        }
+
+        if (! $this->posture->allowsDemoTooling()) {
+            $this->refuse(DemoDataRefused::postureNotDemo());
         }
     }
 

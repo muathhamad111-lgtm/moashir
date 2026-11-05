@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Enums\Award;
 
+use App\Enums\Identity\AssessorQualification;
 use App\Enums\Identity\PermissionKey;
 
 enum CandidateRole: string
@@ -21,5 +22,10 @@ enum CandidateRole: string
             self::AwardSecretary => PermissionKey::AwardSecretaryDecide,
             self::CommitteeAssessor => PermissionKey::AwardCommitteeScore,
         };
+    }
+
+    public function qualification(): ?AssessorQualification
+    {
+        return $this === self::InitialAssessor ? AssessorQualification::AdvancedInitial : null;
     }
 }

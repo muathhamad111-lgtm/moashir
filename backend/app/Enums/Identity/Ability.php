@@ -18,6 +18,12 @@ enum Ability: string
     case ManageFinanceSettings = 'settings.finance.manage';
     case EditFinanceSettingField = 'settings.finance.edit-field';
     case ManageAssessmentSettings = 'settings.assessment-section.manage';
+    case ManageCertificateSettings = 'settings.certificates-section.manage';
+    case ManageContactSettings = 'settings.contact-section.manage';
+    case ManageAuthSettings = 'settings.auth-section.manage';
+    case ViewReadinessDetails = 'platform.readiness.details';
+    case IssueAccreditedCertificate = 'certificates.accredited-certificate.issue';
+    case ViewFeedbackReport = 'reports.feedback-report.view';
     case ViewCommitteeRoster = 'award.committee-roster.view';
     case ManageCommitteeRoster = 'award.committee-roster.manage';
     case ManageCommitteeMember = 'award.committee-roster.member';
@@ -33,4 +39,5 @@ enum Ability: string
     case UnapproveRegionResults = 'award.results-board.unapprove-region';
     case ApproveNationalResults = 'award.results-board.approve-national';
     case AnnounceAwardResults = 'award.results-board.announce';
+    case ViewDashboard = 'dashboard.summary.view';
 }

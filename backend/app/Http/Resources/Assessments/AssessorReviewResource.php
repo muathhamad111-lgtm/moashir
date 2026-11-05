@@ -9,6 +9,7 @@ use App\Data\Assessments\FeedbackView;
 use App\Models\Assessments\Assessment;
 use App\Support\Assessments\CompletionRequestPresenter;
 use App\Support\Assessments\EvidencePresenter;
+use App\Support\Assessments\PathPresenter;
 use App\Support\Assessments\ReviewClockPresenter;
 use App\Support\Entities\EntityPresenter;
 use Illuminate\Http\Request;
@@ -41,7 +42,7 @@ final class AssessorReviewResource extends JsonResource
             'context' => array_map(static fn (Assessment $other): array => [
                 'id' => $other->id,
                 'number' => $other->request_number,
-                'path' => $other->path->value,
+                ...PathPresenter::of($other->path),
                 'completed_at' => $other->completed_at?->toIso8601String(),
                 'percent' => $other->currentResult?->percent->toDisplay(),
             ], $review->context),

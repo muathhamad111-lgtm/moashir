@@ -63,6 +63,7 @@ return [
     'criteria.publish' => ['label' => 'Publish criteria', 'description' => 'Publish or archive a criteria version.'],
     'content.home.manage' => ['label' => 'Manage site content', 'description' => 'Edit, publish and reorder homepage sections and pages.'],
     'content.kpis.manage' => ['label' => 'Manage indicators', 'description' => 'Create, publish and reorder indicators.'],
+    'contact.messages.manage' => ['label' => 'Manage contact messages', 'description' => 'View the messages sent through the contact form, assign them, add internal notes, reply to senders and close or reopen them.'],
     'ai.kb.manage' => ['label' => 'Manage the knowledge base', 'description' => 'Upload and approve assistant knowledge-base files.'],
     'ai.provider.manage' => ['label' => 'Manage the AI provider', 'description' => 'Set the AI provider, model and key.'],
     'users.view' => ['label' => 'View users', 'description' => 'List and read user accounts.'],

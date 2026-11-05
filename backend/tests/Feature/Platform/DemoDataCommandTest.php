@@ -8,15 +8,20 @@ use App\Enums\Award\CycleMemberRole;
 use App\Enums\Entities\EntityStatus;
 use App\Enums\Finance\PaymentStatus;
 use App\Enums\Identity\RoleKey;
+use App\Enums\Identity\TermsKind;
 use App\Enums\Integrations\IntegrationMode;
 use App\Enums\Platform\DemoRecordKind;
 use App\Models\Assessments\Assessment;
 use App\Models\Award\AwardCycle;
+use App\Models\Cms\CmsPage;
 use App\Models\Entities\Entity;
 use App\Models\Finance\Payment;
 use App\Models\Finance\PaymentReceipt;
+use App\Models\Identity\TermsVersion;
 use App\Models\Identity\User;
+use App\Models\Kpis\Kpi;
 use App\Models\Platform\DemoRecord;
+use App\Services\Cms\LegalDocumentSource;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -85,6 +90,32 @@ it('refuses to install demo data unless APP_DEMO_DATA is explicitly true', funct
         ->and(DemoRecord::query()->count())->toBe(0)
         ->and(Entity::query()->count())->toBe(0);
     expectRefusalWasLogged('flag_not_set');
+});
+
+it('refuses demo data outside local and testing unless the environment opted in to the demo posture', function (string $environment): void {
+    Log::spy();
+    enableDemoData();
+    installDemoPrerequisites();
+    app()['env'] = $environment;
+    $accountsFile = demoAccountsDirectory().'/accounts.txt';
+
+    $result = runDemoCommand('moashir:demo:install', $accountsFile);
+
+    expect($result['exit'])->toBe(1)
+        ->and($result['output'])->toContain('MOASHIR_DEMO is not true')
+        ->and(file_exists($accountsFile))->toBeFalse()
+        ->and(DemoRecord::query()->count())->toBe(0);
+    expectRefusalWasLogged('posture_not_demo');
+})->with(['production', 'staging']);
+
+it('installs demo data in production only with the demo posture opt-in', function (): void {
+    enableDemoData();
+    config()->set('moashir.demo.posture', true);
+    installDemoPrerequisites();
+    app()['env'] = 'production';
+
+    expect(runDemoCommand('moashir:demo:install', demoAccountsDirectory().'/accounts.txt')['exit'])->toBe(0)
+        ->and(DemoRecord::query()->count())->toBeGreaterThan(0);
 });
 
 it('refuses to install demo data when an entity was not created by the demo command', function (): void {
@@ -234,3 +265,97 @@ it('refuses to rotate demo passwords without the flag or without demo accounts',
     'flag not set' => [false, 'flag_not_set', 'APP_DEMO_DATA is not set to true'],
     'nothing installed' => [true, 'not_installed', 'No demo accounts exist'],
 ]);
+
+it('installs published public content and KPIs with the demo so the demo site is not in maintenance', function (): void {
+    enableDemoData();
+    installDemoPrerequisites();
+
+    $result = runDemoCommand('moashir:demo:install', demoAccountsDirectory().'/accounts.txt');
+
+    expect($result['exit'])->toBe(0)
+        ->and($result['output'])->toContain('6 published content pages and 8 published KPIs');
+    $this->getJson('/api/v1/content/status')->assertJsonPath('data.maintenance', false);
+    $this->getJson('/api/v1/content/home')
+        ->assertJsonPath('data.sections.0.type', 'hero')
+        ->assertJsonPath('data.site_settings.contact.email', 'info@moashir.example.sa');
+    $this->getJson('/api/v1/content/pages/lenses')->assertOk()->assertJsonCount(2, 'data.sections');
+    $this->getJson('/api/v1/kpis/featured')->assertOk()->assertJsonCount(6, 'data');
+});
+
+it('adds the demo content to an installed demo once and keeps existing content on a second run', function (): void {
+    Log::spy();
+    enableDemoData();
+    installDemoPrerequisites();
+    runDemoCommand('moashir:demo:install', demoAccountsDirectory().'/accounts.txt');
+    $home = CmsPage::query()->where('key', 'home')->sole();
+    $sections = $home->sections()->count();
+
+    expect(Artisan::call('moashir:demo:install', ['--content-only' => true]))->toBe(0)
+        ->and(Artisan::output())->toContain('0 published content pages and 0 published KPIs')
+        ->and($home->sections()->count())->toBe($sections)
+        ->and(Kpi::query()->count())->toBe(8);
+});
+
+it('refuses the content-only option without the flag or without an installed demo', function (): void {
+    Log::spy();
+
+    expect(Artisan::call('moashir:demo:install', ['--content-only' => true]))->toBe(1);
+    expectRefusalWasLogged('flag_not_set');
+
+    enableDemoData();
+    expect(Artisan::call('moashir:demo:install', ['--content-only' => true]))->toBe(1)
+        ->and(Kpi::query()->exists())->toBeFalse();
+});
+
+it('replaces the demo home page with the current demo content on request', function (): void {
+    enableDemoData();
+    installDemoPrerequisites();
+    runDemoCommand('moashir:demo:install', demoAccountsDirectory().'/accounts.txt');
+    $home = CmsPage::query()->where('key', 'home')->sole();
+    $home->sections()->orderBy('sort_order')->firstOrFail()->forceFill(['title' => ['ar' => 'عنوان قديم', 'en' => 'Old title']])->save();
+
+    expect(Artisan::call('moashir:demo:refresh-home'))->toBe(0)
+        ->and(Artisan::output())->toContain('replaced with the current demo content');
+
+    $this->getJson('/api/v1/content/home')->assertOk()
+        ->assertJsonPath('data.sections.0.title.ar', 'قِس تميّزك المؤسسي،')
+        ->assertJsonPath('data.sections.4.meta.variant', 'journey');
+    expect($home->sections()->count())->toBe(9)
+        ->and($home->sections()->onlyTrashed()->count())->toBeGreaterThan(0);
+});
+
+it('refuses to refresh the demo home page without the flag or an installed demo', function (): void {
+    Log::spy();
+
+    expect(Artisan::call('moashir:demo:refresh-home'))->toBe(1);
+    expectRefusalWasLogged('flag_not_set');
+
+    enableDemoData();
+    expect(Artisan::call('moashir:demo:refresh-home'))->toBe(1)
+        ->and(CmsPage::query()->where('key', 'home')->sole()->sections()->count())->toBe(0);
+});
+
+it('publishes the legal drafts and the accessibility page with the demo and keeps a second run unchanged', function (): void {
+    enableDemoData();
+    installDemoPrerequisites();
+
+    $result = runDemoCommand('moashir:demo:install', demoAccountsDirectory().'/accounts.txt');
+
+    expect($result['exit'])->toBe(0);
+    $terms = TermsVersion::query()->current()->ofKind(TermsKind::Terms)->sole();
+    expect($terms->version)->toBe(LegalDocumentSource::SEED_VERSION)
+        ->and($terms->acceptances()->count())->toBe(3)
+        ->and(TermsVersion::query()->current()->ofKind(TermsKind::Privacy)->sole()->version)->toBe(LegalDocumentSource::SEED_VERSION);
+
+    $this->getJson('/api/v1/content/legal/privacy')->assertOk()
+        ->assertJsonPath('data.title.en', 'Privacy Policy — Moashir')
+        ->assertJsonPath('data.body.ar.0.text', 'مسودة للمراجعة القانونية — آخر تحديث: [[تاريخ الاعتماد]]');
+    $this->getJson('/api/v1/content/pages/accessibility')->assertOk()
+        ->assertJsonCount(13, 'data.sections')
+        ->assertJsonPath('data.sections.1.title.ar', '1. التزامنا')
+        ->assertJsonPath('data.sections.2.blocks.en.0.type', 'list');
+
+    expect(Artisan::call('moashir:demo:install', ['--content-only' => true]))->toBe(0)
+        ->and(Artisan::output())->toContain('0 legal texts and 0 legal pages published from the legal drafts')
+        ->and(TermsVersion::query()->count())->toBe(2);
+});

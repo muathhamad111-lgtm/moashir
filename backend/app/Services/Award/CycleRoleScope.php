@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace App\Services\Award;
 
+use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Award\CycleMemberRole;
 use App\Enums\Identity\PermissionKey;
 use App\Enums\Identity\RoleKey;
 use App\Models\Award\AwardCycle;
 use App\Models\Identity\User;
+use App\Services\Identity\RequestPathScope;
 use Illuminate\Auth\Access\Response;
 
 final readonly class CycleRoleScope
 {
-    public function __construct(private CycleMembership $membership, private CycleRecordScope $records) {}
+    public function __construct(private CycleMembership $membership, private CycleRecordScope $records, private RequestPathScope $paths) {}
 
     /**
      * @param  list<RoleKey>  $globalRoles
@@ -31,7 +33,7 @@ final readonly class CycleRoleScope
 
         $user->loadMissing('roles');
 
-        if (array_any($globalRoles, static fn (RoleKey $role): bool => in_array($role, $user->roleKeys(), true))) {
+        if (array_any($globalRoles, static fn (RoleKey $role): bool => in_array($role, $user->roleKeys(), true)) && $this->paths->covers($user, AssessmentPath::Advanced)) {
             return true;
         }
 

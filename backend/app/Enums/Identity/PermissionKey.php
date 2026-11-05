@@ -74,6 +74,7 @@ enum PermissionKey: string
 
     case ContentHomeManage = 'content.home.manage';
     case ContentKpisManage = 'content.kpis.manage';
+    case ContactMessagesManage = 'contact.messages.manage';
 
     case AiKbManage = 'ai.kb.manage';
     case AiProviderManage = 'ai.provider.manage';
@@ -104,6 +105,7 @@ enum PermissionKey: string
     case FinanceReceiptsManage = 'finance.receipts.manage';
 
     private const array SYSTEM_ADMIN_ONLY = [
+        self::SettingsAuthManage,
         self::SettingsBrandingManage,
         self::SettingsPaymentManage,
         self::SettingsSmsManage,
@@ -122,6 +124,7 @@ enum PermissionKey: string
         'bag.plan.approve',
         'bag.subscription.activate_free',
         'messaging.campaigns.send',
+        'contact.messages.manage',
     ];
 
     private const array NON_CONFIDENTIAL = [
@@ -178,6 +181,7 @@ enum PermissionKey: string
         'bag.' => PermissionModule::Bag,
         'criteria.' => PermissionModule::Criteria,
         'content.' => PermissionModule::Content,
+        'contact.' => PermissionModule::Content,
         'ai.' => PermissionModule::Ai,
         'users.' => PermissionModule::Admin,
         'roles.' => PermissionModule::Admin,

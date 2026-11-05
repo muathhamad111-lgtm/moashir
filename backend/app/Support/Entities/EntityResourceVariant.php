@@ -29,6 +29,6 @@ final class EntityResourceVariant
     {
         $class = self::classFor($access);
 
-        return new $class($entity->loadMissing(['owner', 'region', 'city']));
+        return new $class($entity->loadMissing(['owner', 'region', 'city', 'logo']));
     }
 }

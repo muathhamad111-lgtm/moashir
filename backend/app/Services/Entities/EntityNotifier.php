@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Entities;
 
 use App\Data\Entities\EntityNotice;
+use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Entities\EntityStatus;
 use App\Enums\Identity\Locale;
 use App\Enums\Identity\PermissionKey;
@@ -31,7 +32,7 @@ final class EntityNotifier
 
     public function toRole(RoleKey $role, EntityNotice $notice, ?int $actorId): void
     {
-        $this->sendToStaff(User::query()->role($role->value), $notice, $actorId);
+        $this->sendToStaff($this->followingNoticePath(User::query()->role($role->value), $notice), $notice, $actorId);
     }
 
     public function toStaffUser(int $userId, EntityNotice $notice): void
@@ -69,12 +70,23 @@ final class EntityNotifier
 
     public function toPermissionHolders(PermissionKey $permission, EntityNotice $notice, ?int $actorId): void
     {
-        $this->sendToStaff(User::query()->permission($permission->value), $notice, $actorId);
+        $this->sendToStaff($this->followingNoticePath(User::query()->permission($permission->value), $notice), $notice, $actorId);
     }
 
     public function toAddress(EmailAddress $address, EntityNotice $notice, Locale $locale): void
     {
         Notification::route('mail', $address->value)->notify(new EntityNotification($notice->mailOnly())->locale($locale->value));
+    }
+
+    /**
+     * @param  Builder<User>  $query
+     * @return Builder<User>
+     */
+    private function followingNoticePath(Builder $query, EntityNotice $notice): Builder
+    {
+        $path = $notice->path;
+
+        return $path instanceof AssessmentPath && $path->isReviewed() ? $query->followingPath($path) : $query;
     }
 
     /**

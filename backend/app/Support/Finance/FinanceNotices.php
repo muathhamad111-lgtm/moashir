@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Support\Finance;
 
 use App\Data\Entities\EntityNotice;
+use App\Enums\Assessments\AssessmentPath;
+use App\Enums\Finance\PaymentPurpose;
 use App\Enums\Notifications\NotificationCode;
 use App\Models\Finance\Payment;
 use App\Support\ValueObjects\LocalizedText;
@@ -28,13 +30,14 @@ final class FinanceNotices
             $link,
             true,
             true,
+            $payment->purpose === PaymentPurpose::Accredited ? AssessmentPath::Accredited : null,
         );
     }
 
     public static function exportReady(string $exportPublicId, int $rowCount): EntityNotice
     {
         $key = 'notifications.payments.'.NotificationCode::FinanceExportReady->value;
-        $replacements = ['count' => (string) $rowCount];
+        $replacements = ['transactions' => LocalizedText::fromChoice('quantities.transactions', $rowCount)];
 
         return new EntityNotice(
             NotificationCode::FinanceExportReady,

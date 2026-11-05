@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Jobs\Finance\ExpirePaymentsJob;
 use App\Jobs\Finance\ReconcilePendingPaymentsJob;
+use App\Jobs\Platform\RecordQueueHeartbeat;
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('moashir:expire-invitations')->hourly()->withoutOverlapping();
@@ -19,7 +20,11 @@ Schedule::command('moashir:award:remind-submission-deadline')->hourly()->without
 Schedule::command('moashir:award:flag-overdue-committee')->hourly()->withoutOverlapping();
 Schedule::job(new ExpirePaymentsJob)->everyMinute();
 Schedule::job(new ReconcilePendingPaymentsJob)->everyFiveMinutes();
+Schedule::job(new RecordQueueHeartbeat)->everyMinute();
 Schedule::command('moashir:files:scan-pending')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('moashir:files:purge-orphans')->dailyAt('03:00')->withoutOverlapping();
 Schedule::command('backup:clean')->daily()->at('01:00');
 Schedule::command('backup:run')->daily()->at('01:30');
+Schedule::command('backup:monitor')->dailyAt('06:00')->withoutOverlapping();
+Schedule::command('moashir:certificates:prune-verification-logs')->dailyAt('03:30')->withoutOverlapping();
+Schedule::command('moashir:contact-messages:purge-closed')->dailyAt('03:45')->withoutOverlapping();

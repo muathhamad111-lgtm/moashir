@@ -91,12 +91,12 @@ it('follows the allowed types and the per-sub limit from the settings', function
     $version = publishedAccreditedCriteria();
     $assessment = openedAccreditedRequest();
     $owner = ownerOf($assessment->entity);
-    setIntegrationSetting(SettingKey::EvidenceAllowedTypes, ['png']);
+    setIntegrationSetting(SettingKey::AccreditedEvidenceAllowedTypes, ['png']);
 
     uploadEvidence($owner, $assessment, $version)->assertUnprocessable()->assertJsonPath('code', 'file.content_mismatch');
 
-    setIntegrationSetting(SettingKey::EvidenceAllowedTypes, ['pdf']);
-    setIntegrationSetting(SettingKey::EvidenceMaxFilesPerSub, 1);
+    setIntegrationSetting(SettingKey::AccreditedEvidenceAllowedTypes, ['pdf']);
+    setIntegrationSetting(SettingKey::AccreditedEvidenceMaxFilesPerSub, 1);
     uploadEvidence($owner, $assessment, $version)->assertCreated();
     uploadEvidence($owner, $assessment, $version, 'M1.1', 'board_minutes')->assertUnprocessable()
         ->assertJsonPath('code', 'attachment.sub_full')

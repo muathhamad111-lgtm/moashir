@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Enums\Settings;
 
 use App\Enums\Award\CommitteeEntityVisibility;
+use App\Enums\Certificates\CertificateLevel;
 use App\Enums\Files\EvidenceFileType;
 use App\Enums\Integrations\CardNetwork;
 use App\Enums\Integrations\CheckoutPattern;
@@ -13,6 +14,7 @@ use App\Enums\Integrations\IntegrationMode;
 use App\Enums\Integrations\PaymentLinkedPath;
 use App\Enums\Integrations\PaymentMethod;
 use App\Support\ValueObjects\LocalizedText;
+use App\Support\ValueObjects\PathEntityTexts;
 
 enum SettingKey: string
 {
@@ -39,12 +41,22 @@ enum SettingKey: string
     case AbandonedCartAfterHours = 'abandoned_carts.after_hours';
     case FilesMaxSizeMb = 'files.max_size_mb';
     case AccreditedReviewSlaDays = 'assessment.accredited_review_sla_days';
-    case EvidenceAllowedTypes = 'files.evidence_allowed_types';
-    case EvidenceMaxFilesPerSub = 'files.evidence_max_files_per_sub';
+    case AccreditedUploadMaxFileMb = 'assessment.accredited_upload_max_file_mb';
+    case AccreditedEvidenceAllowedTypes = 'assessment.accredited_evidence_allowed_types';
+    case AccreditedEvidenceMaxFilesPerSub = 'assessment.accredited_evidence_max_files_per_sub';
+    case AccreditedEntityTexts = 'assessment.accredited_entity_texts';
+    case AdvancedUploadMaxFileMb = 'assessment.advanced_upload_max_file_mb';
+    case AdvancedEvidenceAllowedTypes = 'assessment.advanced_evidence_allowed_types';
+    case AdvancedEvidenceMaxFilesPerSub = 'assessment.advanced_evidence_max_files_per_sub';
+    case AdvancedEntityTexts = 'assessment.advanced_entity_texts';
     case AdvancedMinEntityAgeYears = 'assessment.advanced_min_entity_age_years';
     case AdvancedDisqualificationScore = 'assessment.advanced_disqualification_score';
     case AdvancedInitialReviewSlaDays = 'assessment.advanced_initial_review_sla_days';
     case CommitteeEntityDataVisibility = 'assessment.committee_entity_data_visibility';
+    case CertificateLevelThresholds = 'certificates.level_thresholds';
+    case AccreditedCertificateIssuance = 'certificates.accredited_issuance_enabled';
+    case ContactRetentionMonths = 'contact.retention_months';
+    case EntitySecondFactorEnabled = 'auth.entity_second_factor_enabled';
 
     public function group(): SettingGroup
     {
@@ -57,9 +69,11 @@ enum SettingKey: string
             self::PaymentMode, self::PaymentCheckoutPattern, self::SmsMode, self::EmailMode, self::EmailTestAddress,
             self::AiMode, self::AiPlacement, self::CommitteeEntityDataVisibility => SettingType::String,
             self::PaymentOrderValidityMinutes, self::AbandonedCartAfterHours, self::FilesMaxSizeMb,
-            self::AccreditedReviewSlaDays, self::EvidenceMaxFilesPerSub, self::AdvancedMinEntityAgeYears,
-            self::AdvancedInitialReviewSlaDays => SettingType::Integer,
+            self::AccreditedReviewSlaDays, self::AdvancedMinEntityAgeYears, self::AdvancedInitialReviewSlaDays,
+            self::AccreditedUploadMaxFileMb, self::AccreditedEvidenceMaxFilesPerSub, self::AdvancedUploadMaxFileMb,
+            self::AdvancedEvidenceMaxFilesPerSub, self::ContactRetentionMonths => SettingType::Integer,
             self::AccreditedPrice, self::VatRate, self::BagPrice, self::AdvancedDisqualificationScore => SettingType::Decimal,
+            self::AccreditedCertificateIssuance, self::EntitySecondFactorEnabled => SettingType::Boolean,
             default => SettingType::Json,
         };
     }
@@ -80,14 +94,18 @@ enum SettingKey: string
             self::AiNotice => LocalizedText::fromTranslation('integrations.defaults.ai_notice')->toArray(),
             self::VatRate => '15.00',
             self::AbandonedCartAfterHours => 24,
-            self::FilesMaxSizeMb => 20,
+            self::FilesMaxSizeMb, self::AccreditedUploadMaxFileMb, self::AdvancedUploadMaxFileMb => 20,
             self::AccreditedReviewSlaDays => 14,
-            self::EvidenceAllowedTypes => EvidenceFileType::values(),
-            self::EvidenceMaxFilesPerSub => 10,
+            self::AccreditedEvidenceAllowedTypes, self::AdvancedEvidenceAllowedTypes => EvidenceFileType::values(),
+            self::AccreditedEvidenceMaxFilesPerSub, self::AdvancedEvidenceMaxFilesPerSub => 10,
+            self::AccreditedEntityTexts, self::AdvancedEntityTexts => PathEntityTexts::empty()->toArray(),
             self::AdvancedMinEntityAgeYears => 3,
             self::AdvancedDisqualificationScore => '60.00',
             self::AdvancedInitialReviewSlaDays => 14,
             self::CommitteeEntityDataVisibility => CommitteeEntityVisibility::NameOnly->value,
+            self::CertificateLevelThresholds => CertificateLevel::DEFAULT_THRESHOLDS,
+            self::AccreditedCertificateIssuance, self::EntitySecondFactorEnabled => true,
+            self::ContactRetentionMonths => 24,
             self::PaymentApplePayDomainConfirmation, self::PaymentStcPayActivationConfirmation, self::EmailTestAddress,
             self::AccreditedPrice, self::BagPrice => null,
         };

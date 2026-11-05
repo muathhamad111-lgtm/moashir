@@ -35,10 +35,13 @@ return [
         'transition_illegal' => 'This action is not allowed in the current state.',
     ],
     'credentials' => [
-        'invalid' => 'The email or password is incorrect.',
+        'invalid' => 'The sign-in details are incorrect.',
     ],
-    'login' => [
-        'mode_disabled' => 'This sign-in method is not enabled.',
+    'phone' => [
+        'missing' => 'Add a mobile number to your account before verifying it.',
+        'already_verified' => 'This mobile number is already verified.',
+        'sms_unavailable' => 'Text messages cannot be sent right now. Please try again later.',
+        'in_use' => 'This mobile number is already verified on another account. Contact the platform team.',
     ],
     'otp' => [
         'invalid' => 'The verification code is incorrect.',
@@ -61,7 +64,9 @@ return [
     ],
     'token' => [
         'invalid' => 'This link is invalid or has expired.',
+        'unknown' => 'The selected color is not part of the approved palette.',
     ],
+    'contrast_fail' => 'The selected color does not meet the WCAG 2.1 AA contrast ratio in light and dark mode.',
     'invitation' => [
         'expired' => 'This invitation has expired. Please ask the System Administrator for a new one.',
         'invalid' => 'This invitation is invalid.',
@@ -212,6 +217,7 @@ return [
         'infected' => 'The file was rejected by the malware scan.',
         'scan_failed' => 'The file could not be scanned for malware. Please try again later.',
         'not_clean' => 'This file is not available for download.',
+        'not_usable' => 'The selected image does not exist, is not clean, or belongs to other content. Upload it again.',
     ],
     'signature' => [
         'invalid' => 'This download link is not valid.',
@@ -219,6 +225,20 @@ return [
     ],
     'document' => [
         'renderer_unavailable' => 'The document cannot be generated at the moment. Please try again later.',
+        'renderer_busy' => 'Another document is being generated. Please try again in a moment.',
+        'render_failed' => 'The document could not be generated. Please try again later.',
+    ],
+    'certificate' => [
+        'issuance_disabled' => 'Issuing accredited certificates is turned off in the certificate settings.',
+        'assessment_not_completed' => 'A certificate can be issued only for a completed accredited assessment.',
+        'not_issued' => 'This certificate is not in force.',
+        'revoked' => 'This certificate was revoked and can no longer be downloaded.',
+        'superseded' => 'This certificate was replaced by a newer certificate.',
+        'replacement_exists' => 'This certificate was already replaced by another certificate of the same request.',
+        'suspended' => 'This certificate is suspended while its assessment is reviewed again. A new certificate is issued when the review is completed.',
+    ],
+    'report' => [
+        'not_available' => 'The feedback report is not available yet.',
     ],
     'accredited' => [
         'request_open' => 'Your entity already has an open accredited assessment request. Complete it before paying for a new one.',
@@ -245,6 +265,13 @@ return [
         'invalid' => 'Choose an active assessor account.',
         'same' => 'The request is already assigned to this assessor.',
         'not_in_cycle' => 'This assessor is not an initial assessor of the award cycle of this request.',
+        'not_qualified' => 'This assessor is not qualified for the path of this request.',
+    ],
+    'assessor_qualification' => [
+        'not_assessor' => 'Assessment paths can only be set for staff accounts that hold the assessor role.',
+    ],
+    'request_scope' => [
+        'not_follower' => 'Request paths can only be limited for staff accounts that follow the requests queue.',
     ],
     'sod_self_assignment' => 'You cannot assign a request to yourself.',
     'evidence' => [
@@ -312,5 +339,41 @@ return [
     ],
     'winners' => [
         'none' => 'Rank at least one winner before approving.',
+    ],
+    'cms' => [
+        'section_key_taken' => 'Another section of this page already uses this key.',
+        'limit_reached' => 'The maximum number of entries has been reached.',
+        'page_empty' => 'The page has no enabled section to publish.',
+        'page_not_published' => 'This page is not published.',
+    ],
+    'legal' => [
+        'not_published' => 'No version of this text has been published.',
+        'draft_exists' => 'A draft of this text already exists. Edit, publish or discard it before creating another one.',
+        'version_not_draft' => 'This version is published and cannot be changed. Create a new draft to change the text.',
+        'version_taken' => 'Another version of the same text already uses this version label.',
+    ],
+    'slug' => [
+        'taken' => 'Another indicator already uses this address.',
+    ],
+    'kpi' => [
+        'featured_limit_reached' => 'At most :limit indicators can be shown on the homepage.',
+        'measurement_exists' => 'A measurement is already recorded for this date.',
+    ],
+    'category' => [
+        'in_use' => 'This category is used by indicators. Deactivate it instead, or move its indicators first.',
+    ],
+    'type' => [
+        'in_use' => 'This indicator type is used by indicators. Deactivate it instead.',
+    ],
+    'notification_preference' => [
+        'not_applicable' => 'This notification type is not delivered to your account.',
+        'locked' => 'This notification is mandatory on this channel and cannot be turned off.',
+    ],
+    'board' => [
+        'not_held' => 'This dashboard is not available to your account.',
+    ],
+    'contact' => [
+        'message_closed' => 'This message is closed. Open a new message through the contact form, or ask the team to reopen it.',
+        'assignee_not_eligible' => 'The selected staff member cannot handle contact messages.',
     ],
 ];

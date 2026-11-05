@@ -160,6 +160,31 @@ return [
     'uuid' => 'The :attribute field must be a valid UUID.',
 
     'custom' => [
+        'identifier' => [
+            'format' => 'Enter your official e-mail, your Saudi mobile number (05XXXXXXXX) or your entity\'s unified national number (10 digits starting with 7).',
+        ],
+        'unified_number' => [
+            'regex' => 'The unified national number must contain exactly 10 digits (0-9) and start with 7.',
+            'unique' => 'This unified national number is already registered for another entity on the platform. Check the number or contact the platform team.',
+        ],
+        'license_number' => [
+            'regex' => 'The licence number must contain 3 to 20 digits (0-9) only.',
+            'unique' => 'This licence number is already registered for another entity on the platform. Check the number or contact the platform team.',
+        ],
+        'founded_on' => [
+            'after_or_equal' => 'The founding date must be on or after 1900-01-01.',
+            'before_or_equal' => 'The founding date cannot be in the future.',
+            'date_format' => 'Write the founding date as YYYY-MM-DD, for example 2012-03-01.',
+        ],
+        'website_url' => [
+            'https' => 'The website must be a full address starting with https://, for example https://www.example.sa.',
+        ],
+        'file' => [
+            'dimensions' => 'Each side of the image must be between :min_width and :max_width pixels.',
+        ],
+        'level_thresholds' => [
+            'ascending' => 'The level minimums must be greater than zero and rise from bronze to silver, gold and diamond.',
+        ],
         'secret' => [
             'clear' => 'To remove the stored :attribute, send {"clear": true}.',
             'format' => 'The :attribute has an invalid format.',
@@ -168,6 +193,25 @@ return [
         ],
         'host' => [
             'hostname' => 'The :attribute must be a valid host name.',
+        ],
+        'link' => [
+            'safe' => 'The :attribute must be a site path starting with /, an anchor starting with #, a mailto: address or an https:// link.',
+        ],
+        'icon' => [
+            'font_awesome' => 'The :attribute must be a Font Awesome class such as fa-solid fa-chart-line.',
+        ],
+        'rich_text' => [
+            'markup' => 'HTML tags are not allowed in the :attribute. Use the simple format for headings, lists and tables.',
+        ],
+        'meta' => [
+            'object' => 'The :attribute must be an object of named fields.',
+            'bounded' => 'The :attribute is too large or too deeply nested (at most :max KB, 5 levels, field names of letters, digits and underscores).',
+        ],
+        'key' => [
+            'unknown' => 'This field is not part of the settings.',
+        ],
+        'kpi_number' => [
+            'format' => 'The :attribute must be a number with at most 14 digits before the decimal point and 4 after it.',
         ],
         'apple_pay_file' => [
             'content' => 'The file must be the plain-text domain association file downloaded from Moyasar.',
@@ -209,6 +253,13 @@ return [
     ],
 
     'attributes' => [
+        'accredited_issuance_enabled' => 'accredited certificate issuance',
+        'level_thresholds' => 'level minimums',
+        'level_thresholds.bronze' => 'bronze level minimum',
+        'level_thresholds.silver' => 'silver level minimum',
+        'level_thresholds.gold' => 'gold level minimum',
+        'level_thresholds.diamond' => 'diamond level minimum',
+        'issue_certificate' => 'issue the certificate',
         'award_cycle_id' => 'award cycle',
         'year' => 'year',
         'submission_start' => 'submission start',
@@ -329,6 +380,11 @@ return [
         'development_sector' => 'development sector',
         'org_size' => 'organization size',
         'founding_year' => 'founding year',
+        'license_number' => 'licence number',
+        'unified_number' => 'unified national number',
+        'identifier' => 'e-mail, mobile number or unified national number',
+        'founded_on' => 'founding date',
+        'website_url' => 'website',
         'region_id' => 'region',
         'city_id' => 'city',
         'governance_grade' => 'governance grade',

@@ -4,17 +4,21 @@ declare(strict_types=1);
 
 namespace App\Models\Identity;
 
+use App\Enums\Assessments\AssessmentPath;
+use App\Enums\Identity\AssessorQualification;
 use App\Enums\Identity\Locale;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Identity\SessionGroup;
 use App\Enums\Identity\ThemePreference;
 use App\Enums\Identity\UserStatus;
 use App\Models\Notifications\Notification;
+use App\Observers\Identity\UserPhoneIndexObserver;
 use App\Support\Search\SearchTextNormalizer;
 use App\Support\ValueObjects\EmailAddress;
 use App\Support\ValueObjects\SearchTerm;
 use Database\Factories\Identity\UserFactory;
 use Illuminate\Contracts\Translation\HasLocalePreference;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -34,6 +38,8 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $name
  * @property string $email
  * @property string|null $phone
+ * @property string|null $phone_index
+ * @property Carbon|null $phone_verified_at
  * @property string|null $password
  * @property int|null $entity_id
  * @property bool $password_change_required
@@ -56,7 +62,10 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read Collection<int, Role> $roles
+ * @property-read Collection<int, UserAssessorQualification> $assessorQualifications
+ * @property-read Collection<int, UserRequestPath> $requestPaths
  */
+#[ObservedBy([UserPhoneIndexObserver::class])]
 final class User extends Authenticatable implements Auditable, HasLocalePreference
 {
     use AuditableTrait;
@@ -68,6 +77,8 @@ final class User extends Authenticatable implements Auditable, HasLocalePreferen
     use RoutesNotifications;
     use SoftDeletes;
     use TwoFactorAuthenticatable;
+
+    public const array ADMINISTRATION_RELATIONS = ['roles', 'assessorQualifications', 'requestPaths'];
 
     protected string $guard_name = 'web';
 
@@ -92,14 +103,14 @@ final class User extends Authenticatable implements Auditable, HasLocalePreferen
     /**
      * @var list<string>
      */
-    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'is_super_admin'];
+    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'is_super_admin', 'phone_index'];
 
     /**
      * @var list<string>
      */
     protected array $auditExclude = [
         'password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes',
-        'failed_login_attempts', 'last_login_at', 'last_login_ip', 'phone',
+        'failed_login_attempts', 'last_login_at', 'last_login_ip', 'phone', 'phone_index',
     ];
 
     /**
@@ -165,6 +176,42 @@ final class User extends Authenticatable implements Auditable, HasLocalePreferen
     public function inAppNotifications(): HasMany
     {
         return $this->hasMany(Notification::class);
+    }
+
+    /**
+     * @return HasMany<UserAssessorQualification, $this>
+     */
+    public function assessorQualifications(): HasMany
+    {
+        return $this->hasMany(UserAssessorQualification::class);
+    }
+
+    /**
+     * @return HasMany<UserRequestPath, $this>
+     */
+    public function requestPaths(): HasMany
+    {
+        return $this->hasMany(UserRequestPath::class);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function qualifiedFor(Builder $query, AssessorQualification $qualification): void
+    {
+        $query->whereHas('assessorQualifications', static fn (Builder $held): Builder => $held->where('qualification', $qualification));
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function followingPath(Builder $query, AssessmentPath $path): void
+    {
+        $query->where(static fn (Builder $scoped): Builder => $scoped
+            ->whereDoesntHave('requestPaths')
+            ->orWhereHas('requestPaths', static fn (Builder $granted): Builder => $granted->where('path', $path)));
     }
 
     /**
@@ -234,6 +281,33 @@ final class User extends Authenticatable implements Auditable, HasLocalePreferen
         return array_values($this->roles
             ->map(static fn (Role $role): ?RoleKey => RoleKey::tryFrom($role->name))
             ->filter()
+            ->all());
+    }
+
+    /**
+     * @return list<AssessorQualification>
+     */
+    public function qualifications(): array
+    {
+        $held = $this->loadMissing('assessorQualifications')->assessorQualifications
+            ->map(static fn (UserAssessorQualification $granted): AssessorQualification => $granted->qualification)
+            ->all();
+
+        return array_values(array_filter(AssessorQualification::cases(), static fn (AssessorQualification $qualification): bool => in_array($qualification, $held, true)));
+    }
+
+    public function isQualifiedFor(AssessorQualification $qualification): bool
+    {
+        return in_array($qualification, $this->qualifications(), true);
+    }
+
+    /**
+     * @return list<AssessmentPath>
+     */
+    public function grantedRequestPaths(): array
+    {
+        return array_values($this->loadMissing('requestPaths')->requestPaths
+            ->map(static fn (UserRequestPath $granted): AssessmentPath => $granted->path)
             ->all());
     }
 

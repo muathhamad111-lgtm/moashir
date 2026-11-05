@@ -6,6 +6,8 @@ namespace App\Http\Resources\Identity;
 
 use App\Data\Identity\CommitteeAppointment;
 use App\Data\Identity\SessionContext;
+use App\Enums\Identity\AssessorQualification;
+use App\Support\Assessments\RequestScopePresenter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -29,6 +31,8 @@ final class SessionUserResource extends JsonResource
             'theme' => $user->theme->value,
             'roles' => RoleLabelResource::collection($this->resource->roles)->resolve($request),
             'permissions' => $this->resource->permissions,
+            'assessor_qualifications' => array_map(static fn (AssessorQualification $qualification): string => $qualification->value, $user->qualifications()),
+            'request_scope' => RequestScopePresenter::of($user),
             'is_super_admin' => $user->isSuperAdmin(),
             'mfa_enabled' => $user->hasConfirmedTotp(),
             'password_change_required' => $user->password_change_required,

@@ -9,6 +9,7 @@ use App\Models\Audit\Audit;
 use App\Models\Identity\User;
 use App\Support\Audit\ActorRoles;
 use App\Support\RequestContext;
+use App\Support\Security\SensitiveUrl;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Http\Request;
 
@@ -33,7 +34,7 @@ final readonly class AuditRecorder
             'auditable_id' => $entry->subject->getKey(),
             'old_values' => $entry->oldValues,
             'new_values' => $entry->newValues,
-            'url' => app()->runningInConsole() && ! app()->runningUnitTests() ? 'console' : $this->request->url(),
+            'url' => app()->runningInConsole() && ! app()->runningUnitTests() ? 'console' : SensitiveUrl::redact($this->request->url()),
             'ip_address' => $this->request->ip(),
             'user_agent' => mb_substr((string) $this->request->userAgent(), 0, 1023),
             'tags' => $this->tagsFor($entry, $actor),

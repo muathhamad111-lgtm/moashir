@@ -9,8 +9,11 @@ use App\Enums\Finance\PaymentStatus;
 
 final readonly class MyPaymentFilters
 {
+    /**
+     * @param  list<PaymentStatus>  $statuses
+     */
     public function __construct(
-        public ?PaymentStatus $status = null,
+        public array $statuses = [],
         public ?PaymentPurpose $purpose = null,
         public int $perPage = 15,
     ) {}

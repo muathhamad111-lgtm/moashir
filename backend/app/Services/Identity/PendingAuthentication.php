@@ -46,6 +46,13 @@ final readonly class PendingAuthentication
         return $this->session->get(SessionKeys::PENDING_STAGE) === $stage->value;
     }
 
+    public function holds(User $user, PendingAuthenticationStage $stage): bool
+    {
+        return $this->isPending($stage)
+            && $this->session->get(SessionKeys::PENDING_USER_ID) === $user->id
+            && ScalarValue::int($this->session->get(SessionKeys::PENDING_EXPIRES_AT)) >= Date::now()->getTimestamp();
+    }
+
     public function recordFailure(): int
     {
         $failures = ScalarValue::int($this->session->get(SessionKeys::PENDING_FAILURES)) + 1;

@@ -7,6 +7,8 @@ namespace App\Policies\Files;
 use App\Enums\Files\StoredFilePurpose;
 use App\Models\Assessments\EvidenceBundle;
 use App\Models\Assessments\EvidenceFile;
+use App\Models\Certificates\Certificate;
+use App\Models\Entities\Entity;
 use App\Models\Files\StoredFile;
 use App\Models\Finance\FinanceExport;
 use App\Models\Finance\PaymentReceipt;
@@ -27,6 +29,8 @@ final class StoredFilePolicy
             $file->purpose === StoredFilePurpose::FinanceExport && $owner instanceof FinanceExport => 'download',
             $file->purpose === StoredFilePurpose::AssessmentEvidence && $owner instanceof EvidenceFile => 'download',
             $file->purpose === StoredFilePurpose::EvidenceBundle && $owner instanceof EvidenceBundle => 'download',
+            $file->purpose === StoredFilePurpose::CertificatePdf && $owner instanceof Certificate => 'download',
+            $file->purpose === StoredFilePurpose::EntityLogo && $owner instanceof Entity && $owner->logo_file_id === $file->id => 'viewLogo',
             default => null,
         };
 

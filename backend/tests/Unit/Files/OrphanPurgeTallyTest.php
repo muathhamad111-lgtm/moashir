@@ -32,6 +32,6 @@ it('starts empty', function (): void {
 });
 
 it('keeps the Apple Pay association file out of the owner-bound purposes', function (): void {
-    expect(StoredFilePurpose::ownerBoundValues())->toBe(['refund_evidence', 'receipt_pdf', 'finance_export', 'assessment_evidence', 'evidence_bundle'])
+    expect(StoredFilePurpose::ownerBoundValues())->toBe(['refund_evidence', 'receipt_pdf', 'finance_export', 'assessment_evidence', 'evidence_bundle', 'cms_image', 'kpi_image', 'branding_logo', 'certificate_pdf', 'entity_logo'])
         ->and(StoredFilePurpose::ApplePayDomainAssociation->isOwnerBound())->toBeFalse();
 });

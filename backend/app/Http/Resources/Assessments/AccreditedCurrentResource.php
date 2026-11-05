@@ -28,9 +28,19 @@ final class AccreditedCurrentResource extends JsonResource
                 'status' => $payment->status->value,
                 'expires_at' => $payment->expires_at->toIso8601String(),
             ],
-            'active' => $this->present($this->resource->active, $request),
+            'active' => $this->presentActive($request),
             'latest_closed' => $this->present($this->resource->latestClosed, $request),
         ];
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function presentActive(Request $request): ?array
+    {
+        $active = $this->present($this->resource->active, $request);
+
+        return $active === null ? null : [...$active, 'progress' => $this->resource->activeProgress?->toArray()];
     }
 
     /**

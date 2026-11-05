@@ -15,6 +15,6 @@ final class ActivateUserController
 {
     public function __invoke(OptionalReasonRequest $request, User $managedUser, ReactivateUser $reactivateUser): JsonResponse
     {
-        return ApiResponse::resource(new UserResource($reactivateUser->handle($managedUser, $request->reason())->load('roles')));
+        return ApiResponse::resource(new UserResource($reactivateUser->handle($managedUser, $request->reason())->load(User::ADMINISTRATION_RELATIONS)));
     }
 }

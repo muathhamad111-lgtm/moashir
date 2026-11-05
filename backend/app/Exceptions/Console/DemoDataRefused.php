@@ -18,6 +18,11 @@ final class DemoDataRefused extends RuntimeException
         return new self('flag_not_set', 'Demo data is refused: APP_DEMO_DATA is not set to true for this environment.');
     }
 
+    public static function postureNotDemo(): self
+    {
+        return new self('posture_not_demo', 'Demo data is refused: this environment is not in the demo posture (MOASHIR_DEMO is not true).');
+    }
+
     public static function realDataPresent(int $foreignEntities): self
     {
         return new self('real_data_present', sprintf('Demo data is refused: %d entity record(s) were not created by the demo command.', $foreignEntities));

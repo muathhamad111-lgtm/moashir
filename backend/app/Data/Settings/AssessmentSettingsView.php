@@ -17,6 +17,7 @@ final readonly class AssessmentSettingsView
         public int $reviewSlaDays,
         public array $slaLimits,
         public UploadLimits $uploadLimits,
+        public int $generalMaxFileMegabytes,
         public CycleDefaults $advancedDefaults,
         public CommitteeEntityVisibility $committeeVisibility,
     ) {}

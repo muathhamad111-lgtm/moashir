@@ -16,6 +16,7 @@ use App\Services\Audit\AuditRecorder;
 use App\Services\Entities\EntityNotifier;
 use App\Support\Assessments\AssessmentNotices;
 use App\Support\Entities\EntityLinks;
+use App\Support\ValueObjects\LocalizedText;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -84,7 +85,7 @@ final readonly class SweepStaleCriteriaUpdateHolds
         $this->notifier->toRole(RoleKey::SystemAdmin, AssessmentNotices::fromKey(NotificationCode::RequestProcessingFailed, 'notifications.assessments.criteria_update_stalled', [
             'entity' => $entity->name->toLocalizedText(),
             'reference' => $entity->reference(),
-            'count' => (string) $sweep,
+            'automatic_retries' => LocalizedText::fromChoice('quantities.automatic_retries', $sweep),
         ], EntityLinks::record($entity->id))->inAppOnly(), null);
     }
 }

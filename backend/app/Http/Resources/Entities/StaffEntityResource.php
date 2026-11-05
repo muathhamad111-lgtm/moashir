@@ -24,6 +24,7 @@ final class StaffEntityResource extends JsonResource
         return [
             ...EntityPresenter::summary($entity),
             ...EntityPresenter::profile($entity),
+            ...EntityPresenter::registry($entity, $request),
             ...EntityPresenter::contact($entity),
             'marketing_consent' => $entity->marketing_consent_at !== null,
             'deactivated_at' => $entity->deactivated_at?->toIso8601String(),

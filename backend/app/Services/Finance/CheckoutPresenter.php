@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Finance;
 
+use App\Data\Finance\CheckoutScript;
 use App\Data\Finance\PaymentCheckout;
 use App\Enums\Finance\PaymentStatus;
 use App\Enums\Integrations\CheckoutPattern;
@@ -63,6 +64,7 @@ final readonly class CheckoutPresenter
             new SecretValue($secret),
             in_array(PaymentMethod::ApplePay->value, $methods, true) ? $this->applePay($settings[SettingKey::PaymentApplePayLabel->value], $locale) : null,
             $payment->expires_at,
+            $this->script(),
         );
     }
 
@@ -96,5 +98,12 @@ final readonly class CheckoutPresenter
             'label' => $text->in($locale),
             'validate_merchant_url' => IntegrationUrls::MOYASAR_APPLE_PAY_VALIDATION_URL,
         ];
+    }
+
+    private function script(): CheckoutScript
+    {
+        $integrity = $this->config->get('moashir.finance.checkout_script.integrity');
+
+        return new CheckoutScript($this->config->string('moashir.finance.checkout_script.url'), is_string($integrity) ? $integrity : null);
     }
 }

@@ -28,7 +28,7 @@ final readonly class ListMyCommitteeDiscussions
         $memberIds = array_values((clone $mySeats)->pluck('id')->map(static fn (mixed $id): int => ScalarValue::int($id))->all());
 
         $page = CommitteeDiscussion::query()
-            ->with(['assessment.entity.region', 'assessment.entity.city', 'assessment.region', 'currentEntries'])
+            ->with(['assessment.entity.region', 'assessment.entity.city', 'assessment.entity.owner', 'assessment.region', 'currentEntries'])
             ->whereIn('assessment_id', CommitteeAssignment::query()->select('assessment_id')->live()->whereIn('cycle_committee_assessor_id', $mySeats))
             ->whereHas('assessment', fn (Builder $assessment): Builder => $this->freezeGuard->excludeFrozen($assessment))
             ->when($status instanceof CommitteeDiscussionStatus, static fn (Builder $query): Builder => $query->where('status', $status))

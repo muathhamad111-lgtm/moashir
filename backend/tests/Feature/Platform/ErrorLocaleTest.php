@@ -70,7 +70,7 @@ it('translates 419 when the CSRF token is missing', function (string $locale): v
     app()->instance('env', 'local');
 
     assertLocalizedError(
-        $this->withHeader('Accept-Language', $locale)->postJson('/api/v1/auth/login', ['mode' => 'password', 'email' => 'x@moashir.example.sa', 'password' => 'Wrong-Password-2026!']),
+        $this->withHeader('Accept-Language', $locale)->postJson('/api/v1/auth/login', ['identifier' => 'x@moashir.example.sa', 'password' => 'Wrong-Password-2026!']),
         419,
         'csrf.token_mismatch',
         $locale,
@@ -79,7 +79,7 @@ it('translates 419 when the CSRF token is missing', function (string $locale): v
 
 it('translates 429 when a rate limit is hit', function (string $locale): void {
     $attempt = fn (): TestResponse => $this->withHeader('Accept-Language', $locale)
-        ->postJson('/api/v1/auth/login', ['mode' => 'password', 'email' => 'limited.'.$locale.'@moashir.example.sa', 'password' => 'Wrong-Password-2026!']);
+        ->postJson('/api/v1/auth/login', ['identifier' => 'limited.'.$locale.'@moashir.example.sa', 'password' => 'Wrong-Password-2026!']);
 
     foreach (range(1, 5) as $ignored) {
         $attempt();

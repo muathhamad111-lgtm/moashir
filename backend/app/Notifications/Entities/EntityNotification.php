@@ -6,14 +6,17 @@ namespace App\Notifications\Entities;
 
 use App\Data\Entities\EntityNotice;
 use App\Data\Notifications\InAppMessage;
+use App\Enums\Notifications\MailReason;
+use App\Enums\Notifications\NotificationCode;
 use App\Models\Identity\User;
 use App\Notifications\Channels\InAppChannel;
 use App\Notifications\Contracts\DeliversInApp;
+use App\Notifications\Contracts\HasNotificationCode;
+use App\Notifications\Messages\BrandedMailMessage;
 use App\Notifications\QueuedNotification;
 use App\Support\FrontendUrl;
-use Illuminate\Notifications\Messages\MailMessage;
 
-final class EntityNotification extends QueuedNotification implements DeliversInApp
+final class EntityNotification extends QueuedNotification implements DeliversInApp, HasNotificationCode
 {
     public function __construct(public readonly EntityNotice $notice)
     {
@@ -38,16 +41,12 @@ final class EntityNotification extends QueuedNotification implements DeliversInA
         return $channels;
     }
 
-    public function toMail(object $notifiable): MailMessage
+    public function toMail(object $notifiable): BrandedMailMessage
     {
         $locale = app()->getLocale();
-        $mail = (new MailMessage)->subject($this->notice->title->in($locale));
-
-        if ($notifiable instanceof User) {
-            $mail->greeting(__('notifications.greeting', ['name' => $notifiable->name]));
-        }
-
-        $mail->line($this->notice->body->in($locale));
+        $mail = BrandedMailMessage::make($notifiable, $notifiable instanceof User ? MailReason::Account : MailReason::LinkedAddress)
+            ->subject($this->notice->title->in($locale))
+            ->line($this->notice->body->in($locale));
 
         if ($this->notice->link !== null) {
             $mail->action(__('notifications.entities.open_platform'), FrontendUrl::to($this->notice->link));
@@ -56,8 +55,13 @@ final class EntityNotification extends QueuedNotification implements DeliversInA
         return $mail;
     }
 
+    public function notificationCode(): NotificationCode
+    {
+        return $this->notice->code;
+    }
+
     public function toInApp(User $notifiable): InAppMessage
     {
-        return new InAppMessage($this->notice->code, $this->notice->title, $this->notice->body, $this->notice->link);
+        return new InAppMessage($this->notice->code, $this->notice->title, $this->notice->body, $this->notice->link, $this->notice->path);
     }
 }

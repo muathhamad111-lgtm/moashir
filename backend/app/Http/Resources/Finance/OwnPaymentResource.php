@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Finance;
 
-use App\Models\Finance\Payment;
+use App\Data\Finance\OpenedRequest;
+use App\Data\Finance\OwnPayment;
+use App\Support\Assessments\PathPresenter;
 use App\Support\Finance\PaymentPresenter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @property-read Payment $resource
+ * @property-read OwnPayment $resource
  */
 final class OwnPaymentResource extends JsonResource
 {
@@ -19,7 +21,7 @@ final class OwnPaymentResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $payment = $this->resource;
+        $payment = $this->resource->payment;
 
         return [
             'id' => $payment->public_id,
@@ -38,6 +40,15 @@ final class OwnPaymentResource extends JsonResource
             'cancelled_at' => $payment->cancelled_at?->toIso8601String(),
             'refunded_at' => $payment->refunded_at?->toIso8601String(),
             'receipt' => PaymentPresenter::receiptSummary($payment->receipt),
+            'request' => $this->openedRequest($this->resource->openedRequest),
         ];
+    }
+
+    /**
+     * @return array{id: int, number: string, path: string, path_label: array{ar: string, en: string}}|null
+     */
+    private function openedRequest(?OpenedRequest $request): ?array
+    {
+        return $request instanceof OpenedRequest ? ['id' => $request->id, 'number' => $request->number, ...PathPresenter::of($request->path)] : null;
     }
 }

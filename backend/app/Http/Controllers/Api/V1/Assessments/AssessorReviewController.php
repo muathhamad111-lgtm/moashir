@@ -12,6 +12,7 @@ use App\Actions\Assessments\SaveFeedbackItems;
 use App\Actions\Assessments\SaveReviewScores;
 use App\Actions\Assessments\StartReview;
 use App\Http\Requests\Assessments\AssessmentActionRequest;
+use App\Http\Requests\Assessments\CompleteReviewRequest;
 use App\Http\Requests\Assessments\RequestCompletionRequest;
 use App\Http\Requests\Assessments\SaveFeedbackItemsRequest;
 use App\Http\Requests\Assessments\SaveReviewScoresRequest;
@@ -53,15 +54,16 @@ final class AssessorReviewController
     }
 
     public function complete(
-        AssessmentActionRequest $request,
+        CompleteReviewRequest $request,
         Assessment $assessment,
         #[CurrentUser] User $actor,
         CompleteAccreditedAssessment $completeAccredited,
         CompleteInitialAssessment $completeInitial,
     ): JsonResponse {
+        $completion = $request->completion();
         $completed = $assessment->isAdvanced()
-            ? $completeInitial->handle($actor, $assessment, $request->reason())
-            : $completeAccredited->handle($actor, $assessment, $request->reason());
+            ? $completeInitial->handle($actor, $assessment, $completion->reason)
+            : $completeAccredited->handle($actor, $assessment, $completion);
 
         return ApiResponse::resource(new AssessmentResource($completed));
     }

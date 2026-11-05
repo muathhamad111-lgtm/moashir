@@ -26,12 +26,13 @@ use Tests\TestCase;
 
 function publishTerms(TermsKind $kind = TermsKind::Terms, string $version = '2026-11'): TermsVersion
 {
-    return TermsVersion::query()->create([
+    return TermsVersion::query()->forceCreate([
         'kind' => $kind->value,
         'version' => $version,
         'body' => ['ar' => 'نص الشروط والأحكام المعتمد لمنصة مؤشر.', 'en' => 'The approved terms and conditions of the Moashir platform.'],
         'effective_from' => Date::today()->toDateString(),
         'is_current' => true,
+        'published_at' => Date::now(),
         'published_by_user_id' => User::factory()->create(['name' => 'هند الزهراني'])->id,
     ]);
 }
@@ -56,6 +57,7 @@ function registrationPayload(array $overrides = []): array
         'name' => ['ar' => 'جمعية الأمل الخيرية', 'en' => 'Al-Amal Charitable Association'],
         'authorized_person_name' => 'سلمان بن فهد العتيبي',
         'official_email' => 'info@alamal.example.sa',
+        'unified_number' => '7001234567',
         'phone' => '0551234567',
         'password' => 'Wadi-Hanifa-Spring-2026',
         'password_confirmation' => 'Wadi-Hanifa-Spring-2026',
@@ -146,7 +148,7 @@ function otpCodeSentTo(User $user): string
     $code = '';
 
     Notification::assertSentTo($user, OtpCodeNotification::class, static function (OtpCodeNotification $notification) use ($user, &$code): bool {
-        $code = (string) ($notification->toMail($user)->introLines[1] ?? '');
+        $code = (string) $notification->toMail($user)->code;
 
         return true;
     });
@@ -163,7 +165,7 @@ function otpCodeSentToAddress(string $address): string
             return false;
         }
 
-        $code = (string) ($notification->toMail($notifiable)->introLines[1] ?? '');
+        $code = (string) $notification->toMail($notifiable)->code;
 
         return true;
     });

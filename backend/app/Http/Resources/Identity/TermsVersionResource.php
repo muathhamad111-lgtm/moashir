@@ -23,7 +23,7 @@ final class TermsVersionResource extends JsonResource
             'kind' => $this->resource->kind,
             'version' => $this->resource->version,
             'body' => $this->resource->body->toArray(),
-            'effective_from' => $this->resource->effective_from->toDateString(),
+            'effective_from' => $this->resource->effective_from?->toDateString(),
         ];
     }
 }

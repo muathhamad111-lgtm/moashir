@@ -21,11 +21,11 @@ final readonly class ListAssignedRequests
     /**
      * @return LengthAwarePaginator<int, Assessment>
      */
-    public function handle(User $assessor, ?AssignedRequestsTab $tab, int $perPage): LengthAwarePaginator
+    public function handle(User $assessor, AssessmentPath $path, ?AssignedRequestsTab $tab, int $perPage): LengthAwarePaginator
     {
         $query = $this->freezeGuard->excludeFrozen(Assessment::query()
             ->with([...self::RELATIONS, 'assignments' => static fn (HasMany $assignments): HasMany => $assignments->where('assessor_user_id', $assessor->id)])
-            ->whereIn('path', [AssessmentPath::Accredited, AssessmentPath::Advanced])
+            ->ofPath($path)
             ->reviewedBy($assessor->id));
 
         if ($tab instanceof AssignedRequestsTab) {

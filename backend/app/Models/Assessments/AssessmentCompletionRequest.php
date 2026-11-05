@@ -81,6 +81,14 @@ final class AssessmentCompletionRequest extends Model
         return $this->deadline_at->lessThan($now);
     }
 
+    /**
+     * @return list<string>
+     */
+    public function requestedSubCodes(): array
+    {
+        return array_values(array_unique(array_column($this->items, 'sub_code')));
+    }
+
     public function requests(string $subCode, string $kind): bool
     {
         foreach ($this->items as $item) {

@@ -25,7 +25,7 @@ final readonly class ListEntities
      */
     public function handle(User $actor, EntityListFilters $filters): LengthAwarePaginator
     {
-        $query = $this->filteredQuery($actor, $filters)->with(['owner', 'region', 'city']);
+        $query = $this->filteredQuery($actor, $filters)->with(['owner', 'region', 'city', 'logo']);
         $this->applySort($query, $filters->sort);
 
         return $query->orderBy('id')->paginate($filters->perPage);

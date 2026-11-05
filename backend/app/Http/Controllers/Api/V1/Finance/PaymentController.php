@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1\Finance;
 
 use App\Actions\Finance\CreatePayment;
 use App\Actions\Finance\ListMyPayments;
+use App\Actions\Finance\ShowMyPayment;
 use App\Http\Requests\Finance\IndexMyPaymentsRequest;
 use App\Http\Requests\Finance\StorePaymentRequest;
 use App\Http\Resources\Finance\CreatedPaymentResource;
@@ -25,6 +26,7 @@ final class PaymentController
 
         return ApiResponse::paginated($listPayments->handle($actor, $filters), OwnPaymentResource::class, [
             'stats' => $listPayments->statsOf($actor, $filters)->toArray(),
+            'status_counts' => $listPayments->statusCountsOf($actor, $filters),
         ]);
     }
 
@@ -38,8 +40,8 @@ final class PaymentController
         ]);
     }
 
-    public function show(Payment $payment): JsonResponse
+    public function show(Payment $payment, ShowMyPayment $show): JsonResponse
     {
-        return ApiResponse::resource(new OwnPaymentResource($payment));
+        return ApiResponse::resource(new OwnPaymentResource($show->handle($payment)));
     }
 }

@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Models\Audit;
 
 use App\Models\Concerns\AppendOnly;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Carbon;
 use OwenIt\Auditing\Models\Audit as BaseAudit;
 
 /**
@@ -20,6 +23,11 @@ use OwenIt\Auditing\Models\Audit as BaseAudit;
  * @property string|null $request_id
  * @property list<string>|null $actor_roles
  * @property string|null $tags
+ * @property string|null $url
+ * @property string|null $ip_address
+ * @property string|null $user_agent
+ * @property int|null $actor_entity_id
+ * @property Carbon $created_at
  */
 final class Audit extends BaseAudit
 {
@@ -30,4 +38,12 @@ final class Audit extends BaseAudit
         'new_values' => 'json',
         'actor_roles' => 'json',
     ];
+
+    /**
+     * @return MorphTo<Model, $this>
+     */
+    public function user(): MorphTo
+    {
+        return $this->morphTo(__FUNCTION__, 'user_type', 'user_id');
+    }
 }

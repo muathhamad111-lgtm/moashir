@@ -33,6 +33,7 @@ final readonly class PaymentCheckout
         public SecretValue $clientSecret,
         public ?array $applePay,
         public CarbonInterface $expiresAt,
+        public CheckoutScript $script,
     ) {}
 
     /**
@@ -55,6 +56,7 @@ final readonly class PaymentCheckout
             'payment_intent' => ['id' => $this->intentId, 'client_secret' => $this->clientSecret->reveal()],
             'apple_pay' => $this->applePay,
             'expires_at' => $this->expiresAt->toIso8601String(),
+            'script' => $this->script->toArray(),
         ];
     }
 }

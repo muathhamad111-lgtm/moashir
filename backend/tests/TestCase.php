@@ -14,6 +14,7 @@ use Illuminate\Database\Connection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Tests\Support\FakeHostResolver;
 use Tests\Support\TableByTableSchemaWipe;
 
@@ -32,6 +33,7 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
 
         Http::preventStrayRequests();
+        Storage::fake('local');
         $this->app->instance(HostResolver::class, new FakeHostResolver);
 
         $this->withHeaders(['Origin' => 'http://localhost', 'Referer' => 'http://localhost/', 'Accept-Language' => 'ar']);

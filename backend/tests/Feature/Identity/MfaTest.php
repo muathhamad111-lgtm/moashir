@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 use App\Enums\Identity\RoleKey;
 use App\Models\Identity\User;
+use App\Notifications\Identity\AccountLockedNotification;
 use App\Notifications\Identity\SecurityAlertNotification;
 use Illuminate\Support\Facades\Notification;
 use PragmaRX\Google2FA\Google2FA;
 
 function beginStaffSignIn(User $user): void
 {
-    test()->postJson('/api/v1/auth/login', ['email' => $user->email, 'mode' => 'password', 'password' => defaultPassword()])->assertOk();
+    signInWith($user->email, defaultPassword())->assertOk();
 }
 
 it('completes the staff sign-in with a valid TOTP code', function (): void {
@@ -36,7 +37,8 @@ it('accepts a recovery code only once', function (): void {
     $this->postJson('/api/v1/auth/mfa/challenge', ['recovery_code' => 'recovery-code-one'])->assertUnprocessable()->assertJsonPath('code', 'mfa.invalid');
 });
 
-it('rejects a wrong code and abandons the sign-in after five failures', function (): void {
+it('rejects a wrong code and abandons the sign-in after five failures when the account lockout allows more', function (): void {
+    config()->set('moashir.auth.lockout.max_attempts', 10);
     $user = systemAdmin();
     beginStaffSignIn($user);
 
@@ -48,6 +50,52 @@ it('rejects a wrong code and abandons the sign-in after five failures', function
     $this->travel(61)->seconds();
     $this->postJson('/api/v1/auth/mfa/challenge', ['code' => currentTotp()])->assertUnauthorized()->assertJsonPath('code', 'mfa.not_pending');
     $this->assertGuest('web');
+});
+
+it('counts wrong TOTP codes toward the account lockout across pending sign-ins and addresses', function (): void {
+    Notification::fake();
+    $administrator = systemAdmin();
+    $user = staffUser(RoleKey::Assessor);
+
+    foreach (['10.2.0.1', '10.2.0.2'] as $address) {
+        $this->flushSession();
+        $this->withServerVariables(['REMOTE_ADDR' => $address]);
+        beginStaffSignIn($user);
+        $this->postJson('/api/v1/auth/mfa/challenge', ['code' => '000000'])->assertJsonPath('code', 'mfa.invalid');
+        $this->postJson('/api/v1/auth/mfa/challenge', ['code' => '000000'])->assertJsonPath('code', 'mfa.invalid');
+    }
+
+    $this->flushSession();
+    $this->withServerVariables(['REMOTE_ADDR' => '10.2.0.3']);
+    beginStaffSignIn($user);
+
+    $this->postJson('/api/v1/auth/mfa/challenge', ['code' => '000000'])
+        ->assertStatus(423)
+        ->assertJsonPath('code', 'account_locked');
+
+    expect($user->refresh()->isLocked())->toBeTrue();
+    Notification::assertSentTo($administrator, AccountLockedNotification::class);
+    signInWith($user->email, defaultPassword())->assertStatus(423)->assertJsonPath('code', 'account_locked');
+    $this->assertGuest('web');
+});
+
+it('refuses the TOTP challenge of a pending sign-in once the account is locked', function (): void {
+    $user = systemAdmin();
+    beginStaffSignIn($user);
+    $user->forceFill(['locked_until' => now()->addMinutes(15)])->save();
+
+    $this->postJson('/api/v1/auth/mfa/challenge', ['code' => currentTotp()])->assertStatus(423)->assertJsonPath('code', 'account_locked');
+    $this->assertGuest('web');
+});
+
+it('resets the failure counter after a successful TOTP sign-in', function (): void {
+    $user = systemAdmin();
+    beginStaffSignIn($user);
+    $this->postJson('/api/v1/auth/mfa/challenge', ['code' => '000000'])->assertJsonPath('code', 'mfa.invalid');
+
+    $this->postJson('/api/v1/auth/mfa/challenge', ['code' => currentTotp()])->assertOk();
+
+    expect($user->refresh()->failed_login_attempts)->toBe(0);
 });
 
 it('requires a pending sign-in for the challenge', function (): void {
@@ -117,7 +165,9 @@ it('lets an entity user enable and disable TOTP with the current password', func
     $user = entityUser();
     signIn($user);
 
-    $key = $this->postJson('/api/v1/auth/mfa/enroll')->assertOk()->json('data.manual_entry_key');
+    $this->postJson('/api/v1/auth/mfa/enroll')->assertUnprocessable()->assertJsonValidationErrors('current_password');
+    $this->postJson('/api/v1/auth/mfa/enroll', ['current_password' => 'Wrong-Password-2026!'])->assertUnprocessable()->assertJsonValidationErrors('current_password');
+    $key = $this->postJson('/api/v1/auth/mfa/enroll', ['current_password' => defaultPassword()])->assertOk()->json('data.manual_entry_key');
     $this->postJson('/api/v1/auth/mfa/confirm', ['code' => (new Google2FA)->getCurrentOtp($key)])
         ->assertOk()
         ->assertJsonCount(8, 'data.recovery_codes');
@@ -126,6 +176,17 @@ it('lets an entity user enable and disable TOTP with the current password', func
     $this->deleteJson('/api/v1/auth/mfa', ['current_password' => defaultPassword()])->assertNoContent();
 
     expect($user->refresh()->hasConfirmedTotp())->toBeFalse();
+});
+
+it('refuses enrolment for a signed-in session past its idle timeout', function (): void {
+    $user = entityUser();
+    signIn($user);
+
+    $this->travel(61)->minutes();
+
+    $this->postJson('/api/v1/auth/mfa/enroll', ['current_password' => defaultPassword()])->assertUnauthorized()->assertJsonPath('code', 'session.expired');
+    $this->postJson('/api/v1/auth/mfa/confirm', ['code' => '123456'])->assertUnauthorized();
+    expect($user->refresh()->two_factor_secret)->toBeNull();
 });
 
 it('never lets staff disable TOTP', function (): void {

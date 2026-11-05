@@ -87,6 +87,12 @@ GRANT SELECT, INSERT, UPDATE ON payments, payment_receipts, finance_exports TO :
 REVOKE UPDATE, DELETE, TRUNCATE ON housekeeping_runs FROM :"app_role";
 GRANT SELECT, INSERT ON housekeeping_runs TO :"app_role";
 
+REVOKE DELETE, TRUNCATE ON certificates FROM :"app_role";
+GRANT SELECT, INSERT, UPDATE ON certificates TO :"app_role";
+
+REVOKE UPDATE, TRUNCATE ON certificate_verification_logs FROM :"app_role";
+GRANT SELECT, INSERT, DELETE ON certificate_verification_logs TO :"app_role";
+
 GRANT SELECT ON audits, authentication_events TO :"maintenance_role";
 
 COMMIT;

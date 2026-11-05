@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\Identity\InvitationStatus;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Identity\UserStatus;
+use App\Models\Audit\Audit;
 use App\Models\Identity\TermsVersion;
 use App\Models\Identity\User;
 use App\Notifications\Identity\StaffInvitationNotification;
@@ -54,6 +55,17 @@ it('accepts an invitation, sets the password and requires TOTP enrolment', funct
     $this->assertGuest('web');
 });
 
+it('never stores the single-use invitation token in an audit row', function (): void {
+    $token = inviteStaff(systemAdmin());
+
+    $this->postJson("/api/v1/auth/invitations/{$token}/accept", ['password' => INVITEE_PASSWORD, 'password_confirmation' => INVITEE_PASSWORD])->assertOk();
+
+    $urls = Audit::query()->pluck('url')->filter()->implode(' ');
+    expect($urls)->toContain('/api/v1/auth/invitations/[redacted]/accept')
+        ->and($urls)->not->toContain($token)
+        ->and((string) json_encode(Audit::query()->get()->toArray()))->not->toContain($token);
+});
+
 it('cannot be used twice', function (): void {
     $token = inviteStaff(systemAdmin());
     $payload = ['password' => INVITEE_PASSWORD, 'password_confirmation' => INVITEE_PASSWORD];
@@ -88,12 +100,13 @@ it('rejects an unknown token', function (): void {
 
 it('requires the current terms when a terms version is published', function (): void {
     $administrator = systemAdmin();
-    $terms = TermsVersion::query()->create([
+    $terms = TermsVersion::query()->forceCreate([
         'kind' => 'terms',
         'version' => '2026-10',
         'body' => ['ar' => 'نص الشروط والأحكام لمنصة مؤشر.', 'en' => 'The terms and conditions of the Moashir platform.'],
         'effective_from' => now()->toDateString(),
         'is_current' => true,
+        'published_at' => now(),
         'published_by_user_id' => $administrator->id,
     ]);
     $token = inviteStaff($administrator);

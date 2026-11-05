@@ -1,0 +1,1298 @@
+{
+  "pages": {
+    "home": {
+      "title": {
+        "ar": "منصة مؤشر للتميز المؤسسي",
+        "en": "Moashir Institutional Excellence Platform"
+      },
+      "seo": {
+        "title": {
+          "ar": "منصة مؤشر للتميز المؤسسي",
+          "en": "Moashir Institutional Excellence Platform"
+        },
+        "description": {
+          "ar": "منصة رقمية لقياس نضج الجهات غير الربحية وتميزها المؤسسي.",
+          "en": "A digital platform that measures the maturity and institutional excellence of non-profit entities."
+        }
+      },
+      "sections": [
+        {
+          "key": "hero",
+          "type": "hero",
+          "icon": "fa-solid fa-chart-line",
+          "background": "gradient-brand",
+          "title": {
+            "ar": "قِس تميّزك المؤسسي،",
+            "en": "Measure your organizational excellence,"
+          },
+          "subtitle": {
+            "ar": "منصة رقمية متكاملة لقياس نضج الجهات غير الربحية وإدارة مسارات التقييم وتحليل نتائج التميز المؤسسي.",
+            "en": "An integrated digital platform that measures the maturity of non-profit entities, manages the assessment paths and analyses institutional excellence results."
+          },
+          "description": {
+            "ar": "منصة مؤشر تُمكّن الجمعيات والمؤسسات الأهلية والأوقاف من قياس نضجها المؤسسي وفق نموذج التميّز في العمل الخيري، وكشف فجوات الأداء، والحصول على تقييم معتمد يدعم التحسين المستمر.",
+            "en": "Moashir enables civil associations, civil foundations and endowments to measure their institutional maturity against the Charitable Work Excellence Model, uncover performance gaps and obtain an accredited assessment that supports continuous improvement."
+          },
+          "cta_label": {
+            "ar": "ابدأ التقييم الذاتي مجاناً",
+            "en": "Start the free self assessment"
+          },
+          "cta_url": "/register",
+          "meta": {
+            "eyebrow": {
+              "ar": "منصّة نموذج التميّز في العمل الخيري",
+              "en": "Charitable Work Excellence Model Platform"
+            },
+            "highlight": {
+              "ar": "وانطلق نحو الريادة.",
+              "en": "and lead with confidence."
+            },
+            "preview": {
+              "title": {
+                "ar": "مستوى النضج المؤسسي",
+                "en": "Institutional maturity"
+              },
+              "caption": {
+                "ar": "مثال توضيحي لنتيجة جهة افتراضية",
+                "en": "Illustrative result of a sample entity"
+              },
+              "score": 78,
+              "score_label": {
+                "ar": "الجاهزية",
+                "en": "Readiness"
+              },
+              "bars": [
+                {
+                  "label": {
+                    "ar": "القيادة الإدارية",
+                    "en": "Administrative leadership"
+                  },
+                  "value": 92
+                },
+                {
+                  "label": {
+                    "ar": "إدارة الموارد البشرية والمتطوعين",
+                    "en": "People and volunteers management"
+                  },
+                  "value": 74
+                },
+                {
+                  "label": {
+                    "ar": "إدارة العمليات والخدمات",
+                    "en": "Operations and services management"
+                  },
+                  "value": 81
+                }
+              ],
+              "badges": [
+                {
+                  "icon": "fa-solid fa-award",
+                  "title": {
+                    "ar": "شهادة معتمدة",
+                    "en": "Accredited certificate"
+                  },
+                  "caption": {
+                    "ar": "بمستوى التميّز",
+                    "en": "With the excellence level"
+                  }
+                },
+                {
+                  "icon": "fa-solid fa-file-lines",
+                  "title": {
+                    "ar": "تقرير تغذية راجعة",
+                    "en": "Feedback report"
+                  },
+                  "caption": {
+                    "ar": "لكل معيار فرعي",
+                    "en": "For every sub-criterion"
+                  }
+                }
+              ]
+            }
+          },
+          "items": [
+            {
+              "title": {
+                "ar": "استكشف مسارات التقييم",
+                "en": "Explore the assessment paths"
+              },
+              "cta_label": {
+                "ar": "استكشف مسارات التقييم",
+                "en": "Explore the assessment paths"
+              },
+              "cta_url": "#paths",
+              "meta": {
+                "role": "secondary-cta"
+              }
+            },
+            {
+              "icon": "fa-solid fa-circle-check",
+              "title": {
+                "ar": "نموذج تميّز معتمد",
+                "en": "An approved excellence model"
+              },
+              "meta": {
+                "role": "point"
+              }
+            },
+            {
+              "icon": "fa-solid fa-circle-check",
+              "title": {
+                "ar": "مقيّمون مؤهلون",
+                "en": "Qualified assessors"
+              },
+              "meta": {
+                "role": "point"
+              }
+            },
+            {
+              "icon": "fa-solid fa-circle-check",
+              "title": {
+                "ar": "نتائج وتقارير واضحة",
+                "en": "Clear results and reports"
+              },
+              "meta": {
+                "role": "point"
+              }
+            }
+          ]
+        },
+        {
+          "key": "how_it_works",
+          "type": "how_it_works",
+          "icon": "fa-solid fa-shoe-prints",
+          "title": {
+            "ar": "شاهد رحلتك خطوة بخطوة",
+            "en": "See your journey step by step"
+          },
+          "description": {
+            "ar": "من تسجيل جهتك حتى استلام شهادتك — تجربة رقمية متكاملة وواضحة.",
+            "en": "From registering your entity to receiving your certificate — one clear, integrated digital experience."
+          },
+          "meta": {
+            "eyebrow": {
+              "ar": "جولة في المنصة",
+              "en": "Platform tour"
+            }
+          },
+          "items": [
+            {
+              "icon": "fa-solid fa-user-plus",
+              "title": {
+                "ar": "تسجيل الجهة",
+                "en": "Register the entity"
+              },
+              "description": {
+                "ar": "أنشئ حساب جهتك وأكمل ملفها التعريفي.",
+                "en": "Create your entity account and complete its profile."
+              }
+            },
+            {
+              "icon": "fa-solid fa-route",
+              "title": {
+                "ar": "اختيار المسار",
+                "en": "Choose the path"
+              },
+              "description": {
+                "ar": "ابدأ بالتقييم الذاتي، ثم انتقل إلى التقييم المعتمد.",
+                "en": "Start with the self assessment, then move on to the accredited assessment."
+              }
+            },
+            {
+              "icon": "fa-solid fa-file-arrow-up",
+              "title": {
+                "ar": "رفع الشواهد",
+                "en": "Upload the evidence"
+              },
+              "description": {
+                "ar": "أرفق الشواهد لكل معيار مع التحقق الآلي من سلامة الملفات.",
+                "en": "Attach the evidence for every criterion, with automatic file safety checks."
+              }
+            },
+            {
+              "icon": "fa-solid fa-clipboard-check",
+              "title": {
+                "ar": "المراجعة والتقييم",
+                "en": "Review and assessment"
+              },
+              "description": {
+                "ar": "يراجع المقيّم المؤهل ملفك ويقيّمه وفق النموذج، وقد يطلب منك استكمالاً.",
+                "en": "A qualified assessor reviews and assesses your file against the model and may ask you to complete it."
+              }
+            },
+            {
+              "icon": "fa-solid fa-award",
+              "title": {
+                "ar": "النتيجة والشهادة",
+                "en": "Result and certificate"
+              },
+              "description": {
+                "ar": "اطّلع على نتيجتك وتقرير التغذية الراجعة، واحصل على شهادة بمستوى تميّزك.",
+                "en": "See your result and feedback report, and receive a certificate with your excellence level."
+              }
+            }
+          ]
+        },
+        {
+          "key": "paths",
+          "type": "paths",
+          "icon": "fa-solid fa-route",
+          "title": {
+            "ar": "اختر المسار المناسب لمرحلة جهتك",
+            "en": "Choose the path that fits your entity's stage"
+          },
+          "description": {
+            "ar": "ثلاثة مسارات متدرجة، من التشخيص الذاتي إلى الاعتماد الرسمي والتنافس على الجائزة.",
+            "en": "Three progressive paths, from self diagnosis to official accreditation and competing for the award."
+          },
+          "meta": {
+            "eyebrow": {
+              "ar": "مسارات التقييم",
+              "en": "Assessment paths"
+            }
+          },
+          "items": [
+            {
+              "icon": "fa-solid fa-list-check",
+              "title": {
+                "ar": "التقييم الذاتي",
+                "en": "Self assessment"
+              },
+              "description": {
+                "ar": "تشخيص أولي سريع لمستوى نضج جهتك وفق معايير النموذج.",
+                "en": "A quick first diagnosis of your entity's maturity against the model criteria."
+              },
+              "cta_label": {
+                "ar": "ابدأ التقييم الذاتي",
+                "en": "Start the self assessment"
+              },
+              "cta_url": "/assessment/self",
+              "meta": {
+                "accent": "calm",
+                "availability": "live",
+                "points": [
+                  {
+                    "ar": "بدون شواهد",
+                    "en": "No evidence required"
+                  },
+                  {
+                    "ar": "نتيجة فورية",
+                    "en": "Instant result"
+                  },
+                  {
+                    "ar": "يمكن إعادته",
+                    "en": "Can be repeated"
+                  }
+                ]
+              }
+            },
+            {
+              "icon": "fa-solid fa-clipboard-check",
+              "title": {
+                "ar": "التقييم المعتمد",
+                "en": "Accredited assessment"
+              },
+              "description": {
+                "ar": "تقييم رسمي يراجعه مقيّمون مؤهلون بناءً على شواهد جهتك.",
+                "en": "An official assessment reviewed by qualified assessors on the basis of your entity's evidence."
+              },
+              "cta_label": {
+                "ar": "ابدأ التقييم المعتمد",
+                "en": "Start the accredited assessment"
+              },
+              "cta_url": "/accredited",
+              "meta": {
+                "accent": "accredited",
+                "availability": "live",
+                "points": [
+                  {
+                    "ar": "مراجعة مقيّم مؤهل",
+                    "en": "Review by a qualified assessor"
+                  },
+                  {
+                    "ar": "تقرير تغذية راجعة",
+                    "en": "Feedback report"
+                  },
+                  {
+                    "ar": "شهادة بمستوى التميّز",
+                    "en": "Certificate with the excellence level"
+                  }
+                ]
+              }
+            },
+            {
+              "icon": "fa-solid fa-trophy",
+              "title": {
+                "ar": "التقييم المتقدم (الجائزة)",
+                "en": "Advanced assessment (the Award)"
+              },
+              "description": {
+                "ar": "مسار تنافسي ضمن جائزة التميّز في العمل الخيري، بتقييم أولي ولجنة مقيّمين ونتائج على مستوى المنطقة والمملكة.",
+                "en": "A competitive path within the Charitable Work Excellence Award, with an initial assessment, an assessors committee and results at regional and national level."
+              },
+              "meta": {
+                "accent": "award",
+                "availability": "coming_soon",
+                "points": [
+                  {
+                    "ar": "دورات سنوية",
+                    "en": "Annual cycles"
+                  },
+                  {
+                    "ar": "لجنة مقيّمين",
+                    "en": "Assessors committee"
+                  },
+                  {
+                    "ar": "تكريم الفائزين",
+                    "en": "Winners honoured"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "key": "excellence_model",
+          "type": "excellence_model",
+          "icon": "fa-solid fa-diagram-project",
+          "title": {
+            "ar": "نموذج التميّز في العمل الخيري",
+            "en": "Charitable Work Excellence Model"
+          },
+          "description": {
+            "ar": "إطار مرجعي يقيس قدرة الجهة على التخطيط والتنفيذ والتعلّم وتحقيق النتائج المستدامة.",
+            "en": "A reference framework that measures an entity's ability to plan, deliver, learn and achieve sustainable results."
+          },
+          "meta": {
+            "eyebrow": {
+              "ar": "النموذج المرجعي",
+              "en": "Reference model"
+            }
+          }
+        },
+        {
+          "key": "journey",
+          "type": "how_it_works",
+          "icon": "fa-solid fa-flag-checkered",
+          "title": {
+            "ar": "رحلتك نحو التميّز المؤسسي",
+            "en": "Your journey to institutional excellence"
+          },
+          "description": {
+            "ar": "مسار واضح يرافق جهتك من أول قياس حتى الريادة والتميّز المستدام.",
+            "en": "A clear path that accompanies your entity from its first measurement to leadership and sustainable excellence."
+          },
+          "meta": {
+            "variant": "journey",
+            "eyebrow": {
+              "ar": "رحلة الجهة",
+              "en": "The entity journey"
+            }
+          },
+          "items": [
+            {
+              "icon": "fa-solid fa-flag",
+              "title": {
+                "ar": "الانطلاق",
+                "en": "Start"
+              },
+              "description": {
+                "ar": "تسجيل الجهة وتفعيل حسابها.",
+                "en": "Register the entity and activate its account."
+              }
+            },
+            {
+              "icon": "fa-solid fa-gauge-high",
+              "title": {
+                "ar": "القياس",
+                "en": "Measure"
+              },
+              "description": {
+                "ar": "التقييم وفق معايير النموذج.",
+                "en": "Assess against the model criteria."
+              }
+            },
+            {
+              "icon": "fa-solid fa-magnifying-glass-chart",
+              "title": {
+                "ar": "التحليل",
+                "en": "Analyse"
+              },
+              "description": {
+                "ar": "كشف نقاط القوة والفجوات.",
+                "en": "Reveal the strengths and the gaps."
+              }
+            },
+            {
+              "icon": "fa-solid fa-screwdriver-wrench",
+              "title": {
+                "ar": "التطوير",
+                "en": "Improve"
+              },
+              "description": {
+                "ar": "تنفيذ خطة تحسين مبنية على الفجوات.",
+                "en": "Carry out an improvement plan built on the gaps."
+              }
+            },
+            {
+              "icon": "fa-solid fa-award",
+              "title": {
+                "ar": "الاعتماد",
+                "en": "Accreditation"
+              },
+              "description": {
+                "ar": "الحصول على شهادة تميّز معتمدة.",
+                "en": "Obtain an accredited excellence certificate."
+              }
+            },
+            {
+              "icon": "fa-solid fa-star",
+              "title": {
+                "ar": "الريادة",
+                "en": "Leadership"
+              },
+              "description": {
+                "ar": "تميّز مؤسسي مستدام.",
+                "en": "Sustainable institutional excellence."
+              }
+            }
+          ]
+        },
+        {
+          "key": "bag_promo",
+          "type": "bag_promo",
+          "icon": "fa-solid fa-briefcase",
+          "title": {
+            "ar": "أدوات تصنع الفرق في رحلتك",
+            "en": "Tools that make the difference on your journey"
+          },
+          "description": {
+            "ar": "تُتاح حقيبة التميّز السريع بعد صدور نتيجة التقييم المعتمد، لتحويل الفجوات إلى خطة تحسين مرحلية.",
+            "en": "The Quick Excellence Kit becomes available after the accredited assessment result, to turn the gaps into a staged improvement plan."
+          },
+          "meta": {
+            "availability": "coming_soon",
+            "eyebrow": {
+              "ar": "حقيبة التميّز السريع",
+              "en": "Quick Excellence Kit"
+            }
+          },
+          "items": [
+            {
+              "icon": "fa-solid fa-ruler-combined",
+              "title": {
+                "ar": "تقييم قابل للقياس",
+                "en": "Measurable assessment"
+              },
+              "description": {
+                "ar": "أولويات تحسين واضحة مأخوذة من نتيجة التقييم.",
+                "en": "Clear improvement priorities taken from the assessment result."
+              }
+            },
+            {
+              "icon": "fa-solid fa-book-open",
+              "title": {
+                "ar": "نماذج وأدلة مساعدة",
+                "en": "Templates and guides"
+              },
+              "description": {
+                "ar": "أدلة ونماذج عملية تساعد على التنفيذ.",
+                "en": "Practical guides and templates that support delivery."
+              }
+            },
+            {
+              "icon": "fa-solid fa-chart-simple",
+              "title": {
+                "ar": "تحسين مبني على الفجوات",
+                "en": "Gap-based improvement"
+              },
+              "description": {
+                "ar": "خطة مرحلية لمعالجة الفجوات ومتابعة التقدم.",
+                "en": "A staged plan to close the gaps and follow progress."
+              }
+            }
+          ]
+        },
+        {
+          "key": "cta_banner",
+          "type": "rich_text",
+          "icon": "fa-solid fa-star",
+          "title": {
+            "ar": "جاهز لتبدأ رحلة التميّز؟",
+            "en": "Ready to start your excellence journey?"
+          },
+          "description": {
+            "ar": "سجّل جهتك وابدأ التقييم الذاتي مجاناً، ثم انتقل إلى التقييم المعتمد متى كنت جاهزاً.",
+            "en": "Register your entity and start the free self assessment, then move on to the accredited assessment whenever you are ready."
+          },
+          "cta_label": {
+            "ar": "أنشئ حساب جهتك",
+            "en": "Create your entity account"
+          },
+          "cta_url": "/register",
+          "meta": {
+            "variant": "cta",
+            "eyebrow": {
+              "ar": "ابدأ الآن",
+              "en": "Get started"
+            }
+          },
+          "items": [
+            {
+              "title": {
+                "ar": "تسجيل الدخول",
+                "en": "Sign in"
+              },
+              "cta_label": {
+                "ar": "تسجيل الدخول",
+                "en": "Sign in"
+              },
+              "cta_url": "/login",
+              "meta": {
+                "role": "secondary-cta"
+              }
+            }
+          ]
+        },
+        {
+          "key": "leadership_promo",
+          "type": "leadership_promo",
+          "icon": "fa-solid fa-compass",
+          "title": {
+            "ar": "مسار القيادات",
+            "en": "Leaders path"
+          },
+          "description": {
+            "ar": "مسار تطويري لقياس وتمكين القيادات في الجهات غير الربحية — قريباً.",
+            "en": "A development path to measure and empower the leaders of non-profit entities — coming soon."
+          },
+          "meta": {
+            "badge": "coming_soon",
+            "availability": "coming_soon",
+            "eyebrow": {
+              "ar": "قريباً",
+              "en": "Coming soon"
+            }
+          }
+        },
+        {
+          "key": "contact",
+          "type": "contact",
+          "icon": "fa-solid fa-envelope",
+          "title": {
+            "ar": "نحن هنا لخدمتك",
+            "en": "We are here to help"
+          },
+          "description": {
+            "ar": "أرسل استفسارك عن مسارات التقييم أو خدمات المنصة، وسيصلك رقم مرجعي ورد من فريقنا على بريدك الإلكتروني.",
+            "en": "Send your question about the assessment paths or the platform services. You receive a reference number and a reply from our team by e-mail."
+          },
+          "meta": {
+            "eyebrow": {
+              "ar": "تواصل معنا",
+              "en": "Contact us"
+            }
+          }
+        }
+      ]
+    },
+    "accredited_intro": {
+      "title": {
+        "ar": "التقييم المعتمد",
+        "en": "Accredited assessment"
+      },
+      "sections": [
+        {
+          "key": "overview",
+          "type": "rich_text",
+          "icon": "fa-solid fa-clipboard-check",
+          "title": {
+            "ar": "التقييم المعتمد",
+            "en": "Accredited assessment"
+          },
+          "subtitle": {
+            "ar": "تقييم رسمي قائم على الشواهد يمنح جهتك درجة موثوقة.",
+            "en": "An official evidence-based assessment that gives your entity a trusted score."
+          },
+          "description": {
+            "ar": "ترفع الجهة شواهدها، ويراجعها مقيّم مختص وفق نموذج التميز المؤسسي، ثم تصدر الدرجة النهائية والتقرير التعقيبي.",
+            "en": "The entity uploads its evidence, a specialist assessor reviews it against the institutional excellence model, and the final score and feedback report are then issued."
+          }
+        },
+        {
+          "key": "benefits",
+          "type": "faq",
+          "icon": "fa-solid fa-star",
+          "title": {
+            "ar": "لماذا نوصي بالتقييم المعتمد؟",
+            "en": "Why we recommend the accredited assessment"
+          },
+          "items": [
+            {
+              "icon": "fa-solid fa-file-shield",
+              "title": {
+                "ar": "مراجعة الشواهد من مقيّم مختص",
+                "en": "Evidence review by a specialist assessor"
+              },
+              "description": {
+                "ar": "قراءة موضوعية لشواهد الجهة وفق النموذج المعتمد.",
+                "en": "An objective reading of the entity's evidence against the approved model."
+              }
+            },
+            {
+              "icon": "fa-solid fa-comments",
+              "title": {
+                "ar": "تقرير تعقيبي مفصل",
+                "en": "Detailed feedback report"
+              },
+              "description": {
+                "ar": "نقاط القوة وفرص التحسين لكل معيار فرعي.",
+                "en": "Strengths and improvement opportunities for every sub-criterion."
+              }
+            },
+            {
+              "icon": "fa-solid fa-briefcase",
+              "title": {
+                "ar": "الوصول إلى حقيبة التميز السريع",
+                "en": "Access to the Quick Excellence Kit"
+              },
+              "description": {
+                "ar": "بعد صدور النتيجة يمكن للجهة البدء برحلة التحسين.",
+                "en": "Once the result is issued the entity can start its improvement journey."
+              }
+            }
+          ]
+        },
+        {
+          "key": "pricing",
+          "type": "pricing_box",
+          "icon": "fa-solid fa-receipt",
+          "title": {
+            "ar": "الرسوم وآلية الدفع",
+            "en": "Fees and payment"
+          },
+          "description": {
+            "ar": "تظهر الرسوم قبل ضريبة القيمة المضافة ثم مبلغ الضريبة ثم الإجمالي، ويتم الدفع إلكترونيًا عبر بوابة آمنة، ويصدر إيصال دفع بعد نجاح العملية.",
+            "en": "The fee is shown before VAT, then the VAT amount, then the total. Payment is made online through a secure gateway and a payment receipt is issued after a successful payment."
+          },
+          "cta_label": {
+            "ar": "ادفع وابدأ التقييم",
+            "en": "Pay and start the assessment"
+          },
+          "cta_url": "/assessment/accredited"
+        }
+      ]
+    },
+    "advanced_intro": {
+      "title": {
+        "ar": "التقييم المتقدم",
+        "en": "Advanced assessment"
+      },
+      "sections": [
+        {
+          "key": "overview",
+          "type": "rich_text",
+          "icon": "fa-solid fa-trophy",
+          "title": {
+            "ar": "التقييم المتقدم وجائزة التميز",
+            "en": "The advanced assessment and the excellence award"
+          },
+          "description": {
+            "ar": "تتنافس الجهات المؤهلة خلال دورة سنوية محددة المواعيد عبر التقييم الأولي ثم الفرز ثم مرحلة تقييم اللجنة، وتعلن النتائج بعد اعتمادها.",
+            "en": "Eligible entities compete during a time-bound annual cycle through the initial assessment, filtering and the committee assessment stage; results are announced once approved."
+          }
+        },
+        {
+          "key": "cycle",
+          "type": "cycle_box",
+          "icon": "fa-solid fa-calendar-days",
+          "title": {
+            "ar": "الدورة الحالية",
+            "en": "Current cycle"
+          },
+          "description": {
+            "ar": "تعرض مواعيد الدورة وشروط المشاركة من إعدادات الدورة المعتمدة.",
+            "en": "The cycle dates and entry conditions come from the approved cycle settings."
+          }
+        },
+        {
+          "key": "winners",
+          "type": "winners",
+          "icon": "fa-solid fa-award",
+          "title": {
+            "ar": "الفائزون في الدورة السابقة",
+            "en": "Winners of the previous cycle"
+          },
+          "items": [
+            {
+              "icon": "fa-solid fa-award",
+              "title": {
+                "ar": "جمعية الأمل الخيرية",
+                "en": "Al-Amal Charity"
+              },
+              "description": {
+                "ar": "المركز الأول",
+                "en": "First place"
+              },
+              "meta": {
+                "rank": 1
+              }
+            },
+            {
+              "icon": "fa-solid fa-medal",
+              "title": {
+                "ar": "جمعية النور للتنمية",
+                "en": "Al-Noor Development Society"
+              },
+              "description": {
+                "ar": "المركز الثاني",
+                "en": "Second place"
+              },
+              "meta": {
+                "rank": 2
+              }
+            },
+            {
+              "icon": "fa-solid fa-medal",
+              "title": {
+                "ar": "مؤسسة الغد المستدام",
+                "en": "Sustainable Tomorrow Foundation"
+              },
+              "description": {
+                "ar": "المركز الثالث",
+                "en": "Third place"
+              },
+              "meta": {
+                "rank": 3
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "bag_details": {
+      "title": {
+        "ar": "حقيبة التميز السريع",
+        "en": "Quick Excellence Kit"
+      },
+      "sections": [
+        {
+          "key": "overview",
+          "type": "rich_text",
+          "icon": "fa-solid fa-briefcase",
+          "title": {
+            "ar": "ما حقيبة التميز السريع؟",
+            "en": "What is the Quick Excellence Kit?"
+          },
+          "description": {
+            "ar": "رحلة تحسين وليست تقييمًا جديدًا؛ تبنى على آخر نتيجة معتمدة أو متقدمة للجهة، ولا تطلب منها رفع شواهد جديدة.",
+            "en": "An improvement journey, not a new assessment: it builds on the entity's latest accredited or advanced result and does not ask it to upload new evidence."
+          }
+        },
+        {
+          "key": "faq",
+          "type": "faq",
+          "icon": "fa-solid fa-circle-question",
+          "title": {
+            "ar": "الأسئلة الشائعة",
+            "en": "Frequently asked questions"
+          },
+          "items": [
+            {
+              "title": {
+                "ar": "من يمكنه شراء الحقيبة؟",
+                "en": "Who can purchase the kit?"
+              },
+              "description": {
+                "ar": "الجهات التي لديها نتيجة تقييم معتمد أو متقدم موثقة.",
+                "en": "Entities that hold a verified accredited or advanced assessment result."
+              }
+            },
+            {
+              "title": {
+                "ar": "كم تستغرق الرحلة؟",
+                "en": "How long does the journey take?"
+              },
+              "description": {
+                "ar": "تتكون الخطة من مراحل مدة كل منها أربعة أشهر افتراضيًا.",
+                "en": "The plan is made of stages that last four months each by default."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "lenses": {
+      "title": {
+        "ar": "العدسات التحليلية",
+        "en": "Analytical lenses"
+      },
+      "sections": [
+        {
+          "key": "overview",
+          "type": "rich_text",
+          "icon": "fa-solid fa-glasses",
+          "title": {
+            "ar": "العدسات التحليلية",
+            "en": "Analytical lenses"
+          },
+          "description": {
+            "ar": "تعتمد العدسات على أعلى نتيجة بين آخر تقييم معتمد وآخر تقييم متقدم للجهة، ولا تستخدم نتائج التقييم الذاتي.",
+            "en": "The lenses use the higher of the entity's latest accredited and latest advanced results and never the self-assessment results."
+          }
+        },
+        {
+          "key": "lens_cards",
+          "type": "logos",
+          "icon": "fa-solid fa-layer-group",
+          "title": {
+            "ar": "العدسات",
+            "en": "The lenses"
+          },
+          "items": [
+            {
+              "icon": "fa-solid fa-hand-holding-heart",
+              "title": {
+                "ar": "عدسة المانحين",
+                "en": "Donor lens"
+              }
+            },
+            {
+              "icon": "fa-solid fa-building-shield",
+              "title": {
+                "ar": "عدسة الجهات الإشرافية",
+                "en": "Supervisory bodies lens"
+              }
+            },
+            {
+              "icon": "fa-solid fa-people-roof",
+              "title": {
+                "ar": "عدسة المجتمع",
+                "en": "Community lens"
+              }
+            },
+            {
+              "icon": "fa-solid fa-flag",
+              "title": {
+                "ar": "عدسة برامج رؤية 2030",
+                "en": "Vision 2030 programs lens"
+              }
+            },
+            {
+              "icon": "fa-solid fa-chess",
+              "title": {
+                "ar": "العدسة الاستراتيجية",
+                "en": "Strategic lens"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "kpis": {
+      "title": {
+        "ar": "مؤشرات الأداء",
+        "en": "Performance indicators"
+      },
+      "sections": [
+        {
+          "key": "hero",
+          "type": "hero",
+          "icon": "fa-solid fa-chart-column",
+          "title": {
+            "ar": "مؤشرات التميز المؤسسي",
+            "en": "Institutional excellence indicators"
+          },
+          "description": {
+            "ar": "مؤشرات محدثة لقياس أداء القطاع غير الربحي ونضجه المؤسسي.",
+            "en": "Up-to-date indicators that measure the performance and institutional maturity of the non-profit sector."
+          }
+        }
+      ]
+    }
+  },
+  "site_settings": {
+    "social": [
+      {
+        "platform": "x",
+        "url": "https://x.com/moashir.example"
+      },
+      {
+        "platform": "linkedin",
+        "url": "https://www.linkedin.com/company/moashir-example"
+      }
+    ],
+    "contact": {
+      "email": "info@moashir.example.sa",
+      "phone": null,
+      "address": {
+        "ar": "الرياض، المملكة العربية السعودية",
+        "en": "Riyadh, Kingdom of Saudi Arabia"
+      }
+    },
+    "footer_note": {
+      "ar": "جميع الحقوق محفوظة لمنصة مؤشر.",
+      "en": "All rights reserved to the Moashir platform."
+    },
+    "quick_links": [
+      {
+        "label": {
+          "ar": "الرئيسية",
+          "en": "Home"
+        },
+        "url": "/"
+      },
+      {
+        "label": {
+          "ar": "مسارات التقييم",
+          "en": "Assessment paths"
+        },
+        "url": "#paths"
+      },
+      {
+        "label": {
+          "ar": "حقيبة التميز السريع",
+          "en": "Quick Excellence Kit"
+        },
+        "url": "/bag"
+      },
+      {
+        "label": {
+          "ar": "مؤشرات الأداء",
+          "en": "Performance indicators"
+        },
+        "url": "/kpis"
+      },
+      {
+        "label": {
+          "ar": "تواصل معنا",
+          "en": "Contact us"
+        },
+        "url": "#contact"
+      }
+    ]
+  },
+  "kpi_categories": [
+    {
+      "key": "institutional-excellence",
+      "name": {
+        "ar": "التميز المؤسسي",
+        "en": "Institutional excellence"
+      },
+      "icon": "fa-solid fa-award"
+    },
+    {
+      "key": "performance",
+      "name": {
+        "ar": "الأداء",
+        "en": "Performance"
+      },
+      "icon": "fa-solid fa-gauge-high"
+    },
+    {
+      "key": "beneficiaries",
+      "name": {
+        "ar": "المستفيدون",
+        "en": "Beneficiaries"
+      },
+      "icon": "fa-solid fa-people-group"
+    },
+    {
+      "key": "human-resources",
+      "name": {
+        "ar": "الموارد البشرية",
+        "en": "Human resources"
+      },
+      "icon": "fa-solid fa-user-tie"
+    },
+    {
+      "key": "innovation",
+      "name": {
+        "ar": "الابتكار",
+        "en": "Innovation"
+      },
+      "icon": "fa-solid fa-lightbulb"
+    },
+    {
+      "key": "operations",
+      "name": {
+        "ar": "العمليات",
+        "en": "Operations"
+      },
+      "icon": "fa-solid fa-gears"
+    },
+    {
+      "key": "knowledge",
+      "name": {
+        "ar": "المعرفة",
+        "en": "Knowledge"
+      },
+      "icon": "fa-solid fa-book"
+    },
+    {
+      "key": "key-results",
+      "name": {
+        "ar": "النتائج الرئيسية",
+        "en": "Key results"
+      },
+      "icon": "fa-solid fa-bullseye"
+    }
+  ],
+  "kpi_types": [
+    {
+      "key": "outcome",
+      "name": {
+        "ar": "مؤشر نتائج",
+        "en": "Outcome indicator"
+      }
+    },
+    {
+      "key": "output",
+      "name": {
+        "ar": "مؤشر مخرجات",
+        "en": "Output indicator"
+      }
+    },
+    {
+      "key": "input",
+      "name": {
+        "ar": "مؤشر مدخلات",
+        "en": "Input indicator"
+      }
+    }
+  ],
+  "kpis": [
+    {
+      "slug": "participating-associations",
+      "category": "beneficiaries",
+      "type": "output",
+      "value": "486",
+      "target": "700",
+      "baseline": "320",
+      "status": "good",
+      "featured": true,
+      "icon": "fa-solid fa-people-group",
+      "card": "primary",
+      "badge": "info",
+      "name": {
+        "ar": "الجمعيات المشاركة",
+        "en": "Participating associations"
+      },
+      "unit": {
+        "ar": "جمعية",
+        "en": "associations"
+      },
+      "short_description": {
+        "ar": "عدد الجمعيات المسجلة والمشاركة في المنصة.",
+        "en": "Associations registered and taking part in the platform."
+      },
+      "owner": {
+        "ar": "إدارة تسجيل الجهات",
+        "en": "Entity Registration Department"
+      }
+    },
+    {
+      "slug": "excellence-associations",
+      "category": "institutional-excellence",
+      "type": "outcome",
+      "value": "132",
+      "target": "250",
+      "baseline": "95",
+      "status": "needs_improvement",
+      "featured": true,
+      "icon": "fa-solid fa-award",
+      "card": "success",
+      "badge": "warning",
+      "name": {
+        "ar": "الجمعيات الحاصلة على التميز المؤسسي",
+        "en": "Associations achieving institutional excellence"
+      },
+      "unit": {
+        "ar": "جمعية",
+        "en": "associations"
+      },
+      "short_description": {
+        "ar": "الجمعيات المستوفية لمعايير نموذج التميز عبر المسارين المعتمد والمتقدم.",
+        "en": "Associations meeting the excellence model criteria through the accredited and advanced paths."
+      },
+      "owner": {
+        "ar": "إدارة نموذج التميز",
+        "en": "Excellence Model Department"
+      }
+    },
+    {
+      "slug": "average-excellence-score",
+      "category": "institutional-excellence",
+      "type": "outcome",
+      "value": "71.5",
+      "target": "85",
+      "baseline": "64",
+      "status": "good",
+      "featured": true,
+      "icon": "fa-solid fa-chart-line",
+      "card": "primary",
+      "badge": "info",
+      "name": {
+        "ar": "متوسط درجة التميز المؤسسي",
+        "en": "Average institutional excellence score"
+      },
+      "unit": {
+        "ar": "%",
+        "en": "%"
+      },
+      "short_description": {
+        "ar": "متوسط نتائج الجهات المقيّمة وفق نموذج التميز المؤسسي.",
+        "en": "Average result of the assessed entities against the institutional excellence model."
+      },
+      "owner": {
+        "ar": "إدارة نموذج التميز",
+        "en": "Excellence Model Department"
+      }
+    },
+    {
+      "slug": "beneficiaries-served",
+      "category": "beneficiaries",
+      "type": "outcome",
+      "value": "1250000",
+      "target": "1500000",
+      "baseline": "900000",
+      "status": "excellent",
+      "featured": true,
+      "icon": "fa-solid fa-hand-holding-heart",
+      "card": "success",
+      "badge": "success",
+      "name": {
+        "ar": "المستفيدون من البرامج",
+        "en": "Program beneficiaries"
+      },
+      "unit": {
+        "ar": "مستفيد",
+        "en": "beneficiaries"
+      },
+      "short_description": {
+        "ar": "إجمالي المستفيدين من برامج الجهات المشاركة.",
+        "en": "Total beneficiaries of the participating entities' programs."
+      },
+      "owner": {
+        "ar": "إدارة الأثر المجتمعي",
+        "en": "Community Impact Department"
+      }
+    },
+    {
+      "slug": "volunteer-hours",
+      "category": "human-resources",
+      "type": "input",
+      "value": "384000",
+      "target": "500000",
+      "baseline": "250000",
+      "status": "good",
+      "featured": true,
+      "icon": "fa-solid fa-clock",
+      "card": "info",
+      "badge": "info",
+      "name": {
+        "ar": "إجمالي ساعات التطوع",
+        "en": "Total volunteer hours"
+      },
+      "unit": {
+        "ar": "ساعة",
+        "en": "hours"
+      },
+      "short_description": {
+        "ar": "ساعات التطوع الموثقة لدى الجهات المشاركة.",
+        "en": "Volunteer hours recorded by the participating entities."
+      },
+      "owner": {
+        "ar": "إدارة التطوع",
+        "en": "Volunteering Department"
+      }
+    },
+    {
+      "slug": "strategic-plan-adoption",
+      "category": "operations",
+      "type": "output",
+      "value": "64",
+      "target": "90",
+      "baseline": "48",
+      "status": "behind_target",
+      "featured": true,
+      "icon": "fa-solid fa-chess",
+      "card": "warning",
+      "badge": "danger",
+      "name": {
+        "ar": "نسبة الجهات التي لديها خطة استراتيجية",
+        "en": "Entities with a strategic plan"
+      },
+      "unit": {
+        "ar": "%",
+        "en": "%"
+      },
+      "short_description": {
+        "ar": "نسبة الجهات المشاركة التي اعتمدت خطة استراتيجية سارية.",
+        "en": "Share of participating entities with an approved, current strategic plan."
+      },
+      "owner": {
+        "ar": "إدارة التخطيط",
+        "en": "Planning Department"
+      }
+    },
+    {
+      "slug": "digital-transformation",
+      "category": "innovation",
+      "type": "output",
+      "value": "57",
+      "target": "80",
+      "baseline": "41",
+      "status": "needs_improvement",
+      "featured": false,
+      "icon": "fa-solid fa-laptop-code",
+      "card": "primary",
+      "badge": "warning",
+      "name": {
+        "ar": "نسبة الجهات المطبقة للتحول الرقمي",
+        "en": "Entities applying digital transformation"
+      },
+      "unit": {
+        "ar": "%",
+        "en": "%"
+      },
+      "short_description": {
+        "ar": "نسبة الجهات التي رقمنت خدماتها الأساسية.",
+        "en": "Share of entities that digitised their core services."
+      },
+      "owner": {
+        "ar": "إدارة التحول الرقمي",
+        "en": "Digital Transformation Department"
+      }
+    },
+    {
+      "slug": "knowledge-management",
+      "category": "knowledge",
+      "type": "output",
+      "value": "38",
+      "target": "70",
+      "baseline": "25",
+      "status": "behind_target",
+      "featured": false,
+      "icon": "fa-solid fa-book-open",
+      "card": "danger",
+      "badge": "danger",
+      "name": {
+        "ar": "نسبة الجهات المطبقة لإدارة المعرفة",
+        "en": "Entities applying knowledge management"
+      },
+      "unit": {
+        "ar": "%",
+        "en": "%"
+      },
+      "short_description": {
+        "ar": "نسبة الجهات التي لديها ممارسات موثقة لإدارة المعرفة.",
+        "en": "Share of entities with documented knowledge management practices."
+      },
+      "owner": {
+        "ar": "إدارة المعرفة",
+        "en": "Knowledge Department"
+      }
+    }
+  ]
+}

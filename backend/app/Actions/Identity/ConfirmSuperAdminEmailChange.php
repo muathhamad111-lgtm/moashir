@@ -62,7 +62,7 @@ final readonly class ConfirmSuperAdminEmailChange
 
     private function notifyAddresses(User $user, EmailAddress $oldEmail, EmailAddress $newEmail): void
     {
-        $notification = (new SuperAdminEmailChangedNotification($newEmail->masked()))->locale($user->preferredLocale());
+        $notification = new SuperAdminEmailChangedNotification($newEmail->masked())->locale($user->preferredLocale());
 
         Notification::route('mail', [$oldEmail->value, $newEmail->value])->notify($notification);
         $this->alerter->raise(NotificationCode::SuperAdminEmailChanged);

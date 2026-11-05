@@ -11,10 +11,14 @@ use App\Notifications\Identity\SecurityAlertNotification;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Testing\TestResponse;
 
-function passwordLogin(string $email, string $password): TestResponse
+function passwordLogin(string $identifier, string $password): TestResponse
 {
-    return test()->postJson('/api/v1/auth/login', ['email' => $email, 'mode' => 'password', 'password' => $password]);
+    return signInWith($identifier, $password);
 }
+
+beforeEach(function (): void {
+    setEntitySecondFactor(false);
+});
 
 it('signs an entity user in and returns the session user', function (): void {
     $user = entityUser();
@@ -71,6 +75,24 @@ it('returns the same generic error for a wrong password and an unknown email', f
     $this->assertGuest('web');
 });
 
+it('still accepts the transitional email field of the previous sign-in form', function (): void {
+    $user = entityUser();
+
+    $this->postJson('/api/v1/auth/login', ['email' => $user->email, 'mode' => 'password', 'password' => defaultPassword()])
+        ->assertOk()
+        ->assertJsonPath('data.step', 'authenticated');
+});
+
+it('no longer offers a passwordless sign-in', function (): void {
+    $user = entityUser();
+
+    $this->postJson('/api/v1/auth/login', ['email' => $user->email, 'mode' => 'otp', 'channel' => 'email'])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('password');
+    $this->postJson('/api/v1/auth/otp/request', ['email' => $user->email])->assertNotFound();
+    $this->assertGuest('web');
+});
+
 it('locks the account for fifteen minutes after five failed attempts and alerts the administrators', function (): void {
     Notification::fake();
     $administrator = systemAdmin();
@@ -123,27 +145,24 @@ it('validates the login payload', function (array $payload, string $field): void
         ->assertJsonPath('code', 'validation_failed')
         ->assertJsonValidationErrors($field);
 })->with([
-    'missing email' => [['mode' => 'password', 'password' => 'x'], 'email'],
-    'malformed email' => [['email' => 'not-an-email', 'mode' => 'password', 'password' => 'x'], 'email'],
-    'unknown mode' => [['email' => 'person@moashir.example.sa', 'mode' => 'magic'], 'mode'],
-    'missing password' => [['email' => 'person@moashir.example.sa', 'mode' => 'password'], 'password'],
+    'missing identifier' => [['password' => 'x'], 'identifier'],
+    'malformed e-mail' => [['identifier' => 'not-an-email@', 'password' => 'x'], 'identifier'],
+    'landline number' => [['identifier' => '0114567890', 'password' => 'x'], 'identifier'],
+    'unified number not starting with 7' => [['identifier' => '6001234567', 'password' => 'x'], 'identifier'],
+    'unified number with nine digits' => [['identifier' => '700123456', 'password' => 'x'], 'identifier'],
+    'Arabic-Indic digits' => [['identifier' => '٧٠٠١٢٣٤٥٦٧', 'password' => 'x'], 'identifier'],
+    'identifier too long' => [['identifier' => str_repeat('a', 250).'@example.sa', 'password' => 'x'], 'identifier'],
+    'missing password' => [['identifier' => 'person@moashir.example.sa'], 'password'],
 ]);
 
 it('returns validation messages in the requested language', function (): void {
     $this->postJson('/api/v1/auth/login', [], ['Accept-Language' => 'en'])
         ->assertJsonPath('message', 'The submitted data is invalid.')
-        ->assertJsonPath('errors.email.0', 'The email field is required.');
+        ->assertJsonPath('errors.identifier.0', 'The e-mail, mobile number or unified national number field is required.');
 
     $this->postJson('/api/v1/auth/login', [])
         ->assertJsonPath('message', 'البيانات المرسلة غير صالحة.')
-        ->assertJsonPath('errors.email.0', 'حقل البريد الإلكتروني مطلوب.');
-});
-
-it('rejects password sign-in when the mode is disabled', function (): void {
-    config()->set('moashir.auth.login_modes.email_password', false);
-    $user = entityUser();
-
-    passwordLogin($user->email, defaultPassword())->assertUnprocessable()->assertJsonPath('code', 'login.mode_disabled');
+        ->assertJsonPath('errors.identifier.0', 'حقل البريد الإلكتروني أو رقم الجوال أو الرقم الوطني الموحد مطلوب.');
 });
 
 it('rate limits sign-in attempts per email and address', function (): void {

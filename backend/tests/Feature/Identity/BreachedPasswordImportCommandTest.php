@@ -42,3 +42,24 @@ it('fails on a missing file without revealing its directory', function (): void 
         ->doesntExpectOutputToContain('/srv/private')
         ->assertFailed();
 });
+
+it('imports every bundled digest list of a directory, the SecLists list included', function (): void {
+    $this->artisan('moashir:breached-passwords:import', ['path' => database_path('data/breached-passwords')])
+        ->expectsOutputToContain('curated-seed.sha256')
+        ->expectsOutputToContain('seclists-xato-top-1m-min12.sha256')
+        ->assertSuccessful();
+
+    expect(BreachedPassword::query()->count())->toBeGreaterThanOrEqual(46296)
+        ->and(app(BreachedPasswordChecker::class)->isBreached('123456789012'))->toBeTrue()
+        ->and(app(BreachedPasswordChecker::class)->isBreached('Wadi-Hanifa-Spring-2026'))->toBeFalse();
+});
+
+it('keeps the bundled SecLists list as digests of 12 to 128 characters only, with its licence', function (): void {
+    $lines = file(database_path('data/breached-passwords/seclists-xato-top-1m-min12.sha256'), FILE_IGNORE_NEW_LINES) ?: [];
+
+    expect($lines)->toHaveCount(46296)
+        ->and(array_filter($lines, static fn (string $line): bool => preg_match('/^[0-9a-f]{64}$/', $line) !== 1))->toBe([])
+        ->and(in_array(hash('sha256', '123456789012'), $lines, true))->toBeTrue()
+        ->and(in_array(hash('sha256', '123456'), $lines, true))->toBeFalse()
+        ->and((string) file_get_contents(database_path('data/breached-passwords/SECLISTS-LICENSE.txt')))->toContain('MIT License');
+});

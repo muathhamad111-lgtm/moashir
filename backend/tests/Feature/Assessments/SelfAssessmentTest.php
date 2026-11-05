@@ -311,7 +311,7 @@ it('answers "result not issued yet" before the submission', function (): void {
     $this->getJson("/api/v1/assessments/{$draft->id}/result")
         ->assertOk()
         ->assertExactJson(['data' => [
-            'id' => $draft->id, 'number' => $draft->request_number, 'path' => 'self', 'status' => 'draft', 'is_frozen' => false, 'available' => false,
+            'id' => $draft->id, 'number' => $draft->request_number, 'path' => 'self', 'path_label' => ['ar' => 'التقييم الذاتي', 'en' => 'Self assessment'], 'status' => 'draft', 'is_frozen' => false, 'available' => false,
         ], 'meta' => [], 'errors' => null]);
 });
 

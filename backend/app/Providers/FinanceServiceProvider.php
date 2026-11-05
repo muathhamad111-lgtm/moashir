@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Actions\Finance\ListRefunds;
+use App\Contracts\Finance\OpenedRequestLookup;
 use App\Contracts\Finance\ServicePriceSource;
 use App\Models\Assessments\EvidenceBundle;
 use App\Models\Assessments\EvidenceFile;
@@ -14,6 +15,7 @@ use App\Models\Finance\Payment;
 use App\Models\Finance\PaymentReceipt;
 use App\Models\Finance\Refund;
 use App\Services\Assessments\AccreditedPurchaseCheck;
+use App\Services\Assessments\OpenedRequestsByPayment;
 use App\Services\Entities\EntityEraser;
 use App\Services\Finance\CheckoutIntentEraser;
 use App\Services\Finance\PurchaseEligibility;
@@ -27,6 +29,7 @@ final class FinanceServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(ServicePriceSource::class, SettingsServicePriceSource::class);
+        $this->app->bind(OpenedRequestLookup::class, OpenedRequestsByPayment::class);
         $this->app->tag([CheckoutIntentEraser::class], EntityEraser::TAG);
         $this->app->tag([AccreditedPurchaseCheck::class], PurchaseEligibility::TAG);
     }

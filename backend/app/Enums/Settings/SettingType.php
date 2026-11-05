@@ -9,5 +9,6 @@ enum SettingType: string
     case String = 'string';
     case Integer = 'integer';
     case Decimal = 'decimal';
+    case Boolean = 'boolean';
     case Json = 'json';
 }

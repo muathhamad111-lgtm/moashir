@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Enums\Settings;
 
+use App\Enums\Finance\PaymentPurpose;
 use App\Enums\Identity\PermissionKey;
 
 enum FinanceSettingField: string
@@ -12,6 +13,14 @@ enum FinanceSettingField: string
     case BagPrice = 'bag_price';
     case VatRate = 'vat_rate';
     case OrderValidityMinutes = 'order_validity_minutes';
+
+    public static function priceOf(PaymentPurpose $purpose): self
+    {
+        return match ($purpose) {
+            PaymentPurpose::Accredited => self::AccreditedPrice,
+            PaymentPurpose::Bag => self::BagPrice,
+        };
+    }
 
     public function settingKey(): SettingKey
     {

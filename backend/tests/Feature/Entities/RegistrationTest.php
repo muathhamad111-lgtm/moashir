@@ -52,7 +52,9 @@ it('registers an entity pending verification and sends an e-mail code without re
     expect($entity->status)->toBe(EntityStatus::PendingVerification)
         ->and($entity->name->ar)->toBe('جمعية الأمل الخيرية')
         ->and($entity->governance_grade)->toBe('87.45')
-        ->and($entity->hasCompleteProfile())->toBeTrue()
+        ->and($entity->hasCompleteProfile())->toBeFalse()
+        ->and($entity->profileCompletion()->percent())->toBe(75)
+        ->and($entity->unified_number)->toBe('7001234567')
         ->and($owner->roleKeys())->toBe([RoleKey::Entity])
         ->and($owner->name)->toBe('سلمان بن فهد العتيبي')
         ->and($owner->phone)->toBe('+966551234567')
@@ -136,10 +138,22 @@ it('activates the entity and signs it in when the e-mail code is verified', func
 it('does not ask a verified entity with a complete profile to complete it', function (): void {
     $challengeId = register(registrationPayload())->json('data.otp.challenge_id');
     $owner = registeredOwner();
+    Entity::query()->findOrFail($owner->entity_id)->forceFill(['license_number' => '770000123', 'founded_on' => '2011-03-01'])->save();
 
     $this->postJson('/api/v1/auth/otp/verify', ['challenge_id' => $challengeId, 'code' => otpCodeSentTo($owner)])->assertOk();
 
     Notification::assertNotSentTo($owner, EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityProfileIncomplete);
+});
+
+it('asks every newly verified entity for the licence number and the founding date the registration form does not carry', function (): void {
+    $challengeId = register(registrationPayload())->json('data.otp.challenge_id');
+    $owner = registeredOwner();
+
+    $this->postJson('/api/v1/auth/otp/verify', ['challenge_id' => $challengeId, 'code' => otpCodeSentTo($owner)])
+        ->assertOk()
+        ->assertJsonPath('data.user.entity.profile_completed', false);
+
+    Notification::assertSentTo($owner, EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityProfileIncomplete);
 });
 
 it('returns the entity summary in the session of a signed-in entity', function (): void {
@@ -168,7 +182,7 @@ it('asks an unverified entity signing in with its password for an e-mail code', 
     register(registrationPayload())->assertCreated();
     $owner = registeredOwner();
 
-    $this->postJson('/api/v1/auth/login', ['email' => $owner->email, 'mode' => 'password', 'password' => 'Wadi-Hanifa-Spring-2026'])
+    signInWith($owner->email, 'Wadi-Hanifa-Spring-2026')
         ->assertOk()
         ->assertJsonPath('data.step', 'otp_required')
         ->assertJsonPath('data.requires_otp', true);
@@ -262,10 +276,10 @@ it('explains validation errors in the request language', function (): void {
 
 it('rate limits registrations per address', function (): void {
     foreach (range(1, 5) as $attempt) {
-        register(registrationPayload(['official_email' => "info{$attempt}@alamal.example.sa"]))->assertCreated();
+        register(registrationPayload(['official_email' => "info{$attempt}@alamal.example.sa", 'unified_number' => "700123456{$attempt}"]))->assertCreated();
     }
 
-    register(registrationPayload(['official_email' => 'info6@alamal.example.sa']))->assertTooManyRequests()->assertJsonPath('code', 'rate_limited');
+    register(registrationPayload(['official_email' => 'info6@alamal.example.sa', 'unified_number' => '7001234566']))->assertTooManyRequests()->assertJsonPath('code', 'rate_limited');
 });
 
 it('never deletes an unverified registration automatically', function (): void {

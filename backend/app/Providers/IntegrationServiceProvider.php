@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Contracts\BreachedPasswordChecker;
+use App\Contracts\Documents\HtmlPdfPrinter;
 use App\Contracts\Documents\PdfRenderer;
 use App\Contracts\Files\ClamdConnector;
 use App\Contracts\Files\FileScanner;
@@ -20,6 +21,8 @@ use App\Integrations\Anthropic\AnthropicConnectionTester;
 use App\Integrations\Anthropic\AnthropicProvider;
 use App\Integrations\ClamAv\ClamAvFileScanner;
 use App\Integrations\ClamAv\SocketClamdConnector;
+use App\Integrations\Documents\ChromiumPdfRenderer;
+use App\Integrations\Documents\HeadlessChromePrinter;
 use App\Integrations\Documents\UnavailablePdfRenderer;
 use App\Integrations\Fakes\FakeFileScanner;
 use App\Integrations\Fakes\FakePdfRenderer;
@@ -40,11 +43,14 @@ use App\Integrations\Smtp\SystemHostResolver;
 use App\Integrations\Taqnyat\TaqnyatAccount;
 use App\Integrations\Taqnyat\TaqnyatConnectionTester;
 use App\Integrations\Taqnyat\TaqnyatSmsGateway;
+use App\Services\Documents\ChromiumAvailability;
+use App\Services\Documents\DocumentAssets;
 use App\Services\Identity\LocalBreachedPasswordChecker;
 use App\Services\Integrations\ConfiguredSmsAvailability;
 use App\Services\Integrations\ProviderAdapterRegistry;
 use App\Services\Integrations\SettingsSmsGateway;
 use App\Services\Platform\LocalFakeAdapters;
+use App\Services\Platform\MailerPosture;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\ServiceProvider;
 
@@ -86,14 +92,26 @@ final class IntegrationServiceProvider extends ServiceProvider
         $this->app->singleton(FileScanner::class, fn (): FileScanner => $this->app->make(LocalFakeAdapters::class)->allows('moashir.files.scanner')
             ? $this->app->make(FakeFileScanner::class)
             : $this->app->make(ClamAvFileScanner::class));
-        $this->app->singleton(PdfRenderer::class, fn (): PdfRenderer => $this->app->make(LocalFakeAdapters::class)->allows('moashir.documents.pdf_renderer')
-            ? $this->app->make(FakePdfRenderer::class)
-            : $this->app->make(UnavailablePdfRenderer::class));
+        $this->app->singleton(DocumentAssets::class);
+        $this->app->bind(HtmlPdfPrinter::class, HeadlessChromePrinter::class);
+        $this->app->singleton(PdfRenderer::class, fn (): PdfRenderer => $this->pdfRenderer());
         $this->app->tag(self::ADAPTERS, ProviderAdapterRegistry::TAG);
     }
 
     public function boot(): void
     {
         Mail::extend('settings', fn (): SettingsMailTransport => $this->app->make(SettingsMailTransport::class));
+        $this->app->make(MailerPosture::class)->enforce();
+    }
+
+    private function pdfRenderer(): PdfRenderer
+    {
+        if ($this->app->make(LocalFakeAdapters::class)->allows('moashir.documents.pdf_renderer')) {
+            return $this->app->make(FakePdfRenderer::class);
+        }
+
+        return $this->app->make(ChromiumAvailability::class)->isReady()
+            ? $this->app->make(ChromiumPdfRenderer::class)
+            : $this->app->make(UnavailablePdfRenderer::class);
     }
 }

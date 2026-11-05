@@ -8,4 +8,5 @@ enum PendingAuthenticationStage: string
 {
     case MfaChallenge = 'mfa_challenge';
     case MfaEnrollment = 'mfa_enrollment';
+    case EmailSecondFactor = 'email_second_factor';
 }

@@ -9,7 +9,7 @@ use App\Support\Integrations\IpAddressPolicy;
 
 final readonly class SmtpHostGuard
 {
-    public const array ALLOWED_PORTS = [25, 465, 587, 2525];
+    public const array ALLOWED_PORTS = [25, 465, 587, 2465, 2525, 2587];
 
     public function __construct(private HostResolver $resolver) {}
 

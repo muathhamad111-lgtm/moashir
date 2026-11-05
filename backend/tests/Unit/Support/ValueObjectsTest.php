@@ -18,7 +18,7 @@ it('refuses an invalid e-mail address', function (): void {
 });
 
 it('accepts Saudi mobile numbers in E.164 only', function (): void {
-    expect((new PhoneNumber('+966512345678'))->masked())->toBe('+9665*****678')
+    expect(new PhoneNumber('+966512345678')->masked())->toBe('+9665*****678')
         ->and(fn (): PhoneNumber => new PhoneNumber('0512345678'))->toThrow(InvalidArgumentException::class)
         ->and(fn (): PhoneNumber => new PhoneNumber('+966112345678'))->toThrow(InvalidArgumentException::class);
 });

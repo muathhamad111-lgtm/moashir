@@ -16,6 +16,6 @@ final class ResetUserMfaController
 {
     public function __invoke(RequiredReasonRequest $request, User $managedUser, #[CurrentUser] User $actor, ResetUserMfa $resetMfa): JsonResponse
     {
-        return ApiResponse::resource(new UserResource($resetMfa->handle($actor, $managedUser, $request->reason())->load('roles')));
+        return ApiResponse::resource(new UserResource($resetMfa->handle($actor, $managedUser, $request->reason())->load(User::ADMINISTRATION_RELATIONS)));
     }
 }

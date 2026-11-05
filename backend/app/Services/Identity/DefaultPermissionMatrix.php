@@ -31,7 +31,7 @@ final class DefaultPermissionMatrix
             RoleKey::Assessor => $this->assessor(),
             RoleKey::FilteringOfficer => $this->filteringOfficer(),
             RoleKey::AwardSecretary => $this->awardSecretary(),
-            RoleKey::ContentOfficer => [P::AssessmentCriteriaView, P::ContentHomeManage, P::ContentKpisManage, P::AiKbManage],
+            RoleKey::ContentOfficer => [P::AssessmentCriteriaView, P::ContentHomeManage, P::ContentKpisManage, P::ContactMessagesManage, P::AiKbManage],
             RoleKey::FinanceOfficer => [
                 P::EntitiesView, P::BagRequestsView, P::FinanceOperationsView, P::FinanceOperationsExport,
                 P::FinanceRefundsManage, P::FinanceReceiptsManage,
@@ -58,7 +58,7 @@ final class DefaultPermissionMatrix
             P::ReportsFeedbackView, P::CertificatesManage,
             P::BagRequestsView, P::BagRequestsAssign, P::BagPlanApprove, P::BagSubscriptionActivateFree, P::BagAdminManage,
             P::CriteriaView, P::CriteriaPublish,
-            P::ContentHomeManage, P::ContentKpisManage,
+            P::ContentHomeManage, P::ContentKpisManage, P::ContactMessagesManage,
             P::AiKbManage, P::AiProviderManage,
             P::UsersView, P::UsersManage, P::RolesMatrixView, P::RolesMatrixManage, P::AuditView, P::AuditExport,
             P::SettingsGeneralManage, P::SettingsBrandingManage, P::SettingsAuthManage, P::SettingsAssessmentManage,

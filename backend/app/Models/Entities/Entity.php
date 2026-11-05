@@ -5,15 +5,22 @@ declare(strict_types=1);
 namespace App\Models\Entities;
 
 use App\Casts\EntityNameCast;
+use App\Data\Entities\EntityProfileData;
 use App\Enums\Entities\DevelopmentSector;
+use App\Enums\Entities\EntityProfileField;
 use App\Enums\Entities\EntityStatus;
 use App\Enums\Entities\EntityType;
 use App\Enums\Entities\OrgSize;
+use App\Enums\Entities\ProfileCompletionItem;
+use App\Models\Files\StoredFile;
 use App\Models\Identity\EmailChangeRequest;
 use App\Models\Identity\User;
 use App\Support\Search\SearchTextNormalizer;
 use App\Support\ValueObjects\EntityName;
+use App\Support\ValueObjects\ProfileCompletion;
 use App\Support\ValueObjects\SearchTerm;
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Database\Factories\Entities\EntityFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -24,6 +31,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Date;
 
 /**
  * @property int $id
@@ -39,6 +47,11 @@ use Illuminate\Support\Carbon;
  * @property int|null $employees_count
  * @property int|null $annual_beneficiaries_count
  * @property bool $has_strategic_plan
+ * @property string|null $unified_number
+ * @property string|null $license_number
+ * @property CarbonImmutable|null $founded_on
+ * @property string|null $website_url
+ * @property int|null $logo_file_id
  * @property EntityStatus $status
  * @property Carbon|null $verified_at
  * @property Carbon|null $profile_completed_at
@@ -57,6 +70,7 @@ use Illuminate\Support\Carbon;
  * @property-read Region $region
  * @property-read City $city
  * @property-read User|null $owner
+ * @property-read StoredFile|null $logo
  */
 final class Entity extends Model
 {
@@ -80,7 +94,8 @@ final class Entity extends Model
      */
     protected $fillable = [
         'name', 'entity_type', 'development_sector', 'org_size', 'founding_year', 'region_id', 'city_id',
-        'governance_grade', 'employees_count', 'annual_beneficiaries_count', 'has_strategic_plan',
+        'governance_grade', 'employees_count', 'annual_beneficiaries_count', 'has_strategic_plan', 'license_number',
+        'founded_on', 'website_url', 'unified_number',
     ];
 
     /**
@@ -100,6 +115,8 @@ final class Entity extends Model
             'employees_count' => 'integer',
             'annual_beneficiaries_count' => 'integer',
             'has_strategic_plan' => 'boolean',
+            'founded_on' => 'immutable_date',
+            'logo_file_id' => 'integer',
             'status' => EntityStatus::class,
             'verified_at' => 'datetime',
             'profile_completed_at' => 'datetime',
@@ -134,6 +151,14 @@ final class Entity extends Model
     public function owner(): HasOne
     {
         return $this->hasOne(User::class, 'entity_id');
+    }
+
+    /**
+     * @return BelongsTo<StoredFile, $this>
+     */
+    public function logo(): BelongsTo
+    {
+        return $this->belongsTo(StoredFile::class, 'logo_file_id');
     }
 
     /**
@@ -233,6 +258,41 @@ final class Entity extends Model
 
     public function hasCompleteProfile(): bool
     {
-        return $this->governance_grade !== null && $this->employees_count !== null && $this->annual_beneficiaries_count !== null;
+        return $this->profileCompletion()->isComplete();
+    }
+
+    public function profileCompletion(): ProfileCompletion
+    {
+        $owner = $this->loadMissing('owner')->owner;
+
+        return new ProfileCompletion([
+            ProfileCompletionItem::BasicData->value => array_all(EntityProfileField::basicData(), fn (EntityProfileField $field): bool => $this->getAttribute($field->value) !== null),
+            ProfileCompletionItem::AccountOwner->value => $owner instanceof User && trim($owner->name) !== '',
+            ProfileCompletionItem::GovernanceGrade->value => $this->governance_grade !== null,
+            ProfileCompletionItem::EmployeesCount->value => $this->employees_count !== null,
+            ProfileCompletionItem::AnnualBeneficiariesCount->value => $this->annual_beneficiaries_count !== null,
+            ProfileCompletionItem::UnifiedNumber->value => $this->unified_number !== null,
+            ProfileCompletionItem::LicenseNumber->value => $this->license_number !== null,
+            ProfileCompletionItem::FoundedOn->value => $this->founded_on !== null,
+            ProfileCompletionItem::Phone->value => $owner?->phone !== null,
+            ProfileCompletionItem::WebsiteUrl->value => $this->website_url !== null,
+            ProfileCompletionItem::Logo->value => $this->logo_file_id !== null,
+        ]);
+    }
+
+    public function syncProfileCompletedAt(): void
+    {
+        $this->profile_completed_at = $this->hasCompleteProfile() ? ($this->profile_completed_at ?? Date::now()) : null;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function profileAttributesFrom(EntityProfileData $profile): array
+    {
+        $attributes = $profile->toAttributes();
+        $foundedOn = array_key_exists(EntityProfileField::FoundedOn->value, $attributes) ? $attributes[EntityProfileField::FoundedOn->value] : $this->founded_on;
+
+        return $foundedOn instanceof CarbonInterface ? [...$attributes, EntityProfileField::FoundingYear->value => $foundedOn->year] : $attributes;
     }
 }

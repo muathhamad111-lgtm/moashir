@@ -11,21 +11,6 @@ final readonly class AuthSettings
 {
     public function __construct(private Repository $config) {}
 
-    public function isEmailPasswordEnabled(): bool
-    {
-        return $this->flag('login_modes.email_password');
-    }
-
-    public function isEmailOtpEnabled(): bool
-    {
-        return $this->flag('login_modes.email_otp');
-    }
-
-    public function isSmsOtpEnabled(): bool
-    {
-        return $this->flag('login_modes.sms_otp');
-    }
-
     public function otpLength(): int
     {
         return $this->number('otp.length');
@@ -44,6 +29,16 @@ final readonly class AuthSettings
     public function otpMaxAttempts(): int
     {
         return $this->number('otp.max_attempts');
+    }
+
+    public function otpPerUserPerTenMinutes(): int
+    {
+        return max(1, $this->number('otp.per_user_per_ten_minutes'));
+    }
+
+    public function otpPerUserPerDay(): int
+    {
+        return max(1, $this->number('otp.per_user_per_day'));
     }
 
     public function lockoutMaxAttempts(): int
@@ -79,11 +74,6 @@ final readonly class AuthSettings
     public function absoluteSessionHours(): int
     {
         return $this->number('session.absolute_hours');
-    }
-
-    private function flag(string $key): bool
-    {
-        return (bool) $this->config->get('moashir.auth.'.$key);
     }
 
     private function number(string $key): int

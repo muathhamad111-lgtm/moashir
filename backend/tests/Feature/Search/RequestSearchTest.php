@@ -19,6 +19,7 @@ it('finds self assessment requests by number for the global readers', function (
             'id' => $draft->id,
             'number' => $draft->request_number,
             'path' => 'self',
+            'path_label' => ['ar' => 'التقييم الذاتي', 'en' => 'Self assessment'],
             'status' => 'draft',
             'is_frozen' => false,
             'entity' => [

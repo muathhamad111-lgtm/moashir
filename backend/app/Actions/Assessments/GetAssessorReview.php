@@ -32,7 +32,7 @@ final readonly class GetAssessorReview
 
     public function handle(User $viewer, Assessment $assessment): AssessorReview
     {
-        $assessment->loadMissing(['entity.region', 'entity.city', 'activeAssignment', 'openCompletionRequest']);
+        $assessment->loadMissing(['entity.region', 'entity.city', 'entity.owner', 'activeAssignment', 'openCompletionRequest']);
         $version = $assessment->criteriaVersion;
         $tree = $this->trees->build($version);
         $content = $this->content->forReviewer($assessment);
