@@ -9,6 +9,7 @@ const PUBLIC_API_ROUTES = [
     'health.ready',
     'auth.login-modes',
     'auth.login',
+    'auth.otp.request',
     'auth.otp.verify',
     'auth.otp.resend',
     'auth.mfa.challenge',

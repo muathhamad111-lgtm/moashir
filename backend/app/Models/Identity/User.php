@@ -316,6 +316,11 @@ final class User extends Authenticatable implements Auditable, HasLocalePreferen
         return $this->isSuperAdmin() || $this->mfa_required;
     }
 
+    public function mayUseSignInCode(): bool
+    {
+        return $this->isEntityUser() && ! $this->requiresMfa();
+    }
+
     public function hasConfirmedTotp(): bool
     {
         return $this->two_factor_secret !== null && $this->two_factor_confirmed_at !== null;

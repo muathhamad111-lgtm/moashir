@@ -25,7 +25,7 @@ final class TransactionController
 
     public function show(Payment $payment): JsonResponse
     {
-        $payment->loadMissing(['receipt', 'refund.payment', 'refund.recordedBy', 'refund.evidenceFile', 'entity.owner']);
+        $payment->loadMissing(['receipt', 'refund.payment', 'refund.recordedBy', 'refund.evidenceFile', 'entity.owner', 'bankTransfer.bankAccount', 'bankTransfer.proofFile', 'bankTransfer.reviewedBy']);
 
         return ApiResponse::resource(new TransactionDetailResource($payment));
     }

@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Services\Identity;
 
 use App\Enums\Identity\OtpPurpose;
-use App\Enums\Identity\PendingAuthenticationStage;
 use App\Exceptions\Identity\OtpRejected;
 use App\Models\Identity\OtpCode;
+use Illuminate\Support\Facades\Date;
 
 final readonly class SignInOtpChallenges
 {
-    public function __construct(private PendingAuthentication $pending) {}
+    public function __construct(private AuthSettings $settings, private SignInGuard $guard) {}
 
     public function find(string $challengeId): ?OtpCode
     {
@@ -20,17 +20,25 @@ final readonly class SignInOtpChallenges
             ->whereIn('purpose', OtpPurpose::signIn())
             ->first();
 
-        if ($challenge?->purpose === OtpPurpose::LoginSecondFactor && ! $this->pending->holds($challenge->user, PendingAuthenticationStage::EmailSecondFactor)) {
+        if ($challenge?->purpose === OtpPurpose::SignInCode && ! $challenge->user->mayUseSignInCode()) {
             throw OtpRejected::challengeInvalid();
         }
 
         return $challenge;
     }
 
-    public function release(OtpCode $challenge): void
+    public function assertResendable(OtpCode $challenge): void
     {
-        if ($challenge->purpose === OtpPurpose::LoginSecondFactor) {
-            $this->pending->clear();
+        if (! $challenge->isOpen()) {
+            throw OtpRejected::challengeInvalid();
+        }
+
+        $this->guard->assertNotLocked($challenge->user);
+
+        $availableAt = $challenge->last_sent_at->addSeconds($this->settings->otpResendCooldownSeconds());
+
+        if ($availableAt->isFuture()) {
+            throw OtpRejected::cooldown((int) Date::now()->diffInSeconds($availableAt, true));
         }
     }
 }

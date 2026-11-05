@@ -203,9 +203,10 @@ their Laravel meaning. Production must use `APP_ENV=production`, `APP_DEBUG=fals
 | GET | `/health/ready` | public status; details to `HEALTH_ALLOWED_IPS` or a System Administrator, `throttle:public` |
 | GET | `/auth/login-modes` | public |
 | POST | `/auth/login` (`identifier` + `password`) | public, `throttle:login` (5/min per identifier + IP, 20 per 10 min per identifier, 30/min per IP) |
+| POST | `/auth/otp/request` (`identifier`, entity sign-in code) | public, `throttle:otp-request` (3 per 10 min per identifier, 10 per 10 min per IP) + per-account limits |
 | POST | `/auth/otp/verify`, `/auth/otp/resend` | public, `throttle:otp-verify` / `throttle:otp-resend` + per-account limits |
 | POST | `/auth/mfa/challenge` | pending sign-in, `throttle:mfa` |
-| POST | `/auth/mfa/enroll`, `/auth/mfa/confirm` | pending enrolment, or signed in under `session.timeouts` (+ `current_password` to start) |
+| POST | `/auth/mfa/enroll`, `/auth/mfa/confirm` | pending enrolment, or signed in under `session.timeouts` (+ `current_password` to start); 403 `forbidden` for entity accounts (`identity.mfa.enroll`) |
 | POST | `/me/phone/verification`, `/me/phone/verification/confirm` | signed in, `throttle:sensitive` |
 | GET / PUT | `/settings/auth` | `settings.auth.manage` (System Administrator only, locked), `throttle:sensitive` on PUT |
 | GET / POST | `/audit-logs`, `/audit-logs/{id}`, `/audit-logs/export` | `audit.view` / `audit.export` |
@@ -229,16 +230,22 @@ their Laravel meaning. Production must use `APP_ENV=production`, `APP_DEBUG=fals
 
 Super Admin accounts answer 404 on every `/users/{user}` path for every caller and never appear in lists.
 
-### Sign-in, second factor and lockout (Task-51, operator decision SEC-12 revised 2026-11-04)
-- **One sign-in form.** `POST /auth/login { identifier, password }`. The type of `identifier` is detected by its format
-  (`Support\ValueObjects\SignInIdentifier`): an e-mail (contains `@`, lower-cased); a Saudi mobile number
-  (`05XXXXXXXX`, `5XXXXXXXX`, `+9665…`, `9665…`, `009665…`, spaces and dashes ignored, normalised to `+9665XXXXXXXX`);
-  or the entity's unified national number (10 digits starting with 7, resolves to the entity's owner account). Anything
-  else is 422 on `identifier` (format message, says nothing about accounts). Every failure — unknown account, wrong
-  password, unverified mobile, account without a password — answers the same 422 `credentials.invalid`; the timing is
-  equalised with a dummy hash. The previous form's `email` field is still accepted as an alias of `identifier`
-  (transitional, until the SPA sign-in screen of Task-37d ships; remove `LoginRequest::LEGACY_EMAIL_FIELD` then);
-  `mode` / `channel` are ignored.
+### Sign-in, sign-in codes and lockout (Task-51, Task-61; client decision 2026-11-05 supersedes SEC-12 revised)
+- **Two ways in for an entity, one for staff.** An entity account signs in with its identifier and password
+  (`POST /auth/login`) OR with a one-time sign-in code (`POST /auth/otp/request` then `POST /auth/otp/verify`). There is
+  no second factor for entity accounts. Staff and the Super Admin sign in with the password followed by the mandatory
+  authenticator app (TOTP); they never receive a sign-in code.
+- **Password sign-in.** `POST /auth/login { identifier, password }`. The type of `identifier` is detected by its format
+  (`Support\ValueObjects\SignInIdentifier`, rule `Rules\RecognisedSignInIdentifier`, shared by both endpoints): an e-mail
+  (contains `@`, lower-cased); a Saudi mobile number (`05XXXXXXXX`, `5XXXXXXXX`, `+9665…`, `9665…`, `009665…`, spaces
+  and dashes ignored, normalised to `+9665XXXXXXXX`); or the entity's unified national number (10 digits starting with 7,
+  resolves to the entity's owner account). Anything else is 422 on `identifier` (format message, says nothing about
+  accounts). Every failure — unknown account, wrong password, unverified mobile, account without a password — answers
+  the same 422 `credentials.invalid`; the timing is equalised with a dummy hash. The previous form's `email` field is
+  still accepted as an alias of `identifier` on this endpoint only (transitional; remove
+  `LoginRequest::LEGACY_EMAIL_FIELD` once no client sends it); `mode` / `channel` are ignored. Outcome: an active entity
+  → `step: authenticated` directly (`method: password`); a pending-verification entity → `step: otp_required` with its
+  registration code by e-mail (purpose `login`); staff / Super Admin → `mfa_challenge` or `mfa_enrollment`.
 - **Mobile sign-in needs a verified, unique number.** `users.phone` stays encrypted; `users.phone_index` holds a keyed
   blind index (HMAC-SHA256 with a key derived from `APP_KEY`, purpose-separated, `Services\Identity\BlindIndex`),
   recomputed by `Observers\Identity\UserPhoneIndexObserver` whenever the number changes (a change also clears
@@ -250,36 +257,71 @@ Super Admin accounts answer 404 on every `/users/{user}` path for every caller a
   (409 `phone.in_use` when another account already verified it). The own entity resource shows `phone_verified`. After
   rotating `APP_KEY`, run `php artisan moashir:identity:rebuild-phone-index` (the migration that adds the column runs
   the same backfill).
-- **No passwordless sign-in.** `POST /auth/otp/request` and `mode: otp` are gone (the e-mail-code-only and SMS-code-only
-  modes were single-factor). `POST /auth/otp/verify` and `/auth/otp/resend` stay for the registration / pending
-  verification code and for the entity second factor; the registration and e-mail verification flows are unchanged.
-- **Entity second factor = a control-panel setting** `auth.entity_second_factor_enabled` (default `true`):
-  `GET / PUT /settings/auth { entity_second_factor_enabled, reason? }` → `{ entity_second_factor_enabled,
-  entity_second_factor_channel: "email", staff_totp_required: true }`. `settings.auth.manage` is hard-locked to the
-  System Administrator (Super Admin by bypass with a `reason` of 10..1000, else 422 `reason_required`, plus SEC-04).
-  A real change is audited (`settings.auth_updated`, before / after, reason) and raises **SEC-07** to every System
-  Administrator, every Super Admin and the security mailbox. Turning it off is a client-accepted deviation from NCA ECC
-  2-15-3-5 (record it in the handover security matrix).
-  - ON: after the password, an entity account gets `step: otp_required` with a 6-digit e-mail code (purpose
-    `login_second_factor`, 5 minutes, bound to the browser session that passed the password; from another session the
-    challenge answers `otp.challenge_invalid`), then `POST /auth/otp/verify` signs it in (`method:
-    email_second_factor`).
-  - OFF: the entity is signed in after the password.
-  - Either way an account with a confirmed authenticator app is always asked for TOTP (`step: mfa_challenge`) — an
-    enrolled factor is never skipped (SEC-01). Staff and the Super Admin keep mandatory TOTP whatever the setting.
-- **One lockout for every factor (SEC-08, SEC-09).** Wrong passwords, wrong sign-in e-mail codes and wrong TOTP /
+- **Sign-in code request.** `POST /auth/otp/request { identifier }` (`Actions\Identity\RequestSignInCode`) always answers
+  `200 { step: "otp_required", requires_otp: true, otp: { challenge_id, channel, length, expires_at,
+  resend_available_at }, message }` with `message` = `messages.sign_in_code_sent` ("If an entity account matches what
+  you entered, a sign-in code has been sent."). The only other answers are 422 (identifier format, same message as
+  `/auth/login`) and 429 `rate_limited`; never 403, 404, 423 or 429 `otp.cooldown`, and never a destination.
+  - Channel rule R-CH (`Services\Identity\SignInCodeChannelResolver`): the code follows what was typed. A mobile number
+    gets an SMS when SMS is allowed in `auth.entity_sign_in_code_channels`, the SMS gateway is available
+    (`SmsAvailability`) and the hourly sign-in SMS cap (`moashir.auth.otp.sign_in_sms_per_hour`, default 100,
+    `Services\Identity\SignInSmsCap`) is not reached; otherwise e-mail. An e-mail or a unified national number always
+    gets an e-mail to the official address. The channel is computed from the input and global state only, before the
+    account is looked at, so a decoy gets the same `channel` as a real account.
+  - Eligibility (`Services\Identity\SignInCodeEligibility`, verdict enum `SignInCodeVerdict`): an active entity account
+    (status active, not locked, entity active, under the per-account limits) gets a code with purpose `sign_in_code`;
+    a pending-verification entity gets its registration code (purpose `login`) by e-mail whatever the setting. Everyone
+    else gets a decoy challenge (`DecoyOtpChallenges`, the channel is stored with it) and nothing is sent: unknown
+    identifier, staff, Super Admin, suspended or deactivated account, deleted entity, locked account, per-account limit
+    reached. The request is recorded as `authentication_events.type = otp_request_ignored` with `meta.reason` =
+    `unknown | not_entity | inactive | locked | throttled` (unknown identifiers as `identifier_type` + keyed hash).
+  - SMS only goes to a verified mobile: `IssueOtpChallenge` texts an unverified number only for `verify_phone`; any other
+    purpose falls back to e-mail. A permanent SMS failure falls back to e-mail and raises INT-01 (`FallsBackToMail`).
+    Decoys read the hourly cap but never use it up. The SMS body is the existing `otp_code` template.
+- **Verify and resend.** `POST /auth/otp/verify { challenge_id, code }` accepts the purposes `login` and `sign_in_code`
+  (a `sign_in_code` challenge whose user is not an entity account answers `otp.challenge_invalid`). A `sign_in_code`
+  success signs the entity in through `EstablishSession` (session regenerated, failed counter reset) and records
+  `login_success` with `meta { method: "sign_in_code", channel }`; it never touches `email_verified_at`. A `login`
+  success verifies the e-mail, activates a pending entity and signs it in (`method: otp`). `POST /auth/otp/resend`
+  (60 s cooldown, 429 `otp.cooldown`) issues a new code on the stored channel and voids the old one; SMS falls back to
+  e-mail when it is no longer allowed or available, the cap is reached, or the mobile is no longer verified. A decoy
+  resend keeps its stored channel under the same global fallbacks.
+- **Entity sign-in code channels = a control-panel setting** `auth.entity_sign_in_code_channels` (json list of
+  `email` / `sms`, default `["email"]`): `GET /settings/auth` → `{ entity_sign_in_code_channels: ["email"] |
+  ["email","sms"], sms_status: "unavailable" | "test" | "live", staff_totp_required: true }`; `PUT /settings/auth {
+  entity_sign_in_code_channels, reason? }`. Validation: required non-empty list, distinct, values `email` / `sms`;
+  e-mail must stay in the list (422 `entity_sign_in_code_channels` "E-mail must stay allowed…", operator Q-151); `sms`
+  is refused while the SMS gateway is not configured (422 "Configure the SMS gateway…"). A saved `sms` stays when the
+  gateway later disappears; R-CH then uses e-mail. `settings.auth.manage` is hard-locked to the System Administrator
+  (Super Admin by bypass with a `reason` of 10..1000, else 422 `reason_required`, plus SEC-04). A real change is audited
+  (`settings.auth_updated`, lists before / after, reason) and raises **SEC-07 "Entity sign-in code channels changed"**
+  to every System Administrator, every Super Admin and the security mailbox; no change writes and sends nothing.
+  Single-factor entity sign-in (password OR code) is a client-accepted deviation from NCA ECC 2-15-3-5 (handover
+  security matrix).
+- **Entity accounts cannot hold an authenticator.** `POST /auth/mfa/enroll` and `/auth/mfa/confirm` answer 403
+  `forbidden` for entity accounts (ability `identity.mfa.enroll`, `Policies\Identity\MfaEnrollmentPolicy`). Migration
+  `2026_11_05_140200` cleared the TOTP data of every entity account (one `mfa_disabled` event each, `meta.reason:
+  entity_second_factor_cancelled`). Staff enrolment is unchanged.
+- **One lockout for every factor (SEC-08, SEC-09).** Wrong passwords, wrong sign-in and registration codes and wrong TOTP /
   recovery codes all increment the same `users.failed_login_attempts`; at 5 the account is locked 15 minutes (423
   `account_locked` + `Retry-After`), `locked` is recorded, and USR-02 goes to the user and every System Administrator.
   A locked account cannot verify a code or a TOTP from any session or address. A successful sign-in resets the counter.
   Codes are also limited per account: 5 per 10 minutes and 20 per day (`otp.per_user_per_ten_minutes`,
-  `otp.per_user_per_day`; 429 `otp.cooldown`), on top of the per-address limiters.
+  `otp.per_user_per_day`; 429 `otp.cooldown` on password sign-in and resend, a silent decoy on `/auth/otp/request`), on
+  top of the per-address limiters. A locked account gets no sign-in code (decoy, reason `locked`); verify and resend
+  answer 423; the password path answers 423 (known pre-existing signal G-6, kept for the security matrix).
 - **Accounts without a password** (created from the console, e.g. the Super Admin before the first-password link is
   used) cannot sign in; they set a password through `POST /auth/password/forgot` → the e-mailed reset link.
 - **MFA enrolment (SEC-23).** `POST /auth/mfa/enroll` and `/auth/mfa/confirm` run under `session.timeouts`; a
   signed-in user must also send `current_password` to start an enrolment. The pending-sign-in enrolment of staff is
-  unchanged.
-- **`GET /auth/login-modes`** → `{ identifiers: ["email", "mobile", "unified_number"], entity_second_factor_enabled,
-  otp_length, otp_expiry_seconds, resend_cooldown_seconds, sso_providers: [] }`. The `AUTH_LOGIN_*` variables are gone.
+  unchanged; entity accounts get 403 (above).
+- **`GET /auth/login-modes`** → `{ identifiers: ["email", "mobile", "unified_number"], code_channels: ["email"] |
+  ["email","sms"], otp_length, otp_expiry_seconds, resend_cooldown_seconds, sso_providers: [] }`. `code_channels` lists
+  the allowed channels that are also usable now (SMS only while allowed and the gateway is available). The
+  `AUTH_LOGIN_*` variables are gone.
+- **Historical audit values.** `authentication_events.meta.method = email_second_factor` and older
+  `settings.auth_updated` rows on `auth.entity_second_factor_enabled` stay untouched (append-only); they describe the
+  retired Task-51 entity second factor.
 - **Failed attempts on unknown accounts (SEC-18).** `authentication_events` keeps `identifier_type` and
   `identifier_hash` (HMAC-SHA256, keyed, purpose `sign_in_identifier`) instead of the typed address or number; new rows
   never fill `email_attempted`. Retention: the table is append-only for the application role (trigger + grants); only
@@ -522,10 +564,10 @@ an e-mail that is already used gets the same answer with a decoy challenge and n
 (anti-enumeration). Registration answers 503 `registration.terms_unavailable` while no terms version is published.
 
 Verifying that OTP through the existing `POST /auth/otp/verify` activates the entity (REG-03 when the profile is
-incomplete) and signs it in (that e-mail code already is the second factor of this sign-in). A pending entity that signs
-in with its password receives a new OTP (`step: otp_required`). A verified entity then signs in with its e-mail, verified
-mobile or unified national number plus the password, followed by the e-mail code while the entity second factor is on
-(see "Sign-in, second factor and lockout"). A deactivated entity gets 403 `account_deactivated`; a deleted entity gets the generic
+incomplete) and signs it in. A pending entity that signs in with its password, or asks for a sign-in code, receives a
+new registration OTP by e-mail (`step: otp_required`). A verified entity then signs in with its e-mail, verified mobile
+or unified national number plus the password, or with a one-time sign-in code (see "Sign-in, sign-in codes and
+lockout"). A deactivated entity gets 403 `account_deactivated`; a deleted entity gets the generic
 `credentials.invalid`; neither receives OTP codes. Identity reaches the Entities domain only through the
 `App\Contracts\Identity\EntityAccounts` contract (standing, verification, session summary). `GET /auth/session` now
 returns `entity: { id, reference, name{ar,en}, status, profile_completed }` for entity users. Unverified registrations
@@ -2735,6 +2777,19 @@ apply SRI (`crossorigin="anonymous"`) to a script loaded from that CDN — the l
 (verify again before use). SPA side: Task-37d.
 
 ## Deployment notes
+
+- Migrations `2026_11_05_140000` … `140200` (Task-61, entity sign-in by password or one-time code): `140000` deletes the
+  open `login_second_factor` codes and replaces the `otp_codes_purpose_check` CHECK with `login, sign_in_code,
+  verify_email, verify_phone, password_reset, email_change` (reversible: `down()` deletes the `sign_in_code` rows and
+  restores the Task-51 CHECK). `140100` deletes the settings row `auth.entity_second_factor_enabled`; its `down()` is an
+  intentional no-op (the previous code read a missing row as its default). `140200` clears `two_factor_secret`,
+  `two_factor_recovery_codes` and `two_factor_confirmed_at` of every user with an `entity_id`, writes one `mfa_disabled`
+  authentication event per cleared account (`meta.reason: entity_second_factor_cancelled`) and logs only the count
+  (`identity.entity_authenticators_cleared`); it is irreversible by design (`down()` is a no-op, the secrets are not
+  kept). No grant change, no new permission key, package or environment variable. New config keys under
+  `moashir.auth.otp` (no env): `request_per_identifier_per_ten_minutes` (3), `request_per_ip_per_ten_minutes` (10),
+  `sign_in_sms_per_hour` (100). New named limiter `otp-request`. Deploy the backend together with the Task-61 SPA:
+  the new SPA calls `POST /auth/otp/request` and reads `code_channels`, the old SPA expects the second-factor step.
 
 - Migrations `2026_11_04_160000` … `160300` (Task-51): `otp_codes` purpose `login_second_factor` (CHECK replaced);
   `authentication_events.identifier_type` / `identifier_hash` (+ CHECK and index; append-only unchanged, new rows only);

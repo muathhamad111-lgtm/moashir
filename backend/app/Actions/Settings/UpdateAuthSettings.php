@@ -37,14 +37,14 @@ final readonly class UpdateAuthSettings
         $changed = DB::transaction(function () use ($actor, $update): bool {
             $this->lock->lock(self::SECTION);
 
-            return $this->store->put(SettingKey::EntitySecondFactorEnabled, $update->entitySecondFactorEnabled, AuditEvent::AuthSettingsUpdated, $actor);
+            return $this->store->put(SettingKey::EntitySignInCodeChannels, $update->channelValues(), AuditEvent::AuthSettingsUpdated, $actor);
         });
 
         if (! $changed) {
             return;
         }
 
-        $this->alerter->raiseToAdministrators(NotificationCode::EntitySecondFactorChanged);
+        $this->alerter->raiseToAdministrators(NotificationCode::EntitySignInCodeChannelsChanged);
         $this->reason->alertIfSuperAdmin($actor);
     }
 }

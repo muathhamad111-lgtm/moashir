@@ -88,5 +88,6 @@ return [
     'finance.operations.export' => ['label' => 'Export financial operations', 'description' => 'Export transactions; every export is audited.'],
     'finance.refunds.manage' => ['label' => 'Record refunds', 'description' => 'Record a refund made outside the platform with its transfer receipt.'],
     'finance.receipts.manage' => ['label' => 'Manage payment receipts', 'description' => 'Re-issue or void payment receipts.'],
+    'finance.transfers.review' => ['label' => 'Review bank transfers', 'description' => 'Approve or reject the bank transfer receipts attached by entities, and download the receipts.'],
 
 ];

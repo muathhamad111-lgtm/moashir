@@ -24,12 +24,15 @@ final readonly class AuthenticationEventRecorder
         return $this->store($type, ['user_id' => $user->id], $meta);
     }
 
-    public function forUnknownIdentifier(AuthEventType $type, SignInIdentifier $identifier): AuthenticationEvent
+    /**
+     * @param  array<string, scalar>  $meta
+     */
+    public function forUnknownIdentifier(AuthEventType $type, SignInIdentifier $identifier, array $meta = []): AuthenticationEvent
     {
         return $this->store($type, [
             'identifier_type' => $identifier->type->value,
             'identifier_hash' => $this->blindIndex->of(BlindIndexPurpose::SignInIdentifier, $identifier->type->value.'|'.$identifier->value),
-        ], []);
+        ], $meta);
     }
 
     /**

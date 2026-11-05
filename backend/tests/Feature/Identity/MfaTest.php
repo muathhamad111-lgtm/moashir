@@ -161,21 +161,38 @@ it('refuses enrolment without a pending sign-in or a session', function (): void
     $this->postJson('/api/v1/auth/mfa/enroll')->assertUnauthorized()->assertJsonPath('code', 'mfa.not_pending');
 });
 
-it('lets an entity user enable and disable TOTP with the current password', function (): void {
-    $user = entityUser();
+it('refuses authenticator enrolment for an entity account', function (): void {
+    $owner = ownerOf(entityWithOwner());
+    signIn($owner);
+
+    $this->postJson('/api/v1/auth/mfa/enroll', ['current_password' => defaultPassword()])->assertForbidden()->assertJsonPath('code', 'forbidden');
+    $this->postJson('/api/v1/auth/mfa/confirm', ['code' => '123456'])->assertForbidden()->assertJsonPath('code', 'forbidden');
+
+    expect($owner->refresh()->two_factor_secret)->toBeNull()
+        ->and($owner->two_factor_confirmed_at)->toBeNull();
+});
+
+it('lets an entity account that still holds an authenticator from before remove it', function (): void {
+    $owner = ownerOf(entityWithOwner());
+    $owner->forceFill(totpAttributes())->save();
+    signIn($owner);
+
+    $this->deleteJson('/api/v1/auth/mfa', ['current_password' => 'Wrong-Password-2026!'])->assertUnprocessable()->assertJsonValidationErrors('current_password');
+    $this->deleteJson('/api/v1/auth/mfa', ['current_password' => defaultPassword()])->assertNoContent();
+
+    expect($owner->refresh()->hasConfirmedTotp())->toBeFalse();
+});
+
+it('keeps the staff enrolment for a signed-in staff account that has no authenticator yet', function (): void {
+    $user = User::factory()->withRole(RoleKey::Assessor)->create();
     signIn($user);
 
-    $this->postJson('/api/v1/auth/mfa/enroll')->assertUnprocessable()->assertJsonValidationErrors('current_password');
-    $this->postJson('/api/v1/auth/mfa/enroll', ['current_password' => 'Wrong-Password-2026!'])->assertUnprocessable()->assertJsonValidationErrors('current_password');
     $key = $this->postJson('/api/v1/auth/mfa/enroll', ['current_password' => defaultPassword()])->assertOk()->json('data.manual_entry_key');
     $this->postJson('/api/v1/auth/mfa/confirm', ['code' => (new Google2FA)->getCurrentOtp($key)])
         ->assertOk()
         ->assertJsonCount(8, 'data.recovery_codes');
 
-    $this->deleteJson('/api/v1/auth/mfa', ['current_password' => 'Wrong-Password-2026!'])->assertUnprocessable()->assertJsonValidationErrors('current_password');
-    $this->deleteJson('/api/v1/auth/mfa', ['current_password' => defaultPassword()])->assertNoContent();
-
-    expect($user->refresh()->hasConfirmedTotp())->toBeFalse();
+    expect($user->refresh()->hasConfirmedTotp())->toBeTrue();
 });
 
 it('refuses enrolment for a signed-in session past its idle timeout', function (): void {

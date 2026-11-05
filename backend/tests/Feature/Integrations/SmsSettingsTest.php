@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Contracts\SmsGateway;
-use App\Data\Integrations\SmsDriverSelection;
 use App\Data\Integrations\SmsMessage;
 use App\Enums\Audit\AuditEvent;
 use App\Enums\Identity\OtpChannel;
@@ -40,13 +38,6 @@ function fakeTaqnyatAccount(int $balanceStatus = 201, string $senderStatus = 'ac
         ]], 201),
         'POST api.taqnyat.sa/v1/messages' => Http::response(['statusCode' => 201, 'messageId' => '5829452722', 'cost' => '0.1500', 'currency' => 'SAR', 'totalCount' => 1, 'msgLength' => 1, 'accepted' => '[966551234567,]', 'rejected' => '[]'], 201),
     ]);
-}
-
-function useSettingsSmsGateway(): void
-{
-    config()->set('moashir.sms.driver', 'settings');
-    app()->forgetInstance(SmsDriverSelection::class);
-    app()->forgetInstance(SmsGateway::class);
 }
 
 it('shows both providers, the test numbers and the OTP template without secrets', function (): void {

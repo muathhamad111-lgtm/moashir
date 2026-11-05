@@ -7,15 +7,15 @@ namespace App\Enums\Identity;
 enum OtpPurpose: string
 {
     case Login = 'login';
-    case LoginSecondFactor = 'login_second_factor';
+    case SignInCode = 'sign_in_code';
     case VerifyEmail = 'verify_email';
     case VerifyPhone = 'verify_phone';
     case PasswordReset = 'password_reset';
     case EmailChange = 'email_change';
 
-    public function countsTowardLockout(): bool
+    public function maySendToUnverifiedPhone(): bool
     {
-        return in_array($this, [self::Login, self::LoginSecondFactor], true);
+        return $this === self::VerifyPhone;
     }
 
     /**
@@ -23,6 +23,6 @@ enum OtpPurpose: string
      */
     public static function signIn(): array
     {
-        return [self::Login, self::LoginSecondFactor];
+        return [self::Login, self::SignInCode];
     }
 }

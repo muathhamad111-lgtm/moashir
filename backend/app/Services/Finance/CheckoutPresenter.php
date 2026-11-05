@@ -34,8 +34,9 @@ final readonly class CheckoutPresenter
     public function present(Payment $payment, string $locale): ?PaymentCheckout
     {
         $secret = $payment->checkout_client_secret;
+        $expiresAt = $payment->expires_at;
 
-        if ($payment->status !== PaymentStatus::Created || $payment->provider_intent_id === null || $secret === null || $payment->expires_at->isPast()) {
+        if ($payment->status !== PaymentStatus::Created || $payment->provider_intent_id === null || $secret === null || $expiresAt === null || $expiresAt->isPast()) {
             return null;
         }
 
@@ -63,7 +64,7 @@ final readonly class CheckoutPresenter
             $payment->provider_intent_id,
             new SecretValue($secret),
             in_array(PaymentMethod::ApplePay->value, $methods, true) ? $this->applePay($settings[SettingKey::PaymentApplePayLabel->value], $locale) : null,
-            $payment->expires_at,
+            $expiresAt,
             $this->script(),
         );
     }

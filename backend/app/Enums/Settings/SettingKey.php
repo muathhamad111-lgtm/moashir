@@ -7,6 +7,8 @@ namespace App\Enums\Settings;
 use App\Enums\Award\CommitteeEntityVisibility;
 use App\Enums\Certificates\CertificateLevel;
 use App\Enums\Files\EvidenceFileType;
+use App\Enums\Finance\PaymentChannel;
+use App\Enums\Identity\OtpChannel;
 use App\Enums\Integrations\CardNetwork;
 use App\Enums\Integrations\CheckoutPattern;
 use App\Enums\Integrations\IntegrationKind;
@@ -27,6 +29,7 @@ enum SettingKey: string
     case PaymentApplePayDomainConfirmation = 'payment.apple_pay_domain_confirmation';
     case PaymentStcPayActivationConfirmation = 'payment.stcpay_activation_confirmation';
     case PaymentOrderValidityMinutes = 'payment.order_validity_minutes';
+    case PaymentChannels = 'payment.channels';
     case SmsMode = 'sms.mode';
     case SmsTestRecipients = 'sms.test_recipients';
     case SmsTemplates = 'sms.templates';
@@ -56,7 +59,7 @@ enum SettingKey: string
     case CertificateLevelThresholds = 'certificates.level_thresholds';
     case AccreditedCertificateIssuance = 'certificates.accredited_issuance_enabled';
     case ContactRetentionMonths = 'contact.retention_months';
-    case EntitySecondFactorEnabled = 'auth.entity_second_factor_enabled';
+    case EntitySignInCodeChannels = 'auth.entity_sign_in_code_channels';
 
     public function group(): SettingGroup
     {
@@ -73,7 +76,7 @@ enum SettingKey: string
             self::AccreditedUploadMaxFileMb, self::AccreditedEvidenceMaxFilesPerSub, self::AdvancedUploadMaxFileMb,
             self::AdvancedEvidenceMaxFilesPerSub, self::ContactRetentionMonths => SettingType::Integer,
             self::AccreditedPrice, self::VatRate, self::BagPrice, self::AdvancedDisqualificationScore => SettingType::Decimal,
-            self::AccreditedCertificateIssuance, self::EntitySecondFactorEnabled => SettingType::Boolean,
+            self::AccreditedCertificateIssuance => SettingType::Boolean,
             default => SettingType::Json,
         };
     }
@@ -84,6 +87,7 @@ enum SettingKey: string
             self::PaymentMode, self::AiMode => IntegrationMode::Test->value,
             self::SmsMode, self::EmailMode => IntegrationMode::Live->value,
             self::PaymentMethods => [PaymentMethod::CreditCard->value],
+            self::PaymentChannels => [PaymentChannel::Electronic->value],
             self::PaymentSupportedNetworks => [CardNetwork::Mada->value, CardNetwork::Visa->value, CardNetwork::Mastercard->value],
             self::PaymentApplePayLabel => LocalizedText::fromTranslation('integrations.defaults.apple_pay_label')->toArray(),
             self::PaymentLinkedPaths => PaymentLinkedPath::values(),
@@ -104,7 +108,8 @@ enum SettingKey: string
             self::AdvancedInitialReviewSlaDays => 14,
             self::CommitteeEntityDataVisibility => CommitteeEntityVisibility::NameOnly->value,
             self::CertificateLevelThresholds => CertificateLevel::DEFAULT_THRESHOLDS,
-            self::AccreditedCertificateIssuance, self::EntitySecondFactorEnabled => true,
+            self::AccreditedCertificateIssuance => true,
+            self::EntitySignInCodeChannels => [OtpChannel::Email->value],
             self::ContactRetentionMonths => 24,
             self::PaymentApplePayDomainConfirmation, self::PaymentStcPayActivationConfirmation, self::EmailTestAddress,
             self::AccreditedPrice, self::BagPrice => null,

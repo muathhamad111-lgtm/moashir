@@ -50,9 +50,16 @@ final readonly class IssueOtpChallenge
 
     private function effectiveChannel(OtpDelivery $delivery): OtpChannel
     {
-        $canUseSms = ! $delivery->recipientOverride instanceof EmailAddress && $delivery->user->phone !== null;
+        return $delivery->channel === OtpChannel::Sms && $this->canTextRecipient($delivery) && $this->sms->isAvailable() ? OtpChannel::Sms : OtpChannel::Email;
+    }
 
-        return $delivery->channel === OtpChannel::Sms && $canUseSms && $this->sms->isAvailable() ? OtpChannel::Sms : OtpChannel::Email;
+    private function canTextRecipient(OtpDelivery $delivery): bool
+    {
+        $user = $delivery->user;
+
+        return ! $delivery->recipientOverride instanceof EmailAddress
+            && $user->phone !== null
+            && ($user->phone_verified_at !== null || $delivery->purpose->maySendToUnverifiedPhone());
     }
 
     private function generateCode(): string

@@ -16,19 +16,33 @@ final readonly class OtpIssueThrottle
 
     public function __construct(private RateLimiter $limiter, private AuthSettings $settings) {}
 
+    public function allows(User $user): bool
+    {
+        return $this->exhaustedWindow($user) === null;
+    }
+
     public function hit(User $user): void
     {
-        $windows = $this->windowsFor($user);
+        $exhausted = $this->exhaustedWindow($user);
 
-        foreach ($windows as $key => [$maxAttempts]) {
+        if ($exhausted !== null) {
+            throw OtpRejected::cooldown($this->limiter->availableIn($exhausted));
+        }
+
+        foreach ($this->windowsFor($user) as $key => [, $decaySeconds]) {
+            $this->limiter->hit($key, $decaySeconds);
+        }
+    }
+
+    private function exhaustedWindow(User $user): ?string
+    {
+        foreach ($this->windowsFor($user) as $key => [$maxAttempts]) {
             if ($this->limiter->tooManyAttempts($key, $maxAttempts)) {
-                throw OtpRejected::cooldown($this->limiter->availableIn($key));
+                return $key;
             }
         }
 
-        foreach ($windows as $key => [, $decaySeconds]) {
-            $this->limiter->hit($key, $decaySeconds);
-        }
+        return null;
     }
 
     /**

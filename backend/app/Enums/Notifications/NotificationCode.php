@@ -27,7 +27,7 @@ enum NotificationCode: string
     case ReasonRequiredAction = 'SEC-04';
     case SuperAdminAssignmentRejected = 'SEC-05';
     case IntegrationSecretReplaced = 'SEC-06';
-    case EntitySecondFactorChanged = 'SEC-07';
+    case EntitySignInCodeChannelsChanged = 'SEC-07';
     case CriteriaMainCreated = 'STD-01';
     case CriteriaMainWeightChanged = 'STD-02';
     case CriteriaSubCreated = 'STD-03';
@@ -102,7 +102,10 @@ enum NotificationCode: string
     case PaymentOrderCancelled = 'PAY-07';
     case PaymentRefundRequired = 'PAY-08';
     case ProviderRefundReported = 'PAY-09';
+    case BankTransferSubmitted = 'PAY-11';
+    case BankTransferRejected = 'PAY-12';
     case FinanceExportReady = 'FIN-01';
+    case BankAccountsChanged = 'FIN-03';
     case KpiAdded = 'CMS-01';
     case KpiValueEdited = 'CMS-02';
     case KpiPublished = 'CMS-03';
@@ -124,6 +127,7 @@ enum NotificationCode: string
             self::CriteriaDirectEvaluationEnabled, self::EntityRegistered, self::EntityProfileIncomplete,
             self::EntityVerificationReminder, self::EntityEmailChangeRequested, self::PaymentStarted,
             self::PaymentOrderCancelled, self::PaymentRefundRequired, self::ProviderRefundReported,
+            self::BankTransferSubmitted, self::BankTransferRejected,
             self::AccreditedFormOpened, self::AccreditedSubmitted, self::AccreditedAwaitingAssignment,
             self::AccreditedAssigned, self::AccreditedCompletionRequested, self::EvidenceRefused,
             self::AdvancedCycleOpened, self::AdvancedDeadlineApproaching, self::AdvancedSubmitted, self::AdvancedAssigned,

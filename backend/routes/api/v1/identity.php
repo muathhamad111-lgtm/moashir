@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\V1\Identity\PhoneVerificationController;
 use App\Http\Controllers\Api\V1\Identity\PreferencesController;
 use App\Http\Controllers\Api\V1\Identity\RecoveryCodesController;
 use App\Http\Controllers\Api\V1\Identity\RequestScopeController;
+use App\Http\Controllers\Api\V1\Identity\RequestSignInCodeController;
 use App\Http\Controllers\Api\V1\Identity\ResendInvitationController;
 use App\Http\Controllers\Api\V1\Identity\ResendOtpController;
 use App\Http\Controllers\Api\V1\Identity\ResetPasswordController;
@@ -45,6 +46,7 @@ $authenticated = Ability::Authenticated->value;
 Route::prefix('auth')->name('auth.')->group(function (): void {
     Route::get('login-modes', LoginModesController::class)->middleware('throttle:public')->name('login-modes');
     Route::post('login', LoginController::class)->middleware('throttle:login')->name('login');
+    Route::post('otp/request', RequestSignInCodeController::class)->middleware('throttle:otp-request')->name('otp.request');
     Route::post('otp/verify', VerifyOtpController::class)->middleware('throttle:otp-verify')->name('otp.verify');
     Route::post('otp/resend', ResendOtpController::class)->middleware('throttle:otp-resend')->name('otp.resend');
     Route::post('mfa/challenge', MfaChallengeController::class)->middleware('throttle:mfa')->name('mfa.challenge');

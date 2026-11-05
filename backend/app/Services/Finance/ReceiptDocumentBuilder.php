@@ -7,6 +7,7 @@ namespace App\Services\Finance;
 use App\Data\Documents\PdfDocument;
 use App\Enums\Documents\DocumentTemplate;
 use App\Enums\Documents\DocumentWatermark;
+use App\Enums\Finance\PaymentChannel;
 use App\Models\Finance\PaymentReceipt;
 use App\Support\HijriDate;
 use App\Support\ScalarValue;
@@ -64,8 +65,13 @@ final readonly class ReceiptDocumentBuilder
     private function methodLabelOf(PaymentReceipt $receipt): ?array
     {
         $method = $receipt->snapshot['method'] ?? null;
+        $channel = $receipt->snapshot['channel'] ?? null;
 
-        return is_string($method) && $method !== '' ? LocalizedText::fromTranslation('finance.methods.'.$method)->toArray() : null;
+        return match (true) {
+            is_string($method) && $method !== '' => LocalizedText::fromTranslation('finance.methods.'.$method)->toArray(),
+            $channel === PaymentChannel::BankTransfer->value => LocalizedText::fromTranslation('finance.channels.'.$channel)->toArray(),
+            default => null,
+        };
     }
 
     private function paidOnOf(PaymentReceipt $receipt, string $timezone): ?string

@@ -20,8 +20,8 @@ final class AuthSettingsResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'entity_second_factor_enabled' => $this->resource->entitySecondFactorEnabled,
-            'entity_second_factor_channel' => OtpChannel::Email->value,
+            'entity_sign_in_code_channels' => array_map(static fn (OtpChannel $channel): string => $channel->value, $this->resource->entitySignInCodeChannels),
+            'sms_status' => $this->resource->smsStatus->value,
             'staff_totp_required' => true,
         ];
     }

@@ -14,6 +14,7 @@ use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Assessments\SelfAssessmentStatus as SelfStatus;
 use App\Enums\Award\AwardCycleStatus;
 use App\Enums\Dashboards\ActionSeverity;
+use App\Enums\Finance\PaymentChannel;
 use App\Models\Assessments\Assessment;
 use App\Models\Assessments\AssessmentCompletionRequest;
 use App\Models\Entities\Entity;
@@ -164,6 +165,7 @@ final readonly class EntityActionItems implements ActionItemSource
     {
         $earliest = Payment::query()
             ->ownedBy($entityId)
+            ->where('channel', PaymentChannel::Electronic)
             ->open()
             ->select(['public_id', 'reference', 'expires_at'])
             ->selectRaw('count(*) over () as open_payments')

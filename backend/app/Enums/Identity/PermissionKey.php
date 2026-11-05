@@ -103,6 +103,7 @@ enum PermissionKey: string
     case FinanceOperationsExport = 'finance.operations.export';
     case FinanceRefundsManage = 'finance.refunds.manage';
     case FinanceReceiptsManage = 'finance.receipts.manage';
+    case FinanceTransfersReview = 'finance.transfers.review';
 
     private const array SYSTEM_ADMIN_ONLY = [
         self::SettingsAuthManage,
@@ -125,6 +126,7 @@ enum PermissionKey: string
         'bag.subscription.activate_free',
         'messaging.campaigns.send',
         'contact.messages.manage',
+        'finance.transfers.review',
     ];
 
     private const array NON_CONFIDENTIAL = [

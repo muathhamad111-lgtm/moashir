@@ -13,6 +13,8 @@ final class ReceiptSnapshotBuilder
      */
     public function build(Payment $payment): array
     {
+        $payment->loadMissing('bankTransfer.bankAccount');
+
         return [
             'payment_reference' => $payment->reference,
             'entity_reference' => $payment->entity->reference(),
@@ -24,6 +26,8 @@ final class ReceiptSnapshotBuilder
             'total' => $payment->total,
             'currency' => $payment->currency,
             'paid_at' => $payment->paid_at?->toIso8601String(),
+            'channel' => $payment->channel->value,
+            'bank_name' => $payment->bankTransfer?->bankAccount->bank_name->toArray(),
             'method' => $payment->method?->value,
             'card_last4' => $payment->card_last4,
             'provider_payment_id' => $payment->provider_payment_id,

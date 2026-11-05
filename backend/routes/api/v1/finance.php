@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\Files\DownloadStoredFileController;
 use App\Http\Controllers\Api\V1\Finance\AbandonedCartController;
+use App\Http\Controllers\Api\V1\Finance\BankTransferController;
+use App\Http\Controllers\Api\V1\Finance\BankTransferDecisionController;
+use App\Http\Controllers\Api\V1\Finance\BulkBankTransferDecisionController;
+use App\Http\Controllers\Api\V1\Finance\CancelPaymentController;
+use App\Http\Controllers\Api\V1\Finance\CheckoutOptionsController;
 use App\Http\Controllers\Api\V1\Finance\ExportTransactionsController;
 use App\Http\Controllers\Api\V1\Finance\FinanceExportController;
 use App\Http\Controllers\Api\V1\Finance\FinanceReceiptController;
@@ -16,6 +21,7 @@ use App\Http\Controllers\Api\V1\Finance\PaymentReceiptController;
 use App\Http\Controllers\Api\V1\Finance\RefundController;
 use App\Http\Controllers\Api\V1\Finance\ServicePricesController;
 use App\Http\Controllers\Api\V1\Finance\TransactionController;
+use App\Http\Controllers\Api\V1\Finance\TransferProofController;
 use App\Http\Controllers\Api\V1\Finance\VerifyPaymentController;
 use App\Http\Middleware\EnsureJsonRequest;
 use App\Http\Middleware\ValidateDownloadSignature;
@@ -39,12 +45,15 @@ Route::middleware($signedIn)->group(function () use ($payments): void {
     Route::prefix('payments')->name('payments.')->group(function () use ($payments): void {
         Route::get('mine', [PaymentController::class, 'index'])->middleware("can:viewAnyOwn,{$payments}")->name('mine');
         Route::post('/', [PaymentController::class, 'store'])->middleware(["can:create,{$payments}", 'throttle:sensitive'])->name('store');
+        Route::get('checkout-options', CheckoutOptionsController::class)->middleware("can:create,{$payments}")->name('checkout-options');
 
         Route::whereUuid('payment')->group(function (): void {
             Route::get('{payment}', [PaymentController::class, 'show'])->middleware('can:viewOwn,payment')->name('show');
             Route::post('{payment}/verify', VerifyPaymentController::class)->middleware(['can:verify,payment', 'throttle:payment-verify'])->name('verify');
             Route::get('{payment}/receipt', [PaymentReceiptController::class, 'show'])->middleware('can:viewOwn,payment')->name('receipt.show');
             Route::post('{payment}/receipt/download', [PaymentReceiptController::class, 'download'])->middleware(['can:viewOwn,payment', 'throttle:downloads'])->name('receipt.download');
+            Route::post('{payment}/cancel', CancelPaymentController::class)->middleware(['can:cancel,payment', 'throttle:sensitive'])->name('cancel');
+            Route::post('{payment}/bank-transfer/proof/download', [TransferProofController::class, 'own'])->middleware(['can:downloadOwnTransferProof,payment', 'throttle:downloads'])->name('bank-transfer.proof.download');
         });
     });
 
@@ -54,6 +63,19 @@ Route::middleware($signedIn)->group(function () use ($payments): void {
         Route::post('transactions/export', ExportTransactionsController::class)->middleware(["can:export,{$payments}", 'throttle:exports'])->name('transactions.export');
         Route::get('transactions/{payment}', [TransactionController::class, 'show'])->whereUuid('payment')->middleware("can:viewOperations,{$payments}")->name('transactions.show');
         Route::get('payment-events', PaymentEventController::class)->middleware("can:viewEvents,{$payments}")->name('payment-events.index');
+
+        Route::prefix('bank-transfers')->name('bank-transfers.')->group(function () use ($payments): void {
+            Route::get('/', [BankTransferController::class, 'index'])->middleware("can:viewTransfers,{$payments}")->name('index');
+            Route::post('bulk-approve', [BulkBankTransferDecisionController::class, 'approve'])->middleware(["can:reviewTransfers,{$payments}", 'throttle:sensitive'])->name('bulk-approve');
+            Route::post('bulk-reject', [BulkBankTransferDecisionController::class, 'reject'])->middleware(["can:reviewTransfers,{$payments}", 'throttle:sensitive'])->name('bulk-reject');
+
+            Route::whereUuid('bankTransfer')->group(function () use ($payments): void {
+                Route::get('{bankTransfer}', [BankTransferController::class, 'show'])->middleware("can:viewTransfers,{$payments}")->name('show');
+                Route::post('{bankTransfer}/proof/download', [TransferProofController::class, 'staff'])->middleware(["can:viewTransfers,{$payments}", 'throttle:downloads'])->name('proof.download');
+                Route::post('{bankTransfer}/approve', [BankTransferDecisionController::class, 'approve'])->middleware(["can:reviewTransfers,{$payments}", 'throttle:sensitive'])->name('approve');
+                Route::post('{bankTransfer}/reject', [BankTransferDecisionController::class, 'reject'])->middleware(["can:reviewTransfers,{$payments}", 'throttle:sensitive'])->name('reject');
+            });
+        });
 
         Route::whereUuid(['payment', 'receipt', 'refund', 'financeExport'])->group(function (): void {
             Route::post('payments/{payment}/refunds', [RefundController::class, 'store'])->middleware(['can:recordRefund,payment', 'throttle:sensitive'])->name('refunds.store');

@@ -13,7 +13,8 @@
         ['ar' => __('documents.receipt.vat_rate', [], 'ar'), 'en' => __('documents.receipt.vat_rate', [], 'en'), 'value' => ($data['vat_rate'] ?? '').'%', 'latin' => true],
         ['ar' => __('documents.receipt.vat', [], 'ar'), 'en' => __('documents.receipt.vat', [], 'en'), 'value' => ($data['vat_amount'] ?? '').' '.$currencyAr, 'secondary' => ($data['vat_amount'] ?? '').' '.$currencyEn, 'amount' => true],
         ['ar' => $labelsAr['total'] ?? '', 'en' => $labelsEn['total'] ?? '', 'value' => ($data['total'] ?? '').' '.$currencyAr, 'secondary' => ($data['total'] ?? '').' '.$currencyEn, 'amount' => true, 'strong' => true],
-        ['ar' => $labelsAr['method'] ?? '', 'en' => $labelsEn['method'] ?? '', 'value' => $data['method_label']['ar'] ?? '', 'secondary' => isset($data['card_last4']) ? '•••• '.$data['card_last4'] : null],
+        ['ar' => $labelsAr['method'] ?? '', 'en' => $labelsEn['method'] ?? '', 'value' => $data['method_label']['ar'] ?? '', 'secondary' => isset($data['card_last4']) ? '•••• '.$data['card_last4'] : (isset($data['bank_name']['en']) ? ($data['method_label']['en'] ?? null) : null)],
+        ...(isset($data['bank_name']['ar']) ? [['ar' => $labelsAr['bank'] ?? '', 'en' => $labelsEn['bank'] ?? '', 'value' => $data['bank_name']['ar'], 'secondary' => $data['bank_name']['en'] ?? null]] : []),
         ['ar' => $labelsAr['paid_at'] ?? '', 'en' => $labelsEn['paid_at'] ?? '', 'value' => $data['paid_on'] ?? '', 'latin' => true],
     ];
 @endphp

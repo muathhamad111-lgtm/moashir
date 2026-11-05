@@ -9,13 +9,13 @@ use App\Enums\Identity\SignInIdentifierType;
 
 final readonly class LoginOptionsReader
 {
-    public function __construct(private AuthSettings $settings, private EntitySecondFactor $entitySecondFactor) {}
+    public function __construct(private AuthSettings $settings, private SignInCodeChannels $codeChannels) {}
 
     public function read(): LoginOptions
     {
         return new LoginOptions(
             SignInIdentifierType::cases(),
-            $this->entitySecondFactor->isEnabled(),
+            $this->codeChannels->usable(),
             $this->settings->otpLength(),
             $this->settings->otpExpirySeconds(),
             $this->settings->otpResendCooldownSeconds(),

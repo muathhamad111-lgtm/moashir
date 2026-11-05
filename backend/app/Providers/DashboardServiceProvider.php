@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Services\Dashboards\ActionItems\AssessorActionItems;
+use App\Services\Dashboards\ActionItems\BankTransferReviewActionItems;
 use App\Services\Dashboards\ActionItems\CommitteeActionItems;
 use App\Services\Dashboards\ActionItems\ContactActionItems;
 use App\Services\Dashboards\ActionItems\ContentActionItems;
 use App\Services\Dashboards\ActionItems\CriteriaActionItems;
 use App\Services\Dashboards\ActionItems\EntityActionItems;
 use App\Services\Dashboards\ActionItems\EntityAdministrationActionItems;
+use App\Services\Dashboards\ActionItems\EntityBankTransferActionItems;
 use App\Services\Dashboards\ActionItems\FilteringActionItems;
 use App\Services\Dashboards\ActionItems\FinanceActionItems;
 use App\Services\Dashboards\ActionItems\RequestQueueActionItems;
@@ -57,6 +59,8 @@ final class DashboardServiceProvider extends ServiceProvider
             FilteringActionItems::class,
             SecretaryActionItems::class,
             FinanceActionItems::class,
+            BankTransferReviewActionItems::class,
+            EntityBankTransferActionItems::class,
             EntityAdministrationActionItems::class,
             CriteriaActionItems::class,
             ContentActionItems::class,

@@ -41,6 +41,9 @@ return [
             'max_attempts' => (int) env('AUTH_OTP_MAX_ATTEMPTS', 5),
             'per_user_per_ten_minutes' => 5,
             'per_user_per_day' => 20,
+            'request_per_identifier_per_ten_minutes' => 3,
+            'request_per_ip_per_ten_minutes' => 10,
+            'sign_in_sms_per_hour' => 100,
         ],
         'lockout' => [
             'max_attempts' => (int) env('AUTH_LOCKOUT_MAX_ATTEMPTS', 5),
@@ -106,6 +109,10 @@ return [
         'download_ttl_minutes' => 5,
         'webhook_max_bytes' => 262144,
         'webhooks_per_minute' => 120,
+        'bank_transfer' => [
+            'max_active_accounts' => 10,
+            'bulk_decision_max' => 50,
+        ],
         'checkout_script' => [
             'url' => env('MOYASAR_FORM_SCRIPT_URL') ?: 'https://cdn.moyasar.com/mpf/1.15.0/moyasar.js',
             'integrity' => env('MOYASAR_FORM_SCRIPT_INTEGRITY') ?: null,

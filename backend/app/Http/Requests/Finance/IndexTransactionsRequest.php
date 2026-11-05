@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Finance;
 
 use App\Data\Finance\TransactionFilters;
+use App\Enums\Finance\PaymentChannel;
 use App\Enums\Finance\PaymentInstrument;
 use App\Enums\Finance\PaymentPurpose;
 use App\Enums\Finance\PaymentStatus;
@@ -25,10 +26,11 @@ final class IndexTransactionsRequest extends FormRequest
     {
         return [
             'search' => ['nullable', 'string', 'max:100', new SearchableTerm(2)],
-            'filter' => ['nullable', 'array:status,purpose,method,from,to,mode'],
+            'filter' => ['nullable', 'array:status,purpose,method,channel,from,to,mode'],
             'filter.status' => ['nullable', Rule::enum(PaymentStatus::class)],
             'filter.purpose' => ['nullable', Rule::enum(PaymentPurpose::class)],
             'filter.method' => ['nullable', Rule::enum(PaymentInstrument::class)],
+            'filter.channel' => ['nullable', Rule::enum(PaymentChannel::class)],
             'filter.from' => ['nullable', 'date_format:Y-m-d'],
             'filter.to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:filter.from'],
             'filter.mode' => ['nullable', Rule::enum(IntegrationMode::class)],
@@ -50,6 +52,7 @@ final class IndexTransactionsRequest extends FormRequest
             IntegrationMode::tryFrom($this->string('filter.mode')->toString()) ?? IntegrationMode::Live,
             TransactionSort::tryFrom($this->string('sort')->toString()) ?? TransactionSort::NewestFirst,
             $this->integer('per_page', 15),
+            PaymentChannel::tryFrom($this->string('filter.channel')->toString()),
         );
     }
 

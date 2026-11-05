@@ -16,10 +16,6 @@ function passwordLogin(string $identifier, string $password): TestResponse
     return signInWith($identifier, $password);
 }
 
-beforeEach(function (): void {
-    setEntitySecondFactor(false);
-});
-
 it('signs an entity user in and returns the session user', function (): void {
     $user = entityUser();
 
@@ -83,14 +79,24 @@ it('still accepts the transitional email field of the previous sign-in form', fu
         ->assertJsonPath('data.step', 'authenticated');
 });
 
-it('no longer offers a passwordless sign-in', function (): void {
+it('ignores the retired passwordless mode of the login endpoint', function (): void {
     $user = entityUser();
 
     $this->postJson('/api/v1/auth/login', ['email' => $user->email, 'mode' => 'otp', 'channel' => 'email'])
         ->assertUnprocessable()
         ->assertJsonValidationErrors('password');
-    $this->postJson('/api/v1/auth/otp/request', ['email' => $user->email])->assertNotFound();
     $this->assertGuest('web');
+});
+
+it('signs an entity in directly after the password without any code step', function (): void {
+    Notification::fake();
+    $user = entityUser();
+
+    passwordLogin($user->email, defaultPassword())->assertOk()->assertJsonPath('data.step', 'authenticated')->assertJsonMissingPath('data.otp');
+
+    $this->assertAuthenticatedAs($user, 'web');
+    Notification::assertNothingSentTo($user);
+    expect(AuthenticationEvent::query()->where('user_id', $user->id)->where('type', AuthEventType::LoginSucceeded)->sole()->meta)->toBe(['method' => 'password']);
 });
 
 it('locks the account for fifteen minutes after five failed attempts and alerts the administrators', function (): void {

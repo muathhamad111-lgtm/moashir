@@ -27,7 +27,7 @@ final readonly class ListMyPayments
     public function handle(User $actor, MyPaymentFilters $filters): LengthAwarePaginator
     {
         $page = $this->filtered($actor, $filters)
-            ->with('receipt')
+            ->with(ShowMyPayment::RELATIONS)
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->paginate($filters->perPage);

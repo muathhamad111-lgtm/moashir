@@ -189,7 +189,7 @@ it('shows the System Administrator the read-only notification type catalogue', f
         ->and($types->get('ACC-05')['user_configurable_channels'] ?? null)->toBe(['email'])
         ->and($types->get('ADV-09')['audiences'] ?? null)->toBe(['committee_assessor']);
 
-    $this->getJson(NOTIFICATION_TYPES.'?filter[module]=PAY')->assertOk()->assertJsonPath('meta.total', 8);
+    $this->getJson(NOTIFICATION_TYPES.'?filter[module]=PAY')->assertOk()->assertJsonPath('meta.total', 10);
     $this->getJson(NOTIFICATION_TYPES.'?filter[category]=error')->assertOk()->assertJsonPath('meta.total', 0);
     $this->getJson(NOTIFICATION_TYPES.'?filter[audience]=content_officer')->assertOk()->assertJsonPath('meta.total', 5);
     $this->getJson(NOTIFICATION_TYPES.'?filter[module]=XYZ')->assertUnprocessable()->assertJsonValidationErrors(['filter.module']);

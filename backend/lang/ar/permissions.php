@@ -88,5 +88,6 @@ return [
     'finance.operations.export' => ['label' => 'تصدير العمليات المالية', 'description' => 'تصدير المعاملات مع تسجيل كل عملية تصدير.'],
     'finance.refunds.manage' => ['label' => 'تسجيل المبالغ المستردة', 'description' => 'تسجيل مبلغ مسترد تم خارج المنصة مع إيصال التحويل.'],
     'finance.receipts.manage' => ['label' => 'إدارة إيصالات الدفع', 'description' => 'إعادة إصدار إيصالات الدفع أو إلغاؤها.'],
+    'finance.transfers.review' => ['label' => 'مراجعة الحوالات البنكية', 'description' => 'اعتماد إيصالات التحويل البنكي المرفقة من الجهات أو رفضها، وتنزيل الإيصالات.'],
 
 ];

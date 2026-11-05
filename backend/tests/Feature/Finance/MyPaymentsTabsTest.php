@@ -44,7 +44,7 @@ it('filters the own payments by a list of statuses and counts every status regar
     $cancelled = closedPayment($entity, PaymentStatus::Cancelled, PaymentPurpose::Bag);
     $failed = closedPayment($entity, PaymentStatus::Failed, PaymentPurpose::Bag);
     storedPaidPayment(entityWithOwner());
-    $counts = ['created' => 1, 'pending' => 0, 'paid' => 1, 'failed' => 1, 'cancelled' => 1, 'refunded' => 0];
+    $counts = ['created' => 1, 'pending' => 0, 'under_review' => 0, 'paid' => 1, 'failed' => 1, 'rejected' => 0, 'cancelled' => 1, 'refunded' => 0];
 
     $cancelledTab = myPayments($owner, '?filter[status]=cancelled,failed')->assertOk()
         ->assertJsonCount(2, 'data')
@@ -57,7 +57,7 @@ it('filters the own payments by a list of statuses and counts every status regar
         ->assertJsonPath('data.0.id', $paid->public_id)
         ->assertJsonPath('data.0.is_test', true);
     myPayments($owner, '?filter[purpose]=bag')->assertOk()
-        ->assertJsonPath('meta.status_counts', ['created' => 0, 'pending' => 0, 'paid' => 0, 'failed' => 1, 'cancelled' => 1, 'refunded' => 0]);
+        ->assertJsonPath('meta.status_counts', ['created' => 0, 'pending' => 0, 'under_review' => 0, 'paid' => 0, 'failed' => 1, 'rejected' => 0, 'cancelled' => 1, 'refunded' => 0]);
 
     expect(collect($cancelledTab->json('data'))->pluck('id')->sort()->values()->all())->toBe(collect([$cancelled->public_id, $failed->public_id])->sort()->values()->all());
 });

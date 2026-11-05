@@ -121,8 +121,6 @@ it('lets the entity sign in with the new address once applied', function (): voi
     auth()->guard('web')->logout();
     $this->flushSession();
 
-    setEntitySecondFactor(false);
-
     signInWith(NEW_OFFICIAL_EMAIL, defaultPassword())
         ->assertOk()
         ->assertJsonPath('data.step', 'authenticated');

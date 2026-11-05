@@ -29,8 +29,8 @@ final readonly class VerifySignInOtp
 
         $this->guard->assertCanSignIn($user);
 
-        if ($verified->purpose === OtpPurpose::LoginSecondFactor) {
-            return $this->completeSignIn->handle($user, SignInMethod::EmailSecondFactor);
+        if ($verified->purpose === OtpPurpose::SignInCode) {
+            return $this->completeSignIn->handle($user, SignInMethod::SignInCode, $verified->channel);
         }
 
         $this->confirmEmail($user);

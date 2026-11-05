@@ -178,6 +178,17 @@ enum AuditEvent: string
     case PaymentLatePaid = 'payment.late_paid';
     case PaymentVerificationRejected = 'payment.verification_rejected';
     case PaymentManuallySettled = 'payment.manually_settled';
+    case BankTransferSubmitted = 'payment.transfer_submitted';
+    case BankTransferApproved = 'payment.transfer_approved';
+    case BankTransferRejected = 'payment.transfer_rejected';
+    case PaymentChannelsUpdated = 'settings.payment_channels_updated';
+    case BankAccountCreated = 'bank_account.created';
+    case BankAccountUpdated = 'bank_account.updated';
+    case BankAccountActivated = 'bank_account.activated';
+    case BankAccountDeactivated = 'bank_account.deactivated';
+    case BankAccountArchived = 'bank_account.archived';
+    case BankAccountDeleted = 'bank_account.deleted';
+    case BankAccountsReordered = 'bank_accounts.reordered';
     case ReceiptIssued = 'receipt.issued';
     case ReceiptVoided = 'receipt.voided';
     case ReceiptReissued = 'receipt.reissued';

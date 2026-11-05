@@ -18,6 +18,7 @@ enum AuthEventType: string
     case OtpSent = 'otp_sent';
     case OtpVerified = 'otp_verified';
     case OtpFailed = 'otp_failed';
+    case OtpRequestIgnored = 'otp_request_ignored';
     case PasswordResetRequested = 'password_reset_requested';
     case PasswordResetCompleted = 'password_reset_completed';
     case PasswordChanged = 'password_changed';

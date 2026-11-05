@@ -11,7 +11,6 @@ use App\Enums\Identity\OtpPurpose;
 use App\Enums\Identity\PendingAuthenticationStage;
 use App\Enums\Identity\SignInMethod;
 use App\Models\Identity\User;
-use App\Services\Identity\EntitySecondFactor;
 use App\Services\Identity\PendingAuthentication;
 use App\Services\Identity\SignInGuard;
 
@@ -22,10 +21,9 @@ final readonly class CompleteSignIn
         private PendingAuthentication $pending,
         private SignInGuard $guard,
         private IssueOtpChallenge $issueChallenge,
-        private EntitySecondFactor $entitySecondFactor,
     ) {}
 
-    public function handle(User $user, SignInMethod $method): LoginOutcome
+    public function handle(User $user, SignInMethod $method, ?OtpChannel $codeChannel = null): LoginOutcome
     {
         if ($this->guard->awaitsEntityVerification($user)) {
             return LoginOutcome::otpRequired($this->issueChallenge->handle(new OtpDelivery($user, OtpChannel::Email, OtpPurpose::Login)));
@@ -43,17 +41,6 @@ final readonly class CompleteSignIn
             return LoginOutcome::mfaEnrollment();
         }
 
-        if (! $method->hasProvenSecondFactor() && $this->entitySecondFactor->appliesTo($user)) {
-            return $this->challengeByEmail($user);
-        }
-
-        return LoginOutcome::authenticated($this->establishSession->handle($user, $method));
-    }
-
-    private function challengeByEmail(User $user): LoginOutcome
-    {
-        $this->pending->begin($user, PendingAuthenticationStage::EmailSecondFactor);
-
-        return LoginOutcome::otpRequired($this->issueChallenge->handle(new OtpDelivery($user, OtpChannel::Email, OtpPurpose::LoginSecondFactor)));
+        return LoginOutcome::authenticated($this->establishSession->handle($user, $method, $codeChannel));
     }
 }

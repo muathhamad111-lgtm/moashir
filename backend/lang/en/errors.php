@@ -179,6 +179,18 @@ return [
         'confirmation_in_use' => 'This confirmation cannot be withdrawn while the payment method that depends on it is enabled.',
         'webhook_requires_https' => 'Automatic webhook registration needs the platform to run on an HTTPS address.',
         'apple_pay_file_missing' => 'No Apple Pay domain association file has been uploaded.',
+        'channel_not_available' => 'This payment method is not available right now. Choose another payment method.',
+        'channel_not_supported' => 'This action does not apply to bank-transfer payment requests.',
+        'open_order_exists' => 'You already have an open payment request for this service. Complete it or wait for its review.',
+        'gateway_not_ready' => 'Electronic payment cannot be enabled before the payment gateway is configured and activated.',
+        'bank_account_required' => 'Add at least one active bank account before enabling bank transfer.',
+    ],
+    'bank_account' => [
+        'not_selectable' => 'This bank account does not accept transfers. Choose another account from the list.',
+        'pending_transfers' => 'Transfers awaiting approval point to this account. Approve or reject them first.',
+        'last_active_account' => 'This is the last active bank account and bank transfer is enabled. Add another account or disable bank transfer first.',
+        'limit_reached' => 'The maximum number of active bank accounts is reached. Deactivate an account before adding or activating another.',
+        'payee_fields_immutable' => 'Payee details cannot be changed after saving. Add a new account, then deactivate or delete the old one.',
     ],
     'sms' => [
         'recipient_not_in_test_numbers' => 'In test mode, messages can be sent only to the allowed test numbers.',

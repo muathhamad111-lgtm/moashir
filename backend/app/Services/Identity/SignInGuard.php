@@ -41,13 +41,6 @@ final readonly class SignInGuard
         }
     }
 
-    public function canReceiveOtp(User $user): bool
-    {
-        return $user->status === UserStatus::Active
-            && ! $user->isLocked()
-            && ! $this->entityAccounts->standingOf($user)->blocksSignIn();
-    }
-
     public function awaitsEntityVerification(User $user): bool
     {
         return $this->entityAccounts->standingOf($user) === EntityStanding::PendingVerification;

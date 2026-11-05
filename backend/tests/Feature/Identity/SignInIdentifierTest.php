@@ -5,23 +5,8 @@ declare(strict_types=1);
 use App\Enums\Identity\AuthEventType;
 use App\Enums\Identity\BlindIndexPurpose;
 use App\Models\Identity\AuthenticationEvent;
-use App\Models\Identity\User;
 use App\Services\Identity\BlindIndex;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
-
-beforeEach(function (): void {
-    setEntitySecondFactor(false);
-});
-
-function verifiedMobileOwner(string $phone = '+966551234567'): User
-{
-    $owner = ownerOf(entityWithOwner());
-    $owner->forceFill(['phone' => $phone])->save();
-    $owner->forceFill(['phone_verified_at' => Date::now()])->save();
-
-    return $owner->refresh();
-}
 
 it('signs an entity in with its official e-mail', function (): void {
     $owner = ownerOf(entityWithOwner());
@@ -122,17 +107,29 @@ it('tells an account without a password to use the reset flow by answering like 
     signInWith($owner->email, 'Any-Password-2026!')->assertUnprocessable()->assertJsonPath('code', 'credentials.invalid');
 });
 
-it('describes the simplified sign-in to the SPA', function (bool $enabled): void {
-    setEntitySecondFactor($enabled);
+it('describes the sign-in options and the usable code channels to the SPA', function (array $allowed, bool $smsConfigured, array $usable): void {
+    allowSignInCodeChannels(...$allowed);
+
+    if (! $smsConfigured) {
+        useSettingsSmsGateway();
+    }
 
     $this->getJson('/api/v1/auth/login-modes')
         ->assertOk()
         ->assertExactJson(['data' => [
             'identifiers' => ['email', 'mobile', 'unified_number'],
-            'entity_second_factor_enabled' => $enabled,
+            'code_channels' => $usable,
             'otp_length' => 6,
             'otp_expiry_seconds' => 300,
             'resend_cooldown_seconds' => 60,
             'sso_providers' => [],
         ], 'meta' => [], 'errors' => null]);
-})->with([true, false]);
+})->with([
+    'e-mail only' => [['email'], true, ['email']],
+    'e-mail and SMS' => [['email', 'sms'], true, ['email', 'sms']],
+    'SMS allowed while the gateway is not configured' => [['email', 'sms'], false, ['email']],
+]);
+
+it('offers e-mail codes only by default', function (): void {
+    $this->getJson('/api/v1/auth/login-modes')->assertOk()->assertJsonPath('data.code_channels', ['email']);
+});

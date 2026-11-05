@@ -2,17 +2,19 @@
 
 declare(strict_types=1);
 
+use App\Enums\Identity\OtpPurpose;
 use App\Models\Identity\OtpCode;
 use App\Models\Identity\User;
+use App\Services\Identity\SecretHasher;
 use Illuminate\Support\Facades\Notification;
 
 beforeEach(function (): void {
     Notification::fake();
 });
 
-function secondFactorChallengeFor(User $user): string
+function signInCodeChallengeFor(User $user): string
 {
-    return (string) signInWith($user->email, defaultPassword())->json('data.otp.challenge_id');
+    return (string) requestSignInCode($user->email)->assertOk()->json('data.otp.challenge_id');
 }
 
 function decoyRegistrationChallenge(): string
@@ -26,7 +28,7 @@ function decoyRegistrationChallenge(): string
 
 it('rejects reuse of a consumed code', function (): void {
     $owner = ownerOf(entityWithOwner());
-    $challengeId = secondFactorChallengeFor($owner);
+    $challengeId = signInCodeChallengeFor($owner);
     $code = lastOtpCodeSentTo($owner);
 
     $this->postJson('/api/v1/auth/otp/verify', ['challenge_id' => $challengeId, 'code' => $code])->assertOk();
@@ -38,7 +40,7 @@ it('rejects reuse of a consumed code', function (): void {
 it('voids the challenge after five wrong codes while the account lockout allows more attempts', function (): void {
     config()->set('moashir.auth.lockout.max_attempts', 10);
     $owner = ownerOf(entityWithOwner());
-    $challengeId = secondFactorChallengeFor($owner);
+    $challengeId = signInCodeChallengeFor($owner);
     $wrong = wrongCodeFor(lastOtpCodeSentTo($owner));
 
     foreach (range(1, 4) as $attempt) {
@@ -71,9 +73,8 @@ it('applies the resend cooldown to decoy challenges', function (): void {
 });
 
 it('rejects an expired code', function (): void {
-    config()->set('moashir.auth.pending_authentication_ttl_minutes', 30);
     $owner = ownerOf(entityWithOwner());
-    $challengeId = secondFactorChallengeFor($owner);
+    $challengeId = signInCodeChallengeFor($owner);
 
     $this->travel(6)->minutes();
 
@@ -103,6 +104,37 @@ it('never answers a challenge of another purpose on the sign-in endpoints', func
 
     $this->postJson('/api/v1/auth/otp/verify', ['challenge_id' => $other->challenge_id, 'code' => '123456'])->assertJsonPath('code', 'otp.challenge_invalid');
     $this->postJson('/api/v1/auth/otp/resend', ['challenge_id' => $other->challenge_id])->assertJsonPath('code', 'otp.challenge_invalid');
+});
+
+it('stores the sign-in code with its own purpose so verifying it never confirms the e-mail', function (): void {
+    $owner = ownerOf(entityWithOwner());
+    $owner->forceFill(['email_verified_at' => null])->save();
+    $challengeId = signInCodeChallengeFor($owner);
+
+    expect(OtpCode::query()->where('challenge_id', $challengeId)->value('purpose'))->toBe(OtpPurpose::SignInCode);
+
+    $this->postJson('/api/v1/auth/otp/verify', ['challenge_id' => $challengeId, 'code' => lastOtpCodeSentTo($owner)])->assertOk();
+
+    expect($owner->refresh()->email_verified_at)->toBeNull();
+});
+
+it('refuses a sign-in code challenge that belongs to a staff account', function (): void {
+    $staff = systemAdmin();
+    $forged = OtpCode::query()->create([
+        'challenge_id' => '6f1c2b8e-1d3a-4c2e-9e5b-0a7d8c9b1e24',
+        'user_id' => $staff->id,
+        'channel' => 'email',
+        'purpose' => 'sign_in_code',
+        'code_hash' => app(SecretHasher::class)->hash('123456'),
+        'destination_masked' => 'i***@example.sa',
+        'expires_at' => now()->addMinutes(5),
+        'last_sent_at' => now()->subMinutes(2),
+    ]);
+
+    $this->postJson('/api/v1/auth/otp/verify', ['challenge_id' => $forged->challenge_id, 'code' => '123456'])->assertUnprocessable()->assertJsonPath('code', 'otp.challenge_invalid');
+    $this->postJson('/api/v1/auth/otp/resend', ['challenge_id' => $forged->challenge_id])->assertUnprocessable()->assertJsonPath('code', 'otp.challenge_invalid');
+    $this->assertGuest('web');
+    expect($forged->refresh()->consumed_at)->toBeNull();
 });
 
 it('validates the code payloads', function (string $uri, array $payload, string $field): void {

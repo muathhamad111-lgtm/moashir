@@ -22,6 +22,7 @@ require_once __DIR__.'/Support/entity-helpers.php';
 require_once __DIR__.'/Support/assessment-helpers.php';
 require_once __DIR__.'/Support/integration-helpers.php';
 require_once __DIR__.'/Support/finance-helpers.php';
+require_once __DIR__.'/Support/bank-transfer-helpers.php';
 require_once __DIR__.'/Support/file-helpers.php';
 require_once __DIR__.'/Support/accredited-helpers.php';
 require_once __DIR__.'/Support/advanced-helpers.php';

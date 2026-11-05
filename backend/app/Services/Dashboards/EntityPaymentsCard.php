@@ -24,7 +24,7 @@ final class EntityPaymentsCard
             'last_payment' => $last instanceof Payment ? $this->present($last) : null,
             'pending_payment' => $pending instanceof Payment ? [
                 ...$this->present($pending),
-                'expires_at' => $pending->expires_at->toIso8601String(),
+                'expires_at' => $pending->expires_at?->toIso8601String(),
             ] : null,
             'receipts_count' => PaymentReceipt::query()
                 ->where('status', ReceiptStatus::Issued)
@@ -52,6 +52,7 @@ final class EntityPaymentsCard
             'reference' => $payment->reference,
             'purpose' => $payment->purpose->value,
             'status' => $payment->status->value,
+            'channel' => $payment->channel->value,
             'total' => $payment->total,
             'currency' => $payment->currency,
             'created_at' => $payment->created_at->toIso8601String(),

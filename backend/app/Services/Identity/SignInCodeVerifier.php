@@ -27,10 +27,8 @@ final readonly class SignInCodeVerifier
         }
 
         $this->guard->assertNotLocked($challenge->user);
-        $verified = $this->verifyCounted($challenge, $code);
-        $this->challenges->release($verified);
 
-        return $verified;
+        return $this->verifyCounted($challenge, $code);
     }
 
     private function verifyCounted(OtpCode $challenge, string $code): OtpCode

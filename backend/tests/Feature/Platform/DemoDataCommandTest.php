@@ -6,15 +6,18 @@ use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Award\AwardCycleStatus;
 use App\Enums\Award\CycleMemberRole;
 use App\Enums\Entities\EntityStatus;
+use App\Enums\Finance\PaymentChannel;
 use App\Enums\Finance\PaymentStatus;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Identity\TermsKind;
 use App\Enums\Integrations\IntegrationMode;
 use App\Enums\Platform\DemoRecordKind;
+use App\Enums\Settings\SettingKey;
 use App\Models\Assessments\Assessment;
 use App\Models\Award\AwardCycle;
 use App\Models\Cms\CmsPage;
 use App\Models\Entities\Entity;
+use App\Models\Finance\BankAccount;
 use App\Models\Finance\Payment;
 use App\Models\Finance\PaymentReceipt;
 use App\Models\Identity\TermsVersion;
@@ -22,6 +25,7 @@ use App\Models\Identity\User;
 use App\Models\Kpis\Kpi;
 use App\Models\Platform\DemoRecord;
 use App\Services\Cms\LegalDocumentSource;
+use App\Services\Settings\SettingsStore;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -145,7 +149,7 @@ it('installs fictional demo data, writes the passwords only to a private account
     $passwords = demoPasswordsIn($accountsFile);
 
     expect($result['exit'])->toBe(0)
-        ->and($result['output'])->toContain('Demo data installed: 8 staff accounts, 3 entities with their owner accounts, 2 TEST-mode payments')
+        ->and($result['output'])->toContain('Demo data installed: 8 staff accounts, 3 entities with their owner accounts, 4 TEST-mode payments')
         ->and(fileperms($accountsFile) & 0777)->toBe(0600)
         ->and($passwords)->toHaveCount(11);
 
@@ -169,14 +173,22 @@ it('installs fictional demo data, writes the passwords only to a private account
         ->and(DemoRecord::query()->where('kind', DemoRecordKind::Entity)->count())->toBe(3)
         ->and(DemoRecord::query()->where('kind', DemoRecordKind::User)->count())->toBe(11)
         ->and(Payment::query()->where('mode', '<>', IntegrationMode::Test->value)->exists())->toBeFalse()
-        ->and(Payment::query()->where('status', PaymentStatus::Paid)->count())->toBe(1)
-        ->and(Payment::query()->where('status', PaymentStatus::Created)->count())->toBe(1)
-        ->and(PaymentReceipt::query()->sole()->only(['number', 'is_test']))->toBe(['number' => null, 'is_test' => true]);
+        ->and(Payment::query()->where('status', PaymentStatus::Paid)->count())->toBe(2)
+        ->and(Payment::query()->where('status', PaymentStatus::UnderReview)->count())->toBe(1)
+        ->and(Payment::query()->where('status', PaymentStatus::Rejected)->count())->toBe(1)
+        ->and(PaymentReceipt::query()->pluck('number')->all())->toBe([null, null])
+        ->and(PaymentReceipt::query()->where('is_test', false)->exists())->toBeFalse()
+        ->and(BankAccount::query()->sole()->iban)->toBe(EXAMPLE_IBAN)
+        ->and(BankAccount::query()->sole()->bank_name->ar)->toContain('مثال')
+        ->and(app(SettingsStore::class)->get(SettingKey::PaymentChannels))->toBe(['electronic', 'bank_transfer']);
 
-    $paid = Payment::query()->where('status', PaymentStatus::Paid)->sole();
+    $paid = Payment::query()->where('status', PaymentStatus::Paid)->where('channel', PaymentChannel::Electronic)->sole();
+    $paidTransfer = Payment::query()->where('status', PaymentStatus::Paid)->where('channel', PaymentChannel::BankTransfer)->sole();
     $cycle = AwardCycle::query()->sole();
 
     expect(Assessment::query()->where('entity_id', $paid->entity_id)->where('path', AssessmentPath::Accredited)->exists())->toBeTrue()
+        ->and(Assessment::query()->where('entity_id', $paidTransfer->entity_id)->where('path', AssessmentPath::Accredited)->exists())->toBeTrue()
+        ->and(Payment::query()->where('entity_id', $paidTransfer->entity_id)->where('status', PaymentStatus::Rejected)->exists())->toBeTrue()
         ->and($cycle->status)->toBe(AwardCycleStatus::Draft)
         ->and($cycle->members()->where('role', CycleMemberRole::AwardSecretary)->exists())->toBeTrue();
 });

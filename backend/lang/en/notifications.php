@@ -80,8 +80,8 @@ return [
             'body' => 'A secret of an external integration (payment, SMS, e-mail or AI provider) was replaced or removed.',
         ],
         'SEC-07' => [
-            'title' => 'Entity second factor changed',
-            'body' => 'The setting that asks entity accounts for a one-time e-mail code after the password was turned on or off.',
+            'title' => 'Entity sign-in code channels changed',
+            'body' => 'The channels allowed for the one-time sign-in codes of entity accounts (e-mail, text message) were changed.',
         ],
         'SEC-05' => [
             'title' => 'Rejected Super Admin assignment',
@@ -838,6 +838,10 @@ return [
                 'title' => 'Payment to refund outside the platform',
                 'body' => 'The gateway confirmed :amount for the payment :reference of :entity, but the order could not be completed (it had expired or the amount did not match). Return the amount outside the platform and record the refund.',
             ],
+            'staff_transfer' => [
+                'title' => 'Bank transfer to return outside the platform',
+                'body' => 'Payment request :reference of :entity (:amount) was cancelled after the entity data was permanently erased while its bank transfer receipt was under review. Return the amount outside the platform if it reached the account.',
+            ],
         ],
         'PAY-09' => [
             'staff' => [
@@ -845,9 +849,30 @@ return [
                 'body' => 'The payment gateway reported a refund or a void of the payment :reference of :entity. Record the refund with its bank-transfer receipt.',
             ],
         ],
+        'PAY-11' => [
+            'entity' => [
+                'title' => 'Bank transfer receipt received',
+                'body' => 'We received the bank transfer receipt for payment request :reference for :purpose (:amount). The finance team is reviewing it, and you will be notified of the result.',
+            ],
+            'staff' => [
+                'title' => 'Bank transfer awaiting approval',
+                'body' => ':entity attached a bank transfer receipt for payment request :reference for :purpose (:amount). Review the receipt, then approve or reject it.',
+            ],
+        ],
+        'PAY-12' => [
+            'entity' => [
+                'title' => 'Bank transfer not approved',
+                'body' => 'The bank transfer receipt for payment request :reference for :purpose was not approved. Reason: :reason. Submit a new payment request for the service.',
+                'note' => 'Finance team note: :note',
+            ],
+        ],
         'FIN-01' => [
             'title' => 'Transactions export ready',
             'body' => 'Your export of :transactions is ready to download.',
+        ],
+        'FIN-03' => [
+            'title' => 'Bank transfer accounts changed',
+            'body' => 'The :bank bank account ending in :ending was :change. Check that the change is authorised.',
         ],
         'issues' => [
             'verification_rejected' => [

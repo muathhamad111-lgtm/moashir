@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1\Finance;
 use App\Actions\Finance\CreatePayment;
 use App\Actions\Finance\ListMyPayments;
 use App\Actions\Finance\ShowMyPayment;
+use App\Actions\Finance\SubmitBankTransferPayment;
 use App\Http\Requests\Finance\IndexMyPaymentsRequest;
 use App\Http\Requests\Finance\StorePaymentRequest;
 use App\Http\Resources\Finance\CreatedPaymentResource;
@@ -30,9 +31,11 @@ final class PaymentController
         ]);
     }
 
-    public function store(StorePaymentRequest $request, #[CurrentUser] User $actor, CreatePayment $createPayment): JsonResponse
+    public function store(StorePaymentRequest $request, #[CurrentUser] User $actor, CreatePayment $createPayment, SubmitBankTransferPayment $submitTransfer): JsonResponse
     {
-        $created = $createPayment->handle($actor, $request->purpose(), $request->idempotencyKey(), app()->getLocale());
+        $created = $request->isBankTransfer()
+            ? $submitTransfer->handle($actor, $request->bankTransferOrder())
+            : $createPayment->handle($actor, $request->purpose(), $request->idempotencyKey(), app()->getLocale());
 
         return ApiResponse::resource(new CreatedPaymentResource($created), $created->isExistingOrder ? Response::HTTP_OK : Response::HTTP_CREATED, [
             'idempotent_replay' => $created->isReplay,

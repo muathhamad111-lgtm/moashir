@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Services\Demo;
 
 use App\Data\Demo\DemoUserAccount;
+use App\Data\Finance\OrderTerms;
 use App\Data\Finance\PriceQuote;
+use App\Enums\Finance\PaymentChannel;
 use App\Enums\Finance\PaymentPurpose;
 use App\Enums\Integrations\IntegrationMode;
 use App\Exceptions\Console\DemoDataRefused;
@@ -33,11 +35,6 @@ final readonly class DemoPaymentInstaller
         return $payment->refresh();
     }
 
-    public function installOpen(DemoUserAccount $owner): Payment
-    {
-        return $this->openAccreditedOrder($owner);
-    }
-
     private function openAccreditedOrder(DemoUserAccount $owner): Payment
     {
         $entity = Entity::query()->findOrFail($owner->user->entity_id);
@@ -45,10 +42,7 @@ final readonly class DemoPaymentInstaller
         return $this->orders->open(
             $owner->user,
             $entity,
-            PaymentPurpose::Accredited,
-            $this->accreditedQuote(),
-            IntegrationMode::Test,
-            Str::uuid()->toString(),
+            new OrderTerms(PaymentPurpose::Accredited, PaymentChannel::Electronic, $this->accreditedQuote(), IntegrationMode::Test, Str::uuid()->toString()),
         )->payment;
     }
 

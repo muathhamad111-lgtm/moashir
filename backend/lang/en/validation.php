@@ -160,8 +160,26 @@ return [
     'uuid' => 'The :attribute field must be a valid UUID.',
 
     'custom' => [
+        'iban' => [
+            'format' => 'A Saudi IBAN has 24 characters: SA, two check digits, the bank code and 18 letters or digits.',
+            'checksum' => 'This IBAN is not valid: its check digits do not match the rest of the number. Check it character by character.',
+            'unique' => 'This IBAN is already registered for another bank account on the platform.',
+        ],
+        'rejection_reason' => [
+            'note_required' => 'Write a note that explains the rejection when you choose "Other reason".',
+        ],
+        'payment_ids' => [
+            'max' => 'You can approve or reject at most :max transfers at once.',
+        ],
+        'ordered_ids' => [
+            'complete' => 'Order all the listed bank accounts, each one once.',
+        ],
         'identifier' => [
             'format' => 'Enter your official e-mail, your Saudi mobile number (05XXXXXXXX) or your entity\'s unified national number (10 digits starting with 7).',
+        ],
+        'entity_sign_in_code_channels' => [
+            'email_required' => 'E-mail must stay allowed: every entity can always receive its sign-in code by e-mail.',
+            'sms_unavailable' => 'Configure the SMS gateway before allowing sign-in codes by text message.',
         ],
         'unified_number' => [
             'regex' => 'The unified national number must contain exactly 10 digits (0-9) and start with 7.',
@@ -253,6 +271,22 @@ return [
     ],
 
     'attributes' => [
+        'bank_name' => 'bank name',
+        'bank_name.ar' => 'Arabic bank name',
+        'bank_name.en' => 'English bank name',
+        'account_holder_name' => 'account holder name',
+        'account_holder_name.ar' => 'Arabic account holder name',
+        'account_holder_name.en' => 'English account holder name',
+        'iban' => 'IBAN',
+        'account_number' => 'account number',
+        'payer_note' => 'note to entities',
+        'payer_note.ar' => 'Arabic note to entities',
+        'payer_note.en' => 'English note to entities',
+        'channels' => 'payment channels',
+        'bank_account_id' => 'bank account',
+        'proof' => 'bank transfer receipt',
+        'rejection_reason' => 'rejection reason',
+        'payment_ids' => 'selected transfers',
         'accredited_issuance_enabled' => 'accredited certificate issuance',
         'level_thresholds' => 'level minimums',
         'level_thresholds.bronze' => 'bronze level minimum',
@@ -383,6 +417,7 @@ return [
         'license_number' => 'licence number',
         'unified_number' => 'unified national number',
         'identifier' => 'e-mail, mobile number or unified national number',
+        'entity_sign_in_code_channels' => 'sign-in code channels',
         'founded_on' => 'founding date',
         'website_url' => 'website',
         'region_id' => 'region',

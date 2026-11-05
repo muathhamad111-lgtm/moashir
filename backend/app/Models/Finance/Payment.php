@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models\Finance;
 
 use App\Casts\EntityNameCast;
+use App\Enums\Finance\PaymentChannel;
 use App\Enums\Finance\PaymentFailureReason;
 use App\Enums\Finance\PaymentInstrument;
 use App\Enums\Finance\PaymentPurpose;
@@ -33,7 +34,8 @@ use Illuminate\Support\Carbon;
  * @property EntityName $entity_name
  * @property int $initiated_by_user_id
  * @property PaymentPurpose $purpose
- * @property string $provider
+ * @property PaymentChannel $channel
+ * @property string|null $provider
  * @property IntegrationMode $mode
  * @property string $idempotency_key
  * @property string|null $provider_intent_id
@@ -47,11 +49,12 @@ use Illuminate\Support\Carbon;
  * @property string $total
  * @property string $currency
  * @property PaymentStatus $status
- * @property Carbon $expires_at
+ * @property Carbon|null $expires_at
  * @property Carbon|null $bound_at
  * @property Carbon|null $verified_at
  * @property Carbon|null $paid_at
  * @property Carbon|null $failed_at
+ * @property Carbon|null $rejected_at
  * @property Carbon|null $cancelled_at
  * @property Carbon|null $refunded_at
  * @property Carbon|null $late_paid_at
@@ -65,6 +68,7 @@ use Illuminate\Support\Carbon;
  * @property-read User $initiatedBy
  * @property-read PaymentReceipt|null $receipt
  * @property-read Refund|null $refund
+ * @property-read BankTransfer|null $bankTransfer
  */
 final class Payment extends Model
 {
@@ -77,7 +81,7 @@ final class Payment extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'reference', 'entity_id', 'entity_name', 'initiated_by_user_id', 'purpose', 'mode', 'idempotency_key',
+        'reference', 'entity_id', 'entity_name', 'initiated_by_user_id', 'purpose', 'channel', 'provider', 'mode', 'idempotency_key',
         'price_before_vat', 'vat_rate', 'vat_amount', 'total', 'currency', 'status', 'expires_at',
     ];
 
@@ -85,6 +89,11 @@ final class Payment extends Model
      * @var list<string>
      */
     protected $hidden = ['checkout_client_secret'];
+
+    /**
+     * @var array<string, string>
+     */
+    protected $attributes = ['channel' => 'electronic', 'provider' => 'moyasar'];
 
     /**
      * @return array<string, string>
@@ -96,6 +105,7 @@ final class Payment extends Model
             'entity_name' => EntityNameCast::class,
             'initiated_by_user_id' => 'integer',
             'purpose' => PaymentPurpose::class,
+            'channel' => PaymentChannel::class,
             'mode' => IntegrationMode::class,
             'checkout_client_secret' => 'encrypted',
             'method' => PaymentInstrument::class,
@@ -109,6 +119,7 @@ final class Payment extends Model
             'verified_at' => 'datetime',
             'paid_at' => 'datetime',
             'failed_at' => 'datetime',
+            'rejected_at' => 'datetime',
             'cancelled_at' => 'datetime',
             'refunded_at' => 'datetime',
             'late_paid_at' => 'datetime',
@@ -150,6 +161,14 @@ final class Payment extends Model
     }
 
     /**
+     * @return HasOne<BankTransfer, $this>
+     */
+    public function bankTransfer(): HasOne
+    {
+        return $this->hasOne(BankTransfer::class);
+    }
+
+    /**
      * @return HasMany<PaymentEvent, $this>
      */
     public function events(): HasMany
@@ -170,6 +189,11 @@ final class Payment extends Model
     public function isBound(): bool
     {
         return $this->provider_payment_id !== null;
+    }
+
+    public function isBankTransfer(): bool
+    {
+        return $this->channel === PaymentChannel::BankTransfer;
     }
 
     public function isTest(): bool
@@ -193,6 +217,15 @@ final class Payment extends Model
     protected function open(Builder $query): void
     {
         $query->whereIn('status', PaymentStatus::openValues());
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function bankTransfers(Builder $query): void
+    {
+        $query->where('channel', PaymentChannel::BankTransfer);
     }
 
     /**

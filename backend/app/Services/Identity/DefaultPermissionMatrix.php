@@ -34,7 +34,7 @@ final class DefaultPermissionMatrix
             RoleKey::ContentOfficer => [P::AssessmentCriteriaView, P::ContentHomeManage, P::ContentKpisManage, P::ContactMessagesManage, P::AiKbManage],
             RoleKey::FinanceOfficer => [
                 P::EntitiesView, P::BagRequestsView, P::FinanceOperationsView, P::FinanceOperationsExport,
-                P::FinanceRefundsManage, P::FinanceReceiptsManage,
+                P::FinanceRefundsManage, P::FinanceReceiptsManage, P::FinanceTransfersReview,
             ],
             RoleKey::Entity => $this->entity(),
         };

@@ -7,8 +7,6 @@ use App\Enums\Identity\OtpPurpose;
 use App\Integrations\Fakes\FakeSmsGateway;
 use App\Models\Identity\OtpCode;
 use App\Models\Identity\User;
-use App\Notifications\Channels\SmsChannel;
-use App\Notifications\Identity\OtpCodeNotification;
 use Illuminate\Notifications\ChannelManager;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Notification;
@@ -19,19 +17,6 @@ function ownerWithMobile(string $phone = '+966551234567'): User
     $owner->forceFill(['phone' => $phone])->save();
 
     return $owner->refresh();
-}
-
-function smsCodeSentTo(User $user): string
-{
-    $code = '';
-
-    Notification::assertSentTo($user, OtpCodeNotification::class, static function (OtpCodeNotification $notification, array $channels) use ($user, &$code): bool {
-        $code = (string) $notification->toMail($user)->code;
-
-        return $channels === [SmsChannel::class];
-    });
-
-    return $code;
 }
 
 it('sends a code by SMS to the stored mobile number and verifies it', function (): void {
@@ -53,7 +38,6 @@ it('sends a code by SMS to the stored mobile number and verifies it', function (
     expect($owner->refresh()->phone_verified_at)->not->toBeNull();
     $this->getJson('/api/v1/entities/me')->assertJsonPath('data.phone_verified', true);
 
-    setEntitySecondFactor(false);
     $this->flushSession();
     app('auth')->forgetGuards();
     signInWith('0551234567', defaultPassword())->assertOk()->assertJsonPath('data.user.id', $owner->id);

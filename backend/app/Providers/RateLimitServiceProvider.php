@@ -31,6 +31,11 @@ final class RateLimitServiceProvider extends ServiceProvider
             Limit::perMinute(30)->by('login-ip|'.$request->ip()),
         ]);
 
+        RateLimiter::for('otp-request', static fn (Request $request): array => [
+            Limit::perMinutes(self::TEN_MINUTES, self::otpRequestLimit('request_per_identifier_per_ten_minutes', 3))->by('otp-request-identifier|'.self::identifierFingerprint($request)),
+            Limit::perMinutes(self::TEN_MINUTES, self::otpRequestLimit('request_per_ip_per_ten_minutes', 10))->by('otp-request-ip|'.$request->ip()),
+        ]);
+
         RateLimiter::for('otp-resend', static fn (Request $request): Limit => Limit::perMinutes(self::TEN_MINUTES, 5)->by('otp-resend|'.$request->ip()));
 
         RateLimiter::for('otp-verify', static fn (Request $request): Limit => Limit::perMinute(10)->by('otp-verify|'.$request->ip()));
@@ -108,6 +113,11 @@ final class RateLimitServiceProvider extends ServiceProvider
         $user = $request->user();
 
         return $user instanceof User ? hash('sha256', mb_strtolower($user->email)) : self::emailFingerprint($request);
+    }
+
+    private static function otpRequestLimit(string $key, int $default): int
+    {
+        return max(1, ScalarValue::int(config('moashir.auth.otp.'.$key), $default));
     }
 
     private static function contactLimit(string $key, int $default): int

@@ -41,6 +41,11 @@ final readonly class AuthSettings
         return max(1, $this->number('otp.per_user_per_day'));
     }
 
+    public function signInSmsPerHour(): int
+    {
+        return max(1, $this->number('otp.sign_in_sms_per_hour'));
+    }
+
     public function lockoutMaxAttempts(): int
     {
         return $this->number('lockout.max_attempts');

@@ -17,6 +17,7 @@ enum StoredFilePurpose: string
     case BrandingLogo = 'branding_logo';
     case CertificatePdf = 'certificate_pdf';
     case EntityLogo = 'entity_logo';
+    case TransferProof = 'transfer_proof';
 
     private const array PUBLIC_ASSETS = ['apple_pay_domain_association', 'cms_image', 'kpi_image', 'branding_logo'];
 
@@ -24,6 +25,7 @@ enum StoredFilePurpose: string
 
     private const array UPLOAD_TYPES = [
         'refund_evidence' => ['pdf' => ['application/pdf'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg'], 'png' => ['image/png']],
+        'transfer_proof' => ['pdf' => ['application/pdf'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg'], 'png' => ['image/png']],
         'apple_pay_domain_association' => ['' => ['text/plain'], 'txt' => ['text/plain']],
         'cms_image' => ['png' => ['image/png'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg']],
         'kpi_image' => ['png' => ['image/png'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg']],

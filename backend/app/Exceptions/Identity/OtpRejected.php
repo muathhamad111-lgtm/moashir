@@ -17,6 +17,11 @@ final class OtpRejected extends ApiException
         return in_array($this->error()->code, self::WRONG_CODE, true);
     }
 
+    public function isCooldown(): bool
+    {
+        return $this->error()->code === 'otp.cooldown';
+    }
+
     public static function invalidCode(): self
     {
         return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'otp.invalid'));
