@@ -31,6 +31,8 @@ Every environment has one posture, recorded as `MOASHIR_DEMO` in its `.env`:
 
 The current server hosts the CLIENT DEMO: both environments run in the demo posture with fictional data.
 
+Demo-only relaxations to undo before real operation: the session timeouts in both demo `.env` files were raised (idle 60 / 120 / 120 minutes, `SESSION_LIFETIME=120`); real operation uses the template values (15 / 30 / 60, lifetime 60).
+
 ## Temporary hosting exception
 
 The current server is outside the Kingdom of Saudi Arabia and is shared with other sites. It is used for review
