@@ -29,7 +29,7 @@ const hint = computed(() => {
     <div class="self-actions__buttons">
       <BaseButton
         variant="secondary"
-        icon="fa-regular fa-floppy-disk"
+        icon="save"
         :loading="saving"
         :disabled="readOnly || busy"
         @click="emit('save')"
@@ -38,7 +38,7 @@ const hint = computed(() => {
       </BaseButton>
       <BaseButton
         variant="primary"
-        icon="fa-solid fa-paper-plane"
+        icon="send"
         :loading="submitting"
         :disabled="readOnly || submitBlocked || busy"
         @click="emit('submit')"

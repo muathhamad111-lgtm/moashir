@@ -1,8 +1,12 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Badge from '@/components/ui/Badge.vue'
-import { KPI_STATUS_VARIANTS } from '@/constants/kpiCategories'
+import { DEFAULT_KPI_COLOR, KPI_COLOR_TOKENS, KPI_STATUS_VARIANTS } from '@/constants/kpis'
+import { useCountUp } from '@/composables/useCountUp'
+import { formatRiyadhDate } from '@/utils/datetime'
+import { formatCountUp, formatKpiValue, kpiNumeric, kpiProgress } from '@/utils/kpiNumber'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   kpi: { type: Object, required: true },
@@ -11,115 +15,32 @@ const props = defineProps({
 
 const emit = defineEmits(['activate'])
 
-const { n, t } = useI18n()
-
-const TOKEN_COLORS = ['primary', 'success', 'info', 'warning', 'danger']
-
-const cardColor = computed(() =>
-  TOKEN_COLORS.includes(props.kpi.cardColor)
-    ? props.kpi.cardColor
-    : TOKEN_COLORS.includes(props.kpi.color)
-      ? props.kpi.color
-      : 'primary',
-)
-
-const statusVariant = computed(() => KPI_STATUS_VARIANTS[props.kpi.status] ?? 'muted')
-
-const statusLabel = computed(() => (props.kpi.status ? t(`kpis.statuses.${props.kpi.status}`) : ''))
-
-const progress = computed(() => {
-  const target = Number(props.kpi.target) || 0
-  const value = Number(props.kpi.value) || 0
-  if (!target) return null
-  return Math.min(100, Math.round((value / target) * 100))
-})
-
-const isInteger = computed(() => Number.isInteger(Number(props.kpi.value)))
+const { t, n, locale } = useI18n()
 
 const rootRef = ref(null)
-const displayValue = ref(Number(props.kpi.value) || 0)
-let observer = null
-let frameId = null
+const endValue = () => kpiNumeric(props.kpi.value) ?? 0
+const { current } = useCountUp(rootRef, endValue)
+
+const cardColor = computed(() => {
+  const token = props.kpi.cardColor ?? props.kpi.cardColorToken
+  return KPI_COLOR_TOKENS.includes(token) ? token : DEFAULT_KPI_COLOR
+})
+const statusVariant = computed(() => KPI_STATUS_VARIANTS[props.kpi.status] ?? 'muted')
+const statusLabel = computed(() => (props.kpi.status ? t(`kpis.statuses.${props.kpi.status}`) : ''))
+const progress = computed(() => kpiProgress(props.kpi.value, props.kpi.target))
+const unit = computed(() => props.localized(props.kpi.unit))
+const description = computed(() => props.localized(props.kpi.shortDescription))
+const lastUpdate = computed(() => formatRiyadhDate(props.kpi.lastUpdate, locale.value))
+const displayNumber = computed(() => formatCountUp(n, current.value, endValue()))
 
 function fmt(value) {
-  if (typeof value !== 'number') return value
-  const formatted = n(value, 'default')
-  return formatted === '' ? String(value) : formatted
-}
-
-const displayNumber = computed(() => {
-  const rounded = isInteger.value
-    ? Math.round(displayValue.value)
-    : Math.round(displayValue.value * 10) / 10
-  return fmt(rounded)
-})
-
-function prefersReducedMotion() {
-  return (
-    typeof window !== 'undefined' &&
-    typeof window.matchMedia === 'function' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  )
-}
-
-function animateCount() {
-  const end = Number(props.kpi.value) || 0
-  if (prefersReducedMotion() || typeof requestAnimationFrame !== 'function') {
-    displayValue.value = end
-    return
-  }
-  displayValue.value = 0
-  const duration = 1100
-  const start = performance.now()
-  function step(now) {
-    const elapsed = now - start
-    const ratio = Math.min(1, elapsed / duration)
-    const eased = 1 - Math.pow(1 - ratio, 3)
-    displayValue.value = end * eased
-    if (ratio < 1) {
-      frameId = requestAnimationFrame(step)
-    } else {
-      displayValue.value = end
-    }
-  }
-  frameId = requestAnimationFrame(step)
-}
-
-onMounted(() => {
-  if (typeof IntersectionObserver !== 'function' || !rootRef.value || prefersReducedMotion()) {
-    displayValue.value = Number(props.kpi.value) || 0
-    return
-  }
-  observer = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          animateCount()
-          observer.disconnect()
-          observer = null
-          break
-        }
-      }
-    },
-    { threshold: 0.35 },
-  )
-  observer.observe(rootRef.value)
-})
-
-onBeforeUnmount(() => {
-  if (observer) observer.disconnect()
-  if (frameId) cancelAnimationFrame(frameId)
-})
-
-function onActivate() {
-  emit('activate', props.kpi)
+  return formatKpiValue(n, value)
 }
 
 function onKeydown(event) {
-  if (event.key === 'Enter' || event.key === ' ') {
-    event.preventDefault()
-    onActivate()
-  }
+  if (event.key !== 'Enter' && event.key !== ' ') return
+  event.preventDefault()
+  emit('activate', props.kpi)
 }
 </script>
 
@@ -131,12 +52,12 @@ function onKeydown(event) {
     tabindex="0"
     role="link"
     :aria-label="localized(kpi.name)"
-    @click="onActivate"
+    @click="emit('activate', kpi)"
     @keydown="onKeydown"
   >
     <div class="kpi-card__head">
       <span class="kpi-card__icon" aria-hidden="true">
-        <i :class="kpi.icon"></i>
+        <AppIcon :name="kpi.icon || 'chart-bar'" />
       </span>
       <Badge v-if="statusLabel" :variant="statusVariant" class="kpi-card__status">
         {{ statusLabel }}
@@ -146,44 +67,42 @@ function onKeydown(event) {
     <p class="kpi-card__value">
       <span class="kpi-card__number" aria-hidden="true">{{ displayNumber }}</span>
       <span class="kpi-card__number-sr">{{ fmt(kpi.value) }}</span>
-      <span class="kpi-card__unit">{{ localized(kpi.unit) }}</span>
+      <span class="kpi-card__unit">{{ unit }}</span>
     </p>
 
     <h3 class="kpi-card__name">{{ localized(kpi.name) }}</h3>
 
     <div v-if="progress !== null" class="kpi-card__target">
-      <div
+      <progress
         class="kpi-card__meter"
-        role="progressbar"
-        :aria-valuenow="progress"
-        aria-valuemin="0"
-        aria-valuemax="100"
+        :value="progress"
+        max="100"
         :aria-label="localized(kpi.name)"
       >
-        <span class="kpi-card__meter-fill" :style="{ '--kpi-progress': `${progress}%` }"></span>
-      </div>
+        {{ progress }}
+      </progress>
       <span class="kpi-card__target-label">
-        {{ $t('kpis.targetLabel', { value: fmt(kpi.target), unit: localized(kpi.unit) }) }}
+        {{ t('kpis.targetLabel', { value: fmt(kpi.target), unit }) }}
       </span>
     </div>
 
     <div class="kpi-card__reveal" aria-hidden="true">
       <dl class="kpi-card__facts">
-        <div v-if="kpi.target" class="kpi-card__fact">
-          <dt class="kpi-card__fact-label">{{ $t('kpis.page.reveal.target') }}</dt>
-          <dd class="kpi-card__fact-value">{{ fmt(kpi.target) }} {{ localized(kpi.unit) }}</dd>
+        <div v-if="kpiNumeric(kpi.target) !== null" class="kpi-card__fact">
+          <dt class="kpi-card__fact-label">{{ t('kpis.page.reveal.target') }}</dt>
+          <dd class="kpi-card__fact-value">{{ fmt(kpi.target) }} {{ unit }}</dd>
         </div>
-        <div v-if="kpi.baseline !== null && kpi.baseline !== undefined" class="kpi-card__fact">
-          <dt class="kpi-card__fact-label">{{ $t('kpis.page.reveal.baseline') }}</dt>
-          <dd class="kpi-card__fact-value">{{ fmt(kpi.baseline) }} {{ localized(kpi.unit) }}</dd>
+        <div v-if="kpiNumeric(kpi.baseline) !== null" class="kpi-card__fact">
+          <dt class="kpi-card__fact-label">{{ t('kpis.page.reveal.baseline') }}</dt>
+          <dd class="kpi-card__fact-value">{{ fmt(kpi.baseline) }} {{ unit }}</dd>
         </div>
-        <div v-if="kpi.lastUpdate" class="kpi-card__fact">
-          <dt class="kpi-card__fact-label">{{ $t('kpis.page.reveal.lastUpdate') }}</dt>
-          <dd class="kpi-card__fact-value">{{ kpi.lastUpdate }}</dd>
+        <div v-if="lastUpdate" class="kpi-card__fact">
+          <dt class="kpi-card__fact-label">{{ t('kpis.page.reveal.lastUpdate') }}</dt>
+          <dd class="kpi-card__fact-value">{{ lastUpdate }}</dd>
         </div>
       </dl>
-      <p v-if="kpi.description" class="kpi-card__description">{{ localized(kpi.description) }}</p>
-      <span class="kpi-card__cue">{{ $t('kpis.page.reveal.viewDetail') }}</span>
+      <p v-if="description" class="kpi-card__description">{{ description }}</p>
+      <span class="kpi-card__cue">{{ t('kpis.page.reveal.viewDetail') }}</span>
     </div>
   </article>
 </template>

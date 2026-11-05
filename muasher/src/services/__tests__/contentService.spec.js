@@ -3,125 +3,48 @@ import { contentService } from '@/services/contentService'
 import { apiClient } from '@/api/client'
 import { logger } from '@/utils/logger'
 
-vi.mock('@/api/client', () => ({
-  apiClient: { get: vi.fn(), post: vi.fn(), patch: vi.fn(), delete: vi.fn() },
-}))
-vi.mock('@/utils/logger', () => ({
-  logger: { breadcrumb: vi.fn(), error: vi.fn(), info: vi.fn() },
-}))
-
-beforeEach(() => {
-  vi.clearAllMocks()
-})
+vi.mock('@/api/client', () => ({ apiClient: { get: vi.fn() } }))
+vi.mock('@/utils/logger', () => ({ logger: { breadcrumb: vi.fn(), error: vi.fn(), info: vi.fn() } }))
 
 function ok(data) {
   return { data: { data, meta: {}, errors: null } }
 }
 
-describe('contentService', () => {
-  it('loads the landing content through the axios client', async () => {
-    const envelope = { data: { published: true }, meta: {}, errors: null }
-    apiClient.get.mockResolvedValue({ data: envelope })
-    const result = await contentService.getLanding()
-    expect(apiClient.get).toHaveBeenCalledWith('/content/landing')
-    expect(result).toEqual(envelope)
-    expect(logger.breadcrumb).toHaveBeenCalledWith(
-      'service',
-      'content.getLanding',
-      expect.objectContaining({ entity: 'landing-content' }),
-    )
+beforeEach(() => vi.clearAllMocks())
+
+describe('contentService (public CMS reads)', () => {
+  it('reads the maintenance status from /content/status', async () => {
+    apiClient.get.mockResolvedValue(ok({ maintenance: true, publishedAt: null }))
+    const result = await contentService.getStatus()
+    expect(apiClient.get).toHaveBeenCalledWith('/content/status')
+    expect(result.data.maintenance).toBe(true)
   })
 
-  it('loads the model-criteria snapshot', async () => {
-    apiClient.get.mockResolvedValue({ data: { data: [], meta: {}, errors: null } })
-    await contentService.getModelCriteria()
-    expect(apiClient.get).toHaveBeenCalledWith('/content/model-criteria')
-  })
-
-  it('reports failures to Sentry and rethrows', async () => {
-    const failure = new Error('down')
-    apiClient.get.mockRejectedValue(failure)
-    await expect(contentService.getLanding()).rejects.toBe(failure)
-    expect(logger.error).toHaveBeenCalledWith(
-      failure,
-      expect.objectContaining({ action: 'content.getLanding' }),
-    )
-  })
-
-  it('loads the public home over /content/home', async () => {
-    apiClient.get.mockResolvedValue(ok({ sections: [], siteSettings: {} }))
+  it('loads the published home over /content/home', async () => {
+    apiClient.get.mockResolvedValue(ok({ published: true, sections: [] }))
     await contentService.getHome()
     expect(apiClient.get).toHaveBeenCalledWith('/content/home')
-    expect(logger.breadcrumb).toHaveBeenCalledWith(
-      'service',
-      'content.getHome',
-      expect.objectContaining({ entity: 'home-content' }),
-    )
+    expect(logger.breadcrumb).toHaveBeenCalledWith('service', 'content.getHome', expect.objectContaining({ entity: 'home-content' }))
   })
 
-  it('loads the admin home over /admin/content/home', async () => {
-    apiClient.get.mockResolvedValue(ok({ sections: [], siteSettings: {} }))
-    await contentService.getHomeAdmin()
-    expect(apiClient.get).toHaveBeenCalledWith('/admin/content/home')
+  it('loads a published page by key and treats 404 as an expected answer', async () => {
+    const notPublished = Object.assign(new Error('not published'), { response: { status: 404 } })
+    apiClient.get.mockRejectedValue(notPublished)
+    await expect(contentService.getPage('lenses')).rejects.toBe(notPublished)
+    expect(apiClient.get).toHaveBeenCalledWith('/content/pages/lenses')
+    expect(logger.error).not.toHaveBeenCalled()
   })
 
-  it('updates a section', async () => {
-    apiClient.patch.mockResolvedValue(ok({ id: 'sec-hero' }))
-    await contentService.updateSection('sec-hero', { title: { ar: 'ا', en: 'A' } })
-    expect(apiClient.patch).toHaveBeenCalledWith('/admin/content/sections/sec-hero', {
-      title: { ar: 'ا', en: 'A' },
-    })
+  it('reports unexpected failures and rethrows', async () => {
+    const failure = Object.assign(new Error('down'), { response: { status: 503 } })
+    apiClient.get.mockRejectedValue(failure)
+    await expect(contentService.getHome()).rejects.toBe(failure)
+    expect(logger.error).toHaveBeenCalledWith(failure, expect.objectContaining({ action: 'content.getHome' }))
   })
 
-  it('toggles a section', async () => {
-    apiClient.patch.mockResolvedValue(ok({ id: 'sec-hero', enabled: false }))
-    await contentService.toggleSection('sec-hero', false)
-    expect(apiClient.patch).toHaveBeenCalledWith('/admin/content/sections/sec-hero/enabled', {
-      enabled: false,
-    })
-  })
-
-  it('reorders sections', async () => {
-    apiClient.patch.mockResolvedValue(ok([]))
-    await contentService.reorderSections(['a', 'b'])
-    expect(apiClient.patch).toHaveBeenCalledWith('/admin/content/sections/reorder', {
-      orderedIds: ['a', 'b'],
-    })
-  })
-
-  it('upserts an item', async () => {
-    apiClient.post.mockResolvedValue(ok({ id: 'sec-partners' }))
-    await contentService.upsertItem('sec-partners', { title: { ar: 'ش', en: 'P' } })
-    expect(apiClient.post).toHaveBeenCalledWith('/admin/content/sections/sec-partners/items', {
-      title: { ar: 'ش', en: 'P' },
-    })
-  })
-
-  it('removes an item', async () => {
-    apiClient.delete.mockResolvedValue(ok({}))
-    await contentService.removeItem('sec-partners', 'partner-1')
-    expect(apiClient.delete).toHaveBeenCalledWith(
-      '/admin/content/sections/sec-partners/items/partner-1',
-    )
-  })
-
-  it('reorders items', async () => {
-    apiClient.patch.mockResolvedValue(ok({}))
-    await contentService.reorderItems('sec-partners', ['partner-2', 'partner-1'])
-    expect(apiClient.patch).toHaveBeenCalledWith(
-      '/admin/content/sections/sec-partners/items/reorder',
-      { orderedIds: ['partner-2', 'partner-1'] },
-    )
-  })
-
-  it('reads and updates site settings', async () => {
-    apiClient.get.mockResolvedValue(ok({ social: [] }))
-    apiClient.patch.mockResolvedValue(ok({ social: [{ platform: 'x', url: 'u' }] }))
-    await contentService.getSiteSettings()
-    expect(apiClient.get).toHaveBeenCalledWith('/admin/content/site-settings')
-    await contentService.updateSiteSettings({ footerNote: { ar: 'ا', en: 'A' } })
-    expect(apiClient.patch).toHaveBeenCalledWith('/admin/content/site-settings', {
-      footerNote: { ar: 'ا', en: 'A' },
-    })
+  it('loads the published model criteria', async () => {
+    apiClient.get.mockResolvedValue(ok([]))
+    await contentService.getModelCriteria()
+    expect(apiClient.get).toHaveBeenCalledWith('/content/model-criteria')
   })
 })

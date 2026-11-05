@@ -35,7 +35,7 @@ const usage = computed(() =>
     <div class="ai-answer__actions">
       <BaseButton
         variant="secondary"
-        icon="fa-solid fa-comment-dots"
+        icon="chat"
         :loading="answer.state.value === PROVIDER_ACTION_STATES.PENDING"
         :disabled="disabled"
         @click="answer.execute()"

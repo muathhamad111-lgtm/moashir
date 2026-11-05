@@ -27,7 +27,6 @@ export function demoDescriptorOf(user) {
     name: user.name ?? null,
     roles: roles.length ? roles : (persona.roles ?? []),
     entityId: persona.entityId ?? null,
-    committeeCycles: persona.committeeCycles ?? [],
     locale: user.locale ?? null,
     superAdmin: user.is_super_admin === true,
   }

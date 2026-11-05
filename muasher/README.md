@@ -20,7 +20,6 @@ Node `^22.18.0 || >=24.12.0` (developed on Node 24 LTS), npm 10+.
 | `npm install` | Install dependencies (also copies the MSW worker to `public/`). |
 | `npm run dev` | Vite dev server at `http://localhost:5173` (MSW mocks active). |
 | `npm run build` | Production build to `dist/`. |
-| `npm run icons:pro` | With `FONTAWESOME_NPM_AUTH_TOKEN` exported: installs the pinned Font Awesome Pro package without touching the lockfile. |
 | `npm run preview` | Serve the production build at `http://localhost:4173`. |
 | `npm run lint` | oxlint + ESLint (auto-fix). |
 | `npm run format` | Prettier over `src/` and `e2e/`. |
@@ -28,6 +27,7 @@ Node `^22.18.0 || >=24.12.0` (developed on Node 24 LTS), npm 10+.
 | `npm run test:unit` | Vitest (single run). `npm run test:unit:watch` for watch mode. |
 | `npm run test:e2e` | Playwright (run `npx playwright install chromium` once first). |
 | `npm run test:e2e:integration` | Playwright smoke against a real local backend (see "Real integration check"). |
+| `npm run test:e2e:posture` | Playwright check of a real-operation build served on `:5180` (no mock worker, coming-soon screens; see "Build posture"). |
 
 ## Environment
 
@@ -36,10 +36,10 @@ Copy `.env.example` to `.env.local`. Never commit values.
 | Name | Meaning |
 |---|---|
 | `VITE_API_BASE_URL` | Empty: the MSW mock layer answers `/api/v1` and `/sanctum` (local development). Set (for example `/api/v1` behind the same Nginx origin): the real API is used. The CSRF cookie is read from the same origin. |
-| `VITE_DEMO_MODULES` | Only with `VITE_API_BASE_URL`. Comma-separated module keys that stay on demo data (hybrid mode, see below). Empty: every module uses the real API and the mock layer is never loaded. |
+| `VITE_DEMO_BUILD` | Build posture (SEC-07, see "Build posture"). `true` only in the client-demo env files (`.env.staging.example`, `.env.production.example` while both environments are demos). Empty or any other value = real-operation build: no mock code, no `mockServiceWorker.js`, demo-only screens become «قريبًا» screens, and the build fails if `VITE_DEMO_MODULES` is not empty. |
+| `VITE_DEMO_MODULES` | Only with `VITE_API_BASE_URL` and `VITE_DEMO_BUILD=true`. Comma-separated module keys that stay on demo data (hybrid mode, see below). Empty: every module uses the real API and the mock layer is never loaded. |
 | `VITE_DEMO_LOGIN` | `true` shows the demo quick-login on the login page. It works only in `npm run dev` (`import.meta.env.DEV`); every `vite build` (staging and production) drops the component, its strings and its mock endpoint. `.env.development` sets it for local development. |
-| `VITE_SENTRY_DSN`, `VITE_SENTRY_ENVIRONMENT`, `VITE_SENTRY_RELEASE` | Self-hosted GlitchTip. |
-| `VITE_FONTAWESOME_KIT_ID`, `FONTAWESOME_NPM_AUTH_TOKEN` | Font Awesome Pro (see below). Both optional at build time; the token is never part of a build. |
+| `VITE_SENTRY_DSN`, `VITE_SENTRY_ENVIRONMENT`, `VITE_SENTRY_RELEASE` | Self-hosted GlitchTip. Every event, transaction and breadcrumb passes through `src/utils/monitoring/scrubEvent.js` (`beforeSend`, `beforeSendTransaction`, `beforeBreadcrumb`, `sendDefaultPii: false`, SEC-16): no user object, query strings and fragments dropped, token path segments, e-mails, Saudi mobiles, national ids, file names and credentials masked, form values in the extra context redacted, only safe request headers kept. |
 | `MOASHIR_API_PROXY_TARGET` | Shell variable for `npm run dev` / `npm run preview` only: proxies `/api` and `/sanctum` to a local Laravel (for example `http://127.0.0.1:8010`) so the SPA and the API share one origin, as behind Nginx. |
 
 ## Hybrid mode (review and demo environments)
@@ -47,11 +47,13 @@ Copy `.env.example` to `.env.local`. Never commit values.
 The review / demo deployments (operator decision Session 20) run the real API for every module that has a backend
 and keep demo data, clearly marked, for the modules that do not have one yet.
 
-| `VITE_API_BASE_URL` | `VITE_DEMO_MODULES` | Result |
-|---|---|---|
-| empty | ignored | full mock layer (local development, unit and e2e tests) |
-| `/api/v1` | empty | fully real; the mock code is never loaded |
-| `/api/v1` | `bag,kpis,…` | hybrid: MSW starts with the handlers of the listed modules only and `onUnhandledRequest: 'bypass'`, so every other call reaches the real API |
+| `VITE_API_BASE_URL` | `VITE_DEMO_BUILD` | `VITE_DEMO_MODULES` | Result |
+|---|---|---|---|
+| empty | ignored | ignored | full mock layer (local development, unit and e2e tests, the CI e2e build) |
+| `/api/v1` | `true` | empty | client demo without mocks; the mock code is loaded but never started |
+| `/api/v1` | `true` | `bag,ai,…` | client-demo hybrid: MSW starts with the handlers of the listed modules only and `onUnhandledRequest: 'bypass'`, so every other call reaches the real API |
+| `/api/v1` | empty / `false` | empty | real operation: the mock layer and its worker are not in the build at all |
+| `/api/v1` | empty / `false` | not empty | the build stops with "VITE_DEMO_MODULES must be empty in a real-operation build" |
 
 - Module keys: `src/constants/mockModules.js`; the registry that maps each key to its handlers is
   `src/mocks/handlers/index.js` (`mockModules`). Unknown keys are ignored (reported to GlitchTip as an info event). The
@@ -63,9 +65,35 @@ and keep demo data, clearly marked, for the modules that do not have one yet.
 - Every screen of a demo module shows the translated "Demo data" note (`DemoDataNotice`, route meta `demoModules`);
   demo parts embedded in connected screens (notification panel, assistant, footer and CMS copy, SMS / e-mail / cart
   campaigns) show the section variant. Connected screens show nothing.
-- Current list (`.env.staging.example`, `.env.production.example`): `bag, certificates, kpis, cms, branding, dashboards,
-  ai, notifications, notifications-admin, messaging, platform-settings` (no backend route yet) and `users, committee,
-  secretary, results` (backend exists, the SPA batch is not aligned yet). Remove a key when its batch lands.
+- Current list (`.env.staging.example`, `.env.production.example`, both with `VITE_DEMO_BUILD=true`): `bag, ai,
+  messaging, platform-settings` (no backend route yet). Since Task-37d the staff dashboards (`GET /dashboard/summary?board=`)
+  and the read-only notification types catalogue (`GET /settings/notifications/types`) use the real API (`dashboards`
+  and `notifications-admin` left the list); the contact inbox, the contact retention setting, the contact privacy tools,
+  the legal versions management, the audit log and the staff certificate actions are real from the start. `users`,
+  `committee`, `secretary` and `results` use the real API since the committee batch; `cms`, `branding` and `kpis` since
+  the CMS batch (Task-34); `contact` and the public certificate levels since the home page (Task-41); the notification
+  centre since Task-37a; the entity portal areas, certificates and legal pages since Task-37b; the staff settings and
+  recovery pages since Task-37c. The home page never shows a demo note, and the AI assistant is hidden there in phase 1
+  (route meta `hideAssistant`). Remove a key when its batch lands.
+
+## Build posture (SEC-07)
+
+`vite-plugins/buildPosture.js` decides at build time what ships (`src/utils/build/buildPosture.js`, unit-tested):
+
+| Posture | When | What ships |
+|---|---|---|
+| `mock` | `VITE_API_BASE_URL` empty | the whole mock layer and `mockServiceWorker.js` (local development and the CI e2e build only — such a build has no backend and is never deployed) |
+| `demo` | `VITE_API_BASE_URL` set and `VITE_DEMO_BUILD=true` | exactly the current client-demo behaviour: hybrid MSW for `VITE_DEMO_MODULES`, the worker, and every demo-only screen working on its mocks or on the real API as today |
+| `real` | `VITE_API_BASE_URL` set and `VITE_DEMO_BUILD` empty / not `true` (the default) | `@/mocks` is replaced by an empty module (no MSW code in `dist/`), `dist/mockServiceWorker.js` is deleted after the build, demo-only routes (`meta.demoOnly`: Quick Excellence Kit, the advanced path, the Award screens, the AI knowledge base, platform general settings, abandoned-cart campaigns) render the static «قريبًا» / "Coming soon" screen (`src/router/comingSoon.js`, `views/public/ComingSoon.vue`), and the AI assistant and the SMS / e-mail campaign composers are not shown. A non-empty `VITE_DEMO_MODULES` stops the build. |
+
+The build log prints `Moashir build posture: <posture>`. Both current environments (staging and production) are client
+demos, so both example env files keep `VITE_DEMO_BUILD=true` and the deploy kit (which copies
+`.env.<environment>.example` when `.env.<environment>` is absent) keeps building them exactly as before. For real
+operation, provide `muasher/.env.production` (it takes precedence over the example in `deploy/deploy.sh`) with
+`VITE_DEMO_BUILD=false` and an empty `VITE_DEMO_MODULES`, or change the example at go-live. A shell value overrides the
+files, for example `VITE_DEMO_BUILD=false VITE_DEMO_MODULES= npm run build -- --mode production`. Check a real build with
+`ls dist/mockServiceWorker.js` (absent) and `grep -rl setupWorker dist` (no match), or serve it with `vite preview` on
+`:5180` and run `npm run test:e2e:posture`.
 
 ### Environment builds
 
@@ -77,31 +105,64 @@ npm run build -- --mode production
 ```
 
 `*.local` files are ignored by version control. `VITE_DEMO_LOGIN` is `false` in both templates (and every `vite build`
-drops the demo login anyway). `VITE_FONTAWESOME_KIT_ID` is empty in both: without the Pro package and without a kit the
-build succeeds and icons are simply not drawn (icon-only buttons keep their accessible names).
+drops the demo login anyway). Icons need no variable: they are inline SVGs compiled into the build (see "Icons").
 
 ### Real integration check (local backend)
 
 The smoke suite `e2e/integration/*.spec.js` runs against a real local Laravel and is excluded from `npm run test:e2e`.
 It uses its own database (default `moashir_integration`, never `moashir` or a test database) and the fictional local
-staff accounts of the backend seeders (e-mail code sign-in, then authenticator enrolment).
+staff accounts of the backend seeders. Those accounts have no password: the first sign-in of each account sets one
+through `/auth/forgot-password` → the e-mailed reset link, then signs in with it and enrols the authenticator.
 
 ```
 createdb moashir_integration                      # once
-./scripts/integration/backend.sh setup            # migrate + seed (APP_ENV=local, fake scanner / PDF / SMS, mail to stderr)
+./scripts/integration/backend.sh setup            # migrate + seed (APP_ENV=local, fake scanner / PDF / SMS, mail to the mail log)
 ./scripts/integration/backend.sh serve  > /tmp/integration-serve.log 2>&1 &
 ./scripts/integration/backend.sh queue  > /tmp/integration-queue.log 2>&1 &
 cp .env.staging.example .env.staging.local && npm run build -- --mode staging
 MOASHIR_API_PROXY_TARGET=http://127.0.0.1:8010 npx vite preview --mode staging --port 5180 --strictPort &
-MOASHIR_INTEGRATION_MAIL_LOGS=/tmp/integration-queue.log,/tmp/integration-serve.log npm run test:e2e:integration
+MOASHIR_INTEGRATION_MAIL_LOGS=$(cd ../backend/storage/logs && pwd) npm run test:e2e:integration
 ```
+
+E-mails are written by the backend `mail` log channel (`backend/storage/logs/mail-YYYY-MM-DD.log`): since Task-51 the
+other channels redact single-use tokens, so reset and invitation links can only be read there.
+`MOASHIR_INTEGRATION_MAIL_LOGS` takes files or directories (every `mail*.log` of a directory is read).
+`./scripts/integration/backend.sh verify-phone <e-mail>` marks the mobile number of a fictional `example.sa` account as
+verified on the integration database: the local fake SMS gateway keeps its messages in memory, so the code of
+`POST /me/phone/verification` cannot be read back. The backend limits sign-in to 30 attempts per minute per address
+(5 per identifier), password resets to 3 per 10 minutes per account, and public reads to 120 per minute, so run each
+spec file on its own on a freshly reset database (`e2e/integration/support/pacing.js` paces the calls of one spec).
+`e2e/integration/signin.spec.js` (Task-54) covers the simplified sign-in on the real contract: registration with the
+unified national number and the duplicate 422, sign-in with the e-mail, the unified number and the verified mobile
+(each followed by the e-mail code read from the mail log), the generic answer for a wrong password and an unverified
+mobile, the SMS verification request, the System Administrator's password reset and authenticator enrolment, and the
+entity second-factor setting turned off (entities sign in after the password) and on again.
 
 Run `./scripts/integration/backend.sh reset` before every repeated run (the staff authenticators are enrolled once per
 database), then restart the queue worker. The suite reads one-time codes from the mail log files only; it never prints
 them. It covers sign-in with MFA enrolment and challenge, criteria, entity registration and profile, self assessment
 draft → submit → result, the accredited price and checkout up to the gateway boundary (`503 integration.not_configured`
 without payment keys), the follower queue, integrations, award cycles, the demo markers, and a sweep of every connected
-administrator and entity screen that fails on any 4xx/5xx or error state.
+administrator and entity screen that fails on any 4xx/5xx or error state. `e2e/integration/award.spec.js` runs the award
+path end to end with the seeded staff (system administrator, requests follower, assessor, filtering officer, award
+secretary): a cycle is prepared through the API, a new entity applies and submits, the request is assessed and qualified,
+the administrator invites a committee assessor from the users screen (the invitation is accepted through the API with a
+random password), appoints it and starts the committee from the UI, the committee assessor scores and submits, the Award
+Secretary approves the average, ranks and approves the region and the national result and announces them, and the entity
+reads its result. Run it on a freshly reset database. `e2e/integration/staff-paths.spec.js` (Task-37c) covers the
+path distinction on the real contract: assessor qualifications and the follower scope edited from the users screen, the
+per-path queue (`meta.path`, `meta.path_counts`), a scoped follower, the per-path and certificate settings, the staff
+entity detail with the registry details and the logo, an e-mailed invitation accepted from `/auth/invitations/:token`
+and a password reset from `/auth/reset-password/:token`. It changes users and settings, so run it on a freshly reset
+database too. `e2e/integration/staff-admin.spec.js` (Task-37d) covers the staff boards and the notification catalogue
+read from the backend, a signed-in portal message answered from the contact inbox (reply + internal note, closed) and
+read back in «رسائلي», the contact retention setting and the contact privacy export, a new privacy version drafted,
+previewed and published by the Content Officer and shown on `/privacy`, an accredited request completed by the assessor
+through the complete dialog (`issue_certificate`) with its certificate downloaded from the request page and verified on
+`/verify/:code`, and the audit log filtered and exported. The accredited request is opened without a payment gateway by
+`./scripts/integration/backend.sh open-accredited <e-mail>` (a paid order + receipt + `OpenPaidAccreditedRequest` on the
+integration database only, like `verify-phone`); export `INTEGRATION_DB_DATABASE` for the spec so that it reaches the
+same database.
 
 ## API contract and session
 
@@ -109,8 +170,15 @@ administrator and entity screen that fails on any 4xx/5xx or error state.
   state-changing call the client requests `GET /sanctum/csrf-cookie`; axios sends `X-XSRF-TOKEN`,
   `withCredentials` and `Accept-Language` (the active locale) on every request. A 419 refreshes the
   CSRF cookie once and retries; a second 419 or a 401 ends the session and returns to the login page.
-- Sign-in follows the `step` field of the login response: `otp_required` → `/auth/otp`,
-  `mfa_challenge` / `mfa_enrollment` → `/auth/mfa`, `authenticated` → the workspace.
+- Sign-in is one form (`POST /auth/login { identifier, password }`): the identifier is the official e-mail, the
+  verified mobile number or the entity's unified national number (`src/utils/auth/signInIdentifier.js` mirrors the
+  backend recognition; Arabic-Indic digits are converted). The flow follows the `step` field of the answer:
+  `otp_required` → `/auth/otp` (the e-mail code of the entity second factor, or the registration code),
+  `mfa_challenge` / `mfa_enrollment` → `/auth/mfa`, `authenticated` → the workspace. Wrong credentials always show
+  one generic message; `account_locked` (423) and the 429 limits show the wait from `Retry-After`
+  (`src/utils/auth/authFailures.js`). There is no passwordless sign-in and no call to `POST /auth/otp/request`.
+- The entity second factor is a setting of the System Administrator (`/admin/settings/sign-in`, `GET/PUT
+  /settings/auth`): turning it off shows the risk and asks for a confirmation; the Super Admin gives a reason.
 - `src/api/caseMapping.js` is the only camelCase ⇄ snake_case boundary. Every request body and query
   key is sent in snake_case and every response is read back in camelCase; status values travel as the
   canonical backend value (`under_review`) and are shown through `status.<canonical value>` labels.
@@ -132,7 +200,11 @@ administrator and entity screen that fails on any 4xx/5xx or error state.
 The MSW handlers go through `src/mocks/contract/http.js`, which enforces the CSRF header and speaks
 snake_case on the wire. The mock "server" keeps its session in the `moashir_mock_session` cookie (it
 exists only when mocks are on). Fixed mock-only values: password `Muasher@2026`, e-mail OTP `482913`,
-authenticator code `246810`. Every mock e-mail uses an `example.sa` domain.
+authenticator code `246810`. Every mock e-mail uses an `example.sa` domain. The sign-in mock follows the Task-51
+contract: `ENT-005001` signs in with `info@albirr-riyadh.example.sa`, its verified mobile `0500005001` or its unified
+number `7100005001`; the entity second factor is on until a System Administrator turns it off (mock state of the
+page); five failures of any factor lock the account for 15 minutes; an account receives at most 5 codes per 10
+minutes. `POST /me/phone/verification` answers 503 `phone.sms_unavailable` while no SMS provider row is active.
 
 The criteria mocks (`src/mocks/handlers/criteria*.js`, `src/mocks/stores/criteria*.js`) mirror the
 backend Criteria domain: version 1 is seeded from the backend seed content and published; drafts,
@@ -234,8 +306,16 @@ advanced routes of `assessments.php` / `requests.php` (Task-27 report §2):
   assessment by assessor 10), `000003` (`ENT-006004`, awaiting assignment), `000004` (`ENT-006005`, awaiting filtering above
   the threshold), `000005` (`ENT-007005`, awaiting filtering below the threshold), `000006` (`ENT-006006`, region not
   covered, conditions rejection); `ENT-005001` has no request in cycle 31 and a not-qualified request in cycle 30.
-- The committee, secretary and results screens still run on the legacy committee mocks (`handlers/committee.js`,
-  `handlers/awardResults.js`, `handlers/advancedResults.js`) until their backend contract (Task-28) is available.
+- Committee, secretary, results and announcement (`handlers/{committee,secretary,awardResults}.js`,
+  `stores/committee/*`) mirror Task-28 §2: committee roster (appoint with SoD, remove, disable, exclude, substitute),
+  blind evaluations per the `committee_entity_data_visibility` setting, automatic average once every counted row is
+  submitted, discussions, secretary decisions, regional / national ranks and approvals, Super Admin unapproval and the
+  manual announcement. The entity result (`GET /assessments/{id}/result`) opens after the announcement only.
+- Mock scenarios (cookie `moashir_mock_scenario`, unit tests `setMockScenario`): `qualified` (cycle 31 submissions
+  closed, `000004` / `000005` qualified, no committee), `committee` (committee running with assessors 27 / 29 / 30:
+  `000004` under committee assessment, `000005` awaiting the secretary, `000002` in a discussion session), `results`
+  (regions 2 and 4 approved, `000004` approved in region 1) and `announced` (national winners, results announced).
+  Without the cookie cycle 31 stays in the submission stage and has no committee.
 
 The payments and finance mocks (`src/mocks/handlers/{payments,finance,financeSettings,moyasarSandbox}.js`,
 `src/mocks/stores/finance/*`) mirror `backend/routes/api/v1/finance.php` and `settings.php`:
@@ -243,9 +323,18 @@ The payments and finance mocks (`src/mocks/handlers/{payments,finance,financeSet
   `/settings/finance`, the gateway mode, methods and networks come from the payment integration mock, the checkout
   object carries the intent, the snake_case `metadata` and the callback `/payments/{id}/return`. An open order of the
   same service is returned with 200. Created orders expire after `order_validity_minutes`.
-- No request ever reaches Moyasar: MSW serves the pinned `cdn.moyasar.com/mpf/2.3.0/moyasar.js` from
-  `src/mocks/moyasar/fakeMoyasarForm.js` (a sandbox form with outcome choices and no card fields) and answers
-  `api.moyasar.com/v1/payment_intents/{id}/fulfill`. `POST /payments/{id}/verify` reads that sandbox ledger and applies
+- The checkout names the Moyasar form script (`checkout.script { url, integrity }`, Task-51); the SPA loads exactly
+  that URL and the stylesheet of the same folder (`moyasar.css`), and sets `integrity` + `crossorigin` only when the
+  backend sends a hash (`src/utils/payments/moyasarLoader.js`). There is no version pinned in the SPA. The Moyasar CDN
+  sends no CORS header, so SRI cannot be enforced on a CDN script; to enforce it, self-host the pinned file on the SPA
+  origin and set `MOYASAR_FORM_SCRIPT_URL` / `MOYASAR_FORM_SCRIPT_INTEGRITY` on the backend (backend README "Checkout
+  script and SRI").
+- No request reaches Moyasar in the normal mock run: the mock checkout names `cdn.moyasar.com/mpf/1.15.0/moyasar.js`
+  (the backend default) and MSW serves every `mpf/<version>/moyasar.js` from `src/mocks/moyasar/fakeMoyasarForm.js`
+  (a sandbox form with outcome choices and no card fields) and answers
+  `api.moyasar.com/v1/payment_intents/{id}/fulfill`. With the cookie `moashir_moyasar_form=cdn` MSW lets the real CDN
+  script through: `MOASHIR_CHECK_MOYASAR_CDN=1 npx playwright test e2e/moyasar-cdn.spec.js` (dev server, network
+  needed) checks that the real form renders on the payment page (the spec is skipped by the normal run). `POST /payments/{id}/verify` reads that sandbox ledger and applies
   the backend rules (metadata binding, amount, 202 while 3-D Secure is pending, late payment stays cancelled).
 - Receipts `RCP-YYYY-######` gap-free for live payments, TEST receipts without a number, voids on refund; downloads
   go through signed links (`/api/v1/files/{id}/download`, 5 minutes, bound to the user).
@@ -266,24 +355,68 @@ Random mock failures (the deliberate 5xx of the older handlers) go through
 - An e2e test forces an error explicitly with `forceMockFault(page, { method, path, status })` from
   `e2e/support/mockFaults.js` (cookie `moashir_mock_fault`) and removes it with `clearMockFault(page)`.
 
-## Icons (Font Awesome Pro, self-hosted)
+The entity portal mocks (Task-37a) mirror the Task-35 / Task-46 contracts: `entity-board`
+(`src/mocks/handlers/entityBoard.js`, `src/mocks/stores/entityBoard/*`) answers `GET /dashboard/action-center` and
+`GET /dashboard/summary?board=entity` with the Action Center `context`, the profile completion percent and the
+`latest_result` / `payments_card` widgets; `notifications` answers the list (`filter[read|archived|category|code|path]`,
+`search`, `per_page`, `meta.unread_count`), `unread-count`, `read`, `archive`, `read-all` and
+`GET/PUT /me/notification-preferences` (catalogue generated from the backend type definitions, mandatory types locked
+with 422 `notification_preference.locked`); `contact` adds `GET /me/contact-messages` with `meta.unread_replies` and
+`status_counts`; `cms` serves `GET /content/assessment-paths/{accredited|advanced}`; `accredited` adds
+`active.progress` and `entities` adds `profile_completion`.
 
-Icons are Font Awesome Pro served from the build when the Pro package is present: its solid, regular
-and brands webfonts are compiled by `src/styles/vendor/font-awesome.scss` and emitted into
-`dist/assets/`, so no icon request leaves the platform. The package is NOT a dependency in
-`package.json` / `package-lock.json`, so `npm ci` works in every clean checkout (CI, deploy) without the
-token, and the lockfile never depends on the private registry.
+## Brand identity
 
-With the token (pinned version, installed next to the locked tree, never saved):
+- Source of truth: the official identity guide (`../agents/design/moashir-identity.pdf`); review and token mapping in
+  `../agents/tasks/reports/Task-38-identity-review.md`.
+- Colours are tokens only (`src/styles/tokens/_colors.scss`): `#0a2325`, `#98d8d3`, `#d9f7f7`, gold / bronze / silver
+  and the derived AA text tokens. Never use `#98d8d3` for small text on light surfaces.
+- Logos: official SVGs in `src/assets/logos/` (on light, on dark, mono dark / grey / teal, star, arrow), extracted from
+  the guide's vector outlines. Patterns: `src/assets/patterns/` through `components/ui/BrandPattern.vue`.
+- Favicon / app icons / social cards in `public/` use the star mark on `#0a2325`.
+- Fonts: Montserrat (Latin) + Tajawal / IBM Plex Sans Arabic (Arabic) until a web licence for the guide's Arabic font is
+  provided — see `src/assets/fonts/README.md`.
 
-1. Export `FONTAWESOME_NPM_AUTH_TOKEN` in your shell or CI secret store (never in a file of this
-   repository). `.npmrc` reads it by name only.
-2. `npm ci` then `npm run icons:pro` (`npm install --no-save @fortawesome/fontawesome-pro@7.3.1`).
-3. `npm run build`. `vite-plugins/fontAwesome.js` detects the package and switches the app to the
-   self-hosted icons; the CDN kit is no longer injected.
+## Icons (TTS icon set, inline SVG)
 
-Without the token the build still succeeds: the app uses the kit of `VITE_FONTAWESOME_KIT_ID` when set,
-otherwise no icon font is loaded (icons are not drawn; icon-only buttons keep their accessible names).
+Every icon is a glyph of the TTS icon set ("TTS Panel Design System" Figma library, `Icon/<name>`, Iconly-based),
+drawn by one component, `src/components/ui/AppIcon.vue`. There is no icon font, kit, CDN or sprite request: the SVG
+path data is compiled into the JavaScript bundle and rendered inline, so icons render offline, under the strict CSP and
+in every build.
+
+| Piece | Role |
+|---|---|
+| `src/assets/icons/tts/<name>.svg` | One glyph per file: `viewBox="0 0 24 24"`, `fill="currentColor"`, paths only. |
+| `src/assets/icons/tts/pending.json` | Icons the platform needs that TTS has not published yet: `glyph` (name → stop-gap TTS glyph), `brand` (social logos → the generic `link` glyph until the official brand marks are supplied) and `withheld` (`flask`, `language`, `pause`, `phone`: their stop-gaps misled, so nothing is drawn — every use has a visible text label — until TTS publishes the glyph). |
+| `src/assets/icons/interim/<name>.svg` | Interim glyphs derived from a TTS glyph until TTS publishes the real one. Today only `bell`: the TTS `bell-dot` outline closed by mirroring its left half, without the dot. The bells always draw `bell` and overlay the unread badge / dot only when something is unread. A published `tts/bell.svg` wins automatically; then delete the interim file (a unit test fails while both exist). |
+| `src/utils/icons/iconRegistry.js` | The single registry: every SVG of the folder (`import.meta.glob`, raw, eager), the pending stop-gaps and the aliases. `resolveIcon(name)` returns the path data, the RTL mirroring and the flip / spin flags. |
+| `src/constants/icons.js` | Size tokens, the RTL mirroring list, the aliases (`undo` = flipped `refresh`, `spinner` = spinning `refresh-dots`) and the stored-value pattern. |
+| `src/utils/icons/storedIcon.js` + `legacyIconNames.js` | CMS and KPI icons are still stored by the API in the legacy class format (`fa-solid fa-chart-line`, backend rule `FontAwesomeIcon`). The registry reads such values as platform names; the CMS / KPI forms write `fa-solid fa-<name>` until the backend stores plain names. |
+
+Usage:
+
+```vue
+<AppIcon name="search" />
+<AppIcon name="gear" size="lg" />
+<AppIcon name="arrow-right" :mirror="false" />
+<button type="button" class="btn btn--icon"><AppIcon name="x" :label="t('actions.close')" /></button>
+```
+
+- `name`: a TTS name, a pending name (drawn with its stop-gap) or an alias. Props that used to carry icon class strings
+  (`BaseButton` `icon` / `icon-end`, menu actions, stat cards, notices …) now carry these names.
+- `size`: `sm` 16 px, `md` 20 px, `lg` 24 px (`--icon-size-*`). Without a size the icon is `1em`, sized by its context.
+- `label`: for an icon that is the only content of a control → `role="img"` + `aria-label`. Without it the icon is
+  decorative (`aria-hidden="true"`, `focusable="false"`); the visible text of the control carries the meaning.
+- RTL: `arrow-left`, `arrow-right`, `chevron-left`, `chevron-right`, `chevron-sm-left`, `chevron-sm-right`, `send`,
+  `login`, `logout` and `reply` are mirrored in Arabic (CSS `scale`, so it composes with component rotations). A use
+  that means a physical direction opts out with `:mirror="false"`. Everything else is never mirrored.
+- Colour comes from `currentColor`, so icons follow the text colour tokens of their context.
+
+Adding or replacing an icon when TTS publishes it (phase A2) is a data-only change: drop `<name>.svg` into
+`src/assets/icons/tts/` and delete its entry from `pending.json` (or the interim file). `hasIcon(name)` tells a
+component whether a glyph is drawn, so a decorative tile or a fixed icon column can stay aligned without one. The unit tests fail while a pending entry still has its
+own SVG or points to a missing stop-gap. Licence: the glyphs come from the "TTS Pro icon font (Iconly)"; their use in
+the client deliverable relies on TTS's Iconly licence — operator to confirm in the handover.
 
 ## Dependencies
 

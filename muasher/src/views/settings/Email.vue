@@ -13,6 +13,7 @@ import EmailSenderFields from '@/components/integrations/email/EmailSenderFields
 import DnsChecklist from '@/components/integrations/email/DnsChecklist.vue'
 import EmailTestSend from '@/components/integrations/email/EmailTestSend.vue'
 import EmailCampaignComposer from '@/components/integrations/email/EmailCampaignComposer.vue'
+import { SHOWS_DEMO_ONLY_MODULES } from '@/constants/buildPosture'
 import { useEmailIntegration } from '@/composables/useEmailIntegration'
 import { usePermissions } from '@/composables/usePermissions'
 import { emailIntegrationService } from '@/services/emailIntegrationService'
@@ -76,7 +77,9 @@ onMounted(load)
     </form>
 
     <EmailTestSend />
-    <EmailCampaignComposer v-if="can(PERMISSIONS.MESSAGING_CAMPAIGNS_SEND)" />
+    <EmailCampaignComposer
+      v-if="SHOWS_DEMO_ONLY_MODULES && can(PERMISSIONS.MESSAGING_CAMPAIGNS_SEND)"
+    />
 
     <ReasonDialog
       v-model="reasonOpen"
@@ -93,7 +96,7 @@ onMounted(load)
         form="email-integration-form"
         variant="primary"
         :loading="saving"
-        icon="fa-solid fa-floppy-disk"
+        icon="save"
       >
         {{ t('actions.save') }}
       </BaseButton>

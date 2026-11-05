@@ -10,7 +10,11 @@ import { KNOWN_PERMISSIONS } from '@/constants/permissionKeys'
 import { ROUTE_ACCESS } from '@/constants/routeAccess'
 import { sessionUserFor } from '@/test-utils/session'
 
-const OPEN_TO_ANY_SIGNED_IN_USER = [ROUTE_NAMES.ACCOUNT_PROFILE]
+const OPEN_TO_ANY_SIGNED_IN_USER = [
+  ROUTE_NAMES.ACCOUNT_PROFILE,
+  ROUTE_NAMES.MESSAGES_INDEX,
+  ROUTE_NAMES.MESSAGES_THREAD,
+]
 
 function freshRouter() {
   const router = createRouter({ history: createMemoryHistory(), routes })
@@ -32,6 +36,17 @@ function signIn(roles, extra = {}) {
 beforeEach(() => {
   setActivePinia(createPinia())
 })
+
+const APPOINTMENT = {
+  id: 7001,
+  awardCycleId: 31,
+  cycleName: { ar: 'دورة الجائزة', en: 'Award cycle' },
+  cycleStatus: 'committee-assessment',
+  status: 'active',
+  isSubstitute: false,
+  committeeStart: null,
+  committeeEnd: null,
+}
 
 describe('router guards — permission-driven, deny by default', () => {
   it('bounces a guest to login with redirect=to.fullPath', async () => {
@@ -55,7 +70,7 @@ describe('router guards — permission-driven, deny by default', () => {
     signIn([ROLES.SYSTEM_ADMIN])
     expect((await visit('/admin/settings/users')).name).toBe(ROUTE_NAMES.ADMIN_USERS)
     expect((await visit('/assessment/self')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
-    expect((await visit('/admin/award/committee')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
+    expect((await visit('/admin/committee/assignments')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
   })
 
   it('follows the permission keys, not the role names', async () => {
@@ -67,9 +82,15 @@ describe('router guards — permission-driven, deny by default', () => {
 
   it('opens the committee queue only for an assessor with an active appointment', async () => {
     signIn([ROLES.ASSESSOR])
-    expect((await visit('/admin/award/committee')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
-    signIn([ROLES.ASSESSOR], { committeeAppointments: [{ cycleId: 'cycle-1', status: 'active' }] })
-    expect((await visit('/admin/award/committee')).name).toBe(ROUTE_NAMES.AWARD_COMMITTEE)
+    expect((await visit('/admin/committee/assignments')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
+    signIn([ROLES.ASSESSOR], { committeeAppointments: [APPOINTMENT] })
+    expect((await visit('/admin/committee/assignments')).name).toBe(ROUTE_NAMES.AWARD_COMMITTEE)
+    expect((await visit('/admin/committee/assignments/7101')).name).toBe(
+      ROUTE_NAMES.AWARD_COMMITTEE_SCORE,
+    )
+    expect((await visit('/admin/committee/discussions')).name).toBe(
+      ROUTE_NAMES.AWARD_COMMITTEE_DISCUSSIONS,
+    )
   })
 
   it('declares a known permission for every protected route', () => {

@@ -1,10 +1,11 @@
 <script setup>
 import IllustrationSlot from '@/components/public/IllustrationSlot.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   title: { type: String, required: true },
   message: { type: String, default: '' },
-  icon: { type: String, default: 'fa-regular fa-folder-open' },
+  icon: { type: String, default: 'folder' },
   branded: { type: Boolean, default: false },
   illustration: { type: String, default: null },
   illustrationAlt: { type: String, default: '' },
@@ -22,7 +23,7 @@ defineProps({
           :alt="illustrationAlt || $t('illustrations.emptyState')"
           variant="compact"
         />
-        <i v-else :class="icon" aria-hidden="true"></i>
+        <AppIcon v-else :name="icon" />
       </slot>
     </div>
     <h3 class="empty-state__title">{{ title }}</h3>

@@ -61,60 +61,40 @@ function openReview() {
       <BaseButton
         v-if="mayAssign && canAssign"
         variant="primary"
-        icon="fa-solid fa-user-check"
+        icon="user-check"
         @click="emit('assign')"
         >{{ t('requests.actions.assign') }}</BaseButton
       >
       <BaseButton
         v-if="mayAssign && canReassign"
         variant="secondary"
-        icon="fa-solid fa-user-pen"
+        icon="pen"
         @click="emit('reassign')"
         >{{ t('requests.actions.reassign') }}</BaseButton
       >
-      <BaseButton
-        v-if="canReturn"
-        variant="secondary"
-        icon="fa-solid fa-reply"
-        @click="emit('return')"
-        >{{ t('requests.actions.return') }}</BaseButton
-      >
-      <BaseButton
-        v-if="mayReview"
-        variant="secondary"
-        icon="fa-solid fa-clipboard-check"
-        @click="openReview"
-        >{{ t('requests.actions.openReview') }}</BaseButton
-      >
+      <BaseButton v-if="canReturn" variant="secondary" icon="reply" @click="emit('return')">{{
+        t('requests.actions.return')
+      }}</BaseButton>
+      <BaseButton v-if="mayReview" variant="secondary" icon="clipboard-check" @click="openReview">{{
+        t('requests.actions.openReview')
+      }}</BaseButton>
       <BaseButton
         v-if="mayBundle"
         variant="secondary"
-        icon="fa-solid fa-file-zipper"
+        icon="docs"
         :loading="bundleRequesting"
         @click="emit('bundle')"
         >{{ t('requests.actions.bundle') }}</BaseButton
       >
-      <BaseButton
-        v-if="canWithdraw"
-        variant="danger"
-        icon="fa-solid fa-ban"
-        @click="emit('withdraw')"
-        >{{ t('requests.actions.withdraw') }}</BaseButton
-      >
-      <BaseButton
-        v-if="mayReopen"
-        variant="danger"
-        icon="fa-solid fa-lock-open"
-        @click="emit('reopen')"
-        >{{ t('requests.overrides.reopen') }}</BaseButton
-      >
-      <BaseButton
-        v-if="mayForce"
-        variant="danger"
-        icon="fa-solid fa-shuffle"
-        @click="emit('force')"
-        >{{ t('requests.overrides.force') }}</BaseButton
-      >
+      <BaseButton v-if="canWithdraw" variant="danger" icon="ban" @click="emit('withdraw')">{{
+        t('requests.actions.withdraw')
+      }}</BaseButton>
+      <BaseButton v-if="mayReopen" variant="danger" icon="lock-open" @click="emit('reopen')">{{
+        t('requests.overrides.reopen')
+      }}</BaseButton>
+      <BaseButton v-if="mayForce" variant="danger" icon="shuffle" @click="emit('force')">{{
+        t('requests.overrides.force')
+      }}</BaseButton>
     </div>
     <p class="request-actions__note">{{ t('requests.detail.bundleNote') }}</p>
   </Card>

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
 
-const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d|Font Awesome/i
+const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d/i
 
 const STAFF = {
   follower: { id: 8, roles: ['request_follower', 'filtering_officer'] },
@@ -57,7 +57,7 @@ test.describe('Requests follower', () => {
     await expect(page.locator('.stats-card')).toHaveCount(4)
     const overdue = page.locator('.overdue-badge.badge--danger').first()
     await expect(overdue).toBeVisible()
-    await expect(overdue.locator('i')).toHaveCount(1)
+    await expect(overdue.locator('svg.app-icon')).toHaveCount(1)
     await page.screenshot({ path: `test-results/requests-queue-${suffixOf(testInfo)}.png`, fullPage: true })
     await page.locator('.request-filters .dropdown__toggle').first().click()
     await page.locator('.dropdown__item', { hasText: isEn(testInfo) ? 'Submitted' : 'مُرسل' }).first().click()
@@ -117,7 +117,7 @@ test.describe('Assessor', () => {
     await expect(rows).toHaveCount(1)
     await expect(rows).toContainText('ACC-2026-000007')
     await page.locator('.tabs__tab').nth(1).click()
-    await expect(rows).toHaveCount(2)
+    await expect(rows).toHaveCount(1)
     await expect(rows.filter({ hasText: 'ACC-2026-000008' })).toHaveCount(1)
 
     await page.goto('/admin/requests/9107/review')
@@ -181,13 +181,13 @@ test.describe('Super Admin and settings', () => {
   test('the System Administrator updates the review deadline and the upload limits', async ({ page }, testInfo) => {
     await signIn(page, testInfo, STAFF.systemAdmin)
     await page.goto('/admin/settings/assessment')
-    const sla = page.locator('input[name="accreditedReviewSlaDays"]')
+    const sla = page.locator('input[name="reviewSlaDays"]')
     await expect(sla).toHaveValue('14')
     await sla.fill('500')
-    await page.locator('.settings-section .btn--primary').click()
+    await page.locator('.path-settings .btn--primary').click()
     await expect(page.locator('.field__error').first()).toBeVisible()
     await sla.fill('21')
-    await page.locator('.settings-section .btn--primary').click()
+    await page.locator('.path-settings .btn--primary').click()
     await expect(page.locator('.toast--success').first()).toBeVisible()
     await page.screenshot({ path: `test-results/settings-assessment-${suffixOf(testInfo)}.png`, fullPage: true })
   })

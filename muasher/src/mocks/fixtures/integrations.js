@@ -83,7 +83,7 @@ export function paymentSeed() {
     associationFile: null,
     rows: {
       test: {
-        publishableKey: 'pk_test_fake_example_moashir01',
+        publishableKey: 'pk_test_MoashirLocalSandboxFictionalKey000000001',
         secretKey: stored('ex01'),
         webhookSecret: stored(null),
         webhook: {
@@ -104,10 +104,10 @@ export const SMS_TEMPLATE_DEFINITIONS = Object.freeze([
     key: 'otp_code',
     label: { ar: 'رمز التحقق', en: 'Verification code' },
     defaultBody: {
-      ar: 'رمز التحقق في منصة مؤشر هو {code} وهو صالح لمدة {minutes} دقيقة.',
-      en: 'Your Moashir verification code is {code}. It is valid for {minutes} minutes.',
+      ar: 'رمز التحقق في منصة مؤشر هو {code} وهو صالح لمدة {validity}.',
+      en: 'Your Moashir verification code is {code}. It is valid for {validity}.',
     },
-    placeholders: ['code', 'minutes'],
+    placeholders: ['code', 'validity', 'minutes'],
     requiredPlaceholders: ['code'],
     singleSegment: true,
   },
@@ -117,12 +117,12 @@ export const MSEGAT_APPROVED_TEMPLATES = Object.freeze([
   {
     id: '101',
     title: 'رمز التحقق',
-    body: 'رمز التحقق في منصة مؤشر هو {{1}} وهو صالح لمدة {{2}} دقيقة.',
+    body: 'رمز التحقق في منصة مؤشر هو {{1}} وهو صالح لمدة {{2}}.',
   },
   {
     id: '102',
     title: 'Verification code',
-    body: 'Your Moashir verification code is {{1}}. It is valid for {{2}} minutes.',
+    body: 'Your Moashir verification code is {{1}}. It is valid for {{2}}.',
   },
   {
     id: '103',

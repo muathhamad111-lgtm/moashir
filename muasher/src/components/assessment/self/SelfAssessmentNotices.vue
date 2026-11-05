@@ -42,7 +42,7 @@ const showConflict = computed(() => props.conflictCode === CODES.TRANSITION_ILLE
         <BaseButton
           variant="secondary"
           size="sm"
-          icon="fa-solid fa-rotate"
+          icon="refresh"
           :loading="refreshing"
           @click="emit('refresh')"
         >
@@ -61,7 +61,7 @@ const showConflict = computed(() => props.conflictCode === CODES.TRANSITION_ILLE
         <BaseButton
           variant="secondary"
           size="sm"
-          icon="fa-solid fa-rotate"
+          icon="refresh"
           :loading="refreshing"
           @click="emit('refresh')"
         >

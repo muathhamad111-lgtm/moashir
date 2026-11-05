@@ -7,6 +7,12 @@ import { versionResource } from '../stores/criteriaSerializers'
 import { createDraft, discardDraft } from '../stores/criteriaVersions'
 import { correctTexts, publishVersion } from '../stores/criteriaPublishing'
 import { interpolate, requestLocale } from '../stores/criteriaRejection'
+import { FieldCollector } from '../stores/criteriaValidation'
+import {
+  DRAFT_CYCLE_CHOICES,
+  cycleBindingsSummary,
+  moveDraftCycles,
+} from '../stores/award/cycleBindings'
 import {
   CRITERIA_PERMISSIONS as CAN,
   actorWith,
@@ -17,6 +23,15 @@ import {
 } from './criteriaSupport'
 
 const BASE = '/api/v1/criteria/versions'
+
+function draftCyclesChoice(body) {
+  const value = body.draftCycles ?? 'keep'
+  if (DRAFT_CYCLE_CHOICES.includes(value)) return value
+  const errors = new FieldCollector()
+  errors.add('draftCycles', 'field.invalid')
+  errors.assertValid()
+  return value
+}
 
 function withMessage(entry, locale) {
   const template = criteriaProblemMessages[entry.problem][locale]
@@ -80,7 +95,10 @@ export const criteriaVersionHandlers = [
       const version = found(findVersion(params.versionId))
       const locale = requestLocale(request)
       const problems = consistencyProblems(version.id).map((entry) => withMessage(entry, locale))
-      return envelope({ consistent: problems.length === 0, problems })
+      return envelope(
+        { consistent: problems.length === 0, problems },
+        { awardCycles: cycleBindingsSummary() },
+      )
     }),
   ),
 
@@ -89,8 +107,15 @@ export const criteriaVersionHandlers = [
     criteriaRoute(async ({ request, params }) => {
       const actor = actorWith(CAN.PUBLISH)
       const version = found(findVersion(params.versionId))
-      const outcome = publishVersion(actor, version, await readBody(request))
-      return envelope(versionResource(outcome.version), outcome.meta)
+      const body = await readBody(request)
+      const draftCycles = draftCyclesChoice(body)
+      const before = cycleBindingsSummary()
+      const outcome = publishVersion(actor, version, body)
+      const movedCycleIds = draftCycles === 'move' ? moveDraftCycles(outcome.version.id) : []
+      return envelope(versionResource(outcome.version), {
+        ...outcome.meta,
+        awardCycles: { ...before, draftCycles, movedCycleIds },
+      })
     }),
   ),
 

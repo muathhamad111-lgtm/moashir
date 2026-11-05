@@ -1,6 +1,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
 import { ELIGIBILITY_RULES } from '@/constants/advanced'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   conditions: { type: Array, required: true },
@@ -24,10 +25,7 @@ function textOf(check) {
       class="eligibility-list__item"
       :class="{ 'eligibility-list__item--failed': !check.passed }"
     >
-      <i
-        :class="check.passed ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark'"
-        aria-hidden="true"
-      ></i>
+      <AppIcon :name="check.passed ? 'check-circle' : 'x'" />
       <span class="eligibility-list__text">{{ textOf(check) }}</span>
       <span class="eligibility-list__state">{{
         check.passed ? t('advanced.eligibility.passed') : t('advanced.eligibility.failed')
@@ -38,10 +36,7 @@ function textOf(check) {
       class="eligibility-list__item"
       :class="{ 'eligibility-list__item--failed': !windowOpen }"
     >
-      <i
-        :class="windowOpen ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark'"
-        aria-hidden="true"
-      ></i>
+      <AppIcon :name="windowOpen ? 'check-circle' : 'x'" />
       <span class="eligibility-list__text">{{ t('advanced.eligibility.window') }}</span>
       <span class="eligibility-list__state">{{
         windowOpen ? t('advanced.eligibility.open') : t('advanced.eligibility.closed')

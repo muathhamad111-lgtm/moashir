@@ -13,12 +13,9 @@ import { entityEmailChangesHandlers } from './entityEmailChanges'
 import { privacyRequestsHandlers } from './privacyRequests'
 import { regionsHandlers } from './regions'
 import { assessmentsHandlers } from './assessments'
-import {
-  certificateSettingsHandlers,
-  knowledgeBaseHandlers,
-  notificationSettingsHandlers,
-  platformSettingsHandlers,
-} from './settings'
+import { knowledgeBaseHandlers, platformSettingsHandlers } from './settings'
+import { notificationTypesHandlers } from './notificationTypes'
+import { certificateSettingsHandlers } from './certificateSettings'
 import { integrationsHandlers } from './integrations'
 import { paymentIntegrationHandlers } from './paymentIntegration'
 import { smsIntegrationHandlers } from './smsIntegration'
@@ -34,20 +31,30 @@ import { requestsHandlers } from './requests'
 import { assessorReviewHandlers } from './assessorReview'
 import { assessmentSettingsHandlers } from './assessmentSettings'
 import { certificatesHandlers } from './certificates'
+import { certificatesStaffHandlers } from './certificatesStaff'
 import { servicePricesHandlers } from './servicePrices'
 import { bagHandlers } from './bag'
 import { bagRequestsHandlers } from './bagRequests'
 import { awardHandlers } from './award'
-import { advancedResultsHandlers } from './advancedResults'
-import { committeeHandlers, secretaryHandlers } from './committee'
+import { committeeHandlers } from './committee'
+import { secretaryHandlers } from './secretary'
 import { awardResultsHandlers } from './awardResults'
 import { permissionsHandlers } from './permissions'
 import { dashboardHandlers } from './dashboard'
+import { entityBoardHandlers } from './entityBoard'
 import { brandingHandlers } from './branding'
 import { profileHandlers } from './profile'
 import { searchHandlers } from './search'
 import { sanctumHandlers } from './sanctum'
 import { devSessionHandlers } from './devSession'
+import { contactMessagesHandlers } from './contactMessages'
+import { contactInboxHandlers } from './contactInbox'
+import { contactSettingsHandlers } from './contactSettings'
+import { certificateLevelsHandlers } from './certificateLevels'
+import { pathGuidesHandlers } from './pathGuides'
+import { legalHandlers } from './legal'
+import { legalVersionsHandlers } from './legalVersions'
+import { auditLogsHandlers } from './auditLogs'
 
 export const CORE_MOCK_KEYS = Object.freeze({ SESSION: 'session', AUTH: 'auth' })
 
@@ -60,7 +67,20 @@ export const mockModules = [
   { key: M.KPIS, handlers: kpisHandlers },
   { key: M.NOTIFICATIONS, handlers: notificationsHandlers },
   { key: M.CRITERIA, handlers: criteriaHandlers },
-  { key: M.CMS, handlers: contentHandlers },
+  {
+    key: M.CMS,
+    handlers: [
+      ...legalHandlers,
+      ...legalVersionsHandlers,
+      ...contentHandlers,
+      ...certificateLevelsHandlers,
+      ...pathGuidesHandlers,
+    ],
+  },
+  {
+    key: M.CONTACT,
+    handlers: [...contactInboxHandlers, ...contactSettingsHandlers, ...contactMessagesHandlers],
+  },
   { key: M.AI, handlers: [...aiHandlers, ...knowledgeBaseHandlers] },
   { key: M.USERS, handlers: usersHandlers },
   { key: CORE_MOCK_KEYS.AUTH, core: true, handlers: authHandlers },
@@ -88,7 +108,7 @@ export const mockModules = [
     ],
   },
   { key: M.PLATFORM_SETTINGS, handlers: platformSettingsHandlers },
-  { key: M.NOTIFICATIONS_ADMIN, handlers: notificationSettingsHandlers },
+  { key: M.NOTIFICATIONS_ADMIN, handlers: notificationTypesHandlers },
   { key: M.PAYMENTS, handlers: [...paymentsHandlers, ...moyasarSandboxHandlers] },
   {
     key: M.FINANCE,
@@ -104,12 +124,21 @@ export const mockModules = [
       ...assessmentSettingsHandlers,
     ],
   },
-  { key: M.CERTIFICATES, handlers: [...certificatesHandlers, ...certificateSettingsHandlers] },
+  {
+    key: M.CERTIFICATES,
+    handlers: [
+      ...certificatesStaffHandlers,
+      ...certificatesHandlers,
+      ...certificateSettingsHandlers,
+    ],
+  },
   { key: M.BAG, handlers: [...bagHandlers, ...bagRequestsHandlers] },
-  { key: M.RESULTS, handlers: [...advancedResultsHandlers, ...awardResultsHandlers] },
+  { key: M.RESULTS, handlers: awardResultsHandlers },
   { key: M.COMMITTEE, handlers: committeeHandlers },
   { key: M.SECRETARY, handlers: secretaryHandlers },
   { key: M.PERMISSIONS, handlers: permissionsHandlers },
+  { key: M.AUDIT, handlers: auditLogsHandlers },
+  { key: M.ENTITY_BOARD, handlers: entityBoardHandlers },
   { key: M.DASHBOARDS, handlers: dashboardHandlers },
   { key: M.BRANDING, handlers: brandingHandlers },
   { key: M.PROFILE, handlers: profileHandlers },

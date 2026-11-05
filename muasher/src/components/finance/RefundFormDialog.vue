@@ -11,6 +11,7 @@ import RefundEvidenceField from './RefundEvidenceField.vue'
 import { useRefundForm } from '@/composables/useRefundForm'
 import { REFUND_RULES } from '@/constants/finance'
 import { riyadhDate } from '@/utils/finance/refundSchema'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -43,7 +44,7 @@ const evidence = useField('evidence')
   >
     <div class="refund-form">
       <p class="refund-form__lead" role="note">
-        <i class="fa-solid fa-building-columns" aria-hidden="true"></i>
+        <AppIcon name="landmark" />
         {{ t('finance.refund.lead') }}
       </p>
       <p class="refund-form__total">

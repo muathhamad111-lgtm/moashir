@@ -5,7 +5,7 @@ import { findVersion } from '../criteriaStore'
 import { sessionCan } from '../sessionPermissions'
 import { nowIso } from '../accredited/accreditedRecords'
 import { throwIfErrors, trimmed } from '../accredited/accreditedValidation'
-import { CYCLE_DEFAULTS } from './cycleDefaults'
+import { cycleDefaults } from './cycleDefaults'
 import { insertCycle } from './cycleStore'
 import { managesEveryCycle } from './cycleAccess'
 import {
@@ -118,7 +118,7 @@ export function createCycle(user, body) {
     year: riyadhYear(attributes.submissionStart),
     announcementAt: null,
     scaleKind: version.scaleKind,
-    ...CYCLE_DEFAULTS,
+    ...cycleDefaults(),
     participationCertificateEnabled: false,
     ...attributes,
     status: 'draft',

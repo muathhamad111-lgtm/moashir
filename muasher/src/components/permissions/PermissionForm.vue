@@ -8,6 +8,7 @@ import BaseTextarea from '@/components/form/BaseTextarea.vue'
 import BaseCheckbox from '@/components/form/BaseCheckbox.vue'
 import { useValidatedForm } from '@/composables/useValidatedForm'
 import { usePermissionsCatalog } from '@/composables/usePermissionsCatalog'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -160,7 +161,7 @@ function toggleRole(value, checked) {
         <legend class="permission-form__legend">{{ t('permissions.fields.roles') }}</legend>
         <p class="permission-form__hint">{{ t('permissions.fields.rolesHint') }}</p>
         <p v-if="isLocked" class="permission-form__locked">
-          <i class="fa-solid fa-lock" aria-hidden="true"></i>
+          <AppIcon name="lock" />
           {{ t('permissions.lockedHint') }}
         </p>
         <div

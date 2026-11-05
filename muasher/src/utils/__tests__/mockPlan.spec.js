@@ -11,6 +11,8 @@ function templateValue(file, name) {
   return line ? line.slice(name.length + 1) : null
 }
 
+const DEMO = { VITE_API_BASE_URL: '/api/v1', VITE_DEMO_BUILD: 'true' }
+
 describe('mock plan', () => {
   it('keeps the whole mock layer when no API base URL is set', () => {
     expect(mockPlanOf({ VITE_DEMO_MODULES: 'bag' })).toEqual({
@@ -22,16 +24,26 @@ describe('mock plan', () => {
 
   it('turns the mocks off for a real API without demo modules', () => {
     expect(mockPlanOf({ VITE_API_BASE_URL: '/api/v1' }).mode).toBe(MOCK_MODES.OFF)
-    expect(mockPlanOf({ VITE_API_BASE_URL: '/api/v1', VITE_DEMO_MODULES: ' , ' }).mode).toBe(
-      MOCK_MODES.OFF,
-    )
+    expect(mockPlanOf({ ...DEMO, VITE_DEMO_MODULES: ' , ' }).mode).toBe(MOCK_MODES.OFF)
+  })
+
+  it('never mocks a real-operation build, even when demo modules are listed', () => {
+    expect(mockPlanOf({ VITE_API_BASE_URL: '/api/v1', VITE_DEMO_MODULES: 'bag,ai' })).toEqual({
+      mode: MOCK_MODES.OFF,
+      modules: [],
+      unknown: [],
+    })
+    expect(
+      mockPlanOf({
+        VITE_API_BASE_URL: '/api/v1',
+        VITE_DEMO_BUILD: 'false',
+        VITE_DEMO_MODULES: 'bag',
+      }).mode,
+    ).toBe(MOCK_MODES.OFF)
   })
 
   it('starts hybrid mode with the listed modules only, normalised and deduplicated', () => {
-    const plan = mockPlanOf({
-      VITE_API_BASE_URL: '/api/v1',
-      VITE_DEMO_MODULES: ' Bag, kpis ,bag,unknown-module',
-    })
+    const plan = mockPlanOf({ ...DEMO, VITE_DEMO_MODULES: ' Bag, kpis ,bag,unknown-module' })
     expect(plan).toEqual({
       mode: MOCK_MODES.HYBRID,
       modules: ['bag', 'kpis'],
@@ -40,7 +52,7 @@ describe('mock plan', () => {
   })
 
   it('ignores a list made of unknown keys only', () => {
-    expect(mockPlanOf({ VITE_API_BASE_URL: '/api/v1', VITE_DEMO_MODULES: 'lenses' })).toEqual({
+    expect(mockPlanOf({ ...DEMO, VITE_DEMO_MODULES: 'lenses' })).toEqual({
       mode: MOCK_MODES.OFF,
       modules: [],
       unknown: ['lenses'],
@@ -48,7 +60,7 @@ describe('mock plan', () => {
   })
 
   it('reports demo data only for listed modules in hybrid mode', () => {
-    const hybrid = mockPlanOf({ VITE_API_BASE_URL: '/api/v1', VITE_DEMO_MODULES: 'cms,kpis' })
+    const hybrid = mockPlanOf({ ...DEMO, VITE_DEMO_MODULES: 'cms,kpis' })
     expect(demoModulesIn(['kpis', 'criteria'], hybrid)).toEqual(['kpis'])
     expect(showsDemoData(['criteria'], hybrid)).toBe(false)
     expect(showsDemoData(undefined, hybrid)).toBe(false)
@@ -56,17 +68,27 @@ describe('mock plan', () => {
   })
 
   it.each(['.env.staging.example', '.env.production.example'])(
-    '%s lists known modules, a same-origin API and no demo login',
+    '%s is a client-demo build with known modules, a same-origin API and no demo login',
     (file) => {
       const { modules, unknown } = parseDemoModules(templateValue(file, 'VITE_DEMO_MODULES'))
+      expect(templateValue(file, 'VITE_DEMO_BUILD')).toBe('true')
       expect(unknown).toEqual([])
-      expect(modules.length).toBeGreaterThan(0)
-      expect(modules).not.toContain(MOCK_MODULES.CRITERIA)
+      expect(modules).toEqual([
+        MOCK_MODULES.BAG,
+        MOCK_MODULES.AI,
+        MOCK_MODULES.MESSAGING,
+        MOCK_MODULES.PLATFORM_SETTINGS,
+      ])
       expect(templateValue(file, 'VITE_API_BASE_URL')).toBe('/api/v1')
       expect(templateValue(file, 'VITE_DEMO_LOGIN')).toBe('false')
       expect(templateValue(file, 'VITE_SENTRY_DSN')).toBe('')
     },
   )
+
+  it('keeps the generic template a real-operation build with no demo module', () => {
+    expect(templateValue('.env.example', 'VITE_DEMO_BUILD')).toBe('')
+    expect(templateValue('.env.example', 'VITE_DEMO_MODULES')).toBe('')
+  })
 
   it('uses the same demo list for staging and production', () => {
     expect(templateValue('.env.staging.example', 'VITE_DEMO_MODULES')).toBe(

@@ -24,7 +24,7 @@ const { t } = useI18n()
       <BaseButton
         v-if="canStart"
         variant="primary"
-        icon="fa-solid fa-play"
+        icon="play"
         :loading="busy === 'start'"
         @click="emit('start')"
         >{{ t('review.start') }}</BaseButton
@@ -32,7 +32,7 @@ const { t } = useI18n()
       <template v-if="canScore">
         <BaseButton
           variant="secondary"
-          icon="fa-regular fa-floppy-disk"
+          icon="save"
           :loading="busy === 'save'"
           :disabled="!dirty || Boolean(busy)"
           @click="emit('save')"
@@ -41,14 +41,14 @@ const { t } = useI18n()
         <BaseButton
           v-if="canRequestCompletion"
           variant="secondary"
-          icon="fa-solid fa-reply"
+          icon="reply"
           :disabled="Boolean(busy)"
           @click="emit('requestCompletion')"
           >{{ t('review.requestCompletion') }}</BaseButton
         >
         <BaseButton
           variant="primary"
-          icon="fa-solid fa-flag-checkered"
+          icon="flag-checkered"
           :loading="busy === 'complete'"
           :disabled="Boolean(busy)"
           @click="emit('complete')"

@@ -59,7 +59,9 @@ describe('evidence components', () => {
       render(ScanStatusBadge, { status }).text(),
     )
     expect(labels).toEqual(['Being scanned', 'Clean', 'Refused', 'Scan failed'])
-    expect(render(ScanStatusBadge, { status: 'infected' }, 'ar').find('i').exists()).toBe(true)
+    expect(
+      render(ScanStatusBadge, { status: 'infected' }, 'ar').find('svg.app-icon').exists(),
+    ).toBe(true)
   })
 
   it('offers the download of a clean file and the replacement of a refused one', async () => {

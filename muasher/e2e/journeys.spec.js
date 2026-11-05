@@ -1,5 +1,6 @@
-/* eslint-disable playwright/no-conditional-in-test, playwright/no-wait-for-timeout */
+/* eslint-disable playwright/no-wait-for-timeout */
 import { test, expect } from '@playwright/test'
+import { DEV_OTP_CODE, submitSignIn, typeCode } from './support/signIn'
 import { seedSignedIn, seedLocale } from './support/session'
 
 function isEn(testInfo) {
@@ -110,42 +111,9 @@ test.describe('Journeys — Notes 8a/8b/8c', () => {
   }, testInfo) => {
     await localeOnly(page, isEn(testInfo) ? 'en' : 'ar')
     await gotoWithRetry(page, '/auth/login?redirect=%2Fassessment%2Fself', '.auth-form__body')
-    const passwordMode = page.locator('.auth-form__mode', { hasText: /password|كلمة/i })
-    if (
-      await passwordMode
-        .first()
-        .isVisible()
-        .catch(() => false)
-    ) {
-      await passwordMode.first().click()
-    }
-    for (let attempt = 0; attempt < 8; attempt += 1) {
-      if (
-        await page
-          .locator('[name="password"]')
-          .isVisible()
-          .catch(() => false)
-      )
-        break
-      const retry = page.locator('.error-state__retry')
-      if (
-        await retry
-          .first()
-          .isVisible()
-          .catch(() => false)
-      )
-        await retry
-          .first()
-          .click()
-          .catch(() => {})
-      await page.waitForTimeout(500)
-    }
-    await page.locator('[name="officialEmail"]').fill('info@albirr-riyadh.example.sa')
-    await page.locator('[name="password"]').fill('Muasher@2026')
-    await page
-      .getByRole('button', { name: /log in|تسجيل الدخول|دخول/i })
-      .first()
-      .click()
+    await submitSignIn(page, 'info@albirr-riyadh.example.sa')
+    await expect(page).toHaveURL(/\/auth\/otp\?redirect=/)
+    await typeCode(page, DEV_OTP_CODE)
     await page.waitForURL(/\/assessment\/self$/, { timeout: 15000 })
     await waitForRetry(page, '.self-form__title')
     await expect(page.locator('.self-form__title')).toBeVisible({ timeout: 15000 })
@@ -181,6 +149,7 @@ test.describe('Journeys — Notes 8a/8b/8c', () => {
     await gotoWithRetry(page, '/assessment/advanced', '.advanced-intro__layout')
     await expect(page.locator('.advanced-intro__title')).toBeVisible()
     await expect(page.locator('.advanced-content__item').first()).toBeVisible({ timeout: 15000 })
-    await expect(page.locator('.advanced-content__group')).toHaveCount(4)
+    await expect(page.locator('.advanced-content__card')).toHaveCount(2)
+    await expect(page.locator('.advanced-content__group')).toHaveCount(2)
   })
 })

@@ -20,6 +20,9 @@ import {
 import { ENTITY_ACCESS, entityResourceFor, ownEntityResource } from '../stores/entitySerializers'
 import { entityStats, filtersFrom, queryEntities } from '../stores/entityQueries'
 import { applyProfile, isDeleted, setMarketingConsent } from '../stores/entitiesStore'
+import { applyRegistry } from '../stores/entityRegistry'
+import { applyUnifiedNumber } from '../stores/entityUnifiedNumber'
+import { removeEntityLogo, storeEntityLogo } from '../stores/entityLogo'
 import {
   assertOwnProfile,
   assertProfile,
@@ -43,7 +46,7 @@ function ownResource(entity) {
 }
 
 function staffResource(user, entity) {
-  return entityResourceFor(accessOf(user))(entity)
+  return entityResourceFor(accessOf(user))(entity, user)
 }
 
 function listFilters(request) {
@@ -81,11 +84,33 @@ export const entitiesHandlers = [
       const user = ownEntityActor(P.PROFILE_EDIT)
       const entity = ownEntityOf(user)
       const body = await readJson(request)
-      assertOwnProfile(body)
+      assertOwnProfile(body, entity.id)
       const before = { ...entity, name: { ...entity.name } }
       applyProfile(entity, profileFrom(body), contactFrom(body))
+      applyRegistry(entity, body)
+      applyUnifiedNumber(entity, body)
       recordProfileChanges(entity, before, entity, { actor: user, isStaff: false })
       setMarketingConsent(entity, body.marketingConsent)
+      return envelope(ownResource(entity))
+    }),
+  ),
+
+  http.post(
+    '/api/v1/entities/me/logo',
+    entityRoute(async ({ request }) => {
+      const user = ownEntityActor(P.PROFILE_EDIT)
+      const entity = ownEntityOf(user)
+      const form = await request.formData()
+      await storeEntityLogo(user, entity, form.get('file'))
+      return envelope(ownResource(entity), {}, { status: 201 })
+    }),
+  ),
+
+  http.delete(
+    '/api/v1/entities/me/logo',
+    entityRoute(() => {
+      const user = ownEntityActor(P.PROFILE_EDIT)
+      const entity = removeEntityLogo(ownEntityOf(user))
       return envelope(ownResource(entity))
     }),
   ),
@@ -137,11 +162,12 @@ export const entitiesHandlers = [
       const user = manager()
       const entity = viewableEntity(user, params.id)
       const body = await readJson(request)
-      assertProfile(body)
+      assertProfile(body, entity.id)
       assertReason(body)
       if (isDeleted(entity)) throw entityReject.deleted()
       const before = { ...entity, name: { ...entity.name } }
       applyProfile(entity, profileFrom(body), contactFrom(body))
+      applyUnifiedNumber(entity, body)
       recordProfileChanges(entity, before, entity, { actor: user, isStaff: true })
       return envelope(staffResource(user, entity))
     }),

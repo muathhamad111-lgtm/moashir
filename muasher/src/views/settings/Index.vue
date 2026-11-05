@@ -5,6 +5,7 @@ import { RouterLink } from 'vue-router'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { usePermissions } from '@/composables/usePermissions'
 import { accessFor } from '@/constants/routeAccess'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 const { canAccess } = usePermissions()
@@ -13,97 +14,103 @@ const sections = computed(() => [
   {
     key: 'general',
     to: ROUTE_NAMES.ADMIN_SETTINGS_GENERAL,
-    icon: 'fa-solid fa-sliders',
+    icon: 'gear',
     group: 'platform',
   },
   {
     key: 'branding',
     to: ROUTE_NAMES.ADMIN_BRANDING,
-    icon: 'fa-solid fa-palette',
+    icon: 'palette',
     group: 'platform',
   },
   {
-    key: 'otp',
-    to: ROUTE_NAMES.ADMIN_SETTINGS_OTP,
-    icon: 'fa-solid fa-shield-halved',
+    key: 'signIn',
+    to: ROUTE_NAMES.ADMIN_SETTINGS_SIGN_IN,
+    icon: 'shield-info',
     group: 'platform',
   },
   {
     key: 'assessment',
     to: ROUTE_NAMES.ADMIN_SETTINGS_ASSESSMENT,
-    icon: 'fa-solid fa-list-check',
+    icon: 'list-check',
     group: 'platform',
   },
   {
     key: 'finance',
     to: ROUTE_NAMES.ADMIN_SETTINGS_FINANCE,
-    icon: 'fa-solid fa-coins',
+    icon: 'sar',
     group: 'platform',
   },
   {
     key: 'certificates',
     to: ROUTE_NAMES.ADMIN_SETTINGS_CERTIFICATES,
-    icon: 'fa-solid fa-award',
+    icon: 'award',
     group: 'platform',
   },
   {
     key: 'notifications',
     to: ROUTE_NAMES.ADMIN_SETTINGS_NOTIFICATIONS,
-    icon: 'fa-solid fa-bell',
+    icon: 'bell',
+    group: 'platform',
+  },
+  {
+    key: 'contactMessages',
+    to: ROUTE_NAMES.ADMIN_SETTINGS_CONTACT_MESSAGES,
+    icon: 'envelope',
     group: 'platform',
   },
   {
     key: 'cities',
     to: ROUTE_NAMES.ADMIN_SETTINGS_CITIES,
-    icon: 'fa-solid fa-city',
+    icon: 'building',
     group: 'platform',
   },
   {
     key: 'integrations',
     to: ROUTE_NAMES.ADMIN_SETTINGS_INTEGRATIONS,
-    icon: 'fa-solid fa-plug',
+    icon: 'link',
     group: 'integrations',
   },
   {
     key: 'payment',
     to: ROUTE_NAMES.ADMIN_SETTINGS_PAYMENT,
-    icon: 'fa-solid fa-credit-card',
+    icon: 'credit-card',
     group: 'integrations',
   },
   {
     key: 'sms',
     to: ROUTE_NAMES.ADMIN_SETTINGS_SMS,
-    icon: 'fa-solid fa-comment-sms',
+    icon: 'chat',
     group: 'integrations',
   },
   {
     key: 'email',
     to: ROUTE_NAMES.ADMIN_SETTINGS_EMAIL,
-    icon: 'fa-solid fa-envelope',
+    icon: 'envelope',
     group: 'integrations',
   },
   {
     key: 'abandonedCarts',
     to: ROUTE_NAMES.ADMIN_SETTINGS_ABANDONED_CARTS,
-    icon: 'fa-solid fa-cart-arrow-down',
+    icon: 'shopping-bag',
     group: 'integrations',
   },
   {
     key: 'ai',
     to: ROUTE_NAMES.ADMIN_SETTINGS_AI,
-    icon: 'fa-solid fa-robot',
+    icon: 'robot',
     group: 'integrations',
   },
   {
     key: 'homepage',
     to: ROUTE_NAMES.ADMIN_SETTINGS_HOMEPAGE,
-    icon: 'fa-solid fa-house-chimney',
+    icon: 'home-smile',
     group: 'content',
   },
   {
     key: 'aiKnowledgeBase',
     to: ROUTE_NAMES.ADMIN_SETTINGS_AI_KNOWLEDGE_BASE,
-    icon: 'fa-solid fa-book-open',
+    icon: 'book-open',
     group: 'content',
   },
 ])
@@ -139,7 +146,7 @@ const groups = computed(() =>
         <li v-for="section in group.items" :key="section.key">
           <RouterLink :to="{ name: section.to }" class="settings-hub__card">
             <span class="settings-hub__card-icon">
-              <i :class="section.icon" aria-hidden="true"></i>
+              <AppIcon :name="section.icon" />
             </span>
             <span class="settings-hub__card-body">
               <span class="settings-hub__card-title">
@@ -149,10 +156,7 @@ const groups = computed(() =>
                 {{ t(`settings.hub.sections.${section.key}.desc`) }}
               </span>
             </span>
-            <i
-              class="fa-solid fa-chevron-right u-flip-in-rtl settings-hub__card-arrow"
-              aria-hidden="true"
-            ></i>
+            <AppIcon name="chevron-right" class="settings-hub__card-arrow" />
           </RouterLink>
         </li>
       </ul>

@@ -2,104 +2,51 @@
 import { computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { useHead } from '@unhead/vue'
 import { useKpiDetail } from '@/composables/useKpiDetail'
-import { KPI_STATUS_VARIANTS } from '@/constants/kpiCategories'
+import { useKpiFacts } from '@/composables/useKpiFacts'
+import { usePageSeo } from '@/composables/usePageSeo'
+import { DEFAULT_KPI_COLOR, KPI_COLOR_TOKENS, KPI_STATUS_VARIANTS } from '@/constants/kpis'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import { contentImageUrl } from '@/utils/contentImage'
+import { formatKpiValue, kpiProgress } from '@/utils/kpiNumber'
 import Badge from '@/components/ui/Badge.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import IllustrationSlot from '@/components/public/IllustrationSlot.vue'
+import KpiHistoryTable from '@/components/kpis/KpiHistoryTable.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t, n } = useI18n()
 const route = useRoute()
 const router = useRouter()
-
 const { kpi, status, load, localized } = useKpiDetail()
+const facts = useKpiFacts(kpi, localized)
 
-function fmt(value) {
-  if (value === null || value === undefined || value === '') return ''
-  if (typeof value !== 'number') return value
-  const formatted = n(value, 'default')
-  return formatted === '' ? String(value) : formatted
-}
-
-const heroName = computed(() => (kpi.value ? localized(kpi.value.name) : ''))
-
-useHead({
-  title: () =>
-    heroName.value ? `${heroName.value} — ${t('kpis.page.title')}` : t('kpis.detail.metaTitle'),
-  meta: [
-    {
-      name: 'description',
-      content: () => (kpi.value ? localized(kpi.value.description) : t('kpis.page.subtitle')),
-    },
-  ],
-})
-
-const statusVariant = computed(() =>
-  kpi.value ? (KPI_STATUS_VARIANTS[kpi.value.status] ?? 'muted') : 'muted',
+const name = computed(() => (kpi.value ? localized(kpi.value.name) : ''))
+const unit = computed(() => localized(kpi.value?.unit))
+const color = computed(() =>
+  KPI_COLOR_TOKENS.includes(kpi.value?.cardColor) ? kpi.value.cardColor : DEFAULT_KPI_COLOR,
 )
-
+const statusVariant = computed(() => KPI_STATUS_VARIANTS[kpi.value?.status] ?? 'muted')
 const statusLabel = computed(() =>
   kpi.value?.status ? t(`kpis.statuses.${kpi.value.status}`) : '',
 )
-
-const categoryLabel = computed(() =>
-  kpi.value?.category ? t(`kpis.categories.${kpi.value.category}`) : '',
+const progress = computed(() => kpiProgress(kpi.value?.value, kpi.value?.target))
+const description = computed(
+  () => localized(kpi.value?.fullDescription) || localized(kpi.value?.shortDescription),
 )
+const image = computed(() => contentImageUrl(kpi.value?.image))
 
-const progress = computed(() => {
-  if (!kpi.value) return null
-  const target = Number(kpi.value.target) || 0
-  const value = Number(kpi.value.value) || 0
-  if (!target) return null
-  return Math.min(100, Math.round((value / target) * 100))
-})
-
-const facts = computed(() => {
-  if (!kpi.value) return []
-  const unit = localized(kpi.value.unit)
-  const entries = []
-  if (kpi.value.target) {
-    entries.push({ key: 'target', label: t('kpis.detail.target'), value: `${fmt(kpi.value.target)} ${unit}` })
-  }
-  if (kpi.value.baseline !== null && kpi.value.baseline !== undefined) {
-    entries.push({
-      key: 'baseline',
-      label: t('kpis.detail.baseline'),
-      value: `${fmt(kpi.value.baseline)} ${unit}`,
-    })
-  }
-  if (categoryLabel.value) {
-    entries.push({ key: 'category', label: t('kpis.detail.category'), value: categoryLabel.value })
-  }
-  if (kpi.value.lastUpdate) {
-    entries.push({ key: 'lastUpdate', label: t('kpis.detail.lastUpdate'), value: kpi.value.lastUpdate })
-  }
-  if (localized(kpi.value.owner)) {
-    entries.push({ key: 'owner', label: t('kpis.detail.owner'), value: localized(kpi.value.owner) })
-  }
-  if (localized(kpi.value.dataSource)) {
-    entries.push({
-      key: 'dataSource',
-      label: t('kpis.detail.dataSource'),
-      value: localized(kpi.value.dataSource),
-    })
-  }
-  return entries
+usePageSeo({
+  title: () =>
+    kpi.value ? localized(kpi.value.seo?.title) || name.value : t('kpis.detail.metaTitle'),
+  description: () => localized(kpi.value?.seo?.description),
 })
 
 function goToList() {
   router.push({ name: ROUTE_NAMES.PUBLIC_KPIS })
-}
-
-function openExternal() {
-  if (kpi.value?.externalLink) {
-    window.open(kpi.value.externalLink, '_blank', 'noopener')
-  }
 }
 
 function reload() {
@@ -107,7 +54,6 @@ function reload() {
 }
 
 onMounted(reload)
-
 watch(
   () => route.params.slug,
   (slug, previous) => {
@@ -119,18 +65,20 @@ watch(
 <template>
   <div class="kpi-detail">
     <div class="kpi-detail__container">
-      <nav class="kpi-detail__breadcrumb" :aria-label="$t('kpis.detail.breadcrumbLabel')">
+      <nav class="kpi-detail__breadcrumb" :aria-label="t('kpis.detail.breadcrumbLabel')">
         <RouterLink :to="{ name: ROUTE_NAMES.PUBLIC_KPIS }" class="kpi-detail__crumb">
-          <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
-          {{ $t('kpis.page.title') }}
+          <AppIcon name="chart-line" />
+          {{ t('kpis.page.title') }}
         </RouterLink>
-        <span v-if="heroName" class="kpi-detail__crumb-sep" aria-hidden="true">/</span>
-        <span v-if="heroName" class="kpi-detail__crumb kpi-detail__crumb--current" aria-current="page">
-          {{ heroName }}
-        </span>
+        <template v-if="name">
+          <span class="kpi-detail__crumb-sep" aria-hidden="true">/</span>
+          <span class="kpi-detail__crumb kpi-detail__crumb--current" aria-current="page">{{
+            name
+          }}</span>
+        </template>
       </nav>
 
-      <div v-if="status === 'loading'" class="kpi-detail__skeleton" aria-hidden="true">
+      <div v-if="status === 'loading'" class="kpi-detail__skeleton" aria-busy="true">
         <Skeleton variant="block" />
         <div class="kpi-detail__skeleton-grid">
           <Skeleton v-for="i in 4" :key="i" variant="block" />
@@ -139,64 +87,61 @@ watch(
 
       <ErrorState
         v-else-if="status === 'error'"
-        :message="$t('kpis.detail.error')"
+        :message="t('kpis.detail.error')"
         @retry="reload"
       />
 
       <EmptyState
         v-else-if="status === 'not-found'"
         branded
-        :title="$t('kpis.detail.notFound.title')"
-        :message="$t('kpis.detail.notFound.message')"
-        :illustration-alt="$t('kpis.detail.notFound.title')"
+        :title="t('kpis.detail.notFound.title')"
+        :message="t('kpis.detail.notFound.message')"
+        :illustration-alt="t('kpis.detail.notFound.title')"
       >
         <template #action>
-          <BaseButton variant="primary" icon="fa-solid fa-arrow-right-long" @click="goToList">
-            {{ $t('kpis.detail.backToList') }}
+          <BaseButton
+            variant="primary"
+            icon="arrow-left"
+            @click="goToList"
+          >
+            {{ t('kpis.detail.backToList') }}
           </BaseButton>
         </template>
       </EmptyState>
 
-      <article v-else-if="kpi" class="kpi-detail__body" :class="`kpi-detail__body--${kpi.cardColor || kpi.color || 'primary'}`">
+      <article v-else-if="kpi" class="kpi-detail__body" :class="`kpi-detail__body--${color}`">
         <div class="kpi-detail__main">
           <header class="kpi-detail__header">
             <span class="kpi-detail__icon" aria-hidden="true">
-              <i :class="kpi.icon || 'fa-solid fa-chart-column'"></i>
+              <AppIcon :name="kpi.icon || 'chart-bar'" />
             </span>
             <div class="kpi-detail__heading">
-              <Badge v-if="statusLabel" :variant="statusVariant" class="kpi-detail__status">
-                {{ statusLabel }}
-              </Badge>
-              <h1 class="kpi-detail__title">{{ heroName }}</h1>
+              <Badge v-if="statusLabel" :variant="statusVariant" class="kpi-detail__status">{{
+                statusLabel
+              }}</Badge>
+              <h1 class="kpi-detail__title">{{ name }}</h1>
             </div>
           </header>
 
-          <p v-if="localized(kpi.description)" class="kpi-detail__description">
-            {{ localized(kpi.description) }}
-          </p>
+          <p v-if="description" class="kpi-detail__description">{{ description }}</p>
 
           <div class="kpi-detail__value-block">
             <p class="kpi-detail__value">
-              <span class="kpi-detail__number">{{ fmt(kpi.value) }}</span>
-              <span class="kpi-detail__unit">{{ localized(kpi.unit) }}</span>
+              <span class="kpi-detail__number">{{ formatKpiValue(n, kpi.value) }}</span>
+              <span class="kpi-detail__unit">{{ unit }}</span>
             </p>
             <div v-if="progress !== null" class="kpi-detail__progress">
-              <div
+              <progress
                 class="kpi-detail__meter"
-                role="progressbar"
-                :aria-valuenow="progress"
-                aria-valuemin="0"
-                aria-valuemax="100"
-                :aria-label="$t('kpis.detail.progressLabel')"
+                :value="progress"
+                max="100"
+                :aria-label="t('kpis.detail.progressLabel')"
               >
-                <span
-                  class="kpi-detail__meter-fill"
-                  :style="{ '--kpi-progress': `${progress}%` }"
-                ></span>
-              </div>
-              <span class="kpi-detail__progress-label">
-                {{ $t('kpis.detail.progressValue', { value: fmt(progress) }) }}
-              </span>
+                {{ progress }}
+              </progress>
+              <span class="kpi-detail__progress-label">{{
+                t('kpis.detail.progressValue', { value: n(progress, 'id') })
+              }}</span>
             </div>
           </div>
 
@@ -208,34 +153,49 @@ watch(
           </dl>
 
           <section v-if="localized(kpi.calcMethod)" class="kpi-detail__section">
-            <h2 class="kpi-detail__section-title">{{ $t('kpis.detail.calcMethod') }}</h2>
+            <h2 class="kpi-detail__section-title">{{ t('kpis.detail.calcMethod') }}</h2>
             <p class="kpi-detail__section-text">{{ localized(kpi.calcMethod) }}</p>
           </section>
 
           <section v-if="localized(kpi.notes)" class="kpi-detail__section">
-            <h2 class="kpi-detail__section-title">{{ $t('kpis.detail.notes') }}</h2>
+            <h2 class="kpi-detail__section-title">{{ t('kpis.detail.notes') }}</h2>
             <p class="kpi-detail__section-text">{{ localized(kpi.notes) }}</p>
           </section>
 
+          <section v-if="kpi.history?.length" class="kpi-detail__section">
+            <KpiHistoryTable
+              :history="kpi.history"
+              :unit="unit"
+              :caption="t('kpis.detail.history')"
+            />
+          </section>
+
           <div class="kpi-detail__actions">
-            <BaseButton variant="secondary" icon="fa-solid fa-arrow-right-long" @click="goToList">
-              {{ $t('kpis.detail.backToList') }}
-            </BaseButton>
             <BaseButton
-              v-if="kpi.externalLink"
-              variant="primary"
-              icon="fa-solid fa-arrow-up-right-from-square"
-              @click="openExternal"
+              variant="secondary"
+              icon="arrow-left"
+              @click="goToList"
             >
-              {{ $t('kpis.detail.externalLink') }}
+              {{ t('kpis.detail.backToList') }}
             </BaseButton>
+            <a
+              v-if="kpi.externalLink"
+              class="btn btn--primary btn--md"
+              :href="kpi.externalLink"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <AppIcon name="link" />
+              {{ t('kpis.detail.externalLink') }}
+            </a>
           </div>
         </div>
 
         <aside class="kpi-detail__aside">
           <IllustrationSlot
             class="kpi-detail__illustration"
-            :alt="heroName"
+            :src="image || null"
+            :alt="name"
             variant="default"
           />
         </aside>

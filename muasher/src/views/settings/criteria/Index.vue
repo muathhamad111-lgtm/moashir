@@ -154,10 +154,10 @@ function onAction(key, row) {
       v-if="versions.status.value === 'empty' && status !== 'loading'"
       :title="t('criteria.index.noVersionsTitle')"
       :message="t('criteria.index.noVersionsMessage')"
-      icon="fa-solid fa-sitemap"
+      icon="hierarchy"
     >
       <template v-if="access.canManage.value" #action>
-        <BaseButton variant="primary" icon="fa-solid fa-plus" @click="startFirstDraft">{{
+        <BaseButton variant="primary" icon="plus" @click="startFirstDraft">{{
           t('criteria.version.createEmptyDraft')
         }}</BaseButton>
       </template>
@@ -177,7 +177,7 @@ function onAction(key, row) {
           />
         </template>
         <template v-if="access.canEditTree.value" #actions>
-          <BaseButton variant="primary" size="sm" icon="fa-solid fa-plus" @click="openForm()">{{
+          <BaseButton variant="primary" size="sm" icon="plus" @click="openForm()">{{
             t('criteria.index.add')
           }}</BaseButton>
         </template>

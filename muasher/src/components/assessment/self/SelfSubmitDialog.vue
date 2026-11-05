@@ -2,6 +2,7 @@
 import { useI18n } from 'vue-i18n'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   modelValue: { type: Boolean, required: true },
@@ -29,19 +30,19 @@ const { t } = useI18n()
       </p>
       <ul class="self-submit__facts">
         <li class="self-submit__fact">
-          <i class="fa-solid fa-list-check" aria-hidden="true"></i>
+          <AppIcon name="list-check" />
           {{ t('assessment.self.confirm.allScored', { count: itemsCount }, itemsCount) }}
         </li>
         <li v-if="dirty" class="self-submit__fact">
-          <i class="fa-regular fa-floppy-disk" aria-hidden="true"></i>
+          <AppIcon name="save" />
           {{ t('assessment.self.confirm.unsavedIncluded') }}
         </li>
         <li class="self-submit__fact">
-          <i class="fa-solid fa-calculator" aria-hidden="true"></i>
+          <AppIcon name="calculator" />
           {{ t('assessment.self.confirm.immediateResult') }}
         </li>
         <li class="self-submit__fact">
-          <i class="fa-solid fa-lock" aria-hidden="true"></i>
+          <AppIcon name="lock" />
           {{ t('assessment.self.confirm.finalNote') }}
         </li>
       </ul>
@@ -54,12 +55,7 @@ const { t } = useI18n()
       >
         {{ t('actions.cancel') }}
       </BaseButton>
-      <BaseButton
-        variant="primary"
-        icon="fa-solid fa-paper-plane"
-        :loading="submitting"
-        @click="emit('confirm')"
-      >
+      <BaseButton variant="primary" icon="send" :loading="submitting" @click="emit('confirm')">
         {{ t('assessment.self.confirm.confirm') }}
       </BaseButton>
     </template>

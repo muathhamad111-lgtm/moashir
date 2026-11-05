@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { formatNumber } from '@/utils/formatNumber'
 import { formatDate } from '@/utils/datetime'
 import { CHECK_DETAILS, CONNECTION_CHECKS, CONNECTION_INFO_KEYS } from '@/constants/integrations'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   result: { type: Object, required: true },
@@ -70,10 +71,7 @@ const latency = computed(() =>
     :role="passed ? 'status' : undefined"
   >
     <p class="test-result__summary">
-      <i
-        :class="passed ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark'"
-        aria-hidden="true"
-      ></i>
+      <AppIcon :name="passed ? 'check-circle' : 'x'" />
       {{ t(passed ? 'integrations.feedback.testPassed' : 'integrations.feedback.testFailed') }}
       <span v-if="latency" class="test-result__latency">{{ latency }}</span>
     </p>
@@ -84,10 +82,7 @@ const latency = computed(() =>
         class="test-result__check"
         :class="{ 'test-result__check--warn': !item.ok }"
       >
-        <i
-          :class="item.ok ? 'fa-solid fa-check' : 'fa-solid fa-triangle-exclamation'"
-          aria-hidden="true"
-        ></i>
+        <AppIcon :name="item.ok ? 'check' : 'warning-triangle'" />
         <span>{{ item.label }}</span>
         <span class="test-result__check-state">{{
           t(item.ok ? 'integrations.feedback.checkOk' : 'integrations.feedback.checkFailed')

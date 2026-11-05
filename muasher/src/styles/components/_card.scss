@@ -1,4 +1,5 @@
 .card {
+  --field-label-backdrop: var(--theme-surface-solid);
   background-color: var(--theme-surface);
   border: var(--border-width) solid var(--theme-border);
   border-radius: var(--radius-xl);

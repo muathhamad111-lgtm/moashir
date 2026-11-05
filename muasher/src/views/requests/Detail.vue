@@ -11,7 +11,9 @@ import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import AssessmentTimeline from '@/components/assessment/AssessmentTimeline.vue'
 import CompletionRequestCard from '@/components/accredited/CompletionRequestCard.vue'
 import RequestFacts from '@/components/requests/RequestFacts.vue'
+import PathBadge from '@/components/ui/PathBadge.vue'
 import RequestActionsCard from '@/components/requests/RequestActionsCard.vue'
+import RequestCertificateCard from '@/components/requests/RequestCertificateCard.vue'
 import AssignmentHistoryList from '@/components/requests/AssignmentHistoryList.vue'
 import AssignAssessorDialog from '@/components/requests/AssignAssessorDialog.vue'
 import ForceTransitionDialog from '@/components/requests/ForceTransitionDialog.vue'
@@ -24,10 +26,11 @@ import { useRequestDetail } from '@/composables/useRequestDetail'
 import { useEvidenceBundleRequest } from '@/composables/useEvidenceBundle'
 import { usePermissions } from '@/composables/usePermissions'
 import { assessmentOverridesService } from '@/services/assessmentOverridesService'
-import { ACCREDITED_LIMITS } from '@/constants/accredited'
+import { ACCREDITED_LIMITS, ACCREDITED_STATUSES } from '@/constants/accredited'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -55,6 +58,10 @@ const reopenOpen = ref(false)
 const forceOpen = ref(false)
 
 useHead({ title: () => t('requests.detail.title') })
+
+const ACCREDITED_PATH = 'accredited'
+const isAccredited = computed(() => detail.value?.path === ACCREDITED_PATH)
+const isCompleted = computed(() => detail.value?.status === ACCREDITED_STATUSES.COMPLETED)
 
 const backRoute = computed(() =>
   can(PERMISSIONS.REQUESTS_QUEUE_VIEW) ? ROUTE_NAMES.REQUESTS_INDEX : ROUTE_NAMES.REQUESTS_ASSIGNED,
@@ -90,12 +97,13 @@ onMounted(load)
   <section class="request-detail">
     <header class="request-detail__header">
       <RouterLink class="request-detail__back" :to="{ name: backRoute }">
-        <i class="fa-solid fa-arrow-left-long u-flip-in-rtl" aria-hidden="true"></i>
+        <AppIcon name="arrow-left" />
         {{ t('requests.detail.back') }}
       </RouterLink>
       <h1 class="request-detail__title">{{ t('requests.detail.title') }}</h1>
       <p v-if="detail" class="request-detail__number">
         <bdi dir="ltr">{{ detail.number }}</bdi>
+        <PathBadge v-if="detail.path" :path="detail.path" :label="detail.pathLabel" />
       </p>
     </header>
     <div v-if="status === 'loading'" class="request-detail__loading" aria-busy="true">
@@ -105,7 +113,7 @@ onMounted(load)
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
     <EmptyState
       v-else-if="status === 'missing'"
-      icon="fa-regular fa-folder-open"
+      icon="folder"
       :title="t('requests.detail.missingTitle')"
       :message="t('requests.detail.missingMessage')"
     />
@@ -149,12 +157,20 @@ onMounted(load)
           @return="openReturn"
           @withdraw="withdrawOpen = true"
         />
+        <RequestCertificateCard
+          v-if="isAccredited"
+          :key="`${detail.id}-${detail.status}`"
+          :request-id="detail.id"
+          :completed="isCompleted"
+        />
       </aside>
       <AssignAssessorDialog
         v-model="assignOpen"
         :request-id="detail.id"
         :mode="assignMode"
         :entity-name="localizedText(detail.entity?.name, locale)"
+        :path="detail.path ?? ''"
+        :path-label="detail.pathLabel"
         @done="apply"
       />
       <ReasonDialog

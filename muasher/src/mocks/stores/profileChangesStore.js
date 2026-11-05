@@ -15,6 +15,10 @@ const TRACKED_FIELDS = Object.freeze({
   employees_count: 'employeesCount',
   annual_beneficiaries_count: 'annualBeneficiariesCount',
   has_strategic_plan: 'hasStrategicPlan',
+  unified_number: 'unifiedNumber',
+  license_number: 'licenseNumber',
+  founded_on: 'foundedOn',
+  website_url: 'websiteUrl',
 })
 
 const PLACE_FIELDS = { region_id: findRegion, city_id: findCity }

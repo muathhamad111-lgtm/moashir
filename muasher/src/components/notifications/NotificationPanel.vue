@@ -6,8 +6,6 @@ import Skeleton from '@/components/feedback/Skeleton.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import NotificationItem from './NotificationItem.vue'
-import DemoDataNotice from '@/components/ui/DemoDataNotice.vue'
-import { MOCK_MODULES } from '@/constants/mockModules'
 
 defineProps({
   items: { type: Array, default: () => [] },
@@ -18,8 +16,6 @@ defineProps({
 const emit = defineEmits(['open', 'mark-all-read', 'retry'])
 const { t } = useI18n()
 const notificationsRoute = { name: ROUTE_NAMES.NOTIFICATIONS_INDEX }
-
-const DEMO_MODULES = [MOCK_MODULES.NOTIFICATIONS]
 </script>
 
 <template>
@@ -30,14 +26,13 @@ const DEMO_MODULES = [MOCK_MODULES.NOTIFICATIONS]
         {{ t('components.notifications.markAllRead') }}
       </BaseButton>
     </header>
-    <DemoDataNotice class="notification-panel__demo" scope="section" :modules="DEMO_MODULES" />
     <div v-if="status === 'loading'" class="notification-panel__state">
       <Skeleton variant="text" :count="4" />
     </div>
     <ErrorState v-else-if="status === 'error'" @retry="emit('retry')" />
     <EmptyState
       v-else-if="status === 'empty'"
-      icon="fa-regular fa-bell"
+      icon="bell"
       :title="t('components.notifications.emptyTitle')"
       :message="t('components.notifications.emptyMessage')"
     />

@@ -1,115 +1,89 @@
-import { computed, ref } from 'vue'
-import { useKpis } from '@/composables/useKpis'
-import { KPI_CATEGORIES } from '@/constants/kpiCategories'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { kpisService } from '@/services/kpisService'
+import { KPI_PAGE_SIZE, KPI_SEARCH_DEBOUNCE_MS } from '@/constants/kpis'
+import { localizedText } from '@/utils/localizedText'
+import { useKpiFilters } from './useKpiFilters'
+import { useKpiReferences } from './useKpiReferences'
 
-const PAGE_SIZE = 9
+export function useKpisCatalog({ pageSize = KPI_PAGE_SIZE.public } = {}) {
+  const { locale } = useI18n()
+  const filtering = useKpiFilters()
+  const references = useKpiReferences()
+  const kpis = ref([])
+  const status = ref('loading')
+  const loadingMore = ref(false)
+  const paging = ref({ page: 1, lastPage: 1, total: 0 })
+  let debounce = null
+  let requestId = 0
 
-export const KPI_SORTS = ['order', 'name', 'newest', 'value-desc', 'value-asc']
+  const hasMore = computed(() => paging.value.page < paging.value.lastPage)
 
-export function useKpisCatalog({ pageSize = PAGE_SIZE } = {}) {
-  const { kpis, status, load, localized } = useKpis()
-
-  const category = ref('all')
-  const statusFilter = ref('all')
-  const search = ref('')
-  const sort = ref('order')
-  const visibleCount = ref(pageSize)
-
-  const availableCategories = computed(() => {
-    const present = new Set(kpis.value.map((kpi) => kpi.category))
-    return KPI_CATEGORIES.filter((entry) => present.has(entry.key))
-  })
-
-  function matchesSearch(kpi) {
-    const term = search.value.trim().toLowerCase()
-    if (!term) return true
-    const name = localized(kpi.name)?.toLowerCase() ?? ''
-    return name.includes(term)
+  function localized(value) {
+    return localizedText(value, locale.value)
   }
 
-  const filtered = computed(() => {
-    let list = kpis.value.filter((kpi) => {
-      if (category.value !== 'all' && kpi.category !== category.value) return false
-      if (statusFilter.value !== 'all' && kpi.status !== statusFilter.value) return false
-      return matchesSearch(kpi)
-    })
+  async function fetchPage(page) {
+    const envelope = await kpisService.list({ ...filtering.params.value, page, perPage: pageSize })
+    paging.value = { page, lastPage: 1, total: 0, ...envelope.meta?.pagination }
+    return envelope.data ?? []
+  }
 
-    list = [...list]
-    switch (sort.value) {
-      case 'name':
-        list.sort((a, b) => localized(a.name).localeCompare(localized(b.name)))
-        break
-      case 'newest':
-        list.sort((a, b) => String(b.lastUpdate ?? '').localeCompare(String(a.lastUpdate ?? '')))
-        break
-      case 'value-desc':
-        list.sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0))
-        break
-      case 'value-asc':
-        list.sort((a, b) => (Number(a.value) || 0) - (Number(b.value) || 0))
-        break
-      default:
-        list.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+  async function load() {
+    const current = ++requestId
+    status.value = 'loading'
+    try {
+      const items = await fetchPage(1)
+      if (current !== requestId) return
+      kpis.value = items
+      status.value = items.length || filtering.isFiltering.value ? 'success' : 'empty'
+    } catch {
+      if (current === requestId) status.value = 'error'
     }
-    return list
-  })
-
-  const visible = computed(() => filtered.value.slice(0, visibleCount.value))
-  const hasMore = computed(() => visibleCount.value < filtered.value.length)
-  const isFiltering = computed(
-    () =>
-      category.value !== 'all' ||
-      statusFilter.value !== 'all' ||
-      search.value.trim() !== '' ||
-      sort.value !== 'order',
-  )
-
-  function resetPaging() {
-    visibleCount.value = pageSize
   }
 
-  function setCategory(value) {
-    category.value = value
-    resetPaging()
+  async function showMore() {
+    if (!hasMore.value || loadingMore.value || status.value !== 'success') return
+    const current = requestId
+    loadingMore.value = true
+    try {
+      const items = await fetchPage(paging.value.page + 1)
+      if (current === requestId) kpis.value = [...kpis.value, ...items]
+    } catch {
+      if (current === requestId) status.value = 'error'
+    } finally {
+      loadingMore.value = false
+    }
   }
 
-  function setStatus(value) {
-    statusFilter.value = value
-    resetPaging()
+  function loadNow() {
+    clearTimeout(debounce)
+    load()
   }
 
-  function setSearch(value) {
-    search.value = value
-    resetPaging()
+  function scheduleLoad() {
+    clearTimeout(debounce)
+    debounce = setTimeout(load, KPI_SEARCH_DEBOUNCE_MS)
   }
 
-  function setSort(value) {
-    sort.value = value
-    resetPaging()
-  }
-
-  function showMore() {
-    visibleCount.value += pageSize
-  }
+  const { filters } = filtering
+  const params = filtering.params
+  watch([() => filters.category, () => filters.status, () => filters.year, () => filters.type, () => filters.sort], loadNow)
+  watch([() => params.value.search, () => params.value['filter[owner]']], scheduleLoad)
+  onMounted(load)
+  onBeforeUnmount(() => clearTimeout(debounce))
 
   return {
     kpis,
     status,
-    load,
-    localized,
-    category,
-    statusFilter,
-    search,
-    sort,
-    availableCategories,
-    filtered,
-    visible,
+    loadingMore,
+    paging,
     hasMore,
-    isFiltering,
-    setCategory,
-    setStatus,
-    setSearch,
-    setSort,
+    localized,
+    load,
     showMore,
+    ...filtering,
+    categories: references.categories,
+    types: references.types,
   }
 }

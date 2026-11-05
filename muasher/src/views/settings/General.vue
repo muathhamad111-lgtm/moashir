@@ -10,6 +10,7 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseFileUpload from '@/components/form/BaseFileUpload.vue'
 import { useSettingsSection } from '@/composables/useSettingsSection'
 import { settingsService } from '@/services/settingsService'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 
@@ -88,7 +89,7 @@ function onSave() {
       <fieldset class="settings-form__group">
         <legend class="settings-form__legend">{{ t('settings.general.branding') }}</legend>
         <p class="settings-form__note">
-          <i class="fa-solid fa-palette" aria-hidden="true"></i>
+          <AppIcon name="palette" />
           {{ t('settings.general.brandingMoved') }}
           <RouterLink :to="{ name: ROUTE_NAMES.ADMIN_BRANDING }">{{
             t('nav.branding')
@@ -141,12 +142,7 @@ function onSave() {
     </div>
 
     <template #actions>
-      <BaseButton
-        variant="primary"
-        :loading="saving"
-        icon="fa-solid fa-floppy-disk"
-        @click="onSave"
-      >
+      <BaseButton variant="primary" :loading="saving" icon="save" @click="onSave">
         {{ t('actions.save') }}
       </BaseButton>
     </template>

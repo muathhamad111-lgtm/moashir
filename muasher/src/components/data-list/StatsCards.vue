@@ -1,5 +1,6 @@
 <script setup>
 import Skeleton from '@/components/feedback/Skeleton.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   stats: { type: Array, default: () => [] },
@@ -19,7 +20,7 @@ defineProps({
     <template v-else>
       <div v-for="stat in stats" :key="stat.id" class="stats-card">
         <span v-if="stat.icon" class="stats-card__icon" aria-hidden="true">
-          <i :class="stat.icon"></i>
+          <AppIcon :name="stat.icon" />
         </span>
         <span class="stats-card__value">{{ stat.value }}</span>
         <span class="stats-card__label">{{ stat.label }}</span>

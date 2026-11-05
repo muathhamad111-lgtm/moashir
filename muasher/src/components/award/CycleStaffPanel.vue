@@ -39,7 +39,7 @@ onMounted(() => {
       <BaseButton
         v-if="editable"
         variant="secondary"
-        icon="fa-solid fa-user-check"
+        icon="user-check"
         :loading="staff.saving.value === 'members'"
         @click="staff.saveMembers"
       >
@@ -61,7 +61,7 @@ onMounted(() => {
       <BaseButton
         v-if="editable"
         variant="secondary"
-        icon="fa-solid fa-user-check"
+        icon="user-check"
         :loading="staff.saving.value === 'assessors'"
         @click="staff.saveInitialAssessors"
       >

@@ -40,7 +40,7 @@ describe('AssessmentNotice', () => {
     expect(live.find('.assessment-notice__title').text()).toBe('Criteria update in progress')
     const note = mountWith(AssessmentNotice, { variant: 'frozen', title: 'Frozen' })
     expect(note.attributes('role')).toBe('note')
-    expect(note.find('.fa-snowflake').exists()).toBe(true)
+    expect(note.find('[data-icon="snowflake"]').exists()).toBe(true)
   })
 })
 

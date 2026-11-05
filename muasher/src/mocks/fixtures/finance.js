@@ -1,3 +1,4 @@
+import { FIXTURE_ENTITY_LOGO_FILE } from './entityLogos'
 export const FINANCE_YEAR = 2026
 
 export const financeSettingsSeed = {
@@ -378,6 +379,7 @@ export function storedFilesSeed() {
       scanStatus: 'clean',
       createdAt: '2026-09-02T09:19:00Z',
     },
+    { ...FIXTURE_ENTITY_LOGO_FILE },
   ]
 }
 

@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Card from '@/components/ui/Card.vue'
+import PathBadge from '@/components/ui/PathBadge.vue'
 import { localizedText } from '@/utils/localizedText'
 
 const props = defineProps({
@@ -47,7 +48,7 @@ const facts = computed(() =>
       <p class="review-entity__context-title">{{ t('review.contextTitle') }}</p>
       <ul class="review-entity__context-list">
         <li v-for="item in context" :key="item.id" class="review-entity__context-item">
-          <span>{{ t(`requests.paths.${item.path}`) }}</span>
+          <PathBadge v-if="item.path" :path="item.path" :label="item.pathLabel" compact />
           <bdi dir="ltr">{{ item.number }}</bdi>
           <span v-if="item.percent" class="u-ltr">{{ item.percent }}%</span>
         </li>

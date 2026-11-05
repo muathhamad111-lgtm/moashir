@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import Card from '@/components/ui/Card.vue'
 import Badge from '@/components/ui/Badge.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   gap: { type: Object, required: true },
@@ -78,7 +79,7 @@ const priorityVariant = computed(() => PRIORITY_VARIANTS[props.gap.priority] ?? 
     </p>
 
     <div v-if="gap.consultantNote" class="gap-card__note">
-      <i class="fa-solid fa-user-pen gap-card__note-icon" aria-hidden="true"></i>
+      <AppIcon name="pen" class="gap-card__note-icon" />
       <div>
         <p class="gap-card__note-label">{{ $t('bag.gap.consultantNote') }}</p>
         <p class="gap-card__note-body">{{ localized(gap.consultantNote) }}</p>
@@ -86,7 +87,7 @@ const priorityVariant = computed(() => PRIORITY_VARIANTS[props.gap.priority] ?? 
     </div>
 
     <div v-if="gap.recommendedAction" class="gap-card__action">
-      <i class="fa-solid fa-lightbulb gap-card__action-icon" aria-hidden="true"></i>
+      <AppIcon name="lightbulb" class="gap-card__action-icon" />
       <div>
         <p class="gap-card__action-label">{{ $t('bag.gap.recommendedAction') }}</p>
         <p class="gap-card__action-body">{{ localized(gap.recommendedAction) }}</p>
@@ -97,7 +98,7 @@ const priorityVariant = computed(() => PRIORITY_VARIANTS[props.gap.priority] ?? 
       <h4 class="gap-card__section-title">{{ $t('bag.gap.unmetPoints') }}</h4>
       <ul class="gap-card__points">
         <li v-for="point in gap.unmetPoints" :key="point.id" class="gap-card__point">
-          <i class="fa-solid fa-circle-exclamation gap-card__point-icon" aria-hidden="true"></i>
+          <AppIcon name="warning-triangle" class="gap-card__point-icon" />
           <span>{{ localized(point.description) }}</span>
         </li>
       </ul>
@@ -107,7 +108,7 @@ const priorityVariant = computed(() => PRIORITY_VARIANTS[props.gap.priority] ?? 
       <h4 class="gap-card__section-title">{{ $t('bag.gap.helperFiles') }}</h4>
       <ul class="gap-card__files">
         <li v-for="file in gap.helperFiles" :key="file.id" class="gap-card__file">
-          <i class="fa-solid fa-file-arrow-down gap-card__file-icon" aria-hidden="true"></i>
+          <AppIcon name="download" class="gap-card__file-icon" />
           <a
             v-if="downloadable"
             class="gap-card__file-link"

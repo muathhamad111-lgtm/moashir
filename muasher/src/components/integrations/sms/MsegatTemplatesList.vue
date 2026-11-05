@@ -22,7 +22,7 @@ const { t } = useI18n()
       <BaseButton
         variant="secondary"
         size="sm"
-        icon="fa-solid fa-file-import"
+        icon="download"
         :loading="action.state.value === PROVIDER_ACTION_STATES.PENDING"
         :disabled="disabled"
         @click="action.execute()"

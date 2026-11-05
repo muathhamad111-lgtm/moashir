@@ -17,8 +17,9 @@ function withComposable(locale = 'ar') {
 }
 
 describe('useUsers', () => {
-  it('exposes the 9 canonical role keys in a stable order, never super_admin or a committee assessor role', () => {
-    expect(ROLE_ORDER).toHaveLength(9)
+  it('exposes the 8 staff role keys in a stable order, never entity, super_admin or a committee assessor role', () => {
+    expect(ROLE_ORDER).toHaveLength(8)
+    expect(ROLE_ORDER).not.toContain('entity')
     expect(ROLE_ORDER[0]).toBe('system_admin')
     expect(ROLE_ORDER).toContain('finance_officer')
     expect(ROLE_ORDER).not.toContain('super_admin')
@@ -28,10 +29,17 @@ describe('useUsers', () => {
 
   it('builds one option per role plus placeholders on the filter lists', () => {
     const { roleOptions, roleFilterOptions, statusFilterOptions } = withComposable()
-    expect(roleOptions.value).toHaveLength(9)
-    expect(roleFilterOptions.value).toHaveLength(10)
+    expect(roleOptions.value).toHaveLength(8)
+    expect(roleFilterOptions.value).toHaveLength(9)
     expect(roleFilterOptions.value[0].value).toBe('')
-    expect(statusFilterOptions.value.map((o) => o.value)).toEqual(['', 'active', 'inactive'])
+    expect(statusFilterOptions.value.map((o) => o.value)).toEqual([
+      '',
+      'invited',
+      'active',
+      'locked',
+      'suspended',
+      'expired',
+    ])
   })
 
   it('localizes role labels to the active locale', () => {

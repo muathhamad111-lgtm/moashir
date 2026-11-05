@@ -1,17 +1,19 @@
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { brandingService } from '@/services/brandingService'
 import { useBrandingStore } from '@/stores/branding'
 import { DEFAULT_ACCENT_TOKEN, LOGO_SURFACES } from '@/constants/branding'
-import { accentContrastPairs, passesAllContrast } from '@/utils/brandingContrast'
+import {
+  accentContrastPairs,
+  passesAllContrast,
+  serverContrastPairs,
+} from '@/utils/brandingContrast'
+import { localizedText } from '@/utils/localizedText'
 import { logoForSurface } from './useBackOfficeLogo'
 import { useLogoSelection } from './useLogoSelection'
+import { useSuperAdminReason } from './useSuperAdminReason'
 
-function resolve(value, locale) {
-  if (value === null || value === undefined) return ''
-  if (typeof value === 'string') return value
-  return value[locale] || value.ar || value.en || ''
-}
+const CONTRAST_FAIL = 'contrast_fail'
 
 function bySurface(build) {
   return Object.fromEntries(LOGO_SURFACES.map((surface) => [surface, build(surface)]))
@@ -21,6 +23,7 @@ export function useBrandingEditor({ auto = true } = {}) {
   const { locale } = useI18n()
   const branding = useBrandingStore()
   const logos = bySurface(() => useLogoSelection())
+  const { prompt: reasonPrompt, reasonExtra } = useSuperAdminReason()
 
   const palette = ref([])
   const savedToken = ref(DEFAULT_ACCENT_TOKEN)
@@ -29,6 +32,7 @@ export function useBrandingEditor({ auto = true } = {}) {
   const status = ref('loading')
   const saving = ref(false)
   const resetting = ref(false)
+  const rejectedPairs = ref([])
 
   const busy = computed(() => saving.value || resetting.value)
   const selectedEntry = computed(
@@ -46,12 +50,12 @@ export function useBrandingEditor({ auto = true } = {}) {
   )
   const customLogos = computed(() => bySurface((surface) => Boolean(savedLogos.value[surface])))
 
-  function localized(value) {
-    return resolve(value, locale.value)
-  }
+  watch(draftToken, () => {
+    rejectedPairs.value = []
+  })
 
-  function clearSelections() {
-    LOGO_SURFACES.forEach((surface) => logos[surface].clear())
+  function localized(value) {
+    return localizedText(value, locale.value)
   }
 
   function applyTheme(theme) {
@@ -73,37 +77,45 @@ export function useBrandingEditor({ auto = true } = {}) {
     }
   }
 
-  async function uploadPendingLogos() {
+  async function uploadPendingLogos(reason) {
     for (const surface of LOGO_SURFACES) {
       const file = logos[surface].file.value
-      if (file) await brandingService.uploadLogo(file, surface)
+      if (file) await brandingService.uploadLogo(file, surface, reason)
     }
   }
 
-  async function save() {
-    if (!canSave.value) return false
-    saving.value = true
+  function rememberRejection(error) {
+    if (error?.normalized?.code === CONTRAST_FAIL)
+      rejectedPairs.value = serverContrastPairs(error.normalized.meta?.pairs)
+    throw error
+  }
+
+  async function withReason(flag, work) {
+    const extra = await reasonExtra()
+    if (!extra) return false
+    flag.value = true
     try {
-      await uploadPendingLogos()
-      const { data } = await brandingService.update({ accentToken: draftToken.value })
+      const { data } = await work(extra.reason ?? null)
       applyTheme(data)
-      clearSelections()
+      LOGO_SURFACES.forEach((surface) => logos[surface].clear())
       return true
+    } catch (error) {
+      return rememberRejection(error)
     } finally {
-      saving.value = false
+      flag.value = false
     }
   }
 
-  async function reset() {
-    resetting.value = true
-    try {
-      const { data } = await brandingService.reset()
-      applyTheme(data)
-      clearSelections()
-      return true
-    } finally {
-      resetting.value = false
-    }
+  function save() {
+    if (!canSave.value) return Promise.resolve(false)
+    return withReason(saving, async (reason) => {
+      await uploadPendingLogos(reason)
+      return brandingService.update({ accentToken: draftToken.value, reason })
+    })
+  }
+
+  function reset() {
+    return withReason(resetting, (reason) => brandingService.reset({ reason }))
   }
 
   if (auto) onMounted(load)
@@ -115,6 +127,7 @@ export function useBrandingEditor({ auto = true } = {}) {
     selectedEntry,
     contrastPairs,
     contrastOk,
+    rejectedPairs,
     isDirty,
     canSave,
     busy,
@@ -124,6 +137,7 @@ export function useBrandingEditor({ auto = true } = {}) {
     status,
     saving,
     resetting,
+    reasonPrompt,
     localized,
     load,
     save,

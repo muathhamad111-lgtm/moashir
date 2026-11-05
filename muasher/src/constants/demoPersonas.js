@@ -25,7 +25,7 @@ export const DEMO_PERSONAS = [
   },
   {
     code: 'committee_assessor',
-    labelKey: 'dashboard.boards.committee-assessor',
+    labelKey: 'settings.notifications.catalogue.audiences.committee_assessor',
     home: ROUTE_NAMES.AWARD_COMMITTEE,
   },
   {

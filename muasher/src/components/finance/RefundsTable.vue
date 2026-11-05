@@ -70,7 +70,7 @@ function dayOf(value) {
         <BaseButton
           variant="ghost"
           size="sm"
-          icon="fa-solid fa-file-arrow-down"
+          icon="download"
           :disabled="item.evidence.scanStatus !== SCAN_STATUSES.CLEAN"
           :loading="busy[item.id] === true"
           :aria-label="

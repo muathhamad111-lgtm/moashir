@@ -749,6 +749,19 @@ export const permissionCatalogFixture = [
     grantable: false,
   },
   {
+    key: 'contact.messages.manage',
+    module: 'content',
+    label: { ar: 'إدارة رسائل التواصل', en: 'Manage contact messages' },
+    description: {
+      ar: 'عرض الرسائل الواردة من نموذج التواصل وإسنادها وإضافة الملاحظات الداخلية والرد على المرسلين وإغلاقها أو إعادة فتحها.',
+      en: 'View the messages sent through the contact form, assign them, add internal notes, reply to senders and close or reopen them.',
+    },
+    system: false,
+    lockedToRoles: [],
+    confidential: true,
+    grantable: true,
+  },
+  {
     key: 'ai.kb.manage',
     module: 'ai',
     label: { ar: 'إدارة قاعدة المعرفة', en: 'Manage the knowledge base' },
@@ -1097,6 +1110,7 @@ export const defaultRoleMatrixFixture = {
     'criteria.publish',
     'content.home.manage',
     'content.kpis.manage',
+    'contact.messages.manage',
     'ai.kb.manage',
     'ai.provider.manage',
     'users.view',
@@ -1204,6 +1218,7 @@ export const defaultRoleMatrixFixture = {
     'assessment.criteria.view',
     'content.home.manage',
     'content.kpis.manage',
+    'contact.messages.manage',
     'ai.kb.manage',
   ],
   finance_officer: [

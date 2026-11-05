@@ -117,13 +117,23 @@ describe('AssignmentHistoryList and filters', () => {
     )
   })
 
-  it('offers every queue status including the declined state', () => {
-    const wrapper = render(RequestQueueFilters, {
-      filters: { path: '', cycleId: '', status: '', overdue: '', assessorId: '' },
+  it('offers the statuses of the served path and the cycle filter on the advanced path only', () => {
+    const filters = { path: 'accredited', cycleId: '', status: '', overdue: '', assessorId: '' }
+    const cycles = [{ id: 31, name: { ar: 'دورة الجائزة', en: 'Award cycle' }, year: 2026 }]
+    const accredited = render(RequestQueueFilters, {
+      path: 'accredited',
+      filters,
       sort: '-submitted_at',
-      assessors: [],
+      cycles,
     })
-    expect(wrapper.findAll('.dropdown')).toHaveLength(4)
+    expect(accredited.findAll('.dropdown')).toHaveLength(3)
+    const advanced = render(RequestQueueFilters, {
+      path: 'advanced',
+      filters: { ...filters, path: 'advanced' },
+      sort: '-submitted_at',
+      cycles,
+    })
+    expect(advanced.findAll('.dropdown')).toHaveLength(4)
   })
 })
 

@@ -1,6 +1,7 @@
 import { createI18n } from 'vue-i18n'
 import { DEFAULT_LOCALE, FALLBACK_LOCALE, SUPPORTED_LOCALES } from '@/constants/locales'
 import { readLocaleCookie } from '@/utils/localeCookie'
+import { PLURAL_RULES } from '@/utils/arabicPlural'
 import ar from './locales/ar.json'
 import en from './locales/en.json'
 
@@ -45,6 +46,7 @@ export const i18n = createI18n({
   locale: initialLocale(),
   fallbackLocale: FALLBACK_LOCALE,
   messages: { ar, en },
+  pluralRules: PLURAL_RULES,
   numberFormats: {
     ar: latinNumberFormats,
     en: latinNumberFormats,

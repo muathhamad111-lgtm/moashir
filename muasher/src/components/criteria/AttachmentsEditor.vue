@@ -1,6 +1,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Array, default: () => [] },
@@ -75,11 +76,7 @@ function setRequired(index, value) {
                 :checked="item.required"
                 @change="setRequired(index, $event.target.checked)"
               />
-              <i
-                v-if="item.required"
-                class="fa-solid fa-check checkbox__check"
-                aria-hidden="true"
-              ></i>
+              <AppIcon v-if="item.required" name="check" class="checkbox__check" />
             </span>
             <span class="checkbox__label">{{ t('criteria.attachments.required') }}</span>
           </label>
@@ -87,7 +84,7 @@ function setRequired(index, value) {
             variant="ghost"
             size="sm"
             icon-only
-            icon="fa-solid fa-trash-can"
+            icon="trash"
             :aria-label="t('criteria.attachments.remove')"
             @click="removeAttachment(index)"
           />
@@ -96,7 +93,7 @@ function setRequired(index, value) {
     </ul>
     <p v-else class="attachments-editor__empty">{{ t('criteria.attachments.empty') }}</p>
 
-    <BaseButton variant="secondary" size="sm" icon="fa-solid fa-plus" @click="addAttachment">
+    <BaseButton variant="secondary" size="sm" icon="plus" @click="addAttachment">
       {{ t('criteria.attachments.add') }}
     </BaseButton>
   </fieldset>

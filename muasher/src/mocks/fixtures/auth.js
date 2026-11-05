@@ -1,8 +1,4 @@
-export const loginModesFixture = {
-  emailPassword: true,
-  emailOtp: true,
-  smsOtp: true,
-}
+export const SIGN_IN_IDENTIFIER_KINDS = Object.freeze(['email', 'mobile', 'unified_number'])
 
 export const DEV_OTP_CODE = '482913'
 
@@ -10,9 +6,13 @@ export const DEV_TOTP_CODE = '246810'
 
 export const OTP_CONFIG = {
   length: 6,
-  expirySeconds: 120,
-  resendCooldownSeconds: 30,
+  expirySeconds: 300,
+  resendCooldownSeconds: 60,
 }
+
+export const LOCKOUT_POLICY = Object.freeze({ maxAttempts: 5, lockSeconds: 15 * 60 })
+
+export const CODE_LIMITS = Object.freeze({ perTenMinutes: 5, windowSeconds: 10 * 60 })
 
 export const MOCK_PASSWORD = 'Muasher@2026'
 
@@ -35,3 +35,14 @@ export const IDLE_TIMEOUT_MINUTES = {
   staff: 30,
   entity: 60,
 }
+
+export const RECOVERY_TOKENS = Object.freeze({
+  EXPIRED_RESET: 'expired-reset-link-2026',
+  INVITATIONS: {
+    'invite-sarah-whitfield-2026': 4,
+    'invite-expired-2026': 'expired',
+    'invite-used-2026': 'used',
+  },
+})
+
+export const PASSWORD_RULES = Object.freeze({ MIN: 12, MAX: 128 })

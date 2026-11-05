@@ -1,0 +1,44 @@
+@use '../mixins' as *;
+
+.icon-field {
+  @include flex(column, stretch, flex-start, var(--space-1));
+}
+
+.icon-field__row {
+  @include flex(row, center, flex-start, var(--space-3));
+}
+
+.icon-field__preview {
+  @include flex-center;
+  inline-size: var(--space-10);
+  block-size: var(--space-10);
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  font-size: var(--icon-size-lg);
+  color: var(--theme-accent-text);
+  background-color: var(--color-info-soft);
+}
+
+.icon-field__select {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.icon-field__option-icon {
+  margin-inline-end: var(--space-2);
+  color: var(--theme-accent-text);
+}
+
+.icon-field__hint,
+.icon-field__error {
+  margin: 0;
+  font-size: var(--fs-xs);
+}
+
+.icon-field__hint {
+  color: var(--theme-text-secondary);
+}
+
+.icon-field__error {
+  color: var(--theme-danger-text);
+}

@@ -12,6 +12,7 @@ import { CHECKOUT_PHASES, useCheckout } from '@/composables/useCheckout'
 import { useToast } from '@/composables/useToast'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { financeErrorMessage } from '@/utils/payments/financeErrors'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   purpose: { type: String, required: true },
@@ -54,7 +55,7 @@ function onVerifyFailed(error) {
       <p class="checkout__eyebrow">{{ t('finance.checkout.eyebrow') }}</p>
       <h1 class="checkout__title">{{ t(`finance.checkout.title.${purpose}`) }}</h1>
       <p class="checkout__secured">
-        <i class="fa-solid fa-lock" aria-hidden="true"></i>
+        <AppIcon name="lock" />
         {{ t('finance.checkout.securedBy') }}
       </p>
     </header>
@@ -67,13 +68,13 @@ function onVerifyFailed(error) {
           <div v-if="showStart" class="checkout__start">
             <p class="checkout__intro">{{ t('finance.checkout.intro') }}</p>
             <p class="checkout__card-note" role="note">
-              <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+              <AppIcon name="shield-info" />
               {{ t('finance.checkout.cardNote') }}
             </p>
             <div class="checkout__actions">
               <BaseButton
                 variant="primary"
-                icon="fa-solid fa-credit-card"
+                icon="credit-card"
                 :loading="isStarting"
                 :disabled="isStarting"
                 @click="start"

@@ -7,6 +7,7 @@ import FieldInput from '@/components/form/FieldInput.vue'
 import OtpInput from '@/components/form/OtpInput.vue'
 import { EMAIL_CHANGE_STEPS, useEmailChange } from '@/composables/useEmailChange'
 import { EMAIL_CHANGE_STATUSES } from '@/constants/entityEnums'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   modelValue: { type: Boolean, required: true },
@@ -96,11 +97,10 @@ function close() {
     </div>
 
     <div v-else class="email-change email-change--done" role="status">
-      <i
-        class="fa-solid email-change__icon"
-        :class="awaitingApproval ? 'fa-hourglass-half' : 'fa-circle-check'"
-        aria-hidden="true"
-      ></i>
+      <AppIcon
+        :name="awaitingApproval ? 'refresh-dots' : 'check-circle'"
+        class="email-change__icon"
+      />
       <p class="email-change__outcome">
         {{
           awaitingApproval

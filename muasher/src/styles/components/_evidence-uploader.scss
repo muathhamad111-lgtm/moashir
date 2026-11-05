@@ -25,14 +25,14 @@
   background-color: var(--color-success-soft);
   color: var(--theme-text);
 
-  i {
+  .app-icon {
     color: var(--color-success);
   }
 
-  &:has(.fa-triangle-exclamation) {
+  &:has([data-icon='warning-triangle']) {
     background-color: var(--color-warning-soft);
 
-    i {
+    .app-icon {
       color: var(--color-warning);
     }
   }

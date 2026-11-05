@@ -112,12 +112,7 @@ function onSave() {
     />
 
     <div class="gap-guidance__footer">
-      <BaseButton
-        type="submit"
-        variant="secondary"
-        icon="fa-solid fa-floppy-disk"
-        :loading="saving"
-      >
+      <BaseButton type="submit" variant="secondary" icon="save" :loading="saving">
         {{ t('bag.manage.guidance.save') }}
       </BaseButton>
     </div>

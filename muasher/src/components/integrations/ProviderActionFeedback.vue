@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { TEST_FAILURES, integrationErrorKey } from '@/utils/integrations/providerError'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   failure: { type: Object, default: null },
@@ -26,9 +27,7 @@ const message = computed(() => {
 })
 
 const icon = computed(() =>
-  props.failure?.type === TEST_FAILURES.RATE_LIMITED
-    ? 'fa-solid fa-hourglass-half'
-    : 'fa-solid fa-circle-xmark',
+  props.failure?.type === TEST_FAILURES.RATE_LIMITED ? 'refresh-dots' : 'x',
 )
 </script>
 
@@ -39,7 +38,7 @@ const icon = computed(() =>
     :class="`provider-feedback--${failure.type}`"
     role="alert"
   >
-    <i :class="icon" aria-hidden="true"></i>
+    <AppIcon :name="icon" />
     <span>{{ message }}</span>
   </p>
 </template>

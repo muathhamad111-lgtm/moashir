@@ -4,8 +4,8 @@ import ActionsDropdown from '@/components/data-list/ActionsDropdown.vue'
 import { createTestGlobals } from '@/test-utils'
 
 const actions = [
-  { key: 'view', label: 'عرض', icon: 'fa-solid fa-eye' },
-  { key: 'deactivate', label: 'تعطيل', icon: 'fa-solid fa-ban', variant: 'danger' },
+  { key: 'view', label: 'عرض', icon: 'eye' },
+  { key: 'deactivate', label: 'تعطيل', icon: 'ban', variant: 'danger' },
   { key: 'archive', label: 'أرشفة', disabled: true },
 ]
 

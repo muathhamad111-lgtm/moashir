@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils'
 import { createI18n } from 'vue-i18n'
 import ar from '@/i18n/locales/ar.json'
 import en from '@/i18n/locales/en.json'
+import { WITHHELD_ICONS } from '@/utils/icons/iconRegistry'
 
 function i18nFor(locale) {
   return createI18n({ legacy: false, locale, messages: { ar, en } })
@@ -15,7 +16,11 @@ async function mountNotice(env, props, locale = 'en') {
   return mount(DemoDataNotice, { props, global: { plugins: [i18nFor(locale)] } })
 }
 
-const HYBRID = { VITE_API_BASE_URL: '/api/v1', VITE_DEMO_MODULES: 'kpis,messaging' }
+const HYBRID = {
+  VITE_API_BASE_URL: '/api/v1',
+  VITE_DEMO_BUILD: 'true',
+  VITE_DEMO_MODULES: 'kpis,messaging',
+}
 
 afterEach(() => {
   vi.unstubAllEnvs()
@@ -28,7 +33,8 @@ describe('DemoDataNotice', () => {
     expect(note.text()).toContain('Demo data')
     expect(note.text()).toContain('this module is not connected yet')
     expect(note.classes()).toContain('demo-notice--page')
-    expect(wrapper.get('i').attributes('aria-hidden')).toBe('true')
+    expect(WITHHELD_ICONS).toContain('flask')
+    expect(wrapper.find('svg').exists()).toBe(false)
   })
 
   it('speaks Arabic in the Arabic interface and words sections and actions apart', async () => {

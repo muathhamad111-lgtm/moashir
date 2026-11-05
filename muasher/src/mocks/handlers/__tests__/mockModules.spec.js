@@ -4,6 +4,9 @@ import { bagHandlers } from '@/mocks/handlers/bag'
 import { bagRequestsHandlers } from '@/mocks/handlers/bagRequests'
 import { MOCK_MODULES } from '@/constants/mockModules'
 
+const BOARD_BRIDGE_ROUTE = 'GET /api/v1/dashboard/summary'
+const CERTIFICATE_LIST_ROUTE = 'GET /api/v1/certificates'
+
 function headersOf(list) {
   return list.map((handler) => handler.info.header)
 }
@@ -22,7 +25,22 @@ describe('mock module registry', () => {
     expect(all.length).toBe(
       mockModules.reduce((total, module) => total + module.handlers.length, 0),
     )
-    expect(new Set(all).size).toBe(all.length)
+    const duplicated = all.filter((header, index) => all.indexOf(header) !== index)
+    expect(duplicated.sort()).toEqual([BOARD_BRIDGE_ROUTE, CERTIFICATE_LIST_ROUTE].sort())
+  })
+
+  it('splits the dashboard summary by board between the legacy and the entity board mocks', () => {
+    const owners = mockModules
+      .filter((module) => headersOf(module.handlers).includes(BOARD_BRIDGE_ROUTE))
+      .map((module) => module.key)
+    expect(owners.sort()).toEqual([MOCK_MODULES.DASHBOARDS, MOCK_MODULES.ENTITY_BOARD].sort())
+  })
+
+  it('serves the staff certificate list of a request before the owner list, in one module', () => {
+    const owners = mockModules
+      .filter((module) => headersOf(module.handlers).includes(CERTIFICATE_LIST_ROUTE))
+      .map((module) => module.key)
+    expect(owners).toEqual([MOCK_MODULES.CERTIFICATES])
   })
 
   it('selects only the handlers of the listed demo modules', () => {

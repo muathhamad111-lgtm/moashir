@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import { FORM_STATES, useMoyasarForm } from '@/composables/useMoyasarForm'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   payment: { type: Object, required: true },
@@ -38,7 +39,7 @@ onMounted(mountForm)
       @retry="mountForm"
     />
     <p v-if="verifying" class="moyasar-host__verifying" role="status">
-      <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+      <AppIcon name="spinner" />
       {{ t('finance.checkout.verifying') }}
     </p>
     <div v-show="state === FORM_STATES.READY" ref="host" class="mysr-form moyasar-host__form"></div>

@@ -1,0 +1,11 @@
+@mixin motion-safe {
+  @media (prefers-reduced-motion: no-preference) {
+    @content;
+  }
+}
+
+@mixin ambient-pausable {
+  .is-motion-paused & {
+    animation-play-state: paused;
+  }
+}

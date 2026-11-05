@@ -14,7 +14,10 @@ import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
 import AccentSwatchPicker from '@/components/branding/AccentSwatchPicker.vue'
 import ContrastCheck from '@/components/branding/ContrastCheck.vue'
+import ContrastFailNotice from '@/components/branding/ContrastFailNotice.vue'
+import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import BrandingPreview from '@/components/branding/BrandingPreview.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 const toast = useToast()
@@ -24,6 +27,8 @@ const {
   palette,
   draftToken,
   contrastPairs,
+  rejectedPairs,
+  reasonPrompt,
   canSave,
   busy,
   previewLogos,
@@ -40,10 +45,9 @@ const {
 
 async function onSave() {
   try {
-    await save()
-    toast.success(t('branding.toast.saved'))
-  } catch {
-    toast.error(t('branding.toast.saveError'))
+    if (await save()) toast.success(t('branding.toast.saved'))
+  } catch (error) {
+    toast.error(error?.normalized?.message || t('branding.toast.saveError'))
   }
 }
 
@@ -56,10 +60,9 @@ async function onReset() {
   })
   if (!accepted) return
   try {
-    await reset()
-    toast.success(t('branding.toast.reset'))
-  } catch {
-    toast.error(t('branding.toast.saveError'))
+    if (await reset()) toast.success(t('branding.toast.reset'))
+  } catch (error) {
+    toast.error(error?.normalized?.message || t('branding.toast.saveError'))
   }
 }
 </script>
@@ -68,13 +71,13 @@ async function onReset() {
   <section class="branding-page">
     <header class="page-header">
       <RouterLink :to="{ name: ROUTE_NAMES.ADMIN_SETTINGS }" class="branding-page__back">
-        <i class="fa-solid fa-arrow-right-long u-flip-in-rtl" aria-hidden="true"></i>
+        <AppIcon name="arrow-right" />
         {{ t('settings.hub.backToHub') }}
       </RouterLink>
       <h1 class="page-header__title">{{ t('branding.title') }}</h1>
       <p class="page-header__subtitle">{{ t('branding.subtitle') }}</p>
       <p class="branding-page__lock">
-        <i class="fa-solid fa-lock" aria-hidden="true"></i>
+        <AppIcon name="lock" />
         {{ t('branding.locked') }}
       </p>
     </header>
@@ -88,7 +91,7 @@ async function onReset() {
 
     <EmptyState
       v-else-if="status === 'empty'"
-      icon="fa-solid fa-palette"
+      icon="palette"
       :title="t('branding.emptyTitle')"
       :message="t('branding.emptyMessage')"
     />
@@ -106,6 +109,7 @@ async function onReset() {
         </Card>
 
         <Card :title="t('branding.contrast.title')">
+          <ContrastFailNotice :pairs="rejectedPairs" />
           <ContrastCheck :pairs="contrastPairs" />
         </Card>
 
@@ -128,7 +132,7 @@ async function onReset() {
         <div class="branding-page__actions">
           <BaseButton
             variant="primary"
-            icon="fa-solid fa-floppy-disk"
+            icon="save"
             :loading="saving"
             :disabled="!canSave"
             @click="onSave"
@@ -137,7 +141,7 @@ async function onReset() {
           </BaseButton>
           <BaseButton
             variant="ghost"
-            icon="fa-solid fa-rotate-left"
+            icon="undo"
             :loading="resetting"
             :disabled="busy"
             @click="onReset"
@@ -153,5 +157,13 @@ async function onReset() {
         <BrandingPreview :accent-token="draftToken" :logos="previewLogos" />
       </aside>
     </div>
+    <ReasonDialog
+      v-model="reasonPrompt.open.value"
+      :title="t('branding.reason.title')"
+      :message="t('branding.reason.message')"
+      :submit-label="t('actions.confirm')"
+      :action="reasonPrompt.provide"
+      action-name="branding.superAdminReason"
+    />
   </section>
 </template>

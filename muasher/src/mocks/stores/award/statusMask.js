@@ -2,7 +2,7 @@ import { ASSESSMENT_PATHS } from '@/constants/assessment'
 import { fromCanonicalStatus } from '@/utils/canonicalStatus'
 import { currentSessionUser } from '../sessionStore'
 import { sessionCan } from '../sessionPermissions'
-import { ADVANCED_STATES, ENTITY_PLACEHOLDER, FILTERING_STATES } from './advancedStates'
+import { ADVANCED_STATES, ENTITY_PLACEHOLDER, FILTERING_VISIBLE_STATES } from './advancedStates'
 import { findCycle } from './cycleStore'
 
 const RESULT_READER_PERMISSIONS = [
@@ -29,7 +29,7 @@ function isAnnounced(record) {
 function hidesState(record, viewer, status) {
   if (
     record.path !== ASSESSMENT_PATHS.ADVANCED ||
-    !FILTERING_STATES.includes(status) ||
+    !FILTERING_VISIBLE_STATES.includes(status) ||
     isAnnounced(record)
   )
     return false
@@ -54,6 +54,8 @@ export function visibleTransitions(record, viewer = currentSessionUser()) {
 
 export function hiddenStatusesFor(viewer = currentSessionUser()) {
   if (!viewer) return []
-  if (viewer.entityId !== null) return FILTERING_STATES
-  return readsResults(viewer) ? [] : [ADVANCED_STATES.QUALIFIED, ADVANCED_STATES.NOT_QUALIFIED]
+  if (viewer.entityId !== null) return FILTERING_VISIBLE_STATES
+  return readsResults(viewer)
+    ? []
+    : FILTERING_VISIBLE_STATES.filter((status) => status !== ADVANCED_STATES.AWAITING_FILTERING)
 }

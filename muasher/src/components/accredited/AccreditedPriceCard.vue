@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n'
 import Card from '@/components/ui/Card.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import PricingBreakdown from '@/components/payments/PricingBreakdown.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   title: { type: String, required: true },
@@ -22,7 +23,7 @@ const { t } = useI18n()
       <Skeleton v-if="status === 'loading'" variant="text" :count="3" />
       <PricingBreakdown v-else-if="price" :pricing="price" />
       <p v-else class="accredited-price__note" role="note">
-        <i class="fa-solid fa-calculator" aria-hidden="true"></i>
+        <AppIcon name="calculator" />
         <span>{{
           status === 'unset' ? t('accredited.price.unset') : t('finance.checkout.feesAtCheckout')
         }}</span>

@@ -54,7 +54,7 @@ const runTest = () => smsIntegrationService.testConnection(SMS_PROVIDERS.TAQNYAT
       <BaseButton
         variant="secondary"
         size="sm"
-        icon="fa-solid fa-arrows-rotate"
+        icon="refresh"
         :loading="senders.state.value === PROVIDER_ACTION_STATES.PENDING"
         :disabled="!tokenStored"
         @click="senders.execute()"

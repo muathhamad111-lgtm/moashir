@@ -8,6 +8,7 @@ import ReorderButtons from './ReorderButtons.vue'
 import { useCriteria } from '@/composables/useCriteria'
 import { useCriteriaRowActions } from '@/composables/useCriteriaRowActions'
 import { percentOf } from '@/utils/weight'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   points: { type: Array, required: true },
@@ -55,7 +56,7 @@ const columns = computed(() => [
     </template>
     <template #cell-attachments="{ item }">
       <span v-if="item.attachments.length" class="criteria-page__attach">
-        <i class="fa-solid fa-paperclip" aria-hidden="true"></i>
+        <AppIcon name="attachment" />
         {{
           t(
             'criteria.attachments.count',

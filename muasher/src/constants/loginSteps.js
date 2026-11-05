@@ -5,12 +5,11 @@ export const LOGIN_STEPS = {
   OTP_REQUIRED: 'otp_required',
 }
 
-export const LOGIN_REQUEST_MODES = {
-  PASSWORD: 'password',
-  OTP: 'otp',
-}
-
 export const AUTH_FLOW_INTENTS = {
   LOGIN: 'login',
   REGISTER: 'register',
+}
+
+export const AUTH_NOTICES = {
+  PASSWORD_RESET: 'password-reset',
 }

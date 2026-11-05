@@ -54,7 +54,7 @@ const restoreDefault = () => setValue({ ...props.definition.defaultBody })
       <p class="field__hint">
         {{ t('integrations.sms.requiredPlaceholders', { tokens: requiredTokens }) }}
       </p>
-      <BaseButton variant="ghost" size="sm" icon="fa-solid fa-rotate-left" @click="restoreDefault">
+      <BaseButton variant="ghost" size="sm" icon="undo" @click="restoreDefault">
         {{ t('integrations.sms.restoreDefault') }}
       </BaseButton>
     </div>

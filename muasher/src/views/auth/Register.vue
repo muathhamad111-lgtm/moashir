@@ -40,7 +40,7 @@ onMounted(load)
 
     <EmptyState
       v-else-if="status === 'unavailable'"
-      icon="fa-regular fa-clock"
+      icon="clock"
       :title="t('entities.registration.unavailableTitle')"
       :message="t('entities.registration.unavailableMessage')"
     />

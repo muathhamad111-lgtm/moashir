@@ -3,7 +3,7 @@ import { seedSignedIn } from './support/session'
 import { forceMockFault } from './support/mockFaults'
 import { guardMoyasar } from './support/moyasarGuard'
 
-const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d|Font Awesome/i
+const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d/i
 const PAID_ACCREDITED = '3f0c9a52-6d1e-4b7a-9c21-5a1e00000001'
 const OWN_PENDING = '3f0c9a52-6d1e-4b7a-9c21-5a1e00000011'
 const OWN_PENDING_PROVIDER = 'mock_pay_settles_after_checks_0011'
@@ -127,8 +127,8 @@ test('My Payments lists receipts, live-only stats and opens an official receipt 
   const errors = trackConsole(page)
   await seedEntity(page, testInfo)
   await page.goto('/payments')
-  await expect(page.locator('.table__row')).toHaveCount(4)
-  await expect(page.locator('.stats-card').nth(2)).toContainText('1,150.00')
+  await expect(page.locator('.my-payments__row')).toHaveCount(4)
+  await expect(page.locator('.payment-stats__tile').nth(2)).toContainText('1,150.00')
   await page.screenshot({ path: `test-results/my-payments-${suffixOf(testInfo)}.png`, fullPage: true })
 
   await page.goto(`/payments/${PAID_ACCREDITED}`)

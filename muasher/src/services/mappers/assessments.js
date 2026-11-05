@@ -25,6 +25,7 @@ export function toAssessment(raw = {}) {
     id: raw.id ?? null,
     number: raw.number ?? '',
     path: raw.path ?? null,
+    pathLabel: raw.pathLabel ?? null,
     status: toRequestStatus(raw.status),
     isOpen: raw.isOpen === true,
     isFrozen: raw.isFrozen === true,
@@ -86,7 +87,7 @@ export function toCriteriaUpdate(raw) {
   }
 }
 
-function toScoreMap(scores) {
+export function toScoreMap(scores) {
   return Object.fromEntries(
     Object.entries(scores ?? {}).map(([id, score]) => [
       id,

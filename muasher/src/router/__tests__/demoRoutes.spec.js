@@ -17,21 +17,27 @@ describe('demo module markers on routes', () => {
   })
 
   it('marks the screens of modules without a backend', () => {
-    expect(metaOf(ROUTE_NAMES.APP_DASHBOARD).demoModules).toEqual([MOCK_MODULES.DASHBOARDS])
     expect(metaOf(ROUTE_NAMES.BAG_INDEX).demoModules).toEqual([MOCK_MODULES.BAG])
-    expect(metaOf(ROUTE_NAMES.AWARD_SECRETARY).demoModules).toEqual([MOCK_MODULES.SECRETARY])
-    expect(metaOf(ROUTE_NAMES.ADMIN_USERS).demoModules).toEqual([MOCK_MODULES.USERS])
+    expect(metaOf(ROUTE_NAMES.ASSESSMENT_ADVANCED_RESULT).demoModules).toBeUndefined()
   })
 
   it('leaves the connected screens unmarked', () => {
     ;[
       ROUTE_NAMES.ADMIN_CRITERIA,
+      ROUTE_NAMES.APP_DASHBOARD,
+      ROUTE_NAMES.ADMIN_SETTINGS_NOTIFICATIONS,
       ROUTE_NAMES.ENTITY_PROFILE,
       ROUTE_NAMES.ASSESSMENT_SELF,
       ROUTE_NAMES.ASSESSMENT_ACCREDITED_PAY,
       ROUTE_NAMES.AWARD_CYCLES,
       ROUTE_NAMES.ADMIN_SETTINGS_INTEGRATIONS,
       ROUTE_NAMES.REQUESTS_INDEX,
+      ROUTE_NAMES.ADMIN_USERS,
+      ROUTE_NAMES.AWARD_COMMITTEE_ROSTER,
+      ROUTE_NAMES.AWARD_COMMITTEE,
+      ROUTE_NAMES.AWARD_SECRETARY_DESK,
+      ROUTE_NAMES.AWARD_RESULTS_BOARD,
+      ROUTE_NAMES.AWARD_NATIONAL,
     ].forEach((name) => expect(metaOf(name).demoModules).toBeUndefined())
   })
 })

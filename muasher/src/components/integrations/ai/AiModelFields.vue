@@ -45,7 +45,7 @@ const timeout = INTEGRATION_LIMITS.AI_TIMEOUT
       <BaseButton
         variant="secondary"
         size="sm"
-        icon="fa-solid fa-arrows-rotate"
+        icon="refresh"
         :loading="models.state.value === PROVIDER_ACTION_STATES.PENDING"
         :disabled="!keyStored"
         @click="models.execute()"

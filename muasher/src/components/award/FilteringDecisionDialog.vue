@@ -8,6 +8,7 @@ import { useValidatedForm } from '@/composables/useValidatedForm'
 import { useAuthStore } from '@/stores/auth'
 import { filteringService } from '@/services/filteringService'
 import { AWARD_LIMITS } from '@/constants/advanced'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -98,7 +99,7 @@ watch(
         {{ t(`filtering.decision.${mode}.lead`, { number: row.number }) }}
       </p>
       <p v-if="isBelow" class="filtering-decision__warning" role="alert">
-        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+        <AppIcon name="warning-triangle" />
         {{
           t('filtering.decision.belowWarning', {
             score: row.initialResult?.percent ?? '',

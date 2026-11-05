@@ -1,13 +1,13 @@
 import { computed } from 'vue'
-import logoGreen from '@/assets/logos/logo-lockup-green.png'
-import logoDark from '@/assets/logos/logo-lockup-dark.png'
+import logoOnDark from '@/assets/logos/moashir-logo-on-dark.svg'
+import logoOnLight from '@/assets/logos/moashir-logo-on-light.svg'
 import { useTheme } from '@/composables/useTheme'
 import { THEMES } from '@/constants/themes'
 
 export function useBrandLogo() {
   const { theme } = useTheme()
 
-  const themedLogo = computed(() => (theme.value === THEMES.light ? logoDark : logoGreen))
+  const themedLogo = computed(() => (theme.value === THEMES.light ? logoOnLight : logoOnDark))
 
-  return { themedLogo, logoOnDark: logoGreen, logoOnLight: logoDark }
+  return { themedLogo, logoOnDark, logoOnLight }
 }

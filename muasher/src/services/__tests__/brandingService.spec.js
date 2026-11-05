@@ -15,7 +15,14 @@ const resource = {
   accentToken: 'teal',
   logoLight: { fileId: 6, url: 'data:image/png;base64,LIGHT' },
   logoDark: { fileId: 7, url: 'data:image/png;base64,AAAA' },
-  palette: [{ token: 'teal', hex: '#33d1c4', textOnLightHex: '#0b7068', label: { ar: 'فيروزي', en: 'Teal' } }],
+  palette: [
+    {
+      token: 'teal',
+      hex: '#33d1c4',
+      textOnLightHex: '#0b7068',
+      label: { ar: 'فيروزي', en: 'Teal' },
+    },
+  ],
   updatedAt: '2026-10-31T09:00:00Z',
 }
 
@@ -31,7 +38,14 @@ describe('brandingService', () => {
     expect(data).toEqual({
       accentToken: 'teal',
       logos: { dark: 'data:image/png;base64,LIGHT', light: 'data:image/png;base64,AAAA' },
-      palette: [{ token: 'teal', hex: '#33d1c4', textOnLightHex: '#0b7068', label: { ar: 'فيروزي', en: 'Teal' } }],
+      palette: [
+        {
+          token: 'teal',
+          hex: '#33d1c4',
+          textOnLightHex: '#0b7068',
+          label: { ar: 'فيروزي', en: 'Teal' },
+        },
+      ],
       updatedAt: '2026-10-31T09:00:00Z',
     })
   })
@@ -48,7 +62,9 @@ describe('brandingService', () => {
   })
 
   it('uploads the dark-background logo as the light variant (multipart)', async () => {
-    apiClient.post.mockResolvedValue({ data: { data: { fileId: 9, url: 'blob:logo' }, meta: {}, errors: null } })
+    apiClient.post.mockResolvedValue({
+      data: { data: { fileId: 9, url: 'blob:logo' }, meta: {}, errors: null },
+    })
     const file = new File(['logo'], 'logo.png', { type: 'image/png' })
     const { data } = await brandingService.uploadLogo(file, 'dark')
     const [url, form] = apiClient.post.mock.calls[0]
@@ -59,28 +75,59 @@ describe('brandingService', () => {
   })
 
   it('uploads the light-background logo as the dark variant', async () => {
-    apiClient.post.mockResolvedValue({ data: { data: { fileId: 10, url: 'blob:logo' }, meta: {}, errors: null } })
-    await brandingService.uploadLogo(new File(['logo'], 'logo.svg', { type: 'image/svg+xml' }), 'light')
+    apiClient.post.mockResolvedValue({
+      data: { data: { fileId: 10, url: 'blob:logo' }, meta: {}, errors: null },
+    })
+    await brandingService.uploadLogo(
+      new File(['logo'], 'logo.svg', { type: 'image/svg+xml' }),
+      'light',
+    )
     expect(apiClient.post.mock.calls[0][1].get('variant')).toBe('dark')
   })
 
   it('resets the accent and both logos through the single global reset verb', async () => {
     apiClient.post.mockResolvedValue({
-      data: { data: { ...resource, accentToken: 'brand_default', logoLight: null, logoDark: null }, meta: {}, errors: null },
+      data: {
+        data: { ...resource, accentToken: 'brand_default', logoLight: null, logoDark: null },
+        meta: {},
+        errors: null,
+      },
     })
     const { data } = await brandingService.reset()
     expect(apiClient.post).toHaveBeenCalledTimes(1)
-    expect(apiClient.post).toHaveBeenCalledWith('/settings/branding/reset')
+    expect(apiClient.post).toHaveBeenCalledWith('/settings/branding/reset', {})
     expect(data.accentToken).toBe('brand_default')
     expect(data.logos).toEqual({ dark: null, light: null })
     expect(brandingService).not.toHaveProperty('resetLogo')
   })
 
+  it('sends the Super Admin reason with the accent, the reset and each logo', async () => {
+    apiClient.put.mockResolvedValue({ data: { data: resource, meta: {}, errors: null } })
+    apiClient.post.mockResolvedValue({ data: { data: resource, meta: {}, errors: null } })
+    const reason = 'Aligning the back office with the approved identity'
+    await brandingService.update({ accentToken: 'teal', reason })
+    await brandingService.reset({ reason })
+    await brandingService.uploadLogo(new File(['logo'], 'logo.png', { type: 'image/png' }), 'dark', reason)
+    expect(apiClient.put).toHaveBeenCalledWith('/settings/branding', { accentToken: 'teal', reason })
+    expect(apiClient.post).toHaveBeenNthCalledWith(1, '/settings/branding/reset', { reason })
+    expect(apiClient.post.mock.calls[1][1].get('reason')).toBe(reason)
+  })
+
+  it('treats the contrast rejection as an expected answer', async () => {
+    const rejected = Object.assign(new Error('contrast'), { response: { status: 422 } })
+    apiClient.put.mockRejectedValue(rejected)
+    await expect(brandingService.update({ accentToken: 'lime' })).rejects.toBe(rejected)
+    expect(logger.error).not.toHaveBeenCalled()
+  })
+
   it('reports failures through the logger and rethrows', async () => {
-    const failure = new Error('forbidden')
+    const failure = Object.assign(new Error('unavailable'), { response: { status: 503 } })
     apiClient.put.mockRejectedValue(failure)
     await expect(brandingService.update({ accentToken: 'teal' })).rejects.toBe(failure)
-    expect(logger.error).toHaveBeenCalledWith(failure, expect.objectContaining({ action: 'branding.update' }))
+    expect(logger.error).toHaveBeenCalledWith(
+      failure,
+      expect.objectContaining({ action: 'branding.update' }),
+    )
   })
 })
 
@@ -90,7 +137,13 @@ describe('profileService', () => {
       data: {
         data: {
           roles: [{ key: 'admin', label: { ar: 'مدير النظام', en: 'System Administrator' } }],
-          permissions: [{ key: 'settings.branding.manage', module: 'settings', label: { ar: 'الهوية', en: 'Identity' } }],
+          permissions: [
+            {
+              key: 'settings.branding.manage',
+              module: 'settings',
+              label: { ar: 'الهوية', en: 'Identity' },
+            },
+          ],
         },
         meta: {},
         errors: null,
@@ -99,7 +152,11 @@ describe('profileService', () => {
     const { data } = await profileService.getMyPermissions()
     expect(apiClient.get).toHaveBeenCalledWith('/me/profile/permissions')
     expect(data.roles[0].key).toBe('admin')
-    expect(data.permissions[0]).toEqual({ key: 'settings.branding.manage', module: 'settings', label: { ar: 'الهوية', en: 'Identity' } })
+    expect(data.permissions[0]).toEqual({
+      key: 'settings.branding.manage',
+      module: 'settings',
+      label: { ar: 'الهوية', en: 'Identity' },
+    })
   })
 
   it('tolerates an empty payload', async () => {

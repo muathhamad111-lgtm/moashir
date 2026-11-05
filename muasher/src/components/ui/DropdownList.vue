@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, useId, watch } from 'vue'
 import { useDisclosure } from '@/composables/useDisclosure'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: [String, Number, null], default: null },
@@ -97,7 +98,7 @@ function onKeydown(event) {
     >
       <span v-if="selected">{{ selected.label }}</span>
       <span v-else class="dropdown__placeholder">{{ placeholder }}</span>
-      <i class="fa-solid fa-chevron-down dropdown__caret" aria-hidden="true"></i>
+      <AppIcon name="chevron-down" class="dropdown__caret" />
     </button>
     <ul v-if="isOpen" :id="listId" class="dropdown__menu" role="listbox">
       <li v-for="(option, index) in options" :key="option.value" role="presentation">

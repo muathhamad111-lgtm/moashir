@@ -5,6 +5,7 @@ import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import AssessmentTimeline from './AssessmentTimeline.vue'
 import { useAssessmentStatusHistory } from '@/composables/useAssessmentStatusHistory'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   assessmentId: { type: Number, required: true },
@@ -30,7 +31,7 @@ function toggle() {
       :aria-controls="panelId"
       @click="toggle"
     >
-      <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+      <AppIcon name="refresh-dots" />
       {{ expanded ? t('assessment.timeline.hide') : t('assessment.timeline.show') }}
     </button>
     <div v-show="expanded" :id="panelId" class="status-history__panel">

@@ -3,6 +3,7 @@ import { onMounted, toRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Card from '@/components/ui/Card.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
+import PathBadge from '@/components/ui/PathBadge.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import FrozenBadge from '@/components/entities/FrozenBadge.vue'
@@ -44,9 +45,7 @@ onMounted(load)
           >
             <span class="u-ltr">{{ item.number }}</span>
           </router-link>
-          <span class="entity-assessments__path">{{
-            t(`assessment.paths.${item.path}.title`)
-          }}</span>
+          <PathBadge :path="item.path" :label="item.pathLabel" compact />
           <span class="entity-assessments__date">{{ dateOf(item.createdAt) }}</span>
           <span class="entity-assessments__badges">
             <StatusBadge :status="item.status" />

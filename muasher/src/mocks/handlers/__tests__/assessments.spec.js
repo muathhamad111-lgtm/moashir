@@ -38,6 +38,7 @@ const RESOURCE_KEYS = [
   'is_open',
   'number',
   'path',
+  'path_label',
   'result',
   'scale_kind',
   'status',
@@ -195,6 +196,7 @@ describe('self assessment mock — reads', () => {
       id: 9002,
       number: 'SLF-2026-000002',
       path: 'self',
+      path_label: { ar: 'التقييم الذاتي', en: 'Self assessment' },
       status: 'draft',
       is_frozen: false,
       available: false,
@@ -560,6 +562,7 @@ describe('self assessment mock — criteria edits, restore and search', () => {
       id: 9002,
       number: 'SLF-2026-000002',
       path: 'self',
+      path_label: { ar: 'التقييم الذاتي', en: 'Self assessment' },
       status: 'draft',
       is_frozen: false,
       entity: {

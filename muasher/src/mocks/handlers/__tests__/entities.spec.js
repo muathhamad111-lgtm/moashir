@@ -106,6 +106,7 @@ describe('entities mock — registration', () => {
       }),
       name: { ar: 'جمعية الوفاء الخيرية', en: null },
       official_email: 'info@alwafa.example.sa',
+      unified_number: '7000000901',
       password: 'Strong-Passphrase-2026',
       password_confirmation: 'Strong-Passphrase-2026',
       terms_version_id: 3,
@@ -164,6 +165,25 @@ describe('entities mock — registration', () => {
       'terms_accepted',
     ])
   })
+
+  it('requires a unique unified national number of 10 digits starting with 7', async () => {
+    const missing = await call('POST', '/auth/register', registration({ unified_number: '' }))
+    expect(missing.status).toBe(422)
+    expect(Object.keys(missing.body.errors)).toEqual(['unified_number'])
+    const malformed = await call(
+      'POST',
+      '/auth/register',
+      registration({ unified_number: '6000000901' }),
+    )
+    expect(malformed.body.errors.unified_number[0]).toContain('start with 7')
+    const taken = await call(
+      'POST',
+      '/auth/register',
+      registration({ unified_number: '7100005001' }),
+    )
+    expect(taken.status).toBe(422)
+    expect(taken.body.errors.unified_number[0]).toContain('already registered for another entity')
+  })
 })
 
 describe('entities mock — own profile', () => {
@@ -179,6 +199,25 @@ describe('entities mock — own profile', () => {
     expect(saved.status).toBe(200)
     expect(saved.body.data).toMatchObject({ governance_grade: '88.25', marketing_consent: false })
     expect((await call('PUT', '/entities/me', profileBody())).status).toBe(422)
+  })
+
+  it('keeps an absent unified number, replaces a valid one and never clears it', async () => {
+    as(ENTITY)
+    const kept = await call('PUT', '/entities/me', profileBody({ marketing_consent: true }))
+    expect(kept.body.data.unified_number).toBe('7100005001')
+    const replaced = await call(
+      'PUT',
+      '/entities/me',
+      profileBody({ marketing_consent: true, unified_number: '7000000902' }),
+    )
+    expect(replaced.body.data.unified_number).toBe('7000000902')
+    const cleared = await call(
+      'PUT',
+      '/entities/me',
+      profileBody({ marketing_consent: true, unified_number: null }),
+    )
+    expect(cleared.status).toBe(422)
+    expect(Object.keys(cleared.body.errors)).toEqual(['unified_number'])
   })
 
   it('denies staff and guests', async () => {
@@ -279,6 +318,7 @@ describe('entities mock — staff list and record scope', () => {
         'name',
         'official_email',
         'phone',
+        'phone_verified',
         'reference',
         'status',
       ].sort(),

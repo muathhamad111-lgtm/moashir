@@ -29,7 +29,7 @@ const shownResult = computed(
     <div class="connection-test__actions">
       <BaseButton
         variant="secondary"
-        icon="fa-solid fa-plug-circle-check"
+        icon="link"
         :loading="state === PROVIDER_ACTION_STATES.PENDING"
         :disabled="disabled"
         @click="execute"

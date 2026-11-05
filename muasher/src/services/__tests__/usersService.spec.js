@@ -17,12 +17,42 @@ beforeEach(() => {
 })
 
 describe('usersService', () => {
-  it('lists users and unwraps the envelope with a params-shape breadcrumb', async () => {
-    apiClient.get.mockResolvedValue({ data: envelope })
+  it('lists users, maps them and keeps a params-shape breadcrumb', async () => {
+    apiClient.get.mockResolvedValue({
+      data: {
+        data: [
+          {
+            id: 4,
+            name: 'سارة',
+            email: 's@example.sa',
+            roles: ['assessor'],
+            status: 'invited',
+            mfaEnabled: false,
+            lastLoginAt: null,
+          },
+        ],
+        meta: { stats: { total: 1, invited: 1 } },
+        errors: null,
+      },
+    })
     const params = { search: 'ريم', 'filter[role]': 'assessor', page: 2 }
     const result = await usersService.list(params)
     expect(apiClient.get).toHaveBeenCalledWith('/users', { params })
-    expect(result).toEqual(envelope)
+    expect(result.data[0]).toMatchObject({
+      id: 4,
+      status: 'invited',
+      mfaEnabled: false,
+      lastLoginAt: null,
+      phone: null,
+    })
+    expect(result.meta.stats).toEqual({
+      total: 1,
+      active: 0,
+      locked: 0,
+      suspended: 0,
+      invited: 1,
+      byRole: {},
+    })
     expect(logger.breadcrumb).toHaveBeenCalledWith(
       'service',
       'users.list',
@@ -42,18 +72,16 @@ describe('usersService', () => {
       name: 'فهد',
       email: 'fahad@moashir.example.sa',
       roles: ['system_admin'],
-      status: 'active',
     })
     expect(apiClient.post).toHaveBeenCalledWith('/users', {
       name: 'فهد',
       email: 'fahad@moashir.example.sa',
       roles: ['system_admin'],
-      status: 'active',
     })
     expect(logger.breadcrumb).toHaveBeenCalledWith(
       'service',
       'users.create',
-      expect.objectContaining({ payloadShape: ['name', 'email', 'roles', 'status'] }),
+      expect.objectContaining({ payloadShape: ['name', 'email', 'roles'] }),
     )
   })
 
@@ -63,16 +91,23 @@ describe('usersService', () => {
     expect(apiClient.put).toHaveBeenCalledWith('/users/3', { roles: ['request_follower'] })
   })
 
-  it('activates a user via PATCH with an active status body', async () => {
-    apiClient.patch.mockResolvedValue({ data: envelope })
+  it('calls the explicit account verbs, never a generic status patch', async () => {
+    apiClient.post.mockResolvedValue({ data: envelope })
+    await usersService.suspend(9, { reason: 'إيقاف مؤقت بقرار من الإدارة' })
+    expect(apiClient.post).toHaveBeenCalledWith('/users/9/suspend', {
+      reason: 'إيقاف مؤقت بقرار من الإدارة',
+    })
     await usersService.activate(9)
-    expect(apiClient.patch).toHaveBeenCalledWith('/users/9/status', { status: 'active' })
-  })
-
-  it('deactivates a user via PATCH with an inactive status body', async () => {
-    apiClient.patch.mockResolvedValue({ data: envelope })
-    await usersService.deactivate(9)
-    expect(apiClient.patch).toHaveBeenCalledWith('/users/9/status', { status: 'inactive' })
+    expect(apiClient.post).toHaveBeenCalledWith('/users/9/activate', {})
+    await usersService.unlock(9)
+    expect(apiClient.post).toHaveBeenCalledWith('/users/9/unlock', {})
+    await usersService.resetMfa(9, { reason: 'فقد المستخدم جهاز المصادقة' })
+    expect(apiClient.post).toHaveBeenCalledWith('/users/9/mfa/reset', {
+      reason: 'فقد المستخدم جهاز المصادقة',
+    })
+    await usersService.resendInvitation(9)
+    expect(apiClient.post).toHaveBeenCalledWith('/users/9/invitation/resend', {})
+    expect(apiClient.patch).not.toHaveBeenCalled()
   })
 
   it('reports failures to Sentry and rethrows (never swallows)', async () => {

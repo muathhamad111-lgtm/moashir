@@ -18,6 +18,7 @@ import { useToast } from '@/composables/useToast'
 import { useBagRequests } from '@/composables/useBagRequests'
 import { bagRequestsService } from '@/services/bagRequestsService'
 import { formatDate } from '@/utils/datetime'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t, n, locale } = useI18n()
 const toast = useToast()
@@ -46,25 +47,25 @@ const { items, status, errorMessage, load } = useTable({
 const statCards = computed(() => [
   {
     id: 'total',
-    icon: 'fa-solid fa-inbox',
+    icon: 'inbox',
     value: stats.value?.total ?? 0,
     label: t('bagRequests.stats.total'),
   },
   {
     id: 'awaiting',
-    icon: 'fa-solid fa-user-clock',
+    icon: 'user-clock',
     value: stats.value?.awaiting ?? 0,
     label: t('bagRequests.stats.awaiting'),
   },
   {
     id: 'active',
-    icon: 'fa-solid fa-briefcase',
+    icon: 'briefcase',
     value: stats.value?.byStatus?.active ?? 0,
     label: t('bagRequests.stats.active'),
   },
   {
     id: 'completed',
-    icon: 'fa-solid fa-flag-checkered',
+    icon: 'flag-checkered',
     value: stats.value?.byStatus?.completed ?? 0,
     label: t('bagRequests.stats.completed'),
   },
@@ -92,13 +93,13 @@ function rowActions(row) {
     actions.push({
       key: 'assign',
       label: t('bagRequests.actions.assign'),
-      icon: 'fa-solid fa-user-plus',
+      icon: 'user',
     })
   } else if (!CLOSED.includes(row.status)) {
     actions.push({
       key: 'reassign',
       label: t('bagRequests.actions.reassign'),
-      icon: 'fa-solid fa-user-pen',
+      icon: 'pen',
     })
   }
   return actions
@@ -198,7 +199,7 @@ function onAction(key, row) {
       </template>
       <template #cell-evaluator="{ item }">
         <span v-if="item.assignedEvaluatorName" class="bag-requests__evaluator">
-          <i class="fa-solid fa-user-check bag-requests__evaluator-icon" aria-hidden="true"></i>
+          <AppIcon name="user-check" class="bag-requests__evaluator-icon" />
           {{ localized(item.assignedEvaluatorName) }}
         </span>
         <span v-else class="bag-requests__unassigned">{{ t('bagRequests.unassigned') }}</span>

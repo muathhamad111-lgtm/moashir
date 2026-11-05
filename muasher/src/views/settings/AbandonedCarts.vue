@@ -72,7 +72,7 @@ function rowActions(cart) {
   return CHANNELS.map((channel) => ({
     key: channel,
     label: t(`settings.carts.actions.${channel}`),
-    icon: channel === 'email' ? 'fa-solid fa-envelope' : 'fa-solid fa-comment-sms',
+    icon: channel === 'email' ? 'envelope' : 'chat',
   }))
 }
 

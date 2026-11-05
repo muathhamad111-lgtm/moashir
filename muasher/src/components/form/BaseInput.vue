@@ -11,6 +11,7 @@ defineProps({
   hint: { type: String, default: '' },
   required: { type: Boolean, default: false },
   disabled: { type: Boolean, default: false },
+  readonly: { type: Boolean, default: false },
   inputmode: { type: String, default: undefined },
   autocomplete: { type: String, default: undefined },
   inputDir: { type: String, default: undefined },
@@ -38,6 +39,7 @@ const emit = defineEmits(['update:modelValue', 'blur'])
       :value="modelValue"
       placeholder=" "
       :disabled="disabled"
+      :readonly="readonly"
       :required="required"
       :inputmode="inputmode"
       :autocomplete="autocomplete"

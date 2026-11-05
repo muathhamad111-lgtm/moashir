@@ -14,6 +14,7 @@ import { useEvidenceBundleStatus } from '@/composables/useEvidenceBundle'
 import { BUNDLE_STATUSES } from '@/constants/accredited'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { formatFileSize } from '@/utils/payments/amountFormat'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const VARIANTS = {
   [BUNDLE_STATUSES.PREPARING]: 'warning',
@@ -43,7 +44,7 @@ onMounted(load)
         class="request-detail__back"
         :to="{ name: ROUTE_NAMES.REQUESTS_DETAIL, params: { id: assessmentId } }"
       >
-        <i class="fa-solid fa-arrow-left-long u-flip-in-rtl" aria-hidden="true"></i>
+        <AppIcon name="arrow-left" />
         {{ t('review.backToRequest') }}
       </RouterLink>
       <h1 class="bundle-page__title">{{ t('requests.bundle.title') }}</h1>
@@ -52,18 +53,14 @@ onMounted(load)
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
     <EmptyState
       v-else-if="status === 'missing'"
-      icon="fa-regular fa-folder-open"
+      icon="folder"
       :title="t('requests.bundle.missingTitle')"
       :message="t('requests.bundle.missingMessage')"
     />
     <Card v-else-if="bundle" class="bundle-card">
       <div class="bundle-card__head" aria-live="polite">
         <Badge :variant="VARIANTS[bundle.status] ?? 'muted'">
-          <i
-            v-if="bundle.status === BUNDLE_STATUSES.PREPARING"
-            class="fa-solid fa-spinner fa-spin"
-            aria-hidden="true"
-          ></i>
+          <AppIcon v-if="bundle.status === BUNDLE_STATUSES.PREPARING" name="refresh-dots" spin />
           {{ t(`requests.bundle.statuses.${bundle.status}`) }}
         </Badge>
         <span class="bundle-card__meta">{{
@@ -75,7 +72,7 @@ onMounted(load)
         }}</span>
       </div>
       <p v-if="bundle.status === BUNDLE_STATUSES.PREPARING" class="bundle-card__note" role="note">
-        <i class="fa-solid fa-bell" aria-hidden="true"></i>
+        <AppIcon name="bell-dot" />
         {{ t('requests.bundle.notice') }}
       </p>
       <dl class="bundle-card__facts">
@@ -91,7 +88,7 @@ onMounted(load)
       <BaseButton
         v-if="bundle.isDownloadable"
         variant="primary"
-        icon="fa-solid fa-download"
+        icon="download"
         :loading="Boolean(downloading[bundle.id])"
         @click="download"
       >

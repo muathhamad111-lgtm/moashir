@@ -121,38 +121,32 @@ describe('completion request form', () => {
 
 describe('assessment settings form', () => {
   const settings = {
-    accreditedReviewSlaDays: 14,
-    uploadMaxFileMb: 20,
-    evidenceMaxFilesPerSub: 10,
-    evidenceAllowedTypes: ['pdf', 'png'],
+    generalUploadMaxFileMb: 20,
+    advancedMinEntityAgeYears: 3,
+    advancedDisqualificationScore: '60.00',
+    committeeEntityDataVisibility: 'name_only',
   }
 
-  it('sends only the changed keys as numbers and arrays', () => {
-    const values = {
-      ...settingsFormValues(settings),
-      accreditedReviewSlaDays: '21',
-      evidenceAllowedTypes: ['png', 'pdf'],
-    }
-    expect(changedAssessmentSettings(settings, values)).toEqual({ accreditedReviewSlaDays: 21 })
-    expect(
-      changedAssessmentSettings(settings, { ...values, evidenceAllowedTypes: ['pdf'] }),
-    ).toEqual({ accreditedReviewSlaDays: 21, evidenceAllowedTypes: ['pdf'] })
+  it('sends only the changed general keys and never the legacy path aliases', () => {
+    const values = { ...settingsFormValues(settings), generalUploadMaxFileMb: '٣٠' }
+    expect(changedAssessmentSettings(settings, values)).toEqual({ generalUploadMaxFileMb: 30 })
+    expect(Object.keys(settingsFormValues(settings)).sort()).toEqual([
+      'advancedDisqualificationScore',
+      'advancedMinEntityAgeYears',
+      'committeeEntityDataVisibility',
+      'generalUploadMaxFileMb',
+    ])
   })
 
-  it('validates the server limits and at least one type', async () => {
-    const schema = assessmentSettingsSchema(t, { min: 1, max: 120 })
+  it('validates the general upload bounds', async () => {
+    const schema = assessmentSettingsSchema(t)
     await expect(
       schema.validate(
-        {
-          accreditedReviewSlaDays: '0',
-          uploadMaxFileMb: '101',
-          evidenceMaxFilesPerSub: '5',
-          evidenceAllowedTypes: [],
-        },
+        { ...settingsFormValues(settings), generalUploadMaxFileMb: '101' },
         { abortEarly: false },
       ),
     ).rejects.toMatchObject({
-      errors: expect.arrayContaining(['settings.assessment.validation.types']),
+      errors: [expect.stringContaining('settings.assessment.validation.range')],
     })
   })
 })

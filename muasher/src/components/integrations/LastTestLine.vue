@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { formatDate } from '@/utils/datetime'
 import { knownErrorKind } from '@/utils/integrations/providerError'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   lastTest: { type: Object, default: null },
@@ -31,7 +32,7 @@ const outcome = computed(() => {
 
 <template>
   <p class="last-test" :class="{ 'last-test--failed': lastTest && !lastTest.ok }">
-    <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+    <AppIcon name="refresh-dots" />
     <span>{{ summary }}</span>
     <span v-if="outcome" class="last-test__outcome">{{ outcome }}</span>
   </p>

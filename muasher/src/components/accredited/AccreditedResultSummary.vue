@@ -2,6 +2,7 @@
 import { useI18n } from 'vue-i18n'
 import Card from '@/components/ui/Card.vue'
 import DateStamp from './DateStamp.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   result: { type: Object, required: true },
@@ -31,7 +32,7 @@ const { t } = useI18n()
       </div>
     </div>
     <p class="accredited-result-summary__confidential" role="note">
-      <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
+      <AppIcon name="user-shield" />
       {{ t('accredited.result.confidential') }}
     </p>
   </Card>

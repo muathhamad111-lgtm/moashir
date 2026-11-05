@@ -9,12 +9,13 @@ import ErrorState from '@/components/feedback/ErrorState.vue'
 import AccreditedPriceCard from '@/components/accredited/AccreditedPriceCard.vue'
 import AccreditedCurrentCard from '@/components/accredited/AccreditedCurrentCard.vue'
 import { useAccreditedIntro } from '@/composables/useAccreditedIntro'
-import { usePublicHome } from '@/composables/useHomeContent'
+import { useAccreditedIntroContent } from '@/composables/useIntroPageContent'
 import { usePermissions } from '@/composables/usePermissions'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import DemoDataNotice from '@/components/ui/DemoDataNotice.vue'
 import { MOCK_MODULES } from '@/constants/mockModules'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const PAY_PATH = '/assessment/accredited/pay'
 
@@ -23,24 +24,13 @@ const router = useRouter()
 const { canAll } = usePermissions()
 const { status, errorMessage, current, price, priceStatus, isAuthenticated, isEntity, load } =
   useAccreditedIntro()
-const { sectionByKey, localized } = usePublicHome()
-
-const content = computed(() => sectionByKey('accredited-intro'))
-const benefits = computed(() => [...(content.value?.items ?? [])].sort((a, b) => a.order - b.order))
-const introTitle = computed(
-  () => (content.value?.title ? localized(content.value.title) : '') || t('accredited.intro.title'),
-)
-const introSubtitle = computed(
-  () =>
-    (content.value?.subtitle ? localized(content.value.subtitle) : '') ||
-    t('accredited.intro.subtitle'),
-)
-const introDescription = computed(() =>
-  content.value?.description ? localized(content.value.description) : '',
-)
-const feesCopy = computed(() => content.value?.meta?.fees ?? null)
-const whyRecommended = computed(() => content.value?.meta?.whyRecommended ?? null)
-const paymentCopy = computed(() => content.value?.meta?.payment ?? null)
+const cms = useAccreditedIntroContent()
+const { localized, benefits, whyRecommended } = cms
+const introTitle = computed(() => cms.title.value || t('accredited.intro.title'))
+const introSubtitle = computed(() => cms.subtitle.value || t('accredited.intro.subtitle'))
+const introDescription = computed(() => cms.description.value)
+const feesCopy = computed(() => cms.fees.value)
+const paymentCopy = computed(() => cms.payment.value)
 const canPay = computed(() =>
   canAll([PERMISSIONS.PAYMENTS_OWN_CREATE, PERMISSIONS.ASSESSMENT_ACCREDITED_MANAGE]),
 )
@@ -49,25 +39,25 @@ const action = computed(() => {
   if (!isAuthenticated.value)
     return {
       key: 'login',
-      icon: 'fa-solid fa-arrow-right-to-bracket',
+      icon: 'login',
       to: { name: ROUTE_NAMES.AUTH_LOGIN, query: { redirect: PAY_PATH } },
     }
   if (current.value?.active)
     return {
       key: 'resume',
-      icon: 'fa-solid fa-file-pen',
+      icon: 'pen-line',
       to: { name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_FORM, params: { id: current.value.active.id } },
     }
   if (!isEntity.value || !canPay.value) return null
   if (current.value?.awaitingPayment)
     return {
       key: 'continuePayment',
-      icon: 'fa-solid fa-credit-card',
+      icon: 'credit-card',
       to: { name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_PAY },
     }
   return {
     key: 'pay',
-    icon: 'fa-solid fa-credit-card',
+    icon: 'credit-card',
     to: { name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_PAY },
   }
 })
@@ -102,9 +92,9 @@ const DEMO_MODULES = [MOCK_MODULES.CMS]
         </Card>
         <Card v-if="whyRecommended">
           <template #header>
-            <h2 class="card__title-text">{{ localized(whyRecommended.title) }}</h2>
+            <h2 class="card__title-text">{{ whyRecommended.title }}</h2>
           </template>
-          <p class="accredited-intro__lead">{{ localized(whyRecommended.body) }}</p>
+          <p class="accredited-intro__lead">{{ whyRecommended.body }}</p>
         </Card>
         <Card v-if="benefits.length">
           <template #header>
@@ -113,8 +103,8 @@ const DEMO_MODULES = [MOCK_MODULES.CMS]
           <ul class="accredited-intro__benefits">
             <li v-for="benefit in benefits" :key="benefit.id" class="accredited-intro__benefit">
               <span class="accredited-intro__benefit-icon" aria-hidden="true"
-                ><i :class="benefit.icon || 'fa-solid fa-check'"></i
-              ></span>
+                ><AppIcon :name="benefit.icon || 'check'"
+              /></span>
               <span class="accredited-intro__benefit-body">
                 <span class="accredited-intro__benefit-title">{{ localized(benefit.title) }}</span>
                 <span class="accredited-intro__benefit-desc">{{
@@ -126,20 +116,20 @@ const DEMO_MODULES = [MOCK_MODULES.CMS]
         </Card>
         <Card v-if="paymentCopy">
           <template #header>
-            <h2 class="card__title-text">{{ localized(paymentCopy.title) }}</h2>
+            <h2 class="card__title-text">{{ paymentCopy.title }}</h2>
           </template>
-          <p class="accredited-intro__lead">{{ localized(paymentCopy.body) }}</p>
+          <p class="accredited-intro__lead">{{ paymentCopy.body }}</p>
         </Card>
         <div class="accredited-intro__note" role="note">
-          <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+          <AppIcon name="shield-info" />
           <p>{{ t('accredited.intro.evidenceNote') }}</p>
         </div>
       </div>
 
       <aside class="accredited-intro__aside">
         <AccreditedPriceCard
-          :title="feesCopy ? localized(feesCopy.title) : t('accredited.intro.feesTitle')"
-          :description="feesCopy ? localized(feesCopy.body) : t('accredited.intro.feesDescription')"
+          :title="feesCopy?.title || t('accredited.intro.feesTitle')"
+          :description="feesCopy?.body || t('accredited.intro.feesDescription')"
           :price="price"
           :status="priceStatus"
         >

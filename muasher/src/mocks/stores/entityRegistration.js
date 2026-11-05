@@ -2,6 +2,7 @@ import { entityReject } from './entityRejection'
 import { assertRegistration, contactFrom, profileFrom } from './entityValidation'
 import { createEntity, isDeleted, markVerified, ownerEmailTaken } from './entitiesStore'
 import { currentTerms } from './termsStore'
+import { unifiedNumberFrom } from './entityUnifiedNumber'
 
 export const ENTITY_STANDING = {
   SIGN_IN: 'sign_in',
@@ -20,6 +21,7 @@ export function registerEntity(body) {
     profile: profileFrom(body),
     contact: contactFrom(body),
     email,
+    unifiedNumber: unifiedNumberFrom(body),
     marketingConsent: body.marketingConsent === true,
   })
 }

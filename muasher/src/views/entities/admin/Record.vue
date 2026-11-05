@@ -14,6 +14,7 @@ import FrozenRequestsCard from '@/components/entities/admin/FrozenRequestsCard.v
 import EntityActionsHost from '@/components/entities/admin/EntityActionsHost.vue'
 import ProfileChangeHistory from '@/components/entities/ProfileChangeHistory.vue'
 import EntityAssessmentsCard from '@/components/entities/admin/EntityAssessmentsCard.vue'
+import EntityLogoPreview from '@/components/entities/admin/EntityLogoPreview.vue'
 import { usePermissions } from '@/composables/usePermissions'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { profileChangesService } from '@/services/profileChangesService'
@@ -21,6 +22,7 @@ import { useEntityRecord } from '@/composables/useEntityRecord'
 import { useEntityDisplay } from '@/composables/useEntityDisplay'
 import { ENTITY_ACTIONS } from '@/composables/useEntityActions'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   id: { type: String, required: true },
@@ -29,9 +31,12 @@ const props = defineProps({
 const DETAIL_ROWS = [
   'nameAr',
   'nameEn',
+  'unifiedNumber',
   'entityType',
   'developmentSector',
   'orgSize',
+  'licenseNumber',
+  'foundedOn',
   'foundingYear',
   'region',
   'city',
@@ -40,7 +45,8 @@ const DETAIL_ROWS = [
   'annualBeneficiariesCount',
   'hasStrategicPlan',
 ]
-const CONTACT_ROWS = ['authorizedPersonName', 'officialEmail', 'phone']
+const CONTACT_ROWS = ['authorizedPersonName', 'officialEmail', 'phone', 'websiteUrl']
+const CONTACT_ONLY_ROWS = ['authorizedPersonName', 'officialEmail', 'phone']
 const LIFECYCLE_ROWS = [
   'createdAt',
   'verifiedAt',
@@ -65,6 +71,7 @@ const {
   isFullRecord,
   load,
   loadFrozenRequests,
+  refreshLogo,
 } = useEntityRecord(toRef(props, 'id'))
 const actionsHost = ref(null)
 const historyVersion = ref(0)
@@ -72,8 +79,9 @@ const loadHistory = (params) => profileChangesService.listForEntity(props.id, pa
 
 const sections = computed(() => {
   if (!entity.value) return []
+  if (!isFullRecord.value)
+    return [{ key: 'contact', rows: rowsOf(entity.value, CONTACT_ONLY_ROWS) }]
   const contact = { key: 'contact', rows: rowsOf(entity.value, CONTACT_ROWS) }
-  if (!isFullRecord.value) return [contact]
   const deletion = entity.value.isDeleted
     ? [{ key: 'deletion', rows: rowsOf(entity.value, DELETION_ROWS) }]
     : []
@@ -118,7 +126,7 @@ onMounted(load)
 
     <template v-else-if="entity">
       <router-link class="entity-record__back" :to="{ name: backRoute }">
-        <i class="fa-solid fa-arrow-left u-flip-in-rtl" aria-hidden="true"></i>
+        <AppIcon name="arrow-left" />
         {{ t(entity.isDeleted ? 'entities.record.backToDeleted' : 'entities.record.backToList') }}
       </router-link>
       <header class="entity-record__header">
@@ -132,7 +140,7 @@ onMounted(load)
       </header>
 
       <aside v-if="entity.isDeleted" class="entity-record__notice" role="note">
-        <i class="fa-solid fa-snowflake" aria-hidden="true"></i>
+        <AppIcon name="snowflake" />
         <p>{{ t('entities.record.deletedNotice') }}</p>
       </aside>
 
@@ -144,6 +152,12 @@ onMounted(load)
         >
           <EntityDetailsList :rows="section.rows" />
         </Card>
+        <EntityLogoPreview
+          v-if="isFullRecord"
+          :logo="entity.logo ?? null"
+          :entity-name="localized(entity.name)"
+          :refresh="refreshLogo"
+        />
         <FrozenRequestsCard
           v-if="entity.isDeleted"
           :requests="frozenRequests"

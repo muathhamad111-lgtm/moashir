@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Badge from '@/components/ui/Badge.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   records: { type: Array, required: true },
@@ -34,7 +35,7 @@ const rows = computed(() => props.records.map((record) => ({ ...record, state: s
 <template>
   <section class="dns-checklist" :aria-label="t('integrations.email.dns.title')">
     <h3 class="dns-checklist__title">
-      <i class="fa-solid fa-globe" aria-hidden="true"></i>
+      <AppIcon name="globe" />
       {{ t('integrations.email.dns.title') }}
     </h3>
     <p class="field__hint">{{ t('integrations.email.dns.hint') }}</p>

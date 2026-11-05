@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import Card from '@/components/ui/Card.vue'
 import { slotsOf } from '@/utils/accredited/evidenceRules'
 import { localizedText } from '@/utils/localizedText'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   missing: { type: Object, required: true },
@@ -53,10 +54,7 @@ defineExpose({ focus })
 <template>
   <Card class="accredited-completeness" :class="{ 'accredited-completeness--done': !count }">
     <h2 ref="heading" class="accredited-completeness__title" tabindex="-1">
-      <i
-        :class="count ? 'fa-solid fa-list-check' : 'fa-solid fa-circle-check'"
-        aria-hidden="true"
-      ></i>
+      <AppIcon :name="count ? 'list-check' : 'check-circle'" />
       {{
         count
           ? t('accredited.completeness.title', { count }, count)

@@ -57,6 +57,7 @@ async function fill(wrapper) {
     password: 'Wafa-Charity-Account-2026',
     passwordConfirmation: 'Wafa-Charity-Account-2026',
     'name.ar': 'جمعية الوفاء الخيرية',
+    unifiedNumber: '7000000901',
     authorizedPersonName: 'سلمان بن فهد الحربي',
     foundingYear: '2016',
   }
@@ -113,6 +114,7 @@ describe('Register', () => {
     expect(authService.register).toHaveBeenCalledWith(
       expect.objectContaining({
         entityType: 'waqf',
+        unifiedNumber: '7000000901',
         regionId: 2,
         cityId: 12,
         governanceGrade: null,
@@ -125,6 +127,40 @@ describe('Register', () => {
     )
     expect(useAuthFlowStore().intent).toBe('register')
     expect(push).toHaveBeenCalledWith({ name: 'auth.otp' })
+  })
+
+  it('keeps the unified number digits only, explains it and shows the duplicate answer on the field', async () => {
+    const DUPLICATE =
+      'This unified national number is already registered for another entity on the platform.'
+    authService.register.mockRejectedValue({
+      response: { status: 422 },
+      normalized: { message: 'Invalid', fieldErrors: { unifiedNumber: [DUPLICATE] } },
+    })
+    const { wrapper } = await mountRegister()
+    await fill(wrapper)
+    const input = wrapper.find('[name="unifiedNumber"]')
+    await input.setValue('٧٠٠-٠٠ab٠٠٩٠١9999')
+    expect(input.element.value).toBe('7000000901')
+    expect(input.attributes()).toMatchObject({ inputmode: 'numeric', dir: 'ltr', maxlength: '10' })
+    expect(wrapper.text()).toContain('10 digits starting with 7.')
+    await wrapper.find('[name="termsAccepted"]').setValue(true)
+    await wrapper.find('form').trigger('submit')
+    await settle()
+    expect(authService.register).toHaveBeenCalledWith(
+      expect.objectContaining({ unifiedNumber: '7000000901' }),
+    )
+    expect(wrapper.text()).toContain(DUPLICATE)
+  })
+
+  it('requires the unified number before registering', async () => {
+    const { wrapper } = await mountRegister()
+    await fill(wrapper)
+    await wrapper.find('[name="unifiedNumber"]').setValue('')
+    await wrapper.find('[name="termsAccepted"]').setValue(true)
+    await wrapper.find('form').trigger('submit')
+    await settle()
+    expect(authService.register).not.toHaveBeenCalled()
+    expect(wrapper.find('[name="unifiedNumber"]').attributes('aria-invalid')).toBe('true')
   })
 
   it('explains that registration is unavailable while no terms are published', async () => {

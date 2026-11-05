@@ -33,7 +33,9 @@ async function mountView(locale = 'ar') {
 beforeEach(() => {
   vi.clearAllMocks()
   brandingService.get.mockResolvedValue(theme())
-  brandingService.update.mockImplementation(({ accentToken }) => Promise.resolve(theme(accentToken)))
+  brandingService.update.mockImplementation(({ accentToken }) =>
+    Promise.resolve(theme(accentToken)),
+  )
   brandingService.reset.mockResolvedValue(theme())
   brandingService.uploadLogo.mockResolvedValue({ data: { fileId: 1, url: 'blob:x' } })
   globalThis.URL.createObjectURL = vi.fn(() => 'blob:preview')
@@ -62,7 +64,7 @@ describe('Branding settings (System Administrator)', () => {
   it('shows a passing AA contrast check for the selected color', async () => {
     const { wrapper } = await mountView('en')
     const rows = wrapper.findAll('.contrast-check__row')
-    expect(rows).toHaveLength(3)
+    expect(rows).toHaveLength(4)
     rows.forEach((row) => expect(row.text()).toContain('Passes AA'))
     wrapper.unmount()
   })
@@ -75,7 +77,7 @@ describe('Branding settings (System Administrator)', () => {
     expect(save.attributes('disabled')).toBeUndefined()
     await save.trigger('click')
     await flushPromises()
-    expect(brandingService.update).toHaveBeenCalledWith({ accentToken: 'teal' })
+    expect(brandingService.update).toHaveBeenCalledWith({ accentToken: 'teal', reason: null })
     expect(useBrandingStore().accentToken).toBe('teal')
     wrapper.unmount()
   })
@@ -93,20 +95,28 @@ describe('Branding settings (System Administrator)', () => {
   })
 
   it('shows each saved logo in its preview frame', async () => {
-    brandingService.get.mockResolvedValue(theme('brand_default', { dark: 'blob:on-dark', light: 'blob:on-light' }))
+    brandingService.get.mockResolvedValue(
+      theme('brand_default', { dark: 'blob:on-dark', light: 'blob:on-light' }),
+    )
     const { wrapper } = await mountView('en')
     const frames = wrapper.findAll('.branding-preview__frame')
     expect(frames[0].find('.branding-preview__logo').attributes('src')).toBe('blob:on-dark')
     expect(frames[1].find('.branding-preview__logo').attributes('src')).toBe('blob:on-light')
-    wrapper.findAll('.logo-variant').forEach((field) => expect(field.text()).toContain('Custom logo'))
+    wrapper
+      .findAll('.logo-variant')
+      .forEach((field) => expect(field.text()).toContain('Custom logo'))
     wrapper.unmount()
   })
 
   it('offers no per-logo restore; only the global reset returns the logos to the brand defaults', async () => {
-    brandingService.get.mockResolvedValue(theme('coral', { dark: 'blob:on-dark', light: 'blob:on-light' }))
+    brandingService.get.mockResolvedValue(
+      theme('coral', { dark: 'blob:on-dark', light: 'blob:on-light' }),
+    )
     const { wrapper } = await mountView()
     wrapper.findAll('.logo-variant').forEach((field) => {
-      expect(field.findAll('button').map((button) => button.classes())).toEqual([['file-upload__dropzone']])
+      expect(field.findAll('button').map((button) => button.classes())).toEqual([
+        ['file-upload__dropzone'],
+      ])
     })
     expect(wrapper.findAll('.branding-page__actions .btn')).toHaveLength(2)
     expect(wrapper.text()).not.toContain('استعادة الشعار الافتراضي')
@@ -133,13 +143,15 @@ describe('Branding settings (System Administrator)', () => {
     await wrapper.find('.branding-page__actions .btn--primary').trigger('click')
     await flushPromises()
     expect(brandingService.uploadLogo).toHaveBeenCalledTimes(1)
-    expect(brandingService.uploadLogo).toHaveBeenCalledWith(expect.any(File), 'light')
+    expect(brandingService.uploadLogo).toHaveBeenCalledWith(expect.any(File), 'light', null)
     expect(brandingService.update).toHaveBeenCalled()
     wrapper.unmount()
   })
 
   it('resets the accent and both logos to the brand defaults only after confirmation', async () => {
-    brandingService.get.mockResolvedValue(theme('coral', { dark: 'blob:on-dark', light: 'blob:on-light' }))
+    brandingService.get.mockResolvedValue(
+      theme('coral', { dark: 'blob:on-dark', light: 'blob:on-light' }),
+    )
     const { wrapper } = await mountView('en')
     await wrapper.find('.branding-page__actions .btn--ghost').trigger('click')
     await flushPromises()
@@ -149,7 +161,9 @@ describe('Branding settings (System Administrator)', () => {
     expect(brandingService.reset).toHaveBeenCalledTimes(1)
     expect(useBrandingStore().accentToken).toBe('brand_default')
     expect(useBrandingStore().logos).toEqual({ dark: null, light: null })
-    wrapper.findAll('.logo-variant').forEach((field) => expect(field.text()).toContain('Brand default'))
+    wrapper
+      .findAll('.logo-variant')
+      .forEach((field) => expect(field.text()).toContain('Brand default'))
     wrapper.unmount()
   })
 
@@ -163,7 +177,49 @@ describe('Branding settings (System Administrator)', () => {
     await flushPromises()
     expect(useBrandingStore().accentToken).toBe('coral')
     expect(wrapper.findAll('.logo-variant')[0].text()).toContain('Custom logo')
-    expect(useToast().toasts.at(-1)).toMatchObject({ type: 'error', message: 'Could not save the identity. Please try again.' })
+    expect(useToast().toasts.at(-1)).toMatchObject({
+      type: 'error',
+      message: 'Could not save the identity. Please try again.',
+    })
+    wrapper.unmount()
+  })
+
+  it('shows the server contrast_fail pairs clearly and keeps the saved accent', async () => {
+    brandingService.update.mockRejectedValueOnce(
+      Object.assign(new Error('contrast'), {
+        normalized: {
+          code: 'contrast_fail',
+          message: 'The selected color does not meet the WCAG 2.1 AA contrast ratio in light and dark mode.',
+          meta: { pairs: [{ pair: 'dark.accent_on_content', foreground: '#a7db4f', background: '#0a2325', ratio: '4.20', minimum: '4.5' }] },
+          fieldErrors: {},
+        },
+      }),
+    )
+    const { wrapper } = await mountView('en')
+    await wrapper.findAll('.accent-swatch__input')[8].setValue(true)
+    await wrapper.find('.branding-page__actions .btn--primary').trigger('click')
+    await flushPromises()
+    const notice = wrapper.find('.contrast-fail')
+    expect(notice.attributes('role')).toBe('alert')
+    expect(notice.text()).toContain('Accent as text in dark mode')
+    expect(notice.text()).toMatch(/4\.2(0)?:1/)
+    expect(notice.text()).toMatch(/4\.5(0)?:1/)
+    expect(useBrandingStore().accentToken).toBe('brand_default')
+    await wrapper.findAll('.accent-swatch__input')[2].setValue(true)
+    expect(wrapper.find('.contrast-fail').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('asks the Super Admin for a reason and sends it with every change', async () => {
+    const { wrapper, globals } = await mountView('en')
+    const { useAuthStore } = await import('@/stores/auth')
+    useAuthStore(globals.pinia).user = { id: 1, name: 'مدير النظام الرئيسي', roles: [], permissions: [], isSuperAdmin: true }
+    await wrapper.findAll('.accent-swatch__input')[2].setValue(true)
+    await wrapper.find('.branding-page__actions .btn--primary').trigger('click')
+    await flushPromises()
+    expect(brandingService.update).not.toHaveBeenCalled()
+    const dialog = document.body.querySelector('.reason-dialog textarea')
+    expect(dialog).not.toBeNull()
     wrapper.unmount()
   })
 
@@ -178,7 +234,9 @@ describe('Branding settings (System Administrator)', () => {
   })
 
   it('shows the empty state when the palette is not returned', async () => {
-    brandingService.get.mockResolvedValue({ data: { accentToken: 'brand_default', logos: { dark: null, light: null }, palette: [] } })
+    brandingService.get.mockResolvedValue({
+      data: { accentToken: 'brand_default', logos: { dark: null, light: null }, palette: [] },
+    })
     const { wrapper } = await mountView('en')
     expect(wrapper.find('.empty-state').exists()).toBe(true)
     wrapper.unmount()

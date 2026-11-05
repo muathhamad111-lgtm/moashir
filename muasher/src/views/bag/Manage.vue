@@ -99,7 +99,7 @@ async function onSaveGuidance(gap, payload) {
 
     <EmptyState
       v-else-if="status === 'empty'"
-      icon="fa-solid fa-folder-open"
+      icon="folder"
       :title="t('bag.manage.empty.title')"
       :message="t('bag.manage.empty.message')"
     />
@@ -150,7 +150,7 @@ async function onSaveGuidance(gap, payload) {
           </span>
           <BaseButton
             variant="primary"
-            icon="fa-solid fa-folder-plus"
+            icon="folder"
             :disabled="selectedCount === 0"
             :loading="opening"
             @click="onOpenSelected"

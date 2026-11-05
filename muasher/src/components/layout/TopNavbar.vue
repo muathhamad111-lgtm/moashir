@@ -16,6 +16,7 @@ import NotificationBell from '@/components/notifications/NotificationBell.vue'
 import ActionsDropdown from '@/components/data-list/ActionsDropdown.vue'
 import Badge from '@/components/ui/Badge.vue'
 import GlobalSearch from '@/components/search/GlobalSearch.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -41,14 +42,14 @@ const initial = computed(() => Array.from(displayName.value.trim())[0] ?? '')
 const roleLabels = computed(() => auth.roles.map((role) => t(`users.roleLabels.${role}`)))
 
 const userActions = computed(() => [
-  { key: 'account', label: t('nav.account'), icon: 'fa-solid fa-id-badge' },
+  { key: 'account', label: t('nav.account'), icon: 'user-circle' },
   ...(canViewEntityProfile.value
-    ? [{ key: 'profile', label: t('nav.entityProfile'), icon: 'fa-solid fa-user' }]
+    ? [{ key: 'profile', label: t('nav.entityProfile'), icon: 'user' }]
     : []),
   {
     key: 'logout',
     label: t('actions.logout'),
-    icon: 'fa-solid fa-arrow-right-from-bracket',
+    icon: 'logout',
     variant: 'danger',
   },
 ])
@@ -82,7 +83,7 @@ function onUserAction(key) {
         :aria-expanded="!sidebarCollapsed"
         @click="ui.toggleSidebar"
       >
-        <i class="fa-solid fa-bars-staggered u-flip-in-rtl" aria-hidden="true"></i>
+        <AppIcon name="menu" />
       </button>
       <p class="navbar__title">{{ pageTitle }}</p>
     </div>
@@ -97,7 +98,7 @@ function onUserAction(key) {
         :aria-label="t('nav.adminSettings')"
         :title="t('nav.adminSettings')"
       >
-        <i class="fa-solid fa-gear" aria-hidden="true"></i>
+        <AppIcon name="gear" />
       </router-link>
       <NotificationBell />
       <div class="navbar__user">

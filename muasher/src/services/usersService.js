@@ -1,43 +1,79 @@
 import { apiClient } from '@/api/client'
-import { payloadShape } from '@/utils/payloadShape'
-import { serviceRequest } from './serviceRequest'
+import { domainRequests } from './domainRequest'
+import { toUser, toUserStats } from './mappers/users'
+
+const { read, write } = domainRequests('users', 'user')
+
+function mapUser(request) {
+  return request.then((envelope) => ({ ...envelope, data: toUser(envelope.data) }))
+}
+
+function action(name, userId, verb, payload) {
+  return mapUser(write(name, () => apiClient.post(`/users/${userId}/${verb}`, payload), payload))
+}
 
 export const usersService = {
   list(params = {}) {
-    return serviceRequest('users.list', () => apiClient.get('/users', { params }), {
-      entity: 'user',
-      paramsShape: payloadShape(params),
-    })
+    return read('list', () => apiClient.get('/users', { params }), params).then((envelope) => ({
+      ...envelope,
+      data: (envelope.data ?? []).map(toUser),
+      meta: { ...envelope.meta, stats: toUserStats(envelope.meta?.stats) },
+    }))
   },
+
   get(userId) {
-    return serviceRequest('users.get', () => apiClient.get(`/users/${userId}`), {
-      entity: 'user',
-    })
+    return mapUser(read('get', () => apiClient.get(`/users/${userId}`)))
   },
+
   create(payload) {
-    return serviceRequest('users.create', () => apiClient.post('/users', payload), {
-      entity: 'user',
-      payloadShape: payloadShape(payload),
-    })
+    return mapUser(write('create', () => apiClient.post('/users', payload), payload))
   },
+
   update(userId, payload) {
-    return serviceRequest('users.update', () => apiClient.put(`/users/${userId}`, payload), {
-      entity: 'user',
-      payloadShape: payloadShape(payload),
-    })
+    return mapUser(write('update', () => apiClient.put(`/users/${userId}`, payload), payload))
   },
-  activate(userId) {
-    return serviceRequest(
-      'users.activate',
-      () => apiClient.patch(`/users/${userId}/status`, { status: 'active' }),
-      { entity: 'user' },
+
+  suspend(userId, payload) {
+    return action('suspend', userId, 'suspend', payload)
+  },
+
+  activate(userId, payload = {}) {
+    return action('activate', userId, 'activate', payload)
+  },
+
+  unlock(userId, payload = {}) {
+    return action('unlock', userId, 'unlock', payload)
+  },
+
+  resetMfa(userId, payload) {
+    return action('resetMfa', userId, 'mfa/reset', payload)
+  },
+
+  updateAssessorQualifications(userId, payload) {
+    return mapUser(
+      write(
+        'updateAssessorQualifications',
+        () => apiClient.put(`/users/${userId}/assessor-qualifications`, payload),
+        payload,
+      ),
     )
   },
-  deactivate(userId) {
-    return serviceRequest(
-      'users.deactivate',
-      () => apiClient.patch(`/users/${userId}/status`, { status: 'inactive' }),
-      { entity: 'user' },
+
+  updateRequestScope(userId, payload) {
+    return mapUser(
+      write(
+        'updateRequestScope',
+        () => apiClient.put(`/users/${userId}/request-scope`, payload),
+        payload,
+      ),
+    )
+  },
+
+  resendInvitation(userId) {
+    return write(
+      'resendInvitation',
+      () => apiClient.post(`/users/${userId}/invitation/resend`, {}),
+      {},
     )
   },
 }

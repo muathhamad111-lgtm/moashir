@@ -474,7 +474,7 @@ describe('sms settings', () => {
     expect(data.templates).toHaveLength(1)
     expect(data.templates[0]).toMatchObject({
       key: 'otp_code',
-      placeholders: ['code', 'minutes'],
+      placeholders: ['code', 'validity', 'minutes'],
       required_placeholders: ['code'],
       single_segment: true,
       matches_msegat_template: null,

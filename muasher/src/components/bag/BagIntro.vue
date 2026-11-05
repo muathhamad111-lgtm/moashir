@@ -6,12 +6,14 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import Accordion from '@/components/ui/Accordion.vue'
 import FeeSummary from '@/components/payments/FeeSummary.vue'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   product: { type: Object, required: true },
   pricing: { type: Object, default: null },
   localized: { type: Function, required: true },
   eligible: { type: Boolean, default: false },
+  cms: { type: Object, default: null },
 })
 
 const { t, n } = useI18n()
@@ -40,12 +42,18 @@ const lineItems = computed(() => {
   ]
 })
 
-const faqItems = computed(() =>
+const productFaqs = computed(() =>
   (marketing.value.faqs ?? []).map((faq, index) => ({
     id: `bag-faq-${index}`,
     title: props.localized(faq.q),
     content: props.localized(faq.a),
   })),
+)
+const faqItems = computed(() => (props.cms?.faqs?.length ? props.cms.faqs : productFaqs.value))
+const faqTitle = computed(() => props.cms?.faqTitle || t('bag.intro.faq.title'))
+const whatTitle = computed(() => props.cms?.overview?.title || t('bag.intro.what.title'))
+const whatBody = computed(
+  () => props.cms?.overview?.body || props.localized(marketing.value.whatIsIt),
 )
 </script>
 
@@ -59,8 +67,8 @@ const faqItems = computed(() =>
 
     <div class="bag-intro__grid">
       <Card v-reveal class="bag-intro__block">
-        <h2 class="bag-intro__block-title">{{ t('bag.intro.what.title') }}</h2>
-        <p class="bag-intro__block-body">{{ localized(marketing.whatIsIt) }}</p>
+        <h2 class="bag-intro__block-title">{{ whatTitle }}</h2>
+        <p class="bag-intro__block-body">{{ whatBody }}</p>
       </Card>
       <Card v-reveal class="bag-intro__block">
         <h2 class="bag-intro__block-title">{{ t('bag.intro.why.title') }}</h2>
@@ -88,7 +96,7 @@ const faqItems = computed(() =>
       </h2>
       <ul class="bag-intro__output-list">
         <li v-for="(out, index) in marketing.outputs ?? []" :key="index" class="bag-intro__output">
-          <i class="fa-solid fa-circle-check bag-intro__output-icon" aria-hidden="true"></i>
+          <AppIcon name="check-circle" class="bag-intro__output-icon" />
           <span>{{ localized(out) }}</span>
         </li>
       </ul>
@@ -109,10 +117,7 @@ const faqItems = computed(() =>
         <template #action>
           <div class="bag-intro__cta">
             <p class="bag-intro__eligibility" :class="eligible ? 'is-eligible' : 'is-blocked'">
-              <i
-                :class="eligible ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-info'"
-                aria-hidden="true"
-              ></i>
+              <AppIcon :name="eligible ? 'check-circle' : 'info-circle'" />
               <span>{{ localized(marketing.eligibilityNote) }}</span>
             </p>
 
@@ -121,7 +126,7 @@ const faqItems = computed(() =>
               class="bag-intro__pay-link"
               :to="{ name: ROUTE_NAMES.BAG_PAY }"
             >
-              <BaseButton variant="primary" icon="fa-solid fa-credit-card" tabindex="-1">
+              <BaseButton variant="primary" icon="credit-card" tabindex="-1">
                 {{ t('bag.intro.cta.subscribe') }}
               </BaseButton>
             </router-link>
@@ -131,7 +136,7 @@ const faqItems = computed(() =>
               class="bag-intro__return-link"
               :to="{ name: ROUTE_NAMES.ASSESSMENT_ACCREDITED }"
             >
-              <BaseButton variant="secondary" icon="fa-solid fa-clipboard-check" tabindex="-1">
+              <BaseButton variant="secondary" icon="clipboard-check" tabindex="-1">
                 {{ t('bag.intro.cta.completeAccredited') }}
               </BaseButton>
             </router-link>
@@ -141,7 +146,7 @@ const faqItems = computed(() =>
     </section>
 
     <section v-if="faqItems.length" v-reveal class="bag-intro__faq" aria-labelledby="bag-intro-faq">
-      <h2 id="bag-intro-faq" class="bag-intro__section-title">{{ t('bag.intro.faq.title') }}</h2>
+      <h2 id="bag-intro-faq" class="bag-intro__section-title">{{ faqTitle }}</h2>
       <Accordion :items="faqItems" />
     </section>
   </div>

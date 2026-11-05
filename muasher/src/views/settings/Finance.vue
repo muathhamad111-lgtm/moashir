@@ -7,6 +7,7 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import FinanceSettingsPreview from '@/components/finance/FinanceSettingsPreview.vue'
 import { useFinanceSettings } from '@/composables/useFinanceSettings'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 const {
@@ -49,7 +50,7 @@ onMounted(load)
       <fieldset class="settings-form__group">
         <legend class="settings-form__legend">{{ t('finance.settings.pricesTitle') }}</legend>
         <p class="settings-form__note" role="note">
-          <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+          <AppIcon name="info-circle" />
           {{ t('finance.settings.pricesNote') }}
         </p>
         <div class="settings-form__grid">
@@ -106,7 +107,7 @@ onMounted(load)
         form="finance-settings-form"
         variant="primary"
         :loading="saving"
-        icon="fa-solid fa-floppy-disk"
+        icon="save"
       >
         {{ t('actions.save') }}
       </BaseButton>

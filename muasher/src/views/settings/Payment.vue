@@ -135,7 +135,7 @@ onMounted(load)
         form="payment-integration-form"
         variant="primary"
         :loading="saving"
-        icon="fa-solid fa-floppy-disk"
+        icon="save"
       >
         {{ t('actions.save') }}
       </BaseButton>

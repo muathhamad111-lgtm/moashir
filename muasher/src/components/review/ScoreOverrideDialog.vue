@@ -18,6 +18,7 @@ import {
   withinScale,
 } from '@/utils/assessments/scoreSheet'
 import { logger } from '@/utils/logger'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -114,7 +115,7 @@ watch(
   >
     <div class="override-dialog">
       <p class="override-dialog__warning" role="note">
-        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+        <AppIcon name="warning-triangle" />
         {{ t('review.override.warning') }}
       </p>
       <div class="override-dialog__grid">

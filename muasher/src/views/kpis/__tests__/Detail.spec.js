@@ -22,22 +22,32 @@ function sampleKpi(overrides = {}) {
     id: 1,
     slug: 'participating-associations',
     name: { ar: 'الجمعيات المشاركة', en: 'Participating associations' },
-    description: { ar: 'وصف', en: 'Registered associations on the platform' },
-    value: 486,
-    target: 700,
-    baseline: 320,
+    shortDescription: { ar: 'وصف', en: 'Registered associations on the platform' },
+    fullDescription: { ar: 'وصف كامل', en: 'All associations registered and active on the platform' },
+    value: '486',
+    target: '700',
+    baseline: '320',
     unit: { ar: 'جمعية', en: 'associations' },
-    category: 'beneficiaries',
+    category: { id: 3, key: 'beneficiaries', name: { ar: 'المستفيدون', en: 'Beneficiaries' } },
+    type: { id: 2, key: 'output', name: { ar: 'مؤشر مخرجات', en: 'Output indicator' } },
     status: 'good',
     owner: { ar: 'الإدارة', en: 'Registration Department' },
     dataSource: { ar: 'السجل', en: 'Platform log' },
-    lastUpdate: '2025-01-15',
-    externalLink: 'https://muasher.sa/associations',
+    measurementYear: 2026,
+    lastUpdate: '2026-06-30T09:00:00Z',
+    createdAt: '2026-01-10T09:00:00Z',
+    externalLink: 'https://data.moashir.example.sa/associations',
     calcMethod: { ar: 'طريقة', en: 'Count of active entities' },
     notes: { ar: 'ملاحظات', en: 'Updated quarterly' },
-    icon: 'fa-solid fa-people-group',
-    color: 'primary',
-    cardColor: 'primary',
+    icon: 'users-two',
+    image: null,
+    cardColor: 'success',
+    badgeColor: 'info',
+    history: [
+      { value: '320', measuredOn: '2024-12-31' },
+      { value: '486', measuredOn: '2026-06-30' },
+    ],
+    seo: { title: { ar: 'الجمعيات المشاركة', en: 'Participating associations' }, description: null },
     ...overrides,
   }
 }
@@ -68,15 +78,32 @@ describe('KPI detail (per-slug page)', () => {
     expect(wrapper.text()).toContain('Count of active entities')
     expect(wrapper.text()).toContain('Updated quarterly')
     expect(wrapper.find('.kpi-detail__status').exists()).toBe(true)
+    expect(wrapper.find('.kpi-detail__body').classes()).toContain('kpi-detail__body--success')
+  })
+
+  it('lists the facts with category and type names and the value history newest first', () => {
+    status.value = 'success'
+    kpi.value = sampleKpi()
+    const wrapper = mountView()
+    const facts = wrapper.findAll('.kpi-detail__fact-value').map((el) => el.text())
+    expect(facts).toContain('Beneficiaries')
+    expect(facts).toContain('Output indicator')
+    expect(facts).toContain('2026')
+    const rows = wrapper.findAll('.kpi-history__row')
+    expect(rows).toHaveLength(2)
+    expect(rows[0].text()).toContain('486')
+    expect(wrapper.find('progress.kpi-detail__meter').attributes('value')).toBe('69')
   })
 
   it('exposes the external link action and a back-to-list action', () => {
     status.value = 'success'
     kpi.value = sampleKpi()
     const wrapper = mountView()
-    const labels = wrapper.findAll('.btn__label').map((el) => el.text())
-    expect(labels).toContain('Open the data source')
-    expect(labels).toContain('Back to indicators')
+    const external = wrapper.find('.kpi-detail__actions a[target="_blank"]')
+    expect(external.attributes('href')).toBe('https://data.moashir.example.sa/associations')
+    expect(external.attributes('rel')).toContain('noopener')
+    expect(external.text()).toContain('Open the data source')
+    expect(wrapper.findAll('.btn__label').map((el) => el.text())).toContain('Back to indicators')
   })
 
   it('renders a branded not-found state with a back link when the slug is unknown', () => {

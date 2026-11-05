@@ -7,7 +7,7 @@ defineProps({
   accept: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
   loading: { type: Boolean, default: false },
-  icon: { type: String, default: 'fa-solid fa-cloud-arrow-up' },
+  icon: { type: String, default: 'cloud-upload' },
 })
 
 const emit = defineEmits(['select'])

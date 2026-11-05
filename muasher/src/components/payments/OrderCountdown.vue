@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { COUNTDOWN_WARNING_SECONDS } from '@/constants/payments'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   label: { type: String, required: true },
@@ -15,7 +16,7 @@ const minutesLeft = computed(() => Math.ceil(props.remaining / 60))
 
 <template>
   <p class="order-countdown" :class="{ 'order-countdown--urgent': urgent }">
-    <i class="fa-solid fa-hourglass-half" aria-hidden="true"></i>
+    <AppIcon name="refresh-dots" />
     <span>{{ t('finance.checkout.expiresIn') }}</span>
     <time class="order-countdown__time" dir="ltr" aria-hidden="true">{{ label }}</time>
     <span class="order-countdown__live" aria-live="polite">{{

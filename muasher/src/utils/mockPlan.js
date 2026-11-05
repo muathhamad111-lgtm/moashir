@@ -1,4 +1,5 @@
 import { MOCK_MODES, MOCK_MODULES } from '@/constants/mockModules'
+import { BUILD_POSTURES, buildPostureOf } from '@/utils/build/buildPosture'
 
 const KNOWN_MODULES = new Set(Object.values(MOCK_MODULES))
 const LIST_SEPARATOR = ','
@@ -19,7 +20,9 @@ export function parseDemoModules(raw) {
 }
 
 export function mockPlanOf(env = {}) {
-  if (!env.VITE_API_BASE_URL) return { mode: MOCK_MODES.FULL, modules: [], unknown: [] }
+  const posture = buildPostureOf(env)
+  if (posture === BUILD_POSTURES.MOCK) return { mode: MOCK_MODES.FULL, modules: [], unknown: [] }
+  if (posture === BUILD_POSTURES.REAL) return { mode: MOCK_MODES.OFF, modules: [], unknown: [] }
   const { modules, unknown } = parseDemoModules(env.VITE_DEMO_MODULES)
   const mode = modules.length ? MOCK_MODES.HYBRID : MOCK_MODES.OFF
   return { mode, modules, unknown }

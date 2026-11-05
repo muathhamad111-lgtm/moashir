@@ -45,9 +45,18 @@ export const COUNTDOWN_TICK_MS = 1000
 
 export const COUNTDOWN_WARNING_SECONDS = 120
 
-export const MOYASAR_FORM_VERSION = '2.3.0'
+export const MY_PAYMENT_TABS = Object.freeze({
+  ALL: 'all',
+  AWAITING: 'awaiting',
+  PAID: 'paid',
+  CANCELLED: 'cancelled',
+})
 
-export const MOYASAR_FORM_ASSETS = {
-  scriptUrl: `https://cdn.moyasar.com/mpf/${MOYASAR_FORM_VERSION}/moyasar.js`,
-  stylesheetUrl: `https://cdn.moyasar.com/mpf/${MOYASAR_FORM_VERSION}/moyasar.css`,
-}
+export const MY_PAYMENT_TAB_STATUSES = Object.freeze({
+  [MY_PAYMENT_TABS.ALL]: [],
+  [MY_PAYMENT_TABS.AWAITING]: [PAYMENT_STATUSES.CREATED, PAYMENT_STATUSES.PENDING],
+  [MY_PAYMENT_TABS.PAID]: [PAYMENT_STATUSES.PAID],
+  [MY_PAYMENT_TABS.CANCELLED]: [PAYMENT_STATUSES.CANCELLED, PAYMENT_STATUSES.FAILED],
+})
+
+export const PENDING_ORDER_LIMIT = 5

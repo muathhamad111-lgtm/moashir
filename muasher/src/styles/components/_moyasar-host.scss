@@ -17,6 +17,13 @@
 
 .moyasar-host__form {
   min-block-size: var(--size-touch-target);
+
+  &.mysr-form-moyasarForm {
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-white);
+    color-scheme: light;
+  }
 }
 
 .fake-moyasar {

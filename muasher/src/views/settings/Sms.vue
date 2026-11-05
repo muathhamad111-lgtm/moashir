@@ -13,6 +13,7 @@ import MsegatCard from '@/components/integrations/sms/MsegatCard.vue'
 import SmsTemplatesEditor from '@/components/integrations/sms/SmsTemplatesEditor.vue'
 import SmsTestSend from '@/components/integrations/sms/SmsTestSend.vue'
 import SmsBroadcastCard from '@/components/integrations/sms/SmsBroadcastCard.vue'
+import { SHOWS_DEMO_ONLY_MODULES } from '@/constants/buildPosture'
 import { useSmsIntegration } from '@/composables/useSmsIntegration'
 import { usePermissions } from '@/composables/usePermissions'
 import { PERMISSIONS } from '@/constants/permissionKeys'
@@ -87,7 +88,7 @@ onMounted(load)
     </form>
 
     <SmsTestSend :key="defaultTestProvider" :default-provider="defaultTestProvider" />
-    <SmsBroadcastCard v-if="can(PERMISSIONS.MESSAGING_CAMPAIGNS_SEND)" />
+    <SmsBroadcastCard v-if="SHOWS_DEMO_ONLY_MODULES && can(PERMISSIONS.MESSAGING_CAMPAIGNS_SEND)" />
 
     <ReasonDialog
       v-model="reasonOpen"
@@ -104,7 +105,7 @@ onMounted(load)
         form="sms-integration-form"
         variant="primary"
         :loading="saving"
-        icon="fa-solid fa-floppy-disk"
+        icon="save"
       >
         {{ t('actions.save') }}
       </BaseButton>

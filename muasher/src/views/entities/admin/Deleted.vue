@@ -11,6 +11,7 @@ import { useEntityList } from '@/composables/useEntityList'
 import { useRegions } from '@/composables/useRegions'
 import { ENTITY_ACTIONS } from '@/composables/useEntityActions'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -38,7 +39,7 @@ onMounted(regions.load)
     </header>
 
     <aside class="entities-admin__notice" role="note">
-      <i class="fa-solid fa-snowflake" aria-hidden="true"></i>
+      <AppIcon name="snowflake" />
       <p>{{ t('entities.deleted.frozenNotice') }}</p>
     </aside>
 

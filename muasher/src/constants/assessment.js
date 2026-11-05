@@ -43,8 +43,14 @@ export const SELF_ASSESSMENT_CODES = {
 export const SELF_REQUEST_PREFIX = 'SLF'
 
 export const ASSESSMENT_NOTICE_ICONS = {
-  info: 'fa-solid fa-circle-info',
-  warning: 'fa-solid fa-triangle-exclamation',
-  danger: 'fa-solid fa-circle-exclamation',
-  frozen: 'fa-solid fa-snowflake',
+  info: 'info-circle',
+  warning: 'warning-triangle',
+  danger: 'warning-triangle',
+  frozen: 'snowflake',
 }
+
+export const ASSESSMENT_TABS = Object.freeze({
+  CURRENT: 'current',
+  HISTORY: 'history',
+  RESULTS: 'results',
+})

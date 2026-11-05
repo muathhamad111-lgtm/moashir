@@ -1,41 +1,5 @@
 export const notificationsFixture = [
   {
-    id: 1,
-    code: 'REG-01',
-    type: 'info',
-    recipientRole: 'entity',
-    channels: ['in-app', 'email'],
-    title: {
-      ar: 'تم إنشاء حسابكم في منصة مؤشر',
-      en: 'Your Muasher account was created',
-    },
-    body: {
-      ar: 'تم إنشاء حسابكم في منصة مؤشر بنجاح. يمكنكم الآن الدخول واستكمال بيانات الجهة.',
-      en: 'Your Muasher account was created successfully. You can now sign in and complete your organization profile.',
-    },
-    link: '/entity/profile',
-    read: true,
-    createdAt: '2026-06-25T12:05:00+03:00',
-  },
-  {
-    id: 2,
-    code: 'REG-03',
-    type: 'action',
-    recipientRole: 'entity',
-    channels: ['in-app', 'email'],
-    title: {
-      ar: 'استكمال بيانات ملف الجهة',
-      en: 'Complete your organization profile',
-    },
-    body: {
-      ar: 'يرجى استكمال بيانات الجهة المطلوبة قبل البدء في مسارات التقييم.',
-      en: 'Please complete the required organization profile data before starting the assessment paths.',
-    },
-    link: '/entity/profile',
-    read: false,
-    createdAt: '2026-06-25T12:20:00+03:00',
-  },
-  {
     id: 3,
     code: 'REG-05',
     type: 'alert',
@@ -53,7 +17,6 @@ export const notificationsFixture = [
     read: true,
     createdAt: '2026-06-24T09:30:00+03:00',
   },
-
   {
     id: 4,
     code: 'STD-01',
@@ -108,43 +71,6 @@ export const notificationsFixture = [
     read: true,
     createdAt: '2026-07-03T10:25:00+03:00',
   },
-
-  {
-    id: 7,
-    code: 'PAY-01',
-    type: 'action',
-    recipientRole: 'entity',
-    channels: ['in-app'],
-    title: {
-      ar: 'إنشاء طلب دفع للتقييم المعتمد',
-      en: 'Accredited assessment payment created',
-    },
-    body: {
-      ar: 'تم إنشاء طلب دفع للتقييم المعتمد. يرجى إتمام السداد للمتابعة.',
-      en: 'A payment request for the accredited assessment was created. Please complete the payment to continue.',
-    },
-    link: '/assessment/accredited/payment',
-    read: false,
-    createdAt: '2026-07-06T20:40:00+03:00',
-  },
-  {
-    id: 8,
-    code: 'PAY-02',
-    type: 'info',
-    recipientRole: 'entity',
-    channels: ['in-app', 'email', 'sms'],
-    title: {
-      ar: 'نجاح الدفع',
-      en: 'Payment received',
-    },
-    body: {
-      ar: 'تم استلام رسوم التقييم المعتمد بنجاح، وتم فتح نموذج التقييم لكم.',
-      en: 'The accredited assessment fee was received successfully and the assessment form is now open for you.',
-    },
-    link: '/assessment/accredited/form/2041',
-    read: false,
-    createdAt: '2026-07-06T21:05:00+03:00',
-  },
   {
     id: 9,
     code: 'PAY-02',
@@ -182,62 +108,6 @@ export const notificationsFixture = [
     createdAt: '2026-07-05T08:12:00+03:00',
   },
   {
-    id: 11,
-    code: 'PAY-05',
-    type: 'info',
-    recipientRole: 'assessor',
-    channels: ['in-app', 'email'],
-    title: {
-      ar: 'تفعيل اشتراك حقيبة التميز السريع',
-      en: 'Quick Excellence Kit subscription activated',
-    },
-    body: {
-      ar: 'تم تفعيل حقيبة التميز السريع للجهة بناءً على السداد.',
-      en: 'The Quick Excellence Kit was activated for the organization following payment.',
-    },
-    link: '/bag',
-    read: true,
-    createdAt: '2026-07-04T12:00:00+03:00',
-  },
-
-  {
-    id: 12,
-    code: 'SELF-03',
-    type: 'info',
-    recipientRole: 'entity',
-    channels: ['in-app', 'email'],
-    title: {
-      ar: 'إرسال التقييم الذاتي',
-      en: 'Self assessment submitted',
-    },
-    body: {
-      ar: 'تم إرسال التقييم الذاتي واحتساب النتيجة الأولية.',
-      en: 'Your self assessment was submitted and the initial result was calculated.',
-    },
-    link: '/assessment/self/result',
-    read: true,
-    createdAt: '2026-07-03T16:30:00+03:00',
-  },
-  {
-    id: 13,
-    code: 'SELF-04',
-    type: 'info',
-    recipientRole: 'entity',
-    channels: ['in-app'],
-    title: {
-      ar: 'ظهور نتيجة التقييم الذاتي',
-      en: 'Self assessment result available',
-    },
-    body: {
-      ar: 'نتيجة التقييم الذاتي متاحة الآن في لوحة التحكم.',
-      en: 'Your self assessment result is now available on your dashboard.',
-    },
-    link: '/assessment/self/result',
-    read: true,
-    createdAt: '2026-07-03T16:31:00+03:00',
-  },
-
-  {
     id: 14,
     code: 'ACC-04',
     type: 'action',
@@ -272,78 +142,6 @@ export const notificationsFixture = [
     link: '/admin/requests/9108/review',
     read: false,
     createdAt: '2026-07-06T11:20:00+03:00',
-  },
-  {
-    id: 16,
-    code: 'ACC-07',
-    type: 'action',
-    recipientRole: 'entity',
-    channels: ['in-app', 'email'],
-    title: {
-      ar: 'طلب استكمال من المقيم',
-      en: 'Completion requested by the assessor',
-    },
-    body: {
-      ar: 'يرجى استكمال المتطلبات أو مراجعة الملاحظات على طلب التقييم المعتمد.',
-      en: 'Please complete the requirements or review the notes on your accredited assessment request.',
-    },
-    link: '/assessment/accredited/form/2041',
-    read: false,
-    createdAt: '2026-07-07T08:40:00+03:00',
-  },
-  {
-    id: 17,
-    code: 'ACC-08',
-    type: 'info',
-    recipientRole: 'entity',
-    channels: ['in-app', 'email'],
-    title: {
-      ar: 'اكتمال تقييم طلبكم المعتمد',
-      en: 'Your accredited assessment is complete',
-    },
-    body: {
-      ar: 'تم الانتهاء من تقييم طلبكم المعتمد، والنتيجة متاحة الآن.',
-      en: 'Your accredited assessment request has been completed and the result is now available.',
-    },
-    link: '/assessment/accredited/result/1980',
-    read: true,
-    createdAt: '2026-06-22T15:35:00+03:00',
-  },
-  {
-    id: 18,
-    code: 'ACC-09',
-    type: 'info',
-    recipientRole: 'entity',
-    channels: ['in-app', 'email'],
-    title: {
-      ar: 'إصدار شهادة التقييم المعتمد',
-      en: 'Accredited certificate issued',
-    },
-    body: {
-      ar: 'تم إصدار شهادة التقييم المعتمد للجهة جمعية فتاة الأحساء الخيرية. يمكنكم تحميلها من صفحة الشهادات.',
-      en: 'The accredited assessment certificate for Fatat Al-Ahsa Charity was issued. You can download it from the certificates page.',
-    },
-    link: '/certificates',
-    read: true,
-    createdAt: '2026-07-02T13:10:00+03:00',
-  },
-  {
-    id: 19,
-    code: 'ACC-10',
-    type: 'info',
-    recipientRole: 'entity',
-    channels: ['in-app', 'email'],
-    title: {
-      ar: 'إتاحة التقرير التعقيبي',
-      en: 'Feedback report available',
-    },
-    body: {
-      ar: 'التقرير التعقيبي الخاص بتقييمكم متاح الآن للاطلاع والتصدير.',
-      en: 'Your assessment feedback report is now available to review and export.',
-    },
-    link: '/assessment/accredited/reports/feedback/1980',
-    read: true,
-    createdAt: '2026-07-02T13:20:00+03:00',
   },
   {
     id: 20,
@@ -381,43 +179,6 @@ export const notificationsFixture = [
     read: false,
     createdAt: '2026-07-06T16:31:00+03:00',
   },
-
-  {
-    id: 22,
-    code: 'ADV-01',
-    type: 'info',
-    recipientRole: 'entity',
-    channels: ['in-app', 'email'],
-    title: {
-      ar: 'فتح دورة تقييم متقدم جديدة',
-      en: 'New advanced assessment cycle opened',
-    },
-    body: {
-      ar: 'تم فتح دورة تقييم متقدم جديدة. يمكن للجهات المؤهلة التقديم خلال الفترة المحددة.',
-      en: 'A new advanced assessment cycle is open. Eligible organizations may apply within the announced window.',
-    },
-    link: '/assessment/advanced',
-    read: true,
-    createdAt: '2026-06-28T08:00:00+03:00',
-  },
-  {
-    id: 23,
-    code: 'ADV-02',
-    type: 'alert',
-    recipientRole: 'entity',
-    channels: ['in-app', 'email', 'sms'],
-    title: {
-      ar: 'قرب انتهاء فترة التقديم',
-      en: 'Submission window closing soon',
-    },
-    body: {
-      ar: 'تبقى 3 أيام على انتهاء فترة التقديم للتقييم المتقدم. يرجى إكمال وإرسال الطلب.',
-      en: '3 days remain before the advanced assessment submission window closes. Please complete and submit your request.',
-    },
-    link: '/assessment/advanced',
-    read: false,
-    createdAt: '2026-07-05T09:00:00+03:00',
-  },
   {
     id: 24,
     code: 'ADV-06',
@@ -435,24 +196,6 @@ export const notificationsFixture = [
     link: '/admin/award/filtering',
     read: false,
     createdAt: '2026-07-05T14:10:00+03:00',
-  },
-  {
-    id: 25,
-    code: 'ADV-07',
-    type: 'info',
-    recipientRole: 'entity',
-    channels: ['in-app', 'email'],
-    title: {
-      ar: 'التأهل لتقييم اللجنة النهائي',
-      en: 'Qualified for final committee assessment',
-    },
-    body: {
-      ar: 'تم تأهيل الجهة للمرحلة التالية من التقييم المتقدم. سيبدأ تقييم اللجنة النهائي قريبًا.',
-      en: 'Your organization qualified for the next stage of the advanced assessment. Final committee assessment will begin soon.',
-    },
-    link: '/assessment/advanced',
-    read: true,
-    createdAt: '2026-07-04T14:45:00+03:00',
   },
   {
     id: 26,
@@ -529,98 +272,6 @@ export const notificationsFixture = [
     createdAt: '2026-07-03T11:40:00+03:00',
   },
   {
-    id: 30,
-    code: 'ADV-17',
-    type: 'info',
-    recipientRole: 'entity',
-    channels: ['in-app', 'email'],
-    title: {
-      ar: 'اعتماد نتيجة التقييم المتقدم',
-      en: 'Advanced assessment result approved',
-    },
-    body: {
-      ar: 'تم اعتماد نتيجة التقييم المتقدم للجهة. ستظهر النتيجة حسب سياسة الإعلان.',
-      en: 'The advanced assessment result for your organization was approved. It will appear according to the announcement policy.',
-    },
-    link: '/assessment/advanced',
-    read: true,
-    createdAt: '2026-07-01T09:15:00+03:00',
-  },
-  {
-    id: 31,
-    code: 'ADV-19',
-    type: 'info',
-    recipientRole: 'entity',
-    channels: ['in-app', 'email'],
-    title: {
-      ar: 'إصدار شهادة التقييم المتقدم',
-      en: 'Advanced certificate issued',
-    },
-    body: {
-      ar: 'تم إصدار شهادة المشاركة/الإنجاز للتقييم المتقدم. يمكنكم تحميلها من لوحة التحكم.',
-      en: 'Your advanced assessment participation/achievement certificate was issued. You can download it from your dashboard.',
-    },
-    link: '/certificates',
-    read: true,
-    createdAt: '2026-07-01T09:30:00+03:00',
-  },
-
-  {
-    id: 32,
-    code: 'BAG-01',
-    type: 'info',
-    recipientRole: 'entity',
-    channels: ['in-app'],
-    title: {
-      ar: 'أهلية الجهة لحقيبة التميز السريع',
-      en: 'Eligible for the Quick Excellence Kit',
-    },
-    body: {
-      ar: 'بناءً على نتائج تقييمكم، يمكنكم الاستفادة من حقيبة التميز السريع لمعالجة الفجوات.',
-      en: 'Based on your assessment results, you can benefit from the Quick Excellence Kit to address the gaps.',
-    },
-    link: '/bag',
-    read: false,
-    createdAt: '2026-07-02T18:00:00+03:00',
-  },
-  {
-    id: 33,
-    code: 'BAG-04',
-    type: 'info',
-    recipientRole: 'entity',
-    channels: ['in-app', 'email'],
-    title: {
-      ar: 'تحديد الفجوات المرحلية',
-      en: 'Staged gaps defined',
-    },
-    body: {
-      ar: 'تم تحديد الفجوات المرحلية المطلوب العمل عليها ضمن حقيبة التميز السريع.',
-      en: 'The staged gaps to work on in your Quick Excellence Kit have been defined.',
-    },
-    link: '/bag',
-    read: true,
-    createdAt: '2026-07-01T17:55:00+03:00',
-  },
-  {
-    id: 34,
-    code: 'BAG-06',
-    type: 'action',
-    recipientRole: 'entity',
-    channels: ['in-app', 'email'],
-    title: {
-      ar: 'تذكير بمرحلة التحسين',
-      en: 'Improvement stage reminder',
-    },
-    body: {
-      ar: 'تذكير: يرجى متابعة تنفيذ عناصر التحسين المحددة في حقيبة التميز السريع.',
-      en: 'Reminder: please follow up on the improvement items defined in your Quick Excellence Kit.',
-    },
-    link: '/bag',
-    read: false,
-    createdAt: '2026-07-05T08:00:00+03:00',
-  },
-
-  {
     id: 35,
     code: 'CMS-01',
     type: 'info',
@@ -656,25 +307,6 @@ export const notificationsFixture = [
     read: true,
     createdAt: '2026-07-04T11:00:00+03:00',
   },
-
-  {
-    id: 37,
-    code: 'AI-02',
-    type: 'info',
-    recipientRole: 'content_officer',
-    channels: ['in-app'],
-    title: {
-      ar: 'اكتمال معالجة ملف قاعدة المعرفة',
-      en: 'Knowledge base file processed',
-    },
-    body: {
-      ar: 'تمت معالجة الملف وإتاحته للمساعد الذكي. يمكنكم اختبار الإجابات.',
-      en: 'The file was processed and made available to the AI assistant. You can now test the answers.',
-    },
-    link: '/admin/settings/ai',
-    read: true,
-    createdAt: '2026-07-03T09:20:00+03:00',
-  },
   {
     id: 38,
     code: 'AI-05',
@@ -693,7 +325,6 @@ export const notificationsFixture = [
     read: true,
     createdAt: '2026-06-30T09:40:00+03:00',
   },
-
   {
     id: 39,
     code: 'INT-01',
@@ -750,92 +381,90 @@ export const notificationsFixture = [
   },
 ]
 
-export const notificationAuditFixture = {
-  8: [
-    {
-      id: 'aud-8-1',
-      recipient: { ar: 'جمعية البر بمنطقة الرياض', en: 'Al-Birr Association, Riyadh' },
-      recipientRole: 'entity',
-      channel: 'email',
-      receivedAt: '2026-07-06T21:05:12+03:00',
-      openedAt: '2026-07-06T21:18:44+03:00',
-      actionedAt: '2026-07-06T21:40:03+03:00',
+export const ENTITY_REPLY_THREAD_ID = '7c2f4e1a-52b0-4c8e-9a31-0000000000a1'
+
+export const entityNotificationsFixture = [
+  {
+    code: 'CNT-02',
+    minutesAgo: 120,
+    isRead: false,
+    title: {
+      ar: 'ردّ فريق منصة مؤشر على استفساركم CNT-2026-000052',
+      en: 'The Moashir team replied to your enquiry CNT-2026-000052',
     },
-    {
-      id: 'aud-8-2',
-      recipient: { ar: 'جمعية البر بمنطقة الرياض', en: 'Al-Birr Association, Riyadh' },
-      recipientRole: 'entity',
-      channel: 'in-app',
-      receivedAt: '2026-07-06T21:05:12+03:00',
-      openedAt: '2026-07-06T21:19:02+03:00',
-      actionedAt: null,
+    body: {
+      ar: 'أضاف فريق منصة مؤشر رداً جديداً على استفساركم عن رفع الشواهد.',
+      en: 'The Moashir team added a new reply to your enquiry about uploading evidence.',
     },
-    {
-      id: 'aud-8-3',
-      recipient: { ar: 'جمعية البر بمنطقة الرياض', en: 'Al-Birr Association, Riyadh' },
-      recipientRole: 'entity',
-      channel: 'sms',
-      receivedAt: '2026-07-06T21:05:15+03:00',
-      openedAt: null,
-      actionedAt: null,
+    link: `/messages/${ENTITY_REPLY_THREAD_ID}`,
+  },
+  {
+    code: 'ACC-01',
+    minutesAgo: 2 * 24 * 60,
+    isRead: false,
+    path: 'accredited',
+    title: {
+      ar: 'فُتح نموذج التقييم المعتمد لرفع الشواهد',
+      en: 'The accredited assessment form is open for evidence',
     },
-  ],
-  15: [
-    {
-      id: 'aud-15-1',
-      recipient: { ar: 'م. سارة العتيبي — مقيّم', en: 'Eng. Sarah Al-Otaibi — Assessor' },
-      recipientRole: 'assessor',
-      channel: 'in-app',
-      receivedAt: '2026-07-06T11:20:05+03:00',
-      openedAt: '2026-07-06T11:35:19+03:00',
-      actionedAt: null,
+    body: {
+      ar: 'يمكنكم الآن رفع الشواهد لكل معيار فرعي ثم إرسال الطلب إلى المقيّم.',
+      en: 'You can now upload the evidence of every sub-criterion and send the request to the assessor.',
     },
-    {
-      id: 'aud-15-2',
-      recipient: { ar: 'م. سارة العتيبي — مقيّم', en: 'Eng. Sarah Al-Otaibi — Assessor' },
-      recipientRole: 'assessor',
-      channel: 'email',
-      receivedAt: '2026-07-06T11:20:07+03:00',
-      openedAt: null,
-      actionedAt: null,
+    link: '/assessment/accredited',
+  },
+  {
+    code: 'PAY-06',
+    minutesAgo: 2 * 24 * 60 + 15,
+    isRead: true,
+    title: {
+      ar: 'صدر إيصال الدفع للتقييم المعتمد',
+      en: 'The payment receipt of the accredited assessment was issued',
     },
-    {
-      id: 'aud-15-3',
-      recipient: {
-        ar: 'خالد المطيري — متابع الطلبات',
-        en: 'Khalid Al-Mutairi — Requests Follower',
-      },
-      recipientRole: 'request_follower',
-      channel: 'in-app',
-      receivedAt: '2026-07-06T11:20:05+03:00',
-      openedAt: '2026-07-06T12:02:41+03:00',
-      actionedAt: '2026-07-06T12:05:10+03:00',
+    body: {
+      ar: 'إيصال الدفع متاح للتنزيل من صفحة الدفع والإيصالات.',
+      en: 'The payment receipt is available to download from the payments and receipts page.',
     },
-  ],
-  27: [
-    {
-      id: 'aud-27-1',
-      recipient: {
-        ar: 'أ. نورة الحربي — أمين الجائزة',
-        en: 'Ms. Noura Al-Harbi — Award Secretary',
-      },
-      recipientRole: 'award_secretary',
-      channel: 'in-app',
-      receivedAt: '2026-07-07T07:15:03+03:00',
-      openedAt: '2026-07-07T07:22:18+03:00',
-      actionedAt: null,
+    link: '/payments',
+  },
+  {
+    code: 'PAY-07',
+    minutesAgo: 3 * 24 * 60,
+    isRead: true,
+    title: {
+      ar: 'أُلغي طلب دفع تلقائياً بعد انتهاء صلاحيته',
+      en: 'A payment order was cancelled automatically after it expired',
     },
-    {
-      id: 'aud-27-2',
-      recipient: {
-        ar: 'أ. نورة الحربي — أمين الجائزة',
-        en: 'Ms. Noura Al-Harbi — Award Secretary',
-      },
-      recipientRole: 'award_secretary',
-      channel: 'email',
-      receivedAt: '2026-07-07T07:15:05+03:00',
-      openedAt: '2026-07-07T07:20:47+03:00',
-      actionedAt: null,
+    body: {
+      ar: 'انتهت مدة صلاحية طلب الدفع دون إتمامه، ويمكنكم إنشاء طلب جديد متى شئتم.',
+      en: 'The payment order expired before it was completed. You can create a new order at any time.',
     },
-  ],
-}
+    link: '/payments',
+  },
+  {
+    code: 'SELF-04',
+    minutesAgo: 9 * 24 * 60,
+    isRead: true,
+    path: 'self',
+    title: {
+      ar: 'صدرت نتيجة التقييم الذاتي لجهتكم',
+      en: 'The self-assessment result of your organization is available',
+    },
+    body: {
+      ar: 'اطلعوا على النتيجة التفصيلية لكل معيار في صفحة النتيجة.',
+      en: 'Review the detailed result of every criterion on the result page.',
+    },
+    link: '/assessment/history',
+  },
+  {
+    code: 'REG-03',
+    minutesAgo: 14 * 24 * 60,
+    isRead: true,
+    title: { ar: 'أكملوا بيانات ملف الجهة', en: 'Complete your organization profile' },
+    body: {
+      ar: 'يرجى استكمال بيانات الجهة المطلوبة قبل البدء في مسارات التقييم.',
+      en: 'Please complete the required organization data before starting the assessment paths.',
+    },
+    link: '/entity/profile',
+  },
+]

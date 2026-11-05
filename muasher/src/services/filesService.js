@@ -5,7 +5,10 @@ import { fileNameFrom } from './mappers/download'
 import { serviceRequest } from './serviceRequest'
 
 const LINK_REJECTIONS = [403, 409, 410]
-const DOWNLOAD_PATH = /^\/files\/[0-9a-f-]{36}\/download$/i
+const DOWNLOAD_PATHS = [
+  /^\/files\/[0-9a-f-]{36}\/download$/i,
+  /^\/assessments\/\d+\/feedback-report\/pdf$/,
+]
 
 export class UntrustedDownloadLink extends Error {
   constructor() {
@@ -20,7 +23,7 @@ function apiPathOf(url) {
   if (parsed.origin !== base.origin || !parsed.pathname.startsWith(base.pathname))
     throw new UntrustedDownloadLink()
   const path = parsed.pathname.slice(base.pathname.length)
-  if (!DOWNLOAD_PATH.test(path)) throw new UntrustedDownloadLink()
+  if (!DOWNLOAD_PATHS.some((pattern) => pattern.test(path))) throw new UntrustedDownloadLink()
   return `${path}${parsed.search}`
 }
 

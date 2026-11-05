@@ -1,70 +1,70 @@
-import { describe, expect, it, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
-import { ref } from 'vue'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { flushPromises, mount } from '@vue/test-utils'
 import LensesIndex from '@/views/lenses/Index.vue'
+import { contentService } from '@/services/contentService'
 import { createTestGlobals } from '@/test-utils'
 
-const status = ref('success')
-const load = vi.fn()
+vi.mock('@/services/contentService', () => ({ contentService: { getPage: vi.fn() } }))
 
-const lensesSection = {
-  id: 'sec-analytics-lenses',
-  key: 'analytics-lenses',
-  enabled: true,
-  order: 7,
-  title: { ar: 'العدسات التحليلية', en: 'Analytics lenses' },
-  subtitle: {
-    ar: 'تعتمد على آخر تقييم معتمد أو متقدم، وعند وجود تقييمين يتم اعتماد الأعلى، ولا تعتمد على التقييم الذاتي.',
-    en: 'Based on the latest accredited or advanced assessment, the higher of the two, never on self assessment.',
-  },
-  description: { ar: 'لوحات تحليلية', en: 'Analytical dashboards' },
-  items: [
-    { id: 'lens-grantor', order: 1, icon: 'fa-solid fa-hand-holding-dollar', title: { ar: 'عدسة المانح', en: 'Grantor lens' }, description: { ar: 'وصف', en: 'Desc' } },
-    { id: 'lens-supervisory', order: 2, icon: 'fa-solid fa-building-shield', title: { ar: 'عدسة الجهات الإشرافية', en: 'Supervisory lens' }, description: { ar: '', en: '' } },
-    { id: 'lens-community', order: 3, icon: 'fa-solid fa-people-group', title: { ar: 'عدسة المجتمع', en: 'Community lens' }, description: { ar: '', en: '' } },
-    { id: 'lens-vision', order: 4, icon: 'fa-solid fa-flag', title: { ar: 'عدسة برامج رؤية 2030', en: 'Vision 2030 lens' }, description: { ar: '', en: '' } },
-    { id: 'lens-strategic', order: 5, icon: 'fa-solid fa-chess', title: { ar: 'العدسة الاستراتيجية', en: 'Strategic lens' }, description: { ar: '', en: '' } },
+const lensesPage = {
+  key: 'lenses',
+  title: { ar: 'العدسات التحليلية', en: 'Analytical lenses' },
+  sections: [
+    {
+      id: 331,
+      type: 'rich_text',
+      title: { ar: 'العدسات التحليلية', en: 'Analytical lenses' },
+      subtitle: { ar: 'قراءة النتائج', en: 'Reading the results from several angles' },
+      description: { ar: 'أعلى نتيجة', en: 'The higher of the latest accredited and advanced results, never self assessment.' },
+      items: [],
+    },
+    {
+      id: 332,
+      type: 'logos',
+      title: { ar: 'العدسات', en: 'The lenses' },
+      items: ['Donor', 'Supervisory', 'Community', 'Vision 2030', 'Strategic'].map((name, index) => ({
+        id: index + 1,
+        icon: 'pie-chart',
+        title: { ar: name, en: `${name} lens` },
+        description: { ar: '', en: index === 0 ? 'Funding view' : '' },
+      })),
+    },
   ],
-  meta: {},
 }
 
-const sectionByKey = vi.fn((key) => (key === 'analytics-lenses' ? lensesSection : null))
-
-vi.mock('@/composables/useHomeContent', () => ({
-  usePublicHome: () => ({
-    status,
-    load,
-    localized: (value) => (typeof value === 'string' ? value : value?.en ?? ''),
-    sectionByKey,
-  }),
-}))
-
-function mountView() {
-  return mount(LensesIndex, { global: createTestGlobals({ locale: 'en' }) })
+async function mountView() {
+  const wrapper = mount(LensesIndex, { global: createTestGlobals({ locale: 'en' }) })
+  await flushPromises()
+  return wrapper
 }
 
-describe('Lenses standalone page', () => {
-  it('renders the 5 lenses from the mocked CMS section', () => {
-    status.value = 'success'
-    const wrapper = mountView()
-    const cards = wrapper.findAll('.lens-card')
-    expect(cards).toHaveLength(5)
-    expect(cards[0].find('.lens-card__title').text()).toBe('Grantor lens')
-    expect(wrapper.find('.lenses-page__title').text()).toBe('Analytics lenses')
+beforeEach(() => vi.clearAllMocks())
+
+describe('Lenses standalone page (CMS page "lenses")', () => {
+  it('renders the lens cards, the hero copy and the rule from the published page', async () => {
+    contentService.getPage.mockResolvedValue({ data: lensesPage })
+    const wrapper = await mountView()
+    expect(contentService.getPage).toHaveBeenCalledWith('lenses')
+    expect(wrapper.findAll('.lens-card')).toHaveLength(5)
+    expect(wrapper.find('.lenses-page__title').text()).toBe('Analytical lenses')
+    expect(wrapper.find('.lenses-page__subtitle').text()).toBe('Reading the results from several angles')
+    expect(wrapper.find('.lenses-page__rule-text').text()).toContain('never self assessment')
   })
 
-  it('shows the rule note from the section subtitle', () => {
-    status.value = 'success'
-    const wrapper = mountView()
-    const rule = wrapper.find('.lenses-page__rule-text').text()
-    expect(rule).toContain('never on self assessment')
+  it('falls back to the translated lenses while the page is not published', async () => {
+    contentService.getPage.mockRejectedValue(Object.assign(new Error('not published'), { response: { status: 404 } }))
+    const wrapper = await mountView()
+    expect(wrapper.findAll('.lens-card')).toHaveLength(5)
+    expect(wrapper.find('.error-state').exists()).toBe(false)
   })
 
   it('shows an error state with retry when loading fails', async () => {
-    status.value = 'error'
-    const wrapper = mountView()
-    expect(wrapper.findAll('.lens-card')).toHaveLength(0)
-    await wrapper.find('button').trigger('click')
-    expect(load).toHaveBeenCalled()
+    contentService.getPage.mockRejectedValueOnce(Object.assign(new Error('down'), { response: { status: 503 } }))
+    const wrapper = await mountView()
+    expect(wrapper.find('.error-state').exists()).toBe(true)
+    contentService.getPage.mockResolvedValue({ data: lensesPage })
+    await wrapper.find('.error-state button').trigger('click')
+    await flushPromises()
+    expect(wrapper.findAll('.lens-card')).toHaveLength(5)
   })
 })

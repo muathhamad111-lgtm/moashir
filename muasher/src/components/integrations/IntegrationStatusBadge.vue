@@ -6,6 +6,7 @@ import {
   INTEGRATION_STATUS_ICONS,
   INTEGRATION_STATUS_VARIANTS,
 } from '@/utils/integrations/integrationStatus'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   status: {
@@ -22,7 +23,7 @@ const icon = computed(() => INTEGRATION_STATUS_ICONS[props.status])
 
 <template>
   <Badge :variant="variant" class="integration-status">
-    <i :class="icon" aria-hidden="true"></i>
+    <AppIcon :name="icon" />
     {{ t(`integrations.status.${status}`) }}
   </Badge>
 </template>

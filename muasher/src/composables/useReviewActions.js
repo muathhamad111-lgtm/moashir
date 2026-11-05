@@ -93,13 +93,16 @@ export function useReviewActions({ reviewState, scoreSheet, feedback, askReason 
     )
   }
 
-  function complete() {
+  function complete(choice = {}) {
     return perform(
       'complete',
       async (extra) => {
         await sendScores(extra)
         await feedback.save(extra)
-        await assessorReviewService.complete(reviewState.assessment.value.id, extra)
+        await assessorReviewService.complete(reviewState.assessment.value.id, {
+          ...extra,
+          ...choice,
+        })
         await reviewState.load({ silent: true })
         return true
       },

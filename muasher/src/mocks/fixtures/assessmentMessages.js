@@ -176,6 +176,30 @@ export const assessmentMessages = {
     en: 'This file is not available for download.',
   },
   'assessor.invalid': { ar: 'اختر حساب مقيّم نشطًا.', en: 'Choose an active assessor account.' },
+  'assessor.not_qualified': {
+    ar: 'هذا المقيّم غير مؤهل لمسار هذا الطلب.',
+    en: 'This assessor is not qualified for the path of this request.',
+  },
+  'assessor_qualification.not_assessor': {
+    ar: 'لا تُحدَّد مسارات التقييم إلا لحسابات الموظفين الذين يحملون دور المقيّم.',
+    en: 'Assessment paths can only be set for staff accounts that hold the assessor role.',
+  },
+  'request_scope.not_follower': {
+    ar: 'لا يُقيَّد مسار الطلبات إلا لحسابات الموظفين الذين يتابعون قائمة الطلبات.',
+    en: 'Request paths can only be limited for staff accounts that follow the requests queue.',
+  },
+  sod_self_grant: {
+    ar: 'لا يمكنك تعديل صلاحيات حسابك بنفسك.',
+    en: 'You cannot change the access of your own account.',
+  },
+  'level_thresholds.ascending': {
+    ar: 'يجب أن تكون الحدود الدنيا للمستويات تصاعدية: البرونزي ثم الفضي ثم الذهبي ثم الماسي.',
+    en: 'The level minimums must be ascending: bronze, then silver, then gold, then diamond.',
+  },
+  'path_texts.pair': {
+    ar: 'أدخل النص بالعربية والإنجليزية معًا أو اتركهما فارغين.',
+    en: 'Enter the text in both Arabic and English, or leave both empty.',
+  },
   'assessor.same': {
     ar: 'الطلب مسند بالفعل إلى هذا المقيّم.',
     en: 'The request is already assigned to this assessor.',
@@ -280,9 +304,109 @@ export const assessmentMessages = {
     ar: 'قيمة :attribute غير صالحة.',
     en: 'The :attribute value is invalid.',
   },
+  'validation.email': {
+    ar: 'يجب أن يكون :attribute بريدًا إلكترونيًا صالحًا.',
+    en: 'The :attribute must be a valid e-mail address.',
+  },
+  'validation.unique': {
+    ar: 'قيمة :attribute مستخدمة من قبل.',
+    en: 'The :attribute has already been taken.',
+  },
+  'user.self': {
+    ar: 'لا يمكنك تنفيذ هذا الإجراء على حسابك.',
+    en: 'You cannot perform this action on your own account.',
+  },
+  'user.entity_status_managed': {
+    ar: 'تتبع حسابات الجهات حالة الجهة نفسها.',
+    en: 'Entity accounts follow the status of their entity.',
+  },
+  'cycle.committee_not_started': {
+    ar: 'لم تبدأ مرحلة تقييم اللجنة في هذه الدورة.',
+    en: 'The committee assessment of this cycle has not started.',
+  },
+  'committee.candidate_invalid': {
+    ar: 'اختر حساب مقيّم نشطًا.',
+    en: 'Choose an active assessor account.',
+  },
+  'committee.member_exists': {
+    ar: 'هذا المقيّم عضو في لجنة المقيّمين لهذه الدورة.',
+    en: 'This assessor already sits on the committee of this cycle.',
+  },
+  'committee.none_active': {
+    ar: 'يجب أن يبقى في الدورة مقيّم لجنة نشط واحد على الأقل.',
+    en: 'At least one active committee assessor must remain in the cycle.',
+  },
+  'committee.evaluation_locked': {
+    ar: 'أُرسل هذا التقييم وأُقفل، ولا يُفتح إلا إذا أعاد أمين الجائزة الطلب إلى اللجنة.',
+    en: 'This evaluation was submitted and is locked. It reopens only when the Award Secretary returns the request to the committee.',
+  },
+  'committee.membership_inactive': {
+    ar: 'تعيينكم في لجنة المقيّمين لهذه الدورة غير نشط.',
+    en: 'Your committee appointment in this cycle is not active.',
+  },
+  'committee.incomplete': {
+    ar: 'لم يرسل جميع مقيّمي اللجنة تقييم هذا الطلب بعد.',
+    en: 'Not every committee assessor has submitted the evaluation of this request yet.',
+  },
+  'committee.substitution_pending': {
+    ar: 'توجد نتيجة مقيّم لجنة بديل بانتظار الاعتماد لهذا الطلب. اعتمدها قبل اعتماد المتوسط.',
+    en: 'A substitute committee assessor result awaits approval for this request. Approve it before approving the average.',
+  },
+  'committee.substitute_not_completed': {
+    ar: 'لم يرسل مقيّم اللجنة البديل تقييمه بعد.',
+    en: 'The substitute committee assessor has not submitted the evaluation yet.',
+  },
+  'committee_assessor.has_scores': {
+    ar: 'بدأ مقيّم اللجنة هذا تقييماته أو أرسلها. عطّله بدلًا من إزالته.',
+    en: 'This committee assessor already started or submitted evaluations. Disable the assessor instead of removing them.',
+  },
+  'discussion.closed': { ar: 'أُغلق نقاش اللجنة هذا.', en: 'This committee discussion is closed.' },
+  'discussion.deadline_passed': {
+    ar: 'انتهت المهلة المحددة لنقاش اللجنة هذا.',
+    en: 'The deadline of this committee discussion has passed.',
+  },
+  'discussion.entry_kind_invalid': {
+    ar: 'هذا الرد لا يتوافق مع نمط النقاش.',
+    en: 'This response does not match the mode of the discussion.',
+  },
+  'rank.taken': {
+    ar: 'يشغل طلب آخر هذا الترتيب. ألغِ ترتيبه أولًا.',
+    en: 'Another request already holds this rank. Clear it first.',
+  },
+  'award.region_locked': {
+    ar: 'اعتُمدت نتائج هذه المنطقة وأُقفلت.',
+    en: 'The results of this region are approved and locked.',
+  },
+  'award.region_approved': {
+    ar: 'نتائج هذه المنطقة معتمدة مسبقًا.',
+    en: 'The results of this region are already approved.',
+  },
+  'award.region_not_approved': {
+    ar: 'نتائج هذه المنطقة غير معتمدة.',
+    en: 'The results of this region are not approved.',
+  },
+  'award.national_approved': {
+    ar: 'اعتُمدت النتيجة الوطنية لهذه الدورة وأُقفلت.',
+    en: 'The national result of this cycle is approved and locked.',
+  },
+  'region.requests_pending': {
+    ar: 'لم تصل بعض طلبات هذه المنطقة إلى نتيجة معتمدة بعد.',
+    en: 'Some requests of this region have not reached an approved result yet.',
+  },
+  'regions.pending': {
+    ar: 'ما زالت بعض المناطق فيها طلبات دون نتيجة معتمدة أو لم تُعتمد نتائجها بعد.',
+    en: 'Some regions still have requests without an approved result or are not approved yet.',
+  },
+  'winners.none': {
+    ar: 'حدّد فائزًا واحدًا على الأقل قبل الاعتماد.',
+    en: 'Rank at least one winner before approving.',
+  },
 }
 
 export const assessmentAttributes = {
+  email: { ar: 'البريد الإلكتروني', en: 'e-mail' },
+  fullName: { ar: 'الاسم', en: 'name' },
+  roles: { ar: 'الأدوار', en: 'roles' },
   path: { ar: 'مسار التقييم', en: 'assessment path' },
   reason: { ar: 'السبب', en: 'reason' },
   scores: { ar: 'الدرجات', en: 'scores' },

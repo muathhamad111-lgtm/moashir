@@ -9,6 +9,7 @@ import { assessmentOverridesService } from '@/services/assessmentOverridesServic
 import { ACCREDITED_LIMITS, FORCE_TARGETS } from '@/constants/accredited'
 import { statusLabelKey } from '@/utils/canonicalStatus'
 import { logger } from '@/utils/logger'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -86,7 +87,7 @@ watch(
   >
     <div class="override-dialog">
       <p class="override-dialog__warning" role="note">
-        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+        <AppIcon name="warning-triangle" />
         {{ t('requests.overrides.forceWarning') }}
       </p>
       <BaseSelect

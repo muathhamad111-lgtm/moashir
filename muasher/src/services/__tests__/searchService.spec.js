@@ -92,6 +92,7 @@ describe('searchService', () => {
       title: { ar: 'جمعية إحسان الخيرية', en: 'Ehsan Charitable Society' },
       reference: 'SLF-2026-000003',
       path: 'self',
+      pathLabel: null,
       status: 'result-available',
       isFrozen: false,
     })

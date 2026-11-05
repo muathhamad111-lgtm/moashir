@@ -9,6 +9,7 @@ import ProviderActionFeedback from '@/components/integrations/ProviderActionFeed
 import { emailIntegrationService } from '@/services/emailIntegrationService'
 import { PROVIDER_ACTION_STATES, useProviderAction } from '@/composables/useProviderAction'
 import { testEmailSchema } from '@/utils/integrations/emailSchema'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 const form = useForm({ validationSchema: testEmailSchema(t), initialValues: { recipient: '' } })
@@ -40,7 +41,7 @@ const send = form.handleSubmit((values) => sending.execute({ recipient: values.r
         <BaseButton
           type="submit"
           variant="secondary"
-          icon="fa-solid fa-paper-plane"
+          icon="send"
           :loading="sending.state.value === PROVIDER_ACTION_STATES.PENDING"
         >
           {{ t('integrations.email.sendTest') }}
@@ -52,7 +53,7 @@ const send = form.handleSubmit((values) => sending.execute({ recipient: values.r
       class="provider-feedback provider-feedback--success"
       role="status"
     >
-      <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+      <AppIcon name="check-circle" />
       {{ sentMessage }}
     </p>
     <ProviderActionFeedback

@@ -1,6 +1,7 @@
 <script setup>
 import { nextTick, onBeforeUnmount, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -103,7 +104,7 @@ onBeforeUnmount(() => {
             :aria-label="t('actions.close')"
             @click="close"
           >
-            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            <AppIcon name="x" />
           </button>
         </header>
         <div class="modal__body">

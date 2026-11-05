@@ -38,6 +38,7 @@ import {
 import { bundleDownload, bundleOf, requestBundle } from '../stores/accredited/evidenceBundles'
 import { isPositiveInteger } from '../stores/accredited/accreditedValidation'
 import { runAccreditedSchedule } from '../stores/accredited/scheduler'
+import { accreditedProgressOf } from '../stores/accredited/accreditedProgress'
 
 const ASSESSMENT = '/api/v1/assessments/:assessment'
 const NUMERIC_ID = /^\d+$/
@@ -93,7 +94,9 @@ function currentResource(user) {
   const closed = latestClosedOf(records)
   return {
     awaitingPayment: awaitingPaymentOf(Number(user.entityId)),
-    active: active ? assessmentResource(active) : null,
+    active: active
+      ? { ...assessmentResource(active), progress: accreditedProgressOf(active) }
+      : null,
     latestClosed: closed ? assessmentResource(closed) : null,
   }
 }

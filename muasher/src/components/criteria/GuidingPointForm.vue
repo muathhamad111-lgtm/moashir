@@ -14,6 +14,7 @@ import { requiredText, weightText } from '@/utils/criteriaSchemas'
 import { attachmentsPayload, cloneAttachments } from '@/utils/criteriaAttachments'
 import { compareWeights, normalizeWeight, sumWeights } from '@/utils/weight'
 import { CRITERIA_DESCRIPTION_MAX_LENGTH } from '@/constants/criteria'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -144,7 +145,7 @@ const [active] = form.defineField('active')
         required
       />
       <p v-else class="criteria-form__note" role="note">
-        <i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>
+        <AppIcon name="scale" />
         <span>{{ t('criteria.point.equalNote') }}</span>
       </p>
 

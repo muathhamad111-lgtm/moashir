@@ -32,10 +32,10 @@ export const INTEGRATION_KIND_ROUTES = Object.freeze({
 })
 
 export const INTEGRATION_KIND_ICONS = Object.freeze({
-  [INTEGRATION_KINDS.PAYMENT]: 'fa-solid fa-credit-card',
-  [INTEGRATION_KINDS.SMS]: 'fa-solid fa-comment-sms',
-  [INTEGRATION_KINDS.EMAIL]: 'fa-solid fa-envelope',
-  [INTEGRATION_KINDS.AI]: 'fa-solid fa-robot',
+  [INTEGRATION_KINDS.PAYMENT]: 'credit-card',
+  [INTEGRATION_KINDS.SMS]: 'chat',
+  [INTEGRATION_KINDS.EMAIL]: 'envelope',
+  [INTEGRATION_KINDS.AI]: 'robot',
 })
 
 export const INTEGRATION_MODES = Object.freeze({ TEST: 'test', LIVE: 'live' })
@@ -85,7 +85,7 @@ export const NO_ACTIVE_PROVIDER = 'none'
 export const SMS_PROVIDERS = Object.freeze({ TAQNYAT: 'taqnyat', MSEGAT: 'msegat' })
 export const TAQNYAT_ACTIVE_SENDER = 'active'
 
-export const SMTP_PORTS = Object.freeze([587, 465, 25, 2525])
+export const SMTP_PORTS = Object.freeze([587, 465, 25, 2525, 2465, 2587])
 export const SMTP_ENCRYPTIONS = Object.freeze(['starttls', 'tls'])
 
 export const AI_PROVIDERS = Object.freeze({ OPENAI: 'openai', ANTHROPIC: 'anthropic' })

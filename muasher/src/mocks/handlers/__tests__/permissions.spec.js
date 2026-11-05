@@ -34,7 +34,7 @@ afterEach(() => {
 afterAll(() => server.close())
 
 describe('permissions mock — code-defined catalog + role matrix', () => {
-  it('returns the 83-key catalog, the roles and the matrix', async () => {
+  it('returns the code-defined catalog, the roles and the matrix', async () => {
     const { body } = await retry('GET', '/permissions')
     expect(body.data.permissions.map((item) => item.key)).toEqual(PERMISSION_KEYS)
     expect(body.data.roles.map((role) => role.key)).not.toContain('super_admin')

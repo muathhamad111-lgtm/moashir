@@ -356,6 +356,9 @@ describe('advanced path mock — follower and initial assessor', () => {
     )
     expect(eligible.sort((a, b) => a - b)).toEqual([10, 11, 15])
     expect((await call('POST', '/requests/9203/assign', { assessor_id: 27 })).body.code).toBe(
+      'assessor.not_qualified',
+    )
+    expect((await call('POST', '/requests/9203/assign', { assessor_id: 29 })).body.code).toBe(
       'assessor.not_in_cycle',
     )
     findCycle(31).members.push({ userId: 15, role: 'filtering_officer' })
@@ -397,9 +400,9 @@ describe('advanced path mock — follower and initial assessor', () => {
     findAssessment(9204).status = 'qualified-for-committee'
     seedMockSession(ASSESSOR)
     expect(
-      (await call('GET', '/requests/assigned?filter[tab]=completed')).body.data.find(
-        (row) => row.id === 9204,
-      ).status,
+      (
+        await call('GET', '/requests/assigned?filter[tab]=completed&filter[path]=advanced')
+      ).body.data.find((row) => row.id === 9204).status,
     ).toBe('awaiting_filtering')
   })
 })

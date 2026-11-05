@@ -1,0 +1,150 @@
+@use '../mixins' as *;
+
+.portal-more,
+.portal-help {
+  @include flex(column, stretch, flex-start, var(--space-5));
+  max-inline-size: var(--size-container);
+  margin-inline: auto;
+  padding-block: var(--space-6) var(--space-10);
+  padding-inline: var(--space-4);
+
+  @include respond-to('md') {
+    padding-inline: var(--space-8);
+  }
+
+  @include respond-to('xl') {
+    padding-inline: var(--space-0);
+  }
+}
+
+.portal-more__header,
+.portal-help__header {
+  @include flex(column, flex-start, flex-start, var(--space-2));
+}
+
+.portal-more__eyebrow,
+.portal-help__eyebrow {
+  margin: 0;
+  color: var(--theme-accent-text);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+}
+
+.portal-more__title,
+.portal-help__title {
+  margin: 0;
+  color: var(--theme-heading);
+  font-family: var(--font-heading);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-semibold);
+}
+
+.portal-help__subtitle {
+  max-inline-size: var(--size-prose-wide);
+  margin: 0;
+  color: var(--theme-text-secondary);
+}
+
+.portal-more__identity {
+  @include flex(row, center, flex-start, var(--space-3));
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-xl);
+  background-color: var(--theme-surface);
+}
+
+.portal-more__avatar {
+  @include flex-center;
+  flex-shrink: 0;
+  inline-size: var(--size-icon-box);
+  block-size: var(--size-icon-box);
+  border-radius: var(--radius-pill);
+  background-color: var(--theme-tint);
+  color: var(--theme-accent-text);
+  font-family: var(--font-heading);
+  font-weight: var(--fw-medium);
+}
+
+.portal-more__names {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+}
+
+.portal-more__entity {
+  color: var(--theme-heading);
+  font-family: var(--font-heading);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+}
+
+.portal-more__user {
+  color: var(--theme-text-secondary);
+  font-size: var(--fs-xs);
+}
+
+.portal-more__group {
+  @include flex(column, stretch, flex-start, var(--space-3));
+}
+
+.portal-more__group-title {
+  margin: 0;
+  color: var(--theme-text-secondary);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+}
+
+.portal-more__list {
+  @include flex(column, stretch, flex-start, var(--space-1));
+  padding: var(--space-2);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-xl);
+  background-color: var(--theme-surface);
+}
+
+.portal-help__layout {
+  display: grid;
+  gap: var(--space-5);
+
+  @include respond-to('lg') {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.portal-help__guides {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.portal-help__message,
+.path-guide-card {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  padding: var(--space-5);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-xl);
+  background-color: var(--theme-surface);
+}
+
+.path-guide-card__title {
+  margin: 0;
+  color: var(--theme-heading);
+  font-family: var(--font-heading);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+}
+
+.portal-help__message-text,
+.path-guide-card__intro,
+.path-guide-card__after,
+.path-guide-card__empty {
+  margin: 0;
+  color: var(--theme-text-secondary);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
+}
+
+.path-guide-card__steps {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  margin: 0;
+  padding-inline-start: var(--space-5);
+  color: var(--theme-text);
+  font-size: var(--fs-sm);
+}

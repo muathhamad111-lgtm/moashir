@@ -4,76 +4,58 @@ import NotificationCenterItem from '@/components/notifications/NotificationCente
 import { createTestGlobals } from '@/test-utils'
 
 const notification = {
-  id: 15,
-  code: 'ACC-05',
-  type: 'action',
-  title: { ar: 'إسناد طلب تقييم معتمد إليكم', en: 'Accredited assessment assigned to you' },
-  body: {
-    ar: 'تم إسناد طلب تقييم معتمد جديد إليكم.',
-    en: 'A new request has been assigned to you.',
-  },
-  link: '/admin/requests/9108/review',
-  read: false,
-  createdAt: '2026-07-06T11:20:00+03:00',
+  id: '5e1f0c2a-0000-4000-8000-000000000001',
+  code: 'CNT-02',
+  module: 'CNT',
+  category: 'informational',
+  title: { ar: 'ردّ فريق منصة مؤشر على استفساركم', en: 'The Moashir team replied' },
+  body: { ar: 'أضاف الفريق رداً جديداً.', en: 'The team added a new reply.' },
+  link: '/messages',
+  isRead: false,
+  createdAt: new Date().toISOString(),
 }
 
-function mountItem(overrides = {}, opts = {}) {
+function factory(props = {}, locale = 'ar') {
   return mount(NotificationCenterItem, {
-    props: { notification: { ...notification, ...overrides } },
-    global: createTestGlobals(opts),
+    props: { notification, ...props },
+    global: createTestGlobals({ locale }),
   })
 }
 
 describe('NotificationCenterItem', () => {
-  it('renders the type badge label (text, not color-only), code, title and body', () => {
-    const wrapper = mountItem()
-    expect(wrapper.find('.badge').text()).toBe('يتطلب إجراء')
-    expect(wrapper.find('.notification-center-item__code').text()).toBe('ACC-05')
-    expect(wrapper.find('.notification-center-item__title').text()).toBe(
-      'إسناد طلب تقييم معتمد إليكم',
+  it('renders the localized title, body, module icon and the unread marker as text', () => {
+    const wrapper = factory()
+    expect(wrapper.find('.notification-center-item__title').text()).toBe(notification.title.ar)
+    expect(wrapper.find('.notification-center-item__body').text()).toBe(notification.body.ar)
+    expect(wrapper.find('.notification-center-item__icon svg').attributes('data-icon')).toBe(
+      'envelope',
     )
-    expect(wrapper.find('.notification-center-item__body').text()).toContain('تم إسناد')
-    expect(wrapper.classes()).toContain('notification-center-item--action')
     expect(wrapper.classes()).toContain('is-unread')
+    expect(wrapper.find('.notification-center-item__sr').text()).toBe('غير مقروء')
   })
 
-  it('deep-links the title to the record and emits open on click', async () => {
-    const wrapper = mountItem()
-    const title = wrapper.find('.notification-center-item__title')
-    expect(title.attributes('href')).toBe('/admin/requests/9108/review')
-    await title.trigger('click')
-    expect(wrapper.emitted('open')[0][0].id).toBe(15)
+  it('emits open from the title link and archive from its button', async () => {
+    const wrapper = factory()
+    await wrapper.find('.notification-center-item__title').trigger('click')
+    expect(wrapper.emitted('open')[0][0].id).toBe(notification.id)
+    await wrapper.find('.notification-center-item__archive').trigger('click')
+    expect(wrapper.emitted('archive')[0][0].id).toBe(notification.id)
   })
 
-  it('emits mark-read and audit from the action buttons', async () => {
-    const wrapper = mountItem()
-    const buttons = wrapper.findAll('.notification-center-item__action')
-    await buttons[0].trigger('click')
-    expect(wrapper.emitted('mark-read')[0][0]).toBe(15)
-    await buttons[1].trigger('click')
-    expect(wrapper.emitted('audit')[0][0].id).toBe(15)
-  })
-
-  it('hides the mark-read control and the unread marker when the item is read', () => {
-    const wrapper = mountItem({ read: true })
-    expect(wrapper.find('.notification-center-item__unread').exists()).toBe(false)
-    expect(wrapper.findAll('.notification-center-item__action')).toHaveLength(1)
-  })
-
-  it('disables the mark-read button while busy', () => {
-    const wrapper = mount(NotificationCenterItem, {
-      props: { notification, busy: true },
-      global: createTestGlobals(),
-    })
-    const markRead = wrapper.findAll('.notification-center-item__action')[0]
-    expect(markRead.attributes('disabled')).toBeDefined()
-  })
-
-  it('renders English content under the en locale', () => {
-    const wrapper = mountItem({}, { locale: 'en' })
-    expect(wrapper.find('.notification-center-item__title').text()).toBe(
-      'Accredited assessment assigned to you',
+  it('names the archive button after the notification and disables it while busy', () => {
+    const wrapper = factory({ busy: true }, 'en')
+    const archive = wrapper.find('.notification-center-item__archive')
+    expect(archive.attributes('aria-label')).toBe(
+      'Archive the notification: The Moashir team replied',
     )
-    expect(wrapper.find('.badge').text()).toBe('Action required')
+    expect(archive.attributes('disabled')).toBeDefined()
+  })
+
+  it('shows an older notification with its date and no unread marker once read', () => {
+    const wrapper = factory({
+      notification: { ...notification, isRead: true, createdAt: '2026-01-05T08:00:00+03:00' },
+    })
+    expect(wrapper.find('.notification-center-item__time').text()).toBe('2026-01-05')
+    expect(wrapper.find('.notification-center-item__unread').exists()).toBe(false)
   })
 })

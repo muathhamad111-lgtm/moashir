@@ -9,6 +9,8 @@ import DateStamp from '@/components/accredited/DateStamp.vue'
 import AdvancedEligibilityList from './AdvancedEligibilityList.vue'
 import { ADVANCED_STATUSES as S } from '@/constants/advanced'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import { RESULT_STATUSES as R } from '@/constants/committee'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   request: { type: Object, default: null },
@@ -34,8 +36,12 @@ const CLOSED = {
   [S.NOT_QUALIFIED]: 'notQualified',
 }
 
+const ANNOUNCED = [R.NON_WINNER, R.NATIONAL_WINNER, R.NATIONAL_NON_WINNER]
+const WITH_RESULT = [S.NOT_QUALIFIED, ...ANNOUNCED]
+
 function stateOfRequest(status) {
   if (status === S.REJECTED_CONDITIONS) return 'rejected'
+  if (ANNOUNCED.includes(status)) return 'result'
   if (status === S.DRAFT) return 'draft'
   if (status === S.NEEDS_COMPLETION) return 'completion'
   if (UNDER_REVIEW.includes(status)) return 'review'
@@ -60,6 +66,11 @@ const variant = computed(
     ({ rejected: 'danger', notEligible: 'danger', completion: 'warning', windowClosed: 'info' })[
       state.value
     ] ?? 'info',
+)
+const resultRoute = computed(() =>
+  props.request && WITH_RESULT.includes(props.request.status)
+    ? { name: ROUTE_NAMES.ASSESSMENT_ADVANCED_RESULT, params: { id: props.request.id } }
+    : null,
 )
 const formRoute = computed(() =>
   props.request
@@ -93,7 +104,7 @@ const formRoute = computed(() =>
       <BaseButton
         v-if="canApply"
         variant="primary"
-        icon="fa-solid fa-paper-plane"
+        icon="send"
         :loading="applying"
         @click="emit('apply')"
       >
@@ -104,13 +115,21 @@ const formRoute = computed(() =>
         class="btn btn--primary btn--md advanced-request__link"
         :to="formRoute"
       >
-        <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+        <AppIcon name="pen-line" />
         {{ state === 'draft' ? t('advanced.request.continue') : t('advanced.request.complete') }}
+      </RouterLink>
+      <RouterLink
+        v-if="resultRoute"
+        class="btn btn--primary btn--md advanced-request__link"
+        :to="resultRoute"
+      >
+        <AppIcon name="trophy" />
+        {{ t('advanced.request.viewResult') }}
       </RouterLink>
       <BaseButton
         v-if="state === 'draft'"
         variant="danger"
-        icon="fa-solid fa-trash-can"
+        icon="trash"
         :loading="deleting"
         @click="emit('delete')"
       >

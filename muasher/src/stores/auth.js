@@ -56,16 +56,16 @@ export const useAuthStore = defineStore('auth', {
       if (outcome.step === LOGIN_STEPS.AUTHENTICATED && outcome.user) this.setUser(outcome.user)
       return outcome
     },
+    async acceptInvitation(token, payload) {
+      const { data } = await authService.acceptInvitation(token, payload)
+      return this.applyOutcome(data)
+    },
     async register(payload) {
       const { data } = await authService.register(payload)
       return data
     },
-    async loginWithPassword(credentials) {
-      const { data } = await authService.loginWithPassword(credentials)
-      return this.applyOutcome(data)
-    },
-    async requestLoginOtp(request) {
-      const { data } = await authService.requestLoginOtp(request)
+    async signIn(credentials) {
+      const { data } = await authService.signIn(credentials)
       return this.applyOutcome(data)
     },
     async verifyOtp(attempt) {

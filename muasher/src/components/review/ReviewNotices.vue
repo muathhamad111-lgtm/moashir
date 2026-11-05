@@ -40,13 +40,9 @@ const mayOverride = computed(
       :message="t('review.conflict.message')"
     >
       <template #action>
-        <BaseButton
-          variant="secondary"
-          size="sm"
-          icon="fa-solid fa-rotate"
-          @click="emit('refresh')"
-          >{{ t('accredited.notices.refresh') }}</BaseButton
-        >
+        <BaseButton variant="secondary" size="sm" icon="refresh" @click="emit('refresh')">{{
+          t('accredited.notices.refresh')
+        }}</BaseButton>
       </template>
     </AssessmentNotice>
     <AssessmentNotice
@@ -76,13 +72,9 @@ const mayOverride = computed(
       :message="t('review.override.noticeMessage')"
     >
       <template #action>
-        <BaseButton
-          variant="danger"
-          size="sm"
-          icon="fa-solid fa-pen-ruler"
-          @click="emit('override')"
-          >{{ t('review.override.open') }}</BaseButton
-        >
+        <BaseButton variant="danger" size="sm" icon="pen" @click="emit('override')">{{
+          t('review.override.open')
+        }}</BaseButton>
       </template>
     </AssessmentNotice>
   </div>

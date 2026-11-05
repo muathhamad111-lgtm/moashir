@@ -1,0 +1,38 @@
+@use '../mixins' as *;
+
+.app-icon {
+  display: inline-block;
+  flex-shrink: 0;
+  inline-size: 1em;
+  block-size: 1em;
+  vertical-align: var(--icon-baseline-offset);
+}
+
+.app-icon--sm {
+  font-size: var(--icon-size-sm);
+}
+
+.app-icon--md {
+  font-size: var(--icon-size-md);
+}
+
+.app-icon--lg {
+  font-size: var(--icon-size-lg);
+}
+
+.app-icon--flip,
+[dir='rtl'] .app-icon--mirror {
+  scale: -1 1;
+}
+
+@include motion-safe {
+  .app-icon--spin {
+    animation: app-icon-spin var(--motion-icon-spin) linear infinite;
+  }
+}
+
+@keyframes app-icon-spin {
+  to {
+    rotate: 1turn;
+  }
+}

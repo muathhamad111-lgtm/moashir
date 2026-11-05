@@ -20,6 +20,7 @@ import { useSuperAdminReason } from '@/composables/useSuperAdminReason'
 import { AWARD_LIMITS } from '@/constants/advanced'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -64,7 +65,7 @@ watch(cycleId, editor.load)
   <section class="cycle-editor">
     <header class="cycle-editor__header">
       <RouterLink class="cycle-editor__back" :to="{ name: ROUTE_NAMES.AWARD_CYCLES }">
-        <i class="fa-solid fa-arrow-left-long u-flip-in-rtl" aria-hidden="true"></i>
+        <AppIcon name="arrow-left" />
         {{ t('cycles.editor.back') }}
       </RouterLink>
       <div class="cycle-editor__title-row">
@@ -81,13 +82,13 @@ watch(cycleId, editor.load)
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="editor.load" />
     <EmptyState
       v-else-if="status === 'missing'"
-      icon="fa-regular fa-folder-open"
+      icon="folder"
       :title="t('cycles.editor.missingTitle')"
       :message="t('cycles.editor.missingMessage')"
     />
     <EmptyState
       v-else-if="status === 'blocked'"
-      icon="fa-solid fa-lock"
+      icon="lock"
       :title="t('cycles.editor.blockedTitle')"
       :message="errorMessage || t('cycles.editor.blockedMessage')"
     />

@@ -7,7 +7,7 @@
   font-weight: var(--fw-semibold);
   color: var(--theme-heading);
 
-  i {
+  .app-icon {
     color: var(--color-warning);
   }
 
@@ -16,7 +16,7 @@
   }
 }
 
-.accredited-completeness--done .accredited-completeness__title i {
+.accredited-completeness--done .accredited-completeness__title .app-icon {
   color: var(--color-success);
 }
 

@@ -271,7 +271,7 @@ describe('criteria mock — STD notifications, published tree and public model',
       (item) => item.code === 'STD-01' && item.body.en.includes('Sustainability'),
     )
     expect(notice).toMatchObject({
-      read: false,
+      readAt: null,
       link: expect.stringMatching(/^\/admin\/settings\/criteria\/\d+$/),
     })
     expect(notice.actorId).toBeUndefined()

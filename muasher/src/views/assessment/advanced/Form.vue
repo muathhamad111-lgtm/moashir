@@ -8,6 +8,7 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import { useDraftDeletion } from '@/composables/useDraftDeletion'
 import { ADVANCED_STATUSES } from '@/constants/advanced'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -34,7 +35,7 @@ async function onDelete(assessment) {
       <p class="accredited-form__subtitle">{{ t('advanced.form.subtitle') }}</p>
     </header>
     <div class="accredited-form__note" role="note">
-      <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+      <AppIcon name="shield-info" />
       <p>{{ t('advanced.form.note') }}</p>
     </div>
     <AccreditedFormWorkspace
@@ -46,7 +47,7 @@ async function onDelete(assessment) {
         <BaseButton
           v-if="assessment.status === ADVANCED_STATUSES.DRAFT"
           variant="danger"
-          icon="fa-solid fa-trash-can"
+          icon="trash"
           :loading="deleting"
           @click="onDelete(assessment)"
         >

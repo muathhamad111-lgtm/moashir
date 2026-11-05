@@ -1,8 +1,8 @@
 export const brandingPaletteFixture = [
   {
     token: 'brand_default',
-    hex: '#3de9ad',
-    textOnLightHex: '#0a7d57',
+    hex: '#98d8d3',
+    textOnLightHex: '#1d7470',
     label: { ar: 'ألوان الهوية الافتراضية', en: 'Brand default' },
   },
   {

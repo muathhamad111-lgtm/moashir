@@ -4,8 +4,10 @@ import Badge from '@/components/ui/Badge.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import DateStamp from '@/components/accredited/DateStamp.vue'
 import OverdueBadge from '@/components/accredited/OverdueBadge.vue'
+import PathBadge from '@/components/ui/PathBadge.vue'
 import { REVIEW_MODES } from '@/constants/accredited'
 import { localizedText } from '@/utils/localizedText'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   review: { type: Object, required: true },
@@ -22,6 +24,12 @@ const { t, locale } = useI18n()
         <bdi dir="ltr">{{ review.assessment.number }}</bdi>
       </dd>
     </div>
+    <div v-if="review.assessment.path" class="review-header__item">
+      <dt>{{ t('requests.columns.path') }}</dt>
+      <dd>
+        <PathBadge :path="review.assessment.path" :label="review.assessment.pathLabel" />
+      </dd>
+    </div>
     <div class="review-header__item">
       <dt>{{ t('requests.columns.entity') }}</dt>
       <dd>{{ localizedText(review.entity?.name, locale) }}</dd>
@@ -31,11 +39,10 @@ const { t, locale } = useI18n()
       <dd class="review-header__badges">
         <StatusBadge :status="review.assessment.status" />
         <Badge v-if="review.mode === REVIEW_MODES.READ_ONLY" variant="muted"
-          ><i class="fa-solid fa-eye" aria-hidden="true"></i> {{ t('review.readOnly') }}</Badge
+          ><AppIcon name="eye" /> {{ t('review.readOnly') }}</Badge
         >
         <Badge v-if="review.assessment.isFrozen" variant="danger"
-          ><i class="fa-solid fa-snowflake" aria-hidden="true"></i>
-          {{ t('accredited.form.frozen') }}</Badge
+          ><AppIcon name="snowflake" /> {{ t('accredited.form.frozen') }}</Badge
         >
       </dd>
     </div>

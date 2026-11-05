@@ -62,3 +62,7 @@ export function endOfRiyadhDay(dateKey) {
 export function startOfRiyadhDay(dateKey) {
   return new Date(`${dateKey}T00:00:00+03:00`).toISOString()
 }
+
+export function isoDate(value) {
+  return value ? riyadhDateKey(value) : ''
+}

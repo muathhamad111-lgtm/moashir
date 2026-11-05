@@ -58,6 +58,7 @@ export const PERMISSIONS = {
   CRITERIA_PUBLISH: 'criteria.publish',
   CONTENT_HOME_MANAGE: 'content.home.manage',
   CONTENT_KPIS_MANAGE: 'content.kpis.manage',
+  CONTACT_MESSAGES_MANAGE: 'contact.messages.manage',
   AI_KB_MANAGE: 'ai.kb.manage',
   AI_PROVIDER_MANAGE: 'ai.provider.manage',
   USERS_VIEW: 'users.view',

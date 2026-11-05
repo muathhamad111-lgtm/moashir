@@ -1,6 +1,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
 import Card from '@/components/ui/Card.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   title: { type: String, required: true },
@@ -16,7 +17,7 @@ const { t } = useI18n()
       <h2 class="service-fees__title">{{ title }}</h2>
       <p v-if="description" class="service-fees__description">{{ description }}</p>
       <p class="service-fees__note" role="note">
-        <i class="fa-solid fa-calculator" aria-hidden="true"></i>
+        <AppIcon name="calculator" />
         <span>{{ t('finance.checkout.feesAtCheckout') }}</span>
       </p>
       <div v-if="$slots.action" class="service-fees__action">

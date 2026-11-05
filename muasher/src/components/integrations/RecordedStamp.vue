@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { formatDate } from '@/utils/datetime'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   kind: {
@@ -26,7 +27,7 @@ const text = computed(() => {
 
 <template>
   <p v-if="text" class="recorded-stamp">
-    <i class="fa-solid fa-user-clock" aria-hidden="true"></i>
+    <AppIcon name="user-clock" />
     {{ text }}
   </p>
 </template>

@@ -8,6 +8,7 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import { useEmailCampaign } from '@/composables/useEmailCampaign'
 import DemoDataNotice from '@/components/ui/DemoDataNotice.vue'
 import { MOCK_MODULES } from '@/constants/mockModules'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 const {
@@ -35,7 +36,7 @@ const DEMO_MODULES = [MOCK_MODULES.MESSAGING]
     </h2>
     <DemoDataNotice scope="section" :modules="DEMO_MODULES" />
     <p class="settings-form__note" role="note">
-      <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+      <AppIcon name="info-circle" />
       {{ t('settings.email.composeNote') }}
     </p>
     <BaseInput
@@ -64,7 +65,7 @@ const DEMO_MODULES = [MOCK_MODULES.MESSAGING]
     <div class="settings-form__inline">
       <BaseButton
         variant="primary"
-        icon="fa-solid fa-envelope-circle-check"
+        icon="envelope"
         :loading="sending"
         :disabled="!valid"
         @click="send"

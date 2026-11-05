@@ -114,7 +114,7 @@ function hijri(value) {
       <PaymentNotice
         v-if="unavailable"
         tone="warning"
-        icon="fa-solid fa-file-circle-exclamation"
+        icon="warning-triangle"
         :title="t('finance.receipt.unavailableTitle')"
         :message="t('finance.receipt.unavailableMessage')"
         live
@@ -123,7 +123,7 @@ function hijri(value) {
       <footer class="receipt-card__actions">
         <BaseButton
           variant="secondary"
-          icon="fa-solid fa-file-arrow-down"
+          icon="download"
           :loading="downloading"
           @click="emit('download')"
         >

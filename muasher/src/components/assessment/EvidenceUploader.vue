@@ -2,6 +2,7 @@
 import { computed, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   attachments: { type: Array, required: true },
@@ -54,11 +55,11 @@ function sizeLabel(file) {
 
     <p :id="`${groupId}-summary`" class="evidence-uploader__summary" role="status">
       <template v-if="requiredMissingCount > 0">
-        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+        <AppIcon name="warning-triangle" />
         {{ t('evidence.requiredMissing', { count: requiredMissingCount }) }}
       </template>
       <template v-else>
-        <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+        <AppIcon name="check-circle" />
         {{ t('evidence.requiredComplete') }}
       </template>
     </p>
@@ -97,7 +98,7 @@ function sizeLabel(file) {
 
         <ul v-if="filesForKey(att.key).length" class="evidence-uploader__files">
           <li v-for="file in filesForKey(att.key)" :key="file.id" class="evidence-uploader__file">
-            <i class="fa-solid fa-file-lines evidence-uploader__file-icon" aria-hidden="true"></i>
+            <AppIcon name="doc" class="evidence-uploader__file-icon" />
             <span class="evidence-uploader__file-name">{{ file.fileName }}</span>
             <span v-if="sizeLabel(file)" class="evidence-uploader__file-size">{{
               sizeLabel(file)
@@ -106,7 +107,7 @@ function sizeLabel(file) {
               variant="ghost"
               size="sm"
               icon-only
-              icon="fa-solid fa-trash-can"
+              icon="trash"
               :disabled="disabled"
               :aria-label="t('evidence.remove', { name: file.fileName })"
               @click="emit('remove', file.id)"
@@ -120,12 +121,7 @@ function sizeLabel(file) {
           :disabled="disabled || uploading[att.key]"
           @click="openPicker(att.key)"
         >
-          <i
-            :class="
-              uploading[att.key] ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-cloud-arrow-up'
-            "
-            aria-hidden="true"
-          ></i>
+          <AppIcon :name="uploading[att.key] ? 'spinner' : 'cloud-upload'" />
           <span>{{ uploading[att.key] ? t('evidence.uploading') : t('evidence.add') }}</span>
         </button>
       </li>

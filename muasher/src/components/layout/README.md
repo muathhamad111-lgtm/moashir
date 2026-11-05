@@ -1,6 +1,14 @@
 # components/layout
 
-The three layouts, wired through `meta.layout` (`public` | `auth` | `app`) in `src/App.vue`:
+The layouts, wired through `meta.layout` (`public` | `auth` | `app`) in `src/App.vue`. An `app` route opens in
+`PortalLayout` for entity-only accounts and in `AppLayout` for every other account (`utils/portalAudience.js`), so every
+route keeps its path for both audiences:
+
+- `PortalLayout` — entity portal (Figma page 14): skip link, `portal/PortalTopBar` (logo, رحلتي · تقييماتي ·
+  شهاداتي · مدفوعاتي · رسائلي with the unread-reply badge, bell, account menu overlay; logo, bell and avatar → `/more`
+  below `lg`), `portal/AttentionStrip` on hub screens, the `<main id="portal-main">` slot, `portal/PortalFooter` and
+  `portal/MobileTabBar` below `lg`. Task screens (`PORTAL_TASK_ROUTES` in `constants/portal.js`) hide the strip and the
+  tab bar; the thread route hides them on mobile only.
 
 - `AppLayout` — back-office shell: skip link, full-height `Sidebar` at the inline start, then a
   column with `TopNavbar` and the `<main id="app-main">` slot. Loads the shared branding theme
@@ -13,8 +21,12 @@ The three layouts, wired through `meta.layout` (`public` | `auth` | `app`) in `s
 - `TopNavbar` (`.navbar.navbar--app`) — sidebar toggle, page title, LocaleSwitcher, ThemeToggle,
   settings shortcut, NotificationBell, avatar user menu (My account, entity profile, sign out).
 - `PublicLayout` / `PublicNavbar` / `AppFooter` — public pages (base `.navbar` styles).
-- `AuthLayout` — brand panel + centered card; also hosts the maintenance page.
+- `AuthLayout` — centered card in `<main>` first, then the brand panel `<aside>` (logo on dark +
+  `auth/AuthValuePanel`: an `h2` that names the aside and the three value cards from
+  `constants/authPanel.js`, footnote behind `AUTH_PANEL_SHOWS_FOOTNOTE`). The aside sits at the
+  inline start through CSS `order`; below `lg` it is a compact header (logo + heading); from `lg`
+  with a tall viewport its inner column is sticky. Also hosts the maintenance page.
 
 Styling: `_sidebar.scss` (sidebar + curved tab via `mixins/_curved-tab.scss`), `_navbar.scss`,
-`_app-layout.scss`, `_public-layout.scss`, `_auth-layout.scss`, `_footer.scss`. No style block or
+`_app-layout.scss`, `_portal-layout.scss`, `_portal-top-bar.scss`, `_attention-strip.scss`, `_mobile-tab-bar.scss`, `_public-layout.scss`, `_auth-layout.scss`, `_auth-value-panel.scss`, `_footer.scss`. No style block or
 inline style in any `.vue`.

@@ -99,9 +99,9 @@ const singleSelectValue = ref(null)
 const multiSelectValue = ref(['riyadh', 'makkah'])
 
 const rowActions = computed(() => [
-  { key: 'view', label: t('routes.requests.detail.title'), icon: 'fa-solid fa-eye' },
-  { key: 'edit', label: t('actions.save'), icon: 'fa-solid fa-pen' },
-  { key: 'remove', label: t('actions.cancel'), icon: 'fa-solid fa-trash-can', variant: 'danger' },
+  { key: 'view', label: t('routes.requests.detail.title'), icon: 'eye' },
+  { key: 'edit', label: t('actions.save'), icon: 'pen' },
+  { key: 'remove', label: t('actions.cancel'), icon: 'trash', variant: 'danger' },
 ])
 
 const inputValue = ref('')
@@ -197,10 +197,10 @@ const tableRows = [
 ]
 
 const galleryStats = computed(() => [
-  { id: 1, icon: 'fa-solid fa-building', label: t('gallery.demo.statLabel1'), value: '148' },
-  { id: 2, icon: 'fa-solid fa-clipboard-check', label: t('gallery.demo.statLabel2'), value: '342' },
-  { id: 3, icon: 'fa-solid fa-award', label: t('gallery.demo.statLabel3'), value: '96' },
-  { id: 4, icon: 'fa-solid fa-trophy', label: t('gallery.demo.statLabel4'), value: '1' },
+  { id: 1, icon: 'building', label: t('gallery.demo.statLabel1'), value: '148' },
+  { id: 2, icon: 'clipboard-check', label: t('gallery.demo.statLabel2'), value: '342' },
+  { id: 3, icon: 'award', label: t('gallery.demo.statLabel3'), value: '96' },
+  { id: 4, icon: 'trophy', label: t('gallery.demo.statLabel4'), value: '1' },
 ])
 
 const modalOpen = ref(false)
@@ -266,7 +266,7 @@ const notifications = useNotifications({ perPage: 3 })
         <BaseButton
           variant="secondary"
           icon-only
-          icon="fa-solid fa-plus"
+          icon="plus"
           :aria-label="t('gallery.labels.iconOnly')"
         />
       </div>
@@ -326,7 +326,7 @@ const notifications = useNotifications({ perPage: 3 })
           <BaseButton
             variant="secondary"
             icon-only
-            icon="fa-solid fa-circle-question"
+            icon="question-circle"
             :aria-label="t('gallery.labels.tooltipTrigger')"
           />
         </Tooltip>
@@ -512,7 +512,7 @@ const notifications = useNotifications({ perPage: 3 })
           />
         </template>
         <template #actions>
-          <BaseButton variant="primary" size="sm" icon="fa-solid fa-plus">
+          <BaseButton variant="primary" size="sm" icon="plus">
             {{ t('gallery.labels.iconOnly') }}
           </BaseButton>
         </template>

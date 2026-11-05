@@ -98,7 +98,7 @@
   font-size: var(--fs-sm);
   color: var(--theme-text);
 
-  i {
+  .app-icon {
     color: var(--theme-accent-text);
     margin-block-start: var(--space-1);
   }
@@ -106,7 +106,7 @@
   &--muted {
     color: var(--theme-text-muted);
 
-    i {
+    .app-icon {
       color: var(--theme-text-muted);
     }
   }

@@ -94,29 +94,100 @@ const completedSubRatios = {
   801: 0.8,
 }
 
+const ACCREDITED_LABEL = { ar: 'التقييم المعتمد', en: 'Accredited assessment' }
+const LEVEL_LABELS = {
+  silver: { ar: 'المستوى الفضي', en: 'Silver level' },
+  gold: { ar: 'المستوى الذهبي', en: 'Gold level' },
+}
+
+function request(id, number) {
+  return { id, number, path: 'accredited', pathLabel: ACCREDITED_LABEL }
+}
+
+function verificationUrl(code) {
+  return `${window.location.origin}/verify/${code}`
+}
+
 export const certificatesFixture = [
   {
-    id: 'cert-acc-9102',
+    id: '2c9e7a41-0b5d-4f63-8e21-7d4a00009102',
     entityId: FIXTURE_ENTITY_ID,
-    assessmentId: COMPLETED_ACCREDITED_ID,
+    number: 'CRT-2026-000001',
     kind: 'accredited',
-    entityName: { ar: 'جمعية البر بالرياض', en: 'Al-Birr Charity — Riyadh' },
-    scorePercent: 78,
-    issuedAt: '2026-06-22T12:00:00+03:00',
-    downloadUrl: '/assets/certificates/issued/cert-acc-9102.pdf',
+    level: 'silver',
+    levelLabel: LEVEL_LABELS.silver,
+    status: 'issued',
+    isTest: false,
+    percent: '78.00',
+    request: request(COMPLETED_ACCREDITED_ID, 'ACC-2026-000001'),
+    entity: {
+      id: FIXTURE_ENTITY_ID,
+      reference: 'ENT-005001',
+      name: { ar: 'جمعية البر بالرياض', en: 'Al-Birr Charity — Riyadh' },
+    },
+    verificationCode: 'K7Q2-M9XA-4TPE-8RWC-2HZN-6YVB-3DFG',
+    issuedAt: '2026-06-22T09:00:00+00:00',
+    revokedAt: null,
+    revokedReason: null,
+    supersededAt: null,
+    suspendedAt: null,
+    replaces: null,
+    hasPdf: true,
   },
-]
-
-export const feedbackReportsFixture = [
   {
-    assessmentId: COMPLETED_ACCREDITED_ID,
-    entityId: FIXTURE_ENTITY_ID,
-    status: 'available',
-    generatedAt: '2026-06-22T11:30:00+03:00',
-    items: Object.entries(completedSubRatios).map(([subCriterionId, ratio]) => ({
-      subCriterionId: Number(subCriterionId),
-      scorePercent: Math.round(ratio * 100),
-      comment: assessorNotes[subCriterionId] ?? { ar: '', en: '' },
-    })),
+    id: '2c9e7a41-0b5d-4f63-8e21-7d4a00009104',
+    entityId: 6001,
+    number: 'CRT-2026-000003',
+    kind: 'accredited',
+    level: 'silver',
+    levelLabel: LEVEL_LABELS.silver,
+    status: 'issued',
+    isTest: false,
+    percent: '74.50',
+    request: request(ACCREDITED_FIXTURE_IDS.completedEarlier, 'ACC-2026-000003'),
+    entity: {
+      id: 6001,
+      reference: 'ENT-006001',
+      name: { ar: 'مؤسسة نماء للتنمية', en: 'Namaa Development Foundation' },
+    },
+    verificationCode: '9F3K-MQ2T-7XHD-M4PA-Z81C-QW5N-RT6B',
+    issuedAt: '2026-09-05T08:00:00+00:00',
+    revokedAt: null,
+    revokedReason: null,
+    supersededAt: null,
+    suspendedAt: null,
+    replaces: { id: '2c9e7a41-0b5d-4f63-8e21-7d4a00009103', number: 'CRT-2026-000002' },
+    hasPdf: true,
   },
-]
+  {
+    id: '2c9e7a41-0b5d-4f63-8e21-7d4a00009103',
+    entityId: 6001,
+    number: 'CRT-2026-000002',
+    kind: 'accredited',
+    level: 'silver',
+    levelLabel: LEVEL_LABELS.silver,
+    status: 'superseded',
+    isTest: false,
+    percent: '74.50',
+    request: request(ACCREDITED_FIXTURE_IDS.completedEarlier, 'ACC-2026-000003'),
+    entity: {
+      id: 6001,
+      reference: 'ENT-006001',
+      name: { ar: 'مؤسسة نماء للتنمية', en: 'Namaa Development Foundation' },
+    },
+    verificationCode: 'B4NE-2WQ8-HC7T-KX3M-5RZA-9PDV-1GFY',
+    issuedAt: '2026-09-03T08:00:00+00:00',
+    revokedAt: null,
+    revokedReason: null,
+    supersededAt: '2026-09-05T08:00:00+00:00',
+    suspendedAt: null,
+    replaces: null,
+    hasPdf: true,
+  },
+].map((certificate) => ({
+  ...certificate,
+  verificationUrl: verificationUrl(certificate.verificationCode),
+}))
+
+export const feedbackRatios = completedSubRatios
+export const feedbackNotes = assessorNotes

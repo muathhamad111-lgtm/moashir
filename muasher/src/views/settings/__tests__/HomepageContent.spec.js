@@ -1,239 +1,223 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { mount, flushPromises } from '@vue/test-utils'
-import { ref } from 'vue'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { flushPromises, mount } from '@vue/test-utils'
 import HomepageContent from '@/views/settings/HomepageContent.vue'
-import FormModal from '@/components/modal/FormModal.vue'
-import HomepageItemsEditor from '@/components/settings/HomepageItemsEditor.vue'
-import SiteSettingsEditor from '@/components/settings/SiteSettingsEditor.vue'
+import SectionFormDialog from '@/components/cms/SectionFormDialog.vue'
+import { cmsService } from '@/services/cmsService'
+import { siteSettingsService } from '@/services/siteSettingsService'
 import { useConfirm } from '@/composables/useConfirm'
+import { useToast } from '@/composables/useToast'
+import BaseInput from '@/components/form/BaseInput.vue'
+import BaseSelect from '@/components/form/BaseSelect.vue'
+import FormModal from '@/components/modal/FormModal.vue'
+import { useSiteStatusStore } from '@/stores/siteStatus'
 import { createTestGlobals } from '@/test-utils'
 
-const toggleSection = vi.fn()
-const reorderSections = vi.fn()
-const updateSection = vi.fn()
-const upsertItem = vi.fn()
-const removeItem = vi.fn()
-const reorderItems = vi.fn()
-const loadSiteSettings = vi.fn()
-const updateSiteSettings = vi.fn()
-const load = vi.fn()
-const setPublished = vi.fn()
-
-const siteSettings = {
-  footerNote: { ar: 'حقوق', en: 'Rights' },
-  contact: { email: 'info@moashir.example.sa', phone: '+966', address: { ar: 'الرياض', en: 'Riyadh' } },
-  social: [{ platform: 'x', url: 'https://x.com/muasher' }],
-  quickLinks: [{ label: { ar: 'الرئيسية', en: 'Home' }, url: '/' }],
-}
-
-const sections = [
-  {
-    id: 'sec-hero',
-    key: 'hero',
-    enabled: true,
-    order: 1,
-    title: { ar: 'واجهة', en: 'Hero' },
-    subtitle: { ar: '', en: '' },
-    description: { ar: '', en: '' },
-    ctaLabel: { ar: '', en: '' },
-    ctaUrl: '',
-    image: '',
-    icon: '',
-    background: '',
-    items: [],
+vi.mock('@/services/cmsService', () => ({
+  cmsService: {
+    getPage: vi.fn(),
+    publishPage: vi.fn(),
+    unpublishPage: vi.fn(),
+    updatePage: vi.fn(),
+    createSection: vi.fn(),
+    updateSection: vi.fn(),
+    toggleSection: vi.fn(),
+    removeSection: vi.fn(),
+    reorderSections: vi.fn(),
+    createItem: vi.fn(),
+    updateItem: vi.fn(),
+    toggleItem: vi.fn(),
+    removeItem: vi.fn(),
+    reorderItems: vi.fn(),
+    uploadImage: vi.fn(),
   },
-  {
-    id: 'sec-paths',
-    key: 'evaluation-paths',
-    enabled: false,
-    order: 2,
-    title: { ar: 'المسارات', en: 'Paths' },
-    subtitle: { ar: '', en: '' },
-    description: { ar: '', en: '' },
-    ctaLabel: { ar: '', en: '' },
-    ctaUrl: '',
-    image: '',
-    icon: '',
-    background: '',
-    items: [
-      {
-        id: 'path-self',
-        order: 1,
-        icon: 'fa-solid fa-list-check',
-        image: '',
-        title: { ar: 'الذاتي', en: 'Self' },
-        description: { ar: '', en: '' },
-        ctaLabel: { ar: '', en: '' },
-        ctaUrl: '',
-        meta: {},
-      },
-      {
-        id: 'path-accredited',
-        order: 2,
-        icon: 'fa-solid fa-clipboard-check',
-        image: '',
-        title: { ar: 'المعتمد', en: 'Accredited' },
-        description: { ar: '', en: '' },
-        ctaLabel: { ar: '', en: '' },
-        ctaUrl: '',
-        meta: {},
-      },
-    ],
-  },
-]
-
-vi.mock('@/composables/useHomeContent', () => ({
-  useHomeAdmin: () => ({
-    orderedSections: ref(sections),
-    siteSettings: ref(siteSettings),
-    published: ref(true),
-    setPublished,
-    status: ref('success'),
-    saving: ref(false),
-    localized: (value) => value?.en ?? '',
-    load,
-    updateSection,
-    toggleSection,
-    reorderSections,
-    upsertItem,
-    removeItem,
-    reorderItems,
-    loadSiteSettings,
-    updateSiteSettings,
-  }),
 }))
+vi.mock('@/services/siteSettingsService', () => ({ siteSettingsService: { get: vi.fn(), update: vi.fn() } }))
 
-function mountView() {
-  return mount(HomepageContent, {
-    attachTo: document.body,
-    global: createTestGlobals({ locale: 'en' }),
-  })
+function section(id, order, overrides = {}) {
+  return {
+    id,
+    page: 'home',
+    key: `section-${id}`,
+    type: 'rich_text',
+    enabled: true,
+    order,
+    title: { ar: `قسم ${id}`, en: `Section ${id}` },
+    subtitle: null,
+    description: null,
+    ctaLabel: null,
+    ctaUrl: null,
+    icon: null,
+    background: null,
+    image: null,
+    meta: null,
+    items: [],
+    updatedAt: '2026-11-01T08:00:00Z',
+    ...overrides,
+  }
 }
 
-describe('HomepageContent (admin homepage CMS)', () => {
-  beforeEach(() => {
-    toggleSection.mockReset().mockResolvedValue({})
-    reorderSections.mockReset().mockResolvedValue({})
-    updateSection.mockReset().mockResolvedValue({})
-    upsertItem.mockReset().mockResolvedValue({})
-    removeItem.mockReset().mockResolvedValue({})
-    reorderItems.mockReset().mockResolvedValue({})
-    loadSiteSettings.mockReset().mockResolvedValue(siteSettings)
-    updateSiteSettings.mockReset().mockResolvedValue(siteSettings)
-    setPublished.mockReset().mockResolvedValue(false)
+function page(key = 'home', overrides = {}) {
+  return {
+    key,
+    title: { ar: 'الصفحة', en: 'Page' },
+    published: true,
+    publishedAt: '2026-11-01T08:00:00Z',
+    hasUnpublishedChanges: false,
+    contentUpdatedAt: '2026-11-01T08:00:00Z',
+    seo: { title: null, description: null },
+    sections: [section(101, 1), section(102, 2), section(103, 3)],
+    ...overrides,
+  }
+}
+
+const SETTINGS = {
+  social: [{ platform: 'x', url: 'https://x.com/moashir.example' }],
+  contact: { email: 'info@moashir.example.sa', phone: null, address: { ar: 'الرياض', en: 'Riyadh' } },
+  footerNote: { ar: 'حقوق', en: 'Rights' },
+  quickLinks: [{ label: { ar: 'الرئيسية', en: 'Home' }, url: '/' }],
+  seo: { title: null, description: null },
+  featuredKpiLimit: 6,
+  showFeaturedKpis: true,
+  updatedAt: '2026-11-01T08:00:00Z',
+}
+
+async function mountView() {
+  const globals = createTestGlobals({ locale: 'en' })
+  const wrapper = mount(HomepageContent, { global: globals, attachTo: document.body })
+  await flushPromises()
+  return { wrapper, globals }
+}
+
+beforeEach(() => {
+  vi.clearAllMocks()
+  cmsService.getPage.mockImplementation((key) => Promise.resolve({ data: page(key) }))
+  siteSettingsService.get.mockResolvedValue({ data: SETTINGS })
+})
+
+describe('Public site content editor (Content Officer)', () => {
+  it('offers one tab per CMS page, the two legal texts and the site settings, homepage first', async () => {
+    const { wrapper } = await mountView()
+    expect(wrapper.findAll('.tabs__tab').map((tab) => tab.text())).toEqual([
+      'Homepage',
+      'Accredited assessment',
+      'Advanced assessment',
+      'Quick Excellence Kit',
+      'Analytical lenses',
+      'Indicators page',
+      'Accessibility statement',
+      'Terms of use',
+      'Privacy policy',
+      'Site settings',
+    ])
+    expect(cmsService.getPage).toHaveBeenCalledWith('home')
+    expect(wrapper.findAll('.cms-section-row')).toHaveLength(3)
+    expect(wrapper.find('.publication-control .badge').text()).toBe('Published')
+    wrapper.unmount()
   })
 
-  it('shows the publication state and unpublishes only after confirmation', async () => {
-    const wrapper = mountView()
-    expect(wrapper.find('.publication-control').text()).toContain('Published')
-    await wrapper.find('.publication-control .btn').trigger('click')
+  it('toggles a section and moves it down with the arrow buttons', async () => {
+    cmsService.toggleSection.mockResolvedValue({ data: section(101, 1, { enabled: false }) })
+    cmsService.reorderSections.mockResolvedValue({ data: [section(102, 1), section(101, 2), section(103, 3)] })
+    const { wrapper } = await mountView()
+    await wrapper.find('.cms-section-row input[type="checkbox"]').setValue(false)
     await flushPromises()
-    expect(setPublished).not.toHaveBeenCalled()
+    expect(cmsService.toggleSection).toHaveBeenCalledWith(101, false)
+    await wrapper.findAll('.sortable-list__moves')[0].findAll('button')[1].trigger('click')
+    await flushPromises()
+    expect(cmsService.reorderSections).toHaveBeenCalledWith([102, 101, 103])
+    expect(wrapper.find('.publication-control .badge').text()).toBe('Published, with unpublished changes')
+    wrapper.unmount()
+  })
+
+  it('reorders the sections by drag and drop', async () => {
+    cmsService.reorderSections.mockResolvedValue({ data: [section(103, 1), section(101, 2), section(102, 3)] })
+    const { wrapper } = await mountView()
+    const rows = wrapper.findAll('.sortable-list__row')
+    await rows[2].trigger('dragstart', { dataTransfer: { setData: vi.fn(), effectAllowed: '' } })
+    await rows[0].trigger('dragover')
+    await rows[0].trigger('drop')
+    await flushPromises()
+    expect(cmsService.reorderSections).toHaveBeenCalledWith([103, 101, 102])
+    wrapper.unmount()
+  })
+
+  it('unpublishes the homepage only after confirmation and switches the public site to maintenance', async () => {
+    cmsService.unpublishPage.mockResolvedValue({ data: page('home', { published: false }) })
+    const { wrapper, globals } = await mountView()
+    const unpublish = wrapper.findAll('.publication-control button').find((button) => button.text().includes('Unpublish'))
+    await unpublish.trigger('click')
+    await flushPromises()
+    expect(cmsService.unpublishPage).not.toHaveBeenCalled()
     useConfirm().accept()
     await flushPromises()
-    expect(setPublished).toHaveBeenCalledWith(false)
+    expect(cmsService.unpublishPage).toHaveBeenCalledWith('home')
+    expect(useSiteStatusStore(globals.pinia).maintenance).toBe(true)
+    expect(wrapper.find('.publication-control .badge').text()).toBe('Not published')
     wrapper.unmount()
   })
 
-  it('lists all sections in order with their key and status', () => {
-    const wrapper = mountView()
-    const text = wrapper.text()
-    expect(text).toContain('Hero')
-    expect(text).toContain('hero')
-    expect(text).toContain('Paths')
-    expect(text).toContain('evaluation-paths')
-  })
-
-  it('toggles a section via toggleSection', async () => {
-    const wrapper = mountView()
-    const firstSwitch = wrapper.find('input[role="switch"]')
-    await firstSwitch.setValue(false)
+  it('shows the server refusal when a page cannot be published', async () => {
+    cmsService.getPage.mockResolvedValue({ data: page('home', { hasUnpublishedChanges: true }) })
+    cmsService.publishPage.mockRejectedValue(
+      Object.assign(new Error('empty'), { normalized: { code: 'cms.page_empty', message: 'The page has no enabled section to publish.' } }),
+    )
+    const { wrapper } = await mountView()
+    await wrapper.find('.publication-control .btn--primary').trigger('click')
+    useConfirm().accept()
     await flushPromises()
-    expect(toggleSection).toHaveBeenCalledWith('sec-hero', false)
-  })
-
-  it('reorders sections via reorderSections when moving a row down', async () => {
-    const wrapper = mountView()
-    const downButton = wrapper.find('button[aria-label="Move down"]')
-    await downButton.trigger('click')
-    await flushPromises()
-    expect(reorderSections).toHaveBeenCalledWith(['sec-paths', 'sec-hero'])
-  })
-
-  it('opens the edit modal pre-filled with the section fields', async () => {
-    const wrapper = mountView()
-    const editButton = wrapper.findAll('button').find((btn) => btn.text().includes('Edit'))
-    await editButton.trigger('click')
-    await flushPromises()
-    const modal = wrapper.getComponent(FormModal)
-    expect(modal.props('modelValue')).toBe(true)
-    const titleAr = document.querySelector('input[name="titleAr"]')
-    const titleEn = document.querySelector('input[name="titleEn"]')
-    expect(titleAr).not.toBeNull()
-    expect(titleAr.value).toBe('واجهة')
-    expect(titleEn.value).toBe('Hero')
+    expect(useToast().toasts.at(-1)).toMatchObject({ type: 'error', message: 'The page has no enabled section to publish.' })
     wrapper.unmount()
   })
 
-  it('shows a manage-items action for item-bearing sections only', () => {
-    const wrapper = mountView()
-    const manageButtons = wrapper.findAll('button').filter((btn) => btn.text().includes('Manage items'))
-    expect(manageButtons).toHaveLength(2)
-  })
-
-  it('opens the items editor for the selected section and forwards upsert', async () => {
-    const wrapper = mountView()
-    const manageButtons = wrapper.findAll('button').filter((btn) => btn.text().includes('Manage items'))
-    await manageButtons[1].trigger('click')
+  it('creates a section with its key and type through the dialog', async () => {
+    cmsService.createSection.mockResolvedValue({ data: section(150, 4, { key: 'faq_block', type: 'faq' }) })
+    const { wrapper } = await mountView()
+    await wrapper.find('.cms-page-editor__toolbar .btn--primary').trigger('click')
     await flushPromises()
-
-    const editor = wrapper.getComponent(HomepageItemsEditor)
-    expect(editor.props('modelValue')).toBe(true)
-    expect(editor.props('section').id).toBe('sec-paths')
-    expect(editor.props('items')).toHaveLength(2)
-
-    editor.vm.$emit('upsert', { title: { ar: 'جديد', en: 'New' } })
+    const dialog = wrapper.findComponent(SectionFormDialog)
+    const input = (name) => dialog.findAllComponents(BaseInput).find((field) => field.props('name') === name)
+    await input('key').find('input').setValue('faq_block')
+    await dialog.findAllComponents(BaseSelect).find((field) => field.props('name') === 'type').find('select').setValue('faq')
+    await input('title.ar').find('input').setValue('الأسئلة الشائعة')
+    dialog.findComponent(FormModal).vm.$emit('submit')
     await flushPromises()
-    expect(upsertItem).toHaveBeenCalledWith('sec-paths', { title: { ar: 'جديد', en: 'New' } })
-
-    editor.vm.$emit('reorder', ['path-accredited', 'path-self'])
+    await vi.waitFor(() => expect(cmsService.createSection).toHaveBeenCalled())
     await flushPromises()
-    expect(reorderItems).toHaveBeenCalledWith('sec-paths', ['path-accredited', 'path-self'])
-
-    editor.vm.$emit('remove', 'path-self')
-    await flushPromises()
-    expect(removeItem).toHaveBeenCalledWith('sec-paths', 'path-self')
+    expect(cmsService.createSection).toHaveBeenCalledWith('home', expect.objectContaining({ key: 'faq_block', type: 'faq', title: { ar: 'الأسئلة الشائعة', en: '' } }))
+    expect(wrapper.findAll('.cms-section-row')).toHaveLength(4)
     wrapper.unmount()
   })
 
-  it('removing an item asks for confirmation then forwards removeItem', async () => {
-    const wrapper = mountView()
-    const manageButtons = wrapper.findAll('button').filter((btn) => btn.text().includes('Manage items'))
-    await manageButtons[1].trigger('click')
+  it('loads another page when its tab is selected', async () => {
+    const { wrapper } = await mountView()
+    await wrapper.findAll('.tabs__tab')[4].trigger('click')
     await flushPromises()
-
-    const removeButton = document.querySelector('button[aria-label="Remove"]')
-    expect(removeButton).not.toBeNull()
-    removeButton.click()
-    await flushPromises()
-
-    const { confirmState, accept } = useConfirm()
-    expect(confirmState.isOpen).toBe(true)
-    accept()
-    await flushPromises()
-    expect(removeItem).toHaveBeenCalledWith('sec-paths', 'path-self')
+    expect(cmsService.getPage).toHaveBeenLastCalledWith('lenses')
     wrapper.unmount()
   })
 
-  it('loads site settings on mount and saves via updateSiteSettings', async () => {
-    const wrapper = mountView()
+  it('edits and saves the site settings with the featured indicator settings', async () => {
+    siteSettingsService.update.mockImplementation((payload) => Promise.resolve({ data: { ...SETTINGS, ...payload } }))
+    const { wrapper } = await mountView()
+    await wrapper.findAll('.tabs__tab')[9].trigger('click')
     await flushPromises()
-    expect(loadSiteSettings).toHaveBeenCalled()
+    await wrapper.find('select[name="featuredKpiLimit"]').setValue('4')
+    await wrapper.find('.site-settings__form').trigger('submit')
+    await flushPromises()
+    expect(siteSettingsService.update).toHaveBeenCalledWith(expect.objectContaining({ featuredKpiLimit: 4, showFeaturedKpis: true }))
+    wrapper.unmount()
+  })
 
-    const editor = wrapper.getComponent(SiteSettingsEditor)
-    editor.vm.$emit('save', { footerNote: { ar: 'محدث', en: 'Updated' } })
+  it('maps the server field errors of the site settings to their fields', async () => {
+    siteSettingsService.update.mockRejectedValue(
+      Object.assign(new Error('invalid'), { normalized: { message: 'The submitted data is invalid.', fieldErrors: { 'social.0.url': ['The link must start with https://.'] } } }),
+    )
+    const { wrapper } = await mountView()
+    await wrapper.findAll('.tabs__tab')[9].trigger('click')
     await flushPromises()
-    expect(updateSiteSettings).toHaveBeenCalledWith({ footerNote: { ar: 'محدث', en: 'Updated' } })
+    await wrapper.find('.site-settings__form').trigger('submit')
+    await flushPromises()
+    expect(wrapper.text()).toContain('The link must start with https://.')
     wrapper.unmount()
   })
 })

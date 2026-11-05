@@ -4,6 +4,7 @@ import { entityOf, isFrozen } from '../assessments/assessmentsStore'
 import { activeAssignment, isOverdue, reviewedRecords } from './accreditedRecords'
 import { REVIEWED_PATHS, pathRules } from '../assessments/reviewedPaths'
 import { isPositiveInteger, throwIfErrors } from './accreditedValidation'
+import { pathLabelOf } from '../../fixtures/pathLabels'
 
 const FILTER_KEYS = [
   'filter[path]',
@@ -27,25 +28,27 @@ function invalid(errors, field, attribute = 'filter') {
   errors[field] = [fieldMessage('validation.invalid', {}, attribute)]
 }
 
-function pathsOf(query) {
+function pathsOf(query, followed) {
   const path = query.get('filter[path]')
   if (query.get('filter[cycleId]')) return [ADVANCED]
-  return REVIEWED_PATHS.includes(path) ? [path] : REVIEWED_PATHS
+  return [followed.includes(path) ? path : followed[0]]
 }
 
 function statesOf(paths) {
   return [...new Set(paths.flatMap((path) => pathRules(path).queueStates))]
 }
 
-function checkFilters(query, errors) {
+function checkFilters(query, followed, errors) {
   if ([...query.keys()].some((key) => key.startsWith('filter[') && !FILTER_KEYS.includes(key)))
     invalid(errors, 'filter')
   const path = query.get('filter[path]')
-  if (path && !REVIEWED_PATHS.includes(path)) invalid(errors, 'filter.path')
+  if (path && !followed.includes(path)) invalid(errors, 'filter.path')
   const status = query.get('filter[status]')
-  if (status && !statesOf(pathsOf(query)).includes(status)) invalid(errors, 'filter.status')
+  if (status && !statesOf(pathsOf(query, followed)).includes(status))
+    invalid(errors, 'filter.status')
   const cycleId = query.get('filter[cycleId]')
-  if (cycleId && !isPositiveInteger(cycleId))
+  if (cycleId && !followed.includes(ADVANCED)) invalid(errors, 'filter.cycleId')
+  else if (cycleId && !isPositiveInteger(cycleId))
     errors['filter.cycleId'] = [fieldMessage('validation.integer', {}, 'filter')]
   const overdue = query.get('filter[overdue]')
   if (overdue && !(overdue in OVERDUE_VALUES)) invalid(errors, 'filter.overdue')
@@ -68,14 +71,14 @@ function checkPaging(query, errors) {
   }
 }
 
-export function queueFiltersFrom(query) {
+export function queueFiltersFrom(query, followed = REVIEWED_PATHS) {
   const errors = {}
-  checkFilters(query, errors)
+  checkFilters(query, followed, errors)
   checkPaging(query, errors)
   throwIfErrors(errors)
   const overdue = query.get('filter[overdue]')
   return {
-    paths: pathsOf(query),
+    paths: pathsOf(query, followed),
     cycleId: query.get('filter[cycleId]') ? Number(query.get('filter[cycleId]')) : null,
     status: query.get('filter[status]') || null,
     overdue: overdue ? OVERDUE_VALUES[overdue] : null,
@@ -114,9 +117,30 @@ function matchesFilters(record, filters) {
   return filters.assessorId === null || activeAssignment(record)?.assessorId === filters.assessorId
 }
 
+function queuedRecords() {
+  return reviewedRecords().filter(
+    (record) => pathRules(record.path).inQueue(record.status) && !isFrozen(record),
+  )
+}
+
+export function queuePathCounts(followed) {
+  const queued = queuedRecords()
+  return followed.map((path) => {
+    const records = queued.filter((record) => record.path === path)
+    return {
+      path,
+      pathLabel: pathLabelOf(path),
+      total: records.length,
+      awaitingAssignment: records.filter(
+        (record) => record.status === pathRules(path).stages.awaiting,
+      ).length,
+      overdue: records.filter((record) => isOverdue(record)).length,
+    }
+  })
+}
+
 export function queueRecords(filters, normalize) {
-  return reviewedRecords()
-    .filter((record) => pathRules(record.path).inQueue(record.status) && !isFrozen(record))
+  return queuedRecords()
     .filter(
       (record) =>
         matchesFilters(record, filters) && matchesSearch(record, filters.search, normalize),

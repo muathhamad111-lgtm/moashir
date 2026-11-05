@@ -1,5 +1,6 @@
 <script setup>
 import { computed, useId } from 'vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   modelValue: { type: Boolean, default: false },
@@ -30,7 +31,7 @@ const errorId = computed(() => `${controlId}-error`)
           :aria-describedby="error ? errorId : undefined"
           @change="emit('update:modelValue', $event.target.checked)"
         />
-        <i v-if="modelValue" class="fa-solid fa-check checkbox__check" aria-hidden="true"></i>
+        <AppIcon v-if="modelValue" name="check" class="checkbox__check" />
       </span>
       <span class="checkbox__label">{{ label }}</span>
     </label>

@@ -45,6 +45,7 @@ const OWN_PAYMENT_KEYS = [
   'receipt',
   'reference',
   'refunded_at',
+  'request',
   'status',
 ]
 const CHECKOUT_KEYS = [
@@ -61,6 +62,7 @@ const CHECKOUT_KEYS = [
   'pattern',
   'payment_intent',
   'publishable_key',
+  'script',
   'supported_networks',
 ]
 const TRANSACTION_KEYS = [

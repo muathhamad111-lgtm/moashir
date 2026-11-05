@@ -190,3 +190,22 @@ export function toFilteringDetail(raw = {}) {
     decisions: (raw.decisions ?? []).map(toFilteringDecision),
   }
 }
+
+function toCycleBinding(raw) {
+  if (!raw) return null
+  return {
+    id: raw.id ?? null,
+    name: raw.name ?? null,
+    status: raw.status ?? null,
+    criteriaVersionId: raw.criteriaVersionId ?? null,
+    openRequests: raw.openRequests ?? 0,
+  }
+}
+
+export function toCycleBindings(raw) {
+  return {
+    running: toCycleBinding(raw?.running),
+    requestsStayOnCycleVersion: raw?.requestsStayOnCycleVersion !== false,
+    drafts: (raw?.drafts ?? []).map(toCycleBinding),
+  }
+}

@@ -34,7 +34,6 @@ describe('backend session bridge', () => {
       name: 'جمعية الأمل الخيرية',
       roles: ['entity'],
       entityId: 5001,
-      committeeCycles: [],
       locale: 'ar',
       superAdmin: false,
     })
@@ -56,9 +55,10 @@ describe('backend session bridge', () => {
       id: 9,
       name: 'Reem',
       roles: [{ key: 'assessor' }],
-      committee_appointments: [{ cycle_id: 31 }],
+      committee_appointments: [{ id: 7001, award_cycle_id: 31 }],
     })
-    expect(appointed.committeeCycles.length).toBe(1)
+    expect(appointed.id).toBe(27)
+    expect(appointed.roles).toEqual(['assessor'])
     expect(demoDescriptorOf(null)).toBeNull()
   })
 

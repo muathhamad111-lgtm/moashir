@@ -21,11 +21,26 @@ beforeEach(() => {
 })
 
 describe('authService', () => {
-  it('loads the login modes', async () => {
-    apiClient.get.mockResolvedValue(respond({ emailPassword: true }))
+  it('loads the login modes of the simplified sign-in', async () => {
+    apiClient.get.mockResolvedValue(
+      respond({
+        identifiers: ['email', 'mobile', 'unified_number'],
+        entitySecondFactorEnabled: false,
+        otpLength: 6,
+        otpExpirySeconds: 300,
+        resendCooldownSeconds: 60,
+        ssoProviders: [],
+      }),
+    )
     const result = await authService.getLoginModes()
     expect(apiClient.get).toHaveBeenCalledWith('/auth/login-modes', AUTH_FLOW)
-    expect(result.data.emailPassword).toBe(true)
+    expect(result.data).toEqual({
+      identifiers: ['email', 'mobile', 'unified_number'],
+      entitySecondFactorEnabled: false,
+      otpLength: 6,
+      otpExpirySeconds: 300,
+      resendCooldownSeconds: 60,
+    })
   })
 
   it('registers via POST and breadcrumbs only the field SHAPE (never values)', async () => {
@@ -53,13 +68,10 @@ describe('authService', () => {
         },
       }),
     )
-    const result = await authService.loginWithPassword({
-      officialEmail: 'a@example.sa',
-      password: 'x',
-    })
+    const result = await authService.signIn({ identifier: 'a@example.sa', password: 'x' })
     expect(apiClient.post).toHaveBeenCalledWith(
       '/auth/login',
-      { email: 'a@example.sa', mode: 'password', password: 'x' },
+      { identifier: 'a@example.sa', password: 'x' },
       AUTH_FLOW,
     )
     expect(result.data.step).toBe('authenticated')
@@ -68,28 +80,38 @@ describe('authService', () => {
     expect(result.data.user.committeeAppointments).toEqual([{ cycleId: 3 }])
   })
 
-  it('requests an OTP sign-in through the login endpoint', async () => {
+  it('answers the e-mail second factor step with its challenge and never calls otp/request', async () => {
     apiClient.post.mockResolvedValue(respond({ step: 'otp_required', otp: { challengeId: 'c-1' } }))
-    const result = await authService.requestLoginOtp({
-      officialEmail: 'a@example.sa',
-      channel: 'sms',
-    })
-    expect(apiClient.post).toHaveBeenCalledWith(
-      '/auth/login',
-      { email: 'a@example.sa', mode: 'otp', channel: 'sms' },
-      AUTH_FLOW,
-    )
+    const result = await authService.signIn({ identifier: '7001234567', password: 'x' })
     expect(result.data.otp.challengeId).toBe('c-1')
     expect(result.data.user).toBeNull()
+    expect(apiClient.post.mock.calls.map(([path]) => path)).toEqual(['/auth/login'])
+    expect(authService).not.toHaveProperty('requestLoginOtp')
   })
 
-  it('maps the e-mail field error back to the form field name', async () => {
-    const error = { normalized: { fieldErrors: { email: ['Invalid'] } } }
-    apiClient.post.mockRejectedValue(error)
+  it('does not report expected sign-in rejections to GlitchTip', async () => {
+    for (const status of [403, 422, 423, 429]) {
+      apiClient.post.mockRejectedValueOnce({ response: { status } })
+      await expect(
+        authService.signIn({ identifier: 'a@example.sa', password: 'x' }),
+      ).rejects.toBeTruthy()
+    }
+    expect(logger.error).not.toHaveBeenCalled()
+    apiClient.post.mockRejectedValueOnce({ response: { status: 500 } })
     await expect(
-      authService.loginWithPassword({ officialEmail: 'a@example.sa', password: 'x' }),
-    ).rejects.toBe(error)
-    expect(error.normalized.fieldErrors).toEqual({ officialEmail: ['Invalid'] })
+      authService.signIn({ identifier: 'a@example.sa', password: 'x' }),
+    ).rejects.toBeTruthy()
+    expect(logger.error).toHaveBeenCalledTimes(1)
+  })
+
+  it('resends the code with the challenge id only', async () => {
+    apiClient.post.mockResolvedValue(respond({ step: 'otp_required', otp: { challengeId: 'c-2' } }))
+    await authService.resendOtp({ challengeId: 'c-1' })
+    expect(apiClient.post).toHaveBeenCalledWith(
+      '/auth/otp/resend',
+      { challengeId: 'c-1' },
+      AUTH_FLOW,
+    )
   })
 
   it('verifies an OTP without leaking the code value', async () => {

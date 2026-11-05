@@ -85,7 +85,7 @@ onMounted(load)
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
     <EmptyState
       v-else-if="status === 'missing'"
-      icon="fa-regular fa-clipboard"
+      icon="doc"
       :title="t('assessment.self.missing.title')"
       :message="t('assessment.self.missing.message')"
     />

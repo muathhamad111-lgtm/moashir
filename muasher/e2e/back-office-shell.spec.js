@@ -2,11 +2,11 @@ import { Buffer } from 'node:buffer'
 import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
 
-const IGNORED_CONSOLE = /Failed to load resource|50\d|Service Unavailable|Font Awesome/i
+const IGNORED_CONSOLE = /Failed to load resource|50\d|Service Unavailable/i
 const SHOTS = 'e2e/__screenshots__/shell'
 const SIDEBAR_BY_THEME = {
-  dark: { background: 'rgb(1, 20, 22)', logo: /logo-lockup-green/ },
-  light: { background: 'rgb(217, 247, 247)', logo: /logo-lockup-dark/ },
+  dark: { background: 'rgb(6, 24, 25)', logo: /moashir-logo-on-dark/ },
+  light: { background: 'rgb(217, 247, 247)', logo: /moashir-logo-mono-dark/ },
 }
 
 function isEn(testInfo) {
@@ -78,7 +78,7 @@ for (const theme of ['dark', 'light']) {
       const active = page.locator('.sidebar__item.is-active')
       await expect(active).toHaveCount(1)
       await expect(active).toHaveAttribute('aria-current', 'page')
-      await expect(active).toHaveAttribute('href', '/admin/requests')
+      await expect(active).toHaveAttribute('href', '/admin/requests?path=accredited')
 
       await prepare(page)
       await settleAnimations(page)
@@ -145,11 +145,11 @@ test('unified workspace: module groups, no role switcher, profile lists roles an
 
 test('Action Center aggregates the tasks of every held role', async ({ page }, testInfo) => {
   await seedSession(page, { roles: ['request_follower', 'content_officer'], locale: isEn(testInfo) ? 'en' : 'ar' })
-  await expect(async () => {
-    await page.goto('/dashboard')
-    await clickUntil(page, '.error-state__retry .btn', '#follower-requests')
-    await expect(page.locator('.action-center__source').first()).toBeVisible({ timeout: 3000 })
-  }).toPass({ timeout: 30000 })
+  await page.goto('/dashboard')
+  await expect(page.locator('[data-board="request_follower"]')).toBeVisible()
+  await expect(page.locator('.dashboard-board-nav__link')).toHaveCount(2)
+  await expect(page.locator('[data-action="assign_requests"]')).toBeVisible()
+  await expect(page.locator('[data-action="publish_content_changes"]')).toBeVisible()
   await page.screenshot({ path: `${SHOTS}/dashboard-unified-${suffix(testInfo)}.png`, fullPage: true })
 })
 
@@ -163,11 +163,11 @@ test('branding: System Administrator picks an accent, the back office applies it
   await page.locator('.accent-swatch').nth(6).click()
   await expect(page.locator('.branding-preview__frame').first()).toHaveAttribute('data-accent', 'amber')
   await expect(page.locator('html')).toHaveAttribute('data-accent', 'brand_default')
-  await expect(page.locator('.contrast-check .badge--success')).toHaveCount(3)
+  await expect(page.locator('.contrast-check .badge--success')).toHaveCount(4)
 
   await expect(page.locator('.logo-variant')).toHaveCount(2)
-  await expect(page.locator('.branding-preview__frame[data-theme="light"] .branding-preview__logo')).toHaveAttribute('src', /logo-lockup-dark/)
-  await expect(page.locator('.branding-preview__frame[data-theme="dark"] .branding-preview__logo')).toHaveAttribute('src', /logo-lockup-green/)
+  await expect(page.locator('.branding-preview__frame[data-theme="light"] .branding-preview__logo')).toHaveAttribute('src', /moashir-logo-mono-dark/)
+  await expect(page.locator('.branding-preview__frame[data-theme="dark"] .branding-preview__logo')).toHaveAttribute('src', /moashir-logo-on-dark/)
   const lightSidebar = await page
     .locator('.branding-preview__frame[data-theme="light"] .branding-preview__sidebar')
     .evaluate((element) => getComputedStyle(element).backgroundColor)
@@ -201,7 +201,7 @@ test('branding: one logo per background, previewed, and returned to the brand de
   await expect(page.locator('.branding-preview__frame[data-theme="light"] .branding-preview__logo')).toHaveAttribute('src', /^blob:/)
   await page.locator('.branding-page__actions .btn--primary').click()
   await expect(page.locator('.toast').first()).toBeVisible()
-  await expect(page.locator('.sidebar__logo')).toHaveAttribute('src', /^data:image\/svg\+xml/)
+  await expect(page.locator('.sidebar__logo')).toHaveAttribute('src', /^\/api\/v1\/content\/files\/[0-9a-f-]{36}$/)
   await expect(lightField.locator('.badge--info')).toBeVisible()
   await expect(page.locator('.logo-variant button:not(.file-upload__dropzone)')).toHaveCount(0)
   await page.screenshot({ path: `${SHOTS}/branding-logos-light-${suffix(testInfo)}.png`, fullPage: true })
@@ -226,7 +226,7 @@ test('maintenance page blocks visitors but keeps sign-in reachable (Q-96)', asyn
   await seedSession(page, { roles: ['system_admin'], locale: isEn(testInfo) ? 'en' : 'ar' })
   await page.goto('/admin/settings/homepage')
   await clickUntil(page, '.error-state__retry .btn', '.publication-control')
-  await page.locator('.publication-control .btn').click()
+  await page.locator('.publication-control').getByRole('button', { name: /^(Unpublish|إلغاء النشر)$/ }).click()
   await page.locator('.modal .btn--danger').click()
   await expect(page.locator('.publication-control--off')).toBeVisible()
 

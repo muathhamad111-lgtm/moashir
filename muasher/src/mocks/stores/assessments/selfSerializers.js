@@ -1,4 +1,5 @@
 import { SCORE_LEVELS } from '@/constants/assessment'
+import { pathLabelOf } from '../../fixtures/pathLabels'
 import { toCanonicalStatus } from '@/utils/canonicalStatus'
 import { entitySummary } from '../entitySerializers'
 import { findMain, findPoint, findSub } from '../criteriaStore'
@@ -32,6 +33,7 @@ export function assessmentResource(record) {
     id: record.id,
     number: record.number,
     path: record.path,
+    pathLabel: pathLabelOf(record.path),
     status: maskedStatus(record),
     isOpen: isOpen(record) || isMaskedFor(record),
     isFrozen: isFrozen(record),
@@ -107,7 +109,7 @@ function nullableRaw(raw) {
   return raw === null ? null : decimalRaw(raw)
 }
 
-function mainRows(result) {
+export function mainRows(result) {
   return result.mains.map((main) => ({
     criterionId: main.id,
     code: main.code,
@@ -130,7 +132,7 @@ export function subRows(result) {
   )
 }
 
-function pointRows(result) {
+export function pointRows(result) {
   return result.mains.flatMap((main) =>
     main.subs.flatMap((sub) =>
       sub.points.map((point) => ({
@@ -150,6 +152,7 @@ function resultIdentity(record) {
     id: record.id,
     number: record.number,
     path: record.path,
+    pathLabel: pathLabelOf(record.path),
     status: maskedStatus(record),
     isFrozen: isFrozen(record),
   }
@@ -184,6 +187,7 @@ export function requestSearchHit(record) {
     id: record.id,
     number: record.number,
     path: record.path,
+    pathLabel: pathLabelOf(record.path),
     status: record.status,
     isFrozen: isFrozen(record),
     entity: entitySummary(entityOf(record)),

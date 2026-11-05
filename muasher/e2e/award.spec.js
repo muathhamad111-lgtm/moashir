@@ -2,7 +2,7 @@ import { Buffer } from 'node:buffer'
 import { test, expect } from '@playwright/test'
 import { seedPreferences, seedSignedIn } from './support/session'
 
-const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d|Font Awesome/i
+const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d/i
 const PDF = Buffer.from('%PDF-1.4\n% Award evidence\n%%EOF\n')
 
 const USERS = {
@@ -153,8 +153,8 @@ test.describe('Award staff screens', () => {
     await page.goto('/admin/requests')
     const rows = page.locator('.table:not(.table--loading) tbody .table__row')
     await expect(rows.first()).toBeVisible()
-    await page.locator('.request-filters .dropdown__toggle').nth(1).click()
-    await page.locator('.dropdown__item', { hasText: text(testInfo, 'Award', 'الجائزة') }).first().click()
+    await page.locator('.path-switch__link').nth(1).click()
+    await expect(page).toHaveURL(/\/admin\/requests\?path=advanced$/)
     await expect(rows.first()).toContainText('ADV-')
     await expect(rows.first()).toContainText(text(testInfo, 'Moashir Institutional Excellence Award', 'دورة جائزة مؤشر للتميز المؤسسي'))
     await page.goto('/admin/requests/9203')
@@ -187,7 +187,7 @@ test.describe('Award staff screens', () => {
   test('the initial assessor completes the assessment and the request waits for filtering', async ({ page }, testInfo) => {
     const errors = trackConsole(page)
     await signIn(page, testInfo, USERS.assessor)
-    await page.goto('/admin/requests/assigned')
+    await page.goto('/admin/requests/assigned?path=advanced')
     await page.getByRole('tab').nth(1).click()
     await expect(page.locator('.table__row', { hasText: 'ADV-' }).first()).toBeVisible()
     await page.goto('/admin/requests/9202/review')

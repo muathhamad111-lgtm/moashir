@@ -40,7 +40,7 @@ describe('BaseButton', () => {
   })
 
   it('renders icon-only mode without a label', () => {
-    const wrapper = mount(BaseButton, { props: { iconOnly: true, icon: 'fa-solid fa-plus' } })
+    const wrapper = mount(BaseButton, { props: { iconOnly: true, icon: 'plus' } })
     expect(wrapper.classes()).toContain('btn--icon')
     expect(wrapper.find('.btn__label').exists()).toBe(false)
     expect(wrapper.find('.btn__icon').exists()).toBe(true)

@@ -186,3 +186,21 @@ describe('approval, privacy, regions and terms services', () => {
     expect(apiClient.get).toHaveBeenCalledWith('/terms/current')
   })
 })
+
+describe('entitiesService logo', () => {
+  it('uploads the logo as multipart without logging the file name', async () => {
+    apiClient.post.mockResolvedValue({ data: envelope })
+    const file = new File(['png'], 'شعار-الجمعية.png', { type: 'image/png' })
+    await entitiesService.uploadLogo(file)
+    const [path, body] = apiClient.post.mock.calls[0]
+    expect(path).toBe('/entities/me/logo')
+    expect(body.get('file')).toBe(file)
+    expect(JSON.stringify(logger.breadcrumb.mock.calls)).not.toContain('شعار')
+  })
+
+  it('removes the logo', async () => {
+    apiClient.delete.mockResolvedValue({ data: envelope })
+    await entitiesService.removeLogo()
+    expect(apiClient.delete).toHaveBeenCalledWith('/entities/me/logo')
+  })
+})

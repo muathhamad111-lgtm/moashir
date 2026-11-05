@@ -21,7 +21,11 @@ const MOCK_FAULTS_OFF = {
 
 export default defineConfig({
   testDir: './e2e',
-  testIgnore: ['**/integration/**'],
+  testIgnore: [
+    '**/integration/**',
+    '**/posture/**',
+    ...(process.env.MOASHIR_CHECK_MOYASAR_CDN ? [] : ['**/moyasar-cdn.spec.js']),
+  ],
   timeout: 30 * 1000,
   expect: {
     timeout: 5000,

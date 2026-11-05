@@ -32,25 +32,25 @@ const fullRecords = computed(() => items.value.some((item) => 'entityType' in it
 const statCards = computed(() => [
   {
     id: 'total',
-    icon: 'fa-solid fa-building-ngo',
+    icon: 'building',
     value: stats.value?.total ?? 0,
     label: t('entities.stats.total'),
   },
   {
     id: 'active',
-    icon: 'fa-solid fa-circle-check',
+    icon: 'check-circle',
     value: stats.value?.active ?? 0,
     label: t('entities.stats.active'),
   },
   {
     id: 'pending',
-    icon: 'fa-solid fa-hourglass-half',
+    icon: 'refresh-dots',
     value: stats.value?.pendingVerification ?? 0,
     label: t('entities.stats.pendingVerification'),
   },
   {
     id: 'deactivated',
-    icon: 'fa-solid fa-ban',
+    icon: 'ban',
     value: stats.value?.deactivated ?? 0,
     label: t('entities.stats.deactivated'),
   },
@@ -77,7 +77,7 @@ onMounted(regions.load)
           v-if="can(PERMISSIONS.ENTITIES_DELETE)"
           variant="ghost"
           size="sm"
-          icon="fa-solid fa-trash-can-arrow-up"
+          icon="undo"
           @click="router.push({ name: ROUTE_NAMES.ADMIN_ENTITIES_DELETED })"
         >
           {{ t('nav.deletedEntities') }}
@@ -102,7 +102,7 @@ onMounted(regions.load)
         <BaseButton
           variant="secondary"
           size="sm"
-          icon="fa-solid fa-file-csv"
+          icon="doc"
           :loading="exporting"
           @click="exportCsv(exportParams)"
         >

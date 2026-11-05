@@ -50,19 +50,19 @@ const tableStatus = computed(() => {
 const statCards = computed(() => [
   {
     id: 'total',
-    icon: 'fa-solid fa-shield-halved',
+    icon: 'shield-info',
     value: rows.value.length,
     label: t('permissions.stats.total'),
   },
   {
     id: 'locked',
-    icon: 'fa-solid fa-lock',
+    icon: 'lock',
     value: rows.value.filter((item) => item.lockedToRoles?.length).length,
     label: t('permissions.stats.locked'),
   },
   {
     id: 'confidential',
-    icon: 'fa-solid fa-user-shield',
+    icon: 'user-shield',
     value: rows.value.filter((item) => item.confidential).length,
     label: t('permissions.stats.confidential'),
   },
@@ -77,7 +77,7 @@ const columns = computed(() => [
 ])
 
 const rowActions = computed(() => [
-  { key: 'edit', label: t('permissions.actions.edit'), icon: 'fa-solid fa-pen' },
+  { key: 'edit', label: t('permissions.actions.edit'), icon: 'pen' },
 ])
 
 const formOpen = ref(false)

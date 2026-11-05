@@ -2,6 +2,7 @@
 import { useI18n } from 'vue-i18n'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   modelValue: { type: Boolean, required: true },
@@ -32,11 +33,11 @@ const { t } = useI18n()
       </p>
       <ul class="accredited-submit__facts">
         <li class="accredited-submit__fact">
-          <i class="fa-solid fa-lock" aria-hidden="true"></i>
+          <AppIcon name="lock" />
           {{ t('accredited.submit.lockNote') }}
         </li>
         <li class="accredited-submit__fact">
-          <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
+          <AppIcon name="user-shield" />
           {{ t('accredited.submit.reviewNote') }}
         </li>
       </ul>
@@ -48,12 +49,7 @@ const { t } = useI18n()
         @click="emit('update:modelValue', false)"
         >{{ t('actions.cancel') }}</BaseButton
       >
-      <BaseButton
-        variant="primary"
-        icon="fa-solid fa-paper-plane"
-        :loading="submitting"
-        @click="emit('confirm')"
-      >
+      <BaseButton variant="primary" icon="send" :loading="submitting" @click="emit('confirm')">
         {{ resubmission ? t('accredited.form.resubmit') : t('accredited.form.submit') }}
       </BaseButton>
     </template>

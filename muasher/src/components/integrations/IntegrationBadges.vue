@@ -5,6 +5,7 @@ import Badge from '@/components/ui/Badge.vue'
 import IntegrationStatusBadge from './IntegrationStatusBadge.vue'
 import { CREDENTIAL_SOURCES } from '@/constants/integrations'
 import { integrationStatusOf } from '@/utils/integrations/integrationStatus'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   source: { type: String, required: true },
@@ -32,11 +33,11 @@ const showSource = computed(() => props.source !== CREDENTIAL_SOURCES.NONE)
       v-if="showSource"
       :variant="source === CREDENTIAL_SOURCES.ENVIRONMENT ? 'warning' : 'muted'"
     >
-      <i class="fa-solid fa-database" aria-hidden="true"></i>
+      <AppIcon name="database" />
       {{ t(`integrations.source.${source}`) }}
     </Badge>
     <Badge v-if="mode" :variant="mode === 'live' ? 'info' : 'muted'">
-      <i class="fa-solid fa-flask" aria-hidden="true"></i>
+      <AppIcon name="flask" />
       {{ t(`integrations.mode.${mode}`) }}
     </Badge>
   </span>

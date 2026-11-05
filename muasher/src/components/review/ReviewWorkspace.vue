@@ -13,13 +13,13 @@ import ReviewMainPanel from './ReviewMainPanel.vue'
 import ReviewActions from './ReviewActions.vue'
 import RequestCompletionDialog from './RequestCompletionDialog.vue'
 import ScoreOverrideDialog from './ScoreOverrideDialog.vue'
+import CompleteReviewDialog from './CompleteReviewDialog.vue'
 import { useAssessorReview } from '@/composables/useAssessorReview'
 import { useSelfScoreSheet } from '@/composables/useSelfScoreSheet'
 import { useReviewFeedback } from '@/composables/useReviewFeedback'
 import { useReviewActions } from '@/composables/useReviewActions'
 import { useReasonPrompt } from '@/composables/useReasonPrompt'
 import { useSignedDownload } from '@/composables/useSignedDownload'
-import { useConfirm } from '@/composables/useConfirm'
 import { useAuthStore } from '@/stores/auth'
 import { evidenceService } from '@/services/evidenceService'
 import { localizedText } from '@/utils/localizedText'
@@ -30,7 +30,6 @@ const props = defineProps({
 
 const { t, locale } = useI18n()
 const auth = useAuthStore()
-const { confirm } = useConfirm()
 const reviewState = useAssessorReview(toRef(props, 'assessmentId'))
 const {
   status,
@@ -52,6 +51,8 @@ const workspace = { reviewState, scoreSheet, feedback, actions, downloads }
 const activeMainId = ref(null)
 const completionOpen = ref(false)
 const overrideOpen = ref(false)
+const completeOpen = ref(false)
+const ACCREDITED_PATH = 'accredited'
 
 const mains = computed(() => review.value?.criteria?.mains ?? [])
 const activeMain = computed(
@@ -88,20 +89,12 @@ function download(file) {
   )
 }
 
-async function onComplete() {
-  const message =
-    fullyScored.value && !scoreSheet.dirty.value
-      ? t('review.confirmComplete.message')
-      : t('review.confirmComplete.pendingMessage')
-  if (
-    await confirm({
-      title: t('review.confirmComplete.title'),
-      message,
-      confirmLabel: t('review.complete'),
-    })
-  )
-    actions.complete()
-}
+const completeMessage = computed(() =>
+  fullyScored.value && !scoreSheet.dirty.value
+    ? t('review.confirmComplete.message')
+    : t('review.confirmComplete.pendingMessage'),
+)
+const offersCertificate = computed(() => assessment.value?.path === ACCREDITED_PATH)
 
 async function refresh() {
   actions.clearConflict()
@@ -119,7 +112,7 @@ onMounted(reviewState.load)
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="reviewState.load" />
     <EmptyState
       v-else-if="status === 'missing' || status === 'blocked'"
-      icon="fa-solid fa-lock"
+      icon="lock"
       :title="t('review.unavailable.title')"
       :message="errorMessage || t('review.unavailable.message')"
     />
@@ -158,7 +151,13 @@ onMounted(reviewState.load)
         @start="actions.startReview"
         @save="actions.saveAll"
         @request-completion="completionOpen = true"
-        @complete="onComplete"
+        @complete="completeOpen = true"
+      />
+      <CompleteReviewDialog
+        v-model="completeOpen"
+        :message="completeMessage"
+        :offers-certificate="offersCertificate"
+        @confirm="actions.complete"
       />
       <RequestCompletionDialog
         v-model="completionOpen"

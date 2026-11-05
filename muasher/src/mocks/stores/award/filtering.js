@@ -17,9 +17,15 @@ import {
   trimmed,
 } from '../accredited/accreditedValidation'
 import { assertNotFrozen } from '../accredited/entityWorkflow'
-import { ADVANCED_STATES, FILTERING_STATES } from './advancedStates'
+import {
+  ADVANCED_STATES,
+  FILTERING_STATES,
+  FILTERING_VISIBLE_STATES,
+  QUALIFIED_STATES,
+} from './advancedStates'
 import { awardReject } from './awardRejection'
 import { announceFilteringDecision } from './awardNotices'
+import { distributeQualified } from '../committee/committeeRelease'
 
 const FILTER_KEYS = ['filter[status]', 'filter[regionId]']
 const SORTABLE = {
@@ -82,7 +88,7 @@ function cycleRecords(cycle, filters, normalize) {
     .filter(
       (record) =>
         record.awardCycleId === cycle.id &&
-        FILTERING_STATES.includes(record.status) &&
+        FILTERING_VISIBLE_STATES.includes(record.status) &&
         !isFrozen(record),
     )
     .filter((record) => filters.regionId === null || record.regionId === filters.regionId)
@@ -142,14 +148,18 @@ export function filteringRow(record, cycle) {
   }
 }
 
+function groupOf(status) {
+  return QUALIFIED_STATES.includes(status) ? ADVANCED_STATES.QUALIFIED : status
+}
+
 export function filteringQueue(cycle, query, normalize) {
   const filters = filteringFiltersFrom(query)
   const unfiltered = cycleRecords(cycle, filters, normalize)
   const rows = unfiltered
-    .filter((record) => !filters.status || record.status === filters.status)
+    .filter((record) => !filters.status || groupOf(record.status) === filters.status)
     .sort(compareBy(sortFieldOf(filters.sort), filters.sort.startsWith('-')))
   const { items, pagination } = paginate(rows, query)
-  const count = (status) => unfiltered.filter((record) => record.status === status).length
+  const count = (status) => unfiltered.filter((record) => groupOf(record.status) === status).length
   return {
     items: items.map((record) => filteringRow(record, cycle)),
     meta: {
@@ -236,6 +246,7 @@ function decide(user, cycle, record, { outcome, reason, note, verb, isOverride }
   )
   Object.assign(record, { status, updatedAt: at })
   announceFilteringDecision(record, decision)
+  if (outcome === 'qualified') distributeQualified(cycle, record)
   return record
 }
 

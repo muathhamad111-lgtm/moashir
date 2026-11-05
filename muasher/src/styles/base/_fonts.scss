@@ -54,30 +54,8 @@
 }
 
 @font-face {
-  font-family: 'Tajawal';
-  src: url('@/assets/fonts/tajawal-arabic-400.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-  unicode-range:
-    U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E,
-    U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
-}
-
-@font-face {
-  font-family: 'Tajawal';
-  src: url('@/assets/fonts/tajawal-arabic-500.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-  unicode-range:
-    U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E,
-    U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
-}
-
-@font-face {
-  font-family: 'Tajawal';
-  src: url('@/assets/fonts/tajawal-arabic-700.woff2') format('woff2');
+  font-family: 'Alexandria';
+  src: url('@/assets/fonts/alexandria-arabic-700.woff2') format('woff2');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -87,9 +65,53 @@
 }
 
 @font-face {
-  font-family: 'Tajawal';
-  src: url('@/assets/fonts/tajawal-arabic-900.woff2') format('woff2');
-  font-weight: 900;
+  font-family: 'Alexandria';
+  src: url('@/assets/fonts/alexandria-arabic-800.woff2') format('woff2');
+  font-weight: 800 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E,
+    U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
+}
+
+@font-face {
+  font-family: 'Noto Kufi Arabic';
+  src: url('@/assets/fonts/noto-kufi-arabic-arabic-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E,
+    U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
+}
+
+@font-face {
+  font-family: 'Noto Kufi Arabic';
+  src: url('@/assets/fonts/noto-kufi-arabic-arabic-800.woff2') format('woff2');
+  font-weight: 800 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E,
+    U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
+}
+
+@font-face {
+  font-family: 'Cairo';
+  src: url('@/assets/fonts/cairo-arabic-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E,
+    U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
+}
+
+@font-face {
+  font-family: 'Cairo';
+  src: url('@/assets/fonts/cairo-arabic-800.woff2') format('woff2');
+  font-weight: 800 900;
   font-style: normal;
   font-display: swap;
   unicode-range:

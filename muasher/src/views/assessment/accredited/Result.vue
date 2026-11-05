@@ -49,7 +49,7 @@ onMounted(async () => {
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
     <EmptyState
       v-else-if="status === 'missing'"
-      icon="fa-regular fa-folder-open"
+      icon="folder"
       :title="t('accredited.result.missing.title')"
       :message="t('accredited.result.missing.message')"
     />

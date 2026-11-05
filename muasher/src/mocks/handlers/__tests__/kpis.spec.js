@@ -1,10 +1,12 @@
-import { describe, expect, it, beforeAll, afterAll, afterEach } from 'vitest'
+import { describe, expect, it, beforeAll, afterAll, afterEach, beforeEach } from 'vitest'
 import { setupServer } from 'msw/node'
 import { kpisHandlers } from '@/mocks/handlers/kpis'
-import { MOCK_API_BASE, mockFetch } from '@/test-utils/mockApi'
+import { contentHandlers } from '@/mocks/handlers/content'
+import { resetKpiState } from '@/mocks/stores/kpis/kpiState'
+import { resetCmsMock } from '@/mocks/stores/content/cmsPublication'
+import { MOCK_API_BASE, clearMockSession, mockFetch, seedMockSession } from '@/test-utils/mockApi'
 
-const server = setupServer(...kpisHandlers)
-const BASE = MOCK_API_BASE
+const server = setupServer(...kpisHandlers, ...contentHandlers)
 
 async function call(method, path, body) {
   const init = { method }
@@ -12,141 +14,127 @@ async function call(method, path, body) {
     init.headers = { 'content-type': 'application/json' }
     init.body = JSON.stringify(body)
   }
-  const res = await mockFetch(`${BASE}${path}`, init)
-  return { ok: res.ok, status: res.status, body: await res.json() }
-}
-
-async function retry(method, path, body, tries = 20) {
-  let last
-  for (let i = 0; i < tries; i += 1) {
-    last = await call(method, path, body)
-    if (last.ok) return last
-  }
-  throw new Error(`step failed: ${method} ${path} (status ${last?.status})`)
+  const res = await mockFetch(`${MOCK_API_BASE}${path}`, init)
+  return { status: res.status, body: res.status === 204 ? null : await res.json() }
 }
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
+beforeEach(() => {
+  resetKpiState()
+  resetCmsMock()
+  seedMockSession({ id: 7001, roles: ['content_officer'] })
+})
 afterEach(() => server.resetHandlers())
-afterAll(() => server.close())
+afterAll(() => {
+  server.close()
+  clearMockSession()
+})
 
-describe('kpis mock — expanded model (chunk 3A)', () => {
-  it('public list returns published, ordered indicators carrying the new fields', async () => {
-    const { body } = await retry('GET', '/kpis')
-    const items = body.data
-    expect(items.length).toBeGreaterThan(0)
-    expect(items.every((kpi) => kpi.published)).toBe(true)
-    for (let i = 1; i < items.length; i += 1) {
-      expect(items[i].order).toBeGreaterThanOrEqual(items[i - 1].order)
-    }
-    const first = items[0]
-    expect(first.slug).toBeTruthy()
-    expect(first.category).toBeTruthy()
-    expect(first.status).toBeTruthy()
-    expect(first.owner.ar).toBeTruthy()
-    expect(first.dataSource.en).toBeTruthy()
-    expect(typeof first.showOnHomepage).toBe('boolean')
+describe('KPI mock — public reads (Task-33 §3 #29-#32)', () => {
+  it('pages published indicators in the public shape with decimal strings and references', async () => {
+    const { body } = await call('GET', '/kpis?per_page=5')
+    expect(body.data).toHaveLength(5)
+    expect(body.meta.pagination).toMatchObject({ page: 1, perPage: 5 })
+    const [first] = body.data
+    expect(typeof first.value).toBe('string')
+    expect(first.category).toEqual(expect.objectContaining({ id: expect.any(Number), key: expect.any(String) }))
+    expect(first).toHaveProperty('cardColor')
+    expect(first).not.toHaveProperty('published')
+    expect(first).not.toHaveProperty('cardColorToken')
   })
 
-  it('exposes a homepage subset via showOnHomepage', async () => {
-    const { body } = await retry('GET', '/kpis')
-    const featured = body.data.filter((kpi) => kpi.showOnHomepage)
-    expect(featured.length).toBeGreaterThanOrEqual(3)
-    expect(featured.length).toBeLessThanOrEqual(8)
+  it('filters by category, status, year, type and owner and sorts by value', async () => {
+    const byCategory = await call('GET', '/kpis?filter[category_id]=3&per_page=100')
+    expect(byCategory.body.data.every((kpi) => kpi.category.id === 3)).toBe(true)
+    const byStatus = await call('GET', '/kpis?filter[status]=needs_improvement&per_page=100')
+    expect(byStatus.body.data.length).toBeGreaterThan(0)
+    expect(byStatus.body.data.every((kpi) => kpi.status === 'needs-improvement')).toBe(true)
+    const byYear = await call('GET', '/kpis?filter[measurement_year]=2025&per_page=100')
+    expect(byYear.body.data.every((kpi) => kpi.measurementYear === 2025)).toBe(true)
+    const sorted = await call('GET', '/kpis?sort=-value&per_page=100')
+    const values = sorted.body.data.map((kpi) => Number(kpi.value))
+    expect(values).toEqual([...values].sort((a, b) => b - a))
   })
 
-  it('public list with homepage=true returns only featured, capped at six', async () => {
-    const { body } = await retry('GET', '/kpis?homepage=true')
-    const items = body.data
-    expect(items.length).toBeGreaterThanOrEqual(3)
-    expect(items.length).toBeLessThanOrEqual(6)
-    expect(items.every((kpi) => kpi.published && kpi.showOnHomepage)).toBe(true)
+  it('refuses a one-letter search with 422', async () => {
+    expect((await call('GET', '/kpis?search=a')).status).toBe(422)
   })
 
-  it('getBySlug returns the matching PUBLISHED indicator with all fields', async () => {
-    const { body } = await retry('GET', '/kpis/participating-associations')
-    const kpi = body.data
-    expect(kpi.slug).toBe('participating-associations')
-    expect(kpi.published).toBe(true)
-    expect(kpi.baseline).not.toBeUndefined()
-    expect(kpi.lastUpdate).toMatch(/^\d{4}-\d{2}-\d{2}$/)
-    expect(kpi.calcMethod.ar).toBeTruthy()
-    expect(kpi.badgeColor).toBeTruthy()
-    expect(kpi.cardColor).toBeTruthy()
+  it('serves the featured list with the minimum and honours the site settings limit', async () => {
+    const featured = await call('GET', '/kpis/featured')
+    expect(featured.body.meta).toEqual({ minimum: 3, count: featured.body.data.length })
+    await call('PATCH', '/admin/content/site-settings', { featuredKpiLimit: 3 })
+    expect((await call('GET', '/kpis/featured')).body.data).toHaveLength(3)
+    await call('PATCH', '/admin/content/site-settings', { showFeaturedKpis: false })
+    expect((await call('GET', '/kpis/featured')).body.data).toEqual([])
   })
 
-  it('getBySlug 404s for an unknown or unpublished slug', async () => {
-    let res
-    for (let i = 0; i < 20; i += 1) {
-      res = await call('GET', '/kpis/does-not-exist')
-      if (res.status === 404) break
-    }
-    expect(res.status).toBe(404)
+  it('returns the detail by slug with history and SEO, and 404 for unpublished slugs', async () => {
+    const detail = await call('GET', '/kpis/participating-associations')
+    expect(detail.body.data.history.length).toBeGreaterThan(0)
+    expect(detail.body.data.seo.title.en).toBe('Participating associations')
+    const hidden = (await call('GET', '/admin/kpis?filter[published]=false')).body.data[0]
+    expect((await call('GET', `/kpis/${hidden.slug}`)).status).toBe(404)
+  })
+})
+
+describe('KPI mock — editor writes (Task-33 §3 #33-#42)', () => {
+  it('creates an unpublished KPI with an automatic slug and refuses a taken slug', async () => {
+    const created = await call('POST', '/admin/kpis', { name: { ar: 'مؤشر الشراكات', en: 'Partnership index' }, value: '12.50', kpiCategoryId: 2 })
+    expect(created.status).toBe(201)
+    expect(created.body.data).toMatchObject({ slug: 'partnership-index', value: '12.5', published: false })
+    const taken = await call('POST', '/admin/kpis', { name: { ar: 'مكرر', en: 'Duplicate' }, slug: 'partnership-index' })
+    expect(taken.body.code).toBe('slug.taken')
+    const prohibited = await call('POST', '/admin/kpis', { name: { ar: 'منشور', en: '' }, published: true })
+    expect(prohibited.body.errors).toHaveProperty('published')
   })
 
-  it('creates an indicator that persists the new fields and gets a unique slug', async () => {
-    const payload = {
-      name: { ar: 'مؤشر تجريبي', en: 'Sample new indicator' },
-      description: { ar: 'وصف', en: 'Description' },
-      value: 120,
-      target: 200,
-      baseline: 80,
-      unit: { ar: 'وحدة', en: 'units' },
-      category: 'innovation',
-      status: 'good',
-      owner: { ar: 'إدارة الابتكار', en: 'Innovation Department' },
-      dataSource: { ar: 'سجل الابتكار', en: 'Innovation registry' },
-      lastUpdate: '2025-04-01',
-      externalLink: 'https://example.sa',
-      calcMethod: { ar: 'طريقة', en: 'Method' },
-      notes: { ar: 'ملاحظة', en: 'Note' },
-      icon: 'fa-solid fa-rocket',
-      color: 'info',
-      badgeColor: 'warning',
-      cardColor: 'success',
-      showOnHomepage: true,
-      published: true,
-    }
-    const { body } = await retry('POST', '/admin/kpis', payload)
-    const created = body.data
-    expect(created.id).toBeTruthy()
-    expect(created.slug).toBe('sample-new-indicator')
-    expect(created.baseline).toBe(80)
-    expect(created.category).toBe('innovation')
-    expect(created.status).toBe('good')
-    expect(created.owner).toEqual(payload.owner)
-    expect(created.dataSource).toEqual(payload.dataSource)
-    expect(created.lastUpdate).toBe('2025-04-01')
-    expect(created.externalLink).toBe('https://example.sa')
-    expect(created.calcMethod).toEqual(payload.calcMethod)
-    expect(created.notes).toEqual(payload.notes)
-    expect(created.badgeColor).toBe('warning')
-    expect(created.cardColor).toBe('success')
-    expect(created.showOnHomepage).toBe(true)
+  it('caps the featured flag at six indicators', async () => {
+    const candidate = (await call('GET', '/admin/kpis?filter[featured]=false')).body.data[0]
+    const refused = await call('PUT', `/admin/kpis/${candidate.id}`, { showOnHomepage: true })
+    expect(refused.status).toBe(422)
+    expect(refused.body.code).toBe('kpi.featured_limit_reached')
+  })
 
-    const bySlug = await retry('GET', `/kpis/${created.slug}`)
-    expect(bySlug.body.data.id).toBe(created.id)
-  }, 20000)
+  it('publishes, archives and reports the stats', async () => {
+    const list = await call('GET', '/admin/kpis')
+    expect(list.body.meta.stats).toMatchObject({ total: 31, featured: 6 })
+    const target = list.body.data[0]
+    expect((await call('PATCH', `/admin/kpis/${target.id}/published`, { published: false })).body.data.published).toBe(false)
+    expect((await call('DELETE', `/admin/kpis/${target.id}`)).status).toBe(204)
+    expect((await call('GET', '/admin/kpis')).body.meta.stats.total).toBe(30)
+  })
 
-  it('updates an indicator and round-trips the new fields', async () => {
-    const admin = await retry('GET', '/admin/kpis?per_page=50')
-    const target = admin.body.data[0]
-    const { body } = await retry('PUT', `/admin/kpis/${target.id}`, {
-      category: 'operations',
-      status: 'behind-target',
-      baseline: 5,
-      owner: { ar: 'إدارة محدثة', en: 'Updated department' },
-      badgeColor: 'danger',
-      cardColor: 'warning',
-      showOnHomepage: true,
-    })
-    const updated = body.data
-    expect(updated.category).toBe('operations')
-    expect(updated.status).toBe('behind-target')
-    expect(updated.baseline).toBe(5)
-    expect(updated.owner.en).toBe('Updated department')
-    expect(updated.badgeColor).toBe('danger')
-    expect(updated.cardColor).toBe('warning')
-    expect(updated.showOnHomepage).toBe(true)
-    expect(updated.name).toEqual(target.name)
-  }, 20000)
+  it('moves one step and applies a complete bulk order', async () => {
+    const first = (await call('GET', '/admin/kpis')).body.data[0]
+    const moved = await call('PATCH', `/admin/kpis/${first.id}/reorder`, { direction: 'down' })
+    expect(moved.body.data[1].id).toBe(first.id)
+    const ids = moved.body.data.map((entry) => entry.id).reverse()
+    expect((await call('PATCH', '/admin/kpis/reorder', { orderedIds: ids })).body.data[0].id).toBe(ids[0])
+    expect((await call('PATCH', '/admin/kpis/reorder', { orderedIds: ids.slice(2) })).body.code).toBe('order.incomplete')
+  })
+
+  it('records a dated measurement once per day and refuses future dates', async () => {
+    const kpi = (await call('GET', '/admin/kpis')).body.data[0]
+    const recorded = await call('POST', `/admin/kpis/${kpi.id}/values`, { value: '510', measuredOn: '2026-07-31' })
+    expect(recorded.status).toBe(201)
+    expect(recorded.body.data.at(-1)).toEqual({ value: '510', measuredOn: '2026-07-31' })
+    expect((await call('POST', `/admin/kpis/${kpi.id}/values`, { value: '1', measuredOn: '2026-07-31' })).body.code).toBe('kpi.measurement_exists')
+    expect((await call('POST', `/admin/kpis/${kpi.id}/values`, { value: '1', measuredOn: '2999-01-01' })).status).toBe(422)
+  })
+
+  it('manages categories and refuses to delete one in use', async () => {
+    const created = await call('POST', '/admin/kpi-categories', { key: 'impact', name: { ar: 'الأثر', en: 'Impact' } })
+    expect(created.status).toBe(201)
+    expect((await call('DELETE', `/admin/kpi-categories/${created.body.data.id}`)).status).toBe(204)
+    const inUse = await call('DELETE', '/admin/kpi-categories/1')
+    expect(inUse.status).toBe(409)
+    expect(inUse.body.code).toBe('category.in_use')
+    expect(inUse.body.meta.kpiCount).toBeGreaterThan(0)
+  })
+
+  it('denies the editor endpoints to roles without content.kpis.manage', async () => {
+    seedMockSession({ id: 7002, roles: ['finance_officer'] })
+    expect((await call('GET', '/admin/kpis')).status).toBe(403)
+  })
 })

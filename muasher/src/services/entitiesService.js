@@ -14,6 +14,16 @@ export const entitiesService = {
   updateMine(payload) {
     return write('updateMine', () => apiClient.put('/entities/me', payload), payload)
   },
+  uploadLogo(file) {
+    const body = new FormData()
+    body.append('file', file)
+    return write('uploadLogo', () => apiClient.post('/entities/me/logo', body), {
+      file: file.type,
+    })
+  },
+  removeLogo() {
+    return write('removeLogo', () => apiClient.delete('/entities/me/logo'), {})
+  },
   requestEmailChange(newEmail) {
     const payload = { newEmail }
     return write(

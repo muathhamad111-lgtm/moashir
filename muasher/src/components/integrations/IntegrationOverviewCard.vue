@@ -5,6 +5,7 @@ import { RouterLink } from 'vue-router'
 import IntegrationBadges from './IntegrationBadges.vue'
 import LastTestLine from './LastTestLine.vue'
 import { INTEGRATION_KIND_ICONS, INTEGRATION_KIND_ROUTES } from '@/constants/integrations'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   row: { type: Object, required: true },
@@ -23,7 +24,7 @@ const providerName = computed(() =>
   <article class="overview-card" :aria-labelledby="`overview-${row.kind}`">
     <header class="overview-card__header">
       <span class="overview-card__icon">
-        <i :class="INTEGRATION_KIND_ICONS[row.kind]" aria-hidden="true"></i>
+        <AppIcon :name="INTEGRATION_KIND_ICONS[row.kind]" />
       </span>
       <div class="overview-card__heading">
         <h2 :id="`overview-${row.kind}`" class="overview-card__title">{{ title }}</h2>
@@ -42,7 +43,7 @@ const providerName = computed(() =>
     <LastTestLine :last-test="row.lastTest" />
     <RouterLink class="overview-card__link" :to="{ name: INTEGRATION_KIND_ROUTES[row.kind] }">
       {{ t('integrations.overview.manage', { kind: title }) }}
-      <i class="fa-solid fa-chevron-right u-flip-in-rtl" aria-hidden="true"></i>
+      <AppIcon name="chevron-right" />
     </RouterLink>
   </article>
 </template>

@@ -40,15 +40,15 @@ const columns = computed(() =>
 
 function cityActions(city) {
   return [
-    { key: 'edit', label: t('entities.cities.edit'), icon: 'fa-solid fa-pen' },
+    { key: 'edit', label: t('entities.cities.edit'), icon: 'pen' },
     city.isActive
       ? {
           key: 'toggle',
           label: t('entities.cities.deactivate'),
-          icon: 'fa-solid fa-eye-slash',
+          icon: 'eye-slash',
           variant: 'danger',
         }
-      : { key: 'toggle', label: t('entities.cities.activate'), icon: 'fa-solid fa-eye' },
+      : { key: 'toggle', label: t('entities.cities.activate'), icon: 'eye' },
   ]
 }
 
@@ -86,7 +86,7 @@ function onAction(key, city) {
         />
       </template>
       <template #actions>
-        <BaseButton variant="primary" size="sm" icon="fa-solid fa-plus" @click="openEditor()">{{
+        <BaseButton variant="primary" size="sm" icon="plus" @click="openEditor()">{{
           t('entities.cities.add')
         }}</BaseButton>
       </template>

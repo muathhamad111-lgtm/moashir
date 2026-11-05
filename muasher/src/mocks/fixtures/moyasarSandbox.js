@@ -1,3 +1,13 @@
+export const MOYASAR_CHECKOUT_SCRIPT = Object.freeze({
+  url: 'https://cdn.moyasar.com/mpf/1.15.0/moyasar.js',
+  integrity: null,
+})
+
+export const MOYASAR_FORM_ASSET_PATTERNS = Object.freeze({
+  script: 'https://cdn.moyasar.com/mpf/:version/moyasar.js',
+  stylesheet: 'https://cdn.moyasar.com/mpf/:version/moyasar.css',
+})
+
 export const SANDBOX_OUTCOME_ORDER = [
   'paid',
   'declined',

@@ -2,13 +2,14 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DropdownList from '@/components/ui/DropdownList.vue'
-import { QUEUE_SORTS, QUEUE_STATUSES } from '@/constants/accredited'
-import { ADVANCED_QUEUE_STATUSES } from '@/constants/advanced'
+import { QUEUE_SORTS } from '@/constants/accredited'
 import { ASSESSMENT_PATHS } from '@/constants/assessment'
 import { statusLabelKey } from '@/utils/canonicalStatus'
 import { localizedText } from '@/utils/localizedText'
+import { queueStatusesOf } from '@/utils/requestPaths'
 
 const props = defineProps({
+  path: { type: String, required: true },
   filters: { type: Object, required: true },
   sort: { type: String, required: true },
   assessors: { type: Array, default: () => [] },
@@ -18,18 +19,9 @@ const props = defineProps({
 const emit = defineEmits(['filter', 'sort'])
 const { t, locale } = useI18n()
 
-const PATHS = [ASSESSMENT_PATHS.ACCREDITED, ASSESSMENT_PATHS.ADVANCED]
-
-const statuses = computed(() => {
-  if (props.filters.path === ASSESSMENT_PATHS.ACCREDITED) return QUEUE_STATUSES
-  if (props.filters.path === ASSESSMENT_PATHS.ADVANCED || props.filters.cycleId)
-    return ADVANCED_QUEUE_STATUSES
-  return [...new Set([...QUEUE_STATUSES, ...ADVANCED_QUEUE_STATUSES])]
-})
-const pathOptions = computed(() => [
-  { value: '', label: t('requests.filters.allPaths') },
-  ...PATHS.map((value) => ({ value, label: t(`requests.paths.${value}`) })),
-])
+const showsCycles = computed(
+  () => props.path === ASSESSMENT_PATHS.ADVANCED && props.cycles.length > 0,
+)
 const cycleOptions = computed(() => [
   { value: '', label: t('requests.filters.allCycles') },
   ...props.cycles.map((cycle) => ({
@@ -39,7 +31,7 @@ const cycleOptions = computed(() => [
 ])
 const statusOptions = computed(() => [
   { value: '', label: t('requests.filters.allStatuses') },
-  ...statuses.value.map((value) => ({ value, label: t(statusLabelKey(value)) })),
+  ...queueStatusesOf(props.path).map((value) => ({ value, label: t(statusLabelKey(value)) })),
 ])
 const overdueOptions = computed(() => [
   { value: '', label: t('requests.filters.allRequests') },
@@ -57,12 +49,6 @@ const sortOptions = computed(() =>
   })),
 )
 
-function setPath(value) {
-  emit('filter', 'status', '')
-  if (value !== ASSESSMENT_PATHS.ADVANCED) emit('filter', 'cycleId', '')
-  emit('filter', 'path', value)
-}
-
 function setCycle(value) {
   emit('filter', 'status', '')
   emit('filter', 'cycleId', value)
@@ -78,13 +64,7 @@ function setCycle(value) {
       @update:model-value="emit('filter', 'status', $event)"
     />
     <DropdownList
-      :model-value="filters.path"
-      :options="pathOptions"
-      :placeholder="t('requests.filters.path')"
-      @update:model-value="setPath"
-    />
-    <DropdownList
-      v-if="cycles.length && filters.path !== 'accredited'"
+      v-if="showsCycles"
       :model-value="filters.cycleId"
       :options="cycleOptions"
       :placeholder="t('requests.filters.cycle')"

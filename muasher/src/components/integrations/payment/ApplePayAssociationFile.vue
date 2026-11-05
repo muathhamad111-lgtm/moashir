@@ -6,6 +6,7 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import Badge from '@/components/ui/Badge.vue'
 import RecordedStamp from '@/components/integrations/RecordedStamp.vue'
 import { INTEGRATION_LIMITS } from '@/constants/integrations'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   file: { type: Object, default: null },
@@ -63,10 +64,7 @@ function onPick(event) {
       t('integrations.payment.applePay.fileLabel')
     }}</span>
     <p class="association-file__state">
-      <i
-        :class="stored ? 'fa-solid fa-file-circle-check' : 'fa-solid fa-file-circle-question'"
-        aria-hidden="true"
-      ></i>
+      <AppIcon :name="stored ? 'check-circle' : 'question-circle'" />
       {{ sizeLine }}
     </p>
     <RecordedStamp v-if="stored" kind="uploaded" :at="file.uploadedAt" :by="file.uploadedBy" />
@@ -87,7 +85,7 @@ function onPick(event) {
       <BaseButton
         variant="secondary"
         size="sm"
-        icon="fa-solid fa-upload"
+        icon="upload"
         :disabled="busy"
         @click="inputRef.click()"
       >
@@ -103,7 +101,7 @@ function onPick(event) {
         v-if="stored"
         variant="ghost"
         size="sm"
-        icon="fa-solid fa-trash-can"
+        icon="trash"
         :disabled="busy"
         @click="emit('remove')"
       >
@@ -113,7 +111,7 @@ function onPick(event) {
         v-if="stored"
         variant="ghost"
         size="sm"
-        icon="fa-solid fa-globe"
+        icon="globe"
         :disabled="busy"
         @click="emit('check')"
       >

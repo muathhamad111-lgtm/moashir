@@ -1,4 +1,5 @@
 import { http } from '../contract/http'
+import { pathLabelOf } from '../fixtures/pathLabels'
 import { envelope } from '../contract/responses'
 import {
   assessmentReject,
@@ -65,6 +66,7 @@ function contextOf(record) {
       id: item.id,
       number: item.number,
       path: item.path,
+      pathLabel: pathLabelOf(item.path),
       completedAt: item.completedAt,
       percent: assessmentResource(item).result?.percent ?? null,
     }))

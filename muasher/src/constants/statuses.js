@@ -91,6 +91,9 @@ export const STATUS_VARIANTS = {
   'non-winner': 'muted',
   'qualified-for-national': 'info',
   'national-winner': 'success',
+  'committee-discussion': 'info',
+  'returned-to-committee': 'warning',
+  'national-non-winner': 'muted',
 }
 
 export const STATUS_TOKENS = Object.keys(STATUS_VARIANTS)

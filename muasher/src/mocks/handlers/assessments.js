@@ -20,7 +20,11 @@ import {
   signedInActor,
 } from '../stores/assessments/assessmentAccess'
 import { findAssessment } from '../stores/assessments/assessmentsStore'
-import { listAssessments, listFiltersFrom } from '../stores/assessments/assessmentQueries'
+import {
+  listAssessments,
+  countAssessments,
+  listFiltersFrom,
+} from '../stores/assessments/assessmentQueries'
 import {
   assessmentResource,
   formResource,
@@ -120,7 +124,10 @@ export const assessmentsHandlers = [
       runAccreditedSchedule()
       if (failsToRead()) return unavailable()
       const { items, pagination } = listAssessments(user, filters, query)
-      return envelope(items.map(assessmentResource), { pagination })
+      return envelope(items.map(assessmentResource), {
+        pagination,
+        counts: countAssessments(user, filters),
+      })
     }),
   ),
 

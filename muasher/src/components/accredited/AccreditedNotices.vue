@@ -63,7 +63,7 @@ function noticeKey(name, part) {
         <BaseButton
           variant="secondary"
           size="sm"
-          icon="fa-solid fa-rotate"
+          icon="refresh"
           :loading="refreshing"
           @click="emit('refresh')"
         >

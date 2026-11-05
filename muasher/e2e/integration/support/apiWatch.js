@@ -62,3 +62,10 @@ export function watchApi(page) {
 }
 
 export const GUEST_SESSION_PROBE = { status: 401, path: /^\/api\/v1\/auth\/session$/ }
+
+export const PAGE_NOT_PUBLISHED = { status: 404, path: /^\/api\/v1\/content\/pages\/[a-z_]+$/ }
+
+export const FOOTER_LEGAL_PROBES = [
+  { status: 404, path: /^\/api\/v1\/content\/legal\/(terms|privacy)$/ },
+  { status: 404, path: /^\/api\/v1\/content\/pages\/accessibility$/ },
+]

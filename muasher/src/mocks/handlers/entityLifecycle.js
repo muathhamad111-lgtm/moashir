@@ -28,7 +28,7 @@ import { personalDataPackage } from '../stores/entityPersonalData'
 const ENTITY_PATH = '/api/v1/entities/:id'
 
 function resourceOf(user, entity) {
-  return envelope(entityResourceFor(accessOf(user))(entity))
+  return envelope(entityResourceFor(accessOf(user))(entity, user))
 }
 
 function reasonAction(permission, transition) {

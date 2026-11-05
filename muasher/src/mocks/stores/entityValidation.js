@@ -1,6 +1,8 @@
 import { ENTITY_TYPES, DEVELOPMENT_SECTORS, ORG_SIZES } from '@/constants/entityEnums'
 import { activeCityOf, findRegion } from './regionsStore'
 import { entityReject, fieldError } from './entityRejection'
+import { checkRegistry } from './entityRegistry'
+import { checkUnifiedNumber } from './entityUnifiedNumber'
 
 const PHONE_PATTERN = /^(05\d{8}|\+9665\d{8})$/
 const GRADE_PATTERN = /^\d{1,3}(\.\d{1,2})?$/
@@ -132,18 +134,23 @@ export function contactFrom(body) {
   }
 }
 
-export function assertProfile(body) {
-  profileErrors(body).assertValid()
+export function assertProfile(body, entityId = null) {
+  const errors = profileErrors(body)
+  checkUnifiedNumber(errors, body, { entityId })
+  errors.assertValid()
 }
 
-export function assertOwnProfile(body) {
+export function assertOwnProfile(body, entityId = null) {
   const errors = profileErrors(body)
   if (typeof body.marketingConsent !== 'boolean') errors.add('marketingConsent', 'field.required')
+  checkRegistry(errors, body, entityId)
+  checkUnifiedNumber(errors, body, { entityId })
   errors.assertValid()
 }
 
 export function assertRegistration(body, terms) {
   const errors = profileErrors(body)
+  checkUnifiedNumber(errors, body, { required: true })
   if (blank(body.officialEmail) || !EMAIL_PATTERN.test(String(body.officialEmail)))
     errors.add('officialEmail', 'field.email')
   if (String(body.password ?? '').length < PASSWORD_MIN)

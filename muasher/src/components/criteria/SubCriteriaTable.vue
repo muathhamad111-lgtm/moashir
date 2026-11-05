@@ -40,13 +40,13 @@ function isGuided(sub) {
 function rowActions(sub) {
   const actions = actionsFor(
     sub,
-    isGuided(sub) ? { label: 'criteria.actions.openPoints', icon: 'fa-solid fa-list-check' } : null,
+    isGuided(sub) ? { label: 'criteria.actions.openPoints', icon: 'list-check' } : null,
   )
   if (!props.access.canEditTree.value) return actions
   const label = isGuided(sub)
     ? 'criteria.evaluationType.switchToDirect'
     : 'criteria.evaluationType.switchToPoints'
-  return [...actions, { key: 'switch', label: t(label), icon: 'fa-solid fa-right-left' }]
+  return [...actions, { key: 'switch', label: t(label), icon: 'swap' }]
 }
 </script>
 

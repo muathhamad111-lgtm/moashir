@@ -145,7 +145,7 @@ describe('cycle staff components', () => {
           { roles: ['system_admin'] },
         ),
       ),
-    ).toEqual(['Close the cycle'])
+    ).toEqual(['Start the committee assessment', 'Close the cycle'])
     const draft = render(
       CycleActionsCard,
       { cycle: { ...cycle, id: 32, status: 'draft' }, blockingCycle: cycle },

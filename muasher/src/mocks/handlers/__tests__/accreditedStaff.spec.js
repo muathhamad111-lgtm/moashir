@@ -36,6 +36,7 @@ const ROW_KEYS = [
   'is_overdue',
   'number',
   'path',
+  'path_label',
   'region',
   'status',
   'submitted_at',
@@ -489,11 +490,43 @@ describe('accredited mock — Super Admin overrides and settings', () => {
     expect(keys(body.data)).toEqual([
       'accredited_review_sla_days',
       'accredited_review_sla_limits',
+      'advanced_disqualification_score',
+      'advanced_initial_review_sla_days',
+      'advanced_min_entity_age_years',
+      'committee_entity_data_visibility',
       'evidence_allowed_types',
       'evidence_max_files_per_sub',
       'evidence_type_catalog',
+      'general_upload_max_file_mb',
       'upload_max_file_mb',
     ])
+    expect(body.data).toMatchObject({
+      advanced_min_entity_age_years: 3,
+      advanced_disqualification_score: '60.00',
+      advanced_initial_review_sla_days: 14,
+      committee_entity_data_visibility: 'name_only',
+    })
+    expect(
+      (await call('PUT', '/settings/assessment', { advanced_disqualification_score: '100.5' }))
+        .status,
+    ).toBe(422)
+    expect(
+      (
+        await call('PUT', '/settings/assessment', {
+          committee_entity_data_visibility: 'everything',
+        })
+      ).status,
+    ).toBe(422)
+    const advanced = await call('PUT', '/settings/assessment', {
+      advanced_disqualification_score: '65.5',
+      advanced_min_entity_age_years: 5,
+      committee_entity_data_visibility: 'code_only',
+    })
+    expect(advanced.body.data).toMatchObject({
+      advanced_disqualification_score: '65.50',
+      advanced_min_entity_age_years: 5,
+      committee_entity_data_visibility: 'code_only',
+    })
     expect(
       (await call('PUT', '/settings/assessment', { accredited_review_sla_days: 121 })).status,
     ).toBe(422)

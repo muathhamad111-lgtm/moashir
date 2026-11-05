@@ -1,0 +1,181 @@
+@use '../tokens' as *;
+@use '../mixins' as *;
+
+@keyframes journey-draw-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes journey-draw-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes journey-stage-light {
+  from {
+    opacity: $opacity-stage-dim;
+    transform: scale($scale-stage-dim);
+  }
+}
+
+.home-journey {
+  background: var(--color-dark);
+
+  .home-section__title {
+    color: var(--color-white);
+  }
+
+  .home-section__eyebrow {
+    color: var(--color-primary);
+  }
+}
+
+.home-journey__track {
+  position: relative;
+  view-timeline: --journey block;
+}
+
+.home-journey__line {
+  position: absolute;
+  overflow: hidden;
+  inset-block: calc(var(--size-journey-marker) / 2);
+  inset-inline-start: calc(var(--size-journey-marker) / 2 - var(--size-journey-line) / 2);
+  inline-size: var(--size-journey-line);
+  background-color: var(--brand-line-on-dark);
+
+  @include respond-to('lg') {
+    inset-block: calc(var(--size-journey-marker) / 2 - var(--size-journey-line) / 2) auto;
+    inset-inline: calc(100% / (2 * #{$journey-stages}));
+    inline-size: auto;
+    block-size: var(--size-journey-line);
+  }
+}
+
+.home-journey__line-fill {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  background-color: var(--color-primary);
+  transform-origin: center top;
+
+  @include respond-to('lg') {
+    transform-origin: left center;
+
+    [dir='rtl'] & {
+      transform-origin: right center;
+    }
+  }
+}
+
+.home-journey__stages {
+  @include flex(column, stretch, flex-start, var(--space-6));
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include respond-to('lg') {
+    display: grid;
+    grid-template-columns: repeat($journey-stages, minmax(0, 1fr));
+    gap: var(--space-5);
+  }
+}
+
+.home-journey__stage {
+  @include flex(row, flex-start, flex-start, var(--space-4));
+
+  @include respond-to('lg') {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    text-align: center;
+  }
+}
+
+.home-journey__marker {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  inline-size: var(--size-journey-marker);
+  block-size: var(--size-journey-marker);
+  border-radius: var(--radius-circle);
+  background-color: var(--color-primary);
+  box-shadow: var(--shadow-glow);
+  color: var(--color-dark);
+  font-family: var(--font-latin);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+}
+
+.home-journey__text {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+
+  @include respond-to('lg') {
+    align-items: center;
+  }
+}
+
+.home-journey__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  color: var(--color-white);
+}
+
+.home-journey__desc {
+  font-size: var(--fs-xs);
+  line-height: var(--lh-relaxed);
+  color: var(--color-gray-300);
+}
+
+@include motion-safe {
+  @supports (animation-timeline: view()) {
+    .home-journey__line-fill {
+      animation: journey-draw-y linear both;
+      animation-timeline: --journey;
+      animation-range: $journey-line-range;
+
+      @include respond-to('lg') {
+        animation-name: journey-draw-x;
+      }
+    }
+
+    .home-journey__marker {
+      animation: journey-stage-light linear both;
+      animation-timeline: --journey;
+    }
+
+    @for $index from 1 through $journey-stages {
+      $start: $journey-stage-start + ($index - 1) * $journey-stage-step;
+
+      .home-journey__stage:nth-child(#{$index}) .home-journey__marker {
+        animation-range: cover #{$start} cover #{$start + $journey-stage-span};
+      }
+    }
+  }
+
+  @supports not (animation-timeline: view()) {
+    .home-journey__track.is-revealed .home-journey__line-fill {
+      animation: journey-draw-y var(--motion-ring) var(--ease-brand) backwards;
+
+      @include respond-to('lg') {
+        animation-name: journey-draw-x;
+      }
+    }
+
+    .home-journey__track.is-revealed .home-journey__marker {
+      animation: journey-stage-light var(--motion-stage) var(--ease-brand) backwards;
+    }
+
+    @for $index from 1 through $journey-stages {
+      .home-journey__track.is-revealed
+        .home-journey__stage:nth-child(#{$index})
+        .home-journey__marker {
+        animation-delay: calc(var(--motion-ring) / #{$journey-stages} * #{$index - 1});
+      }
+    }
+  }
+}

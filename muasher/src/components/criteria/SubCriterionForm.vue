@@ -15,6 +15,7 @@ import { pairedText, requiredText, weightText } from '@/utils/criteriaSchemas'
 import { cloneAttachments, attachmentsPayload } from '@/utils/criteriaAttachments'
 import { compareWeights, normalizeWeight } from '@/utils/weight'
 import { CRITERIA_DESCRIPTION_MAX_LENGTH, EVALUATION_TYPES } from '@/constants/criteria'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -191,7 +192,7 @@ const isGuidingPoints = computed(() => evaluationType.value === EVALUATION_TYPES
         required
       />
       <p v-else class="criteria-form__note" role="note">
-        <i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>
+        <AppIcon name="scale" />
         <span>{{ t('criteria.fields.equalWeightNote') }}</span>
       </p>
 
@@ -204,7 +205,7 @@ const isGuidingPoints = computed(() => evaluationType.value === EVALUATION_TYPES
           :error="form.errors.value.evaluationType"
         />
         <p class="criteria-form__note" role="note">
-          <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+          <AppIcon name="info-circle" />
           <span>{{
             isGuidingPoints
               ? t('criteria.evaluationType.guidingHint')
@@ -213,7 +214,7 @@ const isGuidingPoints = computed(() => evaluationType.value === EVALUATION_TYPES
         </p>
       </template>
       <p v-else class="criteria-form__note" role="note">
-        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+        <AppIcon name="info-circle" />
         <span>{{ t('criteria.evaluationType.editNote') }}</span>
       </p>
 

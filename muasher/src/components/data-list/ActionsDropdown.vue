@@ -2,6 +2,7 @@
 import { ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDisclosure } from '@/composables/useDisclosure'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   actions: { type: Array, required: true },
@@ -71,7 +72,7 @@ function onKeydown(event) {
       @keydown="onKeydown"
     >
       <slot name="trigger">
-        <i class="fa-solid fa-ellipsis-vertical" aria-hidden="true"></i>
+        <AppIcon name="dots-vertical" />
       </slot>
     </button>
     <ul v-if="isOpen" :id="menuId" class="dropdown__menu" role="menu">
@@ -92,7 +93,7 @@ function onKeydown(event) {
           @click="choose(action)"
           @mousemove="highlightedIndex = index"
         >
-          <i v-if="action.icon" :class="action.icon" aria-hidden="true"></i>
+          <AppIcon v-if="action.icon" :name="action.icon" />
           {{ action.label }}
         </button>
       </li>

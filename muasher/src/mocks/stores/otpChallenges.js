@@ -2,7 +2,7 @@ import { DEV_OTP_CODE, OTP_CONFIG } from '../fixtures/auth'
 
 const challenges = new Map()
 
-export const OTP_PURPOSES = { LOGIN: 'login', EMAIL_CHANGE: 'email_change' }
+export const OTP_PURPOSES = { LOGIN: 'login', EMAIL_CHANGE: 'email_change', PHONE: 'phone' }
 
 export function createChallenge(account, channel = 'email', purpose = OTP_PURPOSES.LOGIN) {
   const now = Date.now()

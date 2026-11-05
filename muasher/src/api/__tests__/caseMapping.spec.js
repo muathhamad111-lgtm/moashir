@@ -81,6 +81,14 @@ describe('caseMapping — the single camelCase ⇄ snake_case boundary', () => {
     expect(fromWire(wire)).toEqual(wire)
   })
 
+  it('keeps the audited old and new values verbatim', () => {
+    const wire = {
+      old_values: { governance_grade: 50, status: 'pending_verification' },
+      new_values: { governance_grade: 70, status: 'active' },
+    }
+    expect(fromWire(wire)).toEqual({ oldValues: wire.old_values, newValues: wire.new_values })
+  })
+
   it('keeps the checkout metadata keys verbatim in both directions', () => {
     const wire = { checkout: { metadata: { moashir_payment_id: 'a', app_env: 'local' } } }
     expect(fromWire(wire).checkout.metadata).toEqual(wire.checkout.metadata)

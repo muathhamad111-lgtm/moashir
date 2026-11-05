@@ -3,6 +3,7 @@ import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Card from '@/components/ui/Card.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
+import PathBadge from '@/components/ui/PathBadge.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
@@ -17,6 +18,7 @@ import { usePermissions } from '@/composables/usePermissions'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   id: { type: String, required: true },
@@ -41,7 +43,7 @@ onMounted(load)
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
     <EmptyState
       v-else-if="status === 'missing'"
-      icon="fa-regular fa-clipboard"
+      icon="doc"
       :title="t('assessment.result.missingTitle')"
       :message="t('assessment.result.missingMessage')"
     />
@@ -52,15 +54,18 @@ onMounted(load)
         class="assessment-record__back"
         :to="{ name: ROUTE_NAMES.ADMIN_ENTITY, params: { id: assessment.entity.id } }"
       >
-        <i class="fa-solid fa-arrow-left u-flip-in-rtl" aria-hidden="true"></i>
+        <AppIcon name="arrow-left" />
         {{ t('assessment.staff.backToEntity') }}
       </router-link>
 
       <header class="assessment-record__header">
         <div>
-          <p class="assessment-record__eyebrow">
-            {{ t(`assessment.paths.${assessment.path}.title`) }}
-          </p>
+          <PathBadge
+            v-if="assessment.path"
+            class="assessment-record__path"
+            :path="assessment.path"
+            :label="assessment.pathLabel"
+          />
           <h1 class="assessment-record__title">
             {{ t('assessment.staff.recordTitle') }}
             <span class="u-ltr">{{ assessment.number }}</span>

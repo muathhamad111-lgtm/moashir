@@ -6,6 +6,7 @@ import ScanStatusBadge from './ScanStatusBadge.vue'
 import EvidenceUploadButton from './EvidenceUploadButton.vue'
 import { SCAN_STATUSES } from '@/constants/accredited'
 import { formatFileSize } from '@/utils/payments/amountFormat'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   file: { type: Object, required: true },
@@ -29,7 +30,7 @@ const isRefused = computed(() =>
 
 <template>
   <li class="evidence-file" :class="{ 'evidence-file--refused': isRefused }">
-    <i class="fa-solid fa-file-lines evidence-file__icon" aria-hidden="true"></i>
+    <AppIcon name="doc" class="evidence-file__icon" />
     <span class="evidence-file__meta">
       <bdi class="evidence-file__name" dir="ltr">{{ file.fileName }}</bdi>
       <span class="evidence-file__size">{{ size }}</span>
@@ -41,7 +42,7 @@ const isRefused = computed(() =>
         variant="ghost"
         size="sm"
         icon-only
-        icon="fa-solid fa-download"
+        icon="download"
         :loading="downloading"
         :aria-label="t('accredited.evidence.download', { name: file.fileName })"
         @click="emit('download', file)"
@@ -49,7 +50,7 @@ const isRefused = computed(() =>
       <EvidenceUploadButton
         v-if="editable && isRefused"
         :label="t('accredited.evidence.replace')"
-        icon="fa-solid fa-arrows-rotate"
+        icon="refresh"
         :accept="accept"
         :loading="busy"
         @select="emit('replace', { file, replacement: $event })"
@@ -59,7 +60,7 @@ const isRefused = computed(() =>
         variant="ghost"
         size="sm"
         icon-only
-        icon="fa-solid fa-trash-can"
+        icon="trash"
         :disabled="busy"
         :aria-label="t('accredited.evidence.remove', { name: file.fileName })"
         @click="emit('remove', file)"

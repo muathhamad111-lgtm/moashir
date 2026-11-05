@@ -1,37 +1,62 @@
+import { randomUUID } from 'node:crypto'
 import { expect } from '@playwright/test'
-import { mailMark, waitForCode } from './mailbox'
+import { mailMark, waitForCode, waitForResetToken } from './mailbox'
 import { millisecondsToNextStep, timeStepOf, totpCode } from './totp'
+import { paced } from './pacing'
 
 export const STAFF = {
   systemAdmin: 'system.admin@moashir.example.sa',
   requestsFollower: 'requests.follower@moashir.example.sa',
+  assessor: 'assessor@moashir.example.sa',
+  filteringOfficer: 'filtering.officer@moashir.example.sa',
+  awardSecretary: 'award.secretary@moashir.example.sa',
+  contentOfficer: 'content.officer@moashir.example.sa',
 }
 
 const authenticators = new Map()
+const passwords = new Map()
 
 export async function typeCode(page, code) {
   await page.locator('.otp-input__box').first().click()
   await page.keyboard.type(code)
 }
 
-async function chooseEmailCodeMode(page) {
-  const modes = page.locator('.auth-form__mode')
-  await expect(page.locator('[name="officialEmail"]')).toBeVisible()
-  if ((await modes.count()) > 1)
-    await modes
-      .filter({ hasText: /code|رمز/i })
-      .first()
-      .click()
+export function rememberPassword(email, password) {
+  passwords.set(email, password)
 }
 
-export async function requestEmailCode(page, email) {
+export async function signInWithPassword(page, identifier, password) {
+  await paced('signIn')
   await page.goto('/auth/login')
-  await chooseEmailCodeMode(page)
-  const mark = mailMark(email)
-  await page.locator('[name="officialEmail"]').fill(email)
+  await expect(page.locator('[name="identifier"]')).toBeVisible()
+  await page.locator('[name="identifier"]').fill(identifier)
+  await page.locator('[name="password"]').fill(password)
   await page.locator('form button[type="submit"]').click()
+}
+
+export async function signInWithEmailCode(page, identifier, password, email) {
+  const mark = mailMark(email)
+  await signInWithPassword(page, identifier, password)
   await expect(page).toHaveURL(/\/auth\/otp/)
-  return waitForCode(email, mark)
+  await typeCode(page, await waitForCode(email, mark))
+}
+
+export async function resetPassword(page, email, password = `Moashir-${randomUUID()}`) {
+  await paced('passwordReset')
+  await page.goto('/auth/forgot-password')
+  const mark = mailMark(email)
+  await page.locator('[name="email"]').fill(email)
+  await page.locator('form button[type="submit"]').click()
+  await expect(page.locator('.auth-status--success')).toBeVisible()
+  const token = await waitForResetToken(email, mark)
+  await page.goto(`/auth/reset-password/${token}`)
+  await page.locator('[name="email"]').fill(email)
+  await page.locator('[name="password"]').fill(password)
+  await page.locator('[name="passwordConfirmation"]').fill(password)
+  await page.locator('form button[type="submit"]').click()
+  await expect(page).toHaveURL(/\/auth\/login\?notice=password-reset/)
+  passwords.set(email, password)
+  return password
 }
 
 async function freshTotp(email) {
@@ -56,8 +81,9 @@ async function enrol(page, email) {
 }
 
 export async function signInStaff(page, email) {
-  const code = await requestEmailCode(page, email)
-  await typeCode(page, code)
+  const password = passwords.get(email) ?? (await resetPassword(page, email))
+  await paced('mfa', 2)
+  await signInWithPassword(page, email, password)
   await expect(page).toHaveURL(/\/auth\/mfa/)
   const enrolling = page.locator('.auth-mfa__manual-key')
   await expect(enrolling.or(page.locator('.auth-mfa__form')).first()).toBeVisible()

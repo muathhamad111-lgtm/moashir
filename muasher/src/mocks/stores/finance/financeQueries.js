@@ -58,13 +58,21 @@ function filterEntries(query) {
   return entries
 }
 
+function listedValues(value) {
+  return String(value).split(',')
+}
+
+function matchesList(filter, value) {
+  return !filter || listedValues(filter).includes(value)
+}
+
 function checkFilter(errors, rules, key, value) {
   const rule = rules[key]
   if (rule === undefined) return errors.push(['filter', fieldMessage('invalid')])
   if (value === '') return null
   if (rule === 'date' && !isCalendarDate(value))
     return errors.push([`filter.${key}`, fieldMessage('date')])
-  if (Array.isArray(rule) && !rule.includes(value))
+  if (Array.isArray(rule) && !listedValues(value).every((item) => rule.includes(item)))
     return errors.push([`filter.${key}`, fieldMessage('choice')])
   return null
 }
@@ -213,10 +221,21 @@ export function ownPayments(user, filters) {
     )
     .filter(
       (payment) =>
-        (!filters.status || payment.status === filters.status) &&
+        matchesList(filters.status, payment.status) &&
         (!filters.purpose || payment.purpose === filters.purpose),
     )
     .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+}
+
+const OWN_STATUSES = ['created', 'pending', 'paid', 'failed', 'cancelled', 'refunded']
+
+export function ownStatusCountsOf(payments) {
+  return Object.fromEntries(
+    OWN_STATUSES.map((status) => [
+      status,
+      payments.filter((payment) => payment.status === status).length,
+    ]),
+  )
 }
 
 export function page(items, query) {

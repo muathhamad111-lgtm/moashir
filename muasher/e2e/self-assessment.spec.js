@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
 import { clearMockFault, forceMockFault } from './support/mockFaults'
 
-const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d|Font Awesome/i
+const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d/i
 
 function isEn(testInfo) {
   return testInfo.project.name === 'chromium-en-ltr'
@@ -104,6 +104,7 @@ test('the entity completes the draft, confirms and sees the result immediately, 
 
   await page.locator('.self-result__actions .btn--secondary').click()
   await expect(page).toHaveURL(/\/assessment\/history$/)
+  await page.locator('[role="tab"]').nth(1).click()
   await expect(page.locator('.history-item')).toHaveCount(4)
   await page.locator('.history-item').first().locator('.status-history__toggle').click()
   await expect(page.locator('.history-item').first().locator('.assessment-timeline__step')).toHaveCount(3)

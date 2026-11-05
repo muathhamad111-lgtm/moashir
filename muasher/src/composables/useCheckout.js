@@ -1,4 +1,4 @@
-import { computed, ref, watch } from 'vue'
+import { computed, ref, unref, watch } from 'vue'
 import { useCountdown } from '@/composables/useCountdown'
 import { useIdempotencyKey } from '@/composables/useIdempotencyKey'
 import { paymentsService } from '@/services/paymentsService'
@@ -50,7 +50,7 @@ export function useCheckout(purpose) {
     phase.value = CHECKOUT_PHASES.STARTING
     failure.value = null
     try {
-      const envelope = await paymentsService.create(purpose, keys.current())
+      const envelope = await paymentsService.create(unref(purpose), keys.current())
       keys.renew()
       const { checkout: checkoutObject, ...ownPayment } = envelope.data
       payment.value = ownPayment

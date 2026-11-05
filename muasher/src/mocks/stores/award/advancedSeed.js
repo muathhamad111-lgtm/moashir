@@ -227,6 +227,7 @@ function advancedRecord(fixture, version, anchor) {
     assignments,
     completionRequests: completionsOf(fixture, anchor),
     filteringDecisions: [],
+    committeeAverageId: null,
     bundles: [],
     createdAt,
     updatedAt: createdAt,

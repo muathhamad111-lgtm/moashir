@@ -20,6 +20,7 @@ const assessmentWire = {
   id: 9002,
   number: 'SLF-2026-000002',
   path: 'self',
+  pathLabel: { ar: 'التقييم الذاتي', en: 'Self assessment' },
   status: 'draft',
   isOpen: true,
   isFrozen: false,

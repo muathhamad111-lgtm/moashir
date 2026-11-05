@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { mockSessionCookie, seedSignedIn } from './support/session'
 
-const IGNORED_CONSOLE = /Failed to load resource|50\d|Service Unavailable|Font Awesome/i
+const IGNORED_CONSOLE = /Failed to load resource|50\d|Service Unavailable/i
 const SHOTS = 'e2e/__screenshots__/search'
 
 function isEn(testInfo) {

@@ -6,6 +6,7 @@ import CvEntryField from './CvEntryField.vue'
 import EvidenceSlotGroup from './EvidenceSlotGroup.vue'
 import { COMPLETION_ITEM_KINDS } from '@/constants/accredited'
 import { evidenceOfSub } from '@/utils/accredited/evidenceRules'
+import { isSubComplete } from '@/utils/accredited/submissionProgress'
 import { localizedText } from '@/utils/localizedText'
 
 const props = defineProps({
@@ -31,6 +32,7 @@ const cvMissing = computed(() =>
   form.value.missing.missingCv.some((item) => item.subCriterionId === props.sub.id),
 )
 const subEvidence = computed(() => evidenceOfSub(form.value.evidence, props.sub.id))
+const complete = computed(() => isSubComplete(form.value, props.sub.id))
 
 function text(content) {
   return localizedText(content, locale.value)
@@ -49,7 +51,14 @@ function text(content) {
         <span class="accredited-sub__code u-ltr">{{ sub.code }}</span>
         {{ text(sub.name) }}
       </h3>
-      <Badge v-if="isRequested" variant="warning">{{ t('accredited.form.requestedItem') }}</Badge>
+      <div class="accredited-sub__badges">
+        <Badge v-if="isRequested" variant="warning">{{ t('accredited.form.requestedItem') }}</Badge>
+        <Badge :variant="complete ? 'success' : 'warning'">{{
+          complete
+            ? t('portal.assessments.task.subComplete')
+            : t('portal.assessments.task.subPending')
+        }}</Badge>
+      </div>
     </div>
     <p v-if="sub.description" class="accredited-sub__description">{{ text(sub.description) }}</p>
     <div v-if="sub.points.length" class="accredited-sub__guidance">

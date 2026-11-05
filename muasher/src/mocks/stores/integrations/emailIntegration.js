@@ -25,7 +25,7 @@ import {
 } from './integrationValidation'
 
 const MODES = ['test', 'live']
-const PORTS = [25, 465, 587, 2525]
+const PORTS = [25, 465, 587, 2465, 2525, 2587]
 const ENCRYPTIONS = ['starttls', 'tls']
 const BLOCKED_HOSTS = [
   /^localhost$/i,

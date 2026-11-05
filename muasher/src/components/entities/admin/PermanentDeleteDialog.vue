@@ -9,6 +9,7 @@ import FieldTextarea from '@/components/form/FieldTextarea.vue'
 import { usePermanentDeletion } from '@/composables/usePermanentDeletion'
 import { useEntityDisplay } from '@/composables/useEntityDisplay'
 import { ERASURE_KEPT_RECORDS, REASON_LENGTH } from '@/constants/entityEnums'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -45,7 +46,7 @@ watch(
   >
     <form class="permanent-delete" novalidate @submit.prevent="form.onSubmit">
       <div class="permanent-delete__warning" role="alert">
-        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+        <AppIcon name="warning-triangle" />
         <p class="permanent-delete__warning-text">
           {{
             t('entities.permanent.disclaimer', {
@@ -90,12 +91,7 @@ watch(
         >
           {{ t('actions.cancel') }}
         </BaseButton>
-        <BaseButton
-          type="submit"
-          variant="danger"
-          icon="fa-solid fa-dumpster-fire"
-          :loading="form.submitting.value"
-        >
+        <BaseButton type="submit" variant="danger" icon="trash" :loading="form.submitting.value">
           {{ t('entities.permanent.submit') }}
         </BaseButton>
       </footer>

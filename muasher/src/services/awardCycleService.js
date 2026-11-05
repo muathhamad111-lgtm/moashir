@@ -114,4 +114,12 @@ export const awardCycleService = {
   reopen(cycleId, payload) {
     return transition('reopen', cycleId, 'reopen', payload)
   },
+
+  startCommittee(cycleId, payload = {}) {
+    return transition('startCommittee', cycleId, 'start-committee', payload)
+  },
+
+  announce(cycleId, payload = {}) {
+    return transition('announce', cycleId, 'announce', payload)
+  },
 }

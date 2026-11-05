@@ -59,7 +59,7 @@ function remove(number) {
           variant="ghost"
           size="sm"
           icon-only
-          icon="fa-solid fa-xmark"
+          icon="x"
           :aria-label="t('integrations.sms.removeNumber', { number })"
           @click="remove(number)"
         />
@@ -81,13 +81,7 @@ function remove(number) {
         :aria-describedby="`${inputId}-hint`"
         @keydown.enter.prevent="add"
       />
-      <BaseButton
-        variant="secondary"
-        size="sm"
-        icon="fa-solid fa-plus"
-        :disabled="full"
-        @click="add"
-      >
+      <BaseButton variant="secondary" size="sm" icon="plus" :disabled="full" @click="add">
         {{ t('integrations.sms.addNumber') }}
       </BaseButton>
     </div>

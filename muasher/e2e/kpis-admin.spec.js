@@ -24,7 +24,7 @@ test('renders the KPIs management table with the fixtures', async ({ page }) => 
   await page.goto('/admin/kpis')
   await expect(page.locator('.kpis-admin__title').first()).toBeVisible()
   await retryTable(page)
-  await expect(page.locator('.table:not(.table--loading) tbody .table__row')).toHaveCount(12)
+  await expect(page.locator('.table:not(.table--loading) tbody .table__row')).toHaveCount(15)
   await expect(page.locator('.pagination')).toBeVisible({ timeout: 10000 })
 })
 
@@ -32,7 +32,7 @@ test('shows the stats cards for the KPIs summary', async ({ page }) => {
   await page.goto('/admin/kpis')
   await retryTable(page)
   await expect(page.locator('.stats-card').first()).toBeVisible()
-  await expect(page.locator('.stats-card')).toHaveCount(3)
+  await expect(page.locator('.stats-card')).toHaveCount(4)
 })
 
 test('renders the up/down reorder controls per row', async ({ page }) => {
@@ -45,12 +45,12 @@ test('renders the up/down reorder controls per row', async ({ page }) => {
 test('opens the add-KPI form modal with bilingual fields and color swatches', async ({ page }) => {
   await page.goto('/admin/kpis')
   await retryTable(page)
-  await page.getByRole('button', { name: /add kpi|إضافة مؤشر/i }).first().click()
+  await page.getByRole('button', { name: /add indicator|إضافة مؤشر/i }).first().click()
   await expect(page.locator('.modal__panel')).toBeVisible()
-  await expect(page.locator('input[name="nameAr"]')).toBeVisible()
-  await expect(page.locator('input[name="nameEn"]')).toBeVisible()
-  await expect(page.locator('.kpi-form__swatches')).toHaveCount(3)
-  await expect(page.locator('.kpi-form__swatch')).toHaveCount(15)
+  await expect(page.locator('input[name="name.ar"]')).toBeVisible()
+  await expect(page.locator('input[name="name.en"]')).toBeVisible()
+  await expect(page.locator('.kpi-form__swatches')).toHaveCount(2)
+  await expect(page.locator('.kpi-form__swatch')).toHaveCount(10)
   await expect(page.locator('.kpi-form__preview .kpi-card')).toBeVisible()
 })
 
@@ -75,7 +75,7 @@ test('capture KPIs admin screens for the design review', async ({ page }, testIn
   await page.waitForTimeout(600)
   await page.screenshot({ path: `test-results/kpis-admin-index-${suffix}.png`, fullPage: true })
 
-  await page.getByRole('button', { name: /add kpi|إضافة مؤشر/i }).first().click()
+  await page.getByRole('button', { name: /add indicator|إضافة مؤشر/i }).first().click()
   await page.waitForTimeout(500)
   await page.screenshot({ path: `test-results/kpis-admin-form-${suffix}.png`, fullPage: true })
 })

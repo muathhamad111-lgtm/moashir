@@ -30,9 +30,14 @@ import {
 import {
   queueFiltersFrom,
   queuePage,
+  queuePathCounts,
   queueRecords,
   queueStats,
 } from '../stores/accredited/requestQueue'
+import { assignedPathCounts, assignedPathOf } from '../stores/accredited/assignedQueue'
+import { qualificationsOf, requestScopeOf } from '../stores/staffUsers'
+import { sessionCan } from '../stores/sessionPermissions'
+import { REVIEWED_PATHS } from '../stores/assessments/reviewedPaths'
 import {
   assignAssessor,
   eligibleAssessors,
@@ -49,6 +54,24 @@ const TABS = {
   completed: ['completed', 'awaiting-filtering', 'qualified-for-committee', 'not-qualified'],
 }
 const REVIEWING = ['active', 'completed']
+const QUEUE_VIEW = 'requests.queue.view'
+
+function followedPaths(user) {
+  return requestScopeOf(user.id, { superAdmin: user.superAdmin }).paths
+}
+
+function assertInScope(user, record) {
+  if (user.superAdmin || !sessionCan(QUEUE_VIEW) || followedPaths(user).includes(record.path))
+    return
+  if (record.assignments.some((assignment) => assignment.assessorId === user.id)) return
+  throw assessmentReject.notFound()
+}
+
+function scopedRecord(user, params) {
+  const record = boundRecord(params)
+  assertInScope(user, record)
+  return record
+}
 
 function numericRoute(resolve) {
   const route = assessmentRoute(resolve)
@@ -95,14 +118,7 @@ function detailResource(record, viewer) {
   }
 }
 
-function assignedFor(user, query) {
-  const keys = [...query.keys()].filter((key) => key.startsWith('filter['))
-  const tab = query.get('filter[tab]')
-  if (keys.some((key) => key !== 'filter[tab]') || (tab && !TABS[tab])) {
-    throw assessmentReject.validation({
-      'filter.tab': [fieldMessage('validation.invalid', {}, 'filter')],
-    })
-  }
+function reviewedBy(user) {
   return reviewedRecords()
     .filter((record) => !isFrozen(record))
     .filter((record) =>
@@ -110,6 +126,24 @@ function assignedFor(user, query) {
         (assignment) => assignment.assessorId === user.id && REVIEWING.includes(assignment.status),
       ),
     )
+}
+
+function checkAssignedFilters(query) {
+  const keys = [...query.keys()].filter((key) => key.startsWith('filter['))
+  const tab = query.get('filter[tab]')
+  const path = query.get('filter[path]')
+  const errors = {}
+  if (keys.some((key) => !['filter[tab]', 'filter[path]'].includes(key)) || (tab && !TABS[tab]))
+    errors['filter.tab'] = [fieldMessage('validation.invalid', {}, 'filter')]
+  if (path && !REVIEWED_PATHS.includes(path))
+    errors['filter.path'] = [fieldMessage('validation.invalid', {}, 'filter')]
+  if (Object.keys(errors).length) throw assessmentReject.validation(errors)
+  return tab
+}
+
+function assignedFor(records, tab, path) {
+  return records
+    .filter((record) => record.path === path)
     .filter((record) => !tab || TABS[tab].includes(record.status))
     .sort((a, b) => ((a.dueAt ?? '') < (b.dueAt ?? '') ? -1 : 1))
 }
@@ -122,12 +156,18 @@ export const requestsHandlers = [
       authorizeQueue(user)
       runAccreditedSchedule()
       const query = new URL(request.url).searchParams
-      const filters = queueFiltersFrom(query)
+      const followed = followedPaths(user)
+      const filters = queueFiltersFrom(query, followed)
       const records = queueRecords(filters, normalizeSearchText)
       const { items, pagination } = queuePage(records, query)
       return envelope(
         items.map((record) => queueRow(record, staffNameOf)),
-        { pagination, stats: queueStats(records, filters) },
+        {
+          pagination,
+          stats: queueStats(records, filters),
+          path: filters.paths[0],
+          pathCounts: queuePathCounts(followed),
+        },
       )
     }),
   ),
@@ -139,10 +179,14 @@ export const requestsHandlers = [
       authorizeAssignedList(user)
       runAccreditedSchedule()
       const query = new URL(request.url).searchParams
-      const { items, pagination } = paginate(assignedFor(user, query), query)
+      const tab = checkAssignedFilters(query)
+      const records = reviewedBy(user)
+      const pathCounts = assignedPathCounts(records, qualificationsOf(user.id), TABS)
+      const path = assignedPathOf(query.get('filter[path]'), pathCounts)
+      const { items, pagination } = paginate(assignedFor(records, tab, path), query)
       return envelope(
         items.map((record) => assignedRow(record, user)),
-        { pagination },
+        { pagination, path, pathCounts },
       )
     }),
   ),
@@ -152,7 +196,9 @@ export const requestsHandlers = [
     assessmentRoute(({ request }) => {
       const user = signedInActor()
       authorizeListAssessors(user)
-      return envelope(eligibleAssessors(user, new URL(request.url).searchParams))
+      return envelope(
+        eligibleAssessors(user, new URL(request.url).searchParams, followedPaths(user)),
+      )
     }),
   ),
 
@@ -160,7 +206,7 @@ export const requestsHandlers = [
     REQUEST,
     numericRoute(({ params }) => {
       const user = signedInActor()
-      const record = boundRecord(params)
+      const record = scopedRecord(user, params)
       authorizeViewRequest(user, record)
       return envelope(detailResource(record, user))
     }),
@@ -170,7 +216,7 @@ export const requestsHandlers = [
     `${REQUEST}/assign`,
     numericRoute(async ({ params, request }) => {
       const user = signedInActor()
-      const record = boundRecord(params)
+      const record = scopedRecord(user, params)
       authorizeAssign(user, record)
       return envelope(detailResource(assignAssessor(user, record, await readJson(request)), user))
     }),
@@ -180,7 +226,7 @@ export const requestsHandlers = [
     `${REQUEST}/return-for-completion`,
     numericRoute(async ({ params, request }) => {
       const user = signedInActor()
-      const record = boundRecord(params)
+      const record = scopedRecord(user, params)
       authorizeFollowAdvanced(user, record)
       return envelope(
         detailResource(returnForCompletion(user, record, await readJson(request)), user),
@@ -192,7 +238,7 @@ export const requestsHandlers = [
     `${REQUEST}/withdraw`,
     numericRoute(async ({ params, request }) => {
       const user = signedInActor()
-      const record = boundRecord(params)
+      const record = scopedRecord(user, params)
       authorizeFollowAdvanced(user, record)
       return envelope(detailResource(withdrawRequest(user, record, await readJson(request)), user))
     }),
@@ -202,7 +248,7 @@ export const requestsHandlers = [
     `${REQUEST}/reassign`,
     numericRoute(async ({ params, request }) => {
       const user = signedInActor()
-      const record = boundRecord(params)
+      const record = scopedRecord(user, params)
       authorizeAssign(user, record)
       return envelope(detailResource(reassignAssessor(user, record, await readJson(request)), user))
     }),

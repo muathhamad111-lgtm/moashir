@@ -12,6 +12,7 @@ import CycleTable from '@/components/award/CycleTable.vue'
 import { useCycleList } from '@/composables/useCycleList'
 import { useCycleAuthority } from '@/composables/useCycleAuthority'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 const {
@@ -37,25 +38,25 @@ const statCards = computed(() => {
   return [
     {
       id: 'total',
-      icon: 'fa-solid fa-layer-group',
+      icon: 'layers',
       value: value.total,
       label: t('cycles.stats.total'),
     },
     {
       id: 'open',
-      icon: 'fa-solid fa-door-open',
+      icon: 'door-open',
       value: value.byStatus.submissionOpen ?? 0,
       label: t('cycles.stats.open'),
     },
     {
       id: 'draft',
-      icon: 'fa-regular fa-file-lines',
+      icon: 'doc',
       value: value.byStatus.draft ?? 0,
       label: t('cycles.stats.draft'),
     },
     {
       id: 'closed',
-      icon: 'fa-solid fa-box-archive',
+      icon: 'docs',
       value: value.byStatus.closed ?? 0,
       label: t('cycles.stats.closed'),
     },
@@ -76,7 +77,7 @@ const statCards = computed(() => {
         class="btn btn--primary btn--md"
         :to="{ name: ROUTE_NAMES.AWARD_CYCLE_NEW }"
       >
-        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+        <AppIcon name="plus" />
         {{ t('cycles.list.new') }}
       </RouterLink>
     </header>

@@ -12,6 +12,7 @@ import GapCard from '@/components/bag/GapCard.vue'
 import BagIntro from '@/components/bag/BagIntro.vue'
 import { useBagEntity } from '@/composables/useBag'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t, n } = useI18n()
 
@@ -77,13 +78,13 @@ const helperFiles = computed(() =>
 
         <EmptyState
           v-if="face === 'period-ended'"
-          icon="fa-solid fa-flag-checkered"
+          icon="flag-checkered"
           :title="t('bag.index.periodEnded.title')"
           :message="t('bag.index.periodEnded.message')"
         >
           <template #action>
             <router-link class="bag__return-link" :to="{ name: ROUTE_NAMES.ASSESSMENT_ACCREDITED }">
-              <BaseButton variant="primary" icon="fa-solid fa-rotate-left" tabindex="-1">
+              <BaseButton variant="primary" icon="undo" tabindex="-1">
                 {{ t('bag.index.returnToAccredited') }}
               </BaseButton>
             </router-link>
@@ -92,7 +93,7 @@ const helperFiles = computed(() =>
 
         <template v-else>
           <p v-if="reference" class="bag__reference" role="note">
-            <i class="fa-solid fa-lock bag__reference-icon" aria-hidden="true"></i>
+            <AppIcon name="lock" class="bag__reference-icon" />
             <span>{{
               t('bag.index.reference', {
                 id: n(reference.assessmentId, 'id'),
@@ -116,7 +117,7 @@ const helperFiles = computed(() =>
 
           <router-link class="bag__comparison-link" :to="{ name: ROUTE_NAMES.BAG_COMPARISON }">
             <span class="bag__comparison-link-body">
-              <i class="fa-solid fa-chart-column bag__comparison-link-icon" aria-hidden="true"></i>
+              <AppIcon name="chart-bar" class="bag__comparison-link-icon" />
               <span>
                 <span class="bag__comparison-link-title">{{
                   t('bag.index.comparison.title')
@@ -124,13 +125,13 @@ const helperFiles = computed(() =>
                 <span class="bag__comparison-link-desc">{{ t('bag.index.comparison.desc') }}</span>
               </span>
             </span>
-            <i class="fa-solid fa-arrow-right bag__comparison-link-arrow" aria-hidden="true"></i>
+            <AppIcon name="arrow-right" class="bag__comparison-link-arrow" />
           </router-link>
 
           <h2 class="bag__section-title">{{ t('bag.index.openGaps.title') }}</h2>
 
           <div class="bag__how" role="note">
-            <i class="fa-solid fa-circle-info bag__how-icon" aria-hidden="true"></i>
+            <AppIcon name="info-circle" class="bag__how-icon" />
             <div>
               <p class="bag__how-title">{{ t('bag.index.howGaps.title') }}</p>
               <p class="bag__how-body">{{ t('bag.index.howGaps.body') }}</p>
@@ -139,7 +140,7 @@ const helperFiles = computed(() =>
 
           <EmptyState
             v-if="!openGaps.length"
-            icon="fa-solid fa-circle-check"
+            icon="check-circle"
             :title="t('bag.index.openGaps.emptyTitle')"
             :message="t('bag.index.openGaps.emptyMessage')"
           />
@@ -155,7 +156,7 @@ const helperFiles = computed(() =>
             <p class="bag__helpers-lead">{{ t('bag.index.helpers.lead') }}</p>
             <ul class="bag__helper-list">
               <li v-for="file in helperFiles" :key="file.id" class="bag__helper">
-                <i class="fa-solid fa-file-arrow-down bag__helper-icon" aria-hidden="true"></i>
+                <AppIcon name="download" class="bag__helper-icon" />
                 <a class="bag__helper-link" :href="file.url" :download="file.fileName">
                   {{ localized(file.name) }}
                 </a>
@@ -182,7 +183,7 @@ const helperFiles = computed(() =>
                 <span class="bag__history-score">{{
                   t('bag.index.history.before', { score: n(kit.referenceScorePercent, 'default') })
                 }}</span>
-                <i class="fa-solid fa-arrow-right-long bag__history-arrow" aria-hidden="true"></i>
+                <AppIcon name="arrow-right" class="bag__history-arrow" />
                 <span class="bag__history-score bag__history-score--after">{{
                   t('bag.index.history.after', { score: n(kit.reassessedScorePercent, 'default') })
                 }}</span>

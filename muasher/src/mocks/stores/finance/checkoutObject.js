@@ -1,5 +1,6 @@
 import { paymentState } from '../integrations/integrationsState'
 import { toMinor } from './financeMoney'
+import { MOYASAR_CHECKOUT_SCRIPT } from '../../fixtures/moyasarSandbox'
 
 export const APPLE_PAY_VALIDATION_URL = 'https://api.moyasar.com/v1/applepay/initiate'
 const APPLE_PAY_COUNTRY = 'SA'
@@ -74,5 +75,6 @@ export function checkoutOf(payment, locale) {
     },
     applePay: applePayOf(gateway, locale),
     expiresAt: payment.expiresAt,
+    script: { ...MOYASAR_CHECKOUT_SCRIPT },
   }
 }

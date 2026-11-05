@@ -5,6 +5,7 @@ import BaseModal from '@/components/modal/BaseModal.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseTextarea from '@/components/form/BaseTextarea.vue'
 import SearchSelect from '@/components/form/SearchSelect.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -78,7 +79,7 @@ function onConfirm() {
           @update:model-value="selected = $event; showSelectError = false"
         />
         <p v-if="showSelectError" class="assign-modal__error" role="alert">
-          <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+          <AppIcon name="warning-triangle" />
           {{ t('bagRequests.assign.chooseError') }}
         </p>
       </div>
@@ -94,7 +95,7 @@ function onConfirm() {
           @update:model-value="showReasonError = false"
         />
         <p v-if="showReasonError" class="assign-modal__error" role="alert">
-          <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+          <AppIcon name="warning-triangle" />
           {{ t('bagRequests.assign.reasonError') }}
         </p>
       </div>

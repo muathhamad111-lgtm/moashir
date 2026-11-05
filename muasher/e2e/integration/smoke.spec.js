@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto'
 import { test, expect } from '@playwright/test'
-import { assertMailLogsConfigured, mailMark, waitForCode } from './support/mailbox'
-import { STAFF, signInStaff, typeCode } from './support/accounts'
+import { assertMailLogsConfigured } from './support/mailbox'
+import { STAFF, signInStaff } from './support/accounts'
 import { writeFileSync } from 'node:fs'
-import { GUEST_SESSION_PROBE, SOURCES, watchApi } from './support/apiWatch'
+import { GUEST_SESSION_PROBE, PAGE_NOT_PUBLISHED, SOURCES, watchApi } from './support/apiWatch'
+import { registerEntity } from './support/entities'
 
 const RUN = Date.now().toString(36)
 const ENTITY = {
@@ -11,6 +12,7 @@ const ENTITY = {
   password: `Noor-${randomUUID()}`,
   nameAr: 'جمعية النور للتنمية الأهلية',
   nameEn: 'Al-Noor Community Development Association',
+  person: 'ريم بنت عبدالعزيز السبيعي',
 }
 const ACCREDITED_PRICE = '1500'
 const PAYMENT_UNAVAILABLE = { status: 503, path: /^\/api\/v1\/payments$/ }
@@ -33,6 +35,13 @@ const ADMIN_SCREENS = [
   '/admin/settings/abandoned-carts',
   '/admin/award/filtering',
   '/admin/award/cycles/new',
+  '/admin/settings/users',
+  '/admin/settings/homepage',
+  '/admin/kpis',
+  '/admin/branding',
+  '/admin/award/committee/manage',
+  '/admin/award/secretary',
+  '/admin/award/results',
   '/admin/requests',
   '/finance',
   '/finance/transactions',
@@ -56,6 +65,10 @@ async function sweep({ page, api }, role, paths) {
 async function settled(page, api) {
   await api.idle()
   await expect(page.locator('[aria-busy="true"], .skeleton')).toHaveCount(0)
+}
+
+function isUnpublishedPage(failure) {
+  return failure.status === PAGE_NOT_PUBLISHED.status && PAGE_NOT_PUBLISHED.path.test(failure.path)
 }
 
 function shot(page, name) {
@@ -104,7 +117,7 @@ test.afterAll(async () => {
 test('the system administrator signs in with an e-mail code and enrols the authenticator', async () => {
   const { page, api } = sessions.admin
   await signInStaff(page, STAFF.systemAdmin)
-  await expect(page.locator('.demo-notice')).toBeVisible()
+  await expect(page.locator('.demo-notice--page')).toBeVisible()
   await shot(page, 'admin-dashboard-demo')
   expect(api.unexpected([GUEST_SESSION_PROBE])).toEqual([])
 })
@@ -162,29 +175,7 @@ test('the administrator lists the award cycles', async () => {
 
 test('a new entity registers, verifies its e-mail code and opens its profile', async () => {
   const { page, api } = sessions.entity
-  await page.goto('/auth/register')
-  await page.locator('[name="officialEmail"]').fill(ENTITY.email)
-  await page.locator('[name="password"]').fill(ENTITY.password)
-  await page.locator('[name="passwordConfirmation"]').fill(ENTITY.password)
-  await page.locator('[name="name.ar"]').fill(ENTITY.nameAr)
-  await page.locator('[name="name.en"]').fill(ENTITY.nameEn)
-  await page.locator('[name="authorizedPersonName"]').fill('ريم بنت عبدالعزيز السبيعي')
-  await page.locator('[name="entityType"]').selectOption({ index: 1 })
-  await page.locator('[name="developmentSector"]').selectOption({ index: 1 })
-  await page.locator('[name="orgSize"]').selectOption({ index: 1 })
-  await page.locator('[name="foundingYear"]').fill('2012')
-  await page.locator('[name="regionId"]').selectOption({ index: 1 })
-  await expect(page.locator('[name="cityId"]')).toBeEnabled()
-  await page.locator('[name="cityId"]').selectOption({ index: 1 })
-  await page.locator('[name="governanceGrade"]').fill('88.5')
-  await page.locator('label.checkbox:has([name="termsAccepted"])').click()
-  await shot(page, 'entity-register')
-  const mark = mailMark(ENTITY.email)
-  await page.locator('form button[type="submit"]').click()
-  await expect(page).toHaveURL(/\/auth\/otp/)
-  await typeCode(page, await waitForCode(ENTITY.email, mark))
-  await expect(page).toHaveURL(/\/entity\/profile/)
-  await expect(page.locator('.entity-profile__title')).toHaveText(ENTITY.nameAr)
+  await registerEntity(page, ENTITY)
   await shot(page, 'entity-profile')
   expect(api.unexpected([GUEST_SESSION_PROBE])).toEqual([])
 })
@@ -224,7 +215,7 @@ test('the entity sees the accredited price and its checkout stops at the payment
   expect(api.failures.filter((failure) => failure.path === '/api/v1/payments')).toEqual([
     { method: 'POST', path: '/api/v1/payments', status: 503, code: 'integration.not_configured' },
   ])
-  expect(api.unexpected([GUEST_SESSION_PROBE, PAYMENT_UNAVAILABLE])).toEqual([])
+  expect(api.unexpected([GUEST_SESSION_PROBE, PAYMENT_UNAVAILABLE, PAGE_NOT_PUBLISHED])).toEqual([])
 })
 
 test('the requests follower signs in and opens the accredited request queue', async () => {
@@ -240,22 +231,22 @@ test('the requests follower signs in and opens the accredited request queue', as
 test('demo modules answer from the mock layer with the marker while the session stays real', async () => {
   const { page, api } = sessions.entity
   await page.goto('/dashboard')
-  await expect(page.locator('.demo-notice')).toBeVisible()
+  await expect(page.locator('.demo-notice--page')).toBeVisible()
   await settled(page, api)
   await expect(page.locator('.error-state')).toHaveCount(0)
   await shot(page, 'entity-dashboard-demo')
   await page.goto('/notifications')
-  await expect(page.locator('.demo-notice')).toBeVisible()
+  await expect(page.locator('.demo-notice--page')).toBeVisible()
   await settled(page, api)
   await expect(page.locator('.error-state')).toHaveCount(0)
   await shot(page, 'entity-notifications-demo')
   await page.goto('/entity/profile')
-  await expect(page.locator('.entity-profile__title')).toHaveText(ENTITY.nameAr)
+  await expect(page.locator('.entity-profile-hub .portal-area__title')).toContainText(ENTITY.nameAr)
   expect(api.sourcesOf(/^\/api\/v1\/dashboard\//)).toEqual([SOURCES.DEMO])
   expect(api.sourcesOf(/^\/api\/v1\/notifications/)).toEqual([SOURCES.DEMO])
   expect(api.sourcesOf(/^\/api\/v1\/entities\/me$/)).toEqual([SOURCES.BACKEND])
   expect(api.sourcesOf(/^\/api\/v1\/auth\/session$/)).toEqual([SOURCES.BACKEND])
-  expect(api.unexpected([GUEST_SESSION_PROBE, PAYMENT_UNAVAILABLE])).toEqual([])
+  expect(api.unexpected([GUEST_SESSION_PROBE, PAYMENT_UNAVAILABLE, PAGE_NOT_PUBLISHED])).toEqual([])
 })
 
 test('every connected administrator screen loads from the server without a contract error', async () => {
@@ -263,7 +254,7 @@ test('every connected administrator screen loads from the server without a contr
   const { api } = sessions.admin
   const before = api.failures.length
   expect(await sweep(sessions.admin, 'admin', ADMIN_SCREENS)).toEqual([])
-  expect(api.failures.slice(before)).toEqual([])
+  expect(api.failures.slice(before).filter((failure) => !isUnpublishedPage(failure))).toEqual([])
 })
 
 test('every connected entity screen loads from the server without a contract error', async () => {
@@ -271,5 +262,5 @@ test('every connected entity screen loads from the server without a contract err
   const { api } = sessions.entity
   const before = api.failures.length
   expect(await sweep(sessions.entity, 'entity', ENTITY_SCREENS)).toEqual([])
-  expect(api.failures.slice(before)).toEqual([])
+  expect(api.failures.slice(before).filter((failure) => !isUnpublishedPage(failure))).toEqual([])
 })

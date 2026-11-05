@@ -2,7 +2,7 @@ import { toAssessment, toAssessmentScores, toEntitySummary } from './assessments
 import { toCompletionRequest, toCvSheet, toEvidenceList, toFeedbackFields } from './accredited'
 import { toClock, toPlace } from './requests'
 
-function toReviewEntity(raw) {
+export function toReviewEntity(raw) {
   if (!raw) return null
   return {
     ...toEntitySummary(raw),
@@ -30,6 +30,7 @@ function toContextItem(raw) {
     id: raw.id ?? null,
     number: raw.number ?? '',
     path: raw.path ?? null,
+    pathLabel: raw.pathLabel ?? null,
     completedAt: raw.completedAt ?? null,
     percent: raw.percent ?? null,
   }

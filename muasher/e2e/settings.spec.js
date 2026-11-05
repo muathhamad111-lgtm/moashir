@@ -27,14 +27,15 @@ async function retrySection(page, selector) {
 test('renders the settings hub with launcher cards', async ({ page }) => {
   await page.goto('/admin/settings')
   await expect(page.locator('.settings-hub__title')).toBeVisible()
-  await expect(page.locator('.settings-hub__card')).toHaveCount(16)
+  await expect(page.locator('.settings-hub__card')).toHaveCount(17)
   await expect(page.locator('a.settings-hub__card[href="/admin/settings/finance"]')).toBeVisible()
 })
 
-test('opens the OTP settings screen with login-mode toggles', async ({ page }) => {
-  await page.goto('/admin/settings/otp')
+test('opens the sign-in security screen with the entity second-factor switch', async ({ page }) => {
+  await page.goto('/admin/settings/sign-in')
   await retrySection(page, '.toggle-switch')
-  await expect(page.locator('.toggle-switch')).toHaveCount(3)
+  await expect(page.locator('.toggle-switch')).toHaveCount(1)
+  await expect(page.locator('input[name="entitySecondFactorEnabled"]')).toBeChecked()
 })
 
 test('payment screen shows stored secrets as metadata only and empty write-only inputs', async ({
@@ -58,8 +59,8 @@ test('assessment screen exposes the review deadline and the evidence upload limi
   page,
 }) => {
   await page.goto('/admin/settings/assessment')
-  await retrySection(page, 'input[name="accreditedReviewSlaDays"]')
-  await expect(page.locator('input[name="accreditedReviewSlaDays"]')).toHaveValue('14')
+  await retrySection(page, 'input[name="reviewSlaDays"]')
+  await expect(page.locator('input[name="reviewSlaDays"]')).toHaveValue('14')
   await expect(page.locator('input[name="uploadMaxFileMb"]')).toHaveValue('20')
   await expect(page.locator('.checkbox-group .checkbox')).toHaveCount(6)
 })
@@ -72,10 +73,10 @@ test('capture settings screens for the design review', async ({ page }, testInfo
   await page.waitForTimeout(400)
   await page.screenshot({ path: `test-results/settings-hub-${suffix}.png`, fullPage: true })
 
-  await page.goto('/admin/settings/otp')
+  await page.goto('/admin/settings/sign-in')
   await retrySection(page, '.toggle-switch')
   await page.waitForTimeout(400)
-  await page.screenshot({ path: `test-results/settings-otp-${suffix}.png`, fullPage: true })
+  await page.screenshot({ path: `test-results/settings-sign-in-${suffix}.png`, fullPage: true })
 
   await page.goto('/admin/settings/assessment')
   await retrySection(page, 'select[name="scale"]')

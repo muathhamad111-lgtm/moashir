@@ -1,6 +1,11 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
 import FieldInput from '@/components/form/FieldInput.vue'
+import EntityUnifiedNumberField from './EntityUnifiedNumberField.vue'
+
+defineProps({
+  unifiedNumberRequired: { type: Boolean, default: true },
+})
 
 const { t } = useI18n()
 </script>
@@ -16,6 +21,7 @@ const { t } = useI18n()
         :label="t('entities.fields.nameEn')"
         :hint="t('entities.hints.nameEn')"
       />
+      <EntityUnifiedNumberField :required="unifiedNumberRequired" />
       <FieldInput
         name="authorizedPersonName"
         :label="t('entities.fields.authorizedPersonName')"

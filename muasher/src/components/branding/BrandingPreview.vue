@@ -1,5 +1,6 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   accentToken: { type: String, required: true },
@@ -28,13 +29,13 @@ const MODES = ['dark', 'light']
         <div class="branding-preview__sidebar">
           <img class="branding-preview__logo" :src="logos[mode]" alt="" />
           <span class="branding-preview__item">
-            <i class="fa-solid fa-gauge-high"></i>{{ t('branding.preview.menuDashboard') }}
+            <AppIcon name="gauge" />{{ t('branding.preview.menuDashboard') }}
           </span>
           <span class="branding-preview__item is-active">
-            <i class="fa-solid fa-inbox"></i>{{ t('branding.preview.menuRequests') }}
+            <AppIcon name="inbox" />{{ t('branding.preview.menuRequests') }}
           </span>
           <span class="branding-preview__item">
-            <i class="fa-solid fa-bell"></i>{{ t('branding.preview.menuNotifications') }}
+            <AppIcon name="bell" />{{ t('branding.preview.menuNotifications') }}
           </span>
         </div>
         <div class="branding-preview__content">

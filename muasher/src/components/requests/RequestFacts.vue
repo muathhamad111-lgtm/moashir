@@ -4,7 +4,9 @@ import Badge from '@/components/ui/Badge.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import DateStamp from '@/components/accredited/DateStamp.vue'
 import OverdueBadge from '@/components/accredited/OverdueBadge.vue'
+import PathBadge from '@/components/ui/PathBadge.vue'
 import { localizedText } from '@/utils/localizedText'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   detail: { type: Object, required: true },
@@ -22,13 +24,16 @@ const { t, locale } = useI18n()
         <bdi dir="ltr" class="request-facts__reference">{{ detail.entity?.reference }}</bdi>
       </dd>
     </div>
+    <div v-if="detail.path" class="request-facts__item">
+      <dt>{{ t('requests.columns.path') }}</dt>
+      <dd><PathBadge :path="detail.path" :label="detail.pathLabel" /></dd>
+    </div>
     <div class="request-facts__item">
       <dt>{{ t('requests.columns.status') }}</dt>
       <dd class="request-facts__badges">
         <StatusBadge :status="detail.status" />
         <Badge v-if="detail.isFrozen" variant="danger"
-          ><i class="fa-solid fa-snowflake" aria-hidden="true"></i>
-          {{ t('accredited.form.frozen') }}</Badge
+          ><AppIcon name="snowflake" /> {{ t('accredited.form.frozen') }}</Badge
         >
       </dd>
     </div>

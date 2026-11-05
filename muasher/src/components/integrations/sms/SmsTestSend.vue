@@ -11,6 +11,7 @@ import { smsIntegrationService } from '@/services/smsIntegrationService'
 import { PROVIDER_ACTION_STATES, useProviderAction } from '@/composables/useProviderAction'
 import { testRecipientSchema } from '@/utils/integrations/smsSchema'
 import { SMS_PROVIDERS } from '@/constants/integrations'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   defaultProvider: { type: String, default: SMS_PROVIDERS.TAQNYAT },
@@ -63,7 +64,7 @@ const send = form.handleSubmit((values) =>
         <BaseButton
           type="submit"
           variant="secondary"
-          icon="fa-solid fa-paper-plane"
+          icon="send"
           :loading="sending.state.value === PROVIDER_ACTION_STATES.PENDING"
         >
           {{ t('integrations.sms.sendTest') }}
@@ -75,7 +76,7 @@ const send = form.handleSubmit((values) =>
       class="provider-feedback provider-feedback--success"
       role="status"
     >
-      <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+      <AppIcon name="check-circle" />
       {{ sentThrough }}
     </p>
     <ProviderActionFeedback

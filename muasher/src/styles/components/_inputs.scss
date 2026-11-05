@@ -18,7 +18,7 @@
   font-size: var(--fs-base);
   font-weight: var(--fw-regular);
   color: var(--theme-text-secondary);
-  background-color: var(--theme-surface);
+  background: var(--field-label-rest);
   pointer-events: none;
   transition:
     inset-block-start var(--t-fast) var(--ease),
@@ -43,6 +43,12 @@
   &::placeholder {
     color: transparent;
   }
+
+  &[readonly] {
+    background-color: var(--theme-bg);
+    color: var(--theme-text-secondary);
+    cursor: default;
+  }
 }
 
 .field--floated .field__label,
@@ -50,6 +56,11 @@
   inset-block-start: calc(var(--space-2) * -1);
   font-size: var(--fs-xs);
   font-weight: var(--fw-medium);
+  background: linear-gradient(
+    to bottom,
+    var(--field-label-backdrop) calc(var(--space-2) + var(--border-width)),
+    var(--field-label-under) 0
+  );
 }
 
 .field--floated.field--focused .field__label {
@@ -82,4 +93,8 @@
 .field--required .field__label::after {
   content: ' *';
   color: var(--color-danger);
+}
+
+.field__control--digits {
+  font-variant-numeric: tabular-nums;
 }

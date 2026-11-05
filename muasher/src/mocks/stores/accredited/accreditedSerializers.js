@@ -1,3 +1,4 @@
+import { ASSESSMENT_PATHS } from '@/constants/assessment'
 import { boundTree, entityOf, isFrozen } from '../assessments/assessmentsStore'
 import {
   assessmentResource,
@@ -21,6 +22,8 @@ import {
 } from './accreditedRecords'
 import { findCycle } from '../award/cycleStore'
 import { maskedStatus } from '../award/statusMask'
+import { awardOutcomeOf } from '../committee/awardOutcome'
+import { pathLabelOf } from '../../fixtures/pathLabels'
 
 function placeOf(region) {
   return region ? { id: region.id, code: region.code, name: { ...region.name } } : null
@@ -87,7 +90,7 @@ export function completionResource(completion, subs) {
   }
 }
 
-function cvBySubId(record, subs) {
+export function cvBySubId(record, subs) {
   return Object.fromEntries(
     subs
       .filter((sub) => record.cv[sub.code] !== undefined)
@@ -133,7 +136,11 @@ export function accreditedFormResource(record, viewer) {
 export function accreditedResultResource(record) {
   const result = resultResource(record)
   if (!result.available) return result
-  return withFeedback(record, result)
+  const withAward =
+    record.path === ASSESSMENT_PATHS.ADVANCED
+      ? { ...result, award: awardOutcomeOf(record) }
+      : result
+  return withFeedback(record, withAward)
 }
 
 export function withFeedback(record, result) {
@@ -159,6 +166,7 @@ export function queueRow(record, staffName) {
     id: record.id,
     number: record.number,
     path: record.path,
+    pathLabel: pathLabelOf(record.path),
     status: maskedStatus(record),
     isFrozen: isFrozen(record),
     entity: entitySummary(entityOf(record)),
@@ -179,6 +187,7 @@ export function assignedRow(record, viewer) {
     id: record.id,
     number: record.number,
     path: record.path,
+    pathLabel: pathLabelOf(record.path),
     status: maskedStatus(record),
     entity: { ...entitySummary(entity), region: placeOf(findRegion(entity.regionId)) },
     assignedAt: assignment?.createdAt ?? null,

@@ -9,6 +9,7 @@ import {
   PRIVACY_DETAILS_LENGTH,
   PRIVACY_REQUEST_KINDS,
   REASON_LENGTH,
+  UNIFIED_NUMBER_PATTERN,
 } from '@/constants/entityEnums'
 import { isValidGovernanceGrade } from '@/utils/governanceGrade'
 import { toWesternDigits } from '@/utils/numerals'
@@ -19,6 +20,11 @@ const EMAIL_MAX = 254
 const COUNT_PATTERN = /^\d+$/
 const YEAR_PATTERN = /^\d{4}$/
 const CITY_NAME_MAX = 120
+const LICENSE_PATTERN = /^\d{3,20}$/
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+const EARLIEST_FOUNDING_DATE = '1900-01-01'
+const WEBSITE_MAX = 255
+const HTTPS_PREFIX = 'https://'
 
 function requiredText(t, max) {
   return yupString()
@@ -53,6 +59,17 @@ function foundingYear(t) {
           Number(text) <= currentYear
         )
       },
+    )
+}
+
+export function unifiedNumberField(t, { required = true } = {}) {
+  return yupString()
+    .trim()
+    .test('required', t('validation.required'), (value) => !required || Boolean(value))
+    .test(
+      'unifiedNumber',
+      t('entities.validation.unifiedNumber'),
+      (value) => !value || UNIFIED_NUMBER_PATTERN.test(toWesternDigits(value)),
     )
 }
 
@@ -92,17 +109,69 @@ export function entityProfileShape(t) {
   }
 }
 
-export function ownProfileSchema(t) {
-  return yupObject({ ...entityProfileShape(t), marketingConsent: yupBoolean() })
+function isCalendarDate(value) {
+  if (!DATE_PATTERN.test(value)) return false
+  const date = new Date(`${value}T00:00:00Z`)
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
 }
 
-export function staffProfileSchema(t) {
-  return yupObject({ ...entityProfileShape(t), reason: reasonText(t) })
+function isHttpsAddress(value) {
+  if (!value.startsWith(HTTPS_PREFIX) || /\s/.test(value)) return false
+  try {
+    return Boolean(new URL(value).hostname.includes('.'))
+  } catch {
+    return false
+  }
+}
+
+export function registryShape(t, today) {
+  return {
+    licenseNumber: yupString()
+      .trim()
+      .test('license', t('entities.validation.licenseNumber'), (value) => {
+        const text = toWesternDigits(value)
+        return !text || LICENSE_PATTERN.test(text)
+      }),
+    foundedOn: yupString()
+      .trim()
+      .test(
+        'date',
+        t('entities.validation.foundedOn', { min: EARLIEST_FOUNDING_DATE }),
+        (value) =>
+          !value || (isCalendarDate(value) && value >= EARLIEST_FOUNDING_DATE && value <= today),
+      ),
+    websiteUrl: yupString()
+      .trim()
+      .max(WEBSITE_MAX, t('entities.validation.maxChars', { max: WEBSITE_MAX }))
+      .test(
+        'https',
+        t('entities.validation.websiteUrl'),
+        (value) => !value || isHttpsAddress(value),
+      ),
+  }
+}
+
+export function ownProfileSchema(t, today, { unifiedNumberRequired = true } = {}) {
+  return yupObject({
+    ...entityProfileShape(t),
+    ...registryShape(t, today),
+    unifiedNumber: unifiedNumberField(t, { required: unifiedNumberRequired }),
+    marketingConsent: yupBoolean(),
+  })
+}
+
+export function staffProfileSchema(t, { unifiedNumberRequired = false } = {}) {
+  return yupObject({
+    ...entityProfileShape(t),
+    unifiedNumber: unifiedNumberField(t, { required: unifiedNumberRequired }),
+    reason: reasonText(t),
+  })
 }
 
 export function registrationSchema(t) {
   return yupObject({
     ...entityProfileShape(t),
+    unifiedNumber: unifiedNumberField(t),
     officialEmail: yupString()
       .trim()
       .required(t('validation.required'))

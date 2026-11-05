@@ -1,7 +1,11 @@
-import { HttpResponse, http } from 'msw'
-import { MOYASAR_FORM_ASSETS } from '@/constants/payments'
-import { SANDBOX_OUTCOME_ORDER, moyasarSandboxTexts } from '../fixtures/moyasarSandbox'
+import { HttpResponse, http, passthrough } from 'msw'
+import {
+  MOYASAR_FORM_ASSET_PATTERNS,
+  SANDBOX_OUTCOME_ORDER,
+  moyasarSandboxTexts,
+} from '../fixtures/moyasarSandbox'
 import { fakeMoyasarScriptSource } from '../moyasar/fakeMoyasarForm'
+import { usesMoyasarCdnForm } from '../moyasar/sandboxMode'
 import { paymentState } from '../stores/integrations/integrationsState'
 import { financeState } from '../stores/finance/financeState'
 import { clientSecretOf } from '../stores/finance/checkoutObject'
@@ -53,17 +57,18 @@ function providerPaymentResource(record, payment) {
 }
 
 export const moyasarSandboxHandlers = [
-  http.get(
-    MOYASAR_FORM_ASSETS.scriptUrl,
-    () =>
-      new HttpResponse(fakeMoyasarScriptSource(moyasarSandboxTexts, SANDBOX_OUTCOME_ORDER), {
-        headers: { 'Content-Type': 'application/javascript; charset=utf-8' },
-      }),
+  http.get(MOYASAR_FORM_ASSET_PATTERNS.script, () =>
+    usesMoyasarCdnForm()
+      ? passthrough()
+      : new HttpResponse(fakeMoyasarScriptSource(moyasarSandboxTexts, SANDBOX_OUTCOME_ORDER), {
+          headers: { 'Content-Type': 'application/javascript; charset=utf-8' },
+        }),
   ),
 
-  http.get(
-    MOYASAR_FORM_ASSETS.stylesheetUrl,
-    () => new HttpResponse('', { headers: { 'Content-Type': 'text/css' } }),
+  http.get(MOYASAR_FORM_ASSET_PATTERNS.stylesheet, () =>
+    usesMoyasarCdnForm()
+      ? passthrough()
+      : new HttpResponse('', { headers: { 'Content-Type': 'text/css' } }),
   ),
 
   http.post(FULFIL_PATH, async ({ params, request }) => {

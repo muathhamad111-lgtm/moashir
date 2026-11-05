@@ -3,21 +3,12 @@ import config from '../../playwright.config.js'
 export const MOCK_SESSION_COOKIE = 'moashir_mock_session'
 const APP_URL = config.use.baseURL
 
-function descriptorOf({
-  id = 7000,
-  roles = [],
-  entityId = null,
-  name,
-  committeeCycles,
-  locale,
-  superAdmin,
-}) {
+function descriptorOf({ id = 7000, roles = [], entityId = null, name, locale, superAdmin }) {
   return {
     id,
     roles,
     entityId,
     ...(name ? { name } : {}),
-    ...(committeeCycles ? { committeeCycles } : {}),
     ...(locale ? { locale } : {}),
     ...(superAdmin ? { superAdmin } : {}),
   }
@@ -36,6 +27,11 @@ export function seedMockSession(page, user) {
 }
 
 export const LOCALE_COOKIE = 'locale'
+export const MOCK_SCENARIO_COOKIE = 'moashir_mock_scenario'
+
+export function seedScenario(page, scenario) {
+  return page.context().addCookies([{ name: MOCK_SCENARIO_COOKIE, value: scenario, url: APP_URL }])
+}
 
 export function seedLocale(page, locale) {
   if (!locale) return Promise.resolve()

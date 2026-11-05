@@ -2,6 +2,7 @@ import { apiClient } from '@/api/client'
 import { payloadShape } from '@/utils/payloadShape'
 import { domainRequests } from './domainRequest'
 import { serviceRequest } from './serviceRequest'
+import { toAdvancedResult } from './mappers/committee'
 import {
   toAssessment,
   toAssessmentForm,
@@ -82,10 +83,9 @@ export const assessmentsService = {
   },
 
   getAdvancedResult(assessmentId) {
-    return serviceRequest(
-      'assessments.getAdvancedResult',
-      () => apiClient.get(`/assessments/${assessmentId}/advanced-result`),
-      { entity: 'assessment' },
+    return mapData(
+      read('getAdvancedResult', () => apiClient.get(`/assessments/${assessmentId}/result`)),
+      toAdvancedResult,
     )
   },
 }

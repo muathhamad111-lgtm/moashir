@@ -55,14 +55,12 @@ function dateLabel(value) {
 
 function rowActions(row) {
   if (row.status === 'assigned') {
-    return [
-      { key: 'analyze', label: t('bagRequests.actions.startAnalysis'), icon: 'fa-solid fa-play' },
-    ]
+    return [{ key: 'analyze', label: t('bagRequests.actions.startAnalysis'), icon: 'play' }]
   }
   if (row.status !== 'completed' && row.status !== 'cancelled') {
-    return [{ key: 'open', label: t('bagRequests.actions.open'), icon: 'fa-solid fa-folder-open' }]
+    return [{ key: 'open', label: t('bagRequests.actions.open'), icon: 'folder' }]
   }
-  return [{ key: 'view', label: t('bagRequests.actions.view'), icon: 'fa-solid fa-eye' }]
+  return [{ key: 'view', label: t('bagRequests.actions.view'), icon: 'eye' }]
 }
 
 function openManage(row) {

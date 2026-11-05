@@ -100,12 +100,7 @@ const versionId = computed(() =>
       :can-set-participation="canSetParticipation && editable"
     />
     <div v-if="editable" class="cycle-form__actions">
-      <BaseButton
-        type="submit"
-        variant="primary"
-        icon="fa-regular fa-floppy-disk"
-        :loading="cycleForm.submitting.value"
-      >
+      <BaseButton type="submit" variant="primary" icon="save" :loading="cycleForm.submitting.value">
         {{ cycleId ? t('cycles.form.save') : t('cycles.form.create') }}
       </BaseButton>
     </div>

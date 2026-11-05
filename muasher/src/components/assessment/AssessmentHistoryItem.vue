@@ -6,6 +6,7 @@ import FrozenBadge from '@/components/entities/FrozenBadge.vue'
 import AssessmentStatusHistory from './AssessmentStatusHistory.vue'
 import { ASSESSMENT_PATHS } from '@/constants/assessment'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   item: { type: Object, required: true },
@@ -56,14 +57,14 @@ const continueRoute = computed(() =>
           :to="{ name: resultRoute, params: { id: item.id } }"
         >
           {{ t('assessment.history.viewResult') }}
-          <i class="fa-solid fa-arrow-right u-flip-in-rtl" aria-hidden="true"></i>
+          <AppIcon name="arrow-right" />
         </router-link>
         <router-link
           v-if="canContinue && (isSelf || isAccredited)"
           class="btn btn--secondary btn--sm"
           :to="continueRoute"
         >
-          <i class="fa-solid fa-pen" aria-hidden="true"></i>
+          <AppIcon name="pen" />
           {{
             isAccredited
               ? t('assessment.history.openRequest')

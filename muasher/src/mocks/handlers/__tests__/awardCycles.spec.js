@@ -192,7 +192,7 @@ describe('award cycles mock — reads and scope', () => {
       (await call('GET', '/award/cycles/candidates?role=initial_assessor')).body.data
         .map((person) => person.id)
         .sort((a, b) => a - b),
-    ).toEqual([10, 11, 15, 16, 27])
+    ).toEqual([10, 11, 15, 16, 27, 29, 30, 31])
     expect((await call('GET', '/award/cycles/candidates?role=juror')).status).toBe(422)
     seedMockSession(FOLLOWER)
     expect((await call('GET', '/award/cycles/candidates?role=filtering_officer')).status).toBe(403)

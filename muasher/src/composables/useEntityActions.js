@@ -17,15 +17,15 @@ export const ENTITY_ACTIONS = {
 }
 
 const ICONS = {
-  view: 'fa-solid fa-eye',
-  edit: 'fa-solid fa-pen',
-  deactivate: 'fa-solid fa-ban',
-  reactivate: 'fa-solid fa-circle-check',
-  resendVerification: 'fa-solid fa-paper-plane',
-  delete: 'fa-solid fa-trash-can',
-  restore: 'fa-solid fa-rotate-left',
-  permanentDelete: 'fa-solid fa-dumpster-fire',
-  exportPersonalData: 'fa-solid fa-file-export',
+  view: 'eye',
+  edit: 'pen',
+  deactivate: 'ban',
+  reactivate: 'check-circle',
+  resendVerification: 'send',
+  delete: 'trash',
+  restore: 'undo',
+  permanentDelete: 'trash',
+  exportPersonalData: 'upload',
 }
 
 const DANGEROUS = new Set([

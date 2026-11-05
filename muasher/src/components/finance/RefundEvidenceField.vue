@@ -6,6 +6,7 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import Badge from '@/components/ui/Badge.vue'
 import { REFUND_RULES, UPLOAD_STATES } from '@/constants/finance'
 import { formatFileSize } from '@/utils/payments/amountFormat'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   file: { type: Object, default: null },
@@ -42,27 +43,27 @@ const isPending = computed(() => props.uploadState === UPLOAD_STATES.PENDING)
       @select="emit('select', $event[0])"
     />
     <div v-if="file" class="refund-evidence__file" :aria-busy="isPending || undefined">
-      <i class="fa-solid fa-file-lines refund-evidence__icon" aria-hidden="true"></i>
+      <AppIcon name="doc" class="refund-evidence__icon" />
       <span class="refund-evidence__meta">
         <bdi class="refund-evidence__name" dir="ltr">{{ file.name }}</bdi>
         <span class="refund-evidence__size">{{ sizeLabel }}</span>
       </span>
       <Badge :variant="STATE_VARIANTS[uploadState]">
-        <i v-if="isPending" class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+        <AppIcon v-if="isPending" name="refresh-dots" spin />
         {{ stateLabel }}
       </Badge>
       <BaseButton
         variant="ghost"
         size="sm"
         icon-only
-        icon="fa-solid fa-trash-can"
+        icon="trash"
         :disabled="disabled"
         :aria-label="t('finance.refund.evidence.remove', { name: file.name })"
         @click="emit('select', null)"
       />
     </div>
     <p v-if="refusal" class="refund-evidence__refusal" role="alert">
-      <i class="fa-solid fa-shield-virus" aria-hidden="true"></i>
+      <AppIcon name="shield-info" />
       {{ refusal }}
     </p>
     <p class="refund-evidence__status" aria-live="polite">{{ file ? stateLabel : '' }}</p>

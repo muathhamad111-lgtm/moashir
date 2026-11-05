@@ -9,8 +9,10 @@ import CycleBlockedRequests from './CycleBlockedRequests.vue'
 import { usePermissions } from '@/composables/usePermissions'
 import { CYCLE_CLOSABLE_STATUSES, CYCLE_STATUSES, AWARD_CODES } from '@/constants/advanced'
 import { PERMISSIONS } from '@/constants/permissionKeys'
+import { COMMITTEE_CYCLE_STATUSES } from '@/constants/committee'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   cycle: { type: Object, required: true },
@@ -36,6 +38,35 @@ const blockedRequests = computed(() =>
   props.blocked?.code === AWARD_CODES.REQUESTS_PENDING ? props.blocked.requests : [],
 )
 const anotherOpen = computed(() => props.blocked?.code === AWARD_CODES.ANOTHER_OPEN)
+const AFTER_SUBMISSIONS = [
+  CYCLE_STATUSES.SUBMISSION_CLOSED,
+  ...COMMITTEE_CYCLE_STATUSES,
+  CYCLE_STATUSES.APPROVED,
+  CYCLE_STATUSES.ANNOUNCED,
+  CYCLE_STATUSES.CLOSED,
+]
+const stageLinks = computed(() =>
+  [
+    {
+      key: 'committee',
+      icon: 'users-two',
+      route: ROUTE_NAMES.AWARD_COMMITTEE_ROSTER,
+      shown: can(PERMISSIONS.AWARD_COMMITTEE_MANAGE) || can(PERMISSIONS.AWARD_SECRETARY_REVIEW),
+    },
+    {
+      key: 'secretary',
+      icon: 'stamp',
+      route: ROUTE_NAMES.AWARD_SECRETARY_DESK,
+      shown: can(PERMISSIONS.AWARD_SECRETARY_REVIEW) && AFTER_SUBMISSIONS.includes(status.value),
+    },
+    {
+      key: 'results',
+      icon: 'trophy',
+      route: ROUTE_NAMES.AWARD_RESULTS_BOARD,
+      shown: can(PERMISSIONS.AWARD_RESULTS_VIEW) && AFTER_SUBMISSIONS.includes(status.value),
+    },
+  ].filter((link) => link.shown),
+)
 </script>
 
 <template>
@@ -64,7 +95,7 @@ const anotherOpen = computed(() => props.blocked?.code === AWARD_CODES.ANOTHER_O
         <BaseButton
           v-if="status === CYCLE_STATUSES.DRAFT"
           variant="primary"
-          icon="fa-solid fa-door-open"
+          icon="door-open"
           :loading="busy === 'open'"
           :disabled="blockedOpen"
           @click="emit('run', 'open')"
@@ -74,16 +105,25 @@ const anotherOpen = computed(() => props.blocked?.code === AWARD_CODES.ANOTHER_O
         <BaseButton
           v-if="status === CYCLE_STATUSES.SUBMISSION_OPEN"
           variant="secondary"
-          icon="fa-solid fa-door-closed"
+          icon="lock"
           :loading="busy === 'closeSubmissions'"
           @click="emit('run', 'closeSubmissions')"
         >
           {{ t('cycles.actions.closeSubmissions.label') }}
         </BaseButton>
         <BaseButton
+          v-if="status === CYCLE_STATUSES.SUBMISSION_CLOSED"
+          variant="primary"
+          icon="users-two"
+          :loading="busy === 'startCommittee'"
+          @click="emit('run', 'startCommittee')"
+        >
+          {{ t('cycles.actions.startCommittee.label') }}
+        </BaseButton>
+        <BaseButton
           v-if="CYCLE_CLOSABLE_STATUSES.includes(status)"
           variant="danger"
-          icon="fa-solid fa-box-archive"
+          icon="docs"
           :loading="busy === 'close'"
           @click="emit('run', 'close')"
         >
@@ -93,7 +133,7 @@ const anotherOpen = computed(() => props.blocked?.code === AWARD_CODES.ANOTHER_O
       <BaseButton
         v-if="canReopen && status === CYCLE_STATUSES.CLOSED"
         variant="secondary"
-        icon="fa-solid fa-rotate-left"
+        icon="undo"
         :loading="busy === 'reopen'"
         @click="emit('reopen')"
       >
@@ -104,8 +144,17 @@ const anotherOpen = computed(() => props.blocked?.code === AWARD_CODES.ANOTHER_O
         class="btn btn--ghost btn--md"
         :to="{ name: ROUTE_NAMES.AWARD_FILTERING_QUEUE, params: { id: cycle.id } }"
       >
-        <i class="fa-solid fa-filter" aria-hidden="true"></i>
+        <AppIcon name="filter" />
         {{ t('cycles.actions.filtering') }}
+      </RouterLink>
+      <RouterLink
+        v-for="link in stageLinks"
+        :key="link.key"
+        class="btn btn--ghost btn--md"
+        :to="{ name: link.route, params: { id: cycle.id } }"
+      >
+        <AppIcon :name="link.icon" />
+        {{ t(`cycles.actions.links.${link.key}`) }}
       </RouterLink>
     </div>
     <p v-if="!manage" class="cycle-actions__note">{{ t('cycles.actions.readOnly') }}</p>

@@ -9,6 +9,7 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import PrivacyRequestForm from '@/components/entities/admin/PrivacyRequestForm.vue'
+import ContactPrivacyTools from '@/components/entities/admin/ContactPrivacyTools.vue'
 import { PRIVACY_DECISIONS, usePrivacyRequests } from '@/composables/usePrivacyRequests'
 import { useEntityDisplay } from '@/composables/useEntityDisplay'
 import { useToast } from '@/composables/useToast'
@@ -47,12 +48,12 @@ function decisionsFor(request) {
     {
       key: PRIVACY_DECISIONS.FULFIL,
       label: t('entities.privacy.fulfil'),
-      icon: 'fa-solid fa-check',
+      icon: 'check',
     },
     {
       key: PRIVACY_DECISIONS.REJECT,
       label: t('entities.privacy.reject'),
-      icon: 'fa-solid fa-xmark',
+      icon: 'x',
       variant: 'danger',
     },
   ]
@@ -71,7 +72,7 @@ async function onCreated() {
         <h1 class="entities-admin__title">{{ t('entities.privacy.title') }}</h1>
         <p class="entities-admin__subtitle">{{ t('entities.privacy.subtitle') }}</p>
       </div>
-      <BaseButton variant="primary" size="sm" icon="fa-solid fa-plus" @click="formOpen = true">{{
+      <BaseButton variant="primary" size="sm" icon="plus" @click="formOpen = true">{{
         t('entities.privacy.add')
       }}</BaseButton>
     </header>
@@ -131,6 +132,8 @@ async function onCreated() {
       :last-page="paginator.pagination.lastPage"
       @update:page="paginator.setPage($event)"
     />
+
+    <ContactPrivacyTools />
 
     <ReasonDialog
       :key="decision.kind"

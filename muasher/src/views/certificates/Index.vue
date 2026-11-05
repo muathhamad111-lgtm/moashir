@@ -1,96 +1,116 @@
 <script setup>
-import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import Card from '@/components/ui/Card.vue'
-import Badge from '@/components/ui/Badge.vue'
+import { useHead } from '@unhead/vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
-import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
-import { useCertificates } from '@/composables/useCertificates'
-import { useToast } from '@/composables/useToast'
-import { withLatinNumerals } from '@/utils/numerals'
+import ErrorState from '@/components/feedback/ErrorState.vue'
+import PortalAreaHeader from '@/components/portal/PortalAreaHeader.vue'
+import CertificateCard from '@/components/certificates/portal/CertificateCard.vue'
+import IssuingCertificateCard from '@/components/certificates/portal/IssuingCertificateCard.vue'
+import VerifyGuideCards from '@/components/certificates/portal/VerifyGuideCards.vue'
+import { useCertificatesHub } from '@/composables/useCertificatesHub'
+import { useSignedDownload } from '@/composables/useSignedDownload'
+import { useClipboard } from '@/composables/useClipboard'
+import { certificatesService } from '@/services/certificatesService'
+import { CERTIFICATE_TABS } from '@/constants/certificates'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
-const { t, locale } = useI18n()
-const toast = useToast()
+const PANEL_ID = 'certificates-panel'
 
-const { status, errorMessage, certificates, downloading, localized, load, download } =
-  useCertificates()
+const { t } = useI18n()
+const hub = useCertificatesHub()
+const downloads = useSignedDownload({
+  errorPrefix: 'portal.certificates.errors',
+  fallbackKey: 'portal.certificates.errors.failed',
+})
+const clipboard = useClipboard()
 
-onMounted(load)
+useHead({ title: () => t('portal.certificates.eyebrow') })
 
-async function onDownload(certificate) {
-  try {
-    const data = await download(certificate.id)
-    if (data?.downloadUrl) toast.success(t('certificates.toasts.downloadReady'))
-  } catch {
-    toast.error(t('certificates.toasts.downloadFailed'))
-  }
+function download(certificate) {
+  return downloads.download(certificate.id, () => certificatesService.download(certificate.id))
 }
 
-function issuedDate(certificate) {
-  if (!certificate.issuedAt) return '—'
-  return new Intl.DateTimeFormat(withLatinNumerals(locale.value === 'ar' ? 'ar-SA' : 'en-GB'), {
-    dateStyle: 'medium',
-  }).format(new Date(certificate.issuedAt))
+function copyLink(certificate) {
+  return clipboard.copy(certificate.id, certificate.verificationUrl)
 }
 </script>
 
 <template>
-  <section class="certificates">
-    <header class="certificates__header">
-      <div>
-        <p class="certificates__eyebrow">{{ t('certificates.eyebrow') }}</p>
-        <h1 class="certificates__title">{{ t('certificates.title') }}</h1>
-        <p class="certificates__subtitle">{{ t('certificates.subtitle') }}</p>
-      </div>
-    </header>
-
-    <div v-if="status === 'loading'" class="certificates__loading">
-      <Skeleton variant="block" />
-      <Skeleton variant="text" :count="3" />
-    </div>
-
-    <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
-
-    <EmptyState
-      v-else-if="status === 'empty'"
-      icon="fa-solid fa-certificate"
-      :title="t('certificates.empty.title')"
-      :message="t('certificates.empty.message')"
+  <section class="portal-area certificates-hub">
+    <PortalAreaHeader
+      :eyebrow="t('portal.certificates.eyebrow')"
+      :title="t('portal.certificates.title')"
+      :subtitle="t('portal.certificates.subtitle')"
+      :tabs="hub.tabs.value"
+      :tab="hub.tab.value"
+      :tabs-label="t('portal.certificates.tabsLabel')"
+      :panel-id="PANEL_ID"
+      @update:tab="hub.tab.value = $event"
     />
 
-    <ul v-else class="certificates__list">
-      <li v-for="certificate in certificates" :key="certificate.id" class="certificates__item">
-        <Card>
-          <div class="certificates__card">
-            <div class="certificates__badge" aria-hidden="true">
-              <i class="fa-solid fa-award"></i>
-            </div>
-            <div class="certificates__meta">
-              <div class="certificates__meta-head">
-                <h2 class="certificates__name">{{ localized(certificate.entityName) }}</h2>
-                <Badge variant="success">{{ t(`certificates.kinds.${certificate.kind}`) }}</Badge>
-              </div>
-              <p class="certificates__detail">
-                <span>{{ t('certificates.scoreLabel', { score: certificate.scorePercent }) }}</span>
-                <span class="certificates__dot" aria-hidden="true">•</span>
-                <span>{{ t('certificates.issuedOn', { date: issuedDate(certificate) }) }}</span>
-              </p>
-            </div>
-            <div class="certificates__action">
-              <BaseButton
-                variant="primary"
-                icon="fa-solid fa-download"
-                :loading="downloading[certificate.id]"
-                @click="onDownload(certificate)"
-              >
-                {{ t('certificates.download') }}
-              </BaseButton>
-            </div>
-          </div>
-        </Card>
-      </li>
-    </ul>
+    <div class="portal-area__body certificates-hub__body">
+      <div
+        :id="PANEL_ID"
+        class="portal-area__panel"
+        role="tabpanel"
+        :aria-labelledby="`${PANEL_ID}-tab-${hub.tab.value}`"
+      >
+        <h2 class="portal-area__section-title">
+          {{ t(`portal.certificates.sections.${hub.tab.value}`) }}
+        </h2>
+        <Skeleton v-if="hub.status.value === 'loading'" variant="block" :count="2" />
+        <ErrorState
+          v-else-if="hub.status.value === 'error'"
+          :message="hub.errorMessage.value"
+          @retry="hub.load"
+        />
+        <template v-else-if="hub.tab.value === CERTIFICATE_TABS.ISSUING">
+          <EmptyState
+            v-if="!hub.issuing.value.length"
+            icon="clock"
+            :title="t('portal.certificates.empty.in_progress.title')"
+            :message="t('portal.certificates.empty.in_progress.message')"
+          />
+          <IssuingCertificateCard
+            v-for="request in hub.issuing.value"
+            :key="request.id"
+            :request="request"
+          />
+        </template>
+        <template v-else>
+          <EmptyState
+            v-if="!hub.visible.value.length"
+            icon="award"
+            :title="t(`portal.certificates.empty.${hub.tab.value}.title`)"
+            :message="t(`portal.certificates.empty.${hub.tab.value}.message`)"
+          />
+          <CertificateCard
+            v-for="certificate in hub.visible.value"
+            :key="certificate.id"
+            :certificate="certificate"
+            :downloading="Boolean(downloads.busy[certificate.id])"
+            :copied="clipboard.copiedKey.value === certificate.id"
+            @download="download"
+            @copy="copyLink"
+          />
+          <p
+            v-if="hub.tab.value === CERTIFICATE_TABS.VALID && hub.issuing.value.length"
+            class="portal-area__note certificates-hub__issuing-note"
+          >
+            <AppIcon name="clock" />
+            <span class="certificates-hub__issuing-text">
+              {{ t('portal.certificates.issuingNote', hub.issuing.value.length) }}
+            </span>
+            <BaseButton variant="ghost" size="sm" @click="hub.tab.value = CERTIFICATE_TABS.ISSUING">
+              {{ t('portal.certificates.showIssuing') }}
+            </BaseButton>
+          </p>
+        </template>
+      </div>
+
+      <VerifyGuideCards />
+    </div>
   </section>
 </template>

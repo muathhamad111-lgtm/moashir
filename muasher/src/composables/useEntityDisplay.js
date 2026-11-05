@@ -4,7 +4,19 @@ import { formatGovernanceGrade } from '@/utils/governanceGrade'
 import { localizedText } from '@/utils/localizedText'
 import { withLatinNumerals } from '@/utils/numerals'
 
-const LTR_FIELDS = new Set(['reference', 'officialEmail', 'phone', 'nameEn', 'governanceGrade'])
+const LTR_FIELDS = new Set([
+  'reference',
+  'officialEmail',
+  'phone',
+  'nameEn',
+  'governanceGrade',
+  'unifiedNumber',
+  'licenseNumber',
+  'foundedOn',
+  'websiteUrl',
+])
+const LINK_FIELDS = new Set(['websiteUrl'])
+const SECURE_LINK = /^https:\/\/[^\s]+$/
 const FREE_TEXT_FIELDS = new Set(['deactivationReason', 'deletionReason'])
 
 export function useEntityDisplay() {
@@ -31,6 +43,10 @@ export function useEntityDisplay() {
     developmentSector: (entity) => enumLabel('developmentSector', entity.developmentSector),
     orgSize: (entity) => enumLabel('orgSize', entity.orgSize),
     foundingYear: (entity) => (entity.foundingYear ? String(entity.foundingYear) : ''),
+    unifiedNumber: (entity) => entity.unifiedNumber,
+    licenseNumber: (entity) => entity.licenseNumber,
+    foundedOn: (entity) => entity.foundedOn,
+    websiteUrl: (entity) => entity.websiteUrl,
     region: (entity) => localizedText(entity.region?.name, locale.value),
     city: (entity) => localizedText(entity.city?.name, locale.value),
     governanceGrade: (entity) => formatGovernanceGrade(entity.governanceGrade),
@@ -58,6 +74,7 @@ export function useEntityDisplay() {
         value: value || t('entities.display.notProvided'),
         ltr: LTR_FIELDS.has(key),
         free: FREE_TEXT_FIELDS.has(key),
+        href: LINK_FIELDS.has(key) && SECURE_LINK.test(value ?? '') ? value : null,
       }))
   }
 

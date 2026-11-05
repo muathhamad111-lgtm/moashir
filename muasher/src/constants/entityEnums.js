@@ -58,10 +58,5 @@ export const REASON_LENGTH = { MIN: 10, MAX: 1000, PERMANENT_MIN: 20 }
 export const PRIVACY_DETAILS_LENGTH = { MIN: 10, MAX: 2000 }
 export const PHONE_PATTERN = /^(05\d{8}|\+9665\d{8})$/
 
-export const LOGIN_MODES = {
-  EMAIL_OTP: 'email-otp',
-  SMS_OTP: 'sms-otp',
-  EMAIL_PASSWORD: 'email-password',
-}
-
-export const OTP_CHANNELS = { EMAIL: 'email', SMS: 'sms' }
+export const UNIFIED_NUMBER_LENGTH = 10
+export const UNIFIED_NUMBER_PATTERN = /^7\d{9}$/

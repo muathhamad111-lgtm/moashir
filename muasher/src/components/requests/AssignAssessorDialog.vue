@@ -5,7 +5,8 @@ import FormModal from '@/components/modal/FormModal.vue'
 import BaseInput from '@/components/form/BaseInput.vue'
 import BaseTextarea from '@/components/form/BaseTextarea.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
-import { useAssignAssessor } from '@/composables/useAssignAssessor'
+import PathBadge from '@/components/ui/PathBadge.vue'
+import { assignmentFailureOf, useAssignAssessor } from '@/composables/useAssignAssessor'
 import { useToast } from '@/composables/useToast'
 import { useAuthStore } from '@/stores/auth'
 import { ACCREDITED_LIMITS } from '@/constants/accredited'
@@ -16,6 +17,8 @@ const props = defineProps({
   requestId: { type: Number, required: true },
   mode: { type: String, default: 'assign' },
   entityName: { type: String, default: '' },
+  path: { type: String, default: '' },
+  pathLabel: { type: Object, default: null },
 })
 
 const emit = defineEmits(['update:modelValue', 'done'])
@@ -48,6 +51,23 @@ function validate() {
   return !Object.keys(next).length
 }
 
+function handleFailure(failure) {
+  if (failure.outOfScope) {
+    toast.error(t('requests.assign.outOfScope'))
+    emit('update:modelValue', false)
+    return
+  }
+  const assessorError = failure.notQualified
+    ? t('requests.assign.notQualified')
+    : (failure.fields.assessorId?.[0] ?? '')
+  errors.value = { assessorId: assessorError, reason: failure.fields.reason?.[0] ?? '' }
+  toast.error(failure.message || t('errors.unexpected'))
+  if (failure.notQualified) {
+    chosen.value = null
+    loadAssessors()
+  }
+}
+
 async function onSubmit() {
   if (busy.value || !validate()) return
   busy.value = true
@@ -64,9 +84,7 @@ async function onSubmit() {
     emit('update:modelValue', false)
     emit('done', data)
   } catch (error) {
-    const fields = error?.normalized?.fieldErrors ?? {}
-    errors.value = { assessorId: fields.assessorId?.[0] ?? '', reason: fields.reason?.[0] ?? '' }
-    toast.error(error?.normalized?.message || t('errors.unexpected'))
+    handleFailure(assignmentFailureOf(error))
   } finally {
     busy.value = false
   }
@@ -99,6 +117,10 @@ watch(
   >
     <div class="assign-dialog">
       <p class="assign-dialog__lead">{{ t('requests.assign.lead', { entity: entityName }) }}</p>
+      <p v-if="path" class="assign-dialog__path">
+        <PathBadge :path="path" :label="pathLabel" />
+        <span>{{ t('requests.assign.qualifiedOnly') }}</span>
+      </p>
       <BaseInput
         v-model="search"
         name="assessor-search"
@@ -108,6 +130,9 @@ watch(
       <Skeleton v-if="status === 'loading'" variant="text" :count="3" />
       <p v-else-if="status === 'empty'" class="assign-dialog__empty">
         {{ t('requests.assign.empty') }}
+      </p>
+      <p v-else-if="status === 'outOfScope'" class="assign-dialog__empty" role="alert">
+        {{ t('requests.assign.outOfScope') }}
       </p>
       <p v-else-if="status === 'error'" class="assign-dialog__empty" role="alert">
         {{ t('requests.assign.loadFailed') }}

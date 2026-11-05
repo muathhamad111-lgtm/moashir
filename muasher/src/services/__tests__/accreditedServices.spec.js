@@ -263,13 +263,16 @@ describe('assessor review, overrides, settings and prices', () => {
     apiClient.get.mockResolvedValue(
       answer({
         accreditedReviewSlaDays: 14,
-        evidenceAllowedTypes: ['pdf'],
-        evidenceTypeCatalog: ['pdf'],
+        uploadMaxFileMb: 20,
+        generalUploadMaxFileMb: 25,
+        advancedMinEntityAgeYears: 3,
       }),
     )
-    expect((await assessmentSettingsService.get()).data).toMatchObject({
-      accreditedReviewSlaDays: 14,
-      accreditedReviewSlaLimits: { min: 1, max: 120 },
+    expect((await assessmentSettingsService.get()).data).toEqual({
+      generalUploadMaxFileMb: 25,
+      advancedMinEntityAgeYears: 3,
+      advancedDisqualificationScore: null,
+      committeeEntityDataVisibility: null,
     })
     apiClient.get.mockResolvedValue(
       answer({

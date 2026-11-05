@@ -34,6 +34,11 @@ export function useEntityRecord(entityId) {
     }
   }
 
+  async function refreshLogo() {
+    const { data } = await entitiesService.get(entityId.value)
+    if (entity.value) entity.value = { ...entity.value, logo: data.logo ?? null }
+  }
+
   const isFullRecord = computed(() => Boolean(entity.value && 'entityType' in entity.value))
 
   return {
@@ -45,5 +50,6 @@ export function useEntityRecord(entityId) {
     isFullRecord,
     load,
     loadFrozenRequests,
+    refreshLogo,
   }
 }

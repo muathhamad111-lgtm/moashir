@@ -35,6 +35,7 @@ export function toQueueRow(raw = {}) {
     id: raw.id ?? null,
     number: raw.number ?? '',
     path: raw.path ?? null,
+    pathLabel: raw.pathLabel ?? null,
     status: toRequestStatus(raw.status),
     isFrozen: raw.isFrozen === true,
     entity: toEntitySummary(raw.entity),
@@ -93,6 +94,7 @@ export function toAssignedRow(raw = {}) {
     id: raw.id ?? null,
     number: raw.number ?? '',
     path: raw.path ?? null,
+    pathLabel: raw.pathLabel ?? null,
     status: toRequestStatus(raw.status),
     entity: raw.entity
       ? { ...toEntitySummary(raw.entity), region: toPlace(raw.entity.region) }
@@ -102,5 +104,25 @@ export function toAssignedRow(raw = {}) {
     completionDeadline: raw.completionDeadline ?? null,
     awardCycle: toCycleSummary(raw.awardCycle),
     ...toClock(raw),
+  }
+}
+
+export function toQueuePathCount(raw = {}) {
+  return {
+    path: raw.path ?? null,
+    pathLabel: raw.pathLabel ?? null,
+    total: raw.total ?? 0,
+    awaitingAssignment: raw.awaitingAssignment ?? 0,
+    overdue: raw.overdue ?? 0,
+  }
+}
+
+export function toAssignedPathCount(raw = {}) {
+  return {
+    path: raw.path ?? null,
+    pathLabel: raw.pathLabel ?? null,
+    new: raw.new ?? 0,
+    inProgress: raw.inProgress ?? 0,
+    completed: raw.completed ?? 0,
   }
 }

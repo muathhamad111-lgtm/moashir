@@ -53,7 +53,7 @@ const canChange = computed(
         v-if="canChange"
         variant="secondary"
         size="sm"
-        icon="fa-solid fa-envelope-circle-check"
+        icon="envelope"
         @click="dialogOpen = true"
       >
         {{ t('entities.email.change') }}

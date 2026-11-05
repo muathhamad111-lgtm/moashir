@@ -2,7 +2,7 @@ import { Buffer } from 'node:buffer'
 import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
 
-const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d|Font Awesome/i
+const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d/i
 const PAID_ACCREDITED = '3f0c9a52-6d1e-4b7a-9c21-5a1e00000001'
 const PAID_BAG = '3f0c9a52-6d1e-4b7a-9c21-5a1e00000002'
 const PENDING_LIVE = '3f0c9a52-6d1e-4b7a-9c21-5a1e00000008'

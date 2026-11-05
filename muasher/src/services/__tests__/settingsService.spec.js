@@ -17,12 +17,11 @@ beforeEach(() => {
 })
 
 describe('settingsService', () => {
-  it('gets each section from its own endpoint', async () => {
+  it('gets the general section from its own endpoint and no longer offers the sign-in modes', async () => {
     apiClient.get.mockResolvedValue({ data: envelope })
     await settingsService.getGeneral()
-    await settingsService.getOtp()
     expect(apiClient.get).toHaveBeenCalledWith('/settings/general')
-    expect(apiClient.get).toHaveBeenCalledWith('/settings/otp')
+    expect(settingsService).not.toHaveProperty('getOtp')
   })
 
   it('updates a section via PUT and logs only the payload SHAPE (never a value)', async () => {
@@ -40,14 +39,6 @@ describe('settingsService', () => {
     )
     expect(breadcrumb[2].payloadShape).toEqual(['platformName', 'contactEmail'])
     expect(JSON.stringify(breadcrumb[2])).not.toContain('example.sa')
-  })
-
-  it('updates a certificate template scoped by kind', async () => {
-    apiClient.put.mockResolvedValue({ data: envelope })
-    await settingsService.updateCertificate('advanced-winner', { issuanceEnabled: true })
-    expect(apiClient.put).toHaveBeenCalledWith('/settings/certificates/advanced-winner', {
-      issuanceEnabled: true,
-    })
   })
 
   it('manages KB files (list/upload/approve/remove/retrain)', async () => {
@@ -69,19 +60,10 @@ describe('settingsService', () => {
     expect(apiClient.post).toHaveBeenCalledWith('/settings/ai/retrain')
   })
 
-  it('lists + updates notification types and reads the audit log', async () => {
-    apiClient.get.mockResolvedValue({ data: envelope })
-    apiClient.put.mockResolvedValue({ data: envelope })
-    await settingsService.listNotificationTypes({ 'filter[category]': 'payment' })
-    await settingsService.updateNotificationType('PAY-02', { emailEnabled: false })
-    await settingsService.listNotificationAudit()
-    expect(apiClient.get).toHaveBeenCalledWith('/settings/notifications/types', {
-      params: { 'filter[category]': 'payment' },
-    })
-    expect(apiClient.put).toHaveBeenCalledWith('/settings/notifications/types/PAY-02', {
-      emailEnabled: false,
-    })
-    expect(apiClient.get).toHaveBeenCalledWith('/settings/notifications/audit', { params: {} })
+  it('no longer offers the notification template or audit calls (not built in phase 1)', () => {
+    expect(settingsService.listNotificationTypes).toBeUndefined()
+    expect(settingsService.updateNotificationType).toBeUndefined()
+    expect(settingsService.listNotificationAudit).toBeUndefined()
   })
 
   it('reports failures to Sentry and rethrows (never swallows)', async () => {

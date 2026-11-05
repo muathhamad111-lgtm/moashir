@@ -2,6 +2,7 @@ import { assessmentReject, fieldMessage } from '../assessments/assessmentRejecti
 import { isOpen } from '../assessments/assessmentsStore'
 import { dispatchQueuedJob } from '../mockQueue'
 import {
+  COMMITTEE_VISIBILITIES,
   EVIDENCE_TYPE_CATALOG,
   SLA_LIMITS,
   UPLOAD_LIMITS,
@@ -15,7 +16,22 @@ import { reasonError, throwIfErrors, trimmed } from './accreditedValidation'
 const INTEGER_RULES = {
   accreditedReviewSlaDays: SLA_LIMITS,
   uploadMaxFileMb: { min: 1, max: UPLOAD_LIMITS.maxFileMb },
+  generalUploadMaxFileMb: { min: 1, max: UPLOAD_LIMITS.maxFileMb },
   evidenceMaxFilesPerSub: { min: 1, max: UPLOAD_LIMITS.maxFilesPerSub },
+  advancedMinEntityAgeYears: { min: 0, max: 100 },
+  advancedInitialReviewSlaDays: SLA_LIMITS,
+}
+
+const SCORE_PATTERN = /^\d{1,3}(\.\d{1,2})?$/
+
+function scoreError(value) {
+  const text = typeof value === 'number' ? String(value) : value
+  const valid = typeof text === 'string' && SCORE_PATTERN.test(text) && Number(text) <= 100
+  return valid ? null : [fieldMessage('validation.between', { min: 0, max: 100 }, 'settings')]
+}
+
+function twoDecimals(value) {
+  return Number(value).toFixed(2)
 }
 
 function integerError(value, { min, max }) {
@@ -46,6 +62,16 @@ function validatedChanges(body) {
     const error = typesError(body.evidenceAllowedTypes)
     if (error) errors.evidenceAllowedTypes = error
     else changes.evidenceAllowedTypes = [...body.evidenceAllowedTypes]
+  }
+  if ('advancedDisqualificationScore' in body) {
+    const error = scoreError(body.advancedDisqualificationScore)
+    if (error) errors.advancedDisqualificationScore = error
+    else changes.advancedDisqualificationScore = twoDecimals(body.advancedDisqualificationScore)
+  }
+  if ('committeeEntityDataVisibility' in body) {
+    if (COMMITTEE_VISIBILITIES.includes(body.committeeEntityDataVisibility))
+      changes.committeeEntityDataVisibility = body.committeeEntityDataVisibility
+    else errors.committeeEntityDataVisibility = [fieldMessage('validation.invalid', {}, 'settings')]
   }
   const reason = reasonError(body.reason)
   if (reason) errors.reason = reason
@@ -79,8 +105,13 @@ export function assessmentSettingsResource() {
     accreditedReviewSlaDays: settings.accreditedReviewSlaDays,
     accreditedReviewSlaLimits: { ...SLA_LIMITS },
     uploadMaxFileMb: settings.uploadMaxFileMb,
+    generalUploadMaxFileMb: settings.generalUploadMaxFileMb,
     evidenceAllowedTypes: [...settings.evidenceAllowedTypes],
     evidenceMaxFilesPerSub: settings.evidenceMaxFilesPerSub,
     evidenceTypeCatalog: [...EVIDENCE_TYPE_CATALOG],
+    advancedMinEntityAgeYears: settings.advancedMinEntityAgeYears,
+    advancedDisqualificationScore: settings.advancedDisqualificationScore,
+    advancedInitialReviewSlaDays: settings.advancedInitialReviewSlaDays,
+    committeeEntityDataVisibility: settings.committeeEntityDataVisibility,
   }
 }

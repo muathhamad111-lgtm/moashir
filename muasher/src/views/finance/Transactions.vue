@@ -46,7 +46,7 @@ useHead({ title: () => t('finance.transactions.title') })
       <template v-if="can(PERMISSIONS.FINANCE_OPERATIONS_EXPORT)" #actions>
         <BaseButton
           variant="secondary"
-          icon="fa-solid fa-file-csv"
+          icon="doc"
           :loading="exporter.exporting.value"
           :disabled="status !== 'success'"
           @click="exporter.run(exportParams)"

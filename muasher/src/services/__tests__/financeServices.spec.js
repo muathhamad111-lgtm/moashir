@@ -148,4 +148,15 @@ describe('filesService', () => {
     ).rejects.toBeInstanceOf(UntrustedDownloadLink)
     expect(apiClient.get).not.toHaveBeenCalled()
   })
+
+  it('also follows the signed feedback report link of the export', async () => {
+    apiClient.get.mockResolvedValue({ data: new Blob(['%PDF']), headers: {} })
+    const url = `${window.location.origin}/api/v1/assessments/14/feedback-report/pdf?locale=ar&signature=abc`
+    const result = await filesService.fetchSignedFile({ url, fileName: 'feedback.pdf' })
+    expect(apiClient.get).toHaveBeenCalledWith(
+      '/assessments/14/feedback-report/pdf?locale=ar&signature=abc',
+      { responseType: 'blob' },
+    )
+    expect(result.fileName).toBe('feedback.pdf')
+  })
 })

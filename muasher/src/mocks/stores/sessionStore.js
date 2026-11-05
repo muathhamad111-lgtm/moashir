@@ -34,7 +34,6 @@ export function currentSessionUser() {
     name: descriptor.name ?? null,
     roles: descriptor.roles,
     entityId: descriptor.entityId ?? null,
-    committeeCycles: descriptor.committeeCycles ?? [],
     locale: descriptor.locale ?? null,
     superAdmin: descriptor.superAdmin === true,
   }

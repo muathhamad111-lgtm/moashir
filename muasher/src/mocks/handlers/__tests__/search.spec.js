@@ -49,6 +49,7 @@ describe('global search mock (GET /search)', () => {
       id: 9108,
       number: 'ACC-2026-000008',
       path: 'accredited',
+      pathLabel: { ar: 'التقييم المعتمد', en: 'Accredited assessment' },
       status: 'under-review',
       isFrozen: false,
       entity: {

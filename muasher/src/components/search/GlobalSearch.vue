@@ -19,6 +19,7 @@ import {
 import BaseButton from '@/components/ui/BaseButton.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import GlobalSearchOption from './GlobalSearchOption.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const RECENT = 'recent'
 const EDITABLE_TAGS = ['INPUT', 'TEXTAREA', 'SELECT']
@@ -223,7 +224,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onGlobalKeydown))
     @focusout="onFocusOut"
   >
     <div class="global-search__field">
-      <i class="fa-solid fa-magnifying-glass global-search__icon" aria-hidden="true"></i>
+      <AppIcon name="search" class="global-search__icon" />
       <label :for="inputId" class="global-search__label">{{ t('globalSearch.label') }}</label>
       <input
         :id="inputId"
@@ -253,7 +254,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onGlobalKeydown))
         :aria-label="t('globalSearch.clearQuery')"
         @click="onClearQuery"
       >
-        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        <AppIcon name="x" />
       </button>
       <kbd v-else class="global-search__shortcut" aria-hidden="true">{{
         t('globalSearch.shortcut')
@@ -302,7 +303,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onGlobalKeydown))
           {{ t('globalSearch.tooShort', { min: SEARCH_MIN_LENGTH }) }}
         </p>
         <p v-else-if="status === 'empty'" class="global-search__state">
-          <i class="fa-solid fa-magnifying-glass-minus" aria-hidden="true"></i>
+          <AppIcon name="search" />
           {{ t('globalSearch.empty', { query: term }) }}
         </p>
         <div
@@ -310,32 +311,21 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onGlobalKeydown))
           class="global-search__state global-search__state--error"
         >
           <p class="global-search__error">
-            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+            <AppIcon name="warning-triangle" />
             {{ t('globalSearch.error') }}
           </p>
-          <BaseButton
-            variant="secondary"
-            size="sm"
-            icon="fa-solid fa-rotate-right"
-            @click="onRetry"
-          >
+          <BaseButton variant="secondary" size="sm" icon="refresh" @click="onRetry">
             {{ t('globalSearch.retry') }}
           </BaseButton>
         </div>
       </template>
 
       <div class="global-search__footer">
-        <BaseButton
-          v-if="showRecent"
-          variant="ghost"
-          size="sm"
-          icon="fa-solid fa-trash-can"
-          @click="onClearRecent"
-        >
+        <BaseButton v-if="showRecent" variant="ghost" size="sm" icon="trash" @click="onClearRecent">
           {{ t('globalSearch.clearRecent') }}
         </BaseButton>
         <p v-else class="global-search__note">
-          <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+          <AppIcon name="shield-info" />
           {{ t('globalSearch.scopeNote') }}
         </p>
       </div>

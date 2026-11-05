@@ -8,6 +8,7 @@ import MoneyAmount from '@/components/payments/MoneyAmount.vue'
 import { SCAN_STATUSES } from '@/constants/finance'
 import { formatDate } from '@/utils/datetime'
 import { formatFileSize } from '@/utils/payments/amountFormat'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   refund: { type: Object, required: true },
@@ -65,7 +66,7 @@ const recordedAt = computed(() =>
       <div class="payment-facts__row">
         <dt>{{ t('finance.refund.evidence.label') }}</dt>
         <dd class="refund-record__evidence">
-          <i class="fa-solid fa-file-shield" aria-hidden="true"></i>
+          <AppIcon name="shield-info" />
           <bdi dir="ltr">{{ refund.evidence.name }}</bdi>
           <span class="payment-facts__muted">{{
             t('finance.common.sizeKb', { size: formatFileSize(refund.evidence.sizeBytes, locale) })
@@ -79,7 +80,7 @@ const recordedAt = computed(() =>
     <template #footer>
       <BaseButton
         variant="secondary"
-        icon="fa-solid fa-file-arrow-down"
+        icon="download"
         :disabled="!isClean"
         :loading="downloading"
         @click="emit('download')"

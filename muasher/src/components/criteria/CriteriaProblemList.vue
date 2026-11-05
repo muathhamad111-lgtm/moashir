@@ -3,6 +3,7 @@ import { toRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCriteria } from '@/composables/useCriteria'
 import { useCriteriaProblemLinks } from '@/composables/useCriteriaProblemLinks'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   problems: { type: Array, required: true },
@@ -37,7 +38,7 @@ function keyOf(problem, index) {
 <template>
   <section class="criteria-problems" role="alert">
     <header class="criteria-problems__head">
-      <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+      <AppIcon name="warning-triangle" />
       <h3 class="criteria-problems__title">{{ title || t('criteria.problems.title') }}</h3>
     </header>
     <ul class="criteria-problems__list">
@@ -50,7 +51,7 @@ function keyOf(problem, index) {
         <span class="criteria-problems__text">{{ describe(problem) }}</span>
         <RouterLink class="criteria-problems__fix" :to="linkFor(problem)" @click="emit('navigate')">
           {{ fixLabel(problem) }}
-          <i class="fa-solid fa-arrow-right u-flip-in-rtl" aria-hidden="true"></i>
+          <AppIcon name="arrow-right" />
         </RouterLink>
       </li>
     </ul>

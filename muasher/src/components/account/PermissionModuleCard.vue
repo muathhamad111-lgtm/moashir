@@ -1,5 +1,6 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   module: { type: String, required: true },
@@ -22,7 +23,7 @@ const { t } = useI18n()
     </header>
     <ul class="permission-module__list">
       <li v-for="item in items" :key="item.key" class="permission-module__item">
-        <i class="fa-solid fa-circle-check permission-module__icon" aria-hidden="true"></i>
+        <AppIcon name="check-circle" class="permission-module__icon" />
         <span class="permission-module__label">{{ localized(item.label) }}</span>
       </li>
     </ul>

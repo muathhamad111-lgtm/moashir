@@ -16,6 +16,7 @@ import {
   CRITERION_GROUP_ORDER,
   CRITERION_GROUPS,
 } from '@/constants/criteria'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -186,7 +187,7 @@ const [active] = form.defineField('active')
         />
       </div>
       <p v-if="isEdit" class="criteria-form__note" role="note">
-        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+        <AppIcon name="info-circle" />
         <span>{{ t('criteria.fields.orderNote') }}</span>
       </p>
     </div>

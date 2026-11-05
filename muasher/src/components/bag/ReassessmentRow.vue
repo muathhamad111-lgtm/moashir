@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   row: { type: Object, required: true },
@@ -53,7 +54,7 @@ const diffClass = computed(() => {
         <span class="reassessment-row__score-label">{{ $t('bag.comparison.before') }}</span>
         <span class="reassessment-row__score-value">{{ n(row.before, 'default') }}</span>
       </div>
-      <i class="fa-solid fa-arrow-right-long reassessment-row__arrow" aria-hidden="true"></i>
+      <AppIcon name="arrow-right" class="reassessment-row__arrow" />
       <div class="reassessment-row__score">
         <span class="reassessment-row__score-label">{{ $t('bag.comparison.after') }}</span>
         <span class="reassessment-row__score-value">{{ n(row.after, 'default') }}</span>

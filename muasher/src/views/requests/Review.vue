@@ -9,6 +9,7 @@ import { useEvidenceBundleRequest } from '@/composables/useEvidenceBundle'
 import { usePermissions } from '@/composables/usePermissions'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -26,7 +27,7 @@ useHead({ title: () => t('review.title') })
         class="request-detail__back"
         :to="{ name: ROUTE_NAMES.REQUESTS_DETAIL, params: { id: assessmentId } }"
       >
-        <i class="fa-solid fa-arrow-left-long u-flip-in-rtl" aria-hidden="true"></i>
+        <AppIcon name="arrow-left" />
         {{ t('review.backToRequest') }}
       </RouterLink>
       <div class="review-page__title-row">
@@ -37,7 +38,7 @@ useHead({ title: () => t('review.title') })
         <BaseButton
           v-if="can(PERMISSIONS.EVIDENCE_VIEW)"
           variant="secondary"
-          icon="fa-solid fa-file-zipper"
+          icon="docs"
           :loading="bundles.requesting.value"
           @click="bundles.requestBundle"
         >

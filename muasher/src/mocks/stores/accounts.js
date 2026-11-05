@@ -1,7 +1,9 @@
 import { ROLES } from '@/constants/roles'
 import { usersFixture } from '../fixtures/users'
 import { IDLE_TIMEOUT_MINUTES, SESSION_ABSOLUTE_HOURS } from '../fixtures/auth'
-import { COMMITTEE_CYCLE_ID } from '../fixtures/committee'
+import { COMMITTEE_SEAT_USERS } from '../fixtures/committeeScenarios'
+import { seatsOfUser } from './committee/committeeState'
+import { findCycle } from './award/cycleStore'
 import {
   findEntity,
   findEntityByOwnerEmail,
@@ -9,13 +11,13 @@ import {
   referenceOf,
 } from './entitiesStore'
 import { permissionsOf } from './sessionPermissions'
+import { qualificationsOf, requestScopeOf } from './staffUsers'
 import { findRole } from './permissionsStore'
 import { profileLocaleOf } from './preferencesStore'
 import { DEFAULT_LOCALE } from '@/constants/locales'
 
 const HOUR_MS = 60 * 60 * 1000
 const DEFAULT_ENTITY_ID = 5001
-const DEFAULT_COMMITTEE_CYCLE = COMMITTEE_CYCLE_ID
 
 function sameEmail(left, right) {
   return (
@@ -42,26 +44,35 @@ export function descriptorFor(account) {
   if (account.kind === 'entity') {
     return { id: account.record.id, roles: [ROLES.ENTITY], entityId: account.record.id, locale }
   }
-  return {
-    id: account.record.id,
-    roles: [...account.record.roles],
-    entityId: null,
-    committeeCycles: [],
-    locale,
-  }
+  return { id: account.record.id, roles: [...account.record.roles], entityId: null, locale }
 }
 
 export const COMMITTEE_PERSONA = 'committee_assessor'
 
 const COMMITTEE_PERSONA_DESCRIPTOR = {
-  id: 'jur-9404',
+  id: COMMITTEE_SEAT_USERS[0],
   roles: [ROLES.ASSESSOR],
   entityId: null,
-  committeeCycles: [DEFAULT_COMMITTEE_CYCLE],
+}
+
+function appointmentOf(seat) {
+  const cycle = findCycle(seat.cycleId)
+  return {
+    id: seat.id,
+    awardCycleId: cycle.id,
+    cycleName: { ...cycle.name },
+    cycleStatus: cycle.status,
+    status: seat.status,
+    isSubstitute: seat.replacesId !== null,
+    committeeStart: cycle.committeeStart,
+    committeeEnd: cycle.committeeEnd,
+  }
 }
 
 function committeeAppointmentsOf(descriptor) {
-  return (descriptor.committeeCycles ?? []).map((cycleId) => ({ cycleId, status: 'active' }))
+  return seatsOfUser(descriptor.id)
+    .filter((seat) => seat.status === 'active' && findCycle(seat.cycleId)?.status !== 'closed')
+    .map(appointmentOf)
 }
 
 export function descriptorForPersona(role) {
@@ -120,6 +131,8 @@ export function sessionPayload(descriptor) {
     entityId: entity?.id ?? null,
     entity: entity ? entitySummary(entity) : null,
     committeeAppointments: committeeAppointmentsOf(descriptor),
+    assessorQualifications: entity ? [] : qualificationsOf(descriptor.id),
+    requestScope: requestScopeOf(descriptor.id, { superAdmin: descriptor.superAdmin === true }),
     sessionExpiresAt: new Date(Date.now() + SESSION_ABSOLUTE_HOURS * HOUR_MS).toISOString(),
     idleTimeoutMinutes: entity ? IDLE_TIMEOUT_MINUTES.entity : IDLE_TIMEOUT_MINUTES.staff,
   }

@@ -7,7 +7,7 @@ async function fetchMaintenanceFlag() {
   let lastError = null
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
     try {
-      const { data } = await contentService.getLanding()
+      const { data } = await contentService.getStatus()
       return Boolean(data?.maintenance)
     } catch (error) {
       lastError = error

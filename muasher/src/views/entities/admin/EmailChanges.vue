@@ -84,15 +84,10 @@ const columns = computed(() =>
           v-if="item.status === EMAIL_CHANGE_STATUSES.AWAITING_APPROVAL"
           class="entities-admin__row-actions"
         >
-          <BaseButton size="sm" variant="primary" icon="fa-solid fa-check" @click="approve(item)">
+          <BaseButton size="sm" variant="primary" icon="check" @click="approve(item)">
             {{ t('entities.emailChanges.approve') }}
           </BaseButton>
-          <BaseButton
-            size="sm"
-            variant="danger"
-            icon="fa-solid fa-xmark"
-            @click="startReject(item)"
-          >
+          <BaseButton size="sm" variant="danger" icon="x" @click="startReject(item)">
             {{ t('entities.emailChanges.reject') }}
           </BaseButton>
         </span>

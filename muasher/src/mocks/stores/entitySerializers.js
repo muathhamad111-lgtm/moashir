@@ -1,5 +1,8 @@
 import { findCity, findRegion } from './regionsStore'
 import { findEntity, hasCompleteProfile, isDeleted, referenceOf } from './entitiesStore'
+import { profileCompletionOf } from './entityBoard/profileCompletion'
+import { findFile } from './finance/financeState'
+import { signedDownloadOf } from './finance/signedFiles'
 
 export const ENTITY_ACCESS = { FULL: 'full', CONTACT: 'contact', NONE: 'none' }
 
@@ -33,6 +36,10 @@ export function entityProfileOf(entity) {
     employeesCount: entity.employeesCount,
     annualBeneficiariesCount: entity.annualBeneficiariesCount,
     hasStrategicPlan: entity.hasStrategicPlan,
+    unifiedNumber: entity.unifiedNumber ?? null,
+    licenseNumber: entity.licenseNumber ?? null,
+    foundedOn: entity.foundedOn ?? null,
+    websiteUrl: entity.websiteUrl ?? null,
     profileCompleted: hasCompleteProfile(entity),
     verifiedAt: entity.verifiedAt,
     createdAt: entity.createdAt,
@@ -44,6 +51,7 @@ function entityContact(entity) {
     authorizedPersonName: entity.owner.name,
     officialEmail: entity.owner.email,
     phone: entity.owner.phone,
+    phoneVerified: Boolean(entity.owner.phoneVerifiedAt),
   }
 }
 
@@ -66,14 +74,27 @@ export function ownEntityResource(entity, awaitingChange = null) {
     marketingConsent: entity.marketingConsentAt !== null,
     marketingConsentAt: entity.marketingConsentAt,
     pendingEmailChange: pendingChange(awaitingChange),
+    logo: entity.logo ? { ...entity.logo } : null,
+    profileCompletion: profileCompletionOf(entity),
   }
 }
 
-function staffEntityResource(entity) {
+function staffLogoOf(entity, viewer) {
+  const file = entity.logo ? findFile(entity.logo.id) : null
+  if (!file || !viewer) return null
+  return {
+    id: file.id,
+    url: signedDownloadOf(viewer, file).url,
+    uploadedAt: entity.logo.uploadedAt,
+  }
+}
+
+function staffEntityResource(entity, viewer) {
   return {
     ...entitySummary(entity),
     ...entityProfileOf(entity),
     ...entityContact(entity),
+    logo: staffLogoOf(entity, viewer),
     marketingConsent: entity.marketingConsentAt !== null,
     deactivatedAt: entity.deactivatedAt,
     deactivationReason: entity.deactivationReason,

@@ -8,7 +8,7 @@ const { toggleLocale } = useLocale()
 </script>
 
 <template>
-  <BaseButton variant="ghost" size="sm" icon="fa-solid fa-language" @click="toggleLocale">
+  <BaseButton variant="ghost" size="sm" icon="language" @click="toggleLocale">
     {{ t('locale.switchLabel') }}
   </BaseButton>
 </template>

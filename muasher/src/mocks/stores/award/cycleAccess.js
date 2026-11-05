@@ -4,6 +4,7 @@ import { assessmentReject } from '../assessments/assessmentRejection'
 import { ACCESS, accessOf } from '../assessments/assessmentAccess'
 import { isInFiltering } from './advancedStates'
 import { isLinkedAssessor, isMember } from './cycleStore'
+import { seatOfUser } from '../committee/committeeState'
 
 export const AWARD_PERMISSIONS = {
   CYCLES_VIEW: 'award.cycles.view',
@@ -37,7 +38,9 @@ export function canView(user, cycle) {
   if (readsEveryCycle(user)) return true
   return (
     sessionCan(AWARD_PERMISSIONS.CYCLES_VIEW) &&
-    (isMember(cycle, user.id) || isLinkedAssessor(cycle, user.id))
+    (isMember(cycle, user.id) ||
+      isLinkedAssessor(cycle, user.id) ||
+      Boolean(seatOfUser(cycle.id, user.id)))
   )
 }
 

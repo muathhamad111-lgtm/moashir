@@ -3,7 +3,6 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { setActivePinia } from 'pinia'
 import EmailChangeDialog from '@/components/entities/profile/EmailChangeDialog.vue'
 import PermanentDeleteDialog from '@/components/entities/admin/PermanentDeleteDialog.vue'
-import EntityProfileEditor from '@/components/entities/profile/EntityProfileEditor.vue'
 import { entitiesService } from '@/services/entitiesService'
 import { entityLifecycleService } from '@/services/entityLifecycleService'
 import { useAuthStore } from '@/stores/auth'
@@ -28,26 +27,6 @@ const OTP = {
   expiresAt: '2099-01-01T00:00:00Z',
   resendAvailableAt: '2099-01-01T00:00:00Z',
 }
-const PROFILE = {
-  id: 5001,
-  reference: 'ENT-005001',
-  name: { ar: 'جمعية البر بالرياض', en: 'Al-Birr Charity' },
-  status: 'active',
-  authorizedPersonName: 'أحمد بن سالم القحطاني',
-  phone: null,
-  entityType: 'civil_association',
-  developmentSector: 'social',
-  orgSize: 'large',
-  foundingYear: 2009,
-  region: { id: 1 },
-  city: { id: 1 },
-  governanceGrade: '86.50',
-  employeesCount: 180,
-  annualBeneficiariesCount: 42000,
-  hasStrategicPlan: true,
-  marketingConsent: true,
-}
-
 async function settle() {
   for (let round = 0; round < 3; round += 1) {
     await new Promise((resolve) => setTimeout(resolve, 10))
@@ -166,47 +145,6 @@ describe('PermanentDeleteDialog', () => {
     body('.permanent-delete').dispatchEvent(new Event('submit'))
     await settle()
     expect(wrapper.emitted('erased')[0][0]).toMatchObject({ pseudonym: 'ERASED-007003' })
-    wrapper.unmount()
-  })
-})
-
-describe('EntityProfileEditor', () => {
-  const props = {
-    profile: PROFILE,
-    regionOptions: [{ value: '1', label: 'Riyadh Region' }],
-    cityOptionsFor: () => [{ value: '1', label: 'Riyadh' }],
-  }
-
-  it('reviews only the changed fields before an explicit save with the marketing choice', async () => {
-    entitiesService.updateMine.mockResolvedValue({
-      data: { ...PROFILE, governanceGrade: '91.25', marketingConsent: false },
-    })
-    const wrapper = mountWith(EntityProfileEditor, props)
-    await wrapper.find('form').trigger('submit')
-    await settle()
-    expect(wrapper.find('.change-review').exists()).toBe(false)
-
-    await wrapper.find('[name="governanceGrade"]').setValue('91.25')
-    await wrapper.find('[name="marketingConsent"]').setValue(false)
-    await wrapper.find('form').trigger('submit')
-    await settle()
-    expect(wrapper.findAll('.change-review__row').map((row) => row.find('th').text())).toEqual([
-      'Governance grade (%)',
-      'Agrees to marketing messages',
-    ])
-    expect(entitiesService.updateMine).not.toHaveBeenCalled()
-
-    await wrapper.find('.entity-form__actions .btn--primary').trigger('click')
-    await settle()
-    expect(entitiesService.updateMine).toHaveBeenCalledWith(
-      expect.objectContaining({
-        governanceGrade: '91.25',
-        marketingConsent: false,
-        regionId: 1,
-        cityId: 1,
-      }),
-    )
-    expect(wrapper.emitted('saved')).toHaveLength(1)
     wrapper.unmount()
   })
 })

@@ -16,6 +16,7 @@ import { usePaymentDetail } from '@/composables/usePaymentDetail'
 import { useSignedDownload } from '@/composables/useSignedDownload'
 import { PAYMENT_STATUSES } from '@/constants/payments'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   id: { type: String, required: true },
@@ -44,7 +45,7 @@ onMounted(load)
 <template>
   <section class="payment-detail">
     <RouterLink class="payment-detail__back" :to="{ name: ROUTE_NAMES.PAYMENTS_MINE }">
-      <i class="fa-solid fa-arrow-left-long u-flip-in-rtl" aria-hidden="true"></i>
+      <AppIcon name="arrow-left" />
       {{ t('finance.detail.back') }}
     </RouterLink>
 
@@ -55,7 +56,7 @@ onMounted(load)
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
     <EmptyState
       v-else-if="status === 'not-found'"
-      icon="fa-solid fa-receipt"
+      icon="receipt"
       :title="t('finance.detail.notFound')"
     />
 
@@ -75,14 +76,14 @@ onMounted(load)
       <PaymentNotice
         v-if="isPending"
         tone="info"
-        icon="fa-solid fa-hourglass-half"
+        icon="refresh-dots"
         :title="t('finance.detail.pendingTitle')"
         :message="t('finance.detail.pendingMessage')"
       />
       <PaymentNotice
         v-if="isOpen"
         tone="info"
-        icon="fa-solid fa-credit-card"
+        icon="credit-card"
         :title="t('finance.detail.openTitle')"
         :message="t('finance.detail.openMessage')"
       >

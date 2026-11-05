@@ -15,6 +15,7 @@ import { useFilteringQueue } from '@/composables/useFilteringQueue'
 import { CYCLE_FILTERING_STATUSES } from '@/constants/advanced'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -42,25 +43,25 @@ const statCards = computed(() => {
   return [
     {
       id: 'awaiting',
-      icon: 'fa-solid fa-hourglass-half',
+      icon: 'refresh-dots',
       value: value.counts.awaitingFiltering,
       label: t('filtering.stats.awaiting'),
     },
     {
       id: 'qualified',
-      icon: 'fa-solid fa-circle-check',
+      icon: 'check-circle',
       value: value.counts.qualifiedForCommittee,
       label: t('filtering.stats.qualified'),
     },
     {
       id: 'notQualified',
-      icon: 'fa-solid fa-circle-xmark',
+      icon: 'x',
       value: value.counts.notQualified,
       label: t('filtering.stats.notQualified'),
     },
     {
       id: 'below',
-      icon: 'fa-solid fa-arrow-down',
+      icon: 'arrow-down',
       value: value.belowThreshold,
       label: t('filtering.stats.below'),
     },
@@ -76,7 +77,7 @@ const decisionsClosed = computed(
     <header class="cycles-page__header">
       <div>
         <RouterLink class="cycle-editor__back" :to="{ name: ROUTE_NAMES.AWARD_FILTERING }">
-          <i class="fa-solid fa-arrow-left-long u-flip-in-rtl" aria-hidden="true"></i>
+          <AppIcon name="arrow-left" />
           {{ t('filtering.queue.back') }}
         </RouterLink>
         <h1 class="cycles-page__title">{{ t('filtering.queue.title') }}</h1>
@@ -86,7 +87,7 @@ const decisionsClosed = computed(
         </p>
       </div>
       <p v-if="summary" class="filtering-threshold" role="note">
-        <i class="fa-solid fa-gauge-high" aria-hidden="true"></i>
+        <AppIcon name="gauge" />
         {{ t('filtering.threshold.label', { value: summary.disqualificationScore }) }}
       </p>
     </header>

@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCriteria } from '@/composables/useCriteria'
 import { toHundredths, weightBudget } from '@/utils/weight'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   capacity: { type: String, required: true },
@@ -20,9 +21,9 @@ const capacityHundredths = computed(() => Math.max(1, toHundredths(props.capacit
 const filled = computed(() => Math.min(toHundredths(props.allocated), capacityHundredths.value))
 
 const ICONS = {
-  balanced: 'fa-solid fa-circle-check',
-  under: 'fa-solid fa-scale-unbalanced',
-  over: 'fa-solid fa-circle-exclamation',
+  balanced: 'check-circle',
+  under: 'scale',
+  over: 'warning-triangle',
 }
 
 const message = computed(() => {
@@ -58,11 +59,11 @@ const message = computed(() => {
       :aria-label="t('criteria.budget.progressLabel')"
     ></progress>
     <p class="weight-budget__status" role="status">
-      <i :class="ICONS[budget.state]" aria-hidden="true"></i>
+      <AppIcon :name="ICONS[budget.state]" />
       <span>{{ message }}</span>
     </p>
     <p v-if="equalDistribution" class="weight-budget__note">
-      <i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>
+      <AppIcon name="scale" />
       {{ t('criteria.budget.equalNote') }}
     </p>
   </section>

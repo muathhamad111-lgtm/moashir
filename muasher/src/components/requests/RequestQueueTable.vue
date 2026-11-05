@@ -6,13 +6,15 @@ import DataTable from '@/components/data-list/DataTable.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import DateStamp from '@/components/accredited/DateStamp.vue'
 import OverdueBadge from '@/components/accredited/OverdueBadge.vue'
+import PathBadge from '@/components/ui/PathBadge.vue'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
 
-defineProps({
+const props = defineProps({
   items: { type: Array, required: true },
   status: { type: String, required: true },
   errorMessage: { type: String, default: '' },
+  showsRegion: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['retry'])
@@ -21,8 +23,8 @@ const { t, locale } = useI18n()
 const columns = computed(() => [
   { key: 'number', label: t('requests.columns.number') },
   { key: 'entity', label: t('requests.columns.entity') },
-  { key: 'cycle', label: t('requests.columns.cycle') },
-  { key: 'region', label: t('requests.columns.region') },
+  { key: 'path', label: t('requests.columns.pathAndCycle') },
+  ...(props.showsRegion ? [{ key: 'region', label: t('requests.columns.region') }] : []),
   { key: 'status', label: t('requests.columns.status') },
   { key: 'assessor', label: t('requests.columns.assessor') },
   { key: 'submittedAt', label: t('requests.columns.submittedAt') },
@@ -49,12 +51,13 @@ const columns = computed(() => [
       </RouterLink>
     </template>
     <template #cell-entity="{ item }">{{ localizedText(item.entity?.name, locale) }}</template>
-    <template #cell-cycle="{ item }">
-      <span :class="{ 'request-queue__muted': !item.awardCycle }">{{
-        item.awardCycle
-          ? localizedText(item.awardCycle.name, locale)
-          : t('requests.paths.accredited')
-      }}</span>
+    <template #cell-path="{ item }">
+      <span class="request-queue__path">
+        <PathBadge v-if="item.path" :path="item.path" :label="item.pathLabel" compact />
+        <span v-if="item.awardCycle" class="request-queue__muted">{{
+          localizedText(item.awardCycle.name, locale)
+        }}</span>
+      </span>
     </template>
     <template #cell-region="{ item }">{{
       item.region ? localizedText(item.region.name, locale) : ''

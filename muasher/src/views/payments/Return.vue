@@ -95,12 +95,7 @@ onMounted(start)
           >
             {{ t('finance.return.tryAgain') }}
           </RouterLink>
-          <BaseButton
-            v-if="canVerifyAgain"
-            variant="secondary"
-            icon="fa-solid fa-rotate-right"
-            @click="start"
-          >
+          <BaseButton v-if="canVerifyAgain" variant="secondary" icon="refresh" @click="start">
             {{ t('finance.return.checkAgain') }}
           </BaseButton>
           <RouterLink class="payment-return__link" :to="{ name: ROUTE_NAMES.PAYMENTS_MINE }">{{

@@ -25,9 +25,9 @@ export function canUseGlobalSearch(can) {
 }
 
 export const SEARCH_TYPE_ICONS = {
-  [SEARCH_TYPES.entities]: 'fa-solid fa-building-ngo',
-  [SEARCH_TYPES.requests]: 'fa-solid fa-inbox',
-  [SEARCH_TYPES.users]: 'fa-solid fa-user',
+  [SEARCH_TYPES.entities]: 'building',
+  [SEARCH_TYPES.requests]: 'inbox',
+  [SEARCH_TYPES.users]: 'user',
 }
 
 const DESTINATIONS = {

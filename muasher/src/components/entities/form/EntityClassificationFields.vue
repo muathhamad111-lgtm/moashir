@@ -4,6 +4,10 @@ import FieldInput from '@/components/form/FieldInput.vue'
 import FieldSelect from '@/components/form/FieldSelect.vue'
 import { useEntityOptions } from '@/composables/useEntityOptions'
 
+defineProps({
+  showFoundingYear: { type: Boolean, default: true },
+})
+
 const { t } = useI18n()
 const { entityTypeOptions, sectorOptions, orgSizeOptions } = useEntityOptions()
 </script>
@@ -31,6 +35,7 @@ const { entityTypeOptions, sectorOptions, orgSizeOptions } = useEntityOptions()
         required
       />
       <FieldInput
+        v-if="showFoundingYear"
         name="foundingYear"
         inputmode="numeric"
         :label="t('entities.fields.foundingYear')"

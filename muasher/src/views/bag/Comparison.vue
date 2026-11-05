@@ -7,6 +7,7 @@ import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import ReassessmentRow from '@/components/bag/ReassessmentRow.vue'
 import { useBagReassessment } from '@/composables/useBag'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t, n } = useI18n()
 
@@ -47,7 +48,7 @@ onMounted(load)
       <p class="bag-comparison__intro">{{ t('bag.comparison.intro') }}</p>
 
       <p v-if="reference && reassessment" class="bag-comparison__versions">
-        <i class="fa-solid fa-lock bag-comparison__versions-icon" aria-hidden="true"></i>
+        <AppIcon name="lock" class="bag-comparison__versions-icon" />
         {{
           t('bag.comparison.versions', {
             refVersion: n(reference.version, 'id'),
@@ -66,10 +67,7 @@ onMounted(load)
               {{ t('bag.comparison.percent', { value: n(overall.beforePercent, 'default') }) }}
             </span>
           </div>
-          <i
-            class="fa-solid fa-arrow-right-long bag-comparison__overall-arrow"
-            aria-hidden="true"
-          ></i>
+          <AppIcon name="arrow-right" class="bag-comparison__overall-arrow" />
           <div class="bag-comparison__overall-score">
             <span class="bag-comparison__overall-label">{{
               t('bag.comparison.overallAfter')

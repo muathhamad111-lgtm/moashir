@@ -20,6 +20,7 @@ import { useSignedDownload } from '@/composables/useSignedDownload'
 import { useToast } from '@/composables/useToast'
 import { evidenceService } from '@/services/evidenceService'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -59,7 +60,7 @@ onMounted(filtering.load)
         class="request-detail__back"
         :to="{ name: ROUTE_NAMES.AWARD_FILTERING_QUEUE, params: { id: cycleId } }"
       >
-        <i class="fa-solid fa-arrow-left-long u-flip-in-rtl" aria-hidden="true"></i>
+        <AppIcon name="arrow-left" />
         {{ t('filtering.detail.back') }}
       </RouterLink>
       <h1 class="request-detail__title">{{ t('filtering.detail.title') }}</h1>
@@ -74,13 +75,13 @@ onMounted(filtering.load)
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="filtering.load" />
     <EmptyState
       v-else-if="status === 'missing'"
-      icon="fa-regular fa-folder-open"
+      icon="folder"
       :title="t('filtering.detail.missingTitle')"
       :message="t('filtering.detail.missingMessage')"
     />
     <EmptyState
       v-else-if="status === 'blocked'"
-      icon="fa-solid fa-lock"
+      icon="lock"
       :title="t('filtering.detail.blockedTitle')"
       :message="errorMessage || t('filtering.detail.blockedMessage')"
     />
@@ -118,14 +119,14 @@ onMounted(filtering.load)
           <div class="filtering-actions__buttons">
             <BaseButton
               variant="primary"
-              icon="fa-solid fa-circle-check"
+              icon="check-circle"
               :disabled="!windowOpen"
               @click="dialogMode = 'qualify'"
               >{{ t('filtering.decision.qualify.label') }}</BaseButton
             >
             <BaseButton
               variant="danger"
-              icon="fa-solid fa-circle-xmark"
+              icon="x"
               :disabled="!windowOpen"
               @click="dialogMode = 'disqualify'"
               >{{ t('filtering.decision.disqualify.label') }}</BaseButton

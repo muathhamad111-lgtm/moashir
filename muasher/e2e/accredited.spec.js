@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 import { seedPreferences, seedSignedIn } from './support/session'
 import { guardMoyasar } from './support/moyasarGuard'
 
-const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d|Font Awesome/i
+const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d/i
 const PDF = Buffer.from('%PDF-1.4\n% Accredited evidence\n%%EOF\n')
 const EICAR = Buffer.from(
   '%PDF-1.4\nX5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*\n%%EOF\n',
@@ -53,7 +53,7 @@ function trackConsole(page) {
 }
 
 async function openMain(page, index) {
-  await page.locator('.criteria-tree__open').nth(index).click()
+  await page.locator('.station-row__button').nth(index).click()
 }
 
 function pdf(name, content = PDF) {
@@ -73,20 +73,14 @@ test('a guest sees the public price before VAT, the VAT and the total with a sig
   await expect(page.locator('.accredited-current')).toHaveCount(0)
 })
 
-test('the entity sees its current request and the latest result, and cannot pay twice', async ({
+test('the entity with a draft request is sent to its form, and cannot pay twice', async ({
   page,
 }, testInfo) => {
   const errors = trackConsole(page)
   await signIn(page, testInfo, ENTITIES.namaa)
   await page.goto('/assessment/accredited')
-  const current = page.locator('.accredited-current')
-  await expect(current).toContainText('ACC-2026-000004')
-  await expect(current).toContainText('ACC-2026-000003')
-  await expect(current.locator('.accredited-current__link')).toHaveCount(2)
-  await page.screenshot({
-    path: `test-results/accredited-intro-${suffixOf(testInfo)}.png`,
-    fullPage: true,
-  })
+  await expect(page).toHaveURL(/\/assessment\/accredited\/form\/9101$/)
+  await expect(page.locator('.request-card')).toContainText('ACC-2026-000004')
 
   await page.goto('/assessment/accredited/pay')
   await page.locator('.checkout__start .btn--primary').click()
@@ -229,9 +223,9 @@ test('a paid accredited order opens a draft request for the entity', async ({ pa
   await page.locator('.fake-moyasar__pay').click()
   await expect(page.locator('.payment-outcome--paid')).toBeVisible()
   await page.goto('/assessment/accredited')
-  await expect(page.locator('.accredited-current')).toContainText(/ACC-2026-0000\d\d/)
-  await page.locator('.accredited-current__link').first().click()
-  await expect(page.locator('.accredited-summary')).toContainText('Draft')
+  await expect(page).toHaveURL(/\/assessment\/accredited\/form\/\d+$/)
+  await expect(page.locator('.request-card')).toContainText(/ACC-2026-0000\d\d/)
+  await expect(page.locator('.request-card')).toContainText('Draft')
   expect(leaks).toEqual([])
 })
 
@@ -240,7 +234,7 @@ test('feedback report and certificates remain reachable for the entity', async (
 }, testInfo) => {
   await signIn(page, testInfo, ENTITIES.albirr)
   await page.goto('/reports/feedback/9102')
-  await expect(page.locator('.feedback-report__item').first()).toBeVisible()
+  await expect(page.locator('.feedback-report__sub').first()).toBeVisible()
   await page.goto('/certificates')
-  await expect(page.locator('.certificates__item').first()).toBeVisible()
+  await expect(page.locator('.certificate-card').first()).toBeVisible()
 })

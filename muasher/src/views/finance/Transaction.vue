@@ -21,6 +21,7 @@ import { useTransactionDetail } from '@/composables/useTransactionDetail'
 import { useSignedDownload } from '@/composables/useSignedDownload'
 import { useToast } from '@/composables/useToast'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   id: { type: String, required: true },
@@ -59,7 +60,7 @@ onMounted(load)
 <template>
   <section class="finance-page transaction-detail">
     <RouterLink class="transaction-detail__back" :to="{ name: ROUTE_NAMES.FINANCE_TRANSACTIONS }">
-      <i class="fa-solid fa-arrow-left-long u-flip-in-rtl" aria-hidden="true"></i>
+      <AppIcon name="arrow-left" />
       {{ t('finance.transaction.back') }}
     </RouterLink>
 
@@ -70,7 +71,7 @@ onMounted(load)
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
     <EmptyState
       v-else-if="status === 'not-found'"
-      icon="fa-solid fa-money-bill-transfer"
+      icon="sar"
       :title="t('finance.transaction.notFound')"
     />
 
@@ -95,7 +96,7 @@ onMounted(load)
           <BaseButton
             v-if="canRecordRefund"
             variant="primary"
-            icon="fa-solid fa-rotate-left"
+            icon="undo"
             @click="refundOpen = true"
           >
             {{ t('finance.refund.open') }}
@@ -103,7 +104,7 @@ onMounted(load)
           <BaseButton
             v-if="canSettle"
             variant="secondary"
-            icon="fa-solid fa-user-shield"
+            icon="user-shield"
             @click="settleOpen = true"
           >
             {{ t('finance.settle.open') }}
@@ -130,12 +131,9 @@ onMounted(load)
             @download="downloads.download('receipt', detail.requestReceiptLink)"
           >
             <template v-if="canReissue" #actions>
-              <BaseButton
-                variant="ghost"
-                icon="fa-solid fa-arrows-rotate"
-                @click="reissueOpen = true"
-                >{{ t('finance.receipt.reissue') }}</BaseButton
-              >
+              <BaseButton variant="ghost" icon="refresh" @click="reissueOpen = true">{{
+                t('finance.receipt.reissue')
+              }}</BaseButton>
             </template>
           </ReceiptCard>
           <RefundRecord

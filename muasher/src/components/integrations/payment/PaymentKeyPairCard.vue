@@ -13,6 +13,7 @@ import ProviderActionFeedback from '@/components/integrations/ProviderActionFeed
 import { paymentIntegrationService } from '@/services/paymentIntegrationService'
 import { PROVIDER_ACTION_STATES } from '@/composables/useProviderAction'
 import { integrationStatusOf } from '@/utils/integrations/integrationStatus'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   mode: { type: String, required: true },
@@ -72,10 +73,7 @@ const runTest = () => paymentIntegrationService.testConnection(props.mode)
     </div>
     <div class="key-pair__webhook">
       <Badge :variant="pair.webhook ? 'success' : 'warning'">
-        <i
-          :class="pair.webhook ? 'fa-solid fa-link' : 'fa-solid fa-link-slash'"
-          aria-hidden="true"
-        ></i>
+        <AppIcon :name="pair.webhook ? 'link' : 'unlink'" />
         {{
           t(
             pair.webhook
@@ -87,7 +85,7 @@ const runTest = () => paymentIntegrationService.testConnection(props.mode)
       <BaseButton
         variant="ghost"
         size="sm"
-        icon="fa-solid fa-satellite-dish"
+        icon="broadcast"
         :loading="registering"
         :disabled="!pair.configured"
         @click="webhook.register(mode)"

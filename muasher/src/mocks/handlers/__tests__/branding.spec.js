@@ -70,11 +70,11 @@ describe('branding mock (settings.branding.manage — hard-locked)', () => {
 
   it('stores one logo per background variant; only the global reset returns both to the brand default', async () => {
     signInAs(['system_admin'])
-    storeBrandingLogo('dark', 'data:image/svg+xml;base64,PHN2Zy8+')
-    storeBrandingLogo('light', 'data:image/png;base64,TElHSFQ=')
+    storeBrandingLogo('dark', new File(['<svg/>'], 'dark.svg', { type: 'image/svg+xml' }))
+    storeBrandingLogo('light', new File(['png'], 'light.png', { type: 'image/png' }))
     const theme = await call('GET', '/settings/branding')
-    expect(theme.body.data.logoDark.url).toMatch(/^data:image\/svg\+xml/)
-    expect(theme.body.data.logoLight.url).toMatch(/^data:image\/png/)
+    expect(theme.body.data.logoDark.url).toMatch(/^\/api\/v1\/content\/files\/[0-9a-f-]{36}$/)
+    expect(theme.body.data.logoLight.fileId).toBeTruthy()
     const reset = await call('POST', '/settings/branding/reset')
     expect(reset.body.data.logoDark).toBeNull()
     expect(reset.body.data.logoLight).toBeNull()
@@ -88,6 +88,17 @@ describe('branding mock (settings.branding.manage — hard-locked)', () => {
       'POST /api/v1/settings/branding/logo',
       'POST /api/v1/settings/branding/reset',
     ])
+  })
+
+  it('requires a reason from the Super Admin before any identity change', async () => {
+    seedMockSession({ id: 1, roles: [], superAdmin: true })
+    const missing = await call('PUT', '/settings/branding', { accentToken: 'teal' })
+    expect(missing.status).toBe(422)
+    expect(missing.body.code).toBe('reason_required')
+    const short = await call('PUT', '/settings/branding', { accentToken: 'teal', reason: 'short' })
+    expect(short.body.errors).toHaveProperty('reason')
+    const accepted = await call('PUT', '/settings/branding', { accentToken: 'teal', reason: 'Approved by the identity committee' })
+    expect(accepted.body.data.accentToken).toBe('teal')
   })
 
   it('rejects the global reset from non-administrators with 403', async () => {
@@ -120,7 +131,9 @@ describe('permissions mock — locked key', () => {
   it('refuses to grant settings.branding.manage to another role', async () => {
     signInAs(['system_admin'])
     const { body } = await retry('GET', '/permissions')
-    const locked = body.data.permissions.find((permission) => permission.key === 'settings.branding.manage')
+    const locked = body.data.permissions.find(
+      (permission) => permission.key === 'settings.branding.manage',
+    )
     expect(locked.lockedToRoles).toEqual(['system_admin'])
     const res = await retry(
       'PUT',

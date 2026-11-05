@@ -27,8 +27,10 @@ describe('feedbackReportService', () => {
 
   it('exports a report', async () => {
     apiClient.post.mockResolvedValue({ data: envelope })
-    await feedbackReportService.export(9102)
-    expect(apiClient.post).toHaveBeenCalledWith('/assessments/9102/feedback-report/export', {})
+    await feedbackReportService.export(9102, { locale: 'en' })
+    expect(apiClient.post).toHaveBeenCalledWith('/assessments/9102/feedback-report/export', {
+      locale: 'en',
+    })
   })
 
   it('reports failures to Sentry and rethrows', async () => {

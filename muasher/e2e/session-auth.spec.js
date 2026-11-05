@@ -1,10 +1,8 @@
-/* eslint-disable playwright/no-wait-for-timeout */
 import process from 'node:process'
 import { test, expect } from '@playwright/test'
 import { seedPreferences } from './support/session'
+import { DEV_TOTP_CODE, openSignIn, signInEntity, submitSignIn, typeCode } from './support/signIn'
 
-const MOCK_PASSWORD = 'Muasher@2026'
-const DEV_TOTP_CODE = '246810'
 const STAFF_ENROLLED = 'yasser.alghamdi@moashir.example.sa'
 const STAFF_NOT_ENROLLED = 'laura.bennett@moashir.example.sa'
 const ENTITY_EMAIL = 'info@albirr-riyadh.example.sa'
@@ -13,47 +11,10 @@ function localeOf(testInfo) {
   return testInfo.project.name === 'chromium-en-ltr' ? 'en' : 'ar'
 }
 
-async function openPasswordLogin(page) {
-  await page.goto('/auth/login')
-  for (let attempt = 0; attempt < 8; attempt += 1) {
-    if (
-      await page
-        .locator('.auth-form__mode')
-        .first()
-        .isVisible()
-        .catch(() => false)
-    )
-      break
-    const retry = page.locator('.error-state__retry')
-    if (await retry.isVisible().catch(() => false)) await retry.click()
-    await page.waitForTimeout(500)
-  }
-  await page.locator('.auth-form__mode').first().click()
-}
-
-async function submitPassword(page, email, nextSelector) {
-  for (let attempt = 0; attempt < 6; attempt += 1) {
-    await page.locator('[name="officialEmail"]').fill(email)
-    await page.locator('[name="password"]').fill(MOCK_PASSWORD)
-    await page.locator('form button[type="submit"]').click()
-    if (
-      await page
-        .locator(nextSelector)
-        .first()
-        .waitFor({ timeout: 2500 })
-        .then(
-          () => true,
-          () => false,
-        )
-    )
-      return
-  }
-}
-
-async function typeCode(page, code) {
-  const boxes = page.locator('.otp-input__box')
-  await boxes.first().click()
-  await page.keyboard.type(code)
+async function signInStaff(page, email) {
+  await openSignIn(page)
+  await submitSignIn(page, email)
+  await expect(page.locator('.auth-mfa').first()).toBeVisible()
 }
 
 async function browserStorage(page) {
@@ -72,15 +33,14 @@ test('entity password sign-in opens a cookie session with nothing in browser sto
   page,
 }, testInfo) => {
   await seedPreferences(page, { locale: localeOf(testInfo) })
-  await openPasswordLogin(page)
-  await submitPassword(page, ENTITY_EMAIL, '.navbar--app')
+  await signInEntity(page, ENTITY_EMAIL)
   await expect(page).toHaveURL(/\/dashboard/)
   expect(await browserStorage(page)).toEqual([])
   const cookies = await page.context().cookies()
   expect(cookies.map((cookie) => cookie.name)).toContain('XSRF-TOKEN')
 
   await page.reload()
-  await expect(page.locator('.navbar--app')).toBeVisible()
+  await expect(page.locator('.portal-top-bar')).toBeVisible()
   await expect(page).toHaveURL(/\/dashboard/)
 })
 
@@ -88,14 +48,12 @@ test('staff sign-in continues to the TOTP challenge before the workspace opens',
   page,
 }, testInfo) => {
   await seedPreferences(page, { locale: localeOf(testInfo) })
-  await openPasswordLogin(page)
-  await submitPassword(page, STAFF_ENROLLED, '.auth-mfa')
+  await signInStaff(page, STAFF_ENROLLED)
   await expect(page).toHaveURL(/\/auth\/mfa/)
   await page.goto('/dashboard')
   await expect(page).toHaveURL(/\/auth\/login/)
 
-  await openPasswordLogin(page)
-  await submitPassword(page, STAFF_ENROLLED, '.auth-mfa')
+  await signInStaff(page, STAFF_ENROLLED)
   await typeCode(page, DEV_TOTP_CODE)
   await expect(page.locator('.navbar--app')).toBeVisible()
   expect(await browserStorage(page)).toEqual([])
@@ -105,8 +63,7 @@ test('first staff sign-in enrols TOTP, shows the recovery codes once, then opens
   page,
 }, testInfo) => {
   await seedPreferences(page, { locale: localeOf(testInfo) })
-  await openPasswordLogin(page)
-  await submitPassword(page, STAFF_NOT_ENROLLED, '.auth-mfa')
+  await signInStaff(page, STAFF_NOT_ENROLLED)
   await expect(page.locator('.auth-mfa__qr-image')).toBeVisible()
   await expect(page.locator('.auth-mfa__manual-key')).not.toBeEmpty()
   await typeCode(page, DEV_TOTP_CODE)
@@ -117,10 +74,9 @@ test('first staff sign-in enrols TOTP, shows the recovery codes once, then opens
 
 test('signing out ends the cookie session', async ({ page }, testInfo) => {
   await seedPreferences(page, { locale: localeOf(testInfo) })
-  await openPasswordLogin(page)
-  await submitPassword(page, ENTITY_EMAIL, '.navbar--app')
-  await page.locator('.navbar__avatar').click()
-  await page.getByRole('menuitem').last().click()
+  await signInEntity(page, ENTITY_EMAIL)
+  await page.locator('.account-menu__chip').click()
+  await page.locator('.account-menu__panel .portal-menu-entry--danger').click()
   await expect(page).toHaveURL(/\/auth\/login/)
   await page.goto('/dashboard')
   await expect(page).toHaveURL(/\/auth\/login/)

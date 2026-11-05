@@ -2,6 +2,7 @@ import { HttpResponse } from 'msw'
 import { financeState, findFile, persistFinanceState } from './financeState'
 import { financeReject } from './financeRejection'
 import { nowIso } from './paymentLifecycle'
+import { FIXTURE_ENTITY_LOGO_FILE_ID, fixtureEntityLogoBytes } from '../../fixtures/entityLogos'
 
 export const SIGNED_LINK_MINUTES = 5
 
@@ -55,6 +56,7 @@ export function signedDownloadOf(user, file) {
 }
 
 function placeholderContent(file) {
+  if (file.id === FIXTURE_ENTITY_LOGO_FILE_ID) return fixtureEntityLogoBytes()
   if (file.mimeType === 'text/csv') return '\uFEFFreference,status\n'
   if (file.mimeType === 'application/pdf') return `%PDF-1.4\n% ${file.name}\n%%EOF\n`
   return new Uint8Array([0x89, 0x50, 0x4e, 0x47])

@@ -2,6 +2,7 @@
 import { computed, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDisclosure } from '@/composables/useDisclosure'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: [String, Number, Array, null], default: null },
@@ -149,7 +150,7 @@ function onInputKeydown(event) {
           :aria-label="t('components.searchSelect.removeTag', { label: option.label })"
           @click.stop="removeTag(option)"
         >
-          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+          <AppIcon name="x" />
         </button>
       </span>
       <span v-if="!multiple && singleLabel && !isOpen" class="select2-search__value">
@@ -172,7 +173,7 @@ function onInputKeydown(event) {
         @focus="open"
         @keydown="onInputKeydown"
       />
-      <i class="fa-solid fa-chevron-down select2-search__caret" aria-hidden="true"></i>
+      <AppIcon name="chevron-down" class="select2-search__caret" />
     </div>
     <ul
       v-if="isOpen"
@@ -205,7 +206,7 @@ function onInputKeydown(event) {
           @click="select(option)"
           @mousemove="highlightedIndex = index"
         >
-          {{ option.label }}
+          <slot name="option" :option="option">{{ option.label }}</slot>
           <span v-if="option.badge" class="select2-search__badge">{{ option.badge }}</span>
         </button>
       </li>

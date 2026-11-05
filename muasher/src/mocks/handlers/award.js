@@ -11,7 +11,7 @@ import { findAssessment } from '../stores/assessments/assessmentsStore'
 import { assessmentResource } from '../stores/assessments/selfSerializers'
 import { normalizeSearchText } from '../stores/searchIndex'
 import { runAccreditedSchedule } from '../stores/accredited/scheduler'
-import { findCycle, runningCycle } from '../stores/award/cycleStore'
+import { runningCycle } from '../stores/award/cycleStore'
 import {
   authorizeAdvancedEntity,
   authorizeCreateCycle,
@@ -51,27 +51,12 @@ import {
   applyForAdvanced,
   deleteAdvancedDraft,
 } from '../stores/award/advancedEntity'
+import { boundCycle, cycleRoute } from './awardRouting'
 
 const CYCLES = '/api/v1/award/cycles'
 const CYCLE = `${CYCLES}/:cycle`
 const FILTERING = `${CYCLE}/filtering/:assessment`
 const NUMERIC_ID = /^\d+$/
-
-function cycleRoute(resolve) {
-  const route = assessmentRoute(resolve)
-  return (info) =>
-    NUMERIC_ID.test(info.params.cycle) &&
-    (!info.params.assessment || NUMERIC_ID.test(info.params.assessment))
-      ? route(info)
-      : undefined
-}
-
-function boundCycle(params) {
-  runAccreditedSchedule()
-  const cycle = findCycle(params.cycle)
-  if (!cycle) throw assessmentReject.notFound()
-  return cycle
-}
 
 function managedRoute(act) {
   return cycleRoute(async ({ params, request }) => {

@@ -11,6 +11,13 @@ import { announceInitialAssessorAssigned } from '../award/awardNotices'
 import { activeAssessors, isActiveAssessor } from './staffDirectory'
 import { assertNotFrozen } from './entityWorkflow'
 import { isPositiveInteger, reasonError, throwIfErrors, trimmed } from './accreditedValidation'
+import { qualificationsOf } from '../staffUsers'
+
+const QUALIFICATION_FOR = { accredited: 'accredited', advanced: 'advanced_initial' }
+
+function isQualified(assessorId, path) {
+  return qualificationsOf(assessorId).includes(QUALIFICATION_FOR[path])
+}
 
 const SEARCH_MAX = 100
 const LIST_MAX = 100
@@ -29,26 +36,39 @@ function cycleOf(record) {
   return record && isAdvanced(record) ? findCycle(record.awardCycleId) : null
 }
 
-function candidatesFor(record) {
+function candidatesFor(record, path) {
+  const qualified = activeAssessors().filter((staff) => isQualified(staff.id, path))
   const cycle = cycleOf(record)
-  if (!cycle) return activeAssessors()
-  return activeAssessors().filter(
+  if (!cycle) return qualified
+  return qualified.filter(
     (staff) => isInitialAssessor(cycle, staff.id) && !isMember(cycle, staff.id),
   )
 }
 
-export function eligibleAssessors(user, query) {
+function scopedRecordOf(assessmentId, followed) {
+  const record = assessmentId ? findAssessment(assessmentId) : null
+  if (assessmentId && (!record || !followed.includes(record.path)))
+    throw assessmentReject.validation({
+      assessmentId: [fieldMessage('validation.invalid', {}, 'assessorId')],
+    })
+  return record
+}
+
+export function eligibleAssessors(user, query, followed) {
   const errors = {}
   const assessmentId = query.get('assessmentId')
+  const path = query.get('path')
   if (assessmentId && !isPositiveInteger(assessmentId))
     errors.assessmentId = [fieldMessage('validation.integer', {}, 'assessorId')]
+  if (path && !followed.includes(path))
+    errors.path = [fieldMessage('validation.invalid', {}, 'filter')]
   if ((query.get('search') ?? '').length > SEARCH_MAX)
     errors.search = [fieldMessage('validation.max_chars', { max: SEARCH_MAX }, 'filter')]
   throwIfErrors(errors)
-  const record = assessmentId ? findAssessment(assessmentId) : null
+  const record = scopedRecordOf(assessmentId, followed)
   const currentId = record ? (activeAssignment(record)?.assessorId ?? null) : null
   const needle = (query.get('search') ?? '').trim().toLowerCase()
-  return candidatesFor(record)
+  return candidatesFor(record, record?.path ?? path ?? followed[0])
     .filter((staff) => staff.id !== user.id && staff.id !== currentId)
     .filter((staff) => !needle || staff.name.toLowerCase().includes(needle))
     .slice(0, LIST_MAX)
@@ -69,6 +89,8 @@ function assertAssessor(user, record, assessorId) {
   if (assessorId === user.id) throw assessmentReject.coded(422, 'sod_self_assignment', 'assessorId')
   if (!isActiveAssessor(assessorId))
     throw assessmentReject.coded(422, 'assessor.invalid', 'assessorId')
+  if (!isQualified(assessorId, record.path))
+    throw assessmentReject.notQualified(QUALIFICATION_FOR[record.path], record.path)
   const cycle = cycleOf(record)
   if (!cycle) return
   if (isMember(cycle, assessorId)) throw assessmentReject.coded(422, 'sod_conflict', 'assessorId')

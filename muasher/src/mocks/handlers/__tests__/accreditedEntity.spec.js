@@ -40,6 +40,7 @@ const ASSESSMENT_KEYS = [
   'is_open',
   'number',
   'path',
+  'path_label',
   'result',
   'scale_kind',
   'status',
@@ -132,11 +133,16 @@ describe('accredited mock — entity reads', () => {
     expect(status).toBe(200)
     expect(keys(body.data)).toEqual(['active', 'awaiting_payment', 'latest_closed'])
     expect(body.data.awaiting_payment).toBeNull()
-    expect(keys(body.data.active)).toEqual(ASSESSMENT_KEYS)
+    expect(keys(body.data.active)).toEqual([...ASSESSMENT_KEYS, 'progress'].sort())
+    expect(keys(body.data.active.progress)).toEqual(['remaining', 'subs_complete', 'subs_total'])
+    expect(body.data.active.progress.subs_complete).toBe(
+      body.data.active.progress.subs_total - body.data.active.progress.remaining.length,
+    )
     expect(body.data.active).toMatchObject({
       id: 9101,
       number: 'ACC-2026-000004',
       path: 'accredited',
+      path_label: { ar: 'التقييم المعتمد', en: 'Accredited assessment' },
       status: 'draft',
       is_open: true,
       result: null,
@@ -361,6 +367,7 @@ describe('accredited mock — results, opening, prices', () => {
       id: 9101,
       number: 'ACC-2026-000004',
       path: 'accredited',
+      path_label: { ar: 'التقييم المعتمد', en: 'Accredited assessment' },
       status: 'draft',
       is_frozen: false,
       available: false,

@@ -14,6 +14,7 @@ import { ADVANCED_STATES, isWithdrawable } from './advancedStates'
 import { findCycle } from './cycleStore'
 import { awardReject } from './awardRejection'
 import { announceReturned, announceWithdrawn } from './awardNotices'
+import { releaseCommitteeWork } from '../committee/committeeRelease'
 
 const NOTES = { MIN: 10, MAX: 2000 }
 const EXPIRY_OUTCOMES = ['continue_as_submitted', 'decline']
@@ -110,6 +111,7 @@ export function withdrawRequest(user, record, body) {
   record.transitions.push(
     transition(from, ADVANCED_STATES.WITHDRAWN, 'withdraw', at, ACTORS.STAFF, visibleActorId(user)),
   )
+  releaseCommitteeWork(record, at)
   announceWithdrawn(record)
   return record
 }

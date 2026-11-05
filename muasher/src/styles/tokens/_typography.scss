@@ -1,6 +1,6 @@
 $font-family-latin: 'Montserrat';
 $font-family-arabic-body: 'IBM Plex Sans Arabic';
-$font-family-arabic-heading: 'Tajawal';
+$font-family-arabic-heading: 'Alexandria';
 $font-fallback: system-ui, sans-serif;
 
 $font-arabic: $font-family-latin, $font-family-arabic-body, $font-fallback;
@@ -23,7 +23,19 @@ $fs-2xl: 24px;
 $fs-3xl: 30px;
 $fs-4xl: 36px;
 $fs-5xl: 48px;
+$fs-caption: 13px;
+$fs-label: 15px;
+$fs-h4: 22px;
+$fs-number: 32px;
+$fs-display: 56px;
+$fs-display-fluid: clamp(2.25rem, 1.4rem + 3vw, 3.5rem);
+$fs-display-fluid-latin: clamp(2rem, 1.4rem + 2.2vw, 3rem);
+$fs-section-title-fluid: clamp(1.75rem, 1.3rem + 1.6vw, 2.25rem);
 
 $lh-tight: 1.2;
 $lh-base: 1.5;
 $lh-relaxed: 1.7;
+$lh-display: 1.25;
+$lh-heading: 1.36;
+$ls-display: -0.5px;
+$ls-number: -0.3px;

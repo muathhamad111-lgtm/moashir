@@ -10,6 +10,10 @@ export const PROFILE_FIELD_LABELS = Object.freeze({
   employees_count: { ar: 'عدد الموظفين', en: 'Number of employees' },
   annual_beneficiaries_count: { ar: 'عدد المستفيدين سنويًا', en: 'Annual beneficiaries' },
   has_strategic_plan: { ar: 'الخطة الاستراتيجية', en: 'Strategic plan' },
+  unified_number: { ar: 'الرقم الوطني الموحد', en: 'Unified national number' },
+  license_number: { ar: 'رقم الترخيص', en: 'Licence number' },
+  founded_on: { ar: 'تاريخ التأسيس', en: 'Founding date' },
+  website_url: { ar: 'الموقع الإلكتروني', en: 'Website' },
 })
 
 const SYSTEM_ADMIN_ROLE = {
@@ -61,6 +65,26 @@ export const profileChangesFixture = [
     changedBy: 'system',
     staff: null,
     changedAt: '2026-10-28T05:00:00Z',
+  },
+  {
+    id: 9006,
+    entityId: 6003,
+    field: 'license_number',
+    oldValue: '880600',
+    newValue: '8806003',
+    changedBy: 'staff',
+    staff: { name: 'منيرة بنت خالد العتيبي', roles: [SYSTEM_ADMIN_ROLE] },
+    changedAt: '2026-11-02T08:10:00Z',
+  },
+  {
+    id: 9007,
+    entityId: 6003,
+    field: 'founded_on',
+    oldValue: null,
+    newValue: '2018-03-01',
+    changedBy: 'entity',
+    staff: null,
+    changedAt: '2026-11-03T06:45:00Z',
   },
   {
     id: 9005,

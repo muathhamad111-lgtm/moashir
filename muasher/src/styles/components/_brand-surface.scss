@@ -1,0 +1,22 @@
+@use '../themes/dark' as *;
+
+.brand-surface {
+  @include theme-dark;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--gradient-brand);
+  color: var(--theme-text);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset-block-end: var(--size-hero-glow-offset);
+    inset-inline-end: var(--size-hero-glow-offset);
+    z-index: -1;
+    inline-size: var(--size-hero-glow);
+    block-size: var(--size-hero-glow);
+    background: var(--gradient-hero-glow);
+    pointer-events: none;
+  }
+}

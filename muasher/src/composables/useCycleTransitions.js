@@ -9,6 +9,7 @@ const TRANSITIONS = {
   open: { call: 'open', variant: 'primary' },
   closeSubmissions: { call: 'closeSubmissions', variant: 'danger' },
   close: { call: 'close', variant: 'danger' },
+  startCommittee: { call: 'startCommittee', variant: 'primary' },
 }
 
 export function useCycleTransitions({ editor, reasonExtra }) {

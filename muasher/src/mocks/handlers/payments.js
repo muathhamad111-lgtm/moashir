@@ -10,7 +10,13 @@ import {
 } from '../stores/finance/financeAccess'
 import { findPayment, receiptOf } from '../stores/finance/financeState'
 import { financeReject, financeRoute, readJson } from '../stores/finance/financeRejection'
-import { listFilters, ownPayments, ownStatsOf, page } from '../stores/finance/financeQueries'
+import {
+  listFilters,
+  ownPayments,
+  ownStatsOf,
+  ownStatusCountsOf,
+  page,
+} from '../stores/finance/financeQueries'
 import { ownPaymentResource, receiptResource } from '../stores/finance/financeSerializers'
 import { checkoutOf } from '../stores/finance/checkoutObject'
 import { expireDueOrders } from '../stores/finance/paymentLifecycle'
@@ -34,6 +40,20 @@ import {
 import { receiptFileOf } from '../stores/finance/receiptOperations'
 import { fileDownloadResponse, signedDownloadOf } from '../stores/finance/signedFiles'
 import { assertMayPurchase } from '../stores/finance/paymentHooks'
+import { recordOfPayment } from '../stores/accredited/accreditedRecords'
+
+const ACCREDITED_LABEL = { ar: 'التقييم المعتمد', en: 'Accredited assessment' }
+
+function openedRequestOf(payment) {
+  const record = payment.status === 'paid' ? recordOfPayment(payment.id) : null
+  return record
+    ? { id: record.id, number: record.number, path: record.path, pathLabel: ACCREDITED_LABEL }
+    : null
+}
+
+function ownPaymentWithRequest(payment) {
+  return { ...ownPaymentResource(payment), request: openedRequestOf(payment) }
+}
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -45,7 +65,11 @@ export function boundPayment(params) {
 
 function createdResponse(payment, request, { replay = false, existing = false } = {}) {
   return envelope(
-    { ...ownPaymentResource(payment), checkout: checkoutOf(payment, requestLocale(request)) },
+    {
+      ...ownPaymentResource(payment),
+      request: null,
+      checkout: checkoutOf(payment, requestLocale(request)),
+    },
     { idempotentReplay: replay, existingOrder: existing },
     { status: existing ? 200 : 201 },
   )
@@ -85,9 +109,15 @@ export const paymentsHandlers = [
       authorizeOwnList(user)
       const query = new URL(request.url).searchParams
       expireDueOrders()
-      const payments = ownPayments(user, listFilters(query, 'mine'))
+      const filters = listFilters(query, 'mine')
+      const payments = ownPayments(user, filters)
+      const counted = ownPayments(user, { ...filters, status: '' })
       const { items, pagination } = page(payments, query)
-      return envelope(items.map(ownPaymentResource), { pagination, stats: ownStatsOf(payments) })
+      return envelope(items.map(ownPaymentWithRequest), {
+        pagination,
+        stats: ownStatsOf(payments),
+        statusCounts: ownStatusCountsOf(counted),
+      })
     }),
   ),
 
@@ -100,7 +130,7 @@ export const paymentsHandlers = [
       const payment = boundPayment(params)
       authorizeViewOwn(user, payment)
       expireDueOrders()
-      return envelope(ownPaymentResource(payment))
+      return envelope(ownPaymentWithRequest(payment))
     }),
   ),
 

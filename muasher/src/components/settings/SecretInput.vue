@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import { SECRET_ACTIONS, isSecretStored } from '@/utils/integrations/secretValue'
 import { formatDate } from '@/utils/datetime'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Object, default: () => ({ action: SECRET_ACTIONS.KEEP, value: '' }) },
@@ -85,7 +86,7 @@ function onInput(event) {
         v-if="stored"
         variant="ghost"
         size="sm"
-        icon="fa-solid fa-rotate-left"
+        icon="undo"
         :disabled="disabled"
         @click="emitAction(SECRET_ACTIONS.KEEP)"
       >
@@ -100,13 +101,13 @@ function onInput(event) {
       :aria-labelledby="labelId"
     >
       <span class="secret-input__status" role="status">
-        <i class="fa-solid fa-eraser" aria-hidden="true"></i>
+        <AppIcon name="x" />
         {{ t('integrations.secret.willClear') }}
       </span>
       <BaseButton
         variant="ghost"
         size="sm"
-        icon="fa-solid fa-rotate-left"
+        icon="undo"
         :disabled="disabled"
         @click="emitAction(SECRET_ACTIONS.KEEP)"
       >
@@ -122,7 +123,7 @@ function onInput(event) {
       :aria-describedby="describedBy"
     >
       <span class="secret-input__status">
-        <i class="fa-solid fa-key" aria-hidden="true"></i>
+        <AppIcon name="lock" />
         {{ t('integrations.secret.stored') }}
       </span>
       <span v-if="meta.last4" class="secret-input__last4" dir="ltr">{{
@@ -133,7 +134,7 @@ function onInput(event) {
         <BaseButton
           variant="secondary"
           size="sm"
-          icon="fa-solid fa-pen"
+          icon="pen"
           :disabled="disabled"
           @click="emitAction(SECRET_ACTIONS.REPLACE)"
         >
@@ -142,7 +143,7 @@ function onInput(event) {
         <BaseButton
           variant="ghost"
           size="sm"
-          icon="fa-solid fa-trash-can"
+          icon="trash"
           :disabled="disabled"
           @click="emitAction(SECRET_ACTIONS.CLEAR)"
         >

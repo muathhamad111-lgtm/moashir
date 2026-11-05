@@ -2,6 +2,7 @@
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import { formatFileSize } from '@/utils/payments/amountFormat'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   files: { type: Array, required: true },
@@ -19,7 +20,7 @@ const { t, locale } = useI18n()
     </p>
     <ul v-if="files.length" class="review-evidence__list">
       <li v-for="file in files" :key="file.id" class="review-evidence__item">
-        <i class="fa-solid fa-file-lines" aria-hidden="true"></i>
+        <AppIcon name="doc" />
         <bdi class="review-evidence__name" dir="ltr">{{ file.fileName }}</bdi>
         <span class="review-evidence__size">{{
           t('accredited.evidence.sizeKb', { size: formatFileSize(file.sizeBytes, locale) })
@@ -28,7 +29,7 @@ const { t, locale } = useI18n()
           variant="ghost"
           size="sm"
           icon-only
-          icon="fa-solid fa-download"
+          icon="download"
           :loading="Boolean(downloading[file.id])"
           :aria-label="t('accredited.evidence.download', { name: file.fileName })"
           @click="emit('download', file)"

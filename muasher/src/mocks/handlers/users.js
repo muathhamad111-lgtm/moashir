@@ -1,144 +1,104 @@
-import { HttpResponse, delay } from 'msw'
 import { http } from '../contract/http'
-import { usersFixture } from '../fixtures/users'
-import { failsRandomly } from '../contract/faults'
+import { envelope } from '../contract/responses'
+import { paginate } from '../contract/pagination'
+import {
+  assessmentReject,
+  assessmentRoute,
+  readJson,
+} from '../stores/assessments/assessmentRejection'
+import { signedInActor } from '../stores/assessments/assessmentAccess'
+import { sessionCan } from '../stores/sessionPermissions'
+import {
+  activateStaffUser,
+  findStaffUser,
+  inviteStaffUser,
+  listStaffUsers,
+  resendStaffInvitation,
+  resetStaffMfa,
+  setAssessorQualifications,
+  setRequestScope,
+  suspendStaffUser,
+  unlockStaffUser,
+  updateStaffUser,
+  userResource,
+} from '../stores/staffUsers'
 
-let users = usersFixture.map((item) => ({ ...item }))
+const USERS = '/api/v1/users'
+const USER = `${USERS}/:user`
+const NUMERIC_ID = /^\d+$/
+const PERMISSIONS = { VIEW: 'users.view', MANAGE: 'users.manage' }
 
-let idSeed = 500000
-
-function nextId() {
-  idSeed += 1
-  return idSeed
+function actorWith(permission) {
+  const user = signedInActor()
+  if (!user.superAdmin && !sessionCan(permission)) throw assessmentReject.forbidden()
+  return user
 }
 
-function envelope(data, meta = {}) {
-  return HttpResponse.json({ data, meta, errors: null })
+function boundUser(params) {
+  const user = NUMERIC_ID.test(params.user) ? findStaffUser(params.user) : null
+  if (!user) throw assessmentReject.notFound()
+  return user
 }
 
-function errorResponse(message, status, fieldErrors = {}) {
-  return HttpResponse.json({ message, errors: fieldErrors, code: status }, { status })
-}
-
-const maybeFail = failsRandomly(0.1)
-
-function emailTaken(email, exceptId = null) {
-  const needle = String(email).trim().toLowerCase()
-  return users.some((user) => user.email.toLowerCase() === needle && user.id !== exceptId)
-}
-
-function statsOf(all) {
-  const byRole = {}
-  for (const user of all) {
-    for (const role of user.roles ?? []) byRole[role] = (byRole[role] ?? 0) + 1
-  }
-  return {
-    total: all.length,
-    active: all.filter((user) => user.status === 'active').length,
-    inactive: all.filter((user) => user.status === 'inactive').length,
-    byRole,
-  }
+function actionRoute(act) {
+  return assessmentRoute(async ({ params, request }) => {
+    const actor = actorWith(PERMISSIONS.MANAGE)
+    const user = boundUser(params)
+    return envelope(userResource(act(actor, user, await readJson(request))))
+  })
 }
 
 export const usersHandlers = [
-  http.get('/api/v1/users', async ({ request }) => {
-    await delay(420)
-    if (maybeFail(0.08)) return errorResponse('Failed to load users', 503)
-    const url = new URL(request.url)
-    const search = (url.searchParams.get('search') ?? '').trim().toLowerCase()
-    const roleFilter = url.searchParams.get('filter[role]')
-    const statusFilter = url.searchParams.get('filter[status]')
-    const sort = url.searchParams.get('sort') ?? 'name'
-    const page = Number(url.searchParams.get('page')) || 1
-    const perPage = Number(url.searchParams.get('perPage')) || 10
+  http.get(
+    USERS,
+    assessmentRoute(({ request }) => {
+      actorWith(PERMISSIONS.VIEW)
+      const query = new URL(request.url).searchParams
+      const { rows, stats } = listStaffUsers(query)
+      const { items, pagination } = paginate(rows, query)
+      return envelope(items.map(userResource), { pagination, stats })
+    }),
+  ),
 
-    let items = users.map((user) => ({ ...user }))
-    if (search) {
-      items = items.filter(
-        (user) =>
-          user.name.toLowerCase().includes(search) || user.email.toLowerCase().includes(search),
-      )
-    }
-    if (roleFilter) items = items.filter((user) => (user.roles ?? []).includes(roleFilter))
-    if (statusFilter) items = items.filter((user) => user.status === statusFilter)
+  http.post(
+    USERS,
+    assessmentRoute(async ({ request }) => {
+      actorWith(PERMISSIONS.MANAGE)
+      return envelope(userResource(inviteStaffUser(await readJson(request))), {}, { status: 201 })
+    }),
+  ),
 
-    const desc = sort.startsWith('-')
-    const key = desc ? sort.slice(1) : sort
-    items.sort((a, b) => {
-      const av = a[key] ?? ''
-      const bv = b[key] ?? ''
-      if (av < bv) return desc ? 1 : -1
-      if (av > bv) return desc ? -1 : 1
-      return 0
-    })
+  http.get(
+    USER,
+    assessmentRoute(({ params }) => {
+      actorWith(PERMISSIONS.VIEW)
+      return envelope(userResource(boundUser(params)))
+    }),
+  ),
 
-    const total = items.length
-    const lastPage = Math.max(1, Math.ceil(total / perPage))
-    const start = (page - 1) * perPage
-    const pageItems = items.slice(start, start + perPage)
+  http.put(
+    USER,
+    actionRoute((actor, user, body) => updateStaffUser(user, body)),
+  ),
+  http.post(`${USER}/suspend`, actionRoute(suspendStaffUser)),
+  http.post(
+    `${USER}/activate`,
+    actionRoute((actor, user, body) => activateStaffUser(user, body)),
+  ),
+  http.post(
+    `${USER}/unlock`,
+    actionRoute((actor, user, body) => unlockStaffUser(user, body)),
+  ),
+  http.post(`${USER}/mfa/reset`, actionRoute(resetStaffMfa)),
+  http.put(`${USER}/assessor-qualifications`, actionRoute(setAssessorQualifications)),
+  http.put(`${USER}/request-scope`, actionRoute(setRequestScope)),
 
-    return envelope(pageItems, {
-      pagination: { page, perPage: perPage, total, lastPage: lastPage },
-      stats: statsOf(users),
-    })
-  }),
-
-  http.get('/api/v1/users/:userId', async ({ params }) => {
-    await delay(320)
-    if (maybeFail(0.06)) return errorResponse('Failed to load the user', 503)
-    const user = users.find((item) => item.id === Number(params.userId))
-    if (!user) return errorResponse('User not found', 404)
-    return envelope({ ...user })
-  }),
-
-  http.post('/api/v1/users', async ({ request }) => {
-    await delay(440)
-    if (maybeFail()) return errorResponse('Could not create the user', 500)
-    const body = await request.json()
-    if (emailTaken(body.email)) {
-      return errorResponse('This email is already in use', 422, {
-        email: ['This email is already in use.'],
-      })
-    }
-    const created = {
-      id: nextId(),
-      name: body.name,
-      email: body.email,
-      roles: Array.isArray(body.roles) ? body.roles : [],
-      status: body.status ?? 'active',
-      lastLogin: null,
-    }
-    users.push(created)
-    return envelope({ ...created })
-  }),
-
-  http.put('/api/v1/users/:userId', async ({ request, params }) => {
-    await delay(400)
-    if (maybeFail()) return errorResponse('Could not update the user', 500)
-    const user = users.find((item) => item.id === Number(params.userId))
-    if (!user) return errorResponse('User not found', 404)
-    const body = await request.json()
-    if (body.email !== undefined && emailTaken(body.email, user.id)) {
-      return errorResponse('This email is already in use', 422, {
-        email: ['This email is already in use.'],
-      })
-    }
-    Object.assign(user, {
-      name: body.name ?? user.name,
-      email: body.email ?? user.email,
-      roles: Array.isArray(body.roles) ? body.roles : user.roles,
-      status: body.status ?? user.status,
-    })
-    return envelope({ ...user })
-  }),
-
-  http.patch('/api/v1/users/:userId/status', async ({ request, params }) => {
-    await delay(280)
-    if (maybeFail(0.08)) return errorResponse('Could not change the user status', 500)
-    const user = users.find((item) => item.id === Number(params.userId))
-    if (!user) return errorResponse('User not found', 404)
-    const body = await request.json()
-    user.status = body.status === 'active' ? 'active' : 'inactive'
-    return envelope({ ...user })
-  }),
+  http.post(
+    `${USER}/invitation/resend`,
+    assessmentRoute(({ params }) => {
+      actorWith(PERMISSIONS.MANAGE)
+      resendStaffInvitation(boundUser(params))
+      return envelope(null, {}, { status: 202 })
+    }),
+  ),
 ]

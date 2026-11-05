@@ -1,3 +1,4 @@
+import { readsCommitteeEvidence } from '../committee/committeeEvidence'
 import { sessionCan } from '../sessionPermissions'
 import { assessmentReject } from '../assessments/assessmentRejection'
 import { ACCESS, accessOf, isOwner } from '../assessments/assessmentAccess'
@@ -52,7 +53,7 @@ export function authorizeManageOwn(user, record, permission) {
 
 export function authorizeViewEvidence(user, record) {
   requireReviewed(record)
-  if (user.superAdmin) return
+  if (user.superAdmin || readsCommitteeEvidence(user, record)) return
   if (!sessionCan(ACCREDITED_PERMISSIONS.EVIDENCE_VIEW)) throw assessmentReject.forbidden()
   if (accessOf(user, record) === ACCESS.NONE) throw assessmentReject.notFound()
 }

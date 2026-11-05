@@ -66,6 +66,11 @@ export const assessmentReject = {
       params: { max },
     }),
   notAssignee: () => new MockRejection(403, 'assessment.not_assignee'),
+  notQualified: (qualification, path) =>
+    new MockRejection(422, 'assessor.not_qualified', {
+      fields: { assessorId: single('assessor.not_qualified') },
+      meta: { requiredQualification: qualification, path },
+    }),
   invalidScoreItems: (reasonsByField) => {
     const reasons = [...new Set(Object.values(reasonsByField))]
     const fields = Object.fromEntries(

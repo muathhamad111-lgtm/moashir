@@ -8,8 +8,7 @@ vi.mock('@/services/authService', () => ({
   UNAUTHENTICATED_STATUS: 401,
   authService: {
     register: vi.fn(),
-    loginWithPassword: vi.fn(),
-    requestLoginOtp: vi.fn(),
+    signIn: vi.fn(),
     verifyOtp: vi.fn(),
     resendOtp: vi.fn(),
     challengeMfa: vi.fn(),
@@ -103,12 +102,13 @@ describe('auth store — cookie session, nothing in browser storage', () => {
   })
 
   it('opens the session only when the step is authenticated', async () => {
-    authService.loginWithPassword.mockResolvedValue({
+    authService.signIn.mockResolvedValue({
       data: { step: LOGIN_STEPS.AUTHENTICATED, user },
     })
     const auth = useAuthStore()
-    const outcome = await auth.loginWithPassword({
-      officialEmail: 'x@example.sa',
+    const outcome = await auth.signIn({ identifier: '7001234567', password: 'secret' })
+    expect(authService.signIn).toHaveBeenCalledWith({
+      identifier: '7001234567',
       password: 'secret',
     })
     expect(outcome.step).toBe(LOGIN_STEPS.AUTHENTICATED)
@@ -118,15 +118,15 @@ describe('auth store — cookie session, nothing in browser storage', () => {
   it.each([LOGIN_STEPS.MFA_CHALLENGE, LOGIN_STEPS.MFA_ENROLLMENT, LOGIN_STEPS.OTP_REQUIRED])(
     'stays signed out while the %s step is pending',
     async (step) => {
-      authService.loginWithPassword.mockResolvedValue({ data: { step, user: null } })
+      authService.signIn.mockResolvedValue({ data: { step, user: null } })
       const auth = useAuthStore()
-      await auth.loginWithPassword({ officialEmail: 'x@example.sa', password: 'secret' })
+      await auth.signIn({ identifier: 'x@example.sa', password: 'secret' })
       expect(auth.isAuthenticated).toBe(false)
     },
   )
 
   it('completes password → OTP → TOTP and only then holds the user', async () => {
-    authService.requestLoginOtp.mockResolvedValue({
+    authService.signIn.mockResolvedValue({
       data: { step: LOGIN_STEPS.OTP_REQUIRED, otp: { challengeId: '11' } },
     })
     authService.verifyOtp.mockResolvedValue({
@@ -134,7 +134,7 @@ describe('auth store — cookie session, nothing in browser storage', () => {
     })
     authService.challengeMfa.mockResolvedValue({ data: { step: LOGIN_STEPS.AUTHENTICATED, user } })
     const auth = useAuthStore()
-    await auth.requestLoginOtp({ officialEmail: 'x@example.sa', channel: 'email' })
+    await auth.signIn({ identifier: '0500000001', password: 'secret' })
     await auth.verifyOtp({ challengeId: '11', code: '000000' })
     expect(auth.isAuthenticated).toBe(false)
     await auth.challengeMfa({ code: '000000' })

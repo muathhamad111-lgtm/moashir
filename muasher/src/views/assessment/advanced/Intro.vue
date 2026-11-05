@@ -9,6 +9,7 @@ import AdvancedIntroContent from '@/components/award/AdvancedIntroContent.vue'
 import { useAdvancedIntro } from '@/composables/useAdvancedIntro'
 import { useDraftDeletion } from '@/composables/useDraftDeletion'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -58,7 +59,7 @@ onMounted(intro.load)
           class="btn btn--primary btn--md"
           :to="{ name: ROUTE_NAMES.AUTH_LOGIN, query: { redirect: '/assessment/advanced' } }"
         >
-          <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
+          <AppIcon name="login" />
           {{ t('advanced.guest.signIn') }}
         </RouterLink>
       </aside>

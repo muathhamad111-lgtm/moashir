@@ -4,6 +4,7 @@ import { useFieldArray } from 'vee-validate'
 import { useI18n } from 'vue-i18n'
 import IntegrationCard from '@/components/integrations/IntegrationCard.vue'
 import SmsTemplateField from './SmsTemplateField.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   definitions: { type: Array, required: true },
@@ -36,7 +37,7 @@ const notice = computed(() => {
       :class="{ 'is-pending': !templatesLoaded }"
       role="note"
     >
-      <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+      <AppIcon name="shield-info" />
       {{ notice }}
     </p>
     <div class="sms-templates">

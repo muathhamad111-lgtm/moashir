@@ -11,7 +11,7 @@ import { ROLES } from '@/constants/roles'
 import { sessionUserFor } from '@/test-utils/session'
 
 vi.mock('@/services/contentService', () => ({
-  contentService: { getLanding: vi.fn() },
+  contentService: { getStatus: vi.fn() },
 }))
 
 function freshRouter() {
@@ -21,7 +21,7 @@ function freshRouter() {
 }
 
 function maintenanceOn() {
-  contentService.getLanding.mockResolvedValue({ data: { published: false, maintenance: true } })
+  contentService.getStatus.mockResolvedValue({ data: { maintenance: true, publishedAt: null } })
 }
 
 beforeEach(() => {
@@ -46,7 +46,7 @@ describe('maintenance guard (Q-96)', () => {
     const router = freshRouter()
     await router.push('/auth/login')
     expect(router.currentRoute.value.name).toBe(ROUTE_NAMES.AUTH_LOGIN)
-    expect(contentService.getLanding).not.toHaveBeenCalled()
+    expect(contentService.getStatus).not.toHaveBeenCalled()
   })
 
   it('keeps the back office reachable for signed-in users', async () => {
@@ -59,19 +59,46 @@ describe('maintenance guard (Q-96)', () => {
     expect(router.currentRoute.value.name).toBe(ROUTE_NAMES.ADMIN_SETTINGS_HOMEPAGE)
   })
 
+  it.each([
+    ['/verify', ROUTE_NAMES.VERIFY],
+    ['/verify/9F3K-MQ2T-7XHD-M4PA', ROUTE_NAMES.VERIFY_CERTIFICATE],
+    ['/terms', ROUTE_NAMES.LEGAL_TERMS],
+    ['/privacy', ROUTE_NAMES.LEGAL_PRIVACY],
+    ['/accessibility', ROUTE_NAMES.LEGAL_ACCESSIBILITY],
+    ['/auth/forgot-password', ROUTE_NAMES.AUTH_FORGOT_PASSWORD],
+    ['/auth/reset-password/a1b2c3d4e5f6', ROUTE_NAMES.AUTH_RESET_PASSWORD],
+    ['/auth/invitations/invite-sarah-whitfield-2026', ROUTE_NAMES.AUTH_INVITATION],
+  ])('keeps %s reachable for visitors while the homepage is unpublished', async (path, name) => {
+    maintenanceOn()
+    const router = freshRouter()
+    await router.push(path)
+    expect(router.currentRoute.value.name).toBe(name)
+    expect(contentService.getStatus).not.toHaveBeenCalled()
+  })
+
+  it('still sends the other public pages to the maintenance page', async () => {
+    maintenanceOn()
+    const router = freshRouter()
+    await router.push('/verify')
+    await router.push('/lenses')
+    expect(router.currentRoute.value.name).toBe(ROUTE_NAMES.PUBLIC_MAINTENANCE)
+  })
+
   it('lets visitors through when the homepage is published', async () => {
-    contentService.getLanding.mockResolvedValue({ data: { published: true, hero: {} } })
+    contentService.getStatus.mockResolvedValue({
+      data: { maintenance: false, publishedAt: '2026-11-01T08:00:00Z' },
+    })
     const router = freshRouter()
     await router.push('/')
     expect(router.currentRoute.value.name).toBe(ROUTE_NAMES.PUBLIC_HOME)
   })
 
   it('checks the status once and fails open after a retry when the API is unreachable', async () => {
-    contentService.getLanding.mockRejectedValue(new Error('offline'))
+    contentService.getStatus.mockRejectedValue(new Error('offline'))
     const router = freshRouter()
     await router.push('/')
     expect(router.currentRoute.value.name).toBe(ROUTE_NAMES.PUBLIC_HOME)
-    expect(contentService.getLanding).toHaveBeenCalledTimes(2)
+    expect(contentService.getStatus).toHaveBeenCalledTimes(2)
     expect(useSiteStatusStore().status).toBe('error')
   })
 

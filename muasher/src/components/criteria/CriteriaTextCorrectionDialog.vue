@@ -23,6 +23,7 @@ import {
   CRITERIA_NODE_TYPES as NODE,
   CRITERIA_REASON_MIN_LENGTH,
 } from '@/constants/criteria'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -129,7 +130,7 @@ const [reason] = form.defineField('reason')
   >
     <div class="criteria-form">
       <p class="criteria-form__note criteria-form__note--emphasis" role="note">
-        <i class="fa-solid fa-spell-check" aria-hidden="true"></i>
+        <AppIcon name="pen-line" />
         <span>{{ t('criteria.correction.note', { number: version.versionNumber }) }}</span>
       </p>
       <div class="criteria-form__grid">

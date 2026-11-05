@@ -4,20 +4,21 @@ import { useI18n } from 'vue-i18n'
 import { formatDate } from '@/utils/datetime'
 import { localizedText } from '@/utils/localizedText'
 import { statusLabelKey } from '@/utils/canonicalStatus'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const DATE_OPTIONS = { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Riyadh' }
 const VERB_ICONS = {
-  start: 'fa-solid fa-play',
-  submit: 'fa-solid fa-paper-plane',
-  resubmit: 'fa-solid fa-paper-plane',
-  compute_result: 'fa-solid fa-calculator',
-  assign: 'fa-solid fa-user-check',
-  reassign: 'fa-solid fa-user-pen',
-  start_review: 'fa-solid fa-magnifying-glass',
-  request_completion: 'fa-solid fa-reply',
-  complete: 'fa-solid fa-flag-checkered',
-  refund: 'fa-solid fa-rotate-left',
-  expire_completion: 'fa-solid fa-hourglass-end',
+  start: 'play',
+  submit: 'send',
+  resubmit: 'send',
+  compute_result: 'calculator',
+  assign: 'user-check',
+  reassign: 'pen',
+  start_review: 'search',
+  request_completion: 'reply',
+  complete: 'flag-checkered',
+  refund: 'undo',
+  expire_completion: 'clock',
 }
 
 const props = defineProps({
@@ -49,7 +50,7 @@ const steps = computed(() =>
   props.history.map((change, index) => ({
     key: `${index}-${change.verb}`,
     at: change.at,
-    icon: VERB_ICONS[change.verb] ?? 'fa-solid fa-circle-check',
+    icon: VERB_ICONS[change.verb] ?? 'check-circle',
     verb: verbLabel(change),
     actor: actorLabel(change),
     date: change.at ? formatDate(change.at, locale.value, DATE_OPTIONS) : '',
@@ -64,7 +65,7 @@ const steps = computed(() =>
       :key="step.key"
       class="assessment-timeline__step assessment-timeline__step--done"
     >
-      <i :class="step.icon" class="assessment-timeline__icon" aria-hidden="true"></i>
+      <AppIcon :name="step.icon" class="assessment-timeline__icon" />
       <span class="assessment-timeline__name">{{ step.verb }}</span>
       <span class="assessment-timeline__actor">{{ step.actor }}</span>
       <time class="assessment-timeline__date" :datetime="step.at">{{ step.date }}</time>

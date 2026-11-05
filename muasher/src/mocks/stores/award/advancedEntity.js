@@ -84,6 +84,7 @@ function newRequest(user, entity, cycle, status, conditionFailure) {
     assignments: [],
     completionRequests: [],
     filteringDecisions: [],
+    committeeAverageId: null,
     bundles: [],
     createdAt: at,
     updatedAt: at,
