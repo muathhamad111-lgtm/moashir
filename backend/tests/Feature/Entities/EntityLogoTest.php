@@ -78,16 +78,18 @@ it('strips hidden metadata from PNG and JPEG logos', function (string $name, Clo
     'JPEG comment' => ['شعار-الجمعية.jpg', fn (): string => jpegWithComment(logoImageBytes('jpeg'), LOGO_HIDDEN_NOTE), 'image/jpeg'],
 ]);
 
-it('refuses anything but a PNG or JPEG image of the allowed size', function (Closure $file, string $code): void {
+it('refuses anything but a PNG or JPEG image of the allowed size', function (Closure $file, string ...$codes): void {
     $entity = entityWithOwner();
 
-    uploadEntityLogo(ownerOf($entity), $file())->assertUnprocessable()->assertJsonPath('code', $code)->assertJsonValidationErrors(['file']);
+    uploadEntityLogo(ownerOf($entity), $file())->assertUnprocessable()
+        ->assertJsonPath('code', static fn (string $code): bool => in_array($code, $codes, true))
+        ->assertJsonValidationErrors(['file']);
 
     expect($entity->refresh()->logo_file_id)->toBeNull()
         ->and(StoredFile::query()->ofPurpose(StoredFilePurpose::EntityLogo)->count())->toBe(0);
 })->with([
     'SVG' => [fn (): UploadedFile => logoUpload('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><script>alert(1)</script></svg>', 'شعار.svg'), 'validation_failed'],
-    'SVG renamed to PNG' => [fn (): UploadedFile => logoUpload('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"></svg>', 'شعار.png'), 'file.content_mismatch'],
+    'SVG renamed to PNG (refused by the type rule or the content check, per the host file-type database)' => [fn (): UploadedFile => logoUpload('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"></svg>', 'شعار.png'), 'file.content_mismatch', 'validation_failed'],
     'GIF' => [fn (): UploadedFile => UploadedFile::fake()->image('شعار.gif', 400, 400), 'validation_failed'],
     'larger than 2 MB' => [fn (): UploadedFile => logoUpload(pngWithTextChunk(logoImageBytes(), str_repeat('A', 2100 * 1024))), 'validation_failed'],
     'narrower than 200 px' => [fn (): UploadedFile => logoUpload(logoImageBytes('png', 150, 300)), 'validation_failed'],

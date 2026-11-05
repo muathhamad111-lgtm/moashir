@@ -10,6 +10,7 @@ use App\Exceptions\Persistence\AppendOnlyViolation;
 use App\Models\Audit\Audit;
 use App\Models\Entities\EntityProfileChange;
 use App\Notifications\Entities\EntityNotification;
+use Database\Factories\Entities\EntityFactory;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
@@ -52,7 +53,7 @@ it('requires a session for the own profile', function (): void {
 
 it('updates the profile, records every changed field and notifies the administration', function (): void {
     $admin = systemAdmin();
-    $entity = entityWithOwner();
+    $entity = entityWithOwner(static fn (EntityFactory $factory): EntityFactory => $factory->state(['employees_count' => 40]));
     $owner = ownerOf($entity);
     signIn($owner);
 
