@@ -144,8 +144,9 @@ build_frontend() {
     local source="${ROOT_DIR}/muasher"
 
     mkdir -p "${build}/muasher"
-    COPYFILE_DISABLE=1 tar -C "${source}" --exclude ./node_modules --exclude ./dist --exclude ./test-results \
-        --exclude ./playwright-report --exclude './.env.local' --exclude './.env.*.local' -cf - . | tar -C "${build}/muasher" -xf -
+    # A leading "/" anchors an rsync pattern to the source root; tar patterns match at any depth.
+    rsync -a --exclude=/node_modules --exclude=/dist --exclude=/test-results --exclude=/playwright-report \
+        --exclude=.env.local --exclude='.env.*.local' --exclude=.DS_Store "${source}/" "${build}/muasher/"
 
     if [[ ! -f "${build}/muasher/.env.${ENVIRONMENT}" ]]; then
         [[ -f "${build}/muasher/.env.${ENVIRONMENT}.example" ]] || die "muasher/.env.${ENVIRONMENT}.example is missing."
@@ -167,13 +168,27 @@ build_frontend() {
 prepare_backend() {
     local build="$1"
     mkdir -p "${build}/release/backend"
-    COPYFILE_DISABLE=1 tar -C "${ROOT_DIR}/backend" \
-        --exclude ./vendor --exclude ./node_modules --exclude ./storage --exclude ./tests \
-        --exclude './.env' --exclude './.env.*' --exclude ./.phpunit.cache --exclude ./.phpunit.result.cache \
-        --exclude './bootstrap/cache/*.php' --exclude ./docker --exclude ./compose.yaml \
-        --exclude ./phpunit.xml --exclude ./phpstan.neon --exclude ./rector.php --exclude ./pint.json \
-        --exclude ./.mcp.json --exclude ./boost.json --exclude ./AGENTS.md --exclude ./CLAUDE.md --exclude ./.ai \
-        --exclude ./.DS_Store -cf - . | tar -C "${build}/release/backend" -xf -
+    # Anchored patterns: an unanchored "vendor" also dropped resources/views/vendor (the mail layout and theme).
+    rsync -a \
+        --exclude=/vendor --exclude=/node_modules --exclude=/storage --exclude=/tests \
+        --exclude=.env --exclude='.env.*' --exclude=/.phpunit.cache --exclude=/.phpunit.result.cache \
+        --exclude='/bootstrap/cache/*.php' --exclude=/docker --exclude=/compose.yaml \
+        --exclude=/phpunit.xml --exclude=/phpstan.neon --exclude=/rector.php --exclude=/pint.json \
+        --exclude=/.mcp.json --exclude=/boost.json --exclude=/AGENTS.md --exclude=/CLAUDE.md --exclude=/.ai \
+        --exclude=.DS_Store "${ROOT_DIR}/backend/" "${build}/release/backend/"
+    assert_backend_complete "${build}/release/backend"
+}
+
+assert_backend_complete() {
+    local release="$1" file missing=0
+    while IFS= read -r file; do
+        if [[ ! -f "${release}/${file}" ]]; then
+            printf '  missing from the release: %s\n' "${file}" >&2
+            missing=$((missing + 1))
+        fi
+    done < <(cd "${ROOT_DIR}/backend" && find app config database lang resources routes -type f ! -name .DS_Store)
+
+    [[ ${missing} -eq 0 ]] || die "${missing} backend source file(s) did not reach the release."
 }
 
 release_commit() {
