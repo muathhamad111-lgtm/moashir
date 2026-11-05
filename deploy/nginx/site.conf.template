@@ -49,7 +49,7 @@ server {
         error_page 413 @moashir_request_too_large;
         include /etc/nginx/snippets/moashir-{{ENVIRONMENT}}-laravel.conf;
 
-        location ~ ^/api/v1/(?:assessments/[^/]+/evidence|finance/payments/[^/]+/refunds)$ {
+        location ~ ^/api/v1/(?:assessments/[^/]+/evidence|finance/payments/[^/]+/refunds|payments)$ {
             client_max_body_size {{EVIDENCE_BODY_LIMIT}};
             include /etc/nginx/snippets/moashir-{{ENVIRONMENT}}-laravel.conf;
         }

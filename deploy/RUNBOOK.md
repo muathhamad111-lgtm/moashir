@@ -403,7 +403,7 @@ get Nginx's HTML page.
 
 | Route | Application rule | Nginx limit |
 |---|---|---|
-| `POST /api/v1/assessments/{id}/evidence`, `POST /api/v1/finance/payments/{id}/refunds` | setting `upload_max_file_mb` / `general_upload_max_file_mb` (default 20 MB, the validation allows up to 100 MB) | `101m` |
+| `POST /api/v1/assessments/{id}/evidence`, `POST /api/v1/finance/payments/{id}/refunds`, `POST /api/v1/payments` (bank transfer with its receipt) | setting `upload_max_file_mb` / `general_upload_max_file_mb` (default 20 MB, the validation allows up to 100 MB) | `101m` |
 | `POST /api/v1/admin/content/images`, `POST /api/v1/admin/kpis/images` | `moashir.cms.image_max_kb` = 5120 KB | `5376k` |
 | `POST /api/v1/entities/me/logo` | `moashir.entities.logo.max_kb` = 2048 KB | `2304k` |
 | `POST /api/v1/settings/branding/logo` | `moashir.branding.logo_max_kb` = 1024 KB | `1280k` |
@@ -522,6 +522,26 @@ mv -Tf /opt/moashir/chrome-headless-shell/current.next /opt/moashir/chrome-headl
 ```
 
 Then run `deploy/deploy.sh <env> smoke`.
+
+## Payment by bank transfer (Task-59)
+
+- Release order: deploy the backend (migrations add `bank_accounts`, `bank_transfers`, the payment `channel` and the
+  `under_review` / `rejected` statuses), then run `provision.sh nginx-final` on each environment. The new Nginx
+  template sends `POST /api/v1/payments` (a bank-transfer request carries its receipt) to the evidence-size location,
+  and the SPA CSP gains `frame-src 'self' blob:` for the inline PDF preview of transfer receipts. Without
+  `nginx-final`, a receipt larger than 2 MB is refused with `413 request.too_large`.
+- Permissions: every deployment runs `moashir:permissions:sync`. The sync creates `finance.transfers.review` and gives
+  it to the existing `finance_officer` role. It is a grantable permission: the System Administrator can grant it to
+  other roles or users through the permissions matrix. Run `artisan moashir:permissions:sync` by hand only if a
+  release was activated without the deploy script.
+- Settings: `payment.channels` keeps its default `["electronic"]` until the System Administrator enables bank
+  transfer on `/admin/settings/payment`. Enabling it needs at least one active bank account. No new `.env` variable.
+- Rollback: the migration that adds the payment channel refuses to roll back once a bank-transfer payment exists, and
+  the receipt file purpose refuses once a receipt is stored (payment records are kept for ten years). Use a forward
+  fix instead.
+- The demo installation (`demo-install`) adds one fictional account with the published registry example IBAN
+  `SA0380000000608010167519`, labelled «مثال» / "example", and enables both payment channels. It belongs to no
+  real bank account.
 
 ## Rollback
 
