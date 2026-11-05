@@ -5909,8 +5909,8 @@
       "openReview": "Open the transfer review",
       "stats": {
         "underReview": "Under review",
-        "approved": "Approved",
-        "rejected": "Rejected"
+        "approvedToday": "Approved today",
+        "rejectedToday": "Rejected today"
       },
       "tabs": {
         "under-review": "Under review",
@@ -5922,6 +5922,11 @@
       "filters": {
         "account": "Receiving account",
         "allAccounts": "All accounts",
+        "accountWithState": "{account} ({state})",
+        "accountStates": {
+          "inactive": "Inactive",
+          "archived": "Archived"
+        },
         "allModes": "All modes",
         "frozenLabel": "Frozen entities",
         "frozen": {

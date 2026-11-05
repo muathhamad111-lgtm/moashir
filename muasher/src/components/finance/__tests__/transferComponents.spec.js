@@ -6,6 +6,9 @@ import RejectTransferDialog from '@/components/finance/RejectTransferDialog.vue'
 import ApproveTransferDialog from '@/components/finance/ApproveTransferDialog.vue'
 import TransferQueueTable from '@/components/finance/TransferQueueTable.vue'
 import TransferBulkBar from '@/components/finance/TransferBulkBar.vue'
+import TransferQueueFilters from '@/components/finance/TransferQueueFilters.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
+import { TRANSFER_FILTERS } from '@/constants/bankTransfer'
 import BulkOutcomeNotice from '@/components/finance/BulkOutcomeNotice.vue'
 import TransferDecisionLine from '@/components/finance/TransferDecisionLine.vue'
 import PendingTransfersDialog from '@/components/settings/payment/PendingTransfersDialog.vue'
@@ -153,6 +156,47 @@ describe('TransferQueueTable', () => {
       global: globals,
     })
     expect(readOnly.find('input[type="checkbox"]').exists()).toBe(false)
+  })
+})
+
+describe('TransferQueueFilters', () => {
+  it('names each account by bank and last 4 digits, with the state when it is not active', async () => {
+    const accounts = [
+      {
+        id: 'a-1',
+        bankName: { ar: 'بنك المثال', en: 'Example Bank' },
+        ibanLast4: '7519',
+        state: 'active',
+      },
+      {
+        id: 'a-2',
+        bankName: { ar: 'مصرف العيّنة', en: 'Sample Bank' },
+        ibanLast4: '7890',
+        state: 'inactive',
+      },
+      {
+        id: 'a-3',
+        bankName: { ar: 'مصرف الواحة', en: 'Al-Waha Bank' },
+        ibanLast4: '0011',
+        state: 'archived',
+      },
+    ]
+    const wrapper = mountWith(TransferQueueFilters, {
+      filters: { ...TRANSFER_FILTERS },
+      sort: 'submitted_at',
+      accounts,
+    })
+    const accountSelect = wrapper.findAllComponents(AppSelect)[0]
+    expect(accountSelect.props('options')).toEqual([
+      { value: '', label: 'All accounts' },
+      { value: 'a-1', label: 'Example Bank · ends in 7519' },
+      { value: 'a-2', label: 'Sample Bank · ends in 7890 (Inactive)' },
+      { value: 'a-3', label: 'Al-Waha Bank · ends in 0011 (Archived)' },
+    ])
+    accountSelect.vm.$emit('update:modelValue', 'a-3')
+    await flushPromises()
+    expect(wrapper.emitted('filter')).toEqual([['bankAccount', 'a-3']])
+    wrapper.unmount()
   })
 })
 

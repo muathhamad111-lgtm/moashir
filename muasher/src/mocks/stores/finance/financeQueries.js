@@ -116,6 +116,19 @@ function checkRange(errors, filters) {
     errors.push(['filter.to', fieldMessage('date_order')])
 }
 
+function rejectFieldErrors(errors) {
+  if (errors.length)
+    throw financeReject.validation(
+      Object.fromEntries(errors.map(([field, message]) => [field, [message]])),
+    )
+}
+
+export function validatedPaging(query) {
+  const errors = []
+  checkPaging(errors, query)
+  rejectFieldErrors(errors)
+}
+
 export function listFilters(query, kind, { searchable = false, sortable = false } = {}) {
   const rules = LIST_RULES[kind]
   const errors = []
@@ -127,10 +140,7 @@ export function listFilters(query, kind, { searchable = false, sortable = false 
   const sort = query.get('sort')
   if (sort !== null && (!sortable || !TRANSACTION_SORTS[sort]))
     errors.push(['sort', fieldMessage('choice')])
-  if (errors.length)
-    throw financeReject.validation(
-      Object.fromEntries(errors.map(([field, message]) => [field, [message]])),
-    )
+  rejectFieldErrors(errors)
   return {
     ...filters,
     search: normalizeSearchText(query.get('search') ?? ''),

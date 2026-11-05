@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\Files\DownloadStoredFileController;
 use App\Http\Controllers\Api\V1\Finance\AbandonedCartController;
+use App\Http\Controllers\Api\V1\Finance\BankTransferAccountController;
 use App\Http\Controllers\Api\V1\Finance\BankTransferController;
 use App\Http\Controllers\Api\V1\Finance\BankTransferDecisionController;
 use App\Http\Controllers\Api\V1\Finance\BulkBankTransferDecisionController;
@@ -66,6 +67,7 @@ Route::middleware($signedIn)->group(function () use ($payments): void {
 
         Route::prefix('bank-transfers')->name('bank-transfers.')->group(function () use ($payments): void {
             Route::get('/', [BankTransferController::class, 'index'])->middleware("can:viewTransfers,{$payments}")->name('index');
+            Route::get('accounts', BankTransferAccountController::class)->middleware("can:viewTransfers,{$payments}")->name('accounts.index');
             Route::post('bulk-approve', [BulkBankTransferDecisionController::class, 'approve'])->middleware(["can:reviewTransfers,{$payments}", 'throttle:sensitive'])->name('bulk-approve');
             Route::post('bulk-reject', [BulkBankTransferDecisionController::class, 'reject'])->middleware(["can:reviewTransfers,{$payments}", 'throttle:sensitive'])->name('bulk-reject');
 

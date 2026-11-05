@@ -90,6 +90,14 @@ export const TRANSFER_FILTERS = Object.freeze({
 
 export const FROZEN_FILTER_VALUES = Object.freeze(['0', '1'])
 
+export const BANK_ACCOUNT_STATES = Object.freeze({
+  ACTIVE: 'active',
+  INACTIVE: 'inactive',
+  ARCHIVED: 'archived',
+})
+
+export const TRANSFER_ACCOUNTS_PER_PAGE = 100
+
 export const CHANNEL_CHOICES = Object.freeze({
   ELECTRONIC: 'electronic',
   BANK_TRANSFER: 'bank_transfer',

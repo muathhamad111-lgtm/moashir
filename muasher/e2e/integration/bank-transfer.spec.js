@@ -3,7 +3,7 @@ import { Buffer } from 'node:buffer'
 import { test, expect } from '@playwright/test'
 import { assertMailLogsConfigured } from './support/mailbox'
 import { STAFF, signInStaff } from './support/accounts'
-import { FOOTER_LEGAL_PROBES, GUEST_SESSION_PROBE, watchApi } from './support/apiWatch'
+import { FOOTER_LEGAL_PROBES, GUEST_SESSION_PROBE, SOURCES, watchApi } from './support/apiWatch'
 import { registerEntity } from './support/entities'
 
 const RUN = Date.now().toString(36)
@@ -26,6 +26,7 @@ const EXPECTED_PROBES = [GUEST_SESSION_PROBE, ...FOOTER_LEGAL_PROBES]
 
 const sessions = {}
 const transfers = { second: null }
+const account = { iban: null }
 
 function fictionalIban() {
   const account = Array.from({ length: ACCOUNT_DIGITS }, () => randomInt(10)).join('')
@@ -128,7 +129,8 @@ test('the System Administrator adds a bank account and turns bank transfer on', 
   await form.locator('[name="bankName.en"]').fill('Sample Bank')
   await form.locator('[name="accountHolderName.ar"]').fill('منصة مؤشر — حساب الرسوم')
   await form.locator('[name="accountHolderName.en"]').fill('Moashir Platform — fees account')
-  await form.locator('[name="iban"]').fill(fictionalIban())
+  account.iban = fictionalIban()
+  await form.locator('[name="iban"]').fill(account.iban)
   const created = page.waitForResponse(
     (response) =>
       response.request().method() === 'POST' &&
@@ -202,4 +204,34 @@ test('Finance approves the new request and the entity gets its payment receipt',
   await expect(entity.page.locator('.receipt-card')).toBeVisible()
   await expect(entity.page.locator('.transfer-record')).toBeVisible()
   expect(finance.api.unexpected(EXPECTED_PROBES)).toEqual([])
+})
+
+test('the Finance queue counts the decisions of the day and filters by the receiving account', async () => {
+  const { page, api } = sessions.finance
+  const listed = page.waitForResponse((response) =>
+    response.url().endsWith('/api/v1/finance/bank-transfers/accounts?per_page=100'),
+  )
+  await page.goto('/finance/transfers')
+  const accounts = await (await listed).json()
+  expect(accounts.data).toEqual([
+    {
+      id: expect.any(String),
+      bank_name: { ar: 'مصرف العيّنة', en: 'Sample Bank' },
+      iban_last4: account.iban.slice(-4),
+      state: 'active',
+    },
+  ])
+  await expect(page.locator('.stats-card__value')).toHaveText(['0', '1', '1'])
+  await page.locator('.transfer-filters [role="combobox"]').first().click()
+  await page
+    .locator('.dropdown-popup')
+    .getByRole('option', { name: `مصرف العيّنة · ينتهي بـ ${account.iban.slice(-4)}` })
+    .click()
+  await page.locator('[role="tab"]').last().click()
+  await expect(page.locator('.transfer-queue__table tbody tr')).toHaveCount(2)
+  await shot(page, 'queue-today')
+  expect(api.sourcesOf(/^\/api\/v1\/finance\/bank-transfers(\/accounts)?$/)).toEqual([
+    SOURCES.BACKEND,
+  ])
+  expect(api.unexpected(EXPECTED_PROBES)).toEqual([])
 })

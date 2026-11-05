@@ -17,7 +17,7 @@ final class BankTransferController
     public function index(IndexBankTransfersRequest $request, ListBankTransfers $listTransfers): JsonResponse
     {
         return ApiResponse::paginated($listTransfers->handle($request->filters()), BankTransferResource::class, [
-            'counts' => ['under_review' => $listTransfers->awaitingReviewCount()],
+            'counts' => $listTransfers->counts()->toArray(),
         ]);
     }
 

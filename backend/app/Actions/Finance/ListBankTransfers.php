@@ -6,14 +6,20 @@ namespace App\Actions\Finance;
 
 use App\Data\Finance\BankTransferFilters;
 use App\Data\Finance\StaffBankTransfer;
+use App\Data\Finance\TransferQueueCounts;
 use App\Models\Finance\Payment;
 use App\Services\Finance\BankTransferQuery;
+use App\Services\Finance\BankTransferQueueCounter;
 use App\Services\Finance\DuplicateProofFinder;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 final readonly class ListBankTransfers
 {
-    public function __construct(private BankTransferQuery $query, private DuplicateProofFinder $duplicates) {}
+    public function __construct(
+        private BankTransferQuery $query,
+        private DuplicateProofFinder $duplicates,
+        private BankTransferQueueCounter $counter,
+    ) {}
 
     /**
      * @return LengthAwarePaginator<int, StaffBankTransfer>
@@ -29,9 +35,9 @@ final readonly class ListBankTransfers
         ));
     }
 
-    public function awaitingReviewCount(): int
+    public function counts(): TransferQueueCounts
     {
-        return $this->query->awaitingReviewCount();
+        return $this->counter->count();
     }
 
     /**

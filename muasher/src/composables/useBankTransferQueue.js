@@ -1,24 +1,23 @@
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useFinanceList } from '@/composables/useFinanceList'
 import { useTransferSelection } from '@/composables/useTransferSelection'
 import { bankTransfersService } from '@/services/bankTransfersService'
 import {
   DEFAULT_TRANSFER_SORT,
+  TRANSFER_ACCOUNTS_PER_PAGE,
   TRANSFER_FILTERS,
   TRANSFER_REVIEW_TABS,
 } from '@/constants/bankTransfer'
 import { PAYMENT_STATUSES } from '@/constants/payments'
 
 const QUEUE_PER_PAGE = 15
-const COUNT_PROBE = { perPage: 1 }
 
 function isDecidable(item) {
   return item.status === PAYMENT_STATUSES.UNDER_REVIEW && !item.entity.isFrozen
 }
 
-async function totalOf(status) {
-  const envelope = await bankTransfersService.list({ ...COUNT_PROBE, 'filter[status]': status })
-  return envelope.meta?.pagination?.total ?? 0
+function countOf(value) {
+  return Number.isInteger(value) ? value : null
 }
 
 export function useBankTransferQueue() {
@@ -29,34 +28,29 @@ export function useBankTransferQueue() {
     sort: DEFAULT_TRANSFER_SORT,
   })
   const selection = useTransferSelection(list.items, { isSelectable: isDecidable })
-  const totals = reactive({ paid: null, rejected: null })
-  const accounts = ref(new Map())
+  const accounts = ref([])
 
-  const underReviewCount = computed(() => list.meta.value?.counts?.underReview ?? null)
+  const counts = computed(() => {
+    const raw = list.meta.value?.counts ?? {}
+    return {
+      underReview: countOf(raw.underReview),
+      approvedToday: countOf(raw.approvedToday),
+      rejectedToday: countOf(raw.rejectedToday),
+    }
+  })
+  const underReviewCount = computed(() => counts.value.underReview)
   const tab = computed(() => list.filters.filters.status)
   const canSelect = computed(() => tab.value === TRANSFER_REVIEW_TABS.UNDER_REVIEW)
-  const knownAccounts = computed(() => [...accounts.value.values()])
 
-  async function loadTotals() {
+  async function loadAccounts() {
     try {
-      const [paid, rejected] = await Promise.all([
-        totalOf(PAYMENT_STATUSES.PAID),
-        totalOf(PAYMENT_STATUSES.REJECTED),
-      ])
-      totals.paid = paid
-      totals.rejected = rejected
+      const envelope = await bankTransfersService.listAccounts({
+        perPage: TRANSFER_ACCOUNTS_PER_PAGE,
+      })
+      accounts.value = envelope.data
     } catch {
-      totals.paid = null
-      totals.rejected = null
+      accounts.value = []
     }
-  }
-
-  function rememberAccounts(items) {
-    const next = new Map(accounts.value)
-    items.forEach((item) => {
-      if (item.bankAccount?.id) next.set(item.bankAccount.id, item.bankAccount)
-    })
-    accounts.value = next
   }
 
   function setTab(value) {
@@ -66,20 +60,19 @@ export function useBankTransferQueue() {
 
   async function refresh() {
     selection.clear()
-    await Promise.all([list.load(), loadTotals()])
+    await list.load()
   }
 
-  watch(list.items, rememberAccounts)
-  onMounted(loadTotals)
+  onMounted(loadAccounts)
 
   return {
     ...list,
     selection,
-    totals,
+    counts,
     underReviewCount,
+    accounts,
     tab,
     canSelect,
-    knownAccounts,
     isDecidable,
     setTab,
     refresh,

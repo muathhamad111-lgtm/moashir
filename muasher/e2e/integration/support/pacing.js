@@ -3,9 +3,10 @@ const WINDOWS = {
   signIn: { limit: 20, windowMs: 60 * 1000 },
   signInCode: { limit: 10, windowMs: 10 * 60 * 1000 },
   passwordReset: { limit: 9, windowMs: 10 * 60 * 1000 },
+  pageLoad: { limit: 12, windowMs: 60 * 1000 },
 }
 const MARGIN_MS = 1500
-const history = { mfa: [], signIn: [], signInCode: [], passwordReset: [] }
+const history = { mfa: [], signIn: [], signInCode: [], passwordReset: [], pageLoad: [] }
 
 export async function paced(name, cost = 1) {
   const { limit, windowMs } = WINDOWS[name]

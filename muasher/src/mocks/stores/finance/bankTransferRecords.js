@@ -1,3 +1,4 @@
+import { riyadhDateKey } from '@/utils/datetime'
 import { financeEntityEmails } from '../../fixtures/finance'
 import { findEntity } from '../entitiesStore'
 import { financeState, findBankAccount, findFile, receiptOf, transferOf } from './financeState'
@@ -149,4 +150,21 @@ export function awaitingReviewCount() {
   return transferPayments().filter(
     (payment) => payment.status === UNDER_REVIEW && !isFrozenEntity(payment.entityId),
   ).length
+}
+
+function decidedToday() {
+  const today = riyadhDateKey(new Date())
+  return transferPayments()
+    .filter((payment) => !isFrozenEntity(payment.entityId))
+    .map((payment) => transferOf(payment.id))
+    .filter((transfer) => transfer?.reviewedAt && riyadhDateKey(transfer.reviewedAt) === today)
+}
+
+export function queueCounts() {
+  const decisions = decidedToday()
+  return {
+    underReview: awaitingReviewCount(),
+    approvedToday: decisions.filter((transfer) => !transfer.rejectionReason).length,
+    rejectedToday: decisions.filter((transfer) => Boolean(transfer.rejectionReason)).length,
+  }
 }

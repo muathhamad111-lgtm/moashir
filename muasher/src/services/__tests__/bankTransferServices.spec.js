@@ -10,6 +10,7 @@ import {
   toCheckoutOptions,
   toPaymentChannels,
   toStaffTransfer,
+  toTransferAccount,
 } from '@/services/mappers/bankTransfers'
 
 vi.mock('@/api/client', () => ({
@@ -200,11 +201,13 @@ describe('paymentChannelsService', () => {
 describe('bankTransfersService', () => {
   it('lists, reads and decides transfers', async () => {
     apiClient.get.mockResolvedValue(
-      envelope([{ id: 'p-1', entity: {} }], { counts: { underReview: 1 } }),
+      envelope([{ id: 'p-1', entity: {} }], {
+        counts: { underReview: 1, approvedToday: 2, rejectedToday: 0 },
+      }),
     )
     apiClient.post.mockResolvedValue(envelope({ id: 'p-1', entity: {} }))
     const listed = await bankTransfersService.list({ 'filter[status]': 'under-review' })
-    expect(listed.meta.counts.underReview).toBe(1)
+    expect(listed.meta.counts).toEqual({ underReview: 1, approvedToday: 2, rejectedToday: 0 })
     await bankTransfersService.approve('p-1')
     await bankTransfersService.reject('p-1', {
       rejectionReason: 'other',
@@ -223,6 +226,29 @@ describe('bankTransfersService', () => {
       ],
       ['/finance/bank-transfers/p-1/reject', { rejectionReason: 'unreadable', reason: 'Reason.' }],
     ])
+  })
+
+  it('reads the destination accounts Finance may filter by', async () => {
+    apiClient.get.mockResolvedValue(
+      envelope([
+        { id: 'acc-1', bankName: ACCOUNT.bankName, ibanLast4: '7519', state: 'archived' },
+        { id: 'acc-2', ibanLast4: '7890', state: 'unknown' },
+      ]),
+    )
+    const listed = await bankTransfersService.listAccounts({ perPage: 100 })
+    expect(apiClient.get).toHaveBeenCalledWith('/finance/bank-transfers/accounts', {
+      params: { perPage: 100 },
+    })
+    expect(listed.data).toEqual([
+      { id: 'acc-1', bankName: ACCOUNT.bankName, ibanLast4: '7519', state: 'archived' },
+      { id: 'acc-2', bankName: { ar: '', en: '' }, ibanLast4: '7890', state: null },
+    ])
+    expect(toTransferAccount()).toEqual({
+      id: null,
+      bankName: { ar: '', en: '' },
+      ibanLast4: '',
+      state: null,
+    })
   })
 
   it('sends one reason for a bulk decision and maps the outcome', async () => {

@@ -1,4 +1,4 @@
-import { BANK_ACCOUNT_RULES } from '@/constants/bankTransfer'
+import { BANK_ACCOUNT_RULES, BANK_ACCOUNT_STATES } from '@/constants/bankTransfer'
 import { ibanIssue, normalizeIban } from '@/utils/payments/iban'
 import { usersFixture } from '../../fixtures/users'
 import { financeState, persistFinanceState } from './financeState'
@@ -238,6 +238,27 @@ export function reorderAccounts(body) {
   })
   persistFinanceState()
   return listedAccounts()
+}
+
+function stateOf(account) {
+  if (account.archivedAt !== null) return BANK_ACCOUNT_STATES.ARCHIVED
+  return account.isActive ? BANK_ACCOUNT_STATES.ACTIVE : BANK_ACCOUNT_STATES.INACTIVE
+}
+
+export function transferAccounts() {
+  const archived = financeState()
+    .bankAccounts.filter((account) => account.archivedAt !== null && usageOf(account).isUsed)
+    .sort((left, right) => left.archivedAt.localeCompare(right.archivedAt))
+  return [...listedAccounts(), ...archived]
+}
+
+export function transferAccountResource(account) {
+  return {
+    id: account.id,
+    bankName: { ...account.bankName },
+    ibanLast4: account.iban.slice(-4),
+    state: stateOf(account),
+  }
 }
 
 export function listedAccount(id) {

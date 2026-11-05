@@ -1,4 +1,7 @@
 import { PAYMENT_CHANNEL_VALUES } from '@/constants/payments'
+import { BANK_ACCOUNT_STATES } from '@/constants/bankTransfer'
+
+const ACCOUNT_STATE_VALUES = Object.values(BANK_ACCOUNT_STATES)
 
 function bilingual(raw) {
   if (!raw) return null
@@ -58,6 +61,15 @@ export function toBankAccount(raw = {}) {
     deactivatedAt: raw.deactivatedAt ?? null,
     createdAt: raw.createdAt ?? null,
     createdBy: actorOf(raw.createdBy),
+  }
+}
+
+export function toTransferAccount(raw = {}) {
+  return {
+    id: raw.id ?? null,
+    bankName: bilingual(raw.bankName) ?? { ar: '', en: '' },
+    ibanLast4: raw.ibanLast4 ?? '',
+    state: ACCOUNT_STATE_VALUES.includes(raw.state) ? raw.state : null,
   }
 }
 

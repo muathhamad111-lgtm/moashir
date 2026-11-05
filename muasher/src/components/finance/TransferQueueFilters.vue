@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import AppSelect from '@/components/form/AppSelect.vue'
 import { PAYMENT_PURPOSE_VALUES } from '@/constants/payments'
 import { FINANCE_MODES } from '@/constants/finance'
-import { FROZEN_FILTER_VALUES, TRANSFER_SORTS } from '@/constants/bankTransfer'
+import { BANK_ACCOUNT_STATES, FROZEN_FILTER_VALUES, TRANSFER_SORTS } from '@/constants/bankTransfer'
 import { localizedText } from '@/utils/localizedText'
 
 const props = defineProps({
@@ -16,12 +16,21 @@ const props = defineProps({
 const emit = defineEmits(['filter', 'sort'])
 const { t, locale } = useI18n()
 
+function accountLabel(account) {
+  const line = t('finance.transfers.fields.accountLine', {
+    bank: localizedText(account.bankName, locale.value),
+    last4: account.ibanLast4,
+  })
+  if (!account.state || account.state === BANK_ACCOUNT_STATES.ACTIVE) return line
+  return t('finance.transfers.filters.accountWithState', {
+    account: line,
+    state: t(`finance.transfers.filters.accountStates.${account.state}`),
+  })
+}
+
 const accountOptions = computed(() => [
   { value: '', label: t('finance.transfers.filters.allAccounts') },
-  ...props.accounts.map((account) => ({
-    value: account.id,
-    label: localizedText(account.bankName, locale.value),
-  })),
+  ...props.accounts.map((account) => ({ value: account.id, label: accountLabel(account) })),
 ])
 const purposeOptions = computed(() => [
   { value: '', label: t('finance.filters.allServices') },
@@ -51,6 +60,7 @@ const sortOptions = computed(() =>
 <template>
   <div class="transfer-filters">
     <AppSelect
+      class="transfer-filters__account"
       variant="filter"
       :model-value="filters.bankAccount"
       :options="accountOptions"

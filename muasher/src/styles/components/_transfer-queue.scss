@@ -32,6 +32,17 @@
   flex-wrap: wrap;
 }
 
+.transfers-page__panel .toolbar__filters,
+.transfer-filters,
+.transfer-filters__account {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+}
+
+.transfer-filters__account .dropdown-filter__trigger {
+  max-inline-size: var(--size-filter-wide);
+}
+
 .transfer-queue {
   @include flex(column, stretch, flex-start, var(--space-3));
 }

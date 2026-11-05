@@ -209,6 +209,18 @@ test('Finance approves the selected transfers at once', async ({ page }, testInf
   await signIn(page, testInfo, USERS.finance)
   await page.goto('/finance/transfers')
   await expect(page.locator('.transfer-queue__table tbody tr')).toHaveCount(3)
+  await expect(page.locator('.stats-card__value')).toHaveText(['3', '0', '0'])
+  await expect(page.locator('.stats-card__label')).toHaveText(
+    isEn(testInfo)
+      ? ['Under review', 'Approved today', 'Rejected today']
+      : ['قيد المراجعة', 'اعتُمدت اليوم', 'رُفضت اليوم'],
+  )
+  await page.locator('.transfer-filters [role="combobox"]').first().click()
+  await expect(page.locator('.dropdown-popup').getByRole('option')).toHaveText([
+    isEn(testInfo) ? 'All accounts' : 'كل الحسابات',
+    isEn(testInfo) ? 'Example Bank (example) · ends in 7519' : 'بنك المثال (مثال) · ينتهي بـ 7519',
+  ])
+  await page.keyboard.press('Escape')
   await expect(page.locator('.transfer-queue__table tbody tr').nth(1)).toContainText(
     isEn(testInfo) ? 'Duplicate file' : 'ملف مكرر',
   )
@@ -227,6 +239,7 @@ test('Finance approves the selected transfers at once', async ({ page }, testInf
     isEn(testInfo) ? 'decided: 3' : 'المنفَّذ: 3',
   )
   await expect(page.locator('.transfer-queue .empty-state')).toBeVisible()
+  await expect(page.locator('.stats-card__value')).toHaveText(['0', '3', '0'])
   expect(errors).toEqual([])
 })
 

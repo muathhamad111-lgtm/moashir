@@ -1,8 +1,9 @@
 import { apiClient } from '@/api/client'
 import { domainRequests } from './domainRequest'
-import { toBulkOutcome, toStaffTransfer } from './mappers/bankTransfers'
+import { toBulkOutcome, toStaffTransfer, toTransferAccount } from './mappers/bankTransfers'
 
 const PATH = '/finance/bank-transfers'
+const ACCOUNTS_PATH = `${PATH}/accounts`
 const NOT_FOUND = 404
 
 const { read, write } = domainRequests('bankTransfers', 'bank-transfer')
@@ -29,6 +30,12 @@ export const bankTransfersService = {
       ...envelope,
       data: (envelope.data ?? []).map(toStaffTransfer),
     }))
+  },
+
+  listAccounts(params = {}) {
+    return read('listAccounts', () => apiClient.get(ACCOUNTS_PATH, { params }), params).then(
+      (envelope) => ({ ...envelope, data: (envelope.data ?? []).map(toTransferAccount) }),
+    )
   },
 
   get(paymentId) {

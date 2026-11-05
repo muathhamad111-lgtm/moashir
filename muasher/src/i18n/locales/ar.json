@@ -5909,8 +5909,8 @@
       "openReview": "فتح مراجعة التحويل",
       "stats": {
         "underReview": "قيد المراجعة",
-        "approved": "المعتمدة",
-        "rejected": "المرفوضة"
+        "approvedToday": "اعتُمدت اليوم",
+        "rejectedToday": "رُفضت اليوم"
       },
       "tabs": {
         "under-review": "قيد المراجعة",
@@ -5922,6 +5922,11 @@
       "filters": {
         "account": "الحساب المستلم",
         "allAccounts": "كل الحسابات",
+        "accountWithState": "{account} ({state})",
+        "accountStates": {
+          "inactive": "معطّل",
+          "archived": "مؤرشف"
+        },
         "allModes": "كل البيئات",
         "frozenLabel": "الجهات الموقوفة",
         "frozen": {

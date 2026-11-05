@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models\Finance;
 
 use App\Casts\LocalizedTextCast;
+use App\Enums\Finance\BankAccountState;
 use App\Models\Concerns\HasPublicId;
 use App\Models\Identity\User;
 use App\Support\ValueObjects\LocalizedText;
@@ -92,6 +93,15 @@ final class BankAccount extends Model
     public function ibanLastFour(): string
     {
         return substr($this->iban, -4);
+    }
+
+    public function state(): BankAccountState
+    {
+        if ($this->archived_at !== null) {
+            return BankAccountState::Archived;
+        }
+
+        return $this->is_active ? BankAccountState::Active : BankAccountState::Inactive;
     }
 
     /**

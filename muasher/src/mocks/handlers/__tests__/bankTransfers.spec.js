@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { setupServer } from 'msw/node'
 import { paymentsHandlers } from '@/mocks/handlers/payments'
 import { bankTransfersHandlers } from '@/mocks/handlers/bankTransfers'
@@ -79,6 +79,7 @@ beforeEach(() => {
 afterEach(() => {
   server.resetHandlers()
   clearMockSession()
+  vi.useRealTimers()
 })
 afterAll(() => server.close())
 
@@ -307,7 +308,7 @@ describe('finance bank-transfer review mock contract', () => {
       'PAY-2026-000022',
       'PAY-2026-000023',
     ])
-    expect(body.meta.counts.under_review).toBe(3)
+    expect(body.meta.counts).toEqual({ under_review: 3, approved_today: 0, rejected_today: 0 })
     expect(body.data[1].has_duplicate_proof).toBe(true)
     expect(body.data[1].duplicate_proofs).toBeNull()
     const detail = await call(`/finance/bank-transfers/${BANK_TRANSFER_IDS.underReviewBag}`)
@@ -372,6 +373,91 @@ describe('finance bank-transfer review mock contract', () => {
       decided: [BANK_TRANSFER_IDS.underReviewLatest],
       skipped: [{ id: BANK_TRANSFER_IDS.paidBag, code: 'state.transition_illegal' }],
     })
+  })
+
+  it('counts the approvals and rejections decided on the current Riyadh day', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    seedMockSession(OFFICER)
+    const decide = (id, action, body = {}) =>
+      call(`/finance/bank-transfers/${id}/${action}`, { method: 'POST', body })
+    vi.setSystemTime(new Date('2026-11-05T20:59:00Z'))
+    await decide(BANK_TRANSFER_IDS.underReviewAccredited, 'approve')
+    vi.setSystemTime(new Date('2026-11-05T21:00:00Z'))
+    await decide(BANK_TRANSFER_IDS.underReviewBag, 'approve')
+    await decide(BANK_TRANSFER_IDS.underReviewLatest, 'reject', { rejection_reason: 'unreadable' })
+    const { body } = await call('/finance/bank-transfers?filter[status]=all&filter[mode]=live')
+    expect(body.meta.counts).toEqual({ under_review: 0, approved_today: 1, rejected_today: 1 })
+    vi.setSystemTime(new Date('2026-11-06T21:00:00Z'))
+    const nextDay = await call('/finance/bank-transfers')
+    expect(nextDay.body.meta.counts).toEqual({
+      under_review: 0,
+      approved_today: 0,
+      rejected_today: 0,
+    })
+  })
+
+  it('lists the destination accounts for Finance with the last 4 digits and the state only', async () => {
+    seedMockSession(OFFICER)
+    const first = await call('/finance/bank-transfers/accounts')
+    expect(first.status).toBe(200)
+    expect(first.body.data).toEqual([
+      {
+        id: EXAMPLE_ACCOUNT_ID,
+        bank_name: { ar: 'بنك المثال (مثال)', en: 'Example Bank (example)' },
+        iban_last4: '7519',
+        state: 'active',
+      },
+    ])
+    expect(first.body.meta.pagination).toEqual({ page: 1, per_page: 50, total: 1, last_page: 1 })
+    seedMockSession(ADMIN)
+    const created = await call('/settings/payment/bank-accounts', {
+      method: 'POST',
+      body: newAccount(),
+    })
+    await call(`/settings/payment/bank-accounts/${created.body.data.id}/deactivate`, {
+      method: 'POST',
+      body: {},
+    })
+    financeState().bankAccounts.push({
+      ...financeState().bankAccounts[0],
+      id: crypto.randomUUID(),
+      iban: 'SA0400000000000000000011',
+      isActive: false,
+      archivedAt: '2026-11-01T08:00:00Z',
+    })
+    const listed = await call('/finance/bank-transfers/accounts?per_page=100')
+    expect(listed.body.data.map((account) => [account.iban_last4, account.state])).toEqual([
+      ['7519', 'active'],
+      ['7890', 'inactive'],
+    ])
+    expect(JSON.stringify(listed.body)).not.toContain('SA0380000000608010167519')
+  })
+
+  it('keeps archived accounts used by a transfer in the Finance account list', async () => {
+    seedMockSession(ADMIN)
+    await call('/settings/payment/bank-accounts', { method: 'POST', body: newAccount() })
+    seedMockSession(OFFICER)
+    const pending = await call('/finance/bank-transfers')
+    await call('/finance/bank-transfers/bulk-approve', {
+      method: 'POST',
+      body: { payment_ids: pending.body.data.map((item) => item.id) },
+    })
+    seedMockSession(ADMIN)
+    await call(`/settings/payment/bank-accounts/${EXAMPLE_ACCOUNT_ID}`, { method: 'DELETE' })
+    const listed = await call('/finance/bank-transfers/accounts')
+    expect(listed.body.data.map((account) => [account.iban_last4, account.state])).toEqual([
+      ['7890', 'active'],
+      ['7519', 'archived'],
+    ])
+  })
+
+  it('refuses the account list to users without finance access and validates the page size', async () => {
+    seedMockSession(ENTITY)
+    expect((await call('/finance/bank-transfers/accounts')).status).toBe(403)
+    seedMockSession(OFFICER)
+    const tooMany = await call('/finance/bank-transfers/accounts?per_page=101')
+    expect([tooMany.status, tooMany.body.code]).toEqual([422, 'validation_failed'])
+    expect(Object.keys(tooMany.body.errors)).toEqual(['per_page'])
   })
 
   it('shows the reviewer action item with the count of transfers under review', async () => {

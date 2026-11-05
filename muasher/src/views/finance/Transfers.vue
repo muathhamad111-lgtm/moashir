@@ -43,20 +43,20 @@ const stats = computed(() => [
   {
     id: 'under-review',
     icon: 'refresh-dots',
-    value: countLabel(queue.underReviewCount.value),
+    value: countLabel(queue.counts.value.underReview),
     label: t('finance.transfers.stats.underReview'),
   },
   {
-    id: 'approved',
+    id: 'approved-today',
     icon: 'check-circle',
-    value: countLabel(queue.totals.paid),
-    label: t('finance.transfers.stats.approved'),
+    value: countLabel(queue.counts.value.approvedToday),
+    label: t('finance.transfers.stats.approvedToday'),
   },
   {
-    id: 'rejected',
+    id: 'rejected-today',
     icon: 'x',
-    value: countLabel(queue.totals.rejected),
-    label: t('finance.transfers.stats.rejected'),
+    value: countLabel(queue.counts.value.rejectedToday),
+    label: t('finance.transfers.stats.rejectedToday'),
   },
 ])
 
@@ -111,7 +111,7 @@ const emptyKey = computed(() =>
               <TransferQueueFilters
                 :filters="filters.filters"
                 :sort="filters.sort.value"
-                :accounts="queue.knownAccounts.value"
+                :accounts="queue.accounts.value"
                 @filter="queue.setFilter"
                 @sort="queue.setSort"
               />

@@ -1,4 +1,5 @@
 import { http } from '../contract/http'
+import { paginate } from '../contract/pagination'
 import { envelope } from '../contract/responses'
 import {
   actorCan,
@@ -8,9 +9,14 @@ import {
 } from '../stores/finance/financeAccess'
 import { findFile, transferOf } from '../stores/finance/financeState'
 import { financeReject, financeRoute, readJson } from '../stores/finance/financeRejection'
-import { page } from '../stores/finance/financeQueries'
+import { page, validatedPaging } from '../stores/finance/financeQueries'
 import { signedDownloadOf } from '../stores/finance/signedFiles'
-import { awaitingReviewCount, staffTransferResource } from '../stores/finance/bankTransferRecords'
+import {
+  awaitingReviewCount,
+  queueCounts,
+  staffTransferResource,
+} from '../stores/finance/bankTransferRecords'
+import { transferAccountResource, transferAccounts } from '../stores/finance/bankAccountsStore'
 import {
   approveTransfer,
   decideEach,
@@ -26,6 +32,7 @@ import {
 const BASE = '/api/v1/finance/bank-transfers'
 const REVIEW = 'finance.transfers.review'
 const OPERATIONS = 'finance.operations.view'
+const ACCOUNTS_PER_PAGE = 50
 
 function viewer() {
   const user = signedInActor()
@@ -74,8 +81,19 @@ export const bankTransfersHandlers = [
       const { items, pagination } = page(queueOf(queueFilters(query)), query)
       return envelope(
         items.map((payment) => staffTransferResource(payment)),
-        { pagination, counts: { underReview: awaitingReviewCount() } },
+        { pagination, counts: queueCounts() },
       )
+    }),
+  ),
+
+  http.get(
+    `${BASE}/accounts`,
+    financeRoute(({ request }) => {
+      viewer()
+      const query = new URL(request.url).searchParams
+      validatedPaging(query)
+      const { items, pagination } = paginate(transferAccounts(), query, ACCOUNTS_PER_PAGE)
+      return envelope(items.map(transferAccountResource), { pagination })
     }),
   ),
 
