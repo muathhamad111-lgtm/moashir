@@ -3,6 +3,7 @@ import { financeState, findFile, persistFinanceState } from './financeState'
 import { financeReject } from './financeRejection'
 import { nowIso } from './paymentLifecycle'
 import { FIXTURE_ENTITY_LOGO_FILE_ID, fixtureEntityLogoBytes } from '../../fixtures/entityLogos'
+import { transferProofSample } from './proofSamples'
 
 export const SIGNED_LINK_MINUTES = 5
 
@@ -73,11 +74,12 @@ function verifiedLink(url, user) {
   return fileId
 }
 
-export function fileDownloadResponse(request, user) {
+export async function fileDownloadResponse(request, user) {
   const file = findFile(verifiedLink(new URL(request.url), user))
   if (!file) throw financeReject.notFound()
   if (file.scanStatus !== 'clean') throw financeReject.fileNotClean()
-  const body = fileContents.get(file.id) ?? placeholderContent(file)
+  const body =
+    fileContents.get(file.id) ?? (await transferProofSample(file)) ?? placeholderContent(file)
   return new HttpResponse(body, {
     status: 200,
     headers: {

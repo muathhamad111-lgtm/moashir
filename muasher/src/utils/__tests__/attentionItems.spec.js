@@ -72,4 +72,23 @@ describe('attention item views', () => {
     expect(views).toHaveLength(1)
     expect(views[0].to).toBeNull()
   })
+
+  it('presents the entity bank-transfer items: rejected as an action, under review as information', () => {
+    const rejected = attentionView(
+      item('bank_transfer_rejected', 1, { reference: 'PAY-2026-000024' }, { link: '/payments' }),
+    )
+    expect(rejected).toMatchObject({
+      tone: 'warning',
+      textKey: 'portal.strip.items.bank_transfer_rejected.single',
+      to: '/payments',
+    })
+    const underReview = attentionView(
+      item('bank_transfer_under_review', 2, {}, { link: '/payments' }),
+    )
+    expect(underReview).toMatchObject({
+      tone: 'info',
+      textKey: 'portal.strip.items.bank_transfer_under_review.many',
+      plural: 2,
+    })
+  })
 })

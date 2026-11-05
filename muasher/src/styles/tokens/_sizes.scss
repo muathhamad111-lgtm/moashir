@@ -105,3 +105,17 @@ $size-sheet-max-block: 85%;
 $size-sheet-handle: 2.5rem;
 $size-filter-min: 10rem;
 $size-filter-max: 18rem;
+$size-proof-stage: 34rem;
+$size-proof-stage-compact: 18rem;
+$size-method-option-min: 15rem;
+$size-account-card-min: 14rem;
+$size-transfer-step-marker: 1.75rem;
+$proof-zoom-levels: (
+  50: 0.5,
+  75: 0.75,
+  100: 1,
+  125: 1.25,
+  150: 1.5,
+  175: 1.75,
+  200: 2,
+);

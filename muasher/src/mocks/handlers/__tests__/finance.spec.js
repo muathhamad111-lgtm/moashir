@@ -30,8 +30,10 @@ const ASSESSOR = { id: 30, roles: ['assessor'] }
 
 const PRICING_KEYS = ['currency', 'price_before_vat', 'total', 'vat_amount', 'vat_rate']
 const OWN_PAYMENT_KEYS = [
+  'bank_transfer',
   'cancelled_at',
   'card_last4',
+  'channel',
   'created_at',
   'expires_at',
   'failed_at',
@@ -45,6 +47,7 @@ const OWN_PAYMENT_KEYS = [
   'receipt',
   'reference',
   'refunded_at',
+  'rejected_at',
   'request',
   'status',
 ]
@@ -67,6 +70,7 @@ const CHECKOUT_KEYS = [
 ]
 const TRANSACTION_KEYS = [
   'card_last4',
+  'channel',
   'created_at',
   'entity',
   'has_refund',
@@ -85,6 +89,7 @@ const TRANSACTION_KEYS = [
   'updated_at',
 ]
 const DETAIL_EXTRA_KEYS = [
+  'bank_transfer',
   'cancelled_at',
   'expires_at',
   'failed_at',
@@ -96,6 +101,7 @@ const DETAIL_EXTRA_KEYS = [
   'provider_payment_id',
   'receipt',
   'refund',
+  'rejected_at',
   'verified_at',
 ]
 const RECEIPT_KEYS = [
@@ -111,6 +117,7 @@ const RECEIPT_KEYS = [
 ]
 const SNAPSHOT_KEYS = [
   'card_last4',
+  'channel',
   'currency',
   'entity_name',
   'entity_reference',
@@ -507,7 +514,7 @@ describe('finance staff mock contract', () => {
   it('summarises live payments by purpose', async () => {
     as(FINANCE_OFFICER)
     const { body } = await call('/finance/summary')
-    expect(keys(body.data)).toEqual([...STATS_KEYS, 'by_purpose'].sort())
+    expect(keys(body.data)).toEqual([...STATS_KEYS, 'by_channel', 'by_purpose'].sort())
     expect(body.data.by_purpose.map((row) => row.purpose)).toEqual(['accredited', 'bag'])
     expect(body.meta).toEqual({ live_only: true })
     expect((await call('/finance/summary?from=2026-13-01')).status).toBe(422)

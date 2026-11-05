@@ -41,6 +41,18 @@ import { receiptFileOf } from '../stores/finance/receiptOperations'
 import { fileDownloadResponse, signedDownloadOf } from '../stores/finance/signedFiles'
 import { assertMayPurchase } from '../stores/finance/paymentHooks'
 import { recordOfPayment } from '../stores/accredited/accreditedRecords'
+import { findFile, transferOf } from '../stores/finance/financeState'
+import { isChannelAvailable, availableChannels } from '../stores/finance/paymentChannelsStore'
+import { payerAccountResource, selectableAccounts } from '../stores/finance/bankAccountsStore'
+import {
+  acceptProof,
+  assertTransferAvailable,
+  isTransferForm,
+  openTransfer,
+  validatedTransfer,
+} from '../stores/finance/bankTransferSubmission'
+import { cancelCardOrder } from '../stores/finance/paymentCancellation'
+import { findEntity } from '../stores/entitiesStore'
 
 const ACCREDITED_LABEL = { ar: 'التقييم المعتمد', en: 'Accredited assessment' }
 
@@ -75,7 +87,12 @@ function createdResponse(payment, request, { replay = false, existing = false } 
   )
 }
 
-async function createPayment({ request }) {
+function assertReplayChannel(replay, channel) {
+  if (replay && (replay.channel ?? 'electronic') !== channel)
+    throw financeReject.idempotencyKeyReused()
+}
+
+async function createCardPayment({ request }) {
   const user = signedInActor()
   authorizeCreate(user)
   const key = idempotencyKeyOf(request)
@@ -84,15 +101,72 @@ async function createPayment({ request }) {
   const purpose = validatedPurpose(body)
   expireDueOrders()
   const replay = replayOf(user, purpose, key)
+  assertReplayChannel(replay, 'electronic')
   if (replay) return createdResponse(replay, request, { replay: true })
   const entity = payingEntity(user)
+  if (!isChannelAvailable('electronic')) throw financeReject.channelNotAvailable()
   const mode = gatewayMode()
   assertLinkedPath(purpose)
   const quote = quoteFor(purpose)
   const existing = openOrderOf(entity.id, purpose)
+  if (existing?.channel === 'bank_transfer') throw financeReject.openOrderExists(existing)
   if (existing) return createdResponse(existing, request, { existing: true })
   assertMayPurchase(entity, purpose)
   return createdResponse(openOrder({ user, entity, purpose, quote, mode, key }), request)
+}
+
+function transferCreated(payment, replay) {
+  return envelope(
+    { ...ownPaymentResource(payment), request: null, checkout: null },
+    { idempotentReplay: replay, existingOrder: false },
+    { status: 201 },
+  )
+}
+
+async function createTransferPayment({ request }) {
+  const user = signedInActor()
+  authorizeCreate(user)
+  const key = idempotencyKeyOf(request)
+  const form = await request.formData()
+  const purposeField = { purpose: form.get('purpose') }
+  authorizeKnownPurpose(user, purposeField)
+  const purpose = validatedPurpose(purposeField)
+  const replay = replayOf(user, purpose, key)
+  assertReplayChannel(replay, 'bank_transfer')
+  if (replay) return transferCreated(replay, true)
+  const order = validatedTransfer(form)
+  const entity = payingEntity(user)
+  const account = assertTransferAvailable(order)
+  assertLinkedPath(purpose)
+  const quote = quoteFor(purpose)
+  expireDueOrders()
+  const existing = openOrderOf(entity.id, purpose)
+  if (existing) throw financeReject.openOrderExists(existing)
+  assertMayPurchase(entity, purpose)
+  const proof = await acceptProof(order.proof)
+  return transferCreated(openTransfer({ user, entity, purpose, quote, key, account, proof }), false)
+}
+
+function createPayment(info) {
+  return isTransferForm(info.request) ? createTransferPayment(info) : createCardPayment(info)
+}
+
+function checkoutOptionsOf(user) {
+  const channels = availableChannels()
+  const entity = user.entityId === null ? null : findEntity(user.entityId)
+  return {
+    channels,
+    bankAccounts: channels.includes('bank_transfer')
+      ? selectableAccounts().map(payerAccountResource)
+      : [],
+    transferNote: { unifiedNumber: entity?.unifiedNumber ?? null },
+  }
+}
+
+function ownProofOf(payment) {
+  const transfer = transferOf(payment.id)
+  if (!transfer) throw financeReject.notFound()
+  return findFile(transfer.proofFileId)
 }
 
 function issuedReceipt(payment) {
@@ -122,6 +196,35 @@ export const paymentsHandlers = [
   ),
 
   http.post('/api/v1/payments', financeRoute(createPayment)),
+
+  http.get(
+    '/api/v1/payments/checkout-options',
+    financeRoute(() => {
+      const user = signedInActor()
+      authorizeCreate(user)
+      return envelope(checkoutOptionsOf(user))
+    }),
+  ),
+
+  http.post(
+    '/api/v1/payments/:payment/cancel',
+    financeRoute(({ params }) => {
+      const user = signedInActor()
+      const payment = boundPayment(params)
+      authorizeVerify(user, payment)
+      return envelope(ownPaymentWithRequest(cancelCardOrder(payment)))
+    }),
+  ),
+
+  http.post(
+    '/api/v1/payments/:payment/bank-transfer/proof/download',
+    financeRoute(({ params }) => {
+      const user = signedInActor()
+      const payment = boundPayment(params)
+      authorizeViewOwn(user, payment)
+      return envelope(signedDownloadOf(user, ownProofOf(payment)))
+    }),
+  ),
 
   http.get(
     '/api/v1/payments/:payment',

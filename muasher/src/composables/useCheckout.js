@@ -66,6 +66,15 @@ export function useCheckout(purpose) {
     payment.value = verified
   }
 
+  function reset() {
+    keys.renew()
+    phase.value = CHECKOUT_PHASES.IDLE
+    payment.value = null
+    checkout.value = null
+    failure.value = null
+    existingOrder.value = false
+  }
+
   return {
     phase,
     payment,
@@ -77,5 +86,6 @@ export function useCheckout(purpose) {
     isTest,
     start,
     applyVerified,
+    reset,
   }
 }

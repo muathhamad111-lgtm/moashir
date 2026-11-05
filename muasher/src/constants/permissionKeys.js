@@ -83,6 +83,7 @@ export const PERMISSIONS = {
   FINANCE_OPERATIONS_EXPORT: 'finance.operations.export',
   FINANCE_REFUNDS_MANAGE: 'finance.refunds.manage',
   FINANCE_RECEIPTS_MANAGE: 'finance.receipts.manage',
+  FINANCE_TRANSFERS_REVIEW: 'finance.transfers.review',
 }
 
 export const PERMISSION_KEYS = Object.freeze(Object.values(PERMISSIONS))

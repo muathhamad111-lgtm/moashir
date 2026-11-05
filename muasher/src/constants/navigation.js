@@ -198,6 +198,13 @@ export const APP_NAV_ITEMS = [
     routeName: ROUTE_NAMES.FINANCE_TRANSACTIONS,
   },
   {
+    id: 'finance-transfers',
+    group: 'finance',
+    labelKey: 'nav.financeTransfers',
+    icon: 'inbox',
+    routeName: ROUTE_NAMES.FINANCE_TRANSFERS,
+  },
+  {
     id: 'finance-refunds',
     group: 'finance',
     labelKey: 'nav.financeRefunds',

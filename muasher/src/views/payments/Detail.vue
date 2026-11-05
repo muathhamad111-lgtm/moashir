@@ -12,10 +12,12 @@ import PricingBreakdown from '@/components/payments/PricingBreakdown.vue'
 import ReceiptCard from '@/components/payments/ReceiptCard.vue'
 import TestModeNotice from '@/components/payments/TestModeNotice.vue'
 import PaymentNotice from '@/components/payments/PaymentNotice.vue'
+import TransferRecordCard from '@/components/payments/TransferRecordCard.vue'
 import { usePaymentDetail } from '@/composables/usePaymentDetail'
 import { useSignedDownload } from '@/composables/useSignedDownload'
 import { PAYMENT_STATUSES } from '@/constants/payments'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import { isBankTransfer, newRequestRouteOf } from '@/utils/payments/myPaymentRow'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
@@ -36,8 +38,13 @@ const downloads = useSignedDownload()
 
 useHead({ title: () => t('finance.detail.title') })
 
-const isOpen = computed(() => payment.value?.status === PAYMENT_STATUSES.CREATED)
+const isTransfer = computed(() => isBankTransfer(payment.value))
+const isOpen = computed(
+  () => !isTransfer.value && payment.value?.status === PAYMENT_STATUSES.CREATED,
+)
 const isPending = computed(() => payment.value?.status === PAYMENT_STATUSES.PENDING)
+const isUnderReview = computed(() => payment.value?.status === PAYMENT_STATUSES.UNDER_REVIEW)
+const newRequest = computed(() => (payment.value ? newRequestRouteOf(payment.value) : null))
 
 onMounted(load)
 </script>
@@ -96,11 +103,33 @@ onMounted(load)
         </template>
       </PaymentNotice>
 
+      <PaymentNotice
+        v-if="isUnderReview"
+        tone="info"
+        icon="refresh-dots"
+        :title="t('portal.transfer.status.underReview.title')"
+        :message="t('portal.transfer.status.underReview.message')"
+      />
+      <PaymentNotice
+        v-if="newRequest"
+        tone="danger"
+        icon="x"
+        :title="t('portal.transfer.status.rejected.title')"
+        :message="t('portal.transfer.status.rejected.message')"
+      >
+        <template #actions>
+          <RouterLink class="payment-notice__link" :to="newRequest">{{
+            t('portal.transfer.newRequest')
+          }}</RouterLink>
+        </template>
+      </PaymentNotice>
+
       <div class="payment-detail__layout">
         <Card :title="t('finance.detail.summary')">
           <PaymentFacts :payment="payment" />
           <PricingBreakdown :pricing="payment.pricing" />
         </Card>
+        <TransferRecordCard v-if="isTransfer" :payment="payment" />
         <ReceiptCard
           v-if="receipt"
           :receipt="receipt"
@@ -108,7 +137,7 @@ onMounted(load)
           :unavailable="downloads.unavailable[RECEIPT_KEY] === true"
           @download="downloads.download(RECEIPT_KEY, requestReceiptLink)"
         />
-        <Card v-else>
+        <Card v-else-if="!isTransfer">
           <p class="payment-detail__no-receipt">{{ t('finance.detail.noReceipt') }}</p>
         </Card>
       </div>

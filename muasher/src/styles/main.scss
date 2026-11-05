@@ -208,6 +208,17 @@
 @use 'components/refund-evidence';
 @use 'components/payment-events';
 @use 'components/finance-preview';
+@use 'components/selection-checkbox';
+@use 'components/method-option';
+@use 'components/channels-card';
+@use 'components/bank-accounts';
+@use 'components/transfer-queue';
+@use 'components/transfer-review';
+@use 'components/proof-viewer';
+@use 'components/method-choice';
+@use 'components/transfer-panel';
+@use 'components/proof-upload';
+@use 'components/transfer-status';
 @use 'components/advanced-intro';
 @use 'components/cycles';
 @use 'components/filtering';

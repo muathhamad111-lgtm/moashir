@@ -1,8 +1,9 @@
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SettingsSection from '@/components/settings/SettingsSection.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import IntegrationCard from '@/components/integrations/IntegrationCard.vue'
 import TestModeBanner from '@/components/integrations/TestModeBanner.vue'
@@ -14,13 +15,19 @@ import PaymentKeyPairCard from '@/components/integrations/payment/PaymentKeyPair
 import PaymentMethodsFields from '@/components/integrations/payment/PaymentMethodsFields.vue'
 import ApplePayChecklist from '@/components/integrations/payment/ApplePayChecklist.vue'
 import StcPayChecklist from '@/components/integrations/payment/StcPayChecklist.vue'
+import PaymentChannelsCard from '@/components/settings/payment/PaymentChannelsCard.vue'
+import BankAccountsCard from '@/components/settings/payment/BankAccountsCard.vue'
 import { usePaymentIntegration } from '@/composables/usePaymentIntegration'
+import { usePaymentChannelsSettings } from '@/composables/usePaymentChannelsSettings'
+import { useBankAccountsSettings } from '@/composables/useBankAccountsSettings'
+import { useSuperAdminReason } from '@/composables/useSuperAdminReason'
 import { usePermissions } from '@/composables/usePermissions'
 import { INTEGRATION_MODES } from '@/constants/integrations'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 
 const MODES = [INTEGRATION_MODES.TEST, INTEGRATION_MODES.LIVE]
+const GATEWAY_ANCHOR = 'payment-gateway'
 
 const { t } = useI18n()
 const { can } = usePermissions()
@@ -51,8 +58,19 @@ const {
 } = payment
 const { reasonOpen: webhookReasonOpen, confirmReason: confirmWebhookReason } = webhook
 const fileActions = { fileUpload, fileRemoval, fileCheck }
+const reasons = useSuperAdminReason()
+const channels = usePaymentChannelsSettings({ reasonExtra: reasons.reasonExtra })
+const accounts = useBankAccountsSettings({
+  reasonExtra: reasons.reasonExtra,
+  onChanged: channels.refresh,
+})
+const addingAccount = ref(false)
 
-onMounted(load)
+onMounted(() => {
+  load()
+  channels.load()
+  accounts.load()
+})
 </script>
 
 <template>
@@ -63,6 +81,13 @@ onMounted(load)
     :error-message="errorMessage"
     @retry="load"
   >
+    <PaymentChannelsCard
+      :channels="channels"
+      :gateway-anchor="GATEWAY_ANCHOR"
+      @add-account="addingAccount = true"
+    />
+    <BankAccountsCard v-model:adding="addingAccount" :accounts="accounts" />
+
     <form
       id="payment-integration-form"
       class="integration-form"
@@ -70,8 +95,17 @@ onMounted(load)
       @submit.prevent="submit"
     >
       <TestModeBanner v-if="testModeBanner" />
+      <p
+        v-if="channels.view.value && !channels.electronicOffered.value"
+        class="integration-form__not-offered"
+        role="note"
+      >
+        <AppIcon name="eye-slash" />
+        {{ t('settings.paymentChannels.notOffered') }}
+      </p>
       <EnvironmentSourceNote v-if="fromEnvironment" />
       <IntegrationCard
+        :id="GATEWAY_ANCHOR"
         :title="t('integrations.payment.gatewayTitle')"
         :description="t('integrations.payment.gatewayDesc')"
         :status="cardStatus"
@@ -119,6 +153,14 @@ onMounted(load)
       :submit-label="t('actions.save')"
       :action="confirmReason"
       action-name="paymentIntegration.reason"
+    />
+    <ReasonDialog
+      v-model="reasons.prompt.open.value"
+      :title="t('integrations.reason.title')"
+      :message="t('settings.paymentChannels.reasonMessage')"
+      :submit-label="t('actions.confirm')"
+      :action="reasons.prompt.provide"
+      action-name="paymentChannels.reason"
     />
     <ReasonDialog
       v-model="webhookReasonOpen"

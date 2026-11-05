@@ -93,6 +93,7 @@ function toAwaitingPayment(raw) {
   return {
     paymentId: raw.paymentId ?? null,
     reference: raw.reference ?? '',
+    channel: raw.channel ?? 'electronic',
     status: raw.status ?? null,
     expiresAt: raw.expiresAt ?? null,
   }

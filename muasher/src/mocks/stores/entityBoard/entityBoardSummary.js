@@ -4,7 +4,7 @@ import { financeState } from '../finance/financeState'
 import { inboxOf } from '../notificationsStore'
 import { entityActionItems } from './entityActionItems'
 
-const OPEN_ORDERS = ['created', 'pending']
+const OPEN_ORDERS = ['created', 'pending', 'under-review']
 const ISSUED = 'issued'
 
 const PATH_LABELS = {
@@ -40,6 +40,7 @@ function presentPayment(payment) {
     id: payment.id,
     reference: payment.reference,
     purpose: payment.purpose,
+    channel: payment.channel ?? 'electronic',
     status: payment.status,
     total: payment.total,
     currency: payment.currency,

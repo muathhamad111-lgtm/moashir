@@ -1,13 +1,15 @@
 import { computed, onMounted, ref, unref } from 'vue'
 import { paymentsService } from '@/services/paymentsService'
 import { CHECKOUT_PHASES, useCheckout } from '@/composables/useCheckout'
-import { canCompletePayment } from '@/utils/payments/myPaymentRow'
+import { canCompletePayment, isBankTransfer } from '@/utils/payments/myPaymentRow'
+import { PAYMENT_CHANNELS, PAYMENT_STATUSES } from '@/constants/payments'
 
 const NOT_FOUND = 404
 
 export const COMPLETION_STATES = Object.freeze({
   LOADING: 'loading',
   CHECKOUT: 'checkout',
+  TRANSFER: 'transfer',
   CLOSED: 'closed',
   MISSING: 'missing',
   ERROR: 'error',
@@ -20,8 +22,24 @@ export function usePaymentCompletion(paymentId, { onReplaced = () => {} } = {}) 
   const purpose = computed(() => order.value?.purpose ?? '')
   const checkout = useCheckout(purpose)
 
+  const channels = ref([])
+
   const payment = computed(() => checkout.payment.value ?? order.value)
   const isReady = computed(() => checkout.phase.value === CHECKOUT_PHASES.READY)
+  const canSwitchToTransfer = computed(
+    () =>
+      channels.value.includes(PAYMENT_CHANNELS.BANK_TRANSFER) &&
+      payment.value?.status === PAYMENT_STATUSES.CREATED &&
+      !isBankTransfer(payment.value),
+  )
+
+  async function loadChannels() {
+    try {
+      channels.value = (await paymentsService.checkoutOptions()).data.channels
+    } catch {
+      channels.value = []
+    }
+  }
 
   async function startCheckout() {
     await checkout.start()
@@ -35,12 +53,16 @@ export function usePaymentCompletion(paymentId, { onReplaced = () => {} } = {}) 
     try {
       const { data } = await paymentsService.get(unref(paymentId))
       order.value = data
+      if (isBankTransfer(data)) {
+        state.value = COMPLETION_STATES.TRANSFER
+        return
+      }
       if (!canCompletePayment(data)) {
         state.value = COMPLETION_STATES.CLOSED
         return
       }
       state.value = COMPLETION_STATES.CHECKOUT
-      await startCheckout()
+      await Promise.all([startCheckout(), loadChannels()])
     } catch (error) {
       errorMessage.value = error?.normalized?.message ?? ''
       state.value =
@@ -52,5 +74,16 @@ export function usePaymentCompletion(paymentId, { onReplaced = () => {} } = {}) 
 
   onMounted(load)
 
-  return { order, payment, purpose, state, errorMessage, isReady, checkout, load, startCheckout }
+  return {
+    order,
+    payment,
+    purpose,
+    state,
+    errorMessage,
+    isReady,
+    checkout,
+    canSwitchToTransfer,
+    load,
+    startCheckout,
+  }
 }

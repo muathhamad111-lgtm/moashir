@@ -42,12 +42,14 @@ describe('FinanceNav', () => {
     expect(officer.findAll('.finance-nav__link').map((link) => link.text())).toEqual([
       'Summary',
       'Transactions',
+      'Transfer review',
       'Refunds',
     ])
     const admin = mountWith(FinanceNav, {}, { roles: ['system_admin'] })
     expect(admin.findAll('.finance-nav__link').map((link) => link.text())).toEqual([
       'Summary',
       'Transactions',
+      'Transfer review',
       'Refunds',
       'Payment events',
       'Abandoned carts',
@@ -113,13 +115,18 @@ describe('RefundRecord', () => {
 describe('TransactionFilters', () => {
   it('emits the filter key and value chosen, and the sort', async () => {
     const wrapper = mountWith(TransactionFilters, {
-      filters: { status: '', purpose: '', method: '', mode: '', from: '', to: '' },
+      filters: { status: '', purpose: '', channel: '', method: '', mode: '', from: '', to: '' },
       sort: '-created_at',
     })
-    await wrapper.findAll('.dropdown-filter__trigger')[3].trigger('click')
-    await wrapper.findAll('[role="option"]')[1].trigger('click')
-    expect(wrapper.emitted('filter')).toEqual([['mode', 'test']])
+    await wrapper.findAll('.dropdown-filter__trigger')[2].trigger('click')
+    await wrapper.findAll('[role="option"]')[2].trigger('click')
     await wrapper.findAll('.dropdown-filter__trigger')[4].trigger('click')
+    await wrapper.findAll('[role="option"]')[1].trigger('click')
+    expect(wrapper.emitted('filter')).toEqual([
+      ['channel', 'bank_transfer'],
+      ['mode', 'test'],
+    ])
+    await wrapper.findAll('.dropdown-filter__trigger')[5].trigger('click')
     await wrapper.findAll('[role="option"]')[2].trigger('click')
     expect(wrapper.emitted('sort')).toEqual([['-total']])
   })

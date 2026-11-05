@@ -4,7 +4,7 @@ import { toMinor } from './financeMoney'
 import { failureReasonOf, fetchProviderPayment, last4Of, methodOf } from './providerLedger'
 import {
   CONCLUDED_STATUSES,
-  OPEN_STATUSES,
+  OPEN_CARD_STATUSES,
   bindProvider,
   issueReceipt,
   nowIso,
@@ -91,11 +91,12 @@ function afterCancellation(payment, provider) {
 
 function applied(payment, provider) {
   if (payment.status === 'cancelled') return afterCancellation(payment, provider)
-  if (OPEN_STATUSES.includes(payment.status)) return whileOpen(payment, provider)
+  if (OPEN_CARD_STATUSES.includes(payment.status)) return whileOpen(payment, provider)
   return VERIFICATION.IGNORED
 }
 
 export function verifyPayment(payment, providerPaymentId) {
+  if (payment.channel === 'bank_transfer') throw financeReject.channelNotSupported()
   if (payment.providerPaymentId && payment.providerPaymentId !== providerPaymentId)
     throw financeReject.bindingMismatch()
   if (CONCLUDED_STATUSES.includes(payment.status)) return VERIFICATION.IGNORED

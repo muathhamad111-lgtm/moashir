@@ -1067,6 +1067,19 @@ export const permissionCatalogFixture = [
     confidential: true,
     grantable: false,
   },
+  {
+    key: 'finance.transfers.review',
+    module: 'finance',
+    label: { ar: 'مراجعة التحويلات البنكية', en: 'Review bank transfers' },
+    description: {
+      ar: 'اعتماد طلبات الدفع بالتحويل البنكي أو رفضها بعد مطابقتها مع كشف الحساب.',
+      en: 'Approve or reject bank-transfer payment requests after matching them with the bank statement.',
+    },
+    system: true,
+    lockedToRoles: [],
+    confidential: true,
+    grantable: true,
+  },
 ]
 
 export const defaultRoleMatrixFixture = {
@@ -1230,6 +1243,7 @@ export const defaultRoleMatrixFixture = {
     'finance.operations.export',
     'finance.refunds.manage',
     'finance.receipts.manage',
+    'finance.transfers.review',
   ],
   entity: [
     'dashboard.view',

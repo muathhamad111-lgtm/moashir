@@ -15,13 +15,17 @@ import CheckoutStateNotice from '@/components/payments/CheckoutStateNotice.vue'
 import MoyasarFormHost from '@/components/payments/MoyasarFormHost.vue'
 import MoneyAmount from '@/components/payments/MoneyAmount.vue'
 import PaymentNotice from '@/components/payments/PaymentNotice.vue'
+import TransferStatusPanel from '@/components/payments/TransferStatusPanel.vue'
+import ChangeMethodDialog from '@/components/payments/ChangeMethodDialog.vue'
 import { COMPLETION_STATES, usePaymentCompletion } from '@/composables/usePaymentCompletion'
+import { useCardOrderCancel } from '@/composables/useCardOrderCancel'
+import { PAYMENT_CHANNELS } from '@/constants/payments'
 import { useToast } from '@/composables/useToast'
 import { CHECKOUT_PHASES } from '@/composables/useCheckout'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { formatDate } from '@/utils/datetime'
 import { financeErrorMessage } from '@/utils/payments/financeErrors'
-import { paymentYearOf } from '@/utils/payments/myPaymentRow'
+import { entryRouteOf, paymentYearOf } from '@/utils/payments/myPaymentRow'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const i18n = useI18n()
@@ -38,6 +42,13 @@ const completion = usePaymentCompletion(
   },
 )
 const { checkout, state, payment, order } = completion
+const isTransfer = computed(() => state.value === COMPLETION_STATES.TRANSFER)
+const changeMethod = useCardOrderCancel({
+  onCancelled: (cancelled) => {
+    const entry = entryRouteOf(cancelled.purpose)
+    if (entry) router.push({ ...entry, query: { method: PAYMENT_CHANNELS.BANK_TRANSFER } })
+  },
+})
 
 useHead({ title: () => t('portal.payments.completion.title') })
 
@@ -70,7 +81,7 @@ const validUntil = computed(() => {
     : ''
 })
 const subtitle = computed(() =>
-  validUntil.value
+  validUntil.value && !isTransfer.value
     ? t(`portal.payments.completion.subtitle.${order.value?.purpose ?? 'accredited'}`, {
         time: validUntil.value,
       })
@@ -102,14 +113,34 @@ function focusForm() {
     />
 
     <div class="portal-area__body portal-area__body--aside payment-complete__body">
+      <section v-if="isTransfer" class="portal-surface payment-complete__main">
+        <TestModeNotice v-if="order.isTest" compact />
+        <TransferStatusPanel :payment="order" />
+        <RouterLink class="payment-complete__back" :to="{ name: ROUTE_NAMES.PAYMENTS_MINE }">
+          <AppIcon name="arrow-left" />
+          {{ t('portal.payments.completion.back') }}
+        </RouterLink>
+      </section>
       <section
+        v-else
         ref="formArea"
         class="portal-surface payment-complete__main"
         aria-labelledby="pay-title"
       >
-        <h2 id="pay-title" class="portal-surface__title">
-          {{ t('portal.payments.completion.cardTitle') }}
-        </h2>
+        <div class="payment-complete__title-row">
+          <h2 id="pay-title" class="portal-surface__title">
+            {{ t('portal.payments.completion.cardTitle') }}
+          </h2>
+          <button
+            v-if="completion.canSwitchToTransfer.value && showForm"
+            type="button"
+            class="checkout__change"
+            @click="changeMethod.open.value = true"
+          >
+            <AppIcon name="refresh" />
+            {{ t('portal.checkoutMethod.changeMethod') }}
+          </button>
+        </div>
         <p class="portal-surface__text">
           {{ t('portal.payments.completion.cardIntro', { service }) }}
         </p>
@@ -182,10 +213,19 @@ function focusForm() {
           v-if="order"
           :purpose="order.purpose"
           :payment="payment"
+          :channel="payment?.channel ?? PAYMENT_CHANNELS.ELECTRONIC"
+          :show-status="isTransfer"
           :countdown="showForm ? checkout.countdown : null"
         />
       </aside>
     </div>
+
+    <ChangeMethodDialog
+      v-if="payment && !isTransfer"
+      v-model="changeMethod.open.value"
+      :reference="payment.reference"
+      :action="() => changeMethod.cancel(payment)"
+    />
 
     <MobileActionBar v-if="showForm && payment" :label="t('portal.payments.completion.barLabel')">
       <div class="payment-complete__bar">

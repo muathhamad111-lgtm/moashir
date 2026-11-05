@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import AppSelect from '@/components/form/AppSelect.vue'
 import BaseDatePicker from '@/components/form/BaseDatePicker.vue'
 import {
+  PAYMENT_CHANNEL_VALUES,
   PAYMENT_METHOD_VALUES,
   PAYMENT_PURPOSE_VALUES,
   PAYMENT_STATUS_VALUES,
@@ -30,6 +31,9 @@ const statusOptions = computed(() =>
 )
 const purposeOptions = computed(() =>
   withAll('finance.filters.allServices', PAYMENT_PURPOSE_VALUES, 'finance.purposes'),
+)
+const channelOptions = computed(() =>
+  withAll('finance.filters.allChannels', PAYMENT_CHANNEL_VALUES, 'finance.channels'),
 )
 const methodOptions = computed(() =>
   withAll('finance.filters.allMethods', PAYMENT_METHOD_VALUES, 'finance.methods'),
@@ -61,6 +65,13 @@ const sortOptions = computed(() =>
       :options="purposeOptions"
       :label="t('finance.filters.service')"
       @update:model-value="emit('filter', 'purpose', $event)"
+    />
+    <AppSelect
+      variant="filter"
+      :model-value="filters.channel"
+      :options="channelOptions"
+      :label="t('finance.filters.channel')"
+      @update:model-value="emit('filter', 'channel', $event)"
     />
     <AppSelect
       variant="filter"

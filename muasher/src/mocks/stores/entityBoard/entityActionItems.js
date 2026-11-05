@@ -88,11 +88,44 @@ function requestItems(entityId) {
   ]
 }
 
+function paymentsOf(entityId) {
+  return financeState().payments.filter((payment) => payment.entityId === Number(entityId))
+}
+
+function singleContext(payments) {
+  if (payments.length !== 1) return emptyContext()
+  const [only] = payments
+  return { ...emptyContext(), paymentId: only.id, reference: only.reference }
+}
+
+function transferUnderReviewItem(entityId) {
+  const pending = paymentsOf(entityId).filter((payment) => payment.status === 'under-review')
+  return item('bank_transfer_under_review', pending.length, 'info', LINKS.payments, {
+    context: singleContext(pending),
+  })
+}
+
+function isLatestOfPurpose(payment, payments) {
+  return !payments.some(
+    (other) => other.purpose === payment.purpose && other.createdAt > payment.createdAt,
+  )
+}
+
+function transferRejectedItem(entityId) {
+  const payments = paymentsOf(entityId)
+  const rejected = payments.filter(
+    (payment) => payment.status === 'rejected' && isLatestOfPurpose(payment, payments),
+  )
+  return item('bank_transfer_rejected', rejected.length, 'danger', LINKS.payments, {
+    context: singleContext(rejected),
+  })
+}
+
 function paymentItem(entityId) {
   expireDueOrders()
-  const open = financeState()
-    .payments.filter(
-      (payment) => payment.entityId === Number(entityId) && OPEN_ORDERS.includes(payment.status),
+  const open = paymentsOf(entityId)
+    .filter(
+      (payment) => payment.channel !== 'bank_transfer' && OPEN_ORDERS.includes(payment.status),
     )
     .sort((left, right) => (left.expiresAt < right.expiresAt ? -1 : 1))
   const [earliest] = open
@@ -134,6 +167,8 @@ export function entityActionItems(user) {
     profileItem(entity),
     ...requestItems(entity.id),
     paymentItem(entity.id),
+    transferRejectedItem(entity.id),
+    transferUnderReviewItem(entity.id),
     contactItem(user),
   ]
     .filter((candidate) => candidate && candidate.count > 0)

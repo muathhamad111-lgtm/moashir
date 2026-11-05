@@ -8,6 +8,7 @@ import { staffActionItems } from '../stores/staffActionItems'
 import { STAFF_BOARDS } from '../fixtures/staffBoards'
 import { activeScenario } from '../stores/committee/committeeScenario'
 import { DASHBOARD_BOARDS } from '@/constants/dashboardBoards'
+import { reviewerActionItem } from './bankTransfers'
 
 const LATENCY_MS = 320
 const ENTITY_BOARD = 'entity'
@@ -27,7 +28,12 @@ function heldBoards(user) {
 
 function actionItemsOf(user) {
   const entityItems = user.roles.includes(ENTITY_BOARD) ? entityActionItems(user) : []
-  return [...staffActionItems(user.superAdmin ? ['system_admin'] : user.roles), ...entityItems]
+  const reviewItem = user.roles.includes(ENTITY_BOARD) ? null : reviewerActionItem(user)
+  return [
+    ...(reviewItem ? [reviewItem] : []),
+    ...staffActionItems(user.superAdmin ? ['system_admin'] : user.roles),
+    ...entityItems,
+  ]
 }
 
 export const dashboardHandlers = [

@@ -11,6 +11,7 @@ export const STAFF = {
   filteringOfficer: 'filtering.officer@moashir.example.sa',
   awardSecretary: 'award.secretary@moashir.example.sa',
   contentOfficer: 'content.officer@moashir.example.sa',
+  financeOfficer: 'finance.officer@moashir.example.sa',
 }
 
 const authenticators = new Map()

@@ -138,6 +138,46 @@ export const financeMessages = {
     ar: 'يتعذّر إنشاء المستند حاليًا. يرجى المحاولة لاحقًا.',
     en: 'The document cannot be generated at the moment. Please try again later.',
   },
+  'payment.channel_not_available': {
+    ar: 'طريقة الدفع هذه غير متاحة حاليًا. اختر طريقة دفع أخرى.',
+    en: 'This payment method is not available right now. Choose another payment method.',
+  },
+  'payment.channel_not_supported': {
+    ar: 'لا ينطبق هذا الإجراء على طلبات الدفع بالتحويل البنكي.',
+    en: 'This action does not apply to bank-transfer payment requests.',
+  },
+  'payment.open_order_exists': {
+    ar: 'لديك طلب دفع مفتوح لهذه الخدمة. أكمل الطلب الحالي أو انتظر نتيجة مراجعته.',
+    en: 'You already have an open payment request for this service. Complete it or wait for its review.',
+  },
+  'payment.gateway_not_ready': {
+    ar: 'لا يمكن تفعيل الدفع الإلكتروني قبل إعداد بوابة الدفع وتفعيلها.',
+    en: 'Electronic payment cannot be enabled before the payment gateway is configured and activated.',
+  },
+  'payment.bank_account_required': {
+    ar: 'أضف حسابًا بنكيًا نشطًا واحدًا على الأقل قبل تفعيل التحويل البنكي.',
+    en: 'Add at least one active bank account before enabling bank transfer.',
+  },
+  'bank_account.not_selectable': {
+    ar: 'هذا الحساب البنكي لا يستقبل تحويلات. اختر حسابًا آخر من القائمة.',
+    en: 'This bank account does not accept transfers. Choose another account from the list.',
+  },
+  'bank_account.pending_transfers': {
+    ar: 'توجد حوالات بانتظار الاعتماد على هذا الحساب. اعتمدها أو ارفضها أولًا.',
+    en: 'Transfers awaiting approval use this account. Approve or reject them first.',
+  },
+  'bank_account.last_active_account': {
+    ar: 'هذا آخر حساب بنكي نشط والتحويل البنكي مفعّل. أضف حسابًا آخر أو أوقف التحويل البنكي أولًا.',
+    en: 'This is the last active bank account and bank transfer is enabled. Add another account or turn bank transfer off first.',
+  },
+  'bank_account.limit_reached': {
+    ar: 'وصلت إلى الحد الأعلى لعدد الحسابات البنكية النشطة. أوقف حسابًا قبل إضافة حساب آخر أو تفعيله.',
+    en: 'The limit of active bank accounts is reached. Deactivate an account before adding or activating another.',
+  },
+  'bank_account.payee_fields_immutable': {
+    ar: 'لا يمكن تعديل بيانات المستفيد بعد الحفظ. أضف حسابًا جديدًا ثم أوقف الحساب القديم أو احذفه.',
+    en: 'Payee details cannot change after saving. Add a new account, then deactivate or delete the old one.',
+  },
 }
 
 export const financeFieldMessages = {
@@ -186,4 +226,28 @@ export const financeFieldMessages = {
     en: 'The value must be a whole number between :min and :max.',
   },
   choice: { ar: 'القيمة المختارة غير صالحة.', en: 'The selected value is invalid.' },
+  iban_format: {
+    ar: 'صيغة رقم الآيبان غير صحيحة: SA ثم رقمان للتحقق ورقمان لرمز البنك و18 خانة.',
+    en: 'The IBAN format is not valid: SA, 2 check digits, a 2-digit bank code and 18 characters.',
+  },
+  iban_country: {
+    ar: 'يقبل هذا الحقل رقم آيبان سعوديًا فقط يبدأ بـ SA.',
+    en: 'This field accepts a Saudi IBAN only, starting with SA.',
+  },
+  iban_length: {
+    ar: 'رقم الآيبان السعودي 24 خانة.',
+    en: 'A Saudi IBAN has 24 characters.',
+  },
+  iban_checksum: {
+    ar: 'خانتا التحقق لا تطابقان الرقم. راجع الرقم كما في خطاب البنك.',
+    en: 'The check digits do not match the number. Check it against the bank letter.',
+  },
+  iban_taken: {
+    ar: 'رقم الآيبان هذا مسجّل في حساب آخر.',
+    en: 'This IBAN is already registered on another account.',
+  },
+  rejection_note_required: {
+    ar: 'اكتب ملاحظة للجهة عند اختيار «سبب آخر».',
+    en: 'Write a note for the entity when you choose "Other".',
+  },
 }

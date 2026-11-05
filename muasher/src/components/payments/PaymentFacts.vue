@@ -2,6 +2,8 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { formatDate } from '@/utils/datetime'
+import { localizedText } from '@/utils/localizedText'
+import { ibanLast4 } from '@/utils/payments/iban'
 
 const props = defineProps({
   payment: { type: Object, required: true },
@@ -9,7 +11,7 @@ const props = defineProps({
 
 const { t, te, locale } = useI18n()
 
-const STAMPS = ['createdAt', 'paidAt', 'failedAt', 'cancelledAt', 'refundedAt']
+const STAMPS = ['createdAt', 'paidAt', 'failedAt', 'cancelledAt', 'rejectedAt', 'refundedAt']
 
 function dateOf(value) {
   return formatDate(value, locale.value, {
@@ -19,6 +21,18 @@ function dateOf(value) {
   })
 }
 
+const channel = computed(() =>
+  props.payment.channel ? t(`finance.channels.${props.payment.channel}`) : '',
+)
+const destination = computed(() => {
+  const account = props.payment.bankTransfer?.bankAccount
+  return account
+    ? t('finance.fields.destinationLine', {
+        bank: localizedText(account.bankName, locale.value),
+        last4: ibanLast4(account.iban),
+      })
+    : ''
+})
 const method = computed(() =>
   props.payment.method ? t(`finance.methods.${props.payment.method}`) : '',
 )
@@ -45,6 +59,14 @@ const stamps = computed(() =>
     <div class="payment-facts__row">
       <dt>{{ t('finance.fields.service') }}</dt>
       <dd>{{ t(`finance.purposes.${payment.purpose}`) }}</dd>
+    </div>
+    <div v-if="channel" class="payment-facts__row">
+      <dt>{{ t('finance.fields.channel') }}</dt>
+      <dd>{{ channel }}</dd>
+    </div>
+    <div v-if="destination" class="payment-facts__row">
+      <dt>{{ t('finance.fields.destination') }}</dt>
+      <dd>{{ destination }}</dd>
     </div>
     <div v-if="method" class="payment-facts__row">
       <dt>{{ t('finance.fields.method') }}</dt>

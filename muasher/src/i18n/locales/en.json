@@ -142,7 +142,8 @@
       "assigned": "{count} open"
     },
     "contactMessages": "Contact messages",
-    "auditLog": "Audit log"
+    "auditLog": "Audit log",
+    "financeTransfers": "Transfer review"
   },
   "footer": {
     "copyright": "All rights reserved © {year} — Moashir platform",
@@ -1071,6 +1072,12 @@
       },
       "paymentEvents": {
         "title": "Payment events"
+      },
+      "transfers": {
+        "title": "Bank transfer review"
+      },
+      "transfer": {
+        "title": "Transfer review"
       }
     },
     "messages": {
@@ -2554,7 +2561,10 @@
       "fix_criteria_draft": "Issues in the criteria draft",
       "publish_content_changes": "Content changes to publish",
       "answer_contact_messages": "New contact messages to handle",
-      "read_contact_replies": "New replies to your messages"
+      "read_contact_replies": "New replies to your messages",
+      "review_bank_transfers": "Transfers awaiting approval",
+      "bank_transfer_under_review": "Your transfer is under review",
+      "bank_transfer_rejected": "Transfer rejected: submit a new payment request"
     },
     "cards": {
       "entities_total": "Entities",
@@ -3415,6 +3425,162 @@
       "validation": {
         "whole": "Enter a whole number from {min} to {max}."
       }
+    },
+    "paymentChannels": {
+      "title": "Payment channels for entities",
+      "subtitle": "Applies to every paid service.",
+      "options": {
+        "electronic": {
+          "title": "Electronic payment",
+          "description": "mada and credit cards through the Moyasar gateway."
+        },
+        "bank_transfer": {
+          "title": "Bank transfer",
+          "description": "The entity transfers and attaches the receipt; Finance approves it."
+        },
+        "both": {
+          "title": "Both",
+          "description": "The entity chooses the channel when it pays."
+        }
+      },
+      "meta": {
+        "gatewayReady": "Moyasar gateway ready",
+        "gatewayNotReady": "Moyasar gateway not ready",
+        "accounts": "No active accounts | {count} active account | {count} active accounts",
+        "noAccount": "No active bank account",
+        "noReviewer": "No finance reviewer"
+      },
+      "alerts": {
+        "noAccount": "Bank transfer cannot be saved before at least one active bank account is added.",
+        "gatewayNotReady": "The payment gateway is not ready: the keys and the connection test of the selected mode must be completed before the payment channels are saved.",
+        "openGateway": "Open mode and keys",
+        "noReviewer": "No user can review transfers. Bank transfer receipts will wait for review until a reviewer is added.",
+        "openUsers": "Users and roles"
+      },
+      "note": "Turning a channel off does not cancel open orders; they finish under the channel they started with.",
+      "save": "Save payment channels",
+      "saved": "Payment channels for entities saved.",
+      "saveFailed": "The payment channels could not be saved.",
+      "notOffered": "Not offered to entities: electronic payment is not in the current channels. Keys can still be prepared and tested.",
+      "reasonMessage": "Write the reason for this change. It is recorded in the audit log."
+    },
+    "bankAccounts": {
+      "title": "Bank accounts for transfers",
+      "subtitle": "Active accounts are shown to entities in this order. Payee details cannot be edited after saving.",
+      "add": "Add account",
+      "loadFailed": "The bank accounts could not be loaded.",
+      "empty": {
+        "title": "No bank accounts yet",
+        "message": "Add at least one account to enable bank transfer."
+      },
+      "columns": {
+        "order": "Order",
+        "bank": "Bank",
+        "holder": "Account holder",
+        "iban": "IBAN",
+        "status": "Status"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "usage": {
+        "used": "Used in payments",
+        "unused": "Not used yet"
+      },
+      "example": "Example",
+      "exampleNote": "The IBAN shown is a published example that belongs to no account.",
+      "copied": "IBAN copied.",
+      "actions": {
+        "note": "Edit note",
+        "copy": "Copy IBAN",
+        "copyFor": "Copy the IBAN of {bank}",
+        "deactivate": "Deactivate account",
+        "activate": "Activate account",
+        "delete": "Delete account",
+        "menu": "Actions for {bank}",
+        "moveUp": "Move {bank} up",
+        "moveDown": "Move {bank} down",
+        "up": "Move up",
+        "down": "Move down"
+      },
+      "fields": {
+        "bankNameAr": "Bank name in Arabic",
+        "bankNameEn": "Bank name in English",
+        "holderAr": "Account holder in Arabic",
+        "holderEn": "Account holder in English",
+        "iban": "IBAN",
+        "accountNumber": "Account number (optional)",
+        "accountNumberHint": "{min} to {max} letters or digits",
+        "accountNumberInvalid": "Enter {min} to {max} letters or digits without spaces.",
+        "noteAr": "Note for entities in Arabic (optional)",
+        "noteEn": "Note for entities in English (optional)",
+        "noteHint": "Up to {max} characters",
+        "notePair": "Write the note in both languages or leave both empty."
+      },
+      "iban": {
+        "hint": "SA, 2 check digits, a 2-digit bank code and 18 characters. Spaces and lower case are accepted.",
+        "errors": {
+          "format": "The IBAN format is not valid: SA, 2 check digits, a 2-digit bank code and 18 characters.",
+          "country": "This field accepts a Saudi IBAN only, starting with SA.",
+          "length": "A Saudi IBAN has 24 characters. Complete the number.",
+          "checksum": "The check digits do not match the number. Check it against the bank letter."
+        }
+      },
+      "form": {
+        "title": "Add a bank account",
+        "lead": "The account is shown to entities right after saving.",
+        "notice": "Finance officers will be notified. Payee details (bank, holder, IBAN, account number) cannot be edited after saving.",
+        "footnote": "The account is saved as active at the end of the order.",
+        "submit": "Save account"
+      },
+      "note": {
+        "title": "Edit the account note",
+        "immutable": "Payee details cannot be edited. To change them, add a new account, then deactivate or delete this one.",
+        "orderHint": "The order changes with the arrows in the list."
+      },
+      "retire": {
+        "deactivate": {
+          "title": "Deactivate the bank account?",
+          "message": "Entities will no longer see the account for new requests. It can be activated later.",
+          "confirm": "Deactivate account"
+        },
+        "archive": {
+          "title": "Delete the bank account?",
+          "message": "The account disappears from the list and is never offered again. Its data stays in past payments and receipts.",
+          "confirm": "Delete account"
+        },
+        "delete": {
+          "title": "Delete the bank account?",
+          "message": "This account was never used in a transfer, so it is deleted permanently. This cannot be undone.",
+          "confirm": "Delete account"
+        }
+      },
+      "blocked": {
+        "subtitle": "{bank} · ends in {last4}",
+        "reviewer": "No transfers awaiting approval use this account. | {count} transfer awaiting approval uses this account. It must be approved or rejected first. | {count} transfers awaiting approval use this account. They must be approved or rejected first.",
+        "readOnly": "No transfers awaiting approval use this account. | {count} transfer awaiting approval uses this account. A transfer reviewer must approve or reject it first. | {count} transfers awaiting approval use this account. A transfer reviewer must approve or reject them first.",
+        "deactivate": {
+          "title": "The account can't be deactivated now",
+          "cleared": "No transfers awaiting approval use this account any more. It can be deactivated now.",
+          "retry": "Deactivate account"
+        },
+        "delete": {
+          "title": "The account can't be deleted now",
+          "cleared": "No transfers awaiting approval use this account any more. It can be deleted now.",
+          "retry": "Delete account"
+        }
+      },
+      "toasts": {
+        "added": "The bank account was added.",
+        "noteSaved": "The account note was saved.",
+        "deactivated": "The bank account was deactivated.",
+        "activated": "The bank account was activated.",
+        "deleted": "The bank account was deleted.",
+        "archived": "The account was removed from the list; its data stays in past payments.",
+        "reordered": "The account order was saved."
+      },
+      "actionFailed": "The account action could not be completed."
     }
   },
   "accredited": {
@@ -3430,7 +3596,8 @@
         "login": "Sign in to start",
         "pay": "Pay and start",
         "continuePayment": "Continue the payment",
-        "resume": "Open the current request"
+        "resume": "Open the current request",
+        "viewTransfer": "View the transfer request"
       }
     },
     "price": {
@@ -3450,7 +3617,8 @@
       "closedNotes": {
         "refunded": "The fee of this request was refunded and the request was closed.",
         "declined": "The request was closed because the requested completion was not provided before the deadline."
-      }
+      },
+      "transferUnderReview": "The bank transfer is under Finance review."
     },
     "form": {
       "title": "Accredited assessment form",
@@ -4787,8 +4955,8 @@
       "filesTitle": "Knowledge-base files"
     },
     "payment": {
-      "title": "Payment gateway (Moyasar)",
-      "description": "Keys for the test and live environments, payment methods and the values to copy into Moyasar.",
+      "title": "Payment settings",
+      "description": "Payment channels, bank accounts and the Moyasar gateway.",
       "gatewayTitle": "Environment and keys",
       "gatewayDesc": "Both key pairs are kept. Switching the environment never removes keys.",
       "methodsTitle": "Payment methods",
@@ -5228,7 +5396,9 @@
       "paid": "Paid",
       "failed": "Failed",
       "cancelled": "Cancelled",
-      "refunded": "Refunded"
+      "refunded": "Refunded",
+      "under-review": "Under Finance review",
+      "rejected": "Rejected"
     },
     "methods": {
       "creditcard": "Credit card",
@@ -5279,7 +5449,11 @@
       "cancelledAt": "Cancelled",
       "latePaidAt": "Late payment received",
       "manuallySettledAt": "Settled manually",
-      "refundedAt": "Refunded"
+      "refundedAt": "Refunded",
+      "channel": "Payment channel",
+      "destination": "Destination account",
+      "destinationLine": "{bank} · ends in {last4}",
+      "rejectedAt": "Rejected on"
     },
     "filters": {
       "status": "Status",
@@ -5295,7 +5469,9 @@
       "modes": {
         "live": "Live payments",
         "test": "Test payments"
-      }
+      },
+      "channel": "Payment channel",
+      "allChannels": "All channels"
     },
     "sorts": {
       "desc_created_at": "Newest first",
@@ -5319,7 +5495,7 @@
       "back": "Back",
       "summaryTitle": "Order summary",
       "reference": "Order reference",
-      "amountPending": "The amounts appear here once the payment order is created.",
+      "amountPending": "Order number: shown after you continue",
       "expiresIn": "Order valid for",
       "minutesLeft": "{minutes} minutes left to complete the payment.",
       "existingOrder": "You already have an open payment order for this service, so it is shown again.",
@@ -5336,7 +5512,9 @@
       "startAgain": "Start a new payment order",
       "blockedTitle": "The payment could not be started",
       "retry": "Try again",
-      "feesAtCheckout": "The price before VAT, the VAT and the total are calculated by the platform when you start the payment."
+      "feesAtCheckout": "The price before VAT, the VAT and the total are calculated by the platform when you start the payment.",
+      "channelLabel": "Payment method",
+      "referenceOnSubmit": "Order number: created when you send"
     },
     "return": {
       "eyebrow": "Payment result",
@@ -5451,7 +5629,8 @@
       "refunds": "Refunds",
       "paymentEvents": "Payment events",
       "abandonedCarts": "Abandoned carts",
-      "settings": "Prices and VAT"
+      "settings": "Prices and VAT",
+      "transfers": "Transfer review"
     },
     "transactions": {
       "title": "Financial transactions",
@@ -5605,7 +5784,8 @@
         "payment_failed": "Payment failed",
         "order_expired": "Order expired",
         "refund_recorded": "Refund recorded",
-        "manual_settle": "Manual settlement"
+        "manual_settle": "Manual settlement",
+        "order_cancelled": "Order cancelled to change the payment method"
       }
     },
     "settings": {
@@ -5669,7 +5849,12 @@
         "provider_payment_not_found": "The payment could not be found at the payment gateway.",
         "verification_rejected": "The payment returned by the gateway does not match this payment order.",
         "provider_payment_id_required": "Enter the gateway payment reference to mark the payment as paid.",
-        "provider_payment_id_in_use": "This gateway payment reference is already linked to another payment."
+        "provider_payment_id_in_use": "This gateway payment reference is already linked to another payment.",
+        "channel_not_available": "This payment method is not available right now. Choose another payment method.",
+        "channel_not_supported": "This action does not apply to bank-transfer payment requests.",
+        "open_order_exists": "You already have an open payment request for this service. Complete it or wait for its review.",
+        "gateway_not_ready": "Electronic payment cannot be enabled before the payment gateway is configured and activated.",
+        "bank_account_required": "Add at least one active bank account before enabling bank transfer."
       },
       "idempotency_key": {
         "missing": "The payment request could not be identified. Try again.",
@@ -5702,6 +5887,193 @@
       },
       "document": {
         "renderer_unavailable": "The receipt is temporarily unavailable. Try again later."
+      },
+      "bank_account": {
+        "not_selectable": "This bank account does not accept transfers. Choose another account from the list.",
+        "pending_transfers": "Transfers awaiting approval use this account. They must be approved or rejected first.",
+        "last_active_account": "This is the last active bank account and bank transfer is enabled. Add another account or turn bank transfer off first.",
+        "limit_reached": "The limit of active bank accounts is reached. Deactivate an account before adding or activating another.",
+        "payee_fields_immutable": "Payee details cannot change after saving. Add a new account, then deactivate or delete the old one."
+      }
+    },
+    "channels": {
+      "electronic": "Electronic",
+      "bank_transfer": "Bank transfer"
+    },
+    "transfers": {
+      "title": "Bank transfer review",
+      "subtitle": "Approve transfers after matching them with the bank statement, or reject them with a clear reason.",
+      "readOnly": "View only: approving and rejecting belong to the transfer reviewer.",
+      "searchPlaceholder": "Order number or entity name",
+      "review": "Review",
+      "openReview": "Open the transfer review",
+      "stats": {
+        "underReview": "Under review",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "tabs": {
+        "under-review": "Under review",
+        "underReviewCount": "Under review ({count})",
+        "paid": "Approved",
+        "rejected": "Rejected",
+        "all": "All"
+      },
+      "filters": {
+        "account": "Receiving account",
+        "allAccounts": "All accounts",
+        "allModes": "All modes",
+        "frozenLabel": "Frozen entities",
+        "frozen": {
+          "0": "Excluded",
+          "1": "Only frozen"
+        }
+      },
+      "sorts": {
+        "oldest": "Oldest first",
+        "newest": "Newest first"
+      },
+      "columns": {
+        "request": "Request",
+        "entity": "Entity and service",
+        "amount": "Amount due",
+        "bank": "Receiving bank",
+        "status": "Status",
+        "flags": "Flags",
+        "actions": "Actions"
+      },
+      "flags": {
+        "duplicate": "Duplicate file",
+        "frozen": "Frozen entity"
+      },
+      "selection": {
+        "selectAll": "Select all",
+        "select": "Select {reference}",
+        "count": "{count} selected",
+        "countOf": "{count} of {total} selected",
+        "clear": "Clear selection"
+      },
+      "bulk": {
+        "label": "Selection actions",
+        "approve": "Approve selected ({count})",
+        "reject": "Reject selected ({count})",
+        "limit": "You can decide at most {max} transfers at once.",
+        "outcome": "Bulk decision done · decided: {decided} · skipped: {skipped}",
+        "skipped": {
+          "state_transition_illegal": "skipped: already decided.",
+          "entity_deleted": "skipped: the entity is frozen.",
+          "not_found": "skipped: no longer available.",
+          "other": "skipped."
+        }
+      },
+      "empty": {
+        "underReview": {
+          "title": "No transfers under review",
+          "message": "Transfer requests appear here as soon as they are sent."
+        },
+        "other": {
+          "title": "No transfers",
+          "message": "Try other filters."
+        }
+      },
+      "conflict": {
+        "state_transition_illegal": "Another reviewer decided this transfer moments ago; the page was refreshed.",
+        "entity_deleted": "The entity is frozen; the transfer cannot be approved or rejected."
+      },
+      "fields": {
+        "reference": "Order number",
+        "entity": "Entity",
+        "service": "Service",
+        "account": "Destination account",
+        "accountLine": "{bank} · ends in {last4}",
+        "submittedAt": "Sent on",
+        "mode": "Mode",
+        "amountDue": "Amount due"
+      },
+      "modes": {
+        "test": "Test",
+        "live": "Live"
+      },
+      "detail": {
+        "title": "Transfer review",
+        "eyebrow": "Transfer review",
+        "heading": "{entity} ·",
+        "back": "Back to the list",
+        "notFound": "The transfer request was not found",
+        "matchHint": "Match the amount with the bank statement before approving.",
+        "requestTitle": "Request details",
+        "frozen": "The entity is frozen; the transfer cannot be approved or rejected."
+      },
+      "duplicate": {
+        "title": "Duplicate file",
+        "usedIn": "The same file was uploaded for request",
+        "open": "Open request"
+      },
+      "proof": {
+        "title": "Bank transfer receipt",
+        "scan": {
+          "clean": "Scanned",
+          "pending": "Scanning",
+          "infected": "Unsafe",
+          "failed": "Scan failed"
+        },
+        "zoomIn": "Zoom in",
+        "zoomOut": "Zoom out",
+        "open": "Open / download",
+        "notScanned": "The file cannot be shown before its scan is complete.",
+        "pdfOnDesktop": "PDF files are shown inline on large screens. Open or download the file to view it.",
+        "failed": "The file could not be shown.",
+        "imageAlt": "Bank transfer receipt {name}",
+        "pdfTitle": "Preview of bank transfer receipt {name}",
+        "logged": "Every view and download of this file is logged."
+      },
+      "decision": {
+        "approvedBy": "Approved by {name} · {time}",
+        "rejectedBy": "Rejected by {name} · {time}",
+        "superAdmin": "Super Admin",
+        "reason": "Reason: {reason}",
+        "note": "Note: {note}"
+      },
+      "approve": {
+        "open": "Approve transfer",
+        "title": "Approve the transfer and record the payment?",
+        "message": "The payment is recorded, the payment receipt is issued and the service opens for the entity.",
+        "submit": "Approve",
+        "bulkTitle": "Approve the selected transfers ({count})?",
+        "bulkMessage": "Each payment is recorded separately with its receipt. Anything already decided is skipped.",
+        "bulkSubmit": "Approve selected ({count})"
+      },
+      "reject": {
+        "open": "Reject transfer",
+        "title": "Reject the transfer",
+        "bulkTitle": "Reject the selected transfers ({count})",
+        "reasonLabel": "Rejection reason",
+        "reasonRequired": "Choose a rejection reason.",
+        "noteLabel": "Note for the entity (optional; required with \"Other reason\")",
+        "noteRequiredLabel": "Note for the entity",
+        "noteHint": "The entity will see this note · up to {max} characters",
+        "noteRequired": "Write a note for the entity when you choose \"Other reason\".",
+        "noteMin": "Write a note for the entity of at least {min} characters.",
+        "notice": "The request will close and the entity will be told to submit a new one.",
+        "bulkNotice": "The requests will close and each entity will be told to submit a new one.",
+        "submit": "Reject transfer",
+        "bulkSubmit": "Reject selected ({count})"
+      },
+      "rejectionReasons": {
+        "not_received": "Not found in the bank statement",
+        "amount_mismatch": "The amount differs from the amount due",
+        "unreadable": "The receipt is unclear or unreadable",
+        "wrong_account": "Transferred to another account",
+        "duplicate": "The receipt was used for another request",
+        "other": "Other reason"
+      },
+      "superAdminReason": {
+        "label": "Reason (Super Admin)",
+        "hint": "{min} to {max} characters. It is recorded in the audit log."
+      },
+      "toasts": {
+        "approved": "The transfer was approved and payment receipt {number} was issued.",
+        "rejected": "The transfer was rejected and the entity was notified."
       }
     }
   },
@@ -6823,6 +7195,14 @@
         "read_contact_replies": {
           "single": "New reply to your message {reference}",
           "many": "No new replies to your messages | {count} new reply to your messages | {count} new replies to your messages"
+        },
+        "bank_transfer_under_review": {
+          "single": "Your transfer is under review · {reference}",
+          "many": "No transfers under review | {count} transfer under review | {count} transfers under review"
+        },
+        "bank_transfer_rejected": {
+          "single": "Transfer rejected: submit a new payment request · {reference}",
+          "many": "No rejected transfers | {count} transfer rejected: submit a new payment request | {count} transfers rejected: submit new payment requests"
         }
       },
       "short": {
@@ -6833,7 +7213,9 @@
         "complete_advanced_request": "Advanced completion",
         "submit_advanced_draft": "Advanced assessment",
         "complete_payment": "Payment order",
-        "read_contact_replies": "New reply to your messages"
+        "read_contact_replies": "New reply to your messages",
+        "bank_transfer_under_review": "Transfer under review",
+        "bank_transfer_rejected": "New payment request"
       }
     },
     "home": {
@@ -7107,9 +7489,9 @@
       "tabsLabel": "Filter payments",
       "tabs": {
         "all": "All",
-        "awaiting": "Awaiting payment",
+        "awaiting": "In progress",
         "paid": "Paid",
-        "cancelled": "Cancelled"
+        "cancelled": "Cancelled or rejected"
       },
       "recordsTitle": "Payment records",
       "tableCaption": "Payments with their receipt and the amounts before and after VAT",
@@ -7126,7 +7508,8 @@
         "vatShort": "VAT",
         "total": "Total",
         "status": "Status",
-        "actions": "Actions"
+        "actions": "Actions",
+        "channel": "Channel"
       },
       "stats": {
         "count": "Payments",
@@ -7141,20 +7524,20 @@
           "message": "Payments made by your organization and their receipts appear here."
         },
         "awaiting": {
-          "title": "No orders awaiting payment",
-          "message": "An open payment order appears here until it is completed or expires."
+          "title": "No requests in progress",
+          "message": "Your open payment order or the transfer under review appears here."
         },
         "paid": {
           "title": "No paid payments",
           "message": "Completed payments appear here with their receipts."
         },
         "cancelled": {
-          "title": "No cancelled payments",
-          "message": "Orders that expired or were not paid appear here."
+          "title": "No cancelled or rejected requests",
+          "message": "Orders that expired or were not paid, and rejected transfers, appear here."
         }
       },
       "testNote": "Test payments are listed but not counted: the statistics include live payments only.",
-      "note": "Amounts are shown before VAT; VAT and the total are calculated at payment time and kept with the payment. A payment order is valid for 30 minutes and is then cancelled automatically; you can start a new order at any time.",
+      "note": "Amounts are shown before VAT; VAT and the total are calculated when you place the request and kept with it. An electronic payment order is valid for 30 minutes and is then cancelled automatically; you can start a new order at any time.",
       "pending": {
         "badge": "Awaiting payment · {minutes} minute left | Awaiting payment · {minutes} minute left | Awaiting payment · {minutes} minutes left",
         "title": "Payment order: {service} —",
@@ -7206,7 +7589,8 @@
             "message": "The order is no longer valid. Start a new payment order from the service page."
           }
         }
-      }
+      },
+      "viewDetails": "View details"
     },
     "certificates": {
       "eyebrow": "Certificates",
@@ -7336,6 +7720,10 @@
           "title": "Accredited assessment",
           "body": "An accredited assessor reviews your evidence; the excellence certificate is issued once the result is approved.",
           "action": "Request the accredited assessment"
+        },
+        "transfer": {
+          "title": "Your transfer is under review",
+          "body": "Finance is reviewing the bank transfer receipt of request"
         }
       },
       "results": {
@@ -7469,6 +7857,196 @@
           "size": "The logo must not exceed 2 MB.",
           "dimensions": "Each side of the image must be between 200 and 2000 pixels."
         }
+      }
+    },
+    "checkoutMethod": {
+      "title": "Choose the payment method",
+      "continue": "Continue",
+      "changeMethod": "Change payment method",
+      "options": {
+        "electronic": {
+          "title": "Electronic payment",
+          "description": "mada, Visa or Mastercard through Moyasar.",
+          "meta": "Instant"
+        },
+        "bank_transfer": {
+          "title": "Bank transfer",
+          "description": "Transfer the amount and attach the receipt.",
+          "meta": "Finance approves it after review"
+        }
+      },
+      "change": {
+        "title": "Change payment method?",
+        "cancels": "This cancels electronic payment order",
+        "then": "Then choose bank transfer.",
+        "keep": "Keep electronic payment",
+        "confirm": "Cancel the order and change",
+        "failed": "The payment method could not be changed. Try again."
+      },
+      "states": {
+        "underReview": {
+          "title": "You have a request under review",
+          "message": "You will be notified of the result.",
+          "action": "View request"
+        },
+        "unavailable": {
+          "title": "Payment is not available right now",
+          "message": "Try later, or contact support.",
+          "action": "Contact support"
+        }
+      }
+    },
+    "transfer": {
+      "title": "Pay by bank transfer",
+      "changeMethod": "Change payment method",
+      "steps": {
+        "account": {
+          "title": "Choose the account",
+          "single": "Account to transfer to"
+        },
+        "transfer": "Transfer the amount",
+        "proof": "Attach the bank transfer receipt"
+      },
+      "account": {
+        "endsWith": "Ends in {last4}",
+        "unavailable": "This account no longer accepts new transfers",
+        "chooseAnother": "Choose another account, then send the request.",
+        "line": "{bank} · ends in {last4}"
+      },
+      "details": {
+        "bank": "Bank",
+        "holder": "Account holder",
+        "iban": "IBAN",
+        "ibanExample": "IBAN (example)",
+        "amount": "Amount due (SAR)",
+        "unifiedNumber": "Your entity's unified national number"
+      },
+      "copy": {
+        "action": "Copy",
+        "copied": "Copied",
+        "label": "Copy {label}",
+        "announced": "Copied: {label}."
+      },
+      "guidance": {
+        "fullAmount": "Transfer the full amount in one transfer from the entity's account.",
+        "unifiedNumber": "Write your entity's unified national number in the transfer description.",
+        "platformOnly": "Check the account details inside the platform only; we never e-mail them."
+      },
+      "proof": {
+        "title": "Bank transfer receipt",
+        "prompt": "Drag the receipt here or choose a file",
+        "drop": "Drop the receipt here",
+        "hint": "PDF, JPG or PNG · up to {max} MB",
+        "progress": "Upload progress of {name}",
+        "remove": "Remove {name}",
+        "retry": "Try again",
+        "missing": "Attach the bank transfer receipt before sending.",
+        "download": "Download {name}",
+        "sent": "{size} · sent {date} · {bank}",
+        "states": {
+          "ready": "Ready",
+          "uploading": "Uploading",
+          "scanning": "Scanning",
+          "accepted": "Accepted",
+          "wrong-type": "Refused",
+          "too-large": "Refused",
+          "unsafe": "Refused",
+          "failed": "Not completed"
+        },
+        "details": {
+          "ready": "{size} · ready to send",
+          "scanning": "The file is checked before it is accepted.",
+          "accepted": "{size} · scanned",
+          "wrong-type": "Attach a PDF, JPG or PNG.",
+          "too-large": "The limit is {max} MB.",
+          "unsafe": "The file could not be accepted for security reasons. Attach another copy.",
+          "failed": "The upload failed. Try again."
+        },
+        "badges": {
+          "underReview": "Under review",
+          "rejected": "Rejected",
+          "accepted": "Accepted"
+        }
+      },
+      "submit": "Send request",
+      "sending": "Sending…",
+      "submitHint": "Turns on after you attach the receipt.",
+      "failures": {
+        "cardOrder": {
+          "title": "You have an open payment order",
+          "message": "Complete it, or change the payment method from it.",
+          "action": "Open order"
+        },
+        "transferOrder": {
+          "title": "You have a transfer request under review",
+          "message": "You already sent a transfer request for this service and it is under review.",
+          "action": "View request"
+        },
+        "blocked": {
+          "title": "Payment cannot be completed",
+          "action": "Contact support"
+        },
+        "other": {
+          "title": "The request could not be sent"
+        }
+      },
+      "errors": {
+        "failed": "The upload failed. Try again."
+      },
+      "status": {
+        "underReview": {
+          "title": "Under Finance review",
+          "message": "You will be notified when Finance approves or rejects it."
+        },
+        "rejected": {
+          "title": "Transfer rejected",
+          "message": "This request is closed; you can submit a new payment request."
+        },
+        "paid": {
+          "title": "Payment complete",
+          "message": "Finance approved the transfer and the payment receipt is issued."
+        },
+        "closed": {
+          "title": "Request closed",
+          "message": "This request is no longer open."
+        }
+      },
+      "progress": {
+        "submit": "Account and transfer",
+        "send": "Send request",
+        "review": "Finance review",
+        "receipt": "Payment receipt"
+      },
+      "rejection": {
+        "reason": "Reason: {reason}",
+        "note": "Finance team note: {note}",
+        "by": "Finance team · {time}"
+      },
+      "rejectionReasons": {
+        "not_received": "Not found in the bank statement",
+        "amount_mismatch": "The amount differs from the amount due",
+        "unreadable": "The receipt is unclear or unreadable",
+        "wrong_account": "Transferred to another account",
+        "duplicate": "The receipt was used for another request",
+        "other": "Other reason"
+      },
+      "newRequest": "Submit a new payment request",
+      "viewReceipt": "View the payment receipt",
+      "facts": {
+        "account": "Destination account",
+        "amount": "Amount due",
+        "submittedAt": "Sent on"
+      },
+      "timeline": {
+        "title": "Request history",
+        "submitted": "Request sent with the bank transfer receipt",
+        "submittedDetail": "{time} · {bank}",
+        "underReview": "Under Finance review",
+        "approved": "Finance approved the transfer",
+        "rejected": "Finance rejected the transfer",
+        "byFinance": "Finance team · {time}",
+        "notified": "You will be notified of the result.",
+        "receiptAfterApproval": "The payment receipt is issued after Finance approves."
       }
     }
   },

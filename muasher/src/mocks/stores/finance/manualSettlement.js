@@ -1,7 +1,7 @@
 import { persistFinanceState } from './financeState'
 import { fieldMessage, financeReject } from './financeRejection'
 import {
-  OPEN_STATUSES,
+  OPEN_CARD_STATUSES,
   bindProvider,
   issueReceipt,
   nowIso,
@@ -48,7 +48,8 @@ export function validatedSettlement(body) {
 }
 
 export function settleManually(payment, settlement) {
-  if (!OPEN_STATUSES.includes(payment.status))
+  if (payment.channel === 'bank_transfer') throw financeReject.channelNotSupported()
+  if (!OPEN_CARD_STATUSES.includes(payment.status))
     throw financeReject.illegalTransition(payment.status, 'manual_settle')
   const providerPaymentId = settlement.providerPaymentId ?? payment.providerPaymentId
   if (settlement.status === 'paid' && providerPaymentId === null)

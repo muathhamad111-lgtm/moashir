@@ -13,6 +13,7 @@ const LINKS = [
     name: ROUTE_NAMES.FINANCE_TRANSACTIONS,
     icon: 'sar',
   },
+  { key: 'transfers', name: ROUTE_NAMES.FINANCE_TRANSFERS, icon: 'inbox' },
   { key: 'refunds', name: ROUTE_NAMES.FINANCE_REFUNDS, icon: 'undo' },
   { key: 'paymentEvents', name: ROUTE_NAMES.FINANCE_PAYMENT_EVENTS, icon: 'menu' },
   {

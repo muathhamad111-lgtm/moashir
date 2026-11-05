@@ -56,6 +56,7 @@ import { boundPayment } from './payments'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const PURPOSES = ['accredited', 'bag']
+const CHANNELS = ['electronic', 'bank_transfer']
 const failsToList = failsRandomly(0.04)
 
 function found(record) {
@@ -96,6 +97,10 @@ function summaryOf(range) {
     byPurpose: PURPOSES.map((purpose) => ({
       purpose,
       ...statsOf(payments.filter((payment) => payment.purpose === purpose)),
+    })),
+    byChannel: CHANNELS.map((channel) => ({
+      channel,
+      ...statsOf(payments.filter((payment) => (payment.channel ?? 'electronic') === channel)),
     })),
   }
 }

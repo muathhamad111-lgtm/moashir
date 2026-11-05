@@ -59,6 +59,7 @@ function payment(fields) {
   return {
     entityId: 5001,
     initiatedByUserId: fields.entityId ?? 5001,
+    channel: 'electronic',
     mode: 'live',
     idempotencyKey: null,
     providerIntentId: null,
@@ -72,6 +73,7 @@ function payment(fields) {
     paidAt: null,
     failedAt: null,
     cancelledAt: null,
+    rejectedAt: null,
     refundedAt: null,
     latePaidAt: null,
     manuallySettledAt: null,

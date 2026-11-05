@@ -17,6 +17,21 @@ vi.mock('@/services/paymentIntegrationService', () => ({
   },
 }))
 
+vi.mock('@/services/paymentChannelsService', () => ({
+  paymentChannelsService: {
+    getChannels: vi.fn().mockResolvedValue({
+      data: {
+        channels: ['electronic'],
+        availableChannels: ['electronic'],
+        gatewayReady: true,
+        activeBankAccountsCount: 0,
+        reviewersCount: 1,
+      },
+    }),
+    listAccounts: vi.fn().mockResolvedValue({ data: [] }),
+  },
+}))
+
 const SECRET = 'sk_test_fake_example_replacement_9876'
 const REASON = 'Checkout rehearsal before the award cycle opens.'
 const ACTOR = { id: 2, name: 'منيرة بنت خالد العتيبي' }

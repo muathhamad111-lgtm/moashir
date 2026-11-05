@@ -1,6 +1,7 @@
 import { financeEntityEmails } from '../../fixtures/finance'
 import { findFile, findPayment, receiptOf, refundOf } from './financeState'
 import { entityNameOf, entityReferenceOf } from './receiptSnapshot'
+import { ownTransferResource, transferDetailsOf } from './bankTransferRecords'
 
 function pricingOf(payment) {
   return {
@@ -28,6 +29,7 @@ export function ownPaymentResource(payment) {
     id: payment.id,
     reference: payment.reference,
     purpose: payment.purpose,
+    channel: payment.channel ?? 'electronic',
     status: payment.status,
     isTest: payment.mode === 'test',
     pricing: pricingOf(payment),
@@ -39,8 +41,10 @@ export function ownPaymentResource(payment) {
     paidAt: payment.paidAt,
     failedAt: payment.failedAt,
     cancelledAt: payment.cancelledAt,
+    rejectedAt: payment.rejectedAt ?? null,
     refundedAt: payment.refundedAt,
     receipt: receiptSummaryOf(receiptOf(payment.id)),
+    bankTransfer: ownTransferResource(payment),
   }
 }
 
@@ -64,6 +68,7 @@ export function transactionResource(payment) {
     reference: payment.reference,
     receiptNumber: receiptOf(payment.id)?.number ?? null,
     purpose: payment.purpose,
+    channel: payment.channel ?? 'electronic',
     status: payment.status,
     isTest: payment.mode === 'test',
     entity: {
@@ -122,10 +127,12 @@ export function transactionDetailResource(payment) {
     verifiedAt: payment.verifiedAt,
     failedAt: payment.failedAt,
     cancelledAt: payment.cancelledAt,
+    rejectedAt: payment.rejectedAt ?? null,
     latePaidAt: payment.latePaidAt,
     manuallySettledAt: payment.manuallySettledAt,
     receipt: receipt ? receiptResource(receipt) : null,
     refund: refund ? refundResource(refund) : null,
+    bankTransfer: transferDetailsOf(payment),
   }
 }
 

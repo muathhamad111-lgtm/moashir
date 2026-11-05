@@ -35,6 +35,12 @@ function staff() {
   return users.filter((user) => !user.roles.includes(ROLES.ENTITY))
 }
 
+export function staffHolding(permission) {
+  return staff().filter(
+    (user) => user.status === 'active' && grantedPermissionKeys(user.roles).includes(permission),
+  )
+}
+
 export function findStaffUser(id) {
   return staff().find((user) => user.id === Number(id)) ?? null
 }

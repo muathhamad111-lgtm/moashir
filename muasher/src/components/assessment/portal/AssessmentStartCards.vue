@@ -1,25 +1,32 @@
 <script setup>
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import { PAYMENT_CHANNELS } from '@/constants/payments'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
-defineProps({
+const props = defineProps({
   canStartSelf: { type: Boolean, default: false },
   canRequestAccredited: { type: Boolean, default: false },
   pendingPayment: { type: Object, default: null },
 })
 
 const { t } = useI18n()
+const paymentKey = computed(() =>
+  props.pendingPayment?.channel === PAYMENT_CHANNELS.BANK_TRANSFER ? 'transfer' : 'payment',
+)
 </script>
 
 <template>
   <ul class="assessment-start">
     <li v-if="pendingPayment" class="assessment-start__card assessment-start__card--warning">
-      <AppIcon name="credit-card" />
+      <AppIcon :name="paymentKey === 'transfer' ? 'refresh-dots' : 'credit-card'" />
       <div class="assessment-start__text">
-        <h3 class="assessment-start__title">{{ t('portal.assessments.start.payment.title') }}</h3>
+        <h3 class="assessment-start__title">
+          {{ t(`portal.assessments.start.${paymentKey}.title`) }}
+        </h3>
         <p class="assessment-start__body">
-          {{ t('portal.assessments.start.payment.body') }}
+          {{ t(`portal.assessments.start.${paymentKey}.body`) }}
           <bdi dir="ltr">{{ pendingPayment.reference }}</bdi>
         </p>
       </div>
@@ -27,7 +34,11 @@ const { t } = useI18n()
         class="btn btn--primary"
         :to="{ name: ROUTE_NAMES.PAYMENTS_COMPLETE, params: { id: pendingPayment.paymentId } }"
       >
-        {{ t('portal.payments.complete') }}
+        {{
+          paymentKey === 'transfer'
+            ? t('portal.payments.viewDetails')
+            : t('portal.payments.complete')
+        }}
       </router-link>
     </li>
     <li v-if="canStartSelf" class="assessment-start__card">

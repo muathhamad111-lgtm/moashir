@@ -35,6 +35,21 @@ export const financeReject = {
       fields: { state: [state], attempted: [attempted] },
     }),
   entityDeleted: () => new MockRejection(409, 'entity.deleted'),
+  channelNotSupported: () => new MockRejection(409, 'payment.channel_not_supported'),
+  channelNotAvailable: () => codeField(422, 'payment.channel_not_available', 'channel'),
+  openOrderExists: (payment) =>
+    new MockRejection(409, 'payment.open_order_exists', {
+      meta: { paymentId: payment.id, channel: payment.channel, status: payment.status },
+    }),
+  accountNotSelectable: () => codeField(422, 'bank_account.not_selectable', 'bankAccountId'),
+  pendingTransfers: (transfers) =>
+    new MockRejection(409, 'bank_account.pending_transfers', { meta: { transfers } }),
+  lastActiveAccount: () => new MockRejection(409, 'bank_account.last_active_account'),
+  accountLimitReached: (max) =>
+    new MockRejection(422, 'bank_account.limit_reached', { meta: { maxActiveAccounts: max } }),
+  payeeImmutable: () => new MockRejection(422, 'bank_account.payee_fields_immutable'),
+  gatewayNotReady: () => new MockRejection(409, 'payment.gateway_not_ready'),
+  bankAccountRequired: () => new MockRejection(409, 'payment.bank_account_required'),
   notConfigured: () =>
     new MockRejection(503, 'integration.not_configured', { meta: { kind: 'payment' } }),
   providerUnavailable: () => new MockRejection(503, 'provider_unavailable'),

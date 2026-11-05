@@ -5,6 +5,16 @@ import { fieldMessage, financeReject } from './financeRejection'
 import { fromMinor, toMinor } from './financeMoney'
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+const PAYMENT_STATUS_VALUES = [
+  'created',
+  'pending',
+  'under-review',
+  'paid',
+  'failed',
+  'rejected',
+  'cancelled',
+  'refunded',
+]
 
 export function isCalendarDate(value) {
   if (!DATE_PATTERN.test(value)) return false
@@ -19,12 +29,13 @@ const SEARCH_MAX = 100
 
 export const LIST_RULES = {
   mine: {
-    status: ['created', 'pending', 'paid', 'failed', 'cancelled', 'refunded'],
+    status: PAYMENT_STATUS_VALUES,
     purpose: ['accredited', 'bag'],
   },
   transactions: {
-    status: ['created', 'pending', 'paid', 'failed', 'cancelled', 'refunded'],
+    status: PAYMENT_STATUS_VALUES,
     purpose: ['accredited', 'bag'],
+    channel: ['electronic', 'bank_transfer'],
     method: ['creditcard', 'mada', 'applepay', 'stcpay'],
     mode: ['test', 'live'],
     from: 'date',
@@ -155,6 +166,7 @@ function matchesPaymentFilters(payment, filters) {
     (!filters.status || payment.status === filters.status) &&
     (!filters.purpose || payment.purpose === filters.purpose) &&
     (!filters.method || payment.method === filters.method) &&
+    (!filters.channel || (payment.channel ?? 'electronic') === filters.channel) &&
     withinDates(payment.createdAt, filters)
   )
 }
@@ -194,7 +206,14 @@ export function statsOf(payments) {
   return {
     transactionsCount: payments.length,
     completedCount: count(['paid']),
-    incompleteCount: count(['created', 'pending', 'failed', 'cancelled']),
+    incompleteCount: count([
+      'created',
+      'pending',
+      'under-review',
+      'failed',
+      'rejected',
+      'cancelled',
+    ]),
     refundedCount: count(['refunded']),
     totalIncome: sumWhere(payments, 'paid', 'total'),
     totalVat: sumWhere(payments, 'paid', 'vatAmount'),
@@ -227,12 +246,14 @@ export function ownPayments(user, filters) {
     .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
 }
 
-const OWN_STATUSES = ['created', 'pending', 'paid', 'failed', 'cancelled', 'refunded']
+function countKeyOf(status) {
+  return status.replace(/-([a-z])/g, (match, letter) => letter.toUpperCase())
+}
 
 export function ownStatusCountsOf(payments) {
   return Object.fromEntries(
-    OWN_STATUSES.map((status) => [
-      status,
+    PAYMENT_STATUS_VALUES.map((status) => [
+      countKeyOf(status),
       payments.filter((payment) => payment.status === status).length,
     ]),
   )

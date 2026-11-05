@@ -49,7 +49,16 @@ const ADMIN_SCREENS = [
   '/finance/payment-events',
   '/account',
 ]
-const ENTITY_SCREENS = ['/assessment/history', '/payments', '/assessment/advanced', '/assessment/accredited', '/certificates', '/bag', '/account', '/entity/profile']
+const ENTITY_SCREENS = [
+  '/assessment/history',
+  '/payments',
+  '/assessment/advanced',
+  '/assessment/accredited',
+  '/certificates',
+  '/bag',
+  '/account',
+  '/entity/profile',
+]
 
 async function sweep({ page, api }, role, paths) {
   const broken = []
@@ -109,7 +118,9 @@ test.beforeAll(async ({ browser, request }) => {
 })
 
 test.afterAll(async () => {
-  const calls = Object.fromEntries(Object.entries(sessions).map(([key, { api }]) => [key, api.calls]))
+  const calls = Object.fromEntries(
+    Object.entries(sessions).map(([key, { api }]) => [key, api.calls]),
+  )
   writeFileSync('test-results/integration-api-calls.json', JSON.stringify(calls, null, 1))
   await Promise.all(Object.values(sessions).map(({ context }) => context.close()))
 })
@@ -199,22 +210,21 @@ test('the entity starts a self assessment, submits it and sees the server result
   expect(api.unexpected([GUEST_SESSION_PROBE])).toEqual([])
 })
 
-test('the entity sees the accredited price and its checkout stops at the payment gateway boundary', async () => {
+test('the entity sees the accredited price and its checkout reads the payment channels from the backend', async () => {
   const { page, api } = sessions.entity
   await page.goto('/assessment/accredited')
   await expect(page.locator('.accredited-price')).toContainText('1,725.00')
   await shot(page, 'entity-accredited-intro')
-  const created = page.waitForRequest((request) => request.method() === 'POST' && request.url().endsWith('/api/v1/payments'))
+  const options = page.waitForResponse((response) =>
+    response.url().endsWith('/api/v1/payments/checkout-options'),
+  )
   await page.goto('/assessment/accredited/pay')
-  await page.locator('.checkout__start .btn--primary').click()
-  const payment = await created
-  expect(payment.headers()['idempotency-key']).toMatch(/^[0-9a-f-]{36}$/)
-  expect(payment.postDataJSON()).toEqual({ purpose: 'accredited' })
-  await expect(page.locator('.payment-notice').first()).toBeVisible()
+  expect((await options).status()).toBe(200)
+  await expect(
+    page.locator('.payment-notice, .method-choice, .transfer-panel').first(),
+  ).toBeVisible()
   await shot(page, 'entity-checkout-boundary')
-  expect(api.failures.filter((failure) => failure.path === '/api/v1/payments')).toEqual([
-    { method: 'POST', path: '/api/v1/payments', status: 503, code: 'integration.not_configured' },
-  ])
+  expect(api.failures.filter((failure) => failure.path.startsWith('/api/v1/payments'))).toEqual([])
   expect(api.unexpected([GUEST_SESSION_PROBE, PAYMENT_UNAVAILABLE, PAGE_NOT_PUBLISHED])).toEqual([])
 })
 

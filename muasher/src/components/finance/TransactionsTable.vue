@@ -5,6 +5,7 @@ import DataTable from '@/components/data-list/DataTable.vue'
 import Badge from '@/components/ui/Badge.vue'
 import MoneyAmount from '@/components/payments/MoneyAmount.vue'
 import PaymentStatusBadge from '@/components/payments/PaymentStatusBadge.vue'
+import PaymentChannelCell from '@/components/payments/portal/PaymentChannelCell.vue'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { formatDate } from '@/utils/datetime'
 
@@ -22,6 +23,7 @@ const columns = computed(() => [
   { key: 'receiptNumber', label: t('finance.fields.receiptNumber') },
   { key: 'purpose', label: t('finance.fields.service') },
   { key: 'entity', label: t('finance.fields.entity') },
+  { key: 'channel', label: t('finance.fields.channel') },
   { key: 'method', label: t('finance.fields.method') },
   { key: 'status', label: t('finance.fields.status') },
   { key: 'beforeVat', label: t('finance.pricing.beforeVatShort') },
@@ -79,6 +81,9 @@ function dateOf(value) {
         <bdi class="transactions-table__entity-email" dir="ltr">{{ item.entity.email }}</bdi>
       </span>
     </template>
+    <template #cell-channel="{ item }"
+      ><PaymentChannelCell :payment="item" :with-method="false"
+    /></template>
     <template #cell-method="{ item }">{{
       item.method ? t(`finance.methods.${item.method}`) : t('finance.common.none')
     }}</template>

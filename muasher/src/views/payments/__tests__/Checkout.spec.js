@@ -6,6 +6,12 @@ import Checkout from '@/views/payments/Checkout.vue'
 import { paymentsHandlers } from '@/mocks/handlers/payments'
 import { moyasarSandboxHandlers } from '@/mocks/handlers/moyasarSandbox'
 import { sanctumHandlers } from '@/mocks/handlers/sanctum'
+import { servicePricesHandlers } from '@/mocks/handlers/servicePrices'
+import { dashboardHandlers } from '@/mocks/handlers/dashboard'
+import { entityBoardHandlers } from '@/mocks/handlers/entityBoard'
+import { financeState } from '@/mocks/stores/finance/financeState'
+import { paymentsService } from '@/services/paymentsService'
+import { ROUTE_NAMES } from '@/constants/routeNames'
 import { installFakeMoyasar } from '@/mocks/moyasar/fakeMoyasarForm'
 import { SANDBOX_OUTCOME_ORDER, moyasarSandboxTexts } from '@/mocks/fixtures/moyasarSandbox'
 import { resetFinanceState } from '@/mocks/stores/finance/financeState'
@@ -13,7 +19,17 @@ import { resetIntegrationsState } from '@/mocks/stores/integrations/integrations
 import { clearMockSession, seedMockSession } from '@/test-utils/mockApi'
 import { createTestGlobals } from '@/test-utils'
 
-const server = setupServer(...sanctumHandlers, ...paymentsHandlers, ...moyasarSandboxHandlers)
+const server = setupServer(
+  ...sanctumHandlers,
+  ...paymentsHandlers,
+  ...moyasarSandboxHandlers,
+  ...servicePricesHandlers,
+  ...entityBoardHandlers,
+  ...dashboardHandlers,
+)
+const PDF = new File(['%PDF-1.4\n1 0 obj\n%%EOF\n'], 'bank-transfer-receipt.pdf', {
+  type: 'application/pdf',
+})
 const assign = vi.fn()
 
 function installSandbox() {
@@ -29,14 +45,18 @@ async function settle(rounds = 30) {
   }
 }
 
-function mountCheckout(purpose) {
-  const globals = createTestGlobals({ locale: 'en' })
+let globals = null
+
+async function mountCheckout(purpose) {
+  globals = createTestGlobals({ locale: 'en' })
   setActivePinia(globals.pinia)
-  return mount(Checkout, {
+  const wrapper = mount(Checkout, {
     props: { purpose },
     global: { ...globals, stubs: { teleport: true } },
     attachTo: document.body,
   })
+  await settle()
+  return wrapper
 }
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
@@ -56,7 +76,7 @@ afterAll(() => server.close())
 
 describe('checkout view', () => {
   it('opens the order on demand, shows the server pricing and the TEST notice, and mounts the Moyasar form', async () => {
-    const wrapper = mountCheckout('accredited')
+    const wrapper = await mountCheckout('accredited')
     expect(wrapper.find('[data-fake-moyasar]').exists()).toBe(false)
     expect(wrapper.find('.checkout-summary__pending').exists()).toBe(true)
     await wrapper.find('.checkout__start .btn--primary').trigger('click')
@@ -70,7 +90,7 @@ describe('checkout view', () => {
   })
 
   it('verifies the gateway payment with the platform before the redirect', async () => {
-    const wrapper = mountCheckout('accredited')
+    const wrapper = await mountCheckout('accredited')
     await wrapper.find('.checkout__start .btn--primary').trigger('click')
     await settle()
     wrapper
@@ -84,11 +104,80 @@ describe('checkout view', () => {
   })
 
   it('reports the open payment of the same service instead of a second checkout', async () => {
-    const wrapper = mountCheckout('bag')
+    const wrapper = await mountCheckout('bag')
     await wrapper.find('.checkout__start .btn--primary').trigger('click')
     await settle()
     expect(wrapper.find('.payment-notice--warning').exists()).toBe(true)
     expect(wrapper.find('[data-fake-moyasar]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('offers both channels with the electronic option chosen first', async () => {
+    const wrapper = await mountCheckout('accredited')
+    const options = wrapper.findAll('.method-option')
+    expect(options.map((option) => option.attributes('data-value'))).toEqual([
+      'electronic',
+      'bank_transfer',
+    ])
+    expect(options[0].classes()).toContain('is-selected')
+    expect(wrapper.find('.checkout-summary .pricing-breakdown__row--total').text()).toContain(
+      '1,150.00',
+    )
+    wrapper.unmount()
+  })
+
+  it('skips the choice when only one channel is available', async () => {
+    financeState().channels = ['bank_transfer']
+    const transferOnly = await mountCheckout('accredited')
+    expect(transferOnly.find('.method-option').exists()).toBe(false)
+    expect(transferOnly.find('.transfer-panel').exists()).toBe(true)
+    expect(transferOnly.find('.transfer-panel__change').exists()).toBe(false)
+    transferOnly.unmount()
+    financeState().channels = ['electronic']
+    const cardOnly = await mountCheckout('accredited')
+    expect(cardOnly.find('.method-option').exists()).toBe(false)
+    expect(cardOnly.find('.checkout__intro').exists()).toBe(true)
+    cardOnly.unmount()
+  })
+
+  it('submits a bank transfer with its receipt and opens the review state', async () => {
+    const submitted = { id: '3f0c9a52-6d1e-4b7a-9c21-5a1e00000099', status: 'under-review' }
+    const submit = vi
+      .spyOn(paymentsService, 'submitTransfer')
+      .mockResolvedValue({ data: submitted, meta: {} })
+    const wrapper = await mountCheckout('accredited')
+    await wrapper.find('.method-option[data-value="bank_transfer"] input').setValue(true)
+    await wrapper.find('.checkout__start .btn--primary').trigger('click')
+    await settle(5)
+    expect(wrapper.find('.copy-row__value--latin').text()).toContain(
+      'SA03 8000 0000 6080 1016 7519',
+    )
+    const send = wrapper.find('.transfer-panel__submit .btn--primary')
+    expect(send.attributes('disabled')).toBeDefined()
+    const input = wrapper.find('input[type="file"][name="proof"]')
+    Object.defineProperty(input.element, 'files', { value: [PDF], configurable: true })
+    await input.trigger('change')
+    expect(wrapper.find('.proof-chip').text()).toContain('bank-transfer-receipt.pdf')
+    await wrapper.find('.transfer-panel__submit .btn--primary').trigger('click')
+    await settle()
+    const [order, key] = submit.mock.calls[0]
+    expect(order).toEqual({
+      purpose: 'accredited',
+      bankAccountId: '7c2d9e41-5b3a-4f6e-9d18-2a6b00000001',
+      proof: PDF,
+    })
+    expect(key).toMatch(/^[0-9a-f-]{36}$/)
+    expect(globals.router.currentRoute.value.name).toBe(ROUTE_NAMES.PAYMENTS_COMPLETE)
+    expect(globals.router.currentRoute.value.params.id).toBe(submitted.id)
+    submit.mockRestore()
+    wrapper.unmount()
+  })
+
+  it('shows the transfer under review instead of a new checkout', async () => {
+    seedMockSession({ id: 6002, roles: ['entity'], entityId: 6002 })
+    const wrapper = await mountCheckout('bag')
+    expect(wrapper.find('.payment-notice--info').text()).toContain('under review')
+    expect(wrapper.find('.method-option').exists()).toBe(false)
     wrapper.unmount()
   })
 })

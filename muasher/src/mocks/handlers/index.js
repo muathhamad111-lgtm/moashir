@@ -23,6 +23,8 @@ import { emailIntegrationHandlers } from './emailIntegration'
 import { aiIntegrationHandlers } from './aiIntegration'
 import { paymentsHandlers } from './payments'
 import { financeHandlers } from './finance'
+import { bankTransfersHandlers } from './bankTransfers'
+import { paymentChannelsHandlers } from './paymentChannels'
 import { financeSettingsHandlers } from './financeSettings'
 import { moyasarSandboxHandlers } from './moyasarSandbox'
 import { messagingHandlers } from './messaging'
@@ -112,7 +114,13 @@ export const mockModules = [
   { key: M.PAYMENTS, handlers: [...paymentsHandlers, ...moyasarSandboxHandlers] },
   {
     key: M.FINANCE,
-    handlers: [...financeHandlers, ...financeSettingsHandlers, ...servicePricesHandlers],
+    handlers: [
+      ...bankTransfersHandlers,
+      ...paymentChannelsHandlers,
+      ...financeHandlers,
+      ...financeSettingsHandlers,
+      ...servicePricesHandlers,
+    ],
   },
   { key: M.MESSAGING, handlers: messagingHandlers },
   {

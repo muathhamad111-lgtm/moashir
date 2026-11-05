@@ -2,6 +2,9 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { formatDate } from '@/utils/datetime'
+import { localizedText } from '@/utils/localizedText'
+import { ibanLast4 } from '@/utils/payments/iban'
+import { ROUTE_NAMES } from '@/constants/routeNames'
 
 const props = defineProps({
   transaction: { type: Object, required: true },
@@ -14,6 +17,7 @@ const STAMPS = [
   'paidAt',
   'failedAt',
   'cancelledAt',
+  'rejectedAt',
   'latePaidAt',
   'manuallySettledAt',
   'refundedAt',
@@ -32,6 +36,15 @@ function dateOf(value) {
 const entityName = computed(
   () => props.transaction.entity.name?.[locale.value] || props.transaction.entity.name?.ar || '',
 )
+const transferAccount = computed(() => {
+  const account = props.transaction.bankTransfer?.bankAccount
+  return account
+    ? t('finance.fields.destinationLine', {
+        bank: localizedText(account.bankName, locale.value),
+        last4: ibanLast4(account.iban),
+      })
+    : ''
+})
 const reason = computed(() => {
   const value = props.transaction.failureReason
   return value && te(`finance.failureReasons.${value}`) ? t(`finance.failureReasons.${value}`) : ''
@@ -57,6 +70,22 @@ const stamps = computed(() =>
     <div class="payment-facts__row">
       <dt>{{ t('finance.fields.service') }}</dt>
       <dd>{{ t(`finance.purposes.${transaction.purpose}`) }}</dd>
+    </div>
+    <div class="payment-facts__row">
+      <dt>{{ t('finance.fields.channel') }}</dt>
+      <dd>{{ t(`finance.channels.${transaction.channel ?? 'electronic'}`) }}</dd>
+    </div>
+    <div v-if="transferAccount" class="payment-facts__row">
+      <dt>{{ t('finance.fields.destination') }}</dt>
+      <dd>
+        {{ transferAccount }}
+        <RouterLink
+          class="payment-facts__link"
+          :to="{ name: ROUTE_NAMES.FINANCE_TRANSFER, params: { id: transaction.id } }"
+        >
+          {{ t('finance.transfers.openReview') }}
+        </RouterLink>
+      </dd>
     </div>
     <div class="payment-facts__row">
       <dt>{{ t('finance.fields.method') }}</dt>

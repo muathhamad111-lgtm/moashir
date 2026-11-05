@@ -43,7 +43,7 @@ import { accreditedProgressOf } from '../stores/accredited/accreditedProgress'
 const ASSESSMENT = '/api/v1/assessments/:assessment'
 const NUMERIC_ID = /^\d+$/
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-const OPEN_ORDER = ['created', 'pending']
+const OPEN_ORDER = ['created', 'pending', 'under-review']
 
 function boundRecord(params) {
   runAccreditedSchedule()
@@ -74,6 +74,7 @@ function awaitingPaymentOf(entityId) {
     ? {
         paymentId: order.id,
         reference: order.reference,
+        channel: order.channel ?? 'electronic',
         status: order.status,
         expiresAt: order.expiresAt,
       }

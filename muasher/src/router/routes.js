@@ -700,6 +700,19 @@ export const appRoutes = [
     meta: { layout: 'app', titleKey: 'routes.finance.transaction.title', requiresAuth: true },
   },
   {
+    path: '/finance/transfers',
+    name: ROUTE_NAMES.FINANCE_TRANSFERS,
+    component: () => import('@/views/finance/Transfers.vue'),
+    meta: { layout: 'app', titleKey: 'routes.finance.transfers.title', requiresAuth: true },
+  },
+  {
+    path: `/finance/transfers/:id(${UUID_PARAM})`,
+    name: ROUTE_NAMES.FINANCE_TRANSFER,
+    component: () => import('@/views/finance/TransferReview.vue'),
+    props: true,
+    meta: { layout: 'app', titleKey: 'routes.finance.transfer.title', requiresAuth: true },
+  },
+  {
     path: '/finance/refunds',
     name: ROUTE_NAMES.FINANCE_REFUNDS,
     component: () => import('@/views/finance/Refunds.vue'),

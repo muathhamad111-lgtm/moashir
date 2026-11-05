@@ -88,7 +88,7 @@ describe('usePaymentsHub', () => {
     api.tab.value = 'cancelled'
     await vi.waitFor(() =>
       expect(paymentsService.listMine).toHaveBeenLastCalledWith(
-        expect.objectContaining({ 'filter[status]': 'cancelled,failed' }),
+        expect.objectContaining({ 'filter[status]': 'cancelled,failed,rejected' }),
       ),
     )
   })

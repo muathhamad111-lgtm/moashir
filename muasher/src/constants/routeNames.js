@@ -71,6 +71,8 @@ export const ROUTE_NAMES = {
   FINANCE_REFUNDS: 'finance.refunds',
   FINANCE_EXPORT: 'finance.transactions.export',
   FINANCE_PAYMENT_EVENTS: 'finance.paymentEvents',
+  FINANCE_TRANSFERS: 'finance.transfers',
+  FINANCE_TRANSFER: 'finance.transfers.detail',
   AWARD_RESULTS: 'award.results',
   AWARD_NATIONAL: 'award.national',
   NOTIFICATIONS_INDEX: 'notifications.index',

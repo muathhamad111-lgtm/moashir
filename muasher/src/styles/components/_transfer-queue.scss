@@ -1,0 +1,242 @@
+@use '../mixins' as *;
+
+.transfers-page__panel {
+  @include flex(column, stretch, flex-start, var(--space-4));
+  padding-block-start: var(--space-4);
+}
+
+.transfers-page__read-only,
+.transfer-review__read-only {
+  @include flex(row, center, flex-start, var(--space-2));
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--color-info-soft);
+  color: var(--theme-info-text);
+  font-size: var(--fs-sm);
+}
+
+.transfers-page__conflict,
+.transfer-review__conflict {
+  @include flex(row, center, flex-start, var(--space-2));
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--color-danger-soft);
+  color: var(--theme-danger-text);
+  font-size: var(--fs-sm);
+}
+
+.transfer-filters {
+  @include flex(row, center, flex-start, var(--space-3));
+  flex-wrap: wrap;
+}
+
+.transfer-queue {
+  @include flex(column, stretch, flex-start, var(--space-3));
+}
+
+.transfer-queue__select-all {
+  @include flex(row, center, space-between, var(--space-3));
+
+  @include respond-to('md') {
+    display: none;
+  }
+}
+
+.transfer-queue__count {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-sm);
+}
+
+.transfer-queue__table-wrap {
+  display: none;
+  overflow-x: auto;
+
+  @include respond-to('md') {
+    display: block;
+  }
+}
+
+.transfer-queue__table {
+  inline-size: 100%;
+}
+
+.transfer-queue__row.is-selected,
+.transfer-card.is-selected {
+  background-color: var(--theme-accent-soft);
+}
+
+.transfer-queue__check {
+  inline-size: var(--space-10);
+}
+
+.transfer-queue__reference,
+.transfer-queue__entity {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+}
+
+.transfer-queue__reference bdi {
+  font-family: var(--font-latin);
+  font-weight: var(--fw-bold);
+  color: var(--theme-heading);
+  white-space: nowrap;
+}
+
+.transfer-queue__entity > span:first-child {
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.transfer-queue__muted {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}
+
+.transfer-queue__link {
+  @include flex(row, center, flex-start, var(--space-1));
+  color: var(--theme-accent-text);
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.transfer-queue__sr {
+  @include visually-hidden;
+}
+
+.transfer-queue__cards {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include respond-to('md') {
+    display: none;
+  }
+}
+
+.transfer-card {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-lg);
+}
+
+.transfer-card__head {
+  @include flex(row, flex-start, flex-start, var(--space-3));
+}
+
+.transfer-card__title {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.transfer-card__reference {
+  font-family: var(--font-latin);
+  font-weight: var(--fw-bold);
+}
+
+.transfer-card__amount,
+.transfer-card__meta {
+  @include flex(row, center, space-between, var(--space-2));
+  flex-wrap: wrap;
+  margin: 0;
+  color: var(--theme-text-secondary);
+  font-size: var(--fs-sm);
+}
+
+.transfer-card__action {
+  justify-content: center;
+  min-block-size: var(--size-touch-target);
+}
+
+.transfer-flags {
+  @include flex(row, center, flex-start, var(--space-1));
+  flex-wrap: wrap;
+}
+
+.transfer-flags__none {
+  color: var(--theme-text-muted);
+}
+
+.transfer-bulk-bar {
+  @include flex(row, center, flex-start, var(--space-3));
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width) solid var(--theme-accent-text);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-accent-soft);
+}
+
+.transfer-bulk-bar__count {
+  margin: 0;
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.transfer-bulk-bar__clear {
+  border: none;
+  background: none;
+  padding: var(--space-1);
+  color: var(--theme-accent-text);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.transfer-bulk-bar__limit {
+  inline-size: 100%;
+  margin: 0;
+  color: var(--theme-danger-text);
+  font-size: var(--fs-sm);
+}
+
+.transfer-bulk-bar__actions {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  margin-inline-start: auto;
+}
+
+.bulk-outcome {
+  @include flex(column, stretch, flex-start, var(--space-2));
+}
+
+.bulk-outcome__line {
+  @include flex(row, center, flex-start, var(--space-2));
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-sm);
+}
+
+.bulk-outcome__line--success {
+  background-color: var(--color-success-soft);
+  color: var(--theme-success-text);
+}
+
+.bulk-outcome__line--warning {
+  background-color: var(--color-warning-soft);
+  color: var(--theme-warning-text);
+}
+
+.bulk-outcome__dismiss {
+  align-self: flex-start;
+  border: none;
+  background: none;
+  padding: var(--space-1);
+  color: var(--theme-accent-text);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}

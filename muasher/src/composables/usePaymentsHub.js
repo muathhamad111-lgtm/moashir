@@ -1,23 +1,31 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { paymentsService } from '@/services/paymentsService'
+import { toCamelKey } from '@/api/caseMapping'
+import { toCanonicalStatus } from '@/utils/canonicalStatus'
 import { usePortalTab } from '@/composables/usePortalTab'
 import {
   MY_PAYMENT_TAB_STATUSES,
   MY_PAYMENT_TABS,
+  PAYMENT_CHANNELS,
   PAYMENT_STATUSES,
   PENDING_ORDER_LIMIT,
 } from '@/constants/payments'
 
 const DEFAULT_PER_PAGE = 15
 
+function countKeyOf(status) {
+  return toCamelKey(toCanonicalStatus(status))
+}
+
 function sumOf(counts, statuses) {
   if (!counts) return null
-  return statuses.reduce((sum, status) => sum + (counts[status] ?? 0), 0)
+  return statuses.reduce((sum, status) => sum + (counts[countKeyOf(status)] ?? 0), 0)
 }
 
 function isOpenOrder(payment, now = Date.now()) {
   return (
+    payment.channel !== PAYMENT_CHANNELS.BANK_TRANSFER &&
     payment.status === PAYMENT_STATUSES.CREATED &&
     Boolean(payment.expiresAt) &&
     new Date(payment.expiresAt).getTime() > now

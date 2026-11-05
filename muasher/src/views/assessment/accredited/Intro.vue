@@ -13,6 +13,7 @@ import { useAccreditedIntroContent } from '@/composables/useIntroPageContent'
 import { usePermissions } from '@/composables/usePermissions'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import { PAYMENT_CHANNELS } from '@/constants/payments'
 import DemoDataNotice from '@/components/ui/DemoDataNotice.vue'
 import { MOCK_MODULES } from '@/constants/mockModules'
 import AppIcon from '@/components/ui/AppIcon.vue'
@@ -49,6 +50,15 @@ const action = computed(() => {
       to: { name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_FORM, params: { id: current.value.active.id } },
     }
   if (!isEntity.value || !canPay.value) return null
+  if (current.value?.awaitingPayment?.channel === PAYMENT_CHANNELS.BANK_TRANSFER)
+    return {
+      key: 'viewTransfer',
+      icon: 'refresh-dots',
+      to: {
+        name: ROUTE_NAMES.PAYMENTS_COMPLETE,
+        params: { id: current.value.awaitingPayment.paymentId },
+      },
+    }
   if (current.value?.awaitingPayment)
     return {
       key: 'continuePayment',

@@ -34,9 +34,12 @@ const closedNote = computed(() =>
         <bdi dir="ltr">{{ current.awaitingPayment.reference }}</bdi>
         <PaymentStatusBadge :status="current.awaitingPayment.status" />
       </p>
-      <p class="accredited-current__meta">
+      <p v-if="current.awaitingPayment.expiresAt" class="accredited-current__meta">
         {{ t('accredited.current.expiresAt') }}
         <DateStamp :value="current.awaitingPayment.expiresAt" />
+      </p>
+      <p v-else class="accredited-current__meta">
+        {{ t('accredited.current.transferUnderReview') }}
       </p>
       <RouterLink
         class="accredited-current__link"

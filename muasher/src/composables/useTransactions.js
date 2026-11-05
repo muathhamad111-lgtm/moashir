@@ -6,6 +6,7 @@ import { DEFAULT_TRANSACTION_SORT } from '@/constants/finance'
 export const TRANSACTION_FILTERS = {
   status: '',
   purpose: '',
+  channel: '',
   method: '',
   from: '',
   to: '',
