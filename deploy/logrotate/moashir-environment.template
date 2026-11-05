@@ -1,5 +1,5 @@
-/var/log/moashir/*/*.log {
-    su moashir moashir
+{{LOG_DIR}}/*.log {
+    su {{APP_USER}} {{APP_USER}}
     daily
     rotate 14
     missingok

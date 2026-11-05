@@ -1,0 +1,8 @@
+[Unit]
+Description=Copy the closed application logs of the Moashir %i environment into the root-only archive
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/bash /opt/moashir/deploy/remote/log-archive.sh %i
+Nice=10
+PrivateTmp=yes

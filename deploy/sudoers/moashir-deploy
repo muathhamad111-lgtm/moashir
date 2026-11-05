@@ -1,0 +1,3 @@
+Defaults:moashir-deploy !requiretty
+Defaults:moashir-deploy env_reset
+moashir-deploy ALL=(root) NOPASSWD: /usr/bin/bash /opt/moashir/deploy/remote/release-entry.sh *

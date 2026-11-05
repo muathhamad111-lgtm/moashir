@@ -1,0 +1,13 @@
+[Unit]
+Description=Moashir encrypted off-server backup of the %i environment
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/bash /opt/moashir/deploy/remote/backup.sh %i
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+PrivateTmp=yes
+TimeoutStartSec=6h

@@ -59,19 +59,31 @@ candidate_files() {
     find . "${prune[@]}" -name '.env.*' ! -name '*.example' ! -path ./backend/.env.testing -prune -o -type f -print | sed 's|^\./||'
 }
 
-is_allowed() {
-    local file="$1" kind="$2" rule rule_kind rule_glob
-    [[ -f ${ALLOW_FILE} ]] || return 1
+ALLOW_KINDS=()
+ALLOW_REGEXES=()
+
+glob_regex() {
+    local escaped
+    escaped="$(printf '%s' "$1" | sed -e 's/[].[^$\\+(){}|]/\\&/g' -e 's/\*/.*/g' -e 's/?/./g')"
+    printf '^%s$' "${escaped}"
+}
+
+load_allow_rules() {
+    local rule
+    [[ -f ${ALLOW_FILE} ]] || return 0
 
     while IFS= read -r rule || [[ -n ${rule} ]]; do
         [[ -z ${rule} || ${rule} == \#* ]] && continue
-        rule_kind="${rule%% *}"
-        rule_glob="${rule#* }"
-        [[ ${rule_kind} == "${kind}" ]] || continue
-        case "${file}" in
-            ${rule_glob}) return 0 ;;
-        esac
+        ALLOW_KINDS+=("${rule%% *}")
+        ALLOW_REGEXES+=("$(glob_regex "${rule#* }")")
     done <"${ALLOW_FILE}"
+}
+
+is_allowed() {
+    local file="$1" kind="$2" index
+    for index in "${!ALLOW_KINDS[@]}"; do
+        [[ ${ALLOW_KINDS[index]} == "${kind}" && ${file} =~ ${ALLOW_REGEXES[index]} ]] && return 0
+    done
 
     return 1
 }
@@ -135,6 +147,7 @@ check_content() {
 main() {
     local file count=0
     cd "${ROOT_DIR}" || exit 2
+    load_allow_rules
 
     while IFS= read -r file; do
         [[ -f ${file} ]] || continue
@@ -144,6 +157,10 @@ main() {
     done < <(candidate_files)
 
     printf 'Scanned %d files.\n' "${count}"
+    [[ ${count} -gt 0 ]] || {
+        printf 'No file could be listed; the scan cannot vouch for this tree.\n'
+        exit 2
+    }
 
     if [[ ${FINDINGS} -gt 0 ]]; then
         printf '%d finding(s). Remove the secret, or add a reviewed rule to deploy/secrets-scan.allow for fictional test fixtures only.\n' "${FINDINGS}"
