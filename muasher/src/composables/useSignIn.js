@@ -16,7 +16,7 @@ import { AUTH_FLOW_INTENTS } from '@/constants/loginSteps'
 
 const ACTION = 'auth.login.submit'
 
-export function useSignIn() {
+export function useSignIn(initialIdentifier = '') {
   const { t } = useI18n()
   const auth = useAuthStore()
   const { continueAfter } = useLoginOutcome()
@@ -24,7 +24,7 @@ export function useSignIn() {
   const submitting = ref(false)
   const form = useForm({
     validationSchema: computed(() => signInSchema(t)),
-    initialValues: { ...SIGN_IN_DEFAULTS },
+    initialValues: { ...SIGN_IN_DEFAULTS, identifier: initialIdentifier },
   })
 
   function reject(error) {
@@ -48,6 +48,7 @@ export function useSignIn() {
       const outcome = await auth.signIn(credentials)
       await continueAfter(outcome, {
         officialEmail: signInEmailOf(credentials.identifier),
+        identifier: values.identifier.trim(),
         intent: AUTH_FLOW_INTENTS.LOGIN,
       })
     } catch (error) {

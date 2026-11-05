@@ -48,6 +48,11 @@ export function signInFailureOf(error) {
   return { kind: SIGN_IN_BY_CODE[errorCodeOf(error)] ?? fallback, minutes: waitMinutesOf(error) }
 }
 
+export function codeRequestFailureOf(error) {
+  const kind = isTooManyRequests(error) ? SIGN_IN_FAILURES.THROTTLED : SIGN_IN_FAILURES.UNEXPECTED
+  return { kind, minutes: waitMinutesOf(error) }
+}
+
 export function codeFailureOf(error) {
   const fallback = isTooManyRequests(error) ? CODE_FAILURES.COOLDOWN : CODE_FAILURES.UNEXPECTED
   return { kind: CODE_BY_ERROR[errorCodeOf(error)] ?? fallback, minutes: waitMinutesOf(error) }

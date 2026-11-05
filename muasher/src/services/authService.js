@@ -1,5 +1,5 @@
 import { apiClient } from '@/api/client'
-import { SIGN_IN_REJECTIONS } from '@/constants/signIn'
+import { CODE_REQUEST_REJECTIONS, SIGN_IN_REJECTIONS } from '@/constants/signIn'
 import { payloadShape } from '@/utils/payloadShape'
 import { serviceRequest } from './serviceRequest'
 import { toLoginModes, toLoginOutcome, toMfaEnrollment, toSessionUser } from './mappers/session'
@@ -46,6 +46,15 @@ export const authService = {
       '/auth/login',
       { identifier, password },
       { expectedStatuses: SIGN_IN_REJECTIONS },
+    )
+  },
+
+  requestSignInCode({ identifier }) {
+    return postOutcome(
+      'auth.requestSignInCode',
+      '/auth/otp/request',
+      { identifier },
+      { expectedStatuses: CODE_REQUEST_REJECTIONS },
     )
   },
 

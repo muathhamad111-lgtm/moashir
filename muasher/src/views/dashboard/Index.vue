@@ -11,9 +11,10 @@ const { t, locale } = useI18n()
 const auth = useAuthStore()
 
 const isPortal = computed(() => isPortalAudience(auth.roles))
-const greetingName = computed(
-  () => localizedText(auth.user?.name, locale.value) || t('dashboard.greetingFallback'),
-)
+const greeting = computed(() => {
+  const name = localizedText(auth.user?.name, locale.value)
+  return name ? t('dashboard.greeting', { name }) : t('dashboard.greetingAnonymous')
+})
 </script>
 
 <template>
@@ -21,7 +22,7 @@ const greetingName = computed(
   <section v-else class="dashboard">
     <header class="dashboard__header">
       <p class="dashboard__eyebrow">{{ t('dashboard.eyebrow') }}</p>
-      <h1 class="dashboard__title">{{ t('dashboard.greeting', { name: greetingName }) }}</h1>
+      <h1 class="dashboard__title">{{ greeting }}</h1>
       <p class="dashboard__subtitle">{{ t('dashboard.roleSubtitle') }}</p>
     </header>
     <StaffDashboard v-if="auth.isAuthenticated" />

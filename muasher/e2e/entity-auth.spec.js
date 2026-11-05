@@ -1,7 +1,7 @@
 /* eslint-disable playwright/no-conditional-in-test, playwright/no-wait-for-timeout, playwright/expect-expect */
 import { test, expect } from '@playwright/test'
 import { seedSignedIn, seedLocale } from './support/session'
-import { openSignIn, submitSignIn } from './support/signIn'
+import { openSignIn, requestSignInCode, signInTab } from './support/signIn'
 
 function isEn(testInfo) {
   return testInfo.project.name === 'chromium-en-ltr'
@@ -28,7 +28,7 @@ async function loadLoginForm(page) {
 
 async function goToOtpViaLogin(page) {
   await openSignIn(page)
-  await submitSignIn(page, 'info@albirr-riyadh.example.sa')
+  await requestSignInCode(page, 'info@albirr-riyadh.example.sa')
   await expect(page.locator('.otp-input__box').first()).toBeVisible()
 }
 
@@ -45,16 +45,20 @@ test('register renders the full §5 field set', async ({ page }, testInfo) => {
   await expect(page.locator('[name="annualBeneficiariesCount"]')).toBeVisible()
 })
 
-test('login renders one form with the identifier, the password and the recovery link', async ({ page }, testInfo) => {
+test('login renders the password tab first, then the code tab without a password', async ({ page }, testInfo) => {
   await localeOnly(page, isEn(testInfo) ? 'en' : 'ar')
   await loadLoginForm(page)
   await expect(page.locator('.auth-form__title')).toBeVisible()
-  await expect(page.locator('[role="tablist"]')).toHaveCount(0)
+  await expect(page.locator('[role="tablist"] [role="tab"]')).toHaveCount(2)
+  await expect(signInTab(page, 'password')).toHaveAttribute('aria-selected', 'true')
   await expect(page.locator('[name="password"]')).toBeVisible()
   await expect(page.locator('.auth-form__forgot')).toBeVisible()
+  await signInTab(page, 'code').click()
+  await expect(page.locator('[name="password"]')).toHaveCount(0)
+  await expect(page.locator('[data-note="entity-only"]')).toBeVisible()
 })
 
-test('login → OTP shows the code boxes, expiry and resend', async ({ page }, testInfo) => {
+test('login code → OTP shows the code boxes, expiry and resend', async ({ page }, testInfo) => {
   await localeOnly(page, isEn(testInfo) ? 'en' : 'ar')
   await goToOtpViaLogin(page)
   await expect(page.locator('.otp-input__box')).toHaveCount(6)

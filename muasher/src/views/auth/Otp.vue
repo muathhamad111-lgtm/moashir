@@ -1,23 +1,34 @@
 <script setup>
-import { computed, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import OtpInput from '@/components/form/OtpInput.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import AuthFailureAlert from '@/components/auth/AuthFailureAlert.vue'
-import { useOtpStep } from '@/composables/useOtpStep'
-import { ROUTE_NAMES } from '@/constants/routeNames'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import AuthFailureAlert from '@/components/auth/AuthFailureAlert.vue'
+import OtpChallengeEnded from '@/components/auth/OtpChallengeEnded.vue'
+import { useOtpStep } from '@/composables/useOtpStep'
+import { useLoginOutcome } from '@/composables/useLoginOutcome'
+import { ROUTE_NAMES } from '@/constants/routeNames'
+import { SIGN_IN_METHODS } from '@/constants/signIn'
 
 const { t } = useI18n()
 const router = useRouter()
 const step = useOtpStep()
-const { otp, code, codeError, failure, submitting, resending, target, ended, locked } = step
-
-const subtitleKey = computed(() => {
-  if (step.isRegistration.value) return 'auth.otp.registrationSubtitle'
-  return target.value ? 'auth.otp.signInSubtitle' : 'auth.otp.signInSubtitleGeneric'
-})
+const { signInRoute } = useLoginOutcome()
+const {
+  otp,
+  code,
+  codeError,
+  failure,
+  submitting,
+  resending,
+  isCode,
+  destination,
+  channelIcon,
+  ended,
+  locked,
+} = step
 
 onMounted(() => {
   if (!step.start()) router.replace({ name: ROUTE_NAMES.AUTH_LOGIN })
@@ -27,22 +38,42 @@ onMounted(() => {
 <template>
   <section class="auth-form auth-otp">
     <header class="auth-form__header">
+      <span v-if="isCode" class="auth-otp__tile" :data-channel="otp.channel.value">
+        <AppIcon :name="channelIcon" />
+      </span>
       <h1 class="auth-form__title">{{ t('auth.otp.title') }}</h1>
-      <i18n-t :keypath="subtitleKey" scope="global" tag="p" class="auth-form__subtitle">
+      <i18n-t
+        v-if="destination.inline"
+        :keypath="destination.subtitleKey"
+        scope="global"
+        tag="p"
+        class="auth-form__subtitle"
+      >
         <template #target>
-          <bdi class="auth-otp__target" dir="ltr">{{ target }}</bdi>
+          <bdi class="auth-otp__target" dir="ltr">{{ destination.target }}</bdi>
         </template>
       </i18n-t>
-      <p class="auth-form__hint">
+      <template v-else>
+        <p class="auth-form__subtitle">{{ t(destination.subtitleKey) }}</p>
+        <p v-if="destination.target" class="auth-otp__target-line">
+          <bdi class="auth-otp__target" dir="ltr">{{ destination.target }}</bdi>
+        </p>
+      </template>
+      <p v-if="!ended" class="auth-form__hint">
         {{
           t('auth.otp.validity', { count: otp.validityMinutes.value }, otp.validityMinutes.value)
         }}
       </p>
     </header>
 
-    <AuthFailureAlert v-if="failure" :failure="failure" group="code" />
+    <OtpChallengeEnded
+      v-if="isCode && ended"
+      :failure="failure"
+      :request-route="signInRoute(SIGN_IN_METHODS.CODE)"
+    />
+    <AuthFailureAlert v-else-if="failure" :failure="failure" group="code" />
 
-    <div class="auth-form__body">
+    <div v-if="!ended" class="auth-form__body">
       <OtpInput
         v-model="code"
         :length="otp.length.value"
@@ -54,18 +85,13 @@ onMounted(() => {
 
       <p v-if="codeError" class="auth-otp__error" role="alert">{{ codeError }}</p>
 
-      <p
-        v-if="!ended"
-        class="auth-otp__expiry"
-        :class="{ 'is-expired': otp.expired.value }"
-        aria-live="polite"
-      >
+      <p class="auth-otp__expiry" :class="{ 'is-expired': otp.expired.value }" aria-live="polite">
         <AppIcon :name="otp.expired.value ? 'x' : 'clock'" />
         <span v-if="otp.expired.value">{{ t('auth.otp.expired') }}</span>
         <span v-else>{{ t('auth.otp.expiresIn', { time: otp.expiryClock.value }) }}</span>
       </p>
 
-      <div v-if="!ended" class="auth-form__actions">
+      <div class="auth-form__actions">
         <BaseButton
           type="button"
           variant="primary"
@@ -77,7 +103,7 @@ onMounted(() => {
         </BaseButton>
       </div>
 
-      <div v-if="!ended" class="auth-otp__resend">
+      <div class="auth-otp__resend">
         <span>{{ t('auth.otp.noCode') }}</span>
         <button
           v-if="otp.canResend.value"
@@ -95,7 +121,11 @@ onMounted(() => {
     </div>
 
     <p class="auth-form__switch">
-      <router-link class="auth-form__link" :to="{ name: ROUTE_NAMES.AUTH_LOGIN }">
+      <router-link v-if="isCode" class="auth-form__link auth-otp__password" :to="signInRoute()">
+        <AppIcon name="lock" />
+        {{ t('auth.otp.code.usePassword') }}
+      </router-link>
+      <router-link v-else class="auth-form__link" :to="{ name: ROUTE_NAMES.AUTH_LOGIN }">
         {{ t('auth.otp.backToLogin') }}
       </router-link>
     </p>

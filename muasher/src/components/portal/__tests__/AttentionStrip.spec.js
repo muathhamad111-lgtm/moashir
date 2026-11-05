@@ -66,7 +66,7 @@ describe('AttentionStrip', () => {
     const wrapper = await factory(ITEMS.slice(0, 3))
     expect(wrapper.findAll('.attention-strip__mobile .attention-item')).toHaveLength(1)
     expect(wrapper.find('.attention-strip__summary').text()).toBe(
-      '+ ردّ جديد على رسائلكم · ملف الجهة',
+      '+ ردّ جديد على رسائلك · ملف الجهة',
     )
   })
 

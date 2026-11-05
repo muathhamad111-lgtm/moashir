@@ -1,5 +1,6 @@
 import { envelope } from '../contract/responses'
 import { descriptorFor, sessionPayload } from './accounts'
+import { challengePayload } from './otpChallenges'
 import { startMockSession } from './sessionStore'
 import { clearFailures } from './signInLockout'
 
@@ -18,6 +19,15 @@ export function pendingSignIn() {
 
 export function isStaff(account) {
   return account?.kind === 'staff'
+}
+
+export function otpRequired(challenge, extra = {}) {
+  return envelope({
+    step: SIGN_IN_STEPS.OTP_REQUIRED,
+    requiresOtp: true,
+    otp: challengePayload(challenge),
+    ...extra,
+  })
 }
 
 export function signIn(account, extra = {}) {

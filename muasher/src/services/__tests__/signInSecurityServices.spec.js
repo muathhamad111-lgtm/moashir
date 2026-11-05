@@ -20,26 +20,41 @@ beforeEach(() => {
 })
 
 describe('authSettingsService', () => {
-  it('reads and changes the entity second factor through /settings/auth', async () => {
+  it('reads and changes the entity sign-in code channels through /settings/auth', async () => {
     apiClient.get.mockResolvedValue(
+      respond({ entitySignInCodeChannels: ['email'], smsStatus: 'test', staffTotpRequired: true }),
+    )
+    apiClient.put.mockResolvedValue(
       respond({
-        entitySecondFactorEnabled: true,
-        entitySecondFactorChannel: 'email',
+        entitySignInCodeChannels: ['sms', 'email'],
+        smsStatus: 'live',
         staffTotpRequired: true,
       }),
     )
-    apiClient.put.mockResolvedValue(respond({ entitySecondFactorEnabled: false }))
     expect((await authSettingsService.get()).data).toEqual({
-      entitySecondFactorEnabled: true,
-      entitySecondFactorChannel: 'email',
+      entitySignInCodeChannels: ['email'],
+      smsStatus: 'test',
       staffTotpRequired: true,
     })
-    const payload = { entitySecondFactorEnabled: false, reason: 'Approved by the client board.' }
+    const payload = {
+      entitySignInCodeChannels: ['email', 'sms'],
+      reason: 'Approved by the client board.',
+    }
     const saved = await authSettingsService.update(payload)
     expect(apiClient.get).toHaveBeenCalledWith('/settings/auth')
     expect(apiClient.put).toHaveBeenCalledWith('/settings/auth', payload)
-    expect(saved.data.entitySecondFactorEnabled).toBe(false)
+    expect(saved.data.entitySignInCodeChannels).toEqual(['email', 'sms'])
+    expect(saved.data.smsStatus).toBe('live')
     expect(JSON.stringify(logger.breadcrumb.mock.calls)).not.toContain('Approved by the client')
+  })
+
+  it('keeps the e-mail channel and reads an unknown SMS status as unavailable', async () => {
+    apiClient.get.mockResolvedValue(respond({ entitySignInCodeChannels: ['sms', 'pigeon'] }))
+    expect((await authSettingsService.get()).data).toEqual({
+      entitySignInCodeChannels: ['email', 'sms'],
+      smsStatus: 'unavailable',
+      staffTotpRequired: false,
+    })
   })
 
   it('treats 403 and 422 as expected answers', async () => {

@@ -110,7 +110,7 @@ export const awardCyclesFixture = [
 ]
 
 const RETURN_NOTES =
-  'يرجى استكمال وصف دراسة احتياجات المستفيدين وإرفاق تقرير قياس الأثر لعام 2025 قبل نهاية المهلة.'
+  'أكمل وصف دراسة احتياجات المستفيدين، وأرفق تقرير قياس الأثر لعام 2025 قبل نهاية المهلة.'
 
 const COMPLETE_EVIDENCE = evidence(FULL_EVIDENCE)
 
@@ -130,7 +130,7 @@ export const advancedRequestsFixture = [
         status: 'open',
         notes: RETURN_NOTES,
         items: [
-          { subCode: 'M2.1', kind: 'cv', note: 'أضيفوا منهجية الدراسة وعدد المستفيدين المشمولين.' },
+          { subCode: 'M2.1', kind: 'cv', note: 'أضف منهجية الدراسة وعدد المستفيدين المشمولين.' },
           { subCode: 'M8.2', kind: 'evidence', note: null },
         ],
         requestedOffset: -3,
@@ -290,7 +290,7 @@ export const advancedRequestsFixture = [
     completionRequests: [
       {
         status: 'expired-declined',
-        notes: 'يرجى استكمال السير المطلوبة للمعايير من الثالث إلى الثامن.',
+        notes: 'أكمل السير المطلوبة للمعايير من الثالث إلى الثامن.',
         items: [{ subCode: 'M3.1', kind: 'cv', note: null }],
         requestedOffset: -345,
         deadlineOffset: -336,

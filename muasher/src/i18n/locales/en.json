@@ -1842,6 +1842,17 @@
       },
       "validation": {
         "identifier": "Enter your official e-mail, your Saudi mobile number (05XXXXXXXX) or your entity's unified national number (10 digits starting with 7)."
+      },
+      "methods": {
+        "label": "Sign-in method",
+        "password": "Password",
+        "code": "Verification code"
+      },
+      "code": {
+        "channelEmail": "The code is sent to your official e-mail.",
+        "channelSms": "You get the code by SMS if you enter your verified mobile; otherwise, by your official e-mail.",
+        "entityOnly": "Code sign-in is for entity accounts only. Staff sign in with a password and an authenticator app.",
+        "submit": "Send verification code"
       }
     },
     "panel": {
@@ -1882,7 +1893,29 @@
       "signInSubtitle": "To finish signing in, enter the verification code we sent to the official e-mail {target}.",
       "signInSubtitleGeneric": "To finish signing in, enter the verification code we sent to your entity's official e-mail.",
       "registrationSubtitle": "Enter the verification code we sent to {target} to confirm your entity's official e-mail.",
-      "validity": "The code is valid for less than a minute and works once. | The code is valid for 1 minute and works once. | The code is valid for {count} minutes and works once."
+      "validity": "The code is valid for less than a minute and works once. | The code is valid for 1 minute and works once. | The code is valid for {count} minutes and works once.",
+      "code": {
+        "subtitleTypedEmail": "If the account is registered, we sent the code to the e-mail you entered:",
+        "subtitleTypedMobile": "If the account is registered, we sent the code to the mobile you entered:",
+        "subtitleRegisteredEmail": "If the account is registered, we sent the code to the official e-mail registered for this account.",
+        "subtitleGeneric": "If the account is registered, we sent it a verification code.",
+        "usePassword": "Sign in with your password instead",
+        "requestNew": "Request a new code",
+        "ended": {
+          "attempts": {
+            "title": "Too many attempts",
+            "body": "This code has ended. Request a new code to continue."
+          },
+          "challenge": {
+            "title": "This code has ended",
+            "body": "Request a new code to continue."
+          },
+          "locked": {
+            "title": "Account temporarily locked",
+            "body": "Try again later."
+          }
+        }
+      }
     },
     "mfa": {
       "challenge": {
@@ -1973,6 +2006,10 @@
         "deactivated": "This account is not active. Contact the Moashir team.",
         "throttled": "Too many attempts in a short time.",
         "unexpected": "Signing in is not possible right now. Try again shortly."
+      },
+      "codeRequest": {
+        "throttled": "Too many requests.",
+        "unexpected": "The code cannot be sent right now. Try again shortly."
       },
       "code": {
         "invalid": "The verification code is incorrect.",
@@ -2465,7 +2502,7 @@
   "dashboard": {
     "eyebrow": "Dashboard",
     "greeting": "Welcome, {name}",
-    "greetingFallback": "there",
+    "greetingAnonymous": "Welcome",
     "roleSubtitle": "Your dashboard brings all your roles together: what needs your action first, then the indicators.",
     "loadError": "Failed to load the dashboard.",
     "actionCenter": {
@@ -3003,7 +3040,7 @@
         },
         "signIn": {
           "title": "Sign-in security",
-          "desc": "The e-mail verification code of entity accounts after the password."
+          "desc": "Entity sign-in and verification code channels."
         },
         "contactMessages": {
           "title": "Contact messages",
@@ -3343,32 +3380,27 @@
     },
     "signIn": {
       "title": "Sign-in security",
-      "description": "Choose the extra verification step of entity accounts after the password.",
+      "description": "Entity sign-in and verification code channels.",
       "entityTitle": "Entity accounts",
-      "entitySecondFactor": "E-mail verification code after the password",
-      "entitySecondFactorDesc": "When on, the entity enters a code sent to its official e-mail after the password. The code works once, for a limited time.",
-      "onNote": "On: the password alone is not enough to enter an entity account.",
-      "risk": {
-        "title": "Turning this off weakens the protection of entity accounts",
-        "items": {
-          "passwordOnly": "Entities will sign in with the password alone unless they enabled an authenticator app.",
-          "stolenPassword": "A leaked or guessed password is enough to enter the entity's account, data and requests.",
-          "compliance": "Turning it off is a deviation from the multi-factor guidance of the National Cybersecurity Authority's Essential Cybersecurity Controls and must be formally accepted by the platform owner."
-        }
+      "statement": "Entity accounts sign in with a password or a one-time verification code, without a second factor.",
+      "channels": {
+        "legend": "Verification code channels",
+        "help": "The channels allowed to send the entity sign-in code.",
+        "email": "E-mail",
+        "emailAlways": "Always allowed; it cannot be turned off.",
+        "sms": "SMS",
+        "smsHelp": "Used when the entity signs in with its verified mobile. If SMS fails, the code goes by e-mail.",
+        "smsUnavailable": "The SMS gateway is not configured.",
+        "smsSetup": "Set up the SMS gateway",
+        "smsTest": "Test mode: messages reach test numbers only."
       },
       "alwaysTitle": "Always applies",
       "always": {
-        "staffTotp": "The authenticator app stays mandatory for staff and Super Admin accounts; this setting does not change it.",
-        "enrolledAuthenticator": "An entity that enabled an authenticator app is asked for its code at every sign-in.",
+        "staffTotp": "The authenticator app stays mandatory for staff and Super Admin accounts.",
         "audited": "Every change is recorded in the audit log and the System Administrators are notified."
       },
       "saved": "The sign-in security setting was saved.",
       "unchanged": "There are no changes to save.",
-      "confirmOff": {
-        "title": "Turn off the verification code of entity accounts?",
-        "message": "Entities will be able to sign in with the password alone. The change is recorded and the System Administrators are notified.",
-        "confirm": "Turn it off"
-      },
       "reasonTitle": "Reason for the sign-in security change",
       "reasonMessage": "The Super Admin gives a reason for every change; the reason is kept in the audit log."
     },
@@ -3517,7 +3549,7 @@
     "completeness": {
       "title": "Before you submit | One item is missing | {count} items are missing",
       "done": "All required CV entries and attachments are provided.",
-      "hint": "The list comes from the platform and updates after every save or upload.",
+      "hint": "The list updates after every save or upload.",
       "cv": "CV entry",
       "attachment": "Attachment: {name}"
     },
@@ -4166,7 +4198,7 @@
     "comparison": {
       "eyebrow": "Impact measurement",
       "title": "Before & After Comparison",
-      "intro": "This view compares your frozen reference result with the new re-assessment result, criterion by criterion. Real improvement is measured only from re-assessment — never from Kit progress.",
+      "intro": "Your reference result compared with the re-assessment result, criterion by criterion. Improvement is measured only from re-assessment, never from Kit progress.",
       "versions": "Reference version {refVersion} vs re-assessment version {newVersion}",
       "inKit": "In Kit scope",
       "before": "Before",
@@ -6814,7 +6846,7 @@
       },
       "hero": {
         "eyebrow": "Excellence journey",
-        "title": "Welcome, {name}. Your organization is on its way to excellence",
+        "title": "Welcome, {name}",
         "lead": "You are now at the {station} station.",
         "leadWithResult": "You completed the self assessment with {percent}, and you are now at the {station} station.",
         "leadComplete": "You completed every station of the journey. Your certificate is in My certificates."
@@ -6999,7 +7031,7 @@
     },
     "help": {
       "eyebrow": "Help and guides",
-      "title": "Path guides and contact with the Moashir team",
+      "title": "Path guides and contact",
       "subtitle": "See what every station needs, and write to the Moashir team when you need help.",
       "noGuide": "No guidance has been added for this path yet.",
       "newMessage": "New message",
@@ -7011,7 +7043,7 @@
     },
     "messages": {
       "eyebrow": "Messages",
-      "title": "Your conversations with the Moashir team in one place",
+      "title": "Your messages with the Moashir team",
       "subtitle": "We answer your enquiries here and by e-mail. Messages you sent while signed in appear here.",
       "tabsLabel": "Filter messages",
       "tabs": {
@@ -7071,7 +7103,7 @@
     "payments": {
       "eyebrow": "Payments",
       "title": "Payments and receipts",
-      "subtitle": "All payments of your organization and their receipts in one place. A payment receipt is issued for every completed payment.",
+      "subtitle": "Your organization's payments and their receipts. A payment receipt is issued for every completed payment.",
       "tabsLabel": "Filter payments",
       "tabs": {
         "all": "All",
@@ -7178,7 +7210,7 @@
     },
     "certificates": {
       "eyebrow": "Certificates",
-      "title": "Your certificates — the outcome of every station you completed",
+      "title": "Your organization's certificates",
       "subtitle": "Every certificate carries a verification code and a QR code, so anyone can confirm it on the public verification page without an account.",
       "tabsLabel": "Filter certificates",
       "tabs": {
@@ -7269,7 +7301,7 @@
     "assessments": {
       "eyebrow": "Assessments",
       "title": "Assessments",
-      "subtitle": "Your current assessment request, your previous assessments and their results in one place.",
+      "subtitle": "Your current assessment, your previous assessments and their results.",
       "tabsLabel": "Filter assessments",
       "tabs": {
         "current": "Current",
@@ -7362,7 +7394,7 @@
       "eyebrow": "Station 1 · Organization profile",
       "eyebrowShort": "Organization profile",
       "title": "Profile of {name}",
-      "subtitle": "The identity card the assessor reads with your evidence. Update it whenever your organization's details change.",
+      "subtitle": "The assessor reads this profile with your evidence. Update it whenever your organization's details change.",
       "tabsLabel": "Organization profile sections",
       "tabs": {
         "basic": "Basic details",

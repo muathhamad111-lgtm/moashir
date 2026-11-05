@@ -1,16 +1,17 @@
 <script setup>
-import { computed, defineAsyncComponent, onMounted } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
-import BaseInput from '@/components/form/BaseInput.vue'
-import BaseButton from '@/components/ui/BaseButton.vue'
-import AuthFailureAlert from '@/components/auth/AuthFailureAlert.vue'
-import { useSignIn } from '@/composables/useSignIn'
+import SignInMethodTabs from '@/components/auth/SignInMethodTabs.vue'
+import SignInPasswordForm from '@/components/auth/SignInPasswordForm.vue'
+import SignInCodeForm from '@/components/auth/SignInCodeForm.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 import { useLoginModes } from '@/composables/useLoginModes'
+import { useAuthFlowStore } from '@/stores/authFlow'
 import { identifierHintOf } from '@/utils/auth/signInForm'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { AUTH_NOTICES } from '@/constants/loginSteps'
-import AppIcon from '@/components/ui/AppIcon.vue'
+import { SIGN_IN_METHODS, SIGN_IN_METHOD_QUERY, SIGN_IN_METHOD_VALUES } from '@/constants/signIn'
 
 const DemoLogin =
   import.meta.env.DEV && import.meta.env.VITE_DEMO_LOGIN === 'true'
@@ -19,11 +20,15 @@ const DemoLogin =
 
 const { t, locale } = useI18n()
 const route = useRoute()
+const authFlow = useAuthFlowStore()
+const { identifiers, codeChannels, load } = useLoginModes()
+
+const requestedMethod = route.query[SIGN_IN_METHOD_QUERY]
+const method = ref(
+  SIGN_IN_METHOD_VALUES.includes(requestedMethod) ? requestedMethod : SIGN_IN_METHODS.PASSWORD,
+)
+const identifier = ref(authFlow.identifier)
 const passwordWasReset = computed(() => route.query.notice === AUTH_NOTICES.PASSWORD_RESET)
-const { identifiers, load } = useLoginModes()
-const { form, failure, submitting, onSubmit } = useSignIn()
-const [identifier] = form.defineField('identifier')
-const [password] = form.defineField('password')
 const identifierHint = computed(() => identifierHintOf(t, locale.value, identifiers.value))
 
 onMounted(load)
@@ -41,43 +46,19 @@ onMounted(load)
       <p class="auth-status__text">{{ t('auth.reset.done') }}</p>
     </div>
 
-    <AuthFailureAlert v-if="failure" :failure="failure" group="signIn" />
-
-    <form class="auth-form__body" novalidate @submit.prevent="onSubmit">
-      <fieldset class="auth-form__group" :disabled="submitting">
-        <BaseInput
-          v-model="identifier"
-          name="identifier"
-          autocomplete="username"
-          input-dir="ltr"
-          :label="t('auth.login.fields.identifier')"
-          :hint="identifierHint"
-          :error="form.errors.value.identifier"
-          required
-        />
-        <BaseInput
-          v-model="password"
-          name="password"
-          type="password"
-          autocomplete="current-password"
-          :label="t('auth.login.fields.password')"
-          :error="form.errors.value.password"
-          required
-        />
-        <router-link
-          class="auth-form__link auth-form__forgot"
-          :to="{ name: ROUTE_NAMES.AUTH_FORGOT_PASSWORD }"
-        >
-          {{ t('auth.login.forgotPassword') }}
-        </router-link>
-      </fieldset>
-
-      <div class="auth-form__actions">
-        <BaseButton type="submit" variant="primary" :loading="submitting">
-          {{ t('auth.login.submit') }}
-        </BaseButton>
-      </div>
-    </form>
+    <SignInMethodTabs v-model="method">
+      <SignInPasswordForm
+        v-if="method === SIGN_IN_METHODS.PASSWORD"
+        v-model:identifier="identifier"
+        :identifier-hint="identifierHint"
+      />
+      <SignInCodeForm
+        v-else
+        v-model:identifier="identifier"
+        :identifier-hint="identifierHint"
+        :code-channels="codeChannels"
+      />
+    </SignInMethodTabs>
 
     <component :is="DemoLogin" v-if="DemoLogin" />
 

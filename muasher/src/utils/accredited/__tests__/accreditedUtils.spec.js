@@ -74,17 +74,17 @@ describe('completion request form', () => {
     expect(options.map((option) => option.key)).toEqual(['101:cv', '101:evidence', '702:evidence'])
     const payload = completionPayload(
       {
-        notes: '  أكملوا الشواهد  ',
+        notes: '  أكمل الشواهد  ',
         items: ['101:cv', '702:evidence'],
         deadline: '2026-11-20',
         expiryOutcome: 'decline',
       },
-      { '101:cv': 'أضيفوا أمثلة' },
+      { '101:cv': 'أضف أمثلة' },
     )
     expect(payload).toEqual({
-      notes: 'أكملوا الشواهد',
+      notes: 'أكمل الشواهد',
       items: [
-        { subCriterionId: 101, kind: 'cv', note: 'أضيفوا أمثلة' },
+        { subCriterionId: 101, kind: 'cv', note: 'أضف أمثلة' },
         { subCriterionId: 702, kind: 'evidence' },
       ],
       deadlineAt: '2026-11-20T20:59:00.000Z',

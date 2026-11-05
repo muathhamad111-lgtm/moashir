@@ -31,4 +31,21 @@ describe('BaseCheckbox', () => {
     expect(wrapper.find('.checkbox').classes()).toContain('is-disabled')
     expect(wrapper.find('input').attributes('disabled')).toBeDefined()
   })
+
+  it('ties the description and the error to the checkbox', () => {
+    const wrapper = mount(BaseCheckbox, {
+      props: {
+        modelValue: true,
+        label: 'الرسائل النصية',
+        name: 'sms',
+        description: 'تُستخدم عند الدخول برقم الجوال الموثّق.',
+        error: 'هيّئ بوابة الرسائل النصية أولًا.',
+      },
+    })
+    const description = wrapper.find('.checkbox__description')
+    expect(description.text()).toBe('تُستخدم عند الدخول برقم الجوال الموثّق.')
+    expect(wrapper.find('input').attributes('aria-describedby')).toBe(
+      `${description.attributes('id')} ${wrapper.find('.field__error').attributes('id')}`,
+    )
+  })
 })

@@ -47,7 +47,7 @@ export function announceRefusedEvidence(record, row) {
     title: { ar: 'رُفض ملف شاهد بعد فحصه', en: 'An evidence file was refused after the scan' },
     body: replaceable
       ? {
-          ar: `رُفض ملف شاهد في المعيار ${row.subCode} بعد فحصه. يرجى رفع ملف بديل.`,
+          ar: `رُفض ملف شاهد في المعيار ${row.subCode} بعد فحصه. ارفع ملفاً بديلاً.`,
           en: `An evidence file of sub-criterion ${row.subCode} was refused after the scan. Please upload a replacement.`,
         }
       : {

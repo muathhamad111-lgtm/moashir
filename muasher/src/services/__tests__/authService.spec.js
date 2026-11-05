@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { authService } from '@/services/authService'
+import { toLoginModes } from '@/services/mappers/session'
 import { apiClient } from '@/api/client'
 import { logger } from '@/utils/logger'
 
@@ -21,11 +22,11 @@ beforeEach(() => {
 })
 
 describe('authService', () => {
-  it('loads the login modes of the simplified sign-in', async () => {
+  it('loads the login modes with the entity sign-in code channels', async () => {
     apiClient.get.mockResolvedValue(
       respond({
         identifiers: ['email', 'mobile', 'unified_number'],
-        entitySecondFactorEnabled: false,
+        codeChannels: ['sms', 'email', 'fax'],
         otpLength: 6,
         otpExpirySeconds: 300,
         resendCooldownSeconds: 60,
@@ -36,11 +37,18 @@ describe('authService', () => {
     expect(apiClient.get).toHaveBeenCalledWith('/auth/login-modes', AUTH_FLOW)
     expect(result.data).toEqual({
       identifiers: ['email', 'mobile', 'unified_number'],
-      entitySecondFactorEnabled: false,
+      codeChannels: ['email', 'sms'],
       otpLength: 6,
       otpExpirySeconds: 300,
       resendCooldownSeconds: 60,
     })
+  })
+
+  it('always offers the e-mail code channel, even when the server omits it', () => {
+    expect(toLoginModes({}).codeChannels).toEqual(['email'])
+    expect(toLoginModes({ codeChannels: ['sms'] }).codeChannels).toEqual(['email', 'sms'])
+    expect(toLoginModes({ codeChannels: 'email' }).codeChannels).toEqual(['email'])
+    expect(toLoginModes({})).not.toHaveProperty('entitySecondFactorEnabled')
   })
 
   it('registers via POST and breadcrumbs only the field SHAPE (never values)', async () => {
@@ -80,13 +88,45 @@ describe('authService', () => {
     expect(result.data.user.committeeAppointments).toEqual([{ cycleId: 3 }])
   })
 
-  it('answers the e-mail second factor step with its challenge and never calls otp/request', async () => {
-    apiClient.post.mockResolvedValue(respond({ step: 'otp_required', otp: { challengeId: 'c-1' } }))
+  it('requests a sign-in code with the identifier only and maps the challenge', async () => {
+    apiClient.post.mockResolvedValue(
+      respond({
+        step: 'otp_required',
+        requiresOtp: true,
+        otp: { challengeId: 'c-1', channel: 'sms', length: 6 },
+        message: 'If an entity account matches what you entered, a sign-in code has been sent.',
+      }),
+    )
+    const result = await authService.requestSignInCode({ identifier: '0551234567' })
+    expect(apiClient.post).toHaveBeenCalledWith(
+      '/auth/otp/request',
+      { identifier: '0551234567' },
+      AUTH_FLOW,
+    )
+    expect(result.data).toMatchObject({
+      step: 'otp_required',
+      otp: { challengeId: 'c-1', channel: 'sms' },
+      user: null,
+    })
+    expect(JSON.stringify(logger.breadcrumb.mock.calls)).not.toContain('0551234567')
+  })
+
+  it('treats 422 and 429 of a code request as expected answers', async () => {
+    for (const status of [422, 429]) {
+      apiClient.post.mockRejectedValueOnce({ response: { status } })
+      await expect(
+        authService.requestSignInCode({ identifier: 'a@example.sa' }),
+      ).rejects.toBeTruthy()
+    }
+    expect(logger.error).not.toHaveBeenCalled()
+  })
+
+  it('signs an entity in with the password alone', async () => {
+    apiClient.post.mockResolvedValue(respond({ step: 'authenticated', user: { id: 5001 } }))
     const result = await authService.signIn({ identifier: '7001234567', password: 'x' })
-    expect(result.data.otp.challengeId).toBe('c-1')
-    expect(result.data.user).toBeNull()
+    expect(result.data.step).toBe('authenticated')
+    expect(result.data.otp).toBeNull()
     expect(apiClient.post.mock.calls.map(([path]) => path)).toEqual(['/auth/login'])
-    expect(authService).not.toHaveProperty('requestLoginOtp')
   })
 
   it('does not report expected sign-in rejections to GlitchTip', async () => {

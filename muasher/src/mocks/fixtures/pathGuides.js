@@ -4,11 +4,11 @@ export const PATH_GUIDES_FIXTURE = {
     pathLabel: { ar: 'التقييم المعتمد', en: 'Accredited assessment' },
     entityTexts: {
       intro: {
-        ar: 'يقيّم مقيّم معتمد من منصة مؤشر شواهد جهتكم لكل معيار فرعي، وتصدر الشهادة بعد اعتماد النتيجة.',
+        ar: 'يقيّم مقيّم معتمد من منصة مؤشر شواهد جهتك لكل معيار فرعي، وتصدر الشهادة بعد اعتماد النتيجة.',
         en: 'A Moashir accredited assessor reviews your evidence for every sub-criterion, and the certificate is issued once the result is approved.',
       },
       instructions: {
-        ar: 'ارفعوا الشواهد المطلوبة لكل معيار فرعي قبل الإرسال.\nاكتبوا وصفاً مختصراً للممارسة عندما يطلبه المعيار.\nتأكدوا أن كل ملف مقروء وحديث وخالٍ من البيانات الشخصية غير اللازمة.\nأرسلوا الطلب إلى المقيّم بعد اكتمال جميع المعايير الفرعية.',
+        ar: 'ارفع الشواهد المطلوبة لكل معيار فرعي قبل الإرسال.\nاكتب وصفاً مختصراً للممارسة عندما يطلبه المعيار.\nتأكد أن كل ملف مقروء وحديث وخالٍ من البيانات الشخصية غير اللازمة.\nأرسل الطلب إلى المقيّم بعد اكتمال جميع المعايير الفرعية.',
         en: 'Upload the required evidence for every sub-criterion before you submit.\nWrite a short description of the practice when the criterion asks for it.\nMake sure every file is readable, recent and free of unnecessary personal data.\nSend the request to the assessor once every sub-criterion is complete.',
       },
       afterSubmission: {

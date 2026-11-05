@@ -112,11 +112,11 @@ export const assessmentMessages = {
     en: 'The file must not be greater than :max megabytes.',
   },
   'accredited.request_open': {
-    ar: 'لدى جهتكم طلب تقييم معتمد مفتوح. أكملوه قبل سداد رسوم طلب جديد.',
+    ar: 'لدى جهتك طلب تقييم معتمد مفتوح. أكمله قبل سداد رسوم طلب جديد.',
     en: 'Your entity already has an open accredited assessment request. Complete it before paying for a new one.',
   },
   'accredited.payment_being_processed': {
-    ar: 'تجري معالجة سداد رسوم التقييم المعتمد، وسيُفتح طلبكم خلال وقت قصير.',
+    ar: 'تجري معالجة سداد رسوم التقييم المعتمد، وسيُفتح طلبك خلال وقت قصير.',
     en: 'Your accredited assessment payment is being processed. Your request will open shortly.',
   },
   'assessment.sub_not_in_version': {
@@ -265,7 +265,7 @@ export const assessmentMessages = {
     en: 'The submission period of the award cycle is not open.',
   },
   'cycle.conditions_failed': {
-    ar: 'لا تستوفي جهتكم شروط الدخول في دورة الجائزة.',
+    ar: 'لا تستوفي جهتك شروط الدخول في دورة الجائزة.',
     en: 'Your entity does not meet the entry conditions of the award cycle.',
   },
   'cycle.member_invalid': {
@@ -281,7 +281,7 @@ export const assessmentMessages = {
     en: 'Filtering decisions can be taken only after the submission period of the cycle has closed.',
   },
   'advanced.request_exists': {
-    ar: 'لدى جهتكم طلب في دورة الجائزة هذه.',
+    ar: 'لدى جهتك طلب في دورة الجائزة هذه.',
     en: 'Your entity already has a request in this award cycle.',
   },
   'advanced.conditions.min_entity_age': {

@@ -63,9 +63,9 @@ export const auditLogsFixture = [
     { type: 'setting', id: 2 },
     '2026-11-03T18:00:00+00:00',
     {
-      oldValues: { entity_second_factor_enabled: true },
-      newValues: { entity_second_factor_enabled: false },
-      reason: 'تعطيل مؤقت أثناء عرض تجريبي للعميل بموافقة مكتوبة.',
+      oldValues: { entity_sign_in_code_channels: ['email'] },
+      newValues: { entity_sign_in_code_channels: ['email', 'sms'] },
+      reason: 'السماح برمز الدخول بالرسائل النصية بعد اعتماد بوابة الرسائل لدى الجهة المالكة.',
     },
   ),
   row(

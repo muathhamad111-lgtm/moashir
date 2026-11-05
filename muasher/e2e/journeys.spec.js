@@ -1,6 +1,6 @@
 /* eslint-disable playwright/no-wait-for-timeout */
 import { test, expect } from '@playwright/test'
-import { DEV_OTP_CODE, submitSignIn, typeCode } from './support/signIn'
+import { DEV_OTP_CODE, requestSignInCode, submitSignIn, typeCode } from './support/signIn'
 import { seedSignedIn, seedLocale } from './support/session'
 
 function isEn(testInfo) {
@@ -112,6 +112,17 @@ test.describe('Journeys — Notes 8a/8b/8c', () => {
     await localeOnly(page, isEn(testInfo) ? 'en' : 'ar')
     await gotoWithRetry(page, '/auth/login?redirect=%2Fassessment%2Fself', '.auth-form__body')
     await submitSignIn(page, 'info@albirr-riyadh.example.sa')
+    await page.waitForURL(/\/assessment\/self$/, { timeout: 15000 })
+    await waitForRetry(page, '.self-form__title')
+    await expect(page.locator('.self-form__title')).toBeVisible({ timeout: 15000 })
+  })
+
+  test('Note 8a: the code sign-in keeps the redirect back to the self-assessment screen', async ({
+    page,
+  }, testInfo) => {
+    await localeOnly(page, isEn(testInfo) ? 'en' : 'ar')
+    await gotoWithRetry(page, '/auth/login?redirect=%2Fassessment%2Fself', '.auth-form__body')
+    await requestSignInCode(page, '7100005001')
     await expect(page).toHaveURL(/\/auth\/otp\?redirect=/)
     await typeCode(page, DEV_OTP_CODE)
     await page.waitForURL(/\/assessment\/self$/, { timeout: 15000 })

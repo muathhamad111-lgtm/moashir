@@ -1,7 +1,14 @@
 import process from 'node:process'
 import { test, expect } from '@playwright/test'
 import { seedPreferences } from './support/session'
-import { DEV_TOTP_CODE, openSignIn, signInEntity, submitSignIn, typeCode } from './support/signIn'
+import {
+  DEV_TOTP_CODE,
+  openSignIn,
+  signInEntity,
+  signInEntityWithCode,
+  submitSignIn,
+  typeCode,
+} from './support/signIn'
 
 const STAFF_ENROLLED = 'yasser.alghamdi@moashir.example.sa'
 const STAFF_NOT_ENROLLED = 'laura.bennett@moashir.example.sa'
@@ -42,6 +49,17 @@ test('entity password sign-in opens a cookie session with nothing in browser sto
   await page.reload()
   await expect(page.locator('.portal-top-bar')).toBeVisible()
   await expect(page).toHaveURL(/\/dashboard/)
+})
+
+test('entity code sign-in opens the same cookie session with nothing in browser storage', async ({
+  page,
+}, testInfo) => {
+  await seedPreferences(page, { locale: localeOf(testInfo) })
+  await signInEntityWithCode(page, ENTITY_EMAIL)
+  await expect(page).toHaveURL(/\/dashboard/)
+  expect(await browserStorage(page)).toEqual([])
+  await page.reload()
+  await expect(page.locator('.portal-top-bar')).toBeVisible()
 })
 
 test('staff sign-in continues to the TOTP challenge before the workspace opens', async ({

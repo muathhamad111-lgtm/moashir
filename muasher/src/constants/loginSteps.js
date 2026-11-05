@@ -7,6 +7,7 @@ export const LOGIN_STEPS = {
 
 export const AUTH_FLOW_INTENTS = {
   LOGIN: 'login',
+  CODE: 'code',
   REGISTER: 'register',
 }
 

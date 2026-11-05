@@ -82,11 +82,11 @@ export const financeMessages = {
     en: 'This service cannot be paid through the platform.',
   },
   'accredited.request_open': {
-    ar: 'لدى جهتكم طلب تقييم معتمد مفتوح. أكملوه قبل سداد رسوم طلب جديد.',
+    ar: 'لدى جهتك طلب تقييم معتمد مفتوح. أكمله قبل سداد رسوم طلب جديد.',
     en: 'Your entity already has an open accredited assessment request. Complete it before paying for a new one.',
   },
   'accredited.payment_being_processed': {
-    ar: 'تجري معالجة سداد رسوم التقييم المعتمد، وسيُفتح طلبكم خلال وقت قصير.',
+    ar: 'تجري معالجة سداد رسوم التقييم المعتمد، وسيُفتح طلبك خلال وقت قصير.',
     en: 'Your accredited assessment payment is being processed. Your request will open shortly.',
   },
   'refund.amount_must_equal_total': {

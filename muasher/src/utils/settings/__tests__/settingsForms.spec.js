@@ -11,6 +11,12 @@ import {
   levelRangesOf,
 } from '@/utils/settings/certificateSettingsForm'
 import { toPathSettings } from '@/services/mappers/pathSettings'
+import {
+  authSettingsValues,
+  changedAuthSettings,
+  smsChannelLocked,
+  withSmsChannel,
+} from '@/utils/settings/authSettingsForm'
 
 const t = (key) => key
 
@@ -117,5 +123,31 @@ describe('certificate settings form', () => {
       { level: 'diamond', from: '90.00', to: null },
     ])
     expect(levelRangesOf({ ...settings.levelThresholds, gold: '65' })).toEqual([])
+  })
+})
+
+describe('sign-in security form', () => {
+  const EMAIL_ONLY = { entitySignInCodeChannels: ['email'], smsStatus: 'test' }
+
+  it('sends the full channel list only when it changed', () => {
+    const values = authSettingsValues(EMAIL_ONLY)
+    expect(values).toEqual({ entitySignInCodeChannels: ['email'] })
+    expect(changedAuthSettings(EMAIL_ONLY, values)).toEqual({})
+    const withSms = {
+      entitySignInCodeChannels: withSmsChannel(values.entitySignInCodeChannels, true),
+    }
+    expect(changedAuthSettings(EMAIL_ONLY, withSms)).toEqual({
+      entitySignInCodeChannels: ['email', 'sms'],
+    })
+    expect(withSmsChannel(['email', 'sms'], false)).toEqual(['email'])
+    expect(withSmsChannel([], true)).toEqual(['email', 'sms'])
+  })
+
+  it('locks the change only while SMS is unavailable and not saved', () => {
+    expect(smsChannelLocked({ ...EMAIL_ONLY, smsStatus: 'unavailable' })).toBe(true)
+    expect(
+      smsChannelLocked({ entitySignInCodeChannels: ['email', 'sms'], smsStatus: 'unavailable' }),
+    ).toBe(false)
+    expect(smsChannelLocked(EMAIL_ONLY)).toBe(false)
   })
 })

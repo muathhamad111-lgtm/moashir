@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue'
 import { authService } from '@/services/authService'
-import { SIGN_IN_IDENTIFIER_VALUES } from '@/constants/signIn'
+import { OTP_CHANNELS, SIGN_IN_IDENTIFIER_VALUES } from '@/constants/signIn'
 
 export function useLoginModes() {
   const modes = ref(null)
@@ -12,6 +12,8 @@ export function useLoginModes() {
     return served.length ? served : [...SIGN_IN_IDENTIFIER_VALUES]
   })
 
+  const codeChannels = computed(() => modes.value?.codeChannels ?? [OTP_CHANNELS.EMAIL])
+
   async function load() {
     try {
       modes.value = (await authService.getLoginModes()).data
@@ -20,5 +22,5 @@ export function useLoginModes() {
     }
   }
 
-  return { modes, identifiers, load }
+  return { modes, identifiers, codeChannels, load }
 }

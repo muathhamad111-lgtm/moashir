@@ -16,7 +16,7 @@ const OPEN = {
   createdAt: '2026-11-02T07:14:00Z',
   closedAt: null,
   hasUnreadReply: true,
-  preview: 'شكراً لتواصلكم',
+  preview: 'شكراً لتواصلك',
   lastActivityAt: '2026-11-03T09:40:00Z',
   entries: [
     {
@@ -30,7 +30,7 @@ const OPEN = {
       id: 2,
       kind: 'reply',
       author: 'team',
-      body: 'شكراً لتواصلكم',
+      body: 'شكراً لتواصلك',
       createdAt: '2026-11-03T09:40:00Z',
     },
   ],

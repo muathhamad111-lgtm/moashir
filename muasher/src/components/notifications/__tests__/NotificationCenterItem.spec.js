@@ -8,7 +8,7 @@ const notification = {
   code: 'CNT-02',
   module: 'CNT',
   category: 'informational',
-  title: { ar: 'ردّ فريق منصة مؤشر على استفساركم', en: 'The Moashir team replied' },
+  title: { ar: 'ردّ فريق منصة مؤشر على استفسارك', en: 'The Moashir team replied' },
   body: { ar: 'أضاف الفريق رداً جديداً.', en: 'The team added a new reply.' },
   link: '/messages',
   isRead: false,

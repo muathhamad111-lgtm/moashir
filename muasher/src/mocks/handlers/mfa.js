@@ -3,6 +3,7 @@ import { http } from '../contract/http'
 import { envelope, errorResponse } from '../contract/responses'
 import { DEV_TOTP_CODE, MOCK_MANUAL_ENTRY_KEY, MOCK_RECOVERY_CODES } from '../fixtures/auth'
 import { SIGN_IN_STEPS, pendingSignIn, signIn } from '../stores/signInFlow'
+import { currentSessionUser } from '../stores/sessionStore'
 
 const LATENCY_MS = 320
 
@@ -16,6 +17,11 @@ function invalidCode() {
 
 function notPending() {
   return errorResponse(401, 'unauthenticated', 'Unauthenticated.')
+}
+
+function entityEnrolmentForbidden() {
+  const message = 'You do not have permission to perform this action.'
+  return currentSessionUser()?.entityId ? errorResponse(403, 'forbidden', message) : null
 }
 
 function pendingAt(step) {
@@ -38,12 +44,16 @@ export const mfaHandlers = [
 
   http.post('/api/v1/auth/mfa/enroll', async () => {
     await delay(LATENCY_MS)
+    const forbidden = entityEnrolmentForbidden()
+    if (forbidden) return forbidden
     if (!pendingAt(SIGN_IN_STEPS.MFA_ENROLLMENT)) return notPending()
     return envelope({ qrSvg: MOCK_QR_SVG, manualEntryKey: MOCK_MANUAL_ENTRY_KEY })
   }),
 
   http.post('/api/v1/auth/mfa/confirm', async ({ request }) => {
     await delay(LATENCY_MS)
+    const forbidden = entityEnrolmentForbidden()
+    if (forbidden) return forbidden
     const pending = pendingAt(SIGN_IN_STEPS.MFA_ENROLLMENT)
     if (!pending) return notPending()
     const body = await request.json()

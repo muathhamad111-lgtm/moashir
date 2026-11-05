@@ -2,8 +2,17 @@ import { mkdirSync } from 'node:fs'
 import { test, expect } from '@playwright/test'
 import { seedPreferences, seedSignedIn } from './support/session'
 import { settleFonts } from './support/screenshots'
-import { DEV_OTP_CODE, fillSignIn, openSignIn, submitSignIn, typeCode } from './support/signIn'
+import {
+  DEV_OTP_CODE,
+  fillSignIn,
+  openSignIn,
+  requestSignInCode,
+  signInTab,
+  submitSignIn,
+  typeCode,
+} from './support/signIn'
 import { chooseNamed } from './support/dropdown'
+import { AA_NON_TEXT, contrastOf } from './support/contrast'
 
 const SHOTS = 'e2e/__screenshots__/signin'
 const VIEWPORTS = {
@@ -22,11 +31,13 @@ const ALBIRR = {
   mobile: '0500005001',
   unifiedNumber: '7100005001',
 }
-const IDENTIFIERS = [
-  { identifier: ALBIRR.email, targets: ['in***@albirr-riyadh.example.sa'] },
+const CODE_TARGETS = [
+  { identifier: ALBIRR.email, targets: ['in•••@albirr-riyadh.example.sa'] },
   { identifier: ALBIRR.mobile, targets: [] },
   { identifier: ALBIRR.unifiedNumber, targets: [] },
 ]
+const UNKNOWN_EMAIL = 'nobody@example.sa'
+const WRONG_CODE = '000000'
 const WRONG_PASSWORD = 'Not-The-Password-2026'
 const MOYASAR_FORM_SCRIPT = 'https://cdn.moyasar.com/mpf/1.15.0/moyasar.js'
 
@@ -64,23 +75,152 @@ async function noHorizontalOverflow(page) {
     .toBeLessThanOrEqual(1)
 }
 
-test.describe('simplified sign-in', () => {
-  test('one form signs an entity in with each identifier after the e-mail code', async ({
+async function signOut(page) {
+  await page.locator('.portal-top-bar .account-menu__chip, .navbar__avatar').first().click()
+  await page
+    .locator('.account-menu__panel .portal-menu-entry--danger, [role="menuitem"].is-danger')
+    .first()
+    .click()
+  await expect(page.locator('[name="identifier"]')).toBeVisible()
+}
+
+test.describe('entity sign-in: password or code', () => {
+  test('the password tab signs an entity in with each identifier, with no code step', async ({
     page,
   }, testInfo) => {
     await seedPreferences(page, { locale: localeOf(testInfo) })
-    for (const { identifier, targets } of IDENTIFIERS) {
+    for (const { identifier } of CODE_TARGETS) {
       await openSignIn(page)
-      await expect(page.locator('[role="tablist"]')).toHaveCount(0)
+      await expect(signInTab(page, 'password')).toHaveAttribute('aria-selected', 'true')
       await submitSignIn(page, identifier)
+      await expect(page.locator('.portal-top-bar')).toBeVisible()
+      await expect(page).toHaveURL(/\/dashboard/)
+      await page.context().clearCookies({ name: 'moashir_mock_session' })
+    }
+  })
+
+  test('the code tab signs an entity in with each identifier and names only what was typed', async ({
+    page,
+  }, testInfo) => {
+    await seedPreferences(page, { locale: localeOf(testInfo) })
+    for (const { identifier, targets } of CODE_TARGETS) {
+      await openSignIn(page)
+      await requestSignInCode(page, identifier)
       await expect(page).toHaveURL(/\/auth\/otp/)
+      await expect(page.locator('.auth-otp__tile')).toHaveAttribute('data-channel', 'email')
       await expect(page.locator('.auth-otp__target')).toHaveText(targets)
       await expect(page.locator('.otp-input__box')).toHaveCount(6)
-      await expect(page.locator('.auth-otp__resend')).toBeVisible()
+      await expect(page.locator('.auth-otp__password')).toHaveText(
+        text(testInfo, 'Sign in with your password instead', 'الدخول بكلمة المرور بدلًا من ذلك'),
+      )
       await typeCode(page, DEV_OTP_CODE)
       await expect(page.locator('.portal-top-bar')).toBeVisible()
       await page.context().clearCookies({ name: 'moashir_mock_session' })
     }
+  })
+
+  test('the tabs follow the keyboard, keep the identifier and mark the selected tab at 3:1', async ({
+    page,
+  }, testInfo) => {
+    for (const theme of ['light', 'dark']) {
+      await seedPreferences(page, { locale: localeOf(testInfo), theme })
+      await openSignIn(page)
+      await page.locator('[name="identifier"]').fill(ALBIRR.unifiedNumber)
+      await signInTab(page, 'password').focus()
+      await page.keyboard.press(isEn(testInfo) ? 'ArrowRight' : 'ArrowLeft')
+      await expect(signInTab(page, 'code')).toHaveAttribute('aria-selected', 'true')
+      await expect(signInTab(page, 'code')).toBeFocused()
+      await expect(page.locator('[name="identifier"]')).toHaveValue(ALBIRR.unifiedNumber)
+      await expect(page.locator('[name="password"]')).toHaveCount(0)
+      const selected = '[role="tab"][aria-selected="true"]'
+      const indicator = await contrastOf(page, selected, {
+        property: 'borderTopColor',
+        behind: true,
+      })
+      expect(indicator).toBeGreaterThanOrEqual(AA_NON_TEXT)
+      await page.keyboard.press('Home')
+      await expect(signInTab(page, 'password')).toBeFocused()
+      await expect(page.locator('[name="password"]')).toBeVisible()
+    }
+  })
+
+  test('five wrong codes end the challenge and a new code starts from the code tab', async ({
+    page,
+  }, testInfo) => {
+    await seedPreferences(page, { locale: localeOf(testInfo) })
+    await openSignIn(page)
+    await requestSignInCode(page, UNKNOWN_EMAIL)
+    await expect(page).toHaveURL(/\/auth\/otp/)
+    for (let attempt = 1; attempt <= 4; attempt += 1) {
+      await typeCode(page, WRONG_CODE)
+      await expect(page.locator('.auth-otp__error')).toBeVisible()
+      await expect(page.locator('.otp-input__box').first()).toHaveValue('')
+    }
+    await typeCode(page, WRONG_CODE)
+    const ended = page.locator('.auth-failure[data-failure="attempts"]')
+    await expect(ended).toContainText(text(testInfo, 'Too many attempts', 'تجاوزت عدد المحاولات'))
+    await expect(page.locator('.otp-input__box')).toHaveCount(0)
+    await expect(page.locator('.auth-otp__resend')).toHaveCount(0)
+    await page.locator('.auth-otp__request-new').click()
+    await expect(page).toHaveURL(/\/auth\/login\?method=code/)
+    await expect(signInTab(page, 'code')).toHaveAttribute('aria-selected', 'true')
+    await expect(page.locator('[name="identifier"]')).toHaveValue(UNKNOWN_EMAIL)
+  })
+
+  test('the password link keeps the identifier and a fourth request of one identifier waits', async ({
+    page,
+  }, testInfo) => {
+    await seedPreferences(page, { locale: localeOf(testInfo) })
+    await openSignIn(page)
+    for (let request = 1; request <= 3; request += 1) {
+      await requestSignInCode(page, ALBIRR.unifiedNumber)
+      await expect(page).toHaveURL(/\/auth\/otp/)
+      await page.locator('.auth-otp__password').click()
+      await expect(signInTab(page, 'password')).toHaveAttribute('aria-selected', 'true')
+      await expect(page.locator('[name="identifier"]')).toHaveValue(ALBIRR.unifiedNumber)
+    }
+    await requestSignInCode(page, ALBIRR.unifiedNumber)
+    const throttled = page.locator('.auth-failure[data-failure="throttled"]')
+    await expect(throttled).toContainText(text(testInfo, 'Too many requests.', 'طلبات كثيرة.'))
+    await expect(throttled).toContainText(text(testInfo, '10 minutes', '10 دقائق'))
+    await expect(page).toHaveURL(/\/auth\/login/)
+  })
+
+  test('the System Administrator allows SMS codes, then the verified mobile gets its code by SMS', async ({
+    page,
+  }, testInfo) => {
+    await seedSignedIn(page, USERS.systemAdmin, { locale: localeOf(testInfo) })
+    await open(page, '/admin/settings/sign-in', '.sign-in-channels')
+    const email = page.locator('input[name="codeChannelEmail"]')
+    const sms = page.locator('input[name="codeChannelSms"]')
+    await expect(email).toBeChecked()
+    await expect(email).toBeDisabled()
+    await expect(sms).not.toBeChecked()
+    await expect(page.locator('.sign-in-channels__warning')).toBeVisible()
+    await page.locator('label.checkbox:has([name="codeChannelSms"])').click()
+    await expect(sms).toBeChecked()
+    const saved = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === '/api/v1/settings/auth' &&
+        response.request().method() === 'PUT',
+    )
+    await page.locator('.settings-section button[type="submit"]').click()
+    expect((await saved).status()).toBe(200)
+    await expect(page.locator('.toast').first()).toBeVisible()
+    await signOut(page)
+    await signInTab(page, 'code').click()
+    await expect(page.locator('[data-note="channel"]')).toContainText(
+      text(testInfo, 'by SMS', 'برسالة نصية'),
+    )
+    await requestSignInCode(page, ALBIRR.mobile)
+    await expect(page).toHaveURL(/\/auth\/otp/)
+    await expect(page.locator('.auth-otp__tile')).toHaveAttribute('data-channel', 'sms')
+    await expect(page.locator('.auth-otp__target')).toHaveText('05•••••01')
+    await expect(page.locator('.auth-form__subtitle')).toContainText(
+      text(testInfo, 'the mobile you entered', 'الجوال الذي أدخلته'),
+    )
+    await typeCode(page, DEV_OTP_CODE)
+    await expect(page.locator('.portal-top-bar')).toBeVisible()
   })
 
   test('wrong credentials get one generic message and five failures lock the account', async ({
@@ -104,28 +244,6 @@ test.describe('simplified sign-in', () => {
     await expect(page.locator('.field__error').first()).toContainText(
       text(testInfo, '10 digits starting with 7', '10 أرقام تبدأ بالرقم 7'),
     )
-  })
-
-  test('the System Administrator turns the entity code off, then entities sign in after the password', async ({
-    page,
-  }, testInfo) => {
-    await seedSignedIn(page, USERS.systemAdmin, { locale: localeOf(testInfo) })
-    await open(page, '/admin/settings/sign-in', '.toggle-switch')
-    const toggle = page.locator('input[name="entitySecondFactorEnabled"]')
-    await expect(toggle).toBeChecked()
-    await expect(page.locator('.second-factor-risk')).toHaveCount(0)
-    await page.locator('.toggle-switch__track').click()
-    await expect(page.locator('.second-factor-risk')).toBeVisible()
-    await page.locator('.settings-section button[type="submit"]').click()
-    const dialog = page.locator('.modal__panel')
-    await expect(dialog).toContainText(text(testInfo, 'password alone', 'بكلمة المرور وحدها'))
-    await dialog.locator('.btn--danger').click()
-    await expect(page.locator('.toast').first()).toBeVisible()
-    await page.locator('.navbar__avatar').click()
-    await page.locator('[role="menuitem"].is-danger').click()
-    await expect(page.locator('[name="identifier"]')).toBeVisible()
-    await submitSignIn(page, ALBIRR.unifiedNumber)
-    await expect(page.locator('.portal-top-bar')).toBeVisible()
   })
 
   test('the language switch and the bells draw no misleading stand-in', async ({
@@ -233,12 +351,31 @@ const NOTHING_TO_PREPARE = async () => {}
 const CAPTURES = [
   { name: 'login', path: '/auth/login', ready: '[name="identifier"]' },
   {
-    name: 'otp',
+    name: 'login-code',
+    path: '/auth/login?method=code',
+    ready: '[name="identifier"]',
+    settled: '[data-note="channel"]',
+  },
+  {
+    name: 'otp-code',
     path: '/auth/login',
     ready: '[name="identifier"]',
     settled: '.otp-input__box',
     async prepare(page) {
-      await submitSignIn(page, ALBIRR.email)
+      await requestSignInCode(page, ALBIRR.email)
+    },
+  },
+  {
+    name: 'otp-code-ended',
+    path: '/auth/login',
+    ready: '[name="identifier"]',
+    settled: '.auth-otp__request-new',
+    async prepare(page) {
+      await requestSignInCode(page, UNKNOWN_EMAIL)
+      for (let attempt = 0; attempt < 5; attempt += 1) {
+        await typeCode(page, WRONG_CODE)
+        await page.locator('.auth-otp__error, .auth-otp__request-new').first().waitFor()
+      }
     },
   },
   {
@@ -257,16 +394,21 @@ const CAPTURES = [
     name: 'security-settings',
     user: USERS.systemAdmin,
     path: '/admin/settings/sign-in',
-    ready: '.toggle-switch',
+    ready: '.sign-in-channels',
   },
   {
-    name: 'security-settings-off',
+    name: 'security-settings-sms',
     user: USERS.systemAdmin,
     path: '/admin/settings/sign-in',
-    ready: '.toggle-switch',
-    settled: '.second-factor-risk',
+    ready: '.sign-in-channels',
+    settled: 'input[name="codeChannelSms"]:checked',
     async prepare(page) {
-      await page.locator('.toggle-switch__track').click()
+      await page.locator('label.checkbox:has([name="codeChannelSms"])').click()
+      await page.waitForFunction(() => {
+        const fillOf = (name) =>
+          getComputedStyle(document.querySelector(`input[name="${name}"]`)).backgroundColor
+        return fillOf('codeChannelSms') === fillOf('codeChannelEmail')
+      })
     },
   },
   { name: 'register', path: '/auth/register', ready: '[name="unifiedNumber"]' },

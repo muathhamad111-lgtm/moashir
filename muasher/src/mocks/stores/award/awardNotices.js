@@ -22,7 +22,7 @@ export function announceCycleOpened(cycle) {
 }
 
 export function announceConditionsRejected(record) {
-  const title = { ar: 'لم تستوفِ جهتكم شروط الدخول', en: 'Entry conditions not met' }
+  const title = { ar: 'لم تستوفِ جهتك شروط الدخول', en: 'Entry conditions not met' }
   const body = {
     ar: `سُجّل الطلب ${record.number} لعدم استيفاء شروط الدخول في دورة الجائزة.`,
     en: `Request ${record.number} was recorded as not meeting the entry conditions of the award cycle.`,

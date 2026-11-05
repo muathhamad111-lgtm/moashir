@@ -3,10 +3,24 @@ import { createI18n } from 'vue-i18n'
 import ar from '@/i18n/locales/ar.json'
 import en from '@/i18n/locales/en.json'
 import { PLURAL_RULES } from '@/utils/arabicPlural'
-import { identifierForRequest, identifierTypeOf, maskEmail } from '@/utils/auth/signInIdentifier'
-import { identifierHintOf, signInEmailOf, signInSchema } from '@/utils/auth/signInForm'
+import {
+  identifierForRequest,
+  identifierTypeOf,
+  maskEmail,
+  maskMobile,
+} from '@/utils/auth/signInIdentifier'
+import {
+  identifierHintOf,
+  signInCodeRequestOf,
+  signInCodeSchema,
+  signInEmailOf,
+  signInSchema,
+} from '@/utils/auth/signInForm'
+import { channelIconOf, otpDestinationOf } from '@/utils/auth/otpDestination'
+import { normalizedCodeChannels } from '@/utils/auth/codeChannels'
 import {
   codeFailureOf,
+  codeRequestFailureOf,
   endsTheChallenge,
   failureText,
   signInFailureOf,
@@ -45,8 +59,8 @@ describe('sign-in identifier', () => {
   )
 
   it('masks the e-mail and keeps only an e-mail identifier for the code step', () => {
-    expect(maskEmail('info@alamal.example.sa')).toBe('in***@alamal.example.sa')
-    expect(maskEmail('a@b.sa')).toBe('a***@b.sa')
+    expect(maskEmail('info@alamal.example.sa')).toBe('in•••@alamal.example.sa')
+    expect(maskEmail('a@b.sa')).toBe('a•••@b.sa')
     expect(maskEmail('')).toBe('')
     expect(signInEmailOf('info@alamal.example.sa')).toBe('info@alamal.example.sa')
     expect(signInEmailOf('0551234567')).toBe('')
@@ -68,6 +82,93 @@ describe('sign-in identifier', () => {
     const arabic = i18nOf('ar').t
     expect(identifierHintOf(arabic, 'ar', ['email', 'unified_number'])).toBe(
       'استخدم البريد الإلكتروني الرسمي أو الرقم الوطني الموحد للجهة (10 أرقام تبدأ بالرقم 7).',
+    )
+  })
+})
+
+describe('sign-in code request', () => {
+  it.each([
+    ['0551234567', '05•••••67'],
+    ['055-123 4567', '05•••••67'],
+    ['+966551234567', '05•••••67'],
+    ['00966551234567', '05•••••67'],
+    ['551234567', '05•••••67'],
+    ['٠٥٥١٢٣٤٥٦٧', '05•••••67'],
+  ])('masks the typed mobile %s as %s', (typed, masked) => {
+    expect(maskMobile(typed)).toBe(masked)
+  })
+
+  it('masks nothing that is not a mobile', () => {
+    expect(maskMobile('7001234567')).toBe('')
+    expect(maskMobile('info@alamal.example.sa')).toBe('')
+    expect(maskMobile('')).toBe('')
+  })
+
+  it('validates the identifier alone and sends it in the backend form', async () => {
+    const t = i18nOf('en').t
+    const schema = signInCodeSchema(t)
+    await expect(schema.validate({ identifier: '0551234567' })).resolves.toBeTruthy()
+    await expect(schema.validate({ identifier: '12345' })).rejects.toThrow(
+      'unified national number',
+    )
+    await expect(schema.validate({ identifier: '' })).rejects.toThrow('This field is required')
+    expect(signInCodeRequestOf({ identifier: ' Info@Alamal.example.sa ' })).toEqual({
+      identifier: 'info@alamal.example.sa',
+    })
+    expect(signInCodeRequestOf({ identifier: '055 123 4567' })).toEqual({
+      identifier: '0551234567',
+    })
+  })
+
+  it('always keeps the e-mail channel first and drops unknown channels', () => {
+    expect(normalizedCodeChannels(['sms', 'email'])).toEqual(['email', 'sms'])
+    expect(normalizedCodeChannels(['sms'])).toEqual(['email', 'sms'])
+    expect(normalizedCodeChannels(['fax'])).toEqual(['email'])
+    expect(normalizedCodeChannels(undefined)).toEqual(['email'])
+  })
+
+  it.each([
+    [
+      'code',
+      'email',
+      'Info@Alamal.example.sa',
+      'auth.otp.code.subtitleTypedEmail',
+      'in•••@alamal.example.sa',
+    ],
+    ['code', 'sms', '0551234567', 'auth.otp.code.subtitleTypedMobile', '05•••••67'],
+    ['code', 'email', '0551234567', 'auth.otp.code.subtitleRegisteredEmail', ''],
+    ['code', 'email', '7001234567', 'auth.otp.code.subtitleRegisteredEmail', ''],
+    ['code', 'sms', 'info@alamal.example.sa', 'auth.otp.code.subtitleGeneric', ''],
+    ['login', 'email', '7001234567', 'auth.otp.signInSubtitleGeneric', ''],
+  ])(
+    'builds the %s subtitle for %s with %s from the user input only',
+    (intent, channel, identifier, subtitleKey, target) => {
+      const destination = otpDestinationOf({ intent, channel, identifier, officialEmail: '' })
+      expect(destination).toMatchObject({ subtitleKey, target })
+    },
+  )
+
+  it('names the code step channel icons', () => {
+    expect(channelIconOf('sms')).toBe('send')
+    expect(channelIconOf('email')).toBe('envelope')
+    expect(channelIconOf(undefined)).toBe('envelope')
+  })
+
+  it.each([
+    [rejection(429, 'rate_limited', 540), 'throttled', 9],
+    [rejection(429, 'otp.cooldown'), 'throttled', null],
+    [rejection(500, 'server_error'), 'unexpected', null],
+    [rejection(422, 'credentials.invalid'), 'unexpected', null],
+  ])('maps a code request rejection', (error, kind, minutes) => {
+    expect(codeRequestFailureOf(error)).toEqual({ kind, minutes })
+  })
+
+  it('words the code request failures in both languages', () => {
+    expect(failureText(i18nOf('ar').t, 'codeRequest', { kind: 'throttled', minutes: 9 })).toBe(
+      'طلبات كثيرة. حاول مرة أخرى بعد 9 دقائق.',
+    )
+    expect(failureText(i18nOf('en').t, 'codeRequest', { kind: 'throttled', minutes: 1 })).toBe(
+      'Too many requests. Try again in 1 minute.',
     )
   })
 })

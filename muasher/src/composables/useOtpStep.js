@@ -7,7 +7,7 @@ import { useLoginOutcome } from '@/composables/useLoginOutcome'
 import { useToast } from '@/composables/useToast'
 import { logger } from '@/utils/logger'
 import { codeFailureOf, endsTheChallenge, failureText } from '@/utils/auth/authFailures'
-import { maskEmail } from '@/utils/auth/signInIdentifier'
+import { channelIconOf, otpDestinationOf } from '@/utils/auth/otpDestination'
 import { AUTH_FLOW_INTENTS } from '@/constants/loginSteps'
 import { CODE_FAILURES } from '@/constants/signIn'
 
@@ -26,11 +26,16 @@ export function useOtpStep() {
   const submitting = ref(false)
   const resending = ref(false)
 
-  const isRegistration = computed(() => authFlow.intent === AUTH_FLOW_INTENTS.REGISTER)
-  const target = computed(() => {
-    if (isRegistration.value) return authFlow.officialEmail
-    return maskEmail(authFlow.officialEmail)
-  })
+  const isCode = computed(() => authFlow.intent === AUTH_FLOW_INTENTS.CODE)
+  const destination = computed(() =>
+    otpDestinationOf({
+      intent: authFlow.intent,
+      channel: otp.channel.value,
+      identifier: authFlow.identifier,
+      officialEmail: authFlow.officialEmail,
+    }),
+  )
+  const channelIcon = computed(() => channelIconOf(otp.channel.value))
   const ended = computed(() => Boolean(failure.value) && endsTheChallenge(failure.value))
   const locked = computed(() => submitting.value || otp.expired.value || ended.value)
 
@@ -97,8 +102,9 @@ export function useOtpStep() {
     failure,
     submitting,
     resending,
-    isRegistration,
-    target,
+    isCode,
+    destination,
+    channelIcon,
     ended,
     locked,
     start,

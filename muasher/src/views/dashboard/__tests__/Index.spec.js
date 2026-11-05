@@ -31,6 +31,13 @@ describe('dashboard entry (Index.vue)', () => {
     )
   })
 
+  it('greets a staff user without a name without a placeholder word', () => {
+    const globals = createTestGlobals({ locale: 'ar' })
+    useAuthStore(globals.pinia).setUser({ name: null, roles: ['system_admin'] })
+    const wrapper = shallowMount(DashboardIndex, { global: { plugins: globals.plugins } })
+    expect(wrapper.find('.dashboard__title').text()).toBe('أهلًا بك')
+  })
+
   it('renders the journey home (not a staff board) for an entity account', () => {
     const wrapper = mountWithRoles(['entity'])
     expect(wrapper.findComponent({ name: 'JourneyHome' }).exists()).toBe(true)

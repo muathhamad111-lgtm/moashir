@@ -1,3 +1,5 @@
+import { normalizedCodeChannels } from '@/utils/auth/codeChannels'
+
 function roleKeyOf(role) {
   return typeof role === 'string' ? role : (role?.key ?? null)
 }
@@ -57,7 +59,7 @@ export function toLoginOutcome(raw = {}) {
 export function toLoginModes(raw = {}) {
   return {
     identifiers: [...(raw.identifiers ?? [])],
-    entitySecondFactorEnabled: raw.entitySecondFactorEnabled !== false,
+    codeChannels: normalizedCodeChannels(raw.codeChannels),
     otpLength: raw.otpLength ?? null,
     otpExpirySeconds: raw.otpExpirySeconds ?? null,
     resendCooldownSeconds: raw.resendCooldownSeconds ?? null,

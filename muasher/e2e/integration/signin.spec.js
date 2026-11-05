@@ -6,9 +6,10 @@ import { test, expect } from '@playwright/test'
 import { assertMailLogsConfigured, mailMark, waitForCode } from './support/mailbox'
 import {
   STAFF,
+  requestSignInCode,
   resetPassword,
   signInStaff,
-  signInWithEmailCode,
+  signInWithCode,
   signInWithPassword,
   typeCode,
 } from './support/accounts'
@@ -67,22 +68,6 @@ async function expectPortal(page) {
   await expect(page).toHaveURL(/\/dashboard/)
 }
 
-async function setEntitySecondFactor(page, enabled) {
-  await page.goto('/admin/settings/sign-in')
-  const toggle = page.locator('input[name="entitySecondFactorEnabled"]')
-  await expect(toggle).toBeVisible()
-  if ((await toggle.isChecked()) === enabled) return
-  await page.locator('.toggle-switch__track').click()
-  const saved = page.waitForResponse(
-    (response) =>
-      new URL(response.url()).pathname === '/api/v1/settings/auth' &&
-      response.request().method() === 'PUT',
-  )
-  await page.locator('.settings-section button[type="submit"]').click()
-  if (!enabled) await page.locator('.modal__panel .btn--danger').click()
-  expect((await saved).status()).toBe(200)
-}
-
 test.beforeAll(async ({ browser }) => {
   assertMailLogsConfigured()
   await openSession(browser, 'entity')
@@ -107,26 +92,29 @@ test('a new entity registers with its unified number, and the number cannot be u
   expect(duplicate.body.errors.unified_number[0]).toContain('مسجّل لجهة أخرى')
 })
 
-test('the entity signs in with the e-mail and the e-mail code, then with the unified number', async () => {
+test('the entity signs in with the e-mail and its password, then with the unified number and a code', async () => {
   test.setTimeout(PACED_TIMEOUT_MS)
   const { page, api: watch } = sessions.entity
   await signInWithPassword(page, ENTITY.email, WRONG_PASSWORD)
   await expect(page.locator('.auth-failure[data-failure="credentials"]')).toBeVisible()
-  await signInWithEmailCode(page, ENTITY.email, ENTITY.password, ENTITY.email)
+  await signInWithPassword(page, ENTITY.email, ENTITY.password)
   await expectPortal(page)
   await signOut(sessions.entity)
   const mark = mailMark(ENTITY.email)
-  await signInWithPassword(page, ENTITY.unifiedNumber, ENTITY.password)
+  await requestSignInCode(page, ENTITY.unifiedNumber)
   await expect(page).toHaveURL(/\/auth\/otp/)
   await expect(page.locator('.auth-otp__target')).toHaveCount(0)
+  await expect(page.locator('.auth-otp__password')).toBeVisible()
   await shot(page, 'otp-unified-number')
   await typeCode(page, await waitForCode(ENTITY.email, mark))
   await expectPortal(page)
-  expect(watch.sourcesOf(/^\/api\/v1\/auth\/(login|otp\/verify)$/)).toEqual([SOURCES.BACKEND])
+  expect(watch.sourcesOf(/^\/api\/v1\/auth\/(login|otp\/request|otp\/verify)$/)).toEqual([
+    SOURCES.BACKEND,
+  ])
   expect(watch.unexpected(ALLOWED)).toEqual([])
 })
 
-test('the entity saves a mobile number, asks for its SMS code and signs in with it once verified', async () => {
+test('the entity saves a mobile number and, once verified, signs in with it and its password or a code', async () => {
   test.setTimeout(PACED_TIMEOUT_MS)
   const { page, api: watch } = sessions.entity
   await page.goto('/entity/profile?tab=contact')
@@ -146,29 +134,42 @@ test('the entity saves a mobile number, asks for its SMS code and signs in with 
   await signInWithPassword(page, MOBILE, ENTITY.password)
   await expect(page.locator('.auth-failure[data-failure="credentials"]')).toBeVisible()
   execFileSync(BACKEND_SCRIPT, ['verify-phone', ENTITY.email], { stdio: 'ignore' })
-  await signInWithEmailCode(page, MOBILE, ENTITY.password, ENTITY.email)
+  await signInWithPassword(page, MOBILE, ENTITY.password)
   await expectPortal(page)
   await page.goto('/entity/profile?tab=contact')
   await expect(page.locator('[data-testid="phone-verification"] .badge--success')).toBeVisible()
+  await signOut(sessions.entity)
+  await signInWithCode(page, MOBILE, ENTITY.email)
+  await expectPortal(page)
   expect(watch.unexpected(ALLOWED)).toEqual([])
   await signOut(sessions.entity)
 })
 
-test('the System Administrator resets the password, turns the entity code off and on again', async () => {
+test('a staff identifier gets the same code answer as an unknown one, and the administrator sees the channels', async () => {
   test.setTimeout(PACED_TIMEOUT_MS)
   const admin = sessions.admin
+  const { page } = sessions.entity
+  const staffAnswer = await api(page, 'POST', '/auth/otp/request', {
+    body: { identifier: STAFF.systemAdmin },
+  })
+  const unknownAnswer = await api(page, 'POST', '/auth/otp/request', {
+    body: { identifier: `nobody.${RUN}@example.sa` },
+  })
+  for (const answer of [staffAnswer, unknownAnswer]) {
+    expect(answer.status).toBe(200)
+    expect(answer.body.data.step).toBe('otp_required')
+  }
+  expect(staffAnswer.body.data.message).toBe(unknownAnswer.body.data.message)
+  expect(staffAnswer.body.data.otp.channel).toBe(unknownAnswer.body.data.otp.channel)
   await resetPassword(admin.page, STAFF.systemAdmin)
   await signInStaff(admin.page, STAFF.systemAdmin)
-  await setEntitySecondFactor(admin.page, false)
-  await expect(admin.page.locator('.second-factor-risk')).toBeVisible()
-  await shot(admin.page, 'security-off')
-  const { page } = sessions.entity
-  await signInWithPassword(page, ENTITY.unifiedNumber, ENTITY.password)
-  await expectPortal(page)
-  await signOut(sessions.entity)
-  await setEntitySecondFactor(admin.page, true)
-  await admin.page.reload()
-  await expect(admin.page.locator('input[name="entitySecondFactorEnabled"]')).toBeChecked()
+  await admin.page.goto('/admin/settings/sign-in')
+  await expect(admin.page.locator('.sign-in-channels')).toBeVisible()
+  await expect(admin.page.locator('input[name="codeChannelEmail"]')).toBeChecked()
+  await expect(admin.page.locator('input[name="codeChannelEmail"]')).toBeDisabled()
+  await expect(admin.page.locator('.sign-in-security__statement')).toBeVisible()
+  await expect(admin.page.locator('.toggle-switch')).toHaveCount(0)
+  await shot(admin.page, 'security-channels')
   expect(admin.api.sourcesOf(/^\/api\/v1\/settings\/auth$/)).toEqual([SOURCES.BACKEND])
   expect(admin.api.unexpected(ALLOWED)).toEqual([])
 })

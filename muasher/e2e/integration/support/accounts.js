@@ -34,9 +34,20 @@ export async function signInWithPassword(page, identifier, password) {
   await page.locator('form button[type="submit"]').click()
 }
 
-export async function signInWithEmailCode(page, identifier, password, email) {
+export async function requestSignInCode(page, identifier) {
+  await paced('signInCode')
+  await page.goto('/auth/login?method=code')
+  await expect(page.locator('[role="tab"][data-method="code"]')).toHaveAttribute(
+    'aria-selected',
+    'true',
+  )
+  await page.locator('[name="identifier"]').fill(identifier)
+  await page.locator('form button[type="submit"]').click()
+}
+
+export async function signInWithCode(page, identifier, email) {
   const mark = mailMark(email)
-  await signInWithPassword(page, identifier, password)
+  await requestSignInCode(page, identifier)
   await expect(page).toHaveURL(/\/auth\/otp/)
   await typeCode(page, await waitForCode(email, mark))
 }

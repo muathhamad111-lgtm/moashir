@@ -8,11 +8,20 @@ export const OTP_CONFIG = {
   length: 6,
   expirySeconds: 300,
   resendCooldownSeconds: 60,
+  maxAttempts: 5,
 }
 
 export const LOCKOUT_POLICY = Object.freeze({ maxAttempts: 5, lockSeconds: 15 * 60 })
 
 export const CODE_LIMITS = Object.freeze({ perTenMinutes: 5, windowSeconds: 10 * 60 })
+
+export const CODE_REQUEST_LIMITS = Object.freeze({
+  perIdentifier: 3,
+  perAddress: 10,
+  windowSeconds: 10 * 60,
+})
+
+export const SIGN_IN_SMS_CAP = Object.freeze({ perHour: 100, windowSeconds: 60 * 60 })
 
 export const MOCK_PASSWORD = 'Muasher@2026'
 

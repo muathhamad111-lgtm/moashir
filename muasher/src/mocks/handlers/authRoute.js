@@ -22,7 +22,10 @@ export const authReject = {
   deactivated: () => new MockRejection(403, 'account_deactivated'),
   locked: (seconds) => new MockRejection(423, 'account_locked', { headers: retryAfter(seconds) }),
   code: (code) => new MockRejection(422, code, { fields: codeField(code) }),
+  attemptsExceeded: () => new MockRejection(423, 'otp.attempts_exceeded'),
   cooldown: (seconds) => new MockRejection(429, 'otp.cooldown', { headers: retryAfter(seconds) }),
+  rateLimited: (seconds) =>
+    new MockRejection(429, 'rate_limited', { headers: retryAfter(seconds) }),
   conflict: (code) => new MockRejection(409, code),
   unavailable: (code) => new MockRejection(503, code),
   reasonRequired: () => new MockRejection(422, 'reason_required'),

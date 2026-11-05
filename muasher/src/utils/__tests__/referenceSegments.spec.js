@@ -4,12 +4,12 @@ import { referenceSegments } from '@/utils/referenceSegments'
 describe('reference segments', () => {
   it('isolates request, message and receipt references inside Arabic text', () => {
     expect(
-      referenceSegments('ردّ فريق منصة مؤشر على استفساركم CNT-2026-000052').map((part) => [
+      referenceSegments('ردّ فريق منصة مؤشر على استفسارك CNT-2026-000052').map((part) => [
         part.text,
         part.isReference,
       ]),
     ).toEqual([
-      ['ردّ فريق منصة مؤشر على استفساركم ', false],
+      ['ردّ فريق منصة مؤشر على استفسارك ', false],
       ['CNT-2026-000052', true],
     ])
     expect(

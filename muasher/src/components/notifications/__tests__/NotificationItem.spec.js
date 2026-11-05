@@ -53,7 +53,7 @@ describe('NotificationItem', () => {
       props: {
         notification: {
           ...notification,
-          title: { ar: 'ردّ فريق منصة مؤشر على استفساركم CNT-2026-000052', en: 'Reply' },
+          title: { ar: 'ردّ فريق منصة مؤشر على استفسارك CNT-2026-000052', en: 'Reply' },
         },
       },
       global: createTestGlobals(),

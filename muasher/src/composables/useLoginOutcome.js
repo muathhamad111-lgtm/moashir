@@ -2,6 +2,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthFlowStore } from '@/stores/authFlow'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { AUTH_FLOW_INTENTS, LOGIN_STEPS } from '@/constants/loginSteps'
+import { SIGN_IN_METHODS, SIGN_IN_METHOD_QUERY } from '@/constants/signIn'
 import { isInternalPath } from '@/utils/internalPath'
 
 export function useLoginOutcome() {
@@ -18,8 +19,14 @@ export function useLoginOutcome() {
     return redirect ? { redirect } : undefined
   }
 
-  function toOtp(outcome, { officialEmail, intent }, redirect) {
-    authFlow.setChallenge({ challenge: outcome.otp, officialEmail, intent })
+  function signInRoute(method = SIGN_IN_METHODS.PASSWORD) {
+    const query = { ...redirectQuery(redirectTarget()) }
+    if (method !== SIGN_IN_METHODS.PASSWORD) query[SIGN_IN_METHOD_QUERY] = method
+    return { name: ROUTE_NAMES.AUTH_LOGIN, query }
+  }
+
+  function toOtp(outcome, { officialEmail, intent, identifier }, redirect) {
+    authFlow.setChallenge({ challenge: outcome.otp, officialEmail, intent, identifier })
     authFlow.setPendingStep(null, redirect)
     return router.push({ name: ROUTE_NAMES.AUTH_OTP, query: redirectQuery(redirect) })
   }
@@ -51,5 +58,5 @@ export function useLoginOutcome() {
     return next(outcome, context, redirectTarget())
   }
 
-  return { continueAfter, redirectTarget }
+  return { continueAfter, redirectTarget, signInRoute }
 }

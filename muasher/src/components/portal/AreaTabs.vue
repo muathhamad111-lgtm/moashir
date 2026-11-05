@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { formatNumber } from '@/utils/formatNumber'
+import { isRightToLeft, tabIndexAfterKey } from '@/utils/tabNavigation'
 
 const props = defineProps({
   tabs: { type: Array, required: true },
@@ -13,8 +14,6 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 const { n } = useI18n()
 const tabRefs = ref([])
-
-const KEY_STEPS = { ArrowRight: 1, ArrowLeft: -1, Home: 'first', End: 'last' }
 
 function tabId(value) {
   return `${props.panelId}-tab-${value}`
@@ -31,19 +30,11 @@ function select(index) {
   tabRefs.value[index]?.focus()
 }
 
-function targetIndex(step, index) {
-  const last = props.tabs.length - 1
-  if (step === 'first') return 0
-  if (step === 'last') return last
-  const direction = document.documentElement.dir === 'rtl' ? -step : step
-  return (index + direction + props.tabs.length) % props.tabs.length
-}
-
 function onKeydown(event, index) {
-  const step = KEY_STEPS[event.key]
-  if (step === undefined) return
+  const next = tabIndexAfterKey(event.key, index, props.tabs.length, isRightToLeft())
+  if (next === null) return
   event.preventDefault()
-  select(targetIndex(step, index))
+  select(next)
 }
 </script>
 

@@ -144,7 +144,7 @@ describe('JourneyHome (D1 / M1)', () => {
   it('shows the evidence next step with progress and the remaining sub-criteria', async () => {
     const wrapper = await factory()
     const card = wrapper.find('.next-step')
-    expect(card.find('.next-step__title').text()).toBe('أكملوا شواهد التقييم المعتمد')
+    expect(card.find('.next-step__title').text()).toBe('أكمل شواهد التقييم المعتمد')
     expect(card.find('.next-step__text').text()).toContain('بقي معيار فرعي واحد')
     expect(card.find('[role="progressbar"]').attributes('aria-valuenow')).toBe('12')
     expect(card.find('.remaining-subs__item').text()).toContain('ثقافة التميّز')

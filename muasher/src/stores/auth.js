@@ -68,6 +68,10 @@ export const useAuthStore = defineStore('auth', {
       const { data } = await authService.signIn(credentials)
       return this.applyOutcome(data)
     },
+    async requestSignInCode(request) {
+      const { data } = await authService.requestSignInCode(request)
+      return data
+    },
     async verifyOtp(attempt) {
       const { data } = await authService.verifyOtp(attempt)
       return this.applyOutcome(data)

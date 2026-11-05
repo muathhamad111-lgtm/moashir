@@ -7,12 +7,15 @@ import { entityNotices } from '../fixtures/entityMessages'
 import { sessionPayload } from '../stores/accounts'
 import { currentSessionUser, endMockSession } from '../stores/sessionStore'
 import {
+  OTP_PURPOSES,
+  SIGN_IN_PURPOSES,
   acceptsCode,
   challengePayload,
   consumeChallenge,
   createChallenge,
   findChallenge,
   isExpired,
+  recordWrongAttempt,
 } from '../stores/otpChallenges'
 import {
   ENTITY_STANDING,
@@ -29,11 +32,16 @@ import {
   recordFailure,
   recordIssuedCode,
 } from '../stores/signInLockout'
-import { entitySecondFactorEnabled } from '../stores/authSettingsStore'
-import { SIGN_IN_STEPS, continueSignIn, isStaff } from '../stores/signInFlow'
+import {
+  availableCodeChannels,
+  recordSignInSms,
+  resendChannelFor,
+} from '../stores/signInCodeChannel'
+import { SIGN_IN_STEPS, continueSignIn, isStaff, otpRequired, signIn } from '../stores/signInFlow'
 import { failsRandomly } from '../contract/faults'
 import { authField, authReject, authRoute } from './authRoute'
 import { mfaHandlers } from './mfa'
+import { signInCodeHandlers } from './signInCode'
 import { authSettingsHandlers } from './authSettings'
 import { phoneVerificationHandlers } from './phoneVerification'
 import { passwordRecoveryHandlers } from './passwordRecovery'
@@ -42,15 +50,6 @@ const LATENCY = { LOGIN: 460, CODE: 360, RESEND: 320 }
 const BLOCKED_STAFF_STATUSES = ['deactivated', 'inactive', 'suspended']
 
 const maybeFail = failsRandomly(0.06)
-
-function otpRequired(challenge, extra = {}) {
-  return envelope({
-    step: SIGN_IN_STEPS.OTP_REQUIRED,
-    requiresOtp: true,
-    otp: challengePayload(challenge),
-    ...extra,
-  })
-}
 
 function isStaffBlocked(account) {
   return isStaff(account) && BLOCKED_STAFF_STATUSES.includes(account.record.status)
@@ -76,19 +75,19 @@ function rejectFailure(account) {
   if (seconds) throw authReject.locked(seconds)
 }
 
-function issueCode(account) {
+function issueCode(account, channel = 'email', purpose = OTP_PURPOSES.LOGIN) {
   const seconds = codeCooldownSecondsOf(account)
   if (seconds) throw authReject.cooldown(seconds)
   recordIssuedCode(account)
-  return createChallenge(account, 'email')
+  recordSignInSms(channel)
+  return createChallenge(account, channel, purpose)
 }
 
 function entitySignIn(account) {
   const standing = standingOf(account.record)
   if (standing === ENTITY_STANDING.CLOSED) throw authReject.credentials()
   if (standing === ENTITY_STANDING.DEACTIVATED) throw authReject.deactivated()
-  if (standing === ENTITY_STANDING.VERIFY || entitySecondFactorEnabled())
-    return otpRequired(issueCode(account))
+  if (standing === ENTITY_STANDING.VERIFY) return otpRequired(issueCode(account))
   return continueSignIn(account)
 }
 
@@ -102,13 +101,23 @@ function verifiedAccount(challenge) {
   return { kind: 'entity', record: completeVerification(entity) }
 }
 
+function completeSignIn(challenge) {
+  if (challenge.purpose === OTP_PURPOSES.SIGN_IN_CODE) return signIn(challenge.account)
+  return continueSignIn(verifiedAccount(challenge))
+}
+
+function rejectWrongCode(challenge) {
+  rejectFailure(challenge.account)
+  if (!recordWrongAttempt(challenge)) throw authReject.code('otp.invalid')
+  consumeChallenge(challenge.id)
+  throw authReject.attemptsExceeded()
+}
+
 function assertCodeAccepted(challenge, code) {
   if (!challenge) throw authReject.code('otp.challenge_invalid')
   assertNotLocked(challenge.account)
   if (isExpired(challenge)) throw authReject.code('otp.expired')
-  if (acceptsCode(challenge, code)) return
-  rejectFailure(challenge.account)
-  throw authReject.code('otp.invalid')
+  if (!acceptsCode(challenge, code)) rejectWrongCode(challenge)
 }
 
 function assertResendable(challenge) {
@@ -118,13 +127,19 @@ function assertResendable(challenge) {
   assertNotLocked(challenge.account)
 }
 
+function nextChallenge(previous) {
+  const channel = resendChannelFor(previous)
+  if (!previous.account) return createChallenge(null, channel, previous.purpose)
+  return issueCode(previous.account, channel, previous.purpose)
+}
+
 export const authHandlers = [
   http.get('/api/v1/auth/login-modes', async () => {
     await delay(200)
     if (maybeFail(0.04)) return errorResponse(503, 'service_unavailable', 'Service unavailable')
     return envelope({
       identifiers: [...SIGN_IN_IDENTIFIER_KINDS],
-      entitySecondFactorEnabled: entitySecondFactorEnabled(),
+      codeChannels: availableCodeChannels(),
       otpLength: OTP_CONFIG.length,
       otpExpirySeconds: OTP_CONFIG.expirySeconds,
       resendCooldownSeconds: OTP_CONFIG.resendCooldownSeconds,
@@ -163,16 +178,18 @@ export const authHandlers = [
     }, LATENCY.LOGIN),
   ),
 
+  ...signInCodeHandlers,
+
   http.post(
     '/api/v1/auth/otp/verify',
     authRoute(async ({ request }) => {
       if (maybeFail(0.05))
         return errorResponse(500, 'server_error', 'Verification failed, please try again')
       const body = await readJson(request)
-      const challenge = findChallenge(body.challengeId)
+      const challenge = findChallenge(body.challengeId, SIGN_IN_PURPOSES)
       assertCodeAccepted(challenge, body.code)
       consumeChallenge(challenge.id)
-      return continueSignIn(verifiedAccount(challenge))
+      return completeSignIn(challenge)
     }, LATENCY.CODE),
   ),
 
@@ -181,9 +198,9 @@ export const authHandlers = [
     authRoute(async ({ request }) => {
       if (maybeFail(0.05)) return errorResponse(500, 'server_error', 'Could not resend the code')
       const body = await readJson(request)
-      const previous = findChallenge(body.challengeId)
+      const previous = findChallenge(body.challengeId, SIGN_IN_PURPOSES)
       assertResendable(previous)
-      const next = previous.account ? issueCode(previous.account) : createChallenge(null, 'email')
+      const next = nextChallenge(previous)
       consumeChallenge(previous.id)
       return otpRequired(next)
     }, LATENCY.RESEND),

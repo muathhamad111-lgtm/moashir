@@ -1,25 +1,34 @@
-const DEFAULTS = Object.freeze({ entitySecondFactorEnabled: true })
+import { smsGatewayStatus } from './smsAvailability'
 
-let settings = { ...DEFAULTS }
+export const CODE_CHANNELS = Object.freeze({ EMAIL: 'email', SMS: 'sms' })
+
+const DEFAULT_CHANNELS = Object.freeze([CODE_CHANNELS.EMAIL])
+
+let channels = [...DEFAULT_CHANNELS]
 
 export function resetAuthSettings() {
-  settings = { ...DEFAULTS }
+  channels = [...DEFAULT_CHANNELS]
 }
 
-export function entitySecondFactorEnabled() {
-  return settings.entitySecondFactorEnabled
+export function signInCodeChannelsAllowed() {
+  return [...channels]
+}
+
+export function smsAllowedForSignInCodes() {
+  return channels.includes(CODE_CHANNELS.SMS)
 }
 
 export function authSettingsResource() {
   return {
-    entitySecondFactorEnabled: settings.entitySecondFactorEnabled,
-    entitySecondFactorChannel: 'email',
+    entitySignInCodeChannels: signInCodeChannelsAllowed(),
+    smsStatus: smsGatewayStatus(),
     staffTotpRequired: true,
   }
 }
 
-export function setEntitySecondFactor(enabled) {
-  const changed = settings.entitySecondFactorEnabled !== enabled
-  settings = { ...settings, entitySecondFactorEnabled: enabled }
+export function setSignInCodeChannels(next) {
+  const ordered = Object.values(CODE_CHANNELS).filter((channel) => next.includes(channel))
+  const changed = ordered.join() !== channels.join()
+  channels = ordered
   return changed
 }

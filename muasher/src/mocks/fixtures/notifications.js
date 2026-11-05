@@ -389,11 +389,11 @@ export const entityNotificationsFixture = [
     minutesAgo: 120,
     isRead: false,
     title: {
-      ar: 'ردّ فريق منصة مؤشر على استفساركم CNT-2026-000052',
+      ar: 'ردّ فريق منصة مؤشر على استفسارك CNT-2026-000052',
       en: 'The Moashir team replied to your enquiry CNT-2026-000052',
     },
     body: {
-      ar: 'أضاف فريق منصة مؤشر رداً جديداً على استفساركم عن رفع الشواهد.',
+      ar: 'أضاف فريق منصة مؤشر رداً جديداً على استفسارك عن رفع الشواهد.',
       en: 'The Moashir team added a new reply to your enquiry about uploading evidence.',
     },
     link: `/messages/${ENTITY_REPLY_THREAD_ID}`,
@@ -408,7 +408,7 @@ export const entityNotificationsFixture = [
       en: 'The accredited assessment form is open for evidence',
     },
     body: {
-      ar: 'يمكنكم الآن رفع الشواهد لكل معيار فرعي ثم إرسال الطلب إلى المقيّم.',
+      ar: 'يمكنك الآن رفع شواهد كل معيار فرعي، ثم إرسال الطلب إلى المقيّم.',
       en: 'You can now upload the evidence of every sub-criterion and send the request to the assessor.',
     },
     link: '/assessment/accredited',
@@ -436,7 +436,7 @@ export const entityNotificationsFixture = [
       en: 'A payment order was cancelled automatically after it expired',
     },
     body: {
-      ar: 'انتهت مدة صلاحية طلب الدفع دون إتمامه، ويمكنكم إنشاء طلب جديد متى شئتم.',
+      ar: 'انتهت صلاحية طلب الدفع قبل إتمامه. يمكنك إنشاء طلب جديد متى شئت.',
       en: 'The payment order expired before it was completed. You can create a new order at any time.',
     },
     link: '/payments',
@@ -447,11 +447,11 @@ export const entityNotificationsFixture = [
     isRead: true,
     path: 'self',
     title: {
-      ar: 'صدرت نتيجة التقييم الذاتي لجهتكم',
+      ar: 'صدرت نتيجة التقييم الذاتي لجهتك',
       en: 'The self-assessment result of your organization is available',
     },
     body: {
-      ar: 'اطلعوا على النتيجة التفصيلية لكل معيار في صفحة النتيجة.',
+      ar: 'اطّلع على نتيجة كل معيار في صفحة النتيجة.',
       en: 'Review the detailed result of every criterion on the result page.',
     },
     link: '/assessment/history',
@@ -460,9 +460,9 @@ export const entityNotificationsFixture = [
     code: 'REG-03',
     minutesAgo: 14 * 24 * 60,
     isRead: true,
-    title: { ar: 'أكملوا بيانات ملف الجهة', en: 'Complete your organization profile' },
+    title: { ar: 'أكمل بيانات ملف الجهة', en: 'Complete your organization profile' },
     body: {
-      ar: 'يرجى استكمال بيانات الجهة المطلوبة قبل البدء في مسارات التقييم.',
+      ar: 'أكمل بيانات الجهة المطلوبة قبل البدء في مسارات التقييم.',
       en: 'Please complete the required organization data before starting the assessment paths.',
     },
     link: '/entity/profile',

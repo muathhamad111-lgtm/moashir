@@ -132,11 +132,12 @@ verified on the integration database: the local fake SMS gateway keeps its messa
 `POST /me/phone/verification` cannot be read back. The backend limits sign-in to 30 attempts per minute per address
 (5 per identifier), password resets to 3 per 10 minutes per account, and public reads to 120 per minute, so run each
 spec file on its own on a freshly reset database (`e2e/integration/support/pacing.js` paces the calls of one spec).
-`e2e/integration/signin.spec.js` (Task-54) covers the simplified sign-in on the real contract: registration with the
-unified national number and the duplicate 422, sign-in with the e-mail, the unified number and the verified mobile
-(each followed by the e-mail code read from the mail log), the generic answer for a wrong password and an unverified
-mobile, the SMS verification request, the System Administrator's password reset and authenticator enrolment, and the
-entity second-factor setting turned off (entities sign in after the password) and on again.
+`e2e/integration/signin.spec.js` (Task-54, Task-61) covers the entity sign-in on the real contract: registration with
+the unified national number and the duplicate 422, sign-in with the e-mail and the password alone, sign-in with the
+unified number and a one-time code read from the mail log, the generic answer for a wrong password and an unverified
+mobile, the SMS verification request, sign-in with the verified mobile (password, then a code), the identical
+`POST /auth/otp/request` answer for a staff and an unknown identifier, the System Administrator's password reset and
+authenticator enrolment, and the sign-in code channels screen (e-mail always on).
 
 Run `./scripts/integration/backend.sh reset` before every repeated run (the staff authenticators are enrolled once per
 database), then restart the queue worker. The suite reads one-time codes from the mail log files only; it never prints
@@ -170,15 +171,21 @@ same database.
   state-changing call the client requests `GET /sanctum/csrf-cookie`; axios sends `X-XSRF-TOKEN`,
   `withCredentials` and `Accept-Language` (the active locale) on every request. A 419 refreshes the
   CSRF cookie once and retries; a second 419 or a 401 ends the session and returns to the login page.
-- Sign-in is one form (`POST /auth/login { identifier, password }`): the identifier is the official e-mail, the
-  verified mobile number or the entity's unified national number (`src/utils/auth/signInIdentifier.js` mirrors the
-  backend recognition; Arabic-Indic digits are converted). The flow follows the `step` field of the answer:
-  `otp_required` → `/auth/otp` (the e-mail code of the entity second factor, or the registration code),
-  `mfa_challenge` / `mfa_enrollment` → `/auth/mfa`, `authenticated` → the workspace. Wrong credentials always show
-  one generic message; `account_locked` (423) and the 429 limits show the wait from `Retry-After`
-  (`src/utils/auth/authFailures.js`). There is no passwordless sign-in and no call to `POST /auth/otp/request`.
-- The entity second factor is a setting of the System Administrator (`/admin/settings/sign-in`, `GET/PUT
-  /settings/auth`): turning it off shows the risk and asks for a confirmation; the Super Admin gives a reason.
+- Sign-in offers two tabs (`src/components/auth/SignInMethodTabs.vue`, WAI-ARIA tabs, arrows follow the reading
+  direction). The identifier is the official e-mail, the verified mobile number or the entity's unified national number
+  (`src/utils/auth/signInIdentifier.js` mirrors the backend recognition; Arabic-Indic digits are converted) and is kept
+  when switching tabs. «كلمة المرور» sends `POST /auth/login { identifier, password }`; «رمز التحقق» sends
+  `POST /auth/otp/request { identifier }` (entity accounts only; the answer is always `otp_required`, with the channel
+  chosen from what was typed). The flow follows the `step` field of the answer: `otp_required` → `/auth/otp` (the
+  sign-in code, or the registration code of an entity that is still pending), `mfa_challenge` / `mfa_enrollment` →
+  `/auth/mfa` (staff and the Super Admin only), `authenticated` → the workspace. Entity accounts have no second factor.
+  The code step names only what the user typed, masked on the client (`in•••@domain`, `05•••••12`), or the registered
+  e-mail in general words; it never shows a destination from the server. Wrong credentials always show one generic
+  message; `account_locked` (423) and the 429 limits show the wait from `Retry-After`
+  (`src/utils/auth/authFailures.js`).
+- The entity sign-in code channels are a setting of the System Administrator (`/admin/settings/sign-in`, `GET/PUT
+  /settings/auth { entity_sign_in_code_channels, sms_status, staff_totp_required }`): e-mail is always allowed, SMS
+  can be added while the SMS gateway is configured; the Super Admin gives a reason.
 - `src/api/caseMapping.js` is the only camelCase ⇄ snake_case boundary. Every request body and query
   key is sent in snake_case and every response is read back in camelCase; status values travel as the
   canonical backend value (`under_review`) and are shown through `status.<canonical value>` labels.
@@ -202,9 +209,11 @@ snake_case on the wire. The mock "server" keeps its session in the `moashir_mock
 exists only when mocks are on). Fixed mock-only values: password `Muasher@2026`, e-mail OTP `482913`,
 authenticator code `246810`. Every mock e-mail uses an `example.sa` domain. The sign-in mock follows the Task-51
 contract: `ENT-005001` signs in with `info@albirr-riyadh.example.sa`, its verified mobile `0500005001` or its unified
-number `7100005001`; the entity second factor is on until a System Administrator turns it off (mock state of the
-page); five failures of any factor lock the account for 15 minutes; an account receives at most 5 codes per 10
-minutes. `POST /me/phone/verification` answers 503 `phone.sms_unavailable` while no SMS provider row is active.
+number `7100005001`, with its password or with the code `482913` (the code tab); entity accounts have no second
+factor; SMS sign-in codes are off until a System Administrator allows them (mock state of the page); five failures of
+any factor lock the account for 15 minutes; an account receives at most 5 codes per 10 minutes, one identifier may
+request 3 codes and one browser 10 codes per 10 minutes; a code request for an unknown, staff, deactivated or locked
+identifier answers the same `otp_required` and never accepts a code. `POST /me/phone/verification` answers 503 `phone.sms_unavailable` while no SMS provider row is active.
 
 The criteria mocks (`src/mocks/handlers/criteria*.js`, `src/mocks/stores/criteria*.js`) mirror the
 backend Criteria domain: version 1 is seeded from the backend seed content and published; drafts,

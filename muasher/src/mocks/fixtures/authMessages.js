@@ -61,12 +61,24 @@ export const authMessages = {
     ar: 'أدخل بريدك الإلكتروني الرسمي، أو رقم جوالك السعودي (05XXXXXXXX)، أو الرقم الوطني الموحد للجهة (10 أرقام تبدأ بالرقم 7).',
     en: "Enter your official e-mail, your Saudi mobile number (05XXXXXXXX) or your entity's unified national number (10 digits starting with 7).",
   },
-  'field.boolean': {
-    ar: 'يجب أن تكون قيمة الحقل صحيحة أو خاطئة.',
-    en: 'The field must be true or false.',
+  'field.invalid': { ar: 'القيمة المدخلة غير صالحة.', en: 'The value is not valid.' },
+  'channels.email_required': {
+    ar: 'يجب أن يبقى البريد الإلكتروني مسموحًا به، فهو القناة التي تضمن وصول رمز الدخول إلى كل جهة.',
+    en: 'E-mail must stay allowed: every entity can always receive its sign-in code by e-mail.',
+  },
+  'channels.sms_unavailable': {
+    ar: 'اضبط بوابة الرسائل النصية أولًا قبل السماح بإرسال رمز الدخول برسالة نصية.',
+    en: 'Configure the SMS gateway before allowing sign-in codes by text message.',
   },
   'field.reason_min': {
     ar: 'يجب ألا يقل السبب عن :min أحرف.',
     en: 'The reason must be at least :min characters.',
+  },
+}
+
+export const authNotices = {
+  signInCodeSent: {
+    ar: 'إذا كان ما أدخلته يطابق حساب جهة مسجّلًا، فقد أرسلنا إليك رمز الدخول.',
+    en: 'If an entity account matches what you entered, a sign-in code has been sent.',
   },
 }

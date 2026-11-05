@@ -95,6 +95,7 @@
 @use 'components/permissions';
 @use 'components/otp-input';
 @use 'components/auth-form';
+@use 'components/sign-in-methods';
 @use 'components/auth-status';
 @use 'components/auth-mfa';
 @use 'components/completion-prompt';

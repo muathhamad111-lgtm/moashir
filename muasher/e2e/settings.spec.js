@@ -31,11 +31,16 @@ test('renders the settings hub with launcher cards', async ({ page }) => {
   await expect(page.locator('a.settings-hub__card[href="/admin/settings/finance"]')).toBeVisible()
 })
 
-test('opens the sign-in security screen with the entity second-factor switch', async ({ page }) => {
+test('opens the sign-in security screen with the entity sign-in code channels', async ({
+  page,
+}) => {
   await page.goto('/admin/settings/sign-in')
-  await retrySection(page, '.toggle-switch')
-  await expect(page.locator('.toggle-switch')).toHaveCount(1)
-  await expect(page.locator('input[name="entitySecondFactorEnabled"]')).toBeChecked()
+  await retrySection(page, '.sign-in-channels')
+  await expect(page.locator('.toggle-switch')).toHaveCount(0)
+  await expect(page.locator('input[name="codeChannelEmail"]')).toBeChecked()
+  await expect(page.locator('input[name="codeChannelEmail"]')).toBeDisabled()
+  await expect(page.locator('input[name="codeChannelSms"]')).not.toBeChecked()
+  await expect(page.locator('.sign-in-security__statement')).toBeVisible()
 })
 
 test('payment screen shows stored secrets as metadata only and empty write-only inputs', async ({

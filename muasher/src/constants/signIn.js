@@ -38,4 +38,30 @@ export const AUTH_ERROR_CODES = Object.freeze({
 
 export const SIGN_IN_REJECTIONS = Object.freeze([403, 422, 423, 429])
 
+export const CODE_REQUEST_REJECTIONS = Object.freeze([422, 429])
+
+export const SIGN_IN_METHODS = Object.freeze({
+  PASSWORD: 'password',
+  CODE: 'code',
+})
+
+export const SIGN_IN_METHOD_VALUES = Object.freeze(Object.values(SIGN_IN_METHODS))
+
+export const SIGN_IN_METHOD_QUERY = 'method'
+
+export const OTP_CHANNELS = Object.freeze({
+  EMAIL: 'email',
+  SMS: 'sms',
+})
+
+export const OTP_CHANNEL_VALUES = Object.freeze(Object.values(OTP_CHANNELS))
+
+export const SMS_STATUSES = Object.freeze({
+  UNAVAILABLE: 'unavailable',
+  TEST: 'test',
+  LIVE: 'live',
+})
+
+export const SMS_STATUS_VALUES = Object.freeze(Object.values(SMS_STATUSES))
+
 export const IDENTIFIER_MAX_LENGTH = 254
