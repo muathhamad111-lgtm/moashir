@@ -7,6 +7,7 @@ namespace App\Services\Demo;
 use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Assessments\ResultSnapshotKind;
 use App\Enums\Assessments\SelfAssessmentStatus;
+use App\Enums\Platform\DemoRecordKind;
 use App\Exceptions\Console\DemoDataRefused;
 use App\Models\Assessments\Assessment;
 use App\Models\Criteria\CriteriaVersion;
@@ -16,7 +17,7 @@ use Carbon\CarbonImmutable;
 
 final readonly class DemoSelfResultInstaller
 {
-    public function __construct(private RequestNumberAllocator $numbers, private DemoResultScorer $scorer) {}
+    public function __construct(private RequestNumberAllocator $numbers, private DemoResultScorer $scorer, private DemoRecords $records) {}
 
     /**
      * @param  list<int>  $profile
@@ -38,6 +39,7 @@ final readonly class DemoSelfResultInstaller
 
         $this->scorer->score($assessment, $version, $profile, ResultSnapshotKind::SelfResult, null);
         $assessment->forceFill(['status' => SelfAssessmentStatus::ResultAvailable, 'completed_at' => $completedAt])->save();
+        $this->records->remember(DemoRecordKind::InsightsAssessment, $assessment->id);
 
         return $assessment;
     }

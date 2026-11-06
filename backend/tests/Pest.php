@@ -36,6 +36,7 @@ require_once __DIR__.'/Support/entity-logo-helpers.php';
 require_once __DIR__.'/Support/sign-in-helpers.php';
 require_once __DIR__.'/Support/insights-helpers.php';
 require_once __DIR__.'/Support/insights-unit-helpers.php';
+require_once __DIR__.'/Support/demo-helpers.php';
 
 pest()->extend(TestCase::class)->in('Feature', 'Unit');
 

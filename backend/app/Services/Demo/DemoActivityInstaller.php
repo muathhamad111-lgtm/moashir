@@ -24,11 +24,11 @@ final readonly class DemoActivityInstaller
         $this->prices->install($systemAdmin);
         $cycle = $this->cycle->install($people->staffMember(RoleKey::AwardSecretary));
         [$paidEntity, $pendingEntity, $settledEntity] = $people->entityOwners;
-        $accreditedResults = $this->insights->install($people);
+        $insights = $this->insights->installWithNewDemo($people);
 
         return new DemoActivity($cycle, [
-            $this->payments->installPaid($paidEntity),
+            $this->payments->installPaid($paidEntity->user),
             ...$this->bankTransfers->install($systemAdmin, $people->staffMember(RoleKey::FinanceOfficer), $pendingEntity, $settledEntity),
-        ], $accreditedResults);
+        ], $insights->accreditedResults);
     }
 }

@@ -4,22 +4,21 @@ declare(strict_types=1);
 
 namespace App\Services\Demo;
 
-use App\Actions\Assessments\OpenPaidAccreditedRequest;
 use App\Actions\Certificates\IssueAccreditedCertificate;
 use App\Actions\Certificates\RevokeCertificate;
+use App\Contracts\Demo\DemoAccreditedRequestSource;
 use App\Data\Demo\DemoAccreditedResult;
-use App\Data\Demo\DemoUserAccount;
-use App\Enums\Assessments\AccreditedAssessmentStatus;
+use App\Data\Demo\DemoInsightsCast;
 use App\Enums\Assessments\FeedbackKind;
-use App\Enums\Assessments\ResultSnapshotKind;
 use App\Enums\Platform\DemoCertificateOutcome;
-use App\Exceptions\Console\DemoDataRefused;
+use App\Enums\Platform\DemoRecordKind;
 use App\Models\Assessments\Assessment;
 use App\Models\Assessments\AssessmentFeedbackItem;
 use App\Models\Assessments\AssessmentSummary;
+use App\Models\Certificates\Certificate;
 use App\Models\Criteria\CriteriaVersion;
 use App\Models\Identity\User;
-use Carbon\CarbonImmutable;
+use App\Support\RequestContext;
 
 final readonly class DemoAccreditedResultInstaller
 {
@@ -33,29 +32,21 @@ final readonly class DemoAccreditedResultInstaller
     private const string REVOKE_REASON = 'إلغاء تجريبي لعرض حالة الشهادة الملغاة في أدوات التميّز (بيانات تجريبية).';
 
     public function __construct(
-        private DemoPaymentInstaller $payments,
-        private OpenPaidAccreditedRequest $open,
         private DemoResultScorer $scorer,
         private IssueAccreditedCertificate $certificates,
         private RevokeCertificate $revoke,
+        private RequestContext $context,
+        private DemoRecords $records,
     ) {}
 
-    public function install(DemoAccreditedResult $plan, DemoUserAccount $owner, User $assessor, User $systemAdmin): Assessment
+    public function install(DemoAccreditedResult $plan, DemoInsightsCast $cast, DemoAccreditedRequestSource $requests): Assessment
     {
-        $payment = $this->payments->installPaid($owner);
-        $assessment = $this->open->handle($payment->id) ?? throw DemoDataRefused::missingPrerequisite('the demo accredited request could not be opened');
-        $completedAt = CarbonImmutable::parse($plan->completedOn);
+        $assessment = $requests->completedRequestFor($plan, $cast->assessor);
 
-        $this->scorer->score($assessment, CriteriaVersion::query()->findOrFail($assessment->criteria_version_id), $plan->profile, ResultSnapshotKind::AccreditedResult, $assessor->id);
-        $assessment->forceFill([
-            'status' => AccreditedAssessmentStatus::Completed,
-            'submitted_at' => $completedAt->subWeeks(3),
-            'completed_at' => $completedAt,
-        ])->save();
-
-        $this->writeFeedback($assessment, $assessor);
-        $this->writeSummary($assessment, $assessor, $plan->assessorSummary);
-        $this->settleCertificate($assessment, $plan->certificate, $systemAdmin);
+        $this->writeFeedback($assessment, $cast->assessor);
+        $this->writeSummary($assessment, $cast->assessor, $plan->assessorSummary);
+        $this->settleCertificate($assessment, $plan->certificate, $cast->systemAdmin);
+        $this->records->remember(DemoRecordKind::InsightsAssessment, $assessment->id);
 
         return $assessment;
     }
@@ -101,7 +92,14 @@ final readonly class DemoAccreditedResultInstaller
         $certificate = $this->certificates->handle($assessment, $systemAdmin->id);
 
         if ($outcome === DemoCertificateOutcome::Revoked) {
-            $this->revoke->handle($systemAdmin, $certificate, self::REVOKE_REASON);
+            $this->revokeWithItsOwnReason($certificate, $systemAdmin);
         }
+    }
+
+    private function revokeWithItsOwnReason(Certificate $certificate, User $systemAdmin): void
+    {
+        $reasonBefore = $this->context->reason();
+        $this->revoke->handle($systemAdmin, $certificate, self::REVOKE_REASON);
+        $this->context->recordReason($reasonBefore);
     }
 }

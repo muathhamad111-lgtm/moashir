@@ -33,6 +33,15 @@ final readonly class DemoInstallGuard
         $this->assertMayRotate();
     }
 
+    public function assertMayInstallInsights(): void
+    {
+        $this->assertMayInstallContent();
+
+        if ($this->records->hasInsightsCases()) {
+            $this->refuse(DemoDataRefused::insightsAlreadyInstalled());
+        }
+    }
+
     public function assertMayRotate(): void
     {
         $this->assertEnabled();

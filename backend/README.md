@@ -2908,6 +2908,39 @@ never contains a password. `php artisan moashir:demo:rotate-passwords --accounts
 passwords for every demo account, ends their sessions and writes a new file. The deployment kit wraps both commands
 and moves the file to `/root/moashir-<env>-demo-accounts.txt` (see `deploy/RUNBOOK.md`).
 
+### Excellence-tools cases on an installed demo (`--insights-only`, Task-71)
+A demo installed before Task-64 has no completed accredited result, so the excellence tools show only their empty
+states. `php artisan moashir:demo:install --insights-only` adds ONLY the Task-64 cases above to an installed demo, in one
+transaction:
+- the four accredited results with their own TEST payments and TEST receipts (number empty), feedback, the assessor
+  summary and `TEST-CRT-…` certificates (Al-Khair's newer certificate revoked), the self result of Al-Namaa, and the
+  fictional generic maturity texts — only for generic bands whose text is still empty. Text a Content Officer wrote
+  (generic or per main criterion) is never overwritten;
+- the cast is resolved from `demo_records`: the three demo entity owners in install order (Al-Amal, Al-Namaa,
+  Al-Khair — the same mapping as a fresh install) and the demo Assessor, System Administrator and Content Officer. A
+  missing or deleted one refuses the run (`missing_prerequisite`). Entities the demo did not create are neither read
+  nor changed and do not block the run;
+- existing requests, drafts, self results, payments and receipts stay untouched. The demo requests are written as
+  closed records (never in an open state), so an open accredited draft of the same entity does not conflict; the
+  purchase rules for new orders are not applied to these historical TEST payments. A demo entity with an OPEN
+  accredited payment order (created, pending or a bank transfer under review) refuses the run (`open_payment_order`)
+  until that order is paid, cancelled or expired;
+- no e-mail, SMS or in-app notification is sent; audit rows are written as in a fresh install (each demo request has
+  one `assessment.created` row and one `start → completed` status row instead of the opened/draft history);
+- the idempotency marker is in the database: every result it adds (and every result of a fresh install since
+  Task-71) is recorded in `demo_records` with kind `insights_assessment`. A second run is refused
+  (`insights_already_installed`, "already installed; nothing was changed") and writes nothing;
+- guards as `--content-only`: `APP_DEMO_DATA=true`, the demo posture outside `local` / `testing`, an installed demo.
+  It cannot be combined with `--content-only` or `--accounts-file`. Prerequisites: a published criteria version and the
+  accredited price (unchanged; payment channels and prices are not touched).
+
+The output is one line, for example `Demo excellence-tools cases installed: accredited results: 4, revoked
+certificates: 1, assessor summaries: 1, self results: 1, maturity texts filled: 4.` On a server, take a backup first,
+then run it as the environment user from the current release:
+`sudo -u moashir-<env> php8.4 /var/www/moashir/<env>/current/backend/artisan moashir:demo:install --insights-only`.
+The certificates are issued with today's date (`issued_at`) although the results carry their historical completion
+dates.
+
 ## Mail posture (SEC-02)
 `Services\Platform\MailerPosture` runs at boot. In `APP_ENV=production` without the demo opt-in (`MOASHIR_DEMO` not
 `true`) a default mailer that keeps e-mail on the server — transport `log` or `array`, or a `failover` / `roundrobin`
@@ -2964,6 +2997,12 @@ apply SRI (`crossorigin="anonymous"`) to a script loaded from that CDN — the l
 (verify again before use). SPA side: Task-37d.
 
 ## Deployment notes
+
+- Migration `2026_11_06_120000` (Task-71): the `demo_records_kind_check` CHECK accepts `insights_assessment` (marker of
+  the excellence-tools demo cases). Reversible: `down()` deletes the `insights_assessment` rows and restores
+  `entity | user`. No grant change, no new permission key, package or environment variable. On a demo installed before
+  Task-64, run `moashir:demo:install --insights-only` after the deploy (section "Excellence-tools cases on an installed
+  demo").
 
 - Migrations `2026_11_05_140000` … `140200` (Task-61, entity sign-in by password or one-time code): `140000` deletes the
   open `login_second_factor` codes and replaces the `otp_codes_purpose_check` CHECK with `login, sign_in_code,

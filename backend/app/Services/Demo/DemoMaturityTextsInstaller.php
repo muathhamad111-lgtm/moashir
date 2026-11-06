@@ -8,6 +8,8 @@ use App\Actions\Insights\SaveMaturityText;
 use App\Data\Insights\MaturityTextEdit;
 use App\Enums\Insights\MaturityBand;
 use App\Models\Identity\User;
+use App\Models\Insights\MaturityInterpretation;
+use App\Services\Settings\SettingsLock;
 use App\Support\ValueObjects\LocalizedText;
 
 final readonly class DemoMaturityTextsInstaller
@@ -31,12 +33,30 @@ final readonly class DemoMaturityTextsInstaller
         ],
     ];
 
-    public function __construct(private SaveMaturityText $save) {}
+    public function __construct(private SaveMaturityText $save, private SettingsLock $lock) {}
 
-    public function install(User $editor): void
+    public function install(User $editor): int
     {
-        foreach (self::TEXTS as $band => $text) {
+        $this->lock->lock(SaveMaturityText::LOCK);
+        $emptyBands = array_diff_key(self::TEXTS, array_flip($this->bandsWithGenericText()));
+
+        foreach ($emptyBands as $band => $text) {
             $this->save->handle($editor, new MaturityTextEdit(MaturityBand::from($band), null, new LocalizedText($text['ar'], $text['en'])));
         }
+
+        return count($emptyBands);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function bandsWithGenericText(): array
+    {
+        return array_values(MaturityInterpretation::query()
+            ->whereNull('main_criterion_code')
+            ->whereNotNull('text')
+            ->get(['band'])
+            ->map(static fn (MaturityInterpretation $row): string => $row->band->value)
+            ->all());
     }
 }
