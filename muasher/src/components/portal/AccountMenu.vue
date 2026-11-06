@@ -11,6 +11,8 @@ import { THEMES } from '@/constants/themes'
 import AppPopover from '@/components/ui/AppPopover.vue'
 import PortalMenuEntry from './PortalMenuEntry.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import LevelBadge from '@/components/level/LevelBadge.vue'
+import { useEntityLevel } from '@/composables/useEntityLevel'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -19,6 +21,7 @@ const { toggleLocale } = useLocale()
 const { theme, toggleTheme } = useTheme()
 const { signOut } = usePortalSession()
 const popoverRef = ref(null)
+const { tier, reassessment } = useEntityLevel()
 
 const themeValue = computed(() =>
   theme.value === THEMES.dark ? t('portal.account.themeDark') : t('portal.account.themeLight'),
@@ -49,6 +52,7 @@ async function onSignOut() {
         <span class="account-menu__entity">{{ identity.entityName.value }}</span>
         <span class="account-menu__user">{{ identity.userName.value }}</span>
       </span>
+      <LevelBadge class="account-menu__level" :tier="tier" size="s" :reassessment="reassessment" />
       <AppIcon :name="isOpen ? 'chevron-up' : 'chevron-down'" class="account-menu__chevron" />
     </template>
     <template #default="{ headingId }">

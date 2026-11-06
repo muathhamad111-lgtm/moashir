@@ -31,7 +31,9 @@ vi.mock('@/services/cmsService', () => ({
     uploadImage: vi.fn(),
   },
 }))
-vi.mock('@/services/siteSettingsService', () => ({ siteSettingsService: { get: vi.fn(), update: vi.fn() } }))
+vi.mock('@/services/siteSettingsService', () => ({
+  siteSettingsService: { get: vi.fn(), update: vi.fn() },
+}))
 
 function section(id, order, overrides = {}) {
   return {
@@ -72,7 +74,11 @@ function page(key = 'home', overrides = {}) {
 
 const SETTINGS = {
   social: [{ platform: 'x', url: 'https://x.com/moashir.example' }],
-  contact: { email: 'info@moashir.example.sa', phone: null, address: { ar: 'الرياض', en: 'Riyadh' } },
+  contact: {
+    email: 'info@moashir.example.sa',
+    phone: null,
+    address: { ar: 'الرياض', en: 'Riyadh' },
+  },
   footerNote: { ar: 'حقوق', en: 'Rights' },
   quickLinks: [{ label: { ar: 'الرئيسية', en: 'Home' }, url: '/' }],
   seo: { title: null, description: null },
@@ -117,7 +123,9 @@ describe('Public site content editor (Content Officer)', () => {
 
   it('toggles a section and moves it down with the arrow buttons', async () => {
     cmsService.toggleSection.mockResolvedValue({ data: section(101, 1, { enabled: false }) })
-    cmsService.reorderSections.mockResolvedValue({ data: [section(102, 1), section(101, 2), section(103, 3)] })
+    cmsService.reorderSections.mockResolvedValue({
+      data: [section(102, 1), section(101, 2), section(103, 3)],
+    })
     const { wrapper } = await mountView()
     await wrapper.find('.cms-section-row input[type="checkbox"]').setValue(false)
     await flushPromises()
@@ -125,12 +133,16 @@ describe('Public site content editor (Content Officer)', () => {
     await wrapper.findAll('.sortable-list__moves')[0].findAll('button')[1].trigger('click')
     await flushPromises()
     expect(cmsService.reorderSections).toHaveBeenCalledWith([102, 101, 103])
-    expect(wrapper.find('.publication-control .badge').text()).toBe('Published, with unpublished changes')
+    expect(wrapper.find('.publication-control .badge').text()).toBe(
+      'Published, with unpublished changes',
+    )
     wrapper.unmount()
   })
 
   it('reorders the sections by drag and drop', async () => {
-    cmsService.reorderSections.mockResolvedValue({ data: [section(103, 1), section(101, 2), section(102, 3)] })
+    cmsService.reorderSections.mockResolvedValue({
+      data: [section(103, 1), section(101, 2), section(102, 3)],
+    })
     const { wrapper } = await mountView()
     const rows = wrapper.findAll('.sortable-list__row')
     await rows[2].trigger('dragstart', { dataTransfer: { setData: vi.fn(), effectAllowed: '' } })
@@ -144,7 +156,9 @@ describe('Public site content editor (Content Officer)', () => {
   it('unpublishes the homepage only after confirmation and switches the public site to maintenance', async () => {
     cmsService.unpublishPage.mockResolvedValue({ data: page('home', { published: false }) })
     const { wrapper, globals } = await mountView()
-    const unpublish = wrapper.findAll('.publication-control button').find((button) => button.text().includes('Unpublish'))
+    const unpublish = wrapper
+      .findAll('.publication-control button')
+      .find((button) => button.text().includes('Unpublish'))
     await unpublish.trigger('click')
     await flushPromises()
     expect(cmsService.unpublishPage).not.toHaveBeenCalled()
@@ -159,23 +173,34 @@ describe('Public site content editor (Content Officer)', () => {
   it('shows the server refusal when a page cannot be published', async () => {
     cmsService.getPage.mockResolvedValue({ data: page('home', { hasUnpublishedChanges: true }) })
     cmsService.publishPage.mockRejectedValue(
-      Object.assign(new Error('empty'), { normalized: { code: 'cms.page_empty', message: 'The page has no enabled section to publish.' } }),
+      Object.assign(new Error('empty'), {
+        normalized: {
+          code: 'cms.page_empty',
+          message: 'The page has no enabled section to publish.',
+        },
+      }),
     )
     const { wrapper } = await mountView()
     await wrapper.find('.publication-control .btn--primary').trigger('click')
     useConfirm().accept()
     await flushPromises()
-    expect(useToast().toasts.at(-1)).toMatchObject({ type: 'error', message: 'The page has no enabled section to publish.' })
+    expect(useToast().toasts.at(-1)).toMatchObject({
+      type: 'error',
+      message: 'The page has no enabled section to publish.',
+    })
     wrapper.unmount()
   })
 
   it('creates a section with its key and type through the dialog', async () => {
-    cmsService.createSection.mockResolvedValue({ data: section(150, 4, { key: 'faq_block', type: 'faq' }) })
+    cmsService.createSection.mockResolvedValue({
+      data: section(150, 4, { key: 'faq_block', type: 'faq' }),
+    })
     const { wrapper } = await mountView()
     await wrapper.find('.cms-page-editor__toolbar .btn--primary').trigger('click')
     await flushPromises()
     const dialog = wrapper.findComponent(SectionFormDialog)
-    const input = (name) => dialog.findAllComponents(BaseInput).find((field) => field.props('name') === name)
+    const input = (name) =>
+      dialog.findAllComponents(BaseInput).find((field) => field.props('name') === name)
     await input('key').find('input').setValue('faq_block')
     await chooseNamedOption(dialog, 'type', 'faq')
     await input('title.ar').find('input').setValue('الأسئلة الشائعة')
@@ -183,7 +208,14 @@ describe('Public site content editor (Content Officer)', () => {
     await flushPromises()
     await vi.waitFor(() => expect(cmsService.createSection).toHaveBeenCalled())
     await flushPromises()
-    expect(cmsService.createSection).toHaveBeenCalledWith('home', expect.objectContaining({ key: 'faq_block', type: 'faq', title: { ar: 'الأسئلة الشائعة', en: '' } }))
+    expect(cmsService.createSection).toHaveBeenCalledWith(
+      'home',
+      expect.objectContaining({
+        key: 'faq_block',
+        type: 'faq',
+        title: { ar: 'الأسئلة الشائعة', en: '' },
+      }),
+    )
     expect(wrapper.findAll('.cms-section-row')).toHaveLength(4)
     wrapper.unmount()
   })
@@ -197,20 +229,29 @@ describe('Public site content editor (Content Officer)', () => {
   })
 
   it('edits and saves the site settings with the featured indicator settings', async () => {
-    siteSettingsService.update.mockImplementation((payload) => Promise.resolve({ data: { ...SETTINGS, ...payload } }))
+    siteSettingsService.update.mockImplementation((payload) =>
+      Promise.resolve({ data: { ...SETTINGS, ...payload } }),
+    )
     const { wrapper } = await mountView()
     await wrapper.findAll('.tabs__tab')[9].trigger('click')
     await flushPromises()
     await chooseNamedOption(wrapper, 'featuredKpiLimit', 4)
     await wrapper.find('.site-settings__form').trigger('submit')
     await flushPromises()
-    expect(siteSettingsService.update).toHaveBeenCalledWith(expect.objectContaining({ featuredKpiLimit: 4, showFeaturedKpis: true }))
+    expect(siteSettingsService.update).toHaveBeenCalledWith(
+      expect.objectContaining({ featuredKpiLimit: 4, showFeaturedKpis: true }),
+    )
     wrapper.unmount()
   })
 
   it('maps the server field errors of the site settings to their fields', async () => {
     siteSettingsService.update.mockRejectedValue(
-      Object.assign(new Error('invalid'), { normalized: { message: 'The submitted data is invalid.', fieldErrors: { 'social.0.url': ['The link must start with https://.'] } } }),
+      Object.assign(new Error('invalid'), {
+        normalized: {
+          message: 'The submitted data is invalid.',
+          fieldErrors: { 'social.0.url': ['The link must start with https://.'] },
+        },
+      }),
     )
     const { wrapper } = await mountView()
     await wrapper.findAll('.tabs__tab')[9].trigger('click')

@@ -16,7 +16,14 @@ async function retryFor(page, selector) {
   for (let attempt = 0; attempt < 6; attempt += 1) {
     const retry = page.locator('.error-state__retry').first()
     if (await retry.isVisible().catch(() => false)) await retry.click()
-    if (await page.locator(selector).first().isVisible().catch(() => false)) return
+    if (
+      await page
+        .locator(selector)
+        .first()
+        .isVisible()
+        .catch(() => false)
+    )
+      return
     await page.waitForTimeout(500)
   }
   await expect(page.locator(selector).first()).toBeVisible({ timeout: 10000 })
@@ -24,7 +31,14 @@ async function retryFor(page, selector) {
 
 async function settleTurn(page, selector) {
   for (let attempt = 0; attempt < 6; attempt += 1) {
-    if (await page.locator(selector).first().isVisible().catch(() => false)) return
+    if (
+      await page
+        .locator(selector)
+        .first()
+        .isVisible()
+        .catch(() => false)
+    )
+      return
     const turnRetry = page.locator('.chat-widget__turn-error .chat-widget__inline-retry')
     if (await turnRetry.isVisible().catch(() => false)) await turnRetry.click()
     await page.waitForTimeout(600)

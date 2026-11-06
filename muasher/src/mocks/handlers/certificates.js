@@ -2,6 +2,7 @@ import { HttpResponse, delay } from 'msw'
 import { http } from '../contract/http'
 import { FIXTURE_ENTITY_ID } from '../fixtures/assessments'
 import { currentSessionUser } from '../stores/sessionStore'
+import { sessionCan } from '../stores/sessionPermissions'
 import { certificateByCode, certificateResource, certificates } from '../stores/certificatesStore'
 import { feedbackReportOf } from '../stores/feedbackReports'
 import { findAssessment } from '../stores/assessments/assessmentsStore'
@@ -10,6 +11,7 @@ import { signedDownloadOf, storeFile } from '../stores/finance/signedFiles'
 import { requestLocale } from '../contract/locale'
 
 const ISSUED = 'issued'
+const MANAGE = 'certificates.manage'
 const VERIFY_LIMIT = 30
 const VERIFY_WINDOW_MS = 60 * 1000
 const verifyAttempts = []
@@ -60,6 +62,13 @@ function rejection(request, status, code) {
 
 function viewerEntityId() {
   return currentSessionUser()?.entityId ?? FIXTURE_ENTITY_ID
+}
+
+function listedEntityId(query) {
+  const requested = query.get('filter[entityId]')
+  const isStaff = currentSessionUser() && !currentSessionUser().entityId
+  if (requested && isStaff) return sessionCan(MANAGE) ? requested : null
+  return viewerEntityId()
 }
 
 function ownCertificate(id) {
@@ -125,7 +134,7 @@ export const certificatesHandlers = [
     const query = new URL(request.url).searchParams
     const statuses = statusesOf(query)
     const owned = certificates.filter(
-      (certificate) => certificate.entityId === Number(viewerEntityId()),
+      (certificate) => certificate.entityId === Number(listedEntityId(query)),
     )
     const items = owned
       .filter((certificate) => !statuses.length || statuses.includes(certificate.status))

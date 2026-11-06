@@ -7,13 +7,9 @@
   z-index: var(--z-fixed);
   padding-block: var(--space-2) var(--size-safe-area-bottom);
   padding-inline: var(--space-2);
-  border-block-start: var(--border-width) solid var(--theme-border);
-  background-color: var(--theme-surface);
-  box-shadow: var(--shadow-md);
-
-  [data-theme='dark'] & {
-    background-color: var(--color-dark-deep);
-  }
+  border-block-start: var(--border-width) solid var(--glass-stroke);
+  background: var(--nav-gradient);
+  box-shadow: var(--elevation-e3);
 }
 
 .mobile-tab-bar__list {
@@ -30,7 +26,7 @@
 .mobile-tab-bar__tab {
   @include flex(column, center, center, var(--space-1));
   min-block-size: var(--size-touch-target);
-  color: var(--theme-text-muted);
+  color: var(--band-ink-muted);
   font-size: var(--fs-xs);
   border-radius: var(--radius-md);
 
@@ -39,7 +35,7 @@
   }
 
   &.is-active {
-    color: var(--theme-accent-text);
+    color: var(--band-ink);
     font-size: var(--fs-caption);
     font-weight: var(--fw-semibold);
   }
@@ -53,6 +49,7 @@
   font-size: var(--fs-lg);
 
   .mobile-tab-bar__tab.is-active & {
-    background-color: var(--theme-tint);
+    background-color: var(--nav-active);
+    color: var(--data-on-band);
   }
 }

@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\V1\Settings\AuthSettingsController;
 use App\Http\Controllers\Api\V1\Settings\BrandingController;
 use App\Http\Controllers\Api\V1\Settings\CertificateSettingsController;
 use App\Http\Controllers\Api\V1\Settings\FinanceSettingsController;
+use App\Http\Controllers\Api\V1\Settings\InsightsSettingsController;
 use App\Http\Controllers\Api\V1\Settings\PathGuideController;
 use App\Http\Controllers\Api\V1\Settings\PathSettingsController;
 use App\Http\Controllers\Api\V1\Settings\PaymentChannelsController;
@@ -38,6 +39,8 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
         Route::get('assessment/paths/{path}', [PathSettingsController::class, 'show'])->middleware($assessment)->name('assessment.paths.show');
         Route::put('assessment/paths/{path}', [PathSettingsController::class, 'update'])->middleware([$assessment, 'throttle:sensitive'])->name('assessment.paths.update');
     });
+    Route::get('insights', [InsightsSettingsController::class, 'show'])->middleware($assessment)->name('insights.show');
+    Route::put('insights', [InsightsSettingsController::class, 'update'])->middleware([$assessment, 'throttle:sensitive'])->name('insights.update');
     Route::get('certificates', [CertificateSettingsController::class, 'show'])->middleware($certificates)->name('certificates.show');
     Route::put('certificates', [CertificateSettingsController::class, 'update'])->middleware([$certificates, 'throttle:sensitive'])->name('certificates.update');
     Route::get('auth', [AuthSettingsController::class, 'show'])->middleware($auth)->name('auth.show');

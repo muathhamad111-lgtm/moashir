@@ -36,6 +36,10 @@ export const dashboardService = {
       'dashboard.getActionCenter',
       () => apiClient.get('/dashboard/action-center'),
       { entity: 'dashboard' },
-    ).then((envelope) => ({ ...envelope, data: toActionItems(envelope.data) }))
+    ).then((envelope) => ({
+      ...envelope,
+      data: toActionItems(envelope.data),
+      generatedAt: envelope.meta?.generatedAt ?? null,
+    }))
   },
 }

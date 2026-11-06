@@ -8,7 +8,8 @@
   margin: 0;
 }
 
-.complete-review__hint {
+.complete-review__hint,
+.complete-review__summary-hint {
   margin: 0;
   font-size: var(--fs-sm);
   color: var(--theme-text-muted);

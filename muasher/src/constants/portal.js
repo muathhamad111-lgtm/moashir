@@ -34,15 +34,114 @@ export const PORTAL_AREA_ROUTES = Object.freeze({
     R.ACCOUNT_PROFILE,
     R.BAG_INDEX,
     R.BAG_COMPARISON,
+    R.PORTAL_TOOL_MATURITY,
+    R.PORTAL_TOOL_STRENGTHS,
+    R.PORTAL_TOOL_BOARD_REPORTS,
+    R.PORTAL_TOOL_EVIDENCE_LIBRARY,
+    R.PORTAL_TOOL_PERIODIC_REVIEW,
+    R.PORTAL_TOOL_ROADMAP,
+    R.PORTAL_TOOL_NATIONAL_IMPACT,
+    R.PORTAL_TOOL_TRENDS,
   ],
 })
 
-export const PORTAL_NAV_ITEMS = Object.freeze([
+export const PORTAL_TOOLS = Object.freeze([
+  {
+    key: 'maturity',
+    slug: 'maturity',
+    icon: 'chart-bar',
+    routeName: R.PORTAL_TOOL_MATURITY,
+    live: true,
+  },
+  {
+    key: 'strengths',
+    slug: 'strengths-and-gaps',
+    icon: 'target',
+    routeName: R.PORTAL_TOOL_STRENGTHS,
+    live: true,
+  },
+  {
+    key: 'boardReports',
+    slug: 'board-reports',
+    icon: 'docs',
+    routeName: R.PORTAL_TOOL_BOARD_REPORTS,
+    live: true,
+  },
+  {
+    key: 'evidenceLibrary',
+    slug: 'evidence-library',
+    icon: 'attachment',
+    routeName: R.PORTAL_TOOL_EVIDENCE_LIBRARY,
+  },
+  {
+    key: 'periodicReview',
+    slug: 'periodic-review',
+    icon: 'calendar',
+    routeName: R.PORTAL_TOOL_PERIODIC_REVIEW,
+  },
+  { key: 'roadmap', slug: 'roadmap', icon: 'chart-up', routeName: R.PORTAL_TOOL_ROADMAP },
+  {
+    key: 'nationalImpact',
+    slug: 'national-impact',
+    icon: 'globe',
+    routeName: R.PORTAL_TOOL_NATIONAL_IMPACT,
+  },
+  { key: 'trends', slug: 'trends', icon: 'lightbulb', routeName: R.PORTAL_TOOL_TRENDS },
+])
+
+export const PORTAL_TOOL_ROUTES = Object.freeze(PORTAL_TOOLS.map((tool) => tool.routeName))
+
+export const PORTAL_TEASER_TOOLS = Object.freeze(PORTAL_TOOLS.filter((tool) => !tool.live))
+
+export const PORTAL_SIDE_NAV_ITEMS = Object.freeze([
+  { key: 'journey', routeName: R.APP_DASHBOARD, icon: 'grid-vertical', routes: [R.APP_DASHBOARD] },
+  {
+    key: 'assessments',
+    routeName: R.ASSESSMENT_HISTORY,
+    icon: 'clipboard-check',
+    routes: PORTAL_AREA_ROUTES[A.ASSESSMENTS],
+  },
+  {
+    key: 'certificates',
+    routeName: R.CERTIFICATES_INDEX,
+    icon: 'award',
+    routes: PORTAL_AREA_ROUTES[A.CERTIFICATES],
+  },
+  {
+    key: 'payments',
+    routeName: R.PAYMENTS_MINE,
+    icon: 'credit-card',
+    routes: PORTAL_AREA_ROUTES[A.PAYMENTS],
+  },
+  {
+    key: 'messages',
+    routeName: R.MESSAGES_INDEX,
+    icon: 'chat',
+    routes: PORTAL_AREA_ROUTES[A.MESSAGES],
+    badge: 'unreadReplies',
+  },
+  {
+    key: 'notifications',
+    routeName: R.NOTIFICATIONS_INDEX,
+    icon: 'bell',
+    routes: [R.NOTIFICATIONS_INDEX],
+    badge: 'unreadNotifications',
+  },
+  {
+    key: 'entityProfile',
+    routeName: R.ENTITY_PROFILE,
+    icon: 'building',
+    routes: [R.ENTITY_PROFILE, R.ACCOUNT_PROFILE],
+  },
+  { key: 'help', routeName: R.PORTAL_HELP, icon: 'question-circle', routes: [R.PORTAL_HELP] },
+])
+
+export const PORTAL_TAB_ITEMS = Object.freeze([
   {
     area: A.JOURNEY,
     routeName: R.APP_DASHBOARD,
     labelKey: 'portal.nav.journey',
-    icon: 'route',
+    icon: 'grid-vertical',
   },
   {
     area: A.ASSESSMENTS,
@@ -56,31 +155,7 @@ export const PORTAL_NAV_ITEMS = Object.freeze([
     labelKey: 'portal.nav.certificates',
     icon: 'award',
   },
-  {
-    area: A.PAYMENTS,
-    routeName: R.PAYMENTS_MINE,
-    labelKey: 'portal.nav.payments',
-    icon: 'credit-card',
-  },
-  {
-    area: A.MESSAGES,
-    routeName: R.MESSAGES_INDEX,
-    labelKey: 'portal.nav.messages',
-    icon: 'envelope',
-    badge: 'unreadReplies',
-  },
-])
-
-export const PORTAL_TAB_ITEMS = Object.freeze([
-  ...PORTAL_NAV_ITEMS.filter((item) =>
-    [A.JOURNEY, A.ASSESSMENTS, A.CERTIFICATES].includes(item.area),
-  ),
-  {
-    area: A.MORE,
-    routeName: R.PORTAL_MORE,
-    labelKey: 'portal.nav.more',
-    icon: 'dots-horizontal',
-  },
+  { area: A.MORE, routeName: R.PORTAL_MORE, labelKey: 'portal.nav.more', icon: 'dots-horizontal' },
 ])
 
 export const PORTAL_TASK_ROUTES = Object.freeze([

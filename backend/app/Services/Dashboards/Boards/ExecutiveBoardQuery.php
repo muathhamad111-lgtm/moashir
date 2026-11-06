@@ -58,6 +58,7 @@ final readonly class ExecutiveBoardQuery implements DashboardBoardQuery
             new DashboardWidget('entities_by_region', $this->entities->byRegion()),
             new DashboardWidget('entities_by_sector', $this->entities->bySector()),
             new DashboardWidget('entities_by_governance', $this->entities->byGovernance()),
+            new DashboardWidget('entities_by_level', $this->entities->byLevel()),
             new DashboardWidget('lowest_criteria', $this->criteria->lowestMains($this->completedAccredited(), self::LOWEST_CRITERIA)),
         ]);
     }

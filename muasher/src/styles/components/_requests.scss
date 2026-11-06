@@ -49,6 +49,11 @@
   flex-wrap: wrap;
 }
 
+.request-queue__entity {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+}
+
 .request-queue__path {
   @include flex(column, flex-start, flex-start, var(--space-1));
 }

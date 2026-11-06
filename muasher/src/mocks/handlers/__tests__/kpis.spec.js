@@ -37,7 +37,9 @@ describe('KPI mock — public reads (Task-33 §3 #29-#32)', () => {
     expect(body.meta.pagination).toMatchObject({ page: 1, perPage: 5 })
     const [first] = body.data
     expect(typeof first.value).toBe('string')
-    expect(first.category).toEqual(expect.objectContaining({ id: expect.any(Number), key: expect.any(String) }))
+    expect(first.category).toEqual(
+      expect.objectContaining({ id: expect.any(Number), key: expect.any(String) }),
+    )
     expect(first).toHaveProperty('cardColor')
     expect(first).not.toHaveProperty('published')
     expect(first).not.toHaveProperty('cardColorToken')
@@ -80,12 +82,26 @@ describe('KPI mock — public reads (Task-33 §3 #29-#32)', () => {
 
 describe('KPI mock — editor writes (Task-33 §3 #33-#42)', () => {
   it('creates an unpublished KPI with an automatic slug and refuses a taken slug', async () => {
-    const created = await call('POST', '/admin/kpis', { name: { ar: 'مؤشر الشراكات', en: 'Partnership index' }, value: '12.50', kpiCategoryId: 2 })
+    const created = await call('POST', '/admin/kpis', {
+      name: { ar: 'مؤشر الشراكات', en: 'Partnership index' },
+      value: '12.50',
+      kpiCategoryId: 2,
+    })
     expect(created.status).toBe(201)
-    expect(created.body.data).toMatchObject({ slug: 'partnership-index', value: '12.5', published: false })
-    const taken = await call('POST', '/admin/kpis', { name: { ar: 'مكرر', en: 'Duplicate' }, slug: 'partnership-index' })
+    expect(created.body.data).toMatchObject({
+      slug: 'partnership-index',
+      value: '12.5',
+      published: false,
+    })
+    const taken = await call('POST', '/admin/kpis', {
+      name: { ar: 'مكرر', en: 'Duplicate' },
+      slug: 'partnership-index',
+    })
     expect(taken.body.code).toBe('slug.taken')
-    const prohibited = await call('POST', '/admin/kpis', { name: { ar: 'منشور', en: '' }, published: true })
+    const prohibited = await call('POST', '/admin/kpis', {
+      name: { ar: 'منشور', en: '' },
+      published: true,
+    })
     expect(prohibited.body.errors).toHaveProperty('published')
   })
 
@@ -100,7 +116,10 @@ describe('KPI mock — editor writes (Task-33 §3 #33-#42)', () => {
     const list = await call('GET', '/admin/kpis')
     expect(list.body.meta.stats).toMatchObject({ total: 31, featured: 6 })
     const target = list.body.data[0]
-    expect((await call('PATCH', `/admin/kpis/${target.id}/published`, { published: false })).body.data.published).toBe(false)
+    expect(
+      (await call('PATCH', `/admin/kpis/${target.id}/published`, { published: false })).body.data
+        .published,
+    ).toBe(false)
     expect((await call('DELETE', `/admin/kpis/${target.id}`)).status).toBe(204)
     expect((await call('GET', '/admin/kpis')).body.meta.stats.total).toBe(30)
   })
@@ -110,21 +129,37 @@ describe('KPI mock — editor writes (Task-33 §3 #33-#42)', () => {
     const moved = await call('PATCH', `/admin/kpis/${first.id}/reorder`, { direction: 'down' })
     expect(moved.body.data[1].id).toBe(first.id)
     const ids = moved.body.data.map((entry) => entry.id).reverse()
-    expect((await call('PATCH', '/admin/kpis/reorder', { orderedIds: ids })).body.data[0].id).toBe(ids[0])
-    expect((await call('PATCH', '/admin/kpis/reorder', { orderedIds: ids.slice(2) })).body.code).toBe('order.incomplete')
+    expect((await call('PATCH', '/admin/kpis/reorder', { orderedIds: ids })).body.data[0].id).toBe(
+      ids[0],
+    )
+    expect(
+      (await call('PATCH', '/admin/kpis/reorder', { orderedIds: ids.slice(2) })).body.code,
+    ).toBe('order.incomplete')
   })
 
   it('records a dated measurement once per day and refuses future dates', async () => {
     const kpi = (await call('GET', '/admin/kpis')).body.data[0]
-    const recorded = await call('POST', `/admin/kpis/${kpi.id}/values`, { value: '510', measuredOn: '2026-07-31' })
+    const recorded = await call('POST', `/admin/kpis/${kpi.id}/values`, {
+      value: '510',
+      measuredOn: '2026-07-31',
+    })
     expect(recorded.status).toBe(201)
     expect(recorded.body.data.at(-1)).toEqual({ value: '510', measuredOn: '2026-07-31' })
-    expect((await call('POST', `/admin/kpis/${kpi.id}/values`, { value: '1', measuredOn: '2026-07-31' })).body.code).toBe('kpi.measurement_exists')
-    expect((await call('POST', `/admin/kpis/${kpi.id}/values`, { value: '1', measuredOn: '2999-01-01' })).status).toBe(422)
+    expect(
+      (await call('POST', `/admin/kpis/${kpi.id}/values`, { value: '1', measuredOn: '2026-07-31' }))
+        .body.code,
+    ).toBe('kpi.measurement_exists')
+    expect(
+      (await call('POST', `/admin/kpis/${kpi.id}/values`, { value: '1', measuredOn: '2999-01-01' }))
+        .status,
+    ).toBe(422)
   })
 
   it('manages categories and refuses to delete one in use', async () => {
-    const created = await call('POST', '/admin/kpi-categories', { key: 'impact', name: { ar: 'الأثر', en: 'Impact' } })
+    const created = await call('POST', '/admin/kpi-categories', {
+      key: 'impact',
+      name: { ar: 'الأثر', en: 'Impact' },
+    })
     expect(created.status).toBe(201)
     expect((await call('DELETE', `/admin/kpi-categories/${created.body.data.id}`)).status).toBe(204)
     const inUse = await call('DELETE', '/admin/kpi-categories/1')

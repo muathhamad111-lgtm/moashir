@@ -19,14 +19,29 @@ const ENTITY = {
 
 const PUBLIC_SCREENS = [
   { key: 'home', path: '/', ready: '.home-hero__title', settled: '.home-stats__item' },
-  { key: 'login', path: '/auth/login', ready: '.auth-layout__brand', settled: '.auth-layout__card form' },
-  { key: 'register', path: '/auth/register', ready: '.auth-layout__brand', settled: '.auth-layout__card form' },
+  {
+    key: 'login',
+    path: '/auth/login',
+    ready: '.auth-layout__brand',
+    settled: '.auth-layout__card form',
+  },
+  {
+    key: 'register',
+    path: '/auth/register',
+    ready: '.auth-layout__brand',
+    settled: '.auth-layout__card form',
+  },
 ]
 
 const ENTITY_SCREENS = [
   { key: 'dashboard', path: '/dashboard', ready: 'main h1', settled: '.journey-station' },
   { key: 'self', path: '/assessment/self', ready: 'main h1', settled: '.self-summary' },
-  { key: 'accredited', path: '/assessment/accredited', ready: 'main h1', settled: '.pricing-breakdown__row' },
+  {
+    key: 'accredited',
+    path: '/assessment/accredited',
+    ready: 'main h1',
+    settled: '.pricing-breakdown__row',
+  },
 ]
 
 function localeOf(testInfo) {
@@ -71,10 +86,15 @@ for (const theme of ['dark', 'light']) {
 
           await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
           await expect(page.locator('html')).toHaveAttribute('dir', dirOf(testInfo))
-          await expect(page.locator('.brand-pattern').first()).toHaveAttribute('aria-hidden', 'true')
+          await expect(page.locator('.brand-pattern').first()).toHaveAttribute(
+            'aria-hidden',
+            'true',
+          )
           expect(await contrastOf(page, '.btn--primary')).toBeGreaterThanOrEqual(AA_TEXT)
 
-          await page.screenshot({ path: `${SHOTS}/${screen.key}-${theme}-${viewportName}-${suffixOf(testInfo)}.png` })
+          await page.screenshot({
+            path: `${SHOTS}/${screen.key}-${theme}-${viewportName}-${suffixOf(testInfo)}.png`,
+          })
           expect(errors).toEqual([])
         })
       }
@@ -82,13 +102,19 @@ for (const theme of ['dark', 'light']) {
       for (const screen of ENTITY_SCREENS) {
         test(`entity ${screen.key}`, async ({ page }, testInfo) => {
           const errors = trackConsole(page)
-          await seedSignedIn(page, { ...ENTITY, locale: localeOf(testInfo) }, { locale: localeOf(testInfo), theme })
+          await seedSignedIn(
+            page,
+            { ...ENTITY, locale: localeOf(testInfo) },
+            { locale: localeOf(testInfo), theme },
+          )
           await openScreen(page, screen)
 
           await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
           expect(await contrastOf(page, screen.ready)).toBeGreaterThanOrEqual(AA_TEXT)
 
-          await page.screenshot({ path: `${SHOTS}/${screen.key}-${theme}-${viewportName}-${suffixOf(testInfo)}.png` })
+          await page.screenshot({
+            path: `${SHOTS}/${screen.key}-${theme}-${viewportName}-${suffixOf(testInfo)}.png`,
+          })
           expect(errors).toEqual([])
         })
       }
@@ -96,11 +122,16 @@ for (const theme of ['dark', 'light']) {
   }
 }
 
-test('home hero and footer use the official on-dark logo, patterns and featured indicators', async ({ page }, testInfo) => {
+test('home hero and footer use the official on-dark logo, patterns and featured indicators', async ({
+  page,
+}, testInfo) => {
   await seedPreferences(page, { locale: localeOf(testInfo), theme: 'light' })
   await openScreen(page, PUBLIC_SCREENS[0])
 
-  await expect(page.locator('.home-hero.brand-surface .brand-pattern--lattice')).toHaveAttribute('aria-hidden', 'true')
+  await expect(page.locator('.home-hero.brand-surface .brand-pattern--lattice')).toHaveAttribute(
+    'aria-hidden',
+    'true',
+  )
   await expect(page.locator('.home-hero__mark')).toHaveAttribute('alt', '')
   await expect(page.locator('.home-stats__item').first()).toBeVisible()
   expect(await contrastOf(page, '.home-stats__value')).toBeGreaterThanOrEqual(AA_TEXT)
@@ -115,18 +146,26 @@ test('home hero and footer use the official on-dark logo, patterns and featured 
   await footer.screenshot({ path: `${SHOTS}/footer-light-${suffixOf(testInfo)}.png` })
 })
 
-test('sign-in brand panel shows the on-dark logo over the lattice pattern', async ({ page }, testInfo) => {
+test('sign-in brand panel shows the on-dark logo over the lattice pattern', async ({
+  page,
+}, testInfo) => {
   await seedPreferences(page, { locale: localeOf(testInfo), theme: 'light' })
   await openScreen(page, PUBLIC_SCREENS[1])
 
   await expect(page.locator('.auth-layout__logo')).toHaveAttribute('src', /moashir-logo-on-dark/)
-  await expect(page.locator('.auth-layout__brand .brand-pattern--lattice')).toHaveAttribute('aria-hidden', 'true')
+  await expect(page.locator('.auth-layout__brand .brand-pattern--lattice')).toHaveAttribute(
+    'aria-hidden',
+    'true',
+  )
   expect(await contrastOf(page, '.auth-value-panel__heading')).toBeGreaterThanOrEqual(AA_TEXT)
 })
 
 test('the favicon and app icons follow the identity', async ({ page }) => {
   await page.goto('/')
-  await expect(page.locator('link[rel="icon"][type="image/svg+xml"]')).toHaveAttribute('href', '/favicon.svg')
+  await expect(page.locator('link[rel="icon"][type="image/svg+xml"]')).toHaveAttribute(
+    'href',
+    '/favicon.svg',
+  )
   await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', '#0a2325')
   const favicon = await page.request.get('/favicon.svg')
   expect(favicon.ok()).toBe(true)

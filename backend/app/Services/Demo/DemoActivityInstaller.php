@@ -15,6 +15,7 @@ final readonly class DemoActivityInstaller
         private DemoCycleInstaller $cycle,
         private DemoPaymentInstaller $payments,
         private DemoBankTransferInstaller $bankTransfers,
+        private DemoInsightsInstaller $insights,
     ) {}
 
     public function install(DemoPeople $people): DemoActivity
@@ -23,10 +24,11 @@ final readonly class DemoActivityInstaller
         $this->prices->install($systemAdmin);
         $cycle = $this->cycle->install($people->staffMember(RoleKey::AwardSecretary));
         [$paidEntity, $pendingEntity, $settledEntity] = $people->entityOwners;
+        $accreditedResults = $this->insights->install($people);
 
         return new DemoActivity($cycle, [
             $this->payments->installPaid($paidEntity),
             ...$this->bankTransfers->install($systemAdmin, $people->staffMember(RoleKey::FinanceOfficer), $pendingEntity, $settledEntity),
-        ]);
+        ], $accreditedResults);
     }
 }

@@ -1,10 +1,17 @@
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import { PORTAL_TOOLS } from '@/constants/portal'
 import { MOCK_MODULES as M } from '@/constants/mockModules'
 import { accreditedEntryGuard } from './accreditedEntry'
 import { withComingSoonScreens } from './comingSoon'
 
 const AUTH_TOKEN_PARAM = '[A-Za-z0-9_-]{8,128}'
 const UUID_PARAM = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
+
+const LIVE_TOOL_VIEWS = {
+  maturity: () => import('@/views/insights/Maturity.vue'),
+  strengths: () => import('@/views/insights/StrengthsGaps.vue'),
+  boardReports: () => import('@/views/insights/BoardReports.vue'),
+}
 
 export const appRoutes = [
   {
@@ -150,6 +157,7 @@ export const appRoutes = [
     beforeEnter: accreditedEntryGuard,
     meta: {
       layout: 'public',
+      openForPortalUsers: true,
       titleKey: 'routes.assessment.accredited.title',
     },
   },
@@ -202,6 +210,7 @@ export const appRoutes = [
     meta: {
       demoOnly: true,
       layout: 'public',
+      openForPortalUsers: true,
       titleKey: 'routes.assessment.advanced.title',
     },
   },
@@ -611,6 +620,17 @@ export const appRoutes = [
     component: () => import('@/views/portal/Help.vue'),
     meta: { layout: 'app', titleKey: 'routes.portal.help.title', requiresAuth: true },
   },
+  ...PORTAL_TOOLS.map((tool) => ({
+    path: `/tools/${tool.slug}`,
+    name: tool.routeName,
+    component: LIVE_TOOL_VIEWS[tool.key] ?? (() => import('@/views/public/ComingSoon.vue')),
+    meta: {
+      layout: 'app',
+      requiresAuth: true,
+      ...(tool.live ? {} : { toolKey: tool.key }),
+      titleKey: `portal.tools.items.${tool.key}.title`,
+    },
+  })),
   {
     path: `/payments/:id(${UUID_PARAM})/return`,
     name: ROUTE_NAMES.PAYMENTS_RETURN,
@@ -891,6 +911,16 @@ export const appRoutes = [
       demoModules: [M.CMS],
       layout: 'app',
       titleKey: 'routes.admin.settings.homepage.title',
+      requiresAuth: true,
+    },
+  },
+  {
+    path: '/admin/settings/maturity-texts',
+    name: ROUTE_NAMES.ADMIN_SETTINGS_MATURITY_TEXTS,
+    component: () => import('@/views/settings/MaturityTexts.vue'),
+    meta: {
+      layout: 'app',
+      titleKey: 'routes.admin.settings.maturityTexts.title',
       requiresAuth: true,
     },
   },

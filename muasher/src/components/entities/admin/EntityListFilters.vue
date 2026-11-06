@@ -24,6 +24,14 @@ function bind(key) {
 <template>
   <AppSelect
     variant="filter"
+    v-if="'level' in filters.filters"
+    v-bind="bind('level')"
+    :options="options.levelOptions.value"
+    :label="t('entities.filters.level')"
+    data-testid="entity-level-filter"
+  />
+  <AppSelect
+    variant="filter"
     v-if="'status' in filters.filters"
     v-bind="bind('status')"
     :options="options.statusOptions.value"
@@ -61,6 +69,7 @@ function bind(key) {
       :model-value="filters.sort.value || '-created_at'"
       :options="options.sortOptions.value"
       :label="t('entities.filters.sort')"
+      data-testid="entity-sort"
       @update:model-value="filters.setSort($event)"
     />
   </template>

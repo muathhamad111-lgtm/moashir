@@ -36,6 +36,11 @@ function toContextItem(raw) {
   }
 }
 
+export function toAssessorSummary(raw) {
+  if (!raw?.body) return null
+  return { body: raw.body, version: raw.version ?? null, updatedAt: raw.updatedAt ?? null }
+}
+
 export function toAssessorReview(raw = {}) {
   return {
     ...toAssessmentScores(raw),
@@ -48,6 +53,7 @@ export function toAssessorReview(raw = {}) {
     feedback: toFeedbackSheet(raw.feedback),
     completionRequest: toCompletionRequest(raw.completionRequest),
     context: (raw.context ?? []).map(toContextItem),
+    summary: toAssessorSummary(raw.summary),
   }
 }
 

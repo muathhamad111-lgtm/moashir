@@ -17,4 +17,6 @@ enum SettingGroup: string
     case Certificates = 'certificates';
     case Contact = 'contact';
     case Auth = 'auth';
+    case Insights = 'insights';
+    case Finance = 'finance';
 }

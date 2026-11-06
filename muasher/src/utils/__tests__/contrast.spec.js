@@ -40,10 +40,23 @@ describe('contrast utilities', () => {
 
   it('maps the server contrast_fail pairs to failing display rows', () => {
     const rows = serverContrastPairs([
-      { pair: 'dark.accent_on_content', foreground: '#111111', background: '#0a2325', ratio: '1.10', minimum: '4.5' },
+      {
+        pair: 'dark.accent_on_content',
+        foreground: '#111111',
+        background: '#0a2325',
+        ratio: '1.10',
+        minimum: '4.5',
+      },
     ])
     expect(rows).toEqual([
-      { key: 'dark.accent_on_content', foreground: '#111111', background: '#0a2325', ratio: 1.1, minimum: 4.5, passes: false },
+      {
+        key: 'dark.accent_on_content',
+        foreground: '#111111',
+        background: '#0a2325',
+        ratio: 1.1,
+        minimum: 4.5,
+        passes: false,
+      },
     ])
   })
 })

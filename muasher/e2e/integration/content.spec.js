@@ -3,7 +3,14 @@ import { writeFileSync } from 'node:fs'
 import { test, expect } from '@playwright/test'
 import { assertMailLogsConfigured } from './support/mailbox'
 import { STAFF, signInStaff } from './support/accounts'
-import { FOOTER_LEGAL_PROBES, GUEST_SESSION_PROBE, PAGE_NOT_PUBLISHED, SOURCES, watchApi } from './support/apiWatch'
+import {
+  FOOTER_LEGAL_PROBES,
+  GUEST_SESSION_PROBE,
+  PAGE_NOT_PUBLISHED,
+  SOURCES,
+  watchApi,
+} from './support/apiWatch'
+import { apiOk } from './support/api'
 import { chooseNamed } from '../support/dropdown'
 
 const RUN = Date.now().toString(36)
@@ -50,7 +57,9 @@ test.beforeAll(async ({ browser }) => {
 })
 
 test.afterAll(async () => {
-  const calls = Object.fromEntries(Object.entries(sessions).map(([key, { api }]) => [key, api.calls]))
+  const calls = Object.fromEntries(
+    Object.entries(sessions).map(([key, { api }]) => [key, api.calls]),
+  )
   writeFileSync('test-results/integration-content-api-calls.json', JSON.stringify(calls, null, 1))
   await Promise.all(Object.values(sessions).map(({ context }) => context.close()))
 })
@@ -78,8 +87,13 @@ test('the Content Officer builds the hero with an uploaded image and publishes t
   await dialog.locator('input[name="title.ar"]').fill(HERO.titleAr)
   await dialog.locator('input[name="title.en"]').fill(HERO.titleEn)
   await dialog.locator('textarea[name="description.ar"]').fill(HERO.descriptionAr)
-  await dialog.locator('input[type="file"]').setInputFiles({ name: 'hero.png', mimeType: 'image/png', buffer: PIXEL_PNG })
-  await expect(dialog.locator('.content-image-field__image')).toHaveAttribute('src', /\/api\/v1\/content\/files\/[0-9a-f-]{36}$/)
+  await dialog
+    .locator('input[type="file"]')
+    .setInputFiles({ name: 'hero.png', mimeType: 'image/png', buffer: PIXEL_PNG })
+  await expect(dialog.locator('.content-image-field__image')).toHaveAttribute(
+    'src',
+    /\/api\/v1\/content\/files\/[0-9a-f-]{36}$/,
+  )
   await dialog.locator('.modal__footer .btn--primary').click()
   await expect(dialog).toBeHidden()
   await expect(page.locator('.cms-section-row__key')).toContainText([HERO.key])
@@ -90,8 +104,17 @@ test('the Content Officer builds the hero with an uploaded image and publishes t
   await expect(page.locator('.publication-control .badge')).toHaveClass(/badge--success/)
   await shot(page, 'editor-published')
 
-  const published = api.calls.filter((call) => call.method === 'POST' && call.path === '/api/v1/admin/content/pages/home/publish')
-  expect(published).toEqual([{ method: 'POST', path: '/api/v1/admin/content/pages/home/publish', status: 200, source: SOURCES.BACKEND }])
+  const published = api.calls.filter(
+    (call) => call.method === 'POST' && call.path === '/api/v1/admin/content/pages/home/publish',
+  )
+  expect(published).toEqual([
+    {
+      method: 'POST',
+      path: '/api/v1/admin/content/pages/home/publish',
+      status: 200,
+      source: SOURCES.BACKEND,
+    },
+  ])
   expect(api.unexpected([GUEST_SESSION_PROBE, ...FOOTER_LEGAL_PROBES])).toEqual([])
 })
 
@@ -100,12 +123,23 @@ test('the published homepage reaches the public site with the server image', asy
   await page.goto('/')
   await expect(page).toHaveURL(/\/$/)
   await expect(page.locator('.home-hero__title')).toContainText(HERO.titleAr)
-  const image = page.locator('.home-hero__media img')
-  await expect(image).toHaveAttribute('src', /\/api\/v1\/content\/files\/[0-9a-f-]{36}$/)
-  await expect.poll(() => image.evaluate((element) => element.naturalWidth)).toBe(1)
   await shot(page, 'public-home')
   expect(api.sourcesOf(/^\/api\/v1\/content\/home$/)).toEqual([SOURCES.BACKEND])
-  expect(api.unexpected([GUEST_SESSION_PROBE, PAGE_NOT_PUBLISHED, ...FOOTER_LEGAL_PROBES])).toEqual([])
+  expect(api.unexpected([GUEST_SESSION_PROBE, PAGE_NOT_PUBLISHED, ...FOOTER_LEGAL_PROBES])).toEqual(
+    [],
+  )
+  // The approved hero (Task-41) shows the illustrative maturity card, not the section image, so the
+  // uploaded image is checked through the public content API and its file route.
+  const home = await apiOk(page, 'GET', '/content/home')
+  const hero = (home.data?.sections ?? []).find((section) => section.key === HERO.key)
+  expect(hero?.image?.url).toMatch(/^\/api\/v1\/content\/files\/[0-9a-f-]{36}$/)
+  const width = await page.evaluate(async (url) => {
+    const image = new Image()
+    image.src = url
+    await image.decode()
+    return image.naturalWidth
+  }, hero.image.url)
+  expect(width).toBe(1)
 })
 
 test('the Content Officer creates, values and publishes a KPI', async () => {
@@ -155,5 +189,7 @@ test('a guest opens the KPI by its slug and reads the value history from the ser
   await expect(page.locator('.kpi-history__row').first()).toContainText(KPI.value)
   await shot(page, 'kpi-detail')
   expect(api.sourcesOf(/^\/api\/v1\/kpis\/[a-z0-9-]+$/)).toEqual([SOURCES.BACKEND])
-  expect(api.unexpected([GUEST_SESSION_PROBE, PAGE_NOT_PUBLISHED, ...FOOTER_LEGAL_PROBES])).toEqual([])
+  expect(api.unexpected([GUEST_SESSION_PROBE, PAGE_NOT_PUBLISHED, ...FOOTER_LEGAL_PROBES])).toEqual(
+    [],
+  )
 })

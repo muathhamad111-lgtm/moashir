@@ -6,6 +6,7 @@ import { normalizedRate, quoteOf } from './financeMoney'
 
 const PRICE_PATTERN = /^\d{1,7}\.\d{2}$/
 const VAT_PATTERN = /^\d{1,3}(\.\d{1,2})?$/
+const VAT_NUMBER_PATTERN = /^3\d{13}3$/
 
 export const FINANCE_FIELDS = {
   accreditedPrice: {
@@ -17,6 +18,10 @@ export const FINANCE_FIELDS = {
   orderValidityMinutes: {
     wire: 'order_validity_minutes',
     permission: FINANCE_PERMISSIONS.ASSESSMENT_SETTINGS,
+  },
+  vatRegistrationNumber: {
+    wire: 'vat_registration_number',
+    permission: FINANCE_PERMISSIONS.PAYMENT_SETTINGS,
   },
 }
 
@@ -44,6 +49,8 @@ export function financeSettingsResource(user) {
     vatRate: settings.vatRate,
     orderValidityMinutes: settings.orderValidityMinutes,
     orderValidityLimits: { ...ORDER_VALIDITY_LIMITS },
+    vatRegistrationNumber: settings.vatRegistrationNumber ?? null,
+    vatRegistrationReminder: Number(settings.vatRate) > 0 && !settings.vatRegistrationNumber,
     pricing: {
       accredited: previewOf(settings.accreditedPrice, settings.vatRate),
       bag: previewOf(settings.bagPrice, settings.vatRate),
@@ -61,6 +68,13 @@ function vatError(value) {
   if (typeof value !== 'string' || !VAT_PATTERN.test(value) || Number(value) > 100)
     return fieldMessage('vat_format')
   return null
+}
+
+function vatNumberError(value) {
+  if (value === null || value === '') return null
+  return typeof value === 'string' && VAT_NUMBER_PATTERN.test(value)
+    ? null
+    : fieldMessage('vat_registration_number_format')
 }
 
 function validityError(value) {
@@ -83,6 +97,7 @@ const FIELD_CHECKS = {
   bagPrice: priceError,
   vatRate: vatError,
   orderValidityMinutes: validityError,
+  vatRegistrationNumber: vatNumberError,
 }
 
 function presentFields(body) {
@@ -100,6 +115,12 @@ function validated(body) {
     )
 }
 
+function storedValue(field, value) {
+  if (field === 'vatRate') return normalizedRate(value)
+  if (field === 'vatRegistrationNumber') return value || null
+  return value
+}
+
 export function updateFinanceSettings(user, body) {
   const fields = presentFields(body)
   if (fields.some((field) => !actorCan(user, FINANCE_FIELDS[field].permission)))
@@ -109,7 +130,7 @@ export function updateFinanceSettings(user, body) {
   if (user.superAdmin && !String(body.reason ?? '').trim()) throw financeReject.reasonRequired()
   const settings = financeState().settings
   fields.forEach((field) => {
-    settings[field] = field === 'vatRate' ? normalizedRate(body.vatRate) : body[field]
+    settings[field] = storedValue(field, body[field])
   })
   persistFinanceState()
 }

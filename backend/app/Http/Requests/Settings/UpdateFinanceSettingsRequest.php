@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Settings;
 
 use App\Data\Settings\FinanceSettingsUpdate;
+use App\Data\Settings\VatRegistrationNumberEdit;
 use App\Enums\Identity\Ability;
 use App\Enums\Settings\FinanceSettingField;
 use App\Models\Identity\User;
@@ -13,6 +14,7 @@ use App\Rules\VatRatePercent;
 use App\Services\Finance\FinanceSettings;
 use App\Support\ValueObjects\Money;
 use App\Support\ValueObjects\VatRate;
+use App\Support\ValueObjects\VatRegistrationNumber;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class UpdateFinanceSettingsRequest extends FormRequest
@@ -40,6 +42,7 @@ final class UpdateFinanceSettingsRequest extends FormRequest
             FinanceSettingField::BagPrice->value => ['sometimes', 'required', new PriceBeforeVat],
             FinanceSettingField::VatRate->value => ['sometimes', 'required', new VatRatePercent],
             FinanceSettingField::OrderValidityMinutes->value => ['sometimes', 'required', 'integer', 'between:'.$limits['min'].','.$limits['max']],
+            FinanceSettingField::VatRegistrationNumber->value => ['sometimes', 'nullable', 'string', 'regex:'.VatRegistrationNumber::PATTERN],
             'reason' => ['nullable', 'string', 'min:10', 'max:1000'],
         ];
     }
@@ -55,7 +58,19 @@ final class UpdateFinanceSettingsRequest extends FormRequest
             $this->filled($vatRate) ? new VatRate($this->string($vatRate)->toString()) : null,
             $this->filled($validity) ? $this->integer($validity) : null,
             $this->filled('reason') ? $this->string('reason')->trim()->toString() : null,
+            $this->vatRegistrationNumberEdit(),
         );
+    }
+
+    private function vatRegistrationNumberEdit(): ?VatRegistrationNumberEdit
+    {
+        $field = FinanceSettingField::VatRegistrationNumber->value;
+
+        if (! $this->has($field)) {
+            return null;
+        }
+
+        return new VatRegistrationNumberEdit($this->filled($field) ? new VatRegistrationNumber($this->string($field)->toString()) : null);
     }
 
     private function money(FinanceSettingField $field): ?Money

@@ -6,6 +6,7 @@ import WidgetTable from './widgets/WidgetTable.vue'
 import WidgetFacts from './widgets/WidgetFacts.vue'
 import WidgetCriteria from './widgets/WidgetCriteria.vue'
 import WidgetTimeline from './widgets/WidgetTimeline.vue'
+import WidgetLevels from './widgets/WidgetLevels.vue'
 import { WIDGET_KINDS, widgetDefinition } from '@/constants/dashboardWidgets'
 
 const RENDERERS = {
@@ -14,6 +15,7 @@ const RENDERERS = {
   [WIDGET_KINDS.FACTS]: WidgetFacts,
   [WIDGET_KINDS.CRITERIA]: WidgetCriteria,
   [WIDGET_KINDS.TIMELINE]: WidgetTimeline,
+  [WIDGET_KINDS.LEVELS]: WidgetLevels,
 }
 
 const props = defineProps({

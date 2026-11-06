@@ -9,9 +9,12 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 const { t } = useI18n()
 const route = useRoute()
 
+const TAB_AREAS = PORTAL_TAB_ITEMS.map((item) => item.area)
+
 const activeArea = computed(() => {
   const area = portalAreaOf(route.name)
-  return [PORTAL_AREAS.PAYMENTS, PORTAL_AREAS.MESSAGES].includes(area) ? PORTAL_AREAS.MORE : area
+  if (!area) return null
+  return TAB_AREAS.includes(area) ? area : PORTAL_AREAS.MORE
 })
 </script>
 

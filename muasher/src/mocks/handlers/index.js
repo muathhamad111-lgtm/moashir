@@ -31,6 +31,7 @@ import { messagingHandlers } from './messaging'
 import { accreditedHandlers } from './accredited'
 import { requestsHandlers } from './requests'
 import { assessorReviewHandlers } from './assessorReview'
+import { insightsHandlers } from './insights'
 import { assessmentSettingsHandlers } from './assessmentSettings'
 import { certificatesHandlers } from './certificates'
 import { certificatesStaffHandlers } from './certificatesStaff'
@@ -130,6 +131,7 @@ export const mockModules = [
       ...requestsHandlers,
       ...assessorReviewHandlers,
       ...assessmentSettingsHandlers,
+      ...insightsHandlers,
     ],
   },
   {

@@ -8,6 +8,7 @@ const LINK_REJECTIONS = [403, 409, 410]
 const DOWNLOAD_PATHS = [
   /^\/files\/[0-9a-f-]{36}\/download$/i,
   /^\/assessments\/\d+\/feedback-report\/pdf$/,
+  /^\/assessments\/\d+\/board-report\/pdf$/,
 ]
 
 export class UntrustedDownloadLink extends Error {

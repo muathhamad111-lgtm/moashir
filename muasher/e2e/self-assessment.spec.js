@@ -19,19 +19,29 @@ function localeOf(testInfo) {
 function seedEntity(page, testInfo, entityId = 5001) {
   return seedSignedIn(
     page,
-    { id: entityId, roles: ['entity'], entityId, name: { ar: 'أحمد بن سالم القحطاني', en: 'Ahmed Salem Al-Qahtani' } },
+    {
+      id: entityId,
+      roles: ['entity'],
+      entityId,
+      name: { ar: 'أحمد بن سالم القحطاني', en: 'Ahmed Salem Al-Qahtani' },
+    },
     { locale: localeOf(testInfo) },
   )
 }
 
 function seedStaff(page, testInfo, roles = ['system_admin']) {
-  return seedSignedIn(page, { id: 2, roles, name: { ar: 'منيرة بنت خالد العتيبي', en: 'Munira Khalid Al-Otaibi' } }, { locale: localeOf(testInfo) })
+  return seedSignedIn(
+    page,
+    { id: 2, roles, name: { ar: 'منيرة بنت خالد العتيبي', en: 'Munira Khalid Al-Otaibi' } },
+    { locale: localeOf(testInfo) },
+  )
 }
 
 function trackConsole(page) {
   const errors = []
   page.on('console', (message) => {
-    if (['error', 'warning'].includes(message.type()) && !IGNORED_CONSOLE.test(message.text())) errors.push(message.text())
+    if (['error', 'warning'].includes(message.type()) && !IGNORED_CONSOLE.test(message.text()))
+      errors.push(message.text())
   })
   page.on('pageerror', (error) => errors.push(error.message))
   return errors
@@ -51,13 +61,18 @@ async function fillEveryEmptyScore(page, value) {
   }
 }
 
-test('the entity resumes its open draft, saves raw scores and sees the percent returned by the server', async ({ page }, testInfo) => {
+test('the entity resumes its open draft, saves raw scores and sees the percent returned by the server', async ({
+  page,
+}, testInfo) => {
   const errors = trackConsole(page)
   await seedEntity(page, testInfo)
   await page.goto('/assessment/self')
   await expect(page.locator('.self-summary__number')).toContainText('SLF-2026-000002')
   await expect(page.locator('.self-summary__progress-value')).toContainText(/6/)
-  await page.screenshot({ path: `test-results/self-draft-${suffixOf(testInfo)}.png`, fullPage: true })
+  await page.screenshot({
+    path: `test-results/self-draft-${suffixOf(testInfo)}.png`,
+    fullPage: true,
+  })
 
   await page.locator('.criteria-tree__open').nth(1).click()
   const empty = page.locator('.self-main .raw-score input').first()
@@ -67,12 +82,16 @@ test('the entity resumes its open draft, saves raw scores and sees the percent r
   await page.locator('.self-actions .btn--secondary').click()
   await expect(page.locator('.toast--success').last()).toBeVisible()
   await expect(page.locator('.self-summary__progress-value')).toContainText(/7/)
-  await expect(page.locator('.self-main .raw-score').first().locator('.field__hint')).toContainText('75.00%')
+  await expect(page.locator('.self-main .raw-score').first().locator('.field__hint')).toContainText(
+    '75.00%',
+  )
   await expect(empty).toHaveValue('7.50')
   expect(errors).toEqual([])
 })
 
-test('an incomplete submission points to the first item without a score', async ({ page }, testInfo) => {
+test('an incomplete submission points to the first item without a score', async ({
+  page,
+}, testInfo) => {
   await seedEntity(page, testInfo)
   await page.goto('/assessment/self')
   await expect(page.locator('.self-summary')).toBeVisible()
@@ -82,7 +101,9 @@ test('an incomplete submission points to the first item without a score', async 
   await expect(page.getByRole('dialog')).toHaveCount(0)
 })
 
-test('the entity completes the draft, confirms and sees the result immediately, then its history', async ({ page }, testInfo) => {
+test('the entity completes the draft, confirms and sees the result immediately, then its history', async ({
+  page,
+}, testInfo) => {
   test.setTimeout(60000)
   const errors = trackConsole(page)
   await seedEntity(page, testInfo)
@@ -100,40 +121,62 @@ test('the entity completes the draft, confirms and sees the result immediately, 
   await expect(page.locator('.self-result__gauge-value')).toBeVisible()
   await expect(page.locator('.self-result__main')).not.toHaveCount(0)
   await expect(page.locator('.self-result__point').first()).toBeVisible()
-  await page.screenshot({ path: `test-results/self-result-${suffixOf(testInfo)}.png`, fullPage: true })
+  await page.screenshot({
+    path: `test-results/self-result-${suffixOf(testInfo)}.png`,
+    fullPage: true,
+  })
 
   await page.locator('.self-result__actions .btn--secondary').click()
   await expect(page).toHaveURL(/\/assessment\/history$/)
   await page.locator('[role="tab"]').nth(1).click()
   await expect(page.locator('.history-item')).toHaveCount(4)
   await page.locator('.history-item').first().locator('.status-history__toggle').click()
-  await expect(page.locator('.history-item').first().locator('.assessment-timeline__step')).toHaveCount(3)
-  await expect(page.locator('.history-item').first().locator('.assessment-timeline__actor').first()).toHaveText(isEn(testInfo) ? 'The entity' : 'الجهة')
-  await page.screenshot({ path: `test-results/self-history-${suffixOf(testInfo)}.png`, fullPage: true })
+  await expect(
+    page.locator('.history-item').first().locator('.assessment-timeline__step'),
+  ).toHaveCount(3)
+  await expect(
+    page.locator('.history-item').first().locator('.assessment-timeline__actor').first(),
+  ).toHaveText(isEn(testInfo) ? 'The entity' : 'الجهة')
+  await page.screenshot({
+    path: `test-results/self-history-${suffixOf(testInfo)}.png`,
+    fullPage: true,
+  })
   expect(errors).toEqual([])
 })
 
-test('an entity without an open draft starts a new numbered self assessment', async ({ page }, testInfo) => {
+test('an entity without an open draft starts a new numbered self assessment', async ({
+  page,
+}, testInfo) => {
   await seedEntity(page, testInfo, 6002)
   await page.goto('/assessment/self')
   const start = page.locator('.self-start')
   await expect(start).toBeVisible()
   await expect(start.locator('.self-start__facts li')).toHaveCount(3)
-  await page.screenshot({ path: `test-results/self-start-${suffixOf(testInfo)}.png`, fullPage: true })
+  await page.screenshot({
+    path: `test-results/self-start-${suffixOf(testInfo)}.png`,
+    fullPage: true,
+  })
   await start.locator('.btn--primary').click()
   await expect(page.locator('.self-summary__number')).toContainText('SLF-2026-000006')
   await expect(page.locator('.self-summary__progress-value')).toContainText(/0/)
 })
 
-test('criteria update in progress blocks submission with the translated message but keeps saving', async ({ page }, testInfo) => {
+test('criteria update in progress blocks submission with the translated message but keeps saving', async ({
+  page,
+}, testInfo) => {
   await seedEntity(page, testInfo, 7005)
   await page.goto('/assessment/self')
   const notice = page.locator('.assessment-notice--warning')
   await expect(notice).toBeVisible()
-  await expect(notice).toContainText(isEn(testInfo) ? 'Criteria update in progress' : 'جارٍ تحديث المعايير')
+  await expect(notice).toContainText(
+    isEn(testInfo) ? 'Criteria update in progress' : 'جارٍ تحديث المعايير',
+  )
   await expect(page.locator('.self-actions .btn--primary')).toBeDisabled()
   await expect(page.locator('.self-actions .btn--secondary')).toBeEnabled()
-  await page.screenshot({ path: `test-results/self-criteria-update-${suffixOf(testInfo)}.png`, fullPage: true })
+  await page.screenshot({
+    path: `test-results/self-criteria-update-${suffixOf(testInfo)}.png`,
+    fullPage: true,
+  })
   await page.locator('.self-actions .btn--secondary').click()
   await expect(page.locator('.toast--success').last()).toBeVisible()
   await notice.locator('.btn').click()
@@ -144,7 +187,12 @@ test('a state conflict on save offers a refresh path', async ({ page }, testInfo
   await seedEntity(page, testInfo)
   await page.goto('/assessment/self')
   await expect(page.locator('.self-summary')).toBeVisible()
-  await forceMockFault(page, { method: 'PUT', path: '/api/v1/assessments/9002', status: 409, code: 'state.transition_illegal' })
+  await forceMockFault(page, {
+    method: 'PUT',
+    path: '/api/v1/assessments/9002',
+    status: 409,
+    code: 'state.transition_illegal',
+  })
   await page.locator('.self-actions .btn--secondary').click()
   const conflict = page.locator('.assessment-notice--danger')
   await expect(conflict).toBeVisible()
@@ -158,7 +206,12 @@ test('a frozen answer while saving turns the draft read-only', async ({ page }, 
   await seedEntity(page, testInfo)
   await page.goto('/assessment/self')
   await expect(page.locator('.self-summary')).toBeVisible()
-  await forceMockFault(page, { method: 'PUT', path: '/api/v1/assessments/9002', status: 409, code: 'entity.deleted' })
+  await forceMockFault(page, {
+    method: 'PUT',
+    path: '/api/v1/assessments/9002',
+    status: 409,
+    code: 'entity.deleted',
+  })
   await page.locator('.self-actions .btn--secondary').click()
   await expect(page.locator('.assessment-notice--frozen')).toBeVisible()
   await expect(page.locator('.self-summary .frozen-badge')).toBeVisible()
@@ -166,7 +219,9 @@ test('a frozen answer while saving turns the draft read-only', async ({ page }, 
   await expect(page.locator('.self-actions .btn--primary')).toBeDisabled()
 })
 
-test('the result of an open draft shows the not-issued placeholder with its status', async ({ page }, testInfo) => {
+test('the result of an open draft shows the not-issued placeholder with its status', async ({
+  page,
+}, testInfo) => {
   await seedEntity(page, testInfo)
   await page.goto('/assessment/self/result/9002')
   await expect(page.locator('.result-pending')).toBeVisible()
@@ -187,7 +242,10 @@ test('staff read a frozen request read-only from the entity record', async ({ pa
   await expect(page.locator('.assessment-notice--frozen')).toBeVisible()
   await expect(page.locator('.assessment-record__badges .frozen-badge')).toBeVisible()
   await expect(page.locator('.result-pending')).toBeVisible()
-  await page.screenshot({ path: `test-results/self-frozen-${suffixOf(testInfo)}.png`, fullPage: true })
+  await page.screenshot({
+    path: `test-results/self-frozen-${suffixOf(testInfo)}.png`,
+    fullPage: true,
+  })
   expect(errors).toEqual([])
 })
 

@@ -5,6 +5,8 @@ import DataTable from '@/components/data-list/DataTable.vue'
 import AppMenu from '@/components/ui/AppMenu.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import FrozenBadge from '@/components/entities/FrozenBadge.vue'
+import LevelBadge from '@/components/level/LevelBadge.vue'
+import { reassessmentOf, tierOfLevel } from '@/utils/levelTier'
 import { useEntityActions } from '@/composables/useEntityActions'
 import { useEntityDisplay } from '@/composables/useEntityDisplay'
 import { ROUTE_NAMES } from '@/constants/routeNames'
@@ -26,9 +28,21 @@ const { rowActionsFor } = useEntityActions()
 const { localized, enumLabel, date, dateTime } = useEntityDisplay()
 
 const COLUMN_SETS = {
-  full: ['reference', 'name', 'entityType', 'region', 'status', 'createdAt', 'actions'],
-  contact: ['reference', 'name', 'authorizedPersonName', 'officialEmail', 'status', 'actions'],
+  full: ['reference', 'name', 'level', 'entityType', 'region', 'status', 'createdAt', 'actions'],
+  contact: [
+    'reference',
+    'name',
+    'level',
+    'authorizedPersonName',
+    'officialEmail',
+    'status',
+    'actions',
+  ],
   deleted: ['reference', 'name', 'region', 'deletedAt', 'status', 'actions'],
+}
+
+function tierOf(item) {
+  return tierOfLevel(item.level, item.hasOpenAccreditedRequest === true)
 }
 
 const columns = computed(() => {
@@ -57,6 +71,13 @@ const columns = computed(() => {
       >
         {{ localized(item.name) }}
       </router-link>
+    </template>
+    <template #cell-level="{ item }">
+      <LevelBadge
+        :tier="tierOf(item)"
+        size="s"
+        :reassessment="reassessmentOf(tierOf(item), item.hasOpenAccreditedRequest)"
+      />
     </template>
     <template #cell-entityType="{ item }">{{ enumLabel('entityType', item.entityType) }}</template>
     <template #cell-region="{ item }">{{ localized(item.region?.name) }}</template>

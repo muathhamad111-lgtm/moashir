@@ -58,6 +58,7 @@ const REVIEW_KEYS = [
   'scale',
   'scores',
   'submitted_at',
+  'summary',
 ]
 
 async function call(method, path, body, locale = 'en') {
@@ -108,13 +109,13 @@ describe('accredited mock — requests queue and assignment', () => {
     expect(keys(body.data[0])).toEqual(ROW_KEYS)
     expect(body.data.map((row) => row.id)).not.toContain(9101)
     expect(body.meta.stats).toEqual({
-      total: 7,
+      total: 8,
       by_status: {
         submitted: 1,
         assigned: 1,
         under_review: 1,
         needs_completion: 1,
-        completed: 2,
+        completed: 3,
         refunded: 1,
         declined_incomplete: 0,
       },
@@ -141,7 +142,7 @@ describe('accredited mock — requests queue and assignment', () => {
     ).toEqual([9106])
     expect(
       (await call('GET', '/requests?sort=due_at&filter[path]=accredited')).body.data[0].id,
-    ).toBe(9102)
+    ).toBe(9109)
     expect((await call('GET', '/requests?sort=number')).status).toBe(422)
     expect((await call('GET', '/requests?filter[status]=draft')).status).toBe(422)
     seedMockSession(NAMAA)

@@ -73,6 +73,12 @@ export function recordEvent(payment, fields) {
   })
 }
 
+function issuedSnapshotOf(payment) {
+  const vatRegistrationNumber = financeState().settings.vatRegistrationNumber ?? null
+  const snapshot = receiptSnapshotOf(payment)
+  return vatRegistrationNumber ? { ...snapshot, vatRegistrationNumber } : snapshot
+}
+
 export function issueReceipt(payment) {
   if (receiptOf(payment.id)) return
   const isTest = payment.mode === 'test'
@@ -86,7 +92,7 @@ export function issueReceipt(payment) {
     voidedAt: null,
     reissueCount: 0,
     lastReissuedAt: null,
-    snapshot: receiptSnapshotOf(payment),
+    snapshot: issuedSnapshotOf(payment),
   })
 }
 

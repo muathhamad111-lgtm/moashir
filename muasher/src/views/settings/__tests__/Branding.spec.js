@@ -189,8 +189,19 @@ describe('Branding settings (System Administrator)', () => {
       Object.assign(new Error('contrast'), {
         normalized: {
           code: 'contrast_fail',
-          message: 'The selected color does not meet the WCAG 2.1 AA contrast ratio in light and dark mode.',
-          meta: { pairs: [{ pair: 'dark.accent_on_content', foreground: '#a7db4f', background: '#0a2325', ratio: '4.20', minimum: '4.5' }] },
+          message:
+            'The selected color does not meet the WCAG 2.1 AA contrast ratio in light and dark mode.',
+          meta: {
+            pairs: [
+              {
+                pair: 'dark.accent_on_content',
+                foreground: '#a7db4f',
+                background: '#0a2325',
+                ratio: '4.20',
+                minimum: '4.5',
+              },
+            ],
+          },
           fieldErrors: {},
         },
       }),
@@ -213,7 +224,13 @@ describe('Branding settings (System Administrator)', () => {
   it('asks the Super Admin for a reason and sends it with every change', async () => {
     const { wrapper, globals } = await mountView('en')
     const { useAuthStore } = await import('@/stores/auth')
-    useAuthStore(globals.pinia).user = { id: 1, name: 'مدير النظام الرئيسي', roles: [], permissions: [], isSuperAdmin: true }
+    useAuthStore(globals.pinia).user = {
+      id: 1,
+      name: 'مدير النظام الرئيسي',
+      roles: [],
+      permissions: [],
+      isSuperAdmin: true,
+    }
     await wrapper.findAll('.accent-swatch__input')[2].setValue(true)
     await wrapper.find('.branding-page__actions .btn--primary').trigger('click')
     await flushPromises()

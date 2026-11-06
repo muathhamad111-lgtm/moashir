@@ -10,14 +10,23 @@ use App\Enums\Assessments\SelfAssessmentStatus;
 use App\Models\Assessments\Assessment;
 use App\Models\Assessments\AssessmentResultSnapshot;
 use App\Models\Criteria\MainCriterion;
+use App\Services\Insights\AccreditedResultsReader;
 use App\Support\Assessments\PathPresenter;
+use App\Support\Insights\EligibleResultSelector;
 use App\Support\ScalarValue;
 use App\Support\ValueObjects\LocalizedText;
 use App\Support\ValueObjects\Percent;
 use Illuminate\Database\Eloquent\Builder;
 
-final class EntityResults
+final readonly class EntityResults
 {
+    public function __construct(private AccreditedResultsReader $accredited, private EligibleResultSelector $selector) {}
+
+    public function latestEligibleAccreditedOf(int $entityId): ?Assessment
+    {
+        return $this->selector->latest($this->accredited->forEntity($entityId))?->assessment;
+    }
+
     public function latestOf(int $entityId): ?Assessment
     {
         return Assessment::query()

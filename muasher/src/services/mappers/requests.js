@@ -30,6 +30,11 @@ export function toCycleSummary(raw) {
   return { id: raw.id ?? null, name: raw.name ?? null, status: raw.status ?? null }
 }
 
+function toQueueEntity(raw) {
+  const entity = toEntitySummary(raw)
+  return entity ? { ...entity, level: raw.level ?? null } : null
+}
+
 export function toQueueRow(raw = {}) {
   return {
     id: raw.id ?? null,
@@ -38,7 +43,7 @@ export function toQueueRow(raw = {}) {
     pathLabel: raw.pathLabel ?? null,
     status: toRequestStatus(raw.status),
     isFrozen: raw.isFrozen === true,
-    entity: toEntitySummary(raw.entity),
+    entity: toQueueEntity(raw.entity),
     assessor: toPerson(raw.assessor),
     assignedAt: raw.assignedAt ?? null,
     completionDeadline: raw.completionDeadline ?? null,

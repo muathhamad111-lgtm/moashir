@@ -38,6 +38,7 @@ use Illuminate\Contracts\Validation\UncompromisedVerifier;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\DB;
@@ -254,3 +255,12 @@ arch('the branded mail message is final')
     ->expect(BrandedMailMessage::class)
     ->toBeFinal()
     ->toExtend(MailMessage::class);
+
+arch('the excellence-tools calculators and presenters are final, pure and free of HTTP and database access')
+    ->expect('App\Support\Insights')
+    ->toBeFinal()
+    ->not->toUse([DB::class, 'App\Http', 'App\Services', 'App\Actions', Request::class]);
+
+arch('excellence-tools percentages are never handled as floats')
+    ->expect(['App\Support\Insights', 'App\Services\Insights', 'App\Data\Insights', 'App\Actions\Insights'])
+    ->not->toUse(['floatval', 'round', 'floor', 'ceil', 'fdiv', 'bcdiv', 'number_format']);

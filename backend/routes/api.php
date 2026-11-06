@@ -18,5 +18,6 @@ require __DIR__.'/api/v1/kpis.php';
 require __DIR__.'/api/v1/notifications.php';
 require __DIR__.'/api/v1/dashboard.php';
 require __DIR__.'/api/v1/certificates.php';
+require __DIR__.'/api/v1/insights.php';
 require __DIR__.'/api/v1/contact.php';
 require __DIR__.'/api/v1/audit.php';

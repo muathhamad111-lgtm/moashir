@@ -7,9 +7,9 @@ use App\Enums\Identity\PermissionModule;
 use App\Enums\Identity\RoleKey;
 use App\Services\Identity\DefaultPermissionMatrix;
 
-it('defines 85 unique permission keys in the module.resource.action format', function (): void {
-    expect(PermissionKey::values())->toHaveCount(85)
-        ->and(array_unique(PermissionKey::values()))->toHaveCount(85);
+it('defines 88 unique permission keys in the module.resource.action format', function (): void {
+    expect(PermissionKey::values())->toHaveCount(88)
+        ->and(array_unique(PermissionKey::values()))->toHaveCount(88);
 
     foreach (PermissionKey::cases() as $key) {
         expect($key->value)->toMatch('/^[a-z_]+(\.[a-z_]+){1,3}$/');

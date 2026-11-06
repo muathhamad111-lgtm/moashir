@@ -9,6 +9,8 @@ import { STAFF_BOARDS } from '../fixtures/staffBoards'
 import { activeScenario } from '../stores/committee/committeeScenario'
 import { DASHBOARD_BOARDS } from '@/constants/dashboardBoards'
 import { reviewerActionItem } from './bankTransfers'
+import { allEntities, isDeleted, isErased } from '../stores/entitiesStore'
+import { entitiesByLevel } from '../stores/entityLevels'
 
 const LATENCY_MS = 320
 const ENTITY_BOARD = 'entity'
@@ -16,6 +18,7 @@ const EXECUTIVE_BOARD = 'executive'
 const EXECUTIVE_PERMISSION = 'dashboard.executive.view'
 const COMMITTEE_SCENARIO = 'committee'
 const GENERATED_AT = '2026-11-05T06:00:00+00:00'
+const LEVEL_BOARDS = ['system_admin', EXECUTIVE_BOARD]
 
 function heldBoards(user) {
   const fromRoles = user.superAdmin ? ['system_admin'] : user.roles
@@ -24,6 +27,17 @@ function heldBoards(user) {
     held.add('committee_assessor')
   if (user.superAdmin || sessionCan(EXECUTIVE_PERMISSION)) held.add(EXECUTIVE_BOARD)
   return DASHBOARD_BOARDS.filter((board) => held.has(board))
+}
+
+function levelWidget() {
+  const counted = allEntities().filter((entity) => !isDeleted(entity) && !isErased(entity))
+  return { key: 'entities_by_level', data: entitiesByLevel(counted) }
+}
+
+function boardContent(board) {
+  const content = STAFF_BOARDS[board]
+  if (!LEVEL_BOARDS.includes(board)) return content
+  return { ...content, widgets: [...content.widgets, levelWidget()] }
 }
 
 function actionItemsOf(user) {
@@ -56,7 +70,7 @@ export const dashboardHandlers = [
       board,
       landingBoard: landing,
       availableBoards: boards,
-      ...STAFF_BOARDS[board],
+      ...boardContent(board),
       actionCenter: actionItemsOf(user),
       generatedAt: GENERATED_AT,
     })

@@ -1,6 +1,7 @@
 import { boundTree } from './assessments/assessmentsStore'
 import { feedbackNotes, feedbackRatios } from '../fixtures/certificates'
 import { certificates } from './certificatesStore'
+import { currentSummaryOf } from './insights/assessorSummaries'
 
 const DEFAULT_RATIO = 0.72
 const HIJRI = { ar: '10 ربيع الأول 1448 هـ', en: '10 Rabi al-Awwal 1448 AH' }
@@ -56,6 +57,11 @@ function certificateOf(record) {
     : null
 }
 
+function assessorSummaryOf(record) {
+  const summary = currentSummaryOf(record.id)
+  return summary ? { body: summary.body, version: summary.version } : null
+}
+
 export function feedbackReportOf(record, entity) {
   const identity = {
     assessmentId: record.id,
@@ -83,6 +89,7 @@ export function feedbackReportOf(record, entity) {
     maxTotal: fixed(maxTotal),
     percent: fixed(maxTotal ? (total / maxTotal) * 100 : 0),
     certificate: certificateOf(record),
+    assessorSummary: assessorSummaryOf(record),
     criteria,
   }
 }

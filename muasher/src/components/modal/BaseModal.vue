@@ -67,8 +67,8 @@ watch(
     if (open) {
       previouslyFocused = document.activeElement
       await nextTick()
-      const elements = focusables()
-      ;(elements[0] ?? panelRef.value)?.focus()
+      const preferred = panelRef.value?.querySelector('[data-autofocus]')
+      ;(preferred ?? focusables()[0] ?? panelRef.value)?.focus()
     } else if (previouslyFocused instanceof HTMLElement) {
       previouslyFocused.focus()
       previouslyFocused = null

@@ -49,7 +49,7 @@ describe('More (M4)', () => {
 
   it('shows the account and preference entries in English', async () => {
     const wrapper = await factory('en')
-    const account = wrapper.findAll('.portal-more__group')[1]
+    const account = wrapper.findAll('.portal-more__group')[2]
     expect(account.findAll('.portal-menu-entry__label').map((label) => label.text())).toEqual([
       'My profile',
       'Language',

@@ -58,6 +58,7 @@ export function receiptResource(receipt) {
     voidedAt: receipt.voidedAt,
     reissueCount: receipt.reissueCount,
     lastReissuedAt: receipt.lastReissuedAt,
+    vatRegistrationNumber: receipt.snapshot.vatRegistrationNumber ?? null,
     snapshot: { ...receipt.snapshot, entityName: { ...receipt.snapshot.entityName } },
   }
 }

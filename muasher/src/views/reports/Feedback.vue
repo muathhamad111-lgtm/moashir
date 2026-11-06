@@ -154,6 +154,22 @@ function exportPdf() {
           </p>
         </section>
 
+        <section
+          v-if="report.assessorSummary"
+          class="portal-surface feedback-report__assessor"
+          aria-labelledby="report-assessor-summary"
+          data-testid="feedback-assessor-summary"
+        >
+          <h2 id="report-assessor-summary" class="portal-surface__title">
+            {{ t('feedback.report.assessorSummary') }}
+          </h2>
+          <blockquote
+            class="feedback-report__assessor-text"
+            dir="auto"
+            v-text="report.assessorSummary.body"
+          ></blockquote>
+        </section>
+
         <FeedbackCriterion
           v-for="criterion in report.criteria"
           :key="criterion.criterionId ?? criterion.code"

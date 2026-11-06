@@ -68,7 +68,16 @@ export function useKpisCatalog({ pageSize = KPI_PAGE_SIZE.public } = {}) {
 
   const { filters } = filtering
   const params = filtering.params
-  watch([() => filters.category, () => filters.status, () => filters.year, () => filters.type, () => filters.sort], loadNow)
+  watch(
+    [
+      () => filters.category,
+      () => filters.status,
+      () => filters.year,
+      () => filters.type,
+      () => filters.sort,
+    ],
+    loadNow,
+  )
   watch([() => params.value.search, () => params.value['filter[owner]']], scheduleLoad)
   onMounted(load)
   onBeforeUnmount(() => clearTimeout(debounce))

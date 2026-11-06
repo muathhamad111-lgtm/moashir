@@ -33,11 +33,21 @@ export function watchApi(page) {
   page.on('response', async (response) => {
     const url = new URL(response.url())
     if (!API_PATH.test(url.pathname)) return
-    const entry = { method: response.request().method(), path: url.pathname, status: response.status(), source: sourceOf(response) }
+    const entry = {
+      method: response.request().method(),
+      path: url.pathname,
+      status: response.status(),
+      source: sourceOf(response),
+    }
     calls.push(entry)
     if (response.status() < 400) return
     const body = await response.json().catch(() => ({}))
-    failures.push({ method: entry.method, path: entry.path, status: entry.status, code: body?.code ?? null })
+    failures.push({
+      method: entry.method,
+      path: entry.path,
+      status: entry.status,
+      code: body?.code ?? null,
+    })
   })
   return {
     calls,
@@ -55,7 +65,8 @@ export function watchApi(page) {
     failures,
     unexpected(allowed = []) {
       return failures.filter(
-        (failure) => !allowed.some((rule) => rule.status === failure.status && rule.path.test(failure.path)),
+        (failure) =>
+          !allowed.some((rule) => rule.status === failure.status && rule.path.test(failure.path)),
       )
     },
   }

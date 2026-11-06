@@ -27,7 +27,10 @@ export const entityBoardHandlers = [
     const user = signedIn()
     if (!user) return unauthenticated()
     const items = itemsOf(user)
-    return envelope(items, { total: items.reduce((sum, item) => sum + item.count, 0) })
+    return envelope(items, {
+      total: items.reduce((sum, item) => sum + item.count, 0),
+      generatedAt: new Date().toISOString(),
+    })
   }),
 
   http.get('/api/v1/dashboard/summary', async ({ request }) => {

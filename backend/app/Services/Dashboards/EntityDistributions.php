@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace App\Services\Dashboards;
 
+use App\Enums\Certificates\EntityLevel;
+use App\Enums\Certificates\EntityLevelBucket;
 use App\Enums\Entities\EntityStatus;
 use App\Models\Entities\Entity;
 use App\Models\Entities\Region;
+use App\Support\Certificates\EntityLevelQuery;
 use App\Support\Dashboards\AggregateRow;
 use App\Support\ScalarValue;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 final class EntityDistributions
 {
@@ -75,6 +79,30 @@ final class EntityDistributions
         $counts = AggregateRow::counts($this->entities(), self::GOVERNANCE_BANDS);
 
         return array_map(static fn (string $band): array => ['key' => $band, 'count' => $counts[$band] ?? 0], array_keys(self::GOVERNANCE_BANDS));
+    }
+
+    /**
+     * @return list<array{key: string, count: int}>
+     */
+    public function byLevel(): array
+    {
+        $ranked = $this->entities()->select('entities.id');
+        EntityLevelQuery::selectLevelKey($ranked);
+        $ranked->withExists(EntityLevelQuery::openAccreditedRequestFlag());
+        $counts = array_fill_keys(array_column(EntityLevelBucket::cases(), 'value'), 0);
+
+        $rows = DB::query()->fromSub($ranked, 'ranked')
+            ->selectRaw(EntityLevelQuery::LEVEL_KEY.', '.EntityLevelQuery::OPEN_ACCREDITED_REQUEST.', count(*) as total')
+            ->groupBy([EntityLevelQuery::LEVEL_KEY, EntityLevelQuery::OPEN_ACCREDITED_REQUEST])
+            ->get();
+
+        foreach ($rows as $row) {
+            $values = get_object_vars($row);
+            $bucket = EntityLevelBucket::of(EntityLevel::tryFrom(ScalarValue::string($values[EntityLevelQuery::LEVEL_KEY] ?? null)), (bool) ($values[EntityLevelQuery::OPEN_ACCREDITED_REQUEST] ?? false));
+            $counts[$bucket->value] += ScalarValue::int($values['total'] ?? null);
+        }
+
+        return array_map(static fn (string $key, int $count): array => ['key' => $key, 'count' => $count], array_keys($counts), array_values($counts));
     }
 
     /**

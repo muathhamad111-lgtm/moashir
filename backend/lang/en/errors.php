@@ -154,6 +154,7 @@ return [
         'entity_required' => 'Only an entity account can start a self assessment.',
         'entity_not_active' => 'The entity account must be active to take part in assessments.',
         'criteria_update_in_progress' => 'The assessment criteria of this draft are being updated after the entity account was restored. Try submitting again shortly.',
+        'summary_not_applicable' => 'The assessor summary applies to accredited assessments only.',
     ],
     'provider_error' => 'The provider rejected the request or could not be reached. Review the settings and try again.',
     'provider_unavailable' => 'This service is temporarily unavailable. Please try again later.',
@@ -251,6 +252,10 @@ return [
     ],
     'report' => [
         'not_available' => 'The feedback report is not available yet.',
+    ],
+    'insights' => [
+        'result_not_eligible' => 'This result is not available for the excellence tools.',
+        'generic_text_not_deletable' => 'The generic text of a maturity band cannot be deleted; edit it instead.',
     ],
     'accredited' => [
         'request_open' => 'Your entity already has an open accredited assessment request. Complete it before paying for a new one.',

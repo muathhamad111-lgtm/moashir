@@ -8,6 +8,7 @@ import {
   ENTITY_TYPES,
   ORG_SIZES,
 } from '@/constants/entityEnums'
+import { LEVEL_FILTER_VALUES } from '@/constants/levels'
 
 export function useEntityFilterOptions(regionOptions) {
   const { t } = useI18n()
@@ -33,6 +34,12 @@ export function useEntityFilterOptions(regionOptions) {
       withAll('allSectors', enumOptions('developmentSector', DEVELOPMENT_SECTORS)),
     ),
     sizeOptions: computed(() => withAll('allSizes', enumOptions('orgSize', ORG_SIZES))),
+    levelOptions: computed(() =>
+      withAll(
+        'allLevels',
+        LEVEL_FILTER_VALUES.map((value) => ({ value, label: t(`level.short.${value}`) })),
+      ),
+    ),
     sortOptions: computed(() =>
       ENTITY_SORTS.map((value) => ({ value, label: t(`entities.sorts.${value}`) })),
     ),

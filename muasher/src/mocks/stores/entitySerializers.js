@@ -3,6 +3,7 @@ import { findEntity, hasCompleteProfile, isDeleted, referenceOf } from './entiti
 import { profileCompletionOf } from './entityBoard/profileCompletion'
 import { findFile } from './finance/financeState'
 import { signedDownloadOf } from './finance/signedFiles'
+import { entityLevelFields, hasOpenAccreditedRequest } from './entityLevels'
 
 export const ENTITY_ACCESS = { FULL: 'full', CONTACT: 'contact', NONE: 'none' }
 
@@ -92,6 +93,8 @@ function staffLogoOf(entity, viewer) {
 function staffEntityResource(entity, viewer) {
   return {
     ...entitySummary(entity),
+    ...entityLevelFields(entity),
+    hasOpenAccreditedRequest: hasOpenAccreditedRequest(entity.id),
     ...entityProfileOf(entity),
     ...entityContact(entity),
     logo: staffLogoOf(entity, viewer),
@@ -109,8 +112,16 @@ function staffEntityResource(entity, viewer) {
 
 const VARIANTS = {
   [ENTITY_ACCESS.FULL]: staffEntityResource,
-  [ENTITY_ACCESS.CONTACT]: (entity) => ({ ...entitySummary(entity), ...entityContact(entity) }),
-  [ENTITY_ACCESS.NONE]: (entity) => ({ ...entitySummary(entity), isDeleted: isDeleted(entity) }),
+  [ENTITY_ACCESS.CONTACT]: (entity) => ({
+    ...entitySummary(entity),
+    ...entityLevelFields(entity),
+    ...entityContact(entity),
+  }),
+  [ENTITY_ACCESS.NONE]: (entity) => ({
+    ...entitySummary(entity),
+    ...entityLevelFields(entity),
+    isDeleted: isDeleted(entity),
+  }),
 }
 
 export function entityResourceFor(access) {

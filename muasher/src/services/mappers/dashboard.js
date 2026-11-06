@@ -41,8 +41,17 @@ function toLatestResult(raw) {
   }
 }
 
+function cardValue(raw, key) {
+  return (raw?.cards ?? []).find((card) => card.key === key)?.value ?? null
+}
+
+function toCount(value) {
+  return value === null || value === undefined ? null : Number(value)
+}
+
 export function toEntityBoard(raw = {}) {
   return {
+    acceptedEvidenceCount: toCount(cardValue(raw, 'accepted_evidence_count')),
     latestResult: toLatestResult(widgetData(raw, 'latest_result')),
     paymentsCard: widgetData(raw, 'payments_card'),
     actionCenter: toActionItems(raw?.actionCenter),

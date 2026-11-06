@@ -24,9 +24,9 @@
   gap: var(--space-4);
 
   @include respond-to('lg') {
-    grid-template-columns: minmax(0, 1fr) var(--size-connector) minmax(0, 1fr) var(
-        --size-connector
-      ) minmax(0, 1fr);
+    grid-template-columns:
+      minmax(0, 1fr) var(--size-connector) minmax(0, 1fr) var(--size-connector)
+      minmax(0, 1fr);
     align-items: start;
     gap: var(--space-4);
   }

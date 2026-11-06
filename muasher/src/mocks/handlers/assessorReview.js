@@ -26,12 +26,15 @@ import {
   completeReview,
   requestCompletion,
   reviewModeOf,
+  saveAssessorSummary,
   saveFeedbackItems,
   saveReviewScores,
   startReview,
 } from '../stores/accredited/assessorWork'
 import { forceTransition, overrideScores, reopenAssessment } from '../stores/accredited/overrides'
+import { isAdvanced } from '../stores/assessments/reviewedPaths'
 import { runAccreditedSchedule } from '../stores/accredited/scheduler'
+import { summaryResource } from '../stores/insights/assessorSummaries'
 
 const ASSESSMENT = '/api/v1/assessments/:assessment'
 const NUMERIC_ID = /^\d+$/
@@ -103,9 +106,10 @@ export const assessorReviewHandlers = [
       const user = signedInActor()
       const record = boundRecord(params)
       authorizeReview(user, record)
-      return envelope(
-        reviewResource(record, { mode: reviewModeOf(user, record), context: contextOf(record) }),
-      )
+      return envelope({
+        ...reviewResource(record, { mode: reviewModeOf(user, record), context: contextOf(record) }),
+        summary: isAdvanced(record) ? null : summaryResource(record.id),
+      })
     }),
   ),
 
@@ -128,6 +132,17 @@ export const assessorReviewHandlers = [
       const record = boundRecord(params)
       authorizeScore(user, record)
       return envelope(feedbackResource(saveFeedbackItems(user, record, await readJson(request))))
+    }),
+  ),
+
+  http.put(
+    `${ASSESSMENT}/review/summary`,
+    numericRoute(async ({ params, request }) => {
+      const user = signedInActor()
+      const record = boundRecord(params)
+      authorizeScore(user, record)
+      saveAssessorSummary(user, record, await readJson(request))
+      return envelope({ summary: summaryResource(record.id) })
     }),
   ),
 

@@ -108,6 +108,12 @@ const sections = computed(() => [
     group: 'content',
   },
   {
+    key: 'maturityTexts',
+    to: ROUTE_NAMES.ADMIN_SETTINGS_MATURITY_TEXTS,
+    icon: 'book-open',
+    group: 'content',
+  },
+  {
     key: 'aiKnowledgeBase',
     to: ROUTE_NAMES.ADMIN_SETTINGS_AI_KNOWLEDGE_BASE,
     icon: 'book-open',

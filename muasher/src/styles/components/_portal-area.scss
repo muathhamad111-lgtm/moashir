@@ -219,3 +219,29 @@
 .portal-breadcrumb__current {
   color: var(--theme-text-secondary);
 }
+
+.portal-area__header--band {
+  border-block-end: 0;
+
+  .portal-area__hero {
+    background: var(--stage-gradient);
+    padding-block: var(--space-8) var(--space-8);
+  }
+
+  .portal-area__title {
+    color: var(--band-ink);
+  }
+
+  .portal-area__eyebrow {
+    color: var(--data-on-band);
+  }
+
+  .portal-area__subtitle {
+    color: var(--band-ink-muted);
+  }
+
+  .portal-breadcrumb__link,
+  .portal-breadcrumb__item {
+    color: var(--band-ink-muted);
+  }
+}

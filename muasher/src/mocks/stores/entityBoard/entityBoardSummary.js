@@ -3,6 +3,8 @@ import { assessmentResource } from '../assessments/selfSerializers'
 import { financeState } from '../finance/financeState'
 import { inboxOf } from '../notificationsStore'
 import { entityActionItems } from './entityActionItems'
+import { eligibleResultsOf } from '../insights/insightsResults'
+import { strengthsGapsOf } from '../insights/insightsTools'
 
 const OPEN_ORDERS = ['created', 'pending', 'under-review']
 const ISSUED = 'issued'
@@ -12,6 +14,9 @@ const PATH_LABELS = {
   accredited: { ar: 'التقييم المعتمد', en: 'Accredited assessment' },
   advanced: { ar: 'التقييم المتقدم (الجائزة)', en: 'Advanced assessment (Award)' },
 }
+
+const UPLOADED = 'uploaded'
+const CLEAN = 'clean'
 
 const RESULT_STATES = { self: 'result-available', accredited: 'completed' }
 
@@ -33,6 +38,18 @@ function latestResultOf(entityId) {
     percent: resource.result?.percent ?? null,
     completedAt: latest.completedAt,
   }
+}
+
+function acceptedEvidenceCountOf(entityId) {
+  return ownedRecords(entityId)
+    .flatMap((record) => record.evidence ?? [])
+    .filter((row) => row.status === UPLOADED && row.scanStatus === CLEAN).length
+}
+
+function accreditedMainsOf(entityId) {
+  const [latest] = eligibleResultsOf(entityId)
+  if (!latest) return []
+  return strengthsGapsOf(latest).mains.map(({ code, name, percent }) => ({ code, name, percent }))
 }
 
 function presentPayment(payment) {
@@ -86,10 +103,11 @@ export function entityBoardSummary(user, now = new Date()) {
       card('latest_result_percent', latest?.percent ?? null, 'percent', '/assessment/history'),
       card('open_requests', open, 'number', '/assessment/history'),
       card('unread_notifications', unread, 'number', '/notifications'),
+      card('accepted_evidence_count', entityId ? acceptedEvidenceCountOf(entityId) : 0, 'count'),
     ],
     widgets: [
       { key: 'latest_result', data: latest },
-      { key: 'criteria_progress', data: [] },
+      { key: 'criteria_progress', data: entityId ? accreditedMainsOf(entityId) : [] },
       { key: 'requests', data: [] },
       { key: 'payments_card', data: entityId ? paymentsCardOf(entityId) : null },
     ],

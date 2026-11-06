@@ -17,6 +17,8 @@ export const ENTITY_SORTS = [
   '-name',
   '-governance_grade',
   'governance_grade',
+  '-level',
+  'level',
 ]
 
 export const EMAIL_CHANGE_STATUSES = {

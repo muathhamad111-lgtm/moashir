@@ -97,7 +97,10 @@ describe('branding mock (settings.branding.manage — hard-locked)', () => {
     expect(missing.body.code).toBe('reason_required')
     const short = await call('PUT', '/settings/branding', { accentToken: 'teal', reason: 'short' })
     expect(short.body.errors).toHaveProperty('reason')
-    const accepted = await call('PUT', '/settings/branding', { accentToken: 'teal', reason: 'Approved by the identity committee' })
+    const accepted = await call('PUT', '/settings/branding', {
+      accentToken: 'teal',
+      reason: 'Approved by the identity committee',
+    })
     expect(accepted.body.data.accentToken).toBe('teal')
   })
 

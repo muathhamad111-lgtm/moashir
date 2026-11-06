@@ -12,8 +12,13 @@ import { useEntityStore } from '@/stores/entity'
 import { formatNumber } from '@/utils/formatNumber'
 import { percentText } from '@/utils/percentText'
 import { ROUTE_NAMES as R } from '@/constants/routeNames'
+import { accessFor } from '@/constants/routeAccess'
+import { usePermissions } from '@/composables/usePermissions'
 import { THEMES } from '@/constants/themes'
 import PortalMenuEntry from '@/components/portal/PortalMenuEntry.vue'
+import LevelBadge from '@/components/level/LevelBadge.vue'
+import { useEntityLevel } from '@/composables/useEntityLevel'
+import { PORTAL_TOOLS } from '@/constants/portal'
 
 const { t, n } = useI18n()
 const router = useRouter()
@@ -24,6 +29,9 @@ const { theme, toggleTheme } = useTheme()
 const counts = usePortalCountsStore()
 const { unreadNotifications, unreadReplies } = storeToRefs(counts)
 const entityStore = useEntityStore()
+const { tier, reassessment } = useEntityLevel()
+const { canAccess } = usePermissions()
+const tools = computed(() => PORTAL_TOOLS.filter((tool) => canAccess(accessFor(tool.routeName))))
 
 const profilePercent = computed(() => entityStore.profile?.profileCompletion?.percent ?? null)
 const repliesValue = computed(() =>
@@ -67,6 +75,7 @@ onMounted(() => entityStore.loadProfile().catch(() => null))
         <span class="portal-more__user"
           >{{ identity.userName.value }} · {{ identity.roleLabel.value }}</span
         >
+        <LevelBadge :tier="tier" size="s" :reassessment="reassessment" />
       </span>
     </div>
 
@@ -97,6 +106,22 @@ onMounted(() => entityStore.loadProfile().catch(() => null))
           :label="t('portal.account.entityProfile')"
           :value="profileValue"
           :to="{ name: R.ENTITY_PROFILE }"
+        />
+      </div>
+    </section>
+
+    <section class="portal-more__group" aria-labelledby="portal-more-tools">
+      <h2 id="portal-more-tools" class="portal-more__group-title">
+        {{ t('portal.tools.group') }}
+      </h2>
+      <div class="portal-more__list" data-testid="more-tools">
+        <PortalMenuEntry
+          v-for="tool in tools"
+          :key="tool.key"
+          :icon="tool.icon"
+          :label="t(`portal.tools.items.${tool.key}.title`)"
+          :value="tool.live ? '' : t('portal.tools.soon')"
+          :to="{ name: tool.routeName }"
         />
       </div>
     </section>

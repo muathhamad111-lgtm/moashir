@@ -12,7 +12,16 @@ function suffixFor(testInfo) {
 }
 
 function seedEntity(page, locale) {
-  return seedSignedIn(page, { id: 5001, roles: ['entity'], entityId: 5001, name: { ar: 'أحمد بن سالم القحطاني', en: 'Ahmed Salem Al-Qahtani' } }, { locale })
+  return seedSignedIn(
+    page,
+    {
+      id: 5001,
+      roles: ['entity'],
+      entityId: 5001,
+      name: { ar: 'أحمد بن سالم القحطاني', en: 'Ahmed Salem Al-Qahtani' },
+    },
+    { locale },
+  )
 }
 
 function localeOnly(page, locale) {
@@ -45,7 +54,9 @@ test('register renders the full §5 field set', async ({ page }, testInfo) => {
   await expect(page.locator('[name="annualBeneficiariesCount"]')).toBeVisible()
 })
 
-test('login renders the password tab first, then the code tab without a password', async ({ page }, testInfo) => {
+test('login renders the password tab first, then the code tab without a password', async ({
+  page,
+}, testInfo) => {
   await localeOnly(page, isEn(testInfo) ? 'en' : 'ar')
   await loadLoginForm(page)
   await expect(page.locator('.auth-form__title')).toBeVisible()
@@ -70,7 +81,13 @@ test('profile renders the entity details behind the session', async ({ page }, t
   await seedEntity(page, isEn(testInfo) ? 'en' : 'ar')
   await page.goto('/entity/profile')
   for (let attempt = 0; attempt < 6; attempt += 1) {
-    if (await page.locator('.entity-profile-hub .portal-area__title').isVisible().catch(() => false)) break
+    if (
+      await page
+        .locator('.entity-profile-hub .portal-area__title')
+        .isVisible()
+        .catch(() => false)
+    )
+      break
     const retry = page.locator('.error-state__retry')
     if (await retry.isVisible().catch(() => false)) await retry.click()
     await page.waitForTimeout(600)

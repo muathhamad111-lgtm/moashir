@@ -107,8 +107,15 @@ describe('brandingService', () => {
     const reason = 'Aligning the back office with the approved identity'
     await brandingService.update({ accentToken: 'teal', reason })
     await brandingService.reset({ reason })
-    await brandingService.uploadLogo(new File(['logo'], 'logo.png', { type: 'image/png' }), 'dark', reason)
-    expect(apiClient.put).toHaveBeenCalledWith('/settings/branding', { accentToken: 'teal', reason })
+    await brandingService.uploadLogo(
+      new File(['logo'], 'logo.png', { type: 'image/png' }),
+      'dark',
+      reason,
+    )
+    expect(apiClient.put).toHaveBeenCalledWith('/settings/branding', {
+      accentToken: 'teal',
+      reason,
+    })
     expect(apiClient.post).toHaveBeenNthCalledWith(1, '/settings/branding/reset', { reason })
     expect(apiClient.post.mock.calls[1][1].get('reason')).toBe(reason)
   })

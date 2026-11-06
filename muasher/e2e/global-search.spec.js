@@ -13,13 +13,18 @@ function suffix(testInfo) {
 }
 
 function seedSession(page, { roles, locale, theme = 'dark', id = 7001 }) {
-  return seedSignedIn(page, { id, roles, name: { ar: 'نورة بنت سعد', en: 'Noura Saad' } }, { locale, theme })
+  return seedSignedIn(
+    page,
+    { id, roles, name: { ar: 'نورة بنت سعد', en: 'Noura Saad' } },
+    { locale, theme },
+  )
 }
 
 function trackConsole(page) {
   const errors = []
   page.on('console', (message) => {
-    if (message.type() === 'error' && !IGNORED_CONSOLE.test(message.text())) errors.push(message.text())
+    if (message.type() === 'error' && !IGNORED_CONSOLE.test(message.text()))
+      errors.push(message.text())
   })
   page.on('pageerror', (error) => errors.push(error.message))
   return errors
@@ -33,7 +38,9 @@ function resultGroups(page) {
   return page.getByRole('listbox').getByRole('group')
 }
 
-test('follower finds entities and requests grouped, navigates with the keyboard', async ({ page }, testInfo) => {
+test('follower finds entities and requests grouped, navigates with the keyboard', async ({
+  page,
+}, testInfo) => {
   const errors = trackConsole(page)
   await seedSession(page, { roles: ['request_follower'], locale: isEn(testInfo) ? 'en' : 'ar' })
   await page.goto('/dashboard')
@@ -52,22 +59,33 @@ test('follower finds entities and requests grouped, navigates with the keyboard'
   const listbox = page.getByRole('listbox')
   await expect(resultGroups(page)).toHaveCount(2)
   await expect(listbox.getByRole('option')).toHaveCount(5)
-  await expect(page.locator('.global-search__live')).toHaveText(isEn(testInfo) ? 'Results found: 5' : 'عدد النتائج: 5')
+  await expect(page.locator('.global-search__live')).toHaveText(
+    isEn(testInfo) ? 'Results found: 5' : 'عدد النتائج: 5',
+  )
   await page.screenshot({ path: `${SHOTS}/search-results-dark-${suffix(testInfo)}.png` })
 
   await input.press('ArrowDown')
   await input.press('ArrowDown')
   const active = listbox.getByRole('option', { selected: true })
   await expect(active).toHaveCount(1)
-  await expect(input).toHaveAttribute('aria-activedescendant', (await active.getAttribute('id')) ?? '')
+  await expect(input).toHaveAttribute(
+    'aria-activedescendant',
+    (await active.getAttribute('id')) ?? '',
+  )
   await input.press('Enter')
   await expect(page).toHaveURL(/\/admin\/requests\/9108$/)
   await expect(input).toHaveAttribute('aria-expanded', 'false')
   expect(errors).toEqual([])
 })
 
-test('selecting an entity opens the entity record without exposing its name in the URL', async ({ page }, testInfo) => {
-  await seedSession(page, { roles: ['request_follower'], locale: isEn(testInfo) ? 'en' : 'ar', theme: 'light' })
+test('selecting an entity opens the entity record without exposing its name in the URL', async ({
+  page,
+}, testInfo) => {
+  await seedSession(page, {
+    roles: ['request_follower'],
+    locale: isEn(testInfo) ? 'en' : 'ar',
+    theme: 'light',
+  })
   await page.goto('/dashboard')
   const input = combobox(page)
   await input.click()
@@ -77,7 +95,9 @@ test('selecting an entity opens the entity record without exposing its name in t
   await page.screenshot({ path: `${SHOTS}/search-results-light-${suffix(testInfo)}.png` })
   await entity.click()
   await expect(page).toHaveURL(/\/admin\/entities\/6001$/)
-  await expect(page.locator('.entity-record__title, h1').first()).toContainText(isEn(testInfo) ? 'Namaa Development Foundation' : 'مؤسسة نماء للتنمية')
+  await expect(page.locator('.entity-record__title, h1').first()).toContainText(
+    isEn(testInfo) ? 'Namaa Development Foundation' : 'مؤسسة نماء للتنمية',
+  )
 })
 
 test('recent searches are kept per user and offered on focus', async ({ page }, testInfo) => {
@@ -97,9 +117,15 @@ test('recent searches are kept per user and offered on focus', async ({ page }, 
 })
 
 for (const theme of ['dark', 'light']) {
-  test(`the System Administrator sees users with the e-mail under the name (${theme})`, async ({ page }, testInfo) => {
+  test(`the System Administrator sees users with the e-mail under the name (${theme})`, async ({
+    page,
+  }, testInfo) => {
     const errors = trackConsole(page)
-    await seedSession(page, { roles: ['system_admin'], locale: isEn(testInfo) ? 'en' : 'ar', theme })
+    await seedSession(page, {
+      roles: ['system_admin'],
+      locale: isEn(testInfo) ? 'en' : 'ar',
+      theme,
+    })
     await page.goto('/dashboard')
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
     const input = combobox(page)

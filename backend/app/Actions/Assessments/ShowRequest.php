@@ -11,6 +11,7 @@ use App\Models\Assessments\AssessmentAssignment;
 use App\Models\Assessments\AssessmentCompletionRequest;
 use App\Models\Identity\User;
 use App\Services\Assessments\AssessmentRecordScope;
+use App\Support\Certificates\EntityLevelQuery;
 use Illuminate\Database\Eloquent\Builder;
 
 final readonly class ShowRequest
@@ -19,7 +20,7 @@ final readonly class ShowRequest
 
     public function handle(User $viewer, Assessment $assessment): RequestDetail
     {
-        $assessment->loadMissing(['activeAssignment.assessor', 'openCompletionRequest', 'payment', 'awardCycle', 'region']);
+        $assessment->loadMissing(['entity.'.EntityLevelQuery::RELATION, 'activeAssignment.assessor', 'openCompletionRequest', 'payment', 'awardCycle', 'region']);
         $revealsIdentities = $this->scope->accessOf($viewer, $assessment)->revealsStaffIdentities();
         $assignments = AssessmentAssignment::query()
             ->with(['assessor', 'assignedBy'])

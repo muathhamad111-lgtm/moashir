@@ -15,7 +15,9 @@ use App\Enums\Integrations\IntegrationKind;
 use App\Enums\Integrations\IntegrationMode;
 use App\Enums\Integrations\PaymentLinkedPath;
 use App\Enums\Integrations\PaymentMethod;
+use App\Support\ValueObjects\GapThresholds;
 use App\Support\ValueObjects\LocalizedText;
+use App\Support\ValueObjects\MaturityBounds;
 use App\Support\ValueObjects\PathEntityTexts;
 
 enum SettingKey: string
@@ -60,6 +62,9 @@ enum SettingKey: string
     case AccreditedCertificateIssuance = 'certificates.accredited_issuance_enabled';
     case ContactRetentionMonths = 'contact.retention_months';
     case EntitySignInCodeChannels = 'auth.entity_sign_in_code_channels';
+    case InsightsGapThresholds = 'insights.gap_thresholds';
+    case InsightsMaturityBands = 'insights.maturity_bands';
+    case VatRegistrationNumber = 'finance.vat_registration_number';
 
     public function group(): SettingGroup
     {
@@ -70,7 +75,7 @@ enum SettingKey: string
     {
         return match ($this) {
             self::PaymentMode, self::PaymentCheckoutPattern, self::SmsMode, self::EmailMode, self::EmailTestAddress,
-            self::AiMode, self::AiPlacement, self::CommitteeEntityDataVisibility => SettingType::String,
+            self::AiMode, self::AiPlacement, self::CommitteeEntityDataVisibility, self::VatRegistrationNumber => SettingType::String,
             self::PaymentOrderValidityMinutes, self::AbandonedCartAfterHours, self::FilesMaxSizeMb,
             self::AccreditedReviewSlaDays, self::AdvancedMinEntityAgeYears, self::AdvancedInitialReviewSlaDays,
             self::AccreditedUploadMaxFileMb, self::AccreditedEvidenceMaxFilesPerSub, self::AdvancedUploadMaxFileMb,
@@ -111,8 +116,10 @@ enum SettingKey: string
             self::AccreditedCertificateIssuance => true,
             self::EntitySignInCodeChannels => [OtpChannel::Email->value],
             self::ContactRetentionMonths => 24,
+            self::InsightsGapThresholds => GapThresholds::DEFAULTS,
+            self::InsightsMaturityBands => MaturityBounds::DEFAULTS,
             self::PaymentApplePayDomainConfirmation, self::PaymentStcPayActivationConfirmation, self::EmailTestAddress,
-            self::AccreditedPrice, self::BagPrice => null,
+            self::AccreditedPrice, self::BagPrice, self::VatRegistrationNumber => null,
         };
     }
 

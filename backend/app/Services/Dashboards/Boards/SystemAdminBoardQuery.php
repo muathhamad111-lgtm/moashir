@@ -49,6 +49,7 @@ final readonly class SystemAdminBoardQuery implements DashboardBoardQuery
             new DashboardWidget('entities_by_sector', $this->entities->bySector()),
             new DashboardWidget('entities_by_founding_decade', $this->entities->byFoundingDecade()),
             new DashboardWidget('entities_by_governance', $this->entities->byGovernance()),
+            new DashboardWidget('entities_by_level', $this->entities->byLevel()),
             new DashboardWidget('lowest_criteria', $this->criteria->lowestMains(
                 $this->assessments->operational()->where('path', AssessmentPath::Accredited)->where('status', AccreditedAssessmentStatus::Completed->value),
                 self::LOWEST_CRITERIA,

@@ -73,6 +73,7 @@ return [
         'criteria_update_redispatch_alert_after' => 3,
         'cv_max_chars' => 10000,
         'feedback_max_chars' => 5000,
+        'summary_max_chars' => 2000,
         'completion_deadline_max_days' => 60,
         'evidence_bundle_sync_max_bytes' => 20 * 1024 * 1024,
         'evidence_bundle_ttl_hours' => 24,
@@ -128,6 +129,14 @@ return [
             'socket' => env('FILES_CLAMAV_SOCKET', 'unix:///var/run/clamav/clamd.ctl'),
             'timeout_seconds' => (int) env('FILES_CLAMAV_TIMEOUT_SECONDS', 30),
         ],
+    ],
+
+    'insights' => [
+        'results_per_page' => 15,
+        'maturity_text_max_chars' => 600,
+        'board_report_quote_max_chars' => 200,
+        'board_report_summary_max_chars' => 600,
+        'board_report_one_page_mains' => 12,
     ],
 
     'documents' => [

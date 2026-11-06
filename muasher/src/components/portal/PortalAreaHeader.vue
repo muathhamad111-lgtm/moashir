@@ -11,13 +11,14 @@ defineProps({
   tab: { type: String, default: '' },
   tabsLabel: { type: String, default: '' },
   panelId: { type: String, default: '' },
+  band: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:tab'])
 </script>
 
 <template>
-  <header class="portal-area__header">
+  <header class="portal-area__header" :class="{ 'portal-area__header--band': band }">
     <div class="portal-area__hero">
       <div class="portal-area__intro">
         <PortalBreadcrumb v-if="breadcrumbs.length" :items="breadcrumbs" />

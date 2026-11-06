@@ -47,12 +47,20 @@ describe('KpiCard', () => {
   })
 
   it('applies the card color token class', () => {
-    expect(mountCard('en', { cardColor: 'success' }).find('.kpi-card').classes()).toContain('kpi-card--success')
+    expect(mountCard('en', { cardColor: 'success' }).find('.kpi-card').classes()).toContain(
+      'kpi-card--success',
+    )
   })
 
   it('reads the editor token name and falls back to primary for an unknown token', () => {
-    expect(mountCard('en', { cardColor: undefined, cardColorToken: 'warning' }).find('.kpi-card').classes()).toContain('kpi-card--warning')
-    expect(mountCard('en', { cardColor: 'chartreuse' }).find('.kpi-card').classes()).toContain('kpi-card--primary')
+    expect(
+      mountCard('en', { cardColor: undefined, cardColorToken: 'warning' })
+        .find('.kpi-card')
+        .classes(),
+    ).toContain('kpi-card--warning')
+    expect(mountCard('en', { cardColor: 'chartreuse' }).find('.kpi-card').classes()).toContain(
+      'kpi-card--primary',
+    )
   })
 
   it('renders a status badge with text (not color alone)', () => {

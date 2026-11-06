@@ -99,11 +99,7 @@ watch(
         :illustration-alt="t('kpis.detail.notFound.title')"
       >
         <template #action>
-          <BaseButton
-            variant="primary"
-            icon="arrow-left"
-            @click="goToList"
-          >
+          <BaseButton variant="primary" icon="arrow-left" @click="goToList">
             {{ t('kpis.detail.backToList') }}
           </BaseButton>
         </template>
@@ -171,11 +167,7 @@ watch(
           </section>
 
           <div class="kpi-detail__actions">
-            <BaseButton
-              variant="secondary"
-              icon="arrow-left"
-              @click="goToList"
-            >
+            <BaseButton variant="secondary" icon="arrow-left" @click="goToList">
               {{ t('kpis.detail.backToList') }}
             </BaseButton>
             <a

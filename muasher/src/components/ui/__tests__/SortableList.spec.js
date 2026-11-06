@@ -12,7 +12,9 @@ const items = [
 function mountList(props = {}) {
   return mount(SortableList, {
     props: { items, labelOf: (item) => item.name, listLabel: 'Sections', ...props },
-    slots: { item: '<template #item="{ item }"><span class="name">{{ item.name }}</span></template>' },
+    slots: {
+      item: '<template #item="{ item }"><span class="name">{{ item.name }}</span></template>',
+    },
     global: createTestGlobals({ locale: 'en' }),
   })
 }
@@ -43,6 +45,8 @@ describe('SortableList', () => {
   it('locks dragging and moving while disabled', () => {
     const wrapper = mountList({ disabled: true })
     expect(wrapper.find('.sortable-list__row').attributes('draggable')).toBe('false')
-    expect(wrapper.findAll('button').every((button) => button.attributes('disabled') !== undefined)).toBe(true)
+    expect(
+      wrapper.findAll('button').every((button) => button.attributes('disabled') !== undefined),
+    ).toBe(true)
   })
 })

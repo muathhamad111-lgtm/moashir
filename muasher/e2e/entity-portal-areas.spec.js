@@ -212,7 +212,9 @@ test.describe('messages area', () => {
     await expect(page).toHaveURL(new RegExp(`${OPEN_THREAD}$`))
     await expect(page.locator('.message-bubble')).toHaveCount(2)
     await expect(page.locator('.message-item.is-unread')).toHaveCount(0)
-    await expect(page.locator('.portal-nav__badge')).toHaveCount(0)
+    await expect(
+      page.locator('.side-nav-item[href="/messages"] .side-nav-item__count'),
+    ).toHaveCount(0)
     await page.locator('.message-thread__composer textarea').fill('شكراً لكم، سنرفع الملفين معاً.')
     await page.locator('.message-thread__composer .btn--primary').click()
     await expect(page.locator('.message-bubble')).toHaveCount(3)

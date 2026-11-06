@@ -17,8 +17,13 @@ const ENTITY = {
   nameEn: 'Al-Ataa Community Development Association',
   person: 'نورة بنت فهد العتيبي',
 }
-const COMMITTEE_ASSESSOR = { email: `committee.${RUN}@assessors.example.sa`, name: 'د. سلمان بن عادل الحربي', password: `Committee-${randomUUID()}` }
-const CV_TEXT = 'تعتمد الجمعية منهجية موثقة لتخطيط برامجها وقياس أثرها، وتراجع نتائجها كل ربع سنة مع مجلس الإدارة.'
+const COMMITTEE_ASSESSOR = {
+  email: `committee.${RUN}@assessors.example.sa`,
+  name: 'د. سلمان بن عادل الحربي',
+  password: `Committee-${randomUUID()}`,
+}
+const CV_TEXT =
+  'تعتمد الجمعية منهجية موثقة لتخطيط برامجها وقياس أثرها، وتراجع نتائجها كل ربع سنة مع مجلس الإدارة.'
 
 const sessions = {}
 const flow = {}
@@ -65,10 +70,23 @@ async function completeForm(page, assessmentId) {
     const { data } = await apiOk(page, 'GET', `/assessments/${assessmentId}/form`)
     const { missing_cv: missingCv, missing_attachments: missingFiles } = data.missing
     if (!missingCv.length && !missingFiles.length) return
-    if (missingCv.length) await apiOk(page, 'PUT', `/assessments/${assessmentId}/cv`, { body: { cv: Object.fromEntries(missingCv.map((item) => [item.sub_criterion_id, CV_TEXT])) } })
+    if (missingCv.length)
+      await apiOk(page, 'PUT', `/assessments/${assessmentId}/cv`, {
+        body: { cv: Object.fromEntries(missingCv.map((item) => [item.sub_criterion_id, CV_TEXT])) },
+      })
     for (const item of missingFiles) {
-      const fields = { sub_criterion_id: item.sub_criterion_id, ...(item.attachment_key ? { attachment_key: item.attachment_key } : {}) }
-      await apiOk(page, 'POST', `/assessments/${assessmentId}/evidence`, { upload: { fields, content: EVIDENCE_PDF, name: `evidence-${item.code}.pdf`, type: 'application/pdf' } })
+      const fields = {
+        sub_criterion_id: item.sub_criterion_id,
+        ...(item.attachment_key ? { attachment_key: item.attachment_key } : {}),
+      }
+      await apiOk(page, 'POST', `/assessments/${assessmentId}/evidence`, {
+        upload: {
+          fields,
+          content: EVIDENCE_PDF,
+          name: `evidence-${item.code}.pdf`,
+          type: 'application/pdf',
+        },
+      })
     }
     await new Promise((resolve) => setTimeout(resolve, 1500))
   }
@@ -81,11 +99,14 @@ test.beforeAll(async ({ browser, request }) => {
   assertMailLogsConfigured()
   const health = await request.get('/api/v1/health', { headers: { Accept: 'application/json' } })
   expect(health.status()).toBe(200)
-  for (const key of ['admin', 'entity', 'assessor', 'filtering', 'secretary', 'committee']) await openSession(browser, key)
+  for (const key of ['admin', 'entity', 'assessor', 'filtering', 'secretary', 'committee'])
+    await openSession(browser, key)
 })
 
 test.afterAll(async () => {
-  const calls = Object.fromEntries(Object.entries(sessions).map(([key, { api: watch }]) => [key, watch.calls]))
+  const calls = Object.fromEntries(
+    Object.entries(sessions).map(([key, { api: watch }]) => [key, watch.calls]),
+  )
   writeFileSync('test-results/integration-award-api-calls.json', JSON.stringify(calls, null, 1))
   await Promise.all(Object.values(sessions).map(({ context }) => context.close()))
 })
@@ -118,9 +139,14 @@ test('the administrator prepares and opens an award cycle with its members and i
   })
   flow.cycleId = cycle.data.id
   await apiOk(page, 'PUT', `/award/cycles/${flow.cycleId}/members`, {
-    body: { filtering_officer_ids: [await userIdOf(page, STAFF.filteringOfficer)], award_secretary_ids: [await userIdOf(page, STAFF.awardSecretary)] },
+    body: {
+      filtering_officer_ids: [await userIdOf(page, STAFF.filteringOfficer)],
+      award_secretary_ids: [await userIdOf(page, STAFF.awardSecretary)],
+    },
   })
-  await apiOk(page, 'PUT', `/award/cycles/${flow.cycleId}/initial-assessors`, { body: { assessor_ids: [flow.assessorId] } })
+  await apiOk(page, 'PUT', `/award/cycles/${flow.cycleId}/initial-assessors`, {
+    body: { assessor_ids: [flow.assessorId] },
+  })
   const opened = await apiOk(page, 'POST', `/award/cycles/${flow.cycleId}/open`, { body: {} })
   expect(opened.data.status).toBe('submission_open')
 })
@@ -128,26 +154,43 @@ test('the administrator prepares and opens an award cycle with its members and i
 test('the entity applies, completes and submits the advanced request', async () => {
   test.setTimeout(400000)
   const { page } = sessions.entity
-  const applied = await apiOk(page, 'POST', '/assessments/advanced', { body: { award_cycle_id: flow.cycleId } })
+  const applied = await apiOk(page, 'POST', '/assessments/advanced', {
+    body: { award_cycle_id: flow.cycleId },
+  })
   flow.assessmentId = applied.data.id
   await completeForm(page, flow.assessmentId)
-  const submitted = await apiOk(page, 'POST', `/assessments/${flow.assessmentId}/submit`, { body: {} })
+  const submitted = await apiOk(page, 'POST', `/assessments/${flow.assessmentId}/submit`, {
+    body: {},
+  })
   expect(submitted.data.status).toBe('awaiting_review_assignment')
 })
 
 test('the request is assessed, the submissions close and the filtering officer qualifies it', async () => {
-  await apiOk(sessions.admin.page, 'POST', `/requests/${flow.assessmentId}/assign`, { body: { assessor_id: flow.assessorId } })
+  await apiOk(sessions.admin.page, 'POST', `/requests/${flow.assessmentId}/assign`, {
+    body: { assessor_id: flow.assessorId },
+  })
   const assessor = sessions.assessor.page
   await apiOk(assessor, 'POST', `/assessments/${flow.assessmentId}/start-review`, { body: {} })
   const review = await apiOk(assessor, 'GET', `/assessments/${flow.assessmentId}/review`)
-  await apiOk(assessor, 'PUT', `/assessments/${flow.assessmentId}/review/scores`, { body: { scores: scoreSheetOf(review.data.criteria, '8') } })
+  await apiOk(assessor, 'PUT', `/assessments/${flow.assessmentId}/review/scores`, {
+    body: { scores: scoreSheetOf(review.data.criteria, '8') },
+  })
   await apiOk(assessor, 'POST', `/assessments/${flow.assessmentId}/complete`, { body: {} })
-  await apiOk(sessions.admin.page, 'POST', `/award/cycles/${flow.cycleId}/close-submissions`, { body: {} })
-  const qualified = await apiOk(sessions.filtering.page, 'POST', `/award/cycles/${flow.cycleId}/filtering/${flow.assessmentId}/qualify`, { body: {} })
+  await apiOk(sessions.admin.page, 'POST', `/award/cycles/${flow.cycleId}/close-submissions`, {
+    body: {},
+  })
+  const qualified = await apiOk(
+    sessions.filtering.page,
+    'POST',
+    `/award/cycles/${flow.cycleId}/filtering/${flow.assessmentId}/qualify`,
+    { body: {} },
+  )
   expect(qualified.data.status).toBe('qualified_for_committee')
 })
 
-test('the administrator invites a committee assessor from the users screen and the invitation is accepted', async ({ browser }) => {
+test('the administrator invites a committee assessor from the users screen and the invitation is accepted', async ({
+  browser,
+}) => {
   test.setTimeout(600000)
   const { page, api: watch } = sessions.admin
   await page.goto('/admin/settings/users')
@@ -170,7 +213,11 @@ test('the administrator invites a committee assessor from the users screen and t
   await guestPage.goto('/auth/login')
   const terms = await api(guestPage, 'GET', '/terms/current')
   const accepted = await api(guestPage, 'POST', `/auth/invitations/${token}/accept`, {
-    body: { password: COMMITTEE_ASSESSOR.password, password_confirmation: COMMITTEE_ASSESSOR.password, ...(terms.body?.data?.id ? { terms_version_id: terms.body.data.id } : {}) },
+    body: {
+      password: COMMITTEE_ASSESSOR.password,
+      password_confirmation: COMMITTEE_ASSESSOR.password,
+      ...(terms.body?.data?.terms?.id ? { terms_version_id: terms.body.data.terms.id } : {}),
+    },
   })
   expect(accepted.status).toBeLessThan(300)
   await guest.close()

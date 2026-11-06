@@ -50,7 +50,9 @@ async function fillRegistration(page) {
   await page.locator('[name="governanceGrade"]').fill('84.5')
 }
 
-test('an entity registers with terms, verifies the OTP and lands on its profile', async ({ page }, testInfo) => {
+test('an entity registers with terms, verifies the OTP and lands on its profile', async ({
+  page,
+}, testInfo) => {
   await seedLocale(page, localeOf(testInfo))
   await page.goto('/auth/register')
   await expect(page.locator('[name="officialEmail"]')).toBeVisible()
@@ -61,25 +63,37 @@ test('an entity registers with terms, verifies the OTP and lands on its profile'
   await expect(page.locator('[name="marketingConsent"]')).not.toBeChecked()
 
   await page.locator('form button[type="submit"]').click()
-  await expect(checkbox(page, 'termsAccepted').locator('xpath=..').locator('.field__error')).toBeVisible()
+  await expect(
+    checkbox(page, 'termsAccepted').locator('xpath=..').locator('.field__error'),
+  ).toBeVisible()
   await page.locator('.accordion__trigger').first().click()
   await expect(page.locator('.entity-form__terms')).toBeVisible()
   await checkbox(page, 'termsAccepted').click()
-  await page.screenshot({ path: `test-results/entities-register-${suffix(testInfo)}.png`, fullPage: true })
+  await page.screenshot({
+    path: `test-results/entities-register-${suffix(testInfo)}.png`,
+    fullPage: true,
+  })
 
   await page.locator('form button[type="submit"]').click()
   await expect(page).toHaveURL(/\/auth\/otp/)
   await typeCode(page, DEV_OTP_CODE)
   await expect(page).toHaveURL(/\/entity\/profile\?welcome=1/)
-  await expect(page.locator('.entity-profile-hub .portal-area__title')).toContainText(isEn(testInfo) ? 'Al-Wafa Charity' : 'جمعية الوفاء الخيرية')
+  await expect(page.locator('.entity-profile-hub .portal-area__title')).toContainText(
+    isEn(testInfo) ? 'Al-Wafa Charity' : 'جمعية الوفاء الخيرية',
+  )
   await expect(page.locator('.completion-prompt')).toBeVisible()
 })
 
-test('the entity edits its profile, saves the basic tab and sees the change history entry', async ({ page }, testInfo) => {
+test('the entity edits its profile, saves the basic tab and sees the change history entry', async ({
+  page,
+}, testInfo) => {
   await seedSignedIn(page, ENTITY, { locale: localeOf(testInfo) })
   await page.goto('/entity/profile')
   await expect(page.locator('[name="governanceGrade"]')).toHaveValue('86.50')
-  await page.screenshot({ path: `test-results/entities-profile-${suffix(testInfo)}.png`, fullPage: true })
+  await page.screenshot({
+    path: `test-results/entities-profile-${suffix(testInfo)}.png`,
+    fullPage: true,
+  })
 
   await page.locator('[name="governanceGrade"]').fill('90.125')
   await page.locator('[name="governanceGrade"]').blur()
@@ -93,7 +107,9 @@ test('the entity edits its profile, saves the basic tab and sees the change hist
   await expect(page.locator('.profile-history tbody tr').first()).toContainText('91.25')
 })
 
-test('the official e-mail change is verified by OTP and waits for approval', async ({ page }, testInfo) => {
+test('the official e-mail change is verified by OTP and waits for approval', async ({
+  page,
+}, testInfo) => {
   await seedSignedIn(page, ENTITY, { locale: localeOf(testInfo) })
   await page.goto('/entity/profile?tab=contact')
   await page.locator('.official-email .btn').click()
@@ -109,7 +125,9 @@ test('the official e-mail change is verified by OTP and waits for approval', asy
   await expect(page.locator('.official-email .btn')).toHaveCount(0)
 })
 
-test('a forced server error shows the error state and the retry recovers the profile', async ({ page }, testInfo) => {
+test('a forced server error shows the error state and the retry recovers the profile', async ({
+  page,
+}, testInfo) => {
   await seedSignedIn(page, ENTITY, { locale: localeOf(testInfo) })
   await forceMockFault(page, { method: 'GET', path: '/api/v1/entities/me', status: 503 })
   await page.goto('/entity/profile')

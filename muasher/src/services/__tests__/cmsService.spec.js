@@ -6,7 +6,9 @@ import { logger } from '@/utils/logger'
 vi.mock('@/api/client', () => ({
   apiClient: { get: vi.fn(), post: vi.fn(), put: vi.fn(), patch: vi.fn(), delete: vi.fn() },
 }))
-vi.mock('@/utils/logger', () => ({ logger: { breadcrumb: vi.fn(), error: vi.fn(), info: vi.fn() } }))
+vi.mock('@/utils/logger', () => ({
+  logger: { breadcrumb: vi.fn(), error: vi.fn(), info: vi.fn() },
+}))
 
 const envelope = { data: { data: {}, meta: {}, errors: null } }
 
@@ -28,7 +30,10 @@ describe('cmsService (Content Officer endpoints)', () => {
   })
 
   it('updates page details with PUT and publishes or unpublishes with POST verbs', async () => {
-    const details = { title: { ar: 'العنوان', en: 'Title' }, seo: { title: null, description: null } }
+    const details = {
+      title: { ar: 'العنوان', en: 'Title' },
+      seo: { title: null, description: null },
+    }
     await cmsService.updatePage('home', details)
     await cmsService.publishPage('home')
     await cmsService.unpublishPage('home')
@@ -43,7 +48,10 @@ describe('cmsService (Content Officer endpoints)', () => {
     await cmsService.toggleSection(12, false)
     await cmsService.removeSection(12)
     await cmsService.reorderSections([3, 1, 2])
-    expect(apiClient.post).toHaveBeenCalledWith('/admin/content/pages/home/sections', { key: 'faq', type: 'faq' })
+    expect(apiClient.post).toHaveBeenCalledWith('/admin/content/pages/home/sections', {
+      key: 'faq',
+      type: 'faq',
+    })
     expect(apiClient.patch.mock.calls).toEqual([
       ['/admin/content/sections/12', { title: { ar: 'أ', en: 'A' } }],
       ['/admin/content/sections/12/enabled', { enabled: false }],
@@ -58,8 +66,12 @@ describe('cmsService (Content Officer endpoints)', () => {
     await cmsService.toggleItem(5, 40, true)
     await cmsService.removeItem(5, 40)
     await cmsService.reorderItems(5, [41, 40])
-    expect(apiClient.post).toHaveBeenCalledWith('/admin/content/sections/5/items', { title: { ar: 'خطوة', en: 'Step' } })
-    expect(apiClient.put).toHaveBeenCalledWith('/admin/content/sections/5/items/40', { icon: 'fa-solid fa-star' })
+    expect(apiClient.post).toHaveBeenCalledWith('/admin/content/sections/5/items', {
+      title: { ar: 'خطوة', en: 'Step' },
+    })
+    expect(apiClient.put).toHaveBeenCalledWith('/admin/content/sections/5/items/40', {
+      icon: 'fa-solid fa-star',
+    })
     expect(apiClient.patch.mock.calls).toEqual([
       ['/admin/content/sections/5/items/40/enabled', { enabled: true }],
       ['/admin/content/sections/5/items/reorder', { orderedIds: [41, 40] }],
@@ -73,7 +85,11 @@ describe('cmsService (Content Officer endpoints)', () => {
     const [url, form] = apiClient.post.mock.calls[0]
     expect(url).toBe('/admin/content/images')
     expect(form.get('file')).toBeInstanceOf(File)
-    expect(logger.breadcrumb).toHaveBeenCalledWith('service', 'cms.uploadImage', expect.objectContaining({ payloadShape: ['fileType'] }))
+    expect(logger.breadcrumb).toHaveBeenCalledWith(
+      'service',
+      'cms.uploadImage',
+      expect.objectContaining({ payloadShape: ['fileType'] }),
+    )
   })
 
   it('treats contract rejections as expected answers and still rethrows them', async () => {

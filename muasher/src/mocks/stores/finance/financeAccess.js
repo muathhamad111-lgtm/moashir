@@ -10,6 +10,7 @@ export const FINANCE_PERMISSIONS = {
   REFUNDS_MANAGE: 'finance.refunds.manage',
   RECEIPTS_MANAGE: 'finance.receipts.manage',
   EVENTS_VIEW: 'settings.payment.manage',
+  PAYMENT_SETTINGS: 'settings.payment.manage',
   CARTS_VIEW: 'messaging.campaigns.send',
   ASSESSMENT_SETTINGS: 'settings.assessment.manage',
   BAG_ADMIN: 'bag.admin.manage',

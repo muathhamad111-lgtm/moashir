@@ -1,7 +1,7 @@
 import { apiClient } from '@/api/client'
 import { domainRequests } from './domainRequest'
 import { toAssessment, toAssessmentScores } from './mappers/assessments'
-import { toAssessorReview, toFeedbackSaved } from './mappers/review'
+import { toAssessorReview, toAssessorSummary, toFeedbackSaved } from './mappers/review'
 
 const { read, write } = domainRequests('review', 'assessment')
 
@@ -42,6 +42,16 @@ export const assessorReviewService = {
       payload,
     )
     return mapData(request, toFeedbackSaved)
+  },
+
+  saveSummary(assessmentId, payload) {
+    const request = write(
+      'saveSummary',
+      () => apiClient.put(`/assessments/${assessmentId}/review/summary`, payload),
+      payload,
+      [403],
+    )
+    return mapData(request, (raw) => toAssessorSummary(raw?.summary))
   },
 
   requestCompletion(assessmentId, payload) {

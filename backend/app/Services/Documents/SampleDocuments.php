@@ -28,7 +28,7 @@ final readonly class SampleDocuments
         ['M8', 'قياس الأثر والنتائج', 'Impact measurement and results', '100.00', '92.50', '92.50'],
     ];
 
-    public function __construct(private Repository $config, private DocumentAssets $assets) {}
+    public function __construct(private Repository $config, private DocumentAssets $assets, private SampleBoardReports $boardReports) {}
 
     /**
      * @return array<string, PdfDocument>
@@ -42,6 +42,7 @@ final readonly class SampleDocuments
             'sample-feedback-report-ar.pdf' => $this->feedbackReport('ar'),
             'sample-feedback-report-en.pdf' => $this->feedbackReport('en'),
             'sample-receipt.pdf' => $this->receipt(),
+            ...$this->boardReports->all(),
         ];
     }
 
@@ -143,6 +144,7 @@ final readonly class SampleDocuments
             'method' => 'mada',
             'method_label' => ['ar' => trans('finance.methods.mada', [], 'ar'), 'en' => trans('finance.methods.mada', [], 'en')],
             'card_last4' => '4242',
+            'vat_registration_number' => '300000000000003',
             'paid_on' => $issuedAt->toDateString(),
             'number' => null,
             'is_test' => true,

@@ -56,17 +56,19 @@ test.describe('entity portal shell', () => {
     await signIn(page, testInfo)
   })
 
-  test('replaces the sidebar with the slim top bar and marks the area', async ({ page }) => {
+  test('uses the B side navigation with the slim top bar and marks the item', async ({ page }) => {
     await open(page, '/dashboard', '.journey-hero__title')
     await expect(page.locator('.sidebar')).toHaveCount(0)
-    await expect(page.locator('.portal-nav__link')).toHaveCount(5)
-    await expect(page.locator('.portal-nav__link.is-active')).toHaveAttribute('href', '/dashboard')
+    const nav = page.locator('[data-testid="portal-side-nav"]')
+    await expect(nav.locator('.side-nav__list').first().locator('.side-nav-item')).toHaveCount(8)
+    await expect(nav.locator('.side-nav-item.is-active')).toHaveAttribute('href', '/dashboard')
     await expect(
-      page.locator('.portal-nav__link[href="/messages"] .portal-nav__badge'),
+      nav.locator('.side-nav-item[href="/messages"] .side-nav-item__count'),
     ).toContainText('1')
-    await page.locator('.portal-nav__link[href="/payments"]').click()
+    await expect(page.locator('.portal-top-bar__area')).toBeVisible()
+    await nav.locator('.side-nav-item[href="/payments"]').click()
     await expect(page).toHaveURL(/\/payments$/)
-    await expect(page.locator('.portal-nav__link.is-active')).toHaveAttribute('href', '/payments')
+    await expect(nav.locator('.side-nav-item.is-active')).toHaveAttribute('href', '/payments')
   })
 
   test('shows the attention strip with context and expands it inline', async ({ page }) => {
@@ -200,7 +202,7 @@ test.describe('mobile portal', () => {
 
   test('uses the bottom tab bar on hubs and the More screen for the rest', async ({ page }) => {
     await open(page, '/dashboard', '.mobile-tab-bar')
-    await expect(page.locator('.portal-nav')).toBeHidden()
+    await expect(page.locator('[data-testid="portal-side-nav"]')).toBeHidden()
     await expect(page.locator('.attention-strip__mobile .attention-item')).toHaveCount(1)
     await expect(page.locator('.attention-strip__summary')).toBeVisible()
     await noHorizontalOverflow(page)

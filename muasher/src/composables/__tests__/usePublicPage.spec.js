@@ -13,7 +13,14 @@ beforeEach(() => vi.clearAllMocks())
 describe('usePublicPage', () => {
   it('exposes the sections by type once the page is published', async () => {
     contentService.getPage.mockResolvedValue({
-      data: { key: 'advanced_intro', sections: [{ id: 1, type: 'rich_text' }, { id: 2, type: 'cycle_box' }, { id: 3, type: 'rich_text' }] },
+      data: {
+        key: 'advanced_intro',
+        sections: [
+          { id: 1, type: 'rich_text' },
+          { id: 2, type: 'cycle_box' },
+          { id: 3, type: 'rich_text' },
+        ],
+      },
     })
     const { api: page } = withSetup(() => usePublicPage('advanced_intro'))
     await flushPromises()
@@ -24,11 +31,15 @@ describe('usePublicPage', () => {
   })
 
   it('separates an unpublished page (404) from a failure', async () => {
-    contentService.getPage.mockRejectedValueOnce(Object.assign(new Error('hidden'), { response: { status: 404 } }))
+    contentService.getPage.mockRejectedValueOnce(
+      Object.assign(new Error('hidden'), { response: { status: 404 } }),
+    )
     const { api: hidden } = withSetup(() => usePublicPage('lenses'))
     await flushPromises()
     expect(hidden.state.value).toBe(PUBLIC_PAGE_STATES.UNPUBLISHED)
-    contentService.getPage.mockRejectedValueOnce(Object.assign(new Error('down'), { response: { status: 503 } }))
+    contentService.getPage.mockRejectedValueOnce(
+      Object.assign(new Error('down'), { response: { status: 503 } }),
+    )
     const { api: failed } = withSetup(() => usePublicPage('lenses'))
     await flushPromises()
     expect(failed.state.value).toBe(PUBLIC_PAGE_STATES.ERROR)

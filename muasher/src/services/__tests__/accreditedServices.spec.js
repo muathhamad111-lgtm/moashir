@@ -176,6 +176,22 @@ describe('requestsService', () => {
     })
   })
 
+  it('keeps the entity level on queue rows (null when the entity holds none)', async () => {
+    apiClient.get.mockResolvedValue(
+      answer([
+        {
+          id: 9101,
+          status: 'submitted',
+          entity: { id: 6002, reference: 'ENT-006002', name: { ar: 'إحسان' }, level: 'gold' },
+        },
+        { id: 9102, status: 'submitted', entity: { id: 6003, reference: 'ENT-006003' } },
+      ]),
+    )
+    const { data } = await requestsService.listQueue()
+    expect(data[0].entity).toMatchObject({ id: 6002, level: 'gold' })
+    expect(data[1].entity.level).toBeNull()
+  })
+
   it('maps the detail with assignment history and assigns or reassigns', async () => {
     apiClient.post.mockResolvedValue(
       answer({

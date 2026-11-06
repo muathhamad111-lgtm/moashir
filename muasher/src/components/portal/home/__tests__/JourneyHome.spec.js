@@ -14,7 +14,9 @@ import { sessionUserFor } from '@/test-utils/session'
 
 vi.mock('@/services/entitiesService', () => ({ entitiesService: { getMine: vi.fn() } }))
 vi.mock('@/services/assessmentsService', () => ({ assessmentsService: { list: vi.fn() } }))
-vi.mock('@/services/accreditedService', () => ({ accreditedService: { getCurrent: vi.fn() } }))
+vi.mock('@/services/accreditedService', () => ({
+  accreditedService: { getCurrent: vi.fn(), getResult: vi.fn() },
+}))
 vi.mock('@/services/certificatesService', () => ({ certificatesService: { listCards: vi.fn() } }))
 vi.mock('@/services/dashboardService', () => ({
   dashboardService: { getEntityBoard: vi.fn(), getActionCenter: vi.fn() },
@@ -56,7 +58,71 @@ const ACTIVE = {
   },
 }
 
+const SELF_LIST = [
+  {
+    id: 9001,
+    status: 'result-available',
+    result: { percent: '78.00' },
+    completedAt: '2026-10-28T08:00:00Z',
+  },
+]
+
+const ACCREDITED_LIST = [
+  {
+    id: 71,
+    number: 'ACC-2026-000014',
+    result: { percent: '82.00' },
+    completedAt: '2026-10-28T08:00:00Z',
+  },
+  {
+    id: 70,
+    number: 'ACC-2025-000009',
+    result: { percent: '74.00' },
+    completedAt: '2025-11-02T08:00:00Z',
+  },
+]
+
+function mainsOf(values) {
+  return values.map(([criterionId, ar, percent]) => ({
+    criterionId,
+    code: String(criterionId),
+    name: { ar, en: ar },
+    percent,
+  }))
+}
+
+const RESULTS = {
+  71: {
+    available: true,
+    main: mainsOf([
+      [1, 'القيادة الإدارية', '88.00'],
+      [2, 'نتائج الموارد البشرية', '76.00'],
+      [3, 'إدارة العمليات', '90.00'],
+    ]),
+  },
+  70: {
+    available: true,
+    main: mainsOf([
+      [1, 'القيادة الإدارية', '80.00'],
+      [2, 'نتائج الموارد البشرية', '78.00'],
+      [3, 'إدارة العمليات', '85.00'],
+    ]),
+  },
+}
+
+const GOLD = {
+  id: 'c-gold',
+  number: 'CRT-2026-000031',
+  level: 'gold',
+  status: 'issued',
+  percent: '82.00',
+  issuedAt: '2026-10-30T08:00:00Z',
+}
+
+let accreditedList = []
+
 function seed() {
+  accreditedList = []
   entitiesService.getMine.mockResolvedValue({
     data: {
       status: 'active',
@@ -64,16 +130,10 @@ function seed() {
       profileCompletion: { percent: 80 },
     },
   })
-  assessmentsService.list.mockResolvedValue({
-    data: [
-      {
-        id: 9001,
-        status: 'result-available',
-        result: { percent: '78.00' },
-        completedAt: '2026-10-28T08:00:00Z',
-      },
-    ],
-  })
+  assessmentsService.list.mockImplementation((params) =>
+    Promise.resolve({ data: params['filter[path]'] === 'accredited' ? accreditedList : SELF_LIST }),
+  )
+  accreditedService.getResult.mockImplementation((id) => Promise.resolve({ data: RESULTS[id] }))
   accreditedService.getCurrent.mockResolvedValue({
     data: { awaitingPayment: null, active: ACTIVE, latestClosed: null },
   })
@@ -88,6 +148,7 @@ function seed() {
         completedAt: '2026-10-28T08:00:00Z',
       },
       paymentsCard: null,
+      acceptedEvidenceCount: 7,
       actionCenter: [],
     },
   })
@@ -109,10 +170,33 @@ beforeEach(() => {
   seed()
 })
 
+describe('JourneyHome — uploaded evidence KPI', () => {
+  it('shows the uploaded evidence count from the entity board', async () => {
+    const wrapper = await factory()
+    const tile = wrapper.find('[data-kpi="evidence"]')
+    expect(tile.find('.kpi-tile__label').text()).toBe('الشواهد المرفوعة')
+    expect(tile.find('.kpi-tile__value').text()).toBe('7')
+    expect(tile.find('.kpi-tile__value').element.tagName).toBe('BDI')
+  })
+
+  it('shows a dash when the board is unavailable, in English too', async () => {
+    dashboardService.getEntityBoard.mockRejectedValue(new Error('offline'))
+    const wrapper = await factory('en')
+    const tile = wrapper.find('[data-kpi="evidence"]')
+    expect(tile.find('.kpi-tile__label').text()).toBe('Uploaded evidence')
+    expect(tile.find('.kpi-tile__value').text()).toBe('—')
+  })
+})
+
 describe('JourneyHome (D1 / M1)', () => {
   it('reads the real contracts without the legacy ?role= summary', async () => {
     await factory()
     expect(assessmentsService.list).toHaveBeenCalledWith({ 'filter[path]': 'self', perPage: 20 })
+    expect(assessmentsService.list).toHaveBeenCalledWith({
+      'filter[path]': 'accredited',
+      'filter[status]': 'completed',
+      perPage: 6,
+    })
     expect(certificatesService.listCards).toHaveBeenCalledWith({
       'filter[status]': 'issued,suspended',
       perPage: 5,
@@ -122,7 +206,7 @@ describe('JourneyHome (D1 / M1)', () => {
 
   it('greets the user and places the entity at station 3 with the self result', async () => {
     const wrapper = await factory()
-    expect(wrapper.find('.journey-hero__title').text()).toContain('أهلاً سارة')
+    expect(wrapper.find('.journey-hero__greeting').text()).toContain('أهلاً سارة')
     expect(wrapper.find('.journey-hero__lead').text()).toContain('78%')
     expect(wrapper.find('.journey-hero__lead bdi').text()).toBe('78%')
     expect(wrapper.find('.journey-path__badge').text()).toBe('المحطة 3 من 4')
@@ -155,16 +239,97 @@ describe('JourneyHome (D1 / M1)', () => {
 
   it('shows the indicative level of the self result as text only', async () => {
     const wrapper = await factory()
-    const result = wrapper.find('.glance-result__note')
-    expect(result.text()).toBe('المستوى الفضي (استرشادي) — لا تصدر شهادة عن التقييم الذاتي')
-    expect(wrapper.find('.glance-certificate__seal').exists()).toBe(false)
-    expect(wrapper.find('.glance-certificate__upcoming').text()).toContain('2026')
+    const tiles = wrapper.findAll('.kpi-tile')
+    expect(tiles[1].find('.kpi-tile__caption').text()).toBe(
+      'المستوى الفضي (استرشادي) — لا تصدر شهادة عن التقييم الذاتي',
+    )
+    expect(tiles[1].find('.level-emblem').exists()).toBe(false)
   })
 
   it('renders in English', async () => {
     const wrapper = await factory('en')
     expect(wrapper.find('.journey-path__badge').text()).toBe('Station 3 of 4')
-    expect(wrapper.find('.glance-result__note').text()).toContain('Silver level (indicative)')
+    expect(wrapper.findAll('.kpi-tile__caption')[1].text()).toContain('Silver level (indicative)')
+  })
+
+  it('shows the no-level hero with the start action while the entity holds no certificate', async () => {
+    accreditedService.getCurrent.mockResolvedValue({
+      data: { awaitingPayment: null, active: null, latestClosed: null },
+    })
+    const wrapper = await factory()
+    const hero = wrapper.find('.level-hero')
+    expect(hero.attributes('data-tier')).toBe('none')
+    expect(hero.find('.level-hero__name').text()).toBe('لم تحصل على مستوى بعد')
+    expect(hero.find('.level-emblem__seal').exists()).toBe(false)
+    expect(hero.find('.level-hero__actions a').text()).toBe('ابدأ التقييم المعتمد')
+    expect(wrapper.find('.ranked-bars').exists()).toBe(false)
+  })
+
+  it('shows the gold hero with the seal, the threshold track and the remaining percent', async () => {
+    certificatesService.listCards.mockImplementation((params) =>
+      Promise.resolve({ data: params.perPage === 1 ? [GOLD] : [] }),
+    )
+    contentService.getCertificateLevels.mockResolvedValue({
+      data: {
+        levels: [
+          ...LEVELS.levels,
+          {
+            level: 'diamond',
+            label: { ar: 'المستوى الماسي', en: 'Diamond level' },
+            minPercent: '90.00',
+          },
+        ],
+      },
+    })
+    const wrapper = await factory()
+    const hero = wrapper.find('.level-hero')
+    expect(hero.attributes('data-tier')).toBe('gold')
+    expect(hero.find('.level-emblem__seal').exists()).toBe(true)
+    expect(hero.find('.level-hero__chip--reassessment').exists()).toBe(true)
+    expect(hero.find('.level-hero__next').text()).toBe('تبقّى 8% لبلوغ المستوى الماسي')
+    expect(hero.find('.level-hero__next bdi').attributes('dir')).toBe('ltr')
+    expect(hero.findAll('.level-track__segment')).toHaveLength(5)
+    expect(hero.find('.level-hero__actions a').text()).toBe('عرض الشهادة')
+  })
+
+  it('ranks the accredited criteria from 0 with deltas and compares the two latest results', async () => {
+    accreditedList = ACCREDITED_LIST
+    const wrapper = await factory()
+    const rows = wrapper.findAll('.ranked-bars__row')
+    expect(rows.map((row) => row.find('.ranked-bars__label').text())).toEqual([
+      'إدارة العمليات',
+      'القيادة الإدارية',
+      'نتائج الموارد البشرية',
+    ])
+    expect(rows[0].find('.delta-chip').classes()).toContain('delta-chip--up')
+    expect(rows[2].find('.delta-chip').classes()).toContain('delta-chip--down')
+    expect(wrapper.find('.ranked-bars__axis').text()).toContain('0')
+    expect(wrapper.find('.radar-chart__previous').exists()).toBe(true)
+    expect(wrapper.find('.radar-chart__caption').text()).toBe(
+      'مقارنة آخر نتيجة معتمدة بالنتيجة المعتمدة السابقة',
+    )
+    expect(wrapper.find('.b-card__legend-item--previous').exists()).toBe(true)
+    expect(wrapper.findAll('.ranked-bars__axis-label').map((mark) => mark.text())).toEqual([
+      '0',
+      '25',
+      '50',
+      '75',
+      '100',
+    ])
+    expect(wrapper.findAll('.ranked-bars__axis-label--minor')).toHaveLength(2)
+    expect(wrapper.find('.level-trend__line').exists()).toBe(true)
+    expect(wrapper.findAll('.kpi-tile')[0].find('.delta-chip').attributes('aria-label')).toBe(
+      'ارتفاع بمقدار 8',
+    )
+  })
+
+  it('shows the single-result caption and no dashed legend without a previous result', async () => {
+    accreditedList = ACCREDITED_LIST.slice(0, 1)
+    const wrapper = await factory()
+    expect(wrapper.find('.radar-chart__previous').exists()).toBe(false)
+    expect(wrapper.find('.radar-chart__caption').text()).toBe('النتيجة الحالية')
+    expect(wrapper.find('.b-card__legend-item--previous').exists()).toBe(false)
+    expect(wrapper.find('.level-trend').exists()).toBe(false)
   })
 
   it('shows a retry state when a required source fails', async () => {

@@ -4,6 +4,7 @@ export const WIDGET_KINDS = Object.freeze({
   CRITERIA: 'criteria',
   TIMELINE: 'timeline',
   FACTS: 'facts',
+  LEVELS: 'levels',
 })
 
 export const BAR_LABELS = Object.freeze({
@@ -74,6 +75,7 @@ export const DASHBOARD_WIDGETS = Object.freeze({
   entities_by_sector: bars(BAR_LABELS.SECTOR),
   entities_by_founding_decade: bars(BAR_LABELS.DECADE),
   entities_by_governance: bars(BAR_LABELS.BAND),
+  entities_by_level: Object.freeze({ kind: WIDGET_KINDS.LEVELS }),
   score_histogram: bars(BAR_LABELS.HISTOGRAM),
   requests_by_path: bars(BAR_LABELS.PATH),
   by_service: bars(BAR_LABELS.PURPOSE, { amountKey: 'total' }),

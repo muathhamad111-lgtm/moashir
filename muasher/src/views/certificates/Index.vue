@@ -40,6 +40,7 @@ function copyLink(certificate) {
 <template>
   <section class="portal-area certificates-hub">
     <PortalAreaHeader
+      band
       :eyebrow="t('portal.certificates.eyebrow')"
       :title="t('portal.certificates.title')"
       :subtitle="t('portal.certificates.subtitle')"

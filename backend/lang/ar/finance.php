@@ -51,6 +51,7 @@ return [
         'payer_note' => 'حساب تجريبي للعرض فقط. لا تحوّل إليه أي مبلغ.',
     ],
     'receipt' => [
+        'vat_registration_number' => 'الرقم الضريبي',
         'title' => 'إيصال دفع',
         'number' => 'رقم الإيصال',
         'issued_on' => 'تاريخ الإصدار',

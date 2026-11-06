@@ -113,6 +113,7 @@ const RECEIPT_KEYS = [
   'reissue_count',
   'snapshot',
   'status',
+  'vat_registration_number',
   'voided_at',
 ]
 const SNAPSHOT_KEYS = [
@@ -754,12 +755,15 @@ describe('finance settings mock contract', () => {
       'order_validity_minutes',
       'pricing',
       'vat_rate',
+      'vat_registration_number',
+      'vat_registration_reminder',
     ])
     expect(body.data.editable_fields).toEqual([
       'accredited_price',
       'bag_price',
       'vat_rate',
       'order_validity_minutes',
+      'vat_registration_number',
     ])
     expect(body.data.pricing.accredited).toEqual({
       price_before_vat: '1000.00',

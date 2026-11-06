@@ -159,4 +159,14 @@ describe('filesService', () => {
     )
     expect(result.fileName).toBe('feedback.pdf')
   })
+
+  it('follows the signed board report link of the export', async () => {
+    apiClient.get.mockResolvedValue({ data: new Blob(['%PDF']), headers: {} })
+    const url = `${window.location.origin}/api/v1/assessments/14/board-report/pdf?locale=en&user=5&signature=abc`
+    await filesService.fetchSignedFile({ url, fileName: 'board.pdf' })
+    expect(apiClient.get).toHaveBeenCalledWith(
+      '/assessments/14/board-report/pdf?locale=en&user=5&signature=abc',
+      { responseType: 'blob' },
+    )
+  })
 })

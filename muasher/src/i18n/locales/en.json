@@ -987,6 +987,9 @@
         },
         "contactMessages": {
           "title": "Contact message settings"
+        },
+        "maturityTexts": {
+          "title": "Maturity texts"
         }
       },
       "criteria": {
@@ -2209,7 +2212,8 @@
       "authorizedPersonName": "Authorized person",
       "officialEmail": "Official e-mail",
       "deletedAt": "Deleted on",
-      "actions": "Actions"
+      "actions": "Actions",
+      "level": "Level"
     },
     "filters": {
       "status": "Status",
@@ -2222,7 +2226,9 @@
       "allRegions": "All regions",
       "allTypes": "All types",
       "allSectors": "All sectors",
-      "allSizes": "All sizes"
+      "allSizes": "All sizes",
+      "level": "Level",
+      "allLevels": "All levels"
     },
     "sorts": {
       "-created_at": "Newest first",
@@ -2230,7 +2236,9 @@
       "name": "Name A to Z",
       "-name": "Name Z to A",
       "-governance_grade": "Highest governance grade",
-      "governance_grade": "Lowest governance grade"
+      "governance_grade": "Lowest governance grade",
+      "-level": "Level (highest first)",
+      "level": "Level (lowest first)"
     },
     "actions": {
       "menu": "Actions for {name}",
@@ -2653,12 +2661,13 @@
         "latest_edits": "Latest content edits",
         "daily_payments": "Daily payments",
         "requests": "Latest requests",
-        "criteria_progress": "Main criteria of the latest result",
+        "criteria_progress": "Main criteria in the latest accredited result",
         "latest_result": "Latest result",
         "published_version": "Published criteria version",
         "draft_version": "Criteria draft",
         "payments_card": "Payments and receipts",
-        "cycles": "Award cycles"
+        "cycles": "Award cycles",
+        "entities_by_level": "Entities by level"
       }
     },
     "columns": {
@@ -2761,6 +2770,10 @@
       "qualify_national": "Qualified for the national level",
       "approve_national": "National results approved",
       "unapprove_region": "Region approval withdrawn"
+    },
+    "levels": {
+      "openList": "Show the {level} entities in the entities list",
+      "hint": "Select a level to open the entities list filtered by it."
     }
   },
   "assessment": {
@@ -3055,6 +3068,10 @@
         "contactMessages": {
           "title": "Contact messages",
           "desc": "How long closed messages are kept before deletion."
+        },
+        "maturityTexts": {
+          "title": "Maturity texts",
+          "desc": "Generic and per-criterion interpretation texts for the maturity stages."
         }
       }
     },
@@ -3581,6 +3598,64 @@
         "reordered": "The account order was saved."
       },
       "actionFailed": "The account action could not be completed."
+    },
+    "insights": {
+      "tab": "Excellence tools",
+      "description": "These values classify the criteria in “Strengths and gaps” and the stages in “Maturity analysis”. Every change creates a new version and is recorded in the audit log.",
+      "version": "Classification rules version {gaps} · stage rules version {bands}",
+      "savedAt": "last saved {date}",
+      "gapsTitle": "Classification rules",
+      "bandsTitle": "Maturity stage rules",
+      "fields": {
+        "criticalBelow": "Critical gap below — percent",
+        "strengthFrom": "Strength from — percent",
+        "developingFrom": "Developing from — percent",
+        "matureFrom": "Mature from — percent",
+        "leadingFrom": "Leading from — percent"
+      },
+      "previewTitle": "Preview on a 0–100 scale",
+      "previewGaps": "Classification rules — preview",
+      "previewBands": "Maturity stages — preview",
+      "alignmentTitle": "The rules are not aligned",
+      "alignmentMessage": "The critical-gap bound differs from the start of “Developing”, or the strength bound differs from the start of “Leading”; a criterion may show a stage that does not match its class. You can still save.",
+      "save": "Save changes",
+      "saved": "The excellence tools rules were saved.",
+      "failed": "The excellence tools rules could not be saved.",
+      "unchanged": "There are no changes to save.",
+      "loadError": "The excellence tools settings could not be loaded.",
+      "reasonTitle": "Reason for changing the excellence tools rules",
+      "reasonMessage": "Write the reason for the change; it is recorded with the change in the audit log.",
+      "validation": {
+        "rule": "Enter a percentage above 0 and up to 100 with at most two decimals.",
+        "ascending": "This bound must be higher than the previous one."
+      }
+    },
+    "maturityTexts": {
+      "title": "Maturity texts",
+      "description": "One interpretation text per maturity stage, plus texts for specific criteria. Entities see them as soon as they are saved.",
+      "loadError": "The maturity texts could not be loaded.",
+      "genericTitle": "Generic text per stage",
+      "genericLead": "One text per stage, in Arabic and English, up to 600 characters each, without formatting.",
+      "arabic": "العربية",
+      "english": "English",
+      "empty": "No text yet",
+      "editorTitle": "Text for a criterion",
+      "addOverride": "Add a text for a criterion",
+      "band": "Stage",
+      "criterion": "Main criterion",
+      "textAr": "Arabic text",
+      "textEn": "English text",
+      "counter": "{count} / {max}",
+      "save": "Save the text",
+      "delete": "Delete",
+      "overridesTitle": "Criterion texts",
+      "overridesLead": "A criterion text replaces the generic text of that stage.",
+      "noOverrides": "There are no criterion texts yet.",
+      "orphan": "Criterion not in the current version",
+      "updated": "Last edited {date}",
+      "saved": "The text was saved.",
+      "deleted": "The criterion text was deleted.",
+      "failed": "The text could not be saved. Check the fields and try again."
     }
   },
   "accredited": {
@@ -3855,7 +3930,8 @@
         "report": {
           "not_available": "The report is not available yet."
         }
-      }
+      },
+      "assessorSummary": "Assessor summary"
     },
     "staffBreadcrumb": {
       "request": "Request page"
@@ -5604,7 +5680,8 @@
       "reissue": "Reissue the receipt",
       "reissueTitle": "Reissue the payment receipt",
       "reissueMessage": "A new receipt file is generated with the same number. Explain why it is reissued.",
-      "reissuedToast": "The payment receipt was reissued."
+      "reissuedToast": "The payment receipt was reissued.",
+      "vatRegistrationNumber": "VAT registration number"
     },
     "overview": {
       "title": "Financial summary",
@@ -5814,8 +5891,14 @@
         "price": "Enter a price with at most 7 digits and up to two decimals, for example 1500.00.",
         "pricePositive": "The price must be greater than zero.",
         "vat": "Enter a rate from 0 to 100 with up to two decimals.",
-        "validity": "Enter a whole number of minutes from {min} to {max}."
-      }
+        "validity": "Enter a whole number of minutes from {min} to {max}.",
+        "vatNumber": "Enter 15 digits that start and end with 3, without spaces."
+      },
+      "vatNumberTitle": "Platform VAT registration number",
+      "vatNumber": "Platform VAT registration number — optional",
+      "vatNumberHint": "15 digits that start and end with 3. It appears on new receipts only and may be left empty.",
+      "vatNumberReminder": "The platform VAT registration number is not set; receipts will not show it until it is set. This is a reminder only; it blocks neither payments nor receipts.",
+      "adminOnly": "System Administrator only"
     },
     "validation": {
       "maxChars": "Must be at most {max} characters",
@@ -6177,6 +6260,28 @@
       "saved": "Scores and feedback were saved.",
       "started": "The review started.",
       "completed": "The assessment was completed and the result published."
+    },
+    "summary": {
+      "title": "Assessor summary · optional",
+      "lead": "A short summary of the whole result, in your own words.",
+      "label": "Assessor summary (optional)",
+      "help": "The entity sees this summary in the feedback report and the board reports. Do not include your name or personal data.",
+      "counter": "{count} / {max}",
+      "save": "Save the summary",
+      "saved": "The assessor summary was saved.",
+      "cleared": "The assessor summary was cleared.",
+      "version": "Version {version} · saved",
+      "lastSaved": "Last saved {date}",
+      "empty": "No assessor summary was added.",
+      "emptyHint": "No assessor summary added (optional).",
+      "errors": {
+        "tooLong": "The summary is longer than 2000 characters.",
+        "notApplicable": "The assessor summary applies to accredited assessments only.",
+        "notUnderReview": "The summary cannot be changed now because the assessment is not under review.",
+        "notAssignee": "You are no longer the assigned assessor of this request, so you cannot change the summary.",
+        "invalid": "Check the summary text and try again.",
+        "failed": "The summary could not be saved. Try again."
+      }
     }
   },
   "cycles": {
@@ -7406,6 +7511,29 @@
           "empty": "No notifications yet.",
           "link": "All notifications"
         }
+      },
+      "kpis": {
+        "label": "Your association indicators",
+        "accredited": "Latest accredited result",
+        "self": "Latest self assessment",
+        "certificates": "Valid certificates",
+        "none": "—",
+        "noAccredited": "No accredited result yet",
+        "noSelf": "No self assessment yet",
+        "noCertificate": "No valid certificate yet",
+        "evidence": "Uploaded evidence",
+        "evidenceCaption": "Uploaded files that passed the scan, across all your requests"
+      },
+      "performance": {
+        "ranked": "Criteria ranked",
+        "rankedCaption": "From the latest accredited result · marks = level thresholds",
+        "radar": "Performance profile",
+        "radarCaption": "Latest accredited result compared with the previous accredited result",
+        "current": "Current result",
+        "previous": "Previous result",
+        "trend": "Accredited result over time",
+        "trendCaption": "Accredited results only; self and accredited results are never mixed",
+        "radarCaptionSingle": "Current result"
       }
     },
     "more": {
@@ -8053,6 +8181,117 @@
         "notified": "You will be notified of the result.",
         "receiptAfterApproval": "The payment receipt is issued after Finance approves."
       }
+    },
+    "sideNav": {
+      "collapse": "Collapse menu",
+      "expand": "Expand menu",
+      "items": {
+        "journey": "My journey",
+        "assessments": "Assessments",
+        "certificates": "Certificates",
+        "payments": "Payments & receipts",
+        "messages": "Messages",
+        "notifications": "Notifications",
+        "entityProfile": "Entity profile",
+        "help": "Help"
+      },
+      "unread": {
+        "messages": "no new replies | {count} new reply | {count} new replies",
+        "notifications": "no new notifications | {count} new notification | {count} new notifications"
+      }
+    },
+    "topBar": {
+      "area": "Association account",
+      "updated": "Last update"
+    },
+    "tools": {
+      "group": "Excellence tools",
+      "soon": "Soon",
+      "benefitsTitle": "What you will get",
+      "basedOnTitle": "Based on",
+      "note": "This tool is being prepared and will open in your account at launch.",
+      "items": {
+        "maturity": {
+          "title": "Maturity",
+          "lead": "The maturity stage of each criterion from your accredited result, with a clear reading of each stage.",
+          "benefits": {
+            "0": "A maturity stage for each criterion: emerging, developing, mature or leading.",
+            "1": "What each criterion measures and your score in it.",
+            "2": "The change from your previous accredited result."
+          },
+          "basedOn": "From the accredited assessment result."
+        },
+        "strengths": {
+          "title": "Strengths & gaps",
+          "lead": "Your strengths, critical gaps and improvement opportunities on one page.",
+          "benefits": {
+            "0": "Strengths with the practices behind them.",
+            "1": "Critical gaps that need your attention first.",
+            "2": "Improvement opportunities with the assessor notes."
+          },
+          "basedOn": "From the accredited result and the assessor notes."
+        },
+        "boardReports": {
+          "title": "Board reports",
+          "lead": "An executive summary and a one-page report for your board.",
+          "benefits": {
+            "0": "An executive summary of your result and level.",
+            "1": "A one-page report ready to print.",
+            "2": "Your reports in one library."
+          },
+          "basedOn": "From the accredited result and the feedback report."
+        },
+        "evidenceLibrary": {
+          "title": "Evidence library",
+          "lead": "One place for your evidence, reusable in your requests.",
+          "benefits": {
+            "0": "Your evidence organised by criterion.",
+            "1": "Attach evidence from the library to a new request.",
+            "2": "The storage you use."
+          },
+          "basedOn": "From the evidence you upload in your requests."
+        },
+        "periodicReview": {
+          "title": "Periodic review",
+          "lead": "Your next self-assessment date with a reminder and suggested criteria.",
+          "benefits": {
+            "0": "The date of your next self-assessment.",
+            "1": "A reminder before the date.",
+            "2": "Suggested criteria to re-assess."
+          },
+          "basedOn": "From your previous self-assessment results."
+        },
+        "roadmap": {
+          "title": "Roadmap",
+          "lead": "Improvement steps ranked by priority from the assessor notes.",
+          "benefits": {
+            "0": "Steps ranked by priority.",
+            "1": "The criterion and expected duration of each step.",
+            "2": "A reference for each step from approved guides."
+          },
+          "basedOn": "From the assessor notes and the Quick Excellence Kit."
+        },
+        "nationalImpact": {
+          "title": "National impact",
+          "lead": "Your position among associations without naming any other association.",
+          "benefits": {
+            "0": "Your position within an anonymous group.",
+            "1": "Your impact indicators.",
+            "2": "Alignment with the Saudi Vision 2030 programmes."
+          },
+          "basedOn": "Based on the analytical lenses."
+        },
+        "trends": {
+          "title": "Trends",
+          "lead": "How ready your association is for the coming trends in the sector.",
+          "benefits": {
+            "0": "Trends that affect the sector.",
+            "1": "Your readiness for each trend.",
+            "2": "The criteria linked to each trend."
+          },
+          "basedOn": "From the accredited result and the sector trends list."
+        }
+      }
     }
   },
   "verify": {
@@ -8558,6 +8797,324 @@
       "warningTriangle": "Warning triangle",
       "x": "Close mark",
       "xBold": "Bold close mark"
+    }
+  },
+  "level": {
+    "names": {
+      "none": "No level yet",
+      "progress": "Accredited assessment in progress",
+      "participation": "Participation certificate",
+      "bronze": "Bronze level",
+      "silver": "Silver level",
+      "gold": "Gold level",
+      "diamond": "Diamond level"
+    },
+    "short": {
+      "none": "No level",
+      "progress": "In progress",
+      "participation": "Participation",
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold",
+      "diamond": "Diamond"
+    },
+    "reassessment": "Re-assessment in progress",
+    "miniCard": {
+      "start": "Start the accredited assessment",
+      "follow": "Follow your request",
+      "participation": "View the participation certificate",
+      "certificate": "View the certificate"
+    },
+    "hero": {
+      "eyebrow": {
+        "entity": "Your current level",
+        "staff": "Entity level"
+      },
+      "lead": {
+        "none": "Start the accredited assessment to earn an excellence level.",
+        "progress": "The assessor is reviewing your accredited request.",
+        "participation": "From the accredited assessment certificate",
+        "bronze": "From the accredited assessment certificate",
+        "silver": "From the accredited assessment certificate",
+        "gold": "From the accredited assessment certificate",
+        "diamond": "From the accredited assessment certificate"
+      },
+      "number": "Certificate number",
+      "issuedAt": "Issue date",
+      "valid": "Valid",
+      "ringLabel": "Accredited score",
+      "viewCertificate": "View the certificate",
+      "startAccredited": "Start the accredited assessment",
+      "followRequest": "Follow your request",
+      "nextLevelLink": "What the next level needs"
+    },
+    "ring": {
+      "unit": "%"
+    },
+    "track": {
+      "title": {
+        "entity": "Your position on the excellence levels",
+        "staff": "Entity position on the excellence levels"
+      },
+      "remaining": "{value} to {level}",
+      "top": {
+        "entity": "Your association has reached the highest level",
+        "staff": "The entity has reached the highest level"
+      },
+      "start": "Levels start at {value} in the accredited assessment",
+      "pin": {
+        "entity": "You {value}",
+        "staff": "Entity {value}"
+      }
+    },
+    "achieved": {
+      "title": "Congratulations! Your association earned the {level}",
+      "message": "This message appears once, at the first sign-in after the certificate is issued.",
+      "view": "View the certificate",
+      "later": "Later"
+    },
+    "staff": {
+      "entityLevel": "Entity level",
+      "loadError": "The entity level could not be loaded."
+    },
+    "history": {
+      "title": "Level history",
+      "note": "From issued certificates; a revoked certificate grants no level.",
+      "empty": "No certificates have been issued to this entity yet.",
+      "current": "Current",
+      "status": {
+        "issued": "Issued",
+        "suspended": "Suspended",
+        "revoked": "Revoked",
+        "superseded": "Previous"
+      }
+    }
+  },
+  "charts": {
+    "delta": {
+      "up": "Up by {value}",
+      "down": "Down by {value}",
+      "flat": "No change",
+      "mark": {
+        "up": "▲",
+        "down": "▼",
+        "flat": "="
+      }
+    }
+  },
+  "insights": {
+    "selector": {
+      "label": "Verified result",
+      "option": "{number} · {date}",
+      "latest": "Latest",
+      "loading": "Loading the verified results",
+      "optionWithCertificate": "{number} · {date} · {certificate}"
+    },
+    "sourceLine": "From verified assessment result {number} — criteria version: {version}",
+    "versionFallback": "Version {number}",
+    "rules": {
+      "gaps": "Classification rules: critical gap below {critical} — strength from {strength} · version {version}",
+      "bands": "Stage rules: Developing from {developing} · Mature from {mature} · Leading from {leading} · version {version}"
+    },
+    "loadError": "The excellence tools could not be loaded. Try again.",
+    "classes": {
+      "strength": "Strength",
+      "opportunity": "Improvement opportunity",
+      "critical_gap": "Critical gap"
+    },
+    "bands": {
+      "emerging": "Emerging",
+      "developing": "Developing",
+      "mature": "Mature",
+      "leading": "Leading"
+    },
+    "bandGlyph": "Stage {level} of 4",
+    "empty": {
+      "no_verified_result": {
+        "title": "No verified result yet",
+        "message": "The excellence tools use a verified assessment result. Start your accredited assessment to see your strengths, gaps and maturity here."
+      },
+      "only_self": {
+        "title": "No verified result yet",
+        "message": "The excellence tools use a verified assessment result. Start your accredited assessment to see your strengths, gaps and maturity here. Self-assessment results are not used in these tools."
+      },
+      "in_progress": {
+        "title": "Your accredited assessment is in progress",
+        "message": "Your accredited assessment is in progress; the results will appear here once it is completed."
+      },
+      "under_review": {
+        "title": "Your result is under review",
+        "message": "Your result is currently under review."
+      },
+      "cta": {
+        "start_accredited": "Start the accredited assessment",
+        "view_request": "View the request"
+      },
+      "note": "The three tools show verified results only, newest first."
+    },
+    "inProgress": "You have an accredited assessment in progress; the tools show your current verified result until it is completed.",
+    "exclusion": {
+      "certificate_revoked": "Assessment result {number} is not used in these tools because its certificate was revoked",
+      "under_review": "Assessment result {number} is under review",
+      "fallback": "The tools show the previous verified result {number} here."
+    },
+    "errors": {
+      "not_completed": "This result is not completed yet, so it is not in the excellence tools.",
+      "not_accredited": "The excellence tools use accredited assessment results only.",
+      "certificate_revoked": "The certificate of this result was revoked, so it is not in the excellence tools.",
+      "under_review": "This result is currently under review.",
+      "notEligible": "This result is not available for the excellence tools.",
+      "missing": "This result was not found."
+    },
+    "strengths": {
+      "total": "Total",
+      "totalNote": "Each criterion in one class",
+      "subUnit": "sub-criteria | sub-criterion | sub-criteria | sub-criteria | sub-criteria | sub-criteria",
+      "mainsTitle": "Main criteria",
+      "summaryLabel": "Class summary",
+      "columnsLabel": "Classes",
+      "columns": {
+        "strength": "Strengths",
+        "critical_gap": "Critical gaps",
+        "opportunity": "Improvement opportunities"
+      },
+      "tabs": {
+        "strength": "Strengths",
+        "critical_gap": "Gaps",
+        "opportunity": "Opportunities"
+      },
+      "range": {
+        "from": "{value} and above",
+        "below": "Below {value}",
+        "between": "From {min} to below {max}"
+      },
+      "emptyColumn": {
+        "strength": "No strengths in this result",
+        "critical_gap": "No critical gaps in this result",
+        "opportunity": "No improvement opportunities in this result"
+      },
+      "earned": "Earned {earned} of {weight}",
+      "lost": "Points not achieved {value}",
+      "showMore": "Show more | Show 1 more criterion | Show 2 more criteria | Show {count} more criteria | Show {count} more criteria | Show {count} more criteria",
+      "showLess": "Show less",
+      "footnote": "Assessor texts are shown as written. The page contains no forecasts or recommendations from the platform."
+    },
+    "assessor": {
+      "strengths": "Strengths — from the assessor",
+      "improvements": "Improvement points — from the assessor",
+      "none": "No assessor comment on this criterion"
+    },
+    "maturity": {
+      "overall": "Overall stage",
+      "legend": "Maturity stages",
+      "range": {
+        "below": "Below {value}",
+        "between": "{min}–{max}",
+        "from": "{value} and above"
+      },
+      "comparison": "Compared with the previous verified result {number} · {date}",
+      "measures": "What it measures: {text}",
+      "earned": "Earned {earned} of {weight}",
+      "previousBand": "Previously: {band}",
+      "showSubs": "Show sub-criteria · {count}",
+      "hideSubs": "Hide sub-criteria",
+      "subsLabel": "Sub-criteria of {name}",
+      "removedRow": "{percent} in the previous result · not compared",
+      "footnote": "The interpretation texts come from the platform content. The page contains no forecasts."
+    },
+    "delta": {
+      "none": "No earlier verified result to compare",
+      "versionsDiffer": "The two results use different criteria versions; compare with care.",
+      "newInVersion": "New criterion",
+      "removed": "Criteria no longer in the current version"
+    },
+    "board": {
+      "summaryTitle": "Executive summary",
+      "identity": "{number} · Accredited assessment · verified on {date} · criteria version: {version}",
+      "score": "Total score",
+      "points": "{earned} of {total} points",
+      "level": "Level",
+      "participation": "Participation certificate",
+      "notIssued": "No certificate issued",
+      "change": "Change",
+      "changeVs": "percentage points vs {number}",
+      "assessorSummary": "Assessor summary",
+      "assessorQuote": "The assessor's text as written",
+      "profile": "Results profile",
+      "profileSubs": "sub-criteria",
+      "profileMains": "main criteria",
+      "strongAreas": "Strong areas",
+      "priorityGaps": "Priority gaps",
+      "noItems": "No criteria in this class",
+      "footer": "Generated automatically from verified assessment result {number}; contains no forecasts and no recommendations other than the assessor's.",
+      "rulesFooter": "Classification rules version {gaps} · stage rules version {bands}",
+      "download": {
+        "title": "Board report",
+        "note": "One A4 page · Internal document of the entity — confidential",
+        "language": "Report language",
+        "action": "Download the board report",
+        "preview": "Thumbnail of the report page"
+      },
+      "errors": {
+        "document": {
+          "renderer_unavailable": "The PDF service is temporarily unavailable. Try again shortly."
+        },
+        "rate_limited": "Too many downloads. Try again in a minute.",
+        "signature": {
+          "invalid": "The download link is not valid. Request the file again.",
+          "expired": "The download link has expired. Request the file again."
+        },
+        "insights": {
+          "result_not_eligible": "This result is not available for the board report."
+        },
+        "forbidden": "You are not allowed to download this report.",
+        "failed": "The board report could not be downloaded. Try again."
+      },
+      "logoAlt": "{name} logo",
+      "validCertificate": "Valid certificate {number}",
+      "participationCertificate": "Participation certificate {number}"
+    },
+    "library": {
+      "title": "Report library",
+      "subtitle": "Verified results · newest first",
+      "rowHeading": "{date} · {version}",
+      "items": {
+        "feedback_report": "Feedback report",
+        "board_report": "Board report",
+        "certificate": "Certificate"
+      },
+      "certificateStatus": {
+        "issued": "Valid",
+        "superseded": "Previous",
+        "revoked": "Revoked",
+        "suspended": "Under review"
+      },
+      "notAvailable": "Not available for this result",
+      "noCertificate": "No certificate issued",
+      "view": "View",
+      "pdf": "PDF",
+      "comingSoonTitle": "Coming soon",
+      "comingSoon": {
+        "periodic": "Periodic report",
+        "annual": "Annual report",
+        "benchmark": "Sector benchmark report"
+      },
+      "more": "Show older results",
+      "empty": "No reports yet.",
+      "feedbackPdf": "Download the feedback report PDF of result {number}",
+      "feedbackPdfFailed": "The feedback report could not be downloaded. Try again."
+    },
+    "links": {
+      "feedbackReport": "View the feedback report",
+      "maturity": "Maturity analysis",
+      "strengths": "Strengths and gaps",
+      "boardReports": "Board reports"
+    },
+    "staff": {
+      "title": "Excellence tools",
+      "lead": "Read only, exactly as the entity sees it. The list shows the verified results within your account's scope.",
+      "readOnly": "Read only",
+      "tabsLabel": "Excellence tools"
     }
   }
 }

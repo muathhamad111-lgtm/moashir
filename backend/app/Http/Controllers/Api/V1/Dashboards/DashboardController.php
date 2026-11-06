@@ -14,6 +14,7 @@ use App\Http\Responses\ApiResponse;
 use App\Models\Identity\User;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Date;
 
 final class DashboardController
 {
@@ -28,6 +29,7 @@ final class DashboardController
 
         return ApiResponse::data(ActionItemResource::collection($items)->resolve(request()), meta: [
             'total' => array_sum(array_map(static fn (ActionItem $item): int => $item->count, $items)),
+            'generated_at' => Date::now()->toIso8601String(),
         ]);
     }
 }

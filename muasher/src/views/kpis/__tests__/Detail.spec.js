@@ -23,7 +23,10 @@ function sampleKpi(overrides = {}) {
     slug: 'participating-associations',
     name: { ar: 'الجمعيات المشاركة', en: 'Participating associations' },
     shortDescription: { ar: 'وصف', en: 'Registered associations on the platform' },
-    fullDescription: { ar: 'وصف كامل', en: 'All associations registered and active on the platform' },
+    fullDescription: {
+      ar: 'وصف كامل',
+      en: 'All associations registered and active on the platform',
+    },
     value: '486',
     target: '700',
     baseline: '320',
@@ -47,7 +50,10 @@ function sampleKpi(overrides = {}) {
       { value: '320', measuredOn: '2024-12-31' },
       { value: '486', measuredOn: '2026-06-30' },
     ],
-    seo: { title: { ar: 'الجمعيات المشاركة', en: 'Participating associations' }, description: null },
+    seo: {
+      title: { ar: 'الجمعيات المشاركة', en: 'Participating associations' },
+      description: null,
+    },
     ...overrides,
   }
 }

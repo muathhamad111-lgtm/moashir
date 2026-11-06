@@ -39,7 +39,9 @@ function messagesTo(email) {
 export function assertMailLogsConfigured() {
   const sources = logSources()
   if (!sources.length || !sources.every((source) => existsSync(source))) {
-    throw new Error('Set MOASHIR_INTEGRATION_MAIL_LOGS to the log files of the integration backend (see README).')
+    throw new Error(
+      'Set MOASHIR_INTEGRATION_MAIL_LOGS to the log files of the integration backend (see README).',
+    )
   }
 }
 
@@ -63,7 +65,10 @@ const INVITATION_LINK = /\/auth\/invitations\/([A-Za-z0-9_-]+)/
 export async function waitForInvitationToken(email, mark) {
   const deadline = Date.now() + WAIT_MS
   while (Date.now() < deadline) {
-    const token = messagesTo(email).slice(mark).map((message) => message.match(INVITATION_LINK)?.[1]).findLast(Boolean)
+    const token = messagesTo(email)
+      .slice(mark)
+      .map((message) => message.match(INVITATION_LINK)?.[1])
+      .findLast(Boolean)
     if (token) return token
     await new Promise((resolve) => setTimeout(resolve, POLL_MS))
   }
@@ -75,7 +80,10 @@ const RESET_LINK = /\/auth\/reset-password\/([A-Za-z0-9_-]+)/
 export async function waitForResetToken(email, mark) {
   const deadline = Date.now() + WAIT_MS
   while (Date.now() < deadline) {
-    const token = messagesTo(email).slice(mark).map((message) => message.match(RESET_LINK)?.[1]).findLast(Boolean)
+    const token = messagesTo(email)
+      .slice(mark)
+      .map((message) => message.match(RESET_LINK)?.[1])
+      .findLast(Boolean)
     if (token) return token
     await new Promise((resolve) => setTimeout(resolve, POLL_MS))
   }

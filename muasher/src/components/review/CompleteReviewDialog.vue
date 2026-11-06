@@ -9,6 +9,7 @@ const props = defineProps({
   modelValue: { type: Boolean, required: true },
   message: { type: String, required: true },
   offersCertificate: { type: Boolean, default: false },
+  summaryMissing: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:modelValue', 'confirm'])
@@ -41,6 +42,13 @@ function confirm() {
   >
     <div class="complete-review">
       <p class="complete-review__message">{{ message }}</p>
+      <p
+        v-if="summaryMissing"
+        class="complete-review__summary-hint"
+        data-testid="summary-missing-hint"
+      >
+        {{ t('review.summary.emptyHint') }}
+      </p>
       <template v-if="offersCertificate">
         <BaseCheckbox
           v-model="issueCertificate"

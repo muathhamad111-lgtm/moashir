@@ -45,7 +45,7 @@ onMounted(init)
     />
 
     <template v-else-if="result">
-      <header class="self-result__header">
+      <header class="self-result__header result-band">
         <div>
           <p class="self-result__eyebrow">
             {{ t('assessment.self.result.eyebrow') }}

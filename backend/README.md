@@ -54,7 +54,7 @@ refuses to start without `DB_PASSWORD` and `REDIS_PASSWORD`; it contains no defa
 5. `php artisan serve` and, in another terminal, `php artisan queue:work` (OTP, invitations and alerts
    are queued; with `MAIL_MAILER=log` the messages appear in `storage/logs/laravel.log`).
 
-`migrate --seed` loads the code-defined permission catalog (84 keys, 9 roles), the curated breached-password
+`migrate --seed` loads the code-defined permission catalog (88 keys, 9 roles), the curated breached-password
 seed (see below), publishes criteria version 1 (see "Criteria") and installs the 13 regions with their cities (see
 "Entities"). In `local` only it also
 creates fictional staff accounts (`*@moashir.example.sa`, no password): sign in with the e-mail OTP
@@ -729,8 +729,8 @@ a request still waiting for its code is replaced by a new one. Addresses are mas
 | POST / DELETE | `/entities/me/logo` (POST multipart `file`) | `entity.profile.edit` (own, active entity); POST `throttle:uploads` → 201, DELETE `throttle:sensitive` → 200; both answer the own entity |
 | POST | `/entities/me/email/change`, `/entities/me/email/confirm` | `entity.profile.edit`; `throttle:email-change` (3/10 min) / `throttle:otp-verify` |
 | GET | `/entities/me/profile-changes` (`page`, `per_page`) | `entity.profile.view` (own entity) |
-| GET | `/entities` (`search`, `filter[status|region_id|city_id|entity_type|development_sector|org_size|trashed]`, `sort`, pagination, `meta.stats`) | `entities.view` (+ `entities.delete` for `filter[trashed]=only`) |
-| POST | `/entities/export` (same filters, CSV stream, audited, max 10,000 rows) | `entities.export` + full scope, `throttle:exports` (5/min) |
+| GET | `/entities` (`search`, `filter[status|region_id|city_id|entity_type|development_sector|org_size|level|trashed]`, `sort` incl. ±`level`, pagination, `meta.stats`; rows carry `level` + `level_certificate_number`, see "Excellence level on staff lists") | `entities.view` (+ `entities.delete` for `filter[trashed]=only`) |
+| POST | `/entities/export` (same filters incl. `filter[level]`, CSV stream, audited with the filters, max 10,000 rows) | `entities.export` + full scope, `throttle:exports` (5/min) |
 | GET / PUT | `/entities/{entity}` (PUT = core data on behalf, `reason` required; the three registry keys are "absent = unchanged"; the full staff view adds `license_number`, `founded_on`, `website_url`, `logo`) | `entities.view` / `entities.manage` |
 | GET | `/entities/{entity}/profile-changes` (`page`, `per_page`) | `entities.view` + full record scope (`EntityPolicy::viewProfileChanges`) |
 | POST | `/entities/{entity}/deactivate`, `/reactivate` (`reason`) | `entities.deactivate` / `entities.reactivate` |
@@ -1017,7 +1017,7 @@ force_transition`; `expire_completion` has no actor, `actor = system` in the his
   `sort` ±`submitted_at | due_at | status | created_at` (default `-submitted_at`), pagination, `meta.stats { total, by_status,
   overdue }` (for the served path), `meta.path` and `meta.path_counts[{ path, path_label{ar,en}, total, awaiting_assignment,
   overdue }]` (one entry per followed path, independent of the other filters, for the sidebar). Row: `{ id, number, path,
-  path_label{ar,en}, status, is_frozen, entity{ id, reference, name, status }, assessor{ id, name } | null, assigned_at,
+  path_label{ar,en}, status, is_frozen, entity{ id, reference, name, status, level }, assessor{ id, name } | null, assigned_at,
   completion_deadline, submitted_at, due_at, is_overdue, completed_at }`.
 - `GET /requests/{id}` — row + `payment { paid }`, `record` (the assessment with `status_history`), `assignment_history[{ id,
   assessor{ id, name }, status, assigned_at, started_at, ended_at, assigned_by{ id, name }, reason, end_reason }]`,
@@ -1737,6 +1737,13 @@ finance settings below (no database edit is needed in staging).
   value writes nothing. Concurrent saves are serialized by a transaction-scoped advisory lock (`settings:finance`).
 - Snapshot rule: a payment copies its price, VAT rate, VAT, total and `expires_at` when the order is opened, so a change
   never alters an existing payment or open order; only orders opened afterwards use the new values.
+- Platform VAT registration number (Task-64, Q-155 / Q-156): field `vat_registration_number` (setting
+  `finance.vat_registration_number`, string or `null`) guarded by the locked `settings.payment.manage` (System
+  Administrator; Super Admin with `reason`). Format `^3[0-9]{13}3$` (15 Western digits, first and last `3`, no spaces;
+  Arabic-Indic digits are refused) else 422 on `vat_registration_number`; sending `null` or `""` clears it at any time.
+  Audited as `settings.finance_updated` (before / after; not a secret). The `GET` shape adds `vat_registration_number`
+  and `vat_registration_reminder` (`true` while the VAT rate is above zero and the number is empty — a non-blocking hint
+  for the hub). An empty number never blocks an order, a payment or a receipt.
 
 ### State machine
 `created → pending` (provider payment bound) `→ paid | failed | cancelled`; `created → cancelled`; `paid → refunded`
@@ -1783,6 +1790,12 @@ issue, or on the first download): bilingual labels, Gregorian and Umm al-Qura da
 renderer (`UnavailablePdfRenderer`) the download answers 503 `document.renderer_unavailable` and the job defers. Reissue
 (`finance.receipts.manage`, reason) renders a new file and keeps the previous one; a voided receipt cannot be reissued
 (409 `receipt.voided`).
+
+VAT registration number on receipts (Task-64): `ReceiptSnapshotBuilder` copies the platform number into
+`snapshot.vat_registration_number` at issue time ONLY when it is set (the key is absent otherwise); a reissue renders
+the stored snapshot, so the issue-time value never changes. The receipt resource adds `vat_registration_number`
+(`null` when absent) and the PDF prints the row in the header block only when it is present. No "not a tax invoice"
+line. `receipt.issued` records `vat_registration_number_present`.
 
 ### Refunds (recorded only)
 `POST /finance/payments/{payment}/refunds` (multipart: `amount` = total, else 422 `refund.amount_must_equal_total`;
@@ -2178,14 +2191,14 @@ compare the query count for small and larger data sets). Frozen requests (soft-d
 
 | Board | Cards | Widgets | Scope |
 |---|---|---|---|
-| `system_admin` | entities total / active / pending verification, active staff, running cycles, self assessments, accredited and advanced requests, open, completed, overdue, payments collected / open / paid, refunds total | entities by region, sector, founding decade, governance band; 10 lowest main criteria (accredited completed results); last 10 status changes | global |
-| `executive` | entities total / active, completed self / accredited, advanced requests, accredited average %, cycles, payments collected (no links) | entities by region, sector, governance; 10 lowest main criteria | global, read only |
+| `system_admin` | entities total / active / pending verification, active staff, running cycles, self assessments, accredited and advanced requests, open, completed, overdue, payments collected / open / paid, refunds total | entities by region, sector, founding decade, governance band, level (`entities_by_level`); 10 lowest main criteria (accredited completed results); last 10 status changes | global |
+| `executive` | entities total / active, completed self / accredited, advanced requests, accredited average %, cycles, payments collected (no links) | entities by region, sector, governance, level (`entities_by_level`); 10 lowest main criteria | global, read only |
 | `request_follower` | awaiting assignment, assigned, in review, needs completion, completed, overdue, completion rate | requests by path, pipeline by path and status, 10 busiest assessors | submitted accredited and advanced requests |
 | `assessor` | to start, in progress, awaiting entity, overdue, completed, average duration (days) | 5 due soon (own), 5 weakest main criteria of own completed results | own assignments |
 | `committee_assessor` | assigned, completed, remaining, progress, own average | seats with cycle dates and counts, 5 latest rows (no entity data) | own seats |
 | `filtering_officer` | awaiting filtering, qualified, not qualified, override decisions | member cycles | member cycles, filtering states only |
 | `award_secretary` | applicants, qualified, not qualified, in committee, awaiting approval, results approved, winners, committee progress | member cycles, top 10 by committee average, score histogram, by region | member cycles |
-| `entity` | latest result %, open requests, unread notifications | latest result, main criteria of that result, 5 latest requests (masked statuses), payments card (Q-98) | own entity |
+| `entity` | latest result %, open requests, unread notifications, accepted evidence (`accepted_evidence_count`) | latest result (self or accredited), main criteria of the latest ELIGIBLE accredited result (`criteria_progress`, Task-67 N-1), 5 latest requests (masked statuses), payments card (Q-98) | own entity |
 | `finance_officer` | revenue, VAT, paid, open, refunds total and count, receipts issued | daily paid payments (30 days, Asia/Riyadh), by service | live payments |
 | `content_officer` | pages total / published / with draft changes, KPIs total / published / featured | 5 latest edits | global |
 | `criteria_officer` | active mains / subs / points of the published version, open assessments on it, draft problems | published version, draft version | global |
@@ -2195,7 +2208,7 @@ subscriptions, Kit stages, certificates, recommendations, re-assessment date. Pa
 purpose, status, total, currency, created_at, paid_at } | null, pending_payment{ … , expires_at } | null, receipts_count, link }`.
 
 ### Action Center
-Every summary carries `action_center` (also `GET /dashboard/action-center`, `meta.total`): the actionable items of ALL held
+Every summary carries `action_center` (also `GET /dashboard/action-center`, `meta.total`, `meta.generated_at` ISO 8601 UTC): the actionable items of ALL held
 roles and permissions (`Services\Dashboards\ActionItems\*`, tagged `dashboards.action-items`, one or two queries each), only
 items with a count, sorted danger → warning → info, then by due date. Keys: entity `complete_profile`, `submit_self_draft`,
 `submit_accredited_draft`, `complete_accredited_request` / `complete_advanced_request` (danger, completion deadline),
@@ -2475,7 +2488,7 @@ improvement points, notes per sub-criterion); nothing is stored as a file.
   path_label, status, is_frozen, available: false }` (Q-94); then `{ …, available: true, source: assessor_assessment,
   result_version, entity{ id, reference, name{ar,en}, type, type_label{ar,en}, region{ar,en}, city{ar,en} },
   completed_at, completed_on, completed_on_hijri{ar,en}, total, max_total, percent, certificate{ id, number, level,
-  level_label }|null, criteria[{ criterion_id, code, name{ar,en}, weight, earned, percent, subs[{ sub_id, code,
+  level_label }|null, assessor_summary{ body, version }|null, criteria[{ criterion_id, code, name{ar,en}, weight, earned, percent, subs[{ sub_id, code,
   name{ar,en}, weight, earned, percent, strengths, improvement_points, notes }] }] }`. Readers: the entity (own), the
   assessor of the request, the System Administrator and the Requests Follower (their path scope); never an assessor
   identity.
@@ -2486,6 +2499,177 @@ improvement points, notes per sub-criterion); nothing is stored as a file.
   payment), streams it (`no-store`) and audits `feedback_report.exported` (class C download, Q-87). 403
   `signature.invalid` for another user, 410 `signature.expired`, 503 while no renderer is available.
 - ACC-10 keeps its link `/assessment/accredited/result/{id}/feedback`.
+- The PDF prints the «ملخص المقيّم» block after the totals and before the per-criterion section when
+  `assessor_summary` is filled (Task-64, Q-154); it is hidden otherwise.
+
+### Assessor summary «ملخص المقيّم» (Task-64, Q-154)
+- Table `assessment_summaries` (append-only, versioned like `assessment_feedback_items`): `assessment_id`, `body`
+  (CHECK not blank), `author_user_id`, `version` (≥ 1, unique per assessment), `change_reason`, `superseded_at`,
+  `created_at`; partial unique index = one current row per assessment; trigger `moashir_guard_supersede_once()` (update
+  only to set `superseded_at` once; delete only during entity erasure) and the truncate guard.
+- `PUT /assessments/{id}/review/summary { summary: string|null (required key, ≤ moashir.assessment.summary_max_chars =
+  2000 characters, trimmed), reason? }` — `can:score` (active assignee) + `throttle:assessment-write`. Same text = no-op;
+  changed text = supersede + `version + 1`; empty / `null` = supersede and clear. Answers `{ summary: { body, version,
+  updated_at }|null }`. Errors: 409 `assessment.summary_not_applicable` (advanced path), 409 `state.transition_illegal`
+  (not `under_review`, e.g. Super Admin on a completed request), 403 when the caller is not the active assignee (the
+  assignment ends at completion, so a completed request answers 403 to its former assessor), 404 for an unrelated
+  assessor, 422 (too long, Super Admin without `reason` → `reason_required`), 409 `entity.deleted` (frozen entity).
+- Audit `assessment.summary_saved` `{ version, cleared }` (never the text). No notification.
+- `GET /assessments/{id}/review` adds `summary` (assignee and read-only review). Completion never requires it.
+
+## Excellence level on staff lists, dashboards and the entity home (Task-67)
+
+**Level rule (one place).** `Entity::levelCertificate()` is a has-one-of-many relation: the entity's ACCREDITED
+certificate with status `issued`, latest by `issued_at`, then `id`. Revoked, suspended and superseded certificates never
+count (a revoked newest certificate falls back to the previous issued one). `level` = the certificate's metal level
+(`bronze | silver | gold | diamond`), `participation` when the certificate has no metal level, `null` without an issued
+certificate. Test certificates (`TEST-CRT-…`, demo data) count like any issued certificate. Read-side helpers:
+`App\Support\Certificates\EntityLevelQuery` (eager-load constant, filter, sort, dashboard key, open-request flag) and
+`EntityLevelPresenter`; enums `EntityLevel`, `EntityLevelFilter`, `EntityLevelBucket`. Levels are always set-based: one
+eager-load query per page (or a correlated sub-select for sort / dashboard), never one query per row — the list and the
+queue have query-count tests.
+
+**"Open accredited request"** = an accredited request in `draft | submitted | assigned | under_review | needs_completion`
+(paid and not finished; `awaiting_payment`, `completed`, `refunded`, `declined_incomplete` are not open).
+
+- `GET /entities` rows (all three variants: full staff, name and contact, summary) and `GET /entities/{id}` add
+  `level: "bronze"|"silver"|"gold"|"diamond"|"participation"|null` and `level_certificate_number: string|null`
+  (e.g. `"CRT-2026-000014"`). The full staff view (`StaffEntityResource`, list and record) also adds
+  `has_open_accredited_request: bool`; the other variants do not carry this key.
+- `filter[level]` ∈ `none | participation | bronze | silver | gold | diamond` (`none` = no issued certificate); anything
+  else → 422 `validation_failed` (`errors["filter.level"]`). The filter also narrows `meta.stats` and the CSV export, and
+  the export audit records `filters.level`.
+- `sort=level` orders none < participation < bronze < silver < gold < diamond; `sort=-level` the reverse; ties by `id`.
+- `GET /requests` rows and `GET /requests/{id}` (and the assignment / advanced action answers built on it): `entity.level`
+  (same values; no certificate number in the queue).
+- Dashboard widget `entities_by_level` (System Administrator and Executive boards, `bars`): non-erased, non-deleted
+  entities, fixed order and keys, zero counts kept:
+
+```
+{ "key": "entities_by_level", "data": [
+  { "key": "none", "count": 4 }, { "key": "in_progress", "count": 1 }, { "key": "participation", "count": 2 },
+  { "key": "bronze", "count": 3 }, { "key": "silver", "count": 1 }, { "key": "gold", "count": 2 }, { "key": "diamond", "count": 0 } ] }
+```
+
+  `in_progress` = no level AND an open accredited request; an entity with a level and an open request stays in its level.
+  Labels come from the SPA i18n (level names already exist; widget title is an SPA key).
+- Entity board card `{ "key": "accepted_evidence_count", "value": 7, "format": "count", "link": null }`: the entity's
+  evidence files that are present (not removed) and passed the malware scan (`clean`), across all its requests. The
+  domain has no per-file acceptance by the assessor; "accepted" = accepted by the platform.
+- Entity board widget `criteria_progress` (main criteria, used by the home strengths / improvements block) now reads the
+  latest ELIGIBLE accredited result with the insights rules (`AccreditedResultsReader` + `EligibleResultSelector`:
+  completed accredited, newest first, revoked / suspended excluded); never a self result. `[]` when there is none. The
+  `latest_result` widget and the `latest_result_percent` card keep the latest self OR accredited result as before.
+- `GET /dashboard/action-center` → `meta: { total, generated_at: "2026-11-05T08:00:00+00:00" }`.
+
+No migration, permission, package or environment variable.
+
+## Excellence tools — wave 1 (Task-64, analysis-excellence-tools ET-01 … ET-30)
+
+Computed ON READ from the frozen result snapshot, the current feedback items, the current assessor summary and the
+current rule versions; nothing derived is stored.
+
+### Eligibility and selection
+- Eligible result = an ACCREDITED assessment with status `completed`, a current result snapshot and a latest
+  certificate (by id) that is neither `revoked` nor `suspended`. Self is never eligible (404 on tool routes); advanced is
+  never eligible (409 `not_accredited`). Verified date = `completed_at`; default = the latest (tie → higher id);
+  previous = the eligible result just before the one shown (`Support\Insights\EligibleResultSelector`,
+  `ResultEligibility`).
+- Exclusion notices: a revoked certificate (`certificate_revoked`) or a reopened / suspended result (`under_review`)
+  newer than the selected result.
+- Classification compares the displayed percent (2 decimals, half-up) with the CURRENT rules
+  (`Support\ValueObjects\GapThresholds`, `MaturityBounds`); the previous result of a delta uses the same rules.
+
+### Settings (`/api/v1/settings/insights`, `settings.assessment.manage`)
+- `GET` → `{ gap_thresholds{ critical_below, strength_from, version }, maturity_bands{ developing_from, mature_from,
+  leading_from, version }, aligned (bands 50/80 = gaps), effective_since|null }`. Defaults 50.00 / 80.00 and
+  50.00 / 70.00 / 80.00, version 1.
+- `PUT { gap_thresholds?: { critical_below, strength_from }, maturity_bands?: { developing_from, mature_from,
+  leading_from }, reason? }`: strings with at most 2 decimals, `0 < … ≤ 100`, strictly ascending (422 on the group
+  key); the server raises `version` by one on a real change only; audit `settings.insights_updated` (before / after);
+  Super Admin needs `reason` (422 `reason_required`) and raises SEC-04. Advisory lock `settings:insights`.
+
+### Interpretation texts (`/api/v1/content/maturity-texts`, `content.insights.manage`)
+- Table `maturity_interpretations` (`band` ∈ 4 bands, `main_criterion_code` nullable, `text` jsonb `{ar,en}` nullable for
+  the four seeded generic rows, `updated_by_user_id`); unique generic row per band and unique (band, code) override.
+- `GET ?page=&per_page=` (paginated, generic rows first) → `[{ id, band, main_criterion_code, is_generic,
+  in_published_version|null, text{ar,en}|null, updated_at }]`.
+- `PUT /{band} { main_criterion_code?, text{ ar, en } }` upserts (plain text, ≤ 600 characters each, no markup; code
+  must exist in `main_criteria`); unknown band 404. `DELETE /{id}` removes an override (204); a generic row answers 422
+  `insights.generic_text_not_deletable`. Every change audits `content.maturity_texts_updated` (band, code, before / after).
+- Resolution: override (band, main code) > generic text of the band > none.
+
+### Endpoints (all `/api/v1`, signed-in stack)
+| Method | Path | Ability |
+|---|---|---|
+| GET | `/entities/me/insights` | `reports.insights.view-own` (entity + `reports.insights.own.view`) |
+| GET | `/entities/me/insights/results?page=` | same |
+| GET | `/entities/me/report-library?page=` | same |
+| GET | `/entities/{entity}/insights`, `/insights/results`, `/report-library` | `reports.insights.view-entity` (`reports.insights.view` + global reader; deleted entity needs `entities.delete`) |
+| GET | `/assessments/{id}/insights/strengths-gaps`, `/maturity`, `/executive-summary` | `reports.insights.view-assessment` |
+| POST | `/assessments/{id}/board-report/export { locale? }` | same + `throttle:exports` |
+| GET | `/assessments/{id}/board-report/pdf?locale=&user=&signature=` | signed (5 min, user-bound) + same + `throttle:downloads` |
+| GET / PUT | `/settings/insights` | `settings.assessment.manage` (`throttle:sensitive` on PUT) |
+| GET / PUT / DELETE | `/content/maturity-texts` … | `content.insights.manage` (`throttle:content-write` on writes) |
+| PUT | `/assessments/{id}/review/summary` | `can:score` (see "Assessor summary") |
+
+`reports.insights.view-assessment`: self path 404; no insights permission 403 (assessors, Content / Finance Officer …);
+owner with `reports.insights.own.view` or global reader covering the accredited path with `reports.insights.view`
+allowed; anything else 404 (another entity, follower without the accredited path). Super Admin by `Gate::before`.
+
+Shapes:
+- `ResultRef` = `{ assessment_id, number, percent, snapshot_version, verified_at, criteria_version{ id,
+  version_number, label{ar,en}|null }|null, certificate{ id, number, status, level|null }|null }`. `certificate` is
+  `null` when the result has no certificate; `number` is the certificate number (`CRT-2026-000003`, Task-69 G-2),
+  also for a revoked or suspended certificate (read it with `status`).
+- Overview (200 always): `{ selected: ResultRef|null, exclusions[{ assessment_id, number, reason }], empty_state{ reason:
+  no_verified_result|only_self|in_progress|under_review, cta{ kind: start_accredited|view_request, assessment_id|null
+  }|null }|null, in_progress_request{ assessment_id }|null, rules{ gap_thresholds_version, maturity_bands_version,
+  effective_since } }`. `cta` is `null` for staff. A follower without the accredited path sees no result.
+- Results: `ResultRef[]` newest first, 15 per page, `meta.pagination`.
+- Strengths and gaps: `{ result, rules{ critical_below, strength_from, version, effective_since }, counts{ strength,
+  opportunity, critical_gap }, mains[{ code, name, percent, class }], items{ strengths[], opportunities[],
+  critical_gaps[] } }`; item = `{ main_code, main_name, sub_code, sub_name, weight, earned, percent, lost_points, class,
+  assessor{ strengths, improvement_points } }` (notes are never shown). Order: gaps and opportunities by lost points
+  desc, percent asc, criteria order; strengths by percent desc, weight desc, criteria order.
+- Maturity: `{ result, previous: ResultRef|null, versions_differ, rules{ developing_from, mature_from, leading_from,
+  version, effective_since }, overall{ percent, band, delta_pp|null, previous_band|null }, mains[{ code, name,
+  description, weight, earned, percent, band, interpretation{ar,en}|null, comparison: matched|new_in_version|no_previous,
+  delta_pp|null, previous_band|null, subs[{ code, name, percent, band, delta_pp|null }] }], removed_since_previous[{ code,
+  name, previous_percent }] }`. `delta_pp` is a signed string with 2 decimals (`"-2.50"`).
+- Executive summary: `{ result, entity{ name, has_logo, logo_url|null }, score{ percent, earned, total_weight }, certificate{ standing:
+  level|participation|not_issued, level|null }, change{ delta_pp|null, previous|null, versions_differ },
+  assessor_summary{ body, version }|null, profile{ classes{…}, bands{…} }, strong_areas[item + quote],
+  priority_gaps[item + quote], rules{ …versions, gap_thresholds, maturity_bands } }` (top 3 each; priority gaps =
+  critical gaps then opportunities). `entity.logo_url` (Task-69 G-1) is a short-lived signed link to
+  `GET /api/v1/files/{public_id}/download?user=…&expires=…&signature=…` (the existing file-download route, bound to the
+  viewer, TTL `moashir.finance.download_ttl_minutes`), never a storage path; `null` when the entity has no logo, the
+  logo is not scanned clean, or the viewer may not view the entity logo (`EntityPolicy::viewLogo`).
+- Report library: rows `{ result, eligible, exclusion_reason|null, items[{ kind: feedback_report|board_report|certificate,
+  available, status|null, certificate_id|null }] }` per accredited result with a snapshot (completed, revoked or
+  reopened), newest first, 15 per page; `meta.coming_soon[{ kind: periodic|annual|benchmark }]`. The
+  `feedback_report` item also has `pdf_available` (bool) and `pdf_url` (string|null, Task-69 G-4): a signed link to
+  `GET /api/v1/assessments/{id}/feedback-report/pdf?locale=…&user=…&expires=…&signature=…` bound to the viewer
+  (another user 403 `signature.invalid`, expired 410), in the request language, TTL
+  `moashir.documents.download_ttl_minutes`; every download audits `feedback_report.exported`. `pdf_available` is `false`
+  and `pdf_url` `null` when the request is not completed or the viewer lacks the feedback-report ability
+  (`reports.feedback.view` + record scope). The `board_report` and `certificate` items have no PDF keys (board report:
+  `POST …/board-report/export`; certificate: `POST /certificates/{id}/download`).
+- Errors: 409 `insights.result_not_eligible` with `meta.reason` = `not_completed | not_accredited | certificate_revoked |
+  under_review` (tools, export, PDF), 404 hides other entities, 403 missing permission, 422 `page` / `locale`.
+
+### Board report PDF
+Template `documents.board_report` (A4 portrait, ar RTL / en LTR, embedded fonts, entity logo when uploaded, no QR,
+footer «وثيقة داخلية للجهة — سرية», rules and snapshot versions). One page up to 12 main criteria (checked with the
+rendered samples `moashir:documents:render-samples`, ar and en, longest summary and quotes); the assessor summary is
+cut at 600 characters on a word boundary with the pointer to the feedback report, quotes at 200
+(`moashir.insights.*`). Not stored; every download audits `board_report.exported` (`assessment_id`, `snapshot_version`,
+`locale`, both rule versions, tag `download`). File name `board-report-{request_number}-{locale}.pdf`.
+
+### Permissions
+`reports.insights.own.view` (entity, not confidential), `reports.insights.view` (System Administrator, Requests
+Follower; confidential), `content.insights.manage` (Content Officer, System Administrator). Assessors and the other
+roles have no access. Apply with `php artisan moashir:permissions:sync`.
 
 ## Contact messages (phase 1, Task-42)
 
@@ -2709,6 +2893,9 @@ the legal drafts of Task-49 published as the current terms and privacy versions 
 accessibility page, the accredited price when none is set, one draft award cycle
 (created by the demo Award Secretary) and two TEST-mode payments (one paid with a TEST receipt, which opens the
 accredited draft through the normal listener, and one open order). It never creates the Super Admin.
+For the excellence tools (Task-64) it also adds four completed ACCREDITED results opened by TEST payments (Al-Amal: a
+silver then a gold result with an assessor summary, for the delta; Al-Khair: a participation result and a newer result
+whose certificate is revoked), one self result for Al-Namaa (only self results) and fictional generic maturity texts.
 
 Guards (`Services\Demo\DemoInstallGuard`): refused unless `APP_DEMO_DATA=true`; outside `local` / `testing` also
 refused unless the environment opted in to the demo posture with `MOASHIR_DEMO=true` (Task-51 / Task-52, reason
@@ -2916,3 +3103,11 @@ apply SRI (`crossorigin="anonymous"`) to a script loaded from that CDN — the l
   `committee_scores, committee_notes, committee_discussion_entries` lines of `database/sql/production-roles.sql`. The scheduler must
   run `moashir:award:flag-overdue-committee` hourly; `moashir:award:advance-cycles` now also starts the committee assessment on its
   date. No new permission key, no environment variable. Reversible while no request is in a committee state.
+- Task-64 (excellence tools wave 1, assessor summary, receipt VAT number): migrations
+  `2026_11_05_160000_create_assessment_summaries_table` (append-only, reuses `moashir_guard_supersede_once()`) and
+  `2026_11_05_160100_create_maturity_interpretations_table` (seeds the four empty generic rows); both reversible. Re-run
+  the `assessment_summaries` lines of `database/sql/production-roles.sql` (column-level UPDATE on `superseded_at` only).
+  Then `php artisan moashir:permissions:sync` (three new keys: `reports.insights.own.view`, `reports.insights.view`,
+  `content.insights.manage`). New settings keys `insights.gap_thresholds`, `insights.maturity_bands`,
+  `finance.vat_registration_number` read their defaults until saved. No new package or environment variable. After the
+  deploy the System Administrator should set the VAT registration number; receipts issued before carry no row.

@@ -25,8 +25,12 @@ describe('Maintenance page (Q-96)', () => {
   })
 
   it('re-checks the status on demand and offers the homepage once published', async () => {
-    contentService.getStatus.mockResolvedValueOnce({ data: { maintenance: true, publishedAt: null } })
-    contentService.getStatus.mockResolvedValueOnce({ data: { maintenance: false, publishedAt: '2026-11-01T08:00:00Z' } })
+    contentService.getStatus.mockResolvedValueOnce({
+      data: { maintenance: true, publishedAt: null },
+    })
+    contentService.getStatus.mockResolvedValueOnce({
+      data: { maintenance: false, publishedAt: '2026-11-01T08:00:00Z' },
+    })
     const wrapper = await mountView('en')
     await wrapper.find('.maintenance__actions .btn--ghost').trigger('click')
     await flushPromises()

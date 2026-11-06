@@ -42,6 +42,7 @@ table.report__table { width: 100%; border-collapse: collapse; font-size: 9.3pt; 
 .report__field--strengths h3 { color: var(--color-accent-text); }
 .report__field--improvement h3 { color: var(--color-bronze-text); }
 .report__empty { margin: 1mm 0 0; color: var(--color-muted); font-size: 9pt; }
+.report__assessor-summary { margin: 0; padding: 3mm 4mm; border: 0.3mm solid var(--color-border); border-radius: 2mm; white-space: pre-line; }
 .report__footer { margin-top: 8mm; padding-top: 3mm; border-top: 0.3mm solid var(--color-border); font-size: 8.6pt; color: var(--color-muted); }
 @endsection
 
@@ -72,6 +73,11 @@ table.report__table { width: 100%; border-collapse: collapse; font-size: 9.3pt; 
     <span class="report__summary-level">{{ $text($certificate['level_label']) }}</span>
   @endif
 </section>
+
+@if (($data['assessor_summary']['body'] ?? null) !== null)
+  <h2 class="report__section">{{ __('documents.feedback_report.assessor_summary') }}</h2>
+  <p class="report__assessor-summary" dir="auto">{{ $data['assessor_summary']['body'] }}</p>
+@endif
 
 <h2 class="report__section">{{ __('documents.feedback_report.results') }}</h2>
 <table class="report__table">

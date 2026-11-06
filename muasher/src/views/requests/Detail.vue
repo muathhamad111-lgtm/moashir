@@ -12,6 +12,7 @@ import AssessmentTimeline from '@/components/assessment/AssessmentTimeline.vue'
 import CompletionRequestCard from '@/components/accredited/CompletionRequestCard.vue'
 import RequestFacts from '@/components/requests/RequestFacts.vue'
 import PathBadge from '@/components/ui/PathBadge.vue'
+import LevelBadge from '@/components/level/LevelBadge.vue'
 import RequestActionsCard from '@/components/requests/RequestActionsCard.vue'
 import RequestCertificateCard from '@/components/requests/RequestCertificateCard.vue'
 import AssignmentHistoryList from '@/components/requests/AssignmentHistoryList.vue'
@@ -30,6 +31,7 @@ import { ACCREDITED_LIMITS, ACCREDITED_STATUSES } from '@/constants/accredited'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
+import { tierOfLevel } from '@/utils/levelTier'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t, locale } = useI18n()
@@ -104,6 +106,10 @@ onMounted(load)
       <p v-if="detail" class="request-detail__number">
         <bdi dir="ltr">{{ detail.number }}</bdi>
         <PathBadge v-if="detail.path" :path="detail.path" :label="detail.pathLabel" />
+      </p>
+      <p v-if="detail?.entity" class="request-detail__entity" data-testid="request-entity">
+        <span>{{ localizedText(detail.entity.name, locale) }}</span>
+        <LevelBadge :tier="tierOfLevel(detail.entity.level)" size="s" />
       </p>
     </header>
     <div v-if="status === 'loading'" class="request-detail__loading" aria-busy="true">

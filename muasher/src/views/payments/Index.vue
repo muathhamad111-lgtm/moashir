@@ -30,6 +30,7 @@ function downloadReceipt(payment) {
 <template>
   <section class="portal-area payments-hub">
     <PortalAreaHeader
+      band
       :eyebrow="t('portal.payments.eyebrow')"
       :title="t('portal.payments.title')"
       :subtitle="t('portal.payments.subtitle')"

@@ -8,6 +8,7 @@ use App\Data\Assessments\CriteriaNodeNames;
 use App\Data\Assessments\FeedbackSheet;
 use App\Data\Reports\FeedbackReport;
 use App\Models\Assessments\AssessmentResultSnapshot;
+use App\Models\Assessments\AssessmentSummary;
 use App\Models\Certificates\Certificate;
 use App\Support\Assessments\PathPresenter;
 use App\Support\Assessments\ResultBreakdownPresenter;
@@ -52,6 +53,7 @@ final class FeedbackReportPresenter
             'max_total' => $view->snapshot->total_weight->toDecimal(),
             'percent' => $view->snapshot->percent->toDisplay(),
             'certificate' => self::certificateOf($report->certificate),
+            'assessor_summary' => $report->summary instanceof AssessmentSummary ? ['body' => $report->summary->body, 'version' => $report->summary->version] : null,
             'criteria' => self::criteriaOf(new ResultBreakdownPresenter($view->snapshot->breakdown, $view->names), $view->feedback ?? new FeedbackSheet([])),
         ];
     }

@@ -123,6 +123,10 @@ export const assessmentMessages = {
     ar: 'هذا المعيار الفرعي ليس ضمن نسخة المعايير المعتمدة لهذا التقييم.',
     en: 'This sub-criterion is not part of the criteria version of this assessment.',
   },
+  'assessment.summary_not_applicable': {
+    ar: 'ملخص المقيّم متاح في التقييم المعتمد فقط.',
+    en: 'The assessor summary applies to accredited assessments only.',
+  },
   'assessment.not_assignee': {
     ar: 'لا يقوم بهذا الإجراء إلا المقيّم المسند إليه الطلب.',
     en: 'Only the assessor assigned to this request can do this.',

@@ -6,6 +6,10 @@ export const entityMessages = {
   },
   not_found: { ar: 'العنصر المطلوب غير موجود.', en: 'The requested resource was not found.' },
   validation_failed: { ar: 'البيانات المرسلة غير صحيحة.', en: 'The submitted data is invalid.' },
+  'filter.level_invalid': {
+    ar: 'المستوى المحدد غير صالح.',
+    en: 'The selected level is invalid.',
+  },
   rate_limited: {
     ar: 'عدد الطلبات كبير. يرجى المحاولة لاحقًا.',
     en: 'Too many requests. Please try again later.',

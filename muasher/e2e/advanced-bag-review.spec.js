@@ -25,7 +25,9 @@ async function seed(page, locale, { role, entityId, committee = false } = {}) {
 }
 
 function isBenignNetworkNoise(text) {
-  return /Failed to load resource: the server responded with a status of (403|404|500|502|503)/.test(text)
+  return /Failed to load resource: the server responded with a status of (403|404|500|502|503)/.test(
+    text,
+  )
 }
 
 function collectConsoleErrors(page) {
@@ -42,9 +44,25 @@ function collectConsoleErrors(page) {
 async function gotoWithRetry(page, path, selector) {
   await page.goto(path)
   for (let attempt = 0; attempt < 10; attempt += 1) {
-    if (await page.locator(selector).first().isVisible().catch(() => false)) return
+    if (
+      await page
+        .locator(selector)
+        .first()
+        .isVisible()
+        .catch(() => false)
+    )
+      return
     const retry = page.locator('.error-state__retry button, .error-state__retry .btn')
-    if (await retry.first().isVisible().catch(() => false)) await retry.first().click().catch(() => {})
+    if (
+      await retry
+        .first()
+        .isVisible()
+        .catch(() => false)
+    )
+      await retry
+        .first()
+        .click()
+        .catch(() => {})
     await page.waitForTimeout(500)
   }
 }
@@ -56,7 +74,10 @@ async function reviewPage(page, testInfo, { path, titleSelector, name, session, 
   await gotoWithRetry(page, path, waitSelector)
   await expect(page.locator(waitSelector).first()).toBeVisible({ timeout: 15000 })
   await page.waitForTimeout(400)
-  await page.screenshot({ path: `test-results/vr-${name}-${suffixFor(testInfo)}.png`, fullPage: true })
+  await page.screenshot({
+    path: `test-results/vr-${name}-${suffixFor(testInfo)}.png`,
+    fullPage: true,
+  })
   expect(errors, `console errors on ${path}: ${errors.join(' | ')}`).toHaveLength(0)
 }
 

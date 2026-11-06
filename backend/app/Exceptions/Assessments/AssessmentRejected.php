@@ -22,6 +22,11 @@ final class AssessmentRejected extends ApiException
         return new self(new ApiError(Response::HTTP_FORBIDDEN, 'assessment.entity_required'));
     }
 
+    public static function summaryNotApplicable(): self
+    {
+        return new self(new ApiError(Response::HTTP_CONFLICT, 'assessment.summary_not_applicable'));
+    }
+
     public static function entityNotActive(): self
     {
         return new self(new ApiError(Response::HTTP_FORBIDDEN, 'assessment.entity_not_active'));

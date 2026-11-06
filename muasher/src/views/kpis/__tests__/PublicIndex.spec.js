@@ -29,7 +29,10 @@ function makeKpi(id, nameEn, status = 'good') {
 }
 
 function page(items, current = 1, lastPage = 1) {
-  return { data: items, meta: { pagination: { page: current, perPage: 12, total: items.length, lastPage } } }
+  return {
+    data: items,
+    meta: { pagination: { page: current, perPage: 12, total: items.length, lastPage } },
+  }
 }
 
 async function mountView() {
@@ -47,11 +50,25 @@ beforeEach(() => {
   vi.useFakeTimers()
   vi.clearAllMocks()
   kpisService.listCategories.mockResolvedValue({ data: CATEGORIES })
-  kpisService.listTypes.mockResolvedValue({ data: [{ id: 5, key: 'output', name: { ar: 'مخرجات', en: 'Output' } }] })
-  contentService.getPage.mockResolvedValue({
-    data: { key: 'kpis', sections: [{ id: 1, type: 'hero', title: { ar: 'مؤشرات', en: 'Excellence indicators' }, description: { ar: 'وصف', en: 'Up-to-date indicators' } }] },
+  kpisService.listTypes.mockResolvedValue({
+    data: [{ id: 5, key: 'output', name: { ar: 'مخرجات', en: 'Output' } }],
   })
-  kpisService.list.mockResolvedValue(page([makeKpi(1, 'Participating associations'), makeKpi(2, 'Volunteers', 'excellent')], 1, 2))
+  contentService.getPage.mockResolvedValue({
+    data: {
+      key: 'kpis',
+      sections: [
+        {
+          id: 1,
+          type: 'hero',
+          title: { ar: 'مؤشرات', en: 'Excellence indicators' },
+          description: { ar: 'وصف', en: 'Up-to-date indicators' },
+        },
+      ],
+    },
+  })
+  kpisService.list.mockResolvedValue(
+    page([makeKpi(1, 'Participating associations'), makeKpi(2, 'Volunteers', 'excellent')], 1, 2),
+  )
 })
 
 afterEach(() => vi.useRealTimers())
@@ -61,7 +78,11 @@ describe('KPI public index (server-driven catalog)', () => {
     const wrapper = await mountView()
     expect(kpisService.list).toHaveBeenCalledWith({ page: 1, perPage: 12 })
     expect(wrapper.findAll('.kpi-card')).toHaveLength(2)
-    expect(wrapper.findAll('.tabs__tab').map((tab) => tab.text())).toEqual(['All', 'Beneficiaries', 'Performance'])
+    expect(wrapper.findAll('.tabs__tab').map((tab) => tab.text())).toEqual([
+      'All',
+      'Beneficiaries',
+      'Performance',
+    ])
     expect(wrapper.find('.kpis-page__title').text()).toBe('Excellence indicators')
   })
 
@@ -69,13 +90,20 @@ describe('KPI public index (server-driven catalog)', () => {
     const wrapper = await mountView()
     await wrapper.findAll('.tabs__tab')[1].trigger('click')
     await settle()
-    expect(kpisService.list).toHaveBeenLastCalledWith({ 'filter[categoryId]': 1, page: 1, perPage: 12 })
+    expect(kpisService.list).toHaveBeenLastCalledWith({
+      'filter[categoryId]': 1,
+      page: 1,
+      perPage: 12,
+    })
     await wrapper.find('.toolbar__search input').setValue('V')
     await settle()
     expect(kpisService.list.mock.lastCall[0]).not.toHaveProperty('search')
     await wrapper.find('.toolbar__search input').setValue('Vol')
     await settle()
-    expect(kpisService.list.mock.lastCall[0]).toMatchObject({ search: 'Vol', 'filter[categoryId]': 1 })
+    expect(kpisService.list.mock.lastCall[0]).toMatchObject({
+      search: 'Vol',
+      'filter[categoryId]': 1,
+    })
   })
 
   it('appends the next page on show more', async () => {

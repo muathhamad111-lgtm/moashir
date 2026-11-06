@@ -16,7 +16,14 @@ async function retryFor(page, selector) {
   for (let attempt = 0; attempt < 8; attempt += 1) {
     const retry = page.locator('.error-state__retry, .error-state button').first()
     if (await retry.isVisible().catch(() => false)) await retry.click()
-    if (await page.locator(selector).first().isVisible().catch(() => false)) return
+    if (
+      await page
+        .locator(selector)
+        .first()
+        .isVisible()
+        .catch(() => false)
+    )
+      return
     await page.waitForTimeout(500)
   }
   await expect(page.locator(selector).first()).toBeVisible({ timeout: 10000 })
@@ -26,7 +33,14 @@ async function reloadUntil(page, url, selector) {
   for (let attempt = 0; attempt < 8; attempt += 1) {
     await page.goto(url)
     await retryFor(page, '.home-hero__title')
-    if (await page.locator(selector).first().isVisible().catch(() => false)) return
+    if (
+      await page
+        .locator(selector)
+        .first()
+        .isVisible()
+        .catch(() => false)
+    )
+      return
     await page.waitForTimeout(400)
   }
   await expect(page.locator(selector).first()).toBeVisible({ timeout: 10000 })

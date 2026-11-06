@@ -7,13 +7,14 @@ namespace App\Actions\Assessments;
 use App\Data\Assessments\RequestQueueFilters;
 use App\Models\Assessments\Assessment;
 use App\Services\Assessments\RequestQueueQuery;
+use App\Support\Certificates\EntityLevelQuery;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 final readonly class ListRequestQueue
 {
     public const array SORTABLE = ['submitted_at', '-submitted_at', 'due_at', '-due_at', 'status', '-status', 'created_at', '-created_at'];
 
-    public const array RELATIONS = ['entity', 'currentResult', 'activeAssignment.assessor', 'openCompletionRequest', 'awardCycle', 'region'];
+    public const array RELATIONS = ['entity.'.EntityLevelQuery::RELATION, 'currentResult', 'activeAssignment.assessor', 'openCompletionRequest', 'awardCycle', 'region'];
 
     public function __construct(private RequestQueueQuery $queue) {}
 

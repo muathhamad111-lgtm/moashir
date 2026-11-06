@@ -88,6 +88,7 @@ enum AuditEvent: string
     case AssessmentReassigned = 'assessment.reassigned';
     case AssessmentReviewStarted = 'assessment.review_started';
     case AssessmentFeedbackSaved = 'assessment.feedback_saved';
+    case AssessmentSummarySaved = 'assessment.summary_saved';
     case AssessmentCompletionRequested = 'assessment.completion_requested';
     case AssessmentResubmitted = 'assessment.resubmitted';
     case AssessmentCompletionExpired = 'assessment.completion_expired';
@@ -199,6 +200,9 @@ enum AuditEvent: string
     case CertificateSuspended = 'certificate.suspended';
     case CertificateSettingsUpdated = 'settings.certificates_updated';
     case FeedbackReportExported = 'feedback_report.exported';
+    case BoardReportExported = 'board_report.exported';
+    case InsightsSettingsUpdated = 'settings.insights_updated';
+    case MaturityTextsUpdated = 'content.maturity_texts_updated';
     case RefundRecorded = 'refund.recorded';
     case FinanceExported = 'finance.exported';
     case FileUploaded = 'file.uploaded';

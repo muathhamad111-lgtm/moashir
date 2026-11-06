@@ -2,6 +2,7 @@ import process from 'node:process'
 import { defineConfig, devices } from '@playwright/test'
 
 const APP_HOST = 'localhost'
+const DEV_PORT = Number(process.env.PLAYWRIGHT_PORT ?? 5173)
 
 const MOCK_FAULTS_OFF = {
   cookies: [
@@ -39,7 +40,7 @@ export default defineConfig({
   reporter: [['html', { open: 'never' }]],
   use: {
     actionTimeout: 0,
-    baseURL: process.env.CI ? `http://${APP_HOST}:4173` : `http://${APP_HOST}:5173`,
+    baseURL: process.env.CI ? `http://${APP_HOST}:4173` : `http://${APP_HOST}:${DEV_PORT}`,
     storageState: MOCK_FAULTS_OFF,
     trace: 'on-first-retry',
     headless: true,
@@ -61,8 +62,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: process.env.CI ? 'npm run preview' : 'npm run dev',
-    port: process.env.CI ? 4173 : 5173,
+    command: process.env.CI ? 'npm run preview' : `npm run dev -- --port ${DEV_PORT} --strictPort`,
+    port: process.env.CI ? 4173 : DEV_PORT,
     reuseExistingServer: !process.env.CI,
   },
 })

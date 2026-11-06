@@ -62,6 +62,12 @@
     {{ $labelsAr['issued_on'] ?? '' }} <span class="label-en">· {{ $labelsEn['issued_on'] ?? '' }}</span>
     <strong>@include('documents.partials.dates', ['gregorian' => $data['issued_on'] ?? '', 'hijri' => $data['issued_on_hijri']['ar'] ?? '', 'locale' => 'ar'])</strong>
   </div>
+  @if (($data['vat_registration_number'] ?? null) !== null)
+    <div>
+      {{ $labelsAr['vat_registration_number'] ?? '' }} <span class="label-en">· {{ $labelsEn['vat_registration_number'] ?? '' }}</span>
+      <strong class="ltr latin">{{ $data['vat_registration_number'] }}</strong>
+    </div>
+  @endif
 </section>
 
 <table class="receipt__table">

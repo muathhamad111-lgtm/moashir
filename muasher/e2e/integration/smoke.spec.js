@@ -303,7 +303,7 @@ test('the platform settings screen still answers from the mock layer with the ma
   expect(api.unexpected(GUEST_PROBES)).toEqual([])
 })
 
-test('the public path intros wait behind the maintenance page while the homepage is unpublished', async () => {
+test('the public path intros stay open to the signed-in entity while the homepage is unpublished', async () => {
   const { page, api } = sessions.entity
   const status = await page.request.get('/api/v1/content/status', {
     headers: { Accept: 'application/json' },
@@ -311,8 +311,8 @@ test('the public path intros wait behind the maintenance page while the homepage
   expect((await status.json()).data.maintenance).toBe(true)
   for (const path of PUBLIC_PATH_INTROS) {
     await visit(page, path)
-    await expect(page).toHaveURL(/\/maintenance$/)
-    await expect(page.locator('.maintenance__title')).toBeVisible()
+    await expect(page).not.toHaveURL(/\/maintenance$/)
+    await expect(page.locator('.maintenance__title')).toHaveCount(0)
   }
   await settled(page, api)
   expect(api.unexpected([...GUEST_PROBES, PAGE_NOT_PUBLISHED])).toEqual([])

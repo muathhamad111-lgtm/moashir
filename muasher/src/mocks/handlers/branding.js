@@ -103,5 +103,4 @@ export const brandingHandlers = [
       return envelope(themeResource(user))
     }),
   ),
-
 ]

@@ -30,6 +30,8 @@ final class FinanceSettingsResource extends JsonResource
             FinanceSettingField::VatRate->value => $view->vatRate->percent,
             FinanceSettingField::OrderValidityMinutes->value => $view->orderValidityMinutes,
             'order_validity_limits' => $view->orderValidityLimits,
+            FinanceSettingField::VatRegistrationNumber->value => $view->vatRegistrationNumber?->value,
+            'vat_registration_reminder' => $view->needsVatRegistrationReminder(),
             'pricing' => [
                 'accredited' => PriceQuotePresenter::present($view->accredited),
                 'bag' => PriceQuotePresenter::present($view->bag),

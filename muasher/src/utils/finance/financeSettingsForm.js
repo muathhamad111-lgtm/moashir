@@ -2,13 +2,18 @@ import { number as yupNumber, object as yupObject, string as yupString } from 'y
 import { toCamelKey } from '@/api/caseMapping'
 import { FINANCE_SETTINGS_RULES } from '@/constants/finance'
 import { toWesternDigits } from '@/utils/numerals'
+import { VAT_NUMBER_PATTERN } from '@/constants/insights'
+import { vatNumberInput } from '@/utils/insights'
 
 export const FINANCE_FORM_FIELDS = [
   'accreditedPrice',
   'bagPrice',
   'vatRate',
   'orderValidityMinutes',
+  'vatRegistrationNumber',
 ]
+
+const VAT_NUMBER_FIELD = 'vatRegistrationNumber'
 
 export function editableFieldsOf(settings) {
   return new Set((settings?.editableFields ?? []).map(toCamelKey))
@@ -27,6 +32,7 @@ export function formValuesOf(settings) {
     bagPrice: settings.bagPrice ?? '',
     vatRate: settings.vatRate ?? '',
     orderValidityMinutes: String(settings.orderValidityMinutes ?? ''),
+    vatRegistrationNumber: settings.vatRegistrationNumber ?? '',
   }
 }
 
@@ -64,11 +70,19 @@ export function financeSettingsSchema(t, limits, editable) {
     .integer(t('finance.settings.validation.validity', limits))
     .min(limits.min, t('finance.settings.validation.validity', limits))
     .max(limits.max, t('finance.settings.validation.validity', limits))
+  const vatNumber = yupString()
+    .transform((value) => vatNumberInput(value))
+    .test(
+      'format',
+      t('finance.settings.validation.vatNumber'),
+      (value) => !value || VAT_NUMBER_PATTERN.test(value),
+    )
   const rules = {
     accreditedPrice: priceRule(t),
     bagPrice: priceRule(t),
     vatRate: vat,
     orderValidityMinutes: validity,
+    vatRegistrationNumber: vatNumber,
   }
   return yupObject(
     Object.fromEntries(
@@ -81,6 +95,7 @@ export function financeSettingsSchema(t, limits, editable) {
 }
 
 function submittedValue(field, value) {
+  if (field === VAT_NUMBER_FIELD) return vatNumberInput(value) || null
   if (field === 'orderValidityMinutes') return Number(toWesternDigits(value))
   return normalizedDecimal(value)
 }
@@ -91,7 +106,7 @@ export function changedSettings(original, values, editable) {
     FINANCE_FORM_FIELDS.filter((field) => editable.has(field))
       .filter(
         (field) =>
-          toWesternDigits(values[field]) !== '' &&
+          (field === VAT_NUMBER_FIELD || toWesternDigits(values[field]) !== '') &&
           submittedValue(field, values[field]) !== submittedValue(field, initial[field]),
       )
       .map((field) => [field, submittedValue(field, values[field])]),

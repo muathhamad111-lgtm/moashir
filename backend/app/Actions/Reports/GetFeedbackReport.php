@@ -9,10 +9,11 @@ use App\Data\Reports\FeedbackReport;
 use App\Enums\Certificates\CertificateStatus;
 use App\Models\Assessments\Assessment;
 use App\Models\Certificates\Certificate;
+use App\Services\Assessments\AssessmentSummaryReader;
 
 final readonly class GetFeedbackReport
 {
-    public function __construct(private GetAssessmentResult $results) {}
+    public function __construct(private GetAssessmentResult $results, private AssessmentSummaryReader $summaries) {}
 
     public function handle(Assessment $assessment): FeedbackReport
     {
@@ -25,6 +26,6 @@ final readonly class GetFeedbackReport
         return new FeedbackReport($result, Certificate::query()
             ->where('assessment_id', $assessment->id)
             ->where('status', CertificateStatus::Issued)
-            ->first());
+            ->first(), $this->summaries->currentOf($assessment));
     }
 }

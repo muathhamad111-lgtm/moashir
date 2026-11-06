@@ -97,6 +97,33 @@ onMounted(load)
         </div>
       </fieldset>
 
+      <fieldset v-if="editable.has('vatRegistrationNumber')" class="settings-form__group">
+        <legend class="settings-form__legend">
+          {{ t('finance.settings.vatNumberTitle') }}
+          <span class="settings-form__badge">
+            <AppIcon name="lock" />
+            {{ t('finance.settings.adminOnly') }}
+          </span>
+        </legend>
+        <FieldInput
+          name="vatRegistrationNumber"
+          :label="t('finance.settings.vatNumber')"
+          :hint="t('finance.settings.vatNumberHint')"
+          inputmode="numeric"
+          input-dir="ltr"
+          autocomplete="off"
+        />
+        <p
+          v-if="settings.vatRegistrationReminder"
+          class="settings-form__note"
+          role="note"
+          data-testid="vat-number-reminder"
+        >
+          <AppIcon name="info-circle" />
+          {{ t('finance.settings.vatNumberReminder') }}
+        </p>
+      </fieldset>
+
       <FinanceSettingsPreview :pricing="settings.pricing" />
     </form>
 

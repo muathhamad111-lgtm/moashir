@@ -57,10 +57,19 @@ function kpi(id, overrides = {}) {
 }
 
 const ROWS = [kpi(1), kpi(2, { published: false }), kpi(3, { showOnHomepage: true })]
-const LIST = { data: ROWS, meta: { pagination: { page: 1, perPage: 15, total: 3, lastPage: 1 }, stats: { total: 3, published: 2, unpublished: 1, featured: 1 } } }
+const LIST = {
+  data: ROWS,
+  meta: {
+    pagination: { page: 1, perPage: 15, total: 3, lastPage: 1 },
+    stats: { total: 3, published: 2, unpublished: 1, featured: 1 },
+  },
+}
 
 async function mountView() {
-  const wrapper = mount(Manage, { global: createTestGlobals({ locale: 'en' }), attachTo: document.body })
+  const wrapper = mount(Manage, {
+    global: createTestGlobals({ locale: 'en' }),
+    attachTo: document.body,
+  })
   await flushPromises()
   return wrapper
 }
@@ -72,14 +81,29 @@ function rowActions(wrapper, index) {
 beforeEach(() => {
   vi.clearAllMocks()
   kpisAdminService.list.mockResolvedValue(LIST)
-  kpiCatalogService.categories.list.mockResolvedValue({ data: [{ id: 1, key: 'beneficiaries', name: { ar: 'المستفيدون', en: 'Beneficiaries' }, active: true, order: 1 }] })
+  kpiCatalogService.categories.list.mockResolvedValue({
+    data: [
+      {
+        id: 1,
+        key: 'beneficiaries',
+        name: { ar: 'المستفيدون', en: 'Beneficiaries' },
+        active: true,
+        order: 1,
+      },
+    ],
+  })
   kpiCatalogService.types.list.mockResolvedValue({ data: [] })
 })
 
 describe('KPI administration (Content Officer)', () => {
   it('shows the four stats, the rows with category names and the homepage badge', async () => {
     const wrapper = await mountView()
-    expect(wrapper.findAll('.stats-card__value').map((value) => value.text())).toEqual(['3', '2', '1', '1'])
+    expect(wrapper.findAll('.stats-card__value').map((value) => value.text())).toEqual([
+      '3',
+      '2',
+      '1',
+      '1',
+    ])
     expect(wrapper.findAll('.kpis-admin__category')[0].text()).toBe('Beneficiaries')
     expect(wrapper.findAll('.kpis-admin__featured')).toHaveLength(1)
     wrapper.unmount()
@@ -103,12 +127,20 @@ describe('KPI administration (Content Officer)', () => {
 
   it('shows the featured limit refusal returned by the server', async () => {
     kpisAdminService.update.mockRejectedValue(
-      Object.assign(new Error('limit'), { normalized: { code: 'kpi.featured_limit_reached', message: 'At most 6 indicators can be shown on the homepage.' } }),
+      Object.assign(new Error('limit'), {
+        normalized: {
+          code: 'kpi.featured_limit_reached',
+          message: 'At most 6 indicators can be shown on the homepage.',
+        },
+      }),
     )
     const wrapper = await mountView()
     rowActions(wrapper, 0).vm.$emit('select', 'feature')
     await flushPromises()
-    expect(useToast().toasts.at(-1)).toMatchObject({ type: 'error', message: 'At most 6 indicators can be shown on the homepage.' })
+    expect(useToast().toasts.at(-1)).toMatchObject({
+      type: 'error',
+      message: 'At most 6 indicators can be shown on the homepage.',
+    })
     wrapper.unmount()
   })
 
@@ -127,13 +159,18 @@ describe('KPI administration (Content Officer)', () => {
     await wrapper.find('.toolbar__actions .btn--primary').trigger('click')
     await flushPromises()
     const dialog = wrapper.findComponent(KpiFormDialog)
-    const field = (name) => dialog.findAllComponents(BaseInput).find((input) => input.props('name') === name)
+    const field = (name) =>
+      dialog.findAllComponents(BaseInput).find((input) => input.props('name') === name)
     await field('name.ar').find('input').setValue('عدد المتطوعين')
     await field('value').find('input').setValue('1250')
     dialog.findComponent(FormModal).vm.$emit('submit')
     await vi.waitFor(() => expect(kpisAdminService.create).toHaveBeenCalled())
     const payload = kpisAdminService.create.mock.calls[0][0]
-    expect(payload).toMatchObject({ name: { ar: 'عدد المتطوعين', en: '' }, value: '1250', showOnHomepage: false })
+    expect(payload).toMatchObject({
+      name: { ar: 'عدد المتطوعين', en: '' },
+      value: '1250',
+      showOnHomepage: false,
+    })
     expect(payload).not.toHaveProperty('published')
     expect(payload).not.toHaveProperty('order')
     wrapper.unmount()
@@ -157,7 +194,9 @@ describe('KPI administration (Content Officer)', () => {
 
   it('explains why a category in use cannot be deleted', async () => {
     kpiCatalogService.categories.remove.mockRejectedValue(
-      Object.assign(new Error('in use'), { normalized: { code: 'category.in_use', meta: { kpiCount: 4 }, message: 'In use' } }),
+      Object.assign(new Error('in use'), {
+        normalized: { code: 'category.in_use', meta: { kpiCount: 4 }, message: 'In use' },
+      }),
     )
     const wrapper = await mountView()
     await wrapper.findAll('.tabs__tab')[1].trigger('click')
@@ -166,7 +205,9 @@ describe('KPI administration (Content Officer)', () => {
     useConfirm().accept()
     await flushPromises()
     expect(kpiCatalogService.categories.remove).toHaveBeenCalledWith(1)
-    expect(useToast().toasts.at(-1).message).toBe('This entry is used by 4 indicators. Deactivate it instead.')
+    expect(useToast().toasts.at(-1).message).toBe(
+      'This entry is used by 4 indicators. Deactivate it instead.',
+    )
     wrapper.unmount()
   })
 })

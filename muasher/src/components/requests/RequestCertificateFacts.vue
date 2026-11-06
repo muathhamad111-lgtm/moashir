@@ -39,7 +39,7 @@ const issuedOn = computed(() => formatRiyadhDate(props.certificate.issuedAt, loc
     <div v-if="issuedOn">
       <dt>{{ t('requests.certificate.issuedOn') }}</dt>
       <dd>
-        <bdi>{{ issuedOn }}</bdi>
+        <bdi dir="ltr">{{ issuedOn }}</bdi>
       </dd>
     </div>
     <div v-if="certificate.issuedBy?.name">

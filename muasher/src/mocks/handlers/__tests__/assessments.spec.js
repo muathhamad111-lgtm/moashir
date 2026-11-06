@@ -126,7 +126,7 @@ describe('self assessment mock — reads', () => {
       'GET',
       '/assessments?filter[path]=accredited&filter[status]=completed',
     )
-    expect(accredited.body.data.map((item) => item.id)).toEqual([9102])
+    expect(accredited.body.data.map((item) => item.id)).toEqual([9102, 9109])
     expect((await call('GET', '/assessments?filter[path]=kit')).status).toBe(422)
     expect((await call('GET', '/assessments?sort=number')).status).toBe(422)
     const unknown = await call('GET', '/assessments?filter[owner]=1')

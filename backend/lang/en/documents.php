@@ -62,6 +62,7 @@ return [
         'notes' => 'Notes',
         'none' => 'No notes recorded',
         'footer' => 'This report was generated automatically from the assessment result stored in the Moashir platform and contains no assessor names.',
+        'assessor_summary' => 'Assessor summary',
         'generated_on' => 'Report generated on',
     ],
 

@@ -13,6 +13,7 @@ enum FinanceSettingField: string
     case BagPrice = 'bag_price';
     case VatRate = 'vat_rate';
     case OrderValidityMinutes = 'order_validity_minutes';
+    case VatRegistrationNumber = 'vat_registration_number';
 
     public static function priceOf(PaymentPurpose $purpose): self
     {
@@ -29,12 +30,17 @@ enum FinanceSettingField: string
             self::BagPrice => SettingKey::BagPrice,
             self::VatRate => SettingKey::VatRate,
             self::OrderValidityMinutes => SettingKey::PaymentOrderValidityMinutes,
+            self::VatRegistrationNumber => SettingKey::VatRegistrationNumber,
         };
     }
 
     public function permission(): PermissionKey
     {
-        return $this === self::BagPrice ? PermissionKey::BagAdminManage : PermissionKey::SettingsAssessmentManage;
+        return match ($this) {
+            self::BagPrice => PermissionKey::BagAdminManage,
+            self::VatRegistrationNumber => PermissionKey::SettingsPaymentManage,
+            default => PermissionKey::SettingsAssessmentManage,
+        };
     }
 
     /**

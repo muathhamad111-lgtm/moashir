@@ -1,5 +1,6 @@
 import { allEntities, isDeleted } from './entitiesStore'
 import { normalizeSearchText } from './searchIndex'
+import { levelFilterOf, levelRankOf } from './entityLevels'
 
 const STATUSES = ['pending-verification', 'active', 'deactivated']
 
@@ -9,6 +10,7 @@ const SORT_KEYS = {
   founding_year: (entity) => entity.foundingYear,
   governance_grade: (entity) =>
     entity.governanceGrade === null ? -1 : Number(entity.governanceGrade),
+  level: levelRankOf,
 }
 
 export const SORTABLE = Object.keys(SORT_KEYS).flatMap((key) => [key, `-${key}`])
@@ -22,6 +24,7 @@ export function filtersFrom(query) {
     entityType: query.get('filter[entityType]'),
     developmentSector: query.get('filter[developmentSector]'),
     orgSize: query.get('filter[orgSize]'),
+    level: query.get('filter[level]'),
     trashed: query.get('filter[trashed]') === 'only',
     sort: query.get('sort') || '-created_at',
   }
@@ -41,6 +44,7 @@ function matchesFilters(entity, filters) {
     [filters.entityType, () => entity.entityType === filters.entityType],
     [filters.developmentSector, () => entity.developmentSector === filters.developmentSector],
     [filters.orgSize, () => entity.orgSize === filters.orgSize],
+    [filters.level, () => levelFilterOf(entity) === filters.level],
   ]
   return checks.every(([value, check]) => !value || check())
 }

@@ -79,3 +79,8 @@
   font-size: var(--fs-sm);
   color: var(--theme-text-muted);
 }
+
+.accredited-result__tools {
+  @include flex(row, center, flex-start, var(--space-3));
+  flex-wrap: wrap;
+}

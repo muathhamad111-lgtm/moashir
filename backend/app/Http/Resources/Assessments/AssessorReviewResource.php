@@ -7,6 +7,7 @@ namespace App\Http\Resources\Assessments;
 use App\Data\Assessments\AssessorReview;
 use App\Data\Assessments\FeedbackView;
 use App\Models\Assessments\Assessment;
+use App\Support\Assessments\AssessmentSummaryPresenter;
 use App\Support\Assessments\CompletionRequestPresenter;
 use App\Support\Assessments\EvidencePresenter;
 use App\Support\Assessments\PathPresenter;
@@ -38,6 +39,7 @@ final class AssessorReviewResource extends JsonResource
             'cv' => (object) $review->cv->bodiesBySubId(),
             'evidence' => EvidencePresenter::list($review->evidence->evidence, $subs),
             'feedback' => (object) new FeedbackView($assessment, $review->feedback, $subs)->bySubId(),
+            'summary' => AssessmentSummaryPresenter::present($review->summary),
             'completion_request' => CompletionRequestPresenter::present($review->completionRequest, $subs),
             'context' => array_map(static fn (Assessment $other): array => [
                 'id' => $other->id,

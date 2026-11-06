@@ -1,0 +1,53 @@
+@use '../mixins' as *;
+
+.level-trend {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  margin: 0;
+}
+
+.level-trend__svg {
+  inline-size: 100%;
+  direction: ltr;
+  overflow: visible;
+}
+
+.level-trend__band {
+  @each $tier in ('bronze', 'silver', 'gold', 'diamond') {
+    &--#{$tier} {
+      fill: var(--tier-#{$tier}-band);
+      stroke: var(--tier-#{$tier}-graphic);
+      stroke-width: var(--border-width);
+    }
+  }
+}
+
+.level-trend__band-label,
+.level-trend__date {
+  font-family: var(--font-arabic);
+  font-size: var(--fs-xs);
+  fill: var(--theme-text-secondary);
+}
+
+.level-trend__line {
+  fill: none;
+  stroke: var(--data-ink);
+  stroke-width: var(--border-width-thick);
+}
+
+.level-trend__point {
+  fill: var(--theme-surface-solid);
+  stroke: var(--data-ink);
+  stroke-width: var(--border-width-thick);
+}
+
+.level-trend__value {
+  font-family: var(--font-latin);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  fill: var(--theme-heading);
+}
+
+.level-trend__caption {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}

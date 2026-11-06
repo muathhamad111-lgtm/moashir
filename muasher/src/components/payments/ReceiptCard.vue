@@ -99,6 +99,16 @@ function hijri(value) {
             <bdi dir="ltr">{{ snapshot.paymentReference }}</bdi>
           </dd>
         </div>
+        <div
+          v-if="receipt.vatRegistrationNumber"
+          class="receipt-card__fact"
+          data-testid="receipt-vat-number"
+        >
+          <dt>{{ t('finance.receipt.vatRegistrationNumber') }}</dt>
+          <dd>
+            <bdi dir="ltr">{{ receipt.vatRegistrationNumber }}</bdi>
+          </dd>
+        </div>
         <div class="receipt-card__fact">
           <dt>{{ t('finance.fields.service') }}</dt>
           <dd>{{ t(`finance.purposes.${snapshot.purpose}`) }}</dd>

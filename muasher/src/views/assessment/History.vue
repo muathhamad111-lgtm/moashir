@@ -49,6 +49,7 @@ function progressOf(item) {
 <template>
   <section class="portal-area assessments-hub">
     <PortalAreaHeader
+      band
       :eyebrow="t('portal.assessments.eyebrow')"
       :title="t('portal.assessments.title')"
       :subtitle="t('portal.assessments.subtitle')"

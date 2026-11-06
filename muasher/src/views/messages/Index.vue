@@ -51,6 +51,7 @@ async function onCreated({ id, reference }) {
 <template>
   <section class="portal-area messages-page" :class="{ 'messages-page--thread': messageId }">
     <PortalAreaHeader
+      band
       class="messages-page__header"
       :eyebrow="t('portal.messages.eyebrow')"
       :title="t('portal.messages.title')"

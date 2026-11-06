@@ -221,6 +221,10 @@ export const financeFieldMessages = {
     ar: 'أدخل نسبة بين 0 و100 بخانتين عشريتين كحد أقصى.',
     en: 'Enter a rate between 0 and 100 with at most two decimals.',
   },
+  vat_registration_number_format: {
+    ar: 'أدخل 15 رقماً يبدأ وينتهي بالرقم 3، بالأرقام اللاتينية ودون مسافات.',
+    en: 'Enter 15 Western digits that start and end with 3, without spaces.',
+  },
   between: {
     ar: 'يجب أن تكون القيمة عددًا صحيحًا بين :min و:max.',
     en: 'The value must be a whole number between :min and :max.',

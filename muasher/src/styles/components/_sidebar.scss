@@ -23,6 +23,10 @@
     inline-size: var(--size-sidebar);
     padding-inline-start: var(--space-4);
   }
+
+  [data-theme='dark'] & {
+    background-image: var(--nav-gradient);
+  }
 }
 
 .sidebar__brand {

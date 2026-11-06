@@ -22,6 +22,7 @@ use App\Models\Finance\Payment;
 use App\Models\Finance\PaymentReceipt;
 use App\Models\Identity\TermsVersion;
 use App\Models\Identity\User;
+use App\Models\Insights\MaturityInterpretation;
 use App\Models\Kpis\Kpi;
 use App\Models\Platform\DemoRecord;
 use App\Services\Cms\LegalDocumentSource;
@@ -173,16 +174,17 @@ it('installs fictional demo data, writes the passwords only to a private account
         ->and(DemoRecord::query()->where('kind', DemoRecordKind::Entity)->count())->toBe(3)
         ->and(DemoRecord::query()->where('kind', DemoRecordKind::User)->count())->toBe(11)
         ->and(Payment::query()->where('mode', '<>', IntegrationMode::Test->value)->exists())->toBeFalse()
-        ->and(Payment::query()->where('status', PaymentStatus::Paid)->count())->toBe(2)
+        ->and(Payment::query()->where('status', PaymentStatus::Paid)->count())->toBe(6)
         ->and(Payment::query()->where('status', PaymentStatus::UnderReview)->count())->toBe(1)
         ->and(Payment::query()->where('status', PaymentStatus::Rejected)->count())->toBe(1)
-        ->and(PaymentReceipt::query()->pluck('number')->all())->toBe([null, null])
+        ->and(PaymentReceipt::query()->pluck('number')->unique()->all())->toBe([null])
+        ->and(PaymentReceipt::query()->count())->toBe(6)
         ->and(PaymentReceipt::query()->where('is_test', false)->exists())->toBeFalse()
         ->and(BankAccount::query()->sole()->iban)->toBe(EXAMPLE_IBAN)
         ->and(BankAccount::query()->sole()->bank_name->ar)->toContain('مثال')
         ->and(app(SettingsStore::class)->get(SettingKey::PaymentChannels))->toBe(['electronic', 'bank_transfer']);
 
-    $paid = Payment::query()->where('status', PaymentStatus::Paid)->where('channel', PaymentChannel::Electronic)->sole();
+    $paid = Payment::query()->where('status', PaymentStatus::Paid)->where('channel', PaymentChannel::Electronic)->whereNotIn('id', Assessment::query()->where('status', 'completed')->select('payment_id'))->sole();
     $paidTransfer = Payment::query()->where('status', PaymentStatus::Paid)->where('channel', PaymentChannel::BankTransfer)->sole();
     $cycle = AwardCycle::query()->sole();
 
@@ -370,4 +372,25 @@ it('publishes the legal drafts and the accessibility page with the demo and keep
     expect(Artisan::call('moashir:demo:install', ['--content-only' => true]))->toBe(0)
         ->and(Artisan::output())->toContain('0 legal texts and 0 legal pages published from the legal drafts')
         ->and(TermsVersion::query()->count())->toBe(2);
+});
+
+it('installs fictional accredited and self results that show every excellence-tools case', function (): void {
+    enableDemoData();
+    installDemoPrerequisites();
+    runDemoCommand('moashir:demo:install', demoAccountsDirectory().'/accounts.txt');
+    [$gold, $selfOnly, $mixed] = Entity::query()->orderBy('id')->get()->all();
+
+    $goldOverview = switchTo(ownerOf($gold))->getJson('/api/v1/entities/me/insights')->assertOk()->json('data');
+    $goldResult = $goldOverview['selected']['assessment_id'];
+
+    expect($goldOverview['selected']['certificate']['level'])->toBe('gold')
+        ->and(MaturityInterpretation::query()->whereNull('main_criterion_code')->whereNotNull('text')->count())->toBe(4);
+    switchTo(ownerOf($gold))->getJson("/api/v1/assessments/{$goldResult}/insights/executive-summary")->assertOk()
+        ->assertJsonPath('data.change.previous.certificate.level', 'silver')
+        ->assertJsonPath('data.assessor_summary.version', 1);
+    switchTo(ownerOf($selfOnly))->getJson('/api/v1/entities/me/insights')->assertOk()->assertJsonPath('data.empty_state.reason', 'only_self');
+    switchTo(ownerOf($mixed))->getJson('/api/v1/entities/me/insights')->assertOk()
+        ->assertJsonPath('data.selected.certificate.level', null)
+        ->assertJsonPath('data.selected.certificate.status', 'issued')
+        ->assertJsonPath('data.exclusions.0.reason', 'certificate_revoked');
 });

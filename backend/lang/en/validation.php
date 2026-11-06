@@ -160,6 +160,15 @@ return [
     'uuid' => 'The :attribute field must be a valid UUID.',
 
     'custom' => [
+        'vat_registration_number' => [
+            'regex' => 'The VAT registration number has 15 Western digits (0-9) with no spaces, and starts and ends with 3.',
+        ],
+        'gap_thresholds' => [
+            'ascending' => 'The critical-gap threshold must be above zero and below the strength threshold, and the strength threshold cannot exceed 100.',
+        ],
+        'maturity_bands' => [
+            'ascending' => 'The maturity band starts must be above zero, rise from Developing to Mature and Leading, and not exceed 100.',
+        ],
         'iban' => [
             'format' => 'A Saudi IBAN has 24 characters: SA, two check digits, the bank code and 18 letters or digits.',
             'checksum' => 'This IBAN is not valid: its check digits do not match the rest of the number. Check it character by character.',
@@ -271,6 +280,18 @@ return [
     ],
 
     'attributes' => [
+        'vat_registration_number' => 'VAT registration number',
+        'gap_thresholds' => 'strengths and gaps thresholds',
+        'gap_thresholds.critical_below' => 'critical-gap threshold',
+        'gap_thresholds.strength_from' => 'strength threshold',
+        'maturity_bands' => 'maturity band bounds',
+        'maturity_bands.developing_from' => 'start of the Developing band',
+        'maturity_bands.mature_from' => 'start of the Mature band',
+        'maturity_bands.leading_from' => 'start of the Leading band',
+        'summary' => 'assessor summary',
+        'main_criterion_code' => 'main criterion code',
+        'text.ar' => 'Arabic text',
+        'text.en' => 'English text',
         'bank_name' => 'bank name',
         'bank_name.ar' => 'Arabic bank name',
         'bank_name.en' => 'English bank name',

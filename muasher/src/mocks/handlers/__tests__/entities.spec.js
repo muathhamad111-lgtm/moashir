@@ -315,6 +315,8 @@ describe('entities mock — staff list and record scope', () => {
       [
         'authorized_person_name',
         'id',
+        'level',
+        'level_certificate_number',
         'name',
         'official_email',
         'phone',

@@ -8,7 +8,9 @@ import { logger } from '@/utils/logger'
 vi.mock('@/api/client', () => ({
   apiClient: { get: vi.fn(), post: vi.fn(), put: vi.fn(), patch: vi.fn(), delete: vi.fn() },
 }))
-vi.mock('@/utils/logger', () => ({ logger: { breadcrumb: vi.fn(), error: vi.fn(), info: vi.fn() } }))
+vi.mock('@/utils/logger', () => ({
+  logger: { breadcrumb: vi.fn(), error: vi.fn(), info: vi.fn() },
+}))
 
 const envelope = { data: { data: [], meta: {}, errors: null } }
 
@@ -19,10 +21,21 @@ beforeEach(() => {
 
 describe('kpisService (public)', () => {
   it('lists published indicators with server-side filters, sort and paging', async () => {
-    const params = { search: 'الجمعيات', 'filter[categoryId]': 2, 'filter[status]': 'needs-improvement', sort: '-value', page: 2, perPage: 12 }
+    const params = {
+      search: 'الجمعيات',
+      'filter[categoryId]': 2,
+      'filter[status]': 'needs-improvement',
+      sort: '-value',
+      page: 2,
+      perPage: 12,
+    }
     await kpisService.list(params)
     expect(apiClient.get).toHaveBeenCalledWith('/kpis', { params })
-    expect(logger.breadcrumb).toHaveBeenCalledWith('service', 'kpis.list', expect.objectContaining({ entity: 'kpi' }))
+    expect(logger.breadcrumb).toHaveBeenCalledWith(
+      'service',
+      'kpis.list',
+      expect.objectContaining({ entity: 'kpi' }),
+    )
   })
 
   it('reads the featured list, a detail by slug and the public catalogs', async () => {
@@ -30,7 +43,12 @@ describe('kpisService (public)', () => {
     await kpisService.getBySlug('volunteers')
     await kpisService.listCategories()
     await kpisService.listTypes()
-    expect(apiClient.get.mock.calls.map(([url]) => url)).toEqual(['/kpis/featured', '/kpis/volunteers', '/kpi-categories', '/kpi-types'])
+    expect(apiClient.get.mock.calls.map(([url]) => url)).toEqual([
+      '/kpis/featured',
+      '/kpis/volunteers',
+      '/kpi-categories',
+      '/kpi-types',
+    ])
   })
 
   it('does not report a 404 detail as an error', async () => {
@@ -53,7 +71,11 @@ describe('kpisAdminService', () => {
     await kpisAdminService.reorder([2, 7])
     await kpisAdminService.listValues(7)
     await kpisAdminService.recordValue(7, { value: '12.5', measuredOn: '2026-10-01' })
-    expect(apiClient.get.mock.calls.map(([url]) => url)).toEqual(['/admin/kpis', '/admin/kpis/7', '/admin/kpis/7/values'])
+    expect(apiClient.get.mock.calls.map(([url]) => url)).toEqual([
+      '/admin/kpis',
+      '/admin/kpis/7',
+      '/admin/kpis/7/values',
+    ])
     expect(apiClient.post.mock.calls).toEqual([
       ['/admin/kpis', { name: { ar: 'مؤشر', en: '' } }],
       ['/admin/kpis/7/values', { value: '12.5', measuredOn: '2026-10-01' }],

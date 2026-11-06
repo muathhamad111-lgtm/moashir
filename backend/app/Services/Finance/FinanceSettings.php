@@ -9,6 +9,7 @@ use App\Services\Settings\SettingsStore;
 use App\Support\ScalarValue;
 use App\Support\StringList;
 use App\Support\ValueObjects\VatRate;
+use App\Support\ValueObjects\VatRegistrationNumber;
 use Illuminate\Contracts\Config\Repository;
 
 final readonly class FinanceSettings
@@ -18,6 +19,11 @@ final readonly class FinanceSettings
     public function vatRate(): VatRate
     {
         return new VatRate(ScalarValue::string($this->settings->get(SettingKey::VatRate), ScalarValue::string(SettingKey::VatRate->defaultValue())));
+    }
+
+    public function vatRegistrationNumber(): ?VatRegistrationNumber
+    {
+        return VatRegistrationNumber::tryFrom($this->settings->get(SettingKey::VatRegistrationNumber));
     }
 
     public function orderValidityMinutes(): int

@@ -14,6 +14,10 @@ vi.mock('@/services/contentService', () => ({
   contentService: { getStatus: vi.fn() },
 }))
 
+vi.mock('@/services/accreditedService', () => ({
+  accreditedService: { getCurrent: vi.fn().mockResolvedValue({ data: { active: null } }) },
+}))
+
 function freshRouter() {
   const router = createRouter({ history: createMemoryHistory(), routes })
   setupGuards(router)
@@ -80,6 +84,33 @@ describe('maintenance guard (Q-96)', () => {
     maintenanceOn()
     const router = freshRouter()
     await router.push('/verify')
+    await router.push('/lenses')
+    expect(router.currentRoute.value.name).toBe(ROUTE_NAMES.PUBLIC_MAINTENANCE)
+  })
+
+  it.each([
+    ['/assessment/accredited', ROUTE_NAMES.ASSESSMENT_ACCREDITED],
+    ['/assessment/advanced', ROUTE_NAMES.ASSESSMENT_ADVANCED],
+  ])('lets a signed-in entity open %s while the homepage is unpublished', async (path, name) => {
+    maintenanceOn()
+    useAuthStore().setUser(sessionUserFor([ROLES.ENTITY], { id: 'e1' }))
+    const router = freshRouter()
+    await router.push(path)
+    expect(router.currentRoute.value.name).toBe(name)
+    expect(contentService.getStatus).not.toHaveBeenCalled()
+  })
+
+  it('still sends visitors of the path intros to the maintenance page', async () => {
+    maintenanceOn()
+    const router = freshRouter()
+    await router.push('/assessment/accredited')
+    expect(router.currentRoute.value.name).toBe(ROUTE_NAMES.PUBLIC_MAINTENANCE)
+  })
+
+  it('still sends a signed-in entity from other public pages to the maintenance page', async () => {
+    maintenanceOn()
+    useAuthStore().setUser(sessionUserFor([ROLES.ENTITY], { id: 'e2' }))
+    const router = freshRouter()
     await router.push('/lenses')
     expect(router.currentRoute.value.name).toBe(ROUTE_NAMES.PUBLIC_MAINTENANCE)
   })

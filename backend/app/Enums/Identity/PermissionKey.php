@@ -55,6 +55,8 @@ enum PermissionKey: string
     case AwardResultsAnnounce = 'award.results.announce';
 
     case ReportsFeedbackView = 'reports.feedback.view';
+    case ReportsInsightsOwnView = 'reports.insights.own.view';
+    case ReportsInsightsView = 'reports.insights.view';
     case CertificatesOwnView = 'certificates.own.view';
     case CertificatesIssueAccredited = 'certificates.issue.accredited';
     case CertificatesManage = 'certificates.manage';
@@ -74,6 +76,7 @@ enum PermissionKey: string
 
     case ContentHomeManage = 'content.home.manage';
     case ContentKpisManage = 'content.kpis.manage';
+    case ContentInsightsManage = 'content.insights.manage';
     case ContactMessagesManage = 'contact.messages.manage';
 
     case AiKbManage = 'ai.kb.manage';
@@ -144,6 +147,7 @@ enum PermissionKey: string
         'award.cycles.manage',
         'award.committee.assigned.view',
         'certificates.own.view',
+        'reports.insights.own.view',
         'certificates.issue.accredited',
         'certificates.manage',
         'bag.own.view',
@@ -153,6 +157,7 @@ enum PermissionKey: string
         'criteria.publish',
         'content.home.manage',
         'content.kpis.manage',
+        'content.insights.manage',
         'ai.kb.manage',
         'roles.matrix.view',
         'roles.matrix.manage',

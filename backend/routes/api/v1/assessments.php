@@ -49,6 +49,7 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
             Route::post('{assessment}/start-review', [AssessorReviewController::class, 'start'])->middleware(['can:score,assessment', 'throttle:sensitive'])->name('review.start');
             Route::put('{assessment}/review/scores', [AssessorReviewController::class, 'scores'])->middleware(['can:score,assessment', 'throttle:assessment-write'])->name('review.scores');
             Route::put('{assessment}/review/feedback', [AssessorReviewController::class, 'feedback'])->middleware(['can:score,assessment', 'throttle:assessment-write'])->name('review.feedback');
+            Route::put('{assessment}/review/summary', [AssessorReviewController::class, 'summary'])->middleware(['can:score,assessment', 'throttle:assessment-write'])->name('review.summary');
             Route::post('{assessment}/request-completion', [AssessorReviewController::class, 'requestCompletion'])->middleware(['can:score,assessment', 'throttle:sensitive'])->name('review.request-completion');
             Route::post('{assessment}/complete', [AssessorReviewController::class, 'complete'])->middleware(['can:score,assessment', 'throttle:sensitive'])->name('review.complete');
 

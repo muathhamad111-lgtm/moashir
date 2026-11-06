@@ -37,6 +37,7 @@ use App\Models\Identity\Role;
 use App\Models\Identity\TermsVersion;
 use App\Models\Identity\User;
 use App\Models\Identity\UserSession;
+use App\Models\Insights\MaturityInterpretation;
 use App\Models\Kpis\Kpi;
 use App\Models\Notifications\Notification;
 use App\Models\Settings\BrandingTheme;
@@ -74,6 +75,8 @@ use App\Policies\Identity\PermissionPolicy;
 use App\Policies\Identity\RolePolicy;
 use App\Policies\Identity\UserPolicy;
 use App\Policies\Identity\UserSessionPolicy;
+use App\Policies\Insights\InsightsPolicy;
+use App\Policies\Insights\MaturityInterpretationPolicy;
 use App\Policies\Integrations\IntegrationSettingsPolicy;
 use App\Policies\Kpis\KpiPolicy;
 use App\Policies\Notifications\NotificationPolicy;
@@ -132,6 +135,7 @@ final class AuthorizationServiceProvider extends ServiceProvider
         Gate::policy(Notification::class, NotificationPolicy::class);
         Gate::policy(Certificate::class, CertificatePolicy::class);
         Gate::policy(ContactMessage::class, ContactMessagePolicy::class);
+        Gate::policy(MaturityInterpretation::class, MaturityInterpretationPolicy::class);
 
         Gate::define(Ability::SuperAdminSelfService->value, static fn (User $user): bool => false);
         Gate::define(Ability::ListRoles->value, static fn (User $user): bool => $user->can(PermissionKey::UsersView->value)
@@ -154,6 +158,9 @@ final class AuthorizationServiceProvider extends ServiceProvider
         Gate::define(Ability::ManageContactSettings->value, [ContactSettingsPolicy::class, 'manage']);
         Gate::define(Ability::IssueAccreditedCertificate->value, [CertificatePolicy::class, 'issueAccredited']);
         Gate::define(Ability::ViewFeedbackReport->value, [FeedbackReportPolicy::class, 'view']);
+        Gate::define(Ability::ViewOwnInsights->value, [InsightsPolicy::class, 'viewOwn']);
+        Gate::define(Ability::ViewEntityInsights->value, [InsightsPolicy::class, 'viewEntity']);
+        Gate::define(Ability::ViewAssessmentInsights->value, [InsightsPolicy::class, 'view']);
         Gate::define(Ability::ViewCommitteeRoster->value, [CommitteePolicy::class, 'view']);
         Gate::define(Ability::ManageCommitteeRoster->value, [CommitteePolicy::class, 'manage']);
         Gate::define(Ability::ManageCommitteeMember->value, [CommitteePolicy::class, 'manageMember']);

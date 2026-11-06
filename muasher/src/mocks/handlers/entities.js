@@ -7,6 +7,7 @@ import {
   actorWith,
   entityReject,
   entityRoute,
+  fieldError,
   readJson,
   signedInUser,
 } from '../stores/entityRejection'
@@ -19,6 +20,7 @@ import {
 } from '../stores/entityAccess'
 import { ENTITY_ACCESS, entityResourceFor, ownEntityResource } from '../stores/entitySerializers'
 import { entityStats, filtersFrom, queryEntities } from '../stores/entityQueries'
+import { LEVEL_FILTERS } from '../stores/entityLevels'
 import { applyProfile, isDeleted, setMarketingConsent } from '../stores/entitiesStore'
 import { applyRegistry } from '../stores/entityRegistry'
 import { applyUnifiedNumber } from '../stores/entityUnifiedNumber'
@@ -52,6 +54,8 @@ function staffResource(user, entity) {
 function listFilters(request) {
   const filters = filtersFrom(new URL(request.url).searchParams)
   if (filters.trashed && !sessionCan(P.DELETE)) throw entityReject.forbidden()
+  if (filters.level !== null && !LEVEL_FILTERS.includes(filters.level))
+    throw entityReject.validation({ 'filter.level': [fieldError('filter.level_invalid')] })
   return filters
 }
 

@@ -15,6 +15,7 @@ export const ACCREDITED_FIXTURE_IDS = {
   needsCompletion: 9106,
   assigned: 9107,
   underReview: 9108,
+  completedPrevious: 9109,
 }
 
 export const ACCREDITED_FIXTURE_FOLLOWER_ID = FOLLOWER_ID
@@ -185,7 +186,7 @@ export const accreditedRequestsFixture = [
     entityId: 6001,
     paymentId: SEEDED_IDS.paidApplePay,
     status: 'completed',
-    scoring: { pattern: 'developing', count: null },
+    scoring: { pattern: 'silver', count: null },
     cvCodes: ALL_CV,
     evidence: evidence(FULL_EVIDENCE),
     feedbackCodes: ['M2.2'],
@@ -345,6 +346,31 @@ export const accreditedRequestsFixture = [
     createdAt: '2026-10-09T07:50:00Z',
     submittedAt: '2026-10-25T08:00:00Z',
     completedAt: null,
+    refundedAt: null,
+  },
+  {
+    id: ACCREDITED_FIXTURE_IDS.completedPrevious,
+    number: 'ACC-2025-000012',
+    entityId: 5001,
+    paymentId: paymentOf(21),
+    status: 'completed',
+    scoring: { pattern: 'developing', count: null },
+    cvCodes: ALL_CV,
+    evidence: evidence(FULL_EVIDENCE),
+    feedbackCodes: ['M1.1'],
+    assignments: [
+      {
+        assessorId: 11,
+        status: 'completed',
+        assignedAt: '2025-10-05T07:00:00Z',
+        startedAt: '2025-10-06T06:30:00Z',
+        endedAt: '2025-10-30T12:00:00Z',
+      },
+    ],
+    completionRequests: [],
+    createdAt: '2025-09-28T08:15:00Z',
+    submittedAt: '2025-10-04T09:00:00Z',
+    completedAt: '2025-10-30T12:00:00Z',
     refundedAt: null,
   },
 ]

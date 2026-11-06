@@ -7,6 +7,8 @@ import StatusBadge from '@/components/ui/StatusBadge.vue'
 import DateStamp from '@/components/accredited/DateStamp.vue'
 import OverdueBadge from '@/components/accredited/OverdueBadge.vue'
 import PathBadge from '@/components/ui/PathBadge.vue'
+import LevelBadge from '@/components/level/LevelBadge.vue'
+import { tierOfLevel } from '@/utils/levelTier'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
 
@@ -50,7 +52,12 @@ const columns = computed(() => [
         <bdi dir="ltr">{{ item.number }}</bdi>
       </RouterLink>
     </template>
-    <template #cell-entity="{ item }">{{ localizedText(item.entity?.name, locale) }}</template>
+    <template #cell-entity="{ item }">
+      <span class="request-queue__entity">
+        <span>{{ localizedText(item.entity?.name, locale) }}</span>
+        <LevelBadge v-if="item.entity" :tier="tierOfLevel(item.entity.level)" size="s" />
+      </span>
+    </template>
     <template #cell-path="{ item }">
       <span class="request-queue__path">
         <PathBadge v-if="item.path" :path="item.path" :label="item.pathLabel" compact />

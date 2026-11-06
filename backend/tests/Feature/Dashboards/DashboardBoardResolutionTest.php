@@ -73,7 +73,7 @@ it('opens the read-only executive board to holders of the independent permission
         ->assertJsonPath('data.available_boards', ['finance_officer', 'executive']);
 
     expect(collect($response->json('data.cards'))->pluck('link')->filter()->all())->toBe([])
-        ->and(collect($response->json('data.widgets'))->pluck('key')->all())->toBe(['entities_by_region', 'entities_by_sector', 'entities_by_governance', 'lowest_criteria']);
+        ->and(collect($response->json('data.widgets'))->pluck('key')->all())->toBe(['entities_by_region', 'entities_by_sector', 'entities_by_governance', 'entities_by_level', 'lowest_criteria']);
 });
 
 it('keeps a seated assessor on the assessor board while the committee window is not open', function (): void {

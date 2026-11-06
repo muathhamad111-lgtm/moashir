@@ -10,6 +10,7 @@ import { criteriaUpdateOf } from '../assessments/criteriaMoves'
 import { ACCESS, accessOf } from '../assessments/assessmentAccess'
 import { entityProfileOf, entitySummary } from '../entitySerializers'
 import { findRegion } from '../regionsStore'
+import { entityLevelOf } from '../entityLevels'
 import { uploadLimits } from './assessmentSettingsStore'
 import {
   activeAssignment,
@@ -160,6 +161,10 @@ function assessorOf(assignment, staffName) {
   return assignment ? { id: assignment.assessorId, name: staffName(assignment.assessorId) } : null
 }
 
+function queueEntityOf(entity) {
+  return entity ? { ...entitySummary(entity), level: entityLevelOf(entity.id) } : null
+}
+
 export function queueRow(record, staffName) {
   const assignment = activeAssignment(record)
   return {
@@ -169,7 +174,7 @@ export function queueRow(record, staffName) {
     pathLabel: pathLabelOf(record.path),
     status: maskedStatus(record),
     isFrozen: isFrozen(record),
-    entity: entitySummary(entityOf(record)),
+    entity: queueEntityOf(entityOf(record)),
     assessor: assessorOf(assignment, staffName),
     assignedAt: assignment?.createdAt ?? null,
     completionDeadline: openCompletionOf(record)?.deadlineAt ?? null,

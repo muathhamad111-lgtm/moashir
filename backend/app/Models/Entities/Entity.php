@@ -6,12 +6,16 @@ namespace App\Models\Entities;
 
 use App\Casts\EntityNameCast;
 use App\Data\Entities\EntityProfileData;
+use App\Enums\Certificates\CertificateKind;
+use App\Enums\Certificates\CertificateStatus;
 use App\Enums\Entities\DevelopmentSector;
 use App\Enums\Entities\EntityProfileField;
 use App\Enums\Entities\EntityStatus;
 use App\Enums\Entities\EntityType;
 use App\Enums\Entities\OrgSize;
 use App\Enums\Entities\ProfileCompletionItem;
+use App\Models\Assessments\Assessment;
+use App\Models\Certificates\Certificate;
 use App\Models\Files\StoredFile;
 use App\Models\Identity\EmailChangeRequest;
 use App\Models\Identity\User;
@@ -71,6 +75,7 @@ use Illuminate\Support\Facades\Date;
  * @property-read City $city
  * @property-read User|null $owner
  * @property-read StoredFile|null $logo
+ * @property-read Certificate|null $levelCertificate
  */
 final class Entity extends Model
 {
@@ -183,6 +188,27 @@ final class Entity extends Model
     public function privacyRequests(): HasMany
     {
         return $this->hasMany(PrivacyRequest::class);
+    }
+
+    /**
+     * @return HasMany<Assessment, $this>
+     */
+    public function assessments(): HasMany
+    {
+        return $this->hasMany(Assessment::class);
+    }
+
+    /**
+     * @return HasOne<Certificate, $this>
+     */
+    public function levelCertificate(): HasOne
+    {
+        return $this->hasOne(Certificate::class)->ofMany(
+            ['issued_at' => 'max', 'id' => 'max'],
+            static function (Builder $certificates): void {
+                $certificates->where('kind', CertificateKind::Accredited)->where('status', CertificateStatus::Issued);
+            },
+        );
     }
 
     /**

@@ -25,6 +25,9 @@ enum Ability: string
     case ViewReadinessDetails = 'platform.readiness.details';
     case IssueAccreditedCertificate = 'certificates.accredited-certificate.issue';
     case ViewFeedbackReport = 'reports.feedback-report.view';
+    case ViewOwnInsights = 'reports.insights.view-own';
+    case ViewEntityInsights = 'reports.insights.view-entity';
+    case ViewAssessmentInsights = 'reports.insights.view-assessment';
     case ViewCommitteeRoster = 'award.committee-roster.view';
     case ManageCommitteeRoster = 'award.committee-roster.manage';
     case ManageCommitteeMember = 'award.committee-roster.member';

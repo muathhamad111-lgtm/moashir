@@ -13,7 +13,9 @@ use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Dashboards\CardFormat;
 use App\Enums\Dashboards\DashboardBoard;
 use App\Models\Assessments\Assessment;
+use App\Models\Assessments\EvidenceFile;
 use App\Models\Award\AwardCycle;
+use App\Models\Files\StoredFile;
 use App\Models\Identity\User;
 use App\Models\Notifications\Notification;
 use App\Services\Dashboards\EntityPaymentsCard;
@@ -49,9 +51,10 @@ final readonly class EntityBoardQuery implements DashboardBoardQuery
             new DashboardCard('latest_result_percent', $summary['percent'] ?? null, CardFormat::Percent, Links::ASSESSMENT_HISTORY),
             new DashboardCard('open_requests', $this->openRequests($entityId), link: Links::ASSESSMENT_HISTORY),
             new DashboardCard('unread_notifications', Notification::query()->ownedBy($user->id)->inInbox()->unread()->count(), link: Links::NOTIFICATIONS),
+            new DashboardCard('accepted_evidence_count', $this->acceptedEvidence($entityId)),
         ], [
             new DashboardWidget('latest_result', $summary),
-            new DashboardWidget('criteria_progress', $this->results->mainsOf($latest)),
+            new DashboardWidget('criteria_progress', $this->results->mainsOf($this->results->latestEligibleAccreditedOf($entityId))),
             new DashboardWidget('requests', $this->latestRequests($user, $entityId)),
             new DashboardWidget('payments_card', $this->payments->of($entityId)),
         ]);
@@ -67,6 +70,15 @@ final readonly class EntityBoardQuery implements DashboardBoardQuery
                     ->where('path', AssessmentPath::Advanced)
                     ->whereIn('status', Advanced::valuesOf(...Advanced::filteringVisibleStates()))
                     ->whereIn('award_cycle_id', AwardCycle::query()->select('id')->whereNull('announced_at'))))
+            ->count();
+    }
+
+    private function acceptedEvidence(int $entityId): int
+    {
+        return EvidenceFile::query()
+            ->present()
+            ->whereIn('assessment_id', Assessment::query()->ownedBy($entityId)->select('id'))
+            ->whereIn('stored_file_id', StoredFile::query()->clean()->select('id'))
             ->count();
     }
 

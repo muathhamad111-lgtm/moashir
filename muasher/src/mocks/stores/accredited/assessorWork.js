@@ -10,6 +10,7 @@ import { assertNotFrozen } from './entityWorkflow'
 import { isAdvanced, stagesOf } from '../assessments/reviewedPaths'
 import { announceInitialCompleted } from '../award/awardNotices'
 import { recordSnapshot } from './resultSnapshots'
+import { writeSummary } from '../insights/assessorSummaries'
 import {
   isPlainObject,
   isPositiveInteger,
@@ -22,6 +23,7 @@ import {
 
 const FEEDBACK_FIELDS = ['strengths', 'improvementPoints', 'notes']
 const FEEDBACK_MAX = 5000
+const SUMMARY_MAX = 2000
 const FEEDBACK_MAX_ITEMS = 500
 const NOTES = { MIN: 10, MAX: 2000 }
 const ITEMS_MAX = 100
@@ -142,6 +144,31 @@ export function saveFeedbackItems(user, record, body) {
   targets.forEach(({ sub, fields }) => applyFeedback(record, sub, fields))
   touch(record)
   return record
+}
+
+function validateSummary(body) {
+  const summary = body.summary
+  const errors = {}
+  if (summary !== null && summary !== undefined && typeof summary !== 'string')
+    errors.summary = [fieldMessage('validation.invalid', {}, 'summary')]
+  else if (typeof summary === 'string' && summary.trim().length > SUMMARY_MAX)
+    errors.summary = [fieldMessage('validation.max_chars', { max: SUMMARY_MAX }, 'summary')]
+  const reason = reasonError(body.reason)
+  if (reason) errors.reason = reason
+  throwIfErrors(errors)
+}
+
+export function saveAssessorSummary(user, record, body) {
+  if (isAdvanced(record)) throw assessmentReject.coded(409, 'assessment.summary_not_applicable')
+  validateSummary(body)
+  enterReviewGate(user, record, {
+    verb: 'summary',
+    reason: trimmed(body.reason) || null,
+    states: [stagesOf(record).reviewing],
+  })
+  const saved = writeSummary(record.id, body.summary)
+  touch(record)
+  return saved
 }
 
 function deadlineError(value) {

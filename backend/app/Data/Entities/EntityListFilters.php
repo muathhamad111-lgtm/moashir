@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Entities;
 
+use App\Enums\Certificates\EntityLevelFilter;
 use App\Enums\Entities\DevelopmentSector;
 use App\Enums\Entities\EntityStatus;
 use App\Enums\Entities\EntityType;
@@ -23,13 +24,14 @@ final readonly class EntityListFilters
         public bool $onlyDeleted = false,
         public string $sort = '-created_at',
         public int $perPage = 15,
+        public ?EntityLevelFilter $level = null,
     ) {}
 
     public function withStatus(?EntityStatus $status): self
     {
         return new self(
             $this->search, $status, $this->regionId, $this->cityId, $this->entityType,
-            $this->developmentSector, $this->orgSize, $this->onlyDeleted, $this->sort, $this->perPage,
+            $this->developmentSector, $this->orgSize, $this->onlyDeleted, $this->sort, $this->perPage, $this->level,
         );
     }
 }

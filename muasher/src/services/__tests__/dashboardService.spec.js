@@ -92,6 +92,7 @@ describe('dashboardService', () => {
             },
             { key: 'payments_card', data: { receiptsCount: 1 } },
           ],
+          cards: [{ key: 'accepted_evidence_count', value: 7, format: 'count', link: null }],
           actionCenter: [ACTION_ITEM, { ...ACTION_ITEM, key: 'complete_payment', count: 0 }],
         },
       },
@@ -102,7 +103,14 @@ describe('dashboardService', () => {
     })
     expect(data.latestResult).toMatchObject({ assessmentId: 9, percent: '78.00' })
     expect(data.paymentsCard).toEqual({ receiptsCount: 1 })
+    expect(data.acceptedEvidenceCount).toBe(7)
     expect(data.actionCenter).toEqual([ACTION_ITEM])
+  })
+
+  it('keeps the evidence count null when the board has no such card', async () => {
+    apiClient.get.mockResolvedValue({ data: { data: { board: 'entity', widgets: [] } } })
+    const { data } = await dashboardService.getEntityBoard()
+    expect(data.acceptedEvidenceCount).toBeNull()
   })
 
   it('loads the Action Center and keeps the context', async () => {
@@ -111,6 +119,14 @@ describe('dashboardService', () => {
     expect(apiClient.get).toHaveBeenCalledWith('/dashboard/action-center')
     expect(data).toEqual([ACTION_ITEM])
     expect(meta.total).toBe(1)
+  })
+
+  it('exposes the server time of the Action Center data', async () => {
+    apiClient.get.mockResolvedValue({
+      data: { data: [], meta: { total: 0, generatedAt: '2026-11-05T08:00:00+00:00' } },
+    })
+    const { generatedAt } = await dashboardService.getActionCenter()
+    expect(generatedAt).toBe('2026-11-05T08:00:00+00:00')
   })
 
   it('reports failures to Sentry and rethrows (never swallows)', async () => {

@@ -99,6 +99,22 @@ describe('ReceiptCard', () => {
     const unavailable = mountWith(ReceiptCard, { receipt: RECEIPT, unavailable: true })
     expect(unavailable.find('.payment-notice--warning').text()).toContain('temporarily unavailable')
   })
+
+  it('shows the VAT registration number row only when the receipt carries one', () => {
+    const withNumber = mountWith(
+      ReceiptCard,
+      { receipt: { ...RECEIPT, vatRegistrationNumber: '300012345600003' } },
+      { locale: 'ar' },
+    )
+    const row = withNumber.find('[data-testid="receipt-vat-number"]')
+    expect(row.find('dt').text()).toBe('الرقم الضريبي')
+    expect(row.find('bdi').text()).toBe('300012345600003')
+    const withoutNumber = mountWith(ReceiptCard, {
+      receipt: { ...RECEIPT, vatRegistrationNumber: null },
+    })
+    expect(withoutNumber.find('[data-testid="receipt-vat-number"]').exists()).toBe(false)
+    expect(withoutNumber.text()).not.toContain('VAT registration number')
+  })
 })
 
 describe('payment outcome and checkout notices', () => {

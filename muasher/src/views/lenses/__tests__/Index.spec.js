@@ -15,19 +15,24 @@ const lensesPage = {
       type: 'rich_text',
       title: { ar: 'العدسات التحليلية', en: 'Analytical lenses' },
       subtitle: { ar: 'قراءة النتائج', en: 'Reading the results from several angles' },
-      description: { ar: 'أعلى نتيجة', en: 'The higher of the latest accredited and advanced results, never self assessment.' },
+      description: {
+        ar: 'أعلى نتيجة',
+        en: 'The higher of the latest accredited and advanced results, never self assessment.',
+      },
       items: [],
     },
     {
       id: 332,
       type: 'logos',
       title: { ar: 'العدسات', en: 'The lenses' },
-      items: ['Donor', 'Supervisory', 'Community', 'Vision 2030', 'Strategic'].map((name, index) => ({
-        id: index + 1,
-        icon: 'pie-chart',
-        title: { ar: name, en: `${name} lens` },
-        description: { ar: '', en: index === 0 ? 'Funding view' : '' },
-      })),
+      items: ['Donor', 'Supervisory', 'Community', 'Vision 2030', 'Strategic'].map(
+        (name, index) => ({
+          id: index + 1,
+          icon: 'pie-chart',
+          title: { ar: name, en: `${name} lens` },
+          description: { ar: '', en: index === 0 ? 'Funding view' : '' },
+        }),
+      ),
     },
   ],
 }
@@ -47,19 +52,25 @@ describe('Lenses standalone page (CMS page "lenses")', () => {
     expect(contentService.getPage).toHaveBeenCalledWith('lenses')
     expect(wrapper.findAll('.lens-card')).toHaveLength(5)
     expect(wrapper.find('.lenses-page__title').text()).toBe('Analytical lenses')
-    expect(wrapper.find('.lenses-page__subtitle').text()).toBe('Reading the results from several angles')
+    expect(wrapper.find('.lenses-page__subtitle').text()).toBe(
+      'Reading the results from several angles',
+    )
     expect(wrapper.find('.lenses-page__rule-text').text()).toContain('never self assessment')
   })
 
   it('falls back to the translated lenses while the page is not published', async () => {
-    contentService.getPage.mockRejectedValue(Object.assign(new Error('not published'), { response: { status: 404 } }))
+    contentService.getPage.mockRejectedValue(
+      Object.assign(new Error('not published'), { response: { status: 404 } }),
+    )
     const wrapper = await mountView()
     expect(wrapper.findAll('.lens-card')).toHaveLength(5)
     expect(wrapper.find('.error-state').exists()).toBe(false)
   })
 
   it('shows an error state with retry when loading fails', async () => {
-    contentService.getPage.mockRejectedValueOnce(Object.assign(new Error('down'), { response: { status: 503 } }))
+    contentService.getPage.mockRejectedValueOnce(
+      Object.assign(new Error('down'), { response: { status: 503 } }),
+    )
     const wrapper = await mountView()
     expect(wrapper.find('.error-state').exists()).toBe(true)
     contentService.getPage.mockResolvedValue({ data: lensesPage })

@@ -4,14 +4,19 @@ import { KPI_DEFAULT_SORT, KPI_PAGE_SIZE } from '@/constants/kpis'
 import { sameOrder } from '@/utils/reorder'
 
 async function pageOfKpis(page) {
-  const envelope = await kpisAdminService.list({ sort: KPI_DEFAULT_SORT, page, perPage: KPI_PAGE_SIZE.all })
+  const envelope = await kpisAdminService.list({
+    sort: KPI_DEFAULT_SORT,
+    page,
+    perPage: KPI_PAGE_SIZE.all,
+  })
   return { items: envelope.data ?? [], lastPage: envelope.meta?.pagination?.lastPage ?? 1 }
 }
 
 async function allLiveKpis() {
   const first = await pageOfKpis(1)
   const collected = [...first.items]
-  for (let page = 2; page <= first.lastPage; page += 1) collected.push(...(await pageOfKpis(page)).items)
+  for (let page = 2; page <= first.lastPage; page += 1)
+    collected.push(...(await pageOfKpis(page)).items)
   return collected
 }
 

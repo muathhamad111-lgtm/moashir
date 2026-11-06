@@ -4,7 +4,9 @@ import { apiClient } from '@/api/client'
 import { logger } from '@/utils/logger'
 
 vi.mock('@/api/client', () => ({ apiClient: { get: vi.fn() } }))
-vi.mock('@/utils/logger', () => ({ logger: { breadcrumb: vi.fn(), error: vi.fn(), info: vi.fn() } }))
+vi.mock('@/utils/logger', () => ({
+  logger: { breadcrumb: vi.fn(), error: vi.fn(), info: vi.fn() },
+}))
 
 function ok(data) {
   return { data: { data, meta: {}, errors: null } }
@@ -24,7 +26,11 @@ describe('contentService (public CMS reads)', () => {
     apiClient.get.mockResolvedValue(ok({ published: true, sections: [] }))
     await contentService.getHome()
     expect(apiClient.get).toHaveBeenCalledWith('/content/home')
-    expect(logger.breadcrumb).toHaveBeenCalledWith('service', 'content.getHome', expect.objectContaining({ entity: 'home-content' }))
+    expect(logger.breadcrumb).toHaveBeenCalledWith(
+      'service',
+      'content.getHome',
+      expect.objectContaining({ entity: 'home-content' }),
+    )
   })
 
   it('loads a published page by key and treats 404 as an expected answer', async () => {
@@ -39,7 +45,10 @@ describe('contentService (public CMS reads)', () => {
     const failure = Object.assign(new Error('down'), { response: { status: 503 } })
     apiClient.get.mockRejectedValue(failure)
     await expect(contentService.getHome()).rejects.toBe(failure)
-    expect(logger.error).toHaveBeenCalledWith(failure, expect.objectContaining({ action: 'content.getHome' }))
+    expect(logger.error).toHaveBeenCalledWith(
+      failure,
+      expect.objectContaining({ action: 'content.getHome' }),
+    )
   })
 
   it('loads the published model criteria', async () => {

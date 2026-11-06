@@ -51,6 +51,7 @@ return [
         'payer_note' => 'Demo account for display only. Do not transfer any amount to it.',
     ],
     'receipt' => [
+        'vat_registration_number' => 'VAT registration number',
         'title' => 'Payment receipt',
         'number' => 'Receipt number',
         'issued_on' => 'Issue date',

@@ -14,6 +14,7 @@ import ReviewActions from './ReviewActions.vue'
 import RequestCompletionDialog from './RequestCompletionDialog.vue'
 import ScoreOverrideDialog from './ScoreOverrideDialog.vue'
 import CompleteReviewDialog from './CompleteReviewDialog.vue'
+import ReviewSummaryCard from './ReviewSummaryCard.vue'
 import { useAssessorReview } from '@/composables/useAssessorReview'
 import { useSelfScoreSheet } from '@/composables/useSelfScoreSheet'
 import { useReviewFeedback } from '@/composables/useReviewFeedback'
@@ -141,6 +142,15 @@ onMounted(reviewState.load)
           @download="download"
         />
       </div>
+      <ReviewSummaryCard
+        v-if="offersCertificate"
+        :assessment-id="assessment.id"
+        :summary="review.summary"
+        :editable="canScore"
+        :ask-reason="askReason"
+        :requires-reason="auth.isSuperAdmin"
+        @saved="reviewState.patch({ summary: $event })"
+      />
       <ReviewActions
         :busy="actions.busy.value"
         :dirty="dirty"
@@ -157,6 +167,7 @@ onMounted(reviewState.load)
         v-model="completeOpen"
         :message="completeMessage"
         :offers-certificate="offersCertificate"
+        :summary-missing="offersCertificate && !review.summary"
         @confirm="actions.complete"
       />
       <RequestCompletionDialog

@@ -27,7 +27,7 @@ async function retrySection(page, selector) {
 test('renders the settings hub with launcher cards', async ({ page }) => {
   await page.goto('/admin/settings')
   await expect(page.locator('.settings-hub__title')).toBeVisible()
-  await expect(page.locator('.settings-hub__card')).toHaveCount(17)
+  await expect(page.locator('.settings-hub__card')).toHaveCount(18)
   await expect(page.locator('a.settings-hub__card[href="/admin/settings/finance"]')).toBeVisible()
 })
 
