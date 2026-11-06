@@ -30,6 +30,6 @@ final class MyEntityController
 
     private function loaded(Entity $entity): Entity
     {
-        return $entity->load(['owner', 'region', 'city', 'emailChangeRequests']);
+        return $entity->load(OwnEntityResource::RELATIONS);
     }
 }

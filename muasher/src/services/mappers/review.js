@@ -2,7 +2,7 @@ import { toAssessment, toAssessmentScores, toEntitySummary } from './assessments
 import { toCompletionRequest, toCvSheet, toEvidenceList, toFeedbackFields } from './accredited'
 import { toClock, toPlace } from './requests'
 
-function toReviewEntity(raw) {
+export function toReviewEntity(raw) {
   if (!raw) return null
   return {
     ...toEntitySummary(raw),
@@ -20,11 +20,25 @@ function toReviewEntity(raw) {
 }
 
 function toFeedbackSheet(raw) {
-  return Object.fromEntries(Object.entries(raw ?? {}).map(([subId, fields]) => [subId, toFeedbackFields(fields)]))
+  return Object.fromEntries(
+    Object.entries(raw ?? {}).map(([subId, fields]) => [subId, toFeedbackFields(fields)]),
+  )
 }
 
 function toContextItem(raw) {
-  return { id: raw.id ?? null, number: raw.number ?? '', path: raw.path ?? null, completedAt: raw.completedAt ?? null, percent: raw.percent ?? null }
+  return {
+    id: raw.id ?? null,
+    number: raw.number ?? '',
+    path: raw.path ?? null,
+    pathLabel: raw.pathLabel ?? null,
+    completedAt: raw.completedAt ?? null,
+    percent: raw.percent ?? null,
+  }
+}
+
+export function toAssessorSummary(raw) {
+  if (!raw?.body) return null
+  return { body: raw.body, version: raw.version ?? null, updatedAt: raw.updatedAt ?? null }
 }
 
 export function toAssessorReview(raw = {}) {
@@ -39,6 +53,7 @@ export function toAssessorReview(raw = {}) {
     feedback: toFeedbackSheet(raw.feedback),
     completionRequest: toCompletionRequest(raw.completionRequest),
     context: (raw.context ?? []).map(toContextItem),
+    summary: toAssessorSummary(raw.summary),
   }
 }
 

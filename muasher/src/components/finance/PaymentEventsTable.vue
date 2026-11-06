@@ -15,7 +15,14 @@ defineProps({
 const emit = defineEmits(['retry'])
 const { t, te, locale } = useI18n()
 
-const RESULT_VARIANTS = { applied: 'success', pending: 'warning', ignored: 'muted', rejected: 'danger', unmatched: 'warning', late_payment: 'danger' }
+const RESULT_VARIANTS = {
+  applied: 'success',
+  pending: 'warning',
+  ignored: 'muted',
+  rejected: 'danger',
+  unmatched: 'warning',
+  late_payment: 'danger',
+}
 
 const columns = computed(() => [
   { key: 'createdAt', label: t('finance.fields.date') },
@@ -28,7 +35,11 @@ const columns = computed(() => [
 ])
 
 function dateOf(value) {
-  return formatDate(value, locale.value, { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Riyadh' })
+  return formatDate(value, locale.value, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'Asia/Riyadh',
+  })
 }
 
 function typeOf(value) {
@@ -45,25 +56,43 @@ function typeOf(value) {
     :empty-title="t('finance.events.emptyTitle')"
     @retry="emit('retry')"
   >
-    <template #cell-createdAt="{ item }"><span class="transactions-table__date">{{ dateOf(item.createdAt) }}</span></template>
+    <template #cell-createdAt="{ item }"
+      ><span class="transactions-table__date">{{ dateOf(item.createdAt) }}</span></template
+    >
     <template #cell-source="{ item }">{{ t(`finance.events.sources.${item.source}`) }}</template>
     <template #cell-eventType="{ item }">
       <span class="payment-events__type">
         {{ typeOf(item.eventType) }}
-        <Badge v-if="item.signatureValid === true" variant="success">{{ t('finance.events.signed') }}</Badge>
+        <Badge v-if="item.signatureValid === true" variant="success">{{
+          t('finance.events.signed')
+        }}</Badge>
       </span>
     </template>
     <template #cell-payment="{ item }">
-      <RouterLink v-if="item.payment" class="transactions-table__link" :to="{ name: ROUTE_NAMES.FINANCE_TRANSACTION, params: { id: item.payment.id } }">
+      <RouterLink
+        v-if="item.payment"
+        class="transactions-table__link"
+        :to="{ name: ROUTE_NAMES.FINANCE_TRANSACTION, params: { id: item.payment.id } }"
+      >
         <bdi dir="ltr">{{ item.payment.reference }}</bdi>
       </RouterLink>
       <span v-else class="transactions-table__muted">{{ t('finance.events.unmatched') }}</span>
     </template>
-    <template #cell-mode="{ item }">{{ item.mode ? t(`finance.filters.modes.${item.mode}`) : t('finance.common.none') }}</template>
+    <template #cell-mode="{ item }">{{
+      item.mode ? t(`finance.filters.modes.${item.mode}`) : t('finance.common.none')
+    }}</template>
     <template #cell-result="{ item }">
-      <Badge v-if="item.result" :variant="RESULT_VARIANTS[item.result] ?? 'muted'">{{ t(`finance.events.results.${item.result}`) }}</Badge>
-      <span v-if="item.errorCode" class="payment-events__error"><bdi dir="ltr">{{ item.errorCode }}</bdi></span>
+      <Badge v-if="item.result" :variant="RESULT_VARIANTS[item.result] ?? 'muted'">{{
+        t(`finance.events.results.${item.result}`)
+      }}</Badge>
+      <span v-if="item.errorCode" class="payment-events__error"
+        ><bdi dir="ltr">{{ item.errorCode }}</bdi></span
+      >
     </template>
-    <template #cell-providerRef="{ item }"><code class="payment-events__ref" dir="ltr">{{ item.providerRef ?? t('finance.common.none') }}</code></template>
+    <template #cell-providerRef="{ item }"
+      ><code class="payment-events__ref" dir="ltr">{{
+        item.providerRef ?? t('finance.common.none')
+      }}</code></template
+    >
   </DataTable>
 </template>

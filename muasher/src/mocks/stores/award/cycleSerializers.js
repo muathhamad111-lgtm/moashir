@@ -35,7 +35,10 @@ export function cycleResource(cycle, { withCounts = false } = {}) {
     committeeStart: cycle.committeeStart,
     committeeEnd: cycle.committeeEnd,
     announcementAt: cycle.announcementAt,
-    conditions: { minEntityAgeYears: cycle.minEntityAgeYears, disqualificationScore: cycle.disqualificationScore },
+    conditions: {
+      minEntityAgeYears: cycle.minEntityAgeYears,
+      disqualificationScore: cycle.disqualificationScore,
+    },
     initialReviewSlaDays: cycle.initialReviewSlaDays,
     participationCertificateEnabled: cycle.participationCertificateEnabled,
     regions: cycle.regionIds.map(placeOf).filter(Boolean),
@@ -53,8 +56,16 @@ export function cycleDetailResource(cycle, viewer) {
   if (!revealsStaff(viewer, cycle)) return detail
   return {
     ...detail,
-    members: cycle.members.map((member) => ({ id: member.userId, name: staffNameOf(member.userId), role: member.role })),
-    initialAssessors: cycle.initialAssessors.map((link) => ({ id: link.assessorId, name: staffNameOf(link.assessorId), isActive: link.isActive })),
+    members: cycle.members.map((member) => ({
+      id: member.userId,
+      name: staffNameOf(member.userId),
+      role: member.role,
+    })),
+    initialAssessors: cycle.initialAssessors.map((link) => ({
+      id: link.assessorId,
+      name: staffNameOf(link.assessorId),
+      isActive: link.isActive,
+    })),
   }
 }
 

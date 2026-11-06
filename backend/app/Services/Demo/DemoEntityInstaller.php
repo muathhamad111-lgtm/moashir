@@ -10,7 +10,9 @@ use App\Data\Demo\DemoUserAccount;
 use App\Data\Entities\EntityContactData;
 use App\Data\Entities\EntityProfileData;
 use App\Data\Entities\EntityRegistrationData;
+use App\Data\Entities\EntityRegistryUpdate;
 use App\Enums\Entities\DevelopmentSector;
+use App\Enums\Entities\EntityProfileField;
 use App\Enums\Entities\EntityType;
 use App\Enums\Entities\OrgSize;
 use App\Enums\Identity\Locale;
@@ -23,6 +25,10 @@ use App\Models\Identity\User;
 use App\Services\Entities\EntityAccountCreator;
 use App\Support\ValueObjects\EmailAddress;
 use App\Support\ValueObjects\EntityName;
+use App\Support\ValueObjects\LicenseNumber;
+use App\Support\ValueObjects\UnifiedNumber;
+use App\Support\ValueObjects\WebsiteUrl;
+use Carbon\CarbonImmutable;
 
 final readonly class DemoEntityInstaller
 {
@@ -31,6 +37,7 @@ final readonly class DemoEntityInstaller
             'name' => ['ar' => 'جمعية الأمل الخيرية', 'en' => 'Al-Amal Charitable Association'],
             'type' => EntityType::CivilAssociation, 'sector' => DevelopmentSector::Social, 'size' => OrgSize::Medium,
             'founded' => 2009, 'grade' => '88.50', 'employees' => 42, 'beneficiaries' => 12500,
+            'license' => '880000101', 'unified' => '7100000101', 'founded_on' => '2009-03-15', 'website' => 'https://www.alamal.example.sa',
             'region' => 'riyadh', 'city' => 'riyadh',
             'owner' => 'عبدالرحمن المطيري', 'email' => 'demo.alamal@moashir.example.sa',
         ],
@@ -38,6 +45,7 @@ final readonly class DemoEntityInstaller
             'name' => ['ar' => 'مؤسسة النماء الأهلية', 'en' => 'Al-Namaa Civil Foundation'],
             'type' => EntityType::CivilFoundation, 'sector' => DevelopmentSector::Educational, 'size' => OrgSize::Small,
             'founded' => 2015, 'grade' => '76.00', 'employees' => 18, 'beneficiaries' => 3400,
+            'license' => '880000102', 'unified' => '7100000102', 'founded_on' => '2015-09-01', 'website' => 'https://alnamaa.example.sa',
             'region' => 'makkah', 'city' => 'jeddah',
             'owner' => 'منيرة الشمري', 'email' => 'demo.alnamaa@moashir.example.sa',
         ],
@@ -45,6 +53,7 @@ final readonly class DemoEntityInstaller
             'name' => ['ar' => 'وقف الخير التنموي', 'en' => 'Al-Khair Development Waqf'],
             'type' => EntityType::Waqf, 'sector' => DevelopmentSector::Developmental, 'size' => OrgSize::Large,
             'founded' => 2001, 'grade' => '91.25', 'employees' => 120, 'beneficiaries' => 40000,
+            'license' => '880000103', 'unified' => '7100000103', 'founded_on' => '2001-01-20', 'website' => null,
             'region' => 'eastern', 'city' => 'dammam',
             'owner' => 'سلطان العنزي', 'email' => 'demo.alkhair@moashir.example.sa',
         ],
@@ -73,7 +82,7 @@ final readonly class DemoEntityInstaller
     }
 
     /**
-     * @param  array{name: array{ar: string, en: string}, type: EntityType, sector: DevelopmentSector, size: OrgSize, founded: int, grade: string, employees: int, beneficiaries: int, region: string, city: string, owner: string, email: string}  $definition
+     * @param  array{name: array{ar: string, en: string}, type: EntityType, sector: DevelopmentSector, size: OrgSize, founded: int, grade: string, employees: int, beneficiaries: int, license: string, unified: string, founded_on: string, website: string|null, region: string, city: string, owner: string, email: string}  $definition
      * @param  list<int>  $termsVersionIds
      */
     private function register(array $definition, array $termsVersionIds): DemoUserAccount
@@ -102,7 +111,7 @@ final readonly class DemoEntityInstaller
     }
 
     /**
-     * @param  array{name: array{ar: string, en: string}, type: EntityType, sector: DevelopmentSector, size: OrgSize, founded: int, grade: string, employees: int, beneficiaries: int, region: string, city: string, owner: string, email: string}  $definition
+     * @param  array{name: array{ar: string, en: string}, type: EntityType, sector: DevelopmentSector, size: OrgSize, founded: int, grade: string, employees: int, beneficiaries: int, license: string, unified: string, founded_on: string, website: string|null, region: string, city: string, owner: string, email: string}  $definition
      */
     private function profileOf(array $definition): EntityProfileData
     {
@@ -123,6 +132,21 @@ final readonly class DemoEntityInstaller
             $definition['employees'],
             $definition['beneficiaries'],
             true,
+            $this->registryOf($definition),
+        );
+    }
+
+    /**
+     * @param  array{license: string, unified: string, founded_on: string, website: string|null}  $definition
+     */
+    private function registryOf(array $definition): EntityRegistryUpdate
+    {
+        return new EntityRegistryUpdate(
+            new LicenseNumber($definition['license']),
+            CarbonImmutable::parse($definition['founded_on']),
+            $definition['website'] === null ? null : new WebsiteUrl($definition['website']),
+            EntityProfileField::registryDetails(),
+            new UnifiedNumber($definition['unified']),
         );
     }
 }

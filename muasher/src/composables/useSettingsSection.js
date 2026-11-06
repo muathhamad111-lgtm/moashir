@@ -33,7 +33,9 @@ export function useSettingsSection({ fetcher, saver, savedMessage, saveFailedMes
       toast.success(t(savedMessage ?? 'settings.toasts.saved'))
       return true
     } catch (error) {
-      toast.error(error?.normalized?.message || t(saveFailedMessage ?? 'settings.toasts.saveFailed'))
+      toast.error(
+        error?.normalized?.message || t(saveFailedMessage ?? 'settings.toasts.saveFailed'),
+      )
       return false
     } finally {
       saving.value = false

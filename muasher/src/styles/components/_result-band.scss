@@ -1,0 +1,17 @@
+@use '../mixins' as *;
+
+.result-band {
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  background: var(--stage-gradient);
+  box-shadow: var(--elevation-e2);
+  color: var(--band-ink);
+
+  h1 {
+    color: var(--band-ink);
+  }
+
+  p {
+    color: var(--band-ink-muted);
+  }
+}

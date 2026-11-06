@@ -61,4 +61,18 @@ describe('award routes — the links of the award notifications', () => {
     expect(await visit('/admin/award/committee/manage')).toBe(R.AWARD_COMMITTEE_MANAGEMENT)
     expect(await visit('/admin/award/secretary')).toBe(R.AWARD_SECRETARY)
   })
+
+  it('opens the roster, desk and results to their readers and the committee work to seated assessors only', async () => {
+    signIn([ROLES.AWARD_SECRETARY])
+    expect(await visit('/admin/award/cycles/31/committee')).toBe(R.AWARD_COMMITTEE_ROSTER)
+    expect(await visit('/admin/award/cycles/31/secretary')).toBe(R.AWARD_SECRETARY_DESK)
+    expect(await visit('/admin/award/cycles/31/secretary/9205')).toBe(R.AWARD_SECRETARY_REVIEW)
+    expect(await visit('/admin/award/cycles/31/results')).toBe(R.AWARD_RESULTS_BOARD)
+    expect(await visit('/admin/award/cycles/31/results/national')).toBe(R.AWARD_NATIONAL)
+    expect(await visit('/admin/committee/assignments')).toBe(R.ERRORS_FORBIDDEN)
+    signIn([ROLES.REQUEST_FOLLOWER])
+    expect(await visit('/admin/award/cycles/31/committee')).toBe(R.AWARD_COMMITTEE_ROSTER)
+    expect(await visit('/admin/award/cycles/31/secretary')).toBe(R.ERRORS_FORBIDDEN)
+    expect(await visit('/admin/award/cycles/31/results')).toBe(R.ERRORS_FORBIDDEN)
+  })
 })

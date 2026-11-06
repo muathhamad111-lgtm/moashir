@@ -1,0 +1,115 @@
+@use 'sass:map';
+@use '../tokens' as *;
+
+@mixin tier-properties($palette) {
+  @each $tier, $values in $palette {
+    @each $role, $value in $values {
+      --tier-#{$tier}-#{$role}: #{$value};
+    }
+    --tier-#{$tier}-glow: #{rgba(map.get($values, 'accent'), $tier-glow-strength)};
+    --tier-#{$tier}-glow-edge: #{rgba(map.get($values, 'accent'), $tier-glow-edge-strength)};
+    --tier-#{$tier}-band: color-mix(
+      in srgb,
+      #{map.get($values, 'graphic')} #{$tier-band-strength},
+      transparent
+    );
+  }
+}
+
+@mixin staff-sidebar {
+  --sidebar-bg: var(--nav-from);
+  --sidebar-text: var(--band-ink-muted);
+  --sidebar-caption: var(--band-ink-muted);
+  --sidebar-hover-bg: var(--nav-hover);
+  --sidebar-hover-text: var(--band-ink);
+  --sidebar-count-bg: var(--nav-active);
+  --sidebar-active-text: var(--theme-accent-text);
+  --sidebar-focus-ring: var(--data-on-band);
+  --sidebar-path-accredited: #{$color-path-accredited-text-dark};
+  --sidebar-path-advanced: #{$color-path-advanced-text-dark};
+}
+
+@mixin b-shell-light {
+  @include staff-sidebar;
+  @include tier-properties($tier-palette-light);
+  @each $tier in ('bronze', 'silver', 'gold', 'diamond') {
+    --tier-#{$tier}-seal-disc: var(--tier-#{$tier}-surface);
+  }
+  --stage-from: #{map.get($stage-light, 'from')};
+  --stage-to: #{map.get($stage-light, 'to')};
+  --nav-from: #{map.get($nav-light, 'from')};
+  --nav-to: #{map.get($nav-light, 'to')};
+  --data-ink: #{$data-ink};
+  --data-track: #{$data-track};
+  --delta-up-ink: #{$delta-up-ink};
+  --delta-down-ink: #{$delta-down-ink};
+}
+
+@mixin b-shell-dark {
+  @include staff-sidebar;
+  @include tier-properties($tier-palette-dark);
+  @each $tier in ('bronze', 'silver', 'gold', 'diamond') {
+    --tier-#{$tier}-seal-disc: transparent;
+  }
+  --stage-from: #{map.get($stage-dark, 'from')};
+  --stage-to: #{map.get($stage-dark, 'to')};
+  --nav-from: #{map.get($nav-dark, 'from')};
+  --nav-to: #{map.get($nav-dark, 'to')};
+  --data-ink: #{$data-ink-dark};
+  --data-track: #{$data-track-dark};
+  --delta-up-ink: #{$delta-up-ink-dark};
+  --delta-down-ink: #{$delta-down-ink-dark};
+}
+
+:root {
+  @each $tier, $values in $tier-palette-dark {
+    --tier-#{$tier}-on-band: #{map.get($values, 'ink')};
+    --tier-#{$tier}-graphic-on-band: #{map.get($values, 'graphic')};
+  }
+  --stage-gradient: linear-gradient(160deg, var(--stage-from) 0%, var(--stage-to) 100%);
+  --nav-gradient: linear-gradient(180deg, var(--nav-from) 0%, var(--nav-to) 100%);
+  --band-ink: #{$band-ink};
+  --band-ink-muted: #{$band-ink-muted};
+  --data-on-band: #{$data-on-band};
+  --glass-fill: #{$glass-fill};
+  --glass-stroke: #{$glass-stroke};
+  --glass-blur: #{$glass-blur};
+  --nav-active: #{$nav-active};
+  --nav-hover: #{$nav-hover};
+  --elevation-e0: #{$elevation-e0};
+  --elevation-e1: #{$elevation-e1};
+  --elevation-e2: #{$elevation-e2};
+  --elevation-e3: #{$elevation-e3};
+  --size-side-nav: #{$size-side-nav};
+  --size-side-nav-collapsed: #{$size-side-nav-collapsed};
+  --size-top-bar-b: #{$size-top-bar-b};
+  --size-emblem-xl: #{$size-emblem-xl};
+  --size-emblem-l: #{$size-emblem-l};
+  --size-emblem-m: #{$size-emblem-m};
+  --size-emblem-list: #{$size-emblem-list};
+  --size-emblem-s: #{$size-emblem-s};
+  --emblem-seal-scale: #{$emblem-seal-scale};
+  --emblem-icon-scale: #{$emblem-icon-scale};
+  --size-bar-label: #{$size-bar-label};
+  --dash-previous: #{$dash-previous};
+  --data-fill-strength: #{$data-fill-strength};
+  --size-score-ring: #{$size-score-ring};
+  --size-track: #{$size-track};
+  --size-track-pin: #{$size-track-pin};
+  --size-sparkline-block: #{$size-sparkline-block};
+  --size-radar: #{$size-radar};
+  --size-trend-block: #{$size-trend-block};
+  --size-badge-m: #{$size-badge-m};
+  --size-badge-s: #{$size-badge-s};
+  --size-nav-dot: #{$size-nav-dot};
+  --size-band-min: #{$size-band-min};
+}
+
+:root,
+[data-theme='dark'] {
+  @include b-shell-dark;
+}
+
+[data-theme='light'] {
+  @include b-shell-light;
+}

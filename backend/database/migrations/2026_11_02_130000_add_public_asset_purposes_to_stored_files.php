@@ -1,0 +1,29 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
+
+return new class extends Migration
+{
+    private const string PREVIOUS = "purpose IN ('refund_evidence', 'apple_pay_domain_association', 'receipt_pdf', 'finance_export', 'assessment_evidence', 'evidence_bundle')";
+
+    private const string CURRENT = "purpose IN ('refund_evidence', 'apple_pay_domain_association', 'receipt_pdf', 'finance_export', 'assessment_evidence', 'evidence_bundle', 'cms_image', 'kpi_image', 'branding_logo')";
+
+    public function up(): void
+    {
+        $this->replace(self::CURRENT);
+    }
+
+    public function down(): void
+    {
+        $this->replace(self::PREVIOUS);
+    }
+
+    private function replace(string $expression): void
+    {
+        DB::statement('ALTER TABLE stored_files DROP CONSTRAINT IF EXISTS stored_files_purpose_check');
+        DB::statement(sprintf('ALTER TABLE stored_files ADD CONSTRAINT stored_files_purpose_check CHECK (%s)', $expression));
+    }
+};

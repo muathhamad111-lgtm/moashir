@@ -23,7 +23,10 @@ const dialogOpen = ref(false)
 
 const pending = computed(() => props.profile.pendingEmailChange)
 const canChange = computed(
-  () => can(PERMISSIONS.ENTITY_PROFILE_EDIT) && props.profile.status === ENTITY_STATUSES.ACTIVE && !pending.value,
+  () =>
+    can(PERMISSIONS.ENTITY_PROFILE_EDIT) &&
+    props.profile.status === ENTITY_STATUSES.ACTIVE &&
+    !pending.value,
 )
 </script>
 
@@ -37,11 +40,22 @@ const canChange = computed(
       <div v-if="pending" class="official-email__pending" role="status">
         <StatusBadge :status="pending.status" />
         <p class="official-email__pending-text">
-          {{ t('entities.email.pendingMessage', { email: pending.newEmail, date: dateTime(pending.requestedAt) }) }}
+          {{
+            t('entities.email.pendingMessage', {
+              email: pending.newEmail,
+              date: dateTime(pending.requestedAt),
+            })
+          }}
         </p>
       </div>
       <p class="official-email__hint">{{ t('entities.email.hint') }}</p>
-      <BaseButton v-if="canChange" variant="secondary" size="sm" icon="fa-solid fa-envelope-circle-check" @click="dialogOpen = true">
+      <BaseButton
+        v-if="canChange"
+        variant="secondary"
+        size="sm"
+        icon="envelope"
+        @click="dialogOpen = true"
+      >
         {{ t('entities.email.change') }}
       </BaseButton>
     </div>

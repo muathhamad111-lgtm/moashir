@@ -76,7 +76,13 @@ export function seedBagRequests() {
       paidAt: '2026-07-06T12:00:00+03:00',
       createdAt: '2026-07-06T12:00:00+03:00',
       assignmentHistory: [
-        { id: 'bah-1', evaluatorId: EVALUATOR_IDS.SULTAN, action: 'assigned', reason: null, at: '2026-07-07T10:00:00+03:00' },
+        {
+          id: 'bah-1',
+          evaluatorId: EVALUATOR_IDS.SULTAN,
+          action: 'assigned',
+          reason: null,
+          at: '2026-07-07T10:00:00+03:00',
+        },
       ],
     },
     {
@@ -98,7 +104,13 @@ export function seedBagRequests() {
       paidAt: '2026-07-02T09:00:00+03:00',
       createdAt: '2026-07-02T09:00:00+03:00',
       assignmentHistory: [
-        { id: 'bah-2', evaluatorId: EVALUATOR_IDS.HIND, action: 'assigned', reason: null, at: '2026-07-03T09:00:00+03:00' },
+        {
+          id: 'bah-2',
+          evaluatorId: EVALUATOR_IDS.HIND,
+          action: 'assigned',
+          reason: null,
+          at: '2026-07-03T09:00:00+03:00',
+        },
       ],
     },
     {
@@ -120,7 +132,13 @@ export function seedBagRequests() {
       paidAt: '2026-06-23T09:00:00+03:00',
       createdAt: '2026-06-23T09:00:00+03:00',
       assignmentHistory: [
-        { id: 'bah-3', evaluatorId: EVALUATOR_IDS.SULTAN, action: 'assigned', reason: null, at: '2026-06-24T09:00:00+03:00' },
+        {
+          id: 'bah-3',
+          evaluatorId: EVALUATOR_IDS.SULTAN,
+          action: 'assigned',
+          reason: null,
+          at: '2026-06-24T09:00:00+03:00',
+        },
       ],
     },
     {
@@ -142,7 +160,13 @@ export function seedBagRequests() {
       paidAt: '2026-02-16T09:00:00+03:00',
       createdAt: '2026-02-16T09:00:00+03:00',
       assignmentHistory: [
-        { id: 'bah-4', evaluatorId: EVALUATOR_IDS.DAVID, action: 'assigned', reason: null, at: '2026-02-18T09:00:00+03:00' },
+        {
+          id: 'bah-4',
+          evaluatorId: EVALUATOR_IDS.DAVID,
+          action: 'assigned',
+          reason: null,
+          at: '2026-02-18T09:00:00+03:00',
+        },
       ],
     },
   ]

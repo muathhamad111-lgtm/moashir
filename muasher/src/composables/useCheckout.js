@@ -1,4 +1,4 @@
-import { computed, ref, watch } from 'vue'
+import { computed, ref, unref, watch } from 'vue'
 import { useCountdown } from '@/composables/useCountdown'
 import { useIdempotencyKey } from '@/composables/useIdempotencyKey'
 import { paymentsService } from '@/services/paymentsService'
@@ -28,7 +28,9 @@ export function useCheckout(purpose) {
   const failure = ref(null)
   const existingOrder = ref(false)
 
-  const deadline = computed(() => (phase.value === CHECKOUT_PHASES.READY ? checkout.value?.expiresAt : null))
+  const deadline = computed(() =>
+    phase.value === CHECKOUT_PHASES.READY ? checkout.value?.expiresAt : null,
+  )
   const countdown = useCountdown(deadline)
   const isStarting = computed(() => phase.value === CHECKOUT_PHASES.STARTING)
   const isTest = computed(() => checkout.value?.mode === 'test' || payment.value?.isTest === true)
@@ -48,7 +50,7 @@ export function useCheckout(purpose) {
     phase.value = CHECKOUT_PHASES.STARTING
     failure.value = null
     try {
-      const envelope = await paymentsService.create(purpose, keys.current())
+      const envelope = await paymentsService.create(unref(purpose), keys.current())
       keys.renew()
       const { checkout: checkoutObject, ...ownPayment } = envelope.data
       payment.value = ownPayment
@@ -64,5 +66,26 @@ export function useCheckout(purpose) {
     payment.value = verified
   }
 
-  return { phase, payment, checkout, failure, existingOrder, countdown, isStarting, isTest, start, applyVerified }
+  function reset() {
+    keys.renew()
+    phase.value = CHECKOUT_PHASES.IDLE
+    payment.value = null
+    checkout.value = null
+    failure.value = null
+    existingOrder.value = false
+  }
+
+  return {
+    phase,
+    payment,
+    checkout,
+    failure,
+    existingOrder,
+    countdown,
+    isStarting,
+    isTest,
+    start,
+    applyVerified,
+    reset,
+  }
 }

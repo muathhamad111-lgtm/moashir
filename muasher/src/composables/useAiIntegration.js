@@ -37,11 +37,21 @@ export function useAiIntegration() {
     const value = resource.value
     if (!value) return null
     const active = value.activeProvider ? value.providers[value.activeProvider] : null
-    const configured = active ? active.configured : Object.values(value.providers).some((config) => config.configured)
-    return { source: value.source, configured, active: Boolean(active), mode: value.mode, lastTest: active?.lastTest ?? null }
+    const configured = active
+      ? active.configured
+      : Object.values(value.providers).some((config) => config.configured)
+    return {
+      source: value.source,
+      configured,
+      active: Boolean(active),
+      mode: value.mode,
+      lastTest: active?.lastTest ?? null,
+    }
   })
 
-  const clientSteps = computed(() => checklistSteps(resource.value?.checklist, (key) => t(`integrations.ai.checklist.${key}`)))
+  const clientSteps = computed(() =>
+    checklistSteps(resource.value?.checklist, (key) => t(`integrations.ai.checklist.${key}`)),
+  )
 
   return { ...settings, providerStatus, cardStatus, clientSteps }
 }

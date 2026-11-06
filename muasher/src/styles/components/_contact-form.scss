@@ -1,0 +1,96 @@
+@use '../mixins' as *;
+
+.contact-form__form,
+.contact-form__success {
+  @include flex(column, stretch, flex-start, var(--space-5));
+}
+
+.contact-form__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  color: var(--theme-heading);
+}
+
+.contact-form__signed-in {
+  @include flex(row, center, flex-start, var(--space-2));
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-accent-soft);
+  color: var(--theme-accent-text);
+  font-size: var(--fs-sm);
+}
+
+.contact-form__grid {
+  display: grid;
+  gap: var(--space-5);
+
+  @include respond-to('md') {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.contact-form__trap {
+  @include visually-hidden;
+}
+
+.contact-form__alert {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--color-danger-soft);
+  color: var(--theme-danger-text);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+}
+
+.contact-form__footer {
+  @include flex(column, stretch, flex-start, var(--space-3));
+
+  @include respond-to('md') {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.contact-form__note {
+  font-size: var(--fs-xs);
+  color: var(--theme-text-muted);
+}
+
+.contact-form__success {
+  align-items: flex-start;
+}
+
+.contact-form__success-icon {
+  font-size: var(--fs-4xl);
+  color: var(--theme-accent-text);
+}
+
+.contact-form__success-body {
+  margin: 0;
+  color: var(--theme-text-secondary);
+  line-height: var(--lh-relaxed);
+}
+
+.contact-form__reference {
+  @include flex(row, center, flex-start, var(--space-3));
+  flex-wrap: wrap;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-tint);
+  color: var(--theme-text);
+  font-size: var(--fs-sm);
+}
+
+.contact-form__reference-value {
+  font-family: var(--font-latin);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-number);
+  color: var(--theme-heading);
+}

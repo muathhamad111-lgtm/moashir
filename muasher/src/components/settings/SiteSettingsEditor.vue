@@ -1,122 +1,53 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseInput from '@/components/form/BaseInput.vue'
 import BaseTextarea from '@/components/form/BaseTextarea.vue'
-import BaseSelect from '@/components/form/BaseSelect.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
+import ToggleSwitch from '@/components/ui/ToggleSwitch.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
+import SocialLinksField from './SocialLinksField.vue'
+import QuickLinksField from './QuickLinksField.vue'
+import { useSiteSettingsEditor } from '@/composables/useSiteSettingsEditor'
 import { useToast } from '@/composables/useToast'
-
-const props = defineProps({
-  siteSettings: { type: Object, default: null },
-  status: { type: String, default: 'loading' },
-  busy: { type: Boolean, default: false },
-})
-
-const emit = defineEmits(['save', 'retry'])
+import { SITE_SETTINGS_LIMITS } from '@/constants/cms'
 
 const { t } = useI18n()
 const toast = useToast()
+const { status, draft, saving, load, save, errorOf } = useSiteSettingsEditor()
 
-const PLATFORMS = ['x', 'linkedin', 'youtube', 'facebook', 'instagram', 'snapchat', 'tiktok', 'whatsapp']
-
-const platformOptions = computed(() =>
-  PLATFORMS.map((platform) => ({
-    value: platform,
-    label: t(`settings.homepage.siteSettings.platforms.${platform}`),
-  })),
-)
-
-const draft = ref(null)
-
-function clone(value) {
-  return JSON.parse(JSON.stringify(value))
-}
-
-function blankModel() {
-  return {
-    footerNote: { ar: '', en: '' },
-    contact: { email: '', phone: '', address: { ar: '', en: '' } },
-    social: [],
-    quickLinks: [],
-  }
-}
-
-function hydrate(source) {
-  const base = blankModel()
-  if (!source) {
-    draft.value = base
-    return
-  }
-  draft.value = {
-    footerNote: { ...base.footerNote, ...clone(source.footerNote ?? {}) },
-    contact: {
-      email: source.contact?.email ?? '',
-      phone: source.contact?.phone ?? '',
-      address: { ...base.contact.address, ...clone(source.contact?.address ?? {}) },
+const limitOptions = computed(() =>
+  Array.from(
+    { length: SITE_SETTINGS_LIMITS.featuredMax - SITE_SETTINGS_LIMITS.featuredMin + 1 },
+    (_, index) => {
+      const value = SITE_SETTINGS_LIMITS.featuredMin + index
+      return { value, label: String(value) }
     },
-    social: clone(source.social ?? []).map((row) => ({ platform: row.platform ?? 'x', url: row.url ?? '' })),
-    quickLinks: clone(source.quickLinks ?? []).map((row) => ({
-      label: { ar: row.label?.ar ?? '', en: row.label?.en ?? '' },
-      url: row.url ?? '',
-    })),
-  }
-}
-
-watch(
-  () => props.siteSettings,
-  (value) => hydrate(value),
-  { immediate: true },
+  ),
 )
 
-function addSocial() {
-  draft.value.social.push({ platform: 'x', url: '' })
-}
-
-function removeSocial(index) {
-  draft.value.social.splice(index, 1)
-}
-
-function addQuickLink() {
-  draft.value.quickLinks.push({ label: { ar: '', en: '' }, url: '' })
-}
-
-function removeQuickLink(index) {
-  draft.value.quickLinks.splice(index, 1)
-}
-
-function moveQuickLink(index, direction) {
-  const target = index + direction
-  if (target < 0 || target >= draft.value.quickLinks.length) return
-  const list = draft.value.quickLinks
-  ;[list[index], list[target]] = [list[target], list[index]]
-}
-
-const emailInvalid = computed(() => {
-  const email = draft.value?.contact?.email?.trim()
-  if (!email) return false
-  return !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-})
-
-function onSubmit() {
-  if (emailInvalid.value) {
-    toast.error(t('settings.homepage.siteSettings.emailInvalid'))
-    return
+async function onSubmit() {
+  try {
+    await save()
+    toast.success(t('settings.homepage.siteSettings.toasts.saved'))
+  } catch (error) {
+    toast.error(error?.normalized?.message || t('settings.homepage.siteSettings.toasts.saveFailed'))
   }
-  emit('save', clone(draft.value))
 }
 </script>
 
 <template>
   <section class="site-settings" aria-labelledby="site-settings-heading">
     <header class="site-settings__header">
-      <h2 id="site-settings-heading" class="site-settings__title">{{ t('settings.homepage.siteSettings.title') }}</h2>
+      <h2 id="site-settings-heading" class="site-settings__title">
+        {{ t('settings.homepage.siteSettings.title') }}
+      </h2>
       <p class="site-settings__desc">{{ t('settings.homepage.siteSettings.description') }}</p>
     </header>
 
-    <div v-if="status === 'loading'" class="site-settings__loading">
+    <div v-if="status === 'loading'" class="site-settings__loading" aria-busy="true">
       <Skeleton variant="block" />
       <Skeleton variant="text" :count="4" />
     </div>
@@ -124,122 +55,128 @@ function onSubmit() {
     <ErrorState
       v-else-if="status === 'error'"
       :message="t('settings.homepage.siteSettings.error')"
-      @retry="emit('retry')"
+      @retry="load"
     />
 
-    <form v-else-if="draft" class="site-settings__form" :aria-busy="busy || undefined" @submit.prevent="onSubmit">
+    <form
+      v-else
+      class="site-settings__form"
+      :aria-busy="saving || undefined"
+      @submit.prevent="onSubmit"
+    >
       <fieldset class="site-settings__group">
-        <legend class="site-settings__legend">{{ t('settings.homepage.siteSettings.footerNote') }}</legend>
+        <legend class="site-settings__legend">
+          {{ t('settings.homepage.siteSettings.footerNote') }}
+        </legend>
         <div class="site-settings__grid">
-          <BaseTextarea v-model="draft.footerNote.ar" name="footerNoteAr" :rows="2" :label="t('settings.homepage.siteSettings.footerNoteAr')" />
-          <BaseTextarea v-model="draft.footerNote.en" name="footerNoteEn" :rows="2" :label="t('settings.homepage.siteSettings.footerNoteEn')" />
+          <BaseTextarea
+            v-model="draft.footerNote.ar"
+            name="footerNoteAr"
+            :rows="2"
+            :label="t('settings.homepage.siteSettings.footerNoteAr')"
+            :error="errorOf('footerNote.ar')"
+          />
+          <BaseTextarea
+            v-model="draft.footerNote.en"
+            name="footerNoteEn"
+            :rows="2"
+            :label="t('settings.homepage.siteSettings.footerNoteEn')"
+            :error="errorOf('footerNote.en')"
+          />
         </div>
       </fieldset>
 
       <fieldset class="site-settings__group">
-        <legend class="site-settings__legend">{{ t('settings.homepage.siteSettings.contact') }}</legend>
+        <legend class="site-settings__legend">
+          {{ t('settings.homepage.siteSettings.contact') }}
+        </legend>
         <div class="site-settings__grid">
           <BaseInput
             v-model="draft.contact.email"
             name="contactEmail"
             type="email"
             :label="t('settings.homepage.siteSettings.email')"
-            :error="emailInvalid ? t('settings.homepage.siteSettings.emailInvalid') : ''"
+            :error="errorOf('contact.email')"
+            input-dir="ltr"
           />
-          <BaseInput v-model="draft.contact.phone" name="contactPhone" :label="t('settings.homepage.siteSettings.phone')" />
-          <BaseInput v-model="draft.contact.address.ar" name="contactAddressAr" :label="t('settings.homepage.siteSettings.addressAr')" />
-          <BaseInput v-model="draft.contact.address.en" name="contactAddressEn" :label="t('settings.homepage.siteSettings.addressEn')" />
+          <BaseInput
+            v-model="draft.contact.phone"
+            name="contactPhone"
+            :label="t('settings.homepage.siteSettings.phone')"
+            :error="errorOf('contact.phone')"
+            input-dir="ltr"
+          />
+          <BaseInput
+            v-model="draft.contact.address.ar"
+            name="contactAddressAr"
+            :label="t('settings.homepage.siteSettings.addressAr')"
+            :error="errorOf('contact.address.ar')"
+          />
+          <BaseInput
+            v-model="draft.contact.address.en"
+            name="contactAddressEn"
+            :label="t('settings.homepage.siteSettings.addressEn')"
+            input-dir="ltr"
+          />
+        </div>
+      </fieldset>
+
+      <SocialLinksField v-model:rows="draft.social" :error-of="errorOf" :disabled="saving" />
+      <QuickLinksField v-model:rows="draft.quickLinks" :error-of="errorOf" :disabled="saving" />
+
+      <fieldset class="site-settings__group">
+        <legend class="site-settings__legend">{{ t('settings.homepage.siteSettings.seo') }}</legend>
+        <div class="site-settings__grid">
+          <BaseInput
+            v-model="draft.seo.title.ar"
+            name="seoTitleAr"
+            :label="t('settings.homepage.siteSettings.seoTitleAr')"
+            :error="errorOf('seo.title.ar')"
+          />
+          <BaseInput
+            v-model="draft.seo.title.en"
+            name="seoTitleEn"
+            :label="t('settings.homepage.siteSettings.seoTitleEn')"
+            input-dir="ltr"
+          />
+          <BaseTextarea
+            v-model="draft.seo.description.ar"
+            name="seoDescriptionAr"
+            :rows="2"
+            :label="t('settings.homepage.siteSettings.seoDescriptionAr')"
+            :error="errorOf('seo.description.ar')"
+          />
+          <BaseTextarea
+            v-model="draft.seo.description.en"
+            name="seoDescriptionEn"
+            :rows="2"
+            :label="t('settings.homepage.siteSettings.seoDescriptionEn')"
+          />
         </div>
       </fieldset>
 
       <fieldset class="site-settings__group">
-        <legend class="site-settings__legend">{{ t('settings.homepage.siteSettings.social') }}</legend>
-        <ul v-if="draft.social.length" class="site-settings__rows">
-          <li v-for="(row, index) in draft.social" :key="`social-${index}`" class="site-settings__row">
-            <BaseSelect
-              v-model="row.platform"
-              :name="`socialPlatform-${index}`"
-              :label="t('settings.homepage.siteSettings.platform')"
-              :options="platformOptions"
-            />
-            <BaseInput
-              v-model="row.url"
-              :name="`socialUrl-${index}`"
-              :label="t('settings.homepage.siteSettings.url')"
-              :hint="t('settings.homepage.siteSettings.urlHint')"
-            />
-            <BaseButton
-              variant="ghost"
-              size="sm"
-              icon="fa-solid fa-trash-can"
-              icon-only
-              :disabled="busy"
-              :aria-label="t('settings.homepage.siteSettings.removeSocial')"
-              @click="removeSocial(index)"
-            />
-          </li>
-        </ul>
-        <p v-else class="site-settings__empty">{{ t('settings.homepage.siteSettings.noSocial') }}</p>
-        <BaseButton variant="secondary" size="sm" icon="fa-solid fa-plus" :disabled="busy" @click="addSocial">
-          {{ t('settings.homepage.siteSettings.addSocial') }}
-        </BaseButton>
-      </fieldset>
-
-      <fieldset class="site-settings__group">
-        <legend class="site-settings__legend">{{ t('settings.homepage.siteSettings.quickLinks') }}</legend>
-        <ul v-if="draft.quickLinks.length" class="site-settings__rows">
-          <li v-for="(row, index) in draft.quickLinks" :key="`quick-${index}`" class="site-settings__row site-settings__row--stack">
-            <div class="site-settings__grid">
-              <BaseInput v-model="row.label.ar" :name="`quickLabelAr-${index}`" :label="t('settings.homepage.siteSettings.linkLabelAr')" />
-              <BaseInput v-model="row.label.en" :name="`quickLabelEn-${index}`" :label="t('settings.homepage.siteSettings.linkLabelEn')" />
-            </div>
-            <div class="site-settings__row site-settings__row--inline">
-              <BaseInput
-                v-model="row.url"
-                :name="`quickUrl-${index}`"
-                :label="t('settings.homepage.siteSettings.url')"
-                :hint="t('settings.homepage.siteSettings.urlHint')"
-              />
-              <div class="site-settings__row-actions">
-                <BaseButton
-                  variant="ghost"
-                  size="sm"
-                  icon="fa-solid fa-arrow-up-long"
-                  icon-only
-                  :disabled="busy || index === 0"
-                  :aria-label="t('settings.homepage.siteSettings.moveUp')"
-                  @click="moveQuickLink(index, -1)"
-                />
-                <BaseButton
-                  variant="ghost"
-                  size="sm"
-                  icon="fa-solid fa-arrow-down-long"
-                  icon-only
-                  :disabled="busy || index === draft.quickLinks.length - 1"
-                  :aria-label="t('settings.homepage.siteSettings.moveDown')"
-                  @click="moveQuickLink(index, 1)"
-                />
-                <BaseButton
-                  variant="ghost"
-                  size="sm"
-                  icon="fa-solid fa-trash-can"
-                  icon-only
-                  :disabled="busy"
-                  :aria-label="t('settings.homepage.siteSettings.removeLink')"
-                  @click="removeQuickLink(index)"
-                />
-              </div>
-            </div>
-          </li>
-        </ul>
-        <p v-else class="site-settings__empty">{{ t('settings.homepage.siteSettings.noLinks') }}</p>
-        <BaseButton variant="secondary" size="sm" icon="fa-solid fa-plus" :disabled="busy" @click="addQuickLink">
-          {{ t('settings.homepage.siteSettings.addLink') }}
-        </BaseButton>
+        <legend class="site-settings__legend">
+          {{ t('settings.homepage.siteSettings.featured') }}
+        </legend>
+        <ToggleSwitch
+          v-model="draft.showFeaturedKpis"
+          name="showFeaturedKpis"
+          :label="t('settings.homepage.siteSettings.showFeaturedKpis')"
+          :description="t('settings.homepage.siteSettings.showFeaturedKpisHint')"
+        />
+        <AppSelect
+          v-model="draft.featuredKpiLimit"
+          name="featuredKpiLimit"
+          :label="t('settings.homepage.siteSettings.featuredKpiLimit')"
+          :hint="t('settings.homepage.siteSettings.featuredKpiLimitHint')"
+          :options="limitOptions"
+          :error="errorOf('featuredKpiLimit')"
+        />
       </fieldset>
 
       <div class="site-settings__footer">
-        <BaseButton type="submit" variant="primary" :loading="busy">
+        <BaseButton type="submit" variant="primary" :loading="saving">
           {{ t('settings.homepage.siteSettings.save') }}
         </BaseButton>
       </div>

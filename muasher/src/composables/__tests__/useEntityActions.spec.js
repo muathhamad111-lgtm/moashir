@@ -36,14 +36,29 @@ const ALL_ENTITY_KEYS = [
 describe('useEntityActions', () => {
   it('offers each action only with its own permission and the matching state', () => {
     const admin = { permissions: ALL_ENTITY_KEYS }
-    expect(actionsFor(admin, ACTIVE)).toEqual([A.EDIT, A.DEACTIVATE, A.DELETE, A.EXPORT_PERSONAL_DATA])
+    expect(actionsFor(admin, ACTIVE)).toEqual([
+      A.EDIT,
+      A.DEACTIVATE,
+      A.DELETE,
+      A.EXPORT_PERSONAL_DATA,
+    ])
     expect(actionsFor(admin, { ...ACTIVE, status: 'deactivated' })).toContain(A.REACTIVATE)
-    expect(actionsFor(admin, { ...ACTIVE, status: 'pending-verification' })).toContain(A.RESEND_VERIFICATION)
-    expect(actionsFor(admin, { ...ACTIVE, isDeleted: true })).toEqual([A.RESTORE, A.EXPORT_PERSONAL_DATA])
+    expect(actionsFor(admin, { ...ACTIVE, status: 'pending-verification' })).toContain(
+      A.RESEND_VERIFICATION,
+    )
+    expect(actionsFor(admin, { ...ACTIVE, isDeleted: true })).toEqual([
+      A.RESTORE,
+      A.EXPORT_PERSONAL_DATA,
+    ])
   })
 
   it('keeps reactivation separate from deactivation and hides everything from a view-only role', () => {
-    expect(actionsFor({ permissions: ['entities.view', 'entities.deactivate'] }, { ...ACTIVE, status: 'deactivated' })).toEqual([])
+    expect(
+      actionsFor(
+        { permissions: ['entities.view', 'entities.deactivate'] },
+        { ...ACTIVE, status: 'deactivated' },
+      ),
+    ).toEqual([])
     expect(actionsFor({ permissions: ['entities.view'] }, ACTIVE)).toEqual([])
   })
 
@@ -51,6 +66,8 @@ describe('useEntityActions', () => {
     const superAdmin = { isSuperAdmin: true, permissions: ALL_ENTITY_KEYS }
     expect(actionsFor(superAdmin, { ...ACTIVE, isDeleted: true })).toContain(A.PERMANENT_DELETE)
     expect(actionsFor(superAdmin, ACTIVE)).not.toContain(A.PERMANENT_DELETE)
-    expect(actionsFor({ permissions: ALL_ENTITY_KEYS }, { ...ACTIVE, isDeleted: true })).not.toContain(A.PERMANENT_DELETE)
+    expect(
+      actionsFor({ permissions: ALL_ENTITY_KEYS }, { ...ACTIVE, isDeleted: true }),
+    ).not.toContain(A.PERMANENT_DELETE)
   })
 })

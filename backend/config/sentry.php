@@ -33,12 +33,11 @@ return [
 
     'before_send' => [SentryEventScrubber::class, 'scrub'],
 
+    'before_send_transaction' => [SentryEventScrubber::class, 'scrub'],
+
     'data_collection' => null,
 
-    'ignore_transactions' => [
-
-        '/up',
-    ],
+    'ignore_transactions' => [],
 
     'breadcrumbs' => [
 

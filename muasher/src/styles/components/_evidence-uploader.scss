@@ -25,14 +25,14 @@
   background-color: var(--color-success-soft);
   color: var(--theme-text);
 
-  i {
+  .app-icon {
     color: var(--color-success);
   }
 
-  &:has(.fa-triangle-exclamation) {
+  &:has([data-icon='warning-triangle']) {
     background-color: var(--color-warning-soft);
 
-    i {
+    .app-icon {
       color: var(--color-warning);
     }
   }
@@ -129,7 +129,9 @@
   font-size: var(--fs-sm);
   font-weight: var(--fw-medium);
   cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease);
+  transition:
+    border-color var(--t-fast) var(--ease),
+    background-color var(--t-fast) var(--ease);
 
   &:hover:not(:disabled) {
     border-color: var(--theme-accent);

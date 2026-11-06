@@ -33,12 +33,16 @@ function assertEntityMayAct(entity) {
 function enterWriteGate(user, record, { verb, reason }) {
   assertEntityMayAct(entityOf(record))
   if (user.superAdmin && !reason) throw assessmentReject.reasonRequired()
-  if (record.status !== SELF_STATUSES.DRAFT) throw assessmentReject.illegalTransition(toCanonicalStatus(record.status), verb)
+  if (record.status !== SELF_STATUSES.DRAFT)
+    throw assessmentReject.illegalTransition(toCanonicalStatus(record.status), verb)
 }
 
 function validateStart(body) {
   if (body.path === ASSESSMENT_PATHS.SELF) return
-  const code = body.path === undefined || body.path === null || body.path === '' ? 'validation.required' : 'validation.invalid'
+  const code =
+    body.path === undefined || body.path === null || body.path === ''
+      ? 'validation.required'
+      : 'validation.invalid'
   throw assessmentReject.validation({ path: [fieldMessage(code, {}, 'path')] })
 }
 
@@ -94,7 +98,9 @@ export function submitSelfAssessment(user, record, body) {
   enterWriteGate(user, record, { verb: VERBS.SUBMIT, reason: input.reason })
   if (record.criteriaUpdatePendingSince !== null) throw assessmentReject.criteriaUpdateInProgress()
   const tree = boundTree(record)
-  const sheet = input.scores ? parseScoreSheet(input.scores, tree, record.scaleKind) : sheetOf(record)
+  const sheet = input.scores
+    ? parseScoreSheet(input.scores, tree, record.scaleKind)
+    : sheetOf(record)
   const draft = { ...record, scores: Object.fromEntries(sheet) }
   const missing = missingUnits(draft, tree)
   if (missing.length) throw assessmentReject.scoresIncomplete(missing)

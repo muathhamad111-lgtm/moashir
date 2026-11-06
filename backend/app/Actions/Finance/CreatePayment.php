@@ -6,7 +6,9 @@ namespace App\Actions\Finance;
 
 use App\Data\Finance\CreatedPayment;
 use App\Data\Finance\OpenedOrder;
+use App\Data\Finance\OrderTerms;
 use App\Enums\Finance\CancellationCause;
+use App\Enums\Finance\PaymentChannel;
 use App\Enums\Finance\PaymentPurpose;
 use App\Enums\Finance\PaymentStatus;
 use App\Enums\Integrations\IntegrationKind;
@@ -20,6 +22,7 @@ use App\Services\Finance\CheckoutPresenter;
 use App\Services\Finance\FinanceSettings;
 use App\Services\Finance\PayingEntityGuard;
 use App\Services\Finance\PaymentCancellation;
+use App\Services\Finance\PaymentChannelAvailability;
 use App\Services\Finance\PaymentOrderOpener;
 use App\Services\Finance\PaymentRowLock;
 use App\Services\Finance\PriceCalculator;
@@ -39,6 +42,7 @@ final readonly class CreatePayment
         private CheckoutPresenter $presenter,
         private PaymentCancellation $cancellation,
         private PaymentRowLock $locks,
+        private PaymentChannelAvailability $channels,
     ) {}
 
     public function handle(User $actor, PaymentPurpose $purpose, string $idempotencyKey, string $locale): CreatedPayment
@@ -50,6 +54,11 @@ final readonly class CreatePayment
         }
 
         $entity = $this->entities->entityOf($actor);
+
+        if (! $this->channels->isEnabled(PaymentChannel::Electronic)) {
+            throw PaymentRejected::channelNotAvailable();
+        }
+
         $mode = $this->gatewayMode();
 
         if (! in_array($purpose->value, $this->settings->linkedPaths(), true)) {
@@ -59,7 +68,8 @@ final readonly class CreatePayment
         $quote = $this->prices->quote($purpose);
 
         try {
-            $order = DB::transaction(fn (): OpenedOrder => $this->orders->open($actor, $entity, $purpose, $quote, $mode, $idempotencyKey));
+            $terms = new OrderTerms($purpose, PaymentChannel::Electronic, $quote, $mode, $idempotencyKey);
+            $order = DB::transaction(fn (): OpenedOrder => $this->orders->open($actor, $entity, $terms));
         } catch (UniqueConstraintViolationException) {
             return $this->present($this->replayOf($actor, $purpose, $idempotencyKey) ?? throw PaymentRejected::checkoutInProgress(), $locale, true, false);
         }
@@ -101,7 +111,7 @@ final readonly class CreatePayment
     {
         $payment = Payment::query()->with(['entity', 'receipt'])->where('initiated_by_user_id', $actor->id)->where('idempotency_key', $idempotencyKey)->first();
 
-        if ($payment instanceof Payment && $payment->purpose !== $purpose) {
+        if ($payment instanceof Payment && ($payment->purpose !== $purpose || $payment->isBankTransfer())) {
             throw PaymentRejected::idempotencyKeyReused();
         }
 
@@ -110,7 +120,7 @@ final readonly class CreatePayment
 
     private function present(Payment $payment, string $locale, bool $isReplay, bool $isExisting): CreatedPayment
     {
-        $payment->loadMissing(['entity', 'receipt']);
+        $payment->loadMissing(['entity', ...ShowMyPayment::RELATIONS]);
 
         return new CreatedPayment($payment, $this->presenter->present($payment, $locale), $isReplay, $isExisting);
     }

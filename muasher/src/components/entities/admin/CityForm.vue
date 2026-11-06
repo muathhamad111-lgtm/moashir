@@ -29,7 +29,10 @@ function valuesOf(city) {
 
 function payloadOf(values) {
   const order = toWesternDigits(values.sortOrder)
-  return { name: { ar: values.name.ar.trim(), en: values.name.en.trim() }, sortOrder: order === '' ? null : Number(order) }
+  return {
+    name: { ar: values.name.ar.trim(), en: values.name.en.trim() },
+    sortOrder: order === '' ? null : Number(order),
+  }
 }
 
 const form = useValidatedForm({
@@ -63,10 +66,21 @@ watch(
     @submit="form.onSubmit"
   >
     <div class="entity-form">
-      <FieldSelect name="regionId" :label="t('entities.fields.region')" :options="regionOptions" :disabled="Boolean(city)" required />
+      <FieldSelect
+        name="regionId"
+        :label="t('entities.fields.region')"
+        :options="regionOptions"
+        :disabled="Boolean(city)"
+        required
+      />
       <FieldInput name="name.ar" input-dir="rtl" :label="t('entities.cities.nameAr')" required />
       <FieldInput name="name.en" input-dir="ltr" :label="t('entities.cities.nameEn')" required />
-      <FieldInput name="sortOrder" inputmode="numeric" :label="t('entities.cities.sortOrder')" :hint="t('entities.cities.sortOrderHint')" />
+      <FieldInput
+        name="sortOrder"
+        inputmode="numeric"
+        :label="t('entities.cities.sortOrder')"
+        :hint="t('entities.cities.sortOrderHint')"
+      />
     </div>
   </FormModal>
 </template>

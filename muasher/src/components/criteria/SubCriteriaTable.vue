@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DataTable from '@/components/data-list/DataTable.vue'
-import ActionsDropdown from '@/components/data-list/ActionsDropdown.vue'
+import AppMenu from '@/components/ui/AppMenu.vue'
 import Badge from '@/components/ui/Badge.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import ReorderButtons from './ReorderButtons.vue'
@@ -40,13 +40,13 @@ function isGuided(sub) {
 function rowActions(sub) {
   const actions = actionsFor(
     sub,
-    isGuided(sub) ? { label: 'criteria.actions.openPoints', icon: 'fa-solid fa-list-check' } : null,
+    isGuided(sub) ? { label: 'criteria.actions.openPoints', icon: 'list-check' } : null,
   )
   if (!props.access.canEditTree.value) return actions
   const label = isGuided(sub)
     ? 'criteria.evaluationType.switchToDirect'
     : 'criteria.evaluationType.switchToPoints'
-  return [...actions, { key: 'switch', label: t(label), icon: 'fa-solid fa-right-left' }]
+  return [...actions, { key: 'switch', label: t(label), icon: 'swap' }]
 }
 </script>
 
@@ -101,7 +101,11 @@ function rowActions(sub) {
       ><StatusBadge :status="item.active ? 'active' : 'inactive'"
     /></template>
     <template #cell-actions="{ item }">
-      <ActionsDropdown :actions="rowActions(item)" @select="emit('action', $event, item)" />
+      <AppMenu
+        :actions="rowActions(item)"
+        :label="t('components.actions.menuFor', { name: item.code })"
+        @select="emit('action', $event, item)"
+      />
     </template>
   </DataTable>
 </template>

@@ -1,0 +1,92 @@
+@use '../mixins' as *;
+
+.auth-value-panel {
+  @include flex(column, center, flex-start, var(--space-8));
+  inline-size: 100%;
+}
+
+.auth-value-panel__heading {
+  margin: 0;
+  max-inline-size: var(--size-auth-card);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-heading);
+  color: var(--color-secondary);
+  text-wrap: balance;
+
+  @include respond-to('lg') {
+    font-size: var(--fs-h4);
+  }
+}
+
+.auth-value-panel__list {
+  display: none;
+
+  @include respond-to('lg') {
+    @include flex(column, stretch, flex-start, var(--space-3));
+    inline-size: 100%;
+    max-inline-size: var(--size-auth-card);
+    margin: 0;
+  }
+}
+
+.auth-value-card {
+  @include flex(row, flex-start, flex-start, var(--space-4));
+  padding: var(--space-5);
+  border: var(--border-width) solid var(--brand-line-on-dark);
+  border-radius: var(--radius-xl);
+  background-color: var(--brand-glass-on-dark);
+  text-align: start;
+}
+
+.auth-value-card__icon {
+  @include flex-center;
+  flex-shrink: 0;
+  inline-size: var(--size-icon-box);
+  block-size: var(--size-icon-box);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-accent-soft);
+  color: var(--color-primary);
+}
+
+.auth-value-card__text {
+  @include flex(column, stretch, flex-start, var(--space-1));
+  min-inline-size: 0;
+}
+
+.auth-value-card__title {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-base);
+  color: var(--color-secondary);
+}
+
+.auth-value-card__body {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
+  color: var(--color-secondary);
+
+  [dir='ltr'] & {
+    font-size: var(--fs-label);
+  }
+}
+
+.auth-value-panel__footnote {
+  display: none;
+
+  @include respond-to('lg') {
+    @include flex(row, center, center, var(--space-2));
+    margin: 0;
+    font-size: var(--fs-xs);
+    line-height: var(--lh-base);
+    color: var(--color-secondary);
+
+    @include respond-to-block('tall') {
+      position: absolute;
+      inset-block-end: var(--space-10);
+      inset-inline: var(--space-8);
+    }
+  }
+}

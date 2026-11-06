@@ -37,7 +37,10 @@ const columns = computed(() => [
     @retry="emit('retry')"
   >
     <template #cell-name="{ item }">
-      <RouterLink class="cycle-table__link" :to="{ name: ROUTE_NAMES.AWARD_CYCLE, params: { id: item.id } }">
+      <RouterLink
+        class="cycle-table__link"
+        :to="{ name: ROUTE_NAMES.AWARD_CYCLE, params: { id: item.id } }"
+      >
         {{ localizedText(item.name, locale) }} <bdi class="u-ltr">{{ item.year }}</bdi>
       </RouterLink>
     </template>
@@ -49,10 +52,17 @@ const columns = computed(() => [
         <DateStamp :value="item.submissionEnd" :with-time="false" />
       </span>
     </template>
-    <template #cell-regions="{ item }">{{ t('cycles.list.regionCount', { count: item.regions.length }, item.regions.length) }}</template>
+    <template #cell-regions="{ item }">{{
+      t('cycles.list.regionCount', { count: item.regions.length }, item.regions.length)
+    }}</template>
     <template #cell-counts="{ item }">
       <span v-if="item.counts" class="cycle-table__counts">
-        {{ t('cycles.list.counts', { requests: item.counts.requests, qualified: item.counts.qualified }) }}
+        {{
+          t('cycles.list.counts', {
+            requests: item.counts.requests,
+            qualified: item.counts.qualified,
+          })
+        }}
       </span>
     </template>
   </DataTable>

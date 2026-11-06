@@ -3,7 +3,15 @@ import { useFinanceList } from '@/composables/useFinanceList'
 import { financeService } from '@/services/financeService'
 import { DEFAULT_TRANSACTION_SORT } from '@/constants/finance'
 
-export const TRANSACTION_FILTERS = { status: '', purpose: '', method: '', from: '', to: '', mode: '' }
+export const TRANSACTION_FILTERS = {
+  status: '',
+  purpose: '',
+  channel: '',
+  method: '',
+  from: '',
+  to: '',
+  mode: '',
+}
 
 export function useTransactions() {
   const list = useFinanceList({

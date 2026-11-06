@@ -32,10 +32,10 @@ export const INTEGRATION_KIND_ROUTES = Object.freeze({
 })
 
 export const INTEGRATION_KIND_ICONS = Object.freeze({
-  [INTEGRATION_KINDS.PAYMENT]: 'fa-solid fa-credit-card',
-  [INTEGRATION_KINDS.SMS]: 'fa-solid fa-comment-sms',
-  [INTEGRATION_KINDS.EMAIL]: 'fa-solid fa-envelope',
-  [INTEGRATION_KINDS.AI]: 'fa-solid fa-robot',
+  [INTEGRATION_KINDS.PAYMENT]: 'credit-card',
+  [INTEGRATION_KINDS.SMS]: 'chat',
+  [INTEGRATION_KINDS.EMAIL]: 'envelope',
+  [INTEGRATION_KINDS.AI]: 'robot',
 })
 
 export const INTEGRATION_MODES = Object.freeze({ TEST: 'test', LIVE: 'live' })
@@ -72,7 +72,11 @@ export const UNKNOWN_PROVIDER_ERROR = 'unknown'
 
 export const PROVIDER_ERROR_CODE = 'provider_error'
 
-export const PAYMENT_METHODS = Object.freeze({ CREDIT_CARD: 'creditcard', APPLE_PAY: 'applepay', STC_PAY: 'stcpay' })
+export const PAYMENT_METHODS = Object.freeze({
+  CREDIT_CARD: 'creditcard',
+  APPLE_PAY: 'applepay',
+  STC_PAY: 'stcpay',
+})
 export const CARD_NETWORKS = Object.freeze(['mada', 'visa', 'mastercard', 'amex', 'unionpay'])
 export const PAYMENT_LINKED_PATHS = Object.freeze(['accredited', 'bag'])
 
@@ -81,11 +85,23 @@ export const NO_ACTIVE_PROVIDER = 'none'
 export const SMS_PROVIDERS = Object.freeze({ TAQNYAT: 'taqnyat', MSEGAT: 'msegat' })
 export const TAQNYAT_ACTIVE_SENDER = 'active'
 
-export const SMTP_PORTS = Object.freeze([587, 465, 25, 2525])
+export const SMTP_PORTS = Object.freeze([587, 465, 25, 2525, 2465, 2587])
 export const SMTP_ENCRYPTIONS = Object.freeze(['starttls', 'tls'])
 
 export const AI_PROVIDERS = Object.freeze({ OPENAI: 'openai', ANTHROPIC: 'anthropic' })
-export const OPENAI_REGIONS = Object.freeze(['global', 'us', 'eu', 'ae', 'au', 'ca', 'jp', 'in', 'sg', 'kr', 'gb'])
+export const OPENAI_REGIONS = Object.freeze([
+  'global',
+  'us',
+  'eu',
+  'ae',
+  'au',
+  'ca',
+  'jp',
+  'in',
+  'sg',
+  'kr',
+  'gb',
+])
 export const ANTHROPIC_INFERENCE_GEOS = Object.freeze(['global', 'us'])
 export const AI_PLACEMENTS = Object.freeze(['public_only', 'platform_only', 'public_and_platform'])
 export const AI_FINISHES = Object.freeze(['complete', 'truncated', 'refused', 'blocked'])
@@ -153,7 +169,12 @@ export const CONNECTION_CHECKS = Object.freeze([
   'model_available',
 ])
 
-export const CHECK_DETAILS = Object.freeze(['prefix_mismatch', 'sender_not_active', 'model_not_listed', 'host_not_allowed'])
+export const CHECK_DETAILS = Object.freeze([
+  'prefix_mismatch',
+  'sender_not_active',
+  'model_not_listed',
+  'host_not_allowed',
+])
 
 export const CONNECTION_INFO_KEYS = Object.freeze([
   'accountStatus',

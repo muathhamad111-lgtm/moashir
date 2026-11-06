@@ -1,0 +1,9 @@
+@use 'spacing' as *;
+@use 'sizes' as *;
+
+:export {
+  gap: $space-1;
+  margin: $space-2;
+  maxBlock: $size-menu-max-block;
+  flipMin: $size-dropdown-flip-min;
+}

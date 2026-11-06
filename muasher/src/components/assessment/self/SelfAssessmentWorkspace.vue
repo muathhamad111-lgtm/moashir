@@ -36,14 +36,19 @@ const activeMainId = ref(null)
 const refreshing = ref(false)
 
 const mains = computed(() => form.value?.criteria?.mains ?? [])
-const activeMain = computed(() => mains.value.find((main) => main.id === activeMainId.value) ?? mains.value[0] ?? null)
+const activeMain = computed(
+  () => mains.value.find((main) => main.id === activeMainId.value) ?? mains.value[0] ?? null,
+)
 const fieldsDisabled = computed(() => isReadOnly.value || saving.value || submitting.value)
 const treeNodes = computed(() =>
   mains.value.map((main) => ({
     id: main.id,
     label: `${main.code} ${localizedText(main.name, locale.value)}`,
     meta: t('assessment.self.tree.mainMeta', { weight: main.weight }),
-    children: main.subs.map((sub) => ({ id: sub.id, label: `${sub.code} ${localizedText(sub.name, locale.value)}` })),
+    children: main.subs.map((sub) => ({
+      id: sub.id,
+      label: `${sub.code} ${localizedText(sub.name, locale.value)}`,
+    })),
   })),
 )
 
@@ -80,12 +85,17 @@ onMounted(load)
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
     <EmptyState
       v-else-if="status === 'missing'"
-      icon="fa-regular fa-clipboard"
+      icon="doc"
       :title="t('assessment.self.missing.title')"
       :message="t('assessment.self.missing.message')"
     />
     <template v-else-if="form">
-      <SelfAssessmentSummary :assessment="assessment" :criteria="form.criteria" :scale="form.scale" :progress="form.progress" />
+      <SelfAssessmentSummary
+        :assessment="assessment"
+        :criteria="form.criteria"
+        :scale="form.scale"
+        :progress="form.progress"
+      />
       <SelfAssessmentNotices
         :assessment="assessment"
         :conflict-code="conflictCode"
@@ -95,7 +105,11 @@ onMounted(load)
       />
       <div class="self-workspace__layout">
         <aside class="self-workspace__nav" :aria-label="t('assessment.self.nav.label')">
-          <CriteriaTree :nodes="treeNodes" :active-id="activeMain?.id ?? null" @select="selectMain" />
+          <CriteriaTree
+            :nodes="treeNodes"
+            :active-id="activeMain?.id ?? null"
+            @select="selectMain"
+          />
         </aside>
         <SelfMainScoring
           v-if="activeMain"

@@ -20,6 +20,16 @@ final readonly class DemoPeople
         return $this->staff[$role->value]->user;
     }
 
+    public function insightsCast(): DemoInsightsCast
+    {
+        return new DemoInsightsCast(
+            array_map(static fn (DemoUserAccount $owner): User => $owner->user, $this->entityOwners),
+            $this->staffMember(RoleKey::Assessor),
+            $this->staffMember(RoleKey::SystemAdmin),
+            $this->staffMember(RoleKey::ContentOfficer),
+        );
+    }
+
     /**
      * @return list<DemoAccount>
      */

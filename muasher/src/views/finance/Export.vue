@@ -15,23 +15,39 @@ import { EXPORT_STATUSES } from '@/constants/finance'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { formatDate } from '@/utils/datetime'
 import { withLatinNumerals } from '@/utils/numerals'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   id: { type: String, required: true },
 })
 
 const { t, locale } = useI18n()
-const { status, record, errorMessage, isQueued, isReady, reload, requestLink } = useFinanceExport(props.id)
+const { status, record, errorMessage, isQueued, isReady, reload, requestLink } = useFinanceExport(
+  props.id,
+)
 const downloads = useSignedDownload()
 
 useHead({ title: () => t('finance.export.title') })
 
 const TONES = { queued: 'info', ready: 'success', failed: 'danger', streamed: 'success' }
-const ICONS = { queued: 'fa-solid fa-gears', ready: 'fa-solid fa-file-csv', failed: 'fa-solid fa-circle-exclamation', streamed: 'fa-solid fa-file-csv' }
+const ICONS = {
+  queued: 'gear',
+  ready: 'doc',
+  failed: 'warning-triangle',
+  streamed: 'doc',
+}
 
-const rows = computed(() => new Intl.NumberFormat(withLatinNumerals(locale.value)).format(record.value?.rowCount ?? 0))
+const rows = computed(() =>
+  new Intl.NumberFormat(withLatinNumerals(locale.value)).format(record.value?.rowCount ?? 0),
+)
 const createdAt = computed(() =>
-  record.value ? formatDate(record.value.createdAt, locale.value, { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Riyadh' }) : '',
+  record.value
+    ? formatDate(record.value.createdAt, locale.value, {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+        timeZone: 'Asia/Riyadh',
+      })
+    : '',
 )
 </script>
 
@@ -39,12 +55,16 @@ const createdAt = computed(() =>
   <section class="finance-page">
     <FinancePageHeader :eyebrow="t('finance.eyebrow')" :title="t('finance.export.title')" />
     <RouterLink class="transaction-detail__back" :to="{ name: ROUTE_NAMES.FINANCE_TRANSACTIONS }">
-      <i class="fa-solid fa-arrow-left-long u-flip-in-rtl" aria-hidden="true"></i>
+      <AppIcon name="arrow-left" />
       {{ t('finance.transaction.back') }}
     </RouterLink>
     <Skeleton v-if="status === 'loading'" variant="block" />
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="reload" />
-    <EmptyState v-else-if="status === 'not-found'" icon="fa-solid fa-file-csv" :title="t('finance.export.notFound')" />
+    <EmptyState
+      v-else-if="status === 'not-found'"
+      icon="doc"
+      :title="t('finance.export.notFound')"
+    />
     <Card v-else>
       <PaymentNotice
         :tone="TONES[record.status]"
@@ -57,13 +77,18 @@ const createdAt = computed(() =>
           <BaseButton
             v-if="isReady"
             variant="primary"
-            icon="fa-solid fa-file-arrow-down"
+            icon="download"
             :loading="downloads.busy.file === true"
             @click="downloads.download('file', requestLink)"
           >
             {{ t('finance.export.download') }}
           </BaseButton>
-          <BaseButton v-else-if="isQueued || record.status === EXPORT_STATUSES.FAILED" variant="secondary" icon="fa-solid fa-rotate-right" @click="reload">
+          <BaseButton
+            v-else-if="isQueued || record.status === EXPORT_STATUSES.FAILED"
+            variant="secondary"
+            icon="refresh"
+            @click="reload"
+          >
             {{ t('finance.export.refresh') }}
           </BaseButton>
         </template>

@@ -5,6 +5,7 @@ import { ROUTE_NAMES } from '@/constants/routeNames'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   title: { type: String, required: true },
@@ -25,7 +26,7 @@ const { t } = useI18n()
   <section class="settings-section">
     <header class="settings-section__header">
       <RouterLink :to="{ name: ROUTE_NAMES.ADMIN_SETTINGS }" class="settings-section__back">
-        <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i>
+        <AppIcon name="arrow-left" />
         {{ t('settings.hub.backToHub') }}
       </RouterLink>
       <h1 class="settings-section__title">{{ title }}</h1>
@@ -40,16 +41,12 @@ const { t } = useI18n()
 
     <EmptyState
       v-else-if="status === 'forbidden'"
-      icon="fa-solid fa-lock"
+      icon="lock"
       :title="t('integrations.forbidden.title')"
       :message="t('integrations.forbidden.message')"
     />
 
-    <ErrorState
-      v-else-if="status === 'error'"
-      :message="errorMessage"
-      @retry="emit('retry')"
-    />
+    <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="emit('retry')" />
 
     <template v-else>
       <div class="settings-section__body">

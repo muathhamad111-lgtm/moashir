@@ -9,6 +9,7 @@ use App\Data\Entities\EntityProfileData;
 use App\Models\Entities\Entity;
 use App\Support\ValueObjects\EntityName;
 use BackedEnum;
+use Carbon\CarbonInterface;
 
 final class EntityProfileDiff
 {
@@ -17,7 +18,7 @@ final class EntityProfileDiff
         $before = [];
         $after = [];
 
-        foreach ($profile->toAttributes() as $field => $value) {
+        foreach ($entity->profileAttributesFrom($profile) as $field => $value) {
             $previous = $this->comparable($entity->getAttribute($field));
             $next = $this->comparable($value);
 
@@ -35,6 +36,7 @@ final class EntityProfileDiff
         return match (true) {
             $value instanceof EntityName => $value->toArray(),
             $value instanceof BackedEnum => $value->value,
+            $value instanceof CarbonInterface => $value->toDateString(),
             default => $value,
         };
     }

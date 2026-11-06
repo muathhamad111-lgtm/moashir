@@ -25,7 +25,11 @@ describe('scorable units of the bound tree', () => {
       ['point', 1002, 'M1.1.2'],
       ['sub', 102, 'M1.2'],
     ])
-    expect(units[0]).toMatchObject({ mainId: 1, subId: 101, label: { en: 'An approved vision document' } })
+    expect(units[0]).toMatchObject({
+      mainId: 1,
+      subId: 101,
+      label: { en: 'An approved vision document' },
+    })
     expect(scoreFieldName(units[2])).toBe('sub-102')
   })
 
@@ -35,31 +39,44 @@ describe('scorable units of the bound tree', () => {
 })
 
 describe('sheet values and the complete PUT sheet', () => {
-  const scores = { subs: { 102: { rawValue: '7.50', percent: '75.00' } }, points: { 1001: { rawValue: '8.00', percent: '80.00' } } }
+  const scores = {
+    subs: { 102: { rawValue: '7.50', percent: '75.00' } },
+    points: { 1001: { rawValue: '8.00', percent: '80.00' } },
+  }
 
   it('reads the saved raw values exactly as returned', () => {
-    expect(sheetValues(scores, units)).toEqual({ 'point-1001': '8.00', 'point-1002': '', 'sub-102': '7.50' })
+    expect(sheetValues(scores, units)).toEqual({
+      'point-1001': '8.00',
+      'point-1002': '',
+      'sub-102': '7.50',
+    })
     expect(savedScoreOf(scores, units[0])).toEqual({ rawValue: '8.00', percent: '80.00' })
     expect(savedScoreOf(scores, units[1])).toBeNull()
   })
 
   it('sends every unit, null for empty ones, and converts Arabic digits and separators', () => {
     const arabicEightPointFive = String.fromCodePoint(0x0668, 0x066b, 0x0665)
-    const payload = sheetPayload({ 'point-1001': arabicEightPointFive, 'point-1002': '  ', 'sub-102': '6' }, units)
+    const payload = sheetPayload(
+      { 'point-1001': arabicEightPointFive, 'point-1002': '  ', 'sub-102': '6' },
+      units,
+    )
     expect(payload).toEqual({ subs: { 102: '6' }, points: { 1001: '8.5', 1002: null } })
   })
 
   it('lists the units without a value', () => {
-    expect(unscoredUnits({ 'point-1001': '8', 'point-1002': '', 'sub-102': null }, units).map((unit) => unit.code)).toEqual([
-      'M1.1.2',
-      'M1.2',
-    ])
+    expect(
+      unscoredUnits({ 'point-1001': '8', 'point-1002': '', 'sub-102': null }, units).map(
+        (unit) => unit.code,
+      ),
+    ).toEqual(['M1.1.2', 'M1.2'])
   })
 
   it('maps server field paths to sheet fields and ignores other paths', () => {
     expect(fieldNameOfServerPath('scores.points.1002')).toBe('point-1002')
     expect(fieldNameOfServerPath('reason')).toBeNull()
-    expect(sheetFieldErrors({ 'scores.subs.102': ['Out of range'], reason: ['Required'] })).toEqual({ 'sub-102': 'Out of range' })
+    expect(sheetFieldErrors({ 'scores.subs.102': ['Out of range'], reason: ['Required'] })).toEqual(
+      { 'sub-102': 'Out of range' },
+    )
   })
 })
 
@@ -81,8 +98,14 @@ describe('raw value rules', () => {
 
   it('validates format and range with translated messages', async () => {
     const schema = scoreSheetSchema(t, units, '10.00')
-    await expect(schema.validate({ 'point-1001': '', 'point-1002': '9.5', 'sub-102': null })).resolves.toBeTruthy()
-    await expect(schema.validateAt('point-1001', { 'point-1001': '7.555' })).rejects.toThrow('assessment.self.validation.format')
-    await expect(schema.validateAt('point-1001', { 'point-1001': '11' })).rejects.toThrow('assessment.self.validation.range')
+    await expect(
+      schema.validate({ 'point-1001': '', 'point-1002': '9.5', 'sub-102': null }),
+    ).resolves.toBeTruthy()
+    await expect(schema.validateAt('point-1001', { 'point-1001': '7.555' })).rejects.toThrow(
+      'assessment.self.validation.format',
+    )
+    await expect(schema.validateAt('point-1001', { 'point-1001': '11' })).rejects.toThrow(
+      'assessment.self.validation.range',
+    )
   })
 })

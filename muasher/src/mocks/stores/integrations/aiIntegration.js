@@ -1,8 +1,19 @@
 import { AI_DEFAULTS, AI_MODELS, AI_TEST_ANSWER, EMPTY_SECRET } from '../../fixtures/integrations'
 import { integrationReject } from './integrationRejection'
 import { aiState } from './integrationsState'
-import { applySecretPatch, isSecretTouched, secretMetaResource, secretVerdict } from './integrationSecrets'
-import { check, connectionResult, failOnVerdict, representativeTest, settleTest } from './integrationTesting'
+import {
+  applySecretPatch,
+  isSecretTouched,
+  secretMetaResource,
+  secretVerdict,
+} from './integrationSecrets'
+import {
+  check,
+  connectionResult,
+  failOnVerdict,
+  representativeTest,
+  settleTest,
+} from './integrationTesting'
 import {
   checkBoolean,
   checkChoice,
@@ -34,7 +45,13 @@ const REQUEST_IDS = { openai: 'resp_fake_example_0001', anthropic: 'msg_fake_exa
 
 function emptyRow(provider) {
   const fields = Object.fromEntries(PUBLIC_FIELDS[provider].map((field) => [field, null]))
-  return { ...fields, apiKey: { ...EMPTY_SECRET }, acknowledgement: null, lastTest: null, isActive: false }
+  return {
+    ...fields,
+    apiKey: { ...EMPTY_SECRET },
+    acknowledgement: null,
+    lastTest: null,
+    isActive: false,
+  }
 }
 
 function isConfigured(row) {
@@ -80,7 +97,11 @@ function commonResource(row) {
 }
 
 function checklist() {
-  return ['provider_account_and_billing', 'spend_limits', 'data_retention_contract'].map((key) => ({ key, confirmable: false, confirmed: null }))
+  return ['provider_account_and_billing', 'spend_limits', 'data_retention_contract'].map((key) => ({
+    key,
+    confirmable: false,
+    confirmed: null,
+  }))
 }
 
 export function aiResource() {
@@ -120,7 +141,11 @@ function validateProvider(errors, provider, patch) {
   const path = `providers.${provider}`
   checkSecret(errors, `${path}.apiKey`, patch.apiKey, { min: 20, max: 512 })
   if (patch.model && !MODEL_PATTERN.test(patch.model)) errors.add(`${path}.model`, 'field.invalid')
-  checkInteger(errors, patch, 'maxOutputTokens', { min: 64, max: 4096, path: `${path}.maxOutputTokens` })
+  checkInteger(errors, patch, 'maxOutputTokens', {
+    min: 64,
+    max: 4096,
+    path: `${path}.maxOutputTokens`,
+  })
   checkInteger(errors, patch, 'timeoutSeconds', { min: 5, max: 60, path: `${path}.timeoutSeconds` })
   checkBoolean(errors, patch, 'dataTransferAcknowledged', `${path}.dataTransferAcknowledged`)
   if (provider === 'openai') {
@@ -167,7 +192,10 @@ function writeAcknowledgement(state, provider, patch, actor) {
   state.rows[provider] = row
   const acknowledged = patch.dataTransferAcknowledged === true
   if (!acknowledged && row.isActive) {
-    throw integrationReject.field('ai.data_transfer_acknowledgement_required', `providers.${provider}.dataTransferAcknowledged`)
+    throw integrationReject.field(
+      'ai.data_transfer_acknowledgement_required',
+      `providers.${provider}.dataTransferAcknowledged`,
+    )
   }
   if (acknowledged === Boolean(row.acknowledgement)) return
   row.acknowledgement = acknowledged ? { at: new Date().toISOString(), by: actor } : null
@@ -178,8 +206,10 @@ function applyActivation(state, body) {
   const provider = body.activeProvider
   if (provider !== null) {
     const row = state.rows[provider]
-    if (!isConfigured(row)) throw integrationReject.field('integration.configuration_incomplete', 'activeProvider')
-    if (!row.acknowledgement) throw integrationReject.field('ai.data_transfer_acknowledgement_required', 'activeProvider')
+    if (!isConfigured(row))
+      throw integrationReject.field('integration.configuration_incomplete', 'activeProvider')
+    if (!row.acknowledgement)
+      throw integrationReject.field('ai.data_transfer_acknowledgement_required', 'activeProvider')
   }
   PROVIDERS.filter((item) => state.rows[item]).forEach((item) => {
     state.rows[item].isActive = item === provider
@@ -188,10 +218,15 @@ function applyActivation(state, body) {
 
 export function updateAi(body, actor, { superAdmin }) {
   validateAi(body)
-  requireReason(body, superAdmin && hasSecretChange(PROVIDERS.map((provider) => body.providers?.[provider]?.apiKey)))
+  requireReason(
+    body,
+    superAdmin && hasSecretChange(PROVIDERS.map((provider) => body.providers?.[provider]?.apiKey)),
+  )
   const draft = structuredClone(aiState())
   PROVIDERS.forEach((provider) => writeProvider(draft, provider, body.providers?.[provider], actor))
-  PROVIDERS.forEach((provider) => writeAcknowledgement(draft, provider, body.providers?.[provider], actor))
+  PROVIDERS.forEach((provider) =>
+    writeAcknowledgement(draft, provider, body.providers?.[provider], actor),
+  )
   if (has(body, 'placement')) draft.placement = body.placement
   if (has(body, 'notice')) draft.notice = { ar: body.notice.ar, en: body.notice.en }
   if (has(body, 'mode')) draft.mode = body.mode
@@ -227,11 +262,19 @@ export function listModels(requested) {
 function aiTestResult(provider, row) {
   const base = { provider, mode: aiState().mode, latencyMs: LATENCY_MS[provider] }
   const verdict = secretVerdict(row.apiKey)
-  if (verdict !== 'ok') return connectionResult({ ...base, checks: [check('api_key_valid', false, verdict)], errorKind: verdict })
+  if (verdict !== 'ok')
+    return connectionResult({
+      ...base,
+      checks: [check('api_key_valid', false, verdict)],
+      errorKind: verdict,
+    })
   const listed = AI_MODELS[provider].some((model) => model.id === row.model)
   return connectionResult({
     ...base,
-    checks: [check('api_key_valid', true), check('model_available', listed, listed ? null : 'model_not_listed')],
+    checks: [
+      check('api_key_valid', true),
+      check('model_available', listed, listed ? null : 'model_not_listed'),
+    ],
     info: { model: row.model, modelsCount: AI_MODELS[provider].length },
     errorKind: listed ? null : 'misconfigured',
   })

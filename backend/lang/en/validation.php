@@ -160,6 +160,58 @@ return [
     'uuid' => 'The :attribute field must be a valid UUID.',
 
     'custom' => [
+        'vat_registration_number' => [
+            'regex' => 'The VAT registration number has 15 Western digits (0-9) with no spaces, and starts and ends with 3.',
+        ],
+        'gap_thresholds' => [
+            'ascending' => 'The critical-gap threshold must be above zero and below the strength threshold, and the strength threshold cannot exceed 100.',
+        ],
+        'maturity_bands' => [
+            'ascending' => 'The maturity band starts must be above zero, rise from Developing to Mature and Leading, and not exceed 100.',
+        ],
+        'iban' => [
+            'format' => 'A Saudi IBAN has 24 characters: SA, two check digits, the bank code and 18 letters or digits.',
+            'checksum' => 'This IBAN is not valid: its check digits do not match the rest of the number. Check it character by character.',
+            'unique' => 'This IBAN is already registered for another bank account on the platform.',
+        ],
+        'rejection_reason' => [
+            'note_required' => 'Write a note that explains the rejection when you choose "Other reason".',
+        ],
+        'payment_ids' => [
+            'max' => 'You can approve or reject at most :max transfers at once.',
+        ],
+        'ordered_ids' => [
+            'complete' => 'Order all the listed bank accounts, each one once.',
+        ],
+        'identifier' => [
+            'format' => 'Enter your official e-mail, your Saudi mobile number (05XXXXXXXX) or your entity\'s unified national number (10 digits starting with 7).',
+        ],
+        'entity_sign_in_code_channels' => [
+            'email_required' => 'E-mail must stay allowed: every entity can always receive its sign-in code by e-mail.',
+            'sms_unavailable' => 'Configure the SMS gateway before allowing sign-in codes by text message.',
+        ],
+        'unified_number' => [
+            'regex' => 'The unified national number must contain exactly 10 digits (0-9) and start with 7.',
+            'unique' => 'This unified national number is already registered for another entity on the platform. Check the number or contact the platform team.',
+        ],
+        'license_number' => [
+            'regex' => 'The licence number must contain 3 to 20 digits (0-9) only.',
+            'unique' => 'This licence number is already registered for another entity on the platform. Check the number or contact the platform team.',
+        ],
+        'founded_on' => [
+            'after_or_equal' => 'The founding date must be on or after 1900-01-01.',
+            'before_or_equal' => 'The founding date cannot be in the future.',
+            'date_format' => 'Write the founding date as YYYY-MM-DD, for example 2012-03-01.',
+        ],
+        'website_url' => [
+            'https' => 'The website must be a full address starting with https://, for example https://www.example.sa.',
+        ],
+        'file' => [
+            'dimensions' => 'Each side of the image must be between :min_width and :max_width pixels.',
+        ],
+        'level_thresholds' => [
+            'ascending' => 'The level minimums must be greater than zero and rise from bronze to silver, gold and diamond.',
+        ],
         'secret' => [
             'clear' => 'To remove the stored :attribute, send {"clear": true}.',
             'format' => 'The :attribute has an invalid format.',
@@ -168,6 +220,25 @@ return [
         ],
         'host' => [
             'hostname' => 'The :attribute must be a valid host name.',
+        ],
+        'link' => [
+            'safe' => 'The :attribute must be a site path starting with /, an anchor starting with #, a mailto: address or an https:// link.',
+        ],
+        'icon' => [
+            'font_awesome' => 'The :attribute must be a Font Awesome class such as fa-solid fa-chart-line.',
+        ],
+        'rich_text' => [
+            'markup' => 'HTML tags are not allowed in the :attribute. Use the simple format for headings, lists and tables.',
+        ],
+        'meta' => [
+            'object' => 'The :attribute must be an object of named fields.',
+            'bounded' => 'The :attribute is too large or too deeply nested (at most :max KB, 5 levels, field names of letters, digits and underscores).',
+        ],
+        'key' => [
+            'unknown' => 'This field is not part of the settings.',
+        ],
+        'kpi_number' => [
+            'format' => 'The :attribute must be a number with at most 14 digits before the decimal point and 4 after it.',
         ],
         'apple_pay_file' => [
             'content' => 'The file must be the plain-text domain association file downloaded from Moyasar.',
@@ -209,6 +280,41 @@ return [
     ],
 
     'attributes' => [
+        'vat_registration_number' => 'VAT registration number',
+        'gap_thresholds' => 'strengths and gaps thresholds',
+        'gap_thresholds.critical_below' => 'critical-gap threshold',
+        'gap_thresholds.strength_from' => 'strength threshold',
+        'maturity_bands' => 'maturity band bounds',
+        'maturity_bands.developing_from' => 'start of the Developing band',
+        'maturity_bands.mature_from' => 'start of the Mature band',
+        'maturity_bands.leading_from' => 'start of the Leading band',
+        'summary' => 'assessor summary',
+        'main_criterion_code' => 'main criterion code',
+        'text.ar' => 'Arabic text',
+        'text.en' => 'English text',
+        'bank_name' => 'bank name',
+        'bank_name.ar' => 'Arabic bank name',
+        'bank_name.en' => 'English bank name',
+        'account_holder_name' => 'account holder name',
+        'account_holder_name.ar' => 'Arabic account holder name',
+        'account_holder_name.en' => 'English account holder name',
+        'iban' => 'IBAN',
+        'account_number' => 'account number',
+        'payer_note' => 'note to entities',
+        'payer_note.ar' => 'Arabic note to entities',
+        'payer_note.en' => 'English note to entities',
+        'channels' => 'payment channels',
+        'bank_account_id' => 'bank account',
+        'proof' => 'bank transfer receipt',
+        'rejection_reason' => 'rejection reason',
+        'payment_ids' => 'selected transfers',
+        'accredited_issuance_enabled' => 'accredited certificate issuance',
+        'level_thresholds' => 'level minimums',
+        'level_thresholds.bronze' => 'bronze level minimum',
+        'level_thresholds.silver' => 'silver level minimum',
+        'level_thresholds.gold' => 'gold level minimum',
+        'level_thresholds.diamond' => 'diamond level minimum',
+        'issue_certificate' => 'issue the certificate',
         'award_cycle_id' => 'award cycle',
         'year' => 'year',
         'submission_start' => 'submission start',
@@ -329,6 +435,12 @@ return [
         'development_sector' => 'development sector',
         'org_size' => 'organization size',
         'founding_year' => 'founding year',
+        'license_number' => 'licence number',
+        'unified_number' => 'unified national number',
+        'identifier' => 'e-mail, mobile number or unified national number',
+        'entity_sign_in_code_channels' => 'sign-in code channels',
+        'founded_on' => 'founding date',
+        'website_url' => 'website',
         'region_id' => 'region',
         'city_id' => 'city',
         'governance_grade' => 'governance grade',

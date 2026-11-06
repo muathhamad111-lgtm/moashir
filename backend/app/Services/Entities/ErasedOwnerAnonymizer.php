@@ -9,6 +9,7 @@ use App\Models\Identity\OtpCode;
 use App\Models\Identity\PasswordHistory;
 use App\Models\Identity\User;
 use App\Models\Notifications\Notification;
+use App\Models\Notifications\NotificationPreference;
 use App\Services\Identity\UserSessionTerminator;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +27,7 @@ final readonly class ErasedOwnerAnonymizer
         OtpCode::query()->where('user_id', $owner->id)->delete();
         PasswordHistory::query()->where('user_id', $owner->id)->delete();
         Notification::query()->where('user_id', $owner->id)->delete();
+        NotificationPreference::query()->where('user_id', $owner->id)->delete();
         DB::table('password_reset_tokens')->whereRaw('lower(email) = ?', [mb_strtolower($owner->email)])->delete();
 
         User::withoutAuditing(function () use ($owner, $pseudonym): void {

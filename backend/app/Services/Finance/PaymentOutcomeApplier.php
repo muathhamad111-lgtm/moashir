@@ -30,6 +30,10 @@ final readonly class PaymentOutcomeApplier
 
     public function apply(Payment $payment, ProviderPayment $provider, PaymentEventSource $source): PaymentEventResult
     {
+        if ($payment->isBankTransfer()) {
+            return $this->refuseForBankTransfer($payment, $provider, $source);
+        }
+
         $result = $this->matcher->belongsTo($payment, $provider)
             ? DB::transaction(fn (): PaymentEventResult => $this->applyLocked($this->locks->lock($payment), $provider))
             : PaymentEventResult::Rejected;
@@ -45,6 +49,21 @@ final readonly class PaymentOutcomeApplier
         $payment->refresh();
 
         return $result;
+    }
+
+    private function refuseForBankTransfer(Payment $payment, ProviderPayment $provider, PaymentEventSource $source): PaymentEventResult
+    {
+        $this->alerts->serviceIssue('verification_rejected');
+
+        if (ProviderPaymentStatus::effectOf($provider->status) === ProviderStatusEffect::Settle) {
+            $this->alerts->refundRequired($payment);
+        }
+
+        if ($source !== PaymentEventSource::Webhook) {
+            $this->events->recordProviderFetch($payment, $provider, $source, PaymentEventResult::Rejected);
+        }
+
+        return PaymentEventResult::Rejected;
     }
 
     private function applyLocked(Payment $locked, ProviderPayment $provider): PaymentEventResult

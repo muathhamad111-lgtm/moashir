@@ -14,11 +14,12 @@ use App\Models\Assessments\EvidenceFile;
 use App\Models\Identity\User;
 use App\Services\Assessments\AssessmentRecordScope;
 use App\Services\Award\CommitteeSeating;
+use App\Services\Identity\RequestPathScope;
 use Illuminate\Auth\Access\Response;
 
 final readonly class AssessmentPolicy
 {
-    public function __construct(private AssessmentRecordScope $scope, private CommitteeSeating $committee) {}
+    public function __construct(private AssessmentRecordScope $scope, private CommitteeSeating $committee, private RequestPathScope $paths) {}
 
     public function viewAny(User $actor): bool
     {
@@ -161,12 +162,12 @@ final readonly class AssessmentPolicy
             return Response::denyAsNotFound();
         }
 
-        if ($actor->can(PermissionKey::RequestsQueueView->value)) {
+        if ($this->followsQueueOf($actor, $assessment)) {
             return Response::allow();
         }
 
         if (! $actor->can(PermissionKey::RequestsAssignedView->value)) {
-            return Response::deny();
+            return $actor->can(PermissionKey::RequestsQueueView->value) ? Response::denyAsNotFound() : Response::deny();
         }
 
         return $this->scope->isReviewedBy($actor, $assessment) ? Response::allow() : Response::denyAsNotFound();
@@ -179,7 +180,7 @@ final readonly class AssessmentPolicy
 
     public function assign(User $actor, Assessment $assessment): Response
     {
-        if (! $assessment->path->isReviewed()) {
+        if (! $assessment->path->isReviewed() || ! $this->paths->covers($actor, $assessment->path)) {
             return Response::denyAsNotFound();
         }
 
@@ -241,7 +242,7 @@ final readonly class AssessmentPolicy
             return Response::denyAsNotFound();
         }
 
-        if ($actor->can(PermissionKey::RequestsCompletionReturn->value)) {
+        if ($actor->can(PermissionKey::RequestsCompletionReturn->value) && $this->paths->covers($actor, $assessment->path)) {
             return Response::allow();
         }
 
@@ -264,6 +265,11 @@ final readonly class AssessmentPolicy
         }
 
         return $assessment->path === $path && $actor->can($permission->value) ? Response::allow() : Response::deny();
+    }
+
+    private function followsQueueOf(User $actor, Assessment $assessment): bool
+    {
+        return $actor->can(PermissionKey::RequestsQueueView->value) && $this->paths->covers($actor, $assessment->path);
     }
 
     private function isActiveAssignee(User $actor, Assessment $assessment): bool

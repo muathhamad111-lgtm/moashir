@@ -6,6 +6,7 @@ import { formatDate } from '@/utils/datetime'
 import { CRITERIA_VERSION_STATUSES as STATUS } from '@/constants/criteria'
 import { SCALE_KINDS } from '@/constants/assessment'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   version: { type: Object, required: true },
@@ -15,9 +16,9 @@ const props = defineProps({
 const { t, locale } = useI18n()
 
 const VARIANTS = {
-  [STATUS.DRAFT]: { tone: 'info', icon: 'fa-solid fa-pen-ruler' },
-  [STATUS.PUBLISHED]: { tone: 'success', icon: 'fa-solid fa-lock' },
-  [STATUS.ARCHIVED]: { tone: 'muted', icon: 'fa-solid fa-box-archive' },
+  [STATUS.DRAFT]: { tone: 'info', icon: 'pen' },
+  [STATUS.PUBLISHED]: { tone: 'success', icon: 'lock' },
+  [STATUS.ARCHIVED]: { tone: 'muted', icon: 'docs' },
 }
 
 const SCALE_LABELS = {
@@ -57,7 +58,7 @@ const facts = computed(() => {
     :class="`criteria-version--${variant.tone}`"
     :aria-labelledby="`criteria-version-${version.id}`"
   >
-    <span class="criteria-version__icon" aria-hidden="true"><i :class="variant.icon"></i></span>
+    <span class="criteria-version__icon" aria-hidden="true"><AppIcon :name="variant.icon" /></span>
     <div class="criteria-version__body">
       <div class="criteria-version__head">
         <h2 :id="`criteria-version-${version.id}`" class="criteria-version__title">{{ title }}</h2>
@@ -68,7 +69,7 @@ const facts = computed(() => {
         <li v-for="fact in facts" :key="fact">{{ fact }}</li>
       </ul>
       <p v-if="showDraftNote" class="criteria-version__draft-note">
-        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+        <AppIcon name="info-circle" />
         {{ t('criteria.version.draftOpenNote', { number: openDraft.versionNumber }) }}
         <RouterLink
           class="criteria-version__link"

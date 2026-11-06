@@ -24,7 +24,7 @@ final readonly class ListMyCommitteeAssignments
     public function handle(User $viewer, CommitteeAssignmentFilters $filters): CommitteeWorkPage
     {
         $page = CommitteeAssignment::query()
-            ->with(['assessment.entity.region', 'assessment.entity.city', 'assessment.region', 'awardCycle', 'member'])
+            ->with(['assessment.entity.region', 'assessment.entity.city', 'assessment.entity.owner', 'assessment.region', 'awardCycle', 'member'])
             ->whereIn('cycle_committee_assessor_id', CycleCommitteeAssessor::query()->select('id')->where('assessor_user_id', $viewer->id)->seated())
             ->live()
             ->whereHas('assessment', fn (Builder $assessment): Builder => $this->freezeGuard->excludeFrozen($assessment))

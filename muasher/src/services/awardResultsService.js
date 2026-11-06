@@ -1,55 +1,87 @@
-import { payloadShape } from '@/utils/payloadShape'
 import { apiClient } from '@/api/client'
-import { serviceRequest } from './serviceRequest'
+import { domainRequests } from './domainRequest'
+import { toResultRow, toResultsMeta } from './mappers/committee'
+
+const { read, write } = domainRequests('awardResults', 'award-results')
+
+function cyclePath(cycleId) {
+  return `/award/cycles/${cycleId}`
+}
+
+function board(request) {
+  return request.then((envelope) => ({
+    ...envelope,
+    data: (envelope.data ?? []).map(toResultRow),
+    meta: toResultsMeta(envelope.meta),
+  }))
+}
+
+function row(request) {
+  return request.then((envelope) => ({ ...envelope, data: toResultRow(envelope.data) }))
+}
 
 export const awardResultsService = {
-  listResults() {
-    return serviceRequest(
-      'awardResults.listResults',
-      () => apiClient.get('/award/results'),
-      { entity: 'award-results' },
+  listRegional(cycleId, params = {}) {
+    return board(
+      read(
+        'listRegional',
+        () => apiClient.get(`${cyclePath(cycleId)}/results`, { params }),
+        params,
+      ),
     )
   },
 
-  setRegionalRank(assessmentId, rank) {
-    const payload = { rank }
-    return serviceRequest(
-      'awardResults.setRegionalRank',
-      () => apiClient.post(`/award/results/${assessmentId}/rank`, payload),
-      { entity: 'award-results', payloadShape: payloadShape(payload) },
+  setRegionalRank(cycleId, assessmentId, payload) {
+    return row(
+      write(
+        'setRegionalRank',
+        () => apiClient.put(`${cyclePath(cycleId)}/results/${assessmentId}/regional-rank`, payload),
+        payload,
+      ),
     )
   },
 
-  approveRegion(region) {
-    return serviceRequest(
-      'awardResults.approveRegion',
-      () => apiClient.post(`/award/results/region/${region}/approve`),
-      { entity: 'award-results' },
+  approveRegion(cycleId, regionId, payload = {}) {
+    return board(
+      write(
+        'approveRegion',
+        () => apiClient.post(`${cyclePath(cycleId)}/regions/${regionId}/approve`, payload),
+        payload,
+      ),
     )
   },
 
-  listNational() {
-    return serviceRequest(
-      'awardResults.listNational',
-      () => apiClient.get('/award/national'),
-      { entity: 'award-results' },
+  unapproveRegion(cycleId, regionId, payload) {
+    return board(
+      write(
+        'unapproveRegion',
+        () => apiClient.post(`${cyclePath(cycleId)}/regions/${regionId}/unapprove`, payload),
+        payload,
+      ),
     )
   },
 
-  setNationalRank(assessmentId, rank) {
-    const payload = { rank }
-    return serviceRequest(
-      'awardResults.setNationalRank',
-      () => apiClient.post(`/award/national/${assessmentId}/rank`, payload),
-      { entity: 'award-results', payloadShape: payloadShape(payload) },
+  listNational(cycleId) {
+    return board(read('listNational', () => apiClient.get(`${cyclePath(cycleId)}/national`)))
+  },
+
+  setNationalRank(cycleId, assessmentId, payload) {
+    return row(
+      write(
+        'setNationalRank',
+        () => apiClient.put(`${cyclePath(cycleId)}/national/${assessmentId}/rank`, payload),
+        payload,
+      ),
     )
   },
 
-  approveNational() {
-    return serviceRequest(
-      'awardResults.approveNational',
-      () => apiClient.post('/award/national/approve'),
-      { entity: 'award-results' },
+  approveNational(cycleId, payload = {}) {
+    return board(
+      write(
+        'approveNational',
+        () => apiClient.post(`${cyclePath(cycleId)}/national/approve`, payload),
+        payload,
+      ),
     )
   },
 }

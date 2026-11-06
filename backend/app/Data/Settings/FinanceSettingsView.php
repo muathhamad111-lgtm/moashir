@@ -7,6 +7,7 @@ namespace App\Data\Settings;
 use App\Data\Finance\PriceQuote;
 use App\Enums\Settings\FinanceSettingField;
 use App\Support\ValueObjects\VatRate;
+use App\Support\ValueObjects\VatRegistrationNumber;
 
 final readonly class FinanceSettingsView
 {
@@ -21,5 +22,11 @@ final readonly class FinanceSettingsView
         public int $orderValidityMinutes,
         public array $orderValidityLimits,
         public array $editableFields,
+        public ?VatRegistrationNumber $vatRegistrationNumber = null,
     ) {}
+
+    public function needsVatRegistrationReminder(): bool
+    {
+        return ! $this->vatRegistrationNumber instanceof VatRegistrationNumber && $this->vatRate->basisPoints() > 0;
+    }
 }

@@ -61,3 +61,54 @@ describe('AssignAssessorDialog', () => {
     wrapper.unmount()
   })
 })
+
+describe('AssignAssessorDialog path rules', () => {
+  it('shows the path of the request and refreshes the list when the assessor is not qualified', async () => {
+    requestsService.assign.mockRejectedValue({
+      normalized: {
+        status: 422,
+        code: 'assessor.not_qualified',
+        message: 'This assessor is not qualified for the path of this request.',
+        fieldErrors: {
+          assessorId: ['This assessor is not qualified for the path of this request.'],
+        },
+        meta: { requiredQualification: 'accredited', path: 'accredited' },
+      },
+    })
+    const wrapper = mountDialog({ path: 'accredited' })
+    await flushPromises()
+    expect(document.querySelector('.assign-dialog__path .path-badge--accredited')).not.toBeNull()
+    document.querySelectorAll('.assign-dialog__radio')[0].click()
+    document.querySelector('.modal form').dispatchEvent(new Event('submit'))
+    await flushPromises()
+    expect(document.querySelector('#assign-assessor-error').textContent).toContain(
+      'not qualified for the path',
+    )
+    expect(requestsService.listAssessors).toHaveBeenCalledTimes(2)
+    expect(wrapper.emitted('done')).toBeUndefined()
+    wrapper.unmount()
+  })
+
+  it('explains a request outside the followed paths', async () => {
+    requestsService.listAssessors.mockRejectedValue({
+      normalized: { status: 422, fieldErrors: { assessmentId: ['invalid'] } },
+    })
+    const wrapper = mountDialog()
+    await flushPromises()
+    expect(document.querySelector('.assign-dialog__empty').textContent).toContain(
+      'no longer in the paths you follow',
+    )
+    wrapper.unmount()
+  })
+
+  it('closes when the request left the scope while assigning', async () => {
+    requestsService.assign.mockRejectedValue({ normalized: { status: 404, code: 'not_found' } })
+    const wrapper = mountDialog()
+    await flushPromises()
+    document.querySelectorAll('.assign-dialog__radio')[0].click()
+    document.querySelector('.modal form').dispatchEvent(new Event('submit'))
+    await flushPromises()
+    expect(wrapper.emitted('update:modelValue').at(-1)).toEqual([false])
+    wrapper.unmount()
+  })
+})

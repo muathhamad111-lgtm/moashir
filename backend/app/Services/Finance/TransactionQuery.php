@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Finance;
 
 use App\Data\Finance\TransactionFilters;
+use App\Enums\Finance\PaymentChannel;
 use App\Enums\Finance\PaymentInstrument;
 use App\Enums\Finance\PaymentPurpose;
 use App\Enums\Finance\PaymentStatus;
@@ -32,6 +33,7 @@ final readonly class TransactionQuery
             ->when($filters->status instanceof PaymentStatus, static fn (Builder $query): Builder => $query->where('status', $filters->status))
             ->when($filters->purpose instanceof PaymentPurpose, static fn (Builder $query): Builder => $query->where('purpose', $filters->purpose))
             ->when($filters->method instanceof PaymentInstrument, static fn (Builder $query): Builder => $query->where('method', $filters->method))
+            ->when($filters->channel instanceof PaymentChannel, static fn (Builder $query): Builder => $query->where('channel', $filters->channel))
             ->when($from instanceof CarbonImmutable, fn (Builder $query): Builder => $query->where('created_at', '>=', $this->startOf($from)))
             ->when($to instanceof CarbonImmutable, fn (Builder $query): Builder => $query->where('created_at', '<', $this->startOf($to)->addDay()))
             ->when($filters->search instanceof SearchTerm, static fn (Builder $query): Builder => self::matching($query, $filters->search));

@@ -19,6 +19,7 @@ export function receiptSnapshotOf(payment) {
     entityReference: entityReferenceOf(payment.entityId),
     entityName: { ...entityNameOf(payment) },
     purpose: payment.purpose,
+    channel: payment.channel ?? 'electronic',
     priceBeforeVat: payment.priceBeforeVat,
     vatRate: payment.vatRate,
     vatAmount: payment.vatAmount,

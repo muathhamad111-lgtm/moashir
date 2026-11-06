@@ -1,22 +1,40 @@
 import { http } from '../contract/http'
+import { pathLabelOf } from '../fixtures/pathLabels'
 import { envelope } from '../contract/responses'
-import { assessmentReject, assessmentRoute, readJson } from '../stores/assessments/assessmentRejection'
+import {
+  assessmentReject,
+  assessmentRoute,
+  readJson,
+} from '../stores/assessments/assessmentRejection'
 import { signedInActor } from '../stores/assessments/assessmentAccess'
-import { allAssessments, exposesResult, findAssessment, isOpen } from '../stores/assessments/assessmentsStore'
+import {
+  allAssessments,
+  exposesResult,
+  findAssessment,
+  isOpen,
+} from '../stores/assessments/assessmentsStore'
 import { assessmentResource, scoresResource } from '../stores/assessments/selfSerializers'
 import { sessionCan } from '../stores/sessionPermissions'
-import { ACCREDITED_PERMISSIONS, authorizeOverride, authorizeReview, authorizeScore } from '../stores/accredited/accreditedAccess'
+import {
+  ACCREDITED_PERMISSIONS,
+  authorizeOverride,
+  authorizeReview,
+  authorizeScore,
+} from '../stores/accredited/accreditedAccess'
 import { feedbackResource, reviewResource } from '../stores/accredited/accreditedSerializers'
 import {
   completeReview,
   requestCompletion,
   reviewModeOf,
+  saveAssessorSummary,
   saveFeedbackItems,
   saveReviewScores,
   startReview,
 } from '../stores/accredited/assessorWork'
 import { forceTransition, overrideScores, reopenAssessment } from '../stores/accredited/overrides'
+import { isAdvanced } from '../stores/assessments/reviewedPaths'
 import { runAccreditedSchedule } from '../stores/accredited/scheduler'
+import { summaryResource } from '../stores/insights/assessorSummaries'
 
 const ASSESSMENT = '/api/v1/assessments/:assessment'
 const NUMERIC_ID = /^\d+$/
@@ -42,10 +60,19 @@ function latestResultOf(records) {
 
 function contextOf(record) {
   if (!sessionCan(ACCREDITED_PERMISSIONS.CONTEXT_VIEW)) return []
-  const others = allAssessments().filter((item) => item.entityId === record.entityId && item.id !== record.id)
+  const others = allAssessments().filter(
+    (item) => item.entityId === record.entityId && item.id !== record.id,
+  )
   return CONTEXT_PATHS.map((path) => latestResultOf(others.filter((item) => item.path === path)))
     .filter(Boolean)
-    .map((item) => ({ id: item.id, number: item.number, path: item.path, completedAt: item.completedAt, percent: assessmentResource(item).result?.percent ?? null }))
+    .map((item) => ({
+      id: item.id,
+      number: item.number,
+      path: item.path,
+      pathLabel: pathLabelOf(item.path),
+      completedAt: item.completedAt,
+      percent: assessmentResource(item).result?.percent ?? null,
+    }))
 }
 
 function scoringRoute(path, act, present = assessmentResource) {
@@ -79,7 +106,10 @@ export const assessorReviewHandlers = [
       const user = signedInActor()
       const record = boundRecord(params)
       authorizeReview(user, record)
-      return envelope(reviewResource(record, { mode: reviewModeOf(user, record), context: contextOf(record) }))
+      return envelope({
+        ...reviewResource(record, { mode: reviewModeOf(user, record), context: contextOf(record) }),
+        summary: isAdvanced(record) ? null : summaryResource(record.id),
+      })
     }),
   ),
 
@@ -102,6 +132,17 @@ export const assessorReviewHandlers = [
       const record = boundRecord(params)
       authorizeScore(user, record)
       return envelope(feedbackResource(saveFeedbackItems(user, record, await readJson(request))))
+    }),
+  ),
+
+  http.put(
+    `${ASSESSMENT}/review/summary`,
+    numericRoute(async ({ params, request }) => {
+      const user = signedInActor()
+      const record = boundRecord(params)
+      authorizeScore(user, record)
+      saveAssessorSummary(user, record, await readJson(request))
+      return envelope({ summary: summaryResource(record.id) })
     }),
   ),
 

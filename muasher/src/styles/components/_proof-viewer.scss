@@ -1,0 +1,100 @@
+@use '../tokens' as *;
+@use '../mixins' as *;
+
+.proof-viewer {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.proof-viewer__head {
+  @include flex(row, center, flex-start, var(--space-3));
+  flex-wrap: wrap;
+}
+
+.proof-viewer__icon {
+  @include flex-center;
+  inline-size: var(--size-icon-box-sm);
+  block-size: var(--size-icon-box-sm);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-tint);
+  color: var(--theme-accent-text);
+}
+
+.proof-viewer__meta {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.proof-viewer__name {
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+  overflow-wrap: anywhere;
+}
+
+.proof-viewer__size {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}
+
+.proof-viewer__zoom {
+  @include flex(row, center, flex-start, var(--space-2));
+}
+
+.proof-viewer__zoom-value {
+  min-inline-size: var(--space-12);
+  text-align: center;
+  font-family: var(--font-latin);
+  font-weight: var(--fw-semibold);
+}
+
+.proof-viewer__stage {
+  @include flex-center;
+  min-block-size: var(--size-proof-stage-compact);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-surface-raised);
+  overflow: hidden;
+
+  @include respond-to('lg') {
+    min-block-size: var(--size-proof-stage);
+  }
+}
+
+.proof-viewer__placeholder {
+  @include flex(column, center, center, var(--space-2));
+  margin: 0;
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--theme-text-muted);
+}
+
+.proof-viewer__image-frame {
+  inline-size: 100%;
+  max-block-size: var(--size-proof-stage);
+  overflow: auto;
+  text-align: center;
+}
+
+.proof-viewer__image {
+  max-inline-size: 100%;
+  transform-origin: top center;
+  transition: transform var(--t-fast) var(--ease);
+}
+
+@each $level, $scale in $proof-zoom-levels {
+  .proof-viewer__image--zoom-#{$level} {
+    transform: scale($scale);
+  }
+}
+
+.proof-viewer__pdf {
+  inline-size: 100%;
+  block-size: var(--size-proof-stage);
+  border: none;
+}
+
+.proof-viewer__logged {
+  @include flex(row, center, flex-start, var(--space-2));
+  margin: 0;
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}

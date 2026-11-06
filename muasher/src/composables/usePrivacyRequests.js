@@ -15,16 +15,26 @@ export function usePrivacyRequests() {
   const toast = useToast()
   const filters = useFilters({ status: PRIVACY_REQUEST_STATUSES.OPEN, kind: '' })
   const paginator = usePagination({ perPage: 10 })
-  const table = useTable({ fetcher: (params) => privacyRequestsService.list(params), filters, pagination: paginator })
+  const table = useTable({
+    fetcher: (params) => privacyRequestsService.list(params),
+    filters,
+    pagination: paginator,
+  })
   const decision = reactive({ open: false, kind: null, request: null })
 
   const statusOptions = computed(() => [
     { value: '', label: t('entities.filters.allStatuses') },
-    ...Object.values(PRIVACY_REQUEST_STATUSES).map((value) => ({ value, label: t(statusLabelKey(value)) })),
+    ...Object.values(PRIVACY_REQUEST_STATUSES).map((value) => ({
+      value,
+      label: t(statusLabelKey(value)),
+    })),
   ])
   const kindOptions = computed(() => [
     { value: '', label: t('entities.privacy.allKinds') },
-    ...PRIVACY_REQUEST_KINDS.map((value) => ({ value, label: t(`entities.enums.privacyKind.${value}`) })),
+    ...PRIVACY_REQUEST_KINDS.map((value) => ({
+      value,
+      label: t(`entities.enums.privacyKind.${value}`),
+    })),
   ])
 
   function startDecision(kind, request) {
@@ -45,5 +55,15 @@ export function usePrivacyRequests() {
     await table.load()
   }
 
-  return { ...table, filters, paginator, statusOptions, kindOptions, decision, startDecision, decide, afterDecision }
+  return {
+    ...table,
+    filters,
+    paginator,
+    statusOptions,
+    kindOptions,
+    decision,
+    startDecision,
+    decide,
+    afterDecision,
+  }
 }

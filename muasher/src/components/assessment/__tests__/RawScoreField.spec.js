@@ -10,7 +10,14 @@ function mountField({ value = '', saved = null, disabled = false } = {}) {
   const Host = defineComponent({
     setup() {
       useForm({ initialValues: { 'point-1001': value } })
-      return () => h(RawScoreField, { name: 'point-1001', label: 'Score of M1.1.1', maximum: '10.00', saved, disabled })
+      return () =>
+        h(RawScoreField, {
+          name: 'point-1001',
+          label: 'Score of M1.1.1',
+          maximum: '10.00',
+          saved,
+          disabled,
+        })
     },
   })
   return mount(Host, { global: { plugins: globals.plugins } })

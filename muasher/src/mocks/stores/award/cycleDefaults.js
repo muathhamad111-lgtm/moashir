@@ -1,5 +1,14 @@
-export const CYCLE_DEFAULTS = { minEntityAgeYears: 3, disqualificationScore: '60.00', initialReviewSlaDays: 14 }
+import { assessmentSettings } from '../accredited/assessmentSettingsStore'
+
+export function cycleDefaults() {
+  const settings = assessmentSettings()
+  return {
+    minEntityAgeYears: settings.advancedMinEntityAgeYears,
+    disqualificationScore: settings.advancedDisqualificationScore,
+    initialReviewSlaDays: settings.advancedInitialReviewSlaDays,
+  }
+}
 
 export function cycleDefaultsResource() {
-  return { ...CYCLE_DEFAULTS }
+  return cycleDefaults()
 }

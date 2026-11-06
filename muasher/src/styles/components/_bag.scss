@@ -58,9 +58,9 @@
   @include flex(row, center, flex-start, var(--space-3));
 }
 
-.bag__fee-head i {
+.bag__fee-head .app-icon {
   font-size: var(--fs-xl);
-  color: var(--color-primary);
+  color: var(--theme-accent-text);
 }
 
 .bag__fee-title {
@@ -158,11 +158,11 @@
 }
 
 .bag__helper-icon {
-  color: var(--color-primary);
+  color: var(--theme-accent-text);
 }
 
 .bag__helper-link {
-  color: var(--color-primary);
+  color: var(--theme-accent-text);
   font-weight: var(--fw-medium);
   text-decoration: none;
 
@@ -308,7 +308,7 @@
 }
 
 .bag__reference-icon {
-  color: var(--color-primary);
+  color: var(--theme-accent-text);
   margin-block-start: var(--space-1);
   flex-shrink: 0;
 }
@@ -318,7 +318,7 @@
   padding: var(--space-4);
   border: var(--border-width) solid var(--color-primary);
   border-radius: var(--radius-lg);
-  background-color: var(--color-primary-soft);
+  background-color: var(--theme-accent-soft);
   text-decoration: none;
   transition: background-color var(--transition-fast, 150ms) ease;
 
@@ -337,7 +337,7 @@
 
 .bag__comparison-link-icon {
   font-size: var(--fs-xl);
-  color: var(--color-primary);
+  color: var(--theme-accent-text);
 }
 
 .bag__comparison-link-title {
@@ -353,12 +353,8 @@
 }
 
 .bag__comparison-link-arrow {
-  color: var(--color-primary);
+  color: var(--theme-accent-text);
   flex-shrink: 0;
-}
-
-.rtl .bag__comparison-link-arrow {
-  transform: scaleX(-1);
 }
 
 .gap-guidance {
@@ -442,7 +438,7 @@
 }
 
 .bag-comparison__versions-icon {
-  color: var(--color-primary);
+  color: var(--theme-accent-text);
 }
 
 .bag-comparison__overall-scores {
@@ -452,11 +448,6 @@
 
 .bag-comparison__overall-arrow {
   color: var(--theme-text-muted);
-}
-
-.rtl .bag-comparison__overall-arrow,
-.rtl .reassessment-row__arrow {
-  transform: scaleX(-1);
 }
 
 .bag-comparison__overall-score {
@@ -580,7 +571,7 @@
 .reassessment-row__scope {
   font-size: var(--fs-xs);
   font-weight: var(--fw-semibold);
-  color: var(--color-primary);
+  color: var(--theme-accent-text);
 }
 
 .reassessment-row__scores {
@@ -669,7 +660,7 @@
   padding: var(--space-6);
   border: var(--border-width) solid var(--color-primary);
   border-radius: var(--radius-lg);
-  background-color: var(--color-primary-soft);
+  background-color: var(--theme-accent-soft);
 }
 
 .bag-intro__eyebrow {
@@ -677,7 +668,7 @@
   font-size: var(--fs-xs);
   font-weight: var(--fw-semibold);
   letter-spacing: var(--tracking-wide, normal);
-  color: var(--color-primary);
+  color: var(--theme-accent-text);
   text-transform: uppercase;
 }
 
@@ -744,12 +735,12 @@
 
 .bag-intro__step-num {
   @include flex(row, center, center);
-  inline-size: var(--space-7, 1.75rem);
-  block-size: var(--space-7, 1.75rem);
+  inline-size: var(--space-8);
+  block-size: var(--space-8);
   flex-shrink: 0;
   border-radius: var(--radius-pill);
-  background-color: var(--color-primary);
-  color: var(--color-on-primary, #fff);
+  background-color: var(--theme-accent);
+  color: var(--theme-on-accent);
   font-weight: var(--fw-bold);
   font-variant-numeric: tabular-nums;
 }
@@ -988,10 +979,6 @@
 .bag__history-score--after {
   color: var(--color-success);
   font-weight: var(--fw-semibold);
-}
-
-.rtl .bag__history-arrow {
-  transform: scaleX(-1);
 }
 
 .bag__history-arrow {

@@ -1,0 +1,80 @@
+@use '../mixins' as *;
+
+.results-tabs {
+  @include flex(row, center, flex-start, var(--space-2));
+  border-block-end: var(--border-width) solid var(--theme-border);
+}
+
+.results-tabs__link {
+  padding-block: var(--space-2);
+  padding-inline: var(--space-4);
+  border-block-end: var(--border-width-thick) solid transparent;
+  font-weight: var(--fw-medium);
+  color: var(--theme-text-muted);
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--theme-heading);
+  }
+
+  &.is-active {
+    border-block-end-color: var(--color-primary);
+    color: var(--theme-heading);
+  }
+}
+
+.results-board__regions {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.region-results__title {
+  margin: 0;
+  font-size: var(--fs-lg);
+  color: var(--theme-heading);
+}
+
+.region-results__badges {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.region-results__actions {
+  @include flex(row, center, flex-start, var(--space-3));
+  flex-wrap: wrap;
+  margin-block-start: var(--space-4);
+}
+
+.announcement-card__done,
+.announcement-card__text {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  margin-block: 0 var(--space-3);
+  color: var(--theme-text);
+}
+
+.award-outcome__head {
+  @include flex(row, center, flex-start, var(--space-4));
+  margin-block-end: var(--space-4);
+}
+
+.award-outcome__icon {
+  font-size: var(--fs-3xl);
+  color: var(--theme-accent-text);
+}
+
+.award-outcome--winner .award-outcome__icon {
+  color: var(--color-warning);
+}
+
+.award-outcome__title {
+  margin-block: 0 var(--space-2);
+  font-size: var(--fs-xl);
+  color: var(--theme-heading);
+}
+
+.award-outcome__note {
+  margin-block: var(--space-3) 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}

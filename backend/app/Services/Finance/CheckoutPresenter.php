@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Finance;
 
+use App\Data\Finance\CheckoutScript;
 use App\Data\Finance\PaymentCheckout;
 use App\Enums\Finance\PaymentStatus;
 use App\Enums\Integrations\CheckoutPattern;
@@ -33,8 +34,9 @@ final readonly class CheckoutPresenter
     public function present(Payment $payment, string $locale): ?PaymentCheckout
     {
         $secret = $payment->checkout_client_secret;
+        $expiresAt = $payment->expires_at;
 
-        if ($payment->status !== PaymentStatus::Created || $payment->provider_intent_id === null || $secret === null || $payment->expires_at->isPast()) {
+        if ($payment->status !== PaymentStatus::Created || $payment->provider_intent_id === null || $secret === null || $expiresAt === null || $expiresAt->isPast()) {
             return null;
         }
 
@@ -62,7 +64,8 @@ final readonly class CheckoutPresenter
             $payment->provider_intent_id,
             new SecretValue($secret),
             in_array(PaymentMethod::ApplePay->value, $methods, true) ? $this->applePay($settings[SettingKey::PaymentApplePayLabel->value], $locale) : null,
-            $payment->expires_at,
+            $expiresAt,
+            $this->script(),
         );
     }
 
@@ -96,5 +99,12 @@ final readonly class CheckoutPresenter
             'label' => $text->in($locale),
             'validate_merchant_url' => IntegrationUrls::MOYASAR_APPLE_PAY_VALIDATION_URL,
         ];
+    }
+
+    private function script(): CheckoutScript
+    {
+        $integrity = $this->config->get('moashir.finance.checkout_script.integrity');
+
+        return new CheckoutScript($this->config->string('moashir.finance.checkout_script.url'), is_string($integrity) ? $integrity : null);
     }
 }

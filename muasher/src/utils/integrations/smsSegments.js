@@ -1,4 +1,5 @@
-const GSM_BASIC = '@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞÆæßÉ !"#¤%&\'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà'
+const GSM_BASIC =
+  '@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞÆæßÉ !"#¤%&\'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà'
 const GSM_EXTENDED = '^{}\\[~]|€'
 
 const ENCODINGS = Object.freeze({
@@ -7,11 +8,16 @@ const ENCODINGS = Object.freeze({
 })
 
 function isGsm(text) {
-  return [...text].every((character) => GSM_BASIC.includes(character) || GSM_EXTENDED.includes(character))
+  return [...text].every(
+    (character) => GSM_BASIC.includes(character) || GSM_EXTENDED.includes(character),
+  )
 }
 
 function gsmLength(text) {
-  return [...text].reduce((total, character) => total + (GSM_EXTENDED.includes(character) ? 2 : 1), 0)
+  return [...text].reduce(
+    (total, character) => total + (GSM_EXTENDED.includes(character) ? 2 : 1),
+    0,
+  )
 }
 
 export function smsSegmentEstimate(text = '') {

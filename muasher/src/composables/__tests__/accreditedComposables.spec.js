@@ -27,17 +27,26 @@ vi.mock('@/services/accreditedService', () => ({
 vi.mock('@/services/evidenceService', () => ({
   evidenceService: { list: vi.fn(), upload: vi.fn(), remove: vi.fn(), requestDownload: vi.fn() },
 }))
-vi.mock('@/services/servicePricesService', () => ({ servicePricesService: { getServicePrices: vi.fn() } }))
+vi.mock('@/services/servicePricesService', () => ({
+  servicePricesService: { getServicePrices: vi.fn() },
+}))
 vi.mock('@/services/requestsService', () => ({ requestsService: { get: vi.fn() } }))
 
 function formOf(status, extra = {}) {
   return {
-    assessment: { id: 9101, number: 'ACC-2026-000004', status, isFrozen: false, criteriaUpdateInProgress: false },
+    assessment: {
+      id: 9101,
+      number: 'ACC-2026-000004',
+      status,
+      isFrozen: false,
+      criteriaUpdateInProgress: false,
+    },
     criteria: { mains: [] },
     cv: { 101: 'سيرة محفوظة' },
     evidence: [],
     missing: { missingCv: [], missingAttachments: [] },
-    completionRequest: status === 'needs-completion' ? { items: [{ subCriterionId: 202, kind: 'cv' }] } : null,
+    completionRequest:
+      status === 'needs-completion' ? { items: [{ subCriterionId: 202, kind: 'cv' }] } : null,
     uploadLimits: { maxFileMb: 20, allowedTypes: ['pdf'], maxFilesPerSub: 10 },
     criteriaUpdate: null,
     ...extra,
@@ -45,7 +54,10 @@ function formOf(status, extra = {}) {
 }
 
 function failure(status, code, meta = {}) {
-  return Object.assign(new Error(code), { response: { status }, normalized: { status, code, meta, message: code, fieldErrors: {} } })
+  return Object.assign(new Error(code), {
+    response: { status },
+    normalized: { status, code, meta, message: code, fieldErrors: {} },
+  })
 }
 
 async function formState(status, extra) {
@@ -71,7 +83,9 @@ describe('useAccreditedForm', () => {
     expect(completion.canEdit(202, 'cv')).toBe(false)
     const submitted = await formState('submitted')
     expect(submitted.isEditable.value).toBe(false)
-    const frozen = await formState('draft', { assessment: { id: 9101, status: 'draft', isFrozen: true } })
+    const frozen = await formState('draft', {
+      assessment: { id: 9101, status: 'draft', isFrozen: true },
+    })
     expect(frozen.canEdit(101, 'cv')).toBe(false)
   })
 
@@ -95,9 +109,13 @@ describe('useCvDrafts and useAccreditedRejection', () => {
     api.setDraft(101, '')
     api.setDraft(802, 'سيرة جديدة')
     expect(api.changes.value).toEqual({ 101: null, 802: 'سيرة جديدة' })
-    submissionService.saveCv.mockResolvedValue({ data: { assessment: state.assessment.value, cv: { 802: 'سيرة جديدة' } } })
+    submissionService.saveCv.mockResolvedValue({
+      data: { assessment: state.assessment.value, cv: { 802: 'سيرة جديدة' } },
+    })
     expect(await api.save()).toBe(true)
-    expect(submissionService.saveCv).toHaveBeenCalledWith(9101, { cv: { 101: null, 802: 'سيرة جديدة' } })
+    expect(submissionService.saveCv).toHaveBeenCalledWith(9101, {
+      cv: { 101: null, 802: 'سيرة جديدة' },
+    })
     expect(submissionService.getForm).toHaveBeenCalledTimes(2)
     submissionService.saveCv.mockRejectedValue(failure(409, 'entity.deleted'))
     api.setDraft(802, 'تعديل')
@@ -111,9 +129,17 @@ describe('useCvDrafts and useAccreditedRejection', () => {
     api.handle(failure(409, 'entity.deleted'))
     expect(state.assessment.value.isFrozen).toBe(true)
     api.handle(failure(409, 'completion.deadline_passed'))
-    expect([api.conflictCode.value, state.lockedCode.value]).toEqual(['completion.deadline_passed', 'completion.deadline_passed'])
-    api.handle(failure(422, 'submission.incomplete', { missingCv: [{ subCriterionId: 802, code: 'M8.2' }] }))
-    expect(state.form.value.missing).toEqual({ missingCv: [{ subCriterionId: 802, code: 'M8.2' }], missingAttachments: [] })
+    expect([api.conflictCode.value, state.lockedCode.value]).toEqual([
+      'completion.deadline_passed',
+      'completion.deadline_passed',
+    ])
+    api.handle(
+      failure(422, 'submission.incomplete', { missingCv: [{ subCriterionId: 802, code: 'M8.2' }] }),
+    )
+    expect(state.form.value.missing).toEqual({
+      missingCv: [{ subCriterionId: 802, code: 'M8.2' }],
+      missingAttachments: [],
+    })
   })
 })
 
@@ -124,18 +150,35 @@ describe('useEvidenceUploads', () => {
     await api.upload(802, 'sub_802_1', new File(['x'], 'notes.txt'))
     expect(api.errors['802:sub_802_1']).toContain('pdf')
     expect(evidenceService.upload).not.toHaveBeenCalled()
-    evidenceService.upload.mockResolvedValue({ data: { id: 'e9', fileName: 'impact.pdf', scanStatus: 'pending', subCriterionId: 802, attachmentKey: 'sub_802_1' } })
+    evidenceService.upload.mockResolvedValue({
+      data: {
+        id: 'e9',
+        fileName: 'impact.pdf',
+        scanStatus: 'pending',
+        subCriterionId: 802,
+        attachmentKey: 'sub_802_1',
+      },
+    })
     const file = new File(['%PDF'], 'impact.pdf')
     await api.upload(802, 'sub_802_1', file)
-    expect(evidenceService.upload).toHaveBeenCalledWith(9101, { file, subCriterionId: 802, attachmentKey: 'sub_802_1' })
+    expect(evidenceService.upload).toHaveBeenCalledWith(9101, {
+      file,
+      subCriterionId: 802,
+      attachmentKey: 'sub_802_1',
+    })
     expect(submissionService.getForm).toHaveBeenCalledTimes(2)
   })
 })
 
 describe('review, reason prompt, intro and detail', () => {
   it('tracks changed feedback fields per sub-criterion', async () => {
-    const review = ref({ assessment: { id: 9108 }, feedback: { 101: { strengths: 'قوة', improvementPoints: null, notes: null } } })
-    const { api } = withSetup(() => useReviewFeedback({ reviewState: { review, assessment: ref({ id: 9108 }), patch: vi.fn() } }))
+    const review = ref({
+      assessment: { id: 9108 },
+      feedback: { 101: { strengths: 'قوة', improvementPoints: null, notes: null } },
+    })
+    const { api } = withSetup(() =>
+      useReviewFeedback({ reviewState: { review, assessment: ref({ id: 9108 }), patch: vi.fn() } }),
+    )
     api.resetFrom(review.value.feedback)
     expect(api.dirty.value).toBe(false)
     api.setField(101, 'strengths', '')
@@ -156,14 +199,18 @@ describe('review, reason prompt, intro and detail', () => {
   })
 
   it('loads the public price for guests and the current request for an entity', async () => {
-    servicePricesService.getServicePrices.mockResolvedValue({ data: { accredited: { total: '1150.00' }, bag: null } })
+    servicePricesService.getServicePrices.mockResolvedValue({
+      data: { accredited: { total: '1150.00' }, bag: null },
+    })
     const guest = withSetup(() => useAccreditedIntro())
     await guest.api.load()
     expect(accreditedService.getCurrent).not.toHaveBeenCalled()
     expect(guest.api.priceStatus.value).toBe('ready')
     const entity = withSetup(() => useAccreditedIntro())
     useAuthStore(entity.globals.pinia).setUser(sessionUserFor(['entity']))
-    accreditedService.getCurrent.mockResolvedValue({ data: { awaitingPayment: null, active: null, latestClosed: null } })
+    accreditedService.getCurrent.mockResolvedValue({
+      data: { awaitingPayment: null, active: null, latestClosed: null },
+    })
     servicePricesService.getServicePrices.mockRejectedValue(failure(503, 'service_unavailable'))
     await entity.api.load()
     expect(accreditedService.getCurrent).toHaveBeenCalled()
@@ -171,7 +218,9 @@ describe('review, reason prompt, intro and detail', () => {
   })
 
   it('offers assignment for a submitted request and reassignment for an assigned one', async () => {
-    requestsService.get.mockResolvedValue({ data: { id: 9105, status: 'submitted', isFrozen: false } })
+    requestsService.get.mockResolvedValue({
+      data: { id: 9105, status: 'submitted', isFrozen: false },
+    })
     const { api } = withSetup(() => useRequestDetail(ref(9105)))
     await api.load()
     expect([api.canAssign.value, api.canReassign.value]).toEqual([true, false])

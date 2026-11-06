@@ -27,32 +27,58 @@ export const assessmentReject = {
   entityNotActive: () => new MockRejection(403, 'assessment.entity_not_active'),
   entityDeleted: () => new MockRejection(409, 'entity.deleted'),
   noPublishedVersion: () => new MockRejection(404, 'criteria.no_published_version'),
-  draftExists: (assessmentId) => new MockRejection(409, 'self.draft_exists', { meta: { assessmentId } }),
+  draftExists: (assessmentId) =>
+    new MockRejection(409, 'self.draft_exists', { meta: { assessmentId } }),
   illegalTransition: (state, attempted) =>
-    new MockRejection(409, 'state.transition_illegal', { fields: { state: [state], attempted: [attempted] } }),
+    new MockRejection(409, 'state.transition_illegal', {
+      fields: { state: [state], attempted: [attempted] },
+    }),
   criteriaUpdateInProgress: () => new MockRejection(409, 'assessment.criteria_update_in_progress'),
   reasonRequired: () =>
     new MockRejection(422, 'reason_required', { fields: { reason: single('reason_required') } }),
   scoresIncomplete: (missing) =>
     new MockRejection(422, 'scores.incomplete', {
       fields: Object.fromEntries(
-        missing.map((unit) => [`scores.${unit.level}s.${unit.id}`, single('scores.item_missing', { code: unit.code })]),
+        missing.map((unit) => [
+          `scores.${unit.level}s.${unit.id}`,
+          single('scores.item_missing', { code: unit.code }),
+        ]),
       ),
       meta: { missing },
     }),
-  requestOpen: (assessmentId) => new MockRejection(409, 'accredited.request_open', { meta: { assessmentId } }),
+  requestOpen: (assessmentId) =>
+    new MockRejection(409, 'accredited.request_open', { meta: { assessmentId } }),
   paymentBeingProcessed: () => new MockRejection(409, 'accredited.payment_being_processed'),
   coded: (status, code, field = null, params = {}) =>
-    new MockRejection(status, code, { fields: field ? { [field]: single(code, params) } : {}, params }),
+    new MockRejection(status, code, {
+      fields: field ? { [field]: single(code, params) } : {},
+      params,
+    }),
   submissionIncomplete: (gaps, fields) =>
-    new MockRejection(422, 'submission.incomplete', { fields, meta: { missingCv: gaps.missingCv, missingAttachments: gaps.missingAttachments } }),
+    new MockRejection(422, 'submission.incomplete', {
+      fields,
+      meta: { missingCv: gaps.missingCv, missingAttachments: gaps.missingAttachments },
+    }),
   subFull: (max) =>
-    new MockRejection(422, 'attachment.sub_full', { fields: { file: single('attachment.sub_full', { max }) }, meta: { maxFilesPerSub: max }, params: { max } }),
+    new MockRejection(422, 'attachment.sub_full', {
+      fields: { file: single('attachment.sub_full', { max }) },
+      meta: { maxFilesPerSub: max },
+      params: { max },
+    }),
   notAssignee: () => new MockRejection(403, 'assessment.not_assignee'),
+  notQualified: (qualification, path) =>
+    new MockRejection(422, 'assessor.not_qualified', {
+      fields: { assessorId: single('assessor.not_qualified') },
+      meta: { requiredQualification: qualification, path },
+    }),
   invalidScoreItems: (reasonsByField) => {
     const reasons = [...new Set(Object.values(reasonsByField))]
-    const fields = Object.fromEntries(Object.entries(reasonsByField).map(([field, reason]) => [field, single(reason)]))
-    return new MockRejection(422, reasons.length === 1 ? reasons[0] : 'validation_failed', { fields })
+    const fields = Object.fromEntries(
+      Object.entries(reasonsByField).map(([field, reason]) => [field, single(reason)]),
+    )
+    return new MockRejection(422, reasons.length === 1 ? reasons[0] : 'validation_failed', {
+      fields,
+    })
   },
 }
 

@@ -1,0 +1,70 @@
+@use '../tokens' as *;
+@use '../mixins' as *;
+
+@keyframes score-ring-fill {
+  from {
+    stroke-dashoffset: $ring-path-length;
+  }
+}
+
+.score-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  inline-size: var(--size-hero-ring);
+  block-size: var(--size-hero-ring);
+}
+
+.score-ring__svg {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  transform: rotate($angle-ring-start);
+}
+
+.score-ring__track,
+.score-ring__value {
+  fill: none;
+  stroke-width: var(--size-ring-stroke);
+}
+
+.score-ring__track {
+  stroke: var(--theme-border);
+}
+
+.score-ring__value {
+  stroke: var(--theme-accent-text);
+  stroke-linecap: round;
+}
+
+.score-ring__text {
+  @include flex(column, center, center);
+  position: relative;
+}
+
+.score-ring__number {
+  font-family: var(--font-latin);
+  font-size: var(--fs-number);
+  font-weight: var(--fw-bold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--ls-number);
+  line-height: var(--lh-tight);
+  color: var(--theme-heading);
+}
+
+.score-ring__label {
+  font-size: var(--fs-xs);
+  color: var(--theme-text-muted);
+}
+
+@include motion-safe {
+  .is-revealed .score-ring__value {
+    animation: score-ring-fill var(--motion-ring) var(--ease-out) backwards;
+  }
+
+  .is-reveal-pending .score-ring__value {
+    stroke-dashoffset: $ring-path-length;
+  }
+}

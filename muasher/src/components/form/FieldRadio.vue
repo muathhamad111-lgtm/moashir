@@ -13,5 +13,12 @@ const { value, errorMessage } = useField(toRef(props, 'name'))
 </script>
 
 <template>
-  <BaseRadio v-model="value" :name="name" :label="label" :options="options" :error="errorMessage" inline />
+  <BaseRadio
+    v-model="value"
+    :name="name"
+    :label="label"
+    :options="options"
+    :error="errorMessage"
+    inline
+  />
 </template>

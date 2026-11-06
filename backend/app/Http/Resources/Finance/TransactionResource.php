@@ -26,6 +26,7 @@ final class TransactionResource extends JsonResource
             'reference' => $payment->reference,
             'receipt_number' => $payment->receipt?->number,
             'purpose' => $payment->purpose->value,
+            'channel' => $payment->channel->value,
             'status' => $payment->status->value,
             'is_test' => $payment->isTest(),
             'entity' => [

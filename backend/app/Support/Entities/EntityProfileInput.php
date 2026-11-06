@@ -6,15 +6,23 @@ namespace App\Support\Entities;
 
 use App\Data\Entities\EntityContactData;
 use App\Data\Entities\EntityProfileData;
+use App\Data\Entities\EntityRegistryUpdate;
 use App\Enums\Entities\DevelopmentSector;
+use App\Enums\Entities\EntityProfileField;
 use App\Enums\Entities\EntityType;
 use App\Enums\Entities\OrgSize;
 use App\Models\Entities\City;
+use App\Models\Entities\Entity;
 use App\Models\Entities\Region;
+use App\Rules\WebsiteAddress;
 use App\Support\ScalarValue;
 use App\Support\ValueObjects\EntityName;
 use App\Support\ValueObjects\GovernanceGrade;
+use App\Support\ValueObjects\LicenseNumber;
 use App\Support\ValueObjects\PhoneNumber;
+use App\Support\ValueObjects\UnifiedNumber;
+use App\Support\ValueObjects\WebsiteUrl;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Validation\Rule;
@@ -22,6 +30,10 @@ use Illuminate\Validation\Rule;
 final class EntityProfileInput
 {
     private const string PHONE_PATTERN = '/^(05\d{8}|\+9665\d{8})$/';
+
+    private const string DATE_FORMAT = 'Y-m-d';
+
+    private const string EARLIEST_FOUNDING_DATE = '1900-01-01';
 
     /**
      * @return array<string, mixed>
@@ -48,6 +60,29 @@ final class EntityProfileInput
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    public static function registryRules(?int $entityId): array
+    {
+        $today = Date::now(config()->string('app.display_timezone'))->format(self::DATE_FORMAT);
+
+        return [
+            'unified_number' => ['sometimes', ...self::unifiedNumberRules($entityId)],
+            'license_number' => ['sometimes', 'nullable', 'string', 'regex:'.LicenseNumber::PATTERN, Rule::unique(Entity::class, 'license_number')->ignore($entityId)],
+            'founded_on' => ['sometimes', 'nullable', 'date_format:'.self::DATE_FORMAT, 'after_or_equal:'.self::EARLIEST_FOUNDING_DATE, 'before_or_equal:'.$today],
+            'website_url' => ['sometimes', 'nullable', 'string', 'max:'.WebsiteUrl::MAX_LENGTH, new WebsiteAddress],
+        ];
+    }
+
+    /**
+     * @return list<mixed>
+     */
+    public static function unifiedNumberRules(?int $entityId): array
+    {
+        return ['required', 'string', 'regex:'.UnifiedNumber::PATTERN, Rule::unique(Entity::class, 'unified_number')->ignore($entityId)];
+    }
+
+    /**
      * @param  array<array-key, mixed>  $validated
      */
     public static function profile(array $validated): EntityProfileData
@@ -67,6 +102,26 @@ final class EntityProfileInput
             self::optionalCount($validated, 'employees_count'),
             self::optionalCount($validated, 'annual_beneficiaries_count'),
             filter_var($validated['has_strategic_plan'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            self::registry($validated),
+        );
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $validated
+     */
+    private static function registry(array $validated): EntityRegistryUpdate
+    {
+        $license = $validated['license_number'] ?? null;
+        $foundedOn = $validated['founded_on'] ?? null;
+        $website = $validated['website_url'] ?? null;
+        $unifiedNumber = $validated['unified_number'] ?? null;
+
+        return new EntityRegistryUpdate(
+            is_string($license) ? new LicenseNumber($license) : null,
+            is_string($foundedOn) ? CarbonImmutable::createFromFormat('!'.self::DATE_FORMAT, $foundedOn) ?: null : null,
+            is_string($website) ? new WebsiteUrl($website) : null,
+            array_values(array_filter(EntityProfileField::registryDetails(), static fn (EntityProfileField $field): bool => array_key_exists($field->value, $validated))),
+            is_string($unifiedNumber) ? new UnifiedNumber($unifiedNumber) : null,
         );
     }
 

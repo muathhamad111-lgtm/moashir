@@ -9,8 +9,14 @@ import { resetEntitiesMock } from '@/mocks/stores/entityMockReset'
 import { resetAssessmentsStore } from '@/mocks/stores/assessments/assessmentsStore'
 import { discardQueuedJobs, runQueuedJobs } from '@/mocks/stores/mockQueue'
 import { MOCK_API_BASE, clearMockSession, seedMockSession, wireFetch } from '@/test-utils/mockApi'
+import { pinMockClock, releaseMockClock } from '@/test-utils/mockClock'
 
-const server = setupServer(...assessmentsHandlers, ...criteriaHandlers, ...entityLifecycleHandlers, ...searchHandlers)
+const server = setupServer(
+  ...assessmentsHandlers,
+  ...criteriaHandlers,
+  ...entityLifecycleHandlers,
+  ...searchHandlers,
+)
 
 const OWNER = { id: 5001, roles: ['entity'], entityId: 5001 }
 const OTHER_ENTITY = { id: 6002, roles: ['entity'], entityId: 6002 }
@@ -33,6 +39,7 @@ const RESOURCE_KEYS = [
   'is_open',
   'number',
   'path',
+  'path_label',
   'result',
   'scale_kind',
   'status',
@@ -69,7 +76,10 @@ function completeSheet(criteria, value = '8') {
   return sheet
 }
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
+beforeAll(() => {
+  pinMockClock()
+  server.listen({ onUnhandledRequest: 'error' })
+})
 beforeEach(() => {
   resetCriteriaStore()
   resetEntitiesMock()
@@ -80,7 +90,10 @@ afterEach(() => {
   clearMockSession()
   discardQueuedJobs()
 })
-afterAll(() => server.close())
+afterAll(() => {
+  server.close()
+  releaseMockClock()
+})
 
 describe('self assessment mock — reads', () => {
   it('lists the own assessments with the exact resource keys and pagination meta', async () => {
@@ -97,7 +110,12 @@ describe('self assessment mock — reads', () => {
       is_frozen: false,
       criteria_update_in_progress: false,
       scale_kind: 'of_10',
-      entity: { id: 5001, reference: 'ENT-005001', name: { ar: 'جمعية البر بالرياض', en: 'Al-Birr Charity — Riyadh' }, status: 'active' },
+      entity: {
+        id: 5001,
+        reference: 'ENT-005001',
+        name: { ar: 'جمعية البر بالرياض', en: 'Al-Birr Charity — Riyadh' },
+        status: 'active',
+      },
     })
     expect(Object.keys(body.data[1].result).sort()).toEqual(['max_total', 'percent', 'total'])
     expect(body.data[0].result).toBeNull()
@@ -111,8 +129,11 @@ describe('self assessment mock — reads', () => {
     expect(drafts.body.data.map((item) => item.id)).toEqual([9002])
     const results = await call('GET', '/assessments?filter[status]=result_available')
     expect(results.body.data.map((item) => item.id)).toEqual([9001])
-    const accredited = await call('GET', '/assessments?filter[path]=accredited&filter[status]=completed')
-    expect(accredited.body.data.map((item) => item.id)).toEqual([9102])
+    const accredited = await call(
+      'GET',
+      '/assessments?filter[path]=accredited&filter[status]=completed',
+    )
+    expect(accredited.body.data.map((item) => item.id)).toEqual([9102, 9109])
     expect((await call('GET', '/assessments?filter[path]=kit')).status).toBe(422)
     expect((await call('GET', '/assessments?sort=number')).status).toBe(422)
     const unknown = await call('GET', '/assessments?filter[owner]=1')
@@ -132,7 +153,9 @@ describe('self assessment mock — reads', () => {
 
   it('gives an assessor only the assigned requests, 404 on other records, and 403 without the permission', async () => {
     seedMockSession(ASSESSOR)
-    expect((await call('GET', '/assessments')).body.data.map((item) => item.id).sort()).toEqual([9102, 9107, 9108, 9202, 9204])
+    expect((await call('GET', '/assessments')).body.data.map((item) => item.id).sort()).toEqual([
+      9102, 9107, 9108, 9202, 9204,
+    ])
     expect((await call('GET', '/assessments/9001')).status).toBe(404)
     seedMockSession(CRITERIA_OFFICER)
     expect((await call('GET', '/assessments')).status).toBe(403)
@@ -151,9 +174,21 @@ describe('self assessment mock — reads', () => {
   it('serves the form with the bound tree, the scale, the raw values and the server progress', async () => {
     seedMockSession(OWNER)
     const { body } = await call('GET', '/assessments/9002/form')
-    expect(Object.keys(body.data).sort()).toEqual(['assessment', 'criteria', 'criteria_update', 'progress', 'scale', 'scores'])
+    expect(Object.keys(body.data).sort()).toEqual([
+      'assessment',
+      'criteria',
+      'criteria_update',
+      'progress',
+      'scale',
+      'scores',
+    ])
     expect(body.data.scale).toEqual({ kind: 'of_10', maximum: '10.00' })
-    expect(body.data.criteria).toMatchObject({ version_id: 1, version_number: 1, status: 'published', scale_kind: 'of_10' })
+    expect(body.data.criteria).toMatchObject({
+      version_id: 1,
+      version_number: 1,
+      status: 'published',
+      scale_kind: 'of_10',
+    })
     const units = unitsOf(body.data.criteria)
     expect(body.data.progress).toEqual({ scored: 6, required: units.length })
     const firstPoint = units[0]
@@ -164,10 +199,30 @@ describe('self assessment mock — reads', () => {
   it('returns the Q-94 placeholder before the result and the full breakdown after it', async () => {
     seedMockSession(OWNER)
     const pending = await call('GET', '/assessments/9002/result')
-    expect(pending.body.data).toEqual({ id: 9002, number: 'SLF-2026-000002', path: 'self', status: 'draft', is_frozen: false, available: false })
+    expect(pending.body.data).toEqual({
+      id: 9002,
+      number: 'SLF-2026-000002',
+      path: 'self',
+      path_label: { ar: 'التقييم الذاتي', en: 'Self assessment' },
+      status: 'draft',
+      is_frozen: false,
+      available: false,
+    })
     const { body } = await call('GET', '/assessments/9001/result')
-    expect(body.data).toMatchObject({ available: true, result_version: 1, scale_kind: 'of_10', max_total: '8200.00' })
-    expect(Object.keys(body.data.main[0]).sort()).toEqual(['code', 'criterion_id', 'earned', 'name', 'percent', 'weight'])
+    expect(body.data).toMatchObject({
+      available: true,
+      result_version: 1,
+      scale_kind: 'of_10',
+      max_total: '8200.00',
+    })
+    expect(Object.keys(body.data.main[0]).sort()).toEqual([
+      'code',
+      'criterion_id',
+      'earned',
+      'name',
+      'percent',
+      'weight',
+    ])
     expect(Object.keys(body.data.sub[0]).sort()).toEqual([
       'code',
       'earned',
@@ -199,12 +254,28 @@ describe('self assessment mock — status history and criteria update', () => {
     const own = await call('GET', '/assessments/9001')
     expect(own.body.data.status_history).toEqual([
       { from: null, to: 'draft', verb: 'start', at: '2026-06-20T07:00:00Z', actor: 'entity' },
-      { from: 'draft', to: 'submitted', verb: 'submit', at: '2026-06-20T07:42:00Z', actor: 'entity' },
-      { from: 'submitted', to: 'result_available', verb: 'compute_result', at: '2026-06-20T07:42:00Z', actor: 'system' },
+      {
+        from: 'draft',
+        to: 'submitted',
+        verb: 'submit',
+        at: '2026-06-20T07:42:00Z',
+        actor: 'entity',
+      },
+      {
+        from: 'submitted',
+        to: 'result_available',
+        verb: 'compute_result',
+        at: '2026-06-20T07:42:00Z',
+        actor: 'system',
+      },
     ])
     seedMockSession(FOLLOWER)
     const staff = await call('GET', '/assessments/9001')
-    expect(staff.body.data.status_history.map((change) => change.actor_staff)).toEqual([null, null, null])
+    expect(staff.body.data.status_history.map((change) => change.actor_staff)).toEqual([
+      null,
+      null,
+      null,
+    ])
     const list = await call('GET', '/assessments?filter[entity_id]=5001')
     expect(list.body.data[0]).not.toHaveProperty('status_history')
   })
@@ -214,14 +285,31 @@ describe('self assessment mock — status history and criteria update', () => {
     const form = await call('GET', '/assessments/9002/form')
     expect(form.body.data.criteria_update).toBeNull()
     seedMockSession(SUPER_ADMIN)
-    const submitted = await call('POST', '/assessments/9002/submit', { scores: completeSheet(form.body.data.criteria), reason: 'Submitted on behalf of the entity after a call.' })
+    const submitted = await call('POST', '/assessments/9002/submit', {
+      scores: completeSheet(form.body.data.criteria),
+      reason: 'Submitted on behalf of the entity after a call.',
+    })
     expect(submitted.status).toBe(200)
     const record = await call('GET', '/assessments/9002')
-    expect(record.body.data.status_history.at(-2)).toMatchObject({ verb: 'submit', actor: 'staff', actor_staff: { name: null, roles: [] } })
+    expect(record.body.data.status_history.at(-2)).toMatchObject({
+      verb: 'submit',
+      actor: 'staff',
+      actor_staff: { name: null, roles: [] },
+    })
     seedMockSession(OWNER)
     const own = await call('GET', '/assessments/9002')
-    expect(own.body.data.status_history.at(-2)).toEqual({ from: 'draft', to: 'submitted', verb: 'submit', at: expect.any(String), actor: 'staff' })
-    expect(own.body.data.status_history.at(-1)).toMatchObject({ verb: 'compute_result', actor: 'system', to: 'result_available' })
+    expect(own.body.data.status_history.at(-2)).toEqual({
+      from: 'draft',
+      to: 'submitted',
+      verb: 'submit',
+      at: expect.any(String),
+      actor: 'staff',
+    })
+    expect(own.body.data.status_history.at(-1)).toMatchObject({
+      verb: 'compute_result',
+      actor: 'system',
+      to: 'result_available',
+    })
   })
 })
 
@@ -234,7 +322,12 @@ describe('self assessment mock — start, save and submit', () => {
     seedMockSession(OTHER_ENTITY)
     const started = await call('POST', '/assessments', { path: 'self' })
     expect(started.status).toBe(201)
-    expect(started.body.data).toMatchObject({ number: 'SLF-2026-000006', status: 'draft', is_open: true, result: null })
+    expect(started.body.data).toMatchObject({
+      number: 'SLF-2026-000006',
+      status: 'draft',
+      is_open: true,
+      result: null,
+    })
     expect((await call('POST', '/assessments', { path: 'accredited' })).status).toBe(422)
   })
 
@@ -242,7 +335,9 @@ describe('self assessment mock — start, save and submit', () => {
     seedMockSession(SYSTEM_ADMIN)
     expect((await call('POST', '/assessments', { path: 'self' })).status).toBe(403)
     seedMockSession(SUPER_ADMIN)
-    expect((await call('POST', '/assessments', { path: 'self' })).body.code).toBe('assessment.entity_required')
+    expect((await call('POST', '/assessments', { path: 'self' })).body.code).toBe(
+      'assessment.entity_required',
+    )
     seedMockSession({ id: 7002, roles: ['entity'], entityId: 7002 })
     expect((await call('POST', '/assessments', { path: 'self' })).body.code).toBe('entity.deleted')
   })
@@ -255,8 +350,15 @@ describe('self assessment mock — start, save and submit', () => {
       scores: { subs: {}, points: { [first.id]: '7.5', [second.id]: null } },
     })
     expect(saved.status).toBe(200)
-    expect(Object.keys(saved.body.data).sort()).toEqual(['assessment', 'progress', 'scale', 'scores'])
-    expect(saved.body.data.scores.points).toEqual({ [first.id]: { raw_value: '7.50', percent: '75.00' } })
+    expect(Object.keys(saved.body.data).sort()).toEqual([
+      'assessment',
+      'progress',
+      'scale',
+      'scores',
+    ])
+    expect(saved.body.data.scores.points).toEqual({
+      [first.id]: { raw_value: '7.50', percent: '75.00' },
+    })
     expect(saved.body.data.progress.scored).toBe(1)
   })
 
@@ -265,14 +367,20 @@ describe('self assessment mock — start, save and submit', () => {
     const form = await call('GET', '/assessments/9002/form')
     const point = unitsOf(form.body.data.criteria)[0]
     const guidingSub = form.body.data.criteria.mains[0].subs[0]
-    const range = await call('PUT', '/assessments/9002', { scores: { points: { [point.id]: '11' } } })
+    const range = await call('PUT', '/assessments/9002', {
+      scores: { points: { [point.id]: '11' } },
+    })
     expect(range.status).toBe(422)
     expect(range.body.errors).toHaveProperty(`scores.points.${point.id}`)
-    const decimals = await call('PUT', '/assessments/9002', { scores: { points: { [point.id]: '7.555' } } })
+    const decimals = await call('PUT', '/assessments/9002', {
+      scores: { points: { [point.id]: '7.555' } },
+    })
     expect(decimals.body.code).toBe('validation_failed')
     const unknown = await call('PUT', '/assessments/9002', { scores: { points: { 999999: '5' } } })
     expect(unknown.body.code).toBe('score.item_not_in_version')
-    const direct = await call('PUT', '/assessments/9002', { scores: { subs: { [guidingSub.id]: '5' } } })
+    const direct = await call('PUT', '/assessments/9002', {
+      scores: { subs: { [guidingSub.id]: '5' } },
+    })
     expect(direct.body.code).toBe('score.use_points')
     expect(direct.body.errors).toHaveProperty(`scores.subs.${guidingSub.id}`)
     expect((await call('PUT', '/assessments/9002', {})).status).toBe(422)
@@ -286,20 +394,37 @@ describe('self assessment mock — start, save and submit', () => {
     expect(status).toBe(422)
     expect(body.code).toBe('scores.incomplete')
     expect(body.meta.missing).toHaveLength(units.length - 6)
-    expect(body.meta.missing[0]).toEqual({ level: units[6].group === 'subs' ? 'sub' : 'point', id: units[6].id, code: units[6].code })
+    expect(body.meta.missing[0]).toEqual({
+      level: units[6].group === 'subs' ? 'sub' : 'point',
+      id: units[6].id,
+      code: units[6].code,
+    })
     expect(body.errors[`scores.${units[6].group}.${units[6].id}`][0]).toContain(units[6].code)
   })
 
   it('submits with the last scores and answers with the immutable result, then 409 on a second submit', async () => {
     seedMockSession(OWNER)
     const form = await call('GET', '/assessments/9002/form')
-    const submitted = await call('POST', '/assessments/9002/submit', { scores: completeSheet(form.body.data.criteria) })
+    const submitted = await call('POST', '/assessments/9002/submit', {
+      scores: completeSheet(form.body.data.criteria),
+    })
     expect(submitted.status).toBe(200)
-    expect(submitted.body.data).toMatchObject({ id: 9002, status: 'result_available', available: true, total: '6560.00', percent: '80.00' })
+    expect(submitted.body.data).toMatchObject({
+      id: 9002,
+      status: 'result_available',
+      available: true,
+      total: '6560.00',
+      percent: '80.00',
+    })
     const again = await call('POST', '/assessments/9002/submit', {})
     expect(again.status).toBe(409)
-    expect(again.body).toMatchObject({ code: 'state.transition_illegal', errors: { state: ['result_available'], attempted: ['submit'] } })
-    expect((await call('PUT', '/assessments/9002', { scores: {} })).body.errors.attempted).toEqual(['save_draft'])
+    expect(again.body).toMatchObject({
+      code: 'state.transition_illegal',
+      errors: { state: ['result_available'], attempted: ['submit'] },
+    })
+    expect((await call('PUT', '/assessments/9002', { scores: {} })).body.errors.attempted).toEqual([
+      'save_draft',
+    ])
   })
 
   it('refuses writes by read-only staff (403) and by other entities (404), and asks the Super Admin for a reason', async () => {
@@ -310,13 +435,19 @@ describe('self assessment mock — start, save and submit', () => {
     seedMockSession(SUPER_ADMIN)
     const missing = await call('PUT', '/assessments/9002', { scores: {} })
     expect(missing.body.code).toBe('reason_required')
-    const withReason = await call('PUT', '/assessments/9002', { scores: {}, reason: 'Correction requested by the entity in writing.' })
+    const withReason = await call('PUT', '/assessments/9002', {
+      scores: {},
+      reason: 'Correction requested by the entity in writing.',
+    })
     expect(withReason.status).toBe(200)
   })
 
   it('freezes the draft of a deleted entity for everyone', async () => {
     seedMockSession(SUPER_ADMIN)
-    const frozen = await call('PUT', '/assessments/9004', { scores: {}, reason: 'Correction requested by the entity in writing.' })
+    const frozen = await call('PUT', '/assessments/9004', {
+      scores: {},
+      reason: 'Correction requested by the entity in writing.',
+    })
     expect(frozen.status).toBe(409)
     expect(frozen.body.code).toBe('entity.deleted')
     const record = await call('GET', '/assessments/9004')
@@ -327,7 +458,9 @@ describe('self assessment mock — start, save and submit', () => {
     seedMockSession(HELD_ENTITY)
     const form = await call('GET', '/assessments/9005/form')
     expect(form.body.data.assessment.criteria_update_in_progress).toBe(true)
-    const submit = await call('POST', '/assessments/9005/submit', { scores: completeSheet(form.body.data.criteria) })
+    const submit = await call('POST', '/assessments/9005/submit', {
+      scores: completeSheet(form.body.data.criteria),
+    })
     expect(submit.status).toBe(409)
     expect(submit.body.code).toBe('assessment.criteria_update_in_progress')
     const ar = await call('POST', '/assessments/9005/submit', {}, 'ar')
@@ -341,7 +474,10 @@ describe('self assessment mock — criteria edits, restore and search', () => {
     seedMockSession(CRITERIA_OFFICER)
     const draft = await call('POST', '/criteria/versions', {})
     const versionId = draft.body.data.id
-    const published = await call('POST', `/criteria/versions/${versionId}/publish`, { confirm: true, scope })
+    const published = await call('POST', `/criteria/versions/${versionId}/publish`, {
+      confirm: true,
+      scope,
+    })
     return { versionId, published }
   }
 
@@ -353,7 +489,13 @@ describe('self assessment mock — criteria edits, restore and search', () => {
     const form = await call('GET', '/assessments/9002/form')
     expect(form.body.data.assessment.criteria_version_id).toBe(versionId)
     expect(form.body.data.progress.scored).toBe(0)
-    expect(form.body.data.criteria_update).toMatchObject({ from_version_number: 1, to_version_number: 2, scope: 'reset_open', trigger: 'criteria_edit', kept: [] })
+    expect(form.body.data.criteria_update).toMatchObject({
+      from_version_number: 1,
+      to_version_number: 2,
+      scope: 'reset_open',
+      trigger: 'criteria_edit',
+      kept: [],
+    })
     expect(form.body.data.criteria_update.reset).toHaveLength(6)
     seedMockSession(SYSTEM_ADMIN)
     expect((await call('GET', '/assessments/9004')).body.data.criteria_version_id).toBe(1)
@@ -368,9 +510,25 @@ describe('self assessment mock — criteria edits, restore and search', () => {
     expect(form.body.data.progress.scored).toBe(6)
     const update = form.body.data.criteria_update
     expect(Object.keys(update).sort()).toEqual([
-      'added', 'from_version_id', 'from_version_number', 'kept', 'moved_at', 'reset', 'scope', 'to_version_id', 'to_version_number', 'trigger',
+      'added',
+      'from_version_id',
+      'from_version_number',
+      'kept',
+      'moved_at',
+      'reset',
+      'scope',
+      'to_version_id',
+      'to_version_number',
+      'trigger',
     ])
-    expect(update).toMatchObject({ from_version_id: 1, to_version_id: versionId, scope: 'all', trigger: 'criteria_edit', reset: [], added: [] })
+    expect(update).toMatchObject({
+      from_version_id: 1,
+      to_version_id: versionId,
+      scope: 'all',
+      trigger: 'criteria_edit',
+      reset: [],
+      added: [],
+    })
     expect(update.kept).toHaveLength(6)
     expect(Object.keys(update.kept[0]).sort()).toEqual(['code', 'label', 'level'])
     expect(update.kept[0].label).toEqual({ ar: expect.any(String), en: expect.any(String) })
@@ -379,15 +537,28 @@ describe('self assessment mock — criteria edits, restore and search', () => {
   it('holds the drafts of a restored entity, re-binds them in the queued job and releases the hold', async () => {
     await publishNewVersion('reset_open')
     seedMockSession(SYSTEM_ADMIN)
-    expect((await call('POST', '/entities/7002/restore', { reason: 'Restored after the merger was cancelled.' })).status).toBe(200)
+    expect(
+      (
+        await call('POST', '/entities/7002/restore', {
+          reason: 'Restored after the merger was cancelled.',
+        })
+      ).status,
+    ).toBe(200)
     const held = await call('GET', '/assessments/9004')
-    expect(held.body.data).toMatchObject({ is_frozen: false, criteria_update_in_progress: true, criteria_version_id: 1 })
+    expect(held.body.data).toMatchObject({
+      is_frozen: false,
+      criteria_update_in_progress: true,
+      criteria_version_id: 1,
+    })
     runQueuedJobs()
     const settled = await call('GET', '/assessments/9004/form')
     expect(settled.body.data.assessment.criteria_update_in_progress).toBe(false)
     expect(settled.body.data.assessment.criteria_version_id).not.toBe(1)
     expect(settled.body.data.progress.scored).toBe(0)
-    expect(settled.body.data.criteria_update).toMatchObject({ trigger: 'entity_restore', scope: 'reset_open' })
+    expect(settled.body.data.criteria_update).toMatchObject({
+      trigger: 'entity_restore',
+      scope: 'reset_open',
+    })
   })
 
   it('serves the requests search group with the backend item shape, never frozen and only to global readers', async () => {
@@ -398,14 +569,22 @@ describe('self assessment mock — criteria edits, restore and search', () => {
       id: 9002,
       number: 'SLF-2026-000002',
       path: 'self',
+      path_label: { ar: 'التقييم الذاتي', en: 'Self assessment' },
       status: 'draft',
       is_frozen: false,
-      entity: { id: 5001, reference: 'ENT-005001', name: { ar: 'جمعية البر بالرياض', en: 'Al-Birr Charity — Riyadh' }, status: 'active' },
+      entity: {
+        id: 5001,
+        reference: 'ENT-005001',
+        name: { ar: 'جمعية البر بالرياض', en: 'Al-Birr Charity — Riyadh' },
+        status: 'active',
+      },
     })
     expect(requests.items.map((item) => item.id)).toEqual([9002, 9005, 9003, 9001])
     expect(requests.items.map((item) => item.id)).not.toContain(9004)
     const byName = await call('GET', '/search?q=احسان')
-    expect(byName.body.data.find((group) => group.type === 'requests').items.map((item) => item.id)).toEqual([9108, 9202, 9103, 9003])
+    expect(
+      byName.body.data.find((group) => group.type === 'requests').items.map((item) => item.id),
+    ).toEqual([9108, 9202, 9103, 9003])
     seedMockSession(ASSESSOR)
     const assessor = await call('GET', '/search?q=SLF-2026')
     expect(assessor.body.data.find((group) => group.type === 'requests').items).toEqual([])

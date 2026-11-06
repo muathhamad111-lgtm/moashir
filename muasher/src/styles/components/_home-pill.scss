@@ -1,0 +1,73 @@
+@use '../mixins' as *;
+
+.home-pill {
+  @include flex(row, center, flex-start, var(--space-2));
+  display: inline-flex;
+  padding-block: var(--space-1);
+  padding-inline: var(--space-3);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-base);
+  white-space: nowrap;
+  background-color: var(--theme-surface-raised);
+  color: var(--theme-text-secondary);
+}
+
+.home-pill__dot {
+  inline-size: var(--size-dot);
+  block-size: var(--size-dot);
+  border-radius: var(--radius-circle);
+  background-color: currentcolor;
+}
+
+.home-pill__icon {
+  font-size: var(--fs-xs);
+}
+
+.home-pill--free,
+.home-pill--available {
+  background-color: var(--theme-accent-soft);
+  color: var(--theme-accent-text);
+}
+
+.home-pill--soon {
+  background-color: var(--theme-border);
+  color: var(--theme-text-secondary);
+}
+
+.home-pill--example {
+  background-color: var(--color-warning-soft);
+  color: var(--theme-warning-text);
+}
+
+.home-pill--on-dark {
+  background-color: var(--brand-glass-on-dark);
+  border-color: var(--brand-line-on-dark);
+  color: var(--color-secondary);
+
+  .home-pill__icon {
+    color: var(--color-primary);
+  }
+}
+
+.home-pill--gold {
+  background-color: var(--color-gold-soft);
+  color: var(--theme-gold-text);
+}
+
+.home-pill--bronze {
+  background-color: var(--color-gold-soft);
+  color: var(--color-bronze-text);
+}
+
+.home-pill--silver {
+  background-color: var(--theme-border);
+  color: var(--theme-text-secondary);
+}
+
+.home-pill--diamond {
+  background-color: var(--theme-accent-soft);
+  color: var(--theme-accent-text);
+}

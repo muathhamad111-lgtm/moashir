@@ -30,6 +30,7 @@ final readonly class FinanceSettingsReader
                 FinanceSettingField::cases(),
                 static fn (FinanceSettingField $field): bool => $viewer->can(Ability::EditFinanceSettingField->value, $field),
             )),
+            $this->settings->vatRegistrationNumber(),
         );
     }
 }

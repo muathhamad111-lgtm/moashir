@@ -21,11 +21,7 @@ final readonly class RequestQueueQuery
      */
     public function filtered(RequestQueueFilters $filters): Builder
     {
-        $query = $this->freezeGuard->excludeFrozen(Assessment::query()->where(static function (Builder $queued) use ($filters): void {
-            foreach ($filters->paths() as $path) {
-                $queued->orWhere(static fn (Builder $byPath): Builder => $byPath->ofPath($path)->whereIn('status', $path->queueStateValues()));
-            }
-        }));
+        $query = $this->queued([$filters->path]);
 
         if ($filters->status !== null) {
             $query->where('status', $filters->status);
@@ -48,6 +44,23 @@ final readonly class RequestQueueQuery
         }
 
         return $query;
+    }
+
+    /**
+     * @param  list<AssessmentPath>  $paths
+     * @return Builder<Assessment>
+     */
+    public function queued(array $paths): Builder
+    {
+        return $this->freezeGuard->excludeFrozen(Assessment::query()->where(static function (Builder $queued) use ($paths): void {
+            foreach ($paths as $path) {
+                $queued->orWhere(static fn (Builder $byPath): Builder => $byPath->ofPath($path)->whereIn('status', $path->queueStateValues()));
+            }
+
+            if ($paths === []) {
+                $queued->whereRaw('false');
+            }
+        }));
     }
 
     /**

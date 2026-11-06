@@ -64,7 +64,9 @@ function submit() {
         :disabled="submitting"
         @complete="submit"
       />
-      <p v-if="shownError || error" class="auth-otp__error" role="alert">{{ shownError || error }}</p>
+      <p v-if="shownError || error" class="auth-otp__error" role="alert">
+        {{ shownError || error }}
+      </p>
     </template>
 
     <div class="auth-form__actions">

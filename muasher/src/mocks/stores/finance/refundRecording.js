@@ -9,7 +9,12 @@ import { announcePaymentRefunded } from './paymentHooks'
 
 const AMOUNT_PATTERN = /^\d{1,10}\.\d{2}$/
 const REFERENCE_PATTERN = /^[\p{L}\p{N}\s/._-]+$/u
-const EVIDENCE_TYPES = { pdf: 'application/pdf', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png' }
+const EVIDENCE_TYPES = {
+  pdf: 'application/pdf',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+}
 const MAX_EVIDENCE_BYTES = 20 * 1024 * 1024
 const MAX_EVIDENCE_MB = 20
 const INFECTED_MARKER = 'EICAR-STANDARD-ANTIVIRUS-TEST-FILE'
@@ -39,7 +44,10 @@ function text(form, key) {
 }
 
 function extensionOf(name) {
-  return String(name ?? '').split('.').pop().toLowerCase()
+  return String(name ?? '')
+    .split('.')
+    .pop()
+    .toLowerCase()
 }
 
 function lengthError(value, min, max) {
@@ -62,7 +70,9 @@ function dateError(value) {
 }
 
 function referenceError(value) {
-  return lengthError(value, 3, 80) ?? (REFERENCE_PATTERN.test(value) ? null : fieldMessage('invalid'))
+  return (
+    lengthError(value, 3, 80) ?? (REFERENCE_PATTERN.test(value) ? null : fieldMessage('invalid'))
+  )
 }
 
 export function validatedRefund(form) {
@@ -81,24 +91,34 @@ export function validatedRefund(form) {
     evidence: evidenceError(instruction.evidence),
   }
   const failed = Object.entries(errors).filter(([, message]) => message)
-  if (failed.length) throw financeReject.validation(Object.fromEntries(failed.map(([field, message]) => [field, [message]])))
+  if (failed.length)
+    throw financeReject.validation(
+      Object.fromEntries(failed.map(([field, message]) => [field, [message]])),
+    )
   return instruction
 }
 
 function assertRecordable(payment, instruction) {
   assertTransition(payment, 'refunded', 'record_refund')
-  if (toMinor(instruction.amount) !== toMinor(payment.total)) throw financeReject.refundAmount(payment.total)
-  if (payment.paidAt && instruction.refundedOn < riyadhDateOf(payment.paidAt)) throw financeReject.refundDate()
+  if (toMinor(instruction.amount) !== toMinor(payment.total))
+    throw financeReject.refundAmount(payment.total)
+  if (payment.paidAt && instruction.refundedOn < riyadhDateOf(payment.paidAt))
+    throw financeReject.refundDate()
 }
 
 function detectedType(bytes) {
-  return SIGNATURES.find((signature) => signature.bytes.every((byte, index) => bytes[index] === byte))?.mimeType ?? null
+  return (
+    SIGNATURES.find((signature) => signature.bytes.every((byte, index) => bytes[index] === byte))
+      ?.mimeType ?? null
+  )
 }
 
 async function acceptEvidence(file) {
   const bytes = new Uint8Array(await file.arrayBuffer())
-  if (detectedType(bytes) !== EVIDENCE_TYPES[extensionOf(file.name)]) throw financeReject.fileRefused('file.content_mismatch', 'evidence')
-  if (new TextDecoder().decode(bytes).includes(INFECTED_MARKER)) throw financeReject.fileRefused('file.infected', 'evidence')
+  if (detectedType(bytes) !== EVIDENCE_TYPES[extensionOf(file.name)])
+    throw financeReject.fileRefused('file.content_mismatch', 'evidence')
+  if (new TextDecoder().decode(bytes).includes(INFECTED_MARKER))
+    throw financeReject.fileRefused('file.infected', 'evidence')
   return storeFile({
     purpose: 'refund_evidence',
     name: file.name,
@@ -128,7 +148,12 @@ export async function recordRefund(user, payment, instruction) {
   financeState().refunds.push(refund)
   transition(payment, 'refunded', 'record_refund')
   voidReceipt(payment)
-  recordEvent(payment, { source: 'admin', eventType: 'refund_recorded', result: 'applied', providerPaymentId: null })
+  recordEvent(payment, {
+    source: 'admin',
+    eventType: 'refund_recorded',
+    result: 'applied',
+    providerPaymentId: null,
+  })
   persistFinanceState()
   announcePaymentRefunded(payment, refund)
   return refund

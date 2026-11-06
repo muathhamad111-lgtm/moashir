@@ -17,7 +17,7 @@ export default defineConfig([
     '**/dist/**',
     '**/dist-ssr/**',
     '**/coverage/**',
-    '**/public/**',
+    'public/**',
     '**/node_modules/**',
     '**/playwright-report/**',
     '**/playwright-report-integration/**',

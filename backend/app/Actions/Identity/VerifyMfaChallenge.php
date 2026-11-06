@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Identity;
 
 use App\Enums\Identity\PendingAuthenticationStage;
+use App\Enums\Identity\SignInMethod;
 use App\Models\Identity\User;
 use App\Services\Identity\PendingAuthentication;
 use App\Services\Identity\SignInGuard;
@@ -34,6 +35,6 @@ final readonly class VerifyMfaChallenge
             $this->recordFailure->handle($user);
         }
 
-        return $this->establishSession->handle($user, $code !== null ? 'totp' : 'recovery_code');
+        return $this->establishSession->handle($user, $code !== null ? SignInMethod::Totp : SignInMethod::RecoveryCode);
     }
 }

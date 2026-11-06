@@ -38,7 +38,9 @@
   background-color: var(--theme-surface-raised);
   color: var(--theme-text);
   cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease);
+  transition:
+    border-color var(--t-fast) var(--ease),
+    background-color var(--t-fast) var(--ease);
 
   &:hover {
     border-color: var(--theme-accent);

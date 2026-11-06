@@ -4,23 +4,6 @@ import { toWesternDigits } from '@/utils/numerals'
 const YES = 'yes'
 const NO = 'no'
 
-export const PROFILE_FIELDS = [
-  'name.ar',
-  'name.en',
-  'authorizedPersonName',
-  'phone',
-  'entityType',
-  'developmentSector',
-  'orgSize',
-  'foundingYear',
-  'regionId',
-  'cityId',
-  'governanceGrade',
-  'employeesCount',
-  'annualBeneficiariesCount',
-  'hasStrategicPlan',
-]
-
 function text(value) {
   return value === null || value === undefined ? '' : String(value)
 }
@@ -34,9 +17,15 @@ function localPhone(phone) {
   return phone ? phone.replace(/^\+966/, '0') : ''
 }
 
+export function unifiedNumberPayload(value) {
+  const unifiedNumber = toWesternDigits(value)
+  return unifiedNumber ? { unifiedNumber } : {}
+}
+
 export function emptyProfileValues() {
   return {
     name: { ar: '', en: '' },
+    unifiedNumber: '',
     authorizedPersonName: '',
     phone: '',
     entityType: '',
@@ -55,6 +44,7 @@ export function emptyProfileValues() {
 export function profileFormValues(entity) {
   return {
     name: { ar: text(entity.name?.ar), en: text(entity.name?.en) },
+    unifiedNumber: text(entity.unifiedNumber),
     authorizedPersonName: text(entity.authorizedPersonName),
     phone: localPhone(entity.phone),
     entityType: text(entity.entityType),
@@ -89,9 +79,41 @@ export function profilePayload(values) {
   }
 }
 
+const FOUNDED_YEAR = /^(\d{4})-/
+
+export function ownProfileFormValues(entity) {
+  return {
+    ...profileFormValues(entity),
+    licenseNumber: text(entity.licenseNumber),
+    foundedOn: text(entity.foundedOn),
+    websiteUrl: text(entity.websiteUrl),
+    marketingConsent: entity.marketingConsent === true,
+  }
+}
+
+function nullable(value) {
+  const trimmed = text(value).trim()
+  return trimmed === '' ? null : trimmed
+}
+
+export function ownProfilePayload(values) {
+  const foundedOn = nullable(values.foundedOn)
+  const year = FOUNDED_YEAR.exec(foundedOn ?? '')?.[1]
+  const base = profilePayload(year ? { ...values, foundingYear: year } : values)
+  return {
+    ...base,
+    ...unifiedNumberPayload(values.unifiedNumber),
+    licenseNumber: nullable(toWesternDigits(values.licenseNumber)),
+    foundedOn,
+    websiteUrl: nullable(values.websiteUrl),
+    marketingConsent: values.marketingConsent === true,
+  }
+}
+
 export function registrationPayload(values, terms) {
   const payload = {
     ...profilePayload(values),
+    ...unifiedNumberPayload(values.unifiedNumber),
     officialEmail: values.officialEmail.trim(),
     password: values.password,
     passwordConfirmation: values.passwordConfirmation,
@@ -100,14 +122,4 @@ export function registrationPayload(values, terms) {
     marketingConsent: values.marketingConsent === true,
   }
   return terms.privacy ? { ...payload, privacyVersionId: terms.privacy.id } : payload
-}
-
-function valueAt(values, path) {
-  return path.split('.').reduce((current, key) => current?.[key], values)
-}
-
-export function profileChanges(before, after, fields = PROFILE_FIELDS) {
-  return fields
-    .filter((field) => text(valueAt(before, field)).trim() !== text(valueAt(after, field)).trim())
-    .map((field) => ({ field, before: text(valueAt(before, field)), after: text(valueAt(after, field)) }))
 }

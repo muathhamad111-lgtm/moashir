@@ -33,6 +33,7 @@ final class RegisterEntityRequest extends FormRequest
 
         return [
             ...EntityProfileInput::rules($this->input('region_id')),
+            'unified_number' => EntityProfileInput::unifiedNumberRules(null),
             'official_email' => ['required', 'string', 'email:filter', 'max:254'],
             'password' => $passwords->rules(),
             'terms_version_id' => ['required', 'integer', $this->mustBe($this->currentTerms, 'terms_version_id')],

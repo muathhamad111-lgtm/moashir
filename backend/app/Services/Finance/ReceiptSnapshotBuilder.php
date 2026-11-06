@@ -5,14 +5,22 @@ declare(strict_types=1);
 namespace App\Services\Finance;
 
 use App\Models\Finance\Payment;
+use App\Support\ValueObjects\VatRegistrationNumber;
 
-final class ReceiptSnapshotBuilder
+final readonly class ReceiptSnapshotBuilder
 {
+    public const string VAT_REGISTRATION_NUMBER = 'vat_registration_number';
+
+    public function __construct(private FinanceSettings $settings) {}
+
     /**
      * @return array<string, mixed>
      */
     public function build(Payment $payment): array
     {
+        $payment->loadMissing('bankTransfer.bankAccount');
+        $vatNumber = $this->settings->vatRegistrationNumber();
+
         return [
             'payment_reference' => $payment->reference,
             'entity_reference' => $payment->entity->reference(),
@@ -24,9 +32,12 @@ final class ReceiptSnapshotBuilder
             'total' => $payment->total,
             'currency' => $payment->currency,
             'paid_at' => $payment->paid_at?->toIso8601String(),
+            'channel' => $payment->channel->value,
+            'bank_name' => $payment->bankTransfer?->bankAccount->bank_name->toArray(),
             'method' => $payment->method?->value,
             'card_last4' => $payment->card_last4,
             'provider_payment_id' => $payment->provider_payment_id,
+            ...($vatNumber instanceof VatRegistrationNumber ? [self::VAT_REGISTRATION_NUMBER => $vatNumber->value] : []),
         ];
     }
 }

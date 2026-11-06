@@ -7,9 +7,21 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import FinanceSettingsPreview from '@/components/finance/FinanceSettingsPreview.vue'
 import { useFinanceSettings } from '@/composables/useFinanceSettings'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
-const { status, errorMessage, settings, editable, limits, saving, reasonOpen, load, submit, confirmReason } = useFinanceSettings()
+const {
+  status,
+  errorMessage,
+  settings,
+  editable,
+  limits,
+  saving,
+  reasonOpen,
+  load,
+  submit,
+  confirmReason,
+} = useFinanceSettings()
 
 const currency = computed(() => t('finance.currency.SAR'))
 
@@ -21,12 +33,24 @@ onMounted(load)
 </script>
 
 <template>
-  <SettingsSection :title="t('finance.settings.title')" :description="t('finance.settings.description')" :status="status" :error-message="errorMessage" @retry="load">
-    <form v-if="settings" id="finance-settings-form" class="settings-form" novalidate @submit.prevent="submit">
+  <SettingsSection
+    :title="t('finance.settings.title')"
+    :description="t('finance.settings.description')"
+    :status="status"
+    :error-message="errorMessage"
+    @retry="load"
+  >
+    <form
+      v-if="settings"
+      id="finance-settings-form"
+      class="settings-form"
+      novalidate
+      @submit.prevent="submit"
+    >
       <fieldset class="settings-form__group">
         <legend class="settings-form__legend">{{ t('finance.settings.pricesTitle') }}</legend>
         <p class="settings-form__note" role="note">
-          <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+          <AppIcon name="info-circle" />
           {{ t('finance.settings.pricesNote') }}
         </p>
         <div class="settings-form__grid">
@@ -73,11 +97,45 @@ onMounted(load)
         </div>
       </fieldset>
 
+      <fieldset v-if="editable.has('vatRegistrationNumber')" class="settings-form__group">
+        <legend class="settings-form__legend">
+          {{ t('finance.settings.vatNumberTitle') }}
+          <span class="settings-form__badge">
+            <AppIcon name="lock" />
+            {{ t('finance.settings.adminOnly') }}
+          </span>
+        </legend>
+        <FieldInput
+          name="vatRegistrationNumber"
+          :label="t('finance.settings.vatNumber')"
+          :hint="t('finance.settings.vatNumberHint')"
+          inputmode="numeric"
+          input-dir="ltr"
+          autocomplete="off"
+        />
+        <p
+          v-if="settings.vatRegistrationReminder"
+          class="settings-form__note"
+          role="note"
+          data-testid="vat-number-reminder"
+        >
+          <AppIcon name="info-circle" />
+          {{ t('finance.settings.vatNumberReminder') }}
+        </p>
+      </fieldset>
+
       <FinanceSettingsPreview :pricing="settings.pricing" />
     </form>
 
     <template #actions>
-      <BaseButton v-if="editable.size" type="submit" form="finance-settings-form" variant="primary" :loading="saving" icon="fa-solid fa-floppy-disk">
+      <BaseButton
+        v-if="editable.size"
+        type="submit"
+        form="finance-settings-form"
+        variant="primary"
+        :loading="saving"
+        icon="save"
+      >
         {{ t('actions.save') }}
       </BaseButton>
     </template>

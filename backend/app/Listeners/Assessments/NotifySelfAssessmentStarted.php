@@ -22,6 +22,6 @@ final readonly class NotifySelfAssessmentStarted
             NotificationCode::SelfAssessmentStarted,
             ['number' => $assessment->request_number],
             AssessmentLinks::selfForm(),
-        )->inAppOnly());
+        )->forPath($assessment->path)->inAppOnly());
     }
 }

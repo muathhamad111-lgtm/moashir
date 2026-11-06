@@ -13,7 +13,6 @@ use App\Events\Entities\EntityRegistered;
 use App\Models\Entities\Entity;
 use App\Models\Identity\User;
 use App\Services\Identity\TermsAcceptanceRecorder;
-use Illuminate\Support\Facades\Date;
 
 final readonly class EntityAccountCreator
 {
@@ -26,13 +25,14 @@ final readonly class EntityAccountCreator
     public function create(EntityRegistrationData $data): Entity
     {
         $entity = new Entity;
-        $entity->fill($data->profile->toAttributes());
-        $entity->forceFill([
-            'status' => EntityStatus::PendingVerification,
-            'profile_completed_at' => $data->profile->isComplete() ? Date::now() : null,
-        ])->save();
+        $entity->fill($entity->profileAttributesFrom($data->profile));
+        $entity->forceFill(['status' => EntityStatus::PendingVerification])->save();
 
         $owner = $this->createOwner($entity, $data);
+        $entity->setRelation('owner', $owner);
+        $entity->syncProfileCompletedAt();
+        $entity->save();
+
         $this->applyPassword->handle($owner, $data->password);
         $this->terms->accept($owner, $data->acceptedTermsVersionIds);
         $this->consent->record($entity, $data->marketingConsent);

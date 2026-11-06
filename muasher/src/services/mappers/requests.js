@@ -30,14 +30,20 @@ export function toCycleSummary(raw) {
   return { id: raw.id ?? null, name: raw.name ?? null, status: raw.status ?? null }
 }
 
+function toQueueEntity(raw) {
+  const entity = toEntitySummary(raw)
+  return entity ? { ...entity, level: raw.level ?? null } : null
+}
+
 export function toQueueRow(raw = {}) {
   return {
     id: raw.id ?? null,
     number: raw.number ?? '',
     path: raw.path ?? null,
+    pathLabel: raw.pathLabel ?? null,
     status: toRequestStatus(raw.status),
     isFrozen: raw.isFrozen === true,
-    entity: toEntitySummary(raw.entity),
+    entity: toQueueEntity(raw.entity),
     assessor: toPerson(raw.assessor),
     assignedAt: raw.assignedAt ?? null,
     completionDeadline: raw.completionDeadline ?? null,
@@ -49,7 +55,11 @@ export function toQueueRow(raw = {}) {
 
 export function toQueueStats(raw) {
   if (!raw) return null
-  return { total: raw.total ?? 0, byStatus: toStatusCounts(raw.byStatus, STATS_STATUSES), overdue: raw.overdue ?? 0 }
+  return {
+    total: raw.total ?? 0,
+    byStatus: toStatusCounts(raw.byStatus, STATS_STATUSES),
+    overdue: raw.overdue ?? 0,
+  }
 }
 
 function toAssignment(raw) {
@@ -62,7 +72,12 @@ function toAssignment(raw) {
     endedAt: raw.endedAt ?? null,
   }
   if (!Object.hasOwn(raw, 'reason')) return assignment
-  return { ...assignment, assignedBy: toPerson(raw.assignedBy), reason: raw.reason ?? null, endReason: raw.endReason ?? null }
+  return {
+    ...assignment,
+    assignedBy: toPerson(raw.assignedBy),
+    reason: raw.reason ?? null,
+    endReason: raw.endReason ?? null,
+  }
 }
 
 export function toRequestDetail(raw = {}) {
@@ -84,12 +99,35 @@ export function toAssignedRow(raw = {}) {
     id: raw.id ?? null,
     number: raw.number ?? '',
     path: raw.path ?? null,
+    pathLabel: raw.pathLabel ?? null,
     status: toRequestStatus(raw.status),
-    entity: raw.entity ? { ...toEntitySummary(raw.entity), region: toPlace(raw.entity.region) } : null,
+    entity: raw.entity
+      ? { ...toEntitySummary(raw.entity), region: toPlace(raw.entity.region) }
+      : null,
     assignedAt: raw.assignedAt ?? null,
     startedAt: raw.startedAt ?? null,
     completionDeadline: raw.completionDeadline ?? null,
     awardCycle: toCycleSummary(raw.awardCycle),
     ...toClock(raw),
+  }
+}
+
+export function toQueuePathCount(raw = {}) {
+  return {
+    path: raw.path ?? null,
+    pathLabel: raw.pathLabel ?? null,
+    total: raw.total ?? 0,
+    awaitingAssignment: raw.awaitingAssignment ?? 0,
+    overdue: raw.overdue ?? 0,
+  }
+}
+
+export function toAssignedPathCount(raw = {}) {
+  return {
+    path: raw.path ?? null,
+    pathLabel: raw.pathLabel ?? null,
+    new: raw.new ?? 0,
+    inProgress: raw.inProgress ?? 0,
+    completed: raw.completed ?? 0,
   }
 }

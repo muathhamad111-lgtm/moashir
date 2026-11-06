@@ -26,7 +26,7 @@
 }
 
 .navbar__logo {
-  block-size: var(--space-8);
+  block-size: var(--size-navbar-logo);
   inline-size: auto;
   object-fit: contain;
 }
@@ -46,6 +46,10 @@
     min-block-size: var(--size-touch-target);
     border-radius: var(--radius-lg);
     background-color: var(--theme-surface-raised);
+  }
+
+  .btn--icon .app-icon {
+    font-size: var(--icon-size-lg);
   }
 }
 
@@ -70,6 +74,13 @@
 
 .navbar__actions {
   @include flex(row, center, flex-end, var(--space-2));
+  flex-wrap: wrap;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+
+  @include respond-to('md') {
+    flex-wrap: nowrap;
+  }
 }
 
 .navbar__user {
@@ -98,4 +109,21 @@
   &:focus-visible {
     @include focus-ring;
   }
+}
+
+.navbar__user-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.navbar__user-name {
+  font-weight: var(--fw-semibold);
+  color: var(--theme-text);
+}
+
+.navbar__user-roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
 }

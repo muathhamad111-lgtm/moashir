@@ -9,16 +9,20 @@ export function errorStatusOf(error) {
   return error?.normalized?.status ?? error?.response?.status ?? null
 }
 
-export function financeErrorMessage(i18n, error, fallbackKey) {
+export function financeErrorMessage(i18n, error, fallbackKey, prefix = ERROR_PREFIX) {
   const code = errorCodeOf(error)
-  const key = code ? `${ERROR_PREFIX}.${code}` : null
-  if (key && i18n.te(key)) return i18n.t(key, { total: error?.normalized?.meta?.paymentTotal ?? '' })
+  const key = code ? `${prefix}.${code}` : null
+  if (key && i18n.te(key))
+    return i18n.t(key, { total: error?.normalized?.meta?.paymentTotal ?? '' })
   return error?.normalized?.message || i18n.t(fallbackKey)
 }
 
 export function firstFieldErrors(error) {
   const fields = error?.normalized?.fieldErrors ?? {}
   return Object.fromEntries(
-    Object.entries(fields).map(([field, messages]) => [field, Array.isArray(messages) ? messages[0] : messages]),
+    Object.entries(fields).map(([field, messages]) => [
+      field,
+      Array.isArray(messages) ? messages[0] : messages,
+    ]),
   )
 }

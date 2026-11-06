@@ -10,10 +10,20 @@ import { assertNotFrozen } from './entityWorkflow'
 import { isAdvanced, stagesOf } from '../assessments/reviewedPaths'
 import { announceInitialCompleted } from '../award/awardNotices'
 import { recordSnapshot } from './resultSnapshots'
-import { isPlainObject, isPositiveInteger, lengthError, optionalReason, reasonError, throwIfErrors, trimmed } from './accreditedValidation'
+import { writeSummary } from '../insights/assessorSummaries'
+import {
+  isPlainObject,
+  isPositiveInteger,
+  lengthError,
+  optionalReason,
+  reasonError,
+  throwIfErrors,
+  trimmed,
+} from './accreditedValidation'
 
 const FEEDBACK_FIELDS = ['strengths', 'improvementPoints', 'notes']
 const FEEDBACK_MAX = 5000
+const SUMMARY_MAX = 2000
 const FEEDBACK_MAX_ITEMS = 500
 const NOTES = { MIN: 10, MAX: 2000 }
 const ITEMS_MAX = 100
@@ -33,7 +43,8 @@ export function reviewModeOf(user, record) {
 function enterReviewGate(user, record, { verb, reason, states }) {
   assertNotFrozen(record)
   if (user.superAdmin && !reason) throw assessmentReject.reasonRequired()
-  if (!states.includes(record.status)) throw assessmentReject.illegalTransition(toCanonicalStatus(record.status), verb)
+  if (!states.includes(record.status))
+    throw assessmentReject.illegalTransition(toCanonicalStatus(record.status), verb)
 }
 
 export function startReview(user, record, body) {
@@ -44,7 +55,16 @@ export function startReview(user, record, body) {
   const at = nowIso()
   activeAssignment(record).startedAt = at
   record.status = stages.reviewing
-  record.transitions.push(transition(stages.assigned, stages.reviewing, 'start_review', at, ACTORS.STAFF, visibleActorId(user)))
+  record.transitions.push(
+    transition(
+      stages.assigned,
+      stages.reviewing,
+      'start_review',
+      at,
+      ACTORS.STAFF,
+      visibleActorId(user),
+    ),
+  )
   touch(record)
   return record
 }
@@ -59,7 +79,11 @@ function clearedKeys(scores) {
 
 export function saveReviewScores(user, record, body) {
   const input = validateScoreRequest(body, record, 'present')
-  enterReviewGate(user, record, { verb: 'score', reason: input.reason, states: [stagesOf(record).reviewing] })
+  enterReviewGate(user, record, {
+    verb: 'score',
+    reason: input.reason,
+    states: [stagesOf(record).reviewing],
+  })
   const changes = parseScoreSheet(input.scores, boundTree(record), record.scaleKind)
   const merged = { ...record.scores, ...Object.fromEntries(changes) }
   clearedKeys(input.scores).forEach((key) => delete merged[key])
@@ -71,15 +95,21 @@ export function saveReviewScores(user, record, body) {
 function validateFeedback(body) {
   const errors = {}
   const entries = isPlainObject(body.feedback) ? Object.entries(body.feedback) : []
-  if (!entries.length || entries.length > FEEDBACK_MAX_ITEMS) errors.feedback = [fieldMessage('validation.required', {}, 'feedback')]
+  if (!entries.length || entries.length > FEEDBACK_MAX_ITEMS)
+    errors.feedback = [fieldMessage('validation.required', {}, 'feedback')]
   entries.forEach(([subId, fields]) => {
-    if (!isPlainObject(fields) || Object.keys(fields).some((field) => !FEEDBACK_FIELDS.includes(field))) {
+    if (
+      !isPlainObject(fields) ||
+      Object.keys(fields).some((field) => !FEEDBACK_FIELDS.includes(field))
+    ) {
       errors[`feedback.${subId}`] = [fieldMessage('validation.invalid', {}, 'feedback')]
       return
     }
     Object.entries(fields).forEach(([field, text]) => {
       if (text !== null && (typeof text !== 'string' || text.length > FEEDBACK_MAX)) {
-        errors[`feedback.${subId}.${field}`] = [fieldMessage('validation.max_chars', { max: FEEDBACK_MAX }, 'feedback')]
+        errors[`feedback.${subId}.${field}`] = [
+          fieldMessage('validation.max_chars', { max: FEEDBACK_MAX }, 'feedback'),
+        ]
       }
     })
   })
@@ -100,10 +130,15 @@ function applyFeedback(record, sub, fields) {
 
 export function saveFeedbackItems(user, record, body) {
   const entries = validateFeedback(body)
-  enterReviewGate(user, record, { verb: 'feedback', reason: trimmed(body.reason) || null, states: [stagesOf(record).reviewing] })
+  enterReviewGate(user, record, {
+    verb: 'feedback',
+    reason: trimmed(body.reason) || null,
+    states: [stagesOf(record).reviewing],
+  })
   const targets = entries.map(([subId, fields]) => {
     const sub = subOfId(record, subId)
-    if (!sub) throw assessmentReject.coded(422, 'assessment.sub_not_in_version', `feedback.${subId}`)
+    if (!sub)
+      throw assessmentReject.coded(422, 'assessment.sub_not_in_version', `feedback.${subId}`)
     return { sub, fields }
   })
   targets.forEach(({ sub, fields }) => applyFeedback(record, sub, fields))
@@ -111,11 +146,37 @@ export function saveFeedbackItems(user, record, body) {
   return record
 }
 
+function validateSummary(body) {
+  const summary = body.summary
+  const errors = {}
+  if (summary !== null && summary !== undefined && typeof summary !== 'string')
+    errors.summary = [fieldMessage('validation.invalid', {}, 'summary')]
+  else if (typeof summary === 'string' && summary.trim().length > SUMMARY_MAX)
+    errors.summary = [fieldMessage('validation.max_chars', { max: SUMMARY_MAX }, 'summary')]
+  const reason = reasonError(body.reason)
+  if (reason) errors.reason = reason
+  throwIfErrors(errors)
+}
+
+export function saveAssessorSummary(user, record, body) {
+  if (isAdvanced(record)) throw assessmentReject.coded(409, 'assessment.summary_not_applicable')
+  validateSummary(body)
+  enterReviewGate(user, record, {
+    verb: 'summary',
+    reason: trimmed(body.reason) || null,
+    states: [stagesOf(record).reviewing],
+  })
+  const saved = writeSummary(record.id, body.summary)
+  touch(record)
+  return saved
+}
+
 function deadlineError(value) {
   const time = typeof value === 'string' ? Date.parse(value) : Number.NaN
   if (Number.isNaN(time)) return [fieldMessage('validation.required', {}, 'deadlineAt')]
   if (time <= Date.now()) return [fieldMessage('validation.after_now', {}, 'deadlineAt')]
-  if (time > Date.now() + DEADLINE_MAX_DAYS * DAY_MS) return [fieldMessage('validation.before_or_equal', { days: DEADLINE_MAX_DAYS }, 'deadlineAt')]
+  if (time > Date.now() + DEADLINE_MAX_DAYS * DAY_MS)
+    return [fieldMessage('validation.before_or_equal', { days: DEADLINE_MAX_DAYS }, 'deadlineAt')]
   return null
 }
 
@@ -125,10 +186,16 @@ export function itemErrors(items, errors) {
     return
   }
   items.forEach((item, index) => {
-    if (!isPositiveInteger(item?.subCriterionId)) errors[`items.${index}.subCriterionId`] = [fieldMessage('validation.required', {}, 'subCriterionId')]
-    if (!KINDS.includes(item?.kind)) errors[`items.${index}.kind`] = [fieldMessage('validation.invalid', {}, 'items')]
+    if (!isPositiveInteger(item?.subCriterionId))
+      errors[`items.${index}.subCriterionId`] = [
+        fieldMessage('validation.required', {}, 'subCriterionId'),
+      ]
+    if (!KINDS.includes(item?.kind))
+      errors[`items.${index}.kind`] = [fieldMessage('validation.invalid', {}, 'items')]
     if (item?.note && (typeof item.note !== 'string' || item.note.length > ITEM_NOTE_MAX)) {
-      errors[`items.${index}.note`] = [fieldMessage('validation.max_chars', { max: ITEM_NOTE_MAX }, 'notes')]
+      errors[`items.${index}.note`] = [
+        fieldMessage('validation.max_chars', { max: ITEM_NOTE_MAX }, 'notes'),
+      ]
     }
   })
 }
@@ -140,7 +207,8 @@ function validateCompletion(body) {
   itemErrors(body.items, errors)
   const deadline = deadlineError(body.deadlineAt)
   if (deadline) errors.deadlineAt = deadline
-  if (!EXPIRY_OUTCOMES.includes(body.expiryOutcome)) errors.expiryOutcome = [fieldMessage('validation.required', {}, 'expiryOutcome')]
+  if (!EXPIRY_OUTCOMES.includes(body.expiryOutcome))
+    errors.expiryOutcome = [fieldMessage('validation.required', {}, 'expiryOutcome')]
   const reason = reasonError(body.reason)
   if (reason) errors.reason = reason
   throwIfErrors(errors)
@@ -148,15 +216,25 @@ function validateCompletion(body) {
 
 export function completionItem(record, item, index) {
   const sub = subOfId(record, item.subCriterionId)
-  if (!sub) throw assessmentReject.coded(422, 'assessment.sub_not_in_version', `items.${index}.subCriterionId`)
-  if (item.kind === 'cv' && !sub.hasCv) throw assessmentReject.coded(422, 'cv.not_allowed', `items.${index}.kind`)
+  if (!sub)
+    throw assessmentReject.coded(
+      422,
+      'assessment.sub_not_in_version',
+      `items.${index}.subCriterionId`,
+    )
+  if (item.kind === 'cv' && !sub.hasCv)
+    throw assessmentReject.coded(422, 'cv.not_allowed', `items.${index}.kind`)
   return { subCode: sub.code, kind: item.kind, note: trimmed(item.note) || null }
 }
 
 export function requestCompletion(user, record, body) {
   validateCompletion(body)
   const states = isAdvanced(record) ? [] : [STATES.UNDER_REVIEW]
-  enterReviewGate(user, record, { verb: 'request_completion', reason: trimmed(body.reason) || null, states })
+  enterReviewGate(user, record, {
+    verb: 'request_completion',
+    reason: trimmed(body.reason) || null,
+    states,
+  })
   const items = body.items.map((item, index) => completionItem(record, item, index))
   const at = nowIso()
   completionSequence += 1
@@ -171,13 +249,24 @@ export function requestCompletion(user, record, body) {
     resolvedAt: null,
   })
   record.status = STATES.NEEDS_COMPLETION
-  record.transitions.push(transition(STATES.UNDER_REVIEW, STATES.NEEDS_COMPLETION, 'request_completion', at, ACTORS.STAFF, visibleActorId(user)))
+  record.transitions.push(
+    transition(
+      STATES.UNDER_REVIEW,
+      STATES.NEEDS_COMPLETION,
+      'request_completion',
+      at,
+      ACTORS.STAFF,
+      visibleActorId(user),
+    ),
+  )
   touch(record)
   return record
 }
 
 function missingUnits(record) {
-  return scorableUnits(boundTree(record)).filter((unit) => record.scores[unitKey(unit.level, unit.id)] === undefined)
+  return scorableUnits(boundTree(record)).filter(
+    (unit) => record.scores[unitKey(unit.level, unit.id)] === undefined,
+  )
 }
 
 function finishReview(record, at) {
@@ -199,7 +288,9 @@ export function completeReview(user, record, body) {
   const at = nowIso()
   recordSnapshot(record)
   Object.assign(activeAssignment(record), { status: 'completed', endedAt: at })
-  record.transitions.push(transition(stages.reviewing, stages.done, 'complete', at, ACTORS.STAFF, visibleActorId(user)))
+  record.transitions.push(
+    transition(stages.reviewing, stages.done, 'complete', at, ACTORS.STAFF, visibleActorId(user)),
+  )
   finishReview(record, at)
   return record
 }

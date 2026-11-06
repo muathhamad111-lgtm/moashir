@@ -14,7 +14,11 @@ function base(cycleId, assessmentId) {
 
 export const filteringService = {
   list(cycleId, params = {}) {
-    return read('list', () => apiClient.get(`/award/cycles/${cycleId}/filtering`, { params }), params).then((envelope) => ({
+    return read(
+      'list',
+      () => apiClient.get(`/award/cycles/${cycleId}/filtering`, { params }),
+      params,
+    ).then((envelope) => ({
       ...envelope,
       data: (envelope.data ?? []).map(toFilteringRow),
       meta: toFilteringMeta(envelope.meta),
@@ -22,14 +26,31 @@ export const filteringService = {
   },
 
   get(cycleId, assessmentId) {
-    return mapData(read('get', () => apiClient.get(base(cycleId, assessmentId))), toFilteringDetail)
+    return mapData(
+      read('get', () => apiClient.get(base(cycleId, assessmentId))),
+      toFilteringDetail,
+    )
   },
 
   qualify(cycleId, assessmentId, payload = {}) {
-    return mapData(write('qualify', () => apiClient.post(`${base(cycleId, assessmentId)}/qualify`, payload), payload), toFilteringRow)
+    return mapData(
+      write(
+        'qualify',
+        () => apiClient.post(`${base(cycleId, assessmentId)}/qualify`, payload),
+        payload,
+      ),
+      toFilteringRow,
+    )
   },
 
   disqualify(cycleId, assessmentId, payload) {
-    return mapData(write('disqualify', () => apiClient.post(`${base(cycleId, assessmentId)}/disqualify`, payload), payload), toFilteringRow)
+    return mapData(
+      write(
+        'disqualify',
+        () => apiClient.post(`${base(cycleId, assessmentId)}/disqualify`, payload),
+        payload,
+      ),
+      toFilteringRow,
+    )
   },
 }

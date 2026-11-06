@@ -1,0 +1,240 @@
+@use '../mixins' as *;
+
+.transfer-panel {
+  @include flex(column, stretch, flex-start, var(--space-5));
+}
+
+.transfer-panel__header {
+  @include flex(row, center, space-between, var(--space-3));
+  flex-wrap: wrap;
+  padding-block-end: var(--space-4);
+  border-block-end: var(--border-width) solid var(--theme-border);
+}
+
+.transfer-panel__title {
+  margin: 0;
+  font-size: var(--fs-2xl);
+  color: var(--theme-heading);
+}
+
+.transfer-panel__steps {
+  @include flex(column, stretch, flex-start, var(--space-6));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.transfer-step {
+  @include flex(column, stretch, flex-start, var(--space-4));
+
+  & + & {
+    padding-block-start: var(--space-5);
+    border-block-start: var(--border-width) solid var(--theme-border);
+  }
+}
+
+.transfer-step__title {
+  @include flex(row, center, flex-start, var(--space-3));
+  margin: 0;
+  font-size: var(--fs-lg);
+  color: var(--theme-heading);
+}
+
+.transfer-step__number {
+  @include flex-center;
+  inline-size: var(--size-transfer-step-marker);
+  block-size: var(--size-transfer-step-marker);
+  border-radius: var(--radius-circle);
+  background-color: var(--theme-accent-soft);
+  color: var(--theme-accent-text);
+  font-family: var(--font-latin);
+  font-size: var(--fs-sm);
+}
+
+.transfer-step__hint {
+  margin: 0;
+  color: var(--theme-warning-text);
+  font-size: var(--fs-sm);
+}
+
+.transfer-step__alert {
+  @include flex(row, center, flex-start, var(--space-2));
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--color-danger-soft);
+  color: var(--theme-danger-text);
+  font-size: var(--fs-sm);
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.account-choice {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+
+  @include respond-to('md') {
+    grid-template-columns: repeat(auto-fit, minmax(var(--size-account-card-min), 1fr));
+  }
+}
+
+.account-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-surface);
+  cursor: pointer;
+  min-block-size: var(--size-touch-target);
+
+  &.is-selected {
+    border-color: var(--theme-accent-text);
+    border-width: var(--border-width-thick);
+    background-color: var(--theme-accent-soft);
+  }
+
+  &.is-unavailable {
+    border-color: var(--color-warning);
+  }
+
+  &:has(.account-card__input:focus-visible) {
+    @include focus-ring;
+  }
+}
+
+.account-card__input {
+  @include visually-hidden;
+}
+
+.account-card__radio {
+  inline-size: var(--space-5);
+  block-size: var(--space-5);
+  border: var(--border-width-thick) solid var(--theme-input-border);
+  border-radius: var(--radius-circle);
+  background-color: var(--theme-surface);
+
+  .is-selected & {
+    border-color: var(--theme-accent);
+    background-color: var(--theme-accent);
+    box-shadow: inset 0 0 0 var(--border-width-thick) var(--theme-surface);
+  }
+}
+
+.account-card__text {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+}
+
+.account-card__bank {
+  font-weight: var(--fw-bold);
+  color: var(--theme-heading);
+}
+
+.account-card__holder {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}
+
+.account-card__last4 {
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.account-card__warning {
+  @include flex(row, center, flex-start, var(--space-1));
+  color: var(--theme-warning-text);
+  font-size: var(--fs-xs);
+}
+
+.account-card__icon {
+  color: var(--theme-accent-text);
+}
+
+.transfer-details {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.transfer-details__rows {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: 1fr;
+  margin: 0;
+
+  @include respond-to('md') {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.copy-row {
+  @include flex(column, stretch, flex-start, var(--space-1));
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface-raised);
+
+  @include respond-to('md') {
+    &.copy-row--wide {
+      grid-column: 1 / -1;
+    }
+  }
+}
+
+.copy-row__label {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}
+
+.copy-row__body {
+  @include flex(row, center, space-between, var(--space-3));
+  margin: 0;
+}
+
+.copy-row__value {
+  min-inline-size: 0;
+  font-weight: var(--fw-bold);
+  color: var(--theme-heading);
+  overflow-wrap: anywhere;
+}
+
+.copy-row__value--latin {
+  font-family: var(--font-latin);
+}
+
+.transfer-details__status {
+  @include visually-hidden;
+}
+
+.transfer-details__guidance {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  margin: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--color-info-soft);
+  color: var(--theme-text);
+  font-size: var(--fs-sm);
+  list-style: none;
+
+  li {
+    @include flex(row, flex-start, flex-start, var(--space-2));
+  }
+
+  .app-icon {
+    color: var(--theme-info-text);
+    flex-shrink: 0;
+  }
+}
+
+.transfer-panel__submit {
+  @include flex(row, center, flex-start, var(--space-4));
+  flex-wrap: wrap;
+}
+
+.transfer-panel__hint {
+  margin: 0;
+  color: var(--theme-text-muted);
+  font-size: var(--fs-sm);
+}

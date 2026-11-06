@@ -262,6 +262,38 @@ final class Assessment extends Model
 
     /**
      * @param  Builder<self>  $query
+     * @param  list<string>  $maskedStatuses
+     */
+    #[Scope]
+    protected function openForViewer(Builder $query, array $maskedStatuses): void
+    {
+        $query->where(static fn (Builder $visible): Builder => $visible
+            ->open()
+            ->orWhere(static fn (Builder $masked): Builder => $masked
+                ->where('path', AssessmentPath::Advanced)
+                ->whereIn('status', $maskedStatuses)
+                ->whereDoesntHave('awardCycle', static fn (Builder $cycle): Builder => $cycle->whereNotNull('announced_at'))));
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function exposingResult(Builder $query): void
+    {
+        $query->whereNotNull('current_result_snapshot_id')->where(static function (Builder $byPath): void {
+            foreach (AssessmentPath::cases() as $path) {
+                $byPath->orWhere(static fn (Builder $results): Builder => $results
+                    ->where('path', $path)
+                    ->whereIn('status', $path->resultStateValues())
+                    ->when($path->publishesResultsOnAnnouncement(), static fn (Builder $announced): Builder => $announced
+                        ->whereHas('awardCycle', static fn (Builder $cycle): Builder => $cycle->whereNotNull('announced_at'))));
+            }
+        });
+    }
+
+    /**
+     * @param  Builder<self>  $query
      */
     #[Scope]
     protected function followingCriteriaEdits(Builder $query): void
@@ -348,7 +380,7 @@ final class Assessment extends Model
 
     public function exposesResult(): bool
     {
-        return $this->hasResult() && $this->status->exposesResult() && (! $this->isAdvanced() || $this->isAnnounced());
+        return $this->hasResult() && $this->status->exposesResult() && (! $this->path->publishesResultsOnAnnouncement() || $this->isAnnounced());
     }
 
     public function isAnnounced(): bool

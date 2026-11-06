@@ -17,6 +17,7 @@ contracts live in the repository root (`CLAUDE.md`, `references/`, `agents/analy
 | Errors | Ignition locally; self-hosted GlitchTip through `sentry/sentry-laravel` (PII scrubbed) |
 | Headers | `SetSecurityHeaders` middleware + spatie/laravel-csp (`default-src 'none'; frame-ancestors 'none'`) |
 | Backups | spatie/laravel-backup (encrypted archive, disk from `BACKUP_DISK`) |
+| PDF documents | chrome-php/chrome 1.16.1 driving a pinned Chrome for Testing `chrome-headless-shell`; QR codes with bacon/bacon-qr-code 3.1.1 |
 | Quality | Pest 5 (architecture, unit, feature), Larastan level max, Pint, Rector, `composer audit` |
 
 ## Setup
@@ -46,12 +47,14 @@ refuses to start without `DB_PASSWORD` and `REDIS_PASSWORD`; it contains no defa
    `DB_CONNECTION=pgsql`, `DB_HOST=127.0.0.1`, `DB_PORT=5432`, `DB_DATABASE=moashir`, `DB_USERNAME`,
    `DB_PASSWORD`, `SESSION_DRIVER=database`, `SESSION_SECURE_COOKIE=false`, `CACHE_STORE=database`,
    `QUEUE_CONNECTION=database`, `MAIL_MAILER=log`, `MAIL_FROM_ADDRESS`, `SMS_PROVIDER=fake`, and, without a local
-   clamd or PDF library, `FILES_SCANNER=fake` and `PDF_RENDERER=fake` (local only, see "Local-only fakes").
+   clamd, `FILES_SCANNER=fake` (local only, see "Local-only fakes"). PDFs: `PDF_RENDERER=fake` (placeholder files) or
+   `PDF_RENDERER=chromium` with `PDF_CHROME_BINARY` pointing to a local `chrome-headless-shell` of the pinned version
+   (`npx @puppeteer/browsers install chrome-headless-shell@<version>` or the Chrome for Testing zip), see "PDF documents".
 4. `composer install && php artisan key:generate && php artisan migrate --seed`
 5. `php artisan serve` and, in another terminal, `php artisan queue:work` (OTP, invitations and alerts
    are queued; with `MAIL_MAILER=log` the messages appear in `storage/logs/laravel.log`).
 
-`migrate --seed` loads the code-defined permission catalog (83 keys, 9 roles), the curated breached-password
+`migrate --seed` loads the code-defined permission catalog (88 keys, 9 roles), the curated breached-password
 seed (see below), publishes criteria version 1 (see "Criteria") and installs the 13 regions with their cities (see
 "Entities"). In `local` only it also
 creates fictional staff accounts (`*@moashir.example.sa`, no password): sign in with the e-mail OTP
@@ -103,20 +106,28 @@ variable switches it off, and the table holds digests only, never a password. Ma
   this repository, no third-party content, so it ships under the project licence. Loaded by `BreachedPasswordSeeder`
   (part of `db:seed`, idempotent) in local and testing. Seeding is refused in staging and production, so there the
   same file is loaded with the import command below (`--format=sha256`).
-- **Full list** — the operator loads a larger freely licensed list with the import command. Recommended source:
-  SecLists (MIT licence), `Passwords/Common-Credentials/`, e.g. `xato-net-10-million-passwords-1000000.txt`
-  (check the provenance note of the chosen file in the SecLists README before loading). Download it on an operator
-  workstation, copy it to the server over the approved secure channel, then run:
+- **Bundled breached list (Task-51, SEC-19)** — `database/data/breached-passwords/seclists-xato-top-1m-min12.sha256`:
+  46,296 SHA-256 digests, one per line, sorted. Source: SecLists (https://github.com/danielmiessler/SecLists),
+  file `Passwords/Common-Credentials/xato-net-10-million-passwords-1000000.txt` (the 1,000,000 most frequent
+  passwords of Mark Burnett's 2015 "ten million passwords" data set, which its author released to the public domain;
+  SecLists itself is MIT, © 2018 Daniel Miessler — the licence text ships beside the list as `SECLISTS-LICENSE.txt`).
+  Only entries of 12 to 128 characters are kept, because the policy refuses shorter or longer passwords anyway; so
+  the file covers every candidate of the top million that our policy could otherwise accept. Only digests are
+  committed, never a plain password. Built offline on 2026-11-04 from SecLists commit `c205c36` (file SHA-256
+  `424a3e03…0caf51`); rebuild = keep the lines of 12–128 UTF-8 characters, SHA-256 each line, sort, de-duplicate.
+- **Import** — one command for a single list or for the whole bundled directory:
 
   ```
+  php artisan moashir:breached-passwords:import database/data/breached-passwords     # every *.sha256 file of the directory
   php artisan moashir:breached-passwords:import /path/on/server/list.txt              # one password per line
   php artisan moashir:breached-passwords:import /path/on/server/list.sha256 --format=sha256   # one hex digest per line
   ```
 
-  The command streams the file in chunks of 1,000 lines, skips blank lines, ignores entries already listed (safe to
-  re-run) and reports `read / added / already listed / rejected`. Delete the plain-text file from the server after
-  the import. The large list is never committed to the repository. The Have I Been Pwned dataset is not used
-  (operator decision 2026-10-31: no Have I Been Pwned and no external service).
+  The command streams each file in chunks of 1,000 lines, skips blank lines, ignores entries already listed (safe to
+  re-run) and reports `file: read / added / already listed / rejected`. Deployments should import the directory (the
+  deploy kit imports `curated-seed.sha256` only until it switches to the directory form). Delete any plain-text file
+  from the server after an import. The Have I Been Pwned dataset is not used (operator decision 2026-10-31: no Have I
+  Been Pwned and no external service).
 
 ## Environment variables
 
@@ -128,7 +139,6 @@ variable switches it off, and the table holds digests only, never a password. Ma
 | `CORS_ALLOWED_ORIGINS` | Comma-separated SPA origins (same origin in production) |
 | `SANCTUM_STATEFUL_DOMAINS` | Hosts allowed to use the session cookie |
 | `SESSION_IDLE_SUPER_ADMIN_MINUTES`, `SESSION_IDLE_STAFF_MINUTES`, `SESSION_IDLE_ENTITY_MINUTES`, `SESSION_ABSOLUTE_HOURS` | Idle (15 / 30 / 60) and absolute (12 h) session timeouts |
-| `AUTH_LOGIN_EMAIL_PASSWORD`, `AUTH_LOGIN_EMAIL_OTP`, `AUTH_LOGIN_SMS_OTP` | Enabled sign-in modes |
 | `AUTH_OTP_EXPIRY_SECONDS`, `AUTH_OTP_RESEND_COOLDOWN_SECONDS`, `AUTH_OTP_MAX_ATTEMPTS` | OTP policy (300 s, 60 s, 5) |
 | `AUTH_LOCKOUT_MAX_ATTEMPTS`, `AUTH_LOCKOUT_MINUTES` | Lockout policy (5 attempts, 15 min) |
 | `AUTH_PASSWORD_RESET_TTL_MINUTES`, `AUTH_INVITATION_TTL_HOURS` | Reset link (60 min) and invitation (72 h) validity |
@@ -139,21 +149,26 @@ variable switches it off, and the table holds digests only, never a password. Ma
 | `SMS_PROVIDER` | `fake` keeps the in-memory gateway; honoured in `local` and `testing` only and refused elsewhere (the settings gateway is used and `platform.fake_adapter_refused` is logged as critical, see "Local-only fakes"); any other value uses the settings gateway, and `taqnyat` or `msegat` names the provider of the environment bootstrap |
 | `INTEGRATIONS_ENV_FALLBACK` | `true` lets the environment values below act as a bootstrap while no integration row exists for a kind (see "Integrations") |
 | `MOYASAR_ENV`, `MOYASAR_PUBLISHABLE_KEY`, `MOYASAR_SECRET_KEY`, `MOYASAR_WEBHOOK_SECRET` | Payment bootstrap (optional) |
+| `MOYASAR_FORM_SCRIPT_URL`, `MOYASAR_FORM_SCRIPT_INTEGRITY` | Moyasar form script handed to the SPA as `checkout.script { url, integrity }` (default URL `https://cdn.moyasar.com/mpf/1.15.0/moyasar.js`, no integrity); see "Checkout script and SRI" |
 | `TAQNYAT_API_TOKEN`, `TAQNYAT_SENDER`, `MSEGAT_USERNAME`, `MSEGAT_API_KEY`, `MSEGAT_SENDER` | SMS bootstrap (optional) |
 | `AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL` | AI provider bootstrap (optional, `openai` or `anthropic`) |
 | `SERVER_EGRESS_IPS` | Comma-separated public egress addresses of the server, shown on the settings screens for the providers' IP allow-lists |
 | `BACKUP_ARCHIVE_PASSWORD`, `BACKUP_DISK`, `BACKUP_NOTIFICATION_MAIL` | Encrypted off-server backups |
-| `HEALTH_ALLOWED_IPS` | Reserved for the internal readiness probe (next step) |
+| `HEALTH_ALLOWED_IPS` | Comma-separated addresses or CIDR ranges that receive the per-check details of `GET /health/ready` (monitoring host) |
+| `HEALTH_MIN_FREE_DISK_MB` | Free space below which the readiness disk check fails (default 1024) |
 | `FILES_DISK` | Laravel disk of uploaded and generated files (default `local` = `storage/app/private`, outside the web root) |
 | `FILES_SCANNER` | `fake` marks every file clean except the test signature; honoured in `local` and `testing` only and refused elsewhere (ClamAV is used and `platform.fake_adapter_refused` is logged as critical); unset = ClamAV |
 | `FILES_CLAMAV_SOCKET`, `FILES_CLAMAV_TIMEOUT_SECONDS` | clamd address (`unix:///var/run/clamav/clamd.ctl` or `tcp://127.0.0.1:3310`) and timeout (30 s) |
 | `FILES_ORPHAN_GRACE_HOURS` | Age after which a stored file never attached to an owner is purged (default 24 hours, see "File housekeeping") |
-| `PDF_RENDERER` | `fake` renders placeholder PDFs; honoured in `local` and `testing` only and refused elsewhere (logged like `FILES_SCANNER`); unset = no renderer yet, receipt downloads answer 503 `document.renderer_unavailable` |
+| `PDF_RENDERER` | `chromium` prints certificates, feedback reports and receipts with the headless shell below; `fake` renders placeholder PDFs, honoured in `local` and `testing` only and refused elsewhere (logged like `FILES_SCANNER`); unset = no renderer, downloads answer 503 `document.renderer_unavailable` |
+| `PDF_CHROME_BINARY` | Absolute path of the pinned Chrome for Testing `chrome-headless-shell` binary (server: `/opt/moashir/chrome-headless-shell/current/chrome-headless-shell-linux64/chrome-headless-shell`); a missing or non-executable path keeps the renderer unavailable and logs `documents.chrome_binary_unusable` (critical) |
+| `PDF_RENDER_TIMEOUT_SECONDS` | Timeout of each browser step while printing (default 60) |
 | `ASSESSMENT_SCALE_KIND` | Assessment scale copied into a criteria version when it is published: `of_10` (default) or `relative`; seam until the Settings domain stores it |
 | `ENTITY_EMAIL_CHANGE_POLICY` | Official e-mail change of an entity: `requires_approval` (default) or `immediate_notify` (Q-103); seam until the Settings domain stores it |
 | `ENTITY_VERIFICATION_REMINDER_COOLDOWN_MINUTES` | Minimum time between two verification reminders of the same unverified registration (default 15) |
 | `APP_DEMO_DATA` | `true` allows `moashir:demo:install` and `moashir:demo:rotate-passwords` (review / demo environments only, see "Demo data") |
-| `SESSION_COOKIE` | Session cookie name; distinct per environment when two environments share a parent domain |
+| `MOASHIR_DEMO` | Demo posture opt-in of the deploy kit (Task-52). Outside `local` / `testing` the demo commands also need `MOASHIR_DEMO=true`; in `production` without it the `log` / `array` mailers are refused (see "Mail posture") |
+| `SESSION_COOKIE` | Session cookie base name, distinct per environment; it gets the `__Host-` prefix automatically when the cookie is secure, host-only (`SESSION_DOMAIN` empty) and on `/` (see "Session cookie") |
 | `HORIZON_PREFIX`, `HORIZON_MAX_PROCESSES` | Horizon Redis key prefix and worker cap (staging default 3, production default 10) |
 | `MAIL_LOG_CHANNEL`, `MAIL_LOG_DAYS` | With `MAIL_MAILER=log`: the `mail` channel writes messages to `storage/logs/mail-<date>.log` (mode 600, default 7 days) |
 
@@ -185,11 +200,16 @@ their Laravel meaning. Production must use `APP_ENV=production`, `APP_DEBUG=fals
 | Method | Path | Ability / limiter |
 |---|---|---|
 | GET | `/health` | public, `throttle:public` |
+| GET | `/health/ready` | public status; details to `HEALTH_ALLOWED_IPS` or a System Administrator, `throttle:public` |
 | GET | `/auth/login-modes` | public |
-| POST | `/auth/login` (`mode: password \| otp`) | public, `throttle:login` (5/min per e-mail + IP) |
-| POST | `/auth/otp/request`, `/auth/otp/verify`, `/auth/otp/resend` | public, OTP limiters |
+| POST | `/auth/login` (`identifier` + `password`) | public, `throttle:login` (5/min per identifier + IP, 20 per 10 min per identifier, 30/min per IP) |
+| POST | `/auth/otp/request` (`identifier`, entity sign-in code) | public, `throttle:otp-request` (3 per 10 min per identifier, 10 per 10 min per IP) + per-account limits |
+| POST | `/auth/otp/verify`, `/auth/otp/resend` | public, `throttle:otp-verify` / `throttle:otp-resend` + per-account limits |
 | POST | `/auth/mfa/challenge` | pending sign-in, `throttle:mfa` |
-| POST | `/auth/mfa/enroll`, `/auth/mfa/confirm` | pending enrolment or signed in |
+| POST | `/auth/mfa/enroll`, `/auth/mfa/confirm` | pending enrolment, or signed in under `session.timeouts` (+ `current_password` to start); 403 `forbidden` for entity accounts (`identity.mfa.enroll`) |
+| POST | `/me/phone/verification`, `/me/phone/verification/confirm` | signed in, `throttle:sensitive` |
+| GET / PUT | `/settings/auth` | `settings.auth.manage` (System Administrator only, locked), `throttle:sensitive` on PUT |
+| GET / POST | `/audit-logs`, `/audit-logs/{id}`, `/audit-logs/export` | `audit.view` / `audit.export` |
 | POST | `/auth/password/forgot`, `/auth/password/reset` | public, `throttle:password-reset` |
 | POST | `/auth/invitations/{token}/accept` | public, `throttle:invitation` |
 | GET | `/auth/session` | signed in |
@@ -198,6 +218,7 @@ their Laravel meaning. Production must use `APP_ENV=production`, `APP_DEBUG=fals
 | GET / PATCH | `/me/preferences` | signed in |
 | GET / DELETE | `/me/sessions`, `/me/sessions/{session}` | signed in (own sessions only) |
 | GET | `/me/profile/permissions` | signed in |
+| PUT | `/users/{id}/assessor-qualifications`, `/users/{id}/request-scope` | `can:update,managedUser` (`users.manage`), `throttle:sensitive` |
 | POST | `/me/email/change`, `/me/email/confirm` | Super Admin only |
 | GET / POST | `/users` | `users.view` / `users.manage` |
 | GET / PUT | `/users/{user}` | `users.view` / `users.manage` |
@@ -208,6 +229,135 @@ their Laravel meaning. Production must use `APP_ENV=production`, `APP_DEBUG=fals
 | GET | `/search?q=&limit=` | `search.global` (any search provider available), `throttle:search` (60/min per user) |
 
 Super Admin accounts answer 404 on every `/users/{user}` path for every caller and never appear in lists.
+
+### Sign-in, sign-in codes and lockout (Task-51, Task-61; client decision 2026-11-05 supersedes SEC-12 revised)
+- **Two ways in for an entity, one for staff.** An entity account signs in with its identifier and password
+  (`POST /auth/login`) OR with a one-time sign-in code (`POST /auth/otp/request` then `POST /auth/otp/verify`). There is
+  no second factor for entity accounts. Staff and the Super Admin sign in with the password followed by the mandatory
+  authenticator app (TOTP); they never receive a sign-in code.
+- **Password sign-in.** `POST /auth/login { identifier, password }`. The type of `identifier` is detected by its format
+  (`Support\ValueObjects\SignInIdentifier`, rule `Rules\RecognisedSignInIdentifier`, shared by both endpoints): an e-mail
+  (contains `@`, lower-cased); a Saudi mobile number (`05XXXXXXXX`, `5XXXXXXXX`, `+9665…`, `9665…`, `009665…`, spaces
+  and dashes ignored, normalised to `+9665XXXXXXXX`); or the entity's unified national number (10 digits starting with 7,
+  resolves to the entity's owner account). Anything else is 422 on `identifier` (format message, says nothing about
+  accounts). Every failure — unknown account, wrong password, unverified mobile, account without a password — answers
+  the same 422 `credentials.invalid`; the timing is equalised with a dummy hash. The previous form's `email` field is
+  still accepted as an alias of `identifier` on this endpoint only (transitional; remove
+  `LoginRequest::LEGACY_EMAIL_FIELD` once no client sends it); `mode` / `channel` are ignored. Outcome: an active entity
+  → `step: authenticated` directly (`method: password`); a pending-verification entity → `step: otp_required` with its
+  registration code by e-mail (purpose `login`); staff / Super Admin → `mfa_challenge` or `mfa_enrollment`.
+- **Mobile sign-in needs a verified, unique number.** `users.phone` stays encrypted; `users.phone_index` holds a keyed
+  blind index (HMAC-SHA256 with a key derived from `APP_KEY`, purpose-separated, `Services\Identity\BlindIndex`),
+  recomputed by `Observers\Identity\UserPhoneIndexObserver` whenever the number changes (a change also clears
+  `phone_verified_at`). A partial unique index allows each number once among verified, non-deleted accounts
+  (`users_verified_phone_index_unique`); unverified duplicates are allowed so nobody can block someone else's number by
+  typing it. A signed-in user verifies the stored number by SMS: `POST /me/phone/verification` → `OtpChallenge`
+  (channel `sms`; 409 `phone.missing` / `phone.already_verified`, 503 `phone.sms_unavailable` — never an e-mail
+  fallback), then `POST /me/phone/verification/confirm { challenge_id, code }` → `{ phone_verified, phone_verified_at }`
+  (409 `phone.in_use` when another account already verified it). The own entity resource shows `phone_verified`. After
+  rotating `APP_KEY`, run `php artisan moashir:identity:rebuild-phone-index` (the migration that adds the column runs
+  the same backfill).
+- **Sign-in code request.** `POST /auth/otp/request { identifier }` (`Actions\Identity\RequestSignInCode`) always answers
+  `200 { step: "otp_required", requires_otp: true, otp: { challenge_id, channel, length, expires_at,
+  resend_available_at }, message }` with `message` = `messages.sign_in_code_sent` ("If an entity account matches what
+  you entered, a sign-in code has been sent."). The only other answers are 422 (identifier format, same message as
+  `/auth/login`) and 429 `rate_limited`; never 403, 404, 423 or 429 `otp.cooldown`, and never a destination.
+  - Channel rule R-CH (`Services\Identity\SignInCodeChannelResolver`): the code follows what was typed. A mobile number
+    gets an SMS when SMS is allowed in `auth.entity_sign_in_code_channels`, the SMS gateway is available
+    (`SmsAvailability`) and the hourly sign-in SMS cap (`moashir.auth.otp.sign_in_sms_per_hour`, default 100,
+    `Services\Identity\SignInSmsCap`) is not reached; otherwise e-mail. An e-mail or a unified national number always
+    gets an e-mail to the official address. The channel is computed from the input and global state only, before the
+    account is looked at, so a decoy gets the same `channel` as a real account.
+  - Eligibility (`Services\Identity\SignInCodeEligibility`, verdict enum `SignInCodeVerdict`): an active entity account
+    (status active, not locked, entity active, under the per-account limits) gets a code with purpose `sign_in_code`;
+    a pending-verification entity gets its registration code (purpose `login`) by e-mail whatever the setting. Everyone
+    else gets a decoy challenge (`DecoyOtpChallenges`, the channel is stored with it) and nothing is sent: unknown
+    identifier, staff, Super Admin, suspended or deactivated account, deleted entity, locked account, per-account limit
+    reached. The request is recorded as `authentication_events.type = otp_request_ignored` with `meta.reason` =
+    `unknown | not_entity | inactive | locked | throttled` (unknown identifiers as `identifier_type` + keyed hash).
+  - SMS only goes to a verified mobile: `IssueOtpChallenge` texts an unverified number only for `verify_phone`; any other
+    purpose falls back to e-mail. A permanent SMS failure falls back to e-mail and raises INT-01 (`FallsBackToMail`).
+    Decoys read the hourly cap but never use it up. The SMS body is the existing `otp_code` template.
+- **Verify and resend.** `POST /auth/otp/verify { challenge_id, code }` accepts the purposes `login` and `sign_in_code`
+  (a `sign_in_code` challenge whose user is not an entity account answers `otp.challenge_invalid`). A `sign_in_code`
+  success signs the entity in through `EstablishSession` (session regenerated, failed counter reset) and records
+  `login_success` with `meta { method: "sign_in_code", channel }`; it never touches `email_verified_at`. A `login`
+  success verifies the e-mail, activates a pending entity and signs it in (`method: otp`). `POST /auth/otp/resend`
+  (60 s cooldown, 429 `otp.cooldown`) issues a new code on the stored channel and voids the old one; SMS falls back to
+  e-mail when it is no longer allowed or available, the cap is reached, or the mobile is no longer verified. A decoy
+  resend keeps its stored channel under the same global fallbacks.
+- **Entity sign-in code channels = a control-panel setting** `auth.entity_sign_in_code_channels` (json list of
+  `email` / `sms`, default `["email"]`): `GET /settings/auth` → `{ entity_sign_in_code_channels: ["email"] |
+  ["email","sms"], sms_status: "unavailable" | "test" | "live", staff_totp_required: true }`; `PUT /settings/auth {
+  entity_sign_in_code_channels, reason? }`. Validation: required non-empty list, distinct, values `email` / `sms`;
+  e-mail must stay in the list (422 `entity_sign_in_code_channels` "E-mail must stay allowed…", operator Q-151); `sms`
+  is refused while the SMS gateway is not configured (422 "Configure the SMS gateway…"). A saved `sms` stays when the
+  gateway later disappears; R-CH then uses e-mail. `settings.auth.manage` is hard-locked to the System Administrator
+  (Super Admin by bypass with a `reason` of 10..1000, else 422 `reason_required`, plus SEC-04). A real change is audited
+  (`settings.auth_updated`, lists before / after, reason) and raises **SEC-07 "Entity sign-in code channels changed"**
+  to every System Administrator, every Super Admin and the security mailbox; no change writes and sends nothing.
+  Single-factor entity sign-in (password OR code) is a client-accepted deviation from NCA ECC 2-15-3-5 (handover
+  security matrix).
+- **Entity accounts cannot hold an authenticator.** `POST /auth/mfa/enroll` and `/auth/mfa/confirm` answer 403
+  `forbidden` for entity accounts (ability `identity.mfa.enroll`, `Policies\Identity\MfaEnrollmentPolicy`). Migration
+  `2026_11_05_140200` cleared the TOTP data of every entity account (one `mfa_disabled` event each, `meta.reason:
+  entity_second_factor_cancelled`). Staff enrolment is unchanged.
+- **One lockout for every factor (SEC-08, SEC-09).** Wrong passwords, wrong sign-in and registration codes and wrong TOTP /
+  recovery codes all increment the same `users.failed_login_attempts`; at 5 the account is locked 15 minutes (423
+  `account_locked` + `Retry-After`), `locked` is recorded, and USR-02 goes to the user and every System Administrator.
+  A locked account cannot verify a code or a TOTP from any session or address. A successful sign-in resets the counter.
+  Codes are also limited per account: 5 per 10 minutes and 20 per day (`otp.per_user_per_ten_minutes`,
+  `otp.per_user_per_day`; 429 `otp.cooldown` on password sign-in and resend, a silent decoy on `/auth/otp/request`), on
+  top of the per-address limiters. A locked account gets no sign-in code (decoy, reason `locked`); verify and resend
+  answer 423; the password path answers 423 (known pre-existing signal G-6, kept for the security matrix).
+- **Accounts without a password** (created from the console, e.g. the Super Admin before the first-password link is
+  used) cannot sign in; they set a password through `POST /auth/password/forgot` → the e-mailed reset link.
+- **MFA enrolment (SEC-23).** `POST /auth/mfa/enroll` and `/auth/mfa/confirm` run under `session.timeouts`; a
+  signed-in user must also send `current_password` to start an enrolment. The pending-sign-in enrolment of staff is
+  unchanged; entity accounts get 403 (above).
+- **`GET /auth/login-modes`** → `{ identifiers: ["email", "mobile", "unified_number"], code_channels: ["email"] |
+  ["email","sms"], otp_length, otp_expiry_seconds, resend_cooldown_seconds, sso_providers: [] }`. `code_channels` lists
+  the allowed channels that are also usable now (SMS only while allowed and the gateway is available). The
+  `AUTH_LOGIN_*` variables are gone.
+- **Historical audit values.** `authentication_events.meta.method = email_second_factor` and older
+  `settings.auth_updated` rows on `auth.entity_second_factor_enabled` stay untouched (append-only); they describe the
+  retired Task-51 entity second factor.
+- **Failed attempts on unknown accounts (SEC-18).** `authentication_events` keeps `identifier_type` and
+  `identifier_hash` (HMAC-SHA256, keyed, purpose `sign_in_identifier`) instead of the typed address or number; new rows
+  never fill `email_attempted`. Retention: the table is append-only for the application role (trigger + grants); only
+  the maintenance DB role may delete. Proposed periods (to be confirmed by the client's data office, then run as a
+  scheduled maintenance-role job — not built yet): rows about unknown identifiers 12 months (the NCA ECC 2-12 minimum
+  for security event logs), every other row with the audit trail (Q-76: archived encrypted after 5 years, then
+  removed). Rows written before Task-51 may still hold a clear `email_attempted`: they are removed by that job, or
+  earlier with the maintenance role on a data-subject request. An investigator compares the HMAC of a candidate
+  value; after an `APP_KEY` rotation older hashes no longer match.
+
+### Session cookie (SEC-21)
+`config/session.php` names the session cookie through `Support\Security\SessionCookieName`: when the cookie is
+`Secure`, has no `Domain` and uses path `/`, the configured name gets the `__Host-` prefix (for example
+`__Host-moashir_production_session`), so a sibling host such as the staging subdomain can never set or overwrite it;
+otherwise (local HTTP) the plain name is kept. Staging and production keep different names and, being host-only,
+separate cookies. The Sanctum CSRF flow is unchanged: the SPA still calls `GET /sanctum/csrf-cookie` and sends the
+`XSRF-TOKEN` cookie back as `X-XSRF-TOKEN` (that cookie keeps its name; a tossed value only fails the CSRF check).
+Nothing changes in the SPA; it never reads the session cookie.
+
+### Token redaction (SEC-17)
+Single-use tokens never reach the audit trail, the application logs or GlitchTip: `Support\Security\SensitiveUrl`
+replaces the token of `/auth/invitations/{token}` and `/auth/reset-password/{token}` and any path segment of 32+
+random characters with `[redacted]`. It is applied to `audits.url` (`AuditRecorder`, `UrlWithoutQueryResolver`), to
+every application log channel (`tap` `RedactSensitiveLogData`, message and context; the demo-only `mail` channel of the
+`log` mailer is left as is), and to GlitchTip events and transactions (`SentryEventScrubber`, also
+`before_send_transaction`). The Nginx access log is masked by the deploy kit (Task-52).
+
+### Database guards and the console context (SEC-27, residual risk)
+The triggers that protect `users.is_super_admin`, entity erasure and criteria corrections accept a change only inside
+a transaction that set `moashir.console_context` / `moashir.entity_erasure` / the criteria flag with `set_config`.
+The application DB role can set those values too, so the guards stop application bugs (any code path other than the
+dedicated writer) but not SQL injection or a stolen application DB password. No simple, safe fix exists inside the
+application: a real separation needs a dedicated `moashir_console` DB role used only by these console commands, with
+the triggers testing `current_user`, and credentials held outside the web / worker processes (deploy-kit change,
+proposed for the in-Kingdom host). Mitigations today: bound queries only (no SQL concatenation), Super Admin cap and
+SEC-03 alert on every console grant, append-only audit rows, least-privilege `production-roles.sql`.
 
 ### Global search
 
@@ -389,20 +539,24 @@ php artisan moashir:criteria:install-seed     # idempotent: skipped as soon as a
   civil_foundation | waqf`), `development_sector`, `org_size`, `founding_year`, `region_id`, `city_id`,
   `governance_grade` (NCNP percentage `numeric(5,2)`, 0–100, sent as a decimal string `"87.45"`), `employees_count`,
   `annual_beneficiaries_count`, `has_strategic_plan`, `status` (`pending_verification | active | deactivated`),
-  consent and lifecycle timestamps, soft delete (`deleted_at` = "Deleted entities"), `anonymized_at` (erased tombstone).
-  Every value is guarded by a CHECK constraint. The human reference is `ENT-` + the zero-padded id (`ENT-000014`).
+  consent and lifecycle timestamps, soft delete (`deleted_at` = "Deleted entities"), `anonymized_at` (erased tombstone),
+  and since Task-47 the registry details `license_number`, `founded_on`, `website_url` and the logo reference
+  `logo_file_id` (see "Registry details and logo"). Every value is guarded by a CHECK constraint. The human reference is
+  `ENT-` + the zero-padded id (`ENT-000014`).
 - One login per entity: the single `users` row with `users.entity_id` (unique, now a foreign key). The authorized
   person's name, the official e-mail and the mobile number live on that user only (single source of truth).
 - `entity_profile_changes`: one row per changed profile field (old and new value, actor). Append-only: the model
   refuses updates and deletes, a trigger rejects UPDATE and TRUNCATE, and DELETE is accepted only inside the
   permanent-deletion transaction (`moashir.entity_erasure` session flag). Only the business fields of
   `EntityProfileField` are recorded (name, classification, founding year, region, city, governance grade, counts,
-  strategic plan); the authorized person, the official e-mail and the mobile number are never part of the history.
+  strategic plan, licence number, founding date, website); the authorized person, the official e-mail, the mobile
+  number and the logo are never part of the history (logo changes are audited instead).
 - `privacy_requests`: PDPL data-subject requests (`access | correction | deletion`, `open → fulfilled | rejected`).
 - `email_change_requests` (Identity table) now also carries entity requests (`entity_id`).
 
 ### Registration and sign-in
-`POST /auth/register` creates the entity (`pending_verification`) and its owner (role `entity`, password through
+`POST /auth/register` creates the entity (`pending_verification`, with its mandatory `unified_number` — format and
+duplicate answer 422 on `unified_number`, see "Registry details and logo") and its owner (role `entity`, password through
 `PasswordPolicy` with the local breached list), records the acceptance of every CURRENT terms version (`terms` and,
 when published, `privacy`), records the explicit marketing opt-in (unticked by default) and sends a sign-in OTP to the
 official e-mail. The response is always `201 { step: otp_required, requires_otp, otp{challenge_id, …}, message }`;
@@ -410,8 +564,10 @@ an e-mail that is already used gets the same answer with a decoy challenge and n
 (anti-enumeration). Registration answers 503 `registration.terms_unavailable` while no terms version is published.
 
 Verifying that OTP through the existing `POST /auth/otp/verify` activates the entity (REG-03 when the profile is
-incomplete) and signs it in. A pending entity that signs in with its password receives a new OTP
-(`step: otp_required`). A deactivated entity gets 403 `account_deactivated`; a deleted entity gets the generic
+incomplete) and signs it in. A pending entity that signs in with its password, or asks for a sign-in code, receives a
+new registration OTP by e-mail (`step: otp_required`). A verified entity then signs in with its e-mail, verified mobile
+or unified national number plus the password, or with a one-time sign-in code (see "Sign-in, sign-in codes and
+lockout"). A deactivated entity gets 403 `account_deactivated`; a deleted entity gets the generic
 `credentials.invalid`; neither receives OTP codes. Identity reaches the Entities domain only through the
 `App\Contracts\Identity\EntityAccounts` contract (standing, verification, session summary). `GET /auth/session` now
 returns `entity: { id, reference, name{ar,en}, status, profile_completed }` for entity users. Unverified registrations
@@ -447,6 +603,60 @@ returned. The staff endpoint adds `changed_by_staff: { name, roles: [{ key, labe
 (`null` otherwise; current roles of the author, loaded with one query per page); an author who no longer exists or is a
 Super Admin shows `name: null` and `roles: []`. The entity's own endpoint never carries `changed_by_staff` (operator,
 session 12).
+
+### Registry details and logo (Task-47, operator decision Q-133)
+Data dictionary (all on `entities`, migration `2026_11_04_120100`; no personal data — PDPL does not apply to these
+organisation attributes; retention = the entity's lifetime, cleared by the permanent deletion):
+
+| Column | Type | Rule | NDMO class |
+|---|---|---|---|
+| `unified_number` | `varchar(10)` null (Task-51) | «الرقم الوطني الموحد»: exactly 10 Western digits starting with 7 (`Support\ValueObjects\UnifiedNumber`); CHECK `^7[0-9]{9}$`; UNIQUE across all entities (soft-deleted included) through `entities_unified_number_unique … WHERE unified_number IS NOT NULL`. MANDATORY: required by `POST /auth/register`; editable in `PUT /entities/me` and the staff `PUT /entities/{entity}` with the same "absent = unchanged" rule, but never clearable (`null` / `""` → 422); a REQUIRED `profile_completion` item, so entities registered before Task-51 are nudged to add it; accepted as a sign-in identifier (resolves to the owner account); cleared by the permanent deletion | P (public registry data of the organisation; not personal data) |
+| `license_number` | `varchar(20)` null | Western digits only, 3–20 characters (leading zeros kept, e.g. `000123`); CHECK `^[0-9]{3,20}$`; UNIQUE across all entities (soft-deleted included) through the partial index `entities_license_number_unique … WHERE license_number IS NOT NULL` | P (public registry data) |
+| `founded_on` | `date` null | 1900-01-01 … today in Asia/Riyadh; CHECK `>= 1900-01-01` AND `EXTRACT(YEAR FROM founded_on) = founding_year` | P |
+| `website_url` | `varchar(255)` null | `https://` only, normalised by `Support\ValueObjects\WebsiteUrl` (lower-case scheme and host, fragment dropped, bare `/` dropped, default port 443 dropped; no credentials, no other port, no IP or single-label host, no spaces or markup); CHECK `^https://`; never printed as a link in any PDF | P |
+| `logo_file_id` | `bigint` null → `stored_files.id` (restrict) | current logo; the file is purpose `entity_logo`, private disk, NDMO class `I` (internal) until it is printed on a certificate, which publishes it | I → P on a certificate |
+
+- **Founding year.** `founding_year` stays (compatibility, eligibility rules, filters). Whenever the entity has a founding
+  date — sent in the request or already stored — the server sets `founding_year` to its year; the year sent by the
+  client is then ignored. Clearing the date (`"founded_on": null`) lets the sent year apply again. One place:
+  `Entity::profileAttributesFrom()`, used by both profile writers and the registration.
+- **`PUT /entities/me` and `PUT /entities/{entity}` (staff) — absent = unchanged.** Both stay full replaces for every
+  other field, but for these three fields only: a key that is ABSENT from the body leaves the stored value untouched (so
+  an older client that does not know them never erases them); a key sent as `null` or `""` clears it; a value replaces
+  it. 422 `validation_failed` with `errors.license_number` / `errors.founded_on` / `errors.website_url`; a licence number
+  already registered for another entity answers the friendly `validation.custom.license_number.unique` message (also
+  when two requests race: the unique index violation is turned into the same 422). The registration form is unchanged
+  and ignores the three keys.
+- **Profile completion (B-04).** Required: `basic_data`, `account_owner`, `governance_grade`, `employees_count`,
+  `annual_beneficiaries_count`, `license_number`, `founded_on`; optional: `phone`, `website_url`, `logo`. `percent` =
+  floor(complete required / 7 × 100) (0, 14, 28, 42, 57, 71, 85, 100). `Entity::hasCompleteProfile()` stays the single
+  rule (`profile_completed`, `profile_completed_at`, Action Center `complete_profile`, REG-03 at verification). Existing
+  entities without a licence number or a founding date are incomplete, and every new registration is incomplete until
+  the profile adds them (REG-03 is sent at verification).
+- **Logo.** `POST /entities/me/logo` (multipart `file`) and `DELETE /entities/me/logo`. PNG or JPEG only (no SVG),
+  ≤ 2 MB, every side 200–2000 px (`moashir.entities.logo.*`): the Form Request checks the extension, the detected type,
+  the size and the dimensions; `Services\Entities\EntityLogoIntake` checks the magic bytes and dimensions again
+  (`Support\Files\RasterImage`), stores and scans the ORIGINAL through `FileIntake` (ClamAV; infected → 422
+  `file.infected`, removed, `file.infected_upload_refused` + INT-05; scanner down → 422 `file.scan_failed`), then
+  re-encodes the pixels with the PHP GD extension (`Services\Files\ImageReencoder`: no EXIF, text chunks, comments or
+  trailing payload survive; alpha kept), stores only the re-encoded file (`<ENT-reference>-logo.png|jpg`, random path
+  `files/entity-logo/YYYY/MM/<uuid>.<ext>`, attached to the entity) and removes the original. Pixels GD cannot decode →
+  422 `file.content_mismatch`. The swap runs under a row lock on the entity; the previous logo is removed after commit
+  unless an issued certificate keeps it (`Contracts\Entities\EntityLogoRetention`, implemented by
+  `Services\Certificates\CertificateLogoRetention`). `DELETE` is idempotent (200 with `logo: null`; only a real removal
+  is audited). Audits `entity.logo_uploaded` (`{ logo_file_id }` → `{ logo_file_id, mime_type, size_bytes, sha256 }`,
+  public ids only, never the content or the client file name) and `entity.logo_removed`. Policy: `can:updateOwn`
+  (`entity.profile.edit`), active entity only (409 `state.transition_illegal`); upload `throttle:uploads`, delete
+  `throttle:sensitive`.
+- **Reading the logo.** `OwnEntityResource` and `StaffEntityResource` expose `logo: { id, url, uploaded_at } | null`;
+  `url` is the usual `GET /files/{file}/download` link (signed, 5 minutes, bound to the viewer; fine as an `<img src>`),
+  served to the owner (`entity.profile.view`) and to staff allowed to view the entity (`EntityPolicy::viewLogo`), and
+  only for the CURRENT logo (another entity → 404). The Finance Officer's contact view has no logo. Logo downloads are
+  class I and are not audited one by one.
+- **Permanent deletion.** `EntityLogoEraser` (erasure step) clears `logo_file_id` and detaches every logo file that no
+  certificate keeps (the orphan purge removes it); the eraser also clears the three registry details.
+- Demo entities (`moashir:demo:install`) carry fictional licence numbers `880000101`–`880000103`, founding dates and
+  `example.sa` websites.
 
 ### Official e-mail change (Q-103)
 `POST /entities/me/email/change { new_email }` sends an OTP to the NEW address. `POST /entities/me/email/confirm
@@ -515,12 +725,13 @@ a request still waiting for its code is replaced by a new one. Addresses are mas
 | GET | `/regions` (active regions with active cities) | public, `throttle:public` |
 | GET | `/terms/current` (`{ terms, privacy }`) | public, `throttle:public` |
 | POST | `/auth/register` | public, `throttle:register` (5/hour per IP) |
-| GET / PUT | `/entities/me` | `entity.profile.view` / `entity.profile.edit` (own entity), PUT `throttle:sensitive` |
+| GET / PUT | `/entities/me` | `entity.profile.view` / `entity.profile.edit` (own entity), PUT `throttle:sensitive`; both answer `profile_completion { percent, items[{ key, is_complete, is_required }] }` (Task-46) and `license_number`, `founded_on`, `website_url`, `logo { id, url, uploaded_at } \| null` (Task-47); PUT: the three registry keys are "absent = unchanged" |
+| POST / DELETE | `/entities/me/logo` (POST multipart `file`) | `entity.profile.edit` (own, active entity); POST `throttle:uploads` → 201, DELETE `throttle:sensitive` → 200; both answer the own entity |
 | POST | `/entities/me/email/change`, `/entities/me/email/confirm` | `entity.profile.edit`; `throttle:email-change` (3/10 min) / `throttle:otp-verify` |
 | GET | `/entities/me/profile-changes` (`page`, `per_page`) | `entity.profile.view` (own entity) |
-| GET | `/entities` (`search`, `filter[status|region_id|city_id|entity_type|development_sector|org_size|trashed]`, `sort`, pagination, `meta.stats`) | `entities.view` (+ `entities.delete` for `filter[trashed]=only`) |
-| POST | `/entities/export` (same filters, CSV stream, audited, max 10,000 rows) | `entities.export` + full scope, `throttle:exports` (5/min) |
-| GET / PUT | `/entities/{entity}` (PUT = core data on behalf, `reason` required) | `entities.view` / `entities.manage` |
+| GET | `/entities` (`search`, `filter[status|region_id|city_id|entity_type|development_sector|org_size|level|trashed]`, `sort` incl. ±`level`, pagination, `meta.stats`; rows carry `level` + `level_certificate_number`, see "Excellence level on staff lists") | `entities.view` (+ `entities.delete` for `filter[trashed]=only`) |
+| POST | `/entities/export` (same filters incl. `filter[level]`, CSV stream, audited with the filters, max 10,000 rows) | `entities.export` + full scope, `throttle:exports` (5/min) |
+| GET / PUT | `/entities/{entity}` (PUT = core data on behalf, `reason` required; the three registry keys are "absent = unchanged"; the full staff view adds `license_number`, `founded_on`, `website_url`, `logo`) | `entities.view` / `entities.manage` |
 | GET | `/entities/{entity}/profile-changes` (`page`, `per_page`) | `entities.view` + full record scope (`EntityPolicy::viewProfileChanges`) |
 | POST | `/entities/{entity}/deactivate`, `/reactivate` (`reason`) | `entities.deactivate` / `entities.reactivate` |
 | POST | `/entities/{entity}/verification/resend` | `entities.verification.resend` |
@@ -544,12 +755,16 @@ State changes use `throttle:sensitive` (20/min) unless stated. Illegal transitio
 
 ```
 php artisan moashir:regions:install-seed     # idempotent: adds missing regions and cities, never overwrites edits
-php artisan moashir:terms:publish terms 2026-11 --ar=/path/terms-ar.txt --en=/path/terms-en.txt --publisher=<staff e-mail> [--effective-from=Y-m-d]
+php artisan moashir:terms:publish terms 2026-11 --ar=/path/terms-ar.md --en=/path/terms-en.md --publisher=<staff e-mail> [--effective-from=Y-m-d]
 php artisan moashir:terms:publish privacy 2026-11 --ar=… --en=… --publisher=…
+php artisan moashir:terms:publish privacy 2026-11-draft --publisher=<staff e-mail> [--effective-from=Y-m-d]
 ```
 
-The terms texts are supplied by the client; the command makes the new version current and audits it
-(`terms.published`). Authoring the texts in the back office belongs to the CMS domain.
+With `--ar` and `--en` the command creates a new version from the client's files (a leading `# ` line becomes the title,
+the rest is the rich text of "Legal texts and pages"; files with HTML markup are refused) and makes it current. Without
+both options it publishes the stored DRAFT with that label (created in the back office or by
+`moashir:legal:install-drafts`). Either way the previous current version is kept as `superseded` and the publication is
+audited (`terms.published`). Authoring the texts in the back office: section "Legal texts and pages (Task-49)".
 
 ## Assessments (build step 4: shared engine + self assessment)
 
@@ -592,7 +807,7 @@ writes the history row. Self: `— → draft` (start) · `draft → draft` (save
 
 | Method | Path | Ability / limiter | Notes |
 |---|---|---|---|
-| GET | `/assessments` (`filter[path|status|entity_id]`, `sort` = ±`created_at` / `submitted_at` / `completed_at`, pagination) | `assessment.history.view` | own entity; System Administrator and Requests Follower read every assessment (frozen ones only with `filter[entity_id]`) |
+| GET | `/assessments` (`filter[path|status|entity_id|is_open|has_result]`, `sort` = ±`created_at` / `submitted_at` / `completed_at`, pagination) | `assessment.history.view` | own entity; System Administrator and Requests Follower read every assessment (frozen ones only with `filter[entity_id]`); `is_open` / `has_result` = `true | false` with the meaning of the item fields `is_open` and `result` (Task-46); `meta.counts { total, open, with_result }` under the same scope and the `path` / `entity_id` filters, ignoring `status`, `is_open`, `has_result` |
 | POST | `/assessments` `{ path: "self" }` | `assessment.self.manage` (entity account), `throttle:sensitive` | 201; 409 `self.draft_exists` (`meta.assessment_id`); 404 `criteria.no_published_version`; 403 `assessment.entity_required` / `assessment.entity_not_active`; 409 `entity.deleted` |
 | GET | `/assessments/{assessment}` | `assessment.history.view` + record scope (404 outside it) | `{ id, number, path, status, is_open, is_frozen, criteria_update_in_progress, criteria_version_id, scale_kind, entity, result{ total, max_total, percent }|null, timestamps, status_history[] }` (`is_frozen`: the entity is soft-deleted; `criteria_update_in_progress`: a restore hold is pending, submission refused; `status_history`: see "Status history") |
 | GET | `/assessments/{assessment}/form` | same | `{ assessment, scale{ kind, maximum }, scores{ subs{ "<id>": { raw_value, percent } }, points{…} }, progress{ scored, required }, criteria, criteria_update|null }` (tree of the BOUND version; `criteria_update`: see "Criteria update summary") |
@@ -708,8 +923,8 @@ good releases the holds like the listener (`HandleFailedRestoreRebind`).
 
 The accredited path reuses the shared engine (state machine, versioned scores, `ScoringEngine`, result snapshots, freeze
 guard, criteria re-binding and the restore hold) and adds the paid opening, the entity form with CV entries and evidence,
-the Requests Follower queue, the assessor review and the Super Admin overrides. Advanced, Award, certificates, the
-feedback-report PDF and the Kit are not part of this step.
+the Requests Follower queue, the assessor review and the Super Admin overrides. The accredited certificate and the
+feedback report are described in "Certificates, feedback report and PDF documents".
 
 ### Data
 - `assessments` (path `accredited`, numbers `ACC-YYYY-######`): `payment_id` (the paid payment that opened the request,
@@ -770,7 +985,11 @@ force_transition`; `expire_completion` has no actor, `actor = system` in the his
 
 ### Entity side
 - `GET /assessments/accredited/current` → `{ awaiting_payment: { payment_id, reference, status, expires_at } | null, active:
-  Assessment | null, latest_closed: Assessment | null }`. The waiting-for-payment phase is the open accredited payment order.
+  Assessment + progress | null, latest_closed: Assessment | null }`. The waiting-for-payment phase is the open accredited payment order.
+  `active.progress` (Task-46) = `{ subs_total, subs_complete, remaining[{ sub_criterion_id, code, name{ar,en}, cv_missing,
+  attachments_required, attachments_uploaded }] }` while the request accepts entity content (`draft`, `needs_completion`),
+  otherwise `null`; same rules as submit (`SubmissionCoverage`), in `needs_completion` only the requested sub-criteria count;
+  `remaining` ordered by code.
 - `GET /assessments/{id}/form` (accredited) → `{ assessment, criteria (bound version), cv { "<sub id>": text }, evidence[],
   missing { missing_cv[], missing_attachments[] }, completion_request | null, upload_limits { max_file_mb, allowed_types[],
   max_files_per_sub }, criteria_update | null }`. No score is ever returned to the entity before completion; staff readers
@@ -791,21 +1010,28 @@ force_transition`; `expire_completion` has no actor, `actor = system` in the his
   Super Admin on behalf 422 `reason_required` + SEC-04, staff with read scope 403, everyone else 404.
 
 ### Follower queue and assignment
-- `GET /requests` — submitted accredited requests of operational entities (drafts and frozen requests never listed):
-  `filter[path]=accredited`, `filter[status]` (`submitted | assigned | under_review | needs_completion | completed |
+- `GET /requests` — submitted requests of operational entities of ONE path (drafts and frozen requests never listed; separate
+  queues per path, see "Path distinction"): `filter[path]` (default: the first path the caller follows, `accredited` first; a
+  path outside the caller's request scope answers 422), `filter[status]` (`submitted | assigned | under_review | needs_completion | completed |
   refunded | declined_incomplete`), `filter[overdue]=true|false`, `filter[assessor_id]`, `search` (request number, entity name or e-mail),
   `sort` ±`submitted_at | due_at | status | created_at` (default `-submitted_at`), pagination, `meta.stats { total, by_status,
-  overdue }`. Row: `{ id, number, path, status, is_frozen, entity{ id, reference, name, status }, assessor{ id, name } | null,
-  assigned_at, completion_deadline, submitted_at, due_at, is_overdue, completed_at }`.
+  overdue }` (for the served path), `meta.path` and `meta.path_counts[{ path, path_label{ar,en}, total, awaiting_assignment,
+  overdue }]` (one entry per followed path, independent of the other filters, for the sidebar). Row: `{ id, number, path,
+  path_label{ar,en}, status, is_frozen, entity{ id, reference, name, status, level }, assessor{ id, name } | null, assigned_at,
+  completion_deadline, submitted_at, due_at, is_overdue, completed_at }`.
 - `GET /requests/{id}` — row + `payment { paid }`, `record` (the assessment with `status_history`), `assignment_history[{ id,
   assessor{ id, name }, status, assigned_at, started_at, ended_at, assigned_by{ id, name }, reason, end_reason }]`,
   `completion_requests[]`. The assigned assessor (`requests.assigned.view`) sees only their own assignment rows, without
   `assigned_by`, reasons or staff names.
-- `GET /requests/assessors?assessment_id=&search=` — active staff holding `assessment.score.manage` (assessor role), never a
+- `GET /requests/assessors?assessment_id=&path=&search=` — active staff holding `assessment.score.manage` (assessor role) AND
+  qualified for the path of the request (`accredited` → qualification `accredited`, `advanced` → `advanced_initial`), never a
   Super Admin, never the caller (SoD-4), never the current assessor of the given request: `[{ id, name, open_requests }]`.
+  Without `assessment_id` the list follows `path` (default: the first followed path); an `assessment_id` that does not exist or
+  is outside the caller's request scope answers 422 (`errors.assessment_id`).
 - `POST /requests/{id}/assign { assessor_id, reason? }` (`submitted → assigned`) and `POST /requests/{id}/reassign {
   assessor_id, reason 10..1000 }` (status kept; previous assignment `reassigned` with the reason). 422 `assessor.invalid`,
-  `sod_self_assignment`, `assessor.same`; 409 on any other state. ACC-05 to the assessor (I+E) and the other Requests
+  `assessor.not_qualified` (`meta.required_qualification`, `meta.path`), `sod_self_assignment`, `assessor.same`; 409 on any other
+  state. ACC-05 to the assessor (I+E) and the other Requests
   Followers (I+E); on reassign the previous assessor is told in-app and loses access at once. The Super Admin must give a
   reason (SEC-04).
 - SLA: due date = submission + `assessment.accredited_review_sla_days` (default 14). A request is late when its due date is
@@ -816,9 +1042,11 @@ force_transition`; `expire_completion` has no actor, `actor = system` in the his
   paused due date of a frozen request is shifted the same way.
 
 ### Assessor work
-- `GET /requests/assigned?filter[tab]=new|in_progress|completed` — the caller's requests (current or completed assignment),
-  frozen ones excluded, ordered by due date: `{ id, number, path, status, entity{ …, region }, assigned_at, started_at,
-  completion_deadline, submitted_at, due_at, is_overdue, completed_at }`.
+- `GET /requests/assigned?filter[path]=accredited|advanced&filter[tab]=new|in_progress|completed` — the caller's requests of
+  ONE path (current or completed assignment), frozen ones excluded, ordered by due date: `{ id, number, path, path_label,
+  status, entity{ …, region }, assigned_at, started_at, completion_deadline, submitted_at, due_at, is_overdue, completed_at }`.
+  Default path: the first path of `meta.path_counts`. `meta.path` and `meta.path_counts[{ path, path_label, new, in_progress,
+  completed }]` list the paths the assessor is qualified for plus any path where they hold assignments.
 - `GET /assessments/{id}/review` — `{ assessment, scale, scores{ subs, points }, progress, mode: edit|read_only, submitted_at,
   due_at, is_overdue, completed_at, entity (summary + profile), criteria, cv, evidence[] (clean only), feedback{ "<sub id>": {
   strengths, improvement_points, notes } }, completion_request, context[] (latest other self / accredited result, for
@@ -830,7 +1058,8 @@ force_transition`; `expire_completion` has no actor, `actor = system` in the his
   improvement_points?, notes? } } }` (≤ 5,000 characters each, versioned, OPTIONAL — Session 18) · `POST
   /assessments/{id}/request-completion { notes 10..2000, items[{ sub_criterion_id, kind: cv|evidence, note? }] 1..100,
   deadline_at (future, ≤ 60 days), expiry_outcome: continue_as_submitted | decline (required) }` (`under_review →
-  needs_completion`, ACC-07 entity I+E, whose text states the outcome) · `POST /assessments/{id}/complete` (all items scored —
+  needs_completion`, ACC-07 entity I+E, whose text states the outcome) · `POST /assessments/{id}/complete { reason?,
+  issue_certificate?: bool = true }` (all items scored —
   422 `scores.incomplete`; feedback items are optional, an assessor may complete with scores only; computes the
   `accredited_result` snapshot, closes the assignment, ACC-08 entity + followers and ACC-10 entity). Scoring needs `under_review`; only the active assignee
   passes (`can:score` + a re-check under the row lock, 403 `assessment.not_assignee`). Every write: frozen 409 `entity.deleted`,
@@ -883,13 +1112,18 @@ No assessor identity is ever part of a result, the record or the form returned t
   `assessment.result_required`).
 
 ### Assessment settings (`/api/v1/settings/assessment`, `settings.assessment.manage`)
+The per-path settings (review SLA, upload limits, price, entity-facing texts) live in `/settings/assessment/paths/{path}` (see
+"Path distinction"). This section keeps its shape for backward compatibility: `accredited_review_sla_days` and
+`advanced_initial_review_sla_days` are the review SLA of the accredited and advanced paths; `upload_max_file_mb`,
+`evidence_allowed_types` and `evidence_max_files_per_sub` are ALIASES of the accredited path's upload limits (deprecated, to be
+removed once the SPA uses the per-path screen); `general_upload_max_file_mb` (new) is the shared `files.max_size_mb` used by
+non-evidence uploads (refund evidence).
 `GET` → `{ accredited_review_sla_days, accredited_review_sla_limits { min: 1, max: 120 }, upload_max_file_mb,
-evidence_allowed_types[], evidence_max_files_per_sub, evidence_type_catalog[], advanced_min_entity_age_years,
+evidence_allowed_types[], evidence_max_files_per_sub, evidence_type_catalog[], general_upload_max_file_mb, advanced_min_entity_age_years,
 advanced_disqualification_score, advanced_initial_review_sla_days, committee_entity_data_visibility }` (the three advanced keys are the defaults copied into a new
 award cycle: 3 years, "60.00", 14 days; 0..100 years, 0..100 with two decimals, 1..120 days). `PUT` is partial (same keys; types ⊂
 `pdf, docx, xlsx, pptx, jpg, png`, at least one; file size 1..100 MB; 1..50 files per sub-criterion; `reason` 10..1000,
-required for the Super Admin). Each changed key writes `settings.assessment_updated`. `upload_max_file_mb` is the shared
-`files.max_size_mb` (refund evidence included). `committee_entity_data_visibility` (`name_only` default | `code_only` |
+required for the Super Admin). Each changed key writes `settings.assessment_updated`. `committee_entity_data_visibility` (`name_only` default | `code_only` |
 `full`, Q-57) decides what a committee assessor sees of the entity (see "Award committee").
 
 ### Lifecycle hooks
@@ -902,10 +1136,10 @@ files so the daily orphan purge removes them; completed results stay on the eras
 
 ## Evidence files
 - `POST /assessments/{id}/evidence` (multipart `file`, `sub_criterion_id`, `attachment_key?`, `reason?`; `throttle:uploads`
-  30/min): owner, `evidence.manage`, state `draft` (or `needs_completion` for the requested items). The extension, the
-  server-detected MIME type and the magic bytes must match one of the allowed types of the settings (PDF, DOCX, XLSX, PPTX,
-  JPG, PNG by default; 422 `file.content_mismatch`); size ≤ `files.max_size_mb`; at most `files.evidence_max_files_per_sub`
-  files per sub-criterion (422 `attachment.sub_full`, `meta.max_files_per_sub`); the key must be a slot of the sub-criterion
+  30/min): owner, `evidence.manage`, state `draft` (or `needs_completion` for the requested items). The limits are those of the
+  request's PATH (`/settings/assessment/paths/{path}`): the extension, the server-detected MIME type and the magic bytes must
+  match one of the path's allowed types (PDF, DOCX, XLSX, PPTX, JPG, PNG by default; 422 `file.content_mismatch`); size ≤ the
+  path's `upload_max_file_mb`; at most the path's `evidence_max_files_per_sub` files (422 `attachment.sub_full`, `meta.max_files_per_sub`); the key must be a slot of the sub-criterion
   or of its guiding points (422 `attachment.key_invalid`). The file is stored `pending` on the private disk under a random
   name and `ScanStoredFileJob` is queued after commit (no in-request scan). Answer 201 `{ id (uuid), sub_criterion_id, code,
   attachment_key, file_name, mime_type, size_bytes, scan_status, uploaded_at }`.
@@ -952,6 +1186,8 @@ files so the daily orphan purge removes them; completed results stay on the eras
 | PUT | `/assessments/{assessment}/review/scores`, `/review/feedback` | `can:score`, `throttle:assessment-write` |
 | POST | `/assessments/{assessment}/scores/override`, `/reopen`, `/transition/force` | `can:override` (Super Admin only), `throttle:sensitive` |
 | GET / PUT | `/settings/assessment` | `can:settings.assessment-section.manage` (`settings.assessment.manage`), PUT `throttle:sensitive` |
+| GET / PUT | `/settings/assessment/paths/{accredited\|advanced}` | same ability (+ `settings.finance.edit-field` for `price`), PUT `throttle:sensitive` |
+| GET | `/content/assessment-paths/{accredited\|advanced}` | public, `throttle:public` |
 
 Notification links (SPA routes): entity `/assessment/accredited`, `/assessment/accredited/result/{id}`,
 `/assessment/accredited/result/{id}/feedback`; staff `/admin/requests/{id}`, assessor `/admin/requests/{id}/review`, bundle
@@ -1018,12 +1254,14 @@ announced`.
   `cycle.region_has_requests`).
 
 ### Who sees and manages a cycle
-- `award.cycles.view`: the System Administrator and the Requests Followers see every cycle; filtering officers and secretaries
+- `award.cycles.view`: the System Administrator and the Requests Followers see every cycle while their request scope includes
+  the `advanced` path (see "Path distinction"); filtering officers and secretaries
   see the cycles they are members of; assessors the cycles they are linked to. Other cycles answer 404.
 - `award.cycles.manage`: the System Administrator for every cycle; an award secretary for the cycles they are a secretary member
   of. Creating a cycle makes a creating secretary a member (a System Administrator is global and is not added).
 - Members and initial assessors: candidates are active staff accounts holding `award.filtering.decide` (filtering officer),
-  `award.secretary.decide` (secretary) or `assessment.score.manage` (initial assessor), never a Super Admin. Segregation: a
+  `award.secretary.decide` (secretary) or `assessment.score.manage` plus the `advanced_initial` qualification (initial assessor;
+  linking an unqualified assessor answers 422 `assessor.not_qualified` on `assessor_ids.<i>`), never a Super Admin. Segregation: a
   member is never an initial assessor of the same cycle and an initial assessor is never a member (422 `sod_conflict`, checked
   at linking, membership and assignment; SoD-2 / SoD-3 / P-06). The committee roster checks (SoD-1 / P-06) are described in "Award committee".
 - The cycle detail adds `members[]` and `initial_assessors[]` only for its managers and the global readers.
@@ -1063,9 +1301,9 @@ announced`.
   Requests Followers and the assessor.
 
 ### Initial assessment
-- The queue `GET /requests` lists both paths (`filter[path]=accredited|advanced`, `filter[cycle_id]`; rows add `award_cycle` and
-  `region`). `GET /requests/assessors?assessment_id=` lists only the active initial assessors of the cycle who are not cycle
-  members.
+- The queue `GET /requests` serves one path at a time (`filter[path]=advanced`, or `filter[cycle_id]` which implies it; rows add
+  `award_cycle` and `region`). `GET /requests/assessors?assessment_id=` lists only the active initial assessors of the cycle who
+  hold the `advanced_initial` qualification and are not cycle members.
 - `POST /requests/{id}/assign` (`awaiting_review_assignment → assigned`): 422 `assessor.not_in_cycle`, `sod_conflict`,
   `sod_self_assignment`; due date = assignment + the cycle SLA (`review_sla_days`); ADV-05 (I+E) to the assessor. Reassign keeps
   the status and the due date and tells the previous assessor in-app.
@@ -1499,6 +1737,13 @@ finance settings below (no database edit is needed in staging).
   value writes nothing. Concurrent saves are serialized by a transaction-scoped advisory lock (`settings:finance`).
 - Snapshot rule: a payment copies its price, VAT rate, VAT, total and `expires_at` when the order is opened, so a change
   never alters an existing payment or open order; only orders opened afterwards use the new values.
+- Platform VAT registration number (Task-64, Q-155 / Q-156): field `vat_registration_number` (setting
+  `finance.vat_registration_number`, string or `null`) guarded by the locked `settings.payment.manage` (System
+  Administrator; Super Admin with `reason`). Format `^3[0-9]{13}3$` (15 Western digits, first and last `3`, no spaces;
+  Arabic-Indic digits are refused) else 422 on `vat_registration_number`; sending `null` or `""` clears it at any time.
+  Audited as `settings.finance_updated` (before / after; not a secret). The `GET` shape adds `vat_registration_number`
+  and `vat_registration_reminder` (`true` while the VAT rate is above zero and the number is empty — a non-blocking hint
+  for the hub). An empty number never blocks an order, a payment or a receipt.
 
 ### State machine
 `created → pending` (provider payment bound) `→ paid | failed | cancelled`; `created → cancelled`; `paid → refunded`
@@ -1541,9 +1786,16 @@ until the transaction commits, so concurrent issuers wait and a rolled-back issu
 outside a transaction). Test-mode payments get a receipt without a number (`is_test`, watermark `TEST`), excluded from
 every statistic, summary and export. PDFs go through `Contracts\Documents\PdfRenderer` (`RenderReceiptPdfJob` after
 issue, or on the first download): bilingual labels, Gregorian and Umm al-Qura dates with Western digits, watermark
-`TEST` or `VOID`. The Arabic-shaping library is not selected yet: `PDF_RENDERER=fake` locally, otherwise
-`UnavailablePdfRenderer` (download 503 `document.renderer_unavailable`, the job defers). Reissue (`finance.receipts.manage`,
-reason) renders a new file and keeps the previous one; a voided receipt cannot be reissued (409 `receipt.voided`).
+`TEST` or `VOID`, printed by the Chromium renderer (template `documents.payment_receipt`, see "PDF documents"). Without a
+renderer (`UnavailablePdfRenderer`) the download answers 503 `document.renderer_unavailable` and the job defers. Reissue
+(`finance.receipts.manage`, reason) renders a new file and keeps the previous one; a voided receipt cannot be reissued
+(409 `receipt.voided`).
+
+VAT registration number on receipts (Task-64): `ReceiptSnapshotBuilder` copies the platform number into
+`snapshot.vat_registration_number` at issue time ONLY when it is set (the key is absent otherwise); a reissue renders
+the stored snapshot, so the issue-time value never changes. The receipt resource adds `vat_registration_number`
+(`null` when absent) and the PDF prints the row in the header block only when it is present. No "not a tax invoice"
+line. `receipt.issued` records `vat_registration_number_present`.
 
 ### Refunds (recorded only)
 `POST /finance/payments/{payment}/refunds` (multipart: `amount` = total, else 422 `refund.amount_must_equal_total`;
@@ -1556,7 +1808,7 @@ moves the payment to `refunded`, voids the receipt, writes an admin event and th
 
 ### Files foundation
 `stored_files`: purpose (`refund_evidence | apple_pay_domain_association | receipt_pdf | finance_export | assessment_evidence |
-evidence_bundle`), private disk
+evidence_bundle | cms_image | kpi_image | branding_logo | certificate_pdf | entity_logo`), private disk
 (`FILES_DISK`), random path `files/<purpose>/YYYY/MM/<uuid>.<ext>`, sanitized original name, server-detected MIME,
 size, SHA-256, NDMO class, owner (`attachable`), uploader, scan status `pending | clean | infected | failed`. `FileIntake`
 checks extension, detected MIME and magic bytes per purpose, stores the file `pending`, scans it through
@@ -1609,7 +1861,8 @@ byte for byte.
 `FILES_SCANNER=fake`, `PDF_RENDERER=fake` and `SMS_PROVIDER=fake` select `FakeFileScanner`, `FakePdfRenderer` and
 `FakeSmsGateway`, but only when `APP_ENV` is `local` or `testing` (`Services\Platform\LocalFakeAdapters`). In staging,
 production or any other environment the flag is refused: the real adapters are bound (ClamAV, which fails closed without
-clamd, `UnavailablePdfRenderer`, and `SettingsSmsGateway`, so SMS is available only when the SMS settings are configured)
+clamd, the Chromium renderer when `PDF_CHROME_BINARY` is usable and `UnavailablePdfRenderer` otherwise, and
+`SettingsSmsGateway`, so SMS is available only when the SMS settings are configured)
 and `platform.fake_adapter_refused` is logged as critical with the setting name (`moashir.files.scanner`,
 `moashir.documents.pdf_renderer`, `moashir.sms.driver`). The SMS decision is taken once per process
 (`Data\Integrations\SmsDriverSelection`, a singleton shared by the gateway binding and `ConfiguredSmsAvailability`), so a
@@ -1618,7 +1871,7 @@ refused flag logs one line per worker, not one per sign-in. Set the flags in the
 ### Payments and finance endpoints
 | Method | Path | Ability / limiter |
 |---|---|---|
-| GET | `/payments/mine` (`filter[status|purpose]`, pagination, `meta.stats` live only) | entity + `payments.own.view` |
+| GET | `/payments/mine` (`filter[status]` = comma list of statuses, `filter[purpose]`, pagination, `meta.stats` live only on the filtered set, `meta.status_counts` every status of the purpose filter incl. test payments, rows add `request`) | entity + `payments.own.view` |
 | POST | `/payments` (`Idempotency-Key`) | entity + `payments.own.create` + the purpose permission, `throttle:sensitive` |
 | GET | `/payments/{payment}`, `/payments/{payment}/receipt` | own entity (404 otherwise) |
 | POST | `/payments/{payment}/verify` | own entity + `payments.own.create`, `throttle:payment-verify` (30/min) |
@@ -1661,9 +1914,884 @@ rejected verifications, unexpected statuses and unmatched live webhooks (once pe
 - SPA CSP for the Moyasar form: derive the exact origins in staging (Q-110e); expected at least `script-src` and
   `style-src https://cdn.moyasar.com`, `connect-src https://api.moyasar.com`, `frame-src` / `form-action` for the 3-D
   Secure pages, and Apple Pay; pin the Moyasar.js version (≥ 2.3.0 for intents) with SRI.
-- Set the service prices with `PUT /api/v1/settings/finance` (System Administrator) and keep `PDF_RENDERER` unset until
-  the PDF library is installed. Run `database/sql/production-roles.sql` again for the new grants (refunds and payment events
+- Set the service prices with `PUT /api/v1/settings/finance` (System Administrator); `PDF_RENDERER=chromium` needs the
+  headless shell of the deployment kit (`provision.sh pdf-renderer`). Run `database/sql/production-roles.sql` again for the new grants (refunds and payment events
   INSERT/SELECT only, payments, receipts and exports without DELETE).
+
+## Public site CMS, branding and KPIs (build steps 10–11)
+
+### Data
+- `cms_pages`: one row per code-defined page (`CmsPageKey`: `home`, `accredited_intro`, `advanced_intro`, `bag_details`,
+  `lenses`, `kpis`, and since Task-49 `accessibility`), inserted by the migrations. Draft title and SEO text, `is_published`, the frozen
+  `published_content` snapshot, `published_at` / `published_by_user_id`, `has_draft_changes`, `content_updated_at`.
+- `cms_sections` (per page, `CmsSectionType`, unique `key` per page among live rows, `sort_order`, toggle) and
+  `cms_section_items` (per section, `sort_order`, toggle). Both: localized `title`, `subtitle`, `description`,
+  `cta_label` (`{ar, en}`, one language may be empty), `cta_url`, Font Awesome `icon`, `image_file_id`, free `meta`
+  object (≤ 16 KB, 5 levels); soft deletes.
+- `site_settings` (single row): social links, contact, footer note, quick links, site SEO, `featured_kpi_limit` (3..6,
+  default 6), `show_featured_kpis`.
+- `branding_themes` (single row): `accent_token` (`AccentToken`, CHECK), `logo_light_file_id`, `logo_dark_file_id`.
+- `kpi_categories` (soft deletes, unique live `key`), `kpi_types` (Q-40, deactivate instead of delete when used),
+  `kpis` (numbers as `numeric(18,4)` handled as strings by `KpiNumber`, status, colour tokens, `show_on_homepage`,
+  `is_published`, `sort_order`, `value_updated_at`; archive = soft delete) and `kpi_values` (one row per KPI and
+  measurement date).
+- `stored_files` purposes `cms_image`, `kpi_image`, `branding_logo`: visibility `public_asset`, NDMO class `P`, random
+  path, extension + detected MIME + magic bytes, synchronous malware scan (fail closed), SVG logos only without
+  scripts, event handlers, `foreignObject`, entities or external references, PNG logos at most 4096 px a side.
+
+### Draft and published content (CMS-04 / CMS-05)
+Every section, item, page-detail change edits the draft and sets `has_draft_changes`. `POST
+/admin/content/pages/{key}/publish` freezes the enabled sections and enabled items into `published_content` (missing
+translations filled from the other language), clears the flag, removes page images no longer referenced by the draft
+and raises CMS-04 in-app to the Content Officers and System Administrators (never the actor). `unpublish` raises CMS-05.
+Site settings are not drafted: a change is public at once and raises CMS-04. Public reads use the snapshot only.
+
+### Public reads, cache and maintenance (Q-96)
+`/content/status`, `/content/home`, `/content/landing`, `/content/pages/{key}` read the published snapshot through
+`PublicContentCache` (`cms:public:page:<key>` and `cms:public:site-settings`, TTL `moashir.cms.public_cache_seconds`
+= 3600 s). The `ForgetPublicContent` listener forgets the page key after a publish / unpublish commits and the site
+settings key after a settings change. While `home` is not published, `/content/home` and `/content/landing` answer
+200 `{ published: false, maintenance: true }` and `/content/status` `{ maintenance: true }`; the SPA shows the
+maintenance page on public routes. Sign-in, `/auth/*`, `/sanctum/*` and every back-office route stay available.
+Public localized fields are always `{ ar, en }` objects with the empty language filled from the other one; the editor
+endpoints return the stored values unchanged. `/content/pages/{key}` also returns `published_at` and `updated_at` (the last
+draft edit included in the published snapshot; equal to `published_at` for pages published before Task-49), and every
+`rich_text` section carries `blocks { ar: Block[], en: Block[] }` parsed from its `description` (format in "Legal texts
+and pages"). A section or item `description` with HTML markup is refused (422), control and direction-override characters
+are removed before it is stored.
+
+### Public images
+`GET /api/v1/content/files/{uuid}` streams a clean `cms_image`, `kpi_image` or `branding_logo` file (no session, no JSON
+`Accept` needed, `throttle:public-assets` 600/min per IP) with its stored MIME type, `Content-Disposition: inline;
+filename=image.<ext>`, `nosniff` and the API CSP (`default-src 'none'`), so an SVG opened directly runs nothing. Private
+files, unscanned or infected files and unknown ids answer 404. Uploads (`POST /admin/content/images`,
+`POST /admin/kpis/images`) return `{ file_id, url, mime_type, size_bytes }`; the editor then sends `image_file_id` (or
+`null` to remove) with the section, item or KPI. A file attached to other content is refused (422 `file.not_usable`);
+uploads never attached are removed by the orphan purge after `FILES_ORPHAN_GRACE_HOURS`.
+
+### Branding (Q-42, Q-43, Q-44b, Q-45, Q-74)
+One theme for every back-office user. The controlled palette is `AccentToken` (brand default + 8 colours) with the
+designer's colours in `config/moashir.php` (`branding.palette`, `branding.surfaces`). Every change is checked for
+WCAG 2.1 AA (4.5:1) on four pairs — accent text on the light surface, dark text on the accent (light and dark mode),
+accent on the dark surface — and refused with 422 `contrast_fail` (`meta.pairs[]`). `settings.branding.manage` is
+hard-locked to the System Administrator (Super Admin by bypass, reason 10..1000 required, SEC-04). Audit
+`settings.branding.updated` with before / after and the tag `accent`, `logo_light`, `logo_dark` or `reset`. The public
+site keeps the official identity (Q-43).
+
+Logos (SEC-22, Task-51): PNG only, up to `branding.logo_max_kb` and `branding.logo_max_side_px`. SVG is refused (422
+`validation_failed` on `file`; SVG markup renamed `.png` fails the content check) because a deny-list cannot make active
+SVG content safe. The upload is checked by extension, detected type and magic bytes, scanned by ClamAV, then decoded and
+re-encoded by GD (`Services\Settings\BrandingLogoIntake`, transparency kept), so only freshly encoded pixels are stored
+and served; text chunks and any trailing data are dropped. Public images are served only as `image/png` /
+`image/jpeg`, so an SVG stored before this change is no longer served.
+
+### KPIs
+Public list filters (Q-40): `filter[category_id]`, `filter[status]`, `filter[measurement_year]`, `filter[kpi_type_id]`,
+`filter[owner]` (text), `search` (name, Arabic-normalized), `sort` ∈ `order` (default), `name`, `-name`, `-created_at`,
+`created_at`, `-value`, `value`, `-last_update`, `last_update`; `page`, `per_page` ≤ 100 (default 12). Featured:
+published ∧ `show_on_homepage`, at most `featured_kpi_limit`; at most 6 KPIs may be flagged (422
+`kpi.featured_limit_reached`). Reorder: arrows (`direction: up | down`) and drag-and-drop (`ordered_ids`, complete
+permutation, 422 `order.incomplete`) under one advisory lock. A changed value writes today's `kpi_values` row (Asia/Riyadh
+date) and raises CMS-02; dated measurements move the current value only when they are the latest. Notifications:
+CMS-01 created, CMS-02 value, CMS-03 published, CMS-05 unpublished or archived (in-app only, no SMS).
+
+### Content and KPI endpoints
+| Method | Path | Ability / limiter |
+|---|---|---|
+| GET | `/content/status`, `/content/home`, `/content/landing`, `/content/pages/{key}`, `/content/legal/{terms\|privacy}` | public, `throttle:public` |
+| GET | `/content/files/{uuid}` | public, `throttle:public-assets` |
+| GET | `/admin/content/home`, `/admin/content/pages`, `/admin/content/pages/{key}`, `/admin/content/site-settings` | `content.home.manage` |
+| PUT | `/admin/content/pages/{key}` | `content.home.manage`, `throttle:content-write` |
+| POST | `/admin/content/pages/{key}/publish`, `/admin/content/pages/{key}/unpublish` | `content.home.manage`, `throttle:sensitive` |
+| POST | `/admin/content/pages/{key}/sections` | `content.home.manage`, `throttle:content-write` |
+| PATCH | `/admin/content/sections/reorder`, `/admin/content/sections/{id}`, `/admin/content/sections/{id}/enabled` | `content.home.manage`, `throttle:content-write` |
+| DELETE | `/admin/content/sections/{id}` | `content.home.manage`, `throttle:content-write` |
+| POST / PATCH | `/admin/content/sections/{id}/items`, `/admin/content/sections/{id}/items/reorder` | `content.home.manage`, `throttle:content-write` |
+| PUT / PATCH / DELETE | `/admin/content/sections/{id}/items/{item}`, `…/items/{item}/enabled` | `content.home.manage`, `throttle:content-write` |
+| PATCH | `/admin/content/site-settings` | `content.home.manage`, `throttle:content-write` |
+| POST | `/admin/content/images` | `content.home.manage`, `throttle:uploads` |
+| GET / POST | `/admin/content/legal/{terms\|privacy}/versions` | `content.home.manage` (POST `throttle:content-write`) |
+| GET / PUT / DELETE | `/admin/content/legal/versions/{id}` | `content.home.manage` (PUT / DELETE `throttle:content-write`) |
+| POST | `/admin/content/legal/versions/{id}/publish` | `content.home.manage`, `throttle:sensitive` |
+| GET | `/settings/branding` | any signed-in user (palette only with `settings.branding.manage`) |
+| PUT | `/settings/branding`; POST `/settings/branding/reset` | `settings.branding.manage`, `throttle:sensitive` |
+| POST | `/settings/branding/logo` | `settings.branding.manage`, `throttle:uploads` |
+| GET | `/kpis`, `/kpis/featured`, `/kpis/{slug}`, `/kpi-categories`, `/kpi-types` | public, `throttle:public` |
+| GET / POST | `/admin/kpis`; PATCH `/admin/kpis/reorder`; POST `/admin/kpis/images` | `content.kpis.manage` |
+| GET / PUT / DELETE | `/admin/kpis/{id}` | `content.kpis.manage` |
+| PATCH | `/admin/kpis/{id}/published`, `/admin/kpis/{id}/reorder` | `content.kpis.manage` |
+| GET / POST | `/admin/kpis/{id}/values` | `content.kpis.manage` |
+| GET / POST / PUT / DELETE | `/admin/kpi-categories(/{id})`, `/admin/kpi-types(/{id})` | `content.kpis.manage` |
+
+Request and response shapes: `agents/tasks/reports/Task-33-report.md`.
+
+### Demo content
+`moashir:demo:install` now also loads `database/data/demo/public-content.json` (fictional bilingual content): the six
+pages published, site settings, 8 KPI categories, 3 KPI types and 8 published KPIs (6 on the homepage). Since Task-42 the
+home page follows the approved home page brief v2: hero (`meta.eyebrow`, `meta.highlight`, illustrative `meta.preview`,
+items `meta.role = secondary-cta | point`), platform tour (`how_it_works`), paths (advanced = `coming_soon`, no button),
+model, journey (`how_it_works` + `meta.variant = journey`, 6 stages), Quick Excellence Kit (`coming_soon`, no purchase
+button), call-to-action banner (`rich_text` + `meta.variant = cta`, secondary sign-in item), leaders teaser and contact;
+every section carries `meta.eyebrow {ar,en}`; no `demo` availability remains; the KPI promo, lenses and assistant
+sections are no longer part of the demo home page (KPIs only in the stats strip, assistant hidden in phase 1). On a demo
+installed before this change, `php artisan moashir:demo:refresh-home` (needs `APP_DEMO_DATA=true` and an installed demo,
+refusals logged like the install command) soft-deletes the current home sections and items, installs the home page of the
+demo file and publishes it; the other pages, the site settings and the KPIs are untouched. On a demo
+installed before this change run `php artisan moashir:demo:install --content-only` (needs `APP_DEMO_DATA=true` and an
+installed demo; pages that already have sections, filled site settings and existing KPIs are kept; refusals logged as
+before). Since Task-49 the same install (and `--content-only`) also publishes the legal drafts as the current terms and privacy
+versions and publishes the `accessibility` page (section "Legal texts and pages").
+
+### Deployment notes (content)
+- Migrations `2026_11_02_130000` … `130300` (file purposes, CMS tables with the six page rows and the site settings row,
+  the branding row, KPI tables). No grant change (default privileges cover the new tables). No new permission key and no
+  environment variable.
+- Nginx `client_max_body_size` must allow `moashir.cms.image_max_kb` (5 MB) on `/api/v1/admin/content/images` and
+  `/api/v1/admin/kpis/images`.
+
+## Legal texts and pages (Task-49)
+
+Operator decision 2026-11-04: the team prepared drafts of the terms of use, the privacy policy and the accessibility statement
+(`agents/tasks/reports/legal-drafts/`, copied unchanged into `database/data/legal/*.{ar,en}.md`); the Content Officer edits
+them; the client publishes after legal review.
+
+### One source of truth for consent texts
+- The terms of use and the privacy policy live ONLY in `terms_versions` (kinds `terms` / `privacy`). Registration
+  (`terms_version_id`, `privacy_version_id`), staff invitations and the contact form (`privacy_terms_version_id`) keep
+  referencing the CURRENT version, so a recorded consent always points to the exact text that was shown. They are not CMS
+  pages.
+- `terms_versions` gained `title` (`{ar, en}`, nullable for older rows: the public read then uses `lang/*/legal.php`
+  `titles.*`) and `published_at`. A row with `published_at` null is a DRAFT (`effective_from` and `published_by_user_id`
+  null too, CHECK `terms_versions_published_check`); at most one draft per kind (partial unique index
+  `terms_versions_one_draft`); `is_current` requires a published row. A published version is IMMUTABLE: the trigger
+  `moashir_guard_terms_versions()` refuses any change of `kind`, `version`, `title`, `body`, `effective_from`,
+  `published_at`, `published_by_user_id` and any DELETE of a published row (only `is_current` may change, when a newer
+  version is published). Changing a text = a new draft = a new version. Status in the API: `draft | current | superseded`.
+- Publishing (`Services\Identity\TermsVersionPublisher`, used by the API, the console command and the demo) takes the
+  advisory lock `terms:<kind>`, marks the previous current version superseded, sets `published_at`, `effective_from`
+  (Riyadh date of the publication for the API) and the publisher, audits `terms.published` (previous / new label, title,
+  SHA-256 and length of each language) and forgets the cached public copy after commit.
+- The accessibility statement is not part of consent: it is the plain CMS page `accessibility` (managed by the existing
+  CMS editor, served by `GET /content/pages/accessibility`, 404 `cms.page_not_published` until published).
+
+### Rich text format (no HTML path)
+Legal bodies and CMS `rich_text` descriptions are plain text in a small Markdown subset: `#`, `##`, `###` headings,
+paragraphs (consecutive lines are joined), `- ` / `* ` bullet lists, `1. ` numbered lists (the first number is kept as
+`start`), pipe tables (`| a | b |`, an optional `|---|---|` line makes the first row the header). Nothing else is
+interpreted: links, emphasis, images and `[[...]]` placeholders stay literal text. Input with an HTML tag or comment is
+refused with 422 (`Rules\FreeOfHtmlMarkup`, message `validation.custom.rich_text.markup`); control characters, BOM and
+bidirectional override / isolate characters are removed and line endings normalised before storage
+(`Support\RichText\RichTextSanitizer`). Public reads return parsed blocks (`Support\RichText\RichTextParser`), so the SPA
+renders them with text interpolation only:
+
+```
+{ "type": "heading", "level": 2, "text": "1. Introduction and scope" }
+{ "type": "paragraph", "text": "This policy explains ..." }
+{ "type": "list", "ordered": false, "start": null, "items": ["visitors of the platform;", "..."] }
+{ "type": "list", "ordered": true, "start": 1, "items": ["...", "..."] }
+{ "type": "table", "header": ["Data category", "Retention period"], "rows": [["...", "..."]] }
+```
+
+### Endpoints
+| Method | Path | Ability / limiter | Body / answer |
+|---|---|---|---|
+| GET | `/content/legal/{terms\|privacy}` | public, `throttle:public` (cached, `moashir.cms.public_cache_seconds`) | `{ id, kind, version, effective_from, published_at, title{ar,en}, body{ ar: Block[], en: Block[] } }` of the CURRENT version (both languages always, whatever `Accept-Language`); 404 `legal.not_published` when none is published (drafts are never shown), 404 for another kind. `id` is the `terms_version_id` / `privacy_version_id` the forms send. |
+| GET | `/admin/content/legal/{kind}/versions` (`page`, `per_page` ≤ 100) | `content.home.manage` | paginated `LegalVersionSummary` = `{ id, kind, version, status, title, effective_from, published_at, created_at, updated_at }`, draft first, then newest publication |
+| POST | `/admin/content/legal/{kind}/versions` | `content.home.manage`, `throttle:content-write` | `{ version (^[A-Za-z0-9._-]{1,20}$), title{ar,en} (≤ 200 each, single line), body{ar,en} (≤ 60000 each) }` → 201 `LegalVersion` (= summary + `body{ar,en}` source text); 409 `legal.draft_exists`; 422 `legal.version_taken`, `validation_failed` |
+| GET | `/admin/content/legal/versions/{id}` | `content.home.manage` | `LegalVersion` |
+| PUT | `/admin/content/legal/versions/{id}` | `content.home.manage`, `throttle:content-write` | partial `{ version?, title?, body? }` (`id`, `kind`, `status`, `is_current`, `effective_from`, `published_at` prohibited) → `LegalVersion`; 409 `legal.version_not_draft` (`errors.version_status`) on a published version |
+| DELETE | `/admin/content/legal/versions/{id}` | `content.home.manage`, `throttle:content-write` | 204 (draft discarded, audited); 409 `legal.version_not_draft` |
+| POST | `/admin/content/legal/versions/{id}/publish` | `content.home.manage`, `throttle:sensitive` | `{ reason? (10..1000) }` → `LegalVersion` with `status: current`; the Super Admin must give a reason (422 `reason_required`, SEC-04 raised, reason stored in the audit); 409 `legal.version_not_draft` |
+
+Same permission as the CMS (`content.home.manage`: Content Officer and System Administrator by default; Super Admin by
+bypass); every other role 403, guests 401. Audit events: `terms.draft_created`, `terms.draft_updated`,
+`terms.draft_discarded`, `terms.published` (label, title, SHA-256 and character count of each language, never the text).
+
+### Seeding
+- Every install (reference data, idempotent): `php artisan moashir:legal:install-drafts` stores the terms and privacy
+  drafts as UNPUBLISHED versions labelled `2026-11-draft` and fills the `accessibility` page with 13 `rich_text` sections
+  (`intro` = the draft line, `section-1` … `section-12` = the `##` sections) WITHOUT publishing it. A kind that already has
+  a draft (or the seed label) and a page that already has sections are left alone; current published versions are never
+  touched. The first line «مسودة للمراجعة القانونية …», every `[[...]]` placeholder and the conditional AI section of the
+  privacy policy (§17) are kept: the client fills or removes them and publishes after legal review.
+- Demo (`moashir:demo:install`, and `moashir:demo:install --content-only` on an installed demo): the seed drafts are
+  PUBLISHED as the current terms and privacy versions (the stored draft is published in place, or a new version is
+  created and published when none is stored; an earlier current version such as `demo-1` is kept as superseded) and the
+  accessibility page is filled when empty and published. A second run changes nothing; a seed version that was already
+  published is never published again.
+
+## Notification centre, dashboards and Action Center (build step 13)
+
+### Notification centre
+In-app notifications are the `notifications` rows written by `Notifications\Channels\InAppChannel` (bilingual `title` /
+`body` rendered at send time, `code`, `category`, SPA `link`). Every query is scoped to the signed-in user
+(`Actions\Notifications\FindOwnNotification`), so another user's notification answers 404 for everyone, the Super Admin
+included. `archived_at` (new column) moves a notification out of the inbox; it is never deleted by the user. The permanent
+deletion of an entity deletes the owner's notifications and notification preferences.
+
+- `GET /notifications` — inbox (not archived) by default, newest first; `filter[category]` (`action_required |
+  informational | alert | error`), `filter[read]` (`true | false`), `filter[archived]=true` (archive instead of inbox),
+  `filter[code]` (`SELF-03` …), `search` (≥ 2 searchable characters, Arabic-normalized, title and body in both languages),
+  `filter[path]` (`self | accredited | advanced`), `page`, `per_page` 1..100 (default 15). Item `{ id (uuid), code, module,
+  category, title{ar,en}, body{ar,en}, link, path | null, path_label{ar,en} | null, is_read, read_at, actioned_at, archived_at,
+  created_at }`; `meta.pagination` + `meta.unread_count`. `path` is stored on every request, assessment, award and accredited
+  payment notice.
+- `GET /notifications/unread-count` → `{ count, by_category{ action_required, informational, alert, error } }` (inbox only).
+- `PATCH /notifications/{id}/read` and `PATCH /notifications/{id}/archive` → the item (idempotent: the first time is kept).
+- `POST /notifications/read-all { category? }` → `{ updated }` (inbox only).
+
+### Notification types and preferences
+The catalogue of every `NotificationCode` is code-defined in `Support\Notifications\NotificationTypeDefinitions` (one row per
+code: channels `in_app | email | sms` as built, audiences, mandatory flag), read through `Services\Notifications\
+NotificationTypeCatalog`; a unit test keeps it complete. Audiences are the role keys plus `committee_assessor` (assessor role),
+`super_admin`, `account_holder` (the account concerned, e.g. USR-01) and `contact_handler` (any holder of
+`contact.messages.manage`, whatever the role, Task-42). Labels and descriptions come from the SPA i18n by code
+(Q-102).
+
+- In-app delivery can never be turned off. A user may turn off `email` / `sms` of a type that reaches one of their
+  audiences and is not mandatory. Mandatory (locked) types: every SEC, USR, PAY and INT code, AI-05, REG-02 (one-time code),
+  REG-05 … REG-10 (account state, verification, official e-mail), ACC-07 / ACC-12 / ADV-25 / ADV-27 (deadline with a
+  consequence) and ADV-31 (withdrawal).
+- `notification_preferences` stores one row per user, code and channel (`is_enabled`; no row = default on).
+  `Listeners\Notifications\SkipDisabledDeliveryChannel` answers the framework's `NotificationSending` event with `false`
+  for a disabled, configurable channel, so the channel is skipped (`NotificationSkipped`) at send time, also in queued
+  notifications. It applies to notifications implementing `Notifications\Contracts\HasNotificationCode`
+  (`EntityNotification`, which carries every business notice with e-mail).
+- `GET /me/notification-preferences` → `[{ code, module, category, is_mandatory, channels[{ channel, enabled, configurable }] }]`
+  for the types the user receives. `PUT /me/notification-preferences { preferences: [{ code, channel: email|sms, enabled }] }`
+  (1..200 rows, last row wins for a repeated pair) answers the same list; 422 `notification_preference.locked`
+  (`errors["preferences.<i>.channel"]`) or `notification_preference.not_applicable` (`errors["preferences.<i>.code"]`), nothing
+  is stored when any row is refused.
+- `GET /settings/notifications/types` (`settings.notifications.manage`, System Administrator) → read-only catalogue
+  `[{ code, module, category, channels[], audiences[], is_mandatory, user_configurable_channels[] }]`, `meta.total`;
+  `filter[module|category|audience]`. Editing templates and the system-wide channel switches of 03 §14.2 are not built yet.
+
+### Dashboards
+`GET /dashboard/summary?board=<board>` (`dashboard.view`) resolves the boards a user holds: one per role
+(`system_admin`, `award_secretary`, `filtering_officer`, `request_follower`, `assessor`, `content_officer`, `criteria_officer`,
+`finance_officer`, `entity`), `committee_assessor` while the user has an active committee seat in a cycle that is not closed,
+and `executive` for holders of `dashboard.executive.view` (Q-27). The Super Admin holds `system_admin` and `executive`. The
+landing board follows 03 §17 (System Administrator > Award Secretary > Filtering Officer > Follower > Assessor > Content >
+Criteria > Finance > Entity), except that an assessor with an active seat lands on `committee_assessor` while a cycle of that
+seat is in the committee stage (Q-52). One workspace, no role switch (Q-42): `available_boards` lists every held board.
+403 `board.not_held` for a board the user does not hold, 422 `validation_failed` (`errors.board`) for an unknown key.
+
+```
+{ "board": "request_follower", "landing_board": "request_follower", "available_boards": ["request_follower", "assessor"],
+  "cards": [{ "key": "awaiting_assignment", "value": 3, "format": "count", "link": "/admin/requests?status=submitted%2Cawaiting_review_assignment" }],
+  "widgets": [{ "key": "pipeline", "data": [{ "path": "accredited", "status": "submitted", "count": 3 }] }],
+  "action_center": [{ "key": "assign_requests", "count": 3, "severity": "warning", "link": "…", "due_at": null, "context": null }],
+  "generated_at": "2026-11-03T08:00:00+00:00" }
+```
+
+`format` ∈ `count | percent | money | days | date`; percentages and money are decimal strings (`"77.00"`, `"2300.00"`, live
+payments only, never floats); a card without data has `value: null`. One query class per board
+(`Services\Dashboards\Boards\*`, tagged `dashboards.boards`); each uses aggregate queries with a fixed query count (feature tests
+compare the query count for small and larger data sets). Frozen requests (soft-deleted entities) are excluded.
+
+| Board | Cards | Widgets | Scope |
+|---|---|---|---|
+| `system_admin` | entities total / active / pending verification, active staff, running cycles, self assessments, accredited and advanced requests, open, completed, overdue, payments collected / open / paid, refunds total | entities by region, sector, founding decade, governance band, level (`entities_by_level`); 10 lowest main criteria (accredited completed results); last 10 status changes | global |
+| `executive` | entities total / active, completed self / accredited, advanced requests, accredited average %, cycles, payments collected (no links) | entities by region, sector, governance, level (`entities_by_level`); 10 lowest main criteria | global, read only |
+| `request_follower` | awaiting assignment, assigned, in review, needs completion, completed, overdue, completion rate | requests by path, pipeline by path and status, 10 busiest assessors | submitted accredited and advanced requests |
+| `assessor` | to start, in progress, awaiting entity, overdue, completed, average duration (days) | 5 due soon (own), 5 weakest main criteria of own completed results | own assignments |
+| `committee_assessor` | assigned, completed, remaining, progress, own average | seats with cycle dates and counts, 5 latest rows (no entity data) | own seats |
+| `filtering_officer` | awaiting filtering, qualified, not qualified, override decisions | member cycles | member cycles, filtering states only |
+| `award_secretary` | applicants, qualified, not qualified, in committee, awaiting approval, results approved, winners, committee progress | member cycles, top 10 by committee average, score histogram, by region | member cycles |
+| `entity` | latest result %, open requests, unread notifications, accepted evidence (`accepted_evidence_count`) | latest result (self or accredited), main criteria of the latest ELIGIBLE accredited result (`criteria_progress`, Task-67 N-1), 5 latest requests (masked statuses), payments card (Q-98) | own entity |
+| `finance_officer` | revenue, VAT, paid, open, refunds total and count, receipts issued | daily paid payments (30 days, Asia/Riyadh), by service | live payments |
+| `content_officer` | pages total / published / with draft changes, KPIs total / published / featured | 5 latest edits | global |
+| `criteria_officer` | active mains / subs / points of the published version, open assessments on it, draft problems | published version, draft version | global |
+
+Removed (no data source, Q-27): lens counts, support tickets, conversations, news / FAQ counts, satisfaction, maturity stage,
+subscriptions, Kit stages, certificates, recommendations, re-assessment date. Payments card: `{ last_payment{ id, reference,
+purpose, status, total, currency, created_at, paid_at } | null, pending_payment{ … , expires_at } | null, receipts_count, link }`.
+
+### Action Center
+Every summary carries `action_center` (also `GET /dashboard/action-center`, `meta.total`, `meta.generated_at` ISO 8601 UTC): the actionable items of ALL held
+roles and permissions (`Services\Dashboards\ActionItems\*`, tagged `dashboards.action-items`, one or two queries each), only
+items with a count, sorted danger → warning → info, then by due date. Keys: entity `complete_profile`, `submit_self_draft`,
+`submit_accredited_draft`, `complete_accredited_request` / `complete_advanced_request` (danger, completion deadline),
+`submit_advanced_draft` (submission end), `complete_payment` (order expiry); queue `assign_requests` (`requests.assign`),
+`follow_up_overdue_requests`; assessor `start_reviews`, `continue_reviews`, `overdue_reviews`; committee
+`complete_committee_evaluations`, `answer_committee_discussions`; `decide_filtering`; secretary `approve_committee_results`,
+`approve_substitute_evaluations`; finance `record_refunds` (paid accredited payments that opened no request after 30 minutes,
+the PAY-08 duplicate case); `review_entity_email_changes`, `handle_privacy_requests`, `fix_criteria_draft`,
+`publish_content_changes`, `answer_contact_messages` (Task-42), `read_contact_replies` (any signed-in sender with unread
+team replies, `info`, link `/messages/{uuid}` for one message or `/messages`, Task-46). Labels come from the SPA i18n by key.
+Every item carries `context` (Task-46): `null` for staff items; for entity items and `read_contact_replies` an object with
+the fixed nullable keys `{ assessment_id, payment_id, message_id, reference, remaining_subs, percent }`, filled only when
+`count = 1` — `submit_self_draft` / `complete_accredited_request` → `assessment_id`, `reference`; `submit_accredited_draft` →
+plus `remaining_subs` (the accredited progress); `complete_payment` → `payment_id` (uuid), `reference`;
+`read_contact_replies` → `message_id`, `reference`; `complete_profile` → `percent` (the profile completion); the advanced
+items keep every key `null`.
+
+### Notification and dashboard endpoints
+
+| Method | Path | Ability / limiter |
+|---|---|---|
+| GET | `/notifications`, `/notifications/unread-count` | `notifications.view` (own only) |
+| POST | `/notifications/read-all` | `notifications.view` |
+| PATCH | `/notifications/{id}/read`, `/notifications/{id}/archive` | `notifications.view` + owner (404 otherwise) |
+| GET / PUT | `/me/notification-preferences` | signed in; PUT `throttle:sensitive` |
+| GET | `/settings/notifications/types` | `settings.notifications.manage` |
+| GET | `/dashboard/summary`, `/dashboard/action-center` | `dashboard.view` (+ held board) |
+
+Deployment: migrations `2026_11_02_140000` (`notifications.archived_at` + index) and `2026_11_02_140100`
+(`notification_preferences`). No new permission key, package or environment variable.
+
+## E-mail templates (Task-50)
+
+Every e-mail is a notification built with `App\Notifications\Messages\BrandedMailMessage` (an arch test refuses a plain
+`MailMessage` under `App\Notifications`). It renders through Laravel's Markdown mail pipeline with one branded layout:
+
+- Template `resources/views/vendor/notifications/email.blade.php`; components `resources/views/vendor/mail/{html,text}/`
+  (`message`, `paragraph`, `quote`, `code`, `action`); theme `resources/views/vendor/mail/html/themes/moashir.css`
+  (inlined into every element) + `themes/adaptive.css` (mobile and dark-mode media queries, kept in `<style>`).
+  `config/mail.php` sets `markdown.theme = moashir` and the component path. No Markdown parsing of the lines, so text
+  such as `[x](url)` in an entity name stays plain text.
+- `<html lang dir>`, the wrapper tables' `dir`, alignment and font stack follow the active locale (Arabic: RTL, right
+  aligned, Tahoma / Segoe UI / Arial; English: LTR, left aligned, Montserrat / Arial). `App\Support\Mail\MailFrameComposer`
+  (registered by `NotificationMailServiceProvider`) gives the template the frame: locale, direction, logo path,
+  `/privacy` and `/terms` links on `FRONTEND_URL`, current year (Asia/Riyadh).
+- Locale: users get their profile language (`HasLocalePreference`); guest contact senders get the language of their
+  submission; other on-demand recipients get the locale the sender sets, otherwise `app.locale` (`ar`).
+- Frame texts in `lang/{ar,en}/mail.php`: subject prefix «منصة مؤشر — …» / "Moashir — …", greeting by name when the
+  recipient is a user («مرحباً سارة،» / "Hello Sara,") or «السلام عليكم،» / "Hello,", sign-off «مع التحية، فريق منصة مؤشر» /
+  "Regards, The Moashir team", footer © year + privacy + terms + the reason line (`App\Enums\Notifications\MailReason`:
+  account, invitation, address verification, linked address, contact form, security mailbox).
+- Logo: `resources/mail/moashir-logo-on-light.png` (360 × 210, 6 KB, rendered from
+  `resources/documents/logos/moashir-logo-on-light.svg` on an opaque white background so it stays readable in dark-mode
+  clients), attached inline (`cid:`). No remote image, font, pixel or stylesheet; links point only to the platform domain.
+- Codes (`->code()`) are shown large in an LTR isolate (`<bdi dir="ltr">`), selectable; staff replies (`->quote()`) in a
+  quoted block with `dir="auto"`; actions as a button plus the raw link below it (`word-break: break-all`). Lines added
+  after a code or a quote follow it.
+- Every e-mail is multipart (HTML + plain text, the text part rendered from the same template with the `text` components).
+- Quantities use `trans_choice` with `lang/{ar,en}/quantities.php` (six Arabic forms: 0, 1, 2, 3–10, 11–99, 100+, in the
+  genitive/accusative form used after «لمدة» / «على» / «بعد»; two English forms). Notification texts receive the counted
+  phrase (`LocalizedText::fromChoice('quantities.files', $n)`) in placeholders named after the noun (`:files`, `:winners`, …).
+- SMS: the default OTP text uses the new `{validity}` placeholder («5 دقائق» / "5 minutes"); `{minutes}` (bare number)
+  stays accepted for stored custom texts. The one-segment check uses the longest validity phrase of each language.
+
+Preview (renders through the real mail channel on the `array` mailer; nothing is sent, fictional data only):
+
+```
+php artisan moashir:mail:preview [CODE] [--locale=ar] [--locale=en] --out=<existing directory>
+```
+
+Without a code it renders the main e-mails (`MailSamples::MAIN`: sign-in code, password reset, staff invitation,
+registration, payment receipt, accredited result, certificate issued, contact reply); with a code (`REG-02`, `PAY-06`, …)
+every variant of that code. Each sample gives `<name>.<locale>.html` (logo as a data URI, opens in a browser) and
+`<name>.<locale>.txt` (subject + plain-text part).
+
+## Path distinction (phase 1, operator decision Session 24)
+
+One `assessor` role; each assessor is qualified for one or more paths; a Requests Follower can be limited to one or more paths;
+every queue, count, notification and setting is per path. Codes: request paths `accredited | advanced` (`self` is never queued),
+qualifications `accredited | advanced_initial` (enum `Enums\Identity\AssessorQualification`, extensible: a new case + its CHECK
+value). Labels `path_label{ar,en}` come from `lang/*/assessments.php` (`paths.*`, `qualifications.*`).
+
+### Assessor qualification
+- Table `user_assessor_qualifications` (user, qualification, granted by; unique pair; CHECK on the values).
+- `PUT /users/{id}/assessor-qualifications { qualifications: ["accredited", "advanced_initial"], reason? }` (`users.manage`,
+  seeded to the System Administrator only) replaces the set (empty list = none) → `User`. 422 `assessor_qualification.not_assessor`
+  (`errors.qualifications`) when a non-empty set targets an account without `assessment.score.manage` or an entity account,
+  `sod_self_grant` for the caller himself, `validation_failed`; Super Admin needs `reason` (10..1000, `reason_required`) and raises
+  SEC-04; Super Admin accounts answer 404. Audit `user.assessor_qualifications_changed` (old / new sorted lists, only when the set
+  changes).
+- `User` (`GET /users`, `/users/{id}` and every user write) adds `assessor_qualifications[]` and `request_scope { all_paths,
+  paths[] }`; `GET /auth/session` adds the same two fields for the signed-in user (sidebar entries).
+- Enforcement: `GET /requests/assessors`, assign and reassign accept only assessors qualified for the request's path (422
+  `assessor.not_qualified`, `meta.required_qualification`, `meta.path`); cycle initial assessors need `advanced_initial` at linking
+  (`PUT /award/cycles/{id}/initial-assessors`, 422 `assessor.not_qualified`), in the candidates list (`role=initial_assessor`) and
+  again at assignment. A Super Admin reopen re-assigns the last assessor only while they are still qualified (otherwise the request
+  goes back to `submitted`). Removing a qualification never ends an open assignment: the assessor finishes it, the follower may
+  reassign. Committee seats (phase 2) need no qualification yet.
+- Migration of existing data (`2026_11_03_100000`): every staff account that held `assessment.score.manage` (through a role or
+  directly) is qualified for `accredited`; every account linked as an ACTIVE initial assessor of an award cycle is also qualified
+  for `advanced_initial`, so running cycles keep working. New assessors start without qualifications: the System Administrator
+  sets them after the invitation.
+
+### Follower path scope
+- Table `user_request_paths` (user, path, granted by; unique pair; CHECK `accredited | advanced`). No row = every path (the
+  default for every existing follower); rows = only those paths. The Super Admin always follows every path.
+- `PUT /users/{id}/request-scope { all_paths: true }` or `{ all_paths: false, paths: ["accredited"] }` (1..2 distinct paths),
+  `reason?` → `User`. 422 `request_scope.not_follower` (`errors.paths`) when limiting an account without `requests.queue.view` or
+  an entity account, `sod_self_grant`, `validation_failed`; Super Admin reason + SEC-04 as above; audit `user.request_paths_changed`
+  (`["all"]` or the sorted paths).
+- Enforced server-side (`Services\Identity\RequestPathScope`): queue (`filter[path]` limited to the followed paths, 422 otherwise;
+  `filter[cycle_id]` refused without `advanced`), request detail, assign, reassign, return for completion and withdraw (404 for
+  another path), the assessment record scope of the global readers (`GET /assessments`, `/assessments/{id}`, form, evidence,
+  read-only review, global search → requests of other paths are invisible, except the user's own review work), the
+  `request_follower` dashboard (cards, `requests_by_path`, pipeline, busiest assessors) and the `assign_requests` /
+  `follow_up_overdue_requests` Action Center items, award cycles (the role-based global reader / committee manager status of the
+  System Administrator and the Requests Follower needs `advanced` in the scope), and broadcast notifications: a staff notice that
+  carries a path reaches only the role / permission holders who follow it (targeted notices to the assignee are unchanged).
+
+### Separate queues and counts
+- `GET /requests` and `GET /requests/assigned` serve one path each (`meta.path`) and return `meta.path_counts` for the sidebar
+  (queue: `total`, `awaiting_assignment`, `overdue`; assigned: `new`, `in_progress`, `completed`), each entry with `path_label`.
+- Notifications store `path` (`notifications.path`, nullable) for request, assessment, award and accredited-payment notices;
+  the notification item returns `path` + `path_label`; `GET /notifications?filter[path]=` filters by it.
+- `path_label{ar,en}` is added next to `path` on every request / assessment payload: queue row and detail, assigned row, assessment
+  record, result, review context, global-search hits, deletion-impact open requests, dashboard rows (`due_soon`, entity
+  `requests`, `latest_result`, `activity`, `pipeline`, `requests_by_path`).
+
+### Per-path settings
+- `GET /settings/assessment/paths/{accredited|advanced}` (`settings.assessment.manage`; `self` answers 404) → `{ path, path_label,
+  review_sla_days, review_sla_limits{min,max}, upload_limits{ max_file_mb, allowed_types[], max_files_per_sub },
+  upload_limit_bounds{ max_file_mb: 100, max_files_per_sub: 50 }, evidence_type_catalog[], is_paid, price{ price_before_vat,
+  vat_rate, vat_amount, total, currency } | null, entity_texts{ intro, instructions, after_submission } }` (each text `{ar,en}` or
+  null).
+- `PUT` (partial): `review_sla_days` 1..120, `upload_max_file_mb` 1..100, `evidence_allowed_types[]` ⊂ catalog (≥ 1),
+  `evidence_max_files_per_sub` 1..50, `price` (`"2300.00"`, before VAT; paid paths only — `prohibited` on `advanced`; also checked
+  with `settings.finance.edit-field`), `entity_texts{ <key>: {ar, en} | null }` (both languages, ≤ 2000 characters each, a key
+  left out is kept, `null` clears it), `reason` (Super Admin, SEC-04). One transaction under the settings locks; every changed key
+  is audited (`settings.assessment_updated`; the price `settings.finance_updated`, same key as `/settings/finance`). A changed
+  accredited SLA re-derives the open due dates (`RecomputeAccreditedDueDatesJob`); the advanced SLA is the default copied into new
+  award cycles (each cycle keeps its own `initial_review_sla_days`).
+- Storage: the accredited / advanced SLA and the accredited price keep their keys (`assessment.accredited_review_sla_days`,
+  `assessment.advanced_initial_review_sla_days`, `assessment.accredited_price`); new keys
+  `assessment.<path>_upload_max_file_mb`, `…_evidence_allowed_types`, `…_evidence_max_files_per_sub`, `…_entity_texts`. Migration
+  `2026_11_03_100300` copies the stored shared values (`files.max_size_mb`, `files.evidence_allowed_types`,
+  `files.evidence_max_files_per_sub`) into both paths, so nothing changes for existing data. `files.max_size_mb` stays the limit of
+  non-evidence uploads (refund evidence).
+- Entity-facing read: `GET /content/assessment-paths/{accredited|advanced}` (public, `throttle:public`) → `{ path, path_label,
+  entity_texts, review_sla_days, upload_limits, is_paid, price }`. The entity form (`GET /assessments/{id}/form`) returns the
+  `upload_limits` of its path.
+
+## Certificates, feedback report and PDF documents (phase 1, Task-39)
+
+### PDF documents
+- Contract `Contracts\Documents\PdfRenderer::render(PdfDocument): string` (unchanged). `PdfDocument { template, data,
+  watermark (TEST | VOID | null), locale (ar default) }`; templates are the enum `Enums\Documents\DocumentTemplate`
+  (`payment_receipt`, `accredited_certificate`, `feedback_report`), each one a Blade view under
+  `resources/views/documents/` (the ONLY Blade views of the project, operator decision Session 24). Nothing is served as
+  HTML.
+- `Services\Documents\DocumentHtmlComposer` renders the view with the document locale (`<html lang dir>`), the escaped
+  data (`{{ }}` only, no raw output), the watermark and `DocumentAssets`: fonts, logo, level seals and the QR code
+  (`bacon/bacon-qr-code` 3.1.1, SVG) are inlined as `data:` URIs read from `resources/documents/` (no SPA build at
+  runtime). A `Content-Security-Policy` meta (`default-src 'none'; img-src data:; font-src data:`) blocks anything else.
+- `Integrations\Documents\ChromiumPdfRenderer` (`chrome-php/chrome` 1.16.1): composes the HTML, takes the only render
+  slot with `Cache::funnel('documents:pdf-render')->limit(1)` (web requests and Horizon jobs share it; waits up to 30 s,
+  then 503 `document.renderer_busy` with `Retry-After: 30`), and prints through `Contracts\Documents\HtmlPdfPrinter`
+  (`HeadlessChromePrinter`). The printer launches the binary with a private temporary profile (mode 700, removed in
+  `finally`), the sandbox ON (never `--no-sandbox`), `--host-resolver-rules=MAP * ~NOTFOUND`,
+  `--remote-allow-origins=http://127.0.0.1` (instead of `*`), then `Emulation.setScriptExecutionDisabled`,
+  `Network.setBlockedURLs` (http, https, file, ftp, ws, wss), `setHtml`, waits for `document.fonts.ready` and sends
+  `Page.printToPDF` over CDP with `printBackground`, `preferCSSPageSize`, `generateTaggedPDF` and
+  `generateDocumentOutline`. The browser is always closed. Any engine failure is reported to GlitchTip and answers 503
+  `document.render_failed`.
+- Selection (`IntegrationServiceProvider`): `PDF_RENDERER=fake` in local / testing → `FakePdfRenderer`;
+  `PDF_RENDERER=chromium` with an executable `PDF_CHROME_BINARY` → `ChromiumPdfRenderer`; otherwise
+  `UnavailablePdfRenderer` (503 `document.renderer_unavailable`).
+- Fonts (OFL, licences in `resources/documents/fonts/`): Alexandria 700 / 800 (Arabic headings, operator decision
+  Session 24; the SPA's self-hosted Arabic WOFF2 files `alexandria-arabic-{700,800}.woff2` and `OFL-alexandria.txt`), IBM
+  Plex Sans Arabic 400 / 600 / 700 (Arabic body, FULL TTF files) and the SPA's Montserrat Latin variable WOFF2 listed first
+  in every stack for Latin letters and Western digits (so the Arabic-only Alexandria subset is enough for headings).
+  Tajawal is no longer shipped. Changing the display font again: copy the OFL files into `resources/documents/fonts/`, add
+  them to `DocumentAssets::FONTS` and change the two `Moashir Heading` rules of
+  `resources/views/documents/partials/fonts.blade.php`.
+- Identity: colours of the identity guide as CSS variables (`partials/tokens.blade.php`), the on-light logo and the
+  star from Task-38, the four level seals from Task-40 with the "2013" outlines removed; the seal prints the ISSUE year
+  (operator decision). Percentages inside Arabic sentences are `<bdi dir="ltr">87.50%</bdi>` (number then sign).
+  Dates: Gregorian + Umm al-Qura with Western digits, Asia/Riyadh.
+- `php artisan moashir:documents:render-samples --output=<dir>` prints fictional samples (gold certificate with a
+  fictional entity logo, silver certificate without a logo, participation certificate, Arabic and English feedback
+  reports, a TEST receipt) with the configured renderer; the deployment smoke check uses it.
+- Entity logo (Task-47): when the certificate keeps a logo, the template prints it beside the entity name
+  (`.certificate__entity-row`, at most 36 × 18 mm, `object-fit: contain`) as an inline `data:image/png|jpeg` URI; any
+  other value is ignored. Without a logo the markup and layout are the same as before.
+
+### Certificate data
+- `certificates` (append-only, trigger + model guard; never deleted, also kept by the permanent entity deletion, P-02):
+  `public_id`, `number` (`CRT-YYYY-######`, gap-free series `certificates.accredited` per Asia/Riyadh year; requests
+  opened by a TEST payment get `TEST-CRT-YYYY-######` from their own series and a TEST watermark), `verification_code`
+  (28 characters of the Crockford alphabet = 140 random bits, unique; shown in groups of four), `kind` (`accredited`),
+  `level` (`bronze | silver | gold | diamond | null` = participation certificate), `status` (`issued | suspended |
+  revoked | superseded`), `is_test`, entity, assessment, `result_snapshot_id`, `score_percent`, frozen `snapshot` (entity name,
+  reference, request number, percent, level, the thresholds used, result version), `issued_at`, `issued_by_user_id`,
+  `pdf_file_id` (stored PERMANENTLY, Q-80; set once), `entity_logo_file_id` (Task-47: the entity's logo AT ISSUE, read
+  under a share lock on the entity row in the issuing transaction; immutable through the trigger, migration
+  `2026_11_04_120200`; the PDF — rendered later by the job or on the first download — always uses this file, so an
+  issued certificate never changes when the logo changes; the logo file is kept while a certificate references it),
+  `replaces_certificate_id` + `reissue_reason`, `revoked_at` /
+  `revoked_reason` / `revoked_by_user_id`, `superseded_at`, `suspended_at` / `suspended_reason` (the Super Admin's reopen
+  reason, staff-internal, never returned by the API). Partial unique index: ONE `issued` certificate per assessment and
+  kind. The trigger allows only `pdf_file_id` (once), the `issued → suspended | revoked | superseded` moves and the
+  `suspended → revoked | superseded` moves; a suspension is never undone or rewritten (migration `2026_11_03_130200`).
+- `certificate_verification_logs`: every public verification (`certificate_id`, `outcome`, `ip_hash` = HMAC-SHA256 of
+  the address with the application key, never the address), pruned after 365 days by
+  `moashir:certificates:prune-verification-logs` (daily 03:30).
+- Settings (`settings` table, group `certificates`): `certificates.level_thresholds` (default bronze 60.00, silver
+  70.00, gold 80.00, diamond 90.00; strictly ascending, 0.01..100, two decimals) and
+  `certificates.accredited_issuance_enabled` (default true). The level is decided on the two-decimal percentage printed
+  on the certificate (69.995 → 70.00 → silver); below bronze → participation certificate without a level.
+
+### Issue, re-issue, revoke
+- **On completion (Q-49):** `POST /assessments/{id}/complete` takes `issue_certificate` (default `true`).
+  `AssessmentCompleted` carries the completing assessor; the queued listener `IssueCertificateOnCompletion` (3 tries)
+  runs `Actions\Certificates\IssueAccreditedCertificate`: issuance switched on, accredited request `completed` with a
+  result, entity not frozen; idempotent (the issued certificate of the request is returned). It writes
+  `certificate.issued`, sends ACC-09 (entity: link `/certificates`; System Administrators: `/admin/requests/{id}`) and
+  queues `RenderCertificatePdfJob` (stored PDF; first download renders it if the job has not run).
+- **Later by the completing assessor:** `POST /assessments/{assessment}/certificate { reason? }` (ability
+  `certificates.accredited-certificate.issue` = `certificates.issue.accredited` + the assessor's own completed
+  assignment; others 403 / 404) → 201 new or 200 existing; 422 `certificate.issuance_disabled`, 409
+  `certificate.assessment_not_completed`, 409 `entity.deleted`. The Super Admin needs `reason` (422 `reason_required`,
+  SEC-04).
+- **Revoke (Q-68):** `POST /certificates/{id}/revoke { reason 10..1000 }` (`certificates.manage` within the assessment
+  record scope = System Administrator; Super Admin with SEC-04) → `revoked`, audit `certificate.revoked` with the reason,
+  CERT-01 to the entity (with the reason) and the System Administrators; 409 `certificate.not_issued`.
+- **Re-issue (Q-49):** `POST /certificates/{id}/reissue { reason 10..1000 }` (same ability) → 201 a NEW certificate (new
+  number and code, current result snapshot, current entity name, logo and thresholds, `replaces`), the source becomes
+  `superseded` when it was issued or suspended (a revoked source stays revoked); 409 `certificate.superseded`,
+  `certificate.replacement_exists`, `certificate.assessment_not_completed`. Audits `certificate.superseded` +
+  `certificate.reissued`; ACC-09 again.
+- **Suspension on reopen (operator decision Session 24):** when the Super Admin reopens a completed accredited request
+  (`POST /assessments/{id}/reopen`) or forces it out of `completed` (`/transition/force`), the issued certificate becomes
+  `suspended` in the same transaction (`Contracts\Assessments\AssessmentReopenStep`, bound to
+  `Services\Certificates\CertificateSuspender`): audit `certificate.suspended`, CERT-02 to the entity (link
+  `/certificates`, without the reason) and the System Administrators. While suspended: verification answers
+  `under_review` with `level` and `percent` hidden, downloads answer 409 `certificate.suspended`, the System Administrator
+  may still revoke it (CERT-01). When the request is completed again, the completion listener (or a later
+  `POST /assessments/{id}/certificate` when the assessor opted out) issues a NEW certificate that `replaces` the suspended
+  one (`reissue_reason` = the reopen reason, staff only) and the suspended one becomes `superseded`; ACC-09 is sent. With
+  issuance switched off in the settings the certificate stays suspended until a System Administrator re-issues or
+  revokes it. Super Admin score overrides without a reopen do not touch the certificate (Task-39 decision 5).
+
+### Certificate endpoints and shapes
+| Method | Path | Ability / limiter | Notes |
+|---|---|---|---|
+| GET | `/certificates` (`filter[status]` = comma list of statuses, `filter[level|entity_id|assessment_id]`, `search` = number, `page`, `per_page` ≤ 100) | `can:viewAny` (entity `certificates.own.view`, staff `certificates.manage`) | entity: own; staff: certificates of assessments in their record scope (System Administrator all accredited; the Award Secretary sees none in phase 1); `meta.status_counts { issued, suspended, revoked, superseded }` under the same scope and filters, ignoring `filter[status]` (Task-46) |
+| GET | `/certificates/{uuid}` | `can:view` | owner or manager, 404 otherwise |
+| POST | `/certificates/{uuid}/download` | `can:download`, `throttle:downloads` | `{ url, expires_at, file_name }` (signed 5 min, user-bound; `GET /files/{file}/download` audits `file.downloaded`); 409 `certificate.revoked` / `certificate.superseded` |
+| POST | `/certificates/{uuid}/revoke`, `/reissue` | `can:revoke` / `can:reissue`, `throttle:sensitive` | see above |
+| POST | `/assessments/{id}/certificate` | `can:certificates.accredited-certificate.issue,assessment`, `throttle:sensitive` | see above |
+| GET | `/verify/{code}` | public, `throttle:certificate-verify` (30/min per IP) | QR target of the SPA page `/verify/{code}`; dashes, spaces and case are ignored |
+| GET | `/content/certificate-levels` | public, `throttle:public` | `{ levels[{ level, label{ar,en}, min_percent }], participation_below }` from the current settings (home page section "excellence levels"; a level ends 0.01 below the next minimum) |
+| GET / PUT | `/settings/certificates` | `can:settings.certificates-section.manage` (`settings.certificates.manage`), PUT `throttle:sensitive` | `{ accredited_issuance_enabled, level_thresholds{ bronze, silver, gold, diamond } }`; PUT partial with `reason` (Super Admin required, SEC-04); each changed key audited `settings.certificates_updated` |
+
+`Certificate` = `{ id (uuid), number, kind, level, level_label{ar,en}|null, status, is_test, percent, request{ id, number,
+path, path_label }, entity{ id, reference, name{ar,en} }, verification_code (grouped), verification_url, issued_at,
+revoked_at, revoked_reason, superseded_at, suspended_at, replaces{ id, number }|null, has_pdf }`; staff readers also get `issued_by{ id,
+name }`, `revoked_by{ id, name }`, `reissue_reason` (the assessor is never shown to the entity, Q-19). Verification =
+`{ result: valid | under_review | revoked | superseded | not_found, certificate: { number, kind, level, level_label, percent,
+entity_name{ar,en}, issued_at, is_test } | null }` — 200 also for unknown codes (no enumeration signal), never a
+reason, never ids.
+
+### Feedback report (accredited, §9.1, Q-80)
+Generated ON DEMAND from the immutable result snapshot (scores) and the assessor's feedback items (strengths,
+improvement points, notes per sub-criterion); nothing is stored as a file.
+- `GET /assessments/{id}/feedback-report` (ability `reports.feedback-report.view` = `reports.feedback.view` + assessment
+  record scope; accredited path only, other paths 404): before completion 200 `{ assessment_id, number, path,
+  path_label, status, is_frozen, available: false }` (Q-94); then `{ …, available: true, source: assessor_assessment,
+  result_version, entity{ id, reference, name{ar,en}, type, type_label{ar,en}, region{ar,en}, city{ar,en} },
+  completed_at, completed_on, completed_on_hijri{ar,en}, total, max_total, percent, certificate{ id, number, level,
+  level_label }|null, assessor_summary{ body, version }|null, criteria[{ criterion_id, code, name{ar,en}, weight, earned, percent, subs[{ sub_id, code,
+  name{ar,en}, weight, earned, percent, strengths, improvement_points, notes }] }] }`. Readers: the entity (own), the
+  assessor of the request, the System Administrator and the Requests Follower (their path scope); never an assessor
+  identity.
+- `POST /assessments/{id}/feedback-report/export { locale?: ar | en }` (same ability, `throttle:exports`; default
+  language = request language) → `{ url, expires_at, file_name }`; 422 `report.not_available`. The URL is a temporary
+  signed route (5 minutes, bound to the requester) to `GET /assessments/{id}/feedback-report/pdf?locale=&user=`
+  (`throttle:downloads`), which renders the PDF (A4 portrait, page X of Y, TEST watermark for a request opened by a test
+  payment), streams it (`no-store`) and audits `feedback_report.exported` (class C download, Q-87). 403
+  `signature.invalid` for another user, 410 `signature.expired`, 503 while no renderer is available.
+- ACC-10 keeps its link `/assessment/accredited/result/{id}/feedback`.
+- The PDF prints the «ملخص المقيّم» block after the totals and before the per-criterion section when
+  `assessor_summary` is filled (Task-64, Q-154); it is hidden otherwise.
+
+### Assessor summary «ملخص المقيّم» (Task-64, Q-154)
+- Table `assessment_summaries` (append-only, versioned like `assessment_feedback_items`): `assessment_id`, `body`
+  (CHECK not blank), `author_user_id`, `version` (≥ 1, unique per assessment), `change_reason`, `superseded_at`,
+  `created_at`; partial unique index = one current row per assessment; trigger `moashir_guard_supersede_once()` (update
+  only to set `superseded_at` once; delete only during entity erasure) and the truncate guard.
+- `PUT /assessments/{id}/review/summary { summary: string|null (required key, ≤ moashir.assessment.summary_max_chars =
+  2000 characters, trimmed), reason? }` — `can:score` (active assignee) + `throttle:assessment-write`. Same text = no-op;
+  changed text = supersede + `version + 1`; empty / `null` = supersede and clear. Answers `{ summary: { body, version,
+  updated_at }|null }`. Errors: 409 `assessment.summary_not_applicable` (advanced path), 409 `state.transition_illegal`
+  (not `under_review`, e.g. Super Admin on a completed request), 403 when the caller is not the active assignee (the
+  assignment ends at completion, so a completed request answers 403 to its former assessor), 404 for an unrelated
+  assessor, 422 (too long, Super Admin without `reason` → `reason_required`), 409 `entity.deleted` (frozen entity).
+- Audit `assessment.summary_saved` `{ version, cleared }` (never the text). No notification.
+- `GET /assessments/{id}/review` adds `summary` (assignee and read-only review). Completion never requires it.
+
+## Excellence level on staff lists, dashboards and the entity home (Task-67)
+
+**Level rule (one place).** `Entity::levelCertificate()` is a has-one-of-many relation: the entity's ACCREDITED
+certificate with status `issued`, latest by `issued_at`, then `id`. Revoked, suspended and superseded certificates never
+count (a revoked newest certificate falls back to the previous issued one). `level` = the certificate's metal level
+(`bronze | silver | gold | diamond`), `participation` when the certificate has no metal level, `null` without an issued
+certificate. Test certificates (`TEST-CRT-…`, demo data) count like any issued certificate. Read-side helpers:
+`App\Support\Certificates\EntityLevelQuery` (eager-load constant, filter, sort, dashboard key, open-request flag) and
+`EntityLevelPresenter`; enums `EntityLevel`, `EntityLevelFilter`, `EntityLevelBucket`. Levels are always set-based: one
+eager-load query per page (or a correlated sub-select for sort / dashboard), never one query per row — the list and the
+queue have query-count tests.
+
+**"Open accredited request"** = an accredited request in `draft | submitted | assigned | under_review | needs_completion`
+(paid and not finished; `awaiting_payment`, `completed`, `refunded`, `declined_incomplete` are not open).
+
+- `GET /entities` rows (all three variants: full staff, name and contact, summary) and `GET /entities/{id}` add
+  `level: "bronze"|"silver"|"gold"|"diamond"|"participation"|null` and `level_certificate_number: string|null`
+  (e.g. `"CRT-2026-000014"`). The full staff view (`StaffEntityResource`, list and record) also adds
+  `has_open_accredited_request: bool`; the other variants do not carry this key.
+- `filter[level]` ∈ `none | participation | bronze | silver | gold | diamond` (`none` = no issued certificate); anything
+  else → 422 `validation_failed` (`errors["filter.level"]`). The filter also narrows `meta.stats` and the CSV export, and
+  the export audit records `filters.level`.
+- `sort=level` orders none < participation < bronze < silver < gold < diamond; `sort=-level` the reverse; ties by `id`.
+- `GET /requests` rows and `GET /requests/{id}` (and the assignment / advanced action answers built on it): `entity.level`
+  (same values; no certificate number in the queue).
+- Dashboard widget `entities_by_level` (System Administrator and Executive boards, `bars`): non-erased, non-deleted
+  entities, fixed order and keys, zero counts kept:
+
+```
+{ "key": "entities_by_level", "data": [
+  { "key": "none", "count": 4 }, { "key": "in_progress", "count": 1 }, { "key": "participation", "count": 2 },
+  { "key": "bronze", "count": 3 }, { "key": "silver", "count": 1 }, { "key": "gold", "count": 2 }, { "key": "diamond", "count": 0 } ] }
+```
+
+  `in_progress` = no level AND an open accredited request; an entity with a level and an open request stays in its level.
+  Labels come from the SPA i18n (level names already exist; widget title is an SPA key).
+- Entity board card `{ "key": "accepted_evidence_count", "value": 7, "format": "count", "link": null }`: the entity's
+  evidence files that are present (not removed) and passed the malware scan (`clean`), across all its requests. The
+  domain has no per-file acceptance by the assessor; "accepted" = accepted by the platform.
+- Entity board widget `criteria_progress` (main criteria, used by the home strengths / improvements block) now reads the
+  latest ELIGIBLE accredited result with the insights rules (`AccreditedResultsReader` + `EligibleResultSelector`:
+  completed accredited, newest first, revoked / suspended excluded); never a self result. `[]` when there is none. The
+  `latest_result` widget and the `latest_result_percent` card keep the latest self OR accredited result as before.
+- `GET /dashboard/action-center` → `meta: { total, generated_at: "2026-11-05T08:00:00+00:00" }`.
+
+No migration, permission, package or environment variable.
+
+## Excellence tools — wave 1 (Task-64, analysis-excellence-tools ET-01 … ET-30)
+
+Computed ON READ from the frozen result snapshot, the current feedback items, the current assessor summary and the
+current rule versions; nothing derived is stored.
+
+### Eligibility and selection
+- Eligible result = an ACCREDITED assessment with status `completed`, a current result snapshot and a latest
+  certificate (by id) that is neither `revoked` nor `suspended`. Self is never eligible (404 on tool routes); advanced is
+  never eligible (409 `not_accredited`). Verified date = `completed_at`; default = the latest (tie → higher id);
+  previous = the eligible result just before the one shown (`Support\Insights\EligibleResultSelector`,
+  `ResultEligibility`).
+- Exclusion notices: a revoked certificate (`certificate_revoked`) or a reopened / suspended result (`under_review`)
+  newer than the selected result.
+- Classification compares the displayed percent (2 decimals, half-up) with the CURRENT rules
+  (`Support\ValueObjects\GapThresholds`, `MaturityBounds`); the previous result of a delta uses the same rules.
+
+### Settings (`/api/v1/settings/insights`, `settings.assessment.manage`)
+- `GET` → `{ gap_thresholds{ critical_below, strength_from, version }, maturity_bands{ developing_from, mature_from,
+  leading_from, version }, aligned (bands 50/80 = gaps), effective_since|null }`. Defaults 50.00 / 80.00 and
+  50.00 / 70.00 / 80.00, version 1.
+- `PUT { gap_thresholds?: { critical_below, strength_from }, maturity_bands?: { developing_from, mature_from,
+  leading_from }, reason? }`: strings with at most 2 decimals, `0 < … ≤ 100`, strictly ascending (422 on the group
+  key); the server raises `version` by one on a real change only; audit `settings.insights_updated` (before / after);
+  Super Admin needs `reason` (422 `reason_required`) and raises SEC-04. Advisory lock `settings:insights`.
+
+### Interpretation texts (`/api/v1/content/maturity-texts`, `content.insights.manage`)
+- Table `maturity_interpretations` (`band` ∈ 4 bands, `main_criterion_code` nullable, `text` jsonb `{ar,en}` nullable for
+  the four seeded generic rows, `updated_by_user_id`); unique generic row per band and unique (band, code) override.
+- `GET ?page=&per_page=` (paginated, generic rows first) → `[{ id, band, main_criterion_code, is_generic,
+  in_published_version|null, text{ar,en}|null, updated_at }]`.
+- `PUT /{band} { main_criterion_code?, text{ ar, en } }` upserts (plain text, ≤ 600 characters each, no markup; code
+  must exist in `main_criteria`); unknown band 404. `DELETE /{id}` removes an override (204); a generic row answers 422
+  `insights.generic_text_not_deletable`. Every change audits `content.maturity_texts_updated` (band, code, before / after).
+- Resolution: override (band, main code) > generic text of the band > none.
+
+### Endpoints (all `/api/v1`, signed-in stack)
+| Method | Path | Ability |
+|---|---|---|
+| GET | `/entities/me/insights` | `reports.insights.view-own` (entity + `reports.insights.own.view`) |
+| GET | `/entities/me/insights/results?page=` | same |
+| GET | `/entities/me/report-library?page=` | same |
+| GET | `/entities/{entity}/insights`, `/insights/results`, `/report-library` | `reports.insights.view-entity` (`reports.insights.view` + global reader; deleted entity needs `entities.delete`) |
+| GET | `/assessments/{id}/insights/strengths-gaps`, `/maturity`, `/executive-summary` | `reports.insights.view-assessment` |
+| POST | `/assessments/{id}/board-report/export { locale? }` | same + `throttle:exports` |
+| GET | `/assessments/{id}/board-report/pdf?locale=&user=&signature=` | signed (5 min, user-bound) + same + `throttle:downloads` |
+| GET / PUT | `/settings/insights` | `settings.assessment.manage` (`throttle:sensitive` on PUT) |
+| GET / PUT / DELETE | `/content/maturity-texts` … | `content.insights.manage` (`throttle:content-write` on writes) |
+| PUT | `/assessments/{id}/review/summary` | `can:score` (see "Assessor summary") |
+
+`reports.insights.view-assessment`: self path 404; no insights permission 403 (assessors, Content / Finance Officer …);
+owner with `reports.insights.own.view` or global reader covering the accredited path with `reports.insights.view`
+allowed; anything else 404 (another entity, follower without the accredited path). Super Admin by `Gate::before`.
+
+Shapes:
+- `ResultRef` = `{ assessment_id, number, percent, snapshot_version, verified_at, criteria_version{ id,
+  version_number, label{ar,en}|null }|null, certificate{ id, number, status, level|null }|null }`. `certificate` is
+  `null` when the result has no certificate; `number` is the certificate number (`CRT-2026-000003`, Task-69 G-2),
+  also for a revoked or suspended certificate (read it with `status`).
+- Overview (200 always): `{ selected: ResultRef|null, exclusions[{ assessment_id, number, reason }], empty_state{ reason:
+  no_verified_result|only_self|in_progress|under_review, cta{ kind: start_accredited|view_request, assessment_id|null
+  }|null }|null, in_progress_request{ assessment_id }|null, rules{ gap_thresholds_version, maturity_bands_version,
+  effective_since } }`. `cta` is `null` for staff. A follower without the accredited path sees no result.
+- Results: `ResultRef[]` newest first, 15 per page, `meta.pagination`.
+- Strengths and gaps: `{ result, rules{ critical_below, strength_from, version, effective_since }, counts{ strength,
+  opportunity, critical_gap }, mains[{ code, name, percent, class }], items{ strengths[], opportunities[],
+  critical_gaps[] } }`; item = `{ main_code, main_name, sub_code, sub_name, weight, earned, percent, lost_points, class,
+  assessor{ strengths, improvement_points } }` (notes are never shown). Order: gaps and opportunities by lost points
+  desc, percent asc, criteria order; strengths by percent desc, weight desc, criteria order.
+- Maturity: `{ result, previous: ResultRef|null, versions_differ, rules{ developing_from, mature_from, leading_from,
+  version, effective_since }, overall{ percent, band, delta_pp|null, previous_band|null }, mains[{ code, name,
+  description, weight, earned, percent, band, interpretation{ar,en}|null, comparison: matched|new_in_version|no_previous,
+  delta_pp|null, previous_band|null, subs[{ code, name, percent, band, delta_pp|null }] }], removed_since_previous[{ code,
+  name, previous_percent }] }`. `delta_pp` is a signed string with 2 decimals (`"-2.50"`).
+- Executive summary: `{ result, entity{ name, has_logo, logo_url|null }, score{ percent, earned, total_weight }, certificate{ standing:
+  level|participation|not_issued, level|null }, change{ delta_pp|null, previous|null, versions_differ },
+  assessor_summary{ body, version }|null, profile{ classes{…}, bands{…} }, strong_areas[item + quote],
+  priority_gaps[item + quote], rules{ …versions, gap_thresholds, maturity_bands } }` (top 3 each; priority gaps =
+  critical gaps then opportunities). `entity.logo_url` (Task-69 G-1) is a short-lived signed link to
+  `GET /api/v1/files/{public_id}/download?user=…&expires=…&signature=…` (the existing file-download route, bound to the
+  viewer, TTL `moashir.finance.download_ttl_minutes`), never a storage path; `null` when the entity has no logo, the
+  logo is not scanned clean, or the viewer may not view the entity logo (`EntityPolicy::viewLogo`).
+- Report library: rows `{ result, eligible, exclusion_reason|null, items[{ kind: feedback_report|board_report|certificate,
+  available, status|null, certificate_id|null }] }` per accredited result with a snapshot (completed, revoked or
+  reopened), newest first, 15 per page; `meta.coming_soon[{ kind: periodic|annual|benchmark }]`. The
+  `feedback_report` item also has `pdf_available` (bool) and `pdf_url` (string|null, Task-69 G-4): a signed link to
+  `GET /api/v1/assessments/{id}/feedback-report/pdf?locale=…&user=…&expires=…&signature=…` bound to the viewer
+  (another user 403 `signature.invalid`, expired 410), in the request language, TTL
+  `moashir.documents.download_ttl_minutes`; every download audits `feedback_report.exported`. `pdf_available` is `false`
+  and `pdf_url` `null` when the request is not completed or the viewer lacks the feedback-report ability
+  (`reports.feedback.view` + record scope). The `board_report` and `certificate` items have no PDF keys (board report:
+  `POST …/board-report/export`; certificate: `POST /certificates/{id}/download`).
+- Errors: 409 `insights.result_not_eligible` with `meta.reason` = `not_completed | not_accredited | certificate_revoked |
+  under_review` (tools, export, PDF), 404 hides other entities, 403 missing permission, 422 `page` / `locale`.
+
+### Board report PDF
+Template `documents.board_report` (A4 portrait, ar RTL / en LTR, embedded fonts, entity logo when uploaded, no QR,
+footer «وثيقة داخلية للجهة — سرية», rules and snapshot versions). One page up to 12 main criteria (checked with the
+rendered samples `moashir:documents:render-samples`, ar and en, longest summary and quotes); the assessor summary is
+cut at 600 characters on a word boundary with the pointer to the feedback report, quotes at 200
+(`moashir.insights.*`). Not stored; every download audits `board_report.exported` (`assessment_id`, `snapshot_version`,
+`locale`, both rule versions, tag `download`). File name `board-report-{request_number}-{locale}.pdf`.
+
+### Permissions
+`reports.insights.own.view` (entity, not confidential), `reports.insights.view` (System Administrator, Requests
+Follower; confidential), `content.insights.manage` (Content Officer, System Administrator). Assessors and the other
+roles have no access. Apply with `php artisan moashir:permissions:sync`.
+
+## Contact messages (phase 1, Task-42)
+
+Operator decision (Session 24): a REAL contact form on the public site and a back-office inbox with replies. Guest senders
+are answered by e-mail; signed-in senders by e-mail AND in the portal, and their messages appear in "My messages".
+
+### Data
+- `contact_messages`: `public_id` (uuid, used in every URL), `reference` (`CNT-YYYY-######`, gap-free series
+  `contact.messages` per Asia/Riyadh year in `yearly_number_sequences`), `status` (`new | in_progress | replied | closed`),
+  `enquiry_type` (`general | self_assessment | accredited_assessment | payments | technical_support | other |
+  privacy_request`; `privacy_request` = «طلب يتعلق بالبيانات الشخصية» / "Personal data request", Task-49),
+  `sender_name`, `sender_email` (lower case), `sender_mobile` (`+9665XXXXXXXX`, ENCRYPTED at rest, Q-75),
+  `organization_name`, `locale` (`ar | en`, the request language), `user_id` / `entity_id` (linked sender), assignee,
+  `privacy_terms_version_id` + `privacy_consent_at` (consent record), `last_activity_at`, `replied_at`, `closed_at` /
+  `closed_by_user_id`. CHECK constraints on every enum, the reference, `closed_at` and the link.
+- `contact_message_entries`: the thread, `kind` (`message` = from the sender, `reply` = staff answer e-mailed to the sender,
+  `note` = internal, never shown to the sender), `body` (1..5000), author; immutable (trigger + model guard against
+  UPDATE), deleted only by the retention purge and the erasure tools.
+
+### Rules
+- **Linking (PM security decision):** a message is linked to a user (and the user's entity) ONLY when it is sent from a
+  valid signed-in session (`Services\Contact\SignedInSender`: web session, not idle / absolute expired, MFA satisfied).
+  The name, e-mail and organisation are then taken from the account (entity name in the request language), never from the
+  form. A guest message whose e-mail matches an account is NOT linked; it stays a guest message answered by e-mail only.
+- **Spam protection (no third-party CAPTCHA):** honeypot field `website` (must be empty; a filled one answers the normal 201
+  with a decoy reference and stores and sends nothing, logged as `contact.submission_dropped` without data); limiter
+  `contact-messages` = 5 per 10 minutes and 20 per day per IP, 3 per hour per sender e-mail (the account e-mail when signed
+  in), values in `config/moashir.php` (`moashir.contact.*`). The acknowledgement never echoes the sender's text or name
+  (the form cannot be used to relay content to third-party mailboxes).
+- **Back office:** permission `contact.messages.manage` (GRANTABLE, module `content`, confidential; seeded to the System
+  Administrator and the Content Officer; granted to any other role through the permissions matrix; applied by
+  `moashir:permissions:sync`). Every holder sees every message (one shared inbox). Assignment accepts only active staff
+  holding the permission (`GET /admin/contact-messages/assignees`). The Super Admin must give a `reason` (10..1000) for
+  every inbox action and raises SEC-04 (`StaffActionReason`).
+- **States:** `new → in_progress` (assigned), `→ replied` (staff reply), `→ in_progress` (sender follow-up on a replied
+  thread; a follow-up on a `new` thread keeps `new`), any open state `→ closed` (reason optional), `closed → in_progress`
+  (reopen). Replies, assignments and sender follow-ups on a closed thread answer 409 `contact.message_closed`; an illegal
+  close / reopen answers 409 `state.transition_illegal`. Internal notes are allowed in every state and change nothing.
+- **Audit** (`contact_message.received | assigned | note_added | replied | follow_up_received | closed | reopened`): reference,
+  status, enquiry type, entry id, assignee id and `is_linked` only — never a message body, name, e-mail or mobile number.
+
+### Contact endpoints
+| Method | Path | Ability / limiter | Body / answer |
+|---|---|---|---|
+| POST | `/contact-messages` | public (session used when present), `throttle:contact-messages` | `{ name, email, mobile?, organization?, enquiry_type, message (10..5000), privacy_consent: true, website: "" }` (name / email required for guests, ignored when signed in; mobile `05XXXXXXXX` or `+9665XXXXXXXX`) → 201 `{ reference, created_at }` (+ `id` only when the message was linked to the signed-in sender, Task-46); 422 field errors; 429 `rate_limited` |
+| GET | `/me/contact-messages` (`filter[status]` = comma list of statuses, `page`, `per_page` ≤ 100) | signed in (`can:viewOwn`) | paginated `MyContactMessage` (own linked messages only), `meta.status_counts { new, in_progress, replied, closed }` (own messages, ignoring the filter) and `meta.unread_replies` |
+| PATCH | `/me/contact-messages/{id}/seen` | signed in; another sender's message answers 404 for everyone, the Super Admin included | → `MyContactMessage` + `entries`; sets `sender_seen_at` (idempotent, not audited) |
+| GET | `/me/contact-messages/{id}` | signed in; another sender's message answers 404 for everyone, the Super Admin included | `MyContactMessage` + `entries` |
+| POST | `/me/contact-messages/{id}/replies` | signed in, `throttle:contact-follow-ups` (10 per 10 minutes per user) | `{ body (2..5000) }` → 201 `MyContactMessage`; 409 `contact.message_closed` |
+| GET | `/admin/contact-messages` (`filter[status|enquiry_type|from|to|linked|assignee]`, `search`, `page`, `per_page` ≤ 100) | `contact.messages.manage` | paginated `ContactMessage`, `meta.stats { new, in_progress, replied, closed }`; `from` / `to` are `Y-m-d` Riyadh days, `linked` `true | false`, `assignee` `me | none | <user id>`, `search` (≥ 2 characters, Arabic-normalised) on reference, name, e-mail and organisation |
+| GET | `/admin/contact-messages/assignees` | `contact.messages.manage` | `[{ id, name }]` |
+| GET | `/admin/contact-messages/{id}` | `contact.messages.manage` | `ContactMessage` + `entries` (notes included) |
+| POST | `/admin/contact-messages/{id}/assign` | `contact.messages.manage`, `throttle:sensitive` | `{ assignee_id: int | null, reason? }` → `ContactMessage`; 422 `contact.assignee_not_eligible` |
+| POST | `/admin/contact-messages/{id}/notes`, `/replies` | `contact.messages.manage`, `throttle:content-write` | `{ body (2..5000), reason? }` → 201 `ContactMessage` |
+| POST | `/admin/contact-messages/{id}/close`, `/reopen` | `contact.messages.manage`, `throttle:sensitive` | `{ reason? }` → `ContactMessage` |
+| POST | `/privacy/contact-messages/export` | `privacy.requests.manage`, `throttle:exports` | `{ email, reason (10..1000) }` → `{ generated_at, email, messages[] }` |
+| POST | `/privacy/contact-messages/erase` | `privacy.requests.manage`, `throttle:exports` | `{ email, reason }` → `{ erased_messages, erased_entries }` |
+| GET / PUT | `/settings/contact-messages` | `settings.general.manage` (System Administrator), PUT `throttle:sensitive` | `{ retention_months, retention_limits{ min: 1, max: 120 } }`; PUT `{ retention_months, reason? }` (Super Admin: reason + SEC-04); audit `settings.contact_updated` |
+
+`ContactMessage` (staff) = `{ id, reference, status, enquiry_type, sender{ name, email, mobile, organization, locale },
+is_linked, linked_user{ id, name }|null, entity{ id, reference, name{ar,en}, status }|null, assignee{ id, name }|null,
+entry_count (lists), created_at, last_activity_at, replied_at, closed_at, closed_by{ id, name }|null, entries[{ id, kind,
+body, author{ kind: sender|staff, id|null, name }, created_at }] (detail) }`.
+`MyContactMessage` (sender) = `{ id, reference, status, enquiry_type, can_reply, created_at, last_activity_at, replied_at,
+closed_at, has_unread_reply, preview, last_entry_author: sender|team, entries[{ id, kind: message|reply, body, author:
+sender|team, created_at }] (detail) }` — never a note, never a staff identity. `has_unread_reply` = a team reply after the
+sender last opened the thread (`sender_seen_at`, set by the seen endpoint and by a sender follow-up); `preview` = the first
+160 characters of the latest sender-visible entry, whitespace collapsed (one sub-select, Task-46). Enquiry-type labels: `lang/*/contact.php` (e-mails) and the SPA i18n by value.
+
+### Notifications
+| Code | When | To | Channels | Mandatory |
+|---|---|---|---|---|
+| CNT-01 | message received | holders of `contact.messages.manage` (audience `contact_handler`), never the sender | I + E | no |
+| CNT-02 | staff reply | the sender: linked → e-mail (with the reply text) + in-app (link `/messages/{id}`, no reply text); guest → e-mail only | I + E | yes |
+| CNT-03 | acknowledgement | the sender (account or address), reference + enquiry type only; linked senders get the `/messages/{id}` button | E | yes |
+| CNT-04 | sender follow-up | the assignee, else every handler | I + E | no |
+| CNT-05 | assigned to you | the assignee (not when assigning oneself) | I + E | no |
+
+Staff links: `/admin/contact-messages/{id}`. Guest e-mails use the language of the request (`Accept-Language`); linked
+senders receive them in their profile language. Action Center: `answer_contact_messages` (count of `new` messages,
+warning, link `/admin/contact-messages?status=new`) for the holders of the permission.
+
+### Retention and data-subject requests (PDPL)
+- Closed messages are kept `contact.retention_months` months after closing (default **24**, 1..120, setting above); open
+  messages are kept until closed. `moashir:contact-messages:purge-closed` (scheduled daily at 03:45, without overlapping)
+  deletes the expired threads and writes a `housekeeping_runs` row (`task = contact_message_purge`, `counts {
+  purged_messages, purged_entries, retention_months }`) and, when something was purged, the audit `contact_messages.purged`
+  with the counts only.
+- Linked messages are part of the entity personal-data package (`POST /entities/{id}/export`, section `contact_messages`,
+  sender-visible entries only) and are erased by the permanent entity deletion (`Services\Contact\ContactMessageEraser`,
+  tagged erasure step).
+- Guest messages (and any message of an address): `POST /privacy/contact-messages/export` / `erase` by e-mail (holders of
+  `privacy.requests.manage`, reason required). The erasure writes a `housekeeping_runs` row (`contact_message_erasure`) and
+  the audit `privacy.contact_messages_erased` with counts and the masked address; the export writes
+  `privacy.contact_messages_exported` (masked address, message count; the audit subject is the exporting staff account).
+
+## Entity portal contract (Task-46)
+Additive fields, filters and counts for the approved entity portal (`agents/analysis/analysis-entity-portal-contract.md`
+B-01 … B-07). No field was removed or renamed; no new permission key, package or environment variable.
+
+- **Comma-list status filters:** `GET /me/contact-messages`, `GET /payments/mine` and `GET /certificates` accept
+  `filter[status]=a,b` through the shared rule `Rules\EnumValueList` (one value still works; an unknown value, an empty item
+  or a trailing comma answers 422 `validation_failed` with `errors["filter.status"]`). Their `meta.status_counts` come from
+  `Support\StatusCounts` (one `GROUP BY status` query, every status present with 0 when empty) over the same scope and the
+  other filters, never the status filter. The back-office inbox `meta.stats` uses the same helper.
+- **Accredited progress (B-01):** `Services\Assessments\SubmissionProgressReader` reads the bound sub-criteria, the CV
+  entries and the evidence once (`SubmissionCoverageReader`, shared with `SubmissionGapsReader`, so the progress and the
+  submit check cannot disagree). A sub-criterion without CV and without required slots is complete.
+- **Profile completion (B-04, Q-141):** `Support\ValueObjects\ProfileCompletion` holds the rule: required items
+  `basic_data`, `account_owner`, `governance_grade`, `employees_count`, `annual_beneficiaries_count` and, since Task-47,
+  `license_number`, `founded_on`; optional `phone`, `website_url`, `logo`; `percent` = floor(complete required / 7 × 100).
+  `Entity::hasCompleteProfile()` (and `profile_completed`, `profile_completed_at`, the `complete_profile` item) is
+  `percent = 100`.
+- **Payment request link (B-05):** `request { id, number, path, path_label } | null` on `GET /payments/mine` rows,
+  `GET /payments/{uuid}`, `POST /payments` (always `null`, a new order opens no request) and `POST /payments/{uuid}/verify`;
+  read in one `whereIn` lookup through the contract `Contracts\Finance\OpenedRequestLookup` (finance never reads the
+  assessments models directly).
+- **Assessments tabs (B-07):** `filter[is_open]` uses the `openForViewer` scope (masked advanced outcomes stay open for the
+  viewers they are masked from until the announcement), `filter[has_result]` the `exposingResult` scope (same rule as
+  `Assessment::exposesResult()`).
+- Deployment: migration `2026_11_04_100000_add_sender_seen_at_to_contact_messages_table` (`contact_messages.sender_seen_at`
+  `timestamptz null`, reversible).
 
 ## Quality gates
 
@@ -1692,7 +2820,12 @@ PostgreSQL with `max_locks_per_transaction = 256` for headroom as the schema gro
 
 Tests use PostgreSQL (`moashir_testing`), the `array` cache/session drivers, the `sync` queue and fakes for SMS,
 notifications, the payment gateway, the malware scanner (`FILES_SCANNER=fake`) and the PDF renderer (`PDF_RENDERER=fake`).
-`phpunit.xml` sets `memory_limit` to 1G: the architecture tests parse every file of `app/`. See "Test isolation" below for how the suite is kept away from the development database.
+`Tests\TestCase` fakes the `local` disk for every test, so generated and uploaded files never reach `storage/app`.
+The real renderer has one opt-in test (`tests/Feature/Documents/ChromiumRenderingTest.php`), skipped unless
+`PDF_TEST_CHROME_BINARY` points to a `chrome-headless-shell` binary: `PDF_TEST_CHROME_BINARY=<path> composer test`.
+`phpunit.xml` sets `memory_limit` to 2G: the architecture tests parse every file of `app/`, and a sequential run keeps a
+little memory per test (about 0.03 MB for a plain request, up to about 0.7 MB for the long assessment and award flows), so
+the whole suite (2,642 tests after the contact-messages step) needs more than the former 1G limit; finding what each test retains is a follow-up. See "Test isolation" below for how the suite is kept away from the development database.
 `Tests\TestCase` calls `Http::preventStrayRequests()`, so any outbound HTTP call fails the test; the breached-password
 tests also fake the HTTP client to throw and assert that nothing was sent. No test reaches an external service.
 
@@ -1756,11 +2889,17 @@ Laravel emits no console events while `APP_ENV=testing`, so there the boot-time 
 
 `php artisan moashir:demo:install --accounts-file=<absolute path>` loads fictional demo data: one staff account per staff
 role (MFA required), three entities with their owner accounts (registered and verified through the normal services),
-demo terms and privacy texts when none are published, the accredited price when none is set, one draft award cycle
+the legal drafts of Task-49 published as the current terms and privacy versions (label `2026-11-draft`) and the published
+accessibility page, the accredited price when none is set, one draft award cycle
 (created by the demo Award Secretary) and two TEST-mode payments (one paid with a TEST receipt, which opens the
 accredited draft through the normal listener, and one open order). It never creates the Super Admin.
+For the excellence tools (Task-64) it also adds four completed ACCREDITED results opened by TEST payments (Al-Amal: a
+silver then a gold result with an assessor summary, for the delta; Al-Khair: a participation result and a newer result
+whose certificate is revoked), one self result for Al-Namaa (only self results) and fictional generic maturity texts.
 
-Guards (`Services\Demo\DemoInstallGuard`): refused unless `APP_DEMO_DATA=true`; refused when an entity exists that the
+Guards (`Services\Demo\DemoInstallGuard`): refused unless `APP_DEMO_DATA=true`; outside `local` / `testing` also
+refused unless the environment opted in to the demo posture with `MOASHIR_DEMO=true` (Task-51 / Task-52, reason
+`posture_not_demo`); refused when an entity exists that the
 command did not create (the command records its entities and users in `demo_records`); refused when the demo is already
 installed. Every refusal is logged as critical (`platform.demo_data_refused` with the reason only). Passwords are random
 (24 characters) and are written only to the accounts file: a new file outside the application directory, created
@@ -1769,10 +2908,160 @@ never contains a password. `php artisan moashir:demo:rotate-passwords --accounts
 passwords for every demo account, ends their sessions and writes a new file. The deployment kit wraps both commands
 and moves the file to `/root/moashir-<env>-demo-accounts.txt` (see `deploy/RUNBOOK.md`).
 
+### Excellence-tools cases on an installed demo (`--insights-only`, Task-71)
+A demo installed before Task-64 has no completed accredited result, so the excellence tools show only their empty
+states. `php artisan moashir:demo:install --insights-only` adds ONLY the Task-64 cases above to an installed demo, in one
+transaction:
+- the four accredited results with their own TEST payments and TEST receipts (number empty), feedback, the assessor
+  summary and `TEST-CRT-…` certificates (Al-Khair's newer certificate revoked), the self result of Al-Namaa, and the
+  fictional generic maturity texts — only for generic bands whose text is still empty. Text a Content Officer wrote
+  (generic or per main criterion) is never overwritten;
+- the cast is resolved from `demo_records`: the three demo entity owners in install order (Al-Amal, Al-Namaa,
+  Al-Khair — the same mapping as a fresh install) and the demo Assessor, System Administrator and Content Officer. A
+  missing or deleted one refuses the run (`missing_prerequisite`). Entities the demo did not create are neither read
+  nor changed and do not block the run;
+- existing requests, drafts, self results, payments and receipts stay untouched. The demo requests are written as
+  closed records (never in an open state), so an open accredited draft of the same entity does not conflict; the
+  purchase rules for new orders are not applied to these historical TEST payments. A demo entity with an OPEN
+  accredited payment order (created, pending or a bank transfer under review) refuses the run (`open_payment_order`)
+  until that order is paid, cancelled or expired;
+- no e-mail, SMS or in-app notification is sent; audit rows are written as in a fresh install (each demo request has
+  one `assessment.created` row and one `start → completed` status row instead of the opened/draft history);
+- the idempotency marker is in the database: every result it adds (and every result of a fresh install since
+  Task-71) is recorded in `demo_records` with kind `insights_assessment`. A second run is refused
+  (`insights_already_installed`, "already installed; nothing was changed") and writes nothing;
+- guards as `--content-only`: `APP_DEMO_DATA=true`, the demo posture outside `local` / `testing`, an installed demo.
+  It cannot be combined with `--content-only` or `--accounts-file`. Prerequisites: a published criteria version and the
+  accredited price (unchanged; payment channels and prices are not touched).
+
+The output is one line, for example `Demo excellence-tools cases installed: accredited results: 4, revoked
+certificates: 1, assessor summaries: 1, self results: 1, maturity texts filled: 4.` On a server, take a backup first,
+then run it as the environment user from the current release:
+`sudo -u moashir-<env> php8.4 /var/www/moashir/<env>/current/backend/artisan moashir:demo:install --insights-only`.
+The certificates are issued with today's date (`issued_at`) although the results carry their historical completion
+dates.
+
+## Mail posture (SEC-02)
+`Services\Platform\MailerPosture` runs at boot. In `APP_ENV=production` without the demo opt-in (`MOASHIR_DEMO` not
+`true`) a default mailer that keeps e-mail on the server — transport `log` or `array`, or a `failover` / `roundrobin`
+mailer containing one — is replaced by the `settings` mailer and `platform.mailer_refused` is logged as critical. E-mail
+then goes through the platform SMTP settings or fails closed: `SettingsMailTransport` throws, the queued notification is
+retried and INT-04 alerts the System Administrators; nothing is written to a log. Staging, local development and the
+demo posture keep the configured mailer.
+
+## Health and readiness
+- `GET /api/v1/health` — static liveness (unchanged). The framework route `/up` is removed (never proxied).
+- `GET /api/v1/health/ready` — real readiness. Anonymous callers get only `{ status }`: `ready` (200), `degraded` (200, a
+  non-critical check fails) or `not_ready` (503, a critical check fails). Callers whose address is in
+  `HEALTH_ALLOWED_IPS` (addresses or CIDR) and signed-in System Administrators (`platform.readiness.details` →
+  `settings.general.manage`) also get `checks: [{ name, critical, status: ok | failing | skipped }]` and `checked_at`;
+  never a host name, version, error text or path. Checks (`Contracts\Platform\ReadinessCheck`, tagged in
+  `AppServiceProvider`): `database` (`select 1`), `redis` (PING, skipped when neither cache nor queue uses Redis),
+  `queue` (heartbeat written by the scheduled `RecordQueueHeartbeat` job every minute, failing after 5 minutes; skipped
+  with the `sync` queue), `disk_space` (free space of `storage/` ≥ `HEALTH_MIN_FREE_DISK_MB`) — critical; `malware_scanner`
+  (clamd `PING`), `pdf_renderer` (pinned binary usable) — non-critical, skipped with the local fakes. A failing check is
+  logged as `platform.readiness_check_failed` (check name and exception class only).
+- Not proxied framework routes: Horizon runs behind `web`, `session.timeouts`, `mfa`, `password.current` and its gate
+  (Super Admin only); the local disk no longer serves `storage/{path}` (`'serve' => false`).
+- `backup:monitor` runs daily at 06:00; an unhealthy backup (`UnhealthyBackupWasFound`) or a failed run
+  (`BackupHasFailed`) raises **INT-06** "Backup check failed" (in-app + e-mail) to every System Administrator, at most
+  once per alert cool-down (`Listeners\Platform\AlertAdministratorsOfBackupProblem`).
+
+## Audit log API (read-only, Task-51; screen in Task-37d)
+- `GET /api/v1/audit-logs` (`audit.view`, System Administrator; Super Admin by bypass) — newest first, paginated
+  (`per_page` ≤ 100). Filters: `filter[from]`, `filter[to]` (`YYYY-MM-DD`, whole days in Asia/Riyadh), `filter[actor_id]`,
+  `filter[event]`, `filter[subject_type]` (snake_case model name, e.g. `entity`, `user`, `setting`), `filter[subject_id]`,
+  `filter[ip]`. Row: `{ id, event, actor{ kind: user | super_admin | system, id, name, roles[] }, subject{ type, id },
+  old_values, new_values, reason, tags[], ip_address, user_agent (≤ 255), url, request_id, created_at }`.
+- `GET /api/v1/audit-logs/{id}` — one row (404 when hidden).
+- `POST /api/v1/audit-logs/export` (`audit.export`, `throttle:exports`) — same filters, `reason` (10..1000, required from
+  the Super Admin: 422 `reason_required`); streams a UTF-8 CSV (BOM, formula cells neutralised) of at most
+  `moashir.audit.export_max_rows` (10,000) rows, else 422 `export.too_large`; the export itself is audited
+  (`audit.exported`, row count and filters, tag `export`).
+- Scope: the Super Admin sees everything. Other readers never see rows whose subject is a Super Admin account (same
+  invisibility as `/users`), and a row performed by a Super Admin shows `actor: { kind: "super_admin", id: null, name:
+  null }` (what was done stays visible, who did it does not). Values are never secrets: keys such as `password`,
+  `*secret*`, `*token*`, `api_key`, `two_factor*`, `recovery*`, `signature`, `bearer*`, `credential*` are shown as
+  `[redacted]`, and token path segments in values and URLs are redacted (SEC-17). The audit rows stay append-only (no
+  write endpoint; DB triggers and grants unchanged).
+
+## Checkout script and SRI (SEC-11)
+`checkout.script { url, integrity }` is added to every open checkout (`MOYASAR_FORM_SCRIPT_URL`,
+`MOYASAR_FORM_SCRIPT_INTEGRITY`; a value that is not `sha256|384|512-<base64>` is dropped to `null`). Findings while
+building it (2026-11-04): the Moyasar CDN serves `mpf/1.15.0` (the version of Moyasar's documentation) but answers 403 for
+`mpf/2.3.0`, the version pinned in the SPA; and it sends no `Access-Control-Allow-Origin` header, so a browser cannot
+apply SRI (`crossorigin="anonymous"`) to a script loaded from that CDN — the load would fail. The default is therefore the
+1.15.0 URL without integrity. To enforce SRI, serve the pinned file from the SPA origin (e.g.
+`/vendor/moyasar/1.15.0/moyasar.js`, same-origin requests pass the CORS check) and set both variables; SHA-384 of
+`mpf/1.15.0/moyasar.js` as downloaded on 2026-11-04: `sha384-oqe0guC0MTOY4t+u48OQadqsLshSsqG5o7n/m4Vezbh5hSreN6eP5LVE0/QYlnTw`
+(verify again before use). SPA side: Task-37d.
+
 ## Deployment notes
 
-- The review / demo deployment (provisioning, Nginx, PHP-FPM, Horizon, scheduler, ClamAV, releases, rollback, demo
-  data, uninstall) is scripted in the repository folder `deploy/`; the procedure is `deploy/RUNBOOK.md`.
+- Migration `2026_11_06_120000` (Task-71): the `demo_records_kind_check` CHECK accepts `insights_assessment` (marker of
+  the excellence-tools demo cases). Reversible: `down()` deletes the `insights_assessment` rows and restores
+  `entity | user`. No grant change, no new permission key, package or environment variable. On a demo installed before
+  Task-64, run `moashir:demo:install --insights-only` after the deploy (section "Excellence-tools cases on an installed
+  demo").
+
+- Migrations `2026_11_05_140000` … `140200` (Task-61, entity sign-in by password or one-time code): `140000` deletes the
+  open `login_second_factor` codes and replaces the `otp_codes_purpose_check` CHECK with `login, sign_in_code,
+  verify_email, verify_phone, password_reset, email_change` (reversible: `down()` deletes the `sign_in_code` rows and
+  restores the Task-51 CHECK). `140100` deletes the settings row `auth.entity_second_factor_enabled`; its `down()` is an
+  intentional no-op (the previous code read a missing row as its default). `140200` clears `two_factor_secret`,
+  `two_factor_recovery_codes` and `two_factor_confirmed_at` of every user with an `entity_id`, writes one `mfa_disabled`
+  authentication event per cleared account (`meta.reason: entity_second_factor_cancelled`) and logs only the count
+  (`identity.entity_authenticators_cleared`); it is irreversible by design (`down()` is a no-op, the secrets are not
+  kept). No grant change, no new permission key, package or environment variable. New config keys under
+  `moashir.auth.otp` (no env): `request_per_identifier_per_ten_minutes` (3), `request_per_ip_per_ten_minutes` (10),
+  `sign_in_sms_per_hour` (100). New named limiter `otp-request`. Deploy the backend together with the Task-61 SPA:
+  the new SPA calls `POST /auth/otp/request` and reads `code_channels`, the old SPA expects the second-factor step.
+
+- Migrations `2026_11_04_160000` … `160300` (Task-51): `otp_codes` purpose `login_second_factor` (CHECK replaced);
+  `authentication_events.identifier_type` / `identifier_hash` (+ CHECK and index; append-only unchanged, new rows only);
+  `users.phone_index` (backfilled from the encrypted numbers in the migration, partial unique index of verified numbers);
+  `entities.unified_number` (CHECK + partial unique index). Grants are table-level, so no grant change. Run
+  `php artisan moashir:breached-passwords:import database/data/breached-passwords` (imports the 46,296 SecLists
+  digests). New permission key: none (`settings.auth.manage` already exists; it is now hard-locked to the System
+  Administrator). New environment variables (all optional): `MOASHIR_DEMO` (set by the deploy kit),
+  `MOYASAR_FORM_SCRIPT_URL`, `MOYASAR_FORM_SCRIPT_INTEGRITY`, `HEALTH_MIN_FREE_DISK_MB`; removed: `AUTH_LOGIN_EMAIL_PASSWORD`,
+  `AUTH_LOGIN_EMAIL_OTP`, `AUTH_LOGIN_SMS_OTP` (ignored if still present). The scheduler now also runs
+  `RecordQueueHeartbeat` every minute and `backup:monitor` daily. A branding logo stored as SVG is no longer served
+  (re-upload it as PNG).
+
+- Migrations `2026_11_04_140000` … `140200` (Task-49): `terms_versions.title` / `published_at` (backfilled from
+  `created_at`), nullable `effective_from` / `published_by_user_id` for drafts, the CHECKs, the one-draft index and the
+  `terms_versions_published_guard` trigger; the `accessibility` row and key CHECK of `cms_pages`; the `privacy_request`
+  enquiry type in the `contact_messages` CHECK (its `down()` turns such messages into `other`). No grant change, no new
+  permission key, package or environment variable. Add `php artisan moashir:legal:install-drafts --no-interaction` to the
+  reference-data step of the deployment (`deploy/remote/activate-release.sh`, `install_reference_data`) or run it once by
+  hand; on a demo, `moashir:demo:install --content-only` then publishes the drafts (section "Legal texts and pages").
+- Backups (`config/backup.php`, approved 03 §F "daily encrypted backups, 30-day retention"): `backup:run` daily at 01:30,
+  `backup:clean` daily at 01:00 keeps every backup of the last 7 days and one per day for the next 23 days, with no weekly,
+  monthly or yearly archives, so no backup is older than 30 days (the newest backup is never deleted, and the 5000 MB cap
+  still removes the oldest first). Off-server, in-Kingdom storage is still required before real operation
+  (`deploy/RUNBOOK.md`).
+- The review / demo deployment (provisioning, Nginx, PHP-FPM, Horizon, scheduler, ClamAV, PDF renderer, releases,
+  rollback, demo data, uninstall) is scripted in the repository folder `deploy/`; the procedure is `deploy/RUNBOOK.md`.
+- Migrations `2026_11_03_130000` … `130200` (Task-42): `contact_messages` and `contact_message_entries` (with the no-update
+  trigger on entries), the `contact_message_purge` / `contact_message_erasure` housekeeping tasks, and the certificate
+  suspension (`certificates.suspended_at` / `suspended_reason`, status CHECK with `suspended`, the rewritten
+  `moashir_guard_certificates()` trigger function, verification outcome `under_review`). Default privileges cover the two
+  new tables (no grant change; `moashir_app` needs UPDATE on `contact_messages` and DELETE on both tables for the purge).
+  Run `php artisan moashir:permissions:sync` after the migration (new key `contact.messages.manage`, granted to the System
+  Administrator and Content Officer roles). The scheduler runs `moashir:contact-messages:purge-closed` daily at 03:45.
+  The certificate migration is reversible only while no certificate is suspended. No new package or environment variable.
+- Migrations `2026_11_03_120000` … `120200` (Task-39): `stored_files` purpose `certificate_pdf`, `certificates` (with its
+  guard trigger and the partial unique index of issued certificates) and `certificate_verification_logs`. Re-run the
+  `certificates` and `certificate_verification_logs` lines of `database/sql/production-roles.sql` (certificates
+  SELECT/INSERT/UPDATE, logs SELECT/INSERT/DELETE). New packages `chrome-php/chrome` 1.16.1 and `bacon/bacon-qr-code`
+  3.1.1 (operator approval Session 24). New environment variables `PDF_CHROME_BINARY`, `PDF_RENDER_TIMEOUT_SECONDS`;
+  `PDF_RENDERER=chromium` on the server. Horizon must run (certificate issuance on completion and certificate PDFs are
+  queued); the scheduler runs `moashir:certificates:prune-verification-logs` daily. No new permission key.
+- Migrations `2026_11_03_100000` … `100300` (path distinction): `user_assessor_qualifications` (with the backfill described in
+  "Path distinction"), `user_request_paths`, `notifications.path` (+ CHECK), and the copy of the shared upload settings into both
+  paths. Default privileges cover the two new tables (no grant change). No new permission key, package or environment variable.
+  The demo installer and the local staff seeder qualify their assessor for both paths.
 - Migration `2026_11_02_120000_create_demo_records_table` (`demo_records`: kind `entity | user`, record id, unique pair).
   No grant change (default privileges cover it).
 - Horizon defines a `staging` environment; `HORIZON_MAX_PROCESSES` caps the workers on a shared server.
@@ -1792,7 +3081,8 @@ and moves the file to `/root/moashir-<env>-demo-accounts.txt` (see `deploy/RUNBO
   then load the full breached-password list with the same command (section "Breached-password list"), and run
   `php artisan moashir:criteria:install-seed` to publish criteria version 1 (idempotent, safe on later deployments),
   `php artisan moashir:regions:install-seed` to install the regions and cities (idempotent), and publish the client's
-  terms and privacy texts with `php artisan moashir:terms:publish` (registration answers 503 until terms exist).
+  terms and privacy texts with `php artisan moashir:terms:publish` or from the back office after legal review of the
+  drafts stored by `moashir:legal:install-drafts` (registration answers 503 until terms exist).
 - `database/sql/production-roles.sql` makes `entity_profile_changes` SELECT/INSERT/DELETE-only for `moashir_app` (the
   trigger accepts DELETE only inside the permanent-deletion transaction); re-run its `REVOKE` / `GRANT` lines where the
   script already ran.
@@ -1834,7 +3124,7 @@ and moves the file to `/root/moashir-<env>-demo-accounts.txt` (see `deploy/RUNBO
   lines of `database/sql/production-roles.sql` (column-level UPDATE only). The PHP `zip` and `fileinfo` extensions are
   required (evidence bundles, content checks). Horizon must run: the opening listener, the refund listener, the scans, the
   bundles and the due-date recompute are queued. Nginx `client_max_body_size` and PHP upload limits must allow
-  `files.max_size_mb` on `/api/v1/assessments/*/evidence` too.
+  the largest per-path `upload_max_file_mb` on `/api/v1/assessments/*/evidence` too.
 - Migrations `2026_11_01_180000_add_expiry_outcome_to_assessment_completion_requests_table` (column `expiry_outcome`,
   existing rows set to `continue_as_submitted`; status widened to 20 characters with the two expired states; partial index of
   the open deadlines) and `2026_11_01_180100_add_declined_incomplete_to_accredited_assessments` (status CHECK). No grant
@@ -1852,3 +3142,11 @@ and moves the file to `/root/moashir-<env>-demo-accounts.txt` (see `deploy/RUNBO
   `committee_scores, committee_notes, committee_discussion_entries` lines of `database/sql/production-roles.sql`. The scheduler must
   run `moashir:award:flag-overdue-committee` hourly; `moashir:award:advance-cycles` now also starts the committee assessment on its
   date. No new permission key, no environment variable. Reversible while no request is in a committee state.
+- Task-64 (excellence tools wave 1, assessor summary, receipt VAT number): migrations
+  `2026_11_05_160000_create_assessment_summaries_table` (append-only, reuses `moashir_guard_supersede_once()`) and
+  `2026_11_05_160100_create_maturity_interpretations_table` (seeds the four empty generic rows); both reversible. Re-run
+  the `assessment_summaries` lines of `database/sql/production-roles.sql` (column-level UPDATE on `superseded_at` only).
+  Then `php artisan moashir:permissions:sync` (three new keys: `reports.insights.own.view`, `reports.insights.view`,
+  `content.insights.manage`). New settings keys `insights.gap_thresholds`, `insights.maturity_bands`,
+  `finance.vat_registration_number` read their defaults until saved. No new package or environment variable. After the
+  deploy the System Administrator should set the VAT registration number; receipts issued before carry no row.

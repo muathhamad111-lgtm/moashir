@@ -8,6 +8,7 @@ use App\Contracts\Assessments\AssessmentState;
 use App\Contracts\Assessments\ReviewedAssessmentState;
 use App\Data\Assessments\ReviewStages;
 use App\Enums\Entities\EntityRequestPath;
+use App\Support\ValueObjects\LocalizedText;
 use LogicException;
 
 enum AssessmentPath: string
@@ -57,6 +58,22 @@ enum AssessmentPath: string
     /**
      * @return list<string>
      */
+    public function resultStateValues(): array
+    {
+        return array_values(array_map(
+            static fn (AssessmentState $state): string => (string) $state->value,
+            array_filter($this->states(), static fn (AssessmentState $state): bool => $state->exposesResult()),
+        ));
+    }
+
+    public function publishesResultsOnAnnouncement(): bool
+    {
+        return $this === self::Advanced;
+    }
+
+    /**
+     * @return list<string>
+     */
     public function stateValues(): array
     {
         return array_map(static fn (AssessmentState $state): string => (string) $state->value, $this->states());
@@ -97,6 +114,11 @@ enum AssessmentPath: string
     public function isReviewed(): bool
     {
         return $this !== self::SelfAssessment;
+    }
+
+    public function label(): LocalizedText
+    {
+        return LocalizedText::fromTranslation('assessments.paths.'.$this->value);
     }
 
     public function followsCriteriaEdits(): bool

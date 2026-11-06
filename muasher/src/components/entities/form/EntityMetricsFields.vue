@@ -24,9 +24,21 @@ const { strategicPlanOptions } = useEntityOptions()
         :label="t('entities.fields.governanceGrade')"
         :hint="t('entities.hints.governanceGrade')"
       />
-      <FieldInput name="employeesCount" inputmode="numeric" :label="t('entities.fields.employeesCount')" />
-      <FieldInput name="annualBeneficiariesCount" inputmode="numeric" :label="t('entities.fields.annualBeneficiariesCount')" />
+      <FieldInput
+        name="employeesCount"
+        inputmode="numeric"
+        :label="t('entities.fields.employeesCount')"
+      />
+      <FieldInput
+        name="annualBeneficiariesCount"
+        inputmode="numeric"
+        :label="t('entities.fields.annualBeneficiariesCount')"
+      />
     </div>
-    <FieldRadio name="hasStrategicPlan" :label="t('entities.fields.hasStrategicPlan')" :options="strategicPlanOptions" />
+    <FieldRadio
+      name="hasStrategicPlan"
+      :label="t('entities.fields.hasStrategicPlan')"
+      :options="strategicPlanOptions"
+    />
   </fieldset>
 </template>

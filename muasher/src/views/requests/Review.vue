@@ -9,6 +9,7 @@ import { useEvidenceBundleRequest } from '@/composables/useEvidenceBundle'
 import { usePermissions } from '@/composables/usePermissions'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -22,8 +23,11 @@ useHead({ title: () => t('review.title') })
 <template>
   <section class="review-page">
     <header class="review-page__header">
-      <RouterLink class="request-detail__back" :to="{ name: ROUTE_NAMES.REQUESTS_DETAIL, params: { id: assessmentId } }">
-        <i class="fa-solid fa-arrow-left-long u-flip-in-rtl" aria-hidden="true"></i>
+      <RouterLink
+        class="request-detail__back"
+        :to="{ name: ROUTE_NAMES.REQUESTS_DETAIL, params: { id: assessmentId } }"
+      >
+        <AppIcon name="arrow-left" />
         {{ t('review.backToRequest') }}
       </RouterLink>
       <div class="review-page__title-row">
@@ -31,7 +35,13 @@ useHead({ title: () => t('review.title') })
           <p class="review-page__eyebrow">{{ t('requests.index.eyebrow') }}</p>
           <h1 class="review-page__title">{{ t('review.title') }}</h1>
         </div>
-        <BaseButton v-if="can(PERMISSIONS.EVIDENCE_VIEW)" variant="secondary" icon="fa-solid fa-file-zipper" :loading="bundles.requesting.value" @click="bundles.requestBundle">
+        <BaseButton
+          v-if="can(PERMISSIONS.EVIDENCE_VIEW)"
+          variant="secondary"
+          icon="docs"
+          :loading="bundles.requesting.value"
+          @click="bundles.requestBundle"
+        >
           {{ t('requests.actions.bundle') }}
         </BaseButton>
       </div>

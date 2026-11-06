@@ -23,7 +23,9 @@ const emit = defineEmits(['update:modelValue', 'done'])
 const { t } = useI18n()
 
 const form = useValidatedForm({
-  schema: computed(() => (props.optional ? optionalReasonSchema(t) : reasonSchema(t, props.minLength))),
+  schema: computed(() =>
+    props.optional ? optionalReasonSchema(t) : reasonSchema(t, props.minLength),
+  ),
   initialValues: { reason: '' },
   action: props.actionName,
   submit: async ({ reason }) => {
@@ -55,7 +57,11 @@ watch(
       <FieldTextarea
         name="reason"
         :label="reasonLabel || t('entities.reason.label')"
-        :hint="optional ? t('entities.reason.optionalHint') : t('entities.reason.hint', { min: minLength })"
+        :hint="
+          optional
+            ? t('entities.reason.optionalHint')
+            : t('entities.reason.hint', { min: minLength })
+        "
         :required="!optional"
       />
     </div>

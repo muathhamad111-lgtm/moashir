@@ -12,6 +12,9 @@ import { sessionUserFor } from '@/test-utils/session'
 vi.mock('@/services/assessmentsService', () => ({
   assessmentsService: { list: vi.fn(), get: vi.fn(), getResult: vi.fn() },
 }))
+vi.mock('@/services/accreditedService', () => ({
+  accreditedService: { getCurrent: vi.fn().mockResolvedValue({ data: null }) },
+}))
 
 const FROZEN = {
   id: 9004,
@@ -22,7 +25,12 @@ const FROZEN = {
   isFrozen: true,
   criteriaUpdateInProgress: false,
   scaleKind: 'of-10',
-  entity: { id: 7002, reference: 'ENT-007002', name: { ar: 'مؤسسة إعمار للتنمية', en: 'Iemar Development Foundation' }, status: 'active' },
+  entity: {
+    id: 7002,
+    reference: 'ENT-007002',
+    name: { ar: 'مؤسسة إعمار للتنمية', en: 'Iemar Development Foundation' },
+    status: 'active',
+  },
   result: null,
   createdAt: '2026-10-12T08:45:00Z',
   submittedAt: null,
@@ -46,12 +54,28 @@ beforeEach(() => {
 describe('staff assessment record', () => {
   it('shows a frozen request read-only with its badge, details, timeline and the placeholder', async () => {
     const statusHistory = [
-      { from: null, to: 'draft', verb: 'start', at: '2026-10-12T08:45:00Z', actor: 'staff', actorStaff: { name: 'منيرة بنت خالد العتيبي', roles: [{ key: 'system_admin', label: { ar: 'مدير النظام', en: 'System Administrator' } }] } },
+      {
+        from: null,
+        to: 'draft',
+        verb: 'start',
+        at: '2026-10-12T08:45:00Z',
+        actor: 'staff',
+        actorStaff: {
+          name: 'منيرة بنت خالد العتيبي',
+          roles: [
+            { key: 'system_admin', label: { ar: 'مدير النظام', en: 'System Administrator' } },
+          ],
+        },
+      },
     ]
     assessmentsService.get.mockResolvedValue({ data: { ...FROZEN, statusHistory } })
-    assessmentsService.getResult.mockResolvedValue({ data: { id: 9004, status: 'draft', available: false, isFrozen: true } })
+    assessmentsService.getResult.mockResolvedValue({
+      data: { id: 9004, status: 'draft', available: false, isFrozen: true },
+    })
     const wrapper = await mountAs(StaffRecord, ['system_admin'], { id: '9004' })
-    expect(wrapper.find('.assessment-timeline__actor').text()).toBe('منيرة بنت خالد العتيبي — System Administrator')
+    expect(wrapper.find('.assessment-timeline__actor').text()).toBe(
+      'منيرة بنت خالد العتيبي — System Administrator',
+    )
     expect(wrapper.find('.assessment-record__title').text()).toContain('SLF-2026-000004')
     expect(wrapper.find('.assessment-record__badges .frozen-badge').exists()).toBe(true)
     expect(wrapper.find('.assessment-notice--frozen').exists()).toBe(true)
@@ -63,7 +87,9 @@ describe('staff assessment record', () => {
 
   it('hides the entity link from a reader without entities.view and shows the missing state on 404', async () => {
     assessmentsService.get.mockRejectedValue({ normalized: { status: 404, message: 'Not found' } })
-    assessmentsService.getResult.mockRejectedValue({ normalized: { status: 404, message: 'Not found' } })
+    assessmentsService.getResult.mockRejectedValue({
+      normalized: { status: 404, message: 'Not found' },
+    })
     const wrapper = await mountAs(StaffRecord, ['assessor'], { id: '9004' })
     expect(wrapper.find('.empty-state').exists()).toBe(true)
   })
@@ -71,9 +97,16 @@ describe('staff assessment record', () => {
 
 describe('entity assessments card', () => {
   it('lists the entity assessments, frozen ones included, with links to the staff record', async () => {
-    assessmentsService.list.mockResolvedValue({ data: [FROZEN], meta: { pagination: { total: 1 } } })
+    assessmentsService.list.mockResolvedValue({
+      data: [FROZEN],
+      meta: { pagination: { total: 1 } },
+    })
     const wrapper = await mountAs(EntityAssessmentsCard, ['system_admin'], { entityId: 7002 })
-    expect(assessmentsService.list).toHaveBeenCalledWith({ 'filter[entityId]': 7002, sort: '-created_at', perPage: 10 })
+    expect(assessmentsService.list).toHaveBeenCalledWith({
+      'filter[entityId]': 7002,
+      sort: '-created_at',
+      perPage: 10,
+    })
     expect(wrapper.find('a[href="/admin/assessments/9004"]').text()).toBe('SLF-2026-000004')
     expect(wrapper.find('.frozen-badge').exists()).toBe(true)
   })
@@ -89,17 +122,49 @@ describe('entity assessments card', () => {
 })
 
 describe('assessment history view', () => {
-  it('lists the entity assessments with pagination and offers the start only to self managers', async () => {
-    assessmentsService.list.mockResolvedValue({ data: [], meta: {} })
-    const entity = await mountAs(History, ['entity'])
-    expect(entity.find('.empty-state .btn').exists()).toBe(true)
+  async function mountHub(tab) {
+    const globals = createTestGlobals({ locale: 'ar' })
+    setActivePinia(globals.pinia)
+    useAuthStore().setUser(sessionUserFor(['entity']))
+    await globals.router.push({ path: '/assessment/history', query: tab ? { tab } : {} })
+    const wrapper = mount(History, { global: globals })
+    await flushPromises()
+    await flushPromises()
+    return wrapper
+  }
+
+  it('offers the start cards on the current tab and shows the tab counts', async () => {
+    assessmentsService.list.mockResolvedValue({
+      data: [],
+      meta: { counts: { total: 3, open: 0, withResult: 2 } },
+    })
+    const wrapper = await mountHub()
+    expect(assessmentsService.list).toHaveBeenCalledWith(
+      expect.objectContaining({ 'filter[is_open]': 'true' }),
+    )
+    expect(wrapper.findAll('.assessment-start__card').length).toBeGreaterThan(0)
+    const counts = wrapper.findAll('[role="tab"] .area-tabs__count').map((count) => count.text())
+    expect(counts).toEqual(['0', '3', '2'])
+  })
+
+  it('pages the history tab and lists the results with their links', async () => {
     assessmentsService.list.mockResolvedValue({
       data: [{ ...FROZEN, isFrozen: false, entity: null }],
       meta: { pagination: { page: 1, perPage: 10, total: 11, lastPage: 2 } },
     })
-    const paged = await mountAs(History, ['entity'], {}, 'ar')
-    expect(paged.findAll('.history-item')).toHaveLength(1)
-    expect(paged.find('.pagination').exists()).toBe(true)
-    expect(paged.find('.history__count').text()).toContain('11')
+    const history = await mountHub('history')
+    expect(history.findAll('.history-item')).toHaveLength(1)
+    expect(history.find('.pagination').exists()).toBe(true)
+    assessmentsService.list.mockResolvedValue({
+      data: [
+        { ...FROZEN, isFrozen: false, status: 'result-available', result: { percent: '78.00' } },
+      ],
+      meta: {},
+    })
+    const results = await mountHub('results')
+    expect(assessmentsService.list).toHaveBeenLastCalledWith(
+      expect.objectContaining({ 'filter[has_result]': 'true', sort: '-completed_at' }),
+    )
+    expect(results.find('.assessment-result__percent').text()).toBe('78%')
   })
 })

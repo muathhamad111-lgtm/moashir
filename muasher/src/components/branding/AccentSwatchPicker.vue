@@ -1,6 +1,7 @@
 <script setup>
 import { useId } from 'vue'
 import { useI18n } from 'vue-i18n'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   palette: { type: Array, required: true },
@@ -33,7 +34,7 @@ const groupName = useId()
           @change="emit('update:modelValue', entry.token)"
         />
         <span class="accent-swatch__chip" :data-accent="entry.token" aria-hidden="true">
-          <i v-if="entry.token === modelValue" class="fa-solid fa-check"></i>
+          <AppIcon v-if="entry.token === modelValue" name="check" />
         </span>
         <span class="accent-swatch__label">{{ localized(entry.label) }}</span>
       </label>

@@ -6,6 +6,7 @@ import ScanStatusBadge from './ScanStatusBadge.vue'
 import EvidenceUploadButton from './EvidenceUploadButton.vue'
 import { SCAN_STATUSES } from '@/constants/accredited'
 import { formatFileSize } from '@/utils/payments/amountFormat'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   file: { type: Object, required: true },
@@ -18,14 +19,18 @@ const props = defineProps({
 const emit = defineEmits(['download', 'remove', 'replace'])
 const { t, locale } = useI18n()
 
-const size = computed(() => t('accredited.evidence.sizeKb', { size: formatFileSize(props.file.sizeBytes, locale.value) }))
+const size = computed(() =>
+  t('accredited.evidence.sizeKb', { size: formatFileSize(props.file.sizeBytes, locale.value) }),
+)
 const isClean = computed(() => props.file.scanStatus === SCAN_STATUSES.CLEAN)
-const isRefused = computed(() => [SCAN_STATUSES.INFECTED, SCAN_STATUSES.FAILED].includes(props.file.scanStatus))
+const isRefused = computed(() =>
+  [SCAN_STATUSES.INFECTED, SCAN_STATUSES.FAILED].includes(props.file.scanStatus),
+)
 </script>
 
 <template>
   <li class="evidence-file" :class="{ 'evidence-file--refused': isRefused }">
-    <i class="fa-solid fa-file-lines evidence-file__icon" aria-hidden="true"></i>
+    <AppIcon name="doc" class="evidence-file__icon" />
     <span class="evidence-file__meta">
       <bdi class="evidence-file__name" dir="ltr">{{ file.fileName }}</bdi>
       <span class="evidence-file__size">{{ size }}</span>
@@ -37,7 +42,7 @@ const isRefused = computed(() => [SCAN_STATUSES.INFECTED, SCAN_STATUSES.FAILED].
         variant="ghost"
         size="sm"
         icon-only
-        icon="fa-solid fa-download"
+        icon="download"
         :loading="downloading"
         :aria-label="t('accredited.evidence.download', { name: file.fileName })"
         @click="emit('download', file)"
@@ -45,7 +50,7 @@ const isRefused = computed(() => [SCAN_STATUSES.INFECTED, SCAN_STATUSES.FAILED].
       <EvidenceUploadButton
         v-if="editable && isRefused"
         :label="t('accredited.evidence.replace')"
-        icon="fa-solid fa-arrows-rotate"
+        icon="refresh"
         :accept="accept"
         :loading="busy"
         @select="emit('replace', { file, replacement: $event })"
@@ -55,12 +60,14 @@ const isRefused = computed(() => [SCAN_STATUSES.INFECTED, SCAN_STATUSES.FAILED].
         variant="ghost"
         size="sm"
         icon-only
-        icon="fa-solid fa-trash-can"
+        icon="trash"
         :disabled="busy"
         :aria-label="t('accredited.evidence.remove', { name: file.fileName })"
         @click="emit('remove', file)"
       />
     </span>
-    <p v-if="isRefused && editable" class="evidence-file__refusal" role="alert">{{ t('accredited.evidence.refusedHint') }}</p>
+    <p v-if="isRefused && editable" class="evidence-file__refusal" role="alert">
+      {{ t('accredited.evidence.refusedHint') }}
+    </p>
   </li>
 </template>

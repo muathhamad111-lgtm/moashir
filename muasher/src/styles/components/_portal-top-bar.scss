@@ -1,0 +1,118 @@
+@use '../mixins' as *;
+
+.portal-top-bar {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: var(--z-sticky);
+  border-block-end: var(--border-width) solid var(--theme-border);
+  background-color: var(--theme-surface);
+}
+
+.portal-top-bar__inner {
+  @include flex(row, center, space-between, var(--space-4));
+  block-size: var(--size-header-mobile);
+  padding-inline: var(--space-4);
+
+  @include respond-to('md') {
+    padding-inline: var(--space-8);
+  }
+
+  @include respond-to('lg') {
+    block-size: var(--size-top-bar-b);
+  }
+}
+
+.portal-top-bar__start {
+  @include flex(column, flex-start, center, var(--space-0));
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.portal-top-bar__end {
+  @include flex(row, center, flex-end, var(--space-3));
+  flex-shrink: 0;
+}
+
+.portal-top-bar__brand {
+  display: inline-flex;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  @include respond-to('lg') {
+    display: none;
+  }
+}
+
+.portal-top-bar__logo {
+  block-size: var(--size-navbar-logo);
+}
+
+.portal-top-bar__area {
+  display: none;
+  margin: 0;
+  color: var(--theme-heading);
+  font-family: var(--font-heading);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-tight);
+
+  @include respond-to('lg') {
+    display: block;
+  }
+}
+
+.portal-top-bar__updated {
+  display: none;
+  margin: 0;
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+
+  @include respond-to('lg') {
+    display: block;
+  }
+}
+
+.portal-top-bar__account {
+  display: none;
+
+  @include respond-to('lg') {
+    display: flex;
+  }
+}
+
+.portal-bell {
+  @include flex-center;
+  position: relative;
+  flex-shrink: 0;
+  inline-size: var(--size-touch-target);
+  block-size: var(--size-touch-target);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface);
+  color: var(--theme-heading);
+  font-size: var(--icon-size-lg);
+
+  &:hover {
+    border-color: var(--theme-accent-text);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.portal-bell__dot {
+  position: absolute;
+  inset-block-start: var(--space-2);
+  inset-inline-end: var(--space-2);
+  inline-size: var(--size-unread-dot);
+  block-size: var(--size-unread-dot);
+  border: var(--border-width-thick) solid var(--theme-surface);
+  border-radius: var(--radius-circle);
+  background-color: var(--color-danger);
+  box-sizing: content-box;
+}

@@ -13,11 +13,17 @@ export function writesEverything(resource) {
 }
 
 export function changedValues(next, current, { full = false } = {}) {
-  return Object.fromEntries(Object.entries(next).filter(([key, value]) => full || !isSameValue(value, current?.[key])))
+  return Object.fromEntries(
+    Object.entries(next).filter(([key, value]) => full || !isSameValue(value, current?.[key])),
+  )
 }
 
 export function withoutEmptyObjects(payload) {
-  return Object.fromEntries(Object.entries(payload).filter(([, value]) => !isPlainObject(value) || Object.keys(value).length > 0))
+  return Object.fromEntries(
+    Object.entries(payload).filter(
+      ([, value]) => !isPlainObject(value) || Object.keys(value).length > 0,
+    ),
+  )
 }
 
 export function trimmedOrNull(value) {

@@ -29,8 +29,10 @@ export function useEvidenceUploads({ formState, onRejected }) {
 
   function localError(file) {
     const limits = formState.form.value.uploadLimits
-    if (!hasAllowedExtension(file, limits.allowedTypes)) return t('accredited.evidence.errors.type', { types: limits.allowedTypes.join(', ') })
-    if (exceedsSize(file, limits.maxFileMb)) return t('accredited.evidence.errors.size', { max: limits.maxFileMb })
+    if (!hasAllowedExtension(file, limits.allowedTypes))
+      return t('accredited.evidence.errors.type', { types: limits.allowedTypes.join(', ') })
+    if (exceedsSize(file, limits.maxFileMb))
+      return t('accredited.evidence.errors.size', { max: limits.maxFileMb })
     return ''
   }
 
@@ -45,7 +47,11 @@ export function useEvidenceUploads({ formState, onRejected }) {
     if (errors[key] || uploading[key]) return null
     uploading[key] = true
     try {
-      const { data } = await evidenceService.upload(assessmentId(), { file, subCriterionId: subId, attachmentKey })
+      const { data } = await evidenceService.upload(assessmentId(), {
+        file,
+        subCriterionId: subId,
+        attachmentKey,
+      })
       formState.patch({ evidence: [...evidence(), data] })
       toast.success(t('accredited.evidence.toasts.uploaded', { name: data.fileName }))
       await refreshAfterChange()
@@ -91,7 +97,8 @@ export function useEvidenceUploads({ formState, onRejected }) {
 
   async function pollScans() {
     const answer = await evidenceService.list(assessmentId()).catch((error) => ({ error }))
-    if (answer.data && scanSignature(answer.data) !== scanSignature(evidence())) await formState.load({ silent: true })
+    if (answer.data && scanSignature(answer.data) !== scanSignature(evidence()))
+      await formState.load({ silent: true })
     watchScans()
   }
 
@@ -102,5 +109,15 @@ export function useEvidenceUploads({ formState, onRejected }) {
 
   onBeforeUnmount(() => clearTimeout(timer))
 
-  return { uploading, removing, errors, downloading: downloads.busy, upload, remove, replace, download, watchScans }
+  return {
+    uploading,
+    removing,
+    errors,
+    downloading: downloads.busy,
+    upload,
+    remove,
+    replace,
+    download,
+    watchScans,
+  }
 }

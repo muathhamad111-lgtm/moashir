@@ -15,7 +15,7 @@ final class TransactionCsvWriter
 
     private const array COLUMNS = [
         'reference', 'receipt_number', 'created_at', 'paid_at', 'purpose', 'entity_reference', 'entity_name', 'entity_email',
-        'method', 'status', 'price_before_vat', 'vat_rate', 'vat_amount', 'total', 'currency', 'refunded_at', 'refund_amount',
+        'method', 'channel', 'bank_name', 'status', 'price_before_vat', 'vat_rate', 'vat_amount', 'total', 'currency', 'refunded_at', 'refund_amount',
     ];
 
     /**
@@ -47,6 +47,8 @@ final class TransactionCsvWriter
             $payment->entity_name->in($locale),
             $payment->entity->owner->email ?? '',
             $payment->method === null ? '' : $this->label('finance.methods.'.$payment->method->value, $locale),
+            $this->label('finance.channels.'.$payment->channel->value, $locale),
+            $payment->bankTransfer?->bankAccount->bank_name->in($locale) ?? '',
             $this->label('finance.statuses.'.$payment->status->value, $locale),
             $payment->price_before_vat,
             $payment->vat_rate,

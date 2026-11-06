@@ -1,14 +1,31 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createBackendSession, demoDescriptorOf, isAuthTransition, SESSION_CACHE_MS } from '@/mocks/hybrid/backendSession'
+import {
+  createBackendSession,
+  demoDescriptorOf,
+  isAuthTransition,
+  SESSION_CACHE_MS,
+} from '@/mocks/hybrid/backendSession'
 
 function sessionResponse(data, status = 200) {
-  return new Response(JSON.stringify(status === 200 ? { data, meta: {}, errors: null } : { message: 'Unauthenticated.' }), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  })
+  return new Response(
+    JSON.stringify(
+      status === 200 ? { data, meta: {}, errors: null } : { message: 'Unauthenticated.' },
+    ),
+    {
+      status,
+      headers: { 'Content-Type': 'application/json' },
+    },
+  )
 }
 
-const ENTITY_USER = { id: 41, name: 'جمعية الأمل الخيرية', locale: 'ar', roles: [{ key: 'entity', label: {} }], is_super_admin: false, committee_appointments: [] }
+const ENTITY_USER = {
+  id: 41,
+  name: 'جمعية الأمل الخيرية',
+  locale: 'ar',
+  roles: [{ key: 'entity', label: {} }],
+  is_super_admin: false,
+  committee_appointments: [],
+}
 
 describe('backend session bridge', () => {
   it('maps a signed-in entity to the demo entity so demo modules have data', () => {
@@ -17,20 +34,31 @@ describe('backend session bridge', () => {
       name: 'جمعية الأمل الخيرية',
       roles: ['entity'],
       entityId: 5001,
-      committeeCycles: [],
       locale: 'ar',
       superAdmin: false,
     })
   })
 
   it('keeps the real roles of staff, the super admin flag and committee appointments', () => {
-    const staff = demoDescriptorOf({ id: 7, name: 'Sara', locale: 'en', roles: [{ key: 'system_admin' }], is_super_admin: false })
+    const staff = demoDescriptorOf({
+      id: 7,
+      name: 'Sara',
+      locale: 'en',
+      roles: [{ key: 'system_admin' }],
+      is_super_admin: false,
+    })
     expect(staff.roles).toEqual(['system_admin'])
     expect(staff.entityId).toBeNull()
     const superAdmin = demoDescriptorOf({ id: 1, name: 'Owner', roles: [], is_super_admin: true })
     expect(superAdmin.superAdmin).toBe(true)
-    const appointed = demoDescriptorOf({ id: 9, name: 'Reem', roles: [{ key: 'assessor' }], committee_appointments: [{ cycle_id: 31 }] })
-    expect(appointed.committeeCycles.length).toBe(1)
+    const appointed = demoDescriptorOf({
+      id: 9,
+      name: 'Reem',
+      roles: [{ key: 'assessor' }],
+      committee_appointments: [{ id: 7001, award_cycle_id: 31 }],
+    })
+    expect(appointed.id).toBe(27)
+    expect(appointed.roles).toEqual(['assessor'])
     expect(demoDescriptorOf(null)).toBeNull()
   })
 

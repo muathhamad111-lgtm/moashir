@@ -10,10 +10,16 @@ function mapData(request, mapper) {
 
 export const accreditedService = {
   getCurrent() {
-    return mapData(read('getCurrent', () => apiClient.get('/assessments/accredited/current')), toAccreditedCurrent)
+    return mapData(
+      read('getCurrent', () => apiClient.get('/assessments/accredited/current')),
+      toAccreditedCurrent,
+    )
   },
 
   getResult(assessmentId) {
-    return mapData(read('getResult', () => apiClient.get(`/assessments/${assessmentId}/result`)), toAccreditedResult)
+    return mapData(
+      read('getResult', () => apiClient.get(`/assessments/${assessmentId}/result`)),
+      toAccreditedResult,
+    )
   },
 }

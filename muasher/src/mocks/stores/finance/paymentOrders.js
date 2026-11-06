@@ -31,7 +31,9 @@ export function authorizeKnownPurpose(user, body) {
 }
 
 export function replayOf(user, purpose, key) {
-  const payment = financeState().payments.find((item) => item.initiatedByUserId === user.id && item.idempotencyKey === key)
+  const payment = financeState().payments.find(
+    (item) => item.initiatedByUserId === user.id && item.idempotencyKey === key,
+  )
   if (payment && payment.purpose !== purpose) throw financeReject.idempotencyKeyReused()
   return payment ?? null
 }
@@ -64,7 +66,10 @@ export function quoteFor(purpose) {
 export function openOrderOf(entityId, purpose) {
   return (
     financeState().payments.find(
-      (payment) => payment.entityId === entityId && payment.purpose === purpose && OPEN_STATUSES.includes(payment.status),
+      (payment) =>
+        payment.entityId === entityId &&
+        payment.purpose === purpose &&
+        OPEN_STATUSES.includes(payment.status),
     ) ?? null
   )
 }
@@ -83,6 +88,7 @@ export function openOrder({ user, entity, purpose, quote, mode, key }) {
     entityName: { ar: entity.name.ar, en: entity.name.en ?? null },
     initiatedByUserId: user.id,
     purpose,
+    channel: 'electronic',
     mode,
     idempotencyKey: key,
     providerIntentId: `mock_pi_${crypto.randomUUID().replaceAll('-', '').slice(0, 20)}`,
@@ -99,6 +105,7 @@ export function openOrder({ user, entity, purpose, quote, mode, key }) {
     paidAt: null,
     failedAt: null,
     cancelledAt: null,
+    rejectedAt: null,
     refundedAt: null,
     latePaidAt: null,
     manuallySettledAt: null,

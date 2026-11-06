@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Enums\Identity\AssessorQualification;
 use App\Enums\Identity\RoleKey;
 use App\Models\Identity\BreachedPassword;
 use App\Models\Identity\User;
+use App\Models\Identity\UserAssessorQualification;
 use App\Services\Identity\SessionKeys;
 use App\Services\Identity\SuperAdminFlagWriter;
 use App\Support\ValueObjects\PasswordDigest;
@@ -20,10 +22,21 @@ require_once __DIR__.'/Support/entity-helpers.php';
 require_once __DIR__.'/Support/assessment-helpers.php';
 require_once __DIR__.'/Support/integration-helpers.php';
 require_once __DIR__.'/Support/finance-helpers.php';
+require_once __DIR__.'/Support/bank-transfer-helpers.php';
 require_once __DIR__.'/Support/file-helpers.php';
 require_once __DIR__.'/Support/accredited-helpers.php';
 require_once __DIR__.'/Support/advanced-helpers.php';
 require_once __DIR__.'/Support/committee-helpers.php';
+require_once __DIR__.'/Support/content-helpers.php';
+require_once __DIR__.'/Support/notification-helpers.php';
+require_once __DIR__.'/Support/dashboard-helpers.php';
+require_once __DIR__.'/Support/certificate-helpers.php';
+require_once __DIR__.'/Support/contact-helpers.php';
+require_once __DIR__.'/Support/entity-logo-helpers.php';
+require_once __DIR__.'/Support/sign-in-helpers.php';
+require_once __DIR__.'/Support/insights-helpers.php';
+require_once __DIR__.'/Support/insights-unit-helpers.php';
+require_once __DIR__.'/Support/demo-helpers.php';
 
 pest()->extend(TestCase::class)->in('Feature', 'Unit');
 
@@ -44,8 +57,28 @@ function suiteTestDatabase(): string
 
 function staffUser(RoleKey ...$roles): User
 {
+    $user = unqualifiedStaffUser(...$roles);
+
+    if (in_array(RoleKey::Assessor, $roles, true)) {
+        qualifyAssessor($user, ...AssessorQualification::cases());
+    }
+
+    return $user->refresh();
+}
+
+function unqualifiedStaffUser(RoleKey ...$roles): User
+{
     $user = User::factory()->withConfirmedTotp(TOTP_SECRET)->create(['mfa_required' => true]);
     $user->assignRole(array_map(static fn (RoleKey $role): string => $role->value, $roles));
+
+    return $user->refresh();
+}
+
+function qualifyAssessor(User $user, AssessorQualification ...$qualifications): User
+{
+    foreach ($qualifications as $qualification) {
+        UserAssessorQualification::query()->firstOrCreate(['user_id' => $user->id, 'qualification' => $qualification]);
+    }
 
     return $user->refresh();
 }

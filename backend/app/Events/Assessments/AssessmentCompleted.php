@@ -13,5 +13,10 @@ final readonly class AssessmentCompleted implements ShouldDispatchAfterCommit
 {
     use Dispatchable;
 
-    public function __construct(public Assessment $assessment, public AssessmentResultSnapshot $snapshot) {}
+    public function __construct(
+        public Assessment $assessment,
+        public AssessmentResultSnapshot $snapshot,
+        public ?int $completedByUserId = null,
+        public bool $certificateRequested = true,
+    ) {}
 }

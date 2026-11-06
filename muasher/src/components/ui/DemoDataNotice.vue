@@ -2,10 +2,15 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { showsDemoData } from '@/utils/mockPlan'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modules: { type: Array, default: () => [] },
-  scope: { type: String, default: 'page', validator: (value) => ['page', 'section', 'actions'].includes(value) },
+  scope: {
+    type: String,
+    default: 'page',
+    validator: (value) => ['page', 'section', 'actions'].includes(value),
+  },
 })
 
 const { t } = useI18n()
@@ -16,7 +21,7 @@ const bodyKey = computed(() => `demoData.${props.scope}Body`)
 
 <template>
   <p v-if="visible" class="demo-notice" :class="`demo-notice--${scope}`" role="note">
-    <i class="fa-solid fa-flask-vial demo-notice__icon" aria-hidden="true"></i>
+    <AppIcon name="flask" class="demo-notice__icon" />
     <span>
       <strong class="demo-notice__title">{{ t('demoData.title') }}</strong>
       <span class="demo-notice__body">{{ t(bodyKey) }}</span>

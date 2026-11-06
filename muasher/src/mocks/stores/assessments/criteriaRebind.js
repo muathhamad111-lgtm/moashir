@@ -19,12 +19,18 @@ const SCOPE_STRICTNESS = {
 
 function openBoundDrafts(versionId) {
   return allAssessments().filter(
-    (record) => record.path !== ASSESSMENT_PATHS.ADVANCED && isOpen(record) && !isFrozen(record) && record.criteriaVersionId === versionId,
+    (record) =>
+      record.path !== ASSESSMENT_PATHS.ADVANCED &&
+      isOpen(record) &&
+      !isFrozen(record) &&
+      record.criteriaVersionId === versionId,
   )
 }
 
 function carriedScores(record, toTree, rescoredCodes) {
-  const fromUnits = new Map(scorableUnits(boundTree(record)).map((unit) => [unitKey(unit.level, unit.id), unit]))
+  const fromUnits = new Map(
+    scorableUnits(boundTree(record)).map((unit) => [unitKey(unit.level, unit.id), unit]),
+  )
   const targets = new Map(scorableUnits(toTree).map((unit) => [unit.code, unit]))
   const rescored = new Set(rescoredCodes)
   return Object.fromEntries(
@@ -40,7 +46,8 @@ function rebind(record, { toVersionId, scope, rescoredCodes, trigger }) {
   const fromTree = boundTree(record)
   const previousScores = record.scores
   const toTree = versionTree(findVersion(toVersionId))
-  record.scores = scope === CRITERIA_EDIT_SCOPES.ALL ? carriedScores(record, toTree, rescoredCodes) : {}
+  record.scores =
+    scope === CRITERIA_EDIT_SCOPES.ALL ? carriedScores(record, toTree, rescoredCodes) : {}
   record.criteriaVersionId = toVersionId
   record.updatedAt = new Date().toISOString()
   recordMove(record, { fromTree, toTree, previousScores, scope, trigger })
@@ -73,7 +80,8 @@ function missedPublications(versionId) {
 
 function strictestScope(chain) {
   return chain.reduce(
-    (strictest, event) => (SCOPE_STRICTNESS[event.scope] > SCOPE_STRICTNESS[strictest] ? event.scope : strictest),
+    (strictest, event) =>
+      SCOPE_STRICTNESS[event.scope] > SCOPE_STRICTNESS[strictest] ? event.scope : strictest,
     CRITERIA_EDIT_SCOPES.NEW_ONLY,
   )
 }
@@ -83,7 +91,11 @@ function settleRestoredDraft(record) {
   const published = versionWithStatus(CRITERIA_VERSION_STATUSES.PUBLISHED)
   const chain = missedPublications(record.criteriaVersionId)
   const scope = strictestScope(chain)
-  if (published && published.id !== record.criteriaVersionId && scope !== CRITERIA_EDIT_SCOPES.NEW_ONLY) {
+  if (
+    published &&
+    published.id !== record.criteriaVersionId &&
+    scope !== CRITERIA_EDIT_SCOPES.NEW_ONLY
+  ) {
     rebind(record, {
       toVersionId: published.id,
       scope,
@@ -101,7 +113,9 @@ export function settleRestoredDrafts(entityId) {
 }
 
 function holdOpenDrafts(entity) {
-  const drafts = openRequestsOf(entity.id).filter((record) => record.path !== ASSESSMENT_PATHS.ADVANCED)
+  const drafts = openRequestsOf(entity.id).filter(
+    (record) => record.path !== ASSESSMENT_PATHS.ADVANCED,
+  )
   if (!drafts.length) return
   const since = new Date().toISOString()
   drafts.forEach((record) => {

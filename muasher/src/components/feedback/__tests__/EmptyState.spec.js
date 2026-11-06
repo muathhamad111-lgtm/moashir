@@ -10,7 +10,7 @@ describe('EmptyState', () => {
     expect(wrapper.attributes('role')).toBe('status')
     expect(wrapper.find('.empty-state__title').text()).toBe('لا توجد إشعارات')
     expect(wrapper.find('.empty-state__message').text()).toBe('ستظهر الإشعارات الجديدة هنا')
-    expect(wrapper.find('.empty-state__art i').exists()).toBe(true)
+    expect(wrapper.find('.empty-state__art svg.app-icon').exists()).toBe(true)
   })
 
   it('renders the action slot and a custom art slot', () => {

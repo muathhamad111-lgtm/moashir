@@ -10,6 +10,7 @@ use App\Enums\Notifications\NotificationCode;
 use App\Events\Criteria\CriteriaWeightsBecameInconsistent;
 use App\Services\Criteria\CriteriaNotifier;
 use App\Support\Criteria\CriteriaLinks;
+use App\Support\ValueObjects\LocalizedText;
 
 final readonly class NotifyCriteriaWeightMismatch
 {
@@ -19,7 +20,7 @@ final readonly class NotifyCriteriaWeightMismatch
     {
         $this->notifier->notify(CriteriaNotice::for(
             NotificationCode::CriteriaWeightMismatch,
-            ['version' => (string) $event->version->version_number, 'count' => (string) count($event->report->problems)],
+            ['version' => (string) $event->version->version_number, 'weight_problems' => LocalizedText::fromChoice('quantities.weight_problems', count($event->report->problems))],
             CriteriaLinks::settings(),
             [RoleKey::CriteriaOfficer, RoleKey::SystemAdmin],
         ), $event->actorId);

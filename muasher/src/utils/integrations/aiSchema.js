@@ -13,8 +13,16 @@ import { choiceOf, integerBetween, optionalText, requiredText, secretRule } from
 
 function identifierRule(t, prefix = '') {
   return optionalText(t, INTEGRATION_LIMITS.AI_IDENTIFIER_MAX)
-    .test('whitespace', t('integrations.validation.noWhitespace'), (value) => !value || SECRET_PATTERNS.NO_WHITESPACE.test(value))
-    .test('prefix', t('integrations.validation.prefix', { prefix }), (value) => !prefix || !value || value.startsWith(prefix))
+    .test(
+      'whitespace',
+      t('integrations.validation.noWhitespace'),
+      (value) => !value || SECRET_PATTERNS.NO_WHITESPACE.test(value),
+    )
+    .test(
+      'prefix',
+      t('integrations.validation.prefix', { prefix }),
+      (value) => !prefix || !value || value.startsWith(prefix),
+    )
 }
 
 function modelRule(t) {
@@ -42,7 +50,10 @@ function activeProviderRule(t) {
     'acknowledged',
     t('integrations.ai.validation.acknowledgementRequired'),
     function check(provider) {
-      return provider === NO_ACTIVE_PROVIDER || this.parent.providers?.[provider]?.dataTransferAcknowledged === true
+      return (
+        provider === NO_ACTIVE_PROVIDER ||
+        this.parent.providers?.[provider]?.dataTransferAcknowledged === true
+      )
     },
   )
 }

@@ -52,7 +52,8 @@ export const permissionsHandlers = [
     if (!findPermission(params.key)) return errorResponse(404, 'not_found', 'Not found.')
     const body = await request.json()
     const errors = labelErrors(body)
-    if (Object.keys(errors).length) return errorResponse(422, 'validation_failed', 'Validation failed.', errors)
+    if (Object.keys(errors).length)
+      return errorResponse(422, 'validation_failed', 'Validation failed.', errors)
     return envelope(updatePermissionLabels(params.key, body))
   }),
 
@@ -61,7 +62,8 @@ export const permissionsHandlers = [
     if (!sessionCan(MATRIX_MANAGE)) return denied()
     const role = findRole(params.role)
     if (!role) return errorResponse(404, 'not_found', 'Not found.')
-    if (!isRoleEditable(role.key)) return errorResponse(422, 'role.not_editable', 'This role cannot be edited.')
+    if (!isRoleEditable(role.key))
+      return errorResponse(422, 'role.not_editable', 'This role cannot be edited.')
     const keys = (await request.json()).permissionKeys ?? []
     if (unknownPermissionKeys(keys).length) {
       return errorResponse(422, 'permission.unknown', 'The permission is unknown.', {

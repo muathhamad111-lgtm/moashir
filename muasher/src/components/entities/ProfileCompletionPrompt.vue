@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   welcome: { type: Boolean, default: false },
@@ -22,7 +23,7 @@ const message = computed(() =>
 <template>
   <aside class="completion-prompt" role="status">
     <span class="completion-prompt__icon" aria-hidden="true">
-      <i class="fa-solid fa-clipboard-check"></i>
+      <AppIcon name="clipboard-check" />
     </span>
     <div class="completion-prompt__body">
       <p class="completion-prompt__title">{{ title }}</p>

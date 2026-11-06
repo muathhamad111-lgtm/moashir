@@ -1,78 +1,95 @@
 <script setup>
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useBrandLogo } from '@/composables/useBrandLogo'
-import { PUBLIC_NAV_ITEMS } from '@/constants/navigation'
+import { useSectionSpy } from '@/composables/useSectionSpy'
+import { HOME_ANCHORS, HOME_SPY_ANCHORS } from '@/constants/homeSections'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { useAuthStore } from '@/stores/auth'
-import { useDisclosure } from '@/composables/useDisclosure'
+import { scrollBehavior } from '@/utils/motion'
 import LocaleSwitcher from '@/components/ui/LocaleSwitcher.vue'
 import ThemeToggle from '@/components/ui/ThemeToggle.vue'
-import BaseButton from '@/components/ui/BaseButton.vue'
+import PublicNavLinks from './PublicNavLinks.vue'
+import PublicNavDrawer from './PublicNavDrawer.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 const route = useRoute()
 const auth = useAuthStore()
-const { isOpen, rootRef, toggle, close } = useDisclosure()
 const { themedLogo } = useBrandLogo()
-const navItems = PUBLIC_NAV_ITEMS
+const menuOpen = ref(false)
+const isHome = computed(() => route.name === ROUTE_NAMES.PUBLIC_HOME)
+const { activeId, isScrolled } = useSectionSpy(() => (isHome.value ? HOME_SPY_ANCHORS : []))
 
-function isActive(item) {
-  return route.name === item.routeName
+function isActive(link) {
+  if (link.routeName) return route.name === link.routeName
+  if (!isHome.value) return false
+  return (activeId.value ?? HOME_ANCHORS.hero) === link.id
 }
+
+function onNavigate(event, link) {
+  menuOpen.value = false
+  if (link.routeName || !isHome.value) return
+  event.preventDefault()
+  if (link.id === HOME_ANCHORS.hero) {
+    window.scrollTo({ top: 0, behavior: scrollBehavior() })
+    return
+  }
+  document.getElementById(link.id)?.scrollIntoView({ behavior: scrollBehavior() })
+}
+
+watch(
+  () => route.fullPath,
+  () => {
+    menuOpen.value = false
+  },
+)
 </script>
 
 <template>
-  <header ref="rootRef" class="navbar public-navbar">
-    <router-link class="navbar__brand" :to="{ name: ROUTE_NAMES.PUBLIC_HOME }">
-      <img class="navbar__logo" :src="themedLogo" :alt="t('app.name')" />
-    </router-link>
-    <nav
-      :id="'public-nav-menu'"
-      class="public-navbar__menu"
-      :class="{ 'is-open': isOpen }"
-      :aria-label="t('nav.publicLabel')"
-    >
-      <router-link
-        v-for="item in navItems"
-        :key="item.id"
-        class="public-navbar__link"
-        :class="{ 'is-active': isActive(item) }"
-        :to="{ name: item.routeName }"
-        :aria-current="isActive(item) ? 'page' : undefined"
-        @click="close"
-      >
-        {{ t(item.labelKey) }}
-        <span v-if="item.future" class="public-navbar__hint">{{ t('common.comingSoon') }}</span>
+  <header class="public-navbar" :class="{ 'is-scrolled': isScrolled }">
+    <span class="public-navbar__backdrop" aria-hidden="true"></span>
+    <div class="public-navbar__inner">
+      <router-link class="public-navbar__brand" :to="{ name: ROUTE_NAMES.PUBLIC_HOME }">
+        <img class="navbar__logo public-navbar__logo" :src="themedLogo" :alt="t('app.name')" />
       </router-link>
-    </nav>
-    <div class="navbar__actions">
-      <LocaleSwitcher />
-      <ThemeToggle />
-      <router-link v-if="!auth.isAuthenticated" :to="{ name: ROUTE_NAMES.AUTH_LOGIN }" custom>
-        <template #default="{ navigate }">
-          <BaseButton variant="primary" size="sm" @click="navigate">
-            {{ t('actions.login') }}
-          </BaseButton>
+      <nav class="public-navbar__menu" :aria-label="t('nav.publicLabel')">
+        <PublicNavLinks :is-active="isActive" @navigate="onNavigate" />
+      </nav>
+      <div class="public-navbar__actions">
+        <LocaleSwitcher class="public-navbar__wide" />
+        <ThemeToggle class="public-navbar__wide" />
+        <template v-if="!auth.isAuthenticated">
+          <router-link
+            class="btn btn--secondary public-navbar__wide"
+            :to="{ name: ROUTE_NAMES.AUTH_REGISTER }"
+          >
+            {{ t('nav.register') }}
+          </router-link>
+          <router-link
+            class="btn btn--primary public-navbar__login"
+            :to="{ name: ROUTE_NAMES.AUTH_LOGIN }"
+          >
+            <span class="public-navbar__login-full">{{ t('actions.login') }}</span>
+            <span class="public-navbar__login-short">{{ t('nav.signInShort') }}</span>
+          </router-link>
         </template>
-      </router-link>
-      <router-link v-else :to="{ name: ROUTE_NAMES.APP_DASHBOARD }" custom>
-        <template #default="{ navigate }">
-          <BaseButton variant="primary" size="sm" @click="navigate">
-            {{ t('nav.dashboard') }}
-          </BaseButton>
-        </template>
-      </router-link>
-      <button
-        type="button"
-        class="btn btn--ghost btn--sm btn--icon public-navbar__toggle"
-        :aria-label="t('nav.toggleMenu')"
-        :aria-expanded="isOpen"
-        aria-controls="public-nav-menu"
-        @click="toggle"
-      >
-        <i class="fa-solid fa-bars" aria-hidden="true"></i>
-      </button>
+        <router-link v-else class="btn btn--primary" :to="{ name: ROUTE_NAMES.APP_DASHBOARD }">
+          {{ t('nav.dashboard') }}
+        </router-link>
+        <button
+          type="button"
+          class="btn btn--secondary btn--icon public-navbar__toggle"
+          :aria-label="t('nav.toggleMenu')"
+          :aria-expanded="menuOpen"
+          aria-controls="public-nav-drawer"
+          @click="menuOpen = true"
+        >
+          <AppIcon name="menu" />
+        </button>
+      </div>
     </div>
+    <PublicNavDrawer v-model:open="menuOpen" :is-active="isActive" @navigate="onNavigate" />
   </header>
 </template>

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Entities;
 
+use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Notifications\NotificationCode;
 use App\Support\ValueObjects\LocalizedText;
 
@@ -20,6 +21,7 @@ final readonly class EntityNotice
         public ?string $link,
         public bool $viaMail,
         public bool $viaInApp,
+        public ?AssessmentPath $path = null,
     ) {}
 
     /**
@@ -39,12 +41,17 @@ final readonly class EntityNotice
 
     public function inAppOnly(): self
     {
-        return new self($this->code, $this->title, $this->body, $this->link, false, true);
+        return new self($this->code, $this->title, $this->body, $this->link, false, true, $this->path);
     }
 
     public function mailOnly(): self
     {
-        return new self($this->code, $this->title, $this->body, $this->link, true, false);
+        return new self($this->code, $this->title, $this->body, $this->link, true, false, $this->path);
+    }
+
+    public function forPath(AssessmentPath $path): self
+    {
+        return new self($this->code, $this->title, $this->body, $this->link, $this->viaMail, $this->viaInApp, $path);
     }
 
     private static function key(NotificationCode $code, string $audience, string $part): string

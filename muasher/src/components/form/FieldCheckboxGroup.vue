@@ -21,7 +21,11 @@ function toggle(option, checked) {
 </script>
 
 <template>
-  <fieldset class="checkbox-group" :class="{ 'field--error': errorMessage }" :aria-describedby="errorMessage ? `${baseId}-error` : hint ? `${baseId}-hint` : undefined">
+  <fieldset
+    class="checkbox-group"
+    :class="{ 'field--error': errorMessage }"
+    :aria-describedby="errorMessage ? `${baseId}-error` : hint ? `${baseId}-hint` : undefined"
+  >
     <legend class="checkbox-group__legend">{{ label }}</legend>
     <div class="checkbox-group__options">
       <BaseCheckbox
@@ -35,6 +39,8 @@ function toggle(option, checked) {
       />
     </div>
     <p v-if="hint && !errorMessage" :id="`${baseId}-hint`" class="field__hint">{{ hint }}</p>
-    <p v-if="errorMessage" :id="`${baseId}-error`" class="field__error" role="alert">{{ errorMessage }}</p>
+    <p v-if="errorMessage" :id="`${baseId}-error`" class="field__error" role="alert">
+      {{ errorMessage }}
+    </p>
   </fieldset>
 </template>

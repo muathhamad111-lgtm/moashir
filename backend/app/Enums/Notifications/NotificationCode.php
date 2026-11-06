@@ -27,6 +27,7 @@ enum NotificationCode: string
     case ReasonRequiredAction = 'SEC-04';
     case SuperAdminAssignmentRejected = 'SEC-05';
     case IntegrationSecretReplaced = 'SEC-06';
+    case EntitySignInCodeChannelsChanged = 'SEC-07';
     case CriteriaMainCreated = 'STD-01';
     case CriteriaMainWeightChanged = 'STD-02';
     case CriteriaSubCreated = 'STD-03';
@@ -47,6 +48,7 @@ enum NotificationCode: string
     case AccreditedReviewStarted = 'ACC-06';
     case AccreditedCompletionRequested = 'ACC-07';
     case AccreditedCompleted = 'ACC-08';
+    case AccreditedCertificateIssued = 'ACC-09';
     case AccreditedFeedbackAvailable = 'ACC-10';
     case AccreditedReviewOverdue = 'ACC-11';
     case AccreditedCompletionExpired = 'ACC-12';
@@ -89,6 +91,7 @@ enum NotificationCode: string
     case PaymentGatewayTestFailed = 'INT-03';
     case ExternalServiceDown = 'INT-04';
     case RequestProcessingFailed = 'INT-05';
+    case BackupUnhealthy = 'INT-06';
     case AiProviderUpdated = 'AI-04';
     case AiProviderConnectionFailed = 'AI-05';
     case PaymentStarted = 'PAY-01';
@@ -99,7 +102,22 @@ enum NotificationCode: string
     case PaymentOrderCancelled = 'PAY-07';
     case PaymentRefundRequired = 'PAY-08';
     case ProviderRefundReported = 'PAY-09';
+    case BankTransferSubmitted = 'PAY-11';
+    case BankTransferRejected = 'PAY-12';
     case FinanceExportReady = 'FIN-01';
+    case BankAccountsChanged = 'FIN-03';
+    case KpiAdded = 'CMS-01';
+    case KpiValueEdited = 'CMS-02';
+    case KpiPublished = 'CMS-03';
+    case HomepageContentEdited = 'CMS-04';
+    case ContentUnpublished = 'CMS-05';
+    case CertificateRevoked = 'CERT-01';
+    case CertificateSuspended = 'CERT-02';
+    case ContactMessageReceived = 'CNT-01';
+    case ContactReplySent = 'CNT-02';
+    case ContactMessageAcknowledged = 'CNT-03';
+    case ContactFollowUpReceived = 'CNT-04';
+    case ContactMessageAssigned = 'CNT-05';
 
     public function category(): NotificationCategory
     {
@@ -109,25 +127,42 @@ enum NotificationCode: string
             self::CriteriaDirectEvaluationEnabled, self::EntityRegistered, self::EntityProfileIncomplete,
             self::EntityVerificationReminder, self::EntityEmailChangeRequested, self::PaymentStarted,
             self::PaymentOrderCancelled, self::PaymentRefundRequired, self::ProviderRefundReported,
+            self::BankTransferSubmitted, self::BankTransferRejected,
             self::AccreditedFormOpened, self::AccreditedSubmitted, self::AccreditedAwaitingAssignment,
             self::AccreditedAssigned, self::AccreditedCompletionRequested, self::EvidenceRefused,
             self::AdvancedCycleOpened, self::AdvancedDeadlineApproaching, self::AdvancedSubmitted, self::AdvancedAssigned,
             self::AdvancedInitialAssessmentCompleted, self::AdvancedReturnedForCompletion, self::CommitteeAssigned,
             self::CommitteeAllSubmitted, self::CommitteeAssessorDisabled, self::CommitteeSubstituteAssigned, self::ReturnedToCommittee,
-            self::QualifiedForNational, self::NationalResultApproved, self::CommitteeDiscussionOpened => NotificationCategory::ActionRequired,
+            self::QualifiedForNational, self::NationalResultApproved, self::CommitteeDiscussionOpened,
+            self::ContactMessageReceived, self::ContactFollowUpReceived, self::ContactMessageAssigned => NotificationCategory::ActionRequired,
             self::AccountStatusChanged, self::CriteriaMainCreated, self::CriteriaScaleChanged,
             self::CriteriaEditedWithScope, self::EntityCoreDataEdited, self::EntityReactivated,
             self::EntityEmailChangeDecided, self::SelfAssessmentStarted, self::SelfAssessmentDraftSaved,
             self::SelfAssessmentSubmitted, self::SelfAssessmentResultAvailable, self::SmsGatewayTestPassed,
             self::AiProviderUpdated, self::PaymentSucceeded, self::PaymentRefundRecorded, self::PaymentReceiptIssued,
             self::FinanceExportReady, self::AccreditedDraftSaved, self::AccreditedReviewStarted, self::AccreditedCompleted,
-            self::AccreditedFeedbackAvailable, self::AccreditedCompletionExpired, self::EvidenceBundleReady,
+            self::AccreditedFeedbackAvailable, self::AccreditedCertificateIssued, self::AccreditedCompletionExpired, self::EvidenceBundleReady,
             self::AdvancedConditionsRejected, self::AdvancedQualified, self::AdvancedNotQualified, self::AdvancedCompletionExpired,
             self::AdvancedWithdrawn, self::CycleSubmissionsClosed, self::CycleClosed, self::CommitteeEvaluationStarted,
             self::CommitteeEvaluationSubmitted, self::CommitteeAverageApproved, self::AwardResultsAnnounced, self::RegionApproved,
-            self::RegionalResult, self::NationalResult, self::CommitteeSubstituteApproved, self::CommitteeDiscussionEntry => NotificationCategory::Informational,
+            self::RegionalResult, self::NationalResult, self::CommitteeSubstituteApproved, self::CommitteeDiscussionEntry,
+            self::KpiAdded, self::KpiValueEdited, self::KpiPublished, self::HomepageContentEdited, self::ContentUnpublished,
+            self::ContactReplySent, self::ContactMessageAcknowledged => NotificationCategory::Informational,
             default => NotificationCategory::Alert,
         };
+    }
+
+    public function module(): string
+    {
+        return (string) strstr($this->value, '-', true);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function values(): array
+    {
+        return array_column(self::cases(), 'value');
     }
 
     public function sendsMail(): bool
@@ -137,6 +172,7 @@ enum NotificationCode: string
             self::PaymentGatewayTestFailed,
             self::ExternalServiceDown,
             self::AiProviderConnectionFailed,
+            self::BackupUnhealthy,
         ], true);
     }
 }

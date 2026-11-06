@@ -48,6 +48,15 @@ final readonly class EntityPolicy
         return $this->scope->accessOf($actor) === EntityAccess::None ? Response::denyAsNotFound() : Response::allow();
     }
 
+    public function viewLogo(User $actor, Entity $entity): Response
+    {
+        if ($actor->entity_id === null) {
+            return $this->view($actor, $entity);
+        }
+
+        return $actor->entity_id === $entity->id && $this->viewOwn($actor) ? Response::allow() : Response::denyAsNotFound();
+    }
+
     public function viewProfileChanges(User $actor, Entity $entity): Response
     {
         $view = $this->view($actor, $entity);

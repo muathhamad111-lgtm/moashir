@@ -1,7 +1,12 @@
 import { EMAIL_DEFAULTS, EMAIL_DNS_SEED, EMPTY_SECRET } from '../../fixtures/integrations'
 import { integrationReject } from './integrationRejection'
 import { emailState } from './integrationsState'
-import { applySecretPatch, isSecretTouched, secretMetaResource, secretVerdict } from './integrationSecrets'
+import {
+  applySecretPatch,
+  isSecretTouched,
+  secretMetaResource,
+  secretVerdict,
+} from './integrationSecrets'
 import { check, connectionResult, failOnVerdict, settleTest } from './integrationTesting'
 import {
   checkBoolean,
@@ -20,15 +25,36 @@ import {
 } from './integrationValidation'
 
 const MODES = ['test', 'live']
-const PORTS = [25, 465, 587, 2525]
+const PORTS = [25, 465, 587, 2465, 2525, 2587]
 const ENCRYPTIONS = ['starttls', 'tls']
-const BLOCKED_HOSTS = [/^localhost$/i, /\.local$/i, /\.internal$/i, /\.localhost$/i, /^\d+(?:\.\d+){3}$/]
-const PUBLIC_FIELDS = ['host', 'port', 'encryption', 'username', 'fromAddress', 'fromName', 'replyTo', 'ehloDomain', 'timeoutSeconds']
+const BLOCKED_HOSTS = [
+  /^localhost$/i,
+  /\.local$/i,
+  /\.internal$/i,
+  /\.localhost$/i,
+  /^\d+(?:\.\d+){3}$/,
+]
+const PUBLIC_FIELDS = [
+  'host',
+  'port',
+  'encryption',
+  'username',
+  'fromAddress',
+  'fromName',
+  'replyTo',
+  'ehloDomain',
+  'timeoutSeconds',
+]
 const REQUIRED_FIELDS = ['host', 'username', 'fromAddress', 'fromName']
 const LATENCY_MS = 523
 
 function emptyRow() {
-  return { ...Object.fromEntries(PUBLIC_FIELDS.map((field) => [field, null])), password: { ...EMPTY_SECRET }, lastTest: null, isActive: false }
+  return {
+    ...Object.fromEntries(PUBLIC_FIELDS.map((field) => [field, null])),
+    password: { ...EMPTY_SECRET },
+    lastTest: null,
+    isActive: false,
+  }
 }
 
 function isComplete(config) {
@@ -65,7 +91,11 @@ export function emailOverview() {
 }
 
 function checklist() {
-  return ['mailbox', 'spf', 'dkim', 'dmarc'].map((key) => ({ key, confirmable: false, confirmed: null }))
+  return ['mailbox', 'spf', 'dkim', 'dmarc'].map((key) => ({
+    key,
+    confirmable: false,
+    confirmed: null,
+  }))
 }
 
 export function emailResource() {
@@ -124,7 +154,9 @@ function writeRow(state, body, actor) {
   fields.forEach((field) => {
     next[field] = body[field] === '' ? null : structuredClone(body[field])
   })
-  const publicChanged = fields.some((field) => JSON.stringify(next[field]) !== JSON.stringify(row[field]))
+  const publicChanged = fields.some(
+    (field) => JSON.stringify(next[field]) !== JSON.stringify(row[field]),
+  )
   const secretChanged = isSecretTouched(row.password, body.password)
   if (!created && !publicChanged && !secretChanged) return
   next.password = applySecretPatch(row.password, body.password, actor, { showsLastFour: false })
@@ -135,19 +167,22 @@ function writeRow(state, body, actor) {
 
 function applyActivation(state, body) {
   if (!has(body, 'active')) return
-  if (body.active && !isComplete(state.row)) throw integrationReject.field('integration.configuration_incomplete', 'active')
+  if (body.active && !isComplete(state.row))
+    throw integrationReject.field('integration.configuration_incomplete', 'active')
   if (state.row) state.row.isActive = body.active
 }
 
 export function updateEmail(body, actor, { superAdmin }) {
   validateEmail(body)
-  if (has(body, 'host') && body.host && !isHostAllowed(body.host)) throw integrationReject.field('email.host_not_allowed', 'host')
+  if (has(body, 'host') && body.host && !isHostAllowed(body.host))
+    throw integrationReject.field('email.host_not_allowed', 'host')
   requireReason(body, superAdmin && hasSecretChange([body.password]))
   const draft = structuredClone(emailState())
   writeRow(draft, body, actor)
   if (has(body, 'testAddress')) draft.testAddress = body.testAddress || null
   if (has(body, 'mode')) draft.mode = body.mode
-  if (draft.mode === 'test' && !draft.testAddress) throw integrationReject.field('email.test_address_required', 'testAddress')
+  if (draft.mode === 'test' && !draft.testAddress)
+    throw integrationReject.field('email.test_address_required', 'testAddress')
   applyActivation(draft, body)
   Object.assign(emailState(), draft)
   return emailResource()
@@ -160,11 +195,29 @@ function configuredCredentials() {
 }
 
 function connectionTest(config) {
-  const base = { provider: 'smtp', mode: emailState().mode, latencyMs: LATENCY_MS, info: { ...EMAIL_DNS_SEED } }
-  if (!isHostAllowed(config.host)) return connectionResult({ ...base, checks: [check('host_allowed', false, 'host_not_allowed')], errorKind: 'misconfigured' })
+  const base = {
+    provider: 'smtp',
+    mode: emailState().mode,
+    latencyMs: LATENCY_MS,
+    info: { ...EMAIL_DNS_SEED },
+  }
+  if (!isHostAllowed(config.host))
+    return connectionResult({
+      ...base,
+      checks: [check('host_allowed', false, 'host_not_allowed')],
+      errorKind: 'misconfigured',
+    })
   const verdict = secretVerdict(config.password)
-  if (verdict !== 'ok') return connectionResult({ ...base, checks: [check('host_allowed', true), check('handshake', false, verdict)], errorKind: verdict })
-  return connectionResult({ ...base, checks: [check('host_allowed', true), check('handshake', true)] })
+  if (verdict !== 'ok')
+    return connectionResult({
+      ...base,
+      checks: [check('host_allowed', true), check('handshake', false, verdict)],
+      errorKind: verdict,
+    })
+  return connectionResult({
+    ...base,
+    checks: [check('host_allowed', true), check('handshake', true)],
+  })
 }
 
 export function testEmail(actor) {

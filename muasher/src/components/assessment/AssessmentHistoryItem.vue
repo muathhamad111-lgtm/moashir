@@ -6,6 +6,7 @@ import FrozenBadge from '@/components/entities/FrozenBadge.vue'
 import AssessmentStatusHistory from './AssessmentStatusHistory.vue'
 import { ASSESSMENT_PATHS } from '@/constants/assessment'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   item: { type: Object, required: true },
@@ -16,10 +17,16 @@ const { t } = useI18n()
 const isSelf = computed(() => props.item.path === ASSESSMENT_PATHS.SELF)
 const isAccredited = computed(() => props.item.path === ASSESSMENT_PATHS.ACCREDITED)
 const hasResult = computed(() => Boolean(props.item.result))
-const resultRoute = computed(() => (isAccredited.value ? ROUTE_NAMES.ASSESSMENT_ACCREDITED_RESULT : ROUTE_NAMES.ASSESSMENT_SELF_RESULT))
+const resultRoute = computed(() =>
+  isAccredited.value
+    ? ROUTE_NAMES.ASSESSMENT_ACCREDITED_RESULT
+    : ROUTE_NAMES.ASSESSMENT_SELF_RESULT,
+)
 const canContinue = computed(() => props.item.isOpen && !props.item.isFrozen)
 const continueRoute = computed(() =>
-  isAccredited.value ? { name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_FORM, params: { id: props.item.id } } : { name: ROUTE_NAMES.ASSESSMENT_SELF },
+  isAccredited.value
+    ? { name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_FORM, params: { id: props.item.id } }
+    : { name: ROUTE_NAMES.ASSESSMENT_SELF },
 )
 </script>
 
@@ -40,7 +47,9 @@ const continueRoute = computed(() =>
       <span v-if="hasResult" class="history-item__score">
         {{ t('assessment.history.scored', { percent: item.result.percent }) }}
       </span>
-      <span v-else class="history-item__score history-item__score--muted">{{ t('assessment.history.inProgress') }}</span>
+      <span v-else class="history-item__score history-item__score--muted">{{
+        t('assessment.history.inProgress')
+      }}</span>
       <div class="history-item__actions">
         <router-link
           v-if="(isSelf || isAccredited) && hasResult"
@@ -48,11 +57,19 @@ const continueRoute = computed(() =>
           :to="{ name: resultRoute, params: { id: item.id } }"
         >
           {{ t('assessment.history.viewResult') }}
-          <i class="fa-solid fa-arrow-right u-flip-in-rtl" aria-hidden="true"></i>
+          <AppIcon name="arrow-right" />
         </router-link>
-        <router-link v-if="canContinue && (isSelf || isAccredited)" class="btn btn--secondary btn--sm" :to="continueRoute">
-          <i class="fa-solid fa-pen" aria-hidden="true"></i>
-          {{ isAccredited ? t('assessment.history.openRequest') : t('assessment.history.continueDraft') }}
+        <router-link
+          v-if="canContinue && (isSelf || isAccredited)"
+          class="btn btn--secondary btn--sm"
+          :to="continueRoute"
+        >
+          <AppIcon name="pen" />
+          {{
+            isAccredited
+              ? t('assessment.history.openRequest')
+              : t('assessment.history.continueDraft')
+          }}
         </router-link>
       </div>
     </div>

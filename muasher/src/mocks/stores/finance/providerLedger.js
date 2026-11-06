@@ -3,9 +3,24 @@ import { financeState, persistFinanceState } from './financeState'
 export const SANDBOX_OUTCOMES = {
   paid: { status: 'paid', responseCode: '00', checksUntilSettled: null, settlesTo: null },
   declined: { status: 'failed', responseCode: '05', checksUntilSettled: null, settlesTo: null },
-  insufficient_funds: { status: 'failed', responseCode: '51', checksUntilSettled: null, settlesTo: null },
-  three_ds_completes: { status: 'initiated', responseCode: null, checksUntilSettled: 2, settlesTo: 'paid' },
-  three_ds_pending: { status: 'initiated', responseCode: null, checksUntilSettled: null, settlesTo: null },
+  insufficient_funds: {
+    status: 'failed',
+    responseCode: '51',
+    checksUntilSettled: null,
+    settlesTo: null,
+  },
+  three_ds_completes: {
+    status: 'initiated',
+    responseCode: null,
+    checksUntilSettled: 2,
+    settlesTo: 'paid',
+  },
+  three_ds_pending: {
+    status: 'initiated',
+    responseCode: null,
+    checksUntilSettled: null,
+    settlesTo: null,
+  },
 }
 
 const SANDBOX_SOURCES = {

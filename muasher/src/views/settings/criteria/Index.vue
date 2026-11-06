@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
 import MainCriterionForm from '@/components/criteria/MainCriterionForm.vue'
 import MainCriteriaTable from '@/components/criteria/MainCriteriaTable.vue'
@@ -133,10 +133,11 @@ function onAction(key, row) {
       </div>
       <div v-if="versionOptions.length > 1" class="criteria-page__version-picker">
         <span class="criteria-page__picker-label">{{ t('criteria.version.picker') }}</span>
-        <DropdownList
+        <AppSelect
+          variant="filter"
           :model-value="currentVersion?.id ?? null"
           :options="versionOptions"
-          :placeholder="t('criteria.version.picker')"
+          :label="t('criteria.version.picker')"
           @update:model-value="selectVersion"
         />
       </div>
@@ -154,10 +155,10 @@ function onAction(key, row) {
       v-if="versions.status.value === 'empty' && status !== 'loading'"
       :title="t('criteria.index.noVersionsTitle')"
       :message="t('criteria.index.noVersionsMessage')"
-      icon="fa-solid fa-sitemap"
+      icon="hierarchy"
     >
       <template v-if="access.canManage.value" #action>
-        <BaseButton variant="primary" icon="fa-solid fa-plus" @click="startFirstDraft">{{
+        <BaseButton variant="primary" icon="plus" @click="startFirstDraft">{{
           t('criteria.version.createEmptyDraft')
         }}</BaseButton>
       </template>
@@ -169,15 +170,16 @@ function onAction(key, row) {
         :search-placeholder="t('criteria.index.searchPlaceholder')"
       >
         <template #filters>
-          <DropdownList
+          <AppSelect
+            variant="filter"
             :model-value="filters.filters.active"
             :options="activeOptions"
-            :placeholder="t('criteria.filters.state')"
+            :label="t('criteria.filters.state')"
             @update:model-value="filters.setFilter('active', $event)"
           />
         </template>
         <template v-if="access.canEditTree.value" #actions>
-          <BaseButton variant="primary" size="sm" icon="fa-solid fa-plus" @click="openForm()">{{
+          <BaseButton variant="primary" size="sm" icon="plus" @click="openForm()">{{
             t('criteria.index.add')
           }}</BaseButton>
         </template>

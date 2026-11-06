@@ -1,0 +1,62 @@
+@use '../mixins' as *;
+
+.phone-verification__body {
+  @include flex(column, flex-start, flex-start, var(--space-3));
+}
+
+.phone-verification__current {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+.phone-verification__label,
+.phone-verification__note,
+.phone-verification__sent {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.phone-verification__number {
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+  font-variant-numeric: tabular-nums;
+}
+
+.phone-verification__hint {
+  @include flex(row, flex-start, flex-start, var(--space-2));
+  margin: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--color-info-soft);
+  color: var(--theme-text);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
+
+  .app-icon {
+    flex-shrink: 0;
+    margin-block-start: var(--space-1);
+    color: var(--theme-info-text);
+  }
+}
+
+.phone-verification__error {
+  margin: 0;
+  padding: var(--space-3);
+  border-inline-start: var(--border-width-thick) solid var(--color-danger);
+  border-radius: var(--radius-md);
+  background-color: var(--color-danger-soft);
+  color: var(--theme-text);
+  font-size: var(--fs-sm);
+}
+
+.phone-verification__form {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  inline-size: 100%;
+}
+
+.phone-verification__actions {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+}

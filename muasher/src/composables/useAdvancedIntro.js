@@ -22,7 +22,12 @@ export function useAdvancedIntro() {
   const rejection = shallowRef(null)
 
   const isAuthenticated = computed(() => auth.isAuthenticated)
-  const isEntity = computed(() => isAuthenticated.value && Boolean(auth.user?.entityId) && can(PERMISSIONS.ASSESSMENT_ADVANCED_MANAGE))
+  const isEntity = computed(
+    () =>
+      isAuthenticated.value &&
+      Boolean(auth.user?.entityId) &&
+      can(PERMISSIONS.ASSESSMENT_ADVANCED_MANAGE),
+  )
 
   async function loadCycle() {
     cycleStatus.value = 'loading'
@@ -53,8 +58,10 @@ export function useAdvancedIntro() {
 
   function rejectionOf(error) {
     const normalized = error?.normalized ?? {}
-    if (normalized.code === AWARD_CODES.CONDITIONS_FAILED) return { code: normalized.code, conditions: normalized.meta?.conditions ?? [] }
-    if (normalized.code === AWARD_CODES.REQUEST_EXISTS) return { code: normalized.code, assessmentId: normalized.meta?.assessmentId ?? null }
+    if (normalized.code === AWARD_CODES.CONDITIONS_FAILED)
+      return { code: normalized.code, conditions: normalized.meta?.conditions ?? [] }
+    if (normalized.code === AWARD_CODES.REQUEST_EXISTS)
+      return { code: normalized.code, assessmentId: normalized.meta?.assessmentId ?? null }
     return { code: normalized.code ?? '', message: normalized.message ?? '' }
   }
 
@@ -75,5 +82,18 @@ export function useAdvancedIntro() {
     }
   }
 
-  return { cycleStatus, status, errorMessage, cycle, current, applying, rejection, isAuthenticated, isEntity, load, loadCurrent, apply }
+  return {
+    cycleStatus,
+    status,
+    errorMessage,
+    cycle,
+    current,
+    applying,
+    rejection,
+    isAuthenticated,
+    isEntity,
+    load,
+    loadCurrent,
+    apply,
+  }
 }

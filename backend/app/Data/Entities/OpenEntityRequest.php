@@ -23,7 +23,7 @@ final readonly class OpenEntityRequest
     }
 
     /**
-     * @return array{id: int, number: string, path: string, status: string, cycle_id: int|null, is_frozen: bool}
+     * @return array{id: int, number: string, path: string, path_label: array{ar: string, en: string}, status: string, cycle_id: int|null, is_frozen: bool}
      */
     public function toArray(): array
     {
@@ -31,6 +31,7 @@ final readonly class OpenEntityRequest
             'id' => $this->id,
             'number' => $this->number,
             'path' => $this->path->value,
+            'path_label' => $this->path->label()->toArray(),
             'status' => $this->status,
             'cycle_id' => $this->cycleId,
             'is_frozen' => $this->isFrozen,

@@ -1,14 +1,24 @@
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import { PORTAL_TOOLS } from '@/constants/portal'
 import { MOCK_MODULES as M } from '@/constants/mockModules'
+import { accreditedEntryGuard } from './accreditedEntry'
+import { withComingSoonScreens } from './comingSoon'
 
+const AUTH_TOKEN_PARAM = '[A-Za-z0-9_-]{8,128}'
 const UUID_PARAM = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
 
-export const routes = [
+const LIVE_TOOL_VIEWS = {
+  maturity: () => import('@/views/insights/Maturity.vue'),
+  strengths: () => import('@/views/insights/StrengthsGaps.vue'),
+  boardReports: () => import('@/views/insights/BoardReports.vue'),
+}
+
+export const appRoutes = [
   {
     path: '/',
     name: ROUTE_NAMES.PUBLIC_HOME,
     component: () => import('@/views/public/Home.vue'),
-    meta: { layout: 'public', titleKey: 'routes.public.home.title', demoModules: [M.CMS, M.KPIS] },
+    meta: { layout: 'public', titleKey: 'routes.public.home.title', hideAssistant: true },
   },
   {
     path: '/kpis',
@@ -28,6 +38,9 @@ export const routes = [
     component: () => import('@/views/lenses/Index.vue'),
     meta: { layout: 'public', titleKey: 'routes.public.lenses.title', demoModules: [M.CMS] },
   },
+  { path: '/register', redirect: { name: ROUTE_NAMES.AUTH_REGISTER } },
+  { path: '/login', redirect: { name: ROUTE_NAMES.AUTH_LOGIN } },
+  { path: '/accredited', redirect: { name: ROUTE_NAMES.ASSESSMENT_ACCREDITED } },
   {
     path: '/auth/register',
     name: ROUTE_NAMES.AUTH_REGISTER,
@@ -47,6 +60,41 @@ export const routes = [
     meta: { layout: 'auth', titleKey: 'routes.auth.otp.title', guestOnly: true },
   },
   {
+    path: '/auth/forgot-password',
+    name: ROUTE_NAMES.AUTH_FORGOT_PASSWORD,
+    component: () => import('@/views/auth/ForgotPassword.vue'),
+    meta: {
+      layout: 'auth',
+      titleKey: 'routes.auth.forgotPassword.title',
+      guestOnly: true,
+      allowDuringMaintenance: true,
+    },
+  },
+  {
+    path: `/auth/reset-password/:token(${AUTH_TOKEN_PARAM})`,
+    name: ROUTE_NAMES.AUTH_RESET_PASSWORD,
+    component: () => import('@/views/auth/ResetPassword.vue'),
+    props: true,
+    meta: {
+      layout: 'auth',
+      titleKey: 'routes.auth.resetPassword.title',
+      guestOnly: true,
+      allowDuringMaintenance: true,
+    },
+  },
+  {
+    path: `/auth/invitations/:token(${AUTH_TOKEN_PARAM})`,
+    name: ROUTE_NAMES.AUTH_INVITATION,
+    component: () => import('@/views/auth/AcceptInvitation.vue'),
+    props: true,
+    meta: {
+      layout: 'auth',
+      titleKey: 'routes.auth.invitation.title',
+      guestOnly: true,
+      allowDuringMaintenance: true,
+    },
+  },
+  {
     path: '/auth/mfa',
     name: ROUTE_NAMES.AUTH_MFA,
     component: () => import('@/views/auth/Mfa.vue'),
@@ -56,7 +104,11 @@ export const routes = [
     path: '/dashboard',
     name: ROUTE_NAMES.APP_DASHBOARD,
     component: () => import('@/views/dashboard/Index.vue'),
-    meta: { layout: 'app', titleKey: 'routes.app.dashboard.title', requiresAuth: true, demoModules: [M.DASHBOARDS] },
+    meta: {
+      layout: 'app',
+      titleKey: 'routes.app.dashboard.title',
+      requiresAuth: true,
+    },
   },
   {
     path: '/entity/profile',
@@ -102,8 +154,10 @@ export const routes = [
     path: '/assessment/accredited',
     name: ROUTE_NAMES.ASSESSMENT_ACCREDITED,
     component: () => import('@/views/assessment/accredited/Intro.vue'),
+    beforeEnter: accreditedEntryGuard,
     meta: {
       layout: 'public',
+      openForPortalUsers: true,
       titleKey: 'routes.assessment.accredited.title',
     },
   },
@@ -154,7 +208,9 @@ export const routes = [
     name: ROUTE_NAMES.ASSESSMENT_ADVANCED,
     component: () => import('@/views/assessment/advanced/Intro.vue'),
     meta: {
+      demoOnly: true,
       layout: 'public',
+      openForPortalUsers: true,
       titleKey: 'routes.assessment.advanced.title',
     },
   },
@@ -163,6 +219,7 @@ export const routes = [
     name: ROUTE_NAMES.ASSESSMENT_ADVANCED_FORM,
     component: () => import('@/views/assessment/advanced/Form.vue'),
     meta: {
+      demoOnly: true,
       layout: 'app',
       titleKey: 'routes.assessment.advanced.form.title',
       requiresAuth: true,
@@ -173,7 +230,7 @@ export const routes = [
     name: ROUTE_NAMES.ASSESSMENT_ADVANCED_RESULT,
     component: () => import('@/views/assessment/advanced/Result.vue'),
     meta: {
-      demoModules: [M.RESULTS, M.CERTIFICATES],
+      demoOnly: true,
       layout: 'app',
       titleKey: 'routes.assessment.advanced.result.title',
       requiresAuth: true,
@@ -234,6 +291,7 @@ export const routes = [
     name: ROUTE_NAMES.AWARD_CYCLES,
     component: () => import('@/views/award/Cycles.vue'),
     meta: {
+      demoOnly: true,
       layout: 'app',
       titleKey: 'routes.award.cycles.title',
       requiresAuth: true,
@@ -244,6 +302,7 @@ export const routes = [
     name: ROUTE_NAMES.AWARD_CYCLE_NEW,
     component: () => import('@/views/award/CycleEditor.vue'),
     meta: {
+      demoOnly: true,
       layout: 'app',
       titleKey: 'routes.award.cycleNew.title',
       requiresAuth: true,
@@ -254,6 +313,7 @@ export const routes = [
     name: ROUTE_NAMES.AWARD_CYCLE,
     component: () => import('@/views/award/CycleEditor.vue'),
     meta: {
+      demoOnly: true,
       layout: 'app',
       titleKey: 'routes.award.cycle.title',
       requiresAuth: true,
@@ -262,11 +322,13 @@ export const routes = [
   {
     path: '/admin/award/filtering',
     name: ROUTE_NAMES.AWARD_FILTERING,
-    component: () => import('@/views/award/FilteringCycles.vue'),
+    component: () => import('@/views/award/CyclePicker.vue'),
     meta: {
+      demoOnly: true,
       layout: 'app',
       titleKey: 'routes.award.filtering.title',
       requiresAuth: true,
+      picker: { key: 'filtering', target: ROUTE_NAMES.AWARD_FILTERING_QUEUE },
     },
   },
   {
@@ -274,6 +336,7 @@ export const routes = [
     name: ROUTE_NAMES.AWARD_FILTERING_QUEUE,
     component: () => import('@/views/award/FilteringQueue.vue'),
     meta: {
+      demoOnly: true,
       layout: 'app',
       titleKey: 'routes.award.filteringQueue.title',
       requiresAuth: true,
@@ -284,6 +347,7 @@ export const routes = [
     name: ROUTE_NAMES.AWARD_FILTERING_DETAIL,
     component: () => import('@/views/award/FilteringDetail.vue'),
     meta: {
+      demoOnly: true,
       layout: 'app',
       titleKey: 'routes.award.filteringDetail.title',
       requiresAuth: true,
@@ -292,53 +356,88 @@ export const routes = [
   {
     path: '/admin/award/committee/manage',
     name: ROUTE_NAMES.AWARD_COMMITTEE_MANAGEMENT,
-    component: () => import('@/views/assessment/advanced/CommitteeManagement.vue'),
+    component: () => import('@/views/award/CyclePicker.vue'),
     meta: {
-      demoModules: [M.COMMITTEE],
+      demoOnly: true,
       layout: 'app',
       titleKey: 'routes.award.committeeManagement.title',
+      requiresAuth: true,
+      picker: { key: 'committee', target: ROUTE_NAMES.AWARD_COMMITTEE_ROSTER },
+    },
+  },
+  {
+    path: '/admin/award/cycles/:id(\\d+)/committee',
+    name: ROUTE_NAMES.AWARD_COMMITTEE_ROSTER,
+    component: () => import('@/views/award/CommitteeRoster.vue'),
+    meta: {
+      demoOnly: true,
+      layout: 'app',
+      titleKey: 'routes.award.committeeRoster.title',
       requiresAuth: true,
     },
   },
   {
-    path: '/admin/award/committee',
+    path: '/admin/committee/assignments',
     name: ROUTE_NAMES.AWARD_COMMITTEE,
-    component: () => import('@/views/assessment/advanced/CommitteeQueue.vue'),
+    component: () => import('@/views/committee/Assignments.vue'),
     meta: {
-      demoModules: [M.COMMITTEE],
+      demoOnly: true,
       layout: 'app',
       titleKey: 'routes.award.committee.title',
       requiresAuth: true,
     },
   },
   {
-    path: '/admin/award/committee/score/:assessmentId',
+    path: '/admin/committee/assignments/:assignment(\\d+)',
     name: ROUTE_NAMES.AWARD_COMMITTEE_SCORE,
-    component: () => import('@/views/assessment/advanced/CommitteeScore.vue'),
+    component: () => import('@/views/committee/Evaluation.vue'),
     meta: {
-      demoModules: [M.COMMITTEE],
+      demoOnly: true,
       layout: 'app',
-      titleKey: 'routes.award.committee.score.title',
+      titleKey: 'routes.award.committeeEvaluation.title',
+      requiresAuth: true,
+    },
+  },
+  {
+    path: '/admin/committee/discussions',
+    name: ROUTE_NAMES.AWARD_COMMITTEE_DISCUSSIONS,
+    component: () => import('@/views/committee/Discussions.vue'),
+    meta: {
+      demoOnly: true,
+      layout: 'app',
+      titleKey: 'routes.award.committeeDiscussions.title',
       requiresAuth: true,
     },
   },
   {
     path: '/admin/award/secretary',
     name: ROUTE_NAMES.AWARD_SECRETARY,
-    component: () => import('@/views/assessment/advanced/Secretary.vue'),
+    component: () => import('@/views/award/CyclePicker.vue'),
     meta: {
-      demoModules: [M.SECRETARY],
+      demoOnly: true,
       layout: 'app',
       titleKey: 'routes.award.secretary.title',
+      requiresAuth: true,
+      picker: { key: 'secretary', target: ROUTE_NAMES.AWARD_SECRETARY_DESK },
+    },
+  },
+  {
+    path: '/admin/award/cycles/:id(\\d+)/secretary',
+    name: ROUTE_NAMES.AWARD_SECRETARY_DESK,
+    component: () => import('@/views/award/SecretaryDesk.vue'),
+    meta: {
+      demoOnly: true,
+      layout: 'app',
+      titleKey: 'routes.award.secretaryDesk.title',
       requiresAuth: true,
     },
   },
   {
-    path: '/admin/award/secretary/review',
+    path: '/admin/award/cycles/:id(\\d+)/secretary/:assessment(\\d+)',
     name: ROUTE_NAMES.AWARD_SECRETARY_REVIEW,
-    component: () => import('@/views/assessment/advanced/SecretaryReview.vue'),
+    component: () => import('@/views/award/SecretaryRequest.vue'),
     meta: {
-      demoModules: [M.SECRETARY],
+      demoOnly: true,
       layout: 'app',
       titleKey: 'routes.award.secretaryReview.title',
       requiresAuth: true,
@@ -347,31 +446,42 @@ export const routes = [
   {
     path: '/admin/award/results',
     name: ROUTE_NAMES.AWARD_RESULTS,
-    component: () => import('@/views/assessment/advanced/AwardResults.vue'),
+    component: () => import('@/views/award/CyclePicker.vue'),
     meta: {
-      demoModules: [M.RESULTS],
+      demoOnly: true,
       layout: 'app',
       titleKey: 'routes.award.results.title',
+      requiresAuth: true,
+      picker: { key: 'results', target: ROUTE_NAMES.AWARD_RESULTS_BOARD },
+    },
+  },
+  {
+    path: '/admin/award/cycles/:id(\\d+)/results',
+    name: ROUTE_NAMES.AWARD_RESULTS_BOARD,
+    component: () => import('@/views/award/ResultsBoard.vue'),
+    meta: {
+      demoOnly: true,
+      layout: 'app',
+      titleKey: 'routes.award.resultsBoard.title',
       requiresAuth: true,
     },
   },
   {
-    path: '/admin/award/national',
+    path: '/admin/award/cycles/:id(\\d+)/results/national',
     name: ROUTE_NAMES.AWARD_NATIONAL,
-    component: () => import('@/views/assessment/advanced/NationalAward.vue'),
+    component: () => import('@/views/award/NationalBoard.vue'),
     meta: {
-      demoModules: [M.RESULTS],
+      demoOnly: true,
       layout: 'app',
       titleKey: 'routes.award.national.title',
       requiresAuth: true,
     },
   },
   {
-    path: '/reports/feedback/:assessmentId',
+    path: '/reports/feedback/:assessmentId(\\d+)',
     name: ROUTE_NAMES.REPORTS_FEEDBACK,
     component: () => import('@/views/reports/Feedback.vue'),
     meta: {
-      demoModules: [M.CERTIFICATES],
       layout: 'app',
       titleKey: 'routes.reports.feedback.title',
       requiresAuth: true,
@@ -382,17 +492,58 @@ export const routes = [
     name: ROUTE_NAMES.CERTIFICATES_INDEX,
     component: () => import('@/views/certificates/Index.vue'),
     meta: {
-      demoModules: [M.CERTIFICATES],
       layout: 'app',
       titleKey: 'routes.certificates.index.title',
       requiresAuth: true,
     },
   },
   {
+    path: '/terms',
+    name: ROUTE_NAMES.LEGAL_TERMS,
+    component: () => import('@/views/public/LegalPage.vue'),
+    props: { kind: 'terms' },
+    meta: { layout: 'public', titleKey: 'routes.legal.terms.title', allowDuringMaintenance: true },
+  },
+  {
+    path: '/privacy',
+    name: ROUTE_NAMES.LEGAL_PRIVACY,
+    component: () => import('@/views/public/LegalPage.vue'),
+    props: { kind: 'privacy' },
+    meta: {
+      layout: 'public',
+      titleKey: 'routes.legal.privacy.title',
+      allowDuringMaintenance: true,
+    },
+  },
+  {
+    path: '/accessibility',
+    name: ROUTE_NAMES.LEGAL_ACCESSIBILITY,
+    component: () => import('@/views/public/LegalPage.vue'),
+    props: { kind: 'accessibility' },
+    meta: {
+      layout: 'public',
+      titleKey: 'routes.legal.accessibility.title',
+      allowDuringMaintenance: true,
+    },
+  },
+  {
+    path: '/verify',
+    name: ROUTE_NAMES.VERIFY,
+    component: () => import('@/views/public/Verify.vue'),
+    meta: { layout: 'public', titleKey: 'routes.verify.title', allowDuringMaintenance: true },
+  },
+  {
+    path: '/verify/:code([0-9A-Za-z-]{1,60})',
+    name: ROUTE_NAMES.VERIFY_CERTIFICATE,
+    component: () => import('@/views/public/Verify.vue'),
+    meta: { layout: 'public', titleKey: 'routes.verify.title', allowDuringMaintenance: true },
+  },
+  {
     path: '/excellence-bag',
     name: ROUTE_NAMES.BAG_DETAILS,
     component: () => import('@/views/bag/Details.vue'),
     meta: {
+      demoOnly: true,
       demoModules: [M.BAG],
       layout: 'public',
       titleKey: 'routes.bag.details.title',
@@ -404,6 +555,7 @@ export const routes = [
     component: () => import('@/views/payments/Checkout.vue'),
     props: { purpose: 'bag' },
     meta: {
+      demoOnly: true,
       layout: 'public',
       titleKey: 'routes.bag.pay.title',
       requiresAuth: true,
@@ -414,6 +566,7 @@ export const routes = [
     name: ROUTE_NAMES.BAG_INDEX,
     component: () => import('@/views/bag/Index.vue'),
     meta: {
+      demoOnly: true,
       demoModules: [M.BAG],
       layout: 'app',
       titleKey: 'routes.bag.index.title',
@@ -438,6 +591,47 @@ export const routes = [
     meta: { layout: 'app', titleKey: 'routes.payments.detail.title', requiresAuth: true },
   },
   {
+    path: `/payments/:id(${UUID_PARAM})/complete`,
+    name: ROUTE_NAMES.PAYMENTS_COMPLETE,
+    component: () => import('@/views/payments/Complete.vue'),
+    meta: { layout: 'app', titleKey: 'routes.payments.complete.title', requiresAuth: true },
+  },
+  {
+    path: '/messages',
+    name: ROUTE_NAMES.MESSAGES_INDEX,
+    component: () => import('@/views/messages/Index.vue'),
+    meta: { layout: 'app', titleKey: 'routes.messages.index.title', requiresAuth: true },
+  },
+  {
+    path: `/messages/:id(${UUID_PARAM})`,
+    name: ROUTE_NAMES.MESSAGES_THREAD,
+    component: () => import('@/views/messages/Index.vue'),
+    meta: { layout: 'app', titleKey: 'routes.messages.thread.title', requiresAuth: true },
+  },
+  {
+    path: '/more',
+    name: ROUTE_NAMES.PORTAL_MORE,
+    component: () => import('@/views/portal/More.vue'),
+    meta: { layout: 'app', titleKey: 'routes.portal.more.title', requiresAuth: true },
+  },
+  {
+    path: '/help',
+    name: ROUTE_NAMES.PORTAL_HELP,
+    component: () => import('@/views/portal/Help.vue'),
+    meta: { layout: 'app', titleKey: 'routes.portal.help.title', requiresAuth: true },
+  },
+  ...PORTAL_TOOLS.map((tool) => ({
+    path: `/tools/${tool.slug}`,
+    name: tool.routeName,
+    component: LIVE_TOOL_VIEWS[tool.key] ?? (() => import('@/views/public/ComingSoon.vue')),
+    meta: {
+      layout: 'app',
+      requiresAuth: true,
+      ...(tool.live ? {} : { toolKey: tool.key }),
+      titleKey: `portal.tools.items.${tool.key}.title`,
+    },
+  })),
+  {
     path: `/payments/:id(${UUID_PARAM})/return`,
     name: ROUTE_NAMES.PAYMENTS_RETURN,
     component: () => import('@/views/payments/Return.vue'),
@@ -449,6 +643,7 @@ export const routes = [
     name: ROUTE_NAMES.BAG_MANAGE,
     component: () => import('@/views/bag/Manage.vue'),
     meta: {
+      demoOnly: true,
       demoModules: [M.BAG],
       layout: 'app',
       titleKey: 'routes.bag.manage.title',
@@ -460,6 +655,7 @@ export const routes = [
     name: ROUTE_NAMES.BAG_COMPARISON,
     component: () => import('@/views/bag/Comparison.vue'),
     meta: {
+      demoOnly: true,
       demoModules: [M.BAG],
       layout: 'app',
       titleKey: 'routes.bag.comparison.title',
@@ -471,6 +667,7 @@ export const routes = [
     name: ROUTE_NAMES.BAG_REQUESTS,
     component: () => import('@/views/bag/Requests.vue'),
     meta: {
+      demoOnly: true,
       demoModules: [M.BAG],
       layout: 'app',
       titleKey: 'routes.bag.requests.title',
@@ -482,6 +679,7 @@ export const routes = [
     name: ROUTE_NAMES.BAG_EVALUATOR_REQUESTS,
     component: () => import('@/views/bag/EvaluatorRequests.vue'),
     meta: {
+      demoOnly: true,
       demoModules: [M.BAG],
       layout: 'app',
       titleKey: 'routes.bag.evaluator.title',
@@ -492,7 +690,11 @@ export const routes = [
     path: '/notifications',
     name: ROUTE_NAMES.NOTIFICATIONS_INDEX,
     component: () => import('@/views/notifications/Index.vue'),
-    meta: { layout: 'app', titleKey: 'routes.notifications.index.title', requiresAuth: true, demoModules: [M.NOTIFICATIONS] },
+    meta: {
+      layout: 'app',
+      titleKey: 'routes.notifications.index.title',
+      requiresAuth: true,
+    },
   },
   {
     path: '/admin/operations',
@@ -516,6 +718,19 @@ export const routes = [
     component: () => import('@/views/finance/Transaction.vue'),
     props: true,
     meta: { layout: 'app', titleKey: 'routes.finance.transaction.title', requiresAuth: true },
+  },
+  {
+    path: '/finance/transfers',
+    name: ROUTE_NAMES.FINANCE_TRANSFERS,
+    component: () => import('@/views/finance/Transfers.vue'),
+    meta: { layout: 'app', titleKey: 'routes.finance.transfers.title', requiresAuth: true },
+  },
+  {
+    path: `/finance/transfers/:id(${UUID_PARAM})`,
+    name: ROUTE_NAMES.FINANCE_TRANSFER,
+    component: () => import('@/views/finance/TransferReview.vue'),
+    props: true,
+    meta: { layout: 'app', titleKey: 'routes.finance.transfer.title', requiresAuth: true },
   },
   {
     path: '/finance/refunds',
@@ -562,6 +777,7 @@ export const routes = [
     name: ROUTE_NAMES.ADMIN_SETTINGS_GENERAL,
     component: () => import('@/views/settings/General.vue'),
     meta: {
+      demoOnly: true,
       demoModules: [M.PLATFORM_SETTINGS],
       layout: 'app',
       titleKey: 'routes.admin.settings.general.title',
@@ -569,13 +785,12 @@ export const routes = [
     },
   },
   {
-    path: '/admin/settings/otp',
-    name: ROUTE_NAMES.ADMIN_SETTINGS_OTP,
-    component: () => import('@/views/settings/Otp.vue'),
+    path: '/admin/settings/sign-in',
+    name: ROUTE_NAMES.ADMIN_SETTINGS_SIGN_IN,
+    component: () => import('@/views/settings/SignInSecurity.vue'),
     meta: {
-      demoModules: [M.PLATFORM_SETTINGS],
       layout: 'app',
-      titleKey: 'routes.admin.settings.otp.title',
+      titleKey: 'routes.admin.settings.signIn.title',
       requiresAuth: true,
     },
   },
@@ -594,7 +809,6 @@ export const routes = [
     name: ROUTE_NAMES.ADMIN_SETTINGS_CERTIFICATES,
     component: () => import('@/views/settings/Certificates.vue'),
     meta: {
-      demoModules: [M.CERTIFICATES],
       layout: 'app',
       titleKey: 'routes.admin.settings.certificates.title',
       requiresAuth: true,
@@ -645,6 +859,7 @@ export const routes = [
     name: ROUTE_NAMES.ADMIN_SETTINGS_ABANDONED_CARTS,
     component: () => import('@/views/settings/AbandonedCarts.vue'),
     meta: {
+      demoOnly: true,
       layout: 'app',
       titleKey: 'routes.admin.settings.abandonedCarts.title',
       requiresAuth: true,
@@ -671,6 +886,7 @@ export const routes = [
     name: ROUTE_NAMES.ADMIN_SETTINGS_AI_KNOWLEDGE_BASE,
     component: () => import('@/views/settings/AiKnowledgeBase.vue'),
     meta: {
+      demoOnly: true,
       demoModules: [M.AI],
       layout: 'app',
       titleKey: 'routes.admin.settings.aiKnowledgeBase.title',
@@ -682,7 +898,6 @@ export const routes = [
     name: ROUTE_NAMES.ADMIN_SETTINGS_NOTIFICATIONS,
     component: () => import('@/views/settings/Notifications.vue'),
     meta: {
-      demoModules: [M.NOTIFICATIONS_ADMIN],
       layout: 'app',
       titleKey: 'routes.admin.settings.notifications.title',
       requiresAuth: true,
@@ -696,6 +911,16 @@ export const routes = [
       demoModules: [M.CMS],
       layout: 'app',
       titleKey: 'routes.admin.settings.homepage.title',
+      requiresAuth: true,
+    },
+  },
+  {
+    path: '/admin/settings/maturity-texts',
+    name: ROUTE_NAMES.ADMIN_SETTINGS_MATURITY_TEXTS,
+    component: () => import('@/views/settings/MaturityTexts.vue'),
+    meta: {
+      layout: 'app',
+      titleKey: 'routes.admin.settings.maturityTexts.title',
       requiresAuth: true,
     },
   },
@@ -734,7 +959,6 @@ export const routes = [
     name: ROUTE_NAMES.ADMIN_USERS,
     component: () => import('@/views/settings/users/Index.vue'),
     meta: {
-      demoModules: [M.USERS],
       layout: 'app',
       titleKey: 'routes.admin.users.title',
       requiresAuth: true,
@@ -796,6 +1020,34 @@ export const routes = [
     meta: { layout: 'app', titleKey: 'routes.admin.settings.cities.title', requiresAuth: true },
   },
   {
+    path: '/admin/contact-messages',
+    name: ROUTE_NAMES.ADMIN_CONTACT_MESSAGES,
+    component: () => import('@/views/admin/contact/Index.vue'),
+    meta: { layout: 'app', titleKey: 'routes.admin.contactMessages.title', requiresAuth: true },
+  },
+  {
+    path: `/admin/contact-messages/:id(${UUID_PARAM})`,
+    name: ROUTE_NAMES.ADMIN_CONTACT_MESSAGE,
+    component: () => import('@/views/admin/contact/Thread.vue'),
+    meta: { layout: 'app', titleKey: 'routes.admin.contactMessage.title', requiresAuth: true },
+  },
+  {
+    path: '/admin/settings/contact-messages',
+    name: ROUTE_NAMES.ADMIN_SETTINGS_CONTACT_MESSAGES,
+    component: () => import('@/views/settings/ContactMessages.vue'),
+    meta: {
+      layout: 'app',
+      titleKey: 'routes.admin.settings.contactMessages.title',
+      requiresAuth: true,
+    },
+  },
+  {
+    path: '/admin/audit-log',
+    name: ROUTE_NAMES.ADMIN_AUDIT_LOG,
+    component: () => import('@/views/admin/AuditLog.vue'),
+    meta: { layout: 'app', titleKey: 'routes.admin.auditLog.title', requiresAuth: true },
+  },
+  {
     path: '/account',
     name: ROUTE_NAMES.ACCOUNT_PROFILE,
     component: () => import('@/views/account/Profile.vue'),
@@ -825,19 +1077,31 @@ export const routes = [
     path: '/maintenance',
     name: ROUTE_NAMES.PUBLIC_MAINTENANCE,
     component: () => import('@/views/public/Maintenance.vue'),
-    meta: { layout: 'auth', titleKey: 'routes.public.maintenance.title', allowDuringMaintenance: true },
+    meta: {
+      layout: 'auth',
+      titleKey: 'routes.public.maintenance.title',
+      allowDuringMaintenance: true,
+    },
   },
   {
     path: '/403',
     name: ROUTE_NAMES.ERRORS_FORBIDDEN,
     component: () => import('@/views/errors/Forbidden.vue'),
-    meta: { layout: 'public', titleKey: 'routes.errors.forbidden.title', allowDuringMaintenance: true },
+    meta: {
+      layout: 'public',
+      titleKey: 'routes.errors.forbidden.title',
+      allowDuringMaintenance: true,
+    },
   },
   {
     path: '/500',
     name: ROUTE_NAMES.ERRORS_SERVER,
     component: () => import('@/views/errors/ServerError.vue'),
-    meta: { layout: 'public', titleKey: 'routes.errors.server.title', allowDuringMaintenance: true },
+    meta: {
+      layout: 'public',
+      titleKey: 'routes.errors.server.title',
+      allowDuringMaintenance: true,
+    },
   },
   {
     path: '/:pathMatch(.*)*',
@@ -846,3 +1110,5 @@ export const routes = [
     meta: { layout: 'public', titleKey: 'routes.errors.notFound.title' },
   },
 ]
+
+export const routes = withComingSoonScreens(appRoutes)

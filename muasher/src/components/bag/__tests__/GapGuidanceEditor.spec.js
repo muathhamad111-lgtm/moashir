@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import GapGuidanceEditor from '@/components/bag/GapGuidanceEditor.vue'
 import { createTestGlobals } from '@/test-utils'
+import { chooseNamedOption } from '@/test-utils/dropdown'
 
 function localized(content) {
   if (!content) return ''
@@ -39,8 +40,7 @@ describe('GapGuidanceEditor', () => {
 
   it('emits the updated priority after the consultant changes it', async () => {
     const wrapper = mountEditor()
-    const prioritySelect = wrapper.find(`select[name="gap-priority-${gap.id}"]`)
-    await prioritySelect.setValue('low')
+    await chooseNamedOption(wrapper, `gap-priority-${gap.id}`, 'low')
     await wrapper.find('form').trigger('submit.prevent')
 
     const payload = wrapper.emitted('save')?.[0]?.[0]
@@ -52,6 +52,8 @@ describe('GapGuidanceEditor', () => {
       props: { gap, saving: true, localized },
       global: createTestGlobals({ locale: 'en' }),
     })
-    expect(wrapper.find(`select[name="gap-priority-${gap.id}"]`).attributes('disabled')).toBeDefined()
+    expect(
+      wrapper.find(`button[name="gap-priority-${gap.id}"]`).attributes('disabled'),
+    ).toBeDefined()
   })
 })

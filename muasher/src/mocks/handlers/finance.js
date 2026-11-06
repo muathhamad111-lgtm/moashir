@@ -10,9 +10,29 @@ import {
   requirePermission,
   signedInActor,
 } from '../stores/finance/financeAccess'
-import { financeState, findExport, findFile, findPayment, findReceipt, findRefund } from '../stores/finance/financeState'
-import { fieldMessage, financeReject, financeRoute, readJson } from '../stores/finance/financeRejection'
-import { filteredTransactions, isCalendarDate, listFilters, page, sortedTransactions, statsOf, withinDates } from '../stores/finance/financeQueries'
+import {
+  financeState,
+  findExport,
+  findFile,
+  findPayment,
+  findReceipt,
+  findRefund,
+} from '../stores/finance/financeState'
+import {
+  fieldMessage,
+  financeReject,
+  financeRoute,
+  readJson,
+} from '../stores/finance/financeRejection'
+import {
+  filteredTransactions,
+  isCalendarDate,
+  listFilters,
+  page,
+  sortedTransactions,
+  statsOf,
+  withinDates,
+} from '../stores/finance/financeQueries'
 import {
   abandonedCartResource,
   financeExportResource,
@@ -24,7 +44,11 @@ import {
 } from '../stores/finance/financeSerializers'
 import { exportTransactions, progressed, readyExportFile } from '../stores/finance/financeExports'
 import { recordRefund, validatedRefund } from '../stores/finance/refundRecording'
-import { reissueReceipt, receiptFileOf, validatedReissueReason } from '../stores/finance/receiptOperations'
+import {
+  reissueReceipt,
+  receiptFileOf,
+  validatedReissueReason,
+} from '../stores/finance/receiptOperations'
 import { settleManually, validatedSettlement } from '../stores/finance/manualSettlement'
 import { signedDownloadOf } from '../stores/finance/signedFiles'
 import { normalizeSearchText } from '../stores/searchIndex'
@@ -32,6 +56,7 @@ import { boundPayment } from './payments'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const PURPOSES = ['accredited', 'bag']
+const CHANNELS = ['electronic', 'bank_transfer']
 const failsToList = failsRandomly(0.04)
 
 function found(record) {
@@ -51,7 +76,8 @@ function rangeErrors(range) {
   const errors = Object.entries(range)
     .filter(([, value]) => value && !isCalendarDate(value))
     .map(([field]) => [field, [fieldMessage('date')]])
-  if (!errors.length && range.from && range.to && range.to < range.from) errors.push(['to', [fieldMessage('date_order')]])
+  if (!errors.length && range.from && range.to && range.to < range.from)
+    errors.push(['to', [fieldMessage('date_order')]])
   return errors
 }
 
@@ -63,10 +89,19 @@ function summaryRange(query) {
 }
 
 function summaryOf(range) {
-  const payments = financeState().payments.filter((payment) => payment.mode === 'live' && withinDates(payment.createdAt, range))
+  const payments = financeState().payments.filter(
+    (payment) => payment.mode === 'live' && withinDates(payment.createdAt, range),
+  )
   return {
     ...statsOf(payments),
-    byPurpose: PURPOSES.map((purpose) => ({ purpose, ...statsOf(payments.filter((payment) => payment.purpose === purpose)) })),
+    byPurpose: PURPOSES.map((purpose) => ({
+      purpose,
+      ...statsOf(payments.filter((payment) => payment.purpose === purpose)),
+    })),
+    byChannel: CHANNELS.map((channel) => ({
+      channel,
+      ...statsOf(payments.filter((payment) => (payment.channel ?? 'electronic') === channel)),
+    })),
   }
 }
 
@@ -77,33 +112,49 @@ function unavailableSometimes() {
 function eventMatches(event, term) {
   if (!term) return true
   const reference = event.paymentId ? findPayment(event.paymentId)?.reference : ''
-  return [reference ?? '', event.providerPaymentId ?? ''].some((value) => normalizeSearchText(value).includes(term))
+  return [reference ?? '', event.providerPaymentId ?? ''].some((value) =>
+    normalizeSearchText(value).includes(term),
+  )
 }
 
 function eventsOf(filters) {
   return financeState()
-    .events.filter((event) => (!filters.source || event.source === filters.source) && (!filters.result || event.result === filters.result))
-    .filter((event) => (!filters.mode || event.mode === filters.mode) && eventMatches(event, filters.search))
+    .events.filter(
+      (event) =>
+        (!filters.source || event.source === filters.source) &&
+        (!filters.result || event.result === filters.result),
+    )
+    .filter(
+      (event) =>
+        (!filters.mode || event.mode === filters.mode) && eventMatches(event, filters.search),
+    )
     .sort((left, right) => right.createdAt.localeCompare(left.createdAt) || right.id - left.id)
 }
 
 function refundsOf(filters) {
   return financeState()
     .refunds.filter((refund) => withinDates(`${refund.refundedOn}T12:00:00+03:00`, filters))
-    .filter((refund) => !filters.purpose || findPayment(refund.paymentId).purpose === filters.purpose)
+    .filter(
+      (refund) => !filters.purpose || findPayment(refund.paymentId).purpose === filters.purpose,
+    )
     .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
 }
 
 function cartMatches(cart, term) {
   if (!term) return true
   const { entity } = abandonedCartResource(cart)
-  return [cart.email, entity.name.ar, entity.name.en ?? ''].some((value) => normalizeSearchText(value).includes(term))
+  return [cart.email, entity.name.ar, entity.name.en ?? ''].some((value) =>
+    normalizeSearchText(value).includes(term),
+  )
 }
 
 function cartsOf(filters) {
   return financeState()
     .carts.filter((cart) => !filters.purpose || cart.purpose === filters.purpose)
-    .filter((cart) => !filters.contacted || (filters.contacted === 'true') === (cart.contactedAt !== null))
+    .filter(
+      (cart) =>
+        !filters.contacted || (filters.contacted === 'true') === (cart.contactedAt !== null),
+    )
     .filter((cart) => cartMatches(cart, filters.search))
     .sort((left, right) => right.lastSeenAt.localeCompare(left.lastSeenAt))
 }
@@ -140,7 +191,10 @@ export const financeHandlers = [
     financeRoute(({ request }) => {
       const user = signedInActor()
       requirePermission(user, FINANCE_PERMISSIONS.OPERATIONS_EXPORT)
-      const filters = listFilters(queryOf(request), 'transactions', { searchable: true, sortable: true })
+      const filters = listFilters(queryOf(request), 'transactions', {
+        searchable: true,
+        sortable: true,
+      })
       const result = exportTransactions(user, filters, request)
       return result.stream ?? envelope(financeExportResource(result.queued), {}, { status: 202 })
     }),
@@ -160,7 +214,11 @@ export const financeHandlers = [
     financeRoute(({ request }) => {
       requirePermission(signedInActor(), FINANCE_PERMISSIONS.EVENTS_VIEW)
       const query = queryOf(request)
-      return listResponse(eventsOf(listFilters(query, 'events', { searchable: true })), query, paymentEventResource)
+      return listResponse(
+        eventsOf(listFilters(query, 'events', { searchable: true })),
+        query,
+        paymentEventResource,
+      )
     }),
   ),
 
@@ -171,7 +229,11 @@ export const financeHandlers = [
       const user = signedInActor()
       requirePermission(user, FINANCE_PERMISSIONS.REFUNDS_MANAGE)
       const instruction = validatedRefund(await request.formData())
-      return envelope(refundResource(await recordRefund(user, payment, instruction)), {}, { status: 201 })
+      return envelope(
+        refundResource(await recordRefund(user, payment, instruction)),
+        {},
+        { status: 201 },
+      )
     }),
   ),
 
@@ -257,7 +319,11 @@ export const financeHandlers = [
     financeRoute(({ request }) => {
       requirePermission(signedInActor(), FINANCE_PERMISSIONS.CARTS_VIEW)
       const query = queryOf(request)
-      return listResponse(cartsOf(listFilters(query, 'carts', { searchable: true })), query, abandonedCartResource)
+      return listResponse(
+        cartsOf(listFilters(query, 'carts', { searchable: true })),
+        query,
+        abandonedCartResource,
+      )
     }),
   ),
 ]

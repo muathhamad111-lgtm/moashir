@@ -10,7 +10,8 @@ export function useListboxNavigation(options) {
       activeIndex.value = -1
       return
     }
-    activeIndex.value = activeIndex.value < 0 && step < 0 ? count - 1 : (activeIndex.value + step + count) % count
+    activeIndex.value =
+      activeIndex.value < 0 && step < 0 ? count - 1 : (activeIndex.value + step + count) % count
   }
 
   function activate(index) {

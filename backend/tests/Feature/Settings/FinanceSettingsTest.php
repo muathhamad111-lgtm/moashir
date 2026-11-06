@@ -54,8 +54,10 @@ it('shows the defaults to the System Administrator: no prices yet, VAT 15.00 and
             'vat_rate' => '15.00',
             'order_validity_minutes' => 30,
             'order_validity_limits' => ['min' => 5, 'max' => 60],
+            'vat_registration_number' => null,
+            'vat_registration_reminder' => true,
             'pricing' => ['accredited' => null, 'bag' => null],
-            'editable_fields' => ['accredited_price', 'bag_price', 'vat_rate', 'order_validity_minutes'],
+            'editable_fields' => ['accredited_price', 'bag_price', 'vat_rate', 'order_validity_minutes', 'vat_registration_number'],
         ], 'meta' => [], 'errors' => null]);
 });
 
@@ -140,7 +142,7 @@ it('requires a reason from the Super Admin, changes nothing without it and alert
     $this->putJson(FINANCE_SETTINGS, ['vat_rate' => '10.00', 'reason' => FINANCE_SETTINGS_REASON])
         ->assertOk()
         ->assertJsonPath('data.vat_rate', '10.00')
-        ->assertJsonPath('data.editable_fields', ['accredited_price', 'bag_price', 'vat_rate', 'order_validity_minutes']);
+        ->assertJsonPath('data.editable_fields', ['accredited_price', 'bag_price', 'vat_rate', 'order_validity_minutes', 'vat_registration_number']);
 
     expect(auditedSettingChange(SettingKey::VatRate))->toMatchArray(['reason' => FINANCE_SETTINGS_REASON, 'user_id' => $superAdmin->id]);
     Notification::assertSentTo($superAdmin, SecurityAlertNotification::class);

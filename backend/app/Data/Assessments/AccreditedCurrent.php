@@ -9,5 +9,10 @@ use App\Models\Finance\Payment;
 
 final readonly class AccreditedCurrent
 {
-    public function __construct(public ?Payment $awaitingPayment, public ?Assessment $active, public ?Assessment $latestClosed) {}
+    public function __construct(
+        public ?Payment $awaitingPayment,
+        public ?Assessment $active,
+        public ?Assessment $latestClosed,
+        public ?SubmissionProgress $activeProgress = null,
+    ) {}
 }

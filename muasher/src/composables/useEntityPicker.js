@@ -23,7 +23,10 @@ export function useEntityPicker() {
     if (term && term.trim().length < MIN_TERM) return
     loading.value = true
     try {
-      const { data } = await privacyRequestsService.lookupEntities({ search: term.trim() || undefined, limit: PICKER_SIZE })
+      const { data } = await privacyRequestsService.lookupEntities({
+        search: term.trim() || undefined,
+        limit: PICKER_SIZE,
+      })
       options.value = (data ?? []).map(toOption)
     } catch {
       options.value = []

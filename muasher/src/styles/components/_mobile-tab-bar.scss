@@ -1,0 +1,55 @@
+@use '../mixins' as *;
+
+.mobile-tab-bar {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: var(--z-fixed);
+  padding-block: var(--space-2) var(--size-safe-area-bottom);
+  padding-inline: var(--space-2);
+  border-block-start: var(--border-width) solid var(--glass-stroke);
+  background: var(--nav-gradient);
+  box-shadow: var(--elevation-e3);
+}
+
+.mobile-tab-bar__list {
+  @include flex(row, stretch, space-around);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mobile-tab-bar__entry {
+  flex: 1;
+}
+
+.mobile-tab-bar__tab {
+  @include flex(column, center, center, var(--space-1));
+  min-block-size: var(--size-touch-target);
+  color: var(--band-ink-muted);
+  font-size: var(--fs-xs);
+  border-radius: var(--radius-md);
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &.is-active {
+    color: var(--band-ink);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-semibold);
+  }
+}
+
+.mobile-tab-bar__pill {
+  @include flex-center;
+  padding-block: var(--space-1);
+  padding-inline: var(--space-4);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-lg);
+
+  .mobile-tab-bar__tab.is-active & {
+    background-color: var(--nav-active);
+    color: var(--data-on-band);
+  }
+}

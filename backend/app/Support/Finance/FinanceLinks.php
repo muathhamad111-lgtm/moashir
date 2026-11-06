@@ -21,6 +21,21 @@ final class FinanceLinks
         return '/finance/transactions/'.$paymentPublicId;
     }
 
+    public static function bankTransfer(string $paymentPublicId): string
+    {
+        return '/finance/transfers/'.$paymentPublicId;
+    }
+
+    public static function bankTransfers(): string
+    {
+        return '/finance/transfers';
+    }
+
+    public static function paymentSettings(): string
+    {
+        return '/admin/settings/payment';
+    }
+
     public static function export(string $exportPublicId): string
     {
         return '/finance/exports/'.$exportPublicId;

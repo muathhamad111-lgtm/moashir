@@ -15,6 +15,10 @@ const TRACKED_FIELDS = Object.freeze({
   employees_count: 'employeesCount',
   annual_beneficiaries_count: 'annualBeneficiariesCount',
   has_strategic_plan: 'hasStrategicPlan',
+  unified_number: 'unifiedNumber',
+  license_number: 'licenseNumber',
+  founded_on: 'foundedOn',
+  website_url: 'websiteUrl',
 })
 
 const PLACE_FIELDS = { region_id: findRegion, city_id: findCity }
@@ -23,7 +27,12 @@ let changes = []
 let nextId = 1
 
 function clone(change) {
-  return { ...change, staff: change.staff ? { ...change.staff, roles: change.staff.roles.map((role) => ({ ...role })) } : null }
+  return {
+    ...change,
+    staff: change.staff
+      ? { ...change.staff, roles: change.staff.roles.map((role) => ({ ...role })) }
+      : null,
+  }
 }
 
 export function resetProfileChanges() {
@@ -39,7 +48,9 @@ function same(left, right) {
 
 function staffOf(user) {
   const labels = new Map(listRoles().map((role) => [role.key, role.label]))
-  const roles = user.roles.filter((key) => labels.has(key)).map((key) => ({ key, label: { ...labels.get(key) } }))
+  const roles = user.roles
+    .filter((key) => labels.has(key))
+    .map((key) => ({ key, label: { ...labels.get(key) } }))
   return { name: actorDisplayName(user), roles }
 }
 
@@ -86,7 +97,15 @@ export function ownChangeResource(change) {
 
 export function staffChangeResource(change) {
   const staff = change.changedBy === 'staff' ? change.staff : null
-  return { ...baseItem(change), changedByStaff: staff ? { name: staff.name, roles: staff.roles.map((role) => ({ ...role, label: { ...role.label } })) } : null }
+  return {
+    ...baseItem(change),
+    changedByStaff: staff
+      ? {
+          name: staff.name,
+          roles: staff.roles.map((role) => ({ ...role, label: { ...role.label } })),
+        }
+      : null,
+  }
 }
 
 export function changesOf(entityId) {

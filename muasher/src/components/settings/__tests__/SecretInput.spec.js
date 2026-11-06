@@ -31,7 +31,10 @@ describe('SecretInput', () => {
     const wrapper = mountSecret({ meta: STORED })
     const replace = wrapper.findAll('button').find((button) => button.text() === 'Replace')
     await replace.trigger('click')
-    expect(wrapper.emitted('update:modelValue').at(-1)[0]).toEqual({ action: SECRET_ACTIONS.REPLACE, value: '' })
+    expect(wrapper.emitted('update:modelValue').at(-1)[0]).toEqual({
+      action: SECRET_ACTIONS.REPLACE,
+      value: '',
+    })
     await wrapper.setProps({ modelValue: { action: SECRET_ACTIONS.REPLACE, value: '' } })
     const input = wrapper.find('input')
     expect(input.attributes('type')).toBe('password')
@@ -42,15 +45,31 @@ describe('SecretInput', () => {
   it('emits the typed value as a replacement and offers no reveal toggle', async () => {
     const wrapper = mountSecret()
     await wrapper.find('input').setValue('sk_test_fake_example_value_0001')
-    expect(wrapper.emitted('update:modelValue').at(-1)[0]).toEqual({ action: SECRET_ACTIONS.REPLACE, value: 'sk_test_fake_example_value_0001' })
-    expect(wrapper.findAll('button').some((button) => /show|reveal/i.test(button.attributes('aria-label') ?? ''))).toBe(false)
+    expect(wrapper.emitted('update:modelValue').at(-1)[0]).toEqual({
+      action: SECRET_ACTIONS.REPLACE,
+      value: 'sk_test_fake_example_value_0001',
+    })
+    expect(
+      wrapper
+        .findAll('button')
+        .some((button) => /show|reveal/i.test(button.attributes('aria-label') ?? '')),
+    ).toBe(false)
   })
 
   it('marks a stored secret for clearing and can undo it', async () => {
-    const wrapper = mountSecret({ meta: STORED, modelValue: { action: SECRET_ACTIONS.CLEAR, value: '' } })
+    const wrapper = mountSecret({
+      meta: STORED,
+      modelValue: { action: SECRET_ACTIONS.CLEAR, value: '' },
+    })
     expect(wrapper.find('.secret-input__state--clearing').text()).toContain('will be removed')
-    await wrapper.findAll('button').find((button) => button.text() === 'Undo').trigger('click')
-    expect(wrapper.emitted('update:modelValue').at(-1)[0]).toEqual({ action: SECRET_ACTIONS.KEEP, value: '' })
+    await wrapper
+      .findAll('button')
+      .find((button) => button.text() === 'Undo')
+      .trigger('click')
+    expect(wrapper.emitted('update:modelValue').at(-1)[0]).toEqual({
+      action: SECRET_ACTIONS.KEEP,
+      value: '',
+    })
   })
 
   it('shows the field error and links it to the input', () => {

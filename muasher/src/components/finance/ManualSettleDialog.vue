@@ -7,6 +7,7 @@ import FieldRadio from '@/components/form/FieldRadio.vue'
 import FieldTextarea from '@/components/form/FieldTextarea.vue'
 import { useManualSettle } from '@/composables/useManualSettle'
 import { MANUAL_SETTLE_RULES } from '@/constants/finance'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -23,7 +24,12 @@ const { submitting, submit } = useManualSettle(props.transaction.id, {
   },
 })
 
-const statusOptions = computed(() => MANUAL_SETTLE_RULES.STATUSES.map((value) => ({ value, label: t(`finance.settle.statuses.${value}`) })))
+const statusOptions = computed(() =>
+  MANUAL_SETTLE_RULES.STATUSES.map((value) => ({
+    value,
+    label: t(`finance.settle.statuses.${value}`),
+  })),
+)
 </script>
 
 <template>
@@ -37,11 +43,16 @@ const statusOptions = computed(() => MANUAL_SETTLE_RULES.STATUSES.map((value) =>
   >
     <div class="settle-form">
       <p class="settle-form__lead" role="note">
-        <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
+        <AppIcon name="user-shield" />
         {{ t('finance.settle.lead', { reference: transaction.reference }) }}
       </p>
       <FieldRadio name="status" :label="t('finance.settle.status')" :options="statusOptions" />
-      <FieldInput name="providerPaymentId" :label="t('finance.settle.providerPaymentId')" :hint="t('finance.settle.providerPaymentIdHint')" input-dir="ltr" />
+      <FieldInput
+        name="providerPaymentId"
+        :label="t('finance.settle.providerPaymentId')"
+        :hint="t('finance.settle.providerPaymentIdHint')"
+        input-dir="ltr"
+      />
       <FieldTextarea
         name="reason"
         :label="t('finance.settle.reason')"

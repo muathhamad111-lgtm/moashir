@@ -11,7 +11,10 @@ import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import AssessmentTimeline from '@/components/assessment/AssessmentTimeline.vue'
 import CompletionRequestCard from '@/components/accredited/CompletionRequestCard.vue'
 import RequestFacts from '@/components/requests/RequestFacts.vue'
+import PathBadge from '@/components/ui/PathBadge.vue'
+import LevelBadge from '@/components/level/LevelBadge.vue'
 import RequestActionsCard from '@/components/requests/RequestActionsCard.vue'
+import RequestCertificateCard from '@/components/requests/RequestCertificateCard.vue'
 import AssignmentHistoryList from '@/components/requests/AssignmentHistoryList.vue'
 import AssignAssessorDialog from '@/components/requests/AssignAssessorDialog.vue'
 import ForceTransitionDialog from '@/components/requests/ForceTransitionDialog.vue'
@@ -24,16 +27,28 @@ import { useRequestDetail } from '@/composables/useRequestDetail'
 import { useEvidenceBundleRequest } from '@/composables/useEvidenceBundle'
 import { usePermissions } from '@/composables/usePermissions'
 import { assessmentOverridesService } from '@/services/assessmentOverridesService'
-import { ACCREDITED_LIMITS } from '@/constants/accredited'
+import { ACCREDITED_LIMITS, ACCREDITED_STATUSES } from '@/constants/accredited'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
+import { tierOfLevel } from '@/utils/levelTier'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t, locale } = useI18n()
 const route = useRoute()
 const { can } = usePermissions()
 const requestId = computed(() => Number(route.params.id))
-const { status, errorMessage, detail, canAssign, canReassign, canReturn, canWithdraw, load, apply } = useRequestDetail(requestId)
+const {
+  status,
+  errorMessage,
+  detail,
+  canAssign,
+  canReassign,
+  canReturn,
+  canWithdraw,
+  load,
+  apply,
+} = useRequestDetail(requestId)
 const returning = useReturnForCompletion()
 const { prompt: reasonPrompt, reasonExtra } = useSuperAdminReason()
 const returnOpen = ref(false)
@@ -46,7 +61,13 @@ const forceOpen = ref(false)
 
 useHead({ title: () => t('requests.detail.title') })
 
-const backRoute = computed(() => (can(PERMISSIONS.REQUESTS_QUEUE_VIEW) ? ROUTE_NAMES.REQUESTS_INDEX : ROUTE_NAMES.REQUESTS_ASSIGNED))
+const ACCREDITED_PATH = 'accredited'
+const isAccredited = computed(() => detail.value?.path === ACCREDITED_PATH)
+const isCompleted = computed(() => detail.value?.status === ACCREDITED_STATUSES.COMPLETED)
+
+const backRoute = computed(() =>
+  can(PERMISSIONS.REQUESTS_QUEUE_VIEW) ? ROUTE_NAMES.REQUESTS_INDEX : ROUTE_NAMES.REQUESTS_ASSIGNED,
+)
 
 function openAssign(mode) {
   assignMode.value = mode
@@ -78,33 +99,51 @@ onMounted(load)
   <section class="request-detail">
     <header class="request-detail__header">
       <RouterLink class="request-detail__back" :to="{ name: backRoute }">
-        <i class="fa-solid fa-arrow-left-long u-flip-in-rtl" aria-hidden="true"></i>
+        <AppIcon name="arrow-left" />
         {{ t('requests.detail.back') }}
       </RouterLink>
       <h1 class="request-detail__title">{{ t('requests.detail.title') }}</h1>
-      <p v-if="detail" class="request-detail__number"><bdi dir="ltr">{{ detail.number }}</bdi></p>
+      <p v-if="detail" class="request-detail__number">
+        <bdi dir="ltr">{{ detail.number }}</bdi>
+        <PathBadge v-if="detail.path" :path="detail.path" :label="detail.pathLabel" />
+      </p>
+      <p v-if="detail?.entity" class="request-detail__entity" data-testid="request-entity">
+        <span>{{ localizedText(detail.entity.name, locale) }}</span>
+        <LevelBadge :tier="tierOfLevel(detail.entity.level)" size="s" />
+      </p>
     </header>
     <div v-if="status === 'loading'" class="request-detail__loading" aria-busy="true">
       <Skeleton variant="block" />
       <Skeleton variant="text" :count="5" />
     </div>
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
-    <EmptyState v-else-if="status === 'missing'" icon="fa-regular fa-folder-open" :title="t('requests.detail.missingTitle')" :message="t('requests.detail.missingMessage')" />
+    <EmptyState
+      v-else-if="status === 'missing'"
+      icon="folder"
+      :title="t('requests.detail.missingTitle')"
+      :message="t('requests.detail.missingMessage')"
+    />
     <div v-else-if="detail" class="request-detail__layout">
       <div class="request-detail__main">
         <Card>
-          <template #header><h2 class="card__title-text">{{ t('requests.detail.requestInfo') }}</h2></template>
+          <template #header
+            ><h2 class="card__title-text">{{ t('requests.detail.requestInfo') }}</h2></template
+          >
           <RequestFacts :detail="detail" />
         </Card>
         <Card v-for="completion in detail.completionRequests" :key="completion.id">
           <CompletionRequestCard :request="completion" show-status />
         </Card>
         <Card>
-          <template #header><h2 class="card__title-text">{{ t('requests.detail.historyTitle') }}</h2></template>
+          <template #header
+            ><h2 class="card__title-text">{{ t('requests.detail.historyTitle') }}</h2></template
+          >
           <AssignmentHistoryList :history="detail.assignmentHistory" />
         </Card>
         <Card>
-          <template #header><h2 class="card__title-text">{{ t('requests.detail.timelineTitle') }}</h2></template>
+          <template #header
+            ><h2 class="card__title-text">{{ t('requests.detail.timelineTitle') }}</h2></template
+          >
           <AssessmentTimeline :history="detail.record.statusHistory" />
         </Card>
       </div>
@@ -124,8 +163,22 @@ onMounted(load)
           @return="openReturn"
           @withdraw="withdrawOpen = true"
         />
+        <RequestCertificateCard
+          v-if="isAccredited"
+          :key="`${detail.id}-${detail.status}`"
+          :request-id="detail.id"
+          :completed="isCompleted"
+        />
       </aside>
-      <AssignAssessorDialog v-model="assignOpen" :request-id="detail.id" :mode="assignMode" :entity-name="localizedText(detail.entity?.name, locale)" @done="apply" />
+      <AssignAssessorDialog
+        v-model="assignOpen"
+        :request-id="detail.id"
+        :mode="assignMode"
+        :entity-name="localizedText(detail.entity?.name, locale)"
+        :path="detail.path ?? ''"
+        :path-label="detail.pathLabel"
+        @done="apply"
+      />
       <ReasonDialog
         v-model="reopenOpen"
         :title="t('requests.overrides.reopenTitle')"
@@ -158,8 +211,20 @@ onMounted(load)
         action-name="requests.withdraw"
         @done="apply"
       />
-      <ReasonDialog v-model="reasonPrompt.open.value" :title="t('review.reasonTitle')" :message="t('review.reasonMessage')" :submit-label="t('actions.confirm')" :action="reasonPrompt.provide" action-name="requests.superAdminReason" />
-      <ForceTransitionDialog v-model="forceOpen" :assessment-id="detail.id" :current-status="detail.status" @done="load({ silent: true })" />
+      <ReasonDialog
+        v-model="reasonPrompt.open.value"
+        :title="t('review.reasonTitle')"
+        :message="t('review.reasonMessage')"
+        :submit-label="t('actions.confirm')"
+        :action="reasonPrompt.provide"
+        action-name="requests.superAdminReason"
+      />
+      <ForceTransitionDialog
+        v-model="forceOpen"
+        :assessment-id="detail.id"
+        :current-status="detail.status"
+        @done="load({ silent: true })"
+      />
     </div>
   </section>
 </template>

@@ -18,7 +18,9 @@ export function hasAllowedExtension(file, allowedTypes) {
 
 export function slotsOf(sub) {
   const own = (sub.attachments ?? []).map((slot) => ({ ...slot, pointCode: null }))
-  const fromPoints = (sub.points ?? []).flatMap((point) => (point.attachments ?? []).map((slot) => ({ ...slot, pointCode: point.code })))
+  const fromPoints = (sub.points ?? []).flatMap((point) =>
+    (point.attachments ?? []).map((slot) => ({ ...slot, pointCode: point.code })),
+  )
   return [...own, ...fromPoints]
 }
 
@@ -39,5 +41,7 @@ export function hasPendingScan(evidence) {
 }
 
 export function isRequested(completionRequest, subId, kind) {
-  return Boolean(completionRequest?.items.some((item) => item.subCriterionId === subId && item.kind === kind))
+  return Boolean(
+    completionRequest?.items.some((item) => item.subCriterionId === subId && item.kind === kind),
+  )
 }

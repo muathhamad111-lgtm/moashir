@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace App\Services\Entities;
 
+use App\Models\Contact\ContactMessage;
 use App\Models\Entities\Entity;
 use App\Models\Entities\EntityProfileChange;
 use App\Models\Entities\PrivacyRequest;
 use App\Models\Identity\EmailChangeRequest;
 use App\Models\Identity\TermsAcceptance;
 use App\Models\Identity\User;
+use App\Services\Contact\ContactMessageExporter;
 use Illuminate\Support\Carbon;
 
-final class PersonalDataPackageBuilder
+final readonly class PersonalDataPackageBuilder
 {
+    public function __construct(private ContactMessageExporter $contactMessages) {}
+
     /**
      * @return array<string, mixed>
      */
@@ -30,7 +34,22 @@ final class PersonalDataPackageBuilder
             'profile_changes' => $this->profileChanges($entity),
             'email_changes' => $this->emailChanges($entity),
             'privacy_requests' => $this->privacyRequests($entity),
+            'contact_messages' => $this->contactMessagesOf($entity, $owner),
         ];
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function contactMessagesOf(Entity $entity, ?User $owner): array
+    {
+        $linked = ContactMessage::query()->where('entity_id', $entity->id);
+
+        if ($owner instanceof User) {
+            $linked->orWhere('user_id', $owner->id);
+        }
+
+        return $this->contactMessages->rows($linked);
     }
 
     /**
@@ -51,6 +70,11 @@ final class PersonalDataPackageBuilder
             'employees_count' => $entity->employees_count,
             'annual_beneficiaries_count' => $entity->annual_beneficiaries_count,
             'has_strategic_plan' => $entity->has_strategic_plan,
+            'unified_number' => $entity->unified_number,
+            'license_number' => $entity->license_number,
+            'founded_on' => $entity->founded_on?->toDateString(),
+            'website_url' => $entity->website_url,
+            'has_logo' => $entity->logo_file_id !== null,
             'status' => $entity->status->value,
             'registered_at' => $entity->created_at->toIso8601String(),
             'verified_at' => $entity->verified_at?->toIso8601String(),

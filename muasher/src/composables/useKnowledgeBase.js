@@ -35,9 +35,22 @@ export function useKnowledgeBase() {
   }
 
   const upload = () =>
-    runAndReload(() => settingsService.uploadKbFile({ name: t('settings.ai.newFileName'), sizeKb: NEW_FILE_SIZE_KB }), 'settings.ai.uploadQueued', 'settings.ai.uploadFailed')
+    runAndReload(
+      () =>
+        settingsService.uploadKbFile({
+          name: t('settings.ai.newFileName'),
+          sizeKb: NEW_FILE_SIZE_KB,
+        }),
+      'settings.ai.uploadQueued',
+      'settings.ai.uploadFailed',
+    )
 
-  const toggleApproved = (file) => runAndReload(() => settingsService.toggleKbFileApproved(file.id, !file.approved), null, 'settings.ai.approveFailed')
+  const toggleApproved = (file) =>
+    runAndReload(
+      () => settingsService.toggleKbFileApproved(file.id, !file.approved),
+      null,
+      'settings.ai.approveFailed',
+    )
 
   async function remove(file) {
     const accepted = await confirm({
@@ -46,7 +59,12 @@ export function useKnowledgeBase() {
       confirmLabel: t('actions.confirm'),
       variant: 'danger',
     })
-    if (accepted) await runAndReload(() => settingsService.removeKbFile(file.id), 'settings.ai.removed', 'settings.ai.removeFailed')
+    if (accepted)
+      await runAndReload(
+        () => settingsService.removeKbFile(file.id),
+        'settings.ai.removed',
+        'settings.ai.removeFailed',
+      )
   }
 
   async function retrain() {
@@ -58,7 +76,11 @@ export function useKnowledgeBase() {
     })
     if (!accepted) return
     retraining.value = true
-    await runAndReload(() => settingsService.retrainKb(), 'settings.ai.retrainQueued', 'settings.ai.retrainFailed')
+    await runAndReload(
+      () => settingsService.retrainKb(),
+      'settings.ai.retrainQueued',
+      'settings.ai.retrainFailed',
+    )
     retraining.value = false
   }
 

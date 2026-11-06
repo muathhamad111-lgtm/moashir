@@ -6,6 +6,7 @@ namespace App\Http\Resources\Assessments;
 
 use App\Models\Assessments\Assessment;
 use App\Models\Assessments\AssessmentResultSnapshot;
+use App\Support\Assessments\PathPresenter;
 use App\Support\Assessments\StatusMask;
 use App\Support\Entities\EntityPresenter;
 use Illuminate\Http\Request;
@@ -26,7 +27,7 @@ final class AssessmentResource extends JsonResource
         return [
             'id' => $assessment->id,
             'number' => $assessment->request_number,
-            'path' => $assessment->path->value,
+            ...PathPresenter::of($assessment->path),
             'status' => StatusMask::statusFor($assessment, $request->user()),
             'is_open' => StatusMask::isOpenFor($assessment, $request->user()),
             'is_frozen' => $assessment->isFrozen(),

@@ -8,13 +8,17 @@ enum SmsTemplateKey: string
 {
     case OtpCode = 'otp_code';
 
+    private const int LONGEST_ARABIC_MINUTES = 1;
+
+    private const int LONGEST_ENGLISH_MINUTES = 15;
+
     /**
      * @return list<string>
      */
     public function placeholders(): array
     {
         return match ($this) {
-            self::OtpCode => ['code', 'minutes'],
+            self::OtpCode => ['code', 'validity', 'minutes'],
         };
     }
 
@@ -31,10 +35,14 @@ enum SmsTemplateKey: string
     /**
      * @return array<string, string>
      */
-    public function longestSample(): array
+    public function longestSample(string $locale): array
     {
         return match ($this) {
-            self::OtpCode => ['code' => '00000000', 'minutes' => '15'],
+            self::OtpCode => [
+                'code' => '00000000',
+                'validity' => trans_choice('quantities.minutes', $locale === 'en' ? self::LONGEST_ENGLISH_MINUTES : self::LONGEST_ARABIC_MINUTES, [], $locale),
+                'minutes' => '15',
+            ],
         };
     }
 

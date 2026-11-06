@@ -45,6 +45,8 @@ export const PERMISSIONS = {
   CERTIFICATES_OWN_VIEW: 'certificates.own.view',
   CERTIFICATES_ISSUE_ACCREDITED: 'certificates.issue.accredited',
   CERTIFICATES_MANAGE: 'certificates.manage',
+  REPORTS_INSIGHTS_OWN_VIEW: 'reports.insights.own.view',
+  REPORTS_INSIGHTS_VIEW: 'reports.insights.view',
   BAG_OWN_VIEW: 'bag.own.view',
   BAG_OWN_PURCHASE: 'bag.own.purchase',
   BAG_REQUESTS_VIEW: 'bag.requests.view',
@@ -58,6 +60,8 @@ export const PERMISSIONS = {
   CRITERIA_PUBLISH: 'criteria.publish',
   CONTENT_HOME_MANAGE: 'content.home.manage',
   CONTENT_KPIS_MANAGE: 'content.kpis.manage',
+  CONTENT_INSIGHTS_MANAGE: 'content.insights.manage',
+  CONTACT_MESSAGES_MANAGE: 'contact.messages.manage',
   AI_KB_MANAGE: 'ai.kb.manage',
   AI_PROVIDER_MANAGE: 'ai.provider.manage',
   USERS_VIEW: 'users.view',
@@ -82,6 +86,7 @@ export const PERMISSIONS = {
   FINANCE_OPERATIONS_EXPORT: 'finance.operations.export',
   FINANCE_REFUNDS_MANAGE: 'finance.refunds.manage',
   FINANCE_RECEIPTS_MANAGE: 'finance.receipts.manage',
+  FINANCE_TRANSFERS_REVIEW: 'finance.transfers.review',
 }
 
 export const PERMISSION_KEYS = Object.freeze(Object.values(PERMISSIONS))

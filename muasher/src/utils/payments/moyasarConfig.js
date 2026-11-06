@@ -15,7 +15,10 @@ function intentOf(checkout) {
   if (checkout.pattern !== CHECKOUT_PATTERNS.INTENT || !checkout.paymentIntent) return {}
   return {
     use_payment_intent: true,
-    payment_intent: { id: checkout.paymentIntent.id, client_secret: checkout.paymentIntent.clientSecret },
+    payment_intent: {
+      id: checkout.paymentIntent.id,
+      client_secret: checkout.paymentIntent.clientSecret,
+    },
   }
 }
 

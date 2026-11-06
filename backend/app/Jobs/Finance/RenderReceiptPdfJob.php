@@ -20,7 +20,7 @@ final class RenderReceiptPdfJob implements ShouldBeUnique, ShouldQueue
 
     public int $tries = 3;
 
-    public int $timeout = 120;
+    public int $timeout = 85;
 
     /**
      * @var list<int>

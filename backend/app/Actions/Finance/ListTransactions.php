@@ -13,7 +13,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 final readonly class ListTransactions
 {
-    public const array RELATIONS = ['receipt', 'refund', 'entity.owner'];
+    public const array RELATIONS = ['receipt', 'refund', 'entity.owner', 'bankTransfer.bankAccount'];
 
     public function __construct(private TransactionQuery $query, private FinanceStatsCalculator $stats) {}
 

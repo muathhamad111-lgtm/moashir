@@ -1,0 +1,42 @@
+@use '../mixins' as *;
+
+@keyframes meter-bar-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.meter-bar {
+  display: block;
+  overflow: hidden;
+  inline-size: 100%;
+  block-size: var(--size-meter);
+  border-radius: var(--radius-sm);
+  background-color: var(--theme-border);
+}
+
+.meter-bar__svg {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+
+  [dir='rtl'] & {
+    transform: scaleX(-1);
+  }
+}
+
+.meter-bar__fill {
+  fill: var(--theme-accent-text);
+  transform-box: fill-box;
+  transform-origin: left center;
+}
+
+@include motion-safe {
+  .is-revealed .meter-bar__fill {
+    animation: meter-bar-fill var(--motion-bars) var(--ease-brand) backwards;
+  }
+
+  .is-reveal-pending .meter-bar__fill {
+    transform: scaleX(0);
+  }
+}

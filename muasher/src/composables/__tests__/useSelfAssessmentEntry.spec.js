@@ -9,7 +9,9 @@ vi.mock('@/services/assessmentsService', () => ({
 }))
 
 function rejection(status, code, meta = {}) {
-  return Object.assign(new Error(code), { normalized: { status, code, meta, message: `message ${code}`, fieldErrors: {} } })
+  return Object.assign(new Error(code), {
+    normalized: { status, code, meta, message: `message ${code}`, fieldErrors: {} },
+  })
 }
 
 beforeEach(() => {
@@ -17,7 +19,9 @@ beforeEach(() => {
   vi.spyOn(toast, 'error')
   vi.spyOn(toast, 'info')
   assessmentsService.list.mockResolvedValue({ data: [], meta: {} })
-  assessmentsService.getPublishedCriteria.mockResolvedValue({ data: { versionNumber: 1, mains: [] } })
+  assessmentsService.getPublishedCriteria.mockResolvedValue({
+    data: { versionNumber: 1, mains: [] },
+  })
 })
 
 describe('useSelfAssessmentEntry', () => {
@@ -25,7 +29,11 @@ describe('useSelfAssessmentEntry', () => {
     assessmentsService.list.mockResolvedValue({ data: [{ id: 9002 }], meta: {} })
     const { api } = withSetup(useSelfAssessmentEntry)
     await api.locate()
-    expect(assessmentsService.list).toHaveBeenCalledWith({ 'filter[path]': 'self', 'filter[status]': 'draft', perPage: 1 })
+    expect(assessmentsService.list).toHaveBeenCalledWith({
+      'filter[path]': 'self',
+      'filter[status]': 'draft',
+      perPage: 1,
+    })
     expect(api.state.value).toBe(ENTRY_STATES.DRAFT)
     expect(api.draftId.value).toBe(9002)
     expect(assessmentsService.getPublishedCriteria).not.toHaveBeenCalled()
@@ -39,7 +47,9 @@ describe('useSelfAssessmentEntry', () => {
   })
 
   it('shows the no-criteria state when nothing is published, and the error state otherwise', async () => {
-    assessmentsService.getPublishedCriteria.mockRejectedValue(rejection(404, 'criteria.no_published_version'))
+    assessmentsService.getPublishedCriteria.mockRejectedValue(
+      rejection(404, 'criteria.no_published_version'),
+    )
     const { api } = withSetup(useSelfAssessmentEntry)
     await api.locate()
     expect(api.state.value).toBe(ENTRY_STATES.NO_CRITERIA)
@@ -50,7 +60,9 @@ describe('useSelfAssessmentEntry', () => {
   })
 
   it('starts a draft and opens it', async () => {
-    assessmentsService.startSelf.mockResolvedValue({ data: { id: 9101, number: 'SLF-2026-000006' } })
+    assessmentsService.startSelf.mockResolvedValue({
+      data: { id: 9101, number: 'SLF-2026-000006' },
+    })
     const { api } = withSetup(useSelfAssessmentEntry)
     await api.start()
     expect(api.state.value).toBe(ENTRY_STATES.DRAFT)
@@ -58,7 +70,9 @@ describe('useSelfAssessmentEntry', () => {
   })
 
   it('opens the existing draft on 409 self.draft_exists', async () => {
-    assessmentsService.startSelf.mockRejectedValue(rejection(409, 'self.draft_exists', { assessmentId: 9002 }))
+    assessmentsService.startSelf.mockRejectedValue(
+      rejection(409, 'self.draft_exists', { assessmentId: 9002 }),
+    )
     const { api } = withSetup(useSelfAssessmentEntry)
     await api.start()
     expect(api.draftId.value).toBe(9002)
@@ -66,7 +80,9 @@ describe('useSelfAssessmentEntry', () => {
   })
 
   it('blocks an inactive or frozen entity and keeps unknown failures as a toast', async () => {
-    assessmentsService.startSelf.mockRejectedValueOnce(rejection(403, 'assessment.entity_not_active'))
+    assessmentsService.startSelf.mockRejectedValueOnce(
+      rejection(403, 'assessment.entity_not_active'),
+    )
     const { api } = withSetup(useSelfAssessmentEntry)
     await api.start()
     expect(api.state.value).toBe(ENTRY_STATES.BLOCKED)

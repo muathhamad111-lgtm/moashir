@@ -10,7 +10,8 @@ use App\Data\Entities\EntityProfileData;
 use App\Models\Entities\Entity;
 use App\Models\Entities\EntityProfileChange;
 use App\Models\Identity\User;
-use Illuminate\Support\Facades\Date;
+use App\Support\Entities\EntityUniqueViolation;
+use Illuminate\Database\UniqueConstraintViolationException;
 
 final readonly class EntityProfileWriter
 {
@@ -20,14 +21,23 @@ final readonly class EntityProfileWriter
     {
         $changes = $this->diff->between($entity, $profile);
 
-        $entity->fill($profile->toAttributes());
-        $entity->profile_completed_at = $profile->isComplete() ? ($entity->profile_completed_at ?? Date::now()) : null;
-        $entity->save();
+        $entity->fill($entity->profileAttributesFrom($profile));
+        $entity->setRelation('owner', $this->writeContact($entity, $contact));
+        $entity->syncProfileCompletedAt();
+        $this->save($entity);
 
         $this->recordHistory($entity, $changes, $actor);
-        $this->writeContact($entity, $contact);
 
         return $changes;
+    }
+
+    private function save(Entity $entity): void
+    {
+        try {
+            $entity->save();
+        } catch (UniqueConstraintViolationException $violation) {
+            throw EntityUniqueViolation::toValidation($violation) ?? $violation;
+        }
     }
 
     private function recordHistory(Entity $entity, EntityProfileChangeSet $changes, ?User $actor): void
@@ -43,7 +53,7 @@ final readonly class EntityProfileWriter
         }
     }
 
-    private function writeContact(Entity $entity, EntityContactData $contact): void
+    private function writeContact(Entity $entity, EntityContactData $contact): ?User
     {
         $owner = User::query()->where('entity_id', $entity->id)->first();
 
@@ -53,5 +63,7 @@ final readonly class EntityProfileWriter
                 'phone' => $contact->phone?->value,
             ])->save());
         }
+
+        return $owner;
     }
 }

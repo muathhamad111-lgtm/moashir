@@ -21,7 +21,8 @@ const { t } = useI18n()
 const router = useRouter()
 const { can } = usePermissions()
 const regions = useRegions()
-const { items, status, errorMessage, load, filters, paginator, stats, exportParams } = useEntityList()
+const { items, status, errorMessage, load, filters, paginator, stats, exportParams } =
+  useEntityList()
 const { exporting, exportCsv } = useEntityExport()
 const actionsHost = ref(null)
 const { search } = filters
@@ -29,19 +30,35 @@ const { search } = filters
 const fullRecords = computed(() => items.value.some((item) => 'entityType' in item))
 
 const statCards = computed(() => [
-  { id: 'total', icon: 'fa-solid fa-building-ngo', value: stats.value?.total ?? 0, label: t('entities.stats.total') },
-  { id: 'active', icon: 'fa-solid fa-circle-check', value: stats.value?.active ?? 0, label: t('entities.stats.active') },
+  {
+    id: 'total',
+    icon: 'building',
+    value: stats.value?.total ?? 0,
+    label: t('entities.stats.total'),
+  },
+  {
+    id: 'active',
+    icon: 'check-circle',
+    value: stats.value?.active ?? 0,
+    label: t('entities.stats.active'),
+  },
   {
     id: 'pending',
-    icon: 'fa-solid fa-hourglass-half',
+    icon: 'refresh-dots',
     value: stats.value?.pendingVerification ?? 0,
     label: t('entities.stats.pendingVerification'),
   },
-  { id: 'deactivated', icon: 'fa-solid fa-ban', value: stats.value?.deactivated ?? 0, label: t('entities.stats.deactivated') },
+  {
+    id: 'deactivated',
+    icon: 'ban',
+    value: stats.value?.deactivated ?? 0,
+    label: t('entities.stats.deactivated'),
+  },
 ])
 
 function onAction(key, entity) {
-  if (key === ENTITY_ACTIONS.VIEW) return router.push({ name: ROUTE_NAMES.ADMIN_ENTITY, params: { id: entity.id } })
+  if (key === ENTITY_ACTIONS.VIEW)
+    return router.push({ name: ROUTE_NAMES.ADMIN_ENTITY, params: { id: entity.id } })
   return actionsHost.value.run(key, entity)
 }
 
@@ -56,7 +73,13 @@ onMounted(regions.load)
         <p class="entities-admin__subtitle">{{ t('entities.admin.subtitle') }}</p>
       </div>
       <div class="entities-admin__links">
-        <BaseButton v-if="can(PERMISSIONS.ENTITIES_DELETE)" variant="ghost" size="sm" icon="fa-solid fa-trash-can-arrow-up" @click="router.push({ name: ROUTE_NAMES.ADMIN_ENTITIES_DELETED })">
+        <BaseButton
+          v-if="can(PERMISSIONS.ENTITIES_DELETE)"
+          variant="ghost"
+          size="sm"
+          icon="undo"
+          @click="router.push({ name: ROUTE_NAMES.ADMIN_ENTITIES_DELETED })"
+        >
           {{ t('nav.deletedEntities') }}
         </BaseButton>
       </div>
@@ -64,12 +87,25 @@ onMounted(regions.load)
 
     <StatsCards :stats="statCards" :loading="status === 'loading' && !stats" />
 
-    <ListToolbar v-model:search="search" :search-placeholder="t('entities.admin.searchPlaceholder')">
+    <ListToolbar
+      v-model:search="search"
+      :search-placeholder="t('entities.admin.searchPlaceholder')"
+    >
       <template #filters>
-        <EntityListFilters :filters="filters" :region-options="regions.regionOptions.value" :full="fullRecords || status !== 'success'" />
+        <EntityListFilters
+          :filters="filters"
+          :region-options="regions.regionOptions.value"
+          :full="fullRecords || status !== 'success'"
+        />
       </template>
       <template v-if="can(PERMISSIONS.ENTITIES_EXPORT)" #actions>
-        <BaseButton variant="secondary" size="sm" icon="fa-solid fa-file-csv" :loading="exporting" @click="exportCsv(exportParams)">
+        <BaseButton
+          variant="secondary"
+          size="sm"
+          icon="doc"
+          :loading="exporting"
+          @click="exportCsv(exportParams)"
+        >
           {{ t('entities.admin.export') }}
         </BaseButton>
       </template>

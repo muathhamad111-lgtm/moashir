@@ -16,7 +16,9 @@ const props = defineProps({
 const emit = defineEmits(['refresh'])
 const { t } = useI18n()
 
-const showCriteriaUpdate = computed(() => props.assessment.criteriaUpdateInProgress && !props.assessment.isFrozen)
+const showCriteriaUpdate = computed(
+  () => props.assessment.criteriaUpdateInProgress && !props.assessment.isFrozen,
+)
 const showConflict = computed(() => props.conflictCode === CODES.TRANSITION_ILLEGAL)
 </script>
 
@@ -37,7 +39,13 @@ const showConflict = computed(() => props.conflictCode === CODES.TRANSITION_ILLE
       :message="t('assessment.self.notices.criteriaUpdateMessage')"
     >
       <template #action>
-        <BaseButton variant="secondary" size="sm" icon="fa-solid fa-rotate" :loading="refreshing" @click="emit('refresh')">
+        <BaseButton
+          variant="secondary"
+          size="sm"
+          icon="refresh"
+          :loading="refreshing"
+          @click="emit('refresh')"
+        >
           {{ t('assessment.self.notices.checkAgain') }}
         </BaseButton>
       </template>
@@ -50,7 +58,13 @@ const showConflict = computed(() => props.conflictCode === CODES.TRANSITION_ILLE
       :message="t('assessment.self.notices.conflictMessage')"
     >
       <template #action>
-        <BaseButton variant="secondary" size="sm" icon="fa-solid fa-rotate" :loading="refreshing" @click="emit('refresh')">
+        <BaseButton
+          variant="secondary"
+          size="sm"
+          icon="refresh"
+          :loading="refreshing"
+          @click="emit('refresh')"
+        >
           {{ t('assessment.self.notices.refresh') }}
         </BaseButton>
       </template>

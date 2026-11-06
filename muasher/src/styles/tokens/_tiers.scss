@@ -1,0 +1,79 @@
+$tier-palette-light: (
+  'bronze': (
+    'surface': #f7eee5,
+    'border': #d4b08a,
+    'ink': #6b4520,
+    'accent': #9e6c35,
+    'graphic': #9e6c35,
+  ),
+  'silver': (
+    'surface': #f1f3f3,
+    'border': #b4baba,
+    'ink': #454d4d,
+    'accent': #c0c0c0,
+    'graphic': #6e7878,
+  ),
+  'gold': (
+    'surface': #fbf5de,
+    'border': #d9c077,
+    'ink': #664f05,
+    'accent': #d3af37,
+    'graphic': #9c7a0e,
+  ),
+  'diamond': (
+    'surface': #e4f3f3,
+    'border': #8ccaca,
+    'ink': #145e5e,
+    'accent': #299191,
+    'graphic': #299191,
+  ),
+  'neutral': (
+    'surface': #f2f5f5,
+    'border': #c4d0d0,
+    'ink': #334444,
+    'accent': #607070,
+    'graphic': #607070,
+  ),
+);
+
+$tier-palette-dark: (
+  'bronze': (
+    'surface': #2e2117,
+    'border': #7a5634,
+    'ink': #e3bc93,
+    'accent': #9e6c35,
+    'graphic': #9e6c35,
+  ),
+  'silver': (
+    'surface': #262c2e,
+    'border': #7e8888,
+    'ink': #dde2e2,
+    'accent': #c0c0c0,
+    'graphic': #c0c0c0,
+  ),
+  'gold': (
+    'surface': #2d2711,
+    'border': #8f7a2a,
+    'ink': #f0d67a,
+    'accent': #d3af37,
+    'graphic': #d3af37,
+  ),
+  'diamond': (
+    'surface': #0f2e2f,
+    'border': #2f7f7f,
+    'ink': #93dcdc,
+    'accent': #299191,
+    'graphic': #299191,
+  ),
+  'neutral': (
+    'surface': #13302f,
+    'border': #41595a,
+    'ink': #d9e4e4,
+    'accent': #9db0b0,
+    'graphic': #9db0b0,
+  ),
+);
+
+$tier-glow-strength: 0.35;
+$tier-glow-edge-strength: 0.6;
+$tier-band-strength: 20%;

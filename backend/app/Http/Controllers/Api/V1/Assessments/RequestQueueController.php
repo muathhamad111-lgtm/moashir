@@ -7,22 +7,28 @@ namespace App\Http\Controllers\Api\V1\Assessments;
 use App\Actions\Assessments\ListRequestQueue;
 use App\Actions\Assessments\ShowRequest;
 use App\Actions\Assessments\SummarizeRequestQueue;
+use App\Data\Assessments\PathCount;
 use App\Http\Requests\Assessments\IndexRequestQueueRequest;
 use App\Http\Resources\Assessments\RequestDetailResource;
 use App\Http\Resources\Assessments\RequestQueueItemResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\Assessments\Assessment;
 use App\Models\Identity\User;
+use App\Services\Assessments\RequestPathCounts;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\JsonResponse;
 
 final class RequestQueueController
 {
-    public function index(IndexRequestQueueRequest $request, ListRequestQueue $list, SummarizeRequestQueue $summarize): JsonResponse
+    public function index(IndexRequestQueueRequest $request, ListRequestQueue $list, SummarizeRequestQueue $summarize, RequestPathCounts $counts): JsonResponse
     {
         $filters = $request->filters();
 
-        return ApiResponse::paginated($list->handle($filters), RequestQueueItemResource::class, ['stats' => $summarize->handle($filters)]);
+        return ApiResponse::paginated($list->handle($filters), RequestQueueItemResource::class, [
+            'stats' => $summarize->handle($filters),
+            'path' => $filters->path->value,
+            'path_counts' => array_map(static fn (PathCount $count): array => $count->toArray(), $counts->forQueue($request->followedPaths())),
+        ]);
     }
 
     public function show(Assessment $assessment, #[CurrentUser] User $viewer, ShowRequest $show): JsonResponse

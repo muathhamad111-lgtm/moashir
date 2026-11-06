@@ -15,7 +15,14 @@ const { value, errorMessage } = useField(toRef(props, 'name'))
 
 <template>
   <div class="field" :class="{ 'field--error': errorMessage }">
-    <ToggleSwitch :model-value="value === true" :name="name" :label="label" :description="description" :disabled="disabled" @update:model-value="value = $event" />
+    <ToggleSwitch
+      :model-value="value === true"
+      :name="name"
+      :label="label"
+      :description="description"
+      :disabled="disabled"
+      @update:model-value="value = $event"
+    />
     <p v-if="errorMessage" class="field__error" role="alert">{{ errorMessage }}</p>
   </div>
 </template>

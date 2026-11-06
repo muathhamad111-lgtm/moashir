@@ -21,6 +21,7 @@ import { useTransactionDetail } from '@/composables/useTransactionDetail'
 import { useSignedDownload } from '@/composables/useSignedDownload'
 import { useToast } from '@/composables/useToast'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   id: { type: String, required: true },
@@ -29,7 +30,19 @@ const props = defineProps({
 const { t } = useI18n()
 const toast = useToast()
 const detail = useTransactionDetail(props.id)
-const { status, transaction, receipt, refund, errorMessage, canRecordRefund, canReissue, canSettle, load, reissue, replace } = detail
+const {
+  status,
+  transaction,
+  receipt,
+  refund,
+  errorMessage,
+  canRecordRefund,
+  canReissue,
+  canSettle,
+  load,
+  reissue,
+  replace,
+} = detail
 const downloads = useSignedDownload()
 const refundOpen = ref(false)
 const reissueOpen = ref(false)
@@ -47,7 +60,7 @@ onMounted(load)
 <template>
   <section class="finance-page transaction-detail">
     <RouterLink class="transaction-detail__back" :to="{ name: ROUTE_NAMES.FINANCE_TRANSACTIONS }">
-      <i class="fa-solid fa-arrow-left-long u-flip-in-rtl" aria-hidden="true"></i>
+      <AppIcon name="arrow-left" />
       {{ t('finance.transaction.back') }}
     </RouterLink>
 
@@ -56,31 +69,53 @@ onMounted(load)
       <Skeleton variant="text" :count="6" />
     </div>
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
-    <EmptyState v-else-if="status === 'not-found'" icon="fa-solid fa-money-bill-transfer" :title="t('finance.transaction.notFound')" />
+    <EmptyState
+      v-else-if="status === 'not-found'"
+      icon="sar"
+      :title="t('finance.transaction.notFound')"
+    />
 
     <template v-else>
       <header class="transaction-detail__header">
         <div>
           <p class="transaction-detail__eyebrow">{{ t('finance.transaction.eyebrow') }}</p>
-          <h1 class="transaction-detail__title"><bdi dir="ltr">{{ transaction.reference }}</bdi></h1>
+          <h1 class="transaction-detail__title">
+            <bdi dir="ltr">{{ transaction.reference }}</bdi>
+          </h1>
         </div>
         <div class="transaction-detail__badges">
           <PaymentStatusBadge :status="transaction.status" />
-          <Badge v-if="transaction.latePaid" variant="danger">{{ t('finance.transactions.latePaid') }}</Badge>
-          <Badge v-if="transaction.manuallySettled" variant="info">{{ t('finance.transactions.manuallySettled') }}</Badge>
+          <Badge v-if="transaction.latePaid" variant="danger">{{
+            t('finance.transactions.latePaid')
+          }}</Badge>
+          <Badge v-if="transaction.manuallySettled" variant="info">{{
+            t('finance.transactions.manuallySettled')
+          }}</Badge>
         </div>
         <div class="transaction-detail__actions">
-          <BaseButton v-if="canRecordRefund" variant="primary" icon="fa-solid fa-rotate-left" @click="refundOpen = true">
+          <BaseButton
+            v-if="canRecordRefund"
+            variant="primary"
+            icon="undo"
+            @click="refundOpen = true"
+          >
             {{ t('finance.refund.open') }}
           </BaseButton>
-          <BaseButton v-if="canSettle" variant="secondary" icon="fa-solid fa-user-shield" @click="settleOpen = true">
+          <BaseButton
+            v-if="canSettle"
+            variant="secondary"
+            icon="user-shield"
+            @click="settleOpen = true"
+          >
             {{ t('finance.settle.open') }}
           </BaseButton>
         </div>
       </header>
 
       <TestModeNotice v-if="transaction.isTest" compact />
-      <p v-if="transaction.latePaid" class="transaction-detail__late" role="note">{{ t('finance.transaction.latePaidNote') }}</p>
+      <p v-if="transaction.latePaid" class="transaction-detail__late" role="note">
+        {{ t('finance.transaction.latePaidNote') }}
+      </p>
 
       <div class="transaction-detail__layout">
         <Card :title="t('finance.transaction.collected')">
@@ -96,7 +131,9 @@ onMounted(load)
             @download="downloads.download('receipt', detail.requestReceiptLink)"
           >
             <template v-if="canReissue" #actions>
-              <BaseButton variant="ghost" icon="fa-solid fa-arrows-rotate" @click="reissueOpen = true">{{ t('finance.receipt.reissue') }}</BaseButton>
+              <BaseButton variant="ghost" icon="refresh" @click="reissueOpen = true">{{
+                t('finance.receipt.reissue')
+              }}</BaseButton>
             </template>
           </ReceiptCard>
           <RefundRecord
@@ -108,8 +145,18 @@ onMounted(load)
         </div>
       </div>
 
-      <RefundFormDialog v-if="refundOpen" v-model="refundOpen" :transaction="transaction" @recorded="load" />
-      <ManualSettleDialog v-if="settleOpen" v-model="settleOpen" :transaction="transaction" @settled="replace" />
+      <RefundFormDialog
+        v-if="refundOpen"
+        v-model="refundOpen"
+        :transaction="transaction"
+        @recorded="load"
+      />
+      <ManualSettleDialog
+        v-if="settleOpen"
+        v-model="settleOpen"
+        :transaction="transaction"
+        @settled="replace"
+      />
       <ReasonDialog
         v-model="reissueOpen"
         :title="t('finance.receipt.reissueTitle')"

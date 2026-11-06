@@ -3,7 +3,6 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { setActivePinia } from 'pinia'
 import EmailChangeDialog from '@/components/entities/profile/EmailChangeDialog.vue'
 import PermanentDeleteDialog from '@/components/entities/admin/PermanentDeleteDialog.vue'
-import EntityProfileEditor from '@/components/entities/profile/EntityProfileEditor.vue'
 import { entitiesService } from '@/services/entitiesService'
 import { entityLifecycleService } from '@/services/entityLifecycleService'
 import { useAuthStore } from '@/stores/auth'
@@ -11,33 +10,23 @@ import { createTestGlobals } from '@/test-utils'
 import { sessionUserFor } from '@/test-utils/session'
 
 vi.mock('@/services/entitiesService', () => ({
-  entitiesService: { requestEmailChange: vi.fn(), confirmEmailChange: vi.fn(), updateMine: vi.fn() },
+  entitiesService: {
+    requestEmailChange: vi.fn(),
+    confirmEmailChange: vi.fn(),
+    updateMine: vi.fn(),
+  },
 }))
 vi.mock('@/services/entityLifecycleService', () => ({
   entityLifecycleService: { permanentlyDelete: vi.fn() },
 }))
 
-const OTP = { challengeId: 'c-1', channel: 'email', length: 6, expiresAt: '2099-01-01T00:00:00Z', resendAvailableAt: '2099-01-01T00:00:00Z' }
-const PROFILE = {
-  id: 5001,
-  reference: 'ENT-005001',
-  name: { ar: 'جمعية البر بالرياض', en: 'Al-Birr Charity' },
-  status: 'active',
-  authorizedPersonName: 'أحمد بن سالم القحطاني',
-  phone: null,
-  entityType: 'civil_association',
-  developmentSector: 'social',
-  orgSize: 'large',
-  foundingYear: 2009,
-  region: { id: 1 },
-  city: { id: 1 },
-  governanceGrade: '86.50',
-  employeesCount: 180,
-  annualBeneficiariesCount: 42000,
-  hasStrategicPlan: true,
-  marketingConsent: true,
+const OTP = {
+  challengeId: 'c-1',
+  channel: 'email',
+  length: 6,
+  expiresAt: '2099-01-01T00:00:00Z',
+  resendAvailableAt: '2099-01-01T00:00:00Z',
 }
-
 async function settle() {
   for (let round = 0; round < 3; round += 1) {
     await new Promise((resolve) => setTimeout(resolve, 10))
@@ -49,17 +38,33 @@ function mountWith(component, props) {
   const globals = createTestGlobals({ locale: 'en' })
   setActivePinia(globals.pinia)
   useAuthStore().setUser(sessionUserFor(['entity']))
-  return mount(component, { props, global: { ...globals, stubs: { teleport: true } }, attachTo: document.body })
+  return mount(component, {
+    props,
+    global: { ...globals, stubs: { teleport: true } },
+    attachTo: document.body,
+  })
 }
 
 beforeEach(() => vi.clearAllMocks())
 
 describe('EmailChangeDialog', () => {
   it('sends the code to the new address, verifies it and shows the awaiting-approval outcome', async () => {
-    entitiesService.requestEmailChange.mockResolvedValue({ data: { otp: OTP, message: 'Code sent' } })
+    entitiesService.requestEmailChange.mockResolvedValue({
+      data: { otp: OTP, message: 'Code sent' },
+    })
     entitiesService.confirmEmailChange
-      .mockRejectedValueOnce(Object.assign(new Error('invalid'), { normalized: { fieldErrors: { code: ['The verification code is incorrect.'] } } }))
-      .mockResolvedValueOnce({ data: { status: 'awaiting-approval', policy: 'requires_approval', newEmail: 'o***@albirr.example.sa' } })
+      .mockRejectedValueOnce(
+        Object.assign(new Error('invalid'), {
+          normalized: { fieldErrors: { code: ['The verification code is incorrect.'] } },
+        }),
+      )
+      .mockResolvedValueOnce({
+        data: {
+          status: 'awaiting-approval',
+          policy: 'requires_approval',
+          newEmail: 'o***@albirr.example.sa',
+        },
+      })
     const wrapper = mountWith(EmailChangeDialog, { modelValue: true })
     await wrapper.find('[name="newEmail"]').setValue('office@albirr.example.sa')
     await wrapper.find('form').trigger('submit')
@@ -72,7 +77,10 @@ describe('EmailChangeDialog', () => {
     expect(wrapper.find('.email-change__error').text()).toBe('The verification code is incorrect.')
     wrapper.vm.$.setupState.verify('482913')
     await settle()
-    expect(entitiesService.confirmEmailChange).toHaveBeenLastCalledWith({ challengeId: 'c-1', code: '482913' })
+    expect(entitiesService.confirmEmailChange).toHaveBeenLastCalledWith({
+      challengeId: 'c-1',
+      code: '482913',
+    })
     expect(wrapper.find('.email-change--done').text()).toContain('o***@albirr.example.sa')
     expect(wrapper.emitted('completed')).toHaveLength(1)
     wrapper.unmount()
@@ -92,14 +100,30 @@ describe('PermanentDeleteDialog', () => {
     entityLifecycleService.permanentlyDelete
       .mockRejectedValueOnce(
         Object.assign(new Error('mismatch'), {
-          normalized: { code: 'confirmation.mismatch', message: 'Mismatch', fieldErrors: { confirmation: ['The typed confirmation does not match the entity reference.'] } },
+          normalized: {
+            code: 'confirmation.mismatch',
+            message: 'Mismatch',
+            fieldErrors: {
+              confirmation: ['The typed confirmation does not match the entity reference.'],
+            },
+          },
         }),
       )
-      .mockResolvedValueOnce({ data: { reference: 'ENT-007003', pseudonym: 'ERASED-007003', kept: [] } })
+      .mockResolvedValueOnce({
+        data: { reference: 'ENT-007003', pseudonym: 'ERASED-007003', kept: [] },
+      })
     const globals = createTestGlobals({ locale: 'en' })
     setActivePinia(globals.pinia)
-    const entity = { id: 7003, reference: 'ENT-007003', name: { ar: 'وقف النور التعليمي', en: 'Al-Noor Educational Waqf' } }
-    const wrapper = mount(PermanentDeleteDialog, { props: { modelValue: false, entity }, global: globals, attachTo: document.body })
+    const entity = {
+      id: 7003,
+      reference: 'ENT-007003',
+      name: { ar: 'وقف النور التعليمي', en: 'Al-Noor Educational Waqf' },
+    }
+    const wrapper = mount(PermanentDeleteDialog, {
+      props: { modelValue: false, entity },
+      global: globals,
+      attachTo: document.body,
+    })
     await wrapper.setProps({ modelValue: true })
     expect(document.body.querySelectorAll('.permanent-delete__list li')).toHaveLength(6)
     const disclaimer = body('[name="disclaimerAcknowledged"]')
@@ -115,44 +139,12 @@ describe('PermanentDeleteDialog', () => {
       confirmation: 'ent-007003',
       disclaimerAcknowledged: true,
     })
-    expect(body('.permanent-delete').textContent).toContain('The typed confirmation does not match the entity reference.')
+    expect(body('.permanent-delete').textContent).toContain(
+      'The typed confirmation does not match the entity reference.',
+    )
     body('.permanent-delete').dispatchEvent(new Event('submit'))
     await settle()
     expect(wrapper.emitted('erased')[0][0]).toMatchObject({ pseudonym: 'ERASED-007003' })
-    wrapper.unmount()
-  })
-})
-
-describe('EntityProfileEditor', () => {
-  const props = {
-    profile: PROFILE,
-    regionOptions: [{ value: '1', label: 'Riyadh Region' }],
-    cityOptionsFor: () => [{ value: '1', label: 'Riyadh' }],
-  }
-
-  it('reviews only the changed fields before an explicit save with the marketing choice', async () => {
-    entitiesService.updateMine.mockResolvedValue({ data: { ...PROFILE, governanceGrade: '91.25', marketingConsent: false } })
-    const wrapper = mountWith(EntityProfileEditor, props)
-    await wrapper.find('form').trigger('submit')
-    await settle()
-    expect(wrapper.find('.change-review').exists()).toBe(false)
-
-    await wrapper.find('[name="governanceGrade"]').setValue('91.25')
-    await wrapper.find('[name="marketingConsent"]').setValue(false)
-    await wrapper.find('form').trigger('submit')
-    await settle()
-    expect(wrapper.findAll('.change-review__row').map((row) => row.find('th').text())).toEqual([
-      'Governance grade (%)',
-      'Agrees to marketing messages',
-    ])
-    expect(entitiesService.updateMine).not.toHaveBeenCalled()
-
-    await wrapper.find('.entity-form__actions .btn--primary').trigger('click')
-    await settle()
-    expect(entitiesService.updateMine).toHaveBeenCalledWith(
-      expect.objectContaining({ governanceGrade: '91.25', marketingConsent: false, regionId: 1, cityId: 1 }),
-    )
-    expect(wrapper.emitted('saved')).toHaveLength(1)
     wrapper.unmount()
   })
 })

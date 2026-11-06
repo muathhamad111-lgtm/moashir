@@ -1,6 +1,6 @@
 @use '../tokens' as *;
 
-[data-theme='light'] {
+@mixin theme-light {
   color-scheme: light;
   --theme-bg: var(--color-gray-50);
   --theme-surface: var(--color-white);
@@ -15,13 +15,32 @@
   --theme-accent-text: var(--accent-text-on-light, var(--color-primary-800));
   --theme-on-accent: var(--color-dark);
   --theme-accent-soft: color-mix(in srgb, var(--theme-accent-text) 12%, transparent);
+  --theme-accent-hover: color-mix(in srgb, var(--theme-accent) 88%, var(--color-dark));
+  --theme-gold-text: var(--color-gold-text);
+  --theme-tint: var(--color-secondary);
+  --theme-warning-text: var(--color-warning-text);
+  --theme-success-text: var(--color-success-text);
+  --theme-info-text: var(--color-info-text);
+  --theme-border-strong: var(--color-gray-300);
+  --theme-input-border: var(--theme-text-muted);
+  --pattern-opacity: var(--opacity-pattern-light);
   --content-bg: var(--theme-bg);
-  --sidebar-bg: var(--color-secondary);
-  --sidebar-text: var(--color-gray-700);
-  --sidebar-caption: var(--color-gray-600);
-  --sidebar-hover-bg: #{rgba($color-dark, 0.06)};
-  --sidebar-hover-text: var(--color-dark);
-  --sidebar-active-text: var(--theme-accent-text);
-  --sidebar-focus-ring: var(--theme-accent-text);
   --navbar-bg: var(--content-bg);
+  --path-self-edge: var(--color-info);
+  --path-self-text: #{$color-path-self-text};
+  --path-accredited-edge: var(--color-primary-800);
+  --path-accredited-text: #{$color-path-accredited-text};
+  --path-advanced-edge: var(--color-gold);
+  --path-advanced-text: #{$color-path-advanced-text};
+  --path-bag-edge: var(--color-bronze);
+  --path-bag-text: #{$color-path-bag-text};
+  --theme-surface-solid: var(--theme-surface);
+  --field-label-rest: var(--theme-surface);
+  --field-label-backdrop: var(--theme-surface);
+  --field-label-under: var(--theme-surface);
+  --path-fill-strength: #{$opacity-path-fill-light};
+}
+
+[data-theme='light'] {
+  @include theme-light;
 }

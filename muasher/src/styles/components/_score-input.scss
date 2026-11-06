@@ -53,7 +53,7 @@
   padding-inline: var(--space-3);
   min-inline-size: var(--size-control-min);
   background-color: var(--theme-surface);
-  border: var(--border-width) solid var(--theme-border);
+  border: var(--border-width) solid var(--theme-input-border);
   border-radius: var(--radius-md);
 
   &:focus-within {

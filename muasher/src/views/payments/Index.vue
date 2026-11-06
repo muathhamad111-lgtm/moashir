@@ -1,76 +1,102 @@
 <script setup>
-import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
-import Card from '@/components/ui/Card.vue'
-import DropdownList from '@/components/ui/DropdownList.vue'
-import StatsCards from '@/components/data-list/StatsCards.vue'
+import Skeleton from '@/components/feedback/Skeleton.vue'
+import EmptyState from '@/components/feedback/EmptyState.vue'
+import ErrorState from '@/components/feedback/ErrorState.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
-import PaymentsTable from '@/components/payments/PaymentsTable.vue'
-import { useMyPayments } from '@/composables/useMyPayments'
-import { PAYMENT_PURPOSE_VALUES, PAYMENT_STATUS_VALUES } from '@/constants/payments'
-import { formatAmount } from '@/utils/payments/amountFormat'
+import PortalAreaHeader from '@/components/portal/PortalAreaHeader.vue'
+import PaymentStatTiles from '@/components/payments/portal/PaymentStatTiles.vue'
+import PendingOrderCard from '@/components/payments/portal/PendingOrderCard.vue'
+import MyPaymentsList from '@/components/payments/portal/MyPaymentsList.vue'
+import { usePaymentsHub } from '@/composables/usePaymentsHub'
+import { useSignedDownload } from '@/composables/useSignedDownload'
+import { paymentsService } from '@/services/paymentsService'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
-const { t, locale } = useI18n()
-const { items, status, errorMessage, load, filters, paginator, stats, setFilter } = useMyPayments()
-const { pagination, setPage } = paginator
+const PANEL_ID = 'payments-panel'
 
-useHead({ title: () => t('finance.mine.title') })
+const { t } = useI18n()
+const hub = usePaymentsHub()
+const receipts = useSignedDownload()
 
-function money(value) {
-  return t('finance.money', { amount: formatAmount(value ?? '0.00', locale.value), currency: t('finance.currency.SAR') })
+useHead({ title: () => t('portal.payments.title') })
+
+function downloadReceipt(payment) {
+  return receipts.download(payment.id, () => paymentsService.requestReceiptDownload(payment.id))
 }
-
-const statCards = computed(() => [
-  { id: 'count', icon: 'fa-solid fa-receipt', value: stats.value?.count ?? 0, label: t('finance.mine.stats.count') },
-  { id: 'paid', icon: 'fa-solid fa-circle-check', value: stats.value?.paidCount ?? 0, label: t('finance.mine.stats.paid') },
-  { id: 'total', icon: 'fa-solid fa-sack-dollar', value: money(stats.value?.totalPaid), label: t('finance.mine.stats.totalPaid') },
-  { id: 'vat', icon: 'fa-solid fa-percent', value: money(stats.value?.totalVat), label: t('finance.mine.stats.totalVat') },
-])
-
-const statusOptions = computed(() => [
-  { value: '', label: t('finance.filters.allStatuses') },
-  ...PAYMENT_STATUS_VALUES.map((value) => ({ value, label: t(`finance.status.${value}`) })),
-])
-const purposeOptions = computed(() => [
-  { value: '', label: t('finance.filters.allServices') },
-  ...PAYMENT_PURPOSE_VALUES.map((value) => ({ value, label: t(`finance.purposes.${value}`) })),
-])
 </script>
 
 <template>
-  <section class="payments-page">
-    <header class="payments-page__header">
-      <p class="payments-page__eyebrow">{{ t('finance.mine.eyebrow') }}</p>
-      <h1 class="payments-page__title">{{ t('finance.mine.title') }}</h1>
-      <p class="payments-page__subtitle">{{ t('finance.mine.subtitle') }}</p>
-    </header>
+  <section class="portal-area payments-hub">
+    <PortalAreaHeader
+      band
+      :eyebrow="t('portal.payments.eyebrow')"
+      :title="t('portal.payments.title')"
+      :subtitle="t('portal.payments.subtitle')"
+      :tabs="hub.tabs.value"
+      :tab="hub.tab.value"
+      :tabs-label="t('portal.payments.tabsLabel')"
+      :panel-id="PANEL_ID"
+      @update:tab="hub.tab.value = $event"
+    />
 
-    <StatsCards :stats="statCards" :loading="status === 'loading' && !stats" />
-    <p class="payments-page__note" role="note">{{ t('finance.mine.liveOnly') }}</p>
-
-    <Card>
-      <div class="payments-page__filters">
-        <DropdownList
-          :model-value="filters.filters.status"
-          :options="statusOptions"
-          :placeholder="t('finance.filters.status')"
-          @update:model-value="setFilter('status', $event)"
-        />
-        <DropdownList
-          :model-value="filters.filters.purpose"
-          :options="purposeOptions"
-          :placeholder="t('finance.filters.service')"
-          @update:model-value="setFilter('purpose', $event)"
-        />
-      </div>
-      <PaymentsTable :items="items" :status="status" :error-message="errorMessage" @retry="load" />
-      <Pagination
-        v-if="status === 'success' && pagination.lastPage > 1"
-        :page="pagination.page"
-        :last-page="pagination.lastPage"
-        @update:page="setPage($event)"
+    <div
+      :id="PANEL_ID"
+      class="portal-area__body payments-hub__body"
+      role="tabpanel"
+      :aria-labelledby="`${PANEL_ID}-tab-${hub.tab.value}`"
+    >
+      <PendingOrderCard
+        v-for="order in hub.pendingOrders.value"
+        :key="order.id"
+        :order="order"
+        @expired="hub.dropExpiredOrder"
       />
-    </Card>
+
+      <PaymentStatTiles v-if="hub.stats.value" :stats="hub.stats.value" />
+      <Skeleton v-else-if="hub.status.value === 'loading'" variant="block" />
+
+      <section class="portal-surface payments-hub__records" aria-labelledby="payments-records">
+        <header class="payments-hub__records-head">
+          <h2 id="payments-records" class="portal-surface__title">
+            {{ t('portal.payments.recordsTitle') }}
+          </h2>
+        </header>
+        <Skeleton v-if="hub.status.value === 'loading'" variant="text" :count="4" />
+        <ErrorState
+          v-else-if="hub.status.value === 'error'"
+          :message="hub.errorMessage.value"
+          @retry="hub.load"
+        />
+        <EmptyState
+          v-else-if="!hub.tableRows.value.length"
+          icon="receipt"
+          :title="t(`portal.payments.empty.${hub.tab.value}.title`)"
+          :message="t(`portal.payments.empty.${hub.tab.value}.message`)"
+        />
+        <MyPaymentsList
+          v-else
+          :rows="hub.tableRows.value"
+          :busy="receipts.busy"
+          @download="downloadReceipt"
+        />
+        <Pagination
+          v-if="hub.lastPage.value > 1"
+          :page="hub.page.value"
+          :last-page="hub.lastPage.value"
+          @update:page="hub.setPage"
+        />
+      </section>
+
+      <p v-if="hub.hasTestRows.value" class="portal-area__note portal-area__note--warning">
+        <AppIcon name="flask" />
+        {{ t('portal.payments.testNote') }}
+      </p>
+      <p class="portal-area__note">
+        <AppIcon name="info-circle" />
+        {{ t('portal.payments.note') }}
+      </p>
+    </div>
   </section>
 </template>

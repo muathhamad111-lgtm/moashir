@@ -8,6 +8,7 @@ import EmptyState from '@/components/feedback/EmptyState.vue'
 import CycleDateList from './CycleDateList.vue'
 import CycleRegionList from './CycleRegionList.vue'
 import { localizedText } from '@/utils/localizedText'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   status: { type: String, required: true },
@@ -23,19 +24,34 @@ const { t, locale } = useI18n()
     <div v-if="status === 'loading'" class="public-cycle__loading" aria-busy="true">
       <Skeleton variant="text" :count="4" />
     </div>
-    <ErrorState v-else-if="status === 'error'" :message="t('advanced.cycle.error')" @retry="emit('retry')" />
-    <EmptyState v-else-if="!cycle" icon="fa-regular fa-calendar-xmark" :title="t('advanced.cycle.noneTitle')" :message="t('advanced.cycle.noneMessage')" />
+    <ErrorState
+      v-else-if="status === 'error'"
+      :message="t('advanced.cycle.error')"
+      @retry="emit('retry')"
+    />
+    <EmptyState
+      v-else-if="!cycle"
+      icon="calendar"
+      :title="t('advanced.cycle.noneTitle')"
+      :message="t('advanced.cycle.noneMessage')"
+    />
     <div v-else class="public-cycle__body">
       <div class="public-cycle__head">
-        <h2 class="public-cycle__name">{{ localizedText(cycle.name, locale) }} <bdi class="u-ltr">{{ cycle.year }}</bdi></h2>
+        <h2 class="public-cycle__name">
+          {{ localizedText(cycle.name, locale) }} <bdi class="u-ltr">{{ cycle.year }}</bdi>
+        </h2>
         <Badge :variant="cycle.isAcceptingApplications ? 'success' : 'muted'">
-          {{ cycle.isAcceptingApplications ? t('advanced.cycle.accepting') : t('advanced.cycle.notAccepting') }}
+          {{
+            cycle.isAcceptingApplications
+              ? t('advanced.cycle.accepting')
+              : t('advanced.cycle.notAccepting')
+          }}
         </Badge>
       </div>
       <CycleDateList :cycle="cycle" />
       <CycleRegionList :regions="cycle.regions" />
       <p class="public-cycle__condition">
-        <i class="fa-solid fa-hourglass-half" aria-hidden="true"></i>
+        <AppIcon name="refresh-dots" />
         {{ t('advanced.cycle.minAge', { years: cycle.conditions.minEntityAgeYears }) }}
       </p>
     </div>

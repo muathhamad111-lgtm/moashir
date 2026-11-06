@@ -4,14 +4,24 @@ import { useI18n } from 'vue-i18n'
 import { usePermissions } from '@/composables/usePermissions'
 import { accessFor } from '@/constants/routeAccess'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const LINKS = [
-  { key: 'overview', name: ROUTE_NAMES.FINANCE_OVERVIEW, icon: 'fa-solid fa-chart-pie' },
-  { key: 'transactions', name: ROUTE_NAMES.FINANCE_TRANSACTIONS, icon: 'fa-solid fa-money-bill-transfer' },
-  { key: 'refunds', name: ROUTE_NAMES.FINANCE_REFUNDS, icon: 'fa-solid fa-rotate-left' },
-  { key: 'paymentEvents', name: ROUTE_NAMES.FINANCE_PAYMENT_EVENTS, icon: 'fa-solid fa-list-ul' },
-  { key: 'abandonedCarts', name: ROUTE_NAMES.ADMIN_SETTINGS_ABANDONED_CARTS, icon: 'fa-solid fa-cart-arrow-down' },
-  { key: 'settings', name: ROUTE_NAMES.ADMIN_SETTINGS_FINANCE, icon: 'fa-solid fa-coins' },
+  { key: 'overview', name: ROUTE_NAMES.FINANCE_OVERVIEW, icon: 'pie-chart' },
+  {
+    key: 'transactions',
+    name: ROUTE_NAMES.FINANCE_TRANSACTIONS,
+    icon: 'sar',
+  },
+  { key: 'transfers', name: ROUTE_NAMES.FINANCE_TRANSFERS, icon: 'inbox' },
+  { key: 'refunds', name: ROUTE_NAMES.FINANCE_REFUNDS, icon: 'undo' },
+  { key: 'paymentEvents', name: ROUTE_NAMES.FINANCE_PAYMENT_EVENTS, icon: 'menu' },
+  {
+    key: 'abandonedCarts',
+    name: ROUTE_NAMES.ADMIN_SETTINGS_ABANDONED_CARTS,
+    icon: 'shopping-bag',
+  },
+  { key: 'settings', name: ROUTE_NAMES.ADMIN_SETTINGS_FINANCE, icon: 'sar' },
 ]
 
 const { t } = useI18n()
@@ -28,7 +38,7 @@ const links = computed(() => LINKS.filter((link) => canAccess(accessFor(link.nam
       class="finance-nav__link"
       exact-active-class="finance-nav__link--active"
     >
-      <i :class="link.icon" aria-hidden="true"></i>
+      <AppIcon :name="link.icon" />
       <span>{{ t(`finance.nav.${link.key}`) }}</span>
     </RouterLink>
   </nav>

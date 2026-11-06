@@ -1,6 +1,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
 import Badge from '@/components/ui/Badge.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   pairs: { type: Array, required: true },
@@ -21,7 +22,7 @@ function formatRatio(ratio) {
         {{ t('branding.contrast.ratio', { ratio: formatRatio(pair.ratio) }) }}
       </span>
       <Badge :variant="pair.passes ? 'success' : 'danger'">
-        <i :class="pair.passes ? 'fa-solid fa-check' : 'fa-solid fa-xmark'" aria-hidden="true"></i>
+        <AppIcon :name="pair.passes ? 'check' : 'x'" />
         {{ pair.passes ? t('branding.contrast.pass') : t('branding.contrast.fail') }}
       </Badge>
     </li>

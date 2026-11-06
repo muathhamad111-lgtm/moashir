@@ -11,10 +11,7 @@ const hasImage = computed(() => typeof props.src === 'string' && props.src.trim(
 </script>
 
 <template>
-  <figure
-    class="illustration-slot"
-    :class="`illustration-slot--${variant}`"
-  >
+  <figure class="illustration-slot" :class="`illustration-slot--${variant}`">
     <img
       v-if="hasImage"
       class="illustration-slot__image"
@@ -23,12 +20,7 @@ const hasImage = computed(() => typeof props.src === 'string' && props.src.trim(
       loading="lazy"
       decoding="async"
     />
-    <span
-      v-else
-      class="illustration-slot__placeholder"
-      role="img"
-      :aria-label="alt"
-    >
+    <span v-else class="illustration-slot__placeholder" role="img" :aria-label="alt">
       <svg
         class="illustration-slot__art"
         viewBox="0 0 160 120"

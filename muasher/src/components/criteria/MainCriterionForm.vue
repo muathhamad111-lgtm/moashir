@@ -6,7 +6,7 @@ import FormModal from '@/components/modal/FormModal.vue'
 import BaseInput from '@/components/form/BaseInput.vue'
 import BaseTextarea from '@/components/form/BaseTextarea.vue'
 import BaseCheckbox from '@/components/form/BaseCheckbox.vue'
-import BaseSelect from '@/components/form/BaseSelect.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import { useValidatedForm } from '@/composables/useValidatedForm'
 import { renameFieldErrors } from '@/services/mappers/fieldErrors'
 import { pairedText, requiredText, weightText } from '@/utils/criteriaSchemas'
@@ -16,6 +16,7 @@ import {
   CRITERION_GROUP_ORDER,
   CRITERION_GROUPS,
 } from '@/constants/criteria'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -147,7 +148,7 @@ const [active] = form.defineField('active')
           :error="form.errors.value.weight"
           required
         />
-        <BaseSelect
+        <AppSelect
           v-model="group"
           name="group"
           :label="t('criteria.fields.group')"
@@ -186,7 +187,7 @@ const [active] = form.defineField('active')
         />
       </div>
       <p v-if="isEdit" class="criteria-form__note" role="note">
-        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+        <AppIcon name="info-circle" />
         <span>{{ t('criteria.fields.orderNote') }}</span>
       </p>
     </div>

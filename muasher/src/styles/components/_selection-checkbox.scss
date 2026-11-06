@@ -1,0 +1,20 @@
+@use '../mixins' as *;
+
+.selection-checkbox {
+  align-items: center;
+  min-block-size: var(--space-6);
+
+  .checkbox__input:indeterminate {
+    background-color: var(--theme-accent);
+    border-color: var(--theme-accent);
+  }
+}
+
+.selection-checkbox__label {
+  @include visually-hidden;
+}
+
+.selection-checkbox--labelled .checkbox__label {
+  font-weight: var(--fw-medium);
+  color: var(--theme-text);
+}

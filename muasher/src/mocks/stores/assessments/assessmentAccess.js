@@ -36,7 +36,8 @@ export function isOwner(user, record) {
 export function isReviewedBy(user, record) {
   if (!sessionCan(ASSESSMENT_PERMISSIONS.ASSIGNED_VIEW)) return false
   return (record.assignments ?? []).some(
-    (assignment) => assignment.assessorId === user.id && REVIEWING_ASSIGNMENTS.includes(assignment.status),
+    (assignment) =>
+      assignment.assessorId === user.id && REVIEWING_ASSIGNMENTS.includes(assignment.status),
   )
 }
 
@@ -50,7 +51,9 @@ export function accessOf(user, record) {
   if (isOwner(user, record)) return ACCESS.OWNER
   if (readsEveryAssessment(user)) return ACCESS.READ_ONLY
   if (isReviewedBy(user, record)) return ACCESS.ASSIGNEE
-  return isCycleMemberOf(user, record) && sessionCan(ASSESSMENT_PERMISSIONS.HISTORY_VIEW) ? ACCESS.READ_ONLY : ACCESS.NONE
+  return isCycleMemberOf(user, record) && sessionCan(ASSESSMENT_PERMISSIONS.HISTORY_VIEW)
+    ? ACCESS.READ_ONLY
+    : ACCESS.NONE
 }
 
 export function inRecordScope(user, record) {
@@ -70,7 +73,8 @@ export function authorizeView(user, record) {
 
 export function authorizeCreateSelf(user) {
   if (user.superAdmin) return
-  if (user.entityId === null || !sessionCan(ASSESSMENT_PERMISSIONS.SELF_MANAGE)) throw assessmentReject.forbidden()
+  if (user.entityId === null || !sessionCan(ASSESSMENT_PERMISSIONS.SELF_MANAGE))
+    throw assessmentReject.forbidden()
 }
 
 export function authorizeManageSelf(user, record) {

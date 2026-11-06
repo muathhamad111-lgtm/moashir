@@ -13,7 +13,10 @@ const { t } = useI18n()
 
 <template>
   <div class="ai-acknowledgement">
-    <FieldCheckbox :name="`${prefix}.dataTransferAcknowledged`" :label="t('integrations.ai.transfer.acknowledge')" />
+    <FieldCheckbox
+      :name="`${prefix}.dataTransferAcknowledged`"
+      :label="t('integrations.ai.transfer.acknowledge')"
+    />
     <RecordedStamp
       v-if="acknowledgement?.acknowledged"
       kind="acknowledged"

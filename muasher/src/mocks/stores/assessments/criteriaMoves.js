@@ -24,7 +24,9 @@ export function recordMove(record, { fromTree, toTree, previousScores, scope, tr
     trigger,
     kept: before.filter((unit) => keptCodes.has(unit.code)).map(entryOf),
     reset: before.filter((unit) => !keptCodes.has(unit.code)).map(entryOf),
-    added: scorableUnits(toTree).filter((unit) => !fromCodes.has(unit.code)).map(entryOf),
+    added: scorableUnits(toTree)
+      .filter((unit) => !fromCodes.has(unit.code))
+      .map(entryOf),
   }
   record.criteriaMoves = [...(record.criteriaMoves ?? []), move]
 }
@@ -39,7 +41,10 @@ function labelsOf(tree) {
 }
 
 function labelled(entries, current, previous) {
-  return entries.map((entry) => ({ ...entry, label: current.get(entry.code) ?? previous.get(entry.code) ?? null }))
+  return entries.map((entry) => ({
+    ...entry,
+    label: current.get(entry.code) ?? previous.get(entry.code) ?? null,
+  }))
 }
 
 export function criteriaUpdateOf(record) {

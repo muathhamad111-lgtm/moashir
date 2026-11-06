@@ -41,6 +41,10 @@ return [
         'employees_count' => 'عدد الموظفين',
         'annual_beneficiaries_count' => 'عدد المستفيدين سنويًا',
         'has_strategic_plan' => 'الخطة الاستراتيجية',
+        'license_number' => 'رقم الترخيص',
+        'unified_number' => 'الرقم الوطني الموحد',
+        'founded_on' => 'تاريخ التأسيس',
+        'website_url' => 'الموقع الإلكتروني',
     ],
 
     'export' => [

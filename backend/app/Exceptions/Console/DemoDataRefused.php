@@ -18,6 +18,11 @@ final class DemoDataRefused extends RuntimeException
         return new self('flag_not_set', 'Demo data is refused: APP_DEMO_DATA is not set to true for this environment.');
     }
 
+    public static function postureNotDemo(): self
+    {
+        return new self('posture_not_demo', 'Demo data is refused: this environment is not in the demo posture (MOASHIR_DEMO is not true).');
+    }
+
     public static function realDataPresent(int $foreignEntities): self
     {
         return new self('real_data_present', sprintf('Demo data is refused: %d entity record(s) were not created by the demo command.', $foreignEntities));
@@ -31,6 +36,21 @@ final class DemoDataRefused extends RuntimeException
     public static function notInstalled(): self
     {
         return new self('not_installed', 'No demo accounts exist. Install the demo data first with moashir:demo:install.');
+    }
+
+    public static function insightsAlreadyInstalled(): self
+    {
+        return new self('insights_already_installed', 'The excellence-tools demo cases are already installed; nothing was changed.');
+    }
+
+    public static function insightsOnlyCombined(): self
+    {
+        return new self('options_combined', 'Demo data is refused: --insights-only cannot be combined with --content-only or --accounts-file.');
+    }
+
+    public static function openPaymentOrder(): self
+    {
+        return new self('open_payment_order', 'Demo data is refused: a demo entity has an open accredited payment order; run the command again after it is paid, cancelled or expired.');
     }
 
     public static function missingPrerequisite(string $what): self

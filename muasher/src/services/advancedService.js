@@ -10,14 +10,24 @@ function mapData(request, mapper) {
 
 export const advancedService = {
   getCurrent() {
-    return mapData(read('getCurrent', () => apiClient.get('/assessments/advanced/current')), toAdvancedCurrent)
+    return mapData(
+      read('getCurrent', () => apiClient.get('/assessments/advanced/current')),
+      toAdvancedCurrent,
+    )
   },
 
   apply(payload) {
-    return mapData(write('apply', () => apiClient.post('/assessments/advanced', payload), payload), toAdvancedAssessment)
+    return mapData(
+      write('apply', () => apiClient.post('/assessments/advanced', payload), payload),
+      toAdvancedAssessment,
+    )
   },
 
   deleteDraft(assessmentId, payload = {}) {
-    return write('deleteDraft', () => apiClient.delete(`/assessments/${assessmentId}`, { data: payload }), payload)
+    return write(
+      'deleteDraft',
+      () => apiClient.delete(`/assessments/${assessmentId}`, { data: payload }),
+      payload,
+    )
   },
 }

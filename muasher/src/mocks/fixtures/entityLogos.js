@@ -1,0 +1,48 @@
+export const FIXTURE_ENTITY_LOGO_FILE_ID = '5b0e7c1d-6a2f-4e39-9c41-0000000006a3'
+
+export const FIXTURE_ENTITY_LOGO = Object.freeze({
+  id: FIXTURE_ENTITY_LOGO_FILE_ID,
+  uploadedAt: '2026-11-03T07:20:00Z',
+})
+
+const FIXTURE_ENTITY_LOGO_BASE64 = [
+  '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',
+  'AABJRU5ErkJggg==',
+].join('')
+
+export function fixtureEntityLogoBytes() {
+  return Uint8Array.from(atob(FIXTURE_ENTITY_LOGO_BASE64), (character) => character.charCodeAt(0))
+}
+
+export const FIXTURE_ENTITY_LOGO_FILE = Object.freeze({
+  id: FIXTURE_ENTITY_LOGO_FILE_ID,
+  purpose: 'entity_logo',
+  name: 'alkhair-waqf-logo.png',
+  mimeType: 'image/png',
+  sizeBytes: 1630,
+  scanStatus: 'clean',
+  createdAt: '2026-11-03T07:20:00Z',
+})

@@ -1,0 +1,65 @@
+@media only screen and (max-width: 620px) {
+    .mail-container {
+        width: 100% !important;
+    }
+
+    .mail-wrapper-cell {
+        padding: 16px 8px !important;
+    }
+
+    .mail-header,
+    .mail-card,
+    .mail-footer {
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+    }
+
+    .mail-code-box .mail-code {
+        font-size: 28px !important;
+        letter-spacing: 6px !important;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .mail-body,
+    .mail-wrapper {
+        background-color: #061819 !important;
+    }
+
+    .mail-card {
+        background-color: #0a2325 !important;
+    }
+
+    .mail-heading,
+    .mail-signature {
+        color: #d9f7f7 !important;
+    }
+
+    .mail-paragraph,
+    .mail-quote {
+        color: #d9f7f7 !important;
+    }
+
+    .mail-quote {
+        background-color: #145053 !important;
+    }
+
+    .mail-code-box {
+        background-color: #145053 !important;
+        border-color: #98d8d3 !important;
+    }
+
+    .mail-code-box .mail-code {
+        color: #ffffff !important;
+    }
+
+    .mail-link-hint,
+    .mail-footer .mail-footer-text {
+        color: #b9c6c6 !important;
+    }
+
+    .mail-link .mail-link-anchor,
+    .mail-footer .mail-footer-link {
+        color: #98d8d3 !important;
+    }
+}

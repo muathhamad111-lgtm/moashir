@@ -4,7 +4,8 @@ import { useI18n } from 'vue-i18n'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseTextarea from '@/components/form/BaseTextarea.vue'
-import SearchSelect from '@/components/form/SearchSelect.vue'
+import AppCombobox from '@/components/form/AppCombobox.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -55,6 +56,11 @@ const confirmLabel = computed(() =>
   isReassign.value ? t('bagRequests.assign.reassignAction') : t('bagRequests.assign.action'),
 )
 
+function onEvaluatorChange(value) {
+  selected.value = value
+  showSelectError.value = false
+}
+
 function onConfirm() {
   showSelectError.value = !selected.value
   showReasonError.value = isReassign.value && !reason.value.trim()
@@ -68,19 +74,18 @@ function onConfirm() {
     <div class="assign-modal">
       <p class="assign-modal__lead">{{ t('bagRequests.assign.lead', { entity: entityName }) }}</p>
       <div class="assign-modal__field">
-        <SearchSelect
+        <AppCombobox
           :model-value="selected"
           :options="options"
           :loading="loading"
+          name="bag-evaluator"
           :label="t('bagRequests.assign.evaluatorLabel')"
           :placeholder="t('bagRequests.assign.evaluatorPlaceholder')"
+          :error="showSelectError ? t('bagRequests.assign.chooseError') : ''"
           :disabled="busy"
-          @update:model-value="selected = $event; showSelectError = false"
+          required
+          @update:model-value="onEvaluatorChange"
         />
-        <p v-if="showSelectError" class="assign-modal__error" role="alert">
-          <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
-          {{ t('bagRequests.assign.chooseError') }}
-        </p>
       </div>
 
       <div v-if="isReassign" class="assign-modal__field">
@@ -94,7 +99,7 @@ function onConfirm() {
           @update:model-value="showReasonError = false"
         />
         <p v-if="showReasonError" class="assign-modal__error" role="alert">
-          <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+          <AppIcon name="warning-triangle" />
           {{ t('bagRequests.assign.reasonError') }}
         </p>
       </div>

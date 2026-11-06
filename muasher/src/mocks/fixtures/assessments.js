@@ -3,6 +3,7 @@ export const FIXTURE_ENTITY_ID = 5001
 export const SELF_RAW_PATTERNS = {
   steady: ['8.50', '7.00', '9.00', '6.50', '7.50', '8.00', '6.00', '9.50'],
   developing: ['6.00', '5.50', '7.00', '4.50', '6.50', '5.00'],
+  silver: ['8.00', '7.00', '7.50', '7.20', '7.70', '7.30'],
 }
 
 export const selfAssessmentsFixture = [

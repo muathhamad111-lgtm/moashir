@@ -41,6 +41,11 @@ final readonly class LocalizedText implements JsonSerializable
         );
     }
 
+    public static function fromChoice(string $key, int $count): self
+    {
+        return new self(trans_choice($key, $count, [], 'ar'), trans_choice($key, $count, [], 'en'));
+    }
+
     /**
      * @return array{ar: string, en: string}
      */

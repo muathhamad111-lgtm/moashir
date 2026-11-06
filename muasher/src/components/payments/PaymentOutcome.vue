@@ -13,24 +13,26 @@ const props = defineProps({
 const { t, te } = useI18n()
 
 const PRESENTATION = {
-  [RETURN_STATES.VERIFYING]: { tone: 'info', icon: 'fa-solid fa-spinner fa-spin' },
-  [RETURN_STATES.PAID]: { tone: 'success', icon: 'fa-solid fa-circle-check' },
-  [RETURN_STATES.FAILED]: { tone: 'danger', icon: 'fa-solid fa-circle-xmark' },
-  [RETURN_STATES.PENDING]: { tone: 'info', icon: 'fa-solid fa-hourglass-half' },
-  [RETURN_STATES.NOTIFY]: { tone: 'warning', icon: 'fa-solid fa-bell' },
-  [RETURN_STATES.CANCELLED]: { tone: 'warning', icon: 'fa-solid fa-ban' },
-  [RETURN_STATES.LATE]: { tone: 'warning', icon: 'fa-solid fa-triangle-exclamation' },
-  [RETURN_STATES.REFUNDED]: { tone: 'warning', icon: 'fa-solid fa-rotate-left' },
-  [RETURN_STATES.UNCONFIRMED]: { tone: 'warning', icon: 'fa-solid fa-circle-question' },
-  [RETURN_STATES.ERROR]: { tone: 'danger', icon: 'fa-solid fa-circle-exclamation' },
-  [RETURN_STATES.NOT_FOUND]: { tone: 'danger', icon: 'fa-solid fa-magnifying-glass' },
+  [RETURN_STATES.VERIFYING]: { tone: 'info', icon: 'spinner' },
+  [RETURN_STATES.PAID]: { tone: 'success', icon: 'check-circle' },
+  [RETURN_STATES.FAILED]: { tone: 'danger', icon: 'x' },
+  [RETURN_STATES.PENDING]: { tone: 'info', icon: 'refresh-dots' },
+  [RETURN_STATES.NOTIFY]: { tone: 'warning', icon: 'bell-dot' },
+  [RETURN_STATES.CANCELLED]: { tone: 'warning', icon: 'ban' },
+  [RETURN_STATES.LATE]: { tone: 'warning', icon: 'warning-triangle' },
+  [RETURN_STATES.REFUNDED]: { tone: 'warning', icon: 'undo' },
+  [RETURN_STATES.UNCONFIRMED]: { tone: 'warning', icon: 'question-circle' },
+  [RETURN_STATES.ERROR]: { tone: 'danger', icon: 'warning-triangle' },
+  [RETURN_STATES.NOT_FOUND]: { tone: 'danger', icon: 'search' },
 }
 
 const presentation = computed(() => PRESENTATION[props.state])
 
 const reasonText = computed(() => {
   const reason = props.payment?.failureReason
-  return reason && te(`finance.failureReasons.${reason}`) ? t(`finance.failureReasons.${reason}`) : ''
+  return reason && te(`finance.failureReasons.${reason}`)
+    ? t(`finance.failureReasons.${reason}`)
+    : ''
 })
 
 const message = computed(() => {

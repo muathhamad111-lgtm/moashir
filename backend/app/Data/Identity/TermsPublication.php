@@ -15,5 +15,6 @@ final readonly class TermsPublication
         public string $version,
         public LocalizedText $body,
         public CarbonImmutable $effectiveFrom,
+        public ?LocalizedText $title = null,
     ) {}
 }

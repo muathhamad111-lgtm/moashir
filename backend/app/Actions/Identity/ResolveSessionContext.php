@@ -26,7 +26,7 @@ final readonly class ResolveSessionContext
 
     public function handle(User $user): SessionContext
     {
-        $user->loadMissing('roles.permissions');
+        $user->loadMissing(['roles.permissions', 'assessorQualifications', 'requestPaths']);
         $signedInAt = $this->clock->signedInAt();
 
         return new SessionContext(

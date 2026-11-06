@@ -1,6 +1,7 @@
 <script setup>
 import { nextTick, onBeforeUnmount, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -66,8 +67,8 @@ watch(
     if (open) {
       previouslyFocused = document.activeElement
       await nextTick()
-      const elements = focusables()
-      ;(elements[0] ?? panelRef.value)?.focus()
+      const preferred = panelRef.value?.querySelector('[data-autofocus]')
+      ;(preferred ?? focusables()[0] ?? panelRef.value)?.focus()
     } else if (previouslyFocused instanceof HTMLElement) {
       previouslyFocused.focus()
       previouslyFocused = null
@@ -83,12 +84,7 @@ onBeforeUnmount(() => {
 
 <template>
   <Teleport to="body">
-    <div
-      v-if="modelValue"
-      class="modal is-open"
-      :class="`modal--${size}`"
-      @keydown="onKeydown"
-    >
+    <div v-if="modelValue" class="modal is-open" :class="`modal--${size}`" @keydown="onKeydown">
       <div class="modal__backdrop" @click="onBackdropClick"></div>
       <div
         ref="panelRef"
@@ -108,7 +104,7 @@ onBeforeUnmount(() => {
             :aria-label="t('actions.close')"
             @click="close"
           >
-            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            <AppIcon name="x" />
           </button>
         </header>
         <div class="modal__body">

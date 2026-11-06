@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\Entities\ExportEntitiesController;
 use App\Http\Controllers\Api\V1\Entities\ExportEntityPersonalDataController;
 use App\Http\Controllers\Api\V1\Entities\MyEmailChangeController;
 use App\Http\Controllers\Api\V1\Entities\MyEntityController;
+use App\Http\Controllers\Api\V1\Entities\MyEntityLogoController;
 use App\Http\Controllers\Api\V1\Entities\MyProfileChangeController;
 use App\Http\Controllers\Api\V1\Entities\PermanentlyDeleteEntityController;
 use App\Http\Controllers\Api\V1\Entities\PrivacyEntityLookupController;
@@ -43,6 +44,8 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
     Route::prefix('entities/me')->name('entities.me.')->group(function () use ($entities): void {
         Route::get('/', [MyEntityController::class, 'show'])->middleware("can:viewOwn,{$entities}")->name('show');
         Route::put('/', [MyEntityController::class, 'update'])->middleware(["can:updateOwn,{$entities}", 'throttle:sensitive'])->name('update');
+        Route::post('logo', [MyEntityLogoController::class, 'store'])->middleware(["can:updateOwn,{$entities}", 'throttle:uploads'])->name('logo.store');
+        Route::delete('logo', [MyEntityLogoController::class, 'destroy'])->middleware(["can:updateOwn,{$entities}", 'throttle:sensitive'])->name('logo.destroy');
         Route::get('profile-changes', MyProfileChangeController::class)->middleware("can:viewOwn,{$entities}")->name('profile-changes');
         Route::post('email/change', MyEmailChangeController::class)->middleware(["can:updateOwn,{$entities}", 'throttle:email-change'])->name('email.change');
         Route::post('email/confirm', ConfirmMyEmailChangeController::class)->middleware(["can:updateOwn,{$entities}", 'throttle:otp-verify'])->name('email.confirm');

@@ -33,7 +33,7 @@ final readonly class GetSubmissionForm
             $content->evidence,
             $this->gaps->read($assessment, $content->subs),
             $assessment->loadMissing('openCompletionRequest')->openCompletionRequest,
-            $this->limits->read(),
+            $this->limits->read($assessment->path),
             $this->moves->latestFor($assessment),
         );
     }

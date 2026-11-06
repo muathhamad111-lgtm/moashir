@@ -4,22 +4,28 @@ declare(strict_types=1);
 
 namespace App\Services\Award;
 
+use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Award\CycleMemberRole;
 use App\Enums\Identity\PermissionKey;
 use App\Enums\Identity\RoleKey;
 use App\Models\Award\AwardCycle;
 use App\Models\Identity\User;
+use App\Services\Identity\RequestPathScope;
 use Illuminate\Database\Eloquent\Builder;
 
 final readonly class CycleRecordScope
 {
     private const array GLOBAL_READER_ROLES = [RoleKey::SystemAdmin, RoleKey::RequestFollower];
 
-    public function __construct(private CycleMembership $membership) {}
+    public function __construct(private CycleMembership $membership, private RequestPathScope $paths) {}
 
     public function readsEveryCycle(User $user): bool
     {
-        return $user->isSuperAdmin() || ($user->can(PermissionKey::AwardCyclesView->value) && $this->holdsAnyRole($user, self::GLOBAL_READER_ROLES));
+        return $user->isSuperAdmin() || (
+            $user->can(PermissionKey::AwardCyclesView->value)
+            && $this->holdsAnyRole($user, self::GLOBAL_READER_ROLES)
+            && $this->paths->covers($user, AssessmentPath::Advanced)
+        );
     }
 
     public function managesEveryCycle(User $user): bool

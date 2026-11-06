@@ -30,11 +30,6 @@ final class AuthenticationRejected extends ApiException
         return new self(new ApiError(Response::HTTP_UNAUTHORIZED, 'session.expired'));
     }
 
-    public static function modeDisabled(): self
-    {
-        return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'login.mode_disabled'));
-    }
-
     public static function passwordChangeRequired(): self
     {
         return new self(new ApiError(Response::HTTP_FORBIDDEN, 'password.change_required'));

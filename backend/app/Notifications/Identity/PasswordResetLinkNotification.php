@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Notifications\Identity;
 
+use App\Enums\Notifications\MailReason;
 use App\Models\Identity\User;
+use App\Notifications\Messages\BrandedMailMessage;
 use App\Notifications\QueuedNotification;
 use App\Support\FrontendUrl;
-use Illuminate\Notifications\Messages\MailMessage;
 
 final class PasswordResetLinkNotification extends QueuedNotification
 {
@@ -24,14 +25,13 @@ final class PasswordResetLinkNotification extends QueuedNotification
         return ['mail'];
     }
 
-    public function toMail(User $notifiable): MailMessage
+    public function toMail(User $notifiable): BrandedMailMessage
     {
-        return (new MailMessage)
+        return BrandedMailMessage::make($notifiable, MailReason::Account)
             ->subject(__('notifications.password_reset.subject'))
-            ->greeting(__('notifications.greeting', ['name' => $notifiable->name]))
             ->line(__('notifications.password_reset.line'))
             ->action(__('notifications.password_reset.action'), FrontendUrl::to('auth/reset-password/'.$this->token))
-            ->line(__('notifications.password_reset.expiry', ['minutes' => $this->validMinutes]))
+            ->line(__('notifications.password_reset.expiry', ['duration' => trans_choice('quantities.minutes', $this->validMinutes)]))
             ->line(__('notifications.password_reset.ignore'));
     }
 }

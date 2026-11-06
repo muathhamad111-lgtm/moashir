@@ -6,7 +6,8 @@ export const MOCK_EGRESS_IPS = Object.freeze(['203.0.113.24'])
 
 export const MOYASAR_WEBHOOK_PATH = '/api/v1/webhooks/moyasar'
 
-export const APPLE_PAY_ASSOCIATION_PATH = '/.well-known/apple-developer-merchantid-domain-association'
+export const APPLE_PAY_ASSOCIATION_PATH =
+  '/.well-known/apple-developer-merchantid-domain-association'
 
 const SEED_DATES = {
   keys: '2026-10-28T08:40:00Z',
@@ -16,16 +17,40 @@ const SEED_DATES = {
 }
 
 function stored(last4) {
-  return { set: true, last4, updatedAt: SEED_DATES.keys, updatedBy: { ...INTEGRATION_ACTOR }, verdict: 'ok' }
+  return {
+    set: true,
+    last4,
+    updatedAt: SEED_DATES.keys,
+    updatedBy: { ...INTEGRATION_ACTOR },
+    verdict: 'ok',
+  }
 }
 
 function passed(latencyMs) {
-  return { at: SEED_DATES.tested, ok: true, errorKind: null, latencyMs, by: { ...INTEGRATION_ACTOR } }
+  return {
+    at: SEED_DATES.tested,
+    ok: true,
+    errorKind: null,
+    latencyMs,
+    by: { ...INTEGRATION_ACTOR },
+  }
 }
 
-export const EMPTY_SECRET = Object.freeze({ set: false, last4: null, updatedAt: null, updatedBy: null, verdict: null })
+export const EMPTY_SECRET = Object.freeze({
+  set: false,
+  last4: null,
+  updatedAt: null,
+  updatedBy: null,
+  verdict: null,
+})
 
-export const ENVIRONMENT_SECRET = Object.freeze({ set: true, last4: null, updatedAt: null, updatedBy: null, verdict: 'ok' })
+export const ENVIRONMENT_SECRET = Object.freeze({
+  set: true,
+  last4: null,
+  updatedAt: null,
+  updatedBy: null,
+  verdict: 'ok',
+})
 
 export const PAYMENT_DEFAULTS = Object.freeze({
   checkoutPattern: 'intent',
@@ -58,7 +83,7 @@ export function paymentSeed() {
     associationFile: null,
     rows: {
       test: {
-        publishableKey: 'pk_test_fake_example_moashir01',
+        publishableKey: 'pk_test_MoashirLocalSandboxFictionalKey000000001',
         secretKey: stored('ex01'),
         webhookSecret: stored(null),
         webhook: {
@@ -79,19 +104,31 @@ export const SMS_TEMPLATE_DEFINITIONS = Object.freeze([
     key: 'otp_code',
     label: { ar: 'رمز التحقق', en: 'Verification code' },
     defaultBody: {
-      ar: 'رمز التحقق في منصة مؤشر هو {code} وهو صالح لمدة {minutes} دقيقة.',
-      en: 'Your Moashir verification code is {code}. It is valid for {minutes} minutes.',
+      ar: 'رمز التحقق في منصة مؤشر هو {code} وهو صالح لمدة {validity}.',
+      en: 'Your Moashir verification code is {code}. It is valid for {validity}.',
     },
-    placeholders: ['code', 'minutes'],
+    placeholders: ['code', 'validity', 'minutes'],
     requiredPlaceholders: ['code'],
     singleSegment: true,
   },
 ])
 
 export const MSEGAT_APPROVED_TEMPLATES = Object.freeze([
-  { id: '101', title: 'رمز التحقق', body: 'رمز التحقق في منصة مؤشر هو {{1}} وهو صالح لمدة {{2}} دقيقة.' },
-  { id: '102', title: 'Verification code', body: 'Your Moashir verification code is {{1}}. It is valid for {{2}} minutes.' },
-  { id: '103', title: 'تذكير بموعد التقديم', body: 'تبقى على انتهاء فترة التقديم في منصة مؤشر {{1}} أيام.' },
+  {
+    id: '101',
+    title: 'رمز التحقق',
+    body: 'رمز التحقق في منصة مؤشر هو {{1}} وهو صالح لمدة {{2}}.',
+  },
+  {
+    id: '102',
+    title: 'Verification code',
+    body: 'Your Moashir verification code is {{1}}. It is valid for {{2}}.',
+  },
+  {
+    id: '103',
+    title: 'تذكير بموعد التقديم',
+    body: 'تبقى على انتهاء فترة التقديم في منصة مؤشر {{1}} أيام.',
+  },
 ])
 
 export const TAQNYAT_SENDERS = Object.freeze([
@@ -106,7 +143,12 @@ export function smsSeed() {
     testRecipients: ['+966500000001', '+966500000002'],
     templates: {},
     rows: {
-      taqnyat: { senderName: 'Moashir', bearerToken: stored('rt01'), lastTest: passed(268), isActive: true },
+      taqnyat: {
+        senderName: 'Moashir',
+        bearerToken: stored('rt01'),
+        lastTest: passed(268),
+        isActive: true,
+      },
       msegat: {
         username: 'moashir-platform',
         senderName: 'Moashir',
@@ -114,14 +156,24 @@ export function smsSeed() {
         apiKey: stored('ms02'),
         approvedTemplates: [],
         templatesLoadedAt: null,
-        lastTest: { at: SEED_DATES.failed, ok: false, errorKind: 'unavailable', latencyMs: 15000, by: { ...INTEGRATION_ACTOR } },
+        lastTest: {
+          at: SEED_DATES.failed,
+          ok: false,
+          errorKind: 'unavailable',
+          latencyMs: 15000,
+          by: { ...INTEGRATION_ACTOR },
+        },
         isActive: false,
       },
     },
   }
 }
 
-export const EMAIL_DEFAULTS = Object.freeze({ port: 587, encryption: 'starttls', timeoutSeconds: 15 })
+export const EMAIL_DEFAULTS = Object.freeze({
+  port: 587,
+  encryption: 'starttls',
+  timeoutSeconds: 15,
+})
 
 export function emailSeed() {
   return {
@@ -178,4 +230,9 @@ export function aiSeed() {
   }
 }
 
-export const AI_TEST_ANSWER = Object.freeze({ text: 'OK', finish: 'complete', inputTokens: 38, outputTokens: 2 })
+export const AI_TEST_ANSWER = Object.freeze({
+  text: 'OK',
+  finish: 'complete',
+  inputTokens: 38,
+  outputTokens: 2,
+})

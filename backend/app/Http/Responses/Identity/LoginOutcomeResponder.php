@@ -38,13 +38,13 @@ final readonly class LoginOutcomeResponder
     {
         return match ($outcome->step) {
             LoginStep::Authenticated => $outcome->user instanceof User ? [
-                'user' => (new SessionUserResource($this->resolveContext->handle($outcome->user)))->resolve($this->request),
+                'user' => new SessionUserResource($this->resolveContext->handle($outcome->user))->resolve($this->request),
             ] : [],
             LoginStep::MfaChallenge => ['mfa_required' => true],
             LoginStep::MfaEnrollment => ['mfa_enrollment_required' => true],
             LoginStep::OtpRequired => $outcome->otp instanceof OtpChallenge ? [
                 'requires_otp' => true,
-                'otp' => (new OtpChallengeResource($outcome->otp))->resolve($this->request),
+                'otp' => new OtpChallengeResource($outcome->otp)->resolve($this->request),
                 'message' => __('messages.otp_sent'),
             ] : [],
         };

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Finance;
 
+use App\Models\Finance\BankTransfer;
 use App\Models\Finance\Payment;
 use App\Models\Finance\PaymentReceipt;
 use App\Models\Finance\Refund;
+use App\Support\Finance\StaffTransferPresenter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -28,7 +30,7 @@ final class TransactionDetailResource extends JsonResource
             'failure_reason' => $payment->failure_reason?->value,
             'failure_code' => $payment->failure_code,
             'failure_message' => $payment->failure_message,
-            'expires_at' => $payment->expires_at->toIso8601String(),
+            'expires_at' => $payment->expires_at?->toIso8601String(),
             'verified_at' => $payment->verified_at?->toIso8601String(),
             'failed_at' => $payment->failed_at?->toIso8601String(),
             'cancelled_at' => $payment->cancelled_at?->toIso8601String(),
@@ -36,6 +38,8 @@ final class TransactionDetailResource extends JsonResource
             'manually_settled_at' => $payment->manually_settled_at?->toIso8601String(),
             'receipt' => $payment->receipt instanceof PaymentReceipt ? new ReceiptResource($payment->receipt)->toArray($request) : null,
             'refund' => $payment->refund instanceof Refund ? new RefundResource($payment->refund)->toArray($request) : null,
+            'rejected_at' => $payment->rejected_at?->toIso8601String(),
+            'bank_transfer' => $payment->bankTransfer instanceof BankTransfer ? StaffTransferPresenter::detailsOf($payment->bankTransfer) : null,
         ];
     }
 }

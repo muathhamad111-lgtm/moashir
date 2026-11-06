@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Actions\Assessments\OpenPaidAccreditedRequest;
+use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Criteria\ScaleKind;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Integrations\IntegrationMode;
@@ -10,6 +11,7 @@ use App\Models\Assessments\Assessment;
 use App\Models\Criteria\CriteriaVersion;
 use App\Models\Entities\Entity;
 use App\Models\Identity\User;
+use App\Models\Identity\UserRequestPath;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Testing\TestResponse;
 
@@ -112,6 +114,17 @@ function assessorUser(): User
 function requestFollower(): User
 {
     return staffUser(RoleKey::RequestFollower);
+}
+
+function followerOfPaths(AssessmentPath ...$paths): User
+{
+    $follower = requestFollower();
+
+    foreach ($paths as $path) {
+        UserRequestPath::query()->create(['user_id' => $follower->id, 'path' => $path]);
+    }
+
+    return $follower->refresh();
 }
 
 function assignedAccreditedRequest(CriteriaVersion $version, User $assessor, ?User $follower = null): Assessment

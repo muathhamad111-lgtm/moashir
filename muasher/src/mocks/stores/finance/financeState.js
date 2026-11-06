@@ -9,7 +9,15 @@ import {
   refundsSeed,
   storedFilesSeed,
 } from '../../fixtures/finance'
+import {
+  bankAccountsSeed,
+  bankTransferPaymentsSeed,
+  transferProofFilesSeed,
+  transfersSeed,
+} from '../../fixtures/bankTransfers'
 import { issueSeedReceipts } from './receiptSeed'
+
+export const SEEDED_CHANNELS = Object.freeze(['electronic', 'bank_transfer'])
 
 export const FINANCE_STORAGE_KEY = 'moashir_mock_finance'
 
@@ -18,14 +26,20 @@ const PERSISTED = import.meta.env.MODE !== 'test'
 let state = null
 
 function seededState() {
-  const payments = paymentsSeed().map((payment) => ({ ...payment, entityName: { ...financeEntitiesSeed[payment.entityId] } }))
+  const payments = [...paymentsSeed(), ...bankTransferPaymentsSeed()].map((payment) => ({
+    ...payment,
+    entityName: { ...financeEntitiesSeed[payment.entityId] },
+  }))
   const refunds = refundsSeed()
   const { receipts, issued } = issueSeedReceipts(payments, refunds)
   return {
     payments,
     receipts,
     refunds,
-    files: storedFilesSeed(),
+    files: [...storedFilesSeed(), ...transferProofFilesSeed()],
+    channels: [...SEEDED_CHANNELS],
+    bankAccounts: bankAccountsSeed(),
+    transfers: transfersSeed(),
     exports: [],
     events: paymentEventsSeed(),
     providerPayments: providerPaymentsSeed(),
@@ -48,7 +62,8 @@ function restored() {
   const raw = storage()?.getItem(FINANCE_STORAGE_KEY)
   if (!raw) return null
   try {
-    return JSON.parse(raw)
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed?.bankAccounts) ? parsed : null
   } catch {
     return null
   }
@@ -102,6 +117,14 @@ export function findRefund(id) {
 
 export function findFile(id) {
   return financeState().files.find((file) => file.id === id) ?? null
+}
+
+export function findBankAccount(id) {
+  return financeState().bankAccounts.find((account) => account.id === id) ?? null
+}
+
+export function transferOf(paymentId) {
+  return financeState().transfers.find((transfer) => transfer.paymentId === paymentId) ?? null
 }
 
 export function findExport(id) {

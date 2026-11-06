@@ -13,7 +13,8 @@ function base32Bytes(secret) {
     .map((char) => BASE32.indexOf(char).toString(2).padStart(5, '0'))
     .join('')
   const bytes = []
-  for (let offset = 0; offset + 8 <= bits.length; offset += 8) bytes.push(Number.parseInt(bits.slice(offset, offset + 8), 2))
+  for (let offset = 0; offset + 8 <= bits.length; offset += 8)
+    bytes.push(Number.parseInt(bits.slice(offset, offset + 8), 2))
   return Buffer.from(bytes)
 }
 

@@ -11,7 +11,6 @@ use App\Enums\Assessments\CompletionItemKind;
 use App\Exceptions\Assessments\AssessmentRejected;
 use App\Models\Assessments\Assessment;
 use App\Models\Assessments\EvidenceFile;
-use App\Services\Files\FileSettings;
 
 final readonly class EvidenceTarget
 {
@@ -22,7 +21,7 @@ final readonly class EvidenceTarget
     public function __construct(
         private BoundSubCriteriaReader $subs,
         private CompletionScope $completion,
-        private FileSettings $settings,
+        private UploadLimitsReader $limits,
     ) {}
 
     public function subsOf(Assessment $assessment): BoundSubCriteria
@@ -46,7 +45,7 @@ final readonly class EvidenceTarget
 
     private function assertRoomFor(Assessment $assessment, BoundSub $sub): void
     {
-        $maximum = $this->settings->evidenceMaxFilesPerSub();
+        $maximum = $this->limits->read($assessment->path)->maxFilesPerSub;
         $present = EvidenceFile::query()->where('assessment_id', $assessment->id)->where('sub_code', $sub->code)->present()->count();
 
         if ($present >= $maximum) {

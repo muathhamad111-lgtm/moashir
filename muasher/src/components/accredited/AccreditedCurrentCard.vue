@@ -16,7 +16,11 @@ const props = defineProps({
 const { t } = useI18n()
 const closed = computed(() => props.current.latestClosed)
 const hasResult = computed(() => closed.value?.status === ACCREDITED_STATUSES.COMPLETED)
-const closedNote = computed(() => (closed.value && !hasResult.value ? t(`accredited.current.closedNotes.${closed.value.status}`) : ''))
+const closedNote = computed(() =>
+  closed.value && !hasResult.value
+    ? t(`accredited.current.closedNotes.${closed.value.status}`)
+    : '',
+)
 </script>
 
 <template>
@@ -30,8 +34,20 @@ const closedNote = computed(() => (closed.value && !hasResult.value ? t(`accredi
         <bdi dir="ltr">{{ current.awaitingPayment.reference }}</bdi>
         <PaymentStatusBadge :status="current.awaitingPayment.status" />
       </p>
-      <p class="accredited-current__meta">{{ t('accredited.current.expiresAt') }} <DateStamp :value="current.awaitingPayment.expiresAt" /></p>
-      <RouterLink class="accredited-current__link" :to="{ name: ROUTE_NAMES.PAYMENTS_DETAIL, params: { id: current.awaitingPayment.paymentId } }">
+      <p v-if="current.awaitingPayment.expiresAt" class="accredited-current__meta">
+        {{ t('accredited.current.expiresAt') }}
+        <DateStamp :value="current.awaitingPayment.expiresAt" />
+      </p>
+      <p v-else class="accredited-current__meta">
+        {{ t('accredited.current.transferUnderReview') }}
+      </p>
+      <RouterLink
+        class="accredited-current__link"
+        :to="{
+          name: ROUTE_NAMES.PAYMENTS_DETAIL,
+          params: { id: current.awaitingPayment.paymentId },
+        }"
+      >
         {{ t('accredited.current.openPayment') }}
       </RouterLink>
     </div>
@@ -41,8 +57,13 @@ const closedNote = computed(() => (closed.value && !hasResult.value ? t(`accredi
         <bdi dir="ltr">{{ current.active.number }}</bdi>
         <StatusBadge :status="current.active.status" />
       </p>
-      <p v-if="current.active.submittedAt" class="accredited-current__meta">{{ t('accredited.form.submittedAt') }} <DateStamp :value="current.active.submittedAt" /></p>
-      <RouterLink class="accredited-current__link" :to="{ name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_FORM, params: { id: current.active.id } }">
+      <p v-if="current.active.submittedAt" class="accredited-current__meta">
+        {{ t('accredited.form.submittedAt') }} <DateStamp :value="current.active.submittedAt" />
+      </p>
+      <RouterLink
+        class="accredited-current__link"
+        :to="{ name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_FORM, params: { id: current.active.id } }"
+      >
         {{ t('accredited.current.openRequest') }}
       </RouterLink>
     </div>
@@ -53,10 +74,19 @@ const closedNote = computed(() => (closed.value && !hasResult.value ? t(`accredi
         <StatusBadge :status="closed.status" />
       </p>
       <p v-if="closedNote" class="accredited-current__meta">{{ closedNote }}</p>
-      <RouterLink v-if="hasResult" class="accredited-current__link" :to="{ name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_RESULT, params: { id: closed.id } }">
+      <RouterLink
+        v-if="hasResult"
+        class="accredited-current__link"
+        :to="{ name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_RESULT, params: { id: closed.id } }"
+      >
         {{ t('accredited.current.viewResult') }}
       </RouterLink>
     </div>
-    <p v-if="!current.awaitingPayment && !current.active && !closed" class="accredited-current__empty">{{ t('accredited.current.empty') }}</p>
+    <p
+      v-if="!current.awaitingPayment && !current.active && !closed"
+      class="accredited-current__empty"
+    >
+      {{ t('accredited.current.empty') }}
+    </p>
   </Card>
 </template>

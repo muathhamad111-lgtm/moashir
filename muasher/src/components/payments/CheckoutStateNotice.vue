@@ -21,10 +21,14 @@ const emit = defineEmits(['restart'])
 const i18n = useI18n()
 const { t } = i18n
 
-const blockedMessage = computed(() => financeErrorMessage(i18n, props.failure?.error, 'finance.checkout.startFailed'))
+const blockedMessage = computed(() =>
+  financeErrorMessage(i18n, props.failure?.error, 'finance.checkout.startFailed'),
+)
 const canRetry = computed(() => RETRYABLE_CODES.includes(props.failure?.code ?? null))
 const openRequestId = computed(() =>
-  props.failure?.code === ACCREDITED_CODES.REQUEST_OPEN ? (props.failure.error?.normalized?.meta?.assessmentId ?? null) : null,
+  props.failure?.code === ACCREDITED_CODES.REQUEST_OPEN
+    ? (props.failure.error?.normalized?.meta?.assessmentId ?? null)
+    : null,
 )
 </script>
 
@@ -32,12 +36,15 @@ const openRequestId = computed(() =>
   <PaymentNotice
     v-if="phase === CHECKOUT_PHASES.IN_PROGRESS"
     tone="warning"
-    icon="fa-solid fa-clock-rotate-left"
+    icon="refresh-dots"
     :title="t('finance.checkout.inProgressTitle')"
     :message="t('finance.checkout.inProgressMessage')"
   >
     <template #actions>
-      <RouterLink class="payment-notice__link" :to="{ name: ROUTE_NAMES.PAYMENTS_DETAIL, params: { id: payment.id } }">
+      <RouterLink
+        class="payment-notice__link"
+        :to="{ name: ROUTE_NAMES.PAYMENTS_DETAIL, params: { id: payment.id } }"
+      >
         {{ t('finance.checkout.viewPayment') }}
       </RouterLink>
     </template>
@@ -46,13 +53,13 @@ const openRequestId = computed(() =>
   <PaymentNotice
     v-else-if="phase === CHECKOUT_PHASES.EXPIRED"
     tone="warning"
-    icon="fa-solid fa-hourglass-end"
+    icon="clock"
     :title="t('finance.checkout.expiredTitle')"
     :message="t('finance.checkout.expiredMessage')"
     live
   >
     <template #actions>
-      <BaseButton variant="primary" icon="fa-solid fa-rotate-right" :loading="busy" @click="emit('restart')">
+      <BaseButton variant="primary" icon="refresh" :loading="busy" @click="emit('restart')">
         {{ t('finance.checkout.startAgain') }}
       </BaseButton>
     </template>
@@ -61,16 +68,26 @@ const openRequestId = computed(() =>
   <PaymentNotice
     v-else-if="phase === CHECKOUT_PHASES.BLOCKED"
     tone="danger"
-    icon="fa-solid fa-circle-exclamation"
+    icon="warning-triangle"
     :title="t('finance.checkout.blockedTitle')"
     :message="blockedMessage"
     live
   >
     <template v-if="canRetry || openRequestId" #actions>
-      <BaseButton v-if="canRetry" variant="primary" icon="fa-solid fa-rotate-right" :loading="busy" @click="emit('restart')">
+      <BaseButton
+        v-if="canRetry"
+        variant="primary"
+        icon="refresh"
+        :loading="busy"
+        @click="emit('restart')"
+      >
         {{ t('finance.checkout.retry') }}
       </BaseButton>
-      <RouterLink v-if="openRequestId" class="payment-notice__link" :to="{ name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_FORM, params: { id: openRequestId } }">
+      <RouterLink
+        v-if="openRequestId"
+        class="payment-notice__link"
+        :to="{ name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_FORM, params: { id: openRequestId } }"
+      >
         {{ t('accredited.current.openRequest') }}
       </RouterLink>
     </template>

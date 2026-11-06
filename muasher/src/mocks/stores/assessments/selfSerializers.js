@@ -1,4 +1,5 @@
 import { SCORE_LEVELS } from '@/constants/assessment'
+import { pathLabelOf } from '../../fixtures/pathLabels'
 import { toCanonicalStatus } from '@/utils/canonicalStatus'
 import { entitySummary } from '../entitySerializers'
 import { findMain, findPoint, findSub } from '../criteriaStore'
@@ -32,6 +33,7 @@ export function assessmentResource(record) {
     id: record.id,
     number: record.number,
     path: record.path,
+    pathLabel: pathLabelOf(record.path),
     status: maskedStatus(record),
     isOpen: isOpen(record) || isMaskedFor(record),
     isFrozen: isFrozen(record),
@@ -81,22 +83,33 @@ export function scoresResource(record) {
 
 export function recordResource(record, viewer) {
   const visible = { ...record, transitions: visibleTransitions(record, viewer) }
-  return { ...assessmentResource(record), statusHistory: statusHistoryOf(visible, { staffView: readsEveryAssessment(viewer) }) }
+  return {
+    ...assessmentResource(record),
+    statusHistory: statusHistoryOf(visible, { staffView: readsEveryAssessment(viewer) }),
+  }
 }
 
 export function formResource(record) {
-  return { ...scoresResource(record), criteria: boundTree(record), criteriaUpdate: criteriaUpdateOf(record) }
+  return {
+    ...scoresResource(record),
+    criteria: boundTree(record),
+    criteriaUpdate: criteriaUpdateOf(record),
+  }
 }
 
 function figures(node) {
-  return { weight: decimalWeight(node.weight), earned: displayEarned(node.earned), percent: displayPercent(node.percent) }
+  return {
+    weight: decimalWeight(node.weight),
+    earned: displayEarned(node.earned),
+    percent: displayPercent(node.percent),
+  }
 }
 
 function nullableRaw(raw) {
   return raw === null ? null : decimalRaw(raw)
 }
 
-function mainRows(result) {
+export function mainRows(result) {
   return result.mains.map((main) => ({
     criterionId: main.id,
     code: main.code,
@@ -119,7 +132,7 @@ export function subRows(result) {
   )
 }
 
-function pointRows(result) {
+export function pointRows(result) {
   return result.mains.flatMap((main) =>
     main.subs.flatMap((sub) =>
       sub.points.map((point) => ({
@@ -135,7 +148,14 @@ function pointRows(result) {
 }
 
 function resultIdentity(record) {
-  return { id: record.id, number: record.number, path: record.path, status: maskedStatus(record), isFrozen: isFrozen(record) }
+  return {
+    id: record.id,
+    number: record.number,
+    path: record.path,
+    pathLabel: pathLabelOf(record.path),
+    status: maskedStatus(record),
+    isFrozen: isFrozen(record),
+  }
 }
 
 export function resultResource(record) {
@@ -167,6 +187,7 @@ export function requestSearchHit(record) {
     id: record.id,
     number: record.number,
     path: record.path,
+    pathLabel: pathLabelOf(record.path),
     status: record.status,
     isFrozen: isFrozen(record),
     entity: entitySummary(entityOf(record)),

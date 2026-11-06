@@ -6,6 +6,7 @@ namespace App\Http\Resources\Assessments;
 
 use App\Models\Assessments\Assessment;
 use App\Models\Assessments\AssessmentAssignment;
+use App\Support\Assessments\PathPresenter;
 use App\Support\Assessments\ReviewClockPresenter;
 use App\Support\Assessments\StatusMask;
 use App\Support\Award\CyclePresenter;
@@ -29,7 +30,7 @@ final class AssignedRequestResource extends JsonResource
         return [
             'id' => $assessment->id,
             'number' => $assessment->request_number,
-            'path' => $assessment->path->value,
+            ...PathPresenter::of($assessment->path),
             'status' => StatusMask::statusFor($assessment, $request->user()),
             'entity' => [...EntityPresenter::summary($assessment->entity), 'region' => EntityPresenter::place($assessment->entity->region)],
             'assigned_at' => $assignment instanceof AssessmentAssignment ? $assignment->created_at->toIso8601String() : null,

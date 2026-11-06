@@ -4,6 +4,7 @@ import { assessmentReject } from '../assessments/assessmentRejection'
 import { ACCESS, accessOf } from '../assessments/assessmentAccess'
 import { isInFiltering } from './advancedStates'
 import { isLinkedAssessor, isMember } from './cycleStore'
+import { seatOfUser } from '../committee/committeeState'
 
 export const AWARD_PERMISSIONS = {
   CYCLES_VIEW: 'award.cycles.view',
@@ -22,21 +23,32 @@ function holds(user, roles) {
 }
 
 export function readsEveryCycle(user) {
-  return user.superAdmin || (sessionCan(AWARD_PERMISSIONS.CYCLES_VIEW) && holds(user, GLOBAL_READERS))
+  return (
+    user.superAdmin || (sessionCan(AWARD_PERMISSIONS.CYCLES_VIEW) && holds(user, GLOBAL_READERS))
+  )
 }
 
 export function managesEveryCycle(user) {
-  return user.superAdmin || (sessionCan(AWARD_PERMISSIONS.CYCLES_MANAGE) && holds(user, [SYSTEM_ADMIN]))
+  return (
+    user.superAdmin || (sessionCan(AWARD_PERMISSIONS.CYCLES_MANAGE) && holds(user, [SYSTEM_ADMIN]))
+  )
 }
 
 export function canView(user, cycle) {
   if (readsEveryCycle(user)) return true
-  return sessionCan(AWARD_PERMISSIONS.CYCLES_VIEW) && (isMember(cycle, user.id) || isLinkedAssessor(cycle, user.id))
+  return (
+    sessionCan(AWARD_PERMISSIONS.CYCLES_VIEW) &&
+    (isMember(cycle, user.id) ||
+      isLinkedAssessor(cycle, user.id) ||
+      Boolean(seatOfUser(cycle.id, user.id)))
+  )
 }
 
 export function canManage(user, cycle) {
   if (managesEveryCycle(user)) return true
-  return sessionCan(AWARD_PERMISSIONS.CYCLES_MANAGE) && isMember(cycle, user.id, ['award_secretary'])
+  return (
+    sessionCan(AWARD_PERMISSIONS.CYCLES_MANAGE) && isMember(cycle, user.id, ['award_secretary'])
+  )
 }
 
 export function revealsStaff(user, cycle) {
@@ -50,7 +62,11 @@ function canViewFiltering(user, cycle) {
 }
 
 export function canDecideFiltering(user, cycle) {
-  return user.superAdmin || (sessionCan(AWARD_PERMISSIONS.FILTERING_DECIDE) && isMember(cycle, user.id, ['filtering_officer']))
+  return (
+    user.superAdmin ||
+    (sessionCan(AWARD_PERMISSIONS.FILTERING_DECIDE) &&
+      isMember(cycle, user.id, ['filtering_officer']))
+  )
 }
 
 function denyOrHide(user, cycle) {
@@ -62,16 +78,19 @@ function requireCycle(cycle) {
 }
 
 export function authorizeViewAnyCycles(user) {
-  if (!user.superAdmin && !sessionCan(AWARD_PERMISSIONS.CYCLES_VIEW)) throw assessmentReject.forbidden()
+  if (!user.superAdmin && !sessionCan(AWARD_PERMISSIONS.CYCLES_VIEW))
+    throw assessmentReject.forbidden()
 }
 
 export function authorizeCreateCycle(user) {
-  if (!user.superAdmin && !sessionCan(AWARD_PERMISSIONS.CYCLES_MANAGE)) throw assessmentReject.forbidden()
+  if (!user.superAdmin && !sessionCan(AWARD_PERMISSIONS.CYCLES_MANAGE))
+    throw assessmentReject.forbidden()
 }
 
 export function authorizeViewCycle(user, cycle) {
   requireCycle(cycle)
-  if (!user.superAdmin && !sessionCan(AWARD_PERMISSIONS.CYCLES_VIEW)) throw assessmentReject.forbidden()
+  if (!user.superAdmin && !sessionCan(AWARD_PERMISSIONS.CYCLES_VIEW))
+    throw assessmentReject.forbidden()
   if (!canView(user, cycle)) throw assessmentReject.notFound()
 }
 
@@ -93,7 +112,11 @@ export function authorizeViewFiltering(user, cycle) {
 }
 
 function requireFilteringRequest(cycle, record) {
-  const belongs = record && record.path === ASSESSMENT_PATHS.ADVANCED && record.awardCycleId === cycle.id && isInFiltering(record.status)
+  const belongs =
+    record &&
+    record.path === ASSESSMENT_PATHS.ADVANCED &&
+    record.awardCycleId === cycle.id &&
+    isInFiltering(record.status)
   if (!belongs) throw assessmentReject.notFound()
 }
 
@@ -112,16 +135,23 @@ export function authorizeDecideFiltering(user, cycle, record) {
 }
 
 export function authorizeAdvancedEntity(user) {
-  if (user.entityId === null || !sessionCan(AWARD_PERMISSIONS.ADVANCED_MANAGE)) throw assessmentReject.forbidden()
+  if (user.entityId === null || !sessionCan(AWARD_PERMISSIONS.ADVANCED_MANAGE))
+    throw assessmentReject.forbidden()
 }
 
 export function authorizeFollowAdvanced(user, record) {
   if (record.path !== ASSESSMENT_PATHS.ADVANCED) throw assessmentReject.notFound()
   if (user.superAdmin || sessionCan(AWARD_PERMISSIONS.COMPLETION_RETURN)) return
-  throw accessOf(user, record) === ACCESS.NONE ? assessmentReject.notFound() : assessmentReject.forbidden()
+  throw accessOf(user, record) === ACCESS.NONE
+    ? assessmentReject.notFound()
+    : assessmentReject.forbidden()
 }
 
 export function authorizeDeleteDraft(user, record) {
-  if (record.entityId !== Number(user.entityId)) throw accessOf(user, record) === ACCESS.NONE ? assessmentReject.notFound() : assessmentReject.forbidden()
-  if (record.path !== ASSESSMENT_PATHS.ADVANCED || !sessionCan(AWARD_PERMISSIONS.ADVANCED_MANAGE)) throw assessmentReject.forbidden()
+  if (record.entityId !== Number(user.entityId))
+    throw accessOf(user, record) === ACCESS.NONE
+      ? assessmentReject.notFound()
+      : assessmentReject.forbidden()
+  if (record.path !== ASSESSMENT_PATHS.ADVANCED || !sessionCan(AWARD_PERMISSIONS.ADVANCED_MANAGE))
+    throw assessmentReject.forbidden()
 }

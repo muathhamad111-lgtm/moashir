@@ -8,6 +8,7 @@ use App\Data\Audit\AuditEntry;
 use App\Data\Identity\LoginOutcome;
 use App\Enums\Audit\AuditEvent;
 use App\Enums\Identity\InvitationStatus;
+use App\Enums\Identity\SignInMethod;
 use App\Enums\Identity\UserStatus;
 use App\Exceptions\Identity\AccountActionRejected;
 use App\Models\Identity\TermsVersion;
@@ -49,7 +50,7 @@ final readonly class AcceptInvitation
             $this->audit->record(new AuditEntry(AuditEvent::UserActivated, $user));
         });
 
-        return $this->completeSignIn->handle($user, 'invitation');
+        return $this->completeSignIn->handle($user, SignInMethod::Invitation);
     }
 
     private function findUsableInvitation(string $token): UserInvitation

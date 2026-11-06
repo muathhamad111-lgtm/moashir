@@ -6,6 +6,7 @@ import { useToast } from '@/composables/useToast'
 import { messagingService } from '@/services/messagingService'
 import DemoDataNotice from '@/components/ui/DemoDataNotice.vue'
 import { MOCK_MODULES } from '@/constants/mockModules'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 const toast = useToast()
@@ -29,14 +30,16 @@ const DEMO_MODULES = [MOCK_MODULES.MESSAGING]
 
 <template>
   <section class="settings-form__group" aria-labelledby="sms-broadcast-title">
-    <h2 id="sms-broadcast-title" class="settings-form__legend">{{ t('settings.sms.broadcastTitle') }}</h2>
+    <h2 id="sms-broadcast-title" class="settings-form__legend">
+      {{ t('settings.sms.broadcastTitle') }}
+    </h2>
     <DemoDataNotice scope="section" :modules="DEMO_MODULES" />
     <p class="settings-form__note" role="note">
-      <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+      <AppIcon name="info-circle" />
       {{ t('settings.sms.broadcastNote') }}
     </p>
     <div class="settings-form__inline">
-      <BaseButton variant="secondary" icon="fa-solid fa-tower-broadcast" :loading="sending" @click="sendBroadcast">
+      <BaseButton variant="secondary" icon="broadcast" :loading="sending" @click="sendBroadcast">
         {{ t('settings.sms.broadcastSend') }}
       </BaseButton>
     </div>

@@ -62,7 +62,7 @@ describe('EvidenceUploader', () => {
     const wrapper = mountUploader({ uploading: { a0: true } })
     const addButtons = wrapper.findAll('.evidence-uploader__add')
     expect(addButtons[0].attributes('disabled')).toBeDefined()
-    expect(addButtons[0].find('.fa-spinner').exists()).toBe(true)
+    expect(addButtons[0].find('[data-icon="spinner"]').exists()).toBe(true)
   })
 
   it('disables all controls when disabled', () => {

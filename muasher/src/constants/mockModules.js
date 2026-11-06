@@ -21,10 +21,13 @@ export const MOCK_MODULES = Object.freeze({
   NOTIFICATIONS: 'notifications',
   NOTIFICATIONS_ADMIN: 'notifications-admin',
   CMS: 'cms',
+  CONTACT: 'contact',
   BRANDING: 'branding',
   KPIS: 'kpis',
   AI: 'ai',
   DASHBOARDS: 'dashboards',
+  ENTITY_BOARD: 'entity-board',
+  AUDIT: 'audit',
 })
 
 export const MOCK_MODES = Object.freeze({

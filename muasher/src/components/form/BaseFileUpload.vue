@@ -2,6 +2,7 @@
 import { computed, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   files: { type: Array, default: () => [] },
@@ -42,7 +43,8 @@ function onInputChange(event) {
 }
 
 function statusLabel(file) {
-  if (file.status === 'uploading') return t('components.fileUpload.uploading', { progress: file.progress ?? 0 })
+  if (file.status === 'uploading')
+    return t('components.fileUpload.uploading', { progress: file.progress ?? 0 })
   if (file.status === 'failed') return t('components.fileUpload.failed')
   return t('components.fileUpload.done')
 }
@@ -70,7 +72,7 @@ function statusLabel(file) {
       :aria-labelledby="`${controlId}-label`"
       @click="openPicker"
     >
-      <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
+      <AppIcon name="cloud-upload" />
       <span>{{ t('components.fileUpload.choose') }}</span>
       <span v-if="hint" class="file-upload__hint">{{ hint }}</span>
     </button>
@@ -81,7 +83,7 @@ function statusLabel(file) {
         class="file-upload__item"
         :class="{ 'is-failed': file.status === 'failed' }"
       >
-        <i class="fa-solid fa-file-lines file-upload__file-icon" aria-hidden="true"></i>
+        <AppIcon name="doc" class="file-upload__file-icon" />
         <div class="file-upload__meta">
           <span class="file-upload__name">{{ file.name }}</span>
           <span class="file-upload__status">{{ statusLabel(file) }}</span>
@@ -98,7 +100,7 @@ function statusLabel(file) {
           variant="ghost"
           size="sm"
           icon-only
-          icon="fa-solid fa-rotate-right"
+          icon="refresh"
           :aria-label="t('components.fileUpload.retry', { name: file.name })"
           @click="emit('retry', file.id)"
         />
@@ -106,7 +108,7 @@ function statusLabel(file) {
           variant="ghost"
           size="sm"
           icon-only
-          icon="fa-solid fa-trash-can"
+          icon="trash"
           :aria-label="t('components.fileUpload.remove', { name: file.name })"
           @click="emit('remove', file.id)"
         />

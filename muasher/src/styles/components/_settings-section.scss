@@ -31,21 +31,17 @@
     @include focus-ring;
   }
 
-  i {
-    transition: transform var(--t-fast) var(--ease);
+  .app-icon {
+    transition: translate var(--t-fast) var(--ease);
   }
 
-  &:hover i {
-    transform: translateX(calc(-1 * var(--space-1)));
+  &:hover .app-icon {
+    translate: var(--space-1);
   }
 }
 
-[dir='ltr'] .settings-section__back i {
-  transform: rotate(180deg);
-}
-
-[dir='ltr'] .settings-section__back:hover i {
-  transform: rotate(180deg) translateX(calc(-1 * var(--space-1)));
+[dir='rtl'] .settings-section__back:hover .app-icon {
+  translate: calc(-1 * var(--space-1));
 }
 
 .settings-section__title {

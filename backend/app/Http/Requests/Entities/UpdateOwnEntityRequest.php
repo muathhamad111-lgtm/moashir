@@ -18,6 +18,7 @@ final class UpdateOwnEntityRequest extends FormRequest
     {
         return [
             ...EntityProfileInput::rules($this->input('region_id')),
+            ...EntityProfileInput::registryRules($this->user()?->entity_id),
             'marketing_consent' => ['required', 'boolean'],
         ];
     }

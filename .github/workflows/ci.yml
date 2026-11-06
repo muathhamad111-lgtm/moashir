@@ -22,7 +22,7 @@ jobs:
         working-directory: backend
     services:
       postgres:
-        image: postgres:16
+        image: postgres:17
         env:
           POSTGRES_DB: moashir_testing
           POSTGRES_USER: postgres
@@ -41,27 +41,33 @@ jobs:
       DB_USERNAME: postgres
       DB_PASSWORD: ""
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
 
       - name: Raise max_locks_per_transaction for the parallel-capable suite
         working-directory: .
         run: |
           docker exec ${{ job.services.postgres.id }} psql -U postgres -c "ALTER SYSTEM SET max_locks_per_transaction = 256"
           docker restart ${{ job.services.postgres.id }}
-          for attempt in $(seq 1 30); do
+          for _ in $(seq 1 30); do
             docker exec ${{ job.services.postgres.id }} pg_isready -U postgres && break
             sleep 2
           done
           docker exec ${{ job.services.postgres.id }} psql -U postgres -tAc "SHOW max_locks_per_transaction" | grep -qx 256
 
-      - uses: shivammathur/setup-php@v2
+      # CI has no .env: without a key the session guard cannot be built, and Larastan loses its type.
+      - name: Provide an ephemeral application key
+        run: echo "APP_KEY=base64:$(openssl rand -base64 32)" >> "$GITHUB_ENV"
+
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
         with:
           php-version: "8.4"
-          extensions: pdo_pgsql, pgsql, intl, zip, mbstring, fileinfo, pcntl, posix
+          extensions: pdo_pgsql, pgsql, intl, zip, mbstring, fileinfo, pcntl, posix, gd
           coverage: none
           tools: composer:v2
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
           path: ~/.composer/cache/files
           key: composer-${{ hashFiles('backend/composer.lock') }}
@@ -80,12 +86,12 @@ jobs:
     defaults:
       run:
         working-directory: muasher
-    env:
-      FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_NPM_AUTH_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version: "24"
           cache: npm
@@ -99,12 +105,74 @@ jobs:
       - run: npm run build
       - run: npm audit
 
+  frontend-e2e:
+    name: Frontend e2e (Playwright, mocks, Chromium) ${{ matrix.shard }}/3
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    defaults:
+      run:
+        working-directory: muasher
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: muasher/package-lock.json
+
+      - run: npm ci --no-fund
+      - name: Build the SPA in full mock mode
+        run: npm run build
+        env:
+          VITE_LEVEL_ACHIEVED_SINCE: "2026-11-06"
+
+      - name: Playwright version
+        id: playwright
+        run: echo "version=$(node -p "require('./package-lock.json').packages['node_modules/@playwright/test'].version")" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        id: browsers
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+
+      - name: Install Chromium with its system libraries
+        if: steps.browsers.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Install the system libraries for the cached Chromium
+        if: steps.browsers.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      - name: Playwright critical flows (ar-RTL and en-LTR)
+        run: npx playwright test --shard=${{ matrix.shard }}/3
+
+      - name: Upload the Playwright report
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: playwright-report-${{ matrix.shard }}
+          path: |
+            muasher/playwright-report
+            muasher/test-results
+          retention-days: 14
+          if-no-files-found: ignore
+
   deploy-kit:
-    name: Deployment kit (bash -n, shellcheck, secrets scan)
+    name: Deployment kit (bash -n, shellcheck, php -l, secrets scan)
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - run: for script in deploy/*.sh deploy/lib/*.sh deploy/remote/*.sh; do bash -n "$script"; done
       - run: shellcheck --severity=warning --exclude=SC1091 deploy/*.sh deploy/lib/*.sh deploy/remote/*.sh
+      - run: for file in deploy/bin/*.php; do php -l "$file"; done
       - run: bash deploy/secrets-scan.sh

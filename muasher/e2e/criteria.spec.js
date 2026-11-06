@@ -34,7 +34,7 @@ async function openCriteria(page) {
 
 async function rowAction(page, rowText, actionName) {
   const row = rows(page).filter({ hasText: rowText }).first()
-  await row.locator('.actions-dropdown > button').click()
+  await row.locator('.dropdown-menu > button').click()
   await page.getByRole('menuitem', { name: actionName }).click()
 }
 
@@ -71,7 +71,7 @@ test('the published version is read-only and offers a draft copy and text correc
   await expect(
     page.getByRole('button', { name: /create a draft copy|إنشاء نسخة مسودة/ }),
   ).toBeVisible()
-  await rows(page).first().locator('.actions-dropdown > button').click()
+  await rows(page).first().locator('.dropdown-menu > button').click()
   await expect(page.getByRole('menuitem', { name: /Correct text|تصحيح النص/ })).toBeVisible()
   await expect(page.getByRole('menuitem', { name: /^\s*(Edit|تعديل)\s*$/ })).toHaveCount(0)
 })
@@ -212,6 +212,6 @@ test('the System Administrator reads the criteria without any tree or text editi
   await expect(
     page.getByRole('button', { name: /create a draft copy|إنشاء نسخة مسودة/ }),
   ).toHaveCount(0)
-  await rows(page).first().locator('.actions-dropdown > button').click()
+  await rows(page).first().locator('.dropdown-menu > button').click()
   await expect(page.getByRole('menuitem')).toHaveCount(1)
 })

@@ -8,6 +8,7 @@ defineProps({
   title: { type: String, required: true },
   busy: { type: Boolean, default: false },
   submitLabel: { type: String, default: '' },
+  submitVariant: { type: String, default: 'primary' },
   size: { type: String, default: 'md' },
 })
 
@@ -30,7 +31,7 @@ const { t } = useI18n()
         <BaseButton variant="secondary" :disabled="busy" @click="emit('update:modelValue', false)">
           {{ t('actions.cancel') }}
         </BaseButton>
-        <BaseButton type="submit" variant="primary" :loading="busy">
+        <BaseButton type="submit" :variant="submitVariant" :loading="busy">
           {{ submitLabel || t('actions.save') }}
         </BaseButton>
       </footer>

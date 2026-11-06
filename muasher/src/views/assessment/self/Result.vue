@@ -39,13 +39,13 @@ onMounted(init)
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
     <EmptyState
       v-else-if="status === 'missing'"
-      icon="fa-regular fa-clipboard"
+      icon="doc"
       :title="t('assessment.result.missingTitle')"
       :message="t('assessment.result.missingMessage')"
     />
 
     <template v-else-if="result">
-      <header class="self-result__header">
+      <header class="self-result__header result-band">
         <div>
           <p class="self-result__eyebrow">
             {{ t('assessment.self.result.eyebrow') }}
@@ -60,7 +60,12 @@ onMounted(init)
       </header>
 
       <ResultPendingNotice v-if="!result.available" :result="result">
-        <BaseButton v-if="isDraft" variant="primary" icon="fa-solid fa-pen" @click="goTo(ROUTE_NAMES.ASSESSMENT_SELF)">
+        <BaseButton
+          v-if="isDraft"
+          variant="primary"
+          icon="pen"
+          @click="goTo(ROUTE_NAMES.ASSESSMENT_SELF)"
+        >
           {{ t('assessment.result.continueDraft') }}
         </BaseButton>
       </ResultPendingNotice>
@@ -71,10 +76,10 @@ onMounted(init)
       </template>
 
       <footer class="self-result__actions">
-        <BaseButton variant="secondary" icon="fa-regular fa-clipboard" @click="goTo(ROUTE_NAMES.ASSESSMENT_HISTORY)">
+        <BaseButton variant="secondary" icon="doc" @click="goTo(ROUTE_NAMES.ASSESSMENT_HISTORY)">
           {{ t('assessment.self.result.viewHistory') }}
         </BaseButton>
-        <BaseButton variant="primary" icon="fa-solid fa-gauge-high" @click="goTo(ROUTE_NAMES.APP_DASHBOARD)">
+        <BaseButton variant="primary" icon="gauge" @click="goTo(ROUTE_NAMES.APP_DASHBOARD)">
           {{ t('assessment.self.result.backToDashboard') }}
         </BaseButton>
       </footer>

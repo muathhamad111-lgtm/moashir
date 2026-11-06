@@ -3,6 +3,7 @@ import { computed, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { SCALE_KINDS } from '@/constants/assessment'
 import { valueToRatio, ratioToValue, ratioToPercent, scaleMax } from '@/utils/assessmentScoring'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Number, default: 0 },
@@ -65,7 +66,7 @@ const atMax = computed(() => props.modelValue >= 1)
         :aria-label="t('assessment.score.decrease')"
         @click="decrement"
       >
-        <i class="fa-solid fa-minus" aria-hidden="true"></i>
+        <AppIcon name="minus" />
       </button>
       <div class="score-input__field">
         <input
@@ -85,7 +86,9 @@ const atMax = computed(() => props.modelValue >= 1)
           @input="onInput"
         />
         <span class="score-input__unit" aria-hidden="true">
-          {{ isRelative ? t('assessment.score.percentUnit') : t('assessment.score.ofTen', { max }) }}
+          {{
+            isRelative ? t('assessment.score.percentUnit') : t('assessment.score.ofTen', { max })
+          }}
         </span>
       </div>
       <button
@@ -95,11 +98,11 @@ const atMax = computed(() => props.modelValue >= 1)
         :aria-label="t('assessment.score.increase')"
         @click="increment"
       >
-        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+        <AppIcon name="plus" />
       </button>
     </div>
     <p class="score-input__percent">
-      <i class="fa-solid fa-percent score-input__percent-icon" aria-hidden="true"></i>
+      <AppIcon name="percent" class="score-input__percent-icon" />
       <span>{{ t('assessment.score.reflected', { percent }) }}</span>
     </p>
   </div>

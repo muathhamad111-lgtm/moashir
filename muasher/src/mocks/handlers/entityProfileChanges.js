@@ -2,7 +2,12 @@ import { http } from '../contract/http'
 import { envelope } from '../contract/responses'
 import { paginate } from '../contract/pagination'
 import { entityReject, entityRoute, signedInUser } from '../stores/entityRejection'
-import { ENTITY_PERMISSIONS as P, hasFullAccess, ownEntityOf, viewableEntity } from '../stores/entityAccess'
+import {
+  ENTITY_PERMISSIONS as P,
+  hasFullAccess,
+  ownEntityOf,
+  viewableEntity,
+} from '../stores/entityAccess'
 import { sessionCan } from '../stores/sessionPermissions'
 import { changesOf, ownChangeResource, staffChangeResource } from '../stores/profileChangesStore'
 

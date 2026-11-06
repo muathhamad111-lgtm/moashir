@@ -19,9 +19,15 @@ describe('enableMocking', () => {
   })
 
   it('starts only the demo modules in hybrid mode', async () => {
-    const plan = mockPlanOf({ VITE_API_BASE_URL: '/api/v1', VITE_DEMO_MODULES: 'bag' })
+    const plan = mockPlanOf({
+      VITE_API_BASE_URL: '/api/v1',
+      VITE_DEMO_BUILD: 'true',
+      VITE_DEMO_MODULES: 'bag',
+    })
     await enableMocking(plan)
-    expect(startMockWorker).toHaveBeenCalledWith(expect.objectContaining({ mode: 'hybrid', modules: ['bag'] }))
+    expect(startMockWorker).toHaveBeenCalledWith(
+      expect.objectContaining({ mode: 'hybrid', modules: ['bag'] }),
+    )
   })
 
   it('never loads the mock worker against the real API without demo modules', async () => {

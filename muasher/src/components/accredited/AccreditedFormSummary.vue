@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n'
 import Badge from '@/components/ui/Badge.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import DateStamp from './DateStamp.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   assessment: { type: Object, required: true },
@@ -16,14 +17,16 @@ const { t } = useI18n()
   <dl class="accredited-summary">
     <div class="accredited-summary__item">
       <dt>{{ t('accredited.form.number') }}</dt>
-      <dd><bdi dir="ltr">{{ assessment.number }}</bdi></dd>
+      <dd>
+        <bdi dir="ltr">{{ assessment.number }}</bdi>
+      </dd>
     </div>
     <div class="accredited-summary__item">
       <dt>{{ t('accredited.form.status') }}</dt>
       <dd class="accredited-summary__badges">
         <StatusBadge :status="assessment.status" />
         <Badge v-if="assessment.isFrozen" variant="danger">
-          <i class="fa-solid fa-snowflake" aria-hidden="true"></i>
+          <AppIcon name="snowflake" />
           {{ t('accredited.form.frozen') }}
         </Badge>
       </dd>

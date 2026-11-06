@@ -13,7 +13,10 @@ export function installFakeMoyasar(target, texts, outcomeOrder) {
     const id = `fake-moyasar-${name}`
     const select = node('select', { id, name, class: 'fake-moyasar__control' })
     options.forEach(([value, text]) => select.append(node('option', { value }, [text])))
-    return { select, field: node('label', { class: 'fake-moyasar__field', for: id }, [label, select]) }
+    return {
+      select,
+      field: node('label', { class: 'fake-moyasar__field', for: id }, [label, select]),
+    }
   }
 
   function amountLabel(config) {
@@ -21,7 +24,11 @@ export function installFakeMoyasar(target, texts, outcomeOrder) {
   }
 
   function returnUrl(config, payment) {
-    const query = new URLSearchParams({ id: payment.id, status: payment.status, message: payment.source?.message ?? '' })
+    const query = new URLSearchParams({
+      id: payment.id,
+      status: payment.status,
+      message: payment.source?.message ?? '',
+    })
     return `${config.callback_url}?${query}`
   }
 
@@ -41,20 +48,35 @@ export function installFakeMoyasar(target, texts, outcomeOrder) {
   }
 
   function render(config) {
-    const host = typeof config.element === 'string' ? doc.querySelector(config.element) : config.element
+    const host =
+      typeof config.element === 'string' ? doc.querySelector(config.element) : config.element
     if (!host) throw new Error('element_not_found')
     const copy = texts[config.language] ?? texts.ar
-    const outcome = choice('sandbox-outcome', copy.outcomeLabel, outcomeOrder.map((key) => [key, copy.outcomes[key]]))
-    const method = choice('sandbox-method', copy.methodLabel, config.methods.map((key) => [key, copy.methods[key] ?? key]))
+    const outcome = choice(
+      'sandbox-outcome',
+      copy.outcomeLabel,
+      outcomeOrder.map((key) => [key, copy.outcomes[key]]),
+    )
+    const method = choice(
+      'sandbox-method',
+      copy.methodLabel,
+      config.methods.map((key) => [key, copy.methods[key] ?? key]),
+    )
     const error = node('p', { class: 'fake-moyasar__error', role: 'alert', hidden: '' })
-    const pay = node('button', { type: 'submit', class: 'fake-moyasar__pay' }, [`${copy.pay} ${amountLabel(config)}`])
-    const form = node('form', { class: 'fake-moyasar', 'data-fake-moyasar': 'form', novalidate: '' }, [
-      node('p', { class: 'fake-moyasar__notice' }, [copy.notice]),
-      outcome.field,
-      method.field,
-      error,
-      pay,
+    const pay = node('button', { type: 'submit', class: 'fake-moyasar__pay' }, [
+      `${copy.pay} ${amountLabel(config)}`,
     ])
+    const form = node(
+      'form',
+      { class: 'fake-moyasar', 'data-fake-moyasar': 'form', novalidate: '' },
+      [
+        node('p', { class: 'fake-moyasar__notice' }, [copy.notice]),
+        outcome.field,
+        method.field,
+        error,
+        pay,
+      ],
+    )
 
     function fail(message) {
       error.textContent = message

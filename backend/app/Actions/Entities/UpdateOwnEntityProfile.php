@@ -9,7 +9,6 @@ use App\Data\Entities\EntityContactData;
 use App\Data\Entities\EntityProfileData;
 use App\Enums\Audit\AuditEvent;
 use App\Events\Entities\EntityProfileUpdated;
-use App\Exceptions\IllegalStateTransition;
 use App\Models\Entities\Entity;
 use App\Models\Identity\User;
 use App\Services\Audit\AuditRecorder;
@@ -29,11 +28,7 @@ final readonly class UpdateOwnEntityProfile
 
     public function handle(User $owner, EntityProfileData $profile, EntityContactData $contact, bool $marketingConsent): Entity
     {
-        $entity = $this->ownEntity->of($owner);
-
-        if (! $entity->isActive()) {
-            throw IllegalStateTransition::from($entity->status->value, 'update_profile');
-        }
+        $entity = $this->ownEntity->editableOf($owner, 'update_profile');
 
         DB::transaction(function () use ($owner, $entity, $profile, $contact, $marketingConsent): void {
             $changes = $this->writer->write($entity, $profile, $contact, $owner);

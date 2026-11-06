@@ -96,6 +96,11 @@ final class AwardRejected extends ApiException
         return self::fieldError('cycle.initial_assessor_invalid', $field);
     }
 
+    public static function initialAssessorNotQualified(string $field): self
+    {
+        return self::fieldError('assessor.not_qualified', $field);
+    }
+
     public static function segregationConflict(string $field): self
     {
         return self::fieldError('sod_conflict', $field);

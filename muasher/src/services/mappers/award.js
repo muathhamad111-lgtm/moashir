@@ -52,7 +52,8 @@ function toLinkedAssessor(raw) {
 
 export function toCycleDetail(raw = {}) {
   const detail = { ...toCycle(raw), canManage: raw.canManage === true }
-  if (!Object.hasOwn(raw, 'members')) return { ...detail, revealsStaff: false, members: [], initialAssessors: [] }
+  if (!Object.hasOwn(raw, 'members'))
+    return { ...detail, revealsStaff: false, members: [], initialAssessors: [] }
   return {
     ...detail,
     revealsStaff: true,
@@ -97,7 +98,12 @@ export function toCandidate(raw = {}) {
 }
 
 export function toConditionCheck(raw = {}) {
-  return { rule: raw.rule ?? null, passed: raw.passed === true, required: raw.required ?? null, actual: raw.actual ?? null }
+  return {
+    rule: raw.rule ?? null,
+    passed: raw.passed === true,
+    required: raw.required ?? null,
+    actual: raw.actual ?? null,
+  }
 }
 
 function toAdvancedRequest(raw) {
@@ -182,5 +188,24 @@ export function toFilteringDetail(raw = {}) {
     review: toAssessorReview(raw.review),
     result: toAccreditedResult(raw.result),
     decisions: (raw.decisions ?? []).map(toFilteringDecision),
+  }
+}
+
+function toCycleBinding(raw) {
+  if (!raw) return null
+  return {
+    id: raw.id ?? null,
+    name: raw.name ?? null,
+    status: raw.status ?? null,
+    criteriaVersionId: raw.criteriaVersionId ?? null,
+    openRequests: raw.openRequests ?? 0,
+  }
+}
+
+export function toCycleBindings(raw) {
+  return {
+    running: toCycleBinding(raw?.running),
+    requestsStayOnCycleVersion: raw?.requestsStayOnCycleVersion !== false,
+    drafts: (raw?.drafts ?? []).map(toCycleBinding),
   }
 }

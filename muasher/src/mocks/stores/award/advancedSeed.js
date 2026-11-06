@@ -11,7 +11,11 @@ import { ADVANCED_STATES as S } from './advancedStates'
 import { findCycle } from './cycleStore'
 
 const RIYADH_OFFSET_MS = 3 * 60 * 60 * 1000
-const MIME_TYPES = { pdf: 'application/pdf', xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', jpg: 'image/jpeg' }
+const MIME_TYPES = {
+  pdf: 'application/pdf',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  jpg: 'image/jpeg',
+}
 const ASSESSED = [S.AWAITING_FILTERING, S.QUALIFIED, S.NOT_QUALIFIED]
 
 function riyadhYear(iso) {
@@ -94,30 +98,108 @@ function decisionsOf(fixture, record, cycle, anchor) {
 
 function seedTransitions(record) {
   const steps = [transition(null, S.DRAFT, 'start', record.createdAt, ACTORS.ENTITY)]
-  if (record.status === S.REJECTED_CONDITIONS) return [transition(null, S.REJECTED_CONDITIONS, 'reject_conditions', record.createdAt, ACTORS.ENTITY)]
-  if (record.submittedAt) steps.push(transition(S.DRAFT, S.AWAITING_ASSIGNMENT, 'submit', record.submittedAt, ACTORS.ENTITY))
+  if (record.status === S.REJECTED_CONDITIONS)
+    return [
+      transition(null, S.REJECTED_CONDITIONS, 'reject_conditions', record.createdAt, ACTORS.ENTITY),
+    ]
+  if (record.submittedAt)
+    steps.push(
+      transition(S.DRAFT, S.AWAITING_ASSIGNMENT, 'submit', record.submittedAt, ACTORS.ENTITY),
+    )
   record.completionRequests.forEach((completion) =>
-    steps.push(transition(S.AWAITING_ASSIGNMENT, S.NEEDS_COMPLETION, 'return_for_completion', completion.createdAt, ACTORS.STAFF, AWARD_STAFF.follower)),
+    steps.push(
+      transition(
+        S.AWAITING_ASSIGNMENT,
+        S.NEEDS_COMPLETION,
+        'return_for_completion',
+        completion.createdAt,
+        ACTORS.STAFF,
+        AWARD_STAFF.follower,
+      ),
+    ),
   )
   record.assignments.forEach((assignment) => {
-    steps.push(transition(S.AWAITING_ASSIGNMENT, S.ASSIGNED, 'assign', assignment.createdAt, ACTORS.STAFF, assignment.assignedById))
-    if (assignment.startedAt) steps.push(transition(S.ASSIGNED, S.UNDER_INITIAL_ASSESSMENT, 'start_review', assignment.startedAt, ACTORS.STAFF, assignment.assessorId))
-    if (assignment.status === 'completed') steps.push(transition(S.UNDER_INITIAL_ASSESSMENT, S.AWAITING_FILTERING, 'complete', assignment.endedAt, ACTORS.STAFF, assignment.assessorId))
+    steps.push(
+      transition(
+        S.AWAITING_ASSIGNMENT,
+        S.ASSIGNED,
+        'assign',
+        assignment.createdAt,
+        ACTORS.STAFF,
+        assignment.assignedById,
+      ),
+    )
+    if (assignment.startedAt)
+      steps.push(
+        transition(
+          S.ASSIGNED,
+          S.UNDER_INITIAL_ASSESSMENT,
+          'start_review',
+          assignment.startedAt,
+          ACTORS.STAFF,
+          assignment.assessorId,
+        ),
+      )
+    if (assignment.status === 'completed')
+      steps.push(
+        transition(
+          S.UNDER_INITIAL_ASSESSMENT,
+          S.AWAITING_FILTERING,
+          'complete',
+          assignment.endedAt,
+          ACTORS.STAFF,
+          assignment.assessorId,
+        ),
+      )
   })
   return steps
 }
 
 function closingSteps(record) {
   const decision = record.filteringDecisions.at(-1)
-  if (decision) return [transition(S.AWAITING_FILTERING, record.status, decision.outcome === 'qualified' ? 'qualify' : 'disqualify', decision.decidedAt, ACTORS.STAFF, decision.deciderId)]
-  if (record.status === S.WITHDRAWN) return [transition(S.AWAITING_ASSIGNMENT, S.WITHDRAWN, 'withdraw', record.withdrawnAt, ACTORS.STAFF, AWARD_STAFF.follower)]
-  if (record.status === S.DECLINED) return [transition(S.NEEDS_COMPLETION, S.DECLINED, 'expire_completion', record.completionRequests.at(-1).resolvedAt, ACTORS.SYSTEM)]
+  if (decision)
+    return [
+      transition(
+        S.AWAITING_FILTERING,
+        record.status,
+        decision.outcome === 'qualified' ? 'qualify' : 'disqualify',
+        decision.decidedAt,
+        ACTORS.STAFF,
+        decision.deciderId,
+      ),
+    ]
+  if (record.status === S.WITHDRAWN)
+    return [
+      transition(
+        S.AWAITING_ASSIGNMENT,
+        S.WITHDRAWN,
+        'withdraw',
+        record.withdrawnAt,
+        ACTORS.STAFF,
+        AWARD_STAFF.follower,
+      ),
+    ]
+  if (record.status === S.DECLINED)
+    return [
+      transition(
+        S.NEEDS_COMPLETION,
+        S.DECLINED,
+        'expire_completion',
+        record.completionRequests.at(-1).resolvedAt,
+        ACTORS.SYSTEM,
+      ),
+    ]
   return []
 }
 
 function snapshotOf(record, tree) {
   const sheet = new Map(Object.entries(record.scores))
-  return { version: 1, criteriaVersionId: record.criteriaVersionId, scaleKind: record.scaleKind, ...computeSelfResult(tree, sheet, record.scaleKind) }
+  return {
+    version: 1,
+    criteriaVersionId: record.criteriaVersionId,
+    scaleKind: record.scaleKind,
+    ...computeSelfResult(tree, sheet, record.scaleKind),
+  }
 }
 
 function advancedRecord(fixture, version, anchor) {
@@ -145,10 +227,12 @@ function advancedRecord(fixture, version, anchor) {
     assignments,
     completionRequests: completionsOf(fixture, anchor),
     filteringDecisions: [],
+    committeeAverageId: null,
     bundles: [],
     createdAt,
     updatedAt: createdAt,
-    submittedAt: fixture.offsets.submittedAt === null ? null : addDays(anchor, fixture.offsets.submittedAt),
+    submittedAt:
+      fixture.offsets.submittedAt === null ? null : addDays(anchor, fixture.offsets.submittedAt),
     completedAt: null,
     initialAssessedAt: null,
     withdrawnAt: fixture.withdrawal ? addDays(anchor, fixture.withdrawal.offset) : null,

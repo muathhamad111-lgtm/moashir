@@ -2,7 +2,15 @@ import { persistFinanceState } from './financeState'
 import { fieldMessage, financeReject } from './financeRejection'
 import { toMinor } from './financeMoney'
 import { failureReasonOf, fetchProviderPayment, last4Of, methodOf } from './providerLedger'
-import { CONCLUDED_STATUSES, OPEN_STATUSES, bindProvider, issueReceipt, nowIso, recordEvent, transition } from './paymentLifecycle'
+import {
+  CONCLUDED_STATUSES,
+  OPEN_CARD_STATUSES,
+  bindProvider,
+  issueReceipt,
+  nowIso,
+  recordEvent,
+  transition,
+} from './paymentLifecycle'
 import { announcePaymentPaid } from './paymentHooks'
 
 const PROVIDER_ID_PATTERN = /^[A-Za-z0-9_-]{1,80}$/
@@ -83,22 +91,35 @@ function afterCancellation(payment, provider) {
 
 function applied(payment, provider) {
   if (payment.status === 'cancelled') return afterCancellation(payment, provider)
-  if (OPEN_STATUSES.includes(payment.status)) return whileOpen(payment, provider)
+  if (OPEN_CARD_STATUSES.includes(payment.status)) return whileOpen(payment, provider)
   return VERIFICATION.IGNORED
 }
 
 export function verifyPayment(payment, providerPaymentId) {
-  if (payment.providerPaymentId && payment.providerPaymentId !== providerPaymentId) throw financeReject.bindingMismatch()
+  if (payment.channel === 'bank_transfer') throw financeReject.channelNotSupported()
+  if (payment.providerPaymentId && payment.providerPaymentId !== providerPaymentId)
+    throw financeReject.bindingMismatch()
   if (CONCLUDED_STATUSES.includes(payment.status)) return VERIFICATION.IGNORED
   const provider = fetchProviderPayment(providerPaymentId)
   if (!provider) throw financeReject.providerPaymentNotFound()
   if (!belongsTo(payment, provider)) {
-    recordEvent(payment, { source: 'verification', eventType: 'payment_fetched', result: 'rejected', errorCode: 'payment.verification_rejected', providerPaymentId })
+    recordEvent(payment, {
+      source: 'verification',
+      eventType: 'payment_fetched',
+      result: 'rejected',
+      errorCode: 'payment.verification_rejected',
+      providerPaymentId,
+    })
     persistFinanceState()
     throw financeReject.verificationRejected()
   }
   const result = applied(payment, provider)
-  recordEvent(payment, { source: 'verification', eventType: 'payment_fetched', result, providerPaymentId })
+  recordEvent(payment, {
+    source: 'verification',
+    eventType: 'payment_fetched',
+    result,
+    providerPaymentId,
+  })
   persistFinanceState()
   return result
 }

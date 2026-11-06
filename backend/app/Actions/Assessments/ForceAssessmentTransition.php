@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Assessments;
 
+use App\Contracts\Assessments\AssessmentReopenStep;
 use App\Data\Audit\AuditEntry;
 use App\Enums\Assessments\AccreditedAssessmentStatus;
 use App\Enums\Assessments\AssessmentVerb;
@@ -24,6 +25,7 @@ final readonly class ForceAssessmentTransition
         private ForcedStateAligner $aligner,
         private AssessmentStateMachine $stateMachine,
         private AuditRecorder $audit,
+        private AssessmentReopenStep $reopenStep,
     ) {}
 
     public function handle(User $actor, Assessment $assessment, AccreditedAssessmentStatus $target, string $reason): Assessment
@@ -39,6 +41,10 @@ final readonly class ForceAssessmentTransition
             $this->aligner->alignTo($locked, $target);
             $this->stateMachine->override($locked, $target, AssessmentVerb::ForceTransition, $actor->id);
             $this->audit->record(new AuditEntry(AuditEvent::AssessmentTransitionForced, $locked, ['status' => $previous->value], ['status' => $target->value]));
+
+            if ($previous === AccreditedAssessmentStatus::Completed) {
+                $this->reopenStep->onReopen($locked, $reason);
+            }
 
             return $locked;
         });

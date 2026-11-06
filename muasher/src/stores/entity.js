@@ -38,7 +38,9 @@ export const useEntityStore = defineStore('entity', {
         profileCompleted: data.profileCompleted,
         status: data.status,
         email: data.officialEmail,
-        entity: auth.user?.entity ? { ...auth.user.entity, profileCompleted: data.profileCompleted } : null,
+        entity: auth.user?.entity
+          ? { ...auth.user.entity, profileCompleted: data.profileCompleted }
+          : null,
       })
     },
     reset() {

@@ -48,7 +48,8 @@ it('opens a payment order with the A1 checkout object of a server-side intent', 
         ->assertJsonPath('data.checkout.methods', ['creditcard'])
         ->assertJsonPath('data.checkout.supported_networks', ['mada', 'visa', 'mastercard'])
         ->assertJsonPath('data.checkout.payment_intent', ['id' => 'fake-intent-1', 'client_secret' => 'fake-intent-secret-1'])
-        ->assertJsonPath('data.checkout.apple_pay', null);
+        ->assertJsonPath('data.checkout.apple_pay', null)
+        ->assertJsonPath('data.checkout.script', ['url' => 'https://cdn.moyasar.com/mpf/1.15.0/moyasar.js', 'integrity' => null]);
 
     $payment = Payment::query()->sole();
     $metadata = $response->json('data.checkout.metadata');
@@ -72,6 +73,18 @@ it('opens a payment order with the A1 checkout object of a server-side intent', 
 
     Notification::assertSentTo($owner, EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::PaymentStarted);
 });
+
+it('hands the configured Moyasar form script and its subresource integrity to the SPA, and drops a malformed hash', function (string $integrity, ?string $expected): void {
+    ['owner' => $owner] = payingEntity();
+    config()->set('moashir.finance.checkout_script.url', '/vendor/moyasar/1.15.0/moyasar.js');
+    config()->set('moashir.finance.checkout_script.integrity', $integrity);
+
+    startPayment($owner)->assertCreated()
+        ->assertJsonPath('data.checkout.script', ['url' => '/vendor/moyasar/1.15.0/moyasar.js', 'integrity' => $expected]);
+})->with([
+    'sha384' => ['sha384-oqe0guC0MTOY4t+u48OQadqsLshSsqG5o7n/m4Vezbh5hSreN6eP5LVE0/QYlnTw', 'sha384-oqe0guC0MTOY4t+u48OQadqsLshSsqG5o7n/m4Vezbh5hSreN6eP5LVE0/QYlnTw'],
+    'malformed' => ['md5-abc', null],
+]);
 
 it('prices the Kit from its own setting and offers Apple Pay with the label of the request locale', function (): void {
     ['owner' => $owner] = payingEntity();

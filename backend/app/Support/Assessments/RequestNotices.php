@@ -43,6 +43,7 @@ final class RequestNotices
             $link,
             true,
             true,
+            $assessment->path,
         );
     }
 }

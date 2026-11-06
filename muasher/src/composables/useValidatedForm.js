@@ -5,8 +5,14 @@ import { logger } from '@/utils/logger'
 import { toast } from '@/composables/useToast'
 import { payloadShape } from '@/utils/payloadShape'
 
-export function useValidatedForm({ schema, initialValues = {}, action, submit }) {
-  const form = useForm({ validationSchema: schema, initialValues })
+export function useValidatedForm({
+  schema,
+  initialValues = {},
+  action,
+  submit,
+  keepValuesOnUnmount = false,
+}) {
+  const form = useForm({ validationSchema: schema, initialValues, keepValuesOnUnmount })
   const submitting = ref(false)
 
   const onSubmit = form.handleSubmit(async (values) => {

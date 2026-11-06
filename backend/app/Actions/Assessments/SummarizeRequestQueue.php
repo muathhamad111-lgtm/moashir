@@ -20,10 +20,8 @@ final readonly class SummarizeRequestQueue
         $counts = $this->queue->filtered($filters)->toBase()->selectRaw('status, count(*) as aggregate')->groupBy('status')->pluck('aggregate', 'status');
         $byStatus = [];
 
-        foreach ($filters->paths() as $path) {
-            foreach ($path->queueStateValues() as $status) {
-                $byStatus[$status] = ScalarValue::int($counts->get($status));
-            }
+        foreach ($filters->path->queueStateValues() as $status) {
+            $byStatus[$status] = ScalarValue::int($counts->get($status));
         }
 
         return [

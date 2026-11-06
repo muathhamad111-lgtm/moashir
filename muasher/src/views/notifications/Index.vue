@@ -1,23 +1,27 @@
 <script setup>
-import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import Tabs from '@/components/ui/Tabs.vue'
+import { useRoute, useRouter } from 'vue-router'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
-import NotificationCenterItem from '@/components/notifications/NotificationCenterItem.vue'
-import NotificationAuditModal from '@/components/notifications/NotificationAuditModal.vue'
+import AreaTabs from '@/components/portal/AreaTabs.vue'
+import NotificationDayGroup from '@/components/notifications/NotificationDayGroup.vue'
+import NotificationPreferencesCard from '@/components/notifications/NotificationPreferencesCard.vue'
 import { useNotificationsCenter } from '@/composables/useNotificationsCenter'
+import { isInternalPath } from '@/utils/internalPath'
+
+const PANEL_ID = 'notifications-panel'
 
 const { t } = useI18n()
+const route = useRoute()
+const router = useRouter()
 
 const {
-  activeFilter,
-  filterTabs,
-  search,
-  items,
+  tab,
+  tabs,
+  groups,
   status,
   errorMessage,
   unreadCount,
@@ -25,109 +29,76 @@ const {
   busyIds,
   markingAll,
   load,
-  setFilter,
+  setTab,
   setPage,
   markRead,
+  archive,
   markAllRead,
-} = useNotificationsCenter()
+} = useNotificationsCenter({ initialTab: route.query.tab })
 
-const auditOpen = ref(false)
-const auditTarget = ref(null)
-
-const emptyCopy = computed(() => {
-  const key = activeFilter.value === 'all' ? 'all' : activeFilter.value
-  return {
-    title: t(`notifications.center.empty.${key}.title`),
-    message: t(`notifications.center.empty.${key}.message`),
-  }
-})
-
-function onFilter(value) {
-  setFilter(value)
+function onTab(value) {
+  setTab(value)
+  router.replace({ query: { ...route.query, tab: value } })
 }
 
-function openAudit(notification) {
-  auditTarget.value = notification
-  auditOpen.value = true
-}
-
-function isBusy(id) {
-  return busyIds.value.includes(id)
+async function open(item) {
+  await markRead(item).catch(() => null)
+  if (isInternalPath(item.link)) router.push(item.link)
 }
 </script>
 
 <template>
   <section class="notifications-center">
-    <header class="notifications-center__header">
+    <header class="notifications-center__hero">
       <div class="notifications-center__intro">
+        <p class="notifications-center__eyebrow">{{ t('notifications.center.eyebrow') }}</p>
         <h1 class="notifications-center__title">{{ t('notifications.center.title') }}</h1>
         <p class="notifications-center__subtitle">{{ t('notifications.center.subtitle') }}</p>
       </div>
-      <div class="notifications-center__header-actions">
-        <span class="notifications-center__count" role="status">
-          <i class="fa-solid fa-envelope-open-text" aria-hidden="true"></i>
-          {{ t('notifications.center.unreadCount', { count: unreadCount }) }}
-        </span>
-        <BaseButton
-          variant="secondary"
-          size="sm"
-          icon="fa-solid fa-check-double"
-          :disabled="unreadCount === 0 || markingAll"
-          @click="markAllRead"
-        >
-          {{ t('notifications.center.markAllRead') }}
-        </BaseButton>
-      </div>
+      <BaseButton
+        variant="secondary"
+        icon="check"
+        :loading="markingAll"
+        :disabled="unreadCount === 0"
+        @click="markAllRead"
+      >
+        {{ t('notifications.center.markAllRead') }}
+      </BaseButton>
     </header>
 
-    <div class="notifications-center__toolbar">
-      <div class="notifications-center__search">
-        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-        <input
-          v-model="search"
-          class="notifications-center__search-input"
-          type="search"
-          :placeholder="t('notifications.center.searchPlaceholder')"
-          :aria-label="t('notifications.center.searchLabel')"
-        />
-      </div>
-    </div>
+    <AreaTabs
+      class="notifications-center__tabs"
+      :tabs="tabs"
+      :model-value="tab"
+      :label="t('notifications.center.tabsLabel')"
+      :panel-id="PANEL_ID"
+      @update:model-value="onTab"
+    />
 
-    <Tabs
-      :model-value="activeFilter"
-      :tabs="filterTabs"
-      @update:model-value="onFilter"
-    >
-      <div class="notifications-center__panel">
-        <div v-if="status === 'loading'" class="notifications-center__loading">
-          <Skeleton v-for="row in 4" :key="row" variant="block" />
-        </div>
-
-        <ErrorState
-          v-else-if="status === 'error'"
-          :message="errorMessage"
-          @retry="load"
-        />
-
+    <div class="notifications-center__body">
+      <div
+        :id="PANEL_ID"
+        class="notifications-center__panel"
+        role="tabpanel"
+        :aria-labelledby="`${PANEL_ID}-tab-${tab}`"
+      >
+        <Skeleton v-if="status === 'loading'" variant="block" :count="4" />
+        <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
         <EmptyState
           v-else-if="status === 'empty'"
-          icon="fa-regular fa-bell-slash"
-          :title="emptyCopy.title"
-          :message="emptyCopy.message"
+          icon="bell-off"
+          :title="t(`notifications.center.empty.${tab}.title`)"
+          :message="t(`notifications.center.empty.${tab}.message`)"
         />
-
         <template v-else>
-          <ul class="notifications-center__list">
-            <NotificationCenterItem
-              v-for="item in items"
-              :key="item.id"
-              :notification="item"
-              :busy="isBusy(item.id)"
-              @mark-read="markRead"
-              @audit="openAudit"
-            />
-          </ul>
-
+          <NotificationDayGroup
+            v-for="group in groups"
+            :key="group.key"
+            :group="group"
+            :busy-ids="busyIds"
+            @open="open"
+            @archive="archive"
+          />
           <Pagination
             v-if="pagination.lastPage > 1"
             class="notifications-center__pagination"
@@ -137,11 +108,7 @@ function isBusy(id) {
           />
         </template>
       </div>
-    </Tabs>
-
-    <NotificationAuditModal
-      v-model="auditOpen"
-      :notification="auditTarget"
-    />
+      <NotificationPreferencesCard class="notifications-center__preferences" />
+    </div>
   </section>
 </template>

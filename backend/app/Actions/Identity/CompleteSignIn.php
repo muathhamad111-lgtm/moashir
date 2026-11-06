@@ -9,6 +9,7 @@ use App\Data\Identity\OtpDelivery;
 use App\Enums\Identity\OtpChannel;
 use App\Enums\Identity\OtpPurpose;
 use App\Enums\Identity\PendingAuthenticationStage;
+use App\Enums\Identity\SignInMethod;
 use App\Models\Identity\User;
 use App\Services\Identity\PendingAuthentication;
 use App\Services\Identity\SignInGuard;
@@ -22,14 +23,10 @@ final readonly class CompleteSignIn
         private IssueOtpChallenge $issueChallenge,
     ) {}
 
-    public function handle(User $user, string $method): LoginOutcome
+    public function handle(User $user, SignInMethod $method, ?OtpChannel $codeChannel = null): LoginOutcome
     {
         if ($this->guard->awaitsEntityVerification($user)) {
             return LoginOutcome::otpRequired($this->issueChallenge->handle(new OtpDelivery($user, OtpChannel::Email, OtpPurpose::Login)));
-        }
-
-        if (! $user->requiresMfa()) {
-            return LoginOutcome::authenticated($this->establishSession->handle($user, $method));
         }
 
         if ($user->hasConfirmedTotp()) {
@@ -38,8 +35,12 @@ final readonly class CompleteSignIn
             return LoginOutcome::mfaChallenge();
         }
 
-        $this->pending->begin($user, PendingAuthenticationStage::MfaEnrollment);
+        if ($user->requiresMfa()) {
+            $this->pending->begin($user, PendingAuthenticationStage::MfaEnrollment);
 
-        return LoginOutcome::mfaEnrollment();
+            return LoginOutcome::mfaEnrollment();
+        }
+
+        return LoginOutcome::authenticated($this->establishSession->handle($user, $method, $codeChannel));
     }
 }

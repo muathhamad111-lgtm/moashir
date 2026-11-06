@@ -1,0 +1,119 @@
+@use '../mixins' as *;
+
+.account-menu {
+  position: relative;
+}
+
+.account-menu__chip {
+  @include flex(row, center, flex-start, var(--space-3));
+  padding-block: var(--space-1);
+  padding-inline: var(--space-1) var(--space-3);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-pill);
+  background-color: var(--theme-surface);
+  color: var(--theme-heading);
+  font: inherit;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--theme-accent-text);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.account-menu__avatar {
+  @include flex-center;
+  flex-shrink: 0;
+  inline-size: var(--size-icon-box-sm);
+  block-size: var(--size-icon-box-sm);
+  border-radius: var(--radius-pill);
+  background-color: var(--theme-tint);
+  color: var(--theme-accent-text);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+
+  &--lg {
+    inline-size: var(--size-icon-box);
+    block-size: var(--size-icon-box);
+    font-family: var(--font-heading);
+    font-size: var(--fs-base);
+  }
+}
+
+.account-menu__names,
+.account-menu__identity {
+  @include flex(column, flex-start, flex-start);
+  min-inline-size: 0;
+  text-align: start;
+}
+
+.account-menu__names {
+  display: none;
+
+  @include respond-to('xl') {
+    display: flex;
+  }
+}
+
+.account-menu__entity {
+  @include truncate;
+  max-inline-size: var(--size-control-min);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+}
+
+.account-menu__user {
+  font-size: var(--fs-xs);
+  color: var(--theme-text-muted);
+}
+
+.account-menu__chevron {
+  font-size: var(--fs-xs);
+  color: var(--theme-text-muted);
+}
+
+.account-menu__panel {
+  @include flex(column, stretch, flex-start, var(--space-1));
+  inline-size: min(var(--size-account-menu), calc(100vw - var(--space-4)));
+  padding: var(--space-2);
+
+  .dropdown-sheet & {
+    inline-size: auto;
+    padding: var(--space-0);
+  }
+}
+
+.account-menu__title {
+  @include visually-hidden;
+}
+
+.account-menu__header {
+  @include flex(row, center, flex-start, var(--space-3));
+  padding: var(--space-3);
+  border-block-end: var(--border-width) solid var(--theme-border);
+}
+
+.account-menu__identity-entity {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.account-menu__identity-user {
+  font-size: var(--fs-xs);
+  color: var(--theme-text-secondary);
+}
+
+.account-menu__identity-email {
+  font-family: var(--font-latin);
+  font-size: var(--fs-xs);
+  color: var(--theme-text-muted);
+}
+
+.account-menu__signout {
+  border-block-start: var(--border-width) solid var(--theme-border);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}

@@ -17,6 +17,21 @@ vi.mock('@/services/paymentIntegrationService', () => ({
   },
 }))
 
+vi.mock('@/services/paymentChannelsService', () => ({
+  paymentChannelsService: {
+    getChannels: vi.fn().mockResolvedValue({
+      data: {
+        channels: ['electronic'],
+        availableChannels: ['electronic'],
+        gatewayReady: true,
+        activeBankAccountsCount: 0,
+        reviewersCount: 1,
+      },
+    }),
+    listAccounts: vi.fn().mockResolvedValue({ data: [] }),
+  },
+}))
+
 const SECRET = 'sk_test_fake_example_replacement_9876'
 const REASON = 'Checkout rehearsal before the award cycle opens.'
 const ACTOR = { id: 2, name: 'منيرة بنت خالد العتيبي' }
@@ -25,7 +40,16 @@ const EMPTY = { set: false, last4: null, updatedAt: null, updatedBy: null }
 const UNCONFIRMED = { confirmed: false, confirmedAt: null, confirmedBy: null }
 
 function pair(overrides = {}) {
-  return { configured: false, active: false, publishableKey: null, secretKey: EMPTY, webhookSecret: EMPTY, webhook: null, lastTest: null, ...overrides }
+  return {
+    configured: false,
+    active: false,
+    publishableKey: null,
+    secretKey: EMPTY,
+    webhookSecret: EMPTY,
+    webhook: null,
+    lastTest: null,
+    ...overrides,
+  }
 }
 
 function resource(overrides = {}) {
@@ -36,20 +60,43 @@ function resource(overrides = {}) {
     source: 'settings',
     isTestModeInProduction: false,
     checkoutPattern: 'intent',
-    test: pair({ configured: true, publishableKey: 'pk_test_fake_example_moashir01', secretKey: STORED, webhook: { id: 'wh_test_fake_example_0001', url: 'https://moashir.ttshub.live/api/v1/webhooks/moyasar', registeredAt: '2026-10-28T08:55:00Z' } }),
+    test: pair({
+      configured: true,
+      publishableKey: 'pk_test_fake_example_moashir01',
+      secretKey: STORED,
+      webhook: {
+        id: 'wh_test_fake_example_0001',
+        url: 'https://moashir.ttshub.live/api/v1/webhooks/moyasar',
+        registeredAt: '2026-10-28T08:55:00Z',
+      },
+    }),
     live: pair(),
     methods: ['creditcard'],
     supportedNetworks: ['mada', 'visa'],
     applePayLabel: { ar: 'منصة مؤشر', en: 'Moashir Platform' },
-    confirmations: { applePayDomain: UNCONFIRMED, stcpayActivation: { confirmed: true, confirmedAt: '2026-10-29T11:05:00Z', confirmedBy: ACTOR } },
+    confirmations: {
+      applePayDomain: UNCONFIRMED,
+      stcpayActivation: {
+        confirmed: true,
+        confirmedAt: '2026-10-29T11:05:00Z',
+        confirmedBy: ACTOR,
+      },
+    },
     linkedPaths: ['accredited'],
-    applePayAssociationFile: { set: false, sizeBytes: null, sha256: null, uploadedAt: null, uploadedBy: null },
+    applePayAssociationFile: {
+      set: false,
+      sizeBytes: null,
+      sha256: null,
+      uploadedAt: null,
+      uploadedBy: null,
+    },
     valuesToCopy: {
       webhookUrl: 'https://moashir.ttshub.live/api/v1/webhooks/moyasar',
       webhookMethod: 'POST',
       webhookEvents: 'all',
       applePayHost: 'moashir.ttshub.live',
-      applePayAssociationUrl: 'https://moashir.ttshub.live/.well-known/apple-developer-merchantid-domain-association',
+      applePayAssociationUrl:
+        'https://moashir.ttshub.live/.well-known/apple-developer-merchantid-domain-association',
       egressIps: ['203.0.113.24'],
     },
     checklist: [
@@ -66,20 +113,34 @@ function resource(overrides = {}) {
 function reasonRequired() {
   return {
     response: { status: 422 },
-    normalized: { status: 422, code: 'reason_required', message: 'A reason is required for this action.', fieldErrors: { reason: ['A reason is required for this action.'] }, meta: {} },
+    normalized: {
+      status: 422,
+      code: 'reason_required',
+      message: 'A reason is required for this action.',
+      fieldErrors: { reason: ['A reason is required for this action.'] },
+      meta: {},
+    },
   }
 }
 
 async function mountView({ superAdmin = false, locale = 'en' } = {}) {
   const globals = createTestGlobals({ locale })
   const wrapper = mount(Payment, { global: globals, attachTo: document.body })
-  useAuthStore().setUser({ id: 2, roles: ['system_admin'], permissions: ['settings.payment.manage'], isSuperAdmin: superAdmin })
+  useAuthStore().setUser({
+    id: 2,
+    roles: ['system_admin'],
+    permissions: ['settings.payment.manage'],
+    isSuperAdmin: superAdmin,
+  })
   await flushPromises()
   return wrapper
 }
 
 function replaceButton(wrapper) {
-  return wrapper.findAll('.key-pair')[0].findAll('button').find((button) => button.text() === 'Replace')
+  return wrapper
+    .findAll('.key-pair')[0]
+    .findAll('button')
+    .find((button) => button.text() === 'Replace')
 }
 
 async function replaceTestSecret(wrapper) {
@@ -115,7 +176,9 @@ describe('Payment integration screen', () => {
     await replaceTestSecret(wrapper)
     await vi.waitFor(() => expect(paymentIntegrationService.update).toHaveBeenCalledOnce())
     await flushPromises()
-    expect(paymentIntegrationService.update.mock.calls[0][0]).toEqual({ test: { secretKey: SECRET } })
+    expect(paymentIntegrationService.update.mock.calls[0][0]).toEqual({
+      test: { secretKey: SECRET },
+    })
     expect(wrapper.html()).not.toContain(SECRET)
     expect(wrapper.find('input[name="test.secretKey"]').exists()).toBe(false)
     wrapper.unmount()
@@ -141,21 +204,32 @@ describe('Payment integration screen', () => {
     textarea.dispatchEvent(new Event('input'))
     dialog.querySelector('button[type="submit"]').click()
     await vi.waitFor(() => expect(paymentIntegrationService.update).toHaveBeenCalledTimes(2))
-    expect(paymentIntegrationService.update.mock.calls[1][0]).toEqual({ methods: [], reason: REASON })
+    expect(paymentIntegrationService.update.mock.calls[1][0]).toEqual({
+      methods: [],
+      reason: REASON,
+    })
     wrapper.unmount()
   })
 
   it('keeps live disabled until the live pair passes a test and shows the production test-mode banner', async () => {
-    paymentIntegrationService.get.mockResolvedValue({ data: resource({ isTestModeInProduction: true }), meta: {} })
+    paymentIntegrationService.get.mockResolvedValue({
+      data: resource({ isTestModeInProduction: true }),
+      meta: {},
+    })
     const wrapper = await mountView()
-    const live = wrapper.findAll('input[type="radio"]').find((input) => input.element.value === 'live')
+    const live = wrapper
+      .findAll('input[type="radio"]')
+      .find((input) => input.element.value === 'live')
     expect(live.attributes('disabled')).toBeDefined()
     expect(wrapper.find('.test-mode-banner').text()).toContain('Test mode — no real charge.')
     wrapper.unmount()
   })
 
   it('shows the forbidden state on 403', async () => {
-    paymentIntegrationService.get.mockRejectedValue({ response: { status: 403 }, normalized: { message: 'You are not allowed to perform this action.' } })
+    paymentIntegrationService.get.mockRejectedValue({
+      response: { status: 403 },
+      normalized: { message: 'You are not allowed to perform this action.' },
+    })
     const wrapper = await mountView({ locale: 'ar' })
     expect(wrapper.text()).toContain('لا تملك صلاحية الوصول إلى هذه الشاشة')
     wrapper.unmount()

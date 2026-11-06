@@ -1,119 +1,139 @@
-import { describe, expect, it, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
-import { ref } from 'vue'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { flushPromises, mount } from '@vue/test-utils'
 import PublicIndex from '@/views/kpis/PublicIndex.vue'
+import { kpisService } from '@/services/kpisService'
+import { contentService } from '@/services/contentService'
 import { createTestGlobals } from '@/test-utils'
 
-const status = ref('success')
-const load = vi.fn()
+vi.mock('@/services/kpisService', () => ({
+  kpisService: { list: vi.fn(), listCategories: vi.fn(), listTypes: vi.fn() },
+}))
+vi.mock('@/services/contentService', () => ({ contentService: { getPage: vi.fn() } }))
 
-function makeKpi(overrides) {
+const CATEGORIES = [
+  { id: 1, key: 'beneficiaries', name: { ar: 'المستفيدون', en: 'Beneficiaries' } },
+  { id: 2, key: 'performance', name: { ar: 'الأداء', en: 'Performance' } },
+]
+
+function makeKpi(id, nameEn, status = 'good') {
   return {
-    id: overrides.id,
-    slug: overrides.slug ?? `kpi-${overrides.id}`,
-    name: overrides.name,
-    value: overrides.value ?? 100,
-    target: overrides.target ?? 200,
-    baseline: overrides.baseline ?? 50,
-    unit: overrides.unit ?? { ar: 'وحدة', en: 'unit' },
-    description: overrides.description ?? { ar: 'وصف', en: 'Description' },
-    category: overrides.category,
-    status: overrides.status,
-    lastUpdate: overrides.lastUpdate ?? '2025-01-01',
-    icon: 'fa-solid fa-chart-line',
-    color: 'primary',
-    cardColor: overrides.cardColor ?? 'primary',
-    order: overrides.order ?? overrides.id,
-    published: true,
+    id,
+    slug: `kpi-${id}`,
+    name: { ar: `مؤشر ${id}`, en: nameEn },
+    value: String(100 + id),
+    target: '300',
+    unit: { ar: 'وحدة', en: 'unit' },
+    status,
+    cardColor: 'primary',
   }
 }
 
-const kpis = ref([
-  makeKpi({
-    id: 1,
-    name: { ar: 'الجمعيات المشاركة', en: 'Participating associations' },
-    category: 'beneficiaries',
-    status: 'good',
-    value: 486,
-  }),
-  makeKpi({
-    id: 2,
-    name: { ar: 'التميز المؤسسي', en: 'Institutional excellence' },
-    category: 'institutional-excellence',
-    status: 'excellent',
-    value: 132,
-  }),
-  makeKpi({
-    id: 3,
-    name: { ar: 'رضا المستفيدين', en: 'Beneficiary satisfaction' },
-    category: 'beneficiaries',
-    status: 'needs-improvement',
-    value: 78,
-  }),
-])
-
-vi.mock('@/composables/useKpis', () => ({
-  useKpis: () => ({
-    kpis,
-    status,
-    load,
-    localized: (value) => (typeof value === 'string' ? value : (value?.en ?? '')),
-  }),
-}))
-
-function mountView() {
-  return mount(PublicIndex, { global: createTestGlobals({ locale: 'en' }) })
+function page(items, current = 1, lastPage = 1) {
+  return {
+    data: items,
+    meta: { pagination: { page: current, perPage: 12, total: items.length, lastPage } },
+  }
 }
 
-describe('KPI public index (premium redesign)', () => {
-  it('renders a card per published KPI with a status badge', () => {
-    status.value = 'success'
-    const wrapper = mountView()
-    const cards = wrapper.findAll('.kpi-card')
-    expect(cards).toHaveLength(3)
-    expect(wrapper.findAll('.badge').length).toBeGreaterThanOrEqual(3)
-    expect(cards[0].find('.kpi-card__name').text()).toBe('Participating associations')
+async function mountView() {
+  const wrapper = mount(PublicIndex, { global: createTestGlobals({ locale: 'en' }) })
+  await flushPromises()
+  return wrapper
+}
+
+async function settle() {
+  await vi.advanceTimersByTimeAsync(400)
+  await flushPromises()
+}
+
+beforeEach(() => {
+  vi.useFakeTimers()
+  vi.clearAllMocks()
+  kpisService.listCategories.mockResolvedValue({ data: CATEGORIES })
+  kpisService.listTypes.mockResolvedValue({
+    data: [{ id: 5, key: 'output', name: { ar: 'مخرجات', en: 'Output' } }],
+  })
+  contentService.getPage.mockResolvedValue({
+    data: {
+      key: 'kpis',
+      sections: [
+        {
+          id: 1,
+          type: 'hero',
+          title: { ar: 'مؤشرات', en: 'Excellence indicators' },
+          description: { ar: 'وصف', en: 'Up-to-date indicators' },
+        },
+      ],
+    },
+  })
+  kpisService.list.mockResolvedValue(
+    page([makeKpi(1, 'Participating associations'), makeKpi(2, 'Volunteers', 'excellent')], 1, 2),
+  )
+})
+
+afterEach(() => vi.useRealTimers())
+
+describe('KPI public index (server-driven catalog)', () => {
+  it('renders the first page, the category tabs and the CMS hero copy', async () => {
+    const wrapper = await mountView()
+    expect(kpisService.list).toHaveBeenCalledWith({ page: 1, perPage: 12 })
+    expect(wrapper.findAll('.kpi-card')).toHaveLength(2)
+    expect(wrapper.findAll('.tabs__tab').map((tab) => tab.text())).toEqual([
+      'All',
+      'Beneficiaries',
+      'Performance',
+    ])
+    expect(wrapper.find('.kpis-page__title').text()).toBe('Excellence indicators')
   })
 
-  it('narrows the grid when a category tab is selected', async () => {
-    status.value = 'success'
-    const wrapper = mountView()
+  it('asks the server for the selected category, status and minimum-length search', async () => {
+    const wrapper = await mountView()
+    await wrapper.findAll('.tabs__tab')[1].trigger('click')
+    await settle()
+    expect(kpisService.list).toHaveBeenLastCalledWith({
+      'filter[categoryId]': 1,
+      page: 1,
+      perPage: 12,
+    })
+    await wrapper.find('.toolbar__search input').setValue('V')
+    await settle()
+    expect(kpisService.list.mock.lastCall[0]).not.toHaveProperty('search')
+    await wrapper.find('.toolbar__search input').setValue('Vol')
+    await settle()
+    expect(kpisService.list.mock.lastCall[0]).toMatchObject({
+      search: 'Vol',
+      'filter[categoryId]': 1,
+    })
+  })
+
+  it('appends the next page on show more', async () => {
+    const wrapper = await mountView()
+    kpisService.list.mockResolvedValueOnce(page([makeKpi(3, 'Employees')], 2, 2))
+    await wrapper.find('.kpis-page__more button').trigger('click')
+    await flushPromises()
+    expect(kpisService.list).toHaveBeenLastCalledWith({ page: 2, perPage: 12 })
     expect(wrapper.findAll('.kpi-card')).toHaveLength(3)
-
-    const beneficiariesTab = wrapper
-      .findAll('.tabs__tab')
-      .find((tab) => tab.text() === 'Beneficiaries')
-    expect(beneficiariesTab).toBeTruthy()
-    await beneficiariesTab.trigger('click')
-
-    const names = wrapper.findAll('.kpi-card__name').map((el) => el.text())
-    expect(names).toEqual(['Participating associations', 'Beneficiary satisfaction'])
+    expect(wrapper.find('.kpis-page__more').exists()).toBe(false)
   })
 
-  it('filters the grid by the real-time search term', async () => {
-    status.value = 'success'
-    const wrapper = mountView()
-    await wrapper.find('input[type="search"]').setValue('Institutional')
-    const names = wrapper.findAll('.kpi-card__name').map((el) => el.text())
-    expect(names).toEqual(['Institutional excellence'])
-  })
-
-  it('shows a no-results empty state when nothing matches the search', async () => {
-    status.value = 'success'
-    const wrapper = mountView()
-    await wrapper.find('input[type="search"]').setValue('zzz-nothing')
+  it('shows the no-results state when the filtered page is empty', async () => {
+    const wrapper = await mountView()
+    kpisService.list.mockResolvedValue(page([]))
+    await wrapper.find('.toolbar__search input').setValue('Nothing here')
+    await settle()
     expect(wrapper.findAll('.kpi-card')).toHaveLength(0)
-    expect(wrapper.find('.empty-state').exists()).toBe(true)
+    expect(wrapper.text()).toContain('No matching results')
   })
 
-  it('renders skeletons while loading and an error state on failure', async () => {
-    status.value = 'loading'
-    let wrapper = mountView()
-    expect(wrapper.findAll('.skeleton').length).toBeGreaterThan(0)
-
-    status.value = 'error'
-    wrapper = mountView()
+  it('shows the empty state without filters and an error state with retry', async () => {
+    kpisService.list.mockResolvedValueOnce(page([]))
+    let wrapper = await mountView()
+    expect(wrapper.text()).toContain('No indicators published yet')
+    kpisService.list.mockRejectedValueOnce(new Error('down'))
+    wrapper = await mountView()
+    expect(wrapper.find('.error-state').exists()).toBe(true)
     await wrapper.find('.error-state button').trigger('click')
-    expect(load).toHaveBeenCalled()
+    await flushPromises()
+    expect(wrapper.findAll('.kpi-card')).toHaveLength(2)
   })
 })

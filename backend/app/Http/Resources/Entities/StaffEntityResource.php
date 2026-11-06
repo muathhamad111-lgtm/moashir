@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources\Entities;
 
 use App\Models\Entities\Entity;
+use App\Support\Certificates\EntityLevelPresenter;
 use App\Support\Entities\EntityPresenter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -23,7 +24,10 @@ final class StaffEntityResource extends JsonResource
 
         return [
             ...EntityPresenter::summary($entity),
+            ...EntityLevelPresenter::of($entity),
+            'has_open_accredited_request' => EntityLevelPresenter::hasOpenAccreditedRequest($entity),
             ...EntityPresenter::profile($entity),
+            ...EntityPresenter::registry($entity, $request),
             ...EntityPresenter::contact($entity),
             'marketing_consent' => $entity->marketing_consent_at !== null,
             'deactivated_at' => $entity->deactivated_at?->toIso8601String(),

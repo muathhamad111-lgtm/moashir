@@ -20,6 +20,7 @@ import { useSignedDownload } from '@/composables/useSignedDownload'
 import { useToast } from '@/composables/useToast'
 import { evidenceService } from '@/services/evidenceService'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -55,41 +56,86 @@ onMounted(filtering.load)
 <template>
   <section class="request-detail">
     <header class="request-detail__header">
-      <RouterLink class="request-detail__back" :to="{ name: ROUTE_NAMES.AWARD_FILTERING_QUEUE, params: { id: cycleId } }">
-        <i class="fa-solid fa-arrow-left-long u-flip-in-rtl" aria-hidden="true"></i>
+      <RouterLink
+        class="request-detail__back"
+        :to="{ name: ROUTE_NAMES.AWARD_FILTERING_QUEUE, params: { id: cycleId } }"
+      >
+        <AppIcon name="arrow-left" />
         {{ t('filtering.detail.back') }}
       </RouterLink>
       <h1 class="request-detail__title">{{ t('filtering.detail.title') }}</h1>
-      <p v-if="row" class="request-detail__number"><bdi dir="ltr">{{ row.number }}</bdi> <StatusBadge :status="row.status" /></p>
+      <p v-if="row" class="request-detail__number">
+        <bdi dir="ltr">{{ row.number }}</bdi> <StatusBadge :status="row.status" />
+      </p>
     </header>
     <div v-if="status === 'loading'" class="request-detail__loading" aria-busy="true">
       <Skeleton variant="block" />
       <Skeleton variant="text" :count="6" />
     </div>
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="filtering.load" />
-    <EmptyState v-else-if="status === 'missing'" icon="fa-regular fa-folder-open" :title="t('filtering.detail.missingTitle')" :message="t('filtering.detail.missingMessage')" />
-    <EmptyState v-else-if="status === 'blocked'" icon="fa-solid fa-lock" :title="t('filtering.detail.blockedTitle')" :message="errorMessage || t('filtering.detail.blockedMessage')" />
+    <EmptyState
+      v-else-if="status === 'missing'"
+      icon="folder"
+      :title="t('filtering.detail.missingTitle')"
+      :message="t('filtering.detail.missingMessage')"
+    />
+    <EmptyState
+      v-else-if="status === 'blocked'"
+      icon="lock"
+      :title="t('filtering.detail.blockedTitle')"
+      :message="errorMessage || t('filtering.detail.blockedMessage')"
+    />
     <div v-else-if="detail" class="request-detail__layout">
       <div class="request-detail__main">
-        <AssessmentNotice v-if="row.isFrozen" variant="frozen" :title="t('accredited.notices.frozen.title')" :message="t('accredited.notices.frozen.message')" />
-        <AssessmentNotice v-if="!windowOpen && mayDecide" variant="info" :title="t('filtering.window.title')" :message="t('filtering.window.message')" />
+        <AssessmentNotice
+          v-if="row.isFrozen"
+          variant="frozen"
+          :title="t('accredited.notices.frozen.title')"
+          :message="t('accredited.notices.frozen.message')"
+        />
+        <AssessmentNotice
+          v-if="!windowOpen && mayDecide"
+          variant="info"
+          :title="t('filtering.window.title')"
+          :message="t('filtering.window.message')"
+        />
         <Card :title="t('filtering.detail.facts')"><FilteringFacts :detail="detail" /></Card>
         <Card v-if="detail.result.available" :title="t('filtering.detail.result')">
-          <p class="filtering-detail__read-only" role="note">{{ t('filtering.detail.readOnly') }}</p>
+          <p class="filtering-detail__read-only" role="note">
+            {{ t('filtering.detail.readOnly') }}
+          </p>
           <AccreditedFeedbackList :feedback="detail.result.feedback" />
         </Card>
         <Card :title="t('filtering.detail.evidence')">
-          <ReviewEvidenceList :files="detail.review.evidence" :downloading="downloads.busy" @download="download" />
+          <ReviewEvidenceList
+            :files="detail.review.evidence"
+            :downloading="downloads.busy"
+            @download="download"
+          />
         </Card>
       </div>
       <aside class="request-detail__aside">
         <Card v-if="mayDecide" class="filtering-actions" :title="t('filtering.detail.decide')">
           <div class="filtering-actions__buttons">
-            <BaseButton variant="primary" icon="fa-solid fa-circle-check" :disabled="!windowOpen" @click="dialogMode = 'qualify'">{{ t('filtering.decision.qualify.label') }}</BaseButton>
-            <BaseButton variant="danger" icon="fa-solid fa-circle-xmark" :disabled="!windowOpen" @click="dialogMode = 'disqualify'">{{ t('filtering.decision.disqualify.label') }}</BaseButton>
+            <BaseButton
+              variant="primary"
+              icon="check-circle"
+              :disabled="!windowOpen"
+              @click="dialogMode = 'qualify'"
+              >{{ t('filtering.decision.qualify.label') }}</BaseButton
+            >
+            <BaseButton
+              variant="danger"
+              icon="x"
+              :disabled="!windowOpen"
+              @click="dialogMode = 'disqualify'"
+              >{{ t('filtering.decision.disqualify.label') }}</BaseButton
+            >
           </div>
         </Card>
-        <Card :title="t('filtering.detail.decisions')"><FilteringDecisionList :decisions="detail.decisions" /></Card>
+        <Card :title="t('filtering.detail.decisions')"
+          ><FilteringDecisionList :decisions="detail.decisions"
+        /></Card>
       </aside>
     </div>
     <FilteringDecisionDialog

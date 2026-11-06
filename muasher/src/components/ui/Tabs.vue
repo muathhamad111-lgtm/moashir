@@ -11,9 +11,7 @@ const emit = defineEmits(['update:modelValue'])
 const baseId = useId()
 const tabRefs = ref([])
 
-const activeIndex = computed(() =>
-  props.tabs.findIndex((tab) => tab.value === props.modelValue),
-)
+const activeIndex = computed(() => props.tabs.findIndex((tab) => tab.value === props.modelValue))
 
 function tabId(tab) {
   return `${baseId}-tab-${tab.value}`

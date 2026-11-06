@@ -31,7 +31,17 @@
   color: var(--theme-heading);
 }
 
+.request-detail__entity {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  margin: 0;
+  color: var(--theme-text);
+  font-weight: var(--fw-semibold);
+}
+
 .request-detail__number {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
   margin: 0;
   color: var(--theme-text-muted);
 }

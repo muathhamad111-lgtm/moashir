@@ -22,7 +22,10 @@ const SETTINGS = {
 }
 
 function rejected(code) {
-  return Object.assign(new Error(code), { response: { status: 422 }, normalized: { status: 422, code, fieldErrors: {} } })
+  return Object.assign(new Error(code), {
+    response: { status: 422 },
+    normalized: { status: 422, code, fieldErrors: {} },
+  })
 }
 
 async function setup(extra = {}) {
@@ -57,7 +60,10 @@ describe('useFinanceSettings', () => {
     expect(api.reasonOpen.value).toBe(true)
     financeSettingsService.update.mockResolvedValue({ data: { ...SETTINGS, bagPrice: '3000.00' } })
     await api.confirmReason('Approved price list for 2027.')
-    expect(financeSettingsService.update).toHaveBeenCalledWith({ bagPrice: '3000.00', reason: 'Approved price list for 2027.' })
+    expect(financeSettingsService.update).toHaveBeenCalledWith({
+      bagPrice: '3000.00',
+      reason: 'Approved price list for 2027.',
+    })
   })
 
   it('opens the reason dialog when the server asks for a reason', async () => {

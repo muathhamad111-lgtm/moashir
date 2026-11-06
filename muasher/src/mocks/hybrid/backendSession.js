@@ -5,7 +5,8 @@ import { logger } from '@/utils/logger'
 export const BACKEND_SESSION_PATH = '/api/v1/auth/session'
 export const SESSION_CACHE_MS = 5000
 
-const AUTH_TRANSITION_PATH = /^\/api\/v1\/auth\/(login|logout|otp\/verify|mfa\/challenge|mfa\/confirm|invitations\/[^/]+\/accept)$/
+const AUTH_TRANSITION_PATH =
+  /^\/api\/v1\/auth\/(login|logout|otp\/verify|mfa\/challenge|mfa\/confirm|invitations\/[^/]+\/accept)$/
 
 function roleKeysOf(roles) {
   return (roles ?? []).map((role) => (typeof role === 'string' ? role : role?.key)).filter(Boolean)
@@ -26,7 +27,6 @@ export function demoDescriptorOf(user) {
     name: user.name ?? null,
     roles: roles.length ? roles : (persona.roles ?? []),
     entityId: persona.entityId ?? null,
-    committeeCycles: persona.committeeCycles ?? [],
     locale: user.locale ?? null,
     superAdmin: user.is_super_admin === true,
   }
@@ -37,14 +37,20 @@ export function isAuthTransition(request) {
 }
 
 async function readSession(fetcher) {
-  const request = new Request(new URL(BACKEND_SESSION_PATH, globalThis.location.origin), { headers: { Accept: 'application/json' }, credentials: 'same-origin' })
+  const request = new Request(new URL(BACKEND_SESSION_PATH, globalThis.location.origin), {
+    headers: { Accept: 'application/json' },
+    credentials: 'same-origin',
+  })
   const response = await fetcher(bypass(request))
   if (!response.ok) return null
   const body = await response.json()
   return demoDescriptorOf(body?.data)
 }
 
-export function createBackendSession({ fetcher = (request) => fetch(request), now = () => Date.now() } = {}) {
+export function createBackendSession({
+  fetcher = (request) => fetch(request),
+  now = () => Date.now(),
+} = {}) {
   const state = { descriptor: null, loadedAt: null, pending: null }
 
   function isFresh() {

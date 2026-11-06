@@ -13,6 +13,7 @@ import MsegatCard from '@/components/integrations/sms/MsegatCard.vue'
 import SmsTemplatesEditor from '@/components/integrations/sms/SmsTemplatesEditor.vue'
 import SmsTestSend from '@/components/integrations/sms/SmsTestSend.vue'
 import SmsBroadcastCard from '@/components/integrations/sms/SmsBroadcastCard.vue'
+import { SHOWS_DEMO_ONLY_MODULES } from '@/constants/buildPosture'
 import { useSmsIntegration } from '@/composables/useSmsIntegration'
 import { usePermissions } from '@/composables/usePermissions'
 import { PERMISSIONS } from '@/constants/permissionKeys'
@@ -21,15 +22,40 @@ import { SMS_PROVIDERS } from '@/constants/integrations'
 const { t } = useI18n()
 const { can } = usePermissions()
 const sms = useSmsIntegration()
-const { status, errorMessage, resource, fromEnvironment, saving, reasonOpen, load, refresh, submit, confirmReason } = sms
-const { senders, activeSenders, msegatTemplates, approvedTemplates, templatesLoaded, templateRestricted, approvedBodies } = sms
+const {
+  status,
+  errorMessage,
+  resource,
+  fromEnvironment,
+  saving,
+  reasonOpen,
+  load,
+  refresh,
+  submit,
+  confirmReason,
+} = sms
+const {
+  senders,
+  activeSenders,
+  msegatTemplates,
+  approvedTemplates,
+  templatesLoaded,
+  templateRestricted,
+  approvedBodies,
+} = sms
 const { providerStatus, generalStatus, clientSteps, defaultTestProvider } = sms
 
 onMounted(load)
 </script>
 
 <template>
-  <SettingsSection :title="t('integrations.sms.title')" :description="t('integrations.sms.description')" :status="status" :error-message="errorMessage" @retry="load">
+  <SettingsSection
+    :title="t('integrations.sms.title')"
+    :description="t('integrations.sms.description')"
+    :status="status"
+    :error-message="errorMessage"
+    @retry="load"
+  >
     <form id="sms-integration-form" class="integration-form" novalidate @submit.prevent="submit">
       <EnvironmentSourceNote v-if="fromEnvironment" />
       <IntegrationCard :title="t('integrations.sms.generalTitle')" :status="generalStatus">
@@ -62,7 +88,7 @@ onMounted(load)
     </form>
 
     <SmsTestSend :key="defaultTestProvider" :default-provider="defaultTestProvider" />
-    <SmsBroadcastCard v-if="can(PERMISSIONS.MESSAGING_CAMPAIGNS_SEND)" />
+    <SmsBroadcastCard v-if="SHOWS_DEMO_ONLY_MODULES && can(PERMISSIONS.MESSAGING_CAMPAIGNS_SEND)" />
 
     <ReasonDialog
       v-model="reasonOpen"
@@ -74,7 +100,13 @@ onMounted(load)
     />
 
     <template #actions>
-      <BaseButton type="submit" form="sms-integration-form" variant="primary" :loading="saving" icon="fa-solid fa-floppy-disk">
+      <BaseButton
+        type="submit"
+        form="sms-integration-form"
+        variant="primary"
+        :loading="saving"
+        icon="save"
+      >
         {{ t('actions.save') }}
       </BaseButton>
     </template>
