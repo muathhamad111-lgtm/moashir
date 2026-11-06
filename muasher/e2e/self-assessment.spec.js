@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
+import { pinMockClock } from './support/clock'
 import { clearMockFault, forceMockFault } from './support/mockFaults'
 
 const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d/i
@@ -15,6 +16,14 @@ function suffixOf(testInfo) {
 function localeOf(testInfo) {
   return isEn(testInfo) ? 'en' : 'ar'
 }
+
+const AL_BIRR_HISTORY = [
+  'SLF-2026-000002',
+  'SLF-2026-000001',
+  'ACC-2026-000001',
+  'ACC-2025-000012',
+  'ADV-2025-000001',
+]
 
 function seedEntity(page, testInfo, entityId = 5001) {
   return seedSignedIn(
@@ -106,6 +115,7 @@ test('the entity completes the draft, confirms and sees the result immediately, 
 }, testInfo) => {
   test.setTimeout(60000)
   const errors = trackConsole(page)
+  await pinMockClock(page)
   await seedEntity(page, testInfo)
   await page.goto('/assessment/self')
   await expect(page.locator('.self-summary')).toBeVisible()
@@ -129,7 +139,10 @@ test('the entity completes the draft, confirms and sees the result immediately, 
   await page.locator('.self-result__actions .btn--secondary').click()
   await expect(page).toHaveURL(/\/assessment\/history$/)
   await page.locator('[role="tab"]').nth(1).click()
-  await expect(page.locator('.history-item')).toHaveCount(4)
+  await expect(page.locator('.history-item')).toHaveCount(AL_BIRR_HISTORY.length)
+  expect((await page.locator('.history-item__number').allInnerTexts()).toSorted()).toEqual(
+    AL_BIRR_HISTORY.toSorted(),
+  )
   await page.locator('.history-item').first().locator('.status-history__toggle').click()
   await expect(
     page.locator('.history-item').first().locator('.assessment-timeline__step'),

@@ -16,7 +16,21 @@
   }
 }
 
+@mixin staff-sidebar {
+  --sidebar-bg: var(--nav-from);
+  --sidebar-text: var(--band-ink-muted);
+  --sidebar-caption: var(--band-ink-muted);
+  --sidebar-hover-bg: var(--nav-hover);
+  --sidebar-hover-text: var(--band-ink);
+  --sidebar-count-bg: var(--nav-active);
+  --sidebar-active-text: var(--theme-accent-text);
+  --sidebar-focus-ring: var(--data-on-band);
+  --sidebar-path-accredited: #{$color-path-accredited-text-dark};
+  --sidebar-path-advanced: #{$color-path-advanced-text-dark};
+}
+
 @mixin b-shell-light {
+  @include staff-sidebar;
   @include tier-properties($tier-palette-light);
   @each $tier in ('bronze', 'silver', 'gold', 'diamond') {
     --tier-#{$tier}-seal-disc: var(--tier-#{$tier}-surface);
@@ -32,6 +46,7 @@
 }
 
 @mixin b-shell-dark {
+  @include staff-sidebar;
   @include tier-properties($tier-palette-dark);
   @each $tier in ('bronze', 'silver', 'gold', 'diamond') {
     --tier-#{$tier}-seal-disc: transparent;

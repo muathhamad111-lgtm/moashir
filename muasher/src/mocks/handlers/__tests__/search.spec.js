@@ -2,7 +2,9 @@ import { describe, expect, it, beforeAll, afterAll, afterEach, beforeEach } from
 import { setupServer } from 'msw/node'
 import { searchHandlers } from '@/mocks/handlers/search'
 import { normalizeSearchText } from '@/mocks/stores/searchIndex'
+import { resetAssessmentsStore } from '@/mocks/stores/assessments/assessmentsStore'
 import { MOCK_API_BASE, clearMockSession, mockFetch, seedMockSession } from '@/test-utils/mockApi'
+import { pinMockClock, releaseMockClock } from '@/test-utils/mockClock'
 
 const server = setupServer(...searchHandlers)
 const BASE = MOCK_API_BASE
@@ -24,12 +26,17 @@ function groupOf(body, type) {
   return body.data.find((group) => group.type === type)
 }
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
+beforeAll(() => {
+  pinMockClock()
+  resetAssessmentsStore()
+  server.listen({ onUnhandledRequest: 'error' })
+})
 beforeEach(() => clearMockSession())
 afterEach(() => server.resetHandlers())
 afterAll(() => {
   server.close()
   clearMockSession()
+  releaseMockClock()
 })
 
 describe('global search mock (GET /search)', () => {

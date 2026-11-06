@@ -9,6 +9,7 @@ import { resetEntitiesMock } from '@/mocks/stores/entityMockReset'
 import { resetAssessmentsStore } from '@/mocks/stores/assessments/assessmentsStore'
 import { discardQueuedJobs, runQueuedJobs } from '@/mocks/stores/mockQueue'
 import { MOCK_API_BASE, clearMockSession, seedMockSession, wireFetch } from '@/test-utils/mockApi'
+import { pinMockClock, releaseMockClock } from '@/test-utils/mockClock'
 
 const server = setupServer(
   ...assessmentsHandlers,
@@ -75,7 +76,10 @@ function completeSheet(criteria, value = '8') {
   return sheet
 }
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
+beforeAll(() => {
+  pinMockClock()
+  server.listen({ onUnhandledRequest: 'error' })
+})
 beforeEach(() => {
   resetCriteriaStore()
   resetEntitiesMock()
@@ -86,7 +90,10 @@ afterEach(() => {
   clearMockSession()
   discardQueuedJobs()
 })
-afterAll(() => server.close())
+afterAll(() => {
+  server.close()
+  releaseMockClock()
+})
 
 describe('self assessment mock — reads', () => {
   it('lists the own assessments with the exact resource keys and pagination meta', async () => {

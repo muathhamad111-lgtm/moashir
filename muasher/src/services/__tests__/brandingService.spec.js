@@ -31,13 +31,13 @@ beforeEach(() => {
 })
 
 describe('brandingService', () => {
-  it('maps the snake_case theme resource to the SPA shape', async () => {
+  it('maps the snake_case theme resource to the SPA shape, keeping only the sidebar (dark-background) logo', async () => {
     apiClient.get.mockResolvedValue({ data: { data: resource, meta: {}, errors: null } })
     const { data } = await brandingService.get()
     expect(apiClient.get).toHaveBeenCalledWith('/settings/branding')
     expect(data).toEqual({
       accentToken: 'teal',
-      logos: { dark: 'data:image/png;base64,LIGHT', light: 'data:image/png;base64,AAAA' },
+      logos: { dark: 'data:image/png;base64,LIGHT' },
       palette: [
         {
           token: 'teal',
@@ -74,7 +74,7 @@ describe('brandingService', () => {
     expect(data).toEqual({ fileId: 9, url: 'blob:logo' })
   })
 
-  it('uploads the light-background logo as the dark variant', async () => {
+  it('never uploads a light-background variant: any other surface falls back to the sidebar logo', async () => {
     apiClient.post.mockResolvedValue({
       data: { data: { fileId: 10, url: 'blob:logo' }, meta: {}, errors: null },
     })
@@ -82,10 +82,10 @@ describe('brandingService', () => {
       new File(['logo'], 'logo.svg', { type: 'image/svg+xml' }),
       'light',
     )
-    expect(apiClient.post.mock.calls[0][1].get('variant')).toBe('dark')
+    expect(apiClient.post.mock.calls[0][1].get('variant')).toBe('light')
   })
 
-  it('resets the accent and both logos through the single global reset verb', async () => {
+  it('resets the accent and the logo through the single global reset verb', async () => {
     apiClient.post.mockResolvedValue({
       data: {
         data: { ...resource, accentToken: 'brand_default', logoLight: null, logoDark: null },
@@ -97,7 +97,7 @@ describe('brandingService', () => {
     expect(apiClient.post).toHaveBeenCalledTimes(1)
     expect(apiClient.post).toHaveBeenCalledWith('/settings/branding/reset', {})
     expect(data.accentToken).toBe('brand_default')
-    expect(data.logos).toEqual({ dark: null, light: null })
+    expect(data.logos).toEqual({ dark: null })
     expect(brandingService).not.toHaveProperty('resetLogo')
   })
 

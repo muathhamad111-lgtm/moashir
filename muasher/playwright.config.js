@@ -3,6 +3,7 @@ import { defineConfig, devices } from '@playwright/test'
 
 const APP_HOST = 'localhost'
 const DEV_PORT = Number(process.env.PLAYWRIGHT_PORT ?? 5173)
+const LEVEL_ACHIEVED_SINCE = process.env.VITE_LEVEL_ACHIEVED_SINCE || '2026-11-06'
 
 const MOCK_FAULTS_OFF = {
   cookies: [
@@ -65,5 +66,6 @@ export default defineConfig({
     command: process.env.CI ? 'npm run preview' : `npm run dev -- --port ${DEV_PORT} --strictPort`,
     port: process.env.CI ? 4173 : DEV_PORT,
     reuseExistingServer: !process.env.CI,
+    env: { VITE_LEVEL_ACHIEVED_SINCE: LEVEL_ACHIEVED_SINCE },
   },
 })

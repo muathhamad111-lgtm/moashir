@@ -62,7 +62,7 @@ export function useBrandingEditor({ auto = true } = {}) {
     palette.value = theme.palette
     savedToken.value = theme.accentToken
     draftToken.value = theme.accentToken
-    savedLogos.value = { ...bySurface(() => null), ...theme.logos }
+    savedLogos.value = bySurface((surface) => theme.logos?.[surface] ?? null)
     branding.apply(theme)
   }
 

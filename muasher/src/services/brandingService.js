@@ -17,7 +17,6 @@ function toPaletteEntry(entry) {
 function toLogos(data) {
   return {
     dark: contentImageUrl(data.logoLight) || null,
-    light: contentImageUrl(data.logoDark) || null,
   }
 }
 

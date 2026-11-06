@@ -1,12 +1,15 @@
 import { Buffer } from 'node:buffer'
 import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
+import { AA_NON_TEXT, AA_TEXT, contrastOf } from './support/contrast'
 
 const IGNORED_CONSOLE = /Failed to load resource|50\d|Service Unavailable/i
 const SHOTS = 'e2e/__screenshots__/shell'
+const REPORT_SHOTS = '../agents/tasks/reports/Task-70'
+const SIDEBAR_LOGO = /moashir-logo-on-dark/
 const SIDEBAR_BY_THEME = {
-  dark: { background: 'rgb(6, 24, 25)', logo: /moashir-logo-on-dark/ },
-  light: { background: 'rgb(217, 247, 247)', logo: /moashir-logo-mono-dark/ },
+  dark: { background: 'rgb(6, 24, 25)' },
+  light: { background: 'rgb(10, 35, 37)' },
 }
 
 function isEn(testInfo) {
@@ -55,6 +58,41 @@ async function collapseSidebar(page) {
   await expect(page.locator('.sidebar__label').first()).toBeHidden()
 }
 
+async function focusByKeyboard(page, selector) {
+  await page.keyboard.press('Shift')
+  await page.locator(selector).first().focus()
+}
+
+async function expectSidebarAtAa(page, state) {
+  const idle = '.sidebar__item:not(.is-active):visible'
+  expect(await contrastOf(page, idle)).toBeGreaterThanOrEqual(AA_TEXT)
+  expect(await contrastOf(page, '.sidebar__item.is-active')).toBeGreaterThanOrEqual(AA_TEXT)
+  expect(await contrastOf(page, '.sidebar__item.is-active .sidebar__icon')).toBeGreaterThanOrEqual(
+    AA_NON_TEXT,
+  )
+  expect(
+    await contrastOf(page, '.sidebar__item--advanced:not(.is-active) .sidebar__icon'),
+  ).toBeGreaterThanOrEqual(AA_NON_TEXT)
+  if (state === 'expanded')
+    expect(await contrastOf(page, '.sidebar__caption')).toBeGreaterThanOrEqual(AA_TEXT)
+
+  await page.locator(idle).first().hover()
+  expect(await contrastOf(page, `${idle}:hover`)).toBeGreaterThanOrEqual(AA_TEXT)
+
+  await focusByKeyboard(page, idle)
+  expect(
+    await contrastOf(page, `${idle}:focus-visible`, { property: 'outlineColor' }),
+  ).toBeGreaterThanOrEqual(AA_NON_TEXT)
+  await focusByKeyboard(page, '.sidebar__item.is-active')
+  expect(
+    await contrastOf(page, '.sidebar__item.is-active:focus-visible', {
+      property: 'outlineColor',
+    }),
+  ).toBeGreaterThanOrEqual(AA_NON_TEXT)
+  await page.locator('.sidebar__item.is-active').blur()
+  await page.mouse.move(0, 0)
+}
+
 async function settleAnimations(page) {
   await page.waitForFunction(() =>
     document.getAnimations().every((animation) => animation.playState !== 'running'),
@@ -68,7 +106,9 @@ const SIDEBAR_STATES = [
 
 for (const theme of ['dark', 'light']) {
   for (const { state, prepare } of SIDEBAR_STATES) {
-    test(`curved active tab — ${theme} ${state}`, async ({ page }, testInfo) => {
+    test(`always-dark sidebar with the curved active tab — ${theme} ${state}`, async ({
+      page,
+    }, testInfo) => {
       const errors = trackConsole(page)
       await seedSession(page, {
         roles: ['request_follower', 'content_officer'],
@@ -101,6 +141,7 @@ for (const theme of ['dark', 'light']) {
           itemBg: getComputedStyle(item).backgroundColor,
           contentBg: getComputedStyle(main).backgroundColor,
           sidebarBg: getComputedStyle(sidebar).backgroundColor,
+          sidebarImage: getComputedStyle(sidebar).backgroundImage,
           beforeImage: before.backgroundImage,
           afterImage: after.backgroundImage,
           beforeContent: before.content,
@@ -117,10 +158,8 @@ for (const theme of ['dark', 'light']) {
       expect(geometry.itemBg).toBe(geometry.contentBg)
       expect(geometry.sidebarBg).not.toBe(geometry.contentBg)
       expect(geometry.sidebarBg).toBe(SIDEBAR_BY_THEME[theme].background)
-      await expect(page.locator('.sidebar__logo')).toHaveAttribute(
-        'src',
-        SIDEBAR_BY_THEME[theme].logo,
-      )
+      expect(geometry.sidebarImage).toContain('linear-gradient')
+      await expect(page.locator('.sidebar__logo')).toHaveAttribute('src', SIDEBAR_LOGO)
       expect(geometry.beforeContent).toBe('""')
       expect(geometry.beforeImage).toContain('radial-gradient')
       expect(geometry.afterImage).toContain('radial-gradient')
@@ -129,6 +168,10 @@ for (const theme of ['dark', 'light']) {
       expect(geometry.overflow).not.toContain('hidden')
 
       await page.screenshot({ path: `${SHOTS}/shell-${theme}-${state}-${suffix(testInfo)}.png` })
+      await page.screenshot({
+        path: `${REPORT_SHOTS}/sidebar-${theme}-${state}-${suffix(testInfo)}.png`,
+      })
+      await expectSidebarAtAa(page, state)
       expect(errors).toEqual([])
     })
   }
@@ -189,17 +232,16 @@ test('branding: System Administrator picks an accent, the back office applies it
   await expect(page.locator('html')).toHaveAttribute('data-accent', 'brand_default')
   await expect(page.locator('.contrast-check .badge--success')).toHaveCount(4)
 
-  await expect(page.locator('.logo-variant')).toHaveCount(2)
-  await expect(
-    page.locator('.branding-preview__frame[data-theme="light"] .branding-preview__logo'),
-  ).toHaveAttribute('src', /moashir-logo-mono-dark/)
-  await expect(
-    page.locator('.branding-preview__frame[data-theme="dark"] .branding-preview__logo'),
-  ).toHaveAttribute('src', /moashir-logo-on-dark/)
-  const lightSidebar = await page
-    .locator('.branding-preview__frame[data-theme="light"] .branding-preview__sidebar')
-    .evaluate((element) => getComputedStyle(element).backgroundColor)
-  expect(lightSidebar).toBe(SIDEBAR_BY_THEME.light.background)
+  await expect(page.locator('.logo-variant')).toHaveCount(1)
+  await expect(page.locator('.logo-variant')).toHaveAttribute('data-surface', 'dark')
+  for (const mode of ['dark', 'light']) {
+    const frame = page.locator(`.branding-preview__frame[data-theme="${mode}"]`)
+    await expect(frame.locator('.branding-preview__logo')).toHaveAttribute('src', SIDEBAR_LOGO)
+    const sidebar = await frame
+      .locator('.branding-preview__sidebar')
+      .evaluate((element) => getComputedStyle(element).backgroundColor)
+    expect(sidebar).toBe(SIDEBAR_BY_THEME[mode].background)
+  }
 
   await page.locator('.branding-page__actions .btn--primary').click()
   await expect(page.locator('html')).toHaveAttribute('data-accent', 'amber')
@@ -213,7 +255,7 @@ test('branding: System Administrator picks an accent, the back office applies it
   expect(errors).toEqual([])
 })
 
-test('branding: one logo per background, previewed, and returned to the brand default by the global reset only', async ({
+test('branding: the dark-background logo drives the sidebar in light mode, previewed, and returned to the brand default by the global reset only', async ({
   page,
 }, testInfo) => {
   const errors = trackConsole(page)
@@ -223,39 +265,43 @@ test('branding: one logo per background, previewed, and returned to the brand de
     theme: 'light',
   })
   await page.goto('/admin/branding')
-  const lightField = page.locator('.logo-variant[data-surface="light"]')
-  await lightField.locator('input[type="file"]').setInputFiles({
-    name: 'moashir-on-light.svg',
+  await expect(page.locator('.sidebar__logo')).toHaveAttribute('src', SIDEBAR_LOGO)
+  await expect(page.locator('.logo-variant[data-surface="light"]')).toHaveCount(0)
+  const darkField = page.locator('.logo-variant[data-surface="dark"]')
+  await darkField.locator('input[type="file"]').setInputFiles({
+    name: 'moashir-on-dark.svg',
     mimeType: 'image/svg+xml',
     buffer: Buffer.from(
-      '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="48"><rect width="160" height="48" rx="8" fill="#022426"/></svg>',
+      '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="48"><rect width="160" height="48" rx="8" fill="#f5f8f8"/></svg>',
     ),
   })
-  await expect(lightField.locator('.logo-variant__image')).toHaveAttribute('src', /^blob:/)
-  await expect(
-    page.locator('.branding-preview__frame[data-theme="light"] .branding-preview__logo'),
-  ).toHaveAttribute('src', /^blob:/)
+  await expect(darkField.locator('.logo-variant__image')).toHaveAttribute('src', /^blob:/)
+  await expect(page.locator('.branding-preview__logo')).toHaveCount(2)
+  for (const logo of await page.locator('.branding-preview__logo').all())
+    await expect(logo).toHaveAttribute('src', /^blob:/)
   await page.locator('.branding-page__actions .btn--primary').click()
   await expect(page.locator('.toast').first()).toBeVisible()
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
   await expect(page.locator('.sidebar__logo')).toHaveAttribute(
     'src',
     /^\/api\/v1\/content\/files\/[0-9a-f-]{36}$/,
   )
-  await expect(lightField.locator('.badge--info')).toBeVisible()
+  await expect(darkField.locator('.badge--info')).toBeVisible()
   await expect(page.locator('.logo-variant button:not(.file-upload__dropzone)')).toHaveCount(0)
   await page.screenshot({
-    path: `${SHOTS}/branding-logos-light-${suffix(testInfo)}.png`,
+    path: `${SHOTS}/branding-logo-light-mode-${suffix(testInfo)}.png`,
+    fullPage: true,
+  })
+  await page.screenshot({
+    path: `${REPORT_SHOTS}/branding-logo-light-mode-${suffix(testInfo)}.png`,
     fullPage: true,
   })
 
   await page.locator('.branding-page__actions .btn--ghost').click()
   await page.locator('.modal .btn--danger').click()
-  await expect(page.locator('.sidebar__logo')).toHaveAttribute('src', SIDEBAR_BY_THEME.light.logo)
-  await expect(lightField.locator('.badge--info')).toHaveCount(0)
-  await expect(lightField.locator('.logo-variant__image')).toHaveAttribute(
-    'src',
-    SIDEBAR_BY_THEME.light.logo,
-  )
+  await expect(page.locator('.sidebar__logo')).toHaveAttribute('src', SIDEBAR_LOGO)
+  await expect(darkField.locator('.badge--info')).toHaveCount(0)
+  await expect(darkField.locator('.logo-variant__image')).toHaveAttribute('src', SIDEBAR_LOGO)
   expect(errors).toEqual([])
 })
 

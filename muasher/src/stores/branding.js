@@ -1,15 +1,15 @@
 import { defineStore } from 'pinia'
 import { brandingService } from '@/services/brandingService'
-import { DEFAULT_ACCENT_TOKEN, isKnownAccent } from '@/constants/branding'
+import { DEFAULT_ACCENT_TOKEN, LOGO_SURFACES, isKnownAccent } from '@/constants/branding'
 
-function emptyLogos() {
-  return { dark: null, light: null }
+function logosOf(source) {
+  return Object.fromEntries(LOGO_SURFACES.map((surface) => [surface, source?.[surface] ?? null]))
 }
 
 export const useBrandingStore = defineStore('branding', {
   state: () => ({
     accentToken: DEFAULT_ACCENT_TOKEN,
-    logos: emptyLogos(),
+    logos: logosOf(),
     status: 'idle',
   }),
   actions: {
@@ -17,7 +17,7 @@ export const useBrandingStore = defineStore('branding', {
       this.accentToken = isKnownAccent(theme?.accentToken)
         ? theme.accentToken
         : DEFAULT_ACCENT_TOKEN
-      this.logos = { ...emptyLogos(), ...theme?.logos }
+      this.logos = logosOf(theme?.logos)
     },
     async load() {
       this.status = 'loading'

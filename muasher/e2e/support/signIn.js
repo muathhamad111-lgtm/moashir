@@ -43,22 +43,10 @@ export async function typeCode(page, code) {
   await page.keyboard.type(code)
 }
 
-const LEVEL_ACHIEVED = '.modal:has(.level-achieved__body)'
-const LEVEL_ACHIEVED_WAIT_MS = 4000
-
-export function dismissLevelAchieved(page) {
-  return page
-    .locator(LEVEL_ACHIEVED)
-    .waitFor({ state: 'visible', timeout: LEVEL_ACHIEVED_WAIT_MS })
-    .then(() => page.keyboard.press('Escape'))
-    .catch(() => null)
-}
-
 export async function signInEntity(page, identifier) {
   await openSignIn(page)
   await submitSignIn(page, identifier)
   await expect(page.locator('.portal-top-bar')).toBeVisible()
-  await dismissLevelAchieved(page)
 }
 
 export async function signInEntityWithCode(page, identifier) {
@@ -67,5 +55,4 @@ export async function signInEntityWithCode(page, identifier) {
   await expect(page).toHaveURL(/\/auth\/otp/)
   await typeCode(page, DEV_OTP_CODE)
   await expect(page.locator('.portal-top-bar')).toBeVisible()
-  await dismissLevelAchieved(page)
 }

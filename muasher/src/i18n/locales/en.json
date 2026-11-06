@@ -4746,8 +4746,8 @@
       "legend": "Approved palette"
     },
     "logo": {
-      "title": "Back-office logos",
-      "hint": "Upload one logo for dark backgrounds and one for light backgrounds. The sidebar shows the logo that matches the active mode.",
+      "title": "Back-office logo",
+      "hint": "Upload a logo for dark backgrounds. The sidebar is dark in both light and dark modes, so it always shows this logo.",
       "custom": "Custom logo",
       "brandDefault": "Brand default",
       "invalidType": "File type not allowed. Use PNG or SVG.",
@@ -4755,13 +4755,8 @@
       "surfaces": {
         "dark": {
           "label": "Logo for dark backgrounds",
-          "hint": "Shown in the sidebar in dark mode. Use a light-colored logo: PNG or SVG with a transparent background, up to 1 MB.",
+          "hint": "Shown in the sidebar in both light and dark modes. Use a light-colored logo: PNG or SVG with a transparent background, up to 1 MB.",
           "preview": "Logo shown on dark backgrounds"
-        },
-        "light": {
-          "label": "Logo for light backgrounds",
-          "hint": "Shown in the sidebar in light mode. Use a dark-colored logo: PNG or SVG with a transparent background, up to 1 MB.",
-          "preview": "Logo shown on light backgrounds"
         }
       }
     },
@@ -4799,7 +4794,7 @@
     },
     "confirmReset": {
       "title": "Reset to the brand defaults?",
-      "message": "Both logos and the accent color return to the official Moashir identity for every user.",
+      "message": "The logo and the accent color return to the official Moashir identity for every user.",
       "confirm": "Reset"
     },
     "toast": {

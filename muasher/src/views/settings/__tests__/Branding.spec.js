@@ -19,7 +19,7 @@ const palette = brandingPaletteFixture.map((entry) => ({
   label: entry.label,
 }))
 
-function theme(accentToken = 'brand_default', logos = { dark: null, light: null }) {
+function theme(accentToken = 'brand_default', logos = { dark: null }) {
   return { data: { accentToken, logos, palette, updatedAt: null } }
 }
 
@@ -51,12 +51,15 @@ describe('Branding settings (System Administrator)', () => {
     wrapper.unmount()
   })
 
-  it('previews the selected accent in dark and light frames before saving', async () => {
+  it('previews the selected accent in dark and light frames, both with the dark sidebar logo', async () => {
     const { wrapper } = await mountView()
     await wrapper.findAll('.accent-swatch__input')[6].setValue(true)
     const frames = wrapper.findAll('.branding-preview__frame')
     expect(frames.map((frame) => frame.attributes('data-theme'))).toEqual(['dark', 'light'])
     frames.forEach((frame) => expect(frame.attributes('data-accent')).toBe('amber'))
+    const logos = frames.map((frame) => frame.find('.branding-preview__logo').attributes('src'))
+    expect(logos[0]).toMatch(/moashir-logo-on-dark/)
+    expect(logos[1]).toBe(logos[0])
     expect(useBrandingStore().accentToken).toBe('brand_default')
     wrapper.unmount()
   })
@@ -82,29 +85,29 @@ describe('Branding settings (System Administrator)', () => {
     wrapper.unmount()
   })
 
-  it('offers one logo for dark backgrounds and one for light backgrounds, on brand defaults', async () => {
+  it('offers only the dark-background logo used by the always-dark sidebar, on the brand default', async () => {
     const { wrapper } = await mountView('en')
     const fields = wrapper.findAll('.logo-variant')
-    expect(fields.map((field) => field.attributes('data-surface'))).toEqual(['dark', 'light'])
+    expect(fields.map((field) => field.attributes('data-surface'))).toEqual(['dark'])
     expect(fields[0].text()).toContain('Logo for dark backgrounds')
-    expect(fields[1].text()).toContain('Logo for light backgrounds')
-    fields.forEach((field) => expect(field.text()).toContain('Brand default'))
-    const images = wrapper.findAll('.logo-variant__image').map((image) => image.attributes('src'))
-    expect(images[0]).not.toBe(images[1])
+    expect(fields[0].text()).toContain('Shown in the sidebar in both light and dark modes')
+    expect(fields[0].text()).toContain('Brand default')
+    expect(wrapper.text()).not.toContain('Logo for light backgrounds')
+    expect(wrapper.find('.logo-variant__image').attributes('src')).toMatch(/moashir-logo-on-dark/)
     wrapper.unmount()
   })
 
-  it('shows each saved logo in its preview frame', async () => {
+  it('shows the saved dark-background logo in both preview frames and ignores a stored light one', async () => {
     brandingService.get.mockResolvedValue(
       theme('brand_default', { dark: 'blob:on-dark', light: 'blob:on-light' }),
     )
     const { wrapper } = await mountView('en')
     const frames = wrapper.findAll('.branding-preview__frame')
-    expect(frames[0].find('.branding-preview__logo').attributes('src')).toBe('blob:on-dark')
-    expect(frames[1].find('.branding-preview__logo').attributes('src')).toBe('blob:on-light')
-    wrapper
-      .findAll('.logo-variant')
-      .forEach((field) => expect(field.text()).toContain('Custom logo'))
+    frames.forEach((frame) =>
+      expect(frame.find('.branding-preview__logo').attributes('src')).toBe('blob:on-dark'),
+    )
+    expect(wrapper.html()).not.toContain('blob:on-light')
+    expect(wrapper.find('.logo-variant').text()).toContain('Custom logo')
     wrapper.unmount()
   })
 
@@ -133,22 +136,25 @@ describe('Branding settings (System Administrator)', () => {
     wrapper.unmount()
   })
 
-  it('uploads each selected logo with its background surface on save', async () => {
+  it('uploads the selected logo with its dark-background surface on save', async () => {
     const { wrapper } = await mountView()
     const uploads = wrapper.findAllComponents({ name: 'BaseFileUpload' })
-    uploads[1].vm.$emit('select', [new File(['png'], 'logo-dark.png', { type: 'image/png' })])
+    expect(uploads).toHaveLength(1)
+    uploads[0].vm.$emit('select', [new File(['png'], 'logo-light.png', { type: 'image/png' })])
     await flushPromises()
-    expect(wrapper.findAll('.logo-variant__image')[1].attributes('src')).toBe('blob:preview')
-    expect(wrapper.findAll('.branding-preview__logo')[1].attributes('src')).toBe('blob:preview')
+    expect(wrapper.find('.logo-variant__image').attributes('src')).toBe('blob:preview')
+    wrapper
+      .findAll('.branding-preview__logo')
+      .forEach((logo) => expect(logo.attributes('src')).toBe('blob:preview'))
     await wrapper.find('.branding-page__actions .btn--primary').trigger('click')
     await flushPromises()
     expect(brandingService.uploadLogo).toHaveBeenCalledTimes(1)
-    expect(brandingService.uploadLogo).toHaveBeenCalledWith(expect.any(File), 'light', null)
+    expect(brandingService.uploadLogo).toHaveBeenCalledWith(expect.any(File), 'dark', null)
     expect(brandingService.update).toHaveBeenCalled()
     wrapper.unmount()
   })
 
-  it('resets the accent and both logos to the brand defaults only after confirmation', async () => {
+  it('resets the accent and the logo to the brand defaults only after confirmation', async () => {
     brandingService.get.mockResolvedValue(
       theme('coral', { dark: 'blob:on-dark', light: 'blob:on-light' }),
     )
@@ -160,7 +166,7 @@ describe('Branding settings (System Administrator)', () => {
     await flushPromises()
     expect(brandingService.reset).toHaveBeenCalledTimes(1)
     expect(useBrandingStore().accentToken).toBe('brand_default')
-    expect(useBrandingStore().logos).toEqual({ dark: null, light: null })
+    expect(useBrandingStore().logos).toEqual({ dark: null })
     wrapper
       .findAll('.logo-variant')
       .forEach((field) => expect(field.text()).toContain('Brand default'))
@@ -168,7 +174,7 @@ describe('Branding settings (System Administrator)', () => {
   })
 
   it('keeps the saved identity when the global reset fails', async () => {
-    brandingService.get.mockResolvedValue(theme('coral', { dark: 'blob:on-dark', light: null }))
+    brandingService.get.mockResolvedValue(theme('coral', { dark: 'blob:on-dark' }))
     brandingService.reset.mockRejectedValueOnce(new Error('offline'))
     const { wrapper } = await mountView('en')
     await wrapper.find('.branding-page__actions .btn--ghost').trigger('click')

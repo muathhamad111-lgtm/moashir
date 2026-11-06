@@ -25,6 +25,10 @@ vi.mock('@/services/certificatesService', () => ({
 vi.mock('@/services/accreditedService', () => ({
   accreditedService: { getCurrent: vi.fn() },
 }))
+vi.mock('@/config/levelAchieved', async (importOriginal) => ({
+  ...(await importOriginal()),
+  LEVEL_ACHIEVED_SINCE: Date.parse('2026-10-15T00:00:00+03:00'),
+}))
 
 const GOLD = {
   id: 'c-gold',
@@ -195,6 +199,15 @@ describe('PortalLayout', () => {
     const badge = wrapper.find('.account-menu__level')
     expect(badge.find('.level-badge__label').text()).toBe('ذهبي')
     expect(badge.find('.level-badge__chip').text()).toBe('قيد إعادة التقييم')
+  })
+
+  it('shows no level-achieved dialog for a certificate issued before the cut-off', async () => {
+    certificatesService.listCards.mockResolvedValue({
+      data: [{ ...GOLD, issuedAt: '2026-09-05T08:00:00Z' }],
+    })
+    const wrapper = await at('/dashboard')
+    expect(wrapper.find('.account-menu__level .level-badge__label').text()).toBe('ذهبي')
+    expect(document.body.querySelector('.modal')).toBeNull()
   })
 
   it('opens the level-achieved dialog once per new certificate', async () => {

@@ -130,6 +130,8 @@ jobs:
       - run: npm ci --no-fund
       - name: Build the SPA in full mock mode
         run: npm run build
+        env:
+          VITE_LEVEL_ACHIEVED_SINCE: "2026-11-06"
 
       - name: Playwright version
         id: playwright

@@ -4,11 +4,7 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   accentToken: { type: String, required: true },
-  logos: {
-    type: Object,
-    required: true,
-    validator: (value) => Boolean(value?.dark && value?.light),
-  },
+  logo: { type: String, required: true },
 })
 
 const { t } = useI18n()
@@ -27,7 +23,7 @@ const MODES = ['dark', 'light']
       <figcaption class="branding-preview__caption">{{ t(`branding.preview.${mode}`) }}</figcaption>
       <div class="branding-preview__shell" aria-hidden="true">
         <div class="branding-preview__sidebar">
-          <img class="branding-preview__logo" :src="logos[mode]" alt="" />
+          <img class="branding-preview__logo" :src="logo" alt="" />
           <span class="branding-preview__item">
             <AppIcon name="gauge" />{{ t('branding.preview.menuDashboard') }}
           </span>

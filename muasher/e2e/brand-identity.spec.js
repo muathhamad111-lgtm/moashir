@@ -173,3 +173,26 @@ test('the favicon and app icons follow the identity', async ({ page }) => {
   const manifest = await (await page.request.get('/site.webmanifest')).json()
   expect(manifest.theme_color).toBe('#0a2325')
 })
+
+test('light mode: public navigation keeps the on-light logo while the staff sidebar stays dark with the on-dark logo', async ({
+  page,
+}, testInfo) => {
+  await seedPreferences(page, { locale: localeOf(testInfo), theme: 'light' })
+  await openScreen(page, PUBLIC_SCREENS[0])
+  await expect(page.locator('.navbar__logo')).toHaveAttribute('src', /moashir-logo-on-light/)
+
+  await seedSignedIn(
+    page,
+    { id: 7001, roles: ['system_admin'], name: { ar: 'نورة بنت سعد', en: 'Noura Saad' } },
+    { locale: localeOf(testInfo), theme: 'light' },
+  )
+  await page.goto('/admin/settings')
+  await expect(page.locator('.sidebar__logo')).toHaveAttribute('src', /moashir-logo-on-dark/)
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+  expect(
+    await page.locator('.sidebar').evaluate((element) => getComputedStyle(element).backgroundImage),
+  ).toContain('linear-gradient')
+  expect(await contrastOf(page, '.sidebar__item:not(.is-active):visible')).toBeGreaterThanOrEqual(
+    AA_TEXT,
+  )
+})

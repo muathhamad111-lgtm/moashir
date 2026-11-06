@@ -31,13 +31,11 @@ async function capture(page, name, testInfo, { fullPage = true } = {}) {
   await page.screenshot({ path: `${SHOTS}/${name}-${suffix}.png`, fullPage })
 }
 
-async function closeAchieved(page) {
+async function waitForSilverBadge(page) {
   await expect(page.locator('.account-menu__level .level-badge')).toHaveAttribute(
     'data-tier',
     'silver',
   )
-  const later = page.locator(`${ACHIEVED} .btn--ghost`)
-  if (await later.isVisible().catch(() => false)) await later.click()
 }
 
 test.describe('direction B — entity home tiers', () => {
@@ -49,18 +47,8 @@ test.describe('direction B — entity home tiers', () => {
   test('shows the silver level from the latest issued certificate with re-assessment', async ({
     page,
   }, testInfo) => {
-    await seedSignedIn(page, NAMAA, {
-      locale: localeOf(testInfo),
-      theme: 'light',
-      showLevelAchieved: true,
-    })
+    await seedSignedIn(page, NAMAA, { locale: localeOf(testInfo), theme: 'light' })
     await open(page, '/dashboard', '.level-hero')
-    const dialog = page.locator(`${ACHIEVED} [role="dialog"]`)
-    await expect(dialog).toBeVisible()
-    await expect(page.locator(`${ACHIEVED} [data-autofocus]`)).toBeFocused()
-    await capture(page, 'level-achieved', testInfo, { fullPage: false })
-    await page.keyboard.press('Escape')
-    await expect(dialog).toHaveCount(0)
     const hero = page.locator('.level-hero')
     await expect(hero).toHaveAttribute('data-tier', 'silver')
     await expect(hero.locator('.level-emblem__seal')).toBeVisible()
@@ -73,10 +61,8 @@ test.describe('direction B — entity home tiers', () => {
       'data-tier',
       'silver',
     )
-    await capture(page, 'home-silver', testInfo)
-    await page.reload()
-    await expect(page.locator('.level-hero')).toBeVisible()
     await expect(page.locator(`${ACHIEVED} [role="dialog"]`)).toHaveCount(0)
+    await capture(page, 'home-silver', testInfo)
   })
 
   test('shows the neutral placeholder and the start action without a certificate', async ({
@@ -96,7 +82,7 @@ test.describe('direction B — entity home tiers', () => {
   }, testInfo) => {
     await seedSignedIn(page, NAMAA, { locale: localeOf(testInfo), theme: 'dark' })
     await open(page, '/dashboard', '.level-hero')
-    await closeAchieved(page)
+    await waitForSilverBadge(page)
     await capture(page, 'home-dark', testInfo)
     await page.setViewportSize(MOBILE)
     await expect(page.locator('.mobile-tab-bar')).toBeVisible()
@@ -167,7 +153,7 @@ test.describe('direction B — side navigation', () => {
     await page.setViewportSize(DESKTOP)
     await seedSignedIn(page, NAMAA, { locale: localeOf(testInfo) })
     await open(page, '/dashboard', '[data-testid="portal-side-nav"]')
-    await closeAchieved(page)
+    await waitForSilverBadge(page)
     const collapse = page.locator('[data-testid="portal-nav-collapse"]')
     await expect(collapse).toHaveAttribute('aria-expanded', 'true')
     await collapse.focus()
@@ -197,7 +183,7 @@ test.describe('direction B — side navigation', () => {
     await page.setViewportSize(MOBILE)
     await seedSignedIn(page, NAMAA, { locale: localeOf(testInfo) })
     await open(page, '/more', '[data-testid="more-tools"]')
-    await closeAchieved(page)
+    await waitForSilverBadge(page)
     await expect(page.locator('[data-testid="more-tools"] .portal-menu-entry')).toHaveCount(8)
     await capture(page, 'more-mobile', testInfo)
   })

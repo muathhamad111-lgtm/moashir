@@ -26,11 +26,12 @@ export const LOGO_RULES = {
   accept: '.png,.svg,image/png,image/svg+xml',
 }
 
-export const LOGO_SURFACES = ['dark', 'light']
+export const SIDEBAR_LOGO_SURFACE = 'dark'
+
+export const LOGO_SURFACES = [SIDEBAR_LOGO_SURFACE]
 
 export const LOGO_VARIANT_BY_SURFACE = {
   dark: 'light',
-  light: 'dark',
 }
 
 export function isKnownAccent(token) {

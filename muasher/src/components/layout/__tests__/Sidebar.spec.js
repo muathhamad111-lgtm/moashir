@@ -210,7 +210,7 @@ describe('Sidebar', () => {
     expect(wrapper.find('.sidebar__logo').attributes('alt')).toBe('مؤشر، الانتقال إلى لوحة التحكم')
   })
 
-  it('switches to the logo of the active background: dark mode then light mode', async () => {
+  it('always shows the logo for a dark background, in dark mode and in light mode', async () => {
     const { wrapper, globals } = factory()
     const ui = useUiStore(globals.pinia)
     ui.setTheme('dark')
@@ -218,19 +218,22 @@ describe('Sidebar', () => {
     expect(wrapper.find('.sidebar__logo').attributes('src')).toBe(DEFAULT_BACK_OFFICE_LOGOS.dark)
     ui.setTheme('light')
     await wrapper.vm.$nextTick()
-    expect(wrapper.find('.sidebar__logo').attributes('src')).toBe(DEFAULT_BACK_OFFICE_LOGOS.light)
+    expect(wrapper.find('.sidebar__logo').attributes('src')).toBe(DEFAULT_BACK_OFFICE_LOGOS.dark)
   })
 
-  it('prefers the custom logo uploaded for the active background', async () => {
-    const { wrapper, globals } = factory()
-    useUiStore(globals.pinia).setTheme('light')
-    useBrandingStore(globals.pinia).apply({
-      accentToken: 'brand_default',
-      logos: { dark: null, light: 'blob:on-light' },
-    })
-    await wrapper.vm.$nextTick()
-    expect(wrapper.find('.sidebar__logo').attributes('src')).toBe('blob:on-light')
-  })
+  it.each(['dark', 'light'])(
+    'prefers the custom dark-background logo in %s mode',
+    async (theme) => {
+      const { wrapper, globals } = factory()
+      useUiStore(globals.pinia).setTheme(theme)
+      useBrandingStore(globals.pinia).apply({
+        accentToken: 'brand_default',
+        logos: { dark: 'blob:on-dark', light: 'blob:on-light' },
+      })
+      await wrapper.vm.$nextTick()
+      expect(wrapper.find('.sidebar__logo').attributes('src')).toBe('blob:on-dark')
+    },
+  )
 
   it('collapses via the ui store keeping accessible names', async () => {
     const { wrapper, globals } = factory({ roles: [ROLES.ENTITY] })

@@ -9,12 +9,6 @@
   @include respond-to('md') {
     grid-template-columns: var(--size-logo-preview) 1fr;
   }
-
-  & + & {
-    margin-block-start: var(--space-6);
-    padding-block-start: var(--space-6);
-    border-block-start: var(--border-width) solid var(--theme-border);
-  }
 }
 
 .logo-variant__tile {
@@ -25,10 +19,6 @@
 
   [data-surface='dark'] > & {
     background-color: var(--color-dark-deep);
-  }
-
-  [data-surface='light'] > & {
-    background-color: var(--color-secondary);
   }
 }
 

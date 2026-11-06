@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { mockSessionCookie, seedSignedIn } from './support/session'
+import { pinMockClock } from './support/clock'
 
 const IGNORED_CONSOLE = /Failed to load resource|50\d|Service Unavailable/i
 const SHOTS = 'e2e/__screenshots__/search'
@@ -42,6 +43,7 @@ test('follower finds entities and requests grouped, navigates with the keyboard'
   page,
 }, testInfo) => {
   const errors = trackConsole(page)
+  await pinMockClock(page)
   await seedSession(page, { roles: ['request_follower'], locale: isEn(testInfo) ? 'en' : 'ar' })
   await page.goto('/dashboard')
   const input = combobox(page)

@@ -2,7 +2,7 @@
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { ROUTE_NAMES } from '@/constants/routeNames'
-import { LOGO_SURFACES } from '@/constants/branding'
+import { LOGO_SURFACES, SIDEBAR_LOGO_SURFACE } from '@/constants/branding'
 import { useBrandingEditor } from '@/composables/useBrandingEditor'
 import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
@@ -154,7 +154,7 @@ async function onReset() {
       <aside class="branding-page__preview" :aria-label="t('branding.preview.title')">
         <h2 class="branding-page__preview-title">{{ t('branding.preview.title') }}</h2>
         <p class="branding-page__hint">{{ t('branding.preview.hint') }}</p>
-        <BrandingPreview :accent-token="draftToken" :logos="previewLogos" />
+        <BrandingPreview :accent-token="draftToken" :logo="previewLogos[SIDEBAR_LOGO_SURFACE]" />
       </aside>
     </div>
     <ReasonDialog
