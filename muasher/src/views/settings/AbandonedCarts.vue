@@ -14,7 +14,7 @@ import { useFinanceList } from '@/composables/useFinanceList'
 import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
 import { messagingService } from '@/services/messagingService'
-import { PAYMENT_PURPOSE_VALUES } from '@/constants/payments'
+import { CART_PURPOSE_VALUES } from '@/constants/payments'
 import { ABANDONED_CART_CONTACTED } from '@/constants/finance'
 import { formatDate } from '@/utils/datetime'
 import { SHOWS_MODULES_AWAITING_BACKEND } from '@/constants/buildPosture'
@@ -33,7 +33,7 @@ const { pagination, setPage } = paginator
 
 const purposeOptions = computed(() => [
   { value: '', label: t('settings.carts.allPurposes') },
-  ...PAYMENT_PURPOSE_VALUES.map((value) => ({ value, label: t(`finance.purposes.${value}`) })),
+  ...CART_PURPOSE_VALUES.map((value) => ({ value, label: t(`finance.purposes.${value}`) })),
 ])
 const contactedOptions = computed(() => [
   { value: '', label: t('settings.carts.allContacts') },

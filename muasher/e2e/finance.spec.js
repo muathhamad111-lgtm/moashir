@@ -55,7 +55,7 @@ test('the finance officer reads the live summary by service', async ({ page }, t
   await seedStaff(page, testInfo, STAFF.financeOfficer)
   await page.goto('/finance')
   await expect(page.locator('.stats-card')).toHaveCount(7)
-  await expect(page.locator('.purpose-breakdown tbody tr')).toHaveCount(2)
+  await expect(page.locator('.purpose-breakdown tbody tr')).toHaveCount(4)
   await expect(page.locator('.finance-nav__link')).toHaveCount(4)
   await page.screenshot({
     path: `test-results/finance-summary-${suffixOf(testInfo)}.png`,
@@ -231,10 +231,15 @@ test('the Super Admin gives a reason before a finance setting changes', async ({
 }, testInfo) => {
   await seedStaff(page, testInfo, STAFF.superAdmin)
   await page.goto('/admin/settings/finance')
-  await page.locator('input[name="bagPrice"]').fill('3000')
+  await expect(page.locator('input[name="bagPrice"]')).toHaveCount(0)
+  await expect(page.locator('[data-testid="finance-prices-moved"] a')).toHaveAttribute(
+    'href',
+    '/admin/settings/prices',
+  )
+  await page.locator('input[name="vatRate"]').fill('5')
   await page.locator('.settings-section .btn--primary').click()
   const dialog = page.getByRole('dialog')
-  await dialog.locator('textarea[name="reason"]').fill('Approved price list for the next cycle.')
+  await dialog.locator('textarea[name="reason"]').fill('Approved VAT change for the next cycle.')
   await dialog.locator('button[type="submit"]').click()
-  await expect(page.locator('input[name="bagPrice"]')).toHaveValue('3000.00')
+  await expect(page.locator('input[name="vatRate"]')).toHaveValue('5.00')
 })

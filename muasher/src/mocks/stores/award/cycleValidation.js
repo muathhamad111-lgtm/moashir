@@ -116,6 +116,14 @@ function conditionErrors(body, errors) {
   }
 }
 
+const FEE_PATTERN = /^\d{1,7}\.\d{2}$/
+
+function feeErrors(body, errors) {
+  if (!has(body, 'entryFee')) return
+  if (typeof body.entryFee !== 'string' || !FEE_PATTERN.test(body.entryFee))
+    errors.entryFee = [fieldMessage('validation.invalid', {}, 'entryFee')]
+}
+
 export function cycleErrors(body, { required }) {
   const errors = {}
   nameErrors(body, required, errors)
@@ -126,6 +134,7 @@ export function cycleErrors(body, { required }) {
       errors.criteriaVersionId = [fieldMessage('validation.required', {}, 'criteriaVersionId')]
   }
   conditionErrors(body, errors)
+  feeErrors(body, errors)
   if (has(body, 'status')) errors.status = [fieldMessage('validation.invalid', {}, 'toStatus')]
   const reason = reasonError(body.reason)
   if (reason) errors.reason = reason

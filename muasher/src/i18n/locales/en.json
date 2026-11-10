@@ -780,13 +780,13 @@
       }
     },
     "assessment": {
-      "history": {
-        "title": "Assessments"
-      },
       "self": {
         "title": "Self Assessment",
         "result": {
           "title": "Self Assessment Result"
+        },
+        "pay": {
+          "title": "Self assessment fee"
         }
       },
       "accredited": {
@@ -796,9 +796,6 @@
         },
         "form": {
           "title": "Accredited Assessment Form"
-        },
-        "result": {
-          "title": "Accredited Assessment Result"
         }
       },
       "advanced": {
@@ -808,6 +805,9 @@
         },
         "result": {
           "title": "Advanced Assessment Result"
+        },
+        "pay": {
+          "title": "Award entry fee"
         }
       }
     },
@@ -979,7 +979,7 @@
           "title": "Assistant knowledge base"
         },
         "finance": {
-          "title": "Prices and VAT"
+          "title": "VAT and payment orders"
         },
         "signIn": {
           "title": "Sign-in security"
@@ -989,6 +989,9 @@
         },
         "maturityTexts": {
           "title": "Maturity texts"
+        },
+        "prices": {
+          "title": "Path prices"
         }
       },
       "criteria": {
@@ -1110,6 +1113,20 @@
       },
       "accessibility": {
         "title": "Accessibility statement"
+      }
+    },
+    "paths": {
+      "self": {
+        "title": "Self assessment"
+      },
+      "accredited": {
+        "title": "Accredited assessment"
+      },
+      "request": {
+        "title": "Accredited request"
+      },
+      "award": {
+        "title": "Award"
       }
     }
   },
@@ -2558,7 +2575,8 @@
       "read_contact_replies": "New replies to your messages",
       "review_bank_transfers": "Transfers awaiting approval",
       "bank_transfer_under_review": "Your transfer is under review",
-      "bank_transfer_rejected": "Transfer rejected: submit a new payment request"
+      "bank_transfer_rejected": "Transfer rejected: submit a new payment request",
+      "award_paid_after_window": "Award fees paid after the submission window closed"
     },
     "cards": {
       "entities_total": "Entities",
@@ -2888,7 +2906,9 @@
         "title": "The self assessment is not available",
         "entityNotActive": "The entity account must be active to take part in assessments.",
         "entityRequired": "Only an entity account can start a self assessment.",
-        "entityDeleted": "This entity was deleted. Its records are frozen until the entity is restored."
+        "entityDeleted": "This entity was deleted. Its records are frozen until the entity is restored.",
+        "pathUnavailable": "The self assessment is not available at the moment.",
+        "paymentProcessing": "Your payment went through and the self assessment is being opened. Refresh the page in a moment."
       },
       "start": {
         "title": "Start a new self assessment",
@@ -2898,13 +2918,6 @@
         "action": "Start the self assessment"
       },
       "pointScoreLabel": "Score of {code}"
-    },
-    "history": {
-      "scored": "Scored {percent}%",
-      "inProgress": "In progress",
-      "viewResult": "View result",
-      "continueDraft": "Continue the draft",
-      "openRequest": "Open the request"
     },
     "result": {
       "pendingTitle": "The result is not issued yet",
@@ -3043,8 +3056,8 @@
           "desc": "City list of each region used in registration."
         },
         "finance": {
-          "title": "Prices and VAT",
-          "desc": "Service prices before VAT, the VAT rate and the payment order validity."
+          "title": "VAT and payment orders",
+          "desc": "The VAT rate, the payment order validity and the VAT registration number."
         },
         "signIn": {
           "title": "Sign-in security",
@@ -3057,6 +3070,10 @@
         "maturityTexts": {
           "title": "Maturity texts",
           "desc": "Generic and per-criterion interpretation texts for the maturity stages."
+        },
+        "prices": {
+          "title": "Path prices",
+          "desc": "Each path price before VAT, its availability, effective date and change history."
         }
       }
     },
@@ -3338,9 +3355,6 @@
       "reviewSlaDays": "Review deadline (days)",
       "uploadsNote": "These limits apply to the evidence of this path only.",
       "priceTitle": "Path price",
-      "priceNote": "The price before VAT. The VAT and the total follow the VAT rate of the finance settings.",
-      "priceBeforeVat": "Price before VAT (SAR)",
-      "priceHint": "A positive amount with up to two decimals, such as 1150.00.",
       "textsTitle": "Texts shown to the entity",
       "textsNote": "These texts appear in the path guide of the entity. Enter each text in both Arabic and English or leave both empty, up to {max} characters per language.",
       "texts": {
@@ -3357,7 +3371,8 @@
         "textMax": "Up to {max} characters.",
         "textPair": "Enter the text in both languages or leave both empty."
       },
-      "noPrice": "No price is set for this path yet. Entities cannot pay until it is set."
+      "noPrice": "No payment is requested for this path now: it is free, or its price is not set yet and it stays unavailable to entities until it is.",
+      "priceMoved": "The path price and availability are edited in Path prices."
     },
     "certificates": {
       "title": "Certificate settings",
@@ -3626,6 +3641,81 @@
       "saved": "The text was saved.",
       "deleted": "The criterion text was deleted.",
       "failed": "The text could not be saved. Check the fields and try again."
+    },
+    "prices": {
+      "title": "Path prices",
+      "description": "Set each path price before VAT and its availability. A price of 0 makes the path free, with no payment and no receipt.",
+      "vatNote": "VAT at {rate}% and the total are computed by the server on save. A change never alters existing orders, transfers, drafts or receipts.",
+      "reasonTitle": "Reason for the price change",
+      "rows": {
+        "self": {
+          "title": "Self assessment",
+          "lead": "When priced, the entity pays before the draft opens."
+        },
+        "accredited": {
+          "title": "Accredited assessment",
+          "lead": "A price of 0 opens the request directly, without a payment step."
+        },
+        "award": {
+          "title": "Award (default price)",
+          "lead": "Copied into the fee of each new cycle. The cycle fee is edited in the cycle setup until applications open."
+        },
+        "bag": {
+          "title": "Quick Excellence Kit",
+          "lead": "The Kit price and availability. The Kit marketing content stays in its own settings."
+        }
+      },
+      "inForce": "Price in force",
+      "scheduled": "Scheduled price",
+      "unset": "No price is set yet. The path stays unavailable until it is set.",
+      "system": "System",
+      "setBy": "Set by {name} on {date}",
+      "effectiveOn": "Takes effect on {date}",
+      "cancelScheduled": "Cancel the scheduled price",
+      "scheduledCancelled": "The scheduled price is cancelled.",
+      "replacesScheduled": "Saving a new value cancels the current scheduled price.",
+      "stale": "Another user changed this price before you saved. The current value is shown. Review it, then save again.",
+      "saved": "The price is saved.",
+      "unchanged": "The price and the availability did not change.",
+      "availability": {
+        "available": "Available",
+        "paused": "Paused",
+        "hidden": "Hidden"
+      },
+      "fields": {
+        "price": "Price before VAT (SAR)",
+        "priceHint": "0 or more with two decimals. 0 means free.",
+        "availability": "Availability",
+        "effectiveFrom": "Effective from (optional)",
+        "effectiveFromHint": "Leave it empty to apply now, or pick a date that starts at midnight Riyadh time."
+      },
+      "validation": {
+        "price": "Enter a number with at most two decimals.",
+        "max": "The price may not exceed {max}.",
+        "effectiveFrom": "Choose a date between {min} and {max}."
+      },
+      "history": {
+        "title": "Price history",
+        "toggle": "Price history ({count})",
+        "empty": "No changes are recorded.",
+        "when": "When",
+        "who": "By",
+        "before": "Before",
+        "after": "After",
+        "effective": "Effective from",
+        "state": "Status",
+        "states": {
+          "in_force": "In force",
+          "scheduled": "Scheduled",
+          "superseded": "Superseded",
+          "cancelled": "Cancelled"
+        }
+      },
+      "errors": {
+        "prices": {
+          "no_scheduled_version": "This path has no scheduled price any more: it was cancelled or took effect. Refresh the page."
+        }
+      }
     }
   },
   "accredited": {
@@ -3802,10 +3892,12 @@
     "submit": {
       "title": "Send the request for review?",
       "resubmitTitle": "Resend the request?",
-      "lockNote": "The form becomes read-only after submission."
+      "lockNote": "The form becomes read-only after submission.",
+      "periodLine": "Period: {period}",
+      "blockedTitle": "Submission opens on {date}",
+      "blockedMessage": "Your entity is assessed in this period. Your draft stays saved."
     },
     "result": {
-      "title": "Accredited assessment result",
       "totalOf": "{total} of {max} points",
       "percentAria": "Overall score {percent} percent",
       "completedAt": "Completed on",
@@ -3813,7 +3905,6 @@
       "feedbackTitle": "Feedback per sub-criterion",
       "feedbackHint": "Strengths, improvement points and notes written by the assessor.",
       "noFeedback": "No feedback was written for this sub-criterion.",
-      "back": "Back to the accredited assessment",
       "missing": {
         "title": "Result not found",
         "message": "This result does not exist or is not available to your account."
@@ -5063,7 +5154,9 @@
       },
       "linkedPaths": {
         "accredited": "Accredited assessment",
-        "bag": "Quick Excellence Kit"
+        "bag": "Quick Excellence Kit",
+        "self": "Self assessment",
+        "award": "Award participation fee"
       },
       "webhook": {
         "registered": "Webhook registered",
@@ -5448,7 +5541,9 @@
     },
     "purposes": {
       "accredited": "Accredited assessment",
-      "bag": "Quick Excellence Kit"
+      "bag": "Quick Excellence Kit",
+      "self": "Self assessment",
+      "award": "Award participation fee"
     },
     "status": {
       "created": "Awaiting payment",
@@ -5519,7 +5614,8 @@
       "channel": "Payment channel",
       "destination": "Destination account",
       "destinationLine": "{bank} · ends in {last4}",
-      "rejectedAt": "Rejected on"
+      "rejectedAt": "Rejected on",
+      "awardCycle": "Award cycle"
     },
     "filters": {
       "status": "Status",
@@ -5552,7 +5648,9 @@
       "eyebrow": "Secure payment",
       "title": {
         "accredited": "Accredited assessment payment",
-        "bag": "Quick Excellence Kit payment"
+        "bag": "Quick Excellence Kit payment",
+        "self": "Self assessment payment",
+        "award": "Award entry fee payment"
       },
       "securedBy": "Payments are processed by the Moyasar payment gateway. Card details are entered in the Moyasar form only and never reach the platform.",
       "intro": "Start the payment to create a payment order. The platform calculates the price before VAT, the VAT and the total, and keeps the order open for a limited time.",
@@ -5580,7 +5678,8 @@
       "retry": "Try again",
       "feesAtCheckout": "The price before VAT, the VAT and the total are calculated by the platform when you start the payment.",
       "channelLabel": "Payment method",
-      "referenceOnSubmit": "Order number: created when you send"
+      "referenceOnSubmit": "Order number: created when you send",
+      "backToPath": "Back to the path page"
     },
     "return": {
       "eyebrow": "Payment result",
@@ -5635,7 +5734,9 @@
       "myPayments": "Go to My Payments",
       "next": {
         "accredited": "Go to the accredited assessment",
-        "bag": "Go to the Quick Excellence Kit"
+        "bag": "Go to the Quick Excellence Kit",
+        "self": "Go to the self assessment",
+        "award": "Go to the award form"
       }
     },
     "detail": {
@@ -5855,13 +5956,8 @@
       }
     },
     "settings": {
-      "title": "Prices and VAT",
-      "description": "Service prices before VAT, the VAT rate and the payment order validity.",
-      "pricesTitle": "Service prices",
-      "pricesNote": "Prices are entered before VAT. Existing payments and open orders keep the price they were created with.",
-      "accreditedPrice": "Accredited assessment price",
-      "bagPrice": "Quick Excellence Kit price",
-      "priceHint": "Before VAT, in {currency}, with two decimals.",
+      "title": "VAT and payment orders",
+      "description": "The VAT rate, the payment order validity and the VAT registration number.",
       "taxTitle": "VAT and order validity",
       "vatRate": "VAT rate (%)",
       "vatHint": "One rate for every paid service, from 0 to 100.",
@@ -5876,8 +5972,6 @@
       "unchanged": "Nothing has changed.",
       "reasonTitle": "Reason for the change",
       "validation": {
-        "price": "Enter a price with at most 7 digits and up to two decimals, such as 1500.00.",
-        "pricePositive": "The price must be greater than zero.",
         "vat": "Enter a rate from 0 to 100 with up to two decimals.",
         "validity": "Enter a whole number of minutes from {min} to {max}.",
         "vatNumber": "Enter 15 digits that start and end with 3, without spaces."
@@ -5886,7 +5980,9 @@
       "vatNumber": "Platform VAT registration number — optional",
       "vatNumberHint": "15 digits that start and end with 3. It appears on new receipts only and may be left empty.",
       "vatNumberReminder": "The platform VAT registration number is not set; receipts will not show it until it is set. This is a reminder only; it blocks neither payments nor receipts.",
-      "adminOnly": "System Administrator only"
+      "adminOnly": "System Administrator only",
+      "pricesMoved": "Path prices and availability are edited in Path prices. The prices below are shown for reference only.",
+      "openPrices": "Open Path prices"
     },
     "validation": {
       "maxChars": "Must be at most {max} characters",
@@ -5912,7 +6008,6 @@
         "not_configured": "Online payment is not available yet. Try again later."
       },
       "payment": {
-        "price_not_configured": "The price of this service is not set yet. Try again later.",
         "entity_required": "Only an entity account can pay for a service.",
         "entity_not_active": "The entity account must be active to pay for a service.",
         "checkout_in_progress": "This payment is being prepared. Try again in a moment.",
@@ -5925,7 +6020,9 @@
         "channel_not_supported": "This action does not apply to bank-transfer payment requests.",
         "open_order_exists": "You already have an open payment request for this service. Complete it or wait for its review.",
         "gateway_not_ready": "Electronic payment cannot be enabled before the payment gateway is configured and activated.",
-        "bank_account_required": "Add at least one active bank account before enabling bank transfer."
+        "bank_account_required": "Add at least one active bank account before enabling bank transfer.",
+        "not_required": "This service is free now and needs no payment.",
+        "award_cycle_not_found": "The selected award cycle was not found. Go back to the award page and try again."
       },
       "idempotency_key": {
         "missing": "The payment request could not be identified. Try again.",
@@ -5965,6 +6062,17 @@
         "last_active_account": "This is the last active bank account and bank transfer is enabled. Add another account or turn bank transfer off first.",
         "limit_reached": "The limit of active bank accounts is reached. Deactivate an account before adding or activating another.",
         "payee_fields_immutable": "Payee details cannot change after saving. Add a new account, then deactivate or delete the old one."
+      },
+      "path": {
+        "unavailable": "This path is not available at the moment.",
+        "payment_required": "This path requires payment before it starts."
+      },
+      "self": {
+        "payment_being_processed": "Your payment went through and the self assessment is being opened.",
+        "draft_exists": "Your entity has an open self assessment. Continue it first."
+      },
+      "advanced": {
+        "payment_being_processed": "Your payment went through and the award form is being opened."
       }
     },
     "channels": {
@@ -6344,7 +6452,8 @@
         "basics": "Cycle name",
         "windows": "Dates",
         "assessment": "Regions and criteria",
-        "conditions": "Entry conditions and deadlines"
+        "conditions": "Entry conditions and deadlines",
+        "fee": "Cycle entry fee"
       },
       "nameAr": "Name in Arabic",
       "nameEn": "Name in English",
@@ -6376,7 +6485,11 @@
       "save": "Save the changes",
       "created": "The cycle was created as a draft.",
       "updated": "The cycle was updated.",
-      "noChanges": "There are no changes to save."
+      "noChanges": "There are no changes to save.",
+      "entryFee": "Entry fee before VAT (SAR)",
+      "entryFeeHint": "0 means free entry. The fee is fixed on each payment when it is created.",
+      "entryFeeDefaultHint": "Leave it empty to use the default award price from Path prices. 0 means free entry.",
+      "entryFeeLocked": "The fee cannot change once the submission window has opened."
     },
     "validation": {
       "between": "Enter a whole number from {min} to {max}.",
@@ -6388,7 +6501,8 @@
         "committeeStart": "The committee assessment must start on or after the submission end.",
         "committeeEnd": "The committee assessment end must come after its start.",
         "announcementAt": "The announcement must come on or after the committee assessment end."
-      }
+      },
+      "entryFee": "Enter a number with at most two decimals, or 0 for free entry."
     },
     "actions": {
       "title": "Cycle stage",
@@ -7206,12 +7320,12 @@
       "label": "Organization portal navigation",
       "mobileLabel": "Quick navigation",
       "journey": "Journey",
-      "assessments": "Assessments",
       "certificates": "Certificates",
       "payments": "Payments",
       "messages": "Messages",
       "more": "More",
-      "unread": "no new replies | {count} new reply | {count} new replies"
+      "unread": "no new replies | {count} new reply | {count} new replies",
+      "paths": "Paths"
     },
     "bell": {
       "label": "Notifications, none unread | Notifications, {count} unread | Notifications, {count} unread"
@@ -7307,153 +7421,79 @@
       },
       "hero": {
         "eyebrow": "Excellence journey",
-        "title": "Welcome, {name}",
-        "lead": "You are now at the {station} station.",
-        "leadWithResult": "You completed the self assessment with {percent}, and you are now at the {station} station.",
-        "leadComplete": "You completed every station of the journey. Your certificate is in My certificates."
-      },
-      "path": {
-        "title": "Where is your organization now?",
-        "subtitle": "A four-station path: from the profile to the certificate.",
-        "position": "Station {current} of {total}",
-        "after": "After the certificate: the advanced assessment (Award) and the Quick Excellence Kit",
-        "soon": "Coming soon"
-      },
-      "stationStates": {
-        "done": "Completed",
-        "current": "Current station",
-        "upcoming": "Upcoming"
-      },
-      "stations": {
-        "profile": {
-          "title": "Profile",
-          "meta": {
-            "verified": "Core data complete · {date}",
-            "pending": "Awaiting account verification"
-          }
-        },
-        "self": {
-          "title": "Self assessment",
-          "meta": {
-            "result": "Completed with {percent} · {date}",
-            "draft": "Draft in progress",
-            "submitted": "Submitted, awaiting the result",
-            "start": "Start here",
-            "upcoming": "Available at any time"
-          }
-        },
-        "accredited": {
-          "title": "Accredited assessment",
-          "meta": {
-            "awaitingPayment": "Awaiting payment",
-            "needsCompletion": "Completion requested by the assessor",
-            "inReview": "Under the assessor’s review",
-            "draft": "In progress · completed sub-criteria {progress}",
-            "draftOpen": "In progress",
-            "completed": "Completed · {date}",
-            "restart": "You can start a new request",
-            "upcoming": "After the self assessment"
-          }
-        },
-        "certificate": {
-          "title": "Certificate",
-          "meta": {
-            "issued": "Issued · {number}",
-            "underReview": "Under review (temporarily suspended)",
-            "issuing": "Being issued",
-            "afterApproval": "Issued after the assessor’s approval"
-          }
-        }
+        "title": "Welcome, {name}"
       },
       "next": {
         "eyebrow": "Your next step",
-        "price": "Fee {price} SAR — excluding VAT",
-        "expiresIn": "The order ends now | The order ends in {count} minute | The order ends in {count} minutes",
-        "due": "Completion deadline: {date}",
-        "lastSaved": "Last saved: {time}",
-        "reviewAfterSubmit": "The assessor starts after you submit",
-        "progressLabel": "Completed sub-criteria",
-        "remaining": {
-          "title": "Left before you submit",
-          "note": "Every file is scanned automatically before it is accepted."
-        },
-        "actions": {
-          "pay": "Complete the payment",
-          "payments": "My payments",
-          "complete": "Complete the request",
-          "evidence": "Continue uploading evidence",
-          "assessments": "View my assessments",
-          "selfContinue": "Continue the self assessment",
-          "selfStart": "Start the self assessment",
-          "accreditedStart": "Request the accredited assessment",
-          "certificates": "View my certificates",
-          "feedback": "Feedback report",
-          "guide": "What does this station need?"
-        },
-        "payment": {
-          "default": {
-            "title": "Complete the accredited assessment payment",
-            "text": "Payment order {reference} awaits completion and is cancelled automatically when it expires."
-          }
-        },
-        "completion": {
-          "default": {
-            "title": "Complete what the assessor requested",
-            "text": "Everything the assessor requested in {reference} is complete. You can resubmit it. | {count} sub-criterion the assessor requested in {reference} is still open. | {count} sub-criteria the assessor requested in {reference} are still open.",
-            "plain": "The assessor asked you to complete some evidence in {reference}."
-          }
-        },
-        "evidence": {
-          "default": {
-            "title": "Complete the accredited assessment evidence",
-            "text": "Every sub-criterion has its evidence. You can send the request to the assessor. | {count} sub-criterion still needs evidence before you send the request to the assessor. Your progress is saved automatically. | {count} sub-criteria still need evidence before you send the request to the assessor. Your progress is saved automatically.",
-            "plain": "Upload the evidence of every sub-criterion, then send the request to the assessor."
-          }
-        },
-        "inReview": {
-          "default": {
-            "title": "Your request is under review",
-            "text": "The assessor is reviewing the evidence of {reference}. We will let you know as soon as the result is ready."
-          }
-        },
-        "selfDraft": {
-          "default": {
-            "title": "Complete the self assessment",
-            "text": "You have a self assessment saved as a draft. Complete it to see your indicative level."
-          }
-        },
-        "selfSubmitted": {
-          "default": {
-            "title": "Your self-assessment result is being prepared",
-            "text": "You submitted the self assessment. The result appears in My assessments once it is ready."
-          }
-        },
-        "selfStart": {
-          "default": {
-            "title": "Start with the self assessment",
-            "text": "Assess your organization against the excellence model to see your indicative level before you request the accredited assessment."
-          }
-        },
-        "accreditedStart": {
-          "default": {
-            "title": "Request the accredited assessment",
-            "text": "Move to the next station: an accredited assessor reviews your evidence, and the certificate is issued once the result is approved."
+        "steps": {
+          "settle_payment": {
+            "title": "Complete your payment",
+            "text": "A payment in the {path} path is waiting to be completed.",
+            "textDate": "A payment in the {path} path is waiting to be completed before {date}.",
+            "action": "Complete payment"
           },
-          "restart": {
-            "title": "Start a new accredited request",
-            "text": "Your previous request was closed without a result. You can start a new request at any time."
+          "complete_request": {
+            "title": "Complete what the assessor asked for",
+            "text": "Request {number} needs completion.",
+            "textDate": "Request {number} needs completion before {date}.",
+            "action": "Complete the request"
+          },
+          "finish_draft": {
+            "title": "Finish your draft",
+            "text": "Finish draft {number} and submit it for review.",
+            "textDate": "Finish draft {number} and submit it before {date}.",
+            "action": "Continue the draft"
+          },
+          "track_review": {
+            "title": "Your request is under review",
+            "text": "We are reviewing request {number} and will notify you when the result is out.",
+            "textDate": "We are reviewing request {number} and will notify you when the result is out.",
+            "action": "View the request"
+          },
+          "kit_action": {
+            "title": "Confirm your Kit items",
+            "text": "Items in your Quick Excellence Kit are waiting for your confirmation.",
+            "textDate": "Items in your Quick Excellence Kit are waiting for your confirmation.",
+            "action": "Open the Kit"
+          },
+          "kit_offer": {
+            "title": "The Quick Excellence Kit is available for your result",
+            "text": "An improvement plan built on the result of request {number}.",
+            "textDate": "An improvement plan built on the result of request {number}.",
+            "action": "View the Kit"
+          },
+          "apply_accredited": {
+            "title": "Request the accredited assessment for this period",
+            "text": "Your entity has not submitted a request in this period yet.",
+            "textDate": "Your entity has not submitted a request in this period yet. The period ends on {date}.",
+            "action": "Request the accredited assessment"
+          },
+          "apply_award": {
+            "title": "Apply for the Excellence Award",
+            "text": "Applications are open and your entity meets the conditions.",
+            "textDate": "Applications are open until {date} and your entity meets the conditions.",
+            "action": "Apply for the award"
+          },
+          "continue_self_draft": {
+            "title": "Continue the self assessment (optional)",
+            "text": "Finish your self assessment at any time. Its result is indicative and grants no level.",
+            "textDate": "Finish your self assessment at any time. Its result is indicative and grants no level.",
+            "action": "Continue the self assessment"
+          },
+          "start_self": {
+            "title": "Start a self assessment (optional)",
+            "text": "Check how ready your entity is at any time. The result is indicative and grants no level.",
+            "textDate": "Check how ready your entity is at any time. The result is indicative and grants no level.",
+            "action": "Start the self assessment"
+          },
+          "settle_payment_rejected": {
+            "title": "Create a new payment order",
+            "text": "The bank transfer in the {path} path was rejected and a new payment order is needed.",
+            "textDate": "The bank transfer in the {path} path was rejected and a new payment order is needed.",
+            "action": "New payment order"
           }
         },
-        "certificate": {
-          "default": {
-            "title": "Your accredited assessment is complete",
-            "text": "The result of {reference} is ready. View your certificate and the feedback report."
-          }
-        }
-      },
-      "guide": {
-        "title": "What does this station need?",
-        "empty": "No guidance has been added for this station yet."
+        "paymentExpires": "The order expires {time}"
       },
       "glance": {
         "title": "At a glance",
@@ -7653,7 +7693,9 @@
         "eyebrow": "Payment order · {service} — {year}",
         "subtitle": {
           "accredited": "Pay the accredited assessment fee and the evidence form opens immediately. The order is valid until {time}.",
-          "bag": "Pay the Quick Excellence Kit fee to activate it immediately. The order is valid until {time}."
+          "bag": "Pay the Quick Excellence Kit fee to activate it immediately. The order is valid until {time}.",
+          "self": "Pay the self assessment fee and the draft opens immediately. The order is valid until {time}.",
+          "award": "Pay the award entry fee and the award form opens in the cycle. The order is valid until {time}."
         },
         "cardTitle": "Pay by card",
         "cardIntro": "Enter the card details to pay the {service} fee.",
@@ -7785,69 +7827,10 @@
       }
     },
     "assessments": {
-      "eyebrow": "Assessments",
-      "title": "Assessments",
-      "subtitle": "Your current assessment, your previous assessments and their results.",
-      "tabsLabel": "Filter assessments",
-      "tabs": {
-        "current": "Current",
-        "history": "History",
-        "results": "Results"
-      },
       "current": {
-        "progress": "Completed sub-criteria",
-        "remaining": "Every sub-criterion is complete; you can submit | {count} sub-criterion left before submitting | {count} sub-criteria left before submitting",
-        "states": {
-          "self": "The self assessment is being processed.",
-          "accredited": "Your request is under review by the assessor; you are notified when the result is issued.",
-          "advanced": "The advanced assessment request is under review."
-        },
-        "actions": {
-          "evidence": "Continue uploading evidence",
-          "continue": "Continue the assessment",
-          "view": "View the request"
-        }
-      },
-      "start": {
-        "payment": {
-          "title": "Payment order awaiting completion",
-          "body": "Complete the accredited assessment fee to open the evidence form."
-        },
-        "self": {
-          "title": "Self assessment",
-          "body": "Assess your organization against the excellence model and get an indicative result at once.",
-          "action": "Start the self assessment"
-        },
-        "accredited": {
-          "title": "Accredited assessment",
-          "body": "An accredited assessor reviews your evidence; the excellence certificate is issued once the result is approved.",
-          "action": "Request the accredited assessment"
-        },
-        "transfer": {
-          "title": "Your transfer is under review",
-          "body": "Finance is reviewing the bank transfer receipt of request"
-        }
-      },
-      "results": {
-        "view": "View result",
-        "feedback": "Feedback report"
-      },
-      "empty": {
-        "current": {
-          "title": "No current assessments",
-          "message": "Start a new assessment and it appears here until it is complete."
-        },
-        "history": {
-          "title": "No assessments yet",
-          "message": "All assessments of your organization appear here, newest first."
-        },
-        "results": {
-          "title": "No results yet",
-          "message": "Self and accredited assessment results appear here once issued."
-        }
+        "progress": "Completed sub-criteria"
       },
       "task": {
-        "title": "Station {station} · Accredited assessment —",
         "unsaved": "Unsaved changes",
         "savedAt": "Draft — saved {time}",
         "remainingHint": "Submitting is enabled once the evidence is complete | Submitting is enabled once the evidence is complete — {count} sub-criterion left | Submitting is enabled once the evidence is complete — {count} sub-criteria left",
@@ -7880,7 +7863,6 @@
       "discard": "Leave"
     },
     "profile": {
-      "eyebrow": "Station 1 · Organization profile",
       "eyebrowShort": "Organization profile",
       "title": "Profile of {name}",
       "subtitle": "The assessor reads this profile with your evidence. Update it whenever your organization's details change.",
@@ -8153,17 +8135,22 @@
       "expand": "Expand menu",
       "items": {
         "journey": "My journey",
-        "assessments": "Assessments",
         "certificates": "Certificates",
         "payments": "Payments & receipts",
         "messages": "Messages",
         "notifications": "Notifications",
         "entityProfile": "Entity profile",
-        "help": "Help"
+        "help": "Help",
+        "paths": "Paths"
       },
       "unread": {
         "messages": "no new replies | {count} new reply | {count} new replies",
         "notifications": "no new notifications | {count} new notification | {count} new notifications"
+      },
+      "paths": {
+        "self": "Self",
+        "accredited": "Accredited",
+        "award": "Award"
       }
     },
     "topBar": {
@@ -8335,6 +8322,310 @@
       "accredited": "Accredited assessment",
       "advanced": "Advanced assessment (Award)",
       "bag": "Quick Excellence Kit"
+    },
+    "names": {
+      "self": "Self assessment",
+      "accredited": "Accredited assessment",
+      "award": "Award"
+    },
+    "cadence": {
+      "quarterly": "Quarterly",
+      "semi_annual": "Semi-annual",
+      "annual": "Annual"
+    },
+    "price": {
+      "free": "Free",
+      "unavailable": "Currently unavailable",
+      "beforeVat": "before VAT",
+      "vat": "VAT",
+      "total": "Total"
+    },
+    "summary": {
+      "unavailable": "Currently unavailable",
+      "self": {
+        "draft": "Draft in progress · {number}",
+        "lastResult": "Last result: {percent} · {date}",
+        "noResult": "No self assessment yet"
+      },
+      "accredited": {
+        "period": "{period} · until {date}",
+        "rollout": "Periodic assessment starts on {date}",
+        "assessed": "This period is assessed — next submission from {date}",
+        "notSubmitted": "No request submitted in this period",
+        "openRequest": "{number} · {status}"
+      },
+      "kit": {
+        "offered": "The Kit is available for your result",
+        "preparing": "The Kit is being prepared",
+        "active": "The Kit is active",
+        "closed": "The Kit is closed"
+      },
+      "award": {
+        "windowOpen": "{cycle} · applications until {date}",
+        "windowUpcoming": "Next cycle {cycle} · applications open on {date}",
+        "windowClosed": "The application window for {cycle} has closed",
+        "noCycle": "The next cycle will be announced later",
+        "request": "{number} · {status}",
+        "announced": "Results announced · {percent}",
+        "eligible": "Your entity meets the cycle conditions",
+        "windowClosedBeforePayment": "The submission window closed before the transfer was approved"
+      },
+      "awaitingPayment": "Payment {reference} is waiting to be completed"
+    },
+    "award": {
+      "reasons": {
+        "no_cycle": "No open cycle",
+        "window_not_open": "Applications are not open yet",
+        "window_closed": "The application window has closed",
+        "request_exists": "Your entity already has a request in this cycle",
+        "min_entity_age": "The entity is younger than the cycle minimum",
+        "region": "The entity region is not part of this cycle",
+        "unknown": "Your entity is not eligible for this cycle",
+        "awaiting_payment": "Your entity has an open payment order for this cycle",
+        "path_unavailable": "The award is not available at the moment"
+      }
+    },
+    "actions": {
+      "continueSelf": "Continue the self assessment",
+      "startSelf": "Start the self assessment",
+      "viewPayment": "View the payment",
+      "complete": "Complete the request",
+      "continueRequest": "Continue uploading evidence",
+      "viewRequest": "View the request",
+      "viewResult": "View the result",
+      "applyAccredited": "Request the accredited assessment",
+      "applyAward": "Apply for the award",
+      "continueAward": "Continue the award form",
+      "viewAwardResult": "View the award result",
+      "applyNextPeriod": "Request for the next period",
+      "payAndStart": "Pay and start",
+      "startAccredited": "Start the accredited request"
+    },
+    "tile": {
+      "title": "Assessment paths",
+      "lead": "Each path has its own page and requests. The Kit lives inside the accredited path.",
+      "tags": {
+        "self": "Optional · grants no level",
+        "accredited": "Periodic assessment",
+        "award": "Award cycle"
+      },
+      "actions": {
+        "self": {
+          "draft": "Continue the self assessment",
+          "start": "Start a self assessment",
+          "unavailable": "Path details",
+          "awaitingPayment": "View payment",
+          "payStart": "Pay and start"
+        },
+        "accredited": {
+          "awaitingPayment": "View the payment",
+          "needsCompletion": "Complete the request",
+          "draft": "Continue your request",
+          "inReview": "View the request",
+          "unavailable": "Path details",
+          "assessed": "View the result",
+          "apply": "Request the accredited assessment"
+        },
+        "award": {
+          "draft": "Continue the award form",
+          "submitted": "View the request",
+          "announced": "View the result",
+          "none": "Learn about the award",
+          "upcoming": "Learn about the award",
+          "closed": "Cycle details",
+          "notEligible": "Eligibility details",
+          "eligible": "Apply for the award",
+          "awaitingPayment": "View payment",
+          "unavailable": "Path details",
+          "latePayment": "Request details"
+        }
+      }
+    },
+    "sheet": {
+      "title": "Assessment paths"
+    },
+    "list": {
+      "title": "My requests in this path",
+      "loadError": "Could not load the requests. Try again.",
+      "open": "Open",
+      "indicative": "Indicative",
+      "hint": {
+        "self": "Newest first",
+        "accredited": "One row per request and per missed period",
+        "award": "The detailed status shows after the results are announced"
+      },
+      "empty": {
+        "title": "No requests yet",
+        "self": "Start a self assessment whenever you like.",
+        "accredited": "Request the accredited assessment and it will show here.",
+        "award": "Your entity requests in award cycles show here."
+      },
+      "columns": {
+        "number": "Number",
+        "startedAt": "Started",
+        "submittedAt": "Submitted",
+        "status": "Status",
+        "result": "Result",
+        "period": "Period",
+        "payment": "Payment",
+        "level": "Level / certificate",
+        "kit": "Quick Excellence Kit",
+        "cycle": "Cycle",
+        "certificate": "Certificate",
+        "action": "Action"
+      }
+    },
+    "periodStatus": {
+      "assessed": "Assessed this period",
+      "in_progress": "Request in progress",
+      "not_submitted": "Not submitted yet",
+      "missed": "Missed",
+      "closed_without_result": "Closed without a result",
+      "frozen": "Frozen",
+      "not_required": "Not required"
+    },
+    "kit": {
+      "status": {
+        "offered": "Offered",
+        "preparing": "Preparing",
+        "active": "Active",
+        "closed": "Closed"
+      },
+      "offer": {
+        "title": "The Quick Excellence Kit offer for this result",
+        "text": "An improvement plan prepared by an accredited assessor from the result of request {number} · {period}.",
+        "action": "Order the Kit and pay"
+      },
+      "tab": {
+        "none": {
+          "title": "No Kit for this result",
+          "text": "The Kit shows here once ordered."
+        },
+        "offered": {
+          "title": "The Kit is available",
+          "text": "Order it from the result tab."
+        },
+        "preparing": {
+          "title": "The Kit is being prepared",
+          "text": "The assessor is preparing the improvement plan. We will notify you when it is ready."
+        },
+        "active": {
+          "title": "The Kit is active",
+          "text": "Follow and confirm the improvement plan items.",
+          "action": "Open the Kit"
+        },
+        "closed": {
+          "title": "The Kit is closed",
+          "text": "View the before-and-after comparison.",
+          "action": "View the comparison"
+        }
+      }
+    },
+    "pages": {
+      "status": "Path status",
+      "price": "Fees",
+      "fee": "Cycle fee",
+      "loadError": "Could not load the path. Try again.",
+      "self": {
+        "lead": "An assessment your entity runs itself to check its readiness. The result is indicative."
+      },
+      "accredited": {
+        "lead": "An assessment by an accredited assessor that grants the excellence level and its certificate. The request period is set from its submission date.",
+        "currentPeriod": "Current period · {cadence}",
+        "period": "Period",
+        "notLive": "Periodic assessment has not started yet",
+        "nextPeriod": {
+          "title": "Your entity is assessed in this period",
+          "message": "You can pay and prepare now. Submission opens on {date}.",
+          "confirm": "Continue"
+        },
+        "nextPeriodLabel": "Next period: {period}",
+        "noticeOn": "Notice on {date}",
+        "started": "Your request {number} is open"
+      },
+      "award": {
+        "lead": "An annual award for excellent entities. Results are announced after the assessment.",
+        "window": {
+          "open": "Applications open",
+          "upcoming": "Next cycle",
+          "closed": "Application window closed",
+          "none": "No cycle now"
+        },
+        "noCycle": "The next cycle will be announced later",
+        "regions": "Regions: {regions}",
+        "minAge": "Minimum entity age: {years} years",
+        "resultsNote": "Results show after the announcement.",
+        "nextCycle": "The next cycle starts on {date}",
+        "latePaymentNote": "This request cannot be submitted after the window closed. The finance team follows up the fee refund."
+      }
+    },
+    "request": {
+      "title": "Request {number}",
+      "submittedOn": "Submitted {date}",
+      "completedOn": "Result issued {date}",
+      "timeline": "Request timeline",
+      "tabs": {
+        "request": "Request",
+        "result": "Result",
+        "feedback": "Feedback report",
+        "certificate": "Certificate",
+        "tools": "Excellence tools",
+        "kit": "Quick Excellence Kit"
+      },
+      "missing": {
+        "title": "Request not available",
+        "text": "Check the link or go back to the path page."
+      },
+      "task": {
+        "draft": "Complete the evidence, then submit the request for review",
+        "completion": "Complete what the assessor asked for, then resubmit",
+        "progress": "Completed sub-criteria"
+      },
+      "card": {
+        "title": "Request details",
+        "number": "Request number",
+        "period": "Period",
+        "submittedAt": "Submitted on",
+        "completedAt": "Result date",
+        "result": "Total result",
+        "level": "Level"
+      },
+      "payment": {
+        "title": "Payment and receipt",
+        "reference": "Payment reference",
+        "channel": "Payment method",
+        "status": "Payment status",
+        "paidAt": "Paid on",
+        "receipt": "Payment receipt",
+        "none": "This request needs no payment",
+        "open": "Payments and receipts"
+      },
+      "certificate": {
+        "title": "Certificate",
+        "expired": "Expired",
+        "number": "Certificate number",
+        "issuedAt": "Issued on",
+        "validUntil": "Valid until",
+        "open": "View my certificates"
+      }
+    },
+    "errors": {
+      "startFailed": "The request could not be started. Try again.",
+      "path": {
+        "unavailable": "This path is not available at the moment."
+      },
+      "payment": {
+        "open_order_exists": "Your entity has an open payment order for this path. Complete it from Payments and receipts."
+      },
+      "accredited": {
+        "payment_being_processed": "Your payment went through and the request is being opened. Refresh the page in a moment."
+      },
+      "self": {
+        "payment_being_processed": "Your payment went through and the self assessment is being opened."
+      },
+      "advanced": {
+        "payment_being_processed": "Your payment went through and the award form is being opened."
+      }
     }
   },
   "comingSoon": {
@@ -8819,7 +9110,8 @@
       "viewCertificate": "View the certificate",
       "startAccredited": "Start the accredited assessment",
       "followRequest": "Follow your request",
-      "nextLevelLink": "What the next level needs"
+      "nextLevelLink": "What the next level needs",
+      "validUntil": "Valid until"
     },
     "ring": {
       "unit": "%"

@@ -1,4 +1,3 @@
-import { computed } from 'vue'
 import { useSettingsEditor } from '@/composables/useSettingsEditor'
 import { usePermissions } from '@/composables/usePermissions'
 import { pathSettingsService } from '@/services/pathSettingsService'
@@ -11,17 +10,14 @@ import {
 
 export function usePathSettings(path) {
   const { can } = usePermissions()
-  const priceEditable = computed(() => can(PERMISSIONS.SETTINGS_ASSESSMENT_MANAGE))
   const editor = useSettingsEditor({
     read: () => pathSettingsService.get(path),
     write: (payload) => pathSettingsService.update(path, payload),
-    schema: (t, settings) =>
-      pathSettingsSchema(t, settings, { priceEditable: priceEditable.value }),
+    schema: (t, settings) => pathSettingsSchema(t, settings),
     valuesOf: pathSettingsValues,
-    changesOf: (settings, values) =>
-      changedPathSettings(settings, values, { priceEditable: priceEditable.value }),
+    changesOf: (settings, values) => changedPathSettings(settings, values),
     messages: { saved: 'settings.paths.saved', unchanged: 'settings.assessment.unchanged' },
     action: `settings.assessment.paths.${path}.update`,
   })
-  return { ...editor, priceEditable }
+  return { ...editor, canEditPrices: can(PERMISSIONS.SETTINGS_PRICES_MANAGE) }
 }

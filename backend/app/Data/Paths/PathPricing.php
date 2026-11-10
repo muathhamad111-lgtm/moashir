@@ -16,6 +16,11 @@ final readonly class PathPricing
         return new self(null, true, PathAvailability::Available);
     }
 
+    public static function unset(): self
+    {
+        return new self(null, false, PathAvailability::Paused);
+    }
+
     public function isAvailable(): bool
     {
         return $this->availability === PathAvailability::Available;
@@ -24,5 +29,10 @@ final readonly class PathPricing
     public function isHidden(): bool
     {
         return $this->availability === PathAvailability::Hidden;
+    }
+
+    public function requiresPayment(): bool
+    {
+        return $this->price instanceof PriceQuote;
     }
 }

@@ -135,6 +135,18 @@ describe('committee display components', () => {
     expect(done.text()).toContain('The results were announced on')
   })
 
+  it('keeps the announcement closed while another results action is still settling', async () => {
+    const approvedNationally = {
+      cycleStatus: 'approved',
+      national: { approved: true, approvedAt: '2026-11-01T08:00:00Z', announcedAt: null },
+      canAnnounce: true,
+    }
+    const settling = render(AnnouncementCard, { ...approvedNationally, locked: true })
+    expect(settling.find('.btn--primary').attributes('disabled')).toBeDefined()
+    await settling.setProps({ locked: false })
+    expect(settling.find('.btn--primary').attributes('disabled')).toBeUndefined()
+  })
+
   it('explains the running cycle and offers keep or move for the draft cycles', async () => {
     const bindings = {
       running: {

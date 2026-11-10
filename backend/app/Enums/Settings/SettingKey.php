@@ -43,9 +43,7 @@ enum SettingKey: string
     case AiMode = 'ai.mode';
     case AiPlacement = 'ai.placement';
     case AiNotice = 'ai.notice';
-    case AccreditedPrice = 'assessment.accredited_price';
     case VatRate = 'assessment.vat_rate';
-    case BagPrice = 'bag.price';
     case AbandonedCartAfterHours = 'abandoned_carts.after_hours';
     case FilesMaxSizeMb = 'files.max_size_mb';
     case AccreditedReviewSlaDays = 'assessment.accredited_review_sla_days';
@@ -92,7 +90,7 @@ enum SettingKey: string
             self::AccreditedUploadMaxFileMb, self::AccreditedEvidenceMaxFilesPerSub, self::AdvancedUploadMaxFileMb,
             self::AdvancedEvidenceMaxFilesPerSub, self::ContactRetentionMonths, self::PeriodicNoticeDaysBefore,
             self::PeriodicPaidDraftReminderDays => SettingType::Integer,
-            self::AccreditedPrice, self::VatRate, self::BagPrice, self::AdvancedDisqualificationScore => SettingType::Decimal,
+            self::VatRate, self::AdvancedDisqualificationScore => SettingType::Decimal,
             self::AccreditedCertificateIssuance => SettingType::Boolean,
             default => SettingType::Json,
         };
@@ -137,7 +135,7 @@ enum SettingKey: string
             self::PeriodicCertificateValidity => CertificateValidityRule::NextPeriodEnd->value,
             self::PeriodicPaidDraftReminderDays => 7,
             self::PaymentApplePayDomainConfirmation, self::PaymentStcPayActivationConfirmation, self::EmailTestAddress,
-            self::AccreditedPrice, self::BagPrice, self::VatRegistrationNumber, self::PeriodicRolloutFrom => null,
+            self::VatRegistrationNumber, self::PeriodicRolloutFrom => null,
         };
     }
 

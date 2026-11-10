@@ -22,7 +22,7 @@ import { useTransactionDetail } from '@/composables/useTransactionDetail'
 import { useSignedDownload } from '@/composables/useSignedDownload'
 import { useToast } from '@/composables/useToast'
 import { ROUTE_NAMES } from '@/constants/routeNames'
-import { PAYMENT_PURPOSES } from '@/constants/payments'
+import { REQUEST_PURPOSE_VALUES } from '@/constants/payments'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
@@ -137,7 +137,7 @@ onMounted(load)
         </Card>
         <div class="transaction-detail__side">
           <LinkedRequestCard
-            v-if="transaction.purpose === PAYMENT_PURPOSES.ACCREDITED"
+            v-if="REQUEST_PURPOSE_VALUES.includes(transaction.purpose)"
             :linked-request="transaction.linkedRequest"
             :payment-status="transaction.status"
             :entity-id="transaction.entity?.id ?? null"

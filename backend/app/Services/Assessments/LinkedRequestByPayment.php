@@ -28,7 +28,7 @@ final readonly class LinkedRequestByPayment implements LinkedRequestReader
             new OpenedRequest($assessment->id, $assessment->request_number, $assessment->path),
             StatusMask::statusFor($assessment, $viewer),
             $viewer->can('viewRequest', $assessment),
-            $this->progress->read($assessment),
+            $assessment->isAccredited() ? $this->progress->read($assessment) : null,
         );
     }
 }

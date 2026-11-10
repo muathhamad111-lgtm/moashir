@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { setActivePinia } from 'pinia'
 import StaffRecord from '@/views/assessment/admin/Record.vue'
-import History from '@/views/assessment/History.vue'
 import EntityAssessmentsCard from '@/components/entities/admin/EntityAssessmentsCard.vue'
 import { assessmentsService } from '@/services/assessmentsService'
 import { useAuthStore } from '@/stores/auth'
@@ -118,53 +117,5 @@ describe('entity assessments card', () => {
     assessmentsService.list.mockRejectedValueOnce(new Error('down'))
     const failed = await mountAs(EntityAssessmentsCard, ['system_admin'], { entityId: 7002 })
     expect(failed.find('.error-state').exists()).toBe(true)
-  })
-})
-
-describe('assessment history view', () => {
-  async function mountHub(tab) {
-    const globals = createTestGlobals({ locale: 'ar' })
-    setActivePinia(globals.pinia)
-    useAuthStore().setUser(sessionUserFor(['entity']))
-    await globals.router.push({ path: '/assessment/history', query: tab ? { tab } : {} })
-    const wrapper = mount(History, { global: globals })
-    await flushPromises()
-    await flushPromises()
-    return wrapper
-  }
-
-  it('offers the start cards on the current tab and shows the tab counts', async () => {
-    assessmentsService.list.mockResolvedValue({
-      data: [],
-      meta: { counts: { total: 3, open: 0, withResult: 2 } },
-    })
-    const wrapper = await mountHub()
-    expect(assessmentsService.list).toHaveBeenCalledWith(
-      expect.objectContaining({ 'filter[is_open]': 'true' }),
-    )
-    expect(wrapper.findAll('.assessment-start__card').length).toBeGreaterThan(0)
-    const counts = wrapper.findAll('[role="tab"] .area-tabs__count').map((count) => count.text())
-    expect(counts).toEqual(['0', '3', '2'])
-  })
-
-  it('pages the history tab and lists the results with their links', async () => {
-    assessmentsService.list.mockResolvedValue({
-      data: [{ ...FROZEN, isFrozen: false, entity: null }],
-      meta: { pagination: { page: 1, perPage: 10, total: 11, lastPage: 2 } },
-    })
-    const history = await mountHub('history')
-    expect(history.findAll('.history-item')).toHaveLength(1)
-    expect(history.find('.pagination').exists()).toBe(true)
-    assessmentsService.list.mockResolvedValue({
-      data: [
-        { ...FROZEN, isFrozen: false, status: 'result-available', result: { percent: '78.00' } },
-      ],
-      meta: {},
-    })
-    const results = await mountHub('results')
-    expect(assessmentsService.list).toHaveBeenLastCalledWith(
-      expect.objectContaining({ 'filter[has_result]': 'true', sort: '-completed_at' }),
-    )
-    expect(results.find('.assessment-result__percent').text()).toBe('78%')
   })
 })

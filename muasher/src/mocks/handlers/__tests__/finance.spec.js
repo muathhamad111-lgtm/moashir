@@ -30,6 +30,7 @@ const ASSESSOR = { id: 30, roles: ['assessor'] }
 
 const PRICING_KEYS = ['currency', 'price_before_vat', 'total', 'vat_amount', 'vat_rate']
 const OWN_PAYMENT_KEYS = [
+  'award_cycle',
   'bank_transfer',
   'cancelled_at',
   'card_last4',
@@ -69,6 +70,7 @@ const CHECKOUT_KEYS = [
   'supported_networks',
 ]
 const TRANSACTION_KEYS = [
+  'award_cycle',
   'card_last4',
   'channel',
   'created_at',
@@ -118,6 +120,7 @@ const RECEIPT_KEYS = [
   'voided_at',
 ]
 const SNAPSHOT_KEYS = [
+  'award_cycle',
   'card_last4',
   'channel',
   'currency',
@@ -517,7 +520,12 @@ describe('finance staff mock contract', () => {
     as(FINANCE_OFFICER)
     const { body } = await call('/finance/summary')
     expect(keys(body.data)).toEqual([...STATS_KEYS, 'by_channel', 'by_purpose'].sort())
-    expect(body.data.by_purpose.map((row) => row.purpose)).toEqual(['accredited', 'bag'])
+    expect(body.data.by_purpose.map((row) => row.purpose)).toEqual([
+      'accredited',
+      'bag',
+      'self',
+      'award',
+    ])
     expect(body.meta).toEqual({ live_only: true })
     expect((await call('/finance/summary?from=2026-13-01')).status).toBe(422)
   })
@@ -760,8 +768,6 @@ describe('finance settings mock contract', () => {
       'vat_registration_reminder',
     ])
     expect(body.data.editable_fields).toEqual([
-      'accredited_price',
-      'bag_price',
       'vat_rate',
       'order_validity_minutes',
       'vat_registration_number',
@@ -778,11 +784,20 @@ describe('finance settings mock contract', () => {
     expect(updated.body.data.pricing.bag.total).toBe('2625.00')
     const invalid = await call('/settings/finance', {
       method: 'PUT',
-      body: { accredited_price: '1500', order_validity_minutes: 90 },
+      body: { accredited_price: '1500.00', order_validity_minutes: 90 },
     })
     expect(Object.keys(invalid.body.errors).sort()).toEqual([
       'accredited_price',
       'order_validity_minutes',
+    ])
+    const moved = await call('/settings/finance', {
+      method: 'PUT',
+      body: { bag_price: '3000.00' },
+    })
+    expect([moved.status, moved.body.code, Object.keys(moved.body.errors)]).toEqual([
+      422,
+      'validation_failed',
+      ['bag_price'],
     ])
   })
 
@@ -790,14 +805,14 @@ describe('finance settings mock contract', () => {
     as(SUPER_ADMIN)
     const missing = await call('/settings/finance', {
       method: 'PUT',
-      body: { bag_price: '3000.00' },
+      body: { vat_rate: '5.00' },
     })
     expect([missing.status, missing.body.code]).toEqual([422, 'reason_required'])
     const reasoned = await call('/settings/finance', {
       method: 'PUT',
-      body: { bag_price: '3000.00', reason: 'Approved price list for 2027.' },
+      body: { vat_rate: '5.00', reason: 'Approved VAT change for 2027.' },
     })
-    expect(reasoned.body.data.bag_price).toBe('3000.00')
+    expect(reasoned.body.data.vat_rate).toBe('5.00')
     as(FINANCE_OFFICER)
     expect((await call('/settings/finance')).status).toBe(403)
   })

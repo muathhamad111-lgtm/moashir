@@ -71,6 +71,10 @@ const stamps = computed(() =>
       <dt>{{ t('finance.fields.service') }}</dt>
       <dd>{{ t(`finance.purposes.${transaction.purpose}`) }}</dd>
     </div>
+    <div v-if="transaction.awardCycle" class="payment-facts__row" data-testid="payment-award-cycle">
+      <dt>{{ t('finance.fields.awardCycle') }}</dt>
+      <dd>{{ localizedText(transaction.awardCycle.name, locale) }}</dd>
+    </div>
     <div class="payment-facts__row">
       <dt>{{ t('finance.fields.channel') }}</dt>
       <dd>{{ t(`finance.channels.${transaction.channel ?? 'electronic'}`) }}</dd>

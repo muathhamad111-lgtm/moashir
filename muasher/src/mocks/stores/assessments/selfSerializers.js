@@ -1,3 +1,4 @@
+import { cycleRefOf } from '../award/cycleRef'
 import { SCORE_LEVELS } from '@/constants/assessment'
 import { pathLabelOf } from '../../fixtures/pathLabels'
 import { toCanonicalStatus } from '@/utils/canonicalStatus'
@@ -8,6 +9,8 @@ import { criteriaUpdateOf } from './criteriaMoves'
 import { statusHistoryOf } from './statusHistory'
 import { readsEveryAssessment } from './assessmentAccess'
 import { isMaskedFor, maskedStatus, visibleTransitions } from '../award/statusMask'
+import { requestPaymentOf } from '../accredited/requestPayments'
+import { availableTabsOf, pathRowFieldsOf } from '../periodic/requestPeriods'
 import {
   decimalRaw,
   decimalWeight,
@@ -41,12 +44,14 @@ export function assessmentResource(record) {
     criteriaVersionId: record.criteriaVersionId,
     scaleKind: record.scaleKind,
     awardCycleId: record.awardCycleId ?? null,
+    awardCycle: cycleRefOf(record.awardCycleId),
     entity: entitySummary(entityOf(record)),
     result: exposesResult(record) ? resultSummary(record.result) : null,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
     submittedAt: record.submittedAt,
     completedAt: record.completedAt,
+    ...pathRowFieldsOf(record, requestPaymentOf),
   }
 }
 
@@ -86,6 +91,7 @@ export function recordResource(record, viewer) {
   return {
     ...assessmentResource(record),
     statusHistory: statusHistoryOf(visible, { staffView: readsEveryAssessment(viewer) }),
+    ...availableTabsOf(record),
   }
 }
 

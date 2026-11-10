@@ -11,6 +11,7 @@ import { SUBMIT_FAILURES, useBankTransferSubmission } from '@/composables/useBan
 
 const props = defineProps({
   purpose: { type: String, required: true },
+  awardCycleId: { type: Number, default: null },
   accounts: { type: Array, required: true },
   amount: { type: Object, default: null },
   unifiedNumber: { type: String, default: null },
@@ -22,7 +23,8 @@ const { t } = useI18n()
 const ids = { account: useId(), transfer: useId(), proof: useId() }
 const missingRef = ref(null)
 
-const submission = useBankTransferSubmission(toRef(props, 'purpose'), toRef(props, 'accounts'), {
+const order = computed(() => ({ purpose: props.purpose, awardCycleId: props.awardCycleId }))
+const submission = useBankTransferSubmission(order, toRef(props, 'accounts'), {
   onSubmitted: (payment) => emit('submitted', payment),
 })
 const account = computed(() => submission.selectedAccount.value)

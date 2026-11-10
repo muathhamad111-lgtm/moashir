@@ -104,6 +104,7 @@ export const awardCyclesFixture = [
     disqualificationScore: '60.00',
     initialReviewSlaDays: 14,
     participationCertificateEnabled: false,
+    entryFee: '750.00',
     members: [{ userId: AWARD_STAFF.secretary, role: 'award_secretary' }],
     initialAssessors: [],
   },

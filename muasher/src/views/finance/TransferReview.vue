@@ -19,7 +19,7 @@ import ApproveTransferDialog from '@/components/finance/ApproveTransferDialog.vu
 import RejectTransferDialog from '@/components/finance/RejectTransferDialog.vue'
 import { useBankTransferReview } from '@/composables/useBankTransferReview'
 import { ROUTE_NAMES } from '@/constants/routeNames'
-import { PAYMENT_PURPOSES } from '@/constants/payments'
+import { REQUEST_PURPOSE_VALUES } from '@/constants/payments'
 import { localizedText } from '@/utils/localizedText'
 
 const props = defineProps({
@@ -114,7 +114,7 @@ onMounted(review.load)
           </Card>
 
           <LinkedRequestCard
-            v-if="transfer.purpose === PAYMENT_PURPOSES.ACCREDITED"
+            v-if="REQUEST_PURPOSE_VALUES.includes(transfer.purpose)"
             :linked-request="transfer.linkedRequest"
             :payment-status="transfer.status"
             :entity-id="transfer.entity.id"

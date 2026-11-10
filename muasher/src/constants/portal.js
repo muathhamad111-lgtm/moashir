@@ -2,7 +2,7 @@ import { ROUTE_NAMES as R } from './routeNames'
 
 export const PORTAL_AREAS = Object.freeze({
   JOURNEY: 'journey',
-  ASSESSMENTS: 'assessments',
+  PATHS: 'paths',
   CERTIFICATES: 'certificates',
   PAYMENTS: 'payments',
   MESSAGES: 'messages',
@@ -13,8 +13,11 @@ const A = PORTAL_AREAS
 
 export const PORTAL_AREA_ROUTES = Object.freeze({
   [A.JOURNEY]: [R.APP_DASHBOARD],
-  [A.ASSESSMENTS]: [
-    R.ASSESSMENT_HISTORY,
+  [A.PATHS]: [
+    R.PATHS_SELF,
+    R.PATHS_ACCREDITED,
+    R.PATHS_ACCREDITED_REQUEST,
+    R.PATHS_AWARD,
     R.ASSESSMENT_SELF,
     R.ASSESSMENT_SELF_RESULT,
     R.ASSESSMENT_ACCREDITED_FORM,
@@ -96,10 +99,36 @@ export const PORTAL_TEASER_TOOLS = Object.freeze(PORTAL_TOOLS.filter((tool) => !
 export const PORTAL_SIDE_NAV_ITEMS = Object.freeze([
   { key: 'journey', routeName: R.APP_DASHBOARD, icon: 'grid-vertical', routes: [R.APP_DASHBOARD] },
   {
-    key: 'assessments',
-    routeName: R.ASSESSMENT_HISTORY,
-    icon: 'clipboard-check',
-    routes: PORTAL_AREA_ROUTES[A.ASSESSMENTS],
+    key: 'paths',
+    routeName: R.PATHS_ACCREDITED,
+    icon: 'layers',
+    routes: [],
+    children: [
+      {
+        key: 'self',
+        routeName: R.PATHS_SELF,
+        icon: 'list-check',
+        routes: [R.PATHS_SELF, R.ASSESSMENT_SELF, R.ASSESSMENT_SELF_RESULT],
+      },
+      {
+        key: 'accredited',
+        routeName: R.PATHS_ACCREDITED,
+        icon: 'clipboard-check',
+        routes: [
+          R.PATHS_ACCREDITED,
+          R.PATHS_ACCREDITED_REQUEST,
+          R.ASSESSMENT_ACCREDITED_FORM,
+          R.ASSESSMENT_ACCREDITED_RESULT,
+          R.ASSESSMENT_ACCREDITED_FEEDBACK,
+        ],
+      },
+      {
+        key: 'award',
+        routeName: R.PATHS_AWARD,
+        icon: 'trophy',
+        routes: [R.PATHS_AWARD, R.ASSESSMENT_ADVANCED_FORM, R.ASSESSMENT_ADVANCED_RESULT],
+      },
+    ],
   },
   {
     key: 'certificates',
@@ -144,10 +173,11 @@ export const PORTAL_TAB_ITEMS = Object.freeze([
     icon: 'grid-vertical',
   },
   {
-    area: A.ASSESSMENTS,
-    routeName: R.ASSESSMENT_HISTORY,
-    labelKey: 'portal.nav.assessments',
-    icon: 'clipboard-check',
+    area: A.PATHS,
+    routeName: R.PATHS_ACCREDITED,
+    labelKey: 'portal.nav.paths',
+    icon: 'layers',
+    opensSheet: true,
   },
   {
     area: A.CERTIFICATES,

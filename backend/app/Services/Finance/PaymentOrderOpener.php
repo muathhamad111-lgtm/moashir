@@ -20,13 +20,13 @@ final readonly class PaymentOrderOpener
     {
         Entity::query()->whereKey($entity->id)->lockForUpdate()->first();
 
-        $existing = Payment::query()->ownedBy($entity->id)->where('purpose', $terms->purpose)->open()->first();
+        $existing = Payment::query()->ownedBy($entity->id)->forService($terms->purpose, $terms->cycle?->id)->open()->first();
 
         if ($existing instanceof Payment) {
             return $this->reuse($existing, $terms);
         }
 
-        $this->eligibility->assertMayPurchase($entity, $terms->purpose);
+        $this->eligibility->assertMayPurchase($entity, $terms);
 
         return new OpenedOrder($this->writer->write($actor, $entity, $terms), false);
     }

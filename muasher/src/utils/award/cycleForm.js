@@ -5,7 +5,10 @@ import {
   CYCLE_STAGE_ACCEPTS,
   CYCLE_STATUSES,
 } from '@/constants/advanced'
+import { FINANCE_SETTINGS_RULES } from '@/constants/finance'
 import { endOfRiyadhDay, riyadhDateKey, startOfRiyadhDay } from '@/utils/datetime'
+import { toWesternDigits } from '@/utils/numerals'
+import { priceString } from '@/utils/settings/pathPriceForm'
 
 const SCORE_FORMAT = /^\d{1,3}(\.\d{1,2})?$/
 const DATE_ORDER = [
@@ -44,6 +47,7 @@ export function cycleFormValues(cycle, { defaults, published }) {
       disqualificationScore: defaults?.disqualificationScore ?? '',
       initialReviewSlaDays: String(defaults?.initialReviewSlaDays ?? ''),
       participationCertificateEnabled: false,
+      entryFee: defaults?.entryFee ?? '',
     }
   }
   return {
@@ -61,6 +65,7 @@ export function cycleFormValues(cycle, { defaults, published }) {
     disqualificationScore: cycle.conditions.disqualificationScore ?? '',
     initialReviewSlaDays: String(cycle.initialReviewSlaDays ?? ''),
     participationCertificateEnabled: cycle.participationCertificateEnabled,
+    entryFee: cycle.entryFee ?? '',
   }
 }
 
@@ -135,6 +140,13 @@ export function cycleSchema(t) {
       ),
     initialReviewSlaDays: integerField(t, AWARD_LIMITS.SLA_MIN, AWARD_LIMITS.SLA_MAX),
     participationCertificateEnabled: boolean(),
+    entryFee: string()
+      .transform((value) => toWesternDigits(value ?? '').trim())
+      .test(
+        'fee',
+        t('cycles.validation.entryFee'),
+        (value) => !value || FINANCE_SETTINGS_RULES.PRICE_INPUT_PATTERN.test(value),
+      ),
   })
 }
 
@@ -143,6 +155,7 @@ function wireValue(field, value) {
   if (NUMBER_FIELDS.includes(field)) return value === '' || value === null ? null : Number(value)
   if (field === 'name') return { ar: value.ar.trim(), en: value.en.trim() }
   if (field === 'disqualificationScore') return Number(value).toFixed(2)
+  if (field === 'entryFee') return value === '' || value === null ? null : priceString(value)
   return value
 }
 
@@ -152,10 +165,14 @@ function payloadFields(values, { includeParticipation }) {
   )
 }
 
+function omitted(field, values) {
+  return ['year', 'entryFee'].includes(field) && (values[field] ?? '') === ''
+}
+
 export function cyclePayload(values, { includeParticipation }) {
   return Object.fromEntries(
     payloadFields(values, { includeParticipation })
-      .filter((field) => !(field === 'year' && values.year === ''))
+      .filter((field) => !omitted(field, values))
       .map((field) => [field, wireValue(field, values[field])]),
   )
 }
@@ -170,6 +187,7 @@ export function changedCyclePayload(values, initial, { includeParticipation, loc
       .filter(
         (field) =>
           !locked.has(field) &&
+          !(field === 'entryFee' && omitted(field, values)) &&
           !sameValue(wireValue(field, values[field]), wireValue(field, initial[field])),
       )
       .map((field) => [field, wireValue(field, values[field])]),

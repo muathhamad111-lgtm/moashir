@@ -33,6 +33,7 @@ final readonly class PaymentOrderWriter
             'entity_name' => $entity->name,
             'initiated_by_user_id' => $actor->id,
             'purpose' => $terms->purpose,
+            'award_cycle_id' => $terms->cycle?->id,
             'channel' => $terms->channel,
             'provider' => $terms->channel->providerName(),
             'mode' => $terms->mode,
@@ -47,7 +48,9 @@ final readonly class PaymentOrderWriter
         ]);
         $payment->setRelation('entity', $entity);
 
-        $this->intents->touch($payment);
+        if ($terms->purpose->tracksCheckoutIntent()) {
+            $this->intents->touch($payment);
+        }
         $this->recordCreation($payment);
 
         if ($terms->channel === PaymentChannel::Electronic) {
@@ -67,6 +70,7 @@ final readonly class PaymentOrderWriter
         $this->audit->record(new AuditEntry(AuditEvent::PaymentCreated, $payment, [], [
             'reference' => $payment->reference,
             'purpose' => $payment->purpose->value,
+            'award_cycle_id' => $payment->award_cycle_id,
             'channel' => $payment->channel->value,
             'mode' => $payment->mode->value,
             'price_before_vat' => $payment->price_before_vat,

@@ -45,6 +45,8 @@ it('summarises the three paths of an entity that has not started anything', func
 
     expect($paths['self'])->toBe([
         'pricing' => ['price' => null, 'is_free' => true, 'availability' => 'available'],
+        'is_listed' => true,
+        'awaiting_payment' => null,
         'open_draft' => null,
         'last_result' => null,
     ])
@@ -74,6 +76,7 @@ it('summarises the three paths of an entity that has not started anything', func
         'context' => [
             'assessment_id' => null, 'number' => null, 'status' => null, 'payment_id' => null, 'is_paid' => null,
             'deadline_at' => null, 'period_ends_on' => '2027-03-31', 'cycle_id' => null,
+            'payment_reference' => null, 'payment_channel' => null, 'payment_status' => null, 'payment_expires_at' => null,
         ],
     ]);
 });

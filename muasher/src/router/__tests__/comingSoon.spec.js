@@ -19,9 +19,12 @@ const AWAITING_BACKEND = [
   ROUTE_NAMES.ADMIN_SETTINGS_AI_KNOWLEDGE_BASE,
 ]
 
-const DEMO_ONLY = [
-  ROUTE_NAMES.ADMIN_SETTINGS_ABANDONED_CARTS,
+const DEMO_ONLY = [ROUTE_NAMES.ADMIN_SETTINGS_ABANDONED_CARTS]
+
+const AWARD_SCREENS = [
   ROUTE_NAMES.ASSESSMENT_ADVANCED,
+  ROUTE_NAMES.ASSESSMENT_ADVANCED_FORM,
+  ROUTE_NAMES.ASSESSMENT_ADVANCED_PAY,
   ROUTE_NAMES.AWARD_CYCLES,
   ROUTE_NAMES.AWARD_COMMITTEE,
   ROUTE_NAMES.AWARD_SECRETARY_DESK,
@@ -108,6 +111,15 @@ describe('demo-only screens', () => {
     for (const name of DEMO_ONLY) {
       expect(await shapeOf(real, name)).toEqual(comingSoonShapeOf(name))
     }
+  })
+
+  it('no longer include the award screens, served by the backend in every build', () => {
+    expect(appRoutes.filter((route) => route.meta?.demoOnly).map(({ name }) => name)).toEqual(
+      DEMO_ONLY,
+    )
+    expect(
+      replacedAmong(withComingSoonScreens(appRoutes, BUILD_POSTURES.REAL), AWARD_SCREENS),
+    ).toEqual([])
   })
 
   it('stay working in the client-demo build', () => {

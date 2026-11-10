@@ -13,7 +13,7 @@ final readonly class ShowTransaction
 {
     private const array RELATIONS = [
         'receipt', 'refund.payment', 'refund.recordedBy', 'refund.evidenceFile', 'entity.owner',
-        'bankTransfer.bankAccount', 'bankTransfer.proofFile', 'bankTransfer.reviewedBy',
+        'bankTransfer.bankAccount', 'bankTransfer.proofFile', 'bankTransfer.reviewedBy', 'awardCycle',
     ];
 
     public function __construct(private LinkedRequestReader $linkedRequests) {}

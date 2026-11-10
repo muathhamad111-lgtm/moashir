@@ -29,7 +29,9 @@ const PDF = '%PDF-1.4\n% evidence\n%%EOF\n'
 const EICAR = '%PDF-1.4\nEICAR-STANDARD-ANTIVIRUS-TEST-FILE\n%%EOF\n'
 
 const ASSESSMENT_KEYS = [
+  'award_cycle',
   'award_cycle_id',
+  'certificate',
   'completed_at',
   'created_at',
   'criteria_update_in_progress',
@@ -38,10 +40,18 @@ const ASSESSMENT_KEYS = [
   'id',
   'is_frozen',
   'is_open',
+  'kit',
+  'level',
   'number',
   'path',
   'path_label',
+  'payment',
+  'period',
+  'period_label',
+  'period_state',
   'result',
+  'row_key',
+  'row_type',
   'scale_kind',
   'status',
   'submitted_at',
@@ -131,7 +141,15 @@ describe('accredited mock — entity reads', () => {
     seedMockSession(NAMAA)
     const { status, body } = await call('GET', '/assessments/accredited/current')
     expect(status).toBe(200)
-    expect(keys(body.data)).toEqual(['active', 'awaiting_payment', 'latest_closed'])
+    expect(keys(body.data)).toEqual([
+      'active',
+      'apply',
+      'awaiting_payment',
+      'latest_closed',
+      'periodic',
+      'pricing',
+      'submission',
+    ])
     expect(body.data.awaiting_payment).toBeNull()
     expect(keys(body.data.active)).toEqual([...ASSESSMENT_KEYS, 'progress'].sort())
     expect(keys(body.data.active.progress)).toEqual(['remaining', 'subs_complete', 'subs_total'])
@@ -413,6 +431,8 @@ describe('accredited mock — results, opening, prices', () => {
       total: '1150.00',
       currency: 'SAR',
     })
-    expect(keys(body.data)).toEqual(['accredited', 'bag'])
+    expect(keys(body.data)).toEqual(['accredited', 'bag', 'paths'])
+    expect(body.data.paths.self).toEqual({ price: null, is_free: true, availability: 'available' })
+    expect(body.data.paths.accredited).toMatchObject({ is_free: false, availability: 'available' })
   })
 })

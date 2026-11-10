@@ -55,6 +55,10 @@
   font-variant-numeric: tabular-nums;
 }
 
+.accredited-result-summary__value--long {
+  font-size: var(--fs-sm);
+}
+
 .accredited-result-summary__detail {
   @include flex(column, flex-start, center, var(--space-1));
 }

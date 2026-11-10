@@ -1,3 +1,4 @@
+import { toPathPricing } from './paths'
 import { PAYMENT_CHANNEL_VALUES } from '@/constants/payments'
 import { BANK_ACCOUNT_STATES } from '@/constants/bankTransfer'
 import { toRequestStatus } from './accreditedStatus'
@@ -79,6 +80,7 @@ export function toCheckoutOptions(raw = {}) {
     channels: knownChannels(raw.channels),
     bankAccounts: (raw.bankAccounts ?? []).map(toPayerBankAccount),
     unifiedNumber: raw.transferNote?.unifiedNumber ?? null,
+    pricing: toPathPricing(raw.pricing),
   }
 }
 

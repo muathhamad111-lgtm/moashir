@@ -17,7 +17,9 @@ export const FINANCE_PERMISSIONS = {
 }
 
 export const PURPOSE_PERMISSIONS = {
+  self: 'assessment.self.manage',
   accredited: 'assessment.accredited.manage',
+  award: 'assessment.advanced.manage',
   bag: 'bag.own.purchase',
 }
 

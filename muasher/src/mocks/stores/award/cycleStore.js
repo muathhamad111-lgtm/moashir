@@ -2,6 +2,7 @@ import { CRITERIA_VERSION_STATUSES } from '@/constants/criteria'
 import { awardCyclesFixture } from '../../fixtures/awardCycles'
 import { versionWithStatus } from '../criteriaStore'
 import { addDays } from '../accredited/dates'
+import { scenarioAnchor, seededEntryFee } from './feeScenario'
 
 const RUNNING_EXCLUDED = ['draft', 'closed']
 const DATE_FIELDS = [
@@ -41,6 +42,7 @@ function seededCycle(fixture, version, anchor) {
     disqualificationScore: fixture.disqualificationScore,
     initialReviewSlaDays: fixture.initialReviewSlaDays,
     participationCertificateEnabled: fixture.participationCertificateEnabled,
+    entryFee: seededEntryFee(fixture),
     regionIds: [...fixture.regionIds],
     members: fixture.members.map((member) => ({ ...member })),
     initialAssessors: fixture.initialAssessors.map((link) => ({ ...link })),
@@ -55,7 +57,7 @@ function seededCycle(fixture, version, anchor) {
   }
 }
 
-export function resetCycleStore(anchor = new Date().toISOString()) {
+export function resetCycleStore(anchor = scenarioAnchor() ?? new Date().toISOString()) {
   const version = versionWithStatus(CRITERIA_VERSION_STATUSES.PUBLISHED)
   state.cycles = awardCyclesFixture.map((fixture) => seededCycle(fixture, version, anchor))
   state.nextId = Math.max(100, ...state.cycles.map((cycle) => cycle.id))

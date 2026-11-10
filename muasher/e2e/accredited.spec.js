@@ -149,8 +149,8 @@ test('the entity completes the form: CV, evidence with scan states, refused file
   await expect(completeness).toHaveClass(/accredited-completeness--done/)
   await page.locator('.accredited-actions .btn--primary').click()
   await page.locator('.modal .btn--primary').click()
-  await expect(page).toHaveURL(/\/assessment\/accredited$/)
-  await expect(page.locator('.accredited-current')).toContainText(
+  await expect(page).toHaveURL(/\/paths\/accredited\/9101\?tab=request$/)
+  await expect(page.locator('.request-page__badges')).toContainText(
     isEn(testInfo) ? 'Submitted' : 'مُرسل',
   )
   expect(errors).toEqual([])
@@ -188,8 +188,8 @@ test('a completion request limits edits to the listed items and shows the deadli
   await expect(page.locator('#accredited-sub-402 .scan-status').first()).toBeVisible()
   await page.locator('.accredited-actions .btn--primary').click()
   await page.locator('.modal .btn--primary').click()
-  await expect(page).toHaveURL(/\/assessment\/accredited$/)
-  await expect(page.locator('.accredited-current')).toContainText(
+  await expect(page).toHaveURL(/\/paths\/accredited\/9106\?tab=request$/)
+  await expect(page.locator('.request-page__badges')).toContainText(
     isEn(testInfo) ? 'Under review' : 'قيد المراجعة',
   )
 })
@@ -198,11 +198,13 @@ test('the result shows totals and feedback per sub-criterion without the assesso
   page,
 }, testInfo) => {
   await signIn(page, testInfo, ENTITIES.albirr)
-  await page.goto('/assessment/accredited/result/9102/feedback')
+  await page.goto('/assessment/accredited/result/9102')
+  await expect(page).toHaveURL(/\/paths\/accredited\/9102\?tab=result$/)
   await expect(page.locator('.accredited-result-summary__value')).toContainText('%')
+  await page.goto('/assessment/accredited/result/9102/feedback')
+  await expect(page).toHaveURL(/\/paths\/accredited\/9102\?tab=feedback$/)
   await expect(page.locator('.accredited-feedback__item').first()).toBeVisible()
   await expect(page.locator('.accredited-feedback__field--strengths').first()).toBeVisible()
-  await expect(page.locator('.accredited-feedback__title')).toBeFocused()
   await expect(page.locator('main')).not.toContainText(/سلطان|Sultan/)
   await page.screenshot({
     path: `test-results/accredited-result-${suffixOf(testInfo)}.png`,
@@ -211,7 +213,8 @@ test('the result shows totals and feedback per sub-criterion without the assesso
 
   await signIn(page, testInfo, ENTITIES.namaa)
   await page.goto('/assessment/accredited/result/9101')
-  await expect(page.locator('.result-pending')).toBeVisible()
+  await expect(page.locator('[data-testid="request-tab-request"]')).toBeVisible()
+  await expect(page.locator('[role="tab"]')).toHaveCount(1)
 })
 
 test('a paid accredited order opens a draft request for the entity', async ({ page }) => {

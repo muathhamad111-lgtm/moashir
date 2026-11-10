@@ -100,31 +100,20 @@ test.describe('assessments area', () => {
     await signIn(page, testInfo)
   })
 
-  test('shows the current, history and results tabs with the server counts', async ({ page }) => {
-    await open(page, '/assessment/history', '.current-assessment')
-    await expect(page.locator('[role="tab"]')).toHaveCount(3)
-    await expect(page.locator('[role="tab"][aria-selected="true"]')).toHaveAttribute(
-      'id',
-      'assessments-panel-tab-current',
+  test('replaces the history page with the accredited path page and its rows', async ({ page }) => {
+    await open(page, '/assessment/history', '[data-testid="next-step"]')
+    await expect(page).toHaveURL(/\/dashboard$/)
+    await open(page, '/paths/accredited', '[data-testid="path-requests"]')
+    await expect(page.locator('[data-testid="path-row-request-9101"]')).toContainText(
+      'ACC-2026-000004',
     )
-    await expect(page.locator('.current-assessment', { hasText: 'ACC-2026-000004' })).toBeVisible()
-    await expect(page.locator('.current-assessment [role="progressbar"]').first()).toBeVisible()
-    await page.locator('[role="tab"]').nth(1).click()
-    await expect(page).toHaveURL(/tab=history/)
-    await expect(page.locator('.history-item').first()).toBeVisible()
-    await page.locator('[role="tab"]').nth(2).click()
-    await expect(page.locator('.assessment-result').first()).toBeVisible()
-    await expect(page.locator('.assessment-result__percent').first()).toContainText('%')
   })
 
   test('opens the accredited form as a task screen with stations, guide and step navigation', async ({
     page,
   }) => {
-    await open(page, '/assessment/history', '.current-assessment')
-    await page
-      .locator('.current-assessment', { hasText: 'ACC-2026-000004' })
-      .locator('.btn--primary')
-      .click()
+    await open(page, '/paths/accredited', '[data-testid="path-status-card"]')
+    await page.locator('[data-testid="path-primary-action"]').click()
     await expect(page).toHaveURL(/\/assessment\/accredited\/form\/9101$/)
     await expect(page.locator('[data-testid="attention-strip"]')).toHaveCount(0)
     await expect(page.locator('.portal-breadcrumb')).toContainText('ACC-2026-000004')
@@ -142,8 +131,6 @@ test.describe('assessments area', () => {
       'accredited_assessment',
     )
     await page.keyboard.press('Escape')
-    await page.locator('[role="tab"]').nth(1).click()
-    await expect(page).toHaveURL(/\/assessment\/history\?tab=history$/)
   })
 })
 
@@ -381,7 +368,7 @@ test.describe('legal pages', () => {
 
 test.describe('portal areas screenshots', () => {
   const PAGES = [
-    { name: 'assessments', path: '/assessment/history', ready: '.current-assessment' },
+    { name: 'assessments', path: '/paths/accredited', ready: '[data-testid="path-requests"]' },
     { name: 'accredited-form', path: '/assessment/accredited/form/9101', ready: '.station-row' },
     { name: 'certificates', path: '/certificates', ready: '.certificate-card' },
     { name: 'messages', path: OPEN_THREAD, ready: '.message-bubble' },

@@ -7,7 +7,6 @@ import { sessionUserFor } from '@/test-utils/session'
 import { accreditedService } from '@/services/accreditedService'
 import { servicePricesService } from '@/services/servicePricesService'
 import { contentService } from '@/services/contentService'
-import Result from '../Result.vue'
 import Intro from '../Intro.vue'
 
 vi.mock('@/services/accreditedService', () => ({
@@ -49,57 +48,6 @@ beforeEach(() => {
 })
 
 describe('accredited views', () => {
-  it('shows the Q-94 placeholder until the result is published', async () => {
-    accreditedService.getResult.mockResolvedValue({
-      data: {
-        id: 9101,
-        number: 'ACC-2026-000004',
-        path: 'accredited',
-        status: 'under-review',
-        isFrozen: false,
-        available: false,
-      },
-    })
-    const { wrapper } = await mountAt(Result, '/assessment/accredited/result/9101', ['entity'])
-    expect(accreditedService.getResult).toHaveBeenCalledWith(9101)
-    expect(wrapper.find('.result-pending').exists()).toBe(true)
-    expect(wrapper.find('.accredited-feedback').exists()).toBe(false)
-  })
-
-  it('shows the published result with its feedback', async () => {
-    accreditedService.getResult.mockResolvedValue({
-      data: {
-        id: 9102,
-        number: 'ACC-2026-000001',
-        status: 'completed',
-        available: true,
-        total: '6800.00',
-        maxTotal: '8200.00',
-        percent: '82.93',
-        completedAt: '2026-09-10T12:00:00Z',
-        main: [],
-        sub: [],
-        points: [],
-        feedback: [
-          {
-            subId: 101,
-            code: 'M1.1',
-            name: { en: 'Strategic direction' },
-            percent: '81.67',
-            strengths: 'Clear vision',
-            improvementPoints: null,
-            notes: null,
-          },
-        ],
-      },
-    })
-    const { wrapper } = await mountAt(Result, '/assessment/accredited/result/9102/feedback', [
-      'entity',
-    ])
-    expect(wrapper.find('.accredited-result-summary__value').text()).toBe('82.93%')
-    expect(wrapper.find('.accredited-feedback__field--strengths').text()).toContain('Clear vision')
-  })
-
   it('shows the price to a guest with a sign-in action and the open request to an entity', async () => {
     const guest = await mountAt(Intro, '/assessment/accredited')
     expect(guest.wrapper.findAll('.pricing-breakdown__row')).toHaveLength(3)

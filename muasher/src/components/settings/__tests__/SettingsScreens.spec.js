@@ -66,18 +66,30 @@ afterEach(() => {
 })
 
 describe('per-path settings panel', () => {
-  it('shows the price only on the paid path with its breakdown', async () => {
+  it('shows the price read-only on the paid path and points to the path prices', async () => {
     mountWith(PathSettingsPanel, { path: 'accredited' })
     await flushPromises()
     expect(pathSettingsService.get).toHaveBeenCalledWith('accredited')
-    expect(wrapper.find('input[name="price"]').element.value).toBe('1000.00')
+    expect(wrapper.find('input[name="price"]').exists()).toBe(false)
     expect(wrapper.find('.pricing-breakdown').text()).toContain('1,150.00')
+    expect(wrapper.find('[data-testid="path-price-moved"]').exists()).toBe(true)
     expect(wrapper.findAll('textarea')).toHaveLength(6)
     wrapper.unmount()
     mountWith(PathSettingsPanel, { path: 'advanced' })
     await flushPromises()
-    expect(wrapper.find('input[name="price"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="path-price-moved"]').exists()).toBe(false)
     expect(wrapper.find('.path-settings__intro .path-badge--advanced').exists()).toBe(true)
+  })
+
+  it('keeps the price section and its link on the accredited path while no price is in force', async () => {
+    pathSettingsService.get.mockResolvedValueOnce({ data: settingsOf('accredited', false) })
+    mountWith(PathSettingsPanel, { path: 'accredited' })
+    await flushPromises()
+    expect(wrapper.find('.pricing-breakdown').exists()).toBe(false)
+    expect(wrapper.text()).toContain('No payment is requested for this path now')
+    expect(wrapper.find('[data-testid="path-price-moved"] a').attributes('href')).toBe(
+      '/admin/settings/prices',
+    )
   })
 
   it('offers a retry when the settings cannot be read', async () => {

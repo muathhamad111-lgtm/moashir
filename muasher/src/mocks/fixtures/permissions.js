@@ -980,6 +980,19 @@ export const permissionCatalogFixture = [
     grantable: false,
   },
   {
+    key: 'settings.prices.manage',
+    module: 'settings',
+    label: { ar: 'إدارة أسعار المسارات', en: 'Manage path prices' },
+    description: {
+      ar: 'سعر كل مسار قبل الضريبة وإتاحته وتاريخ سريانه وسجله.',
+      en: 'Each path price before VAT, its availability, effective date and history.',
+    },
+    system: false,
+    lockedToRoles: [],
+    confidential: false,
+    grantable: true,
+  },
+  {
     key: 'settings.sms.manage',
     module: 'settings',
     label: { ar: 'إدارة إعدادات الرسائل النصية', en: 'Manage SMS settings' },
@@ -1179,6 +1192,7 @@ export const defaultRoleMatrixFixture = {
     'settings.assessment.manage',
     'settings.certificates.manage',
     'settings.payment.manage',
+    'settings.prices.manage',
     'settings.sms.manage',
     'settings.email.manage',
     'settings.notifications.manage',

@@ -30,6 +30,9 @@ const CYCLE_KEYS = [
   'counts',
   'created_at',
   'criteria_version_id',
+  'entry_fee',
+  'entry_fee_editable',
+  'entry_fee_quote',
   'id',
   'initial_review_sla_days',
   'name',
@@ -183,6 +186,7 @@ describe('award cycles mock — reads and scope', () => {
       min_entity_age_years: 3,
       disqualification_score: '60.00',
       initial_review_sla_days: 14,
+      entry_fee: '0.00',
     })
     const officers = (await call('GET', '/award/cycles/candidates?role=filtering_officer')).body
       .data

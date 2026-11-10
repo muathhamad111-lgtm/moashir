@@ -53,7 +53,6 @@ export const financeReject = {
   notConfigured: () =>
     new MockRejection(503, 'integration.not_configured', { meta: { kind: 'payment' } }),
   providerUnavailable: () => new MockRejection(503, 'provider_unavailable'),
-  priceNotConfigured: () => new MockRejection(409, 'payment.price_not_configured'),
   entityRequired: () => new MockRejection(403, 'payment.entity_required'),
   entityNotActive: () => new MockRejection(409, 'payment.entity_not_active'),
   checkoutInProgress: () => new MockRejection(409, 'payment.checkout_in_progress'),

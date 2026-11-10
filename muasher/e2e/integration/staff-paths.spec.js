@@ -9,6 +9,7 @@ import {
 import { STAFF, rememberPassword, signInStaff } from './support/accounts'
 import { FOOTER_LEGAL_PROBES, GUEST_SESSION_PROBE, SOURCES, watchApi } from './support/apiWatch'
 import { apiOk } from './support/api'
+import { AVAILABLE, savePathPrice } from './support/prices'
 import { paced } from './support/pacing'
 import { registerEntity } from './support/entities'
 import { squarePng } from './support/images'
@@ -47,6 +48,21 @@ function probe(page, path) {
   const origin = new URL(page.url()).origin
   return page.request.get(`/api/v1${path}`, {
     headers: { Accept: 'application/json', Referer: `${origin}/`, Origin: origin },
+  })
+}
+
+async function probeWrite(page, path, body) {
+  const origin = new URL(page.url()).origin
+  const cookies = await page.context().cookies(origin)
+  const xsrf = cookies.find((cookie) => cookie.name === 'XSRF-TOKEN')?.value ?? ''
+  return page.request.put(`/api/v1${path}`, {
+    data: body,
+    headers: {
+      Accept: 'application/json',
+      Referer: `${origin}/`,
+      Origin: origin,
+      'X-XSRF-TOKEN': decodeURIComponent(xsrf),
+    },
   })
 }
 
@@ -130,9 +146,21 @@ test('the per-path and certificate settings save on the real contract', async ()
   await expect(page.locator('.toast--success').last()).toBeVisible()
   const guide = await apiOk(page, 'GET', '/content/assessment-paths/accredited')
   expect(guide.data.entity_texts.intro.ar).toBe(intro)
-  await page.locator('input[name="price"]').fill('1150')
-  await page.locator('.path-settings .btn--primary').click()
-  await expect(page.locator('.pricing-breakdown')).toBeVisible()
+  await expect(page.locator('input[name="price"]')).toHaveCount(0)
+  const refused = await probeWrite(page, '/settings/assessment/paths/accredited', {
+    price: '1150.00',
+  })
+  expect(refused.status()).toBe(422)
+  const refusal = await refused.json()
+  expect(refusal.code).toBe('validation_failed')
+  expect(Object.keys(refusal.errors)).toEqual(['price'])
+  await page.locator('[data-testid="path-price-moved"] a').click()
+  await expect(page).toHaveURL(/\/admin\/settings\/prices$/)
+  const saved = await savePathPrice(page, 'accredited', { price: '1150' })
+  expect(saved.pricing).toMatchObject({ is_free: false, availability: AVAILABLE })
+  await page.goto('/admin/settings/assessment')
+  await expect(page.locator('.path-settings .pricing-breakdown')).toBeVisible()
+  await expect(page.locator('input[name="price"]')).toHaveCount(0)
   const priced = await apiOk(page, 'GET', '/settings/assessment/paths/accredited')
   expect(priced.data.price.price_before_vat).toBe('1150.00')
   await page.locator('[role="tab"]').nth(1).click()

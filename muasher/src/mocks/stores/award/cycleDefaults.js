@@ -1,4 +1,7 @@
 import { assessmentSettings } from '../accredited/assessmentSettingsStore'
+import { priceInForce } from '../finance/priceVersions'
+
+const FREE_FEE = '0.00'
 
 export function cycleDefaults() {
   const settings = assessmentSettings()
@@ -9,6 +12,10 @@ export function cycleDefaults() {
   }
 }
 
+export function defaultEntryFee() {
+  return priceInForce('award') ?? FREE_FEE
+}
+
 export function cycleDefaultsResource() {
-  return cycleDefaults()
+  return { ...cycleDefaults(), entryFee: defaultEntryFee() }
 }

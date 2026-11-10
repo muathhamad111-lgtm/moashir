@@ -7,6 +7,10 @@ import { assessmentReject } from '../assessments/assessmentRejection'
 import { ACTORS, transition } from '../assessments/statusHistory'
 import { dispatchQueuedJob } from '../mockQueue'
 import { financeState } from '../finance/financeState'
+import { findEntity, isDeleted } from '../entitiesStore'
+import { pathPricingOf } from '../finance/priceVersions'
+import { assertAvailable, pathReject } from '../finance/pathRejection'
+import { openOrderFor } from '../periodic/paidRequests'
 import {
   registerPaymentPaidListener,
   registerPaymentRefundedListener,
@@ -33,13 +37,13 @@ function paidAccreditedPayments(entityId = null) {
   )
 }
 
-function openedRecord(payment, version, at) {
-  const record = insertAssessment({
+function insertAccreditedDraft(entityId, paymentId, version, at) {
+  return insertAssessment({
     number: nextRequestNumber(new Date(at), ACCREDITED_REQUEST_PREFIX),
-    entityId: payment.entityId,
+    entityId,
     path: ASSESSMENT_PATHS.ACCREDITED,
     status: STATES.DRAFT,
-    paymentId: payment.id,
+    paymentId,
     criteriaVersionId: version.id,
     scaleKind: version.scaleKind,
     scores: {},
@@ -61,6 +65,10 @@ function openedRecord(payment, version, at) {
     criteriaUpdatePendingSince: null,
     criteriaMoves: [],
   })
+}
+
+function openedRecord(payment, version, at) {
+  const record = insertAccreditedDraft(payment.entityId, payment.id, version, at)
   record.transitions = [
     transition(null, STATES.AWAITING_PAYMENT, 'start', at, ACTORS.SYSTEM),
     transition(STATES.AWAITING_PAYMENT, STATES.DRAFT, 'open_draft', at, ACTORS.SYSTEM),
@@ -89,12 +97,52 @@ export function resetAccreditedOpening() {
   duplicatePayments.clear()
 }
 
-function assertMayBuyAccredited(entity, purpose) {
-  if (purpose !== ACCREDITED) return
+function assertNoOpenRequest(entity) {
   const open = openAccreditedOf(entity.id)
   if (open) throw assessmentReject.requestOpen(open.id)
+}
+
+function assertNoPaidPending(entity) {
   if (paidAccreditedPayments(entity.id).some((payment) => !recordOfPayment(payment.id)))
     throw assessmentReject.paymentBeingProcessed()
+}
+
+function assertMayBuyAccredited(entity, purpose) {
+  if (purpose !== ACCREDITED) return
+  assertNoOpenRequest(entity)
+  assertNoPaidPending(entity)
+}
+
+function startableEntity(user) {
+  const entity = user.entityId === null ? null : findEntity(user.entityId)
+  if (!entity) throw assessmentReject.entityRequired()
+  if (isDeleted(entity)) throw assessmentReject.entityDeleted()
+  if (entity.status !== 'active') throw assessmentReject.entityNotActive()
+  return entity
+}
+
+function assertFreeAndAvailable() {
+  const pricing = pathPricingOf(ACCREDITED)
+  assertAvailable(ACCREDITED, pricing)
+  if (!pricing.isFree)
+    throw pathReject.paymentRequired({ path: ACCREDITED, purpose: ACCREDITED, pricing })
+}
+
+export function startFreeAccredited(user) {
+  const entity = startableEntity(user)
+  assertFreeAndAvailable()
+  assertNoOpenRequest(entity)
+  const order = openOrderFor(entity.id, ACCREDITED)
+  if (order) throw pathReject.openOrderExists(order)
+  assertNoPaidPending(entity)
+  const version = versionWithStatus(CRITERIA_VERSION_STATUSES.PUBLISHED)
+  if (!version) throw assessmentReject.noPublishedVersion()
+  const at = nowIso()
+  const record = insertAccreditedDraft(entity.id, null, version, at)
+  record.transitions = [
+    transition(null, STATES.DRAFT, 'start', at, ACTORS.ENTITY, user.superAdmin ? null : user.id),
+  ]
+  return record
 }
 
 function closeOnRefund(payment, refund) {

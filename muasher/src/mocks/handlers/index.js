@@ -25,6 +25,7 @@ import { financeHandlers } from './finance'
 import { bankTransfersHandlers } from './bankTransfers'
 import { paymentChannelsHandlers } from './paymentChannels'
 import { financeSettingsHandlers } from './financeSettings'
+import { pricesSettingsHandlers } from './pricesSettings'
 import { moyasarSandboxHandlers } from './moyasarSandbox'
 import { messagingHandlers } from './messaging'
 import { accreditedHandlers } from './accredited'
@@ -97,6 +98,7 @@ export const handlers = [
   ...paymentChannelsHandlers,
   ...financeHandlers,
   ...financeSettingsHandlers,
+  ...pricesSettingsHandlers,
   ...servicePricesHandlers,
   ...messagingHandlers,
   ...accreditedHandlers,

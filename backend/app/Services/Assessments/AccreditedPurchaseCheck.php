@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Assessments;
 
 use App\Contracts\Finance\PurchaseEligibilityCheck;
+use App\Data\Finance\OrderTerms;
 use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Finance\PaymentPurpose;
 use App\Enums\Finance\PaymentStatus;
@@ -16,12 +17,15 @@ use App\Support\ScalarValue;
 
 final class AccreditedPurchaseCheck implements PurchaseEligibilityCheck
 {
-    public function assertMayPurchase(Entity $entity, PaymentPurpose $purpose): void
+    public function assertMayPurchase(Entity $entity, OrderTerms $terms): void
     {
-        if ($purpose !== PaymentPurpose::Accredited) {
-            return;
+        if ($terms->purpose === PaymentPurpose::Accredited) {
+            $this->assertMayStart($entity);
         }
+    }
 
+    public function assertMayStart(Entity $entity): void
+    {
         $openId = Assessment::query()->ownedBy($entity->id)->ofPath(AssessmentPath::Accredited)->open()->value('id');
 
         if ($openId !== null) {

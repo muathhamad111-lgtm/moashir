@@ -26,6 +26,7 @@ final class NextStepResolver
             ?? $this->awardStep($paths, $viewer, AdvancedAssessmentStatus::NeedsCompletion, NextStepKey::CompleteRequest)
             ?? $this->accreditedStep($paths, $viewer, AccreditedAssessmentStatus::Draft, NextStepKey::FinishDraft)
             ?? $this->awardDraft($paths, $viewer)
+            ?? $this->paidSelfDraft($paths, $viewer)
             ?? $this->trackReview($paths, $viewer)
             ?? $this->applyAccredited($paths)
             ?? $this->applyAward($paths)
@@ -40,10 +41,28 @@ final class NextStepResolver
             return null;
         }
 
-        return new NextStep(NextStepKey::SettlePayment, AssessmentPath::Accredited, new NextStepTarget(NextStepTarget::ACCREDITED), [
+        $path = $payment->purpose->opensPath() ?? AssessmentPath::Accredited;
+
+        return new NextStep(NextStepKey::SettlePayment, $path, NextStepTarget::ofPath($path), [
             ...$this->emptyContext(),
             'payment_id' => $payment->public_id,
+            'cycle_id' => $payment->award_cycle_id,
+            'payment_reference' => $payment->reference,
+            'payment_channel' => $payment->channel->value,
+            'payment_status' => $payment->status->value,
+            'payment_expires_at' => $payment->expires_at?->toIso8601String(),
         ]);
+    }
+
+    private function paidSelfDraft(EntityPaths $paths, User $viewer): ?NextStep
+    {
+        $self = $paths->self;
+
+        if (! $self->openDraft instanceof Assessment || ! $self->hasPaidDraft()) {
+            return null;
+        }
+
+        return new NextStep(NextStepKey::FinishDraft, AssessmentPath::SelfAssessment, new NextStepTarget(NextStepTarget::SELF), $this->requestContext($self->openDraft, $viewer));
     }
 
     private function accreditedStep(EntityPaths $paths, User $viewer, AccreditedAssessmentStatus $status, NextStepKey $key): ?NextStep
@@ -151,7 +170,7 @@ final class NextStepResolver
             return new NextStep(NextStepKey::ContinueSelfDraft, AssessmentPath::SelfAssessment, new NextStepTarget(NextStepTarget::SELF), $this->requestContext($self->openDraft, $viewer));
         }
 
-        return $self->pricing->isHidden() ? null : new NextStep(NextStepKey::StartSelf, AssessmentPath::SelfAssessment, new NextStepTarget(NextStepTarget::SELF), $this->emptyContext());
+        return $self->pricing->isHidden() || $self->awaitingPayment instanceof Payment ? null : new NextStep(NextStepKey::StartSelf, AssessmentPath::SelfAssessment, new NextStepTarget(NextStepTarget::SELF), $this->emptyContext());
     }
 
     /**
@@ -182,6 +201,10 @@ final class NextStepResolver
             'deadline_at' => null,
             'period_ends_on' => null,
             'cycle_id' => null,
+            'payment_reference' => null,
+            'payment_channel' => null,
+            'payment_status' => null,
+            'payment_expires_at' => null,
         ];
     }
 }

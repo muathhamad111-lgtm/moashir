@@ -27,7 +27,7 @@ final readonly class BankTransferOrderOpener
     {
         $proof = $submission->proof;
         $account = $this->selectableAccount($submission->bankAccountId);
-        $terms = new OrderTerms($submission->purpose, PaymentChannel::BankTransfer, $submission->quote, $this->mode->current(), $submission->idempotencyKey);
+        $terms = new OrderTerms($submission->purpose, PaymentChannel::BankTransfer, $submission->quote, $this->mode->current(), $submission->idempotencyKey, $submission->cycle);
         $payment = $this->orders->open($actor, $entity, $terms)->payment;
 
         $transfer = BankTransfer::query()->create([

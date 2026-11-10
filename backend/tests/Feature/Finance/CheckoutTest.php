@@ -166,7 +166,7 @@ it('answers 409 while the price of the service is not set', function (): void {
     ['owner' => $owner] = payingEntity();
     setServicePrices(null, null);
 
-    startPayment($owner)->assertConflict()->assertJsonPath('code', 'payment.price_not_configured');
+    startPayment($owner)->assertConflict()->assertJsonPath('code', 'path.unavailable');
 });
 
 it('cancels the new order and answers 503 when the gateway cannot create the intent', function (): void {

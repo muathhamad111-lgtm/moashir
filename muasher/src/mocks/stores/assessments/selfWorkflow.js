@@ -16,6 +16,7 @@ import {
 import { parseScoreSheet, validateScoreRequest } from './scoreInput'
 import { scorableUnits, unitKey } from './selfScoring'
 import { recordStart, recordSubmission } from './statusHistory'
+import { assertSelfStartable } from './selfStartGate'
 
 const ACTIVE_ENTITY_STATUS = 'active'
 
@@ -46,32 +47,38 @@ function validateStart(body) {
   throw assessmentReject.validation({ path: [fieldMessage(code, {}, 'path')] })
 }
 
-export function startSelfAssessment(user, body) {
-  validateStart(body)
-  const entity = user.entityId === null ? null : findEntity(user.entityId)
-  if (!entity) throw assessmentReject.entityRequired()
-  assertEntityMayAct(entity)
-  const version = versionWithStatus(CRITERIA_VERSION_STATUSES.PUBLISHED)
-  if (!version) throw assessmentReject.noPublishedVersion()
-  const existing = openSelfDraftsOf(entity.id)[0]
-  if (existing) throw assessmentReject.draftExists(existing.id)
-  const timestamp = now()
-  const record = insertAssessment({
+export function insertSelfDraft(entityId, version, at, extra = {}) {
+  return insertAssessment({
     number: nextRequestNumber(),
-    entityId: entity.id,
+    entityId,
     path: ASSESSMENT_PATHS.SELF,
     status: SELF_STATUSES.DRAFT,
     criteriaVersionId: version.id,
     scaleKind: version.scaleKind,
     scores: {},
     result: null,
-    createdAt: timestamp,
-    updatedAt: timestamp,
+    createdAt: at,
+    updatedAt: at,
     submittedAt: null,
     completedAt: null,
     criteriaUpdatePendingSince: null,
     criteriaMoves: [],
+    ...extra,
   })
+}
+
+export function startSelfAssessment(user, body) {
+  validateStart(body)
+  const entity = user.entityId === null ? null : findEntity(user.entityId)
+  if (!entity) throw assessmentReject.entityRequired()
+  assertEntityMayAct(entity)
+  assertSelfStartable(entity)
+  const version = versionWithStatus(CRITERIA_VERSION_STATUSES.PUBLISHED)
+  if (!version) throw assessmentReject.noPublishedVersion()
+  const existing = openSelfDraftsOf(entity.id)[0]
+  if (existing) throw assessmentReject.draftExists(existing.id)
+  const timestamp = now()
+  const record = insertSelfDraft(entity.id, version, timestamp)
   recordStart(record, user, timestamp)
   return record
 }

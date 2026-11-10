@@ -55,6 +55,11 @@ final readonly class AssessmentPolicy
         return $actor->entity_id !== null && $actor->can(PermissionKey::AssessmentAdvancedManage->value);
     }
 
+    public function startAccredited(User $actor): bool
+    {
+        return $this->viewAccreditedCurrent($actor);
+    }
+
     public function applyAdvanced(User $actor): bool
     {
         return $this->viewAdvancedCurrent($actor);

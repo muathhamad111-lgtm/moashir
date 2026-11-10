@@ -138,6 +138,7 @@ return [
     ],
     'self' => [
         'draft_exists' => 'You already have an open self-assessment draft. Continue it or submit it before starting a new one.',
+        'payment_being_processed' => 'Your self-assessment payment is being processed. Your draft will open shortly.',
     ],
     'scores' => [
         'incomplete' => 'Score every item before submitting the assessment.',
@@ -168,8 +169,17 @@ return [
     'ai' => [
         'data_transfer_acknowledgement_required' => 'Acknowledge that visitor questions and knowledge-base excerpts are sent to a provider outside the Kingdom before activating it.',
     ],
+    'path' => [
+        'unavailable' => 'This path is not available right now.',
+        'payment_required' => 'This path needs a payment first. Continue to checkout to start.',
+    ],
+    'prices' => [
+        'stale_version' => 'This price was changed by someone else. Review the current price and try again.',
+        'no_scheduled_version' => 'There is no scheduled price to cancel for this path.',
+    ],
     'payment' => [
-        'price_not_configured' => 'The price of this service is not set yet. Please try again later.',
+        'not_required' => 'This service is free right now. No payment is needed.',
+        'award_cycle_not_found' => 'The selected award cycle was not found.',
         'entity_required' => 'Only an entity account can pay for a service.',
         'entity_not_active' => 'The entity account must be active to pay for a service.',
         'checkout_in_progress' => 'This payment is being prepared. Please try again in a moment.',
@@ -315,6 +325,7 @@ return [
     ],
     'advanced' => [
         'request_exists' => 'Your entity already has a request in this award cycle.',
+        'payment_being_processed' => 'Your award entry-fee payment is being processed. Your application will open shortly.',
         'conditions' => [
             'min_entity_age' => 'The entity must be at least :required years old to apply (current age: :actual years).',
             'region' => 'The region of the entity is not covered by this award cycle.',

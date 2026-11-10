@@ -1,89 +1,96 @@
-import { describe, expect, it, vi } from 'vitest'
-import { flushPromises, mount } from '@vue/test-utils'
+import { describe, expect, it } from 'vitest'
+import { mount } from '@vue/test-utils'
 import NextStepCard from '@/components/portal/home/NextStepCard.vue'
-import { NEXT_STEPS } from '@/composables/useEntityJourney'
-import { servicePricesService } from '@/services/servicePricesService'
-import { contentService } from '@/services/contentService'
 import { createTestGlobals } from '@/test-utils'
 
-vi.mock('@/services/servicePricesService', () => ({
-  servicePricesService: { getServicePrices: vi.fn() },
-}))
-vi.mock('@/services/contentService', () => ({ contentService: { getPathGuide: vi.fn() } }))
+const STEP = {
+  rank: 7,
+  key: 'apply_accredited',
+  path: 'accredited',
+  target: { route: 'paths.accredited', params: {}, query: {}, href: '/paths/accredited' },
+  context: {
+    assessmentId: null,
+    number: null,
+    status: null,
+    paymentId: null,
+    isPaid: null,
+    deadlineAt: null,
+    periodEndsOn: '2027-03-31',
+    cycleId: null,
+  },
+}
 
-async function factory(step, locale = 'ar') {
-  const wrapper = mount(NextStepCard, {
-    props: { step },
-    global: createTestGlobals({ locale }),
-    attachTo: document.body,
-  })
-  await flushPromises()
-  return wrapper
+function factory(step, locale = 'ar') {
+  return mount(NextStepCard, { props: { step }, global: createTestGlobals({ locale }) })
 }
 
 describe('NextStepCard', () => {
-  it('counts down an open payment order and links its completion screen', async () => {
-    const expiresAt = new Date(Date.now() + 18 * 60 * 1000).toISOString()
-    const wrapper = await factory({
-      kind: NEXT_STEPS.PAYMENT,
-      paymentId: '3f0c9a52-6d1e-4b7a-9c21-5a1e00000021',
-      reference: 'PAY-2026-000021',
-      expiresAt,
-    })
-    expect(wrapper.find('.next-step__text bdi').text()).toBe('PAY-2026-000021')
-    expect(wrapper.find('.next-step__countdown').text()).toContain('18 دقيقة')
-    expect(wrapper.find('.next-step__action--primary').attributes('href')).toBe(
-      '/payments/3f0c9a52-6d1e-4b7a-9c21-5a1e00000021/complete',
+  it('shows the rank-7 step with the isolated period end and its path link', () => {
+    const wrapper = factory(STEP)
+    expect(wrapper.attributes('data-rank')).toBe('7')
+    expect(wrapper.find('.next-step__title').text()).toBe('اطلب التقييم المعتمد لهذه الفترة')
+    expect(wrapper.find('.next-step__text bdi').text()).toBe('2027-03-31')
+    expect(wrapper.find('.next-step__action--primary').attributes('href')).toBe('/paths/accredited')
+  })
+
+  it('renders the self steps in English with the path page link', () => {
+    const wrapper = factory(
+      {
+        ...STEP,
+        rank: 10,
+        key: 'start_self',
+        path: 'self',
+        target: { route: 'paths.self', params: {}, query: {}, href: '/paths/self' },
+        context: { ...STEP.context, periodEndsOn: null },
+      },
+      'en',
     )
-    wrapper.unmount()
+    expect(wrapper.find('.next-step__title').text()).toBe('Start a self assessment (optional)')
+    expect(wrapper.find('.next-step__action--primary').text()).toBe('Start the self assessment')
   })
 
-  it('shows the completion deadline', async () => {
-    const wrapper = await factory({
-      kind: NEXT_STEPS.COMPLETION,
-      assessmentId: 14,
-      reference: 'ACC-2026-000014',
-      dueAt: '2026-11-10T20:59:00Z',
-      progress: null,
-    })
-    expect(wrapper.find('.next-step__due').text()).toContain('2026-11-10')
-    expect(wrapper.find('.next-step__text').text()).toContain('ACC-2026-000014')
-    wrapper.unmount()
-  })
-
-  it('adds the accredited price before VAT when the path is suggested', async () => {
-    servicePricesService.getServicePrices.mockResolvedValue({
-      data: { accredited: { priceBeforeVat: '1000.00' } },
-    })
-    const wrapper = await factory({ kind: NEXT_STEPS.ACCREDITED_START, restart: false }, 'en')
-    expect(wrapper.find('.next-step__price').text()).toMatch(
-      /^Fee 1,?000(\.00)? SAR — excluding VAT$/,
-    )
-    wrapper.unmount()
-  })
-
-  it('opens the station guide from the path settings', async () => {
-    contentService.getPathGuide.mockResolvedValue({
-      data: {
-        entityTexts: {
-          intro: { ar: 'مقدمة', en: 'Intro' },
-          instructions: { ar: 'الخطوة الأولى\nالخطوة الثانية', en: 'One\nTwo' },
-          afterSubmission: null,
-        },
+  it('shows the rank-1 card channel, reference and order expiry for the award path', () => {
+    const wrapper = factory({
+      ...STEP,
+      rank: 1,
+      key: 'settle_payment',
+      path: 'advanced',
+      target: { route: 'paths.award', params: {}, query: {}, href: '/paths/award' },
+      context: {
+        ...STEP.context,
+        periodEndsOn: null,
+        paymentReference: 'PAY-2026-000121',
+        paymentChannel: 'electronic',
+        paymentStatus: 'pending',
+        paymentExpiresAt: '2026-11-10T09:30:00+00:00',
       },
     })
-    const wrapper = await factory({
-      kind: NEXT_STEPS.EVIDENCE,
-      assessmentId: 14,
-      reference: 'ACC-2026-000014',
-      progress: { subsTotal: 2, subsComplete: 2, remaining: [] },
-    })
-    expect(wrapper.find('.next-step__text').text()).toContain('اكتملت شواهد جميع المعايير')
-    await wrapper.find('.next-step__action--ghost').trigger('click')
-    await flushPromises()
-    expect(contentService.getPathGuide).toHaveBeenCalledWith('accredited')
-    const steps = document.body.querySelectorAll('.station-guide__step')
-    expect([...steps].map((step) => step.textContent)).toEqual(['الخطوة الأولى', 'الخطوة الثانية'])
-    wrapper.unmount()
+    expect(wrapper.find('.next-step__text').text()).toContain('الجائزة')
+    const payment = wrapper.find('[data-testid="next-step-payment"]')
+    expect(payment.text()).toContain('PAY-2026-000121')
+    expect(wrapper.find('[data-testid="next-step-expiry"]').text()).toContain('تنتهي صلاحية الطلب')
+  })
+
+  it('asks for a new order after a rejected transfer, without an expiry', () => {
+    const wrapper = factory(
+      {
+        ...STEP,
+        rank: 1,
+        key: 'settle_payment',
+        path: 'self',
+        target: { route: 'paths.self', params: {}, query: {}, href: '/paths/self' },
+        context: {
+          ...STEP.context,
+          periodEndsOn: null,
+          paymentReference: 'PAY-2026-000130',
+          paymentChannel: 'bank_transfer',
+          paymentStatus: 'rejected',
+          paymentExpiresAt: null,
+        },
+      },
+      'en',
+    )
+    expect(wrapper.find('.next-step__title').text()).toBe('Create a new payment order')
+    expect(wrapper.find('[data-testid="next-step-expiry"]').exists()).toBe(false)
   })
 })

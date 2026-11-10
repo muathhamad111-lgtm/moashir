@@ -45,8 +45,9 @@ const { checkout, state, payment, order } = completion
 const isTransfer = computed(() => state.value === COMPLETION_STATES.TRANSFER)
 const changeMethod = useCardOrderCancel({
   onCancelled: (cancelled) => {
-    const entry = entryRouteOf(cancelled.purpose)
-    if (entry) router.push({ ...entry, query: { method: PAYMENT_CHANNELS.BANK_TRANSFER } })
+    const entry = entryRouteOf(cancelled)
+    if (entry)
+      router.push({ ...entry, query: { ...entry.query, method: PAYMENT_CHANNELS.BANK_TRANSFER } })
   },
 })
 

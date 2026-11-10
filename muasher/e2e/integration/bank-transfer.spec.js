@@ -6,6 +6,7 @@ import { assertMailLogsConfigured } from './support/mailbox'
 import { STAFF, signInStaff } from './support/accounts'
 import { FOOTER_LEGAL_PROBES, GUEST_SESSION_PROBE, SOURCES, watchApi } from './support/apiWatch'
 import { registerEntity } from './support/entities'
+import { AVAILABLE, PRICES_SCREEN, savePathPrice } from './support/prices'
 
 const RUN = Date.now().toString(36)
 const ENTITY = {
@@ -16,6 +17,7 @@ const ENTITY = {
   person: 'نورة بنت سعد الحربي',
 }
 const ACCREDITED_PRICE = '1500'
+const ACCREDITED_QUOTE = { price_before_vat: '1500.00', total: '1725.00', currency: 'SAR' }
 const IBAN_LENGTH = 24
 const BANK_CODE = '00'
 const ACCOUNT_DIGITS = 18
@@ -118,12 +120,10 @@ test.afterAll(async () => {
 test('the System Administrator adds a bank account and turns bank transfer on', async () => {
   const { page, api } = sessions.admin
   await signInStaff(page, STAFF.systemAdmin)
-  await page.goto('/admin/settings/finance')
-  const price = page.locator('input[name="accreditedPrice"]')
-  await expect(price).toBeEditable()
-  await price.fill(ACCREDITED_PRICE)
-  await page.locator('.settings-section .btn--primary').click()
-  await expect(page.locator('.toast--success').last()).toBeVisible()
+  await page.goto(PRICES_SCREEN)
+  const accredited = await savePathPrice(page, 'accredited', { price: ACCREDITED_PRICE })
+  expect(accredited.pricing).toMatchObject({ is_free: false, availability: AVAILABLE })
+  expect(accredited.pricing.price).toMatchObject(ACCREDITED_QUOTE)
 
   await page.goto('/admin/settings/payment')
   await expect(page.locator('.channels-card .method-option').first()).toBeVisible()

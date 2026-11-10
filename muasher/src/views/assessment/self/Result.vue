@@ -76,7 +76,7 @@ onMounted(init)
       </template>
 
       <footer class="self-result__actions">
-        <BaseButton variant="secondary" icon="doc" @click="goTo(ROUTE_NAMES.ASSESSMENT_HISTORY)">
+        <BaseButton variant="secondary" icon="doc" @click="goTo(ROUTE_NAMES.PATHS_SELF)">
           {{ t('assessment.self.result.viewHistory') }}
         </BaseButton>
         <BaseButton variant="primary" icon="gauge" @click="goTo(ROUTE_NAMES.APP_DASHBOARD)">

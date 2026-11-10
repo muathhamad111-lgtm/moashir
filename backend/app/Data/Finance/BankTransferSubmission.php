@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Finance;
 
 use App\Enums\Finance\PaymentPurpose;
+use App\Models\Award\AwardCycle;
 use App\Models\Files\StoredFile;
 
 final readonly class BankTransferSubmission
@@ -15,5 +16,6 @@ final readonly class BankTransferSubmission
         public string $bankAccountId,
         public PriceQuote $quote,
         public StoredFile $proof,
+        public ?AwardCycle $cycle = null,
     ) {}
 }

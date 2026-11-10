@@ -154,6 +154,7 @@ enum AuditEvent: string
     case FinanceSettingsUpdated = 'settings.finance_updated';
     case AssessmentSettingsUpdated = 'settings.assessment_updated';
     case PeriodicSettingsUpdated = 'settings.periodic_updated';
+    case PricesSettingsUpdated = 'settings.prices_updated';
     case PaymentConnectionTested = 'settings.payment_tested';
     case SmsConnectionTested = 'settings.sms_tested';
     case EmailConnectionTested = 'settings.email_tested';

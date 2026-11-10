@@ -84,7 +84,9 @@ describe('useBankTransferSubmission', () => {
   function setup() {
     const onSubmitted = vi.fn()
     const { api } = withSetup(() =>
-      useBankTransferSubmission(ref('accredited'), ref(ACCOUNTS), { onSubmitted }),
+      useBankTransferSubmission(ref({ purpose: 'accredited', awardCycleId: null }), ref(ACCOUNTS), {
+        onSubmitted,
+      }),
     )
     return { api, onSubmitted }
   }
@@ -119,7 +121,12 @@ describe('useBankTransferSubmission', () => {
     await first
     expect(paymentsService.submitTransfer).toHaveBeenCalledTimes(1)
     const [order, key] = paymentsService.submitTransfer.mock.calls[0]
-    expect(order).toEqual({ purpose: 'accredited', bankAccountId: 'acc-2', proof: PDF })
+    expect(order).toEqual({
+      purpose: 'accredited',
+      awardCycleId: null,
+      bankAccountId: 'acc-2',
+      proof: PDF,
+    })
     expect(key).toMatch(/^[0-9a-f-]{36}$/)
     expect(api.proofState.value).toBe(PROOF_STATES.ACCEPTED)
     expect(onSubmitted).toHaveBeenCalledWith({ id: 'p-9', status: 'under-review' })

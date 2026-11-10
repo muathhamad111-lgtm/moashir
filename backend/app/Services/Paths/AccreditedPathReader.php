@@ -21,6 +21,7 @@ final readonly class AccreditedPathReader
         private AccreditedPeriodSummary $periods,
         private SubmissionProgressReader $progress,
         private ApplyReadinessCheck $apply,
+        private PathListing $listing,
     ) {}
 
     public function read(Entity $entity): AccreditedPathSummary
@@ -41,6 +42,7 @@ final readonly class AccreditedPathReader
             $open instanceof Assessment ? $this->progress->read($open) : null,
             $lastResult,
             $this->apply->check($awaitingPayment, $open, $pricing, $period),
+            $this->listing->isListed($entity, PaymentPurpose::Accredited, $pricing),
         );
     }
 }

@@ -20,7 +20,7 @@ function phaseOf(payment, checkout) {
   return CHECKOUT_PHASES.EXPIRED
 }
 
-export function useCheckout(purpose) {
+export function useCheckout(order) {
   const keys = useIdempotencyKey()
   const phase = ref(CHECKOUT_PHASES.IDLE)
   const payment = ref(null)
@@ -50,7 +50,7 @@ export function useCheckout(purpose) {
     phase.value = CHECKOUT_PHASES.STARTING
     failure.value = null
     try {
-      const envelope = await paymentsService.create(unref(purpose), keys.current())
+      const envelope = await paymentsService.create(unref(order), keys.current())
       keys.renew()
       const { checkout: checkoutObject, ...ownPayment } = envelope.data
       payment.value = ownPayment

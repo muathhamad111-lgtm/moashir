@@ -10,7 +10,7 @@ import { isFrozenEntity, transferPayments } from './bankTransferRecords'
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const REASON = { MIN: 10, MAX: 1000 }
 const STATUSES = ['under-review', 'paid', 'rejected', 'cancelled', 'refunded', 'all']
-const PURPOSES = ['accredited', 'bag']
+const PURPOSES = ['accredited', 'bag', 'self', 'award']
 const MODES = ['test', 'live']
 const SORTS = ['submitted_at', '-submitted_at']
 const FILTER_KEYS = ['status', 'purpose', 'bankAccount', 'mode', 'frozen']

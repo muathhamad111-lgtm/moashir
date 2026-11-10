@@ -1,3 +1,4 @@
+import { cycleRefOf } from '../award/cycleRef'
 import { linkedRequestOf } from '../accredited/requestPayments'
 import { riyadhDateKey } from '@/utils/datetime'
 import { financeEntityEmails } from '../../fixtures/finance'
@@ -105,6 +106,7 @@ export function staffTransferResource(payment, { detail = false } = {}) {
     id: payment.id,
     reference: payment.reference,
     purpose: payment.purpose,
+    awardCycle: cycleRefOf(payment.awardCycleId),
     status: payment.status,
     isTest: payment.mode === 'test',
     pricing: pricingOf(payment),

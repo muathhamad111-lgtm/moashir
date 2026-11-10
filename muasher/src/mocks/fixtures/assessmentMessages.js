@@ -1,4 +1,7 @@
+import { pathMessages } from './pathMessages'
+
 export const assessmentMessages = {
+  ...pathMessages,
   unauthenticated: { ar: 'يرجى تسجيل الدخول للمتابعة.', en: 'Please sign in to continue.' },
   forbidden: {
     ar: 'ليست لديك صلاحية لتنفيذ هذا الإجراء.',
@@ -443,6 +446,7 @@ export const assessmentAttributes = {
   criteriaVersionId: { ar: 'إصدار المعايير', en: 'criteria version' },
   scaleKind: { ar: 'مقياس التقييم', en: 'assessment scale' },
   minEntityAgeYears: { ar: 'الحد الأدنى لعمر الجهة', en: 'minimum entity age' },
+  entryFee: { ar: 'رسوم الدورة', en: 'cycle entry fee' },
   disqualificationScore: { ar: 'درجة الاستبعاد', en: 'disqualification score' },
   initialReviewSlaDays: { ar: 'مهلة التقييم الأولي', en: 'initial assessment deadline' },
   participationCertificateEnabled: { ar: 'شهادة المشاركة', en: 'participation certificate' },

@@ -84,6 +84,7 @@ return [
     'settings.sms.manage' => ['label' => 'Manage SMS settings', 'description' => 'SMS provider, key, sender and templates.'],
     'settings.email.manage' => ['label' => 'Manage email settings', 'description' => 'Mail sending settings.'],
     'settings.notifications.manage' => ['label' => 'Manage notification settings', 'description' => 'Notification channels, templates and reminder days.'],
+    'settings.prices.manage' => ['label' => 'Manage path prices', 'description' => 'Prices before VAT, availability and scheduled price versions of the self, accredited, award and Quick Excellence Kit paths.'],
     'messaging.campaigns.send' => ['label' => 'Send campaigns', 'description' => 'Send SMS and email campaigns to consenting entities.'],
     'payments.own.view' => ['label' => 'View own payments', 'description' => 'View own payments and payment receipts.'],
     'payments.own.create' => ['label' => 'Make payments', 'description' => 'Create a payment for an accredited assessment or the Kit.'],

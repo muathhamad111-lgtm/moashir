@@ -1,3 +1,6 @@
+import { listPathRows } from '../stores/periodic/pathRows'
+import { periodConflictFor } from '../stores/periodic/periodConflict'
+import { requestLocale } from '../contract/locale'
 import { HttpResponse } from 'msw'
 import { http } from '../contract/http'
 import { envelope } from '../contract/responses'
@@ -20,11 +23,7 @@ import {
   signedInActor,
 } from '../stores/assessments/assessmentAccess'
 import { findAssessment } from '../stores/assessments/assessmentsStore'
-import {
-  listAssessments,
-  countAssessments,
-  listFiltersFrom,
-} from '../stores/assessments/assessmentQueries'
+import { countAssessments, listFiltersFrom } from '../stores/assessments/assessmentQueries'
 import {
   assessmentResource,
   formResource,
@@ -123,10 +122,11 @@ export const assessmentsHandlers = [
       const filters = listFiltersFrom(query)
       runAccreditedSchedule()
       if (failsToRead()) return unavailable()
-      const { items, pagination } = listAssessments(user, filters, query)
-      return envelope(items.map(assessmentResource), {
+      const { items, pagination, missedPeriods } = listPathRows(user, filters, query)
+      return envelope(items, {
         pagination,
         counts: countAssessments(user, filters),
+        missedPeriods,
       })
     }),
   ),
@@ -164,6 +164,8 @@ export const assessmentsHandlers = [
       const record = boundRecord(params)
       if (isReviewedPath(record.path)) {
         authorizeManageOwn(user, record, ACCREDITED_PERMISSIONS.ACCREDITED_MANAGE)
+        const conflict = periodConflictFor(record, requestLocale(request))
+        if (conflict) return conflict
         return envelope(
           assessmentResource(submitReviewedRequest(user, record, await readJson(request))),
         )

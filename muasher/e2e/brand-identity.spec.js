@@ -34,7 +34,7 @@ const PUBLIC_SCREENS = [
 ]
 
 const ENTITY_SCREENS = [
-  { key: 'dashboard', path: '/dashboard', ready: 'main h1', settled: '.journey-station' },
+  { key: 'dashboard', path: '/dashboard', ready: 'main h1', settled: '.path-tile' },
   { key: 'self', path: '/assessment/self', ready: 'main h1', settled: '.self-summary' },
   {
     key: 'accredited',

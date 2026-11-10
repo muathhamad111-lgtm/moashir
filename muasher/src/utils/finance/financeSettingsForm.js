@@ -5,13 +5,7 @@ import { toWesternDigits } from '@/utils/numerals'
 import { VAT_NUMBER_PATTERN } from '@/constants/insights'
 import { vatNumberInput } from '@/utils/insights'
 
-export const FINANCE_FORM_FIELDS = [
-  'accreditedPrice',
-  'bagPrice',
-  'vatRate',
-  'orderValidityMinutes',
-  'vatRegistrationNumber',
-]
+export const FINANCE_FORM_FIELDS = ['vatRate', 'orderValidityMinutes', 'vatRegistrationNumber']
 
 const VAT_NUMBER_FIELD = 'vatRegistrationNumber'
 
@@ -28,27 +22,10 @@ export function normalizedDecimal(value) {
 
 export function formValuesOf(settings) {
   return {
-    accreditedPrice: settings.accreditedPrice ?? '',
-    bagPrice: settings.bagPrice ?? '',
     vatRate: settings.vatRate ?? '',
     orderValidityMinutes: String(settings.orderValidityMinutes ?? ''),
     vatRegistrationNumber: settings.vatRegistrationNumber ?? '',
   }
-}
-
-function priceRule(t) {
-  return yupString()
-    .transform((value) => toWesternDigits(value))
-    .test(
-      'format',
-      t('finance.settings.validation.price'),
-      (value) => !value || FINANCE_SETTINGS_RULES.PRICE_INPUT_PATTERN.test(value),
-    )
-    .test(
-      'positive',
-      t('finance.settings.validation.pricePositive'),
-      (value) => !value || Number(value) > 0,
-    )
 }
 
 export function financeSettingsSchema(t, limits, editable) {
@@ -78,8 +55,6 @@ export function financeSettingsSchema(t, limits, editable) {
       (value) => !value || VAT_NUMBER_PATTERN.test(value),
     )
   const rules = {
-    accreditedPrice: priceRule(t),
-    bagPrice: priceRule(t),
     vatRate: vat,
     orderValidityMinutes: validity,
     vatRegistrationNumber: vatNumber,

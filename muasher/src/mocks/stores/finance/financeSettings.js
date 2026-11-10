@@ -3,17 +3,20 @@ import { financeState, persistFinanceState } from './financeState'
 import { actorCan, FINANCE_PERMISSIONS } from './financeAccess'
 import { fieldMessage, financeReject } from './financeRejection'
 import { normalizedRate, quoteOf } from './financeMoney'
+import { priceInForce } from './priceVersions'
 
-const PRICE_PATTERN = /^\d{1,7}\.\d{2}$/
 const VAT_PATTERN = /^\d{1,3}(\.\d{1,2})?$/
 const VAT_NUMBER_PATTERN = /^3\d{13}3$/
 
+const READ_PERMISSIONS = [
+  FINANCE_PERMISSIONS.ASSESSMENT_SETTINGS,
+  FINANCE_PERMISSIONS.BAG_ADMIN,
+  FINANCE_PERMISSIONS.PAYMENT_SETTINGS,
+]
+
+const MOVED_PRICE_FIELDS = ['accreditedPrice', 'bagPrice']
+
 export const FINANCE_FIELDS = {
-  accreditedPrice: {
-    wire: 'accredited_price',
-    permission: FINANCE_PERMISSIONS.ASSESSMENT_SETTINGS,
-  },
-  bagPrice: { wire: 'bag_price', permission: FINANCE_PERMISSIONS.BAG_ADMIN },
   vatRate: { wire: 'vat_rate', permission: FINANCE_PERMISSIONS.ASSESSMENT_SETTINGS },
   orderValidityMinutes: {
     wire: 'order_validity_minutes',
@@ -26,7 +29,7 @@ export const FINANCE_FIELDS = {
 }
 
 export function authorizeFinanceSettings(user) {
-  if (!Object.values(FINANCE_FIELDS).some((field) => actorCan(user, field.permission)))
+  if (!READ_PERMISSIONS.some((permission) => actorCan(user, permission)))
     throw financeReject.forbidden()
 }
 
@@ -42,26 +45,23 @@ function previewOf(price, vatRate) {
 
 export function financeSettingsResource(user) {
   const settings = financeState().settings
+  const accreditedPrice = priceInForce('accredited')
+  const bagPrice = priceInForce('bag')
   return {
     currency: 'SAR',
-    accreditedPrice: settings.accreditedPrice,
-    bagPrice: settings.bagPrice,
+    accreditedPrice,
+    bagPrice,
     vatRate: settings.vatRate,
     orderValidityMinutes: settings.orderValidityMinutes,
     orderValidityLimits: { ...ORDER_VALIDITY_LIMITS },
     vatRegistrationNumber: settings.vatRegistrationNumber ?? null,
     vatRegistrationReminder: Number(settings.vatRate) > 0 && !settings.vatRegistrationNumber,
     pricing: {
-      accredited: previewOf(settings.accreditedPrice, settings.vatRate),
-      bag: previewOf(settings.bagPrice, settings.vatRate),
+      accredited: previewOf(accreditedPrice, settings.vatRate),
+      bag: previewOf(bagPrice, settings.vatRate),
     },
     editableFields: editableFields(user),
   }
-}
-
-function priceError(value) {
-  if (typeof value !== 'string' || !PRICE_PATTERN.test(value)) return fieldMessage('price_format')
-  return Number(value) > 0 ? null : fieldMessage('price_positive')
 }
 
 function vatError(value) {
@@ -93,8 +93,6 @@ function reasonError(value) {
 }
 
 const FIELD_CHECKS = {
-  accreditedPrice: priceError,
-  bagPrice: priceError,
   vatRate: vatError,
   orderValidityMinutes: validityError,
   vatRegistrationNumber: vatNumberError,
@@ -104,9 +102,17 @@ function presentFields(body) {
   return Object.keys(FINANCE_FIELDS).filter((field) => Object.hasOwn(body, field))
 }
 
+function movedErrors(body) {
+  return MOVED_PRICE_FIELDS.filter((field) => Object.hasOwn(body, field)).map((field) => [
+    field,
+    fieldMessage('price_moved'),
+  ])
+}
+
 function validated(body) {
   const errors = presentFields(body)
     .map((field) => [field, FIELD_CHECKS[field](body[field])])
+    .concat(movedErrors(body))
     .concat([['reason', reasonError(body.reason)]])
     .filter(([, message]) => message)
   if (errors.length)

@@ -152,6 +152,8 @@ onMounted(guide.load)
       <AccreditedSubmitDialog
         v-model="submitter.confirmOpen.value"
         :number="assessment.number"
+        :period="submitter.periodLabel.value"
+        :blocked-until="submitter.blockedUntil.value"
         :resubmission="isResubmission"
         :submitting="submitter.submitting.value"
         @confirm="submitter.confirmSubmit"

@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 final readonly class BankTransferQuery
 {
     public const array RELATIONS = [
-        'entity.owner', 'receipt', 'bankTransfer.bankAccount', 'bankTransfer.proofFile', 'bankTransfer.reviewedBy',
+        'entity.owner', 'receipt', 'bankTransfer.bankAccount', 'bankTransfer.proofFile', 'bankTransfer.reviewedBy', 'awardCycle',
     ];
 
     public function __construct(private EntityFreezeGuard $freezeGuard) {}

@@ -1,7 +1,13 @@
 import { randomUUID } from 'node:crypto'
 import { test, expect } from '@playwright/test'
 import { assertMailLogsConfigured } from './support/mailbox'
-import { FOOTER_LEGAL_PROBES, GUEST_SESSION_PROBE, SOURCES, watchApi } from './support/apiWatch'
+import {
+  FOOTER_LEGAL_PROBES,
+  GUEST_SESSION_PROBE,
+  PAGE_NOT_PUBLISHED,
+  SOURCES,
+  watchApi,
+} from './support/apiWatch'
 import { registerEntity } from './support/entities'
 
 const RUN = Date.now().toString(36)
@@ -21,6 +27,8 @@ const PORTAL_CONTRACTS = [
   /^\/api\/v1\/me\/contact-messages$/,
   /^\/api\/v1\/assessments\/accredited\/current$/,
 ]
+
+const NEW_ENTITY_TILES = { self: 'start', accredited: 'unavailable', award: 'none' }
 
 const session = {}
 
@@ -47,14 +55,38 @@ test.afterAll(async () => {
   await session.context.close()
 })
 
-test('a new entity lands in the portal shell with its journey on the real contracts', async () => {
+test('a new entity lands in the portal shell with its path tiles on the real contracts', async () => {
   const { page, api } = session
   await registerEntity(page, ENTITY)
+  const summary = page.waitForResponse((response) => {
+    const url = new URL(response.url())
+    return (
+      url.pathname === '/api/v1/dashboard/summary' && url.searchParams.get('board') === 'entity'
+    )
+  })
   await page.goto('/dashboard')
+  const { data: board } = await (await summary).json()
   await settled(page)
   await expect(page.locator('.portal-top-bar')).toBeVisible()
   await expect(page.locator('.sidebar')).toHaveCount(0)
-  await expect(page.locator('.journey-station')).toHaveCount(4)
+  const paths = board.widgets.find((widget) => widget.key === 'paths').data
+  expect(paths.self.pricing).toMatchObject({
+    price: null,
+    is_free: true,
+    availability: 'available',
+  })
+  expect(paths.accredited.pricing).toMatchObject({ price: null, availability: 'paused' })
+  for (const [key, state] of Object.entries(NEW_ENTITY_TILES)) {
+    expect(paths[key].is_listed).toBe(true)
+    await expect(page.locator(`[data-testid="path-tile-${key}"]`)).toHaveAttribute(
+      'data-state',
+      state,
+    )
+  }
+  await expect(page.locator('[data-testid="path-tile-self"] .path-price__free')).toBeVisible()
+  await expect(
+    page.locator('[data-testid="path-tile-accredited"] .path-price__muted'),
+  ).toBeVisible()
   await expect(page.locator('[data-testid="next-step"] .next-step__title')).toBeVisible()
   await expect(page.locator('[data-testid="attention-strip"]')).toContainText('%')
   for (const path of PORTAL_CONTRACTS) expect(api.sourcesOf(path)).toEqual([SOURCES.BACKEND])
@@ -98,5 +130,9 @@ test('the More screen, the help page and the accredited entry stay on the real b
   await page.goto('/assessment/accredited')
   await settled(page)
   await expect(page).toHaveURL(/\/assessment\/accredited$/)
-  expect(api.unexpected([GUEST_SESSION_PROBE, ...FOOTER_LEGAL_PROBES])).toEqual([])
+  await expect(page.locator('.accredited-intro__title')).toBeVisible()
+  await expect(page.locator('.accredited-intro .error-state')).toHaveCount(0)
+  expect(api.unexpected([GUEST_SESSION_PROBE, PAGE_NOT_PUBLISHED, ...FOOTER_LEGAL_PROBES])).toEqual(
+    [],
+  )
 })

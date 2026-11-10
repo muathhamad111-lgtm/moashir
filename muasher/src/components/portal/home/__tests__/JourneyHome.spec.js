@@ -121,6 +121,91 @@ const GOLD = {
 
 let accreditedList = []
 
+const PERIOD = {
+  key: '2026-Q4',
+  label: { ar: 'الربع الرابع 2026', en: 'Q4 2026' },
+  startsOn: '2026-10-01',
+  endsOn: '2026-12-31',
+}
+
+const PATHS = {
+  self: {
+    pricing: { price: null, isFree: true, availability: 'available' },
+    openDraft: null,
+    lastResult: {
+      assessmentId: 9001,
+      number: 'SLF-2026-009001',
+      percent: '78.00',
+      completedAt: '2026-10-28T08:00:00Z',
+    },
+  },
+  accredited: {
+    pricing: {
+      price: {
+        priceBeforeVat: '1000.00',
+        vatRate: '15.00',
+        vatAmount: '150.00',
+        total: '1150.00',
+        currency: 'SAR',
+      },
+      isFree: false,
+      availability: 'available',
+    },
+    isLive: true,
+    cadence: 'quarterly',
+    currentPeriod: PERIOD,
+    periodStatus: 'not-submitted',
+    nextPeriod: null,
+    nextSubmissionFrom: null,
+    awaitingPayment: null,
+    openRequest: {
+      id: 14,
+      number: 'ACC-2026-000014',
+      status: 'draft',
+      needsCompletion: false,
+      completionDeadline: null,
+      remainingCount: 4,
+      submittedAt: null,
+      periodState: 'pending',
+      periodLabel: { ar: 'تُحدَّد عند الإرسال', en: 'Set on submission' },
+    },
+    lastResult: null,
+    kit: { status: null, requestId: null },
+  },
+  award: {
+    pricing: { price: null, isFree: true, availability: 'hidden' },
+    windowState: 'none',
+    cycle: null,
+    nextCycle: null,
+    eligibility: { eligible: false, reason: 'no_cycle' },
+    openRequest: null,
+    announced: false,
+    lastResult: null,
+  },
+}
+
+const NEXT_STEP = {
+  rank: 3,
+  key: 'finish_draft',
+  path: 'accredited',
+  target: {
+    route: 'paths.accredited.request',
+    params: { id: 14 },
+    query: { tab: 'request' },
+    href: '/paths/accredited/14?tab=request',
+  },
+  context: {
+    assessmentId: 14,
+    number: 'ACC-2026-000014',
+    status: 'draft',
+    paymentId: null,
+    isPaid: true,
+    deadlineAt: null,
+    periodEndsOn: '2026-12-31',
+    cycleId: null,
+  },
+}
+
 function seed() {
   accreditedList = []
   entitiesService.getMine.mockResolvedValue({
@@ -150,6 +235,12 @@ function seed() {
       paymentsCard: null,
       acceptedEvidenceCount: 7,
       actionCenter: [],
+      level: {
+        level: 'gold',
+        certificate: { number: 'CRT-2026-000031', validUntil: '2027-03-31' },
+      },
+      paths: PATHS,
+      nextStep: NEXT_STEP,
     },
   })
   dashboardService.getActionCenter.mockResolvedValue({ data: [], meta: {} })
@@ -179,8 +270,10 @@ describe('JourneyHome — uploaded evidence KPI', () => {
     expect(tile.find('.kpi-tile__value').element.tagName).toBe('BDI')
   })
 
-  it('shows a dash when the board is unavailable, in English too', async () => {
-    dashboardService.getEntityBoard.mockRejectedValue(new Error('offline'))
+  it('shows a dash when the board has no evidence count, in English too', async () => {
+    dashboardService.getEntityBoard.mockResolvedValue({
+      data: { acceptedEvidenceCount: null, paths: PATHS, nextStep: null, level: null },
+    })
     const wrapper = await factory('en')
     const tile = wrapper.find('[data-kpi="evidence"]')
     expect(tile.find('.kpi-tile__label').text()).toBe('Uploaded evidence')
@@ -204,37 +297,37 @@ describe('JourneyHome (D1 / M1)', () => {
     expect(dashboardService.getEntityBoard).toHaveBeenCalled()
   })
 
-  it('greets the user and places the entity at station 3 with the self result', async () => {
+  it('greets the user and shows the three path tiles without the old station path', async () => {
     const wrapper = await factory()
     expect(wrapper.find('.journey-hero__greeting').text()).toContain('أهلاً سارة')
-    expect(wrapper.find('.journey-hero__lead').text()).toContain('78%')
-    expect(wrapper.find('.journey-hero__lead bdi').text()).toBe('78%')
-    expect(wrapper.find('.journey-path__badge').text()).toBe('المحطة 3 من 4')
-    const stations = wrapper.findAll('.journey-station')
-    expect(
-      stations.map((station) =>
-        station.classes().find((name) => name.startsWith('journey-station--')),
-      ),
-    ).toEqual([
-      'journey-station--done',
-      'journey-station--done',
-      'journey-station--current',
-      'journey-station--upcoming',
-    ])
-    expect(stations[2].attributes('aria-current')).toBe('step')
-    expect(stations[2].find('.journey-station__meta bdi').text()).toBe('12 / 16')
+    expect(wrapper.find('.journey-path').exists()).toBe(false)
+    expect(wrapper.find('.path-tiles__title').text()).toBe('مسارات التقييم')
+    const tiles = wrapper.findAll('.path-tile')
+    expect(tiles.map((tile) => tile.attributes('data-state'))).toEqual(['start', 'draft'])
+    expect(tiles[0].find('.path-price__free').text()).toBe('مجاني')
+    expect(tiles[0].find('.path-tile__status').text()).toContain('78%')
+    expect(tiles[1].find('.path-tile__line').text()).toContain('الربع الرابع 2026')
+    expect(tiles[1].find('.path-tile__action').attributes('href')).toBe('/paths/accredited')
   })
 
-  it('shows the evidence next step with progress and the remaining sub-criteria', async () => {
+  it('renders the backend next step and links into the request tab', async () => {
     const wrapper = await factory()
     const card = wrapper.find('.next-step')
-    expect(card.find('.next-step__title').text()).toBe('أكمل شواهد التقييم المعتمد')
-    expect(card.find('.next-step__text').text()).toContain('بقي معيار فرعي واحد')
-    expect(card.find('[role="progressbar"]').attributes('aria-valuenow')).toBe('12')
-    expect(card.find('.remaining-subs__item').text()).toContain('ثقافة التميّز')
+    expect(card.attributes('data-rank')).toBe('3')
+    expect(card.find('.next-step__title').text()).toBe('أكمل مسودة طلبك')
+    expect(card.find('.next-step__text').text()).toContain('ACC-2026-000014')
+    expect(card.find('.next-step__text').text()).toContain('2026-12-31')
     expect(card.find('.next-step__action--primary').attributes('href')).toBe(
-      '/assessment/accredited/form/14',
+      '/paths/accredited/14?tab=request',
     )
+  })
+
+  it('shows «صالحة حتى» on the level hero from the board level widget', async () => {
+    certificatesService.listCards.mockImplementation((params) =>
+      Promise.resolve({ data: params.perPage === 1 ? [GOLD] : [] }),
+    )
+    const wrapper = await factory()
+    expect(wrapper.find('[data-testid="level-valid-until"]').text()).toContain('2027-03-31')
   })
 
   it('shows the indicative level of the self result as text only', async () => {
@@ -248,7 +341,8 @@ describe('JourneyHome (D1 / M1)', () => {
 
   it('renders in English', async () => {
     const wrapper = await factory('en')
-    expect(wrapper.find('.journey-path__badge').text()).toBe('Station 3 of 4')
+    expect(wrapper.find('.path-tiles__title').text()).toBe('Assessment paths')
+    expect(wrapper.find('.next-step__title').text()).toBe('Finish your draft')
     expect(wrapper.findAll('.kpi-tile__caption')[1].text()).toContain('Silver level (indicative)')
   })
 
@@ -333,12 +427,9 @@ describe('JourneyHome (D1 / M1)', () => {
   })
 
   it('shows a retry state when a required source fails', async () => {
-    accreditedService.getCurrent.mockRejectedValueOnce(new Error('boom'))
+    dashboardService.getEntityBoard.mockRejectedValueOnce(new Error('boom'))
     const wrapper = await factory()
     expect(wrapper.find('.error-state').exists()).toBe(true)
-    accreditedService.getCurrent.mockResolvedValueOnce({
-      data: { awaitingPayment: null, active: ACTIVE, latestClosed: null },
-    })
     await wrapper.find('.error-state__retry button').trigger('click')
     await flushPromises()
     expect(wrapper.find('.next-step').exists()).toBe(true)

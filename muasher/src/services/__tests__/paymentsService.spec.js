@@ -24,7 +24,7 @@ beforeEach(() => {
 describe('paymentsService', () => {
   it('opens a checkout with the purpose only and the attempt Idempotency-Key header', async () => {
     apiClient.post.mockResolvedValue({ data: envelope })
-    await paymentsService.create('accredited', KEY)
+    await paymentsService.create({ purpose: 'accredited', awardCycleId: null }, KEY)
     expect(apiClient.post).toHaveBeenCalledWith(
       '/payments',
       { purpose: 'accredited' },
@@ -32,6 +32,22 @@ describe('paymentsService', () => {
     )
     const breadcrumb = logger.breadcrumb.mock.calls.find((call) => call[1] === 'payments.create')
     expect(breadcrumb[2]).toEqual({ entity: 'payment', payloadShape: ['purpose'] })
+  })
+
+  it('sends the award cycle with an award order and asks for its checkout quote', async () => {
+    apiClient.post.mockResolvedValue({ data: envelope })
+    apiClient.get.mockResolvedValue({ data: { data: { channels: [] }, meta: {} } })
+    await paymentsService.create({ purpose: 'award', awardCycleId: 31 }, KEY)
+    expect(apiClient.post).toHaveBeenCalledWith(
+      '/payments',
+      { purpose: 'award', awardCycleId: 31 },
+      { headers: { 'Idempotency-Key': KEY } },
+    )
+    const options = await paymentsService.checkoutOptions({ purpose: 'award', awardCycleId: 31 })
+    expect(apiClient.get).toHaveBeenCalledWith('/payments/checkout-options', {
+      params: { purpose: 'award', awardCycleId: 31 },
+    })
+    expect(options.data.pricing).toBeNull()
   })
 
   it('verifies with the gateway payment id only', async () => {

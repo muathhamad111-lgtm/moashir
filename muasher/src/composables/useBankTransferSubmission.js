@@ -35,7 +35,7 @@ function firstAccountId(accounts) {
   return accounts[0]?.id ?? null
 }
 
-export function useBankTransferSubmission(purpose, accounts, { onSubmitted = () => {} } = {}) {
+export function useBankTransferSubmission(order, accounts, { onSubmitted = () => {} } = {}) {
   const i18n = useI18n()
   const keys = useIdempotencyKey()
   const accountId = ref(firstAccountId(unref(accounts)))
@@ -127,7 +127,7 @@ export function useBankTransferSubmission(purpose, accounts, { onSubmitted = () 
     logger.breadcrumb('form', 'payments.submitTransfer', { fields: ['account', 'proof'] })
     try {
       const envelope = await paymentsService.submitTransfer(
-        { purpose: unref(purpose), bankAccountId: accountId.value, proof: proof.value },
+        { ...unref(order), bankAccountId: accountId.value, proof: proof.value },
         keys.current(),
         { onUploadProgress: trackUpload },
       )

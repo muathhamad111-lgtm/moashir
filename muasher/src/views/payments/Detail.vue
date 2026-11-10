@@ -17,7 +17,7 @@ import { usePaymentDetail } from '@/composables/usePaymentDetail'
 import { useSignedDownload } from '@/composables/useSignedDownload'
 import { PAYMENT_STATUSES } from '@/constants/payments'
 import { ROUTE_NAMES } from '@/constants/routeNames'
-import { isBankTransfer, newRequestRouteOf } from '@/utils/payments/myPaymentRow'
+import { entryRouteOf, isBankTransfer, newRequestRouteOf } from '@/utils/payments/myPaymentRow'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
@@ -25,10 +25,6 @@ const props = defineProps({
 })
 
 const RECEIPT_KEY = 'receipt'
-const CHECKOUT_ROUTES = {
-  accredited: ROUTE_NAMES.ASSESSMENT_ACCREDITED_PAY,
-  bag: ROUTE_NAMES.BAG_PAY,
-}
 
 const { t } = useI18n()
 const { status, payment, receipt, errorMessage, load, requestReceiptLink } = usePaymentDetail(
@@ -96,8 +92,9 @@ onMounted(load)
       >
         <template #actions>
           <RouterLink
+            v-if="entryRouteOf(payment)"
             class="payment-notice__link"
-            :to="{ name: CHECKOUT_ROUTES[payment.purpose] }"
+            :to="entryRouteOf(payment)"
             >{{ t('finance.detail.continue') }}</RouterLink
           >
         </template>

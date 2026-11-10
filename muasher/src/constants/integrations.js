@@ -78,7 +78,7 @@ export const PAYMENT_METHODS = Object.freeze({
   STC_PAY: 'stcpay',
 })
 export const CARD_NETWORKS = Object.freeze(['mada', 'visa', 'mastercard', 'amex', 'unionpay'])
-export const PAYMENT_LINKED_PATHS = Object.freeze(['accredited', 'bag'])
+export const PAYMENT_LINKED_PATHS = Object.freeze(['accredited', 'bag', 'self', 'award'])
 
 export const NO_ACTIVE_PROVIDER = 'none'
 

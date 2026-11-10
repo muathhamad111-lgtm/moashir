@@ -3,9 +3,11 @@
 declare(strict_types=1);
 
 use App\Enums\Audit\AuditEvent;
+use App\Enums\Finance\PaymentPurpose;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Settings\SettingKey;
 use App\Models\Audit\Audit;
+use App\Models\Finance\ServicePriceVersion;
 use App\Notifications\Identity\SecurityAlertNotification;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Notification;
@@ -17,7 +19,7 @@ beforeEach(function (): void {
 });
 
 it('serves the settings of each path with defaults', function (): void {
-    setIntegrationSetting(SettingKey::AccreditedPrice, '2000.00');
+    setServicePrice(PaymentPurpose::Accredited, '2000.00');
 
     switchTo(systemAdmin())->getJson(PATH_SETTINGS.'accredited')->assertOk()
         ->assertJsonPath('data.path', 'accredited')
@@ -65,17 +67,19 @@ it('updates each path independently and audits every changed key', function (): 
     expect(Audit::query()->where('event', AuditEvent::AssessmentSettingsUpdated->value)->count())->toBe(6);
 });
 
-it('updates the accredited price through the path settings with the finance audit', function (): void {
-    switchTo(systemAdmin())->putJson(PATH_SETTINGS.'accredited', ['price' => '2500.00'])->assertOk()
-        ->assertJsonPath('data.price.price_before_vat', '2500.00')
-        ->assertJsonPath('data.price.total', '2875.00');
+it('shows the price read-only and refuses to edit it here: prices are edited only in the path prices', function (): void {
+    setServicePrice(PaymentPurpose::Accredited, '2000.00');
 
-    test()->getJson('/api/v1/settings/finance')->assertOk()->assertJsonPath('data.accredited_price', '2500.00');
-    test()->getJson('/api/v1/content/prices')->assertOk();
-
-    expect(Audit::query()->where('event', AuditEvent::FinanceSettingsUpdated->value)->count())->toBe(1);
-
+    switchTo(systemAdmin())->putJson(PATH_SETTINGS.'accredited', ['price' => '2500.00', 'review_sla_days' => 21], ['Accept-Language' => 'en'])
+        ->assertUnprocessable()
+        ->assertJsonPath('code', 'validation_failed')
+        ->assertJsonPath('errors.price.0', 'Prices are now edited in the path prices settings.');
     test()->putJson(PATH_SETTINGS.'advanced', ['price' => '100.00'])->assertUnprocessable()->assertJsonValidationErrors(['price']);
+    test()->getJson(PATH_SETTINGS.'accredited')->assertOk()->assertJsonPath('data.price.price_before_vat', '2000.00');
+
+    expect(ServicePriceVersion::query()->where('purpose', PaymentPurpose::Accredited)->sole()->price_before_vat)->toBe('2000.00')
+        ->and(Audit::query()->where('event', AuditEvent::PricesSettingsUpdated->value)->exists())->toBeFalse()
+        ->and(Audit::query()->where('event', AuditEvent::AssessmentSettingsUpdated->value)->exists())->toBeFalse();
 });
 
 it('moves the open accredited due dates when the accredited review SLA changes', function (): void {
@@ -122,7 +126,7 @@ it('refuses invalid path settings', function (array $payload, string $field): vo
     'no types' => [['evidence_allowed_types' => []], 'evidence_allowed_types'],
     'unknown type' => [['evidence_allowed_types' => ['exe']], 'evidence_allowed_types.0'],
     'too many files' => [['evidence_max_files_per_sub' => 51], 'evidence_max_files_per_sub'],
-    'price format' => [['price' => '10'], 'price'],
+    'price moved to the path prices' => [['price' => '1000.00'], 'price'],
     'text without english' => [['entity_texts' => ['intro' => ['ar' => 'نص عربي']]], 'entity_texts.intro.en'],
     'unknown text' => [['entity_texts' => ['banner' => ['ar' => 'نص', 'en' => 'Text']]], 'entity_texts'],
     'text too long' => [['entity_texts' => ['intro' => ['ar' => str_repeat('ن', 2001), 'en' => 'Text']]], 'entity_texts.intro.ar'],

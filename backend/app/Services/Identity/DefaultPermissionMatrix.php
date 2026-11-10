@@ -66,7 +66,7 @@ final class DefaultPermissionMatrix
             P::UsersView, P::UsersManage, P::RolesMatrixView, P::RolesMatrixManage, P::AuditView, P::AuditExport,
             P::SettingsGeneralManage, P::SettingsBrandingManage, P::SettingsAuthManage, P::SettingsAssessmentManage,
             P::SettingsCertificatesManage, P::SettingsPaymentManage, P::SettingsSmsManage, P::SettingsEmailManage,
-            P::SettingsNotificationsManage, P::MessagingCampaignsSend,
+            P::SettingsNotificationsManage, P::SettingsPricesManage, P::MessagingCampaignsSend,
             P::FinanceOperationsView, P::FinanceOperationsExport, P::FinanceRefundsManage,
         ];
     }

@@ -25,8 +25,8 @@ final class FinanceSettingsResource extends JsonResource
 
         return [
             'currency' => Money::SAUDI_RIYAL,
-            FinanceSettingField::AccreditedPrice->value => $view->accredited?->priceBeforeVat->amount,
-            FinanceSettingField::BagPrice->value => $view->bag?->priceBeforeVat->amount,
+            FinanceSettingField::ACCREDITED_PRICE_MIRROR => $view->accredited?->priceBeforeVat->amount,
+            FinanceSettingField::BAG_PRICE_MIRROR => $view->bag?->priceBeforeVat->amount,
             FinanceSettingField::VatRate->value => $view->vatRate->percent,
             FinanceSettingField::OrderValidityMinutes->value => $view->orderValidityMinutes,
             'order_validity_limits' => $view->orderValidityLimits,

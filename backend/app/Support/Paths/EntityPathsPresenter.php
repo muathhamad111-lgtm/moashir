@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Paths;
 
+use App\Data\Finance\PriceQuote;
 use App\Data\Paths\AccreditedPathSummary;
 use App\Data\Paths\AwardPathSummary;
 use App\Data\Paths\EntityPaths;
@@ -14,9 +15,11 @@ use App\Models\Assessments\AssessmentResultSnapshot;
 use App\Models\Award\AwardCycle;
 use App\Models\Entities\Region;
 use App\Models\Finance\Payment;
+use App\Support\Assessments\RequestPaymentPresenter;
 use App\Support\Assessments\StatusMask;
 use App\Support\Certificates\CertificateSummaryPresenter;
 use App\Support\Entities\EntityPresenter;
+use App\Support\Finance\PriceQuotePresenter;
 use App\Support\Periods\PeriodPresenter;
 
 final class EntityPathsPresenter
@@ -42,6 +45,8 @@ final class EntityPathsPresenter
 
         return [
             'pricing' => PathPricingPresenter::present($self->pricing),
+            'is_listed' => $self->isListed,
+            'awaiting_payment' => self::paymentOf($self->awaitingPayment),
             'open_draft' => $draft instanceof Assessment ? [
                 'id' => $draft->id,
                 'number' => $draft->request_number,
@@ -62,6 +67,7 @@ final class EntityPathsPresenter
 
         return [
             'pricing' => PathPricingPresenter::present($accredited->pricing),
+            'is_listed' => $accredited->isListed,
             'is_live' => $view['is_live'],
             'cadence' => $view['cadence'],
             'current_period' => $view['current_period'],
@@ -132,20 +138,25 @@ final class EntityPathsPresenter
 
         return [
             'pricing' => PathPricingPresenter::present($award->pricing),
+            'is_listed' => $award->isListed,
             'window_state' => $award->window->value,
-            'cycle' => self::cycleOf($award->cycle),
+            'cycle' => self::cycleOf($award->cycle, $award->cycleFee),
             'next_cycle' => $award->nextCycle instanceof AwardCycle ? [
                 'id' => $award->nextCycle->id,
                 'name' => $award->nextCycle->name->toArray(),
                 'submission_start' => $award->nextCycle->submission_start->toIso8601String(),
+                'entry_fee' => PriceQuotePresenter::present($award->nextCycleFee),
             ] : null,
             'eligibility' => ['eligible' => $award->isEligible(), 'reason' => $award->ineligibility?->value],
+            'awaiting_payment' => self::paymentOf($award->awaitingPayment),
             'open_request' => $request instanceof Assessment ? [
                 'id' => $request->id,
                 'number' => $request->request_number,
                 'status' => StatusMask::statusFor($request, $viewer),
                 'is_open' => StatusMask::isOpenFor($request, $viewer),
+                'payment' => $request->payment_id === null ? null : RequestPaymentPresenter::of($request->payment, $viewer),
             ] : null,
+            'window_closed_before_payment' => $award->windowClosedBeforePayment(),
             'announced' => $award->isAnnounced(),
             'last_result' => $request instanceof Assessment && $request->exposesResult() ? [
                 ...(self::resultOf($request) ?? []),
@@ -157,7 +168,7 @@ final class EntityPathsPresenter
     /**
      * @return array<string, mixed>|null
      */
-    private static function cycleOf(?AwardCycle $cycle): ?array
+    private static function cycleOf(?AwardCycle $cycle, ?PriceQuote $fee): ?array
     {
         if (! $cycle instanceof AwardCycle) {
             return null;
@@ -171,6 +182,7 @@ final class EntityPathsPresenter
             'announcement_at' => $cycle->announcement_at?->toIso8601String(),
             'min_entity_age_years' => $cycle->min_entity_age_years,
             'regions' => array_values($cycle->regions->map(static fn (Region $region): array => EntityPresenter::place($region))->all()),
+            'entry_fee' => PriceQuotePresenter::present($fee),
         ];
     }
 

@@ -41,48 +41,40 @@ const ACCREDITED = toPathSettings({
 describe('per-path settings form', () => {
   it('starts from the server values and sends nothing when nothing changed', () => {
     const values = pathSettingsValues(ACCREDITED)
-    expect(values).toMatchObject({ reviewSlaDays: '14', price: '1000.00' })
-    expect(changedPathSettings(ACCREDITED, values, { priceEditable: true })).toEqual({})
+    expect(values).toMatchObject({ reviewSlaDays: '14' })
+    expect(values).not.toHaveProperty('price')
+    expect(changedPathSettings(ACCREDITED, values)).toEqual({})
   })
 
-  it('sends the changed limits, the normalised price and the changed texts only', () => {
+  it('sends the changed limits and texts only, never a price', () => {
     const values = pathSettingsValues(ACCREDITED)
     values.reviewSlaDays = '٢١'
     values.evidenceAllowedTypes = ['pdf']
     values.price = '1250.5'
     values.entityTexts.intro = { ar: '', en: '' }
     values.entityTexts.instructions = { ar: 'خطوة أولى', en: 'First step' }
-    expect(changedPathSettings(ACCREDITED, values, { priceEditable: true })).toEqual({
+    expect(changedPathSettings(ACCREDITED, values)).toEqual({
       reviewSlaDays: 21,
       evidenceAllowedTypes: ['pdf'],
-      price: '1250.50',
       entityTexts: { intro: null, instructions: { ar: 'خطوة أولى', en: 'First step' } },
     })
-    expect(changedPathSettings(ACCREDITED, values)).not.toHaveProperty('price')
   })
 
   it('lets a paid path without a price save its other settings', async () => {
     const unpriced = { ...ACCREDITED, price: null }
     const values = { ...pathSettingsValues(unpriced), reviewSlaDays: '20' }
-    expect(values.price).toBe('')
-    await expect(
-      pathSettingsSchema(t, unpriced, { priceEditable: true }).validate(values),
-    ).resolves.toBeTruthy()
-    expect(changedPathSettings(unpriced, values, { priceEditable: true })).toEqual({
-      reviewSlaDays: 20,
-    })
+    await expect(pathSettingsSchema(t, unpriced).validate(values)).resolves.toBeTruthy()
+    expect(changedPathSettings(unpriced, values)).toEqual({ reviewSlaDays: 20 })
   })
 
-  it('needs both languages of a text and a positive price within the bounds', async () => {
+  it('needs both languages of a text and limits within the bounds', async () => {
     const values = pathSettingsValues(ACCREDITED)
     values.entityTexts.afterSubmission = { ar: 'نص عربي', en: '' }
-    values.price = '0'
     values.uploadMaxFileMb = '101'
-    const schema = pathSettingsSchema(t, ACCREDITED, { priceEditable: true })
+    const schema = pathSettingsSchema(t, ACCREDITED)
     const failure = await schema.validate(values, { abortEarly: false }).catch((error) => error)
     expect(failure.inner.map((issue) => issue.path).sort()).toEqual([
       'entityTexts.afterSubmission.en',
-      'price',
       'uploadMaxFileMb',
     ])
   })

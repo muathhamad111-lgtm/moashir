@@ -10,6 +10,7 @@ import { PORTAL_SIDE_NAV_ITEMS, PORTAL_TOOL_ROUTES, PORTAL_TOOLS } from '@/const
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { accessFor } from '@/constants/routeAccess'
 import { usePermissions } from '@/composables/usePermissions'
+import { useHiddenPaths } from '@/composables/useHiddenPaths'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import LevelMiniCard from '@/components/level/LevelMiniCard.vue'
 import PortalSideNavItem from './PortalSideNavItem.vue'
@@ -30,6 +31,11 @@ const tools = computed(() => PORTAL_TOOLS.filter((tool) => canAccess(accessFor(t
 const onToolPage = computed(() => PORTAL_TOOL_ROUTES.includes(route.name))
 const toolsOpen = ref(onToolPage.value)
 const showTools = computed(() => toolsOpen.value || onToolPage.value)
+const hiddenPaths = useHiddenPaths()
+
+function visibleChildren(item) {
+  return item.children.filter((child) => !hiddenPaths.value.has(child.key))
+}
 
 function countOf(item) {
   return item.badge ? (counts[item.badge]?.value ?? 0) : 0
@@ -57,7 +63,31 @@ function toggleLabel() {
 
     <ul class="side-nav__list">
       <li v-for="item in PORTAL_SIDE_NAV_ITEMS" :key="item.key">
+        <template v-if="item.children">
+          <p
+            class="side-nav__section"
+            :class="{ 'side-nav__section--collapsed': collapsed }"
+            :data-testid="`side-nav-${item.key}`"
+          >
+            <span class="side-nav__section-icon"><AppIcon :name="item.icon" /></span>
+            <span :class="collapsed ? 'side-nav-item__sr' : 'side-nav__section-label'">
+              {{ t(`portal.sideNav.items.${item.key}`) }}
+            </span>
+          </p>
+          <ul class="side-nav__list side-nav__list--sub">
+            <li v-for="child in visibleChildren(item)" :key="child.key">
+              <PortalSideNavItem
+                :to="{ name: child.routeName }"
+                :icon="child.icon"
+                :label="t(`portal.sideNav.paths.${child.key}`)"
+                :active="isActive(child)"
+                :collapsed="collapsed"
+              />
+            </li>
+          </ul>
+        </template>
         <PortalSideNavItem
+          v-else
           :to="{ name: item.routeName }"
           :icon="item.icon"
           :label="t(`portal.sideNav.items.${item.key}`)"

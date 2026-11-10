@@ -6,8 +6,10 @@ namespace App\Http\Requests\Award;
 
 use App\Data\Award\CycleAttributes;
 use App\Enums\Criteria\ScaleKind;
+use App\Rules\PriceOrFreeBeforeVat;
 use App\Support\ScalarValue;
 use App\Support\ValueObjects\LocalizedText;
+use App\Support\ValueObjects\Money;
 use App\Support\ValueObjects\Percent;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
@@ -40,6 +42,7 @@ abstract class CycleAttributesRequest extends FormRequest
             'disqualification_score' => ['sometimes', 'nullable', 'numeric', 'between:0,100', self::SCORE_FORMAT],
             'initial_review_sla_days' => ['sometimes', 'nullable', 'integer', 'between:1,120'],
             'participation_certificate_enabled' => ['sometimes', 'boolean'],
+            'entry_fee' => ['sometimes', 'required', new PriceOrFreeBeforeVat],
             'reason' => ['nullable', 'string', 'min:10', 'max:1000'],
         ];
     }
@@ -57,6 +60,7 @@ abstract class CycleAttributesRequest extends FormRequest
             $this->filled('disqualification_score') ? Percent::of($this->string('disqualification_score')->toString()) : null,
             $this->filled('initial_review_sla_days') ? $this->integer('initial_review_sla_days') : null,
             $this->has('participation_certificate_enabled') ? $this->boolean('participation_certificate_enabled') : null,
+            $this->filled('entry_fee') ? new Money($this->string('entry_fee')->toString()) : null,
         );
     }
 

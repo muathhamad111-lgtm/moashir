@@ -18,11 +18,10 @@ final readonly class EntityPathsReader
 
     public function read(Entity $entity): EntityPaths
     {
-        return new EntityPaths(
-            $this->self->read($entity),
-            $this->accredited->read($entity),
-            $this->award->read($entity),
-            $this->payments->read($entity),
-        );
+        $self = $this->self->read($entity);
+        $accredited = $this->accredited->read($entity);
+        $award = $this->award->read($entity);
+
+        return new EntityPaths($self, $accredited, $award, $this->payments->read($entity, $self, $accredited, $award));
     }
 }

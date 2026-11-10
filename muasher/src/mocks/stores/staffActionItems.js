@@ -1,3 +1,5 @@
+import { financeState } from './finance/financeState'
+import { findCycle } from './award/cycleStore'
 const ROLE_ITEMS = {
   system_admin: [
     {
@@ -80,10 +82,31 @@ function staffItem(raw) {
   return { ...raw, dueAt: null, context: null }
 }
 
+const LATE_AWARD_LINK = '/finance/transactions?purpose=award&status=paid'
+
+function paidAfterWindow(payment) {
+  const cycle = findCycle(payment.awardCycleId)
+  return (
+    payment.purpose === 'award' &&
+    payment.status === 'paid' &&
+    Boolean(cycle) &&
+    payment.paidAt > cycle.submissionEnd
+  )
+}
+
+function lateAwardItems(roles) {
+  if (!roles.includes('finance_officer')) return []
+  const count = financeState().payments.filter(paidAfterWindow).length
+  return count
+    ? [{ key: 'award_paid_after_window', count, severity: 'danger', link: LATE_AWARD_LINK }]
+    : []
+}
+
 export function staffActionItems(roles) {
   const byKey = new Map()
   roles
     .flatMap((role) => ROLE_ITEMS[role] ?? [])
+    .concat(lateAwardItems(roles))
     .forEach((raw) => byKey.set(raw.key, staffItem(raw)))
   return [...byKey.values()].sort(
     (left, right) => SEVERITY_RANK[left.severity] - SEVERITY_RANK[right.severity],

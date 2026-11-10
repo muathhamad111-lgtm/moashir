@@ -15,6 +15,12 @@ it('shows the current accredited and Quick Excellence Kit prices to a guest with
         ->assertExactJson(['data' => [
             'accredited' => ['price_before_vat' => ACCREDITED_PRICE, 'vat_rate' => '15.00', 'vat_amount' => '150.00', 'total' => ACCREDITED_TOTAL, 'currency' => 'SAR'],
             'bag' => ['price_before_vat' => BAG_PRICE, 'vat_rate' => '15.00', 'vat_amount' => '375.00', 'total' => BAG_TOTAL, 'currency' => 'SAR'],
+            'paths' => [
+                'accredited' => ['price' => ['price_before_vat' => ACCREDITED_PRICE, 'vat_rate' => '15.00', 'vat_amount' => '150.00', 'total' => ACCREDITED_TOTAL, 'currency' => 'SAR'], 'is_free' => false, 'availability' => 'available'],
+                'bag' => ['price' => ['price_before_vat' => BAG_PRICE, 'vat_rate' => '15.00', 'vat_amount' => '375.00', 'total' => BAG_TOTAL, 'currency' => 'SAR'], 'is_free' => false, 'availability' => 'available'],
+                'self' => ['price' => null, 'is_free' => true, 'availability' => 'available'],
+                'award' => ['price' => null, 'is_free' => true, 'availability' => 'available'],
+            ],
         ], 'meta' => [], 'errors' => null]);
 });
 
@@ -35,10 +41,16 @@ it('answers null for a service whose price is not set and follows a VAT rate cha
         ->assertJsonPath('data.accredited', ['price_before_vat' => '1234.56', 'vat_rate' => '5.00', 'vat_amount' => '61.73', 'total' => '1296.29', 'currency' => 'SAR']);
 });
 
-it('answers null for both services before any price is set and never exposes other settings', function (): void {
-    $response = $this->getJson(SERVICE_PRICES)->assertOk()->assertExactJson(['data' => ['accredited' => null, 'bag' => null], 'meta' => [], 'errors' => null]);
+it('answers null and a paused path for both services before any price is set and never exposes other settings', function (): void {
+    setServicePrices(null, null);
 
-    expect(array_keys($response->json('data')))->toBe(['accredited', 'bag']);
+    $response = $this->getJson(SERVICE_PRICES)->assertOk()
+        ->assertJsonPath('data.accredited', null)
+        ->assertJsonPath('data.bag', null)
+        ->assertJsonPath('data.paths.accredited', ['price' => null, 'is_free' => false, 'availability' => 'paused'])
+        ->assertJsonPath('data.paths.bag', ['price' => null, 'is_free' => false, 'availability' => 'paused']);
+
+    expect(array_keys($response->json('data')))->toBe(['accredited', 'bag', 'paths']);
 });
 
 it('accepts reads only and requires a JSON request', function (): void {

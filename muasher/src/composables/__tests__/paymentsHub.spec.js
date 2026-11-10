@@ -104,7 +104,10 @@ describe('usePaymentCompletion', () => {
     const onReplaced = vi.fn()
     const { api } = withSetup(() => usePaymentCompletion('21', { onReplaced }))
     await flushPromises()
-    expect(paymentsService.create).toHaveBeenCalledWith('accredited', expect.any(String))
+    expect(paymentsService.create).toHaveBeenCalledWith(
+      { purpose: 'accredited', awardCycleId: null },
+      expect.any(String),
+    )
     expect(api.state.value).toBe(COMPLETION_STATES.CHECKOUT)
     expect(api.isReady.value).toBe(true)
     expect(onReplaced).toHaveBeenCalledWith(24)

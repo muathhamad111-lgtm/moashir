@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
@@ -10,6 +10,7 @@ import PathLimitsFields from '@/components/settings/PathLimitsFields.vue'
 import PathPriceFields from '@/components/settings/PathPriceFields.vue'
 import PathEntityTextFields from '@/components/settings/PathEntityTextFields.vue'
 import { usePathSettings } from '@/composables/usePathSettings'
+import { ASSESSMENT_PATHS } from '@/constants/assessment'
 
 const props = defineProps({
   path: { type: String, required: true },
@@ -25,9 +26,12 @@ const {
   load,
   submit,
   confirmReason,
-  priceEditable,
+  canEditPrices,
 } = usePathSettings(props.path)
 const formId = `path-settings-${props.path}`
+const showsPrice = computed(
+  () => props.path === ASSESSMENT_PATHS.ACCREDITED || settings.value?.isPaid === true,
+)
 
 onMounted(load)
 </script>
@@ -51,7 +55,7 @@ onMounted(load)
         <span>{{ t('settings.paths.intro') }}</span>
       </p>
       <PathLimitsFields :settings="settings" />
-      <PathPriceFields v-if="settings.isPaid" :settings="settings" :editable="priceEditable" />
+      <PathPriceFields v-if="showsPrice" :settings="settings" :can-edit-prices="canEditPrices" />
       <PathEntityTextFields />
       <div class="path-settings__actions">
         <BaseButton type="submit" variant="primary" :loading="saving" icon="save">{{

@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Services\Finance;
 
 use App\Models\Finance\Payment;
+use App\Support\Award\AwardCycleRefPresenter;
 use App\Support\ValueObjects\VatRegistrationNumber;
 
 final readonly class ReceiptSnapshotBuilder
 {
     public const string VAT_REGISTRATION_NUMBER = 'vat_registration_number';
+
+    public const string AWARD_CYCLE = 'award_cycle';
 
     public function __construct(private FinanceSettings $settings) {}
 
@@ -18,7 +21,7 @@ final readonly class ReceiptSnapshotBuilder
      */
     public function build(Payment $payment): array
     {
-        $payment->loadMissing('bankTransfer.bankAccount');
+        $payment->loadMissing(['bankTransfer.bankAccount', 'awardCycle']);
         $vatNumber = $this->settings->vatRegistrationNumber();
 
         return [
@@ -26,6 +29,7 @@ final readonly class ReceiptSnapshotBuilder
             'entity_reference' => $payment->entity->reference(),
             'entity_name' => $payment->entity_name->toArray(),
             'purpose' => $payment->purpose->value,
+            ...($payment->award_cycle_id === null ? [] : [self::AWARD_CYCLE => AwardCycleRefPresenter::of($payment->awardCycle)]),
             'price_before_vat' => $payment->price_before_vat,
             'vat_rate' => $payment->vat_rate,
             'vat_amount' => $payment->vat_amount,

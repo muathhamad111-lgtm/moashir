@@ -1,5 +1,6 @@
 import { computed, ref, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import { awardCycleService } from '@/services/awardCycleService'
 import { advancedService } from '@/services/advancedService'
 import { useAuthStore } from '@/stores/auth'
@@ -7,9 +8,23 @@ import { usePermissions } from '@/composables/usePermissions'
 import { useToast } from '@/composables/useToast'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { AWARD_CODES } from '@/constants/advanced'
+import { PATH_CODES } from '@/constants/entityPaths'
+import { ROUTE_NAMES } from '@/constants/routeNames'
+
+const OPEN_ORDER_CODE = 'payment.open_order_exists'
+
+function redirectOf(normalized, cycleId) {
+  if (normalized.code === PATH_CODES.PAYMENT_REQUIRED)
+    return {
+      name: ROUTE_NAMES.ASSESSMENT_ADVANCED_PAY,
+      query: { cycle: String(normalized.meta?.awardCycleId ?? cycleId) },
+    }
+  return normalized.code === OPEN_ORDER_CODE ? { name: ROUTE_NAMES.PATHS_AWARD } : null
+}
 
 export function useAdvancedIntro() {
   const { t } = useI18n()
+  const router = useRouter()
   const auth = useAuthStore()
   const toast = useToast()
   const { can } = usePermissions()
@@ -69,10 +84,16 @@ export function useAdvancedIntro() {
     if (applying.value || !current.value?.cycle) return null
     applying.value = true
     rejection.value = null
+    const cycleId = current.value.cycle.id
     try {
-      const { data } = await advancedService.apply({ awardCycleId: current.value.cycle.id })
+      const { data } = await advancedService.apply({ awardCycleId: cycleId })
       return data
     } catch (error) {
+      const redirect = redirectOf(error?.normalized ?? {}, cycleId)
+      if (redirect) {
+        await router.push(redirect)
+        return null
+      }
       rejection.value = rejectionOf(error)
       toast.error(error?.normalized?.message || t('errors.unexpected'))
       await loadCurrent()

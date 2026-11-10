@@ -1,6 +1,5 @@
 import { computed, onMounted, ref, unref } from 'vue'
 import { paymentsService } from '@/services/paymentsService'
-import { servicePricesService } from '@/services/servicePricesService'
 import { PAYMENT_CHANNELS, PAYMENT_STATUSES } from '@/constants/payments'
 
 export const CHECKOUT_STEPS = Object.freeze({
@@ -10,7 +9,12 @@ export const CHECKOUT_STEPS = Object.freeze({
   UNAVAILABLE: 'unavailable',
 })
 
-const EMPTY_OPTIONS = Object.freeze({ channels: [], bankAccounts: [], unifiedNumber: null })
+const EMPTY_OPTIONS = Object.freeze({
+  channels: [],
+  bankAccounts: [],
+  unifiedNumber: null,
+  pricing: null,
+})
 
 export function initialStepOf(channels) {
   if (!channels.length) return CHECKOUT_STEPS.UNAVAILABLE
@@ -27,7 +31,7 @@ async function openTransferOf(purpose) {
   return data?.[0] ?? null
 }
 
-export function useCheckoutChannels(purpose, { preferred = null } = {}) {
+export function useCheckoutChannels(order, { preferred = null } = {}) {
   const status = ref('loading')
   const errorMessage = ref('')
   const options = ref({ ...EMPTY_OPTIONS })
@@ -48,13 +52,12 @@ export function useCheckoutChannels(purpose, { preferred = null } = {}) {
     status.value = 'loading'
     errorMessage.value = ''
     try {
-      const [checkoutOptions, prices, transfer] = await Promise.all([
-        paymentsService.checkoutOptions(),
-        servicePricesService.getServicePrices(),
-        openTransferOf(unref(purpose)),
+      const [checkoutOptions, transfer] = await Promise.all([
+        paymentsService.checkoutOptions(unref(order)),
+        openTransferOf(unref(order).purpose),
       ])
       options.value = checkoutOptions.data
-      quote.value = prices.data?.[unref(purpose)] ?? null
+      quote.value = checkoutOptions.data.pricing?.price ?? null
       openTransfer.value = transfer
       step.value = initialStepOf(channels.value)
       selected.value = preferredChannel() ?? null
@@ -67,7 +70,7 @@ export function useCheckoutChannels(purpose, { preferred = null } = {}) {
 
   async function reloadOptions() {
     try {
-      options.value = (await paymentsService.checkoutOptions()).data
+      options.value = (await paymentsService.checkoutOptions(unref(order))).data
     } catch (error) {
       errorMessage.value = error?.normalized?.message ?? ''
     }

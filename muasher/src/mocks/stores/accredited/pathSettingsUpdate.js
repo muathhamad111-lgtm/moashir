@@ -8,7 +8,6 @@ const INTEGER_RULES = {
   uploadMaxFileMb: { min: 1, max: UPLOAD_LIMITS.maxFileMb },
   evidenceMaxFilesPerSub: { min: 1, max: UPLOAD_LIMITS.maxFilesPerSub },
 }
-const PRICE = /^\d{1,7}\.\d{2}$/
 const TEXT_MAX = 2000
 
 function invalid(code = 'validation.invalid', params = {}) {
@@ -35,11 +34,8 @@ function typesErrors(body, errors) {
   if (!valid) errors.evidenceAllowedTypes = invalid()
 }
 
-function priceErrors(body, isPaid, errors) {
-  if (!('price' in body)) return
-  if (!isPaid) errors.price = invalid()
-  else if (typeof body.price !== 'string' || !PRICE.test(body.price) || Number(body.price) <= 0)
-    errors.price = invalid()
+function priceErrors(body, errors) {
+  if ('price' in body) errors.price = invalid()
 }
 
 function textErrors(body, errors) {
@@ -64,11 +60,11 @@ function textErrors(body, errors) {
   })
 }
 
-export function updatePathSettings(user, path, isPaid, body) {
+export function updatePathSettings(user, path, body) {
   const errors = {}
   integerErrors(body, errors)
   typesErrors(body, errors)
-  priceErrors(body, isPaid, errors)
+  priceErrors(body, errors)
   textErrors(body, errors)
   const reason = reasonError(body.reason)
   if (reason) errors.reason = reason

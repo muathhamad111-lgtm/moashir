@@ -97,6 +97,16 @@
   }
 }
 
+.request-card__title bdi {
+  white-space: nowrap;
+}
+
+.request-card__period {
+  @include respond-to('md') {
+    white-space: nowrap;
+  }
+}
+
 .request-card__badges {
   @include flex(row, center, flex-start, var(--space-2));
   flex-wrap: wrap;

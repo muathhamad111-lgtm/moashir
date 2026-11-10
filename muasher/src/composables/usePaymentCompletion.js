@@ -20,7 +20,9 @@ export function usePaymentCompletion(paymentId, { onReplaced = () => {} } = {}) 
   const state = ref(COMPLETION_STATES.LOADING)
   const errorMessage = ref('')
   const purpose = computed(() => order.value?.purpose ?? '')
-  const checkout = useCheckout(purpose)
+  const checkout = useCheckout(
+    computed(() => ({ purpose: purpose.value, awardCycleId: order.value?.awardCycle?.id ?? null })),
+  )
 
   const channels = ref([])
 

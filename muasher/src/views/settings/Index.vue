@@ -42,6 +42,12 @@ const sections = computed(() => [
     group: 'platform',
   },
   {
+    key: 'prices',
+    to: ROUTE_NAMES.ADMIN_SETTINGS_PRICES,
+    icon: 'calculator',
+    group: 'platform',
+  },
+  {
     key: 'certificates',
     to: ROUTE_NAMES.ADMIN_SETTINGS_CERTIFICATES,
     icon: 'award',

@@ -5,6 +5,8 @@ import { inboxOf } from '../notificationsStore'
 import { entityActionItems } from './entityActionItems'
 import { eligibleResultsOf } from '../insights/insightsResults'
 import { strengthsGapsOf } from '../insights/insightsTools'
+import { levelWidgetOf, pathsWidgetOf } from '../periodic/pathsBoard'
+import { nextStepOf } from '../periodic/nextStep'
 
 const OPEN_ORDERS = ['created', 'pending', 'under-review']
 const ISSUED = 'issued'
@@ -88,6 +90,16 @@ function card(key, value, format = 'number', link = null) {
   return { key, value, format, link }
 }
 
+function pathWidgets(entityId) {
+  if (!entityId) return []
+  const paths = pathsWidgetOf(entityId)
+  return [
+    { key: 'level', data: levelWidgetOf(entityId) },
+    { key: 'paths', data: paths },
+    { key: 'next_step', data: nextStepOf(paths, entityId) },
+  ]
+}
+
 export function entityBoardSummary(user, now = new Date()) {
   const entityId = user.entityId
   const latest = entityId ? latestResultOf(entityId) : null
@@ -100,8 +112,8 @@ export function entityBoardSummary(user, now = new Date()) {
     landingBoard: 'entity',
     availableBoards: ['entity'],
     cards: [
-      card('latest_result_percent', latest?.percent ?? null, 'percent', '/assessment/history'),
-      card('open_requests', open, 'number', '/assessment/history'),
+      card('latest_result_percent', latest?.percent ?? null, 'percent', '/paths/accredited'),
+      card('open_requests', open, 'number', '/paths/accredited'),
       card('unread_notifications', unread, 'number', '/notifications'),
       card('accepted_evidence_count', entityId ? acceptedEvidenceCountOf(entityId) : 0, 'count'),
     ],
@@ -110,6 +122,7 @@ export function entityBoardSummary(user, now = new Date()) {
       { key: 'criteria_progress', data: entityId ? accreditedMainsOf(entityId) : [] },
       { key: 'requests', data: [] },
       { key: 'payments_card', data: entityId ? paymentsCardOf(entityId) : null },
+      ...pathWidgets(entityId),
     ],
     actionCenter: entityActionItems(user),
     generatedAt: now.toISOString(),

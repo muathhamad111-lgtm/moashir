@@ -10,6 +10,8 @@ enum AwardIneligibility: string
     case WindowNotOpen = 'window_not_open';
     case WindowClosed = 'window_closed';
     case RequestExists = 'request_exists';
+    case AwaitingPayment = 'awaiting_payment';
+    case PathUnavailable = 'path_unavailable';
     case MinEntityAge = 'min_entity_age';
     case Region = 'region';
 

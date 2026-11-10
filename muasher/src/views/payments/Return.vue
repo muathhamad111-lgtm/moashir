@@ -12,6 +12,7 @@ import { RETURN_STATES, usePaymentReturn } from '@/composables/usePaymentReturn'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { financeErrorMessage } from '@/utils/payments/financeErrors'
 import { providerPaymentIdOf } from '@/utils/payments/paymentReturn'
+import { entryRouteOf, nextRouteOf } from '@/utils/payments/myPaymentRow'
 
 const props = defineProps({
   id: { type: String, required: true },
@@ -27,17 +28,11 @@ const { state, payment, failure, start } = usePaymentReturn(
 
 useHead({ title: () => t('finance.return.pageTitle') })
 
-const CHECKOUT_ROUTES = {
-  accredited: ROUTE_NAMES.ASSESSMENT_ACCREDITED_PAY,
-  bag: ROUTE_NAMES.BAG_PAY,
-}
-const NEXT_ROUTES = { accredited: ROUTE_NAMES.ASSESSMENT_ACCREDITED, bag: ROUTE_NAMES.BAG_INDEX }
-
 const errorMessage = computed(() =>
   failure.value ? financeErrorMessage(i18n, failure.value, 'finance.return.error.message') : '',
 )
-const checkoutRoute = computed(() => CHECKOUT_ROUTES[payment.value?.purpose])
-const nextRoute = computed(() => NEXT_ROUTES[payment.value?.purpose])
+const checkoutRoute = computed(() => entryRouteOf(payment.value))
+const nextRoute = computed(() => nextRouteOf(payment.value))
 const canRetry = computed(
   () =>
     [RETURN_STATES.FAILED, RETURN_STATES.CANCELLED].includes(state.value) && checkoutRoute.value,
@@ -84,14 +79,14 @@ onMounted(start)
           <RouterLink
             v-if="state === RETURN_STATES.PAID && nextRoute"
             class="payment-return__link"
-            :to="{ name: nextRoute }"
+            :to="nextRoute"
           >
             {{ t(`finance.return.next.${payment.purpose}`) }}
           </RouterLink>
           <RouterLink
             v-if="canRetry"
             class="payment-return__link payment-return__link--primary"
-            :to="{ name: checkoutRoute }"
+            :to="checkoutRoute"
           >
             {{ t('finance.return.tryAgain') }}
           </RouterLink>

@@ -1,74 +1,50 @@
-import { NEXT_STEPS as N } from '@/composables/useEntityJourney'
-import { ROUTE_NAMES as R } from '@/constants/routeNames'
+import { NEXT_STEP_PATH_KEYS, NEXT_STEP_ROUTES } from '@/constants/entityPaths'
+import { PAYMENT_STATUSES } from '@/constants/payments'
+import { isInternalPath } from '@/utils/internalPath'
+import { isoDate } from '@/utils/datetime'
 
 const ROOT = 'portal.home.next'
+const DATE_FIELDS = ['deadlineAt', 'periodEndsOn']
+const SETTLE_PAYMENT = 'settle_payment'
 
-function formRoute(step) {
-  return { name: R.ASSESSMENT_ACCREDITED_FORM, params: { id: String(step.assessmentId) } }
+function targetOf(step) {
+  const { route, params, query, href } = step.target
+  if (NEXT_STEP_ROUTES.includes(route)) {
+    const stringParams = Object.fromEntries(
+      Object.entries(params ?? {}).map(([key, value]) => [key, String(value)]),
+    )
+    return { name: route, params: stringParams, query: query ?? {} }
+  }
+  return isInternalPath(href) ? href : null
 }
 
-function action(labelKey, to, icon = 'arrow-right') {
-  return { labelKey: `${ROOT}.actions.${labelKey}`, to, icon }
+function dateOf(context) {
+  const field = DATE_FIELDS.find((key) => context[key])
+  return field ? isoDate(context[field]) : ''
 }
 
-function paymentRoute(step) {
-  return step.paymentId
-    ? { name: R.PAYMENTS_COMPLETE, params: { id: step.paymentId } }
-    : { name: R.ASSESSMENT_ACCREDITED_PAY }
+function stepKeyOf(step) {
+  return step.key === SETTLE_PAYMENT && step.context.paymentStatus === PAYMENT_STATUSES.REJECTED
+    ? `${step.key}_rejected`
+    : step.key
 }
 
-const HISTORY = { name: R.ASSESSMENT_HISTORY }
-const SELF = { name: R.ASSESSMENT_SELF }
-
-const VIEWS = {
-  [N.PAYMENT]: (step) => ({
-    primary: action('pay', paymentRoute(step)),
-    secondary: action('payments', { name: R.PAYMENTS_MINE }, 'credit-card'),
-  }),
-  [N.COMPLETION]: (step) => ({ primary: action('complete', formRoute(step)), secondary: null }),
-  [N.EVIDENCE]: (step) => ({ primary: action('evidence', formRoute(step)), secondary: null }),
-  [N.IN_REVIEW]: () => ({
-    primary: action('assessments', HISTORY, 'clipboard-check'),
-    secondary: null,
-  }),
-  [N.SELF_DRAFT]: () => ({ primary: action('selfContinue', SELF), secondary: null }),
-  [N.SELF_SUBMITTED]: () => ({
-    primary: action('assessments', HISTORY, 'clipboard-check'),
-    secondary: null,
-  }),
-  [N.SELF_START]: () => ({ primary: action('selfStart', SELF), secondary: null }),
-  [N.ACCREDITED_START]: () => ({
-    primary: action('accreditedStart', { name: R.ASSESSMENT_ACCREDITED }),
-    secondary: null,
-  }),
-  [N.CERTIFICATE]: (step) => ({
-    primary: action('certificates', { name: R.CERTIFICATES_INDEX }, 'award'),
-    secondary: action(
-      'feedback',
-      { name: R.ASSESSMENT_ACCREDITED_FEEDBACK, params: { id: String(step.assessmentId) } },
-      'doc',
-    ),
-  }),
+function paymentOf(step) {
+  const { paymentChannel, paymentReference, paymentExpiresAt } = step.context
+  if (step.key !== SETTLE_PAYMENT || !paymentChannel) return null
+  return { channel: paymentChannel, reference: paymentReference, expiresAt: paymentExpiresAt }
 }
 
-const PROGRESS_KINDS = [N.EVIDENCE, N.COMPLETION]
-
-function variantOf(step) {
-  return step.kind === N.ACCREDITED_START && step.restart ? 'restart' : 'default'
-}
-
-function textNameOf(step) {
-  return PROGRESS_KINDS.includes(step.kind) && !step.progress ? 'plain' : 'text'
-}
-
-export function nextStepView(source) {
-  const step = source ?? { kind: N.SELF_START }
-  const variant = variantOf(step)
+export function nextStepView(step) {
+  const date = dateOf(step.context)
+  const key = stepKeyOf(step)
   return {
-    kind: step.kind,
-    titleKey: `${ROOT}.${step.kind}.${variant}.title`,
-    textKey: `${ROOT}.${step.kind}.${variant}.${textNameOf(step)}`,
-    showsGuide: PROGRESS_KINDS.includes(step.kind),
-    ...VIEWS[step.kind](step),
+    titleKey: `${ROOT}.steps.${key}.title`,
+    textKey: `${ROOT}.steps.${key}.${date ? 'textDate' : 'text'}`,
+    actionKey: `${ROOT}.steps.${key}.action`,
+    date,
+    pathKey: NEXT_STEP_PATH_KEYS[step.path] ?? step.path,
+    payment: paymentOf(step),
+    to: targetOf(step),
   }
 }

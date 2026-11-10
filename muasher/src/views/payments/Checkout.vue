@@ -27,7 +27,15 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   purpose: { type: String, required: true },
+  awardCycleId: { type: Number, default: null },
 })
+
+const BACK_ROUTES = {
+  self: ROUTE_NAMES.PATHS_SELF,
+  accredited: ROUTE_NAMES.ASSESSMENT_ACCREDITED,
+  award: ROUTE_NAMES.PATHS_AWARD,
+  bag: ROUTE_NAMES.BAG_DETAILS,
+}
 
 const i18n = useI18n()
 const { t } = i18n
@@ -35,10 +43,10 @@ const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 const actionCenter = useActionCenterStore()
-const flow = useCheckoutChannels(
-  computed(() => props.purpose),
-  { preferred: computed(() => route.query.method ?? null) },
-)
+const order = computed(() => ({ purpose: props.purpose, awardCycleId: props.awardCycleId }))
+const flow = useCheckoutChannels(order, {
+  preferred: computed(() => route.query.method ?? null),
+})
 const {
   phase,
   payment,
@@ -51,7 +59,7 @@ const {
   start,
   applyVerified,
   reset,
-} = useCheckout(props.purpose)
+} = useCheckout(order)
 const changeMethod = useCardOrderCancel({
   onCancelled: () => {
     reset()
@@ -61,9 +69,7 @@ const changeMethod = useCardOrderCancel({
 
 useHead({ title: () => t(`finance.checkout.title.${props.purpose}`) })
 
-const backRoute = computed(() =>
-  props.purpose === 'bag' ? ROUTE_NAMES.BAG_DETAILS : ROUTE_NAMES.ASSESSMENT_ACCREDITED,
-)
+const backRoute = computed(() => BACK_ROUTES[props.purpose] ?? ROUTE_NAMES.ASSESSMENT_ACCREDITED)
 const step = computed(() => flow.step.value)
 const isBankStep = computed(() => step.value === CHECKOUT_STEPS.BANK_TRANSFER)
 const choosing = computed(() => step.value === CHECKOUT_STEPS.CHOOSE)
@@ -153,6 +159,7 @@ function onSubmitted(submitted) {
           <BankTransferPanel
             v-else-if="isBankStep"
             :purpose="purpose"
+            :award-cycle-id="awardCycleId"
             :accounts="flow.options.value.bankAccounts"
             :amount="flow.quote.value"
             :unified-number="flow.options.value.unifiedNumber"

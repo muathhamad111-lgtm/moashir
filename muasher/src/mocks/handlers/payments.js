@@ -9,7 +9,12 @@ import {
   signedInActor,
 } from '../stores/finance/financeAccess'
 import { findPayment, receiptOf } from '../stores/finance/financeState'
-import { financeReject, financeRoute, readJson } from '../stores/finance/financeRejection'
+import {
+  fieldMessage,
+  financeReject,
+  financeRoute,
+  readJson,
+} from '../stores/finance/financeRejection'
 import {
   listFilters,
   ownPayments,
@@ -22,14 +27,17 @@ import { checkoutOf } from '../stores/finance/checkoutObject'
 import { expireDueOrders } from '../stores/finance/paymentLifecycle'
 import {
   assertLinkedPath,
+  assertOrderable,
   authorizeKnownPurpose,
   gatewayMode,
   idempotencyKeyOf,
   openOrder,
   openOrderOf,
+  orderPricingOf,
   payingEntity,
   quoteFor,
   replayOf,
+  validatedCycle,
   validatedPurpose,
 } from '../stores/finance/paymentOrders'
 import {
@@ -40,7 +48,10 @@ import {
 import { receiptFileOf } from '../stores/finance/receiptOperations'
 import { fileDownloadResponse, signedDownloadOf } from '../stores/finance/signedFiles'
 import { assertMayPurchase } from '../stores/finance/paymentHooks'
-import { recordOfPayment } from '../stores/accredited/accreditedRecords'
+import { requestOfPayment } from '../stores/periodic/paidRequests'
+import { pathReject } from '../stores/finance/pathRejection'
+import { pathLabelOf } from '../fixtures/pathLabels'
+import { findCycle } from '../stores/award/cycleStore'
 import { findFile, transferOf } from '../stores/finance/financeState'
 import { isChannelAvailable, availableChannels } from '../stores/finance/paymentChannelsStore'
 import { payerAccountResource, selectableAccounts } from '../stores/finance/bankAccountsStore'
@@ -54,12 +65,15 @@ import {
 import { cancelCardOrder } from '../stores/finance/paymentCancellation'
 import { findEntity } from '../stores/entitiesStore'
 
-const ACCREDITED_LABEL = { ar: 'التقييم المعتمد', en: 'Accredited assessment' }
-
 function openedRequestOf(payment) {
-  const record = payment.status === 'paid' ? recordOfPayment(payment.id) : null
+  const record = payment.status === 'paid' ? requestOfPayment(payment.id) : null
   return record
-    ? { id: record.id, number: record.number, path: record.path, pathLabel: ACCREDITED_LABEL }
+    ? {
+        id: record.id,
+        number: record.number,
+        path: record.path,
+        pathLabel: pathLabelOf(record.path),
+      }
     : null
 }
 
@@ -99,6 +113,7 @@ async function createCardPayment({ request }) {
   const body = await readJson(request)
   authorizeKnownPurpose(user, body)
   const purpose = validatedPurpose(body)
+  const cycle = validatedCycle(purpose, body)
   expireDueOrders()
   const replay = replayOf(user, purpose, key)
   assertReplayChannel(replay, 'electronic')
@@ -107,12 +122,13 @@ async function createCardPayment({ request }) {
   if (!isChannelAvailable('electronic')) throw financeReject.channelNotAvailable()
   const mode = gatewayMode()
   assertLinkedPath(purpose)
-  const quote = quoteFor(purpose)
-  const existing = openOrderOf(entity.id, purpose)
+  const pricing = assertOrderable(purpose, cycle)
+  const existing = openOrderOf(entity.id, purpose, cycle)
   if (existing?.channel === 'bank_transfer') throw financeReject.openOrderExists(existing)
   if (existing) return createdResponse(existing, request, { existing: true })
-  assertMayPurchase(entity, purpose)
-  return createdResponse(openOrder({ user, entity, purpose, quote, mode, key }), request)
+  assertMayPurchase(entity, purpose, cycle)
+  const quote = quoteFor(purpose, pricing)
+  return createdResponse(openOrder({ user, entity, purpose, quote, mode, key, cycle }), request)
 }
 
 function transferCreated(payment, replay) {
@@ -131,6 +147,7 @@ async function createTransferPayment({ request }) {
   const purposeField = { purpose: form.get('purpose') }
   authorizeKnownPurpose(user, purposeField)
   const purpose = validatedPurpose(purposeField)
+  const cycle = validatedCycle(purpose, { awardCycleId: form.get('awardCycleId') })
   const replay = replayOf(user, purpose, key)
   assertReplayChannel(replay, 'bank_transfer')
   if (replay) return transferCreated(replay, true)
@@ -138,20 +155,39 @@ async function createTransferPayment({ request }) {
   const entity = payingEntity(user)
   const account = assertTransferAvailable(order)
   assertLinkedPath(purpose)
-  const quote = quoteFor(purpose)
+  const pricing = assertOrderable(purpose, cycle)
   expireDueOrders()
-  const existing = openOrderOf(entity.id, purpose)
+  const existing = openOrderOf(entity.id, purpose, cycle)
   if (existing) throw financeReject.openOrderExists(existing)
-  assertMayPurchase(entity, purpose)
+  assertMayPurchase(entity, purpose, cycle)
+  const quote = quoteFor(purpose, pricing)
   const proof = await acceptProof(order.proof)
-  return transferCreated(openTransfer({ user, entity, purpose, quote, key, account, proof }), false)
+  return transferCreated(
+    openTransfer({ user, entity, purpose, quote, key, account, proof, cycle }),
+    false,
+  )
 }
 
 function createPayment(info) {
   return isTransferForm(info.request) ? createTransferPayment(info) : createCardPayment(info)
 }
 
-function checkoutOptionsOf(user) {
+const QUOTED_PURPOSES = ['self', 'accredited', 'award', 'bag']
+
+function quotedPricing(query) {
+  const purpose = query.get('purpose')
+  if (!purpose) return null
+  if (!QUOTED_PURPOSES.includes(purpose))
+    throw financeReject.validation({ purpose: [fieldMessage('choice')] })
+  if (purpose !== 'award') return orderPricingOf(purpose, null)
+  const cycle = findCycle(Number(query.get('awardCycleId')))
+  if (!query.get('awardCycleId'))
+    throw financeReject.validation({ awardCycleId: [fieldMessage('award_cycle_required')] })
+  if (!cycle) throw pathReject.cycleNotFound()
+  return orderPricingOf(purpose, cycle)
+}
+
+function checkoutOptionsOf(user, query) {
   const channels = availableChannels()
   const entity = user.entityId === null ? null : findEntity(user.entityId)
   return {
@@ -160,6 +196,7 @@ function checkoutOptionsOf(user) {
       ? selectableAccounts().map(payerAccountResource)
       : [],
     transferNote: { unifiedNumber: entity?.unifiedNumber ?? null },
+    pricing: quotedPricing(query),
   }
 }
 
@@ -199,10 +236,10 @@ export const paymentsHandlers = [
 
   http.get(
     '/api/v1/payments/checkout-options',
-    financeRoute(() => {
+    financeRoute(({ request }) => {
       const user = signedInActor()
       authorizeCreate(user)
-      return envelope(checkoutOptionsOf(user))
+      return envelope(checkoutOptionsOf(user, new URL(request.url).searchParams))
     }),
   ),
 

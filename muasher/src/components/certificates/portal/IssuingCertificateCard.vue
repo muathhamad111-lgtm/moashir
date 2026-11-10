@@ -18,7 +18,7 @@ const target = computed(() =>
     ? { name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_FORM, params: { id: props.request.id } }
     : props.request.status === ACCREDITED_STATUSES.COMPLETED
       ? { name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_RESULT, params: { id: props.request.id } }
-      : { name: ROUTE_NAMES.ASSESSMENT_HISTORY, query: { tab: 'current' } },
+      : { name: ROUTE_NAMES.PATHS_ACCREDITED_REQUEST, params: { id: String(props.request.id) } },
 )
 const stageKey = computed(() =>
   props.request.stage === ISSUING_STAGES.ISSUING ? 'issuing' : 'review',

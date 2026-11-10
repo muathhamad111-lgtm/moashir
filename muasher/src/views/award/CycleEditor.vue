@@ -104,6 +104,7 @@ watch(cycleId, editor.load)
           :can-set-participation="isSystemAdministrator"
           :editable="editable"
           :reason-extra="reasonExtra"
+          :fee-quote="cycle?.entryFeeQuote ?? null"
           @created="onCreated"
           @updated="editor.apply"
           @locked="editor.lockFields"

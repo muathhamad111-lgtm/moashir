@@ -91,6 +91,7 @@ use App\Policies\Settings\BrandingThemePolicy;
 use App\Policies\Settings\CertificateSettingsPolicy;
 use App\Policies\Settings\ContactSettingsPolicy;
 use App\Policies\Settings\FinanceSettingsPolicy;
+use App\Policies\Settings\PathPricesPolicy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
@@ -155,6 +156,7 @@ final class AuthorizationServiceProvider extends ServiceProvider
         Gate::define(Ability::ManageFinanceSettings->value, [FinanceSettingsPolicy::class, 'manage']);
         Gate::define(Ability::EditFinanceSettingField->value, [FinanceSettingsPolicy::class, 'editField']);
         Gate::define(Ability::ManageAssessmentSettings->value, [AssessmentSettingsPolicy::class, 'manage']);
+        Gate::define(Ability::ManagePathPrices->value, [PathPricesPolicy::class, 'manage']);
         Gate::define(Ability::ManageCertificateSettings->value, [CertificateSettingsPolicy::class, 'manage']);
         Gate::define(Ability::ManageAuthSettings->value, [AuthSettingsPolicy::class, 'manage']);
         Gate::define(Ability::ViewReadinessDetails->value, [PlatformReadinessPolicy::class, 'viewDetails']);

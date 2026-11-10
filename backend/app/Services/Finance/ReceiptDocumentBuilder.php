@@ -35,7 +35,7 @@ final readonly class ReceiptDocumentBuilder
             'status' => $receipt->status->value,
             'issued_on' => $issuedAt->toDateString(),
             'issued_on_hijri' => ['ar' => HijriDate::format($issuedAt, 'ar', $timezone), 'en' => HijriDate::format($issuedAt, 'en', $timezone)],
-            'purpose_label' => LocalizedText::fromTranslation('finance.purposes.'.ScalarValue::string($receipt->snapshot['purpose'] ?? null))->toArray(),
+            'purpose_label' => $this->purposeLabelOf($receipt),
             'currency_label' => LocalizedText::fromTranslation('finance.currencies.'.ScalarValue::string($receipt->snapshot['currency'] ?? null))->toArray(),
             'method_label' => $this->methodLabelOf($receipt),
             'paid_on' => $this->paidOnOf($receipt, $timezone),
@@ -46,6 +46,25 @@ final readonly class ReceiptDocumentBuilder
     public function fileNameOf(PaymentReceipt $receipt): string
     {
         return ($receipt->number ?? ScalarValue::string($receipt->snapshot['payment_reference'] ?? null)).'.pdf';
+    }
+
+    /**
+     * @return array{ar: string, en: string}
+     */
+    private function purposeLabelOf(PaymentReceipt $receipt): array
+    {
+        $label = LocalizedText::fromTranslation('finance.purposes.'.ScalarValue::string($receipt->snapshot['purpose'] ?? null))->toArray();
+        $cycle = $receipt->snapshot[ReceiptSnapshotBuilder::AWARD_CYCLE] ?? null;
+        $name = is_array($cycle) ? ($cycle['name'] ?? null) : null;
+
+        if (! is_array($name)) {
+            return $label;
+        }
+
+        return [
+            'ar' => $label['ar'].' — '.ScalarValue::string($name['ar'] ?? null),
+            'en' => $label['en'].' — '.ScalarValue::string($name['en'] ?? null),
+        ];
     }
 
     /**

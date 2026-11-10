@@ -1,3 +1,5 @@
+import { toLevelWidget, toNextStep, toPathsWidget } from './paths'
+
 function toActionContext(raw) {
   if (!raw) return null
   return {
@@ -55,6 +57,9 @@ export function toEntityBoard(raw = {}) {
     latestResult: toLatestResult(widgetData(raw, 'latest_result')),
     paymentsCard: widgetData(raw, 'payments_card'),
     actionCenter: toActionItems(raw?.actionCenter),
+    level: toLevelWidget(widgetData(raw, 'level')),
+    paths: toPathsWidget(widgetData(raw, 'paths')),
+    nextStep: toNextStep(widgetData(raw, 'next_step')),
   }
 }
 

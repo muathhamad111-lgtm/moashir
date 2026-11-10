@@ -1,3 +1,4 @@
+import { cycleRefOf } from '../award/cycleRef'
 import { ENTITY_REFERENCE_PREFIX } from '../../fixtures/entities'
 import { financeEntitiesSeed } from '../../fixtures/finance'
 
@@ -19,6 +20,7 @@ export function receiptSnapshotOf(payment) {
     entityReference: entityReferenceOf(payment.entityId),
     entityName: { ...entityNameOf(payment) },
     purpose: payment.purpose,
+    awardCycle: payment.purpose === 'award' ? cycleRefOf(payment.awardCycleId) : null,
     channel: payment.channel ?? 'electronic',
     priceBeforeVat: payment.priceBeforeVat,
     vatRate: payment.vatRate,

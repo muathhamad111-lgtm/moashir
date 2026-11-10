@@ -11,6 +11,7 @@ import SelfAssessmentWorkspace from '@/components/assessment/self/SelfAssessment
 import { ENTRY_STATES, useSelfAssessmentEntry } from '@/composables/useSelfAssessmentEntry'
 import { useAssessmentResultHandoffStore } from '@/stores/assessmentResultHandoff'
 import { SELF_ASSESSMENT_CODES as CODES } from '@/constants/assessment'
+import { PATH_CODES } from '@/constants/entityPaths'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
@@ -18,6 +19,8 @@ const BLOCKED_KEYS = {
   [CODES.ENTITY_NOT_ACTIVE]: 'entityNotActive',
   [CODES.ENTITY_REQUIRED]: 'entityRequired',
   [CODES.ENTITY_DELETED]: 'entityDeleted',
+  [PATH_CODES.UNAVAILABLE]: 'pathUnavailable',
+  [PATH_CODES.SELF_PAYMENT_PROCESSING]: 'paymentProcessing',
 }
 
 const { t } = useI18n()

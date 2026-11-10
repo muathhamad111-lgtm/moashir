@@ -24,7 +24,7 @@ use App\Integrations\Fakes\FakePdfRenderer;
 use App\Models\Assessments\AssessmentResultSnapshot;
 use App\Models\Award\CommitteeAverage;
 use App\Notifications\Messages\BrandedMailMessage;
-use App\Rules\PriceBeforeVat;
+use App\Rules\PriceOrFreeBeforeVat;
 use App\Rules\VatRatePercent;
 use App\Services\Identity\LocalBreachedPasswordChecker;
 use App\Support\FixedPoint;
@@ -237,7 +237,7 @@ arch('the finance and files domains reach adapters only through contracts')
     ->not->toUse('App\Integrations');
 
 arch('finance settings never handle prices or the VAT rate as floats')
-    ->expect(['App\Actions\Settings', 'App\Services\Settings', 'App\Data\Settings', PriceBeforeVat::class, VatRatePercent::class])
+    ->expect(['App\Actions\Settings', 'App\Services\Settings', 'App\Data\Settings', PriceOrFreeBeforeVat::class, VatRatePercent::class])
     ->not->toUse(['floatval', 'round', 'floor', 'ceil', 'fdiv', 'number_format']);
 
 arch('file scanners and PDF renderers implement their contracts')

@@ -13,6 +13,7 @@ const props = defineProps({
   national: { type: Object, required: true },
   canAnnounce: { type: Boolean, default: false },
   busy: { type: Boolean, default: false },
+  locked: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['announce'])
@@ -49,7 +50,7 @@ async function announce() {
         variant="primary"
         icon="megaphone"
         :loading="busy"
-        :disabled="!ready"
+        :disabled="!ready || locked"
         @click="announce"
         >{{ t('award.announce.action') }}</BaseButton
       >

@@ -186,18 +186,19 @@ describe('per-path settings', () => {
     expect((await call('GET', '/settings/assessment/paths/accredited')).status).toBe(403)
   })
 
-  it('updates limits, price and texts, and serves the texts to the entity guide', async () => {
+  it('updates limits and texts, keeps the price read-only and serves the texts to the entity guide', async () => {
     seedMockSession(SYSTEM_ADMIN)
+    const priced = await call('PUT', '/settings/assessment/paths/accredited', { price: '1250.00' })
+    expect([priced.status, Object.keys(priced.body.errors)]).toEqual([422, ['price']])
     const updated = await call('PUT', '/settings/assessment/paths/accredited', {
       review_sla_days: 21,
       evidence_max_files_per_sub: 6,
-      price: '1250.00',
       entity_texts: { intro: { ar: 'تعريف محدث بالمسار.', en: 'An updated path introduction.' } },
     })
     expect(updated.body.data).toMatchObject({
       review_sla_days: 21,
       upload_limits: { max_files_per_sub: 6 },
-      price: { price_before_vat: '1250.00' },
+      price: { price_before_vat: '1000.00' },
       entity_texts: { intro: { ar: 'تعريف محدث بالمسار.', en: 'An updated path introduction.' } },
     })
     const guide = (await call('GET', '/content/assessment-paths/accredited')).body.data

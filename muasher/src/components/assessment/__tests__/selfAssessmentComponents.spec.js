@@ -3,7 +3,6 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { setActivePinia } from 'pinia'
 import AssessmentNotice from '@/components/assessment/AssessmentNotice.vue'
 import AssessmentTimeline from '@/components/assessment/AssessmentTimeline.vue'
-import AssessmentHistoryItem from '@/components/assessment/AssessmentHistoryItem.vue'
 import ResultPendingNotice from '@/components/assessment/ResultPendingNotice.vue'
 import SelfAssessmentNotices from '@/components/assessment/self/SelfAssessmentNotices.vue'
 import SelfAssessmentActions from '@/components/assessment/self/SelfAssessmentActions.vue'
@@ -162,20 +161,7 @@ describe('SelfSubmitDialog', () => {
   })
 })
 
-describe('AssessmentTimeline and history item', () => {
-  const RESULT = {
-    id: 9001,
-    number: 'SLF-2026-000001',
-    path: 'self',
-    status: 'result-available',
-    isOpen: false,
-    isFrozen: false,
-    result: { total: '6329.17', maxTotal: '8200.00', percent: '77.18' },
-    createdAt: '2026-06-20T07:00:00Z',
-    submittedAt: '2026-06-20T07:42:00Z',
-    completedAt: '2026-06-20T07:42:00Z',
-  }
-
+describe('AssessmentTimeline', () => {
   const HISTORY = [
     { from: null, to: 'draft', verb: 'start', at: '2026-06-20T07:00:00Z', actor: 'entity' },
     {
@@ -235,21 +221,6 @@ describe('AssessmentTimeline and history item', () => {
     expect(mountWith(AssessmentTimeline, { history: unknownVerb }).text()).toContain(
       'Status changed to Submitted',
     )
-  })
-
-  it('links a result to its result page and an open draft to the form, never a frozen one', () => {
-    const result = mountWith(AssessmentHistoryItem, { item: RESULT })
-    expect(result.text()).toContain('Scored 77.18%')
-    expect(result.find('a[href="/assessment/self/result/9001"]').exists()).toBe(true)
-    const draft = mountWith(AssessmentHistoryItem, {
-      item: { ...RESULT, status: 'draft', isOpen: true, result: null },
-    })
-    expect(draft.find('a[href="/assessment/self"]').exists()).toBe(true)
-    const frozen = mountWith(AssessmentHistoryItem, {
-      item: { ...RESULT, status: 'draft', isOpen: true, isFrozen: true, result: null },
-    })
-    expect(frozen.find('a[href="/assessment/self"]').exists()).toBe(false)
-    expect(frozen.find('.frozen-badge').exists()).toBe(true)
   })
 })
 

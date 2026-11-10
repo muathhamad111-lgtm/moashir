@@ -106,7 +106,6 @@
 @use 'components/score-input';
 @use 'components/self-form';
 @use 'components/self-result';
-@use 'components/assessment-history';
 @use 'components/assessment-notice';
 @use 'components/assessment-timeline';
 @use 'components/assessment-record';
@@ -123,6 +122,7 @@
 @use 'components/settings-hub';
 @use 'components/settings-section';
 @use 'components/settings-form';
+@use 'components/path-prices';
 @use 'components/sign-in-security';
 @use 'components/phone-verification';
 @use 'components/homepage-cms';
@@ -165,8 +165,11 @@
 @use 'components/attention-strip';
 @use 'components/area-tabs';
 @use 'components/journey-home';
-@use 'components/journey-path';
 @use 'components/next-step';
+@use 'components/path-tiles';
+@use 'components/path-page';
+@use 'components/path-requests';
+@use 'components/path-request';
 @use 'components/glance-card';
 @use 'components/portal-more';
 @use 'components/portal-area';

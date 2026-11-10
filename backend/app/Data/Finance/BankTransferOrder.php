@@ -14,5 +14,6 @@ final readonly class BankTransferOrder
         public string $idempotencyKey,
         public string $bankAccountId,
         public UploadedFile $proof,
+        public ?int $awardCycleId = null,
     ) {}
 }

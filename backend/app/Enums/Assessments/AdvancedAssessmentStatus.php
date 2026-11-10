@@ -31,12 +31,13 @@ enum AdvancedAssessmentStatus: string implements ReviewedAssessmentState
     case QualifiedForNational = 'qualified_for_national';
     case NationalWinner = 'national_winner';
     case NationalNonWinner = 'national_non_winner';
+    case Refunded = 'refunded';
 
     public const string ENTITY_PLACEHOLDER = 'under_review';
 
     private const array TERMINAL = [
         self::RejectedConditions, self::Expired, self::DeclinedIncomplete, self::Withdrawn, self::NotQualified,
-        self::NonWinner, self::NationalWinner, self::NationalNonWinner,
+        self::NonWinner, self::NationalWinner, self::NationalNonWinner, self::Refunded,
     ];
 
     public function isOpen(): bool
@@ -82,6 +83,11 @@ enum AdvancedAssessmentStatus: string implements ReviewedAssessmentState
     public function isWithdrawable(): bool
     {
         return $this->isInRequestQueue() && $this->isOpen() && ! $this->isResult();
+    }
+
+    public function isRefundable(): bool
+    {
+        return $this === self::Draft || $this->isWithdrawable();
     }
 
     public function isQualified(): bool
@@ -186,6 +192,16 @@ enum AdvancedAssessmentStatus: string implements ReviewedAssessmentState
      */
     private function nextStates(): array
     {
+        $states = $this->forwardStates();
+
+        return $this->isRefundable() ? [...$states, self::Refunded] : $states;
+    }
+
+    /**
+     * @return list<self>
+     */
+    private function forwardStates(): array
+    {
         return match ($this) {
             self::Draft => [self::Draft, self::AwaitingReviewAssignment, self::Expired],
             self::AwaitingReviewAssignment => [self::NeedsCompletion, self::Assigned, self::Withdrawn],
@@ -202,7 +218,7 @@ enum AdvancedAssessmentStatus: string implements ReviewedAssessmentState
             self::RegionalWinner => [self::QualifiedForNational],
             self::QualifiedForNational => [self::NationalWinner, self::NationalNonWinner],
             self::RejectedConditions, self::Expired, self::DeclinedIncomplete, self::Withdrawn, self::NotQualified,
-            self::NonWinner, self::NationalWinner, self::NationalNonWinner => [],
+            self::NonWinner, self::NationalWinner, self::NationalNonWinner, self::Refunded => [],
         };
     }
 }

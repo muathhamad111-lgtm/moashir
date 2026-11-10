@@ -11,6 +11,7 @@ use App\Models\Identity\User;
 use App\Support\Assessments\PathPresenter;
 use App\Support\Assessments\RequestPaymentPresenter;
 use App\Support\Assessments\StatusMask;
+use App\Support\Award\AwardCycleRefPresenter;
 use App\Support\Certificates\CertificateSummaryPresenter;
 use App\Support\Entities\EntityPresenter;
 use App\Support\Paths\KitLinePresenter;
@@ -45,6 +46,7 @@ final class AssessmentResource extends JsonResource
             'criteria_version_id' => $assessment->criteria_version_id,
             'scale_kind' => $assessment->scale_kind->value,
             'award_cycle_id' => $assessment->award_cycle_id,
+            'award_cycle' => $assessment->award_cycle_id === null ? null : AwardCycleRefPresenter::of($assessment->awardCycle),
             'entity' => EntityPresenter::summary($assessment->entity),
             'result' => $assessment->exposesResult() ? $this->result($assessment->currentResult) : null,
             'created_at' => $assessment->created_at->toIso8601String(),
@@ -61,18 +63,32 @@ final class AssessmentResource extends JsonResource
      */
     private function accreditedColumns(Assessment $assessment, Request $request): array
     {
+        $payment = $this->paymentOf($assessment, $request);
+
         if (! $assessment->isAccredited()) {
-            return ['payment' => null, 'level' => null, 'certificate' => null, 'kit' => null];
+            return ['payment' => $payment, 'level' => null, 'certificate' => null, 'kit' => null];
         }
 
         $certificate = $assessment->certificate;
 
         return [
-            'payment' => $this->seesPayment($assessment, $request->user()) ? RequestPaymentPresenter::of($assessment->payment, $request->user()) : null,
+            'payment' => $payment,
             'level' => $certificate?->level?->value,
             'certificate' => CertificateSummaryPresenter::present($certificate),
             'kit' => KitLinePresenter::placeholder(),
         ];
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function paymentOf(Assessment $assessment, Request $request): ?array
+    {
+        if ($assessment->payment_id === null || ! $this->seesPayment($assessment, $request->user())) {
+            return null;
+        }
+
+        return RequestPaymentPresenter::of($assessment->payment, $request->user());
     }
 
     private function seesPayment(Assessment $assessment, mixed $viewer): bool

@@ -2,6 +2,7 @@ import { FEEDBACK_FIELDS } from '@/constants/accredited'
 import { fromCanonicalStatus } from '@/utils/canonicalStatus'
 import { toAssessment, toAssessmentResult, toCriteriaUpdate } from './assessments'
 import { toCompletionStatus } from './accreditedStatus'
+import { toApplyGate, toPathPricing, toPeriodic, toRequestPeriod, toSubmissionGate } from './paths'
 
 export function toEvidence(raw = {}) {
   return {
@@ -73,7 +74,7 @@ export function toCvSheet(raw) {
 
 export function toAccreditedForm(raw = {}) {
   return {
-    assessment: toAssessment(raw.assessment),
+    assessment: { ...toAssessment(raw.assessment), ...toRequestPeriod(raw.assessment ?? {}) },
     criteria: raw.criteria ?? null,
     cv: toCvSheet(raw.cv),
     evidence: toEvidenceList(raw.evidence),
@@ -121,7 +122,11 @@ export function toSubmissionProgress(raw) {
 
 function toActiveRequest(raw) {
   if (!raw) return null
-  return { ...toAssessment(raw), progress: toSubmissionProgress(raw.progress) }
+  return {
+    ...toAssessment(raw),
+    ...toRequestPeriod(raw),
+    progress: toSubmissionProgress(raw.progress),
+  }
 }
 
 export function toAccreditedCurrent(raw = {}) {
@@ -129,6 +134,10 @@ export function toAccreditedCurrent(raw = {}) {
     awaitingPayment: toAwaitingPayment(raw.awaitingPayment),
     active: toActiveRequest(raw.active),
     latestClosed: raw.latestClosed ? toAssessment(raw.latestClosed) : null,
+    periodic: toPeriodic(raw.periodic),
+    submission: toSubmissionGate(raw.submission),
+    apply: toApplyGate(raw.apply),
+    pricing: toPathPricing(raw.pricing),
   }
 }
 

@@ -120,13 +120,16 @@ export function countAssessments(user, filters) {
   }
 }
 
-export function listAssessments(user, filters, query) {
-  const rows = scopedRows(user, filters)
+export function filteredAssessments(user, filters) {
+  return scopedRows(user, filters)
     .filter((record) => !filters.status || record.status === filters.status)
     .filter((record) => filters.isOpen === null || isOpenForViewer(record) === filters.isOpen)
     .filter((record) => filters.hasResult === null || exposesResult(record) === filters.hasResult)
     .sort(compareBy(sortFieldOf(filters.sort), filters.sort.startsWith('-')))
-  return paginate(rows, query)
+}
+
+export function listAssessments(user, filters, query) {
+  return paginate(filteredAssessments(user, filters), query)
 }
 
 function matchesNeedle(record, needle, normalize) {

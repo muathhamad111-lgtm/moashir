@@ -273,7 +273,7 @@ it('applies the existing payment guards to bank transfers', function (): void {
     ['owner' => $owner, 'account' => $account] = transferPayingEntity();
     setServicePrices(null, null);
 
-    submitBankTransfer($owner, $account)->assertConflict()->assertJsonPath('code', 'payment.price_not_configured');
+    submitBankTransfer($owner, $account)->assertConflict()->assertJsonPath('code', 'path.unavailable');
     submitBankTransfer($owner, $account, ['purpose' => 'leadership'])->assertUnprocessable()->assertJsonPath('code', 'purpose.not_available');
 
     expect(StoredFile::query()->ofPurpose(StoredFilePurpose::TransferProof)->count())->toBe(0);

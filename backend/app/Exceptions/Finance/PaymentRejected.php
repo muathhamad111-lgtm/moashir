@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions\Finance;
 
+use App\Enums\Finance\PaymentPurpose;
 use App\Exceptions\ApiException;
 use App\Http\Responses\ApiError;
 use App\Models\Finance\Payment;
@@ -26,9 +27,14 @@ final class PaymentRejected extends ApiException
         return self::fieldError('purpose.not_available', 'purpose');
     }
 
-    public static function priceNotConfigured(): self
+    public static function notRequired(PaymentPurpose $purpose): self
     {
-        return new self(new ApiError(Response::HTTP_CONFLICT, 'payment.price_not_configured'));
+        return new self(new ApiError(Response::HTTP_CONFLICT, 'payment.not_required', [], [], ['purpose' => $purpose->value]));
+    }
+
+    public static function awardCycleNotFound(): self
+    {
+        return self::fieldError('payment.award_cycle_not_found', 'award_cycle_id', Response::HTTP_NOT_FOUND);
     }
 
     public static function gatewayNotConfigured(): self

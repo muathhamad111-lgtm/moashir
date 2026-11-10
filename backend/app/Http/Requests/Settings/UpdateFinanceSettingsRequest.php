@@ -9,10 +9,8 @@ use App\Data\Settings\VatRegistrationNumberEdit;
 use App\Enums\Identity\Ability;
 use App\Enums\Settings\FinanceSettingField;
 use App\Models\Identity\User;
-use App\Rules\PriceBeforeVat;
 use App\Rules\VatRatePercent;
 use App\Services\Finance\FinanceSettings;
-use App\Support\ValueObjects\Money;
 use App\Support\ValueObjects\VatRate;
 use App\Support\ValueObjects\VatRegistrationNumber;
 use Illuminate\Foundation\Http\FormRequest;
@@ -38,8 +36,8 @@ final class UpdateFinanceSettingsRequest extends FormRequest
         $limits = app(FinanceSettings::class)->orderValidityLimits();
 
         return [
-            FinanceSettingField::AccreditedPrice->value => ['sometimes', 'required', new PriceBeforeVat],
-            FinanceSettingField::BagPrice->value => ['sometimes', 'required', new PriceBeforeVat],
+            FinanceSettingField::ACCREDITED_PRICE_MIRROR => ['prohibited'],
+            FinanceSettingField::BAG_PRICE_MIRROR => ['prohibited'],
             FinanceSettingField::VatRate->value => ['sometimes', 'required', new VatRatePercent],
             FinanceSettingField::OrderValidityMinutes->value => ['sometimes', 'required', 'integer', 'between:'.$limits['min'].','.$limits['max']],
             FinanceSettingField::VatRegistrationNumber->value => ['sometimes', 'nullable', 'string', 'regex:'.VatRegistrationNumber::PATTERN],
@@ -53,8 +51,6 @@ final class UpdateFinanceSettingsRequest extends FormRequest
         $validity = FinanceSettingField::OrderValidityMinutes->value;
 
         return new FinanceSettingsUpdate(
-            $this->money(FinanceSettingField::AccreditedPrice),
-            $this->money(FinanceSettingField::BagPrice),
             $this->filled($vatRate) ? new VatRate($this->string($vatRate)->toString()) : null,
             $this->filled($validity) ? $this->integer($validity) : null,
             $this->filled('reason') ? $this->string('reason')->trim()->toString() : null,
@@ -73,8 +69,14 @@ final class UpdateFinanceSettingsRequest extends FormRequest
         return new VatRegistrationNumberEdit($this->filled($field) ? new VatRegistrationNumber($this->string($field)->toString()) : null);
     }
 
-    private function money(FinanceSettingField $field): ?Money
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
     {
-        return $this->filled($field->value) ? new Money($this->string($field->value)->toString()) : null;
+        return array_fill_keys(
+            array_map(static fn (string $field): string => $field.'.prohibited', FinanceSettingField::priceMirrors()),
+            __('validation.custom.price.moved'),
+        );
     }
 }

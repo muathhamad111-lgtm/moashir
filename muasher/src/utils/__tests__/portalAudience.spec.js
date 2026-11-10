@@ -25,7 +25,8 @@ describe('portal audience and screens', () => {
 
   it('maps routes to their portal area', () => {
     expect(portalAreaOf(R.APP_DASHBOARD)).toBe('journey')
-    expect(portalAreaOf(R.ASSESSMENT_ACCREDITED_FORM)).toBe('assessments')
+    expect(portalAreaOf(R.ASSESSMENT_ACCREDITED_FORM)).toBe('paths')
+    expect(portalAreaOf(R.PATHS_ACCREDITED_REQUEST)).toBe('paths')
     expect(portalAreaOf(R.PAYMENTS_COMPLETE)).toBe('payments')
     expect(portalAreaOf(R.MESSAGES_THREAD)).toBe('messages')
     expect(portalAreaOf(R.NOTIFICATIONS_INDEX)).toBe('more')

@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { localizedText } from '@/utils/localizedText'
 import Card from '@/components/ui/Card.vue'
 import Badge from '@/components/ui/Badge.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
@@ -109,6 +110,10 @@ function hijri(value) {
         <div class="receipt-card__fact">
           <dt>{{ t('finance.fields.service') }}</dt>
           <dd>{{ t(`finance.purposes.${snapshot.purpose}`) }}</dd>
+        </div>
+        <div v-if="snapshot.awardCycle" class="receipt-card__fact">
+          <dt>{{ t('finance.fields.awardCycle') }}</dt>
+          <dd>{{ localizedText(snapshot.awardCycle.name, locale) }}</dd>
         </div>
         <div v-if="receipt.reissueCount" class="receipt-card__fact">
           <dt>{{ t('finance.receipt.reissued') }}</dt>

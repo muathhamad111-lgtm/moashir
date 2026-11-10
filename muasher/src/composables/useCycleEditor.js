@@ -38,8 +38,16 @@ export function useCycleEditor(cycleId) {
   const initialValues = computed(() =>
     cycleFormValues(cycle.value, { defaults: defaults.value, published: published.value }),
   )
+  const feeLocked = computed(() =>
+    cycle.value && !cycle.value.entryFeeEditable ? ['entryFee'] : [],
+  )
   const locked = computed(
-    () => new Set([...lockedCycleFields(cycle.value?.status), ...serverLocked.value]),
+    () =>
+      new Set([
+        ...lockedCycleFields(cycle.value?.status),
+        ...feeLocked.value,
+        ...serverLocked.value,
+      ]),
   )
   const blockingCycle = computed(() =>
     running.value && running.value.id !== cycle.value?.id ? running.value : null,

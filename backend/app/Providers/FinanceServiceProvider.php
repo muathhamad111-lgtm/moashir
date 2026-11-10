@@ -20,6 +20,8 @@ use App\Models\Finance\Refund;
 use App\Services\Assessments\AccreditedPurchaseCheck;
 use App\Services\Assessments\LinkedRequestByPayment;
 use App\Services\Assessments\OpenedRequestsByPayment;
+use App\Services\Assessments\SelfPurchaseCheck;
+use App\Services\Award\AwardPurchaseCheck;
 use App\Services\Entities\EntityEraser;
 use App\Services\Entities\OpenRequestDirectory;
 use App\Services\Finance\BankAccountCounts;
@@ -28,7 +30,8 @@ use App\Services\Finance\BankTransferQuery;
 use App\Services\Finance\CheckoutIntentEraser;
 use App\Services\Finance\OpenBankTransfers;
 use App\Services\Finance\PurchaseEligibility;
-use App\Services\Finance\SettingsServicePriceSource;
+use App\Services\Finance\RequestVatRate;
+use App\Services\Prices\VersionedServicePriceSource;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -37,12 +40,13 @@ final class FinanceServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->bind(ServicePriceSource::class, SettingsServicePriceSource::class);
+        $this->app->bind(ServicePriceSource::class, VersionedServicePriceSource::class);
+        $this->app->scoped(RequestVatRate::class);
         $this->app->bind(OpenedRequestLookup::class, OpenedRequestsByPayment::class);
         $this->app->bind(LinkedRequestReader::class, LinkedRequestByPayment::class);
         $this->app->tag([CheckoutIntentEraser::class, BankTransferEraser::class], EntityEraser::TAG);
         $this->app->tag([OpenBankTransfers::class], OpenRequestDirectory::TAG);
-        $this->app->tag([AccreditedPurchaseCheck::class], PurchaseEligibility::TAG);
+        $this->app->tag([AccreditedPurchaseCheck::class, SelfPurchaseCheck::class, AwardPurchaseCheck::class], PurchaseEligibility::TAG);
     }
 
     public function boot(): void

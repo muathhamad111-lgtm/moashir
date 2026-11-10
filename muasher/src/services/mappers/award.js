@@ -2,6 +2,7 @@ import { toAssessment, toEntitySummary } from './assessments'
 import { toAccreditedResult } from './accredited'
 import { toAssessorReview } from './review'
 import { toPlace } from './requests'
+import { toPriceQuote } from './paths'
 
 function toPerson(raw) {
   if (!raw) return null
@@ -32,6 +33,9 @@ export function toCycle(raw = {}) {
     },
     initialReviewSlaDays: raw.initialReviewSlaDays ?? null,
     participationCertificateEnabled: raw.participationCertificateEnabled === true,
+    entryFee: raw.entryFee ?? null,
+    entryFeeQuote: toPriceQuote(raw.entryFeeQuote),
+    entryFeeEditable: raw.entryFeeEditable === true,
     regions: (raw.regions ?? []).map(toPlace),
     counts: toCounts(raw.counts),
     openedAt: raw.openedAt ?? null,
@@ -90,6 +94,7 @@ export function toCycleDefaults(raw = {}) {
     minEntityAgeYears: raw.minEntityAgeYears ?? null,
     disqualificationScore: raw.disqualificationScore ?? null,
     initialReviewSlaDays: raw.initialReviewSlaDays ?? null,
+    entryFee: raw.entryFee ?? null,
   }
 }
 

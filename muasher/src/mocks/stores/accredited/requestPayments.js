@@ -1,7 +1,7 @@
 import { findPayment, receiptOf } from '../finance/financeState'
 import { sessionCan, sessionIsSuperAdmin } from '../sessionPermissions'
 import { accreditedProgressOf } from './accreditedProgress'
-import { recordOfPayment } from './accreditedRecords'
+import { requestOfPayment } from '../periodic/paidRequests'
 import { maskedStatus } from '../award/statusMask'
 import { pathLabelOf } from '../../fixtures/pathLabels'
 
@@ -43,14 +43,14 @@ export function progressSummaryOf(record) {
 }
 
 export function linkedRequestOf(paymentId) {
-  const record = recordOfPayment(paymentId)
+  const record = requestOfPayment(paymentId)
   if (!record) return null
   const summary = {
     number: record.number,
     path: record.path,
     pathLabel: pathLabelOf(record.path),
     status: maskedStatus(record),
-    progress: progressSummaryOf(record),
+    progress: record.path === 'accredited' ? progressSummaryOf(record) : null,
   }
   return opensRequests() ? { id: record.id, ...summary } : summary
 }

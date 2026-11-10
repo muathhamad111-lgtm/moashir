@@ -7,9 +7,7 @@ namespace App\Actions\Settings;
 use App\Data\Settings\PathSettingsUpdate;
 use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Audit\AuditEvent;
-use App\Enums\Finance\PaymentPurpose;
 use App\Enums\Notifications\NotificationCode;
-use App\Enums\Settings\FinanceSettingField;
 use App\Enums\Settings\PathSetting;
 use App\Exceptions\Settings\SettingsRejected;
 use App\Jobs\Assessments\RecomputeAccreditedDueDatesJob;
@@ -19,14 +17,11 @@ use App\Services\Settings\PathSettingsReader;
 use App\Services\Settings\SettingsLock;
 use App\Services\Settings\SettingsStore;
 use App\Support\RequestContext;
-use App\Support\ValueObjects\Money;
 use Illuminate\Support\Facades\DB;
 
 final readonly class UpdatePathSettings
 {
     private const string ASSESSMENT_SECTION = 'assessment';
-
-    private const string FINANCE_SECTION = 'finance';
 
     public function __construct(
         private SettingsStore $store,
@@ -76,10 +71,6 @@ final readonly class UpdatePathSettings
             $changed[] = PathSetting::EntityTexts->value;
         }
 
-        if ($update->price instanceof Money && $this->writePrice($actor, $path, $update->price)) {
-            $changed[] = PathSettingsUpdate::PRICE;
-        }
-
         return $changed;
     }
 
@@ -88,18 +79,5 @@ final readonly class UpdatePathSettings
         $texts = $this->reader->textsOf($path)->replacing($update->textChanges);
 
         return $this->store->put(PathSetting::EntityTexts->keyFor($path), $texts->toArray(), AuditEvent::AssessmentSettingsUpdated, $actor);
-    }
-
-    private function writePrice(User $actor, AssessmentPath $path, Money $price): bool
-    {
-        $purpose = PathSettingsReader::purposeOf($path);
-
-        if (! $purpose instanceof PaymentPurpose) {
-            return false;
-        }
-
-        $this->lock->lock(self::FINANCE_SECTION);
-
-        return $this->store->put(FinanceSettingField::priceOf($purpose)->settingKey(), $price->amount, AuditEvent::FinanceSettingsUpdated, $actor);
     }
 }

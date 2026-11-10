@@ -11,6 +11,7 @@ use App\Enums\Finance\PaymentInstrument;
 use App\Enums\Finance\PaymentPurpose;
 use App\Enums\Finance\PaymentStatus;
 use App\Enums\Integrations\IntegrationMode;
+use App\Models\Award\AwardCycle;
 use App\Models\Concerns\HasPublicId;
 use App\Models\Entities\Entity;
 use App\Models\Identity\User;
@@ -34,6 +35,7 @@ use Illuminate\Support\Carbon;
  * @property EntityName $entity_name
  * @property int $initiated_by_user_id
  * @property PaymentPurpose $purpose
+ * @property int|null $award_cycle_id
  * @property PaymentChannel $channel
  * @property string|null $provider
  * @property IntegrationMode $mode
@@ -69,6 +71,7 @@ use Illuminate\Support\Carbon;
  * @property-read PaymentReceipt|null $receipt
  * @property-read Refund|null $refund
  * @property-read BankTransfer|null $bankTransfer
+ * @property-read AwardCycle|null $awardCycle
  */
 final class Payment extends Model
 {
@@ -81,7 +84,7 @@ final class Payment extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'reference', 'entity_id', 'entity_name', 'initiated_by_user_id', 'purpose', 'channel', 'provider', 'mode', 'idempotency_key',
+        'reference', 'entity_id', 'entity_name', 'initiated_by_user_id', 'purpose', 'award_cycle_id', 'channel', 'provider', 'mode', 'idempotency_key',
         'price_before_vat', 'vat_rate', 'vat_amount', 'total', 'currency', 'status', 'expires_at',
     ];
 
@@ -105,6 +108,7 @@ final class Payment extends Model
             'entity_name' => EntityNameCast::class,
             'initiated_by_user_id' => 'integer',
             'purpose' => PaymentPurpose::class,
+            'award_cycle_id' => 'integer',
             'channel' => PaymentChannel::class,
             'mode' => IntegrationMode::class,
             'checkout_client_secret' => 'encrypted',
@@ -142,6 +146,14 @@ final class Payment extends Model
     public function initiatedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'initiated_by_user_id')->withTrashed();
+    }
+
+    /**
+     * @return BelongsTo<AwardCycle, $this>
+     */
+    public function awardCycle(): BelongsTo
+    {
+        return $this->belongsTo(AwardCycle::class);
     }
 
     /**
@@ -196,6 +208,11 @@ final class Payment extends Model
         return $this->channel === PaymentChannel::BankTransfer;
     }
 
+    public function wasPaidAfterWindowOf(AwardCycle $cycle): bool
+    {
+        return $this->paid_at !== null && $cycle->closedSubmissionsBefore($this->paid_at);
+    }
+
     public function isTest(): bool
     {
         return $this->mode->isTest();
@@ -217,6 +234,15 @@ final class Payment extends Model
     protected function open(Builder $query): void
     {
         $query->whereIn('status', PaymentStatus::openValues());
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function forService(Builder $query, PaymentPurpose $purpose, ?int $awardCycleId): void
+    {
+        $query->where('purpose', $purpose)->when($purpose->isPerCycle(), static fn (Builder $inner): Builder => $inner->where('award_cycle_id', $awardCycleId));
     }
 
     /**

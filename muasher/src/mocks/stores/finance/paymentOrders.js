@@ -3,14 +3,17 @@ import { findEntity } from '../entitiesStore'
 import { authorizePurpose } from './financeAccess'
 import { financeState, nextSequence, persistFinanceState } from './financeState'
 import { fieldMessage, financeReject } from './financeRejection'
-import { quoteOf } from './financeMoney'
 import { gatewayRow, linkedPaths } from './checkoutObject'
 import { OPEN_STATUSES, nowIso, recordEvent } from './paymentLifecycle'
+import { pathPricingOf } from './priceVersions'
+import { assertAvailable, pathReject } from './pathRejection'
+import { cycleFeePricing } from '../award/awardPricing'
+import { findCycle } from '../award/cycleStore'
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-const PURPOSES = ['accredited', 'bag']
+const PURPOSES = ['self', 'accredited', 'award', 'bag']
 const RETIRED_PURPOSE = 'leadership'
-const PRICE_KEYS = { accredited: 'accreditedPrice', bag: 'bagPrice' }
+const AWARD = 'award'
 
 export function idempotencyKeyOf(request) {
   const key = request.headers.get('idempotency-key')
@@ -56,19 +59,44 @@ export function assertLinkedPath(purpose) {
   if (!linkedPaths().includes(purpose)) throw financeReject.purposeNotAvailable()
 }
 
-export function quoteFor(purpose) {
-  const settings = financeState().settings
-  const price = settings[PRICE_KEYS[purpose]]
-  if (!price || Number(price) <= 0) throw financeReject.priceNotConfigured()
-  return quoteOf(price, settings.vatRate)
+function hasValue(value) {
+  return value !== undefined && value !== null && value !== ''
 }
 
-export function openOrderOf(entityId, purpose) {
+export function validatedCycle(purpose, body) {
+  const given = hasValue(body.awardCycleId)
+  if (purpose === AWARD && !given)
+    throw financeReject.validation({ awardCycleId: [fieldMessage('award_cycle_required')] })
+  if (purpose !== AWARD && given)
+    throw financeReject.validation({ awardCycleId: [fieldMessage('award_cycle_prohibited')] })
+  if (!given) return null
+  const cycle = findCycle(Number(body.awardCycleId))
+  if (!cycle) throw pathReject.cycleNotFound()
+  return cycle
+}
+
+export function orderPricingOf(purpose, cycle) {
+  return purpose === AWARD ? cycleFeePricing(cycle) : pathPricingOf(purpose)
+}
+
+export function assertOrderable(purpose, cycle) {
+  const pricing = orderPricingOf(purpose, cycle)
+  assertAvailable(purpose, pricing)
+  return pricing
+}
+
+export function quoteFor(purpose, pricing) {
+  if (pricing.isFree) throw pathReject.notRequired(purpose)
+  return { ...pricing.price }
+}
+
+export function openOrderOf(entityId, purpose, cycle = null) {
   return (
     financeState().payments.find(
       (payment) =>
         payment.entityId === entityId &&
         payment.purpose === purpose &&
+        (cycle === null || payment.awardCycleId === cycle.id) &&
         OPEN_STATUSES.includes(payment.status),
     ) ?? null
   )
@@ -78,7 +106,7 @@ function referenceOf(sequence) {
   return `PAY-${FINANCE_YEAR}-${String(sequence).padStart(6, '0')}`
 }
 
-export function openOrder({ user, entity, purpose, quote, mode, key }) {
+export function openOrder({ user, entity, purpose, quote, mode, key, cycle = null }) {
   const createdAt = nowIso()
   const validity = financeState().settings.orderValidityMinutes
   const payment = {
@@ -88,6 +116,7 @@ export function openOrder({ user, entity, purpose, quote, mode, key }) {
     entityName: { ar: entity.name.ar, en: entity.name.en ?? null },
     initiatedByUserId: user.id,
     purpose,
+    awardCycleId: cycle?.id ?? null,
     channel: 'electronic',
     mode,
     idempotencyKey: key,

@@ -35,7 +35,7 @@ final class PaymentController
     {
         $created = $request->isBankTransfer()
             ? $submitTransfer->handle($actor, $request->bankTransferOrder())
-            : $createPayment->handle($actor, $request->purpose(), $request->idempotencyKey(), app()->getLocale());
+            : $createPayment->handle($actor, $request->cardOrder(), app()->getLocale());
 
         return ApiResponse::resource(new CreatedPaymentResource($created), $created->isExistingOrder ? Response::HTTP_OK : Response::HTTP_CREATED, [
             'idempotent_replay' => $created->isReplay,

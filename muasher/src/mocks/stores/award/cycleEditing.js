@@ -5,7 +5,7 @@ import { findVersion } from '../criteriaStore'
 import { sessionCan } from '../sessionPermissions'
 import { nowIso } from '../accredited/accreditedRecords'
 import { throwIfErrors, trimmed } from '../accredited/accreditedValidation'
-import { cycleDefaults } from './cycleDefaults'
+import { cycleDefaults, defaultEntryFee } from './cycleDefaults'
 import { insertCycle } from './cycleStore'
 import { managesEveryCycle } from './cycleAccess'
 import {
@@ -30,6 +30,7 @@ const FIELD_STAGES = {
     fields: ['committeeStart', 'committeeEnd', 'initialReviewSlaDays'],
     statuses: ['draft', 'submission-open', 'submission-closed'],
   },
+  untilOpen: { fields: ['entryFee'], statuses: ['draft'] },
 }
 
 const EDITABLE_FIELDS = [
@@ -43,6 +44,7 @@ const EDITABLE_FIELDS = [
   'disqualificationScore',
   'initialReviewSlaDays',
   'participationCertificateEnabled',
+  'entryFee',
 ]
 
 const WIRE_FIELD = { regionIds: 'region_ids' }
@@ -97,6 +99,7 @@ function attributesOf(body) {
     attributes.initialReviewSlaDays = Number(body.initialReviewSlaDays)
   if (Object.hasOwn(body, 'participationCertificateEnabled'))
     attributes.participationCertificateEnabled = body.participationCertificateEnabled
+  if (filled(body.entryFee)) attributes.entryFee = body.entryFee
   return attributes
 }
 
@@ -119,6 +122,7 @@ export function createCycle(user, body) {
     announcementAt: null,
     scaleKind: version.scaleKind,
     ...cycleDefaults(),
+    entryFee: defaultEntryFee(),
     participationCertificateEnabled: false,
     ...attributes,
     status: 'draft',

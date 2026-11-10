@@ -76,6 +76,7 @@ export const PERMISSIONS = {
   SETTINGS_ASSESSMENT_MANAGE: 'settings.assessment.manage',
   SETTINGS_CERTIFICATES_MANAGE: 'settings.certificates.manage',
   SETTINGS_PAYMENT_MANAGE: 'settings.payment.manage',
+  SETTINGS_PRICES_MANAGE: 'settings.prices.manage',
   SETTINGS_SMS_MANAGE: 'settings.sms.manage',
   SETTINGS_EMAIL_MANAGE: 'settings.email.manage',
   SETTINGS_NOTIFICATIONS_MANAGE: 'settings.notifications.manage',

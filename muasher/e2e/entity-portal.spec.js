@@ -60,7 +60,8 @@ test.describe('entity portal shell', () => {
     await open(page, '/dashboard', '.journey-hero__title')
     await expect(page.locator('.sidebar')).toHaveCount(0)
     const nav = page.locator('[data-testid="portal-side-nav"]')
-    await expect(nav.locator('.side-nav__list').first().locator('.side-nav-item')).toHaveCount(8)
+    await expect(nav.locator('.side-nav__list').first().locator('.side-nav-item')).toHaveCount(10)
+    await expect(nav.locator('[data-testid="side-nav-paths"]')).toBeVisible()
     await expect(nav.locator('.side-nav-item.is-active')).toHaveAttribute('href', '/dashboard')
     await expect(
       nav.locator('.side-nav-item[href="/messages"] .side-nav-item__count'),
@@ -122,25 +123,16 @@ test.describe('journey home', () => {
     await signIn(page, testInfo)
   })
 
-  test('derives the stations and the next step from the real contracts', async ({
-    page,
-  }, testInfo) => {
+  test('shows the three path tiles and the server-ranked next step', async ({ page }) => {
     await open(page, '/dashboard', '[data-testid="next-step"]')
-    await expect(page.locator('.journey-station')).toHaveCount(4)
-    await expect(page.locator('.journey-station--current')).toHaveCount(1)
-    await expect(page.locator('.journey-path__badge')).toHaveText(
-      localeOf(testInfo) === 'en' ? 'Station 3 of 4' : 'المحطة 3 من 4',
-    )
+    await expect(page.locator('.path-tile')).toHaveCount(3)
+    await expect(page.locator('.journey-path')).toHaveCount(0)
     const next = page.locator('[data-testid="next-step"]')
-    await expect(next.locator('[role="progressbar"]')).toBeVisible()
+    await expect(next).toHaveAttribute('data-rank', '3')
     await expect(next.locator('.next-step__action--primary')).toHaveAttribute(
       'href',
-      '/assessment/accredited/form/9101',
+      '/paths/accredited/9101?tab=request',
     )
-    await next.locator('.next-step__action--ghost').click()
-    await expect(page.locator('.station-guide__step')).toHaveCount(4)
-    await page.keyboard.press('Escape')
-    await expect(page.locator('.station-guide')).toHaveCount(0)
   })
 
   test('opens a notification from the glance card and marks it read', async ({ page }) => {

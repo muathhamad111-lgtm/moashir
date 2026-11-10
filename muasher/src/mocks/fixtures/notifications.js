@@ -411,7 +411,7 @@ export const entityNotificationsFixture = [
       ar: 'يمكنك الآن رفع شواهد كل معيار فرعي، ثم إرسال الطلب إلى المقيّم.',
       en: 'You can now upload the evidence of every sub-criterion and send the request to the assessor.',
     },
-    link: '/assessment/accredited',
+    link: '/paths/accredited',
   },
   {
     code: 'PAY-06',
@@ -454,7 +454,7 @@ export const entityNotificationsFixture = [
       ar: 'اطّلع على نتيجة كل معيار في صفحة النتيجة.',
       en: 'Review the detailed result of every criterion on the result page.',
     },
-    link: '/assessment/history',
+    link: '/paths/self',
   },
   {
     code: 'REG-03',

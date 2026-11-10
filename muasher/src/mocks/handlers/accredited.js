@@ -10,8 +10,6 @@ import { signedInActor } from '../stores/assessments/assessmentAccess'
 import { findAssessment } from '../stores/assessments/assessmentsStore'
 import { assessmentResource } from '../stores/assessments/selfSerializers'
 import { findEntity } from '../stores/entitiesStore'
-import { financeState } from '../stores/finance/financeState'
-import { expireDueOrders } from '../stores/finance/paymentLifecycle'
 import {
   ACCREDITED_PERMISSIONS,
   authorizeAccreditedCurrent,
@@ -38,12 +36,20 @@ import {
 import { bundleDownload, bundleOf, requestBundle } from '../stores/accredited/evidenceBundles'
 import { isPositiveInteger } from '../stores/accredited/accreditedValidation'
 import { runAccreditedSchedule } from '../stores/accredited/scheduler'
+import { startFreeAccredited } from '../stores/accredited/accreditedOpening'
 import { accreditedProgressOf } from '../stores/accredited/accreditedProgress'
+import { isFrozen } from '../stores/assessments/assessmentsStore'
+import { awaitingPaymentOf } from '../stores/periodic/awaitingPayment'
+import {
+  accreditedPricing,
+  applyOf,
+  periodicOf,
+  submissionOf,
+} from '../stores/periodic/accreditedPeriodic'
 
 const ASSESSMENT = '/api/v1/assessments/:assessment'
 const NUMERIC_ID = /^\d+$/
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-const OPEN_ORDER = ['created', 'pending', 'under-review']
 
 function boundRecord(params) {
   runAccreditedSchedule()
@@ -62,25 +68,6 @@ function uuidRoute(key, resolve) {
   return (info) => (UUID.test(info.params[key]) ? route(info) : undefined)
 }
 
-function awaitingPaymentOf(entityId) {
-  expireDueOrders()
-  const order = financeState().payments.find(
-    (payment) =>
-      payment.entityId === entityId &&
-      payment.purpose === 'accredited' &&
-      OPEN_ORDER.includes(payment.status),
-  )
-  return order
-    ? {
-        paymentId: order.id,
-        reference: order.reference,
-        channel: order.channel ?? 'electronic',
-        status: order.status,
-        expiresAt: order.expiresAt,
-      }
-    : null
-}
-
 function latestClosedOf(records) {
   const closed = records.filter((record) => !isAccreditedOpen(record.status))
   const stamp = (record) => record.completedAt ?? record.refundedAt ?? record.updatedAt
@@ -93,12 +80,21 @@ function currentResource(user) {
   const records = accreditedOf(user.entityId)
   const active = records.find((record) => isAccreditedOpen(record.status)) ?? null
   const closed = latestClosedOf(records)
+  const entityId = Number(user.entityId)
+  const awaitingPayment = awaitingPaymentOf(entityId)
+  const progress = active ? accreditedProgressOf(active) : null
   return {
-    awaitingPayment: awaitingPaymentOf(Number(user.entityId)),
-    active: active
-      ? { ...assessmentResource(active), progress: accreditedProgressOf(active) }
-      : null,
+    awaitingPayment,
+    active: active ? { ...assessmentResource(active), progress } : null,
     latestClosed: closed ? assessmentResource(closed) : null,
+    periodic: periodicOf(entityId),
+    submission: submissionOf({
+      active: active ? { ...active, remaining: progress?.remaining?.length ?? 0 } : null,
+      awaitingPayment,
+      entityFrozen: active ? isFrozen(active) : false,
+    }),
+    apply: applyOf({ active, awaitingPayment, entityId }),
+    pricing: accreditedPricing(),
   }
 }
 
@@ -122,6 +118,16 @@ function boundBundle(user, record, params) {
 }
 
 export const accreditedHandlers = [
+  http.post(
+    '/api/v1/assessments/accredited',
+    assessmentRoute(() => {
+      const user = signedInActor()
+      authorizeAccreditedCurrent(user)
+      runAccreditedSchedule()
+      return envelope(assessmentResource(startFreeAccredited(user)), {}, { status: 201 })
+    }),
+  ),
+
   http.get(
     '/api/v1/assessments/accredited/current',
     assessmentRoute(() => {

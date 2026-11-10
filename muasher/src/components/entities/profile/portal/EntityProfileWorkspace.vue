@@ -76,7 +76,7 @@ async function switchTab(value) {
   <section class="portal-area entity-profile-hub">
     <PortalAreaHeader
       :breadcrumbs="breadcrumbs"
-      :eyebrow="t('portal.profile.eyebrow')"
+      :eyebrow="t('portal.profile.eyebrowShort')"
       :title="t('portal.profile.title', { name: entityName })"
       :subtitle="t('portal.profile.subtitle')"
       :tabs="tabs"

@@ -10,7 +10,7 @@ use App\Models\Finance\Payment;
 
 final readonly class ShowMyPayment
 {
-    public const array RELATIONS = ['receipt', 'bankTransfer.bankAccount', 'bankTransfer.proofFile'];
+    public const array RELATIONS = ['receipt', 'bankTransfer.bankAccount', 'bankTransfer.proofFile', 'awardCycle'];
 
     public function __construct(private OpenedRequestLookup $openedRequests) {}
 

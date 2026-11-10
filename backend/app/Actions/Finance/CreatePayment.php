@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Finance;
 
+use App\Data\Finance\CardOrder;
 use App\Data\Finance\CreatedPayment;
 use App\Data\Finance\OpenedOrder;
 use App\Data\Finance\OrderTerms;
@@ -20,6 +21,7 @@ use App\Models\Identity\User;
 use App\Services\Finance\CheckoutOpener;
 use App\Services\Finance\CheckoutPresenter;
 use App\Services\Finance\FinanceSettings;
+use App\Services\Finance\OrderAdmission;
 use App\Services\Finance\PayingEntityGuard;
 use App\Services\Finance\PaymentCancellation;
 use App\Services\Finance\PaymentChannelAvailability;
@@ -43,10 +45,13 @@ final readonly class CreatePayment
         private PaymentCancellation $cancellation,
         private PaymentRowLock $locks,
         private PaymentChannelAvailability $channels,
+        private OrderAdmission $admission,
     ) {}
 
-    public function handle(User $actor, PaymentPurpose $purpose, string $idempotencyKey, string $locale): CreatedPayment
+    public function handle(User $actor, CardOrder $order, string $locale): CreatedPayment
     {
+        $purpose = $order->purpose;
+        $idempotencyKey = $order->idempotencyKey;
         $replay = $this->replayOf($actor, $purpose, $idempotencyKey);
 
         if ($replay instanceof Payment) {
@@ -65,10 +70,11 @@ final readonly class CreatePayment
             throw PaymentRejected::purposeNotAvailable();
         }
 
-        $quote = $this->prices->quote($purpose);
+        $cycle = $this->admission->admit($actor, $entity, $purpose, $order->awardCycleId);
+        $quote = $this->prices->quote($purpose, $cycle);
 
         try {
-            $terms = new OrderTerms($purpose, PaymentChannel::Electronic, $quote, $mode, $idempotencyKey);
+            $terms = new OrderTerms($purpose, PaymentChannel::Electronic, $quote, $mode, $idempotencyKey, $cycle);
             $order = DB::transaction(fn (): OpenedOrder => $this->orders->open($actor, $entity, $terms));
         } catch (UniqueConstraintViolationException) {
             return $this->present($this->replayOf($actor, $purpose, $idempotencyKey) ?? throw PaymentRejected::checkoutInProgress(), $locale, true, false);

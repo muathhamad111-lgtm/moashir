@@ -18,14 +18,6 @@ function localeOf(testInfo) {
   return isEn(testInfo) ? 'en' : 'ar'
 }
 
-const AL_BIRR_HISTORY = [
-  'SLF-2026-000002',
-  'SLF-2026-000001',
-  'ACC-2026-000001',
-  'ACC-2025-000012',
-  'ADV-2025-000001',
-]
-
 function seedEntity(page, testInfo, entityId = 5001) {
   return seedSignedIn(
     page,
@@ -139,19 +131,9 @@ test('the entity completes the draft, confirms and sees the result immediately, 
   })
 
   await page.locator('.self-result__actions .btn--secondary').click()
-  await expect(page).toHaveURL(/\/assessment\/history$/)
-  await page.locator('[role="tab"]').nth(1).click()
-  await expect(page.locator('.history-item')).toHaveCount(AL_BIRR_HISTORY.length)
-  expect((await page.locator('.history-item__number').allInnerTexts()).toSorted()).toEqual(
-    AL_BIRR_HISTORY.toSorted(),
-  )
-  await page.locator('.history-item').first().locator('.status-history__toggle').click()
-  await expect(
-    page.locator('.history-item').first().locator('.assessment-timeline__step'),
-  ).toHaveCount(3)
-  await expect(
-    page.locator('.history-item').first().locator('.assessment-timeline__actor').first(),
-  ).toHaveText(isEn(testInfo) ? 'The entity' : 'الجهة')
+  await expect(page).toHaveURL(/\/paths\/self$/)
+  await expect(page.locator('[data-testid="path-requests"]')).toBeVisible()
+  await expect(page.locator('[data-testid^="path-row-request-"]').first()).toBeVisible()
   await page.screenshot({
     path: `test-results/self-history-${suffixOf(testInfo)}.png`,
     fullPage: true,

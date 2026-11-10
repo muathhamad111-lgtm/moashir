@@ -1,8 +1,6 @@
 import { array, object, string } from 'yup'
-import { FINANCE_SETTINGS_RULES } from '@/constants/finance'
 import { PATH_ENTITY_TEXTS, PATH_TEXT_MAX } from '@/constants/paths'
 import { integerField } from '@/utils/accredited/assessmentSettingsForm'
-import { normalizedDecimal } from '@/utils/finance/financeSettingsForm'
 import { toWesternDigits } from '@/utils/numerals'
 
 const INTEGER_FIELDS = {
@@ -32,23 +30,7 @@ function textPair(t) {
   )
 }
 
-function priceField(t, stored) {
-  const rule = string().transform((value) => toWesternDigits(value ?? '').trim())
-  const filled = stored ? rule.required(t('validation.required')) : rule
-  return filled
-    .test(
-      'format',
-      t('finance.settings.validation.price'),
-      (value) => !value || FINANCE_SETTINGS_RULES.PRICE_INPUT_PATTERN.test(value),
-    )
-    .test(
-      'positive',
-      t('finance.settings.validation.pricePositive'),
-      (value) => !value || Number(value) > 0,
-    )
-}
-
-export function pathSettingsSchema(t, settings, { priceEditable = false } = {}) {
+export function pathSettingsSchema(t, settings) {
   const limits = settings?.reviewSlaLimits ?? { min: 1, max: 120 }
   const bounds = settings?.uploadLimitBounds ?? { maxFileMb: 100, maxFilesPerSub: 50 }
   return object({
@@ -56,7 +38,6 @@ export function pathSettingsSchema(t, settings, { priceEditable = false } = {}) 
     uploadMaxFileMb: integerField(t, { min: 1, max: bounds.maxFileMb }),
     evidenceMaxFilesPerSub: integerField(t, { min: 1, max: bounds.maxFilesPerSub }),
     evidenceAllowedTypes: array().min(1, t('settings.assessment.validation.types')),
-    ...(settings?.isPaid && priceEditable ? { price: priceField(t, Boolean(settings.price)) } : {}),
     entityTexts: object(Object.fromEntries(PATH_ENTITY_TEXTS.map((key) => [key, textPair(t)]))),
   })
 }
@@ -67,7 +48,6 @@ export function pathSettingsValues(settings) {
       Object.entries(INTEGER_FIELDS).map(([field, read]) => [field, String(read(settings) ?? '')]),
     ),
     evidenceAllowedTypes: [...settings.uploadLimits.allowedTypes],
-    price: settings.price?.priceBeforeVat ?? '',
     entityTexts: Object.fromEntries(
       PATH_ENTITY_TEXTS.map((key) => [
         key,
@@ -111,15 +91,10 @@ function changedIntegers(settings, values) {
   )
 }
 
-export function changedPathSettings(settings, values, { priceEditable = false } = {}) {
+export function changedPathSettings(settings, values) {
   const changes = changedIntegers(settings, values)
   if (!sameTypes(values.evidenceAllowedTypes, settings.uploadLimits.allowedTypes))
     changes.evidenceAllowedTypes = [...values.evidenceAllowedTypes]
-  if (settings.isPaid && priceEditable) {
-    const price = normalizedDecimal(values.price)
-    if (price && price !== normalizedDecimal(settings.price?.priceBeforeVat ?? ''))
-      changes.price = price
-  }
   const texts = changedTexts(settings, values)
   if (Object.keys(texts).length) changes.entityTexts = texts
   return changes

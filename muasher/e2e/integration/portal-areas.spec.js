@@ -12,6 +12,7 @@ import { registerEntity } from './support/entities'
 import { api as callApi } from './support/api'
 import { squarePng } from './support/images'
 import { chooseNamed } from '../support/dropdown'
+import { paced } from './support/pacing'
 
 const RUN = Date.now().toString(36)
 const LICENSE = String(Date.now()).slice(-9)
@@ -26,6 +27,8 @@ const ALLOWED = [GUEST_SESSION_PROBE, PAGE_NOT_PUBLISHED, ...FOOTER_LEGAL_PROBES
 const UNKNOWN_CODE = 'AAAA-BBBB-CCCC-DDDD-EEEE-FFFF-GGGG'
 const LEGAL_KINDS = ['terms', 'privacy']
 const BLOCK_TYPES = ['heading', 'paragraph', 'list', 'table']
+const STATUS_CARD = '[data-testid="path-status-card"]'
+const PRIMARY_ACTION = '[data-testid="path-primary-action"]'
 
 const session = {}
 
@@ -34,6 +37,11 @@ test.describe.configure({ mode: 'serial' })
 async function settled(page) {
   await session.api.idle()
   await expect(page.locator('[aria-busy="true"], .skeleton')).toHaveCount(0)
+}
+
+async function visit(page, path) {
+  await paced('pageLoad')
+  await page.goto(path)
 }
 
 function shot(page, name) {
@@ -86,7 +94,7 @@ test('the profile tabs save the registry details and the logo on the real contra
 
 test('a signed-in message opens its thread and the follow-up reaches the backend', async () => {
   const { page, api } = session
-  await page.goto('/messages')
+  await visit(page, '/messages')
   await settled(page)
   await expect(page.locator('[role="tab"]')).toHaveCount(2)
   await page.locator('.portal-area__actions .btn--primary').click()
@@ -111,25 +119,55 @@ test('a signed-in message opens its thread and the follow-up reaches the backend
   expect(api.unexpected(ALLOWED)).toEqual([])
 })
 
-test('the assessments, payments and certificates hubs read the tab counts from the backend', async () => {
-  const { page, api } = session
-  await page.goto('/assessment/history')
+function sideNavLink(page, path) {
+  return page.locator(`[data-testid="portal-side-nav"] a[href="${path}"]`)
+}
+
+async function openFromSideNav(page, path) {
+  await sideNavLink(page, path).click()
+  await expect(page).toHaveURL(new RegExp(`${path}$`))
   await settled(page)
-  await expect(page.locator('[role="tab"] .area-tabs__count')).toHaveCount(3)
-  await expect(page.locator('.assessment-start__card').first()).toBeVisible()
-  await shot(page, 'assessments')
-  await page.goto('/payments')
+}
+
+async function openPathPage(page, path) {
+  await openFromSideNav(page, `/paths/${path}`)
+  await expect(page.locator(`[data-testid="path-page-${path}"] ${STATUS_CARD}`)).toBeVisible()
+  await expect(page.locator('[data-testid="path-requests"]')).toBeVisible()
+  await expect(page.locator('[data-testid="path-requests"] .error-state')).toHaveCount(0)
+}
+
+test('the path pages, the payments and certificates hubs read their lists from the backend', async () => {
+  const { page, api } = session
+  await visit(page, '/assessment/history')
+  await expect(page).toHaveURL(/\/dashboard$/)
+  await expect(page.locator('[data-testid="path-tiles"]')).toBeVisible()
+  await settled(page)
+  await openPathPage(page, 'self')
+  await expect(page.locator(STATUS_CARD)).toHaveAttribute('data-state', 'start')
+  await expect(page.locator(PRIMARY_ACTION)).toBeVisible()
+  await expect(page.locator('[data-testid="path-requests"] .empty-state')).toBeVisible()
+  await shot(page, 'path-self')
+  await openPathPage(page, 'accredited')
+  await expect(page.locator(PRIMARY_ACTION)).toHaveCount(0)
+  await expect(
+    page.locator('[data-testid="path-header-accredited"] .path-price__muted'),
+  ).toBeVisible()
+  await shot(page, 'path-accredited')
+  await openPathPage(page, 'award')
+  await expect(page.locator(STATUS_CARD)).toHaveAttribute('data-state', 'none')
+  await shot(page, 'path-award')
+  await openFromSideNav(page, '/payments')
   await expect(page.locator('[role="tab"] .area-tabs__count')).toHaveCount(4)
   await expect(page.locator('.payment-stats__tile')).toHaveCount(4)
   await expect(page.locator('.payments-hub__records .empty-state')).toBeVisible()
   await settled(page)
   await shot(page, 'payments')
-  await page.goto('/certificates')
-  await settled(page)
+  await openFromSideNav(page, '/certificates')
   await expect(page.locator('[role="tab"] .area-tabs__count')).toHaveCount(3)
   await expect(page.locator('.verify-guide')).toBeVisible()
   await shot(page, 'certificates')
   backend(/^\/api\/v1\/assessments$/)
+  backend(/^\/api\/v1\/dashboard\/summary$/)
   backend(/^\/api\/v1\/payments\/mine$/)
   backend(/^\/api\/v1\/certificates$/)
   expect(api.unexpected(ALLOWED)).toEqual([])
@@ -149,16 +187,16 @@ test('the verification and legal pages stay reachable while the public site wait
     const types = [...body.data.body.ar, ...body.data.body.en].map((block) => block.type)
     expect(types.filter((type) => !BLOCK_TYPES.includes(type))).toEqual([])
   }
-  await page.goto('/assessment/history')
+  await visit(page, '/paths/self')
   await settled(page)
   await expect(page.locator('.portal-footer a[href="/privacy"]')).toHaveCount(1)
-  await page.goto(`/verify/${UNKNOWN_CODE}`)
+  await visit(page, `/verify/${UNKNOWN_CODE}`)
   await expect(page.locator('.verification-result')).toBeVisible()
   await expect(page).toHaveURL(new RegExp(`/verify/${UNKNOWN_CODE}$`))
-  await page.goto('/privacy')
+  await visit(page, '/privacy')
   await expect(page.locator('.legal-page')).toBeVisible()
   await expect(page).toHaveURL(/\/privacy$/)
-  await page.goto('/kpis')
+  await visit(page, '/kpis')
   await expect(page).toHaveURL(/\/maintenance$/)
   await settled(page)
   await shot(page, 'legal-maintenance')

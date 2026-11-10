@@ -172,9 +172,10 @@ test.describe('excellence tools — empty states and entry points', () => {
     await open(page, '/dashboard', '[data-testid="hero-next-level"]')
     await page.locator('[data-testid="hero-next-level"]').click()
     await expect(page).toHaveURL(/\/tools\/strengths-and-gaps/)
-    await open(page, `/assessment/accredited/result/${LATEST}`, '[data-testid="result-tools"]')
-    await page.locator('[data-testid="result-tools"] a').first().click()
-    await expect(page).toHaveURL(new RegExp(`/tools/board-reports\\?result=${LATEST}`))
+    await open(page, `/paths/accredited/${LATEST}?tab=tools`, '[data-testid="request-tab-tools"]')
+    await expect(
+      page.locator('[data-testid="request-tab-tools"] > .tabs > .tabs__list > [role="tab"]'),
+    ).toHaveCount(3)
   })
 })
 

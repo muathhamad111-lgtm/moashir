@@ -253,6 +253,10 @@ return [
             'title' => 'Criteria update of restored requests failed',
             'body' => 'The criteria update of the open requests of :entity (:reference) did not complete after several attempts. The drafts stay on their current criteria version and can be submitted again (:count released). Review the technical log and retry the failed job.',
         ],
+        'paid_request_opening_failed' => [
+            'title' => 'Paid request could not be opened',
+            'body' => 'The request of the paid payment :reference could not be opened because no criteria version is published. Publish the criteria, then record a refund or contact the entity.',
+        ],
         'accredited_opening_failed' => [
             'title' => 'Accredited request could not be opened',
             'body' => 'The accredited assessment request of the paid payment :reference could not be opened because no criteria version is published. Publish the criteria; the request opens automatically within ten minutes.',

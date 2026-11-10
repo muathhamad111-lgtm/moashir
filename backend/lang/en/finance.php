@@ -8,7 +8,9 @@ return [
         'SAR' => 'SAR',
     ],
     'purposes' => [
+        'self' => 'Self assessment',
         'accredited' => 'Accredited assessment',
+        'award' => 'Award entry fee',
         'bag' => 'Quick Excellence Kit',
     ],
     'statuses' => [

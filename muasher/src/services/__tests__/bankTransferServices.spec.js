@@ -71,6 +71,7 @@ describe('bank-transfer mappers', () => {
       channels: ['bank_transfer'],
       bankAccounts: [{ ...ACCOUNT, accountNumber: null, payerNote: null }],
       unifiedNumber: '7000000000',
+      pricing: null,
     })
     const staff = toStaffTransfer({ id: 'p-1', entity: { name: { ar: 'جمعية' } } })
     expect(staff.entity).toEqual({
@@ -139,7 +140,9 @@ describe('paymentsService bank transfer calls', () => {
     expect((await paymentsService.checkoutOptions()).data.channels).toEqual(['electronic'])
     await paymentsService.cancel('p-1')
     await paymentsService.requestTransferProofDownload('p-1')
-    expect(apiClient.get).toHaveBeenCalledWith('/payments/checkout-options')
+    expect(apiClient.get).toHaveBeenCalledWith('/payments/checkout-options', {
+      params: undefined,
+    })
     expect(apiClient.post.mock.calls.map((call) => call[0])).toEqual([
       '/payments/p-1/cancel',
       '/payments/p-1/bank-transfer/proof/download',

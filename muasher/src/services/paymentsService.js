@@ -16,9 +16,14 @@ function withTransfer(envelope) {
   }
 }
 
-function transferForm({ purpose, bankAccountId, proof }) {
+function orderPayload({ purpose, awardCycleId = null }) {
+  return awardCycleId ? { purpose, awardCycleId } : { purpose }
+}
+
+function transferForm({ purpose, awardCycleId = null, bankAccountId, proof }) {
   const form = new FormData()
   form.append('purpose', purpose)
+  if (awardCycleId) form.append('awardCycleId', String(awardCycleId))
   form.append('channel', PAYMENT_CHANNELS.BANK_TRANSFER)
   form.append('bankAccountId', bankAccountId)
   form.append('proof', proof)
@@ -30,17 +35,24 @@ export const paymentsService = {
     return read('listMine', () => apiClient.get('/payments/mine', { params }), params)
   },
 
-  create(purpose, idempotencyKey) {
-    const payload = { purpose }
+  create(order, idempotencyKey) {
+    const payload = orderPayload(order)
     const headers = { [IDEMPOTENCY_HEADER]: idempotencyKey }
     return write('create', () => apiClient.post('/payments', payload, { headers }), payload, [
+      NOT_FOUND,
       UNAVAILABLE,
     ])
   },
 
   submitTransfer(order, idempotencyKey, { onUploadProgress } = {}) {
     const headers = { [IDEMPOTENCY_HEADER]: idempotencyKey }
-    const shape = { purpose: null, channel: null, bankAccountId: null, proof: null }
+    const shape = {
+      purpose: null,
+      awardCycleId: null,
+      channel: null,
+      bankAccountId: null,
+      proof: null,
+    }
     return write(
       'submitTransfer',
       () => apiClient.post('/payments', transferForm(order), { headers, onUploadProgress }),
@@ -48,10 +60,14 @@ export const paymentsService = {
     ).then(withTransfer)
   },
 
-  checkoutOptions() {
-    return read('checkoutOptions', () => apiClient.get('/payments/checkout-options')).then(
-      (envelope) => ({ ...envelope, data: toCheckoutOptions(envelope.data) }),
-    )
+  checkoutOptions(order = null) {
+    const params = order ? orderPayload(order) : undefined
+    return read(
+      'checkoutOptions',
+      () => apiClient.get('/payments/checkout-options', { params }),
+      params,
+      [NOT_FOUND],
+    ).then((envelope) => ({ ...envelope, data: toCheckoutOptions(envelope.data) }))
   },
 
   cancel(paymentId) {

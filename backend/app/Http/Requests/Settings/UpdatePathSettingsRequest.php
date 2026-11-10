@@ -8,16 +8,10 @@ use App\Data\Assessments\UploadLimits;
 use App\Data\Settings\PathSettingsUpdate;
 use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Files\EvidenceFileType;
-use App\Enums\Finance\PaymentPurpose;
-use App\Enums\Identity\Ability;
-use App\Enums\Settings\FinanceSettingField;
 use App\Enums\Settings\PathEntityText;
 use App\Models\Identity\User;
-use App\Rules\PriceBeforeVat;
 use App\Services\Settings\AssessmentSettingsReader;
-use App\Services\Settings\PathSettingsReader;
 use App\Support\ValueObjects\LocalizedText;
-use App\Support\ValueObjects\Money;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -27,16 +21,7 @@ final class UpdatePathSettingsRequest extends FormRequest
 
     public function authorize(): bool
     {
-        $user = $this->user();
-        $purpose = PathSettingsReader::purposeOf($this->settingsPath());
-
-        if (! $user instanceof User) {
-            return false;
-        }
-
-        return ! $this->has(PathSettingsUpdate::PRICE)
-            || ! $purpose instanceof PaymentPurpose
-            || $user->can(Ability::EditFinanceSettingField->value, FinanceSettingField::priceOf($purpose));
+        return $this->user() instanceof User;
     }
 
     /**
@@ -52,13 +37,19 @@ final class UpdatePathSettingsRequest extends FormRequest
             'evidence_allowed_types' => ['sometimes', 'required', 'array', 'min:1', 'max:'.count(EvidenceFileType::cases())],
             'evidence_allowed_types.*' => ['required', 'string', 'distinct', Rule::enum(EvidenceFileType::class)],
             'evidence_max_files_per_sub' => ['sometimes', 'required', 'integer', 'between:1,'.UploadLimits::MAX_FILES_PER_SUB],
-            PathSettingsUpdate::PRICE => PathSettingsReader::purposeOf($this->settingsPath()) instanceof PaymentPurpose
-                ? ['sometimes', 'required', new PriceBeforeVat]
-                : ['prohibited'],
+            PathSettingsUpdate::PRICE => ['prohibited'],
             self::TEXTS => ['sometimes', 'required', 'array:'.implode(',', PathEntityText::values())],
             ...$this->textRules(),
             'reason' => ['nullable', 'string', 'min:10', 'max:1000'],
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [PathSettingsUpdate::PRICE.'.prohibited' => __('validation.custom.price.moved')];
     }
 
     public function settingsPath(): AssessmentPath
@@ -75,7 +66,6 @@ final class UpdatePathSettingsRequest extends FormRequest
             $this->filled('upload_max_file_mb') ? $this->integer('upload_max_file_mb') : null,
             $this->has('evidence_allowed_types') ? $this->types() : null,
             $this->filled('evidence_max_files_per_sub') ? $this->integer('evidence_max_files_per_sub') : null,
-            $this->filled(PathSettingsUpdate::PRICE) ? new Money($this->string(PathSettingsUpdate::PRICE)->toString()) : null,
             $this->textChanges(),
             $this->filled('reason') ? $this->string('reason')->trim()->toString() : null,
         );

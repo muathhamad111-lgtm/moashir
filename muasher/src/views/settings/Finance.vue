@@ -8,6 +8,10 @@ import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import FinanceSettingsPreview from '@/components/finance/FinanceSettingsPreview.vue'
 import { useFinanceSettings } from '@/composables/useFinanceSettings'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import { RouterLink } from 'vue-router'
+import { usePermissions } from '@/composables/usePermissions'
+import { PERMISSIONS } from '@/constants/permissionKeys'
+import { ROUTE_NAMES } from '@/constants/routeNames'
 
 const { t } = useI18n()
 const {
@@ -23,7 +27,8 @@ const {
   confirmReason,
 } = useFinanceSettings()
 
-const currency = computed(() => t('finance.currency.SAR'))
+const { can } = usePermissions()
+const canEditPrices = computed(() => can(PERMISSIONS.SETTINGS_PRICES_MANAGE))
 
 function hintFor(field, hint) {
   return editable.value.has(field) ? hint : `${hint} ${t('finance.settings.readOnly')}`
@@ -47,31 +52,17 @@ onMounted(load)
       novalidate
       @submit.prevent="submit"
     >
-      <fieldset class="settings-form__group">
-        <legend class="settings-form__legend">{{ t('finance.settings.pricesTitle') }}</legend>
-        <p class="settings-form__note" role="note">
-          <AppIcon name="info-circle" />
-          {{ t('finance.settings.pricesNote') }}
-        </p>
-        <div class="settings-form__grid">
-          <FieldInput
-            name="accreditedPrice"
-            :label="t('finance.settings.accreditedPrice')"
-            :hint="hintFor('accreditedPrice', t('finance.settings.priceHint', { currency }))"
-            inputmode="decimal"
-            input-dir="ltr"
-            :disabled="!editable.has('accreditedPrice')"
-          />
-          <FieldInput
-            name="bagPrice"
-            :label="t('finance.settings.bagPrice')"
-            :hint="hintFor('bagPrice', t('finance.settings.priceHint', { currency }))"
-            inputmode="decimal"
-            input-dir="ltr"
-            :disabled="!editable.has('bagPrice')"
-          />
-        </div>
-      </fieldset>
+      <p class="settings-form__note" role="note" data-testid="finance-prices-moved">
+        <AppIcon name="info-circle" />
+        <span>{{ t('finance.settings.pricesMoved') }}</span>
+        <RouterLink
+          v-if="canEditPrices"
+          class="settings-form__link"
+          :to="{ name: ROUTE_NAMES.ADMIN_SETTINGS_PRICES }"
+        >
+          {{ t('finance.settings.openPrices') }}
+        </RouterLink>
+      </p>
 
       <fieldset class="settings-form__group">
         <legend class="settings-form__legend">{{ t('finance.settings.taxTitle') }}</legend>

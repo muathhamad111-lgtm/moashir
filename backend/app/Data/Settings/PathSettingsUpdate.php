@@ -8,7 +8,6 @@ use App\Enums\Files\EvidenceFileType;
 use App\Enums\Settings\PathEntityText;
 use App\Enums\Settings\PathSetting;
 use App\Support\ValueObjects\LocalizedText;
-use App\Support\ValueObjects\Money;
 
 final readonly class PathSettingsUpdate
 {
@@ -23,7 +22,6 @@ final readonly class PathSettingsUpdate
         public ?int $maxFileMegabytes = null,
         public ?array $evidenceTypes = null,
         public ?int $maxFilesPerSub = null,
-        public ?Money $price = null,
         public array $textChanges = [],
         public ?string $reason = null,
     ) {}
@@ -45,6 +43,6 @@ final readonly class PathSettingsUpdate
 
     public function isEmpty(): bool
     {
-        return $this->scalarValues() === [] && ! $this->price instanceof Money && $this->textChanges === [];
+        return $this->scalarValues() === [] && $this->textChanges === [];
     }
 }

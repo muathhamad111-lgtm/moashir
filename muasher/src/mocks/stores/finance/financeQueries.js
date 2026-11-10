@@ -27,21 +27,23 @@ const MAX_PER_PAGE = 100
 const SEARCH_MIN = 2
 const SEARCH_MAX = 100
 
+const PURPOSES = ['accredited', 'bag', 'self', 'award']
+
 export const LIST_RULES = {
   mine: {
     status: PAYMENT_STATUS_VALUES,
-    purpose: ['accredited', 'bag'],
+    purpose: PURPOSES,
   },
   transactions: {
     status: PAYMENT_STATUS_VALUES,
-    purpose: ['accredited', 'bag'],
+    purpose: PURPOSES,
     channel: ['electronic', 'bank_transfer'],
     method: ['creditcard', 'mada', 'applepay', 'stcpay'],
     mode: ['test', 'live'],
     from: 'date',
     to: 'date',
   },
-  refunds: { purpose: ['accredited', 'bag'], from: 'date', to: 'date' },
+  refunds: { purpose: PURPOSES, from: 'date', to: 'date' },
   events: {
     source: ['checkout', 'verification', 'webhook', 'expiry', 'reconciliation', 'admin'],
     result: ['applied', 'pending', 'ignored', 'rejected', 'unmatched', 'late_payment'],

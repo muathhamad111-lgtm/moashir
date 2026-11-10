@@ -15,6 +15,7 @@ import {
   transferProofFilesSeed,
   transfersSeed,
 } from '../../fixtures/bankTransfers'
+import { priceVersionsSeed } from '../../fixtures/priceVersions'
 import { issueSeedReceipts } from './receiptSeed'
 
 export const SEEDED_CHANNELS = Object.freeze(['electronic', 'bank_transfer'])
@@ -45,11 +46,13 @@ function seededState() {
     providerPayments: providerPaymentsSeed(),
     carts: abandonedCartsSeed(),
     settings: { ...financeSettingsSeed },
+    priceVersions: priceVersionsSeed(),
     counters: {
       payment: { [FINANCE_YEAR]: payments.length },
       receipt: { [FINANCE_YEAR]: issued },
       event: paymentEventsSeed().length,
       export: 0,
+      priceVersion: priceVersionsSeed().length,
     },
   }
 }
@@ -63,7 +66,9 @@ function restored() {
   if (!raw) return null
   try {
     const parsed = JSON.parse(raw)
-    return Array.isArray(parsed?.bankAccounts) ? parsed : null
+    return Array.isArray(parsed?.bankAccounts) && Array.isArray(parsed?.priceVersions)
+      ? parsed
+      : null
   } catch {
     return null
   }

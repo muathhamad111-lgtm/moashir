@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Data\Paths;
 
+use App\Enums\Assessments\AssessmentPath;
+
 final readonly class NextStepTarget
 {
     public const string SELF = 'paths.self';
@@ -25,6 +27,15 @@ final readonly class NextStepTarget
      * @param  array<string, string>  $query
      */
     public function __construct(public string $route, public array $params = [], public array $query = []) {}
+
+    public static function ofPath(AssessmentPath $path): self
+    {
+        return new self(match ($path) {
+            AssessmentPath::SelfAssessment => self::SELF,
+            AssessmentPath::Accredited => self::ACCREDITED,
+            AssessmentPath::Advanced => self::AWARD,
+        });
+    }
 
     public static function accreditedRequest(int $assessmentId): self
     {

@@ -98,6 +98,7 @@ enum PermissionKey: string
     case SettingsSmsManage = 'settings.sms.manage';
     case SettingsEmailManage = 'settings.email.manage';
     case SettingsNotificationsManage = 'settings.notifications.manage';
+    case SettingsPricesManage = 'settings.prices.manage';
     case MessagingCampaignsSend = 'messaging.campaigns.send';
 
     case PaymentsOwnView = 'payments.own.view';
@@ -130,6 +131,7 @@ enum PermissionKey: string
         'messaging.campaigns.send',
         'contact.messages.manage',
         'finance.transfers.review',
+        'settings.prices.manage',
     ];
 
     private const array NON_CONFIDENTIAL = [
@@ -167,6 +169,7 @@ enum PermissionKey: string
         'settings.assessment.manage',
         'settings.certificates.manage',
         'settings.notifications.manage',
+        'settings.prices.manage',
         'payments.own.view',
         'payments.own.create',
     ];

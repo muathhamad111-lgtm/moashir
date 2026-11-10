@@ -131,6 +131,7 @@ async function approve() {
         :national="national"
         :can-announce="announces"
         :busy="busy === 'announce'"
+        :locked="Boolean(busy)"
         @announce="board.announce"
       />
     </template>

@@ -55,7 +55,7 @@ import { normalizeSearchText } from '../stores/searchIndex'
 import { boundPayment } from './payments'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-const PURPOSES = ['accredited', 'bag']
+const PURPOSES = ['accredited', 'bag', 'self', 'award']
 const CHANNELS = ['electronic', 'bank_transfer']
 const failsToList = failsRandomly(0.04)
 

@@ -57,7 +57,7 @@ export const PAYMENT_DEFAULTS = Object.freeze({
   methods: Object.freeze(['creditcard']),
   supportedNetworks: Object.freeze(['mada', 'visa', 'mastercard']),
   applePayLabel: Object.freeze({ ar: 'منصة مؤشر', en: 'Moashir Platform' }),
-  linkedPaths: Object.freeze(['accredited', 'bag']),
+  linkedPaths: Object.freeze(['accredited', 'bag', 'self', 'award']),
 })
 
 export function emptyPaymentRow() {

@@ -177,11 +177,17 @@ test.describe('users path access', () => {
 })
 
 test.describe('per-path and certificate settings', () => {
-  test('each path keeps its own limits, price and entity texts', async ({ page }, testInfo) => {
+  test('each path keeps its own limits and entity texts, with a read-only price', async ({
+    page,
+  }, testInfo) => {
     await signIn(page, testInfo, USERS.systemAdmin)
     await open(page, '/admin/settings/assessment', 'input[name="reviewSlaDays"]')
-    await expect(page.locator('input[name="price"]')).toHaveValue('1000.00')
-    await page.locator('input[name="price"]').fill('1250')
+    await expect(page.locator('input[name="price"]')).toHaveCount(0)
+    await expect(page.locator('.path-settings .pricing-breakdown')).toContainText('1,150.00')
+    await expect(page.locator('[data-testid="path-price-moved"] a')).toHaveAttribute(
+      'href',
+      '/admin/settings/prices',
+    )
     await page
       .locator('textarea[name="entityTexts.afterSubmission.ar"]')
       .fill('يبدأ المقيّم المراجعة بعد الإرسال.')
@@ -193,7 +199,6 @@ test.describe('per-path and certificate settings', () => {
       .fill('The assessor starts the review after submission.')
     await page.locator('.path-settings .btn--primary').click()
     await expect(page.locator('.toast--success').first()).toBeVisible()
-    await expect(page.locator('input[name="price"]')).toHaveValue('1250.00')
     await page
       .getByRole('tab', {
         name: text(testInfo, 'Advanced assessment (Award)', 'التقييم المتقدم (الجائزة)'),

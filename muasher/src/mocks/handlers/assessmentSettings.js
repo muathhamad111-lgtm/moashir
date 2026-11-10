@@ -54,8 +54,7 @@ export const assessmentSettingsHandlers = [
       const user = signedInActor()
       authorizeSettings(user)
       const path = settingsPath(params)
-      const resource = pathSettingsResource(path)
-      updatePathSettings(user, path, resource.isPaid, await readJson(request))
+      updatePathSettings(user, path, await readJson(request))
       return envelope(pathSettingsResource(path))
     }),
   ),

@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Enums\Finance\PaymentPurpose;
 use App\Enums\Identity\Ability;
 use App\Enums\Settings\PathSetting;
 use App\Http\Controllers\Api\V1\Finance\ActivateBankAccountController;
 use App\Http\Controllers\Api\V1\Finance\BankAccountController;
 use App\Http\Controllers\Api\V1\Finance\DeactivateBankAccountController;
 use App\Http\Controllers\Api\V1\Finance\ReorderBankAccountsController;
+use App\Http\Controllers\Api\V1\Prices\PathPricesController;
 use App\Http\Controllers\Api\V1\Settings\AssessmentSettingsController;
 use App\Http\Controllers\Api\V1\Settings\AuthSettingsController;
 use App\Http\Controllers\Api\V1\Settings\BrandingController;
@@ -29,9 +31,10 @@ $auth = 'can:'.Ability::ManageAuthSettings->value;
 $viewBranding = 'can:view,'.BrandingTheme::class;
 $manageBranding = 'can:manage,'.BrandingTheme::class;
 $paymentChannels = 'can:'.Ability::ManagePaymentIntegration->value;
+$prices = 'can:'.Ability::ManagePathPrices->value;
 $bankAccounts = 'can:manage,'.BankAccount::class;
 
-Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'])->prefix('settings')->name('settings.')->group(function () use ($finance, $assessment, $certificates, $auth, $viewBranding, $manageBranding, $paymentChannels, $bankAccounts): void {
+Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'])->prefix('settings')->name('settings.')->group(function () use ($finance, $assessment, $certificates, $auth, $viewBranding, $manageBranding, $paymentChannels, $bankAccounts, $prices): void {
     Route::get('finance', [FinanceSettingsController::class, 'show'])->middleware($finance)->name('finance.show');
     Route::put('finance', [FinanceSettingsController::class, 'update'])->middleware([$finance, 'throttle:sensitive'])->name('finance.update');
     Route::get('assessment', [AssessmentSettingsController::class, 'show'])->middleware($assessment)->name('assessment.show');
@@ -42,6 +45,12 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
     Route::whereIn('path', PathSetting::pathValues())->group(function () use ($assessment): void {
         Route::get('assessment/paths/{path}', [PathSettingsController::class, 'show'])->middleware($assessment)->name('assessment.paths.show');
         Route::put('assessment/paths/{path}', [PathSettingsController::class, 'update'])->middleware([$assessment, 'throttle:sensitive'])->name('assessment.paths.update');
+    });
+    Route::get('prices', [PathPricesController::class, 'index'])->middleware($prices)->name('prices.index');
+    Route::whereIn('key', PaymentPurpose::values())->group(function () use ($prices): void {
+        Route::get('prices/{key}/history', [PathPricesController::class, 'history'])->middleware($prices)->name('prices.history');
+        Route::put('prices/{key}', [PathPricesController::class, 'update'])->middleware([$prices, 'throttle:sensitive'])->name('prices.update');
+        Route::delete('prices/{key}/scheduled', [PathPricesController::class, 'cancelScheduled'])->middleware([$prices, 'throttle:sensitive'])->name('prices.scheduled.destroy');
     });
     Route::get('insights', [InsightsSettingsController::class, 'show'])->middleware($assessment)->name('insights.show');
     Route::put('insights', [InsightsSettingsController::class, 'update'])->middleware([$assessment, 'throttle:sensitive'])->name('insights.update');

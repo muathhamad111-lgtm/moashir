@@ -9,7 +9,7 @@ import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import LevelHeroCard from '@/components/level/LevelHeroCard.vue'
 import JourneyHero from './JourneyHero.vue'
-import JourneyPath from './JourneyPath.vue'
+import PathTiles from '@/components/paths/PathTiles.vue'
 import JourneyKpis from './JourneyKpis.vue'
 import JourneyPerformance from './JourneyPerformance.vue'
 import NextStepCard from './NextStepCard.vue'
@@ -21,11 +21,12 @@ import { ROUTE_NAMES } from '@/constants/routeNames'
 import { NEXT_LEVEL_TIERS } from '@/constants/levels'
 
 const { t } = useI18n()
-const { sources, status, journey, load } = useJourneyHome()
+const { sources, status, load } = useJourneyHome()
 const level = useEntityLevel()
 const { ranges } = useCertificateLevels()
 const performance = useAccreditedPerformance()
 const { canAccess } = usePermissions()
+const validUntil = computed(() => sources.board?.level?.certificate?.validUntil ?? null)
 const showsNextLevelLink = computed(
   () =>
     NEXT_LEVEL_TIERS.includes(level.tier.value) &&
@@ -37,12 +38,13 @@ const showsNextLevelLink = computed(
   <div class="journey-home" :aria-busy="status === 'loading'">
     <section class="b-band journey-home__band" data-testid="journey-band">
       <div class="b-band__inner">
-        <JourneyHero :journey="status === 'success' ? journey : null" />
+        <JourneyHero />
         <LevelHeroCard
           :tier="level.tier.value"
           :certificate="level.certificate.value"
           :ranges="ranges"
           :reassessment="level.reassessment.value"
+          :valid-until="validUntil"
         >
           <template #actions>
             <router-link class="btn btn--on-band" :to="{ name: level.miniCard.value.routeName }">
@@ -72,16 +74,14 @@ const showsNextLevelLink = computed(
         @retry="load"
       />
       <template v-else>
+        <PathTiles :paths="sources.board?.paths ?? null" />
+        <NextStepCard v-if="sources.board?.nextStep" :step="sources.board.nextStep" />
         <JourneyKpis
           :accredited-series="performance.series.value"
           :self-assessments="sources.selfAssessments"
           :certificates="sources.certificates"
           :evidence-count="sources.board?.acceptedEvidenceCount ?? null"
         />
-        <div class="journey-home__pair">
-          <NextStepCard class="journey-home__next" :step="journey.nextStep" />
-          <JourneyPath class="journey-home__path" :journey="journey" />
-        </div>
         <JourneyPerformance
           :criteria="performance.criteria.value"
           :series="performance.series.value"

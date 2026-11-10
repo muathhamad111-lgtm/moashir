@@ -103,7 +103,7 @@ function referenceOf(sequence) {
   return `PAY-${FINANCE_YEAR}-${String(sequence).padStart(6, '0')}`
 }
 
-function transferPaymentOf({ user, entity, purpose, quote, key }) {
+function transferPaymentOf({ user, entity, purpose, quote, key, cycle }) {
   const at = nowIso()
   return {
     id: crypto.randomUUID(),
@@ -112,6 +112,7 @@ function transferPaymentOf({ user, entity, purpose, quote, key }) {
     entityName: { ar: entity.name.ar, en: entity.name.en ?? null },
     initiatedByUserId: user.id,
     purpose,
+    awardCycleId: cycle?.id ?? null,
     channel: 'bank_transfer',
     mode: 'test',
     idempotencyKey: key,
@@ -139,8 +140,8 @@ function transferPaymentOf({ user, entity, purpose, quote, key }) {
   }
 }
 
-export function openTransfer({ user, entity, purpose, quote, key, account, proof }) {
-  const payment = transferPaymentOf({ user, entity, purpose, quote, key })
+export function openTransfer({ user, entity, purpose, quote, key, account, proof, cycle = null }) {
+  const payment = transferPaymentOf({ user, entity, purpose, quote, key, cycle })
   const state = financeState()
   state.payments.push(payment)
   state.transfers.push({

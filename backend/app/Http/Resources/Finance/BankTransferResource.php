@@ -7,6 +7,7 @@ namespace App\Http\Resources\Finance;
 use App\Data\Finance\StaffBankTransfer;
 use App\Models\Finance\BankTransfer;
 use App\Models\Finance\Payment;
+use App\Support\Award\AwardCycleRefPresenter;
 use App\Support\Finance\PaymentPresenter;
 use App\Support\Finance\StaffTransferPresenter;
 use Illuminate\Http\Request;
@@ -29,6 +30,7 @@ final class BankTransferResource extends JsonResource
             'id' => $payment->public_id,
             'reference' => $payment->reference,
             'purpose' => $payment->purpose->value,
+            'award_cycle' => $payment->award_cycle_id === null ? null : AwardCycleRefPresenter::of($payment->awardCycle),
             'status' => $payment->status->value,
             'is_test' => $payment->isTest(),
             'pricing' => PaymentPresenter::pricing($payment),

@@ -17,6 +17,11 @@ final class AssessmentRejected extends ApiException
         return new self(new ApiError(Response::HTTP_CONFLICT, 'self.draft_exists', [], [], ['assessment_id' => $draftId]));
     }
 
+    public static function selfPaymentPending(): self
+    {
+        return new self(new ApiError(Response::HTTP_CONFLICT, 'self.payment_being_processed'));
+    }
+
     public static function entityRequired(): self
     {
         return new self(new ApiError(Response::HTTP_FORBIDDEN, 'assessment.entity_required'));

@@ -272,7 +272,10 @@ return [
         ],
         'price' => [
             'format' => 'The :attribute must be an amount in riyals written with two decimals, for example 1500.00.',
-            'positive' => 'The :attribute must be greater than zero.',
+            'moved' => 'Prices are now edited in the path prices settings.',
+        ],
+        'effective_from' => [
+            'window' => 'Choose a date from :min to :max.',
         ],
         'vat_rate' => [
             'format' => 'The :attribute must be a percentage between 0 and 100 with at most two decimals, for example 15.00.',

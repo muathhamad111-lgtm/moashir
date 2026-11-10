@@ -3,6 +3,7 @@ import { useActionCenterStore } from '@/stores/actionCenter'
 import { usePortalCountsStore } from '@/stores/portalCounts'
 import { useEntityStore } from '@/stores/entity'
 import { useEntityLevelStore } from '@/stores/entityLevel'
+import { useEntityPathsStore } from '@/stores/entityPaths'
 
 export function usePortalSession() {
   const auth = useAuthStore()
@@ -10,6 +11,7 @@ export function usePortalSession() {
   const counts = usePortalCountsStore()
   const entity = useEntityStore()
   const level = useEntityLevelStore()
+  const paths = useEntityPathsStore()
 
   async function signOut() {
     await auth.logout()
@@ -17,6 +19,7 @@ export function usePortalSession() {
     counts.reset()
     entity.reset()
     level.reset()
+    paths.reset()
   }
 
   return { signOut }

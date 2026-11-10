@@ -1,7 +1,6 @@
 import { PATH_GUIDES_FIXTURE } from '../../fixtures/pathGuides'
 import { pathLabelOf } from '../../fixtures/pathLabels'
-import { financeState, persistFinanceState } from '../finance/financeState'
-import { quoteOf } from '../finance/financeMoney'
+import { priceInForce, quoteOfPrice } from '../finance/priceVersions'
 import {
   ADVANCED_UPLOAD_DEFAULTS,
   EVIDENCE_TYPE_CATALOG,
@@ -46,8 +45,8 @@ function uploadsOf(path) {
 
 export function priceQuoteOf(path) {
   if (path !== PAID_PATH) return null
-  const { accreditedPrice, vatRate } = financeState().settings
-  return accreditedPrice ? quoteOf(accreditedPrice, vatRate) : null
+  const price = priceInForce(PAID_PATH)
+  return price && Number(price) > 0 ? quoteOfPrice(price) : null
 }
 
 export function pathTextsOf(path) {
@@ -63,7 +62,7 @@ export function pathSettingsResource(path) {
     uploadLimits: uploadsOf(path),
     uploadLimitBounds: { ...UPLOAD_LIMITS },
     evidenceTypeCatalog: [...EVIDENCE_TYPE_CATALOG],
-    isPaid: path === PAID_PATH,
+    isPaid: priceQuoteOf(path) !== null,
     price: priceQuoteOf(path),
     entityTexts: pathTextsOf(path),
   }
@@ -86,10 +85,6 @@ export function writePathSettings(path, changes) {
       ...('maxFilesPerSub' in uploads ? { evidenceMaxFilesPerSub: uploads.maxFilesPerSub } : {}),
     })
   } else advancedUploads = { ...advancedUploads, ...uploads }
-  if (changes.price) {
-    financeState().settings.accreditedPrice = changes.price
-    persistFinanceState()
-  }
   Object.entries(changes.entityTexts ?? {}).forEach(([key, value]) => {
     texts[path][key] = value ? { ...value } : null
   })

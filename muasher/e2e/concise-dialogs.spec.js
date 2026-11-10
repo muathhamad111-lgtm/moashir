@@ -15,6 +15,7 @@ const USERS = {
 const COPY = {
   ar: {
     submitTitle: 'إرسال الطلب للمراجعة؟',
+    periodLine: 'الفترة: الربع الرابع 2026',
     send: 'إرسال',
     cancel: 'إلغاء',
     submitted: 'أُرسل طلبك للمراجعة',
@@ -29,6 +30,7 @@ const COPY = {
   },
   en: {
     submitTitle: 'Send the request for review?',
+    periodLine: 'Period: Q4 2026',
     send: 'Send',
     cancel: 'Cancel',
     submitted: 'Your request was sent for review',
@@ -104,7 +106,7 @@ test('submitting a request asks one short question, then confirms the success', 
   const dialog = alertDialog(page)
   await expectConcise(dialog, {
     title: copy.submitTitle,
-    line: 'ACC-2026-000004',
+    line: copy.periodLine,
     buttons: [copy.send, copy.cancel],
   })
   await expect(dialog.locator('.modal__footer .btn').first()).toBeFocused()
@@ -113,7 +115,7 @@ test('submitting a request asks one short question, then confirms the success', 
 
   await page.locator('.accredited-actions .btn--primary').click()
   await alertDialog(page).locator('.modal__footer .btn--primary').click()
-  await expect(page).toHaveURL(/\/assessment\/accredited$/)
+  await expect(page).toHaveURL(/\/paths\/accredited\/9101\?tab=request$/)
   const done = successDialog(page)
   await expect(done.locator('.modal__title')).toHaveText(copy.submitted)
   await expect(done.locator('.modal__message')).toHaveText('ACC-2026-000004')

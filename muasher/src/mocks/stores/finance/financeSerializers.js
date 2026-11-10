@@ -3,6 +3,7 @@ import { financeEntityEmails } from '../../fixtures/finance'
 import { findFile, findPayment, receiptOf, refundOf } from './financeState'
 import { entityNameOf, entityReferenceOf } from './receiptSnapshot'
 import { ownTransferResource, transferDetailsOf } from './bankTransferRecords'
+import { cycleRefOf } from '../award/cycleRef'
 
 function pricingOf(payment) {
   return {
@@ -30,6 +31,7 @@ export function ownPaymentResource(payment) {
     id: payment.id,
     reference: payment.reference,
     purpose: payment.purpose,
+    awardCycle: cycleRefOf(payment.awardCycleId),
     channel: payment.channel ?? 'electronic',
     status: payment.status,
     isTest: payment.mode === 'test',
@@ -70,6 +72,7 @@ export function transactionResource(payment) {
     reference: payment.reference,
     receiptNumber: receiptOf(payment.id)?.number ?? null,
     purpose: payment.purpose,
+    awardCycle: cycleRefOf(payment.awardCycleId),
     channel: payment.channel ?? 'electronic',
     status: payment.status,
     isTest: payment.mode === 'test',

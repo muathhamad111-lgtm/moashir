@@ -24,6 +24,7 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
     ->group(function () use ($assessments): void {
         Route::get('/', [AssessmentController::class, 'index'])->middleware("can:viewAny,{$assessments}")->name('index');
         Route::post('/', [SelfAssessmentController::class, 'store'])->middleware(["can:createSelf,{$assessments}", 'throttle:sensitive'])->name('store');
+        Route::post('accredited', [AccreditedAssessmentController::class, 'start'])->middleware(["can:startAccredited,{$assessments}", 'throttle:sensitive'])->name('accredited.start');
         Route::get('accredited/current', [AccreditedAssessmentController::class, 'current'])->middleware("can:viewAccreditedCurrent,{$assessments}")->name('accredited.current');
         Route::get('advanced/current', [AdvancedAssessmentController::class, 'current'])->middleware("can:viewAdvancedCurrent,{$assessments}")->name('advanced.current');
         Route::post('advanced', [AdvancedAssessmentController::class, 'apply'])->middleware(["can:applyAdvanced,{$assessments}", 'throttle:sensitive'])->name('advanced.apply');

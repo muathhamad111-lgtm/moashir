@@ -100,7 +100,7 @@ test('entity accounts land on the journey home in the portal shell', async ({ pa
   await page.goto('/dashboard')
   await expect(page.locator('.portal-top-bar')).toBeVisible()
   await expect(page.locator('.sidebar')).toHaveCount(0)
-  await expect(page.locator('.journey-station')).toHaveCount(4)
+  await expect(page.locator('[data-testid="path-tiles"]')).toBeVisible()
   await expect(page.locator('[data-testid="next-step"]')).toBeVisible()
 })
 

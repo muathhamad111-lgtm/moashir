@@ -38,7 +38,7 @@ import {
 const MODES = ['test', 'live']
 const METHODS = ['creditcard', 'applepay', 'stcpay']
 const NETWORKS = ['mada', 'visa', 'mastercard', 'amex', 'unionpay']
-const LINKED_PATHS = ['accredited', 'bag']
+const LINKED_PATHS = ['accredited', 'bag', 'self', 'award']
 const CHECKOUT_PATTERNS = ['intent', 'form']
 const SETTING_FIELDS = [
   'checkoutPattern',

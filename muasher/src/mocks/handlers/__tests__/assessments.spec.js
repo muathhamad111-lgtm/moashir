@@ -28,7 +28,9 @@ const CRITERIA_OFFICER = { id: 11, roles: ['criteria_officer'] }
 const SUPER_ADMIN = { id: 1, roles: [], superAdmin: true }
 
 const RESOURCE_KEYS = [
+  'award_cycle',
   'award_cycle_id',
+  'certificate',
   'completed_at',
   'created_at',
   'criteria_update_in_progress',
@@ -37,10 +39,18 @@ const RESOURCE_KEYS = [
   'id',
   'is_frozen',
   'is_open',
+  'kit',
+  'level',
   'number',
   'path',
   'path_label',
+  'payment',
+  'period',
+  'period_label',
+  'period_state',
   'result',
+  'row_key',
+  'row_type',
   'scale_kind',
   'status',
   'submitted_at',

@@ -163,6 +163,7 @@ describe('checkout view', () => {
     const [order, key] = submit.mock.calls[0]
     expect(order).toEqual({
       purpose: 'accredited',
+      awardCycleId: null,
       bankAccountId: '7c2d9e41-5b3a-4f6e-9d18-2a6b00000001',
       proof: PDF,
     })

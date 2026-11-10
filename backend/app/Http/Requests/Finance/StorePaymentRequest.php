@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Finance;
 
 use App\Data\Finance\BankTransferOrder;
+use App\Data\Finance\CardOrder;
 use App\Enums\Finance\PaymentChannel;
 use App\Enums\Finance\PaymentPurpose;
 use App\Exceptions\Finance\PaymentRejected;
@@ -41,6 +42,7 @@ final class StorePaymentRequest extends FormRequest
         return [
             'purpose' => ['required', 'string', Rule::in([...PaymentPurpose::values(), self::RETIRED_PURPOSE])],
             'channel' => ['sometimes', 'string', Rule::enum(PaymentChannel::class)],
+            'award_cycle_id' => ['required_if:purpose,'.PaymentPurpose::Award->value, 'prohibited_unless:purpose,'.PaymentPurpose::Award->value, 'integer', 'min:1'],
             'bank_account_id' => ['required_if:channel,'.self::BANK_TRANSFER, 'prohibited_unless:channel,'.self::BANK_TRANSFER, 'uuid'],
             'proof' => [
                 'required_if:channel,'.self::BANK_TRANSFER,
@@ -55,6 +57,16 @@ final class StorePaymentRequest extends FormRequest
     public function purpose(): PaymentPurpose
     {
         return PaymentPurpose::tryFrom($this->string('purpose')->toString()) ?? throw PaymentRejected::purposeNotAvailable();
+    }
+
+    public function cardOrder(): CardOrder
+    {
+        return new CardOrder($this->purpose(), $this->idempotencyKey(), $this->awardCycleId());
+    }
+
+    public function awardCycleId(): ?int
+    {
+        return $this->filled('award_cycle_id') ? $this->integer('award_cycle_id') : null;
     }
 
     public function idempotencyKey(): string
@@ -75,7 +87,7 @@ final class StorePaymentRequest extends FormRequest
             throw new LogicException('The transfer receipt is validated before the order is built.');
         }
 
-        return new BankTransferOrder($this->purpose(), $this->idempotencyKey(), mb_strtolower($this->string('bank_account_id')->toString()), $proof);
+        return new BankTransferOrder($this->purpose(), $this->idempotencyKey(), mb_strtolower($this->string('bank_account_id')->toString()), $proof, $this->awardCycleId());
     }
 
     protected function prepareForValidation(): void

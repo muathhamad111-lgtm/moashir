@@ -15,6 +15,7 @@ const props = defineProps({
   certificate: { type: Object, default: null },
   ranges: { type: Array, default: () => [] },
   reassessment: { type: Boolean, default: false },
+  validUntil: { type: String, default: null },
   audience: { type: String, default: 'entity', validator: (v) => ['entity', 'staff'].includes(v) },
 })
 
@@ -57,6 +58,12 @@ const classes = computed(() => [
             <dt>{{ t('level.hero.issuedAt') }}</dt>
             <dd>
               <bdi dir="ltr">{{ issuedOn }}</bdi>
+            </dd>
+          </div>
+          <div v-if="validUntil" class="level-hero__fact" data-testid="level-valid-until">
+            <dt>{{ t('level.hero.validUntil') }}</dt>
+            <dd>
+              <bdi dir="ltr">{{ validUntil }}</bdi>
             </dd>
           </div>
         </dl>

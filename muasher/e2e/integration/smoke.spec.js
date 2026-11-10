@@ -13,6 +13,7 @@ import {
 } from './support/apiWatch'
 import { registerEntity } from './support/entities'
 import { paced } from './support/pacing'
+import { AVAILABLE, PRICES_SCREEN, savePathPrice } from './support/prices'
 
 const RUN = Date.now().toString(36)
 const ENTITY = {
@@ -61,7 +62,9 @@ const ADMIN_SCREENS = [
   '/account',
 ]
 const ENTITY_SCREENS = [
-  '/assessment/history',
+  '/paths/self',
+  '/paths/accredited',
+  '/paths/award',
   '/payments',
   '/certificates',
   '/bag',
@@ -181,15 +184,16 @@ test('the administrator reads the published criteria tree from the server', asyn
   expect(api.unexpected(GUEST_PROBES)).toEqual([])
 })
 
-test('the administrator sets the accredited price in the finance settings', async () => {
+test('the administrator sets the accredited price in the path prices', async () => {
   const { page, api } = sessions.admin
-  await visit(page, '/admin/settings/finance')
-  const price = page.locator('input[name="accreditedPrice"]')
-  await expect(price).toBeEditable()
-  await price.fill(ACCREDITED_PRICE)
-  await page.locator('.settings-section .btn--primary').click()
-  await expect(page.locator('.toast--success').last()).toBeVisible()
-  await expect(price).toHaveValue('1500.00')
+  await visit(page, PRICES_SCREEN)
+  const saved = await savePathPrice(page, 'accredited', { price: ACCREDITED_PRICE })
+  expect(saved.pricing).toMatchObject({ is_free: false, availability: AVAILABLE })
+  expect(saved.in_force.price_before_vat).toBe(ACCREDITED_QUOTE.price_before_vat)
+  await expect(
+    page.locator('[data-testid="price-row-accredited"] input[name="priceBeforeVat"]'),
+  ).toHaveValue('1500.00')
+  expect(api.sourcesOf(/^\/api\/v1\/settings\/prices(\/accredited)?$/)).toEqual([SOURCES.BACKEND])
   expect(api.unexpected(GUEST_PROBES)).toEqual([])
 })
 
@@ -240,21 +244,33 @@ test('the entity starts a self assessment, submits it and sees the server result
 
 test('the entity checkout reads the accredited price and the payment channels from the backend', async () => {
   const { page, api } = sessions.entity
-  const answerOf = (path) => page.waitForResponse((response) => response.url().endsWith(path))
-  const options = answerOf('/api/v1/payments/checkout-options')
-  const prices = answerOf('/api/v1/content/prices')
+  const options = page.waitForResponse((response) => {
+    const url = new URL(response.url())
+    return (
+      url.pathname === '/api/v1/payments/checkout-options' &&
+      url.searchParams.get('purpose') === 'accredited'
+    )
+  })
   await visit(page, '/assessment/accredited/pay')
-  expect((await options).status()).toBe(200)
-  const priced = await prices
-  expect(priced.status()).toBe(200)
-  expect((await priced.json()).data.accredited).toMatchObject(ACCREDITED_QUOTE)
+  const answer = await options
+  expect(answer.status()).toBe(200)
+  const { pricing } = (await answer.json()).data
+  expect(pricing).toMatchObject({ is_free: false, availability: AVAILABLE })
+  expect(pricing.price).toMatchObject(ACCREDITED_QUOTE)
   await expect(
     page.locator('.payment-notice, .method-choice, .transfer-panel').first(),
   ).toBeVisible()
+  await expect(page.locator('.checkout__aside')).toContainText('1,725.00')
   await shot(page, 'entity-checkout-boundary')
-  expect(api.sourcesOf(/^\/api\/v1\/(payments\/checkout-options|content\/prices)$/)).toEqual([
-    SOURCES.BACKEND,
-  ])
+  const prices = await page.request.get('/api/v1/content/prices', {
+    headers: { Accept: 'application/json' },
+  })
+  expect(prices.status()).toBe(200)
+  const published = (await prices.json()).data
+  expect(published.accredited).toMatchObject(ACCREDITED_QUOTE)
+  expect(published.paths.accredited).toMatchObject({ is_free: false, availability: AVAILABLE })
+  expect(published.paths.self).toMatchObject({ price: null, is_free: true })
+  expect(api.sourcesOf(/^\/api\/v1\/payments\/checkout-options$/)).toEqual([SOURCES.BACKEND])
   expect(api.failures.filter((failure) => failure.path.startsWith('/api/v1/payments'))).toEqual([])
   expect(api.unexpected([...GUEST_PROBES, PAYMENT_UNAVAILABLE, PAGE_NOT_PUBLISHED])).toEqual([])
 })

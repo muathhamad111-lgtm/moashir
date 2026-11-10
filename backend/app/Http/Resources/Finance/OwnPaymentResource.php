@@ -8,6 +8,7 @@ use App\Data\Finance\OpenedRequest;
 use App\Data\Finance\OwnPayment;
 use App\Models\Finance\BankTransfer;
 use App\Support\Assessments\PathPresenter;
+use App\Support\Award\AwardCycleRefPresenter;
 use App\Support\Finance\BankTransferPresenter;
 use App\Support\Finance\PaymentPresenter;
 use Illuminate\Http\Request;
@@ -29,6 +30,7 @@ final class OwnPaymentResource extends JsonResource
             'id' => $payment->public_id,
             'reference' => $payment->reference,
             'purpose' => $payment->purpose->value,
+            'award_cycle' => $payment->award_cycle_id === null ? null : AwardCycleRefPresenter::of($payment->awardCycle),
             'channel' => $payment->channel->value,
             'status' => $payment->status->value,
             'is_test' => $payment->isTest(),

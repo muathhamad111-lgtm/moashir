@@ -1,4 +1,11 @@
+import { pathMessages } from './pathMessages'
+import { assessmentMessages } from './assessmentMessages'
+
 export const financeMessages = {
+  ...pathMessages,
+  'cycle.submission_closed': assessmentMessages['cycle.submission_closed'],
+  'cycle.conditions_failed': assessmentMessages['cycle.conditions_failed'],
+  'advanced.request_exists': assessmentMessages['advanced.request_exists'],
   validation_failed: { ar: 'البيانات المرسلة غير صالحة.', en: 'The submitted data is invalid.' },
   unauthenticated: { ar: 'يرجى تسجيل الدخول للمتابعة.', en: 'Please sign in to continue.' },
   forbidden: {
@@ -33,9 +40,17 @@ export const financeMessages = {
     ar: 'هذه الخدمة غير متاحة مؤقتًا. يرجى المحاولة لاحقًا.',
     en: 'This service is temporarily unavailable. Please try again later.',
   },
-  'payment.price_not_configured': {
-    ar: 'لم يُحدَّد سعر هذه الخدمة بعد. يرجى المحاولة لاحقًا.',
-    en: 'The price of this service is not set yet. Please try again later.',
+  'self.draft_exists': {
+    ar: 'لدى جهتك تقييم ذاتي مفتوح.',
+    en: 'Your entity already has an open self assessment.',
+  },
+  'prices.stale_version': {
+    ar: 'غيّر مستخدم آخر هذا السعر قبل حفظك. راجع القيمة الحالية ثم احفظ من جديد.',
+    en: 'Another user changed this price before you saved. Review the current value, then save again.',
+  },
+  'prices.no_scheduled_version': {
+    ar: 'لا يوجد سعر مجدول لهذا المسار.',
+    en: 'This path has no scheduled price.',
   },
   'payment.entity_required': {
     ar: 'يقتصر الدفع للخدمات على حسابات الجهات.',
@@ -212,6 +227,22 @@ export const financeFieldMessages = {
   price_format: {
     ar: 'أدخل السعر بخانتين عشريتين وبحد أقصى 7 خانات صحيحة، مثل 1500.00.',
     en: 'Enter the price with two decimals and at most 7 integer digits, for example 1500.00.',
+  },
+  price_moved: {
+    ar: 'يُعدَّل هذا السعر من «أسعار المسارات».',
+    en: 'This price is edited in Path prices.',
+  },
+  price_date_range: {
+    ar: 'اختر تاريخًا بين :min و:max.',
+    en: 'Choose a date between :min and :max.',
+  },
+  award_cycle_required: {
+    ar: 'حدّد دورة الجائزة.',
+    en: 'Select the award cycle.',
+  },
+  award_cycle_prohibited: {
+    ar: 'لا تُحدَّد دورة الجائزة إلا لرسوم الجائزة.',
+    en: 'An award cycle applies only to the award fee.',
   },
   price_positive: {
     ar: 'يجب أن يكون السعر أكبر من صفر.',

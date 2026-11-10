@@ -4,6 +4,10 @@ import { allAssessments } from '../assessments/assessmentsStore'
 import { ADVANCED_STATES, isInAdvancedQueue } from './advancedStates'
 import { acceptsApplications } from './cycleStore'
 import { canManage, revealsStaff } from './cycleAccess'
+import { entryFeeOf } from './awardPricing'
+import { quoteOfPrice } from '../finance/priceVersions'
+
+const FEE_EDITABLE_STATUS = 'draft'
 
 function placeOf(regionId) {
   const region = findRegion(regionId)
@@ -41,6 +45,9 @@ export function cycleResource(cycle, { withCounts = false } = {}) {
     },
     initialReviewSlaDays: cycle.initialReviewSlaDays,
     participationCertificateEnabled: cycle.participationCertificateEnabled,
+    entryFee: entryFeeOf(cycle),
+    entryFeeQuote: quoteOfPrice(entryFeeOf(cycle)),
+    entryFeeEditable: cycle.status === FEE_EDITABLE_STATUS,
     regions: cycle.regionIds.map(placeOf).filter(Boolean),
     counts: withCounts ? countsOf(cycle) : null,
     openedAt: cycle.openedAt,

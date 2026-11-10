@@ -19,6 +19,7 @@ enum Ability: string
     case ManageFinanceSettings = 'settings.finance.manage';
     case EditFinanceSettingField = 'settings.finance.edit-field';
     case ManageAssessmentSettings = 'settings.assessment-section.manage';
+    case ManagePathPrices = 'settings.prices-section.manage';
     case ManageCertificateSettings = 'settings.certificates-section.manage';
     case ManageContactSettings = 'settings.contact-section.manage';
     case ManageAuthSettings = 'settings.auth-section.manage';

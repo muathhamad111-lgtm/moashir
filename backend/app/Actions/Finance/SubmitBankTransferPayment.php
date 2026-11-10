@@ -18,6 +18,7 @@ use App\Services\Files\FileIntake;
 use App\Services\Files\StoredFileRemover;
 use App\Services\Finance\BankTransferOrderOpener;
 use App\Services\Finance\FinanceSettings;
+use App\Services\Finance\OrderAdmission;
 use App\Services\Finance\PayingEntityGuard;
 use App\Services\Finance\PaymentChannelAvailability;
 use App\Services\Finance\PriceCalculator;
@@ -36,6 +37,7 @@ final readonly class SubmitBankTransferPayment
         private FileIntake $files,
         private StoredFileRemover $remover,
         private BankTransferOrderOpener $opener,
+        private OrderAdmission $admission,
     ) {}
 
     public function handle(User $actor, BankTransferOrder $order): CreatedPayment
@@ -47,8 +49,9 @@ final readonly class SubmitBankTransferPayment
         }
 
         $entity = $this->payingEntity($actor, $order);
-        $quote = $this->prices->quote($order->purpose);
-        $submission = new BankTransferSubmission($order->purpose, $order->idempotencyKey, $order->bankAccountId, $quote, $this->acceptProof($actor, $order));
+        $cycle = $this->admission->admit($actor, $entity, $order->purpose, $order->awardCycleId);
+        $quote = $this->prices->quote($order->purpose, $cycle);
+        $submission = new BankTransferSubmission($order->purpose, $order->idempotencyKey, $order->bankAccountId, $quote, $this->acceptProof($actor, $order), $cycle);
 
         try {
             return $this->present(DB::transaction(fn (): Payment => $this->opener->open($actor, $entity, $submission)), false);

@@ -134,32 +134,28 @@ describe('finance settings form', () => {
     vatRate: '15.00',
     orderValidityMinutes: 30,
     orderValidityLimits: { min: 5, max: 60 },
-    editableFields: ['accredited_price', 'vat_rate', 'order_validity_minutes'],
+    editableFields: ['vat_rate', 'order_validity_minutes'],
   }
   const editable = editableFieldsOf(settings)
 
   it('reads the editable fields from the server and never lets the client decide', () => {
-    expect([...editable]).toEqual(['accreditedPrice', 'vatRate', 'orderValidityMinutes'])
+    expect([...editable]).toEqual(['vatRate', 'orderValidityMinutes'])
     expect(editableFieldsOf(null).size).toBe(0)
   })
 
   it('sends only changed, editable fields normalized to the server format', () => {
     const values = {
       ...formValuesOf(settings),
-      accreditedPrice: '1500',
-      bagPrice: '2000',
       vatRate: '\u0665',
       orderValidityMinutes: '30',
     }
-    expect(changedSettings(settings, values, editable)).toEqual({
-      accreditedPrice: '1500.00',
-      vatRate: '5.00',
-    })
+    expect(formValuesOf(settings)).not.toHaveProperty('accreditedPrice')
+    expect(changedSettings(settings, values, editable)).toEqual({ vatRate: '5.00' })
     expect(changedSettings(settings, formValuesOf(settings), editable)).toEqual({})
     expect(normalizedDecimal('1500.5')).toBe('1500.50')
   })
 
-  it('validates prices, the VAT rate and the validity window', async () => {
+  it('validates the VAT rate and the validity window, never a price', async () => {
     const schema = financeSettingsSchema(
       t,
       settings.orderValidityLimits,
@@ -171,19 +167,7 @@ describe('finance settings form', () => {
       vatRate: '101',
       orderValidityMinutes: '61',
     })
-    expect(Object.keys(errors).sort()).toEqual([
-      'accreditedPrice',
-      'bagPrice',
-      'orderValidityMinutes',
-      'vatRate',
-    ])
-    expect(
-      await errorsOf(schema, {
-        accreditedPrice: '1500.50',
-        bagPrice: '',
-        vatRate: '0',
-        orderValidityMinutes: '5',
-      }),
-    ).toEqual({})
+    expect(Object.keys(errors).sort()).toEqual(['orderValidityMinutes', 'vatRate'])
+    expect(await errorsOf(schema, { vatRate: '0', orderValidityMinutes: '5' })).toEqual({})
   })
 })

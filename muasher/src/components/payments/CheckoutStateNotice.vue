@@ -7,6 +7,8 @@ import { CHECKOUT_PHASES } from '@/composables/useCheckout'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { financeErrorMessage } from '@/utils/payments/financeErrors'
 import { ACCREDITED_CODES } from '@/constants/accredited'
+import { SELF_ASSESSMENT_CODES } from '@/constants/assessment'
+import { PATH_CODES } from '@/constants/entityPaths'
 
 const RETRYABLE_CODES = ['payment.checkout_in_progress', 'provider_unavailable', null]
 
@@ -25,10 +27,32 @@ const blockedMessage = computed(() =>
   financeErrorMessage(i18n, props.failure?.error, 'finance.checkout.startFailed'),
 )
 const canRetry = computed(() => RETRYABLE_CODES.includes(props.failure?.code ?? null))
-const openRequestId = computed(() =>
-  props.failure?.code === ACCREDITED_CODES.REQUEST_OPEN
-    ? (props.failure.error?.normalized?.meta?.assessmentId ?? null)
-    : null,
+const PATH_PAGES = {
+  self: ROUTE_NAMES.PATHS_SELF,
+  accredited: ROUTE_NAMES.PATHS_ACCREDITED,
+  award: ROUTE_NAMES.PATHS_AWARD,
+}
+
+const BLOCKED_LINKS = {
+  [ACCREDITED_CODES.REQUEST_OPEN]: (meta) =>
+    meta?.assessmentId
+      ? {
+          to: { name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_FORM, params: { id: meta.assessmentId } },
+          labelKey: 'accredited.current.openRequest',
+        }
+      : null,
+  [SELF_ASSESSMENT_CODES.DRAFT_EXISTS]: () => ({
+    to: { name: ROUTE_NAMES.ASSESSMENT_SELF },
+    labelKey: 'paths.actions.continueSelf',
+  }),
+  [PATH_CODES.PAYMENT_NOT_REQUIRED]: (meta) =>
+    PATH_PAGES[meta?.purpose]
+      ? { to: { name: PATH_PAGES[meta.purpose] }, labelKey: 'finance.checkout.backToPath' }
+      : null,
+}
+
+const blockedLink = computed(
+  () => BLOCKED_LINKS[props.failure?.code]?.(props.failure.error?.normalized?.meta ?? null) ?? null,
 )
 </script>
 
@@ -73,7 +97,7 @@ const openRequestId = computed(() =>
     :message="blockedMessage"
     live
   >
-    <template v-if="canRetry || openRequestId" #actions>
+    <template v-if="canRetry || blockedLink" #actions>
       <BaseButton
         v-if="canRetry"
         variant="primary"
@@ -83,12 +107,8 @@ const openRequestId = computed(() =>
       >
         {{ t('finance.checkout.retry') }}
       </BaseButton>
-      <RouterLink
-        v-if="openRequestId"
-        class="payment-notice__link"
-        :to="{ name: ROUTE_NAMES.ASSESSMENT_ACCREDITED_FORM, params: { id: openRequestId } }"
-      >
-        {{ t('accredited.current.openRequest') }}
+      <RouterLink v-if="blockedLink" class="payment-notice__link" :to="blockedLink.to">
+        {{ t(blockedLink.labelKey) }}
       </RouterLink>
     </template>
   </PaymentNotice>

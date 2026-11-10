@@ -19,5 +19,6 @@ final readonly class AccreditedPathSummary
         public ?SubmissionProgress $openProgress,
         public ?Assessment $lastResult,
         public ApplyReadiness $apply,
+        public bool $isListed,
     ) {}
 }

@@ -5,6 +5,7 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import CycleBasicsFields from './CycleBasicsFields.vue'
 import CycleWindowFields from './CycleWindowFields.vue'
 import CycleConditionFields from './CycleConditionFields.vue'
+import CycleFeeFields from './CycleFeeFields.vue'
 import { useValidatedForm } from '@/composables/useValidatedForm'
 import { awardCycleService } from '@/services/awardCycleService'
 import { useToast } from '@/composables/useToast'
@@ -20,6 +21,7 @@ const props = defineProps({
   canSetParticipation: { type: Boolean, default: false },
   editable: { type: Boolean, default: true },
   reasonExtra: { type: Function, required: true },
+  feeQuote: { type: Object, default: null },
 })
 
 const emit = defineEmits(['created', 'updated', 'locked'])
@@ -99,6 +101,7 @@ const versionId = computed(() =>
       :version-id="versionId"
       :can-set-participation="canSetParticipation && editable"
     />
+    <CycleFeeFields :locked="allLocked" :quote="feeQuote" :is-new="!cycleId" />
     <div v-if="editable" class="cycle-form__actions">
       <BaseButton type="submit" variant="primary" icon="save" :loading="cycleForm.submitting.value">
         {{ cycleId ? t('cycles.form.save') : t('cycles.form.create') }}
