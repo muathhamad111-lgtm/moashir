@@ -122,9 +122,11 @@ describe('contact privacy tools', () => {
     await erase.trigger('click')
     await flushPromises()
     expect(contactPrivacyService.eraseByEmail).not.toHaveBeenCalled()
-    const accept = [...document.querySelectorAll('.modal button')].find((button) =>
-      button.textContent.includes('Delete the messages'),
+    expect(document.querySelector('[role="alertdialog"] .modal__title').textContent).toBe(
+      'Delete the messages of this address?',
     )
+    const accept = document.querySelector('.modal__footer .btn--danger')
+    expect(accept.textContent.trim()).toBe('Delete')
     accept.click()
     await flushPromises()
     expect(contactPrivacyService.eraseByEmail).toHaveBeenCalled()

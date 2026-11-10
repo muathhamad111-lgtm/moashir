@@ -77,10 +77,10 @@ async function submit() {
       </template>
     </div>
     <template #footer>
-      <BaseButton variant="ghost" @click="close">{{ t('actions.cancel') }}</BaseButton>
       <BaseButton :loading="saving" :disabled="!changes.length" @click="submit">
         {{ t('notifications.preferences.save') }}
       </BaseButton>
+      <BaseButton variant="secondary" @click="close">{{ t('actions.cancel') }}</BaseButton>
     </template>
   </BaseModal>
 </template>

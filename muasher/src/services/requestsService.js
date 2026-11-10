@@ -4,6 +4,7 @@ import {
   toAssignedPathCount,
   toAssignedRow,
   toEligibleAssessor,
+  toPreparingRow,
   toQueuePathCount,
   toQueueRow,
   toQueueStats,
@@ -40,6 +41,22 @@ export const requestsService = {
         },
       }),
     )
+  },
+
+  listPreparing(params = {}) {
+    return read(
+      'listPreparing',
+      () => apiClient.get('/requests/preparing', { params }),
+      params,
+    ).then((envelope) => ({
+      ...envelope,
+      data: (envelope.data ?? []).map(toPreparingRow),
+      meta: {
+        ...envelope.meta,
+        path: envelope.meta?.path ?? null,
+        pathCounts: (envelope.meta?.pathCounts ?? []).map(toQueuePathCount),
+      },
+    }))
   },
 
   get(requestId) {

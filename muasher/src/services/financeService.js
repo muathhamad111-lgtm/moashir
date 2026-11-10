@@ -3,6 +3,7 @@ import { fromWire } from '@/api/caseMapping'
 import { domainRequests } from './domainRequest'
 import { withJsonErrorBody } from './mappers/blobError'
 import { toDownload } from './mappers/download'
+import { toLinkedRequest } from './mappers/bankTransfers'
 
 const EXPORT_FALLBACK_NAME = 'transactions.csv'
 const QUEUED = 202
@@ -10,6 +11,14 @@ const NOT_FOUND = 404
 const UNAVAILABLE = 503
 
 const { read, write } = domainRequests('finance', 'finance')
+
+function transactionEnvelope(envelope) {
+  if (!envelope?.data) return envelope
+  return {
+    ...envelope,
+    data: { ...envelope.data, linkedRequest: toLinkedRequest(envelope.data.linkedRequest) },
+  }
+}
 
 async function exportResult(response) {
   if (response.status !== QUEUED)
@@ -34,7 +43,7 @@ export const financeService = {
   getTransaction(paymentId) {
     return read('getTransaction', () => apiClient.get(`/finance/transactions/${paymentId}`), null, [
       NOT_FOUND,
-    ])
+    ]).then(transactionEnvelope)
   },
 
   exportTransactions(params = {}) {
@@ -101,7 +110,7 @@ export const financeService = {
       'manualSettle',
       () => apiClient.post(`/finance/payments/${paymentId}/manual-settle`, payload),
       payload,
-    )
+    ).then(transactionEnvelope)
   },
 
   listPaymentEvents(params = {}) {

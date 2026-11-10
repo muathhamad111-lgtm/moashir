@@ -1,3 +1,4 @@
+import { linkedRequestOf } from '../accredited/requestPayments'
 import { riyadhDateKey } from '@/utils/datetime'
 import { financeEntityEmails } from '../../fixtures/finance'
 import { findEntity } from '../entitiesStore'
@@ -127,6 +128,7 @@ export function staffTransferResource(payment, { detail = false } = {}) {
     paidAt: payment.paidAt,
     rejectedAt: payment.rejectedAt ?? null,
     receipt: receiptSummaryOf(payment),
+    ...(detail ? { linkedRequest: linkedRequestOf(payment.id) } : {}),
   }
 }
 

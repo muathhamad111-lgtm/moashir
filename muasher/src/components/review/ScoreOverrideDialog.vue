@@ -18,7 +18,6 @@ import {
   withinScale,
 } from '@/utils/assessments/scoreSheet'
 import { logger } from '@/utils/logger'
-import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -108,16 +107,13 @@ watch(
     :model-value="modelValue"
     size="lg"
     :title="t('review.override.title')"
+    :subtitle="t('review.override.warning')"
     :busy="busy"
     :submit-label="t('review.override.submit')"
     @update:model-value="emit('update:modelValue', $event)"
     @submit="onSubmit"
   >
     <div class="override-dialog">
-      <p class="override-dialog__warning" role="note">
-        <AppIcon name="warning-triangle" />
-        {{ t('review.override.warning') }}
-      </p>
       <div class="override-dialog__grid">
         <BaseInput
           v-for="unit in units"

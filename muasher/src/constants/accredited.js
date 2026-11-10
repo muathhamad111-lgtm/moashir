@@ -146,3 +146,5 @@ export const ACCREDITED_CODES = {
 }
 
 export const ACCREDITED_REQUEST_PREFIX = 'ACC'
+
+export const QUEUE_STAGES = Object.freeze({ QUEUE: 'queue', PREPARING: 'preparing' })

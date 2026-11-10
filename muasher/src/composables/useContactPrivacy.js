@@ -65,8 +65,8 @@ export function useContactPrivacy() {
     exported.value = null
     const accepted = await confirm({
       title: t('entities.privacy.contact.eraseTitle'),
-      message: t('entities.privacy.contact.eraseMessage'),
-      confirmLabel: t('entities.privacy.contact.erase'),
+      message: t('components.confirm.irreversible'),
+      confirmLabel: t('actions.delete'),
       variant: 'danger',
     })
     if (!accepted) return

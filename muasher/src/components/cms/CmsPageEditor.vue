@@ -72,7 +72,7 @@ async function attempt(request, successKey) {
 async function removeSection(section) {
   const accepted = await confirm({
     title: t('cms.sections.confirmRemove.title'),
-    message: t('cms.sections.confirmRemove.message', { name: sectionLabel(section, localized) }),
+    message: sectionLabel(section, localized),
     confirmLabel: t('cms.sections.remove'),
     variant: 'danger',
   })

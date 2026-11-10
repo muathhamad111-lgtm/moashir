@@ -6,9 +6,10 @@ namespace App\Http\Requests\Assessments;
 
 use App\Actions\Assessments\ListRequestQueue;
 use App\Data\Assessments\RequestQueueFilters;
+use App\Data\Periods\PeriodFilter;
 use App\Enums\Assessments\AssessmentPath;
-use App\Models\Identity\User;
-use App\Services\Identity\RequestPathScope;
+use App\Services\Assessments\QueuePathSelector;
+use App\Support\Periods\PeriodFilterRules;
 use App\Support\ValueObjects\SearchTerm;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -23,12 +24,13 @@ final class IndexRequestQueueRequest extends FormRequest
         $followed = array_map(static fn (AssessmentPath $path): string => $path->value, $this->followedPaths());
 
         return [
-            'filter' => ['nullable', 'array:path,status,overdue,assessor_id,cycle_id'],
+            'filter' => ['nullable', 'array:path,status,overdue,assessor_id,cycle_id,period_id'],
             'filter.path' => ['nullable', Rule::in($followed)],
             'filter.status' => ['nullable', Rule::in($this->queuePath()->queueStateValues())],
             'filter.overdue' => ['nullable', Rule::in(['true', 'false', '1', '0'])],
             'filter.assessor_id' => ['nullable', 'integer', 'min:1'],
             'filter.cycle_id' => in_array(AssessmentPath::Advanced->value, $followed, true) ? ['nullable', 'integer', 'min:1'] : ['prohibited'],
+            'filter.period_id' => $this->periodRules(),
             'search' => ['nullable', 'string', 'max:100'],
             'sort' => ['nullable', Rule::in(ListRequestQueue::SORTABLE)],
             'page' => ['nullable', 'integer', 'min:1'],
@@ -49,6 +51,7 @@ final class IndexRequestQueueRequest extends FormRequest
             SearchTerm::tryFrom($this->string('search')->toString()),
             $this->filled('sort') ? $this->string('sort')->toString() : '-submitted_at',
             $this->integer('per_page', 15),
+            PeriodFilter::fromInput($this->input('filter.period_id')),
         );
     }
 
@@ -57,10 +60,19 @@ final class IndexRequestQueueRequest extends FormRequest
      */
     public function followedPaths(): array
     {
-        $user = $this->user();
-        $paths = $user instanceof User ? app(RequestPathScope::class)->pathsFor($user) : [];
+        return app(QueuePathSelector::class)->followedBy($this->user());
+    }
 
-        return $paths === [] ? [AssessmentPath::Accredited] : $paths;
+    /**
+     * @return list<mixed>
+     */
+    private function periodRules(): array
+    {
+        if ($this->queuePath() !== AssessmentPath::Accredited) {
+            return ['prohibited'];
+        }
+
+        return PeriodFilterRules::for($this->input('filter.period_id'));
     }
 
     private function queuePath(): AssessmentPath
@@ -69,8 +81,6 @@ final class IndexRequestQueueRequest extends FormRequest
             return AssessmentPath::Advanced;
         }
 
-        $requested = AssessmentPath::tryFrom($this->string('filter.path')->toString());
-
-        return $requested instanceof AssessmentPath && in_array($requested, $this->followedPaths(), true) ? $requested : $this->followedPaths()[0];
+        return app(QueuePathSelector::class)->chosenBy($this->user(), $this->string('filter.path')->toString());
     }
 }

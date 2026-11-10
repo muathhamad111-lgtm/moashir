@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Finance;
 
+use App\Data\Finance\StaffTransaction;
 use App\Models\Finance\BankTransfer;
-use App\Models\Finance\Payment;
 use App\Models\Finance\PaymentReceipt;
 use App\Models\Finance\Refund;
+use App\Support\Finance\LinkedRequestPresenter;
 use App\Support\Finance\StaffTransferPresenter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @property-read Payment $resource
+ * @property-read StaffTransaction $resource
  */
 final class TransactionDetailResource extends JsonResource
 {
@@ -22,7 +23,7 @@ final class TransactionDetailResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $payment = $this->resource;
+        $payment = $this->resource->payment;
 
         return [
             ...new TransactionResource($payment)->toArray($request),
@@ -40,6 +41,7 @@ final class TransactionDetailResource extends JsonResource
             'refund' => $payment->refund instanceof Refund ? new RefundResource($payment->refund)->toArray($request) : null,
             'rejected_at' => $payment->rejected_at?->toIso8601String(),
             'bank_transfer' => $payment->bankTransfer instanceof BankTransfer ? StaffTransferPresenter::detailsOf($payment->bankTransfer) : null,
+            'linked_request' => LinkedRequestPresenter::of($this->resource->linkedRequest),
         ];
     }
 }

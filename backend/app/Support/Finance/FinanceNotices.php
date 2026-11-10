@@ -28,6 +28,11 @@ final class FinanceNotices
         return self::build($code, $audience, $payment, $link);
     }
 
+    public static function forStaffWithLink(NotificationCode $code, Payment $payment, ?string $link): EntityNotice
+    {
+        return self::build($code, self::FOR_STAFF, $payment, $link);
+    }
+
     public static function transferToReview(Payment $payment): EntityNotice
     {
         return self::build(NotificationCode::BankTransferSubmitted, self::FOR_STAFF, $payment, FinanceLinks::bankTransfer($payment->public_id));
@@ -67,7 +72,7 @@ final class FinanceNotices
         );
     }
 
-    private static function build(NotificationCode $code, string $audience, Payment $payment, string $link): EntityNotice
+    private static function build(NotificationCode $code, string $audience, Payment $payment, ?string $link): EntityNotice
     {
         $key = 'notifications.payments.'.$code->value.'.'.$audience;
         $replacements = self::replacementsOf($payment);

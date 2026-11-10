@@ -5,6 +5,7 @@ import { legalVersionsService } from '@/services/legalVersionsService'
 import { useConfirm } from '@/composables/useConfirm'
 import { useSuperAdminReason } from '@/composables/useSuperAdminReason'
 import { useToast } from '@/composables/useToast'
+import { success } from '@/composables/useSuccess'
 import { firstFieldErrors } from '@/utils/payments/financeErrors'
 import {
   changedLegalDraft,
@@ -129,7 +130,7 @@ export function useLegalVersions(kind) {
     const accepted = await confirm({
       title: t('legalAdmin.discardTitle'),
       message: t('legalAdmin.discardMessage'),
-      confirmLabel: t('legalAdmin.discard'),
+      confirmLabel: t('actions.delete'),
       variant: 'danger',
     })
     if (!accepted) return
@@ -144,9 +145,9 @@ export function useLegalVersions(kind) {
   async function publish() {
     if (form.meta.value.dirty) return toast.error(t('legalAdmin.toasts.saveFirst'))
     const accepted = await confirm({
-      title: t('legalAdmin.publishTitle'),
-      message: t('legalAdmin.publishMessage', { version: selected.value.version }),
-      confirmLabel: t('legalAdmin.publish'),
+      title: t('legalAdmin.publishTitle', { version: selected.value.version }),
+      message: t('legalAdmin.publishMessage'),
+      confirmLabel: t('actions.publish'),
     })
     if (!accepted) return undefined
     const extra = await reasonExtra()
@@ -155,7 +156,7 @@ export function useLegalVersions(kind) {
       const published = (await legalVersionsService.publish(selected.value.id, extra)).data
       selected.value = published
       mode.value = MODES.VIEW
-      toast.success(t('legalAdmin.toasts.published'))
+      success.show({ title: t('legalAdmin.toasts.published'), message: published.version })
       await loadList()
     })
   }

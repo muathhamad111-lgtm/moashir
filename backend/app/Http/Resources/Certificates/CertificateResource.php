@@ -9,6 +9,7 @@ use App\Models\Identity\User;
 use App\Services\Certificates\VerificationCode;
 use App\Support\Assessments\PathPresenter;
 use App\Support\Certificates\CertificateLinks;
+use App\Support\Periods\LocalDay;
 use App\Support\ScalarValue;
 use App\Support\ValueObjects\LocalizedText;
 use Illuminate\Http\Request;
@@ -53,6 +54,9 @@ final class CertificateResource extends JsonResource
             'revoked_reason' => $certificate->revoked_reason,
             'superseded_at' => $certificate->superseded_at?->toIso8601String(),
             'suspended_at' => $certificate->suspended_at?->toIso8601String(),
+            'valid_until' => $certificate->valid_until?->toDateString(),
+            'valid_until_at' => $certificate->validUntilInstant()?->toIso8601String(),
+            'is_expired' => $certificate->isExpiredOn(LocalDay::today()),
             'replaces' => $certificate->replaces instanceof Certificate ? ['id' => $certificate->replaces->public_id, 'number' => $certificate->replaces->number] : null,
             'has_pdf' => $certificate->pdf_file_id !== null,
         ];

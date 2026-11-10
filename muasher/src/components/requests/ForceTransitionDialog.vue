@@ -9,7 +9,6 @@ import { assessmentOverridesService } from '@/services/assessmentOverridesServic
 import { ACCREDITED_LIMITS, FORCE_TARGETS } from '@/constants/accredited'
 import { statusLabelKey } from '@/utils/canonicalStatus'
 import { logger } from '@/utils/logger'
-import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -80,16 +79,13 @@ watch(
   <FormModal
     :model-value="modelValue"
     :title="t('requests.overrides.forceTitle')"
+    :subtitle="t('requests.overrides.forceWarning')"
     :busy="busy"
     :submit-label="t('requests.overrides.forceAction')"
     @update:model-value="emit('update:modelValue', $event)"
     @submit="onSubmit"
   >
     <div class="override-dialog">
-      <p class="override-dialog__warning" role="note">
-        <AppIcon name="warning-triangle" />
-        {{ t('requests.overrides.forceWarning') }}
-      </p>
       <AppSelect
         v-model="target"
         name="toStatus"

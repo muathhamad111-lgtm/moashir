@@ -55,8 +55,8 @@ export function useKnowledgeBase() {
   async function remove(file) {
     const accepted = await confirm({
       title: t('settings.ai.removeTitle'),
-      message: t('settings.ai.removeMessage', { name: file.name }),
-      confirmLabel: t('actions.confirm'),
+      message: file.name,
+      confirmLabel: t('actions.delete'),
       variant: 'danger',
     })
     if (accepted)
@@ -70,9 +70,8 @@ export function useKnowledgeBase() {
   async function retrain() {
     const accepted = await confirm({
       title: t('settings.ai.retrainTitle'),
-      message: t('settings.ai.retrainMessage'),
       confirmLabel: t('settings.ai.retrain'),
-      variant: 'primary',
+      variant: 'confirm',
     })
     if (!accepted) return
     retraining.value = true

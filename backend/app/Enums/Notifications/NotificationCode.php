@@ -52,6 +52,12 @@ enum NotificationCode: string
     case AccreditedFeedbackAvailable = 'ACC-10';
     case AccreditedReviewOverdue = 'ACC-11';
     case AccreditedCompletionExpired = 'ACC-12';
+    case AccreditedPaidDraftReminder = 'ACC-13';
+    case PeriodStartingSoon = 'PER-01';
+    case PeriodEndingSoon = 'PER-02';
+    case PeriodMissed = 'PER-03';
+    case PeriodDigest = 'PER-04';
+    case PeriodCorrected = 'PER-05';
     case AdvancedCycleOpened = 'ADV-01';
     case AdvancedDeadlineApproaching = 'ADV-02';
     case AdvancedConditionsRejected = 'ADV-03';
@@ -130,6 +136,7 @@ enum NotificationCode: string
             self::BankTransferSubmitted, self::BankTransferRejected,
             self::AccreditedFormOpened, self::AccreditedSubmitted, self::AccreditedAwaitingAssignment,
             self::AccreditedAssigned, self::AccreditedCompletionRequested, self::EvidenceRefused,
+            self::AccreditedPaidDraftReminder, self::PeriodStartingSoon, self::PeriodEndingSoon,
             self::AdvancedCycleOpened, self::AdvancedDeadlineApproaching, self::AdvancedSubmitted, self::AdvancedAssigned,
             self::AdvancedInitialAssessmentCompleted, self::AdvancedReturnedForCompletion, self::CommitteeAssigned,
             self::CommitteeAllSubmitted, self::CommitteeAssessorDisabled, self::CommitteeSubstituteAssigned, self::ReturnedToCommittee,
@@ -147,7 +154,8 @@ enum NotificationCode: string
             self::CommitteeEvaluationSubmitted, self::CommitteeAverageApproved, self::AwardResultsAnnounced, self::RegionApproved,
             self::RegionalResult, self::NationalResult, self::CommitteeSubstituteApproved, self::CommitteeDiscussionEntry,
             self::KpiAdded, self::KpiValueEdited, self::KpiPublished, self::HomepageContentEdited, self::ContentUnpublished,
-            self::ContactReplySent, self::ContactMessageAcknowledged => NotificationCategory::Informational,
+            self::ContactReplySent, self::ContactMessageAcknowledged, self::PeriodMissed, self::PeriodDigest,
+            self::PeriodCorrected => NotificationCategory::Informational,
             default => NotificationCategory::Alert,
         };
     }

@@ -5,16 +5,19 @@ declare(strict_types=1);
 namespace App\Services\Assessments;
 
 use App\Data\Assessments\RequestQueueFilters;
+use App\Data\Periods\PeriodFilter;
 use App\Enums\Assessments\AssessmentPath;
 use App\Models\Assessments\Assessment;
 use App\Services\Entities\EntityFreezeGuard;
+use App\Services\Periods\PeriodScopes;
 use App\Support\ValueObjects\SearchTerm;
+use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Date;
 
 final readonly class RequestQueueQuery
 {
-    public function __construct(private EntityFreezeGuard $freezeGuard) {}
+    public function __construct(private EntityFreezeGuard $freezeGuard, private PeriodScopes $periods) {}
 
     /**
      * @return Builder<Assessment>
@@ -43,6 +46,10 @@ final readonly class RequestQueueQuery
             $query->matchingSearch($filters->search);
         }
 
+        if ($filters->period instanceof PeriodFilter) {
+            $this->periods->submittedIn($query, $filters->period);
+        }
+
         return $query;
     }
 
@@ -52,15 +59,16 @@ final readonly class RequestQueueQuery
      */
     public function queued(array $paths): Builder
     {
-        return $this->freezeGuard->excludeFrozen(Assessment::query()->where(static function (Builder $queued) use ($paths): void {
-            foreach ($paths as $path) {
-                $queued->orWhere(static fn (Builder $byPath): Builder => $byPath->ofPath($path)->whereIn('status', $path->queueStateValues()));
-            }
+        return $this->inStates($paths, static fn (AssessmentPath $path): array => $path->queueStateValues());
+    }
 
-            if ($paths === []) {
-                $queued->whereRaw('false');
-            }
-        }));
+    /**
+     * @param  list<AssessmentPath>  $paths
+     * @return Builder<Assessment>
+     */
+    public function preparing(array $paths): Builder
+    {
+        return $this->inStates($paths, static fn (AssessmentPath $path): array => $path->preparingStateValues());
     }
 
     /**
@@ -76,5 +84,23 @@ final readonly class RequestQueueQuery
                 }
             })
             ->where('due_at', '<', Date::now());
+    }
+
+    /**
+     * @param  list<AssessmentPath>  $paths
+     * @param  Closure(AssessmentPath): list<string>  $statesOf
+     * @return Builder<Assessment>
+     */
+    private function inStates(array $paths, Closure $statesOf): Builder
+    {
+        return $this->freezeGuard->excludeFrozen(Assessment::query()->where(static function (Builder $inStates) use ($paths, $statesOf): void {
+            foreach ($paths as $path) {
+                $inStates->orWhere(static fn (Builder $byPath): Builder => $byPath->ofPath($path)->whereIn('status', $statesOf($path)));
+            }
+
+            if ($paths === []) {
+                $inStates->whereRaw('false');
+            }
+        }));
     }
 }

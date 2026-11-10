@@ -39,9 +39,24 @@ enum AccreditedAssessmentStatus: string implements ReviewedAssessmentState
         return $next instanceof self && in_array($next, $this->nextStates(), true);
     }
 
+    public function awaitsResult(): bool
+    {
+        return in_array($this, [self::Submitted, self::Assigned, self::UnderReview, self::NeedsCompletion], true);
+    }
+
+    public function endedWithoutResult(): bool
+    {
+        return $this === self::Refunded || $this === self::DeclinedIncomplete;
+    }
+
     public function isInRequestQueue(): bool
     {
         return ! in_array($this, [self::AwaitingPayment, self::Draft], true);
+    }
+
+    public function isPreparedByEntity(): bool
+    {
+        return $this === self::Draft;
     }
 
     public function runsReviewClock(): bool

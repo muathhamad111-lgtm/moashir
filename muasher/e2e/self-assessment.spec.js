@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
 import { pinMockClock } from './support/clock'
 import { clearMockFault, forceMockFault } from './support/mockFaults'
+import { closeSuccess } from './support/dialogs'
 
 const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d/i
 
@@ -107,7 +108,7 @@ test('an incomplete submission points to the first item without a score', async 
   await page.locator('.self-actions .btn--primary').click()
   await expect(page.locator('.toast--error').last()).toBeVisible()
   await expect(page.locator('.self-main .field__error').first()).toBeVisible()
-  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await expect(page.getByRole('alertdialog')).toHaveCount(0)
 })
 
 test('the entity completes the draft, confirms and sees the result immediately, then its history', async ({
@@ -121,13 +122,14 @@ test('the entity completes the draft, confirms and sees the result immediately, 
   await expect(page.locator('.self-summary')).toBeVisible()
   await fillEveryEmptyScore(page, '8')
   await page.locator('.self-actions .btn--primary').click()
-  const dialog = page.getByRole('dialog')
+  const dialog = page.getByRole('alertdialog')
   await expect(dialog).toBeVisible()
-  await expect(dialog.locator('.self-submit__lead')).toContainText('SLF-2026-000002')
+  await expect(dialog.locator('.modal__message')).toHaveText('SLF-2026-000002')
   await page.screenshot({ path: `test-results/self-submit-confirm-${suffixOf(testInfo)}.png` })
 
   await dialog.locator('.btn--primary').click()
   await expect(page).toHaveURL(/\/assessment\/self\/result\/9002$/)
+  await closeSuccess(page)
   await expect(page.locator('.self-result__gauge-value')).toBeVisible()
   await expect(page.locator('.self-result__main')).not.toHaveCount(0)
   await expect(page.locator('.self-result__point').first()).toBeVisible()

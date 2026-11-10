@@ -53,7 +53,8 @@ async function approve() {
     await confirm({
       title: t('award.national.approveTitle'),
       message: t('award.national.approveMessage'),
-      confirmLabel: t('award.national.approve'),
+      confirmLabel: t('actions.approve'),
+      variant: 'confirm',
     })
   )
     board.approveNational()
@@ -136,7 +137,6 @@ async function approve() {
     <ReasonDialog
       v-model="reasons.prompt.open.value"
       :title="t('review.reasonTitle')"
-      :message="t('review.reasonMessage')"
       :submit-label="t('actions.confirm')"
       :action="reasons.prompt.provide"
       action-name="results.superAdminReason"

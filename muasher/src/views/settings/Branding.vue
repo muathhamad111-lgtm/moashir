@@ -56,7 +56,7 @@ async function onReset() {
     title: t('branding.confirmReset.title'),
     message: t('branding.confirmReset.message'),
     confirmLabel: t('branding.confirmReset.confirm'),
-    variant: 'danger',
+    variant: 'warning',
   })
   if (!accepted) return
   try {
@@ -160,7 +160,6 @@ async function onReset() {
     <ReasonDialog
       v-model="reasonPrompt.open.value"
       :title="t('branding.reason.title')"
-      :message="t('branding.reason.message')"
       :submit-label="t('actions.confirm')"
       :action="reasonPrompt.provide"
       action-name="branding.superAdminReason"

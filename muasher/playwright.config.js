@@ -28,6 +28,7 @@ export default defineConfig({
     '**/posture/**',
     ...(process.env.MOASHIR_CHECK_MOYASAR_CDN ? [] : ['**/moyasar-cdn.spec.js']),
     ...(process.env.MOASHIR_BANK_TRANSFER_SCREENS ? [] : ['**/bank-transfer-screens.spec.js']),
+    ...(process.env.MOASHIR_DIALOG_SCREENS ? [] : ['**/dialog-screens.spec.js']),
     // CI tests the production build, which has no dev-only component gallery route.
     ...(process.env.CI ? ['**/gallery.spec.js'] : []),
   ],

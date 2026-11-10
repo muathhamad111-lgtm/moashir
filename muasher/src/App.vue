@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import AppToast from '@/components/feedback/AppToast.vue'
 import ConfirmModal from '@/components/modal/ConfirmModal.vue'
+import SuccessModal from '@/components/modal/SuccessModal.vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import PublicLayout from '@/components/layout/PublicLayout.vue'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
@@ -74,4 +75,5 @@ useHead({
   </component>
   <AppToast />
   <ConfirmModal />
+  <SuccessModal />
 </template>

@@ -6,28 +6,60 @@ namespace App\Services\Assessments;
 
 use App\Data\Assessments\SubmissionCoverage;
 use App\Models\Assessments\Assessment;
+use App\Models\Assessments\AssessmentCvEntry;
 use App\Models\Assessments\EvidenceFile;
 
-final readonly class SubmissionCoverageReader
+final class SubmissionCoverageReader
 {
-    public function __construct(private CvEntryWriter $cv) {}
-
     public function read(Assessment $assessment): SubmissionCoverage
     {
-        return new SubmissionCoverage($this->cv->bodiesOf($assessment), $this->providedSlots($assessment));
+        return $this->readMany([$assessment->id])[$assessment->id];
     }
 
     /**
-     * @return array<string, true>
+     * @param  list<int>  $assessmentIds
+     * @return array<int, SubmissionCoverage>
      */
-    private function providedSlots(Assessment $assessment): array
+    public function readMany(array $assessmentIds): array
+    {
+        $bodies = $this->cvBodiesOf($assessmentIds);
+        $slots = $this->providedSlotsOf($assessmentIds);
+        $coverage = [];
+
+        foreach ($assessmentIds as $id) {
+            $coverage[$id] = new SubmissionCoverage($bodies[$id] ?? [], $slots[$id] ?? []);
+        }
+
+        return $coverage;
+    }
+
+    /**
+     * @param  list<int>  $assessmentIds
+     * @return array<int, array<string, string>>
+     */
+    private function cvBodiesOf(array $assessmentIds): array
+    {
+        $bodies = [];
+
+        foreach (AssessmentCvEntry::query()->whereIn('assessment_id', $assessmentIds)->get(['assessment_id', 'sub_code', 'body']) as $entry) {
+            $bodies[$entry->assessment_id][$entry->sub_code] = $entry->body;
+        }
+
+        return $bodies;
+    }
+
+    /**
+     * @param  list<int>  $assessmentIds
+     * @return array<int, array<string, true>>
+     */
+    private function providedSlotsOf(array $assessmentIds): array
     {
         $provided = [];
-        $evidence = EvidenceFile::query()->where('assessment_id', $assessment->id)->present()->whereNotNull('attachment_key')->with('storedFile')->get();
+        $evidence = EvidenceFile::query()->whereIn('assessment_id', $assessmentIds)->present()->whereNotNull('attachment_key')->with('storedFile')->get();
 
         foreach ($evidence as $file) {
             if ($file->countsTowardRequirements()) {
-                $provided[$file->sub_code.'|'.$file->attachment_key] = true;
+                $provided[$file->assessment_id][$file->sub_code.'|'.$file->attachment_key] = true;
             }
         }
 

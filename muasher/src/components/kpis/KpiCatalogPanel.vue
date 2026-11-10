@@ -42,7 +42,7 @@ async function save(payload) {
 async function remove(entry) {
   const accepted = await confirm({
     title: t(`kpis.admin.catalog.${props.kind}.removeTitle`),
-    message: t('kpis.admin.catalog.removeMessage', { name: props.localized(entry.name) }),
+    message: props.localized(entry.name),
     confirmLabel: t('kpis.admin.catalog.remove'),
     variant: 'danger',
   })

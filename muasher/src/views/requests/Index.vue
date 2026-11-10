@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
 import Card from '@/components/ui/Card.vue'
+import Tabs from '@/components/ui/Tabs.vue'
 import PathBadge from '@/components/ui/PathBadge.vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
@@ -10,14 +11,17 @@ import Pagination from '@/components/data-list/Pagination.vue'
 import RequestPathSwitch from '@/components/requests/RequestPathSwitch.vue'
 import RequestQueueFilters from '@/components/requests/RequestQueueFilters.vue'
 import RequestQueueTable from '@/components/requests/RequestQueueTable.vue'
+import PreparingRequestsPanel from '@/components/requests/PreparingRequestsPanel.vue'
 import { useRequestQueue } from '@/composables/useRequestQueue'
 import { useQueueStatCards } from '@/composables/useQueueStatCards'
+import { useQueueStage } from '@/composables/useQueueStage'
 import { usePermissions } from '@/composables/usePermissions'
 import { useAuthStore } from '@/stores/auth'
 import { requestsService } from '@/services/requestsService'
 import { awardCycleService } from '@/services/awardCycleService'
 import { ASSESSMENT_PATHS } from '@/constants/assessment'
 import { CYCLE_STATUSES } from '@/constants/advanced'
+import { QUEUE_STAGES } from '@/constants/accredited'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { followedPathsOf, pathCountOf } from '@/utils/requestPaths'
@@ -32,6 +36,7 @@ const queue = useRequestQueue(paths)
 const { items, status, errorMessage, load, filters, paginator, searchInput, stats, path } = queue
 const { pagination, setPage } = paginator
 const statCards = useQueueStatCards(stats)
+const { stage, stageQuery } = useQueueStage()
 const assessors = ref([])
 const cycles = ref([])
 
@@ -47,9 +52,22 @@ const switchEntries = computed(() =>
     }
   }),
 )
-const currentLabel = computed(
-  () => pathCountOf(queue.pathCounts.value, path.value)?.pathLabel ?? null,
-)
+const currentCount = computed(() => pathCountOf(queue.pathCounts.value, path.value))
+const currentLabel = computed(() => currentCount.value?.pathLabel ?? null)
+const keptQuery = computed(() => ({ ...queue.linkQuery.value, ...stageQuery.value }))
+
+function stageTab(value, key, count) {
+  const label = t(`requests.tabs.${key}`)
+  return {
+    value,
+    label: count === undefined ? label : t('requests.tabs.withCount', { label, count }),
+  }
+}
+
+const stageTabs = computed(() => [
+  stageTab(QUEUE_STAGES.QUEUE, 'assignmentQueue', currentCount.value?.total),
+  stageTab(QUEUE_STAGES.PREPARING, 'awaitingEntity', currentCount.value?.preparing),
+])
 
 async function loadAssessors() {
   if (!can(PERMISSIONS.REQUESTS_ASSIGN)) return
@@ -84,39 +102,46 @@ onMounted(() => Promise.all([loadAssessors(), loadCycles()]))
       :current="path"
       :route-name="ROUTE_NAMES.REQUESTS_INDEX"
       :label="t('requests.index.pathSwitchLabel')"
-      :kept-query="queue.linkQuery.value"
+      :kept-query="keptQuery"
     />
     <StatsCards :stats="statCards" :loading="!stats && status === 'loading'" />
     <Card>
-      <ListToolbar
-        v-model:search="searchInput"
-        :search-placeholder="t('requests.index.searchPlaceholder')"
-      >
-        <template #filters>
-          <RequestQueueFilters
-            :path="path"
-            :filters="filters.filters"
-            :sort="filters.sort.value"
-            :assessors="assessors"
-            :cycles="cycles"
-            @filter="queue.chooseFilter"
-            @sort="queue.setSort"
-          />
+      <Tabs v-model="stage" :tabs="stageTabs">
+        <template #default="{ active }">
+          <PreparingRequestsPanel v-if="active === QUEUE_STAGES.PREPARING" :path="path" />
+          <template v-else>
+            <ListToolbar
+              v-model:search="searchInput"
+              :search-placeholder="t('requests.index.searchPlaceholder')"
+            >
+              <template #filters>
+                <RequestQueueFilters
+                  :path="path"
+                  :filters="filters.filters"
+                  :sort="filters.sort.value"
+                  :assessors="assessors"
+                  :cycles="cycles"
+                  @filter="queue.chooseFilter"
+                  @sort="queue.setSort"
+                />
+              </template>
+            </ListToolbar>
+            <RequestQueueTable
+              :items="items"
+              :status="status"
+              :error-message="errorMessage"
+              :shows-region="path === ASSESSMENT_PATHS.ADVANCED"
+              @retry="load"
+            />
+            <Pagination
+              v-if="status === 'success' && pagination.lastPage > 1"
+              :page="pagination.page"
+              :last-page="pagination.lastPage"
+              @update:page="setPage($event)"
+            />
+          </template>
         </template>
-      </ListToolbar>
-      <RequestQueueTable
-        :items="items"
-        :status="status"
-        :error-message="errorMessage"
-        :shows-region="path === ASSESSMENT_PATHS.ADVANCED"
-        @retry="load"
-      />
-      <Pagination
-        v-if="status === 'success' && pagination.lastPage > 1"
-        :page="pagination.page"
-        :last-page="pagination.lastPage"
-        @update:page="setPage($event)"
-      />
+      </Tabs>
     </Card>
   </section>
 </template>

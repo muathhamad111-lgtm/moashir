@@ -55,9 +55,9 @@ export function useAccreditedWorkspace({ assessmentId, onSubmitted, completeness
   async function onRemove(row) {
     const accepted = await confirm({
       title: t('accredited.evidence.removeTitle'),
-      message: t('accredited.evidence.removeMessage', { name: row.fileName }),
+      message: row.fileName,
       variant: 'danger',
-      confirmLabel: t('accredited.evidence.removeConfirm'),
+      confirmLabel: t('actions.remove'),
     })
     if (accepted) uploads.remove(row)
   }

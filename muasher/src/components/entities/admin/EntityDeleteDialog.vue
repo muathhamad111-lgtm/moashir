@@ -42,13 +42,12 @@ watch(
   <BaseModal
     :model-value="modelValue"
     size="lg"
-    :title="t('entities.delete.title', { name: localized(entity.name) })"
+    :title="t('entities.delete.title')"
+    :subtitle="localized(entity.name)"
     :close-on-backdrop="!form.submitting.value"
     @update:model-value="emit('update:modelValue', $event)"
   >
     <form class="entity-delete" novalidate @submit.prevent="form.onSubmit">
-      <p class="entity-delete__intro">{{ t('entities.delete.intro') }}</p>
-
       <div v-if="impactStatus === 'loading'" class="entity-delete__loading" aria-busy="true">
         <Skeleton variant="text" :count="3" />
       </div>
@@ -89,19 +88,19 @@ watch(
 
       <footer class="modal__footer">
         <BaseButton
-          variant="secondary"
-          :disabled="form.submitting.value"
-          @click="emit('update:modelValue', false)"
-        >
-          {{ t('actions.cancel') }}
-        </BaseButton>
-        <BaseButton
           type="submit"
           variant="danger"
           :loading="form.submitting.value"
           :disabled="impactStatus !== 'success'"
         >
-          {{ t('entities.delete.submit') }}
+          {{ t('actions.delete') }}
+        </BaseButton>
+        <BaseButton
+          variant="secondary"
+          :disabled="form.submitting.value"
+          @click="emit('update:modelValue', false)"
+        >
+          {{ t('actions.cancel') }}
         </BaseButton>
       </footer>
     </form>

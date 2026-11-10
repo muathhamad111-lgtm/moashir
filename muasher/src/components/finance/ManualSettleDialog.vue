@@ -7,7 +7,6 @@ import FieldRadio from '@/components/form/FieldRadio.vue'
 import FieldTextarea from '@/components/form/FieldTextarea.vue'
 import { useManualSettle } from '@/composables/useManualSettle'
 import { MANUAL_SETTLE_RULES } from '@/constants/finance'
-import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -36,16 +35,13 @@ const statusOptions = computed(() =>
   <FormModal
     :model-value="modelValue"
     :title="t('finance.settle.title')"
+    :subtitle="transaction.reference"
     :busy="submitting"
     :submit-label="t('finance.settle.submit')"
     @update:model-value="emit('update:modelValue', $event)"
     @submit="submit"
   >
     <div class="settle-form">
-      <p class="settle-form__lead" role="note">
-        <AppIcon name="user-shield" />
-        {{ t('finance.settle.lead', { reference: transaction.reference }) }}
-      </p>
       <FieldRadio name="status" :label="t('finance.settle.status')" :options="statusOptions" />
       <FieldInput
         name="providerPaymentId"

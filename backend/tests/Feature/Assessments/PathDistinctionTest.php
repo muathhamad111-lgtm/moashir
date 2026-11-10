@@ -206,13 +206,14 @@ describe('separate queues and counts per path', function (): void {
         $overdue = assignedAccreditedRequest($version, assessorUser());
         $overdue->forceFill(['due_at' => Date::now()->subDay()])->save();
         submittedAdvancedRequest($cycle, $version);
+        openedAccreditedRequest();
 
         switchTo(requestFollower())->getJson('/api/v1/requests?filter[status]=assigned')->assertOk()
             ->assertJsonPath('meta.path', 'accredited')
             ->assertJsonPath('meta.pagination.total', 1)
             ->assertJsonPath('meta.path_counts', [
-                ['path' => 'accredited', 'path_label' => ['ar' => 'التقييم المعتمد', 'en' => 'Accredited assessment'], 'total' => 2, 'awaiting_assignment' => 1, 'overdue' => 1],
-                ['path' => 'advanced', 'path_label' => ['ar' => 'التقييم المتقدم (الجائزة)', 'en' => 'Advanced assessment (Award)'], 'total' => 1, 'awaiting_assignment' => 1, 'overdue' => 0],
+                ['path' => 'accredited', 'path_label' => ['ar' => 'التقييم المعتمد', 'en' => 'Accredited assessment'], 'total' => 2, 'awaiting_assignment' => 1, 'overdue' => 1, 'preparing' => 1],
+                ['path' => 'advanced', 'path_label' => ['ar' => 'التقييم المتقدم (الجائزة)', 'en' => 'Advanced assessment (Award)'], 'total' => 1, 'awaiting_assignment' => 1, 'overdue' => 0, 'preparing' => 0],
             ]);
     });
 

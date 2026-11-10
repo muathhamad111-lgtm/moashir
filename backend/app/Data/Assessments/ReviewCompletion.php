@@ -6,8 +6,5 @@ namespace App\Data\Assessments;
 
 final readonly class ReviewCompletion
 {
-    public function __construct(
-        public ?string $reason = null,
-        public bool $issueCertificate = true,
-    ) {}
+    public function __construct(public ?string $reason = null) {}
 }

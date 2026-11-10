@@ -149,7 +149,6 @@ onMounted(() => {
     <ReasonDialog
       v-model="reasonOpen"
       :title="t('integrations.reason.title')"
-      :message="t('integrations.reason.message')"
       :submit-label="t('actions.save')"
       :action="confirmReason"
       action-name="paymentIntegration.reason"
@@ -157,7 +156,6 @@ onMounted(() => {
     <ReasonDialog
       v-model="reasons.prompt.open.value"
       :title="t('integrations.reason.title')"
-      :message="t('settings.paymentChannels.reasonMessage')"
       :submit-label="t('actions.confirm')"
       :action="reasons.prompt.provide"
       action-name="paymentChannels.reason"
@@ -165,7 +163,7 @@ onMounted(() => {
     <ReasonDialog
       v-model="webhookReasonOpen"
       :title="t('integrations.reason.title')"
-      :message="t('integrations.payment.webhook.reasonMessage')"
+      :subtitle="t('integrations.payment.webhook.reasonMessage')"
       :submit-label="t('integrations.payment.webhook.register')"
       :action="confirmWebhookReason"
       action-name="paymentIntegration.webhookReason"

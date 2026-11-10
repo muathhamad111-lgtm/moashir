@@ -13,8 +13,7 @@ export function useUnsavedGuard(isDirty, { onDiscard = () => {} } = {}) {
       title: t('portal.unsaved.title'),
       message: t('portal.unsaved.message'),
       confirmLabel: t('portal.unsaved.discard'),
-      cancelLabel: t('portal.unsaved.stay'),
-      variant: 'danger',
+      variant: 'warning',
     })
     if (discard) onDiscard()
     return discard

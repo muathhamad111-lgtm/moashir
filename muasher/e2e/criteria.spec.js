@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
+import { closeSuccess, successDialog } from './support/dialogs'
 
 const OFFICER = {
   id: 7101,
@@ -126,7 +127,8 @@ test('editing published criteria: clone, blocked publish with links to fix, then
       isEn(testInfo) ? 'Annual review of the criteria weights.' : 'مراجعة سنوية لأوزان المعايير.',
     )
   await dialog.locator('button[type="submit"]').click()
-  await expect(page.locator('.toast--success').last()).toContainText(/2/)
+  await expect(successDialog(page).locator('.modal__title')).toContainText(/2/)
+  await closeSuccess(page)
   await expect(page.locator('.criteria-version--success')).toContainText(/2/)
 })
 
@@ -174,7 +176,7 @@ test('switching a guiding-points sub-criterion to direct evaluation warns with t
   await startDraft(page)
   await openMain(page, 'M1')
   await rowAction(page, 'M1.1', /Switch to direct evaluation|التحويل إلى التقييم المباشر/)
-  const confirm = page.getByRole('dialog')
+  const confirm = page.getByRole('alertdialog')
   await expect(confirm).toContainText('3')
   await page.screenshot({ path: `test-results/criteria-switch-warning-${suffixOf(testInfo)}.png` })
   await confirm.getByRole('button', { name: /Cancel|إلغاء/ }).click()

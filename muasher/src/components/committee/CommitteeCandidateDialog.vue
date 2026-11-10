@@ -108,9 +108,6 @@ onMounted(() => {
     @submit="form.onSubmit"
   >
     <div class="committee-candidate">
-      <p class="committee-candidate__lead">
-        {{ isSubstitute ? t('award.roster.substitute.lead') : t('award.roster.appoint.lead') }}
-      </p>
       <AppCombobox
         v-model="candidate"
         :options="options"

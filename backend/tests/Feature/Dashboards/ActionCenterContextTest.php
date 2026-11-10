@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
-const ENTITY_BOARD_QUERY_BOUND = 45;
+const ENTITY_BOARD_QUERY_BOUND = 55;
 
 const EMPTY_CONTEXT = ['assessment_id' => null, 'payment_id' => null, 'message_id' => null, 'reference' => null, 'remaining_subs' => null, 'percent' => null];
 

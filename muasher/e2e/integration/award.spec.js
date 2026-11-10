@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { writeFileSync } from 'node:fs'
 import { test, expect } from '@playwright/test'
+import { decisionAction } from './support/dialogs'
 import { assertMailLogsConfigured, mailMark, waitForInvitationToken } from './support/mailbox'
 import { STAFF, rememberPassword, signInStaff } from './support/accounts'
 import { FOOTER_LEGAL_PROBES, GUEST_SESSION_PROBE, watchApi } from './support/apiWatch'
@@ -239,7 +240,7 @@ test('the administrator appoints the committee assessor and starts the committee
   await shot(page, 'committee-roster')
   await page.goto(`/admin/award/cycles/${flow.cycleId}`)
   await page.locator('.cycle-actions button', { hasText: 'بدء تقييم اللجنة' }).click()
-  await page.locator('.modal .btn--primary').click()
+  await decisionAction(page).click()
   await expect(page.locator('.cycle-editor__title-row')).toContainText('تقييم اللجنة')
   expect(watch.unexpected([GUEST_SESSION_PROBE, ...FOOTER_LEGAL_PROBES])).toEqual([])
 })
@@ -255,7 +256,7 @@ test('the committee assessor scores the entity blindly and submits the evaluatio
   await page.locator('.committee-actions .btn--secondary').click()
   await expect(page.locator('.review-actions__status')).toContainText('كل شيء محفوظ')
   await page.locator('.committee-actions .btn--primary').click()
-  await page.locator('.modal .btn--primary').click()
+  await decisionAction(page).click()
   await expect(page.locator('.committee-workspace')).toContainText('أُرسل وأُقفل')
   await shot(page, 'committee-evaluation')
   expect(watch.unexpected([GUEST_SESSION_PROBE, ...FOOTER_LEGAL_PROBES])).toEqual([])
@@ -275,16 +276,16 @@ test('the Award Secretary approves the average, ranks, approves the results and 
   await chooseValue(region.locator('button[role="combobox"]'), '1')
   await expect(region.locator('.region-results__actions .btn--primary')).toBeEnabled()
   await region.locator('.region-results__actions .btn--primary').click()
-  await page.locator('.modal .btn--primary').click()
+  await decisionAction(page).click()
   await expect(region).toContainText('معتمدة')
   await page.locator('.results-tabs__link').nth(1).click()
   await chooseValue(rows(page).first().locator('button[role="combobox"]'), '1')
   await expect(page.locator('.region-results__actions .btn--primary')).toBeEnabled()
   await page.locator('.region-results__actions .btn--primary').click()
-  await page.locator('.modal .btn--primary').click()
+  await decisionAction(page).click()
   await expect(page.locator('.announcement-card .btn--primary')).toBeEnabled()
   await page.locator('.announcement-card .btn--primary').click()
-  await page.locator('.modal .btn--primary').click()
+  await decisionAction(page).click()
   await expect(page.locator('.announcement-card')).toContainText('أُعلنت النتائج بتاريخ')
   await shot(page, 'results-announced')
   expect(watch.unexpected([GUEST_SESSION_PROBE, ...FOOTER_LEGAL_PROBES])).toEqual([])

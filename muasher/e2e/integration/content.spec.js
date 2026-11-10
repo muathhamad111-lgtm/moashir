@@ -1,6 +1,7 @@
 import { Buffer } from 'node:buffer'
 import { writeFileSync } from 'node:fs'
 import { test, expect } from '@playwright/test'
+import { closeSuccess, decisionAction } from './support/dialogs'
 import { assertMailLogsConfigured } from './support/mailbox'
 import { STAFF, signInStaff } from './support/accounts'
 import {
@@ -45,7 +46,7 @@ async function openSession(browser, key) {
 }
 
 async function confirmDialog(page) {
-  await page.locator('.modal .modal__footer .btn').last().click()
+  await decisionAction(page).click()
 }
 
 test.describe.configure({ mode: 'serial' })
@@ -101,6 +102,7 @@ test('the Content Officer builds the hero with an uploaded image and publishes t
 
   await page.locator('.publication-control .btn--primary').click()
   await confirmDialog(page)
+  await closeSuccess(page)
   await expect(page.locator('.publication-control .badge')).toHaveClass(/badge--success/)
   await shot(page, 'editor-published')
 

@@ -69,7 +69,7 @@ function reorder(orderedIds) {
 async function remove(item) {
   const accepted = await confirm({
     title: t('cms.items.confirmRemove.title'),
-    message: t('cms.items.confirmRemove.message', { name: labelOf(item) }),
+    message: labelOf(item),
     confirmLabel: t('cms.items.remove'),
     variant: 'danger',
   })

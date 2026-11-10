@@ -51,7 +51,7 @@ export function useEntityLogo() {
       title: t('portal.profile.logo.removeTitle'),
       message: t('portal.profile.logo.removeMessage'),
       variant: 'danger',
-      confirmLabel: t('portal.profile.logo.removeConfirm'),
+      confirmLabel: t('actions.delete'),
     })
     if (!accepted) return
     busy.value = true

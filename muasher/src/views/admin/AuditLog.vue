@@ -92,7 +92,7 @@ function exportWith(reason) {
     <ReasonDialog
       v-model="exportOpen"
       :title="t('auditLog.exportTitle')"
-      :message="t('auditLog.exportMessage')"
+      :subtitle="t('auditLog.exportMessage')"
       :submit-label="t('auditLog.export')"
       :optional="!auth.isSuperAdmin"
       :action="exportWith"

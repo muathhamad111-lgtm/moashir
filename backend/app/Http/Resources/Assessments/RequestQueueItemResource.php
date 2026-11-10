@@ -13,6 +13,7 @@ use App\Support\Assessments\StatusMask;
 use App\Support\Award\CyclePresenter;
 use App\Support\Certificates\EntityLevelPresenter;
 use App\Support\Entities\EntityPresenter;
+use App\Support\Periods\PeriodPresenter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -42,6 +43,7 @@ final class RequestQueueItemResource extends JsonResource
             'award_cycle' => CyclePresenter::summary($assessment->awardCycle),
             'region' => $assessment->region instanceof Region ? EntityPresenter::place($assessment->region) : null,
             ...ReviewClockPresenter::of($assessment),
+            ...PeriodPresenter::attribution($assessment),
         ];
     }
 }

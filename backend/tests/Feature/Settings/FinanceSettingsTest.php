@@ -124,7 +124,7 @@ it('treats an empty update as a no-op', function (): void {
 
     $this->putJson(FINANCE_SETTINGS, [])->assertOk()->assertJsonPath('data.vat_rate', '15.00');
 
-    expect(Setting::query()->count())->toBe(0)
+    expect(Setting::query()->whereNot('key', SettingKey::PeriodicRolloutFrom->value)->count())->toBe(0)
         ->and(Audit::query()->where('event', AuditEvent::FinanceSettingsUpdated->value)->exists())->toBeFalse();
 });
 
@@ -160,7 +160,7 @@ it('denies every staff role without the finance setting permissions', function (
     $this->getJson(FINANCE_SETTINGS)->assertForbidden()->assertJsonPath('code', 'forbidden');
     $this->putJson(FINANCE_SETTINGS, ['accredited_price' => '900.00'])->assertForbidden()->assertJsonPath('code', 'forbidden');
 
-    expect(Setting::query()->count())->toBe(0);
+    expect(Setting::query()->whereNot('key', SettingKey::PeriodicRolloutFrom->value)->count())->toBe(0);
 })->with(nonSystemAdminRoles());
 
 it('refuses guests and entities', function (): void {
@@ -180,7 +180,7 @@ it('guards the Kit price with its own permission', function (): void {
         ->assertOk()
         ->assertJsonPath('data.editable_fields', ['accredited_price', 'vat_rate', 'order_validity_minutes']);
     $this->putJson(FINANCE_SETTINGS, ['accredited_price' => '900.00', 'bag_price' => '100.00'])->assertForbidden();
-    expect(Setting::query()->count())->toBe(0);
+    expect(Setting::query()->whereNot('key', SettingKey::PeriodicRolloutFrom->value)->count())->toBe(0);
 
     $this->putJson(FINANCE_SETTINGS, ['accredited_price' => '900.00'])->assertOk()->assertJsonPath('data.accredited_price', '900.00');
 });
@@ -202,7 +202,7 @@ it('rejects invalid finance settings without changing anything', function (array
         ->assertJsonPath('code', 'validation_failed')
         ->assertJsonValidationErrors([$field]);
 
-    expect(Setting::query()->count())->toBe(0);
+    expect(Setting::query()->whereNot('key', SettingKey::PeriodicRolloutFrom->value)->count())->toBe(0);
 })->with([
     'price without decimals' => [['accredited_price' => '1000'], 'accredited_price'],
     'price with three decimals' => [['accredited_price' => '1000.005'], 'accredited_price'],

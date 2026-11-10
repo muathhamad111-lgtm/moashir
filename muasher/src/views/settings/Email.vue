@@ -84,7 +84,6 @@ onMounted(load)
     <ReasonDialog
       v-model="reasonOpen"
       :title="t('integrations.reason.title')"
-      :message="t('integrations.reason.message')"
       :submit-label="t('actions.save')"
       :action="confirmReason"
       action-name="emailIntegration.reason"

@@ -13,12 +13,13 @@ export function useEvaluationTypeSwitch() {
       return {
         message: t('criteria.evaluationType.toPointsMessage'),
         confirmLabel: t('criteria.evaluationType.switchConfirm'),
+        variant: 'confirm',
       }
     }
     if (!pointCount) {
       return {
-        message: t('criteria.evaluationType.toDirectNoPointsMessage'),
         confirmLabel: t('criteria.evaluationType.switchConfirm'),
+        variant: 'confirm',
       }
     }
     return {

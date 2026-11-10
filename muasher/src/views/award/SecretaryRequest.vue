@@ -123,7 +123,6 @@ onMounted(request.load)
     <ReasonDialog
       v-model="actions.reasons.prompt.open.value"
       :title="t('review.reasonTitle')"
-      :message="t('review.reasonMessage')"
       :submit-label="t('actions.confirm')"
       :action="actions.reasons.prompt.provide"
       action-name="secretary.superAdminReason"

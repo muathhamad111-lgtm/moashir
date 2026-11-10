@@ -7,6 +7,7 @@ namespace App\Providers;
 use App\Enums\Identity\Ability;
 use App\Enums\Identity\PermissionKey;
 use App\Models\Assessments\Assessment;
+use App\Models\Assessments\AssessmentPeriod;
 use App\Models\Assessments\EvidenceBundle;
 use App\Models\Assessments\EvidenceFile;
 use App\Models\Audit\Audit;
@@ -80,6 +81,7 @@ use App\Policies\Insights\MaturityInterpretationPolicy;
 use App\Policies\Integrations\IntegrationSettingsPolicy;
 use App\Policies\Kpis\KpiPolicy;
 use App\Policies\Notifications\NotificationPolicy;
+use App\Policies\Periods\AssessmentPeriodPolicy;
 use App\Policies\Platform\PlatformReadinessPolicy;
 use App\Policies\Reports\FeedbackReportPolicy;
 use App\Policies\Search\GlobalSearchPolicy;
@@ -136,6 +138,7 @@ final class AuthorizationServiceProvider extends ServiceProvider
         Gate::policy(Certificate::class, CertificatePolicy::class);
         Gate::policy(ContactMessage::class, ContactMessagePolicy::class);
         Gate::policy(MaturityInterpretation::class, MaturityInterpretationPolicy::class);
+        Gate::policy(AssessmentPeriod::class, AssessmentPeriodPolicy::class);
 
         Gate::define(Ability::SuperAdminSelfService->value, static fn (User $user): bool => false);
         Gate::define(Ability::ListRoles->value, static fn (User $user): bool => $user->can(PermissionKey::UsersView->value)

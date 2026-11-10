@@ -15,6 +15,9 @@ use App\Enums\Integrations\IntegrationKind;
 use App\Enums\Integrations\IntegrationMode;
 use App\Enums\Integrations\PaymentLinkedPath;
 use App\Enums\Integrations\PaymentMethod;
+use App\Enums\Periods\CertificateValidityRule;
+use App\Enums\Periods\PeriodCadence;
+use App\Enums\Periods\PeriodicAudience;
 use App\Support\ValueObjects\GapThresholds;
 use App\Support\ValueObjects\LocalizedText;
 use App\Support\ValueObjects\MaturityBounds;
@@ -65,6 +68,13 @@ enum SettingKey: string
     case InsightsGapThresholds = 'insights.gap_thresholds';
     case InsightsMaturityBands = 'insights.maturity_bands';
     case VatRegistrationNumber = 'finance.vat_registration_number';
+    case PeriodicCadence = 'periodic.cadence';
+    case PeriodicNoticeDaysBefore = 'periodic.notice_days_before';
+    case PeriodicReminderDaysBeforeEnd = 'periodic.reminder_days_before_end';
+    case PeriodicAudience = 'periodic.audience';
+    case PeriodicCertificateValidity = 'periodic.certificate_validity';
+    case PeriodicPaidDraftReminderDays = 'periodic.paid_draft_reminder_days';
+    case PeriodicRolloutFrom = 'periodic.rollout_from';
 
     public function group(): SettingGroup
     {
@@ -75,11 +85,13 @@ enum SettingKey: string
     {
         return match ($this) {
             self::PaymentMode, self::PaymentCheckoutPattern, self::SmsMode, self::EmailMode, self::EmailTestAddress,
-            self::AiMode, self::AiPlacement, self::CommitteeEntityDataVisibility, self::VatRegistrationNumber => SettingType::String,
+            self::AiMode, self::AiPlacement, self::CommitteeEntityDataVisibility, self::VatRegistrationNumber,
+            self::PeriodicCadence, self::PeriodicAudience, self::PeriodicCertificateValidity, self::PeriodicRolloutFrom => SettingType::String,
             self::PaymentOrderValidityMinutes, self::AbandonedCartAfterHours, self::FilesMaxSizeMb,
             self::AccreditedReviewSlaDays, self::AdvancedMinEntityAgeYears, self::AdvancedInitialReviewSlaDays,
             self::AccreditedUploadMaxFileMb, self::AccreditedEvidenceMaxFilesPerSub, self::AdvancedUploadMaxFileMb,
-            self::AdvancedEvidenceMaxFilesPerSub, self::ContactRetentionMonths => SettingType::Integer,
+            self::AdvancedEvidenceMaxFilesPerSub, self::ContactRetentionMonths, self::PeriodicNoticeDaysBefore,
+            self::PeriodicPaidDraftReminderDays => SettingType::Integer,
             self::AccreditedPrice, self::VatRate, self::BagPrice, self::AdvancedDisqualificationScore => SettingType::Decimal,
             self::AccreditedCertificateIssuance => SettingType::Boolean,
             default => SettingType::Json,
@@ -118,8 +130,14 @@ enum SettingKey: string
             self::ContactRetentionMonths => 24,
             self::InsightsGapThresholds => GapThresholds::DEFAULTS,
             self::InsightsMaturityBands => MaturityBounds::DEFAULTS,
+            self::PeriodicCadence => PeriodCadence::Quarterly->value,
+            self::PeriodicNoticeDaysBefore => PeriodCadence::Quarterly->defaultNoticeDays(),
+            self::PeriodicReminderDaysBeforeEnd => PeriodCadence::Quarterly->defaultReminderDays(),
+            self::PeriodicAudience => PeriodicAudience::ActiveVerifiedEntities->value,
+            self::PeriodicCertificateValidity => CertificateValidityRule::NextPeriodEnd->value,
+            self::PeriodicPaidDraftReminderDays => 7,
             self::PaymentApplePayDomainConfirmation, self::PaymentStcPayActivationConfirmation, self::EmailTestAddress,
-            self::AccreditedPrice, self::BagPrice, self::VatRegistrationNumber => null,
+            self::AccreditedPrice, self::BagPrice, self::VatRegistrationNumber, self::PeriodicRolloutFrom => null,
         };
     }
 

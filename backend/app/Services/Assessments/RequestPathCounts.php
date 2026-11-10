@@ -25,11 +25,13 @@ final readonly class RequestPathCounts
     {
         $byStatus = $this->countByPathAndStatus($this->queue->queued($paths));
         $overdue = $this->countByPath($this->queue->overdue($this->queue->queued($paths)));
+        $preparing = $this->countByPath($this->queue->preparing($paths));
 
         return array_map(static fn (AssessmentPath $path): PathCount => new PathCount($path, [
             'total' => array_sum($byStatus[$path->value] ?? []),
             'awaiting_assignment' => $byStatus[$path->value][$path->reviewStages()->awaitingAssignment->value] ?? 0,
             'overdue' => $overdue[$path->value] ?? 0,
+            'preparing' => $preparing[$path->value] ?? 0,
         ]), $paths);
     }
 

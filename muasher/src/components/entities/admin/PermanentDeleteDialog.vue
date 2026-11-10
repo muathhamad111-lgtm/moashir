@@ -41,6 +41,7 @@ watch(
     :model-value="modelValue"
     size="lg"
     :title="t('entities.permanent.title')"
+    :subtitle="localized(entity.name)"
     :close-on-backdrop="false"
     @update:model-value="emit('update:modelValue', $event)"
   >
@@ -84,15 +85,15 @@ watch(
         required
       />
       <footer class="modal__footer">
+        <BaseButton type="submit" variant="danger" icon="trash" :loading="form.submitting.value">
+          {{ t('entities.permanent.submit') }}
+        </BaseButton>
         <BaseButton
           variant="secondary"
           :disabled="form.submitting.value"
           @click="emit('update:modelValue', false)"
         >
           {{ t('actions.cancel') }}
-        </BaseButton>
-        <BaseButton type="submit" variant="danger" icon="trash" :loading="form.submitting.value">
-          {{ t('entities.permanent.submit') }}
         </BaseButton>
       </footer>
     </form>

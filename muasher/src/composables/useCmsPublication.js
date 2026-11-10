@@ -2,6 +2,7 @@ import { useI18n } from 'vue-i18n'
 import { CMS_PAGE_KEYS } from '@/constants/cms'
 import { useConfirm } from './useConfirm'
 import { useToast } from './useToast'
+import { success } from './useSuccess'
 import { useSiteStatusStore } from '@/stores/siteStatus'
 import { usePublicHomeStore } from '@/stores/publicHome'
 
@@ -23,7 +24,7 @@ export function useCmsPublication(editor, pageKey) {
     if (!accepted) return
     try {
       syncPublicSite(await action())
-      toast.success(messages.success)
+      success.show({ title: messages.success })
     } catch (error) {
       toast.error(error?.normalized?.message || t('cms.toasts.failed'))
     }
@@ -33,22 +34,21 @@ export function useCmsPublication(editor, pageKey) {
     return change(editor.publish, {
       confirm: {
         title: t('cms.publication.confirmPublish.title'),
-        message: t('cms.publication.confirmPublish.message'),
         confirmLabel: t('cms.publication.publish'),
-        variant: 'primary',
+        variant: 'confirm',
       },
       success: t('cms.publication.publishedToast'),
     })
   }
 
   function unpublish() {
-    const homeKey = pageKey.value === CMS_PAGE_KEYS.HOME ? 'home' : 'page'
+    const isHome = pageKey.value === CMS_PAGE_KEYS.HOME
     return change(editor.unpublish, {
       confirm: {
         title: t('cms.publication.confirmUnpublish.title'),
-        message: t(`cms.publication.confirmUnpublish.${homeKey}`),
+        message: isHome ? t('cms.publication.confirmUnpublish.home') : '',
         confirmLabel: t('cms.publication.unpublish'),
-        variant: 'danger',
+        variant: 'warning',
       },
       success: t('cms.publication.unpublishedToast'),
     })

@@ -1,0 +1,42 @@
+@use '../mixins' as *;
+
+.linked-request__number {
+  @include flex(row, center, flex-end, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.linked-request__empty {
+  margin: 0;
+  color: var(--theme-text-muted);
+  font-size: var(--fs-sm);
+}
+
+.linked-request__progress {
+  margin-block-start: var(--space-4);
+}
+
+.linked-request__restricted {
+  @include flex(row, center, flex-start, var(--space-2));
+  margin: var(--space-4) 0 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--color-info-soft);
+  color: var(--theme-info-text);
+  font-size: var(--fs-sm);
+}
+
+.linked-request__links {
+  @include flex(column, flex-start, flex-start, var(--space-2));
+  margin-block-start: var(--space-4);
+}
+
+.linked-request__link {
+  @include flex(row, center, flex-start, var(--space-2));
+  min-block-size: var(--size-touch-target);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-accent-text);
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}

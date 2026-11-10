@@ -14,7 +14,7 @@ final readonly class ListRequestQueue
 {
     public const array SORTABLE = ['submitted_at', '-submitted_at', 'due_at', '-due_at', 'status', '-status', 'created_at', '-created_at'];
 
-    public const array RELATIONS = ['entity.'.EntityLevelQuery::RELATION, 'currentResult', 'activeAssignment.assessor', 'openCompletionRequest', 'awardCycle', 'region'];
+    public const array RELATIONS = ['entity.'.EntityLevelQuery::RELATION, 'currentResult', 'activeAssignment.assessor', 'openCompletionRequest', 'awardCycle', 'region', 'period'];
 
     public function __construct(private RequestQueueQuery $queue) {}
 

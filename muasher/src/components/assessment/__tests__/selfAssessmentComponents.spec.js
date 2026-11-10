@@ -147,19 +147,17 @@ describe('SelfAssessmentActions', () => {
 })
 
 describe('SelfSubmitDialog', () => {
-  it('confirms with the request number, the items count and the unsaved changes note', async () => {
-    const wrapper = mountWith(SelfSubmitDialog, {
-      modelValue: true,
-      number: 'SLF-2026-000002',
-      itemsCount: 26,
-      dirty: true,
-    })
+  it('asks one short question with the request number and a send / cancel pair', async () => {
+    const wrapper = mountWith(SelfSubmitDialog, { modelValue: true, number: 'SLF-2026-000002' })
     await flushPromises()
-    expect(wrapper.find('.self-submit__lead').text()).toContain('SLF-2026-000002')
-    expect(wrapper.text()).toContain('All 26 items are scored.')
-    expect(wrapper.text()).toContain('Your unsaved changes are saved with the submission.')
-    const buttons = wrapper.findAll('.modal__footer button, footer button')
-    await buttons[buttons.length - 1].trigger('click')
+    expect(wrapper.find('[role="alertdialog"] .modal__title').text()).toBe(
+      'Submit the self assessment?',
+    )
+    expect(wrapper.find('.modal__message').text()).toBe('SLF-2026-000002')
+    expect(wrapper.findAll('li')).toHaveLength(0)
+    const buttons = wrapper.findAll('.modal__footer .btn')
+    expect(buttons.map((button) => button.text())).toEqual(['Send', 'Cancel'])
+    await buttons[0].trigger('click')
     expect(wrapper.emitted('confirm')).toHaveLength(1)
   })
 })

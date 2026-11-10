@@ -9,6 +9,7 @@ use App\Enums\Certificates\VerificationOutcome;
 use App\Models\Certificates\Certificate;
 use App\Models\Certificates\CertificateVerificationLog;
 use App\Services\Certificates\VerificationCode;
+use App\Support\Periods\LocalDay;
 use Illuminate\Contracts\Config\Repository;
 
 final readonly class VerifyCertificate
@@ -22,7 +23,7 @@ final readonly class VerifyCertificate
         $normalized = $this->codes->normalize($code);
         $certificate = $normalized === null ? null : Certificate::query()->where('verification_code', $normalized)->first();
         $verification = $certificate instanceof Certificate
-            ? new CertificateVerification(VerificationOutcome::of($certificate->status), $certificate)
+            ? new CertificateVerification(VerificationOutcome::ofCertificate($certificate, LocalDay::today()), $certificate)
             : new CertificateVerification(VerificationOutcome::NotFound);
 
         CertificateVerificationLog::query()->create([

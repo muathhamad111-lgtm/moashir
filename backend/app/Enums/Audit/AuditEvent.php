@@ -100,6 +100,7 @@ enum AuditEvent: string
     case AssessmentReopened = 'assessment.reopened';
     case AssessmentTransitionForced = 'assessment.transition_forced';
     case AssessmentDueDatesRecomputed = 'assessment.due_dates_recomputed';
+    case RequestReminderSent = 'requests.reminder_sent';
     case CycleCreated = 'cycle.created';
     case CycleUpdated = 'cycle.updated';
     case CycleMembersChanged = 'cycle.members_changed';
@@ -152,6 +153,7 @@ enum AuditEvent: string
     case AiSettingsUpdated = 'settings.ai_updated';
     case FinanceSettingsUpdated = 'settings.finance_updated';
     case AssessmentSettingsUpdated = 'settings.assessment_updated';
+    case PeriodicSettingsUpdated = 'settings.periodic_updated';
     case PaymentConnectionTested = 'settings.payment_tested';
     case SmsConnectionTested = 'settings.sms_tested';
     case EmailConnectionTested = 'settings.email_tested';

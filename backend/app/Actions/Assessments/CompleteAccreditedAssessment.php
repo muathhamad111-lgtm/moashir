@@ -38,7 +38,7 @@ final readonly class CompleteAccreditedAssessment
 
             $snapshot = $this->finalizer->finalize($actor, $locked, $assignment, $this->completeness->assertComplete($locked));
 
-            AssessmentCompleted::dispatch($locked, $snapshot, $actor->id, $completion->issueCertificate);
+            AssessmentCompleted::dispatch($locked, $snapshot, $actor->id);
 
             return $locked;
         });

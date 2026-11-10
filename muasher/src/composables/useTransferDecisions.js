@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useToast } from '@/composables/useToast'
+import { success } from '@/composables/useSuccess'
 import { useAuthStore } from '@/stores/auth'
 import { bankTransfersService } from '@/services/bankTransfersService'
 import { BANK_TRANSFER_CODES } from '@/constants/bankTransfer'
@@ -20,7 +20,6 @@ function toTarget(item) {
 
 export function useTransferDecisions({ onDecided = () => {} } = {}) {
   const { t } = useI18n()
-  const toast = useToast()
   const auth = useAuthStore()
   const approveTargets = ref([])
   const rejectTargets = ref([])
@@ -41,18 +40,28 @@ export function useTransferDecisions({ onDecided = () => {} } = {}) {
     rejectOpen.value = true
   }
 
+  function closeDialogs() {
+    approveOpen.value = false
+    rejectOpen.value = false
+  }
+
   function settledSingle(error) {
     const code = errorCodeOf(error)
     if (!CONFLICT_CODES.includes(code)) throw error
     conflict.value = code
+    closeDialogs()
     onDecided({ conflict: code })
   }
 
-  async function runSingle(request, successKey) {
+  async function runSingle(request, outcomeKey) {
     try {
       const { data } = await request()
       conflict.value = null
-      toast.success(t(successKey, { number: data.receipt?.number ?? '' }))
+      closeDialogs()
+      success.show({
+        title: t(`finance.transfers.success.${outcomeKey}`),
+        message: data.reference ?? '',
+      })
       onDecided({ transfer: data })
     } catch (error) {
       settledSingle(error)
@@ -70,7 +79,7 @@ export function useTransferDecisions({ onDecided = () => {} } = {}) {
     if (ids.length === 1)
       return runSingle(
         () => bankTransfersService.approve(ids[0], reason),
-        'finance.transfers.toasts.approved',
+        'approved',
       )
     return runBulk(() => bankTransfersService.bulkApprove(ids, reason))
   }
@@ -81,7 +90,7 @@ export function useTransferDecisions({ onDecided = () => {} } = {}) {
     if (ids.length === 1)
       return runSingle(
         () => bankTransfersService.reject(ids[0], rejection, reason),
-        'finance.transfers.toasts.rejected',
+        'rejected',
       )
     return runBulk(() => bankTransfersService.bulkReject(ids, rejection, reason))
   }

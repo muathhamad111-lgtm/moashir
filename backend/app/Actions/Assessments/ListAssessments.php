@@ -17,6 +17,8 @@ final readonly class ListAssessments
 {
     public const array SORTABLE = ['created_at', '-created_at', 'submitted_at', '-submitted_at', 'completed_at', '-completed_at'];
 
+    public const array RELATIONS = ['entity', 'currentResult', 'awardCycle', 'period', 'payment.receipt', 'certificate'];
+
     public function __construct(private AssessmentListQuery $listQuery) {}
 
     /**
@@ -24,7 +26,7 @@ final readonly class ListAssessments
      */
     public function handle(User $actor, AssessmentListFilters $filters): LengthAwarePaginator
     {
-        $query = $this->listQuery->scoped($actor, $filters)->with(['entity', 'currentResult', 'awardCycle']);
+        $query = $this->listQuery->scoped($actor, $filters)->with(self::RELATIONS);
         $this->filterStatus($query, $actor, $filters->status);
         $this->filterOpen($query, $actor, $filters->isOpen);
         $this->filterResult($query, $filters->hasResult);

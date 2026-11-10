@@ -1016,10 +1016,20 @@ force_transition`; `expire_completion` has no actor, `actor = system` in the his
   refunded | declined_incomplete`), `filter[overdue]=true|false`, `filter[assessor_id]`, `search` (request number, entity name or e-mail),
   `sort` ±`submitted_at | due_at | status | created_at` (default `-submitted_at`), pagination, `meta.stats { total, by_status,
   overdue }` (for the served path), `meta.path` and `meta.path_counts[{ path, path_label{ar,en}, total, awaiting_assignment,
-  overdue }]` (one entry per followed path, independent of the other filters, for the sidebar). Row: `{ id, number, path,
+  overdue, preparing }]` (one entry per followed path, independent of the other filters, for the sidebar; `preparing` counts
+  the paid drafts below and never enters `stats`, the dashboards or the SLA). Row: `{ id, number, path,
   path_label{ar,en}, status, is_frozen, entity{ id, reference, name, status, level }, assessor{ id, name } | null, assigned_at,
   completion_deadline, submitted_at, due_at, is_overdue, completed_at }`.
-- `GET /requests/{id}` — row + `payment { paid }`, `record` (the assessment with `status_history`), `assignment_history[{ id,
+- `GET /requests/preparing` — the preparing stage (Task-75, DF-1): open requests of operational entities that the entity has
+  not sent yet (status `draft`; for the accredited path the fee is already paid). Read only, never assignable, outside the
+  assignment statistics and the SLA. `filter[path]`, `filter[cycle_id]` (advanced), `search`, `sort` ±`created_at` (default
+  oldest opened first), pagination; `meta.path`, `meta.path_counts` (as above). Row: `{ id, number, path, path_label, status,
+  is_frozen, entity{ id, reference, name, status, level }, award_cycle, opened_at, payment{ reference, channel, status,
+  is_test, paid_at, receipt{ number, status, is_test } | null } | null, progress{ subs_complete, subs_total } | null,
+  last_activity_at }` (latest of the opening, a CV edit or an evidence change). Holders of `finance.operations.view` also get
+  `payment.id` and `payment.receipt.id` to open the finance record and download the receipt.
+- `GET /requests/{id}` — row + `payment { paid }` (global readers also get the payment card fields of the preparing row:
+  `reference, channel, status, is_test, paid_at, receipt`, plus `id` / `receipt.id` for `finance.operations.view`), `record` (the assessment with `status_history`), `assignment_history[{ id,
   assessor{ id, name }, status, assigned_at, started_at, ended_at, assigned_by{ id, name }, reason, end_reason }]`,
   `completion_requests[]`. The assigned assessor (`requests.assigned.view`) sees only their own assignment rows, without
   `assigned_by`, reasons or staff names.
@@ -1059,7 +1069,7 @@ force_transition`; `expire_completion` has no actor, `actor = system` in the his
   /assessments/{id}/request-completion { notes 10..2000, items[{ sub_criterion_id, kind: cv|evidence, note? }] 1..100,
   deadline_at (future, ≤ 60 days), expiry_outcome: continue_as_submitted | decline (required) }` (`under_review →
   needs_completion`, ACC-07 entity I+E, whose text states the outcome) · `POST /assessments/{id}/complete { reason?,
-  issue_certificate?: bool = true }` (all items scored —
+  issue_certificate? (deprecated, accepted as a boolean and ignored — Task-79) }` (all items scored —
   422 `scores.incomplete`; feedback items are optional, an assessor may complete with scores only; computes the
   `accredited_result` snapshot, closes the assignment, ACC-08 entity + followers and ACC-10 entity). Scoring needs `under_review`; only the active assignee
   passes (`can:score` + a re-check under the row lock, 403 `assessment.not_assignee`). Every write: frozen 409 `entity.deleted`,
@@ -1134,6 +1144,72 @@ scores and sends STD-08 to the entity and the assessor, I+E). Permanent deletion
 open (frozen) requests, every CV entry, completion request, evidence row and bundle, and detaches the evidence and bundle
 files so the daily orphan purge removes them; completed results stay on the erased tombstone and the payments stay.
 
+## Periodic accredited assessment (Task-79, 03 §7.2, §14.3, §19)
+
+The full contract (JSON shapes, codes, placeholders) is `agents/tasks/reports/Task-79-contract.md`.
+
+### Data
+- `assessment_periods`: cadence (`quarterly | semi_annual | annual`), key (`2027-Q1`, `2027-H1`, `2027`), year, sequence,
+  `starts_on` / `ends_on` (inclusive, Asia/Riyadh calendar), `starts_at` / `ends_at` (UTC instants, `ends_at` exclusive),
+  `is_shortened`, `notice_sent_at`, `reminders_sent` (days), `last_digest_on`, `closed_at`, `superseded_at`. One live
+  period per key and per start date (partial unique indexes).
+- `assessments.period_id` + `period_assigned_at` (accredited, set at `draft → submitted`, never recomputed; checked in the
+  database) and `assessments.paid_draft_reminded_at` (ACC-13 window).
+- `entity_period_statuses` (`assessed | in_progress | missed | closed_without_result | frozen | not_required`), one row per
+  entity and ended period; `not_submitted` is live only (current period).
+- `period_notices` (period, entity, code `PER-01 | PER-02 | PER-03 | PER-05`, threshold days): one row per notice sent;
+  the unique key makes every notice idempotent.
+- `certificates.valid_until` (date, accredited only, required by a check constraint, immutable through the certificate
+  guard trigger). `certificate_verification_logs.outcome` gains `expired`.
+- Settings (group `periodic`): `periodic.cadence`, `periodic.notice_days_before`, `periodic.reminder_days_before_end`,
+  `periodic.audience`, `periodic.certificate_validity`, `periodic.paid_draft_reminder_days`, and the read-only
+  `periodic.rollout_from` seeded by the migration with the first full quarter after the release (2027-01-01).
+
+### Rules
+- Periods are generated from the rollout through today and the next four (`moashir:periods:generate`, daily 00:05
+  Riyadh, idempotent; also after a settings change and, if missing, at submission). Started periods never change. A
+  cadence change takes effect at the end of the current period: the first new period is the new-cadence period that
+  contains the next day, shortened to start that day; unstarted periods that no longer match are superseded and PER-05
+  corrects the PER-01 already sent for them (queued listener, tries 3, backoff 60/300, timeout 300).
+- Submission: the period that contains the submission instant (Asia/Riyadh); before the rollout the request has no period
+  (`pre_periodic`, «قبل التقييم الدوري»). A second submission in a period that already holds a completed result returns
+  409 `period.already_assessed` with `meta.next_submission_from`, `meta.current_period`, `meta.next_period`; the draft is
+  kept. Requests closed without a result do not count. A late result keeps its period.
+- Closing (`moashir:periods:close`, daily 00:15 Riyadh): every active verified entity (and every frozen one) verified before
+  the period end gets a stored status; `not_required` when verified after `ends_on` − the largest reminder interval;
+  PER-03 for `missed` when the period ended in the last 7 days; `in_progress` rows are settled again every day.
+- Notices (`moashir:periods:notify`, daily 09:00): PER-01 from `starts_on − notice_days_before` until the start; PER-02 at each
+  reminder threshold to entities without a submission in the period (closest threshold only when several became due;
+  link to the open draft when there is one). Audience: active, verified, not deleted entities (service notices).
+- Digest (`moashir:periods:digest`, daily 08:00): PER-04 in-app to Request Followers (accredited path) and System
+  Administrators, at most once a day per period.
+- Paid drafts (`moashir:assessments:remind-paid-drafts`, daily 10:00): ACC-13 after `periodic.paid_draft_reminder_days` without
+  entity activity, at most once per window; `POST /requests/{id}/remind` (`requests.assign`) at most once per 24 hours
+  (409 `request.reminder_too_soon` with `meta.next_remind_at`, 409 `request.not_paid_draft`), audited `requests.reminder_sent`.
+- Certificates: issued automatically on completion while issuance is on (`issue_certificate` is accepted for older clients
+  and ignored); `valid_until` = the end of the period after the request period, or the end of the first rollout period for
+  pre-periodic requests (back-filled for existing certificates); a replacement keeps the replaced `valid_until`. The entity
+  level is the latest issued, not revoked/suspended, unexpired accredited certificate (`level_valid_until` added to the
+  entity level fields); public verification returns `expired` after `valid_until`.
+
+### Endpoints
+
+| Method | Path | Ability / limiter |
+|---|---|---|
+| GET | `/assessments/accredited/current` | as before; adds `periodic`, `submission`, `apply`, `pricing` |
+| GET | `/assessments?filter[path]=accredited` | as before; rows add `row_type`, `row_key`, period, payment, level, certificate, kit; missed periods merged for one entity (`meta.missed_periods`) |
+| GET | `/assessments/{assessment}` | as before; adds `available_tabs`, `default_tab` |
+| GET | `/dashboard/summary?board=entity` | as before; widgets `level`, `paths`, `next_step` |
+| GET / PUT | `/settings/assessment/periodic` | `settings.assessment.manage` (Super Admin with a reason), PUT `throttle:sensitive`, audited `settings.periodic_updated` |
+| POST | `/settings/assessment/periodic/preview` | same ability, `throttle:sensitive`, no write |
+| GET | `/assessment-periods?filter[state]=past\|current\|upcoming` | `requests.queue.view` or `requests.assigned.view` or `settings.assessment.manage` |
+| GET | `/requests?filter[period_id]={id\|none}`, `/requests/preparing?filter[period_id]=` | as before; accredited queue only |
+| POST | `/requests/{assessment}/remind` | `can:remind` (`requests.assign`, followed path), `throttle:sensitive` |
+
+New notification codes: ACC-13, PER-01 … PER-05 (links `/paths/accredited`, `/paths/accredited/{id}?tab=request`, staff
+`/admin/requests?path=accredited&stage=preparing`). Demo: `moashir:demo:install` (and `--insights-only`) lowers the demo
+rollout to 2025-10-01, generates the periods and attaches them to the demo results.
+
 ## Evidence files
 - `POST /assessments/{id}/evidence` (multipart `file`, `sub_criterion_id`, `attachment_key?`, `reason?`; `throttle:uploads`
   30/min): owner, `evidence.manage`, state `draft` (or `needs_completion` for the requested items). The limits are those of the
@@ -1177,6 +1253,7 @@ files so the daily orphan purge removes them; completed results stay on the eras
 | POST | `/assessments/{assessment}/evidence/bundles` | `can:requestEvidenceBundle`, `throttle:exports` |
 | GET / POST | `/assessments/{assessment}/evidence/bundles/{bundle}`, `…/download` | `can:viewEvidenceBundle` (requester), `throttle:downloads` |
 | GET | `/requests` | `can:viewRequestQueue` (`requests.queue.view`) |
+| GET | `/requests/preparing` | `can:viewRequestQueue` (`requests.queue.view`) |
 | GET | `/requests/assigned` | `can:viewAssignedRequests` (`requests.assigned.view`) |
 | GET | `/requests/assessors` | `can:listAssessors` (`requests.assign`) |
 | GET | `/requests/{assessment}` | `can:viewRequest` (queue view, or the assessor of the request) |
@@ -1197,7 +1274,8 @@ Notification links (SPA routes): entity `/assessment/accredited`, `/assessment/a
 `assessment.assigned`, `assessment.reassigned`, `assessment.review_started`,
 `assessment.scores_saved`, `assessment.feedback_saved`, `assessment.completion_requested`, `assessment.completed`,
 `assessment.refunded`, `assessment.refund_after_completion`, `assessment.score_overridden`, `assessment.reopened`,
-`assessment.transition_forced`, `assessment.due_dates_recomputed`, `settings.assessment_updated`.
+`assessment.transition_forced`, `assessment.due_dates_recomputed`, `settings.assessment_updated`,
+`settings.periodic_updated`, `requests.reminder_sent`.
 
 ## Award cycles and the advanced path (build step 7, part 1)
 
@@ -1894,9 +1972,20 @@ refused flag logs one line per worker, not one per sign-in. Set the flags in the
 
 Request and response shapes are listed in `agents/tasks/reports/Task-18-report.md`.
 
+### Linked request on the staff payment records (Task-75)
+`GET /finance/transactions/{payment}`, `GET /finance/bank-transfers/{payment}` and the approve / reject / manual-settle
+answers carry `linked_request { number, path, path_label, status, progress{ subs_complete, subs_total } | null } | null`
+(`null` until the accredited request is opened; the list rows do not carry it). Finance sees the number, status and progress
+only: no request content and no new permission. `linked_request.id` is added only when the viewer may open the request
+(`viewRequest`: `requests.queue.view` on a followed path, or the Super Admin). The entity link uses the existing `entity.id`
+and is shown by the SPA to holders of `entities.view` only.
+
 ### Events and notifications
 Events (after commit): `PaymentCreated` (PAY-01, entity, in-app), `PaymentPaid` (PAY-02, entity + Request Followers +
-System Administrators), `PaymentFailed` (PAY-03, entity + System Administrators), `PaymentCancelled` (PAY-07 on expiry,
+System Administrators; the staff link follows the audience (DF-2): holders of `finance.operations.view` open
+`/finance/transactions/{id}`, other holders of `requests.queue.view` open the request `/admin/requests/{id}` once it is
+opened, or the preparing tab `/admin/requests?path=accredited&stage=preparing`, and a recipient holding neither gets no
+link), `PaymentFailed` (PAY-03, entity + System Administrators), `PaymentCancelled` (PAY-07 on expiry,
 entity, in-app), `ReceiptIssued` (PAY-06, entity + Finance Officers for live receipts; queues the PDF), `RefundRecorded`
 (PAY-04, entity + System Administrators + Finance Officers, never the recorder), `PaymentRefunded`. New codes: PAY-08
 (payment to refund outside the platform), PAY-09 (refund reported by the gateway), FIN-01 (export ready). INT-04 covers
@@ -2429,8 +2518,8 @@ value). Labels `path_label{ar,en}` come from `lang/*/assessments.php` (`paths.*`
   on the certificate (69.995 → 70.00 → silver); below bronze → participation certificate without a level.
 
 ### Issue, re-issue, revoke
-- **On completion (Q-49):** `POST /assessments/{id}/complete` takes `issue_certificate` (default `true`).
-  `AssessmentCompleted` carries the completing assessor; the queued listener `IssueCertificateOnCompletion` (3 tries)
+- **On completion (Q-49, Q-181):** every completed accredited result gets a certificate while issuance is on;
+  `issue_certificate` is still accepted from older clients and ignored (Task-79). `AssessmentCompleted` carries the completing assessor; the queued listener `IssueCertificateOnCompletion` (3 tries)
   runs `Actions\Certificates\IssueAccreditedCertificate`: issuance switched on, accredited request `completed` with a
   result, entity not frozen; idempotent (the issued certificate of the request is returned). It writes
   `certificate.issued`, sends ACC-09 (entity: link `/certificates`; System Administrators: `/admin/requests/{id}`) and
@@ -2533,10 +2622,11 @@ queue have query-count tests.
 (paid and not finished; `awaiting_payment`, `completed`, `refunded`, `declined_incomplete` are not open).
 
 - `GET /entities` rows (all three variants: full staff, name and contact, summary) and `GET /entities/{id}` add
-  `level: "bronze"|"silver"|"gold"|"diamond"|"participation"|null` and `level_certificate_number: string|null`
-  (e.g. `"CRT-2026-000014"`). The full staff view (`StaffEntityResource`, list and record) also adds
+  `level: "bronze"|"silver"|"gold"|"diamond"|"participation"|null`, `level_certificate_number: string|null`
+  (e.g. `"CRT-2026-000014"`) and `level_valid_until: "YYYY-MM-DD"|null`, taken from the latest VALID certificate (issued, not
+  past `valid_until` — Task-79, Q-160). The full staff view (`StaffEntityResource`, list and record) also adds
   `has_open_accredited_request: bool`; the other variants do not carry this key.
-- `filter[level]` ∈ `none | participation | bronze | silver | gold | diamond` (`none` = no issued certificate); anything
+- `filter[level]` ∈ `none | participation | bronze | silver | gold | diamond` (`none` = no valid certificate); anything
   else → 422 `validation_failed` (`errors["filter.level"]`). The filter also narrows `meta.stats` and the CSV export, and
   the export audit records `filters.level`.
 - `sort=level` orders none < participation < bronze < silver < gold < diamond; `sort=-level` the reverse; ties by `id`.

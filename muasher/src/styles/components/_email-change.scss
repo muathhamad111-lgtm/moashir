@@ -36,7 +36,7 @@
 }
 
 .email-change__actions {
-  @include flex(row, center, flex-end, var(--space-3));
+  @include flex(row, center, flex-start, var(--space-3));
   flex-wrap: wrap;
   inline-size: 100%;
 }

@@ -129,7 +129,6 @@ watch(cycleId, editor.load)
     <ReasonDialog
       v-model="reasonPrompt.open.value"
       :title="t('cycles.reason.title')"
-      :message="t('cycles.reason.message')"
       :submit-label="t('actions.confirm')"
       :action="reasonPrompt.provide"
       action-name="cycles.superAdminReason"
@@ -137,7 +136,7 @@ watch(cycleId, editor.load)
     <ReasonDialog
       v-model="reopenOpen"
       :title="t('cycles.actions.reopen.title')"
-      :message="t('cycles.actions.reopen.message')"
+      :subtitle="t('cycles.actions.reopen.message')"
       :submit-label="t('cycles.actions.reopen.confirm')"
       :min-length="AWARD_LIMITS.REOPEN_REASON_MIN"
       :action="transitions.reopen"

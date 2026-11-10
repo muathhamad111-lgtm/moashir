@@ -81,19 +81,18 @@ it('suspends the certificate when a completed assessment is forced back into the
     expect(Certificate::query()->whereKey($certificate->id)->sole()->status->value)->toBe('suspended');
 });
 
-it('keeps the certificate suspended until it is issued again when the assessor completes without one', function (): void {
+it('replaces the suspended certificate automatically when the reopened assessment is completed again', function (): void {
     ['assessment' => $assessment, 'certificate' => $certificate, 'assessor' => $assessor] = certifiedAccreditedRequest();
 
     switchTo(superAdmin())->postJson("/api/v1/assessments/{$assessment->id}/reopen", ['reason' => SUPER_ADMIN_REASON])->assertOk();
-    switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/complete", ['issue_certificate' => false])->assertOk();
-
     expect(Certificate::query()->whereKey($certificate->id)->sole()->status->value)->toBe('suspended');
 
-    switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/certificate")->assertCreated()
-        ->assertJsonPath('data.replaces.number', $certificate->number);
+    switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/complete", ['issue_certificate' => false])->assertOk();
+    $replacement = Certificate::query()->where('status', 'issued')->sole();
 
     expect(Certificate::query()->whereKey($certificate->id)->sole()->status->value)->toBe('superseded')
-        ->and(Certificate::query()->where('status', 'issued')->count())->toBe(1);
+        ->and($replacement->replaces_certificate_id)->toBe($certificate->id)
+        ->and($replacement->valid_until?->toDateString())->toBe($certificate->valid_until?->toDateString());
 });
 
 it('lets the System Administrator revoke a suspended certificate', function (): void {

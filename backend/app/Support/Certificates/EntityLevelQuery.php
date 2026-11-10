@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 
 final class EntityLevelQuery
 {
-    public const string RELATION = 'levelCertificate:id,entity_id,level,number';
+    public const string RELATION = 'levelCertificate:id,entity_id,level,number,valid_until';
 
     public const string OPEN_ACCREDITED_REQUEST = 'has_open_accredited_request';
 

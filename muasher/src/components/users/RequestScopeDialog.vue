@@ -63,14 +63,12 @@ watch(
   <FormModal
     :model-value="modelValue"
     :title="t('users.pathAccess.scopeTitle')"
+    :subtitle="user?.name ?? ''"
     :busy="form.submitting.value"
     @update:model-value="emit('update:modelValue', $event)"
     @submit="form.onSubmit"
   >
     <div class="path-access-form">
-      <p class="path-access-form__lead">
-        {{ t('users.pathAccess.scopeLead', { name: user?.name ?? '' }) }}
-      </p>
       <FieldRadio name="scope" :label="t('users.pathAccess.scopeLabel')" :options="scopeOptions" />
       <FieldCheckboxGroup
         v-if="limited"

@@ -414,6 +414,12 @@ return [
                     ],
                 ],
             ],
+            'ACC-13' => [
+                'entity' => [
+                    'title' => 'Complete your accredited assessment request',
+                    'body' => 'Accredited assessment request :number is paid and is still a draft. Complete the CVs and evidence and submit it so that it counts in its period.',
+                ],
+            ],
             'STD-08' => [
                 'entity' => [
                     'title' => 'Your accredited assessment request was updated',
@@ -561,6 +567,46 @@ return [
                     'title' => 'An evidence file was refused',
                     'body' => 'An evidence file of the sub-criterion :code in your award request :number did not pass the security check and was refused. The assessor does not see it.',
                 ],
+            ],
+        ],
+    ],
+    'periods' => [
+        'PER-01' => [
+            'entity' => [
+                'title' => 'The accredited assessment period :period starts soon',
+                'body' => 'The accredited assessment period :period runs from :starts_on to :ends_on. Submit your request within the period so that your assessment counts in it.',
+            ],
+        ],
+        'PER-02' => [
+            'draft' => [
+                'entity' => [
+                    'title' => 'The period :period ends in :days',
+                    'body' => 'The accredited assessment period :period ends on :ends_on and your entity has not submitted yet. Complete draft request :number and submit it before the period ends.',
+                ],
+            ],
+            'apply' => [
+                'entity' => [
+                    'title' => 'The period :period ends in :days',
+                    'body' => 'The accredited assessment period :period ends on :ends_on and your entity has not submitted a request in it. Apply before the period ends; paying early is recommended.',
+                ],
+            ],
+        ],
+        'PER-03' => [
+            'entity' => [
+                'title' => 'The period :period ended without a request',
+                'body' => 'The accredited assessment period :period ended without a request from your entity. You can apply in the current period.',
+            ],
+        ],
+        'PER-04' => [
+            'staff' => [
+                'title' => 'Accredited assessment period :period digest',
+                'body' => 'The period ends on :ends_on. Entities that have not submitted: :pending_entities. Paid requests still in draft: :paid_drafts. Transfers under review for entities whose period ends within 7 days: :pending_transfers.',
+            ],
+        ],
+        'PER-05' => [
+            'entity' => [
+                'title' => 'Corrected accredited assessment period dates',
+                'body' => 'The accredited assessment cadence changed, so the period :period you were told about no longer exists. The next period runs from :starts_on to :ends_on.',
             ],
         ],
     ],

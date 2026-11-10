@@ -141,7 +141,6 @@ onMounted(load)
     <ReasonDialog
       v-model="reasonOpen"
       :title="t('settings.insights.reasonTitle')"
-      :message="t('settings.insights.reasonMessage')"
       :submit-label="t('actions.save')"
       :action="confirmReason"
       action-name="settings.insights.update"

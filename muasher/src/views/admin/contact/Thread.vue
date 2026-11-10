@@ -141,7 +141,6 @@ onMounted(() => {
     <ReasonDialog
       v-model="reasonPrompt.open.value"
       :title="t('review.reasonTitle')"
-      :message="t('review.reasonMessage')"
       :submit-label="t('actions.confirm')"
       :action="reasonPrompt.provide"
       action-name="contactInbox.superAdminReason"

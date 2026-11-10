@@ -74,7 +74,6 @@ onMounted(load)
   <ReasonDialog
     v-model="reasonOpen"
     :title="t('settings.signIn.reasonTitle')"
-    :message="t('settings.signIn.reasonMessage')"
     :submit-label="t('actions.save')"
     :action="confirmReason"
     action-name="settings.auth.update"

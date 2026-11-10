@@ -8,6 +8,7 @@ import Skeleton from '@/components/feedback/Skeleton.vue'
 import PathBadge from '@/components/ui/PathBadge.vue'
 import { assignmentFailureOf, useAssignAssessor } from '@/composables/useAssignAssessor'
 import { useToast } from '@/composables/useToast'
+import { success } from '@/composables/useSuccess'
 import { useAuthStore } from '@/stores/auth'
 import { ACCREDITED_LIMITS } from '@/constants/accredited'
 import { logger } from '@/utils/logger'
@@ -37,6 +38,10 @@ const reasonRequired = computed(() => props.mode === 'reassign' || auth.isSuperA
 const title = computed(() =>
   props.mode === 'reassign' ? t('requests.assign.reassignTitle') : t('requests.assign.title'),
 )
+
+function assessorName() {
+  return assessors.value.find((assessor) => assessor.id === chosen.value)?.name ?? ''
+}
 
 function validate() {
   const next = {}
@@ -78,10 +83,11 @@ async function onSubmit() {
   logger.breadcrumb('form', `requests.${props.mode}.submit`, { fields: Object.keys(payload) })
   try {
     const { data } = await submit(props.mode, payload)
-    toast.success(
-      t(props.mode === 'reassign' ? 'requests.toasts.reassigned' : 'requests.toasts.assigned'),
-    )
     emit('update:modelValue', false)
+    success.show({
+      title: t(props.mode === 'reassign' ? 'requests.toasts.reassigned' : 'requests.toasts.assigned'),
+      message: assessorName(),
+    })
     emit('done', data)
   } catch (error) {
     handleFailure(assignmentFailureOf(error))
@@ -108,6 +114,7 @@ watch(
   <FormModal
     :model-value="modelValue"
     :title="title"
+    :subtitle="entityName"
     :busy="busy"
     :submit-label="
       mode === 'reassign' ? t('requests.assign.reassignAction') : t('requests.assign.action')
@@ -116,7 +123,6 @@ watch(
     @submit="onSubmit"
   >
     <div class="assign-dialog">
-      <p class="assign-dialog__lead">{{ t('requests.assign.lead', { entity: entityName }) }}</p>
       <p v-if="path" class="assign-dialog__path">
         <PathBadge :path="path" :label="pathLabel" />
         <span>{{ t('requests.assign.qualifiedOnly') }}</span>

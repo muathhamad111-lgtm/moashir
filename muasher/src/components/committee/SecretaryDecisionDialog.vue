@@ -56,13 +56,13 @@ watch(
   <FormModal
     :model-value="modelValue"
     :title="text('title')"
+    :subtitle="subject"
     :busy="form.submitting.value"
     :submit-label="text('submit')"
     @update:model-value="emit('update:modelValue', $event)"
     @submit="form.onSubmit"
   >
     <div class="secretary-decision">
-      <p class="secretary-decision__lead">{{ text('lead', { subject }) }}</p>
       <FieldTextarea
         v-if="kind === 'approve' || kind === 'approveSubstitution'"
         name="note"

@@ -14,6 +14,7 @@ import RequestFacts from '@/components/requests/RequestFacts.vue'
 import PathBadge from '@/components/ui/PathBadge.vue'
 import LevelBadge from '@/components/level/LevelBadge.vue'
 import RequestActionsCard from '@/components/requests/RequestActionsCard.vue'
+import RequestPaymentCard from '@/components/requests/RequestPaymentCard.vue'
 import RequestCertificateCard from '@/components/requests/RequestCertificateCard.vue'
 import AssignmentHistoryList from '@/components/requests/AssignmentHistoryList.vue'
 import AssignAssessorDialog from '@/components/requests/AssignAssessorDialog.vue'
@@ -25,6 +26,8 @@ import { requestsService } from '@/services/requestsService'
 import { AWARD_LIMITS } from '@/constants/advanced'
 import { useRequestDetail } from '@/composables/useRequestDetail'
 import { useEvidenceBundleRequest } from '@/composables/useEvidenceBundle'
+import { useSignedDownload } from '@/composables/useSignedDownload'
+import { financeService } from '@/services/financeService'
 import { usePermissions } from '@/composables/usePermissions'
 import { assessmentOverridesService } from '@/services/assessmentOverridesService'
 import { ACCREDITED_LIMITS, ACCREDITED_STATUSES } from '@/constants/accredited'
@@ -54,6 +57,7 @@ const { prompt: reasonPrompt, reasonExtra } = useSuperAdminReason()
 const returnOpen = ref(false)
 const withdrawOpen = ref(false)
 const bundles = useEvidenceBundleRequest(requestId)
+const receipts = useSignedDownload()
 const assignOpen = ref(false)
 const assignMode = ref('assign')
 const reopenOpen = ref(false)
@@ -68,6 +72,10 @@ const isCompleted = computed(() => detail.value?.status === ACCREDITED_STATUSES.
 const backRoute = computed(() =>
   can(PERMISSIONS.REQUESTS_QUEUE_VIEW) ? ROUTE_NAMES.REQUESTS_INDEX : ROUTE_NAMES.REQUESTS_ASSIGNED,
 )
+
+function downloadReceipt(receiptId) {
+  receipts.download('receipt', () => financeService.requestReceiptDownload(receiptId))
+}
 
 function openAssign(mode) {
   assignMode.value = mode
@@ -148,6 +156,12 @@ onMounted(load)
         </Card>
       </div>
       <aside class="request-detail__aside">
+        <RequestPaymentCard
+          v-if="detail.payment.details"
+          :payment="detail.payment.details"
+          :downloading="receipts.busy.receipt === true"
+          @download="downloadReceipt"
+        />
         <RequestActionsCard
           :detail="detail"
           :can-assign="canAssign"
@@ -182,7 +196,7 @@ onMounted(load)
       <ReasonDialog
         v-model="reopenOpen"
         :title="t('requests.overrides.reopenTitle')"
-        :message="t('requests.overrides.reopenMessage')"
+        :subtitle="t('requests.overrides.reopenMessage')"
         :submit-label="t('requests.overrides.reopen')"
         :min-length="ACCREDITED_LIMITS.OVERRIDE_REASON_MIN"
         :action="reopen"
@@ -203,7 +217,8 @@ onMounted(load)
       <ReasonDialog
         v-model="withdrawOpen"
         :title="t('requests.withdraw.title')"
-        :message="t('requests.withdraw.message', { number: detail.number })"
+        :subtitle="detail.number"
+        destructive
         :submit-label="t('requests.withdraw.confirm')"
         :reason-label="t('requests.withdraw.reason')"
         :min-length="AWARD_LIMITS.REASON_MIN"
@@ -214,7 +229,6 @@ onMounted(load)
       <ReasonDialog
         v-model="reasonPrompt.open.value"
         :title="t('review.reasonTitle')"
-        :message="t('review.reasonMessage')"
         :submit-label="t('actions.confirm')"
         :action="reasonPrompt.provide"
         action-name="requests.superAdminReason"

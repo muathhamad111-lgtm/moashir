@@ -8,6 +8,7 @@ use App\Data\Assessments\RequestDetail;
 use App\Models\Assessments\AssessmentAssignment;
 use App\Models\Assessments\AssessmentCompletionRequest;
 use App\Support\Assessments\CompletionRequestPresenter;
+use App\Support\Assessments\RequestPaymentPresenter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -26,7 +27,7 @@ final class RequestDetailResource extends JsonResource
 
         return [
             ...new RequestQueueItemResource($assessment)->toArray($request),
-            'payment' => ['paid' => $detail->isPaid],
+            'payment' => $this->paymentOf($detail, $request),
             'record' => new AssessmentRecordResource($detail->record)->toArray($request),
             'assignment_history' => array_map(fn (AssessmentAssignment $assignment): array => $this->assignmentOf($assignment, $detail->revealsStaffIdentities), $detail->assignments),
             'completion_requests' => array_map(
@@ -34,6 +35,20 @@ final class RequestDetailResource extends JsonResource
                 $detail->completionRequests,
             ),
         ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function paymentOf(RequestDetail $detail, Request $request): array
+    {
+        $paid = ['paid' => $detail->isPaid];
+
+        if (! $detail->revealsStaffIdentities) {
+            return $paid;
+        }
+
+        return [...$paid, ...(RequestPaymentPresenter::of($detail->record->assessment->payment, $request->user()) ?? [])];
     }
 
     /**

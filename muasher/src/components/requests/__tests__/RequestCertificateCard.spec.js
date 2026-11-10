@@ -106,35 +106,37 @@ describe('staff certificate card on the request detail', () => {
 })
 
 describe('complete dialog of the assessor review', () => {
-  it('sends issue_certificate false when the assessor opts out', async () => {
+  it('asks one question with no certificate choice, since issuance is automatic', async () => {
     const wrapper = mount(CompleteReviewDialog, {
-      props: { modelValue: true, message: 'Complete?', offersCertificate: true },
-      global: createTestGlobals({ locale: 'en' }),
-      attachTo: document.body,
-    })
-    await flushPromises()
-    const checkbox = document.querySelector('input[type="checkbox"]')
-    expect(checkbox.checked).toBe(true)
-    checkbox.click()
-    await flushPromises()
-    expect(document.body.textContent).toContain('it can be issued later from the request page')
-    const confirm = [...document.querySelectorAll('button')].find((b) =>
-      b.textContent.includes('Complete'),
-    )
-    confirm.click()
-    await flushPromises()
-    expect(wrapper.emitted('confirm')[0][0]).toEqual({ issueCertificate: false })
-    wrapper.unmount()
-  })
-
-  it('offers no certificate choice outside the accredited path', async () => {
-    const wrapper = mount(CompleteReviewDialog, {
-      props: { modelValue: true, message: 'Complete?', offersCertificate: false },
+      props: {
+        modelValue: true,
+        message: 'The result is published and the certificate is issued automatically.',
+      },
       global: createTestGlobals({ locale: 'en' }),
       attachTo: document.body,
     })
     await flushPromises()
     expect(document.querySelector('input[type="checkbox"]')).toBeNull()
+    expect(document.querySelector('[role="alertdialog"] .modal__message').textContent).toContain(
+      'issued automatically',
+    )
+    const confirm = document.querySelector('.modal__footer .btn--primary')
+    expect(confirm.textContent.trim()).toBe('Complete')
+    confirm.click()
+    await flushPromises()
+    expect(wrapper.emitted('confirm')).toHaveLength(1)
+    expect(wrapper.emitted('update:modelValue')[0]).toEqual([false])
+    wrapper.unmount()
+  })
+
+  it('notes a missing assessor summary', async () => {
+    const wrapper = mount(CompleteReviewDialog, {
+      props: { modelValue: true, message: 'Complete?', summaryMissing: true },
+      global: createTestGlobals({ locale: 'en' }),
+      attachTo: document.body,
+    })
+    await flushPromises()
+    expect(document.querySelector('[data-testid="summary-missing-hint"]')).not.toBeNull()
     wrapper.unmount()
   })
 })

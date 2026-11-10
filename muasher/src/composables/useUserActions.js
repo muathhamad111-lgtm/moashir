@@ -8,10 +8,18 @@ import { USER_ACTIONS as A, USER_STATUSES as S } from '@/constants/users'
 import { isQualifiableUser, isScopableUser } from '@/utils/users/pathAccessRoles'
 
 const REASON_ACTIONS = {
-  [A.SUSPEND]: { run: (id, payload) => usersService.suspend(id, payload), required: true },
+  [A.SUSPEND]: {
+    run: (id, payload) => usersService.suspend(id, payload),
+    required: true,
+    destructive: true,
+  },
   [A.ACTIVATE]: { run: (id, payload) => usersService.activate(id, payload), required: false },
   [A.UNLOCK]: { run: (id, payload) => usersService.unlock(id, payload), required: false },
-  [A.RESET_MFA]: { run: (id, payload) => usersService.resetMfa(id, payload), required: true },
+  [A.RESET_MFA]: {
+    run: (id, payload) => usersService.resetMfa(id, payload),
+    required: true,
+    destructive: true,
+  },
 }
 
 const ACTION_ICONS = {
@@ -58,8 +66,9 @@ export function useUserActions({ onChanged }) {
     const { key, user } = pending.value
     return {
       title: t(`users.actionDialogs.${key}.title`),
-      message: t(`users.actionDialogs.${key}.message`, { name: user.name }),
+      subtitle: t(`users.actionDialogs.${key}.message`, { name: user.name }),
       submitLabel: t(`users.actions.${key}`),
+      destructive: Boolean(REASON_ACTIONS[key].destructive),
       optional: !REASON_ACTIONS[key].required && !auth.isSuperAdmin,
     }
   })
@@ -85,9 +94,9 @@ export function useUserActions({ onChanged }) {
   async function resendInvitation(user) {
     const accepted = await confirm({
       title: t('users.actionDialogs.resendInvitation.title'),
-      message: t('users.actionDialogs.resendInvitation.message', { name: user.name }),
-      confirmLabel: t('users.actions.resendInvitation'),
-      variant: 'primary',
+      message: user.name,
+      confirmLabel: t('actions.send'),
+      variant: 'confirm',
     })
     if (!accepted) return
     try {

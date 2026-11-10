@@ -83,8 +83,8 @@ async function runCampaign(channel, cart) {
       entity: nameOf(cart.entity),
       channel: t(`settings.carts.channels.${channel}`),
     }),
-    confirmLabel: t('settings.carts.send'),
-    variant: 'primary',
+    confirmLabel: t('actions.send'),
+    variant: 'confirm',
   })
   if (!accepted) return
   try {

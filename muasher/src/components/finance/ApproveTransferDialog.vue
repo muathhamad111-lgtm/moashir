@@ -1,9 +1,8 @@
 <script setup>
 import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import FormModal from '@/components/modal/FormModal.vue'
+import DecisionDialog from '@/components/modal/DecisionDialog.vue'
 import FieldTextarea from '@/components/form/FieldTextarea.vue'
-import TransferTargetsSummary from './TransferTargetsSummary.vue'
 import { useValidatedForm } from '@/composables/useValidatedForm'
 import { approvalSchema } from '@/utils/payments/bankTransferSchemas'
 import { SUPER_ADMIN_REASON } from '@/constants/bankTransfer'
@@ -24,10 +23,8 @@ const title = computed(() =>
     ? t('finance.transfers.approve.bulkTitle', { count: props.targets.length })
     : t('finance.transfers.approve.title'),
 )
-const submitLabel = computed(() =>
-  isBulk.value
-    ? t('finance.transfers.approve.bulkSubmit', { count: props.targets.length })
-    : t('finance.transfers.approve.submit'),
+const line = computed(() =>
+  isBulk.value ? t('finance.transfers.approve.bulkMessage') : (props.targets[0]?.reference ?? ''),
 )
 
 const form = useValidatedForm({
@@ -49,25 +46,18 @@ watch(
 </script>
 
 <template>
-  <FormModal
+  <DecisionDialog
     :model-value="modelValue"
     :title="title"
+    :message="line"
+    :confirm-label="t('actions.approve')"
+    icon="check-circle"
     :busy="form.submitting.value"
-    :submit-label="submitLabel"
     @update:model-value="emit('update:modelValue', $event)"
-    @submit="form.onSubmit"
+    @confirm="form.onSubmit"
   >
-    <div class="transfer-decision">
-      <TransferTargetsSummary :targets="targets" />
-      <p class="transfer-decision__message">
-        {{
-          isBulk
-            ? t('finance.transfers.approve.bulkMessage')
-            : t('finance.transfers.approve.message')
-        }}
-      </p>
+    <div v-if="asksReason" class="modal__fields">
       <FieldTextarea
-        v-if="asksReason"
         name="reason"
         :label="t('finance.transfers.superAdminReason.label')"
         :hint="
@@ -79,5 +69,5 @@ watch(
         required
       />
     </div>
-  </FormModal>
+  </DecisionDialog>
 </template>

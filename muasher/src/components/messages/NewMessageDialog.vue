@@ -95,15 +95,15 @@ watch(
         {{ t('public.home.contact.form.failed') }}
       </p>
       <footer class="modal__footer">
+        <BaseButton type="submit" variant="primary" icon="send" :loading="submitting">
+          {{ t('portal.messages.dialog.submit') }}
+        </BaseButton>
         <BaseButton
           variant="secondary"
           :disabled="submitting"
           @click="emit('update:modelValue', false)"
         >
           {{ t('actions.cancel') }}
-        </BaseButton>
-        <BaseButton type="submit" variant="primary" icon="send" :loading="submitting">
-          {{ t('portal.messages.dialog.submit') }}
         </BaseButton>
       </footer>
     </form>

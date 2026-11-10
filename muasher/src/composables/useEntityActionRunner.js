@@ -34,10 +34,8 @@ export function useEntityActionRunner({ onDone }) {
   async function resendVerification(entity) {
     const accepted = await confirm({
       title: t('entities.confirm.resendVerificationTitle'),
-      message: t('entities.confirm.resendVerificationMessage', {
-        name: localizedText(entity.name, locale.value),
-      }),
-      confirmLabel: t('entities.actions.resendVerification'),
+      message: localizedText(entity.name, locale.value),
+      confirmLabel: t('actions.send'),
     })
     if (!accepted) return
     try {

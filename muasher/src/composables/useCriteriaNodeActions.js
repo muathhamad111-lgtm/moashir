@@ -54,7 +54,7 @@ export function useCriteriaNodeActions(kind, reload, parentId = () => null) {
     const accepted = await confirm({
       title: t(`criteria.confirm.${kind}DeleteTitle`),
       message: t(`criteria.confirm.${kind}DeleteMessage`, { name }),
-      confirmLabel: t('criteria.actions.delete'),
+      confirmLabel: t('actions.delete'),
       variant: 'danger',
     })
     if (!accepted) return null

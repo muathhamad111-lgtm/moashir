@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { assessorReviewService } from '@/services/assessorReviewService'
 import { useToast } from '@/composables/useToast'
+import { success } from '@/composables/useSuccess'
 import { useAuthStore } from '@/stores/auth'
 import { changedSheetPayload, isEmptyPayload } from '@/utils/assessments/scoreSheet'
 import { ACCREDITED_CODES as CODES } from '@/constants/accredited'
@@ -34,12 +35,12 @@ export function useReviewActions({ reviewState, scoreSheet, feedback, askReason 
     return run(extra)
   }
 
-  async function perform(action, run, successKey) {
+  async function perform(action, run, announce) {
     if (busy.value) return false
     busy.value = action
     try {
       const done = await withReason(run)
-      if (done !== null && successKey) toast.success(t(successKey))
+      if (done !== null) announce()
       return done !== null
     } catch (error) {
       handle(error)
@@ -77,7 +78,7 @@ export function useReviewActions({ reviewState, scoreSheet, feedback, askReason 
         await feedback.save(extra)
         return true
       },
-      'review.toasts.saved',
+      () => toast.success(t('review.toasts.saved')),
     )
   }
 
@@ -89,24 +90,25 @@ export function useReviewActions({ reviewState, scoreSheet, feedback, askReason 
         await reviewState.load({ silent: true })
         return true
       },
-      'review.toasts.started',
+      () => toast.success(t('review.toasts.started')),
     )
   }
 
-  function complete(choice = {}) {
+  function complete() {
     return perform(
       'complete',
       async (extra) => {
         await sendScores(extra)
         await feedback.save(extra)
-        await assessorReviewService.complete(reviewState.assessment.value.id, {
-          ...extra,
-          ...choice,
-        })
+        await assessorReviewService.complete(reviewState.assessment.value.id, extra)
         await reviewState.load({ silent: true })
         return true
       },
-      'review.toasts.completed',
+      () =>
+        success.show({
+          title: t('review.toasts.completed'),
+          message: reviewState.assessment.value.number,
+        }),
     )
   }
 

@@ -50,7 +50,6 @@ watch(
     @submit="form.onSubmit"
   >
     <div class="entity-form">
-      <p class="entity-form__hint">{{ t('entities.edit.intro') }}</p>
       <Skeleton v-if="regions.status.value === 'loading'" variant="text" :count="4" />
       <fieldset v-else class="entity-form__sections" :disabled="form.submitting.value">
         <EntityIdentityFields :unified-number-required="unifiedNumberRequired" />

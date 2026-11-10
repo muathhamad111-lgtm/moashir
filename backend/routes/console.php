@@ -28,3 +28,8 @@ Schedule::command('backup:run')->daily()->at('01:30');
 Schedule::command('backup:monitor')->dailyAt('06:00')->withoutOverlapping();
 Schedule::command('moashir:certificates:prune-verification-logs')->dailyAt('03:30')->withoutOverlapping();
 Schedule::command('moashir:contact-messages:purge-closed')->dailyAt('03:45')->withoutOverlapping();
+Schedule::command('moashir:periods:generate')->dailyAt('00:05')->timezone(config()->string('app.display_timezone'))->withoutOverlapping();
+Schedule::command('moashir:periods:close')->dailyAt('00:15')->timezone(config()->string('app.display_timezone'))->withoutOverlapping();
+Schedule::command('moashir:periods:notify')->dailyAt('09:00')->timezone(config()->string('app.display_timezone'))->withoutOverlapping();
+Schedule::command('moashir:periods:digest')->dailyAt('08:00')->timezone(config()->string('app.display_timezone'))->withoutOverlapping();
+Schedule::command('moashir:assessments:remind-paid-drafts')->dailyAt('10:00')->timezone(config()->string('app.display_timezone'))->withoutOverlapping();

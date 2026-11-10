@@ -19,6 +19,7 @@ use App\Models\Certificates\Certificate;
 use App\Models\Files\StoredFile;
 use App\Models\Identity\EmailChangeRequest;
 use App\Models\Identity\User;
+use App\Support\Periods\LocalDay;
 use App\Support\Search\SearchTextNormalizer;
 use App\Support\ValueObjects\EntityName;
 use App\Support\ValueObjects\ProfileCompletion;
@@ -206,7 +207,9 @@ final class Entity extends Model
         return $this->hasOne(Certificate::class)->ofMany(
             ['issued_at' => 'max', 'id' => 'max'],
             static function (Builder $certificates): void {
-                $certificates->where('kind', CertificateKind::Accredited)->where('status', CertificateStatus::Issued);
+                $certificates->where('kind', CertificateKind::Accredited)
+                    ->where('status', CertificateStatus::Issued)
+                    ->where('valid_until', '>=', LocalDay::today()->toDateString());
             },
         );
     }

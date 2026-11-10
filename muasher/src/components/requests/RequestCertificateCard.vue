@@ -170,16 +170,18 @@ onMounted(certificates.load)
           ? t('requests.certificate.revokeTitle')
           : t('requests.certificate.reissueTitle')
       "
-      :message="
-        pendingAction?.kind === 'revoke'
-          ? t('requests.certificate.revokeMessage')
-          : t('requests.certificate.reissueMessage')
-      "
+      :subtitle="pendingAction?.certificate?.number ?? ''"
       :submit-label="
         pendingAction?.kind === 'revoke'
           ? t('requests.certificate.revoke')
           : t('requests.certificate.reissue')
       "
+      :reason-hint="
+        pendingAction?.kind === 'revoke'
+          ? t('requests.certificate.revokeHint', { min: REASON_LENGTH.MIN })
+          : ''
+      "
+      :destructive="pendingAction?.kind === 'revoke'"
       :min-length="REASON_LENGTH.MIN"
       :action="runPending"
       action-name="requests.certificate.decision"
@@ -187,7 +189,6 @@ onMounted(certificates.load)
     <ReasonDialog
       v-model="certificates.reasonPrompt.open.value"
       :title="t('review.reasonTitle')"
-      :message="t('review.reasonMessage')"
       :submit-label="t('actions.confirm')"
       :action="certificates.reasonPrompt.provide"
       action-name="requests.certificate.superAdminReason"

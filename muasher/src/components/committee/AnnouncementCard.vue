@@ -24,8 +24,8 @@ async function announce() {
   const accepted = await confirm({
     title: t('award.announce.confirmTitle'),
     message: t('award.announce.confirmMessage'),
-    confirmLabel: t('award.announce.action'),
-    variant: 'primary',
+    confirmLabel: t('award.announce.confirm'),
+    variant: 'warning',
   })
   if (accepted) emit('announce')
 }

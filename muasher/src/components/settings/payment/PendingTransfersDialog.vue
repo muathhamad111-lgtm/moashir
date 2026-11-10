@@ -158,10 +158,10 @@ watch(
       </template>
     </div>
     <template #footer>
-      <BaseButton variant="secondary" @click="emit('close')">{{ t('actions.close') }}</BaseButton>
       <BaseButton v-if="cleared" variant="danger" @click="emit('retry')">
         {{ t(`settings.bankAccounts.blocked.${blocked.action}.retry`) }}
       </BaseButton>
+      <BaseButton variant="secondary" @click="emit('close')">{{ t('actions.close') }}</BaseButton>
     </template>
   </BaseModal>
 

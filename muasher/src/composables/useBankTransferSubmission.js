@@ -1,6 +1,7 @@
 import { computed, ref, unref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useIdempotencyKey } from '@/composables/useIdempotencyKey'
+import { success } from '@/composables/useSuccess'
 import { paymentsService } from '@/services/paymentsService'
 import {
   BANK_TRANSFER_CODES,
@@ -132,6 +133,10 @@ export function useBankTransferSubmission(purpose, accounts, { onSubmitted = () 
       )
       keys.renew()
       proofState.value = PROOF_STATES.ACCEPTED
+      success.show({
+        title: i18n.t('portal.transfer.submittedTitle'),
+        message: envelope.data?.reference ?? '',
+      })
       onSubmitted(envelope.data)
       return envelope.data
     } catch (error) {

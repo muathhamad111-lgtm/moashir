@@ -255,18 +255,18 @@ test.describe('staff certificate and review completion', () => {
     await expect(page.locator('[data-certificate="current"]')).toContainText('CRT-2026-0000')
   })
 
-  test('the assessor chooses whether the certificate is issued when completing', async ({
+  test('completing an accredited review asks one question and offers no certificate choice', async ({
     page,
   }, testInfo) => {
     await signIn(page, testInfo, USERS.assessor)
     await open(page, '/admin/requests/9108/review', '.review-header')
     await page.locator('.review-actions .btn--primary').click()
-    const dialog = page.locator('.modal')
-    await expect(dialog.locator('input[type="checkbox"]')).toBeChecked()
-    await dialog.locator('input[type="checkbox"]').uncheck()
-    await expect(dialog.locator('.complete-review__hint')).toContainText(
-      text(testInfo, 'issued later', 'لاحقًا'),
+    const dialog = page.getByRole('alertdialog')
+    await expect(dialog.locator('.modal__title')).toHaveText(
+      text(testInfo, 'Complete the assessment?', 'إكمال التقييم؟'),
     )
+    await expect(dialog.locator('input[type="checkbox"]')).toHaveCount(0)
+    await expect(dialog.locator('.modal__message')).toBeVisible()
     await dialog.getByRole('button', { name: text(testInfo, 'Cancel', 'إلغاء') }).click()
     await expect(dialog).toHaveCount(0)
   })

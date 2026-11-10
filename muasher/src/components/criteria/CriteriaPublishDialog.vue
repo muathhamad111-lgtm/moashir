@@ -12,7 +12,6 @@ import { useCycleBindings } from '@/composables/useCycleBindings'
 import { useAuthStore } from '@/stores/auth'
 import { logger } from '@/utils/logger'
 import { CRITERIA_REASON_MIN_LENGTH } from '@/constants/criteria'
-import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -87,6 +86,11 @@ function close() {
     size="lg"
     :close-on-backdrop="!submitting"
     :title="t('criteria.publish.dialogTitle', { number: version.versionNumber })"
+    :subtitle="
+      replacesPublished
+        ? t('criteria.publish.replacesNote', { number: published.versionNumber })
+        : t('criteria.publish.firstNote')
+    "
     @update:model-value="emit('update:modelValue', $event)"
   >
     <form
@@ -95,17 +99,6 @@ function close() {
       novalidate
       @submit.prevent="submit"
     >
-      <p class="publish-dialog__intro">
-        {{ t('criteria.publish.intro', { number: version.versionNumber }) }}
-      </p>
-      <p class="publish-dialog__note">
-        <AppIcon name="info-circle" />
-        <span v-if="replacesPublished">{{
-          t('criteria.publish.replacesNote', { number: published.versionNumber })
-        }}</span>
-        <span v-else>{{ t('criteria.publish.firstNote') }}</span>
-      </p>
-
       <CriteriaCycleBindings
         v-if="cycles.isRelevant.value"
         v-model:choice="cycles.choice.value"
@@ -147,12 +140,12 @@ function close() {
       <p v-else-if="errorMessage" class="publish-dialog__error" role="alert">{{ errorMessage }}</p>
 
       <footer class="modal__footer">
+        <BaseButton type="submit" variant="primary" :loading="submitting">
+          {{ t('actions.publish') }}
+        </BaseButton>
         <BaseButton variant="secondary" :disabled="submitting" @click="close">{{
           t('actions.cancel')
         }}</BaseButton>
-        <BaseButton type="submit" variant="primary" icon="upload" :loading="submitting">
-          {{ t('criteria.publish.submit', { number: version.versionNumber }) }}
-        </BaseButton>
       </footer>
     </form>
   </BaseModal>

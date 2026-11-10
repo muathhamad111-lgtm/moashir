@@ -14,6 +14,7 @@ import PricingBreakdown from '@/components/payments/PricingBreakdown.vue'
 import ReceiptCard from '@/components/payments/ReceiptCard.vue'
 import TestModeNotice from '@/components/payments/TestModeNotice.vue'
 import TransactionFacts from '@/components/finance/TransactionFacts.vue'
+import LinkedRequestCard from '@/components/finance/LinkedRequestCard.vue'
 import RefundRecord from '@/components/finance/RefundRecord.vue'
 import RefundFormDialog from '@/components/finance/RefundFormDialog.vue'
 import ManualSettleDialog from '@/components/finance/ManualSettleDialog.vue'
@@ -21,6 +22,7 @@ import { useTransactionDetail } from '@/composables/useTransactionDetail'
 import { useSignedDownload } from '@/composables/useSignedDownload'
 import { useToast } from '@/composables/useToast'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import { PAYMENT_PURPOSES } from '@/constants/payments'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
@@ -112,6 +114,17 @@ onMounted(load)
         </div>
       </header>
 
+      <ul v-if="canRecordRefund || canSettle" class="transaction-detail__hints">
+        <li v-if="canRecordRefund" class="submit-hint">
+          <AppIcon name="landmark" />
+          {{ t('finance.refund.lead') }}
+        </li>
+        <li v-if="canSettle" class="submit-hint">
+          <AppIcon name="user-shield" />
+          {{ t('finance.settle.lead') }}
+        </li>
+      </ul>
+
       <TestModeNotice v-if="transaction.isTest" compact />
       <p v-if="transaction.latePaid" class="transaction-detail__late" role="note">
         {{ t('finance.transaction.latePaidNote') }}
@@ -123,6 +136,12 @@ onMounted(load)
           <TransactionFacts :transaction="transaction" />
         </Card>
         <div class="transaction-detail__side">
+          <LinkedRequestCard
+            v-if="transaction.purpose === PAYMENT_PURPOSES.ACCREDITED"
+            :linked-request="transaction.linkedRequest"
+            :payment-status="transaction.status"
+            :entity-id="transaction.entity?.id ?? null"
+          />
           <ReceiptCard
             v-if="receipt"
             :receipt="receipt"
@@ -160,7 +179,7 @@ onMounted(load)
       <ReasonDialog
         v-model="reissueOpen"
         :title="t('finance.receipt.reissueTitle')"
-        :message="t('finance.receipt.reissueMessage')"
+        :subtitle="t('finance.receipt.reissueMessage')"
         :submit-label="t('finance.receipt.reissue')"
         :action="reissue"
         action-name="finance.reissueReceipt"

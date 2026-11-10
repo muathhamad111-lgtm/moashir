@@ -86,7 +86,8 @@ async function onSubmit() {
     await confirm({
       title: t('award.evaluation.confirmSubmit.title'),
       message,
-      confirmLabel: t('award.evaluation.submit'),
+      confirmLabel: t('actions.send'),
+      variant: 'confirm',
     })
   )
     actions.submit()
@@ -149,7 +150,6 @@ onMounted(state.load)
       <ReasonDialog
         v-model="reasons.prompt.open.value"
         :title="t('review.reasonTitle')"
-        :message="t('review.reasonMessage')"
         :submit-label="t('actions.confirm')"
         :action="reasons.prompt.provide"
         action-name="committee.superAdminReason"

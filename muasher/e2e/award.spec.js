@@ -317,7 +317,7 @@ test.describe('Award staff screens', () => {
         hasText: text(testInfo, 'Close submissions', 'إغلاق التقديم'),
       })
       .click()
-    await page.locator('.modal .btn--danger').click()
+    await page.locator('.modal .btn--primary').click()
     await expect(page.locator('.cycle-editor__title-row')).toContainText(
       text(testInfo, 'Submissions closed', 'التقديم مغلق'),
     )
@@ -326,7 +326,7 @@ test.describe('Award staff screens', () => {
         hasText: text(testInfo, 'Close the cycle', 'إغلاق الدورة'),
       })
       .click()
-    await page.locator('.modal .btn--danger').click()
+    await page.locator('.modal .btn--primary').click()
     await expect(page.locator('.cycle-blocked__item').first()).toBeVisible()
     await expect(page.locator('.cycle-blocked')).toContainText('ADV-')
   })
@@ -388,7 +388,7 @@ test.describe('Award staff screens', () => {
         hasText: text(testInfo, 'Close submissions', 'إغلاق التقديم'),
       })
       .click()
-    await page.locator('.modal .btn--danger').click()
+    await page.locator('.modal .btn--primary').click()
     const reason = page.locator('.modal').filter({ has: page.locator('textarea[name="reason"]') })
     await reason.locator('textarea').fill(SUPER_REASON)
     await reason.locator('button[type="submit"]').click()

@@ -17,6 +17,5 @@ final readonly class AssessmentCompleted implements ShouldDispatchAfterCommit
         public Assessment $assessment,
         public AssessmentResultSnapshot $snapshot,
         public ?int $completedByUserId = null,
-        public bool $certificateRequested = true,
     ) {}
 }

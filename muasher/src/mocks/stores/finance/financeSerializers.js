@@ -1,3 +1,4 @@
+import { linkedRequestOf } from '../accredited/requestPayments'
 import { financeEntityEmails } from '../../fixtures/finance'
 import { findFile, findPayment, receiptOf, refundOf } from './financeState'
 import { entityNameOf, entityReferenceOf } from './receiptSnapshot'
@@ -134,6 +135,7 @@ export function transactionDetailResource(payment) {
     receipt: receipt ? receiptResource(receipt) : null,
     refund: refund ? refundResource(refund) : null,
     bankTransfer: transferDetailsOf(payment),
+    linkedRequest: linkedRequestOf(payment.id),
   }
 }
 

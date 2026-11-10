@@ -41,7 +41,8 @@ export function useEmailChangeApprovals() {
         name: entityName(change),
         email: change.newEmail,
       }),
-      confirmLabel: t('entities.emailChanges.approve'),
+      confirmLabel: t('actions.approve'),
+      variant: 'confirm',
     })
     if (!accepted) return
     try {

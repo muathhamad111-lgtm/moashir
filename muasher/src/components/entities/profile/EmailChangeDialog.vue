@@ -54,11 +54,11 @@ function close() {
         required
       />
       <div class="email-change__actions">
-        <BaseButton variant="secondary" :disabled="form.submitting.value" @click="close">{{
-          t('actions.cancel')
-        }}</BaseButton>
         <BaseButton type="submit" variant="primary" :loading="form.submitting.value">{{
           t('entities.email.sendCode')
+        }}</BaseButton>
+        <BaseButton variant="secondary" :disabled="form.submitting.value" @click="close">{{
+          t('actions.cancel')
         }}</BaseButton>
       </div>
     </form>
@@ -82,9 +82,6 @@ function close() {
         }}
       </p>
       <div class="email-change__actions">
-        <BaseButton variant="secondary" :disabled="verifying" @click="reset">{{
-          t('entities.email.changeAddress')
-        }}</BaseButton>
         <BaseButton
           variant="primary"
           :loading="verifying"
@@ -93,6 +90,9 @@ function close() {
         >
           {{ t('auth.otp.verify') }}
         </BaseButton>
+        <BaseButton variant="secondary" :disabled="verifying" @click="reset">{{
+          t('entities.email.changeAddress')
+        }}</BaseButton>
       </div>
     </div>
 

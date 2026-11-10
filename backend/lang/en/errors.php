@@ -24,6 +24,8 @@ return [
         'malformed' => 'The request is malformed.',
         'not_acceptable' => 'The API only returns JSON. Send the header Accept: application/json.',
         'too_large' => 'The request is too large.',
+        'not_paid_draft' => 'A reminder can only be sent for a paid accredited request that is still a draft with the entity.',
+        'reminder_too_soon' => 'This entity was reminded in the last 24 hours. You can send a new reminder later.',
     ],
     'csrf' => [
         'token_mismatch' => 'Your session has expired. Please refresh and try again.',
@@ -392,5 +394,8 @@ return [
     'contact' => [
         'message_closed' => 'This message is closed. Open a new message through the contact form, or ask the team to reopen it.',
         'assignee_not_eligible' => 'The selected staff member cannot handle contact messages.',
+    ],
+    'period' => [
+        'already_assessed' => 'Your entity already has a completed accredited result in this period. Your draft is kept and you can submit it when the next period starts.',
     ],
 ];

@@ -1,5 +1,6 @@
 import { PAYMENT_CHANNEL_VALUES } from '@/constants/payments'
 import { BANK_ACCOUNT_STATES } from '@/constants/bankTransfer'
+import { toRequestStatus } from './accreditedStatus'
 
 const ACCOUNT_STATE_VALUES = Object.values(BANK_ACCOUNT_STATES)
 
@@ -146,6 +147,21 @@ export function toStaffTransfer(raw = {}) {
     paidAt: raw.paidAt ?? null,
     rejectedAt: raw.rejectedAt ?? null,
     receipt: raw.receipt ?? null,
+    linkedRequest: toLinkedRequest(raw.linkedRequest),
+  }
+}
+
+export function toLinkedRequest(raw) {
+  if (!raw?.number) return null
+  return {
+    id: raw.id ?? null,
+    number: raw.number,
+    path: raw.path ?? null,
+    pathLabel: raw.pathLabel ?? null,
+    status: toRequestStatus(raw.status),
+    progress: raw.progress
+      ? { complete: count(raw.progress.subsComplete), total: count(raw.progress.subsTotal) }
+      : null,
   }
 }
 

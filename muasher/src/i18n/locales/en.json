@@ -29,7 +29,14 @@
     "save": "Save",
     "edit": "Edit",
     "login": "Sign in",
-    "logout": "Sign out"
+    "logout": "Sign out",
+    "ok": "OK",
+    "delete": "Delete",
+    "remove": "Remove",
+    "send": "Send",
+    "approve": "Approve",
+    "reject": "Reject",
+    "publish": "Publish"
   },
   "locale": {
     "switchLabel": "العربية",
@@ -181,7 +188,8 @@
       "menuFor": "Actions: {name}"
     },
     "confirm": {
-      "title": "Confirmation"
+      "title": "Confirmation",
+      "irreversible": "This cannot be undone."
     },
     "wizard": {
       "label": "Form steps"
@@ -212,6 +220,9 @@
       "search": "Search {label}",
       "searchPlaceholder": "Type to search",
       "labelSeparator": ":"
+    },
+    "success": {
+      "title": "Completed successfully"
     }
   },
   "status": {
@@ -483,14 +494,13 @@
       "created": "Draft version {number} created as a copy of the published version.",
       "createdEmpty": "Empty draft version {number} created.",
       "discarded": "Draft version {number} discarded.",
-      "discardTitle": "Discard the draft",
-      "discardMessage": "Discarding draft version {number} deletes every change made in it. The published version stays as it is."
+      "discardTitle": "Discard draft version {number}?",
+      "discardMessage": "The published version is not affected."
     },
     "publish": {
       "dialogTitle": "Publish criteria version {number}",
-      "intro": "Publishing makes version {number} the criteria that assessments use.",
-      "replacesNote": "The current published version {number} will be archived.",
-      "firstNote": "This is the first published version, so no existing assessment is affected.",
+      "replacesNote": "Published version {number} is archived.",
+      "firstNote": "The first published version; no assessment is affected.",
       "scopeLegend": "Where should this change apply?",
       "scopeRequired": "Choose where the change applies.",
       "scopes": {
@@ -512,15 +522,8 @@
       "reasonHint": "Optional. Recorded in the audit log with the change.",
       "reasonHintRequired": "Required for the Super Admin. Recorded in the audit log with the change.",
       "reasonRequired": "Enter the reason for this change.",
-      "submit": "Publish version {number}",
       "blockedTitle": "Publishing is blocked until these items are fixed",
-      "success": "Version {number} published.",
-      "effects": {
-        "all": "Open requests keep the scores of unchanged items.",
-        "new_only": "Only new requests use the new version.",
-        "reset_open": "Open requests were reset for a full re-assessment."
-      },
-      "changeCount": "No item changed. | 1 item changed. | {count} items changed.",
+      "success": "Version {number} was published",
       "affectedOpen": "No open request affected. | 1 open request affected. | {count} open requests affected."
     },
     "problems": {
@@ -572,12 +575,11 @@
       "editNote": "The evaluation type changes with the switch action, which shows the impact on the guiding points first.",
       "switchToDirect": "Switch to direct evaluation",
       "switchToPoints": "Switch to guiding-point evaluation",
-      "switchTitle": "Change the evaluation type",
-      "toDirectMessage": "Switching to direct evaluation deletes {count} guiding points of this sub-criterion. Continue? | Switching to direct evaluation deletes the only guiding point of this sub-criterion. Continue? | Switching to direct evaluation deletes {count} guiding points of this sub-criterion. Continue?",
-      "toDirectNoPointsMessage": "The sub-criterion will be evaluated directly. Guidance stays as descriptive text.",
-      "toPointsMessage": "The sub-criterion will be evaluated on guiding points. Add its guiding points before publishing.",
+      "switchTitle": "Change the evaluation type?",
+      "toDirectMessage": "{count} guiding points are deleted. | Its only guiding point is deleted. | {count} guiding points are deleted.",
+      "toPointsMessage": "Add the guiding points before publishing.",
       "switchConfirm": "Switch",
-      "switchConfirmDelete": "Switch and delete the points",
+      "switchConfirmDelete": "Switch and delete",
       "short": {
         "guidingPoints": "On guiding points",
         "direct": "Direct"
@@ -682,12 +684,12 @@
       "reasonMin": "The reason must be at least {min} characters."
     },
     "confirm": {
-      "mainDeleteTitle": "Delete main criterion",
-      "mainDeleteMessage": "Deleting \"{name}\" from the draft also deletes its sub-criteria and guiding points.",
-      "subDeleteTitle": "Delete sub-criterion",
-      "subDeleteMessage": "Deleting \"{name}\" from the draft also deletes its guiding points.",
-      "pointDeleteTitle": "Delete guiding point",
-      "pointDeleteMessage": "The guiding point {name} will be deleted from the draft."
+      "mainDeleteTitle": "Delete the main criterion?",
+      "mainDeleteMessage": "“{name}” with its sub-criteria and points.",
+      "subDeleteTitle": "Delete the sub-criterion?",
+      "subDeleteMessage": "“{name}” with its guiding points.",
+      "pointDeleteTitle": "Delete the guiding point?",
+      "pointDeleteMessage": "{name}"
     },
     "toasts": {
       "mainCreated": "Main criterion added.",
@@ -1491,12 +1493,9 @@
         "catalogKey": "Use lowercase English letters, digits, hyphens and underscores only."
       },
       "confirm": {
-        "publishTitle": "Publish indicator",
-        "publishMessage": "“{name}” will appear on the public indicators page. Continue?",
-        "unpublishTitle": "Unpublish indicator",
-        "unpublishMessage": "“{name}” will be hidden from the public page. Continue?",
-        "archiveTitle": "Archive indicator",
-        "archiveMessage": "“{name}” will be removed from the lists and the public page. Its history is kept."
+        "publishTitle": "Publish the indicator?",
+        "unpublishTitle": "Unpublish the indicator?",
+        "archiveTitle": "Archive the indicator?"
       },
       "toasts": {
         "created": "Indicator added successfully.",
@@ -1540,7 +1539,7 @@
           "add": "Add category",
           "createTitle": "Add category",
           "editTitle": "Edit category",
-          "removeTitle": "Delete category",
+          "removeTitle": "Delete the category?",
           "emptyTitle": "No categories yet",
           "hint": "Categories group the indicators on the public page tabs."
         },
@@ -1548,7 +1547,7 @@
           "add": "Add indicator type",
           "createTitle": "Add indicator type",
           "editTitle": "Edit indicator type",
-          "removeTitle": "Delete indicator type",
+          "removeTitle": "Delete the indicator type?",
           "emptyTitle": "No indicator types yet",
           "hint": "Indicator types power the optional type filter on the public page."
         },
@@ -1556,7 +1555,6 @@
         "removed": "Deleted.",
         "remove": "Delete",
         "removeNamed": "Delete “{name}”",
-        "removeMessage": "“{name}” will be deleted. This cannot be undone.",
         "inUse": "This entry is used by {count} indicators. Deactivate it instead.",
         "loadError": "Could not load the list."
       }
@@ -1783,23 +1781,22 @@
     "actionDialogs": {
       "suspend": {
         "title": "Suspend the account",
-        "message": "{name} will lose access at once and every session ends. Write the reason; it is kept in the audit log."
+        "message": "{name} · every session ends"
       },
       "activate": {
         "title": "Reactivate the account",
-        "message": "{name} will be able to sign in again."
+        "message": "{name}"
       },
       "unlock": {
         "title": "Unlock the account",
-        "message": "{name} was locked after failed sign-in attempts. Unlock it before the lock ends?"
+        "message": "{name}"
       },
       "resetMfa": {
         "title": "Reset two-factor authentication",
-        "message": "{name} must set up two-factor authentication again at the next sign-in, and every session ends. Write the reason."
+        "message": "{name} · every session ends"
       },
       "resendInvitation": {
-        "title": "Resend the invitation",
-        "message": "A new invitation e-mail, valid for 72 hours, will be sent to {name}."
+        "title": "Resend the invitation?"
       }
     },
     "pathAccess": {
@@ -1808,7 +1805,6 @@
       "follows": "Follows",
       "allPaths": "All paths",
       "qualificationsTitle": "Assessor qualified paths",
-      "qualificationsLead": "Choose the paths whose requests {name} may assess. An assessor is listed for assignment only on the paths they are qualified for.",
       "qualificationsLabel": "Qualified paths",
       "qualificationsHint": "Removing a path keeps the open assignments; the assessor finishes them or they are reassigned.",
       "qualifications": {
@@ -1816,7 +1812,6 @@
         "advanced_initial": "Advanced assessment (Award) — initial assessment"
       },
       "scopeTitle": "Request follow-up scope",
-      "scopeLead": "Choose the request paths {name} follows in the requests queue, the request details and the notifications.",
       "scopeLabel": "Scope",
       "scopeChoices": {
         "all": "All paths",
@@ -2265,8 +2260,7 @@
       "exportFailed": "The export could not be prepared."
     },
     "confirm": {
-      "resendVerificationTitle": "Resend the verification",
-      "resendVerificationMessage": "Send {name} a reminder with the sign-in link to verify the account?"
+      "resendVerificationTitle": "Resend the verification link?"
     },
     "reason": {
       "label": "Reason",
@@ -2276,32 +2270,30 @@
     "reasonDialogs": {
       "deactivate": {
         "title": "Deactivate the entity",
-        "message": "{name} will be signed out and cannot sign in until it is reactivated."
+        "message": "{name} · signed out at once"
       },
       "reactivate": {
         "title": "Reactivate the entity",
-        "message": "{name} will be able to sign in again."
+        "message": "{name}"
       },
       "restore": {
         "title": "Restore the entity",
-        "message": "{name} returns with its previous status and its frozen requests are released."
+        "message": "{name} · its requests are released"
       },
       "exportPersonalData": {
         "title": "Export personal data",
-        "message": "Download the personal data package of {name} for a data-subject request. The export is audited."
+        "message": "{name}"
       }
     },
     "delete": {
-      "title": "Delete {name}",
-      "intro": "The entity moves to Deleted entities, its sign-in is closed and it can be restored later.",
+      "title": "Delete the entity",
       "impactFailed": "The open requests could not be checked.",
       "openRequestsTitle": "Open requests ({count})",
       "openRequestsHint": "These requests will be frozen with the entity: no action, score or notification until it is restored.",
       "confirmLabel": "I confirm the deletion and the freezing of the {count} open requests listed above",
       "confirmRequired": "Confirm the listed open requests to continue",
       "staleNotice": "The list of open requests changed since you opened this dialog. Review the current list and confirm again.",
-      "noOpenRequests": "The entity has no open requests.",
-      "submit": "Delete entity"
+      "noOpenRequests": "The entity has no open requests."
     },
     "openRequests": {
       "caption": "Open requests of the entity",
@@ -2327,7 +2319,6 @@
     },
     "edit": {
       "title": "Edit the entity on its behalf",
-      "intro": "Changes are recorded in the profile history and the entity is notified.",
       "submit": "Save changes"
     },
     "record": {
@@ -2375,10 +2366,10 @@
       },
       "approve": "Approve",
       "reject": "Reject",
-      "approveTitle": "Approve the e-mail change",
-      "approveMessage": "The official e-mail of {name} becomes {email}. Both addresses are informed.",
+      "approveTitle": "Approve the e-mail change?",
+      "approveMessage": "{name} · {email}",
       "rejectTitle": "Reject the e-mail change",
-      "rejectMessage": "The current official e-mail stays in use. The reason is kept in the audit log.",
+      "rejectMessage": "The current e-mail stays in use.",
       "approved": "The e-mail change was approved.",
       "rejected": "The e-mail change was rejected.",
       "emptyTitle": "No e-mail changes in this list",
@@ -2402,7 +2393,7 @@
       "reject": "Reject",
       "fulfilTitle": "Fulfil the request",
       "rejectTitle": "Reject the request",
-      "decisionMessage": "The decision closes the request and is recorded in the audit log.",
+      "decisionMessage": "The decision closes the request.",
       "noteLabel": "Decision note",
       "emptyTitle": "No requests in this list",
       "emptyMessage": "Record a request when an entity asks to access, correct or delete its personal data.",
@@ -2429,7 +2420,6 @@
         "export": "Export the messages",
         "erase": "Delete the messages",
         "eraseTitle": "Delete the messages of this address?",
-        "eraseMessage": "Every contact message linked to this e-mail address and its entries are deleted permanently. This cannot be undone.",
         "exportedCount": "Messages exported: {count}",
         "erasedCount": "{messages} messages and {entries} entries were deleted.",
         "downloadFile": "Download the file",
@@ -2824,20 +2814,15 @@
         "submit": "Submit and view result",
         "readOnlyHint": "This assessment is read-only.",
         "submitBlockedHint": "Submission is paused until the criteria update finishes. You can keep saving your draft.",
-        "unsavedHint": "You have unsaved changes."
+        "unsavedHint": "You have unsaved changes.",
+        "submitHint": "The assessment cannot be changed after submission. Your result appears at once."
       },
       "confirm": {
-        "submitTitle": "Submit the self assessment",
-        "submitMessage": "Request {number} will be submitted and can no longer be changed.",
-        "allScored": "No items scored. | All 1 item is scored. | All {count} items are scored.",
-        "unsavedIncluded": "Your unsaved changes are saved with the submission.",
-        "immediateResult": "The platform calculates your result immediately and keeps it in your assessment history.",
-        "finalNote": "The self assessment is a measurement for your entity only.",
-        "confirm": "Submit now"
+        "submitTitle": "Submit the self assessment?"
       },
       "toasts": {
         "draftSaved": "Draft saved",
-        "submitted": "Self assessment submitted",
+        "submitted": "Your self assessment was submitted",
         "started": "Self assessment {number} started",
         "draftResumed": "You already have an open draft. It is open below.",
         "fixErrors": "Correct the highlighted scores first.",
@@ -2973,11 +2958,15 @@
       "frozenTitle": "This request is frozen",
       "frozenMessage": "The entity is in Deleted entities. The request keeps its status and accepts no change until the entity is restored.",
       "readOnlyTitle": "Read-only view",
-      "readOnlyMessage": "Staff can read the self assessment and its result. Only the entity can change or submit it.",
       "detailsTitle": "Request details",
       "entity": "Entity",
       "scale": "Assessment scale",
-      "criteria": "Criteria"
+      "criteria": "Criteria",
+      "readOnlyMessages": {
+        "self": "Staff can read the self assessment and its result. Only the entity can change or submit it.",
+        "accredited": "Staff can read the request and its status. Only the entity can change or submit it.",
+        "advanced": "Staff can read the request and its status. Only the entity can change or submit it."
+      }
     }
   },
   "settings": {
@@ -3181,7 +3170,6 @@
       "saved": "The assessment settings were saved.",
       "unchanged": "Nothing changed.",
       "reasonTitle": "Reason for the change",
-      "reasonMessage": "Changes by the Super Admin need a reason. It is recorded in the audit log.",
       "awardTitle": "Award cycle defaults",
       "awardNote": "These values are copied into every new award cycle and can then be changed in the cycle itself. Existing cycles keep their own values.",
       "minEntityAge": "Minimum entity age (years)",
@@ -3251,9 +3239,8 @@
         "email": "Marketing email",
         "sms": "Marketing SMS"
       },
-      "send": "Send",
-      "confirmTitle": "Send a marketing message",
-      "confirmMessage": "Send a marketing {channel} to {entity}?",
+      "confirmTitle": "Send a marketing message?",
+      "confirmMessage": "{entity} · {channel}",
       "campaignQueued": "The marketing message was queued",
       "campaignFailed": "The marketing message could not be sent",
       "emptyTitle": "No abandoned carts",
@@ -3278,8 +3265,7 @@
       "uploadQueued": "The file was uploaded and is being processed",
       "uploadFailed": "The file could not be uploaded",
       "retrain": "Retrain",
-      "retrainTitle": "Retrain the knowledge base",
-      "retrainMessage": "Reprocess all files so the assistant learns the latest content?",
+      "retrainTitle": "Retrain the knowledge base?",
       "retrainQueued": "Retraining started",
       "retrainFailed": "Retraining could not be started",
       "approve": "Approve",
@@ -3288,8 +3274,7 @@
       "notApproved": "Not approved",
       "approveFailed": "Could not change the approval",
       "removeFile": "Delete {name}",
-      "removeTitle": "Delete knowledge file",
-      "removeMessage": "Delete \"{name}\" from the knowledge base?",
+      "removeTitle": "Delete the knowledge file?",
       "removed": "The file was deleted",
       "removeFailed": "The file could not be deleted",
       "fileSize": "{size} KB",
@@ -3428,8 +3413,7 @@
       },
       "saved": "The sign-in security setting was saved.",
       "unchanged": "There are no changes to save.",
-      "reasonTitle": "Reason for the sign-in security change",
-      "reasonMessage": "The Super Admin gives a reason for every change; the reason is kept in the audit log."
+      "reasonTitle": "Reason for the change"
     },
     "contactMessages": {
       "title": "Contact message settings",
@@ -3478,8 +3462,7 @@
       "save": "Save payment channels",
       "saved": "Payment channels for entities saved.",
       "saveFailed": "The payment channels could not be saved.",
-      "notOffered": "Not offered to entities: electronic payment is not in the current channels. Keys can still be prepared and tested.",
-      "reasonMessage": "Write the reason for this change. It is recorded in the audit log."
+      "notOffered": "Not offered to entities: electronic payment is not in the current channels. Keys can still be prepared and tested."
     },
     "bankAccounts": {
       "title": "Bank accounts for transfers",
@@ -3559,18 +3542,10 @@
       "retire": {
         "deactivate": {
           "title": "Deactivate the bank account?",
-          "message": "Entities will no longer see the account for new requests. It can be activated later.",
-          "confirm": "Deactivate account"
-        },
-        "archive": {
-          "title": "Delete the bank account?",
-          "message": "The account disappears from the list and is never offered again. Its data stays in past payments and receipts.",
-          "confirm": "Delete account"
+          "confirm": "Deactivate"
         },
         "delete": {
-          "title": "Delete the bank account?",
-          "message": "This account was never used in a transfer, so it is deleted permanently. This cannot be undone.",
-          "confirm": "Delete account"
+          "title": "Delete the bank account?"
         }
       },
       "blocked": {
@@ -3623,8 +3598,7 @@
       "failed": "The excellence tools rules could not be saved.",
       "unchanged": "There are no changes to save.",
       "loadError": "The excellence tools settings could not be loaded.",
-      "reasonTitle": "Reason for changing the excellence tools rules",
-      "reasonMessage": "Write the reason for the change; it is recorded with the change in the audit log.",
+      "reasonTitle": "Reason for the change",
       "validation": {
         "rule": "Enter a percentage above 0 and up to 100 with at most two decimals.",
         "ascending": "This bound must be higher than the previous one."
@@ -3724,8 +3698,8 @@
       "toasts": {
         "cvSaved": "The CV entries were saved.",
         "incomplete": "Complete the missing items before submitting. | One item is still missing. | {count} items are still missing.",
-        "submitted": "The request was submitted for review.",
-        "resubmitted": "The completed request was resubmitted to the assessor."
+        "submitted": "Your request was sent for review",
+        "resubmitted": "Your request was resent"
       }
     },
     "cv": {
@@ -3746,8 +3720,6 @@
       "download": "Download {name}",
       "remove": "Remove {name}",
       "removeTitle": "Remove the file?",
-      "removeMessage": "The file {name} will be removed from the request.",
-      "removeConfirm": "Remove the file",
       "full": "This sub-criterion has reached the maximum of {count} files.",
       "refusedHint": "This file was refused by the malware scan and does not count. Replace it with a clean file.",
       "sizeKb": "{size} KB",
@@ -3832,12 +3804,9 @@
       }
     },
     "submit": {
-      "title": "Submit the request for review?",
-      "resubmitTitle": "Resubmit the completed request?",
-      "message": "Request {number} will be sent to the requests follower for assignment to an assessor.",
-      "resubmitMessage": "Request {number} will return to its assessor with your completed items.",
-      "lockNote": "The form becomes read-only after submission.",
-      "reviewNote": "The assessor sees only the files that passed the malware scan."
+      "title": "Send the request for review?",
+      "resubmitTitle": "Resend the request?",
+      "lockNote": "The form becomes read-only after submission."
     },
     "result": {
       "title": "Accredited assessment result",
@@ -4136,7 +4105,6 @@
     "assign": {
       "title": "Assign an assessor",
       "reassignTitle": "Reassign to another assessor",
-      "lead": "Choose an assessor to review the request of {entity}.",
       "searchLabel": "Search assessors by name",
       "assessorLabel": "Eligible assessors",
       "openRequests": "No open requests | 1 open request | {count} open requests",
@@ -4198,7 +4166,19 @@
       "paid": "Paid",
       "notPaid": "Not paid or refunded",
       "missingTitle": "Request not found",
-      "missingMessage": "This request does not exist or is not available to your account."
+      "missingMessage": "This request does not exist or is not available to your account.",
+      "paymentCard": {
+        "title": "Payment",
+        "status": "Status",
+        "reference": "Payment number",
+        "receipt": "Payment receipt",
+        "channel": "Channel",
+        "paidAt": "Paid on",
+        "openRecord": "Open the payment record",
+        "downloadReceipt": "Download the payment receipt",
+        "testReceipt": "Test receipt",
+        "noReceipt": "No receipt issued yet"
+      }
     },
     "bundle": {
       "title": "Evidence bundle",
@@ -4219,11 +4199,11 @@
     },
     "overrides": {
       "reopen": "Reopen the request",
-      "reopenTitle": "Reopen the completed request",
-      "reopenMessage": "The result is hidden again and the request returns to review. Write the reason for this override.",
+      "reopenTitle": "Reopen the request",
+      "reopenMessage": "The result is hidden and the request returns to review.",
       "force": "Change the status",
       "forceTitle": "Change the request status",
-      "forceWarning": "This override bypasses the normal workflow and is recorded in the audit log with your reason.",
+      "forceWarning": "This bypasses the normal workflow.",
       "forceAction": "Change the status",
       "target": "New status",
       "reason": "Reason",
@@ -4232,19 +4212,17 @@
       }
     },
     "toasts": {
-      "assigned": "The request was assigned.",
-      "reassigned": "The request was reassigned."
+      "assigned": "The request was assigned",
+      "reassigned": "The request was reassigned"
     },
     "return": {
       "title": "Return the request for completion",
-      "lead": "The entity edits only the items you list and resubmits before the deadline.",
       "submit": "Return the request",
       "deadlineHint": "Until {date} at the latest, before the committee assessment starts",
       "deadlineError": "Choose a date from today until {date}, before the committee assessment starts."
     },
     "withdraw": {
       "title": "Withdraw the request",
-      "message": "Request {number} is withdrawn at the entity's request and closed. Its assessor and the entity are notified.",
       "reason": "Reason of the withdrawal",
       "confirm": "Withdraw"
     },
@@ -4263,9 +4241,7 @@
       "revoke": "Revoke the certificate",
       "reissue": "Re-issue",
       "revokeTitle": "Revoke the certificate",
-      "revokeMessage": "The certificate is revoked at once and the public verification page shows it as revoked. The reason reaches the entity and is never shown publicly.",
       "reissueTitle": "Re-issue the certificate",
-      "reissueMessage": "A new certificate with a new number and verification code is issued from the current result and levels; the previous one becomes superseded.",
       "afterCompletion": "The certificate is issued once the assessor approves the result.",
       "none": "No certificate has been issued for this request yet.",
       "issueNote": "The request was approved without a certificate. You can issue it now.",
@@ -4274,10 +4250,33 @@
       "reason": "Reason: {reason}",
       "feedbackReport": "Feedback report of the request",
       "toasts": {
-        "issued": "The certificate was issued.",
-        "revoked": "The certificate was revoked.",
-        "reissued": "A new certificate replaced the previous one."
-      }
+        "issued": "The certificate was issued",
+        "revoked": "The certificate was revoked",
+        "reissued": "A new certificate was issued"
+      },
+      "revokeHint": "The entity sees the reason; it is never public · at least {min} characters"
+    },
+    "tabs": {
+      "assignmentQueue": "In the assignment queue",
+      "awaitingEntity": "Waiting for the entity",
+      "withCount": "{label} ({count})"
+    },
+    "awaitingEntity": {
+      "note": {
+        "accredited": "Requests whose fee is paid but that the entity has not sent yet. They need no assignment now and join the assignment queue automatically when sent.",
+        "advanced": "Requests the entity has started but not sent yet. They need no assignment now and join the assignment queue automatically when sent."
+      },
+      "columns": {
+        "payment": "Payment",
+        "openedAt": "Opened on",
+        "progress": "Entity progress",
+        "lastActivity": "Entity last active"
+      },
+      "progressLabel": "Sub-criteria completed",
+      "noPayment": "No payment",
+      "open": "Open",
+      "emptyTitle": "No requests waiting for the entity",
+      "emptyMessage": "Requests open to the entity appear here until it sends them."
     }
   },
   "bag": {
@@ -4399,9 +4398,9 @@
       },
       "openSelected": {
         "action": "Open selected for this stage",
-        "confirmTitle": "Open selected gaps",
-        "confirmMessage": "Open {count} gap(s) for “{stage}”? The organization will see them immediately.",
-        "confirmAction": "Open gaps",
+        "confirmTitle": "Open the selected gaps?",
+        "confirmMessage": "Stage “{stage}”",
+        "confirmAction": "Open",
         "done": "The selected gaps were opened for this stage.",
         "failed": "Could not open the selected gaps. Please try again."
       },
@@ -4515,7 +4514,6 @@
     "assign": {
       "title": "Assign the request to an evaluator",
       "reassignTitle": "Reassign the request",
-      "lead": "Choose an active evaluator to build the Kit for “{entity}”.",
       "evaluatorLabel": "Evaluator",
       "evaluatorPlaceholder": "Choose an evaluator",
       "chooseError": "Choose an evaluator to continue.",
@@ -4644,8 +4642,6 @@
     "draft": {
       "delete": "Delete the draft",
       "deleteTitle": "Delete the draft?",
-      "deleteMessage": "Draft {number} and its CV entries and evidence are deleted permanently. You can apply again while the submission period is open.",
-      "deleteConfirm": "Delete",
       "deleted": "The draft was deleted."
     },
     "guest": {
@@ -4794,7 +4790,7 @@
     },
     "confirmReset": {
       "title": "Reset to the brand defaults?",
-      "message": "The logo and the accent color return to the official Moashir identity for every user.",
+      "message": "It applies to every user.",
       "confirm": "Reset"
     },
     "toast": {
@@ -4808,8 +4804,7 @@
       "ratio": "{ratio}:1 (minimum {minimum}:1)"
     },
     "reason": {
-      "title": "Reason for the change",
-      "message": "As the Super Admin, write the reason for this identity change. It is kept in the audit log."
+      "title": "Reason for the change"
     }
   },
   "maintenance": {
@@ -4994,8 +4989,7 @@
       "pending": "To do"
     },
     "reason": {
-      "title": "Reason for this change",
-      "message": "This change needs a reason. It is stored in the audit log."
+      "title": "Reason for this change"
     },
     "forbidden": {
       "title": "You do not have access to this screen",
@@ -5080,7 +5074,7 @@
         "registered": "Webhook registered",
         "notRegistered": "Webhook not registered",
         "register": "Register webhook automatically",
-        "reasonMessage": "Registering the webhook replaces its secret token. Give a reason for the audit log."
+        "reasonMessage": "Registering replaces the secret token."
       },
       "testBanner": {
         "title": "Test mode — no real charge.",
@@ -5674,7 +5668,7 @@
       "unavailableMessage": "The receipt file cannot be generated at the moment. Try again later.",
       "reissue": "Reissue the receipt",
       "reissueTitle": "Reissue the payment receipt",
-      "reissueMessage": "A new receipt file is generated with the same number. Explain why it is reissued.",
+      "reissueMessage": "A new file is generated with the same number.",
       "reissuedToast": "The payment receipt was reissued.",
       "vatRegistrationNumber": "VAT registration number"
     },
@@ -5760,7 +5754,7 @@
     "refund": {
       "open": "Record a refund",
       "formTitle": "Record a refund made outside the platform",
-      "lead": "Refunds are not executed through the platform or the gateway. Record a bank transfer you have already made, with its transfer receipt.",
+      "lead": "Refunds are paid by bank transfer outside the platform, then recorded here with the transfer receipt.",
       "totalLabel": "Payment total",
       "amount": "Refund amount",
       "amountHint": "Full refunds only: the amount equals the payment total.",
@@ -5801,7 +5795,7 @@
     "settle": {
       "open": "Settle manually",
       "title": "Settle the payment manually",
-      "lead": "Set the final status of {reference} after checking it in the Moyasar dashboard. This action is audited and the reason is stored.",
+      "lead": "Manual settlement sets the final status after you check the payment in the Moyasar dashboard.",
       "status": "Final status",
       "statuses": {
         "paid": "Paid",
@@ -5881,7 +5875,6 @@
       "failed": "The finance settings could not be saved.",
       "unchanged": "Nothing has changed.",
       "reasonTitle": "Reason for the change",
-      "reasonMessage": "Changes made by the Super Admin require a reason, which is stored in the audit log.",
       "validation": {
         "price": "Enter a price with at most 7 digits and up to two decimals, for example 1500.00.",
         "pricePositive": "The price must be greater than zero.",
@@ -6119,12 +6112,10 @@
       },
       "approve": {
         "open": "Approve transfer",
-        "title": "Approve the transfer and record the payment?",
-        "message": "The payment is recorded, the payment receipt is issued and the service opens for the entity.",
-        "submit": "Approve",
+        "title": "Approve the transfer?",
+        "message": "Approval records the payment, issues the payment receipt and opens the service for the entity.",
         "bulkTitle": "Approve the selected transfers ({count})?",
-        "bulkMessage": "Each payment is recorded separately with its receipt. Anything already decided is skipped.",
-        "bulkSubmit": "Approve selected ({count})"
+        "bulkMessage": "Anything already decided is skipped."
       },
       "reject": {
         "open": "Reject transfer",
@@ -6137,10 +6128,7 @@
         "noteHint": "The entity will see this note · up to {max} characters",
         "noteRequired": "Write a note for the entity when you choose \"Other reason\".",
         "noteMin": "Write a note for the entity of at least {min} characters.",
-        "notice": "The request will close and the entity will be told to submit a new one.",
-        "bulkNotice": "The requests will close and each entity will be told to submit a new one.",
-        "submit": "Reject transfer",
-        "bulkSubmit": "Reject selected ({count})"
+        "notice": "Rejection closes the request and tells the entity to submit a new one."
       },
       "rejectionReasons": {
         "not_received": "Not found in the bank statement",
@@ -6154,10 +6142,21 @@
         "label": "Reason (Super Admin)",
         "hint": "{min} to {max} characters. It is recorded in the audit log."
       },
-      "toasts": {
-        "approved": "The transfer was approved and payment receipt {number} was issued.",
-        "rejected": "The transfer was rejected and the entity was notified."
+      "success": {
+        "approved": "The transfer was approved",
+        "rejected": "The transfer was rejected"
       }
+    },
+    "linkedRequest": {
+      "title": "Linked request",
+      "notOpened": "No request yet. The accredited assessment request opens automatically when the transfer is approved.",
+      "notOpenedPaid": "No request has been opened for this payment yet.",
+      "restricted": "The requests team reads the request content. You see its number, status and progress only.",
+      "open": "Open the request",
+      "number": "Request number",
+      "status": "Status",
+      "progress": "Sub-criteria completed",
+      "openEntity": "Open the entity record"
     }
   },
   "review": {
@@ -6197,11 +6196,10 @@
     "completeHint": "Every item needs a saved score before completion. Feedback is optional.",
     "confirmComplete": {
       "title": "Complete the assessment?",
-      "message": "The result is computed by the platform and published to the entity. This cannot be undone by you.",
-      "pendingMessage": "Unsaved changes are saved first. The platform refuses completion while an item has no score.",
-      "issueCertificate": "Issue the accredited certificate now",
-      "issueHint": "The certificate is issued on approval and the entity is notified.",
-      "laterHint": "No certificate is issued now; it can be issued later from the request page."
+      "message": "The result is published to the entity. This cannot be undone.",
+      "pendingMessage": "Unsaved changes are saved first.",
+      "confirm": "Complete",
+      "certificateMessage": "The result is published and the certificate is issued automatically. This cannot be undone."
     },
     "startTitle": "The review has not started",
     "startMessage": "Start the review to score the items and write feedback.",
@@ -6219,10 +6217,8 @@
       "message": "This request is not assigned to you or your account cannot read it."
     },
     "reasonTitle": "Reason for the Super Admin action",
-    "reasonMessage": "Actions on behalf of the assessor need a reason. It is recorded in the audit log.",
     "completion": {
       "title": "Request completion from the entity",
-      "lead": "Choose the items the entity must complete, the deadline and what happens if the deadline passes.",
       "notes": "Notes to the entity",
       "notesHint": "Between {min} and {max} characters.",
       "items": "Items to complete",
@@ -6244,7 +6240,7 @@
       "noticeMessage": "As Super Admin you can override scores. The platform recomputes and republishes the result.",
       "open": "Override scores",
       "title": "Override the published scores",
-      "warning": "Only the changed items are sent. The override and its reason are recorded in the audit log.",
+      "warning": "Only the changed items are sent.",
       "itemLabel": "{code} (out of {max})",
       "noChange": "Change at least one score.",
       "submit": "Override the scores",
@@ -6254,7 +6250,7 @@
       "fixErrors": "Correct the highlighted scores first.",
       "saved": "Scores and feedback were saved.",
       "started": "The review started.",
-      "completed": "The assessment was completed and the result published."
+      "completed": "The assessment is complete"
     },
     "summary": {
       "title": "Assessor summary · optional",
@@ -6401,28 +6397,27 @@
       "open": {
         "label": "Open submissions",
         "title": "Open the submissions?",
-        "message": "Entities of the covered regions are notified and can apply until the submission end. Opening before the start date moves the start to now.",
-        "confirm": "Open submissions",
+        "confirm": "Open",
         "done": "Submissions are open."
       },
       "closeSubmissions": {
         "label": "Close submissions",
         "title": "Close the submissions now?",
-        "message": "The submission end moves to now and drafts that were not submitted expire. Filtering decisions become possible.",
-        "confirm": "Close submissions",
+        "message": "Unsent drafts expire.",
+        "confirm": "Close",
         "done": "Submissions are closed."
       },
       "close": {
         "label": "Close the cycle",
         "title": "Close the cycle?",
-        "message": "A cycle can be closed only when all its requests are finished. Only the Super Admin can reopen it.",
-        "confirm": "Close the cycle",
+        "message": "Only the Super Admin can reopen it.",
+        "confirm": "Close",
         "done": "The cycle is closed."
       },
       "reopen": {
         "label": "Reopen the cycle",
         "title": "Reopen the cycle",
-        "message": "The cycle returns to its stage before the close. Give the reason of this override.",
+        "message": "The cycle returns to its stage before the close.",
         "confirm": "Reopen",
         "done": "The cycle was reopened."
       },
@@ -6436,9 +6431,9 @@
       },
       "startCommittee": {
         "label": "Start the committee assessment",
-        "title": "Start the committee assessment now?",
-        "message": "Every qualified request is distributed to every active committee assessor, who are notified. A start before the committee date moves that date to now.",
-        "confirm": "Start the committee assessment",
+        "title": "Start the committee assessment?",
+        "message": "Active committee assessors are notified.",
+        "confirm": "Start",
         "done": "The committee assessment started."
       },
       "links": {
@@ -6472,8 +6467,7 @@
       }
     },
     "reason": {
-      "title": "Reason for this action",
-      "message": "Every action of the Super Admin is recorded with a reason."
+      "title": "Reason for this action"
     }
   },
   "filtering": {
@@ -6557,13 +6551,11 @@
       "qualify": {
         "label": "Qualify",
         "title": "Qualify for the committee assessment",
-        "lead": "Request {number} moves to the committee assessment of the cycle.",
         "submit": "Qualify"
       },
       "disqualify": {
         "label": "Do not qualify",
         "title": "Do not qualify the request",
-        "lead": "Request {number} is closed. Give the reason of the decision.",
         "submit": "Do not qualify"
       },
       "belowWarning": "The initial result ({score}%) is below the qualification threshold ({threshold}%). Qualifying it is an exception that needs a reason; the award secretaries and the System Administrator are alerted.",
@@ -6672,12 +6664,10 @@
       "candidatePlaceholder": "Search by name",
       "sodHint": "Only active assessors who are not initial assessors or members of this cycle are listed (segregation of duties).",
       "appoint": {
-        "title": "Appoint a committee assessor",
-        "lead": "The new committee assessor receives every qualified request of this cycle."
+        "title": "Appoint a committee assessor"
       },
       "substitute": {
-        "title": "Appoint a substitute for {name}",
-        "lead": "The substitute assesses each request of the disabled assessor independently and can read the replaced scores and notes. The Award Secretary approves each substitute result."
+        "title": "Appoint a substitute for {name}"
       },
       "actions": {
         "appoint": "Appoint",
@@ -6689,15 +6679,14 @@
       "dialogs": {
         "disable": {
           "title": "Disable the committee assessor",
-          "message": "{name} stops working at once. The evaluations already counted stay until you exclude the assessor or appoint a substitute. Write the reason."
+          "message": "{name} · stops working at once"
         },
         "remove": {
-          "title": "Remove the committee assessor",
-          "message": "{name} has not started any evaluation and leaves the committee."
+          "title": "Remove the committee assessor?"
         },
         "exclude": {
           "title": "Exclude the committee assessor",
-          "message": "The evaluations of {name} on requests still in the committee are voided and their averages are recomputed."
+          "message": "{name} · open evaluations are voided"
         }
       },
       "toasts": {
@@ -6759,8 +6748,8 @@
       "submitHint": "Every item must be scored before submitting.",
       "confirmSubmit": {
         "title": "Submit the evaluation?",
-        "message": "Your scores and notes are saved and locked. The average is computed once every committee assessor submits.",
-        "pendingMessage": "Unsaved or missing scores are saved first; the submission is refused while an item has no score."
+        "message": "Your scores and notes are locked after submission.",
+        "pendingMessage": "Unsaved scores are saved first."
       },
       "unavailableTitle": "This evaluation is not available",
       "unavailableMessage": "It does not exist or is not distributed to you.",
@@ -6924,27 +6913,22 @@
       "dialogs": {
         "approve": {
           "title": "Approve the committee average",
-          "lead": "Approve the committee average of {subject}. The request moves to the results ranking.",
           "submit": "Approve"
         },
         "approveSubstitution": {
           "title": "Approve the substitute result",
-          "lead": "The replaced evaluation leaves the average of {subject} and the average is recomputed.",
           "submit": "Approve"
         },
         "returnToCommittee": {
           "title": "Return to the committee",
-          "lead": "Every evaluation of {subject} reopens with its scores. The average is cleared until the committee submits again.",
           "submit": "Return"
         },
         "openDiscussion": {
           "title": "Open a committee discussion",
-          "lead": "The committee assessors of {subject} are notified.",
           "submit": "Open the discussion"
         },
         "closeDiscussion": {
           "title": "Close the discussion",
-          "lead": "{subject} returns to awaiting your approval.",
           "submit": "Close"
         }
       },
@@ -6975,11 +6959,11 @@
       "ranked": "{ranked} of {total} ranked",
       "pendingHint": "The region can be approved once every request in it has an approved result.",
       "approveRegion": "Approve the region",
-      "approveTitle": "Approve the region results",
-      "approveMessage": "The ranked requests of {region} become regional winners and qualify for the national award; the others become non-winners. The region is then locked.",
+      "approveTitle": "Approve the results of {region}?",
+      "approveMessage": "The region is locked after approval.",
       "unapproveRegion": "Withdraw the approval",
       "unapproveTitle": "Withdraw the approval of {region}",
-      "unapproveMessage": "The requests of the region return to approved and their national ranks are cleared. Write the reason (at least 20 characters).",
+      "unapproveMessage": "The region’s national ranks are cleared.",
       "columns": {
         "entity": "Entity",
         "region": "Region",
@@ -7013,8 +6997,8 @@
       "regionsPendingTitle": "Regions not settled",
       "regionsPendingMessage": "One region is not approved yet. | {count} regions are not approved yet.",
       "approve": "Approve the national result",
-      "approveTitle": "Approve the national result",
-      "approveMessage": "The ranked candidates become national winners and the others national non-winners. The cycle moves to approved and the results are locked.",
+      "approveTitle": "Approve the national result?",
+      "approveMessage": "The results are locked after approval.",
       "emptyTitle": "No national candidate yet",
       "emptyMessage": "Candidates appear once the regions are approved."
     },
@@ -7025,9 +7009,10 @@
       "approvedAt": "National result approved on",
       "action": "Announce the results",
       "confirmTitle": "Announce the results?",
-      "confirmMessage": "Every participating entity sees its result and receives the notices. The announcement cannot be undone.",
+      "confirmMessage": "The announcement cannot be undone.",
       "done": "The results were announced on",
-      "secretaryOnly": "Only the Award Secretary of this cycle announces the results."
+      "secretaryOnly": "Only the Award Secretary of this cycle announces the results.",
+      "confirm": "Announce"
     }
   },
   "cms": {
@@ -7066,16 +7051,14 @@
       "publish": "Publish",
       "unpublish": "Unpublish",
       "confirmPublish": {
-        "title": "Publish this page?",
-        "message": "The enabled sections and items become visible to every visitor."
+        "title": "Publish the page?"
       },
       "confirmUnpublish": {
-        "title": "Unpublish this page?",
-        "home": "Every visitor will see the maintenance page until you publish again. Sign-in and the back office stay available.",
-        "page": "Visitors will no longer see this page’s content until you publish again."
+        "title": "Unpublish the page?",
+        "home": "Visitors see the maintenance page until you publish again."
       },
-      "publishedToast": "The page is published.",
-      "unpublishedToast": "The page is unpublished.",
+      "publishedToast": "The page was published",
+      "unpublishedToast": "The page was unpublished",
       "view": "View the public page"
     },
     "page": {
@@ -7098,8 +7081,7 @@
       "remove": "Delete",
       "removeNamed": "Delete the section “{name}”",
       "confirmRemove": {
-        "title": "Delete the section?",
-        "message": "The section “{name}” and all its items will be deleted from the draft."
+        "title": "Delete the section?"
       },
       "empty": {
         "title": "No sections yet",
@@ -7129,8 +7111,7 @@
       "remove": "Delete",
       "removeNamed": "Delete the item “{name}”",
       "confirmRemove": {
-        "title": "Delete the item?",
-        "message": "The item “{name}” will be deleted from the draft."
+        "title": "Delete the item?"
       },
       "empty": {
         "title": "No items yet",
@@ -7901,10 +7882,9 @@
       }
     },
     "unsaved": {
-      "title": "Unsaved changes",
-      "message": "The changes in this section are not saved yet. They are lost if you leave now.",
-      "discard": "Discard changes",
-      "stay": "Stay and save"
+      "title": "Leave without saving?",
+      "message": "Your unsaved changes will be lost.",
+      "discard": "Leave"
     },
     "profile": {
       "eyebrow": "Station 1 · Organization profile",
@@ -7977,9 +7957,8 @@
         "replace": "Replace logo",
         "remove": "Remove logo",
         "uploaded": "The logo was uploaded and scanned.",
-        "removeTitle": "Remove the organization logo",
-        "removeMessage": "The logo will not appear on certificates issued after the removal; earlier certificates stay as they are.",
-        "removeConfirm": "Remove logo",
+        "removeTitle": "Remove the organization logo?",
+        "removeMessage": "It will not appear on new certificates.",
         "errors": {
           "type": "The logo must be a PNG or JPEG image.",
           "size": "The logo must not exceed 2 MB.",
@@ -8004,11 +7983,9 @@
         }
       },
       "change": {
-        "title": "Change payment method?",
-        "cancels": "This cancels electronic payment order",
-        "then": "Then choose bank transfer.",
-        "keep": "Keep electronic payment",
-        "confirm": "Cancel the order and change",
+        "title": "Change the payment method?",
+        "cancels": "Payment order {reference} is cancelled.",
+        "confirm": "Change",
         "failed": "The payment method could not be changed. Try again."
       },
       "states": {
@@ -8175,7 +8152,8 @@
         "byFinance": "Finance team · {time}",
         "notified": "You will be notified of the result.",
         "receiptAfterApproval": "The payment receipt is issued after Finance approves."
-      }
+      },
+      "submittedTitle": "Your transfer was sent for review"
     },
     "sideNav": {
       "collapse": "Collapse menu",
@@ -8490,10 +8468,10 @@
     "saveDraft": "Save the draft",
     "discard": "Discard the draft",
     "discardTitle": "Discard the draft?",
-    "discardMessage": "The draft is deleted; the published version is not affected.",
+    "discardMessage": "The published version is not affected.",
     "publish": "Publish the version",
-    "publishTitle": "Publish this version?",
-    "publishMessage": "Version {version} becomes the current text at once, new users are asked to accept it, and it cannot be edited after publication.",
+    "publishTitle": "Publish version {version}?",
+    "publishMessage": "It cannot be edited after publication.",
     "publishedOn": "Published on",
     "notPublished": "Not published",
     "readOnly": "A published version is read-only; create a new draft to change the text.",
@@ -8544,7 +8522,7 @@
       "saved": "The draft was saved.",
       "unchanged": "There are no changes to save.",
       "discarded": "The draft was discarded.",
-      "published": "The version was published and is now the current text.",
+      "published": "The version was published",
       "saveFirst": "Save the draft changes before publishing."
     }
   },
@@ -8554,7 +8532,7 @@
     "appendOnly": "The log is append-only: no entry can be edited or deleted, and secret values are shown redacted.",
     "export": "Export CSV",
     "exportTitle": "Export the audit log",
-    "exportMessage": "The entries matching the current filters are exported (up to 10,000), and the export itself is recorded in the log.",
+    "exportMessage": "Up to 10,000 entries matching the current filters.",
     "details": "Details",
     "columns": {
       "createdAt": "Time",

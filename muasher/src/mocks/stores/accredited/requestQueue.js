@@ -17,6 +17,9 @@ const ADVANCED = 'advanced'
 const SORTABLE = ['submittedAt', 'dueAt', 'status', 'createdAt']
 const OVERDUE_VALUES = { true: true, 1: true, false: false, 0: false }
 const SEARCH_MAX = 100
+const PREPARING_STATE = 'draft'
+const PREPARING_FILTER_KEYS = ['filter[path]', 'filter[cycleId]']
+const PREPARING_SORTS = ['created_at', '-created_at']
 const MAX_PER_PAGE = 100
 
 function sortFieldOf(raw) {
@@ -123,8 +126,15 @@ function queuedRecords() {
   )
 }
 
+function preparingAll() {
+  return reviewedRecords().filter(
+    (record) => record.status === PREPARING_STATE && !isFrozen(record),
+  )
+}
+
 export function queuePathCounts(followed) {
   const queued = queuedRecords()
+  const preparing = preparingAll()
   return followed.map((path) => {
     const records = queued.filter((record) => record.path === path)
     return {
@@ -135,6 +145,7 @@ export function queuePathCounts(followed) {
         (record) => record.status === pathRules(path).stages.awaiting,
       ).length,
       overdue: records.filter((record) => isOverdue(record)).length,
+      preparing: preparing.filter((record) => record.path === path).length,
     }
   })
 }
@@ -167,4 +178,35 @@ export function queueStats(records, filters) {
 
 export function queuePage(records, query) {
   return paginate(records, query)
+}
+
+export function preparingFiltersFrom(query, followed = REVIEWED_PATHS) {
+  const errors = {}
+  if (
+    [...query.keys()].some(
+      (key) => key.startsWith('filter[') && !PREPARING_FILTER_KEYS.includes(key),
+    )
+  )
+    invalid(errors, 'filter')
+  const path = query.get('filter[path]')
+  if (path && !followed.includes(path)) invalid(errors, 'filter.path')
+  const sort = query.get('sort')
+  if (sort && !PREPARING_SORTS.includes(sort)) invalid(errors, 'sort', 'sort')
+  if ((query.get('search') ?? '').length > SEARCH_MAX)
+    errors.search = [fieldMessage('validation.max_chars', { max: SEARCH_MAX }, 'filter')]
+  throwIfErrors(errors)
+  return {
+    paths: pathsOf(query, followed),
+    cycleId: query.get('filter[cycleId]') ? Number(query.get('filter[cycleId]')) : null,
+    search: (query.get('search') ?? '').trim().toLowerCase(),
+    descending: sort === '-created_at',
+  }
+}
+
+export function preparingRecords(filters, normalize) {
+  return preparingAll()
+    .filter((record) => filters.paths.includes(record.path))
+    .filter((record) => filters.cycleId === null || record.awardCycleId === filters.cycleId)
+    .filter((record) => matchesSearch(record, filters.search, normalize))
+    .sort(compareBy('createdAt', filters.descending))
 }

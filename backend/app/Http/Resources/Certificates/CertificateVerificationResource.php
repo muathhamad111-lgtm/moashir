@@ -46,6 +46,7 @@ final class CertificateVerificationResource extends JsonResource
             'percent' => $outcome === VerificationOutcome::UnderReview ? null : ScalarValue::string($snapshot['percent'] ?? null),
             'entity_name' => $snapshot['entity_name'] ?? null,
             'issued_at' => $certificate->issued_at->toIso8601String(),
+            'valid_until' => $certificate->valid_until?->toDateString(),
             'is_test' => $certificate->is_test,
         ];
     }

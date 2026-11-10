@@ -32,6 +32,11 @@ final class SampleReplacements
         'email' => 'info@alamal.example.sa',
         'file' => 'evidence-2-3.pdf',
         'ending' => '7519',
+        'starts_on' => '2027-04-01',
+        'ends_on' => '2027-06-30',
+        'pending_entities' => '12',
+        'paid_drafts' => '3',
+        'pending_transfers' => '2',
     ];
 
     private const array LOCALIZED = [
@@ -45,6 +50,7 @@ final class SampleReplacements
         'content' => ['خبر إطلاق دورة الجائزة', 'The award cycle launch news item'],
         'reason' => ['أُعيد فتح التقييم لمراجعة شواهد المعيار الفرعي 2.3.', 'The assessment was reopened to review the evidence of sub-criterion 2.3.'],
         'bank' => ['بنك المثال (مثال)', 'Example Bank (example)'],
+        'period' => ['الربع الثاني 2027', 'Q2 2027'],
         'note' => ['يرجى مراجعة درجة المعيار الفرعي 2.3 في ضوء الشواهد المرفقة.', 'Please review the score of sub-criterion 2.3 against the attached evidence.'],
     ];
 

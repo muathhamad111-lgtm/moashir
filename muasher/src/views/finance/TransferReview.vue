@@ -13,11 +13,13 @@ import PaymentStatusBadge from '@/components/payments/PaymentStatusBadge.vue'
 import ProofViewer from '@/components/finance/ProofViewer.vue'
 import TransferRequestFacts from '@/components/finance/TransferRequestFacts.vue'
 import TransferDecisionLine from '@/components/finance/TransferDecisionLine.vue'
+import LinkedRequestCard from '@/components/finance/LinkedRequestCard.vue'
 import DuplicateProofNotice from '@/components/finance/DuplicateProofNotice.vue'
 import ApproveTransferDialog from '@/components/finance/ApproveTransferDialog.vue'
 import RejectTransferDialog from '@/components/finance/RejectTransferDialog.vue'
 import { useBankTransferReview } from '@/composables/useBankTransferReview'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import { PAYMENT_PURPOSES } from '@/constants/payments'
 import { localizedText } from '@/utils/localizedText'
 
 const props = defineProps({
@@ -53,7 +55,7 @@ onMounted(review.load)
       <Skeleton variant="block" />
       <Skeleton variant="text" :count="6" />
     </div>
-    <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="review.load" />
+    <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="review.load()" />
     <EmptyState
       v-else-if="status === 'not-found'"
       icon="inbox"
@@ -111,6 +113,13 @@ onMounted(review.load)
             <TransferRequestFacts :transfer="transfer" />
           </Card>
 
+          <LinkedRequestCard
+            v-if="transfer.purpose === PAYMENT_PURPOSES.ACCREDITED"
+            :linked-request="transfer.linkedRequest"
+            :payment-status="transfer.status"
+            :entity-id="transfer.entity.id"
+          />
+
           <TransferDecisionLine v-if="review.isDecided.value" :transfer="transfer" />
 
           <p v-if="review.isFrozen.value" class="transfer-review__frozen" role="note">
@@ -137,6 +146,16 @@ onMounted(review.load)
                 {{ t('finance.transfers.approve.open') }}
               </BaseButton>
             </div>
+            <ul class="transfer-review__decision-hints">
+              <li class="transfer-review__decision-hint">
+                <AppIcon name="check" />
+                {{ t('finance.transfers.approve.message') }}
+              </li>
+              <li class="transfer-review__decision-hint">
+                <AppIcon name="x" />
+                {{ t('finance.transfers.reject.notice') }}
+              </li>
+            </ul>
           </Card>
         </aside>
       </div>

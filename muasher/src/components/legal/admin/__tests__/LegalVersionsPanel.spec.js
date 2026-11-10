@@ -60,8 +60,8 @@ function button(wrapper, label) {
 }
 
 async function acceptConfirm(label) {
-  ;[...document.querySelectorAll('.modal button')]
-    .find((item) => item.textContent.includes(label))
+  ;[...document.querySelectorAll('.modal__footer button')]
+    .find((item) => item.textContent.trim() === label)
     .click()
   await flushPromises()
 }
@@ -148,7 +148,7 @@ describe('legal versions management (Content Officer)', () => {
     await flushPromises()
     await button(wrapper, 'Publish the version').trigger('click')
     await flushPromises()
-    await acceptConfirm('Publish the version')
+    await acceptConfirm('Publish')
     const reason = wrapper.findAllComponents({ name: 'ReasonDialog' }).at(-1)
     await reason.props('action')('نشر النسخة التي اعتمدها الفريق القانوني')
     await flushPromises()

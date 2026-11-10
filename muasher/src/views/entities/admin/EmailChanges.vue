@@ -108,7 +108,8 @@ const columns = computed(() =>
     <ReasonDialog
       v-model="rejection.open"
       :title="t('entities.emailChanges.rejectTitle')"
-      :message="t('entities.emailChanges.rejectMessage')"
+      :subtitle="t('entities.emailChanges.rejectMessage')"
+      destructive
       :submit-label="t('entities.emailChanges.reject')"
       :action="reject"
       action-name="entities.emailChanges.reject.submit"

@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\V1\Settings\InsightsSettingsController;
 use App\Http\Controllers\Api\V1\Settings\PathGuideController;
 use App\Http\Controllers\Api\V1\Settings\PathSettingsController;
 use App\Http\Controllers\Api\V1\Settings\PaymentChannelsController;
+use App\Http\Controllers\Api\V1\Settings\PeriodicSettingsController;
 use App\Models\Finance\BankAccount;
 use App\Models\Settings\BrandingTheme;
 use Illuminate\Support\Facades\Route;
@@ -35,6 +36,9 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
     Route::put('finance', [FinanceSettingsController::class, 'update'])->middleware([$finance, 'throttle:sensitive'])->name('finance.update');
     Route::get('assessment', [AssessmentSettingsController::class, 'show'])->middleware($assessment)->name('assessment.show');
     Route::put('assessment', [AssessmentSettingsController::class, 'update'])->middleware([$assessment, 'throttle:sensitive'])->name('assessment.update');
+    Route::get('assessment/periodic', [PeriodicSettingsController::class, 'show'])->middleware($assessment)->name('assessment.periodic.show');
+    Route::put('assessment/periodic', [PeriodicSettingsController::class, 'update'])->middleware([$assessment, 'throttle:sensitive'])->name('assessment.periodic.update');
+    Route::post('assessment/periodic/preview', [PeriodicSettingsController::class, 'preview'])->middleware([$assessment, 'throttle:sensitive'])->name('assessment.periodic.preview');
     Route::whereIn('path', PathSetting::pathValues())->group(function () use ($assessment): void {
         Route::get('assessment/paths/{path}', [PathSettingsController::class, 'show'])->middleware($assessment)->name('assessment.paths.show');
         Route::put('assessment/paths/{path}', [PathSettingsController::class, 'update'])->middleware([$assessment, 'throttle:sensitive'])->name('assessment.paths.update');

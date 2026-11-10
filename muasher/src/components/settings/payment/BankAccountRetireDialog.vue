@@ -1,10 +1,10 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import BaseModal from '@/components/modal/BaseModal.vue'
-import BaseButton from '@/components/ui/BaseButton.vue'
-import BankAccountPayee from './BankAccountPayee.vue'
+import DecisionDialog from '@/components/modal/DecisionDialog.vue'
 import { RETIRE_ACTIONS } from '@/composables/useBankAccountsSettings'
+import { localizedText } from '@/utils/localizedText'
+import { ibanLast4 } from '@/utils/payments/iban'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -14,24 +14,25 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue'])
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const busy = ref(false)
 
-const variant = computed(() => {
-  if (props.mode === RETIRE_ACTIONS.DEACTIVATE) return 'deactivate'
-  return props.account?.isUsed ? 'archive' : 'delete'
-})
-
-function close() {
-  emit('update:modelValue', false)
-}
+const deactivating = computed(() => props.mode === RETIRE_ACTIONS.DEACTIVATE)
+const accountLine = computed(() =>
+  props.account
+    ? t('settings.bankAccounts.blocked.subtitle', {
+        bank: localizedText(props.account.bankName, locale.value),
+        last4: ibanLast4(props.account.iban),
+      })
+    : '',
+)
 
 async function confirm() {
   if (busy.value) return
   busy.value = true
   try {
     await props.action(props.account)
-    close()
+    emit('update:modelValue', false)
   } finally {
     busy.value = false
   }
@@ -39,26 +40,19 @@ async function confirm() {
 </script>
 
 <template>
-  <BaseModal
+  <DecisionDialog
     :model-value="modelValue"
-    size="sm"
-    :title="t(`settings.bankAccounts.retire.${variant}.title`)"
-    :close-on-backdrop="!busy"
+    :title="
+      t(`settings.bankAccounts.retire.${deactivating ? 'deactivate' : 'delete'}.title`)
+    "
+    :message="accountLine"
+    :confirm-label="
+      deactivating ? t('settings.bankAccounts.retire.deactivate.confirm') : t('actions.delete')
+    "
+    :variant="deactivating ? 'warning' : 'danger'"
+    :icon="deactivating ? '' : 'trash'"
+    :busy="busy"
     @update:model-value="emit('update:modelValue', $event)"
-  >
-    <div v-if="account" class="bank-account-retire">
-      <BankAccountPayee :account="account" />
-      <p class="bank-account-retire__message">
-        {{ t(`settings.bankAccounts.retire.${variant}.message`) }}
-      </p>
-    </div>
-    <template #footer>
-      <BaseButton variant="secondary" :disabled="busy" @click="close">
-        {{ t('actions.cancel') }}
-      </BaseButton>
-      <BaseButton variant="danger" :loading="busy" @click="confirm">
-        {{ t(`settings.bankAccounts.retire.${variant}.confirm`) }}
-      </BaseButton>
-    </template>
-  </BaseModal>
+    @confirm="confirm"
+  />
 </template>

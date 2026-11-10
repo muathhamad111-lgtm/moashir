@@ -6,10 +6,10 @@ import { useConfirm } from '@/composables/useConfirm'
 import { AWARD_CODES } from '@/constants/advanced'
 
 const TRANSITIONS = {
-  open: { call: 'open', variant: 'primary' },
-  closeSubmissions: { call: 'closeSubmissions', variant: 'danger' },
-  close: { call: 'close', variant: 'danger' },
-  startCommittee: { call: 'startCommittee', variant: 'primary' },
+  open: { call: 'open', variant: 'confirm', line: false },
+  closeSubmissions: { call: 'closeSubmissions', variant: 'warning', line: true },
+  close: { call: 'close', variant: 'warning', line: true },
+  startCommittee: { call: 'startCommittee', variant: 'confirm', line: true },
 }
 
 export function useCycleTransitions({ editor, reasonExtra }) {
@@ -54,7 +54,7 @@ export function useCycleTransitions({ editor, reasonExtra }) {
   async function confirmAndRun(action) {
     const accepted = await confirm({
       title: t(`cycles.actions.${action}.title`),
-      message: t(`cycles.actions.${action}.message`),
+      message: TRANSITIONS[action].line ? t(`cycles.actions.${action}.message`) : '',
       variant: TRANSITIONS[action].variant,
       confirmLabel: t(`cycles.actions.${action}.confirm`),
     })

@@ -14,9 +14,9 @@ export function useDraftDeletion() {
     if (deleting.value) return false
     const accepted = await confirm({
       title: t('advanced.draft.deleteTitle'),
-      message: t('advanced.draft.deleteMessage', { number: request.number }),
+      message: request.number,
       variant: 'danger',
-      confirmLabel: t('advanced.draft.deleteConfirm'),
+      confirmLabel: t('actions.delete'),
     })
     if (!accepted) return false
     deleting.value = true

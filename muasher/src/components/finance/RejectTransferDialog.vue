@@ -5,7 +5,6 @@ import { useI18n } from 'vue-i18n'
 import FormModal from '@/components/modal/FormModal.vue'
 import BaseRadio from '@/components/form/BaseRadio.vue'
 import FieldTextarea from '@/components/form/FieldTextarea.vue'
-import AppIcon from '@/components/ui/AppIcon.vue'
 import { useValidatedForm } from '@/composables/useValidatedForm'
 import { rejectionSchema } from '@/utils/payments/bankTransferSchemas'
 import {
@@ -74,21 +73,15 @@ watch(
   <FormModal
     :model-value="modelValue"
     :title="title"
+    :subtitle="references"
     :busy="form.submitting.value"
-    :submit-label="
-      isBulk
-        ? t('finance.transfers.reject.bulkSubmit', { count: targets.length })
-        : t('finance.transfers.reject.submit')
-    "
+    :submit-label="t('actions.reject')"
     submit-variant="danger"
     size="lg"
     @update:model-value="emit('update:modelValue', $event)"
     @submit="form.onSubmit"
   >
     <div class="transfer-decision">
-      <p class="transfer-decision__references">
-        <bdi dir="ltr">{{ references }}</bdi>
-      </p>
       <BaseRadio
         v-model="preset.value.value"
         class="transfer-decision__presets"
@@ -104,12 +97,6 @@ watch(
         :rows="4"
         :required="preset.value.value === OTHER_REJECTION_REASON"
       />
-      <p class="transfer-decision__notice" role="note">
-        <AppIcon name="question-circle" />
-        {{
-          isBulk ? t('finance.transfers.reject.bulkNotice') : t('finance.transfers.reject.notice')
-        }}
-      </p>
       <FieldTextarea
         v-if="asksReason"
         name="reason"

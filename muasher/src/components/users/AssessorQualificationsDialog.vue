@@ -56,14 +56,12 @@ watch(
   <FormModal
     :model-value="modelValue"
     :title="t('users.pathAccess.qualificationsTitle')"
+    :subtitle="user?.name ?? ''"
     :busy="form.submitting.value"
     @update:model-value="emit('update:modelValue', $event)"
     @submit="form.onSubmit"
   >
     <div class="path-access-form">
-      <p class="path-access-form__lead">
-        {{ t('users.pathAccess.qualificationsLead', { name: user?.name ?? '' }) }}
-      </p>
       <FieldCheckboxGroup
         name="qualifications"
         :label="t('users.pathAccess.qualificationsLabel')"

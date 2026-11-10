@@ -56,18 +56,42 @@ it('applies the edited level thresholds, down to a participation certificate bel
     'participation' => [['bronze' => '80.00', 'silver' => '85.00', 'gold' => '90.00', 'diamond' => '95.00'], null],
 ]);
 
-it('lets the assessor complete without a certificate and issue it later, once', function (): void {
+it('issues the certificate automatically even when an older client asks to complete without one', function (): void {
     $version = publishedAccreditedCriteria();
     $assessor = assessorUser();
     $assessment = scoredAccreditedReview($version, $assessor);
 
     switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/complete", ['issue_certificate' => false])->assertOk();
+    $issued = Certificate::query()->sole();
+
+    switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/certificate")->assertOk()
+        ->assertJsonPath('data.id', $issued->public_id)
+        ->assertJsonPath('data.request.number', $assessment->request_number)
+        ->assertJsonPath('data.issued_by.id', $assessor->id);
+    expect(Certificate::query()->count())->toBe(1);
+});
+
+it('still rejects a non-boolean issue_certificate flag from an older client', function (): void {
+    $version = publishedAccreditedCriteria();
+    $assessor = assessorUser();
+    $assessment = scoredAccreditedReview($version, $assessor);
+
+    switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/complete", ['issue_certificate' => 'sometimes'])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('issue_certificate');
+});
+
+it('lets the assessor issue the certificate later when issuance was off at completion, once', function (): void {
+    $version = publishedAccreditedCriteria();
+    $assessor = assessorUser();
+    $assessment = scoredAccreditedReview($version, $assessor);
+    setAccreditedCertificateIssuance(false);
+    switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/complete")->assertOk();
+    setAccreditedCertificateIssuance(true);
     expect(Certificate::query()->count())->toBe(0);
 
     $created = switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/certificate")->assertCreated()
         ->assertJsonPath('data.status', 'issued')
-        ->assertJsonPath('data.request.number', $assessment->request_number)
-        ->assertJsonPath('data.issued_by.id', $assessor->id)
         ->json('data.id');
 
     switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/certificate")->assertOk()->assertJsonPath('data.id', $created);
@@ -78,7 +102,9 @@ it('lets only the assessor who completed the request issue its certificate', fun
     $version = publishedAccreditedCriteria();
     $assessor = assessorUser();
     $assessment = scoredAccreditedReview($version, $assessor);
-    switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/complete", ['issue_certificate' => false])->assertOk();
+    setAccreditedCertificateIssuance(false);
+    switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/complete")->assertOk();
+    setAccreditedCertificateIssuance(true);
 
     switchTo(assessorUser())->postJson("/api/v1/assessments/{$assessment->id}/certificate")->assertNotFound();
     switchTo(ownerOf($assessment->entity))->postJson("/api/v1/assessments/{$assessment->id}/certificate")->assertForbidden();
@@ -128,7 +154,9 @@ it('asks the Super Admin for a reason before issuing a certificate', function ()
     $version = publishedAccreditedCriteria();
     $assessor = assessorUser();
     $assessment = scoredAccreditedReview($version, $assessor);
-    switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/complete", ['issue_certificate' => false])->assertOk();
+    setAccreditedCertificateIssuance(false);
+    switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/complete")->assertOk();
+    setAccreditedCertificateIssuance(true);
     $superAdmin = superAdmin();
 
     switchTo($superAdmin)->postJson("/api/v1/assessments/{$assessment->id}/certificate")->assertUnprocessable()->assertJsonPath('code', 'reason_required');

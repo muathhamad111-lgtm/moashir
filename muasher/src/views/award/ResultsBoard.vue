@@ -48,9 +48,10 @@ async function approve(region) {
   const name = localizedText(region.name, locale.value)
   if (
     await confirm({
-      title: t('award.results.approveTitle'),
-      message: t('award.results.approveMessage', { region: name }),
-      confirmLabel: t('award.results.approveRegion'),
+      title: t('award.results.approveTitle', { region: name }),
+      message: t('award.results.approveMessage'),
+      confirmLabel: t('actions.approve'),
+      variant: 'confirm',
     })
   )
     board.approveRegion(region)
@@ -116,7 +117,8 @@ function unapprove(reason) {
       :title="
         t('award.results.unapproveTitle', { region: localizedText(unapproving.name, locale) })
       "
-      :message="t('award.results.unapproveMessage')"
+      :subtitle="t('award.results.unapproveMessage')"
+      destructive
       :submit-label="t('award.results.unapproveRegion')"
       :min-length="COMMITTEE_LIMITS.UNAPPROVE_REASON_MIN"
       :action="unapprove"
@@ -125,7 +127,6 @@ function unapprove(reason) {
     <ReasonDialog
       v-model="reasons.prompt.open.value"
       :title="t('review.reasonTitle')"
-      :message="t('review.reasonMessage')"
       :submit-label="t('actions.confirm')"
       :action="reasons.prompt.provide"
       action-name="results.superAdminReason"

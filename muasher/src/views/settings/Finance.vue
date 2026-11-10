@@ -143,7 +143,6 @@ onMounted(load)
     <ReasonDialog
       v-model="reasonOpen"
       :title="t('finance.settings.reasonTitle')"
-      :message="t('finance.settings.reasonMessage')"
       :action="confirmReason"
       action-name="settings.finance.reason"
     />

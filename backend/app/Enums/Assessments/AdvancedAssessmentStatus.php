@@ -59,6 +59,11 @@ enum AdvancedAssessmentStatus: string implements ReviewedAssessmentState
         return ! in_array($this, [self::RejectedConditions, self::Draft, self::Expired], true);
     }
 
+    public function isPreparedByEntity(): bool
+    {
+        return $this === self::Draft;
+    }
+
     public function runsReviewClock(): bool
     {
         return $this === self::Assigned || $this === self::UnderInitialAssessment;

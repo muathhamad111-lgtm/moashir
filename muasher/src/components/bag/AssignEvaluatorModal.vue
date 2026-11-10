@@ -70,9 +70,8 @@ function onConfirm() {
 </script>
 
 <template>
-  <BaseModal v-model="isOpen" size="sm" :title="title">
+  <BaseModal v-model="isOpen" size="sm" :title="title" :subtitle="entityName">
     <div class="assign-modal">
-      <p class="assign-modal__lead">{{ t('bagRequests.assign.lead', { entity: entityName }) }}</p>
       <div class="assign-modal__field">
         <AppCombobox
           :model-value="selected"
@@ -105,11 +104,11 @@ function onConfirm() {
       </div>
     </div>
     <template #footer>
-      <BaseButton variant="secondary" :disabled="busy" @click="isOpen = false">
-        {{ t('actions.cancel') }}
-      </BaseButton>
       <BaseButton variant="primary" :loading="busy" @click="onConfirm">
         {{ confirmLabel }}
+      </BaseButton>
+      <BaseButton variant="secondary" :disabled="busy" @click="isOpen = false">
+        {{ t('actions.cancel') }}
       </BaseButton>
     </template>
   </BaseModal>

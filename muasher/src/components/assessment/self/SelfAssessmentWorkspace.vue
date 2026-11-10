@@ -132,8 +132,6 @@ onMounted(load)
       <SelfSubmitDialog
         v-model="confirmOpen"
         :number="assessment.number"
-        :items-count="units.length"
-        :dirty="scoreSheet.dirty.value"
         :submitting="submitting"
         @confirm="actions.confirmSubmit"
       />

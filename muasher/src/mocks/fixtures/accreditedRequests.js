@@ -1,6 +1,7 @@
 import { SEEDED_IDS } from './finance'
 
 const FOLLOWER_ID = 8
+const ARCHIVED_PAYMENT_SEQUENCE = 91
 
 function paymentOf(sequence) {
   return `3f0c9a52-6d1e-4b7a-9c21-5a1e${String(sequence).padStart(8, '0')}`
@@ -352,7 +353,7 @@ export const accreditedRequestsFixture = [
     id: ACCREDITED_FIXTURE_IDS.completedPrevious,
     number: 'ACC-2025-000012',
     entityId: 5001,
-    paymentId: paymentOf(21),
+    paymentId: paymentOf(ARCHIVED_PAYMENT_SEQUENCE),
     status: 'completed',
     scoring: { pattern: 'developing', count: null },
     cvCodes: ALL_CV,

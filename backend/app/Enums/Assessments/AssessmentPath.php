@@ -94,6 +94,17 @@ enum AssessmentPath: string
     /**
      * @return list<string>
      */
+    public function preparingStateValues(): array
+    {
+        return array_values(array_map(
+            static fn (AssessmentState $state): string => (string) $state->value,
+            array_filter($this->states(), static fn (AssessmentState $state): bool => $state instanceof ReviewedAssessmentState && $state->isPreparedByEntity()),
+        ));
+    }
+
+    /**
+     * @return list<string>
+     */
     public function reviewClockStateValues(): array
     {
         return array_values(array_map(

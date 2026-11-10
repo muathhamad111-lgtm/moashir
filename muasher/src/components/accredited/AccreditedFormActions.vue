@@ -1,6 +1,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   saving: { type: Boolean, default: false },
@@ -21,6 +22,10 @@ const { t } = useI18n()
       {{ dirty ? t('accredited.form.unsaved') : t('accredited.form.allSaved') }}
       <span v-if="remaining > 0" class="accredited-actions__remaining">
         {{ t('portal.assessments.task.remainingHint', { count: remaining }, remaining) }}
+      </span>
+      <span class="accredited-actions__hint">
+        <AppIcon name="lock" />
+        {{ t('accredited.submit.lockNote') }}
       </span>
     </p>
     <div class="accredited-actions__buttons">

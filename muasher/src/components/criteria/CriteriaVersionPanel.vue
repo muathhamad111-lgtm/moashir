@@ -12,6 +12,7 @@ import { useCriteriaAccess } from '@/composables/useCriteriaAccess'
 import { useConsistencyCheck } from '@/composables/usePublishCriteria'
 import { useDraftLifecycle } from '@/composables/useDraftLifecycle'
 import { toast } from '@/composables/useToast'
+import { success } from '@/composables/useSuccess'
 import { publishSummary } from '@/utils/criteriaPublishSummary'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
@@ -70,7 +71,7 @@ async function runCheck() {
 }
 
 function onPublished(outcome) {
-  toast.success(publishSummary(t, outcome), 9000)
+  success.show(publishSummary(t, outcome))
   emit('changed', { versionId: outcome.data.id })
 }
 

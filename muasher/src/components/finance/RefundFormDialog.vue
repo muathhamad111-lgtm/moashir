@@ -11,7 +11,6 @@ import RefundEvidenceField from './RefundEvidenceField.vue'
 import { useRefundForm } from '@/composables/useRefundForm'
 import { REFUND_RULES } from '@/constants/finance'
 import { riyadhDate } from '@/utils/finance/refundSchema'
-import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -36,6 +35,7 @@ const evidence = useField('evidence')
   <FormModal
     :model-value="modelValue"
     :title="t('finance.refund.formTitle')"
+    :subtitle="transaction.reference"
     :busy="submitting"
     :submit-label="t('finance.refund.submit')"
     size="lg"
@@ -43,10 +43,6 @@ const evidence = useField('evidence')
     @submit="submit"
   >
     <div class="refund-form">
-      <p class="refund-form__lead" role="note">
-        <AppIcon name="landmark" />
-        {{ t('finance.refund.lead') }}
-      </p>
       <p class="refund-form__total">
         {{ t('finance.refund.totalLabel') }}
         <MoneyAmount :value="total" :currency="transaction.pricing.currency" strong />

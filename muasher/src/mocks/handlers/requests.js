@@ -28,6 +28,8 @@ import {
   queueRow,
 } from '../stores/accredited/accreditedSerializers'
 import {
+  preparingFiltersFrom,
+  preparingRecords,
   queueFiltersFrom,
   queuePage,
   queuePathCounts,
@@ -35,6 +37,11 @@ import {
   queueStats,
 } from '../stores/accredited/requestQueue'
 import { assignedPathCounts, assignedPathOf } from '../stores/accredited/assignedQueue'
+import {
+  lastActivityOf,
+  progressSummaryOf,
+  requestPaymentOf,
+} from '../stores/accredited/requestPayments'
 import { qualificationsOf, requestScopeOf } from '../stores/staffUsers'
 import { sessionCan } from '../stores/sessionPermissions'
 import { REVIEWED_PATHS } from '../stores/assessments/reviewedPaths'
@@ -109,12 +116,33 @@ function detailResource(record, viewer) {
     : record.assignments.filter((assignment) => assignment.assessorId === viewer.id)
   return {
     ...queueRow(record, staffNameOf),
-    payment: { paid: findPayment(record.paymentId)?.status === 'paid' },
+    payment: {
+      paid: findPayment(record.paymentId)?.status === 'paid',
+      ...(reveals ? (requestPaymentOf(record) ?? {}) : {}),
+    },
     record: recordResource(record, viewer),
     assignmentHistory: assignments.map((assignment) => assignmentItem(assignment, reveals)),
     completionRequests: record.completionRequests.map((completion) =>
       completionResource(completion, null),
     ),
+  }
+}
+
+function preparingRow(record) {
+  const row = queueRow(record, staffNameOf)
+  return {
+    id: row.id,
+    number: row.number,
+    path: row.path,
+    pathLabel: row.pathLabel,
+    status: row.status,
+    isFrozen: row.isFrozen,
+    entity: row.entity,
+    awardCycle: row.awardCycle,
+    openedAt: record.createdAt,
+    payment: requestPaymentOf(record),
+    progress: progressSummaryOf(record),
+    lastActivityAt: lastActivityOf(record),
   }
 }
 
@@ -169,6 +197,24 @@ export const requestsHandlers = [
           pathCounts: queuePathCounts(followed),
         },
       )
+    }),
+  ),
+
+  http.get(
+    '/api/v1/requests/preparing',
+    assessmentRoute(({ request }) => {
+      const user = signedInActor()
+      authorizeQueue(user)
+      runAccreditedSchedule()
+      const query = new URL(request.url).searchParams
+      const followed = followedPaths(user)
+      const filters = preparingFiltersFrom(query, followed)
+      const { items, pagination } = queuePage(preparingRecords(filters, normalizeSearchText), query)
+      return envelope(items.map(preparingRow), {
+        pagination,
+        path: filters.paths[0],
+        pathCounts: queuePathCounts(followed),
+      })
     }),
   ),
 

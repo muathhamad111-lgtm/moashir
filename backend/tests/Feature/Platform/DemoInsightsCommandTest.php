@@ -188,6 +188,7 @@ it('writes the same audit events as the fresh install and keeps the revocation r
         'payment.created' => 4,
         'payment.paid' => 4,
         'receipt.issued' => 4,
+        'settings.periodic_updated' => 1,
     ])->and(DB::table('audits')->where('id', '>', $lastAuditId)->whereNotNull('reason')->pluck('event')->all())->toBe(['certificate.revoked']);
 });
 
@@ -382,4 +383,23 @@ it('refuses with a missing prerequisite when a demo entity was deleted', functio
     expect($result['exit'])->toBe(1)
         ->and($result['output'])->toContain('the three demo entities and their owner accounts are not all present')
         ->and(demoDataCounts())->toBe($counts);
+});
+
+it('fills real accredited periods and certificate validity for the demo results', function (): void {
+    enableDemoData();
+    installDemoPrerequisites();
+    installDemoWithoutInsights();
+
+    expect(runInsightsOnly()['exit'])->toBe(0);
+
+    $results = Assessment::query()
+        ->with(['period', 'certificate'])
+        ->where('path', AssessmentPath::Accredited)
+        ->whereIn('id', DemoRecord::query()->where('kind', DemoRecordKind::InsightsAssessment)->select('record_id'))
+        ->orderBy('submitted_at')
+        ->get();
+
+    expect($results->map(static fn (Assessment $assessment): ?string => $assessment->period?->key)->all())->toBe(['2025-Q4', '2026-Q1', '2026-Q3', '2026-Q3'])
+        ->and($results->map(static fn (Assessment $assessment): ?string => $assessment->certificate?->valid_until?->toDateString())->all())->toBe(['2026-03-31', '2026-06-30', '2026-12-31', '2026-12-31'])
+        ->and(app(SettingsStore::class)->get(SettingKey::PeriodicRolloutFrom))->toBe('2025-10-01');
 });

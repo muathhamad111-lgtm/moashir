@@ -116,7 +116,6 @@
 @use 'components/self-summary';
 @use 'components/self-workspace';
 @use 'components/self-actions';
-@use 'components/self-submit';
 @use 'components/self-start';
 @use 'components/rebind-summary';
 @use 'components/result-pending';
@@ -180,6 +179,8 @@
 @use 'components/reference-text';
 @use 'components/requests';
 @use 'components/request-detail';
+@use 'components/preparing-requests';
+@use 'components/request-payment';
 @use 'components/assignment-history';
 @use 'components/assign-dialog';
 @use 'components/bundle-page';
@@ -216,6 +217,7 @@
 @use 'components/bank-accounts';
 @use 'components/transfer-queue';
 @use 'components/transfer-review';
+@use 'components/linked-request';
 @use 'components/proof-viewer';
 @use 'components/method-choice';
 @use 'components/transfer-panel';

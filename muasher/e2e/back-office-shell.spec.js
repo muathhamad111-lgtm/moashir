@@ -1,6 +1,7 @@
 import { Buffer } from 'node:buffer'
 import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
+import { closeSuccess, decisionAction } from './support/dialogs'
 import { AA_NON_TEXT, AA_TEXT, contrastOf } from './support/contrast'
 
 const IGNORED_CONSOLE = /Failed to load resource|50\d|Service Unavailable/i
@@ -298,7 +299,7 @@ test('branding: the dark-background logo drives the sidebar in light mode, previ
   })
 
   await page.locator('.branding-page__actions .btn--ghost').click()
-  await page.locator('.modal .btn--danger').click()
+  await decisionAction(page).click()
   await expect(page.locator('.sidebar__logo')).toHaveAttribute('src', SIDEBAR_LOGO)
   await expect(darkField.locator('.badge--info')).toHaveCount(0)
   await expect(darkField.locator('.logo-variant__image')).toHaveAttribute('src', SIDEBAR_LOGO)
@@ -326,7 +327,8 @@ test('maintenance page blocks visitors but keeps sign-in reachable (Q-96)', asyn
     .locator('.publication-control')
     .getByRole('button', { name: /^(Unpublish|إلغاء النشر)$/ })
     .click()
-  await page.locator('.modal .btn--danger').click()
+  await decisionAction(page).click()
+  await closeSuccess(page)
   await expect(page.locator('.publication-control--off')).toBeVisible()
 
   await page.locator('.navbar__avatar').click()

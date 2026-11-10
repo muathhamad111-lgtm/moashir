@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { setupServer } from 'msw/node'
 import { handlers } from '@/mocks/handlers'
 import { resetCriteriaStore } from '@/mocks/stores/criteriaStore'
@@ -96,6 +96,7 @@ beforeEach(() => {
   resetAssessmentsStore()
 })
 afterEach(() => {
+  vi.useRealTimers()
   server.resetHandlers()
   clearMockSession()
   discardQueuedJobs()
@@ -104,6 +105,7 @@ afterAll(() => server.close())
 
 describe('accredited mock — requests queue and assignment', () => {
   it('lists submitted requests with stats keyed by canonical status and refuses bad filters', async () => {
+    vi.useFakeTimers({ now: new Date('2026-11-05T09:00:00Z'), toFake: ['Date'] })
     seedMockSession(FOLLOWER)
     const { body } = await call('GET', '/requests?filter[path]=accredited')
     expect(keys(body.data[0])).toEqual(ROW_KEYS)
@@ -161,7 +163,16 @@ describe('accredited mock — requests queue and assignment', () => {
     expect(keys(detail.body.data)).toEqual(
       [...ROW_KEYS, 'assignment_history', 'completion_requests', 'payment', 'record'].sort(),
     )
-    expect(detail.body.data.payment).toEqual({ paid: true })
+    expect(keys(detail.body.data.payment)).toEqual([
+      'channel',
+      'is_test',
+      'paid',
+      'paid_at',
+      'receipt',
+      'reference',
+      'status',
+    ])
+    expect(detail.body.data.payment.paid).toBe(true)
     expect(keys(detail.body.data.assignment_history[0])).toEqual([
       'assessor',
       'assigned_at',

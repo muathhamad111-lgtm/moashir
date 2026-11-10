@@ -4,6 +4,7 @@ import { certificatesService } from '@/services/certificatesService'
 import { usePermissions } from '@/composables/usePermissions'
 import { useSuperAdminReason } from '@/composables/useSuperAdminReason'
 import { useToast } from '@/composables/useToast'
+import { success } from '@/composables/useSuccess'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 
 const CURRENT_STATUSES = ['issued', 'suspended']
@@ -52,8 +53,9 @@ export function useRequestCertificates(requestId) {
     if (!extra || issuing.value) return false
     issuing.value = true
     try {
-      remember((await certificatesService.issueForRequest(requestId.value, extra)).data)
-      toast.success(t('requests.certificate.toasts.issued'))
+      const { data } = await certificatesService.issueForRequest(requestId.value, extra)
+      remember(data)
+      success.show({ title: t('requests.certificate.toasts.issued'), message: data?.number ?? '' })
       return true
     } catch (error) {
       toast.error(error?.normalized?.message || t('errors.unexpected'))
@@ -65,13 +67,13 @@ export function useRequestCertificates(requestId) {
 
   async function revoke(certificate, reason) {
     await certificatesService.revoke(certificate.id, reason)
-    toast.success(t('requests.certificate.toasts.revoked'))
+    success.show({ title: t('requests.certificate.toasts.revoked'), message: certificate.number })
     await load()
   }
 
   async function reissue(certificate, reason) {
-    await certificatesService.reissue(certificate.id, reason)
-    toast.success(t('requests.certificate.toasts.reissued'))
+    const { data } = await certificatesService.reissue(certificate.id, reason)
+    success.show({ title: t('requests.certificate.toasts.reissued'), message: data?.number ?? '' })
     await load()
   }
 

@@ -90,12 +90,13 @@ function download(file) {
   )
 }
 
-const completeMessage = computed(() =>
-  fullyScored.value && !scoreSheet.dirty.value
-    ? t('review.confirmComplete.message')
-    : t('review.confirmComplete.pendingMessage'),
-)
 const offersCertificate = computed(() => assessment.value?.path === ACCREDITED_PATH)
+const completeMessage = computed(() => {
+  if (!fullyScored.value || scoreSheet.dirty.value) return t('review.confirmComplete.pendingMessage')
+  return offersCertificate.value
+    ? t('review.confirmComplete.certificateMessage')
+    : t('review.confirmComplete.message')
+})
 
 async function refresh() {
   actions.clearConflict()
@@ -166,7 +167,6 @@ onMounted(reviewState.load)
       <CompleteReviewDialog
         v-model="completeOpen"
         :message="completeMessage"
-        :offers-certificate="offersCertificate"
         :summary-missing="offersCertificate && !review.summary"
         @confirm="actions.complete"
       />
@@ -188,7 +188,6 @@ onMounted(reviewState.load)
       <ReasonDialog
         v-model="reasonPrompt.open.value"
         :title="t('review.reasonTitle')"
-        :message="t('review.reasonMessage')"
         :submit-label="t('actions.confirm')"
         :action="reasonPrompt.provide"
         action-name="review.superAdminReason"

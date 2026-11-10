@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { test, expect } from '@playwright/test'
+import { closeSuccess, decisionAction } from './support/dialogs'
 import { assertMailLogsConfigured } from './support/mailbox'
 import { STAFF, signInStaff } from './support/accounts'
 import { writeFileSync } from 'node:fs'
@@ -232,10 +233,9 @@ test('the entity starts a self assessment, submits it and sees the server result
   await page.locator('.self-actions .btn--secondary').click()
   await expect(page.locator('.toast--success').last()).toBeVisible()
   await page.locator('.self-actions .btn--primary').click()
-  const dialog = page.getByRole('dialog')
-  await expect(dialog).toBeVisible()
-  await dialog.locator('.btn--primary').click()
+  await decisionAction(page).click()
   await expect(page).toHaveURL(/\/assessment\/self\/result\/\d+$/)
+  await closeSuccess(page)
   await expect(page.locator('.self-result__gauge-value')).toBeVisible()
   await shot(page, 'entity-self-result')
   expect(api.unexpected(GUEST_PROBES)).toEqual([])

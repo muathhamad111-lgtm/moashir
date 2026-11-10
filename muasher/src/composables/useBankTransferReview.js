@@ -14,8 +14,8 @@ export function useBankTransferReview(paymentId) {
   const transfer = ref(null)
   const errorMessage = ref('')
 
-  async function load() {
-    status.value = 'loading'
+  async function load({ silent = false } = {}) {
+    if (!silent) status.value = 'loading'
     errorMessage.value = ''
     try {
       transfer.value = (await bankTransfersService.get(paymentId)).data
@@ -26,7 +26,7 @@ export function useBankTransferReview(paymentId) {
     }
   }
 
-  const decisions = useTransferDecisions({ onDecided: () => load() })
+  const decisions = useTransferDecisions({ onDecided: () => load({ silent: true }) })
 
   const isReviewer = computed(() => can(PERMISSIONS.FINANCE_TRANSFERS_REVIEW))
   const isUnderReview = computed(() => transfer.value?.status === PAYMENT_STATUSES.UNDER_REVIEW)

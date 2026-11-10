@@ -62,7 +62,6 @@ onMounted(load)
     <ReasonDialog
       v-model="reasonOpen"
       :title="t('settings.assessment.reasonTitle')"
-      :message="t('settings.assessment.reasonMessage')"
       :submit-label="t('actions.save')"
       :action="confirmReason"
       :action-name="`settings.assessment.paths.${path}.update`"

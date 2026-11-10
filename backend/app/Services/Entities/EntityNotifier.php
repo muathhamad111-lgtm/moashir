@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Entities;
 
 use App\Data\Entities\EntityNotice;
+use App\Data\Entities\StaffAudience;
 use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Entities\EntityStatus;
 use App\Enums\Identity\Locale;
@@ -15,6 +16,7 @@ use App\Models\Entities\Entity;
 use App\Models\Identity\User;
 use App\Notifications\Entities\EntityNotification;
 use App\Support\ValueObjects\EmailAddress;
+use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Notification;
@@ -30,9 +32,41 @@ final class EntityNotifier
         $owner?->notify(new EntityNotification($notice));
     }
 
+    /**
+     * @param  Collection<int, Entity>  $entities
+     * @param  Closure(Entity): EntityNotice  $noticeFor
+     */
+    public function toEachOwner(Collection $entities, Closure $noticeFor): void
+    {
+        $owners = User::query()->whereIn('entity_id', $entities->modelKeys())->where('status', UserStatus::Active)->get()->keyBy('entity_id');
+
+        foreach ($entities as $entity) {
+            $owner = $owners->get($entity->id);
+
+            if ($owner instanceof User) {
+                $owner->notify(new EntityNotification($noticeFor($entity)));
+            }
+        }
+    }
+
     public function toRole(RoleKey $role, EntityNotice $notice, ?int $actorId): void
     {
         $this->sendToStaff($this->followingNoticePath(User::query()->role($role->value), $notice), $notice, $actorId);
+    }
+
+    public function toAudience(StaffAudience $audience, EntityNotice $notice): void
+    {
+        $query = User::query()->role($audience->roleValues());
+
+        foreach ($audience->holding as $permission) {
+            $query->permission($permission->value);
+        }
+
+        foreach ($audience->lacking as $permission) {
+            $query->withoutPermission($permission->value);
+        }
+
+        $this->sendToStaff($this->followingNoticePath($query, $notice), $notice, null);
     }
 
     public function toStaffUser(int $userId, EntityNotice $notice): void

@@ -15,6 +15,7 @@ return [
     'automatic_retries' => ':count automatic retry|:count automatic retries',
     'open_evaluations' => ':count open committee evaluation|:count open committee evaluations',
     'winners' => ':count winner|:count winners',
+    'days' => ':count day|:count days',
     'transactions' => ':count transaction|:count transactions',
 
 ];

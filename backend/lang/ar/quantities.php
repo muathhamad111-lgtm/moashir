@@ -15,6 +15,7 @@ return [
     'automatic_retries' => ':count محاولة تلقائية|محاولة تلقائية واحدة|محاولتين تلقائيتين|:count محاولات تلقائية|:count محاولة تلقائية|:count محاولة تلقائية',
     'open_evaluations' => ':count تقييم مفتوح|تقييم مفتوح واحد|تقييمين مفتوحين|:count تقييمات مفتوحة|:count تقييمًا مفتوحًا|:count تقييم مفتوح',
     'winners' => ':count فائز|فائز واحد|فائزين اثنين|:count فائزين|:count فائزًا|:count فائز',
+    'days' => ':count يوم|يوم واحد|يومين|:count أيام|:count يومًا|:count يوم',
     'transactions' => ':count عملية|عملية واحدة|عمليتين|:count عمليات|:count عملية|:count عملية',
 
 ];

@@ -15,7 +15,9 @@ use App\Models\Concerns\HasPublicId;
 use App\Models\Entities\Entity;
 use App\Models\Files\StoredFile;
 use App\Models\Identity\User;
+use App\Support\Periods\LocalDay;
 use App\Support\ValueObjects\Percent;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -47,6 +49,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $revoked_by_user_id
  * @property Carbon|null $superseded_at
  * @property Carbon|null $suspended_at
+ * @property CarbonImmutable|null $valid_until
  * @property string|null $suspended_reason
  * @property Carbon $created_at
  * @property Carbon $updated_at
@@ -67,7 +70,7 @@ final class Certificate extends Model
     protected $fillable = [
         'number', 'verification_code', 'kind', 'level', 'status', 'is_test', 'entity_id', 'assessment_id',
         'result_snapshot_id', 'score_percent', 'snapshot', 'issued_at', 'issued_by_user_id', 'replaces_certificate_id',
-        'reissue_reason', 'entity_logo_file_id',
+        'reissue_reason', 'entity_logo_file_id', 'valid_until',
     ];
 
     /**
@@ -104,6 +107,7 @@ final class Certificate extends Model
             'revoked_by_user_id' => 'integer',
             'superseded_at' => 'datetime',
             'suspended_at' => 'datetime',
+            'valid_until' => 'immutable_date',
         ];
     }
 
@@ -162,6 +166,16 @@ final class Certificate extends Model
     protected function ownedBy(Builder $query, int $entityId): void
     {
         $query->where('entity_id', $entityId);
+    }
+
+    public function isExpiredOn(CarbonImmutable $day): bool
+    {
+        return $this->isIssued() && $this->valid_until instanceof CarbonImmutable && $this->valid_until->toDateString() < $day->toDateString();
+    }
+
+    public function validUntilInstant(): ?CarbonImmutable
+    {
+        return $this->valid_until instanceof CarbonImmutable ? LocalDay::endOfDayInstant($this->valid_until) : null;
     }
 
     public function isIssued(): bool

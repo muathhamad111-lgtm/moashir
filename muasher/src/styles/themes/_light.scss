@@ -20,6 +20,9 @@
   --theme-tint: var(--color-secondary);
   --theme-warning-text: var(--color-warning-text);
   --theme-success-text: var(--color-success-text);
+  --theme-warning-soft: color-mix(in srgb, var(--theme-warning-text) 12%, transparent);
+  --theme-danger-soft: color-mix(in srgb, var(--theme-danger-text) 12%, transparent);
+  --theme-success-soft: color-mix(in srgb, var(--theme-success-text) 12%, transparent);
   --theme-info-text: var(--color-info-text);
   --theme-border-strong: var(--color-gray-300);
   --theme-input-border: var(--theme-text-muted);

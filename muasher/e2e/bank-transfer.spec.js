@@ -1,6 +1,7 @@
 import { Buffer } from 'node:buffer'
 import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
+import { closeSuccess, decisionAction } from './support/dialogs'
 
 const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d/i
 const EXAMPLE_IBAN = 'SA03 8000 0000 6080 1016 7519'
@@ -147,6 +148,8 @@ test('the entity pays by transfer, Finance rejects it, and a new request is appr
     .fill('The amount has not reached the fees account yet.')
   await dialog(page).locator('button[type="submit"]').click()
   await expect(page.locator('.transfer-decision-line--rejected')).toBeVisible()
+  await closeSuccess(page)
+  await expect(page.locator('.modal__panel')).toHaveCount(0)
 
   await signIn(page, testInfo, USERS.entity)
   await page.goto(`/payments/${first}/complete`)
@@ -169,9 +172,12 @@ test('the entity pays by transfer, Finance rejects it, and a new request is appr
   await signIn(page, testInfo, USERS.finance)
   await openReview(page, second)
   await page.locator('.transfer-review__decisions .btn--primary').click()
-  await dialog(page).locator('button[type="submit"]').click()
-  await expect(successToast(page)).toBeVisible()
+  await decisionAction(page).click()
+  await closeSuccess(page)
   await expect(page.locator('.transfer-decision-line')).toBeVisible()
+  await expect(page.locator('[data-testid="linked-request-card"]')).toBeVisible()
+  await expect(page.locator('.modal__panel')).toHaveCount(0)
+  await expect(page.locator('.transfer-review__decisions')).toHaveCount(0)
 
   await signIn(page, testInfo, USERS.entity)
   await page.goto(`/payments/${second}`)
@@ -233,8 +239,8 @@ test('Finance approves the selected transfers at once', async ({ page }, testInf
     fullPage: true,
   })
   await page.locator('.transfer-bulk-bar .btn--primary').click()
-  await expect(dialog(page)).toContainText('PAY-2026-000021')
-  await dialog(page).locator('button[type="submit"]').click()
+  await expect(dialog(page)).toContainText('(3)')
+  await decisionAction(page).click()
   await expect(page.locator('.bulk-outcome__line--success')).toContainText(
     isEn(testInfo) ? 'decided: 3' : 'المنفَّذ: 3',
   )
@@ -281,7 +287,7 @@ test('a bank account with transfers awaiting approval cannot be deleted until th
   await reviewer.locator('thead .selection-checkbox').click()
   await reviewer.locator('.transfer-bulk-bar .btn--primary').click()
   await dialog(page).locator('[name="reason"]').fill(REASON)
-  await dialog(page).locator('button[type="submit"]').click()
+  await decisionAction(page).click()
   await expect(reviewer.locator('.pending-transfers__cleared')).toBeVisible()
   await page.screenshot({ path: `test-results/bank-transfer-blocked-${suffixOf(testInfo)}.png` })
   await reviewer.locator('.modal__footer .btn--danger').click()

@@ -108,7 +108,6 @@ watch(
     @submit="form.onSubmit"
   >
     <div class="completion-dialog">
-      <p class="completion-dialog__lead">{{ t(`${copy}.lead`) }}</p>
       <FieldTextarea
         name="notes"
         :label="t('review.completion.notes')"

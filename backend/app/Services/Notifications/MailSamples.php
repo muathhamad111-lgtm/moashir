@@ -73,6 +73,7 @@ final readonly class MailSamples
         'REG' => '/profile',
         'SELF' => '/assessments',
         'ACC' => '/assessments',
+        'PER' => '/paths/accredited',
         'ADV' => '/assessments',
         'EVD' => '/assessments',
         'CERT' => '/certificates',

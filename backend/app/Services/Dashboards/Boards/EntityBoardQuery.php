@@ -8,6 +8,7 @@ use App\Contracts\Dashboards\DashboardBoardQuery;
 use App\Data\Dashboards\BoardContent;
 use App\Data\Dashboards\DashboardCard;
 use App\Data\Dashboards\DashboardWidget;
+use App\Data\Paths\NextStep;
 use App\Enums\Assessments\AdvancedAssessmentStatus as Advanced;
 use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Dashboards\CardFormat;
@@ -15,21 +16,33 @@ use App\Enums\Dashboards\DashboardBoard;
 use App\Models\Assessments\Assessment;
 use App\Models\Assessments\EvidenceFile;
 use App\Models\Award\AwardCycle;
+use App\Models\Entities\Entity;
 use App\Models\Files\StoredFile;
 use App\Models\Identity\User;
 use App\Models\Notifications\Notification;
 use App\Services\Dashboards\EntityPaymentsCard;
 use App\Services\Dashboards\EntityResults;
+use App\Services\Paths\EntityPathsReader;
+use App\Services\Paths\NextStepResolver;
 use App\Support\Assessments\PathPresenter;
 use App\Support\Assessments\StatusMask;
+use App\Support\Certificates\CertificateSummaryPresenter;
+use App\Support\Certificates\EntityLevelPresenter;
 use App\Support\Dashboards\DashboardLinks as Links;
+use App\Support\Paths\EntityPathsPresenter;
+use App\Support\Paths\NextStepPresenter;
 use Illuminate\Database\Eloquent\Builder;
 
 final readonly class EntityBoardQuery implements DashboardBoardQuery
 {
     private const int LATEST_REQUESTS = 5;
 
-    public function __construct(private EntityResults $results, private EntityPaymentsCard $payments) {}
+    public function __construct(
+        private EntityResults $results,
+        private EntityPaymentsCard $payments,
+        private EntityPathsReader $paths,
+        private NextStepResolver $nextStep,
+    ) {}
 
     public function board(): DashboardBoard
     {
@@ -46,6 +59,9 @@ final readonly class EntityBoardQuery implements DashboardBoardQuery
 
         $latest = $this->results->latestOf($entityId);
         $summary = $this->results->summary($latest);
+        $entity = Entity::withTrashed()->with('levelCertificate')->findOrFail($entityId);
+        $paths = $this->paths->read($entity);
+        $nextStep = $this->nextStep->resolve($paths, $user);
 
         return new BoardContent([
             new DashboardCard('latest_result_percent', $summary['percent'] ?? null, CardFormat::Percent, Links::ASSESSMENT_HISTORY),
@@ -57,6 +73,12 @@ final readonly class EntityBoardQuery implements DashboardBoardQuery
             new DashboardWidget('criteria_progress', $this->results->mainsOf($this->results->latestEligibleAccreditedOf($entityId))),
             new DashboardWidget('requests', $this->latestRequests($user, $entityId)),
             new DashboardWidget('payments_card', $this->payments->of($entityId)),
+            new DashboardWidget('level', [
+                'level' => EntityLevelPresenter::levelOf($entity)?->value,
+                'certificate' => CertificateSummaryPresenter::present($entity->levelCertificate),
+            ]),
+            new DashboardWidget('paths', EntityPathsPresenter::present($paths, $user)),
+            new DashboardWidget('next_step', $nextStep instanceof NextStep ? NextStepPresenter::present($nextStep) : null),
         ]);
     }
 

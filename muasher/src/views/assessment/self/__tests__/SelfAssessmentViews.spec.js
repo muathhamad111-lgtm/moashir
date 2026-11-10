@@ -140,10 +140,9 @@ describe('self assessment form view', () => {
     const { wrapper, globals } = await mountView(SelfForm)
     await wrapper.findAll('.self-actions button')[1].trigger('click')
     await settle()
-    const dialog = wrapper.find('.self-submit')
+    const dialog = wrapper.find('[role="alertdialog"]')
     expect(dialog.exists()).toBe(true)
-    const buttons = wrapper.findAll('[role="dialog"] button')
-    await buttons[buttons.length - 1].trigger('click')
+    await dialog.find('.modal__footer .btn--primary').trigger('click')
     await settle()
     expect(assessmentsService.submit).toHaveBeenCalledWith(9002, {
       scores: { subs: { 102: '7.50' }, points: { 1001: '8.00', 1002: '6.00' } },

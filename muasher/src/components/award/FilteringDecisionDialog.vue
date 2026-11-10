@@ -89,15 +89,14 @@ watch(
   <FormModal
     :model-value="modelValue"
     :title="t(`filtering.decision.${mode}.title`)"
+    :subtitle="row.number"
     :busy="form.submitting.value"
     :submit-label="t(`filtering.decision.${mode}.submit`)"
+    :submit-variant="isQualify ? 'primary' : 'danger'"
     @update:model-value="emit('update:modelValue', $event)"
     @submit="form.onSubmit"
   >
     <div class="filtering-decision">
-      <p class="filtering-decision__lead">
-        {{ t(`filtering.decision.${mode}.lead`, { number: row.number }) }}
-      </p>
       <p v-if="isBelow" class="filtering-decision__warning" role="alert">
         <AppIcon name="warning-triangle" />
         {{

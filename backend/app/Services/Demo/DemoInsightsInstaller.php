@@ -25,6 +25,7 @@ final readonly class DemoInsightsInstaller
         private DemoMaturityTextsInstaller $texts,
         private DemoPurchasedRequestSource $purchasedRequests,
         private DemoRecordedRequestSource $recordedRequests,
+        private DemoPeriodInstaller $periods,
     ) {}
 
     public function installWithNewDemo(DemoPeople $people): DemoInsights
@@ -39,6 +40,7 @@ final readonly class DemoInsightsInstaller
 
     private function install(DemoInsightsCast $cast, DemoAccreditedRequestSource $requests): DemoInsights
     {
+        $this->periods->prepare();
         $plans = $this->accreditedPlans($cast);
 
         foreach ($plans as $plan) {

@@ -13,6 +13,7 @@ use App\Events\Certificates\CertificateIssued;
 use App\Models\Certificates\Certificate;
 use App\Models\Entities\Entity;
 use App\Services\Audit\AuditRecorder;
+use App\Services\Periods\CertificateValidity;
 use Illuminate\Support\Facades\Date;
 
 final readonly class CertificateIssuer
@@ -23,6 +24,7 @@ final readonly class CertificateIssuer
         private CertificateSettingsReader $settings,
         private CertificateSnapshotBuilder $snapshots,
         private AuditRecorder $audit,
+        private CertificateValidity $validity,
     ) {}
 
     public function issue(CertificateIssue $issue): Certificate
@@ -49,6 +51,7 @@ final readonly class CertificateIssuer
             'replaces_certificate_id' => $issue->replaces?->id,
             'reissue_reason' => $issue->reissueReason,
             'entity_logo_file_id' => $this->currentLogoOf($issue->assessment->entity_id),
+            'valid_until' => $this->validUntilOf($issue),
         ]);
 
         $this->audit->record(new AuditEntry(
@@ -63,12 +66,20 @@ final readonly class CertificateIssuer
                 'percent' => $issue->result->percent->toDisplay(),
                 'is_test' => $isTest,
                 'replaces_certificate_id' => $certificate->replaces_certificate_id,
+                'valid_until' => $certificate->valid_until?->toDateString(),
             ],
         ));
 
         CertificateIssued::dispatch($certificate);
 
         return $certificate;
+    }
+
+    private function validUntilOf(CertificateIssue $issue): ?string
+    {
+        $inherited = $issue->replaces?->valid_until;
+
+        return ($inherited ?? $this->validity->validUntil($issue->assessment))?->toDateString();
     }
 
     private function currentLogoOf(int $entityId): ?int

@@ -28,9 +28,6 @@ function onOpenChange(value) {
       <p class="level-achieved__message">{{ t('level.achieved.message') }}</p>
     </div>
     <template #footer>
-      <button type="button" class="btn btn--ghost" @click="emit('acknowledge')">
-        {{ t('level.achieved.later') }}
-      </button>
       <router-link
         class="btn btn--primary"
         data-autofocus
@@ -39,6 +36,9 @@ function onOpenChange(value) {
       >
         {{ t('level.achieved.view') }}
       </router-link>
+      <button type="button" class="btn btn--ghost" @click="emit('acknowledge')">
+        {{ t('level.achieved.later') }}
+      </button>
     </template>
   </BaseModal>
 </template>

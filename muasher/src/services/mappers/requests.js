@@ -80,10 +80,55 @@ function toAssignment(raw) {
   }
 }
 
+function toRequestReceipt(raw) {
+  if (!raw) return null
+  return {
+    id: raw.id ?? null,
+    number: raw.number ?? null,
+    status: raw.status ?? null,
+    isTest: raw.isTest === true,
+  }
+}
+
+export function toRequestPayment(raw) {
+  if (!raw?.reference) return null
+  return {
+    id: raw.id ?? null,
+    reference: raw.reference,
+    channel: raw.channel ?? null,
+    status: raw.status ?? null,
+    isTest: raw.isTest === true,
+    paidAt: raw.paidAt ?? null,
+    receipt: toRequestReceipt(raw.receipt),
+  }
+}
+
+export function toProgressSummary(raw) {
+  if (!raw) return null
+  return { complete: raw.subsComplete ?? 0, total: raw.subsTotal ?? 0 }
+}
+
+export function toPreparingRow(raw = {}) {
+  return {
+    id: raw.id ?? null,
+    number: raw.number ?? '',
+    path: raw.path ?? null,
+    pathLabel: raw.pathLabel ?? null,
+    status: toRequestStatus(raw.status),
+    isFrozen: raw.isFrozen === true,
+    entity: toQueueEntity(raw.entity),
+    awardCycle: toCycleSummary(raw.awardCycle),
+    openedAt: raw.openedAt ?? null,
+    payment: toRequestPayment(raw.payment),
+    progress: toProgressSummary(raw.progress),
+    lastActivityAt: raw.lastActivityAt ?? null,
+  }
+}
+
 export function toRequestDetail(raw = {}) {
   return {
     ...toQueueRow(raw),
-    payment: { paid: raw.payment?.paid === true },
+    payment: { paid: raw.payment?.paid === true, details: toRequestPayment(raw.payment) },
     record: toAssessmentRecord(raw.record),
     assignmentHistory: (raw.assignmentHistory ?? []).map(toAssignment),
     completionRequests: (raw.completionRequests ?? []).map(toCompletionRequest),
@@ -119,6 +164,7 @@ export function toQueuePathCount(raw = {}) {
     total: raw.total ?? 0,
     awaitingAssignment: raw.awaitingAssignment ?? 0,
     overdue: raw.overdue ?? 0,
+    preparing: raw.preparing ?? 0,
   }
 }
 

@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { submissionService } from '@/services/submissionService'
 import { useToast } from '@/composables/useToast'
+import { success } from '@/composables/useSuccess'
 
 export function useAccreditedSubmit({
   formState,
@@ -38,13 +39,14 @@ export function useAccreditedSubmit({
     try {
       const { data } = await submissionService.submit(formState.assessment.value.id)
       confirmOpen.value = false
-      toast.success(
-        t(
+      success.show({
+        title: t(
           formState.isResubmission.value
             ? 'accredited.form.toasts.resubmitted'
             : 'accredited.form.toasts.submitted',
         ),
-      )
+        message: formState.assessment.value.number,
+      })
       onSubmitted(data)
     } catch (error) {
       confirmOpen.value = false

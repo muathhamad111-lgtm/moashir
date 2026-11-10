@@ -1,6 +1,7 @@
 import { Buffer } from 'node:buffer'
 import { test, expect } from '@playwright/test'
 import { seedLocale, seedSignedIn } from './support/session'
+import { closeSuccess, decisionAction } from './support/dialogs'
 
 const SHOTS = 'e2e/__screenshots__/cms'
 
@@ -49,7 +50,8 @@ test('a Content Officer edits a home section in the draft, publishes it and the 
   await expect(page.locator('.publication-control .badge')).toHaveClass(/badge--info/)
 
   await page.locator('.publication-control .btn--primary').click()
-  await page.locator('.modal .btn--primary').last().click()
+  await decisionAction(page).click()
+  await closeSuccess(page)
   await expect(page.locator('.publication-control .badge')).toHaveClass(/badge--success/)
 
   await page.locator('.publication-control__view').click()

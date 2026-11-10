@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { mkdirSync } from 'node:fs'
 import process from 'node:process'
 import { test, expect } from '@playwright/test'
+import { closeSuccess, decisionAction } from './support/dialogs'
 import { assertMailLogsConfigured } from './support/mailbox'
 import { STAFF, signInStaff } from './support/accounts'
 import { registerEntity } from './support/entities'
@@ -197,7 +198,8 @@ test('the Content Officer publishes a new privacy version and the public page sh
   await expect(publish).toBeEnabled()
   await shot(page, 'legal-draft')
   await publish.click()
-  await page.locator('.modal .btn--primary').click()
+  await decisionAction(page).click()
+  await closeSuccess(page)
   await expect(page.locator('.legal-viewer')).toContainText('الإصدار الحالي')
   backendOnly('content', /^\/api\/v1\/admin\/content\/legal\//)
 
@@ -247,10 +249,12 @@ test('an accredited request is completed with its certificate, downloaded and ve
   await reviewer.goto(`/admin/requests/${flow.assessmentId}/review`)
   await expect(reviewer.locator('.review-header')).toBeVisible()
   await reviewer.locator('.review-actions .btn--primary').click()
-  const dialog = reviewer.locator('.modal')
-  await expect(dialog.locator('input[type="checkbox"]')).toBeChecked()
+  const dialog = reviewer.getByRole('alertdialog')
+  await expect(dialog.locator('.modal__message')).toContainText('تلقائيًا')
+  await expect(dialog.locator('input[type="checkbox"]')).toHaveCount(0)
   await shot(reviewer, 'complete-dialog')
-  await dialog.locator('.btn--primary').click()
+  await decisionAction(reviewer).click()
+  await closeSuccess(reviewer)
   await expect(reviewer.locator('.review-header')).toContainText('مكتمل')
 
   const admin = sessions.admin.page
@@ -259,8 +263,14 @@ test('an accredited request is completed with its certificate, downloaded and ve
     .poll(
       async () => {
         await admin.goto(`/admin/requests/${flow.assessmentId}`)
-        await admin.locator('[data-certificate="current"]').first().waitFor({ timeout: 10000 })
-        return download.isVisible()
+        return admin
+          .locator('[data-certificate="current"]')
+          .first()
+          .waitFor({ timeout: 10000 })
+          .then(
+            () => download.isVisible(),
+            () => false,
+          )
       },
       { timeout: 90000, intervals: [3000] },
     )

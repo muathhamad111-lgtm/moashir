@@ -187,6 +187,15 @@ final readonly class AssessmentPolicy
         return $actor->can(PermissionKey::RequestsAssign->value) ? Response::allow() : Response::deny();
     }
 
+    public function remind(User $actor, Assessment $assessment): Response
+    {
+        if (! $assessment->isAccredited() || ! $this->paths->covers($actor, $assessment->path)) {
+            return Response::denyAsNotFound();
+        }
+
+        return $actor->can(PermissionKey::RequestsAssign->value) ? Response::allow() : Response::deny();
+    }
+
     public function reassign(User $actor, Assessment $assessment): Response
     {
         return $this->assign($actor, $assessment);

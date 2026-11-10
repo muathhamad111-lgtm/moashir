@@ -1,4 +1,6 @@
-export const PAYMENT_PURPOSE_VALUES = ['accredited', 'bag']
+export const PAYMENT_PURPOSES = Object.freeze({ ACCREDITED: 'accredited', BAG: 'bag' })
+
+export const PAYMENT_PURPOSE_VALUES = Object.values(PAYMENT_PURPOSES)
 
 export const PAYMENT_STATUSES = {
   CREATED: 'created',

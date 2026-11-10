@@ -16,6 +16,7 @@ import SelfResultBreakdown from '@/components/assessment/self/SelfResultBreakdow
 import { useAssessmentRecord } from '@/composables/useAssessmentRecord'
 import { usePermissions } from '@/composables/usePermissions'
 import { PERMISSIONS } from '@/constants/permissionKeys'
+import { ASSESSMENT_PATHS } from '@/constants/assessment'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
 import AppIcon from '@/components/ui/AppIcon.vue'
@@ -30,6 +31,9 @@ const assessmentId = computed(() => Number(props.id))
 const { status, errorMessage, assessment, result, load } = useAssessmentRecord(assessmentId)
 
 const entityName = computed(() => localizedText(assessment.value?.entity?.name, locale.value))
+const readOnlyMessage = computed(() =>
+  t(`assessment.staff.readOnlyMessages.${assessment.value?.path ?? ASSESSMENT_PATHS.SELF}`),
+)
 
 onMounted(load)
 </script>
@@ -87,7 +91,7 @@ onMounted(load)
         v-else
         variant="info"
         :title="t('assessment.staff.readOnlyTitle')"
-        :message="t('assessment.staff.readOnlyMessage')"
+        :message="readOnlyMessage"
       />
 
       <div class="assessment-record__grid">

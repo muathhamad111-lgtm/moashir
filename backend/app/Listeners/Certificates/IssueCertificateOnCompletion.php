@@ -30,7 +30,7 @@ final class IssueCertificateOnCompletion implements ShouldQueue
 
     public function shouldQueue(AssessmentCompleted $event): bool
     {
-        return $event->certificateRequested && $event->assessment->isAccredited();
+        return $event->assessment->isAccredited();
     }
 
     public function handle(AssessmentCompleted $event): void

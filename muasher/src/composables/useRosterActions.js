@@ -33,8 +33,9 @@ export function useRosterActions({ cycleId, roster }) {
     const { key, member } = pending.value
     return {
       title: t(`award.roster.dialogs.${key}.title`),
-      message: t(`award.roster.dialogs.${key}.message`, { name: member.user.name }),
+      subtitle: t(`award.roster.dialogs.${key}.message`, { name: member.user.name }),
       submitLabel: t(`award.roster.actions.${key}`),
+      destructive: true,
       optional: key !== 'disable' && !auth.isSuperAdmin,
     }
   })
@@ -79,7 +80,7 @@ export function useRosterActions({ cycleId, roster }) {
     if (key === 'remove' && !auth.isSuperAdmin) {
       const accepted = await confirm({
         title: t('award.roster.dialogs.remove.title'),
-        message: t('award.roster.dialogs.remove.message', { name: member.user.name }),
+        message: member.user.name,
         confirmLabel: t('award.roster.actions.remove'),
         variant: 'danger',
       })

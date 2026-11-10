@@ -107,8 +107,9 @@ describe('ApproveTransferDialog', () => {
       action,
     })
     expect(reviewer.find('textarea').exists()).toBe(false)
-    expect(reviewer.text()).toContain('PAY-2026-000021')
-    await reviewer.find('form').trigger('submit')
+    expect(reviewer.find('[role="alertdialog"] .modal__title').text()).toBe('Approve the transfer?')
+    expect(reviewer.find('.modal__message').text()).toBe('PAY-2026-000021')
+    await reviewer.find('.modal__footer .btn--primary').trigger('click')
     await settle()
     expect(action).toHaveBeenCalledWith(null)
     reviewer.unmount()
@@ -118,8 +119,11 @@ describe('ApproveTransferDialog', () => {
       asksReason: true,
       action,
     })
+    await superAdmin.find('.modal__footer .btn--primary').trigger('click')
+    await settle()
+    expect(action).toHaveBeenCalledTimes(1)
     await superAdmin.find('textarea[name="reason"]').setValue('Approved after the statement check.')
-    await superAdmin.find('form').trigger('submit')
+    await superAdmin.find('.modal__footer .btn--primary').trigger('click')
     await settle()
     expect(action).toHaveBeenLastCalledWith('Approved after the statement check.')
     superAdmin.unmount()

@@ -1,6 +1,7 @@
 import { randomInt, randomUUID } from 'node:crypto'
 import { Buffer } from 'node:buffer'
 import { test, expect } from '@playwright/test'
+import { closeSuccess, decisionAction } from './support/dialogs'
 import { assertMailLogsConfigured } from './support/mailbox'
 import { STAFF, signInStaff } from './support/accounts'
 import { FOOTER_LEGAL_PROBES, GUEST_SESSION_PROBE, SOURCES, watchApi } from './support/apiWatch'
@@ -87,12 +88,15 @@ async function decide(page, paymentId, action) {
   await page
     .locator(`.transfer-review__decisions .btn--${action === 'approve' ? 'primary' : 'secondary'}`)
     .click()
-  const dialog = page.locator('.modal__panel').last()
   if (action === 'reject') {
+    const dialog = page.locator('.modal__panel').last()
     await dialog.locator('label.radio:has(input[value="not_received"])').click()
     await dialog.locator('textarea[name="note"]').fill(REJECTION_NOTE)
+    await dialog.locator('button[type="submit"]').click()
+  } else {
+    await decisionAction(page).click()
   }
-  await dialog.locator('button[type="submit"]').click()
+  await closeSuccess(page)
   await expect(page.locator('.transfer-decision-line')).toBeVisible()
 }
 

@@ -52,11 +52,9 @@ async function onOpenSelected() {
   if (!selectedCount.value) return
   const ok = await confirm({
     title: t('bag.manage.openSelected.confirmTitle'),
-    message: t('bag.manage.openSelected.confirmMessage', {
-      count: selectedCount.value,
-      stage: activeStageTitle.value,
-    }),
+    message: t('bag.manage.openSelected.confirmMessage', { stage: activeStageTitle.value }),
     confirmLabel: t('bag.manage.openSelected.confirmAction'),
+    variant: 'confirm',
   })
   if (!ok) return
   try {

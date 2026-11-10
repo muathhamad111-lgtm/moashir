@@ -29,12 +29,9 @@ export function useKpiRowActions({ reload, localized }) {
       title: t(
         publishing ? 'kpis.admin.confirm.publishTitle' : 'kpis.admin.confirm.unpublishTitle',
       ),
-      message: t(
-        publishing ? 'kpis.admin.confirm.publishMessage' : 'kpis.admin.confirm.unpublishMessage',
-        { name: localized(kpi.name) },
-      ),
+      message: localized(kpi.name),
       confirmLabel: t(publishing ? 'kpis.admin.actions.publish' : 'kpis.admin.actions.unpublish'),
-      variant: publishing ? 'primary' : 'danger',
+      variant: publishing ? 'confirm' : 'warning',
     })
     if (!accepted) return
     await run(
@@ -56,7 +53,7 @@ export function useKpiRowActions({ reload, localized }) {
   async function archive(kpi) {
     const accepted = await confirm({
       title: t('kpis.admin.confirm.archiveTitle'),
-      message: t('kpis.admin.confirm.archiveMessage', { name: localized(kpi.name) }),
+      message: localized(kpi.name),
       confirmLabel: t('kpis.admin.actions.archive'),
       variant: 'danger',
     })

@@ -6,6 +6,8 @@ namespace App\Http\Resources\Assessments;
 
 use App\Data\Assessments\AccreditedCurrent;
 use App\Models\Assessments\Assessment;
+use App\Support\Paths\PathPricingPresenter;
+use App\Support\Periods\PeriodPresenter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -31,6 +33,10 @@ final class AccreditedCurrentResource extends JsonResource
             ],
             'active' => $this->presentActive($request),
             'latest_closed' => $this->present($this->resource->latestClosed, $request),
+            'periodic' => PeriodPresenter::view($this->resource->period),
+            'submission' => $this->resource->submission->toArray(),
+            'apply' => $this->resource->apply->toArray(),
+            'pricing' => PathPricingPresenter::present($this->resource->pricing),
         ];
     }
 

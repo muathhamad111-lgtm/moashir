@@ -97,6 +97,7 @@ const DETAIL_EXTRA_KEYS = [
   'failure_message',
   'failure_reason',
   'late_paid_at',
+  'linked_request',
   'manually_settled_at',
   'provider_payment_id',
   'receipt',
