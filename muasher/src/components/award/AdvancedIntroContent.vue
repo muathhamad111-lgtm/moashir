@@ -3,8 +3,6 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAdvancedIntroContent } from '@/composables/useIntroPageContent'
 import { PUBLIC_PAGE_STATES } from '@/constants/cms'
-import DemoDataNotice from '@/components/ui/DemoDataNotice.vue'
-import { MOCK_MODULES } from '@/constants/mockModules'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
@@ -21,13 +19,10 @@ function groupTitle(group) {
     group.title || t(`advanced.content.groups.${group.type === 'winners' ? 'winner' : 'partner'}`)
   )
 }
-
-const DEMO_MODULES = [MOCK_MODULES.CMS]
 </script>
 
 <template>
   <section v-if="visible" class="advanced-content" :aria-label="t('advanced.content.label')">
-    <DemoDataNotice scope="section" :modules="DEMO_MODULES" />
     <div v-if="highlights.length" class="advanced-content__highlights">
       <article v-for="card in highlights" :key="card.id" class="advanced-content__card">
         <h2 class="advanced-content__title">{{ card.title }}</h2>

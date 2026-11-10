@@ -1,10 +1,10 @@
 const API_PATH = /\/(api\/v1|sanctum)\//
 const BACKEND_HEADER = 'content-language'
 
-export const SOURCES = { BACKEND: 'backend', DEMO: 'demo' }
+export const SOURCES = { BACKEND: 'backend', MOCK: 'mock' }
 
 function sourceOf(response) {
-  return response.headers()[BACKEND_HEADER] ? SOURCES.BACKEND : SOURCES.DEMO
+  return response.headers()[BACKEND_HEADER] ? SOURCES.BACKEND : SOURCES.MOCK
 }
 
 const QUIET_MS = 400

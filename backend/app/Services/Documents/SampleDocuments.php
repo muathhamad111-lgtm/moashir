@@ -6,7 +6,6 @@ namespace App\Services\Documents;
 
 use App\Data\Documents\PdfDocument;
 use App\Enums\Documents\DocumentTemplate;
-use App\Enums\Documents\DocumentWatermark;
 use App\Support\HijriDate;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Config\Repository;
@@ -64,7 +63,7 @@ final readonly class SampleDocuments
             'issued_on_hijri' => $this->hijri($issuedAt),
             'issue_year' => (string) $issuedAt->year,
             'is_test' => true,
-        ], DocumentWatermark::Test->value);
+        ]);
     }
 
     private function feedbackReport(string $locale): PdfDocument
@@ -94,7 +93,7 @@ final readonly class SampleDocuments
                 'level_label' => ['ar' => trans('certificates.levels.gold', [], 'ar'), 'en' => trans('certificates.levels.gold', [], 'en')],
             ],
             'criteria' => array_map($this->criterion(...), self::CRITERIA),
-        ], DocumentWatermark::Test->value, $locale);
+        ], null, $locale);
     }
 
     /**
@@ -153,7 +152,7 @@ final readonly class SampleDocuments
             'issued_on_hijri' => $this->hijri($issuedAt),
             'purpose_label' => ['ar' => trans('finance.purposes.accredited', [], 'ar'), 'en' => trans('finance.purposes.accredited', [], 'en')],
             'labels' => ['ar' => trans('finance.receipt', [], 'ar'), 'en' => trans('finance.receipt', [], 'en')],
-        ], DocumentWatermark::Test->value);
+        ]);
     }
 
     private function issuedAt(): CarbonImmutable

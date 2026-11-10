@@ -64,7 +64,7 @@ describe('LevelThresholdTrack', () => {
   it('draws one segment below the first threshold plus one per level and isolates the pin', () => {
     const wrapper = render(LevelThresholdTrack, { ranges: RANGES, percent: '74.50' })
     expect(wrapper.findAll('.level-track__segment')).toHaveLength(3)
-    expect(wrapper.find('.level-track__caption').text()).toBe('جمعيتك 74.5%')
+    expect(wrapper.find('.level-track__caption').text()).toBe('جهتك 74.5%')
     expect(wrapper.find('.level-track__caption bdi').attributes('dir')).toBe('ltr')
   })
 

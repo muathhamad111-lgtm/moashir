@@ -166,6 +166,7 @@ export const certificatesHandlers = [
     if (verifyRateLimited()) return rejection(request, 429, 'rate_limited')
     const found = certificateByCode(params.code)
     if (!found) return envelope({ result: 'not_found', certificate: null })
+    if (found.isTest) return envelope({ result: 'unverifiable', certificate: null })
     const outcome = OUTCOMES[found.status]
     const hidden = outcome === 'under_review'
     return envelope({
@@ -178,7 +179,6 @@ export const certificatesHandlers = [
         percent: hidden ? null : found.percent,
         entityName: found.entity.name,
         issuedAt: found.issuedAt,
-        isTest: found.isTest,
       },
     })
   }),

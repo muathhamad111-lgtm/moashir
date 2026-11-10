@@ -7,7 +7,6 @@ namespace App\Services\Insights;
 use App\Data\Documents\PdfDocument;
 use App\Data\Insights\ExecutiveSummary;
 use App\Enums\Documents\DocumentTemplate;
-use App\Enums\Documents\DocumentWatermark;
 use App\Enums\Identity\Locale;
 use App\Services\Reports\EntityLogoImage;
 use App\Support\Insights\BoardReportPresenter;
@@ -26,12 +25,11 @@ final readonly class BoardReportDocumentBuilder
             $this->config->integer('moashir.insights.board_report_summary_max_chars'),
             $this->config->string('app.display_timezone'),
         );
-        $isTest = $assessment->loadMissing('payment')->payment?->isTest() === true;
 
         return new PdfDocument(DocumentTemplate::BoardReport->value, [
             ...$presenter->present($summary, Date::now()),
             'entity_logo' => $this->logos->dataUriOf($assessment->entity),
-        ], $isTest ? DocumentWatermark::Test->value : null, $locale->value);
+        ], null, $locale->value);
     }
 
     public function fileNameOf(ExecutiveSummary $summary, Locale $locale): string

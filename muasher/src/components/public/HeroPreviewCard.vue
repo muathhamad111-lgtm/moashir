@@ -40,7 +40,7 @@ function toneOf(index) {
             localized(preview.caption)
           }}</span>
         </div>
-        <HomePill tone="example">{{ t('public.home.preview.sample') }}</HomePill>
+        <HomePill tone="preview">{{ t('public.home.preview.label') }}</HomePill>
       </div>
       <div class="hero-preview__score">
         <ScoreRing :value="score" :label="t('public.home.preview.scoreLabel')" />

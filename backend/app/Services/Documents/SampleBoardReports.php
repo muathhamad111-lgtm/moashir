@@ -6,7 +6,6 @@ namespace App\Services\Documents;
 
 use App\Data\Documents\PdfDocument;
 use App\Enums\Documents\DocumentTemplate;
-use App\Enums\Documents\DocumentWatermark;
 use App\Support\HijriDate;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Config\Repository;
@@ -66,7 +65,7 @@ final readonly class SampleBoardReports
             'profile' => ['classes' => ['strength' => 9, 'opportunity' => 21, 'critical_gap' => 4], 'bands' => ['emerging' => 1, 'developing' => 5, 'mature' => 2, 'leading' => 4]],
             'bars' => array_map(static fn (array $main): array => ['code' => $main[0], 'name' => ['ar' => $main[1], 'en' => $main[2]], 'percent' => $main[3], 'band' => $main[4]], self::MAINS),
             'rules' => ['gap_thresholds_version' => 1, 'maturity_bands_version' => 1],
-        ], DocumentWatermark::Test->value, $locale);
+        ], null, $locale);
     }
 
     /**

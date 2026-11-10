@@ -211,11 +211,12 @@ describe('HeroPreviewCard', () => {
     ],
   }
 
-  it('labels the card as an illustrative example and derives the level from the thresholds', async () => {
+  it('labels the card as a maturity report preview and derives the level from the thresholds', async () => {
     contentService.getCertificateLevels.mockResolvedValue(LEVELS)
     const { wrapper } = mountWith(HeroPreviewCard, { preview })
     await flushPromises()
-    expect(wrapper.find('.home-pill--example').text()).toBe('Illustrative example')
+    expect(wrapper.find('.home-pill--preview').text()).toBe('Maturity report preview')
+    expect(wrapper.find('.hero-preview').attributes('aria-label')).toBe('Maturity report preview')
     expect(wrapper.find('.score-ring__number').text()).toBe('84%')
     expect(wrapper.find('.score-ring__value').attributes('stroke-dashoffset')).toBe('16')
     expect(wrapper.find('.hero-preview__level .home-pill--gold').text()).toBe('Gold level')

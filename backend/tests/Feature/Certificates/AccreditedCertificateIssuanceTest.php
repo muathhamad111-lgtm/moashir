@@ -136,7 +136,7 @@ it('issues nothing while accredited certificate issuance is turned off', functio
         ->assertJsonPath('code', 'certificate.issuance_disabled');
 });
 
-it('marks the certificate of a request opened by a TEST payment with a TEST number and watermark', function (): void {
+it('flags the certificate of a request opened by a test-mode payment internally, with a regular number, no watermark and the neutral line', function (): void {
     $version = publishedAccreditedCriteria();
     $assessor = assessorUser();
     $assessment = scoredAccreditedReview($version, $assessor);
@@ -144,10 +144,24 @@ it('marks the certificate of a request opened by a TEST payment with a TEST numb
 
     switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/complete")->assertOk();
     $certificate = Certificate::query()->sole();
+    $document = collect(app(FakePdfRenderer::class)->rendered())->firstWhere('template', 'accredited_certificate');
 
     expect($certificate->is_test)->toBeTrue()
-        ->and($certificate->number)->toMatch('/^TEST-CRT-\d{4}-000001$/')
-        ->and(collect(app(FakePdfRenderer::class)->rendered())->firstWhere('template', 'accredited_certificate')?->watermark)->toBe('TEST');
+        ->and($certificate->number)->toMatch('/^CRT-\d{4}-000001$/')
+        ->and($document?->watermark)->toBeNull()
+        ->and($document?->data['is_test'] ?? null)->toBeTrue();
+});
+
+it('shares one number series between test-mode and live certificates', function (): void {
+    $version = publishedAccreditedCriteria();
+    $assessor = assessorUser();
+    $test = scoredAccreditedReview($version, $assessor);
+    Payment::query()->whereKey($test->payment_id)->update(['mode' => IntegrationMode::Test->value]);
+    switchTo($assessor)->postJson("/api/v1/assessments/{$test->id}/complete")->assertOk();
+    $live = scoredAccreditedReview($version, $assessor);
+    switchTo($assessor)->postJson("/api/v1/assessments/{$live->id}/complete")->assertOk();
+
+    expect(Certificate::query()->orderBy('id')->pluck('number')->map(static fn (string $number): string => substr($number, -6))->all())->toBe(['000001', '000002']);
 });
 
 it('asks the Super Admin for a reason before issuing a certificate', function (): void {

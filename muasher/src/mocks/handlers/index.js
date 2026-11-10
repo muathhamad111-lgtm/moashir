@@ -1,4 +1,3 @@
-import { MOCK_MODULES as M } from '@/constants/mockModules'
 import { kpisHandlers } from './kpis'
 import { notificationsHandlers } from './notifications'
 import { criteriaHandlers } from './criteria'
@@ -59,107 +58,65 @@ import { legalHandlers } from './legal'
 import { legalVersionsHandlers } from './legalVersions'
 import { auditLogsHandlers } from './auditLogs'
 
-export const CORE_MOCK_KEYS = Object.freeze({ SESSION: 'session', AUTH: 'auth' })
-
-export const mockModules = [
-  {
-    key: CORE_MOCK_KEYS.SESSION,
-    core: true,
-    handlers: [...sanctumHandlers, ...(import.meta.env.DEV ? devSessionHandlers() : [])],
-  },
-  { key: M.KPIS, handlers: kpisHandlers },
-  { key: M.NOTIFICATIONS, handlers: notificationsHandlers },
-  { key: M.CRITERIA, handlers: criteriaHandlers },
-  {
-    key: M.CMS,
-    handlers: [
-      ...legalHandlers,
-      ...legalVersionsHandlers,
-      ...contentHandlers,
-      ...certificateLevelsHandlers,
-      ...pathGuidesHandlers,
-    ],
-  },
-  {
-    key: M.CONTACT,
-    handlers: [...contactInboxHandlers, ...contactSettingsHandlers, ...contactMessagesHandlers],
-  },
-  { key: M.AI, handlers: [...aiHandlers, ...knowledgeBaseHandlers] },
-  { key: M.USERS, handlers: usersHandlers },
-  { key: CORE_MOCK_KEYS.AUTH, core: true, handlers: authHandlers },
-  {
-    key: M.ENTITIES,
-    handlers: [
-      ...entityEmailChangesHandlers,
-      ...entityLifecycleHandlers,
-      ...entityProfileChangesHandlers,
-      ...entitiesHandlers,
-      ...privacyRequestsHandlers,
-      ...regionsHandlers,
-    ],
-  },
-  { key: M.AWARD, handlers: awardHandlers },
-  { key: M.ASSESSMENTS, handlers: assessmentsHandlers },
-  {
-    key: M.INTEGRATIONS,
-    handlers: [
-      ...integrationsHandlers,
-      ...paymentIntegrationHandlers,
-      ...smsIntegrationHandlers,
-      ...emailIntegrationHandlers,
-      ...aiIntegrationHandlers,
-    ],
-  },
-  { key: M.PLATFORM_SETTINGS, handlers: platformSettingsHandlers },
-  { key: M.NOTIFICATIONS_ADMIN, handlers: notificationTypesHandlers },
-  { key: M.PAYMENTS, handlers: [...paymentsHandlers, ...moyasarSandboxHandlers] },
-  {
-    key: M.FINANCE,
-    handlers: [
-      ...bankTransfersHandlers,
-      ...paymentChannelsHandlers,
-      ...financeHandlers,
-      ...financeSettingsHandlers,
-      ...servicePricesHandlers,
-    ],
-  },
-  { key: M.MESSAGING, handlers: messagingHandlers },
-  {
-    key: M.ACCREDITED,
-    handlers: [
-      ...accreditedHandlers,
-      ...requestsHandlers,
-      ...assessorReviewHandlers,
-      ...assessmentSettingsHandlers,
-      ...insightsHandlers,
-    ],
-  },
-  {
-    key: M.CERTIFICATES,
-    handlers: [
-      ...certificatesStaffHandlers,
-      ...certificatesHandlers,
-      ...certificateSettingsHandlers,
-    ],
-  },
-  { key: M.BAG, handlers: [...bagHandlers, ...bagRequestsHandlers] },
-  { key: M.RESULTS, handlers: awardResultsHandlers },
-  { key: M.COMMITTEE, handlers: committeeHandlers },
-  { key: M.SECRETARY, handlers: secretaryHandlers },
-  { key: M.PERMISSIONS, handlers: permissionsHandlers },
-  { key: M.AUDIT, handlers: auditLogsHandlers },
-  { key: M.ENTITY_BOARD, handlers: entityBoardHandlers },
-  { key: M.DASHBOARDS, handlers: dashboardHandlers },
-  { key: M.BRANDING, handlers: brandingHandlers },
-  { key: M.PROFILE, handlers: profileHandlers },
-  { key: M.SEARCH, handlers: searchHandlers },
+export const handlers = [
+  ...sanctumHandlers,
+  ...(import.meta.env.DEV ? devSessionHandlers() : []),
+  ...kpisHandlers,
+  ...notificationsHandlers,
+  ...criteriaHandlers,
+  ...legalHandlers,
+  ...legalVersionsHandlers,
+  ...contentHandlers,
+  ...certificateLevelsHandlers,
+  ...pathGuidesHandlers,
+  ...contactInboxHandlers,
+  ...contactSettingsHandlers,
+  ...contactMessagesHandlers,
+  ...aiHandlers,
+  ...knowledgeBaseHandlers,
+  ...usersHandlers,
+  ...authHandlers,
+  ...entityEmailChangesHandlers,
+  ...entityLifecycleHandlers,
+  ...entityProfileChangesHandlers,
+  ...entitiesHandlers,
+  ...privacyRequestsHandlers,
+  ...regionsHandlers,
+  ...awardHandlers,
+  ...assessmentsHandlers,
+  ...integrationsHandlers,
+  ...paymentIntegrationHandlers,
+  ...smsIntegrationHandlers,
+  ...emailIntegrationHandlers,
+  ...aiIntegrationHandlers,
+  ...platformSettingsHandlers,
+  ...notificationTypesHandlers,
+  ...paymentsHandlers,
+  ...moyasarSandboxHandlers,
+  ...bankTransfersHandlers,
+  ...paymentChannelsHandlers,
+  ...financeHandlers,
+  ...financeSettingsHandlers,
+  ...servicePricesHandlers,
+  ...messagingHandlers,
+  ...accreditedHandlers,
+  ...requestsHandlers,
+  ...assessorReviewHandlers,
+  ...assessmentSettingsHandlers,
+  ...insightsHandlers,
+  ...certificatesStaffHandlers,
+  ...certificatesHandlers,
+  ...certificateSettingsHandlers,
+  ...bagHandlers,
+  ...bagRequestsHandlers,
+  ...awardResultsHandlers,
+  ...committeeHandlers,
+  ...secretaryHandlers,
+  ...permissionsHandlers,
+  ...auditLogsHandlers,
+  ...entityBoardHandlers,
+  ...dashboardHandlers,
+  ...brandingHandlers,
+  ...profileHandlers,
+  ...searchHandlers,
 ]
-
-export function handlersOfModules(keys) {
-  const selected = new Set(keys)
-  return mockModules
-    .filter((module) => !module.core && selected.has(module.key))
-    .flatMap((module) => module.handlers)
-}
-
-export const handlers = mockModules.flatMap((module) => module.handlers)

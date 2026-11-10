@@ -213,6 +213,7 @@ enum AuditEvent: string
     case FileQuarantined = 'file.quarantined';
     case InfectedUploadRefused = 'file.infected_upload_refused';
     case OrphanFilesPurged = 'file.orphans_purged';
+    case DemoPurged = 'demo.purged';
     case CmsPageUpdated = 'cms.page_updated';
     case CmsPagePublished = 'cms.page_published';
     case CmsPageUnpublished = 'cms.page_unpublished';

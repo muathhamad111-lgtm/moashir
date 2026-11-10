@@ -101,8 +101,23 @@ it('refuses unsafe links, unknown icons, oversized meta and half-empty localized
     'meta list' => [['meta' => ['one', 'two']], 'meta'],
     'meta bad key' => [['meta' => ['bad key' => 'x']], 'meta'],
     'meta too deep' => [['meta' => ['a' => ['b' => ['c' => ['d' => ['e' => ['f' => 1]]]]]]], 'meta'],
+    'dropped demo availability' => [['meta' => ['availability' => 'demo']], 'meta.availability'],
+    'unknown availability' => [['meta' => ['availability' => 'soon']], 'meta.availability'],
     'unknown language' => [['title' => ['fr' => 'Titre']], 'title'],
 ]);
+
+it('accepts only the live and coming-soon availability on sections and items', function (string $availability): void {
+    $section = cmsSection();
+    $item = cmsItem($section);
+    signIn(contentOfficer());
+
+    $this->patchJson(CMS_ADMIN.'/sections/'.$section->id, ['meta' => ['availability' => $availability]])
+        ->assertOk()->assertJsonPath('data.meta.availability', $availability);
+    $this->putJson(CMS_ADMIN.'/sections/'.$section->id.'/items/'.$item->id, ['meta' => ['availability' => $availability]])
+        ->assertOk()->assertJsonPath('data.items.0.meta.availability', $availability);
+    $this->putJson(CMS_ADMIN.'/sections/'.$section->id.'/items/'.$item->id, ['meta' => ['availability' => 'demo']])
+        ->assertUnprocessable()->assertJsonValidationErrors(['meta.availability']);
+})->with(['live', 'coming_soon']);
 
 it('updates only the fields sent and audits the before and after values', function (): void {
     $section = cmsSection(CmsPageKey::Home, ['cta_url' => '/register']);

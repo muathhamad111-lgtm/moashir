@@ -15,10 +15,15 @@ enum VerificationOutcome: string
     case Revoked = 'revoked';
     case Superseded = 'superseded';
     case NotFound = 'not_found';
+    case Unverifiable = 'unverifiable';
 
     public static function ofCertificate(Certificate $certificate, CarbonImmutable $today): self
     {
-        return $certificate->isExpiredOn($today) ? self::Expired : self::of($certificate->status);
+        return match (true) {
+            $certificate->is_test => self::Unverifiable,
+            $certificate->isExpiredOn($today) => self::Expired,
+            default => self::of($certificate->status),
+        };
     }
 
     public static function of(CertificateStatus $status): self
@@ -29,5 +34,10 @@ enum VerificationOutcome: string
             CertificateStatus::Revoked => self::Revoked,
             CertificateStatus::Superseded => self::Superseded,
         };
+    }
+
+    public function disclosesCertificate(): bool
+    {
+        return ! in_array($this, [self::NotFound, self::Unverifiable], true);
     }
 }

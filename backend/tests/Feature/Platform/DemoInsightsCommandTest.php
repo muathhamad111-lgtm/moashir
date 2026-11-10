@@ -144,7 +144,7 @@ it('adds every excellence-tools case to a demo installed before them', function 
         ->and($certificates->where('entity_id', $gold->id)->pluck('status')->all())->toBe([CertificateStatus::Issued, CertificateStatus::Issued])
         ->and($certificates->where('entity_id', $gold->id)->map(static fn (Certificate $certificate): ?string => $certificate->level?->value)->values()->all())->toBe(['silver', 'gold'])
         ->and($certificates->where('entity_id', $mixed->id)->pluck('status')->all())->toBe([CertificateStatus::Issued, CertificateStatus::Revoked])
-        ->and($certificates->every(static fn (Certificate $certificate): bool => $certificate->is_test && str_starts_with($certificate->number, 'TEST-CRT-')))->toBeTrue()
+        ->and($certificates->every(static fn (Certificate $certificate): bool => $certificate->is_test && str_starts_with($certificate->number, 'CRT-')))->toBeTrue()
         ->and(PaymentReceipt::query()->whereIn('payment_id', $completed->pluck('payment_id'))->whereNull('number')->where('is_test', true)->count())->toBe(4)
         ->and(AssessmentSummary::query()->count())->toBe(1)
         ->and(Assessment::query()->where('entity_id', $selfOnly->id)->where('path', AssessmentPath::SelfAssessment)->where('status', SelfAssessmentStatus::ResultAvailable)->count())->toBe(1)

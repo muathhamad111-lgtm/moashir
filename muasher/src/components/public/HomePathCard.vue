@@ -7,7 +7,7 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import HomePill from '@/components/public/HomePill.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
-const UNAVAILABLE = ['coming_soon', 'demo']
+const COMING_SOON = 'coming_soon'
 
 const PILLS = {
   calm: { tone: 'free', key: 'public.home.paths.badges.free' },
@@ -32,7 +32,7 @@ const { n, t } = useI18n()
 const accent = computed(() =>
   PATH_ACCENTS.includes(props.path.meta?.accent) ? props.path.meta.accent : PATH_ACCENTS[0],
 )
-const isComingSoon = computed(() => UNAVAILABLE.includes(props.path.meta?.availability))
+const isComingSoon = computed(() => props.path.meta?.availability === COMING_SOON)
 const pill = computed(() => (isComingSoon.value ? PILLS.award : PILLS[accent.value]))
 const points = computed(() =>
   Array.isArray(props.path.meta?.points) ? props.path.meta.points : [],

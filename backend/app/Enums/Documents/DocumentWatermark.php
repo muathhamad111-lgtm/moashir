@@ -6,6 +6,5 @@ namespace App\Enums\Documents;
 
 enum DocumentWatermark: string
 {
-    case Test = 'TEST';
     case Void = 'VOID';
 }

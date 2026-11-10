@@ -3,7 +3,7 @@
 Vue 3 (JavaScript) front-end for the Tamayuz Institutional Assessment Portal. Arabic-first
 (`ar`/RTL default, dark theme default) with full English (`en`/LTR) support. All data flows through
 `src/services/`: the MSW mock layer answers in local development, the Laravel API (`../backend/`) in the review,
-staging and production environments (hybrid mode below).
+staging and production environments (see "Build posture").
 
 Full environment contract: `references/00-ai-workflow.md`. Hard rules:
 `references/04-guardrails.md`. Structure: `references/06-architecture.md`. Theme:
@@ -36,46 +36,27 @@ Copy `.env.example` to `.env.local`. Never commit values.
 | Name | Meaning |
 |---|---|
 | `VITE_API_BASE_URL` | Empty: the MSW mock layer answers `/api/v1` and `/sanctum` (local development). Set (for example `/api/v1` behind the same Nginx origin): the real API is used. The CSRF cookie is read from the same origin. |
-| `VITE_DEMO_BUILD` | Build posture (SEC-07, see "Build posture"). `true` only in the client-demo env files (`.env.staging.example`, `.env.production.example` while both environments are demos). Empty or any other value = real-operation build: no mock code, no `mockServiceWorker.js`, demo-only screens become «قريبًا» screens, and the build fails if `VITE_DEMO_MODULES` is not empty. |
-| `VITE_DEMO_MODULES` | Only with `VITE_API_BASE_URL` and `VITE_DEMO_BUILD=true`. Comma-separated module keys that stay on demo data (hybrid mode, see below). Empty: every module uses the real API and the mock layer is never loaded. |
+| `VITE_DEMO_BUILD` | Build posture (SEC-07, see "Build posture"). `true` only in the client-demo env files (`.env.staging.example`, `.env.production.example` while both environments are demos): the advanced path, the Award screens and the abandoned-cart list stay open on the real API. Empty or any other value = real-operation build: those screens become «قريبًا» screens too. No API build ever ships mock code or `mockServiceWorker.js`. |
 | `VITE_DEMO_LOGIN` | `true` shows the demo quick-login on the login page. It works only in `npm run dev` (`import.meta.env.DEV`); every `vite build` (staging and production) drops the component, its strings and its mock endpoint. `.env.development` sets it for local development. |
 | `VITE_LEVEL_ACHIEVED_SINCE` | Release date (`YYYY-MM-DD`, read as 00:00 Asia/Riyadh) for the entity «مبارك!» level-achieved dialog: it opens only for a certificate issued on or after this date, once per certificate per user. Empty or invalid disables the dialog (a console warning in `npm run dev` only). Read once in `src/config/levelAchieved.js`; both deploy templates set `2026-11-06`. |
 | `VITE_SENTRY_DSN`, `VITE_SENTRY_ENVIRONMENT`, `VITE_SENTRY_RELEASE` | Self-hosted GlitchTip. Every event, transaction and breadcrumb passes through `src/utils/monitoring/scrubEvent.js` (`beforeSend`, `beforeSendTransaction`, `beforeBreadcrumb`, `sendDefaultPii: false`, SEC-16): no user object, query strings and fragments dropped, token path segments, e-mails, Saudi mobiles, national ids, file names and credentials masked, form values in the extra context redacted, only safe request headers kept. |
 | `MOASHIR_API_PROXY_TARGET` | Shell variable for `npm run dev` / `npm run preview` only: proxies `/api` and `/sanctum` to a local Laravel (for example `http://127.0.0.1:8010`) so the SPA and the API share one origin, as behind Nginx. |
 
-## Hybrid mode (review and demo environments)
+## Modules awaiting their backend (Q-193)
 
-The review / demo deployments (operator decision Session 20) run the real API for every module that has a backend
-and keep demo data, clearly marked, for the modules that do not have one yet.
+No screen shows mock data to a real user. The modules that have no backend yet are visible only on the full mock
+layer (local development, unit and e2e tests); every build with `VITE_API_BASE_URL` shows the «قريبًا» / "Coming soon"
+treatment instead:
 
-| `VITE_API_BASE_URL` | `VITE_DEMO_BUILD` | `VITE_DEMO_MODULES` | Result |
-|---|---|---|---|
-| empty | ignored | ignored | full mock layer (local development, unit and e2e tests, the CI e2e build) |
-| `/api/v1` | `true` | empty | client demo without mocks; the mock code is loaded but never started |
-| `/api/v1` | `true` | `bag,ai,…` | client-demo hybrid: MSW starts with the handlers of the listed modules only and `onUnhandledRequest: 'bypass'`, so every other call reaches the real API |
-| `/api/v1` | empty / `false` | empty | real operation: the mock layer and its worker are not in the build at all |
-| `/api/v1` | empty / `false` | not empty | the build stops with "VITE_DEMO_MODULES must be empty in a real-operation build" |
+| Module | Route meta / switch | API build |
+|---|---|---|
+| Quick Excellence Kit | `meta.awaitsBackend` on `/excellence-bag`, `/bag`, `/bag/pay`, `/bag/manage`, `/bag/comparison`, `/bag/requests`, `/bag/evaluator` | the route stays valid and renders `views/public/ComingSoon.vue` (`src/router/comingSoon.js`) |
+| AI knowledge base, platform general settings | `meta.awaitsBackend` on `/admin/settings/ai/knowledge-base`, `/admin/settings/general` | same |
+| AI assistant (public widget) | `SHOWS_MODULES_AWAITING_BACKEND` in `PublicLayout` | not rendered |
+| Messaging campaigns | `SHOWS_MODULES_AWAITING_BACKEND` in the SMS / e-mail settings and the abandoned-cart actions | composers not rendered; the cart actions column shows the «قريباً» chip |
 
-- Module keys: `src/constants/mockModules.js`; the registry that maps each key to its handlers is
-  `src/mocks/handlers/index.js` (`mockModules`). Unknown keys are ignored (reported to GlitchTip as an info event). The
-  session and sign-in mocks are never served in hybrid mode.
-- Hybrid mode needs a same-origin API path (`/api/v1`): the demo handlers match paths of the SPA origin.
-- Demo handlers see the real signed-in user: before answering they read `GET /api/v1/auth/session` from the backend
-  (cached 5 seconds, refreshed after sign-in and sign-out) and map it to a demo persona of the same role (an entity
-  sees the demo entity). Random mock failures are off in hybrid mode.
-- Every screen of a demo module shows the translated "Demo data" note (`DemoDataNotice`, route meta `demoModules`);
-  demo parts embedded in connected screens (notification panel, assistant, footer and CMS copy, SMS / e-mail / cart
-  campaigns) show the section variant. Connected screens show nothing.
-- Current list (`.env.staging.example`, `.env.production.example`, both with `VITE_DEMO_BUILD=true`): `bag, ai,
-  messaging, platform-settings` (no backend route yet). Since Task-37d the staff dashboards (`GET /dashboard/summary?board=`)
-  and the read-only notification types catalogue (`GET /settings/notifications/types`) use the real API (`dashboards`
-  and `notifications-admin` left the list); the contact inbox, the contact retention setting, the contact privacy tools,
-  the legal versions management, the audit log and the staff certificate actions are real from the start. `users`,
-  `committee`, `secretary` and `results` use the real API since the committee batch; `cms`, `branding` and `kpis` since
-  the CMS batch (Task-34); `contact` and the public certificate levels since the home page (Task-41); the notification
-  centre since Task-37a; the entity portal areas, certificates and legal pages since Task-37b; the staff settings and
-  recovery pages since Task-37c. The home page never shows a demo note, and the AI assistant is hidden there in phase 1
-  (route meta `hideAssistant`). Remove a key when its batch lands.
+`SHOWS_MODULES_AWAITING_BACKEND` (`src/constants/buildPosture.js`) is true only in the `mock` posture. When a module's
+backend lands, drop its `awaitsBackend` marker (or the constant check) in the same change that wires its service.
 
 ## Build posture (SEC-07)
 
@@ -83,18 +64,19 @@ and keep demo data, clearly marked, for the modules that do not have one yet.
 
 | Posture | When | What ships |
 |---|---|---|
-| `mock` | `VITE_API_BASE_URL` empty | the whole mock layer and `mockServiceWorker.js` (local development and the CI e2e build only — such a build has no backend and is never deployed) |
-| `demo` | `VITE_API_BASE_URL` set and `VITE_DEMO_BUILD=true` | exactly the current client-demo behaviour: hybrid MSW for `VITE_DEMO_MODULES`, the worker, and every demo-only screen working on its mocks or on the real API as today |
-| `real` | `VITE_API_BASE_URL` set and `VITE_DEMO_BUILD` empty / not `true` (the default) | `@/mocks` is replaced by an empty module (no MSW code in `dist/`), `dist/mockServiceWorker.js` is deleted after the build, demo-only routes (`meta.demoOnly`: Quick Excellence Kit, the advanced path, the Award screens, the AI knowledge base, platform general settings, abandoned-cart campaigns) render the static «قريبًا» / "Coming soon" screen (`src/router/comingSoon.js`, `views/public/ComingSoon.vue`), and the AI assistant and the SMS / e-mail campaign composers are not shown. A non-empty `VITE_DEMO_MODULES` stops the build. |
+| `mock` | `VITE_API_BASE_URL` empty | the whole mock layer and `mockServiceWorker.js` (local development and the CI e2e build only — such a build has no backend and is never deployed); every screen, including the modules awaiting their backend |
+| `demo` | `VITE_API_BASE_URL` set and `VITE_DEMO_BUILD=true` | the client-demo build: no mock code (`@/mocks` is replaced by an empty module, `dist/mockServiceWorker.js` is deleted), the modules awaiting their backend show «قريبًا», and the demo-only routes (`meta.demoOnly`: the advanced path, the Award screens, the abandoned-cart list) stay open on the real API |
+| `real` | `VITE_API_BASE_URL` set and `VITE_DEMO_BUILD` empty / not `true` (the default) | as `demo`, and the demo-only routes also render the static «قريبًا» / "Coming soon" screen |
 
 The build log prints `Moashir build posture: <posture>`. Both current environments (staging and production) are client
 demos, so both example env files keep `VITE_DEMO_BUILD=true` and the deploy kit (which copies
-`.env.<environment>.example` when `.env.<environment>` is absent) keeps building them exactly as before. For real
+`.env.<environment>.example` when `.env.<environment>` is absent) keeps building them that way. For real
 operation, provide `muasher/.env.production` (it takes precedence over the example in `deploy/deploy.sh`) with
-`VITE_DEMO_BUILD=false` and an empty `VITE_DEMO_MODULES`, or change the example at go-live. A shell value overrides the
-files, for example `VITE_DEMO_BUILD=false VITE_DEMO_MODULES= npm run build -- --mode production`. Check a real build with
-`ls dist/mockServiceWorker.js` (absent) and `grep -rl setupWorker dist` (no match), or serve it with `vite preview` on
-`:5180` and run `npm run test:e2e:posture`.
+`VITE_DEMO_BUILD=false`, or change the example at go-live. A shell value overrides the files, for example
+`VITE_DEMO_BUILD=false npm run build -- --mode production`. `VITE_DEMO_MODULES` is no longer read; a leftover value in an
+older env file is ignored. Check an API build with `ls dist/mockServiceWorker.js` (absent) and
+`grep -rl setupWorker dist` (no match), or serve a real build with `vite preview` on `:5180` and run
+`npm run test:e2e:posture`.
 
 ### Environment builds
 
@@ -144,7 +126,7 @@ Run `./scripts/integration/backend.sh reset` before every repeated run (the staf
 database), then restart the queue worker. The suite reads one-time codes from the mail log files only; it never prints
 them. It covers sign-in with MFA enrolment and challenge, criteria, entity registration and profile, self assessment
 draft → submit → result, the accredited price and checkout up to the gateway boundary (`503 integration.not_configured`
-without payment keys), the follower queue, integrations, award cycles, the demo markers, and a sweep of every connected
+without payment keys), the follower queue, integrations, award cycles, the coming-soon screens, and a sweep of every connected
 administrator and entity screen that fails on any 4xx/5xx or error state. `e2e/integration/award.spec.js` runs the award
 path end to end with the seeded staff (system administrator, requests follower, assessor, filtering officer, award
 secretary): a cycle is prepared through the API, a new entity applies and submits, the request is assessed and qualified,

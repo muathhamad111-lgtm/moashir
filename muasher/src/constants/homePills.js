@@ -2,7 +2,7 @@ export const HOME_PILL_TONES = Object.freeze([
   'free',
   'available',
   'soon',
-  'example',
+  'preview',
   'on-dark',
   'bronze',
   'silver',

@@ -13,7 +13,7 @@ use App\Enums\Platform\DemoCertificateOutcome;
 
 final readonly class DemoInsightsInstaller
 {
-    private const string ASSESSOR_SUMMARY = 'تتمتع الجهة بحوكمة واضحة وإدارة مالية منضبطة، وتحتاج إلى تطوير قياس الأثر وربط برامجها بمؤشرات نتائج دورية (ملخص تجريبي).';
+    private const string ASSESSOR_SUMMARY = 'تتمتع الجهة بحوكمة واضحة وإدارة مالية منضبطة، وتحتاج إلى تطوير قياس الأثر وربط برامجها بمؤشرات نتائج دورية.';
 
     private const array SELF_PROFILE = [66, 58, 71, 62];
 

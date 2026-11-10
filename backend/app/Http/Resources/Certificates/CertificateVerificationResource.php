@@ -23,10 +23,11 @@ final class CertificateVerificationResource extends JsonResource
     public function toArray(Request $request): array
     {
         $certificate = $this->resource->certificate;
+        $outcome = $this->resource->outcome;
 
         return [
-            'result' => $this->resource->outcome->value,
-            'certificate' => $certificate instanceof Certificate ? $this->publicCardOf($certificate, $this->resource->outcome) : null,
+            'result' => $outcome->value,
+            'certificate' => $certificate instanceof Certificate && $outcome->disclosesCertificate() ? $this->publicCardOf($certificate, $outcome) : null,
         ];
     }
 
@@ -47,7 +48,6 @@ final class CertificateVerificationResource extends JsonResource
             'entity_name' => $snapshot['entity_name'] ?? null,
             'issued_at' => $certificate->issued_at->toIso8601String(),
             'valid_until' => $certificate->valid_until?->toDateString(),
-            'is_test' => $certificate->is_test,
         ];
     }
 }

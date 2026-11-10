@@ -47,9 +47,6 @@
     "switchToLight": "Switch to light mode",
     "switchToDark": "Switch to dark mode"
   },
-  "home": {
-    "kpisHeading": "Performance indicators — data-layer demo"
-  },
   "errors": {
     "unexpected": "An unexpected error occurred. Please try again.",
     "notFound": {
@@ -1181,8 +1178,7 @@
         "label": "Featured performance indicators"
       },
       "preview": {
-        "sample": "Illustrative example",
-        "label": "Illustrative preview of an institutional maturity report",
+        "label": "Maturity report preview",
         "scoreLabel": "Score",
         "levelNote": "After a completed accredited assessment"
       },
@@ -2416,7 +2412,7 @@
         "intro": "For personal data requests from visitors who wrote to the platform without an account: export or delete their messages by e-mail address. Every action is recorded in the audit log.",
         "email": "Sender e-mail address",
         "reason": "Reason",
-        "reasonHint": "For example the data subject's request number. 10 to 1000 characters.",
+        "reasonHint": "Such as the data subject's request number. 10 to 1000 characters.",
         "export": "Export the messages",
         "erase": "Delete the messages",
         "eraseTitle": "Delete the messages of this address?",
@@ -4176,7 +4172,6 @@
         "paidAt": "Paid on",
         "openRecord": "Open the payment record",
         "downloadReceipt": "Download the payment receipt",
-        "testReceipt": "Test receipt",
         "noReceipt": "No receipt issued yet"
       }
     },
@@ -5490,8 +5485,14 @@
       "total": "Total"
     },
     "testMode": {
-      "title": "Test mode: no real charge is made.",
-      "body": "The payment gateway runs in test mode. Payments made here are excluded from statistics and get a TEST receipt without an official number.",
+      "staff": {
+        "title": "Test mode: no real charge is made.",
+        "body": "The payment gateway runs in test mode. Payments made here are excluded from statistics and get a receipt marked \"Not valid as proof of payment\", without an official number."
+      },
+      "entity": {
+        "title": "No real amount is charged.",
+        "body": "This payment gets a receipt that is not valid as proof of payment."
+      },
       "badge": "Test"
     },
     "fields": {
@@ -5652,9 +5653,8 @@
     },
     "receipt": {
       "title": "Payment receipt",
-      "testNumber": "TEST receipt",
-      "testBadge": "TEST",
-      "testNote": "TEST — issued for a test-mode payment. It has no official receipt number and is not a proof of payment.",
+      "noNumber": "No number",
+      "notProof": "Not valid as proof of payment",
       "voidNote": "VOID — this receipt was voided because a refund was recorded.",
       "status": {
         "issued": "Issued",
@@ -5876,7 +5876,7 @@
       "unchanged": "Nothing has changed.",
       "reasonTitle": "Reason for the change",
       "validation": {
-        "price": "Enter a price with at most 7 digits and up to two decimals, for example 1500.00.",
+        "price": "Enter a price with at most 7 digits and up to two decimals, such as 1500.00.",
         "pricePositive": "The price must be greater than zero.",
         "vat": "Enter a rate from 0 to 100 with up to two decimals.",
         "validity": "Enter a whole number of minutes from {min} to {max}.",
@@ -6573,12 +6573,6 @@
       "note": "Note:"
     }
   },
-  "demoData": {
-    "title": "Demo data —",
-    "pageBody": "this module is not connected yet. The data on this page is sample data for review only.",
-    "sectionBody": "this section is not connected yet. The data shown here is sample data for review only.",
-    "actionsBody": "the send actions on this screen are not connected yet. No message is actually sent."
-  },
   "award": {
     "common": {
       "backToCycles": "Back to the cycles",
@@ -7158,7 +7152,6 @@
       "none": "None",
       "availabilityOptions": {
         "live": "Available",
-        "demo": "Demo",
         "coming_soon": "Coming soon"
       },
       "variantOptions": {
@@ -7645,7 +7638,7 @@
           "message": "Orders that expired or were not paid, and rejected transfers, appear here."
         }
       },
-      "testNote": "Test payments are listed but not counted: the statistics include live payments only.",
+      "testNote": "Payments whose receipt is marked \"Not valid as proof of payment\" are not counted in the statistics.",
       "note": "Amounts are shown before VAT; VAT and the total are calculated when you place the request and kept with it. An electronic payment order is valid for 30 minutes and is then cancelled automatically; you can start a new order at any time.",
       "pending": {
         "badge": "Awaiting payment · {minutes} minute left | Awaiting payment · {minutes} minute left | Awaiting payment · {minutes} minutes left",
@@ -7724,7 +7717,7 @@
       },
       "cardTitle": "Institutional excellence certificate — {level}",
       "cardTitlePlain": "Institutional excellence certificate",
-      "test": "Test",
+      "notVerifiable": "Not valid for verification",
       "number": "Certificate number",
       "issuedOn": "Issue date",
       "assessment": "Accredited assessment",
@@ -8279,7 +8272,6 @@
     },
     "rateLimited": "Too many verification attempts from this device. Try again in a minute.",
     "failed": "The verification could not be completed now. Try again.",
-    "testNotice": "A test certificate issued from a test environment; it has no standing.",
     "results": {
       "valid": {
         "title": "Valid certificate",
@@ -8288,6 +8280,10 @@
       "under_review": {
         "title": "Certificate under review",
         "text": "The certificate is temporarily suspended while the platform team reviews it; its level is hidden until the review ends."
+      },
+      "expired": {
+        "title": "Certificate expired",
+        "text": "This certificate was issued by the Moashir platform, but its validity period has ended and it no longer proves the organisation's current level."
       },
       "revoked": {
         "title": "Revoked certificate",
@@ -8300,6 +8296,10 @@
       "not_found": {
         "title": "No certificate matches this code",
         "text": "Check the code and try again. The code has 28 characters."
+      },
+      "unverifiable": {
+        "title": "Not valid for verification",
+        "text": "This certificate has no standing and does not prove the organisation's level."
       }
     },
     "fields": {
@@ -8495,7 +8495,7 @@
     "editor": {
       "formatNote": "Write the text in simple Markdown: ## for headings, - for lists, 1. for numbered lists and {'|'} for tables. HTML is not accepted.",
       "version": "Version label",
-      "versionHint": "Latin letters, digits and . _ - up to 20 characters, for example 2026-12.",
+      "versionHint": "Latin letters, digits and . _ - up to 20 characters, such as 2026-12.",
       "title": {
         "ar": "Arabic title",
         "en": "English title"
@@ -8560,11 +8560,11 @@
       "apply": "Apply",
       "reset": "Clear filters",
       "hints": {
-        "event": "For example entity.updated",
-        "subjectType": "For example entity or certificate",
+        "event": "e.g. entity.updated",
+        "subjectType": "e.g. entity or certificate",
         "subjectId": "Digits only",
         "actorId": "The user account number",
-        "ip": "For example 10.20.30.40"
+        "ip": "e.g. 10.20.30.40"
       }
     },
     "empty": {

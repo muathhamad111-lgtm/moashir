@@ -34,7 +34,6 @@ export function toVerification(raw = {}) {
           percent: raw.certificate.percent ?? null,
           entityName: raw.certificate.entityName ?? null,
           issuedAt: raw.certificate.issuedAt ?? null,
-          isTest: raw.certificate.isTest === true,
         }
       : null,
   }

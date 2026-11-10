@@ -280,6 +280,7 @@ return [
     ],
 
     'attributes' => [
+        'meta.availability' => 'availability',
         'vat_registration_number' => 'VAT registration number',
         'gap_thresholds' => 'strengths and gaps thresholds',
         'gap_thresholds.critical_below' => 'critical-gap threshold',

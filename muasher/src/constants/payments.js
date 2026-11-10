@@ -39,6 +39,13 @@ export const PAYMENT_METHOD_VALUES = ['creditcard', 'mada', 'applepay', 'stcpay'
 
 export const RECEIPT_STATUSES = { ISSUED: 'issued', VOIDED: 'voided' }
 
+export const TEST_MODE_AUDIENCES = Object.freeze({ ENTITY: 'entity', STAFF: 'staff' })
+
+export const TEST_MODE_ICONS = Object.freeze({
+  [TEST_MODE_AUDIENCES.ENTITY]: 'info-circle',
+  [TEST_MODE_AUDIENCES.STAFF]: 'flask',
+})
+
 export const CHECKOUT_PATTERNS = { INTENT: 'intent', FORM: 'form' }
 
 export const VERIFICATION_RESULTS = {

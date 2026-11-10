@@ -14,8 +14,6 @@ import { usePermissions } from '@/composables/usePermissions'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { PAYMENT_CHANNELS } from '@/constants/payments'
-import DemoDataNotice from '@/components/ui/DemoDataNotice.vue'
-import { MOCK_MODULES } from '@/constants/mockModules'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const PAY_PATH = '/assessment/accredited/pay'
@@ -73,8 +71,6 @@ const action = computed(() => {
 })
 
 onMounted(load)
-
-const DEMO_MODULES = [MOCK_MODULES.CMS]
 </script>
 
 <template>
@@ -93,7 +89,6 @@ const DEMO_MODULES = [MOCK_MODULES.CMS]
 
     <div v-else class="accredited-intro__layout">
       <div class="accredited-intro__main">
-        <DemoDataNotice scope="section" :modules="DEMO_MODULES" />
         <Card v-if="introDescription">
           <template #header>
             <h2 class="card__title-text">{{ t('accredited.intro.howItWorksTitle') }}</h2>

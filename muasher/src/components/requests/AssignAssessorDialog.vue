@@ -85,7 +85,9 @@ async function onSubmit() {
     const { data } = await submit(props.mode, payload)
     emit('update:modelValue', false)
     success.show({
-      title: t(props.mode === 'reassign' ? 'requests.toasts.reassigned' : 'requests.toasts.assigned'),
+      title: t(
+        props.mode === 'reassign' ? 'requests.toasts.reassigned' : 'requests.toasts.assigned',
+      ),
       message: assessorName(),
     })
     emit('done', data)

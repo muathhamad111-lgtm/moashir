@@ -80,7 +80,7 @@ const PRIVACY_TITLE = { ar: 'سياسة الخصوصية — منصة مؤشر',
 export const legalVersionsFixture = [
   version(15, 'terms', '2026-12', 'draft', TERMS_TITLE, TERMS_SOURCE, null),
   version(13, 'terms', '2026-11-draft', 'current', TERMS_TITLE, TERMS_SOURCE, PUBLISHED_AT),
-  version(9, 'terms', 'demo-1', 'superseded', TERMS_TITLE, TERMS_SOURCE, EARLIER_AT),
+  version(9, 'terms', '2026-01', 'superseded', TERMS_TITLE, TERMS_SOURCE, EARLIER_AT),
   version(14, 'privacy', '2026-11-draft', 'current', PRIVACY_TITLE, PRIVACY_SOURCE, PUBLISHED_AT),
-  version(10, 'privacy', 'demo-1', 'superseded', PRIVACY_TITLE, PRIVACY_SOURCE, EARLIER_AT),
+  version(10, 'privacy', '2026-01', 'superseded', PRIVACY_TITLE, PRIVACY_SOURCE, EARLIER_AT),
 ]

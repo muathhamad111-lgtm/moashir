@@ -13,7 +13,6 @@ return [
     'qr_alt' => 'QR code to verify the certificate',
 
     'watermarks' => [
-        'TEST' => 'TEST',
         'VOID' => 'VOID',
     ],
 
@@ -30,7 +29,7 @@ return [
         'request' => 'Request number',
         'verify_hint' => 'Scan the code to verify this certificate',
         'issued_electronically' => 'This certificate was issued electronically by the Moashir platform. Verify it by scanning the code or on the verification page.',
-        'test_notice' => 'Test certificate for a request opened with a test payment. It is not an official certificate.',
+        'not_valid_for_verification' => 'Not valid for verification',
         'seal_alt' => ':level seal',
         'entity_logo_alt' => 'Logo of :entity',
     ],

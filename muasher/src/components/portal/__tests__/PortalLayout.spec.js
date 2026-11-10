@@ -133,7 +133,7 @@ describe('PortalLayout', () => {
     const wrapper = await at('/payments')
     expect(wrapper.find('.side-nav-item.is-active').text()).toContain('الدفع والإيصالات')
     expect(wrapper.find('.side-nav-item.is-active').attributes('aria-current')).toBe('page')
-    expect(wrapper.find('.portal-top-bar__area').text()).toBe('حساب الجمعية')
+    expect(wrapper.find('.portal-top-bar__area').text()).toBe('حساب الجهة')
   })
 
   it('collapses the side navigation and remembers the choice for the same user', async () => {
@@ -214,7 +214,7 @@ describe('PortalLayout', () => {
     certificatesService.listCards.mockResolvedValue({ data: [GOLD] })
     await at('/dashboard')
     const dialog = document.body.querySelector('.modal [role="dialog"]')
-    expect(dialog.textContent).toContain('مبارك! حصلت جمعيتك على المستوى الذهبي')
+    expect(dialog.textContent).toContain('مبارك! حصلت جهتك على المستوى الذهبي')
     expect(document.activeElement.textContent.trim()).toBe('عرض الشهادة')
     document.body.querySelector('.btn--ghost').click()
     await flushPromises()

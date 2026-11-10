@@ -77,16 +77,6 @@
   }
 }
 
-.portal-layout__demo {
-  max-inline-size: var(--size-container);
-  margin-block: var(--space-4) var(--space-0);
-  margin-inline: var(--space-4);
-
-  @include respond-to('xl') {
-    margin-inline: auto;
-  }
-}
-
 .portal-layout__tabs {
   @include respond-to('lg') {
     display: none;

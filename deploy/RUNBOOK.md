@@ -23,11 +23,16 @@ Every environment has one posture, recorded as `MOASHIR_DEMO` in its `.env`:
   what is still missing in the `.env`.
 - The backend reads the same `MOASHIR_DEMO` flag for its own mailer guard.
 - The SPA has its own build posture, `VITE_DEMO_BUILD`, read from `muasher/.env.<env>` (the kit copies
-  `muasher/.env.<env>.example` when that file is absent). `true` builds the demo SPA (mock layer for the demo-only
-  modules); empty or `false` builds the real SPA (no mock code, phase-2 screens show "Coming soon", and the build stops
-  if `VITE_DEMO_MODULES` is not empty). Both examples are set to the demo build today. When an environment moves to
-  real operation, set `VITE_DEMO_BUILD=false` and `VITE_DEMO_MODULES=` in that environment's example (or provide
-  `muasher/.env.<env>`) in the same change that switches the server posture.
+  `muasher/.env.<env>.example` when that file is absent). No API build ships mock code in either posture: modules
+  with no backend yet (the Kit, the AI knowledge base and assistant, platform general settings, the campaign
+  composers) show "Coming soon" or stay hidden. `true` keeps the backend-served screens that are still marked
+  demo-only (advanced path, Award, abandoned carts) open; empty or `false` shows "Coming soon" there too. Both
+  examples are set to `true` today. When an environment moves to real operation, set `VITE_DEMO_BUILD=false` in that
+  environment's example (or provide `muasher/.env.<env>`) in the same change that switches the server posture.
+  `VITE_DEMO_MODULES` is no longer read; a leftover value is ignored.
+- `moashir:demo:purge` removes the registered demo records (dry run by default, `--force` to delete). It refuses
+  unless `MOASHIR_DEMO=true`, and with `--force` it also needs the database owner role used for migrations (the
+  app role cannot delete the append-only tables). Run it only on the operator's explicit instruction.
 
 The current server hosts the CLIENT DEMO: both environments run in the demo posture with fictional data.
 

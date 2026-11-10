@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
   BUILD_POSTURES,
-  BUILD_POSTURE_PROBLEMS,
   buildPostureOf,
-  buildPostureProblemOf,
-  listedDemoModules,
+  shipsMockLayer,
   showsDemoOnlyModules,
+  showsModulesAwaitingBackend,
 } from '@/utils/build/buildPosture'
 
 const API = { VITE_API_BASE_URL: '/api/v1' }
@@ -28,20 +27,16 @@ describe('build posture', () => {
     expect(buildPostureOf({ ...API, VITE_DEMO_BUILD: '1' })).toBe(BUILD_POSTURES.REAL)
   })
 
-  it('refuses demo modules in a real-operation build only', () => {
-    expect(buildPostureProblemOf({ ...API, VITE_DEMO_MODULES: 'bag' })).toBe(
-      BUILD_POSTURE_PROBLEMS.DEMO_MODULES_IN_REAL_BUILD,
-    )
-    expect(buildPostureProblemOf({ ...API, VITE_DEMO_MODULES: ' , ' })).toBeNull()
-    expect(
-      buildPostureProblemOf({ ...API, VITE_DEMO_BUILD: 'true', VITE_DEMO_MODULES: 'bag' }),
-    ).toBeNull()
-    expect(buildPostureProblemOf({ VITE_DEMO_MODULES: 'bag' })).toBeNull()
+  it('ships the mock layer only in the full mock build', () => {
+    expect(shipsMockLayer(BUILD_POSTURES.MOCK)).toBe(true)
+    expect(shipsMockLayer(BUILD_POSTURES.DEMO)).toBe(false)
+    expect(shipsMockLayer(BUILD_POSTURES.REAL)).toBe(false)
   })
 
-  it('lists the configured demo modules', () => {
-    expect(listedDemoModules({ VITE_DEMO_MODULES: ' bag, ai ,,' })).toEqual(['bag', 'ai'])
-    expect(listedDemoModules({})).toEqual([])
+  it('shows the modules awaiting their backend only on the mock layer', () => {
+    expect(showsModulesAwaitingBackend(BUILD_POSTURES.MOCK)).toBe(true)
+    expect(showsModulesAwaitingBackend(BUILD_POSTURES.DEMO)).toBe(false)
+    expect(showsModulesAwaitingBackend(BUILD_POSTURES.REAL)).toBe(false)
   })
 
   it('shows the demo-only modules everywhere except in a real-operation build', () => {

@@ -88,10 +88,18 @@ describe('ReceiptCard', () => {
     expect(wrapper.emitted('download')).toHaveLength(1)
   })
 
-  it('marks a TEST receipt without a number and a voided receipt with VOID', () => {
+  it('marks an unnumbered receipt as not valid as proof of payment and a voided receipt with VOID', () => {
     const test = mountWith(ReceiptCard, { receipt: { ...RECEIPT, number: null, isTest: true } })
-    expect(test.find('.receipt-card__number').text()).toBe('TEST receipt')
-    expect(test.find('.receipt-card__watermark').text()).toContain('TEST')
+    expect(test.find('.receipt-card__number').text()).toBe('No number')
+    expect(test.find('.receipt-card__watermark').text()).toBe('Not valid as proof of payment')
+    expect(test.text()).not.toMatch(/\b(test|demo|trial|sample)\b/i)
+    const arabic = mountWith(
+      ReceiptCard,
+      { receipt: { ...RECEIPT, number: null, isTest: true } },
+      { locale: 'ar' },
+    )
+    expect(arabic.find('.receipt-card__watermark').text()).toBe('غير معتمد كإثبات دفع')
+    expect(arabic.text()).not.toMatch(/اختبار|تجريبي/)
     const voided = mountWith(ReceiptCard, {
       receipt: { ...RECEIPT, status: 'voided', voidedAt: '2026-09-02T09:20:00Z' },
     })

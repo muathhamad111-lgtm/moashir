@@ -13,7 +13,6 @@ import PortalTopBar from '@/components/portal/PortalTopBar.vue'
 import AttentionStrip from '@/components/portal/AttentionStrip.vue'
 import MobileTabBar from '@/components/portal/MobileTabBar.vue'
 import PortalFooter from '@/components/portal/PortalFooter.vue'
-import DemoDataNotice from '@/components/ui/DemoDataNotice.vue'
 import LevelAchievedDialog from '@/components/level/LevelAchievedDialog.vue'
 
 const { t } = useI18n()
@@ -26,7 +25,6 @@ const { collapsed, toggle } = useSideNavCollapsed()
 
 const isTask = computed(() => isTaskScreen(route.name))
 const isMobileTask = computed(() => isMobileTaskScreen(route.name))
-const demoModules = computed(() => route.meta.demoModules ?? [])
 
 onMounted(() => {
   counts.refreshAll()
@@ -56,7 +54,6 @@ watch(
       <PortalTopBar />
       <AttentionStrip v-if="!isTask" class="portal-layout__strip" />
       <main id="portal-main" class="portal-layout__main" tabindex="-1">
-        <DemoDataNotice class="portal-layout__demo" :modules="demoModules" />
         <slot />
       </main>
       <PortalFooter />

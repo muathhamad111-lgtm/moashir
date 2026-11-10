@@ -51,13 +51,10 @@ function hijri(value) {
           <p class="receipt-card__eyebrow">{{ t('finance.receipt.title') }}</p>
           <h2 class="receipt-card__number">
             <bdi v-if="receipt.number" dir="ltr">{{ receipt.number }}</bdi>
-            <span v-else>{{ t('finance.receipt.testNumber') }}</span>
+            <span v-else>{{ t('finance.receipt.noNumber') }}</span>
           </h2>
         </div>
         <div class="receipt-card__badges">
-          <Badge v-if="receipt.isTest" variant="warning">{{
-            t('finance.receipt.testBadge')
-          }}</Badge>
           <Badge :variant="isVoided ? 'danger' : 'success'">{{
             t(`finance.receipt.status.${receipt.status}`)
           }}</Badge>
@@ -65,7 +62,7 @@ function hijri(value) {
       </header>
 
       <p v-if="receipt.isTest" class="receipt-card__watermark" role="note">
-        {{ t('finance.receipt.testNote') }}
+        {{ t('finance.receipt.notProof') }}
       </p>
       <p v-if="isVoided" class="receipt-card__watermark receipt-card__watermark--void" role="note">
         {{ t('finance.receipt.voidNote') }}

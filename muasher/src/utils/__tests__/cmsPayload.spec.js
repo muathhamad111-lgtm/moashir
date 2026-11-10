@@ -36,13 +36,13 @@ describe('cmsPayload', () => {
     const values = {
       ...contentFormValues(section),
       ctaUrl: '  ',
-      display: { eyebrow: { ar: '', en: '' }, availability: 'demo', variant: '', role: '' },
+      display: { eyebrow: { ar: '', en: '' }, availability: 'coming_soon', variant: '', role: '' },
     }
     const payload = contentPayload(values, section)
     expect(payload.ctaUrl).toBeNull()
     expect(payload.icon).toBe('fa-solid fa-star')
     expect(contentPayload({ ...values, icon: '' }, section).icon).toBeNull()
-    expect(payload.meta).toEqual({ preview: { score: 78 }, availability: 'demo' })
+    expect(payload.meta).toEqual({ preview: { score: 78 }, availability: 'coming_soon' })
     expect(payload).not.toHaveProperty('imageFileId')
     expect(contentPayload({ ...values, image: null }, section).imageFileId).toBeNull()
     expect(contentPayload(values, section, { withBackground: true })).toHaveProperty(

@@ -41,7 +41,11 @@ it('prints the percentage as number then sign in an isolated run and the issue y
         ->and($html)->toContain('data:image/svg+xml;base64,')
         ->and($html)->toContain('المستوى الذهبي')
         ->and($html)->toContain('Gold level')
-        ->and($html)->toContain('نسخة اختبارية — TEST');
+        ->and($html)->toContain('غير صالحة للتحقق')
+        ->and($html)->toContain('Not valid for verification')
+        ->and($html)->not->toContain('class="watermark"')
+        ->and($html)->not->toContain('اختبار')
+        ->and($html)->not->toContain('تجريبي');
 });
 
 it('prints a participation certificate without a level seal', function (): void {

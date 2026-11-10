@@ -51,7 +51,7 @@ async function payWith(page, outcome) {
   await expect(page).toHaveURL(/\/payments\/[0-9a-f-]{36}\/return\?id=/)
 }
 
-test('the entity pays through the Moyasar form, the server verifies it and a TEST receipt is issued', async ({
+test('the entity pays through the Moyasar form, the server verifies it and an unofficial receipt is issued', async ({
   page,
 }, testInfo) => {
   const leaks = await guardMoyasar(page)
@@ -86,6 +86,10 @@ test('the entity pays through the Moyasar form, the server verifies it and a TES
   await page.locator('.payment-return__link--primary').first().click()
   await expect(page.locator('.receipt-card--test')).toBeVisible()
   await expect(page.locator('.receipt-card__number')).not.toContainText('RCP-')
+  await expect(page.locator('.receipt-card__watermark')).toHaveText(
+    /^(غير معتمد كإثبات دفع|Not valid as proof of payment)$/,
+  )
+  await expect(page.locator('main')).not.toContainText(/اختبار|تجريبي|\b(test|demo)\b/i)
 
   expect(platformBodies.some((body) => /card|cvc|cvv|number|sandbox_outcome/i.test(body))).toBe(
     false,

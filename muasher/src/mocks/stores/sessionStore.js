@@ -12,12 +12,6 @@ function cookieDescriptor() {
   }
 }
 
-let descriptorSource = cookieDescriptor
-
-export function setSessionSource(source) {
-  descriptorSource = source ?? cookieDescriptor
-}
-
 export function startMockSession(descriptor) {
   writeCookie(MOCK_SESSION_COOKIE, JSON.stringify(descriptor))
 }
@@ -27,7 +21,7 @@ export function endMockSession() {
 }
 
 export function currentSessionUser() {
-  const descriptor = descriptorSource()
+  const descriptor = cookieDescriptor()
   if (!Array.isArray(descriptor?.roles)) return null
   return {
     id: descriptor.id ?? null,

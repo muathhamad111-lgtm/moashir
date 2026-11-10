@@ -195,7 +195,6 @@ test('the administrator invites a committee assessor from the users screen and t
   test.setTimeout(600000)
   const { page, api: watch } = sessions.admin
   await page.goto('/admin/settings/users')
-  await expect(page.locator('.demo-notice')).toHaveCount(0)
   await page.locator('.toolbar__actions .btn--primary').click()
   const dialog = page.locator('.modal__panel')
   await dialog.locator('input[name="name"]').fill(COMMITTEE_ASSESSOR.name)

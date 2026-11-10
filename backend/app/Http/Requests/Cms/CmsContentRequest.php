@@ -6,6 +6,7 @@ namespace App\Http\Requests\Cms;
 
 use App\Data\Cms\CmsContentChanges;
 use App\Data\Files\ImageChange;
+use App\Enums\Cms\CmsAvailability;
 use App\Rules\BoundedContentMeta;
 use App\Rules\FontAwesomeIcon;
 use App\Rules\FreeOfHtmlMarkup;
@@ -14,6 +15,7 @@ use App\Support\Localization\LocalizedFieldRules;
 use App\Support\RichText\RichTextSanitizer;
 use App\Support\ValueObjects\LocalizedContent;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 abstract class CmsContentRequest extends FormRequest
 {
@@ -60,6 +62,7 @@ abstract class CmsContentRequest extends FormRequest
             'icon' => ['sometimes', 'nullable', 'string', new FontAwesomeIcon],
             'image_file_id' => ['sometimes', 'nullable', 'uuid'],
             'meta' => ['sometimes', 'nullable', new BoundedContentMeta(config()->integer('moashir.cms.meta_max_bytes'))],
+            'meta.availability' => ['sometimes', Rule::enum(CmsAvailability::class)],
         ];
     }
 

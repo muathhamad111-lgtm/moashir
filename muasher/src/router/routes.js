@@ -1,6 +1,5 @@
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { PORTAL_TOOLS } from '@/constants/portal'
-import { MOCK_MODULES as M } from '@/constants/mockModules'
 import { accreditedEntryGuard } from './accreditedEntry'
 import { withComingSoonScreens } from './comingSoon'
 
@@ -24,19 +23,19 @@ export const appRoutes = [
     path: '/kpis',
     name: ROUTE_NAMES.PUBLIC_KPIS,
     component: () => import('@/views/kpis/PublicIndex.vue'),
-    meta: { layout: 'public', titleKey: 'routes.public.kpis.title', demoModules: [M.KPIS] },
+    meta: { layout: 'public', titleKey: 'routes.public.kpis.title' },
   },
   {
     path: '/kpis/:slug',
     name: ROUTE_NAMES.PUBLIC_KPIS_DETAIL,
     component: () => import('@/views/kpis/Detail.vue'),
-    meta: { layout: 'public', titleKey: 'routes.public.kpisDetail.title', demoModules: [M.KPIS] },
+    meta: { layout: 'public', titleKey: 'routes.public.kpisDetail.title' },
   },
   {
     path: '/lenses',
     name: ROUTE_NAMES.PUBLIC_LENSES,
     component: () => import('@/views/lenses/Index.vue'),
-    meta: { layout: 'public', titleKey: 'routes.public.lenses.title', demoModules: [M.CMS] },
+    meta: { layout: 'public', titleKey: 'routes.public.lenses.title' },
   },
   { path: '/register', redirect: { name: ROUTE_NAMES.AUTH_REGISTER } },
   { path: '/login', redirect: { name: ROUTE_NAMES.AUTH_LOGIN } },
@@ -543,8 +542,7 @@ export const appRoutes = [
     name: ROUTE_NAMES.BAG_DETAILS,
     component: () => import('@/views/bag/Details.vue'),
     meta: {
-      demoOnly: true,
-      demoModules: [M.BAG],
+      awaitsBackend: true,
       layout: 'public',
       titleKey: 'routes.bag.details.title',
     },
@@ -555,7 +553,7 @@ export const appRoutes = [
     component: () => import('@/views/payments/Checkout.vue'),
     props: { purpose: 'bag' },
     meta: {
-      demoOnly: true,
+      awaitsBackend: true,
       layout: 'public',
       titleKey: 'routes.bag.pay.title',
       requiresAuth: true,
@@ -566,8 +564,7 @@ export const appRoutes = [
     name: ROUTE_NAMES.BAG_INDEX,
     component: () => import('@/views/bag/Index.vue'),
     meta: {
-      demoOnly: true,
-      demoModules: [M.BAG],
+      awaitsBackend: true,
       layout: 'app',
       titleKey: 'routes.bag.index.title',
       requiresAuth: true,
@@ -643,8 +640,7 @@ export const appRoutes = [
     name: ROUTE_NAMES.BAG_MANAGE,
     component: () => import('@/views/bag/Manage.vue'),
     meta: {
-      demoOnly: true,
-      demoModules: [M.BAG],
+      awaitsBackend: true,
       layout: 'app',
       titleKey: 'routes.bag.manage.title',
       requiresAuth: true,
@@ -655,8 +651,7 @@ export const appRoutes = [
     name: ROUTE_NAMES.BAG_COMPARISON,
     component: () => import('@/views/bag/Comparison.vue'),
     meta: {
-      demoOnly: true,
-      demoModules: [M.BAG],
+      awaitsBackend: true,
       layout: 'app',
       titleKey: 'routes.bag.comparison.title',
       requiresAuth: true,
@@ -667,8 +662,7 @@ export const appRoutes = [
     name: ROUTE_NAMES.BAG_REQUESTS,
     component: () => import('@/views/bag/Requests.vue'),
     meta: {
-      demoOnly: true,
-      demoModules: [M.BAG],
+      awaitsBackend: true,
       layout: 'app',
       titleKey: 'routes.bag.requests.title',
       requiresAuth: true,
@@ -679,8 +673,7 @@ export const appRoutes = [
     name: ROUTE_NAMES.BAG_EVALUATOR_REQUESTS,
     component: () => import('@/views/bag/EvaluatorRequests.vue'),
     meta: {
-      demoOnly: true,
-      demoModules: [M.BAG],
+      awaitsBackend: true,
       layout: 'app',
       titleKey: 'routes.bag.evaluator.title',
       requiresAuth: true,
@@ -756,7 +749,6 @@ export const appRoutes = [
     name: ROUTE_NAMES.ADMIN_KPIS,
     component: () => import('@/views/kpis/Manage.vue'),
     meta: {
-      demoModules: [M.KPIS],
       layout: 'app',
       titleKey: 'routes.admin.kpis.title',
       requiresAuth: true,
@@ -777,8 +769,7 @@ export const appRoutes = [
     name: ROUTE_NAMES.ADMIN_SETTINGS_GENERAL,
     component: () => import('@/views/settings/General.vue'),
     meta: {
-      demoOnly: true,
-      demoModules: [M.PLATFORM_SETTINGS],
+      awaitsBackend: true,
       layout: 'app',
       titleKey: 'routes.admin.settings.general.title',
       requiresAuth: true,
@@ -886,8 +877,7 @@ export const appRoutes = [
     name: ROUTE_NAMES.ADMIN_SETTINGS_AI_KNOWLEDGE_BASE,
     component: () => import('@/views/settings/AiKnowledgeBase.vue'),
     meta: {
-      demoOnly: true,
-      demoModules: [M.AI],
+      awaitsBackend: true,
       layout: 'app',
       titleKey: 'routes.admin.settings.aiKnowledgeBase.title',
       requiresAuth: true,
@@ -908,7 +898,6 @@ export const appRoutes = [
     name: ROUTE_NAMES.ADMIN_SETTINGS_HOMEPAGE,
     component: () => import('@/views/settings/HomepageContent.vue'),
     meta: {
-      demoModules: [M.CMS],
       layout: 'app',
       titleKey: 'routes.admin.settings.homepage.title',
       requiresAuth: true,
@@ -969,7 +958,6 @@ export const appRoutes = [
     name: ROUTE_NAMES.ADMIN_BRANDING,
     component: () => import('@/views/settings/Branding.vue'),
     meta: {
-      demoModules: [M.BRANDING],
       layout: 'app',
       titleKey: 'routes.admin.branding.title',
       requiresAuth: true,

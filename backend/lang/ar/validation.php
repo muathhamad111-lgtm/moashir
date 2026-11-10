@@ -280,6 +280,7 @@ return [
     ],
 
     'attributes' => [
+        'meta.availability' => 'حالة الإتاحة',
         'vat_registration_number' => 'الرقم الضريبي',
         'gap_thresholds' => 'حدود القوة والفجوات',
         'gap_thresholds.critical_below' => 'حد الفجوة الحرجة',

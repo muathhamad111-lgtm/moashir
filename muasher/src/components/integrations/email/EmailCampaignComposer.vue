@@ -6,8 +6,6 @@ import BaseInput from '@/components/form/BaseInput.vue'
 import BaseTextarea from '@/components/form/BaseTextarea.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import { useEmailCampaign } from '@/composables/useEmailCampaign'
-import DemoDataNotice from '@/components/ui/DemoDataNotice.vue'
-import { MOCK_MODULES } from '@/constants/mockModules'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
@@ -25,8 +23,6 @@ const {
 } = useEmailCampaign()
 
 onMounted(loadSegments)
-
-const DEMO_MODULES = [MOCK_MODULES.MESSAGING]
 </script>
 
 <template>
@@ -34,7 +30,6 @@ const DEMO_MODULES = [MOCK_MODULES.MESSAGING]
     <h2 id="email-compose-title" class="settings-form__legend">
       {{ t('settings.email.composeTitle') }}
     </h2>
-    <DemoDataNotice scope="section" :modules="DEMO_MODULES" />
     <p class="settings-form__note" role="note">
       <AppIcon name="info-circle" />
       {{ t('settings.email.composeNote') }}

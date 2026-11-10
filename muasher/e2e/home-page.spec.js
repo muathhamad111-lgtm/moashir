@@ -89,15 +89,16 @@ test.describe('home page — approved sections', () => {
     expect(anchors).toEqual(SECTION_ORDER)
     await expect(page.locator('.home-stats__item').first()).toBeVisible()
     expect(await page.locator('.home-stats__item').count()).toBeLessThanOrEqual(4)
-    await expect(page.locator('.demo-notice')).toHaveCount(0)
     await expect(page.locator('.chat-widget__launcher')).toHaveCount(0)
-    await expect(page.locator('.home-pill--example')).toHaveCount(1)
+    await expect(page.locator('.home-pill--preview')).toHaveText(
+      /^(معاينة تقرير النضج|Maturity report preview)$/,
+    )
     await expect(page.locator('.home-path--award .home-pill--gold')).toBeVisible()
     await expect(page.locator('.home-path--award .btn')).toBeDisabled()
     await expect(page.locator('#kit .home-pill--soon')).toBeVisible()
     await expect(page.locator('#leaders .home-pill--soon')).toBeVisible()
     await expect(page.locator('body')).not.toContainText(
-      /عرض تجريبي|\bDemo\b|فاتور|فواتير|invoice/i,
+      /تجريبي|توضيحي|مثال|\b(Demo|sample|trial)\b|\bexample\b(?!\.)|فاتور|فواتير|invoice/i,
     )
   })
 

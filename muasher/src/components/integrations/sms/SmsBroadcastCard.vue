@@ -4,8 +4,6 @@ import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import { useToast } from '@/composables/useToast'
 import { messagingService } from '@/services/messagingService'
-import DemoDataNotice from '@/components/ui/DemoDataNotice.vue'
-import { MOCK_MODULES } from '@/constants/mockModules'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
@@ -24,8 +22,6 @@ async function sendBroadcast() {
     sending.value = false
   }
 }
-
-const DEMO_MODULES = [MOCK_MODULES.MESSAGING]
 </script>
 
 <template>
@@ -33,7 +29,6 @@ const DEMO_MODULES = [MOCK_MODULES.MESSAGING]
     <h2 id="sms-broadcast-title" class="settings-form__legend">
       {{ t('settings.sms.broadcastTitle') }}
     </h2>
-    <DemoDataNotice scope="section" :modules="DEMO_MODULES" />
     <p class="settings-form__note" role="note">
       <AppIcon name="info-circle" />
       {{ t('settings.sms.broadcastNote') }}

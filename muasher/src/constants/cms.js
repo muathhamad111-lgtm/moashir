@@ -48,7 +48,7 @@ export const CMS_SECTION_VARIANTS = Object.freeze({
   rich_text: ['cta'],
 })
 
-export const CMS_AVAILABILITY = Object.freeze(['live', 'demo', 'coming_soon'])
+export const CMS_AVAILABILITY = Object.freeze(['live', 'coming_soon'])
 
 export const CMS_ITEM_ROLES = Object.freeze({
   hero: ['point', 'secondary-cta'],

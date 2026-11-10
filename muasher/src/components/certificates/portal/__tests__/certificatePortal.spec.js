@@ -78,13 +78,43 @@ describe('VerificationResult', () => {
         percent: '74.50',
         entityName: { ar: 'مؤسسة نماء للتنمية', en: 'Namaa' },
         issuedAt: '2026-09-05T08:00:00Z',
-        isTest: true,
       },
     })
     expect(wrapper.classes()).toContain('verification-result--valid')
     expect(wrapper.text()).toContain('المستوى الفضي')
     expect(wrapper.text()).toContain('74.5%')
-    expect(wrapper.find('.verification-result__test').exists()).toBe(true)
+  })
+
+  it.each([
+    ['ar', 'غير صالحة للتحقق'],
+    ['en', 'Not valid for verification'],
+  ])('answers the unverifiable outcome without any certificate detail (%s)', (locale, title) => {
+    const wrapper = mount(VerificationResult, {
+      props: { verification: { result: 'unverifiable', certificate: null }, code: '9F3K-MQ2T' },
+      global: createTestGlobals({ locale }),
+    })
+    expect(wrapper.classes()).toContain('verification-result--unverifiable')
+    expect(wrapper.find('.verification-result__title').text()).toBe(title)
+    expect(wrapper.find('.verification-result__card').exists()).toBe(false)
+    expect(wrapper.text()).not.toMatch(/اختبار|تجريبي|\btest\b/i)
+  })
+
+  it('explains an expired certificate and still shows its card', () => {
+    const wrapper = mountResult({
+      result: 'expired',
+      certificate: {
+        number: 'CRT-2027-000001',
+        level: 'gold',
+        levelLabel: { ar: 'المستوى الذهبي', en: 'Gold level' },
+        percent: '86.00',
+        entityName: { ar: 'مؤسسة نماء للتنمية', en: 'Namaa' },
+        issuedAt: '2027-01-10T08:00:00Z',
+      },
+    })
+    expect(wrapper.classes()).toContain('verification-result--expired')
+    expect(wrapper.find('.verification-result__title').text()).toBe('انتهت صلاحية الشهادة')
+    expect(wrapper.find('.verification-result__icon').exists()).toBe(true)
+    expect(wrapper.find('.verification-result__card').exists()).toBe(true)
   })
 
   it('hides the level of a certificate under review and handles an unknown code', () => {

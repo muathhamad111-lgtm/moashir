@@ -53,6 +53,16 @@ final class DemoDataRefused extends RuntimeException
         return new self('open_payment_order', 'Demo data is refused: a demo entity has an open accredited payment order; run the command again after it is paid, cancelled or expired.');
     }
 
+    public static function purgeOutsideDemoPosture(): self
+    {
+        return new self('purge_posture_not_demo', 'The demo purge is refused: this environment is not in the demo posture (MOASHIR_DEMO is not true).');
+    }
+
+    public static function purgeNeedsTableOwner(): self
+    {
+        return new self('purge_not_table_owner', 'The demo purge is refused: the database role does not own the guarded tables. Run it with the owner role used for migrations.');
+    }
+
     public static function missingPrerequisite(string $what): self
     {
         return new self('missing_prerequisite', sprintf('Demo data is refused: %s. Run the reference-data commands of the runbook first.', $what));

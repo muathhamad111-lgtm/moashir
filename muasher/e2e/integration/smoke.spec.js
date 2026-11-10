@@ -159,7 +159,6 @@ test('the system administrator signs in with an e-mail code and enrols the authe
   await expect.poll(() => api.sourcesOf(/^\/api\/v1\/dashboard\//)).toEqual([SOURCES.BACKEND])
   await settled(page, api)
   await expect(page.locator('.error-state')).toHaveCount(0)
-  await expect(page.locator('.demo-notice')).toHaveCount(0)
   await shot(page, 'admin-signed-in-dashboard')
   expect(api.sourcesOf(/^\/api\/v1\/auth\/session$/)).toEqual([SOURCES.BACKEND])
   expect(api.unexpected(GUEST_PROBES)).toEqual([])
@@ -178,7 +177,6 @@ test('the administrator reads the published criteria tree from the server', asyn
   const { page, api } = sessions.admin
   await visit(page, '/admin/settings/criteria')
   await expect(page.locator('.criteria-tree, .criteria-version').first()).toBeVisible()
-  await expect(page.locator('.demo-notice')).toHaveCount(0)
   await shot(page, 'admin-criteria')
   expect(api.unexpected(GUEST_PROBES)).toEqual([])
 })
@@ -203,7 +201,6 @@ test('the administrator reads the integrations overview and the payment settings
   await shot(page, 'admin-integrations')
   await visit(page, '/admin/settings/payment')
   await expect(page.locator('form').first()).toBeVisible()
-  await expect(page.locator('.demo-notice')).toHaveCount(0)
   expect(api.unexpected(GUEST_PROBES)).toEqual([])
 })
 
@@ -267,39 +264,36 @@ test('the requests follower signs in and opens the accredited request queue', as
   await signInStaff(page, STAFF.requestsFollower)
   await visit(page, '/admin/requests')
   await expect(page.locator('.data-table, .empty-state').first()).toBeVisible()
-  await expect(page.locator('.demo-notice')).toHaveCount(0)
   await shot(page, 'follower-requests')
   expect(api.unexpected(GUEST_PROBES)).toEqual([])
 })
 
-test('connected modules answer from the server and demo modules from the mock layer with the marker', async () => {
+test('connected modules answer from the server and the modules awaiting their backend show coming soon', async () => {
   const { page, api } = sessions.entity
   for (const [path, contract] of CONNECTED_ENTITY_SCREENS) {
     await openScreen(sessions.entity, path, SHELLS.entity)
     await expect.poll(() => api.sourcesOf(contract)).toEqual([SOURCES.BACKEND])
     await expect(page.locator('.error-state')).toHaveCount(0)
-    await expect(page.locator('.demo-notice')).toHaveCount(0)
     await shot(page, `entity-connected${path.replaceAll('/', '-')}`)
   }
-  await openScreen(sessions.entity, '/bag', SHELLS.entity)
-  await expect(page.locator('.demo-notice--page')).toBeVisible()
-  await expect(page.locator('.error-state')).toHaveCount(0)
-  await shot(page, 'entity-bag-demo')
+  await visit(page, '/bag')
+  await expect(page.locator('.coming-soon')).toBeVisible()
+  await shot(page, 'entity-bag-coming-soon')
   await visit(page, '/entity/profile')
   await expect(page.locator('.entity-profile-hub .portal-area__title')).toContainText(ENTITY.nameAr)
-  expect(api.sourcesOf(/^\/api\/v1\/bag\//)).toEqual([SOURCES.DEMO])
+  expect(api.sourcesOf(/^\/api\/v1\/bag\//)).toEqual([])
   expect(api.sourcesOf(/^\/api\/v1\/entities\/me$/)).toEqual([SOURCES.BACKEND])
   expect(api.sourcesOf(/^\/api\/v1\/auth\/session$/)).toEqual([SOURCES.BACKEND])
+  expect(api.calls.every((call) => call.source === SOURCES.BACKEND)).toBe(true)
   expect(api.unexpected([...GUEST_PROBES, PAYMENT_UNAVAILABLE, PAGE_NOT_PUBLISHED])).toEqual([])
 })
 
-test('the platform settings screen still answers from the mock layer with the marker for the administrator', async () => {
+test('the platform settings screen shows coming soon to the administrator', async () => {
   const { page, api } = sessions.admin
-  await openScreen(sessions.admin, '/admin/settings/general', SHELLS.admin)
-  await expect(page.locator('.demo-notice--page')).toBeVisible()
-  await expect(page.locator('.error-state')).toHaveCount(0)
-  await shot(page, 'admin-settings-general-demo')
-  expect(api.sourcesOf(/^\/api\/v1\/settings\/general$/)).toEqual([SOURCES.DEMO])
+  await visit(page, '/admin/settings/general')
+  await expect(page.locator('.coming-soon')).toBeVisible()
+  await shot(page, 'admin-settings-general-coming-soon')
+  expect(api.sourcesOf(/^\/api\/v1\/settings\/general$/)).toEqual([])
   expect(api.unexpected(GUEST_PROBES)).toEqual([])
 })
 

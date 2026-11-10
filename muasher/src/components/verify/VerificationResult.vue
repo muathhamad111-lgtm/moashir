@@ -11,9 +11,11 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 const ICONS = {
   [VERIFICATION_RESULTS.VALID]: 'check-circle',
   [VERIFICATION_RESULTS.UNDER_REVIEW]: 'pause',
+  [VERIFICATION_RESULTS.EXPIRED]: 'clock',
   [VERIFICATION_RESULTS.REVOKED]: 'x',
   [VERIFICATION_RESULTS.SUPERSEDED]: 'refresh',
   [VERIFICATION_RESULTS.NOT_FOUND]: 'question-circle',
+  [VERIFICATION_RESULTS.UNVERIFIABLE]: 'x',
 }
 
 const props = defineProps({
@@ -49,10 +51,6 @@ const percent = computed(() =>
         <p class="verification-result__text">{{ t(`verify.results.${result}.text`) }}</p>
       </div>
     </header>
-    <p v-if="certificate?.isTest" class="verification-result__test" role="note">
-      <AppIcon name="flask" />
-      {{ t('verify.testNotice') }}
-    </p>
     <div v-if="certificate" class="verification-result__card">
       <img v-if="seal" class="verification-result__seal" :src="seal" alt="" />
       <dl class="verification-result__facts">

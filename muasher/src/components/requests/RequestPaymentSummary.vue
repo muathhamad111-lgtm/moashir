@@ -27,7 +27,7 @@ const { t } = useI18n()
       payment.receipt.number
     }}</bdi>
     <span v-else-if="payment.receipt?.isTest" class="request-queue__muted">{{
-      t('requests.detail.paymentCard.testReceipt')
+      t('finance.receipt.notProof')
     }}</span>
   </span>
 </template>

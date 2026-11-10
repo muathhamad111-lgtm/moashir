@@ -11,6 +11,7 @@ use App\Integrations\Fakes\FakePdfRenderer;
 use App\Models\Audit\Audit;
 use App\Models\Files\StoredFile;
 use App\Models\Finance\PaymentReceipt;
+use App\Services\Documents\DocumentHtmlComposer;
 use App\Services\Finance\ReceiptDocumentBuilder;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Notification;
@@ -51,12 +52,29 @@ it('shows the own receipt and renders it as a bilingual PDF with the Hijri date'
         ->and(Audit::query()->where('event', AuditEvent::FileDownloaded->value)->count())->toBe(1);
 });
 
-it('watermarks TEST receipts and VOID receipts after a recorded refund', function (): void {
+it('prints only the neutral line on a test-mode receipt and names its file after the payment reference', function (): void {
+    ['gateway' => $gateway, 'owner' => $owner] = payingEntity();
+    $payment = paidPayment($owner, $gateway);
+    $receipt = PaymentReceipt::query()->sole();
+    $document = app(FakePdfRenderer::class)->rendered()[0];
+    $html = app(DocumentHtmlComposer::class)->compose($document);
+
+    expect($receipt->is_test)->toBeTrue()
+        ->and($document->watermark)->toBeNull()
+        ->and($html)->toContain('غير معتمد كإثبات دفع')
+        ->and($html)->toContain('Not valid as proof of payment')
+        ->and($html)->not->toContain('class="watermark"')
+        ->and($html)->not->toContain('تجريبي')
+        ->and($html)->not->toContain('اختبار')
+        ->and(app(ReceiptDocumentBuilder::class)->fileNameOf($receipt))->toBe($payment->reference.'.pdf');
+});
+
+it('watermarks VOID receipts after a recorded refund, test-mode ones included', function (): void {
     ['gateway' => $gateway, 'owner' => $owner] = payingEntity();
     $payment = paidPayment($owner, $gateway);
     $finance = financeOfficer();
 
-    expect(app(FakePdfRenderer::class)->rendered()[0]->watermark)->toBe(ReceiptDocumentBuilder::TEST_WATERMARK);
+    expect(app(FakePdfRenderer::class)->rendered()[0]->watermark)->toBeNull();
 
     switchTo($finance)->post("/api/v1/finance/payments/{$payment->public_id}/refunds", refundPayload($payment), ['Accept' => 'application/json'])->assertCreated();
 
@@ -69,6 +87,10 @@ it('watermarks TEST receipts and VOID receipts after a recorded refund', functio
 
     expect($receipt->status->value)->toBe('voided')
         ->and(collect(app(FakePdfRenderer::class)->rendered())->last()?->watermark)->toBe(ReceiptDocumentBuilder::VOID_WATERMARK);
+
+    switchTo($finance)->postJson("/api/v1/finance/receipts/{$receipt->public_id}/download")->assertOk();
+
+    expect(collect(app(FakePdfRenderer::class)->rendered())->last()?->watermark)->toBe(ReceiptDocumentBuilder::VOID_WATERMARK);
 });
 
 it('answers 404 before a receipt exists and hides other entities receipts', function (): void {

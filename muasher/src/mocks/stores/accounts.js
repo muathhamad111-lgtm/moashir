@@ -47,7 +47,7 @@ export function descriptorFor(account) {
   return { id: account.record.id, roles: [...account.record.roles], entityId: null, locale }
 }
 
-export const COMMITTEE_PERSONA = 'committee_assessor'
+const COMMITTEE_PERSONA = 'committee_assessor'
 
 const COMMITTEE_PERSONA_DESCRIPTOR = {
   id: COMMITTEE_SEAT_USERS[0],

@@ -125,7 +125,7 @@ onMounted(load)
         </li>
       </ul>
 
-      <TestModeNotice v-if="transaction.isTest" compact />
+      <TestModeNotice v-if="transaction.isTest" compact audience="staff" />
       <p v-if="transaction.latePaid" class="transaction-detail__late" role="note">
         {{ t('finance.transaction.latePaidNote') }}
       </p>

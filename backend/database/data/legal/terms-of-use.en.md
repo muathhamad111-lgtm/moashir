@@ -48,7 +48,7 @@ Visitors can, without registering, read about the platform, the assessment paths
 
 ### 3.4 Upcoming services
 
-The advanced assessment (the Award), the Quick Excellence Kit and the leadership path are not available at present. Any content about them that the platform marks as illustrative or "coming soon" is neither an offer nor a commitment; they will have their own terms and fees when launched.
+The advanced assessment (the Award), the Quick Excellence Kit and the leadership path are not available at present. Any content about them that the platform marks as "coming soon" is neither an offer nor a commitment; they will have their own terms and fees when launched.
 
 ### 3.5 Development and availability of the service
 

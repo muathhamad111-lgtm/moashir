@@ -58,7 +58,7 @@ const endedOn = computed(() =>
           <bdi dir="ltr">{{ riyadhYear(certificate.issuedAt) }}</bdi>
         </Badge>
         <Badge v-if="certificate.isTest" variant="warning">{{
-          t('portal.certificates.test')
+          t('portal.certificates.notVerifiable')
         }}</Badge>
       </div>
       <h3 :id="`certificate-${certificate.id}`" class="certificate-card__title">{{ title }}</h3>

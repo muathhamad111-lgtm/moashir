@@ -3,8 +3,6 @@ import { nextTick, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAiChat } from '@/composables/useAiChat'
 import ChatMessage from './ChatMessage.vue'
-import DemoDataNotice from '@/components/ui/DemoDataNotice.vue'
-import { MOCK_MODULES } from '@/constants/mockModules'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
@@ -87,8 +85,6 @@ watch(
   () => scrollToEnd(),
 )
 watch(sending, () => scrollToEnd())
-
-const DEMO_MODULES = [MOCK_MODULES.AI]
 </script>
 
 <template>
@@ -137,7 +133,6 @@ const DEMO_MODULES = [MOCK_MODULES.AI]
       </header>
 
       <div ref="threadRef" class="chat-widget__thread">
-        <DemoDataNotice scope="section" :modules="DEMO_MODULES" />
         <p class="chat-widget__disclaimer">
           <AppIcon name="shield-info" />
           {{ $t('ai.disclaimer') }}

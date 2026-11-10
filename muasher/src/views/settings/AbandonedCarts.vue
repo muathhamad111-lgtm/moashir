@@ -9,6 +9,7 @@ import AppMenu from '@/components/ui/AppMenu.vue'
 import AppSelect from '@/components/form/AppSelect.vue'
 import Badge from '@/components/ui/Badge.vue'
 import FinanceNav from '@/components/finance/FinanceNav.vue'
+import ComingSoonChip from '@/components/portal/ComingSoonChip.vue'
 import { useFinanceList } from '@/composables/useFinanceList'
 import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
@@ -16,8 +17,7 @@ import { messagingService } from '@/services/messagingService'
 import { PAYMENT_PURPOSE_VALUES } from '@/constants/payments'
 import { ABANDONED_CART_CONTACTED } from '@/constants/finance'
 import { formatDate } from '@/utils/datetime'
-import DemoDataNotice from '@/components/ui/DemoDataNotice.vue'
-import { MOCK_MODULES } from '@/constants/mockModules'
+import { SHOWS_MODULES_AWAITING_BACKEND } from '@/constants/buildPosture'
 
 const CHANNELS = ['email', 'sms']
 
@@ -67,14 +67,13 @@ function dateOf(value) {
     : t('finance.common.none')
 }
 
-function rowActions(cart) {
-  if (!cart.marketingConsent) return []
-  return CHANNELS.map((channel) => ({
+const campaignActions = computed(() =>
+  CHANNELS.map((channel) => ({
     key: channel,
     label: t(`settings.carts.actions.${channel}`),
     icon: channel === 'email' ? 'envelope' : 'chat',
-  }))
-}
+  })),
+)
 
 async function runCampaign(channel, cart) {
   const accepted = await confirm({
@@ -94,8 +93,6 @@ async function runCampaign(channel, cart) {
     toast.error(error?.normalized?.message || t('settings.carts.campaignFailed'))
   }
 }
-
-const DEMO_MODULES = [MOCK_MODULES.MESSAGING]
 </script>
 
 <template>
@@ -105,7 +102,6 @@ const DEMO_MODULES = [MOCK_MODULES.MESSAGING]
     status="success"
   >
     <FinanceNav />
-    <DemoDataNotice scope="actions" :modules="DEMO_MODULES" />
     <ListToolbar
       v-model:search="searchInput"
       :search-placeholder="t('settings.carts.searchPlaceholder')"
@@ -165,13 +161,16 @@ const DEMO_MODULES = [MOCK_MODULES.MESSAGING]
         ><span class="settings-form__nowrap">{{ dateOf(item.contactedAt) }}</span></template
       >
       <template #cell-actions="{ item }">
+        <span v-if="!item.marketingConsent" class="settings-form__muted">{{
+          t('settings.carts.noConsent')
+        }}</span>
         <AppMenu
-          v-if="item.marketingConsent"
-          :actions="rowActions(item)"
+          v-else-if="SHOWS_MODULES_AWAITING_BACKEND"
+          :actions="campaignActions"
           :label="t('components.actions.menuFor', { name: nameOf(item.entity) })"
           @select="runCampaign($event, item)"
         />
-        <span v-else class="settings-form__muted">{{ t('settings.carts.noConsent') }}</span>
+        <ComingSoonChip v-else compact />
       </template>
     </DataTable>
 

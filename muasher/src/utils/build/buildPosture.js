@@ -1,11 +1,6 @@
 export const BUILD_POSTURES = Object.freeze({ MOCK: 'mock', DEMO: 'demo', REAL: 'real' })
 
-export const BUILD_POSTURE_PROBLEMS = Object.freeze({
-  DEMO_MODULES_IN_REAL_BUILD: 'demo_modules_in_real_build',
-})
-
 const DEMO_FLAG = 'true'
-const LIST_SEPARATOR = ','
 
 function isDemoFlagOn(value) {
   return (
@@ -20,16 +15,12 @@ export function buildPostureOf(env = {}) {
   return isDemoFlagOn(env.VITE_DEMO_BUILD) ? BUILD_POSTURES.DEMO : BUILD_POSTURES.REAL
 }
 
-export function listedDemoModules(env = {}) {
-  return String(env.VITE_DEMO_MODULES ?? '')
-    .split(LIST_SEPARATOR)
-    .map((key) => key.trim())
-    .filter(Boolean)
+export function shipsMockLayer(posture) {
+  return posture === BUILD_POSTURES.MOCK
 }
 
-export function buildPostureProblemOf(env = {}) {
-  if (buildPostureOf(env) !== BUILD_POSTURES.REAL) return null
-  return listedDemoModules(env).length ? BUILD_POSTURE_PROBLEMS.DEMO_MODULES_IN_REAL_BUILD : null
+export function showsModulesAwaitingBackend(posture) {
+  return posture === BUILD_POSTURES.MOCK
 }
 
 export function showsDemoOnlyModules(posture) {

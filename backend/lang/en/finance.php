@@ -64,7 +64,7 @@ return [
         'method' => 'Payment method',
         'bank' => 'Destination bank',
         'paid_at' => 'Paid on',
-        'test_notice' => 'Test payment. This receipt has no official number and no financial value.',
+        'not_valid_as_proof' => 'Not valid as proof of payment',
         'void_notice' => 'This receipt was voided after a refund was recorded.',
         'footer' => 'This document is a payment receipt issued by the Moashir platform.',
     ],

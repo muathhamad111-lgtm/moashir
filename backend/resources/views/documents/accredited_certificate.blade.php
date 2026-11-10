@@ -46,7 +46,7 @@
 .certificate__facts .label-en { font-family: var(--font-latin); font-size: 7.4pt; }
 .certificate__note { flex: 1; margin: 0; text-align: center; font-size: 8.4pt; color: var(--color-muted); }
 .certificate__note span { display: block; font-family: var(--font-latin); font-size: 7.4pt; }
-.certificate__test { display: block; margin-top: 1mm; color: var(--color-bronze-text); font-weight: 700; }
+.certificate__unverifiable { display: block; margin-top: 1mm; color: var(--color-bronze-text); font-weight: 700; }
 .certificate__qr { margin: 0; width: 31mm; text-align: center; }
 .certificate__qr img { width: 24mm; height: 24mm; }
 .certificate__qr figcaption { font-size: 7pt; line-height: 1.35; color: var(--color-muted); }
@@ -111,7 +111,7 @@
           {{ __('documents.certificate.issued_electronically', [], 'ar') }}
           <span lang="en" dir="ltr">{{ __('documents.certificate.issued_electronically', [], 'en') }}</span>
           @if (($data['is_test'] ?? false) === true)
-            <strong class="certificate__test">{{ __('documents.certificate.test_notice', [], 'ar') }}</strong>
+            <strong class="certificate__unverifiable">{{ __('documents.certificate.not_valid_for_verification', [], 'ar') }}<span lang="en" dir="ltr">{{ __('documents.certificate.not_valid_for_verification', [], 'en') }}</span></strong>
           @endif
         </p>
         <figure class="certificate__qr">

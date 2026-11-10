@@ -23,13 +23,13 @@ use App\Support\RequestContext;
 final readonly class DemoAccreditedResultInstaller
 {
     private const array FEEDBACK = [
-        FeedbackKind::Strength->value => 'توجد سياسة معتمدة ومحدّثة مع شواهد موثقة على تطبيقها (بيانات تجريبية).',
-        FeedbackKind::Improvement->value => 'يُستحسن ربط الإجراءات بمؤشرات أداء دورية وتوثيق نتائج مراجعتها (بيانات تجريبية).',
+        FeedbackKind::Strength->value => 'توجد سياسة معتمدة ومحدّثة مع شواهد موثقة على تطبيقها.',
+        FeedbackKind::Improvement->value => 'يُستحسن ربط الإجراءات بمؤشرات أداء دورية وتوثيق نتائج مراجعتها.',
     ];
 
     private const int FEEDBACK_SUBS = 4;
 
-    private const string REVOKE_REASON = 'إلغاء تجريبي لعرض حالة الشهادة الملغاة في أدوات التميّز (بيانات تجريبية).';
+    private const string REVOKE_REASON = 'أُلغيت الشهادة بعد مراجعة إدارية لشواهد الطلب.';
 
     public function __construct(
         private DemoResultScorer $scorer,

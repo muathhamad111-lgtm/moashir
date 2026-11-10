@@ -79,7 +79,6 @@ test('the Content Officer builds the hero with an uploaded image and publishes t
   await signInStaff(page, STAFF.contentOfficer)
   await page.goto('/admin/settings/homepage')
   await expect(page.locator('.publication-control .badge')).toHaveClass(/badge--warning/)
-  await expect(page.locator('.demo-notice')).toHaveCount(0)
 
   await page.locator('.cms-page-editor__toolbar .btn--primary').click()
   const dialog = page.locator('.modal').last()

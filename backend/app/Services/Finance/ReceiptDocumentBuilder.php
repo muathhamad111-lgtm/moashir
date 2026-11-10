@@ -19,8 +19,6 @@ final readonly class ReceiptDocumentBuilder
 {
     public const string TEMPLATE = DocumentTemplate::PaymentReceipt->value;
 
-    public const string TEST_WATERMARK = DocumentWatermark::Test->value;
-
     public const string VOID_WATERMARK = DocumentWatermark::Void->value;
 
     public function __construct(private Repository $config) {}
@@ -42,21 +40,12 @@ final readonly class ReceiptDocumentBuilder
             'method_label' => $this->methodLabelOf($receipt),
             'paid_on' => $this->paidOnOf($receipt, $timezone),
             'labels' => ['ar' => trans('finance.receipt', [], 'ar'), 'en' => trans('finance.receipt', [], 'en')],
-        ], $this->watermarkOf($receipt)?->value);
+        ], $receipt->isVoided() ? self::VOID_WATERMARK : null);
     }
 
     public function fileNameOf(PaymentReceipt $receipt): string
     {
-        return ($receipt->number ?? 'TEST-'.ScalarValue::string($receipt->snapshot['payment_reference'] ?? null)).'.pdf';
-    }
-
-    private function watermarkOf(PaymentReceipt $receipt): ?DocumentWatermark
-    {
-        return match (true) {
-            $receipt->is_test => DocumentWatermark::Test,
-            $receipt->isVoided() => DocumentWatermark::Void,
-            default => null,
-        };
+        return ($receipt->number ?? ScalarValue::string($receipt->snapshot['payment_reference'] ?? null)).'.pdf';
     }
 
     /**

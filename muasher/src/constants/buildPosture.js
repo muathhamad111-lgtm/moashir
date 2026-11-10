@@ -1,5 +1,5 @@
-import { buildPostureOf, showsDemoOnlyModules } from '@/utils/build/buildPosture'
+import { buildPostureOf, showsModulesAwaitingBackend } from '@/utils/build/buildPosture'
 
 export const BUILD_POSTURE = buildPostureOf(import.meta.env)
 
-export const SHOWS_DEMO_ONLY_MODULES = showsDemoOnlyModules(BUILD_POSTURE)
+export const SHOWS_MODULES_AWAITING_BACKEND = showsModulesAwaitingBackend(BUILD_POSTURE)

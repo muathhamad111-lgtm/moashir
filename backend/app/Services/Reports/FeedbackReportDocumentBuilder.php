@@ -7,7 +7,6 @@ namespace App\Services\Reports;
 use App\Data\Documents\PdfDocument;
 use App\Data\Reports\FeedbackReport;
 use App\Enums\Documents\DocumentTemplate;
-use App\Enums\Documents\DocumentWatermark;
 use App\Enums\Identity\Locale;
 use App\Support\Reports\FeedbackReportPresenter;
 use Illuminate\Contracts\Config\Repository;
@@ -21,13 +20,12 @@ final readonly class FeedbackReportDocumentBuilder
     {
         $timezone = $this->config->string('app.display_timezone');
         $generatedAt = Date::now()->setTimezone($timezone);
-        $isTest = $report->result->assessment->loadMissing('payment')->payment?->isTest() === true;
 
         return new PdfDocument(DocumentTemplate::FeedbackReport->value, [
             ...FeedbackReportPresenter::present($report, $timezone),
             'generated_on' => $generatedAt->toDateString(),
             'generated_on_hijri' => FeedbackReportPresenter::hijri($generatedAt, $timezone),
-        ], $isTest ? DocumentWatermark::Test->value : null, $locale->value);
+        ], null, $locale->value);
     }
 
     public function fileNameOf(FeedbackReport $report, Locale $locale): string

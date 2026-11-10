@@ -652,8 +652,8 @@ export const kpisFixture = [
       en: 'Average satisfaction on a 0–100 scale',
     },
     notes: {
-      ar: 'عينة تمثيلية ربع سنوية',
-      en: 'Representative quarterly sample',
+      ar: 'مسح ربع سنوي لشريحة تمثيلية من المستفيدين',
+      en: 'Quarterly survey of a representative group of beneficiaries',
     },
     measurementYear: 2025,
     lastUpdate: '2026-06-30T09:00:00Z',

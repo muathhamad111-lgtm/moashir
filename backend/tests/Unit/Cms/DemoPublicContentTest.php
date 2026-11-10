@@ -77,6 +77,17 @@ it('uses the approved wording only', function (): void {
         ->and(preg_match('/[\x{0660}-\x{0669}]/u', $content))->toBe(0);
 });
 
+it('carries no demo or trial wording and labels the hero preview neutrally', function (): void {
+    $content = json_encode(demoPublicContent(), JSON_UNESCAPED_UNICODE);
+    $hero = collect(demoHomeSections())->keyBy('key')['hero'];
+
+    foreach (['تجريبي', 'تجريبية', 'توضيحي', 'مثال', 'عينة', 'demo', 'Demo', 'trial', 'Trial', 'sample', 'Sample', 'Illustrative'] as $forbidden) {
+        expect($content)->not->toContain($forbidden);
+    }
+
+    expect($hero['meta']['preview']['caption'])->toBe(['ar' => 'النتيجة حسب المعايير الرئيسية', 'en' => 'Result by main criterion']);
+});
+
 it('keeps every link, icon and meta object editable through the content API', function (): void {
     foreach (demoHomeSections() as $section) {
         foreach ([$section, ...($section['items'] ?? [])] as $node) {

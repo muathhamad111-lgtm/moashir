@@ -21,9 +21,11 @@ export const CERTIFICATE_LIST_LIMIT = 50
 export const VERIFICATION_RESULTS = Object.freeze({
   VALID: 'valid',
   UNDER_REVIEW: 'under_review',
+  EXPIRED: 'expired',
   REVOKED: 'revoked',
   SUPERSEDED: 'superseded',
   NOT_FOUND: 'not_found',
+  UNVERIFIABLE: 'unverifiable',
 })
 
 export const VERIFICATION_CODE_PATTERN = /^[0-9A-Za-z-\s]{4,60}$/

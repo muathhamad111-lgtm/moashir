@@ -37,9 +37,9 @@ final readonly class DemoBankTransferInstaller
 {
     public const string EXAMPLE_IBAN = 'SA0380000000608010167519';
 
-    private const string RECEIPT_NAME = 'transfer-receipt-example.pdf';
+    private const string RECEIPT_NAME = 'transfer-receipt.pdf';
 
-    private const string RECEIPT_CONTENTS = "%PDF-1.4\n%Moashir demo bank transfer receipt (example, no real account)\n1 0 obj << /Type /Catalog >> endobj\ntrailer << /Root 1 0 R >>\n%%EOF\n";
+    private const string RECEIPT_CONTENTS = "%PDF-1.4\n%Moashir bank transfer receipt\n1 0 obj << /Type /Catalog >> endobj\ntrailer << /Root 1 0 R >>\n%%EOF\n";
 
     public function __construct(
         private CreateBankAccount $accounts,

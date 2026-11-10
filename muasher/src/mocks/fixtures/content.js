@@ -77,8 +77,8 @@ const heroSection = section({
         en: 'Institutional maturity',
       },
       caption: {
-        ar: 'مثال توضيحي لنتيجة جهة افتراضية',
-        en: 'Illustrative result of a sample entity',
+        ar: 'النتيجة حسب المعايير الرئيسية',
+        en: 'Result by main criterion',
       },
       score: 78,
       scoreLabel: {

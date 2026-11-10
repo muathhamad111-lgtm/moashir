@@ -213,8 +213,9 @@ Each certificate carries a unique number, a verification code and a QR code lead
 - the level and the percentage;
 - the entity's name;
 - the issue date;
-- the certificate status: valid, under review, revoked or superseded;
-- whether it is a test certificate.
+- the certificate status: valid, under review, revoked or superseded.
+
+A certificate that cannot be verified shows only the words "Not valid for verification", with no other detail.
 
 The verification page never shows the assessor's identity, the reason for a revocation or any detail of the evidence. When a certificate is under review its level and percentage are not shown. The entity's name and logo, as they were at the time of issue, appear on the certificate file itself.
 

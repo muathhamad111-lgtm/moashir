@@ -7,16 +7,11 @@ import { dashboardService } from '@/services/dashboardService'
 import { useEntityStore } from '@/stores/entity'
 import { useActionCenterStore } from '@/stores/actionCenter'
 import { useEntityJourney } from '@/composables/useEntityJourney'
-import { showsDemoData } from '@/utils/mockPlan'
-import { MOCK_MODULES } from '@/constants/mockModules'
 
 const SELF_QUERY = { 'filter[path]': 'self', perPage: 20 }
 const CERTIFICATE_QUERY = { 'filter[status]': 'issued,suspended', perPage: 5 }
 
-const DEMO_CERTIFICATES = [MOCK_MODULES.CERTIFICATES]
-
 function loadCertificates() {
-  if (showsDemoData(DEMO_CERTIFICATES)) return Promise.resolve([])
   return certificatesService.listCards(CERTIFICATE_QUERY).then(({ data }) => data)
 }
 

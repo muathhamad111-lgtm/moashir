@@ -7,13 +7,20 @@ import { ROUTE_NAMES } from '@/constants/routeNames'
 import ComingSoon from '@/views/public/ComingSoon.vue'
 import { createTestGlobals } from '@/test-utils'
 
-const DEMO_ONLY = [
+const AWAITING_BACKEND = [
   ROUTE_NAMES.BAG_INDEX,
   ROUTE_NAMES.BAG_DETAILS,
   ROUTE_NAMES.BAG_PAY,
+  ROUTE_NAMES.BAG_MANAGE,
+  ROUTE_NAMES.BAG_COMPARISON,
+  ROUTE_NAMES.BAG_REQUESTS,
+  ROUTE_NAMES.BAG_EVALUATOR_REQUESTS,
   ROUTE_NAMES.ADMIN_SETTINGS_GENERAL,
-  ROUTE_NAMES.ADMIN_SETTINGS_ABANDONED_CARTS,
   ROUTE_NAMES.ADMIN_SETTINGS_AI_KNOWLEDGE_BASE,
+]
+
+const DEMO_ONLY = [
+  ROUTE_NAMES.ADMIN_SETTINGS_ABANDONED_CARTS,
   ROUTE_NAMES.ASSESSMENT_ADVANCED,
   ROUTE_NAMES.AWARD_CYCLES,
   ROUTE_NAMES.AWARD_COMMITTEE,
@@ -34,33 +41,87 @@ function find(routes, name) {
   return routes.find((route) => route.name === name)
 }
 
-describe('coming-soon screens of a real-operation build', () => {
-  const real = withComingSoonScreens(appRoutes, BUILD_POSTURES.REAL)
+async function shapeOf(routes, name) {
+  const route = find(routes, name)
+  return {
+    comingSoon: route.meta.comingSoon,
+    titleKey: route.meta.titleKey,
+    requiresAuth: route.meta.requiresAuth,
+    path: route.path,
+    props: route.props,
+    beforeEnter: route.beforeEnter,
+    component: (await route.component()).default,
+  }
+}
 
-  it('replaces every demo-only screen and keeps its guards and title', async () => {
+function comingSoonShapeOf(name) {
+  const original = find(appRoutes, name)
+  return {
+    comingSoon: true,
+    titleKey: original.meta.titleKey,
+    requiresAuth: original.meta.requiresAuth,
+    path: original.path,
+    props: undefined,
+    beforeEnter: undefined,
+    component: ComingSoon,
+  }
+}
+
+function replacedAmong(routes, names) {
+  return names.filter((name) => find(routes, name) !== find(appRoutes, name))
+}
+
+describe('route markers', () => {
+  it('marks exactly the screens of the modules awaiting their backend', () => {
+    const marked = appRoutes.filter((route) => route.meta?.awaitsBackend).map(({ name }) => name)
+    expect(marked.sort()).toEqual([...AWAITING_BACKEND].sort())
+  })
+
+  it('never marks a screen both ways and carries no data-module list', () => {
+    appRoutes.forEach((route) => {
+      expect(route.meta?.awaitsBackend && route.meta?.demoOnly).toBeFalsy()
+      expect(route.meta?.demoModules).toBeUndefined()
+    })
+  })
+})
+
+describe.each([BUILD_POSTURES.DEMO, BUILD_POSTURES.REAL])(
+  'coming-soon screens of a %s build',
+  (posture) => {
+    const built = withComingSoonScreens(appRoutes, posture)
+
+    it('lands every module awaiting its backend on the coming-soon screen', async () => {
+      for (const name of AWAITING_BACKEND) {
+        expect(await shapeOf(built, name)).toEqual(comingSoonShapeOf(name))
+      }
+    })
+
+    it('keeps the phase 1 screens untouched', () => {
+      expect(replacedAmong(built, PHASE_ONE)).toEqual([])
+    })
+  },
+)
+
+describe('demo-only screens', () => {
+  it('are coming-soon screens in a real-operation build', async () => {
+    const real = withComingSoonScreens(appRoutes, BUILD_POSTURES.REAL)
     for (const name of DEMO_ONLY) {
-      const original = find(appRoutes, name)
-      const replaced = find(real, name)
-      expect(replaced.meta.comingSoon).toBe(true)
-      expect(replaced.meta.titleKey).toBe(original.meta.titleKey)
-      expect(replaced.meta.requiresAuth).toBe(original.meta.requiresAuth)
-      expect(replaced.path).toBe(original.path)
-      expect(replaced.props).toBeUndefined()
-      expect(replaced.beforeEnter).toBeUndefined()
-      expect((await replaced.component()).default).toBe(ComingSoon)
+      expect(await shapeOf(real, name)).toEqual(comingSoonShapeOf(name))
     }
   })
 
-  it('keeps the phase 1 screens untouched', () => {
-    PHASE_ONE.forEach((name) => expect(find(real, name)).toBe(find(appRoutes, name)))
+  it('stay working in the client-demo build', () => {
+    expect(replacedAmong(withComingSoonScreens(appRoutes, BUILD_POSTURES.DEMO), DEMO_ONLY)).toEqual(
+      [],
+    )
   })
+})
 
-  it.each([BUILD_POSTURES.DEMO, BUILD_POSTURES.MOCK])(
-    'keeps every screen working in the %s posture',
-    (posture) => {
-      expect(withComingSoonScreens(appRoutes, posture)).toBe(appRoutes)
-    },
-  )
+describe('the full mock build', () => {
+  it('keeps every screen working', () => {
+    const mock = withComingSoonScreens(appRoutes, BUILD_POSTURES.MOCK)
+    expect(replacedAmong(mock, [...AWAITING_BACKEND, ...DEMO_ONLY, ...PHASE_ONE])).toEqual([])
+  })
 })
 
 describe('coming-soon view', () => {

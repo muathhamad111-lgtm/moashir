@@ -62,7 +62,7 @@ function vatLabel(payment) {
                 payment.receipt.number
               }}</bdi>
               <Badge v-else-if="payment.receipt" variant="warning">{{
-                t('finance.receipt.testBadge')
+                t('finance.receipt.notProof')
               }}</Badge>
               <span v-else class="my-payments__muted">{{ t('finance.common.none') }}</span>
             </td>

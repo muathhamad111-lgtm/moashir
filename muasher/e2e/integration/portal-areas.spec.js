@@ -128,7 +128,6 @@ test('the assessments, payments and certificates hubs read the tab counts from t
   await settled(page)
   await expect(page.locator('[role="tab"] .area-tabs__count')).toHaveCount(3)
   await expect(page.locator('.verify-guide')).toBeVisible()
-  await expect(page.locator('.demo-notice')).toHaveCount(0)
   await shot(page, 'certificates')
   backend(/^\/api\/v1\/assessments$/)
   backend(/^\/api\/v1\/payments\/mine$/)

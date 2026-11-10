@@ -6,7 +6,6 @@ namespace App\Services\Certificates;
 
 use App\Data\Documents\PdfDocument;
 use App\Enums\Documents\DocumentTemplate;
-use App\Enums\Documents\DocumentWatermark;
 use App\Models\Certificates\Certificate;
 use App\Support\Certificates\CertificateLinks;
 use App\Support\HijriDate;
@@ -38,7 +37,7 @@ final readonly class CertificateDocumentBuilder
             'issued_on_hijri' => ['ar' => HijriDate::format($issuedAt, 'ar', $timezone), 'en' => HijriDate::format($issuedAt, 'en', $timezone)],
             'issue_year' => (string) $issuedAt->year,
             'is_test' => $certificate->is_test,
-        ], $certificate->is_test ? DocumentWatermark::Test->value : null);
+        ]);
     }
 
     public function fileNameOf(Certificate $certificate): string

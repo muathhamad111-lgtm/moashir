@@ -40,7 +40,6 @@ const section = {
     path('self', { accent: 'calm', points: [{ en: 'No evidence' }] }),
     path('accredited', { accent: 'accredited', availability: 'live' }, '/accredited'),
     path('advanced', { accent: 'award', availability: 'coming_soon' }),
-    path('legacy', { accent: 'award', availability: 'demo' }),
   ],
 }
 
@@ -58,13 +57,12 @@ async function mountPaths(locale = 'en', prices = pricing('1000.00')) {
 }
 
 describe('HomeEvaluationPaths', () => {
-  it('labels each path: free self, available accredited, coming-soon advanced and legacy demo', async () => {
+  it('labels each path: free self, available accredited and coming-soon advanced', async () => {
     const { wrapper } = await mountPaths()
     const cards = wrapper.findAll('.home-path')
     expect(cards.map((card) => card.find('.home-path__availability').text())).toEqual([
       'Free',
       'Available now',
-      'Coming soon',
       'Coming soon',
     ])
     expect(cards[1].classes()).toContain('home-path--accredited')

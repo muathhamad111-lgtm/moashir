@@ -16,20 +16,20 @@ final readonly class DemoMaturityTextsInstaller
 {
     private const array TEXTS = [
         'emerging' => [
-            'ar' => 'الممارسات في بداياتها وتعتمد على اجتهادات فردية؛ ابدأ بتوثيق الأساسيات وتحديد المسؤوليات (نص تجريبي).',
-            'en' => 'Practices are at an early stage and rely on individual effort; start by documenting the basics and assigning responsibilities (demo text).',
+            'ar' => 'الممارسات في بداياتها وتعتمد على اجتهادات فردية؛ ابدأ بتوثيق الأساسيات وتحديد المسؤوليات.',
+            'en' => 'Practices are at an early stage and rely on individual effort; start by documenting the basics and assigning responsibilities.',
         ],
         'developing' => [
-            'ar' => 'توجد ممارسات موثقة لكنها غير منتظمة التطبيق؛ ركّز على الاتساق والمتابعة الدورية (نص تجريبي).',
-            'en' => 'Documented practices exist but are applied unevenly; focus on consistency and regular follow-up (demo text).',
+            'ar' => 'توجد ممارسات موثقة لكنها غير منتظمة التطبيق؛ ركّز على الاتساق والمتابعة الدورية.',
+            'en' => 'Documented practices exist but are applied unevenly; focus on consistency and regular follow-up.',
         ],
         'mature' => [
-            'ar' => 'الممارسات مطبقة بانتظام وتُقاس نتائجها؛ الخطوة التالية هي التحسين المستمر المبني على البيانات (نص تجريبي).',
-            'en' => 'Practices are applied consistently and their results are measured; the next step is data-driven continuous improvement (demo text).',
+            'ar' => 'الممارسات مطبقة بانتظام وتُقاس نتائجها؛ الخطوة التالية هي التحسين المستمر المبني على البيانات.',
+            'en' => 'Practices are applied consistently and their results are measured; the next step is data-driven continuous improvement.',
         ],
         'leading' => [
-            'ar' => 'الممارسات متقدمة ومتكاملة وتصلح نموذجًا يُحتذى في القطاع (نص تجريبي).',
-            'en' => 'Practices are advanced and integrated and can serve as a model for the sector (demo text).',
+            'ar' => 'الممارسات متقدمة ومتكاملة وتصلح نموذجًا يُحتذى في القطاع.',
+            'en' => 'Practices are advanced and integrated and can serve as a model for the sector.',
         ],
     ];
 

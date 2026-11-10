@@ -14,21 +14,16 @@ final readonly class CertificateNumberGenerator
 {
     private const string SERIES = 'certificates.accredited';
 
-    private const string TEST_SERIES = 'certificates.accredited_test';
-
-    private const string TEST_PREFIX = 'TEST-';
-
     public function __construct(private YearlyNumberSequence $sequence, private Repository $config) {}
 
-    public function next(CarbonInterface $issuedAt, bool $isTest): string
+    public function next(CarbonInterface $issuedAt): string
     {
         if (DB::transactionLevel() === 0) {
             throw new LogicException('Certificate numbers are allocated only inside the transaction that issues the certificate.');
         }
 
         $year = $issuedAt->copy()->setTimezone($this->config->string('app.display_timezone'))->year;
-        $value = $this->sequence->next($isTest ? self::TEST_SERIES : self::SERIES, $year);
 
-        return sprintf('%sCRT-%d-%06d', $isTest ? self::TEST_PREFIX : '', $year, $value);
+        return sprintf('CRT-%d-%06d', $year, $this->sequence->next(self::SERIES, $year));
     }
 }

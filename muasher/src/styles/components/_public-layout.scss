@@ -11,9 +11,3 @@
   flex: 1;
   min-block-size: var(--size-screen);
 }
-
-.public-layout__demo {
-  align-self: center;
-  inline-size: min(var(--size-content-max), calc(100% - var(--space-8)));
-  margin-block: var(--space-4) var(--space-0);
-}

@@ -13,7 +13,7 @@ import EmailSenderFields from '@/components/integrations/email/EmailSenderFields
 import DnsChecklist from '@/components/integrations/email/DnsChecklist.vue'
 import EmailTestSend from '@/components/integrations/email/EmailTestSend.vue'
 import EmailCampaignComposer from '@/components/integrations/email/EmailCampaignComposer.vue'
-import { SHOWS_DEMO_ONLY_MODULES } from '@/constants/buildPosture'
+import { SHOWS_MODULES_AWAITING_BACKEND } from '@/constants/buildPosture'
 import { useEmailIntegration } from '@/composables/useEmailIntegration'
 import { usePermissions } from '@/composables/usePermissions'
 import { emailIntegrationService } from '@/services/emailIntegrationService'
@@ -78,7 +78,7 @@ onMounted(load)
 
     <EmailTestSend />
     <EmailCampaignComposer
-      v-if="SHOWS_DEMO_ONLY_MODULES && can(PERMISSIONS.MESSAGING_CAMPAIGNS_SEND)"
+      v-if="SHOWS_MODULES_AWAITING_BACKEND && can(PERMISSIONS.MESSAGING_CAMPAIGNS_SEND)"
     />
 
     <ReasonDialog

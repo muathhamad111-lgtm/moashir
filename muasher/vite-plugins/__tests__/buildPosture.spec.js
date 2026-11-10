@@ -7,7 +7,6 @@ import {
   DISABLED_MOCKS_SOURCE,
   MOCK_ENTRY,
   MOCK_WORKER_FILE,
-  assertBuildPosture,
   buildPosture,
 } from '../buildPosture'
 
@@ -45,8 +44,11 @@ afterEach(() => {
 })
 
 describe('build posture plugin', () => {
-  it('replaces the mock layer and removes the mock worker in a real-operation build', async () => {
-    const { plugin, root } = started({ VITE_API_BASE_URL: '/api/v1' })
+  it.each([
+    ['a real-operation build', { VITE_API_BASE_URL: '/api/v1' }],
+    ['a client-demo build', { VITE_API_BASE_URL: '/api/v1', VITE_DEMO_BUILD: 'true' }],
+  ])('replaces the mock layer and removes the mock worker in %s', async (_, env) => {
+    const { plugin, root } = started(env)
     const id = await plugin.resolveId.call(resolverContext(root), '@/mocks', 'src/main.js', {})
     expect(id).toBe(DISABLED_MOCKS_ID)
     expect(plugin.load(DISABLED_MOCKS_ID)).toBe(DISABLED_MOCKS_SOURCE)
@@ -65,11 +67,8 @@ describe('build posture plugin', () => {
     expect(plugin.load('src/router/index.js')).toBe(null)
   })
 
-  it.each([
-    ['a client-demo build', { VITE_API_BASE_URL: '/api/v1', VITE_DEMO_BUILD: 'true' }],
-    ['the full mock build', {}],
-  ])('keeps the mock layer and the worker in %s', async (_, env) => {
-    const { plugin, root } = started(env)
+  it('keeps the mock layer and the worker in the full mock build', async () => {
+    const { plugin, root } = started({})
     expect(await plugin.resolveId.call(resolverContext(root), '@/mocks', 'src/main.js', {})).toBe(
       null,
     )
@@ -77,26 +76,20 @@ describe('build posture plugin', () => {
     expect(existsSync(join(root, 'dist', MOCK_WORKER_FILE))).toBe(true)
   })
 
-  it('stops a real-operation build that still lists demo modules', () => {
+  it('builds with a leftover module list from an older env file', () => {
     const plugin = buildPosture()
     const config = resolvedConfig(projectRoot(), {
       VITE_API_BASE_URL: '/api/v1',
       VITE_DEMO_MODULES: 'bag',
     })
-    expect(() => plugin.configResolved(config)).toThrow(/VITE_DEMO_MODULES must be empty/)
-    expect(() =>
-      assertBuildPosture({ VITE_API_BASE_URL: '/api/v1', VITE_DEMO_MODULES: '' }),
-    ).not.toThrow()
+    expect(() => plugin.configResolved(config)).not.toThrow()
+    expect(config.logger.info).toHaveBeenCalledWith('Moashir build posture: real')
   })
 
-  it('never stops the development server', () => {
+  it('never logs on the development server', () => {
     const plugin = buildPosture()
-    const config = resolvedConfig(
-      projectRoot(),
-      { VITE_API_BASE_URL: '/api/v1', VITE_DEMO_MODULES: 'bag' },
-      'serve',
-    )
-    expect(() => plugin.configResolved(config)).not.toThrow()
+    const config = resolvedConfig(projectRoot(), { VITE_API_BASE_URL: '/api/v1' }, 'serve')
+    plugin.configResolved(config)
     expect(config.logger.info).not.toHaveBeenCalled()
   })
 

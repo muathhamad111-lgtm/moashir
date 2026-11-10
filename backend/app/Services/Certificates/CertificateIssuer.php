@@ -35,7 +35,7 @@ final readonly class CertificateIssuer
         $level = $thresholds->levelFor($issue->result->percent);
 
         $certificate = Certificate::query()->create([
-            'number' => $this->numbers->next($issuedAt, $isTest),
+            'number' => $this->numbers->next($issuedAt),
             'verification_code' => $this->codes->generate(),
             'kind' => CertificateKind::Accredited,
             'level' => $level,
