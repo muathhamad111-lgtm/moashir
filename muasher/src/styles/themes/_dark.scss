@@ -5,6 +5,8 @@
   --theme-bg: var(--color-dark);
   --theme-surface: #{rgba($color-secondary, 0.04)};
   --theme-surface-raised: #{rgba($color-secondary, 0.08)};
+  // Sticky bars must be opaque: the translucent surface lets scrolled content show through.
+  --theme-bar-bg: var(--theme-bg);
   --theme-text: var(--color-secondary);
   --theme-text-muted: var(--color-gray-300);
   --theme-text-secondary: var(--color-gray-300);

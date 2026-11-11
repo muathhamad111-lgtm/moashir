@@ -1,17 +1,5 @@
 @use '../mixins' as *;
 
-@mixin portal-gutter {
-  padding-inline: var(--space-4);
-
-  @include respond-to('md') {
-    padding-inline: var(--space-8);
-  }
-
-  @include respond-to('xl') {
-    padding-inline: max(var(--space-8), calc((100% - var(--size-container)) / 2));
-  }
-}
-
 .portal-area {
   @include flex(column, stretch, flex-start);
 }

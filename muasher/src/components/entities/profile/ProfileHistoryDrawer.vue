@@ -54,7 +54,7 @@ watch(
         :aria-label="t('portal.profile.history.filterLabel')"
       >
         <button
-          v-for="key in [...sections, '']"
+          v-for="key in ['', ...sections]"
           :key="key || 'all'"
           type="button"
           class="history-drawer__chip"

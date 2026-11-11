@@ -90,21 +90,14 @@
 
 .portal-footer__inner {
   @include flex(column, flex-start, space-between, var(--space-3));
-  max-inline-size: var(--size-container);
-  margin-inline: auto;
+  @include portal-gutter;
   padding-block: var(--space-6);
-  padding-inline: var(--space-4);
   font-size: var(--fs-xs);
   color: var(--theme-text-muted);
 
   @include respond-to('md') {
     flex-direction: row;
     align-items: center;
-    padding-inline: var(--space-8);
-  }
-
-  @include respond-to('xl') {
-    padding-inline: var(--space-0);
   }
 }
 

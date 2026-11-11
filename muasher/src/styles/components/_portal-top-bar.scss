@@ -5,7 +5,7 @@
   inset-block-start: 0;
   z-index: var(--z-sticky);
   border-block-end: var(--border-width) solid var(--theme-border);
-  background-color: var(--theme-surface);
+  background-color: var(--theme-bar-bg);
 }
 
 .portal-top-bar__inner {

@@ -248,11 +248,24 @@ describe('EntityProfileView', () => {
     expect(drawer.find('[aria-pressed="true"]').text()).toBe('التواصل والمسؤول عن الحساب')
     expect(drawer.text()).toContain('موظف المنصة')
     expect(drawer.text()).toContain('+9665*****567')
-    await drawer.findAll('.history-drawer__chip').at(-1).trigger('click')
+    const allSections = drawer.findAll('.history-drawer__chip').at(0)
+    expect(allSections.text()).toBe('كل الأقسام')
+    await allSections.trigger('click')
     await flushPromises()
     expect(profileChangesService.listMine).toHaveBeenLastCalledWith(
       expect.not.objectContaining({ section: expect.anything() }),
     )
+    wrapper.unmount()
+  })
+
+  it('opens the history drawer from the history card with «كل الأقسام» first and selected', async () => {
+    const wrapper = await factory()
+    await wrapper.find('.profile-history-card__link').trigger('click')
+    await flushPromises()
+    const chips = wrapper.findAll('[data-testid="profile-history-drawer"] .history-drawer__chip')
+    expect(chips.at(0).text()).toBe('كل الأقسام')
+    expect(chips.at(0).attributes('aria-pressed')).toBe('true')
+    expect(chips.filter((chip) => chip.attributes('aria-pressed') === 'true')).toHaveLength(1)
     wrapper.unmount()
   })
 })

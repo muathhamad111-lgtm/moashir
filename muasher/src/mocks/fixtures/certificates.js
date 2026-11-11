@@ -106,7 +106,17 @@ function request(id, number) {
   return { id, number, path: 'accredited', pathLabel: ACCREDITED_LABEL }
 }
 
-function levelCertificate({ id, entity, number, level, percent, requestRef, code, issuedAt }) {
+function levelCertificate({
+  id,
+  entity,
+  number,
+  level,
+  percent,
+  requestRef,
+  code,
+  issuedAt,
+  validUntil,
+}) {
   return {
     id,
     entityId: entity.id,
@@ -121,6 +131,7 @@ function levelCertificate({ id, entity, number, level, percent, requestRef, code
     entity,
     verificationCode: code,
     issuedAt,
+    validUntil,
     revokedAt: null,
     revokedReason: null,
     supersededAt: null,
@@ -171,6 +182,7 @@ const LEVEL_CERTIFICATES = [
     requestRef: { id: 9310, number: 'ACC-2026-000010' },
     code: 'H2KD-7QWM-PX4T-9ZRA-C6NV-3BYE-5FGL',
     issuedAt: '2026-08-14T08:00:00+00:00',
+    validUntil: '2027-08-13',
   }),
   levelCertificate({
     id: '2c9e7a41-0b5d-4f63-8e21-7d4a00009111',
@@ -181,6 +193,7 @@ const LEVEL_CERTIFICATES = [
     requestRef: { id: 9311, number: 'ACC-2026-000011' },
     code: 'T8MV-3KQZ-W5HA-2NRC-Y7PD-4EXB-6LGU',
     issuedAt: '2026-03-18T08:00:00+00:00',
+    validUntil: '2027-03-17',
   }),
   levelCertificate({
     id: '2c9e7a41-0b5d-4f63-8e21-7d4a00009112',
@@ -191,6 +204,7 @@ const LEVEL_CERTIFICATES = [
     requestRef: { id: 9312, number: 'ACC-2026-000012' },
     code: 'R5PW-8DXK-M2QT-6VZH-A9CN-1EYB-4JGF',
     issuedAt: '2026-07-19T08:00:00+00:00',
+    validUntil: '2027-07-18',
   }),
   levelCertificate({
     id: '2c9e7a41-0b5d-4f63-8e21-7d4a00009113',
@@ -201,6 +215,7 @@ const LEVEL_CERTIFICATES = [
     requestRef: { id: 9313, number: 'ACC-2026-000013' },
     code: 'Q4ZN-6WTC-K8MD-3HXA-P2RV-7EYB-9LFG',
     issuedAt: '2026-06-02T08:00:00+00:00',
+    validUntil: '2027-06-01',
   }),
   {
     ...levelCertificate({
@@ -212,6 +227,7 @@ const LEVEL_CERTIFICATES = [
       requestRef: { id: 9309, number: 'ACC-2026-000009' },
       code: 'D3QF-9MXZ-V6KT-1WHA-N8PC-5RYE-2BGL',
       issuedAt: '2026-04-06T08:00:00+00:00',
+      validUntil: '2027-04-05',
     }),
     status: 'revoked',
     revokedAt: '2026-05-10T08:00:00+00:00',
