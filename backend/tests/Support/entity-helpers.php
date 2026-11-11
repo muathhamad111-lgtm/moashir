@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Data\Entities\OpenEntityRequest;
 use App\Enums\Entities\EntityRequestPath;
+use App\Enums\Entities\ProfileSection;
 use App\Enums\Identity\PermissionKey;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Identity\TermsKind;
@@ -16,9 +17,12 @@ use App\Models\Identity\User;
 use App\Notifications\Identity\OtpCodeNotification;
 use App\Services\Entities\EntityEraser;
 use App\Services\Entities\OpenRequestDirectory;
+use App\Support\Entities\ProfileFieldValues;
+use App\Support\Entities\ProfileSectionRevision;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Testing\TestResponse;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Support\FakeOpenRequestSource;
 use Tests\Support\RecordingErasureStep;
@@ -100,6 +104,32 @@ function profilePayload(Entity $entity, array $overrides = []): array
         'has_strategic_plan' => true,
         ...$overrides,
     ];
+}
+
+/**
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
+ */
+function sectionBody(Entity $entity, ProfileSection $section, array $overrides = []): array
+{
+    $values = ProfileFieldValues::of($entity->refresh());
+    $body = ['base_revision' => ProfileSectionRevision::of($values, $section)];
+
+    foreach ($values->editableValuesOf($section) as $field => $value) {
+        data_set($body, $field, $value);
+    }
+
+    return [...$body, ...$overrides];
+}
+
+/**
+ * @param  array<string, mixed>  $overrides
+ */
+function saveSection(Entity $entity, ProfileSection $section, array $overrides = [], ?User $as = null): TestResponse
+{
+    $body = sectionBody($entity, $section, $overrides);
+
+    return switchTo($as ?? ownerOf($entity))->patchJson('/api/v1/entities/me/profile/'.$section->value, $body);
 }
 
 function entityWithOwner(?Closure $state = null): Entity

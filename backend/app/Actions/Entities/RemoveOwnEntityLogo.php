@@ -24,7 +24,7 @@ final readonly class RemoveOwnEntityLogo
 
     public function handle(User $owner): Entity
     {
-        $entity = $this->ownEntity->editableOf($owner, 'remove_logo');
+        $entity = $this->ownEntity->of($owner);
 
         DB::transaction(function () use ($entity): void {
             $locked = Entity::query()->whereKey($entity->id)->lockForUpdate()->firstOrFail();

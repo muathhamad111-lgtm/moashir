@@ -151,18 +151,10 @@ export function registryShape(t, today) {
   }
 }
 
-export function ownProfileSchema(t, today, { unifiedNumberRequired = true } = {}) {
-  return yupObject({
-    ...entityProfileShape(t),
-    ...registryShape(t, today),
-    unifiedNumber: unifiedNumberField(t, { required: unifiedNumberRequired }),
-    marketingConsent: yupBoolean(),
-  })
-}
-
 export function staffProfileSchema(t, { unifiedNumberRequired = false } = {}) {
   return yupObject({
     ...entityProfileShape(t),
+    hasStrategicPlan: yupString().oneOf(['', 'yes', 'no']),
     unifiedNumber: unifiedNumberField(t, { required: unifiedNumberRequired }),
     reason: reasonText(t),
   })

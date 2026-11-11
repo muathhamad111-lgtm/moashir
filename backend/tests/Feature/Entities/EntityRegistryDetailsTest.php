@@ -2,14 +2,12 @@
 
 declare(strict_types=1);
 
-use App\Actions\Entities\UpdateOwnEntityProfile;
-use App\Data\Entities\EntityContactData;
-use App\Data\Entities\EntityProfileData;
-use App\Data\Entities\EntityRegistryUpdate;
+use App\Actions\Entities\SaveOwnProfileSection;
+use App\Data\Entities\EntityProfileWrite;
+use App\Data\Entities\ProfileSectionUpdate;
 use App\Enums\Entities\EntityProfileField;
+use App\Enums\Entities\ProfileSection;
 use App\Models\Entities\Entity;
-use App\Models\Entities\EntityProfileChange;
-use App\Support\ValueObjects\LicenseNumber;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -20,29 +18,17 @@ beforeEach(function (): void {
     Notification::fake();
 });
 
-/**
- * @param  array<string, mixed>  $extra
- * @return array<string, mixed>
- */
-function ownProfileBody(Entity $entity, array $extra = []): array
-{
-    return [...profilePayload($entity, ['founding_year' => $entity->founding_year]), 'marketing_consent' => false, ...$extra];
-}
-
 it('stores the licence number, the founding date and the normalised website and keeps the founding year on that date', function (): void {
-    $entity = entityWithOwner(static fn ($factory) => $factory->state(['founding_year' => 2005]));
+    $entity = entityWithOwner(static fn ($factory) => $factory->state(['founding_year' => 2005, 'founded_on' => null, 'license_number' => null]));
     $owner = ownerOf($entity);
 
-    switchTo($owner)->putJson('/api/v1/entities/me', ownProfileBody($entity, [
-        'license_number' => '000123',
-        'founded_on' => '2012-03-01',
-        'website_url' => 'HTTPS://WWW.Alamal.Example.SA/',
-    ]))->assertOk()
+    saveSection($entity, ProfileSection::Identity, ['license_number' => '000123', 'founded_on' => '2012-03-01'])->assertOk()
         ->assertJsonPath('data.license_number', '000123')
         ->assertJsonPath('data.founded_on', '2012-03-01')
         ->assertJsonPath('data.founding_year', 2012)
-        ->assertJsonPath('data.website_url', 'https://www.alamal.example.sa')
         ->assertJsonPath('data.logo', null);
+    saveSection($entity, ProfileSection::Contact, ['website_url' => 'HTTPS://WWW.Alamal.Example.SA/'])->assertOk()
+        ->assertJsonPath('data.website_url', 'https://www.alamal.example.sa');
 
     $history = collect(switchTo($owner)->getJson('/api/v1/entities/me/profile-changes')->assertOk()->json('data'))->keyBy('field');
 
@@ -52,68 +38,45 @@ it('stores the licence number, the founding date and the normalised website and 
         ->and($history->get('website_url')['new_value'] ?? null)->toBe('https://www.alamal.example.sa');
 });
 
-it('leaves the three registry details unchanged when an older client omits them and clears them on an explicit null', function (): void {
+it('clears the optional registry details on an explicit null or empty value', function (): void {
     $entity = entityWithOwner(static fn ($factory) => $factory->state(['license_number' => '770000901', 'founding_year' => 2010, 'website_url' => 'https://alamal.example.sa']));
-    $owner = ownerOf($entity);
 
-    switchTo($owner)->putJson('/api/v1/entities/me', ownProfileBody($entity, ['employees_count' => 77]))->assertOk()
-        ->assertJsonPath('data.license_number', '770000901')
-        ->assertJsonPath('data.founded_on', '2010-03-01')
-        ->assertJsonPath('data.website_url', 'https://alamal.example.sa');
-
-    $changedFields = EntityProfileChange::query()->where('entity_id', $entity->id)->get()->map(static fn (EntityProfileChange $change): string => $change->field->value)->all();
-
-    expect($changedFields)->toContain('employees_count')->not->toContain('license_number')->not->toContain('founded_on')->not->toContain('website_url');
-
-    switchTo($owner)->putJson('/api/v1/entities/me', ownProfileBody($entity, ['license_number' => null, 'founded_on' => null, 'website_url' => '']))->assertOk()
+    saveSection($entity, ProfileSection::Identity, ['license_number' => null, 'founded_on' => null])->assertOk()
         ->assertJsonPath('data.license_number', null)
         ->assertJsonPath('data.founded_on', null)
-        ->assertJsonPath('data.website_url', null)
+        ->assertJsonPath('data.founding_year', 2010)
         ->assertJsonPath('data.profile_completed', false);
-});
-
-it('keeps the founding year on the stored founding date and takes the sent year once the date is cleared', function (): void {
-    $entity = entityWithOwner(static fn ($factory) => $factory->state(['founding_year' => 2012]));
-    $owner = ownerOf($entity);
-
-    switchTo($owner)->putJson('/api/v1/entities/me', ownProfileBody($entity, ['founding_year' => 1999]))->assertOk()
-        ->assertJsonPath('data.founding_year', 2012)
-        ->assertJsonPath('data.founded_on', '2012-03-01');
-
-    switchTo($owner)->putJson('/api/v1/entities/me', ownProfileBody($entity, ['founding_year' => 1999, 'founded_on' => null]))->assertOk()
-        ->assertJsonPath('data.founding_year', 1999)
-        ->assertJsonPath('data.founded_on', null);
+    saveSection($entity, ProfileSection::Contact, ['website_url' => ''])->assertOk()->assertJsonPath('data.website_url', null);
 });
 
 it('accepts today in Riyadh as a founding date', function (): void {
     Date::setTestNow('2026-11-04 22:30:00');
     $entity = entityWithOwner();
 
-    switchTo(ownerOf($entity))->putJson('/api/v1/entities/me', ownProfileBody($entity, ['founded_on' => '2026-11-05']))->assertOk()
-        ->assertJsonPath('data.founding_year', 2026);
+    saveSection($entity, ProfileSection::Identity, ['founded_on' => '2026-11-05'])->assertOk()->assertJsonPath('data.founding_year', 2026);
 });
 
-it('rejects invalid registry details', function (array $details, string $field): void {
+it('rejects invalid registry details', function (ProfileSection $section, array $details, string $field): void {
     Date::setTestNow('2026-11-04 10:00:00');
     $entity = entityWithOwner();
 
-    switchTo(ownerOf($entity))->putJson('/api/v1/entities/me', ownProfileBody($entity, $details))
+    saveSection($entity, $section, $details)
         ->assertUnprocessable()
         ->assertJsonPath('code', 'validation_failed')
         ->assertJsonValidationErrors([$field]);
 })->with([
-    'licence with letters' => [['license_number' => 'SA-000123'], 'license_number'],
-    'licence with two digits' => [['license_number' => '12'], 'license_number'],
-    'licence with 21 digits' => [['license_number' => str_repeat('1', 21)], 'license_number'],
-    'licence with Arabic-Indic digits' => [['license_number' => '١٢٣٤'], 'license_number'],
-    'founding date in the future' => [['founded_on' => '2026-11-05'], 'founded_on'],
-    'founding date before 1900' => [['founded_on' => '1899-12-31'], 'founded_on'],
-    'founding date in another format' => [['founded_on' => '01/03/2012'], 'founded_on'],
-    'http website' => [['website_url' => 'http://www.alamal.example.sa'], 'website_url'],
-    'script website' => [['website_url' => 'javascript:alert(1)'], 'website_url'],
-    'website with credentials' => [['website_url' => 'https://owner:secret@alamal.example.sa'], 'website_url'],
-    'website on an IP address' => [['website_url' => 'https://10.0.0.8'], 'website_url'],
-    'website longer than 255 characters' => [['website_url' => 'https://alamal.example.sa/'.str_repeat('a', 240)], 'website_url'],
+    'licence with letters' => [ProfileSection::Identity, ['license_number' => 'SA-000123'], 'license_number'],
+    'licence with two digits' => [ProfileSection::Identity, ['license_number' => '12'], 'license_number'],
+    'licence with 21 digits' => [ProfileSection::Identity, ['license_number' => str_repeat('1', 21)], 'license_number'],
+    'licence with Arabic-Indic digits' => [ProfileSection::Identity, ['license_number' => '١٢٣٤'], 'license_number'],
+    'founding date in the future' => [ProfileSection::Identity, ['founded_on' => '2026-11-05'], 'founded_on'],
+    'founding date before 1900' => [ProfileSection::Identity, ['founded_on' => '1899-12-31'], 'founded_on'],
+    'founding date in another format' => [ProfileSection::Identity, ['founded_on' => '01/03/2012'], 'founded_on'],
+    'http website' => [ProfileSection::Contact, ['website_url' => 'http://www.alamal.example.sa'], 'website_url'],
+    'script website' => [ProfileSection::Contact, ['website_url' => 'javascript:alert(1)'], 'website_url'],
+    'website with credentials' => [ProfileSection::Contact, ['website_url' => 'https://owner:secret@alamal.example.sa'], 'website_url'],
+    'website on an IP address' => [ProfileSection::Contact, ['website_url' => 'https://10.0.0.8'], 'website_url'],
+    'website longer than 255 characters' => [ProfileSection::Contact, ['website_url' => 'https://alamal.example.sa/'.str_repeat('a', 240)], 'website_url'],
 ]);
 
 it('refuses a licence number registered for another entity with a clear message and keeps the own number', function (): void {
@@ -121,27 +84,25 @@ it('refuses a licence number registered for another entity with a clear message 
     $deleted = entityWithOwner(static fn ($factory) => $factory->state(['license_number' => '770000666']));
     $deleted->delete();
     $entity = entityWithOwner(static fn ($factory) => $factory->state(['license_number' => '770000777']));
-    $owner = ownerOf($entity);
 
-    switchTo($owner)->putJson('/api/v1/entities/me', ownProfileBody($entity, ['license_number' => '770000555']))
+    saveSection($entity, ProfileSection::Identity, ['license_number' => '770000555'])
         ->assertUnprocessable()
         ->assertJsonPath('code', 'validation_failed')
         ->assertJsonPath('errors.license_number.0', __('validation.custom.license_number.unique'));
-    switchTo($owner)->putJson('/api/v1/entities/me', ownProfileBody($entity, ['license_number' => '770000666']))->assertUnprocessable();
-    switchTo($owner)->putJson('/api/v1/entities/me', ownProfileBody($entity, ['license_number' => '770000777']))->assertOk();
+    saveSection($entity, ProfileSection::Identity, ['license_number' => '770000666'])->assertUnprocessable();
+    saveSection($entity, ProfileSection::Identity, ['license_number' => '770000777'])->assertOk();
 });
 
 it('turns a licence number taken by a concurrent request into the same validation error', function (): void {
     entityWithOwner(static fn ($factory) => $factory->state(['license_number' => '770000555']));
     $entity = entityWithOwner();
-    $profile = new EntityProfileData(
-        $entity->name, $entity->entity_type, $entity->development_sector, $entity->org_size, $entity->founding_year, $entity->region_id,
-        $entity->city_id, $entity->governance_grade, $entity->employees_count, $entity->annual_beneficiaries_count, $entity->has_strategic_plan,
-        new EntityRegistryUpdate(new LicenseNumber('770000555'), provided: [EntityProfileField::LicenseNumber]),
+    $update = new ProfileSectionUpdate(
+        ProfileSection::Identity,
+        sectionBody($entity, ProfileSection::Identity)['base_revision'],
+        new EntityProfileWrite([EntityProfileField::LicenseNumber->value => '770000555']),
     );
 
-    expect(fn () => app(UpdateOwnEntityProfile::class)->handle(ownerOf($entity), $profile, new EntityContactData('سلمان بن فهد العتيبي', null), false))
-        ->toThrow(ValidationException::class);
+    expect(fn () => app(SaveOwnProfileSection::class)->handle(ownerOf($entity), $update))->toThrow(ValidationException::class);
     expect($entity->refresh()->license_number)->not->toBe('770000555');
 });
 

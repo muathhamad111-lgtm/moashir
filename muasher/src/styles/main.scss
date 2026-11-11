@@ -102,6 +102,14 @@
 @use 'components/auth-mfa';
 @use 'components/completion-prompt';
 @use 'components/entity-profile';
+@use 'components/profile-header';
+@use 'components/profile-section';
+@use 'components/profile-field';
+@use 'components/profile-chip';
+@use 'components/profile-completeness';
+@use 'components/profile-history-drawer';
+@use 'components/profile-notice';
+@use 'components/logo-dialog';
 @use 'components/dashboard';
 @use 'components/score-input';
 @use 'components/self-form';
@@ -124,7 +132,7 @@
 @use 'components/settings-form';
 @use 'components/path-prices';
 @use 'components/sign-in-security';
-@use 'components/phone-verification';
+@use 'components/phone-otp';
 @use 'components/homepage-cms';
 @use 'components/cms-editor';
 @use 'components/sortable-list';

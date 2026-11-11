@@ -154,38 +154,25 @@ describe('payments tabs and assessment counts', () => {
 })
 
 describe('entity registry details and logo', () => {
-  it('stores the registry details, keeps absent keys and refuses http websites', async () => {
+  it('stores the registry details by section and refuses http websites', async () => {
     seedMockSession(NAMAA)
     const me = (await call('GET', '/entities/me')).body.data
-    const body = {
+    const revision = (key) => me.profile_sections.find((section) => section.key === key).revision
+    const saved = await call('PATCH', '/entities/me/profile/identity', {
+      base_revision: revision('identity'),
       name: me.name,
-      authorized_person_name: me.authorized_person_name,
-      phone: null,
-      entity_type: me.entity_type,
-      development_sector: me.development_sector,
-      org_size: me.org_size,
-      founding_year: 2015,
-      region_id: me.region.id,
-      city_id: me.city.id,
-      governance_grade: null,
-      employees_count: null,
-      annual_beneficiaries_count: null,
-      has_strategic_plan: true,
-      marketing_consent: false,
-    }
-    const saved = await call('PUT', '/entities/me', {
-      ...body,
+      unified_number: '7000000777',
       license_number: '000123',
       founded_on: '2012-03-01',
-      website_url: 'https://www.namaa.example.sa',
     })
     expect(saved.body.data).toMatchObject({ license_number: '000123', founding_year: 2012 })
-    expect(saved.body.data.profile_completion.percent).toBe(50)
-    const kept = await call('PUT', '/entities/me', { ...body, founding_year: 2012 })
-    expect(kept.body.data.license_number).toBe('000123')
-    const refused = await call('PUT', '/entities/me', {
-      ...body,
+    expect(saved.body.data.profile_completion.percent).toBe(80)
+    const refused = await call('PATCH', '/entities/me/profile/contact', {
+      base_revision: revision('contact'),
+      authorized_person_name: me.authorized_person_name,
+      phone: null,
       website_url: 'http://namaa.example.sa',
+      marketing_consent: false,
     })
     expect(refused.status).toBe(422)
     expect(refused.body.errors).toHaveProperty('website_url')

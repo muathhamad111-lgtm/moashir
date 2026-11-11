@@ -30,7 +30,7 @@ final readonly class UploadOwnEntityLogo
 
     public function handle(User $owner, UploadedFile $upload): Entity
     {
-        $entity = $this->ownEntity->editableOf($owner, 'upload_logo');
+        $entity = $this->ownEntity->of($owner);
         $logo = $this->intake->accept($upload, $entity, $owner);
 
         try {

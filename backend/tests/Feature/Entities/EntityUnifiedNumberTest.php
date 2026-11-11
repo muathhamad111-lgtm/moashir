@@ -8,6 +8,7 @@ use App\Data\Entities\EntityProfileData;
 use App\Data\Entities\EntityRegistrationData;
 use App\Data\Entities\EntityRegistryUpdate;
 use App\Enums\Entities\EntityProfileField;
+use App\Enums\Entities\ProfileSection;
 use App\Enums\Identity\Locale;
 use App\Models\Entities\Entity;
 use App\Services\Entities\EntityEraser;
@@ -21,15 +22,6 @@ use Illuminate\Validation\ValidationException;
 beforeEach(function (): void {
     Notification::fake();
 });
-
-/**
- * @param  array<string, mixed>  $extra
- * @return array<string, mixed>
- */
-function ownProfileWithNumber(Entity $entity, array $extra = []): array
-{
-    return [...profilePayload($entity, ['founding_year' => $entity->founding_year]), 'marketing_consent' => false, ...$extra];
-}
 
 it('requires a valid unified national number at registration', function (array $override, string $message): void {
     $this->postJson('/api/v1/auth/register', registrationPayload($override), ['Accept-Language' => 'en'])
@@ -74,12 +66,11 @@ it('turns a unified national number taken by a concurrent registration into the 
     )))->toThrow(ValidationException::class, __('validation.custom.unified_number.unique'));
 });
 
-it('keeps an existing number when an older client omits it and updates it with a history entry', function (): void {
+it('updates the number from the identity section with a history entry', function (): void {
     $entity = entityWithOwner(static fn ($factory) => $factory->state(['unified_number' => '7001111111']));
     $owner = ownerOf($entity);
 
-    switchTo($owner)->putJson('/api/v1/entities/me', ownProfileWithNumber($entity))->assertOk()->assertJsonPath('data.unified_number', '7001111111');
-    switchTo($owner)->putJson('/api/v1/entities/me', ownProfileWithNumber($entity, ['unified_number' => '7002222222']))->assertOk()
+    saveSection($entity, ProfileSection::Identity, ['unified_number' => '7002222222'])->assertOk()
         ->assertJsonPath('data.unified_number', '7002222222');
 
     $history = collect(switchTo($owner)->getJson('/api/v1/entities/me/profile-changes')->assertOk()->json('data'))->keyBy('field');
@@ -93,7 +84,7 @@ it('keeps an existing number when an older client omits it and updates it with a
 it('never lets a profile update clear the mandatory number', function (mixed $value): void {
     $entity = entityWithOwner(static fn ($factory) => $factory->state(['unified_number' => '7001111111']));
 
-    switchTo(ownerOf($entity))->putJson('/api/v1/entities/me', ownProfileWithNumber($entity, ['unified_number' => $value]))
+    saveSection($entity, ProfileSection::Identity, ['unified_number' => $value])
         ->assertUnprocessable()
         ->assertJsonValidationErrors('unified_number');
 
@@ -103,22 +94,29 @@ it('never lets a profile update clear the mandatory number', function (mixed $va
 it('accepts the entity own number and refuses one held by another entity on update', function (): void {
     entityWithOwner(static fn ($factory) => $factory->state(['unified_number' => '7009999999']));
     $entity = entityWithOwner(static fn ($factory) => $factory->state(['unified_number' => '7001111111']));
-    $owner = ownerOf($entity);
 
-    switchTo($owner)->putJson('/api/v1/entities/me', ownProfileWithNumber($entity, ['unified_number' => '7001111111']))->assertOk();
-    switchTo($owner)->putJson('/api/v1/entities/me', ownProfileWithNumber($entity, ['unified_number' => '7009999999']))
+    saveSection($entity, ProfileSection::Identity, ['unified_number' => '7001111111'])->assertOk();
+    saveSection($entity, ProfileSection::Identity, ['unified_number' => '7009999999'])
         ->assertUnprocessable()
         ->assertJsonPath('errors.unified_number.0', __('validation.custom.unified_number.unique'));
 });
 
-it('nudges an existing entity without the number through a required completion item', function (): void {
+it('shows an existing entity without the number as missing a required field', function (): void {
     $entity = entityWithOwner(static fn ($factory) => $factory->state(['unified_number' => null]));
 
     switchTo(ownerOf($entity))->getJson('/api/v1/entities/me')->assertOk()
         ->assertJsonPath('data.unified_number', null)
         ->assertJsonPath('data.profile_completed', false)
-        ->assertJsonPath('data.profile_completion.percent', 87)
-        ->assertJsonPath('data.profile_completion.items.5', ['key' => 'unified_number', 'is_complete' => false, 'is_required' => true]);
+        ->assertJsonPath('data.profile_completion.percent', 93)
+        ->assertJsonPath('data.profile_completion.sections.0.missing_fields', ['unified_number'])
+        ->assertJsonPath('data.profile_sections.0.fields.2', ['key' => 'unified_number', 'requirement' => 'required']);
+});
+
+it('asks a legacy entity without the number for it before its identity section can be saved', function (): void {
+    $entity = entityWithOwner(static fn ($factory) => $factory->state(['unified_number' => null]));
+
+    saveSection($entity, ProfileSection::Identity, ['license_number' => '770000123'])->assertUnprocessable()->assertJsonValidationErrors('unified_number');
+    saveSection($entity, ProfileSection::Governance, ['employees_count' => 12])->assertOk();
 });
 
 it('lets staff read and correct the number with the reason recorded in the history', function (): void {

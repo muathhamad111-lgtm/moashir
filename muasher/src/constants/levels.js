@@ -53,7 +53,11 @@ export const LEVEL_MINI_CARD = Object.freeze({
     actionKey: 'level.miniCard.participation',
     routeName: ROUTE_NAMES.CERTIFICATES_INDEX,
   },
-  level: { actionKey: 'level.miniCard.certificate', routeName: ROUTE_NAMES.CERTIFICATES_INDEX },
+  level: {
+    actionKey: 'level.miniCard.certificate',
+    routeName: ROUTE_NAMES.CERTIFICATES_INDEX,
+    icon: 'eye',
+  },
 })
 
 export const LEVEL_FILTER_VALUES = Object.freeze([

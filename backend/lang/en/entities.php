@@ -45,6 +45,9 @@ return [
         'unified_number' => 'Unified national number',
         'founded_on' => 'Founding date',
         'website_url' => 'Website',
+        'authorized_person_name' => 'Authorized account manager',
+        'phone' => 'Mobile number',
+        'marketing_consent' => 'Platform news and offers',
     ],
 
     'export' => [

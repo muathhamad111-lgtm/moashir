@@ -63,6 +63,7 @@ describe('demo-free wording (J-4)', () => {
 describe('one entity term (W-1)', () => {
   it('names the own organisation «جهتك» / «الجهة», never «جمعيتك»', () => {
     expect(hits(ar, OWN_ASSOCIATION)).toEqual([])
-    expect(ar.portal.topBar.area).toBe('حساب الجهة')
+    expect(ar.portal.profile.documentTitle).toBe('ملف الجهة')
+    expect(ar.portal.sideNav.items.entityProfile).toBe('ملف الجهة')
   })
 })

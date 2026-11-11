@@ -267,6 +267,9 @@ return [
         'city_id' => [
             'not_in_region' => 'Choose an active city of the selected region.',
         ],
+        'official_email' => [
+            'prohibited' => 'The official e-mail is changed from "Change e-mail", not from this section.',
+        ],
         'new_email' => [
             'same_as_current' => 'The new e-mail must be different from the current one.',
         ],

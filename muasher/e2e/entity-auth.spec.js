@@ -83,7 +83,7 @@ test('profile renders the entity details behind the session', async ({ page }, t
   for (let attempt = 0; attempt < 6; attempt += 1) {
     if (
       await page
-        .locator('.entity-profile-hub .portal-area__title')
+        .locator('.profile-header__name')
         .isVisible()
         .catch(() => false)
     )
@@ -92,7 +92,7 @@ test('profile renders the entity details behind the session', async ({ page }, t
     if (await retry.isVisible().catch(() => false)) await retry.click()
     await page.waitForTimeout(600)
   }
-  await expect(page.locator('.entity-profile-hub .portal-area__title')).toBeVisible()
+  await expect(page.locator('.profile-header__name')).toBeVisible()
 })
 
 test('entity accounts land on the journey home in the portal shell', async ({ page }, testInfo) => {

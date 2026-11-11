@@ -4,8 +4,6 @@ import en from '@/i18n/locales/en.json'
 import ar from '@/i18n/locales/ar.json'
 import {
   emptyProfileValues,
-  ownProfileFormValues,
-  ownProfilePayload,
   profileFormValues,
   profilePayload,
   registrationPayload,
@@ -17,7 +15,6 @@ import {
   isValidGovernanceGrade,
 } from '@/utils/governanceGrade'
 import {
-  ownProfileSchema,
   permanentDeletionSchema,
   registrationSchema,
   unifiedNumberField,
@@ -114,49 +111,10 @@ describe('entity payload mapping', () => {
     )
   })
 
-  it('sends the registry details and lets the founding date decide the year', () => {
-    const payload = ownProfilePayload({
-      ...values(),
-      licenseNumber: '٠٠٠١٢٣',
-      foundedOn: '2012-03-01',
-      foundingYear: '2015',
-      websiteUrl: ' https://www.alamal.example.sa ',
-      marketingConsent: true,
-    })
-    expect(payload).toMatchObject({
-      licenseNumber: '000123',
-      foundedOn: '2012-03-01',
-      foundingYear: 2012,
-      websiteUrl: 'https://www.alamal.example.sa',
-      marketingConsent: true,
-    })
-  })
-
-  it('clears empty registry details and keeps the typed year without a date', () => {
-    const payload = ownProfilePayload({
-      ...values(),
-      licenseNumber: '',
-      foundedOn: '',
-      websiteUrl: '',
-    })
-    expect(payload).toMatchObject({ licenseNumber: null, foundedOn: null, websiteUrl: null })
-    expect(payload.foundingYear).toBe(Number(values().foundingYear))
-  })
-
-  it('reads the registry details back into form values', () => {
-    expect(
-      ownProfileFormValues({
-        licenseNumber: '000123',
-        foundedOn: '2012-03-01',
-        websiteUrl: null,
-        marketingConsent: true,
-      }),
-    ).toMatchObject({
-      licenseNumber: '000123',
-      foundedOn: '2012-03-01',
-      websiteUrl: '',
-      marketingConsent: true,
-    })
+  it('keeps an unanswered strategic plan as empty and sends it back as null (P-6)', () => {
+    expect(profileFormValues({ ...ENTITY, hasStrategicPlan: null }).hasStrategicPlan).toBe('')
+    expect(profilePayload(values({ hasStrategicPlan: '' })).hasStrategicPlan).toBeNull()
+    expect(profilePayload(values({ hasStrategicPlan: 'no' })).hasStrategicPlan).toBe(false)
   })
 })
 
@@ -223,46 +181,5 @@ describe('unified national number', () => {
   it('sends the number only when one is entered, in Western digits', () => {
     expect(unifiedNumberPayload('٧٠٠١٢٣٤٥٦٧')).toEqual({ unifiedNumber: '7001234567' })
     expect(unifiedNumberPayload('')).toEqual({})
-  })
-})
-
-describe('own profile registry details', () => {
-  const TODAY = '2026-11-04'
-
-  async function errorsOf(changes) {
-    const schema = ownProfileSchema(t, TODAY)
-    const errors = await schema
-      .validate(
-        { ...values(), marketingConsent: false, unifiedNumber: '7000000001', ...changes },
-        { abortEarly: false },
-      )
-      .then(() => [])
-      .catch((error) => error.inner.map((issue) => issue.path))
-    return errors
-  }
-
-  it('accepts empty or valid licence, founding date and https website', async () => {
-    expect(await errorsOf({ licenseNumber: '', foundedOn: '', websiteUrl: '' })).toEqual([])
-    expect(
-      await errorsOf({
-        licenseNumber: '000123',
-        foundedOn: '2012-03-01',
-        websiteUrl: 'https://www.alamal.example.sa',
-      }),
-    ).toEqual([])
-  })
-
-  it('refuses short licences, future or malformed dates and plain http', async () => {
-    expect(
-      await errorsOf({
-        licenseNumber: '12',
-        foundedOn: '2026-12-01',
-        websiteUrl: 'http://www.alamal.example.sa',
-      }),
-    ).toEqual(['licenseNumber', 'foundedOn', 'websiteUrl'])
-    expect(await errorsOf({ foundedOn: '2012-02-30', websiteUrl: 'https://localhost' })).toEqual([
-      'foundedOn',
-      'websiteUrl',
-    ])
   })
 })

@@ -44,6 +44,18 @@ function cancelUnconfirmed(entityId) {
     })
 }
 
+const OPEN_STATUSES = [S.AWAITING_OTP, S.AWAITING_APPROVAL]
+
+export function cancelOpenChanges(entityId) {
+  const open = changes.filter(
+    (change) => change.entityId === entityId && OPEN_STATUSES.includes(change.status),
+  )
+  open.forEach((change) => {
+    change.status = S.CANCELLED
+  })
+  return open.length > 0
+}
+
 export function requestChange(entity, newEmail, challengeId) {
   if (entity.status !== 'active') throw entityReject.illegalTransition()
   if (awaitingChangeOf(entity.id)) throw entityReject.emailPendingApproval()

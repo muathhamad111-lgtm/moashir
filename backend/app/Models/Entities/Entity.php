@@ -13,12 +13,12 @@ use App\Enums\Entities\EntityProfileField;
 use App\Enums\Entities\EntityStatus;
 use App\Enums\Entities\EntityType;
 use App\Enums\Entities\OrgSize;
-use App\Enums\Entities\ProfileCompletionItem;
 use App\Models\Assessments\Assessment;
 use App\Models\Certificates\Certificate;
 use App\Models\Files\StoredFile;
 use App\Models\Identity\EmailChangeRequest;
 use App\Models\Identity\User;
+use App\Support\Entities\ProfileFieldValues;
 use App\Support\Periods\LocalDay;
 use App\Support\Search\SearchTextNormalizer;
 use App\Support\ValueObjects\EntityName;
@@ -51,7 +51,7 @@ use Illuminate\Support\Facades\Date;
  * @property string|null $governance_grade
  * @property int|null $employees_count
  * @property int|null $annual_beneficiaries_count
- * @property bool $has_strategic_plan
+ * @property bool|null $has_strategic_plan
  * @property string|null $unified_number
  * @property string|null $license_number
  * @property CarbonImmutable|null $founded_on
@@ -92,7 +92,6 @@ final class Entity extends Model
      */
     protected $attributes = [
         'status' => 'pending_verification',
-        'has_strategic_plan' => false,
     ];
 
     /**
@@ -292,21 +291,7 @@ final class Entity extends Model
 
     public function profileCompletion(): ProfileCompletion
     {
-        $owner = $this->loadMissing('owner')->owner;
-
-        return new ProfileCompletion([
-            ProfileCompletionItem::BasicData->value => array_all(EntityProfileField::basicData(), fn (EntityProfileField $field): bool => $this->getAttribute($field->value) !== null),
-            ProfileCompletionItem::AccountOwner->value => $owner instanceof User && trim($owner->name) !== '',
-            ProfileCompletionItem::GovernanceGrade->value => $this->governance_grade !== null,
-            ProfileCompletionItem::EmployeesCount->value => $this->employees_count !== null,
-            ProfileCompletionItem::AnnualBeneficiariesCount->value => $this->annual_beneficiaries_count !== null,
-            ProfileCompletionItem::UnifiedNumber->value => $this->unified_number !== null,
-            ProfileCompletionItem::LicenseNumber->value => $this->license_number !== null,
-            ProfileCompletionItem::FoundedOn->value => $this->founded_on !== null,
-            ProfileCompletionItem::Phone->value => $owner?->phone !== null,
-            ProfileCompletionItem::WebsiteUrl->value => $this->website_url !== null,
-            ProfileCompletionItem::Logo->value => $this->logo_file_id !== null,
-        ]);
+        return ProfileCompletion::of(ProfileFieldValues::of($this));
     }
 
     public function syncProfileCompletedAt(): void
@@ -319,7 +304,15 @@ final class Entity extends Model
      */
     public function profileAttributesFrom(EntityProfileData $profile): array
     {
-        $attributes = $profile->toAttributes();
+        return $this->withDerivedFoundingYear($profile->toAttributes());
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     * @return array<string, mixed>
+     */
+    public function withDerivedFoundingYear(array $attributes): array
+    {
         $foundedOn = array_key_exists(EntityProfileField::FoundedOn->value, $attributes) ? $attributes[EntityProfileField::FoundedOn->value] : $this->founded_on;
 
         return $foundedOn instanceof CarbonInterface ? [...$attributes, EntityProfileField::FoundingYear->value => $foundedOn->year] : $attributes;

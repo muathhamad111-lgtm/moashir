@@ -70,7 +70,12 @@ describe('tier mapping', () => {
     ['participation', 'level.miniCard.participation', ROUTE_NAMES.CERTIFICATES_INDEX],
     ['gold', 'level.miniCard.certificate', ROUTE_NAMES.CERTIFICATES_INDEX],
   ])('labels the mini-card for %s', (tier, actionKey, routeName) => {
-    expect(miniCardOf(tier)).toEqual({ actionKey, routeName })
+    expect(miniCardOf(tier)).toMatchObject({ actionKey, routeName })
+  })
+
+  it('uses the eye icon for the certificate action only (P-11)', () => {
+    expect(miniCardOf('gold').icon).toBe('eye')
+    expect(miniCardOf('none').icon).toBeUndefined()
   })
 
   it('orders tiers and maps non-metal tiers to the neutral palette', () => {

@@ -24,17 +24,30 @@ beforeEach(() => {
 })
 
 describe('entitiesService — own entity', () => {
-  it('reads and replaces the own profile and breadcrumbs only the field shape', async () => {
+  it('reads the own profile and saves one section, breadcrumbing only the field shape', async () => {
     await entitiesService.getMine()
     expect(apiClient.get).toHaveBeenCalledWith('/entities/me')
-    const payload = { governanceGrade: '88.25', employeesCount: 50 }
-    await entitiesService.updateMine(payload)
-    expect(apiClient.put).toHaveBeenCalledWith('/entities/me', payload)
+    const payload = { baseRevision: 'r-1', governanceGrade: '88.25', employeesCount: 50 }
+    await entitiesService.saveProfileSection('governance', payload)
+    expect(apiClient.patch).toHaveBeenCalledWith('/entities/me/profile/governance', payload)
     expect(logger.breadcrumb).toHaveBeenCalledWith(
       'service',
-      'entities.updateMine',
-      expect.objectContaining({ payloadShape: ['governanceGrade', 'employeesCount'] }),
+      'entities.saveProfileSection',
+      expect.objectContaining({
+        payloadShape: ['baseRevision', 'governanceGrade', 'employeesCount'],
+      }),
     )
+    expect(entitiesService.updateMine).toBeUndefined()
+  })
+
+  it('cancels a pending e-mail change and maps the own entity', async () => {
+    apiClient.post.mockResolvedValue({
+      data: { data: { canEdit: true, profileSections: [], profileCompletion: { percent: 80 } } },
+    })
+    const { data } = await entitiesService.cancelEmailChange()
+    expect(apiClient.post).toHaveBeenCalledWith('/entities/me/email/cancel', {})
+    expect(data.canEdit).toBe(true)
+    expect(data.profileCompletion).toMatchObject({ percent: 80, sections: [] })
   })
 
   it('requests and confirms the official e-mail change', async () => {

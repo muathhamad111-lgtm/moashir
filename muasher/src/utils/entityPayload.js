@@ -17,6 +17,16 @@ function localPhone(phone) {
   return phone ? phone.replace(/^\+966/, '0') : ''
 }
 
+function strategicPlanValue(value) {
+  if (value === null || value === undefined) return ''
+  return value ? YES : NO
+}
+
+function strategicPlanPayload(value) {
+  if (value === YES) return true
+  return value === NO ? false : null
+}
+
 export function unifiedNumberPayload(value) {
   const unifiedNumber = toWesternDigits(value)
   return unifiedNumber ? { unifiedNumber } : {}
@@ -56,7 +66,7 @@ export function profileFormValues(entity) {
     governanceGrade: text(entity.governanceGrade),
     employeesCount: text(entity.employeesCount),
     annualBeneficiariesCount: text(entity.annualBeneficiariesCount),
-    hasStrategicPlan: entity.hasStrategicPlan ? YES : NO,
+    hasStrategicPlan: strategicPlanValue(entity.hasStrategicPlan),
   }
 }
 
@@ -75,38 +85,7 @@ export function profilePayload(values) {
     governanceGrade: governanceGradePayload(values.governanceGrade),
     employeesCount: optionalNumber(values.employeesCount),
     annualBeneficiariesCount: optionalNumber(values.annualBeneficiariesCount),
-    hasStrategicPlan: values.hasStrategicPlan === YES,
-  }
-}
-
-const FOUNDED_YEAR = /^(\d{4})-/
-
-export function ownProfileFormValues(entity) {
-  return {
-    ...profileFormValues(entity),
-    licenseNumber: text(entity.licenseNumber),
-    foundedOn: text(entity.foundedOn),
-    websiteUrl: text(entity.websiteUrl),
-    marketingConsent: entity.marketingConsent === true,
-  }
-}
-
-function nullable(value) {
-  const trimmed = text(value).trim()
-  return trimmed === '' ? null : trimmed
-}
-
-export function ownProfilePayload(values) {
-  const foundedOn = nullable(values.foundedOn)
-  const year = FOUNDED_YEAR.exec(foundedOn ?? '')?.[1]
-  const base = profilePayload(year ? { ...values, foundingYear: year } : values)
-  return {
-    ...base,
-    ...unifiedNumberPayload(values.unifiedNumber),
-    licenseNumber: nullable(toWesternDigits(values.licenseNumber)),
-    foundedOn,
-    websiteUrl: nullable(values.websiteUrl),
-    marketingConsent: values.marketingConsent === true,
+    hasStrategicPlan: strategicPlanPayload(values.hasStrategicPlan),
   }
 }
 

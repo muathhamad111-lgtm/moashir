@@ -173,3 +173,21 @@
   margin-block-start: var(--space-4);
   text-align: start;
 }
+
+.modal--drawer {
+  padding: 0;
+
+  &.is-open {
+    justify-content: flex-end;
+    align-items: stretch;
+  }
+
+  .modal__panel {
+    inline-size: min(100vw, var(--size-modal-sm));
+    max-block-size: none;
+    block-size: 100%;
+    border-block: 0;
+    border-inline-end: 0;
+    border-radius: 0;
+  }
+}

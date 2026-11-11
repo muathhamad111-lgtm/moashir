@@ -5,7 +5,7 @@ import { expireDueOrders } from '../finance/paymentLifecycle'
 import { openCompletionOf } from '../accredited/accreditedRecords'
 import { accreditedProgressOf } from '../accredited/accreditedProgress'
 import { senderThreadCards } from '../senderThreads'
-import { profileCompletionOf } from './profileCompletion'
+import { profileCompletionOf } from '../entityProfileSections'
 
 const SEVERITY_RANK = { danger: 0, warning: 1, info: 2 }
 const OPEN_ORDERS = ['created', 'pending']

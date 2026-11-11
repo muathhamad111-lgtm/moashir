@@ -27,9 +27,11 @@ const ITEMS = [
   item('complete_payment', { reference: 'PAY-2026-000001' }, { link: '/payments' }),
 ]
 
-async function factory(items, locale = 'ar') {
+async function factory(items, locale = 'ar', path = '/dashboard') {
   dashboardService.getActionCenter.mockResolvedValue({ data: items, meta: {} })
-  const wrapper = mount(AttentionStrip, { global: createTestGlobals({ locale }) })
+  const globals = createTestGlobals({ locale })
+  await globals.router.push(path)
+  const wrapper = mount(AttentionStrip, { global: globals })
   await flushPromises()
   return wrapper
 }
@@ -51,6 +53,14 @@ describe('AttentionStrip', () => {
     expect(desktop[0].attributes('href')).toBe('/assessment/accredited')
     expect(desktop[2].text()).toContain('80%')
     expect(wrapper.find('.attention-strip__count').text()).toBe('4')
+  })
+
+  it('hides «أكمل ملف الجهة» on the entity profile page only (P-8)', async () => {
+    const onProfile = await factory(ITEMS, 'ar', '/entity/profile')
+    expect(onProfile.find('.attention-strip__count').text()).toBe('3')
+    expect(onProfile.text()).not.toContain('80%')
+    const elsewhere = await factory(ITEMS, 'ar', '/payments')
+    expect(elsewhere.find('.attention-strip__count').text()).toBe('4')
   })
 
   it('expands every item inline with «عرض الكل»', async () => {

@@ -18,37 +18,42 @@ import {
   ownEntityOf,
   viewableEntity,
 } from '../stores/entityAccess'
-import { ENTITY_ACCESS, entityResourceFor, ownEntityResource } from '../stores/entitySerializers'
+import { ENTITY_ACCESS, entityResourceFor } from '../stores/entitySerializers'
 import { entityStats, filtersFrom, queryEntities } from '../stores/entityQueries'
 import { LEVEL_FILTERS } from '../stores/entityLevels'
-import { applyProfile, isDeleted, setMarketingConsent } from '../stores/entitiesStore'
-import { applyRegistry } from '../stores/entityRegistry'
+import { applyProfile, isDeleted } from '../stores/entitiesStore'
 import { applyUnifiedNumber } from '../stores/entityUnifiedNumber'
 import { removeEntityLogo, storeEntityLogo } from '../stores/entityLogo'
-import {
-  assertOwnProfile,
-  assertProfile,
-  assertReason,
-  contactFrom,
-  profileFrom,
-} from '../stores/entityValidation'
-import { awaitingChangeOf } from '../stores/entityEmailChanges'
+import { assertProfile, assertReason, contactFrom, profileFrom } from '../stores/entityValidation'
 import { sessionCan } from '../stores/sessionPermissions'
 import { entitiesCsv, exportFileName } from '../stores/entityCsv'
 import { recordProfileChanges } from '../stores/profileChangesStore'
-
-function ownEntityActor(permission) {
-  const user = signedInUser()
-  if (!user.entityId || !sessionCan(permission)) throw entityReject.forbidden()
-  return user
-}
-
-function ownResource(entity) {
-  return ownEntityResource(entity, awaitingChangeOf(entity.id))
-}
+import { ownEditableEntity, ownEntityActor, ownResource } from '../stores/ownEntity'
+import { PROFILE_SECTION_KEYS } from '../stores/entityProfileSections'
+import {
+  applySection,
+  assertFreshRevision,
+  assertSection,
+  snapshotOf,
+} from '../stores/entitySectionSaves'
 
 function staffResource(user, entity) {
   return entityResourceFor(accessOf(user))(entity, user)
+}
+
+async function saveSection({ params, request }) {
+  if (!PROFILE_SECTION_KEYS.includes(params.section)) throw entityReject.notFound()
+  const { user, entity } = ownEditableEntity()
+  const body = await readJson(request)
+  assertSection(params.section, body, entity)
+  assertFreshRevision(params.section, body, entity)
+  const before = snapshotOf(entity)
+  applySection(params.section, entity, body)
+  const changedFields = recordProfileChanges(entity, before, entity, {
+    actor: user,
+    isStaff: false,
+  })
+  return envelope(ownResource(entity), { section: params.section, changedFields })
 }
 
 function listFilters(request) {
@@ -82,28 +87,12 @@ export const entitiesHandlers = [
     }),
   ),
 
-  http.put(
-    '/api/v1/entities/me',
-    entityRoute(async ({ request }) => {
-      const user = ownEntityActor(P.PROFILE_EDIT)
-      const entity = ownEntityOf(user)
-      const body = await readJson(request)
-      assertOwnProfile(body, entity.id)
-      const before = { ...entity, name: { ...entity.name } }
-      applyProfile(entity, profileFrom(body), contactFrom(body))
-      applyRegistry(entity, body)
-      applyUnifiedNumber(entity, body)
-      recordProfileChanges(entity, before, entity, { actor: user, isStaff: false })
-      setMarketingConsent(entity, body.marketingConsent)
-      return envelope(ownResource(entity))
-    }),
-  ),
+  http.patch('/api/v1/entities/me/profile/:section', entityRoute(saveSection)),
 
   http.post(
     '/api/v1/entities/me/logo',
     entityRoute(async ({ request }) => {
-      const user = ownEntityActor(P.PROFILE_EDIT)
-      const entity = ownEntityOf(user)
+      const { user, entity } = ownEditableEntity()
       const form = await request.formData()
       await storeEntityLogo(user, entity, form.get('file'))
       return envelope(ownResource(entity), {}, { status: 201 })
@@ -113,9 +102,8 @@ export const entitiesHandlers = [
   http.delete(
     '/api/v1/entities/me/logo',
     entityRoute(() => {
-      const user = ownEntityActor(P.PROFILE_EDIT)
-      const entity = removeEntityLogo(ownEntityOf(user))
-      return envelope(ownResource(entity))
+      const { entity } = ownEditableEntity()
+      return envelope(ownResource(removeEntityLogo(entity)))
     }),
   ),
 
@@ -169,7 +157,7 @@ export const entitiesHandlers = [
       assertProfile(body, entity.id)
       assertReason(body)
       if (isDeleted(entity)) throw entityReject.deleted()
-      const before = { ...entity, name: { ...entity.name } }
+      const before = snapshotOf(entity)
       applyProfile(entity, profileFrom(body), contactFrom(body))
       applyUnifiedNumber(entity, body)
       recordProfileChanges(entity, before, entity, { actor: user, isStaff: true })

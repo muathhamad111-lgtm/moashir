@@ -2,23 +2,36 @@ import { PROFILE_FIELD_LABELS, profileChangesFixture } from '../fixtures/profile
 import { findCity, findRegion } from './regionsStore'
 import { listRoles } from './permissionsStore'
 import { actorDisplayName } from './actorName'
+import { historySectionOf } from './entityProfileSections'
+
+const PHONE_VISIBLE_DIGITS = 3
+const PHONE_PREFIX = '+9665'
+
+function maskedPhone(phone) {
+  if (!phone) return null
+  const text = String(phone)
+  return `${PHONE_PREFIX}${'*'.repeat(text.length - PHONE_PREFIX.length - PHONE_VISIBLE_DIGITS)}${text.slice(-PHONE_VISIBLE_DIGITS)}`
+}
 
 const TRACKED_FIELDS = Object.freeze({
-  name: 'name',
-  entity_type: 'entityType',
-  development_sector: 'developmentSector',
-  org_size: 'orgSize',
-  founding_year: 'foundingYear',
-  region_id: 'regionId',
-  city_id: 'cityId',
-  governance_grade: 'governanceGrade',
-  employees_count: 'employeesCount',
-  annual_beneficiaries_count: 'annualBeneficiariesCount',
-  has_strategic_plan: 'hasStrategicPlan',
-  unified_number: 'unifiedNumber',
-  license_number: 'licenseNumber',
-  founded_on: 'foundedOn',
-  website_url: 'websiteUrl',
+  name: (entity) => entity.name,
+  entity_type: (entity) => entity.entityType,
+  development_sector: (entity) => entity.developmentSector,
+  org_size: (entity) => entity.orgSize,
+  founding_year: (entity) => entity.foundingYear,
+  region_id: (entity) => entity.regionId,
+  city_id: (entity) => entity.cityId,
+  governance_grade: (entity) => entity.governanceGrade,
+  employees_count: (entity) => entity.employeesCount,
+  annual_beneficiaries_count: (entity) => entity.annualBeneficiariesCount,
+  has_strategic_plan: (entity) => entity.hasStrategicPlan,
+  unified_number: (entity) => entity.unifiedNumber,
+  license_number: (entity) => entity.licenseNumber,
+  founded_on: (entity) => entity.foundedOn,
+  authorized_person_name: (entity) => entity.owner?.name,
+  phone: (entity) => maskedPhone(entity.owner?.phone),
+  website_url: (entity) => entity.websiteUrl,
+  marketing_consent: (entity) => entity.marketingConsentAt !== null,
 })
 
 const PLACE_FIELDS = { region_id: findRegion, city_id: findCity }
@@ -56,19 +69,22 @@ function staffOf(user) {
 
 export function recordProfileChanges(entity, before, after, { actor, isStaff }) {
   const changedAt = new Date().toISOString()
-  for (const [field, attribute] of Object.entries(TRACKED_FIELDS)) {
-    if (same(before[attribute], after[attribute])) continue
+  const changed = Object.entries(TRACKED_FIELDS).filter(
+    ([, read]) => !same(read(before), read(after)),
+  )
+  for (const [field, read] of changed) {
     changes.push({
       id: nextId++,
       entityId: entity.id,
       field,
-      oldValue: before[attribute] ?? null,
-      newValue: after[attribute] ?? null,
+      oldValue: read(before) ?? null,
+      newValue: read(after) ?? null,
       changedBy: isStaff ? 'staff' : 'entity',
       staff: isStaff ? staffOf(actor) : null,
       changedAt,
     })
   }
+  return changed.map(([field]) => field)
 }
 
 function presentedValue(field, value) {
@@ -83,6 +99,7 @@ function baseItem(change) {
   return {
     id: change.id,
     field: change.field,
+    section: historySectionOf(change.field),
     fieldLabel: { ...PROFILE_FIELD_LABELS[change.field] },
     oldValue: presentedValue(change.field, change.oldValue),
     newValue: presentedValue(change.field, change.newValue),
@@ -108,8 +125,9 @@ export function staffChangeResource(change) {
   }
 }
 
-export function changesOf(entityId) {
+export function changesOf(entityId, section = null) {
   return changes
     .filter((change) => change.entityId === Number(entityId))
+    .filter((change) => !section || historySectionOf(change.field) === section)
     .sort((left, right) => right.changedAt.localeCompare(left.changedAt) || right.id - left.id)
 }

@@ -280,45 +280,52 @@ test.describe('organization profile', () => {
     await signIn(page, testInfo)
   })
 
-  test('saves the basic tab with the licence and the founding date', async ({ page }) => {
-    await open(page, '/entity/profile', '.profile-form')
-    await expect(page.locator('.profile-completeness__value')).toHaveText('25%')
-    await page.locator('input[name="unifiedNumber"]').fill('7000006001')
-    await page.locator('input[name="licenseNumber"]').fill('000123')
-    await page.locator('input[name="foundedOn"]').fill('2012-03-01')
-    await expect(page.locator('input[name="foundingYear"]')).toHaveValue('2012')
-    await page.locator('.portal-area__actions .btn--primary').click()
-    await expect(page.locator('.toast').first()).toBeVisible()
-    await expect(page.locator('.profile-completeness__value')).toHaveText('62%')
+  test('saves the identity section with the licence and the founding date', async ({ page }) => {
+    await open(page, '/entity/profile', '[data-section="identity"]')
+    const percent = page.locator('.profile-completeness__percent')
+    await expect(percent).toHaveText('60%')
+    const identity = page.locator('[data-section="identity"]')
+    await identity.locator('.profile-section__edit').click()
+    await identity.locator('input[name="unifiedNumber"]').fill('7000006001')
+    await identity.locator('input[name="licenseNumber"]').fill('000123')
+    await identity.locator('input[name="foundedOn"]').fill('2012-03-01')
+    await identity.locator('button[type="submit"]').click()
+    await expect(identity.locator('.profile-section__status-text--success')).toBeVisible()
+    await expect(percent).toHaveText('80%')
+    await expect(identity.getByTestId('profile-section-state')).toHaveClass(/--complete/)
   })
 
-  test('guards unsaved changes when switching tabs and refuses an http website', async ({
-    page,
-  }) => {
-    await open(page, '/entity/profile?tab=contact', '.official-email')
-    await page.locator('input[name="websiteUrl"]').fill('http://namaa.example.sa')
-    await page.locator('[role="tab"]').first().click()
+  test('guards unsaved changes between sections and refuses an http website', async ({ page }) => {
+    await open(page, '/entity/profile', '[data-section="contact"]')
+    const contact = page.locator('[data-section="contact"]')
+    await contact.locator('.profile-section__edit').click()
+    await contact.locator('input[name="websiteUrl"]').fill('http://namaa.example.sa')
+    await page.locator('[data-section="identity"] .profile-section__edit').click()
     await expect(page.locator('.modal__panel')).toBeVisible()
     await page.locator('.modal__panel .btn--secondary').click()
-    await expect(page).toHaveURL(/tab=contact/)
-    await page.locator('.portal-area__actions .btn--primary').click()
-    await expect(page.locator('.field__error').first()).toBeVisible()
+    await expect(contact.locator('form')).toBeVisible()
+    await contact.locator('button[type="submit"]').click()
+    await expect(contact.locator('.field__error').first()).toBeVisible()
   })
 
-  test('uploads and removes the organization logo', async ({ page }) => {
-    await open(page, '/entity/profile', '.entity-logo')
-    await page
-      .locator('.entity-logo__input')
+  test('uploads and removes the organization logo from the identity header', async ({ page }) => {
+    await open(page, '/entity/profile', '[data-testid="profile-change-logo"]')
+    await page.getByTestId('profile-change-logo').click()
+    const dialog = page.getByTestId('logo-dialog')
+    await dialog
+      .locator('.logo-dialog__input')
       .setInputFiles({ name: 'namaa-logo.png', mimeType: 'image/png', buffer: squarePng(240) })
-    await expect(page.locator('.entity-logo__image')).toBeVisible()
-    await expect(page.locator('.entity-logo__meta .scan-status')).toBeVisible()
-    await page.locator('.entity-logo__actions .btn--ghost').click()
-    await page.locator('.modal .btn--danger').click()
-    await expect(page.locator('.entity-logo__image')).toHaveCount(0)
-    await page
-      .locator('.entity-logo__input')
+    await expect(dialog.locator('.logo-dialog__image')).toBeVisible()
+    await expect(page.locator('.profile-header__logo-image')).toBeVisible()
+    await page.locator('.modal__footer .btn--ghost').click()
+    await page.getByRole('alertdialog').locator('.btn--danger').click()
+    await expect(page.locator('.profile-header__logo-image')).toHaveCount(0)
+    await page.getByTestId('profile-change-logo').click()
+    await expect(dialog.locator('.logo-dialog__image')).toHaveCount(0)
+    await dialog
+      .locator('.logo-dialog__input')
       .setInputFiles({ name: 'tiny.png', mimeType: 'image/png', buffer: squarePng(120) })
-    await expect(page.locator('.entity-logo__error')).toBeVisible()
+    await expect(dialog.locator('.logo-dialog__error')).toBeVisible()
   })
 })
 
@@ -378,7 +385,7 @@ test.describe('portal areas screenshots', () => {
       ready: '.message-thread__closed',
     },
     { name: 'payments', path: '/payments', ready: '.payment-stats__tile' },
-    { name: 'profile', path: '/entity/profile', ready: '.profile-completeness' },
+    { name: 'profile', path: '/entity/profile', ready: '[data-testid="profile-completeness"]' },
     { name: 'feedback-report', path: '/reports/feedback/9104', ready: '.feedback-criterion' },
     { name: 'verify', path: `/verify/${VALID_CODE}`, ready: '.verification-result' },
     { name: 'privacy', path: '/privacy', ready: '.rich-text__table' },

@@ -52,7 +52,10 @@ export function useEntityDisplay() {
     governanceGrade: (entity) => formatGovernanceGrade(entity.governanceGrade),
     employeesCount: (entity) => count(entity.employeesCount),
     annualBeneficiariesCount: (entity) => count(entity.annualBeneficiariesCount),
-    hasStrategicPlan: (entity) => yesNo(entity.hasStrategicPlan),
+    hasStrategicPlan: (entity) =>
+      entity.hasStrategicPlan === null || entity.hasStrategicPlan === undefined
+        ? ''
+        : yesNo(entity.hasStrategicPlan),
     marketingConsent: (entity) => yesNo(entity.marketingConsent),
     createdAt: (entity) => date(entity.createdAt),
     verifiedAt: (entity) => date(entity.verifiedAt),

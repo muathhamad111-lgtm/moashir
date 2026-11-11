@@ -32,11 +32,12 @@ final readonly class UpdateEntityOnBehalf
         $this->context->recordReason($reason);
 
         DB::transaction(function () use ($actor, $entity, $profile, $contact): void {
-            $changes = $this->writer->write($entity, $profile, $contact, $actor);
+            $changes = $this->writer->writeProfile($entity, $profile, $contact, $actor);
+            $audited = $changes->withoutPersonalData();
 
-            $this->audit->record(new AuditEntry(AuditEvent::EntityUpdatedByStaff, $entity, $changes->before, $changes->after));
+            $this->audit->record(new AuditEntry(AuditEvent::EntityUpdatedByStaff, $entity, $audited->before, $audited->after));
 
-            if (! $changes->isEmpty()) {
+            if ($changes->touchesEntityRecord()) {
                 EntityProfileUpdated::dispatch($entity, $changes->fields(), $actor->id);
             }
         });

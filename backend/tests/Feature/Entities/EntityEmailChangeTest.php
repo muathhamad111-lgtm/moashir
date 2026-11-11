@@ -247,3 +247,83 @@ it('rate limits e-mail change requests', function (): void {
 
     $this->postJson('/api/v1/entities/me/email/change', ['new_email' => 'office4@alamal.example.sa'])->assertTooManyRequests();
 });
+
+it('lets the entity cancel its pending change, audits it and keeps the current address', function (): void {
+    [$entity, $owner, $challengeId] = requestEmailChange();
+    confirmEmailChange($challengeId)->assertOk();
+    $oldEmail = $owner->email;
+
+    switchTo($owner)->postJson('/api/v1/entities/me/email/cancel')
+        ->assertOk()
+        ->assertJsonPath('meta.changed', true)
+        ->assertJsonPath('data.pending_email_change', null)
+        ->assertJsonPath('data.official_email', $oldEmail);
+
+    $audit = Audit::query()->where('event', AuditEvent::EntityEmailChangeCancelled->value)->sole();
+
+    expect(EmailChangeRequest::query()->where('user_id', $owner->id)->value('status'))->toBe(EmailChangeStatus::Cancelled)
+        ->and($owner->refresh()->email)->toBe($oldEmail)
+        ->and($audit->auditable_id)->toBe($entity->id)
+        ->and($audit->user_id)->toBe($owner->id)
+        ->and($audit->old_values)->toBe(['status' => 'awaiting_approval'])
+        ->and($audit->new_values)->toBe(['status' => 'cancelled'])
+        ->and(json_encode([$audit->old_values, $audit->new_values]))->not->toContain('alamal.example.sa');
+
+    switchTo($owner)->postJson('/api/v1/entities/me/email/change', ['new_email' => 'board@alamal.example.sa'])->assertOk();
+});
+
+it('cancels idempotently and audits only a real cancellation', function (): void {
+    [, $owner, $challengeId] = requestEmailChange();
+    confirmEmailChange($challengeId)->assertOk();
+
+    switchTo($owner)->postJson('/api/v1/entities/me/email/cancel')->assertOk()->assertJsonPath('meta.changed', true);
+    switchTo($owner)->postJson('/api/v1/entities/me/email/cancel')->assertOk()->assertJsonPath('meta.changed', false)->assertJsonPath('data.pending_email_change', null);
+
+    expect(Audit::query()->where('event', AuditEvent::EntityEmailChangeCancelled->value)->count())->toBe(1);
+});
+
+it('answers a cancellation with nothing pending without writing anything', function (): void {
+    $entity = entityWithOwner();
+
+    switchTo(ownerOf($entity))->postJson('/api/v1/entities/me/email/cancel')->assertOk()->assertJsonPath('meta.changed', false);
+
+    expect(Audit::query()->where('event', AuditEvent::EntityEmailChangeCancelled->value)->count())->toBe(0);
+});
+
+it('also cancels a change still awaiting its code, which can then no longer be confirmed', function (): void {
+    [, $owner, $challengeId] = requestEmailChange();
+
+    switchTo($owner)->postJson('/api/v1/entities/me/email/cancel')->assertOk()->assertJsonPath('meta.changed', true);
+
+    expect(EmailChangeRequest::query()->where('user_id', $owner->id)->value('status'))->toBe(EmailChangeStatus::Cancelled)
+        ->and(Audit::query()->where('event', AuditEvent::EntityEmailChangeCancelled->value)->sole()->old_values)->toBe(['status' => 'awaiting_otp']);
+    switchTo($owner);
+    confirmEmailChange($challengeId)->assertStatus(422);
+    expect($owner->refresh()->email)->not->toBe(NEW_OFFICIAL_EMAIL);
+});
+
+it('keeps a cancelled change out of the approvers hands', function (): void {
+    [, $owner, $challengeId] = requestEmailChange();
+    confirmEmailChange($challengeId)->assertOk();
+    $change = EmailChangeRequest::query()->where('user_id', $owner->id)->firstOrFail();
+    switchTo($owner)->postJson('/api/v1/entities/me/email/cancel')->assertOk();
+
+    switchTo(systemAdmin())->postJson("/api/v1/admin/entity-email-changes/{$change->id}/approve")->assertConflict()->assertJsonPath('code', 'state.transition_illegal');
+
+    expect($owner->refresh()->email)->not->toBe(NEW_OFFICIAL_EMAIL);
+});
+
+it('leaves an approved change in force when the entity cancels afterwards', function (): void {
+    [, $owner, $challengeId] = requestEmailChange();
+    confirmEmailChange($challengeId)->assertOk();
+    $change = EmailChangeRequest::query()->where('user_id', $owner->id)->firstOrFail();
+    switchTo(systemAdmin())->postJson("/api/v1/admin/entity-email-changes/{$change->id}/approve")->assertOk();
+
+    switchTo($owner->refresh())->postJson('/api/v1/entities/me/email/cancel')->assertOk()
+        ->assertJsonPath('meta.changed', false)
+        ->assertJsonPath('data.official_email', NEW_OFFICIAL_EMAIL);
+});
+
+it('requires a session to cancel a change', function (): void {
+    $this->postJson('/api/v1/entities/me/email/cancel')->assertUnauthorized()->assertJsonPath('code', 'unauthenticated');
+});

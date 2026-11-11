@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Policies\Entities;
 
 use App\Enums\Entities\EntityAccess;
+use App\Enums\Entities\EntityStatus;
 use App\Enums\Identity\PermissionKey;
 use App\Models\Entities\Entity;
 use App\Models\Identity\User;
@@ -20,9 +21,17 @@ final readonly class EntityPolicy
         return $actor->entity_id !== null && $actor->can(PermissionKey::EntityProfileView->value);
     }
 
-    public function updateOwn(User $actor): bool
+    public function updateOwn(User $actor, ?Entity $entity = null): Response
     {
-        return $actor->entity_id !== null && $actor->can(PermissionKey::EntityProfileEdit->value);
+        if ($actor->entity_id === null || ! $actor->can(PermissionKey::EntityProfileEdit->value)) {
+            return Response::deny();
+        }
+
+        if ($entity instanceof Entity && $entity->id !== $actor->entity_id) {
+            return Response::deny();
+        }
+
+        return $this->statusOfOwn($actor, $entity) === EntityStatus::Active ? Response::allow() : Response::deny();
     }
 
     public function viewAny(User $actor): bool
@@ -111,5 +120,16 @@ final readonly class EntityPolicy
     public function exportPersonalData(User $actor): bool
     {
         return $actor->can(PermissionKey::PrivacyRequestsManage->value);
+    }
+
+    private function statusOfOwn(User $actor, ?Entity $entity): ?EntityStatus
+    {
+        if ($entity instanceof Entity) {
+            return $entity->status;
+        }
+
+        $status = Entity::query()->whereKey($actor->entity_id)->value('status');
+
+        return $status instanceof EntityStatus ? $status : null;
     }
 }

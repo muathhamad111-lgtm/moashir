@@ -26,6 +26,11 @@ const props = defineProps({
     validator: (value) => Object.values(MODAL_TONES).includes(value),
   },
   describedBy: { type: String, default: '' },
+  layout: {
+    type: String,
+    default: 'dialog',
+    validator: (value) => ['dialog', 'drawer'].includes(value),
+  },
 })
 
 const emit = defineEmits(['update:modelValue', 'close', 'interact'])
@@ -40,9 +45,7 @@ const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
 const isCentered = computed(() => Boolean(props.icon))
-const description = computed(
-  () => props.describedBy || (props.subtitle ? subtitleId : undefined),
-)
+const description = computed(() => props.describedBy || (props.subtitle ? subtitleId : undefined))
 
 function close() {
   emit('update:modelValue', false)
@@ -108,7 +111,10 @@ onBeforeUnmount(() => {
     <div
       v-if="modelValue"
       class="modal is-open"
-      :class="[`modal--${size}`, { 'modal--centered': isCentered }]"
+      :class="[
+        `modal--${size}`,
+        { 'modal--centered': isCentered, 'modal--drawer': layout === 'drawer' },
+      ]"
       @keydown="onKeydown"
     >
       <div class="modal__backdrop" @click="onBackdropClick"></div>

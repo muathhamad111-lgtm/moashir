@@ -4,14 +4,9 @@ import { requestLocale } from '../contract/locale'
 import { paginate } from '../contract/pagination'
 import { EMAIL_CHANGE_STATUSES } from '@/constants/entityEnums'
 import { entityNotices } from '../fixtures/entityMessages'
-import {
-  actorWith,
-  entityReject,
-  entityRoute,
-  readJson,
-  signedInUser,
-} from '../stores/entityRejection'
-import { ENTITY_PERMISSIONS as P, ownEntityOf } from '../stores/entityAccess'
+import { actorWith, entityReject, entityRoute, readJson } from '../stores/entityRejection'
+import { ENTITY_PERMISSIONS as P } from '../stores/entityAccess'
+import { ownEditableEntity, ownResource } from '../stores/ownEntity'
 import { emailChangeResource, ownEmailChangeResource } from '../stores/entitySerializers'
 import { assertEmail, assertReason, rejectField } from '../stores/entityValidation'
 import { ownerEmailTaken } from '../stores/entitiesStore'
@@ -23,9 +18,9 @@ import {
   createChallenge,
   findChallenge,
 } from '../stores/otpChallenges'
-import { sessionCan } from '../stores/sessionPermissions'
 import {
   approveChange,
+  cancelOpenChanges,
   confirmChange,
   findEmailChange,
   listEmailChanges,
@@ -36,9 +31,7 @@ import {
 const ADMIN_PATH = '/api/v1/admin/entity-email-changes'
 
 function ownEntity() {
-  const user = signedInUser()
-  if (!user.entityId || !sessionCan(P.PROFILE_EDIT)) throw entityReject.forbidden()
-  return ownEntityOf(user)
+  return ownEditableEntity().entity
 }
 
 function assertNewEmail(entity, value) {
@@ -80,6 +73,15 @@ export const entityEmailChangesHandlers = [
       if (!acceptsCode(challenge, body.code)) throw entityReject.otpInvalid()
       consumeChallenge(challenge.id)
       return envelope(ownEmailChangeResource(confirmChange(entity, challenge.id)))
+    }),
+  ),
+
+  http.post(
+    '/api/v1/entities/me/email/cancel',
+    entityRoute(() => {
+      const entity = ownEntity()
+      const changed = cancelOpenChanges(entity.id)
+      return envelope(ownResource(entity), { changed })
     }),
   ),
 

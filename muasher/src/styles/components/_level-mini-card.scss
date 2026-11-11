@@ -39,3 +39,14 @@
   font-size: var(--fs-sm);
   font-weight: var(--fw-semibold);
 }
+
+.level-mini-card__eye {
+  @include flex-center;
+  flex-shrink: 0;
+  inline-size: var(--size-icon-box-sm);
+  block-size: var(--size-icon-box-sm);
+  margin-inline-start: auto;
+  border: var(--border-width) solid var(--glass-stroke);
+  border-radius: var(--radius-md);
+  color: var(--band-ink);
+}

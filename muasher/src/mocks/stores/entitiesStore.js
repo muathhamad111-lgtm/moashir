@@ -1,4 +1,5 @@
 import { ENTITY_REFERENCE_PREFIX, entitiesFixture } from '../fixtures/entities'
+import { hasFullProfile } from './entityProfileSections'
 
 const ANONYMIZED_DOMAIN = 'erased.invalid'
 
@@ -47,14 +48,7 @@ export function isErased(entity) {
 }
 
 export function hasCompleteProfile(entity) {
-  return [
-    entity.unifiedNumber,
-    entity.governanceGrade,
-    entity.employeesCount,
-    entity.annualBeneficiariesCount,
-    entity.licenseNumber,
-    entity.foundedOn,
-  ].every((value) => value !== null && value !== undefined)
+  return hasFullProfile(entity)
 }
 
 export function allEntities() {

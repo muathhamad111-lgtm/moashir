@@ -78,41 +78,45 @@ test('an entity registers with terms, verifies the OTP and lands on its profile'
   await expect(page).toHaveURL(/\/auth\/otp/)
   await typeCode(page, DEV_OTP_CODE)
   await expect(page).toHaveURL(/\/entity\/profile\?welcome=1/)
-  await expect(page.locator('.entity-profile-hub .portal-area__title')).toContainText(
+  await expect(page.locator('.profile-header__name')).toContainText(
     isEn(testInfo) ? 'Al-Wafa Charity' : 'جمعية الوفاء الخيرية',
   )
   await expect(page.locator('.completion-prompt')).toBeVisible()
+  await expect(page.getByTestId('profile-completeness')).toContainText('73')
 })
 
-test('the entity edits its profile, saves the basic tab and sees the change history entry', async ({
+test('the entity edits one profile section and sees the change in the section history', async ({
   page,
 }, testInfo) => {
   await seedSignedIn(page, ENTITY, { locale: localeOf(testInfo) })
   await page.goto('/entity/profile')
-  await expect(page.locator('[name="governanceGrade"]')).toHaveValue('86.50')
+  const governance = page.locator('[data-section="governance"]')
+  await expect(governance).toContainText('86.50')
   await page.screenshot({
     path: `test-results/entities-profile-${suffix(testInfo)}.png`,
     fullPage: true,
   })
 
-  await page.locator('[name="governanceGrade"]').fill('90.125')
-  await page.locator('[name="governanceGrade"]').blur()
-  await expect(page.locator('.field--error [name="governanceGrade"]')).toBeVisible()
+  await governance.locator('.profile-section__edit').click()
+  await governance.locator('[name="governanceGrade"]').fill('90.125')
+  await governance.locator('[name="governanceGrade"]').blur()
+  await expect(governance.locator('.field--error [name="governanceGrade"]')).toBeVisible()
 
-  await page.locator('[name="governanceGrade"]').fill('91.25')
-  await expect(page.locator('.field--error [name="governanceGrade"]')).toHaveCount(0)
-  await page.locator('.portal-area__actions .btn--primary').click()
-  await expect(page.locator('.toast--success')).toBeVisible()
-  await expect(page.locator('[name="governanceGrade"]')).toHaveValue('91.25')
-  await expect(page.locator('.profile-history tbody tr').first()).toContainText('91.25')
+  await governance.locator('[name="governanceGrade"]').fill('91.25')
+  await expect(governance.locator('.field--error [name="governanceGrade"]')).toHaveCount(0)
+  await governance.locator('button[type="submit"]').click()
+  await expect(governance.locator('.profile-section__status-text--success')).toBeVisible()
+  await expect(governance).toContainText('91.25')
+  await governance.locator('.profile-section__history').click()
+  await expect(page.getByTestId('profile-history-entry').first()).toContainText('91.25')
 })
 
 test('the official e-mail change is verified by OTP and waits for approval', async ({
   page,
 }, testInfo) => {
   await seedSignedIn(page, ENTITY, { locale: localeOf(testInfo) })
-  await page.goto('/entity/profile?tab=contact')
-  await page.locator('.official-email .btn').click()
+  await page.goto('/entity/profile')
+  await page.getByTestId('email-change-open').click()
   await page.locator('.modal [name="newEmail"]').fill('info@albirr-riyadh.example.sa')
   await page.locator('.modal button[type="submit"]').click()
   await expect(page.locator('.modal .field--error [name="newEmail"]')).toBeVisible()
@@ -121,8 +125,8 @@ test('the official e-mail change is verified by OTP and waits for approval', asy
   await typeCode(page, DEV_OTP_CODE)
   await expect(page.locator('.email-change--done')).toContainText('o***@albirr-riyadh.example.sa')
   await page.locator('.email-change--done .btn').click()
-  await expect(page.locator('.official-email__pending')).toBeVisible()
-  await expect(page.locator('.official-email .btn')).toHaveCount(0)
+  await expect(page.getByTestId('email-change-cancel')).toBeVisible()
+  await expect(page.getByTestId('email-change-open')).toHaveCount(0)
 })
 
 test('a forced server error shows the error state and the retry recovers the profile', async ({
@@ -134,5 +138,5 @@ test('a forced server error shows the error state and the retry recovers the pro
   await expect(page.locator('.error-state')).toBeVisible()
   await clearMockFault(page)
   await page.locator('.error-state__retry .btn').click()
-  await expect(page.locator('.entity-profile-hub .portal-area__title')).toBeVisible()
+  await expect(page.locator('.profile-header__name')).toBeVisible()
 })

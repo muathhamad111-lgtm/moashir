@@ -23,7 +23,7 @@ final readonly class EntityProfileData
         public ?string $governanceGrade,
         public ?int $employeesCount,
         public ?int $annualBeneficiariesCount,
-        public bool $hasStrategicPlan,
+        public ?bool $hasStrategicPlan,
         public EntityRegistryUpdate $registry = new EntityRegistryUpdate,
     ) {}
 

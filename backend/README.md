@@ -538,7 +538,7 @@ php artisan moashir:criteria:install-seed     # idempotent: skipped as soon as a
 - `entities`: bilingual `name` (Arabic required, English optional), `entity_type` (`civil_association |
   civil_foundation | waqf`), `development_sector`, `org_size`, `founding_year`, `region_id`, `city_id`,
   `governance_grade` (NCNP percentage `numeric(5,2)`, 0–100, sent as a decimal string `"87.45"`), `employees_count`,
-  `annual_beneficiaries_count`, `has_strategic_plan`, `status` (`pending_verification | active | deactivated`),
+  `annual_beneficiaries_count`, `has_strategic_plan` (nullable since Task-82b: `null` = unanswered, P-6), `status` (`pending_verification | active | deactivated`),
   consent and lifecycle timestamps, soft delete (`deleted_at` = "Deleted entities"), `anonymized_at` (erased tombstone),
   and since Task-47 the registry details `license_number`, `founded_on`, `website_url` and the logo reference
   `logo_file_id` (see "Registry details and logo"). Every value is guarded by a CHECK constraint. The human reference is
@@ -547,10 +547,11 @@ php artisan moashir:criteria:install-seed     # idempotent: skipped as soon as a
   person's name, the official e-mail and the mobile number live on that user only (single source of truth).
 - `entity_profile_changes`: one row per changed profile field (old and new value, actor). Append-only: the model
   refuses updates and deletes, a trigger rejects UPDATE and TRUNCATE, and DELETE is accepted only inside the
-  permanent-deletion transaction (`moashir.entity_erasure` session flag). Only the business fields of
-  `EntityProfileField` are recorded (name, classification, founding year, region, city, governance grade, counts,
-  strategic plan, licence number, founding date, website); the authorized person, the official e-mail, the mobile
-  number and the logo are never part of the history (logo changes are audited instead).
+  permanent-deletion transaction (`moashir.entity_erasure` session flag). The fields of `EntityProfileField` are
+  recorded (name, classification, founding year, region, city, governance grade, counts, strategic plan, licence number,
+  founding date, website and, since Task-82b, the authorized person's name, the mobile number — stored MASKED,
+  `+9665*****567` — and the marketing consent); the official e-mail and the logo are never part of the history (they
+  are audited instead). Each field belongs to one profile section (`EntityProfileField::section()`).
 - `privacy_requests`: PDPL data-subject requests (`access | correction | deletion`, `open → fulfilled | rejected`).
 - `email_change_requests` (Identity table) now also carries entity requests (`entity_id`).
 
@@ -588,13 +589,15 @@ paginated (`page`, `per_page` 1..100, default 15, `meta.pagination`). The staff 
 view: the Finance Officer (name and contact view only) gets 403. Item:
 
 ```
-{ "id": 7, "field": "region_id", "field_label": { "ar": "المنطقة", "en": "Region" },
+{ "id": 7, "field": "region_id", "section": "classification", "field_label": { "ar": "المنطقة", "en": "Region" },
   "old_value": { "id": 1, "code": "riyadh", "name": { "ar": "منطقة الرياض", "en": "Riyadh Region" } },
   "new_value": { "id": 4, "code": "makkah", "name": { "ar": "منطقة مكة المكرمة", "en": "Makkah Region" } },
   "changed_by": "entity", "changed_at": "2026-11-01T10:00:00+00:00" }
 ```
 
-`field` is the canonical `EntityProfileField` value (the PUT body key), `field_label` comes from
+Query `section` (`identity | classification | governance | contact`, optional; anything else → 422) keeps the fields of
+that section (`ProfileSection::historyFields()`); every item also carries `section`. `field` is the canonical
+`EntityProfileField` value, `field_label` comes from
 `lang/{ar,en}/entities.php` (`profile_fields`). Values are the recorded ones: `{ar,en}` for the name, the canonical value
 for enums (labels in the SPA, Q-102), decimal strings for the governance grade, integers and booleans; region and city
 values are resolved to `{ id, code, name{ar,en} }` with two queries per page (`ProfileChangePlacesLoader`). `changed_by`
@@ -610,29 +613,24 @@ organisation attributes; retention = the entity's lifetime, cleared by the perma
 
 | Column | Type | Rule | NDMO class |
 |---|---|---|---|
-| `unified_number` | `varchar(10)` null (Task-51) | «الرقم الوطني الموحد»: exactly 10 Western digits starting with 7 (`Support\ValueObjects\UnifiedNumber`); CHECK `^7[0-9]{9}$`; UNIQUE across all entities (soft-deleted included) through `entities_unified_number_unique … WHERE unified_number IS NOT NULL`. MANDATORY: required by `POST /auth/register`; editable in `PUT /entities/me` and the staff `PUT /entities/{entity}` with the same "absent = unchanged" rule, but never clearable (`null` / `""` → 422); a REQUIRED `profile_completion` item, so entities registered before Task-51 are nudged to add it; accepted as a sign-in identifier (resolves to the owner account); cleared by the permanent deletion | P (public registry data of the organisation; not personal data) |
+| `unified_number` | `varchar(10)` null (Task-51) | «الرقم الوطني الموحد»: exactly 10 Western digits starting with 7 (`Support\ValueObjects\UnifiedNumber`); CHECK `^7[0-9]{9}$`; UNIQUE across all entities (soft-deleted included) through `entities_unified_number_unique … WHERE unified_number IS NOT NULL`. MANDATORY: required by `POST /auth/register`; editable in the identity section `PATCH /entities/me/profile/identity` (required on every identity save) and the staff `PUT /entities/{entity}` ("absent = unchanged"), but never clearable (`null` / `""` → 422); a `required` profile field, shown missing for entities registered before Task-51; accepted as a sign-in identifier (resolves to the owner account); cleared by the permanent deletion | P (public registry data of the organisation; not personal data) |
 | `license_number` | `varchar(20)` null | Western digits only, 3–20 characters (leading zeros kept, e.g. `000123`); CHECK `^[0-9]{3,20}$`; UNIQUE across all entities (soft-deleted included) through the partial index `entities_license_number_unique … WHERE license_number IS NOT NULL` | P (public registry data) |
 | `founded_on` | `date` null | 1900-01-01 … today in Asia/Riyadh; CHECK `>= 1900-01-01` AND `EXTRACT(YEAR FROM founded_on) = founding_year` | P |
 | `website_url` | `varchar(255)` null | `https://` only, normalised by `Support\ValueObjects\WebsiteUrl` (lower-case scheme and host, fragment dropped, bare `/` dropped, default port 443 dropped; no credentials, no other port, no IP or single-label host, no spaces or markup); CHECK `^https://`; never printed as a link in any PDF | P |
 | `logo_file_id` | `bigint` null → `stored_files.id` (restrict) | current logo; the file is purpose `entity_logo`, private disk, NDMO class `I` (internal) until it is printed on a certificate, which publishes it | I → P on a certificate |
 
 - **Founding year.** `founding_year` stays (compatibility, eligibility rules, filters). Whenever the entity has a founding
-  date — sent in the request or already stored — the server sets `founding_year` to its year; the year sent by the
-  client is then ignored. Clearing the date (`"founded_on": null`) lets the sent year apply again. One place:
-  `Entity::profileAttributesFrom()`, used by both profile writers and the registration.
-- **`PUT /entities/me` and `PUT /entities/{entity}` (staff) — absent = unchanged.** Both stay full replaces for every
-  other field, but for these three fields only: a key that is ABSENT from the body leaves the stored value untouched (so
-  an older client that does not know them never erases them); a key sent as `null` or `""` clears it; a value replaces
-  it. 422 `validation_failed` with `errors.license_number` / `errors.founded_on` / `errors.website_url`; a licence number
-  already registered for another entity answers the friendly `validation.custom.license_number.unique` message (also
-  when two requests race: the unique index violation is turned into the same 422). The registration form is unchanged
-  and ignores the three keys.
-- **Profile completion (B-04).** Required: `basic_data`, `account_owner`, `governance_grade`, `employees_count`,
-  `annual_beneficiaries_count`, `license_number`, `founded_on`; optional: `phone`, `website_url`, `logo`. `percent` =
-  floor(complete required / 7 × 100) (0, 14, 28, 42, 57, 71, 85, 100). `Entity::hasCompleteProfile()` stays the single
-  rule (`profile_completed`, `profile_completed_at`, Action Center `complete_profile`, REG-03 at verification). Existing
-  entities without a licence number or a founding date are incomplete, and every new registration is incomplete until
-  the profile adds them (REG-03 is sent at verification).
+  date — sent in the request or already stored — the server sets `founding_year` to its year. The entity never sends the
+  year (Task-82b): clearing the date keeps the stored year. The staff update still sends it and it applies once the date
+  is cleared. One place: `Entity::withDerivedFoundingYear()`, used by both profile writers and the registration.
+- **Staff `PUT /entities/{entity}` — absent = unchanged.** A full replace for every other field, but for these three
+  fields only: a key that is ABSENT from the body leaves the stored value untouched; `null` or `""` clears it. The entity
+  edits them in its sections (licence number and founding date in `identity`, website in `contact`), where every field
+  of the section must be sent. 422 `validation_failed` with `errors.license_number` / `errors.founded_on` /
+  `errors.website_url`; a licence number already registered for another entity answers the friendly
+  `validation.custom.license_number.unique` message (also when two requests race: the unique index violation is turned
+  into the same 422). The registration form ignores the three keys.
+- **Profile completion.** See "Own profile by section (Task-82b)".
 - **Logo.** `POST /entities/me/logo` (multipart `file`) and `DELETE /entities/me/logo`. PNG or JPEG only (no SVG),
   ≤ 2 MB, every side 200–2000 px (`moashir.entities.logo.*`): the Form Request checks the extension, the detected type,
   the size and the dimensions; `Services\Entities\EntityLogoIntake` checks the magic bytes and dimensions again
@@ -646,7 +644,7 @@ organisation attributes; retention = the entity's lifetime, cleared by the perma
   `Services\Certificates\CertificateLogoRetention`). `DELETE` is idempotent (200 with `logo: null`; only a real removal
   is audited). Audits `entity.logo_uploaded` (`{ logo_file_id }` → `{ logo_file_id, mime_type, size_bytes, sha256 }`,
   public ids only, never the content or the client file name) and `entity.logo_removed`. Policy: `can:updateOwn`
-  (`entity.profile.edit`), active entity only (409 `state.transition_illegal`); upload `throttle:uploads`, delete
+  (`entity.profile.edit`), active entity only (403 `forbidden` since Task-82b); upload `throttle:uploads`, delete
   `throttle:sensitive`.
 - **Reading the logo.** `OwnEntityResource` and `StaffEntityResource` expose `logo: { id, url, uploaded_at } | null`;
   `url` is the usual `GET /files/{file}/download` link (signed, 5 minutes, bound to the viewer; fine as an `<img src>`),
@@ -665,6 +663,41 @@ organisation attributes; retention = the entity's lifetime, cleared by the perma
 `immediate_notify` → applied at once, REG-08 to the System Administrators. Approval or rejection (reason) happens in
 `/admin/entity-email-changes`; REG-09 informs the old and the new address. Only one request can wait for approval;
 a request still waiting for its code is replaced by a new one. Addresses are masked in the audit log.
+`POST /entities/me/email/cancel` (Task-82b, P-7; `can:updateOwn`, `throttle:sensitive`, no body) cancels the owner's
+open requests (`awaiting_otp`, `awaiting_approval`) under a row lock and answers the own entity with
+`meta.changed: true`; with nothing open it answers 200 `meta.changed: false` and writes nothing (idempotent). Audited
+`entity.email_change_cancelled` (`{ status: awaiting_approval | awaiting_otp }` → `{ status: cancelled }`, no address);
+no notification. A staff decision after the cancellation answers 409 `state.transition_illegal`.
+
+### Own profile by section (Task-82b)
+- **Sections** (`Enums\Entities\ProfileSection`): `identity` (`name.ar`, `name.en`, `unified_number`, `license_number`,
+  `founded_on`), `classification` (`entity_type`, `development_sector`, `org_size`, `region_id`, `city_id`),
+  `governance` (`governance_grade`, `employees_count`, `annual_beneficiaries_count`, `has_strategic_plan`), `contact`
+  (`official_email`, `authorized_person_name`, `phone`, `website_url`, `marketing_consent`). Each field
+  (`Enums\Entities\ProfileSectionField`) has ONE requirement level (`ProfileFieldRequirement`: `required`,
+  `completion`, `optional`); `required` + `completion` = the 15 counted fields.
+- **`GET /entities/me`** adds `can_edit` (the `updateOwn` policy on the loaded entity), `profile_sections [{ key,
+  revision, fields[{ key, requirement }] }]` and `profile_completion { percent, counted, completed_count, sections[{ key,
+  state: complete|incomplete, missing_count, missing_fields[] }] }`. `percent` = floor(100 × completed_count / 15). A
+  year-only founding record (`founded_on` null) is missing; `has_strategic_plan: false` is answered, `null` is missing;
+  `0` is a filled number. One place: `Support\Entities\ProfileFieldValues` + `Support\ValueObjects\ProfileCompletion`;
+  `Entity::hasCompleteProfile()` = 100 % (`profile_completed`, `profile_completed_at`, `complete_profile`, REG-03).
+- **`PATCH /entities/me/profile/{identity|classification|governance|contact}`** (`can:updateOwn`, `throttle:sensitive`;
+  one Form Request per section). Every field of the section must be present (nullable ones may be `null`) plus
+  `base_revision` = the section's `revision`. `official_email` is prohibited in `contact`. The action locks the entity
+  (and its owner) row, compares the revision (SHA-256 of the section's editable values, 32 hex characters,
+  `Support\Entities\ProfileSectionRevision`) and answers 409 `profile.section_stale` (`meta.section`, `meta.revision`)
+  when another save changed the section. A change in another section, the logo or the e-mail never makes it stale. One
+  history row per changed field; one `entity.profile_updated` audit with `section` and `changed_fields` (the authorized
+  person's name and the mobile number are never written to the audit log); REG-04 only when an entity-record field
+  changed (not for a contact-only save). 200 = the own entity + `meta { section, changed_fields }` (field keys of the
+  section; `[]` = nothing changed, nothing written).
+- **Read-only.** `EntityPolicy::updateOwn` allows the own-profile writes (sections, logo, e-mail change request /
+  confirmation / cancellation) only while the entity is `active`; otherwise 403 `forbidden` (`can_edit: false`; reads
+  stay open). The former `PUT /entities/me` is removed (405).
+- Deployment: migration `2026_11_14_100000_make_has_strategic_plan_nullable_on_entities_table` (`has_strategic_plan`
+  nullable without a default; values kept). `down()` turns unanswered (`null`) into `false`, then restores NOT NULL
+  DEFAULT false. The CSV export leaves the cell empty for an unanswered plan.
 
 ### Deletion, frozen requests and permanent deletion (Q-85, P-01, P-02)
 - `GET /entities/{entity}/deletion-impact` lists the open requests and the record categories kept by a permanent
@@ -725,10 +758,11 @@ a request still waiting for its code is replaced by a new one. Addresses are mas
 | GET | `/regions` (active regions with active cities) | public, `throttle:public` |
 | GET | `/terms/current` (`{ terms, privacy }`) | public, `throttle:public` |
 | POST | `/auth/register` | public, `throttle:register` (5/hour per IP) |
-| GET / PUT | `/entities/me` | `entity.profile.view` / `entity.profile.edit` (own entity), PUT `throttle:sensitive`; both answer `profile_completion { percent, items[{ key, is_complete, is_required }] }` (Task-46) and `license_number`, `founded_on`, `website_url`, `logo { id, url, uploaded_at } \| null` (Task-47); PUT: the three registry keys are "absent = unchanged" |
+| GET | `/entities/me` | `entity.profile.view` (own entity); answers `can_edit`, `profile_sections`, `profile_completion { percent, counted, completed_count, sections[] }` (Task-82b) and `license_number`, `founded_on`, `website_url`, `logo { id, url, uploaded_at } \| null` (Task-47) |
+| PATCH | `/entities/me/profile/{identity\|classification\|governance\|contact}` | `entity.profile.edit`, own ACTIVE entity; `throttle:sensitive`; 409 `profile.section_stale` (Task-82b) |
 | POST / DELETE | `/entities/me/logo` (POST multipart `file`) | `entity.profile.edit` (own, active entity); POST `throttle:uploads` → 201, DELETE `throttle:sensitive` → 200; both answer the own entity |
-| POST | `/entities/me/email/change`, `/entities/me/email/confirm` | `entity.profile.edit`; `throttle:email-change` (3/10 min) / `throttle:otp-verify` |
-| GET | `/entities/me/profile-changes` (`page`, `per_page`) | `entity.profile.view` (own entity) |
+| POST | `/entities/me/email/change`, `/entities/me/email/confirm`, `/entities/me/email/cancel` | `entity.profile.edit`, own ACTIVE entity; `throttle:email-change` (3/10 min) / `throttle:otp-verify` / `throttle:sensitive` |
+| GET | `/entities/me/profile-changes` (`page`, `per_page`, `section`) | `entity.profile.view` (own entity) |
 | GET | `/entities` (`search`, `filter[status|region_id|city_id|entity_type|development_sector|org_size|level|trashed]`, `sort` incl. ±`level`, pagination, `meta.stats`; rows carry `level` + `level_certificate_number`, see "Excellence level on staff lists") | `entities.view` (+ `entities.delete` for `filter[trashed]=only`) |
 | POST | `/entities/export` (same filters incl. `filter[level]`, CSV stream, audited with the filters, max 10,000 rows) | `entities.export` + full scope, `throttle:exports` (5/min) |
 | GET / PUT | `/entities/{entity}` (PUT = core data on behalf, `reason` required; the three registry keys are "absent = unchanged"; the full staff view adds `license_number`, `founded_on`, `website_url`, `logo`) | `entities.view` / `entities.manage` |
@@ -2868,11 +2902,7 @@ B-01 … B-07). No field was removed or renamed; no new permission key, package 
 - **Accredited progress (B-01):** `Services\Assessments\SubmissionProgressReader` reads the bound sub-criteria, the CV
   entries and the evidence once (`SubmissionCoverageReader`, shared with `SubmissionGapsReader`, so the progress and the
   submit check cannot disagree). A sub-criterion without CV and without required slots is complete.
-- **Profile completion (B-04, Q-141):** `Support\ValueObjects\ProfileCompletion` holds the rule: required items
-  `basic_data`, `account_owner`, `governance_grade`, `employees_count`, `annual_beneficiaries_count` and, since Task-47,
-  `license_number`, `founded_on`; optional `phone`, `website_url`, `logo`; `percent` = floor(complete required / 7 × 100).
-  `Entity::hasCompleteProfile()` (and `profile_completed`, `profile_completed_at`, the `complete_profile` item) is
-  `percent = 100`.
+- **Profile completion (B-04, Q-141; per counted field since Task-82b):** see "Own profile by section (Task-82b)".
 - **Payment request link (B-05):** `request { id, number, path, path_label } | null` on `GET /payments/mine` rows,
   `GET /payments/{uuid}`, `POST /payments` (always `null`, a new order opens no request) and `POST /payments/{uuid}/verify`;
   read in one `whereIn` lookup through the contract `Contracts\Finance\OpenedRequestLookup` (finance never reads the

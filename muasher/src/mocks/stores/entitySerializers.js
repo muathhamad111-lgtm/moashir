@@ -1,6 +1,6 @@
 import { findCity, findRegion } from './regionsStore'
 import { findEntity, hasCompleteProfile, isDeleted, referenceOf } from './entitiesStore'
-import { profileCompletionOf } from './entityBoard/profileCompletion'
+import { profileCompletionOf, profileSectionsOf } from './entityProfileSections'
 import { findFile } from './finance/financeState'
 import { signedDownloadOf } from './finance/signedFiles'
 import { entityLevelFields, hasOpenAccreditedRequest } from './entityLevels'
@@ -67,7 +67,7 @@ function pendingChange(change) {
     : null
 }
 
-export function ownEntityResource(entity, awaitingChange = null) {
+export function ownEntityResource(entity, { awaitingChange = null, canEdit = false } = {}) {
   return {
     ...entitySummary(entity),
     ...entityProfileOf(entity),
@@ -76,6 +76,8 @@ export function ownEntityResource(entity, awaitingChange = null) {
     marketingConsentAt: entity.marketingConsentAt,
     pendingEmailChange: pendingChange(awaitingChange),
     logo: entity.logo ? { ...entity.logo } : null,
+    canEdit,
+    profileSections: profileSectionsOf(entity),
     profileCompletion: profileCompletionOf(entity),
   }
 }

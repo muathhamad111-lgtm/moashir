@@ -19,6 +19,8 @@ export function toCertificateCard(raw = {}) {
     supersededAt: raw.supersededAt ?? null,
     suspendedAt: raw.suspendedAt ?? null,
     hasPdf: raw.hasPdf === true,
+    validUntil: raw.validUntil ?? null,
+    isExpired: raw.isExpired === true,
   }
 }
 

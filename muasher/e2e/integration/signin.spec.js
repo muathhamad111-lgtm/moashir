@@ -81,7 +81,11 @@ test.afterAll(async () => {
 test('a new entity registers with its unified number, and the number cannot be used twice', async () => {
   const { page, api: watch } = sessions.entity
   await registerEntity(page, ENTITY)
-  await expect(page.locator('[name="unifiedNumber"]')).toHaveValue(ENTITY.unifiedNumber)
+  await expect(
+    page.locator('[data-section="identity"] .profile-field__value', {
+      hasText: ENTITY.unifiedNumber,
+    }),
+  ).toBeVisible()
   expect(watch.sourcesOf(/^\/api\/v1\/auth\/register$/)).toEqual([SOURCES.BACKEND])
   await shot(page, 'profile-unified-number')
   await signOut(sessions.entity)
@@ -117,16 +121,18 @@ test('the entity signs in with the e-mail and its password, then with the unifie
 test('the entity saves a mobile number and, once verified, signs in with it and its password or a code', async () => {
   test.setTimeout(PACED_TIMEOUT_MS)
   const { page, api: watch } = sessions.entity
-  await page.goto('/entity/profile?tab=contact')
-  const card = page.locator('[data-testid="phone-verification"]')
+  await page.goto('/entity/profile')
+  const contact = page.locator('[data-section="contact"]')
+  const card = contact.getByTestId('profile-phone')
   await expect(card).toBeVisible()
-  await page.locator('[name="phone"]').fill(MOBILE)
-  await page.locator('.portal-area__actions .btn--primary').click()
+  await contact.locator('.profile-section__edit').click()
+  await contact.locator('[name="phone"]').fill(MOBILE)
+  await contact.locator('button[type="submit"]').click()
   await expect(card.locator('.badge--warning')).toBeVisible()
   const sent = page.waitForResponse(
     (response) => new URL(response.url()).pathname === '/api/v1/me/phone/verification',
   )
-  await card.locator('button').click()
+  await card.locator('.profile-field__action').click()
   expect((await sent).status()).toBe(200)
   await expect(card.locator('.otp-input__box')).toHaveCount(6)
   await shot(page, 'phone-code-sent')
@@ -136,8 +142,8 @@ test('the entity saves a mobile number and, once verified, signs in with it and 
   execFileSync(BACKEND_SCRIPT, ['verify-phone', ENTITY.email], { stdio: 'ignore' })
   await signInWithPassword(page, MOBILE, ENTITY.password)
   await expectPortal(page)
-  await page.goto('/entity/profile?tab=contact')
-  await expect(page.locator('[data-testid="phone-verification"] .badge--success')).toBeVisible()
+  await page.goto('/entity/profile')
+  await expect(page.locator('[data-testid="profile-phone"] .badge--success')).toBeVisible()
   await signOut(sessions.entity)
   await signInWithCode(page, MOBILE, ENTITY.email)
   await expectPortal(page)

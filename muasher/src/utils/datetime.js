@@ -49,6 +49,10 @@ export function formatRiyadhDate(value, locale) {
   return value ? formatDate(value, locale, { dateStyle: 'medium', timeZone: RIYADH }) : ''
 }
 
+export function formatRiyadhLongDate(value, locale) {
+  return value ? formatDate(value, locale, { dateStyle: 'long', timeZone: RIYADH }) : ''
+}
+
 export function riyadhDateKey(value) {
   return new Intl.DateTimeFormat('en-CA', { timeZone: RIYADH }).format(
     value instanceof Date ? value : new Date(value),

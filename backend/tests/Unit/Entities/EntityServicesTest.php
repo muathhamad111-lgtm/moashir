@@ -46,7 +46,7 @@ it('reports only the changed profile fields with comparable before and after val
         $entity->has_strategic_plan,
     );
 
-    $changes = app(EntityProfileDiff::class)->between($entity, $profile);
+    $changes = app(EntityProfileDiff::class)->between($entity, $entity->profileAttributesFrom($profile));
 
     expect(array_keys($changes->after))->toBe(['name', 'entity_type', 'employees_count'])
         ->and($changes->before['entity_type'])->toBe('civil_association')

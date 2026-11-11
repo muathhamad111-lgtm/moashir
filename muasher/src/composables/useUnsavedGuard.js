@@ -3,7 +3,7 @@ import { onBeforeRouteLeave } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useConfirm } from '@/composables/useConfirm'
 
-export function useUnsavedGuard(isDirty, { onDiscard = () => {} } = {}) {
+export function useUnsavedGuard(isDirty, { onDiscard = () => {}, message = null } = {}) {
   const { t } = useI18n()
   const { confirm } = useConfirm()
 
@@ -11,7 +11,7 @@ export function useUnsavedGuard(isDirty, { onDiscard = () => {} } = {}) {
     if (!isDirty.value) return true
     const discard = await confirm({
       title: t('portal.unsaved.title'),
-      message: t('portal.unsaved.message'),
+      message: message ? message() : t('portal.unsaved.message'),
       confirmLabel: t('portal.unsaved.discard'),
       variant: 'warning',
     })

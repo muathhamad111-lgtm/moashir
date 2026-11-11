@@ -187,37 +187,22 @@ describe('entities mock — registration', () => {
 })
 
 describe('entities mock — own profile', () => {
-  it('returns the own entity and replaces the profile with the marketing consent', async () => {
+  it('returns the own entity with its sections, completion and edit flag', async () => {
     as(ENTITY)
     const own = await call('GET', '/entities/me')
     expect(own.body.data).toMatchObject({
       reference: 'ENT-005001',
       governance_grade: '86.50',
       marketing_consent: true,
+      can_edit: true,
+      profile_completion: { percent: 100, counted: 15, completed_count: 15 },
     })
-    const saved = await call('PUT', '/entities/me', profileBody({ marketing_consent: false }))
-    expect(saved.status).toBe(200)
-    expect(saved.body.data).toMatchObject({ governance_grade: '88.25', marketing_consent: false })
-    expect((await call('PUT', '/entities/me', profileBody())).status).toBe(422)
-  })
-
-  it('keeps an absent unified number, replaces a valid one and never clears it', async () => {
-    as(ENTITY)
-    const kept = await call('PUT', '/entities/me', profileBody({ marketing_consent: true }))
-    expect(kept.body.data.unified_number).toBe('7100005001')
-    const replaced = await call(
-      'PUT',
-      '/entities/me',
-      profileBody({ marketing_consent: true, unified_number: '7000000902' }),
-    )
-    expect(replaced.body.data.unified_number).toBe('7000000902')
-    const cleared = await call(
-      'PUT',
-      '/entities/me',
-      profileBody({ marketing_consent: true, unified_number: null }),
-    )
-    expect(cleared.status).toBe(422)
-    expect(Object.keys(cleared.body.errors)).toEqual(['unified_number'])
+    expect(own.body.data.profile_sections.map((section) => section.key)).toEqual([
+      'identity',
+      'classification',
+      'governance',
+      'contact',
+    ])
   })
 
   it('denies staff and guests', async () => {

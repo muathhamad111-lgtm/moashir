@@ -61,6 +61,23 @@ export const entityMessages = {
   },
   'otp.invalid': { ar: 'رمز التحقق غير صحيح.', en: 'The verification code is incorrect.' },
   'field.required': { ar: 'هذا الحقل مطلوب.', en: 'This field is required.' },
+  'field.present': { ar: 'يجب إرسال هذا الحقل.', en: 'This field must be present.' },
+  'field.max_chars': {
+    ar: 'يجب ألا يتجاوز :max حرفًا.',
+    en: 'This field must not exceed :max characters.',
+  },
+  'field.person_name': {
+    ar: 'يجب أن يكون الاسم من 3 إلى 150 حرفًا.',
+    en: 'The name must have 3 to 150 characters.',
+  },
+  'field.official_email_prohibited': {
+    ar: 'يُغيَّر البريد الرسمي من «تغيير البريد» فقط.',
+    en: 'The official e-mail is changed only through «Change e-mail».',
+  },
+  'profile.section_stale': {
+    ar: 'تغيّرت بيانات هذا القسم بعد فتحه. راجع القيم الحالية ثم احفظ مجددًا.',
+    en: 'This section was changed after you opened it. Review the current values and save again.',
+  },
   'field.reason_min': {
     ar: 'يجب ألا يقل السبب عن :min أحرف.',
     en: 'The reason must be at least :min characters.',

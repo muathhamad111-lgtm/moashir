@@ -404,20 +404,12 @@ describe('mobile verification mock', () => {
     seedMockSession(NAMAA)
     expect((await call('POST', '/me/phone/verification')).body.code).toBe('phone.missing')
     const me = (await call('GET', '/entities/me')).body.data
-    const saved = await call('PUT', '/entities/me', {
-      name: me.name,
+    const contact = me.profile_sections.find((section) => section.key === 'contact')
+    const saved = await call('PATCH', '/entities/me/profile/contact', {
+      base_revision: contact.revision,
       authorized_person_name: me.authorized_person_name,
       phone: '0500006001',
-      entity_type: me.entity_type,
-      development_sector: me.development_sector,
-      org_size: me.org_size,
-      founding_year: me.founding_year,
-      region_id: me.region.id,
-      city_id: me.city.id,
-      governance_grade: null,
-      employees_count: null,
-      annual_beneficiaries_count: null,
-      has_strategic_plan: true,
+      website_url: null,
       marketing_consent: false,
     })
     expect(saved.body.data).toMatchObject({ phone: '+966500006001', phone_verified: false })

@@ -2183,10 +2183,6 @@
       "action": "Complete profile"
     },
     "email": {
-      "title": "Official e-mail",
-      "hint": "Changing the official e-mail needs a code sent to the new address. The current address is informed of the change.",
-      "change": "Change official e-mail",
-      "pendingMessage": "A change to {email} requested on {date} is awaiting approval. The current address stays in use until it is approved.",
       "dialogTitle": "Change the official e-mail",
       "intro": "Enter the new official e-mail. We will send a verification code to it.",
       "newEmail": "New official e-mail",
@@ -2503,17 +2499,9 @@
       "deleted": "Deleted"
     },
     "phone": {
-      "title": "Mobile number verification",
       "verified": "Verified",
       "notVerified": "Not verified",
-      "why": "Signing in with the mobile number needs a verified number. We send a 6-digit code by text message to the saved number.",
-      "verifiedHint": "You can sign in with this number and your password. Changing the number removes its verification.",
-      "missing": "Add a mobile number in this section and save it, then verify it.",
-      "saveFirst": "Save the new number first, then verify it.",
-      "send": "Send the verification code",
-      "sent": "We sent a code by text message. It is valid for less than a minute. | We sent a code by text message. It is valid for 1 minute. | We sent a code by text message. It is valid for {count} minutes.",
       "codeLabel": "Verification code digit",
-      "confirm": "Confirm the number",
       "verifiedToast": "The mobile number is verified."
     }
   },
@@ -7863,68 +7851,143 @@
       "discard": "Leave"
     },
     "profile": {
-      "eyebrowShort": "Organization profile",
-      "title": "Profile of {name}",
-      "subtitle": "The assessor reads this profile with your evidence. Update it whenever your organization's details change.",
-      "tabsLabel": "Organization profile sections",
-      "tabs": {
-        "basic": "Basic details",
-        "contact": "Contact",
-        "owner": "Account owner"
+      "documentTitle": "Entity profile",
+      "asideLabel": "Profile completeness and change history",
+      "listSeparator": ", ",
+      "consentLabel": "I would like to receive platform news and offers",
+      "status": {
+        "active": "Account active",
+        "deactivated": "Account suspended",
+        "pendingVerification": "Account pending verification"
       },
-      "captions": {
-        "basic": "Shown on the certificate and in the assessment reports.",
-        "contact": "The official e-mail for correspondence and the contact channels of the organization.",
-        "owner": "The person authorized to manage the organization's account on the platform."
+      "readOnly": {
+        "deactivated": "The profile is view only because your entity's account is suspended.",
+        "pendingVerification": "The profile is view only until your entity's account is verified.",
+        "generic": "The profile is view only."
       },
-      "save": "Save changes",
-      "saved": "The organization details were saved.",
-      "unsaved": "You have unsaved changes in this section.",
-      "asideLabel": "Profile completeness and logo",
+      "header": {
+        "factsLabel": "Entity account details",
+        "reference": "Entity number",
+        "registered": "Registered",
+        "verified": "Verified",
+        "certificate": "Certificate",
+        "validUntil": "Valid until {date}",
+        "viewCertificate": "View certificate"
+      },
       "sections": {
-        "contact": "Contact channels",
-        "owner": "Account owner"
+        "identity": "Identity & registration",
+        "classification": "Classification & location",
+        "governance": "Governance & figures",
+        "contact": "Contact & account owner"
+      },
+      "state": {
+        "complete": "Complete",
+        "missing": "{count} missing",
+        "missingLabel": "Missing fields: {count}",
+        "editing": "Editing",
+        "locked": "View only"
       },
       "fields": {
+        "nameAr": "Entity name (Arabic)",
+        "nameEn": "Entity name (English)",
+        "unifiedNumber": "Unified national number",
         "licenseNumber": "Licence number",
         "foundedOn": "Founding date",
+        "entityType": "Entity type",
+        "developmentSector": "Development sector",
+        "orgSize": "Entity size",
+        "regionId": "Region",
+        "cityId": "City",
+        "governanceGrade": "Governance score (%)",
+        "employeesCount": "Employees",
+        "annualBeneficiariesCount": "Annual beneficiaries",
+        "hasStrategicPlan": "Has a strategic plan?",
+        "officialEmail": "Official e-mail",
+        "authorizedPersonName": "Authorised account manager",
+        "phone": "Mobile number",
         "websiteUrl": "Website",
-        "accountEmail": "Account e-mail"
+        "marketingConsent": "Platform news and offers"
       },
       "hints": {
-        "licenseNumber": "Digits only, as on the organization's licence (3 to 20 digits).",
-        "foundedOn": "The founding year follows it automatically.",
-        "yearFollowsDate": "Taken from the founding date.",
-        "websiteUrl": "A full address that starts with https://",
-        "owner": "Their name appears in the official correspondence with the organization.",
-        "accountEmail": "It is the official e-mail of the organization; change it in the Contact section with a verification code."
+        "unifiedNumber": "10 digits starting with 7.",
+        "licenseNumber": "Digits only, as on the entity's licence.",
+        "foundedOn": "Day, month and year.",
+        "governanceGrade": "From the National Center, up to two decimals.",
+        "phone": "Starts with 05 and has 10 digits.",
+        "websiteUrl": "A full address that starts with https://"
       },
+      "values": {
+        "subscribed": "Subscribed",
+        "notSubscribed": "Not subscribed",
+        "empty": "—",
+        "emptyLabel": "Not added"
+      },
+      "missing": {
+        "text": "Not provided",
+        "add": "Add",
+        "addLabel": "Add {field}"
+      },
+      "actions": {
+        "edit": "Edit",
+        "editLabel": "Edit {section}",
+        "save": "Save section",
+        "saving": "Saving…",
+        "cancel": "Cancel",
+        "nextMissing": "Next missing field",
+        "sectionHistory": "Section history"
+      },
+      "footer": {
+        "unsaved": "Unsaved changes",
+        "saved": "Saved",
+        "error": "Correct the highlighted fields"
+      },
+      "errors": {
+        "summary": "Correct the highlighted fields to save the section",
+        "stale": "This section was changed after you opened it. Review the current values and save again."
+      },
+      "unsavedSection": "Your changes to “{section}” will be lost.",
       "completion": {
         "title": "Profile completeness",
-        "text": "A complete profile speeds up the assessor's review.",
-        "items": {
-          "basic_data": "Basic details",
-          "account_owner": "Account owner",
-          "governance_grade": "Governance grade",
-          "employees_count": "Number of employees",
-          "annual_beneficiaries_count": "Annual beneficiaries",
-          "license_number": "Licence number",
-          "founded_on": "Founding date",
-          "phone": "Mobile number",
-          "website_url": "Website",
-          "logo": "Organization logo",
-          "unified_number": "Unified national number"
-        },
-        "states": {
-          "complete": "Complete",
-          "missing": "Missing",
-          "optional": "Optional"
+        "sectionsLabel": "Profile sections",
+        "fix": "Fix",
+        "fixLabel": "Fix {section}",
+        "action": "Complete the profile"
+      },
+      "history": {
+        "title": "Profile change history",
+        "viewAll": "View full history",
+        "allSections": "All sections",
+        "filterLabel": "Filter the history by section",
+        "empty": "No changes have been recorded yet.",
+        "before": "Before",
+        "after": "After",
+        "by": "By",
+        "actors": {
+          "entity": "The entity",
+          "staff": "Platform staff",
+          "system": "System"
         }
       },
+      "email": {
+        "change": "Change e-mail",
+        "to": "To",
+        "cancel": "Cancel request",
+        "cancelTitle": "Cancel the e-mail change request?",
+        "cancelMessage": "The current address stays in use.",
+        "cancelConfirm": "Cancel request",
+        "keepRequest": "Keep request",
+        "cancelledTitle": "The e-mail change request was cancelled"
+      },
+      "phone": {
+        "verify": "Verify the number",
+        "otpTitle": "Verify the mobile number",
+        "otpSent": "Enter the code sent to",
+        "confirm": "Verify the code"
+      },
       "logo": {
-        "title": "Organization logo",
-        "alt": "Current organization logo",
-        "uploadedOn": "Uploaded on {date}",
+        "title": "Entity logo",
+        "change": "Change logo",
+        "alt": "Current entity logo",
         "rules": "PNG or JPEG up to 2 MB, each side between {min} and {max} pixels.",
         "note": "Appears on accredited certificates issued after the upload.",
         "choose": "Choose the logo file",
@@ -7932,7 +7995,7 @@
         "replace": "Replace logo",
         "remove": "Remove logo",
         "uploaded": "The logo was uploaded and scanned.",
-        "removeTitle": "Remove the organization logo?",
+        "removeTitle": "Remove the entity logo?",
         "removeMessage": "It will not appear on new certificates.",
         "errors": {
           "type": "The logo must be a PNG or JPEG image.",
@@ -8154,7 +8217,6 @@
       }
     },
     "topBar": {
-      "area": "Association account",
       "updated": "Last update"
     },
     "tools": {
@@ -9087,7 +9149,8 @@
       "start": "Start the accredited assessment",
       "follow": "Follow your request",
       "participation": "View the participation certificate",
-      "certificate": "View the certificate"
+      "certificate": "View the certificate",
+      "eyebrow": "Your level"
     },
     "hero": {
       "eyebrow": {

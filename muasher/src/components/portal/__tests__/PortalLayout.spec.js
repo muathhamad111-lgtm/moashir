@@ -129,11 +129,14 @@ describe('PortalLayout', () => {
     expect(wrapper.find('.mobile-tab-bar').exists()).toBe(false)
   })
 
-  it('marks the active item in the side navigation and names the area in the top bar', async () => {
+  it('marks the active item in the side navigation and titles the top bar with it (P-10)', async () => {
     const wrapper = await at('/payments')
     expect(wrapper.find('.side-nav-item.is-active').text()).toContain('الدفع والإيصالات')
     expect(wrapper.find('.side-nav-item.is-active').attributes('aria-current')).toBe('page')
-    expect(wrapper.find('.portal-top-bar__area').text()).toBe('حساب الجهة')
+    expect(wrapper.find('.portal-top-bar__area').text()).toBe('الدفع والإيصالات')
+    const profile = await at('/entity/profile')
+    expect(profile.find('.portal-top-bar__area').text()).toBe('ملف الجهة')
+    expect(wrapper.text()).not.toContain('حساب الجهة')
   })
 
   it('collapses the side navigation and remembers the choice for the same user', async () => {
@@ -186,8 +189,17 @@ describe('PortalLayout', () => {
     })
     const wrapper = await at('/dashboard')
     const card = wrapper.find('[data-testid="level-mini-card"]')
-    expect(card.find('.level-mini-card__action').text()).toBe(label)
+    expect(card.attributes('aria-label')).toContain(label)
     expect(card.find('.level-emblem').attributes('data-tier')).toBe(tier)
+  })
+
+  it('shows the eye icon on the certificate mini-card (P-11)', async () => {
+    certificatesService.listCards.mockResolvedValue({ data: [GOLD] })
+    accreditedService.getCurrent.mockResolvedValue({ data: { active: null } })
+    const wrapper = await at('/dashboard')
+    const eye = wrapper.find('[data-testid="level-mini-card-eye"]')
+    expect(eye.find('[data-icon="eye"]').exists()).toBe(true)
+    expect(wrapper.find('.level-mini-card__action').text()).toBe('المستوى الذهبي')
   })
 
   it('shows the level badge with the re-assessment chip on the account chip', async () => {

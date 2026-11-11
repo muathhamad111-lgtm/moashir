@@ -66,10 +66,12 @@ test.describe('entity portal shell', () => {
     await expect(
       nav.locator('.side-nav-item[href="/messages"] .side-nav-item__count'),
     ).toContainText('1')
-    await expect(page.locator('.portal-top-bar__area')).toBeVisible()
+    const title = page.locator('.portal-top-bar__area')
+    await expect(title).toHaveText(await nav.locator('.side-nav-item.is-active').innerText())
     await nav.locator('.side-nav-item[href="/payments"]').click()
     await expect(page).toHaveURL(/\/payments$/)
     await expect(nav.locator('.side-nav-item.is-active')).toHaveAttribute('href', '/payments')
+    await expect(title).toHaveText(await nav.locator('.side-nav-item.is-active').innerText())
   })
 
   test('shows the attention strip with context and expands it inline', async ({ page }) => {
@@ -77,7 +79,7 @@ test.describe('entity portal shell', () => {
     const strip = page.locator('[data-testid="attention-strip"]')
     await expect(strip.locator('.attention-strip__list--desktop .attention-item')).toHaveCount(3)
     await expect(strip).toContainText('ACC-2026-000004')
-    await expect(strip).toContainText('25%')
+    await expect(strip).toContainText('60%')
     await strip.locator('.attention-item').filter({ hasText: 'ACC-2026-000004' }).first().click()
     await expect(page).toHaveURL(/\/assessment\/accredited\/form\/9101$/)
     await expect(page.locator('[data-testid="attention-strip"]')).toHaveCount(0)
@@ -202,7 +204,7 @@ test.describe('mobile portal', () => {
     await expect(page).toHaveURL(/\/more$/)
     const services = page.locator('.portal-more__group').first().locator('.portal-menu-entry')
     await expect(services).toHaveCount(4)
-    await expect(services.nth(3).locator('.portal-menu-entry__value')).toHaveText('25%')
+    await expect(services.nth(3).locator('.portal-menu-entry__value')).toHaveText('60%')
     await noHorizontalOverflow(page)
   })
 })

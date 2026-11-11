@@ -22,10 +22,13 @@ const historyRows = (page) => page.locator('.profile-history tbody tr')
 test('the entity sees its own change history without staff names', async ({ page }, testInfo) => {
   await seed(page, testInfo, ENTITY)
   await page.goto('/entity/profile')
-  await expect(historyRows(page)).toHaveCount(4)
-  await expect(historyRows(page).nth(1)).toContainText(/Staff member|موظف/)
-  await expect(page.locator('.profile-history')).not.toContainText('منيرة')
-  await page.locator('.profile-history').scrollIntoViewIfNeeded()
+  await page.getByTestId('profile-history-card').locator('button').click()
+  const drawer = page.getByTestId('profile-history-drawer')
+  await expect(drawer.getByTestId('profile-history-entry')).toHaveCount(4)
+  await expect(drawer.getByTestId('profile-history-entry').nth(1)).toContainText(
+    /Platform staff|موظف المنصة/,
+  )
+  await expect(drawer).not.toContainText('منيرة')
   await page.screenshot({
     path: `test-results/entity-history-own-${isEn(testInfo) ? 'en-ltr' : 'ar-rtl'}.png`,
     fullPage: true,

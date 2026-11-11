@@ -292,27 +292,28 @@ test.describe('unified national number and mobile verification', () => {
     page,
   }, testInfo) => {
     await seedSignedIn(page, USERS.namaa, { locale: localeOf(testInfo) })
-    await open(page, '/entity/profile', '[name="unifiedNumber"]')
-    await expect(page.locator('.profile-completeness__item').nth(5)).toContainText(
-      text(testInfo, 'Unified national number', 'الرقم الوطني الموحد'),
+    await open(page, '/entity/profile', '[data-section="identity"]')
+    const identity = page.locator('[data-section="identity"]')
+    await expect(identity.locator('[data-field="unifiedNumber"]')).toContainText(
+      text(testInfo, 'Not provided', 'غير مُدخل'),
     )
-    await page.locator('[name="unifiedNumber"]').fill('7000006001')
-    await page.locator('.portal-area__actions .btn--primary').click()
-    await expect(page.locator('.toast--success')).toBeVisible()
-    await expect(page.locator('.profile-form__dirty')).toHaveCount(0)
-    await page.locator('#profile-panel-tab-contact').click()
-    const card = page.locator('[data-testid="phone-verification"]')
-    await expect(card).toContainText(text(testInfo, 'Add a mobile number', 'أضف رقم جوال'))
-    await page.locator('[name="phone"]').fill('0500006001')
-    await expect(card.locator('button')).toHaveCount(0)
-    await page.locator('.portal-area__actions .btn--primary').click()
-    await expect(page.locator('.profile-form__dirty')).toHaveCount(0)
+    await identity.locator('[data-field="unifiedNumber"] .profile-missing__add').click()
+    await identity.locator('[name="unifiedNumber"]').fill('7000006001')
+    await identity.locator('button[type="submit"]').click()
+    await expect(identity.locator('.profile-section__status-text--success')).toBeVisible()
+    await expect(identity.locator('[data-field="unifiedNumber"]')).toContainText('7000006001')
+    const contact = page.locator('[data-section="contact"]')
+    const card = contact.getByTestId('profile-phone')
+    await expect(card.locator('.profile-field__action')).toHaveText(text(testInfo, 'Add', 'أضِف'))
+    await card.locator('.profile-field__action').click()
+    await contact.locator('[name="phone"]').fill('0500006001')
+    await contact.locator('button[type="submit"]').click()
     await expect(card.locator('.badge--warning')).toBeVisible()
-    await card.locator('button').click()
+    await card.locator('.profile-field__action').click()
     await expect(card.locator('.otp-input__box')).toHaveCount(6)
     await typeCode(page, DEV_OTP_CODE)
     await expect(card.locator('.badge--success')).toBeVisible()
-    await expect(card.locator('.phone-verification__number')).toHaveAttribute('dir', 'ltr')
+    await expect(card.locator('bdi[dir="ltr"]')).toHaveText('050 000 6001')
   })
 
   test('the staff entity detail shows the number as an isolated value', async ({
@@ -416,28 +417,31 @@ const CAPTURES = [
     name: 'profile-basic',
     user: USERS.namaa,
     path: '/entity/profile',
-    ready: '[name="unifiedNumber"]',
+    ready: '[data-section="identity"]',
+    settled: '[data-section="identity"] [name="unifiedNumber"]',
+    async prepare(page) {
+      await page.locator('[data-section="identity"] .profile-section__edit').click()
+    },
   },
   {
     name: 'profile-phone',
     user: USERS.albirr,
-    path: '/entity/profile?tab=contact',
-    ready: '[data-testid="phone-verification"]',
+    path: '/entity/profile',
+    ready: '[data-testid="profile-phone"]',
   },
   {
     name: 'profile-phone-code',
     user: USERS.namaa,
-    path: '/entity/profile?tab=contact',
-    ready: '[data-testid="phone-verification"]',
-    settled: '.phone-verification__form',
+    path: '/entity/profile',
+    ready: '[data-testid="profile-phone"]',
+    settled: '[data-testid="phone-otp"]',
     async prepare(page) {
-      await page.locator('[name="phone"]').fill('0500006001')
-      await page
-        .locator('.portal-area__actions .btn--primary:visible, .profile-form__submit:visible')
-        .first()
-        .click()
-      await page.locator('[data-testid="phone-verification"] .badge--warning').waitFor()
-      await page.locator('[data-testid="phone-verification"] button').click()
+      const contact = page.locator('[data-section="contact"]')
+      await contact.locator('.profile-section__edit').click()
+      await contact.locator('[name="phone"]').fill('0500006001')
+      await contact.locator('button[type="submit"]').click()
+      await contact.locator('[data-testid="profile-phone"] .badge--warning').waitFor()
+      await contact.locator('[data-testid="profile-phone"] .profile-field__action').click()
     },
   },
   {

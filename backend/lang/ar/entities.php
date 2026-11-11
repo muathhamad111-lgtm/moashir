@@ -45,6 +45,9 @@ return [
         'unified_number' => 'الرقم الوطني الموحد',
         'founded_on' => 'تاريخ التأسيس',
         'website_url' => 'الموقع الإلكتروني',
+        'authorized_person_name' => 'الشخص المفوّض بإدارة الحساب',
+        'phone' => 'رقم الجوال',
+        'marketing_consent' => 'أخبار المنصة وعروضها',
     ],
 
     'export' => [

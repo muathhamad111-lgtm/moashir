@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\Entities\EntityProfileField;
+use App\Enums\Entities\ProfileSection;
 use App\Enums\Identity\RoleKey;
 use App\Models\Entities\City;
 use App\Models\Entities\Entity;
@@ -18,7 +19,7 @@ const HISTORY_PHONE = '+966551234567';
 
 const HISTORY_EDIT_REASON = 'تصحيح عدد المستفيدين بناءً على تقرير الجهة السنوي.';
 
-const HISTORY_ITEM_KEYS = ['id', 'field', 'field_label', 'old_value', 'new_value', 'changed_by', 'changed_at'];
+const HISTORY_ITEM_KEYS = ['id', 'field', 'section', 'field_label', 'old_value', 'new_value', 'changed_by', 'changed_at'];
 
 beforeEach(function (): void {
     Notification::fake();
@@ -31,10 +32,12 @@ beforeEach(function (): void {
  */
 function unchangedProfileOf(Entity $entity, array $overrides = []): array
 {
+    $owner = ownerOf($entity);
+
     return [
         'name' => $entity->name->toArray(),
-        'authorized_person_name' => HISTORY_AUTHORIZED_PERSON,
-        'phone' => HISTORY_PHONE,
+        'authorized_person_name' => $owner->name,
+        'phone' => $owner->phone,
         'entity_type' => $entity->entity_type->value,
         'development_sector' => $entity->development_sector->value,
         'org_size' => $entity->org_size->value,
@@ -50,9 +53,12 @@ function unchangedProfileOf(Entity $entity, array $overrides = []): array
     ];
 }
 
-function editOwnProfile(Entity $entity, array $overrides): void
+/**
+ * @param  array<string, mixed>  $overrides
+ */
+function editOwnProfile(Entity $entity, array $overrides, ProfileSection $section = ProfileSection::Governance): void
 {
-    switchTo(ownerOf($entity))->putJson('/api/v1/entities/me', unchangedProfileOf($entity->refresh(), $overrides))->assertOk();
+    saveSection($entity, $section, $overrides)->assertOk();
 }
 
 it('lists the own profile changes newest first with bilingual labels and the names of the places', function (): void {
@@ -61,7 +67,7 @@ it('lists the own profile changes newest first with bilingual labels and the nam
     $newCity = regionWithCity()->load('region');
     editOwnProfile($entity, ['governance_grade' => '91.5']);
     Date::setTestNow(Date::now()->addHour());
-    editOwnProfile($entity, ['region_id' => $newCity->region_id, 'city_id' => $newCity->id]);
+    editOwnProfile($entity, ['region_id' => $newCity->region_id, 'city_id' => $newCity->id], ProfileSection::Classification);
 
     $response = switchTo(ownerOf($entity))->getJson('/api/v1/entities/me/profile-changes')
         ->assertOk()
@@ -69,6 +75,7 @@ it('lists the own profile changes newest first with bilingual labels and the nam
         ->assertJsonPath('data.0.field', 'city_id')
         ->assertJsonPath('data.0.old_value', EntityPresenter::place($previousCity))
         ->assertJsonPath('data.0.new_value', EntityPresenter::place($newCity))
+        ->assertJsonPath('data.0.section', 'classification')
         ->assertJsonPath('data.1.field', 'region_id')
         ->assertJsonPath('data.1.field_label', ['ar' => 'المنطقة', 'en' => 'Region'])
         ->assertJsonPath('data.1.old_value', EntityPresenter::place($previousCity->region))
@@ -76,6 +83,7 @@ it('lists the own profile changes newest first with bilingual labels and the nam
         ->assertJsonPath('data.1.changed_by', 'entity')
         ->assertJsonPath('data.1.changed_at', '2026-11-01T10:00:00+00:00')
         ->assertJsonPath('data.2.field', 'governance_grade')
+        ->assertJsonPath('data.2.section', 'governance')
         ->assertJsonPath('data.2.field_label', ['ar' => 'درجة الحوكمة', 'en' => 'Governance grade'])
         ->assertJsonPath('data.2.old_value', '82.50')
         ->assertJsonPath('data.2.new_value', '91.50')
@@ -308,4 +316,47 @@ it('loads the staff authors of a page with a fixed number of queries', function 
     $queriesFor(1);
 
     expect($queriesFor(2))->toBe($queriesFor(12));
+});
+
+it('filters both histories by section', function (): void {
+    $entity = entityWithOwner();
+    $newCity = regionWithCity();
+    editOwnProfile($entity, ['employees_count' => 3]);
+    editOwnProfile($entity, ['region_id' => $newCity->region_id, 'city_id' => $newCity->id], ProfileSection::Classification);
+    editOwnProfile($entity, ['authorized_person_name' => HISTORY_AUTHORIZED_PERSON, 'phone' => '0551234567', 'marketing_consent' => true], ProfileSection::Contact);
+
+    $fieldsOf = static fn (array $items): array => collect($items)->pluck('field')->sort()->values()->all();
+    $own = switchTo(ownerOf($entity))->getJson('/api/v1/entities/me/profile-changes?section=classification')->assertOk()
+        ->assertJsonPath('meta.pagination.total', 2);
+    $staff = switchTo(systemAdmin())->getJson("/api/v1/entities/{$entity->id}/profile-changes?section=contact")->assertOk()
+        ->assertJsonPath('meta.pagination.total', 3);
+
+    expect($fieldsOf($own->json('data')))->toBe(['city_id', 'region_id'])
+        ->and(collect($own->json('data'))->pluck('section')->unique()->all())->toBe(['classification'])
+        ->and($fieldsOf($staff->json('data')))->toBe(['authorized_person_name', 'marketing_consent', 'phone']);
+
+    switchTo(ownerOf($entity))->getJson('/api/v1/entities/me/profile-changes?section=identity')->assertOk()->assertJsonPath('data', []);
+    switchTo(ownerOf($entity))->getJson('/api/v1/entities/me/profile-changes')->assertOk()->assertJsonPath('meta.pagination.total', 6);
+});
+
+it('shows the contact history with the phone masked and the actor kind only', function (): void {
+    $entity = entityWithOwner();
+    editOwnProfile($entity, ['phone' => '0551234567'], ProfileSection::Contact);
+
+    $response = switchTo(ownerOf($entity))->getJson('/api/v1/entities/me/profile-changes?section=contact')->assertOk()
+        ->assertJsonPath('data.0.field', 'phone')
+        ->assertJsonPath('data.0.section', 'contact')
+        ->assertJsonPath('data.0.field_label', ['ar' => 'رقم الجوال', 'en' => 'Mobile number'])
+        ->assertJsonPath('data.0.old_value', null)
+        ->assertJsonPath('data.0.new_value', '+9665*****567')
+        ->assertJsonPath('data.0.changed_by', 'entity');
+
+    expect($response->getContent())->not->toContain(HISTORY_PHONE)->not->toContain('551234567');
+});
+
+it('rejects an unknown history section', function (): void {
+    $entity = entityWithOwner();
+
+    switchTo(ownerOf($entity))->getJson('/api/v1/entities/me/profile-changes?section=logo')->assertUnprocessable()->assertJsonValidationErrors(['section']);
+    switchTo(systemAdmin())->getJson("/api/v1/entities/{$entity->id}/profile-changes?section=owner")->assertUnprocessable()->assertJsonValidationErrors(['section']);
 });

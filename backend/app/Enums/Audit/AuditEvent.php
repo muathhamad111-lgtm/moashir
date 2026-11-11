@@ -60,6 +60,7 @@ enum AuditEvent: string
     case EntityEmailChangeApproved = 'entity.email_change_approved';
     case EntityEmailChangeRejected = 'entity.email_change_rejected';
     case EntityEmailChangeApplied = 'entity.email_change_applied';
+    case EntityEmailChangeCancelled = 'entity.email_change_cancelled';
     case EntitySoftDeleted = 'entity.soft_deleted';
     case EntityRestored = 'entity.restored';
     case EntityPermanentlyDeleted = 'security.entity.permanently_deleted';

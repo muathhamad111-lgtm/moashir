@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support\ValueObjects;
 
-use App\Enums\Entities\ProfileCompletionItem;
+use App\Enums\Entities\ProfileSection;
+use App\Enums\Entities\ProfileSectionField;
+use App\Enums\Entities\ProfileSectionState;
+use App\Support\Entities\ProfileFieldValues;
 use InvalidArgumentException;
 
 final readonly class ProfileCompletion
@@ -12,54 +15,78 @@ final readonly class ProfileCompletion
     private const int FULL = 100;
 
     /**
-     * @var array<string, bool>
+     * @param  list<ProfileSectionField>  $missing
      */
-    private array $completed;
-
-    /**
-     * @param  array<string, bool>  $checks
-     */
-    public function __construct(array $checks)
+    public function __construct(private array $missing)
     {
-        $completed = [];
-
-        foreach (ProfileCompletionItem::cases() as $item) {
-            $completed[$item->value] = $checks[$item->value] ?? throw new InvalidArgumentException('A profile completion check is missing: '.$item->value.'.');
+        foreach ($missing as $field) {
+            if (! $field->isCounted()) {
+                throw new InvalidArgumentException('An optional profile field is never missing: '.$field->value.'.');
+            }
         }
-
-        $this->completed = $completed;
     }
 
-    public function includes(ProfileCompletionItem $item): bool
+    public static function of(ProfileFieldValues $values): self
     {
-        return $this->completed[$item->value];
+        return new self(array_values(array_filter(
+            ProfileSectionField::counted(),
+            static fn (ProfileSectionField $field): bool => ! $values->isFilled($field),
+        )));
+    }
+
+    public function counted(): int
+    {
+        return count(ProfileSectionField::counted());
+    }
+
+    public function completedCount(): int
+    {
+        return $this->counted() - count(array_unique(array_map(static fn (ProfileSectionField $field): string => $field->value, $this->missing)));
     }
 
     public function percent(): int
     {
-        $required = ProfileCompletionItem::required();
-        $complete = array_filter($required, $this->includes(...));
-
-        return intdiv(self::FULL * count($complete), count($required));
+        return intdiv(self::FULL * $this->completedCount(), $this->counted());
     }
 
     public function isComplete(): bool
     {
-        return $this->percent() === self::FULL;
+        return $this->completedCount() === $this->counted();
     }
 
     /**
-     * @return array{percent: int, items: list<array{key: string, is_complete: bool, is_required: bool}>}
+     * @return list<ProfileSectionField>
+     */
+    public function missingIn(ProfileSection $section): array
+    {
+        return array_values(array_filter($section->fields(), fn (ProfileSectionField $field): bool => in_array($field, $this->missing, true)));
+    }
+
+    /**
+     * @return array{percent: int, counted: int, completed_count: int, sections: list<array{key: string, state: string, missing_count: int, missing_fields: list<string>}>}
      */
     public function toArray(): array
     {
         return [
             'percent' => $this->percent(),
-            'items' => array_map(fn (ProfileCompletionItem $item): array => [
-                'key' => $item->value,
-                'is_complete' => $this->includes($item),
-                'is_required' => $item->isRequired(),
-            ], ProfileCompletionItem::cases()),
+            'counted' => $this->counted(),
+            'completed_count' => $this->completedCount(),
+            'sections' => array_map($this->sectionSummary(...), ProfileSection::cases()),
+        ];
+    }
+
+    /**
+     * @return array{key: string, state: string, missing_count: int, missing_fields: list<string>}
+     */
+    private function sectionSummary(ProfileSection $section): array
+    {
+        $missing = array_map(static fn (ProfileSectionField $field): string => $field->value, $this->missingIn($section));
+
+        return [
+            'key' => $section->value,
+            'state' => ProfileSectionState::withMissing(count($missing))->value,
+            'missing_count' => count($missing),
+            'missing_fields' => $missing,
         ];
     }
 }

@@ -1,3 +1,5 @@
+import { ROUTE_NAMES } from './routeNames'
+
 export const ACTION_ITEM_KEYS = Object.freeze({
   COMPLETE_PROFILE: 'complete_profile',
   SUBMIT_SELF_DRAFT: 'submit_self_draft',
@@ -36,4 +38,8 @@ export const ATTENTION_ITEM_PRESENTATION = Object.freeze({
 export const FALLBACK_ATTENTION_PRESENTATION = Object.freeze({
   icon: 'warning-triangle',
   tone: T.INFO,
+})
+
+export const ATTENTION_HIDDEN_ON_ROUTES = Object.freeze({
+  [ACTION_ITEM_KEYS.COMPLETE_PROFILE]: Object.freeze([ROUTE_NAMES.ENTITY_PROFILE]),
 })

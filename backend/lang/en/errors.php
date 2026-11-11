@@ -173,6 +173,9 @@ return [
         'unavailable' => 'This path is not available right now.',
         'payment_required' => 'This path needs a payment first. Continue to checkout to start.',
     ],
+    'profile' => [
+        'section_stale' => 'This section was changed after you opened it. Review the current values and save again.',
+    ],
     'prices' => [
         'stale_version' => 'This price was changed by someone else. Review the current price and try again.',
         'no_scheduled_version' => 'There is no scheduled price to cancel for this path.',

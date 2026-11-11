@@ -26,8 +26,13 @@ export const useEntityStore = defineStore('entity', {
         throw error
       }
     },
-    async updateProfile(payload) {
-      const { data } = await entitiesService.updateMine(payload)
+    async saveSection(section, payload) {
+      const { data, meta } = await entitiesService.saveProfileSection(section, payload)
+      this.applyProfile(data)
+      return { data, meta }
+    },
+    async cancelEmailChange() {
+      const { data } = await entitiesService.cancelEmailChange()
       this.applyProfile(data)
       return data
     },

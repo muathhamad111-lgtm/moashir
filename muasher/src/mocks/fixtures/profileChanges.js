@@ -14,6 +14,12 @@ export const PROFILE_FIELD_LABELS = Object.freeze({
   license_number: { ar: 'رقم الترخيص', en: 'Licence number' },
   founded_on: { ar: 'تاريخ التأسيس', en: 'Founding date' },
   website_url: { ar: 'الموقع الإلكتروني', en: 'Website' },
+  authorized_person_name: {
+    ar: 'الشخص المفوّض بإدارة الحساب',
+    en: 'Authorized account manager',
+  },
+  phone: { ar: 'رقم الجوال', en: 'Mobile number' },
+  marketing_consent: { ar: 'أخبار المنصة وعروضها', en: 'Platform news and offers' },
 })
 
 const SYSTEM_ADMIN_ROLE = {

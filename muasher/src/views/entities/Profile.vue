@@ -5,29 +5,24 @@ import { useRoute } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
-import EntityProfileWorkspace from '@/components/entities/profile/portal/EntityProfileWorkspace.vue'
+import EntityProfileView from '@/components/entities/profile/EntityProfileView.vue'
 import { useEntityStore } from '@/stores/entity'
 import { useRegions } from '@/composables/useRegions'
-import { usePermissions } from '@/composables/usePermissions'
+import { useEntityLevel } from '@/composables/useEntityLevel'
 import { useToast } from '@/composables/useToast'
-import { PERMISSIONS } from '@/constants/permissionKeys'
-import { ENTITY_STATUSES } from '@/constants/entityEnums'
 
 const { t } = useI18n()
 const route = useRoute()
 const entityStore = useEntityStore()
 const regions = useRegions()
-const { can } = usePermissions()
+const { certificate, tier } = useEntityLevel()
 const toast = useToast()
 
 const status = ref('loading')
 const errorMessage = ref('')
 const profile = computed(() => entityStore.profile)
-const canEdit = computed(
-  () => can(PERMISSIONS.ENTITY_PROFILE_EDIT) && profile.value?.status === ENTITY_STATUSES.ACTIVE,
-)
 
-useHead({ title: () => t('portal.profile.eyebrowShort') })
+useHead({ title: () => t('portal.profile.documentTitle') })
 
 async function load() {
   status.value = 'loading'
@@ -53,15 +48,16 @@ onMounted(load)
 </script>
 
 <template>
-  <div v-if="status === 'loading'" class="entity-profile-hub__loading" aria-busy="true">
+  <div v-if="status === 'loading'" class="entity-profile__loading" aria-busy="true">
     <Skeleton variant="block" />
     <Skeleton variant="text" :count="6" />
   </div>
   <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
-  <EntityProfileWorkspace
+  <EntityProfileView
     v-else-if="profile"
     :profile="profile"
-    :can-edit="canEdit"
+    :tier="tier"
+    :certificate="certificate"
     :welcome="route.query.welcome === '1'"
     :region-options="regions.regionOptions.value"
     :city-options-for="regions.cityOptionsFor"

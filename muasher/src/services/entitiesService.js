@@ -2,6 +2,7 @@ import { apiClient } from '@/api/client'
 import { domainRequests } from './domainRequest'
 import { withJsonErrorBody } from './mappers/blobError'
 import { toDownload } from './mappers/download'
+import { withOwnEntity } from './mappers/ownEntity'
 
 const EXPORT_FALLBACK_NAME = 'entities.csv'
 
@@ -9,20 +10,31 @@ const { read, write } = domainRequests('entities', 'entity')
 
 export const entitiesService = {
   getMine() {
-    return read('getMine', () => apiClient.get('/entities/me'))
+    return read('getMine', () => apiClient.get('/entities/me')).then(withOwnEntity)
   },
-  updateMine(payload) {
-    return write('updateMine', () => apiClient.put('/entities/me', payload), payload)
+  saveProfileSection(section, payload) {
+    return write(
+      'saveProfileSection',
+      () => apiClient.patch(`/entities/me/profile/${encodeURIComponent(section)}`, payload),
+      payload,
+    ).then(withOwnEntity)
   },
   uploadLogo(file) {
     const body = new FormData()
     body.append('file', file)
     return write('uploadLogo', () => apiClient.post('/entities/me/logo', body), {
       file: file.type,
-    })
+    }).then(withOwnEntity)
   },
   removeLogo() {
-    return write('removeLogo', () => apiClient.delete('/entities/me/logo'), {})
+    return write('removeLogo', () => apiClient.delete('/entities/me/logo'), {}).then(withOwnEntity)
+  },
+  cancelEmailChange() {
+    return write(
+      'cancelEmailChange',
+      () => apiClient.post('/entities/me/email/cancel', {}),
+      {},
+    ).then(withOwnEntity)
   },
   requestEmailChange(newEmail) {
     const payload = { newEmail }

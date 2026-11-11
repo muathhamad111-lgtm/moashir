@@ -53,7 +53,7 @@ it('registers an entity pending verification and sends an e-mail code without re
         ->and($entity->name->ar)->toBe('جمعية الأمل الخيرية')
         ->and($entity->governance_grade)->toBe('87.45')
         ->and($entity->hasCompleteProfile())->toBeFalse()
-        ->and($entity->profileCompletion()->percent())->toBe(75)
+        ->and($entity->profileCompletion()->percent())->toBe(86)
         ->and($entity->unified_number)->toBe('7001234567')
         ->and($owner->roleKeys())->toBe([RoleKey::Entity])
         ->and($owner->name)->toBe('سلمان بن فهد العتيبي')
@@ -92,6 +92,15 @@ it('accepts an incomplete profile and leaves governance and counts for later', f
     register(registrationPayload(['governance_grade' => null, 'employees_count' => null, 'annual_beneficiaries_count' => null]))->assertCreated();
 
     expect(Entity::query()->firstOrFail()->profile_completed_at)->toBeNull();
+});
+
+it('accepts an unanswered strategic plan and counts it as missing', function (): void {
+    register(registrationPayload(['has_strategic_plan' => null]))->assertCreated();
+
+    $entity = Entity::query()->firstOrFail();
+
+    expect($entity->has_strategic_plan)->toBeNull()
+        ->and($entity->profileCompletion()->toArray()['sections'][2]['missing_fields'])->toBe(['has_strategic_plan']);
 });
 
 it('notifies the entity and the system administrators of the registration', function (): void {

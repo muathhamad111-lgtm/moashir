@@ -42,7 +42,7 @@ describe('entity board mock (Task-46 contract)', () => {
     expect(draft).toMatchObject({ count: 1, severity: 'warning', link: '/assessment/accredited' })
     expect(draft.context).toMatchObject({ assessmentId: 9101, reference: 'ACC-2026-000004' })
     expect(draft.context.remainingSubs).toBeGreaterThan(0)
-    expect(body.data.find((item) => item.key === 'complete_profile').context.percent).toBe(25)
+    expect(body.data.find((item) => item.key === 'complete_profile').context.percent).toBe(60)
     expect(body.meta.total).toBe(body.data.reduce((sum, item) => sum + item.count, 0))
   })
 

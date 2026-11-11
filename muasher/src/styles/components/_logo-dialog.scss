@@ -1,0 +1,40 @@
+@use '../mixins' as *;
+
+.logo-dialog {
+  @include flex(column, stretch, flex-start, var(--space-3));
+}
+
+.logo-dialog__preview {
+  @include flex-center;
+  block-size: var(--size-seal);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-tint);
+}
+
+.logo-dialog__image {
+  max-inline-size: 100%;
+  max-block-size: 100%;
+  object-fit: contain;
+}
+
+.logo-dialog__placeholder {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-3xl);
+}
+
+.logo-dialog__rules,
+.logo-dialog__note {
+  margin: 0;
+  color: var(--theme-text-secondary);
+  font-size: var(--fs-xs);
+}
+
+.logo-dialog__error {
+  margin: 0;
+  color: var(--theme-danger-text);
+  font-size: var(--fs-sm);
+}
+
+.logo-dialog__input {
+  @include visually-hidden;
+}

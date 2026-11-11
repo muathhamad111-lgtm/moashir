@@ -21,18 +21,28 @@ enum EntityProfileField: string
     case UnifiedNumber = 'unified_number';
     case FoundedOn = 'founded_on';
     case WebsiteUrl = 'website_url';
+    case AuthorizedPersonName = 'authorized_person_name';
+    case Phone = 'phone';
+    case MarketingConsent = 'marketing_consent';
 
-    public function isBasicData(): bool
+    public function section(): ProfileSection
     {
-        return in_array($this, [self::Name, self::EntityType, self::DevelopmentSector, self::OrgSize, self::FoundingYear, self::Region, self::City], true);
+        return match ($this) {
+            self::Name, self::UnifiedNumber, self::LicenseNumber, self::FoundedOn, self::FoundingYear => ProfileSection::Identity,
+            self::EntityType, self::DevelopmentSector, self::OrgSize, self::Region, self::City => ProfileSection::Classification,
+            self::GovernanceGrade, self::EmployeesCount, self::AnnualBeneficiariesCount, self::HasStrategicPlan => ProfileSection::Governance,
+            self::AuthorizedPersonName, self::Phone, self::WebsiteUrl, self::MarketingConsent => ProfileSection::Contact,
+        };
     }
 
-    /**
-     * @return list<self>
-     */
-    public static function basicData(): array
+    public function isEntityRecord(): bool
     {
-        return array_values(array_filter(self::cases(), static fn (self $field): bool => $field->isBasicData()));
+        return ! in_array($this, [self::AuthorizedPersonName, self::Phone, self::MarketingConsent], true);
+    }
+
+    public function holdsPersonalData(): bool
+    {
+        return $this === self::AuthorizedPersonName || $this === self::Phone;
     }
 
     /**

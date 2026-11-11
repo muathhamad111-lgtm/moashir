@@ -1,7 +1,6 @@
 import { ENTITY_TYPES, DEVELOPMENT_SECTORS, ORG_SIZES } from '@/constants/entityEnums'
 import { activeCityOf, findRegion } from './regionsStore'
 import { entityReject, fieldError } from './entityRejection'
-import { checkRegistry } from './entityRegistry'
 import { checkUnifiedNumber } from './entityUnifiedNumber'
 
 const PHONE_PATTERN = /^(05\d{8}|\+9665\d{8})$/
@@ -12,7 +11,7 @@ const PASSWORD_MIN = 12
 export const REASON_MIN = 10
 export const PERMANENT_REASON_MIN = 20
 
-function blank(value) {
+export function blank(value) {
   return value === null || value === undefined || String(value).trim() === ''
 }
 
@@ -20,7 +19,7 @@ function isWholeNumber(value) {
   return Number.isInteger(Number(value)) && Number(value) >= 0 && !blank(value)
 }
 
-function collector() {
+export function collector() {
   const fields = {}
   return {
     fields,
@@ -37,7 +36,7 @@ function checkRequired(errors, body, keys) {
   keys.filter((key) => blank(body[key])).forEach((key) => errors.add(key, 'field.required'))
 }
 
-function checkChoices(errors, body) {
+export function checkChoices(errors, body) {
   const choices = {
     entityType: ENTITY_TYPES,
     developmentSector: DEVELOPMENT_SECTORS,
@@ -48,7 +47,7 @@ function checkChoices(errors, body) {
     .forEach(([key]) => errors.add(key, 'field.invalid_choice'))
 }
 
-function checkPlace(errors, body) {
+export function checkPlace(errors, body) {
   if (!blank(body.regionId) && !findRegion(body.regionId))
     errors.add('regionId', 'field.invalid_choice')
   if (!blank(body.cityId) && !activeCityOf(body.regionId, body.cityId)) {
@@ -56,14 +55,14 @@ function checkPlace(errors, body) {
   }
 }
 
-function checkGrade(errors, value) {
+export function checkGrade(errors, value) {
   if (blank(value)) return
   const text = String(value)
   if (!GRADE_PATTERN.test(text) || Number(text) > 100)
     errors.add('governanceGrade', 'field.governance_grade')
 }
 
-function checkNumbers(errors, body) {
+export function checkNumbers(errors, body) {
   const year = Number(body.foundingYear)
   if (
     !blank(body.foundingYear) &&
@@ -93,8 +92,6 @@ function profileErrors(body) {
     'regionId',
     'cityId',
   ])
-  if (body.hasStrategicPlan === undefined || body.hasStrategicPlan === null)
-    errors.add('hasStrategicPlan', 'field.required')
   checkContact(errors, body)
   checkChoices(errors, body)
   checkPlace(errors, body)
@@ -103,7 +100,11 @@ function profileErrors(body) {
   return errors
 }
 
-function optionalCount(value) {
+export function strategicPlanFrom(value) {
+  return value === null || value === undefined ? null : Boolean(value)
+}
+
+export function optionalCount(value) {
   return blank(value) ? null : Number(value)
 }
 
@@ -122,7 +123,7 @@ export function profileFrom(body) {
     governanceGrade: blank(body.governanceGrade) ? null : Number(body.governanceGrade).toFixed(2),
     employeesCount: optionalCount(body.employeesCount),
     annualBeneficiariesCount: optionalCount(body.annualBeneficiariesCount),
-    hasStrategicPlan: Boolean(body.hasStrategicPlan),
+    hasStrategicPlan: strategicPlanFrom(body.hasStrategicPlan),
   }
 }
 
@@ -136,14 +137,6 @@ export function contactFrom(body) {
 
 export function assertProfile(body, entityId = null) {
   const errors = profileErrors(body)
-  checkUnifiedNumber(errors, body, { entityId })
-  errors.assertValid()
-}
-
-export function assertOwnProfile(body, entityId = null) {
-  const errors = profileErrors(body)
-  if (typeof body.marketingConsent !== 'boolean') errors.add('marketingConsent', 'field.required')
-  checkRegistry(errors, body, entityId)
   checkUnifiedNumber(errors, body, { entityId })
   errors.assertValid()
 }

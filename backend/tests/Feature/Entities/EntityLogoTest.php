@@ -41,7 +41,7 @@ it('re-encodes an uploaded PNG logo, keeps it private under a random name and re
 
     $response = uploadEntityLogo(ownerOf($entity), logoUpload(logoImageBytes()))
         ->assertCreated()
-        ->assertJsonPath('data.profile_completion.items.10', ['key' => 'logo', 'is_complete' => true, 'is_required' => false]);
+        ->assertJsonPath('data.profile_completion.percent', 100);
 
     $logo = currentLogoOf($entity);
     expect($response->json('data.logo.id'))->toBe($logo->public_id)
@@ -164,7 +164,7 @@ it('removes the logo idempotently and audits only a real removal', function (): 
 
     switchTo($owner)->deleteJson('/api/v1/entities/me/logo')->assertOk()
         ->assertJsonPath('data.logo', null)
-        ->assertJsonPath('data.profile_completion.items.9.is_complete', false);
+        ->assertJsonPath('data.profile_completion.percent', 100);
     switchTo($owner)->deleteJson('/api/v1/entities/me/logo')->assertOk()->assertJsonPath('data.logo', null);
 
     expect($entity->refresh()->logo_file_id)->toBeNull()

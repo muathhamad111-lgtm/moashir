@@ -13,7 +13,6 @@ vi.mock('@/services/entitiesService', () => ({
   entitiesService: {
     requestEmailChange: vi.fn(),
     confirmEmailChange: vi.fn(),
-    updateMine: vi.fn(),
   },
 }))
 vi.mock('@/services/entityLifecycleService', () => ({

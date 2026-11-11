@@ -34,6 +34,6 @@ export async function registerEntity(page, entity) {
   await expect(page).toHaveURL(/\/auth\/otp/)
   await typeCode(page, await waitForCode(entity.email, mark))
   await expect(page).toHaveURL(/\/entity\/profile/)
-  await expect(page.locator('.entity-profile-hub .portal-area__title')).toContainText(entity.nameAr)
+  await expect(page.locator('.profile-header__name')).toContainText(entity.nameAr)
   return { unifiedNumber }
 }

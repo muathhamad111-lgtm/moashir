@@ -28,8 +28,8 @@ it('describes the single request, the single order and the profile completion of
     $items = actionItems(boardOf($owner));
     $percent = switchTo($owner)->getJson('/api/v1/entities/me')->assertOk()->json('data.profile_completion.percent');
 
-    expect($items->get('complete_profile')['context'] ?? null)->toBe([...EMPTY_CONTEXT, 'percent' => 62])
-        ->and($percent)->toBe(62)
+    expect($items->get('complete_profile')['context'] ?? null)->toBe([...EMPTY_CONTEXT, 'percent' => 80])
+        ->and($percent)->toBe(80)
         ->and($items->get('submit_self_draft')['context'] ?? null)->toBe([...EMPTY_CONTEXT, 'assessment_id' => $draft->id, 'reference' => $draft->request_number])
         ->and($items->get('complete_payment')['context'] ?? null)->toBe([...EMPTY_CONTEXT, 'payment_id' => $payment->public_id, 'reference' => $payment->reference]);
 });
