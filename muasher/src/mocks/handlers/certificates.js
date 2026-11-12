@@ -9,6 +9,7 @@ import { findAssessment } from '../stores/assessments/assessmentsStore'
 import { findEntity, referenceOf } from '../stores/entitiesStore'
 import { signedDownloadOf, storeFile } from '../stores/finance/signedFiles'
 import { requestLocale } from '../contract/locale'
+import { certificatesPending } from '../stores/certificateScenarios'
 
 const ISSUED = 'issued'
 const MANAGE = 'certificates.manage'
@@ -130,7 +131,7 @@ function verifyRateLimited(now = Date.now()) {
 
 export const certificatesHandlers = [
   http.get('/api/v1/certificates', async ({ request }) => {
-    await delay(320)
+    await delay(certificatesPending() ? 'infinite' : 320)
     const query = new URL(request.url).searchParams
     const statuses = statusesOf(query)
     const owned = certificates.filter(

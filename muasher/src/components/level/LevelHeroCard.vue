@@ -1,124 +1,88 @@
 <script setup>
-import { computed, useId } from 'vue'
+import { computed, ref, toRef, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { TIER_ORDER } from '@/constants/levels'
-import { isMetalTier, tierPalette } from '@/utils/levelTier'
-import { isTopLevel, nextLevelOf, remainingTo } from '@/utils/levelProgress'
-import { scorePercentText } from '@/utils/percentText'
-import { riyadhDateKey } from '@/utils/datetime'
-import LevelEmblem from './LevelEmblem.vue'
-import LevelScoreRing from './LevelScoreRing.vue'
-import LevelThresholdTrack from './LevelThresholdTrack.vue'
+import { CERTIFICATE_VALIDITY } from '@/constants/certificates'
+import { tierPalette } from '@/utils/levelTier'
+import { useLevelHeroEntrance } from '@/composables/useLevelHeroEntrance'
+import BaseButton from '@/components/ui/BaseButton.vue'
+import LevelHeroIdentity from './LevelHeroIdentity.vue'
+import LevelHeroProgress from './LevelHeroProgress.vue'
+import LevelHeroSkeleton from './LevelHeroSkeleton.vue'
 
 const props = defineProps({
   tier: { type: String, required: true, validator: (value) => TIER_ORDER.includes(value) },
   certificate: { type: Object, default: null },
   ranges: { type: Array, default: () => [] },
   reassessment: { type: Boolean, default: false },
-  validUntil: { type: String, default: null },
-  audience: { type: String, default: 'entity', validator: (v) => ['entity', 'staff'].includes(v) },
+  action: { type: Object, required: true },
+  nextLevelTo: { type: Object, default: null },
+  playKey: { type: String, required: true },
+  loading: { type: Boolean, default: false },
+  failed: { type: Boolean, default: false },
 })
 
-const { t, n } = useI18n()
+const emit = defineEmits(['retry'])
+const { t } = useI18n()
+const root = ref(null)
 const nameId = useId()
+const settling = ref(false)
 
 const percent = computed(() => props.certificate?.percent ?? null)
-const hasPercent = computed(() => percent.value !== null)
-const nextLevel = computed(() => nextLevelOf(props.ranges, percent.value))
-const remaining = computed(() => remainingTo(nextLevel.value, percent.value))
-const reachedTop = computed(
-  () => isMetalTier(props.tier) && isTopLevel(props.ranges, percent.value),
-)
-const issuedOn = computed(() =>
-  props.certificate?.issuedAt ? riyadhDateKey(props.certificate.issuedAt) : '',
-)
-const firstThreshold = computed(() => props.ranges[0]?.min ?? null)
+const validity = computed(() => props.certificate?.validity ?? null)
+const isExpired = computed(() => validity.value === CERTIFICATE_VALIDITY.EXPIRED)
+const ready = computed(() => !props.loading && !props.failed)
+const { phase, displayScore } = useLevelHeroEntrance(root, {
+  ready,
+  playKey: toRef(props, 'playKey'),
+  score: percent,
+})
 const classes = computed(() => [
   `level-tone--${tierPalette(props.tier)}`,
-  `level-hero--${props.tier}`,
+  `level-hero--${phase.value}`,
+  isExpired.value && 'level-hero--expired',
+  settling.value && 'level-hero--settling',
 ])
+
+watch(
+  () => props.loading,
+  (isLoading, wasLoading) => (settling.value = Boolean(wasLoading) && !isLoading),
+)
 </script>
 
 <template>
-  <section class="level-hero" :class="classes" :data-tier="tier" :aria-labelledby="nameId">
-    <div class="level-hero__identity">
-      <LevelEmblem class="level-hero__emblem" :tier="tier" size="xl" />
-      <div class="level-hero__copy">
-        <h2 :id="nameId" class="level-hero__name">{{ t(`level.names.${tier}`) }}</h2>
-        <p class="level-hero__lead">{{ t(`level.hero.lead.${tier}`) }}</p>
-        <dl v-if="certificate" class="level-hero__facts">
-          <div class="level-hero__fact">
-            <dt>{{ t('level.hero.number') }}</dt>
-            <dd>
-              <bdi dir="ltr">{{ certificate.number }}</bdi>
-            </dd>
-          </div>
-          <div class="level-hero__fact">
-            <dt>{{ t('level.hero.issuedAt') }}</dt>
-            <dd>
-              <bdi dir="ltr">{{ issuedOn }}</bdi>
-            </dd>
-          </div>
-          <div v-if="validUntil" class="level-hero__fact" data-testid="level-valid-until">
-            <dt>{{ t('level.hero.validUntil') }}</dt>
-            <dd>
-              <bdi dir="ltr">{{ validUntil }}</bdi>
-            </dd>
-          </div>
-        </dl>
-        <p class="level-hero__chips">
-          <span v-if="certificate" class="level-hero__chip level-hero__chip--valid">
-            {{ t('level.hero.valid') }}
-          </span>
-          <span
-            v-if="reassessment"
-            class="level-hero__chip level-hero__chip--reassessment"
-            data-testid="level-reassessment"
-          >
-            {{ t('level.reassessment') }}
-          </span>
-        </p>
-        <div v-if="$slots.actions" class="level-hero__actions">
-          <slot name="actions" />
-        </div>
-      </div>
-      <LevelScoreRing
-        v-if="hasPercent"
-        class="level-hero__ring"
-        :value="percent"
-        :label="t('level.hero.ringLabel')"
+  <section
+    ref="root"
+    class="level-hero"
+    :class="classes"
+    :data-tier="tier"
+    :data-validity="validity"
+    :data-phase="phase"
+    :aria-labelledby="ready ? nameId : undefined"
+    :aria-busy="loading || undefined"
+  >
+    <LevelHeroSkeleton v-if="loading" />
+    <div v-else-if="failed" class="level-hero__error" role="alert">
+      <p class="level-hero__error-text">{{ t('level.hero.loadError') }}</p>
+      <BaseButton size="sm" icon="refresh" @click="emit('retry')">{{
+        t('common.retry')
+      }}</BaseButton>
+    </div>
+    <template v-else>
+      <LevelHeroIdentity
+        :tier="tier"
+        :name-id="nameId"
+        :certificate="certificate"
+        :reassessment="reassessment"
+        :action="action"
       />
-    </div>
-
-    <div v-if="ranges.length" class="level-hero__ladder">
-      <div class="level-hero__ladder-head">
-        <p class="level-hero__ladder-title">{{ t('level.track.title') }}</p>
-        <p v-if="reachedTop" class="level-hero__next">{{ t(`level.track.top.${audience}`) }}</p>
-        <i18n-t
-          v-else-if="nextLevel"
-          keypath="level.track.remaining"
-          scope="global"
-          tag="p"
-          class="level-hero__next"
-        >
-          <template #value>
-            <bdi dir="ltr">{{ scorePercentText(n, t, remaining) }}</bdi>
-          </template>
-          <template #level>{{ t(`level.names.${nextLevel.level}`) }}</template>
-        </i18n-t>
-        <i18n-t
-          v-else-if="!hasPercent"
-          keypath="level.track.start"
-          scope="global"
-          tag="p"
-          class="level-hero__next"
-        >
-          <template #value>
-            <bdi dir="ltr">{{ scorePercentText(n, t, firstThreshold) }}</bdi>
-          </template>
-        </i18n-t>
-      </div>
-      <LevelThresholdTrack :ranges="ranges" :percent="percent" />
-    </div>
+      <LevelHeroProgress
+        :tier="tier"
+        :percent="percent"
+        :display-score="displayScore"
+        :ranges="ranges"
+        :next-level-to="isExpired ? null : nextLevelTo"
+      />
+    </template>
   </section>
 </template>

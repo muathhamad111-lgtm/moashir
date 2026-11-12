@@ -8,6 +8,7 @@ import {
   tierRank,
   tierOfLevel,
   reassessmentOf,
+  heroActionOf,
 } from '@/utils/levelTier'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 
@@ -104,4 +105,30 @@ describe('tier from the server level field', () => {
     expect(reassessmentOf('participation', true)).toBe(false)
     expect(reassessmentOf('progress', true)).toBe(false)
   })
+})
+
+describe('hero action', () => {
+  it.each([
+    ['silver', 'valid', false, 'level.miniCard.certificate', ROUTE_NAMES.CERTIFICATES_INDEX],
+    [
+      'participation',
+      'valid',
+      false,
+      'level.miniCard.participation',
+      ROUTE_NAMES.CERTIFICATES_INDEX,
+    ],
+    ['gold', 'expiring_soon', false, 'level.miniCard.start', ROUTE_NAMES.ASSESSMENT_ACCREDITED],
+    ['silver', 'expired', false, 'level.miniCard.start', ROUTE_NAMES.ASSESSMENT_ACCREDITED],
+    ['silver', 'expired', true, 'level.miniCard.follow', ROUTE_NAMES.ASSESSMENT_ACCREDITED],
+    ['none', null, false, 'level.miniCard.start', ROUTE_NAMES.ASSESSMENT_ACCREDITED],
+    ['progress', null, true, 'level.miniCard.follow', ROUTE_NAMES.ASSESSMENT_ACCREDITED],
+  ])(
+    'maps %s / %s / open request %s to one action',
+    (tier, validity, hasOpenRequest, key, route) => {
+      expect(heroActionOf({ tier, validity, hasOpenRequest })).toMatchObject({
+        actionKey: key,
+        routeName: route,
+      })
+    },
+  )
 })

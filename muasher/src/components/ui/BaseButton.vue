@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { RouterLink } from 'vue-router'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
@@ -23,6 +24,7 @@ const props = defineProps({
   iconOnly: { type: Boolean, default: false },
   loading: { type: Boolean, default: false },
   disabled: { type: Boolean, default: false },
+  to: { type: [String, Object], default: null },
 })
 
 const emit = defineEmits(['click'])
@@ -42,7 +44,13 @@ function onClick(event) {
 </script>
 
 <template>
+  <RouterLink v-if="to" :to="to" :class="classes">
+    <AppIcon v-if="icon" :name="icon" class="btn__icon" />
+    <span v-if="!iconOnly" class="btn__label"><slot /></span>
+    <AppIcon v-if="iconEnd" :name="iconEnd" class="btn__icon btn__icon--end" />
+  </RouterLink>
   <button
+    v-else
     :type="type"
     :class="classes"
     :disabled="disabled || loading"

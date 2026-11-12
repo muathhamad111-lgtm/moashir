@@ -12,38 +12,65 @@
 
 .level-track__name,
 .level-track__threshold {
-  font-family: var(--font-arabic);
   font-size: var(--fs-xs);
   fill: var(--band-ink-muted);
 }
 
 .level-track__name {
-  display: none;
+  font-family: var(--font-arabic);
 
-  @include respond-to('md') {
-    display: inline;
+  &--current {
+    font-weight: var(--fw-semibold);
+    fill: var(--band-ink);
   }
 }
 
 .level-track__threshold {
   font-family: var(--font-latin);
-  fill: var(--band-ink);
-}
 
-.level-track__segment {
-  fill: var(--tier-neutral-graphic-on-band);
-  opacity: var(--opacity-disabled);
-
-  @each $tier in ('bronze', 'silver', 'gold', 'diamond') {
-    &--#{$tier} {
-      fill: var(--tier-#{$tier}-graphic-on-band);
-      opacity: 1;
-    }
+  &--next {
+    font-weight: var(--fw-bold);
+    fill: var(--data-on-band);
   }
 }
 
+.level-track__base,
+.level-track__reached {
+  transform-box: view-box;
+  transform-origin: left center;
+
+  [dir='rtl'] & {
+    transform-origin: right center;
+  }
+}
+
+.level-track__reached {
+  .level-hero--expired & {
+    opacity: var(--opacity-disabled);
+  }
+}
+
+.level-track__segment {
+  @each $tier in ('neutral', 'bronze', 'silver', 'gold', 'diamond') {
+    &--#{$tier} {
+      fill: var(--tier-#{$tier}-on-band);
+    }
+  }
+
+  &--neutral {
+    fill: var(--tier-neutral-graphic-on-band);
+  }
+}
+
+.level-track__remaining {
+  fill: var(--glass-fill);
+  stroke: var(--data-on-band);
+  stroke-dasharray: var(--dash-previous);
+  stroke-width: var(--border-width);
+}
+
 .level-track__pin {
-  fill: var(--stage-to);
-  stroke: var(--band-ink);
+  fill: var(--color-white);
+  stroke: var(--color-dark);
   stroke-width: var(--border-width-thick);
 }

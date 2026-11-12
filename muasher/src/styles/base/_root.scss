@@ -47,6 +47,8 @@
   --opacity-pattern-light: #{$opacity-pattern-light};
   --opacity-disabled: #{$opacity-disabled};
   --opacity-backdrop: #{$opacity-backdrop};
+  --opacity-expired-seal: #{$opacity-expired-seal};
+  --opacity-expired-score: #{$opacity-expired-score};
 
   --font-arabic: #{$font-arabic};
   --font-latin: #{$font-latin};
@@ -170,6 +172,10 @@
   --motion-parallax-distance: #{$motion-parallax-distance};
   --motion-header-offset: #{$motion-header-offset};
   --motion-header-scale: #{$motion-header-scale};
+  --motion-seal-turn: #{$motion-seal-turn};
+  --motion-seal-scale: #{$motion-seal-scale};
+  --motion-glow-scale: #{$motion-glow-scale};
+  --motion-track-scale: #{$motion-track-scale};
   --scale-featured: #{$scale-featured};
   --opacity-shimmer-min: #{$opacity-shimmer-min};
   --opacity-shimmer-max: #{$opacity-shimmer-max};

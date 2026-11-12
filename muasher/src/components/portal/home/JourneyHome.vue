@@ -1,9 +1,7 @@
 <script setup>
-import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useJourneyHome } from '@/composables/useJourneyHome'
-import { useEntityLevel } from '@/composables/useEntityLevel'
-import { useCertificateLevels } from '@/composables/useCertificateLevels'
+import { useLevelHero } from '@/composables/useLevelHero'
 import { useAccreditedPerformance } from '@/composables/useAccreditedPerformance'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
@@ -14,24 +12,22 @@ import JourneyKpis from './JourneyKpis.vue'
 import JourneyPerformance from './JourneyPerformance.vue'
 import NextStepCard from './NextStepCard.vue'
 import GlanceNotificationsCard from './GlanceNotificationsCard.vue'
-import AppIcon from '@/components/ui/AppIcon.vue'
-import { usePermissions } from '@/composables/usePermissions'
-import { accessFor } from '@/constants/routeAccess'
-import { ROUTE_NAMES } from '@/constants/routeNames'
-import { NEXT_LEVEL_TIERS } from '@/constants/levels'
 
 const { t } = useI18n()
 const { sources, status, load } = useJourneyHome()
-const level = useEntityLevel()
-const { ranges } = useCertificateLevels()
+const {
+  tier,
+  certificate,
+  ranges,
+  reassessment,
+  action,
+  nextLevelTo,
+  playKey,
+  loading: heroLoading,
+  failed: heroFailed,
+  retry: retryHero,
+} = useLevelHero()
 const performance = useAccreditedPerformance()
-const { canAccess } = usePermissions()
-const validUntil = computed(() => sources.board?.level?.certificate?.validUntil ?? null)
-const showsNextLevelLink = computed(
-  () =>
-    NEXT_LEVEL_TIERS.includes(level.tier.value) &&
-    canAccess(accessFor(ROUTE_NAMES.PORTAL_TOOL_STRENGTHS)),
-)
 </script>
 
 <template>
@@ -40,27 +36,17 @@ const showsNextLevelLink = computed(
       <div class="b-band__inner">
         <JourneyHero />
         <LevelHeroCard
-          :tier="level.tier.value"
-          :certificate="level.certificate.value"
+          :tier="tier"
+          :certificate="certificate"
           :ranges="ranges"
-          :reassessment="level.reassessment.value"
-          :valid-until="validUntil"
-        >
-          <template #actions>
-            <router-link class="btn btn--on-band" :to="{ name: level.miniCard.value.routeName }">
-              {{ t(level.miniCard.value.actionKey) }}
-            </router-link>
-            <router-link
-              v-if="showsNextLevelLink"
-              class="level-hero__link"
-              :to="{ name: ROUTE_NAMES.PORTAL_TOOL_STRENGTHS }"
-              data-testid="hero-next-level"
-            >
-              {{ t('level.hero.nextLevelLink') }}
-              <AppIcon name="arrow-right" />
-            </router-link>
-          </template>
-        </LevelHeroCard>
+          :reassessment="reassessment"
+          :action="action"
+          :next-level-to="nextLevelTo"
+          :play-key="playKey"
+          :loading="heroLoading"
+          :failed="heroFailed"
+          @retry="retryHero"
+        />
       </div>
     </section>
 

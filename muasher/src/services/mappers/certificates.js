@@ -21,6 +21,8 @@ export function toCertificateCard(raw = {}) {
     hasPdf: raw.hasPdf === true,
     validUntil: raw.validUntil ?? null,
     isExpired: raw.isExpired === true,
+    validity: raw.validity ?? null,
+    daysUntilExpiry: raw.daysUntilExpiry ?? null,
   }
 }
 

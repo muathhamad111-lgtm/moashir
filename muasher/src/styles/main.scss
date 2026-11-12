@@ -292,8 +292,9 @@
 @use 'components/level-badge';
 @use 'components/level-mini-card';
 @use 'components/level-hero';
+@use 'components/level-hero-skeleton';
+@use 'components/level-hero-motion';
 @use 'components/level-track';
-@use 'components/level-ring';
 @use 'components/level-ribbon';
 @use 'components/level-history';
 @use 'components/level-achieved';

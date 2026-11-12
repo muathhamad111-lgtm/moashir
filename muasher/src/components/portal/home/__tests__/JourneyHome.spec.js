@@ -323,12 +323,30 @@ describe('JourneyHome (D1 / M1)', () => {
     )
   })
 
-  it('shows «صالحة حتى» on the level hero from the board level widget', async () => {
+  it('shows the derived validity of the level certificate and switches the action when it expires soon', async () => {
     certificatesService.listCards.mockImplementation((params) =>
-      Promise.resolve({ data: params.perPage === 1 ? [GOLD] : [] }),
+      Promise.resolve({
+        data:
+          params.perPage === 1
+            ? [
+                {
+                  ...GOLD,
+                  validUntil: '2026-11-30',
+                  validity: 'expiring_soon',
+                  daysUntilExpiry: 18,
+                },
+              ]
+            : [],
+      }),
     )
+    accreditedService.getCurrent.mockResolvedValue({
+      data: { awaitingPayment: null, active: null, latestClosed: null },
+    })
     const wrapper = await factory()
-    expect(wrapper.find('[data-testid="level-valid-until"]').text()).toContain('2027-03-31')
+    const chip = wrapper.find('[data-testid="level-validity"]')
+    expect(chip.text()).toBe('تنتهي خلال 18 يومًا · 2026-11-30')
+    expect(chip.classes()).toContain('level-hero__chip--expiring')
+    expect(wrapper.find('[data-testid="level-hero-action"]').text()).toBe('ابدأ التقييم المعتمد')
   })
 
   it('shows the indicative level of the self result as text only', async () => {
@@ -354,9 +372,10 @@ describe('JourneyHome (D1 / M1)', () => {
     const wrapper = await factory()
     const hero = wrapper.find('.level-hero')
     expect(hero.attributes('data-tier')).toBe('none')
-    expect(hero.find('.level-hero__name').text()).toBe('لم تحصل على مستوى بعد')
+    expect(hero.find('.level-hero__name').text()).toBe('لم تحصل جهتك على مستوى بعد')
     expect(hero.find('.level-emblem__seal').exists()).toBe(false)
-    expect(hero.find('.level-hero__actions a').text()).toBe('ابدأ التقييم المعتمد')
+    expect(hero.find('[data-testid="level-hero-action"]').text()).toBe('ابدأ التقييم المعتمد')
+    expect(hero.find('.level-hero__remaining').text()).toBe('تبدأ المستويات من 60%')
     expect(wrapper.find('.ranked-bars').exists()).toBe(false)
   })
 
@@ -381,10 +400,12 @@ describe('JourneyHome (D1 / M1)', () => {
     expect(hero.attributes('data-tier')).toBe('gold')
     expect(hero.find('.level-emblem__seal').exists()).toBe(true)
     expect(hero.find('.level-hero__chip--reassessment').exists()).toBe(true)
-    expect(hero.find('.level-hero__next').text()).toBe('تبقّى 8% لبلوغ المستوى الماسي')
-    expect(hero.find('.level-hero__next bdi').attributes('dir')).toBe('ltr')
+    expect(hero.find('.level-hero__remaining').text()).toBe('تبقّى 8% لبلوغ المستوى الماسي')
+    expect(hero.find('.level-hero__remaining bdi').attributes('dir')).toBe('ltr')
     expect(hero.findAll('.level-track__segment')).toHaveLength(5)
-    expect(hero.find('.level-hero__actions a').text()).toBe('عرض الشهادة')
+    expect(hero.find('.level-ring').exists()).toBe(false)
+    expect(hero.findAll('.level-hero__number')).toHaveLength(1)
+    expect(hero.find('[data-testid="level-hero-action"]').text()).toBe('عرض الشهادة')
   })
 
   it('ranks the accredited criteria from 0 with deltas and compares the two latest results', async () => {

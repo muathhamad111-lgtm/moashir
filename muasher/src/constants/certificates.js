@@ -18,6 +18,17 @@ export const CERTIFICATE_STATUS_TONES = Object.freeze({
 
 export const CERTIFICATE_LIST_LIMIT = 50
 
+export const CERTIFICATE_VALIDITY = Object.freeze({
+  VALID: 'valid',
+  EXPIRING_SOON: 'expiring_soon',
+  EXPIRED: 'expired',
+})
+
+export const RENEWAL_VALIDITIES = Object.freeze([
+  CERTIFICATE_VALIDITY.EXPIRING_SOON,
+  CERTIFICATE_VALIDITY.EXPIRED,
+])
+
 export const VERIFICATION_RESULTS = Object.freeze({
   VALID: 'valid',
   UNDER_REVIEW: 'under_review',

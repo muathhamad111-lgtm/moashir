@@ -27,6 +27,7 @@ final class CertificateSummaryPresenter
             'valid_until' => $certificate->valid_until?->toDateString(),
             'valid_until_at' => $certificate->validUntilInstant()?->toIso8601String(),
             'is_expired' => $certificate->isExpiredOn(LocalDay::today()),
+            ...CertificateValidityPresenter::present($certificate),
         ];
     }
 }

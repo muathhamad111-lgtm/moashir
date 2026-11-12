@@ -16,6 +16,7 @@ use App\Models\Entities\Entity;
 use App\Models\Files\StoredFile;
 use App\Models\Identity\User;
 use App\Support\Periods\LocalDay;
+use App\Support\ValueObjects\CertificateValidityStatus;
 use App\Support\ValueObjects\Percent;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -171,6 +172,11 @@ final class Certificate extends Model
     public function isExpiredOn(CarbonImmutable $day): bool
     {
         return $this->isIssued() && $this->valid_until instanceof CarbonImmutable && $this->valid_until->toDateString() < $day->toDateString();
+    }
+
+    public function validityOn(CarbonImmutable $day, int $expiringSoonDays): ?CertificateValidityStatus
+    {
+        return $this->isIssued() ? CertificateValidityStatus::on($this->valid_until, $day, $expiringSoonDays) : null;
     }
 
     public function validUntilInstant(): ?CarbonImmutable

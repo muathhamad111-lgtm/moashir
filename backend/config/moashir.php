@@ -152,6 +152,7 @@ return [
     'certificates' => [
         'verification_log_retention_days' => 365,
         'verification_code_length' => 28,
+        'expiring_soon_days' => 30,
     ],
     'contact' => [
         'submissions_per_ip_per_ten_minutes' => 5,

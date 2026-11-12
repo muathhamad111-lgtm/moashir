@@ -3,4 +3,5 @@ export const STORAGE_KEYS = {
   recentSearches: 'muasher.search.recent',
   sideNavCollapsed: 'muasher.portal.nav.collapsed',
   levelAcknowledged: 'muasher.level.acknowledged',
+  levelHeroEntrance: 'muasher.level.heroEntrance',
 }

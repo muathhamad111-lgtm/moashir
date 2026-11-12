@@ -6,7 +6,6 @@ import LevelBadge from '@/components/level/LevelBadge.vue'
 import LevelRibbon from '@/components/level/LevelRibbon.vue'
 import LevelHistoryList from '@/components/level/LevelHistoryList.vue'
 import LevelThresholdTrack from '@/components/level/LevelThresholdTrack.vue'
-import LevelScoreRing from '@/components/level/LevelScoreRing.vue'
 import { CERTIFICATE_SEALS } from '@/constants/seals'
 
 const RANGES = [
@@ -61,18 +60,59 @@ describe('LevelBadge', () => {
 })
 
 describe('LevelThresholdTrack', () => {
-  it('draws one segment below the first threshold plus one per level, with the pin and no caption', () => {
-    const wrapper = render(LevelThresholdTrack, { ranges: RANGES, percent: '74.50' })
-    expect(wrapper.findAll('.level-track__segment')).toHaveLength(3)
+  const FOUR = [
+    ...RANGES,
+    { level: 'gold', label: { ar: 'المستوى الذهبي', en: 'Gold level' }, min: 80, max: 89.99 },
+    { level: 'diamond', label: { ar: 'المستوى الماسي', en: 'Diamond level' }, min: 90, max: null },
+  ]
+
+  function widthOf(rect) {
+    return Number.parseFloat(rect.attributes('width'))
+  }
+
+  it('fills up to the score, outlines the rest of the current level and pins the score', () => {
+    const wrapper = render(LevelThresholdTrack, { ranges: FOUR, percent: '74.50' })
+    expect(wrapper.findAll('.level-track__reached .level-track__segment')).toHaveLength(3)
+    expect(wrapper.findAll('.level-track__base .level-track__segment')).toHaveLength(2)
+    expect(wrapper.find('.level-track__remaining').exists()).toBe(true)
     expect(wrapper.find('.level-track__pin').exists()).toBe(true)
-    expect(wrapper.find('.level-track__caption').exists()).toBe(false)
+    expect(wrapper.find('.level-track__name--current').text()).toBe('فضي')
+    expect(wrapper.find('.level-track__threshold--next').text()).toBe('80%')
   })
 
-  it('mirrors the pin in RTL', () => {
-    const ar = render(LevelThresholdTrack, { ranges: RANGES, percent: 80 })
-    const en = render(LevelThresholdTrack, { ranges: RANGES, percent: 80 }, 'en')
-    expect(ar.find('.level-track__pin').attributes('cx')).toBe('20%')
-    expect(en.find('.level-track__pin').attributes('cx')).toBe('80%')
+  it('zooms the axis on the levels and keeps a short stub below the first threshold', () => {
+    const wrapper = render(LevelThresholdTrack, { ranges: FOUR, percent: 95 }, 'en')
+    const [stub, bronze] = wrapper.findAll('.level-track__reached .level-track__segment')
+    expect(stub.classes()).toContain('level-track__segment--neutral')
+    expect(widthOf(stub)).toBeCloseTo(11.7, 1)
+    expect(widthOf(bronze)).toBeCloseTo(21.4, 1)
+  })
+
+  it('mirrors the axis between RTL and LTR', () => {
+    const ar = render(LevelThresholdTrack, { ranges: FOUR, percent: 80 })
+    const en = render(LevelThresholdTrack, { ranges: FOUR, percent: 80 }, 'en')
+    expect(ar.find('.level-track__pin').attributes('cx')).toBe('44%')
+    expect(en.find('.level-track__pin').attributes('cx')).toBe('56%')
+  })
+
+  it('moves the pin with the counted value along the zoomed axis', () => {
+    const wrapper = render(LevelThresholdTrack, { ranges: FOUR, percent: 80, pinValue: 40 }, 'en')
+    expect(wrapper.find('.level-track__pin').attributes('cx')).toBe('28%')
+  })
+
+  it('highlights the first threshold and draws no pin without a score', () => {
+    const wrapper = render(LevelThresholdTrack, { ranges: FOUR, percent: null })
+    expect(wrapper.find('.level-track__pin').exists()).toBe(false)
+    expect(wrapper.find('.level-track__remaining').exists()).toBe(false)
+    expect(wrapper.find('.level-track__threshold--next').text()).toBe('60%')
+    expect(wrapper.findAll('.level-track__base .level-track__segment')).toHaveLength(5)
+  })
+
+  it('draws no remaining zone at the top level', () => {
+    const wrapper = render(LevelThresholdTrack, { ranges: FOUR, percent: 93.1 })
+    expect(wrapper.find('.level-track__remaining').exists()).toBe(false)
+    expect(wrapper.find('.level-track__threshold--next').exists()).toBe(false)
+    expect(wrapper.find('.level-track__name--current').text()).toBe('ماسي')
   })
 })
 
@@ -118,14 +158,5 @@ describe('LevelRibbon and LevelHistoryList', () => {
     })
     const chips = wrapper.findAll('.level-history__chip').map((chip) => chip.text())
     expect(chips).toEqual(['الحالية', 'سابقة', 'ملغاة'])
-  })
-})
-
-describe('LevelScoreRing', () => {
-  it('uses the same one-decimal score as the track and the ribbon', () => {
-    const wrapper = render(LevelScoreRing, { value: '74.50', label: 'الدرجة المعتمدة' })
-    expect(wrapper.find('.level-ring__number').text()).toBe('74.5')
-    const whole = render(LevelScoreRing, { value: '82.00', label: 'الدرجة المعتمدة' })
-    expect(whole.find('.level-ring__number').text()).toBe('82')
   })
 })

@@ -1,3 +1,4 @@
+import { RENEWAL_VALIDITIES } from '@/constants/certificates'
 import {
   LEVEL_CERTIFICATE_STATUS,
   LEVEL_MINI_CARD,
@@ -48,6 +49,12 @@ export function showsReassessment({ certificate = null, accredited = null } = {}
 
 export function miniCardOf(tier) {
   return isMetalTier(tier) ? LEVEL_MINI_CARD.level : LEVEL_MINI_CARD[tier]
+}
+
+export function heroActionOf({ tier, validity = null, hasOpenRequest = false }) {
+  const needsRenewal = RENEWAL_VALIDITIES.includes(validity) && tier !== LEVEL_TIERS.NONE
+  if (!needsRenewal || tier === LEVEL_TIERS.PROGRESS) return miniCardOf(tier)
+  return hasOpenRequest ? LEVEL_MINI_CARD[LEVEL_TIERS.PROGRESS] : LEVEL_MINI_CARD[LEVEL_TIERS.NONE]
 }
 
 export function tierRank(tier) {

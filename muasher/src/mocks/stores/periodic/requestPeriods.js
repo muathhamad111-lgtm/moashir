@@ -1,6 +1,6 @@
 import { ASSESSMENT_PATHS } from '@/constants/assessment'
 import { riyadhDateKey } from '@/utils/datetime'
-import { certificates } from '../certificatesStore'
+import { certificates, validityStateOf } from '../certificatesStore'
 import { accreditedOf } from '../accredited/accreditedRecords'
 import { isAccreditedOpen } from '../accredited/accreditedStates'
 import { findEntity } from '../entitiesStore'
@@ -57,6 +57,7 @@ export function certificateOf(record) {
     validUntil,
     validUntilAt,
     isExpired: certificate.status === 'issued' && Date.now() >= Date.parse(validUntilAt),
+    ...validityStateOf(certificate, validUntil),
   }
 }
 

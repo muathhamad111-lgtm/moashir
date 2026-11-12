@@ -47,6 +47,8 @@ export function toCertificateSummary(raw) {
     validUntil: raw.validUntil ?? null,
     validUntilAt: raw.validUntilAt ?? null,
     isExpired: raw.isExpired === true,
+    validity: raw.validity ?? null,
+    daysUntilExpiry: raw.daysUntilExpiry ?? null,
   }
 }
 

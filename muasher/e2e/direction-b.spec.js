@@ -138,7 +138,7 @@ test.describe('direction B — mobile 390 charts', () => {
     const list = await page.locator('.ranked-bars__list').boundingBox()
     expect(bar.width).toBeGreaterThan(list.width * 0.9)
 
-    await expect(page.locator('.level-hero .level-ring__figure')).toContainText('74.5')
+    await expect(page.locator('.level-hero .level-hero__number')).toHaveText('74.5')
     await expect(page.locator('.radar-chart__caption')).toHaveText(
       localeOf(testInfo) === 'en' ? 'Current result' : 'النتيجة الحالية',
     )

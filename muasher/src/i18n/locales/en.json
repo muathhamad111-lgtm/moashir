@@ -7500,7 +7500,7 @@
         }
       },
       "kpis": {
-        "label": "Your association indicators",
+        "label": "Your entity indicators",
         "accredited": "Latest accredited result",
         "self": "Latest self assessment",
         "certificates": "Valid certificates",
@@ -8277,7 +8277,7 @@
         },
         "nationalImpact": {
           "title": "National impact",
-          "lead": "Your position among associations without naming any other association.",
+          "lead": "Your position among entities without naming any other entity.",
           "benefits": {
             "0": "Your position within an anonymous group.",
             "1": "Your impact indicators.",
@@ -8287,7 +8287,7 @@
         },
         "trends": {
           "title": "Trends",
-          "lead": "How ready your association is for the coming trends in the sector.",
+          "lead": "How ready your entity is for the coming trends in the sector.",
           "benefits": {
             "0": "Trends that affect the sector.",
             "1": "Your readiness for each trend.",
@@ -9138,39 +9138,29 @@
       "eyebrow": "Your level"
     },
     "hero": {
-      "lead": {
-        "none": "Start the accredited assessment to earn an excellence level.",
-        "progress": "The assessor is reviewing your accredited request.",
-        "participation": "From the accredited assessment certificate",
-        "bronze": "From the accredited assessment certificate",
-        "silver": "From the accredited assessment certificate",
-        "gold": "From the accredited assessment certificate",
-        "diamond": "From the accredited assessment certificate"
+      "none": "Your entity has no level yet",
+      "scoreLabel": "Accredited score",
+      "scoreValue": "Accredited score {value}",
+      "unit": "%",
+      "meta": "Certificate {number} · issued {date}",
+      "validity": {
+        "valid": "Valid · until {date}",
+        "validOpen": "Valid",
+        "expiringSoon": "Expires today · {date} | Expires in {count} day · {date} | Expires in {count} days · {date}",
+        "expired": "Expired · {date}"
       },
-      "number": "Certificate number",
-      "issuedAt": "Issue date",
-      "valid": "Valid",
-      "ringLabel": "Accredited score",
-      "viewCertificate": "View the certificate",
-      "startAccredited": "Start the accredited assessment",
-      "followRequest": "Follow your request",
       "nextLevelLink": "What the next level needs",
-      "validUntil": "Valid until"
-    },
-    "ring": {
-      "unit": "%"
+      "loading": "Loading your entity level",
+      "loadError": "Your entity level could not be loaded."
     },
     "track": {
       "title": "Excellence journey",
       "remaining": "{value} to {level}",
-      "top": {
-        "entity": "Your association has reached the highest level",
-        "staff": "The entity has reached the highest level"
-      },
-      "start": "Levels start at {value} in the accredited assessment"
+      "top": "Your entity has reached the highest level",
+      "start": "Levels start at {value}"
     },
     "achieved": {
-      "title": "Congratulations! Your association earned the {level}",
+      "title": "Congratulations! Your entity earned the {level}",
       "message": "This message appears once, at the first sign-in after the certificate is issued.",
       "view": "View the certificate",
       "later": "Later"
