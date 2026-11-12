@@ -1087,7 +1087,7 @@
     },
     "messages": {
       "index": {
-        "title": "My messages"
+        "title": "Inbox"
       },
       "thread": {
         "title": "Conversation"
@@ -1149,7 +1149,7 @@
         "social": "Social media accounts",
         "form": {
           "title": "Send a message",
-          "signedIn": "We use your account details to reply, and your message also appears in “My messages”.",
+          "signedIn": "We use your account details to reply, and your message also appears in your “Inbox”.",
           "name": "Name",
           "email": "E-mail",
           "mobile": "Mobile number (optional)",
@@ -1844,7 +1844,6 @@
     },
     "login": {
       "title": "Log in",
-      "subtitle": "Sign in to your Moashir account.",
       "fields": {
         "password": "Password",
         "identifier": "E-mail, mobile or unified national number"
@@ -1852,12 +1851,6 @@
       "submit": "Log in",
       "noAccount": "Don't have an account?",
       "forgotPassword": "Forgot your password?",
-      "identifierHint": "Use {options}.",
-      "identifierKinds": {
-        "email": "your official e-mail",
-        "mobile": "your verified mobile number (05XXXXXXXX)",
-        "unified_number": "your entity's unified national number (10 digits starting with 7)"
-      },
       "validation": {
         "identifier": "Enter your official e-mail, your Saudi mobile number (05XXXXXXXX) or your entity's unified national number (10 digits starting with 7)."
       },
@@ -1867,9 +1860,6 @@
         "code": "Verification code"
       },
       "code": {
-        "channelEmail": "The code is sent to your official e-mail.",
-        "channelSms": "You get the code by SMS if you enter your verified mobile; otherwise, by your official e-mail.",
-        "entityOnly": "Code sign-in is for entity accounts only. Staff sign in with a password and an authenticator app.",
         "submit": "Send verification code"
       }
     },
@@ -1888,8 +1878,7 @@
           "title": "Results that drive improvement",
           "body": "A report on strengths and improvement areas for each criterion, plus indicators to track progress across cycles."
         }
-      },
-      "footnote": "Your data is protected in line with National Cybersecurity Authority controls."
+      }
     },
     "otp": {
       "title": "Verification code",
@@ -5614,6 +5603,8 @@
       "from": "From date",
       "to": "To date",
       "allStatuses": "All statuses",
+      "entity": "Entity",
+      "allEntities": "All entities",
       "allServices": "All services",
       "allMethods": "All methods",
       "modes": {
@@ -5791,7 +5782,7 @@
       "title": "Financial transactions",
       "subtitle": "Every payment with its price before VAT, VAT and total.",
       "statsLiveOnly": "Statistics include live payments only. Choose Test payments in the environment filter to review test payments.",
-      "searchPlaceholder": "Reference, receipt, gateway reference or entity",
+      "searchPlaceholder": "Reference, receipt, gateway reference, entity or authorized person",
       "emptyTitle": "No transactions",
       "emptyMessage": "No transaction matches the filters.",
       "details": "Details",
@@ -7310,7 +7301,7 @@
       "journey": "Journey",
       "certificates": "Certificates",
       "payments": "Payments",
-      "messages": "Messages",
+      "messages": "Inbox",
       "more": "More",
       "unread": "no new replies | {count} new reply | {count} new replies",
       "paths": "Paths"
@@ -7322,7 +7313,6 @@
       "open": "Account menu: {name}",
       "openMore": "Your account and services: {name}",
       "title": "Account menu",
-      "profile": "My profile",
       "entityProfile": "Organization profile",
       "language": "Language",
       "theme": "Appearance",
@@ -7504,7 +7494,7 @@
           "link": "View my certificates"
         },
         "notifications": {
-          "title": "My messages and latest notifications",
+          "title": "Inbox and latest notifications",
           "empty": "No notifications yet.",
           "link": "All notifications"
         }
@@ -7547,14 +7537,14 @@
       "subtitle": "See what every station needs, and write to the Moashir team when you need help.",
       "noGuide": "No guidance has been added for this path yet.",
       "newMessage": "New message",
-      "newMessageText": "The team’s reply reaches My messages and your e-mail."
+      "newMessageText": "The team’s reply reaches your inbox and your e-mail."
     },
     "breadcrumb": {
       "label": "Breadcrumb",
       "journey": "Journey"
     },
     "messages": {
-      "eyebrow": "Messages",
+      "eyebrow": "Inbox",
       "title": "Your messages with the Moashir team",
       "subtitle": "We answer your enquiries here and by e-mail. Messages you sent while signed in appear here.",
       "tabsLabel": "Filter messages",
@@ -7566,7 +7556,7 @@
       "unreadReply": "Unread reply",
       "you": "You",
       "team": "Moashir platform team",
-      "back": "Back to messages",
+      "back": "Back to the inbox",
       "sentOn": "Sent",
       "typeLine": "Enquiry type: {type}",
       "alsoEmailed": "The reply was also sent to",
@@ -7615,18 +7605,27 @@
     "payments": {
       "eyebrow": "Payments",
       "title": "Payments and receipts",
-      "subtitle": "Your organization's payments and their receipts. A payment receipt is issued for every completed payment.",
-      "tabsLabel": "Filter payments",
-      "tabs": {
-        "all": "All",
+      "statusGroups": {
         "awaiting": "In progress",
         "paid": "Paid",
-        "cancelled": "Cancelled or rejected"
+        "cancelled": "Cancelled or rejected",
+        "refunded": "Refunded"
+      },
+      "search": "Search by payment number, receipt number or authorized person",
+      "filters": {
+        "toggle": "Filters",
+        "active": "Filters, {count} active",
+        "clear": "Clear filters"
       },
       "recordsTitle": "Payment records",
       "tableCaption": "Payments with their receipt and the amounts before and after VAT",
       "service": "{service} —",
       "downloadReceipt": "Download receipt",
+      "viewReceipt": "View receipt",
+      "receiptActions": {
+        "view": "View",
+        "download": "Download"
+      },
       "complete": "Complete payment",
       "totalWithVat": "Total incl. VAT",
       "columns": {
@@ -7652,22 +7651,12 @@
         "all": {
           "title": "No payments yet",
           "message": "Payments made by your organization and their receipts appear here."
-        },
-        "awaiting": {
-          "title": "No requests in progress",
-          "message": "Your open payment order or the transfer under review appears here."
-        },
-        "paid": {
-          "title": "No paid payments",
-          "message": "Completed payments appear here with their receipts."
-        },
-        "cancelled": {
-          "title": "No cancelled or rejected requests",
-          "message": "Orders that expired or were not paid, and rejected transfers, appear here."
         }
       },
-      "testNote": "Payments whose receipt is marked \"Not valid as proof of payment\" are not counted in the statistics.",
-      "note": "Amounts are shown before VAT; VAT and the total are calculated when you place the request and kept with it. An electronic payment order is valid for 30 minutes and is then cancelled automatically; you can start a new order at any time.",
+      "emptyFiltered": {
+        "title": "No matching results",
+        "message": "Change the search or the filters, or clear them to see all payments."
+      },
       "pending": {
         "badge": "Awaiting payment · {minutes} minute left | Awaiting payment · {minutes} minute left | Awaiting payment · {minutes} minutes left",
         "title": "Payment order: {service} —",
@@ -8200,7 +8189,7 @@
         "journey": "My journey",
         "certificates": "Certificates",
         "payments": "Payments & receipts",
-        "messages": "Messages",
+        "messages": "Inbox",
         "notifications": "Notifications",
         "entityProfile": "Entity profile",
         "help": "Help",
@@ -8465,7 +8454,6 @@
     },
     "tile": {
       "title": "Assessment paths",
-      "lead": "Each path has its own page and requests. The Kit lives inside the accredited path.",
       "tags": {
         "self": "Optional · grants no level",
         "accredited": "Periodic assessment",
@@ -8588,9 +8576,6 @@
       "price": "Fees",
       "fee": "Cycle fee",
       "loadError": "Could not load the path. Try again.",
-      "self": {
-        "lead": "An assessment your entity runs itself to check its readiness. The result is indicative."
-      },
       "accredited": {
         "lead": "An assessment by an accredited assessor that grants the excellence level and its certificate. The request period is set from its submission date.",
         "currentPeriod": "Current period · {cadence}",
@@ -8787,7 +8772,7 @@
         "note": "Internal note"
       },
       "replyLabel": "Reply",
-      "replyHint": "The reply is e-mailed to the sender and shown in \"My messages\" when they are registered.",
+      "replyHint": "The reply is e-mailed to the sender and shown in their \"Inbox\" when they are registered.",
       "noteLabel": "Note",
       "noteHint": "Visible to the team only.",
       "send": "Send the reply",
@@ -9153,10 +9138,6 @@
       "eyebrow": "Your level"
     },
     "hero": {
-      "eyebrow": {
-        "entity": "Your current level",
-        "staff": "Entity level"
-      },
       "lead": {
         "none": "Start the accredited assessment to earn an excellence level.",
         "progress": "The assessor is reviewing your accredited request.",
@@ -9180,20 +9161,13 @@
       "unit": "%"
     },
     "track": {
-      "title": {
-        "entity": "Your position on the excellence levels",
-        "staff": "Entity position on the excellence levels"
-      },
+      "title": "Excellence journey",
       "remaining": "{value} to {level}",
       "top": {
         "entity": "Your association has reached the highest level",
         "staff": "The entity has reached the highest level"
       },
-      "start": "Levels start at {value} in the accredited assessment",
-      "pin": {
-        "entity": "You {value}",
-        "staff": "Entity {value}"
-      }
+      "start": "Levels start at {value} in the accredited assessment"
     },
     "achieved": {
       "title": "Congratulations! Your association earned the {level}",

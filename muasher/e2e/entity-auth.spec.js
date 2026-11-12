@@ -66,7 +66,7 @@ test('login renders the password tab first, then the code tab without a password
   await expect(page.locator('.auth-form__forgot')).toBeVisible()
   await signInTab(page, 'code').click()
   await expect(page.locator('[name="password"]')).toHaveCount(0)
-  await expect(page.locator('[data-note="entity-only"]')).toBeVisible()
+  await expect(page.locator('[data-note]')).toHaveCount(0)
 })
 
 test('login code → OTP shows the code boxes, expiry and resend', async ({ page }, testInfo) => {

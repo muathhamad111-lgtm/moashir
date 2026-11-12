@@ -3,6 +3,9 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppSelect from '@/components/form/AppSelect.vue'
 import BaseDatePicker from '@/components/form/BaseDatePicker.vue'
+import TransactionEntityFilter from '@/components/finance/TransactionEntityFilter.vue'
+import { usePermissions } from '@/composables/usePermissions'
+import { PERMISSIONS } from '@/constants/permissionKeys'
 import {
   PAYMENT_CHANNEL_VALUES,
   PAYMENT_METHOD_VALUES,
@@ -18,6 +21,8 @@ defineProps({
 
 const emit = defineEmits(['filter', 'sort'])
 const { t } = useI18n()
+const { can } = usePermissions()
+const canPickEntity = computed(() => can(PERMISSIONS.ENTITIES_VIEW))
 
 function withAll(allKey, values, prefix) {
   return [
@@ -52,6 +57,11 @@ const sortOptions = computed(() =>
 
 <template>
   <div class="transaction-filters">
+    <TransactionEntityFilter
+      v-if="canPickEntity"
+      :model-value="filters.entity_id"
+      @update:model-value="emit('filter', 'entity_id', $event)"
+    />
     <AppSelect
       variant="filter"
       :model-value="filters.status"

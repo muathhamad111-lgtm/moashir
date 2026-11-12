@@ -86,6 +86,11 @@ export function paymentOverview() {
   }
 }
 
+export function paymentHidesTestPayments() {
+  const state = paymentState()
+  return state.mode === 'live' && isConfigured(state.rows.live)
+}
+
 export function paymentTestModeInProduction() {
   return mockIsProduction() && paymentState().mode === 'test'
 }

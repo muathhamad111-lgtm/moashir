@@ -41,9 +41,3 @@ export function signInCodeRequestOf(values) {
 export function signInEmailOf(identifier) {
   return identifierTypeOf(identifier) === SIGN_IN_IDENTIFIERS.EMAIL ? identifier : ''
 }
-
-export function identifierHintOf(t, locale, identifiers) {
-  const kinds = identifiers.map((kind) => t(`auth.login.identifierKinds.${kind}`))
-  const list = new Intl.ListFormat(locale, { type: 'disjunction' }).format(kinds)
-  return t('auth.login.identifierHint', { options: list })
-}

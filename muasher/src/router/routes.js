@@ -1,6 +1,7 @@
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { PORTAL_TOOLS } from '@/constants/portal'
 import { accreditedEntryGuard } from './accreditedEntry'
+import { accountProfileEntryGuard } from './accountProfileEntry'
 import { withComingSoonScreens } from './comingSoon'
 
 const AUTH_TOKEN_PARAM = '[A-Za-z0-9_-]{8,128}'
@@ -1063,6 +1064,7 @@ export const appRoutes = [
     path: '/account',
     name: ROUTE_NAMES.ACCOUNT_PROFILE,
     component: () => import('@/views/account/Profile.vue'),
+    beforeEnter: accountProfileEntryGuard,
     meta: { layout: 'app', titleKey: 'routes.account.title', requiresAuth: true },
   },
   {

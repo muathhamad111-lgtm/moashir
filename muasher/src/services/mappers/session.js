@@ -1,5 +1,3 @@
-import { normalizedCodeChannels } from '@/utils/auth/codeChannels'
-
 function roleKeyOf(role) {
   return typeof role === 'string' ? role : (role?.key ?? null)
 }
@@ -53,16 +51,6 @@ export function toLoginOutcome(raw = {}) {
     entityId: raw.entityId ?? null,
     recoveryCodes: [...(raw.recoveryCodes ?? [])],
     message: raw.message ?? '',
-  }
-}
-
-export function toLoginModes(raw = {}) {
-  return {
-    identifiers: [...(raw.identifiers ?? [])],
-    codeChannels: normalizedCodeChannels(raw.codeChannels),
-    otpLength: raw.otpLength ?? null,
-    otpExpirySeconds: raw.otpExpirySeconds ?? null,
-    resendCooldownSeconds: raw.resendCooldownSeconds ?? null,
   }
 }
 

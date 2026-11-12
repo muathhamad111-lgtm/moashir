@@ -1,11 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import ar from '@/i18n/locales/ar.json'
 import en from '@/i18n/locales/en.json'
-import {
-  AUTH_PANEL_FOOTNOTE_ICON,
-  AUTH_PANEL_SHOWS_FOOTNOTE,
-  AUTH_PANEL_VALUES,
-} from '@/constants/authPanel'
+import { AUTH_PANEL_VALUES } from '@/constants/authPanel'
 import { hasIcon } from '@/utils/icons/iconRegistry'
 
 function messageAt(messages, path) {
@@ -29,9 +25,7 @@ describe('auth panel values', () => {
       'user-check',
       'chart-line',
     ])
-    expect(AUTH_PANEL_FOOTNOTE_ICON).toBe('lock')
-    const icons = [...AUTH_PANEL_VALUES.map((value) => value.icon), AUTH_PANEL_FOOTNOTE_ICON]
-    expect(icons.every((name) => hasIcon(name))).toBe(true)
+    expect(AUTH_PANEL_VALUES.every((value) => hasIcon(value.icon))).toBe(true)
   })
 
   it.each([
@@ -42,9 +36,5 @@ describe('auth panel values', () => {
       expect(messageAt(messages, value.titleKey)).toEqual(expect.any(String))
       expect(messageAt(messages, value.bodyKey)).toEqual(expect.any(String))
     }
-  })
-
-  it('ships the footnote', () => {
-    expect(AUTH_PANEL_SHOWS_FOOTNOTE).toBe(true)
   })
 })

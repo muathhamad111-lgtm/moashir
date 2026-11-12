@@ -56,6 +56,10 @@ export function isPaidPath(path) {
   return Boolean(path?.pricing?.price) && path.pricing.isFree !== true
 }
 
+export function isFreePath(path) {
+  return path?.pricing?.availability === AVAILABILITY.AVAILABLE && !isPaidPath(path)
+}
+
 export function selfStateOf(self) {
   if (isHidden(self)) return SELF_STATES.HIDDEN
   if (self.openDraft) return SELF_STATES.DRAFT

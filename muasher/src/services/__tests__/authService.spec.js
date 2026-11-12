@@ -1,6 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { authService } from '@/services/authService'
-import { toLoginModes } from '@/services/mappers/session'
 import { apiClient } from '@/api/client'
 import { logger } from '@/utils/logger'
 
@@ -22,35 +21,6 @@ beforeEach(() => {
 })
 
 describe('authService', () => {
-  it('loads the login modes with the entity sign-in code channels', async () => {
-    apiClient.get.mockResolvedValue(
-      respond({
-        identifiers: ['email', 'mobile', 'unified_number'],
-        codeChannels: ['sms', 'email', 'fax'],
-        otpLength: 6,
-        otpExpirySeconds: 300,
-        resendCooldownSeconds: 60,
-        ssoProviders: [],
-      }),
-    )
-    const result = await authService.getLoginModes()
-    expect(apiClient.get).toHaveBeenCalledWith('/auth/login-modes', AUTH_FLOW)
-    expect(result.data).toEqual({
-      identifiers: ['email', 'mobile', 'unified_number'],
-      codeChannels: ['email', 'sms'],
-      otpLength: 6,
-      otpExpirySeconds: 300,
-      resendCooldownSeconds: 60,
-    })
-  })
-
-  it('always offers the e-mail code channel, even when the server omits it', () => {
-    expect(toLoginModes({}).codeChannels).toEqual(['email'])
-    expect(toLoginModes({ codeChannels: ['sms'] }).codeChannels).toEqual(['email', 'sms'])
-    expect(toLoginModes({ codeChannels: 'email' }).codeChannels).toEqual(['email'])
-    expect(toLoginModes({})).not.toHaveProperty('entitySecondFactorEnabled')
-  })
-
   it('registers via POST and breadcrumbs only the field SHAPE (never values)', async () => {
     apiClient.post.mockResolvedValue(respond({ step: 'otp_required', otp: { challengeId: '1' } }))
     const payload = { officialEmail: 'a@example.sa', password: 'Secret@123', entityType: 'waqf' }

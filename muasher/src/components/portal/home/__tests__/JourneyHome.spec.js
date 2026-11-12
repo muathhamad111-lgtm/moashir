@@ -308,6 +308,7 @@ describe('JourneyHome (D1 / M1)', () => {
     expect(tiles[0].find('.path-tile__status').text()).toContain('78%')
     expect(tiles[1].find('.path-tile__line').text()).toContain('الربع الرابع 2026')
     expect(tiles[1].find('.path-tile__action').attributes('href')).toBe('/paths/accredited')
+    expect(tiles[1].find('.path-tile__action').classes()).toContain('btn--primary')
   })
 
   it('renders the backend next step and links into the request tab', async () => {

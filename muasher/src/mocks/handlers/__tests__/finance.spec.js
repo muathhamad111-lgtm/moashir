@@ -5,7 +5,7 @@ import { financeHandlers } from '@/mocks/handlers/finance'
 import { financeSettingsHandlers } from '@/mocks/handlers/financeSettings'
 import { moyasarSandboxHandlers } from '@/mocks/handlers/moyasarSandbox'
 import { resetFinanceState } from '@/mocks/stores/finance/financeState'
-import { resetIntegrationsState } from '@/mocks/stores/integrations/integrationsState'
+import { paymentState, resetIntegrationsState } from '@/mocks/stores/integrations/integrationsState'
 import { SEEDED_IDS, SEEDED_PROVIDER_IDS } from '@/mocks/fixtures/finance'
 import { MOCK_API_BASE, clearMockSession, seedMockSession, wireFetch } from '@/test-utils/mockApi'
 import { findPayment } from '@/mocks/stores/finance/financeState'
@@ -430,8 +430,30 @@ describe('My Payments and receipts mock contract', () => {
     expect(keys(body.meta.pagination)).toEqual(['last_page', 'page', 'per_page', 'total'])
     const filtered = await call('/payments/mine?filter[status]=failed')
     expect(filtered.body.data.map((item) => item.status)).toEqual(['failed'])
-    const invalid = await call('/payments/mine?filter[method]=mada')
+    const invalid = await call('/payments/mine?filter[entity_id]=5')
     expect(invalid.status).toBe(422)
+    const byReference = await call('/payments/mine?search=PAY-2026-000001')
+    expect(byReference.body.data.map((item) => item.reference)).toEqual(['PAY-2026-000001'])
+    const byChannel = await call('/payments/mine?filter[channel]=bank_transfer')
+    expect(byChannel.body.data.every((item) => item.channel === 'bank_transfer')).toBe(true)
+    const outOfRange = await call('/payments/mine?filter[from]=2020-01-01&filter[to]=2020-01-31')
+    expect(outOfRange.body.data).toEqual([])
+    const reversed = await call('/payments/mine?filter[from]=2026-12-01&filter[to]=2026-01-01')
+    expect(reversed.status).toBe(422)
+  })
+
+  it('hides test payments from the entity once the gateway runs live', async () => {
+    const gateway = paymentState()
+    gateway.rows.live = {
+      publishableKey: 'publishable-example',
+      secretKey: { set: true },
+      isActive: true,
+    }
+    gateway.mode = 'live'
+    as(ENTITY)
+    const { body } = await call('/payments/mine')
+    expect(body.data.map((item) => item.reference)).not.toContain('PAY-2026-000006')
+    expect(body.data.every((item) => item.is_test === false)).toBe(true)
   })
 
   it('returns the receipt snapshot, a signed link bound to the user and the file', async () => {
@@ -483,6 +505,9 @@ describe('finance staff mock contract', () => {
     const sorted = await call('/finance/transactions?sort=-total&per_page=100')
     expect(sorted.body.data[0].pricing.total).toBe('2875.00')
     expect((await call('/finance/transactions?search=a')).status).toBe(422)
+    const byEntity = await call('/finance/transactions?filter[entity_id]=6001&per_page=100')
+    expect(new Set(byEntity.body.data.map((item) => item.entity.id))).toEqual(new Set([6001]))
+    expect((await call('/finance/transactions?filter[entity_id]=0')).status).toBe(422)
     expect((await call('/finance/transactions?sort=-amount')).status).toBe(422)
     expect(
       (await call('/finance/transactions?filter[to]=2026-01-01&filter[from]=2026-02-01')).status,

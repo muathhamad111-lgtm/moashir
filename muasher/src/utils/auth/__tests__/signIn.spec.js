@@ -10,7 +10,6 @@ import {
   maskMobile,
 } from '@/utils/auth/signInIdentifier'
 import {
-  identifierHintOf,
   signInCodeRequestOf,
   signInCodeSchema,
   signInEmailOf,
@@ -66,7 +65,7 @@ describe('sign-in identifier', () => {
     expect(signInEmailOf('0551234567')).toBe('')
   })
 
-  it('validates the form and lists the accepted identifiers in the reading language', async () => {
+  it('validates the form', async () => {
     const t = i18nOf('en').t
     const schema = signInSchema(t)
     await expect(schema.validate({ identifier: '7001234567', password: 'x' })).resolves.toBeTruthy()
@@ -75,13 +74,6 @@ describe('sign-in identifier', () => {
     )
     await expect(schema.validate({ identifier: '7001234567', password: '' })).rejects.toThrow(
       'This field is required',
-    )
-    expect(identifierHintOf(t, 'en', ['email', 'mobile'])).toBe(
-      'Use your official e-mail or your verified mobile number (05XXXXXXXX).',
-    )
-    const arabic = i18nOf('ar').t
-    expect(identifierHintOf(arabic, 'ar', ['email', 'unified_number'])).toBe(
-      'استخدم البريد الإلكتروني الرسمي أو الرقم الوطني الموحد للجهة (10 أرقام تبدأ بالرقم 7).',
     )
   })
 })

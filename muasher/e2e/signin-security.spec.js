@@ -209,9 +209,6 @@ test.describe('entity sign-in: password or code', () => {
     await expect(page.locator('.toast').first()).toBeVisible()
     await signOut(page)
     await signInTab(page, 'code').click()
-    await expect(page.locator('[data-note="channel"]')).toContainText(
-      text(testInfo, 'by SMS', 'برسالة نصية'),
-    )
     await requestSignInCode(page, ALBIRR.mobile)
     await expect(page).toHaveURL(/\/auth\/otp/)
     await expect(page.locator('.auth-otp__tile')).toHaveAttribute('data-channel', 'sms')
@@ -355,7 +352,7 @@ const CAPTURES = [
     name: 'login-code',
     path: '/auth/login?method=code',
     ready: '[name="identifier"]',
-    settled: '[data-note="channel"]',
+    settled: 'form button[type="submit"]',
   },
   {
     name: 'otp-code',

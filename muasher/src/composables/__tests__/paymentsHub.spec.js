@@ -43,7 +43,6 @@ beforeEach(() => {
             totalVat: '150.00',
             currency: 'SAR',
           },
-          statusCounts: { created: 1, pending: 0, paid: 1, failed: 1, cancelled: 1, refunded: 0 },
         },
       })
     if (params['filter[status]'] === 'created')
@@ -62,17 +61,12 @@ beforeEach(() => {
 })
 
 describe('usePaymentsHub', () => {
-  it('groups the tab counts and keeps the stats of the unfiltered call', async () => {
+  it('keeps the stats of the unfiltered call and starts with no active filter', async () => {
     const { api } = withSetup(() => usePaymentsHub())
     await flushPromises()
-    expect(api.tabs.value.map((tab) => [tab.value, tab.count])).toEqual([
-      ['all', 4],
-      ['awaiting', 1],
-      ['paid', 1],
-      ['cancelled', 2],
-    ])
     expect(api.stats.value.totalPaid).toBe('1150.00')
-    expect(api.hasTestRows.value).toBe(true)
+    expect(api.activeFilterCount.value).toBe(0)
+    expect(api.isFiltered.value).toBe(false)
   })
 
   it('shows only unexpired open orders as cards and keeps them out of the table', async () => {
@@ -82,15 +76,32 @@ describe('usePaymentsHub', () => {
     expect(api.tableRows.value.map((row) => row.id)).toEqual([23])
   })
 
-  it('asks the tab statuses as one comma list', async () => {
+  it('sends the search and the filters, counts them and clears them', async () => {
     const { api } = withSetup(() => usePaymentsHub())
     await flushPromises()
-    api.tab.value = 'cancelled'
+    api.setFilter('status', 'cancelled,failed,rejected')
+    api.setFilter('from', '2026-01-01')
     await vi.waitFor(() =>
       expect(paymentsService.listMine).toHaveBeenLastCalledWith(
-        expect.objectContaining({ 'filter[status]': 'cancelled,failed,rejected' }),
+        expect.objectContaining({
+          'filter[status]': 'cancelled,failed,rejected',
+          'filter[from]': '2026-01-01',
+          page: 1,
+        }),
       ),
     )
+    expect(api.activeFilterCount.value).toBe(2)
+    api.searchInput.value = 'RCP-2026'
+    await vi.waitFor(() =>
+      expect(paymentsService.listMine).toHaveBeenLastCalledWith(
+        expect.objectContaining({ search: 'RCP-2026' }),
+      ),
+    )
+    expect(api.isFiltered.value).toBe(true)
+    api.clearFilters()
+    await flushPromises()
+    expect(api.activeFilterCount.value).toBe(0)
+    expect(api.isFiltered.value).toBe(false)
   })
 })
 

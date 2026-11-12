@@ -68,7 +68,6 @@ const ENTITY_SCREENS = [
   '/payments',
   '/certificates',
   '/bag',
-  '/account',
   '/entity/profile',
 ]
 

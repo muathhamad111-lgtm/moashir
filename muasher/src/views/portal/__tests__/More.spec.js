@@ -36,7 +36,7 @@ describe('More (M4)', () => {
     expect(wrapper.find('.portal-more__entity').text()).toBe('جمعية الأمل النموذجية')
     const services = wrapper.findAll('.portal-more__group')[0].findAll('.portal-menu-entry')
     expect(services.map((entry) => entry.find('.portal-menu-entry__label').text())).toEqual([
-      'رسائلي',
+      'صندوق الرسائل',
       'مدفوعاتي',
       'الإشعارات',
       'ملف الجهة',
@@ -51,7 +51,6 @@ describe('More (M4)', () => {
     const wrapper = await factory('en')
     const account = wrapper.findAll('.portal-more__group')[2]
     expect(account.findAll('.portal-menu-entry__label').map((label) => label.text())).toEqual([
-      'My profile',
       'Language',
       'Appearance',
       'Help and guides',

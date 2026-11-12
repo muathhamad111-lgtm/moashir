@@ -244,18 +244,26 @@ test.describe('payments area', () => {
     await signIn(page, testInfo, ALBIRR)
   })
 
-  test('lists the payment tabs, the stats of the unfiltered call and downloads a receipt', async ({
+  test('searches and filters the payments, keeps the overall stats and downloads a receipt', async ({
     page,
   }) => {
     await open(page, '/payments', '.my-payments__table')
-    await expect(page.locator('[role="tab"]')).toHaveCount(4)
+    await expect(page.locator('[role="tab"]')).toHaveCount(0)
     await expect(page.locator('.payment-stats__tile')).toHaveCount(4)
-    await page.locator('[role="tab"]').nth(2).click()
-    await expect(page).toHaveURL(/tab=paid/)
+    const toggle = page.locator('[data-testid="payments-filter-toggle"]')
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    await toggle.click()
+    await expect(page.locator('[data-testid="my-payment-filters"]')).toBeVisible()
+    await page.locator('.payments-hub__search').fill('RCP-2026-000001')
+    await expect(page.locator('.my-payments__row')).toHaveCount(1)
     const row = page.locator('.my-payments__row', { hasText: 'RCP-2026-000001' })
     await expect(row).toContainText('ACC-2026-000001')
     const download = page.waitForEvent('download')
-    await row.locator('.payment-action').click()
+    await expect(row.locator('.receipt-cell [data-action="view"]')).toHaveAttribute(
+      'href',
+      /\/payments\/[^/]+$/,
+    )
+    await row.locator('.receipt-cell [data-action="download"]').click()
     expect((await download).suggestedFilename()).toBe('RCP-2026-000001.pdf')
   })
 
@@ -264,7 +272,7 @@ test.describe('payments area', () => {
     await page.goto('/assessment/accredited/pay')
     await page.locator('.checkout__start .btn--primary').click()
     await expect(page.locator('[data-fake-moyasar="form"]')).toBeVisible()
-    await open(page, '/payments?tab=awaiting', '.pending-order')
+    await open(page, '/payments', '.pending-order')
     await page.locator('.pending-order .btn--primary').click()
     await expect(page).toHaveURL(/\/payments\/[0-9a-f-]{36}\/complete$/)
     await expect(page.locator('[data-fake-moyasar="form"]')).toBeVisible()
@@ -416,7 +424,7 @@ test.describe('portal areas screenshots', () => {
         await page.goto('/assessment/accredited/pay')
         await page.locator('.checkout__start .btn--primary').click()
         await expect(page.locator('[data-fake-moyasar="form"]')).toBeVisible()
-        await open(page, '/payments?tab=awaiting', '.pending-order')
+        await open(page, '/payments', '.pending-order')
         await noHorizontalOverflow(page)
         await capture(page, `payments-pending-${suffix}`)
         await page.locator('.pending-order .btn--primary').click()

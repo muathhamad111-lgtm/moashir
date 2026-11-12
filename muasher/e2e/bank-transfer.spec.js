@@ -206,7 +206,7 @@ test('the entity cancels an unbound card order to pay by transfer instead', asyn
   )
   await page.locator('.checkout__start .btn--primary').click()
   await expect(page.locator('.transfer-panel')).toBeVisible()
-  await page.goto('/payments?tab=cancelled')
+  await page.goto('/payments')
   await expect(page.locator('.my-payments__table')).toContainText(reference)
 })
 

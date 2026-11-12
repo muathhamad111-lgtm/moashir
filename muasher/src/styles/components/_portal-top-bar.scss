@@ -23,7 +23,7 @@
 }
 
 .portal-top-bar__start {
-  @include flex(column, flex-start, center, var(--space-0));
+  @include flex(column, flex-start, center, var(--space-1));
   flex: 1;
   min-inline-size: 0;
 }
@@ -81,6 +81,25 @@
 
   @include respond-to('lg') {
     display: flex;
+  }
+}
+
+.portal-top-bar__tool.btn {
+  flex-shrink: 0;
+  min-inline-size: var(--size-touch-target);
+  block-size: var(--size-touch-target);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface);
+  color: var(--theme-heading);
+
+  &.btn--icon {
+    font-size: var(--icon-size-lg);
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--theme-accent-text);
+    background-color: var(--theme-surface);
   }
 }
 

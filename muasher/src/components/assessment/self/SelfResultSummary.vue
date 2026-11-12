@@ -2,13 +2,14 @@
 import { useI18n } from 'vue-i18n'
 import Card from '@/components/ui/Card.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import { roundToOneDecimal, scorePercentText } from '@/utils/percentText'
 
 defineProps({
   result: { type: Object, required: true },
   ownerView: { type: Boolean, default: true },
 })
 
-const { t } = useI18n()
+const { t, n } = useI18n()
 </script>
 
 <template>
@@ -18,9 +19,13 @@ const { t } = useI18n()
         <div
           class="self-result__gauge"
           role="img"
-          :aria-label="t('assessment.self.result.percentAria', { percent: result.percent })"
+          :aria-label="
+            t('assessment.self.result.percentAria', { percent: roundToOneDecimal(result.percent) })
+          "
         >
-          <span class="self-result__gauge-value u-ltr">{{ result.percent }}%</span>
+          <span class="self-result__gauge-value u-ltr">{{
+            scorePercentText(n, t, result.percent)
+          }}</span>
         </div>
         <div class="self-result__score-detail">
           <p class="self-result__score-total">

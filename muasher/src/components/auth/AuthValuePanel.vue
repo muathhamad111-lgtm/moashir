@@ -1,15 +1,10 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
 import AppIcon from '@/components/ui/AppIcon.vue'
-import {
-  AUTH_PANEL_FOOTNOTE_ICON,
-  AUTH_PANEL_SHOWS_FOOTNOTE,
-  AUTH_PANEL_VALUES,
-} from '@/constants/authPanel'
+import { AUTH_PANEL_VALUES } from '@/constants/authPanel'
 
 defineProps({
   headingId: { type: String, required: true },
-  showFootnote: { type: Boolean, default: AUTH_PANEL_SHOWS_FOOTNOTE },
 })
 
 const { t } = useI18n()
@@ -29,9 +24,5 @@ const { t } = useI18n()
         </div>
       </li>
     </ul>
-    <p v-if="showFootnote" class="auth-value-panel__footnote">
-      <AppIcon :name="AUTH_PANEL_FOOTNOTE_ICON" size="sm" />
-      <span>{{ t('auth.panel.footnote') }}</span>
-    </p>
   </div>
 </template>

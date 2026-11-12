@@ -16,12 +16,6 @@
   font-weight: var(--fw-bold);
 }
 
-.path-tiles__lead {
-  margin: 0;
-  color: var(--theme-text-secondary);
-  font-size: var(--fs-sm);
-}
-
 .path-tiles__grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

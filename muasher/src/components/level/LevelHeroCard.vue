@@ -44,7 +44,6 @@ const classes = computed(() => [
     <div class="level-hero__identity">
       <LevelEmblem class="level-hero__emblem" :tier="tier" size="xl" />
       <div class="level-hero__copy">
-        <p class="level-hero__eyebrow">{{ t(`level.hero.eyebrow.${audience}`) }}</p>
         <h2 :id="nameId" class="level-hero__name">{{ t(`level.names.${tier}`) }}</h2>
         <p class="level-hero__lead">{{ t(`level.hero.lead.${tier}`) }}</p>
         <dl v-if="certificate" class="level-hero__facts">
@@ -93,7 +92,7 @@ const classes = computed(() => [
 
     <div v-if="ranges.length" class="level-hero__ladder">
       <div class="level-hero__ladder-head">
-        <p class="level-hero__ladder-title">{{ t(`level.track.title.${audience}`) }}</p>
+        <p class="level-hero__ladder-title">{{ t('level.track.title') }}</p>
         <p v-if="reachedTop" class="level-hero__next">{{ t(`level.track.top.${audience}`) }}</p>
         <i18n-t
           v-else-if="nextLevel"
@@ -119,11 +118,7 @@ const classes = computed(() => [
           </template>
         </i18n-t>
       </div>
-      <LevelThresholdTrack
-        :ranges="ranges"
-        :percent="percent"
-        :pin-label-key="`level.track.pin.${audience}`"
-      />
+      <LevelThresholdTrack :ranges="ranges" :percent="percent" />
     </div>
   </section>
 </template>

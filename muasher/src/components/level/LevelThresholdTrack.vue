@@ -10,7 +10,6 @@ const FULL = 100
 const props = defineProps({
   ranges: { type: Array, required: true },
   percent: { type: [Number, String], default: null },
-  pinLabelKey: { type: String, default: 'level.track.pin.entity' },
 })
 
 const { t, n } = useI18n()
@@ -81,16 +80,5 @@ const pinX = computed(() => `${axisPercent(props.percent, isRtl.value)}%`)
       </g>
       <circle v-if="hasPin" class="level-track__pin" :cx="pinX" cy="24" r="7" />
     </svg>
-    <i18n-t
-      v-if="hasPin"
-      :keypath="pinLabelKey"
-      scope="global"
-      tag="p"
-      class="level-track__caption"
-    >
-      <template #value>
-        <bdi dir="ltr">{{ scorePercentText(n, t, percent) }}</bdi>
-      </template>
-    </i18n-t>
   </div>
 </template>

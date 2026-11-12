@@ -1,24 +1,33 @@
 <script setup>
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 import PortalAreaHeader from '@/components/portal/PortalAreaHeader.vue'
 import PaymentStatTiles from '@/components/payments/portal/PaymentStatTiles.vue'
 import PendingOrderCard from '@/components/payments/portal/PendingOrderCard.vue'
 import MyPaymentsList from '@/components/payments/portal/MyPaymentsList.vue'
+import MyPaymentFilters from '@/components/payments/portal/MyPaymentFilters.vue'
 import { usePaymentsHub } from '@/composables/usePaymentsHub'
 import { useSignedDownload } from '@/composables/useSignedDownload'
 import { paymentsService } from '@/services/paymentsService'
-import AppIcon from '@/components/ui/AppIcon.vue'
 
-const PANEL_ID = 'payments-panel'
+const FILTERS_ID = 'my-payment-filters'
 
 const { t } = useI18n()
 const hub = usePaymentsHub()
 const receipts = useSignedDownload()
+const filtersOpen = ref(false)
+const { pagination, setPage } = hub.paginator
+const filterLabel = computed(() =>
+  hub.activeFilterCount.value
+    ? t('portal.payments.filters.active', { count: hub.activeFilterCount.value })
+    : t('portal.payments.filters.toggle'),
+)
 
 useHead({ title: () => t('portal.payments.title') })
 
@@ -33,20 +42,9 @@ function downloadReceipt(payment) {
       band
       :eyebrow="t('portal.payments.eyebrow')"
       :title="t('portal.payments.title')"
-      :subtitle="t('portal.payments.subtitle')"
-      :tabs="hub.tabs.value"
-      :tab="hub.tab.value"
-      :tabs-label="t('portal.payments.tabsLabel')"
-      :panel-id="PANEL_ID"
-      @update:tab="hub.tab.value = $event"
     />
 
-    <div
-      :id="PANEL_ID"
-      class="portal-area__body payments-hub__body"
-      role="tabpanel"
-      :aria-labelledby="`${PANEL_ID}-tab-${hub.tab.value}`"
-    >
+    <div class="portal-area__body payments-hub__body">
       <PendingOrderCard
         v-for="order in hub.pendingOrders.value"
         :key="order.id"
@@ -62,18 +60,69 @@ function downloadReceipt(payment) {
           <h2 id="payments-records" class="portal-surface__title">
             {{ t('portal.payments.recordsTitle') }}
           </h2>
+          <div class="payments-hub__tools">
+            <input
+              v-model="hub.searchInput.value"
+              class="field__control payments-hub__search"
+              type="search"
+              name="payments-search"
+              :placeholder="t('portal.payments.search')"
+              :aria-label="t('portal.payments.search')"
+            />
+            <button
+              type="button"
+              class="payments-hub__filter-toggle"
+              :class="{ 'is-active': filtersOpen || hub.activeFilterCount.value }"
+              :aria-expanded="filtersOpen"
+              :aria-controls="FILTERS_ID"
+              :aria-label="filterLabel"
+              data-testid="payments-filter-toggle"
+              @click="filtersOpen = !filtersOpen"
+            >
+              <AppIcon name="filter" />
+              <span aria-hidden="true">{{ t('portal.payments.filters.toggle') }}</span>
+              <span
+                v-if="hub.activeFilterCount.value"
+                class="payments-hub__filter-count"
+                aria-hidden="true"
+                >{{ hub.activeFilterCount.value }}</span
+              >
+            </button>
+            <button
+              v-if="hub.isFiltered.value"
+              type="button"
+              class="payments-hub__clear"
+              data-testid="payments-filter-clear"
+              @click="hub.clearFilters"
+            >
+              <AppIcon name="x" />
+              {{ t('portal.payments.filters.clear') }}
+            </button>
+          </div>
         </header>
+        <MyPaymentFilters
+          v-show="filtersOpen"
+          :panel-id="FILTERS_ID"
+          :filters="hub.filters.filters"
+          @filter="hub.setFilter"
+        />
         <Skeleton v-if="hub.status.value === 'loading'" variant="text" :count="4" />
         <ErrorState
           v-else-if="hub.status.value === 'error'"
           :message="hub.errorMessage.value"
-          @retry="hub.load"
+          @retry="hub.refresh"
+        />
+        <EmptyState
+          v-else-if="!hub.tableRows.value.length && hub.isFiltered.value"
+          icon="search"
+          :title="t('portal.payments.emptyFiltered.title')"
+          :message="t('portal.payments.emptyFiltered.message')"
         />
         <EmptyState
           v-else-if="!hub.tableRows.value.length"
           icon="receipt"
-          :title="t(`portal.payments.empty.${hub.tab.value}.title`)"
-          :message="t(`portal.payments.empty.${hub.tab.value}.message`)"
+          :title="t('portal.payments.empty.all.title')"
+          :message="t('portal.payments.empty.all.message')"
         />
         <MyPaymentsList
           v-else
@@ -82,21 +131,12 @@ function downloadReceipt(payment) {
           @download="downloadReceipt"
         />
         <Pagination
-          v-if="hub.lastPage.value > 1"
-          :page="hub.page.value"
-          :last-page="hub.lastPage.value"
-          @update:page="hub.setPage"
+          v-if="pagination.lastPage > 1"
+          :page="pagination.page"
+          :last-page="pagination.lastPage"
+          @update:page="setPage"
         />
       </section>
-
-      <p v-if="hub.hasTestRows.value" class="portal-area__note portal-area__note--warning">
-        <AppIcon name="flask" />
-        {{ t('portal.payments.testNote') }}
-      </p>
-      <p class="portal-area__note">
-        <AppIcon name="info-circle" />
-        {{ t('portal.payments.note') }}
-      </p>
     </div>
   </section>
 </template>

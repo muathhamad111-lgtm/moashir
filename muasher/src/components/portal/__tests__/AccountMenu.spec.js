@@ -75,24 +75,13 @@ describe('AccountMenu', () => {
     wrapper.unmount()
   })
 
-  it('lists profile, organization profile, language, theme, help and sign out', async () => {
+  it('lists the entity profile, help and sign out', async () => {
     const { wrapper } = factory()
     await wrapper.find('.account-menu__chip').trigger('click')
     const labels = wrapper.findAll('.portal-menu-entry__label').map((entry) => entry.text())
-    expect(labels).toEqual([
-      'ملفي الشخصي',
-      'ملف الجهة',
-      'اللغة',
-      'المظهر',
-      'المساعدة والأدلة',
-      'تسجيل الخروج',
-    ])
-    expect(wrapper.findAll('.portal-menu-entry')[0].attributes('href')).toBe('/account')
-    expect(wrapper.findAll('.portal-menu-entry')[4].attributes('href')).toBe('/help')
-    const language = wrapper.findAll('.portal-menu-entry')[2]
-    expect(language.find('svg').exists()).toBe(false)
-    expect(language.find('span.portal-menu-entry__icon').attributes('aria-hidden')).toBe('true')
-    expect(wrapper.findAll('.portal-menu-entry')[3].find('svg').exists()).toBe(true)
+    expect(labels).toEqual(['ملف الجهة', 'المساعدة والأدلة', 'تسجيل الخروج'])
+    expect(wrapper.findAll('.portal-menu-entry')[0].attributes('href')).toBe('/entity/profile')
+    expect(wrapper.findAll('.portal-menu-entry')[1].attributes('href')).toBe('/help')
     wrapper.unmount()
   })
 

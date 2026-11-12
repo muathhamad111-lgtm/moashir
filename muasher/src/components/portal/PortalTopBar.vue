@@ -8,6 +8,8 @@ import { formatRiyadhDateTime } from '@/utils/datetime'
 import { useBrandLogo } from '@/composables/useBrandLogo'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { portalPageTitleKey } from '@/utils/portalPageTitle'
+import LocaleSwitcher from '@/components/ui/LocaleSwitcher.vue'
+import ThemeToggle from '@/components/ui/ThemeToggle.vue'
 import PortalBell from './PortalBell.vue'
 import AccountMenu from './AccountMenu.vue'
 
@@ -37,6 +39,8 @@ const updatedText = computed(() =>
         </p>
       </div>
       <div class="portal-top-bar__end">
+        <LocaleSwitcher class="portal-top-bar__tool" />
+        <ThemeToggle class="portal-top-bar__tool" />
         <PortalBell />
         <AccountMenu class="portal-top-bar__account" />
       </div>

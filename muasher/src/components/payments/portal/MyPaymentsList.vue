@@ -1,10 +1,10 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
-import Badge from '@/components/ui/Badge.vue'
 import MoneyAmount from '@/components/payments/MoneyAmount.vue'
 import PaymentStatusBadge from '@/components/payments/PaymentStatusBadge.vue'
 import PaymentServiceCell from './PaymentServiceCell.vue'
 import PaymentReceiptAction from './PaymentReceiptAction.vue'
+import PaymentReceiptCell from './PaymentReceiptCell.vue'
 import PaymentChannelCell from './PaymentChannelCell.vue'
 import { isoDate } from '@/utils/datetime'
 import { formatRate } from '@/utils/payments/amountFormat'
@@ -58,13 +58,11 @@ function vatLabel(payment) {
             <td><PaymentServiceCell :payment="payment" /></td>
             <td><PaymentChannelCell :payment="payment" /></td>
             <td>
-              <bdi v-if="payment.receipt?.number" class="my-payments__receipt" dir="ltr">{{
-                payment.receipt.number
-              }}</bdi>
-              <Badge v-else-if="payment.receipt" variant="warning">{{
-                t('finance.receipt.notProof')
-              }}</Badge>
-              <span v-else class="my-payments__muted">{{ t('finance.common.none') }}</span>
+              <PaymentReceiptCell
+                :payment="payment"
+                :busy="Boolean(busy[payment.id])"
+                @download="emit('download', $event)"
+              />
             </td>
             <td>
               <bdi class="my-payments__date" dir="ltr">{{ dateOf(payment) }}</bdi>
@@ -90,11 +88,7 @@ function vatLabel(payment) {
             </td>
             <td><PaymentStatusBadge :status="payment.status" /></td>
             <td>
-              <PaymentReceiptAction
-                :payment="payment"
-                :busy="Boolean(busy[payment.id])"
-                @download="emit('download', $event)"
-              />
+              <PaymentReceiptAction :payment="payment" />
             </td>
           </tr>
         </tbody>
@@ -115,16 +109,14 @@ function vatLabel(payment) {
           <PaymentChannelCell :payment="payment" />
           <span aria-hidden="true">·</span>
           <bdi dir="ltr">{{ dateOf(payment) }}</bdi>
-          <template v-if="payment.receipt?.number">
-            <span aria-hidden="true">·</span>
-            <bdi dir="ltr">{{ payment.receipt.number }}</bdi>
-          </template>
         </p>
-        <PaymentReceiptAction
+        <PaymentReceiptCell
+          v-if="payment.receipt"
           :payment="payment"
           :busy="Boolean(busy[payment.id])"
           @download="emit('download', $event)"
         />
+        <PaymentReceiptAction :payment="payment" />
       </li>
     </ul>
   </div>

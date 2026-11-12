@@ -124,6 +124,11 @@ test('the entity completes the draft, confirms and sees the result immediately, 
   await closeSuccess(page)
   await expect(page.locator('.self-result__gauge-value')).toBeVisible()
   await expect(page.locator('.self-result__main')).not.toHaveCount(0)
+  const firstMain = page.locator('.self-result__main-head').first()
+  await expect(firstMain).toHaveAttribute('aria-expanded', 'false')
+  await expect(page.locator('.self-result__point').first()).toBeHidden()
+  await firstMain.click()
+  await expect(firstMain).toHaveAttribute('aria-expanded', 'true')
   await expect(page.locator('.self-result__point').first()).toBeVisible()
   await page.screenshot({
     path: `test-results/self-result-${suffixOf(testInfo)}.png`,

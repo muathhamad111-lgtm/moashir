@@ -6,6 +6,7 @@ import ProfileCompletionPrompt from '@/components/entities/ProfileCompletionProm
 import EntityIdentityHeader from './EntityIdentityHeader.vue'
 import EntityLogoDialog from './EntityLogoDialog.vue'
 import ProfileCompletenessCard from './ProfileCompletenessCard.vue'
+import ProfileAccountCard from './ProfileAccountCard.vue'
 import ProfileHistoryCard from './ProfileHistoryCard.vue'
 import ProfileHistoryDrawer from './ProfileHistoryDrawer.vue'
 import ProfileSectionCard from './ProfileSectionCard.vue'
@@ -99,6 +100,7 @@ function fixSection(section) {
             @fix="fixSection"
             @complete="completeProfile"
           />
+          <ProfileAccountCard />
           <ProfileHistoryCard @open="openHistory()" />
         </aside>
         <div class="entity-profile__sections">

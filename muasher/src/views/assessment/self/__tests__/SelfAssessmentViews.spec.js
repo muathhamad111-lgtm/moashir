@@ -190,7 +190,7 @@ describe('self assessment result view', () => {
       path: '/assessment/self/result/9001',
       locale: 'ar',
     })
-    expect(wrapper.find('.self-result__gauge-value').text()).toBe('77.18%')
+    expect(wrapper.find('.self-result__gauge-value').text()).toBe('77.2%')
     expect(wrapper.find('.self-result__score-total').text()).toContain('6329.17')
     expect(wrapper.find('.self-result__score-total').text()).toContain('8200.00')
   })

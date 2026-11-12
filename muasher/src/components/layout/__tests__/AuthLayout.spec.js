@@ -54,9 +54,7 @@ describe('AuthLayout', () => {
   it('renders the English panel copy in English', () => {
     const wrapper = mountLayout(createTestGlobals({ locale: 'en' }))
     expect(wrapper.find('aside h2').text()).toBe('Fair measurement, continuous improvement')
-    expect(wrapper.find('aside .auth-value-panel__footnote').text()).toBe(
-      'Your data is protected in line with National Cybersecurity Authority controls.',
-    )
+    expect(wrapper.find('aside .auth-value-panel__footnote').exists()).toBe(false)
     wrapper.unmount()
   })
 

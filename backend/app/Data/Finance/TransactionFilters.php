@@ -27,11 +27,12 @@ final readonly class TransactionFilters
         public TransactionSort $sort = TransactionSort::NewestFirst,
         public int $perPage = 15,
         public ?PaymentChannel $channel = null,
+        public ?int $entityId = null,
     ) {}
 
     public function forLiveMode(): self
     {
-        return new self($this->search, $this->status, $this->purpose, $this->method, $this->from, $this->to, IntegrationMode::Live, $this->sort, $this->perPage, $this->channel);
+        return new self($this->search, $this->status, $this->purpose, $this->method, $this->from, $this->to, IntegrationMode::Live, $this->sort, $this->perPage, $this->channel, $this->entityId);
     }
 
     /**
@@ -45,6 +46,7 @@ final readonly class TransactionFilters
             'purpose' => $this->purpose?->value,
             'method' => $this->method?->value,
             'channel' => $this->channel?->value,
+            'entity_id' => $this->entityId,
             'from' => $this->from?->toDateString(),
             'to' => $this->to?->toDateString(),
             'mode' => $this->mode->value,
@@ -60,6 +62,7 @@ final readonly class TransactionFilters
         $search = ScalarValue::string($values['search'] ?? null);
         $from = ScalarValue::string($values['from'] ?? null);
         $to = ScalarValue::string($values['to'] ?? null);
+        $entityId = ScalarValue::string($values['entity_id'] ?? null);
 
         return new self(
             $search === '' ? null : new SearchTerm($search),
@@ -71,6 +74,7 @@ final readonly class TransactionFilters
             IntegrationMode::tryFrom(ScalarValue::string($values['mode'] ?? null)) ?? IntegrationMode::Live,
             TransactionSort::tryFrom(ScalarValue::string($values['sort'] ?? null)) ?? TransactionSort::NewestFirst,
             channel: PaymentChannel::tryFrom(ScalarValue::string($values['channel'] ?? null)),
+            entityId: ctype_digit($entityId) ? (int) $entityId : null,
         );
     }
 }

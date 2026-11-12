@@ -93,7 +93,7 @@ test.describe('entity portal shell', () => {
     await chip.click()
     const panel = page.locator('.account-menu__panel')
     await expect(panel).toBeVisible()
-    await expect(panel.locator('.portal-menu-entry')).toHaveCount(6)
+    await expect(panel.locator('.portal-menu-entry')).toHaveCount(3)
     await expect(panel.locator(':focus')).toHaveCount(1)
     await page.keyboard.press('Escape')
     await expect(panel).toHaveCount(0)
@@ -102,6 +102,18 @@ test.describe('entity portal shell', () => {
     await panel.locator('.portal-menu-entry[href="/help"]').click()
     await expect(page).toHaveURL(/\/help$/)
     await expect(page.locator('.path-guide-card').first()).toBeVisible()
+  })
+
+  test('the top bar switches the language and the theme in place', async ({ page }, testInfo) => {
+    await open(page, '/dashboard', '.portal-bell')
+    const html = page.locator('html')
+    await expect(html).toHaveAttribute('data-theme', 'light')
+    await page.locator('.portal-top-bar__tool.btn--icon').click()
+    await expect(html).toHaveAttribute('data-theme', 'dark')
+    const locale = localeOf(testInfo)
+    await page.locator('.portal-top-bar__tool:not(.btn--icon)').click()
+    await expect(html).toHaveAttribute('lang', locale === 'ar' ? 'en' : 'ar')
+    await expect(page).toHaveURL(/\/dashboard$/)
   })
 
   test('the bell opens the notification centre', async ({ page }) => {

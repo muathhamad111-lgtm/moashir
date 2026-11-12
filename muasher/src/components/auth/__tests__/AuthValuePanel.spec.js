@@ -11,7 +11,6 @@ const COPY = {
     titles: ['معايير معلنة وموحّدة', 'تقييم مستقل ومحايد', 'نتائج تقود إلى التحسين'],
     firstBody:
       'نموذج التميّز في العمل الخيري مرجعٌ واحد، تُقاس عليه جميع الجهات بالمعايير والأوزان نفسها.',
-    footnote: 'بياناتك محمية وفق ضوابط الهيئة الوطنية للأمن السيبراني.',
   },
   en: {
     heading: 'Fair measurement, continuous improvement',
@@ -22,7 +21,6 @@ const COPY = {
     ],
     firstBody:
       'One reference model. Every entity is measured against the same criteria and weights.',
-    footnote: 'Your data is protected in line with National Cybersecurity Authority controls.',
   },
 }
 
@@ -62,7 +60,6 @@ describe.each(['ar', 'en'])('AuthValuePanel (%s)', (locale) => {
       'list-check',
       'user-check',
       'chart-line',
-      'lock',
     ])
     for (const icon of icons) {
       expect(icon.attributes('aria-hidden')).toBe('true')
@@ -71,11 +68,9 @@ describe.each(['ar', 'en'])('AuthValuePanel (%s)', (locale) => {
     }
   })
 
-  it('shows the footnote by default and hides it when the flag is off', async () => {
+  it('shows no footnote under the value cards', () => {
     const wrapper = mountPanel(locale)
-    expect(wrapper.find('.auth-value-panel__footnote').text()).toBe(copy.footnote)
-    await wrapper.setProps({ showFootnote: false })
     expect(wrapper.find('.auth-value-panel__footnote').exists()).toBe(false)
-    expect(wrapper.text()).not.toContain(copy.footnote)
+    expect(wrapper.findAll('p')).toHaveLength(3)
   })
 })

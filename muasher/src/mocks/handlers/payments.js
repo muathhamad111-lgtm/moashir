@@ -220,7 +220,7 @@ export const paymentsHandlers = [
       authorizeOwnList(user)
       const query = new URL(request.url).searchParams
       expireDueOrders()
-      const filters = listFilters(query, 'mine')
+      const filters = listFilters(query, 'mine', { searchable: true })
       const payments = ownPayments(user, filters)
       const counted = ownPayments(user, { ...filters, status: '' })
       const { items, pagination } = page(payments, query)

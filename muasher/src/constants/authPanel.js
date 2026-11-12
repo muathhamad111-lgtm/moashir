@@ -12,7 +12,3 @@ export const AUTH_PANEL_VALUES = Object.freeze([
   panelValue('review', 'user-check'),
   panelValue('improvement', 'chart-line'),
 ])
-
-export const AUTH_PANEL_FOOTNOTE_ICON = 'lock'
-
-export const AUTH_PANEL_SHOWS_FOOTNOTE = true

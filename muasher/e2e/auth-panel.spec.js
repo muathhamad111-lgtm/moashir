@@ -15,8 +15,6 @@ const COPY = {
   ar: {
     heading: 'قياسٌ عادل، وتحسينٌ مستمر',
     titles: ['معايير معلنة وموحّدة', 'تقييم مستقل ومحايد', 'نتائج تقود إلى التحسين'],
-    footnote: 'بياناتك محمية وفق ضوابط الهيئة الوطنية للأمن السيبراني.',
-    subtitle: 'ادخل إلى حسابك في منصة مؤشر.',
   },
   en: {
     heading: 'Fair measurement, continuous improvement',
@@ -25,8 +23,6 @@ const COPY = {
       'Independent, impartial review',
       'Results that drive improvement',
     ],
-    footnote: 'Your data is protected in line with National Cybersecurity Authority controls.',
-    subtitle: 'Sign in to your Moashir account.',
   },
 }
 const AUTH_PAGES = [
@@ -44,7 +40,6 @@ const PANEL_TEXT = [
   '.auth-value-panel__heading',
   '.auth-value-card__title',
   '.auth-value-card__body',
-  '.auth-value-panel__footnote',
 ]
 
 mkdirSync(SHOTS, { recursive: true })
@@ -104,7 +99,7 @@ test.describe('auth brand panel — semantics', () => {
     await expect(aside.getByRole('heading', { level: 2 })).toHaveText(copy.heading)
     await expect(aside.getByRole('heading', { level: 3 })).toHaveText(copy.titles)
     await expect(aside.getByRole('list').getByRole('listitem')).toHaveCount(3)
-    await expect(page.locator('.auth-value-panel__footnote')).toHaveText(copy.footnote)
+    await expect(page.locator('.auth-value-panel__footnote')).toHaveCount(0)
     await expect(page.locator('.auth-layout__tagline, .illustration-slot')).toHaveCount(0)
   })
 
@@ -113,19 +108,20 @@ test.describe('auth brand panel — semantics', () => {
     await open(page, '/auth/login')
 
     const icons = page.locator('aside.auth-layout__brand svg.app-icon')
-    await expect(icons).toHaveCount(4)
+    await expect(icons).toHaveCount(3)
     const names = await icons.evaluateAll((nodes) => nodes.map((node) => node.dataset.icon))
-    expect(names).toEqual(['list-check', 'user-check', 'chart-line', 'lock'])
+    expect(names).toEqual(['list-check', 'user-check', 'chart-line'])
     for (const icon of await icons.all()) {
       await expect(icon).toHaveAttribute('aria-hidden', 'true')
       await expect(icon).toHaveAttribute('focusable', 'false')
     }
   })
 
-  test('the login subtitle speaks to every audience', async ({ page }, testInfo) => {
+  test('the login header carries the title only', async ({ page }, testInfo) => {
     await seedPreferences(page, { locale: localeOf(testInfo) })
     await open(page, '/auth/login')
-    await expect(page.locator('.auth-form__subtitle')).toHaveText(COPY[localeOf(testInfo)].subtitle)
+    await expect(page.locator('.auth-form__title')).toBeVisible()
+    await expect(page.locator('.auth-form__subtitle')).toHaveCount(0)
   })
 
   test('every auth page shares the same panel', async ({ page }, testInfo) => {
@@ -162,7 +158,7 @@ test.describe('auth brand panel — layout', () => {
     expect(aside.y).toBe(main.y)
     expect(aside.x < main.x).toBe(isEn(testInfo))
     await expect(page.locator('.auth-value-card').first()).toBeVisible()
-    await expect(page.locator('.auth-value-panel__footnote')).toBeInViewport()
+    await expect(page.locator('.auth-value-card').last()).toBeInViewport()
   })
 
   test('the panel stays in view while the long register form scrolls', async ({
@@ -176,7 +172,6 @@ test.describe('auth brand panel — layout', () => {
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
     await expect(page.locator('.auth-value-panel__heading')).toBeInViewport()
     await expect(page.locator('.auth-value-card').last()).toBeInViewport()
-    await expect(page.locator('.auth-value-panel__footnote')).toBeInViewport()
   })
 
   test('mobile shows a compact header above the form without cards', async ({ page }, testInfo) => {
@@ -192,7 +187,6 @@ test.describe('auth brand panel — layout', () => {
       COPY[localeOf(testInfo)].heading,
     )
     await expect(page.locator('.auth-value-panel__list')).toBeHidden()
-    await expect(page.locator('.auth-value-panel__footnote')).toBeHidden()
     await expect(page.getByRole('complementary').getByRole('listitem')).toHaveCount(0)
     await expect(page.locator('main h1')).toBeInViewport()
     await noHorizontalOverflow(page)
@@ -224,7 +218,7 @@ test.describe('auth brand panel — screenshots', () => {
     await seedPreferences(page, { locale: localeOf(testInfo), theme: 'light' })
     await open(page, '/auth/register')
     await page.evaluate(() => window.scrollTo(0, 900))
-    await expect(page.locator('.auth-value-panel__footnote')).toBeInViewport()
+    await expect(page.locator('.auth-value-card').last()).toBeInViewport()
     await settleFonts(page)
     await page.screenshot({
       path: `${SHOTS}/register-scrolled-light-desktop-${suffixOf(testInfo)}.png`,

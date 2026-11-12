@@ -3,6 +3,8 @@ import { normalizeSearchText } from '../searchIndex'
 import { financeState, receiptOf } from './financeState'
 import { fieldMessage, financeReject } from './financeRejection'
 import { fromMinor, toMinor } from './financeMoney'
+import { paymentHidesTestPayments } from '../integrations/paymentIntegration'
+import { findEntity } from '../entitiesStore'
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 const PAYMENT_STATUS_VALUES = [
@@ -33,6 +35,10 @@ export const LIST_RULES = {
   mine: {
     status: PAYMENT_STATUS_VALUES,
     purpose: PURPOSES,
+    channel: ['electronic', 'bank_transfer'],
+    method: ['creditcard', 'mada', 'applepay', 'stcpay'],
+    from: 'date',
+    to: 'date',
   },
   transactions: {
     status: PAYMENT_STATUS_VALUES,
@@ -42,6 +48,7 @@ export const LIST_RULES = {
     mode: ['test', 'live'],
     from: 'date',
     to: 'date',
+    entityId: 'id',
   },
   refunds: { purpose: PURPOSES, from: 'date', to: 'date' },
   events: {
@@ -85,6 +92,8 @@ function checkFilter(errors, rules, key, value) {
   if (value === '') return null
   if (rule === 'date' && !isCalendarDate(value))
     return errors.push([`filter.${key}`, fieldMessage('date')])
+  if (rule === 'id' && !(Number.isInteger(Number(value)) && Number(value) >= 1))
+    return errors.push([`filter.${key}`, fieldMessage('invalid')])
   if (Array.isArray(rule) && !listedValues(value).every((item) => rule.includes(item)))
     return errors.push([`filter.${key}`, fieldMessage('choice')])
   return null
@@ -161,16 +170,33 @@ export function withinDates(iso, { from, to }) {
   return true
 }
 
-function paymentMatches(payment, term) {
-  if (!term) return true
-  const receiptNumber = receiptOf(payment.id)?.number ?? ''
+function ownSearchFields(payment) {
   return [
     payment.reference,
-    payment.providerPaymentId ?? '',
-    payment.entityName.ar,
-    payment.entityName.en ?? '',
-    receiptNumber,
-  ].some((value) => normalizeSearchText(value).includes(term))
+    receiptOf(payment.id)?.number ?? '',
+    findEntity(payment.initiatedByUserId)?.owner?.name ?? '',
+  ]
+}
+
+function matchesAny(values, term) {
+  return values.some((value) => normalizeSearchText(value).includes(term))
+}
+
+function paymentMatches(payment, term) {
+  if (!term) return true
+  return matchesAny(
+    [
+      ...ownSearchFields(payment),
+      payment.providerPaymentId ?? '',
+      payment.entityName.ar,
+      payment.entityName.en ?? '',
+    ],
+    term,
+  )
+}
+
+function ownPaymentMatches(payment, term) {
+  return !term || matchesAny(ownSearchFields(payment), term)
 }
 
 function matchesPaymentFilters(payment, filters) {
@@ -179,6 +205,7 @@ function matchesPaymentFilters(payment, filters) {
     (!filters.purpose || payment.purpose === filters.purpose) &&
     (!filters.method || payment.method === filters.method) &&
     (!filters.channel || (payment.channel ?? 'electronic') === filters.channel) &&
+    (!filters.entityId || payment.entityId === Number(filters.entityId)) &&
     withinDates(payment.createdAt, filters)
   )
 }
@@ -246,14 +273,20 @@ export function ownStatsOf(payments) {
 }
 
 export function ownPayments(user, filters) {
+  const hidesTest = paymentHidesTestPayments()
   return financeState()
     .payments.filter(
       (payment) => user.entityId !== null && payment.entityId === Number(user.entityId),
     )
+    .filter((payment) => !hidesTest || payment.mode !== 'test')
     .filter(
       (payment) =>
         matchesList(filters.status, payment.status) &&
-        (!filters.purpose || payment.purpose === filters.purpose),
+        (!filters.purpose || payment.purpose === filters.purpose) &&
+        (!filters.method || payment.method === filters.method) &&
+        (!filters.channel || (payment.channel ?? 'electronic') === filters.channel) &&
+        withinDates(payment.createdAt, filters) &&
+        ownPaymentMatches(payment, filters.search),
     )
     .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
 }

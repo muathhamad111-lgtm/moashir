@@ -47,15 +47,3 @@
   stroke: var(--band-ink);
   stroke-width: var(--border-width-thick);
 }
-
-.level-track__caption {
-  align-self: flex-start;
-  margin: 0;
-  padding-block: var(--space-1);
-  padding-inline: var(--space-3);
-  border-radius: var(--radius-md);
-  background-color: var(--glass-fill);
-  color: var(--band-ink);
-  font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
-}

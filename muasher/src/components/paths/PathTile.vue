@@ -40,7 +40,7 @@ const cadence = computed(() => props.path?.cadence ?? null)
       <span>{{ summary.kit }}</span>
     </p>
     <router-link
-      class="btn btn--secondary path-tile__action"
+      class="btn btn--primary path-tile__action"
       :to="{ name: PATH_ROUTES[pathKey] }"
       :data-testid="`path-tile-action-${pathKey}`"
     >

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { accreditedStateOf, awardStateOf, selfStateOf } from '@/utils/pathStates'
+import { accreditedStateOf, awardStateOf, isFreePath, selfStateOf } from '@/utils/pathStates'
 import { accreditedAction, awardAction, rowAction } from '@/utils/pathActions'
 
 const AVAILABLE = { price: null, isFree: true, availability: 'available' }
@@ -79,5 +79,28 @@ describe('path states (03 §19.2 header states)', () => {
       name: 'paths.accredited.request',
       params: { id: '9' },
     })
+  })
+})
+
+describe('isFreePath', () => {
+  const PRICE = { priceBeforeVat: '100.00', total: '115.00', currency: 'SAR' }
+
+  it('is free when the path is available and carries no price to pay', () => {
+    expect(isFreePath({ pricing: { price: null, isFree: true, availability: 'available' } })).toBe(
+      true,
+    )
+    expect(isFreePath({ pricing: { price: PRICE, isFree: true, availability: 'available' } })).toBe(
+      true,
+    )
+  })
+
+  it('is not free when a price applies, the path is unavailable, or no pricing is known', () => {
+    expect(
+      isFreePath({ pricing: { price: PRICE, isFree: false, availability: 'available' } }),
+    ).toBe(false)
+    expect(
+      isFreePath({ pricing: { price: null, isFree: true, availability: 'unavailable' } }),
+    ).toBe(false)
+    expect(isFreePath(null)).toBe(false)
   })
 })

@@ -46,7 +46,7 @@ onMounted(load)
 </script>
 
 <template>
-  <section class="payment-detail">
+  <section class="portal-area__body payment-detail">
     <RouterLink class="payment-detail__back" :to="{ name: ROUTE_NAMES.PAYMENTS_MINE }">
       <AppIcon name="arrow-left" />
       {{ t('finance.detail.back') }}

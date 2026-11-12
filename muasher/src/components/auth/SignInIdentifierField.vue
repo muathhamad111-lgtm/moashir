@@ -4,7 +4,6 @@ import BaseInput from '@/components/form/BaseInput.vue'
 
 defineProps({
   modelValue: { type: String, default: '' },
-  hint: { type: String, default: '' },
   error: { type: String, default: '' },
 })
 
@@ -19,7 +18,6 @@ const { t } = useI18n()
     autocomplete="username"
     input-dir="ltr"
     :label="t('auth.login.fields.identifier')"
-    :hint="hint"
     :error="error"
     required
     @update:model-value="emit('update:modelValue', $event)"

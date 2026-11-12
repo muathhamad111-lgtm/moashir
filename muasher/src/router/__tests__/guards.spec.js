@@ -109,6 +109,18 @@ describe('router guards — permission-driven, deny by default', () => {
   })
 })
 
+describe('router guards — account page', () => {
+  it('sends an entity account to the entity profile, which holds its account data', async () => {
+    signIn([ROLES.ENTITY])
+    expect((await visit('/account')).name).toBe(ROUTE_NAMES.ENTITY_PROFILE)
+  })
+
+  it('keeps the account page for staff accounts', async () => {
+    signIn([ROLES.REQUEST_FOLLOWER])
+    expect((await visit('/account')).name).toBe(ROUTE_NAMES.ACCOUNT_PROFILE)
+  })
+})
+
 describe('router guards — self assessment and staff assessment record', () => {
   it('keeps the self form and the entity result for entity accounts only', async () => {
     signIn([ROLES.REQUEST_FOLLOWER])

@@ -26,7 +26,7 @@ final class IndexTransactionsRequest extends FormRequest
     {
         return [
             'search' => ['nullable', 'string', 'max:100', new SearchableTerm(2)],
-            'filter' => ['nullable', 'array:status,purpose,method,channel,from,to,mode'],
+            'filter' => ['nullable', 'array:status,purpose,method,channel,from,to,mode,entity_id'],
             'filter.status' => ['nullable', Rule::enum(PaymentStatus::class)],
             'filter.purpose' => ['nullable', Rule::enum(PaymentPurpose::class)],
             'filter.method' => ['nullable', Rule::enum(PaymentInstrument::class)],
@@ -34,6 +34,7 @@ final class IndexTransactionsRequest extends FormRequest
             'filter.from' => ['nullable', 'date_format:Y-m-d'],
             'filter.to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:filter.from'],
             'filter.mode' => ['nullable', Rule::enum(IntegrationMode::class)],
+            'filter.entity_id' => ['nullable', 'integer', 'min:1'],
             'sort' => ['nullable', Rule::in(TransactionSort::values())],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
@@ -53,6 +54,7 @@ final class IndexTransactionsRequest extends FormRequest
             TransactionSort::tryFrom($this->string('sort')->toString()) ?? TransactionSort::NewestFirst,
             $this->integer('per_page', 15),
             PaymentChannel::tryFrom($this->string('filter.channel')->toString()),
+            $this->filled('filter.entity_id') ? $this->integer('filter.entity_id') : null,
         );
     }
 

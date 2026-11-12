@@ -5,7 +5,7 @@ The layouts, wired through `meta.layout` (`public` | `auth` | `app`) in `src/App
 route keeps its path for both audiences:
 
 - `PortalLayout` — entity portal (Figma page 14): skip link, `portal/PortalTopBar` (logo, رحلتي · تقييماتي ·
-  شهاداتي · مدفوعاتي · رسائلي with the unread-reply badge, bell, account menu overlay; logo, bell and avatar → `/more`
+  شهاداتي · مدفوعاتي · صندوق الرسائل with the unread-reply badge, bell, account menu overlay; logo, bell and avatar → `/more`
   below `lg`), `portal/AttentionStrip` on hub screens, the `<main id="portal-main">` slot, `portal/PortalFooter` and
   `portal/MobileTabBar` below `lg`. Task screens (`PORTAL_TASK_ROUTES` in `constants/portal.js`) hide the strip and the
   tab bar; the thread route hides them on mobile only.
@@ -23,7 +23,7 @@ route keeps its path for both audiences:
 - `PublicLayout` / `PublicNavbar` / `AppFooter` — public pages (base `.navbar` styles).
 - `AuthLayout` — centered card in `<main>` first, then the brand panel `<aside>` (logo on dark +
   `auth/AuthValuePanel`: an `h2` that names the aside and the three value cards from
-  `constants/authPanel.js`, footnote behind `AUTH_PANEL_SHOWS_FOOTNOTE`). The aside sits at the
+  `constants/authPanel.js`). The aside sits at the
   inline start through CSS `order`; below `lg` it is a compact header (logo + heading); from `lg`
   with a tall viewport its inner column is sticky. Also hosts the maintenance page.
 

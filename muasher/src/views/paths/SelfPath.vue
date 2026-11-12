@@ -7,8 +7,9 @@ import { useEntityPathsStore } from '@/stores/entityPaths'
 import { usePathSummaries } from '@/composables/usePathSummaries'
 import { usePathRequests } from '@/composables/usePathRequests'
 import { PATH_KEYS } from '@/constants/entityPaths'
-import { SELF_STATES } from '@/utils/pathStates'
+import { SELF_STATES, isFreePath } from '@/utils/pathStates'
 import ErrorState from '@/components/feedback/ErrorState.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import PathHeader from '@/components/paths/PathHeader.vue'
 import PathHeaderCard from '@/components/paths/PathHeaderCard.vue'
@@ -23,6 +24,7 @@ const summaries = usePathSummaries(paths)
 const summary = computed(() => summaries.value?.[PATH_KEYS.SELF] ?? null)
 const self = computed(() => paths.value?.self ?? null)
 const requests = usePathRequests(PATH_KEYS.SELF)
+const isFree = computed(() => isFreePath(self.value))
 
 useHead({ title: () => t('paths.names.self') })
 
@@ -35,9 +37,19 @@ onMounted(reload)
 
 <template>
   <section class="path-page" data-testid="path-page-self">
-    <PathHeader :path-key="PATH_KEYS.SELF" :lead="t('paths.pages.self.lead')">
+    <PathHeader :path-key="PATH_KEYS.SELF">
       <template #chips>
-        <p class="path-header__chip">{{ t('paths.tile.tags.self') }}</p>
+        <div class="path-header__chips">
+          <p class="path-header__chip">{{ t('paths.tile.tags.self') }}</p>
+          <p
+            v-if="isFree"
+            class="path-header__chip path-header__chip--free"
+            data-testid="path-free-chip"
+          >
+            <AppIcon name="check-circle" />
+            {{ t('paths.price.free') }}
+          </p>
+        </div>
       </template>
       <Skeleton v-if="status === 'loading' && !paths" variant="block" :count="2" />
       <template v-else-if="summary && summary.state !== SELF_STATES.HIDDEN">
@@ -51,7 +63,7 @@ onMounted(reload)
             <PathPrimaryAction :action="summary.action" />
           </template>
         </PathHeaderCard>
-        <PathHeaderCard :eyebrow="t('paths.pages.price')">
+        <PathHeaderCard v-if="!isFree" :eyebrow="t('paths.pages.price')">
           <PathPrice :pricing="self?.pricing ?? null" detailed />
         </PathHeaderCard>
       </template>

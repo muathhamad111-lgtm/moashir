@@ -2,7 +2,7 @@ import { apiClient } from '@/api/client'
 import { CODE_REQUEST_REJECTIONS, SIGN_IN_REJECTIONS } from '@/constants/signIn'
 import { payloadShape } from '@/utils/payloadShape'
 import { serviceRequest } from './serviceRequest'
-import { toLoginModes, toLoginOutcome, toMfaEnrollment, toSessionUser } from './mappers/session'
+import { toLoginOutcome, toMfaEnrollment, toSessionUser } from './mappers/session'
 
 export const UNAUTHENTICATED_STATUS = 401
 
@@ -24,15 +24,6 @@ function postOutcome(action, path, body, { expectedStatuses = [], ...context } =
 }
 
 export const authService = {
-  async getLoginModes() {
-    const envelope = await serviceRequest(
-      'auth.getLoginModes',
-      () => apiClient.get('/auth/login-modes', AUTH_FLOW_CONFIG),
-      { entity: 'login-modes' },
-    )
-    return mapData(envelope, toLoginModes)
-  },
-
   register(payload) {
     return postOutcome('auth.register', '/auth/register', payload, {
       entity: 'entity',

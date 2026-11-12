@@ -10,7 +10,6 @@ import { ROUTE_NAMES } from '@/constants/routeNames'
 
 const props = defineProps({
   identifier: { type: String, default: '' },
-  identifierHint: { type: String, default: '' },
 })
 
 const emit = defineEmits(['update:identifier'])
@@ -28,11 +27,7 @@ watch(typedIdentifier, (value) => emit('update:identifier', value))
 
     <form class="auth-form__body" novalidate @submit.prevent="onSubmit">
       <fieldset class="auth-form__group" :disabled="submitting">
-        <SignInIdentifierField
-          v-model="typedIdentifier"
-          :hint="identifierHint"
-          :error="form.errors.value.identifier"
-        />
+        <SignInIdentifierField v-model="typedIdentifier" :error="form.errors.value.identifier" />
         <BaseInput
           v-model="password"
           name="password"

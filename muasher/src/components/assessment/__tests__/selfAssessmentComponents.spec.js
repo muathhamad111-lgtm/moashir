@@ -233,7 +233,7 @@ describe('result components', () => {
     expect(wrapper.find('.badge').text()).toBe('Draft')
   })
 
-  it('renders mains, subs and points with the figures as returned', () => {
+  it('renders mains, subs and points and folds the subs of each main', async () => {
     const result = {
       id: 9001,
       main: [
@@ -275,6 +275,15 @@ describe('result components', () => {
     expect(wrapper.find('.self-result__main-earned').text()).toBe('769.17 / 1000.00')
     expect(wrapper.find('.self-result__bar').attributes('value')).toBe('76.92')
     expect(wrapper.find('.self-result__point').text()).toContain('Score 8.50')
-    expect(wrapper.find('.self-result__point').text()).toContain('85.00%')
+    expect(wrapper.find('.self-result__point').text()).toContain('85%')
+    const head = wrapper.find('.self-result__main-head')
+    const panel = wrapper.find(`#${head.attributes('aria-controls')}`)
+    expect(head.attributes('aria-expanded')).toBe('false')
+    expect(panel.isVisible()).toBe(false)
+    await head.trigger('click')
+    expect(head.attributes('aria-expanded')).toBe('true')
+    expect(panel.isVisible()).toBe(true)
+    await head.trigger('click')
+    expect(head.attributes('aria-expanded')).toBe('false')
   })
 })

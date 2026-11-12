@@ -1,15 +1,17 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useChartDirection } from '@/composables/useChartDirection'
-import { pointsAttr, scaleY, timelineX } from '@/utils/chartGeometry'
+import { useElementWidth } from '@/composables/useElementWidth'
+import { pointsAttr } from '@/utils/chartGeometry'
+import { levelTrendLayout } from '@/utils/levelTrendLayout'
 import { scorePercentText } from '@/utils/percentText'
+import { formatDate } from '@/utils/datetime'
 
-const WIDTH = 560
-const HEIGHT = 260
-const PLOT = { left: 96, right: 24, top: 16, bottom: 36 }
-const SCALE_MIN = 40
-const FULL = 100
+const FALLBACK_WIDTH = 640
+const MONTH_FORMAT = Object.freeze({ month: 'short', year: 'numeric', timeZone: 'Asia/Riyadh' })
+const LTR_ISOLATE = '\u2066'
+const END_ISOLATE = '\u2069'
 
 const props = defineProps({
   series: { type: Array, required: true },
@@ -18,44 +20,46 @@ const props = defineProps({
 })
 
 const { t, n, locale } = useI18n()
-const { isRtl } = useChartDirection()
-const plotWidth = WIDTH - PLOT.left - PLOT.right
-const plotHeight = HEIGHT - PLOT.top - PLOT.bottom
-const scale = { top: PLOT.top, height: plotHeight, min: SCALE_MIN, max: FULL }
-const axisX = computed(() => (isRtl.value ? WIDTH - PLOT.left + 8 : PLOT.left - 8))
-const plotStart = computed(() => (isRtl.value ? PLOT.right : PLOT.left))
 
-const bands = computed(() =>
-  props.ranges.map((range, index) => {
-    const upper = props.ranges[index + 1]?.min ?? FULL
-    const top = scaleY(upper, scale)
-    return {
-      level: range.level,
-      y: top,
-      height: scaleY(range.min, scale) - top,
-      labelY: scaleY(range.min, scale),
-      label: `${t(`level.short.${range.level}`)} · ${scorePercentText(n, t, range.min)}`,
-    }
+function isolatedPercent(value) {
+  return `${LTR_ISOLATE}${scorePercentText(n, t, value)}${END_ISOLATE}`
+}
+const { isRtl } = useChartDirection()
+const frame = ref(null)
+const width = useElementWidth(frame, FALLBACK_WIDTH)
+const textDirection = computed(() => (isRtl.value ? 'rtl' : 'ltr'))
+
+const layout = computed(() =>
+  levelTrendLayout({
+    series: props.series,
+    ranges: props.ranges,
+    width: width.value,
+    isRtl: isRtl.value,
   }),
 )
-const points = computed(() =>
-  props.series.map((entry, index) => ({
-    key: entry.id,
-    x: plotStart.value + timelineX(index, props.series.length, isRtl.value, plotWidth),
-    y: scaleY(entry.percent, scale),
-    value: scorePercentText(n, t, entry.percent),
-    date: new Intl.DateTimeFormat(locale.value, { year: 'numeric', month: '2-digit' }).format(
-      new Date(entry.completedAt),
-    ),
+const bands = computed(() =>
+  layout.value.bands.map((band) => ({
+    ...band,
+    label: `${t(`level.short.${band.level}`)} · ${isolatedPercent(band.min)}`,
   })),
 )
+const points = computed(() =>
+  layout.value.points.map((point) => ({
+    ...point,
+    value: scorePercentText(n, t, point.percent),
+    date: formatDate(point.completedAt, locale.value, MONTH_FORMAT),
+  })),
+)
+const floorLabel = computed(() => isolatedPercent(layout.value.min))
 </script>
 
 <template>
-  <figure class="level-trend">
+  <figure ref="frame" class="level-trend">
     <svg
       class="level-trend__svg"
-      :viewBox="`0 0 ${WIDTH} ${HEIGHT}`"
+      :width="layout.width"
+      :height="layout.height"
+      :viewBox="`0 0 ${layout.width} ${layout.height}`"
       role="img"
       :aria-label="caption"
       focusable="false"
@@ -64,28 +68,72 @@ const points = computed(() =>
         <rect
           class="level-trend__band"
           :class="`level-trend__band--${band.level}`"
-          :x="plotStart"
+          :x="layout.plot.x"
           :y="band.y"
-          :width="plotWidth"
+          :width="layout.plot.width"
           :height="band.height"
+        />
+        <line
+          class="level-trend__threshold"
+          :class="`level-trend__threshold--${band.level}`"
+          :x1="layout.plot.x"
+          :x2="layout.plot.x + layout.plot.width"
+          :y1="band.y + band.height"
+          :y2="band.y + band.height"
         />
         <text
           class="level-trend__band-label"
-          :x="axisX"
+          :x="layout.labelX"
           :y="band.labelY"
-          :text-anchor="isRtl ? 'start' : 'end'"
+          :direction="textDirection"
+          text-anchor="start"
           dominant-baseline="middle"
         >
           {{ band.label }}
         </text>
       </g>
+      <line
+        class="level-trend__floor"
+        :x1="layout.plot.x"
+        :x2="layout.plot.x + layout.plot.width"
+        :y1="layout.floorY"
+        :y2="layout.floorY"
+      />
+      <text
+        class="level-trend__floor-label"
+        :x="layout.labelX"
+        :y="layout.floorY"
+        :direction="textDirection"
+        text-anchor="start"
+        dominant-baseline="middle"
+      >
+        {{ floorLabel }}
+      </text>
       <polyline class="level-trend__line" :points="pointsAttr(points)" />
       <g v-for="point in points" :key="point.key">
-        <circle class="level-trend__point" :cx="point.x" :cy="point.y" r="5" />
-        <text class="level-trend__value" :x="point.x" :y="point.y - 12" text-anchor="middle">
+        <circle
+          class="level-trend__point"
+          :class="{ 'level-trend__point--latest': point.isLatest }"
+          :cx="point.x"
+          :cy="point.y"
+          r="6"
+        />
+        <text
+          class="level-trend__value"
+          :x="point.x"
+          :y="point.valueY"
+          direction="ltr"
+          text-anchor="middle"
+        >
           {{ point.value }}
         </text>
-        <text class="level-trend__date" :x="point.x" :y="HEIGHT - 10" text-anchor="middle">
+        <text
+          class="level-trend__date"
+          :x="point.x"
+          :y="layout.dateY"
+          :direction="textDirection"
+          text-anchor="middle"
+        >
           {{ point.date }}
         </text>
       </g>

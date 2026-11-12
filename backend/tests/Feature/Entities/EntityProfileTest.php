@@ -126,7 +126,7 @@ it('answers an unknown section with not found', function (): void {
 
 it('keeps the change history append-only', function (): void {
     $entity = entityWithOwner();
-    saveSection($entity, ProfileSection::Governance, ['employees_count' => 99])->assertOk();
+    saveSection($entity, ProfileSection::Governance, ['employees_count' => 999])->assertOk();
 
     $change = EntityProfileChange::query()->firstOrFail();
 

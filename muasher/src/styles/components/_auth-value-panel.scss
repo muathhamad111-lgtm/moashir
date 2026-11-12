@@ -72,21 +72,3 @@
     font-size: var(--fs-label);
   }
 }
-
-.auth-value-panel__footnote {
-  display: none;
-
-  @include respond-to('lg') {
-    @include flex(row, center, center, var(--space-2));
-    margin: 0;
-    font-size: var(--fs-xs);
-    line-height: var(--lh-base);
-    color: var(--color-secondary);
-
-    @include respond-to-block('tall') {
-      position: absolute;
-      inset-block-end: var(--space-10);
-      inset-inline: var(--space-8);
-    }
-  }
-}

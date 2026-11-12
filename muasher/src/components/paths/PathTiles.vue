@@ -25,7 +25,6 @@ const visible = computed(() =>
   >
     <header class="path-tiles__head">
       <h2 id="path-tiles-title" class="path-tiles__title">{{ t('paths.tile.title') }}</h2>
-      <p class="path-tiles__lead">{{ t('paths.tile.lead') }}</p>
     </header>
     <div class="path-tiles__grid">
       <PathTile

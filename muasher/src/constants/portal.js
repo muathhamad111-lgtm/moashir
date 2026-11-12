@@ -34,7 +34,6 @@ export const PORTAL_AREA_ROUTES = Object.freeze({
     R.PORTAL_HELP,
     R.NOTIFICATIONS_INDEX,
     R.ENTITY_PROFILE,
-    R.ACCOUNT_PROFILE,
     R.BAG_INDEX,
     R.BAG_COMPARISON,
     R.PORTAL_TOOL_MATURITY,
@@ -160,7 +159,7 @@ export const PORTAL_SIDE_NAV_ITEMS = Object.freeze([
     key: 'entityProfile',
     routeName: R.ENTITY_PROFILE,
     icon: 'building',
-    routes: [R.ENTITY_PROFILE, R.ACCOUNT_PROFILE],
+    routes: [R.ENTITY_PROFILE],
   },
   { key: 'help', routeName: R.PORTAL_HELP, icon: 'question-circle', routes: [R.PORTAL_HELP] },
 ])

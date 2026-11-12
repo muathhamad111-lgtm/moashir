@@ -1,13 +1,10 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { usePortalIdentity } from '@/composables/usePortalIdentity'
 import { usePortalSession } from '@/composables/usePortalSession'
-import { useLocale } from '@/composables/useLocale'
-import { useTheme } from '@/composables/useTheme'
 import { ROUTE_NAMES } from '@/constants/routeNames'
-import { THEMES } from '@/constants/themes'
 import AppPopover from '@/components/ui/AppPopover.vue'
 import PortalMenuEntry from './PortalMenuEntry.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
@@ -17,15 +14,9 @@ import { useEntityLevel } from '@/composables/useEntityLevel'
 const { t } = useI18n()
 const router = useRouter()
 const identity = usePortalIdentity()
-const { toggleLocale } = useLocale()
-const { theme, toggleTheme } = useTheme()
 const { signOut } = usePortalSession()
 const popoverRef = ref(null)
 const { tier, reassessment } = useEntityLevel()
-
-const themeValue = computed(() =>
-  theme.value === THEMES.dark ? t('portal.account.themeDark') : t('portal.account.themeLight'),
-)
 
 function dismiss() {
   popoverRef.value?.dismiss()
@@ -73,28 +64,10 @@ async function onSignOut() {
           </span>
         </div>
         <PortalMenuEntry
-          icon="user"
-          :label="t('portal.account.profile')"
-          :to="{ name: ROUTE_NAMES.ACCOUNT_PROFILE }"
-          @select="dismiss"
-        />
-        <PortalMenuEntry
           icon="building"
           :label="t('portal.account.entityProfile')"
           :to="{ name: ROUTE_NAMES.ENTITY_PROFILE }"
           @select="dismiss"
-        />
-        <PortalMenuEntry
-          icon="language"
-          :label="t('portal.account.language')"
-          :value="t('locale.switchLabel')"
-          @select="toggleLocale"
-        />
-        <PortalMenuEntry
-          icon="moon-fill"
-          :label="t('portal.account.theme')"
-          :value="themeValue"
-          @select="toggleTheme"
         />
         <PortalMenuEntry
           icon="question-circle"

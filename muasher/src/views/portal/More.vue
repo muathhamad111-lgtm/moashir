@@ -132,11 +132,6 @@ onMounted(() => entityStore.loadProfile().catch(() => null))
       </h2>
       <div class="portal-more__list">
         <PortalMenuEntry
-          icon="user"
-          :label="t('portal.account.profile')"
-          :to="{ name: R.ACCOUNT_PROFILE }"
-        />
-        <PortalMenuEntry
           icon="language"
           :label="t('portal.account.language')"
           :value="t('locale.switchLabel')"

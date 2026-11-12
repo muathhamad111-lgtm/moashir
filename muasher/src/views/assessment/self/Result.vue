@@ -31,7 +31,7 @@ onMounted(init)
 </script>
 
 <template>
-  <section class="self-result">
+  <section class="portal-area__body self-result">
     <div v-if="status === 'loading'" class="self-result__loading" aria-busy="true">
       <Skeleton variant="block" />
       <Skeleton variant="text" :count="5" />

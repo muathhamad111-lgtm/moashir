@@ -57,9 +57,22 @@ function toggleLabel() {
     :aria-label="t('portal.nav.label')"
     data-testid="portal-side-nav"
   >
-    <router-link class="side-nav__brand" :to="{ name: ROUTE_NAMES.APP_DASHBOARD }">
-      <img class="side-nav__logo" :src="logoOnDark" :alt="t('portal.brandHome')" />
-    </router-link>
+    <div class="side-nav__head">
+      <router-link class="side-nav__brand" :to="{ name: ROUTE_NAMES.APP_DASHBOARD }">
+        <img class="side-nav__logo" :src="logoOnDark" :alt="t('portal.brandHome')" />
+      </router-link>
+      <button
+        type="button"
+        class="side-nav__collapse"
+        :aria-expanded="!collapsed"
+        :aria-label="toggleLabel()"
+        :title="toggleLabel()"
+        data-testid="portal-nav-collapse"
+        @click="emit('toggle')"
+      >
+        <AppIcon :name="collapsed ? 'chevron-right' : 'chevron-left'" />
+      </button>
+    </div>
 
     <ul class="side-nav__list">
       <li v-for="item in PORTAL_SIDE_NAV_ITEMS" :key="item.key">
@@ -142,17 +155,6 @@ function toggleLabel() {
 
     <div class="side-nav__footer">
       <LevelMiniCard :tier="tier" :action="miniCard" :collapsed="collapsed" />
-      <button
-        type="button"
-        class="side-nav__collapse"
-        :aria-expanded="!collapsed"
-        :aria-label="toggleLabel()"
-        data-testid="portal-nav-collapse"
-        @click="emit('toggle')"
-      >
-        <AppIcon :name="collapsed ? 'chevron-right' : 'chevron-left'" />
-        <span v-if="!collapsed">{{ t('portal.sideNav.collapse') }}</span>
-      </button>
     </div>
   </nav>
 </template>

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { setActivePinia } from 'pinia'
 import Login from '@/views/auth/Login.vue'
@@ -9,19 +9,11 @@ import { createTestGlobals } from '@/test-utils'
 vi.mock('@/services/authService', () => ({
   UNAUTHENTICATED_STATUS: 401,
   authService: {
-    getLoginModes: vi.fn(),
     signIn: vi.fn(),
     requestSignInCode: vi.fn(),
   },
 }))
 
-const MODES = {
-  identifiers: ['email', 'mobile', 'unified_number'],
-  codeChannels: ['email'],
-  otpLength: 6,
-  otpExpirySeconds: 300,
-  resendCooldownSeconds: 60,
-}
 const CODE_SENT = {
   data: {
     step: 'otp_required',
@@ -71,10 +63,6 @@ async function requestCode(identifier) {
   await wrapper.find('form').trigger('submit')
   await settle()
 }
-
-beforeEach(() => {
-  authService.getLoginModes.mockResolvedValue({ data: MODES })
-})
 
 afterEach(() => {
   wrapper?.unmount()
@@ -146,23 +134,8 @@ describe('Login view: password tab', () => {
     })
     expect(wrapper.find('label[for]').text()).toBe('E-mail, mobile or unified national number')
     expect(wrapper.find('[name="password"]').attributes('type')).toBe('password')
-    expect(wrapper.text()).toContain(
-      "Use your official e-mail, your verified mobile number (05XXXXXXXX), or your entity's unified national number (10 digits starting with 7).",
-    )
+    expect(wrapper.find('.field__hint').exists()).toBe(false)
     expect(wrapper.find('.auth-form__forgot').attributes('href')).toBe('/auth/forgot-password')
-  })
-
-  it('lists only the identifiers the server accepts in the hint', async () => {
-    authService.getLoginModes.mockResolvedValue({ data: { ...MODES, identifiers: ['email'] } })
-    await mountLogin()
-    expect(wrapper.text()).toContain('Use your official e-mail.')
-  })
-
-  it('keeps the form usable when the login modes cannot be loaded', async () => {
-    authService.getLoginModes.mockRejectedValue(new Error('offline'))
-    await mountLogin('ar')
-    expect(wrapper.find('form').exists()).toBe(true)
-    expect(wrapper.text()).toContain('الرقم الوطني الموحد للجهة')
   })
 
   it.each([
@@ -272,27 +245,14 @@ describe('Login view: password tab', () => {
 })
 
 describe('Login view: code tab', () => {
-  it('shows the identifier, the e-mail channel hint, the entity-only note and the send button', async () => {
+  it('shows only the identifier and the send button', async () => {
     await mountLogin('ar', '/auth/login?method=code')
     expect(wrapper.find('[name="password"]').exists()).toBe(false)
     expect(wrapper.find('.auth-form__forgot').exists()).toBe(false)
-    expect(wrapper.find('[data-note="channel"]').text()).toBe('يُرسل الرمز إلى بريدك الرسمي.')
-    expect(wrapper.find('[data-note="channel"] svg').attributes('data-icon')).toBe('envelope')
-    expect(wrapper.find('[data-note="entity-only"]').text()).toBe(
-      'الدخول بالرمز لحسابات الجهات فقط. يدخل الموظفون بكلمة المرور وتطبيق المصادقة.',
-    )
+    expect(wrapper.find('.field__hint').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('يُرسل الرمز')
+    expect(wrapper.text()).not.toContain('لحسابات الجهات فقط')
     expect(wrapper.find('button[type="submit"]').text()).toBe('إرسال رمز التحقق')
-  })
-
-  it('tells about the SMS when the server allows it', async () => {
-    authService.getLoginModes.mockResolvedValue({
-      data: { ...MODES, codeChannels: ['email', 'sms'] },
-    })
-    await mountLogin('ar', '/auth/login?method=code')
-    expect(wrapper.find('[data-note="channel"]').text()).toBe(
-      'يصلك الرمز برسالة نصية إذا أدخلت جوالك الموثّق، وإلا إلى بريدك الرسمي.',
-    )
-    expect(wrapper.find('[data-note="channel"] svg').attributes('data-icon')).toBe('send')
   })
 
   it.each([
