@@ -9,6 +9,9 @@ import {
   tierOfLevel,
   reassessmentOf,
   heroActionOf,
+  displayTierOf,
+  shownValidityOf,
+  isExpiredCertificate,
 } from '@/utils/levelTier'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 
@@ -131,4 +134,24 @@ describe('hero action', () => {
       })
     },
   )
+})
+
+describe('display tier of a staff row (LC-5)', () => {
+  it('prefers the last level so an expired level stays visible', () => {
+    expect(displayTierOf({ level: null, lastLevel: { level: 'bronze' } })).toBe('bronze')
+    expect(displayTierOf({ level: 'silver', lastLevel: { level: 'gold' } })).toBe('gold')
+    expect(displayTierOf({ level: 'gold' })).toBe('gold')
+    expect(displayTierOf({ level: null, lastLevel: null }, true)).toBe('progress')
+    expect(displayTierOf()).toBe('none')
+  })
+
+  it('shows a chip only for expiring and expired certificates', () => {
+    expect(shownValidityOf({ validity: 'expired' })).toBe('expired')
+    expect(shownValidityOf({ validity: 'expiring_soon' })).toBe('expiring_soon')
+    expect(shownValidityOf({ validity: 'valid' })).toBeNull()
+    expect(shownValidityOf(null)).toBeNull()
+    expect(isExpiredCertificate({ validity: 'expired' })).toBe(true)
+    expect(isExpiredCertificate({ validity: 'expiring_soon' })).toBe(false)
+    expect(isExpiredCertificate(null)).toBe(false)
+  })
 })

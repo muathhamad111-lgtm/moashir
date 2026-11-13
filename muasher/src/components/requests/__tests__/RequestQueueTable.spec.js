@@ -30,3 +30,33 @@ describe('RequestQueueTable entity level', () => {
     expect(badges[1].text()).toContain('بلا مستوى')
   })
 })
+
+describe('RequestQueueTable last level (LC-5)', () => {
+  it('shows the expired last level of the entity muted with its chip', () => {
+    const wrapper = mount(RequestQueueTable, {
+      props: {
+        items: [
+          {
+            ...ROW,
+            entity: {
+              ...ROW.entity,
+              level: null,
+              lastLevel: {
+                level: 'silver',
+                validUntil: '2026-11-01',
+                validity: 'expired',
+                daysUntilExpiry: null,
+              },
+            },
+          },
+        ],
+        status: 'success',
+      },
+      global: createTestGlobals({ locale: 'en' }),
+    })
+    const badge = wrapper.find('.request-queue__entity .level-badge')
+    expect(badge.attributes('data-tier')).toBe('silver')
+    expect(badge.classes()).toContain('level-badge--expired')
+    expect(wrapper.find('[data-testid="level-validity"]').text()).toContain('Expired')
+  })
+})

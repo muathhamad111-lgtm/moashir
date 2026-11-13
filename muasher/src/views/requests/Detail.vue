@@ -34,7 +34,7 @@ import { ACCREDITED_LIMITS, ACCREDITED_STATUSES } from '@/constants/accredited'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
-import { tierOfLevel } from '@/utils/levelTier'
+import { displayTierOf } from '@/utils/levelTier'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t, locale } = useI18n()
@@ -117,7 +117,11 @@ onMounted(load)
       </p>
       <p v-if="detail?.entity" class="request-detail__entity" data-testid="request-entity">
         <span>{{ localizedText(detail.entity.name, locale) }}</span>
-        <LevelBadge :tier="tierOfLevel(detail.entity.level)" size="s" />
+        <LevelBadge
+          :tier="displayTierOf(detail.entity)"
+          size="s"
+          :certificate="detail.entity.lastLevel"
+        />
       </p>
     </header>
     <div v-if="status === 'loading'" class="request-detail__loading" aria-busy="true">

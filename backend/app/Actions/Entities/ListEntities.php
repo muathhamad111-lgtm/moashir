@@ -29,7 +29,7 @@ final readonly class ListEntities
     public function handle(User $actor, EntityListFilters $filters): LengthAwarePaginator
     {
         $query = $this->filteredQuery($actor, $filters)
-            ->with(['owner', 'region', 'city', 'logo', EntityLevelQuery::RELATION])
+            ->with(['owner', 'region', 'city', 'logo', EntityLevelQuery::RELATION, EntityLevelQuery::DISPLAY_RELATION])
             ->withExists(EntityLevelQuery::openAccreditedRequestFlag());
         $this->applySort($query, $filters->sort);
 

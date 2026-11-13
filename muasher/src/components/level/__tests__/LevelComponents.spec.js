@@ -160,3 +160,65 @@ describe('LevelRibbon and LevelHistoryList', () => {
     expect(chips).toEqual(['الحالية', 'سابقة', 'ملغاة'])
   })
 })
+
+describe('LevelBadge and LevelRibbon with the last level validity (LC-5)', () => {
+  const lastLevel = (validity, extra = {}) => ({
+    level: 'silver',
+    validUntil: '2026-11-23',
+    validity,
+    daysUntilExpiry: null,
+    ...extra,
+  })
+
+  it('mutes an expired badge to the neutral tone, keeps its level name and words the state', () => {
+    const wrapper = render(LevelBadge, {
+      tier: 'silver',
+      size: 's',
+      certificate: lastLevel('expired'),
+    })
+    const badge = wrapper.find('.level-badge')
+    expect(badge.classes()).toEqual(
+      expect.arrayContaining(['level-badge--expired', 'level-tone--neutral']),
+    )
+    expect(badge.attributes('data-tier')).toBe('silver')
+    expect(badge.text()).toContain('فضي')
+    expect(wrapper.find('.level-emblem').classes()).toContain('level-tone--silver')
+    const chip = wrapper.find('[data-testid="level-validity"]')
+    expect(chip.attributes('data-validity')).toBe('expired')
+    expect(chip.text()).toContain('منتهية')
+    expect(chip.find('bdi').text()).toBe('2026-11-23')
+  })
+
+  it('places a single expiring chip after the badge and keeps the tier tone', () => {
+    const wrapper = render(
+      LevelBadge,
+      { tier: 'silver', certificate: lastLevel('expiring_soon', { daysUntilExpiry: 18 }) },
+      'en',
+    )
+    const group = wrapper.find('.level-badge__group')
+    expect(group.element.children[0].classList.contains('level-badge')).toBe(true)
+    expect(group.element.children[1].dataset.validity).toBe('expiring_soon')
+    expect(wrapper.findAll('[data-testid="level-validity"]')).toHaveLength(1)
+    expect(wrapper.find('.level-badge').classes()).toContain('level-tone--silver')
+    expect(wrapper.text()).toContain('Expires in 18 days')
+  })
+
+  it('shows a valid level as the badge alone', () => {
+    const wrapper = render(LevelBadge, { tier: 'silver', certificate: lastLevel('valid') })
+    expect(wrapper.find('[data-testid="level-validity"]').exists()).toBe(false)
+    expect(wrapper.find('.level-badge').classes()).not.toContain('level-badge--expired')
+  })
+
+  it('mutes an expired ribbon and carries the chip beside the level name', () => {
+    const wrapper = render(LevelRibbon, {
+      tier: 'gold',
+      certificate: { number: 'CRT-2026-000031', status: 'issued', ...lastLevel('expired') },
+    })
+    expect(wrapper.find('[data-testid="level-ribbon"]').classes()).toContain(
+      'level-ribbon--expired',
+    )
+    expect(wrapper.find('.level-ribbon__name [data-testid="level-validity"]').text()).toContain(
+      'منتهية',
+    )
+  })
+})

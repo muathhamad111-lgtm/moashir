@@ -23,6 +23,7 @@ final class EntityContactResource extends JsonResource
         return [
             ...EntityPresenter::summary($this->resource),
             ...EntityLevelPresenter::of($this->resource),
+            'last_level' => EntityLevelPresenter::lastLevelOf($this->resource),
             ...EntityPresenter::contact($this->resource),
         ];
     }

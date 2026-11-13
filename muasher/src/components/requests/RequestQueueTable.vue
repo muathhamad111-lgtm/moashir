@@ -8,7 +8,7 @@ import DateStamp from '@/components/accredited/DateStamp.vue'
 import OverdueBadge from '@/components/accredited/OverdueBadge.vue'
 import PathBadge from '@/components/ui/PathBadge.vue'
 import LevelBadge from '@/components/level/LevelBadge.vue'
-import { tierOfLevel } from '@/utils/levelTier'
+import { displayTierOf } from '@/utils/levelTier'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
 
@@ -55,7 +55,12 @@ const columns = computed(() => [
     <template #cell-entity="{ item }">
       <span class="request-queue__entity">
         <span>{{ localizedText(item.entity?.name, locale) }}</span>
-        <LevelBadge v-if="item.entity" :tier="tierOfLevel(item.entity.level)" size="s" />
+        <LevelBadge
+          v-if="item.entity"
+          :tier="displayTierOf(item.entity)"
+          size="s"
+          :certificate="item.entity.lastLevel"
+        />
       </span>
     </template>
     <template #cell-path="{ item }">

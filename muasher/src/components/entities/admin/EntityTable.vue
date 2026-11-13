@@ -6,7 +6,7 @@ import AppMenu from '@/components/ui/AppMenu.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import FrozenBadge from '@/components/entities/FrozenBadge.vue'
 import LevelBadge from '@/components/level/LevelBadge.vue'
-import { reassessmentOf, tierOfLevel } from '@/utils/levelTier'
+import { displayTierOf, reassessmentOf } from '@/utils/levelTier'
 import { useEntityActions } from '@/composables/useEntityActions'
 import { useEntityDisplay } from '@/composables/useEntityDisplay'
 import { ROUTE_NAMES } from '@/constants/routeNames'
@@ -42,7 +42,7 @@ const COLUMN_SETS = {
 }
 
 function tierOf(item) {
-  return tierOfLevel(item.level, item.hasOpenAccreditedRequest === true)
+  return displayTierOf(item, item.hasOpenAccreditedRequest === true)
 }
 
 const columns = computed(() => {
@@ -77,6 +77,7 @@ const columns = computed(() => {
         :tier="tierOf(item)"
         size="s"
         :reassessment="reassessmentOf(tierOf(item), item.hasOpenAccreditedRequest)"
+        :certificate="item.lastLevel"
       />
     </template>
     <template #cell-entityType="{ item }">{{ enumLabel('entityType', item.entityType) }}</template>

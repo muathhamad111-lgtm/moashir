@@ -18,6 +18,8 @@ final class EntityLevelQuery
 {
     public const string RELATION = 'levelCertificate:id,entity_id,level,number,valid_until';
 
+    public const string DISPLAY_RELATION = 'lastLevelCertificate:id,entity_id,level,status,valid_until';
+
     public const string OPEN_ACCREDITED_REQUEST = 'has_open_accredited_request';
 
     public const string LEVEL_KEY = 'level_key';
@@ -44,22 +46,26 @@ final class EntityLevelQuery
      */
     public static function filter(Builder $query, EntityLevelFilter $filter): void
     {
-        $level = $filter->level();
+        match ($filter) {
+            EntityLevelFilter::None => $query->whereDoesntHave('levelCertificate'),
+            EntityLevelFilter::Expired => $query->whereDoesntHave('levelCertificate')->whereHas('lastLevelCertificate'),
+            default => self::filterByLevel($query, $filter),
+        };
+    }
 
-        if (! $level instanceof EntityLevel) {
-            $query->whereDoesntHave('levelCertificate');
-
-            return;
-        }
-
-        $query->whereHas('levelCertificate', static function (Builder $certificate) use ($level): void {
-            if ($level === EntityLevel::Participation) {
+    /**
+     * @param  Builder<Entity>  $query
+     */
+    private static function filterByLevel(Builder $query, EntityLevelFilter $filter): void
+    {
+        $query->whereHas('levelCertificate', static function (Builder $certificate) use ($filter): void {
+            if ($filter->level() === EntityLevel::Participation) {
                 $certificate->whereNull('level');
 
                 return;
             }
 
-            $certificate->where('level', $level->value);
+            $certificate->where('level', $filter->value);
         });
     }
 

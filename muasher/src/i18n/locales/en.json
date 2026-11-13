@@ -2221,6 +2221,7 @@
       "allSectors": "All sectors",
       "allSizes": "All sizes",
       "level": "Level",
+      "expiredLevel": "Expired level",
       "allLevels": "All levels"
     },
     "sorts": {

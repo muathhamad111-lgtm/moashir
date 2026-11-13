@@ -25,6 +25,7 @@ final class StaffEntityResource extends JsonResource
         return [
             ...EntityPresenter::summary($entity),
             ...EntityLevelPresenter::of($entity),
+            'last_level' => EntityLevelPresenter::lastLevelOf($entity),
             'has_open_accredited_request' => EntityLevelPresenter::hasOpenAccreditedRequest($entity),
             ...EntityPresenter::profile($entity),
             ...EntityPresenter::registry($entity, $request),

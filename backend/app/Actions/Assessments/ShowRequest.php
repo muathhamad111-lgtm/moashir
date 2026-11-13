@@ -20,7 +20,7 @@ final readonly class ShowRequest
 
     public function handle(User $viewer, Assessment $assessment): RequestDetail
     {
-        $assessment->loadMissing(['entity.'.EntityLevelQuery::RELATION, 'activeAssignment.assessor', 'openCompletionRequest', 'payment.receipt', 'awardCycle', 'region']);
+        $assessment->loadMissing(['entity.'.EntityLevelQuery::RELATION, 'entity.'.EntityLevelQuery::DISPLAY_RELATION, 'activeAssignment.assessor', 'openCompletionRequest', 'payment.receipt', 'awardCycle', 'region']);
         $revealsIdentities = $this->scope->accessOf($viewer, $assessment)->revealsStaffIdentities();
         $assignments = AssessmentAssignment::query()
             ->with(['assessor', 'assignedBy'])

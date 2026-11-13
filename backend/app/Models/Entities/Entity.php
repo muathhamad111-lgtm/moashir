@@ -77,6 +77,7 @@ use Illuminate\Support\Facades\Date;
  * @property-read User|null $owner
  * @property-read StoredFile|null $logo
  * @property-read Certificate|null $levelCertificate
+ * @property-read Certificate|null $lastLevelCertificate
  */
 final class Entity extends Model
 {
@@ -206,11 +207,31 @@ final class Entity extends Model
         return $this->hasOne(Certificate::class)->ofMany(
             ['issued_at' => 'max', 'id' => 'max'],
             static function (Builder $certificates): void {
-                $certificates->where('kind', CertificateKind::Accredited)
-                    ->where('status', CertificateStatus::Issued)
-                    ->where('valid_until', '>=', LocalDay::today()->toDateString());
+                self::constrainToIssuedAccredited($certificates);
+                $certificates->where('valid_until', '>=', LocalDay::today()->toDateString());
             },
         );
+    }
+
+    /**
+     * @return HasOne<Certificate, $this>
+     */
+    public function lastLevelCertificate(): HasOne
+    {
+        return $this->hasOne(Certificate::class)->ofMany(
+            ['issued_at' => 'max', 'id' => 'max'],
+            static function (Builder $certificates): void {
+                self::constrainToIssuedAccredited($certificates);
+            },
+        );
+    }
+
+    /**
+     * @param  Builder<Certificate>  $certificates
+     */
+    private static function constrainToIssuedAccredited(Builder $certificates): void
+    {
+        $certificates->where('kind', CertificateKind::Accredited)->where('status', CertificateStatus::Issued);
     }
 
     /**

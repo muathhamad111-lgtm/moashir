@@ -60,8 +60,11 @@ export const LEVEL_MINI_CARD = Object.freeze({
   },
 })
 
+export const LEVEL_FILTERS = Object.freeze({ EXPIRED: 'expired' })
+
 export const LEVEL_FILTER_VALUES = Object.freeze([
   T.NONE,
+  LEVEL_FILTERS.EXPIRED,
   T.PARTICIPATION,
   T.BRONZE,
   T.SILVER,

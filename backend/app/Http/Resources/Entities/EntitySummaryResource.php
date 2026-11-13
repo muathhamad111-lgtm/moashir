@@ -23,6 +23,7 @@ final class EntitySummaryResource extends JsonResource
         return [
             ...EntityPresenter::summary($this->resource),
             ...EntityLevelPresenter::of($this->resource),
+            'last_level' => EntityLevelPresenter::lastLevelOf($this->resource),
             'is_deleted' => $this->resource->trashed(),
         ];
     }

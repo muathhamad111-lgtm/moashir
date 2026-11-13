@@ -1,6 +1,6 @@
 import { allEntities, isDeleted } from './entitiesStore'
 import { normalizeSearchText } from './searchIndex'
-import { levelFilterOf, levelRankOf } from './entityLevels'
+import { levelRankOf, matchesLevelFilter } from './entityLevels'
 
 const STATUSES = ['pending-verification', 'active', 'deactivated']
 
@@ -44,7 +44,7 @@ function matchesFilters(entity, filters) {
     [filters.entityType, () => entity.entityType === filters.entityType],
     [filters.developmentSector, () => entity.developmentSector === filters.developmentSector],
     [filters.orgSize, () => entity.orgSize === filters.orgSize],
-    [filters.level, () => levelFilterOf(entity) === filters.level],
+    [filters.level, () => matchesLevelFilter(entity, filters.level)],
   ]
   return checks.every(([value, check]) => !value || check())
 }

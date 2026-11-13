@@ -71,3 +71,14 @@
   font-size: var(--fs-xs);
   font-weight: var(--fw-semibold);
 }
+
+.level-ribbon--expired {
+  .level-emblem {
+    opacity: var(--opacity-expired-seal);
+    box-shadow: none;
+  }
+
+  .level-ribbon__name {
+    color: var(--band-ink-muted);
+  }
+}

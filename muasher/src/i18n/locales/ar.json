@@ -2221,6 +2221,7 @@
       "allSectors": "كل القطاعات",
       "allSizes": "كل الأحجام",
       "level": "المستوى",
+      "expiredLevel": "مستوى منتهٍ",
       "allLevels": "كل المستويات"
     },
     "sorts": {

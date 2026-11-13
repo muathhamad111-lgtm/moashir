@@ -1,16 +1,17 @@
 import { ASSESSMENT_PATHS } from '@/constants/assessment'
 import { OPEN_ACCREDITED_STATUSES } from '@/constants/levels'
 import { allAssessments } from './assessments/assessmentsStore'
-import { certificates } from './certificatesStore'
+import { certificateResource, certificates } from './certificatesStore'
 
 const METAL_LEVELS = ['bronze', 'silver', 'gold', 'diamond']
 const PARTICIPATION = 'participation'
 const NONE = 'none'
 const IN_PROGRESS = 'in_progress'
+const EXPIRED = 'expired'
 const ISSUED = 'issued'
 const ACCREDITED_KIND = 'accredited'
 
-export const LEVEL_FILTERS = [NONE, PARTICIPATION, ...METAL_LEVELS]
+export const LEVEL_FILTERS = [NONE, EXPIRED, PARTICIPATION, ...METAL_LEVELS]
 export const LEVEL_BUCKET_KEYS = [NONE, IN_PROGRESS, PARTICIPATION, ...METAL_LEVELS]
 const LEVEL_RANK = [NONE, PARTICIPATION, ...METAL_LEVELS]
 
@@ -19,23 +20,46 @@ function newerFirst(left, right) {
   return left.id < right.id ? 1 : -1
 }
 
+function issuedAccreditedOf(entityId) {
+  return certificates
+    .filter(
+      (certificate) =>
+        certificate.entityId === Number(entityId) &&
+        certificate.kind === ACCREDITED_KIND &&
+        certificate.status === ISSUED,
+    )
+    .map(certificateResource)
+    .sort(newerFirst)
+}
+
+function levelOfCertificate(certificate) {
+  return METAL_LEVELS.includes(certificate.level) ? certificate.level : PARTICIPATION
+}
+
 export function levelCertificateOf(entityId) {
   return (
-    certificates
-      .filter(
-        (certificate) =>
-          certificate.entityId === Number(entityId) &&
-          certificate.kind === ACCREDITED_KIND &&
-          certificate.status === ISSUED,
-      )
-      .sort(newerFirst)[0] ?? null
+    issuedAccreditedOf(entityId).find((certificate) => certificate.validity !== EXPIRED) ?? null
   )
+}
+
+export function lastLevelCertificateOf(entityId) {
+  return issuedAccreditedOf(entityId)[0] ?? null
 }
 
 export function entityLevelOf(entityId) {
   const certificate = levelCertificateOf(entityId)
+  return certificate ? levelOfCertificate(certificate) : null
+}
+
+export function lastLevelOf(entityId) {
+  const certificate = lastLevelCertificateOf(entityId)
   if (!certificate) return null
-  return METAL_LEVELS.includes(certificate.level) ? certificate.level : PARTICIPATION
+  return {
+    level: levelOfCertificate(certificate),
+    validUntil: certificate.validUntil,
+    validity: certificate.validity,
+    daysUntilExpiry: certificate.daysUntilExpiry,
+  }
 }
 
 export function hasOpenAccreditedRequest(entityId) {
@@ -48,14 +72,26 @@ export function hasOpenAccreditedRequest(entityId) {
 }
 
 export function entityLevelFields(entity) {
+  const certificate = levelCertificateOf(entity.id)
   return {
     level: entityLevelOf(entity.id),
-    levelCertificateNumber: levelCertificateOf(entity.id)?.number ?? null,
+    levelCertificateNumber: certificate?.number ?? null,
+    levelValidUntil: certificate?.validUntil ?? null,
+    lastLevel: lastLevelOf(entity.id),
   }
 }
 
 export function levelFilterOf(entity) {
   return entityLevelOf(entity.id) ?? NONE
+}
+
+function hasExpiredLastLevel(entity) {
+  return entityLevelOf(entity.id) === null && lastLevelCertificateOf(entity.id) !== null
+}
+
+export function matchesLevelFilter(entity, filter) {
+  if (filter === EXPIRED) return hasExpiredLastLevel(entity)
+  return levelFilterOf(entity) === filter
 }
 
 export function levelRankOf(entity) {

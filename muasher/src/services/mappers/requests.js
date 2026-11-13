@@ -32,7 +32,7 @@ export function toCycleSummary(raw) {
 
 function toQueueEntity(raw) {
   const entity = toEntitySummary(raw)
-  return entity ? { ...entity, level: raw.level ?? null } : null
+  return entity ? { ...entity, level: raw.level ?? null, lastLevel: raw.lastLevel ?? null } : null
 }
 
 export function toQueueRow(raw = {}) {

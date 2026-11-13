@@ -8,7 +8,13 @@ import {
   ENTITY_TYPES,
   ORG_SIZES,
 } from '@/constants/entityEnums'
-import { LEVEL_FILTER_VALUES } from '@/constants/levels'
+import { LEVEL_FILTERS, LEVEL_FILTER_VALUES } from '@/constants/levels'
+
+const EXPIRED_LEVEL_LABEL_KEY = 'entities.filters.expiredLevel'
+
+function levelLabelKey(value) {
+  return value === LEVEL_FILTERS.EXPIRED ? EXPIRED_LEVEL_LABEL_KEY : `level.short.${value}`
+}
 
 export function useEntityFilterOptions(regionOptions) {
   const { t } = useI18n()
@@ -37,7 +43,7 @@ export function useEntityFilterOptions(regionOptions) {
     levelOptions: computed(() =>
       withAll(
         'allLevels',
-        LEVEL_FILTER_VALUES.map((value) => ({ value, label: t(`level.short.${value}`) })),
+        LEVEL_FILTER_VALUES.map((value) => ({ value, label: t(levelLabelKey(value)) })),
       ),
     ),
     sortOptions: computed(() =>

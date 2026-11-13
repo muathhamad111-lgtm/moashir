@@ -29,6 +29,24 @@ final class EntityLevelPresenter
         return $certificate instanceof Certificate ? EntityLevel::ofCertificate($certificate->level) : null;
     }
 
+    /**
+     * @return array{level: string, valid_until: string|null, validity: string|null, days_until_expiry: int|null}|null
+     */
+    public static function lastLevelOf(Entity $entity): ?array
+    {
+        $certificate = $entity->lastLevelCertificate;
+
+        if (! $certificate instanceof Certificate) {
+            return null;
+        }
+
+        return [
+            'level' => EntityLevel::ofCertificate($certificate->level)->value,
+            'valid_until' => $certificate->valid_until?->toDateString(),
+            ...CertificateValidityPresenter::present($certificate),
+        ];
+    }
+
     public static function hasOpenAccreditedRequest(Entity $entity): bool
     {
         return (bool) $entity->getAttribute(EntityLevelQuery::OPEN_ACCREDITED_REQUEST);

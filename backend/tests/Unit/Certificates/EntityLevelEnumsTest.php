@@ -17,10 +17,11 @@ it('maps a certificate without a metal level to participation', function (?Certi
     'diamond' => [CertificateLevel::Diamond, EntityLevel::Diamond],
 ]);
 
-it('resolves the level of a filter value, none meaning no level', function (EntityLevelFilter $filter, ?EntityLevel $expected): void {
+it('resolves the level of a filter value, none and expired meaning no valid level', function (EntityLevelFilter $filter, ?EntityLevel $expected): void {
     expect($filter->level())->toBe($expected);
 })->with([
     'none' => [EntityLevelFilter::None, null],
+    'expired' => [EntityLevelFilter::Expired, null],
     'participation' => [EntityLevelFilter::Participation, EntityLevel::Participation],
     'gold' => [EntityLevelFilter::Gold, EntityLevel::Gold],
 ]);

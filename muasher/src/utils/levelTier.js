@@ -1,4 +1,4 @@
-import { RENEWAL_VALIDITIES } from '@/constants/certificates'
+import { CERTIFICATE_VALIDITY, RENEWAL_VALIDITIES } from '@/constants/certificates'
 import {
   LEVEL_CERTIFICATE_STATUS,
   LEVEL_MINI_CARD,
@@ -37,6 +37,18 @@ export function tierOf({ certificate = null, accredited = null } = {}) {
 export function tierOfLevel(level, hasOpenRequest = false) {
   if (isMetalTier(level) || level === LEVEL_TIERS.PARTICIPATION) return level
   return hasOpenRequest ? LEVEL_TIERS.PROGRESS : LEVEL_TIERS.NONE
+}
+
+export function displayTierOf({ level = null, lastLevel = null } = {}, hasOpenRequest = false) {
+  return tierOfLevel(lastLevel?.level ?? level, hasOpenRequest)
+}
+
+export function shownValidityOf(certificate) {
+  return RENEWAL_VALIDITIES.includes(certificate?.validity) ? certificate.validity : null
+}
+
+export function isExpiredCertificate(certificate) {
+  return certificate?.validity === CERTIFICATE_VALIDITY.EXPIRED
 }
 
 export function reassessmentOf(tier, hasOpenRequest = false) {

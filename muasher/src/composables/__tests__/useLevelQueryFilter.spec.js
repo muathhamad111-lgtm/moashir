@@ -26,6 +26,7 @@ describe('useLevelQueryFilter', () => {
   it('accepts only the server filter values', () => {
     expect(levelFromQuery('gold')).toBe('gold')
     expect(levelFromQuery('none')).toBe('none')
+    expect(levelFromQuery('expired')).toBe('expired')
     expect(levelFromQuery('in_progress')).toBe('')
     expect(levelFromQuery(['gold'])).toBe('')
     expect(levelFromQuery(undefined)).toBe('')

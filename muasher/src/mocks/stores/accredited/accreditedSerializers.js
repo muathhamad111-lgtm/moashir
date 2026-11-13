@@ -10,7 +10,7 @@ import { criteriaUpdateOf } from '../assessments/criteriaMoves'
 import { ACCESS, accessOf } from '../assessments/assessmentAccess'
 import { entityProfileOf, entitySummary } from '../entitySerializers'
 import { findRegion } from '../regionsStore'
-import { entityLevelOf } from '../entityLevels'
+import { entityLevelOf, lastLevelOf } from '../entityLevels'
 import { uploadLimits } from './assessmentSettingsStore'
 import {
   activeAssignment,
@@ -162,7 +162,13 @@ function assessorOf(assignment, staffName) {
 }
 
 function queueEntityOf(entity) {
-  return entity ? { ...entitySummary(entity), level: entityLevelOf(entity.id) } : null
+  return entity
+    ? {
+        ...entitySummary(entity),
+        level: entityLevelOf(entity.id),
+        lastLevel: lastLevelOf(entity.id),
+      }
+    : null
 }
 
 export function queueRow(record, staffName) {

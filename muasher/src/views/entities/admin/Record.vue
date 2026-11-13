@@ -16,6 +16,8 @@ import ProfileChangeHistory from '@/components/entities/ProfileChangeHistory.vue
 import EntityAssessmentsCard from '@/components/entities/admin/EntityAssessmentsCard.vue'
 import EntityLogoPreview from '@/components/entities/admin/EntityLogoPreview.vue'
 import EntityLevelCard from '@/components/entities/admin/EntityLevelCard.vue'
+import LevelBadge from '@/components/level/LevelBadge.vue'
+import { displayTierOf, reassessmentOf } from '@/utils/levelTier'
 import EntityInsightsPanel from '@/components/insights/EntityInsightsPanel.vue'
 import { usePermissions } from '@/composables/usePermissions'
 import { PERMISSIONS } from '@/constants/permissionKeys'
@@ -64,6 +66,9 @@ const { t } = useI18n()
 const router = useRouter()
 const { rowsOf, localized } = useEntityDisplay()
 const { can } = usePermissions()
+const showsLevelCard = computed(() => can(PERMISSIONS.CERTIFICATES_MANAGE))
+const hasOpenRequest = computed(() => entity.value?.hasOpenAccreditedRequest === true)
+const headerTier = computed(() => displayTierOf(entity.value ?? {}, hasOpenRequest.value))
 const {
   entity,
   status,
@@ -137,15 +142,22 @@ onMounted(load)
           <span class="entity-record__reference u-ltr">{{ entity.reference }}</span>
           <StatusBadge :status="entity.status" />
           <FrozenBadge v-if="entity.isFrozen" />
+          <LevelBadge
+            v-if="!showsLevelCard"
+            :tier="headerTier"
+            size="s"
+            :reassessment="reassessmentOf(headerTier, hasOpenRequest)"
+            :certificate="entity.lastLevel"
+          />
         </div>
         <EntityRecordActions :entity="entity" @action="actionsHost.run($event, entity)" />
       </header>
 
       <EntityLevelCard
-        v-if="can(PERMISSIONS.CERTIFICATES_MANAGE)"
+        v-if="showsLevelCard"
         class="entity-record__level"
         :entity-id="entity.id"
-        :open-accredited="entity.hasOpenAccreditedRequest === true"
+        :open-accredited="hasOpenRequest"
       />
 
       <aside v-if="entity.isDeleted" class="entity-record__notice" role="note">

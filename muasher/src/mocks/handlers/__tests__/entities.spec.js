@@ -300,8 +300,10 @@ describe('entities mock — staff list and record scope', () => {
       [
         'authorized_person_name',
         'id',
+        'last_level',
         'level',
         'level_certificate_number',
+        'level_valid_until',
         'name',
         'official_email',
         'phone',

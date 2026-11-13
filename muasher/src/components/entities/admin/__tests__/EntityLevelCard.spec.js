@@ -87,3 +87,32 @@ describe('EntityLevelCard (staff)', () => {
     expect(wrapper.find('.entity-level__empty').text()).toBe('لا توجد شهادات صادرة لهذه الجهة بعد.')
   })
 })
+
+describe('EntityLevelCard with an expired or expiring level (LC-5)', () => {
+  it('mutes the ribbon of an expired current level, keeps «الحالية» on its history row', async () => {
+    certificatesService.listCards.mockResolvedValue({
+      data: [{ ...ISSUED, validUntil: '2026-11-01', validity: 'expired', daysUntilExpiry: null }],
+    })
+    const wrapper = await render()
+    const ribbon = wrapper.find('[data-testid="level-ribbon"]')
+    expect(ribbon.attributes('data-tier')).toBe('gold')
+    expect(ribbon.classes()).toContain('level-ribbon--expired')
+    expect(ribbon.find('[data-testid="level-validity"]').text()).toContain('منتهية')
+    expect(wrapper.find('.level-history__chip--current').text()).toBe('الحالية')
+    expect(wrapper.findAll('[data-testid="level-validity"]')).toHaveLength(1)
+  })
+
+  it('adds the expiring chip to the ribbon without muting it', async () => {
+    certificatesService.listCards.mockResolvedValue({
+      data: [
+        { ...ISSUED, validUntil: '2026-12-01', validity: 'expiring_soon', daysUntilExpiry: 18 },
+      ],
+    })
+    const wrapper = await render()
+    const ribbon = wrapper.find('[data-testid="level-ribbon"]')
+    expect(ribbon.classes()).not.toContain('level-ribbon--expired')
+    expect(ribbon.find('[data-testid="level-validity"]').attributes('data-validity')).toBe(
+      'expiring_soon',
+    )
+  })
+})

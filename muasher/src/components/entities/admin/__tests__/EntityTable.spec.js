@@ -55,3 +55,42 @@ describe('EntityTable level column', () => {
     expect(wrapper.find('.level-badge').exists()).toBe(false)
   })
 })
+
+describe('EntityTable last level (LC-5)', () => {
+  const lastLevel = (validity, daysUntilExpiry = null) => ({
+    level: 'gold',
+    validUntil: '2026-11-23',
+    validity,
+    daysUntilExpiry,
+  })
+
+  it('shows the expired last level muted with its chip instead of «بلا مستوى»', () => {
+    const wrapper = render([{ ...ROW, level: null, lastLevel: lastLevel('expired') }])
+    const badge = wrapper.find('.level-badge')
+    expect(badge.attributes('data-tier')).toBe('gold')
+    expect(badge.classes()).toContain('level-badge--expired')
+    expect(wrapper.find('[data-testid="level-validity"]').text()).toContain('منتهية')
+  })
+
+  it('adds the expiring chip and leaves a valid level as the badge alone', () => {
+    const wrapper = render(
+      [
+        { ...ROW, lastLevel: lastLevel('expiring_soon', 18) },
+        { ...ROW, id: 2, lastLevel: lastLevel('valid', 120) },
+        { ...ROW, id: 3, level: null, lastLevel: null },
+      ],
+      { locale: 'en' },
+    )
+    expect(tiers(wrapper)).toEqual(['gold', 'gold', 'none'])
+    const chips = wrapper.findAll('[data-testid="level-validity"]')
+    expect(chips.map((chip) => chip.attributes('data-validity'))).toEqual(['expiring_soon'])
+  })
+
+  it('keeps the re-assessment chip beside an expired metal level with an open request', () => {
+    const wrapper = render([
+      { ...ROW, level: null, hasOpenAccreditedRequest: true, lastLevel: lastLevel('expired') },
+    ])
+    expect(tiers(wrapper)).toEqual(['gold'])
+    expect(wrapper.find('.level-badge__chip').exists()).toBe(true)
+  })
+})

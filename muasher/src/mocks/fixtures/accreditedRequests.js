@@ -2,6 +2,16 @@ import { SEEDED_IDS } from './finance'
 
 const FOLLOWER_ID = 8
 const ARCHIVED_PAYMENT_SEQUENCE = 91
+const DAY_MS = 24 * 60 * 60 * 1000
+const OPEN_COMPLETION_DAYS_LEFT = 14
+
+// The open completion request must stay open whatever the real date, so its deadline is set relative to now
+// (end of the Riyadh day, 20:59 UTC). A fixed date expired on 2026-11-12 and broke the e2e flows built on it.
+function openCompletionDeadline() {
+  const deadline = new Date(Date.now() + OPEN_COMPLETION_DAYS_LEFT * DAY_MS)
+  deadline.setUTCHours(20, 59, 0, 0)
+  return deadline.toISOString()
+}
 
 function paymentOf(sequence) {
   return `3f0c9a52-6d1e-4b7a-9c21-5a1e${String(sequence).padStart(8, '0')}`
@@ -268,7 +278,7 @@ export const accreditedRequestsFixture = [
           { subCode: 'M4.2', kind: 'evidence', note: 'القوائم المالية المدققة لعام 2025.' },
         ],
         requestedAt: '2026-10-28T09:00:00Z',
-        deadlineAt: '2026-11-12T20:59:00Z',
+        deadlineAt: openCompletionDeadline(),
         expiryOutcome: 'continue_as_submitted',
         resolvedAt: null,
       },

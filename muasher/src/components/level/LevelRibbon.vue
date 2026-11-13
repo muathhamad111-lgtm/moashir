@@ -2,10 +2,11 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { TIER_ORDER } from '@/constants/levels'
-import { tierPalette } from '@/utils/levelTier'
+import { isExpiredCertificate, shownValidityOf, tierPalette } from '@/utils/levelTier'
 import { scorePercentText } from '@/utils/percentText'
 import { riyadhDateKey } from '@/utils/datetime'
 import LevelEmblem from './LevelEmblem.vue'
+import LevelValidityChip from './LevelValidityChip.vue'
 
 const props = defineProps({
   tier: { type: String, required: true, validator: (value) => TIER_ORDER.includes(value) },
@@ -14,6 +15,8 @@ const props = defineProps({
 })
 
 const { t, n } = useI18n()
+const validity = computed(() => shownValidityOf(props.certificate))
+const isExpired = computed(() => isExpiredCertificate(props.certificate))
 const issuedOn = computed(() =>
   props.certificate?.issuedAt ? riyadhDateKey(props.certificate.issuedAt) : '',
 )
@@ -22,7 +25,7 @@ const issuedOn = computed(() =>
 <template>
   <section
     class="level-ribbon"
-    :class="`level-tone--${tierPalette(tier)}`"
+    :class="[`level-tone--${tierPalette(tier)}`, { 'level-ribbon--expired': isExpired }]"
     :data-tier="tier"
     :aria-label="t('level.staff.entityLevel')"
     data-testid="level-ribbon"
@@ -32,6 +35,12 @@ const issuedOn = computed(() =>
       <p class="level-ribbon__eyebrow">{{ t('level.staff.entityLevel') }}</p>
       <p class="level-ribbon__name">
         {{ t(`level.names.${tier}`) }}
+        <LevelValidityChip
+          v-if="validity"
+          :validity="validity"
+          :valid-until="certificate.validUntil"
+          :days-left="certificate.daysUntilExpiry"
+        />
         <span v-if="reassessment" class="level-ribbon__chip" data-testid="level-reassessment">
           {{ t('level.reassessment') }}
         </span>

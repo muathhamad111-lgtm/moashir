@@ -35,3 +35,11 @@
   font-weight: var(--fw-medium);
   white-space: nowrap;
 }
+
+.level-badge--expired .level-emblem {
+  opacity: var(--opacity-expired-seal);
+}
+
+.level-badge__group .level-hero__chip {
+  white-space: nowrap;
+}

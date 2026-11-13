@@ -7,6 +7,7 @@ namespace App\Enums\Certificates;
 enum EntityLevelFilter: string
 {
     case None = 'none';
+    case Expired = 'expired';
     case Participation = 'participation';
     case Bronze = 'bronze';
     case Silver = 'silver';

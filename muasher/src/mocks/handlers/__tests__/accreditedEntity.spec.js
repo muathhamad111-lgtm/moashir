@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { setupServer } from 'msw/node'
 import { handlers } from '@/mocks/handlers'
 import { resetCriteriaStore } from '@/mocks/stores/criteriaStore'
@@ -25,6 +25,8 @@ const NAMAA = { id: 6001, roles: ['entity'], entityId: 6001 }
 const ATAA = { id: 6004, roles: ['entity'], entityId: 6004 }
 const ALBIRR = { id: 5001, roles: ['entity'], entityId: 5001 }
 const FOLLOWER = { id: 8, roles: ['request_follower', 'filtering_officer'] }
+// The fixtures carry fixed dates, so the clock is pinned to keep these flows deterministic.
+const FIXTURE_NOW = new Date('2026-11-05T09:00:00Z')
 const PDF = '%PDF-1.4\n% evidence\n%%EOF\n'
 const EICAR = '%PDF-1.4\nEICAR-STANDARD-ANTIVIRUS-TEST-FILE\n%%EOF\n'
 
@@ -122,6 +124,7 @@ const keys = (value) => Object.keys(value).sort()
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 beforeEach(() => {
+  vi.useFakeTimers({ now: FIXTURE_NOW, toFake: ['Date'] })
   resetCriteriaStore()
   resetEntitiesMock()
   resetFinanceState()
@@ -133,6 +136,7 @@ afterEach(() => {
   server.resetHandlers()
   clearMockSession()
   discardQueuedJobs()
+  vi.useRealTimers()
 })
 afterAll(() => server.close())
 
