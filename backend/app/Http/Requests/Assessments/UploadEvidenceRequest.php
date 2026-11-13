@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Requests\Assessments;
 
 use App\Data\Assessments\EvidenceUpload;
-use App\Services\Files\FileSettings;
+use App\Enums\Assessments\AssessmentPath;
+use App\Models\Assessments\Assessment;
+use App\Services\Assessments\UploadLimitsReader;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\UploadedFile;
 use LogicException;
@@ -17,8 +19,11 @@ final class UploadEvidenceRequest extends FormRequest
      */
     public function rules(): array
     {
+        $assessment = $this->route('assessment');
+        $path = $assessment instanceof Assessment && $assessment->path->isReviewed() ? $assessment->path : AssessmentPath::Accredited;
+
         return [
-            'file' => ['required', 'file', 'max:'.app(FileSettings::class)->maxUploadKilobytes()],
+            'file' => ['required', 'file', 'max:'.app(UploadLimitsReader::class)->read($path)->maxFileKilobytes()],
             'sub_criterion_id' => ['required', 'integer', 'min:1'],
             'attachment_key' => ['nullable', 'string', 'max:40'],
             'reason' => ['nullable', 'string', 'min:10', 'max:1000'],

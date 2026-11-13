@@ -62,6 +62,7 @@ final readonly class CreateAwardCycle
             'disqualification_score' => $attributes->disqualificationScore ?? $defaults->disqualificationScore,
             'initial_review_sla_days' => $attributes->initialReviewSlaDays ?? $defaults->initialReviewSlaDays,
             'participation_certificate_enabled' => $attributes->participationCertificateEnabled ?? false,
+            'entry_fee' => ($attributes->entryFee ?? $defaults->entryFee)->amount,
             'created_by_user_id' => $actor->id,
         ]);
         $cycle->regions()->sync($attributes->regionIds ?? []);
@@ -77,6 +78,7 @@ final readonly class CreateAwardCycle
             'region_ids' => $attributes->regionIds ?? [],
             'submission_start' => $schedule->submissionStart->toIso8601String(),
             'submission_end' => $schedule->submissionEnd->toIso8601String(),
+            'entry_fee' => $cycle->entry_fee,
         ]));
 
         return $cycle->load('regions');

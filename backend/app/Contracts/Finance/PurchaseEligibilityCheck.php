@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Contracts\Finance;
 
-use App\Enums\Finance\PaymentPurpose;
+use App\Data\Finance\OrderTerms;
 use App\Models\Entities\Entity;
 
 interface PurchaseEligibilityCheck
 {
-    public function assertMayPurchase(Entity $entity, PaymentPurpose $purpose): void;
+    public function assertMayPurchase(Entity $entity, OrderTerms $terms): void;
 }

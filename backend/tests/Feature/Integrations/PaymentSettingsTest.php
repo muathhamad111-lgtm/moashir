@@ -63,7 +63,7 @@ it('shows the payment settings with the values to copy and no secret', function 
         ->assertJsonPath('data.methods', ['creditcard'])
         ->assertJsonPath('data.supported_networks', ['mada', 'visa', 'mastercard'])
         ->assertJsonPath('data.apple_pay_label', ['ar' => 'منصة مؤشر', 'en' => 'Moashir Platform'])
-        ->assertJsonPath('data.linked_paths', ['accredited', 'bag'])
+        ->assertJsonPath('data.linked_paths', ['accredited', 'bag', 'self', 'award'])
         ->assertJsonPath('data.values_to_copy.webhook_url', 'http://localhost/api/v1/webhooks/moyasar')
         ->assertJsonPath('data.values_to_copy.webhook_method', 'POST')
         ->assertJsonPath('data.values_to_copy.webhook_events', 'all')

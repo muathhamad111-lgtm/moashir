@@ -21,6 +21,7 @@ use App\Services\Assessments\CompletionRequestCloser;
 use App\Services\Assessments\EntityContentGate;
 use App\Services\Assessments\SubmissionGapsReader;
 use App\Services\Audit\AuditRecorder;
+use App\Services\Periods\PeriodAssigner;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 
@@ -34,6 +35,7 @@ final readonly class SubmitAccreditedRequest
         private AssessmentStateMachine $stateMachine,
         private CompletionRequestCloser $completionRequests,
         private AuditRecorder $audit,
+        private PeriodAssigner $periods,
     ) {}
 
     public function handle(User $actor, Assessment $assessment, ?string $reason): Assessment
@@ -58,11 +60,13 @@ final readonly class SubmitAccreditedRequest
     private function submit(User $actor, Assessment $locked): Assessment
     {
         $now = Date::now();
+        $this->periods->assign($locked, $now);
         $locked->forceFill(['submitted_at' => $now, 'due_at' => $this->sla->dueAt($now), 'review_sla_days' => $this->sla->days(), 'overdue_notified_at' => null]);
         $this->stateMachine->transition($locked, AccreditedAssessmentStatus::Submitted, AssessmentVerb::Submit, $actor->id);
         $this->audit->record(new AuditEntry(AuditEvent::AssessmentSubmitted, $locked, ['status' => AccreditedAssessmentStatus::Draft->value], [
             'status' => AccreditedAssessmentStatus::Submitted->value,
             'due_at' => $locked->due_at?->toIso8601String(),
+            'period_id' => $locked->period_id,
         ]));
 
         AccreditedRequestSubmitted::dispatch($locked);

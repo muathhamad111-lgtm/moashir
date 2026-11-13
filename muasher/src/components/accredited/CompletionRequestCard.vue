@@ -25,7 +25,9 @@ const STATUS_VARIANTS = {
   <article class="completion-card">
     <header class="completion-card__head">
       <h3 class="completion-card__title">{{ t(titleKey) }}</h3>
-      <Badge v-if="showStatus" :variant="STATUS_VARIANTS[request.status] ?? 'muted'">{{ t(`accredited.completion.statuses.${request.status}`) }}</Badge>
+      <Badge v-if="showStatus" :variant="STATUS_VARIANTS[request.status] ?? 'muted'">{{
+        t(`accredited.completion.statuses.${request.status}`)
+      }}</Badge>
     </header>
     <p class="completion-card__notes">{{ request.notes }}</p>
     <dl class="completion-card__facts">
@@ -48,7 +50,11 @@ const STATUS_VARIANTS = {
     </dl>
     <p class="completion-card__items-title">{{ t('accredited.completion.items') }}</p>
     <ul class="completion-card__items">
-      <li v-for="item in request.items" :key="`${item.code}-${item.kind}`" class="completion-card__item">
+      <li
+        v-for="item in request.items"
+        :key="`${item.code}-${item.kind}`"
+        class="completion-card__item"
+      >
         <span class="completion-card__code u-ltr">{{ item.code }}</span>
         <Badge variant="info">{{ t(`accredited.completion.kinds.${item.kind}`) }}</Badge>
         <span v-if="item.note" class="completion-card__note">{{ item.note }}</span>

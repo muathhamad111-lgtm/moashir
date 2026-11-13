@@ -1,0 +1,63 @@
+@use '../mixins' as *;
+
+.auth-status {
+  @include flex(column, flex-start, flex-start, var(--space-2));
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--theme-border);
+  border-inline-start-width: var(--border-width-thick);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+}
+
+.auth-status--success {
+  border-inline-start-color: var(--color-success);
+
+  .auth-status__icon {
+    color: var(--theme-success-text);
+  }
+}
+
+.auth-status--danger {
+  border-inline-start-color: var(--color-danger);
+
+  .auth-status__icon {
+    color: var(--theme-danger-text);
+  }
+}
+
+.auth-status__icon {
+  font-size: var(--fs-xl);
+}
+
+.auth-status__title {
+  margin: 0;
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.auth-status__text {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
+}
+
+.password-policy {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface);
+  font-size: var(--fs-xs);
+  color: var(--theme-text-secondary);
+}
+
+.password-policy__title {
+  margin: 0 0 var(--space-1);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-text);
+}
+
+.password-policy__list {
+  @include flex(column, stretch, flex-start, var(--space-1));
+  margin: 0;
+  padding-inline-start: var(--space-5);
+}

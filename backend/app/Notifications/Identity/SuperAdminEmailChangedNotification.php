@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Notifications\Identity;
 
+use App\Enums\Notifications\MailReason;
+use App\Notifications\Messages\BrandedMailMessage;
 use App\Notifications\QueuedNotification;
 use Illuminate\Notifications\AnonymousNotifiable;
-use Illuminate\Notifications\Messages\MailMessage;
 
 final class SuperAdminEmailChangedNotification extends QueuedNotification
 {
@@ -23,9 +24,9 @@ final class SuperAdminEmailChangedNotification extends QueuedNotification
         return ['mail'];
     }
 
-    public function toMail(AnonymousNotifiable $notifiable): MailMessage
+    public function toMail(AnonymousNotifiable $notifiable): BrandedMailMessage
     {
-        return (new MailMessage)
+        return BrandedMailMessage::make($notifiable, MailReason::LinkedAddress)
             ->subject(__('notifications.super_admin_email_changed.subject'))
             ->line(__('notifications.super_admin_email_changed.line', ['email' => $this->maskedNewEmail]))
             ->line(__('notifications.super_admin_email_changed.advice'));

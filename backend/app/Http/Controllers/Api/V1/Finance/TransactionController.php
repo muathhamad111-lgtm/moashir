@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Finance;
 
 use App\Actions\Finance\ListTransactions;
+use App\Actions\Finance\ShowTransaction;
 use App\Http\Requests\Finance\IndexTransactionsRequest;
 use App\Http\Resources\Finance\TransactionDetailResource;
 use App\Http\Resources\Finance\TransactionResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\Finance\Payment;
+use App\Models\Identity\User;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\JsonResponse;
 
 final class TransactionController
@@ -23,10 +26,8 @@ final class TransactionController
         ]);
     }
 
-    public function show(Payment $payment): JsonResponse
+    public function show(Payment $payment, #[CurrentUser] User $viewer, ShowTransaction $show): JsonResponse
     {
-        $payment->loadMissing(['receipt', 'refund.payment', 'refund.recordedBy', 'refund.evidenceFile', 'entity.owner']);
-
-        return ApiResponse::resource(new TransactionDetailResource($payment));
+        return ApiResponse::resource(new TransactionDetailResource($show->handle($payment, $viewer)));
     }
 }

@@ -112,6 +112,7 @@ final class DemoAccountsFile
         $lines = [
             sprintf('Moashir demo accounts - environment: %s - generated: %s', $environment, Date::now()->toIso8601String()),
             'Fictional demo data only. Staff accounts must enrol an authenticator app (TOTP) at the first sign-in.',
+            'Entity accounts sign in with the password or with a one-time code sent by e-mail; they have no second factor.',
             '',
         ];
 
@@ -120,7 +121,7 @@ final class DemoAccountsFile
             $lines[] = 'name:     '.$account->name;
             $lines[] = 'email:    '.$account->email;
             $lines[] = 'password: '.$account->password->reveal();
-            $lines[] = 'mfa:      '.($account->mfaRequired ? 'required (TOTP enrolment at first sign-in)' : 'optional');
+            $lines[] = 'mfa:      '.($account->mfaRequired ? 'required (TOTP enrolment at first sign-in)' : 'none (password or one-time code)');
             $lines[] = '';
         }
 

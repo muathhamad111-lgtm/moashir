@@ -1,7 +1,8 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { defineComponent, h } from 'vue'
-import { flushPromises, mount } from '@vue/test-utils'
+import { flushPromises } from '@vue/test-utils'
+import { withSetup } from '@/test-utils/withSetup'
 import { useNotifications } from '@/composables/useNotifications'
+import { usePortalCountsStore } from '@/stores/portalCounts'
 import { notificationsService } from '@/services/notificationsService'
 
 vi.mock('@/services/notificationsService', () => ({
@@ -13,61 +14,60 @@ vi.mock('@/services/notificationsService', () => ({
   },
 }))
 
-const items = [
-  { id: 1, read: false, title: { ar: 'أ', en: 'a' } },
-  { id: 2, read: true, title: { ar: 'ب', en: 'b' } },
-]
+const ID_A = '5e1f0c2a-0000-4000-8000-000000000001'
+const ID_B = '5e1f0c2a-0000-4000-8000-000000000002'
 
-function harness() {
-  let api
-  const Host = defineComponent({
-    setup() {
-      api = useNotifications()
-      return () => h('div')
-    },
-  })
-  mount(Host)
-  return api
+function items() {
+  return [
+    { id: ID_A, isRead: false, title: { ar: 'أ', en: 'a' } },
+    { id: ID_B, isRead: true, title: { ar: 'ب', en: 'b' } },
+  ]
 }
 
 beforeEach(() => {
   vi.clearAllMocks()
-  notificationsService.list.mockResolvedValue({ data: items, meta: {}, errors: null })
-  notificationsService.unreadCount.mockResolvedValue({ data: { count: 1 }, meta: {}, errors: null })
-  notificationsService.markRead.mockResolvedValue({ data: { ...items[0], read: true } })
+  notificationsService.list.mockResolvedValue({ data: items(), meta: { unreadCount: 1 } })
+  notificationsService.markRead.mockResolvedValue({ data: {} })
   notificationsService.markAllRead.mockResolvedValue({ data: { updated: 1 } })
 })
 
 describe('useNotifications', () => {
-  it('loads the list and unread count through the service', async () => {
-    const api = harness()
+  it('loads the list and shares the unread count from the list meta', async () => {
+    const { api } = withSetup(() => useNotifications({ perPage: 3 }))
     await flushPromises()
+    expect(notificationsService.list).toHaveBeenCalledWith({ perPage: 3 })
     expect(api.status.value).toBe('success')
-    expect(api.items.value).toHaveLength(2)
     expect(api.unreadCount.value).toBe(1)
+    expect(usePortalCountsStore().unreadNotifications).toBe(1)
   })
 
-  it('marks a single item read and decrements the unread count', async () => {
-    const api = harness()
+  it('marks one item read once and decrements the shared count', async () => {
+    const { api } = withSetup(() => useNotifications())
     await flushPromises()
-    await api.markRead(1)
-    expect(notificationsService.markRead).toHaveBeenCalledWith(1)
-    expect(api.items.value[0].read).toBe(true)
+    await api.markRead(ID_A)
+    await api.markRead(ID_A)
+    await api.markRead(ID_B)
+    expect(notificationsService.markRead).toHaveBeenCalledTimes(1)
+    expect(api.items.value[0].isRead).toBe(true)
     expect(api.unreadCount.value).toBe(0)
   })
 
   it('marks everything read', async () => {
-    const api = harness()
+    const { api } = withSetup(() => useNotifications())
     await flushPromises()
     await api.markAllRead()
-    expect(api.items.value.every((item) => item.read)).toBe(true)
+    expect(api.items.value.every((item) => item.isRead)).toBe(true)
     expect(api.unreadCount.value).toBe(0)
   })
 
-  it('reports the error state when the service fails', async () => {
-    notificationsService.list.mockRejectedValue(new Error('down'))
-    const api = harness()
+  it('reports the empty and error states', async () => {
+    notificationsService.list.mockResolvedValueOnce({ data: [], meta: { unreadCount: 0 } })
+    const empty = withSetup(() => useNotifications())
     await flushPromises()
-    expect(api.status.value).toBe('error')
+    expect(empty.api.status.value).toBe('empty')
+    notificationsService.list.mockRejectedValueOnce(new Error('boom'))
+    const failing = withSetup(() => useNotifications())
+    await flushPromises()
+    expect(failing.api.status.value).toBe('error')
   })
 })

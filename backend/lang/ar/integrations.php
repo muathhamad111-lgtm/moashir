@@ -12,7 +12,7 @@ return [
     'sms_templates' => [
         'otp_code' => [
             'label' => 'رمز التحقق',
-            'default_body' => 'رمز التحقق في منصة مؤشر هو {code} وهو صالح لمدة {minutes} دقيقة.',
+            'default_body' => 'رمز التحقق في منصة مؤشر هو {code} وهو صالح لمدة {validity}.',
         ],
     ],
 

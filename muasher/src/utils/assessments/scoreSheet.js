@@ -38,7 +38,9 @@ export function savedScoreOf(scores, unit) {
 }
 
 export function sheetValues(scores, units) {
-  return Object.fromEntries(units.map((unit) => [scoreFieldName(unit), savedScoreOf(scores, unit)?.rawValue ?? '']))
+  return Object.fromEntries(
+    units.map((unit) => [scoreFieldName(unit), savedScoreOf(scores, unit)?.rawValue ?? '']),
+  )
 }
 
 export function normalizedRawValue(value) {
@@ -61,7 +63,9 @@ export function sheetPayload(values, units) {
   const payload = { subs: {}, points: {} }
   units.forEach((unit) => {
     const value = values[scoreFieldName(unit)]
-    payload[WIRE_GROUPS[unit.level]][String(unit.id)] = isFilled(value) ? normalizedRawValue(value) : null
+    payload[WIRE_GROUPS[unit.level]][String(unit.id)] = isFilled(value)
+      ? normalizedRawValue(value)
+      : null
   })
   return payload
 }
@@ -72,7 +76,9 @@ export function changedSheetPayload(values, units, scores) {
     const value = values[scoreFieldName(unit)]
     const saved = savedScoreOf(scores, unit)?.rawValue ?? ''
     if (sameRawValue(value, saved)) return
-    payload[WIRE_GROUPS[unit.level]][String(unit.id)] = isFilled(value) ? normalizedRawValue(value) : null
+    payload[WIRE_GROUPS[unit.level]][String(unit.id)] = isFilled(value)
+      ? normalizedRawValue(value)
+      : null
   })
   return payload
 }

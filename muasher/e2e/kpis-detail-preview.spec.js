@@ -16,7 +16,14 @@ async function retryFor(page, selector) {
   for (let attempt = 0; attempt < 8; attempt += 1) {
     const retry = page.locator('.error-state__retry, .error-state button').first()
     if (await retry.isVisible().catch(() => false)) await retry.click()
-    if (await page.locator(selector).first().isVisible().catch(() => false)) return
+    if (
+      await page
+        .locator(selector)
+        .first()
+        .isVisible()
+        .catch(() => false)
+    )
+      return
     await page.waitForTimeout(500)
   }
   await expect(page.locator(selector).first()).toBeVisible({ timeout: 10000 })
@@ -25,8 +32,15 @@ async function retryFor(page, selector) {
 async function reloadUntil(page, url, selector) {
   for (let attempt = 0; attempt < 8; attempt += 1) {
     await page.goto(url)
-    await retryFor(page, '.home-kpi-promo')
-    if (await page.locator(selector).first().isVisible().catch(() => false)) return
+    await retryFor(page, '.home-hero__title')
+    if (
+      await page
+        .locator(selector)
+        .first()
+        .isVisible()
+        .catch(() => false)
+    )
+      return
     await page.waitForTimeout(400)
   }
   await expect(page.locator(selector).first()).toBeVisible({ timeout: 10000 })
@@ -72,22 +86,18 @@ test('an unknown slug renders the branded not-found state with a back link', asy
   await expect(page).toHaveURL(/\/kpis$/)
 })
 
-test('the homepage KPI promo renders featured cards and the view-all CTA', async ({
+test('the homepage stats strip shows the featured published indicators only', async ({
   page,
 }, testInfo) => {
-  await reloadUntil(page, '/', '.home-kpi-promo__grid .kpi-card')
-
-  const promo = page.locator('.home-kpi-promo')
-  await promo.scrollIntoViewIfNeeded()
-
-  await expect(page.locator('.home-kpi-promo__grid .kpi-card').first()).toBeVisible()
-  await expect(page.locator('.home-kpi-promo__cta .btn')).toBeVisible()
+  await reloadUntil(page, '/', '.home-stats__item')
+  const items = page.locator('.home-stats__item')
+  await expect(items.first()).toBeVisible()
+  expect(await items.count()).toBeLessThanOrEqual(4)
+  await expect(page.locator('.home-kpi-promo')).toHaveCount(0)
+  await expect(items.first().locator('.home-stats__value')).not.toHaveText('')
 
   await page.screenshot({
     path: `test-results/task3c-home-preview-${localeSuffix(testInfo)}.png`,
     fullPage: false,
   })
-
-  await page.locator('.home-kpi-promo__grid .kpi-card').first().click()
-  await expect(page).toHaveURL(/\/kpis\/[a-z0-9-]+$/)
 })

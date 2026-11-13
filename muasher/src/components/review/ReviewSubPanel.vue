@@ -20,7 +20,9 @@ const emit = defineEmits(['download'])
 const { t, locale } = useI18n()
 
 const review = computed(() => props.workspace.reviewState.review.value)
-const disabled = computed(() => !props.workspace.reviewState.canScore.value || Boolean(props.workspace.actions.busy.value))
+const disabled = computed(
+  () => !props.workspace.reviewState.canScore.value || Boolean(props.workspace.actions.busy.value),
+)
 const usesPoints = computed(() => props.sub.evaluationType === EVALUATION_TYPES.GUIDING_POINTS)
 const cv = computed(() => review.value.cv[String(props.sub.id)] ?? '')
 const files = computed(() => evidenceOfSub(review.value.evidence, props.sub.id))
@@ -38,19 +40,32 @@ function unit(level, node) {
 <template>
   <li :id="`review-sub-${sub.id}`" class="review-sub" tabindex="-1">
     <div class="review-sub__head">
-      <h3 class="review-sub__title"><span class="review-sub__code u-ltr">{{ sub.code }}</span> {{ text(sub.name) }}</h3>
-      <Badge :variant="usesPoints ? 'info' : 'muted'">{{ usesPoints ? t('assessment.self.tree.points', { count: sub.points.length }) : t('assessment.self.tree.direct') }}</Badge>
+      <h3 class="review-sub__title">
+        <span class="review-sub__code u-ltr">{{ sub.code }}</span> {{ text(sub.name) }}
+      </h3>
+      <Badge :variant="usesPoints ? 'info' : 'muted'">{{
+        usesPoints
+          ? t('assessment.self.tree.points', { count: sub.points.length })
+          : t('assessment.self.tree.direct')
+      }}</Badge>
     </div>
     <div v-if="sub.hasCv" class="review-sub__cv">
       <p class="review-sub__label">{{ t('review.cvTitle') }}</p>
       <p v-if="cv" class="review-sub__cv-text">{{ cv }}</p>
       <p v-else class="review-sub__empty">{{ t('review.noCv') }}</p>
     </div>
-    <ReviewEvidenceList :files="files" :downloading="workspace.downloads.busy" @download="emit('download', $event)" />
+    <ReviewEvidenceList
+      :files="files"
+      :downloading="workspace.downloads.busy"
+      @download="emit('download', $event)"
+    />
     <div class="review-sub__scores">
       <template v-if="usesPoints">
         <div v-for="point in sub.points" :key="point.id" class="review-sub__point">
-          <p class="review-sub__point-text"><span class="review-sub__code u-ltr">{{ point.code }}</span> {{ text(point.description) }}</p>
+          <p class="review-sub__point-text">
+            <span class="review-sub__code u-ltr">{{ point.code }}</span>
+            {{ text(point.description) }}
+          </p>
           <RawScoreField
             :name="scoreFieldName(unit(SCORE_LEVELS.POINT, point))"
             :label="t('review.pointScoreLabel', { code: point.code })"
@@ -69,6 +84,11 @@ function unit(level, node) {
         :disabled="disabled"
       />
     </div>
-    <ReviewFeedbackFields :sub-id="sub.id" :fields="workspace.feedback.fieldsOf(sub.id)" :disabled="disabled" @update="workspace.feedback.setField(sub.id, $event.field, $event.value)" />
+    <ReviewFeedbackFields
+      :sub-id="sub.id"
+      :fields="workspace.feedback.fieldsOf(sub.id)"
+      :disabled="disabled"
+      @update="workspace.feedback.setField(sub.id, $event.field, $event.value)"
+    />
   </li>
 </template>

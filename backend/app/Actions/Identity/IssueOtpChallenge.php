@@ -9,55 +9,32 @@ use App\Data\Identity\OtpChallenge;
 use App\Data\Identity\OtpDelivery;
 use App\Enums\Identity\AuthEventType;
 use App\Enums\Identity\OtpChannel;
-use App\Models\Identity\OtpCode;
 use App\Notifications\Identity\OtpCodeNotification;
 use App\Services\Identity\AuthenticationEventRecorder;
 use App\Services\Identity\AuthSettings;
-use App\Services\Identity\SecretHasher;
+use App\Services\Identity\OtpCodeStore;
+use App\Services\Identity\OtpIssueThrottle;
 use App\Support\ValueObjects\EmailAddress;
 use App\Support\ValueObjects\PhoneNumber;
-use Carbon\CarbonImmutable;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Str;
 
 final readonly class IssueOtpChallenge
 {
     public function __construct(
         private AuthSettings $settings,
-        private SecretHasher $hasher,
+        private OtpIssueThrottle $throttle,
+        private OtpCodeStore $store,
         private AuthenticationEventRecorder $events,
-        private Request $request,
         private SmsAvailability $sms,
     ) {}
 
     public function handle(OtpDelivery $delivery): OtpChallenge
     {
+        $this->throttle->hit($delivery->user);
+
         $channel = $this->effectiveChannel($delivery);
         $code = $this->generateCode();
-        $now = CarbonImmutable::now();
-
-        $otp = DB::transaction(function () use ($delivery, $channel, $code, $now): OtpCode {
-            OtpCode::query()
-                ->where('user_id', $delivery->user->id)
-                ->where('purpose', $delivery->purpose)
-                ->whereNull('consumed_at')
-                ->whereNull('voided_at')
-                ->update(['voided_at' => $now]);
-
-            return OtpCode::query()->create([
-                'challenge_id' => (string) Str::uuid(),
-                'user_id' => $delivery->user->id,
-                'channel' => $channel,
-                'purpose' => $delivery->purpose,
-                'code_hash' => $this->hasher->hash($code),
-                'destination_masked' => $this->maskedDestination($delivery, $channel),
-                'expires_at' => $now->addSeconds($this->settings->otpExpirySeconds()),
-                'last_sent_at' => $now,
-                'ip_address' => $this->request->ip(),
-            ]);
-        });
+        $otp = $this->store->open($delivery, $channel, $code, $this->maskedDestination($delivery, $channel));
 
         $this->send($delivery, $channel, $code);
         $this->events->forUser(AuthEventType::OtpSent, $delivery->user, ['channel' => $channel->value, 'purpose' => $delivery->purpose->value]);
@@ -67,15 +44,22 @@ final readonly class IssueOtpChallenge
             $channel,
             $this->settings->otpLength(),
             $otp->expires_at->toImmutable(),
-            $now->addSeconds($this->settings->otpResendCooldownSeconds()),
+            $otp->last_sent_at->toImmutable()->addSeconds($this->settings->otpResendCooldownSeconds()),
         );
     }
 
     private function effectiveChannel(OtpDelivery $delivery): OtpChannel
     {
-        $canUseSms = ! $delivery->recipientOverride instanceof EmailAddress && $delivery->user->phone !== null && $this->settings->isSmsOtpEnabled();
+        return $delivery->channel === OtpChannel::Sms && $this->canTextRecipient($delivery) && $this->sms->isAvailable() ? OtpChannel::Sms : OtpChannel::Email;
+    }
 
-        return $delivery->channel === OtpChannel::Sms && $canUseSms && $this->sms->isAvailable() ? OtpChannel::Sms : OtpChannel::Email;
+    private function canTextRecipient(OtpDelivery $delivery): bool
+    {
+        $user = $delivery->user;
+
+        return ! $delivery->recipientOverride instanceof EmailAddress
+            && $user->phone !== null
+            && ($user->phone_verified_at !== null || $delivery->purpose->maySendToUnverifiedPhone());
     }
 
     private function generateCode(): string

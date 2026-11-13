@@ -1,0 +1,31 @@
+@use '../mixins' as *;
+
+.delta-chip {
+  @include flex(row, center, center, var(--space-1));
+  min-block-size: var(--size-badge-s);
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-latin);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+
+  &--up {
+    background-color: var(--color-success-soft);
+    color: var(--delta-up-ink);
+  }
+
+  &--down {
+    background-color: var(--color-danger-soft);
+    color: var(--delta-down-ink);
+  }
+
+  &--flat {
+    background-color: var(--tier-neutral-surface);
+    color: var(--tier-neutral-ink);
+  }
+}
+
+.delta-chip__mark {
+  font-size: var(--fs-xs);
+}

@@ -1,0 +1,69 @@
+@use 'colors' as *;
+
+$stage-light: (
+  'from': #0a2325,
+  'to': #145053,
+);
+$stage-dark: (
+  'from': #061819,
+  'to': #0a2325,
+);
+$nav-light: (
+  'from': #0a2325,
+  'to': #145053,
+);
+$nav-dark: (
+  'from': #061819,
+  'to': #0c2b2d,
+);
+$band-ink: #ffffff;
+$band-ink-muted: #c6e3e1;
+$data-on-band: #98d8d3;
+$data-ink: #145053;
+$data-ink-dark: #98d8d3;
+$data-track: #e6eded;
+$data-track-dark: rgba($color-secondary, 0.12);
+$delta-up-ink: #0e7a50;
+$delta-down-ink: #b4232a;
+$delta-up-ink-dark: #4fd8a2;
+$delta-down-ink-dark: #f87176;
+
+$glass-fill: rgba($color-secondary, 0.07);
+$glass-stroke: rgba($color-secondary, 0.18);
+$glass-blur: 12px;
+$nav-active: rgba($color-secondary, 0.12);
+$nav-hover: rgba($color-secondary, 0.07);
+
+$elevation-e0: none;
+$elevation-e1:
+  0 1px 2px rgba($color-dark, 0.06),
+  0 1px 3px rgba($color-dark, 0.08);
+$elevation-e2:
+  0 2px 4px rgba($color-dark, 0.06),
+  0 8px 20px rgba($color-dark, 0.1);
+$elevation-e3:
+  0 4px 8px rgba($color-dark, 0.08),
+  0 20px 40px rgba($color-dark, 0.18);
+
+$size-side-nav: 16.5rem;
+$size-side-nav-collapsed: 4.5rem;
+$size-top-bar-b: 4.25rem;
+$size-emblem-xl: 10rem;
+$size-emblem-hero: 8.25rem;
+$size-emblem-hero-s: 5rem;
+$size-emblem-l: 6rem;
+$size-emblem-m: 3rem;
+$size-emblem-list: 2.5rem;
+$size-emblem-s: 1.5rem;
+$emblem-seal-scale: 76%;
+$size-sparkline-block: 2.5rem;
+$size-radar: 22rem;
+$size-trend-block: 14rem;
+$size-badge-m: 2rem;
+$size-badge-s: 1.5rem;
+$size-nav-dot: 0.5rem;
+$size-band-min: 14rem;
+$emblem-icon-scale: 45%;
+$size-bar-label: 10rem;
+$dash-previous: 6 4;
+$data-fill-strength: 16%;

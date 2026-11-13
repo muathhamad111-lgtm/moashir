@@ -45,6 +45,28 @@ final class PaymentPolicy
         return $payment->isOwnedBy($actor->entity_id) ? Response::allow() : Response::denyAsNotFound();
     }
 
+    public function cancel(User $actor, Payment $payment): Response
+    {
+        return $this->verify($actor, $payment);
+    }
+
+    public function downloadOwnTransferProof(User $actor, Payment $payment): Response
+    {
+        $access = $this->viewOwn($actor, $payment);
+
+        return $access->allowed() && ! $payment->isBankTransfer() ? Response::denyAsNotFound() : $access;
+    }
+
+    public function viewTransfers(User $actor): bool
+    {
+        return $actor->can(PermissionKey::FinanceTransfersReview->value) || $actor->can(PermissionKey::FinanceOperationsView->value);
+    }
+
+    public function reviewTransfers(User $actor): bool
+    {
+        return $actor->can(PermissionKey::FinanceTransfersReview->value);
+    }
+
     public function viewOperations(User $actor): bool
     {
         return $actor->can(PermissionKey::FinanceOperationsView->value);

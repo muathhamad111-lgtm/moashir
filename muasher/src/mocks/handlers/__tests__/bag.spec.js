@@ -169,7 +169,9 @@ describe('bag mock — re-assessment comparison (§19)', () => {
 
   it('marks the opened stage-1 gaps as in kit scope', async () => {
     const { body } = await retryGet('/bag/reassessment')
-    const scoped = body.data.criteria.filter((c) => c.inKitScope).map((c) => `gap-${c.subCriterionId}`)
+    const scoped = body.data.criteria
+      .filter((c) => c.inKitScope)
+      .map((c) => `gap-${c.subCriterionId}`)
     expect(scoped.sort()).toEqual([...STAGE_1_OPEN_GAP_IDS].sort())
   })
 

@@ -7,6 +7,7 @@ namespace App\Contracts\Identity;
 use App\Data\Identity\EntitySessionSummary;
 use App\Enums\Identity\EntityStanding;
 use App\Models\Identity\User;
+use App\Support\ValueObjects\UnifiedNumber;
 
 interface EntityAccounts
 {
@@ -15,4 +16,6 @@ interface EntityAccounts
     public function confirmVerification(User $user): void;
 
     public function sessionSummaryOf(User $user): ?EntitySessionSummary;
+
+    public function ownerWithUnifiedNumber(UnifiedNumber $number): ?User;
 }

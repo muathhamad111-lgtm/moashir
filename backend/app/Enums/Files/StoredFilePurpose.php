@@ -12,10 +12,25 @@ enum StoredFilePurpose: string
     case FinanceExport = 'finance_export';
     case AssessmentEvidence = 'assessment_evidence';
     case EvidenceBundle = 'evidence_bundle';
+    case CmsImage = 'cms_image';
+    case KpiImage = 'kpi_image';
+    case BrandingLogo = 'branding_logo';
+    case CertificatePdf = 'certificate_pdf';
+    case EntityLogo = 'entity_logo';
+    case TransferProof = 'transfer_proof';
+
+    private const array PUBLIC_ASSETS = ['apple_pay_domain_association', 'cms_image', 'kpi_image', 'branding_logo'];
+
+    private const array SERVED_IMAGES = ['cms_image', 'kpi_image', 'branding_logo'];
 
     private const array UPLOAD_TYPES = [
         'refund_evidence' => ['pdf' => ['application/pdf'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg'], 'png' => ['image/png']],
+        'transfer_proof' => ['pdf' => ['application/pdf'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg'], 'png' => ['image/png']],
         'apple_pay_domain_association' => ['' => ['text/plain'], 'txt' => ['text/plain']],
+        'cms_image' => ['png' => ['image/png'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg']],
+        'kpi_image' => ['png' => ['image/png'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg']],
+        'branding_logo' => ['png' => ['image/png']],
+        'entity_logo' => ['png' => ['image/png'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg']],
     ];
 
     /**
@@ -33,12 +48,29 @@ enum StoredFilePurpose: string
 
     public function visibility(): FileVisibility
     {
-        return $this === self::ApplePayDomainAssociation ? FileVisibility::PublicAsset : FileVisibility::Private;
+        return $this->isPublicAsset() ? FileVisibility::PublicAsset : FileVisibility::Private;
     }
 
     public function contentClass(): string
     {
-        return $this === self::ApplePayDomainAssociation ? 'P' : 'C';
+        return match (true) {
+            $this->isPublicAsset() => 'P',
+            $this === self::EntityLogo => 'I',
+            default => 'C',
+        };
+    }
+
+    public function isPublicAsset(): bool
+    {
+        return in_array($this->value, self::PUBLIC_ASSETS, true);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function servedImageValues(): array
+    {
+        return self::SERVED_IMAGES;
     }
 
     public function isConfidential(): bool

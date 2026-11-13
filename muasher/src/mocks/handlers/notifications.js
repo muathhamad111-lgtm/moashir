@@ -1,129 +1,171 @@
-import { HttpResponse, delay } from 'msw'
+import { delay } from 'msw'
 import { http } from '../contract/http'
-import { notificationAuditFixture } from '../fixtures/notifications'
-import { notificationsStore as store, visibleTo } from '../stores/notificationsStore'
+import { envelope } from '../contract/responses'
+import { paginate } from '../contract/pagination'
+import { MockRejection, rejectionResponse } from '../contract/rejection'
 import { currentSessionUser } from '../stores/sessionStore'
-import { RESTRICTED_DETAIL_HIDDEN_ROLES } from '@/constants/notifications'
+import { findOwnNotification, inboxOf } from '../stores/notificationsStore'
+import { preferencesOf, updatePreferences } from '../stores/notificationPreferencesStore'
+import { NOTIFICATION_MOCK_MESSAGES } from '../fixtures/notificationMessages'
 
-function withoutActor(item) {
-  const { actorId: _actorId, ...visible } = item
-  return visible
+const LATENCY_MS = 250
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const FLAGS = { true: true, false: false }
+
+function viewer() {
+  const user = currentSessionUser()
+  if (!user) throw new MockRejection(401, 'unauthenticated')
+  return user
 }
 
-function paginate(items, page, perPage) {
-  const start = (page - 1) * perPage
+function owned(user, id) {
+  const item = UUID.test(id) ? findOwnNotification(user, id) : null
+  if (!item) throw new MockRejection(404, 'not_found')
+  return item
+}
+
+function resource({ recipientRole: _role, actorId: _actor, ...item }) {
   return {
-    data: items.slice(start, start + perPage).map(withoutActor),
-    meta: {
-      pagination: {
-        page,
-        perPage: perPage,
-        total: items.length,
-        lastPage: Math.max(1, Math.ceil(items.length / perPage)),
-      },
-    },
-    errors: null,
+    ...item,
+    module: item.code.split('-')[0],
+    pathLabel: null,
+    isRead: item.readAt !== null,
+    actionedAt: null,
   }
 }
 
-function scopeForRole(items, role) {
-  const visible = items.filter(visibleTo(currentSessionUser()))
-  if (!role) return visible
-  return visible.filter((item) => {
-    if (item.recipientRole !== role) return false
-    if (item.restrictedDetail && RESTRICTED_DETAIL_HIDDEN_ROLES.includes(role)) return false
-    return true
-  })
+function localizedFields(fields) {
+  return Object.fromEntries(
+    Object.entries(fields).map(([field, issue]) => [
+      field,
+      [NOTIFICATION_MOCK_MESSAGES[issue.key]],
+    ]),
+  )
 }
 
-function matchesSearch(item, term, wantRestricted) {
-  const haystack = [
-    item.code,
-    item.title?.ar,
-    item.title?.en,
-    wantRestricted ? item.body?.ar : '',
-    wantRestricted ? item.body?.en : '',
-  ]
-  return haystack.some((value) => (value ?? '').toLowerCase().includes(term))
+function route(resolve) {
+  return async (info) => {
+    await delay(LATENCY_MS)
+    try {
+      return await resolve(info)
+    } catch (error) {
+      if (!(error instanceof MockRejection)) throw error
+      const localized = new MockRejection(error.status, error.code, {
+        fields: localizedFields(error.fields),
+      })
+      return rejectionResponse(localized, info.request, NOTIFICATION_MOCK_MESSAGES)
+    }
+  }
+}
+
+function matchesSearch(item, term) {
+  return [item.code, item.title?.ar, item.title?.en, item.body?.ar, item.body?.en].some((value) =>
+    (value ?? '').toLowerCase().includes(term),
+  )
+}
+
+function filtered(items, query) {
+  const read = FLAGS[query.get('filter[read]')]
+  const archived = FLAGS[query.get('filter[archived]')] === true
+  const category = query.get('filter[category]')
+  const code = query.get('filter[code]')
+  const path = query.get('filter[path]')
+  const term = (query.get('search') ?? '').trim().toLowerCase()
+  return items.filter(
+    (item) =>
+      (item.archivedAt !== null) === archived &&
+      (read === undefined || (item.readAt !== null) === read) &&
+      (!category || item.category === category) &&
+      (!code || item.code === code) &&
+      (!path || item.path === path) &&
+      (!term || matchesSearch(item, term)),
+  )
+}
+
+function unreadIn(items) {
+  return items.filter((item) => item.archivedAt === null && item.readAt === null)
+}
+
+function countsOf(items) {
+  const unread = unreadIn(items)
+  const byCategory = unread.reduce(
+    (counts, item) => ({ ...counts, [item.category]: (counts[item.category] ?? 0) + 1 }),
+    {},
+  )
+  return { count: unread.length, byCategory }
+}
+
+function newestFirst(left, right) {
+  return new Date(right.createdAt) - new Date(left.createdAt)
 }
 
 export const notificationsHandlers = [
-  http.get('/api/v1/notifications', async ({ request }) => {
-    await delay(350)
-    const url = new URL(request.url)
-    const page = Number(url.searchParams.get('page') ?? 1)
-    const perPage = Number(url.searchParams.get('perPage') ?? 15)
-    const typeFilter = url.searchParams.get('filter[type]')
-    const readFilter = url.searchParams.get('filter[read]')
-    const roleFilter = url.searchParams.get('filter[recipientRole]')
-    const search = (url.searchParams.get('search') ?? '').trim().toLowerCase()
+  http.get(
+    '/api/v1/notifications',
+    route(({ request }) => {
+      const user = viewer()
+      const query = new URL(request.url).searchParams
+      const inbox = inboxOf(user)
+      const { items, pagination } = paginate(filtered(inbox, query).sort(newestFirst), query)
+      return envelope(items.map(resource), {
+        pagination,
+        unreadCount: unreadIn(inbox).length,
+      })
+    }),
+  ),
 
-    let items = scopeForRole([...store], roleFilter)
-    items = items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    if (typeFilter) items = items.filter((item) => item.type === typeFilter)
-    if (readFilter !== null && readFilter !== '') {
-      const wantRead = readFilter === 'true' || readFilter === '1'
-      items = items.filter((item) => item.read === wantRead)
-    }
-    if (search) {
-      const canSeeRestricted = !RESTRICTED_DETAIL_HIDDEN_ROLES.includes(roleFilter ?? '')
-      items = items.filter((item) => matchesSearch(item, search, canSeeRestricted))
-    }
-    return HttpResponse.json(paginate(items, page, perPage))
-  }),
+  http.get(
+    '/api/v1/notifications/unread-count',
+    route(() => envelope(countsOf(inboxOf(viewer())))),
+  ),
 
-  http.get('/api/v1/notifications/unread-count', async ({ request }) => {
-    await delay(200)
-    const url = new URL(request.url)
-    const roleFilter = url.searchParams.get('filter[recipientRole]')
-    const scoped = scopeForRole(store, roleFilter)
-    const count = scoped.filter((item) => !item.read).length
-    return HttpResponse.json({ data: { count }, meta: {}, errors: null })
-  }),
+  http.patch(
+    '/api/v1/notifications/:id/read',
+    route(({ params }) => {
+      const item = owned(viewer(), params.id)
+      item.readAt = item.readAt ?? new Date().toISOString()
+      return envelope(resource(item))
+    }),
+  ),
 
-  http.get('/api/v1/notifications/:id/audit', async ({ params }) => {
-    await delay(300)
-    const id = Number(params.id)
-    const notification = store.find((candidate) => candidate.id === id)
-    if (!notification) {
-      return HttpResponse.json(
-        { message: 'Notification not found', errors: {}, code: 404 },
-        { status: 404 },
+  http.patch(
+    '/api/v1/notifications/:id/archive',
+    route(({ params }) => {
+      const item = owned(viewer(), params.id)
+      const now = new Date().toISOString()
+      item.readAt = item.readAt ?? now
+      item.archivedAt = item.archivedAt ?? now
+      return envelope(resource(item))
+    }),
+  ),
+
+  http.post(
+    '/api/v1/notifications/read-all',
+    route(async ({ request }) => {
+      const user = viewer()
+      const body = (await request.json().catch(() => null)) ?? {}
+      const now = new Date().toISOString()
+      const targets = unreadIn(inboxOf(user)).filter(
+        (item) => !body.category || item.category === body.category,
       )
-    }
-    const entries = notificationAuditFixture[id] ?? []
-    return HttpResponse.json({
-      data: { code: notification.code, link: notification.link, entries },
-      meta: {},
-      errors: null,
-    })
-  }),
+      targets.forEach((item) => {
+        item.readAt = now
+      })
+      return envelope({ updated: targets.length })
+    }),
+  ),
 
-  http.patch('/api/v1/notifications/:id/read', async ({ params }) => {
-    await delay(200)
-    const item = store.find((candidate) => candidate.id === Number(params.id))
-    if (!item) {
-      return HttpResponse.json(
-        { message: 'Notification not found', errors: {}, code: 404 },
-        { status: 404 },
-      )
-    }
-    item.read = true
-    return HttpResponse.json({ data: item, meta: {}, errors: null })
-  }),
+  http.get(
+    '/api/v1/me/notification-preferences',
+    route(() => envelope(preferencesOf(viewer()))),
+  ),
 
-  http.post('/api/v1/notifications/read-all', async ({ request }) => {
-    await delay(250)
-    const payload = await request.json().catch(() => null)
-    const roleFilter = payload?.recipientRole ?? null
-    let updated = 0
-    const scoped = scopeForRole(store, roleFilter)
-    for (const item of scoped) {
-      if (!item.read) {
-        item.read = true
-        updated += 1
-      }
-    }
-    return HttpResponse.json({ data: { updated }, meta: {}, errors: null })
-  }),
+  http.put(
+    '/api/v1/me/notification-preferences',
+    route(async ({ request }) => {
+      const user = viewer()
+      const body = (await request.json().catch(() => null)) ?? {}
+      return envelope(updatePreferences(user, body))
+    }),
+  ),
 ]

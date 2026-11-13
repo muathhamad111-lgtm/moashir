@@ -1,0 +1,113 @@
+@use '../mixins' as *;
+
+.ranked-bars {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  margin: 0;
+}
+
+.ranked-bars__caption {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}
+
+.ranked-bars__list {
+  @include flex(column, stretch, flex-start, var(--space-0));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ranked-bars__row {
+  display: grid;
+  grid-template-areas:
+    'label value delta'
+    'bar bar bar';
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  padding-block: var(--space-2);
+  border-block-end: var(--border-width) solid var(--theme-border);
+
+  &:last-child {
+    border-block-end: 0;
+  }
+
+  @include respond-to('md') {
+    grid-template-areas: 'label bar value delta';
+    grid-template-columns: minmax(0, var(--size-bar-label)) minmax(0, 1fr) var(--space-12) var(--space-12);
+    min-block-size: var(--size-touch-target);
+    padding-block: var(--space-0);
+  }
+}
+
+.ranked-bars__axis {
+  display: block;
+
+  @include respond-to('md') {
+    display: grid;
+    grid-template-areas: 'label bar value delta';
+    grid-template-columns: minmax(0, var(--size-bar-label)) minmax(0, 1fr) var(--space-12) var(--space-12);
+    gap: var(--space-3);
+  }
+}
+
+.ranked-bars__axis-spacer {
+  display: none;
+
+  @include respond-to('md') {
+    display: block;
+  }
+}
+
+.ranked-bars__delta {
+  grid-area: delta;
+}
+
+.ranked-bars__axis-label--minor {
+  display: none;
+
+  @include respond-to('md') {
+    display: inline;
+  }
+}
+
+.ranked-bars__label {
+  grid-area: label;
+  color: var(--theme-heading);
+  font-size: var(--fs-sm);
+}
+
+.ranked-bars__bar,
+.ranked-bars__axis-scale {
+  grid-area: bar;
+  inline-size: 100%;
+  block-size: var(--space-4);
+  overflow: visible;
+}
+
+.ranked-bars__track {
+  fill: var(--data-track);
+}
+
+.ranked-bars__fill {
+  fill: var(--data-ink);
+}
+
+.ranked-bars__tick {
+  stroke: var(--theme-text-muted);
+  stroke-width: var(--border-width);
+}
+
+.ranked-bars__value {
+  grid-area: value;
+  color: var(--theme-heading);
+  font-family: var(--font-latin);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+
+.ranked-bars__axis-label {
+  font-family: var(--font-latin);
+  font-size: var(--fs-xs);
+  fill: var(--theme-text-muted);
+}

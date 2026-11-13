@@ -86,7 +86,7 @@
     background-color var(--t-fast) var(--ease);
 
   &:hover:not(:disabled) {
-    color: var(--color-primary);
+    color: var(--theme-accent-text);
     border-color: var(--color-primary);
     background-color: var(--color-info-soft);
   }
@@ -112,7 +112,7 @@
   flex-shrink: 0;
   border-radius: var(--radius-md);
   font-size: var(--fs-base);
-  color: var(--color-primary);
+  color: var(--theme-accent-text);
   background-color: var(--color-info-soft);
 
   &--success {
@@ -218,32 +218,6 @@
   color: var(--theme-text);
 }
 
-.kpi-form__error {
-  margin: 0;
-  font-size: var(--fs-xs);
-  color: var(--color-danger);
-}
-
-.kpi-form__icon-field {
-  @include flex(row, center, flex-start, var(--space-3));
-}
-
-.kpi-form__icon-preview {
-  @include flex-center;
-  inline-size: var(--space-10);
-  block-size: var(--space-10);
-  flex-shrink: 0;
-  border-radius: var(--radius-md);
-  font-size: var(--fs-lg);
-  color: var(--color-primary);
-  background-color: var(--color-info-soft);
-}
-
-.kpi-form__icon-select {
-  flex: 1 1 auto;
-  min-inline-size: 0;
-}
-
 .kpi-form__swatches {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(var(--size-swatch-min), 1fr));
@@ -306,7 +280,7 @@
 }
 
 .kpi-form__swatch-check {
-  color: var(--color-primary);
+  color: var(--theme-accent-text);
 }
 
 .kpi-form__preview {

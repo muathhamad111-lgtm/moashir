@@ -1,0 +1,130 @@
+@use '../mixins' as *;
+
+.portal-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-block-size: var(--size-screen);
+  background-color: var(--theme-bg);
+  padding-block-end: var(--size-mobile-tab-bar);
+
+  @include respond-to('lg') {
+    grid-template-columns: var(--size-side-nav) minmax(0, 1fr);
+    padding-block-end: var(--space-0);
+  }
+
+  &--nav-collapsed {
+    @include respond-to('lg') {
+      grid-template-columns: var(--size-side-nav-collapsed) minmax(0, 1fr);
+    }
+  }
+
+  &--mobile-task {
+    padding-block-end: var(--size-mobile-action-bar);
+
+    @include respond-to('lg') {
+      padding-block-end: var(--space-0);
+    }
+  }
+}
+
+.portal-layout__skip {
+  position: absolute;
+  inset-inline-start: var(--space-4);
+  inset-block-start: var(--space-4);
+  z-index: var(--z-toast);
+  padding-block: var(--space-2);
+  padding-inline: var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-accent);
+  color: var(--theme-on-accent);
+  transform: translateY(-200%);
+  transition: transform var(--t-fast) var(--ease);
+
+  &:focus {
+    transform: translateY(0);
+  }
+}
+
+.portal-layout .portal-layout__nav {
+  display: none;
+
+  @include respond-to('lg') {
+    display: flex;
+  }
+}
+
+.portal-layout__column {
+  @include flex(column, stretch, flex-start);
+  min-inline-size: 0;
+}
+
+.portal-layout__strip {
+  .portal-layout--mobile-task & {
+    display: none;
+
+    @include respond-to('lg') {
+      display: block;
+    }
+  }
+}
+
+.portal-layout__main {
+  flex: 1;
+  min-inline-size: 0;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.portal-layout__tabs {
+  @include respond-to('lg') {
+    display: none;
+  }
+}
+
+.portal-footer {
+  border-block-start: var(--border-width) solid var(--theme-border);
+  background-color: var(--theme-bg);
+}
+
+.portal-footer__inner {
+  @include flex(column, flex-start, space-between, var(--space-3));
+  @include portal-gutter;
+  padding-block: var(--space-6);
+  font-size: var(--fs-xs);
+  color: var(--theme-text-muted);
+
+  @include respond-to('md') {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.portal-footer__copy {
+  margin: 0;
+}
+
+.portal-footer__links {
+  @include flex(row, center, flex-start, var(--space-4));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.portal-footer__link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--theme-accent-text);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}

@@ -5,25 +5,31 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import AppToast from '@/components/feedback/AppToast.vue'
 import ConfirmModal from '@/components/modal/ConfirmModal.vue'
+import SuccessModal from '@/components/modal/SuccessModal.vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import PublicLayout from '@/components/layout/PublicLayout.vue'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
+import PortalLayout from '@/components/layout/PortalLayout.vue'
 import { useLocale } from '@/composables/useLocale'
 import { useTheme } from '@/composables/useTheme'
 import { useBrandingStore } from '@/stores/branding'
-import { fontAwesomeKitScripts } from '@/plugins/fontAwesome'
+import { useAuthStore } from '@/stores/auth'
+import { layoutKeyFor } from '@/utils/portalAudience'
+import { BRAND_THEME_COLOR } from '@/constants/branding'
 
-const LAYOUTS = { app: AppLayout, public: PublicLayout, auth: AuthLayout }
+const LAYOUTS = { app: AppLayout, portal: PortalLayout, public: PublicLayout, auth: AuthLayout }
 
 const { t } = useI18n()
 const route = useRoute()
 const { locale, dir } = useLocale()
 const { theme } = useTheme()
 const branding = useBrandingStore()
+const auth = useAuthStore()
 
-const layout = computed(() => LAYOUTS[route.meta.layout] ?? PublicLayout)
+const layoutKey = computed(() => layoutKeyFor(route.meta.layout, auth.roles))
+const layout = computed(() => LAYOUTS[layoutKey.value] ?? PublicLayout)
 const backOfficeAccent = computed(() =>
-  route.meta.layout === 'app' ? branding.accentToken : undefined,
+  layoutKey.value === 'app' ? branding.accentToken : undefined,
 )
 
 useHead({
@@ -36,6 +42,7 @@ useHead({
   title: () => (route.meta.titleKey ? t(route.meta.titleKey) : t('app.name')),
   titleTemplate: (title) => (title ? `${title} | ${t('meta.siteName')}` : t('meta.siteName')),
   link: [
+    { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
     { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' },
     { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' },
     { rel: 'icon', href: '/favicon.ico', sizes: 'any' },
@@ -44,8 +51,8 @@ useHead({
   ],
   meta: [
     { name: 'description', content: () => t('meta.description') },
-    { name: 'theme-color', content: '#022426' },
-    { name: 'msapplication-TileColor', content: '#022426' },
+    { name: 'theme-color', content: BRAND_THEME_COLOR },
+    { name: 'msapplication-TileColor', content: BRAND_THEME_COLOR },
     { name: 'msapplication-config', content: '/browserconfig.xml' },
     { property: 'og:type', content: 'website' },
     { property: 'og:site_name', content: () => t('meta.siteName') },
@@ -59,7 +66,6 @@ useHead({
     { name: 'twitter:description', content: () => t('meta.description') },
     { name: 'twitter:image', content: '/twitter-card.png' },
   ],
-  script: fontAwesomeKitScripts(),
 })
 </script>
 
@@ -69,4 +75,5 @@ useHead({
   </component>
   <AppToast />
   <ConfirmModal />
+  <SuccessModal />
 </template>

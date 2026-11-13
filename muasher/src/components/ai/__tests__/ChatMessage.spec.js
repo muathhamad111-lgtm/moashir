@@ -16,7 +16,12 @@ function mountMessage(message) {
 
 describe('ChatMessage', () => {
   it('renders a user message with the user modifier', () => {
-    const wrapper = mountMessage({ id: '1', role: 'user', kind: 'text', content: 'What is Muasher?' })
+    const wrapper = mountMessage({
+      id: '1',
+      role: 'user',
+      kind: 'text',
+      content: 'What is Muasher?',
+    })
     expect(wrapper.find('.chat-message').classes()).toContain('chat-message--user')
     expect(wrapper.find('.chat-message__text').text()).toBe('What is Muasher?')
   })

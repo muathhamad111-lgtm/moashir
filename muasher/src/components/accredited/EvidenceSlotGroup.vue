@@ -20,7 +20,10 @@ const props = defineProps({
 const emit = defineEmits(['upload', 'remove', 'replace', 'download'])
 const { t, locale } = useI18n()
 
-const isFull = computed(() => props.limits.maxFilesPerSub !== null && props.evidence.length >= props.limits.maxFilesPerSub)
+const isFull = computed(
+  () =>
+    props.limits.maxFilesPerSub !== null && props.evidence.length >= props.limits.maxFilesPerSub,
+)
 
 const slots = computed(() => [
   ...slotsOf(props.sub).map((slot) => ({
@@ -30,7 +33,13 @@ const slots = computed(() => [
     required: slot.required,
     files: evidenceOfSlot(props.evidence, props.sub.id, slot.key),
   })),
-  { key: null, title: t('accredited.evidence.general'), pointCode: null, required: false, files: evidenceOfSlot(props.evidence, props.sub.id, null) },
+  {
+    key: null,
+    title: t('accredited.evidence.general'),
+    pointCode: null,
+    required: false,
+    files: evidenceOfSlot(props.evidence, props.sub.id, null),
+  },
 ])
 
 function isProvided(slot) {
@@ -43,19 +52,34 @@ function slotError(slot) {
 </script>
 
 <template>
-  <section class="evidence-slots" :aria-label="t('accredited.evidence.groupLabel', { code: sub.code })">
+  <section
+    class="evidence-slots"
+    :aria-label="t('accredited.evidence.groupLabel', { code: sub.code })"
+  >
     <p class="evidence-slots__limits">
-      {{ t('accredited.evidence.limits', { max: limits.maxFileMb, count: limits.maxFilesPerSub, types: limits.allowedTypes.join(', ') }) }}
+      {{
+        t('accredited.evidence.limits', {
+          max: limits.maxFileMb,
+          count: limits.maxFilesPerSub,
+          types: limits.allowedTypes.join(', '),
+        })
+      }}
     </p>
     <ul class="evidence-slots__list">
       <li v-for="slot in slots" :key="slot.key ?? 'general'" class="evidence-slots__slot">
         <div class="evidence-slots__head">
           <span class="evidence-slots__title">
-            <span v-if="slot.pointCode" class="evidence-slots__code u-ltr">{{ slot.pointCode }}</span>
+            <span v-if="slot.pointCode" class="evidence-slots__code u-ltr">{{
+              slot.pointCode
+            }}</span>
             {{ slot.title }}
           </span>
           <Badge v-if="slot.required" :variant="isProvided(slot) ? 'success' : 'warning'">
-            {{ isProvided(slot) ? t('accredited.evidence.provided') : t('accredited.evidence.required') }}
+            {{
+              isProvided(slot)
+                ? t('accredited.evidence.provided')
+                : t('accredited.evidence.required')
+            }}
           </Badge>
           <Badge v-else variant="muted">{{ t('accredited.evidence.optional') }}</Badge>
         </div>
@@ -66,7 +90,9 @@ function slotError(slot) {
             :file="file"
             :editable="editable"
             :accept="accept"
-            :busy="Boolean(uploads.removing[file.id] || uploads.uploading[slotKeyOf(sub.id, slot.key)])"
+            :busy="
+              Boolean(uploads.removing[file.id] || uploads.uploading[slotKeyOf(sub.id, slot.key)])
+            "
             :downloading="Boolean(uploads.downloading[file.id])"
             @download="emit('download', $event)"
             @remove="emit('remove', $event)"
@@ -81,9 +107,13 @@ function slotError(slot) {
           :loading="Boolean(uploads.uploading[slotKeyOf(sub.id, slot.key)])"
           @select="emit('upload', { key: slot.key, file: $event })"
         />
-        <p v-if="slotError(slot)" class="evidence-slots__error" role="alert">{{ slotError(slot) }}</p>
+        <p v-if="slotError(slot)" class="evidence-slots__error" role="alert">
+          {{ slotError(slot) }}
+        </p>
       </li>
     </ul>
-    <p v-if="editable && isFull" class="evidence-slots__full" role="status">{{ t('accredited.evidence.full', { count: limits.maxFilesPerSub }) }}</p>
+    <p v-if="editable && isFull" class="evidence-slots__full" role="status">
+      {{ t('accredited.evidence.full', { count: limits.maxFilesPerSub }) }}
+    </p>
   </section>
 </template>

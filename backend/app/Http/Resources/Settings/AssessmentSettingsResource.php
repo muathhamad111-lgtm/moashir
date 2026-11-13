@@ -28,6 +28,7 @@ final class AssessmentSettingsResource extends JsonResource
             'evidence_allowed_types' => $limits['allowed_types'],
             'evidence_max_files_per_sub' => $limits['max_files_per_sub'],
             'evidence_type_catalog' => EvidenceFileType::values(),
+            'general_upload_max_file_mb' => $this->resource->generalMaxFileMegabytes,
             'advanced_min_entity_age_years' => $this->resource->advancedDefaults->minEntityAgeYears,
             'advanced_disqualification_score' => $this->resource->advancedDefaults->disqualificationScore->toDisplay(),
             'advanced_initial_review_sla_days' => $this->resource->advancedDefaults->initialReviewSlaDays,

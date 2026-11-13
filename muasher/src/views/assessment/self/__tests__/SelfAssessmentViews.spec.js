@@ -20,7 +20,10 @@ vi.mock('@/services/assessmentsService', () => ({
   },
 }))
 
-const SAVED = { subs: { 102: { rawValue: '7.50', percent: '75.00' } }, points: { 1001: { rawValue: '8.00', percent: '80.00' } } }
+const SAVED = {
+  subs: { 102: { rawValue: '7.50', percent: '75.00' } },
+  points: { 1001: { rawValue: '8.00', percent: '80.00' } },
+}
 
 async function settle() {
   for (let round = 0; round < 4; round += 1) {
@@ -33,13 +36,18 @@ async function mountView(component, { locale = 'en', path = '/assessment/self' }
   const globals = createTestGlobals({ locale })
   setActivePinia(globals.pinia)
   await globals.router.push(path)
-  const wrapper = mount(component, { global: { ...globals, stubs: { teleport: true } }, attachTo: document.body })
+  const wrapper = mount(component, {
+    global: { ...globals, stubs: { teleport: true } },
+    attachTo: document.body,
+  })
   await settle()
   return { wrapper, globals }
 }
 
 function rejection(status, code) {
-  return Object.assign(new Error(code), { normalized: { status, code, meta: {}, message: code, fieldErrors: {} } })
+  return Object.assign(new Error(code), {
+    normalized: { status, code, meta: {}, message: code, fieldErrors: {} },
+  })
 }
 
 beforeEach(() => {
@@ -58,14 +66,18 @@ describe('self assessment form view', () => {
   })
 
   it('shows the branded empty state when no criteria are published', async () => {
-    assessmentsService.getPublishedCriteria.mockRejectedValue(rejection(404, 'criteria.no_published_version'))
+    assessmentsService.getPublishedCriteria.mockRejectedValue(
+      rejection(404, 'criteria.no_published_version'),
+    )
     const { wrapper } = await mountView(SelfForm)
     expect(wrapper.find('.empty-state').text()).toContain('No published criteria yet')
   })
 
   it('loads the open draft with the server progress and the saved raw values', async () => {
     assessmentsService.list.mockResolvedValue({ data: [{ id: 9002 }], meta: {} })
-    assessmentsService.getForm.mockResolvedValue({ data: { ...formWith({ scores: SAVED }), progress: { scored: 2, required: 3 } } })
+    assessmentsService.getForm.mockResolvedValue({
+      data: { ...formWith({ scores: SAVED }), progress: { scored: 2, required: 3 } },
+    })
     const { wrapper } = await mountView(SelfForm)
     expect(assessmentsService.getForm).toHaveBeenCalledWith(9002)
     expect(wrapper.find('.self-summary__number').text()).toContain('SLF-2026-000002')
@@ -81,8 +93,16 @@ describe('self assessment form view', () => {
     assessmentsService.getForm.mockResolvedValue({ data: frozen })
     const { wrapper } = await mountView(SelfForm, { locale: 'ar' })
     expect(wrapper.find('.assessment-notice--frozen').exists()).toBe(true)
-    expect(wrapper.findAll('.raw-score input').every((input) => input.attributes('disabled') !== undefined)).toBe(true)
-    expect(wrapper.findAll('.self-actions button').every((button) => button.attributes('disabled') !== undefined)).toBe(true)
+    expect(
+      wrapper
+        .findAll('.raw-score input')
+        .every((input) => input.attributes('disabled') !== undefined),
+    ).toBe(true)
+    expect(
+      wrapper
+        .findAll('.self-actions button')
+        .every((button) => button.attributes('disabled') !== undefined),
+    ).toBe(true)
   })
 
   it('blocks submission while the criteria update is in progress', async () => {
@@ -94,23 +114,39 @@ describe('self assessment form view', () => {
     const [save, submit] = wrapper.findAll('.self-actions button')
     expect(save.attributes('disabled')).toBeUndefined()
     expect(submit.attributes('disabled')).toBeDefined()
-    expect(wrapper.find('.assessment-notice--warning').text()).toContain('Criteria update in progress')
+    expect(wrapper.find('.assessment-notice--warning').text()).toContain(
+      'Criteria update in progress',
+    )
   })
 
   it('submits a complete sheet after confirmation and hands the result to the result page', async () => {
     assessmentsService.list.mockResolvedValue({ data: [{ id: 9002 }], meta: {} })
-    assessmentsService.getForm.mockResolvedValue({ data: formWith({ scores: { ...SAVED, points: { ...SAVED.points, 1002: { rawValue: '6.00', percent: '60.00' } } } }) })
-    const result = { id: 9002, number: 'SLF-2026-000002', status: 'result-available', available: true, percent: '70.00' }
+    assessmentsService.getForm.mockResolvedValue({
+      data: formWith({
+        scores: {
+          ...SAVED,
+          points: { ...SAVED.points, 1002: { rawValue: '6.00', percent: '60.00' } },
+        },
+      }),
+    })
+    const result = {
+      id: 9002,
+      number: 'SLF-2026-000002',
+      status: 'result-available',
+      available: true,
+      percent: '70.00',
+    }
     assessmentsService.submit.mockResolvedValue({ data: result })
     const { wrapper, globals } = await mountView(SelfForm)
     await wrapper.findAll('.self-actions button')[1].trigger('click')
     await settle()
-    const dialog = wrapper.find('.self-submit')
+    const dialog = wrapper.find('[role="alertdialog"]')
     expect(dialog.exists()).toBe(true)
-    const buttons = wrapper.findAll('[role="dialog"] button')
-    await buttons[buttons.length - 1].trigger('click')
+    await dialog.find('.modal__footer .btn--primary').trigger('click')
     await settle()
-    expect(assessmentsService.submit).toHaveBeenCalledWith(9002, { scores: { subs: { 102: '7.50' }, points: { 1001: '8.00', 1002: '6.00' } } })
+    expect(assessmentsService.submit).toHaveBeenCalledWith(9002, {
+      scores: { subs: { 102: '7.50' }, points: { 1001: '8.00', 1002: '6.00' } },
+    })
     expect(globals.router.currentRoute.value.fullPath).toBe('/assessment/self/result/9002')
     expect(useAssessmentResultHandoffStore().result).toEqual(result)
   })
@@ -118,7 +154,16 @@ describe('self assessment form view', () => {
 
 describe('self assessment result view', () => {
   it('shows the Q-94 placeholder with a way back to the draft', async () => {
-    assessmentsService.getResult.mockResolvedValue({ data: { id: 9002, number: 'SLF-2026-000002', path: 'self', status: 'draft', isFrozen: false, available: false } })
+    assessmentsService.getResult.mockResolvedValue({
+      data: {
+        id: 9002,
+        number: 'SLF-2026-000002',
+        path: 'self',
+        status: 'draft',
+        isFrozen: false,
+        available: false,
+      },
+    })
     const { wrapper } = await mountView(SelfResult, { path: '/assessment/self/result/9002' })
     expect(wrapper.find('.result-pending').exists()).toBe(true)
     expect(wrapper.find('.result-pending .btn--primary').text()).toContain('Continue the draft')
@@ -126,10 +171,26 @@ describe('self assessment result view', () => {
 
   it('shows the totals and the breakdown of an available result', async () => {
     assessmentsService.getResult.mockResolvedValue({
-      data: { id: 9001, number: 'SLF-2026-000001', path: 'self', status: 'result-available', isFrozen: false, available: true, total: '6329.17', maxTotal: '8200.00', percent: '77.18', main: [], sub: [], points: [] },
+      data: {
+        id: 9001,
+        number: 'SLF-2026-000001',
+        path: 'self',
+        status: 'result-available',
+        isFrozen: false,
+        available: true,
+        total: '6329.17',
+        maxTotal: '8200.00',
+        percent: '77.18',
+        main: [],
+        sub: [],
+        points: [],
+      },
     })
-    const { wrapper } = await mountView(SelfResult, { path: '/assessment/self/result/9001', locale: 'ar' })
-    expect(wrapper.find('.self-result__gauge-value').text()).toBe('77.18%')
+    const { wrapper } = await mountView(SelfResult, {
+      path: '/assessment/self/result/9001',
+      locale: 'ar',
+    })
+    expect(wrapper.find('.self-result__gauge-value').text()).toBe('77.2%')
     expect(wrapper.find('.self-result__score-total').text()).toContain('6329.17')
     expect(wrapper.find('.self-result__score-total').text()).toContain('8200.00')
   })

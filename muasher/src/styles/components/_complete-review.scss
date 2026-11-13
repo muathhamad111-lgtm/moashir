@@ -1,0 +1,7 @@
+@use '../mixins' as *;
+
+.complete-review__hint {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}

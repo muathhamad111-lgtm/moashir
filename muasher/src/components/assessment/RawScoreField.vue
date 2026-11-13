@@ -16,7 +16,9 @@ const props = defineProps({
 const { t } = useI18n()
 const { value, errorMessage, handleBlur } = useField(toRef(props, 'name'))
 
-const isSaved = computed(() => Boolean(props.saved) && sameRawValue(value.value, props.saved.rawValue))
+const isSaved = computed(
+  () => Boolean(props.saved) && sameRawValue(value.value, props.saved.rawValue),
+)
 
 const hint = computed(() => {
   if (isSaved.value) {

@@ -15,7 +15,7 @@
   font-weight: var(--fw-bold);
   color: var(--theme-heading);
   background-color: var(--theme-surface);
-  border: var(--border-width-thick) solid var(--theme-border);
+  border: var(--border-width-thick) solid var(--theme-input-border);
   border-radius: var(--radius-md);
   transition:
     border-color var(--t-fast) var(--ease),

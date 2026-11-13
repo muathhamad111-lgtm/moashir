@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Database\Factories\Identity;
 
+use App\Enums\Identity\AssessorQualification;
 use App\Enums\Identity\Locale;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Identity\ThemePreference;
 use App\Enums\Identity\UserStatus;
 use App\Models\Entities\Entity;
 use App\Models\Identity\User;
+use App\Models\Identity\UserAssessorQualification;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Date;
 use Laravel\Fortify\Fortify;
@@ -48,6 +50,15 @@ final class UserFactory extends Factory
             ->afterCreating(static function (User $user) use ($role): void {
                 $user->assignRole($role->value);
             });
+    }
+
+    public function qualifiedFor(AssessorQualification ...$qualifications): self
+    {
+        return $this->afterCreating(static function (User $user) use ($qualifications): void {
+            foreach ($qualifications as $qualification) {
+                UserAssessorQualification::query()->create(['user_id' => $user->id, 'qualification' => $qualification]);
+            }
+        });
     }
 
     public function withConfirmedTotp(?string $secret = null): self

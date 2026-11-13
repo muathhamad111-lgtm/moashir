@@ -4,23 +4,6 @@ import { toWesternDigits } from '@/utils/numerals'
 const YES = 'yes'
 const NO = 'no'
 
-export const PROFILE_FIELDS = [
-  'name.ar',
-  'name.en',
-  'authorizedPersonName',
-  'phone',
-  'entityType',
-  'developmentSector',
-  'orgSize',
-  'foundingYear',
-  'regionId',
-  'cityId',
-  'governanceGrade',
-  'employeesCount',
-  'annualBeneficiariesCount',
-  'hasStrategicPlan',
-]
-
 function text(value) {
   return value === null || value === undefined ? '' : String(value)
 }
@@ -34,9 +17,25 @@ function localPhone(phone) {
   return phone ? phone.replace(/^\+966/, '0') : ''
 }
 
+function strategicPlanValue(value) {
+  if (value === null || value === undefined) return ''
+  return value ? YES : NO
+}
+
+function strategicPlanPayload(value) {
+  if (value === YES) return true
+  return value === NO ? false : null
+}
+
+export function unifiedNumberPayload(value) {
+  const unifiedNumber = toWesternDigits(value)
+  return unifiedNumber ? { unifiedNumber } : {}
+}
+
 export function emptyProfileValues() {
   return {
     name: { ar: '', en: '' },
+    unifiedNumber: '',
     authorizedPersonName: '',
     phone: '',
     entityType: '',
@@ -55,6 +54,7 @@ export function emptyProfileValues() {
 export function profileFormValues(entity) {
   return {
     name: { ar: text(entity.name?.ar), en: text(entity.name?.en) },
+    unifiedNumber: text(entity.unifiedNumber),
     authorizedPersonName: text(entity.authorizedPersonName),
     phone: localPhone(entity.phone),
     entityType: text(entity.entityType),
@@ -66,7 +66,7 @@ export function profileFormValues(entity) {
     governanceGrade: text(entity.governanceGrade),
     employeesCount: text(entity.employeesCount),
     annualBeneficiariesCount: text(entity.annualBeneficiariesCount),
-    hasStrategicPlan: entity.hasStrategicPlan ? YES : NO,
+    hasStrategicPlan: strategicPlanValue(entity.hasStrategicPlan),
   }
 }
 
@@ -85,13 +85,14 @@ export function profilePayload(values) {
     governanceGrade: governanceGradePayload(values.governanceGrade),
     employeesCount: optionalNumber(values.employeesCount),
     annualBeneficiariesCount: optionalNumber(values.annualBeneficiariesCount),
-    hasStrategicPlan: values.hasStrategicPlan === YES,
+    hasStrategicPlan: strategicPlanPayload(values.hasStrategicPlan),
   }
 }
 
 export function registrationPayload(values, terms) {
   const payload = {
     ...profilePayload(values),
+    ...unifiedNumberPayload(values.unifiedNumber),
     officialEmail: values.officialEmail.trim(),
     password: values.password,
     passwordConfirmation: values.passwordConfirmation,
@@ -100,14 +101,4 @@ export function registrationPayload(values, terms) {
     marketingConsent: values.marketingConsent === true,
   }
   return terms.privacy ? { ...payload, privacyVersionId: terms.privacy.id } : payload
-}
-
-function valueAt(values, path) {
-  return path.split('.').reduce((current, key) => current?.[key], values)
-}
-
-export function profileChanges(before, after, fields = PROFILE_FIELDS) {
-  return fields
-    .filter((field) => text(valueAt(before, field)).trim() !== text(valueAt(after, field)).trim())
-    .map((field) => ({ field, before: text(valueAt(before, field)), after: text(valueAt(after, field)) }))
 }

@@ -20,7 +20,9 @@ describe('useRecentSearches', () => {
   it('keeps at most 5 unique recent searches per user, newest first', () => {
     const userId = ref(7001)
     const recent = useRecentSearches(userId)
-    ;['البر', 'نماء', 'إحسان', 'عطاء', 'رواد', 'تمكين', 'نماء'].forEach((term) => recent.remember(term))
+    ;['البر', 'نماء', 'إحسان', 'عطاء', 'رواد', 'تمكين', 'نماء'].forEach((term) =>
+      recent.remember(term),
+    )
     expect(recent.items.value).toEqual(['نماء', 'تمكين', 'رواد', 'عطاء', 'إحسان'])
     expect(JSON.parse(localStorage.getItem('muasher.search.recent.7001'))).toHaveLength(5)
   })
@@ -49,7 +51,10 @@ describe('useRecentSearches', () => {
   })
 
   it('drops tampered entries on read', () => {
-    localStorage.setItem('muasher.search.recent.7001', JSON.stringify(['البر', 42, 'a@b.example.sa']))
+    localStorage.setItem(
+      'muasher.search.recent.7001',
+      JSON.stringify(['البر', 42, 'a@b.example.sa']),
+    )
     const recent = useRecentSearches(ref(7001))
     expect(recent.items.value).toEqual(['البر'])
   })

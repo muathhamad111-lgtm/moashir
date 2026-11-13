@@ -8,7 +8,10 @@ use App\Enums\Identity\EmailChangeStatus;
 use App\Models\Entities\Entity;
 use App\Models\Identity\EmailChangeRequest;
 use App\Support\Entities\EntityPresenter;
+use App\Support\Entities\ProfileFieldValues;
+use App\Support\Entities\ProfileSectionsPresenter;
 use App\Support\ValueObjects\EmailAddress;
+use App\Support\ValueObjects\ProfileCompletion;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -17,20 +20,27 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 final class OwnEntityResource extends JsonResource
 {
+    public const array RELATIONS = ['owner', 'region', 'city', 'emailChangeRequests', 'logo'];
+
     /**
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
         $entity = $this->resource;
+        $values = ProfileFieldValues::of($entity);
 
         return [
             ...EntityPresenter::summary($entity),
             ...EntityPresenter::profile($entity),
+            ...EntityPresenter::registry($entity, $request),
             ...EntityPresenter::contact($entity),
             'marketing_consent' => $entity->marketing_consent_at !== null,
             'marketing_consent_at' => $entity->marketing_consent_at?->toIso8601String(),
             'pending_email_change' => $this->pendingEmailChange($entity),
+            'can_edit' => $request->user()?->can('updateOwn', $entity) === true,
+            'profile_sections' => ProfileSectionsPresenter::present($values),
+            'profile_completion' => ProfileCompletion::of($values)->toArray(),
         ];
     }
 

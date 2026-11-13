@@ -2,7 +2,6 @@ import { http as mswHttp } from 'msw'
 import { csrfMismatch, hasValidCsrf, requiresCsrf } from './csrf'
 import { forcedFaultFor, forcedFaultResponse } from './faults'
 import { decodeRequest, encodeResponse } from './wire'
-import { prepareRequest } from './requestHooks'
 
 const METHODS = ['get', 'post', 'put', 'patch', 'delete']
 
@@ -11,7 +10,6 @@ function withContract(method, resolver) {
     if (requiresCsrf(method) && !hasValidCsrf(info.request)) return csrfMismatch()
     const fault = forcedFaultFor(method, info.request.url)
     if (fault) return forcedFaultResponse(fault, info.request)
-    await prepareRequest(info.request)
     const request = await decodeRequest(info.request)
     return encodeResponse(await resolver({ ...info, request }))
   }

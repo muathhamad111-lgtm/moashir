@@ -3,7 +3,12 @@ import { usePermissions } from '@/composables/usePermissions'
 import { useAuthStore } from '@/stores/auth'
 import { financeService } from '@/services/financeService'
 import { PERMISSIONS } from '@/constants/permissionKeys'
-import { OPEN_PAYMENT_STATUSES, PAYMENT_STATUSES, RECEIPT_STATUSES } from '@/constants/payments'
+import {
+  OPEN_PAYMENT_STATUSES,
+  PAYMENT_CHANNELS,
+  PAYMENT_STATUSES,
+  RECEIPT_STATUSES,
+} from '@/constants/payments'
 import { errorStatusOf } from '@/utils/payments/financeErrors'
 
 const NOT_FOUND = 404
@@ -18,10 +23,21 @@ export function useTransactionDetail(paymentId) {
   const receipt = computed(() => transaction.value?.receipt ?? null)
   const refund = computed(() => transaction.value?.refund ?? null)
   const canRecordRefund = computed(
-    () => can(PERMISSIONS.FINANCE_REFUNDS_MANAGE) && transaction.value?.status === PAYMENT_STATUSES.PAID && !refund.value,
+    () =>
+      can(PERMISSIONS.FINANCE_REFUNDS_MANAGE) &&
+      transaction.value?.status === PAYMENT_STATUSES.PAID &&
+      !refund.value,
   )
-  const canReissue = computed(() => can(PERMISSIONS.FINANCE_RECEIPTS_MANAGE) && receipt.value?.status === RECEIPT_STATUSES.ISSUED)
-  const canSettle = computed(() => auth.isSuperAdmin && OPEN_PAYMENT_STATUSES.includes(transaction.value?.status))
+  const canReissue = computed(
+    () =>
+      can(PERMISSIONS.FINANCE_RECEIPTS_MANAGE) && receipt.value?.status === RECEIPT_STATUSES.ISSUED,
+  )
+  const canSettle = computed(
+    () =>
+      auth.isSuperAdmin &&
+      transaction.value?.channel !== PAYMENT_CHANNELS.BANK_TRANSFER &&
+      OPEN_PAYMENT_STATUSES.includes(transaction.value?.status),
+  )
 
   async function load() {
     status.value = 'loading'

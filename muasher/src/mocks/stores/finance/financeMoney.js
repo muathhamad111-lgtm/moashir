@@ -20,7 +20,9 @@ export function fromMinor(minor) {
 
 export function vatOf(priceBeforeVat, vatRate) {
   const rateBasisPoints = toMinor(vatRate)
-  return fromMinor(Math.floor((toMinor(priceBeforeVat) * rateBasisPoints + HALF_RATE_SCALE) / RATE_SCALE))
+  return fromMinor(
+    Math.floor((toMinor(priceBeforeVat) * rateBasisPoints + HALF_RATE_SCALE) / RATE_SCALE),
+  )
 }
 
 export function quoteOf(priceBeforeVat, vatRate, currency = 'SAR') {

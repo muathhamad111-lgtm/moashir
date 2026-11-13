@@ -54,9 +54,14 @@ describe('usePermissions — server permissions, deny by default', () => {
   })
 
   it('requires a committee appointment on top of the permission for committee routes', () => {
-    const access = { anyOf: [PERMISSIONS.AWARD_COMMITTEE_ASSIGNED_VIEW], committeeAppointment: true }
+    const access = {
+      anyOf: [PERMISSIONS.AWARD_COMMITTEE_ASSIGNED_VIEW],
+      committeeAppointment: true,
+    }
     expect(signIn([ROLES.ASSESSOR]).canAccess(access)).toBe(false)
-    expect(signIn([ROLES.ASSESSOR], { committeeAppointments: [{ cycleId: 'c-1' }] }).canAccess(access)).toBe(true)
+    expect(
+      signIn([ROLES.ASSESSOR], { committeeAppointments: [{ cycleId: 'c-1' }] }).canAccess(access),
+    ).toBe(true)
     expect(signIn([ROLES.ASSESSOR]).canAccess(null)).toBe(true)
   })
 })

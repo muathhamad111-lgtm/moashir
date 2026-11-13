@@ -57,8 +57,9 @@ it('lists the open requests reported by the other domains', function (): void {
         ->assertOk()
         ->assertJsonPath('data.open_requests_count', 2)
         ->assertJsonPath('data.requires_confirmation', true)
-        ->assertJsonPath('data.open_requests.0', ['id' => 1, 'number' => 'ACC-2026-000014', 'path' => 'accredited', 'status' => 'under_review', 'cycle_id' => null, 'is_frozen' => false])
-        ->assertJsonPath('data.open_requests.1.path', 'bag');
+        ->assertJsonPath('data.open_requests.0', ['id' => 1, 'number' => 'ACC-2026-000014', 'path' => 'accredited', 'path_label' => ['ar' => 'التقييم المعتمد', 'en' => 'Accredited assessment'], 'status' => 'under_review', 'cycle_id' => null, 'is_frozen' => false])
+        ->assertJsonPath('data.open_requests.1.path', 'bag')
+        ->assertJsonPath('data.open_requests.1.path_label.en', 'Quick Excellence Kit');
 });
 
 it('soft deletes an entity without open requests, ends its sessions and audits it', function (): void {

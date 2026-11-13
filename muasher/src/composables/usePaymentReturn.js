@@ -31,7 +31,11 @@ function outcomeOf(payment, verification) {
   return OUTCOMES[payment.status] ?? RETURN_STATES.PENDING
 }
 
-export function usePaymentReturn(paymentId, providerPaymentId, { delays = VERIFY_POLL_DELAYS_MS } = {}) {
+export function usePaymentReturn(
+  paymentId,
+  providerPaymentId,
+  { delays = VERIFY_POLL_DELAYS_MS } = {},
+) {
   const state = ref(RETURN_STATES.VERIFYING)
   const payment = ref(null)
   const failure = ref(null)

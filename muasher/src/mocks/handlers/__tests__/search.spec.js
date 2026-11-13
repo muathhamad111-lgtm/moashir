@@ -2,7 +2,9 @@ import { describe, expect, it, beforeAll, afterAll, afterEach, beforeEach } from
 import { setupServer } from 'msw/node'
 import { searchHandlers } from '@/mocks/handlers/search'
 import { normalizeSearchText } from '@/mocks/stores/searchIndex'
+import { resetAssessmentsStore } from '@/mocks/stores/assessments/assessmentsStore'
 import { MOCK_API_BASE, clearMockSession, mockFetch, seedMockSession } from '@/test-utils/mockApi'
+import { pinMockClock, releaseMockClock } from '@/test-utils/mockClock'
 
 const server = setupServer(...searchHandlers)
 const BASE = MOCK_API_BASE
@@ -24,12 +26,17 @@ function groupOf(body, type) {
   return body.data.find((group) => group.type === type)
 }
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
+beforeAll(() => {
+  pinMockClock()
+  resetAssessmentsStore()
+  server.listen({ onUnhandledRequest: 'error' })
+})
 beforeEach(() => clearMockSession())
 afterEach(() => server.resetHandlers())
 afterAll(() => {
   server.close()
   clearMockSession()
+  releaseMockClock()
 })
 
 describe('global search mock (GET /search)', () => {
@@ -49,9 +56,15 @@ describe('global search mock (GET /search)', () => {
       id: 9108,
       number: 'ACC-2026-000008',
       path: 'accredited',
+      pathLabel: { ar: 'التقييم المعتمد', en: 'Accredited assessment' },
       status: 'under-review',
       isFrozen: false,
-      entity: { id: 6002, reference: 'ENT-006002', name: { ar: 'جمعية إحسان الخيرية', en: 'Ehsan Charitable Society' }, status: 'active' },
+      entity: {
+        id: 6002,
+        reference: 'ENT-006002',
+        name: { ar: 'جمعية إحسان الخيرية', en: 'Ehsan Charitable Society' },
+        status: 'active',
+      },
     })
     expect(body.meta).toEqual({ limit: 5 })
   })
@@ -88,7 +101,9 @@ describe('global search mock (GET /search)', () => {
     const { body } = await search('slf-2026-000004')
     expect(groupOf(body, 'requests').items).toEqual([])
     const byNumber = await search('SLF-2026-000001')
-    expect(groupOf(byNumber.body, 'requests').items.map((item) => item.number)).toEqual(['SLF-2026-000001'])
+    expect(groupOf(byNumber.body, 'requests').items.map((item) => item.number)).toEqual([
+      'SLF-2026-000001',
+    ])
   })
 
   it('answers 403 to a role without any searchable provider', async () => {

@@ -21,6 +21,6 @@ final class MyProfileChangeController
         OwnEntity $ownEntity,
         ListEntityProfileChanges $listChanges,
     ): JsonResponse {
-        return ApiResponse::paginated($listChanges->handle($ownEntity->of($owner), $request->perPage()), ProfileChangeResource::class);
+        return ApiResponse::paginated($listChanges->handle($ownEntity->of($owner), $request->perPage(), $request->section()), ProfileChangeResource::class);
     }
 }

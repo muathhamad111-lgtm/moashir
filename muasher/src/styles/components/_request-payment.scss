@@ -1,0 +1,49 @@
+@use '../mixins' as *;
+
+.request-payment-summary {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+}
+
+.request-payment-summary__line {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  white-space: nowrap;
+}
+
+.request-payment-card__actions {
+  @include flex(row, center, space-between, var(--space-3));
+  flex-wrap: wrap;
+}
+
+.request-payment-card__record {
+  @include flex(row, center, flex-start, var(--space-2));
+  min-block-size: var(--size-touch-target);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-accent-text);
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.request-payment-card__facts {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  margin: 0;
+}
+
+.request-payment-card__row {
+  @include flex(row, center, space-between, var(--space-3));
+  flex-wrap: wrap;
+
+  dt {
+    font-size: var(--fs-sm);
+    color: var(--theme-text-muted);
+  }
+
+  dd {
+    margin: 0;
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
+    color: var(--theme-heading);
+  }
+}

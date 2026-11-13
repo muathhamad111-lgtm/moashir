@@ -6,8 +6,10 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 defineProps({
   modelValue: { type: Boolean, required: true },
   title: { type: String, required: true },
+  subtitle: { type: String, default: '' },
   busy: { type: Boolean, default: false },
   submitLabel: { type: String, default: '' },
+  submitVariant: { type: String, default: 'primary' },
   size: { type: String, default: 'md' },
 })
 
@@ -19,6 +21,7 @@ const { t } = useI18n()
   <BaseModal
     :model-value="modelValue"
     :title="title"
+    :subtitle="subtitle"
     :size="size"
     :close-on-backdrop="!busy"
     @update:model-value="emit('update:modelValue', $event)"
@@ -27,11 +30,11 @@ const { t } = useI18n()
     <form :aria-busy="busy || undefined" novalidate @submit.prevent="emit('submit')">
       <slot />
       <footer class="modal__footer">
+        <BaseButton type="submit" :variant="submitVariant" :loading="busy">
+          {{ submitLabel || t('actions.save') }}
+        </BaseButton>
         <BaseButton variant="secondary" :disabled="busy" @click="emit('update:modelValue', false)">
           {{ t('actions.cancel') }}
-        </BaseButton>
-        <BaseButton type="submit" variant="primary" :loading="busy">
-          {{ submitLabel || t('actions.save') }}
         </BaseButton>
       </footer>
     </form>

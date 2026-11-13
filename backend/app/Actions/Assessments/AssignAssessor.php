@@ -40,7 +40,7 @@ final readonly class AssignAssessor
                 throw IllegalStateTransition::from((string) $locked->status->value, AssessmentVerb::Assign->value);
             }
 
-            $assessor = $this->eligibility->assertEligible($actor, $assessorId, $locked);
+            $assessor = $this->eligibility->assertEligible($actor, $assessorId, $locked->path, $locked->award_cycle_id);
 
             $assignment = $this->assignments->assign($locked, $assessor, $actor, $reason);
             $this->initialReviewSla->startFor($locked);

@@ -7,7 +7,7 @@ import { createTestGlobals } from '@/test-utils'
 
 const path = {
   key: 'accredited',
-  icon: 'fa-solid fa-clipboard-check',
+  icon: 'clipboard-check',
   title: { ar: 'التقييم المعتمد', en: 'Accredited assessment' },
   summary: { ar: 'ملخص', en: 'Summary' },
   order: 2,

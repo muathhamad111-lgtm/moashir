@@ -5,10 +5,16 @@ import { findVersion } from '../criteriaStore'
 import { sessionCan } from '../sessionPermissions'
 import { nowIso } from '../accredited/accreditedRecords'
 import { throwIfErrors, trimmed } from '../accredited/accreditedValidation'
-import { CYCLE_DEFAULTS } from './cycleDefaults'
+import { cycleDefaults, defaultEntryFee } from './cycleDefaults'
 import { insertCycle } from './cycleStore'
 import { managesEveryCycle } from './cycleAccess'
-import { DATE_FIELDS, cycleErrors, datesOrdered, normalizedScore, storeDateOrderErrors } from './cycleValidation'
+import {
+  DATE_FIELDS,
+  cycleErrors,
+  datesOrdered,
+  normalizedScore,
+  storeDateOrderErrors,
+} from './cycleValidation'
 import { awardReject } from './awardRejection'
 
 const RIYADH_OFFSET_MS = 3 * 60 * 60 * 1000
@@ -16,8 +22,15 @@ const SECRETARY_PERMISSION = 'award.secretary.decide'
 
 const FIELD_STAGES = {
   draftOnly: { fields: ['submissionStart', 'criteriaVersionId', 'scaleKind'], statuses: ['draft'] },
-  untilSubmissionsClose: { fields: ['submissionEnd', 'regionIds', 'minEntityAgeYears', 'disqualificationScore'], statuses: ['draft', 'submission-open'] },
-  untilCommittee: { fields: ['committeeStart', 'committeeEnd', 'initialReviewSlaDays'], statuses: ['draft', 'submission-open', 'submission-closed'] },
+  untilSubmissionsClose: {
+    fields: ['submissionEnd', 'regionIds', 'minEntityAgeYears', 'disqualificationScore'],
+    statuses: ['draft', 'submission-open'],
+  },
+  untilCommittee: {
+    fields: ['committeeStart', 'committeeEnd', 'initialReviewSlaDays'],
+    statuses: ['draft', 'submission-open', 'submission-closed'],
+  },
+  untilOpen: { fields: ['entryFee'], statuses: ['draft'] },
 }
 
 const EDITABLE_FIELDS = [
@@ -31,6 +44,7 @@ const EDITABLE_FIELDS = [
   'disqualificationScore',
   'initialReviewSlaDays',
   'participationCertificateEnabled',
+  'entryFee',
 ]
 
 const WIRE_FIELD = { regionIds: 'region_ids' }
@@ -69,7 +83,8 @@ function isoOf(value) {
 
 function attributesOf(body) {
   const attributes = {}
-  if (Object.hasOwn(body, 'name')) attributes.name = { ar: body.name.ar.trim(), en: body.name.en.trim() }
+  if (Object.hasOwn(body, 'name'))
+    attributes.name = { ar: body.name.ar.trim(), en: body.name.en.trim() }
   if (filled(body.year)) attributes.year = Number(body.year)
   DATE_FIELDS.forEach((field) => {
     if (Object.hasOwn(body, field)) attributes[field] = isoOf(body[field])
@@ -78,9 +93,13 @@ function attributesOf(body) {
   if (filled(body.criteriaVersionId)) attributes.criteriaVersionId = Number(body.criteriaVersionId)
   if (filled(body.scaleKind)) attributes.scaleKind = body.scaleKind
   if (filled(body.minEntityAgeYears)) attributes.minEntityAgeYears = Number(body.minEntityAgeYears)
-  if (filled(body.disqualificationScore)) attributes.disqualificationScore = normalizedScore(body.disqualificationScore)
-  if (filled(body.initialReviewSlaDays)) attributes.initialReviewSlaDays = Number(body.initialReviewSlaDays)
-  if (Object.hasOwn(body, 'participationCertificateEnabled')) attributes.participationCertificateEnabled = body.participationCertificateEnabled
+  if (filled(body.disqualificationScore))
+    attributes.disqualificationScore = normalizedScore(body.disqualificationScore)
+  if (filled(body.initialReviewSlaDays))
+    attributes.initialReviewSlaDays = Number(body.initialReviewSlaDays)
+  if (Object.hasOwn(body, 'participationCertificateEnabled'))
+    attributes.participationCertificateEnabled = body.participationCertificateEnabled
+  if (filled(body.entryFee)) attributes.entryFee = body.entryFee
   return attributes
 }
 
@@ -102,7 +121,8 @@ export function createCycle(user, body) {
     year: riyadhYear(attributes.submissionStart),
     announcementAt: null,
     scaleKind: version.scaleKind,
-    ...CYCLE_DEFAULTS,
+    ...cycleDefaults(),
+    entryFee: defaultEntryFee(),
     participationCertificateEnabled: false,
     ...attributes,
     status: 'draft',
@@ -126,12 +146,16 @@ function isEditable(status, field) {
 }
 
 function changedFields(cycle, attributes) {
-  return Object.keys(attributes).filter((field) => JSON.stringify(attributes[field]) !== JSON.stringify(cycle[field]))
+  return Object.keys(attributes).filter(
+    (field) => JSON.stringify(attributes[field]) !== JSON.stringify(cycle[field]),
+  )
 }
 
 function assertRegionsKept(cycle, regionIds) {
   const removed = cycle.regionIds.filter((id) => !regionIds.includes(id))
-  const used = allAssessments().some((record) => record.awardCycleId === cycle.id && removed.includes(record.regionId))
+  const used = allAssessments().some(
+    (record) => record.awardCycleId === cycle.id && removed.includes(record.regionId),
+  )
   if (used) throw assessmentReject.coded(422, 'cycle.region_has_requests', 'regionIds')
 }
 
@@ -143,10 +167,18 @@ export function updateCycle(user, cycle, body) {
   const touched = Object.keys(attributes).filter((field) => EDITABLE_FIELDS.includes(field))
   const locked = touched.filter((field) => !isEditable(cycle.status, field))
   if (locked.length) throw awardReject.fieldsLocked(locked.map(wireName))
-  if (attributes.criteriaVersionId !== undefined) assertPublishedVersion(attributes.criteriaVersionId)
-  const dates = Object.fromEntries(DATE_FIELDS.map((field) => [field, Object.hasOwn(attributes, field) ? attributes[field] : cycle[field]]))
-  if (!datesOrdered(dates, { submissionsOpen: cycle.status === 'submission-open' })) throw assessmentReject.coded(422, 'cycle.dates_unordered')
+  if (attributes.criteriaVersionId !== undefined)
+    assertPublishedVersion(attributes.criteriaVersionId)
+  const dates = Object.fromEntries(
+    DATE_FIELDS.map((field) => [
+      field,
+      Object.hasOwn(attributes, field) ? attributes[field] : cycle[field],
+    ]),
+  )
+  if (!datesOrdered(dates, { submissionsOpen: cycle.status === 'submission-open' }))
+    throw assessmentReject.coded(422, 'cycle.dates_unordered')
   if (attributes.regionIds) assertRegionsKept(cycle, attributes.regionIds)
-  if (changedFields(cycle, attributes).length) Object.assign(cycle, attributes, { updatedAt: nowIso() })
+  if (changedFields(cycle, attributes).length)
+    Object.assign(cycle, attributes, { updatedAt: nowIso() })
   return cycle
 }

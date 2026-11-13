@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import { createTestGlobals } from '@/test-utils'
 
 describe('BaseButton', () => {
   it('renders the default slot inside the label with base classes', () => {
@@ -40,9 +41,22 @@ describe('BaseButton', () => {
   })
 
   it('renders icon-only mode without a label', () => {
-    const wrapper = mount(BaseButton, { props: { iconOnly: true, icon: 'fa-solid fa-plus' } })
+    const wrapper = mount(BaseButton, { props: { iconOnly: true, icon: 'plus' } })
     expect(wrapper.classes()).toContain('btn--icon')
     expect(wrapper.find('.btn__label').exists()).toBe(false)
     expect(wrapper.find('.btn__icon').exists()).toBe(true)
+  })
+
+  it('renders a router link with the same classes when it navigates', () => {
+    const wrapper = mount(BaseButton, {
+      props: { to: { name: 'certificates.index' }, iconEnd: 'arrow-right' },
+      slots: { default: 'عرض الشهادة' },
+      global: createTestGlobals(),
+    })
+    expect(wrapper.element.tagName).toBe('A')
+    expect(wrapper.attributes('href')).toBe('/certificates')
+    expect(wrapper.attributes('type')).toBeUndefined()
+    expect(wrapper.classes()).toEqual(expect.arrayContaining(['btn', 'btn--primary']))
+    expect(wrapper.find('.btn__label').text()).toBe('عرض الشهادة')
   })
 })

@@ -5,19 +5,21 @@ declare(strict_types=1);
 namespace App\Services\Finance;
 
 use App\Data\Documents\PdfDocument;
+use App\Enums\Documents\DocumentTemplate;
+use App\Enums\Documents\DocumentWatermark;
+use App\Enums\Finance\PaymentChannel;
 use App\Models\Finance\PaymentReceipt;
 use App\Support\HijriDate;
 use App\Support\ScalarValue;
 use App\Support\ValueObjects\LocalizedText;
 use Illuminate\Contracts\Config\Repository;
+use Illuminate\Support\Facades\Date;
 
 final readonly class ReceiptDocumentBuilder
 {
-    public const string TEMPLATE = 'payment_receipt';
+    public const string TEMPLATE = DocumentTemplate::PaymentReceipt->value;
 
-    public const string TEST_WATERMARK = 'TEST';
-
-    public const string VOID_WATERMARK = 'VOID';
+    public const string VOID_WATERMARK = DocumentWatermark::Void->value;
 
     public function __construct(private Repository $config) {}
 
@@ -33,22 +35,57 @@ final readonly class ReceiptDocumentBuilder
             'status' => $receipt->status->value,
             'issued_on' => $issuedAt->toDateString(),
             'issued_on_hijri' => ['ar' => HijriDate::format($issuedAt, 'ar', $timezone), 'en' => HijriDate::format($issuedAt, 'en', $timezone)],
-            'purpose_label' => LocalizedText::fromTranslation('finance.purposes.'.ScalarValue::string($receipt->snapshot['purpose'] ?? null))->toArray(),
+            'purpose_label' => $this->purposeLabelOf($receipt),
+            'currency_label' => LocalizedText::fromTranslation('finance.currencies.'.ScalarValue::string($receipt->snapshot['currency'] ?? null))->toArray(),
+            'method_label' => $this->methodLabelOf($receipt),
+            'paid_on' => $this->paidOnOf($receipt, $timezone),
             'labels' => ['ar' => trans('finance.receipt', [], 'ar'), 'en' => trans('finance.receipt', [], 'en')],
-        ], $this->watermarkOf($receipt));
+        ], $receipt->isVoided() ? self::VOID_WATERMARK : null);
     }
 
     public function fileNameOf(PaymentReceipt $receipt): string
     {
-        return ($receipt->number ?? 'TEST-'.ScalarValue::string($receipt->snapshot['payment_reference'] ?? null)).'.pdf';
+        return ($receipt->number ?? ScalarValue::string($receipt->snapshot['payment_reference'] ?? null)).'.pdf';
     }
 
-    private function watermarkOf(PaymentReceipt $receipt): ?string
+    /**
+     * @return array{ar: string, en: string}
+     */
+    private function purposeLabelOf(PaymentReceipt $receipt): array
     {
+        $label = LocalizedText::fromTranslation('finance.purposes.'.ScalarValue::string($receipt->snapshot['purpose'] ?? null))->toArray();
+        $cycle = $receipt->snapshot[ReceiptSnapshotBuilder::AWARD_CYCLE] ?? null;
+        $name = is_array($cycle) ? ($cycle['name'] ?? null) : null;
+
+        if (! is_array($name)) {
+            return $label;
+        }
+
+        return [
+            'ar' => $label['ar'].' — '.ScalarValue::string($name['ar'] ?? null),
+            'en' => $label['en'].' — '.ScalarValue::string($name['en'] ?? null),
+        ];
+    }
+
+    /**
+     * @return array{ar: string, en: string}|null
+     */
+    private function methodLabelOf(PaymentReceipt $receipt): ?array
+    {
+        $method = $receipt->snapshot['method'] ?? null;
+        $channel = $receipt->snapshot['channel'] ?? null;
+
         return match (true) {
-            $receipt->is_test => self::TEST_WATERMARK,
-            $receipt->isVoided() => self::VOID_WATERMARK,
+            is_string($method) && $method !== '' => LocalizedText::fromTranslation('finance.methods.'.$method)->toArray(),
+            $channel === PaymentChannel::BankTransfer->value => LocalizedText::fromTranslation('finance.channels.'.$channel)->toArray(),
             default => null,
         };
+    }
+
+    private function paidOnOf(PaymentReceipt $receipt, string $timezone): ?string
+    {
+        $paidAt = $receipt->snapshot['paid_at'] ?? null;
+
+        return is_string($paidAt) && $paidAt !== '' ? Date::parse($paidAt)->setTimezone($timezone)->toDateString() : null;
     }
 }

@@ -14,10 +14,17 @@ export function useCitiesAdmin() {
   const regions = useRegions()
   const filters = useFilters({ regionId: '', active: '' })
   const paginator = usePagination({ perPage: 20 })
-  const table = useTable({ fetcher: (params) => regionsService.listCities(params), filters, pagination: paginator })
+  const table = useTable({
+    fetcher: (params) => regionsService.listCities(params),
+    filters,
+    pagination: paginator,
+  })
   const editor = reactive({ open: false, city: null })
 
-  const regionFilterOptions = computed(() => [{ value: '', label: t('entities.filters.allRegions') }, ...regions.regionOptions.value])
+  const regionFilterOptions = computed(() => [
+    { value: '', label: t('entities.filters.allRegions') },
+    ...regions.regionOptions.value,
+  ])
   const activeOptions = computed(() => [
     { value: '', label: t('entities.cities.allStates') },
     { value: 'true', label: t('status.active') },
@@ -37,7 +44,11 @@ export function useCitiesAdmin() {
   async function toggle(city) {
     try {
       await regionsService.setCityActive(city.id, !city.isActive)
-      toast.success(t(city.isActive ? 'entities.cities.toasts.deactivated' : 'entities.cities.toasts.activated'))
+      toast.success(
+        t(
+          city.isActive ? 'entities.cities.toasts.deactivated' : 'entities.cities.toasts.activated',
+        ),
+      )
       await table.load()
     } catch (error) {
       toast.error(error?.normalized?.message || t('errors.unexpected'))
@@ -45,11 +56,25 @@ export function useCitiesAdmin() {
   }
 
   async function afterSave() {
-    toast.success(t(editor.city ? 'entities.cities.toasts.updated' : 'entities.cities.toasts.created'))
+    toast.success(
+      t(editor.city ? 'entities.cities.toasts.updated' : 'entities.cities.toasts.created'),
+    )
     await Promise.all([table.load(), regions.load()])
   }
 
   onMounted(regions.load)
 
-  return { ...table, filters, paginator, regions, editor, regionFilterOptions, activeOptions, regionName, openEditor, toggle, afterSave }
+  return {
+    ...table,
+    filters,
+    paginator,
+    regions,
+    editor,
+    regionFilterOptions,
+    activeOptions,
+    regionName,
+    openEditor,
+    toggle,
+    afterSave,
+  }
 }

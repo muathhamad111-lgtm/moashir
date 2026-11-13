@@ -26,9 +26,15 @@ test.describe('visual review captures', () => {
     await page.addInitScript(() => localStorage.setItem('muasher.theme', 'light'))
     await page.goto('/dev/components')
     await page.waitForTimeout(800)
-    await page.screenshot({ path: `test-results/review-gallery-light-${suffix}.png`, fullPage: false })
+    await page.screenshot({
+      path: `test-results/review-gallery-light-${suffix}.png`,
+      fullPage: false,
+    })
     await page.setViewportSize({ width: 375, height: 800 })
     await page.waitForTimeout(400)
-    await page.screenshot({ path: `test-results/review-gallery-mobile-${suffix}.png`, fullPage: false })
+    await page.screenshot({
+      path: `test-results/review-gallery-mobile-${suffix}.png`,
+      fullPage: false,
+    })
   })
 })

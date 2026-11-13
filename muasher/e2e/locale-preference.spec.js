@@ -7,7 +7,7 @@ const OFFICER = {
   name: { ar: 'خالد العمري', en: 'Khalid Al-Omari' },
 }
 
-const localeSwitch = (page) => page.locator('button:has(.fa-language)').first()
+const localeSwitch = (page) => page.getByRole('button', { name: /^(English|العربية)$/ }).first()
 
 async function cookieValue(page, name) {
   const cookies = await page.context().cookies()

@@ -37,6 +37,7 @@ final readonly class ReceiptIssuer
             'number' => $receipt->number,
             'is_test' => $receipt->is_test,
             'payment_reference' => $paid->reference,
+            'vat_registration_number_present' => array_key_exists(ReceiptSnapshotBuilder::VAT_REGISTRATION_NUMBER, $receipt->snapshot),
         ]));
 
         return $receipt;

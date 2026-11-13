@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources\Finance;
 
 use App\Models\Finance\Payment;
+use App\Support\Award\AwardCycleRefPresenter;
 use App\Support\Finance\PaymentPresenter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -26,6 +27,8 @@ final class TransactionResource extends JsonResource
             'reference' => $payment->reference,
             'receipt_number' => $payment->receipt?->number,
             'purpose' => $payment->purpose->value,
+            'award_cycle' => $payment->award_cycle_id === null ? null : AwardCycleRefPresenter::of($payment->awardCycle),
+            'channel' => $payment->channel->value,
             'status' => $payment->status->value,
             'is_test' => $payment->isTest(),
             'entity' => [

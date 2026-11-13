@@ -6,6 +6,7 @@ namespace App\Actions\Identity;
 
 use App\Data\Identity\MfaConfirmation;
 use App\Enums\Identity\AuthEventType;
+use App\Enums\Identity\SignInMethod;
 use App\Exceptions\Identity\MfaRejected;
 use App\Services\Identity\AuthenticationEventRecorder;
 use App\Services\Identity\MfaSubject;
@@ -40,6 +41,6 @@ final readonly class ConfirmMfaEnrollment
         $this->events->forUser(AuthEventType::MfaEnrolled, $user);
         $recoveryCodes = StringList::from($user->recoveryCodes());
 
-        return new MfaConfirmation($recoveryCodes, $isPending ? $this->establishSession->handle($user, 'totp_enrollment') : null);
+        return new MfaConfirmation($recoveryCodes, $isPending ? $this->establishSession->handle($user, SignInMethod::TotpEnrollment) : null);
     }
 }

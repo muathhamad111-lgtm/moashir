@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Actions\Entities;
 
 use App\Data\Entities\EntityListFilters;
+use App\Enums\Certificates\EntityLevelFilter;
 use App\Models\Entities\Entity;
 use App\Models\Identity\User;
 use App\Services\Entities\EntityRecordScope;
+use App\Support\Certificates\EntityLevelQuery;
 use App\Support\ValueObjects\SearchTerm;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -16,6 +18,7 @@ final readonly class ListEntities
 {
     public const array SORTABLE = [
         'name', '-name', 'created_at', '-created_at', 'founding_year', '-founding_year', 'governance_grade', '-governance_grade',
+        'level', '-level',
     ];
 
     public function __construct(private EntityRecordScope $scope) {}
@@ -25,7 +28,9 @@ final readonly class ListEntities
      */
     public function handle(User $actor, EntityListFilters $filters): LengthAwarePaginator
     {
-        $query = $this->filteredQuery($actor, $filters)->with(['owner', 'region', 'city']);
+        $query = $this->filteredQuery($actor, $filters)
+            ->with(['owner', 'region', 'city', 'logo', EntityLevelQuery::RELATION, EntityLevelQuery::DISPLAY_RELATION])
+            ->withExists(EntityLevelQuery::openAccreditedRequestFlag());
         $this->applySort($query, $filters->sort);
 
         return $query->orderBy('id')->paginate($filters->perPage);
@@ -63,6 +68,10 @@ final readonly class ListEntities
             }
         }
 
+        if ($filters->level instanceof EntityLevelFilter) {
+            EntityLevelQuery::filter($query, $filters->level);
+        }
+
         return $query;
     }
 
@@ -73,6 +82,12 @@ final readonly class ListEntities
     {
         $direction = str_starts_with($sort, '-') ? 'desc' : 'asc';
         $column = ltrim($sort, '-');
+
+        if ($column === 'level') {
+            EntityLevelQuery::orderBy($query, $direction);
+
+            return;
+        }
 
         if ($column === 'name') {
             $query->orderByRaw("name->>'ar' ".$direction);

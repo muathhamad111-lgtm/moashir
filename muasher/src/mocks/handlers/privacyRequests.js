@@ -23,17 +23,25 @@ const SEARCH_MAX = 100
 function lookupLimit(raw) {
   if (raw === null) return LOOKUP_LIMIT.DEFAULT
   const limit = Number(raw)
-  if (!Number.isInteger(limit) || limit < 1 || limit > LOOKUP_LIMIT.MAX) rejectField('limit', 'field.invalid_choice')
+  if (!Number.isInteger(limit) || limit < 1 || limit > LOOKUP_LIMIT.MAX)
+    rejectField('limit', 'field.invalid_choice')
   return limit
 }
 
 function lookupMatches(entity, needle) {
   if (!needle) return true
-  return [entity.name.ar, entity.name.en, entity.owner.email, referenceOf(entity)].some((value) => normalizeSearchText(value ?? '').includes(needle))
+  return [entity.name.ar, entity.name.en, entity.owner.email, referenceOf(entity)].some((value) =>
+    normalizeSearchText(value ?? '').includes(needle),
+  )
 }
 
 function lookupResource(entity) {
-  return { id: entity.id, reference: referenceOf(entity), name: { ar: entity.name.ar, en: entity.name.en ?? null }, isDeleted: isDeleted(entity) }
+  return {
+    id: entity.id,
+    reference: referenceOf(entity),
+    name: { ar: entity.name.ar, en: entity.name.en ?? null },
+    isDeleted: isDeleted(entity),
+  }
 }
 
 function lookupEntities(query) {
@@ -57,7 +65,11 @@ function boundRequest(id) {
 function assertNewRequest(body) {
   if (!findEntity(body.entityId)) rejectField('entityId', 'field.invalid_choice')
   if (!PRIVACY_REQUEST_KINDS.includes(body.kind)) rejectField('kind', 'field.invalid_choice')
-  return { entityId: body.entityId, kind: body.kind, details: assertReason(body, DETAILS_MIN, 'details') }
+  return {
+    entityId: body.entityId,
+    kind: body.kind,
+    details: assertReason(body, DETAILS_MIN, 'details'),
+  }
 }
 
 export const privacyRequestsHandlers = [
@@ -108,7 +120,9 @@ export const privacyRequestsHandlers = [
       const actor = actorWith(P.PRIVACY_MANAGE)
       const record = boundRequest(params.id)
       const note = optionalReason(await readJson(request))
-      return envelope(privacyRequestResource(decidePrivacyRequest(record, actor, S.FULFILLED, note)))
+      return envelope(
+        privacyRequestResource(decidePrivacyRequest(record, actor, S.FULFILLED, note)),
+      )
     }),
   ),
 
@@ -118,7 +132,9 @@ export const privacyRequestsHandlers = [
       const actor = actorWith(P.PRIVACY_MANAGE)
       const record = boundRequest(params.id)
       const reason = assertReason(await readJson(request))
-      return envelope(privacyRequestResource(decidePrivacyRequest(record, actor, S.REJECTED, reason)))
+      return envelope(
+        privacyRequestResource(decidePrivacyRequest(record, actor, S.REJECTED, reason)),
+      )
     }),
   ),
 ]

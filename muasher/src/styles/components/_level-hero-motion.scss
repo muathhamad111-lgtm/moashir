@@ -1,0 +1,120 @@
+@use '../mixins' as *;
+
+@include motion-safe {
+  .level-hero--pending {
+    opacity: 0;
+  }
+
+  .level-hero--settling {
+    animation: level-hero-fade var(--t-tab) var(--ease-out) both;
+  }
+
+  .level-hero--playing {
+    animation: level-hero-rise var(--t-slow) var(--ease-brand) both;
+
+    .level-hero__medal::before {
+      animation: level-hero-glow var(--motion-reveal) var(--ease-out) var(--motion-bars-stagger)
+        both;
+    }
+
+    .level-hero__medal .level-emblem {
+      animation: level-hero-seal var(--motion-reveal) var(--ease-brand) var(--motion-bars-stagger)
+        both;
+    }
+
+    .level-hero__name,
+    .level-hero__figure,
+    .level-hero__caption {
+      animation: level-hero-lift var(--t-slow) var(--ease-brand) var(--t-tab) both;
+    }
+
+    .level-hero__chips {
+      animation: level-hero-lift var(--t-slow) var(--ease-brand)
+        calc(var(--t-tab) + var(--motion-stagger)) both;
+    }
+
+    .level-hero__meta,
+    .level-hero__action {
+      animation: level-hero-lift var(--t-slow) var(--ease-brand)
+        calc(var(--t-tab) + var(--motion-stagger) * 2) both;
+    }
+
+    .level-hero__journey-title,
+    .level-hero__link,
+    .level-track__name,
+    .level-track__threshold,
+    .level-track__pin {
+      animation: level-hero-fade var(--t-slow) var(--ease-brand)
+        calc(var(--motion-bars-stagger) * 2) both;
+    }
+
+    .level-track__base {
+      animation: level-track-settle var(--t-slow) var(--ease-brand)
+        calc(var(--motion-bars-stagger) * 2) both;
+    }
+
+    .level-track__reached {
+      animation: level-track-fill var(--motion-bars) var(--ease-brand) calc(var(--t-tab) * 2) both;
+    }
+
+    .level-hero__remaining,
+    .level-track__remaining,
+    .level-track__threshold--next {
+      animation: level-hero-fade var(--t-tab) var(--ease-out)
+        calc(var(--motion-ring) - var(--t-tab)) both;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .level-hero {
+    animation: level-hero-fade var(--t-fast) var(--ease-out) both;
+  }
+}
+
+@keyframes level-hero-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes level-hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-3));
+  }
+}
+
+@keyframes level-hero-lift {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-2));
+  }
+}
+
+@keyframes level-hero-glow {
+  from {
+    opacity: 0;
+    transform: scale(var(--motion-glow-scale));
+  }
+}
+
+@keyframes level-hero-seal {
+  from {
+    opacity: 0;
+    transform: scale(var(--motion-seal-scale)) rotate(var(--motion-seal-turn));
+  }
+}
+
+@keyframes level-track-settle {
+  from {
+    opacity: 0;
+    transform: scaleX(var(--motion-track-scale));
+  }
+}
+
+@keyframes level-track-fill {
+  from {
+    transform: scaleX(0);
+  }
+}

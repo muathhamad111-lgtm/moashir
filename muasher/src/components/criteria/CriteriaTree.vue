@@ -1,6 +1,7 @@
 <script setup>
 import { ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   nodes: { type: Array, default: () => [] },
@@ -54,7 +55,7 @@ function hasChildren(node) {
             :aria-controls="panelId(node)"
             @click="toggle(node)"
           >
-            <i class="fa-solid fa-chevron-down criteria-tree__chevron" aria-hidden="true"></i>
+            <AppIcon name="chevron-down" class="criteria-tree__chevron" />
             <span class="criteria-tree__label">{{ node.label }}</span>
           </button>
           <button

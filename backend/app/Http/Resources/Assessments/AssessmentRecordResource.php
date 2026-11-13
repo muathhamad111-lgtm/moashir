@@ -7,6 +7,7 @@ namespace App\Http\Resources\Assessments;
 use App\Data\Assessments\AssessmentRecord;
 use App\Data\Assessments\StatusHistoryEntry;
 use App\Support\Assessments\StatusMask;
+use App\Support\Paths\RequestTabs;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -29,6 +30,7 @@ final class AssessmentRecordResource extends JsonResource
         return [
             ...new AssessmentResource($assessment)->toArray($request),
             'status_history' => array_map($this->historyItem(...), $visible),
+            ...RequestTabs::of($assessment),
         ];
     }
 

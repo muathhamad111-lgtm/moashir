@@ -1,0 +1,105 @@
+@use '../mixins' as *;
+
+.committee-discussions__list,
+.secretary-discussions {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.discussion-card__title {
+  margin: 0;
+  font-size: var(--fs-lg);
+  color: var(--theme-heading);
+}
+
+.discussion-card__badges {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.discussion-card__deadline {
+  @include flex(row, center, flex-start, var(--space-2));
+  margin: 0;
+  color: var(--theme-text);
+}
+
+.discussion-card__outcome {
+  margin-block: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-accent-soft);
+}
+
+.discussion-card__label {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.discussion-card__text {
+  margin-block: var(--space-1) 0;
+  color: var(--theme-text);
+  white-space: pre-line;
+}
+
+.discussion-card__closed {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.discussion-entries {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  margin-block: var(--space-3);
+}
+
+.discussion-entries__title {
+  margin: 0;
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.discussion-entries__list {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.discussion-entries__item {
+  padding: var(--space-3);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+}
+
+.discussion-entries__head {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.discussion-entries__author {
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.discussion-entries__body {
+  margin-block: var(--space-2) 0;
+  color: var(--theme-text);
+  white-space: pre-line;
+}
+
+.discussion-entry {
+  @include flex(column, stretch, flex-start, var(--space-3));
+}
+
+.discussion-entry__buttons {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.secretary-discussions__item {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  padding: var(--space-3);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+}

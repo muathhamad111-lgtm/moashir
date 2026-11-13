@@ -1,9 +1,16 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import { assessmentsService } from '@/services/assessmentsService'
 import { useToast } from '@/composables/useToast'
 import { logger } from '@/utils/logger'
-import { ASSESSMENT_PATHS, SELF_ASSESSMENT_CODES as CODES, SELF_STATUSES } from '@/constants/assessment'
+import {
+  ASSESSMENT_PATHS,
+  SELF_ASSESSMENT_CODES as CODES,
+  SELF_STATUSES,
+} from '@/constants/assessment'
+import { PATH_CODES } from '@/constants/entityPaths'
+import { ROUTE_NAMES } from '@/constants/routeNames'
 
 export const ENTRY_STATES = {
   LOADING: 'loading',
@@ -14,11 +21,23 @@ export const ENTRY_STATES = {
   ERROR: 'error',
 }
 
-const BLOCKING_CODES = [CODES.ENTITY_NOT_ACTIVE, CODES.ENTITY_REQUIRED, CODES.ENTITY_DELETED]
-const OPEN_DRAFT_QUERY = { 'filter[path]': ASSESSMENT_PATHS.SELF, 'filter[status]': SELF_STATUSES.DRAFT, perPage: 1 }
+const BLOCKING_CODES = [
+  CODES.ENTITY_NOT_ACTIVE,
+  CODES.ENTITY_REQUIRED,
+  CODES.ENTITY_DELETED,
+  PATH_CODES.UNAVAILABLE,
+  PATH_CODES.SELF_PAYMENT_PROCESSING,
+]
+const OPEN_ORDER_CODE = 'payment.open_order_exists'
+const OPEN_DRAFT_QUERY = {
+  'filter[path]': ASSESSMENT_PATHS.SELF,
+  'filter[status]': SELF_STATUSES.DRAFT,
+  perPage: 1,
+}
 
 export function useSelfAssessmentEntry() {
   const { t } = useI18n()
+  const router = useRouter()
   const toast = useToast()
   const state = ref(ENTRY_STATES.LOADING)
   const draftId = ref(null)
@@ -72,6 +91,14 @@ export function useSelfAssessmentEntry() {
     }
     if (code === CODES.NO_PUBLISHED_CRITERIA) {
       state.value = ENTRY_STATES.NO_CRITERIA
+      return
+    }
+    if (code === PATH_CODES.PAYMENT_REQUIRED) {
+      router.push({ name: ROUTE_NAMES.ASSESSMENT_SELF_PAY })
+      return
+    }
+    if (code === OPEN_ORDER_CODE) {
+      router.push({ name: ROUTE_NAMES.PATHS_SELF })
       return
     }
     if (BLOCKING_CODES.includes(code)) {

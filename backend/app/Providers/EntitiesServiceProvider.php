@@ -11,6 +11,8 @@ use App\Models\Entities\PrivacyRequest;
 use App\Models\Entities\Region;
 use App\Models\Identity\EmailChangeRequest;
 use App\Services\Entities\EntityAccountDirectory;
+use App\Services\Entities\EntityEraser;
+use App\Services\Entities\EntityLogoEraser;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
@@ -19,6 +21,7 @@ final class EntitiesServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(EntityAccounts::class, EntityAccountDirectory::class);
+        $this->app->tag([EntityLogoEraser::class], EntityEraser::TAG);
     }
 
     public function boot(): void

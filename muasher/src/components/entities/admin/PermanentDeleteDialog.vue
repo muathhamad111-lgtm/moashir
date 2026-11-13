@@ -9,6 +9,7 @@ import FieldTextarea from '@/components/form/FieldTextarea.vue'
 import { usePermanentDeletion } from '@/composables/usePermanentDeletion'
 import { useEntityDisplay } from '@/composables/useEntityDisplay'
 import { ERASURE_KEPT_RECORDS, REASON_LENGTH } from '@/constants/entityEnums'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -40,23 +41,36 @@ watch(
     :model-value="modelValue"
     size="lg"
     :title="t('entities.permanent.title')"
+    :subtitle="localized(entity.name)"
     :close-on-backdrop="false"
     @update:model-value="emit('update:modelValue', $event)"
   >
     <form class="permanent-delete" novalidate @submit.prevent="form.onSubmit">
       <div class="permanent-delete__warning" role="alert">
-        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+        <AppIcon name="warning-triangle" />
         <p class="permanent-delete__warning-text">
-          {{ t('entities.permanent.disclaimer', { name: localized(entity.name), reference: entity.reference }) }}
+          {{
+            t('entities.permanent.disclaimer', {
+              name: localized(entity.name),
+              reference: entity.reference,
+            })
+          }}
         </p>
       </div>
       <section class="permanent-delete__kept" aria-labelledby="permanent-delete-kept">
-        <h3 id="permanent-delete-kept" class="permanent-delete__heading">{{ t('entities.permanent.keptTitle') }}</h3>
+        <h3 id="permanent-delete-kept" class="permanent-delete__heading">
+          {{ t('entities.permanent.keptTitle') }}
+        </h3>
         <ul class="permanent-delete__list">
-          <li v-for="record in ERASURE_KEPT_RECORDS" :key="record">{{ t(`entities.enums.kept.${record}`) }}</li>
+          <li v-for="record in ERASURE_KEPT_RECORDS" :key="record">
+            {{ t(`entities.enums.kept.${record}`) }}
+          </li>
         </ul>
       </section>
-      <FieldCheckbox name="disclaimerAcknowledged" :label="t('entities.permanent.disclaimerLabel')" />
+      <FieldCheckbox
+        name="disclaimerAcknowledged"
+        :label="t('entities.permanent.disclaimerLabel')"
+      />
       <FieldInput
         name="confirmation"
         input-dir="ltr"
@@ -71,11 +85,15 @@ watch(
         required
       />
       <footer class="modal__footer">
-        <BaseButton variant="secondary" :disabled="form.submitting.value" @click="emit('update:modelValue', false)">
-          {{ t('actions.cancel') }}
-        </BaseButton>
-        <BaseButton type="submit" variant="danger" icon="fa-solid fa-dumpster-fire" :loading="form.submitting.value">
+        <BaseButton type="submit" variant="danger" icon="trash" :loading="form.submitting.value">
           {{ t('entities.permanent.submit') }}
+        </BaseButton>
+        <BaseButton
+          variant="secondary"
+          :disabled="form.submitting.value"
+          @click="emit('update:modelValue', false)"
+        >
+          {{ t('actions.cancel') }}
         </BaseButton>
       </footer>
     </form>

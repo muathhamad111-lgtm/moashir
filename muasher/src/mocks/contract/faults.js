@@ -64,7 +64,10 @@ function matches(fault, method, pathname) {
 
 export function forcedFaultFor(method, url) {
   const pathname = new URL(url).pathname
-  return [...state.forcedFaults, ...cookieFaults()].find((fault) => matches(fault, method, pathname)) ?? null
+  return (
+    [...state.forcedFaults, ...cookieFaults()].find((fault) => matches(fault, method, pathname)) ??
+    null
+  )
 }
 
 export function forcedFaultResponse(fault, request) {

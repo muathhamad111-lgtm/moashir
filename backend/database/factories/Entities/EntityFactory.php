@@ -13,6 +13,7 @@ use App\Models\Entities\City;
 use App\Models\Entities\Entity;
 use App\Models\Entities\Region;
 use App\Models\Identity\User;
+use App\Support\ScalarValue;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Date;
 
@@ -48,6 +49,10 @@ final class EntityFactory extends Factory
             'employees_count' => fake()->numberBetween(5, 200),
             'annual_beneficiaries_count' => fake()->numberBetween(100, 40_000),
             'has_strategic_plan' => true,
+            'license_number' => fake()->unique()->numerify('77########'),
+            'unified_number' => fake()->unique()->numerify('7#########'),
+            'founded_on' => static fn (array $attributes): string => ScalarValue::int($attributes['founding_year']).'-03-01',
+            'website_url' => null,
             'status' => EntityStatus::Active,
             'verified_at' => Date::now(),
             'profile_completed_at' => Date::now(),

@@ -6,6 +6,7 @@ namespace App\Actions\Finance;
 
 use App\Data\Finance\FinanceSummary;
 use App\Data\Finance\TransactionFilters;
+use App\Enums\Finance\PaymentChannel;
 use App\Enums\Finance\PaymentPurpose;
 use App\Services\Finance\FinanceStatsCalculator;
 use App\Services\Finance\TransactionQuery;
@@ -23,6 +24,12 @@ final readonly class GetFinancialSummary
             $byPurpose[$purpose->value] = $this->stats->overall($this->query->filtered(new TransactionFilters(purpose: $purpose, from: $from, to: $to)));
         }
 
-        return new FinanceSummary($this->stats->overall($this->query->filtered(new TransactionFilters(from: $from, to: $to))), $byPurpose);
+        $byChannel = [];
+
+        foreach (PaymentChannel::cases() as $channel) {
+            $byChannel[$channel->value] = $this->stats->overall($this->query->filtered(new TransactionFilters(from: $from, to: $to, channel: $channel)));
+        }
+
+        return new FinanceSummary($this->stats->overall($this->query->filtered(new TransactionFilters(from: $from, to: $to))), $byPurpose, $byChannel);
     }
 }

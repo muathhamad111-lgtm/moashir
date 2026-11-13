@@ -13,6 +13,7 @@ use App\Enums\Audit\AuditEvent;
 use App\Models\Assessments\Assessment;
 use App\Models\Award\AwardCycle;
 use App\Models\Entities\Entity;
+use App\Models\Finance\Payment;
 use App\Services\Audit\AuditRecorder;
 
 final readonly class AdvancedRequestOpener
@@ -32,6 +33,18 @@ final readonly class AdvancedRequestOpener
         return $assessment;
     }
 
+    public function openPaidDraft(Entity $entity, AwardCycle $cycle, Payment $payment): Assessment
+    {
+        $assessment = $this->create($entity, $cycle, AdvancedAssessmentStatus::Draft, null, $payment->id);
+        $this->stateMachine->recordStart($assessment, null);
+        $this->audit->record(new AuditEntry(AuditEvent::AwardApplicationCreated, $assessment, [], [
+            ...$this->auditValues($assessment),
+            'payment_reference' => $payment->reference,
+        ]));
+
+        return $assessment->setRelation('payment', $payment);
+    }
+
     public function recordRejection(Entity $entity, AwardCycle $cycle, AdvancedEligibility $eligibility, int $actorId): Assessment
     {
         $assessment = $this->create($entity, $cycle, AdvancedAssessmentStatus::RejectedConditions, ['failures' => $eligibility->failuresToArray()]);
@@ -47,7 +60,7 @@ final readonly class AdvancedRequestOpener
     /**
      * @param  array<string, mixed>|null  $conditionFailure
      */
-    private function create(Entity $entity, AwardCycle $cycle, AdvancedAssessmentStatus $status, ?array $conditionFailure): Assessment
+    private function create(Entity $entity, AwardCycle $cycle, AdvancedAssessmentStatus $status, ?array $conditionFailure, ?int $paymentId = null): Assessment
     {
         $path = AssessmentPath::Advanced;
         $assessment = Assessment::query()->create([
@@ -60,6 +73,7 @@ final readonly class AdvancedRequestOpener
             'award_cycle_id' => $cycle->id,
             'region_id' => $entity->region_id,
             'condition_failure' => $conditionFailure,
+            'payment_id' => $paymentId,
         ]);
 
         return $assessment->setRelation('entity', $entity)->setRelation('awardCycle', $cycle)->setRelation('currentResult', null);

@@ -5,16 +5,16 @@ export function useCriteriaRowActions(access) {
 
   function editActions(row) {
     return [
-      { key: 'edit', label: t('criteria.actions.edit'), icon: 'fa-solid fa-pen' },
+      { key: 'edit', label: t('criteria.actions.edit'), icon: 'pen' },
       {
         key: 'toggle',
         label: row.active ? t('criteria.actions.deactivate') : t('criteria.actions.activate'),
-        icon: row.active ? 'fa-solid fa-toggle-off' : 'fa-solid fa-toggle-on',
+        icon: row.active ? 'ban' : 'check-circle',
       },
       {
         key: 'delete',
         label: t('criteria.actions.delete'),
-        icon: 'fa-solid fa-trash-can',
+        icon: 'trash',
         variant: 'danger',
       },
     ]
@@ -27,7 +27,7 @@ export function useCriteriaRowActions(access) {
       actions.push({
         key: 'correct',
         label: t('criteria.actions.correctText'),
-        icon: 'fa-solid fa-spell-check',
+        icon: 'pen-line',
       })
     }
     return actions

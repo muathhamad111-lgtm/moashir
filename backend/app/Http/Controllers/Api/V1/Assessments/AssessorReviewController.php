@@ -8,15 +8,19 @@ use App\Actions\Assessments\CompleteAccreditedAssessment;
 use App\Actions\Assessments\CompleteInitialAssessment;
 use App\Actions\Assessments\GetAssessorReview;
 use App\Actions\Assessments\RequestCompletion;
+use App\Actions\Assessments\SaveAssessmentSummary;
 use App\Actions\Assessments\SaveFeedbackItems;
 use App\Actions\Assessments\SaveReviewScores;
 use App\Actions\Assessments\StartReview;
 use App\Http\Requests\Assessments\AssessmentActionRequest;
+use App\Http\Requests\Assessments\CompleteReviewRequest;
 use App\Http\Requests\Assessments\RequestCompletionRequest;
+use App\Http\Requests\Assessments\SaveAssessmentSummaryRequest;
 use App\Http\Requests\Assessments\SaveFeedbackItemsRequest;
 use App\Http\Requests\Assessments\SaveReviewScoresRequest;
 use App\Http\Resources\Assessments\AssessmentResource;
 use App\Http\Resources\Assessments\AssessmentScoresResource;
+use App\Http\Resources\Assessments\AssessmentSummaryResource;
 use App\Http\Resources\Assessments\AssessorReviewResource;
 use App\Http\Resources\Assessments\FeedbackViewResource;
 use App\Http\Responses\ApiResponse;
@@ -47,21 +51,27 @@ final class AssessorReviewController
         return ApiResponse::resource(new FeedbackViewResource($save->handle($actor, $assessment, $request->changes(), $request->reason())));
     }
 
+    public function summary(SaveAssessmentSummaryRequest $request, Assessment $assessment, #[CurrentUser] User $actor, SaveAssessmentSummary $save): JsonResponse
+    {
+        return ApiResponse::resource(new AssessmentSummaryResource($save->handle($actor, $assessment, $request->summary(), $request->reason())));
+    }
+
     public function requestCompletion(RequestCompletionRequest $request, Assessment $assessment, #[CurrentUser] User $actor, RequestCompletion $requestCompletion): JsonResponse
     {
         return ApiResponse::resource(new AssessmentResource($requestCompletion->handle($actor, $assessment, $request->instruction())));
     }
 
     public function complete(
-        AssessmentActionRequest $request,
+        CompleteReviewRequest $request,
         Assessment $assessment,
         #[CurrentUser] User $actor,
         CompleteAccreditedAssessment $completeAccredited,
         CompleteInitialAssessment $completeInitial,
     ): JsonResponse {
+        $completion = $request->completion();
         $completed = $assessment->isAdvanced()
-            ? $completeInitial->handle($actor, $assessment, $request->reason())
-            : $completeAccredited->handle($actor, $assessment, $request->reason());
+            ? $completeInitial->handle($actor, $assessment, $completion->reason)
+            : $completeAccredited->handle($actor, $assessment, $completion);
 
         return ApiResponse::resource(new AssessmentResource($completed));
     }

@@ -6,10 +6,10 @@ import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
-import ActionsDropdown from '@/components/data-list/ActionsDropdown.vue'
+import AppMenu from '@/components/ui/AppMenu.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import Badge from '@/components/ui/Badge.vue'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import AssignEvaluatorModal from '@/components/bag/AssignEvaluatorModal.vue'
 import { useTable } from '@/composables/useTable'
 import { useFilters } from '@/composables/useFilters'
@@ -18,6 +18,7 @@ import { useToast } from '@/composables/useToast'
 import { useBagRequests } from '@/composables/useBagRequests'
 import { bagRequestsService } from '@/services/bagRequestsService'
 import { formatDate } from '@/utils/datetime'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t, n, locale } = useI18n()
 const toast = useToast()
@@ -44,10 +45,30 @@ const { items, status, errorMessage, load } = useTable({
 })
 
 const statCards = computed(() => [
-  { id: 'total', icon: 'fa-solid fa-inbox', value: stats.value?.total ?? 0, label: t('bagRequests.stats.total') },
-  { id: 'awaiting', icon: 'fa-solid fa-user-clock', value: stats.value?.awaiting ?? 0, label: t('bagRequests.stats.awaiting') },
-  { id: 'active', icon: 'fa-solid fa-briefcase', value: stats.value?.byStatus?.active ?? 0, label: t('bagRequests.stats.active') },
-  { id: 'completed', icon: 'fa-solid fa-flag-checkered', value: stats.value?.byStatus?.completed ?? 0, label: t('bagRequests.stats.completed') },
+  {
+    id: 'total',
+    icon: 'inbox',
+    value: stats.value?.total ?? 0,
+    label: t('bagRequests.stats.total'),
+  },
+  {
+    id: 'awaiting',
+    icon: 'user-clock',
+    value: stats.value?.awaiting ?? 0,
+    label: t('bagRequests.stats.awaiting'),
+  },
+  {
+    id: 'active',
+    icon: 'briefcase',
+    value: stats.value?.byStatus?.active ?? 0,
+    label: t('bagRequests.stats.active'),
+  },
+  {
+    id: 'completed',
+    icon: 'flag-checkered',
+    value: stats.value?.byStatus?.completed ?? 0,
+    label: t('bagRequests.stats.completed'),
+  },
 ])
 
 const columns = computed(() => [
@@ -69,9 +90,17 @@ const CLOSED = ['completed', 'cancelled']
 function rowActions(row) {
   const actions = []
   if (row.status === 'awaiting-assignment') {
-    actions.push({ key: 'assign', label: t('bagRequests.actions.assign'), icon: 'fa-solid fa-user-plus' })
+    actions.push({
+      key: 'assign',
+      label: t('bagRequests.actions.assign'),
+      icon: 'user',
+    })
   } else if (!CLOSED.includes(row.status)) {
-    actions.push({ key: 'reassign', label: t('bagRequests.actions.reassign'), icon: 'fa-solid fa-user-pen' })
+    actions.push({
+      key: 'reassign',
+      label: t('bagRequests.actions.reassign'),
+      icon: 'pen',
+    })
   }
   return actions
 }
@@ -126,12 +155,16 @@ function onAction(key, row) {
 
     <StatsCards :stats="statCards" :loading="status === 'loading' && !stats" />
 
-    <ListToolbar v-model:search="search" :search-placeholder="t('bagRequests.index.searchPlaceholder')">
+    <ListToolbar
+      v-model:search="search"
+      :search-placeholder="t('bagRequests.index.searchPlaceholder')"
+    >
       <template #filters>
-        <DropdownList
+        <AppSelect
+          variant="filter"
           :model-value="filters.filters.status"
           :options="statusFilterOptions"
-          :placeholder="t('bagRequests.filters.status')"
+          :label="t('bagRequests.filters.status')"
           @update:model-value="filters.setFilter('status', $event)"
         />
       </template>
@@ -152,7 +185,11 @@ function onAction(key, row) {
       </template>
       <template #cell-reference="{ item }">
         <span class="bag-requests__reference">
-          {{ t('bagRequests.referenceValue', { score: n(item.referenceSnapshot.scorePercent, 'default') }) }}
+          {{
+            t('bagRequests.referenceValue', {
+              score: n(item.referenceSnapshot.scorePercent, 'default'),
+            })
+          }}
         </span>
       </template>
       <template #cell-paidAt="{ item }">
@@ -163,13 +200,18 @@ function onAction(key, row) {
       </template>
       <template #cell-evaluator="{ item }">
         <span v-if="item.assignedEvaluatorName" class="bag-requests__evaluator">
-          <i class="fa-solid fa-user-check bag-requests__evaluator-icon" aria-hidden="true"></i>
+          <AppIcon name="user-check" class="bag-requests__evaluator-icon" />
           {{ localized(item.assignedEvaluatorName) }}
         </span>
         <span v-else class="bag-requests__unassigned">{{ t('bagRequests.unassigned') }}</span>
       </template>
       <template #cell-actions="{ item }">
-        <ActionsDropdown v-if="rowActions(item).length" :actions="rowActions(item)" @select="onAction($event, item)" />
+        <AppMenu
+          v-if="rowActions(item).length"
+          :actions="rowActions(item)"
+          :label="t('components.actions.menuFor', { name: localized(item.entityName) })"
+          @select="onAction($event, item)"
+        />
         <span v-else class="bag-requests__no-actions">—</span>
       </template>
     </DataTable>

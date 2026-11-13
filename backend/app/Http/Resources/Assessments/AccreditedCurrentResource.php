@@ -6,6 +6,8 @@ namespace App\Http\Resources\Assessments;
 
 use App\Data\Assessments\AccreditedCurrent;
 use App\Models\Assessments\Assessment;
+use App\Support\Paths\PathPricingPresenter;
+use App\Support\Periods\PeriodPresenter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -26,11 +28,26 @@ final class AccreditedCurrentResource extends JsonResource
                 'payment_id' => $payment->public_id,
                 'reference' => $payment->reference,
                 'status' => $payment->status->value,
-                'expires_at' => $payment->expires_at->toIso8601String(),
+                'channel' => $payment->channel->value,
+                'expires_at' => $payment->expires_at?->toIso8601String(),
             ],
-            'active' => $this->present($this->resource->active, $request),
+            'active' => $this->presentActive($request),
             'latest_closed' => $this->present($this->resource->latestClosed, $request),
+            'periodic' => PeriodPresenter::view($this->resource->period),
+            'submission' => $this->resource->submission->toArray(),
+            'apply' => $this->resource->apply->toArray(),
+            'pricing' => PathPricingPresenter::present($this->resource->pricing),
         ];
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function presentActive(Request $request): ?array
+    {
+        $active = $this->present($this->resource->active, $request);
+
+        return $active === null ? null : [...$active, 'progress' => $this->resource->activeProgress?->toArray()];
     }
 
     /**

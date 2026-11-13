@@ -1,16 +1,20 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import CriteriaVersionBanner from './CriteriaVersionBanner.vue'
 import CriteriaProblemList from './CriteriaProblemList.vue'
 import CriteriaPublishDialog from './CriteriaPublishDialog.vue'
 import CriteriaTextCorrectionDialog from './CriteriaTextCorrectionDialog.vue'
+import CriteriaCycleBindings from './CriteriaCycleBindings.vue'
+import { useCycleBindings } from '@/composables/useCycleBindings'
 import { useCriteriaAccess } from '@/composables/useCriteriaAccess'
 import { useConsistencyCheck } from '@/composables/usePublishCriteria'
 import { useDraftLifecycle } from '@/composables/useDraftLifecycle'
 import { toast } from '@/composables/useToast'
+import { success } from '@/composables/useSuccess'
 import { publishSummary } from '@/utils/criteriaPublishSummary'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   version: { type: Object, required: true },
@@ -23,15 +27,25 @@ const { t } = useI18n()
 const access = useCriteriaAccess(computed(() => props.version))
 const consistency = useConsistencyCheck()
 const lifecycle = useDraftLifecycle()
+const cycles = useCycleBindings()
 
 const publishOpen = ref(false)
 const correctionOpen = ref(false)
 const creating = ref(false)
 
+function loadBindings() {
+  if (access.isDraft.value) cycles.load(props.version.id)
+}
+
 watch(
   () => props.version.id,
-  () => consistency.clear(),
+  () => {
+    consistency.clear()
+    loadBindings()
+  },
 )
+
+onMounted(loadBindings)
 
 const canStartDraft = computed(
   () => access.isFrozen.value && access.canManage.value && !props.draft,
@@ -57,7 +71,7 @@ async function runCheck() {
 }
 
 function onPublished(outcome) {
-  toast.success(publishSummary(t, outcome), 9000)
+  success.show(publishSummary(t, outcome))
   emit('changed', { versionId: outcome.data.id })
 }
 
@@ -77,7 +91,7 @@ function onCorrected(outcome) {
         <BaseButton
           v-if="canStartDraft"
           variant="primary"
-          icon="fa-solid fa-copy"
+          icon="copy"
           :loading="creating"
           @click="startDraft"
         >
@@ -86,7 +100,7 @@ function onCorrected(outcome) {
         <BaseButton
           v-if="access.canCorrectText.value"
           variant="secondary"
-          icon="fa-solid fa-spell-check"
+          icon="pen-line"
           @click="correctionOpen = true"
         >
           {{ t('criteria.version.correctLabel') }}
@@ -94,7 +108,7 @@ function onCorrected(outcome) {
         <template v-if="access.isDraft.value">
           <BaseButton
             variant="secondary"
-            icon="fa-solid fa-list-check"
+            icon="list-check"
             :loading="consistency.checking.value"
             @click="runCheck"
           >
@@ -103,22 +117,22 @@ function onCorrected(outcome) {
           <BaseButton
             v-if="access.canPublishDraft.value"
             variant="primary"
-            icon="fa-solid fa-upload"
+            icon="upload"
             @click="publishOpen = true"
           >
             {{ t('criteria.version.publish') }}
           </BaseButton>
-          <BaseButton
-            v-if="access.canManage.value"
-            variant="danger"
-            icon="fa-solid fa-trash-can"
-            @click="discard"
-          >
+          <BaseButton v-if="access.canManage.value" variant="danger" icon="trash" @click="discard">
             {{ t('criteria.version.discardDraft') }}
           </BaseButton>
         </template>
       </template>
     </CriteriaVersionBanner>
+
+    <CriteriaCycleBindings
+      v-if="access.isDraft.value && cycles.isRelevant.value"
+      :bindings="cycles.bindings.value"
+    />
 
     <CriteriaProblemList
       v-if="consistency.problems.value.length"
@@ -130,7 +144,7 @@ function onCorrected(outcome) {
       class="criteria-version-panel__consistent"
       role="status"
     >
-      <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+      <AppIcon name="check-circle" />
       {{ t('criteria.version.consistent') }}
     </p>
 

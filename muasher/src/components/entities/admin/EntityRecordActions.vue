@@ -16,7 +16,12 @@ const actions = computed(() => actionsFor(props.entity))
 </script>
 
 <template>
-  <div v-if="actions.length" class="entity-record__actions" role="group" :aria-label="t('entities.record.actionsLabel')">
+  <div
+    v-if="actions.length"
+    class="entity-record__actions"
+    role="group"
+    :aria-label="t('entities.record.actionsLabel')"
+  >
     <BaseButton
       v-for="action in actions"
       :key="action.key"

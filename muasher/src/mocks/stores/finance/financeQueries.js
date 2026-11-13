@@ -3,8 +3,20 @@ import { normalizeSearchText } from '../searchIndex'
 import { financeState, receiptOf } from './financeState'
 import { fieldMessage, financeReject } from './financeRejection'
 import { fromMinor, toMinor } from './financeMoney'
+import { paymentHidesTestPayments } from '../integrations/paymentIntegration'
+import { findEntity } from '../entitiesStore'
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+const PAYMENT_STATUS_VALUES = [
+  'created',
+  'pending',
+  'under-review',
+  'paid',
+  'failed',
+  'rejected',
+  'cancelled',
+  'refunded',
+]
 
 export function isCalendarDate(value) {
   if (!DATE_PATTERN.test(value)) return false
@@ -17,17 +29,28 @@ const MAX_PER_PAGE = 100
 const SEARCH_MIN = 2
 const SEARCH_MAX = 100
 
+const PURPOSES = ['accredited', 'bag', 'self', 'award']
+
 export const LIST_RULES = {
-  mine: { status: ['created', 'pending', 'paid', 'failed', 'cancelled', 'refunded'], purpose: ['accredited', 'bag'] },
+  mine: {
+    status: PAYMENT_STATUS_VALUES,
+    purpose: PURPOSES,
+    channel: ['electronic', 'bank_transfer'],
+    method: ['creditcard', 'mada', 'applepay', 'stcpay'],
+    from: 'date',
+    to: 'date',
+  },
   transactions: {
-    status: ['created', 'pending', 'paid', 'failed', 'cancelled', 'refunded'],
-    purpose: ['accredited', 'bag'],
+    status: PAYMENT_STATUS_VALUES,
+    purpose: PURPOSES,
+    channel: ['electronic', 'bank_transfer'],
     method: ['creditcard', 'mada', 'applepay', 'stcpay'],
     mode: ['test', 'live'],
     from: 'date',
     to: 'date',
+    entityId: 'id',
   },
-  refunds: { purpose: ['accredited', 'bag'], from: 'date', to: 'date' },
+  refunds: { purpose: PURPOSES, from: 'date', to: 'date' },
   events: {
     source: ['checkout', 'verification', 'webhook', 'expiry', 'reconciliation', 'admin'],
     result: ['applied', 'pending', 'ignored', 'rejected', 'unmatched', 'late_payment'],
@@ -55,22 +78,38 @@ function filterEntries(query) {
   return entries
 }
 
+function listedValues(value) {
+  return String(value).split(',')
+}
+
+function matchesList(filter, value) {
+  return !filter || listedValues(filter).includes(value)
+}
+
 function checkFilter(errors, rules, key, value) {
   const rule = rules[key]
   if (rule === undefined) return errors.push(['filter', fieldMessage('invalid')])
   if (value === '') return null
-  if (rule === 'date' && !isCalendarDate(value)) return errors.push([`filter.${key}`, fieldMessage('date')])
-  if (Array.isArray(rule) && !rule.includes(value)) return errors.push([`filter.${key}`, fieldMessage('choice')])
+  if (rule === 'date' && !isCalendarDate(value))
+    return errors.push([`filter.${key}`, fieldMessage('date')])
+  if (rule === 'id' && !(Number.isInteger(Number(value)) && Number(value) >= 1))
+    return errors.push([`filter.${key}`, fieldMessage('invalid')])
+  if (Array.isArray(rule) && !listedValues(value).every((item) => rule.includes(item)))
+    return errors.push([`filter.${key}`, fieldMessage('choice')])
   return null
 }
 
 function checkPaging(errors, query) {
   const perPage = query.get('perPage')
   const page = query.get('page')
-  if (perPage !== null && !(Number.isInteger(Number(perPage)) && Number(perPage) >= 1 && Number(perPage) <= MAX_PER_PAGE)) {
+  if (
+    perPage !== null &&
+    !(Number.isInteger(Number(perPage)) && Number(perPage) >= 1 && Number(perPage) <= MAX_PER_PAGE)
+  ) {
     errors.push(['perPage', fieldMessage('invalid')])
   }
-  if (page !== null && !(Number.isInteger(Number(page)) && Number(page) >= 1)) errors.push(['page', fieldMessage('invalid')])
+  if (page !== null && !(Number.isInteger(Number(page)) && Number(page) >= 1))
+    errors.push(['page', fieldMessage('invalid')])
 }
 
 function checkSearch(errors, query, { searchable }) {
@@ -78,12 +117,27 @@ function checkSearch(errors, query, { searchable }) {
   if (search === null || search === '') return
   if (!searchable) return errors.push(['search', fieldMessage('invalid')])
   const length = normalizeSearchText(search).replace(/\s+/g, '').length
-  if (length < SEARCH_MIN || search.length > SEARCH_MAX) errors.push(['search', fieldMessage('invalid')])
+  if (length < SEARCH_MIN || search.length > SEARCH_MAX)
+    errors.push(['search', fieldMessage('invalid')])
   return null
 }
 
 function checkRange(errors, filters) {
-  if (filters.from && filters.to && filters.to < filters.from) errors.push(['filter.to', fieldMessage('date_order')])
+  if (filters.from && filters.to && filters.to < filters.from)
+    errors.push(['filter.to', fieldMessage('date_order')])
+}
+
+function rejectFieldErrors(errors) {
+  if (errors.length)
+    throw financeReject.validation(
+      Object.fromEntries(errors.map(([field, message]) => [field, [message]])),
+    )
+}
+
+export function validatedPaging(query) {
+  const errors = []
+  checkPaging(errors, query)
+  rejectFieldErrors(errors)
 }
 
 export function listFilters(query, kind, { searchable = false, sortable = false } = {}) {
@@ -95,9 +149,14 @@ export function listFilters(query, kind, { searchable = false, sortable = false 
   checkSearch(errors, query, { searchable })
   checkRange(errors, filters)
   const sort = query.get('sort')
-  if (sort !== null && (!sortable || !TRANSACTION_SORTS[sort])) errors.push(['sort', fieldMessage('choice')])
-  if (errors.length) throw financeReject.validation(Object.fromEntries(errors.map(([field, message]) => [field, [message]])))
-  return { ...filters, search: normalizeSearchText(query.get('search') ?? ''), sort: sort ?? '-created_at' }
+  if (sort !== null && (!sortable || !TRANSACTION_SORTS[sort]))
+    errors.push(['sort', fieldMessage('choice')])
+  rejectFieldErrors(errors)
+  return {
+    ...filters,
+    search: normalizeSearchText(query.get('search') ?? ''),
+    sort: sort ?? '-created_at',
+  }
 }
 
 function dayStart(date) {
@@ -111,12 +170,33 @@ export function withinDates(iso, { from, to }) {
   return true
 }
 
+function ownSearchFields(payment) {
+  return [
+    payment.reference,
+    receiptOf(payment.id)?.number ?? '',
+    findEntity(payment.initiatedByUserId)?.owner?.name ?? '',
+  ]
+}
+
+function matchesAny(values, term) {
+  return values.some((value) => normalizeSearchText(value).includes(term))
+}
+
 function paymentMatches(payment, term) {
   if (!term) return true
-  const receiptNumber = receiptOf(payment.id)?.number ?? ''
-  return [payment.reference, payment.providerPaymentId ?? '', payment.entityName.ar, payment.entityName.en ?? '', receiptNumber].some(
-    (value) => normalizeSearchText(value).includes(term),
+  return matchesAny(
+    [
+      ...ownSearchFields(payment),
+      payment.providerPaymentId ?? '',
+      payment.entityName.ar,
+      payment.entityName.en ?? '',
+    ],
+    term,
   )
+}
+
+function ownPaymentMatches(payment, term) {
+  return !term || matchesAny(ownSearchFields(payment), term)
 }
 
 function matchesPaymentFilters(payment, filters) {
@@ -124,6 +204,8 @@ function matchesPaymentFilters(payment, filters) {
     (!filters.status || payment.status === filters.status) &&
     (!filters.purpose || payment.purpose === filters.purpose) &&
     (!filters.method || payment.method === filters.method) &&
+    (!filters.channel || (payment.channel ?? 'electronic') === filters.channel) &&
+    (!filters.entityId || payment.entityId === Number(filters.entityId)) &&
     withinDates(payment.createdAt, filters)
   )
 }
@@ -140,7 +222,10 @@ function compareBy([field, direction]) {
 export function filteredTransactions(filters, mode = filters.mode ?? 'live') {
   return financeState()
     .payments.filter((payment) => payment.mode === mode)
-    .filter((payment) => matchesPaymentFilters(payment, filters) && paymentMatches(payment, filters.search))
+    .filter(
+      (payment) =>
+        matchesPaymentFilters(payment, filters) && paymentMatches(payment, filters.search),
+    )
 }
 
 export function sortedTransactions(filters) {
@@ -148,7 +233,11 @@ export function sortedTransactions(filters) {
 }
 
 function sumWhere(payments, status, field) {
-  return fromMinor(payments.filter((payment) => payment.status === status).reduce((sum, payment) => sum + toMinor(payment[field]), 0))
+  return fromMinor(
+    payments
+      .filter((payment) => payment.status === status)
+      .reduce((sum, payment) => sum + toMinor(payment[field]), 0),
+  )
 }
 
 export function statsOf(payments) {
@@ -156,7 +245,14 @@ export function statsOf(payments) {
   return {
     transactionsCount: payments.length,
     completedCount: count(['paid']),
-    incompleteCount: count(['created', 'pending', 'failed', 'cancelled']),
+    incompleteCount: count([
+      'created',
+      'pending',
+      'under-review',
+      'failed',
+      'rejected',
+      'cancelled',
+    ]),
     refundedCount: count(['refunded']),
     totalIncome: sumWhere(payments, 'paid', 'total'),
     totalVat: sumWhere(payments, 'paid', 'vatAmount'),
@@ -177,10 +273,35 @@ export function ownStatsOf(payments) {
 }
 
 export function ownPayments(user, filters) {
+  const hidesTest = paymentHidesTestPayments()
   return financeState()
-    .payments.filter((payment) => user.entityId !== null && payment.entityId === Number(user.entityId))
-    .filter((payment) => (!filters.status || payment.status === filters.status) && (!filters.purpose || payment.purpose === filters.purpose))
+    .payments.filter(
+      (payment) => user.entityId !== null && payment.entityId === Number(user.entityId),
+    )
+    .filter((payment) => !hidesTest || payment.mode !== 'test')
+    .filter(
+      (payment) =>
+        matchesList(filters.status, payment.status) &&
+        (!filters.purpose || payment.purpose === filters.purpose) &&
+        (!filters.method || payment.method === filters.method) &&
+        (!filters.channel || (payment.channel ?? 'electronic') === filters.channel) &&
+        withinDates(payment.createdAt, filters) &&
+        ownPaymentMatches(payment, filters.search),
+    )
     .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+}
+
+function countKeyOf(status) {
+  return status.replace(/-([a-z])/g, (match, letter) => letter.toUpperCase())
+}
+
+export function ownStatusCountsOf(payments) {
+  return Object.fromEntries(
+    PAYMENT_STATUS_VALUES.map((status) => [
+      countKeyOf(status),
+      payments.filter((payment) => payment.status === status).length,
+    ]),
+  )
 }
 
 export function page(items, query) {

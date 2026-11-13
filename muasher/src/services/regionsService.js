@@ -11,7 +11,11 @@ export const regionsService = {
     return read('listCities', () => apiClient.get('/cities', { params }), params)
   },
   createCity(regionId, payload) {
-    return write('createCity', () => apiClient.post(`/regions/${regionId}/cities`, payload), payload)
+    return write(
+      'createCity',
+      () => apiClient.post(`/regions/${regionId}/cities`, payload),
+      payload,
+    )
   },
   updateCity(id, payload) {
     return write('updateCity', () => apiClient.put(`/cities/${id}`, payload), payload)

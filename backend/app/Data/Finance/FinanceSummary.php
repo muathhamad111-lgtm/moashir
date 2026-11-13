@@ -8,8 +8,9 @@ final readonly class FinanceSummary
 {
     /**
      * @param  array<string, FinanceStats>  $byPurpose
+     * @param  array<string, FinanceStats>  $byChannel
      */
-    public function __construct(public FinanceStats $overall, public array $byPurpose) {}
+    public function __construct(public FinanceStats $overall, public array $byPurpose, public array $byChannel) {}
 
     /**
      * @return array<string, mixed>
@@ -22,6 +23,12 @@ final readonly class FinanceSummary
             $purposes[] = ['purpose' => $purpose, ...$stats->toArray()];
         }
 
-        return [...$this->overall->toArray(), 'by_purpose' => $purposes];
+        $channels = [];
+
+        foreach ($this->byChannel as $channel => $stats) {
+            $channels[] = ['channel' => $channel, ...$stats->toArray()];
+        }
+
+        return [...$this->overall->toArray(), 'by_purpose' => $purposes, 'by_channel' => $channels];
     }
 }

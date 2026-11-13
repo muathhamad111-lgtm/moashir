@@ -2,6 +2,7 @@ import { FEEDBACK_FIELDS } from '@/constants/accredited'
 import { fromCanonicalStatus } from '@/utils/canonicalStatus'
 import { toAssessment, toAssessmentResult, toCriteriaUpdate } from './assessments'
 import { toCompletionStatus } from './accreditedStatus'
+import { toApplyGate, toPathPricing, toPeriodic, toRequestPeriod, toSubmissionGate } from './paths'
 
 export function toEvidence(raw = {}) {
   return {
@@ -22,7 +23,12 @@ export function toEvidenceList(items) {
 }
 
 function toCompletionItem(raw) {
-  return { subCriterionId: raw.subCriterionId ?? null, code: raw.code ?? '', kind: raw.kind ?? null, note: raw.note ?? null }
+  return {
+    subCriterionId: raw.subCriterionId ?? null,
+    code: raw.code ?? '',
+    kind: raw.kind ?? null,
+    note: raw.note ?? null,
+  }
 }
 
 export function toCompletionRequest(raw) {
@@ -48,7 +54,11 @@ function toUploadLimits(raw) {
 }
 
 function toMissingItem(raw) {
-  return { subCriterionId: raw.subCriterionId ?? null, code: raw.code ?? '', attachmentKey: raw.attachmentKey ?? null }
+  return {
+    subCriterionId: raw.subCriterionId ?? null,
+    code: raw.code ?? '',
+    attachmentKey: raw.attachmentKey ?? null,
+  }
 }
 
 function toMissing(raw) {
@@ -64,7 +74,7 @@ export function toCvSheet(raw) {
 
 export function toAccreditedForm(raw = {}) {
   return {
-    assessment: toAssessment(raw.assessment),
+    assessment: { ...toAssessment(raw.assessment), ...toRequestPeriod(raw.assessment ?? {}) },
     criteria: raw.criteria ?? null,
     cv: toCvSheet(raw.cv),
     evidence: toEvidenceList(raw.evidence),
@@ -81,14 +91,53 @@ export function toCvSaved(raw = {}) {
 
 function toAwaitingPayment(raw) {
   if (!raw) return null
-  return { paymentId: raw.paymentId ?? null, reference: raw.reference ?? '', status: raw.status ?? null, expiresAt: raw.expiresAt ?? null }
+  return {
+    paymentId: raw.paymentId ?? null,
+    reference: raw.reference ?? '',
+    channel: raw.channel ?? 'electronic',
+    status: raw.status ?? null,
+    expiresAt: raw.expiresAt ?? null,
+  }
+}
+
+function toRemainingSub(raw = {}) {
+  return {
+    subCriterionId: raw.subCriterionId ?? null,
+    code: raw.code ?? '',
+    name: raw.name ?? null,
+    cvMissing: raw.cvMissing === true,
+    attachmentsRequired: Number(raw.attachmentsRequired ?? 0),
+    attachmentsUploaded: Number(raw.attachmentsUploaded ?? 0),
+  }
+}
+
+export function toSubmissionProgress(raw) {
+  if (!raw) return null
+  return {
+    subsTotal: Number(raw.subsTotal ?? 0),
+    subsComplete: Number(raw.subsComplete ?? 0),
+    remaining: (raw.remaining ?? []).map(toRemainingSub),
+  }
+}
+
+function toActiveRequest(raw) {
+  if (!raw) return null
+  return {
+    ...toAssessment(raw),
+    ...toRequestPeriod(raw),
+    progress: toSubmissionProgress(raw.progress),
+  }
 }
 
 export function toAccreditedCurrent(raw = {}) {
   return {
     awaitingPayment: toAwaitingPayment(raw.awaitingPayment),
-    active: raw.active ? toAssessment(raw.active) : null,
+    active: toActiveRequest(raw.active),
     latestClosed: raw.latestClosed ? toAssessment(raw.latestClosed) : null,
+    periodic: toPeriodic(raw.periodic),
+    submission: toSubmissionGate(raw.submission),
+    apply: toApplyGate(raw.apply),
+    pricing: toPathPricing(raw.pricing),
   }
 }
 
@@ -143,11 +192,9 @@ export function toServicePrices(raw = {}) {
 
 export function toAssessmentSettings(raw = {}) {
   return {
-    accreditedReviewSlaDays: raw.accreditedReviewSlaDays ?? null,
-    accreditedReviewSlaLimits: { min: raw.accreditedReviewSlaLimits?.min ?? 1, max: raw.accreditedReviewSlaLimits?.max ?? 120 },
-    uploadMaxFileMb: raw.uploadMaxFileMb ?? null,
-    evidenceAllowedTypes: raw.evidenceAllowedTypes ?? [],
-    evidenceMaxFilesPerSub: raw.evidenceMaxFilesPerSub ?? null,
-    evidenceTypeCatalog: raw.evidenceTypeCatalog ?? [],
+    generalUploadMaxFileMb: raw.generalUploadMaxFileMb ?? null,
+    advancedMinEntityAgeYears: raw.advancedMinEntityAgeYears ?? null,
+    advancedDisqualificationScore: raw.advancedDisqualificationScore ?? null,
+    committeeEntityDataVisibility: raw.committeeEntityDataVisibility ?? null,
   }
 }

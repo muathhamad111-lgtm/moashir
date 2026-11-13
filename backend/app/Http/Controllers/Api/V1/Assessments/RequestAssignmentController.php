@@ -23,7 +23,7 @@ final class RequestAssignmentController
 {
     public function assessors(ListEligibleAssessorsRequest $request, #[CurrentUser] User $actor, ListEligibleAssessors $list): JsonResponse
     {
-        return ApiResponse::data(EligibleAssessorResource::collection($list->handle($actor, $request->assessment(), $request->search()))->resolve($request));
+        return ApiResponse::data(EligibleAssessorResource::collection($list->handle($actor, $request->assessmentPath(), $request->assessment(), $request->search()))->resolve($request));
     }
 
     public function assign(AssignAssessorRequest $request, Assessment $assessment, #[CurrentUser] User $actor, AssignAssessor $assign, ShowRequest $show): JsonResponse

@@ -1,14 +1,16 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import UserForm from '@/components/users/UserForm.vue'
 import { createTestGlobals } from '@/test-utils'
 
 let wrapper
+let save
 
 function factory(props = {}) {
+  save = vi.fn().mockResolvedValue(undefined)
   const globals = createTestGlobals({ locale: 'en' })
   wrapper = mount(UserForm, {
-    props: { modelValue: true, user: null, ...props },
+    props: { modelValue: true, user: null, save, ...props },
     attachTo: document.body,
     global: { ...globals, stubs: { teleport: true } },
   })
@@ -28,7 +30,7 @@ describe('UserForm', () => {
   it('renders the create title and the person/roles fields', () => {
     factory()
     const title = document.querySelector('.modal__title')
-    expect(title.textContent).toContain('Add user')
+    expect(title.textContent).toContain('Invite user')
     expect(document.querySelector('input[name="name"]')).toBeTruthy()
     expect(document.querySelector('input[name="email"]')).toBeTruthy()
     expect(
@@ -44,7 +46,7 @@ describe('UserForm', () => {
     expect(document.querySelector('.field__error')).toBeTruthy()
   })
 
-  it('emits saved with a name/email/roles/status payload on a valid submit', async () => {
+  it('saves a name/email/roles payload through the save prop, then emits saved and closes', async () => {
     factory()
     await wrapper.find('input[name="name"]').setValue('Abdullah Al-Qahtani')
     await wrapper.find('input[name="email"]').setValue('abdullah@moashir.example.sa')
@@ -52,17 +54,16 @@ describe('UserForm', () => {
     await flushPromises()
     await submitForm()
     await flushPromises()
-    const saved = wrapper.emitted('saved')
-    expect(saved).toHaveLength(1)
-    expect(saved[0][0]).toEqual({
+    expect(save).toHaveBeenCalledWith({
       id: null,
       payload: {
         name: 'Abdullah Al-Qahtani',
         email: 'abdullah@moashir.example.sa',
         roles: ['system_admin'],
-        status: 'active',
       },
     })
+    expect(wrapper.emitted('saved')).toEqual([[{ id: null }]])
+    expect(wrapper.emitted('update:modelValue')).toEqual([[false]])
   })
 
   it('prefills fields and carries the id in edit mode', async () => {
@@ -71,7 +72,7 @@ describe('UserForm', () => {
       name: 'Sarah Whitfield',
       email: 'sarah@moashir.example.sa',
       roles: ['content_officer'],
-      status: 'inactive',
+      status: 'suspended',
     }
     factory({ user })
     await flushPromises()

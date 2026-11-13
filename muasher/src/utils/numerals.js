@@ -15,3 +15,7 @@ export function toWesternDigits(value) {
     .replace(ARABIC_DECIMAL_SEPARATOR, '.')
     .trim()
 }
+
+export function digitsOnly(value) {
+  return toWesternDigits(value).replace(/\D/g, '')
+}

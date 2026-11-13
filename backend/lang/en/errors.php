@@ -24,6 +24,8 @@ return [
         'malformed' => 'The request is malformed.',
         'not_acceptable' => 'The API only returns JSON. Send the header Accept: application/json.',
         'too_large' => 'The request is too large.',
+        'not_paid_draft' => 'A reminder can only be sent for a paid accredited request that is still a draft with the entity.',
+        'reminder_too_soon' => 'This entity was reminded in the last 24 hours. You can send a new reminder later.',
     ],
     'csrf' => [
         'token_mismatch' => 'Your session has expired. Please refresh and try again.',
@@ -35,10 +37,13 @@ return [
         'transition_illegal' => 'This action is not allowed in the current state.',
     ],
     'credentials' => [
-        'invalid' => 'The email or password is incorrect.',
+        'invalid' => 'The sign-in details are incorrect.',
     ],
-    'login' => [
-        'mode_disabled' => 'This sign-in method is not enabled.',
+    'phone' => [
+        'missing' => 'Add a mobile number to your account before verifying it.',
+        'already_verified' => 'This mobile number is already verified.',
+        'sms_unavailable' => 'Text messages cannot be sent right now. Please try again later.',
+        'in_use' => 'This mobile number is already verified on another account. Contact the platform team.',
     ],
     'otp' => [
         'invalid' => 'The verification code is incorrect.',
@@ -61,7 +66,9 @@ return [
     ],
     'token' => [
         'invalid' => 'This link is invalid or has expired.',
+        'unknown' => 'The selected color is not part of the approved palette.',
     ],
+    'contrast_fail' => 'The selected color does not meet the WCAG 2.1 AA contrast ratio in light and dark mode.',
     'invitation' => [
         'expired' => 'This invitation has expired. Please ask the System Administrator for a new one.',
         'invalid' => 'This invitation is invalid.',
@@ -131,6 +138,7 @@ return [
     ],
     'self' => [
         'draft_exists' => 'You already have an open self-assessment draft. Continue it or submit it before starting a new one.',
+        'payment_being_processed' => 'Your self-assessment payment is being processed. Your draft will open shortly.',
     ],
     'scores' => [
         'incomplete' => 'Score every item before submitting the assessment.',
@@ -149,6 +157,7 @@ return [
         'entity_required' => 'Only an entity account can start a self assessment.',
         'entity_not_active' => 'The entity account must be active to take part in assessments.',
         'criteria_update_in_progress' => 'The assessment criteria of this draft are being updated after the entity account was restored. Try submitting again shortly.',
+        'summary_not_applicable' => 'The assessor summary applies to accredited assessments only.',
     ],
     'provider_error' => 'The provider rejected the request or could not be reached. Review the settings and try again.',
     'provider_unavailable' => 'This service is temporarily unavailable. Please try again later.',
@@ -160,8 +169,20 @@ return [
     'ai' => [
         'data_transfer_acknowledgement_required' => 'Acknowledge that visitor questions and knowledge-base excerpts are sent to a provider outside the Kingdom before activating it.',
     ],
+    'path' => [
+        'unavailable' => 'This path is not available right now.',
+        'payment_required' => 'This path needs a payment first. Continue to checkout to start.',
+    ],
+    'profile' => [
+        'section_stale' => 'This section was changed after you opened it. Review the current values and save again.',
+    ],
+    'prices' => [
+        'stale_version' => 'This price was changed by someone else. Review the current price and try again.',
+        'no_scheduled_version' => 'There is no scheduled price to cancel for this path.',
+    ],
     'payment' => [
-        'price_not_configured' => 'The price of this service is not set yet. Please try again later.',
+        'not_required' => 'This service is free right now. No payment is needed.',
+        'award_cycle_not_found' => 'The selected award cycle was not found.',
         'entity_required' => 'Only an entity account can pay for a service.',
         'entity_not_active' => 'The entity account must be active to pay for a service.',
         'checkout_in_progress' => 'This payment is being prepared. Please try again in a moment.',
@@ -174,6 +195,18 @@ return [
         'confirmation_in_use' => 'This confirmation cannot be withdrawn while the payment method that depends on it is enabled.',
         'webhook_requires_https' => 'Automatic webhook registration needs the platform to run on an HTTPS address.',
         'apple_pay_file_missing' => 'No Apple Pay domain association file has been uploaded.',
+        'channel_not_available' => 'This payment method is not available right now. Choose another payment method.',
+        'channel_not_supported' => 'This action does not apply to bank-transfer payment requests.',
+        'open_order_exists' => 'You already have an open payment request for this service. Complete it or wait for its review.',
+        'gateway_not_ready' => 'Electronic payment cannot be enabled before the payment gateway is configured and activated.',
+        'bank_account_required' => 'Add at least one active bank account before enabling bank transfer.',
+    ],
+    'bank_account' => [
+        'not_selectable' => 'This bank account does not accept transfers. Choose another account from the list.',
+        'pending_transfers' => 'Transfers awaiting approval point to this account. Approve or reject them first.',
+        'last_active_account' => 'This is the last active bank account and bank transfer is enabled. Add another account or disable bank transfer first.',
+        'limit_reached' => 'The maximum number of active bank accounts is reached. Deactivate an account before adding or activating another.',
+        'payee_fields_immutable' => 'Payee details cannot be changed after saving. Add a new account, then deactivate or delete the old one.',
     ],
     'sms' => [
         'recipient_not_in_test_numbers' => 'In test mode, messages can be sent only to the allowed test numbers.',
@@ -212,6 +245,7 @@ return [
         'infected' => 'The file was rejected by the malware scan.',
         'scan_failed' => 'The file could not be scanned for malware. Please try again later.',
         'not_clean' => 'This file is not available for download.',
+        'not_usable' => 'The selected image does not exist, is not clean, or belongs to other content. Upload it again.',
     ],
     'signature' => [
         'invalid' => 'This download link is not valid.',
@@ -219,6 +253,24 @@ return [
     ],
     'document' => [
         'renderer_unavailable' => 'The document cannot be generated at the moment. Please try again later.',
+        'renderer_busy' => 'Another document is being generated. Please try again in a moment.',
+        'render_failed' => 'The document could not be generated. Please try again later.',
+    ],
+    'certificate' => [
+        'issuance_disabled' => 'Issuing accredited certificates is turned off in the certificate settings.',
+        'assessment_not_completed' => 'A certificate can be issued only for a completed accredited assessment.',
+        'not_issued' => 'This certificate is not in force.',
+        'revoked' => 'This certificate was revoked and can no longer be downloaded.',
+        'superseded' => 'This certificate was replaced by a newer certificate.',
+        'replacement_exists' => 'This certificate was already replaced by another certificate of the same request.',
+        'suspended' => 'This certificate is suspended while its assessment is reviewed again. A new certificate is issued when the review is completed.',
+    ],
+    'report' => [
+        'not_available' => 'The feedback report is not available yet.',
+    ],
+    'insights' => [
+        'result_not_eligible' => 'This result is not available for the excellence tools.',
+        'generic_text_not_deletable' => 'The generic text of a maturity band cannot be deleted; edit it instead.',
     ],
     'accredited' => [
         'request_open' => 'Your entity already has an open accredited assessment request. Complete it before paying for a new one.',
@@ -245,6 +297,13 @@ return [
         'invalid' => 'Choose an active assessor account.',
         'same' => 'The request is already assigned to this assessor.',
         'not_in_cycle' => 'This assessor is not an initial assessor of the award cycle of this request.',
+        'not_qualified' => 'This assessor is not qualified for the path of this request.',
+    ],
+    'assessor_qualification' => [
+        'not_assessor' => 'Assessment paths can only be set for staff accounts that hold the assessor role.',
+    ],
+    'request_scope' => [
+        'not_follower' => 'Request paths can only be limited for staff accounts that follow the requests queue.',
     ],
     'sod_self_assignment' => 'You cannot assign a request to yourself.',
     'evidence' => [
@@ -269,6 +328,7 @@ return [
     ],
     'advanced' => [
         'request_exists' => 'Your entity already has a request in this award cycle.',
+        'payment_being_processed' => 'Your award entry-fee payment is being processed. Your application will open shortly.',
         'conditions' => [
             'min_entity_age' => 'The entity must be at least :required years old to apply (current age: :actual years).',
             'region' => 'The region of the entity is not covered by this award cycle.',
@@ -312,5 +372,44 @@ return [
     ],
     'winners' => [
         'none' => 'Rank at least one winner before approving.',
+    ],
+    'cms' => [
+        'section_key_taken' => 'Another section of this page already uses this key.',
+        'limit_reached' => 'The maximum number of entries has been reached.',
+        'page_empty' => 'The page has no enabled section to publish.',
+        'page_not_published' => 'This page is not published.',
+    ],
+    'legal' => [
+        'not_published' => 'No version of this text has been published.',
+        'draft_exists' => 'A draft of this text already exists. Edit, publish or discard it before creating another one.',
+        'version_not_draft' => 'This version is published and cannot be changed. Create a new draft to change the text.',
+        'version_taken' => 'Another version of the same text already uses this version label.',
+    ],
+    'slug' => [
+        'taken' => 'Another indicator already uses this address.',
+    ],
+    'kpi' => [
+        'featured_limit_reached' => 'At most :limit indicators can be shown on the homepage.',
+        'measurement_exists' => 'A measurement is already recorded for this date.',
+    ],
+    'category' => [
+        'in_use' => 'This category is used by indicators. Deactivate it instead, or move its indicators first.',
+    ],
+    'type' => [
+        'in_use' => 'This indicator type is used by indicators. Deactivate it instead.',
+    ],
+    'notification_preference' => [
+        'not_applicable' => 'This notification type is not delivered to your account.',
+        'locked' => 'This notification is mandatory on this channel and cannot be turned off.',
+    ],
+    'board' => [
+        'not_held' => 'This dashboard is not available to your account.',
+    ],
+    'contact' => [
+        'message_closed' => 'This message is closed. Open a new message through the contact form, or ask the team to reopen it.',
+        'assignee_not_eligible' => 'The selected staff member cannot handle contact messages.',
+    ],
+    'period' => [
+        'already_assessed' => 'Your entity already has a completed accredited result in this period. Your draft is kept and you can submit it when the next period starts.',
     ],
 ];

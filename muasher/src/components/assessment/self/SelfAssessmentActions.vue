@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   saving: { type: Boolean, default: false },
@@ -26,10 +27,14 @@ const hint = computed(() => {
 <template>
   <footer class="self-actions">
     <p v-if="hint" class="self-actions__hint" role="status">{{ hint }}</p>
+    <p v-if="!readOnly" class="submit-hint">
+      <AppIcon name="lock" />
+      {{ t('assessment.self.actions.submitHint') }}
+    </p>
     <div class="self-actions__buttons">
       <BaseButton
         variant="secondary"
-        icon="fa-regular fa-floppy-disk"
+        icon="save"
         :loading="saving"
         :disabled="readOnly || busy"
         @click="emit('save')"
@@ -38,7 +43,7 @@ const hint = computed(() => {
       </BaseButton>
       <BaseButton
         variant="primary"
-        icon="fa-solid fa-paper-plane"
+        icon="send"
         :loading="submitting"
         :disabled="readOnly || submitBlocked || busy"
         @click="emit('submit')"

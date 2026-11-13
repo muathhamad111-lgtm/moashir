@@ -16,6 +16,6 @@ final class SuspendUserController
 {
     public function __invoke(RequiredReasonRequest $request, User $managedUser, #[CurrentUser] User $actor, SuspendUser $suspendUser): JsonResponse
     {
-        return ApiResponse::resource(new UserResource($suspendUser->handle($actor, $managedUser, $request->reason())->load('roles')));
+        return ApiResponse::resource(new UserResource($suspendUser->handle($actor, $managedUser, $request->reason())->load(User::ADMINISTRATION_RELATIONS)));
     }
 }

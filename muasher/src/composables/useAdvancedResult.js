@@ -1,34 +1,23 @@
-import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { ref, shallowRef } from 'vue'
 import { assessmentsService } from '@/services/assessmentsService'
-import { localizedText } from '@/utils/localizedText'
+import { errorMessageOf, failureState } from '@/utils/award/loadState'
 
 export function useAdvancedResult(assessmentId) {
-  const { locale } = useI18n()
   const status = ref('loading')
   const errorMessage = ref('')
-  const result = ref(null)
-
-  function localized(content) {
-    return localizedText(content, locale.value)
-  }
+  const result = shallowRef(null)
 
   async function load() {
     status.value = 'loading'
     errorMessage.value = ''
     try {
-      const { data } = await assessmentsService.getAdvancedResult(assessmentId)
-      result.value = data
+      result.value = (await assessmentsService.getAdvancedResult(assessmentId.value)).data
       status.value = 'success'
     } catch (error) {
-      errorMessage.value = error?.normalized?.message ?? ''
-      status.value = 'error'
+      errorMessage.value = errorMessageOf(error)
+      status.value = failureState(error)
     }
   }
 
-  const available = computed(() => result.value?.available === true)
-  const resultKind = computed(() => result.value?.resultKind ?? null)
-  const feedbackItems = computed(() => result.value?.feedback?.items ?? [])
-
-  return { status, errorMessage, result, available, resultKind, feedbackItems, localized, load }
+  return { status, errorMessage, result, load }
 }

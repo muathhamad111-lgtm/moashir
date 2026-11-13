@@ -1,45 +1,48 @@
 <script setup>
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import BaseModal from '@/components/modal/BaseModal.vue'
-import BaseButton from '@/components/ui/BaseButton.vue'
+import DecisionDialog from '@/components/modal/DecisionDialog.vue'
+import { isolate } from '@/utils/bidi'
 
-defineProps({
+const props = defineProps({
   modelValue: { type: Boolean, required: true },
   number: { type: String, required: true },
+  period: { type: String, default: '' },
+  blockedUntil: { type: String, default: '' },
   resubmission: { type: Boolean, default: false },
   submitting: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:modelValue', 'confirm'])
 const { t } = useI18n()
+
+const isBlocked = computed(() => props.blockedUntil !== '')
+const title = computed(() => {
+  if (isBlocked.value)
+    return t('accredited.submit.blockedTitle', { date: isolate(props.blockedUntil) })
+  return props.resubmission ? t('accredited.submit.resubmitTitle') : t('accredited.submit.title')
+})
+const message = computed(() => {
+  if (isBlocked.value) return t('accredited.submit.blockedMessage')
+  return props.period ? t('accredited.submit.periodLine', { period: props.period }) : props.number
+})
+
+function onConfirm() {
+  if (isBlocked.value) emit('update:modelValue', false)
+  else emit('confirm')
+}
 </script>
 
 <template>
-  <BaseModal
+  <DecisionDialog
     :model-value="modelValue"
-    size="md"
-    :title="resubmission ? t('accredited.submit.resubmitTitle') : t('accredited.submit.title')"
-    :close-on-backdrop="!submitting"
+    :title="title"
+    :message="message"
+    :confirm-label="isBlocked ? t('actions.ok') : t('actions.send')"
+    :variant="isBlocked ? 'warning' : 'confirm'"
+    :icon="isBlocked ? 'calendar' : 'send'"
+    :busy="submitting"
     @update:model-value="emit('update:modelValue', $event)"
-  >
-    <div class="accredited-submit">
-      <p class="accredited-submit__lead">{{ t(resubmission ? 'accredited.submit.resubmitMessage' : 'accredited.submit.message', { number }) }}</p>
-      <ul class="accredited-submit__facts">
-        <li class="accredited-submit__fact">
-          <i class="fa-solid fa-lock" aria-hidden="true"></i>
-          {{ t('accredited.submit.lockNote') }}
-        </li>
-        <li class="accredited-submit__fact">
-          <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
-          {{ t('accredited.submit.reviewNote') }}
-        </li>
-      </ul>
-    </div>
-    <template #footer>
-      <BaseButton variant="secondary" :disabled="submitting" @click="emit('update:modelValue', false)">{{ t('actions.cancel') }}</BaseButton>
-      <BaseButton variant="primary" icon="fa-solid fa-paper-plane" :loading="submitting" @click="emit('confirm')">
-        {{ resubmission ? t('accredited.form.resubmit') : t('accredited.form.submit') }}
-      </BaseButton>
-    </template>
-  </BaseModal>
+    @confirm="onConfirm"
+  />
 </template>

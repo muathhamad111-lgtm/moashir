@@ -34,6 +34,10 @@
 .btn--primary {
   background-color: var(--theme-accent);
   color: var(--theme-on-accent);
+
+  &:hover:not(:disabled) {
+    background-color: var(--theme-accent-hover);
+  }
 }
 
 .btn--secondary {
@@ -58,7 +62,7 @@
 }
 
 .btn--danger {
-  background-color: var(--color-danger);
+  background-color: var(--color-danger-strong);
   color: var(--color-white);
 }
 
@@ -74,8 +78,27 @@
   font-size: var(--fs-lg);
 }
 
+.btn--xl {
+  padding-block: var(--space-4);
+  padding-inline: var(--space-8);
+  border-radius: var(--radius-lg);
+  font-size: var(--fs-label);
+}
+
 .btn--icon {
   padding: var(--space-2);
+}
+
+.btn__icon--end {
+  transition: translate var(--motion-press) var(--ease-out);
+
+  .btn:hover:not(:disabled) > & {
+    translate: var(--motion-nudge) 0;
+
+    [dir='rtl'] & {
+      translate: calc(var(--motion-nudge) * -1) 0;
+    }
+  }
 }
 
 .btn--loading {

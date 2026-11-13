@@ -1,7 +1,4 @@
-export const DEVELOPED_BY = {
-  labelKey: 'footer.developedBy',
-  url: 'https://tts.sa',
-}
+export const BRAND_THEME_COLOR = '#0a2325'
 
 export const DEFAULT_ACCENT_TOKEN = 'brand_default'
 
@@ -18,8 +15,8 @@ export const ACCENT_TOKENS = [
 ]
 
 export const CONTRAST_SURFACES = {
-  onAccent: '#022426',
-  darkContent: '#022426',
+  onAccent: '#0a2325',
+  darkContent: '#0a2325',
   lightContent: '#f5f8f8',
 }
 
@@ -29,11 +26,12 @@ export const LOGO_RULES = {
   accept: '.png,.svg,image/png,image/svg+xml',
 }
 
-export const LOGO_SURFACES = ['dark', 'light']
+export const SIDEBAR_LOGO_SURFACE = 'dark'
+
+export const LOGO_SURFACES = [SIDEBAR_LOGO_SURFACE]
 
 export const LOGO_VARIANT_BY_SURFACE = {
   dark: 'light',
-  light: 'dark',
 }
 
 export function isKnownAccent(token) {

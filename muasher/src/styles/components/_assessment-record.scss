@@ -28,11 +28,8 @@
   flex-wrap: wrap;
 }
 
-.assessment-record__eyebrow {
-  margin-block: 0 var(--space-1);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
-  color: var(--theme-accent-text);
+.assessment-record__path {
+  margin-block-end: var(--space-2);
 }
 
 .assessment-record__title {

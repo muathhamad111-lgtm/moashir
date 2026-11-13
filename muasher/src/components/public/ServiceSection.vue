@@ -1,6 +1,8 @@
 <script setup>
+import AppIcon from '@/components/ui/AppIcon.vue'
+
 defineProps({
-  icon: { type: String, default: 'fa-solid fa-star' },
+  icon: { type: String, default: 'star' },
   title: { type: String, required: true },
   body: { type: String, required: true },
   future: { type: Boolean, default: false },
@@ -10,7 +12,7 @@ defineProps({
 <template>
   <article class="service-section" :class="{ 'service-section--future': future }">
     <span class="service-section__icon" aria-hidden="true">
-      <i :class="icon"></i>
+      <AppIcon :name="icon" />
     </span>
     <div class="service-section__content">
       <div class="service-section__head">

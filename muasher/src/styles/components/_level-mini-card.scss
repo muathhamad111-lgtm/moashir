@@ -1,0 +1,52 @@
+@use '../mixins' as *;
+
+.level-mini-card {
+  @include flex(row, center, flex-start, var(--space-3));
+  min-block-size: var(--size-touch-target);
+  padding: var(--space-3);
+  border: var(--border-width) solid var(--glass-stroke);
+  border-radius: var(--radius-lg);
+  background-color: var(--glass-fill);
+  color: var(--band-ink);
+  transition: background-color var(--t-fast) var(--ease);
+
+  &:hover {
+    background-color: var(--nav-active);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &--collapsed {
+    justify-content: center;
+    padding: var(--space-1);
+  }
+}
+
+.level-mini-card__text {
+  @include flex(column, flex-start, center, var(--space-0));
+  min-inline-size: 0;
+}
+
+.level-mini-card__eyebrow {
+  color: var(--band-ink-muted);
+  font-size: var(--fs-xs);
+}
+
+.level-mini-card__action {
+  color: var(--band-ink);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+
+.level-mini-card__eye {
+  @include flex-center;
+  flex-shrink: 0;
+  inline-size: var(--size-icon-box-sm);
+  block-size: var(--size-icon-box-sm);
+  margin-inline-start: auto;
+  border: var(--border-width) solid var(--glass-stroke);
+  border-radius: var(--radius-md);
+  color: var(--band-ink);
+}

@@ -20,9 +20,9 @@ use App\Models\Files\StoredFile;
 use App\Models\Identity\User;
 use App\Services\Assessments\EntityContentGate;
 use App\Services\Assessments\EvidenceTarget;
+use App\Services\Assessments\UploadLimitsReader;
 use App\Services\Audit\AuditRecorder;
 use App\Services\Files\FileIntake;
-use App\Services\Files\FileSettings;
 use App\Services\Files\StoredFileRemover;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -35,7 +35,7 @@ final readonly class UploadEvidence
         private EntityContentGate $gate,
         private EvidenceTarget $target,
         private FileIntake $files,
-        private FileSettings $settings,
+        private UploadLimitsReader $limits,
         private StoredFileRemover $remover,
         private AuditRecorder $audit,
     ) {}
@@ -50,7 +50,7 @@ final readonly class UploadEvidence
             StoredFilePurpose::AssessmentEvidence,
             $actor,
             self::FILE_FIELD,
-            EvidenceFileType::uploadTypesOf($this->settings->evidenceTypes()),
+            EvidenceFileType::uploadTypesOf($this->limits->read($assessment->path)->types),
         );
 
         try {

@@ -5,7 +5,11 @@ import { changedValues, trimmedOrNull, writesEverything } from './partialPayload
 const MODES = Object.values(INTEGRATION_MODES)
 
 function keyPairValues(pair) {
-  return { publishableKey: pair?.publishableKey ?? '', secretKey: keptSecret(), webhookSecret: keptSecret() }
+  return {
+    publishableKey: pair?.publishableKey ?? '',
+    secretKey: keptSecret(),
+    webhookSecret: keptSecret(),
+  }
 }
 
 export function paymentFormValues(resource) {
@@ -37,7 +41,11 @@ function settingsOf(values) {
 }
 
 function keyPairPayload(pair, initial, full) {
-  const publicFields = changedValues({ publishableKey: trimmedOrNull(pair.publishableKey) }, { publishableKey: trimmedOrNull(initial.publishableKey) }, { full })
+  const publicFields = changedValues(
+    { publishableKey: trimmedOrNull(pair.publishableKey) },
+    { publishableKey: trimmedOrNull(initial.publishableKey) },
+    { full },
+  )
   return withSecrets(publicFields, { secretKey: pair.secretKey, webhookSecret: pair.webhookSecret })
 }
 
@@ -55,7 +63,9 @@ export function paymentPayload(values, resource) {
 }
 
 export function paymentSecretsChanged(payload) {
-  return MODES.some((mode) => payload[mode] && ('secretKey' in payload[mode] || 'webhookSecret' in payload[mode]))
+  return MODES.some(
+    (mode) => payload[mode] && ('secretKey' in payload[mode] || 'webhookSecret' in payload[mode]),
+  )
 }
 
 export function isLiveReady(resource) {

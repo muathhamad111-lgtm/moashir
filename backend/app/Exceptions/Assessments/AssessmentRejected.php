@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions\Assessments;
 
 use App\Data\Assessments\ScorableUnit;
+use App\Enums\Identity\AssessorQualification;
 use App\Exceptions\ApiException;
 use App\Http\Responses\ApiError;
 use Illuminate\Http\Response;
@@ -16,9 +17,19 @@ final class AssessmentRejected extends ApiException
         return new self(new ApiError(Response::HTTP_CONFLICT, 'self.draft_exists', [], [], ['assessment_id' => $draftId]));
     }
 
+    public static function selfPaymentPending(): self
+    {
+        return new self(new ApiError(Response::HTTP_CONFLICT, 'self.payment_being_processed'));
+    }
+
     public static function entityRequired(): self
     {
         return new self(new ApiError(Response::HTTP_FORBIDDEN, 'assessment.entity_required'));
+    }
+
+    public static function summaryNotApplicable(): self
+    {
+        return new self(new ApiError(Response::HTTP_CONFLICT, 'assessment.summary_not_applicable'));
     }
 
     public static function entityNotActive(): self
@@ -126,6 +137,13 @@ final class AssessmentRejected extends ApiException
     public static function assessorNotInCycle(): self
     {
         return self::fieldError('assessor.not_in_cycle', 'assessor_id');
+    }
+
+    public static function assessorNotQualified(AssessorQualification $qualification): self
+    {
+        return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'assessor.not_qualified', [
+            'assessor_id' => [__('errors.assessor.not_qualified')],
+        ], [], ['required_qualification' => $qualification->value, 'path' => $qualification->path()->value]));
     }
 
     public static function assessorConflict(): self

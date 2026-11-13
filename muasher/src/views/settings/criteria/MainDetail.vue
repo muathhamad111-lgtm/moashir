@@ -130,7 +130,7 @@ function onAction(key, sub) {
           <BaseButton
             v-if="access.canCorrectText.value"
             variant="secondary"
-            icon="fa-solid fa-spell-check"
+            icon="pen-line"
             @click="correcting = { type: NODE.MAIN, node: main }"
           >
             {{ t('criteria.actions.correctText') }}
@@ -138,7 +138,7 @@ function onAction(key, sub) {
           <BaseButton
             v-if="access.canEditTree.value"
             variant="primary"
-            icon="fa-solid fa-plus"
+            icon="plus"
             :disabled="addBlocked"
             @click="openForm()"
           >
@@ -192,7 +192,7 @@ function onAction(key, sub) {
         :message="t('criteria.main.subsEmptyMessage')"
       >
         <template v-if="access.canEditTree.value && !addBlocked" #action>
-          <BaseButton variant="primary" icon="fa-solid fa-plus" @click="openForm()">{{
+          <BaseButton variant="primary" icon="plus" @click="openForm()">{{
             t('criteria.main.addSub')
           }}</BaseButton>
         </template>

@@ -17,9 +17,21 @@ final readonly class AccreditedRequestAlerts
 {
     private const string KEY = 'notifications.assessments.accredited_opening_failed';
 
+    private const string PAID_REQUEST_KEY = 'notifications.assessments.paid_request_opening_failed';
+
     public function __construct(private EntityNotifier $notifier, private Cache $cache, private Config $config) {}
 
     public function openingFailed(Payment $payment): void
+    {
+        $this->notify($payment, self::KEY);
+    }
+
+    public function paidRequestOpeningFailed(Payment $payment): void
+    {
+        $this->notify($payment, self::PAID_REQUEST_KEY);
+    }
+
+    private function notify(Payment $payment, string $key): void
     {
         $minutes = max(1, $this->config->integer('moashir.integrations.alert_cooldown_minutes'));
 
@@ -29,8 +41,8 @@ final readonly class AccreditedRequestAlerts
 
         $this->notifier->toRole(RoleKey::SystemAdmin, new EntityNotice(
             NotificationCode::RequestProcessingFailed,
-            LocalizedText::fromTranslation(self::KEY.'.title'),
-            LocalizedText::fromTranslationWith(self::KEY.'.body', ['reference' => $payment->reference]),
+            LocalizedText::fromTranslation($key.'.title'),
+            LocalizedText::fromTranslationWith($key.'.body', ['reference' => $payment->reference]),
             null,
             false,
             true,

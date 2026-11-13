@@ -1,0 +1,39 @@
+@use '../mixins' as *;
+
+.profile-chip {
+  @include flex(row, center, flex-start, var(--space-1));
+  flex-shrink: 0;
+  padding-block: var(--space-1);
+  padding-inline: var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+
+  &--complete {
+    background-color: var(--theme-success-soft);
+    color: var(--theme-success-text);
+  }
+
+  &--missing {
+    background-color: var(--theme-warning-soft);
+    color: var(--theme-warning-text);
+  }
+
+  &--editing {
+    align-self: flex-start;
+    background-color: var(--theme-accent-soft);
+    color: var(--theme-accent-text);
+  }
+}
+
+.profile-chip__dot {
+  inline-size: var(--size-dot);
+  block-size: var(--size-dot);
+  border-radius: var(--radius-circle);
+  background-color: currentColor;
+}
+
+.profile-chip__sr {
+  @include visually-hidden;
+}

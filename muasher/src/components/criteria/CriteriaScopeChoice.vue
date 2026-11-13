@@ -2,6 +2,7 @@
 import { computed, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { CRITERIA_EDIT_SCOPE_ORDER, CRITERIA_EDIT_SCOPES } from '@/constants/criteria'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
   modelValue: { type: String, default: null },
@@ -14,9 +15,9 @@ const { t } = useI18n()
 const baseId = useId()
 
 const ICONS = {
-  [CRITERIA_EDIT_SCOPES.ALL]: 'fa-solid fa-layer-group',
-  [CRITERIA_EDIT_SCOPES.NEW_ONLY]: 'fa-solid fa-file-circle-plus',
-  [CRITERIA_EDIT_SCOPES.RESET_OPEN]: 'fa-solid fa-rotate-left',
+  [CRITERIA_EDIT_SCOPES.ALL]: 'layers',
+  [CRITERIA_EDIT_SCOPES.NEW_ONLY]: 'doc-plus-fill',
+  [CRITERIA_EDIT_SCOPES.RESET_OPEN]: 'undo',
 }
 
 const options = computed(() =>
@@ -58,7 +59,7 @@ const errorId = computed(() => `${baseId}-error`)
           required
           @change="emit('update:modelValue', option.value)"
         />
-        <span class="scope-choice__icon" aria-hidden="true"><i :class="option.icon"></i></span>
+        <span class="scope-choice__icon" aria-hidden="true"><AppIcon :name="option.icon" /></span>
         <span class="scope-choice__text">
           <span class="scope-choice__title">{{ option.title }}</span>
           <span :id="`${baseId}-${option.value}`" class="scope-choice__description">{{
@@ -68,7 +69,7 @@ const errorId = computed(() => `${baseId}-error`)
       </label>
     </div>
     <p class="scope-choice__closed-note">
-      <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+      <AppIcon name="shield-info" />
       {{ t('criteria.publish.closedNote') }}
     </p>
     <p v-if="error" :id="errorId" class="field__error" role="alert">{{ error }}</p>

@@ -21,8 +21,12 @@ const inputId = useId()
 
 const numbers = computed(() => (Array.isArray(value.value) ? value.value : []))
 const full = computed(() => numbers.value.length >= props.max)
-const itemErrors = computed(() => numbers.value.map((_, index) => formErrors.value[`${props.name}[${index}]`] ?? ''))
-const shownError = computed(() => draftError.value || errorMessage.value || itemErrors.value.find(Boolean) || '')
+const itemErrors = computed(() =>
+  numbers.value.map((_, index) => formErrors.value[`${props.name}[${index}]`] ?? ''),
+)
+const shownError = computed(
+  () => draftError.value || errorMessage.value || itemErrors.value.find(Boolean) || '',
+)
 
 function add() {
   const number = draft.value.trim()
@@ -44,9 +48,21 @@ function remove(number) {
   <fieldset class="phone-list" :class="{ 'field--error': shownError }">
     <legend class="phone-list__legend">{{ label }}</legend>
     <ul v-if="numbers.length" class="phone-list__items">
-      <li v-for="(number, index) in numbers" :key="number" class="phone-list__item" :class="{ 'is-invalid': itemErrors[index] }">
+      <li
+        v-for="(number, index) in numbers"
+        :key="number"
+        class="phone-list__item"
+        :class="{ 'is-invalid': itemErrors[index] }"
+      >
         <span dir="ltr">{{ number }}</span>
-        <BaseButton variant="ghost" size="sm" icon-only icon="fa-solid fa-xmark" :aria-label="t('integrations.sms.removeNumber', { number })" @click="remove(number)" />
+        <BaseButton
+          variant="ghost"
+          size="sm"
+          icon-only
+          icon="x"
+          :aria-label="t('integrations.sms.removeNumber', { number })"
+          @click="remove(number)"
+        />
       </li>
     </ul>
     <p v-else class="phone-list__empty">{{ t('integrations.sms.noTestNumbers') }}</p>
@@ -65,11 +81,13 @@ function remove(number) {
         :aria-describedby="`${inputId}-hint`"
         @keydown.enter.prevent="add"
       />
-      <BaseButton variant="secondary" size="sm" icon="fa-solid fa-plus" :disabled="full" @click="add">
+      <BaseButton variant="secondary" size="sm" icon="plus" :disabled="full" @click="add">
         {{ t('integrations.sms.addNumber') }}
       </BaseButton>
     </div>
-    <p :id="`${inputId}-hint`" class="field__hint">{{ full ? t('integrations.sms.numbersFull', { max }) : hint }}</p>
+    <p :id="`${inputId}-hint`" class="field__hint">
+      {{ full ? t('integrations.sms.numbersFull', { max }) : hint }}
+    </p>
     <p v-if="shownError" class="field__error" role="alert">{{ shownError }}</p>
   </fieldset>
 </template>

@@ -133,7 +133,9 @@ function nodesByCode(versionId, fields) {
     entries.push([main.code, signature(main, fields.main)])
     subsOf(main.id).forEach((sub) => {
       entries.push([sub.code, signature(sub, fields.sub)])
-      pointsOf(sub.id).forEach((point) => entries.push([point.code, signature(point, fields.point)]))
+      pointsOf(sub.id).forEach((point) =>
+        entries.push([point.code, signature(point, fields.point)]),
+      )
     })
   })
   return new Map(entries)

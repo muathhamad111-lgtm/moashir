@@ -1,6 +1,14 @@
 import { array, boolean, number, object, string } from 'yup'
-import { AWARD_LIMITS, CYCLE_FIELD_GROUPS, CYCLE_STAGE_ACCEPTS, CYCLE_STATUSES } from '@/constants/advanced'
+import {
+  AWARD_LIMITS,
+  CYCLE_FIELD_GROUPS,
+  CYCLE_STAGE_ACCEPTS,
+  CYCLE_STATUSES,
+} from '@/constants/advanced'
+import { FINANCE_SETTINGS_RULES } from '@/constants/finance'
 import { endOfRiyadhDay, riyadhDateKey, startOfRiyadhDay } from '@/utils/datetime'
+import { toWesternDigits } from '@/utils/numerals'
+import { priceString } from '@/utils/settings/pathPriceForm'
 
 const SCORE_FORMAT = /^\d{1,3}(\.\d{1,2})?$/
 const DATE_ORDER = [
@@ -39,6 +47,7 @@ export function cycleFormValues(cycle, { defaults, published }) {
       disqualificationScore: defaults?.disqualificationScore ?? '',
       initialReviewSlaDays: String(defaults?.initialReviewSlaDays ?? ''),
       participationCertificateEnabled: false,
+      entryFee: defaults?.entryFee ?? '',
     }
   }
   return {
@@ -56,6 +65,7 @@ export function cycleFormValues(cycle, { defaults, published }) {
     disqualificationScore: cycle.conditions.disqualificationScore ?? '',
     initialReviewSlaDays: String(cycle.initialReviewSlaDays ?? ''),
     participationCertificateEnabled: cycle.participationCertificateEnabled,
+    entryFee: cycle.entryFee ?? '',
   }
 }
 
@@ -63,7 +73,11 @@ function integerField(t, min, max) {
   return string()
     .trim()
     .required(t('validation.required'))
-    .test('range', t('cycles.validation.between', { min, max }), (value) => !value || (/^\d+$/.test(value) && Number(value) >= min && Number(value) <= max))
+    .test(
+      'range',
+      t('cycles.validation.between', { min, max }),
+      (value) => !value || (/^\d+$/.test(value) && Number(value) >= min && Number(value) <= max),
+    )
 }
 
 function orderedDate(t, [field, previous, inclusive], required) {
@@ -76,15 +90,37 @@ function orderedDate(t, [field, previous, inclusive], required) {
 }
 
 export function cycleSchema(t) {
-  const dates = Object.fromEntries(DATE_ORDER.map((rule) => [rule[0], orderedDate(t, rule, rule[0] !== 'announcementAt')]))
+  const dates = Object.fromEntries(
+    DATE_ORDER.map((rule) => [rule[0], orderedDate(t, rule, rule[0] !== 'announcementAt')]),
+  )
   return object({
     name: object({
-      ar: string().trim().required(t('validation.required')).max(AWARD_LIMITS.NAME_MAX, t('entities.validation.maxChars', { max: AWARD_LIMITS.NAME_MAX })),
-      en: string().trim().required(t('validation.required')).max(AWARD_LIMITS.NAME_MAX, t('entities.validation.maxChars', { max: AWARD_LIMITS.NAME_MAX })),
+      ar: string()
+        .trim()
+        .required(t('validation.required'))
+        .max(
+          AWARD_LIMITS.NAME_MAX,
+          t('entities.validation.maxChars', { max: AWARD_LIMITS.NAME_MAX }),
+        ),
+      en: string()
+        .trim()
+        .required(t('validation.required'))
+        .max(
+          AWARD_LIMITS.NAME_MAX,
+          t('entities.validation.maxChars', { max: AWARD_LIMITS.NAME_MAX }),
+        ),
     }),
     year: string()
       .trim()
-      .test('year', t('cycles.validation.between', { min: AWARD_LIMITS.YEAR_MIN, max: AWARD_LIMITS.YEAR_MAX }), (value) => !value || (/^\d{4}$/.test(value) && Number(value) >= AWARD_LIMITS.YEAR_MIN && Number(value) <= AWARD_LIMITS.YEAR_MAX)),
+      .test(
+        'year',
+        t('cycles.validation.between', { min: AWARD_LIMITS.YEAR_MIN, max: AWARD_LIMITS.YEAR_MAX }),
+        (value) =>
+          !value ||
+          (/^\d{4}$/.test(value) &&
+            Number(value) >= AWARD_LIMITS.YEAR_MIN &&
+            Number(value) <= AWARD_LIMITS.YEAR_MAX),
+      ),
     submissionStart: string().required(t('validation.required')),
     submissionEnd: dates.submissionEnd,
     committeeStart: dates.committeeStart,
@@ -97,9 +133,20 @@ export function cycleSchema(t) {
     disqualificationScore: string()
       .trim()
       .required(t('validation.required'))
-      .test('score', t('cycles.validation.score'), (value) => !value || (SCORE_FORMAT.test(value) && Number(value) <= AWARD_LIMITS.SCORE_MAX)),
+      .test(
+        'score',
+        t('cycles.validation.score'),
+        (value) => !value || (SCORE_FORMAT.test(value) && Number(value) <= AWARD_LIMITS.SCORE_MAX),
+      ),
     initialReviewSlaDays: integerField(t, AWARD_LIMITS.SLA_MIN, AWARD_LIMITS.SLA_MAX),
     participationCertificateEnabled: boolean(),
+    entryFee: string()
+      .transform((value) => toWesternDigits(value ?? '').trim())
+      .test(
+        'fee',
+        t('cycles.validation.entryFee'),
+        (value) => !value || FINANCE_SETTINGS_RULES.PRICE_INPUT_PATTERN.test(value),
+      ),
   })
 }
 
@@ -108,17 +155,24 @@ function wireValue(field, value) {
   if (NUMBER_FIELDS.includes(field)) return value === '' || value === null ? null : Number(value)
   if (field === 'name') return { ar: value.ar.trim(), en: value.en.trim() }
   if (field === 'disqualificationScore') return Number(value).toFixed(2)
+  if (field === 'entryFee') return value === '' || value === null ? null : priceString(value)
   return value
 }
 
 function payloadFields(values, { includeParticipation }) {
-  return Object.keys(values).filter((field) => field !== 'participationCertificateEnabled' || includeParticipation)
+  return Object.keys(values).filter(
+    (field) => field !== 'participationCertificateEnabled' || includeParticipation,
+  )
+}
+
+function omitted(field, values) {
+  return ['year', 'entryFee'].includes(field) && (values[field] ?? '') === ''
 }
 
 export function cyclePayload(values, { includeParticipation }) {
   return Object.fromEntries(
     payloadFields(values, { includeParticipation })
-      .filter((field) => !(field === 'year' && values.year === ''))
+      .filter((field) => !omitted(field, values))
       .map((field) => [field, wireValue(field, values[field])]),
   )
 }
@@ -130,13 +184,29 @@ function sameValue(left, right) {
 export function changedCyclePayload(values, initial, { includeParticipation, locked }) {
   return Object.fromEntries(
     payloadFields(values, { includeParticipation })
-      .filter((field) => !locked.has(field) && !sameValue(wireValue(field, values[field]), wireValue(field, initial[field])))
+      .filter(
+        (field) =>
+          !locked.has(field) &&
+          !(field === 'entryFee' && omitted(field, values)) &&
+          !sameValue(wireValue(field, values[field]), wireValue(field, initial[field])),
+      )
       .map((field) => [field, wireValue(field, values[field])]),
   )
 }
 
 export function lockedCycleFields(status) {
   if (!status) return new Set()
-  if (status === CYCLE_STATUSES.CLOSED) return new Set(['name', 'year', ...Object.values(CYCLE_FIELD_GROUPS).flat(), 'announcementAt', 'participationCertificateEnabled'])
-  return new Set(Object.entries(CYCLE_FIELD_GROUPS).flatMap(([group, fields]) => (CYCLE_STAGE_ACCEPTS[group].includes(status) ? [] : fields)))
+  if (status === CYCLE_STATUSES.CLOSED)
+    return new Set([
+      'name',
+      'year',
+      ...Object.values(CYCLE_FIELD_GROUPS).flat(),
+      'announcementAt',
+      'participationCertificateEnabled',
+    ])
+  return new Set(
+    Object.entries(CYCLE_FIELD_GROUPS).flatMap(([group, fields]) =>
+      CYCLE_STAGE_ACCEPTS[group].includes(status) ? [] : fields,
+    ),
+  )
 }

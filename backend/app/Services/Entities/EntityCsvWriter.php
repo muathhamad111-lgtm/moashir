@@ -53,7 +53,7 @@ final class EntityCsvWriter
             $entity->governance_grade ?? '',
             $entity->employees_count === null ? '' : (string) $entity->employees_count,
             $entity->annual_beneficiaries_count === null ? '' : (string) $entity->annual_beneficiaries_count,
-            $this->label('entities.export.'.($entity->has_strategic_plan ? 'yes' : 'no'), $locale),
+            $entity->has_strategic_plan === null ? '' : $this->label('entities.export.'.($entity->has_strategic_plan ? 'yes' : 'no'), $locale),
             $this->label('entities.statuses.'.$entity->status->value, $locale),
             $entity->owner->name ?? '',
             $entity->owner->email ?? '',

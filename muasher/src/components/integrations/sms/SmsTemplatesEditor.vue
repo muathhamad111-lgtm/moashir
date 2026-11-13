@@ -4,6 +4,7 @@ import { useFieldArray } from 'vee-validate'
 import { useI18n } from 'vue-i18n'
 import IntegrationCard from '@/components/integrations/IntegrationCard.vue'
 import SmsTemplateField from './SmsTemplateField.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   definitions: { type: Array, required: true },
@@ -17,14 +18,26 @@ const { fields } = useFieldArray('templates')
 const definitionOf = (key) => props.definitions.find((definition) => definition.key === key)
 const notice = computed(() => {
   if (!props.templateRestricted) return ''
-  return t(props.templatesLoaded ? 'integrations.sms.templateCheckActive' : 'integrations.sms.templateCheckNeedsTemplates')
+  return t(
+    props.templatesLoaded
+      ? 'integrations.sms.templateCheckActive'
+      : 'integrations.sms.templateCheckNeedsTemplates',
+  )
 })
 </script>
 
 <template>
-  <IntegrationCard :title="t('integrations.sms.templatesTitle')" :description="t('integrations.sms.templatesDesc')">
-    <p v-if="notice" class="sms-templates__check" :class="{ 'is-pending': !templatesLoaded }" role="note">
-      <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+  <IntegrationCard
+    :title="t('integrations.sms.templatesTitle')"
+    :description="t('integrations.sms.templatesDesc')"
+  >
+    <p
+      v-if="notice"
+      class="sms-templates__check"
+      :class="{ 'is-pending': !templatesLoaded }"
+      role="note"
+    >
+      <AppIcon name="shield-info" />
       {{ notice }}
     </p>
     <div class="sms-templates">

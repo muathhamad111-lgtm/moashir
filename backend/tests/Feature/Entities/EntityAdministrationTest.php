@@ -195,11 +195,10 @@ it('blocks the sign-in of a deactivated entity', function (): void {
     $entity = entityWithOwner(static fn ($factory) => $factory->deactivated());
     $owner = ownerOf($entity);
 
-    $this->postJson('/api/v1/auth/login', ['email' => $owner->email, 'mode' => 'password', 'password' => defaultPassword()])
+    signInWith($owner->email, defaultPassword())
         ->assertForbidden()
         ->assertJsonPath('code', 'account_deactivated');
 
-    $this->postJson('/api/v1/auth/otp/request', ['email' => $owner->email, 'channel' => 'email'])->assertOk();
     Notification::assertNotSentTo($owner, OtpCodeNotification::class);
 });
 

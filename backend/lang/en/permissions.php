@@ -47,6 +47,8 @@ return [
     'award.results.approve' => ['label' => 'Approve award results', 'description' => 'Approve regional and national results.'],
     'award.results.announce' => ['label' => 'Announce award results', 'description' => 'Announce the results manually.'],
     'reports.feedback.view' => ['label' => 'View feedback reports', 'description' => 'View and export feedback reports.'],
+    'reports.insights.own.view' => ['label' => 'Use the excellence tools', 'description' => 'View strengths and gaps, maturity analysis and board reports of the entity\'s accredited results.'],
+    'reports.insights.view' => ['label' => 'View entities\' excellence tools', 'description' => 'Read-only view of the excellence tools of entities\' accredited results within the followed paths.'],
     'certificates.own.view' => ['label' => 'View own certificates', 'description' => 'List and download own certificates.'],
     'certificates.issue.accredited' => ['label' => 'Issue accredited certificates', 'description' => 'Issue the certificate of a completed assigned request.'],
     'certificates.manage' => ['label' => 'Manage certificates', 'description' => 'List, re-issue and revoke certificates.'],
@@ -63,6 +65,8 @@ return [
     'criteria.publish' => ['label' => 'Publish criteria', 'description' => 'Publish or archive a criteria version.'],
     'content.home.manage' => ['label' => 'Manage site content', 'description' => 'Edit, publish and reorder homepage sections and pages.'],
     'content.kpis.manage' => ['label' => 'Manage indicators', 'description' => 'Create, publish and reorder indicators.'],
+    'content.insights.manage' => ['label' => 'Manage maturity texts', 'description' => 'Edit the generic and per-criterion interpretation texts of the maturity bands.'],
+    'contact.messages.manage' => ['label' => 'Manage contact messages', 'description' => 'View the messages sent through the contact form, assign them, add internal notes, reply to senders and close or reopen them.'],
     'ai.kb.manage' => ['label' => 'Manage the knowledge base', 'description' => 'Upload and approve assistant knowledge-base files.'],
     'ai.provider.manage' => ['label' => 'Manage the AI provider', 'description' => 'Set the AI provider, model and key.'],
     'users.view' => ['label' => 'View users', 'description' => 'List and read user accounts.'],
@@ -80,6 +84,7 @@ return [
     'settings.sms.manage' => ['label' => 'Manage SMS settings', 'description' => 'SMS provider, key, sender and templates.'],
     'settings.email.manage' => ['label' => 'Manage email settings', 'description' => 'Mail sending settings.'],
     'settings.notifications.manage' => ['label' => 'Manage notification settings', 'description' => 'Notification channels, templates and reminder days.'],
+    'settings.prices.manage' => ['label' => 'Manage path prices', 'description' => 'Prices before VAT, availability and scheduled price versions of the self, accredited, award and Quick Excellence Kit paths.'],
     'messaging.campaigns.send' => ['label' => 'Send campaigns', 'description' => 'Send SMS and email campaigns to consenting entities.'],
     'payments.own.view' => ['label' => 'View own payments', 'description' => 'View own payments and payment receipts.'],
     'payments.own.create' => ['label' => 'Make payments', 'description' => 'Create a payment for an accredited assessment or the Kit.'],
@@ -87,5 +92,6 @@ return [
     'finance.operations.export' => ['label' => 'Export financial operations', 'description' => 'Export transactions; every export is audited.'],
     'finance.refunds.manage' => ['label' => 'Record refunds', 'description' => 'Record a refund made outside the platform with its transfer receipt.'],
     'finance.receipts.manage' => ['label' => 'Manage payment receipts', 'description' => 'Re-issue or void payment receipts.'],
+    'finance.transfers.review' => ['label' => 'Review bank transfers', 'description' => 'Approve or reject the bank transfer receipts attached by entities, and download the receipts.'],
 
 ];

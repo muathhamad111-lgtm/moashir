@@ -23,7 +23,8 @@ use App\Integrations\Fakes\FakeFileScanner;
 use App\Integrations\Fakes\FakePdfRenderer;
 use App\Models\Assessments\AssessmentResultSnapshot;
 use App\Models\Award\CommitteeAverage;
-use App\Rules\PriceBeforeVat;
+use App\Notifications\Messages\BrandedMailMessage;
+use App\Rules\PriceOrFreeBeforeVat;
 use App\Rules\VatRatePercent;
 use App\Services\Identity\LocalBreachedPasswordChecker;
 use App\Support\FixedPoint;
@@ -37,7 +38,9 @@ use Illuminate\Contracts\Validation\UncompromisedVerifier;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\NotPwnedVerifier;
@@ -234,7 +237,7 @@ arch('the finance and files domains reach adapters only through contracts')
     ->not->toUse('App\Integrations');
 
 arch('finance settings never handle prices or the VAT rate as floats')
-    ->expect(['App\Actions\Settings', 'App\Services\Settings', 'App\Data\Settings', PriceBeforeVat::class, VatRatePercent::class])
+    ->expect(['App\Actions\Settings', 'App\Services\Settings', 'App\Data\Settings', PriceOrFreeBeforeVat::class, VatRatePercent::class])
     ->not->toUse(['floatval', 'round', 'floor', 'ceil', 'fdiv', 'number_format']);
 
 arch('file scanners and PDF renderers implement their contracts')
@@ -242,3 +245,22 @@ arch('file scanners and PDF renderers implement their contracts')
     ->toImplement(FileScanner::class)
     ->and([UnavailablePdfRenderer::class, FakePdfRenderer::class])
     ->toImplement(PdfRenderer::class);
+
+arch('notification e-mails are built with the branded mail message only')
+    ->expect('App\Notifications')
+    ->not->toUse(MailMessage::class)
+    ->ignoring(BrandedMailMessage::class);
+
+arch('the branded mail message is final')
+    ->expect(BrandedMailMessage::class)
+    ->toBeFinal()
+    ->toExtend(MailMessage::class);
+
+arch('the excellence-tools calculators and presenters are final, pure and free of HTTP and database access')
+    ->expect('App\Support\Insights')
+    ->toBeFinal()
+    ->not->toUse([DB::class, 'App\Http', 'App\Services', 'App\Actions', Request::class]);
+
+arch('excellence-tools percentages are never handled as floats')
+    ->expect(['App\Support\Insights', 'App\Services\Insights', 'App\Data\Insights', 'App\Actions\Insights'])
+    ->not->toUse(['floatval', 'round', 'floor', 'ceil', 'fdiv', 'bcdiv', 'number_format']);

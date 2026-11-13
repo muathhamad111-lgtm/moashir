@@ -1,4 +1,12 @@
-export const TRANSACTION_SORTS = ['-created_at', 'created_at', '-total', 'total', '-paid_at', 'paid_at', '-updated_at']
+export const TRANSACTION_SORTS = [
+  '-created_at',
+  'created_at',
+  '-total',
+  'total',
+  '-paid_at',
+  'paid_at',
+  '-updated_at',
+]
 
 export const DEFAULT_TRANSACTION_SORT = '-created_at'
 
@@ -13,13 +21,37 @@ export const EXPORT_STATUSES = {
 
 export const EXPORT_POLL_DELAYS_MS = [2000, 4000, 8000, 16000, 30000]
 
-export const PAYMENT_EVENT_SOURCES = ['checkout', 'verification', 'webhook', 'expiry', 'reconciliation', 'admin']
+export const PAYMENT_EVENT_SOURCES = [
+  'checkout',
+  'verification',
+  'webhook',
+  'expiry',
+  'reconciliation',
+  'admin',
+]
 
-export const PAYMENT_EVENT_RESULTS = ['applied', 'pending', 'ignored', 'rejected', 'unmatched', 'late_payment']
+export const PAYMENT_EVENT_RESULTS = [
+  'applied',
+  'pending',
+  'ignored',
+  'rejected',
+  'unmatched',
+  'late_payment',
+]
 
-export const SCAN_STATUSES = { PENDING: 'pending', CLEAN: 'clean', INFECTED: 'infected', FAILED: 'failed' }
+export const SCAN_STATUSES = {
+  PENDING: 'pending',
+  CLEAN: 'clean',
+  INFECTED: 'infected',
+  FAILED: 'failed',
+}
 
-export const UPLOAD_STATES = { IDLE: 'idle', PENDING: 'pending', CLEAN: 'clean', REFUSED: 'refused' }
+export const UPLOAD_STATES = {
+  IDLE: 'idle',
+  PENDING: 'pending',
+  CLEAN: 'clean',
+  REFUSED: 'refused',
+}
 
 export const REFUND_RULES = {
   REASON_MIN: 20,

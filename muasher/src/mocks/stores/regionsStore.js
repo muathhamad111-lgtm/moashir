@@ -6,7 +6,12 @@ let nextCityId = 1
 
 function seedCities() {
   return regionsSeed.flatMap((region) =>
-    region.cities.map((city) => ({ ...city, name: { ...city.name }, regionId: region.id, isActive: true })),
+    region.cities.map((city) => ({
+      ...city,
+      name: { ...city.name },
+      regionId: region.id,
+      isActive: true,
+    })),
   )
 }
 
@@ -51,7 +56,9 @@ export function activeRegions() {
 }
 
 export function allCities() {
-  return [...cities].sort((left, right) => left.regionId - right.regionId || bySortOrder(left, right))
+  return [...cities].sort(
+    (left, right) => left.regionId - right.regionId || bySortOrder(left, right),
+  )
 }
 
 export function cityCodeTaken(regionId, code) {

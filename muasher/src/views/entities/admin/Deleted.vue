@@ -11,6 +11,7 @@ import { useEntityList } from '@/composables/useEntityList'
 import { useRegions } from '@/composables/useRegions'
 import { ENTITY_ACTIONS } from '@/composables/useEntityActions'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -20,7 +21,8 @@ const actionsHost = ref(null)
 const { search } = filters
 
 function onAction(key, entity) {
-  if (key === ENTITY_ACTIONS.VIEW) return router.push({ name: ROUTE_NAMES.ADMIN_ENTITY, params: { id: entity.id } })
+  if (key === ENTITY_ACTIONS.VIEW)
+    return router.push({ name: ROUTE_NAMES.ADMIN_ENTITY, params: { id: entity.id } })
   return actionsHost.value.run(key, entity)
 }
 
@@ -37,11 +39,14 @@ onMounted(regions.load)
     </header>
 
     <aside class="entities-admin__notice" role="note">
-      <i class="fa-solid fa-snowflake" aria-hidden="true"></i>
+      <AppIcon name="snowflake" />
       <p>{{ t('entities.deleted.frozenNotice') }}</p>
     </aside>
 
-    <ListToolbar v-model:search="search" :search-placeholder="t('entities.admin.searchPlaceholder')">
+    <ListToolbar
+      v-model:search="search"
+      :search-placeholder="t('entities.admin.searchPlaceholder')"
+    >
       <template #filters>
         <EntityListFilters :filters="filters" :region-options="regions.regionOptions.value" />
       </template>

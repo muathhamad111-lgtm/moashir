@@ -1,16 +1,18 @@
 <script setup>
 import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { object as yupObject, string as yupString, boolean as yupBoolean, array as yupArray } from 'yup'
+import { object as yupObject, string as yupString, array as yupArray } from 'yup'
 import FormModal from '@/components/modal/FormModal.vue'
 import BaseInput from '@/components/form/BaseInput.vue'
 import BaseCheckbox from '@/components/form/BaseCheckbox.vue'
 import { useValidatedForm } from '@/composables/useValidatedForm'
 import { useUsers } from '@/composables/useUsers'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
   user: { type: Object, default: null },
+  save: { type: Function, required: true },
 })
 
 const emit = defineEmits(['update:modelValue', 'saved'])
@@ -26,12 +28,11 @@ const schema = computed(() =>
       .min(3, t('validation.minChars', { min: 3 })),
     email: yupString().required(t('validation.required')).email(t('validation.email')),
     roles: yupArray().of(yupString()).min(1, t('users.validation.roleRequired')),
-    active: yupBoolean(),
   }),
 )
 
 function emptyValues() {
-  return { name: '', email: '', roles: [], active: true }
+  return { name: '', email: '', roles: [] }
 }
 
 function fromUser(user) {
@@ -40,7 +41,6 @@ function fromUser(user) {
     name: user.name ?? '',
     email: user.email ?? '',
     roles: Array.isArray(user.roles) ? [...user.roles] : [],
-    active: (user.status ?? 'active') === 'active',
   }
 }
 
@@ -49,13 +49,11 @@ const form = useValidatedForm({
   initialValues: fromUser(props.user),
   action: 'users.form.submit',
   submit: async (values) => {
-    const payload = {
-      name: values.name.trim(),
-      email: values.email.trim(),
-      roles: values.roles,
-      status: values.active ? 'active' : 'inactive',
-    }
-    emit('saved', { id: props.user?.id ?? null, payload })
+    const payload = { name: values.name.trim(), email: values.email.trim(), roles: values.roles }
+    const id = props.user?.id ?? null
+    await props.save({ id, payload })
+    emit('update:modelValue', false)
+    emit('saved', { id })
   },
 })
 
@@ -69,7 +67,6 @@ watch(
 const [name] = form.defineField('name')
 const [email] = form.defineField('email')
 const [roles] = form.defineField('roles')
-const [active] = form.defineField('active')
 
 function isRoleSelected(code) {
   return roles.value.includes(code)
@@ -140,19 +137,17 @@ const capabilities = computed(() => {
 
       <div v-if="capabilities.length" class="user-form__hint" role="note">
         <p class="user-form__hint-title">
-          <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+          <AppIcon name="shield-info" />
           {{ t('users.form.capabilitiesTitle') }}
         </p>
         <ul class="user-form__hint-list">
           <li v-for="capability in capabilities" :key="capability" class="user-form__hint-item">
-            <i class="fa-solid fa-check" aria-hidden="true"></i>
+            <AppIcon name="check" />
             {{ capability }}
           </li>
         </ul>
         <p class="user-form__hint-note">{{ t('users.form.capabilitiesNote') }}</p>
       </div>
-
-      <BaseCheckbox v-model="active" name="active" :label="t('users.fields.active')" />
     </div>
   </FormModal>
 </template>

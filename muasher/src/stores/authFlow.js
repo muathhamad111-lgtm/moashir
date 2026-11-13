@@ -5,6 +5,7 @@ export const useAuthFlowStore = defineStore('authFlow', {
   state: () => ({
     challenge: null,
     officialEmail: '',
+    identifier: '',
     intent: AUTH_FLOW_INTENTS.LOGIN,
     pendingStep: null,
     redirect: null,
@@ -13,10 +14,11 @@ export const useAuthFlowStore = defineStore('authFlow', {
     hasChallenge: (state) => Boolean(state.challenge?.challengeId),
   },
   actions: {
-    setChallenge({ challenge, officialEmail, intent }) {
+    setChallenge({ challenge, officialEmail, intent, identifier }) {
       this.challenge = challenge
       if (officialEmail !== undefined) this.officialEmail = officialEmail
       if (intent !== undefined) this.intent = intent
+      if (identifier !== undefined) this.identifier = identifier
     },
     setPendingStep(step, redirect = null) {
       this.pendingStep = step
@@ -25,6 +27,7 @@ export const useAuthFlowStore = defineStore('authFlow', {
     clear() {
       this.challenge = null
       this.officialEmail = ''
+      this.identifier = ''
       this.intent = AUTH_FLOW_INTENTS.LOGIN
       this.pendingStep = null
       this.redirect = null

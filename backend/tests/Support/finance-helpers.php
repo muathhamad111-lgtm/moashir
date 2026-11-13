@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Contracts\Integrations\PaymentGateway;
+use App\Enums\Assessments\PathAvailability;
 use App\Enums\Finance\PaymentPurpose;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Integrations\IntegrationMode;
@@ -12,11 +13,13 @@ use App\Integrations\Fakes\FakePaymentGateway;
 use App\Models\Entities\Entity;
 use App\Models\Finance\Payment;
 use App\Models\Finance\PaymentReceipt;
+use App\Models\Finance\ServicePriceVersion;
 use App\Models\Identity\User;
 use App\Notifications\Entities\EntityNotification;
 use App\Services\Finance\ReceiptIssuer;
 use App\Support\ValueObjects\Money;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
@@ -29,6 +32,8 @@ const ACCREDITED_TOTAL = '1150.00';
 const BAG_PRICE = '2500.00';
 
 const BAG_TOTAL = '2875.00';
+
+const SERVICE_PRICE_SINCE = '2000-01-01T00:00:00Z';
 
 const REFUND_REASON = 'أعيد المبلغ بتحويل بنكي بعد طلب الجهة إلغاء الخدمة قبل البدء.';
 
@@ -48,8 +53,23 @@ function activatePaymentGateway(IntegrationMode $mode = IntegrationMode::Test): 
 
 function setServicePrices(?string $accredited = ACCREDITED_PRICE, ?string $bag = BAG_PRICE): void
 {
-    setIntegrationSetting(SettingKey::AccreditedPrice, $accredited);
-    setIntegrationSetting(SettingKey::BagPrice, $bag);
+    setServicePrice(PaymentPurpose::Accredited, $accredited);
+    setServicePrice(PaymentPurpose::Bag, $bag);
+}
+
+function setServicePrice(PaymentPurpose $purpose, ?string $price, PathAvailability $availability = PathAvailability::Available): ?ServicePriceVersion
+{
+    ServicePriceVersion::query()->where('purpose', $purpose)->update(['previous_version_id' => null]);
+    ServicePriceVersion::query()->where('purpose', $purpose)->delete();
+
+    if ($price === null) {
+        return null;
+    }
+
+    return ServicePriceVersion::factory()->of($purpose, $price)->create([
+        'availability' => $availability,
+        'effective_from' => Date::parse(SERVICE_PRICE_SINCE),
+    ]);
 }
 
 /**

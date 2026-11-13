@@ -6,6 +6,7 @@ namespace App\Data\Award;
 
 use App\Enums\Criteria\ScaleKind;
 use App\Support\ValueObjects\LocalizedText;
+use App\Support\ValueObjects\Money;
 use App\Support\ValueObjects\Percent;
 use Carbon\CarbonImmutable;
 
@@ -28,6 +29,7 @@ final readonly class CycleAttributes
         public ?Percent $disqualificationScore = null,
         public ?int $initialReviewSlaDays = null,
         public ?bool $participationCertificateEnabled = null,
+        public ?Money $entryFee = null,
     ) {}
 
     /**
@@ -44,6 +46,7 @@ final readonly class CycleAttributes
             'disqualification_score' => $this->disqualificationScore,
             'initial_review_sla_days' => $this->initialReviewSlaDays,
             'participation_certificate_enabled' => $this->participationCertificateEnabled,
+            'entry_fee' => $this->entryFee?->amount,
         ], static fn (mixed $value): bool => $value !== null) + $this->dates;
     }
 

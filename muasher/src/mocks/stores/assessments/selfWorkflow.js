@@ -16,6 +16,7 @@ import {
 import { parseScoreSheet, validateScoreRequest } from './scoreInput'
 import { scorableUnits, unitKey } from './selfScoring'
 import { recordStart, recordSubmission } from './statusHistory'
+import { assertSelfStartable } from './selfStartGate'
 
 const ACTIVE_ENTITY_STATUS = 'active'
 
@@ -33,13 +34,37 @@ function assertEntityMayAct(entity) {
 function enterWriteGate(user, record, { verb, reason }) {
   assertEntityMayAct(entityOf(record))
   if (user.superAdmin && !reason) throw assessmentReject.reasonRequired()
-  if (record.status !== SELF_STATUSES.DRAFT) throw assessmentReject.illegalTransition(toCanonicalStatus(record.status), verb)
+  if (record.status !== SELF_STATUSES.DRAFT)
+    throw assessmentReject.illegalTransition(toCanonicalStatus(record.status), verb)
 }
 
 function validateStart(body) {
   if (body.path === ASSESSMENT_PATHS.SELF) return
-  const code = body.path === undefined || body.path === null || body.path === '' ? 'validation.required' : 'validation.invalid'
+  const code =
+    body.path === undefined || body.path === null || body.path === ''
+      ? 'validation.required'
+      : 'validation.invalid'
   throw assessmentReject.validation({ path: [fieldMessage(code, {}, 'path')] })
+}
+
+export function insertSelfDraft(entityId, version, at, extra = {}) {
+  return insertAssessment({
+    number: nextRequestNumber(),
+    entityId,
+    path: ASSESSMENT_PATHS.SELF,
+    status: SELF_STATUSES.DRAFT,
+    criteriaVersionId: version.id,
+    scaleKind: version.scaleKind,
+    scores: {},
+    result: null,
+    createdAt: at,
+    updatedAt: at,
+    submittedAt: null,
+    completedAt: null,
+    criteriaUpdatePendingSince: null,
+    criteriaMoves: [],
+    ...extra,
+  })
 }
 
 export function startSelfAssessment(user, body) {
@@ -47,27 +72,13 @@ export function startSelfAssessment(user, body) {
   const entity = user.entityId === null ? null : findEntity(user.entityId)
   if (!entity) throw assessmentReject.entityRequired()
   assertEntityMayAct(entity)
+  assertSelfStartable(entity)
   const version = versionWithStatus(CRITERIA_VERSION_STATUSES.PUBLISHED)
   if (!version) throw assessmentReject.noPublishedVersion()
   const existing = openSelfDraftsOf(entity.id)[0]
   if (existing) throw assessmentReject.draftExists(existing.id)
   const timestamp = now()
-  const record = insertAssessment({
-    number: nextRequestNumber(),
-    entityId: entity.id,
-    path: ASSESSMENT_PATHS.SELF,
-    status: SELF_STATUSES.DRAFT,
-    criteriaVersionId: version.id,
-    scaleKind: version.scaleKind,
-    scores: {},
-    result: null,
-    createdAt: timestamp,
-    updatedAt: timestamp,
-    submittedAt: null,
-    completedAt: null,
-    criteriaUpdatePendingSince: null,
-    criteriaMoves: [],
-  })
+  const record = insertSelfDraft(entity.id, version, timestamp)
   recordStart(record, user, timestamp)
   return record
 }
@@ -94,7 +105,9 @@ export function submitSelfAssessment(user, record, body) {
   enterWriteGate(user, record, { verb: VERBS.SUBMIT, reason: input.reason })
   if (record.criteriaUpdatePendingSince !== null) throw assessmentReject.criteriaUpdateInProgress()
   const tree = boundTree(record)
-  const sheet = input.scores ? parseScoreSheet(input.scores, tree, record.scaleKind) : sheetOf(record)
+  const sheet = input.scores
+    ? parseScoreSheet(input.scores, tree, record.scaleKind)
+    : sheetOf(record)
   const draft = { ...record, scores: Object.fromEntries(sheet) }
   const missing = missingUnits(draft, tree)
   if (missing.length) throw assessmentReject.scoresIncomplete(missing)

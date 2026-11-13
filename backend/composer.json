@@ -10,6 +10,9 @@
     "license": "proprietary",
     "require": {
         "php": "^8.4",
+        "ext-gd": "*",
+        "bacon/bacon-qr-code": "3.1.1",
+        "chrome-php/chrome": "1.16.1",
         "laravel/fortify": "1.41.0",
         "laravel/framework": "13.39.0",
         "laravel/horizon": "5.50.1",

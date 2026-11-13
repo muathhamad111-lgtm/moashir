@@ -10,9 +10,11 @@ import { REASON_LENGTH } from '@/constants/entityEnums'
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
   title: { type: String, required: true },
-  message: { type: String, default: '' },
+  subtitle: { type: String, default: '' },
+  destructive: { type: Boolean, default: false },
   submitLabel: { type: String, default: '' },
   reasonLabel: { type: String, default: '' },
+  reasonHint: { type: String, default: '' },
   optional: { type: Boolean, default: false },
   action: { type: Function, required: true },
   actionName: { type: String, required: true },
@@ -23,7 +25,9 @@ const emit = defineEmits(['update:modelValue', 'done'])
 const { t } = useI18n()
 
 const form = useValidatedForm({
-  schema: computed(() => (props.optional ? optionalReasonSchema(t) : reasonSchema(t, props.minLength))),
+  schema: computed(() =>
+    props.optional ? optionalReasonSchema(t) : reasonSchema(t, props.minLength),
+  ),
   initialValues: { reason: '' },
   action: props.actionName,
   submit: async ({ reason }) => {
@@ -45,17 +49,23 @@ watch(
   <FormModal
     :model-value="modelValue"
     :title="title"
+    :subtitle="subtitle"
+    :submit-variant="destructive ? 'danger' : 'primary'"
     :busy="form.submitting.value"
     :submit-label="submitLabel"
     @update:model-value="emit('update:modelValue', $event)"
     @submit="form.onSubmit"
   >
     <div class="reason-dialog">
-      <p v-if="message" class="reason-dialog__message">{{ message }}</p>
       <FieldTextarea
         name="reason"
         :label="reasonLabel || t('entities.reason.label')"
-        :hint="optional ? t('entities.reason.optionalHint') : t('entities.reason.hint', { min: minLength })"
+        :hint="
+          reasonHint ||
+          (optional
+            ? t('entities.reason.optionalHint')
+            : t('entities.reason.hint', { min: minLength }))
+        "
         :required="!optional"
       />
     </div>

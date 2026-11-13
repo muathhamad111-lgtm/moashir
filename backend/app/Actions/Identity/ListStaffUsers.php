@@ -25,7 +25,7 @@ final class ListStaffUsers
         $direction = str_starts_with($filters->sort, '-') ? 'desc' : 'asc';
 
         return $this->filteredQuery($filters)
-            ->with('roles')
+            ->with(User::ADMINISTRATION_RELATIONS)
             ->orderBy(ltrim($filters->sort, '-'), $direction)
             ->orderBy('id')
             ->paginate($filters->perPage);

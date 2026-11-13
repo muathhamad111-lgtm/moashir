@@ -1,3 +1,5 @@
+import { FIXTURE_ENTITY_LOGO } from './entityLogos'
+
 export const ENTITY_REFERENCE_PREFIX = 'ENT-'
 
 export const FIXTURE_ENTITY_ID = 5001
@@ -7,12 +9,42 @@ const AUDIT_DATES = {
   verified: '2026-06-28T06:22:00Z',
 }
 
-function owner(id, name, email) {
-  return { id, name, email, phone: null }
+const UNIFIED_NUMBER_PREFIX = '7100'
+const UNIFIED_NUMBER_DIGITS = 6
+
+export const FIXTURE_VERIFIED_PHONE = '+966500005001'
+
+function owner(id, name, email, phone = null) {
+  return { id, name, email, phone, phoneVerifiedAt: phone ? AUDIT_DATES.verified : null }
+}
+
+function unifiedNumberOf(id) {
+  return `${UNIFIED_NUMBER_PREFIX}${String(id).padStart(UNIFIED_NUMBER_DIGITS, '0')}`
+}
+
+function registryOf(fields) {
+  const complete = [
+    fields.governanceGrade,
+    fields.employeesCount,
+    fields.annualBeneficiariesCount,
+  ].every((value) => value !== null && value !== undefined)
+  return complete
+    ? {
+        unifiedNumber: unifiedNumberOf(fields.id),
+        licenseNumber: `880${fields.id}`,
+        foundedOn: `${fields.foundingYear}-03-01`,
+      }
+    : {}
 }
 
 function record(fields) {
   return {
+    unifiedNumber: null,
+    licenseNumber: null,
+    foundedOn: null,
+    websiteUrl: null,
+    logo: null,
+    ...registryOf(fields),
     name: { ar: '', en: null },
     governanceGrade: null,
     employeesCount: null,
@@ -49,8 +81,15 @@ export const entitiesFixture = [
     annualBeneficiariesCount: 42000,
     hasStrategicPlan: true,
     marketingConsentAt: '2026-06-28T06:15:00Z',
-    owner: owner(5001, 'أحمد بن سالم القحطاني', 'info@albirr-riyadh.example.sa'),
-    openRequests: [{ id: 14, number: 'ACC-2026-000014', path: 'accredited', status: 'under-review' }],
+    owner: owner(
+      5001,
+      'أحمد بن سالم القحطاني',
+      'info@albirr-riyadh.example.sa',
+      FIXTURE_VERIFIED_PHONE,
+    ),
+    openRequests: [
+      { id: 14, number: 'ACC-2026-000014', path: 'accredited', status: 'under-review' },
+    ],
   }),
   record({
     id: 6001,
@@ -86,7 +125,12 @@ export const entitiesFixture = [
       { id: 31, number: 'ADV-2026-000031', path: 'advanced', status: 'under-initial-assessment' },
       { id: 7, number: 'BAG-2026-000007', path: 'bag', status: 'stage-active' },
     ],
-    incomingOpenRequest: { id: 52, number: 'ACC-2026-000052', path: 'accredited', status: 'submitted' },
+    incomingOpenRequest: {
+      id: 52,
+      number: 'ACC-2026-000052',
+      path: 'accredited',
+      status: 'submitted',
+    },
   }),
   record({
     id: 6003,
@@ -106,6 +150,8 @@ export const entitiesFixture = [
     deactivatedAt: '2026-09-14T07:30:00Z',
     deactivationReason: 'إيقاف مؤقت بطلب رسمي من مجلس النظارة لحين تحديث بيانات الوقف.',
     owner: owner(6003, 'خالد بن عبدالله الدوسري', 'admin@alkhair-waqf.example.sa'),
+    websiteUrl: 'https://www.alkhair-waqf.example.sa',
+    logo: { ...FIXTURE_ENTITY_LOGO },
   }),
   record({
     id: 6004,
@@ -123,7 +169,9 @@ export const entitiesFixture = [
     createdAt: '2026-04-22T10:00:00Z',
     verifiedAt: '2026-04-22T10:04:00Z',
     owner: owner(6004, 'سارة بنت محمد الحربي', 'info@ataa-madinah.example.sa'),
-    openRequests: [{ id: 19, number: 'ACC-2026-000019', path: 'accredited', status: 'awaiting-assignment' }],
+    openRequests: [
+      { id: 19, number: 'ACC-2026-000019', path: 'accredited', status: 'awaiting-assignment' },
+    ],
   }),
   record({
     id: 6005,

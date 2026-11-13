@@ -6,15 +6,23 @@ namespace App\Support\Entities;
 
 use App\Data\Entities\EntityContactData;
 use App\Data\Entities\EntityProfileData;
+use App\Data\Entities\EntityRegistryUpdate;
 use App\Enums\Entities\DevelopmentSector;
+use App\Enums\Entities\EntityProfileField;
 use App\Enums\Entities\EntityType;
 use App\Enums\Entities\OrgSize;
 use App\Models\Entities\City;
+use App\Models\Entities\Entity;
 use App\Models\Entities\Region;
+use App\Rules\WebsiteAddress;
 use App\Support\ScalarValue;
 use App\Support\ValueObjects\EntityName;
 use App\Support\ValueObjects\GovernanceGrade;
+use App\Support\ValueObjects\LicenseNumber;
 use App\Support\ValueObjects\PhoneNumber;
+use App\Support\ValueObjects\UnifiedNumber;
+use App\Support\ValueObjects\WebsiteUrl;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Validation\Rule;
@@ -23,28 +31,119 @@ final class EntityProfileInput
 {
     private const string PHONE_PATTERN = '/^(05\d{8}|\+9665\d{8})$/';
 
+    private const string DATE_FORMAT = 'Y-m-d';
+
+    private const string EARLIEST_FOUNDING_DATE = '1900-01-01';
+
     /**
      * @return array<string, mixed>
      */
     public static function rules(mixed $regionId): array
     {
         return [
+            ...self::nameRules(),
+            ...self::contactRules(),
+            'founding_year' => ['required', 'integer', 'min:1900', 'max:'.Date::now()->year],
+            ...self::classificationRules($regionId),
+            ...self::governanceRules(),
+        ];
+    }
+
+    /**
+     * @return array<string, list<mixed>>
+     */
+    public static function nameRules(): array
+    {
+        return [
             'name' => ['required', 'array:ar,en'],
             'name.ar' => ['required', 'string', 'max:200'],
             'name.en' => ['nullable', 'string', 'max:200'],
+        ];
+    }
+
+    /**
+     * @return array<string, list<mixed>>
+     */
+    public static function contactRules(): array
+    {
+        return [
             'authorized_person_name' => ['required', 'string', 'min:3', 'max:150'],
             'phone' => ['nullable', 'string', 'regex:'.self::PHONE_PATTERN],
+        ];
+    }
+
+    /**
+     * @return array<string, list<mixed>>
+     */
+    public static function classificationRules(mixed $regionId): array
+    {
+        return [
             'entity_type' => ['required', Rule::enum(EntityType::class)],
             'development_sector' => ['required', Rule::enum(DevelopmentSector::class)],
             'org_size' => ['required', Rule::enum(OrgSize::class)],
-            'founding_year' => ['required', 'integer', 'min:1900', 'max:'.Date::now()->year],
             'region_id' => ['required', 'integer', Rule::exists(Region::class, 'id')->where('is_active', true)],
             'city_id' => ['required', 'integer', self::cityOfRegion($regionId)],
+        ];
+    }
+
+    /**
+     * @return array<string, list<mixed>>
+     */
+    public static function governanceRules(): array
+    {
+        return [
             'governance_grade' => ['nullable', 'decimal:0,2', 'between:0,100'],
             'employees_count' => ['nullable', 'integer', 'min:0', 'max:10000000'],
             'annual_beneficiaries_count' => ['nullable', 'integer', 'min:0', 'max:100000000'],
-            'has_strategic_plan' => ['required', 'boolean'],
+            'has_strategic_plan' => ['present', 'nullable', 'boolean'],
         ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function registryRules(?int $entityId): array
+    {
+        return [
+            'unified_number' => ['sometimes', ...self::unifiedNumberRules($entityId)],
+            'license_number' => ['sometimes', ...self::licenseNumberRules($entityId)],
+            'founded_on' => ['sometimes', ...self::foundedOnRules()],
+            'website_url' => ['sometimes', ...self::websiteUrlRules()],
+        ];
+    }
+
+    /**
+     * @return list<mixed>
+     */
+    public static function unifiedNumberRules(?int $entityId): array
+    {
+        return ['required', 'string', 'regex:'.UnifiedNumber::PATTERN, Rule::unique(Entity::class, 'unified_number')->ignore($entityId)];
+    }
+
+    /**
+     * @return list<mixed>
+     */
+    public static function licenseNumberRules(?int $entityId): array
+    {
+        return ['nullable', 'string', 'regex:'.LicenseNumber::PATTERN, Rule::unique(Entity::class, 'license_number')->ignore($entityId)];
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function foundedOnRules(): array
+    {
+        $today = Date::now(config()->string('app.display_timezone'))->format(self::DATE_FORMAT);
+
+        return ['nullable', 'date_format:'.self::DATE_FORMAT, 'after_or_equal:'.self::EARLIEST_FOUNDING_DATE, 'before_or_equal:'.$today];
+    }
+
+    /**
+     * @return list<mixed>
+     */
+    public static function websiteUrlRules(): array
+    {
+        return ['nullable', 'string', 'max:'.WebsiteUrl::MAX_LENGTH, new WebsiteAddress];
     }
 
     /**
@@ -53,7 +152,6 @@ final class EntityProfileInput
     public static function profile(array $validated): EntityProfileData
     {
         $name = is_array($validated['name'] ?? null) ? $validated['name'] : [];
-        $grade = $validated['governance_grade'] ?? null;
 
         return new EntityProfileData(
             EntityName::fromArray($name),
@@ -63,10 +161,27 @@ final class EntityProfileInput
             ScalarValue::int($validated['founding_year'] ?? null),
             ScalarValue::int($validated['region_id'] ?? null),
             ScalarValue::int($validated['city_id'] ?? null),
-            is_string($grade) || is_int($grade) || is_float($grade) ? GovernanceGrade::of($grade)->toDecimal() : null,
+            self::governanceGrade($validated),
             self::optionalCount($validated, 'employees_count'),
             self::optionalCount($validated, 'annual_beneficiaries_count'),
-            filter_var($validated['has_strategic_plan'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            self::strategicPlan($validated),
+            self::registry($validated),
+        );
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $validated
+     */
+    private static function registry(array $validated): EntityRegistryUpdate
+    {
+        $unifiedNumber = $validated['unified_number'] ?? null;
+
+        return new EntityRegistryUpdate(
+            self::licenseNumber($validated),
+            self::foundedOn($validated),
+            self::websiteUrl($validated),
+            array_values(array_filter(EntityProfileField::registryDetails(), static fn (EntityProfileField $field): bool => array_key_exists($field->value, $validated))),
+            is_string($unifiedNumber) ? new UnifiedNumber($unifiedNumber) : null,
         );
     }
 
@@ -83,19 +198,69 @@ final class EntityProfileInput
         );
     }
 
-    private static function toInternational(string $phone): string
+    /**
+     * @param  array<array-key, mixed>  $validated
+     */
+    public static function governanceGrade(array $validated): ?string
     {
-        return str_starts_with($phone, '05') ? '+966'.substr($phone, 1) : $phone;
+        $grade = $validated['governance_grade'] ?? null;
+
+        return is_string($grade) || is_int($grade) || is_float($grade) ? GovernanceGrade::of($grade)->toDecimal() : null;
     }
 
     /**
      * @param  array<array-key, mixed>  $validated
      */
-    private static function optionalCount(array $validated, string $key): ?int
+    public static function optionalCount(array $validated, string $key): ?int
     {
         $value = $validated[$key] ?? null;
 
         return $value === null ? null : ScalarValue::int($value);
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $validated
+     */
+    public static function strategicPlan(array $validated): ?bool
+    {
+        $answer = $validated['has_strategic_plan'] ?? null;
+
+        return $answer === null ? null : filter_var($answer, FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $validated
+     */
+    public static function licenseNumber(array $validated): ?LicenseNumber
+    {
+        $license = $validated['license_number'] ?? null;
+
+        return is_string($license) ? new LicenseNumber($license) : null;
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $validated
+     */
+    public static function foundedOn(array $validated): ?CarbonImmutable
+    {
+        $foundedOn = $validated['founded_on'] ?? null;
+
+        return is_string($foundedOn) ? CarbonImmutable::createFromFormat('!'.self::DATE_FORMAT, $foundedOn) ?: null : null;
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $validated
+     */
+    public static function websiteUrl(array $validated): ?WebsiteUrl
+    {
+        $website = $validated['website_url'] ?? null;
+
+        return is_string($website) ? new WebsiteUrl($website) : null;
+    }
+
+    private static function toInternational(string $phone): string
+    {
+        return str_starts_with($phone, '05') ? '+966'.substr($phone, 1) : $phone;
     }
 
     private static function cityOfRegion(mixed $regionId): Closure

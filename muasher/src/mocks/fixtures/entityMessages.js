@@ -6,6 +6,10 @@ export const entityMessages = {
   },
   not_found: { ar: 'العنصر المطلوب غير موجود.', en: 'The requested resource was not found.' },
   validation_failed: { ar: 'البيانات المرسلة غير صحيحة.', en: 'The submitted data is invalid.' },
+  'filter.level_invalid': {
+    ar: 'المستوى المحدد غير صالح.',
+    en: 'The selected level is invalid.',
+  },
   rate_limited: {
     ar: 'عدد الطلبات كبير. يرجى المحاولة لاحقًا.',
     en: 'Too many requests. Please try again later.',
@@ -57,6 +61,23 @@ export const entityMessages = {
   },
   'otp.invalid': { ar: 'رمز التحقق غير صحيح.', en: 'The verification code is incorrect.' },
   'field.required': { ar: 'هذا الحقل مطلوب.', en: 'This field is required.' },
+  'field.present': { ar: 'يجب إرسال هذا الحقل.', en: 'This field must be present.' },
+  'field.max_chars': {
+    ar: 'يجب ألا يتجاوز :max حرفًا.',
+    en: 'This field must not exceed :max characters.',
+  },
+  'field.person_name': {
+    ar: 'يجب أن يكون الاسم من 3 إلى 150 حرفًا.',
+    en: 'The name must have 3 to 150 characters.',
+  },
+  'field.official_email_prohibited': {
+    ar: 'يُغيَّر البريد الرسمي من «تغيير البريد» فقط.',
+    en: 'The official e-mail is changed only through «Change e-mail».',
+  },
+  'profile.section_stale': {
+    ar: 'تغيّرت بيانات هذا القسم بعد فتحه. راجع القيم الحالية ثم احفظ مجددًا.',
+    en: 'This section was changed after you opened it. Review the current values and save again.',
+  },
   'field.reason_min': {
     ar: 'يجب ألا يقل السبب عن :min أحرف.',
     en: 'The reason must be at least :min characters.',
@@ -80,6 +101,38 @@ export const entityMessages = {
   'field.governance_grade': {
     ar: 'يجب أن تكون درجة الحوكمة رقمًا بين 0 و100 بمنزلتين عشريتين على الأكثر.',
     en: 'The governance grade must be a number between 0 and 100 with at most two decimals.',
+  },
+  'field.logo_type': {
+    ar: 'يجب أن يكون الشعار بصيغة PNG أو JPEG.',
+    en: 'The logo must be a PNG or JPEG image.',
+  },
+  'field.logo_size': {
+    ar: 'يجب ألا يتجاوز حجم الشعار 2 ميجابايت.',
+    en: 'The logo must not exceed 2 MB.',
+  },
+  'field.unified_number': {
+    ar: 'يجب أن يتكون الرقم الوطني الموحد من 10 أرقام (0-9) بالضبط وأن يبدأ بالرقم 7.',
+    en: 'The unified national number must contain exactly 10 digits (0-9) and start with 7.',
+  },
+  'field.unified_number_taken': {
+    ar: 'هذا الرقم الوطني الموحد مسجّل لجهة أخرى في المنصة. تحقّق من الرقم أو تواصل مع فريق المنصة.',
+    en: 'This unified national number is already registered for another entity on the platform. Check the number or contact the platform team.',
+  },
+  'field.license': {
+    ar: 'رقم الترخيص من 3 إلى 20 رقماً.',
+    en: 'The licence number must have 3 to 20 digits.',
+  },
+  'field.license_taken': {
+    ar: 'رقم الترخيص هذا مسجّل لجهة أخرى في المنصة. تحقّق من الرقم أو تواصل مع فريق المنصة.',
+    en: 'This licence number is registered for another organization. Check the number or contact the platform team.',
+  },
+  'field.founded_on': {
+    ar: 'أدخل تاريخ تأسيس صحيحاً بين 1900-01-01 واليوم.',
+    en: 'Enter a valid founding date between 1900-01-01 and today.',
+  },
+  'field.website': {
+    ar: 'أدخل عنوان موقع كاملاً يبدأ بـ https://',
+    en: 'Enter a full website address that starts with https://',
   },
   'field.phone': {
     ar: 'صيغة رقم الجوال غير صحيحة.',

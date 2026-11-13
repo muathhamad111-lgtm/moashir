@@ -43,7 +43,9 @@ function settingsOf(values) {
 }
 
 export function emailPayload(values, resource) {
-  const changed = changedValues(settingsOf(values), settingsOf(emailFormValues(resource)), { full: writesEverything(resource) })
+  const changed = changedValues(settingsOf(values), settingsOf(emailFormValues(resource)), {
+    full: writesEverything(resource),
+  })
   return withSecrets(changed, { password: values.password })
 }
 

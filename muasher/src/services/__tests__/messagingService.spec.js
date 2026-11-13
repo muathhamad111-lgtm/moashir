@@ -22,12 +22,18 @@ describe('messagingService', () => {
     await messagingService.listSegments()
     await messagingService.searchRecipients({ search: 'بر' })
     expect(apiClient.get).toHaveBeenCalledWith('/messaging/segments')
-    expect(apiClient.get).toHaveBeenCalledWith('/messaging/recipients', { params: { search: 'بر' } })
+    expect(apiClient.get).toHaveBeenCalledWith('/messaging/recipients', {
+      params: { search: 'بر' },
+    })
   })
 
   it('sends an email campaign over a segment', async () => {
     apiClient.post.mockResolvedValue({ data: envelope })
-    await messagingService.sendEmailCampaign({ subject: 'مرحبا', body: '...', segment: 'qualified' })
+    await messagingService.sendEmailCampaign({
+      subject: 'مرحبا',
+      body: '...',
+      segment: 'qualified',
+    })
     expect(apiClient.post).toHaveBeenCalledWith('/messaging/email/send', {
       subject: 'مرحبا',
       body: '...',

@@ -4,28 +4,58 @@ set -Eeuo pipefail
 KIT_SOURCE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly KIT_SOURCE
 source "${KIT_SOURCE}/lib/common.sh"
+source "${KIT_SOURCE}/lib/backup.sh"
+source "${KIT_SOURCE}/lib/provision-users.sh"
+source "${KIT_SOURCE}/lib/provision-database.sh"
+source "${KIT_SOURCE}/lib/provision-redis.sh"
+source "${KIT_SOURCE}/lib/provision-backup.sh"
+source "${KIT_SOURCE}/lib/provision-pdf.sh"
+source "${KIT_SOURCE}/lib/provision-nginx.sh"
+source "${KIT_SOURCE}/lib/provision-posture.sh"
+source "${KIT_SOURCE}/lib/provision-postgresql.sh"
+source "${KIT_SOURCE}/lib/provision-deploy-user.sh"
 
 readonly COMPOSER_VERSION="2.11.1"
 readonly SWAP_FILE="/swapfile"
 readonly SWAP_SIZE="2G"
-readonly UPLOAD_LIMIT="25m"
-readonly UPLOAD_LIMIT_PHP="25M"
-readonly POST_LIMIT_PHP="26M"
+readonly EVIDENCE_UPLOAD_CEILING_MB=100
 readonly CLAMAV_SIGNATURE_WAIT_SECONDS=900
-readonly REQUIRED_PHP_MODULES=(pdo_pgsql redis mbstring dom curl zip intl pcntl posix fileinfo tokenizer)
+readonly REQUIRED_PHP_MODULES=(pdo_pgsql redis mbstring dom curl zip intl pcntl posix fileinfo tokenizer gd)
 readonly CLAMAV_PACKAGES=(clamav clamav-daemon clamav-freshclam)
+readonly SYSTEM_PACKAGES=(gnupg redis-server)
+
+FPM_NEEDS_RELOAD=0
 
 usage() {
     cat <<'USAGE'
-Usage: provision.sh <phase> [staging|production|all]
+Usage: provision.sh <phase> [arguments]
 
-Phases (run as root on the server, in this order, each one idempotent):
-  system           packages, swap, ClamAV, system user, directories, PHP-FPM pools, databases,
-                   .env files, Horizon programs, scheduler cron entries, log rotation
-  nginx-bootstrap  HTTP-only server blocks that answer the ACME challenge for the Moashir domains
-  certificates     Let's Encrypt certificates for the Moashir domains only (webroot, no Nginx edits)
-  nginx-final      HTTPS server blocks (requires the certificates)
-  status           read-only summary (no secrets)
+New host, in this order (run as root on the server, each phase idempotent):
+  postgresql                     PostgreSQL 17 from the PostgreSQL apt repository (key fingerprint verified);
+                                 changes nothing when a PostgreSQL cluster already exists
+  postgresql-repository          only add the verified PostgreSQL apt repository (existing-server upgrade path)
+  system [env|all]               packages, swap, ClamAV, one system user per environment, directories, .env files,
+                                 databases, one private Redis per environment, PHP-FPM pools, Horizon, scheduler,
+                                 log rotation and archive, encrypted backup key and timers, PDF renderer
+  nginx-bootstrap [env|all]      HTTP-only server blocks that answer the ACME challenge
+  certificates [env|all]         Let's Encrypt certificates for the Moashir domains only
+  nginx-final [env|all]          HTTPS server blocks (requires the certificates)
+  nginx-default-tls              dedicated host only: default :443 server that rejects unknown names
+
+Posture (MOASHIR_DEMO in the environment's .env):
+  posture demo [env|all]         fictional data only; demo-install and the log mailer are allowed
+  posture real [env|all]         real operation; refuses a database with demo records
+
+Existing server (RUNBOOK: Applying Task-52 to an existing server):
+  migrate-user <env>             move the environment from the shared moashir user to moashir-<env>
+  redis-cutover <env>            move the environment from the shared Redis to its private instance
+  redis-release-shared <env>     delete the environment's keys from the shared Redis after the checks
+  remove-legacy-user             delete the shared moashir user once both environments are migrated
+
+Other:
+  deploy-user                    non-root deploy user for CI (MOASHIR_DEPLOY_PUBLIC_KEY_FILE=<public key file>)
+  pdf-renderer [env|all]         pinned Chrome for Testing headless shell (monthly version bump)
+  status [env|all]               read-only summary (no secrets)
 USAGE
 }
 
@@ -38,17 +68,21 @@ php_module_package() {
         curl) printf 'php%s-curl' "${MOASHIR_PHP_VERSION}" ;;
         zip) printf 'php%s-zip' "${MOASHIR_PHP_VERSION}" ;;
         intl) printf 'php%s-intl' "${MOASHIR_PHP_VERSION}" ;;
+        gd) printf 'php%s-gd' "${MOASHIR_PHP_VERSION}" ;;
         *) printf 'php%s-common' "${MOASHIR_PHP_VERSION}" ;;
     esac
 }
 
-preflight() {
+preflight_os() {
     require_root
     source /etc/os-release
     [[ ${ID:-} == "ubuntu" && ${VERSION_ID:-} == "24.04" ]] || die "Ubuntu 24.04 is expected."
+}
 
+preflight() {
     local command
-    for command in "${MOASHIR_PHP_BIN}" "${MOASHIR_FPM_BIN}" psql redis-cli nginx supervisorctl certbot openssl sudo curl sha256sum; do
+    preflight_os
+    for command in "${MOASHIR_PHP_BIN}" "${MOASHIR_FPM_BIN}" psql redis-cli nginx supervisorctl certbot openssl sudo curl sha256sum ldd flock; do
         command -v "${command}" >/dev/null || die "Missing command: ${command}"
     done
 }
@@ -94,7 +128,7 @@ missing_packages() {
         fi
     done
 
-    for package in "${CLAMAV_PACKAGES[@]}"; do
+    for package in "${CLAMAV_PACKAGES[@]}" "${CHROME_PACKAGES[@]}" "${SYSTEM_PACKAGES[@]}"; do
         dpkg-query -W -f='${Status}' "${package}" 2>/dev/null | grep -q "install ok installed" || missing+=("${package}")
     done
 
@@ -126,6 +160,11 @@ ensure_packages() {
 
     [[ ${created_policy} -eq 1 ]] && rm -f "${policy}"
     FPM_NEEDS_RELOAD=1
+
+    if [[ " ${packages[*]} " == *" redis-server "* ]]; then
+        systemctl disable --now redis-server >/dev/null 2>&1 || true
+        info "The default shared redis-server instance that came with the package is disabled; Moashir uses one private instance per environment."
+    fi
 }
 
 ensure_composer() {
@@ -152,28 +191,15 @@ ensure_composer() {
     info "Composer ${COMPOSER_VERSION} installed in ${MOASHIR_OPT}/bin (checksum verified)."
 }
 
-ensure_app_user() {
-    if ! id "${MOASHIR_APP_USER}" >/dev/null 2>&1; then
-        useradd --system --user-group --home-dir "${MOASHIR_HOME}" --create-home --shell /usr/sbin/nologin "${MOASHIR_APP_USER}"
-        info "System user ${MOASHIR_APP_USER} created."
-    fi
-
-    chmod 0750 "${MOASHIR_HOME}"
-
-    if getent group clamav >/dev/null && ! id -nG "${MOASHIR_APP_USER}" | grep -qw clamav; then
-        usermod -aG clamav "${MOASHIR_APP_USER}"
-        FPM_NEEDS_RELOAD=1
-        info "${MOASHIR_APP_USER} may now reach the ClamAV socket."
-    fi
-}
-
 ensure_directories() {
-    local environment="$1" dir log_dir
+    local environment="$1" user dir log_dir
+    user="$(environment_user "${environment}")"
     dir="$(environment_dir "${environment}")"
     log_dir="$(environment_log_dir "${environment}")"
 
-    install -d -m 0711 -o "${MOASHIR_APP_USER}" -g "${MOASHIR_APP_USER}" "${MOASHIR_BASE}" "${dir}" "${dir}/releases" "${dir}/shared"
-    install -d -m 0750 -o "${MOASHIR_APP_USER}" -g "${MOASHIR_APP_USER}" \
+    secure_base_directory
+    install -d -m 0711 -o "${user}" -g "${user}" "${dir}" "${dir}/releases" "${dir}/shared"
+    install -d -m 0750 -o "${user}" -g "${user}" \
         "${dir}/shared/storage" \
         "${dir}/shared/storage/app" \
         "${dir}/shared/storage/app/private" \
@@ -185,10 +211,10 @@ ensure_directories() {
         "${dir}/shared/storage/framework/testing" \
         "${dir}/shared/storage/framework/views" \
         "${dir}/shared/storage/logs"
-    install -d -m 0700 -o "${MOASHIR_APP_USER}" -g "${MOASHIR_APP_USER}" "${dir}/shared/tmp"
+    install -d -m 0700 -o "${user}" -g "${user}" "${dir}/shared/tmp"
     install -d -m 0755 -o root -g root "${MOASHIR_ACME_ROOT}"
-    install -d -m 0755 -o root -g root "${MOASHIR_LOG}"
-    install -d -m 0750 -o "${MOASHIR_APP_USER}" -g "${MOASHIR_APP_USER}" "${log_dir}"
+    ensure_log_directories
+    install -d -m 0750 -o "${user}" -g "${user}" "${log_dir}"
     install -d -m 0700 -o root -g root "${MOASHIR_ETC}" "${MOASHIR_ETC}/${environment}"
 }
 
@@ -234,116 +260,17 @@ wait_for_signatures() {
     done
 }
 
-generate_secret() {
-    openssl rand -hex 32
-}
-
-set_role_password() {
-    local role="$1" password="$2" verifier
-    verifier="$(printf '%s' "${password}" | "${MOASHIR_PHP_BIN}" "${MOASHIR_KIT}/bin/pg-scram-verifier.php")"
-    printf 'ALTER ROLE "%s" PASSWORD %s;\n' "${role}" "'${verifier}'" | psql_admin -d postgres
-}
-
-role_exists() {
-    [[ "$(psql_admin -At -d postgres -c "SELECT 1 FROM pg_roles WHERE rolname = '$1'")" == "1" ]]
-}
-
-database_exists() {
-    [[ "$(psql_admin -At -d postgres -c "SELECT 1 FROM pg_database WHERE datname = '$1'")" == "1" ]]
-}
-
-ensure_role() {
-    local role="$1" connection_limit="$2"
-
-    if ! role_exists "${role}"; then
-        psql_admin -d postgres -c "CREATE ROLE \"${role}\" LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION"
-    fi
-
-    psql_admin -d postgres -c "ALTER ROLE \"${role}\" CONNECTION LIMIT ${connection_limit}"
-}
-
-ensure_owner_secret() {
-    local environment="$1" owner secrets password
-    owner="$(environment_role "${environment}" owner)"
-    secrets="$(environment_owner_secrets "${environment}")"
-
-    if [[ -s ${secrets} ]]; then
-        return
-    fi
-
-    password="$(generate_secret)"
-    set_role_password "${owner}" "${password}"
-    (
-        umask 077
-        printf 'DB_USERNAME=%s\nDB_PASSWORD=%s\n' "${owner}" "${password}" >"${secrets}"
-    )
-    chmod 600 "${secrets}"
-    info "Owner role password generated and stored in ${secrets} (root only)."
-}
-
-ensure_app_secret() {
-    local environment="$1" app env_file password current
-    app="$(environment_role "${environment}" app)"
-    env_file="$(environment_env_file "${environment}")"
-    current="$(env_get_key "${env_file}" DB_PASSWORD || true)"
-
-    if [[ -n ${current} ]]; then
-        return
-    fi
-
-    password="$(generate_secret)"
-    set_role_password "${app}" "${password}"
-    env_set_key "${env_file}" DB_PASSWORD "${password}"
-    info "Application role password generated and stored in ${env_file} (mode 600)."
-}
-
-ensure_database() {
-    local environment="$1" database owner app maintenance
-    database="$(environment_database "${environment}")"
-    owner="$(environment_role "${environment}" owner)"
-    app="$(environment_role "${environment}" app)"
-    maintenance="$(environment_role "${environment}" maintenance)"
-
-    ensure_role "${owner}" 5
-    ensure_role "${app}" 40
-    ensure_role "${maintenance}" 2
-
-    if ! database_exists "${database}"; then
-        psql_admin -d postgres -c "CREATE DATABASE \"${database}\" OWNER \"${owner}\" ENCODING 'UTF8' TEMPLATE template0"
-        info "Database ${database} created (owner ${owner})."
-    fi
-
-    psql_admin -d postgres -c "REVOKE ALL ON DATABASE \"${database}\" FROM PUBLIC"
-    psql_admin -d postgres -c "GRANT CONNECT ON DATABASE \"${database}\" TO \"${owner}\", \"${app}\", \"${maintenance}\""
-
-    ensure_owner_secret "${environment}"
-    ensure_app_secret "${environment}"
-}
-
-redis_password() {
-    local line
-    [[ -r /etc/redis/redis.conf ]] || return 0
-
-    while IFS= read -r line; do
-        if [[ ${line} =~ ^requirepass[[:space:]]+(.+)$ ]]; then
-            printf '%s' "${BASH_REMATCH[1]}"
-            return 0
-        fi
-    done </etc/redis/redis.conf
-}
-
 ensure_env_file() {
-    local environment="$1" env_file template line key password
+    local environment="$1" env_file template line key user
     env_file="$(environment_env_file "${environment}")"
     template="${MOASHIR_KIT}/env/${environment}.env.template"
+    user="$(environment_user "${environment}")"
 
     if [[ ! -f ${env_file} ]]; then
-        install -m 600 -o "${MOASHIR_APP_USER}" -g "${MOASHIR_APP_USER}" "${template}" "${env_file}"
+        install -m 600 -o "${user}" -g "${user}" "${template}" "${env_file}"
         env_set_key "${env_file}" APP_KEY "base64:$(openssl rand -base64 32)"
         env_set_key "${env_file}" BACKUP_ARCHIVE_PASSWORD "$(generate_secret)"
-        password="$(redis_password)"
-        [[ -n ${password} ]] && env_set_key "${env_file}" REDIS_PASSWORD "${password}"
-        info "Created ${env_file} from the template with a new APP_KEY and backup password."
+        info "Created ${env_file} from the template (real-operation posture) with a new APP_KEY."
     fi
 
     while IFS= read -r line || [[ -n ${line} ]]; do
@@ -355,31 +282,8 @@ ensure_env_file() {
         fi
     done <"${template}"
 
-    chown "${MOASHIR_APP_USER}:${MOASHIR_APP_USER}" "${env_file}"
+    chown "${user}:${user}" "${env_file}"
     chmod 600 "${env_file}"
-}
-
-redis_cli() {
-    local environment="$1"
-    shift
-    local password
-    password="$(env_get_key "$(environment_env_file "${environment}")" REDIS_PASSWORD || true)"
-    REDISCLI_AUTH="${password}" redis-cli -h 127.0.0.1 -p 6379 --no-auth-warning "$@"
-}
-
-ensure_redis_isolation() {
-    local environment="$1" env_file database foreign
-    env_file="$(environment_env_file "${environment}")"
-
-    [[ "$(redis_cli "${environment}" ping 2>&1)" == "PONG" ]] || die "Redis does not answer PONG for ${environment}; if it requires a password set REDIS_PASSWORD in ${env_file}."
-
-    for key in REDIS_DB REDIS_CACHE_DB; do
-        database="$(env_get_key "${env_file}" "${key}")"
-        redis_cli "${environment}" -n "${database}" ping >/dev/null || die "Redis database ${database} is not available."
-        foreign="$(redis_cli "${environment}" -n "${database}" --scan --count 1000 | grep -v "^moashir_${environment}_" | head -n 1 || true)"
-        [[ -z ${foreign} ]] || die "Redis database ${database} already holds keys of another application; choose free indexes for ${key} in ${env_file}."
-    done
-    info "Redis databases of ${environment} are free or used by Moashir ${environment} only."
 }
 
 ensure_fpm_pool() {
@@ -390,18 +294,18 @@ ensure_fpm_pool() {
 
     render_template "${MOASHIR_KIT}/php-fpm/pool.conf.template" "${rendered}" \
         "ENVIRONMENT=${environment}" \
-        "APP_USER=${MOASHIR_APP_USER}" \
+        "APP_USER=$(environment_user "${environment}")" \
         "WEB_GROUP=${MOASHIR_WEB_GROUP}" \
         "FPM_SOCKET=$(environment_fpm_socket "${environment}")" \
         "FPM_MAX_CHILDREN=${max_children}" \
         "LOG_DIR=$(environment_log_dir "${environment}")" \
         "ENV_DIR=$(environment_dir "${environment}")" \
-        "UPLOAD_LIMIT_PHP=${UPLOAD_LIMIT_PHP}" \
-        "POST_LIMIT_PHP=${POST_LIMIT_PHP}"
+        "UPLOAD_LIMIT_PHP=${EVIDENCE_UPLOAD_CEILING_MB}M" \
+        "POST_LIMIT_PHP=$((EVIDENCE_UPLOAD_CEILING_MB + 1))M"
 
     if install_if_changed "${rendered}" "${MOASHIR_FPM_POOL_DIR}/moashir-${environment}.conf" 0644 root:root; then
         FPM_NEEDS_RELOAD=1
-        info "PHP-FPM pool moashir-${environment} written."
+        info "PHP-FPM pool moashir-${environment} written (user $(environment_user "${environment}"))."
     fi
 }
 
@@ -413,14 +317,14 @@ ensure_supervisor() {
         "ENVIRONMENT=${environment}" \
         "PHP_BIN=${MOASHIR_PHP_BIN}" \
         "ENV_DIR=$(environment_dir "${environment}")" \
-        "APP_USER=${MOASHIR_APP_USER}" \
-        "APP_HOME=${MOASHIR_HOME}" \
+        "APP_USER=$(environment_user "${environment}")" \
+        "APP_HOME=$(environment_home "${environment}")" \
         "LOG_DIR=$(environment_log_dir "${environment}")"
 
     if install_if_changed "${rendered}" "/etc/supervisor/conf.d/moashir-${environment}-horizon.conf" 0644 root:root; then
         supervisorctl reread >/dev/null
         supervisorctl update "moashir-${environment}-horizon" >/dev/null || true
-        info "Supervisor program moashir-${environment}-horizon registered (it starts after the first deployment)."
+        info "Supervisor program moashir-${environment}-horizon registered (user $(environment_user "${environment}"))."
     fi
 }
 
@@ -429,7 +333,7 @@ ensure_cron() {
     rendered="$(mktemp)"
 
     render_template "${MOASHIR_KIT}/cron/scheduler.template" "${rendered}" \
-        "APP_USER=${MOASHIR_APP_USER}" \
+        "APP_USER=$(environment_user "${environment}")" \
         "ENV_DIR=$(environment_dir "${environment}")" \
         "PHP_BIN=${MOASHIR_PHP_BIN}" \
         "LOG_DIR=$(environment_log_dir "${environment}")"
@@ -437,11 +341,33 @@ ensure_cron() {
     install_if_changed "${rendered}" "/etc/cron.d/moashir-${environment}" 0644 root:root && info "Scheduler cron entry for ${environment} written." || true
 }
 
-ensure_logrotate() {
-    local copy
-    copy="$(mktemp)"
-    cp "${MOASHIR_KIT}/logrotate/moashir" "${copy}"
-    install_if_changed "${copy}" /etc/logrotate.d/moashir 0644 root:root && info "Log rotation for /var/log/moashir written." || true
+provision_environment() {
+    local environment="$1"
+    info "Environment ${environment}"
+    if [[ -d "$(environment_dir "${environment}")" ]]; then
+        assert_environment_migrated "${environment}"
+    fi
+
+    ensure_env_user "${environment}"
+    ensure_directories "${environment}"
+    ensure_env_file "${environment}"
+    ensure_database "${environment}"
+    warn_if_old_postgresql "${environment}"
+    ensure_redis_instance "${environment}"
+    assert_redis_settings "${environment}"
+    ensure_fpm_pool "${environment}"
+    ensure_supervisor "${environment}"
+    ensure_cron "${environment}"
+    ensure_incoming "${environment}"
+    provision_backups "${environment}"
+}
+
+pdf_renderer_phase() {
+    local scope="$1"
+    preflight
+    install_kit
+    ensure_packages
+    provision_pdf_renderer "${scope}"
 }
 
 provision_system() {
@@ -453,122 +379,43 @@ provision_system() {
     ensure_swap
     ensure_packages
     ensure_composer
-    ensure_app_user
     ensure_clamav
-    ensure_logrotate
 
     while IFS= read -r environment; do
-        info "Environment ${environment}"
-        ensure_directories "${environment}"
-        ensure_env_file "${environment}"
-        ensure_database "${environment}"
-        ensure_redis_isolation "${environment}"
-        ensure_fpm_pool "${environment}"
-        ensure_supervisor "${environment}"
-        ensure_cron "${environment}"
+        provision_environment "${environment}"
     done < <(environments_in_scope "${scope}")
+
+    ensure_logrotate
+    provision_pdf_renderer "${scope}"
 
     if [[ ${FPM_NEEDS_RELOAD} -eq 1 ]]; then
         fpm_test_and_reload
     fi
 
-    info "System phase complete. Next: provision.sh nginx-bootstrap"
+    info "System phase complete. Next on a new host: provision.sh nginx-bootstrap. Escrow the backup keys offline (RUNBOOK: Backups)."
 }
 
-install_nginx_shared() {
-    local copy changed=1
-    copy="$(mktemp)"
-    cp "${MOASHIR_KIT}/nginx/moashir-http.conf" "${copy}"
-    install_if_changed "${copy}" /etc/nginx/conf.d/moashir-http.conf 0644 root:root || changed=0
-    return "$((1 - changed))"
+status_line() {
+    printf '  %-22s %s\n' "$1" "$2"
 }
 
-install_site() {
-    local environment="$1" template="$2" rendered available enabled
-    rendered="$(mktemp)"
-    available="/etc/nginx/sites-available/moashir-${environment}.conf"
-    enabled="/etc/nginx/sites-enabled/moashir-${environment}.conf"
-
-    render_template "${template}" "${rendered}" \
-        "DOMAIN=$(environment_domain "${environment}")" \
-        "ENVIRONMENT=${environment}" \
-        "ACME_ROOT=${MOASHIR_ACME_ROOT}" \
-        "ENV_DIR=$(environment_dir "${environment}")" \
-        "CERT_NAME=$(environment_cert_name "${environment}")" \
-        "UPLOAD_LIMIT=${UPLOAD_LIMIT}"
-
-    install_if_changed "${rendered}" "${available}" 0644 root:root || true
-    ln -sfn "${available}" "${enabled}"
-}
-
-nginx_bootstrap() {
-    local scope="$1" environment
-    preflight
-    grep -Rqs "sites-enabled" /etc/nginx/nginx.conf || die "/etc/nginx/nginx.conf does not include sites-enabled."
-    install_nginx_shared || true
-
-    while IFS= read -r environment; do
-        if [[ -f "/etc/letsencrypt/live/$(environment_cert_name "${environment}")/fullchain.pem" ]]; then
-            info "Certificate for ${environment} already exists; keeping the final server block."
-            continue
-        fi
-        install_site "${environment}" "${MOASHIR_KIT}/nginx/site-bootstrap.conf.template"
-    done < <(environments_in_scope "${scope}")
-
-    nginx_test_and_reload
-    info "Next: provision.sh certificates"
-}
-
-certificates() {
-    local scope="$1" environment domain
-    local -a account_options=()
-    preflight
-
-    if [[ -n ${MOASHIR_CERTBOT_EMAIL:-} ]]; then
-        account_options+=(--email "${MOASHIR_CERTBOT_EMAIL}")
-    else
-        account_options+=(--register-unsafely-without-email)
-    fi
-
-    if [[ -n ${MOASHIR_CERTBOT_ACCOUNT:-} ]]; then
-        account_options+=(--account "${MOASHIR_CERTBOT_ACCOUNT}")
-    fi
-
-    while IFS= read -r environment; do
-        domain="$(environment_domain "${environment}")"
-        certbot certonly --webroot --webroot-path "${MOASHIR_ACME_ROOT}" \
-            --cert-name "$(environment_cert_name "${environment}")" \
-            --domain "${domain}" \
-            --non-interactive --agree-tos --keep-until-expiring \
-            --deploy-hook "nginx -t && systemctl reload nginx" \
-            "${account_options[@]}"
-        info "Certificate $(environment_cert_name "${environment}") ready for ${domain}."
-    done < <(environments_in_scope "${scope}")
-
-    info "Next: provision.sh nginx-final"
-}
-
-nginx_final() {
-    local scope="$1" environment snippet
-    preflight
-    install_nginx_shared || true
-    install -m 0644 -o root -g root "${MOASHIR_KIT}/nginx/moashir-spa-headers.conf" /etc/nginx/snippets/moashir-spa-headers.conf
-
-    while IFS= read -r environment; do
-        [[ -f "/etc/letsencrypt/live/$(environment_cert_name "${environment}")/fullchain.pem" ]] \
-            || die "No certificate for ${environment}; run provision.sh certificates first."
-
-        snippet="$(mktemp)"
-        render_template "${MOASHIR_KIT}/nginx/laravel.conf.template" "${snippet}" \
-            "ENV_DIR=$(environment_dir "${environment}")" \
-            "FPM_SOCKET=$(environment_fpm_socket "${environment}")"
-        install_if_changed "${snippet}" "/etc/nginx/snippets/moashir-${environment}-laravel.conf" 0644 root:root || true
-
-        install_site "${environment}" "${MOASHIR_KIT}/nginx/site.conf.template"
-    done < <(environments_in_scope "${scope}")
-
-    nginx_test_and_reload
-    info "Next: deploy.sh staging (from the operator workstation)"
+environment_status() {
+    local environment="$1" env_file
+    env_file="$(environment_env_file "${environment}")"
+    printf '\n[%s] %s\n' "${environment}" "$(environment_domain "${environment}")"
+    status_line "current release" "$(readlink "$(environment_dir "${environment}")/current" 2>/dev/null || printf 'none')"
+    status_line "runs as" "$(environment_runtime_user "${environment}")"
+    status_line ".env mode" "$(stat -c '%a %U' "${env_file}" 2>/dev/null || printf 'missing')"
+    status_line "posture" "$(environment_is_demo "${environment}" && printf 'demo (fictional data)' || printf 'real operation')"
+    status_line "Redis" "$(environment_env_value "${environment}" REDIS_HOST) ($(systemctl is-active "$(environment_redis_unit "${environment}")" 2>/dev/null || true))"
+    status_line "FPM socket" "$([[ -S "$(environment_fpm_socket "${environment}")" ]] && printf present || printf missing)"
+    status_line "Horizon" "$(supervisorctl status "moashir-${environment}-horizon" 2>/dev/null | awk '{print $2}' || true)"
+    status_line "certificate" "$([[ -f "/etc/letsencrypt/live/$(environment_cert_name "${environment}")/fullchain.pem" ]] && printf present || printf missing)"
+    status_line "database" "$(database_exists "${environment}" "$(environment_database "${environment}")" && printf present || printf missing)"
+    status_line "PDF renderer" "$(environment_env_value "${environment}" PDF_RENDERER)"
+    status_line "backup key" "$([[ -s "$(backup_key_file "${environment}")" ]] && printf present || printf missing)"
+    status_line "off-server target" "$(backup_target_driver "${environment}" | grep . || printf 'NOT CONFIGURED')"
+    status_line "last backup" "$(backup_read_state "${environment}" last-backup | awk '{ print $1, $3 }' | grep . || printf none)"
 }
 
 status() {
@@ -578,27 +425,41 @@ status() {
     printf 'Swap: %s\n' "$(swapon --show --noheadings | awk '{print $1, $3}' | paste -sd ' ' -)"
     printf 'ClamAV daemon: %s\n' "$(systemctl is-active clamav-daemon 2>/dev/null || true)"
     printf 'Freshclam: %s\n' "$(systemctl is-active clamav-freshclam 2>/dev/null || true)"
+    printf 'chrome-headless-shell: %s\n' "$("${CHROME_ROOT}/current/${CHROME_BINARY_PATH}" --version 2>/dev/null || printf 'missing')"
+    printf 'AppArmor profile: %s\n' "$([[ -f /etc/apparmor.d/${CHROME_APPARMOR_PROFILE} ]] && printf present || printf missing)"
+    printf 'Shared user %s: %s\n' "${MOASHIR_LEGACY_USER}" "$(id "${MOASHIR_LEGACY_USER}" >/dev/null 2>&1 && printf 'still present' || printf 'removed')"
+    printf 'Deploy user %s: %s\n' "${MOASHIR_DEPLOY_USER}" "$(id "${MOASHIR_DEPLOY_USER}" >/dev/null 2>&1 && printf present || printf 'not created')"
 
     while IFS= read -r environment; do
-        printf '\n[%s] %s\n' "${environment}" "$(environment_domain "${environment}")"
-        printf '  current release: %s\n' "$(readlink "$(environment_dir "${environment}")/current" 2>/dev/null || printf 'none')"
-        printf '  .env mode: %s\n' "$(stat -c '%a %U' "$(environment_env_file "${environment}")" 2>/dev/null || printf 'missing')"
-        printf '  FPM socket: %s\n' "$([[ -S "$(environment_fpm_socket "${environment}")" ]] && printf present || printf missing)"
-        printf '  Horizon: %s\n' "$(supervisorctl status "moashir-${environment}-horizon" 2>/dev/null | awk '{print $2}' || true)"
-        printf '  certificate: %s\n' "$([[ -f "/etc/letsencrypt/live/$(environment_cert_name "${environment}")/fullchain.pem" ]] && printf present || printf missing)"
-        printf '  database: %s\n' "$(database_exists "$(environment_database "${environment}")" && printf present || printf missing)"
+        environment_status "${environment}"
     done < <(environments_in_scope "${scope}")
 }
 
+with_kit() {
+    preflight
+    install_kit
+    "$@"
+}
+
 main() {
-    local phase="${1:-}" scope="${2:-all}"
+    local phase="${1:-}"
 
     case "${phase}" in
-        system) provision_system "${scope}" ;;
-        nginx-bootstrap) nginx_bootstrap "${scope}" ;;
-        certificates) certificates "${scope}" ;;
-        nginx-final) nginx_final "${scope}" ;;
-        status) status "${scope}" ;;
+        system) provision_system "${2:-all}" ;;
+        postgresql) preflight_os && provision_postgresql ;;
+        postgresql-repository) preflight_os && install_pgdg_repository ;;
+        pdf-renderer) pdf_renderer_phase "${2:-all}" ;;
+        nginx-bootstrap) nginx_bootstrap "${2:-all}" ;;
+        certificates) certificates "${2:-all}" ;;
+        nginx-final) nginx_final "${2:-all}" ;;
+        nginx-default-tls) nginx_default_tls ;;
+        posture) with_kit set_posture "${2:-}" "${3:-all}" ;;
+        migrate-user) with_kit migrate_user "${2:-}" ;;
+        redis-cutover) with_kit redis_cutover "${2:-}" ;;
+        redis-release-shared) with_kit redis_release_shared "${2:-}" ;;
+        remove-legacy-user) with_kit remove_legacy_user ;;
+        deploy-user) with_kit provision_deploy_user ;;
+        status) status "${2:-all}" ;;
         *)
             usage
             exit 2

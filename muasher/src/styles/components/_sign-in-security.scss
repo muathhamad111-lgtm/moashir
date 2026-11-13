@@ -1,0 +1,71 @@
+@use '../mixins' as *;
+
+.sign-in-security__facts {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sign-in-security__fact {
+  @include flex(row, flex-start, flex-start, var(--space-2));
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
+  color: var(--theme-text);
+
+  .app-icon {
+    flex-shrink: 0;
+    margin-block-start: var(--space-1);
+    color: var(--theme-success-text);
+  }
+}
+
+.sign-in-channels {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-inline-size: 0;
+}
+
+.sign-in-channels__legend {
+  padding: 0;
+  margin-block-end: var(--space-1);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.sign-in-channels__help {
+  margin: 0;
+  color: var(--theme-text-secondary);
+  font-size: var(--fs-sm);
+}
+
+.sign-in-channels__setup {
+  align-self: flex-start;
+  margin-inline-start: calc(var(--space-5) + var(--space-2));
+  color: var(--theme-accent-text);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.sign-in-channels__warning {
+  @include flex(row, flex-start, flex-start, var(--space-2));
+  margin: 0;
+  margin-inline-start: calc(var(--space-5) + var(--space-2));
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--color-warning-soft);
+  color: var(--theme-warning-text);
+  font-size: var(--fs-sm);
+
+  .app-icon {
+    flex-shrink: 0;
+    margin-block-start: var(--space-0);
+  }
+}

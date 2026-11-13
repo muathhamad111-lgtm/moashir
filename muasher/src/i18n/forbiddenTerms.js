@@ -4,7 +4,10 @@ export const FORBIDDEN_TERMS = [
   { term: 'Juror', pattern: /\bjurors?\b/i },
   { term: 'Jury', pattern: /\bjur(?:y|ies)\b/i },
   { term: 'invoice', pattern: /\binvoic(?:e|es|ed|ing)\b/i },
-  { term: 'Excellence Bag', pattern: /\b(?:quick |fast )?excellence bag\b|\bfast excellence kit\b/i },
+  {
+    term: 'Excellence Bag',
+    pattern: /\b(?:quick |fast )?excellence bag\b|\bfast excellence kit\b/i,
+  },
   { term: 'مستشار', pattern: /مستشار/ },
   { term: 'محكم', pattern: /مح[َُِّْ]*ك[َُِّْ]*م/ },
   { term: 'التحكيم', pattern: /تحكيم/ },

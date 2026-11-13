@@ -1,5 +1,9 @@
 import { findCity, findRegion } from './regionsStore'
 import { findEntity, hasCompleteProfile, isDeleted, referenceOf } from './entitiesStore'
+import { profileCompletionOf, profileSectionsOf } from './entityProfileSections'
+import { findFile } from './finance/financeState'
+import { signedDownloadOf } from './finance/signedFiles'
+import { entityLevelFields, hasOpenAccreditedRequest } from './entityLevels'
 
 export const ENTITY_ACCESS = { FULL: 'full', CONTACT: 'contact', NONE: 'none' }
 
@@ -33,6 +37,10 @@ export function entityProfileOf(entity) {
     employeesCount: entity.employeesCount,
     annualBeneficiariesCount: entity.annualBeneficiariesCount,
     hasStrategicPlan: entity.hasStrategicPlan,
+    unifiedNumber: entity.unifiedNumber ?? null,
+    licenseNumber: entity.licenseNumber ?? null,
+    foundedOn: entity.foundedOn ?? null,
+    websiteUrl: entity.websiteUrl ?? null,
     profileCompleted: hasCompleteProfile(entity),
     verifiedAt: entity.verifiedAt,
     createdAt: entity.createdAt,
@@ -44,6 +52,7 @@ function entityContact(entity) {
     authorizedPersonName: entity.owner.name,
     officialEmail: entity.owner.email,
     phone: entity.owner.phone,
+    phoneVerified: Boolean(entity.owner.phoneVerifiedAt),
   }
 }
 
@@ -58,7 +67,7 @@ function pendingChange(change) {
     : null
 }
 
-export function ownEntityResource(entity, awaitingChange = null) {
+export function ownEntityResource(entity, { awaitingChange = null, canEdit = false } = {}) {
   return {
     ...entitySummary(entity),
     ...entityProfileOf(entity),
@@ -66,14 +75,31 @@ export function ownEntityResource(entity, awaitingChange = null) {
     marketingConsent: entity.marketingConsentAt !== null,
     marketingConsentAt: entity.marketingConsentAt,
     pendingEmailChange: pendingChange(awaitingChange),
+    logo: entity.logo ? { ...entity.logo } : null,
+    canEdit,
+    profileSections: profileSectionsOf(entity),
+    profileCompletion: profileCompletionOf(entity),
   }
 }
 
-function staffEntityResource(entity) {
+function staffLogoOf(entity, viewer) {
+  const file = entity.logo ? findFile(entity.logo.id) : null
+  if (!file || !viewer) return null
+  return {
+    id: file.id,
+    url: signedDownloadOf(viewer, file).url,
+    uploadedAt: entity.logo.uploadedAt,
+  }
+}
+
+function staffEntityResource(entity, viewer) {
   return {
     ...entitySummary(entity),
+    ...entityLevelFields(entity),
+    hasOpenAccreditedRequest: hasOpenAccreditedRequest(entity.id),
     ...entityProfileOf(entity),
     ...entityContact(entity),
+    logo: staffLogoOf(entity, viewer),
     marketingConsent: entity.marketingConsentAt !== null,
     deactivatedAt: entity.deactivatedAt,
     deactivationReason: entity.deactivationReason,
@@ -88,8 +114,16 @@ function staffEntityResource(entity) {
 
 const VARIANTS = {
   [ENTITY_ACCESS.FULL]: staffEntityResource,
-  [ENTITY_ACCESS.CONTACT]: (entity) => ({ ...entitySummary(entity), ...entityContact(entity) }),
-  [ENTITY_ACCESS.NONE]: (entity) => ({ ...entitySummary(entity), isDeleted: isDeleted(entity) }),
+  [ENTITY_ACCESS.CONTACT]: (entity) => ({
+    ...entitySummary(entity),
+    ...entityLevelFields(entity),
+    ...entityContact(entity),
+  }),
+  [ENTITY_ACCESS.NONE]: (entity) => ({
+    ...entitySummary(entity),
+    ...entityLevelFields(entity),
+    isDeleted: isDeleted(entity),
+  }),
 }
 
 export function entityResourceFor(access) {
@@ -98,7 +132,11 @@ export function entityResourceFor(access) {
 
 export function deletionImpactResource(openRequests, kept, { frozen = false } = {}) {
   return {
-    openRequests: openRequests.map((request) => ({ ...request, cycleId: request.cycleId ?? null, isFrozen: frozen })),
+    openRequests: openRequests.map((request) => ({
+      ...request,
+      cycleId: request.cycleId ?? null,
+      isFrozen: frozen,
+    })),
     openRequestsCount: openRequests.length,
     requiresConfirmation: openRequests.length > 0,
     keptOnPermanentDeletion: [...kept],

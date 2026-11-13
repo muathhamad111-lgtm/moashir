@@ -13,7 +13,9 @@ const emit = defineEmits(['update'])
 const { t } = useI18n()
 
 function errorOf(value) {
-  return (value ?? '').length > ACCREDITED_LIMITS.FEEDBACK_MAX ? t('accredited.cv.tooLong', { max: ACCREDITED_LIMITS.FEEDBACK_MAX }) : ''
+  return (value ?? '').length > ACCREDITED_LIMITS.FEEDBACK_MAX
+    ? t('accredited.cv.tooLong', { max: ACCREDITED_LIMITS.FEEDBACK_MAX })
+    : ''
 }
 </script>
 

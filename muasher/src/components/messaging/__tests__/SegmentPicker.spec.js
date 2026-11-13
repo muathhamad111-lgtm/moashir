@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import SegmentPicker from '@/components/messaging/SegmentPicker.vue'
 import { createTestGlobals } from '@/test-utils'
+import { REMOTE_SEARCH_DELAY_MS } from '@/constants/dropdown'
 
 const segments = [
   { key: 'qualified', label: { ar: 'المتأهلة', en: 'Qualified' }, count: 12 },
@@ -53,9 +54,12 @@ describe('SegmentPicker', () => {
   })
 
   it('bubbles a recipient search event from the individual picker', async () => {
+    vi.useFakeTimers()
     const wrapper = mountPicker({ modelValue: { segment: 'individual', recipientEntityId: null } })
-    const input = wrapper.find('.select2-search__input')
-    await input.setValue('بر')
+    await wrapper.find('.dropdown-combobox__input').setValue('بر')
+    expect(wrapper.emitted('search-recipients')).toBeUndefined()
+    vi.advanceTimersByTime(REMOTE_SEARCH_DELAY_MS)
     expect(wrapper.emitted('search-recipients')?.at(-1)).toEqual(['بر'])
+    vi.useRealTimers()
   })
 })

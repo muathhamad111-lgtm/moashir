@@ -25,9 +25,15 @@ export function useFilteringDetail(cycleId, assessmentId) {
   const cycle = shallowRef(null)
 
   const row = computed(() => detail.value?.row ?? null)
-  const awaiting = computed(() => row.value?.status === ADVANCED_STATUSES.AWAITING_FILTERING && !row.value?.isFrozen)
-  const windowOpen = computed(() => !cycle.value || CYCLE_FILTERING_STATUSES.includes(cycle.value.status))
-  const mayDecide = computed(() => (auth.isSuperAdmin || can(PERMISSIONS.AWARD_FILTERING_DECIDE)) && awaiting.value)
+  const awaiting = computed(
+    () => row.value?.status === ADVANCED_STATUSES.AWAITING_FILTERING && !row.value?.isFrozen,
+  )
+  const windowOpen = computed(
+    () => !cycle.value || CYCLE_FILTERING_STATUSES.includes(cycle.value.status),
+  )
+  const mayDecide = computed(
+    () => (auth.isSuperAdmin || can(PERMISSIONS.AWARD_FILTERING_DECIDE)) && awaiting.value,
+  )
 
   async function loadCycle() {
     try {
@@ -41,7 +47,10 @@ export function useFilteringDetail(cycleId, assessmentId) {
     if (!silent) status.value = 'loading'
     errorMessage.value = ''
     try {
-      const [{ data }] = await Promise.all([filteringService.get(cycleId.value, assessmentId.value), loadCycle()])
+      const [{ data }] = await Promise.all([
+        filteringService.get(cycleId.value, assessmentId.value),
+        loadCycle(),
+      ])
       detail.value = data
       status.value = 'ready'
     } catch (error) {

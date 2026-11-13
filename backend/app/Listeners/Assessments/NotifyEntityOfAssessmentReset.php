@@ -22,7 +22,7 @@ final readonly class NotifyEntityOfAssessmentReset
 
         $notice = $assessment->isAccredited()
             ? RequestNotices::for($code, RequestNotices::FOR_ENTITY, $assessment, AssessmentLinks::accreditedForm())
-            : AssessmentNotices::for($code, ['number' => $assessment->request_number], AssessmentLinks::selfForm());
+            : AssessmentNotices::for($code, ['number' => $assessment->request_number], AssessmentLinks::selfForm())->forPath($assessment->path);
 
         $this->notifier->toOwner($assessment->entity, $notice);
     }

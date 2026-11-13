@@ -32,10 +32,10 @@ function login() {
       <h1 id="hero-title" class="hero__headline">{{ headline || $t('public.hero.headline') }}</h1>
       <p class="hero__subtitle">{{ subtitle || $t('public.hero.subtitle') }}</p>
       <div class="hero__actions">
-        <BaseButton variant="primary" size="lg" icon="fa-solid fa-flag-checkered" @click="startAssessment">
+        <BaseButton variant="primary" size="lg" icon="flag-checkered" @click="startAssessment">
           {{ $t('public.hero.start') }}
         </BaseButton>
-        <BaseButton variant="secondary" size="lg" icon="fa-solid fa-right-to-bracket" @click="login">
+        <BaseButton variant="secondary" size="lg" icon="login" @click="login">
           {{ $t('actions.login') }}
         </BaseButton>
       </div>

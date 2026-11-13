@@ -4,8 +4,7 @@ import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import { useToast } from '@/composables/useToast'
 import { messagingService } from '@/services/messagingService'
-import DemoDataNotice from '@/components/ui/DemoDataNotice.vue'
-import { MOCK_MODULES } from '@/constants/mockModules'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 const toast = useToast()
@@ -23,20 +22,19 @@ async function sendBroadcast() {
     sending.value = false
   }
 }
-
-const DEMO_MODULES = [MOCK_MODULES.MESSAGING]
 </script>
 
 <template>
   <section class="settings-form__group" aria-labelledby="sms-broadcast-title">
-    <h2 id="sms-broadcast-title" class="settings-form__legend">{{ t('settings.sms.broadcastTitle') }}</h2>
-    <DemoDataNotice scope="section" :modules="DEMO_MODULES" />
+    <h2 id="sms-broadcast-title" class="settings-form__legend">
+      {{ t('settings.sms.broadcastTitle') }}
+    </h2>
     <p class="settings-form__note" role="note">
-      <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+      <AppIcon name="info-circle" />
       {{ t('settings.sms.broadcastNote') }}
     </p>
     <div class="settings-form__inline">
-      <BaseButton variant="secondary" icon="fa-solid fa-tower-broadcast" :loading="sending" @click="sendBroadcast">
+      <BaseButton variant="secondary" icon="broadcast" :loading="sending" @click="sendBroadcast">
         {{ t('settings.sms.broadcastSend') }}
       </BaseButton>
     </div>

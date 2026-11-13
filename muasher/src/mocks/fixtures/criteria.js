@@ -118,7 +118,10 @@ export const subCriteriaFixture = [
     distributeEqually: true,
     evaluationType: 'guiding-points',
     attachments: [
-      { name: { ar: 'وثيقة الرؤية والرسالة المعتمدة', en: 'Approved vision & mission document' }, required: true },
+      {
+        name: { ar: 'وثيقة الرؤية والرسالة المعتمدة', en: 'Approved vision & mission document' },
+        required: true,
+      },
       { name: { ar: 'محاضر مجلس الإدارة', en: 'Board meeting minutes' }, required: false },
     ],
     hasCv: true,
@@ -139,7 +142,10 @@ export const subCriteriaFixture = [
     evaluationType: 'guiding-points',
     attachments: [
       { name: { ar: 'لائحة الحوكمة المعتمدة', en: 'Approved governance charter' }, required: true },
-      { name: { ar: 'تقرير الالتزام النظامي', en: 'Regulatory compliance report' }, required: true },
+      {
+        name: { ar: 'تقرير الالتزام النظامي', en: 'Regulatory compliance report' },
+        required: true,
+      },
     ],
     hasCv: true,
     assessorNotes: true,
@@ -158,7 +164,13 @@ export const subCriteriaFixture = [
     distributeEqually: false,
     evaluationType: 'direct',
     attachments: [
-      { name: { ar: 'نماذج مبادرات التميز الداخلية', en: 'Internal excellence initiatives samples' }, required: false },
+      {
+        name: {
+          ar: 'نماذج مبادرات التميز الداخلية',
+          en: 'Internal excellence initiatives samples',
+        },
+        required: false,
+      },
     ],
     hasCv: true,
     assessorNotes: true,
@@ -173,7 +185,10 @@ export const subCriteriaFixture = [
   {
     id: 201,
     mainCriterionId: 2,
-    name: { ar: 'تحليل البيئة واحتياجات المستفيدين', en: 'Environment & Beneficiary Needs Analysis' },
+    name: {
+      ar: 'تحليل البيئة واحتياجات المستفيدين',
+      en: 'Environment & Beneficiary Needs Analysis',
+    },
     weight: 500,
     distributeEqually: true,
     evaluationType: 'guiding-points',
@@ -197,7 +212,10 @@ export const subCriteriaFixture = [
     distributeEqually: false,
     evaluationType: 'direct',
     attachments: [
-      { name: { ar: 'الخطة الاستراتيجية المعتمدة', en: 'Approved strategic plan' }, required: true },
+      {
+        name: { ar: 'الخطة الاستراتيجية المعتمدة', en: 'Approved strategic plan' },
+        required: true,
+      },
       { name: { ar: 'خطة النشر والتنفيذ', en: 'Deployment & execution plan' }, required: false },
     ],
     hasCv: true,
@@ -218,7 +236,10 @@ export const subCriteriaFixture = [
     distributeEqually: true,
     evaluationType: 'guiding-points',
     attachments: [
-      { name: { ar: 'خطة التدريب والتطوير السنوية', en: 'Annual training & development plan' }, required: true },
+      {
+        name: { ar: 'خطة التدريب والتطوير السنوية', en: 'Annual training & development plan' },
+        required: true,
+      },
     ],
     hasCv: true,
     assessorNotes: true,
@@ -237,7 +258,13 @@ export const subCriteriaFixture = [
     distributeEqually: false,
     evaluationType: 'direct',
     attachments: [
-      { name: { ar: 'سياسة بيئة العمل ورعاية الموظفين', en: 'Workplace & employee wellbeing policy' }, required: false },
+      {
+        name: {
+          ar: 'سياسة بيئة العمل ورعاية الموظفين',
+          en: 'Workplace & employee wellbeing policy',
+        },
+        required: false,
+      },
     ],
     hasCv: true,
     assessorNotes: true,
@@ -257,7 +284,10 @@ export const subCriteriaFixture = [
     distributeEqually: false,
     evaluationType: 'guiding-points',
     attachments: [
-      { name: { ar: 'سجل الشراكات واتفاقياتها', en: 'Partnership register & agreements' }, required: true },
+      {
+        name: { ar: 'سجل الشراكات واتفاقياتها', en: 'Partnership register & agreements' },
+        required: true,
+      },
     ],
     hasCv: true,
     assessorNotes: true,
@@ -271,12 +301,18 @@ export const subCriteriaFixture = [
   {
     id: 402,
     mainCriterionId: 4,
-    name: { ar: 'الاستدامة المالية وإدارة الموارد', en: 'Financial Sustainability & Resource Management' },
+    name: {
+      ar: 'الاستدامة المالية وإدارة الموارد',
+      en: 'Financial Sustainability & Resource Management',
+    },
     weight: 300,
     distributeEqually: false,
     evaluationType: 'direct',
     attachments: [
-      { name: { ar: 'القوائم المالية المدققة', en: 'Audited financial statements' }, required: true },
+      {
+        name: { ar: 'القوائم المالية المدققة', en: 'Audited financial statements' },
+        required: true,
+      },
       { name: { ar: 'خطة تنويع مصادر الدخل', en: 'Income diversification plan' }, required: false },
     ],
     hasCv: true,
@@ -330,7 +366,10 @@ export const subCriteriaFixture = [
   {
     id: 503,
     mainCriterionId: 5,
-    name: { ar: 'التحول الرقمي وإدارة المعرفة', en: 'Digital Transformation & Knowledge Management' },
+    name: {
+      ar: 'التحول الرقمي وإدارة المعرفة',
+      en: 'Digital Transformation & Knowledge Management',
+    },
     weight: 250,
     distributeEqually: false,
     evaluationType: 'guiding-points',
@@ -355,7 +394,10 @@ export const subCriteriaFixture = [
     distributeEqually: false,
     evaluationType: 'direct',
     attachments: [
-      { name: { ar: 'تقارير قياس رضا المستفيدين', en: 'Beneficiary satisfaction survey reports' }, required: true },
+      {
+        name: { ar: 'تقارير قياس رضا المستفيدين', en: 'Beneficiary satisfaction survey reports' },
+        required: true,
+      },
     ],
     hasCv: true,
     assessorNotes: true,
@@ -424,12 +466,18 @@ export const subCriteriaFixture = [
   {
     id: 801,
     mainCriterionId: 8,
-    name: { ar: 'الأثر المجتمعي والإسهام في رؤية 2030', en: 'Community Impact & Vision 2030 Contribution' },
+    name: {
+      ar: 'الأثر المجتمعي والإسهام في رؤية 2030',
+      en: 'Community Impact & Vision 2030 Contribution',
+    },
     weight: 600,
     distributeEqually: false,
     evaluationType: 'guiding-points',
     attachments: [
-      { name: { ar: 'تقرير الأثر المجتمعي السنوي', en: 'Annual community impact report' }, required: true },
+      {
+        name: { ar: 'تقرير الأثر المجتمعي السنوي', en: 'Annual community impact report' },
+        required: true,
+      },
     ],
     hasCv: true,
     assessorNotes: true,
@@ -529,9 +577,7 @@ export const guidingPointsFixture = [
     },
     scaleKind: 'relative',
     weight: 180,
-    attachments: [
-      { name: { ar: 'لائحة الحوكمة', en: 'Governance charter' }, required: true },
-    ],
+    attachments: [{ name: { ar: 'لائحة الحوكمة', en: 'Governance charter' }, required: true }],
     active: true,
     order: 1,
   },
@@ -558,9 +604,7 @@ export const guidingPointsFixture = [
     },
     scaleKind: 'of-10',
     weight: 250,
-    attachments: [
-      { name: { ar: 'دراسة الاحتياجات', en: 'Needs study' }, required: true },
-    ],
+    attachments: [{ name: { ar: 'دراسة الاحتياجات', en: 'Needs study' }, required: true }],
     active: true,
     order: 1,
   },
@@ -587,9 +631,7 @@ export const guidingPointsFixture = [
     },
     scaleKind: 'relative',
     weight: 200,
-    attachments: [
-      { name: { ar: 'خطة التدريب', en: 'Training plan' }, required: true },
-    ],
+    attachments: [{ name: { ar: 'خطة التدريب', en: 'Training plan' }, required: true }],
     active: true,
     order: 1,
   },

@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import SearchSelect from '@/components/form/SearchSelect.vue'
+import AppCombobox from '@/components/form/AppCombobox.vue'
 import { useSettings } from '@/composables/useSettings'
 
 const props = defineProps({
@@ -30,7 +30,8 @@ function selectSegment(segment) {
   if (props.disabled) return
   emit('update:modelValue', {
     segment,
-    recipientEntityId: segment === 'individual' ? props.modelValue?.recipientEntityId ?? null : null,
+    recipientEntityId:
+      segment === 'individual' ? (props.modelValue?.recipientEntityId ?? null) : null,
   })
 }
 
@@ -64,10 +65,7 @@ function segmentLabel(segment) {
             />
             <span class="segment-picker__option-body">
               <span class="segment-picker__option-title">{{ segmentLabel(segment) }}</span>
-              <span
-                v-if="segment.key !== 'individual'"
-                class="segment-picker__count"
-              >
+              <span v-if="segment.key !== 'individual'" class="segment-picker__count">
                 {{ t('settings.email.recipientCount', { count: segment.count }) }}
               </span>
             </span>
@@ -78,8 +76,9 @@ function segmentLabel(segment) {
     </fieldset>
 
     <div v-if="isIndividual" class="segment-picker__individual">
-      <SearchSelect
+      <AppCombobox
         :model-value="modelValue.recipientEntityId"
+        name="recipientEntityId"
         :options="recipientOptions"
         remote
         :loading="recipientsLoading"

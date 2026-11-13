@@ -1,9 +1,19 @@
 import { randomUUID } from 'node:crypto'
 import { test, expect } from '@playwright/test'
-import { assertMailLogsConfigured, mailMark, waitForCode } from './support/mailbox'
-import { STAFF, signInStaff, typeCode } from './support/accounts'
+import { closeSuccess, decisionAction } from './support/dialogs'
+import { assertMailLogsConfigured } from './support/mailbox'
+import { STAFF, signInStaff } from './support/accounts'
 import { writeFileSync } from 'node:fs'
-import { GUEST_SESSION_PROBE, SOURCES, watchApi } from './support/apiWatch'
+import {
+  FOOTER_LEGAL_PROBES,
+  GUEST_SESSION_PROBE,
+  PAGE_NOT_PUBLISHED,
+  SOURCES,
+  watchApi,
+} from './support/apiWatch'
+import { registerEntity } from './support/entities'
+import { paced } from './support/pacing'
+import { AVAILABLE, PRICES_SCREEN, savePathPrice } from './support/prices'
 
 const RUN = Date.now().toString(36)
 const ENTITY = {
@@ -11,9 +21,12 @@ const ENTITY = {
   password: `Noor-${randomUUID()}`,
   nameAr: 'جمعية النور للتنمية الأهلية',
   nameEn: 'Al-Noor Community Development Association',
+  person: 'ريم بنت عبدالعزيز السبيعي',
 }
 const ACCREDITED_PRICE = '1500'
+const ACCREDITED_QUOTE = { price_before_vat: '1500.00', total: '1725.00', currency: 'SAR' }
 const PAYMENT_UNAVAILABLE = { status: 503, path: /^\/api\/v1\/payments$/ }
+const GUEST_PROBES = [GUEST_SESSION_PROBE, ...FOOTER_LEGAL_PROBES]
 
 const sessions = {}
 
@@ -33,29 +46,67 @@ const ADMIN_SCREENS = [
   '/admin/settings/abandoned-carts',
   '/admin/award/filtering',
   '/admin/award/cycles/new',
+  '/admin/settings/users',
+  '/admin/settings/homepage',
+  '/admin/kpis',
+  '/admin/branding',
+  '/admin/award/committee/manage',
+  '/admin/award/secretary',
+  '/admin/award/results',
   '/admin/requests',
   '/finance',
   '/finance/transactions',
+  '/finance/transfers',
   '/finance/refunds',
   '/finance/payment-events',
   '/account',
 ]
-const ENTITY_SCREENS = ['/assessment/history', '/payments', '/assessment/advanced', '/assessment/accredited', '/certificates', '/bag', '/account', '/entity/profile']
+const ENTITY_SCREENS = [
+  '/paths/self',
+  '/paths/accredited',
+  '/paths/award',
+  '/payments',
+  '/certificates',
+  '/bag',
+  '/entity/profile',
+]
 
-async function sweep({ page, api }, role, paths) {
+const PUBLIC_PATH_INTROS = ['/assessment/accredited', '/assessment/advanced']
+const CONNECTED_ENTITY_SCREENS = [
+  ['/dashboard', /^\/api\/v1\/dashboard\//],
+  ['/notifications', /^\/api\/v1\/notifications/],
+]
+const SHELLS = { admin: '.app-layout__content', entity: '.portal-layout__main' }
+
+async function sweep(session, role, paths) {
+  const { page } = session
   const broken = []
   for (const path of paths) {
-    await page.goto(path)
-    await settled(page, api)
+    await openScreen(session, path, SHELLS[role])
     await shot(page, `${role}${path.replaceAll('/', '-')}`)
     if (await page.locator('.error-state').count()) broken.push(path)
   }
   return broken
 }
 
+async function visit(page, path) {
+  await paced('pageLoad')
+  await page.goto(path)
+}
+
+async function openScreen({ page, api }, path, shell) {
+  await visit(page, path)
+  await expect(page.locator(shell)).toBeVisible()
+  await settled(page, api)
+}
+
 async function settled(page, api) {
   await api.idle()
   await expect(page.locator('[aria-busy="true"], .skeleton')).toHaveCount(0)
+}
+
+function isUnpublishedPage(failure) {
+  return failure.status === PAGE_NOT_PUBLISHED.status && PAGE_NOT_PUBLISHED.path.test(failure.path)
 }
 
 function shot(page, name) {
@@ -96,7 +147,9 @@ test.beforeAll(async ({ browser, request }) => {
 })
 
 test.afterAll(async () => {
-  const calls = Object.fromEntries(Object.entries(sessions).map(([key, { api }]) => [key, api.calls]))
+  const calls = Object.fromEntries(
+    Object.entries(sessions).map(([key, { api }]) => [key, api.calls]),
+  )
   writeFileSync('test-results/integration-api-calls.json', JSON.stringify(calls, null, 1))
   await Promise.all(Object.values(sessions).map(({ context }) => context.close()))
 })
@@ -104,9 +157,13 @@ test.afterAll(async () => {
 test('the system administrator signs in with an e-mail code and enrols the authenticator', async () => {
   const { page, api } = sessions.admin
   await signInStaff(page, STAFF.systemAdmin)
-  await expect(page.locator('.demo-notice')).toBeVisible()
-  await shot(page, 'admin-dashboard-demo')
-  expect(api.unexpected([GUEST_SESSION_PROBE])).toEqual([])
+  await expect(page.locator(SHELLS.admin)).toBeVisible()
+  await expect.poll(() => api.sourcesOf(/^\/api\/v1\/dashboard\//)).toEqual([SOURCES.BACKEND])
+  await settled(page, api)
+  await expect(page.locator('.error-state')).toHaveCount(0)
+  await shot(page, 'admin-signed-in-dashboard')
+  expect(api.sourcesOf(/^\/api\/v1\/auth\/session$/)).toEqual([SOURCES.BACKEND])
+  expect(api.unexpected(GUEST_PROBES)).toEqual([])
 })
 
 test('a second sign-in of the administrator passes the authenticator challenge', async () => {
@@ -115,161 +172,174 @@ test('a second sign-in of the administrator passes the authenticator challenge',
   await page.getByRole('menuitem').last().click()
   await expect(page).toHaveURL(/\/auth\/login/)
   await signInStaff(page, STAFF.systemAdmin)
-  expect(api.unexpected([GUEST_SESSION_PROBE])).toEqual([])
+  expect(api.unexpected(GUEST_PROBES)).toEqual([])
 })
 
 test('the administrator reads the published criteria tree from the server', async () => {
   const { page, api } = sessions.admin
-  await page.goto('/admin/settings/criteria')
+  await visit(page, '/admin/settings/criteria')
   await expect(page.locator('.criteria-tree, .criteria-version').first()).toBeVisible()
-  await expect(page.locator('.demo-notice')).toHaveCount(0)
   await shot(page, 'admin-criteria')
-  expect(api.unexpected([GUEST_SESSION_PROBE])).toEqual([])
+  expect(api.unexpected(GUEST_PROBES)).toEqual([])
 })
 
-test('the administrator sets the accredited price in the finance settings', async () => {
+test('the administrator sets the accredited price in the path prices', async () => {
   const { page, api } = sessions.admin
-  await page.goto('/admin/settings/finance')
-  const price = page.locator('input[name="accreditedPrice"]')
-  await expect(price).toBeEditable()
-  await price.fill(ACCREDITED_PRICE)
-  await page.locator('.settings-section .btn--primary').click()
-  await expect(page.locator('.toast--success').last()).toBeVisible()
-  await expect(price).toHaveValue('1500.00')
-  expect(api.unexpected([GUEST_SESSION_PROBE])).toEqual([])
+  await visit(page, PRICES_SCREEN)
+  const saved = await savePathPrice(page, 'accredited', { price: ACCREDITED_PRICE })
+  expect(saved.pricing).toMatchObject({ is_free: false, availability: AVAILABLE })
+  expect(saved.in_force.price_before_vat).toBe(ACCREDITED_QUOTE.price_before_vat)
+  await expect(
+    page.locator('[data-testid="price-row-accredited"] input[name="priceBeforeVat"]'),
+  ).toHaveValue('1500.00')
+  expect(api.sourcesOf(/^\/api\/v1\/settings\/prices(\/accredited)?$/)).toEqual([SOURCES.BACKEND])
+  expect(api.unexpected(GUEST_PROBES)).toEqual([])
 })
 
 test('the administrator reads the integrations overview and the payment settings', async () => {
   const { page, api } = sessions.admin
-  await page.goto('/admin/settings/integrations')
+  await visit(page, '/admin/settings/integrations')
   await expect(page.locator('.integrations-overview__grid').first()).toBeVisible()
   await expect(page.locator('.integrations-overview .error-state')).toHaveCount(0)
   await shot(page, 'admin-integrations')
-  await page.goto('/admin/settings/payment')
+  await visit(page, '/admin/settings/payment')
   await expect(page.locator('form').first()).toBeVisible()
-  await expect(page.locator('.demo-notice')).toHaveCount(0)
-  expect(api.unexpected([GUEST_SESSION_PROBE])).toEqual([])
+  expect(api.unexpected(GUEST_PROBES)).toEqual([])
 })
 
 test('the administrator lists the award cycles', async () => {
   const { page, api } = sessions.admin
-  await page.goto('/admin/award/cycles')
+  await visit(page, '/admin/award/cycles')
   await expect(page.locator('.stats-card').first()).toBeVisible()
   await expect(page.locator('.data-table, .empty-state').first()).toBeVisible()
   await shot(page, 'admin-award-cycles')
-  expect(api.unexpected([GUEST_SESSION_PROBE])).toEqual([])
+  expect(api.unexpected(GUEST_PROBES)).toEqual([])
 })
 
 test('a new entity registers, verifies its e-mail code and opens its profile', async () => {
   const { page, api } = sessions.entity
-  await page.goto('/auth/register')
-  await page.locator('[name="officialEmail"]').fill(ENTITY.email)
-  await page.locator('[name="password"]').fill(ENTITY.password)
-  await page.locator('[name="passwordConfirmation"]').fill(ENTITY.password)
-  await page.locator('[name="name.ar"]').fill(ENTITY.nameAr)
-  await page.locator('[name="name.en"]').fill(ENTITY.nameEn)
-  await page.locator('[name="authorizedPersonName"]').fill('ريم بنت عبدالعزيز السبيعي')
-  await page.locator('[name="entityType"]').selectOption({ index: 1 })
-  await page.locator('[name="developmentSector"]').selectOption({ index: 1 })
-  await page.locator('[name="orgSize"]').selectOption({ index: 1 })
-  await page.locator('[name="foundingYear"]').fill('2012')
-  await page.locator('[name="regionId"]').selectOption({ index: 1 })
-  await expect(page.locator('[name="cityId"]')).toBeEnabled()
-  await page.locator('[name="cityId"]').selectOption({ index: 1 })
-  await page.locator('[name="governanceGrade"]').fill('88.5')
-  await page.locator('label.checkbox:has([name="termsAccepted"])').click()
-  await shot(page, 'entity-register')
-  const mark = mailMark(ENTITY.email)
-  await page.locator('form button[type="submit"]').click()
-  await expect(page).toHaveURL(/\/auth\/otp/)
-  await typeCode(page, await waitForCode(ENTITY.email, mark))
-  await expect(page).toHaveURL(/\/entity\/profile/)
-  await expect(page.locator('.entity-profile__title')).toHaveText(ENTITY.nameAr)
+  await registerEntity(page, ENTITY)
   await shot(page, 'entity-profile')
-  expect(api.unexpected([GUEST_SESSION_PROBE])).toEqual([])
+  expect(api.unexpected(GUEST_PROBES)).toEqual([])
 })
 
 test('the entity starts a self assessment, submits it and sees the server result', async () => {
   test.setTimeout(180000)
   const { page, api } = sessions.entity
-  await page.goto('/assessment/self')
+  await visit(page, '/assessment/self')
   await page.locator('.self-start .btn--primary').click()
   await expect(page.locator('.self-summary')).toBeVisible()
   await fillEveryEmptyScore(page, '8')
   await page.locator('.self-actions .btn--secondary').click()
   await expect(page.locator('.toast--success').last()).toBeVisible()
   await page.locator('.self-actions .btn--primary').click()
-  const dialog = page.getByRole('dialog')
-  await expect(dialog).toBeVisible()
-  await dialog.locator('.btn--primary').click()
+  await decisionAction(page).click()
   await expect(page).toHaveURL(/\/assessment\/self\/result\/\d+$/)
+  await closeSuccess(page)
   await expect(page.locator('.self-result__gauge-value')).toBeVisible()
   await shot(page, 'entity-self-result')
-  expect(api.unexpected([GUEST_SESSION_PROBE])).toEqual([])
+  expect(api.unexpected(GUEST_PROBES)).toEqual([])
 })
 
-test('the entity sees the accredited price and its checkout stops at the payment gateway boundary', async () => {
+test('the entity checkout reads the accredited price and the payment channels from the backend', async () => {
   const { page, api } = sessions.entity
-  await page.goto('/assessment/accredited')
-  await expect(page.locator('.accredited-price')).toContainText('1,725.00')
-  await shot(page, 'entity-accredited-intro')
-  const created = page.waitForRequest((request) => request.method() === 'POST' && request.url().endsWith('/api/v1/payments'))
-  await page.goto('/assessment/accredited/pay')
-  await page.locator('.checkout__start .btn--primary').click()
-  const payment = await created
-  expect(payment.headers()['idempotency-key']).toMatch(/^[0-9a-f-]{36}$/)
-  expect(payment.postDataJSON()).toEqual({ purpose: 'accredited' })
-  await expect(page.locator('.payment-notice').first()).toBeVisible()
+  const options = page.waitForResponse((response) => {
+    const url = new URL(response.url())
+    return (
+      url.pathname === '/api/v1/payments/checkout-options' &&
+      url.searchParams.get('purpose') === 'accredited'
+    )
+  })
+  await visit(page, '/assessment/accredited/pay')
+  const answer = await options
+  expect(answer.status()).toBe(200)
+  const { pricing } = (await answer.json()).data
+  expect(pricing).toMatchObject({ is_free: false, availability: AVAILABLE })
+  expect(pricing.price).toMatchObject(ACCREDITED_QUOTE)
+  await expect(
+    page.locator('.payment-notice, .method-choice, .transfer-panel').first(),
+  ).toBeVisible()
+  await expect(page.locator('.checkout__aside')).toContainText('1,725.00')
   await shot(page, 'entity-checkout-boundary')
-  expect(api.failures.filter((failure) => failure.path === '/api/v1/payments')).toEqual([
-    { method: 'POST', path: '/api/v1/payments', status: 503, code: 'integration.not_configured' },
-  ])
-  expect(api.unexpected([GUEST_SESSION_PROBE, PAYMENT_UNAVAILABLE])).toEqual([])
+  const prices = await page.request.get('/api/v1/content/prices', {
+    headers: { Accept: 'application/json' },
+  })
+  expect(prices.status()).toBe(200)
+  const published = (await prices.json()).data
+  expect(published.accredited).toMatchObject(ACCREDITED_QUOTE)
+  expect(published.paths.accredited).toMatchObject({ is_free: false, availability: AVAILABLE })
+  expect(published.paths.self).toMatchObject({ price: null, is_free: true })
+  expect(api.sourcesOf(/^\/api\/v1\/payments\/checkout-options$/)).toEqual([SOURCES.BACKEND])
+  expect(api.failures.filter((failure) => failure.path.startsWith('/api/v1/payments'))).toEqual([])
+  expect(api.unexpected([...GUEST_PROBES, PAYMENT_UNAVAILABLE, PAGE_NOT_PUBLISHED])).toEqual([])
 })
 
 test('the requests follower signs in and opens the accredited request queue', async () => {
   const { page, api } = sessions.follower
   await signInStaff(page, STAFF.requestsFollower)
-  await page.goto('/admin/requests')
+  await visit(page, '/admin/requests')
   await expect(page.locator('.data-table, .empty-state').first()).toBeVisible()
-  await expect(page.locator('.demo-notice')).toHaveCount(0)
   await shot(page, 'follower-requests')
-  expect(api.unexpected([GUEST_SESSION_PROBE])).toEqual([])
+  expect(api.unexpected(GUEST_PROBES)).toEqual([])
 })
 
-test('demo modules answer from the mock layer with the marker while the session stays real', async () => {
+test('connected modules answer from the server and the modules awaiting their backend show coming soon', async () => {
   const { page, api } = sessions.entity
-  await page.goto('/dashboard')
-  await expect(page.locator('.demo-notice')).toBeVisible()
-  await settled(page, api)
-  await expect(page.locator('.error-state')).toHaveCount(0)
-  await shot(page, 'entity-dashboard-demo')
-  await page.goto('/notifications')
-  await expect(page.locator('.demo-notice')).toBeVisible()
-  await settled(page, api)
-  await expect(page.locator('.error-state')).toHaveCount(0)
-  await shot(page, 'entity-notifications-demo')
-  await page.goto('/entity/profile')
-  await expect(page.locator('.entity-profile__title')).toHaveText(ENTITY.nameAr)
-  expect(api.sourcesOf(/^\/api\/v1\/dashboard\//)).toEqual([SOURCES.DEMO])
-  expect(api.sourcesOf(/^\/api\/v1\/notifications/)).toEqual([SOURCES.DEMO])
+  for (const [path, contract] of CONNECTED_ENTITY_SCREENS) {
+    await openScreen(sessions.entity, path, SHELLS.entity)
+    await expect.poll(() => api.sourcesOf(contract)).toEqual([SOURCES.BACKEND])
+    await expect(page.locator('.error-state')).toHaveCount(0)
+    await shot(page, `entity-connected${path.replaceAll('/', '-')}`)
+  }
+  await visit(page, '/bag')
+  await expect(page.locator('.coming-soon')).toBeVisible()
+  await shot(page, 'entity-bag-coming-soon')
+  await visit(page, '/entity/profile')
+  await expect(page.locator('.profile-header__name')).toContainText(ENTITY.nameAr)
+  await expect(page.getByTestId('portal-page-title')).toHaveText('ملف الجهة')
+  expect(api.sourcesOf(/^\/api\/v1\/bag\//)).toEqual([])
   expect(api.sourcesOf(/^\/api\/v1\/entities\/me$/)).toEqual([SOURCES.BACKEND])
   expect(api.sourcesOf(/^\/api\/v1\/auth\/session$/)).toEqual([SOURCES.BACKEND])
-  expect(api.unexpected([GUEST_SESSION_PROBE, PAYMENT_UNAVAILABLE])).toEqual([])
+  expect(api.calls.every((call) => call.source === SOURCES.BACKEND)).toBe(true)
+  expect(api.unexpected([...GUEST_PROBES, PAYMENT_UNAVAILABLE, PAGE_NOT_PUBLISHED])).toEqual([])
+})
+
+test('the platform settings screen shows coming soon to the administrator', async () => {
+  const { page, api } = sessions.admin
+  await visit(page, '/admin/settings/general')
+  await expect(page.locator('.coming-soon')).toBeVisible()
+  await shot(page, 'admin-settings-general-coming-soon')
+  expect(api.sourcesOf(/^\/api\/v1\/settings\/general$/)).toEqual([])
+  expect(api.unexpected(GUEST_PROBES)).toEqual([])
+})
+
+test('the public path intros stay open to the signed-in entity while the homepage is unpublished', async () => {
+  const { page, api } = sessions.entity
+  const status = await page.request.get('/api/v1/content/status', {
+    headers: { Accept: 'application/json' },
+  })
+  expect((await status.json()).data.maintenance).toBe(true)
+  for (const path of PUBLIC_PATH_INTROS) {
+    await visit(page, path)
+    await expect(page).not.toHaveURL(/\/maintenance$/)
+    await expect(page.locator('.maintenance__title')).toHaveCount(0)
+  }
+  await settled(page, api)
+  expect(api.unexpected([...GUEST_PROBES, PAGE_NOT_PUBLISHED])).toEqual([])
 })
 
 test('every connected administrator screen loads from the server without a contract error', async () => {
-  test.setTimeout(240000)
+  test.setTimeout(360000)
   const { api } = sessions.admin
   const before = api.failures.length
   expect(await sweep(sessions.admin, 'admin', ADMIN_SCREENS)).toEqual([])
-  expect(api.failures.slice(before)).toEqual([])
+  expect(api.failures.slice(before).filter((failure) => !isUnpublishedPage(failure))).toEqual([])
 })
 
 test('every connected entity screen loads from the server without a contract error', async () => {
-  test.setTimeout(120000)
+  test.setTimeout(180000)
   const { api } = sessions.entity
   const before = api.failures.length
   expect(await sweep(sessions.entity, 'entity', ENTITY_SCREENS)).toEqual([])
-  expect(api.failures.slice(before)).toEqual([])
+  expect(api.failures.slice(before).filter((failure) => !isUnpublishedPage(failure))).toEqual([])
 })

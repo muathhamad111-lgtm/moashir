@@ -16,10 +16,20 @@ export function useRefundForm(transaction, { onRecorded }) {
   const submitting = ref(false)
 
   const total = computed(() => transaction.value.pricing.total)
-  const paidOn = computed(() => (transaction.value.paidAt ? riyadhDate(transaction.value.paidAt) : null))
+  const paidOn = computed(() =>
+    transaction.value.paidAt ? riyadhDate(transaction.value.paidAt) : null,
+  )
   const form = useForm({
-    validationSchema: computed(() => refundSchema(i18n.t, { total: total.value, paidOn: paidOn.value })),
-    initialValues: { amount: total.value, refundedOn: riyadhDate(), reason: '', transferReference: '', evidence: null },
+    validationSchema: computed(() =>
+      refundSchema(i18n.t, { total: total.value, paidOn: paidOn.value }),
+    ),
+    initialValues: {
+      amount: total.value,
+      refundedOn: riyadhDate(),
+      reason: '',
+      transferReference: '',
+      evidence: null,
+    },
   })
 
   function selectEvidence(file) {
@@ -47,7 +57,10 @@ export function useRefundForm(transaction, { onRecorded }) {
     refusal.value = ''
     logger.breadcrumb('form', 'finance.recordRefund', { fields: Object.keys(values) })
     try {
-      const { data } = await financeService.recordRefund(transaction.value.id, refundFormData(values))
+      const { data } = await financeService.recordRefund(
+        transaction.value.id,
+        refundFormData(values),
+      )
       uploadState.value = UPLOAD_STATES.CLEAN
       toast.success(i18n.t('finance.refund.recorded'))
       onRecorded(data)

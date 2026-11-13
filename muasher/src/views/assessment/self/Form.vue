@@ -11,18 +11,23 @@ import SelfAssessmentWorkspace from '@/components/assessment/self/SelfAssessment
 import { ENTRY_STATES, useSelfAssessmentEntry } from '@/composables/useSelfAssessmentEntry'
 import { useAssessmentResultHandoffStore } from '@/stores/assessmentResultHandoff'
 import { SELF_ASSESSMENT_CODES as CODES } from '@/constants/assessment'
+import { PATH_CODES } from '@/constants/entityPaths'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const BLOCKED_KEYS = {
   [CODES.ENTITY_NOT_ACTIVE]: 'entityNotActive',
   [CODES.ENTITY_REQUIRED]: 'entityRequired',
   [CODES.ENTITY_DELETED]: 'entityDeleted',
+  [PATH_CODES.UNAVAILABLE]: 'pathUnavailable',
+  [PATH_CODES.SELF_PAYMENT_PROCESSING]: 'paymentProcessing',
 }
 
 const { t } = useI18n()
 const router = useRouter()
 const handoff = useAssessmentResultHandoffStore()
-const { state, draftId, publishedVersion, blockedCode, errorMessage, starting, locate, start } = useSelfAssessmentEntry()
+const { state, draftId, publishedVersion, blockedCode, errorMessage, starting, locate, start } =
+  useSelfAssessmentEntry()
 
 const blockedKey = computed(() => BLOCKED_KEYS[blockedCode.value] ?? 'entityNotActive')
 
@@ -45,7 +50,7 @@ onMounted(locate)
     </header>
 
     <div class="self-form__note" role="note">
-      <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+      <AppIcon name="info-circle" />
       <p>{{ t('assessment.self.unverifiedNote') }}</p>
     </div>
 
@@ -56,7 +61,7 @@ onMounted(locate)
     <ErrorState v-else-if="state === ENTRY_STATES.ERROR" :message="errorMessage" @retry="locate" />
     <EmptyState
       v-else-if="state === ENTRY_STATES.NO_CRITERIA"
-      icon="fa-regular fa-clipboard"
+      icon="doc"
       :title="t('assessment.self.empty.title')"
       :message="t('assessment.self.empty.message')"
     />

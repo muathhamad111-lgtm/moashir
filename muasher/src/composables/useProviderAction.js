@@ -8,7 +8,12 @@ import {
   testFailureOf,
 } from '@/utils/integrations/providerError'
 
-export const PROVIDER_ACTION_STATES = Object.freeze({ IDLE: 'idle', PENDING: 'pending', SUCCESS: 'success', FAILED: 'failed' })
+export const PROVIDER_ACTION_STATES = Object.freeze({
+  IDLE: 'idle',
+  PENDING: 'pending',
+  SUCCESS: 'success',
+  FAILED: 'failed',
+})
 
 function failureOf(error) {
   return {

@@ -8,9 +8,11 @@ use App\Contracts\Assessments\AssessmentState;
 
 enum SelfAssessmentStatus: string implements AssessmentState
 {
+    case AwaitingPayment = 'awaiting_payment';
     case Draft = 'draft';
     case Submitted = 'submitted';
     case ResultAvailable = 'result_available';
+    case Refunded = 'refunded';
 
     public function isOpen(): bool
     {
@@ -25,9 +27,10 @@ enum SelfAssessmentStatus: string implements AssessmentState
     public function allowsTransitionTo(AssessmentState $next): bool
     {
         return match ($this) {
-            self::Draft => $next === self::Draft || $next === self::Submitted,
+            self::AwaitingPayment => $next === self::Draft,
+            self::Draft => in_array($next, [self::Draft, self::Submitted, self::Refunded], true),
             self::Submitted => $next === self::ResultAvailable,
-            self::ResultAvailable => false,
+            self::ResultAvailable, self::Refunded => false,
         };
     }
 }

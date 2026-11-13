@@ -1,58 +1,24 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SettingsSection from '@/components/settings/SettingsSection.vue'
-import Tabs from '@/components/ui/Tabs.vue'
-import CertificateEditor from '@/components/certificates/CertificateEditor.vue'
-import { useSettings, CERTIFICATE_KINDS } from '@/composables/useSettings'
-import { useToast } from '@/composables/useToast'
-import { settingsService } from '@/services/settingsService'
+import FieldInput from '@/components/form/FieldInput.vue'
+import FieldToggle from '@/components/form/FieldToggle.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
+import ReasonDialog from '@/components/modal/ReasonDialog.vue'
+import CertificateLevelRanges from '@/components/settings/CertificateLevelRanges.vue'
+import { useCertificateSettings } from '@/composables/useCertificateSettings'
+import { CERTIFICATE_LEVELS } from '@/constants/certificates'
+import { levelRangesOf } from '@/utils/settings/certificateSettingsForm'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
-const { certificateKindLabel } = useSettings()
-const toast = useToast()
+const { status, errorMessage, settings, form, saving, reasonOpen, load, submit, confirmReason } =
+  useCertificateSettings()
 
-const templates = ref([])
-const status = ref('loading')
-const errorMessage = ref('')
-const activeKind = ref(CERTIFICATE_KINDS[0])
-const savingKind = ref('')
-
-async function load() {
-  status.value = 'loading'
-  errorMessage.value = ''
-  try {
-    const envelope = await settingsService.getCertificates()
-    templates.value = envelope.data ?? []
-    status.value = 'success'
-  } catch (error) {
-    errorMessage.value = error?.normalized?.message || t('common.error')
-    status.value = 'error'
-  }
-}
+const ranges = computed(() => levelRangesOf(form.values.levelThresholds))
 
 onMounted(load)
-
-const tabs = computed(() =>
-  CERTIFICATE_KINDS.map((kind) => ({ value: kind, label: certificateKindLabel(kind) })),
-)
-
-const activeConfig = computed(() => templates.value.find((item) => item.kind === activeKind.value))
-
-async function saveTemplate(payload) {
-  savingKind.value = activeKind.value
-  try {
-    const envelope = await settingsService.updateCertificate(activeKind.value, payload)
-    templates.value = templates.value.map((item) =>
-      item.kind === activeKind.value ? envelope.data : item,
-    )
-    toast.success(t('settings.toasts.saved'))
-  } catch (error) {
-    toast.error(error?.normalized?.message || t('settings.toasts.saveFailed'))
-  } finally {
-    savingKind.value = ''
-  }
-}
 </script>
 
 <template>
@@ -63,13 +29,65 @@ async function saveTemplate(payload) {
     :error-message="errorMessage"
     @retry="load"
   >
-    <Tabs v-model="activeKind" :tabs="tabs">
-      <CertificateEditor
-        v-if="activeConfig"
-        :config="activeConfig"
-        :saving="savingKind === activeKind"
-        @save="saveTemplate"
-      />
-    </Tabs>
+    <form
+      v-if="settings"
+      id="certificate-settings-form"
+      class="settings-form"
+      novalidate
+      @submit.prevent="submit"
+    >
+      <fieldset class="settings-form__group">
+        <legend class="settings-form__legend">
+          {{ t('settings.certificates.issuanceTitle') }}
+        </legend>
+        <FieldToggle
+          name="accreditedIssuanceEnabled"
+          :label="t('settings.certificates.issuance')"
+          :description="t('settings.certificates.issuanceDesc')"
+        />
+      </fieldset>
+      <fieldset class="settings-form__group">
+        <legend class="settings-form__legend">{{ t('settings.certificates.levelsTitle') }}</legend>
+        <p class="settings-form__note" role="note">
+          <AppIcon name="info-circle" />
+          {{ t('settings.certificates.levelsNote') }}
+        </p>
+        <div class="settings-form__grid">
+          <FieldInput
+            v-for="level in CERTIFICATE_LEVELS"
+            :key="level"
+            :name="`levelThresholds.${level}`"
+            :label="
+              t('settings.certificates.minimum', {
+                level: t(`settings.certificates.levels.${level}`),
+              })
+            "
+            :hint="t('settings.certificates.minimumHint')"
+            inputmode="decimal"
+            input-dir="ltr"
+            required
+          />
+        </div>
+        <CertificateLevelRanges :ranges="ranges" />
+      </fieldset>
+    </form>
+    <template #actions>
+      <BaseButton
+        v-if="settings"
+        type="submit"
+        form="certificate-settings-form"
+        variant="primary"
+        :loading="saving"
+        icon="save"
+        >{{ t('actions.save') }}</BaseButton
+      >
+    </template>
   </SettingsSection>
+  <ReasonDialog
+    v-model="reasonOpen"
+    :title="t('settings.assessment.reasonTitle')"
+    :submit-label="t('actions.save')"
+    :action="confirmReason"
+    action-name="settings.certificates.update"
+  />
 </template>

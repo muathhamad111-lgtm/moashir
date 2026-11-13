@@ -1,0 +1,49 @@
+@use '../mixins' as *;
+
+.sign-in-methods {
+  @include flex(column, stretch, flex-start, var(--space-6));
+}
+
+.sign-in-methods__list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-surface);
+}
+
+.sign-in-methods__tab {
+  @include flex-center;
+  min-block-size: var(--size-touch-target);
+  padding-inline: var(--space-3);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--theme-text-secondary);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition:
+    background-color var(--t-fast) var(--ease),
+    border-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+
+  &:hover {
+    color: var(--theme-heading);
+    background-color: var(--theme-accent-soft);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &.is-selected {
+    border-color: var(--theme-accent-text);
+    background-color: var(--theme-accent);
+    color: var(--theme-on-accent);
+    font-weight: var(--fw-semibold);
+  }
+}

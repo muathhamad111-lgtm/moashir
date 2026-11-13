@@ -6,13 +6,14 @@ namespace App\Notifications\Identity;
 
 use App\Data\Notifications\InAppMessage;
 use App\Enums\Identity\UserStatus;
+use App\Enums\Notifications\MailReason;
 use App\Enums\Notifications\NotificationCode;
 use App\Models\Identity\User;
 use App\Notifications\Channels\InAppChannel;
 use App\Notifications\Contracts\DeliversInApp;
+use App\Notifications\Messages\BrandedMailMessage;
 use App\Notifications\QueuedNotification;
 use App\Support\ValueObjects\LocalizedText;
-use Illuminate\Notifications\Messages\MailMessage;
 
 final class AccountStatusChangedNotification extends QueuedNotification implements DeliversInApp
 {
@@ -29,11 +30,10 @@ final class AccountStatusChangedNotification extends QueuedNotification implemen
         return ['mail', InAppChannel::class];
     }
 
-    public function toMail(User $notifiable): MailMessage
+    public function toMail(User $notifiable): BrandedMailMessage
     {
-        return (new MailMessage)
+        return BrandedMailMessage::make($notifiable, MailReason::Account)
             ->subject(__($this->translationKey('subject')))
-            ->greeting(__('notifications.greeting', ['name' => $notifiable->name]))
             ->line(__($this->translationKey('line')));
     }
 

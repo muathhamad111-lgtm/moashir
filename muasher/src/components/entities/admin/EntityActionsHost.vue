@@ -40,18 +40,29 @@ defineExpose({ run })
     :key="state.reasonKey"
     v-model="state.reasonOpen"
     :title="t(`entities.reasonDialogs.${state.reasonKey}.title`)"
-    :message="t(`entities.reasonDialogs.${state.reasonKey}.message`, { name: entityName })"
+    :subtitle="t(`entities.reasonDialogs.${state.reasonKey}.message`, { name: entityName })"
+    :destructive="state.reasonKey === 'deactivate'"
     :submit-label="t(`entities.actions.${state.reasonKey}`)"
     :action="reasonAction"
     :action-name="`entities.${state.reasonKey}.submit`"
     @done="finish(state.reasonKey, state.entity, $event)"
   />
-  <EntityDeleteDialog v-if="state.entity" v-model="deleteOpen" :entity="state.entity" @deleted="finish(A.DELETE, state.entity)" />
+  <EntityDeleteDialog
+    v-if="state.entity"
+    v-model="deleteOpen"
+    :entity="state.entity"
+    @deleted="finish(A.DELETE, state.entity)"
+  />
   <PermanentDeleteDialog
     v-if="state.entity"
     v-model="permanentOpen"
     :entity="state.entity"
     @erased="finish(A.PERMANENT_DELETE, state.entity, $event)"
   />
-  <EntityEditDialog v-if="state.entity" v-model="editOpen" :entity="state.entity" @saved="finish(A.EDIT, state.entity, $event)" />
+  <EntityEditDialog
+    v-if="state.entity"
+    v-model="editOpen"
+    :entity="state.entity"
+    @saved="finish(A.EDIT, state.entity, $event)"
+  />
 </template>

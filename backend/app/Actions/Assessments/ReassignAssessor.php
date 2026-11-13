@@ -41,7 +41,7 @@ final readonly class ReassignAssessor
                 throw AssessmentRejected::assessorUnchanged();
             }
 
-            $assessor = $this->eligibility->assertEligible($actor, $assessorId, $locked);
+            $assessor = $this->eligibility->assertEligible($actor, $assessorId, $locked->path, $locked->award_cycle_id);
             $assignment = $this->assignments->handOver($locked, $current, $assessor, $actor, $reason);
             $this->stateMachine->transition($locked, $locked->status, AssessmentVerb::Reassign, $actor->id);
             $this->audit->record(new AuditEntry(AuditEvent::AssessmentReassigned, $locked, ['assessor_user_id' => $current->assessor_user_id], [

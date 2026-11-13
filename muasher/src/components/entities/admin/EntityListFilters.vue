@@ -1,7 +1,7 @@
 <script setup>
 import { toRef } from 'vue'
 import { useI18n } from 'vue-i18n'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import { useEntityFilterOptions } from '@/composables/useEntityFilterOptions'
 
 const props = defineProps({
@@ -22,21 +22,54 @@ function bind(key) {
 </script>
 
 <template>
-  <DropdownList v-if="'status' in filters.filters" v-bind="bind('status')" :options="options.statusOptions.value" :placeholder="t('entities.filters.status')" />
+  <AppSelect
+    variant="filter"
+    v-if="'level' in filters.filters"
+    v-bind="bind('level')"
+    :options="options.levelOptions.value"
+    :label="t('entities.filters.level')"
+    data-testid="entity-level-filter"
+  />
+  <AppSelect
+    variant="filter"
+    v-if="'status' in filters.filters"
+    v-bind="bind('status')"
+    :options="options.statusOptions.value"
+    :label="t('entities.filters.status')"
+  />
   <template v-if="full">
-    <DropdownList v-bind="bind('regionId')" :options="options.regionFilterOptions.value" :placeholder="t('entities.filters.region')" />
-    <DropdownList v-bind="bind('entityType')" :options="options.typeOptions.value" :placeholder="t('entities.filters.type')" />
-    <DropdownList
+    <AppSelect
+      variant="filter"
+      v-bind="bind('regionId')"
+      :options="options.regionFilterOptions.value"
+      :label="t('entities.filters.region')"
+    />
+    <AppSelect
+      variant="filter"
+      v-bind="bind('entityType')"
+      :options="options.typeOptions.value"
+      :label="t('entities.filters.type')"
+    />
+    <AppSelect
+      variant="filter"
       v-if="'developmentSector' in filters.filters"
       v-bind="bind('developmentSector')"
       :options="options.sectorOptions.value"
-      :placeholder="t('entities.filters.sector')"
+      :label="t('entities.filters.sector')"
     />
-    <DropdownList v-if="'orgSize' in filters.filters" v-bind="bind('orgSize')" :options="options.sizeOptions.value" :placeholder="t('entities.filters.size')" />
-    <DropdownList
+    <AppSelect
+      variant="filter"
+      v-if="'orgSize' in filters.filters"
+      v-bind="bind('orgSize')"
+      :options="options.sizeOptions.value"
+      :label="t('entities.filters.size')"
+    />
+    <AppSelect
+      variant="filter"
       :model-value="filters.sort.value || '-created_at'"
       :options="options.sortOptions.value"
-      :placeholder="t('entities.filters.sort')"
+      :label="t('entities.filters.sort')"
+      data-testid="entity-sort"
       @update:model-value="filters.setSort($event)"
     />
   </template>

@@ -11,7 +11,7 @@ use App\Models\Identity\User;
 
 final readonly class CycleFieldLocks
 {
-    private const array DRAFT_ONLY = ['submission_start', 'criteria_version_id', 'scale_kind'];
+    private const array DRAFT_ONLY = ['submission_start', 'criteria_version_id', 'scale_kind', 'entry_fee'];
 
     private const array UNTIL_SUBMISSIONS_CLOSE = ['submission_end', 'region_ids', 'min_entity_age_years', 'disqualification_score'];
 

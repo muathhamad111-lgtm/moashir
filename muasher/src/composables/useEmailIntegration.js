@@ -32,16 +32,31 @@ export function useEmailIntegration() {
     return [
       { record: 'spf', checked, ok: info?.spfRecordFound === true, value: null },
       { record: 'dkim', checked: false, ok: false, value: null },
-      { record: 'dmarc', checked, ok: Boolean(info?.dmarcPolicy), value: info?.dmarcPolicy ?? null },
+      {
+        record: 'dmarc',
+        checked,
+        ok: Boolean(info?.dmarcPolicy),
+        value: info?.dmarcPolicy ?? null,
+      },
     ]
   })
 
   const cardStatus = computed(() => {
     const value = resource.value
-    return value ? { source: value.source, configured: value.configured, active: value.active, mode: value.mode, lastTest: value.lastTest } : null
+    return value
+      ? {
+          source: value.source,
+          configured: value.configured,
+          active: value.active,
+          mode: value.mode,
+          lastTest: value.lastTest,
+        }
+      : null
   })
 
-  const clientSteps = computed(() => checklistSteps(resource.value?.checklist, (key) => t(`integrations.email.checklist.${key}`)))
+  const clientSteps = computed(() =>
+    checklistSteps(resource.value?.checklist, (key) => t(`integrations.email.checklist.${key}`)),
+  )
 
   return { ...settings, onTested, dnsRecords, cardStatus, clientSteps }
 }

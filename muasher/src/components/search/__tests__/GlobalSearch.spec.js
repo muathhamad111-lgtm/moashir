@@ -14,7 +14,15 @@ const groups = [
   {
     type: 'entities',
     total: 3,
-    items: [{ type: 'entities', key: 'entities:6002', id: 6002, title: { ar: 'جمعية إحسان الخيرية', en: 'Ehsan Charitable Society' }, status: 'active' }],
+    items: [
+      {
+        type: 'entities',
+        key: 'entities:6002',
+        id: 6002,
+        title: { ar: 'جمعية إحسان الخيرية', en: 'Ehsan Charitable Society' },
+        status: 'active',
+      },
+    ],
   },
   {
     type: 'requests',
@@ -83,7 +91,9 @@ describe('GlobalSearch', () => {
     expect(input.attributes('aria-keyshortcuts')).toBe('Control+K Meta+K /')
     const listbox = wrapper.find('[role="listbox"]')
     expect(input.attributes('aria-controls')).toBe(listbox.attributes('id'))
-    expect(wrapper.find(`label[for="${input.attributes('id')}"]`).text()).toBe('ابحث عن جهة أو طلب أو مستخدم')
+    expect(wrapper.find(`label[for="${input.attributes('id')}"]`).text()).toBe(
+      'ابحث عن جهة أو طلب أو مستخدم',
+    )
     wrapper.unmount()
   })
 
@@ -91,7 +101,9 @@ describe('GlobalSearch', () => {
     const { wrapper, input } = await mountSearch({ locale: 'en' })
     await typeAndSettle(input, 'a')
     expect(searchService.search).not.toHaveBeenCalled()
-    expect(wrapper.find('.global-search__state').text()).toBe('Type at least 2 characters to search.')
+    expect(wrapper.find('.global-search__state').text()).toBe(
+      'Type at least 2 characters to search.',
+    )
     expect(input.attributes('aria-expanded')).toBe('true')
     wrapper.unmount()
   })
@@ -106,7 +118,8 @@ describe('GlobalSearch', () => {
     })
     expect(groupEls[0].text()).toContain('Entities')
     expect(groupEls[0].text()).toContain('1 of 3')
-    expect(groupEls[1].text()).toContain('Request ACC-2026-000008 · Accredited')
+    expect(groupEls[1].text()).toContain('Request ACC-2026-000008')
+    expect(groupEls[1].find('.path-badge--accredited').exists()).toBe(true)
     expect(groupEls[1].text()).toContain('Submitted')
     expect(groupEls[2].text()).toContain('Assessment Requests Follower')
     expect(wrapper.find('[role="status"]').text()).toBe('Results found: 3')
@@ -189,7 +202,9 @@ describe('GlobalSearch', () => {
     expect(wrapper.find('.global-search__state').text()).toContain('No results match “zzz”.')
     searchService.search.mockRejectedValueOnce(new Error('offline'))
     await typeAndSettle(input, 'zzzz')
-    expect(wrapper.find('.global-search__state--error').text()).toContain('Search is unavailable right now.')
+    expect(wrapper.find('.global-search__state--error').text()).toContain(
+      'Search is unavailable right now.',
+    )
     await wrapper.find('.global-search__state--error .btn').trigger('click')
     await flushPromises()
     expect(wrapper.findAll('[role="option"]')).toHaveLength(3)
@@ -235,19 +250,25 @@ describe('GlobalSearch', () => {
 
   it('labels the user option with its e-mail in English and omits empty roles', async () => {
     const users = [{ ...groups[2].items[0], roles: [] }]
-    searchService.search.mockResolvedValue({ data: { groups: [{ type: 'users', total: 1, items: users }] } })
+    searchService.search.mockResolvedValue({
+      data: { groups: [{ type: 'users', total: 1, items: users }] },
+    })
     const { wrapper, input } = await mountSearch({ locale: 'en' })
     await typeAndSettle(input, 'Hind')
     const user = wrapper.find('[role="option"]')
     expect(user.find('.global-search__option-email').text()).toBe('hind.alzahrani@example.sa')
     expect(user.find('.global-search__option-subtitle').exists()).toBe(false)
-    expect(user.attributes('aria-label')).toBe('هند بنت علي الزهراني, email hind.alzahrani@example.sa')
+    expect(user.attributes('aria-label')).toBe(
+      'هند بنت علي الزهراني, email hind.alzahrani@example.sa',
+    )
     wrapper.unmount()
   })
 
   it('keeps the content-derived name for entities, requests and users without an e-mail', async () => {
     const users = [{ ...groups[2].items[0], email: '' }]
-    searchService.search.mockResolvedValue({ data: { groups: [...groups.slice(0, 2), { type: 'users', total: 1, items: users }] } })
+    searchService.search.mockResolvedValue({
+      data: { groups: [...groups.slice(0, 2), { type: 'users', total: 1, items: users }] },
+    })
     const { wrapper, input } = await mountSearch()
     await typeAndSettle(input, 'إحسان')
     const options = wrapper.findAll('[role="option"]')

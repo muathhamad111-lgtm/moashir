@@ -6,7 +6,9 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseTextarea from '@/components/form/BaseTextarea.vue'
 import CriteriaScopeChoice from './CriteriaScopeChoice.vue'
 import CriteriaProblemList from './CriteriaProblemList.vue'
+import CriteriaCycleBindings from './CriteriaCycleBindings.vue'
 import { usePublishCriteria } from '@/composables/usePublishCriteria'
+import { useCycleBindings } from '@/composables/useCycleBindings'
 import { useAuthStore } from '@/stores/auth'
 import { logger } from '@/utils/logger'
 import { CRITERIA_REASON_MIN_LENGTH } from '@/constants/criteria'
@@ -21,6 +23,7 @@ const emit = defineEmits(['update:modelValue', 'published'])
 const { t } = useI18n()
 const auth = useAuthStore()
 const { submitting, problems, fieldErrors, errorMessage, publish, reset } = usePublishCriteria()
+const cycles = useCycleBindings()
 
 const scope = ref(null)
 const reason = ref('')
@@ -39,6 +42,7 @@ watch(
     reason.value = ''
     localErrors.value = {}
     reset()
+    cycles.load(props.version.id)
   },
 )
 
@@ -59,10 +63,12 @@ async function submit() {
   logger.breadcrumb('form', 'criteria.publishDialog.submit', {
     scope: scope.value,
     hasReason: Boolean(reason.value),
+    draftCycles: cycles.instruction().draftCycles ?? null,
   })
   const outcome = await publish(props.version, {
     scope: replacesPublished.value ? scope.value : null,
     reason: reason.value.trim() || null,
+    ...cycles.instruction(),
   })
   if (!outcome) return
   emit('published', outcome)
@@ -80,6 +86,11 @@ function close() {
     size="lg"
     :close-on-backdrop="!submitting"
     :title="t('criteria.publish.dialogTitle', { number: version.versionNumber })"
+    :subtitle="
+      replacesPublished
+        ? t('criteria.publish.replacesNote', { number: published.versionNumber })
+        : t('criteria.publish.firstNote')
+    "
     @update:model-value="emit('update:modelValue', $event)"
   >
     <form
@@ -88,16 +99,13 @@ function close() {
       novalidate
       @submit.prevent="submit"
     >
-      <p class="publish-dialog__intro">
-        {{ t('criteria.publish.intro', { number: version.versionNumber }) }}
-      </p>
-      <p class="publish-dialog__note">
-        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-        <span v-if="replacesPublished">{{
-          t('criteria.publish.replacesNote', { number: published.versionNumber })
-        }}</span>
-        <span v-else>{{ t('criteria.publish.firstNote') }}</span>
-      </p>
+      <CriteriaCycleBindings
+        v-if="cycles.isRelevant.value"
+        v-model:choice="cycles.choice.value"
+        :bindings="cycles.bindings.value"
+        :disabled="submitting"
+        show-choice
+      />
 
       <CriteriaScopeChoice
         v-if="replacesPublished"
@@ -132,12 +140,12 @@ function close() {
       <p v-else-if="errorMessage" class="publish-dialog__error" role="alert">{{ errorMessage }}</p>
 
       <footer class="modal__footer">
+        <BaseButton type="submit" variant="primary" :loading="submitting">
+          {{ t('actions.publish') }}
+        </BaseButton>
         <BaseButton variant="secondary" :disabled="submitting" @click="close">{{
           t('actions.cancel')
         }}</BaseButton>
-        <BaseButton type="submit" variant="primary" icon="fa-solid fa-upload" :loading="submitting">
-          {{ t('criteria.publish.submit', { number: version.versionNumber }) }}
-        </BaseButton>
       </footer>
     </form>
   </BaseModal>

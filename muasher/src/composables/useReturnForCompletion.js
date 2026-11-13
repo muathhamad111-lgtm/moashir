@@ -21,7 +21,10 @@ export function useReturnForCompletion() {
     if (preparing.value) return false
     preparing.value = true
     try {
-      const [form, cycle] = await Promise.all([submissionService.getForm(detail.id), awardCycleService.get(detail.awardCycle.id)])
+      const [form, cycle] = await Promise.all([
+        submissionService.getForm(detail.id),
+        awardCycleService.get(detail.awardCycle.id),
+      ])
       criteria.value = form.data.criteria
       bounds.value = boundsOf(cycle.data)
       return true

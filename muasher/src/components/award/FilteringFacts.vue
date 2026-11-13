@@ -29,13 +29,19 @@ const { t, locale } = useI18n()
     <div class="request-facts__item">
       <dt>{{ t('filtering.facts.result') }}</dt>
       <dd>
-        <bdi class="u-ltr">{{ detail.row.initialResult ? t('filtering.facts.resultValue', detail.row.initialResult) : t('accredited.common.notSet') }}</bdi>
+        <bdi class="u-ltr">{{
+          detail.row.initialResult
+            ? t('filtering.facts.resultValue', detail.row.initialResult)
+            : t('accredited.common.notSet')
+        }}</bdi>
       </dd>
     </div>
     <div class="request-facts__item">
       <dt>{{ t('filtering.facts.threshold') }}</dt>
       <dd>
-        <bdi class="u-ltr">{{ t('filtering.percent', { value: detail.disqualificationScore }) }}</bdi>
+        <bdi class="u-ltr">{{
+          t('filtering.percent', { value: detail.disqualificationScore })
+        }}</bdi>
         <ThresholdBadge :meets="detail.row.meetsThreshold" />
       </dd>
     </div>

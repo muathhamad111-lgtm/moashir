@@ -53,7 +53,7 @@ it('classifies public and internal addresses', function (string $address, bool $
 
 it('accepts only the standard SMTP ports', function (int $port, bool $allowed): void {
     expect(app(SmtpHostGuard::class)->isAllowedPort($port))->toBe($allowed);
-})->with([[25, true], [465, true], [587, true], [2525, true], [22, false], [6379, false], [8025, false]]);
+})->with([[25, true], [465, true], [587, true], [2465, true], [2525, true], [2587, true], [22, false], [6379, false], [8025, false]]);
 
 it('connects to the vetted address while verifying the certificate of the host name', function (): void {
     resolveHosts(['smtp.moashir.example.sa' => ['62.149.100.10']]);

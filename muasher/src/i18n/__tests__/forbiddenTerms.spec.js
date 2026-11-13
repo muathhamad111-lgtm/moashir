@@ -28,10 +28,12 @@ function fixtureStrings() {
   return readdirSync(FIXTURES_DIR)
     .filter((file) => file.endsWith('.js'))
     .flatMap((file) =>
-      [...readFileSync(`${FIXTURES_DIR}${file}`, 'utf8').matchAll(BILINGUAL_LITERAL)].map((match) => ({
-        path: file,
-        value: match[1],
-      })),
+      [...readFileSync(`${FIXTURES_DIR}${file}`, 'utf8').matchAll(BILINGUAL_LITERAL)].map(
+        (match) => ({
+          path: file,
+          value: match[1],
+        }),
+      ),
     )
 }
 
@@ -52,7 +54,9 @@ describe('forbidden terminology (04-guardrails Content)', () => {
   it('names the Kit consistently in both languages', () => {
     expect(en.nav.bag).toBe('Quick Excellence Kit')
     expect(ar.nav.bag).toBe('حقيبة التميز السريع')
-    const arabicKitMentions = leaves(ar).filter((entry) => /حقيبة التميز(?! السريع)/.test(entry.value))
+    const arabicKitMentions = leaves(ar).filter((entry) =>
+      /حقيبة التميز(?! السريع)/.test(entry.value),
+    )
     expect(arabicKitMentions).toEqual([])
   })
 

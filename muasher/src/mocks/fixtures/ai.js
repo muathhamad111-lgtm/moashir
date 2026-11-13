@@ -5,17 +5,25 @@ export const kbEntriesFixture = [
       ar: ['ما هي مؤشر', 'ما هو مؤشر', 'المنصة', 'التعريف', 'نبذة', 'مؤشر'],
       en: ['what is muasher', 'about', 'platform', 'introduction', 'muasher'],
     },
-    question: { ar: 'ما هي منصة مؤشر؟', en: 'What is the Muasher platform?' },
+    question: { ar: 'ما هي منصة مؤشر؟', en: 'What is the Moashir platform?' },
     answer: {
       ar: 'مؤشر منصة وطنية لقياس نضج وتميز المنظمات غير الربحية وفق نموذج التميز في العمل الخيري، وتوفّر ثلاثة مسارات للتقييم إضافة إلى خدمات مساندة مثل حقيبة التميز السريع ومؤشرات الأداء.',
-      en: 'Muasher is a national platform for measuring the maturity and excellence of non-profit organizations against the Charitable Work Excellence Model. It offers three assessment paths plus support services such as the Quick Excellence Kit and performance indicators.',
+      en: 'Moashir is a national platform for measuring the maturity and excellence of non-profit organizations against the Charitable Work Excellence Model. It offers three assessment paths plus support services such as the Quick Excellence Kit and performance indicators.',
     },
   },
   {
     id: 'kb-paths',
     keywords: {
       ar: ['مسارات', 'أنواع التقييم', 'الفرق بين', 'ذاتي', 'معتمد', 'متقدم', 'تقييم'],
-      en: ['paths', 'assessment types', 'difference', 'self', 'accredited', 'advanced', 'assessment'],
+      en: [
+        'paths',
+        'assessment types',
+        'difference',
+        'self',
+        'accredited',
+        'advanced',
+        'assessment',
+      ],
     },
     question: { ar: 'ما مسارات التقييم المتاحة؟', en: 'What assessment paths are available?' },
     answer: {

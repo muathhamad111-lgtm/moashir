@@ -49,8 +49,8 @@ export const criteriaService = {
       entity: 'criteria-version',
     })
   },
-  publishVersion(versionId, { scope = null, reason = null } = {}) {
-    const payload = { confirm: true, scope, reason }
+  publishVersion(versionId, { scope = null, reason = null, draftCycles = null } = {}) {
+    const payload = { confirm: true, scope, reason, ...(draftCycles ? { draftCycles } : {}) }
     return write(
       'publishVersion',
       () => apiClient.post(`/criteria/versions/${versionId}/publish`, payload),

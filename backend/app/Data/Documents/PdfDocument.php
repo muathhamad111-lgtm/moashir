@@ -6,6 +6,8 @@ namespace App\Data\Documents;
 
 final readonly class PdfDocument
 {
+    public const string DEFAULT_LOCALE = 'ar';
+
     /**
      * @param  array<string, mixed>  $data
      */
@@ -13,5 +15,11 @@ final readonly class PdfDocument
         public string $template,
         public array $data,
         public ?string $watermark = null,
+        public string $locale = self::DEFAULT_LOCALE,
     ) {}
+
+    public function direction(): string
+    {
+        return $this->locale === 'en' ? 'ltr' : 'rtl';
+    }
 }

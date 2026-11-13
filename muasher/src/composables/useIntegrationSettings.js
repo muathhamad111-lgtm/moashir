@@ -8,7 +8,12 @@ import { payloadShape } from '@/utils/payloadShape'
 import { errorCodeOf, integrationErrorKey } from '@/utils/integrations/providerError'
 import { CREDENTIAL_SOURCES, REASON_REQUIRED_CODE } from '@/constants/integrations'
 
-export const INTEGRATION_LOAD_STATES = Object.freeze({ LOADING: 'loading', SUCCESS: 'success', ERROR: 'error', FORBIDDEN: 'forbidden' })
+export const INTEGRATION_LOAD_STATES = Object.freeze({
+  LOADING: 'loading',
+  SUCCESS: 'success',
+  ERROR: 'error',
+  FORBIDDEN: 'forbidden',
+})
 
 const FORBIDDEN_STATUS = 403
 
@@ -16,7 +21,16 @@ function firstMessage(messages) {
   return Array.isArray(messages) ? messages[0] : messages
 }
 
-export function useIntegrationSettings({ action, fetch, update, toFormValues, toPayload, schema, secretsChanged, errorPath = (path) => path }) {
+export function useIntegrationSettings({
+  action,
+  fetch,
+  update,
+  toFormValues,
+  toPayload,
+  schema,
+  secretsChanged,
+  errorPath = (path) => path,
+}) {
   const { t } = useI18n()
   const auth = useAuthStore()
   const status = ref(INTEGRATION_LOAD_STATES.LOADING)
@@ -40,7 +54,10 @@ export function useIntegrationSettings({ action, fetch, update, toFormValues, to
       status.value = INTEGRATION_LOAD_STATES.SUCCESS
     } catch (error) {
       errorMessage.value = error?.normalized?.message || t('common.error')
-      status.value = error?.response?.status === FORBIDDEN_STATUS ? INTEGRATION_LOAD_STATES.FORBIDDEN : INTEGRATION_LOAD_STATES.ERROR
+      status.value =
+        error?.response?.status === FORBIDDEN_STATUS
+          ? INTEGRATION_LOAD_STATES.FORBIDDEN
+          : INTEGRATION_LOAD_STATES.ERROR
     }
   }
 
@@ -65,12 +82,18 @@ export function useIntegrationSettings({ action, fetch, update, toFormValues, to
   function fieldMessages(error) {
     const key = integrationErrorKey(errorCodeOf(error))
     return Object.fromEntries(
-      Object.entries(error?.normalized?.fieldErrors ?? {}).map(([path, messages]) => [errorPath(path), key ? t(key) : firstMessage(messages)]),
+      Object.entries(error?.normalized?.fieldErrors ?? {}).map(([path, messages]) => [
+        errorPath(path),
+        key ? t(key) : firstMessage(messages),
+      ]),
     )
   }
 
   function onSaveFailure(error, payload, reason) {
-    logger.breadcrumb('form', `${action}.rejected`, { fields: payloadShape(payload), status: error?.response?.status ?? null })
+    logger.breadcrumb('form', `${action}.rejected`, {
+      fields: payloadShape(payload),
+      status: error?.response?.status ?? null,
+    })
     if (errorCodeOf(error) === REASON_REQUIRED_CODE && !reason) return askForReason(payload)
     const fields = fieldMessages(error)
     if (Object.keys(fields).length) form.setErrors(fields)
@@ -109,5 +132,17 @@ export function useIntegrationSettings({ action, fetch, update, toFormValues, to
 
   const fromEnvironment = computed(() => resource.value?.source === CREDENTIAL_SOURCES.ENVIRONMENT)
 
-  return { status, errorMessage, resource, fromEnvironment, form, saving, reasonOpen, load, refresh, submit, confirmReason }
+  return {
+    status,
+    errorMessage,
+    resource,
+    fromEnvironment,
+    form,
+    saving,
+    reasonOpen,
+    load,
+    refresh,
+    submit,
+    confirmReason,
+  }
 }

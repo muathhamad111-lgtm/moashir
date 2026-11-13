@@ -1,0 +1,91 @@
+@use '../mixins' as *;
+
+.award-page-header__actions {
+  @include flex(row, center, flex-end, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.committee-member__name {
+  display: block;
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.committee-member__note {
+  display: block;
+  margin-block-start: var(--space-1);
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.committee-member__progress {
+  font-size: var(--fs-sm);
+  color: var(--theme-text);
+}
+
+.committee-work__badges {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.committee-work__entity {
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.committee-candidate,
+.secretary-decision {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.committee-candidate__hint,
+.secretary-decision__hint {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.committee-entity__note {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.committee-prior {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  padding: var(--space-3);
+  border: var(--border-width) dashed var(--theme-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-info-soft);
+}
+
+.committee-prior__title {
+  @include flex(row, center, flex-start, var(--space-2));
+  margin: 0;
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.committee-prior__scores {
+  @include flex(row, center, flex-start, var(--space-3));
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.committee-prior__score {
+  @include flex(row, center, flex-start, var(--space-1));
+  font-size: var(--fs-sm);
+  color: var(--theme-text);
+}
+
+.committee-prior__note {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text);
+}
+
+.committee-actions {
+  @include flex(column, stretch, flex-start, var(--space-3));
+}

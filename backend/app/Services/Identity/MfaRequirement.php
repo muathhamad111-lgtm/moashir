@@ -13,6 +13,6 @@ final class MfaRequirement
      */
     public function isRequiredFor(array $roles): bool
     {
-        return array_any($roles, fn ($role) => $role->isStaff());
+        return array_any($roles, fn (RoleKey $role): bool => $role->isStaff());
     }
 }

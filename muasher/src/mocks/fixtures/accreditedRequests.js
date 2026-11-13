@@ -1,6 +1,17 @@
 import { SEEDED_IDS } from './finance'
 
 const FOLLOWER_ID = 8
+const ARCHIVED_PAYMENT_SEQUENCE = 91
+const DAY_MS = 24 * 60 * 60 * 1000
+const OPEN_COMPLETION_DAYS_LEFT = 14
+
+// The open completion request must stay open whatever the real date, so its deadline is set relative to now
+// (end of the Riyadh day, 20:59 UTC). A fixed date expired on 2026-11-12 and broke the e2e flows built on it.
+function openCompletionDeadline() {
+  const deadline = new Date(Date.now() + OPEN_COMPLETION_DAYS_LEFT * DAY_MS)
+  deadline.setUTCHours(20, 59, 0, 0)
+  return deadline.toISOString()
+}
 
 function paymentOf(sequence) {
   return `3f0c9a52-6d1e-4b7a-9c21-5a1e${String(sequence).padStart(8, '0')}`
@@ -15,6 +26,7 @@ export const ACCREDITED_FIXTURE_IDS = {
   needsCompletion: 9106,
   assigned: 9107,
   underReview: 9108,
+  completedPrevious: 9109,
 }
 
 export const ACCREDITED_FIXTURE_FOLLOWER_ID = FOLLOWER_ID
@@ -26,22 +38,35 @@ const ACCREDITED_EVIDENCE_IDS = {
 }
 
 export const cvTextsFixture = {
-  'M1.1': 'اعتمد مجلس الإدارة الرؤية والرسالة في عام 2024 بعد ورش عمل شارك فيها العاملون والمستفيدون، وتنشر الجهة الوثيقة على موقعها الإلكتروني وفي مقرها.',
-  'M1.2': 'تطبق الجهة لائحة حوكمة معتمدة تحدد صلاحيات المجلس والإدارة التنفيذية، وتصدر تقرير إفصاح سنويًا يُعرض على الجمعية العمومية.',
-  'M1.3': 'أطلقت الجهة مبادرة التميز الداخلي التي تكرّم الفرق المتميزة كل ربع سنة، ونُفذت من خلالها اثنتا عشرة مبادرة تحسين.',
-  'M2.1': 'أجرت الجهة دراسة احتياجات شاملة شملت 1,200 مستفيد عبر الاستبانات والمقابلات، وبُنيت البرامج على نتائجها.',
-  'M2.2': 'تعمل الجهة وفق خطة استراتيجية للفترة 2025 إلى 2028 بأربعة محاور ومؤشرات أداء ربع سنوية تتابعها لجنة مختصة.',
-  'M3.1': 'تنفذ الجهة خطة تدريب سنوية بمتوسط 30 ساعة تدريبية لكل موظف، وتقيس أثر التدريب على الأداء الوظيفي.',
-  'M3.2': 'اعتمدت الجهة سياسة لبيئة العمل تشمل المرونة في ساعات الدوام وبرنامجًا للرعاية الصحية للعاملين.',
-  'M4.1': 'ترتبط الجهة بثماني شراكات فاعلة مع جهات حكومية وخاصة، ولكل شراكة اتفاقية ومؤشرات متابعة.',
-  'M4.2': 'تصدر الجهة قوائم مالية مدققة سنويًا، وتعمل على تنويع مصادر الدخل من خلال الأوقاف والشراكات المجتمعية.',
-  'M5.1': 'يتوفر دليل معتمد للبرامج والخدمات يوضح معايير الاستحقاق ومسارات تقديم الخدمة لكل برنامج.',
-  'M5.2': 'وُثّقت العمليات الرئيسية في خرائط معتمدة، وتراجعها الجهة سنويًا لتقليل زمن تقديم الخدمة.',
-  'M6.1': 'تسير الجهة وفق خارطة طريق للتحول الرقمي أتمتت من خلالها استقبال الطلبات ومتابعتها إلكترونيًا.',
+  'M1.1':
+    'اعتمد مجلس الإدارة الرؤية والرسالة في عام 2024 بعد ورش عمل شارك فيها العاملون والمستفيدون، وتنشر الجهة الوثيقة على موقعها الإلكتروني وفي مقرها.',
+  'M1.2':
+    'تطبق الجهة لائحة حوكمة معتمدة تحدد صلاحيات المجلس والإدارة التنفيذية، وتصدر تقرير إفصاح سنويًا يُعرض على الجمعية العمومية.',
+  'M1.3':
+    'أطلقت الجهة مبادرة التميز الداخلي التي تكرّم الفرق المتميزة كل ربع سنة، ونُفذت من خلالها اثنتا عشرة مبادرة تحسين.',
+  'M2.1':
+    'أجرت الجهة دراسة احتياجات شاملة شملت 1,200 مستفيد عبر الاستبانات والمقابلات، وبُنيت البرامج على نتائجها.',
+  'M2.2':
+    'تعمل الجهة وفق خطة استراتيجية للفترة 2025 إلى 2028 بأربعة محاور ومؤشرات أداء ربع سنوية تتابعها لجنة مختصة.',
+  'M3.1':
+    'تنفذ الجهة خطة تدريب سنوية بمتوسط 30 ساعة تدريبية لكل موظف، وتقيس أثر التدريب على الأداء الوظيفي.',
+  'M3.2':
+    'اعتمدت الجهة سياسة لبيئة العمل تشمل المرونة في ساعات الدوام وبرنامجًا للرعاية الصحية للعاملين.',
+  'M4.1':
+    'ترتبط الجهة بثماني شراكات فاعلة مع جهات حكومية وخاصة، ولكل شراكة اتفاقية ومؤشرات متابعة.',
+  'M4.2':
+    'تصدر الجهة قوائم مالية مدققة سنويًا، وتعمل على تنويع مصادر الدخل من خلال الأوقاف والشراكات المجتمعية.',
+  'M5.1':
+    'يتوفر دليل معتمد للبرامج والخدمات يوضح معايير الاستحقاق ومسارات تقديم الخدمة لكل برنامج.',
+  'M5.2':
+    'وُثّقت العمليات الرئيسية في خرائط معتمدة، وتراجعها الجهة سنويًا لتقليل زمن تقديم الخدمة.',
+  'M6.1':
+    'تسير الجهة وفق خارطة طريق للتحول الرقمي أتمتت من خلالها استقبال الطلبات ومتابعتها إلكترونيًا.',
   'M6.2': 'يضم سجل الابتكار سبع مبادرات منفذة، أبرزها منصة التطوع الإلكترونية.',
   'M7.1': 'تتابع الجهة رضا العاملين سنويًا، وبلغت نسبة الرضا في آخر قياس 86 في المئة.',
   'M8.1': 'تقيس الجهة رضا المستفيدين بعد كل خدمة، وبلغ متوسط الرضا خلال العام الماضي 91 في المئة.',
-  'M8.2': 'تعد الجهة تقارير قياس الأثر الاجتماعي لبرامجها الرئيسية وفق منهجية العائد الاجتماعي على الاستثمار.',
+  'M8.2':
+    'تعد الجهة تقارير قياس الأثر الاجتماعي لبرامجها الرئيسية وفق منهجية العائد الاجتماعي على الاستثمار.',
 }
 
 export const feedbackFixture = {
@@ -104,7 +129,14 @@ const DRAFT_EVIDENCE = [
       },
     },
   ),
-  { subCode: 'M1.3', attachmentKey: null, name: 'excellence-initiatives-photos.jpg', scanStatus: 'clean', id: null, order: 99 },
+  {
+    subCode: 'M1.3',
+    attachmentKey: null,
+    name: 'excellence-initiatives-photos.jpg',
+    scanStatus: 'clean',
+    id: null,
+    order: 99,
+  },
 ]
 
 export const accreditedRequestsFixture = [
@@ -118,7 +150,15 @@ export const accreditedRequestsFixture = [
     cvCodes: ALL_CV,
     evidence: evidence(FULL_EVIDENCE),
     feedbackCodes: ['M1.1', 'M2.2', 'M8.1'],
-    assignments: [{ assessorId: 10, status: 'completed', assignedAt: '2026-08-21T07:00:00Z', startedAt: '2026-08-22T06:30:00Z', endedAt: '2026-09-10T12:00:00Z' }],
+    assignments: [
+      {
+        assessorId: 10,
+        status: 'completed',
+        assignedAt: '2026-08-21T07:00:00Z',
+        startedAt: '2026-08-22T06:30:00Z',
+        endedAt: '2026-09-10T12:00:00Z',
+      },
+    ],
     completionRequests: [],
     createdAt: '2026-08-12T08:15:00Z',
     submittedAt: '2026-08-20T09:00:00Z',
@@ -136,7 +176,14 @@ export const accreditedRequestsFixture = [
     evidence: evidence(FULL_EVIDENCE),
     feedbackCodes: [],
     assignments: [
-      { assessorId: 11, status: 'ended', assignedAt: '2026-08-28T08:00:00Z', startedAt: '2026-08-30T07:00:00Z', endedAt: '2026-09-02T09:20:00Z', endReason: 'refunded' },
+      {
+        assessorId: 11,
+        status: 'ended',
+        assignedAt: '2026-08-28T08:00:00Z',
+        startedAt: '2026-08-30T07:00:00Z',
+        endedAt: '2026-09-02T09:20:00Z',
+        endReason: 'refunded',
+      },
     ],
     completionRequests: [],
     createdAt: '2026-08-25T07:05:00Z',
@@ -150,11 +197,19 @@ export const accreditedRequestsFixture = [
     entityId: 6001,
     paymentId: SEEDED_IDS.paidApplePay,
     status: 'completed',
-    scoring: { pattern: 'developing', count: null },
+    scoring: { pattern: 'silver', count: null },
     cvCodes: ALL_CV,
     evidence: evidence(FULL_EVIDENCE),
     feedbackCodes: ['M2.2'],
-    assignments: [{ assessorId: 15, status: 'completed', assignedAt: '2026-08-29T08:00:00Z', startedAt: '2026-08-30T07:00:00Z', endedAt: '2026-09-02T13:00:00Z' }],
+    assignments: [
+      {
+        assessorId: 15,
+        status: 'completed',
+        assignedAt: '2026-08-29T08:00:00Z',
+        startedAt: '2026-08-30T07:00:00Z',
+        endedAt: '2026-09-02T13:00:00Z',
+      },
+    ],
     completionRequests: [],
     createdAt: '2026-08-28T13:36:00Z',
     submittedAt: '2026-08-29T06:30:00Z',
@@ -205,17 +260,25 @@ export const accreditedRequestsFixture = [
     cvCodes: ALL_CV,
     evidence: evidence(FULL_EVIDENCE.filter(([, key]) => key !== 'sub_402_1')),
     feedbackCodes: [],
-    assignments: [{ assessorId: 11, status: 'active', assignedAt: '2026-09-22T07:00:00Z', startedAt: '2026-09-23T06:45:00Z', endedAt: null }],
+    assignments: [
+      {
+        assessorId: 11,
+        status: 'active',
+        assignedAt: '2026-09-22T07:00:00Z',
+        startedAt: '2026-09-23T06:45:00Z',
+        endedAt: null,
+      },
+    ],
     completionRequests: [
       {
         status: 'open',
-        notes: 'يرجى استكمال وصف تنفيذ الخطة الاستراتيجية وإرفاق القوائم المالية المدققة للعام الأخير.',
+        notes: 'أكمل وصف تنفيذ الخطة الاستراتيجية، وأرفق القوائم المالية المدققة للعام الأخير.',
         items: [
-          { subCode: 'M2.2', kind: 'cv', note: 'أضيفوا أمثلة على مؤشرات الأداء ونتائج المتابعة.' },
+          { subCode: 'M2.2', kind: 'cv', note: 'أضف أمثلة على مؤشرات الأداء ونتائج المتابعة.' },
           { subCode: 'M4.2', kind: 'evidence', note: 'القوائم المالية المدققة لعام 2025.' },
         ],
         requestedAt: '2026-10-28T09:00:00Z',
-        deadlineAt: '2026-11-12T20:59:00Z',
+        deadlineAt: openCompletionDeadline(),
         expiryOutcome: 'continue_as_submitted',
         resolvedAt: null,
       },
@@ -235,7 +298,15 @@ export const accreditedRequestsFixture = [
     cvCodes: ALL_CV,
     evidence: evidence(FULL_EVIDENCE),
     feedbackCodes: [],
-    assignments: [{ assessorId: 10, status: 'active', assignedAt: '2026-10-01T07:00:00Z', startedAt: null, endedAt: null }],
+    assignments: [
+      {
+        assessorId: 10,
+        status: 'active',
+        assignedAt: '2026-10-01T07:00:00Z',
+        startedAt: null,
+        endedAt: null,
+      },
+    ],
     completionRequests: [],
     createdAt: '2026-09-29T08:35:00Z',
     submittedAt: '2026-09-30T10:00:00Z',
@@ -251,18 +322,66 @@ export const accreditedRequestsFixture = [
     scoring: { pattern: 'steady', count: 10 },
     cvCodes: ALL_CV,
     evidence: [
-      ...evidence(FULL_EVIDENCE, { exceptions: { sub_101_1: { scanStatus: 'clean', id: ACCREDITED_EVIDENCE_IDS.reviewClean } } }),
-      { subCode: 'M1.3', attachmentKey: null, name: 'initiative-draft.pdf', scanStatus: 'pending', id: null, order: 98 },
+      ...evidence(FULL_EVIDENCE, {
+        exceptions: { sub_101_1: { scanStatus: 'clean', id: ACCREDITED_EVIDENCE_IDS.reviewClean } },
+      }),
+      {
+        subCode: 'M1.3',
+        attachmentKey: null,
+        name: 'initiative-draft.pdf',
+        scanStatus: 'pending',
+        id: null,
+        order: 98,
+      },
     ],
     feedbackCodes: ['M1.1'],
     assignments: [
-      { assessorId: 16, status: 'reassigned', assignedAt: '2026-10-26T07:00:00Z', startedAt: null, endedAt: '2026-10-26T11:00:00Z', reason: null },
-      { assessorId: 10, status: 'active', assignedAt: '2026-10-26T11:00:00Z', startedAt: '2026-10-27T06:00:00Z', endedAt: null, reason: 'إعادة توزيع الأحمال بين المقيّمين بعد إجازة المقيّم.' },
+      {
+        assessorId: 16,
+        status: 'reassigned',
+        assignedAt: '2026-10-26T07:00:00Z',
+        startedAt: null,
+        endedAt: '2026-10-26T11:00:00Z',
+        reason: null,
+      },
+      {
+        assessorId: 10,
+        status: 'active',
+        assignedAt: '2026-10-26T11:00:00Z',
+        startedAt: '2026-10-27T06:00:00Z',
+        endedAt: null,
+        reason: 'إعادة توزيع الأحمال بين المقيّمين بعد إجازة المقيّم.',
+      },
     ],
     completionRequests: [],
     createdAt: '2026-10-09T07:50:00Z',
     submittedAt: '2026-10-25T08:00:00Z',
     completedAt: null,
+    refundedAt: null,
+  },
+  {
+    id: ACCREDITED_FIXTURE_IDS.completedPrevious,
+    number: 'ACC-2025-000012',
+    entityId: 5001,
+    paymentId: paymentOf(ARCHIVED_PAYMENT_SEQUENCE),
+    status: 'completed',
+    scoring: { pattern: 'developing', count: null },
+    cvCodes: ALL_CV,
+    evidence: evidence(FULL_EVIDENCE),
+    feedbackCodes: ['M1.1'],
+    assignments: [
+      {
+        assessorId: 11,
+        status: 'completed',
+        assignedAt: '2025-10-05T07:00:00Z',
+        startedAt: '2025-10-06T06:30:00Z',
+        endedAt: '2025-10-30T12:00:00Z',
+      },
+    ],
+    completionRequests: [],
+    createdAt: '2025-09-28T08:15:00Z',
+    submittedAt: '2025-10-04T09:00:00Z',
+    completedAt: '2025-10-30T12:00:00Z',
     refundedAt: null,
   },
 ]

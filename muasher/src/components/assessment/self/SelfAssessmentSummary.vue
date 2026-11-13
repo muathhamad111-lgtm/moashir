@@ -14,7 +14,10 @@ const props = defineProps({
 const { t } = useI18n()
 
 const progressLabel = computed(() =>
-  t('assessment.self.progress.count', { scored: props.progress.scored, total: props.progress.required }),
+  t('assessment.self.progress.count', {
+    scored: props.progress.scored,
+    total: props.progress.required,
+  }),
 )
 </script>
 

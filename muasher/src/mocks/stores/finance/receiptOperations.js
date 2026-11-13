@@ -28,8 +28,10 @@ export function receiptFileOf(receipt) {
 export function validatedReissueReason(body) {
   const reason = typeof body.reason === 'string' ? body.reason.trim() : ''
   if (!reason) throw financeReject.validation({ reason: [fieldMessage('required')] })
-  if (reason.length < 10) throw financeReject.validation({ reason: [fieldMessage('min', { min: 10 })] })
-  if (reason.length > 1000) throw financeReject.validation({ reason: [fieldMessage('max', { max: 1000 })] })
+  if (reason.length < 10)
+    throw financeReject.validation({ reason: [fieldMessage('min', { min: 10 })] })
+  if (reason.length > 1000)
+    throw financeReject.validation({ reason: [fieldMessage('max', { max: 1000 })] })
   return reason
 }
 

@@ -7,6 +7,7 @@ use App\Data\Finance\PriceQuote;
 use App\Enums\Finance\PaymentPurpose;
 use App\Enums\Settings\SettingKey;
 use App\Exceptions\Finance\PaymentRejected;
+use App\Exceptions\Paths\PathRejected;
 use App\Services\Finance\PriceCalculator;
 use App\Support\ValueObjects\Money;
 use App\Support\ValueObjects\VatRate;
@@ -42,11 +43,17 @@ it('uses the default VAT rate of 15 percent', function (): void {
     expect(app(PriceCalculator::class)->quote(PaymentPurpose::Accredited)->vatAmount->amount)->toBe('150.00');
 });
 
-it('refuses to quote a service without a positive price', function (?string $price): void {
-    setServicePrices($price, $price);
+it('refuses to quote a service whose price is not set: the path is paused', function (): void {
+    setServicePrices(null, null);
 
-    expect(fn () => app(PriceCalculator::class)->quote(PaymentPurpose::Accredited))->toThrow(PaymentRejected::class);
-})->with(['missing' => [null], 'zero' => ['0.00'], 'not money' => ['ten riyals']]);
+    expect(fn () => app(PriceCalculator::class)->quote(PaymentPurpose::Accredited))->toThrow(PathRejected::class, 'path.unavailable');
+});
+
+it('refuses to quote a free service: no order is needed', function (): void {
+    setServicePrices('0.00', '0.00');
+
+    expect(fn () => app(PriceCalculator::class)->quote(PaymentPurpose::Accredited))->toThrow(PaymentRejected::class, 'payment.not_required');
+});
 
 it('validates VAT rates and money amounts', function (): void {
     expect(fn (): VatRate => new VatRate('100.01'))->toThrow(InvalidArgumentException::class)

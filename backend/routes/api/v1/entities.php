@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\V1\Entities\CancelMyEmailChangeController;
 use App\Http\Controllers\Api\V1\Entities\CityController;
 use App\Http\Controllers\Api\V1\Entities\ConfirmMyEmailChangeController;
 use App\Http\Controllers\Api\V1\Entities\CurrentTermsController;
@@ -14,7 +15,9 @@ use App\Http\Controllers\Api\V1\Entities\ExportEntitiesController;
 use App\Http\Controllers\Api\V1\Entities\ExportEntityPersonalDataController;
 use App\Http\Controllers\Api\V1\Entities\MyEmailChangeController;
 use App\Http\Controllers\Api\V1\Entities\MyEntityController;
+use App\Http\Controllers\Api\V1\Entities\MyEntityLogoController;
 use App\Http\Controllers\Api\V1\Entities\MyProfileChangeController;
+use App\Http\Controllers\Api\V1\Entities\MyProfileSectionController;
 use App\Http\Controllers\Api\V1\Entities\PermanentlyDeleteEntityController;
 use App\Http\Controllers\Api\V1\Entities\PrivacyEntityLookupController;
 use App\Http\Controllers\Api\V1\Entities\PrivacyRequestController;
@@ -42,10 +45,18 @@ Route::post('auth/register', RegisterEntityController::class)->middleware('throt
 Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'])->group(function () use ($entities, $cities, $emailChanges, $privacyRequests): void {
     Route::prefix('entities/me')->name('entities.me.')->group(function () use ($entities): void {
         Route::get('/', [MyEntityController::class, 'show'])->middleware("can:viewOwn,{$entities}")->name('show');
-        Route::put('/', [MyEntityController::class, 'update'])->middleware(["can:updateOwn,{$entities}", 'throttle:sensitive'])->name('update');
+        Route::prefix('profile')->name('profile.')->middleware(["can:updateOwn,{$entities}", 'throttle:sensitive'])->group(function (): void {
+            Route::patch('identity', [MyProfileSectionController::class, 'identity'])->name('identity');
+            Route::patch('classification', [MyProfileSectionController::class, 'classification'])->name('classification');
+            Route::patch('governance', [MyProfileSectionController::class, 'governance'])->name('governance');
+            Route::patch('contact', [MyProfileSectionController::class, 'contact'])->name('contact');
+        });
+        Route::post('logo', [MyEntityLogoController::class, 'store'])->middleware(["can:updateOwn,{$entities}", 'throttle:uploads'])->name('logo.store');
+        Route::delete('logo', [MyEntityLogoController::class, 'destroy'])->middleware(["can:updateOwn,{$entities}", 'throttle:sensitive'])->name('logo.destroy');
         Route::get('profile-changes', MyProfileChangeController::class)->middleware("can:viewOwn,{$entities}")->name('profile-changes');
         Route::post('email/change', MyEmailChangeController::class)->middleware(["can:updateOwn,{$entities}", 'throttle:email-change'])->name('email.change');
         Route::post('email/confirm', ConfirmMyEmailChangeController::class)->middleware(["can:updateOwn,{$entities}", 'throttle:otp-verify'])->name('email.confirm');
+        Route::post('email/cancel', CancelMyEmailChangeController::class)->middleware(["can:updateOwn,{$entities}", 'throttle:sensitive'])->name('email.cancel');
     });
 
     Route::prefix('entities')->name('entities.')->group(function () use ($entities): void {

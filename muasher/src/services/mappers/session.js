@@ -13,6 +13,11 @@ function toEntitySummary(entity) {
   }
 }
 
+function toRequestScope(raw) {
+  if (!raw) return null
+  return { allPaths: raw.allPaths === true, paths: [...(raw.paths ?? [])] }
+}
+
 export function toSessionUser(raw = {}) {
   const entity = toEntitySummary(raw.entity)
   return {
@@ -29,6 +34,8 @@ export function toSessionUser(raw = {}) {
     entityId: raw.entityId ?? entity?.id ?? null,
     entity,
     committeeAppointments: [...(raw.committeeAppointments ?? [])],
+    assessorQualifications: [...(raw.assessorQualifications ?? [])],
+    requestScope: toRequestScope(raw.requestScope),
     sessionExpiresAt: raw.sessionExpiresAt ?? null,
     idleTimeoutMinutes: raw.idleTimeoutMinutes ?? null,
     profileCompleted: entity ? entity.profileCompleted : true,

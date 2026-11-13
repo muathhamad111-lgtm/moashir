@@ -6,6 +6,7 @@ use Illuminate\Routing\Route;
 
 const PUBLIC_API_ROUTES = [
     'health',
+    'health.ready',
     'auth.login-modes',
     'auth.login',
     'auth.otp.request',
@@ -24,6 +25,21 @@ const PUBLIC_API_ROUTES = [
     'webhooks.moyasar',
     'content.prices',
     'award.cycles.current',
+    'content.status',
+    'content.home',
+    'content.landing',
+    'content.pages.show',
+    'content.legal.show',
+    'content.files.show',
+    'kpis.index',
+    'kpis.featured',
+    'kpis.show',
+    'kpi-categories.index',
+    'kpi-types.index',
+    'content.assessment-paths.show',
+    'certificates.verify',
+    'contact-messages.store',
+    'content.certificate-levels',
 ];
 
 /**

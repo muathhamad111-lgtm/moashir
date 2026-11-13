@@ -12,13 +12,24 @@ vi.mock('@/services/profileService', () => ({
 
 const payload = {
   roles: [
-    { key: 'request_follower', label: { ar: 'متابع طلبات التقييم', en: 'Assessment Requests Follower' } },
+    {
+      key: 'request_follower',
+      label: { ar: 'متابع طلبات التقييم', en: 'Assessment Requests Follower' },
+    },
     { key: 'content_officer', label: { ar: 'مسؤول المحتوى', en: 'Content Officer' } },
   ],
   permissions: [
     { key: 'admin.kpis', module: 'content', label: { ar: 'إدارة المؤشرات', en: 'Manage KPIs' } },
-    { key: 'dashboard.view', module: 'dashboard', label: { ar: 'عرض لوحة التحكم', en: 'View dashboard' } },
-    { key: 'requests.queue', module: 'requests', label: { ar: 'قائمة الطلبات', en: 'Requests queue' } },
+    {
+      key: 'dashboard.view',
+      module: 'dashboard',
+      label: { ar: 'عرض لوحة التحكم', en: 'View dashboard' },
+    },
+    {
+      key: 'requests.queue',
+      module: 'requests',
+      label: { ar: 'قائمة الطلبات', en: 'Requests queue' },
+    },
   ],
 }
 

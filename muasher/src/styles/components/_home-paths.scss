@@ -1,0 +1,198 @@
+@use '../tokens' as *;
+@use '../mixins' as *;
+@use '../themes/dark' as *;
+
+@keyframes path-glow {
+  to {
+    opacity: 1;
+  }
+}
+
+.home-paths__grid {
+  --reveal-step: var(--motion-stagger-cards);
+
+  display: grid;
+  gap: var(--space-6);
+  align-items: stretch;
+
+  @include respond-to('lg') {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.home-path {
+  @include flex(column, stretch, flex-start, var(--space-5));
+  position: relative;
+  padding: var(--space-6);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-2xl);
+  background-color: var(--theme-surface-raised);
+  transition:
+    transform var(--motion-hover) var(--ease-brand),
+    box-shadow var(--motion-hover) var(--ease-brand),
+    border-color var(--motion-hover) var(--ease-brand);
+
+  @include respond-to('md') {
+    padding: var(--space-8);
+  }
+
+  &:hover {
+    transform: translateY(calc(var(--motion-lift) * -1));
+    border-color: var(--theme-accent);
+    box-shadow: var(--shadow-lg);
+  }
+
+  &--accredited {
+    @include theme-dark;
+    background-color: var(--color-dark);
+    border-color: var(--brand-line-on-dark);
+    box-shadow: var(--shadow-xl);
+    color: var(--theme-text);
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      box-shadow: var(--shadow-glow);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    @include respond-to('lg') {
+      transform: scale(var(--scale-featured));
+
+      &:hover {
+        transform: scale(var(--scale-featured)) translateY(calc(var(--motion-lift) * -1));
+      }
+    }
+  }
+
+  &--award {
+    border-color: var(--color-gold);
+  }
+}
+
+.home-path__top {
+  @include flex(row, center, space-between, var(--space-3));
+}
+
+.home-path__icon {
+  display: grid;
+  place-items: center;
+  inline-size: var(--size-icon-tile);
+  block-size: var(--size-icon-tile);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-accent-soft);
+  color: var(--theme-accent-text);
+  font-size: var(--fs-xl);
+
+  .home-path--accredited & {
+    background-color: var(--brand-glass-on-dark);
+    color: var(--color-primary);
+  }
+
+  .home-path--award & {
+    background-color: var(--color-gold-soft);
+    color: var(--theme-gold-text);
+  }
+}
+
+.home-path__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--fs-h4);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.home-path__summary {
+  margin: 0;
+  padding-block-end: var(--space-5);
+  border-block-end: var(--border-width) solid var(--theme-border);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
+  color: var(--theme-text-secondary);
+}
+
+.home-path__points {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-path__point {
+  @include flex(row, center, flex-start, var(--space-3));
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--theme-heading);
+}
+
+.home-path__point-icon {
+  font-size: var(--fs-lg);
+  color: var(--theme-accent-text);
+
+  .home-path--award & {
+    color: var(--theme-gold-text);
+  }
+}
+
+.home-path__price {
+  @include flex(row, baseline, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+.home-path__amount {
+  font-family: var(--font-latin);
+  font-size: var(--fs-number);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-number);
+  color: var(--color-white);
+}
+
+.home-path__price-note {
+  font-size: var(--fs-sm);
+  color: var(--color-gray-300);
+}
+
+.home-path__cta {
+  @include flex(column, stretch, flex-end);
+
+  .btn {
+    inline-size: 100%;
+  }
+
+  .btn:disabled {
+    opacity: 1;
+    background-color: var(--theme-border);
+    border-color: transparent;
+    color: var(--theme-text-secondary);
+  }
+}
+
+@include motion-safe {
+  .home-path--accredited::after {
+    animation: path-glow var(--motion-glow) var(--ease-in-out) infinite alternate;
+
+    @include ambient-pausable;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-path {
+    transition: none;
+
+    &:hover {
+      transform: none;
+    }
+  }
+
+  .home-path--accredited:hover {
+    @include respond-to('lg') {
+      transform: scale(var(--scale-featured));
+    }
+  }
+}

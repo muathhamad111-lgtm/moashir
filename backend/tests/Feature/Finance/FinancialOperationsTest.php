@@ -94,6 +94,21 @@ it('lists live transactions with search, filters, sort and stats', function (): 
         ->assertJsonPath('meta.stats.transactions_count', 4);
 });
 
+it('filters transactions by entity and searches by the authorized person', function (): void {
+    ['paid' => $paid] = financeLedger();
+    $initiator = $paid->initiatedBy;
+    switchTo(financeOfficer());
+
+    $this->getJson("/api/v1/finance/transactions?filter[entity_id]={$paid->entity_id}")->assertOk()
+        ->assertJsonPath('data.0.entity.name.en', 'Al-Waha Charitable Association');
+    expect(collect($this->getJson("/api/v1/finance/transactions?filter[entity_id]={$paid->entity_id}")->json('data'))
+        ->every(static fn (array $row): bool => $row['entity']['name']['en'] === 'Al-Waha Charitable Association'))->toBeTrue();
+    $this->getJson('/api/v1/finance/transactions?filter[entity_id]=999999')->assertOk()->assertJsonPath('meta.pagination.total', 0);
+    $this->getJson('/api/v1/finance/transactions?search='.urlencode((string) $initiator?->name))->assertOk()
+        ->assertJsonPath('data.0.entity.name.en', 'Al-Waha Charitable Association');
+    $this->getJson('/api/v1/finance/transactions?filter[entity_id]=0')->assertUnprocessable();
+});
+
 it('rejects unknown sorts and filters', function (string $query): void {
     switchTo(financeOfficer())->getJson('/api/v1/finance/transactions?'.$query)->assertUnprocessable();
 })->with([

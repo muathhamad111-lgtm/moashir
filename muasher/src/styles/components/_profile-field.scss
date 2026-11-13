@@ -1,0 +1,98 @@
+@use '../mixins' as *;
+
+.profile-field {
+  @include flex(column, stretch, flex-start, var(--space-1));
+  padding-block: var(--space-4);
+  border-block-end: var(--border-width) solid var(--theme-border);
+  min-inline-size: 0;
+
+  &--wide {
+    grid-column: 1 / -1;
+  }
+}
+
+.profile-field__label {
+  color: var(--theme-text-secondary);
+  font-size: var(--fs-sm);
+}
+
+.profile-field__value {
+  @include flex(column, flex-start, flex-start, var(--space-2));
+  margin: 0;
+  color: var(--theme-heading);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  overflow-wrap: anywhere;
+}
+
+.profile-field__empty {
+  color: var(--theme-text-muted);
+}
+
+.profile-field__sr {
+  @include visually-hidden;
+}
+
+.profile-field__meta,
+.profile-field__pending {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  font-weight: var(--fw-regular);
+}
+
+.profile-field__note {
+  color: var(--theme-text-secondary);
+  font-size: var(--fs-xs);
+}
+
+.profile-field__action {
+  min-block-size: var(--size-touch-target);
+  border-radius: var(--radius-sm);
+  color: var(--theme-accent-text);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &:disabled {
+    opacity: var(--opacity-disabled);
+  }
+}
+
+.profile-field-input--wide {
+  grid-column: 1 / -1;
+}
+
+.profile-missing {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  font-weight: var(--fw-regular);
+}
+
+.profile-missing__icon {
+  flex-shrink: 0;
+  color: var(--theme-warning-text);
+}
+
+.profile-missing__text {
+  color: var(--theme-text-secondary);
+}
+
+.profile-missing__add {
+  min-block-size: var(--size-touch-target);
+  border-radius: var(--radius-sm);
+  color: var(--theme-accent-text);
+  font-weight: var(--fw-semibold);
+  text-decoration: underline;
+  text-underline-offset: var(--space-1);
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}

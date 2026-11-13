@@ -22,6 +22,6 @@ export function announcePaymentRefunded(payment, refund) {
   refundListeners.forEach((listener) => listener(payment, refund))
 }
 
-export function assertMayPurchase(entity, purpose) {
-  purchaseChecks.forEach((check) => check(entity, purpose))
+export function assertMayPurchase(entity, purpose, cycle = null) {
+  purchaseChecks.forEach((check) => check(entity, purpose, cycle))
 }

@@ -10,6 +10,7 @@ const props = defineProps({
   hint: { type: String, default: '' },
   required: { type: Boolean, default: false },
   disabled: { type: Boolean, default: false },
+  readonly: { type: Boolean, default: false },
   inputmode: { type: String, default: undefined },
   autocomplete: { type: String, default: undefined },
   inputDir: { type: String, default: undefined },
@@ -28,6 +29,7 @@ const { value, errorMessage, handleBlur } = useField(toRef(props, 'name'))
     :error="errorMessage"
     :required="required"
     :disabled="disabled"
+    :readonly="readonly"
     :inputmode="inputmode"
     :autocomplete="autocomplete"
     :input-dir="inputDir"

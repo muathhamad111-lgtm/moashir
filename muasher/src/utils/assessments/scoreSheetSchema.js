@@ -4,7 +4,11 @@ import { isFilled, isRawScore, scoreFieldName, withinScale } from './scoreSheet'
 export function scoreSheetSchema(t, units, maximum) {
   const field = string()
     .nullable()
-    .test('raw-format', t('assessment.self.validation.format'), (value) => !isFilled(value) || isRawScore(value))
+    .test(
+      'raw-format',
+      t('assessment.self.validation.format'),
+      (value) => !isFilled(value) || isRawScore(value),
+    )
     .test(
       'raw-range',
       t('assessment.self.validation.range', { max: maximum }),

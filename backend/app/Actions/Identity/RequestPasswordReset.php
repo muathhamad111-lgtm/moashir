@@ -11,6 +11,7 @@ use App\Notifications\Identity\PasswordResetLinkNotification;
 use App\Services\Identity\AuthenticationEventRecorder;
 use App\Services\Identity\PasswordResetTokens;
 use App\Support\ValueObjects\EmailAddress;
+use App\Support\ValueObjects\SignInIdentifier;
 use Illuminate\Config\Repository;
 
 final readonly class RequestPasswordReset
@@ -26,7 +27,7 @@ final readonly class RequestPasswordReset
         $user = User::query()->withEmail($email)->first();
 
         if ($user === null || $user->status !== UserStatus::Active) {
-            $this->events->forUnknownEmail(AuthEventType::PasswordResetRequested, $email->value);
+            $this->events->forUnknownIdentifier(AuthEventType::PasswordResetRequested, SignInIdentifier::ofEmail($email));
 
             return;
         }

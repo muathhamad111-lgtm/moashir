@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Enums\Audit\AuditEvent;
-use App\Enums\Finance\PaymentPurpose;
 use App\Enums\Notifications\NotificationCode;
 use App\Models\Assessments\Assessment;
 use App\Models\Assessments\AssessmentAssignment;
@@ -177,7 +176,7 @@ it('lets the entity buy a new accredited assessment after a decline', function (
     Date::setTestNow('2026-11-08 08:01:00');
     expireCompletionRequests();
 
-    app(AccreditedPurchaseCheck::class)->assertMayPurchase($assessment->entity, PaymentPurpose::Accredited);
+    app(AccreditedPurchaseCheck::class)->assertMayStart($assessment->entity);
     $next = openedAccreditedRequest($assessment->entity);
 
     expect($next->id)->not->toBe($assessment->id)

@@ -24,6 +24,11 @@ enum AccreditedAssessmentStatus: string implements ReviewedAssessmentState
         return ! in_array($this, [self::Completed, self::Refunded, self::DeclinedIncomplete], true);
     }
 
+    public function isUnderway(): bool
+    {
+        return $this->isOpen() && $this !== self::AwaitingPayment;
+    }
+
     public function exposesResult(): bool
     {
         return $this === self::Completed;
@@ -34,9 +39,24 @@ enum AccreditedAssessmentStatus: string implements ReviewedAssessmentState
         return $next instanceof self && in_array($next, $this->nextStates(), true);
     }
 
+    public function awaitsResult(): bool
+    {
+        return in_array($this, [self::Submitted, self::Assigned, self::UnderReview, self::NeedsCompletion], true);
+    }
+
+    public function endedWithoutResult(): bool
+    {
+        return $this === self::Refunded || $this === self::DeclinedIncomplete;
+    }
+
     public function isInRequestQueue(): bool
     {
         return ! in_array($this, [self::AwaitingPayment, self::Draft], true);
+    }
+
+    public function isPreparedByEntity(): bool
+    {
+        return $this === self::Draft;
     }
 
     public function runsReviewClock(): bool
@@ -65,6 +85,14 @@ enum AccreditedAssessmentStatus: string implements ReviewedAssessmentState
     public static function forceTargetValues(): array
     {
         return self::valuesOf(...array_filter(self::cases(), static fn (self $status): bool => $status->isForceTarget()));
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function underwayValues(): array
+    {
+        return self::valuesOf(...array_filter(self::cases(), static fn (self $status): bool => $status->isUnderway()));
     }
 
     /**

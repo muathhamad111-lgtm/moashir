@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\Identity\Ability;
 use App\Http\Controllers\Api\V1\Identity\AcceptInvitationController;
 use App\Http\Controllers\Api\V1\Identity\ActivateUserController;
+use App\Http\Controllers\Api\V1\Identity\AssessorQualificationsController;
 use App\Http\Controllers\Api\V1\Identity\ChangeOwnEmailController;
 use App\Http\Controllers\Api\V1\Identity\ChangePasswordController;
 use App\Http\Controllers\Api\V1\Identity\ConfirmMfaEnrollmentController;
@@ -19,9 +20,11 @@ use App\Http\Controllers\Api\V1\Identity\MfaChallengeController;
 use App\Http\Controllers\Api\V1\Identity\MyPermissionsController;
 use App\Http\Controllers\Api\V1\Identity\MySessionsController;
 use App\Http\Controllers\Api\V1\Identity\PermissionController;
+use App\Http\Controllers\Api\V1\Identity\PhoneVerificationController;
 use App\Http\Controllers\Api\V1\Identity\PreferencesController;
 use App\Http\Controllers\Api\V1\Identity\RecoveryCodesController;
-use App\Http\Controllers\Api\V1\Identity\RequestOtpController;
+use App\Http\Controllers\Api\V1\Identity\RequestScopeController;
+use App\Http\Controllers\Api\V1\Identity\RequestSignInCodeController;
 use App\Http\Controllers\Api\V1\Identity\ResendInvitationController;
 use App\Http\Controllers\Api\V1\Identity\ResendOtpController;
 use App\Http\Controllers\Api\V1\Identity\ResetPasswordController;
@@ -43,12 +46,12 @@ $authenticated = Ability::Authenticated->value;
 Route::prefix('auth')->name('auth.')->group(function (): void {
     Route::get('login-modes', LoginModesController::class)->middleware('throttle:public')->name('login-modes');
     Route::post('login', LoginController::class)->middleware('throttle:login')->name('login');
-    Route::post('otp/request', RequestOtpController::class)->middleware('throttle:otp-request')->name('otp.request');
+    Route::post('otp/request', RequestSignInCodeController::class)->middleware('throttle:otp-request')->name('otp.request');
     Route::post('otp/verify', VerifyOtpController::class)->middleware('throttle:otp-verify')->name('otp.verify');
     Route::post('otp/resend', ResendOtpController::class)->middleware('throttle:otp-resend')->name('otp.resend');
     Route::post('mfa/challenge', MfaChallengeController::class)->middleware('throttle:mfa')->name('mfa.challenge');
-    Route::post('mfa/enroll', StartMfaEnrollmentController::class)->middleware('throttle:mfa')->name('mfa.enroll');
-    Route::post('mfa/confirm', ConfirmMfaEnrollmentController::class)->middleware('throttle:mfa')->name('mfa.confirm');
+    Route::post('mfa/enroll', StartMfaEnrollmentController::class)->middleware(['throttle:mfa', 'session.timeouts'])->name('mfa.enroll');
+    Route::post('mfa/confirm', ConfirmMfaEnrollmentController::class)->middleware(['throttle:mfa', 'session.timeouts'])->name('mfa.confirm');
     Route::post('password/forgot', ForgotPasswordController::class)->middleware('throttle:password-reset')->name('password.forgot');
     Route::post('password/reset', ResetPasswordController::class)->middleware('throttle:password-reset')->name('password.reset');
     Route::post('invitations/{token}/accept', AcceptInvitationController::class)->middleware('throttle:invitation')->name('invitations.accept');
@@ -70,6 +73,8 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa'])->group(function (
             Route::delete('sessions', RevokeOtherSessionsController::class)->name('sessions.destroy-others');
             Route::delete('sessions/{session}', [MySessionsController::class, 'destroy'])->name('sessions.destroy');
             Route::get('profile/permissions', MyPermissionsController::class)->name('profile.permissions');
+            Route::post('phone/verification', [PhoneVerificationController::class, 'store'])->middleware('throttle:sensitive')->name('phone.verification.store');
+            Route::post('phone/verification/confirm', [PhoneVerificationController::class, 'confirm'])->middleware('throttle:sensitive')->name('phone.verification.confirm');
         });
 
         Route::prefix('me/email')->name('me.email.')->middleware(['can:'.Ability::SuperAdminSelfService->value, 'throttle:sensitive'])->group(function (): void {
@@ -86,6 +91,8 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa'])->group(function (
         Route::post('users/{managedUser}/unlock', UnlockUserController::class)->middleware(['can:changeStatus,managedUser', 'throttle:sensitive'])->name('users.unlock');
         Route::post('users/{managedUser}/invitation/resend', ResendInvitationController::class)->middleware(['can:update,managedUser', 'throttle:sensitive'])->name('users.invitation.resend');
         Route::post('users/{managedUser}/mfa/reset', ResetUserMfaController::class)->middleware(['can:resetMfa,managedUser', 'throttle:sensitive'])->name('users.mfa.reset');
+        Route::put('users/{managedUser}/assessor-qualifications', AssessorQualificationsController::class)->middleware(['can:update,managedUser', 'throttle:sensitive'])->name('users.assessor-qualifications.update');
+        Route::put('users/{managedUser}/request-scope', RequestScopeController::class)->middleware(['can:update,managedUser', 'throttle:sensitive'])->name('users.request-scope.update');
 
         Route::get('roles', [RoleController::class, 'index'])->middleware('can:'.Ability::ListRoles->value)->name('roles.index');
         Route::put('roles/{role:name}/permissions', RolePermissionsController::class)->middleware(['can:manageMatrix,role', 'throttle:sensitive'])->name('roles.permissions.update');

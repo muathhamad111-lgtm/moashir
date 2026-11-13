@@ -23,7 +23,9 @@ describe('DemoLogin (local development only)', () => {
 
   it('opens a mock cookie session and goes to the persona home', async () => {
     const globals = createTestGlobals({ locale: 'en' })
-    demoSessionService.start.mockResolvedValue({ data: { id: 1, roles: ['system_admin'], permissions: ['dashboard.view'] } })
+    demoSessionService.start.mockResolvedValue({
+      data: { id: 1, roles: ['system_admin'], permissions: ['dashboard.view'] },
+    })
     const push = vi.spyOn(globals.router, 'push')
     const wrapper = mount(DemoLogin, { global: globals })
     await wrapper.findAll('button')[0].trigger('click')

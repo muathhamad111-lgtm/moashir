@@ -12,7 +12,11 @@ const props = defineProps({
 const { t, te, locale } = useI18n()
 
 const amount = computed(() => formatAmount(props.value, locale.value))
-const currencyLabel = computed(() => (te(`finance.currency.${props.currency}`) ? t(`finance.currency.${props.currency}`) : props.currency))
+const currencyLabel = computed(() =>
+  te(`finance.currency.${props.currency}`)
+    ? t(`finance.currency.${props.currency}`)
+    : props.currency,
+)
 </script>
 
 <template>

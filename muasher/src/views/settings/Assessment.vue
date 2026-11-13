@@ -1,55 +1,39 @@
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SettingsSection from '@/components/settings/SettingsSection.vue'
-import FieldInput from '@/components/form/FieldInput.vue'
-import FieldCheckboxGroup from '@/components/form/FieldCheckboxGroup.vue'
-import BaseButton from '@/components/ui/BaseButton.vue'
-import ReasonDialog from '@/components/modal/ReasonDialog.vue'
-import { useAssessmentSettings } from '@/composables/useAssessmentSettings'
-import { usePermissions } from '@/composables/usePermissions'
-import { PERMISSIONS } from '@/constants/permissionKeys'
-import { UPLOAD_BOUNDS } from '@/utils/accredited/assessmentSettingsForm'
+import Tabs from '@/components/ui/Tabs.vue'
+import AssessmentGeneralSettings from '@/components/settings/AssessmentGeneralSettings.vue'
+import PathSettingsPanel from '@/components/settings/PathSettingsPanel.vue'
+import InsightsSettingsCard from '@/components/settings/InsightsSettingsCard.vue'
+import { usePortalTab } from '@/composables/usePortalTab'
+import { REVIEWED_PATHS } from '@/constants/paths'
+
+const GENERAL = 'general'
+const INSIGHTS = 'insights'
+const TAB_VALUES = [...REVIEWED_PATHS, GENERAL, INSIGHTS]
+const TAB_LABELS = { [GENERAL]: 'settings.paths.generalTab', [INSIGHTS]: 'settings.insights.tab' }
 
 const { t } = useI18n()
-const { can } = usePermissions()
-const { status, errorMessage, settings, limits, saving, reasonOpen, load, submit, confirmReason } = useAssessmentSettings()
+const { tab } = usePortalTab(TAB_VALUES)
 
-const editable = computed(() => can(PERMISSIONS.SETTINGS_ASSESSMENT_MANAGE))
-const typeOptions = computed(() => (settings.value?.evidenceTypeCatalog ?? []).map((value) => ({ value, label: t(`settings.assessment.types.${value}`), disabled: !editable.value })))
-
-onMounted(load)
+const tabs = computed(() =>
+  TAB_VALUES.map((value) => ({
+    value,
+    label: t(TAB_LABELS[value] ?? `paths.labels.${value}`),
+  })),
+)
 </script>
 
 <template>
-  <SettingsSection :title="t('settings.assessment.title')" :description="t('settings.assessment.description')" :status="status" :error-message="errorMessage" @retry="load">
-    <form v-if="settings" id="assessment-settings-form" class="settings-form" novalidate @submit.prevent="submit">
-      <fieldset class="settings-form__group">
-        <legend class="settings-form__legend">{{ t('settings.assessment.deadlinesTitle') }}</legend>
-        <p class="settings-form__note" role="note">
-          <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-          {{ t('settings.assessment.slaNote') }}
-        </p>
-        <div class="settings-form__grid">
-          <FieldInput name="accreditedReviewSlaDays" :label="t('settings.assessment.reviewSlaDays')" :hint="t('settings.assessment.reviewSlaDaysHint', limits)" inputmode="numeric" input-dir="ltr" :disabled="!editable" required />
-        </div>
-      </fieldset>
-      <fieldset class="settings-form__group">
-        <legend class="settings-form__legend">{{ t('settings.assessment.uploadsTitle') }}</legend>
-        <p class="settings-form__note" role="note">
-          <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-          {{ t('settings.assessment.uploadsNote') }}
-        </p>
-        <div class="settings-form__grid">
-          <FieldInput name="uploadMaxFileMb" :label="t('settings.assessment.maxFileMb')" :hint="t('settings.assessment.rangeHint', UPLOAD_BOUNDS.maxFileMb)" inputmode="numeric" input-dir="ltr" :disabled="!editable" required />
-          <FieldInput name="evidenceMaxFilesPerSub" :label="t('settings.assessment.maxFilesPerSub')" :hint="t('settings.assessment.rangeHint', UPLOAD_BOUNDS.maxFilesPerSub)" inputmode="numeric" input-dir="ltr" :disabled="!editable" required />
-        </div>
-        <FieldCheckboxGroup name="evidenceAllowedTypes" :label="t('settings.assessment.allowedTypes')" :options="typeOptions" :hint="t('settings.assessment.allowedTypesHint')" />
-      </fieldset>
-    </form>
-    <template #actions>
-      <BaseButton v-if="editable && settings" type="submit" form="assessment-settings-form" variant="primary" :loading="saving" icon="fa-solid fa-floppy-disk">{{ t('actions.save') }}</BaseButton>
-    </template>
+  <SettingsSection
+    :title="t('settings.assessment.title')"
+    :description="t('settings.assessment.description')"
+  >
+    <Tabs v-model="tab" :tabs="tabs">
+      <AssessmentGeneralSettings v-if="tab === GENERAL" />
+      <InsightsSettingsCard v-else-if="tab === INSIGHTS" />
+      <PathSettingsPanel v-else :key="tab" :path="tab" />
+    </Tabs>
   </SettingsSection>
-  <ReasonDialog v-model="reasonOpen" :title="t('settings.assessment.reasonTitle')" :message="t('settings.assessment.reasonMessage')" :submit-label="t('actions.save')" :action="confirmReason" action-name="settings.assessment.update" />
 </template>

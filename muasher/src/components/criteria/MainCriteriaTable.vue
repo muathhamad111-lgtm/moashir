@@ -2,13 +2,14 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DataTable from '@/components/data-list/DataTable.vue'
-import ActionsDropdown from '@/components/data-list/ActionsDropdown.vue'
+import AppMenu from '@/components/ui/AppMenu.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import Badge from '@/components/ui/Badge.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import ReorderButtons from './ReorderButtons.vue'
 import { useCriteria } from '@/composables/useCriteria'
 import { useCriteriaRowActions } from '@/composables/useCriteriaRowActions'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   items: { type: Array, required: true },
@@ -23,7 +24,7 @@ const { t } = useI18n()
 const { localized, weight } = useCriteria()
 const { actionsFor } = useCriteriaRowActions(props.access)
 
-const OPEN_SUBS = { label: 'criteria.actions.openSubs', icon: 'fa-solid fa-diagram-project' }
+const OPEN_SUBS = { label: 'criteria.actions.openSubs', icon: 'diagram' }
 
 const columns = computed(() => [
   { key: 'order', label: t('criteria.columns.order') },
@@ -48,7 +49,7 @@ const columns = computed(() => [
     @retry="emit('retry')"
   >
     <template v-if="access.canEditTree.value" #empty-action>
-      <BaseButton variant="primary" icon="fa-solid fa-plus" @click="emit('add')">{{
+      <BaseButton variant="primary" icon="plus" @click="emit('add')">{{
         t('criteria.index.add')
       }}</BaseButton>
     </template>
@@ -88,11 +89,11 @@ const columns = computed(() => [
     </template>
     <template #cell-balance="{ item }">
       <Badge v-if="item.weightBalanced" variant="success">
-        <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+        <AppIcon name="check-circle" />
         {{ t('criteria.balance.balanced') }}
       </Badge>
       <Badge v-else variant="warning">
-        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+        <AppIcon name="warning-triangle" />
         {{ t('criteria.balance.mismatchShort', { diff: weight(item.remainingWeight) }) }}
       </Badge>
     </template>
@@ -100,8 +101,9 @@ const columns = computed(() => [
       ><StatusBadge :status="item.active ? 'active' : 'inactive'"
     /></template>
     <template #cell-actions="{ item }">
-      <ActionsDropdown
+      <AppMenu
         :actions="actionsFor(item, OPEN_SUBS)"
+        :label="t('components.actions.menuFor', { name: item.code })"
         @select="emit('action', $event, item)"
       />
     </template>

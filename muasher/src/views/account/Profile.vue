@@ -9,6 +9,7 @@ import Skeleton from '@/components/feedback/Skeleton.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import PermissionModuleCard from '@/components/account/PermissionModuleCard.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t, locale } = useI18n()
 const auth = useAuthStore()
@@ -43,7 +44,7 @@ const email = computed(() => auth.user?.email ?? auth.user?.officialEmail ?? '')
           </div>
         </dl>
         <p class="account-page__note">
-          <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+          <AppIcon name="info-circle" />
           {{ t('account.workspace') }}
         </p>
       </Card>
@@ -77,14 +78,10 @@ const email = computed(() => auth.user?.email ?? auth.user?.officialEmail ?? '')
       <div v-if="status === 'loading'" class="account-page__module-grid">
         <Skeleton v-for="i in 3" :key="i" variant="block" />
       </div>
-      <ErrorState
-        v-else-if="status === 'error'"
-        :message="t('account.loadError')"
-        @retry="load"
-      />
+      <ErrorState v-else-if="status === 'error'" :message="t('account.loadError')" @retry="load" />
       <EmptyState
         v-else-if="modules.length === 0"
-        icon="fa-solid fa-shield-halved"
+        icon="shield-info"
         :title="t('account.permissions.empty')"
       />
       <div v-else class="account-page__module-grid">

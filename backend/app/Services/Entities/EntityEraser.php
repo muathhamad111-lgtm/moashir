@@ -87,6 +87,10 @@ final readonly class EntityEraser
             'deactivation_reason' => null,
             'deletion_reason' => null,
             'verification_reminded_at' => null,
+            'unified_number' => null,
+            'license_number' => null,
+            'founded_on' => null,
+            'website_url' => null,
             'anonymized_at' => $erasedAt,
         ])->save();
     }

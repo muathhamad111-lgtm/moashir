@@ -1,6 +1,12 @@
 import { SCORE_LEVELS } from '@/constants/assessment'
 import { assessmentReject, fieldMessage } from './assessmentRejection'
-import { decimalRaw, parseRawHundredths, scaleMaximumHundredths, scorableUnits, unitKey } from './selfScoring'
+import {
+  decimalRaw,
+  parseRawHundredths,
+  scaleMaximumHundredths,
+  scorableUnits,
+  unitKey,
+} from './selfScoring'
 
 const MAX_ITEMS = 500
 const REASON_MIN = 10
@@ -32,14 +38,16 @@ function collectGroupErrors(errors, scores, group, maximum) {
   }
   Object.entries(values).forEach(([key, value]) => {
     const failure = scoreValueError(value, maximum)
-    if (failure) errors[`scores.${group}.${key}`] = [fieldMessage(failure[0], failure[1], `scores.${group}`)]
+    if (failure)
+      errors[`scores.${group}.${key}`] = [fieldMessage(failure[0], failure[1], `scores.${group}`)]
   })
 }
 
 function collectReasonError(errors, reason) {
   if (reason === undefined || reason === null || reason === '') return
   const length = typeof reason === 'string' ? reason.trim().length : -1
-  if (length < REASON_MIN || length > REASON_MAX) errors.reason = [fieldMessage('validation.reason_length', {}, 'reason')]
+  if (length < REASON_MIN || length > REASON_MAX)
+    errors.reason = [fieldMessage('validation.reason_length', {}, 'reason')]
 }
 
 function collectScoresErrors(errors, body, presence, maximum) {
@@ -69,7 +77,9 @@ export function validateScoreRequest(body, record, presence) {
 
 function subsScoredThroughPoints(tree) {
   return new Set(
-    tree.mains.flatMap((main) => main.subs.filter((sub) => sub.points.length).map((sub) => String(sub.id))),
+    tree.mains.flatMap((main) =>
+      main.subs.filter((sub) => sub.points.length).map((sub) => String(sub.id)),
+    ),
   )
 }
 
@@ -82,12 +92,16 @@ export function parseScoreSheet(scores, tree, scaleKind) {
     Object.entries(scores[group] ?? {}).forEach(([key, value]) => {
       const field = `scores.${group}.${key}`
       if (!units.has(unitKey(level, key))) {
-        reasons[field] = level === SCORE_LEVELS.SUB && throughPoints.has(key) ? 'score.use_points' : 'score.item_not_in_version'
+        reasons[field] =
+          level === SCORE_LEVELS.SUB && throughPoints.has(key)
+            ? 'score.use_points'
+            : 'score.item_not_in_version'
         return
       }
       if (value === null) return
       const raw = parseRawHundredths(String(value))
-      if (raw === null || raw > scaleMaximumHundredths(scaleKind)) reasons[field] = 'score.out_of_range'
+      if (raw === null || raw > scaleMaximumHundredths(scaleKind))
+        reasons[field] = 'score.out_of_range'
       else sheet.set(unitKey(level, key), raw)
     })
   })

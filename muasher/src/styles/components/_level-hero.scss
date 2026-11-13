@@ -1,0 +1,379 @@
+@use '../mixins' as *;
+
+.level-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'medal heading'
+    'score score'
+    'title title'
+    'track track'
+    'action action'
+    'link link';
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: var(--border-width) solid var(--glass-stroke);
+  border-radius: var(--radius-2xl);
+  background-color: var(--glass-fill);
+  box-shadow: var(--elevation-e3);
+  color: var(--band-ink);
+  backdrop-filter: blur(var(--glass-blur));
+
+  @include respond-to('md') {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'medal heading figure'
+      'medal meta caption'
+      'title title title'
+      'remaining remaining link'
+      'track track track'
+      'action action action';
+    column-gap: var(--space-6);
+    row-gap: var(--space-3);
+    padding: var(--space-8);
+  }
+
+  @include respond-to('xl') {
+    grid-template-columns: minmax(0, 10fr) minmax(0, 11fr);
+    grid-template-areas: 'identity progress';
+    gap: var(--space-8);
+  }
+}
+
+.level-hero__identity,
+.level-hero__progress {
+  display: contents;
+
+  @include respond-to('xl') {
+    display: grid;
+    align-items: center;
+  }
+}
+
+.level-hero__identity {
+  @include respond-to('xl') {
+    grid-area: identity;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      'medal heading'
+      'medal meta'
+      'medal action';
+    column-gap: var(--space-5);
+    row-gap: var(--space-3);
+  }
+}
+
+.level-hero__progress {
+  @include respond-to('xl') {
+    grid-area: progress;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'score score'
+      'title link'
+      'track track';
+    row-gap: var(--space-4);
+    padding-inline-start: var(--space-8);
+    border-inline-start: var(--border-width) solid var(--glass-stroke);
+  }
+}
+
+.level-hero__medal {
+  position: relative;
+  display: grid;
+  grid-area: medal;
+  place-items: center;
+  align-self: center;
+
+  &::before {
+    position: absolute;
+    inset: calc(var(--space-4) * -1);
+    border-radius: var(--radius-circle);
+    background: radial-gradient(closest-side, var(--level-glow), transparent);
+    content: '';
+  }
+
+  .level-tone--neutral &::before,
+  .level-hero--expired &::before {
+    content: none;
+  }
+
+  .level-emblem {
+    --level-emblem-size: var(--size-emblem-hero-s);
+
+    position: relative;
+
+    @include respond-to('md') {
+      --level-emblem-size: var(--size-emblem-l);
+    }
+
+    @include respond-to('xl') {
+      --level-emblem-size: var(--size-emblem-hero);
+    }
+  }
+
+  .level-emblem--seal {
+    background-color: transparent;
+  }
+
+  .level-emblem--placeholder {
+    border-color: var(--glass-stroke);
+    background-color: var(--glass-fill);
+    color: var(--band-ink);
+  }
+
+  .level-hero--expired & .level-emblem {
+    opacity: var(--opacity-expired-seal);
+  }
+}
+
+.level-hero__heading {
+  @include flex(column, flex-start, flex-start, var(--space-2));
+  grid-area: heading;
+  min-inline-size: 0;
+}
+
+.level-hero__name {
+  margin: 0;
+  color: var(--level-on-band);
+  font-family: var(--font-heading);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-black);
+  line-height: var(--lh-tight);
+
+  @include respond-to('md') {
+    font-size: var(--fs-3xl);
+  }
+
+  .level-tone--neutral & {
+    color: var(--band-ink);
+  }
+
+  .level-hero--expired & {
+    color: var(--band-ink-muted);
+  }
+}
+
+.level-hero__meta {
+  display: none;
+  grid-area: meta;
+  margin: 0;
+  color: var(--band-ink-muted);
+  font-size: var(--fs-caption);
+
+  @include respond-to('md') {
+    display: block;
+  }
+
+  bdi {
+    white-space: nowrap;
+  }
+}
+
+.level-hero__action {
+  grid-area: action;
+
+  .btn {
+    inline-size: 100%;
+  }
+
+  @include respond-to('md') {
+    justify-self: start;
+
+    .btn {
+      inline-size: auto;
+    }
+  }
+}
+
+.level-hero__score {
+  display: grid;
+  grid-area: score;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'figure caption'
+    'figure remaining';
+  align-items: center;
+  column-gap: var(--space-4);
+
+  @include respond-to('md') {
+    display: contents;
+  }
+
+  @include respond-to('xl') {
+    display: grid;
+  }
+
+  &--empty {
+    grid-template-areas: 'remaining remaining';
+  }
+}
+
+.level-hero__figure {
+  grid-area: figure;
+  margin: 0;
+  line-height: var(--lh-tight);
+
+  @include respond-to('md') {
+    align-self: end;
+    justify-self: end;
+  }
+
+  @include respond-to('xl') {
+    align-self: center;
+    justify-self: start;
+  }
+
+  .level-hero--expired & {
+    opacity: var(--opacity-expired-score);
+  }
+}
+
+.level-hero__figure-value {
+  @include flex(row, baseline, flex-start, var(--space-1));
+  font-family: var(--font-latin);
+  font-variant-numeric: tabular-nums;
+}
+
+.level-hero__number {
+  color: var(--band-ink);
+  font-size: var(--fs-5xl);
+  font-weight: var(--fw-bold);
+
+  @include respond-to('xl') {
+    font-size: var(--fs-display);
+  }
+}
+
+.level-hero__unit {
+  color: var(--data-on-band);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-semibold);
+}
+
+.level-hero__caption,
+.level-hero__journey-title {
+  margin: 0;
+  color: var(--band-ink-muted);
+  font-size: var(--fs-sm);
+}
+
+.level-hero__caption {
+  grid-area: caption;
+  align-self: end;
+
+  @include respond-to('md') {
+    align-self: start;
+  }
+
+  @include respond-to('xl') {
+    align-self: end;
+  }
+}
+
+.level-hero__remaining {
+  grid-area: remaining;
+  align-self: start;
+  margin: 0;
+  color: var(--band-ink);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+
+  @include respond-to('md') {
+    align-self: center;
+  }
+
+  @include respond-to('xl') {
+    align-self: start;
+  }
+}
+
+.level-hero__journey-title {
+  grid-area: title;
+}
+
+.level-hero__link {
+  @include flex(row, center, flex-start, var(--space-1));
+  grid-area: link;
+  justify-self: center;
+  min-block-size: var(--size-badge-m);
+  color: var(--data-on-band);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  text-decoration: none;
+
+  @include respond-to('md') {
+    justify-self: end;
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.level-hero__track {
+  grid-area: track;
+  min-inline-size: 0;
+}
+
+.level-hero__chips {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+.level-hero__chip {
+  @include flex(row, center, center, var(--space-2));
+  min-block-size: var(--size-badge-m);
+  padding-inline: var(--space-3);
+  border: var(--border-width) solid var(--glass-stroke);
+  border-radius: var(--radius-pill);
+  background-color: var(--glass-fill);
+  color: var(--band-ink);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+
+  &--expiring,
+  &--expired {
+    border-color: transparent;
+    color: var(--color-dark);
+  }
+
+  &--expiring {
+    background-color: var(--color-warning);
+  }
+
+  &--expired {
+    background-color: var(--color-danger-light);
+  }
+}
+
+.level-hero__chip-dot {
+  inline-size: var(--size-nav-dot);
+  block-size: var(--size-nav-dot);
+  border-radius: var(--radius-circle);
+  background-color: var(--data-on-band);
+
+  .level-hero__chip--expiring &,
+  .level-hero__chip--expired & {
+    background-color: var(--color-dark);
+  }
+}
+
+.level-hero__sr {
+  @include visually-hidden;
+}
+
+.level-hero__error {
+  @include flex(column, flex-start, flex-start, var(--space-3));
+  grid-column: 1 / -1;
+}
+
+.level-hero__error-text {
+  margin: 0;
+  color: var(--band-ink);
+}

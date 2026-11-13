@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { assessmentsService } from '@/services/assessmentsService'
 import { useToast } from '@/composables/useToast'
+import { success } from '@/composables/useSuccess'
 import { logger } from '@/utils/logger'
 import { payloadShape } from '@/utils/payloadShape'
 import { SELF_ASSESSMENT_CODES as CODES } from '@/constants/assessment'
@@ -59,7 +60,9 @@ export function useSelfAssessmentActions({ formState, scoreSheet, onMissing, onS
     if (missing.length) {
       await onMissing(missing)
       scoreSheet.markMissing(missing)
-      return toast.error(t('assessment.self.toasts.incomplete', { count: missing.length }, missing.length))
+      return toast.error(
+        t('assessment.self.toasts.incomplete', { count: missing.length }, missing.length),
+      )
     }
     confirmOpen.value = true
   }
@@ -70,7 +73,7 @@ export function useSelfAssessmentActions({ formState, scoreSheet, onMissing, onS
     try {
       const { data } = await assessmentsService.submit(assessmentId(), sheetRequest('submit'))
       confirmOpen.value = false
-      toast.success(t('assessment.self.toasts.submitted'))
+      success.show({ title: t('assessment.self.toasts.submitted'), message: formState.assessment.value.number })
       onSubmitted(data)
     } catch (error) {
       confirmOpen.value = false
@@ -84,5 +87,14 @@ export function useSelfAssessmentActions({ formState, scoreSheet, onMissing, onS
     conflictCode.value = ''
   }
 
-  return { saving, submitting, confirmOpen, conflictCode, save, requestSubmit, confirmSubmit, clearConflict }
+  return {
+    saving,
+    submitting,
+    confirmOpen,
+    conflictCode,
+    save,
+    requestSubmit,
+    confirmSubmit,
+    clearConflict,
+  }
 }

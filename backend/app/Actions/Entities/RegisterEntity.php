@@ -17,9 +17,11 @@ use App\Models\Identity\User;
 use App\Services\Audit\AuditRecorder;
 use App\Services\Entities\EntityAccountCreator;
 use App\Services\Identity\DecoyOtpChallenges;
+use App\Support\Entities\EntityUniqueViolation;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 final readonly class RegisterEntity
 {
@@ -39,7 +41,9 @@ final readonly class RegisterEntity
 
         try {
             $entity = DB::transaction(fn (): Entity => $this->register($data));
-        } catch (UniqueConstraintViolationException) {
+        } catch (UniqueConstraintViolationException $violation) {
+            $this->rethrowIfEntityField($violation);
+
             return $this->decoy($data);
         }
 
@@ -61,6 +65,15 @@ final readonly class RegisterEntity
         ], ['registration']));
 
         return $entity;
+    }
+
+    private function rethrowIfEntityField(UniqueConstraintViolationException $violation): void
+    {
+        $validation = EntityUniqueViolation::toValidation($violation);
+
+        if ($validation instanceof ValidationException) {
+            throw $validation;
+        }
     }
 
     private function decoy(EntityRegistrationData $data): OtpChallenge

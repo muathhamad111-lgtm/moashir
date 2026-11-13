@@ -1,6 +1,9 @@
+import { linkedRequestOf } from '../accredited/requestPayments'
 import { financeEntityEmails } from '../../fixtures/finance'
 import { findFile, findPayment, receiptOf, refundOf } from './financeState'
 import { entityNameOf, entityReferenceOf } from './receiptSnapshot'
+import { ownTransferResource, transferDetailsOf } from './bankTransferRecords'
+import { cycleRefOf } from '../award/cycleRef'
 
 function pricingOf(payment) {
   return {
@@ -14,7 +17,13 @@ function pricingOf(payment) {
 
 function receiptSummaryOf(receipt) {
   if (!receipt) return null
-  return { id: receipt.id, number: receipt.number, status: receipt.status, isTest: receipt.isTest, issuedAt: receipt.issuedAt }
+  return {
+    id: receipt.id,
+    number: receipt.number,
+    status: receipt.status,
+    isTest: receipt.isTest,
+    issuedAt: receipt.issuedAt,
+  }
 }
 
 export function ownPaymentResource(payment) {
@@ -22,6 +31,8 @@ export function ownPaymentResource(payment) {
     id: payment.id,
     reference: payment.reference,
     purpose: payment.purpose,
+    awardCycle: cycleRefOf(payment.awardCycleId),
+    channel: payment.channel ?? 'electronic',
     status: payment.status,
     isTest: payment.mode === 'test',
     pricing: pricingOf(payment),
@@ -33,8 +44,10 @@ export function ownPaymentResource(payment) {
     paidAt: payment.paidAt,
     failedAt: payment.failedAt,
     cancelledAt: payment.cancelledAt,
+    rejectedAt: payment.rejectedAt ?? null,
     refundedAt: payment.refundedAt,
     receipt: receiptSummaryOf(receiptOf(payment.id)),
+    bankTransfer: ownTransferResource(payment),
   }
 }
 
@@ -48,6 +61,7 @@ export function receiptResource(receipt) {
     voidedAt: receipt.voidedAt,
     reissueCount: receipt.reissueCount,
     lastReissuedAt: receipt.lastReissuedAt,
+    vatRegistrationNumber: receipt.snapshot.vatRegistrationNumber ?? null,
     snapshot: { ...receipt.snapshot, entityName: { ...receipt.snapshot.entityName } },
   }
 }
@@ -58,6 +72,8 @@ export function transactionResource(payment) {
     reference: payment.reference,
     receiptNumber: receiptOf(payment.id)?.number ?? null,
     purpose: payment.purpose,
+    awardCycle: cycleRefOf(payment.awardCycleId),
+    channel: payment.channel ?? 'electronic',
     status: payment.status,
     isTest: payment.mode === 'test',
     entity: {
@@ -116,10 +132,13 @@ export function transactionDetailResource(payment) {
     verifiedAt: payment.verifiedAt,
     failedAt: payment.failedAt,
     cancelledAt: payment.cancelledAt,
+    rejectedAt: payment.rejectedAt ?? null,
     latePaidAt: payment.latePaidAt,
     manuallySettledAt: payment.manuallySettledAt,
     receipt: receipt ? receiptResource(receipt) : null,
     refund: refund ? refundResource(refund) : null,
+    bankTransfer: transferDetailsOf(payment),
+    linkedRequest: linkedRequestOf(payment.id),
   }
 }
 

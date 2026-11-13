@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Accordion from '@/components/ui/Accordion.vue'
 import FieldCheckbox from '@/components/form/FieldCheckbox.vue'
+import LegalConsentNote from '@/components/legal/LegalConsentNote.vue'
 import { localizedText } from '@/utils/localizedText'
 
 const props = defineProps({
@@ -31,6 +32,7 @@ const documents = computed(() =>
       </template>
     </Accordion>
     <FieldCheckbox name="termsAccepted" :label="t('entities.registration.termsAccepted')" />
+    <LegalConsentNote :kinds="['terms', 'privacy']" />
     <FieldCheckbox name="marketingConsent" :label="t('entities.consent.marketing')" />
     <p class="entity-form__hint">{{ t('entities.hints.marketingConsent') }}</p>
   </fieldset>

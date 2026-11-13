@@ -12,7 +12,7 @@ async function mountWithRoles(roles) {
   useAuthStore(globals.pinia).setUser(sessionUserFor(roles, { name: 'Test User' }))
   const wrapper = mount(TopNavbar, { global: globals })
   await flushPromises()
-  await wrapper.find('.navbar__user .actions-dropdown button').trigger('click')
+  await wrapper.find('.navbar__user .navbar__avatar').trigger('click')
   await flushPromises()
   return wrapper
 }
@@ -41,19 +41,19 @@ describe('TopNavbar', () => {
     expect(wrapper.find('.navbar__title').text()).toBe('لوحة التحكم')
     expect(wrapper.text()).toContain('English')
     expect(wrapper.find('.notification-bell').exists()).toBe(true)
-    expect(wrapper.find('.navbar__user .actions-dropdown').exists()).toBe(true)
+    expect(wrapper.find('.navbar__user .dropdown-menu').exists()).toBe(true)
   })
 
   it('shows the entity-profile action + role badges for an entity session', async () => {
     const wrapper = await mountWithRoles(['entity'])
     expect(wrapper.find('.navbar__user-roles').exists()).toBe(true)
-    const items = wrapper.findAll('.actions-dropdown__item').map((b) => b.text())
+    const items = wrapper.findAll('[role="menuitem"]').map((b) => b.text())
     expect(items.some((label) => label.includes('الملف التعريفي'))).toBe(true)
   })
 
   it('hides the entity-profile action for a non-entity session but keeps logout', async () => {
     const wrapper = await mountWithRoles(['system_admin'])
-    const items = wrapper.findAll('.actions-dropdown__item').map((b) => b.text())
+    const items = wrapper.findAll('[role="menuitem"]').map((b) => b.text())
     expect(items.some((label) => label.includes('الملف التعريفي'))).toBe(false)
     expect(items.some((label) => label.includes('خروج'))).toBe(true)
     expect(wrapper.find('.navbar__user-roles').text()).toContain('مدير النظام')
@@ -61,7 +61,7 @@ describe('TopNavbar', () => {
 
   it('offers "My account" to every signed-in user and shows every held role badge', async () => {
     const wrapper = await mountWithRoles(['request_follower', 'content_officer'])
-    const items = wrapper.findAll('.actions-dropdown__item').map((b) => b.text())
+    const items = wrapper.findAll('[role="menuitem"]').map((b) => b.text())
     expect(items[0]).toContain('حسابي')
     const badges = wrapper.findAll('.navbar__user-roles .badge').map((b) => b.text())
     expect(badges).toEqual(['متابع طلبات التقييم', 'مسؤول المحتوى'])

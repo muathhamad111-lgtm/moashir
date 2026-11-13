@@ -46,5 +46,15 @@ export function useSelfScoreSheet({ form, units }) {
     return valid
   }
 
-  return { sheet, maximum, dirty, resetFrom, payload, missing, markMissing, applyServerErrors, isValid }
+  return {
+    sheet,
+    maximum,
+    dirty,
+    resetFrom,
+    payload,
+    missing,
+    markMissing,
+    applyServerErrors,
+    isValid,
+  }
 }

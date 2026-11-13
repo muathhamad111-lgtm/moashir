@@ -86,6 +86,11 @@ final class AwardRejected extends ApiException
         return new self(new ApiError(Response::HTTP_CONFLICT, 'advanced.request_exists', [], [], ['assessment_id' => $assessmentId]));
     }
 
+    public static function paymentBeingProcessed(): self
+    {
+        return new self(new ApiError(Response::HTTP_CONFLICT, 'advanced.payment_being_processed'));
+    }
+
     public static function memberInvalid(string $field): self
     {
         return self::fieldError('cycle.member_invalid', $field);
@@ -94,6 +99,11 @@ final class AwardRejected extends ApiException
     public static function initialAssessorInvalid(string $field): self
     {
         return self::fieldError('cycle.initial_assessor_invalid', $field);
+    }
+
+    public static function initialAssessorNotQualified(string $field): self
+    {
+        return self::fieldError('assessor.not_qualified', $field);
     }
 
     public static function segregationConflict(string $field): self

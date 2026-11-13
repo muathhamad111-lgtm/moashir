@@ -1,9 +1,27 @@
 import { describe, expect, it } from 'vitest'
-import { acceptOf, countsTowardSlot, evidenceOfSlot, exceedsSize, hasAllowedExtension, hasPendingScan, isRequested, slotsOf } from '../evidenceRules'
+import {
+  acceptOf,
+  countsTowardSlot,
+  evidenceOfSlot,
+  exceedsSize,
+  hasAllowedExtension,
+  hasPendingScan,
+  isRequested,
+  slotsOf,
+} from '../evidenceRules'
 import { completionPayload, completionSchema, deadlineBounds, itemOptions } from '../completionForm'
-import { assessmentSettingsSchema, changedAssessmentSettings, settingsFormValues } from '../assessmentSettingsForm'
+import {
+  assessmentSettingsSchema,
+  changedAssessmentSettings,
+  settingsFormValues,
+} from '../assessmentSettingsForm'
 import { changedSheetPayload, isEmptyPayload } from '@/utils/assessments/scoreSheet'
-import { toCompletionStatus, toRequestStatus, toStatusCounts, toWireRequestStatus } from '@/services/mappers/accreditedStatus'
+import {
+  toCompletionStatus,
+  toRequestStatus,
+  toStatusCounts,
+  toWireRequestStatus,
+} from '@/services/mappers/accreditedStatus'
 
 const t = (key, params) => (params ? `${key}:${JSON.stringify(params)}` : key)
 
@@ -12,7 +30,13 @@ const SUB = {
   code: 'M1.1',
   hasCv: true,
   attachments: [{ key: 'sub_101_1', name: { ar: 'وثيقة', en: 'Document' }, required: true }],
-  points: [{ id: 1001, code: 'M1.1.1', attachments: [{ key: 'point_1001_1', name: { ar: 'نقطة', en: 'Point' }, required: true }] }],
+  points: [
+    {
+      id: 1001,
+      code: 'M1.1.1',
+      attachments: [{ key: 'point_1001_1', name: { ar: 'نقطة', en: 'Point' }, required: true }],
+    },
+  ],
 }
 
 describe('evidence rules', () => {
@@ -44,12 +68,25 @@ describe('evidence rules', () => {
 
 describe('completion request form', () => {
   it('offers CV items only for CV sub-criteria and builds the payload with the end of the Riyadh day', () => {
-    const options = itemOptions({ mains: [{ subs: [SUB, { id: 702, code: 'M7.2', hasCv: false, points: [] }] }] })
+    const options = itemOptions({
+      mains: [{ subs: [SUB, { id: 702, code: 'M7.2', hasCv: false, points: [] }] }],
+    })
     expect(options.map((option) => option.key)).toEqual(['101:cv', '101:evidence', '702:evidence'])
-    const payload = completionPayload({ notes: '  أكملوا الشواهد  ', items: ['101:cv', '702:evidence'], deadline: '2026-11-20', expiryOutcome: 'decline' }, { '101:cv': 'أضيفوا أمثلة' })
+    const payload = completionPayload(
+      {
+        notes: '  أكمل الشواهد  ',
+        items: ['101:cv', '702:evidence'],
+        deadline: '2026-11-20',
+        expiryOutcome: 'decline',
+      },
+      { '101:cv': 'أضف أمثلة' },
+    )
     expect(payload).toEqual({
-      notes: 'أكملوا الشواهد',
-      items: [{ subCriterionId: 101, kind: 'cv', note: 'أضيفوا أمثلة' }, { subCriterionId: 702, kind: 'evidence' }],
+      notes: 'أكمل الشواهد',
+      items: [
+        { subCriterionId: 101, kind: 'cv', note: 'أضف أمثلة' },
+        { subCriterionId: 702, kind: 'evidence' },
+      ],
       deadlineAt: '2026-11-20T20:59:00.000Z',
       expiryOutcome: 'decline',
     })
@@ -59,33 +96,84 @@ describe('completion request form', () => {
     const bounds = deadlineBounds(new Date('2026-11-01T09:00:00Z'))
     expect(bounds).toEqual({ min: '2026-11-01', max: '2026-12-30' })
     const schema = completionSchema(t, bounds)
-    await expect(schema.validate({ notes: 'قصير', items: [], deadline: '2027-01-15', expiryOutcome: 'decline' }, { abortEarly: false })).rejects.toMatchObject({ errors: expect.arrayContaining([expect.stringContaining('validation.minChars'), 'review.completion.validation.items', expect.stringContaining('review.completion.validation.deadline')]) })
-    await expect(schema.validate({ notes: 'يرجى استكمال الشواهد', items: ['101:cv'], deadline: '2026-11-10', expiryOutcome: 'continue_as_submitted' })).resolves.toBeTruthy()
+    await expect(
+      schema.validate(
+        { notes: 'قصير', items: [], deadline: '2027-01-15', expiryOutcome: 'decline' },
+        { abortEarly: false },
+      ),
+    ).rejects.toMatchObject({
+      errors: expect.arrayContaining([
+        expect.stringContaining('validation.minChars'),
+        'review.completion.validation.items',
+        expect.stringContaining('review.completion.validation.deadline'),
+      ]),
+    })
+    await expect(
+      schema.validate({
+        notes: 'يرجى استكمال الشواهد',
+        items: ['101:cv'],
+        deadline: '2026-11-10',
+        expiryOutcome: 'continue_as_submitted',
+      }),
+    ).resolves.toBeTruthy()
   })
 })
 
 describe('assessment settings form', () => {
-  const settings = { accreditedReviewSlaDays: 14, uploadMaxFileMb: 20, evidenceMaxFilesPerSub: 10, evidenceAllowedTypes: ['pdf', 'png'] }
+  const settings = {
+    generalUploadMaxFileMb: 20,
+    advancedMinEntityAgeYears: 3,
+    advancedDisqualificationScore: '60.00',
+    committeeEntityDataVisibility: 'name_only',
+  }
 
-  it('sends only the changed keys as numbers and arrays', () => {
-    const values = { ...settingsFormValues(settings), accreditedReviewSlaDays: '21', evidenceAllowedTypes: ['png', 'pdf'] }
-    expect(changedAssessmentSettings(settings, values)).toEqual({ accreditedReviewSlaDays: 21 })
-    expect(changedAssessmentSettings(settings, { ...values, evidenceAllowedTypes: ['pdf'] })).toEqual({ accreditedReviewSlaDays: 21, evidenceAllowedTypes: ['pdf'] })
+  it('sends only the changed general keys and never the legacy path aliases', () => {
+    const values = { ...settingsFormValues(settings), generalUploadMaxFileMb: '٣٠' }
+    expect(changedAssessmentSettings(settings, values)).toEqual({ generalUploadMaxFileMb: 30 })
+    expect(Object.keys(settingsFormValues(settings)).sort()).toEqual([
+      'advancedDisqualificationScore',
+      'advancedMinEntityAgeYears',
+      'committeeEntityDataVisibility',
+      'generalUploadMaxFileMb',
+    ])
   })
 
-  it('validates the server limits and at least one type', async () => {
-    const schema = assessmentSettingsSchema(t, { min: 1, max: 120 })
-    await expect(schema.validate({ accreditedReviewSlaDays: '0', uploadMaxFileMb: '101', evidenceMaxFilesPerSub: '5', evidenceAllowedTypes: [] }, { abortEarly: false })).rejects.toMatchObject({ errors: expect.arrayContaining(['settings.assessment.validation.types']) })
+  it('validates the general upload bounds', async () => {
+    const schema = assessmentSettingsSchema(t)
+    await expect(
+      schema.validate(
+        { ...settingsFormValues(settings), generalUploadMaxFileMb: '101' },
+        { abortEarly: false },
+      ),
+    ).rejects.toMatchObject({
+      errors: [expect.stringContaining('settings.assessment.validation.range')],
+    })
   })
 })
 
 describe('partial score sheet and status mapper', () => {
   it('sends only changed items, with null for a cleared score', () => {
-    const units = [{ level: 'sub', id: 103 }, { level: 'point', id: 1001 }, { level: 'point', id: 1002 }]
+    const units = [
+      { level: 'sub', id: 103 },
+      { level: 'point', id: 1001 },
+      { level: 'point', id: 1002 },
+    ]
     const scores = { subs: { 103: { rawValue: '7.00' } }, points: { 1001: { rawValue: '8.00' } } }
-    const payload = changedSheetPayload({ 'sub-103': '7', 'point-1001': '', 'point-1002': '9.5' }, units, scores)
+    const payload = changedSheetPayload(
+      { 'sub-103': '7', 'point-1001': '', 'point-1002': '9.5' },
+      units,
+      scores,
+    )
     expect(payload).toEqual({ subs: {}, points: { 1001: null, 1002: '9.5' } })
-    expect(isEmptyPayload(changedSheetPayload({ 'sub-103': '7.00', 'point-1001': '8', 'point-1002': '' }, units, scores))).toBe(true)
+    expect(
+      isEmptyPayload(
+        changedSheetPayload(
+          { 'sub-103': '7.00', 'point-1001': '8', 'point-1002': '' },
+          units,
+          scores,
+        ),
+      ),
+    ).toBe(true)
   })
 
   it('keeps the declined terminal state and the expired completion states in one mapper', () => {
@@ -93,6 +181,12 @@ describe('partial score sheet and status mapper', () => {
     expect(toRequestStatus('under_review')).toBe('under-review')
     expect(toWireRequestStatus('declined')).toBe('declined-incomplete')
     expect(toCompletionStatus('expired_declined')).toBe('expired-declined')
-    expect(toStatusCounts({ declinedIncomplete: 2, underReview: 1 }, ['declined', 'under-review', 'completed'])).toEqual({ declined: 2, 'under-review': 1, completed: 0 })
+    expect(
+      toStatusCounts({ declinedIncomplete: 2, underReview: 1 }, [
+        'declined',
+        'under-review',
+        'completed',
+      ]),
+    ).toEqual({ declined: 2, 'under-review': 1, completed: 0 })
   })
 })

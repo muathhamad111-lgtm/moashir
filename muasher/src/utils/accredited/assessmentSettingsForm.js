@@ -1,41 +1,91 @@
-import { array, object, string } from 'yup'
+import { object, string } from 'yup'
 
-export const UPLOAD_BOUNDS = { maxFileMb: { min: 1, max: 100 }, maxFilesPerSub: { min: 1, max: 50 } }
+import { ENTITY_VISIBILITY_LIST } from '@/constants/committee'
+import { toWesternDigits } from '@/utils/numerals'
 
-const INTEGER_FIELDS = ['accreditedReviewSlaDays', 'uploadMaxFileMb', 'evidenceMaxFilesPerSub']
+export const UPLOAD_BOUNDS = {
+  maxFileMb: { min: 1, max: 100 },
+  maxFilesPerSub: { min: 1, max: 50 },
+}
+export const ADVANCED_BOUNDS = {
+  minEntityAgeYears: { min: 0, max: 100 },
+  disqualificationScore: { min: 0, max: 100 },
+}
+
+const INTEGER_FIELDS = ['generalUploadMaxFileMb', 'advancedMinEntityAgeYears']
 const INTEGER = /^\d+$/
+const SCORE = /^\d{1,3}(\.\d{1,2})?$/
 
-function integerField(t, { min, max }) {
+function normalizedNumber(value) {
+  return toWesternDigits(String(value ?? '')).trim()
+}
+
+export function integerField(t, { min, max }) {
   return string()
     .trim()
     .required(t('validation.required'))
-    .test('range', t('settings.assessment.validation.range', { min, max }), (value) => INTEGER.test(value ?? '') && Number(value) >= min && Number(value) <= max)
+    .test('range', t('settings.assessment.validation.range', { min, max }), (value) => {
+      const text = normalizedNumber(value)
+      return INTEGER.test(text) && Number(text) >= min && Number(text) <= max
+    })
 }
 
-export function assessmentSettingsSchema(t, slaLimits) {
+function scoreField(t) {
+  const { min, max } = ADVANCED_BOUNDS.disqualificationScore
+  return string()
+    .trim()
+    .required(t('validation.required'))
+    .test(
+      'score',
+      t('settings.assessment.validation.score', { min, max }),
+      (value) => SCORE.test(normalizedNumber(value)) && Number(normalizedNumber(value)) <= max,
+    )
+}
+
+function sameScore(left, right) {
+  return Number(normalizedNumber(left)).toFixed(2) === Number(right).toFixed(2)
+}
+
+export function assessmentSettingsSchema(t) {
   return object({
-    accreditedReviewSlaDays: integerField(t, slaLimits),
-    uploadMaxFileMb: integerField(t, UPLOAD_BOUNDS.maxFileMb),
-    evidenceMaxFilesPerSub: integerField(t, UPLOAD_BOUNDS.maxFilesPerSub),
-    evidenceAllowedTypes: array().min(1, t('settings.assessment.validation.types')),
+    generalUploadMaxFileMb: integerField(t, UPLOAD_BOUNDS.maxFileMb),
+    advancedMinEntityAgeYears: integerField(t, ADVANCED_BOUNDS.minEntityAgeYears),
+    advancedDisqualificationScore: scoreField(t),
+    committeeEntityDataVisibility: string().oneOf(ENTITY_VISIBILITY_LIST, t('validation.required')),
   })
 }
 
 export function settingsFormValues(settings) {
   return {
     ...Object.fromEntries(INTEGER_FIELDS.map((field) => [field, String(settings[field] ?? '')])),
-    evidenceAllowedTypes: [...settings.evidenceAllowedTypes],
+    advancedDisqualificationScore: String(settings.advancedDisqualificationScore ?? ''),
+    committeeEntityDataVisibility: settings.committeeEntityDataVisibility ?? '',
   }
 }
 
-function sameTypes(left, right) {
-  return left.length === right.length && left.every((type) => right.includes(type))
+function isKnown(value) {
+  return value !== null && value !== undefined
 }
 
 export function changedAssessmentSettings(settings, values) {
   const changes = Object.fromEntries(
-    INTEGER_FIELDS.filter((field) => Number(values[field]) !== settings[field]).map((field) => [field, Number(values[field])]),
+    INTEGER_FIELDS.filter(
+      (field) =>
+        isKnown(settings[field]) && Number(normalizedNumber(values[field])) !== settings[field],
+    ).map((field) => [field, Number(normalizedNumber(values[field]))]),
   )
-  if (!sameTypes(values.evidenceAllowedTypes, settings.evidenceAllowedTypes)) changes.evidenceAllowedTypes = [...values.evidenceAllowedTypes]
+  if (
+    isKnown(settings.advancedDisqualificationScore) &&
+    !sameScore(values.advancedDisqualificationScore, settings.advancedDisqualificationScore)
+  ) {
+    changes.advancedDisqualificationScore = Number(
+      normalizedNumber(values.advancedDisqualificationScore),
+    ).toFixed(2)
+  }
+  if (
+    isKnown(settings.committeeEntityDataVisibility) &&
+    values.committeeEntityDataVisibility !== settings.committeeEntityDataVisibility
+  )
+    changes.committeeEntityDataVisibility = values.committeeEntityDataVisibility
   return changes
 }

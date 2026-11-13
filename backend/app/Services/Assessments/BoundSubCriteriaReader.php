@@ -25,7 +25,7 @@ final readonly class BoundSubCriteriaReader
 
         foreach ($this->active($this->loader->load($version)->mainCriteria) as $main) {
             foreach ($this->active($main->subCriteria) as $sub) {
-                $subs[] = new BoundSub($sub->id, $sub->code, $sub->has_cv, $this->slotsOf($sub));
+                $subs[] = new BoundSub($sub->id, $sub->code, $sub->name, $sub->has_cv, $this->slotsOf($sub));
             }
         }
 

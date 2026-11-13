@@ -1,0 +1,30 @@
+@use '../tokens' as *;
+
+@mixin insight-properties($prefix, $palette) {
+  @each $name, $roles in $palette {
+    @each $role, $value in $roles {
+      --#{$prefix}-#{$name}-#{$role}: #{$value};
+    }
+  }
+}
+
+:root {
+  --insight-glyph-empty: #{$insight-glyph-empty};
+  --size-glyph-bar-inline: #{$size-glyph-bar-inline};
+  --size-glyph-bar-block: #{$size-glyph-bar-block};
+  --size-insight-column: #{$size-insight-column};
+  --size-board-preview: #{$size-board-preview};
+  --delta-up-on-band: #{$delta-up-ink-dark};
+  --delta-down-on-band: #{$delta-down-ink-dark};
+}
+
+:root,
+[data-theme='dark'] {
+  @include insight-properties('insight-class', $insight-class-dark);
+  @include insight-properties('insight-band', $insight-band-dark);
+}
+
+[data-theme='light'] {
+  @include insight-properties('insight-class', $insight-class-light);
+  @include insight-properties('insight-band', $insight-band-light);
+}

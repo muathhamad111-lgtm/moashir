@@ -10,6 +10,8 @@
 /AGENTS.md
 /منصة مؤشر.html
 /منصة-مؤشر/
+/*.pdf
+/handover/
 
 muasher/agents/
 muasher/references/
@@ -39,6 +41,7 @@ Thumbs.db
 !backend/.env.testing
 
 vendor/
+!backend/resources/views/vendor/
 node_modules/
 dist/
 dist-ssr/

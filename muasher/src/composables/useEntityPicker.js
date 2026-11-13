@@ -6,7 +6,11 @@ import { localizedText } from '@/utils/localizedText'
 const PICKER_SIZE = 10
 const MIN_TERM = 2
 
-export function useEntityPicker() {
+function privacyLookup(search, size) {
+  return privacyRequestsService.lookupEntities({ search, limit: size })
+}
+
+export function useEntityPicker({ lookup = privacyLookup } = {}) {
   const { t, locale } = useI18n()
   const options = ref([])
   const loading = ref(false)
@@ -23,7 +27,7 @@ export function useEntityPicker() {
     if (term && term.trim().length < MIN_TERM) return
     loading.value = true
     try {
-      const { data } = await privacyRequestsService.lookupEntities({ search: term.trim() || undefined, limit: PICKER_SIZE })
+      const { data } = await lookup(term.trim() || undefined, PICKER_SIZE)
       options.value = (data ?? []).map(toOption)
     } catch {
       options.value = []

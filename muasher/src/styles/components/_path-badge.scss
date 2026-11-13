@@ -1,0 +1,58 @@
+.path-badge {
+  --path-edge: var(--theme-border-strong);
+  --path-text: var(--theme-text);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  max-inline-size: 100%;
+  padding-block: var(--space-0);
+  padding-inline: var(--space-2);
+  border: var(--border-width) solid color-mix(in srgb, var(--path-edge) 45%, transparent);
+  border-inline-start-width: var(--border-width-thick);
+  border-inline-start-color: var(--path-edge);
+  border-radius: var(--radius-sm);
+  background-color: color-mix(in srgb, var(--path-edge) var(--path-fill-strength), transparent);
+  color: var(--path-text);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-base);
+  vertical-align: middle;
+}
+
+.path-badge__icon {
+  flex-shrink: 0;
+  font-size: var(--fs-xs);
+}
+
+.path-badge__label {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.path-badge--compact {
+  padding-inline: var(--space-1);
+
+  .path-badge__label {
+    white-space: nowrap;
+  }
+}
+
+.path-badge--self {
+  --path-edge: var(--path-self-edge);
+  --path-text: var(--path-self-text);
+}
+
+.path-badge--accredited {
+  --path-edge: var(--path-accredited-edge);
+  --path-text: var(--path-accredited-text);
+}
+
+.path-badge--advanced {
+  --path-edge: var(--path-advanced-edge);
+  --path-text: var(--path-advanced-text);
+}
+
+.path-badge--bag {
+  --path-edge: var(--path-bag-edge);
+  --path-text: var(--path-bag-text);
+}

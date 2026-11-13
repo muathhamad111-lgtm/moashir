@@ -1,0 +1,6 @@
+@font-face { font-family: 'Moashir Latin'; src: url("{{ $assets->font('montserrat-latin-variable.woff2') }}") format('woff2'); font-weight: 100 900; font-style: normal; unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2013-2014, U+2018-201E, U+2022, U+2026, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215; }
+@font-face { font-family: 'Moashir Heading'; src: url("{{ $assets->font('alexandria-arabic-700.woff2') }}") format('woff2'); font-weight: 700; font-style: normal; }
+@font-face { font-family: 'Moashir Heading'; src: url("{{ $assets->font('alexandria-arabic-800.woff2') }}") format('woff2'); font-weight: 800 900; font-style: normal; }
+@font-face { font-family: 'Moashir Body'; src: url("{{ $assets->font('IBMPlexSansArabic-Regular.ttf') }}") format('truetype'); font-weight: 400; font-style: normal; }
+@font-face { font-family: 'Moashir Body'; src: url("{{ $assets->font('IBMPlexSansArabic-SemiBold.ttf') }}") format('truetype'); font-weight: 500 600; font-style: normal; }
+@font-face { font-family: 'Moashir Body'; src: url("{{ $assets->font('IBMPlexSansArabic-Bold.ttf') }}") format('truetype'); font-weight: 700 900; font-style: normal; }

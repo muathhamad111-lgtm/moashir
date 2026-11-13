@@ -16,7 +16,7 @@ final class FinanceStatsCalculator
     private const string AGGREGATES = <<<'SQL'
         count(*) as transactions_count,
         count(*) filter (where status = 'paid') as completed_count,
-        count(*) filter (where status in ('created', 'pending', 'failed', 'cancelled')) as incomplete_count,
+        count(*) filter (where status in ('created', 'pending', 'under_review', 'failed', 'rejected', 'cancelled')) as incomplete_count,
         count(*) filter (where status = 'refunded') as refunded_count,
         coalesce(sum(total) filter (where status = 'paid'), 0) * 100 as income_halalas,
         coalesce(sum(vat_amount) filter (where status = 'paid'), 0) * 100 as vat_halalas,

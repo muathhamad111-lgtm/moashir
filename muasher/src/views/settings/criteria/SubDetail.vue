@@ -144,7 +144,7 @@ function onAction(key, point) {
           <BaseButton
             v-if="access.canCorrectText.value"
             variant="secondary"
-            icon="fa-solid fa-spell-check"
+            icon="pen-line"
             @click="correcting = { type: NODE.SUB, node: sub }"
           >
             {{ t('criteria.actions.correctText') }}
@@ -152,7 +152,7 @@ function onAction(key, point) {
           <BaseButton
             v-if="access.canEditTree.value"
             variant="secondary"
-            icon="fa-solid fa-right-left"
+            icon="swap"
             @click="toggleType(sub, refresh)"
           >
             {{ switchLabel }}
@@ -188,7 +188,7 @@ function onAction(key, point) {
           <BaseButton
             v-if="access.canEditTree.value"
             variant="primary"
-            icon="fa-solid fa-plus"
+            icon="plus"
             :disabled="addBlocked"
             @click="openForm()"
           >
@@ -202,7 +202,7 @@ function onAction(key, point) {
           :message="t('criteria.sub.pointsEmptyMessage')"
         >
           <template v-if="access.canEditTree.value && !addBlocked" #action>
-            <BaseButton variant="primary" icon="fa-solid fa-plus" @click="openForm()">{{
+            <BaseButton variant="primary" icon="plus" @click="openForm()">{{
               t('criteria.point.add')
             }}</BaseButton>
           </template>

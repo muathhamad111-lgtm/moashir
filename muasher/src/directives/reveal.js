@@ -1,31 +1,41 @@
-import { gsap } from 'gsap'
+import { prefersReducedMotion } from '@/utils/motion'
 
-function prefersReducedMotion() {
-  return typeof window !== 'undefined' && window.matchMedia
-    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    : false
+const VISIBLE_RATIO = 0.12
+const PENDING = 'is-reveal-pending'
+const REVEALED = 'is-revealed'
+const STAGGER = 'reveal-stagger'
+
+function show(el) {
+  el.classList.remove(PENDING)
+  el.classList.add(REVEALED)
+}
+
+function observe(el) {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return
+      observer.disconnect()
+      el._revealObserver = null
+      show(el)
+    },
+    { threshold: VISIBLE_RATIO },
+  )
+  el._revealObserver = observer
+  observer.observe(el)
 }
 
 export const reveal = {
   mounted(el, binding) {
-    if (prefersReducedMotion()) return
-    const options = binding.value ?? {}
-    const staggerChildren = Boolean(options.stagger)
-    const targets = staggerChildren ? Array.from(el.children) : el
-    if (staggerChildren && !targets.length) return
-    el._revealCtx = gsap.context(() => {
-      gsap.from(targets, {
-        autoAlpha: 0,
-        y: options.y ?? 20,
-        duration: options.duration ?? 0.55,
-        ease: 'power2.out',
-        stagger: staggerChildren ? (options.step ?? 0.08) : 0,
-        clearProps: 'transform,visibility,opacity',
-      })
-    }, el)
+    if (binding.value?.stagger) el.classList.add(STAGGER)
+    if (prefersReducedMotion() || typeof IntersectionObserver !== 'function') {
+      show(el)
+      return
+    }
+    el.classList.add(PENDING)
+    observe(el)
   },
   unmounted(el) {
-    el._revealCtx?.revert()
-    el._revealCtx = null
+    el._revealObserver?.disconnect()
+    el._revealObserver = null
   },
 }

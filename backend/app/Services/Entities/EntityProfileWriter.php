@@ -7,27 +7,67 @@ namespace App\Services\Entities;
 use App\Data\Entities\EntityContactData;
 use App\Data\Entities\EntityProfileChangeSet;
 use App\Data\Entities\EntityProfileData;
+use App\Data\Entities\EntityProfileWrite;
 use App\Models\Entities\Entity;
 use App\Models\Entities\EntityProfileChange;
 use App\Models\Identity\User;
-use Illuminate\Support\Facades\Date;
+use App\Support\Entities\EntityUniqueViolation;
+use Illuminate\Database\UniqueConstraintViolationException;
 
 final readonly class EntityProfileWriter
 {
-    public function __construct(private EntityProfileDiff $diff) {}
+    public function __construct(private EntityProfileDiff $diff, private MarketingConsentRecorder $consent) {}
 
-    public function write(Entity $entity, EntityProfileData $profile, EntityContactData $contact, ?User $actor): EntityProfileChangeSet
+    public function writeProfile(Entity $entity, EntityProfileData $profile, EntityContactData $contact, ?User $actor): EntityProfileChangeSet
     {
-        $changes = $this->diff->between($entity, $profile);
+        return $this->write($entity, new EntityProfileWrite($profile->toAttributes(), $contact), $actor);
+    }
 
-        $entity->fill($profile->toAttributes());
-        $entity->profile_completed_at = $profile->isComplete() ? ($entity->profile_completed_at ?? Date::now()) : null;
-        $entity->save();
+    public function write(Entity $entity, EntityProfileWrite $write, ?User $actor): EntityProfileChangeSet
+    {
+        $attributes = $entity->withDerivedFoundingYear($write->attributes);
+        $owner = $entity->loadMissing('owner')->owner;
+        $changes = $this->diff->between($entity, $attributes)
+            ->merge($this->diff->ofContact($owner, $write->contact))
+            ->merge($this->diff->ofConsent($entity, $write->marketingConsent));
+
+        $entity->fill($attributes);
+        $this->writeContact($owner, $write->contact);
+        $entity->syncProfileCompletedAt();
+        $this->save($entity);
+        $this->writeConsent($entity, $write->marketingConsent);
 
         $this->recordHistory($entity, $changes, $actor);
-        $this->writeContact($entity, $contact);
 
         return $changes;
+    }
+
+    private function save(Entity $entity): void
+    {
+        try {
+            $entity->save();
+        } catch (UniqueConstraintViolationException $violation) {
+            throw EntityUniqueViolation::toValidation($violation) ?? $violation;
+        }
+    }
+
+    private function writeContact(?User $owner, ?EntityContactData $contact): void
+    {
+        if (! $owner instanceof User || ! $contact instanceof EntityContactData) {
+            return;
+        }
+
+        User::withoutAuditing(static fn (): bool => $owner->forceFill([
+            'name' => $contact->authorizedPersonName,
+            'phone' => $contact->phone?->value,
+        ])->save());
+    }
+
+    private function writeConsent(Entity $entity, ?bool $consents): void
+    {
+        if ($consents !== null) {
+            $this->consent->record($entity, $consents);
+        }
     }
 
     private function recordHistory(Entity $entity, EntityProfileChangeSet $changes, ?User $actor): void
@@ -40,18 +80,6 @@ final readonly class EntityProfileWriter
                 'old_value' => $changes->before[$field] ?? null,
                 'new_value' => $newValue,
             ]);
-        }
-    }
-
-    private function writeContact(Entity $entity, EntityContactData $contact): void
-    {
-        $owner = User::query()->where('entity_id', $entity->id)->first();
-
-        if ($owner instanceof User) {
-            User::withoutAuditing(static fn (): bool => $owner->forceFill([
-                'name' => $contact->authorizedPersonName,
-                'phone' => $contact->phone?->value,
-            ])->save());
         }
     }
 }

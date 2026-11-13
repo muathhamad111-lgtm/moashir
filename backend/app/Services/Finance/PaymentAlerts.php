@@ -26,6 +26,11 @@ final readonly class PaymentAlerts
         $this->toFinance(FinanceNotices::forPayment(NotificationCode::PaymentRefundRequired, FinanceNotices::FOR_STAFF, $payment));
     }
 
+    public function transferRefundRequired(Payment $payment): void
+    {
+        $this->toFinance(FinanceNotices::forPayment(NotificationCode::PaymentRefundRequired, FinanceNotices::FOR_STAFF_TRANSFER, $payment));
+    }
+
     public function providerRefundReported(Payment $payment): void
     {
         if ($this->firstTime('provider-refund:'.$payment->id)) {

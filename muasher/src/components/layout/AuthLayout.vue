@@ -1,42 +1,24 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, useId } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useBrandLogo } from '@/composables/useBrandLogo'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import LocaleSwitcher from '@/components/ui/LocaleSwitcher.vue'
 import ThemeToggle from '@/components/ui/ThemeToggle.vue'
-import IllustrationSlot from '@/components/public/IllustrationSlot.vue'
+import BrandPattern from '@/components/ui/BrandPattern.vue'
+import AuthValuePanel from '@/components/auth/AuthValuePanel.vue'
 
 const { t } = useI18n()
 const route = useRoute()
 const { logoOnDark } = useBrandLogo()
+const panelHeadingId = useId()
 
-const isRegister = computed(() => route.name === ROUTE_NAMES.AUTH_REGISTER)
-const isLogin = computed(() => route.name === ROUTE_NAMES.AUTH_LOGIN)
 const isMaintenance = computed(() => route.name === ROUTE_NAMES.PUBLIC_MAINTENANCE)
-const illustrationAlt = computed(() =>
-  isRegister.value ? t('illustrations.register') : t('illustrations.login'),
-)
-const illustrationSrc = computed(() => {
-  if (isRegister.value) return '/generated/register.jpg'
-  if (isLogin.value) return '/generated/login.jpg'
-  return null
-})
 </script>
 
 <template>
   <div class="auth-layout">
-    <aside class="auth-layout__brand">
-      <img class="auth-layout__logo" :src="logoOnDark" :alt="t('app.name')" />
-      <p class="auth-layout__tagline">{{ t('app.tagline') }}</p>
-      <IllustrationSlot
-        class="auth-layout__illustration"
-        :src="illustrationSrc"
-        :alt="illustrationAlt"
-        variant="compact"
-      />
-    </aside>
     <main class="auth-layout__content">
       <div class="auth-layout__card">
         <slot />
@@ -53,5 +35,12 @@ const illustrationSrc = computed(() => {
         </router-link>
       </div>
     </main>
+    <aside class="auth-layout__brand brand-surface" :aria-labelledby="panelHeadingId">
+      <BrandPattern variant="lattice" />
+      <div class="auth-layout__brand-inner">
+        <img class="auth-layout__logo" :src="logoOnDark" :alt="t('app.name')" />
+        <AuthValuePanel :heading-id="panelHeadingId" />
+      </div>
+    </aside>
   </div>
 </template>

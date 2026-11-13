@@ -15,8 +15,8 @@ final class SmtpFailure
 
         return match (true) {
             in_array($exception->getCode(), [535, 534, 530], true) || str_contains($message, 'authenticat') => ProviderErrorKind::AuthFailed,
-            str_contains($message, 'tls') || str_contains($message, 'ssl') || str_contains($message, 'certificate') => ProviderErrorKind::Misconfigured,
             str_contains($message, 'timed out') || str_contains($message, 'timeout') => ProviderErrorKind::Timeout,
+            str_contains($message, 'tls') || str_contains($message, 'ssl') || str_contains($message, 'certificate') => ProviderErrorKind::Misconfigured,
             default => ProviderErrorKind::Unavailable,
         };
     }

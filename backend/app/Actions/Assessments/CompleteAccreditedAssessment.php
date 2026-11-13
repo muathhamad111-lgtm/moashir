@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Assessments;
 
+use App\Data\Assessments\ReviewCompletion;
 use App\Enums\Assessments\AccreditedAssessmentStatus;
 use App\Enums\Assessments\AssessmentVerb;
 use App\Events\Assessments\AssessmentCompleted;
@@ -25,10 +26,10 @@ final readonly class CompleteAccreditedAssessment
         private AccreditedResultFinalizer $finalizer,
     ) {}
 
-    public function handle(User $actor, Assessment $assessment, ?string $reason): Assessment
+    public function handle(User $actor, Assessment $assessment, ReviewCompletion $completion): Assessment
     {
-        return DB::transaction(function () use ($actor, $assessment, $reason): Assessment {
-            $locked = $this->gate->enter($actor, $assessment, AccreditedAssessmentStatus::Completed, AssessmentVerb::Complete, $reason);
+        return DB::transaction(function () use ($actor, $assessment, $completion): Assessment {
+            $locked = $this->gate->enter($actor, $assessment, AccreditedAssessmentStatus::Completed, AssessmentVerb::Complete, $completion->reason);
             $assignment = $this->assignee->assertActsOn($actor, $locked);
 
             if ($locked->awaitsCriteriaUpdate()) {
@@ -37,7 +38,7 @@ final readonly class CompleteAccreditedAssessment
 
             $snapshot = $this->finalizer->finalize($actor, $locked, $assignment, $this->completeness->assertComplete($locked));
 
-            AssessmentCompleted::dispatch($locked, $snapshot);
+            AssessmentCompleted::dispatch($locked, $snapshot, $actor->id);
 
             return $locked;
         });

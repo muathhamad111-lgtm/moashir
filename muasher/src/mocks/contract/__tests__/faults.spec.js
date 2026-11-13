@@ -51,7 +51,9 @@ describe('mock fault switch', () => {
 
   it('forces an explicit error on one endpoint through the contract facade', async () => {
     forceMockFault({ method: 'GET', path: '/api/v1/probe', status: 503 })
-    const failed = await wireFetch(`${MOCK_API_BASE}/probe`, { headers: { 'accept-language': 'en' } })
+    const failed = await wireFetch(`${MOCK_API_BASE}/probe`, {
+      headers: { 'accept-language': 'en' },
+    })
     expect(failed.status).toBe(503)
     expect(await failed.json()).toMatchObject({ code: 'service_unavailable', data: null })
     clearMockFaults()
@@ -59,7 +61,10 @@ describe('mock fault switch', () => {
   })
 
   it('reads forced errors from the cookie used by the e2e helper', async () => {
-    setCookie(FORCED_FAULT_COOKIE, JSON.stringify([{ method: 'GET', path: '/api/v1/probe', status: 500 }]))
+    setCookie(
+      FORCED_FAULT_COOKIE,
+      JSON.stringify([{ method: 'GET', path: '/api/v1/probe', status: 500 }]),
+    )
     expect((await wireFetch(`${MOCK_API_BASE}/probe`)).status).toBe(500)
   })
 })

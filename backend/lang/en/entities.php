@@ -41,6 +41,13 @@ return [
         'employees_count' => 'Number of employees',
         'annual_beneficiaries_count' => 'Annual beneficiaries',
         'has_strategic_plan' => 'Strategic plan',
+        'license_number' => 'Licence number',
+        'unified_number' => 'Unified national number',
+        'founded_on' => 'Founding date',
+        'website_url' => 'Website',
+        'authorized_person_name' => 'Authorized account manager',
+        'phone' => 'Mobile number',
+        'marketing_consent' => 'Platform news and offers',
     ],
 
     'export' => [

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Actions\Identity;
 
 use App\Enums\Identity\AuthEventType;
+use App\Enums\Identity\OtpChannel;
+use App\Enums\Identity\SignInMethod;
 use App\Enums\Notifications\NotificationCode;
 use App\Models\Identity\User;
 use App\Services\Identity\AuthenticationEventRecorder;
@@ -24,7 +26,7 @@ final readonly class EstablishSession
         private Request $request,
     ) {}
 
-    public function handle(User $user, string $method): User
+    public function handle(User $user, SignInMethod $method, ?OtpChannel $codeChannel = null): User
     {
         $this->auth->guard('web')->login($user);
         $this->clock->start();
@@ -39,7 +41,7 @@ final readonly class EstablishSession
         $this->events->forUser(
             $user->isSuperAdmin() ? AuthEventType::SuperAdminLogin : AuthEventType::LoginSucceeded,
             $user,
-            ['method' => $method],
+            $codeChannel instanceof OtpChannel ? ['method' => $method->value, 'channel' => $codeChannel->value] : ['method' => $method->value],
         );
 
         if ($user->isSuperAdmin()) {
