@@ -255,7 +255,7 @@ describe('sign-in mock: one-time code (Task-61 contract)', () => {
   it('refuses a malformed identifier with the login message', async () => {
     const malformed = await requestCode('12345')
     expect(malformed.status).toBe(422)
-    expect(malformed.body.errors.identifier[0]).toContain('10 digits starting with 7')
+    expect(malformed.body.errors.identifier[0]).toContain('unified national number (10 digits)')
     expect((await requestCode('')).body.errors).toHaveProperty('identifier')
   })
 

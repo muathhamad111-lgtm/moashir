@@ -5,20 +5,6 @@
   inline-size: 100%;
 }
 
-.auth-value-panel__heading {
-  margin: 0;
-  max-inline-size: var(--size-auth-card);
-  font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
-  line-height: var(--lh-heading);
-  color: var(--color-secondary);
-  text-wrap: balance;
-
-  @include respond-to('lg') {
-    font-size: var(--fs-h4);
-  }
-}
-
 .auth-value-panel__list {
   display: none;
 

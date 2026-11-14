@@ -3,17 +3,13 @@ import { mount } from '@vue/test-utils'
 import AuthValuePanel from '@/components/auth/AuthValuePanel.vue'
 import { createTestGlobals } from '@/test-utils'
 
-const HEADING_ID = 'auth-panel-heading'
-
 const COPY = {
   ar: {
-    heading: 'قياسٌ عادل، وتحسينٌ مستمر',
     titles: ['معايير معلنة وموحّدة', 'تقييم مستقل ومحايد', 'نتائج تقود إلى التحسين'],
     firstBody:
       'نموذج التميّز في العمل الخيري مرجعٌ واحد، تُقاس عليه جميع الجهات بالمعايير والأوزان نفسها.',
   },
   en: {
-    heading: 'Fair measurement, continuous improvement',
     titles: [
       'Published, unified standards',
       'Independent, impartial review',
@@ -24,31 +20,25 @@ const COPY = {
   },
 }
 
-function mountPanel(locale, props = {}) {
-  return mount(AuthValuePanel, {
-    props: { headingId: HEADING_ID, ...props },
-    global: createTestGlobals({ locale }),
-  })
+function mountPanel(locale) {
+  return mount(AuthValuePanel, { global: createTestGlobals({ locale }) })
 }
 
 describe.each(['ar', 'en'])('AuthValuePanel (%s)', (locale) => {
   const copy = COPY[locale]
 
-  it('renders one h2 heading carrying the id that names the panel', () => {
+  it('shows no tagline above the value cards', () => {
     const wrapper = mountPanel(locale)
-    const headings = wrapper.findAll('h2')
-    expect(headings).toHaveLength(1)
-    expect(headings[0].attributes('id')).toBe(HEADING_ID)
-    expect(headings[0].text()).toBe(copy.heading)
+    expect(wrapper.find('.auth-value-panel__heading').exists()).toBe(false)
     expect(wrapper.find('h1').exists()).toBe(false)
   })
 
-  it('lists the three values as h3 + paragraph cards', () => {
+  it('lists the three values as h2 + paragraph cards', () => {
     const wrapper = mountPanel(locale)
     expect(wrapper.find('ul').attributes('role')).toBe('list')
     const cards = wrapper.findAll('li.auth-value-card')
     expect(cards).toHaveLength(3)
-    expect(cards.map((card) => card.find('h3').text())).toEqual(copy.titles)
+    expect(cards.map((card) => card.find('h2').text())).toEqual(copy.titles)
     expect(cards.every((card) => card.find('p').text().length > 0)).toBe(true)
     expect(cards[0].find('p').text()).toBe(copy.firstBody)
   })

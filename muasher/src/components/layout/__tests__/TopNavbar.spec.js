@@ -33,12 +33,12 @@ beforeEach(() => {
 })
 
 describe('TopNavbar', () => {
-  it('renders the page title, locale switcher, theme toggle, bell, and user menu', async () => {
+  it('renders no page title, plus the locale switcher, theme toggle, bell, and user menu', async () => {
     const globals = createTestGlobals()
     await globals.router.push('/dashboard')
     const wrapper = mount(TopNavbar, { global: globals })
     await flushPromises()
-    expect(wrapper.find('.navbar__title').text()).toBe('لوحة التحكم')
+    expect(wrapper.find('.navbar__title').exists()).toBe(false)
     expect(wrapper.text()).toContain('English')
     expect(wrapper.find('.notification-bell').exists()).toBe(true)
     expect(wrapper.find('.navbar__user .dropdown-menu').exists()).toBe(true)

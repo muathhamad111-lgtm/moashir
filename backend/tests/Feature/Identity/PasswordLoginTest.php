@@ -153,8 +153,8 @@ it('validates the login payload', function (array $payload, string $field): void
 })->with([
     'missing identifier' => [['password' => 'x'], 'identifier'],
     'malformed e-mail' => [['identifier' => 'not-an-email@', 'password' => 'x'], 'identifier'],
-    'landline number' => [['identifier' => '0114567890', 'password' => 'x'], 'identifier'],
-    'unified number not starting with 7' => [['identifier' => '6001234567', 'password' => 'x'], 'identifier'],
+    'nine digits' => [['identifier' => '011456789', 'password' => 'x'], 'identifier'],
+    'eleven digits' => [['identifier' => '60012345678', 'password' => 'x'], 'identifier'],
     'unified number with nine digits' => [['identifier' => '700123456', 'password' => 'x'], 'identifier'],
     'Arabic-Indic digits' => [['identifier' => '٧٠٠١٢٣٤٥٦٧', 'password' => 'x'], 'identifier'],
     'identifier too long' => [['identifier' => str_repeat('a', 250).'@example.sa', 'password' => 'x'], 'identifier'],

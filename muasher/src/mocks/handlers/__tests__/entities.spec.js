@@ -104,7 +104,7 @@ describe('entities mock — registration', () => {
         employees_count: null,
         annual_beneficiaries_count: null,
       }),
-      name: { ar: 'جمعية الوفاء الخيرية', en: null },
+      name: { ar: 'جمعية الوفاء الخيرية', en: 'Al-Wafa Charity' },
       official_email: 'info@alwafa.example.sa',
       unified_number: '7000000901',
       password: 'Strong-Passphrase-2026',
@@ -166,16 +166,22 @@ describe('entities mock — registration', () => {
     ])
   })
 
-  it('requires a unique unified national number of 10 digits starting with 7', async () => {
+  it('requires the English name and a unique unified national number of exactly 10 digits', async () => {
+    const unnamed = await call(
+      'POST',
+      '/auth/register',
+      registration({ name: { ar: 'جمعية', en: '' } }),
+    )
+    expect(Object.keys(unnamed.body.errors)).toEqual(['name.en'])
     const missing = await call('POST', '/auth/register', registration({ unified_number: '' }))
     expect(missing.status).toBe(422)
     expect(Object.keys(missing.body.errors)).toEqual(['unified_number'])
     const malformed = await call(
       'POST',
       '/auth/register',
-      registration({ unified_number: '6000000901' }),
+      registration({ unified_number: '600000090' }),
     )
-    expect(malformed.body.errors.unified_number[0]).toContain('start with 7')
+    expect(malformed.body.errors.unified_number[0]).toContain('exactly 10 digits')
     const taken = await call(
       'POST',
       '/auth/register',

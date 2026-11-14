@@ -1,4 +1,3 @@
-import process from 'node:process'
 import { test, expect } from '@playwright/test'
 import { seedPreferences } from './support/session'
 import {
@@ -100,16 +99,9 @@ test('signing out ends the cookie session', async ({ page }, testInfo) => {
   await expect(page).toHaveURL(/\/auth\/login/)
 })
 
-const RUNS_ON_DEV_SERVER = !process.env.CI
-
-if (RUNS_ON_DEV_SERVER) {
-  test('the demo login exists in local development only and opens a mock cookie session', async ({
-    page,
-  }, testInfo) => {
-    await seedPreferences(page, { locale: localeOf(testInfo) })
-    await page.goto('/auth/login')
-    await page.locator('.auth-form__demo .btn').first().click()
-    await expect(page).toHaveURL(/\/admin\/settings/)
-    expect(await browserStorage(page)).toEqual([])
-  })
-}
+test('the login page offers no demo quick-login', async ({ page }, testInfo) => {
+  await seedPreferences(page, { locale: localeOf(testInfo) })
+  await page.goto('/auth/login')
+  await expect(page.locator('[name="identifier"]')).toBeVisible()
+  await expect(page.locator('.auth-form__demo')).toHaveCount(0)
+})

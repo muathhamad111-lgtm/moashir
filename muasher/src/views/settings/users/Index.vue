@@ -1,4 +1,6 @@
 <script setup>
+import RouteTabs from '@/components/ui/RouteTabs.vue'
+import { USERS_SECTION_TABS } from '@/constants/navigation'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
@@ -112,6 +114,7 @@ function onAction(key, row) {
         <p class="users-page__subtitle">{{ t('users.index.subtitle') }}</p>
       </div>
     </header>
+    <RouteTabs :tabs="USERS_SECTION_TABS" :label="t('nav.usersSection')" />
 
     <StatsCards :stats="statCards" :loading="status === 'loading' && !stats" />
 

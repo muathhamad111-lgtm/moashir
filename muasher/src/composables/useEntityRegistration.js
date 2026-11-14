@@ -18,6 +18,7 @@ const REGISTRATION_DEFAULTS = {
   passwordConfirmation: '',
   termsAccepted: false,
   marketingConsent: false,
+  hasStrategicPlan: '',
 }
 
 export function useEntityRegistration() {
@@ -55,6 +56,7 @@ export function useEntityRegistration() {
     schema: computed(() => registrationSchema(t)),
     initialValues: { ...emptyProfileValues(), ...REGISTRATION_DEFAULTS },
     action: 'entities.register.submit',
+    keepValuesOnUnmount: true,
     submit: async (values) => {
       const outcome = await auth.register(registrationPayload(values, terms.value))
       authFlow.setChallenge({
@@ -67,5 +69,5 @@ export function useEntityRegistration() {
     },
   })
 
-  return { form, terms, status, load, regions }
+  return { form, status, load, regions }
 }

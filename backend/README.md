@@ -556,7 +556,8 @@ php artisan moashir:criteria:install-seed     # idempotent: skipped as soon as a
 - `email_change_requests` (Identity table) now also carries entity requests (`entity_id`).
 
 ### Registration and sign-in
-`POST /auth/register` creates the entity (`pending_verification`, with its mandatory `unified_number` — format and
+`POST /auth/register` creates the entity (`pending_verification`, with its mandatory English name `name.en` and
+mandatory `unified_number` — format and
 duplicate answer 422 on `unified_number`, see "Registry details and logo") and its owner (role `entity`, password through
 `PasswordPolicy` with the local breached list), records the acceptance of every CURRENT terms version (`terms` and,
 when published, `privacy`), records the explicit marketing opt-in (unticked by default) and sends a sign-in OTP to the
@@ -613,7 +614,7 @@ organisation attributes; retention = the entity's lifetime, cleared by the perma
 
 | Column | Type | Rule | NDMO class |
 |---|---|---|---|
-| `unified_number` | `varchar(10)` null (Task-51) | «الرقم الوطني الموحد»: exactly 10 Western digits starting with 7 (`Support\ValueObjects\UnifiedNumber`); CHECK `^7[0-9]{9}$`; UNIQUE across all entities (soft-deleted included) through `entities_unified_number_unique … WHERE unified_number IS NOT NULL`. MANDATORY: required by `POST /auth/register`; editable in the identity section `PATCH /entities/me/profile/identity` (required on every identity save) and the staff `PUT /entities/{entity}` ("absent = unchanged"), but never clearable (`null` / `""` → 422); a `required` profile field, shown missing for entities registered before Task-51; accepted as a sign-in identifier (resolves to the owner account); cleared by the permanent deletion | P (public registry data of the organisation; not personal data) |
+| `unified_number` | `varchar(10)` null (Task-51) | «الرقم الوطني الموحد»: exactly 10 Western digits, any first digit (`Support\ValueObjects\UnifiedNumber`; operator decision 2026-11-14, the earlier «starts with 7» rule was dropped); CHECK `^[0-9]{10}$`; at sign-in a 10-digit `05…` value is read as a mobile number first; UNIQUE across all entities (soft-deleted included) through `entities_unified_number_unique … WHERE unified_number IS NOT NULL`. MANDATORY: required by `POST /auth/register`; editable in the identity section `PATCH /entities/me/profile/identity` (required on every identity save) and the staff `PUT /entities/{entity}` ("absent = unchanged"), but never clearable (`null` / `""` → 422); a `required` profile field, shown missing for entities registered before Task-51; accepted as a sign-in identifier (resolves to the owner account); cleared by the permanent deletion | P (public registry data of the organisation; not personal data) |
 | `license_number` | `varchar(20)` null | Western digits only, 3–20 characters (leading zeros kept, e.g. `000123`); CHECK `^[0-9]{3,20}$`; UNIQUE across all entities (soft-deleted included) through the partial index `entities_license_number_unique … WHERE license_number IS NOT NULL` | P (public registry data) |
 | `founded_on` | `date` null | 1900-01-01 … today in Asia/Riyadh; CHECK `>= 1900-01-01` AND `EXTRACT(YEAR FROM founded_on) = founding_year` | P |
 | `website_url` | `varchar(255)` null | `https://` only, normalised by `Support\ValueObjects\WebsiteUrl` (lower-case scheme and host, fragment dropped, bare `/` dropped, default port 443 dropped; no credentials, no other port, no IP or single-label host, no spaces or markup); CHECK `^https://`; never printed as a link in any PDF | P |

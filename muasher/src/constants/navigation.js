@@ -3,6 +3,11 @@ import { PERMISSIONS } from './permissionKeys'
 import { ROUTE_NAMES } from './routeNames'
 import { PATH_NAV_KINDS } from './paths'
 
+export const USERS_SECTION_TABS = Object.freeze([
+  { routeName: ROUTE_NAMES.ADMIN_USERS, labelKey: 'nav.adminUsers' },
+  { routeName: ROUTE_NAMES.ADMIN_PERMISSIONS, labelKey: 'nav.adminPermissions' },
+])
+
 export const APP_NAV_ITEMS = [
   {
     id: 'dashboard',
@@ -10,6 +15,13 @@ export const APP_NAV_ITEMS = [
     labelKey: 'nav.dashboard',
     icon: 'gauge',
     routeName: ROUTE_NAMES.APP_DASHBOARD,
+  },
+  {
+    id: 'executive-dashboard',
+    group: 'overview',
+    labelKey: 'nav.executiveDashboard',
+    icon: 'chart-line',
+    routeName: ROUTE_NAMES.APP_DASHBOARD_EXECUTIVE,
   },
   {
     id: 'entity-profile',
@@ -156,34 +168,6 @@ export const APP_NAV_ITEMS = [
     routeName: ROUTE_NAMES.BAG_MANAGE,
   },
   {
-    id: 'notifications',
-    group: 'overview',
-    labelKey: 'nav.notifications',
-    icon: 'bell',
-    routeName: ROUTE_NAMES.NOTIFICATIONS_INDEX,
-  },
-  {
-    id: 'admin-kpis',
-    group: 'content',
-    labelKey: 'nav.adminKpis',
-    icon: 'chart-line',
-    routeName: ROUTE_NAMES.ADMIN_KPIS,
-  },
-  {
-    id: 'admin-criteria',
-    group: 'content',
-    labelKey: 'nav.adminCriteria',
-    icon: 'hierarchy',
-    routeName: ROUTE_NAMES.ADMIN_CRITERIA,
-  },
-  {
-    id: 'admin-contact-messages',
-    group: 'content',
-    labelKey: 'nav.contactMessages',
-    icon: 'envelope',
-    routeName: ROUTE_NAMES.ADMIN_CONTACT_MESSAGES,
-  },
-  {
     id: 'finance-overview',
     group: 'finance',
     labelKey: 'nav.financeOverview',
@@ -252,56 +236,46 @@ export const APP_NAV_ITEMS = [
     labelKey: 'nav.adminUsers',
     icon: 'users-two',
     routeName: ROUTE_NAMES.ADMIN_USERS,
+    activeOn: [ROUTE_NAMES.ADMIN_PERMISSIONS],
   },
   {
-    id: 'admin-permissions',
+    id: 'admin-contact-messages',
     group: 'administration',
-    labelKey: 'nav.adminPermissions',
-    icon: 'shield-info',
-    routeName: ROUTE_NAMES.ADMIN_PERMISSIONS,
-  },
-  {
-    id: 'admin-audit-log',
-    group: 'administration',
-    labelKey: 'nav.auditLog',
-    icon: 'shield-info',
-    routeName: ROUTE_NAMES.ADMIN_AUDIT_LOG,
-  },
-  {
-    id: 'admin-settings',
-    group: 'administration',
-    labelKey: 'nav.adminSettings',
-    icon: 'gear',
-    routeName: ROUTE_NAMES.ADMIN_SETTINGS,
-  },
-  {
-    id: 'admin-branding',
-    group: 'administration',
-    labelKey: 'nav.branding',
-    icon: 'palette',
-    routeName: ROUTE_NAMES.ADMIN_BRANDING,
+    labelKey: 'nav.contactMessages',
+    icon: 'envelope',
+    routeName: ROUTE_NAMES.ADMIN_CONTACT_MESSAGES,
   },
 ]
 
 export const NAV_GROUPS = [
-  { id: 'overview', labelKey: 'shell.groups.overview' },
+  { id: 'overview', headless: true },
   { id: 'entity', labelKey: 'shell.groups.entity' },
   { id: 'entities', labelKey: 'shell.groups.entities' },
   { id: 'assessment', labelKey: 'shell.groups.assessment' },
   { id: 'award', labelKey: 'shell.groups.award' },
-  { id: 'content', labelKey: 'shell.groups.content' },
   { id: 'finance', labelKey: 'shell.groups.finance' },
-  { id: 'administration', labelKey: 'shell.groups.administration' },
+  { id: 'administration', headless: true },
 ]
 
 export function navAccessOf(item) {
   return item.access ?? accessFor(item.routeName)
 }
 
+function isAllowed(access, canAccess) {
+  return access !== null && canAccess(access)
+}
+
+function firstAllowedRoute(item, canAccess) {
+  return [item.routeName, ...(item.activeOn ?? [])].find((name) =>
+    isAllowed(accessFor(name), canAccess),
+  )
+}
+
 export function filterNavByAccess(items, canAccess) {
-  return items.filter((item) => {
-    const access = navAccessOf(item)
-    return access !== null && canAccess(access)
+  return items.flatMap((item) => {
+    if (item.access) return isAllowed(item.access, canAccess) ? [item] : []
+    const routeName = firstAllowedRoute(item, canAccess)
+    return routeName ? [{ ...item, routeName }] : []
   })
 }
 
@@ -313,5 +287,9 @@ export function groupNavItems(items, groups = NAV_GROUPS) {
 
 export function isNavItemActive(item, routeName) {
   if (typeof routeName !== 'string') return false
-  return routeName === item.routeName || routeName.startsWith(`${item.routeName}.`)
+  return (
+    routeName === item.routeName ||
+    routeName.startsWith(`${item.routeName}.`) ||
+    Boolean(item.activeOn?.includes(routeName))
+  )
 }

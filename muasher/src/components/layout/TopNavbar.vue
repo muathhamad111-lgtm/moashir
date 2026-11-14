@@ -1,15 +1,16 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 import { usePermissions } from '@/composables/usePermissions'
+import { useElementWidth } from '@/composables/useElementWidth'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { accessFor } from '@/constants/routeAccess'
-import { canUseGlobalSearch } from '@/constants/globalSearch'
+import { SEARCH_INLINE_MIN_NAVBAR_WIDTH, canUseGlobalSearch } from '@/constants/globalSearch'
 import LocaleSwitcher from '@/components/ui/LocaleSwitcher.vue'
 import ThemeToggle from '@/components/ui/ThemeToggle.vue'
 import NotificationBell from '@/components/notifications/NotificationBell.vue'
@@ -19,7 +20,6 @@ import GlobalSearch from '@/components/search/GlobalSearch.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t, locale } = useI18n()
-const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const ui = useUiStore()
@@ -29,7 +29,8 @@ const { can, canAccess } = usePermissions()
 const canAccessSettings = computed(() => canAccess(accessFor(ROUTE_NAMES.ADMIN_SETTINGS)))
 const canViewEntityProfile = computed(() => can(PERMISSIONS.ENTITY_PROFILE_VIEW))
 const canSearch = computed(() => canUseGlobalSearch(can))
-const pageTitle = computed(() => (route.meta.titleKey ? t(route.meta.titleKey) : t('app.name')))
+const navbarWidth = useElementWidth(useTemplateRef('navbar'), Number.POSITIVE_INFINITY)
+const isSearchCompact = computed(() => navbarWidth.value < SEARCH_INLINE_MIN_NAVBAR_WIDTH)
 
 const displayName = computed(() => {
   const name = auth.user?.name
@@ -74,7 +75,7 @@ function onUserAction(key) {
 </script>
 
 <template>
-  <header class="navbar navbar--app">
+  <header ref="navbar" class="navbar navbar--app">
     <div class="navbar__start">
       <button
         type="button"
@@ -85,11 +86,10 @@ function onUserAction(key) {
       >
         <AppIcon name="menu" />
       </button>
-      <p class="navbar__title">{{ pageTitle }}</p>
     </div>
-    <GlobalSearch v-if="canSearch" />
+    <GlobalSearch v-if="canSearch" :compact="isSearchCompact" />
     <div class="navbar__actions">
-      <LocaleSwitcher />
+      <LocaleSwitcher class="navbar__locale" />
       <ThemeToggle />
       <router-link
         v-if="canAccessSettings"

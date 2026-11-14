@@ -2,7 +2,7 @@ import { mkdirSync } from 'node:fs'
 import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
 import { settleFonts } from './support/screenshots'
-import { chooseValue } from './support/dropdown'
+import { applyListFilters } from './support/listFilters'
 
 const SHOTS = '../agents/tasks/reports/Task-68'
 const DESKTOP = { width: 1440, height: 900 }
@@ -55,8 +55,9 @@ test.describe('Task-68 — staff', () => {
       localeOf(testInfo) === 'en' ? 'Level' : 'المستوى',
     )
 
-    await chooseValue(page.locator('[data-testid="entity-level-filter"] [role="combobox"]'), 'gold')
+    await applyListFilters(page, { 'entity-level-filter': 'gold' })
     await expect(page).toHaveURL(/[?&]level=gold/)
+    await expect(page.locator('.filter-dialog__count')).toHaveText('1')
     await expect(rows(page)).toHaveCount(1)
     await expect(rows(page).first()).toContainText(localeOf(testInfo) === 'en' ? 'Ehsan' : 'إحسان')
     await expect(rows(page).first().locator('.level-badge')).toHaveAttribute('data-tier', 'gold')
@@ -69,15 +70,15 @@ test.describe('Task-68 — staff', () => {
     await expect(rows(page)).toHaveCount(1)
     await expect(rows(page).first().locator('.level-badge')).toHaveAttribute('data-tier', 'gold')
 
-    await chooseValue(page.locator('[data-testid="entity-level-filter"] [role="combobox"]'), '')
+    await page.getByRole('button', { name: /^(Clear filters|مسح التصفية)$/ }).click()
     await expect(page).not.toHaveURL(/level=/)
-    await chooseValue(page.locator('[data-testid="entity-sort"] [role="combobox"]'), '-level')
+    await applyListFilters(page, { 'entity-sort': '-level' })
     await expect
       .poll(async () => (await levelTiers(page)).slice(0, 4))
       .toEqual(['diamond', 'gold', 'silver', 'silver'])
     await capture(page, 'staff-list-sort-level', testInfo)
 
-    await chooseValue(page.locator('[data-testid="entity-sort"] [role="combobox"]'), 'level')
+    await applyListFilters(page, { 'entity-sort': 'level' })
     await expect.poll(async () => (await levelTiers(page)).at(-1)).not.toBe('none')
     await expect
       .poll(async () => ['none', 'progress'].includes((await levelTiers(page))[0]))

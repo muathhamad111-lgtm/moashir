@@ -7,6 +7,7 @@ import { forceMockFault } from './support/mockFaults'
 import { guardMoyasar } from './support/moyasarGuard'
 import { settleFonts } from './support/screenshots'
 import { chooseNamed, namedSelect, openOption } from './support/dropdown'
+import { fillRegistrationEntityStep, goToRegistrationAccountStep } from './support/registration'
 
 const SHOTS = 'e2e/__screenshots__/37b'
 const VIEWPORTS = {
@@ -372,7 +373,9 @@ test.describe('legal pages', () => {
   test('links the policies from the registration and the home contact consent', async ({
     page,
   }) => {
-    await open(page, '/auth/register', '.legal-consent')
+    await open(page, '/auth/register', '[name="unifiedNumber"]')
+    await fillRegistrationEntityStep(page)
+    await goToRegistrationAccountStep(page)
     await expect(page.locator('.legal-consent a')).toHaveCount(2)
     await open(page, '/', '.contact-form__form')
     await expect(page.locator('.contact-form .legal-consent a')).toHaveAttribute('href', '/privacy')

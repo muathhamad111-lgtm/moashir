@@ -8,12 +8,12 @@ use InvalidArgumentException;
 
 final readonly class UnifiedNumber
 {
-    public const string PATTERN = '/^7[0-9]{9}$/';
+    public const string PATTERN = '/^[0-9]{10}$/';
 
     public function __construct(public string $value)
     {
         if (preg_match(self::PATTERN, $value) !== 1) {
-            throw new InvalidArgumentException('A unified national number has 10 digits and starts with 7.');
+            throw new InvalidArgumentException('A unified national number has exactly 10 digits.');
         }
     }
 

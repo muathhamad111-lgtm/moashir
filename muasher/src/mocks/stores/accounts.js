@@ -1,7 +1,6 @@
 import { ROLES } from '@/constants/roles'
 import { usersFixture } from '../fixtures/users'
 import { IDLE_TIMEOUT_MINUTES, SESSION_ABSOLUTE_HOURS } from '../fixtures/auth'
-import { COMMITTEE_SEAT_USERS } from '../fixtures/committeeScenarios'
 import { seatsOfUser } from './committee/committeeState'
 import { findCycle } from './award/cycleStore'
 import {
@@ -17,7 +16,6 @@ import { profileLocaleOf } from './preferencesStore'
 import { DEFAULT_LOCALE } from '@/constants/locales'
 
 const HOUR_MS = 60 * 60 * 1000
-const DEFAULT_ENTITY_ID = 5001
 
 function sameEmail(left, right) {
   return (
@@ -47,14 +45,6 @@ export function descriptorFor(account) {
   return { id: account.record.id, roles: [...account.record.roles], entityId: null, locale }
 }
 
-const COMMITTEE_PERSONA = 'committee_assessor'
-
-const COMMITTEE_PERSONA_DESCRIPTOR = {
-  id: COMMITTEE_SEAT_USERS[0],
-  roles: [ROLES.ASSESSOR],
-  entityId: null,
-}
-
 function appointmentOf(seat) {
   const cycle = findCycle(seat.cycleId)
   return {
@@ -73,25 +63,6 @@ function committeeAppointmentsOf(descriptor) {
   return seatsOfUser(descriptor.id)
     .filter((seat) => seat.status === 'active' && findCycle(seat.cycleId)?.status !== 'closed')
     .map(appointmentOf)
-}
-
-export function descriptorForPersona(role) {
-  if (role === COMMITTEE_PERSONA)
-    return {
-      ...COMMITTEE_PERSONA_DESCRIPTOR,
-      locale: profileLocaleOf(COMMITTEE_PERSONA_DESCRIPTOR.id),
-    }
-  if (role === ROLES.ENTITY)
-    return descriptorFor({ kind: 'entity', record: findEntity(DEFAULT_ENTITY_ID) })
-  const staff = usersFixture.find((item) => item.roles.includes(role) && item.status === 'active')
-  return staff
-    ? descriptorFor({ kind: 'staff', record: staff })
-    : {
-        id: `persona-${role}`,
-        roles: [role],
-        entityId: null,
-        locale: profileLocaleOf(`persona-${role}`),
-      }
 }
 
 function entitySummary(entity) {

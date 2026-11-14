@@ -5,6 +5,7 @@ import { UNIFIED_NUMBER_LENGTH } from '@/constants/entityEnums'
 
 defineProps({
   required: { type: Boolean, default: true },
+  hint: { type: String, default: '' },
 })
 
 const { t } = useI18n()
@@ -14,7 +15,7 @@ const { t } = useI18n()
   <FieldDigits
     name="unifiedNumber"
     :label="t('entities.fields.unifiedNumber')"
-    :hint="t('entities.hints.unifiedNumber')"
+    :hint="hint"
     :maxlength="UNIFIED_NUMBER_LENGTH"
     :required="required"
   />

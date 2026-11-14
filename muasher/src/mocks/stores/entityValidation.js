@@ -143,6 +143,7 @@ export function assertProfile(body, entityId = null) {
 
 export function assertRegistration(body, terms) {
   const errors = profileErrors(body)
+  if (blank(body.name?.en)) errors.add('name.en', 'field.required')
   checkUnifiedNumber(errors, body, { required: true })
   if (blank(body.officialEmail) || !EMAIL_PATTERN.test(String(body.officialEmail)))
     errors.add('officialEmail', 'field.email')

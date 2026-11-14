@@ -58,8 +58,8 @@ export const authMessages = {
   },
   'field.required': { ar: 'هذا الحقل مطلوب.', en: 'This field is required.' },
   'field.identifier': {
-    ar: 'أدخل بريدك الإلكتروني الرسمي، أو رقم جوالك السعودي (05XXXXXXXX)، أو الرقم الوطني الموحد للجهة (10 أرقام تبدأ بالرقم 7).',
-    en: "Enter your official e-mail, your Saudi mobile number (05XXXXXXXX) or your entity's unified national number (10 digits starting with 7).",
+    ar: 'أدخل بريدك الإلكتروني الرسمي، أو رقم جوالك السعودي (05XXXXXXXX)، أو الرقم الوطني الموحد للجهة (10 أرقام).',
+    en: "Enter your official e-mail, your Saudi mobile number (05XXXXXXXX) or your entity's unified national number (10 digits).",
   },
   'field.invalid': { ar: 'القيمة المدخلة غير صالحة.', en: 'The value is not valid.' },
   'channels.email_required': {

@@ -32,7 +32,7 @@ test('shows the stats cards for the users summary', async ({ page }) => {
   await page.goto('/admin/settings/users')
   await retryTable(page)
   await expect(page.locator('.stats-card').first()).toBeVisible()
-  await expect(page.locator('.stats-card')).toHaveCount(5)
+  await expect(page.locator('.stats-card')).toHaveCount(4)
 })
 
 test('filters the list by role', async ({ page }) => {

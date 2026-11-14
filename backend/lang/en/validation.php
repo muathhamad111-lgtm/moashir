@@ -184,14 +184,14 @@ return [
             'complete' => 'Order all the listed bank accounts, each one once.',
         ],
         'identifier' => [
-            'format' => 'Enter your official e-mail, your Saudi mobile number (05XXXXXXXX) or your entity\'s unified national number (10 digits starting with 7).',
+            'format' => 'Enter your official e-mail, your Saudi mobile number (05XXXXXXXX) or your entity\'s unified national number (10 digits).',
         ],
         'entity_sign_in_code_channels' => [
             'email_required' => 'E-mail must stay allowed: every entity can always receive its sign-in code by e-mail.',
             'sms_unavailable' => 'Configure the SMS gateway before allowing sign-in codes by text message.',
         ],
         'unified_number' => [
-            'regex' => 'The unified national number must contain exactly 10 digits (0-9) and start with 7.',
+            'regex' => 'The unified national number must contain exactly 10 digits (0-9).',
             'unique' => 'This unified national number is already registered for another entity on the platform. Check the number or contact the platform team.',
         ],
         'license_number' => [

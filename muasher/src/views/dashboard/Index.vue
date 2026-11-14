@@ -23,7 +23,6 @@ const greeting = computed(() => {
     <header class="dashboard__header">
       <p class="dashboard__eyebrow">{{ t('dashboard.eyebrow') }}</p>
       <h1 class="dashboard__title">{{ greeting }}</h1>
-      <p class="dashboard__subtitle">{{ t('dashboard.roleSubtitle') }}</p>
     </header>
     <StaffDashboard v-if="auth.isAuthenticated" />
   </section>

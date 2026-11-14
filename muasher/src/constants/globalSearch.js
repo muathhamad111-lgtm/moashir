@@ -5,6 +5,7 @@ import { ASSESSMENT_PATHS } from './assessment'
 export const SEARCH_MIN_LENGTH = 2
 export const SEARCH_MAX_LENGTH = 100
 export const SEARCH_DEBOUNCE_MS = 300
+export const SEARCH_INLINE_MIN_NAVBAR_WIDTH = 760
 export const RECENT_SEARCHES_LIMIT = 5
 
 export const SEARCH_TYPES = {

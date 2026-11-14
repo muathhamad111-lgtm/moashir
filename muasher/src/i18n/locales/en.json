@@ -40,6 +40,7 @@
   },
   "locale": {
     "switchLabel": "العربية",
+    "switchShort": "ع",
     "saveFailed": "The language changed on this device, but it could not be saved to your profile."
   },
   "theme": {
@@ -79,6 +80,7 @@
     "home": "Home",
     "kpis": "Performance Indicators",
     "dashboard": "Dashboard",
+    "executiveDashboard": "Executive dashboard",
     "entityProfile": "Organization Profile",
     "assessmentHistory": "Assessment History",
     "assessmentSelf": "Self Assessment",
@@ -100,7 +102,7 @@
     "notifications": "Notifications",
     "adminKpis": "Manage Indicators",
     "adminCriteria": "Criteria Setup",
-    "adminUsers": "Users & Roles",
+    "adminUsers": "Users",
     "adminPermissions": "Permissions",
     "adminSettings": "Settings",
     "sidebarLabel": "Main navigation",
@@ -145,9 +147,10 @@
       "queue": "{count} awaiting assignment",
       "assigned": "{count} open"
     },
-    "contactMessages": "Contact messages",
+    "contactMessages": "Inbox",
     "auditLog": "Audit log",
-    "financeTransfers": "Transfer review"
+    "financeTransfers": "Transfer review",
+    "usersSection": "Users sections"
   },
   "footer": {
     "copyright": "All rights reserved © {year} — Moashir platform",
@@ -772,6 +775,9 @@
     "app": {
       "dashboard": {
         "title": "Dashboard"
+      },
+      "dashboardExecutive": {
+        "title": "Executive dashboard"
       }
     },
     "entity": {
@@ -1004,7 +1010,7 @@
         }
       },
       "users": {
-        "title": "Users & Roles"
+        "title": "Users"
       },
       "permissions": {
         "title": "Permissions Management"
@@ -1031,7 +1037,7 @@
         "title": "Assessment request"
       },
       "contactMessages": {
-        "title": "Contact messages"
+        "title": "Inbox"
       },
       "contactMessage": {
         "title": "Contact message"
@@ -1687,7 +1693,7 @@
   },
   "users": {
     "index": {
-      "title": "Users & Roles",
+      "title": "Users",
       "subtitle": "Invite staff users, assign their roles and manage their account access.",
       "searchPlaceholder": "Search by name or email…",
       "add": "Invite user",
@@ -1698,8 +1704,7 @@
       "total": "Total users",
       "active": "Active",
       "invited": "Invited",
-      "suspended": "Suspended",
-      "locked": "Locked"
+      "suspended": "Suspended"
     },
     "columns": {
       "name": "Name",
@@ -1852,7 +1857,7 @@
       "noAccount": "Don't have an account?",
       "forgotPassword": "Forgot your password?",
       "validation": {
-        "identifier": "Enter your official e-mail, your Saudi mobile number (05XXXXXXXX) or your entity's unified national number (10 digits starting with 7)."
+        "identifier": "Enter your official e-mail, your Saudi mobile number (05XXXXXXXX) or your entity's unified national number (10 digits)."
       },
       "methods": {
         "label": "Sign-in method",
@@ -1864,7 +1869,7 @@
       }
     },
     "panel": {
-      "heading": "Fair measurement, continuous improvement",
+      "label": "About Moashir",
       "values": {
         "standards": {
           "title": "Published, unified standards",
@@ -1964,7 +1969,6 @@
       "title": "Forgot password",
       "subtitle": "Enter the e-mail of your account and we will send it a link to set a new password.",
       "email": "E-mail",
-      "emailHint": "The e-mail you sign in with.",
       "submit": "Send the reset link",
       "sent": "If this e-mail is registered, a message with a link to set a new password will arrive within minutes. The link is valid for 60 minutes and works once. Check your spam folder if you cannot find it."
     },
@@ -2112,22 +2116,16 @@
     "hints": {
       "nameEn": "Optional. Used in the English interface.",
       "phone": "Optional. A Saudi mobile number that starts with 05 and has 10 digits.",
-      "officialEmail": "This e-mail is the single sign-in of the entity.",
-      "password": "At least {min} characters. Avoid passwords used on other sites.",
       "governanceGrade": "The NCNP governance percentage from 0 to 100, up to two decimals.",
-      "regionFirst": "Choose the region first.",
-      "metricsLater": "You can complete these figures later from the entity profile.",
       "metricsProfile": "The governance grade, employees and beneficiaries complete the entity profile.",
       "marketingConsent": "Optional and unticked by default. You can change it at any time from the entity profile.",
-      "unifiedNumber": "10 digits starting with 7."
+      "unifiedNumber": "10 digits."
     },
     "sections": {
-      "account": "Sign-in details",
       "identity": "Entity and authorized person",
       "classification": "Classification",
       "location": "Location",
       "metrics": "Governance and figures",
-      "consent": "Terms and consent",
       "communication": "Communication"
     },
     "validation": {
@@ -2142,7 +2140,7 @@
       "licenseNumber": "The licence number must have 3 to 20 digits.",
       "foundedOn": "Enter a valid founding date from {min} to today.",
       "websiteUrl": "Enter a full website address that starts with https://",
-      "unifiedNumber": "The unified national number must contain exactly 10 digits (0-9) and start with 7."
+      "unifiedNumber": "The unified national number must contain exactly 10 digits (0-9)."
     },
     "display": {
       "notProvided": "Not provided"
@@ -2153,13 +2151,15 @@
       "submit": "Create account",
       "haveAccount": "Already registered?",
       "termsAccepted": "I have read and accept the terms and conditions and the privacy policy",
-      "documents": {
-        "terms": "Terms and conditions (version {version})",
-        "privacy": "Privacy policy (version {version})"
-      },
       "loadFailed": "The registration form could not be loaded.",
       "unavailableTitle": "Registration is not available yet",
-      "unavailableMessage": "The terms are being prepared. Please try again later."
+      "unavailableMessage": "The terms are being prepared. Please try again later.",
+      "steps": {
+        "entity": "Entity details",
+        "account": "Authorized person & sign-in"
+      },
+      "next": "Next",
+      "back": "Back"
     },
     "profile": {
       "refreshFailed": "The latest entity details could not be loaded."
@@ -2499,11 +2499,9 @@
     "eyebrow": "Dashboard",
     "greeting": "Welcome, {name}",
     "greetingAnonymous": "Welcome",
-    "roleSubtitle": "Your dashboard brings all your roles together: what needs your action first, then the indicators.",
     "loadError": "Failed to load the dashboard.",
     "actionCenter": {
-      "title": "Action Center",
-      "subtitle": "Start here: the most important things that need your attention now.",
+      "title": "Pending actions",
       "emptyTitle": "No pending actions",
       "emptyMessage": "You are all caught up. Nice work!",
       "countLabel": "Count: {count}",
@@ -2973,6 +2971,7 @@
       "backToHub": "Back to settings",
       "groups": {
         "platform": "Platform",
+        "standards": "Standards and indicators",
         "integrations": "Integrations & messaging",
         "content": "Content"
       },
@@ -3052,6 +3051,18 @@
         "prices": {
           "title": "Path prices",
           "desc": "Each path price before VAT, its availability, effective date and change history."
+        },
+        "auditLog": {
+          "title": "Audit log",
+          "desc": "Append-only record of every security-relevant action: who, when and from where."
+        },
+        "kpis": {
+          "title": "Indicators",
+          "desc": "Published performance indicators, their values and which show on the home page."
+        },
+        "criteria": {
+          "title": "Criteria set-up",
+          "desc": "Main and sub-criteria, their weights and checkpoints."
         }
       }
     },
@@ -4762,13 +4773,10 @@
     "skipToContent": "Skip to content",
     "brandHome": "Moashir, go to the dashboard",
     "groups": {
-      "overview": "Overview",
       "entity": "Entity workspace",
       "assessment": "Requests and assessment",
       "award": "Award",
-      "content": "Content and criteria",
       "finance": "Finance",
-      "administration": "System administration",
       "entities": "Entity administration"
     }
   },
@@ -4780,7 +4788,7 @@
       "name": "Name",
       "email": "Email"
     },
-    "workspace": "All your roles share one workspace: each role's modules appear in the sidebar and their tasks are combined in the Action Center.",
+    "workspace": "All your roles share one workspace: each role's modules appear in the sidebar and their tasks are combined under “Pending actions”.",
     "roles": {
       "title": "My roles",
       "empty": "No roles are assigned to your account."
@@ -4882,6 +4890,7 @@
   },
   "globalSearch": {
     "label": "Search entities, requests and users",
+    "open": "Open search",
     "shortcut": "Ctrl K",
     "resultsLabel": "Search results",
     "recentTitle": "Recent searches",
@@ -7899,7 +7908,7 @@
         "marketingConsent": "Platform news and offers"
       },
       "hints": {
-        "unifiedNumber": "10 digits starting with 7.",
+        "unifiedNumber": "10 digits.",
         "licenseNumber": "Digits only, as on the entity's licence.",
         "foundedOn": "Day, month and year.",
         "governanceGrade": "From the National Center, up to two decimals.",
@@ -8684,7 +8693,7 @@
     "backHome": "Back to the home page"
   },
   "contactInbox": {
-    "title": "Contact messages",
+    "title": "Inbox",
     "subtitle": "Messages from the \"Contact us\" form and the portal. Assign a message, add internal notes, reply to the sender, then close it.",
     "linked": "Registered sender",
     "guest": "Visitor",
@@ -9408,6 +9417,16 @@
       "lead": "Read only, exactly as the entity sees it. The list shows the verified results within your account's scope.",
       "readOnly": "Read only",
       "tabsLabel": "Excellence tools"
+    }
+  },
+  "dataList": {
+    "filter": {
+      "button": "Filter",
+      "buttonActive": "Filter, {count} applied",
+      "title": "Filter results",
+      "apply": "Apply",
+      "reset": "Clear all",
+      "clear": "Clear filters"
     }
   }
 }

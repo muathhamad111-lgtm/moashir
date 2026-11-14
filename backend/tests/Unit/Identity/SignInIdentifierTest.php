@@ -19,11 +19,13 @@ it('detects the identifier type by its format and normalises it', function (stri
     'international mobile' => ['+966551234567', SignInIdentifierType::Mobile, '+966551234567'],
     'mobile with spaces' => ['055 123 4567', SignInIdentifierType::Mobile, '+966551234567'],
     'unified number' => ['7001234567', SignInIdentifierType::UnifiedNumber, '7001234567'],
+    'unified number with any first digit' => ['6001234567', SignInIdentifierType::UnifiedNumber, '6001234567'],
+    'ten digits starting with 05 read as a mobile' => ['0512345678', SignInIdentifierType::Mobile, '+966512345678'],
 ]);
 
 it('refuses anything that is neither an e-mail, a Saudi mobile nor a unified number', function (string $input): void {
     expect(SignInIdentifier::tryParse($input))->toBeNull();
-})->with(['', 'alamal', 'info@', '0114567890', '6001234567', '70012345678', '+971501234567', '٠٥٥١٢٣٤٥٦٧']);
+})->with(['', 'alamal', 'info@', '600123456', '70012345678', '+971501234567', '٠٥٥١٢٣٤٥٦٧']);
 
 it('keys the blind index with the application key and separates purposes', function (): void {
     $index = app(BlindIndex::class);

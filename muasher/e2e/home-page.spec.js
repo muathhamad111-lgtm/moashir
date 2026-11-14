@@ -197,7 +197,7 @@ test.describe('home page — contact form (Task-42 contract)', () => {
     )
     await expect(page.locator('.contact-form__signed-in')).toBeVisible()
     await expect(page.locator('.public-navbar')).toContainText(
-      localeOf(testInfo) === 'en' ? 'Dashboard' : 'لوحة التحكم',
+      localeOf(testInfo) === 'en' ? 'Dashboard' : 'لوحة المعلومات',
     )
   })
 })

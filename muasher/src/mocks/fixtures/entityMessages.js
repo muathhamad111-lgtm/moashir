@@ -111,8 +111,8 @@ export const entityMessages = {
     en: 'The logo must not exceed 2 MB.',
   },
   'field.unified_number': {
-    ar: 'يجب أن يتكون الرقم الوطني الموحد من 10 أرقام (0-9) بالضبط وأن يبدأ بالرقم 7.',
-    en: 'The unified national number must contain exactly 10 digits (0-9) and start with 7.',
+    ar: 'يجب أن يتكون الرقم الوطني الموحد من 10 أرقام (0-9) بالضبط.',
+    en: 'The unified national number must contain exactly 10 digits (0-9).',
   },
   'field.unified_number_taken': {
     ar: 'هذا الرقم الوطني الموحد مسجّل لجهة أخرى في المنصة. تحقّق من الرقم أو تواصل مع فريق المنصة.',

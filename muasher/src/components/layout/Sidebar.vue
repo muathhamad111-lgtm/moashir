@@ -16,6 +16,7 @@ import {
   isNavItemActive,
 } from '@/constants/navigation'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import SidebarItem from './SidebarItem.vue'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -41,10 +42,6 @@ const activeGroupId = computed(
   () => groups.value.find((group) => group.items.some(isActive))?.id ?? null,
 )
 const { isExpanded, toggle } = useSidebarGroups(activeGroupId)
-
-function labelOf(item) {
-  return item.label ?? t(item.labelKey)
-}
 </script>
 
 <template>
@@ -58,56 +55,46 @@ function labelOf(item) {
     </router-link>
 
     <div class="sidebar__scroll">
-      <div
-        v-for="group in groups"
-        :key="group.id"
-        class="sidebar__group"
-        role="group"
-        :aria-labelledby="`sidebar-group-${group.id}`"
-      >
-        <button
-          :id="`sidebar-group-${group.id}`"
-          type="button"
-          class="sidebar__caption"
-          :aria-expanded="isExpanded(group.id) ? 'true' : 'false'"
-          :aria-controls="`sidebar-menu-${group.id}`"
-          @click="toggle(group.id)"
-        >
-          <span class="sidebar__caption-text">{{ t(group.labelKey) }}</span>
-          <span
-            class="sidebar__chevron"
-            :class="{ 'is-open': isExpanded(group.id) }"
-            aria-hidden="true"
-          >
-            <AppIcon name="chevron-right" />
-          </span>
-        </button>
-        <ul
-          :id="`sidebar-menu-${group.id}`"
-          class="sidebar__menu"
-          :class="{ 'sidebar__menu--closed': !isExpanded(group.id) }"
-        >
+      <template v-for="group in groups" :key="group.id">
+        <ul v-if="group.headless" class="sidebar__menu sidebar__menu--headless">
           <li v-for="item in group.items" :key="item.id" class="sidebar__entry">
-            <router-link
-              class="sidebar__item"
-              :class="[
-                { 'is-active': isActive(item) },
-                item.path ? `sidebar__item--${item.path}` : '',
-              ]"
-              :to="{ name: item.routeName, query: item.query }"
-              :aria-current="isActive(item) ? 'page' : undefined"
-              :aria-label="item.accessibleLabel ?? labelOf(item)"
-              :title="sidebarCollapsed ? labelOf(item) : undefined"
-            >
-              <AppIcon :name="item.icon" class="sidebar__icon" />
-              <span class="sidebar__label">{{ labelOf(item) }}</span>
-              <span v-if="item.count" class="sidebar__count" aria-hidden="true">
-                <bdi>{{ item.count }}</bdi>
-              </span>
-            </router-link>
+            <SidebarItem :item="item" :active="isActive(item)" :collapsed="sidebarCollapsed" />
           </li>
         </ul>
-      </div>
+        <div
+          v-else
+          class="sidebar__group"
+          role="group"
+          :aria-labelledby="`sidebar-group-${group.id}`"
+        >
+          <button
+            :id="`sidebar-group-${group.id}`"
+            type="button"
+            class="sidebar__caption"
+            :aria-expanded="isExpanded(group.id) ? 'true' : 'false'"
+            :aria-controls="`sidebar-menu-${group.id}`"
+            @click="toggle(group.id)"
+          >
+            <span class="sidebar__caption-text">{{ t(group.labelKey) }}</span>
+            <span
+              class="sidebar__chevron"
+              :class="{ 'is-open': isExpanded(group.id) }"
+              aria-hidden="true"
+            >
+              <AppIcon name="chevron-right" />
+            </span>
+          </button>
+          <ul
+            :id="`sidebar-menu-${group.id}`"
+            class="sidebar__menu"
+            :class="{ 'sidebar__menu--closed': !isExpanded(group.id) }"
+          >
+            <li v-for="item in group.items" :key="item.id" class="sidebar__entry">
+              <SidebarItem :item="item" :active="isActive(item)" :collapsed="sidebarCollapsed" />
+            </li>
+          </ul>
+        </div>
+      </template>
     </div>
   </nav>
 </template>

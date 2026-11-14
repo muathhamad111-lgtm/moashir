@@ -33,7 +33,6 @@ useHead({ title: () => t('auth.forgot.title') })
           input-dir="ltr"
           autocomplete="email"
           :label="t('auth.forgot.email')"
-          :hint="t('auth.forgot.emailHint')"
           required
         />
       </fieldset>

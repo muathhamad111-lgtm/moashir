@@ -370,7 +370,7 @@ it('validates the identifier with the sign-in message', function (array $payload
     Notification::assertNothingSent();
 })->with([
     'missing identifier' => [[]],
-    'landline number' => [['identifier' => '0114567890']],
+    'nine digits' => [['identifier' => '011456789']],
     'malformed e-mail' => [['identifier' => 'not-an-email@']],
     'Arabic-Indic digits' => [['identifier' => '٧٠٠١٢٣٤٥٦٧']],
     'identifier too long' => [['identifier' => str_repeat('a', 250).'@example.sa']],

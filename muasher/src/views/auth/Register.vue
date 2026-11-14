@@ -1,21 +1,38 @@
 <script setup>
-import { onMounted } from 'vue'
+import { nextTick, onMounted, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
-import AccountCredentialsFields from '@/components/entities/form/AccountCredentialsFields.vue'
-import EntityIdentityFields from '@/components/entities/form/EntityIdentityFields.vue'
-import EntityClassificationFields from '@/components/entities/form/EntityClassificationFields.vue'
-import EntityLocationFields from '@/components/entities/form/EntityLocationFields.vue'
-import EntityMetricsFields from '@/components/entities/form/EntityMetricsFields.vue'
-import TermsConsentFields from '@/components/entities/form/TermsConsentFields.vue'
+import WizardStepper from '@/components/wizard/WizardStepper.vue'
+import RegistrationEntityStep from '@/components/entities/registration/RegistrationEntityStep.vue'
+import RegistrationAccountStep from '@/components/entities/registration/RegistrationAccountStep.vue'
 import { useEntityRegistration } from '@/composables/useEntityRegistration'
+import { useRegistrationSteps } from '@/composables/useRegistrationSteps'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 
 const { t } = useI18n()
-const { form, terms, status, load, regions } = useEntityRegistration()
+const { form, status, load, regions } = useEntityRegistration()
+const wizard = useRegistrationSteps(form)
+const stepPanel = useTemplateRef('stepPanel')
+
+const FIRST_INVALID = '[aria-invalid="true"]'
+
+async function nextStep() {
+  if (await wizard.next()) return
+  await nextTick()
+  stepPanel.value?.querySelector(FIRST_INVALID)?.focus()
+}
+
+function submitStep() {
+  return wizard.isLast.value ? form.onSubmit() : nextStep()
+}
+
+watch(wizard.currentIndex, async () => {
+  await nextTick()
+  stepPanel.value?.focus()
+})
 
 onMounted(load)
 </script>
@@ -45,21 +62,41 @@ onMounted(load)
       :message="t('entities.registration.unavailableMessage')"
     />
 
-    <form v-else class="auth-form__body entity-form" novalidate @submit.prevent="form.onSubmit">
-      <fieldset class="entity-form__sections" :disabled="form.submitting.value">
-        <AccountCredentialsFields />
-        <EntityIdentityFields />
-        <EntityClassificationFields />
-        <EntityLocationFields
+    <form v-else class="auth-form__body entity-form" novalidate @submit.prevent="submitStep">
+      <WizardStepper
+        :steps="wizard.steps.value"
+        :current-index="wizard.currentIndex.value"
+        @select="wizard.goTo"
+      />
+
+      <fieldset
+        ref="stepPanel"
+        class="entity-form__sections entity-register__step"
+        tabindex="-1"
+        :aria-label="wizard.currentStep.value.label"
+        :disabled="form.submitting.value"
+      >
+        <RegistrationEntityStep
+          v-if="wizard.currentStep.value.id === 'entity'"
           :region-options="regions.regionOptions.value"
           :city-options-for="regions.cityOptionsFor"
         />
-        <EntityMetricsFields :hint="t('entities.hints.metricsLater')" />
-        <TermsConsentFields :terms="terms" />
+        <RegistrationAccountStep v-else />
       </fieldset>
 
-      <div class="auth-form__actions">
-        <BaseButton type="submit" variant="primary" :loading="form.submitting.value">
+      <div class="auth-form__actions entity-register__actions">
+        <BaseButton
+          v-if="wizard.currentIndex.value > 0"
+          variant="secondary"
+          :disabled="form.submitting.value"
+          @click="wizard.previous"
+        >
+          {{ t('entities.registration.back') }}
+        </BaseButton>
+        <BaseButton v-if="!wizard.isLast.value" type="submit" variant="primary">
+          {{ t('entities.registration.next') }}
+        </BaseButton>
+        <BaseButton v-else type="submit" variant="primary" :loading="form.submitting.value">
           {{ t('entities.registration.submit') }}
         </BaseButton>
       </div>

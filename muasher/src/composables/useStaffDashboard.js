@@ -5,7 +5,7 @@ import { BOARD_QUERY_KEY, DASHBOARD_BOARDS } from '@/constants/dashboardBoards'
 
 const BOARD_REFUSALS = [403, 422]
 
-export function useStaffDashboard() {
+export function useStaffDashboard({ fixedBoard = null } = {}) {
   const route = useRoute()
   const router = useRouter()
   const summary = ref(null)
@@ -13,6 +13,7 @@ export function useStaffDashboard() {
   const errorMessage = ref('')
 
   const requestedBoard = computed(() => {
+    if (fixedBoard) return fixedBoard
     const value = route.query[BOARD_QUERY_KEY]
     return typeof value === 'string' && DASHBOARD_BOARDS.includes(value) ? value : null
   })
@@ -31,7 +32,7 @@ export function useStaffDashboard() {
       status.value = 'success'
     } catch (error) {
       const refused = BOARD_REFUSALS.includes(error?.normalized?.status)
-      if (requestedBoard.value && refused) return dropRequestedBoard()
+      if (!fixedBoard && requestedBoard.value && refused) return dropRequestedBoard()
       errorMessage.value = error?.normalized?.message ?? ''
       status.value = 'error'
     }

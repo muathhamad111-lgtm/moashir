@@ -56,11 +56,15 @@ const groups = [
   },
 ]
 
-async function mountSearch({ locale = 'ar', userId = 7001 } = {}) {
+async function mountSearch({ locale = 'ar', userId = 7001, compact = false } = {}) {
   const globals = createTestGlobals({ locale })
   useAuthStore(globals.pinia).setUser({ id: userId, name: 'نورة', roles: ['request_follower'] })
   await globals.router.push('/dashboard')
-  const wrapper = mount(GlobalSearch, { global: globals, attachTo: document.body })
+  const wrapper = mount(GlobalSearch, {
+    props: { compact },
+    global: globals,
+    attachTo: document.body,
+  })
   return { wrapper, globals, input: wrapper.find('input[role="combobox"]') }
 }
 
@@ -281,6 +285,35 @@ describe('GlobalSearch', () => {
     const { wrapper, input } = await mountSearch()
     await typeAndSettle(input, 'إحسان')
     expect(wrapper.findAll('[role="option"]')).toHaveLength(3)
+    wrapper.unmount()
+  })
+
+  it('collapses to a search button in a narrow bar and opens the field under it', async () => {
+    const { wrapper } = await mountSearch({ compact: true })
+    const toggle = wrapper.find('.global-search__toggle')
+    expect(wrapper.classes()).toContain('global-search--compact')
+    expect(toggle.attributes('aria-label')).toBe('فتح البحث')
+    expect(toggle.attributes('aria-expanded')).toBe('false')
+    expect(toggle.attributes('aria-controls')).toBe(
+      wrapper.find('.global-search__body').attributes('id'),
+    )
+
+    await toggle.trigger('click')
+    await flushPromises()
+    expect(wrapper.classes()).toContain('is-revealed')
+    expect(toggle.attributes('aria-expanded')).toBe('true')
+    expect(document.activeElement).toBe(wrapper.find('input[role="combobox"]').element)
+
+    await wrapper.find('input[role="combobox"]').trigger('keydown', { key: 'Escape' })
+    expect(wrapper.classes()).not.toContain('is-revealed')
+    expect(document.activeElement).toBe(toggle.element)
+    wrapper.unmount()
+  })
+
+  it('keeps the inline field in a wide bar', async () => {
+    const { wrapper } = await mountSearch()
+    expect(wrapper.classes()).not.toContain('global-search--compact')
+    expect(wrapper.find('.global-search__field').exists()).toBe(true)
     wrapper.unmount()
   })
 })

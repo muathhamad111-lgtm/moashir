@@ -157,7 +157,7 @@ test('sign-in brand panel shows the on-dark logo over the lattice pattern', asyn
     'aria-hidden',
     'true',
   )
-  expect(await contrastOf(page, '.auth-value-panel__heading')).toBeGreaterThanOrEqual(AA_TEXT)
+  expect(await contrastOf(page, '.auth-value-card__title')).toBeGreaterThanOrEqual(AA_TEXT)
 })
 
 test('the favicon and app icons follow the identity', async ({ page }) => {

@@ -21,6 +21,10 @@ import Skeleton from '@/components/feedback/Skeleton.vue'
 import GlobalSearchOption from './GlobalSearchOption.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
+const props = defineProps({
+  compact: { type: Boolean, default: false },
+})
+
 const RECENT = 'recent'
 const EDITABLE_TAGS = ['INPUT', 'TEXTAREA', 'SELECT']
 
@@ -32,11 +36,14 @@ const handoff = useSearchHandoffStore()
 const baseId = useId()
 const inputId = `${baseId}-input`
 const listboxId = `${baseId}-listbox`
+const bodyId = `${baseId}-body`
 const rootRef = ref(null)
 const inputRef = ref(null)
+const toggleRef = ref(null)
 const listboxRef = ref(null)
 const expanded = ref(false)
 const focused = ref(false)
+const revealed = ref(false)
 
 const userId = computed(() => auth.user?.id ?? null)
 const { query, term, groups, status, retry, clear } = useGlobalSearch()
@@ -114,6 +121,23 @@ function focusInput() {
   inputRef.value?.focus()
 }
 
+async function reveal() {
+  revealed.value = true
+  if (props.compact) await nextTick()
+  focusInput()
+}
+
+function conceal() {
+  revealed.value = false
+  close()
+  toggleRef.value?.focus()
+}
+
+function onToggle() {
+  if (revealed.value) conceal()
+  else reveal()
+}
+
 function navigateTo(item) {
   const destination = searchDestination(item, localizedTitle(item))
   if (!destination) return
@@ -174,6 +198,11 @@ const KEY_HANDLERS = {
     if (query.value) {
       event.preventDefault()
       clear()
+      return
+    }
+    if (revealed.value) {
+      event.preventDefault()
+      conceal()
     }
   },
 }
@@ -190,6 +219,7 @@ function onFocus() {
 function onFocusOut(event) {
   if (rootRef.value?.contains(event.relatedTarget)) return
   focused.value = false
+  revealed.value = false
   close()
 }
 
@@ -202,9 +232,16 @@ function onGlobalKeydown(event) {
   const slash = event.key === SEARCH_SHORTCUT_SLASH && !isEditable(event.target)
   if (!combo && !slash) return
   event.preventDefault()
-  focusInput()
+  reveal()
   open()
 }
+
+watch(
+  () => props.compact,
+  (isCompact) => {
+    if (!isCompact) revealed.value = false
+  },
+)
 
 watch(activeDescendant, async (id) => {
   if (!id) return
@@ -220,114 +257,144 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onGlobalKeydown))
   <div
     ref="rootRef"
     class="global-search"
-    :class="{ 'is-open': isOpen, 'is-floated': isFloated }"
+    :class="{
+      'global-search--compact': compact,
+      'is-open': isOpen,
+      'is-floated': isFloated,
+      'is-revealed': revealed,
+    }"
     @focusout="onFocusOut"
   >
-    <div class="global-search__field">
-      <AppIcon name="search" class="global-search__icon" />
-      <label :for="inputId" class="global-search__label">{{ t('globalSearch.label') }}</label>
-      <input
-        :id="inputId"
-        ref="inputRef"
-        v-model="query"
-        class="global-search__input"
-        type="text"
-        role="combobox"
-        autocomplete="off"
-        spellcheck="false"
-        enterkeyhint="search"
-        :maxlength="SEARCH_MAX_LENGTH"
-        aria-autocomplete="list"
-        :aria-expanded="isOpen ? 'true' : 'false'"
-        :aria-controls="listboxId"
-        :aria-activedescendant="activeDescendant"
-        :aria-keyshortcuts="SEARCH_KEY_SHORTCUTS"
-        @focus="onFocus"
-        @click="open"
-        @input="open"
-        @keydown="onKeydown"
-      />
-      <button
-        v-if="query"
-        type="button"
-        class="global-search__clear"
-        :aria-label="t('globalSearch.clearQuery')"
-        @click="onClearQuery"
-      >
-        <AppIcon name="x" />
-      </button>
-      <kbd v-else class="global-search__shortcut" aria-hidden="true">{{
-        t('globalSearch.shortcut')
-      }}</kbd>
-    </div>
-
-    <div v-show="isOpen" class="global-search__popup">
-      <div
-        :id="listboxId"
-        ref="listboxRef"
-        role="listbox"
-        class="global-search__listbox"
-        :aria-label="t('globalSearch.resultsLabel')"
-      >
-        <ul
-          v-for="group in visibleGroups"
-          :key="group.type"
-          role="group"
-          class="global-search__group"
-          :aria-labelledby="groupLabelId(group.type)"
+    <button
+      ref="toggleRef"
+      type="button"
+      class="btn btn--ghost btn--icon global-search__toggle"
+      :aria-label="t('globalSearch.open')"
+      :aria-expanded="revealed ? 'true' : 'false'"
+      :aria-controls="bodyId"
+      @click="onToggle"
+    >
+      <AppIcon name="search" />
+    </button>
+    <div :id="bodyId" class="global-search__body">
+      <div class="global-search__field">
+        <AppIcon name="search" class="global-search__icon" />
+        <label :for="inputId" class="global-search__label">{{ t('globalSearch.label') }}</label>
+        <input
+          :id="inputId"
+          ref="inputRef"
+          v-model="query"
+          class="global-search__input"
+          type="text"
+          role="combobox"
+          autocomplete="off"
+          spellcheck="false"
+          enterkeyhint="search"
+          :maxlength="SEARCH_MAX_LENGTH"
+          aria-autocomplete="list"
+          :aria-expanded="isOpen ? 'true' : 'false'"
+          :aria-controls="listboxId"
+          :aria-activedescendant="activeDescendant"
+          :aria-keyshortcuts="SEARCH_KEY_SHORTCUTS"
+          @focus="onFocus"
+          @click="open"
+          @input="open"
+          @keydown="onKeydown"
+        />
+        <button
+          v-if="query"
+          type="button"
+          class="global-search__clear"
+          :aria-label="t('globalSearch.clearQuery')"
+          @click="onClearQuery"
         >
-          <li :id="groupLabelId(group.type)" role="presentation" class="global-search__group-label">
-            <span>{{ groupTitle(group) }}</span>
-            <span v-if="group.type !== 'recent'" class="global-search__group-count">
-              {{ t('globalSearch.groupCount', { shown: group.items.length, total: group.total }) }}
-            </span>
-          </li>
-          <GlobalSearchOption
-            v-for="item in group.items"
-            :id="optionId(indexOf(item))"
-            :key="item.key"
-            :item="item"
-            :title="localizedTitle(item)"
-            :active="indexOf(item) === nav.activeIndex.value"
-            @mousedown.prevent
-            @click="select(item)"
-          />
-        </ul>
+          <AppIcon name="x" />
+        </button>
+        <kbd v-else class="global-search__shortcut" aria-hidden="true">{{
+          t('globalSearch.shortcut')
+        }}</kbd>
       </div>
 
-      <template v-if="!showRecent">
-        <div v-if="status === 'loading'" class="global-search__state">
-          <Skeleton variant="text" :count="3" />
-        </div>
-        <p v-else-if="status === 'too-short'" class="global-search__state">
-          {{ t('globalSearch.tooShort', { min: SEARCH_MIN_LENGTH }) }}
-        </p>
-        <p v-else-if="status === 'empty'" class="global-search__state">
-          <AppIcon name="search" />
-          {{ t('globalSearch.empty', { query: term }) }}
-        </p>
+      <div v-show="isOpen" class="global-search__popup">
         <div
-          v-else-if="status === 'error'"
-          class="global-search__state global-search__state--error"
+          :id="listboxId"
+          ref="listboxRef"
+          role="listbox"
+          class="global-search__listbox"
+          :aria-label="t('globalSearch.resultsLabel')"
         >
-          <p class="global-search__error">
-            <AppIcon name="warning-triangle" />
-            {{ t('globalSearch.error') }}
-          </p>
-          <BaseButton variant="secondary" size="sm" icon="refresh" @click="onRetry">
-            {{ t('globalSearch.retry') }}
-          </BaseButton>
+          <ul
+            v-for="group in visibleGroups"
+            :key="group.type"
+            role="group"
+            class="global-search__group"
+            :aria-labelledby="groupLabelId(group.type)"
+          >
+            <li
+              :id="groupLabelId(group.type)"
+              role="presentation"
+              class="global-search__group-label"
+            >
+              <span>{{ groupTitle(group) }}</span>
+              <span v-if="group.type !== 'recent'" class="global-search__group-count">
+                {{
+                  t('globalSearch.groupCount', { shown: group.items.length, total: group.total })
+                }}
+              </span>
+            </li>
+            <GlobalSearchOption
+              v-for="item in group.items"
+              :id="optionId(indexOf(item))"
+              :key="item.key"
+              :item="item"
+              :title="localizedTitle(item)"
+              :active="indexOf(item) === nav.activeIndex.value"
+              @mousedown.prevent
+              @click="select(item)"
+            />
+          </ul>
         </div>
-      </template>
 
-      <div class="global-search__footer">
-        <BaseButton v-if="showRecent" variant="ghost" size="sm" icon="trash" @click="onClearRecent">
-          {{ t('globalSearch.clearRecent') }}
-        </BaseButton>
-        <p v-else class="global-search__note">
-          <AppIcon name="shield-info" />
-          {{ t('globalSearch.scopeNote') }}
-        </p>
+        <template v-if="!showRecent">
+          <div v-if="status === 'loading'" class="global-search__state">
+            <Skeleton variant="text" :count="3" />
+          </div>
+          <p v-else-if="status === 'too-short'" class="global-search__state">
+            {{ t('globalSearch.tooShort', { min: SEARCH_MIN_LENGTH }) }}
+          </p>
+          <p v-else-if="status === 'empty'" class="global-search__state">
+            <AppIcon name="search" />
+            {{ t('globalSearch.empty', { query: term }) }}
+          </p>
+          <div
+            v-else-if="status === 'error'"
+            class="global-search__state global-search__state--error"
+          >
+            <p class="global-search__error">
+              <AppIcon name="warning-triangle" />
+              {{ t('globalSearch.error') }}
+            </p>
+            <BaseButton variant="secondary" size="sm" icon="refresh" @click="onRetry">
+              {{ t('globalSearch.retry') }}
+            </BaseButton>
+          </div>
+        </template>
+
+        <div class="global-search__footer">
+          <BaseButton
+            v-if="showRecent"
+            variant="ghost"
+            size="sm"
+            icon="trash"
+            @click="onClearRecent"
+          >
+            {{ t('globalSearch.clearRecent') }}
+          </BaseButton>
+          <p v-else class="global-search__note">
+            <AppIcon name="shield-info" />
+            {{ t('globalSearch.scopeNote') }}
+          </p>
+        </div>
       </div>
     </div>
 

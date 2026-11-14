@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test'
 import { seedLocale, seedSignedIn } from './support/session'
 import { clearMockFault, forceMockFault } from './support/mockFaults'
-import { chooseNamed, namedSelect } from './support/dropdown'
+import { namedSelect } from './support/dropdown'
+import { fillRegistrationEntityStep, goToRegistrationAccountStep } from './support/registration'
 
 const DEV_OTP_CODE = '482913'
 const ENTITY = {
@@ -33,21 +34,14 @@ async function typeCode(page, code) {
 }
 
 async function fillRegistration(page) {
+  await expect(page.locator('[name="cityId"]')).toBeDisabled()
+  await fillRegistrationEntityStep(page)
+  await page.locator('[name="governanceGrade"]').fill('84.5')
+  await goToRegistrationAccountStep(page)
+  await page.locator('[name="authorizedPersonName"]').fill('سلمان بن فهد الحربي')
   await page.locator('[name="officialEmail"]').fill('info@alwafa-charity.example.sa')
   await page.locator('[name="password"]').fill('Wafa-Charity-Account-2026')
   await page.locator('[name="passwordConfirmation"]').fill('Wafa-Charity-Account-2026')
-  await page.locator('[name="name.ar"]').fill('جمعية الوفاء الخيرية')
-  await page.locator('[name="name.en"]').fill('Al-Wafa Charity')
-  await page.locator('[name="unifiedNumber"]').fill('7000000911')
-  await page.locator('[name="authorizedPersonName"]').fill('سلمان بن فهد الحربي')
-  await chooseNamed(page, 'entityType', 'civil_association')
-  await chooseNamed(page, 'developmentSector', 'social')
-  await chooseNamed(page, 'orgSize', 'medium')
-  await page.locator('[name="foundingYear"]').fill('2016')
-  await expect(page.locator('[name="cityId"]')).toBeDisabled()
-  await chooseNamed(page, 'regionId', '2')
-  await chooseNamed(page, 'cityId', '12')
-  await page.locator('[name="governanceGrade"]').fill('84.5')
 }
 
 test('an entity registers with terms, verifies the OTP and lands on its profile', async ({
@@ -55,7 +49,7 @@ test('an entity registers with terms, verifies the OTP and lands on its profile'
 }, testInfo) => {
   await seedLocale(page, localeOf(testInfo))
   await page.goto('/auth/register')
-  await expect(page.locator('[name="officialEmail"]')).toBeVisible()
+  await expect(page.locator('[name="unifiedNumber"]')).toBeVisible()
   await namedSelect(page, 'entityType').click()
   await expect(page.locator('[role="listbox"] [role="option"]')).toHaveCount(3)
   await page.keyboard.press('Escape')
@@ -66,8 +60,7 @@ test('an entity registers with terms, verifies the OTP and lands on its profile'
   await expect(
     checkbox(page, 'termsAccepted').locator('xpath=..').locator('.field__error'),
   ).toBeVisible()
-  await page.locator('.accordion__trigger').first().click()
-  await expect(page.locator('.entity-form__terms')).toBeVisible()
+  await expect(page.locator('.accordion__trigger')).toHaveCount(0)
   await checkbox(page, 'termsAccepted').click()
   await page.screenshot({
     path: `test-results/entities-register-${suffix(testInfo)}.png`,
@@ -82,7 +75,7 @@ test('an entity registers with terms, verifies the OTP and lands on its profile'
     isEn(testInfo) ? 'Al-Wafa Charity' : 'جمعية الوفاء الخيرية',
   )
   await expect(page.locator('.completion-prompt')).toBeVisible()
-  await expect(page.getByTestId('profile-completeness')).toContainText('73')
+  await expect(page.getByTestId('profile-completeness')).toContainText('66')
 })
 
 test('the entity edits one profile section and sees the change in the section history', async ({

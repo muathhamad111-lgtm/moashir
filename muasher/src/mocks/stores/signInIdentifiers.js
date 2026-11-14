@@ -14,9 +14,9 @@ export function parseIdentifier(raw) {
   const text = String(raw ?? '').trim()
   if (text.includes('@')) return EMAIL_PATTERN.test(text) ? { type: 'email', value: text } : null
   const compact = text.replace(SEPARATORS, '')
-  if (UNIFIED_NUMBER_PATTERN.test(compact)) return { type: 'unified_number', value: compact }
   const mobile = SAUDI_MOBILE_INPUT.exec(compact)
-  return mobile ? { type: 'mobile', value: `+966${mobile[1]}` } : null
+  if (mobile) return { type: 'mobile', value: `+966${mobile[1]}` }
+  return UNIFIED_NUMBER_PATTERN.test(compact) ? { type: 'unified_number', value: compact } : null
 }
 
 const RESOLVERS = {

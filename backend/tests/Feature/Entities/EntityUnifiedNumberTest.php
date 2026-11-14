@@ -31,10 +31,9 @@ it('requires a valid unified national number at registration', function (array $
     expect(Entity::query()->count())->toBe(0);
 })->with([
     'missing' => [['unified_number' => null], 'The unified national number field is required.'],
-    'nine digits' => [['unified_number' => '700123456'], 'The unified national number must contain exactly 10 digits (0-9) and start with 7.'],
-    'starts with 1' => [['unified_number' => '1001234567'], 'The unified national number must contain exactly 10 digits (0-9) and start with 7.'],
-    'letters' => [['unified_number' => '70012345AB'], 'The unified national number must contain exactly 10 digits (0-9) and start with 7.'],
-    'Arabic-Indic digits' => [['unified_number' => '٧٠٠١٢٣٤٥٦٧'], 'The unified national number must contain exactly 10 digits (0-9) and start with 7.'],
+    'nine digits' => [['unified_number' => '700123456'], 'The unified national number must contain exactly 10 digits (0-9).'],
+    'letters' => [['unified_number' => '70012345AB'], 'The unified national number must contain exactly 10 digits (0-9).'],
+    'Arabic-Indic digits' => [['unified_number' => '٧٠٠١٢٣٤٥٦٧'], 'The unified national number must contain exactly 10 digits (0-9).'],
 ]);
 
 it('refuses a unified national number already registered for another entity with a friendly message', function (): void {
@@ -136,7 +135,13 @@ it('lets the database refuse a malformed or duplicate number written directly', 
     $entity = entityWithOwner();
 
     expect(fn () => DB::table('entities')->where('id', $entity->id)->update(['unified_number' => $value]))->toThrow(QueryException::class);
-})->with(['8001234567', '700123456', '7008888888']);
+})->with(['80012345A7', '700123456', '7008888888']);
+
+it('accepts a unified national number with any first digit', function (): void {
+    $this->postJson('/api/v1/auth/register', registrationPayload(['unified_number' => '1001234567']))->assertCreated();
+
+    expect(Entity::query()->sole()->unified_number)->toBe('1001234567');
+});
 
 it('clears the number when the entity is permanently erased', function (): void {
     $entity = entityWithOwner(static fn ($factory) => $factory->state(['unified_number' => '7004444444']));

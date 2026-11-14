@@ -1,5 +1,5 @@
 <script setup>
-import { computed, useId } from 'vue'
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useBrandLogo } from '@/composables/useBrandLogo'
@@ -12,7 +12,6 @@ import AuthValuePanel from '@/components/auth/AuthValuePanel.vue'
 const { t } = useI18n()
 const route = useRoute()
 const { logoOnDark } = useBrandLogo()
-const panelHeadingId = useId()
 
 const isMaintenance = computed(() => route.name === ROUTE_NAMES.PUBLIC_MAINTENANCE)
 </script>
@@ -35,11 +34,11 @@ const isMaintenance = computed(() => route.name === ROUTE_NAMES.PUBLIC_MAINTENAN
         </router-link>
       </div>
     </main>
-    <aside class="auth-layout__brand brand-surface" :aria-labelledby="panelHeadingId">
+    <aside class="auth-layout__brand brand-surface" :aria-label="t('auth.panel.label')">
       <BrandPattern variant="lattice" />
       <div class="auth-layout__brand-inner">
         <img class="auth-layout__logo" :src="logoOnDark" :alt="t('app.name')" />
-        <AuthValuePanel :heading-id="panelHeadingId" />
+        <AuthValuePanel />
       </div>
     </aside>
   </div>

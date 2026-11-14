@@ -26,17 +26,14 @@ describe('AuthLayout', () => {
     wrapper.unmount()
   })
 
-  it('names the aside with the panel h2 and keeps the form h1 the only h1', () => {
+  it('names the aside without a tagline and keeps the form h1 the only h1', () => {
     const wrapper = mountLayout()
     const aside = wrapper.find('aside')
-    const heading = aside.find('h2')
-    expect(heading.text()).toBe('قياسٌ عادل، وتحسينٌ مستمر')
-    expect(heading.attributes('id')).toBeTruthy()
-    expect(aside.attributes('aria-labelledby')).toBe(heading.attributes('id'))
-    expect(document.getElementById(heading.attributes('id'))).toBe(heading.element)
+    expect(aside.attributes('aria-label')).toBe('عن منصة مؤشر')
+    expect(aside.find('.auth-value-panel__heading').exists()).toBe(false)
     expect(wrapper.findAll('h1')).toHaveLength(1)
     expect(wrapper.find('main h1').exists()).toBe(true)
-    expect(aside.findAll('h3')).toHaveLength(3)
+    expect(aside.findAll('h2')).toHaveLength(3)
     wrapper.unmount()
   })
 
@@ -53,7 +50,8 @@ describe('AuthLayout', () => {
 
   it('renders the English panel copy in English', () => {
     const wrapper = mountLayout(createTestGlobals({ locale: 'en' }))
-    expect(wrapper.find('aside h2').text()).toBe('Fair measurement, continuous improvement')
+    expect(wrapper.find('aside').attributes('aria-label')).toBe('About Moashir')
+    expect(wrapper.find('aside h2').text()).toBe('Published, unified standards')
     expect(wrapper.find('aside .auth-value-panel__footnote').exists()).toBe(false)
     wrapper.unmount()
   })

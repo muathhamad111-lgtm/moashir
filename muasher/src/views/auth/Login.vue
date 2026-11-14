@@ -1,5 +1,5 @@
 <script setup>
-import { computed, defineAsyncComponent, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import SignInMethodTabs from '@/components/auth/SignInMethodTabs.vue'
@@ -10,11 +10,6 @@ import { useAuthFlowStore } from '@/stores/authFlow'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { AUTH_NOTICES } from '@/constants/loginSteps'
 import { SIGN_IN_METHODS, SIGN_IN_METHOD_QUERY, SIGN_IN_METHOD_VALUES } from '@/constants/signIn'
-
-const DemoLogin =
-  import.meta.env.DEV && import.meta.env.VITE_DEMO_LOGIN === 'true'
-    ? defineAsyncComponent(() => import('@/components/auth/DemoLogin.vue'))
-    : null
 
 const { t } = useI18n()
 const route = useRoute()
@@ -46,8 +41,6 @@ const passwordWasReset = computed(() => route.query.notice === AUTH_NOTICES.PASS
       />
       <SignInCodeForm v-else v-model:identifier="identifier" />
     </SignInMethodTabs>
-
-    <component :is="DemoLogin" v-if="DemoLogin" />
 
     <p class="auth-form__switch">
       {{ t('auth.login.noAccount') }}

@@ -4,8 +4,6 @@ import { resolve } from 'node:path'
 import process from 'node:process'
 import ar from '@/i18n/locales/ar.json'
 import en from '@/i18n/locales/en.json'
-import devAr from '@/i18n/locales/dev/ar.json'
-import devEn from '@/i18n/locales/dev/en.json'
 import { forbiddenTermsIn } from '@/i18n/forbiddenTerms'
 
 const FIXTURES_DIR = `${resolve(process.cwd(), 'src/mocks/fixtures')}/`
@@ -41,8 +39,6 @@ describe('forbidden terminology (04-guardrails Content)', () => {
   it.each([
     ['ar', ar],
     ['en', en],
-    ['dev/ar', devAr],
-    ['dev/en', devEn],
   ])('keeps the %s messages free of forbidden words', (name, messages) => {
     expect(violations(leaves(messages))).toEqual([])
   })

@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test'
 import { seedScenario, seedSignedIn } from './support/session'
 import { settleFonts } from './support/screenshots'
 import { chooseValue } from './support/dropdown'
+import { applyListFilters } from './support/listFilters'
 
 const SHOTS = '../agents/tasks/reports/Task-84'
 const DESKTOP = { width: 1440, height: 900 }
@@ -179,6 +180,7 @@ test.describe('Task-84 — S1 entity table', () => {
     const locale = localeOf(testInfo)
     await signIn(page, ADMIN, testInfo, { scenario: 'certificate-expired' })
     await open(page, '/admin/entities', '.table__row .level-badge')
+    await page.locator('.filter-dialog__toggle').click()
     await page.locator(LEVEL_FILTER).click()
     const labels = (await page.getByRole('option').allTextContents()).map((text) => text.trim())
     const noLevel = labels.indexOf(NO_LEVEL_OPTION[locale])
@@ -186,8 +188,11 @@ test.describe('Task-84 — S1 entity table', () => {
     expect(labels[noLevel + 1]).toBe(EXPIRED_OPTION[locale])
     await capture(page, page, 's5-filter-open-expired-option', testInfo)
     await page.keyboard.press('Escape')
-
     await chooseValue(page.locator(LEVEL_FILTER), 'expired')
+    await page
+      .getByRole('dialog')
+      .getByRole('button', { name: /^(Apply|تطبيق)$/ })
+      .click()
     await expect(page).toHaveURL(/[?&]level=expired/)
     await expectLevel(
       rowOf(page, ALBIRR.reference),
@@ -199,10 +204,10 @@ test.describe('Task-84 — S1 entity table', () => {
     await expect(page).toHaveURL(/[?&]level=expired/)
     await expect(rowOf(page, ALBIRR.reference)).toHaveCount(1)
 
-    await chooseValue(page.locator(LEVEL_FILTER), 'silver')
+    await applyListFilters(page, { 'entity-level-filter': 'silver' })
     await expect(page).toHaveURL(/[?&]level=silver/)
     await expect(rowOf(page, ALBIRR.reference)).toHaveCount(0)
-    await chooseValue(page.locator(LEVEL_FILTER), 'none')
+    await applyListFilters(page, { 'entity-level-filter': 'none' })
     await expect(page).toHaveURL(/[?&]level=none/)
     await expect(rowOf(page, ALBIRR.reference)).toHaveCount(1)
   })

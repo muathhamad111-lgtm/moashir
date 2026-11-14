@@ -19,3 +19,12 @@ export function toWesternDigits(value) {
 export function digitsOnly(value) {
   return toWesternDigits(value).replace(/\D/g, '')
 }
+
+export function limitDecimalInput(value, { integerDigits, decimals }) {
+  const [whole = '', ...fraction] = toWesternDigits(value)
+    .replace(/[^\d.]/g, '')
+    .split('.')
+  const integer = whole.slice(0, integerDigits)
+  if (fraction.length === 0 || decimals === 0) return integer
+  return `${integer}.${fraction.join('').slice(0, decimals)}`
+}

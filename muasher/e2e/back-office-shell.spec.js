@@ -187,7 +187,13 @@ test('unified workspace: module groups, no role switcher, profile lists roles an
     locale: isEn(testInfo) ? 'en' : 'ar',
   })
   await page.goto('/dashboard')
-  await expect(page.locator('.sidebar__caption')).toHaveCount(6)
+  await expect(page.locator('.sidebar__caption').first()).toBeVisible()
+  await expect(
+    page.locator('.sidebar__caption', {
+      hasText: /Content|المحتوى والمعايير|System administration|إدارة النظام/,
+    }),
+  ).toHaveCount(0)
+  await expect(page.locator('.sidebar__menu--headless .sidebar__item').first()).toBeVisible()
   await expect(page.getByRole('combobox', { name: /role|دور/i })).toHaveCount(0)
 
   await page.locator('.navbar__avatar').click()
@@ -355,7 +361,8 @@ test('settings hub on the new shell offers the branding card to the System Admin
   })
   await page.goto('/admin/settings')
   await expect(page.locator('.settings-hub__card[href="/admin/branding"]')).toBeVisible()
-  await expect(page.locator('.sidebar__item.is-active')).toHaveAttribute('href', '/admin/settings')
+  await expect(page.locator('.settings-hub__card[href="/admin/audit-log"]')).toBeVisible()
+  await expect(page.locator('.sidebar__item.is-active')).toHaveCount(0)
   await page.screenshot({
     path: `${SHOTS}/settings-hub-light-${suffix(testInfo)}.png`,
     fullPage: true,

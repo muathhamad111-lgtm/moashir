@@ -12,6 +12,8 @@ export const DASHBOARD_BOARDS = Object.freeze([
   'executive',
 ])
 
+export const EXECUTIVE_BOARD = 'executive'
+
 export const BOARD_QUERY_KEY = 'board'
 
 export const CARD_FORMATS = Object.freeze({

@@ -11,8 +11,8 @@ import {
   submitSignIn,
   typeCode,
 } from './support/signIn'
-import { chooseNamed } from './support/dropdown'
 import { AA_NON_TEXT, contrastOf } from './support/contrast'
+import { fillRegistrationEntityStep, goToRegistrationAccountStep } from './support/registration'
 
 const SHOTS = 'e2e/__screenshots__/signin'
 const VIEWPORTS = {
@@ -239,7 +239,7 @@ test.describe('entity sign-in: password or code', () => {
     await fillSignIn(page, '12345')
     await page.locator('form button[type="submit"]').click()
     await expect(page.locator('.field__error').first()).toContainText(
-      text(testInfo, '10 digits starting with 7', '10 أرقام تبدأ بالرقم 7'),
+      text(testInfo, 'unified national number (10 digits)', 'الرقم الوطني الموحد للجهة (10 أرقام)'),
     )
   })
 
@@ -263,23 +263,19 @@ test.describe('unified national number and mobile verification', () => {
   }, testInfo) => {
     await seedPreferences(page, { locale: localeOf(testInfo) })
     await open(page, '/auth/register', '[name="unifiedNumber"]')
+    await fillRegistrationEntityStep(page, { unifiedNumber: '' })
     const field = page.locator('[name="unifiedNumber"]')
     await expect(field).toHaveAttribute('inputmode', 'numeric')
     await field.pressSequentially('71a00-005001')
     await expect(field).toHaveValue('7100005001')
+    await goToRegistrationAccountStep(page)
+    await page.locator('[name="authorizedPersonName"]').fill('سلمان بن فهد الحربي')
     await page.locator('[name="officialEmail"]').fill('info@alwafa-charity.example.sa')
     await page.locator('[name="password"]').fill('Wafa-Charity-Account-2026')
     await page.locator('[name="passwordConfirmation"]').fill('Wafa-Charity-Account-2026')
-    await page.locator('[name="name.ar"]').fill('جمعية الوفاء الخيرية')
-    await page.locator('[name="authorizedPersonName"]').fill('سلمان بن فهد الحربي')
-    await chooseNamed(page, 'entityType', 'civil_association')
-    await chooseNamed(page, 'developmentSector', 'social')
-    await chooseNamed(page, 'orgSize', 'medium')
-    await page.locator('[name="foundingYear"]').fill('2016')
-    await chooseNamed(page, 'regionId', '2')
-    await chooseNamed(page, 'cityId', '12')
     await page.locator('label.checkbox:has([name="termsAccepted"])').click()
     await page.locator('form button[type="submit"]').click()
+    await expect(page.locator('.wizard__step.is-active')).toHaveCount(1)
     await expect(page.locator('.field:has([name="unifiedNumber"]) .field__error')).toContainText(
       text(testInfo, 'already registered for another entity', 'مسجّل لجهة أخرى'),
     )

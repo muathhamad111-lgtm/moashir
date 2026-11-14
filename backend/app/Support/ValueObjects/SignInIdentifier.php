@@ -21,15 +21,15 @@ final readonly class SignInIdentifier
         }
 
         $compact = str_replace(self::SEPARATORS, '', $trimmed);
-        $unifiedNumber = UnifiedNumber::tryFrom($compact);
-
-        if ($unifiedNumber instanceof UnifiedNumber) {
-            return new self(SignInIdentifierType::UnifiedNumber, $unifiedNumber->value);
-        }
-
         $phone = PhoneNumber::tryFromSaudiInput($compact);
 
-        return $phone instanceof PhoneNumber ? new self(SignInIdentifierType::Mobile, $phone->value) : null;
+        if ($phone instanceof PhoneNumber) {
+            return new self(SignInIdentifierType::Mobile, $phone->value);
+        }
+
+        $unifiedNumber = UnifiedNumber::tryFrom($compact);
+
+        return $unifiedNumber instanceof UnifiedNumber ? new self(SignInIdentifierType::UnifiedNumber, $unifiedNumber->value) : null;
     }
 
     public static function ofEmail(EmailAddress $email): self

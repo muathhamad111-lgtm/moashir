@@ -231,6 +231,8 @@ it('rejects invalid registration data', function (Closure $mutate, string $field
     expect(Entity::query()->count())->toBe(0);
 })->with([
     'missing Arabic name' => [static fn (array $payload): array => [...$payload, 'name' => ['en' => 'Al-Amal']], 'name.ar'],
+    'missing English name' => [static fn (array $payload): array => [...$payload, 'name' => ['ar' => 'جمعية الأمل الخيرية']], 'name.en'],
+    'blank English name' => [static fn (array $payload): array => [...$payload, 'name' => ['ar' => 'جمعية الأمل الخيرية', 'en' => '  ']], 'name.en'],
     'unknown entity type' => [static fn (array $payload): array => [...$payload, 'entity_type' => 'family_fund'], 'entity_type'],
     'superseded entity type' => [static fn (array $payload): array => [...$payload, 'entity_type' => 'association'], 'entity_type'],
     'unknown sector' => [static fn (array $payload): array => [...$payload, 'development_sector' => 'sports'], 'development_sector'],

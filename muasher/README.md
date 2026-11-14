@@ -15,32 +15,31 @@ Node `^22.18.0 || >=24.12.0` (developed on Node 24 LTS), npm 10+.
 
 ## Commands
 
-| Command | What it does |
-|---|---|
-| `npm install` | Install dependencies (also copies the MSW worker to `public/`). |
-| `npm run dev` | Vite dev server at `http://localhost:5173` (MSW mocks active). |
-| `npm run build` | Production build to `dist/`. |
-| `npm run preview` | Serve the production build at `http://localhost:4173`. |
-| `npm run lint` | oxlint + ESLint (auto-fix). |
-| `npm run format` | Prettier over `src/` and `e2e/`. |
-| `npm run test` | lint + unit tests. |
-| `npm run test:unit` | Vitest (single run). `npm run test:unit:watch` for watch mode. |
-| `npm run test:e2e` | Playwright (run `npx playwright install chromium` once first). |
-| `npm run test:e2e:integration` | Playwright smoke against a real local backend (see "Real integration check"). |
-| `npm run test:e2e:posture` | Playwright check of a real-operation build served on `:5180` (no mock worker, coming-soon screens; see "Build posture"). |
+| Command                        | What it does                                                                                                             |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| `npm install`                  | Install dependencies (also copies the MSW worker to `public/`).                                                          |
+| `npm run dev`                  | Vite dev server at `http://localhost:5173` (MSW mocks active).                                                           |
+| `npm run build`                | Production build to `dist/`.                                                                                             |
+| `npm run preview`              | Serve the production build at `http://localhost:4173`.                                                                   |
+| `npm run lint`                 | oxlint + ESLint (auto-fix).                                                                                              |
+| `npm run format`               | Prettier over `src/` and `e2e/`.                                                                                         |
+| `npm run test`                 | lint + unit tests.                                                                                                       |
+| `npm run test:unit`            | Vitest (single run). `npm run test:unit:watch` for watch mode.                                                           |
+| `npm run test:e2e`             | Playwright (run `npx playwright install chromium` once first).                                                           |
+| `npm run test:e2e:integration` | Playwright smoke against a real local backend (see "Real integration check").                                            |
+| `npm run test:e2e:posture`     | Playwright check of a real-operation build served on `:5180` (no mock worker, coming-soon screens; see "Build posture"). |
 
 ## Environment
 
 Copy `.env.example` to `.env.local`. Never commit values.
 
-| Name | Meaning |
-|---|---|
-| `VITE_API_BASE_URL` | Empty: the MSW mock layer answers `/api/v1` and `/sanctum` (local development). Set (for example `/api/v1` behind the same Nginx origin): the real API is used. The CSRF cookie is read from the same origin. |
-| `VITE_DEMO_BUILD` | Build posture (SEC-07, see "Build posture"). `true` only in the client-demo env files (`.env.staging.example`, `.env.production.example` while both environments are demos): the advanced path, the Award screens and the abandoned-cart list stay open on the real API. Empty or any other value = real-operation build: those screens become «قريبًا» screens too. No API build ever ships mock code or `mockServiceWorker.js`. |
-| `VITE_DEMO_LOGIN` | `true` shows the demo quick-login on the login page. It works only in `npm run dev` (`import.meta.env.DEV`); every `vite build` (staging and production) drops the component, its strings and its mock endpoint. `.env.development` sets it for local development. |
-| `VITE_LEVEL_ACHIEVED_SINCE` | Release date (`YYYY-MM-DD`, read as 00:00 Asia/Riyadh) for the entity «مبارك!» level-achieved dialog: it opens only for a certificate issued on or after this date, once per certificate per user. Empty or invalid disables the dialog (a console warning in `npm run dev` only). Read once in `src/config/levelAchieved.js`; both deploy templates set `2026-11-06`. |
+| Name                                                                | Meaning                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VITE_API_BASE_URL`                                                 | Empty: the MSW mock layer answers `/api/v1` and `/sanctum` (local development). Set (for example `/api/v1` behind the same Nginx origin): the real API is used. The CSRF cookie is read from the same origin.                                                                                                                                                                                                                                  |
+| `VITE_DEMO_BUILD`                                                   | Build posture (SEC-07, see "Build posture"). `true` only in the client-demo env files (`.env.staging.example`, `.env.production.example` while both environments are demos): the advanced path, the Award screens and the abandoned-cart list stay open on the real API. Empty or any other value = real-operation build: those screens become «قريبًا» screens too. No API build ever ships mock code or `mockServiceWorker.js`.              |
+| `VITE_LEVEL_ACHIEVED_SINCE`                                         | Release date (`YYYY-MM-DD`, read as 00:00 Asia/Riyadh) for the entity «مبارك!» level-achieved dialog: it opens only for a certificate issued on or after this date, once per certificate per user. Empty or invalid disables the dialog (a console warning in `npm run dev` only). Read once in `src/config/levelAchieved.js`; both deploy templates set `2026-11-06`.                                                                         |
 | `VITE_SENTRY_DSN`, `VITE_SENTRY_ENVIRONMENT`, `VITE_SENTRY_RELEASE` | Self-hosted GlitchTip. Every event, transaction and breadcrumb passes through `src/utils/monitoring/scrubEvent.js` (`beforeSend`, `beforeSendTransaction`, `beforeBreadcrumb`, `sendDefaultPii: false`, SEC-16): no user object, query strings and fragments dropped, token path segments, e-mails, Saudi mobiles, national ids, file names and credentials masked, form values in the extra context redacted, only safe request headers kept. |
-| `MOASHIR_API_PROXY_TARGET` | Shell variable for `npm run dev` / `npm run preview` only: proxies `/api` and `/sanctum` to a local Laravel (for example `http://127.0.0.1:8010`) so the SPA and the API share one origin, as behind Nginx. |
+| `MOASHIR_API_PROXY_TARGET`                                          | Shell variable for `npm run dev` / `npm run preview` only: proxies `/api` and `/sanctum` to a local Laravel (for example `http://127.0.0.1:8010`) so the SPA and the API share one origin, as behind Nginx.                                                                                                                                                                                                                                    |
 
 ## Modules awaiting their backend (Q-193)
 
@@ -48,12 +47,12 @@ No screen shows mock data to a real user. The modules that have no backend yet a
 layer (local development, unit and e2e tests); every build with `VITE_API_BASE_URL` shows the «قريبًا» / "Coming soon"
 treatment instead:
 
-| Module | Route meta / switch | API build |
-|---|---|---|
-| Quick Excellence Kit | `meta.awaitsBackend` on `/excellence-bag`, `/bag`, `/bag/pay`, `/bag/manage`, `/bag/comparison`, `/bag/requests`, `/bag/evaluator` | the route stays valid and renders `views/public/ComingSoon.vue` (`src/router/comingSoon.js`) |
-| AI knowledge base, platform general settings | `meta.awaitsBackend` on `/admin/settings/ai/knowledge-base`, `/admin/settings/general` | same |
-| AI assistant (public widget) | `SHOWS_MODULES_AWAITING_BACKEND` in `PublicLayout` | not rendered |
-| Messaging campaigns | `SHOWS_MODULES_AWAITING_BACKEND` in the SMS / e-mail settings and the abandoned-cart actions | composers not rendered; the cart actions column shows the «قريباً» chip |
+| Module                                       | Route meta / switch                                                                                                                | API build                                                                                    |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Quick Excellence Kit                         | `meta.awaitsBackend` on `/excellence-bag`, `/bag`, `/bag/pay`, `/bag/manage`, `/bag/comparison`, `/bag/requests`, `/bag/evaluator` | the route stays valid and renders `views/public/ComingSoon.vue` (`src/router/comingSoon.js`) |
+| AI knowledge base, platform general settings | `meta.awaitsBackend` on `/admin/settings/ai/knowledge-base`, `/admin/settings/general`                                             | same                                                                                         |
+| AI assistant (public widget)                 | `SHOWS_MODULES_AWAITING_BACKEND` in `PublicLayout`                                                                                 | not rendered                                                                                 |
+| Messaging campaigns                          | `SHOWS_MODULES_AWAITING_BACKEND` in the SMS / e-mail settings and the abandoned-cart actions                                       | composers not rendered; the cart actions column shows the «قريباً» chip                      |
 
 `SHOWS_MODULES_AWAITING_BACKEND` (`src/constants/buildPosture.js`) is true only in the `mock` posture. When a module's
 backend lands, drop its `awaitsBackend` marker (or the constant check) in the same change that wires its service.
@@ -62,11 +61,11 @@ backend lands, drop its `awaitsBackend` marker (or the constant check) in the sa
 
 `vite-plugins/buildPosture.js` decides at build time what ships (`src/utils/build/buildPosture.js`, unit-tested):
 
-| Posture | When | What ships |
-|---|---|---|
-| `mock` | `VITE_API_BASE_URL` empty | the whole mock layer and `mockServiceWorker.js` (local development and the CI e2e build only — such a build has no backend and is never deployed); every screen, including the modules awaiting their backend |
-| `demo` | `VITE_API_BASE_URL` set and `VITE_DEMO_BUILD=true` | the client-demo build: no mock code (`@/mocks` is replaced by an empty module, `dist/mockServiceWorker.js` is deleted), the modules awaiting their backend show «قريبًا», and the demo-only routes (`meta.demoOnly`: the advanced path, the Award screens, the abandoned-cart list) stay open on the real API |
-| `real` | `VITE_API_BASE_URL` set and `VITE_DEMO_BUILD` empty / not `true` (the default) | as `demo`, and the demo-only routes also render the static «قريبًا» / "Coming soon" screen |
+| Posture | When                                                                           | What ships                                                                                                                                                                                                                                                                                                    |
+| ------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mock`  | `VITE_API_BASE_URL` empty                                                      | the whole mock layer and `mockServiceWorker.js` (local development and the CI e2e build only — such a build has no backend and is never deployed); every screen, including the modules awaiting their backend                                                                                                 |
+| `demo`  | `VITE_API_BASE_URL` set and `VITE_DEMO_BUILD=true`                             | the client-demo build: no mock code (`@/mocks` is replaced by an empty module, `dist/mockServiceWorker.js` is deleted), the modules awaiting their backend show «قريبًا», and the demo-only routes (`meta.demoOnly`: the advanced path, the Award screens, the abandoned-cart list) stay open on the real API |
+| `real`  | `VITE_API_BASE_URL` set and `VITE_DEMO_BUILD` empty / not `true` (the default) | as `demo`, and the demo-only routes also render the static «قريبًا» / "Coming soon" screen                                                                                                                                                                                                                    |
 
 The build log prints `Moashir build posture: <posture>`. Both current environments (staging and production) are client
 demos, so both example env files keep `VITE_DEMO_BUILD=true` and the deploy kit (which copies
@@ -87,8 +86,8 @@ cp .env.production.example .env.production.local
 npm run build -- --mode production
 ```
 
-`*.local` files are ignored by version control. `VITE_DEMO_LOGIN` is `false` in both templates (and every `vite build`
-drops the demo login anyway). Icons need no variable: they are inline SVGs compiled into the build (see "Icons").
+`*.local` files are ignored by version control. There is no demo quick-login (removed 2026-11-14): sign in with
+the demo accounts' own e-mail and password. Icons need no variable: they are inline SVGs compiled into the build (see "Icons").
 
 ### Real integration check (local backend)
 
@@ -167,7 +166,7 @@ same database.
   message; `account_locked` (423) and the 429 limits show the wait from `Retry-After`
   (`src/utils/auth/authFailures.js`).
 - The entity sign-in code channels are a setting of the System Administrator (`/admin/settings/sign-in`, `GET/PUT
-  /settings/auth { entity_sign_in_code_channels, sms_status, staff_totp_required }`): e-mail is always allowed, SMS
+/settings/auth { entity_sign_in_code_channels, sms_status, staff_totp_required }`): e-mail is always allowed, SMS
   can be added while the SMS gateway is configured; the Super Admin gives a reason.
 - `src/api/caseMapping.js` is the only camelCase ⇄ snake_case boundary. Every request body and query
   key is sent in snake_case and every response is read back in camelCase; status values travel as the
@@ -220,6 +219,7 @@ list. A mock Super Admin session is a descriptor with `superAdmin: true`.
 The integrations mocks (`src/mocks/handlers/{integrations,paymentIntegration,smsIntegration,emailIntegration,
 aiIntegration}.js`, `src/mocks/stores/integrations/*`) mirror the real backend contract of
 `agents/tasks/reports/Task-16-report.md` §5 (`backend/routes/api/v1/integrations.php`) field by field:
+
 - Every route needs its own permission (`settings.payment.manage`, `settings.sms.manage`, `settings.email.manage`,
   `ai.provider.manage`); the overview lists only the kinds the session may manage, with `configured` per kind and
   `meta.payment_test_mode_in_production`.
@@ -247,6 +247,7 @@ aiIntegration}.js`, `src/mocks/stores/integrations/*`) mirror the real backend c
 
 The self-assessment mocks (`src/mocks/handlers/assessments.js`, `src/mocks/stores/assessments/*`) mirror the 7 routes
 of `backend/routes/api/v1/assessments.php` and the `requests` group of `GET /search`:
+
 - Record scope as in `AssessmentRecordScope`: the entity reads its own assessments, the System Administrator, the
   Requests Follower and the Super Admin read all of them (frozen ones only with `filter[entity_id]`), every other holder
   of `assessment.history.view` gets an empty list and 404 on a record. Writes are for the owning entity only (403 for
@@ -267,6 +268,7 @@ of `backend/routes/api/v1/assessments.php` and the `requests` group of `GET /sea
 The accredited mocks (`src/mocks/handlers/{accredited,requests,assessorReview,assessmentSettings,servicePrices}.js`,
 `src/mocks/stores/accredited/*`) mirror the accredited routes of `assessments.php`, `requests.php`, `/settings/assessment`
 and the public `GET /content/prices` (Task-24 and Task-25 reports):
+
 - Accredited requests live in the shared assessment store (path `accredited`, numbers `ACC-YYYY-######`); CV entries,
   evidence and feedback are keyed by the sub-criterion code and answered with the ids of the bound version.
 - A paid accredited payment opens a draft (queued, idempotent per payment; a lost job is repaired by the sweep that runs
@@ -285,6 +287,7 @@ and the public `GET /content/prices` (Task-24 and Task-25 reports):
 
 The award mocks (`src/mocks/handlers/award.js`, `src/mocks/stores/award/*`) mirror `backend/routes/api/v1/award.php` and the
 advanced routes of `assessments.php` / `requests.php` (Task-27 report §2):
+
 - Cycles are seeded relative to today so the running cycle always accepts applications: cycle 30 (closed and announced),
   31 (submissions open, regions Riyadh / Makkah / Madinah / Eastern, filtering officers 13 and 8, secretary 18, initial
   assessors 10 / 11 / 15) and 32 (a draft prepared while 31 runs). Opening, closing the submissions (drafts expire) and the
@@ -311,6 +314,7 @@ advanced routes of `assessments.php` / `requests.php` (Task-27 report §2):
 
 The payments and finance mocks (`src/mocks/handlers/{payments,finance,financeSettings,moyasarSandbox}.js`,
 `src/mocks/stores/finance/*`) mirror `backend/routes/api/v1/finance.php` and `settings.php`:
+
 - Checkout A1: `POST /payments` needs a UUID `Idempotency-Key`; the order snapshots the price from
   `/settings/finance`, the gateway mode, methods and networks come from the payment integration mock, the checkout
   object carries the intent, the snake_case `metadata` and the callback `/payments/{id}/return`. An open order of the
@@ -340,6 +344,7 @@ The payments and finance mocks (`src/mocks/handlers/{payments,finance,financeSet
 
 Random mock failures (the deliberate 5xx of the older handlers) go through
 `src/mocks/contract/faults.js`:
+
 - They are ON in local development, OFF in unit tests (`import.meta.env.MODE === 'test'`) and OFF in
   e2e runs (`playwright.config.js` seeds the `moashir_mock_faults=off` cookie through `storageState`).
 - A unit test can switch them on with `setRandomFaults(true)` or force one endpoint to fail with
@@ -376,14 +381,14 @@ drawn by one component, `src/components/ui/AppIcon.vue`. There is no icon font, 
 path data is compiled into the JavaScript bundle and rendered inline, so icons render offline, under the strict CSP and
 in every build.
 
-| Piece | Role |
-|---|---|
-| `src/assets/icons/tts/<name>.svg` | One glyph per file: `viewBox="0 0 24 24"`, `fill="currentColor"`, paths only. |
-| `src/assets/icons/tts/pending.json` | Icons the platform needs that TTS has not published yet: `glyph` (name → stop-gap TTS glyph), `brand` (social logos → the generic `link` glyph until the official brand marks are supplied) and `withheld` (`flask`, `language`, `pause`, `phone`: their stop-gaps misled, so nothing is drawn — every use has a visible text label — until TTS publishes the glyph). |
-| `src/assets/icons/interim/<name>.svg` | Interim glyphs derived from a TTS glyph until TTS publishes the real one. Today only `bell`: the TTS `bell-dot` outline closed by mirroring its left half, without the dot. The bells always draw `bell` and overlay the unread badge / dot only when something is unread. A published `tts/bell.svg` wins automatically; then delete the interim file (a unit test fails while both exist). |
-| `src/utils/icons/iconRegistry.js` | The single registry: every SVG of the folder (`import.meta.glob`, raw, eager), the pending stop-gaps and the aliases. `resolveIcon(name)` returns the path data, the RTL mirroring and the flip / spin flags. |
-| `src/constants/icons.js` | Size tokens, the RTL mirroring list, the aliases (`undo` = flipped `refresh`, `spinner` = spinning `refresh-dots`) and the stored-value pattern. |
-| `src/utils/icons/storedIcon.js` + `legacyIconNames.js` | CMS and KPI icons are still stored by the API in the legacy class format (`fa-solid fa-chart-line`, backend rule `FontAwesomeIcon`). The registry reads such values as platform names; the CMS / KPI forms write `fa-solid fa-<name>` until the backend stores plain names. |
+| Piece                                                  | Role                                                                                                                                                                                                                                                                                                                                                                                         |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/assets/icons/tts/<name>.svg`                      | One glyph per file: `viewBox="0 0 24 24"`, `fill="currentColor"`, paths only.                                                                                                                                                                                                                                                                                                                |
+| `src/assets/icons/tts/pending.json`                    | Icons the platform needs that TTS has not published yet: `glyph` (name → stop-gap TTS glyph), `brand` (social logos → the generic `link` glyph until the official brand marks are supplied) and `withheld` (`flask`, `language`, `pause`, `phone`: their stop-gaps misled, so nothing is drawn — every use has a visible text label — until TTS publishes the glyph).                        |
+| `src/assets/icons/interim/<name>.svg`                  | Interim glyphs derived from a TTS glyph until TTS publishes the real one. Today only `bell`: the TTS `bell-dot` outline closed by mirroring its left half, without the dot. The bells always draw `bell` and overlay the unread badge / dot only when something is unread. A published `tts/bell.svg` wins automatically; then delete the interim file (a unit test fails while both exist). |
+| `src/utils/icons/iconRegistry.js`                      | The single registry: every SVG of the folder (`import.meta.glob`, raw, eager), the pending stop-gaps and the aliases. `resolveIcon(name)` returns the path data, the RTL mirroring and the flip / spin flags.                                                                                                                                                                                |
+| `src/constants/icons.js`                               | Size tokens, the RTL mirroring list, the aliases (`undo` = flipped `refresh`, `spinner` = spinning `refresh-dots`) and the stored-value pattern.                                                                                                                                                                                                                                             |
+| `src/utils/icons/storedIcon.js` + `legacyIconNames.js` | CMS and KPI icons are still stored by the API in the legacy class format (`fa-solid fa-chart-line`, backend rule `FontAwesomeIcon`). The registry reads such values as platform names; the CMS / KPI forms write `fa-solid fa-<name>` until the backend stores plain names.                                                                                                                  |
 
 Usage:
 
@@ -391,7 +396,10 @@ Usage:
 <AppIcon name="search" />
 <AppIcon name="gear" size="lg" />
 <AppIcon name="arrow-right" :mirror="false" />
-<button type="button" class="btn btn--icon"><AppIcon name="x" :label="t('actions.close')" /></button>
+<button
+  type="button"
+  class="btn btn--icon"
+><AppIcon name="x" :label="t('actions.close')" /></button>
 ```
 
 - `name`: a TTS name, a pending name (drawn with its stop-gap) or an alias. Props that used to carry icon class strings
@@ -422,5 +430,5 @@ the client deliverable relies on TTS's Iconly licence — operator to confirm in
     and `minimatch()`, which minimatch 11 keeps.
   - `glob` 14.0.3 (GHSA-3g3m-2fjr-6pw4; only consumer js-beautify under `@vue/test-utils`, loaded
     by its CLI only).
-  Remove an override once every consumer declares a range that already includes the patched
-  version, then run `npm install` and `npm audit`.
+    Remove an override once every consumer declares a range that already includes the patched
+    version, then run `npm install` and `npm audit`.

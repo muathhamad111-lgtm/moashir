@@ -39,7 +39,7 @@ describe('PublicNavbar', () => {
     const globals = createTestGlobals()
     useAuthStore(globals.pinia).setUser({ id: 1, roles: [], permissions: [] })
     mountNavbar(globals)
-    expect(wrapper.text()).toContain('لوحة التحكم')
+    expect(wrapper.text()).toContain('لوحة المعلومات')
     expect(wrapper.find('.public-navbar__login').exists()).toBe(false)
   })
 

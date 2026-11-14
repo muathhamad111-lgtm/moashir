@@ -57,23 +57,54 @@ async function settle() {
   }
 }
 
-async function fill(wrapper) {
-  const values = {
-    officialEmail: 'info@alwafa-charity.example.sa',
-    password: 'Wafa-Charity-Account-2026',
-    passwordConfirmation: 'Wafa-Charity-Account-2026',
-    'name.ar': 'جمعية الوفاء الخيرية',
-    unifiedNumber: '7000000901',
-    authorizedPersonName: 'سلمان بن فهد الحربي',
-    foundingYear: '2016',
-  }
+const ENTITY_VALUES = {
+  unifiedNumber: '7000000901',
+  'name.ar': 'جمعية الوفاء الخيرية',
+  'name.en': 'Al-Wafa Charity',
+  foundingYear: '2016',
+}
+const ACCOUNT_VALUES = {
+  authorizedPersonName: 'سلمان بن فهد الحربي',
+  officialEmail: 'info@alwafa-charity.example.sa',
+  password: 'Wafa-Charity-Account-2026',
+  passwordConfirmation: 'Wafa-Charity-Account-2026',
+}
+
+async function setValues(wrapper, values) {
   for (const [name, value] of Object.entries(values))
     await wrapper.find(`[name="${name}"]`).setValue(value)
+}
+
+function nextButton(wrapper) {
+  return wrapper.find('.entity-register__actions button[type="submit"]')
+}
+
+async function goNext(wrapper) {
+  await wrapper.find('form').trigger('submit')
+  await settle()
+}
+
+async function fillEntityStep(wrapper, overrides = {}) {
   await chooseNamedOption(wrapper, 'entityType', 'waqf')
-  await chooseNamedOption(wrapper, 'developmentSector', 'health')
-  await chooseNamedOption(wrapper, 'orgSize', 'small')
+  await setValues(wrapper, { ...ENTITY_VALUES, ...overrides })
   await chooseNamedOption(wrapper, 'regionId', '2')
   await chooseNamedOption(wrapper, 'cityId', '12')
+  await chooseNamedOption(wrapper, 'developmentSector', 'health')
+  await chooseNamedOption(wrapper, 'orgSize', 'small')
+}
+
+async function fill(wrapper, overrides = {}) {
+  await fillEntityStep(wrapper, overrides)
+  await goNext(wrapper)
+  await setValues(wrapper, ACCOUNT_VALUES)
+}
+
+function stepFieldNames(wrapper) {
+  return [
+    ...new Set(
+      wrapper.findAll('.entity-register__step [name]').map((field) => field.attributes('name')),
+    ),
+  ]
 }
 
 beforeEach(() => {
@@ -86,7 +117,28 @@ beforeEach(() => {
 })
 
 describe('Register', () => {
-  it('offers the three entity types, lists the cities of the chosen region and leaves marketing unticked', async () => {
+  it('asks for the entity first, in the agreed order and without field hints', async () => {
+    const { wrapper } = await mountRegister()
+    expect(wrapper.findAll('.wizard__step')).toHaveLength(2)
+    expect(stepFieldNames(wrapper)).toEqual([
+      'entityType',
+      'unifiedNumber',
+      'name.ar',
+      'name.en',
+      'regionId',
+      'cityId',
+      'developmentSector',
+      'orgSize',
+      'foundingYear',
+      'employeesCount',
+      'governanceGrade',
+      'annualBeneficiariesCount',
+    ])
+    expect(wrapper.findAll('.entity-register__step .field__hint')).toHaveLength(0)
+    expect(nextButton(wrapper).text()).toBe('Next')
+  })
+
+  it('offers the three entity types, lists the cities of the chosen region', async () => {
     const { wrapper } = await mountRegister()
     expect(optionValuesOf(findSelect(wrapper, { name: 'entityType' }))).toEqual([
       'civil_association',
@@ -96,7 +148,38 @@ describe('Register', () => {
     expect(wrapper.find('[name="cityId"]').element.disabled).toBe(true)
     await chooseNamedOption(wrapper, 'regionId', '1')
     expect(optionLabelsOf(findSelect(wrapper, { name: 'cityId' }))).toEqual(['Riyadh'])
+  })
+
+  it('stays on the entity step until it is valid and requires the English name', async () => {
+    const { wrapper } = await mountRegister()
+    await fillEntityStep(wrapper, { 'name.en': '' })
+    await goNext(wrapper)
+    expect(wrapper.find('[name="officialEmail"]').exists()).toBe(false)
+    expect(wrapper.find('[name="name.en"]').attributes('aria-invalid')).toBe('true')
+    expect(wrapper.find('.wizard__step.is-invalid').exists()).toBe(true)
+
+    await setValues(wrapper, { 'name.en': 'Al-Wafa Charity' })
+    await goNext(wrapper)
+    expect(stepFieldNames(wrapper)).toEqual([
+      'authorizedPersonName',
+      'phone',
+      'officialEmail',
+      'password',
+      'passwordConfirmation',
+      'termsAccepted',
+      'marketingConsent',
+    ])
+    expect(wrapper.findAll('.entity-register__step .field__hint')).toHaveLength(0)
     expect(wrapper.find('[name="marketingConsent"]').element.checked).toBe(false)
+  })
+
+  it('keeps the entity answers when going back a step', async () => {
+    const { wrapper } = await mountRegister()
+    await fill(wrapper)
+    await wrapper.find('.entity-register__actions button[type="button"]').trigger('click')
+    await settle()
+    expect(wrapper.find('[name="name.en"]').element.value).toBe('Al-Wafa Charity')
+    expect(wrapper.find('[name="unifiedNumber"]').element.value).toBe('7000000901')
   })
 
   it('blocks the submission until the terms are accepted, then registers and opens the OTP step', async () => {
@@ -113,11 +196,15 @@ describe('Register', () => {
     await settle()
     expect(authService.register).toHaveBeenCalledWith(
       expect.objectContaining({
+        name: { ar: 'جمعية الوفاء الخيرية', en: 'Al-Wafa Charity' },
         entityType: 'waqf',
         unifiedNumber: '7000000901',
         regionId: 2,
         cityId: 12,
         governanceGrade: null,
+        employeesCount: null,
+        annualBeneficiariesCount: null,
+        hasStrategicPlan: null,
         termsVersionId: 3,
         privacyVersionId: 4,
         termsAccepted: true,
@@ -129,7 +216,7 @@ describe('Register', () => {
     expect(push).toHaveBeenCalledWith({ name: 'auth.otp' })
   })
 
-  it('keeps the unified number digits only, explains it and shows the duplicate answer on the field', async () => {
+  it('keeps the unified number digits only and returns to the entity step on a duplicate', async () => {
     const DUPLICATE =
       'This unified national number is already registered for another entity on the platform.'
     authService.register.mockRejectedValue({
@@ -137,29 +224,26 @@ describe('Register', () => {
       normalized: { message: 'Invalid', fieldErrors: { unifiedNumber: [DUPLICATE] } },
     })
     const { wrapper } = await mountRegister()
-    await fill(wrapper)
     const input = wrapper.find('[name="unifiedNumber"]')
     await input.setValue('٧٠٠-٠٠ab٠٠٩٠١9999')
     expect(input.element.value).toBe('7000000901')
     expect(input.attributes()).toMatchObject({ inputmode: 'numeric', dir: 'ltr', maxlength: '10' })
-    expect(wrapper.text()).toContain('10 digits starting with 7.')
+    await fill(wrapper)
     await wrapper.find('[name="termsAccepted"]').setValue(true)
     await wrapper.find('form').trigger('submit')
     await settle()
     expect(authService.register).toHaveBeenCalledWith(
       expect.objectContaining({ unifiedNumber: '7000000901' }),
     )
+    expect(wrapper.find('[name="unifiedNumber"]').exists()).toBe(true)
     expect(wrapper.text()).toContain(DUPLICATE)
   })
 
-  it('requires the unified number before registering', async () => {
+  it('requires the unified number before leaving the entity step', async () => {
     const { wrapper } = await mountRegister()
-    await fill(wrapper)
-    await wrapper.find('[name="unifiedNumber"]').setValue('')
-    await wrapper.find('[name="termsAccepted"]').setValue(true)
-    await wrapper.find('form').trigger('submit')
-    await settle()
-    expect(authService.register).not.toHaveBeenCalled()
+    await fillEntityStep(wrapper, { unifiedNumber: '' })
+    await goNext(wrapper)
+    expect(wrapper.find('[name="officialEmail"]').exists()).toBe(false)
     expect(wrapper.find('[name="unifiedNumber"]').attributes('aria-invalid')).toBe('true')
   })
 

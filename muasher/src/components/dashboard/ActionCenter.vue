@@ -43,7 +43,6 @@ function dueOf(item) {
         <span class="action-center__icon" aria-hidden="true"><AppIcon name="list-check" /></span>
         <div class="action-center__heading">
           <h2 class="action-center__title">{{ t('dashboard.actionCenter.title') }}</h2>
-          <p class="action-center__subtitle">{{ t('dashboard.actionCenter.subtitle') }}</p>
         </div>
         <span
           v-if="items.length && !loading"

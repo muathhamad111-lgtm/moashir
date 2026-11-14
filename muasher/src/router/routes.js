@@ -119,6 +119,16 @@ export const appRoutes = [
     },
   },
   {
+    path: '/dashboard/executive',
+    name: ROUTE_NAMES.APP_DASHBOARD_EXECUTIVE,
+    component: () => import('@/views/dashboard/Executive.vue'),
+    meta: {
+      layout: 'app',
+      titleKey: 'routes.app.dashboardExecutive.title',
+      requiresAuth: true,
+    },
+  },
+  {
     path: '/entity/profile',
     name: ROUTE_NAMES.ENTITY_PROFILE,
     component: () => import('@/views/entities/Profile.vue'),

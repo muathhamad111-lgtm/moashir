@@ -2,6 +2,11 @@
 import { test, expect } from '@playwright/test'
 import { seedSignedIn, seedLocale } from './support/session'
 import { openSignIn, requestSignInCode, signInTab } from './support/signIn'
+import {
+  fillRegistrationEntityStep,
+  goToRegistrationAccountStep,
+  registrationNextButton,
+} from './support/registration'
 
 function isEn(testInfo) {
   return testInfo.project.name === 'chromium-en-ltr'
@@ -41,17 +46,45 @@ async function goToOtpViaLogin(page) {
   await expect(page.locator('.otp-input__box').first()).toBeVisible()
 }
 
-test('register renders the full §5 field set', async ({ page }, testInfo) => {
+test('register asks for the entity first, then the authorized person and sign-in', async ({
+  page,
+}, testInfo) => {
   await localeOnly(page, isEn(testInfo) ? 'en' : 'ar')
   await page.goto('/auth/register')
   await expect(page.locator('.auth-form__title')).toBeVisible()
+  await expect(page.locator('.wizard__step')).toHaveCount(2)
+  const entityFields = await page
+    .locator('.entity-register__step [name]')
+    .evaluateAll((fields) => [...new Set(fields.map((field) => field.getAttribute('name')))])
+  expect(entityFields).toEqual([
+    'entityType',
+    'unifiedNumber',
+    'name.ar',
+    'name.en',
+    'regionId',
+    'cityId',
+    'developmentSector',
+    'orgSize',
+    'foundingYear',
+    'employeesCount',
+    'governanceGrade',
+    'annualBeneficiariesCount',
+  ])
+  await expect(page.locator('.entity-register__step .field__hint')).toHaveCount(0)
+  await expect(page.locator('[name="officialEmail"]')).toHaveCount(0)
+
+  await registrationNextButton(page).click()
+  await expect(page.locator('.wizard__step.is-invalid')).toHaveCount(1)
+  await expect(page.locator('[name="entityType"]')).toBeFocused()
+
+  await fillRegistrationEntityStep(page)
+  await goToRegistrationAccountStep(page)
   await expect(page.locator('[name="authorizedPersonName"]')).toBeVisible()
-  await expect(page.locator('[name="officialEmail"]')).toBeVisible()
-  await expect(page.locator('[name="unifiedNumber"]')).toBeVisible()
-  await expect(page.locator('[name="entityType"]')).toBeVisible()
-  await expect(page.locator('[name="developmentSector"]')).toBeVisible()
-  await expect(page.locator('[name="governanceGrade"]')).toBeVisible()
-  await expect(page.locator('[name="annualBeneficiariesCount"]')).toBeVisible()
+  await expect(page.locator('[name="phone"]')).toBeVisible()
+  await expect(page.locator('[name="password"]')).toBeVisible()
+  await expect(page.locator('.entity-register__step .field__hint')).toHaveCount(0)
+  await page.locator('.entity-register__actions button[type="button"]').click()
+  await expect(page.locator('[name="name.en"]')).toHaveValue('Al-Wafa Charity')
 })
 
 test('login renders the password tab first, then the code tab without a password', async ({

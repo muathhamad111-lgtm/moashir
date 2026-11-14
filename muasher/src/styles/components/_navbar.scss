@@ -58,29 +58,11 @@
   min-inline-size: 0;
 }
 
-.navbar__title {
-  display: none;
-  margin: 0;
-  font-family: var(--font-heading);
-  font-size: var(--fs-xl);
-  font-weight: var(--fw-bold);
-  color: var(--theme-heading);
-  @include truncate;
-
-  @include respond-to('sm') {
-    display: block;
-  }
-}
-
 .navbar__actions {
   @include flex(row, center, flex-end, var(--space-2));
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   min-inline-size: 0;
   max-inline-size: 100%;
-
-  @include respond-to('md') {
-    flex-wrap: nowrap;
-  }
 }
 
 .navbar__user {
@@ -126,4 +108,26 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1);
+}
+
+.locale-switcher__short {
+  display: none;
+}
+
+.navbar__locale {
+  .locale-switcher__full {
+    display: none;
+
+    @include respond-to('sm') {
+      display: inline;
+    }
+  }
+
+  .locale-switcher__short {
+    display: inline;
+
+    @include respond-to('sm') {
+      display: none;
+    }
+  }
 }

@@ -158,7 +158,7 @@ describe('Login view: password tab', () => {
     await mountLogin()
     await submit('12345')
     expect(authService.signIn).not.toHaveBeenCalled()
-    expect(wrapper.text()).toContain('10 digits starting with 7')
+    expect(wrapper.text()).toContain('unified national number (10 digits)')
   })
 
   it('opens the registration code of a pending entity with the masked e-mail', async () => {
@@ -232,8 +232,7 @@ describe('Login view: password tab', () => {
     expect(wrapper.text()).toContain('Server format')
   })
 
-  it('renders no demo login unless the local-only build flag is set', async () => {
-    expect(import.meta.env.VITE_DEMO_LOGIN).toBeUndefined()
+  it('offers no demo quick-login', async () => {
     await mountLogin()
     expect(wrapper.find('.auth-form__demo').exists()).toBe(false)
   })
@@ -287,7 +286,7 @@ describe('Login view: code tab', () => {
     await mountLogin()
     await requestCode('12345')
     expect(authService.requestSignInCode).not.toHaveBeenCalled()
-    expect(wrapper.text()).toContain('10 digits starting with 7')
+    expect(wrapper.text()).toContain('unified national number (10 digits)')
   })
 
   it('shows too many requests with the wait above the field', async () => {

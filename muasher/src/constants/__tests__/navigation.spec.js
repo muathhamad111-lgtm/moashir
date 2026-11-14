@@ -24,18 +24,18 @@ describe('navigation constants', () => {
   })
 
   it('treats child route names as active for their parent item', () => {
-    const settings = APP_NAV_ITEMS.find((item) => item.id === 'admin-settings')
-    expect(isNavItemActive(settings, 'admin.settings')).toBe(true)
-    expect(isNavItemActive(settings, 'admin.settings.general')).toBe(true)
-    expect(isNavItemActive(settings, 'admin.settingsx')).toBe(false)
-    expect(isNavItemActive(settings, undefined)).toBe(false)
+    const dashboard = APP_NAV_ITEMS.find((item) => item.id === 'dashboard')
+    expect(isNavItemActive(dashboard, 'app.dashboard')).toBe(true)
+    expect(isNavItemActive(dashboard, 'app.dashboard.child')).toBe(true)
+    expect(isNavItemActive(dashboard, 'app.dashboardx')).toBe(false)
+    expect(isNavItemActive(dashboard, undefined)).toBe(false)
   })
 
-  it('keeps branding outside the settings prefix so only one item is active', () => {
-    const branding = APP_NAV_ITEMS.find((item) => item.id === 'admin-branding')
-    const settings = APP_NAV_ITEMS.find((item) => item.id === 'admin-settings')
-    expect(isNavItemActive(branding, 'admin.branding')).toBe(true)
-    expect(isNavItemActive(settings, 'admin.branding')).toBe(false)
+  it('leaves settings, branding and the audit log to the settings hub', () => {
+    const ids = APP_NAV_ITEMS.map((item) => item.id)
+    expect(ids).not.toContain('admin-settings')
+    expect(ids).not.toContain('admin-branding')
+    expect(ids).not.toContain('admin-audit-log')
   })
 
   it('gates every sidebar item by a permission key, never by a role name', () => {
@@ -44,5 +44,23 @@ describe('navigation constants', () => {
       APP_NAV_ITEMS.filter((item) => !navAccessOf(item)?.anyOf?.length).map((item) => item.id),
     ).toEqual([])
     expect(accessFor('admin.branding').anyOf).toEqual([PERMISSIONS.SETTINGS_BRANDING_MANAGE])
+  })
+})
+
+describe('Users section', () => {
+  it('opens the permissions tab from the Users item when only the matrix is allowed', () => {
+    const matrixOnly = (access) => access.anyOf.includes('roles.matrix.view')
+    const users = filterNavByAccess(APP_NAV_ITEMS, matrixOnly).find(
+      (item) => item.id === 'admin-users',
+    )
+    expect(users.routeName).toBe('admin.permissions')
+    expect(isNavItemActive(users, 'admin.permissions')).toBe(true)
+  })
+
+  it('marks the Users item active on both of its tabs', () => {
+    const users = APP_NAV_ITEMS.find((item) => item.id === 'admin-users')
+    expect(isNavItemActive(users, 'admin.users')).toBe(true)
+    expect(isNavItemActive(users, 'admin.permissions')).toBe(true)
+    expect(APP_NAV_ITEMS.some((item) => item.id === 'admin-permissions')).toBe(false)
   })
 })

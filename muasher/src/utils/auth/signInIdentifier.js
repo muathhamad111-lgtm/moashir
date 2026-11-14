@@ -20,8 +20,8 @@ export function identifierTypeOf(value) {
   const text = toWesternDigits(value)
   if (text.includes('@')) return EMAIL_PATTERN.test(text) ? SIGN_IN_IDENTIFIERS.EMAIL : null
   const digits = compact(text)
-  if (UNIFIED_NUMBER_PATTERN.test(digits)) return SIGN_IN_IDENTIFIERS.UNIFIED_NUMBER
-  return SAUDI_MOBILE_INPUT.test(digits) ? SIGN_IN_IDENTIFIERS.MOBILE : null
+  if (SAUDI_MOBILE_INPUT.test(digits)) return SIGN_IN_IDENTIFIERS.MOBILE
+  return UNIFIED_NUMBER_PATTERN.test(digits) ? SIGN_IN_IDENTIFIERS.UNIFIED_NUMBER : null
 }
 
 export function identifierForRequest(value) {

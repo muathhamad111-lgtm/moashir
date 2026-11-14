@@ -52,9 +52,8 @@ describe('sign-in identifier', () => {
     expect(identifierForRequest(typed)).toBe(sent)
   })
 
-  it.each(['', 'info@', '12345', '6001234567', '0451234567', '70012345678', 'name'])(
-    'refuses %s',
-    (typed) => expect(identifierTypeOf(typed)).toBeNull(),
+  it.each(['', 'info@', '12345', '600123456', '70012345678', 'name'])('refuses %s', (typed) =>
+    expect(identifierTypeOf(typed)).toBeNull(),
   )
 
   it('masks the e-mail and keeps only an e-mail identifier for the code step', () => {

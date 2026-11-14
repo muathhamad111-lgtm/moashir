@@ -109,36 +109,6 @@
   }
 }
 
-.auth-form__demo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-4);
-  border-radius: var(--radius-md);
-  border: var(--border-width) dashed var(--theme-border);
-  background-color: var(--theme-surface);
-}
-
-.auth-form__demo-title {
-  margin: 0;
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-  color: var(--theme-heading);
-}
-
-.auth-form__demo-hint {
-  margin: 0;
-  font-size: var(--fs-xs);
-  color: var(--theme-text-muted);
-}
-
-.auth-form__demo-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-block-start: var(--space-2);
-}
-
 .auth-otp__error {
   margin: 0;
   color: var(--color-danger);

@@ -8,7 +8,14 @@ const { toggleLocale } = useLocale()
 </script>
 
 <template>
-  <BaseButton variant="ghost" size="sm" icon="language" @click="toggleLocale">
-    {{ t('locale.switchLabel') }}
+  <BaseButton
+    variant="ghost"
+    size="sm"
+    icon="language"
+    :aria-label="t('locale.switchLabel')"
+    @click="toggleLocale"
+  >
+    <span class="locale-switcher__full">{{ t('locale.switchLabel') }}</span>
+    <span class="locale-switcher__short" aria-hidden="true">{{ t('locale.switchShort') }}</span>
   </BaseButton>
 </template>

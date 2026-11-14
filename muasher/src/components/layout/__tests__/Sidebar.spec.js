@@ -43,11 +43,11 @@ describe('Sidebar', () => {
   it('ignores role names and follows the permission keys only', async () => {
     const { wrapper } = factory({
       roles: [ROLES.SYSTEM_ADMIN],
-      extra: { permissions: ['notifications.view'] },
+      extra: { permissions: ['dashboard.view'] },
     })
     await wrapper.vm.$nextTick()
     const labels = wrapper.findAll('.sidebar__label').map((el) => el.text())
-    expect(labels).toEqual(['الإشعارات'])
+    expect(labels).toEqual(['لوحة المعلومات'])
   })
 
   it('filters items by the user roles (entity sees entity items only)', async () => {
@@ -57,22 +57,24 @@ describe('Sidebar', () => {
     expect(labels).toContain('التقييم الذاتي')
     expect(labels).toContain('الشهادات')
     expect(labels).not.toContain('طلبات التقييم')
-    expect(labels).not.toContain('المستخدمون والأدوار')
+    expect(labels).not.toContain('المستخدمون')
   })
 
   it('gives the System Administrator no bypass: only the modules its permissions allow', async () => {
     const { wrapper } = factory({ roles: [ROLES.SYSTEM_ADMIN] })
     await wrapper.vm.$nextTick()
     const labels = wrapper.findAll('.sidebar__label').map((el) => el.text())
-    expect(wrapper.findAll('.sidebar__item')).toHaveLength(27)
+    expect(wrapper.findAll('.sidebar__item')).toHaveLength(21)
+    expect(labels).toContain('المستخدمون')
+    expect(labels).not.toContain('إدارة الصلاحيات')
     expect(labels).toEqual(
       expect.arrayContaining([
         'الملخص المالي',
         'العمليات المالية',
         'الاستردادات',
         'أحداث الدفع',
-        'رسائل تواصل معنا',
-        'سجل التدقيق',
+        'صندوق الرسائل',
+        'المستخدمون',
       ]),
     )
     expect(labels).not.toContain('التقييم الذاتي')
@@ -92,22 +94,19 @@ describe('Sidebar', () => {
     )
   })
 
-  it('groups items by module with a caption per group', async () => {
+  it('lists the dashboards first without a caption, then groups items by module', async () => {
     const { wrapper } = factory({ roles: [ROLES.SYSTEM_ADMIN] })
     await wrapper.vm.$nextTick()
+    const headless = wrapper
+      .findAll('.sidebar__menu--headless .sidebar__label')
+      .map((el) => el.text())
+    expect(headless).toEqual(['لوحة المعلومات', 'اللوحة التنفيذية', 'المستخدمون', 'صندوق الرسائل'])
+    expect(wrapper.text()).not.toContain('الإشعارات')
     const captions = wrapper.findAll('.sidebar__caption').map((el) => el.text())
-    expect(captions).toEqual([
-      'نظرة عامة',
-      'إدارة الجهات',
-      'الطلبات والتقييم',
-      'الجائزة',
-      'المحتوى والمعايير',
-      'المالية',
-      'إدارة النظام',
-    ])
+    expect(captions).toEqual(['إدارة الجهات', 'الطلبات والتقييم', 'الجائزة', 'المالية'])
     const group = wrapper.find('.sidebar__group')
     expect(group.attributes('role')).toBe('group')
-    expect(group.attributes('aria-labelledby')).toBe('sidebar-group-overview')
+    expect(group.attributes('aria-labelledby')).toBe('sidebar-group-entities')
   })
 
   it('shows the union of modules for a multi-role user without any role switcher', async () => {
@@ -116,7 +115,8 @@ describe('Sidebar', () => {
     const labels = wrapper.findAll('.sidebar__label').map((el) => el.text())
     expect(labels).toContain('طلبات المعتمد')
     expect(labels).toContain('طلبات المتقدم')
-    expect(labels).toContain('إدارة المؤشرات')
+    expect(labels).toContain('صندوق الرسائل')
+    expect(labels).not.toContain('إدارة المؤشرات')
     expect(labels).not.toContain('الهوية والألوان')
     expect(wrapper.find('[data-role-switcher]').exists()).toBe(false)
   })
@@ -160,14 +160,12 @@ describe('Sidebar', () => {
 
   it('expands the group of the active route and folds the other groups', async () => {
     const { wrapper, globals } = factory({ roles: [ROLES.SYSTEM_ADMIN], extra: { id: 41 } })
-    await globals.router.push('/admin/settings/users')
+    await globals.router.push('/admin/entities')
     await flushPromises()
-    const toggle = wrapper.find('#sidebar-group-administration')
+    const toggle = wrapper.find('#sidebar-group-entities')
     expect(toggle.attributes('aria-expanded')).toBe('true')
-    expect(toggle.attributes('aria-controls')).toBe('sidebar-menu-administration')
-    expect(wrapper.find('#sidebar-menu-administration').classes()).not.toContain(
-      'sidebar__menu--closed',
-    )
+    expect(toggle.attributes('aria-controls')).toBe('sidebar-menu-entities')
+    expect(wrapper.find('#sidebar-menu-entities').classes()).not.toContain('sidebar__menu--closed')
     expect(wrapper.find('#sidebar-group-finance').attributes('aria-expanded')).toBe('false')
     expect(wrapper.find('#sidebar-menu-finance').classes()).toContain('sidebar__menu--closed')
   })
@@ -189,25 +187,30 @@ describe('Sidebar', () => {
 
   it('marks the item of the current route (and its child routes) as active with aria-current', async () => {
     const { wrapper, globals } = factory({ roles: [ROLES.SYSTEM_ADMIN] })
-    await globals.router.push('/admin/settings/general')
+    await globals.router.push('/admin/permissions')
     await wrapper.vm.$nextTick()
     const active = wrapper.findAll('.sidebar__item.is-active')
     expect(active).toHaveLength(1)
-    expect(active[0].text()).toBe('الإعدادات')
+    expect(active[0].text()).toBe('المستخدمون')
     expect(active[0].attributes('aria-current')).toBe('page')
     expect(wrapper.findAll('[aria-current="page"]')).toHaveLength(1)
   })
 
-  it('shows the branding entry only to the System Administrator', async () => {
+  it('keeps settings, branding and the audit log out of the sidebar', async () => {
     const { wrapper } = factory({ roles: [ROLES.SYSTEM_ADMIN] })
     await wrapper.vm.$nextTick()
-    expect(wrapper.findAll('.sidebar__label').map((el) => el.text())).toContain('الهوية والألوان')
+    const labels = wrapper.findAll('.sidebar__label').map((el) => el.text())
+    expect(labels).not.toContain('الهوية والألوان')
+    expect(labels).not.toContain('الإعدادات')
+    expect(labels).not.toContain('سجل التدقيق')
   })
 
   it('renders the brand logo linking to the dashboard', () => {
     const { wrapper } = factory()
     expect(wrapper.find('.sidebar__brand').attributes('href')).toBe('/dashboard')
-    expect(wrapper.find('.sidebar__logo').attributes('alt')).toBe('مؤشر، الانتقال إلى لوحة التحكم')
+    expect(wrapper.find('.sidebar__logo').attributes('alt')).toBe(
+      'مؤشر، الانتقال إلى لوحة المعلومات',
+    )
   })
 
   it('always shows the logo for a dark background, in dark mode and in light mode', async () => {
@@ -248,5 +251,13 @@ describe('Sidebar', () => {
     const { wrapper } = factory()
     expect(wrapper.element.tagName).toBe('NAV')
     expect(wrapper.attributes('aria-label')).toBe('التنقل الرئيسي')
+  })
+
+  it('marks only the executive dashboard as current on its page', async () => {
+    const { wrapper, globals } = factory({ roles: [ROLES.SYSTEM_ADMIN] })
+    await globals.router.push('/dashboard/executive')
+    await flushPromises()
+    const current = wrapper.findAll('[aria-current="page"]').map((el) => el.text())
+    expect(current).toEqual(['اللوحة التنفيذية'])
   })
 })

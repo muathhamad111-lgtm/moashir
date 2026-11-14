@@ -98,3 +98,28 @@
 .field__control--digits {
   font-variant-numeric: tabular-nums;
 }
+
+.field__affixed {
+  position: relative;
+  display: flex;
+
+  .field__control {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    padding-inline-end: var(--space-8);
+  }
+}
+
+.field__suffix {
+  @include flex-center;
+  position: absolute;
+  inset-block: var(--space-4) var(--space-2);
+  inset-inline-end: var(--space-3);
+  color: var(--theme-text-secondary);
+  pointer-events: none;
+  visibility: hidden;
+
+  .field--floated & {
+    visibility: visible;
+  }
+}

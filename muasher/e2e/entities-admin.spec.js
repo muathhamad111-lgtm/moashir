@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
 import { clearMockFault, forceMockFault } from './support/mockFaults'
 import { chooseNamed } from './support/dropdown'
+import { searchList } from './support/listFilters'
 
 const SYSTEM_ADMIN = {
   id: 2,
@@ -62,9 +63,9 @@ test('the System Administrator lists, filters and exports entities', async ({ pa
     fullPage: true,
   })
 
-  await page.locator('.toolbar__search input').fill(isEn(testInfo) ? 'Ehsan' : 'احسان')
+  await searchList(page, isEn(testInfo) ? 'Ehsan' : 'احسان')
   await expect(rows(page)).toHaveCount(1)
-  await page.locator('.toolbar__search input').fill('')
+  await searchList(page, '')
   await expect(rows(page)).toHaveCount(10)
 
   const download = page.waitForEvent('download')

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { limitDecimalInput } from '@/utils/numerals'
 import { createI18n } from 'vue-i18n'
 import en from '@/i18n/locales/en.json'
 import ar from '@/i18n/locales/ar.json'
@@ -168,12 +169,13 @@ describe('entity schemas', () => {
 })
 
 describe('unified national number', () => {
-  it('requires 10 Western digits starting with 7 and accepts Arabic-Indic input', async () => {
+  it('requires exactly 10 Western digits with any first digit and accepts Arabic-Indic input', async () => {
     const field = unifiedNumberField(t)
     await expect(field.validate('7001234567')).resolves.toBe('7001234567')
     await expect(field.validate('٧٠٠١٢٣٤٥٦٧')).resolves.toBeTruthy()
     await expect(field.validate('')).rejects.toThrow('This field is required')
-    await expect(field.validate('6001234567')).rejects.toThrow('start with 7')
+    await expect(field.validate('6001234567')).resolves.toBe('6001234567')
+    await expect(field.validate('70012345678')).rejects.toThrow('exactly 10 digits')
     await expect(field.validate('700123456')).rejects.toThrow('exactly 10 digits')
     await expect(unifiedNumberField(t, { required: false }).validate('')).resolves.toBe('')
   })
@@ -181,5 +183,17 @@ describe('unified national number', () => {
   it('sends the number only when one is entered, in Western digits', () => {
     expect(unifiedNumberPayload('٧٠٠١٢٣٤٥٦٧')).toEqual({ unifiedNumber: '7001234567' })
     expect(unifiedNumberPayload('')).toEqual({})
+  })
+})
+
+describe('limitDecimalInput', () => {
+  it('keeps digits and one point, then trims the whole and the decimal parts', () => {
+    const limits = { integerDigits: 3, decimals: 2 }
+    expect(limitDecimalInput('21343.5678', limits)).toBe('213.56')
+    expect(limitDecimalInput('9.1.2.3', limits)).toBe('9.12')
+    expect(limitDecimalInput('ab12', limits)).toBe('12')
+    expect(limitDecimalInput('', limits)).toBe('')
+    expect(limitDecimalInput('85.', limits)).toBe('85.')
+    expect(limitDecimalInput('85.5', { integerDigits: 3, decimals: 0 })).toBe('85')
   })
 })

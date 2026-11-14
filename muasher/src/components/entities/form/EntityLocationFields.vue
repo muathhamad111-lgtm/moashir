@@ -1,8 +1,7 @@
 <script setup>
-import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useField } from 'vee-validate'
 import FieldSelect from '@/components/form/FieldSelect.vue'
+import { useRegionCityFields } from '@/composables/useRegionCityFields'
 
 const props = defineProps({
   regionOptions: { type: Array, required: true },
@@ -10,14 +9,7 @@ const props = defineProps({
 })
 
 const { t } = useI18n()
-const { value: regionId } = useField('regionId')
-const { value: cityId } = useField('cityId')
-
-const cityOptions = computed(() => props.cityOptionsFor(regionId.value))
-
-watch(regionId, () => {
-  if (!cityOptions.value.some((option) => option.value === String(cityId.value))) cityId.value = ''
-})
+const { regionId, cityOptions } = useRegionCityFields(props.cityOptionsFor)
 </script>
 
 <template>
@@ -34,7 +26,6 @@ watch(regionId, () => {
         name="cityId"
         :label="t('entities.fields.city')"
         :options="cityOptions"
-        :hint="regionId ? '' : t('entities.hints.regionFirst')"
         :disabled="!regionId"
         required
       />

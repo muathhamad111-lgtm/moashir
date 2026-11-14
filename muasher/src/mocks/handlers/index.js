@@ -49,7 +49,6 @@ import { brandingHandlers } from './branding'
 import { profileHandlers } from './profile'
 import { searchHandlers } from './search'
 import { sanctumHandlers } from './sanctum'
-import { devSessionHandlers } from './devSession'
 import { contactMessagesHandlers } from './contactMessages'
 import { contactInboxHandlers } from './contactInbox'
 import { contactSettingsHandlers } from './contactSettings'
@@ -61,7 +60,6 @@ import { auditLogsHandlers } from './auditLogs'
 
 export const handlers = [
   ...sanctumHandlers,
-  ...(import.meta.env.DEV ? devSessionHandlers() : []),
   ...kpisHandlers,
   ...notificationsHandlers,
   ...criteriaHandlers,

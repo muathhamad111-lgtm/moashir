@@ -23,7 +23,6 @@ function bind(key) {
 
 <template>
   <AppSelect
-    variant="filter"
     v-if="'level' in filters.filters"
     v-bind="bind('level')"
     :options="options.levelOptions.value"
@@ -31,7 +30,6 @@ function bind(key) {
     data-testid="entity-level-filter"
   />
   <AppSelect
-    variant="filter"
     v-if="'status' in filters.filters"
     v-bind="bind('status')"
     :options="options.statusOptions.value"
@@ -39,33 +37,28 @@ function bind(key) {
   />
   <template v-if="full">
     <AppSelect
-      variant="filter"
       v-bind="bind('regionId')"
       :options="options.regionFilterOptions.value"
       :label="t('entities.filters.region')"
     />
     <AppSelect
-      variant="filter"
       v-bind="bind('entityType')"
       :options="options.typeOptions.value"
       :label="t('entities.filters.type')"
     />
     <AppSelect
-      variant="filter"
       v-if="'developmentSector' in filters.filters"
       v-bind="bind('developmentSector')"
       :options="options.sectorOptions.value"
       :label="t('entities.filters.sector')"
     />
     <AppSelect
-      variant="filter"
       v-if="'orgSize' in filters.filters"
       v-bind="bind('orgSize')"
       :options="options.sizeOptions.value"
       :label="t('entities.filters.size')"
     />
     <AppSelect
-      variant="filter"
       :model-value="filters.sort.value || '-created_at'"
       :options="options.sortOptions.value"
       :label="t('entities.filters.sort')"

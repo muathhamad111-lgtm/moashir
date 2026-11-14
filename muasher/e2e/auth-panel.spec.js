@@ -5,6 +5,7 @@ import { settleFonts } from './support/screenshots'
 import { AA_TEXT, contrastOf } from './support/contrast'
 
 const SHOTS = 'e2e/__screenshots__/auth-panel'
+const SHORT_DESKTOP = { width: 1440, height: 700 }
 const VIEWPORTS = {
   desktop: { width: 1440, height: 900 },
   mobile: { width: 390, height: 844 },
@@ -13,11 +14,11 @@ const DEV_OVERLAYS =
   '#__vue-devtools-container__, #vue-inspector-container { display: none !important; }'
 const COPY = {
   ar: {
-    heading: 'قياسٌ عادل، وتحسينٌ مستمر',
+    label: 'عن منصة مؤشر',
     titles: ['معايير معلنة وموحّدة', 'تقييم مستقل ومحايد', 'نتائج تقود إلى التحسين'],
   },
   en: {
-    heading: 'Fair measurement, continuous improvement',
+    label: 'About Moashir',
     titles: [
       'Published, unified standards',
       'Independent, impartial review',
@@ -36,11 +37,7 @@ const SCREENS = [
   { name: 'login', path: '/auth/login', fullPage: false },
   { name: 'register', path: '/auth/register', fullPage: true },
 ]
-const PANEL_TEXT = [
-  '.auth-value-panel__heading',
-  '.auth-value-card__title',
-  '.auth-value-card__body',
-]
+const PANEL_TEXT = ['.auth-value-card__title', '.auth-value-card__body']
 
 mkdirSync(SHOTS, { recursive: true })
 
@@ -60,7 +57,7 @@ async function open(page, path, ready = '.auth-layout__card form') {
   await page.goto(path)
   await page.addStyleTag({ content: DEV_OVERLAYS })
   await expect(page.locator(ready).first()).toBeVisible({ timeout: 10000 })
-  await expect(page.locator('aside.auth-layout__brand h2')).toBeVisible()
+  await expect(page.locator('aside.auth-layout__brand .auth-layout__logo')).toBeVisible()
 }
 
 async function noHorizontalOverflow(page) {
@@ -80,7 +77,9 @@ function boxOf(page, selector) {
 test.describe('auth brand panel — semantics', () => {
   test.use({ viewport: VIEWPORTS.desktop })
 
-  test('the form comes first and the aside is named by its h2', async ({ page }, testInfo) => {
+  test('the form comes first and the aside is named without a tagline', async ({
+    page,
+  }, testInfo) => {
     const copy = COPY[localeOf(testInfo)]
     await seedPreferences(page, { locale: localeOf(testInfo) })
     await open(page, '/auth/login')
@@ -94,10 +93,10 @@ test.describe('auth brand panel — semantics', () => {
     await expect(page.locator('h1')).toHaveCount(1)
     await expect(page.locator('main h1')).toHaveCount(1)
 
-    const aside = page.getByRole('complementary', { name: copy.heading })
+    const aside = page.getByRole('complementary', { name: copy.label })
     await expect(aside).toBeVisible()
-    await expect(aside.getByRole('heading', { level: 2 })).toHaveText(copy.heading)
-    await expect(aside.getByRole('heading', { level: 3 })).toHaveText(copy.titles)
+    await expect(aside.getByRole('heading', { level: 2 })).toHaveText(copy.titles)
+    await expect(page.locator('.auth-value-panel__heading')).toHaveCount(0)
     await expect(aside.getByRole('list').getByRole('listitem')).toHaveCount(3)
     await expect(page.locator('.auth-value-panel__footnote')).toHaveCount(0)
     await expect(page.locator('.auth-layout__tagline, .illustration-slot')).toHaveCount(0)
@@ -129,7 +128,7 @@ test.describe('auth brand panel — semantics', () => {
     await seedPreferences(page, { locale: localeOf(testInfo) })
     for (const { path, ready } of AUTH_PAGES) {
       await open(page, path, ready)
-      await expect(page.locator('aside.auth-layout__brand h2')).toHaveText(copy.heading)
+      await expect(page.getByRole('complementary', { name: copy.label })).toBeVisible()
       await expect(page.locator('.auth-value-card')).toHaveCount(3)
       await expect(page.locator('h1')).toHaveCount(1)
     }
@@ -164,13 +163,13 @@ test.describe('auth brand panel — layout', () => {
   test('the panel stays in view while the long register form scrolls', async ({
     page,
   }, testInfo) => {
-    await page.setViewportSize(VIEWPORTS.desktop)
+    await page.setViewportSize(SHORT_DESKTOP)
     await seedPreferences(page, { locale: localeOf(testInfo) })
     await open(page, '/auth/register')
 
     await page.evaluate(() => window.scrollTo(0, 900))
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
-    await expect(page.locator('.auth-value-panel__heading')).toBeInViewport()
+    await expect(page.locator('.auth-layout__logo')).toBeInViewport()
     await expect(page.locator('.auth-value-card').last()).toBeInViewport()
   })
 
@@ -183,9 +182,7 @@ test.describe('auth brand panel — layout', () => {
     const main = await boxOf(page, 'main.auth-layout__content')
     expect(aside.y + aside.height).toBeLessThanOrEqual(main.y + 1)
     await expect(page.locator('.auth-layout__logo')).toBeVisible()
-    await expect(page.locator('.auth-value-panel__heading')).toHaveText(
-      COPY[localeOf(testInfo)].heading,
-    )
+    await expect(page.locator('.auth-value-panel__heading')).toHaveCount(0)
     await expect(page.locator('.auth-value-panel__list')).toBeHidden()
     await expect(page.getByRole('complementary').getByRole('listitem')).toHaveCount(0)
     await expect(page.locator('main h1')).toBeInViewport()

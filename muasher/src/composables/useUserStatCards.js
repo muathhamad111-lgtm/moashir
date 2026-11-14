@@ -6,7 +6,6 @@ const STAT_ICONS = {
   active: 'user-check',
   invited: 'envelope',
   suspended: 'user-slash',
-  locked: 'lock',
 }
 
 export function useUserStatCards(stats) {

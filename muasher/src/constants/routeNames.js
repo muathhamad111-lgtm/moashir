@@ -11,6 +11,7 @@ export const ROUTE_NAMES = {
   AUTH_RESET_PASSWORD: 'auth.resetPassword',
   AUTH_INVITATION: 'auth.invitation',
   APP_DASHBOARD: 'app.dashboard',
+  APP_DASHBOARD_EXECUTIVE: 'app.executive',
   ENTITY_PROFILE: 'entity.profile',
   ASSESSMENT_HISTORY: 'assessment.history',
   ASSESSMENT_SELF: 'assessment.self',

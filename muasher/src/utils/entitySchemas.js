@@ -163,6 +163,8 @@ export function staffProfileSchema(t, { unifiedNumberRequired = false } = {}) {
 export function registrationSchema(t) {
   return yupObject({
     ...entityProfileShape(t),
+    name: yupObject({ ar: requiredText(t, NAME_MAX), en: requiredText(t, NAME_MAX) }),
+    hasStrategicPlan: yupString().oneOf(['', 'yes', 'no']),
     unifiedNumber: unifiedNumberField(t),
     officialEmail: yupString()
       .trim()

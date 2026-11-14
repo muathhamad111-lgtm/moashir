@@ -72,6 +72,12 @@ const sections = computed(() => [
     group: 'platform',
   },
   {
+    key: 'auditLog',
+    to: ROUTE_NAMES.ADMIN_AUDIT_LOG,
+    icon: 'shield-info',
+    group: 'platform',
+  },
+  {
     key: 'integrations',
     to: ROUTE_NAMES.ADMIN_SETTINGS_INTEGRATIONS,
     icon: 'link',
@@ -108,6 +114,18 @@ const sections = computed(() => [
     group: 'integrations',
   },
   {
+    key: 'kpis',
+    to: ROUTE_NAMES.ADMIN_KPIS,
+    icon: 'chart-line',
+    group: 'standards',
+  },
+  {
+    key: 'criteria',
+    to: ROUTE_NAMES.ADMIN_CRITERIA,
+    icon: 'hierarchy',
+    group: 'standards',
+  },
+  {
     key: 'homepage',
     to: ROUTE_NAMES.ADMIN_SETTINGS_HOMEPAGE,
     icon: 'home-smile',
@@ -134,6 +152,7 @@ const accessibleSections = computed(() =>
 const groups = computed(() =>
   [
     { key: 'platform', title: t('settings.hub.groups.platform') },
+    { key: 'standards', title: t('settings.hub.groups.standards') },
     { key: 'integrations', title: t('settings.hub.groups.integrations') },
     { key: 'content', title: t('settings.hub.groups.content') },
   ]

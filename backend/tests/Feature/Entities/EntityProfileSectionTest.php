@@ -207,7 +207,7 @@ it('rejects invalid section data', function (ProfileSection $section, array $ove
 })->with([
     'identity without an Arabic name' => [ProfileSection::Identity, ['name' => ['ar' => '', 'en' => 'Al-Amal']], 'name.ar'],
     'identity with a cleared unified number' => [ProfileSection::Identity, ['unified_number' => null], 'unified_number'],
-    'identity with a unified number not starting with 7' => [ProfileSection::Identity, ['unified_number' => '6001234567'], 'unified_number'],
+    'identity with an eleven-digit unified number' => [ProfileSection::Identity, ['unified_number' => '60012345678'], 'unified_number'],
     'identity with a founding date in the future' => [ProfileSection::Identity, ['founded_on' => '2026-11-05'], 'founded_on'],
     'classification with an unknown type' => [ProfileSection::Classification, ['entity_type' => 'family_fund'], 'entity_type'],
     'classification without a region' => [ProfileSection::Classification, ['region_id' => null], 'region_id'],

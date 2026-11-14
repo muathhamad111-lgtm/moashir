@@ -32,12 +32,6 @@
   color: var(--theme-heading);
 }
 
-.action-center__subtitle {
-  margin: 0;
-  font-size: var(--fs-sm);
-  color: var(--theme-text-muted);
-}
-
 .action-center__count {
   @include flex-center;
   min-inline-size: var(--space-8);

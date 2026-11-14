@@ -163,7 +163,7 @@ test.describe('contact inbox', () => {
     await open(page, '/admin/contact-messages', ROWS)
     await expect(
       page.locator('.sidebar__item', {
-        hasText: text(testInfo, 'Contact messages', 'رسائل تواصل معنا'),
+        hasText: text(testInfo, 'Inbox', 'صندوق الرسائل'),
       }),
     ).toBeVisible()
     await page.locator(`${ROWS} .contact-inbox__reference`).first().click()
