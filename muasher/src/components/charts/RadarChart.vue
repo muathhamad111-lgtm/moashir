@@ -50,7 +50,7 @@ const labels = computed(() =>
       key: item.key,
       x: point.x,
       y: point.y,
-      lines: splitLabel(localizedText(item.name, locale.value) || item.code),
+      lines: splitLabel(localizedText(item.name, locale.value)),
     }
   }),
 )

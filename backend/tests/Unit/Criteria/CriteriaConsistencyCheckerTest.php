@@ -88,3 +88,14 @@ it('ignores guiding points under a directly evaluated sub-criterion', function (
 
     expect((new CriteriaConsistencyChecker)->check($version)->isConsistent())->toBeTrue();
 });
+
+it('names the criterion in the problem message instead of its code', function (): void {
+    $main = memoryMain(1, '1000', [memorySub(11, '600', EvaluationType::Direct)]);
+    $main->forceFill(['name' => ['ar' => 'القيادة الإدارية', 'en' => 'Leadership']]);
+    $problem = (new CriteriaConsistencyChecker)->check(memoryVersion([$main]))->problems[0];
+
+    app()->setLocale('ar');
+    expect($problem->message())->toContain('«القيادة الإدارية»')->not->toContain('M1');
+    app()->setLocale('en');
+    expect($problem->message())->toContain('“Leadership”')->not->toContain('M1');
+});

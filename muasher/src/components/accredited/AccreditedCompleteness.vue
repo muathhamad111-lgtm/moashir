@@ -29,17 +29,21 @@ function slotName(item) {
   return slot ? localizedText(slot.name, locale.value) : item.attachmentKey
 }
 
+function subName(item) {
+  return localizedText(subs.value.get(item.subCriterionId)?.name, locale.value)
+}
+
 const items = computed(() => [
   ...props.missing.missingCv.map((item) => ({
     key: `cv-${item.subCriterionId}`,
     subId: item.subCriterionId,
-    code: item.code,
+    subName: subName(item),
     label: t('accredited.completeness.cv'),
   })),
   ...props.missing.missingAttachments.map((item) => ({
     key: `att-${item.subCriterionId}-${item.attachmentKey}`,
     subId: item.subCriterionId,
-    code: item.code,
+    subName: subName(item),
     label: t('accredited.completeness.attachment', { name: slotName(item) }),
   })),
 ])
@@ -69,7 +73,7 @@ defineExpose({ focus })
           class="accredited-completeness__link"
           @click="emit('reveal', item.subId)"
         >
-          <span class="accredited-completeness__code u-ltr">{{ item.code }}</span>
+          <span class="accredited-completeness__sub">{{ item.subName }}</span>
           {{ item.label }}
         </button>
       </li>

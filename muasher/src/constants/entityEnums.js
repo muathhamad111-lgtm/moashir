@@ -47,8 +47,10 @@ export const ERASURE_KEPT_RECORDS = [
   'security_events',
 ]
 
-export const GOVERNANCE_GRADE = { MIN: 0, MAX: 100, INTEGER_DIGITS: 3, DECIMALS: 3 }
+export const GOVERNANCE_GRADE = { MIN: 0, MAX: 100, INTEGER_DIGITS: 3, DECIMALS: 2 }
 export const FOUNDING_YEAR_MIN = 1900
+
+export const EARLIEST_FOUNDING_DATE = '1900-01-01'
 export const PASSWORD_LENGTH = { MIN: 12, MAX: 128 }
 export const REASON_LENGTH = { MIN: 10, MAX: 1000, PERMANENT_MIN: 20 }
 export const PHONE_PATTERN = /^(05\d{8}|\+9665\d{8})$/

@@ -24,7 +24,6 @@ function percentOf(value) {
   <section class="feedback-criterion" :aria-labelledby="`criterion-${criterion.code}`">
     <header class="feedback-criterion__head">
       <h3 :id="`criterion-${criterion.code}`" class="feedback-criterion__title">
-        <bdi class="feedback-criterion__code" dir="ltr">{{ criterion.code }}</bdi>
         {{ localizedText(criterion.name, locale) }}
       </h3>
       <bdi class="feedback-criterion__percent" dir="ltr">{{ percentOf(criterion.percent) }}</bdi>
@@ -32,10 +31,7 @@ function percentOf(value) {
     <ul class="feedback-criterion__subs">
       <li v-for="sub in criterion.subs" :key="sub.subId ?? sub.code" class="feedback-report__sub">
         <div class="feedback-report__sub-head">
-          <h4 class="feedback-report__sub-title">
-            <bdi class="feedback-criterion__code" dir="ltr">{{ sub.code }}</bdi>
-            {{ localizedText(sub.name, locale) }}
-          </h4>
+          <h4 class="feedback-report__sub-title">{{ localizedText(sub.name, locale) }}</h4>
           <span class="feedback-report__sub-score">
             <bdi dir="ltr">{{ percentOf(sub.percent) }}</bdi>
             <span class="feedback-report__sub-points">

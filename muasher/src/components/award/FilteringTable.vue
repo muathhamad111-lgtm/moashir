@@ -8,6 +8,7 @@ import Badge from '@/components/ui/Badge.vue'
 import ThresholdBadge from './ThresholdBadge.vue'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
+import { twoDecimals } from '@/utils/percentText'
 
 const props = defineProps({
   cycleId: { type: Number, required: true },
@@ -56,7 +57,7 @@ function detailRoute(item) {
     <template #cell-percent="{ item }">
       <bdi class="filtering-table__percent u-ltr">{{
         item.initialResult
-          ? t('filtering.percent', { value: item.initialResult.percent })
+          ? t('filtering.percent', { value: twoDecimals(item.initialResult.percent) })
           : t('accredited.common.notSet')
       }}</bdi>
     </template>

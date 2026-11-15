@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useChartDirection } from '@/composables/useChartDirection'
 import { axisPercent, spanStart } from '@/utils/chartGeometry'
-import { scorePercentText } from '@/utils/percentText'
+import { percentText } from '@/utils/percentText'
 import { localizedText } from '@/utils/localizedText'
 import DeltaChip from './DeltaChip.vue'
 
@@ -21,7 +21,7 @@ const { isRtl } = useChartDirection()
 const rows = computed(() =>
   props.items.map((item) => ({
     ...item,
-    label: localizedText(item.name, locale.value) || item.code,
+    label: localizedText(item.name, locale.value),
     x: `${spanStart(0, item.percent, isRtl.value)}%`,
     width: `${item.percent}%`,
   })),
@@ -57,7 +57,7 @@ const axis = computed(() =>
             y2="16"
           />
         </svg>
-        <bdi class="ranked-bars__value" dir="ltr">{{ scorePercentText(n, t, row.percent) }}</bdi>
+        <bdi class="ranked-bars__value" dir="ltr">{{ percentText(n, t, row.percent) }}</bdi>
         <DeltaChip class="ranked-bars__delta" :value="row.delta" />
       </li>
     </ol>

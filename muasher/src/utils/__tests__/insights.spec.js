@@ -15,9 +15,10 @@ import {
 } from '@/utils/insights'
 
 describe('insights utilities', () => {
-  it('reads the signed delta string with the shared one-decimal rounding', () => {
+  it('reads the signed delta string with two decimals', () => {
     expect(deltaValue('-2.50')).toBe(-2.5)
-    expect(deltaValue('+8.04')).toBe(8)
+    expect(deltaValue('-2.456')).toBe(-2.46)
+    expect(deltaValue('+8.04')).toBe(8.04)
     expect(deltaValue('0.00')).toBe(0)
     expect(deltaValue(null)).toBeNull()
     expect(deltaValue('')).toBeNull()

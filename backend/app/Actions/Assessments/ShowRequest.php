@@ -11,12 +11,17 @@ use App\Models\Assessments\AssessmentAssignment;
 use App\Models\Assessments\AssessmentCompletionRequest;
 use App\Models\Identity\User;
 use App\Services\Assessments\AssessmentRecordScope;
+use App\Services\Assessments\BoundSubCriteriaReader;
 use App\Support\Certificates\EntityLevelQuery;
 use Illuminate\Database\Eloquent\Builder;
 
 final readonly class ShowRequest
 {
-    public function __construct(private ShowAssessmentRecord $records, private AssessmentRecordScope $scope) {}
+    public function __construct(
+        private ShowAssessmentRecord $records,
+        private AssessmentRecordScope $scope,
+        private BoundSubCriteriaReader $subs,
+    ) {}
 
     public function handle(User $viewer, Assessment $assessment): RequestDetail
     {
@@ -30,12 +35,15 @@ final readonly class ShowRequest
             ->get()
             ->all();
 
+        $completionRequests = array_values(AssessmentCompletionRequest::query()->where('assessment_id', $assessment->id)->orderBy('id')->get()->all());
+
         return new RequestDetail(
             $this->records->handle($viewer, $assessment),
             array_values($assignments),
-            array_values(AssessmentCompletionRequest::query()->where('assessment_id', $assessment->id)->orderBy('id')->get()->all()),
+            $completionRequests,
             $revealsIdentities,
             $assessment->payment?->status === PaymentStatus::Paid,
+            $completionRequests === [] ? null : $this->subs->of($assessment->criteriaVersion()->firstOrFail()),
         );
     }
 }

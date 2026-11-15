@@ -1,4 +1,5 @@
 <script setup>
+import { percentText } from '@/utils/percentText'
 import { useI18n } from 'vue-i18n'
 import Badge from '@/components/ui/Badge.vue'
 import DateStamp from '@/components/accredited/DateStamp.vue'
@@ -12,7 +13,7 @@ defineProps({
   evaluation: { type: Object, required: true },
 })
 
-const { t } = useI18n()
+const { t, n } = useI18n()
 </script>
 
 <template>
@@ -66,7 +67,7 @@ const { t } = useI18n()
     <div v-if="evaluation.percent" class="review-header__item">
       <dt>{{ t('award.evaluation.myTotal') }}</dt>
       <dd>
-        <bdi class="u-ltr">{{ evaluation.percent }}%</bdi>
+        <bdi class="u-ltr">{{ percentText(n, t, evaluation.percent) }}</bdi>
       </dd>
     </div>
   </dl>

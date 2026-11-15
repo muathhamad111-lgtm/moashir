@@ -26,7 +26,6 @@ const rows = computed(() =>
   <p v-if="!rows.length" class="dashboard-widget__empty">{{ t('dashboard.widgets.empty') }}</p>
   <ol v-else class="widget-criteria">
     <li v-for="row in rows" :key="row.code" class="widget-criteria__row">
-      <bdi class="widget-criteria__code" dir="ltr">{{ row.code }}</bdi>
       <span class="widget-criteria__name">{{ row.name }}</span>
       <svg class="widget-criteria__track" focusable="false" aria-hidden="true">
         <rect

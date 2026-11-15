@@ -24,7 +24,7 @@ const bandOptions = computed(() =>
 const mainOptions = computed(() =>
   props.mains.map((main) => ({
     value: main.code,
-    label: `${main.code} · ${localizedText(main.name, locale.value)}`,
+    label: localizedText(main.name, locale.value),
   })),
 )
 

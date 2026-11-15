@@ -120,19 +120,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.criteria-page__code {
-  display: inline-block;
-  padding-block: var(--space-1);
-  padding-inline: var(--space-2);
-  border-radius: var(--radius-sm);
-  background-color: var(--theme-surface-raised);
-  border: var(--border-width) solid var(--theme-border);
-  font-family: var(--font-latin);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-  direction: ltr;
-}
-
 .criteria-page__name {
   font-weight: var(--fw-medium);
 }

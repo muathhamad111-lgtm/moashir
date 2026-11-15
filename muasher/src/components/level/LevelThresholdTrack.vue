@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useChartDirection } from '@/composables/useChartDirection'
 import { LEVEL_TRACK_LAYOUT } from '@/constants/levelHeroMotion'
 import { nextLevelOf } from '@/utils/levelProgress'
-import { scorePercentText } from '@/utils/percentText'
+import { wholePercentText } from '@/utils/percentText'
 import { currentSegmentKey, levelAxis, splitSegment, trackSegments } from '@/utils/levelTrackAxis'
 
 const FULL = 100
@@ -77,7 +77,7 @@ const thresholds = computed(() =>
   props.ranges.map((range) => ({
     key: range.level,
     x: `${mirrored(axis.value(range.min))}%`,
-    label: scorePercentText(n, t, range.min),
+    label: wholePercentText(n, t, range.min),
     isNext: range.min === nextThreshold.value,
   })),
 )

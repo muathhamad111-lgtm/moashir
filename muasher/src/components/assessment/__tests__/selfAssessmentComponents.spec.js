@@ -7,6 +7,7 @@ import ResultPendingNotice from '@/components/assessment/ResultPendingNotice.vue
 import SelfAssessmentNotices from '@/components/assessment/self/SelfAssessmentNotices.vue'
 import SelfAssessmentActions from '@/components/assessment/self/SelfAssessmentActions.vue'
 import SelfSubmitDialog from '@/components/assessment/self/SelfSubmitDialog.vue'
+import SessionExtendDialog from '@/components/session/SessionExtendDialog.vue'
 import SelfResultBreakdown from '@/components/assessment/self/SelfResultBreakdown.vue'
 import { createTestGlobals } from '@/test-utils'
 
@@ -98,7 +99,7 @@ describe('SelfAssessmentNotices', () => {
     expect(wrapper.text()).toContain('1 item needs a new score')
     expect(wrapper.text()).toContain('1 new item')
     expect(wrapper.text()).toContain('Item no longer named in the criteria')
-    expect(wrapper.text()).toContain('Nov 1, 2026')
+    expect(wrapper.text()).toContain('2026-11-01')
     const none = mountWith(SelfAssessmentNotices, { assessment: DRAFT, criteriaUpdate: null })
     expect(none.find('.rebind-summary').exists()).toBe(false)
   })
@@ -142,6 +143,41 @@ describe('SelfAssessmentActions', () => {
     ).toBe(true)
     const busy = mountWith(SelfAssessmentActions, { saving: true })
     expect(busy.findAll('button')[1].attributes('disabled')).toBeDefined()
+  })
+
+  it('walks the criteria one at a time: next on the first, previous and next in the middle, submit at the end', async () => {
+    const labels = (wrapper) => wrapper.findAll('button').map((button) => button.text())
+    const first = mountWith(SelfAssessmentActions, { isFirst: true, isLast: false })
+    expect(labels(first)).toEqual(['Save draft', 'Next'])
+    expect(first.find('.submit-hint').exists()).toBe(false)
+    await first.find('[data-testid="self-next"]').trigger('click')
+    expect(first.emitted('next')).toHaveLength(1)
+
+    const middle = mountWith(SelfAssessmentActions, { isFirst: false, isLast: false })
+    expect(labels(middle)).toEqual(['Previous', 'Save draft', 'Next'])
+    await middle.find('[data-testid="self-previous"]').trigger('click')
+    expect(middle.emitted('previous')).toHaveLength(1)
+
+    const last = mountWith(SelfAssessmentActions, { isFirst: false, isLast: true })
+    expect(labels(last)).toEqual(['Previous', 'Save draft', 'Submit and view result'])
+    expect(last.find('.submit-hint').exists()).toBe(true)
+  })
+})
+
+describe('SessionExtendDialog', () => {
+  it('shows the time left and lets the user extend or save and sign out', async () => {
+    const wrapper = mountWith(SessionExtendDialog, { open: true, countdown: '14:59' })
+    await flushPromises()
+    expect(wrapper.find('[role="alertdialog"] .modal__title').text()).toBe(
+      'Are you still working on the assessment?',
+    )
+    expect(wrapper.find('.session-extend__time').text()).toBe('14:59')
+    const [extend, signOut] = wrapper.findAll('.modal__footer .btn')
+    expect(extend.text()).toBe('Extend session')
+    await extend.trigger('click')
+    await signOut.trigger('click')
+    expect(wrapper.emitted('extend')).toHaveLength(1)
+    expect(wrapper.emitted('sign-out')).toHaveLength(1)
   })
 })
 
@@ -275,7 +311,7 @@ describe('result components', () => {
     expect(wrapper.find('.self-result__main-earned').text()).toBe('769.17 / 1000.00')
     expect(wrapper.find('.self-result__bar').attributes('value')).toBe('76.92')
     expect(wrapper.find('.self-result__point').text()).toContain('Score 8.50')
-    expect(wrapper.find('.self-result__point').text()).toContain('85%')
+    expect(wrapper.find('.self-result__point').text()).toContain('85.00%')
     const head = wrapper.find('.self-result__main-head')
     const panel = wrapper.find(`#${head.attributes('aria-controls')}`)
     expect(head.attributes('aria-expanded')).toBe('false')

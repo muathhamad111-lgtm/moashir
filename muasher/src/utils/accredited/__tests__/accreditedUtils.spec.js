@@ -46,10 +46,7 @@ describe('evidence rules', () => {
     expect(exceedsSize({ size: 1024 }, 20)).toBe(false)
     expect(hasAllowedExtension({ name: 'photo.JPEG' }, ['jpg'])).toBe(true)
     expect(hasAllowedExtension({ name: 'notes.txt' }, ['pdf'])).toBe(false)
-    expect(slotsOf(SUB).map((slot) => [slot.key, slot.pointCode])).toEqual([
-      ['sub_101_1', null],
-      ['point_1001_1', 'M1.1.1'],
-    ])
+    expect(slotsOf(SUB).map((slot) => slot.key)).toEqual(['sub_101_1', 'point_1001_1'])
   })
 
   it('counts pending and clean files toward a slot, not refused ones, and reads requested items', () => {

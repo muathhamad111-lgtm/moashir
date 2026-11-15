@@ -221,7 +221,7 @@ describe('HeroPreviewCard', () => {
     expect(wrapper.find('.score-ring__value').attributes('stroke-dashoffset')).toBe('16')
     expect(wrapper.find('.hero-preview__level .home-pill--gold').text()).toBe('Gold level')
     expect(wrapper.find('.hero-preview__range').text()).toBe('80–89.99%')
-    expect(wrapper.find('.hero-preview__bar-value').text()).toBe('92%')
+    expect(wrapper.find('.hero-preview__bar-value').text()).toBe('92.00%')
     expect(wrapper.find('.meter-bar__fill').attributes('width')).toBe('92%')
     expect(wrapper.findAll('.hero-preview__badge')).toHaveLength(2)
   })

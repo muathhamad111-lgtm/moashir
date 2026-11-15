@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ENTITY_PATH_ICONS, PATH_ROUTES } from '@/constants/entityPaths'
+import { DIRECT_ENTRY_PATHS, ENTITY_PATH_ICONS, PATH_ROUTES } from '@/constants/entityPaths'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import PathPrice from './PathPrice.vue'
 import { usePathNames } from '@/composables/usePathNames'
@@ -17,6 +17,10 @@ const { pathName } = usePathNames()
 const titleId = computed(() => `path-tile-${props.pathKey}`)
 const tagKey = computed(() => `paths.tile.tags.${props.pathKey}`)
 const cadence = computed(() => props.path?.cadence ?? null)
+const pathPage = computed(() => ({ name: PATH_ROUTES[props.pathKey] }))
+const directEntry = computed(() =>
+  DIRECT_ENTRY_PATHS.includes(props.pathKey) ? (props.summary.action?.to ?? null) : null,
+)
 </script>
 
 <template>
@@ -41,13 +45,23 @@ const cadence = computed(() => props.path?.cadence ?? null)
       <AppIcon name="layers" />
       <span>{{ summary.kit }}</span>
     </p>
-    <router-link
-      class="btn btn--primary path-tile__action"
-      :to="{ name: PATH_ROUTES[pathKey] }"
-      :data-testid="`path-tile-action-${pathKey}`"
-    >
-      <span>{{ t(`paths.tile.actions.${pathKey}.${summary.state}`) }}</span>
-      <AppIcon name="arrow-right" />
-    </router-link>
+    <div class="path-tile__actions">
+      <router-link
+        class="btn btn--primary path-tile__action"
+        :to="directEntry ?? pathPage"
+        :data-testid="`path-tile-action-${pathKey}`"
+      >
+        <span>{{ t(`paths.tile.actions.${pathKey}.${summary.state}`) }}</span>
+        <AppIcon name="arrow-right" />
+      </router-link>
+      <router-link
+        v-if="directEntry"
+        class="path-tile__history"
+        :to="pathPage"
+        :data-testid="`path-tile-history-${pathKey}`"
+      >
+        {{ t('paths.tile.previousRequests') }}
+      </router-link>
+    </div>
   </article>
 </template>

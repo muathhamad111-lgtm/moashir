@@ -1,6 +1,5 @@
 import { BAND_BOUNDS, MATURITY_BANDS, RULE_DECIMAL_PATTERN, RULE_MAX } from '@/constants/insights'
 import { toWesternDigits } from './numerals'
-import { roundToOneDecimal } from './percentText'
 
 const HUNDREDTHS = 100
 
@@ -11,7 +10,7 @@ export function toHundredths(value) {
 export function deltaValue(deltaPp) {
   if (deltaPp === null || deltaPp === undefined || deltaPp === '') return null
   const numeric = Number(deltaPp)
-  return Number.isNaN(numeric) ? null : roundToOneDecimal(numeric)
+  return Number.isNaN(numeric) ? null : Math.round(numeric * HUNDREDTHS) / HUNDREDTHS
 }
 
 export function bandLevel(band) {

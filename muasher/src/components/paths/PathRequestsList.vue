@@ -30,7 +30,6 @@ const titleId = computed(() => `path-requests-${props.path}`)
   <section class="path-requests" :aria-labelledby="titleId" data-testid="path-requests">
     <header class="path-requests__head">
       <h2 :id="titleId" class="path-requests__title">{{ t('paths.list.title') }}</h2>
-      <p class="path-requests__hint">{{ t(`paths.list.hint.${path}`) }}</p>
     </header>
     <Skeleton v-if="status === 'loading'" variant="text" :count="4" />
     <ErrorState

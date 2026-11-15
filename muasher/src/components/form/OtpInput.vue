@@ -1,5 +1,6 @@
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue'
+import { digitsOnly } from '@/utils/numerals'
 
 const props = defineProps({
   modelValue: { type: String, default: '' },
@@ -40,7 +41,7 @@ function focusBox(index) {
 }
 
 function onInput(index, event) {
-  const raw = event.target.value.replace(/\D/g, '')
+  const raw = digitsOnly(event.target.value)
   if (!raw) {
     setDigit(index, '')
     return
@@ -71,7 +72,7 @@ function onKeydown(index, event) {
 
 function onPaste(index, event) {
   event.preventDefault()
-  const text = (event.clipboardData?.getData('text') ?? '').replace(/\D/g, '')
+  const text = digitsOnly(event.clipboardData?.getData('text') ?? '')
   if (!text) return
   const current = digits.value.slice()
   for (let offset = 0; offset < text.length && index + offset < props.length; offset += 1) {

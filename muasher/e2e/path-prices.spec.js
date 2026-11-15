@@ -123,9 +123,11 @@ test.describe('path prices in «إدارة المسارات» and the priced sel
     await shot(page, '03-self-pay-start-tile', testInfo)
     await elementShot(page.locator('[data-testid="path-tiles"]'), '03b-path-tiles', testInfo)
 
+    await expect(tile.locator('[data-testid="path-tile-history-self"]')).toHaveAttribute(
+      'href',
+      '/paths/self',
+    )
     await tile.locator('[data-testid="path-tile-action-self"]').click()
-    await expect(page).toHaveURL(/\/paths\/self$/)
-    await page.locator('[data-testid="path-primary-action"]').click()
     await expect(page).toHaveURL(/\/assessment\/self\/pay$/)
     await expect(page.locator('.checkout-summary__service')).toContainText(
       say(testInfo, 'Self assessment', 'التقييم الذاتي'),

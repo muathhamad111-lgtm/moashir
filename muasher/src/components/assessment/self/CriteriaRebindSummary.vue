@@ -64,8 +64,7 @@ function labelOf(item) {
             :key="`${item.level}-${item.code}`"
             class="rebind-summary__item"
           >
-            <span class="rebind-summary__code u-ltr">{{ item.code }}</span>
-            <span>{{ labelOf(item) }}</span>
+            {{ labelOf(item) }}
           </li>
         </ul>
       </section>

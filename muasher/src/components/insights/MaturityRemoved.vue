@@ -15,9 +15,7 @@ const { t, locale } = useI18n()
     <h3 class="b-card__title">{{ t('insights.delta.removed') }}</h3>
     <ul class="maturity-removed__list">
       <li v-for="item in items" :key="item.code" class="maturity-removed__item">
-        <span>
-          <bdi dir="ltr">{{ item.code }}</bdi> · {{ localizedText(item.name, locale) }}
-        </span>
+        <span>{{ localizedText(item.name, locale) }}</span>
         <i18n-t keypath="insights.maturity.removedRow" tag="span" class="maturity-removed__note">
           <template #percent><InsightPercent :value="item.previousPercent" /></template>
         </i18n-t>

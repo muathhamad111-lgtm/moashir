@@ -152,6 +152,7 @@ it('returns the request to the entity for completion and accepts only the reques
 
     switchTo($owner)->getJson("/api/v1/assessments/{$assessment->id}/form")->assertOk()
         ->assertJsonPath('data.completion_request.items.0.sub_criterion_id', $policy->id)
+        ->assertJsonPath('data.completion_request.items.0.name', $policy->name->toArray())
         ->assertJsonPath('data.completion_request.status', 'open')
         ->assertJsonPath('data.completion_request.expiry_outcome', 'continue_as_submitted');
     switchTo($owner)->putJson("/api/v1/assessments/{$assessment->id}/cv", ['cv' => [(string) $strategy->id => 'نص جديد للمعيار']])

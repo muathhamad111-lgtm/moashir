@@ -25,6 +25,7 @@ final class CompletionRequestPresenter
             'items' => array_map(static fn (array $item): array => [
                 'sub_criterion_id' => $subs?->idOf($item['sub_code']),
                 'code' => $item['sub_code'],
+                'name' => $subs?->withCode($item['sub_code'])?->name,
                 'kind' => $item['kind'],
                 'note' => $item['note'],
             ], $request->items),

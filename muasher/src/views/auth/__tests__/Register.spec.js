@@ -68,7 +68,7 @@ const ENTITY_VALUES = {
   unifiedNumber: '7000000901',
   'name.ar': 'جمعية الوفاء الخيرية',
   'name.en': 'Al-Wafa Charity',
-  foundingYear: '2016',
+  foundedOn: '2016-03-21',
 }
 const ACCOUNT_VALUES = {
   authorizedPersonName: 'سلمان بن فهد الحربي',
@@ -148,13 +148,14 @@ describe('Register', () => {
     expect(stepFieldNames(wrapper)).toEqual([
       'entityType',
       'unifiedNumber',
+      'licenseNumber',
       'name.ar',
       'name.en',
       'regionId',
       'cityId',
       'developmentSector',
       'orgSize',
-      'foundingYear',
+      'foundedOn',
       'employeesCount',
       'governanceGrade',
       'annualBeneficiariesCount',

@@ -10,7 +10,7 @@ import { useTheme } from '@/composables/useTheme'
 import { usePortalCountsStore } from '@/stores/portalCounts'
 import { useEntityStore } from '@/stores/entity'
 import { formatNumber } from '@/utils/formatNumber'
-import { percentText } from '@/utils/percentText'
+import { wholePercentText } from '@/utils/percentText'
 import { ROUTE_NAMES as R } from '@/constants/routeNames'
 import { accessFor } from '@/constants/routeAccess'
 import { usePermissions } from '@/composables/usePermissions'
@@ -48,7 +48,7 @@ const notificationsValue = computed(() =>
   unreadNotifications.value ? formatNumber(n, unreadNotifications.value) : '',
 )
 const profileValue = computed(() =>
-  profilePercent.value === null ? '' : percentText(n, t, profilePercent.value),
+  profilePercent.value === null ? '' : wholePercentText(n, t, profilePercent.value),
 )
 const themeValue = computed(() =>
   theme.value === THEMES.dark ? t('portal.account.themeDark') : t('portal.account.themeLight'),

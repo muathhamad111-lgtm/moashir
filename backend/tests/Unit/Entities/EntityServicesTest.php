@@ -28,7 +28,7 @@ it('reports only the changed profile fields with comparable before and after val
     $entity = Entity::factory()->create([
         'name' => ['ar' => 'جمعية الأمل الخيرية', 'en' => null],
         'entity_type' => EntityType::CivilAssociation,
-        'governance_grade' => '80.000',
+        'governance_grade' => '80.00',
         'employees_count' => 10,
     ]);
 
@@ -40,7 +40,7 @@ it('reports only the changed profile fields with comparable before and after val
         $entity->founding_year,
         $entity->region_id,
         $entity->city_id,
-        '80.000',
+        '80.00',
         11,
         $entity->annual_beneficiaries_count,
         $entity->has_strategic_plan,

@@ -21,9 +21,20 @@ export function formatRelativeTime(value, locale, now = new Date()) {
   return formatter.format(elapsedSeconds, 'second')
 }
 
+function dayKeyOf(date, timeZone) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone }).format(date)
+}
+
 export function formatDate(value, locale, options = { dateStyle: 'medium' }) {
   const date = value instanceof Date ? value : new Date(value)
-  return new Intl.DateTimeFormat(withLatinNumerals(locale), options).format(date)
+  const { dateStyle, timeStyle, timeZone } = options
+  if (!dateStyle) return new Intl.DateTimeFormat(withLatinNumerals(locale), options).format(date)
+  const day = dayKeyOf(date, timeZone)
+  if (!timeStyle) return day
+  const time = new Intl.DateTimeFormat(withLatinNumerals(locale), { timeStyle, timeZone }).format(
+    date,
+  )
+  return `${day} ${time}`
 }
 
 export function formatHijriDate(value, locale) {
@@ -58,9 +69,7 @@ export function formatRiyadhLongDate(value, locale) {
 }
 
 export function riyadhDateKey(value) {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: RIYADH }).format(
-    value instanceof Date ? value : new Date(value),
-  )
+  return dayKeyOf(value instanceof Date ? value : new Date(value), RIYADH)
 }
 
 export function endOfRiyadhDay(dateKey) {

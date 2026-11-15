@@ -46,6 +46,7 @@ return [
         'license_number' => 'رقم الترخيص',
         'unified_number' => 'الرقم الوطني الموحد',
         'founded_on' => 'تاريخ التأسيس',
+        'official_email' => 'البريد الإلكتروني الرسمي',
         'website_url' => 'الموقع الإلكتروني',
         'authorized_person_name' => 'الشخص المفوّض بإدارة الحساب',
         'phone' => 'رقم الجوال',

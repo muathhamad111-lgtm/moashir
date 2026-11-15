@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import ProfileSectionChip from './ProfileSectionChip.vue'
-import { percentText } from '@/utils/percentText'
+import { wholePercentText } from '@/utils/percentText'
 import { PROFILE_SECTION_ICONS } from '@/constants/entityProfile'
 
 const props = defineProps({
@@ -17,7 +17,7 @@ const emit = defineEmits(['fix', 'complete'])
 const { t, n } = useI18n()
 const titleId = useId()
 const percent = computed(() => props.completion.percent ?? 0)
-const percentLabel = computed(() => percentText(n, t, percent.value))
+const percentLabel = computed(() => wholePercentText(n, t, percent.value))
 const incomplete = computed(() => props.sections.some((section) => section.missingCount > 0))
 </script>
 

@@ -138,9 +138,9 @@ return [
         'node_not_in_version' => 'This item does not belong to the selected criteria version.',
         'problems' => [
             'no_active_main' => 'The version needs at least one active main criterion.',
-            'weights_mismatch' => 'The active sub-criteria of :code total :actual, but they must equal the main criterion weight of :expected.',
-            'no_active_point' => 'The sub-criterion :code is evaluated on guiding points but has no active guiding point.',
-            'points_exceed_sub' => 'The active guiding points of :code total :actual, which exceeds the sub-criterion weight of :expected.',
+            'weights_mismatch' => 'The active sub-criteria of “:name” total :actual, but they must equal the main criterion weight of :expected.',
+            'no_active_point' => 'The sub-criterion “:name” is evaluated on guiding points but has no active guiding point.',
+            'points_exceed_sub' => 'The active guiding points of “:name” total :actual, which exceeds the sub-criterion weight of :expected.',
         ],
     ],
     'self' => [
@@ -149,7 +149,7 @@ return [
     ],
     'scores' => [
         'incomplete' => 'Score every item before submitting the assessment.',
-        'item_missing' => 'The item :code has no score yet.',
+        'item_missing' => 'This item has no score yet.',
     ],
     'score' => [
         'use_points' => 'This sub-criterion is scored through its guiding points.',
@@ -297,8 +297,8 @@ return [
     ],
     'submission' => [
         'incomplete' => 'Complete the required CV entries and attachments before submitting the request.',
-        'cv_missing' => 'The CV entry of :code is required.',
-        'attachment_missing' => 'A required attachment of :code is missing.',
+        'cv_missing' => 'The CV entry of this criterion is required.',
+        'attachment_missing' => 'A required attachment of this criterion is missing.',
     ],
     'assessor' => [
         'invalid' => 'Choose an active assessor account.',

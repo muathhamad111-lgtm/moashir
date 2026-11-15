@@ -43,7 +43,6 @@ function copyLink(certificate) {
       band
       :eyebrow="t('portal.certificates.eyebrow')"
       :title="t('portal.certificates.title')"
-      :subtitle="t('portal.certificates.subtitle')"
       :tabs="hub.tabs.value"
       :tab="hub.tab.value"
       :tabs-label="t('portal.certificates.tabsLabel')"

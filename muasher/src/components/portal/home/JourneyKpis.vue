@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCertificateLevels } from '@/composables/useCertificateLevels'
 import { levelOfScore } from '@/utils/levelRanges'
-import { scorePercentText } from '@/utils/percentText'
+import { percentText } from '@/utils/percentText'
 import { formatNumber } from '@/utils/formatNumber'
 import { localizedText } from '@/utils/localizedText'
 import { resultSeries, seriesDelta } from '@/utils/accreditedPerformance'
@@ -31,7 +31,7 @@ const tiles = computed(() => [
     icon: 'award',
     label: t('portal.home.kpis.accredited'),
     value: latestAccredited.value
-      ? scorePercentText(n, t, latestAccredited.value.percent)
+      ? percentText(n, t, latestAccredited.value.percent)
       : t('portal.home.kpis.none'),
     caption: latestAccredited.value
       ? latestAccredited.value.number
@@ -44,7 +44,7 @@ const tiles = computed(() => [
     icon: 'clipboard-check',
     label: t('portal.home.kpis.self'),
     value: latestSelf.value
-      ? scorePercentText(n, t, latestSelf.value.percent)
+      ? percentText(n, t, latestSelf.value.percent)
       : t('portal.home.kpis.none'),
     caption: selfCaption(),
     delta: seriesDelta(selfSeries.value),

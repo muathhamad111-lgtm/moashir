@@ -23,7 +23,6 @@ const { actionsFor } = useCriteriaRowActions(props.access)
 
 const columns = computed(() => [
   { key: 'order', label: t('criteria.columns.order') },
-  { key: 'code', label: t('criteria.columns.code') },
   { key: 'description', label: t('criteria.columns.description') },
   { key: 'weight', label: t('criteria.columns.weight') },
   { key: 'attachments', label: t('criteria.columns.attachments') },
@@ -39,14 +38,11 @@ const columns = computed(() => [
         v-if="access.canEditTree.value"
         :index="points.indexOf(item)"
         :count="points.length"
-        :label="item.code"
+        :label="localized(item.description)"
         @move="emit('move', points.indexOf(item), $event)"
       />
       <span v-else class="criteria-page__order">{{ item.order }}</span>
     </template>
-    <template #cell-code="{ item }"
-      ><span class="criteria-page__code">{{ item.code }}</span></template
-    >
     <template #cell-description="{ item }">{{ localized(item.description) }}</template>
     <template #cell-weight="{ item }">
       <span class="criteria-page__weight">{{ weight(item.weight) }}</span>
@@ -74,7 +70,7 @@ const columns = computed(() => [
       <AppMenu
         v-if="actionsFor(item).length"
         :actions="actionsFor(item)"
-        :label="t('components.actions.menuFor', { name: item.code })"
+        :label="t('components.actions.menuFor', { name: localized(item.description) })"
         @select="emit('action', $event, item)"
       />
     </template>

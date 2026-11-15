@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { savedScoreOf } from '@/utils/assessments/scoreSheet'
+import { localizedText } from '@/utils/localizedText'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
@@ -10,7 +11,7 @@ const props = defineProps({
   subId: { type: Number, required: true },
 })
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const rows = computed(() =>
   props.units.map((unit) => ({ unit, score: savedScoreOf(props.prior.scores, unit) })),
 )
@@ -28,7 +29,7 @@ const note = computed(() => props.prior.notes.subs[String(props.subId)] ?? '')
         :key="`${row.unit.level}-${row.unit.id}`"
         class="committee-prior__score"
       >
-        <bdi class="u-ltr">{{ row.unit.code }}</bdi>
+        <span>{{ localizedText(row.unit.label, locale) }}</span>
         <span>{{
           row.score
             ? t('award.evaluation.prior.score', {

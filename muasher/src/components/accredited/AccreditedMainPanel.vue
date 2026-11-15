@@ -17,7 +17,6 @@ const { locale } = useI18n()
   <Card class="accredited-main">
     <template #header>
       <h2 class="accredited-main__title">
-        <span class="accredited-main__code u-ltr">{{ main.code }}</span>
         {{ localizedText(main.name, locale) }}
       </h2>
     </template>

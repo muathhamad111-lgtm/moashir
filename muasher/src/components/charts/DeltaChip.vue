@@ -1,20 +1,20 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { formatNumber } from '@/utils/formatNumber'
+import { twoDecimals } from '@/utils/percentText'
 
 const props = defineProps({
   value: { type: Number, default: null },
   onBand: { type: Boolean, default: false },
 })
 
-const { t, n } = useI18n()
+const { t } = useI18n()
 const direction = computed(() => {
   if (props.value > 0) return 'up'
   if (props.value < 0) return 'down'
   return 'flat'
 })
-const text = computed(() => formatNumber(n, Math.abs(props.value)))
+const text = computed(() => twoDecimals(Math.abs(props.value)))
 const label = computed(() => t(`charts.delta.${direction.value}`, { value: text.value }))
 </script>
 

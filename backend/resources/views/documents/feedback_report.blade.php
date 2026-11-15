@@ -3,6 +3,7 @@
 @php
     $locale = $page->locale;
     $text = static fn (?array $value): string => (string) ($value[$locale] ?? $value['ar'] ?? '');
+    $percent = static fn (mixed $value): string => is_numeric($value) ? number_format((float) $value, 2, '.', '') : '';
     $entity = $data['entity'] ?? [];
     $certificate = $data['certificate'] ?? null;
 @endphp
@@ -67,7 +68,7 @@ table.report__table { width: 100%; border-collapse: collapse; font-size: 9.3pt; 
 </dl>
 
 <section class="report__summary">
-  <bdi class="report__summary-percent" dir="ltr">{{ $data['percent'] ?? '' }}%</bdi>
+  <bdi class="report__summary-percent" dir="ltr">{{ $percent($data['percent'] ?? null) }}%</bdi>
   <div class="report__summary-label">{{ __('documents.feedback_report.overall') }} — <bdi class="latin" dir="ltr">{{ $data['total'] ?? '' }} / {{ $data['max_total'] ?? '' }}</bdi></div>
   @if (($certificate['level_label'] ?? null) !== null)
     <span class="report__summary-level">{{ $text($certificate['level_label']) }}</span>
@@ -83,7 +84,6 @@ table.report__table { width: 100%; border-collapse: collapse; font-size: 9.3pt; 
 <table class="report__table">
   <thead>
     <tr>
-      <th>{{ __('documents.feedback_report.code') }}</th>
       <th>{{ __('documents.feedback_report.criterion') }}</th>
       <th class="num">{{ __('documents.feedback_report.weight') }}</th>
       <th class="num">{{ __('documents.feedback_report.earned') }}</th>
@@ -93,33 +93,31 @@ table.report__table { width: 100%; border-collapse: collapse; font-size: 9.3pt; 
   <tbody>
     @foreach ($data['criteria'] ?? [] as $criterion)
       <tr>
-        <td class="num">{{ $criterion['code'] ?? '' }}</td>
         <td>{{ $text($criterion['name'] ?? null) }}</td>
         <td class="num">{{ $criterion['weight'] ?? '' }}</td>
         <td class="num">{{ $criterion['earned'] ?? '' }}</td>
-        <td class="num"><bdi dir="ltr">{{ $criterion['percent'] ?? '' }}%</bdi></td>
+        <td class="num"><bdi dir="ltr">{{ $percent($criterion['percent'] ?? null) }}%</bdi></td>
       </tr>
     @endforeach
   </tbody>
   <tfoot>
     <tr>
-      <td></td>
       <td>{{ __('documents.feedback_report.total') }}</td>
       <td class="num">{{ $data['max_total'] ?? '' }}</td>
       <td class="num">{{ $data['total'] ?? '' }}</td>
-      <td class="num"><bdi dir="ltr">{{ $data['percent'] ?? '' }}%</bdi></td>
+      <td class="num"><bdi dir="ltr">{{ $percent($data['percent'] ?? null) }}%</bdi></td>
     </tr>
   </tfoot>
 </table>
 
 <h2 class="report__section">{{ __('documents.feedback_report.details') }}</h2>
 @foreach ($data['criteria'] ?? [] as $criterion)
-  <h3 class="report__criterion"><bdi>{{ $criterion['code'] ?? '' }}</bdi> — {{ $text($criterion['name'] ?? null) }} — <bdi dir="ltr">{{ $criterion['percent'] ?? '' }}%</bdi></h3>
+  <h3 class="report__criterion">{{ $text($criterion['name'] ?? null) }} — <bdi dir="ltr">{{ $percent($criterion['percent'] ?? null) }}%</bdi></h3>
   @foreach ($criterion['subs'] ?? [] as $sub)
     <article class="report__sub">
       <div class="report__sub-head">
-        <span><bdi class="latin">{{ $sub['code'] ?? '' }}</bdi> {{ $text($sub['name'] ?? null) }}</span>
-        <bdi class="num" dir="ltr">{{ $sub['percent'] ?? '' }}%</bdi>
+        <span>{{ $text($sub['name'] ?? null) }}</span>
+        <bdi class="num" dir="ltr">{{ $percent($sub['percent'] ?? null) }}%</bdi>
       </div>
       @php($hasFeedback = ($sub['strengths'] ?? null) !== null || ($sub['improvement_points'] ?? null) !== null || ($sub['notes'] ?? null) !== null)
       @if (($sub['strengths'] ?? null) !== null)

@@ -17,7 +17,6 @@ const { t, locale } = useI18n()
   <Card class="review-main">
     <template #header>
       <h2 class="review-main__title">
-        <span class="review-main__code u-ltr">{{ main.code }}</span>
         {{ localizedText(main.name, locale) }}
       </h2>
       <span class="review-main__weight">{{

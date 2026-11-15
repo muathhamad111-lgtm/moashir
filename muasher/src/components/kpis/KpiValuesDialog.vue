@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import FieldInput from '@/components/form/FieldInput.vue'
+import FieldDate from '@/components/form/FieldDate.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import KpiHistoryTable from './KpiHistoryTable.vue'
@@ -81,9 +82,8 @@ watch(
           input-dir="ltr"
           required
         />
-        <FieldInput
+        <FieldDate
           name="measuredOn"
-          type="date"
           :label="t('kpis.history.date')"
           :hint="t('kpis.admin.values.dateHint')"
           required

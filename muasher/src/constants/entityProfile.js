@@ -41,9 +41,9 @@ export const PROFILE_LTR_FIELDS = Object.freeze([
 export const PROFILE_FIELD_INPUTS = Object.freeze({
   'name.ar': { kind: 'text', inputDir: 'rtl' },
   'name.en': { kind: 'text', inputDir: 'ltr' },
-  unifiedNumber: { kind: 'digits', hint: 'unifiedNumber' },
-  licenseNumber: { kind: 'text', inputDir: 'ltr', inputmode: 'numeric', hint: 'licenseNumber' },
-  foundedOn: { kind: 'date', hint: 'foundedOn' },
+  unifiedNumber: { kind: 'digits' },
+  licenseNumber: { kind: 'text', inputDir: 'ltr', inputmode: 'numeric' },
+  foundedOn: { kind: 'date' },
   entityType: { kind: 'select', options: 'entityType' },
   developmentSector: { kind: 'select', options: 'developmentSector' },
   orgSize: { kind: 'select', options: 'orgSize' },

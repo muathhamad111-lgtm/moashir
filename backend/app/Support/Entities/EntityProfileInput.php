@@ -33,6 +33,8 @@ final class EntityProfileInput
 
     private const string DATE_FORMAT = 'Y-m-d';
 
+    private const string DATE_PATTERN = '/^(\d{4})-(\d{2})-(\d{2})$/';
+
     private const string EARLIEST_FOUNDING_DATE = '1900-01-01';
 
     /**
@@ -92,7 +94,7 @@ final class EntityProfileInput
     public static function governanceRules(): array
     {
         return [
-            'governance_grade' => ['nullable', 'decimal:0,3', 'between:0,100'],
+            'governance_grade' => ['nullable', 'decimal:0,2', 'between:0,100'],
             'employees_count' => ['nullable', 'integer', 'min:0', 'max:10000000'],
             'annual_beneficiaries_count' => ['nullable', 'integer', 'min:0', 'max:100000000'],
             'has_strategic_plan' => ['present', 'nullable', 'boolean'],
@@ -246,6 +248,20 @@ final class EntityProfileInput
         $foundedOn = $validated['founded_on'] ?? null;
 
         return is_string($foundedOn) ? CarbonImmutable::createFromFormat('!'.self::DATE_FORMAT, $foundedOn) ?: null : null;
+    }
+
+    /**
+     * The year of a well-formed founding date, so a form that asks for the full date need not repeat the year.
+     */
+    public static function foundingYearOf(mixed $foundedOn): ?int
+    {
+        if (! is_string($foundedOn) || preg_match(self::DATE_PATTERN, $foundedOn, $parts) !== 1) {
+            return null;
+        }
+
+        [, $year, $month, $day] = array_map(intval(...), $parts);
+
+        return checkdate($month, $day, $year) ? $year : null;
     }
 
     /**

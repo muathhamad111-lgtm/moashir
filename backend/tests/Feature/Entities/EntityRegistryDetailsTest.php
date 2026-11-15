@@ -139,14 +139,14 @@ it('lets staff read and correct the registry details on behalf of the entity, wi
         ->and($history->has('website_url'))->toBeFalse();
 });
 
-it('keeps the registration form unchanged and never stores the registry details from it', function (): void {
+it('stores the licence number and the founding date from the registration form but never the website', function (): void {
     $this->postJson('/api/v1/auth/register', registrationPayload(['license_number' => '770000321', 'founded_on' => '2011-05-01', 'website_url' => 'https://alamal.example.sa']))
         ->assertCreated();
 
     $entity = Entity::query()->sole();
 
-    expect($entity->license_number)->toBeNull()
-        ->and($entity->founded_on)->toBeNull()
+    expect($entity->license_number)->toBe('770000321')
+        ->and($entity->founded_on?->toDateString())->toBe('2011-05-01')
         ->and($entity->website_url)->toBeNull()
         ->and($entity->founding_year)->toBe(2011);
 });

@@ -80,7 +80,15 @@ describe('RefundRecord', () => {
 })
 
 describe('TransactionFilters', () => {
-  const FILTERS = { type: '', status: '', purpose: '', from: '', to: '', entity_id: '' }
+  const FILTERS = {
+    type: '',
+    status: '',
+    purpose: '',
+    from: '',
+    to: '',
+    entity_id: '',
+    mode: '',
+  }
 
   function comboboxes(wrapper) {
     return wrapper.findAllComponents({ name: 'AppCombobox' })
@@ -116,6 +124,20 @@ describe('TransactionFilters', () => {
       .findAll('[role="option"]')
       .find((option) => option.text().includes('Payment failed'))
     expect(failed.text()).toBe('Payment failed')
+  })
+
+  it('offers actual payments by default and test payments on request', async () => {
+    const wrapper = mountWith(TransactionFilters, { filters: { ...FILTERS }, sort: '-created_at' })
+    const mode = wrapper
+      .findAllComponents({ name: 'AppSelect' })
+      .find((select) => select.props('label') === 'Environment')
+    expect(mode.props('modelValue')).toBe('')
+    expect(mode.props('options').map((option) => [option.value, option.label])).toEqual([
+      ['', 'Live payments'],
+      ['test', 'Test payments'],
+    ])
+    mode.vm.$emit('update:modelValue', 'test')
+    expect(wrapper.emitted('filter')).toEqual([['mode', 'test']])
   })
 
   it('keeps the chosen values comma-separated in the catalogue order', async () => {
@@ -163,7 +185,7 @@ describe('TransactionsTable', () => {
     expect(payment).toHaveLength(2)
     expect(payment[1].text()).toBe('mada')
     const updated = wrapper.find('time.transactions-table__date').findAll('span')
-    expect(updated.map((line) => line.text())).toEqual(['Nov 10, 2026', '12:00 PM'])
+    expect(updated.map((line) => line.text())).toEqual(['2026-11-10', '12:00 PM'])
   })
 
   it('explains the status when the pointer rests on it', async () => {

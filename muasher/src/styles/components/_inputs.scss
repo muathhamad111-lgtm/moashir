@@ -51,8 +51,7 @@
   }
 }
 
-.field--floated .field__label,
-.field:has(.datepicker__control) .field__label {
+.field--floated .field__label {
   inset-block-start: calc(var(--space-2) * -1);
   font-size: var(--fs-xs);
   font-weight: var(--fw-medium);

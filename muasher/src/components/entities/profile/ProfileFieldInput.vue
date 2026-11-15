@@ -10,9 +10,7 @@ import { useEntityOptions } from '@/composables/useEntityOptions'
 import { riyadhDateKey } from '@/utils/datetime'
 import { fieldLabelKey } from '@/utils/entityProfile/sections'
 import { PROFILE_FIELD_INPUTS } from '@/constants/entityProfile'
-import { UNIFIED_NUMBER_LENGTH } from '@/constants/entityEnums'
-
-const EARLIEST_FOUNDING_DATE = '1900-01-01'
+import { EARLIEST_FOUNDING_DATE, UNIFIED_NUMBER_LENGTH } from '@/constants/entityEnums'
 
 const props = defineProps({
   field: { type: Object, required: true },

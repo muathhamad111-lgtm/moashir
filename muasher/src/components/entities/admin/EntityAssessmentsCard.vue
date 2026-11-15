@@ -1,4 +1,5 @@
 <script setup>
+import { percentText } from '@/utils/percentText'
 import { onMounted, toRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Card from '@/components/ui/Card.vue'
@@ -15,7 +16,7 @@ const props = defineProps({
   entityId: { type: [Number, String], required: true },
 })
 
-const { t, locale } = useI18n()
+const { t, locale, n } = useI18n()
 const { status, items, total, load } = useEntityAssessments(toRef(props, 'entityId'))
 
 function dateOf(value) {
@@ -51,9 +52,9 @@ onMounted(load)
             <StatusBadge :status="item.status" />
             <FrozenBadge v-if="item.isFrozen" />
           </span>
-          <span v-if="item.result" class="entity-assessments__score u-ltr"
-            >{{ item.result.percent }}%</span
-          >
+          <span v-if="item.result" class="entity-assessments__score u-ltr">{{
+            percentText(n, t, item.result.percent)
+          }}</span>
         </li>
       </ul>
       <p v-if="total > items.length" class="entity-assessments__more">

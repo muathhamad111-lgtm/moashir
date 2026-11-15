@@ -57,6 +57,14 @@ final readonly class ProfileCompletion
     /**
      * @return list<ProfileSectionField>
      */
+    public function missingFields(): array
+    {
+        return array_values(array_filter(ProfileSectionField::counted(), fn (ProfileSectionField $field): bool => in_array($field, $this->missing, true)));
+    }
+
+    /**
+     * @return list<ProfileSectionField>
+     */
     public function missingIn(ProfileSection $section): array
     {
         return array_values(array_filter($section->fields(), fn (ProfileSectionField $field): bool => in_array($field, $this->missing, true)));

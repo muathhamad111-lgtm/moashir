@@ -26,7 +26,6 @@ export function criteriaComparison(currentMains = [], previousMains = []) {
     const before = previous.get(keyOf(main)) ?? null
     return {
       key: keyOf(main),
-      code: main.code ?? '',
       name: main.name ?? null,
       percent: Number(main.percent ?? 0),
       previous: before ? Number(before.percent ?? 0) : null,

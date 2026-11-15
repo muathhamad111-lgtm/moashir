@@ -25,10 +25,7 @@ const isNew = computed(() => props.main.comparison === DELTA_COMPARISONS.NEW_IN_
 <template>
   <article class="maturity-card" :data-code="main.code" data-testid="maturity-card">
     <header class="maturity-card__header">
-      <h3 class="maturity-card__title">
-        <bdi dir="ltr">{{ main.code }}</bdi
-        >. {{ name }}
-      </h3>
+      <h3 class="maturity-card__title">{{ name }}</h3>
       <p v-if="description" class="maturity-card__measures">
         {{ t('insights.maturity.measures', { text: description }) }}
       </p>
@@ -75,9 +72,7 @@ const isNew = computed(() => props.main.comparison === DELTA_COMPARISONS.NEW_IN_
       :aria-label="t('insights.maturity.subsLabel', { name })"
     >
       <li v-for="sub in main.subs" :key="sub.code" class="maturity-card__sub">
-        <span class="maturity-card__sub-name">
-          <bdi dir="ltr">{{ sub.code }}</bdi> · {{ localizedText(sub.name, locale) }}
-        </span>
+        <span class="maturity-card__sub-name">{{ localizedText(sub.name, locale) }}</span>
         <span class="maturity-card__sub-facts">
           <InsightPercent :value="sub.percent" />
           <MaturityBandChip :band="sub.band" />

@@ -3,7 +3,7 @@ import { axisPercent, deltaOf, scaleY, spanStart, timelineX } from '@/utils/char
 import { criteriaComparison, rankedCriteria, resultSeries } from '@/utils/accreditedPerformance'
 import { isTopLevel, nextLevelOf, remainingTo } from '@/utils/levelProgress'
 import { splitLabel } from '@/utils/chartLabels'
-import { roundToOneDecimal, scorePercentText } from '@/utils/percentText'
+import { percentText, twoDecimals, wholePercentText } from '@/utils/percentText'
 
 const RANGES = [
   { level: 'bronze', min: 60 },
@@ -87,10 +87,12 @@ describe('score percent text', () => {
   const t = (key, { value }) => `${value}%`
   const n = (value) => String(value)
 
-  it('keeps one decimal when the score is not whole', () => {
-    expect(roundToOneDecimal('74.50')).toBe(74.5)
-    expect(roundToOneDecimal('57.03')).toBe(57)
-    expect(scorePercentText(n, t, '74.5427')).toBe('74.5%')
-    expect(scorePercentText(n, t, '82.00')).toBe('82%')
+  it('shows every score with exactly two decimals in Western digits', () => {
+    expect(twoDecimals('74.5427')).toBe('74.54')
+    expect(twoDecimals(82)).toBe('82.00')
+    expect(twoDecimals(1234.5)).toBe('1,234.50')
+    expect(twoDecimals(null)).toBe('')
+    expect(percentText(n, t, '74.5')).toBe('74.50%')
+    expect(wholePercentText(n, t, 60)).toBe('60%')
   })
 })

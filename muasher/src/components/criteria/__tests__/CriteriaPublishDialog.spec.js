@@ -8,7 +8,7 @@ import { createTestGlobals } from '@/test-utils'
 import { sessionUserFor } from '@/test-utils/session'
 
 vi.mock('@/services/criteriaService', () => ({
-  criteriaService: { publishVersion: vi.fn(), listMains: vi.fn() },
+  criteriaService: { publishVersion: vi.fn(), getMain: vi.fn() },
 }))
 
 const draft = { id: 4, versionNumber: 2, status: 'draft' }
@@ -49,7 +49,9 @@ function inconsistent() {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  criteriaService.listMains.mockResolvedValue({ data: [{ id: 11, code: 'M1' }] })
+  criteriaService.getMain.mockResolvedValue({
+    data: { main: { id: 11, code: 'M1', name: { ar: 'القيادة', en: 'Leadership' } } },
+  })
 })
 
 describe('CriteriaPublishDialog', () => {
@@ -101,8 +103,10 @@ describe('CriteriaPublishDialog', () => {
     await wrapper.find('form').trigger('submit')
     await flushPromises()
     const problem = wrapper.find('.criteria-problems__item')
-    expect(problem.text()).toContain('M1')
-    expect(problem.text()).toContain('750.00')
+    expect(criteriaService.getMain).toHaveBeenCalledWith(11)
+    expect(problem.text()).toContain('The active sub-criteria of Leadership total 750.00')
+    expect(problem.text()).not.toContain('M1')
+    expect(problem.find('a').text()).toBe('Fix Leadership')
     expect(problem.find('a').attributes('href')).toBe('/admin/settings/criteria/11')
     expect(wrapper.emitted('published')).toBeUndefined()
   })

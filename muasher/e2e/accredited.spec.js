@@ -162,7 +162,10 @@ test('a completion request limits edits to the listed items and shows the deadli
   await signIn(page, testInfo, ENTITIES.ataa)
   await page.goto('/assessment/accredited/form/9106')
   const notice = page.locator('.accredited-notices .completion-card')
-  await expect(notice).toContainText('M2.2')
+  await expect(notice.locator('.completion-card__sub').first()).toHaveText(
+    isEn(testInfo) ? 'Strategy Formulation and Deployment' : 'صياغة الخطة الاستراتيجية ونشرها',
+  )
+  await expect(notice).not.toContainText('M2.2')
   await expect(notice).toContainText(
     isEn(testInfo)
       ? 'The review continues with the data available'
@@ -240,4 +243,19 @@ test('feedback report and certificates remain reachable for the entity', async (
   await expect(page.locator('.feedback-report__sub').first()).toBeVisible()
   await page.goto('/certificates')
   await expect(page.locator('.certificate-card').first()).toBeVisible()
+})
+
+test('the accredited form asks to extend the session after two hours of filling in', async ({
+  page,
+}, testInfo) => {
+  await page.clock.install()
+  await signIn(page, testInfo, ENTITIES.namaa)
+  await page.goto('/assessment/accredited/form/9101')
+  await expect(page.locator('.accredited-completeness')).toBeVisible()
+  await page.clock.fastForward('02:00:00')
+  const dialog = page.getByRole('alertdialog')
+  await expect(dialog).toBeVisible()
+  await dialog.locator('.btn--primary').click()
+  await expect(dialog).toHaveCount(0)
+  await expect(page).toHaveURL(/\/assessment\/accredited\/form\/9101$/)
 })

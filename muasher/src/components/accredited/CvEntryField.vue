@@ -6,7 +6,7 @@ import { ACCREDITED_LIMITS } from '@/constants/accredited'
 
 const props = defineProps({
   subId: { type: Number, required: true },
-  code: { type: String, required: true },
+  name: { type: String, required: true },
   modelValue: { type: String, default: '' },
   editable: { type: Boolean, default: false },
   missing: { type: Boolean, default: false },
@@ -32,7 +32,7 @@ const error = computed(() => {
     <BaseTextarea
       :model-value="modelValue"
       :name="`cv-${subId}`"
-      :label="t('accredited.cv.label', { code })"
+      :label="t('accredited.cv.label', { name })"
       :rows="5"
       :hint="hint"
       :error="error"

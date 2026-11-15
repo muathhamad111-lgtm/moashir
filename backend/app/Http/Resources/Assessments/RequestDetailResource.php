@@ -31,7 +31,7 @@ final class RequestDetailResource extends JsonResource
             'record' => new AssessmentRecordResource($detail->record)->toArray($request),
             'assignment_history' => array_map(fn (AssessmentAssignment $assignment): array => $this->assignmentOf($assignment, $detail->revealsStaffIdentities), $detail->assignments),
             'completion_requests' => array_map(
-                static fn (AssessmentCompletionRequest $completion): ?array => CompletionRequestPresenter::present($completion, null),
+                static fn (AssessmentCompletionRequest $completion): ?array => CompletionRequestPresenter::present($completion, $detail->subs),
                 $detail->completionRequests,
             ),
         ];

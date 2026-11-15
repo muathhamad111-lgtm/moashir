@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Listeners\Entities;
 
 use App\Data\Entities\EntityNotice;
+use App\Enums\Entities\ProfileSectionField;
 use App\Enums\Notifications\NotificationCode;
 use App\Events\Entities\EntityApproved;
 use App\Services\Entities\EntityNotifier;
 use App\Support\Entities\EntityLinks;
+use App\Support\ValueObjects\LocalizedText;
 
 final readonly class NotifyEntityApproved
 {
@@ -21,8 +23,11 @@ final readonly class NotifyEntityApproved
 
         $this->notifier->toOwner($entity, EntityNotice::for(NotificationCode::EntityRegistrationApproved, EntityNotice::FOR_ENTITY, $replacements, EntityLinks::signIn()));
 
-        if (! $entity->hasCompleteProfile()) {
-            $this->notifier->toOwner($entity, EntityNotice::for(NotificationCode::EntityProfileIncomplete, EntityNotice::FOR_ENTITY, $replacements, EntityLinks::ownProfile()));
+        $missing = $entity->profileCompletion()->missingFields();
+
+        if ($missing !== []) {
+            $fields = LocalizedText::listOf(array_map(static fn (ProfileSectionField $field): string => $field->labelKey(), $missing));
+            $this->notifier->toOwner($entity, EntityNotice::for(NotificationCode::EntityProfileIncomplete, EntityNotice::FOR_ENTITY, [...$replacements, 'fields' => $fields], EntityLinks::ownProfile()));
         }
     }
 }

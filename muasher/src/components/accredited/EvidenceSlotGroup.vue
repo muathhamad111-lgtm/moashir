@@ -29,14 +29,12 @@ const slots = computed(() => [
   ...slotsOf(props.sub).map((slot) => ({
     key: slot.key,
     title: localizedText(slot.name, locale.value),
-    pointCode: slot.pointCode,
     required: slot.required,
     files: evidenceOfSlot(props.evidence, props.sub.id, slot.key),
   })),
   {
     key: null,
     title: t('accredited.evidence.general'),
-    pointCode: null,
     required: false,
     files: evidenceOfSlot(props.evidence, props.sub.id, null),
   },
@@ -54,7 +52,7 @@ function slotError(slot) {
 <template>
   <section
     class="evidence-slots"
-    :aria-label="t('accredited.evidence.groupLabel', { code: sub.code })"
+    :aria-label="t('accredited.evidence.groupLabel', { name: localizedText(sub.name, locale) })"
   >
     <p class="evidence-slots__limits">
       {{
@@ -68,12 +66,7 @@ function slotError(slot) {
     <ul class="evidence-slots__list">
       <li v-for="slot in slots" :key="slot.key ?? 'general'" class="evidence-slots__slot">
         <div class="evidence-slots__head">
-          <span class="evidence-slots__title">
-            <span v-if="slot.pointCode" class="evidence-slots__code u-ltr">{{
-              slot.pointCode
-            }}</span>
-            {{ slot.title }}
-          </span>
+          <span class="evidence-slots__title">{{ slot.title }}</span>
           <Badge v-if="slot.required" :variant="isProvided(slot) ? 'success' : 'warning'">
             {{
               isProvided(slot)

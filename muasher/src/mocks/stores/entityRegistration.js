@@ -1,5 +1,11 @@
 import { entityReject } from './entityRejection'
-import { assertRegistration, contactFrom, profileFrom } from './entityValidation'
+import {
+  assertRegistration,
+  contactFrom,
+  profileFrom,
+  registrationRegistry,
+} from './entityValidation'
+import { applyRegistry } from './entityRegistry'
 import { createEntity, isDeleted, markVerified, ownerEmailTaken } from './entitiesStore'
 import { currentTerms } from './termsStore'
 import { unifiedNumberFrom } from './entityUnifiedNumber'
@@ -24,7 +30,7 @@ export function registerEntity(body) {
   const email = String(body.officialEmail).trim().toLowerCase()
   if (ownerEmailTaken(email)) return null
   return createEntity({
-    profile: profileFrom(body),
+    profile: applyRegistry(profileFrom(body), registrationRegistry(body)),
     contact: contactFrom(body),
     email,
     unifiedNumber: unifiedNumberFrom(body),

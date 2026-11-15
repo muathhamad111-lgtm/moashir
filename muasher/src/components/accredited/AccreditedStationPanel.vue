@@ -20,9 +20,7 @@ const { t, n, locale } = useI18n()
     <header class="station-panel__head">
       <div class="station-panel__heading">
         <h2 :id="`station-${main.id}`" class="station-panel__title">
-          {{ t('portal.assessments.task.criterion') }}
-          <bdi dir="ltr">{{ main.code }}</bdi>
-          · {{ localizedText(main.name, locale) }}
+          {{ localizedText(main.name, locale) }}
         </h2>
         <p v-if="main.description" class="station-panel__description">
           {{ localizedText(main.description, locale) }}

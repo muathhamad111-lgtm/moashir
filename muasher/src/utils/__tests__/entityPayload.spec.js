@@ -45,19 +45,18 @@ function values(overrides = {}) {
 }
 
 describe('governance grade', () => {
-  it('accepts 0 to 100 with at most three decimals and Eastern digits typed by the user', () => {
+  it('accepts 0 to 100 with at most two decimals and Eastern digits typed by the user', () => {
     expect(isValidGovernanceGrade('100')).toBe(true)
     expect(isValidGovernanceGrade('87.45')).toBe(true)
-    expect(isValidGovernanceGrade('87.456')).toBe(true)
     expect(isValidGovernanceGrade('')).toBe(true)
-    expect(isValidGovernanceGrade('87.4561')).toBe(false)
-    expect(isValidGovernanceGrade('100.001')).toBe(false)
+    expect(isValidGovernanceGrade('87.456')).toBe(false)
+    expect(isValidGovernanceGrade('100.01')).toBe(false)
     expect(isValidGovernanceGrade('-1')).toBe(false)
     const easternEightySeven = String.fromCharCode(0x668, 0x667)
     expect(toWesternDigits(easternEightySeven)).toBe('87')
-    expect(governanceGradePayload('87.5')).toBe('87.500')
+    expect(governanceGradePayload('87.5')).toBe('87.50')
     expect(governanceGradePayload(' ')).toBeNull()
-    expect(formatGovernanceGrade('86.5')).toBe('86.500%')
+    expect(formatGovernanceGrade('86.5')).toBe('86.50%')
   })
 })
 
@@ -79,7 +78,7 @@ describe('entity payload mapping', () => {
       foundingYear: 2009,
       regionId: 1,
       cityId: 1,
-      governanceGrade: '86.500',
+      governanceGrade: '86.50',
       employeesCount: 180,
       annualBeneficiariesCount: null,
       hasStrategicPlan: true,
@@ -97,7 +96,7 @@ describe('entity payload mapping', () => {
       marketingConsent: false,
     }
     const payload = registrationPayload(
-      { ...form, unifiedNumber: '7000000901' },
+      { ...form, unifiedNumber: '7000000901', foundedOn: '2009-04-20', licenseNumber: ' ١٢٣٤ ' },
       { terms: { id: 3 }, privacy: { id: 4 } },
     )
     expect(payload).toMatchObject({
@@ -107,10 +106,22 @@ describe('entity payload mapping', () => {
       privacyVersionId: 4,
       termsAccepted: true,
       marketingConsent: false,
+      foundedOn: '2009-04-20',
+      foundingYear: 2009,
+      licenseNumber: '1234',
     })
-    expect(registrationPayload(form, { terms: { id: 3 }, privacy: null })).not.toHaveProperty(
-      'privacyVersionId',
-    )
+    expect(
+      registrationPayload(
+        { ...form, foundedOn: '2009-04-20', licenseNumber: '' },
+        { terms: { id: 3 }, privacy: null },
+      ),
+    ).not.toHaveProperty('privacyVersionId')
+    expect(
+      registrationPayload(
+        { ...form, foundedOn: '2009-04-20', licenseNumber: '' },
+        { terms: { id: 3 } },
+      ).licenseNumber,
+    ).toBeNull()
   })
 
   it('keeps an unanswered strategic plan as empty and sends it back as null (P-6)', () => {
@@ -143,9 +154,12 @@ describe('entity schemas', () => {
         'regionId',
         'name.ar',
         'unifiedNumber',
+        'foundedOn',
       ]),
     )
     expect(errors).not.toContain('marketingConsent')
+    expect(errors).not.toContain('licenseNumber')
+    expect(errors).not.toContain('foundingYear')
     expect(errors).not.toContain('governanceGrade')
   })
 

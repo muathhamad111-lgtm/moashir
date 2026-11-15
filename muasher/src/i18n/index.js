@@ -19,7 +19,13 @@ const latinNumberFormats = {
     maximumFractionDigits: 0,
     numberingSystem: 'latn',
   },
-  percent: { style: 'percent', maximumFractionDigits: 1, numberingSystem: 'latn' },
+  percent: {
+    style: 'percent',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    numberingSystem: 'latn',
+  },
+
   money: {
     style: 'decimal',
     minimumFractionDigits: 2,

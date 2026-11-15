@@ -41,7 +41,7 @@ function unit(level, node) {
   <li :id="`review-sub-${sub.id}`" class="review-sub" tabindex="-1">
     <div class="review-sub__head">
       <h3 class="review-sub__title">
-        <span class="review-sub__code u-ltr">{{ sub.code }}</span> {{ text(sub.name) }}
+        {{ text(sub.name) }}
       </h3>
       <Badge :variant="usesPoints ? 'info' : 'muted'">{{
         usesPoints
@@ -62,13 +62,10 @@ function unit(level, node) {
     <div class="review-sub__scores">
       <template v-if="usesPoints">
         <div v-for="point in sub.points" :key="point.id" class="review-sub__point">
-          <p class="review-sub__point-text">
-            <span class="review-sub__code u-ltr">{{ point.code }}</span>
-            {{ text(point.description) }}
-          </p>
+          <p class="review-sub__point-text">{{ text(point.description) }}</p>
           <RawScoreField
             :name="scoreFieldName(unit(SCORE_LEVELS.POINT, point))"
-            :label="t('review.pointScoreLabel', { code: point.code })"
+            :label="t('review.pointScoreLabel', { name: text(point.description) })"
             :maximum="maximum"
             :saved="savedScoreOf(review.scores, unit(SCORE_LEVELS.POINT, point))"
             :disabled="disabled"
@@ -78,7 +75,7 @@ function unit(level, node) {
       <RawScoreField
         v-else
         :name="scoreFieldName(unit(SCORE_LEVELS.SUB, sub))"
-        :label="t('review.directScoreLabel', { code: sub.code })"
+        :label="t('review.directScoreLabel', { name: text(sub.name) })"
         :maximum="maximum"
         :saved="savedScoreOf(review.scores, unit(SCORE_LEVELS.SUB, sub))"
         :disabled="disabled"

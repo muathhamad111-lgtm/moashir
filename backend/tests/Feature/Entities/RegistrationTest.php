@@ -53,7 +53,7 @@ it('registers an entity with the verified official e-mail, holds it for staff re
         ->and($entity->verified_at)->not->toBeNull()
         ->and($entity->approved_at)->toBeNull()
         ->and($entity->name->ar)->toBe('جمعية الأمل الخيرية')
-        ->and($entity->governance_grade)->toBe('87.450')
+        ->and($entity->governance_grade)->toBe('87.45')
         ->and($entity->hasCompleteProfile())->toBeFalse()
         ->and($entity->profileCompletion()->percent())->toBe(86)
         ->and($entity->unified_number)->toBe('7001234567')
@@ -183,14 +183,60 @@ it('does not ask a legacy entity with a complete profile to complete it once it 
     Notification::assertNotSentTo($owner, EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityProfileIncomplete);
 });
 
-it('asks every newly verified entity for the licence number and the founding date the registration form does not carry', function (): void {
+it('names only the profile fields still missing in the completion reminder', function (): void {
     requireEntityRegistrationReview(false);
 
     register(registrationPayload())
         ->assertCreated()
         ->assertJsonPath('data.user.entity.profile_completed', false);
 
-    Notification::assertSentTo(registeredOwner(), EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityProfileIncomplete);
+    Notification::assertSentTo(registeredOwner(), EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityProfileIncomplete
+        && $notification->notice->body->ar === 'تم التحقق من حسابك. لاستكمال الملف التعريفي لـ جمعية الأمل الخيرية أضف: رقم الترخيص، تاريخ التأسيس.'
+        && $notification->notice->body->en === 'Your account is verified. To complete the profile of Al-Amal Charitable Association, add: Licence number, Founding date.');
+});
+
+it('names the governance figures in the completion reminder when the registration leaves them empty', function (): void {
+    requireEntityRegistrationReview(false);
+
+    register(registrationPayload(['license_number' => '1234', 'founded_on' => '2011-04-20', 'governance_grade' => null, 'employees_count' => null]))->assertCreated();
+
+    Notification::assertSentTo(registeredOwner(), EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityProfileIncomplete
+        && str_ends_with($notification->notice->body->ar, 'أضف: درجة الحوكمة، عدد الموظفين.')
+        && str_ends_with($notification->notice->body->en, 'add: Governance grade, Number of employees.'));
+});
+
+it('completes the profile from the registration form when it carries the licence number and the founding date', function (): void {
+    requireEntityRegistrationReview(false);
+
+    register(registrationPayload(['license_number' => '1234', 'founded_on' => '2011-04-20']))
+        ->assertCreated()
+        ->assertJsonPath('data.user.entity.profile_completed', true);
+
+    $entity = Entity::query()->firstOrFail();
+
+    expect($entity->license_number)->toBe('1234')
+        ->and($entity->founded_on?->toDateString())->toBe('2011-04-20')
+        ->and($entity->founding_year)->toBe(2011);
+    Notification::assertNotSentTo(registeredOwner(), EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityProfileIncomplete);
+});
+
+it('refuses a licence number already held by another entity', function (): void {
+    Entity::factory()->create(['license_number' => '5678']);
+
+    register(registrationPayload(['license_number' => '5678']))
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['license_number']);
+
+    expect(Entity::query()->count())->toBe(1);
+});
+
+it('takes the founding year from the founding date when the form sends only the date', function (): void {
+    $payload = registrationPayload(['founded_on' => '2009-12-31']);
+    unset($payload['founding_year']);
+
+    register($payload)->assertCreated();
+
+    expect(Entity::query()->firstOrFail()->founding_year)->toBe(2009);
 });
 
 it('asks for two-factor enrolment instead of opening a session when the entity role requires it', function (): void {
@@ -313,13 +359,17 @@ it('rejects invalid registration data', function (Closure $mutate, string $field
     'unknown size' => [static fn (array $payload): array => [...$payload, 'org_size' => 'huge'], 'org_size'],
     'founding year in the future' => [static fn (array $payload): array => [...$payload, 'founding_year' => (int) date('Y') + 1], 'founding_year'],
     'founding year too old' => [static fn (array $payload): array => [...$payload, 'founding_year' => 1850], 'founding_year'],
+    'founding date in the future' => [static fn (array $payload): array => [...$payload, 'founded_on' => date('Y-m-d', strtotime('+2 days'))], 'founded_on'],
+    'founding date not a calendar day' => [static fn (array $payload): array => [...$payload, 'founded_on' => '2011-02-30'], 'founded_on'],
+    'founding date in another format' => [static fn (array $payload): array => [...$payload, 'founded_on' => '20/04/2011'], 'founded_on'],
+    'licence number with letters' => [static fn (array $payload): array => [...$payload, 'license_number' => 'LIC-12'], 'license_number'],
     'missing region' => [static fn (array $payload): array => [...$payload, 'region_id' => null], 'region_id'],
     'missing city' => [static fn (array $payload): array => [...$payload, 'city_id' => null], 'city_id'],
     'city of another region' => [static fn (array $payload): array => [...$payload, 'city_id' => regionWithCity()->id], 'city_id'],
     'inactive city' => [static fn (array $payload): array => [...$payload, 'city_id' => City::factory()->inactive()->create(['region_id' => $payload['region_id']])->id], 'city_id'],
     'governance above 100' => [static fn (array $payload): array => [...$payload, 'governance_grade' => '100.01'], 'governance_grade'],
     'governance below 0' => [static fn (array $payload): array => [...$payload, 'governance_grade' => '-1'], 'governance_grade'],
-    'governance with four decimals' => [static fn (array $payload): array => [...$payload, 'governance_grade' => '87.4551'], 'governance_grade'],
+    'governance with three decimals' => [static fn (array $payload): array => [...$payload, 'governance_grade' => '87.455'], 'governance_grade'],
     'governance as a band label' => [static fn (array $payload): array => [...$payload, 'governance_grade' => 'advanced'], 'governance_grade'],
     'negative employees' => [static fn (array $payload): array => [...$payload, 'employees_count' => -3], 'employees_count'],
     'strategic plan missing' => [static fn (array $payload): array => array_diff_key($payload, ['has_strategic_plan' => true]), 'has_strategic_plan'],

@@ -1,11 +1,66 @@
-.datepicker__control {
-  &::-webkit-calendar-picker-indicator {
-    cursor: pointer;
-    opacity: var(--opacity-backdrop);
-    transition: opacity var(--t-fast) var(--ease);
+@use '../mixins' as *;
 
-    &:hover {
-      opacity: 1;
-    }
+.datepicker {
+  @include flex(row, center, flex-start, var(--space-1));
+  position: relative;
+
+  &:focus-within {
+    @include focus-ring;
+    border-color: var(--theme-accent);
   }
+}
+
+.datepicker__segment {
+  inline-size: var(--size-date-segment);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: center;
+
+  &--year {
+    inline-size: var(--size-date-year);
+  }
+
+  &::placeholder {
+    color: var(--theme-text-secondary);
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+}
+
+.datepicker__separator {
+  color: var(--theme-text-secondary);
+}
+
+.datepicker__calendar {
+  @include flex(row, center, center);
+  margin-inline-start: auto;
+  padding: var(--space-1);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--theme-text-secondary);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--theme-text);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+.datepicker__native {
+  @include visually-hidden;
+  inset-block-end: 0;
+  inset-inline-end: 0;
 }

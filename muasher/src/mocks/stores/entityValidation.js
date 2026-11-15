@@ -2,10 +2,11 @@ import { ENTITY_TYPES, DEVELOPMENT_SECTORS, ORG_SIZES } from '@/constants/entity
 import { activeCityOf, findRegion } from './regionsStore'
 import { entityReject, fieldError } from './entityRejection'
 import { checkUnifiedNumber } from './entityUnifiedNumber'
+import { checkRegistry } from './entityRegistry'
 
 const PHONE_PATTERN = /^(05\d{8}|\+9665\d{8})$/
-const GOVERNANCE_DECIMALS = 3
-const GRADE_PATTERN = /^\d{1,3}(\.\d{1,3})?$/
+const GOVERNANCE_DECIMALS = 2
+const GRADE_PATTERN = /^\d{1,3}(\.\d{1,2})?$/
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const MIN_FOUNDING_YEAR = 1900
 const PASSWORD_MIN = 12
@@ -144,10 +145,19 @@ export function assertProfile(body, entityId = null) {
   errors.assertValid()
 }
 
+const REGISTRATION_REGISTRY_KEYS = ['licenseNumber', 'foundedOn']
+
+export function registrationRegistry(body) {
+  return Object.fromEntries(
+    REGISTRATION_REGISTRY_KEYS.filter((key) => key in body).map((key) => [key, body[key]]),
+  )
+}
+
 export function assertRegistration(body, terms) {
   const errors = profileErrors(body)
   if (blank(body.name?.en)) errors.add('name.en', 'field.required')
   checkUnifiedNumber(errors, body, { required: true })
+  checkRegistry(errors, registrationRegistry(body), null)
   if (blank(body.officialEmail) || !EMAIL_PATTERN.test(String(body.officialEmail)))
     errors.add('officialEmail', 'field.email')
   if (String(body.password ?? '').length < PASSWORD_MIN)

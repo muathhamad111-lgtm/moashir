@@ -48,7 +48,6 @@ function text(content) {
   >
     <div class="accredited-sub__head">
       <h3 class="accredited-sub__title">
-        <span class="accredited-sub__code u-ltr">{{ sub.code }}</span>
         {{ text(sub.name) }}
       </h3>
       <div class="accredited-sub__badges">
@@ -65,7 +64,6 @@ function text(content) {
       <p class="accredited-sub__guidance-title">{{ t('accredited.form.guidanceTitle') }}</p>
       <ul class="accredited-sub__points">
         <li v-for="point in sub.points" :key="point.id" class="accredited-sub__point">
-          <span class="accredited-sub__code u-ltr">{{ point.code }}</span>
           {{ text(point.description) }}
         </li>
       </ul>
@@ -73,7 +71,7 @@ function text(content) {
     <CvEntryField
       v-if="sub.hasCv"
       :sub-id="sub.id"
-      :code="sub.code"
+      :name="text(sub.name)"
       :model-value="workspace.cvDrafts.draftOf(sub.id)"
       :editable="cvEditable"
       :missing="cvMissing"

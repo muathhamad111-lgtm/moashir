@@ -32,7 +32,7 @@ it('returns the own entity profile to its single user', function (): void {
         ->assertJsonPath('data.authorized_person_name', $owner->name)
         ->assertJsonPath('data.region.id', $entity->region_id)
         ->assertJsonPath('data.city.id', $entity->city_id)
-        ->assertJsonPath('data.governance_grade', '82.500')
+        ->assertJsonPath('data.governance_grade', '82.50')
         ->assertJsonPath('data.profile_completed', true)
         ->assertJsonPath('data.pending_email_change', null)
         ->assertJsonPath('data.can_edit', true)

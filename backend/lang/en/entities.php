@@ -46,6 +46,7 @@ return [
         'license_number' => 'Licence number',
         'unified_number' => 'Unified national number',
         'founded_on' => 'Founding date',
+        'official_email' => 'Official e-mail',
         'website_url' => 'Website',
         'authorized_person_name' => 'Authorized account manager',
         'phone' => 'Mobile number',

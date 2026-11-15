@@ -2,7 +2,8 @@
 import { computed, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { SCALE_KINDS } from '@/constants/assessment'
-import { valueToRatio, ratioToValue, ratioToPercent, scaleMax } from '@/utils/assessmentScoring'
+import { clampRatio, valueToRatio, ratioToValue, scaleMax } from '@/utils/assessmentScoring'
+import { twoDecimals } from '@/utils/percentText'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
@@ -30,7 +31,7 @@ const rawValue = computed(() => {
   return Math.round(value * 100) / 100
 })
 
-const percent = computed(() => ratioToPercent(props.modelValue))
+const percent = computed(() => twoDecimals(clampRatio(props.modelValue) * 100))
 
 function commitValue(value) {
   const bounded = Math.min(Math.max(Number(value) || 0, 0), max.value)

@@ -11,7 +11,6 @@ vi.mock('@/services/criteriaService', () => ({
   criteriaService: {
     createDraft: vi.fn(),
     checkVersion: vi.fn(),
-    listMains: vi.fn(),
     discardDraft: vi.fn(),
   },
 }))
@@ -38,7 +37,6 @@ function buttonLabels(wrapper) {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  criteriaService.listMains.mockResolvedValue({ data: [] })
 })
 
 describe('CriteriaVersionPanel', () => {

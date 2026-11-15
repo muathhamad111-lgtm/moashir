@@ -3,8 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { isMetalTier } from '@/utils/levelTier'
 import { isTopLevel, nextLevelOf, remainingTo } from '@/utils/levelProgress'
-import { formatNumber } from '@/utils/formatNumber'
-import { roundToOneDecimal, scorePercentText } from '@/utils/percentText'
+import { percentText, twoDecimals, wholePercentText } from '@/utils/percentText'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import LevelThresholdTrack from './LevelThresholdTrack.vue'
 
@@ -25,8 +24,8 @@ const reachedTop = computed(
   () => isMetalTier(props.tier) && isTopLevel(props.ranges, props.percent),
 )
 const firstThreshold = computed(() => props.ranges[0]?.min ?? null)
-const figure = computed(() => formatNumber(n, roundToOneDecimal(props.displayScore ?? 0)))
-const scoreValue = computed(() => scorePercentText(n, t, props.percent))
+const figure = computed(() => twoDecimals(props.displayScore ?? 0))
+const scoreValue = computed(() => percentText(n, t, props.percent))
 </script>
 
 <template>
@@ -51,7 +50,7 @@ const scoreValue = computed(() => scorePercentText(n, t, props.percent))
         class="level-hero__remaining"
       >
         <template #value>
-          <bdi dir="ltr">{{ scorePercentText(n, t, remaining) }}</bdi>
+          <bdi dir="ltr">{{ percentText(n, t, remaining) }}</bdi>
         </template>
         <template #level>{{ t(`level.names.${nextLevel.level}`) }}</template>
       </i18n-t>
@@ -63,7 +62,7 @@ const scoreValue = computed(() => scorePercentText(n, t, props.percent))
         class="level-hero__remaining"
       >
         <template #value>
-          <bdi dir="ltr">{{ scorePercentText(n, t, firstThreshold) }}</bdi>
+          <bdi dir="ltr">{{ wholePercentText(n, t, firstThreshold) }}</bdi>
         </template>
       </i18n-t>
     </div>

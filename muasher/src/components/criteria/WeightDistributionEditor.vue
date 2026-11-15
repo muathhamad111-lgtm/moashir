@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCriteria } from '@/composables/useCriteria'
 import { percentOf, sumWeights, weightBudget } from '@/utils/weight'
+import { westernizeInputDigits } from '@/utils/numerals'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
@@ -114,7 +115,7 @@ function isEditable(child) {
             :value="child.weight"
             :disabled="!isEditable(child)"
             :aria-label="t('criteria.weights.weightForAria', { name: child.label })"
-            @input="updateWeight(child.id, $event.target.value)"
+            @input="updateWeight(child.id, westernizeInputDigits($event.target))"
           />
           <span v-if="child.active === false" class="weight-editor__inactive">{{
             t('criteria.weights.inactive')

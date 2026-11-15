@@ -305,7 +305,11 @@ describe('JourneyHome (D1 / M1)', () => {
     const tiles = wrapper.findAll('.path-tile')
     expect(tiles.map((tile) => tile.attributes('data-state'))).toEqual(['start', 'draft'])
     expect(tiles[0].find('.path-price__free').text()).toBe('مجاني')
-    expect(tiles[0].find('.path-tile__status').text()).toContain('78%')
+    expect(tiles[0].find('.path-tile__status').text()).toContain('78.00%')
+    expect(tiles[0].find('.path-tile__action').attributes('href')).toBe('/assessment/self')
+    expect(tiles[0].find('.path-tile__history').attributes('href')).toBe('/paths/self')
+    expect(tiles[0].find('.path-tile__history').text()).toBe('الطلبات السابقة')
+    expect(tiles[1].find('.path-tile__history').exists()).toBe(false)
     expect(tiles[1].find('.path-tile__line').text()).toContain('الربع الرابع 2026')
     expect(tiles[1].find('.path-tile__action').attributes('href')).toBe('/paths/accredited')
     expect(tiles[1].find('.path-tile__action').classes()).toContain('btn--primary')
@@ -400,7 +404,7 @@ describe('JourneyHome (D1 / M1)', () => {
     expect(hero.attributes('data-tier')).toBe('gold')
     expect(hero.find('.level-emblem__seal').exists()).toBe(true)
     expect(hero.find('.level-hero__chip--reassessment').exists()).toBe(true)
-    expect(hero.find('.level-hero__remaining').text()).toBe('تبقّى 8% لبلوغ المستوى الماسي')
+    expect(hero.find('.level-hero__remaining').text()).toBe('تبقّى 8.00% لبلوغ المستوى الماسي')
     expect(hero.find('.level-hero__remaining bdi').attributes('dir')).toBe('ltr')
     expect(hero.findAll('.level-track__segment')).toHaveLength(5)
     expect(hero.find('.level-ring').exists()).toBe(false)
@@ -435,7 +439,7 @@ describe('JourneyHome (D1 / M1)', () => {
     expect(wrapper.findAll('.ranked-bars__axis-label--minor')).toHaveLength(2)
     expect(wrapper.find('.level-trend__line').exists()).toBe(true)
     expect(wrapper.findAll('.kpi-tile')[0].find('.delta-chip').attributes('aria-label')).toBe(
-      'ارتفاع بمقدار 8',
+      'ارتفاع بمقدار 8.00',
     )
   })
 

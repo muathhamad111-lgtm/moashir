@@ -25,9 +25,7 @@ const { t, locale } = useI18n()
     <ul v-else class="executive-highlights__list">
       <li v-for="item in items" :key="itemKey(item)" class="executive-highlights__item">
         <div class="executive-highlights__head">
-          <span class="executive-highlights__name">
-            <bdi dir="ltr">{{ item.subCode }}</bdi> · {{ localizedText(item.subName, locale) }}
-          </span>
+          <span class="executive-highlights__name">{{ localizedText(item.subName, locale) }}</span>
           <GapClassChip v-if="item.class !== GAP_CLASSES.STRENGTH" :gap-class="item.class" />
           <InsightPercent :value="item.percent" />
         </div>

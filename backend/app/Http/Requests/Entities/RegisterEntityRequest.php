@@ -35,6 +35,8 @@ final class RegisterEntityRequest extends FormRequest
             ...EntityProfileInput::rules($this->input('region_id')),
             'name.en' => ['required', 'string', 'max:200'],
             'unified_number' => EntityProfileInput::unifiedNumberRules(null),
+            'license_number' => EntityProfileInput::licenseNumberRules(null),
+            'founded_on' => EntityProfileInput::foundedOnRules(),
             'official_email' => ['required', 'string', 'email:filter', 'max:254'],
             'email_verification_token' => ['nullable', 'string', 'max:128'],
             'password' => $passwords->rules(),
@@ -43,6 +45,15 @@ final class RegisterEntityRequest extends FormRequest
             'terms_accepted' => ['accepted'],
             'marketing_consent' => ['sometimes', 'boolean'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $foundingYear = EntityProfileInput::foundingYearOf($this->input('founded_on'));
+
+        if ($foundingYear !== null) {
+            $this->merge(['founding_year' => $foundingYear]);
+        }
     }
 
     public function registration(): EntityRegistrationData

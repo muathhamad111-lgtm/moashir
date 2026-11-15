@@ -17,6 +17,20 @@ function isEn(testInfo) {
   return testInfo.project.name === 'chromium-en-ltr'
 }
 
+const CRITERIA = {
+  leadership: { ar: 'القيادة الإدارية', en: 'Administrative Leadership' },
+  direction: { ar: 'التوجه الاستراتيجي والرؤية', en: 'Strategic Direction and Vision' },
+  excellence: {
+    ar: 'ثقافة التميز والقيادة بالقدوة',
+    en: 'Excellence Culture and Leading by Example',
+  },
+  planning: { ar: 'التخطيط الاستراتيجي', en: 'Strategic Planning' },
+}
+
+function nameOf(testInfo, key) {
+  return CRITERIA[key][isEn(testInfo) ? 'en' : 'ar']
+}
+
 function suffixOf(testInfo) {
   return isEn(testInfo) ? 'en-ltr' : 'ar-rtl'
 }
@@ -45,8 +59,8 @@ async function startDraft(page) {
   await expect(rows(page)).toHaveCount(9)
 }
 
-async function openMain(page, code) {
-  await rows(page).filter({ hasText: code }).first().locator('.criteria-page__link').click()
+async function openMain(page, name) {
+  await rows(page).filter({ hasText: name }).first().locator('.criteria-page__link').click()
   await expect(page.locator('.criteria-page__breadcrumb')).toBeVisible()
   await expect(page.locator('.table__row').first()).toBeVisible()
 }
@@ -86,13 +100,13 @@ test('editing published criteria: clone, blocked publish with links to fix, then
   await openCriteria(page)
   await startDraft(page)
 
-  await openMain(page, 'M1')
+  await openMain(page, nameOf(testInfo, 'leadership'))
   await expect(page.locator('.weight-editor')).toBeVisible()
   await expect(
     page.getByRole('button', { name: /Add sub-criterion|إضافة معيار فرعي/ }),
   ).toBeDisabled()
   await expect(page.locator('.criteria-page__hint')).toBeVisible()
-  await rowAction(page, 'M1.3', /Deactivate|إيقاف/)
+  await rowAction(page, nameOf(testInfo, 'excellence'), /Deactivate|إيقاف/)
   await expect(page.locator('.weight-editor__status--warning')).toBeVisible()
   await expect(
     page.getByRole('button', { name: /Add sub-criterion|إضافة معيار فرعي/ }),
@@ -100,14 +114,17 @@ test('editing published criteria: clone, blocked publish with links to fix, then
 
   await backToVersion(page)
   await page.getByRole('button', { name: /Check consistency|التحقق من الاتساق/ }).click()
-  await expect(page.locator('.criteria-version-panel .criteria-problems')).toContainText('M1')
+  await expect(page.locator('.criteria-version-panel .criteria-problems')).toContainText(
+    nameOf(testInfo, 'leadership'),
+  )
+  await expect(page.locator('.criteria-version-panel .criteria-problems')).not.toContainText(/M\d/)
 
   await page.getByRole('button', { name: /^\s*(Publish|نشر)\s*$/ }).click()
   const dialog = page.getByRole('dialog')
   await expect(dialog.locator('.scope-choice__option')).toHaveCount(3)
   await dialog.locator('.scope-choice__option').first().click()
   await dialog.locator('button[type="submit"]').click()
-  await expect(dialog.locator('.criteria-problems')).toContainText('M1')
+  await expect(dialog.locator('.criteria-problems')).toContainText(nameOf(testInfo, 'leadership'))
   await page.screenshot({
     path: `test-results/criteria-publish-blocked-${suffixOf(testInfo)}.png`,
     fullPage: true,
@@ -115,7 +132,7 @@ test('editing published criteria: clone, blocked publish with links to fix, then
 
   await dialog.locator('.criteria-problems__fix').first().click()
   await expect(page.locator('.weight-editor')).toBeVisible()
-  await rowAction(page, 'M1.3', /Activate|تفعيل/)
+  await rowAction(page, nameOf(testInfo, 'excellence'), /Activate|تفعيل/)
   await expect(page.locator('.weight-editor__status--success')).toBeVisible()
 
   await backToVersion(page)
@@ -155,7 +172,7 @@ test('capture the criteria editor and the publish dialog with the three scopes',
   })
   await dialog.getByRole('button', { name: /Cancel|إلغاء/ }).click()
 
-  await openMain(page, 'M1')
+  await openMain(page, nameOf(testInfo, 'leadership'))
   await page.screenshot({
     path: `test-results/criteria-editor-main-${suffixOf(testInfo)}.png`,
     fullPage: true,
@@ -174,13 +191,21 @@ test('switching a guiding-points sub-criterion to direct evaluation warns with t
   await seed(page, testInfo)
   await openCriteria(page)
   await startDraft(page)
-  await openMain(page, 'M1')
-  await rowAction(page, 'M1.1', /Switch to direct evaluation|التحويل إلى التقييم المباشر/)
+  await openMain(page, nameOf(testInfo, 'leadership'))
+  await expect(
+    page.locator('.table__head th').filter({ hasText: /^\s*(Code|الرمز)\s*$/ }),
+  ).toHaveCount(0)
+  await expect(rows(page).first()).not.toContainText(/M\d/)
+  await rowAction(
+    page,
+    nameOf(testInfo, 'direction'),
+    /Switch to direct evaluation|التحويل إلى التقييم المباشر/,
+  )
   const confirm = page.getByRole('alertdialog')
   await expect(confirm).toContainText('3')
   await page.screenshot({ path: `test-results/criteria-switch-warning-${suffixOf(testInfo)}.png` })
   await confirm.getByRole('button', { name: /Cancel|إلغاء/ }).click()
-  await expect(rows(page).filter({ hasText: 'M1.1' })).toContainText(/3/)
+  await expect(rows(page).filter({ hasText: nameOf(testInfo, 'direction') })).toContainText(/3/)
 })
 
 test('a text correction on the published version changes the name in place', async ({
@@ -189,7 +214,7 @@ test('a text correction on the published version changes the name in place', asy
   await useTallViewport(page)
   await seed(page, testInfo)
   await openCriteria(page)
-  await rowAction(page, 'M2', /Correct text|تصحيح النص/)
+  await rowAction(page, nameOf(testInfo, 'planning'), /Correct text|تصحيح النص/)
   const dialog = page.getByRole('dialog')
   await expect(dialog.locator('.criteria-form__note--emphasis')).toBeVisible()
   await dialog.locator('input[name="correctionPrimaryAr"]').fill('التخطيط الاستراتيجي المؤسسي')
@@ -200,9 +225,11 @@ test('a text correction on the published version changes the name in place', asy
   })
   await dialog.locator('button[type="submit"]').click()
   await expect(page.locator('.toast--success').last()).toBeVisible()
-  await expect(rows(page).filter({ hasText: 'M2' })).toContainText(
-    isEn(testInfo) ? 'Institutional Strategic Planning' : 'التخطيط الاستراتيجي المؤسسي',
-  )
+  await expect(
+    rows(page).filter({
+      hasText: isEn(testInfo) ? 'Institutional Strategic Planning' : 'التخطيط الاستراتيجي المؤسسي',
+    }),
+  ).toHaveCount(1)
   await expect(page.locator('.criteria-version--success')).toBeVisible()
 })
 

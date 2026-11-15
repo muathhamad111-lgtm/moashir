@@ -1,6 +1,7 @@
 import { boolean as yupBoolean, object as yupObject, string as yupString } from 'yup'
 import {
   DEVELOPMENT_SECTORS,
+  EARLIEST_FOUNDING_DATE,
   ENTITY_TYPES,
   FOUNDING_YEAR_MIN,
   ORG_SIZES,
@@ -11,6 +12,7 @@ import {
 } from '@/constants/entityEnums'
 import { isValidGovernanceGrade } from '@/utils/governanceGrade'
 import { toWesternDigits } from '@/utils/numerals'
+import { riyadhDateKey } from '@/utils/datetime'
 
 const NAME_MAX = 200
 const PERSON_NAME = { MIN: 3, MAX: 150 }
@@ -20,7 +22,6 @@ const YEAR_PATTERN = /^\d{4}$/
 const CITY_NAME_MAX = 120
 const LICENSE_PATTERN = /^\d{3,20}$/
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
-const EARLIEST_FOUNDING_DATE = '1900-01-01'
 const WEBSITE_MAX = 255
 const HTTPS_PREFIX = 'https://'
 
@@ -159,9 +160,13 @@ export function staffProfileSchema(t, { unifiedNumberRequired = false } = {}) {
 }
 
 export function registrationSchema(t) {
+  const registry = registryShape(t, riyadhDateKey(new Date()))
   return yupObject({
     ...entityProfileShape(t),
     name: yupObject({ ar: requiredText(t, NAME_MAX), en: requiredText(t, NAME_MAX) }),
+    foundingYear: yupString(),
+    foundedOn: registry.foundedOn.required(t('validation.required')),
+    licenseNumber: registry.licenseNumber,
     hasStrategicPlan: yupString().oneOf(['', 'yes', 'no']),
     unifiedNumber: unifiedNumberField(t),
     officialEmail: yupString()

@@ -1,4 +1,5 @@
 <script setup>
+import { percentText } from '@/utils/percentText'
 import { ref, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseModal from '@/components/modal/BaseModal.vue'
@@ -16,7 +17,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue'])
-const { t, locale } = useI18n()
+const { t, locale, n } = useI18n()
 const status = ref('loading')
 const errorMessage = ref('')
 const evaluation = shallowRef(null)
@@ -72,11 +73,9 @@ watch(
         </thead>
         <tbody>
           <tr v-for="sub in evaluation.result.sub" :key="sub.subId">
+            <td>{{ localizedText(sub.name, locale) }}</td>
             <td>
-              <bdi class="u-ltr">{{ sub.code }}</bdi> {{ localizedText(sub.name, locale) }}
-            </td>
-            <td>
-              <bdi class="u-ltr">{{ sub.percent }}%</bdi>
+              <bdi class="u-ltr">{{ percentText(n, t, sub.percent) }}</bdi>
             </td>
             <td>{{ evaluation.notes.subs[String(sub.subId)] ?? '' }}</td>
           </tr>

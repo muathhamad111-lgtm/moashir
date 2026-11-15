@@ -1,13 +1,13 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
-import InsightPercent from './InsightPercent.vue'
+import { thresholdText } from '@/utils/percentText'
 
 defineProps({
   kind: { type: String, required: true, validator: (value) => ['gaps', 'bands'].includes(value) },
   rules: { type: Object, required: true },
 })
 
-const { n } = useI18n()
+const { t, n } = useI18n()
 </script>
 
 <template>
@@ -18,8 +18,16 @@ const { n } = useI18n()
     class="insights-line"
     data-testid="insights-rules-line"
   >
-    <template #critical><InsightPercent :value="rules.criticalBelow" /></template>
-    <template #strength><InsightPercent :value="rules.strengthFrom" /></template>
+    <template #critical
+      ><bdi class="insight-percent" dir="ltr">{{
+        thresholdText(n, t, rules.criticalBelow)
+      }}</bdi></template
+    >
+    <template #strength
+      ><bdi class="insight-percent" dir="ltr">{{
+        thresholdText(n, t, rules.strengthFrom)
+      }}</bdi></template
+    >
     <template #version>
       <bdi dir="ltr">{{ n(rules.version) }}</bdi>
     </template>
@@ -31,9 +39,21 @@ const { n } = useI18n()
     class="insights-line"
     data-testid="insights-rules-line"
   >
-    <template #developing><InsightPercent :value="rules.developingFrom" /></template>
-    <template #mature><InsightPercent :value="rules.matureFrom" /></template>
-    <template #leading><InsightPercent :value="rules.leadingFrom" /></template>
+    <template #developing
+      ><bdi class="insight-percent" dir="ltr">{{
+        thresholdText(n, t, rules.developingFrom)
+      }}</bdi></template
+    >
+    <template #mature
+      ><bdi class="insight-percent" dir="ltr">{{
+        thresholdText(n, t, rules.matureFrom)
+      }}</bdi></template
+    >
+    <template #leading
+      ><bdi class="insight-percent" dir="ltr">{{
+        thresholdText(n, t, rules.leadingFrom)
+      }}</bdi></template
+    >
     <template #version>
       <bdi dir="ltr">{{ n(rules.version) }}</bdi>
     </template>

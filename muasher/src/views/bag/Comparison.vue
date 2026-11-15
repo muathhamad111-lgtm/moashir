@@ -1,4 +1,5 @@
 <script setup>
+import { twoDecimals } from '@/utils/percentText'
 import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
@@ -64,7 +65,7 @@ onMounted(load)
               t('bag.comparison.overallBefore')
             }}</span>
             <span class="bag-comparison__overall-value">
-              {{ t('bag.comparison.percent', { value: n(overall.beforePercent, 'default') }) }}
+              {{ t('bag.comparison.percent', { value: twoDecimals(overall.beforePercent) }) }}
             </span>
           </div>
           <AppIcon name="arrow-right" class="bag-comparison__overall-arrow" />
@@ -73,7 +74,7 @@ onMounted(load)
               t('bag.comparison.overallAfter')
             }}</span>
             <span class="bag-comparison__overall-value bag-comparison__overall-value--after">
-              {{ t('bag.comparison.percent', { value: n(overall.afterPercent, 'default') }) }}
+              {{ t('bag.comparison.percent', { value: twoDecimals(overall.afterPercent) }) }}
             </span>
           </div>
           <div class="bag-comparison__overall-score">

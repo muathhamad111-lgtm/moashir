@@ -65,7 +65,7 @@ const crumbs = computed(() => [
     label: localized(sub.value.parentName),
     to: { name: ROUTE_NAMES.ADMIN_CRITERIA_MAIN, params: { mainId: mainId.value } },
   },
-  { label: `${sub.value.code} ${localized(sub.value.name)}` },
+  { label: localized(sub.value.name) },
 ])
 
 const facts = computed(() => [
@@ -107,7 +107,7 @@ function onAction(key, point) {
   const handlers = {
     edit: () => openForm(point),
     toggle: () => nodeActions.toggle(point),
-    delete: () => nodeActions.remove(point, point.code),
+    delete: () => nodeActions.remove(point, localized(point.description)),
     correct: () => (correcting.value = { type: NODE.POINT, node: point }),
   }
   handlers[key]?.()
@@ -130,7 +130,6 @@ function onAction(key, point) {
       <header class="criteria-page__header">
         <div class="criteria-page__title-row">
           <h1 class="criteria-page__title">{{ localized(sub.name) }}</h1>
-          <Badge variant="muted">{{ sub.code }}</Badge>
           <StatusBadge :status="sub.active ? 'active' : 'inactive'" />
           <Badge :variant="isGuidingPoints ? 'info' : 'muted'">
             {{

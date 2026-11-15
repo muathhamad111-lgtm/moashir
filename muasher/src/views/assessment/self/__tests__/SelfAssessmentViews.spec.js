@@ -6,12 +6,11 @@ import SelfResult from '@/views/assessment/self/Result.vue'
 import { assessmentsService } from '@/services/assessmentsService'
 import { useAssessmentResultHandoffStore } from '@/stores/assessmentResultHandoff'
 import { createTestGlobals } from '@/test-utils'
-import { criteriaTree, formWith } from '@/utils/assessments/__tests__/fixtures'
+import { formWith } from '@/utils/assessments/__tests__/fixtures'
 
 vi.mock('@/services/assessmentsService', () => ({
   assessmentsService: {
     list: vi.fn(),
-    getPublishedCriteria: vi.fn(),
     startSelf: vi.fn(),
     getForm: vi.fn(),
     saveDraft: vi.fn(),
@@ -53,22 +52,22 @@ function rejection(status, code) {
 beforeEach(() => {
   vi.clearAllMocks()
   assessmentsService.list.mockResolvedValue({ data: [], meta: {} })
-  assessmentsService.getPublishedCriteria.mockResolvedValue({ data: criteriaTree })
 })
 
 describe('self assessment form view', () => {
-  it('offers the start card with the published version, the scale label and the items count', async () => {
+  it('starts a draft at once and opens it when there is none, without a start page', async () => {
+    assessmentsService.startSelf.mockResolvedValue({
+      data: { id: 9002, number: 'SLF-2026-000002' },
+    })
+    assessmentsService.getForm.mockResolvedValue({ data: formWith({ scores: SAVED }) })
     const { wrapper } = await mountView(SelfForm)
-    expect(wrapper.find('.self-start').exists()).toBe(true)
-    expect(wrapper.find('.self-start__facts').text()).toContain('Criteria version 2')
-    expect(wrapper.find('.self-start__facts').text()).toContain('Scale out of 10')
-    expect(wrapper.find('.self-start__facts').text()).toContain('3 items to score')
+    expect(assessmentsService.startSelf).toHaveBeenCalledTimes(1)
+    expect(assessmentsService.getForm).toHaveBeenCalledWith(9002)
+    expect(wrapper.find('.self-main__step').text()).toBe('Criterion 1 of 1')
   })
 
   it('shows the branded empty state when no criteria are published', async () => {
-    assessmentsService.getPublishedCriteria.mockRejectedValue(
-      rejection(404, 'criteria.no_published_version'),
-    )
+    assessmentsService.startSelf.mockRejectedValue(rejection(404, 'criteria.no_published_version'))
     const { wrapper } = await mountView(SelfForm)
     expect(wrapper.find('.empty-state').text()).toContain('No published criteria yet')
   })
@@ -190,7 +189,7 @@ describe('self assessment result view', () => {
       path: '/assessment/self/result/9001',
       locale: 'ar',
     })
-    expect(wrapper.find('.self-result__gauge-value').text()).toBe('77.2%')
+    expect(wrapper.find('.self-result__gauge-value').text()).toBe('77.18%')
     expect(wrapper.find('.self-result__score-total').text()).toContain('6329.17')
     expect(wrapper.find('.self-result__score-total').text()).toContain('8200.00')
   })

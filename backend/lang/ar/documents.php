@@ -48,7 +48,6 @@ return [
         'certificate' => 'الشهادة',
         'no_certificate' => 'لم تصدر شهادة لهذا الطلب',
         'results' => 'النتائج حسب المعايير الرئيسة',
-        'code' => 'الرمز',
         'criterion' => 'المعيار',
         'sub_criterion' => 'المعيار الفرعي',
         'weight' => 'الوزن',

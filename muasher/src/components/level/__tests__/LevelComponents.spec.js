@@ -131,7 +131,7 @@ describe('LevelRibbon and LevelHistoryList', () => {
     const wrapper = render(LevelRibbon, { tier: 'gold', certificate: current })
     expect(wrapper.find('.level-ribbon__name').text()).toBe('المستوى الذهبي')
     expect(wrapper.find('.level-ribbon__meta bdi').text()).toBe('CRT-2026-000031')
-    expect(wrapper.find('.level-ribbon__percent').text()).toBe('82%')
+    expect(wrapper.find('.level-ribbon__percent').text()).toBe('82.00%')
   })
 
   it('marks the current certificate and labels the others by status', () => {

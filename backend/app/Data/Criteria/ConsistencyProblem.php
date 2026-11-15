@@ -6,6 +6,7 @@ namespace App\Data\Criteria;
 
 use App\Enums\Criteria\ConsistencyProblemCode;
 use App\Enums\Criteria\CriteriaNodeType;
+use App\Support\ValueObjects\LocalizedText;
 use App\Support\ValueObjects\Weight;
 
 final readonly class ConsistencyProblem
@@ -17,6 +18,7 @@ final readonly class ConsistencyProblem
         public ConsistencyProblemCode $problem,
         public ?Weight $expected = null,
         public ?Weight $actual = null,
+        public ?LocalizedText $name = null,
     ) {}
 
     public function fieldKey(): string
@@ -27,7 +29,7 @@ final readonly class ConsistencyProblem
     public function message(): string
     {
         return __('errors.criteria.problems.'.$this->problem->value, [
-            'code' => (string) $this->code,
+            'name' => $this->name?->in(app()->getLocale()) ?? '',
             'expected' => $this->expected?->toDecimal() ?? '',
             'actual' => $this->actual?->toDecimal() ?? '',
         ]);

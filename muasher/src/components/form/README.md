@@ -4,6 +4,12 @@ The unified field system: BaseInput, BaseTextarea, BaseDatePicker, BaseCheckbox,
 BaseFileUpload, FormField — see `references/06-architecture.md`. Validation is vee-validate + yup
 (one schema per form). Styling only via `src/styles/components/_inputs.scss`.
 
+`BaseDatePicker` (and `FieldDate`) is three Western-digit boxes (day / month / year, in the reading
+direction) plus a calendar button that opens the browser picker of a hidden native date input. The
+native field is not shown because Chrome in Arabic renders its placeholder reversed. Arabic digits
+are converted while typing; the value is `YYYY-MM-DD` once the date is complete, `''` otherwise.
+Styling: `_datepicker.scss`.
+
 Dropdown family (Task-56, WAI-ARIA APG patterns, one popup surface for every kind):
 
 - `AppSelect` is the select-only combobox. `variant="field"` sits in `FormField` (floating label,

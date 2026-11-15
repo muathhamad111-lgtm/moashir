@@ -1,4 +1,5 @@
 <script setup>
+import { percentText } from '@/utils/percentText'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Card from '@/components/ui/Card.vue'
@@ -11,7 +12,7 @@ const props = defineProps({
 
 const FIELD_MODIFIERS = { strengths: 'strengths', improvementPoints: 'improvement', notes: 'notes' }
 
-const { t, locale } = useI18n()
+const { t, locale, n } = useI18n()
 const heading = ref(null)
 
 const items = computed(() =>
@@ -41,13 +42,10 @@ defineExpose({ focus })
     <ul class="accredited-feedback__list">
       <li v-for="item in items" :key="item.subId" class="accredited-feedback__item">
         <div class="accredited-feedback__head">
-          <h3 class="accredited-feedback__sub">
-            <span class="accredited-feedback__code u-ltr">{{ item.code }}</span>
-            {{ localizedText(item.name, locale) }}
-          </h3>
-          <span v-if="item.percent" class="accredited-feedback__percent u-ltr"
-            >{{ item.percent }}%</span
-          >
+          <h3 class="accredited-feedback__sub">{{ localizedText(item.name, locale) }}</h3>
+          <span v-if="item.percent" class="accredited-feedback__percent u-ltr">{{
+            percentText(n, t, item.percent)
+          }}</span>
         </div>
         <dl v-if="item.fields.length" class="accredited-feedback__fields">
           <div

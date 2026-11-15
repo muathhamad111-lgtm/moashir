@@ -38,7 +38,7 @@ export function announceCompletionExpired(record, outcome) {
   pushNotification({ code: 'ACC-12', recipientRole: 'assessor', title, body, link: assessorLink })
 }
 
-export function announceRefusedEvidence(record, row) {
+export function announceRefusedEvidence(record) {
   const replaceable = acceptsEntityContent(record.status)
   pushNotification({
     code: 'EVD-02',
@@ -47,12 +47,12 @@ export function announceRefusedEvidence(record, row) {
     title: { ar: 'رُفض ملف شاهد بعد فحصه', en: 'An evidence file was refused after the scan' },
     body: replaceable
       ? {
-          ar: `رُفض ملف شاهد في المعيار ${row.subCode} بعد فحصه. ارفع ملفاً بديلاً.`,
-          en: `An evidence file of sub-criterion ${row.subCode} was refused after the scan. Please upload a replacement.`,
+          ar: `رُفض ملف شاهد بعد فحصه. ارفع ملفاً بديلاً.`,
+          en: `An evidence file was refused after the scan. Please upload a replacement.`,
         }
       : {
-          ar: `رُفض ملف شاهد في المعيار ${row.subCode} بعد فحصه، ولا يطلع عليه المقيّم.`,
-          en: `An evidence file of sub-criterion ${row.subCode} was refused after the scan. The assessor does not see it.`,
+          ar: `رُفض ملف شاهد بعد فحصه، ولا يطلع عليه المقيّم.`,
+          en: `An evidence file was refused after the scan. The assessor does not see it.`,
         },
     link: '/assessment/accredited',
   })

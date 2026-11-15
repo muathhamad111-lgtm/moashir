@@ -55,7 +55,6 @@ async function onCreated({ id, reference }) {
       class="messages-page__header"
       :eyebrow="t('portal.messages.eyebrow')"
       :title="t('portal.messages.title')"
-      :subtitle="t('portal.messages.subtitle')"
       :tabs="list.tabs.value"
       :tab="list.tab.value"
       :tabs-label="t('portal.messages.tabsLabel')"

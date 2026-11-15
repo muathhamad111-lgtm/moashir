@@ -20,6 +20,8 @@ export const PATH_ROUTES = Object.freeze({
   [PATH_KEYS.AWARD]: R.PATHS_AWARD,
 })
 
+export const DIRECT_ENTRY_PATHS = Object.freeze([PATH_KEYS.SELF])
+
 export const ENTITY_PATH_ICONS = Object.freeze({
   [PATH_KEYS.SELF]: 'list-check',
   [PATH_KEYS.ACCREDITED]: 'clipboard-check',

@@ -1,4 +1,5 @@
 <script setup>
+import { percentText } from '@/utils/percentText'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DataTable from '@/components/data-list/DataTable.vue'
@@ -14,7 +15,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['view', 'approveSubstitution'])
-const { t } = useI18n()
+const { t, n } = useI18n()
 const names = computed(
   () => new Map(props.evaluations.map((row) => [row.id, row.member.user?.name])),
 )
@@ -63,7 +64,7 @@ const columns = computed(() => [
       </span>
     </template>
     <template #cell-percent="{ item }"
-      ><bdi v-if="item.percent" class="u-ltr">{{ item.percent }}%</bdi></template
+      ><bdi v-if="item.percent" class="u-ltr">{{ percentText(n, t, item.percent) }}</bdi></template
     >
     <template #cell-submittedAt="{ item }"><DateStamp :value="item.submittedAt" /></template>
     <template #cell-actions="{ item }">

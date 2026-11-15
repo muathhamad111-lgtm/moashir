@@ -102,6 +102,24 @@ test('transactions are searched, filtered, sorted and exported as a CSV', async 
   expect(errors).toEqual([])
 })
 
+test('payments made in test mode are one filter away; the default lists actual payments only', async ({
+  page,
+}, testInfo) => {
+  await seedStaff(page, testInfo, STAFF.financeOfficer)
+  await page.goto('/finance/transactions')
+  await expect(page.locator('.table__row')).toHaveCount(10)
+  await expect(page.locator('.transactions-table__reference .badge--warning')).toHaveCount(0)
+  const filters = await openListFilters(page)
+  await filters.locator('.transaction-filters__mode .dropdown-field').click()
+  await page
+    .getByRole('option', { name: isEn(testInfo) ? 'Test payments' : 'مدفوعات الاختبار' })
+    .click()
+  await applyOpenListFilters(page)
+  const testBadge = page.locator('.transactions-table__reference .badge--warning')
+  await expect(testBadge.first()).toBeVisible()
+  await expect(page.locator('.table__row').filter({ hasNot: testBadge })).toHaveCount(0)
+})
+
 test('a large export is queued and downloaded once it is ready', async ({ page }, testInfo) => {
   await seedStaff(page, testInfo, STAFF.financeOfficer)
   await page.goto('/finance/transactions')

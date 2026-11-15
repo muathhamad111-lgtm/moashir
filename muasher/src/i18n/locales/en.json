@@ -162,6 +162,16 @@
     "facebook": "Facebook"
   },
   "components": {
+    "datePicker": {
+      "day": "DD",
+      "month": "MM",
+      "year": "YYYY",
+      "dayLabel": "{label}: day",
+      "monthLabel": "{label}: month",
+      "yearLabel": "{label}: year",
+      "openCalendar": "Choose {label} from the calendar",
+      "incomplete": "Complete the date with the day, month and year."
+    },
     "fileUpload": {
       "choose": "Choose files or drop them here",
       "uploading": "Uploading… {progress}%",
@@ -419,7 +429,6 @@
     },
     "columns": {
       "order": "Order",
-      "code": "Code",
       "name": "Name",
       "group": "Group",
       "weight": "Weight",
@@ -524,10 +533,10 @@
     "problems": {
       "title": "Weight consistency problems",
       "no_active_main": "The version needs at least one active main criterion.",
-      "weights_mismatch": "The active sub-criteria of {code} total {actual}, but they must equal the main criterion weight of {expected}.",
-      "no_active_point": "The sub-criterion {code} is evaluated on guiding points but has no active guiding point.",
-      "points_exceed_sub": "The active guiding points of {code} total {actual}, which exceeds the sub-criterion weight of {expected}.",
-      "fix": "Fix {code}",
+      "weights_mismatch": "The active sub-criteria of {name} total {actual}, but they must equal the main criterion weight of {expected}.",
+      "no_active_point": "The sub-criterion {name} is evaluated on guiding points but has no active guiding point.",
+      "points_exceed_sub": "The active guiding points of {name} total {actual}, which exceeds the sub-criterion weight of {expected}.",
+      "fix": "Fix {name}",
       "fixVersion": "Review the main criteria"
     },
     "correction": {
@@ -1957,7 +1966,13 @@
       }
     },
     "session": {
-      "expired": "Your session has ended. Please sign in again."
+      "expired": "Your session has ended. Please sign in again.",
+      "extendTitle": "Are you still working on the assessment?",
+      "extendMessage": "To protect your account, your session will end soon. Extend it to keep filling in the form; otherwise we save your draft and sign you out.",
+      "timeLeft": "Time left",
+      "extendAction": "Extend session",
+      "saveAndSignOut": "Save and sign out",
+      "savedAndSignedOut": "We saved your draft and signed you out because the session ended. Sign in again to continue."
     },
     "recovery": {
       "backToLogin": "Back to sign in"
@@ -2112,10 +2127,9 @@
     "hints": {
       "nameEn": "Optional. Used in the English interface.",
       "phone": "Optional. A Saudi mobile number that starts with 05 and has 10 digits.",
-      "governanceGrade": "The NCNP governance percentage from 0 to 100, up to three decimals.",
+      "governanceGrade": "The NCNP governance percentage from 0 to 100, up to two decimals.",
       "metricsProfile": "The governance grade, employees and beneficiaries complete the entity profile.",
-      "marketingConsent": "Optional and unticked by default. You can change it at any time from the entity profile.",
-      "unifiedNumber": "10 digits."
+      "marketingConsent": "Optional and unticked by default. You can change it at any time from the entity profile."
     },
     "sections": {
       "identity": "Entity and authorized person",
@@ -2129,7 +2143,7 @@
       "count": "Enter a whole number of 0 or more",
       "foundingYear": "Enter a year between {min} and {max}",
       "phone": "Enter a Saudi mobile number that starts with 05 and has 10 digits",
-      "governanceGrade": "Enter a number from 0 to 100 with at most three decimals",
+      "governanceGrade": "Enter a number from 0 to 100 with at most two decimals",
       "passwordMin": "Must be at least {min} characters",
       "passwordMatch": "The passwords do not match",
       "termsRequired": "You must accept the terms and the privacy policy to register",
@@ -2619,7 +2633,6 @@
       "date": "Date",
       "total": "Amount",
       "createdAt": "Created",
-      "code": "Code",
       "percent": "Percent",
       "completedAt": "Completed on",
       "versionNumber": "Version",
@@ -2725,8 +2738,8 @@
       "unverifiedNote": "Self assessment is unverified — no evidence or CV is uploaded, and it does not feed the analytical lenses or the Quick Excellence Kit.",
       "directLabel": "Score of {name}",
       "pointsHint": "This sub-criterion is evaluated on its guiding points — score each point below.",
-      "nav": {
-        "label": "Criteria navigation"
+      "steps": {
+        "counter": "Criterion {step} of {total}"
       },
       "tree": {
         "mainMeta": "Weight {weight}",
@@ -2743,6 +2756,8 @@
         "message": "Criteria must be published before you can run a self assessment."
       },
       "actions": {
+        "previous": "Previous",
+        "next": "Next",
         "saveDraft": "Save draft",
         "submit": "Submit and view result",
         "readOnlyHint": "This assessment is read-only.",
@@ -2829,14 +2844,7 @@
         "pathUnavailable": "The self assessment is not available at the moment.",
         "paymentProcessing": "Your payment went through and the self assessment is being opened. Refresh the page in a moment."
       },
-      "start": {
-        "title": "Start a new self assessment",
-        "message": "Your draft is saved as you go. Submit it when every item has a score to see your result.",
-        "version": "Criteria version {number}, published {date}",
-        "items": "No items to score | 1 item to score | {count} items to score",
-        "action": "Start the self assessment"
-      },
-      "pointScoreLabel": "Score of {code}"
+      "pointScoreLabel": "Score of item {number}"
     },
     "result": {
       "pendingTitle": "The result is not issued yet",
@@ -3662,13 +3670,13 @@
       }
     },
     "cv": {
-      "label": "CV entry of {code}",
+      "label": "CV entry of {name}",
       "hint": "{count} of {max} characters",
       "required": "This CV entry is required before submission.",
       "tooLong": "Use at most {max} characters."
     },
     "evidence": {
-      "groupLabel": "Evidence of {code}",
+      "groupLabel": "Evidence of {name}",
       "limits": "Up to {max} MB per file and {count} files per sub-criterion. Allowed types: {types}.",
       "general": "Other supporting evidence",
       "required": "Required",
@@ -3870,7 +3878,6 @@
     "center": {
       "eyebrow": "Notifications",
       "title": "Everything about your organization, as it happens",
-      "subtitle": "Assessment, payment, message and certificate updates. They also reach you by e-mail or SMS according to your preferences.",
       "unread": "Unread",
       "markAllRead": "Mark all as read",
       "archive": "Archive",
@@ -6183,8 +6190,8 @@
     "noCv": "No CV entry was written.",
     "evidenceTitle": "No clean evidence | 1 clean evidence file | {count} clean evidence files",
     "noEvidence": "No clean evidence is available for this sub-criterion.",
-    "directScoreLabel": "Score of {code}",
-    "pointScoreLabel": "Score of guiding point {code}",
+    "directScoreLabel": "Score of {name}",
+    "pointScoreLabel": "Score of guiding point {name}",
     "feedbackLegend": "Feedback to the entity",
     "feedbackOptional": "Optional. The entity sees these fields with the result, without your name.",
     "actionsLabel": "Review actions",
@@ -6223,7 +6230,7 @@
       "notes": "Notes to the entity",
       "notesHint": "Between {min} and {max} characters.",
       "items": "Items to complete",
-      "itemLabel": "{code}: {kind}",
+      "itemLabel": "{name}: {kind}",
       "itemNote": "Note on this item",
       "itemNoteHint": "Optional, up to {max} characters.",
       "deadline": "Completion deadline",
@@ -6242,7 +6249,7 @@
       "open": "Override scores",
       "title": "Override the published scores",
       "warning": "Only the changed items are sent.",
-      "itemLabel": "{code} (out of {max})",
+      "itemLabel": "{name} (out of {max})",
       "noChange": "Change at least one score.",
       "submit": "Override the scores",
       "done": "The scores were overridden and the result recomputed."
@@ -6741,7 +6748,7 @@
       "conflictTitle": "This evaluation changed",
       "conflictMessage": "The evaluation cannot be saved in its current state. Refresh it to see the latest state.",
       "refresh": "Refresh",
-      "subNote": "Note on {code}",
+      "subNote": "Note on {name}",
       "noteHint": "Optional. Visible to the Award Secretary only.",
       "generalNote": "General note",
       "generalNoteHint": "Optional. One note on the whole evaluation for the Award Secretary.",
@@ -7460,7 +7467,6 @@
     "messages": {
       "eyebrow": "Inbox",
       "title": "Your messages with the Moashir team",
-      "subtitle": "We answer your enquiries here and by e-mail. Messages you sent while signed in appear here.",
       "tabsLabel": "Filter messages",
       "tabs": {
         "open": "Open",
@@ -7625,7 +7631,6 @@
     "certificates": {
       "eyebrow": "Certificates",
       "title": "Your organization's certificates",
-      "subtitle": "Every certificate carries a verification code and a QR code, so anyone can confirm it on the public verification page without an account.",
       "tabsLabel": "Filter certificates",
       "tabs": {
         "valid": "Valid",
@@ -7726,7 +7731,6 @@
           "partial": "Partial",
           "empty": "Not started"
         },
-        "criterion": "Criterion",
         "subsOf": "{done} of {total} sub-criteria",
         "subComplete": "Complete",
         "subPending": "Awaiting evidence",
@@ -7807,10 +7811,7 @@
         "marketingConsent": "Platform news and offers"
       },
       "hints": {
-        "unifiedNumber": "10 digits.",
-        "licenseNumber": "Digits only, as on the entity's licence.",
-        "foundedOn": "Day, month and year.",
-        "governanceGrade": "From the National Center, up to three decimals.",
+        "governanceGrade": "From the National Center, up to two decimals.",
         "phone": "Starts with 05 and has 10 digits.",
         "websiteUrl": "A full address that starts with https://"
       },
@@ -8362,6 +8363,7 @@
       "startAccredited": "Start the accredited request"
     },
     "tile": {
+      "previousRequests": "Previous requests",
       "title": "Assessment paths",
       "tags": {
         "self": "Optional · grants no level",
@@ -8408,11 +8410,6 @@
       "loadError": "Could not load the requests. Try again.",
       "open": "Open",
       "indicative": "Indicative",
-      "hint": {
-        "self": "Newest first",
-        "accredited": "One row per request and per missed period",
-        "award": "The detailed status shows after the results are announced"
-      },
       "empty": {
         "title": "No requests yet",
         "self": "Start a self assessment whenever you like.",

@@ -13,6 +13,37 @@ describe('BaseInput', () => {
     expect(wrapper.emitted('update:modelValue')[0]).toEqual(['جمعية البر'])
   })
 
+  it('shows Western digits in a number field whatever the keyboard', async () => {
+    const wrapper = mount(BaseInput, {
+      props: { modelValue: '', label: 'رقم الترخيص', name: 'licenseNumber', inputmode: 'numeric' },
+    })
+    const input = wrapper.find('input')
+    await input.setValue('2342٢٣٤٢')
+    expect(input.element.value).toBe('23422342')
+    expect(wrapper.emitted('update:modelValue')[0]).toEqual(['23422342'])
+  })
+
+  it('turns the Arabic decimal separator into a point in a decimal field', async () => {
+    const wrapper = mount(BaseInput, {
+      props: {
+        modelValue: '',
+        label: 'درجة الحوكمة',
+        name: 'governanceGrade',
+        inputmode: 'decimal',
+      },
+    })
+    await wrapper.find('input').setValue('٨٧٫٥')
+    expect(wrapper.emitted('update:modelValue')[0]).toEqual(['87.5'])
+  })
+
+  it('leaves the digits of a free-text field as typed', async () => {
+    const wrapper = mount(BaseInput, {
+      props: { modelValue: '', label: 'العنوان', name: 'address' },
+    })
+    await wrapper.find('input').setValue('مبنى ١٢')
+    expect(wrapper.emitted('update:modelValue')[0]).toEqual(['مبنى ١٢'])
+  })
+
   it('accepts English input as well', async () => {
     const wrapper = mount(BaseInput, {
       props: { modelValue: '', label: 'Name', name: 'name' },

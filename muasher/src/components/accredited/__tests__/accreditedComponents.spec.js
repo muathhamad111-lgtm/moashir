@@ -32,6 +32,7 @@ const FILE = {
 const SUB = {
   id: 101,
   code: 'M1.1',
+  name: { ar: 'التوجه الاستراتيجي', en: 'Strategic direction' },
   attachments: [
     { key: 'sub_101_1', name: { ar: 'وثيقة الرؤية', en: 'Vision document' }, required: true },
   ],
@@ -97,8 +98,12 @@ describe('evidence components', () => {
     const slots = wrapper.findAll('.evidence-slots__slot')
     expect(slots).toHaveLength(3)
     expect(slots[0].text()).toContain('Provided')
-    expect(slots[1].text()).toContain('M1.1.1')
+    expect(slots[1].text()).toContain('Vision publication')
     expect(slots[1].text()).toContain('Required')
+    expect(wrapper.text()).not.toContain('M1.1')
+    expect(wrapper.find('.evidence-slots').attributes('aria-label')).toBe(
+      'Evidence of Strategic direction',
+    )
     expect(slots[2].text()).toContain('Optional')
     expect(wrapper.find('.evidence-slots__full').exists()).toBe(true)
     expect(
@@ -115,7 +120,13 @@ describe('completion, current request and result components', () => {
     status: 'expired-continued',
     notes: 'يرجى إرفاق القوائم المالية المدققة.',
     items: [
-      { subCriterionId: 402, code: 'M4.2', kind: 'evidence', note: 'القوائم المدققة لعام 2025' },
+      {
+        subCriterionId: 402,
+        code: 'M4.2',
+        name: { ar: 'الاستدامة المالية', en: 'Financial sustainability' },
+        kind: 'evidence',
+        note: 'القوائم المدققة لعام 2025',
+      },
     ],
     deadlineAt: '2026-11-12T20:59:00Z',
     expiryOutcome: 'decline',
@@ -127,7 +138,8 @@ describe('completion, current request and result components', () => {
     const wrapper = render(CompletionRequestCard, { request: REQUEST, showStatus: true })
     expect(wrapper.text()).toContain('The request is closed as incomplete')
     expect(wrapper.text()).toContain('Expired, review continued')
-    expect(wrapper.text()).toContain('M4.2')
+    expect(wrapper.find('.completion-card__sub').text()).toBe('Financial sustainability')
+    expect(wrapper.text()).not.toContain('M4.2')
     expect(wrapper.find('.date-stamp__hijri').text()).toMatch(/1448/)
     expect(wrapper.text()).not.toMatch(/[\u0660-\u0669]/)
   })
@@ -176,6 +188,11 @@ describe('completion, current request and result components', () => {
         },
       ],
     })
+    expect(wrapper.findAll('.accredited-feedback__sub').map((title) => title.text())).toEqual([
+      'Strategic direction',
+      'Governance',
+    ])
+    expect(wrapper.text()).not.toContain('M1.')
     expect(wrapper.findAll('.accredited-feedback__field')).toHaveLength(1)
     expect(wrapper.find('.accredited-feedback__field--strengths').text()).toContain('Strengths')
     expect(wrapper.find('.accredited-feedback__empty').exists()).toBe(true)
@@ -191,6 +208,11 @@ describe('completion, current request and result components', () => {
     })
     expect(wrapper.text()).toContain('2 items are missing')
     expect(wrapper.text()).toContain('Attachment: Vision publication')
+    expect(wrapper.findAll('.accredited-completeness__sub').map((name) => name.text())).toEqual([
+      'Strategic direction',
+      'Strategic direction',
+    ])
+    expect(wrapper.text()).not.toContain('M1.1')
     await wrapper.find('.accredited-completeness__link').trigger('click')
     expect(wrapper.emitted('reveal')[0]).toEqual([101])
   })
@@ -199,7 +221,7 @@ describe('completion, current request and result components', () => {
     expect(
       render(CvEntryField, {
         subId: 802,
-        code: 'M8.2',
+        name: 'Volunteering',
         modelValue: '',
         editable: true,
         missing: true,
@@ -208,9 +230,14 @@ describe('completion, current request and result components', () => {
         .exists(),
     ).toBe(true)
     expect(
+      render(CvEntryField, { subId: 802, name: 'Volunteering', editable: true })
+        .find('label')
+        .text(),
+    ).toContain('CV entry of Volunteering')
+    expect(
       render(CvEntryField, {
         subId: 802,
-        code: 'M8.2',
+        name: 'Volunteering',
         modelValue: 'نص',
         editable: true,
         missing: true,
@@ -221,7 +248,7 @@ describe('completion, current request and result components', () => {
     expect(
       render(CvEntryField, {
         subId: 802,
-        code: 'M8.2',
+        name: 'Volunteering',
         modelValue: '',
         editable: false,
         missing: true,

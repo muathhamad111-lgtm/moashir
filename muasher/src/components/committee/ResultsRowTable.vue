@@ -1,4 +1,5 @@
 <script setup>
+import { percentText } from '@/utils/percentText'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DataTable from '@/components/data-list/DataTable.vue'
@@ -16,7 +17,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['rank'])
-const { t, locale } = useI18n()
+const { t, locale, n } = useI18n()
 
 const columns = computed(() => [
   { key: 'entity', label: t('award.results.columns.entity') },
@@ -45,7 +46,9 @@ const columns = computed(() => [
     <template #cell-region="{ item }">{{ localizedText(item.region?.name, locale) }}</template>
     <template #cell-status="{ item }"><StatusBadge :status="item.status" /></template>
     <template #cell-average="{ item }"
-      ><bdi class="u-ltr results-table__average">{{ item.averagePercent }}%</bdi></template
+      ><bdi class="u-ltr results-table__average">{{
+        percentText(n, t, item.averagePercent)
+      }}</bdi></template
     >
     <template #cell-regionalRank="{ item }">{{
       item.regionalRank ? t(`award.results.rank.${RANK_KEYS[item.regionalRank]}`) : ''

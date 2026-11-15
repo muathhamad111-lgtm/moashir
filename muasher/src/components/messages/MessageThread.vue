@@ -43,13 +43,7 @@ const days = computed(() => {
 })
 
 function dayLabel(value) {
-  return formatDate(value, locale.value, {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    timeZone: 'Asia/Riyadh',
-  })
+  return formatDate(value, locale.value, { dateStyle: 'full', timeZone: 'Asia/Riyadh' })
 }
 </script>
 

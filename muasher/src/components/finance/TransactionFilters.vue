@@ -9,6 +9,7 @@ import { usePermissions } from '@/composables/usePermissions'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { PAYMENT_PURPOSE_VALUES } from '@/constants/payments'
 import { TRANSACTION_SORTS } from '@/constants/finance'
+import { INTEGRATION_MODES } from '@/constants/integrations'
 import {
   LIST_FILTERS,
   joinFilterValues,
@@ -38,6 +39,11 @@ const listFilters = computed(() => [
 function emitList(key, values) {
   emit('filter', key, joinFilterValues(values, LIST_FILTERS[key]))
 }
+// The API lists actual payments unless test payments are asked for, so the empty value means «actual».
+const modeOptions = computed(() => [
+  { value: '', label: t(`finance.filters.modes.${INTEGRATION_MODES.LIVE}`) },
+  { value: INTEGRATION_MODES.TEST, label: t(`finance.filters.modes.${INTEGRATION_MODES.TEST}`) },
+])
 const purposeOptions = computed(() => [
   { value: '', label: t('finance.filters.allServices') },
   ...PAYMENT_PURPOSE_VALUES.map((value) => ({ value, label: t(`finance.purposes.${value}`) })),
@@ -82,6 +88,13 @@ const sortOptions = computed(() =>
       :options="purposeOptions"
       :label="t('finance.filters.service')"
       @update:model-value="emit('filter', 'purpose', $event)"
+    />
+    <AppSelect
+      class="transaction-filters__mode"
+      :model-value="filters.mode"
+      :options="modeOptions"
+      :label="t('finance.filters.mode')"
+      @update:model-value="emit('filter', 'mode', $event)"
     />
     <TransactionEntityFilter
       v-if="canPickEntity"

@@ -17,11 +17,8 @@ export function hasAllowedExtension(file, allowedTypes) {
 }
 
 export function slotsOf(sub) {
-  const own = (sub.attachments ?? []).map((slot) => ({ ...slot, pointCode: null }))
-  const fromPoints = (sub.points ?? []).flatMap((point) =>
-    (point.attachments ?? []).map((slot) => ({ ...slot, pointCode: point.code })),
-  )
-  return [...own, ...fromPoints]
+  const fromPoints = (sub.points ?? []).flatMap((point) => point.attachments ?? [])
+  return [...(sub.attachments ?? []), ...fromPoints]
 }
 
 export function evidenceOfSub(evidence, subId) {

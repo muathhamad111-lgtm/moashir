@@ -97,7 +97,7 @@ function scan(record, row) {
   const bytes = contents.get(row.id)
   row.scanStatus =
     bytes && new TextDecoder().decode(bytes).includes(INFECTED_MARKER) ? 'infected' : 'clean'
-  if (row.scanStatus === 'infected') announceRefusedEvidence(record, row)
+  if (row.scanStatus === 'infected') announceRefusedEvidence(record)
 }
 
 export async function uploadEvidence(user, record, form) {

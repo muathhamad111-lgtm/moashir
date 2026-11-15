@@ -99,7 +99,9 @@ watch(
 const title = computed(() => {
   if (type.value === VERSION_TARGET) return t('criteria.correction.versionTitle')
   const node = props.target?.node
-  return t('criteria.correction.title', { name: node?.code ?? localized(node?.name) })
+  return t('criteria.correction.title', {
+    name: localized(node?.name) || localized(node?.description),
+  })
 })
 
 const primaryLabels = computed(() => {

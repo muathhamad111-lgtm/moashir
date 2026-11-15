@@ -89,10 +89,22 @@ export function profilePayload(values) {
   }
 }
 
+function foundingYearOf(foundedOn) {
+  return Number(foundedOn.slice(0, 4))
+}
+
+function optionalText(value) {
+  const text = toWesternDigits(value)
+  return text === '' ? null : text
+}
+
 export function registrationPayload(values, terms) {
   const payload = {
     ...profilePayload(values),
     ...unifiedNumberPayload(values.unifiedNumber),
+    foundingYear: foundingYearOf(values.foundedOn),
+    foundedOn: values.foundedOn,
+    licenseNumber: optionalText(values.licenseNumber),
     officialEmail: values.officialEmail.trim(),
     emailVerificationToken: values.emailVerificationToken,
     password: values.password,

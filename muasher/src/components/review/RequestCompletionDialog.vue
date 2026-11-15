@@ -126,15 +126,13 @@ watch(
       >
         <legend class="completion-dialog__legend">{{ t('review.completion.items') }}</legend>
         <div v-for="group in groups" :key="group.main.id" class="completion-dialog__group">
-          <p class="completion-dialog__main">
-            {{ group.main.code }} {{ localizedText(group.main.name, locale) }}
-          </p>
+          <p class="completion-dialog__main">{{ localizedText(group.main.name, locale) }}</p>
           <div v-for="option in group.options" :key="option.key" class="completion-dialog__option">
             <BaseCheckbox
               :name="`item-${option.key}`"
               :label="
                 t('review.completion.itemLabel', {
-                  code: option.sub.code,
+                  name: localizedText(option.sub.name, locale),
                   kind: t(`accredited.completion.kinds.${option.kind}`),
                 })
               "

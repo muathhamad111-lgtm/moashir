@@ -120,7 +120,7 @@ final class Entity extends Model
             'founding_year' => 'integer',
             'region_id' => 'integer',
             'city_id' => 'integer',
-            'governance_grade' => 'decimal:3',
+            'governance_grade' => 'decimal:2',
             'employees_count' => 'integer',
             'annual_beneficiaries_count' => 'integer',
             'has_strategic_plan' => 'boolean',

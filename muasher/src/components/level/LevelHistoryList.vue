@@ -1,6 +1,6 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
-import { scorePercentText } from '@/utils/percentText'
+import { percentText } from '@/utils/percentText'
 import { riyadhDateKey } from '@/utils/datetime'
 import LevelEmblem from './LevelEmblem.vue'
 
@@ -34,7 +34,7 @@ const { t, n } = useI18n()
         </p>
       </div>
       <bdi v-if="item.percent" class="level-history__percent" dir="ltr">
-        {{ scorePercentText(n, t, item.percent) }}
+        {{ percentText(n, t, item.percent) }}
       </bdi>
     </li>
   </ol>

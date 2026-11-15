@@ -5,11 +5,11 @@ import { useChartDirection } from '@/composables/useChartDirection'
 import { useElementWidth } from '@/composables/useElementWidth'
 import { pointsAttr } from '@/utils/chartGeometry'
 import { levelTrendLayout } from '@/utils/levelTrendLayout'
-import { scorePercentText } from '@/utils/percentText'
+import { percentText } from '@/utils/percentText'
 import { formatDate } from '@/utils/datetime'
 
 const FALLBACK_WIDTH = 640
-const MONTH_FORMAT = Object.freeze({ month: 'short', year: 'numeric', timeZone: 'Asia/Riyadh' })
+const DAY_FORMAT = Object.freeze({ dateStyle: 'medium', timeZone: 'Asia/Riyadh' })
 const LTR_ISOLATE = '\u2066'
 const END_ISOLATE = '\u2069'
 
@@ -22,7 +22,7 @@ const props = defineProps({
 const { t, n, locale } = useI18n()
 
 function isolatedPercent(value) {
-  return `${LTR_ISOLATE}${scorePercentText(n, t, value)}${END_ISOLATE}`
+  return `${LTR_ISOLATE}${percentText(n, t, value)}${END_ISOLATE}`
 }
 const { isRtl } = useChartDirection()
 const frame = ref(null)
@@ -46,8 +46,8 @@ const bands = computed(() =>
 const points = computed(() =>
   layout.value.points.map((point) => ({
     ...point,
-    value: scorePercentText(n, t, point.percent),
-    date: formatDate(point.completedAt, locale.value, MONTH_FORMAT),
+    value: percentText(n, t, point.percent),
+    date: formatDate(point.completedAt, locale.value, DAY_FORMAT),
   })),
 )
 const floorLabel = computed(() => isolatedPercent(layout.value.min))

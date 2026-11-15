@@ -28,7 +28,6 @@ const OPEN_SUBS = { label: 'criteria.actions.openSubs', icon: 'diagram' }
 
 const columns = computed(() => [
   { key: 'order', label: t('criteria.columns.order') },
-  { key: 'code', label: t('criteria.columns.code') },
   { key: 'name', label: t('criteria.columns.name') },
   { key: 'group', label: t('criteria.columns.group') },
   { key: 'weight', label: t('criteria.columns.weight') },
@@ -63,9 +62,6 @@ const columns = computed(() => [
       />
       <span v-else class="criteria-page__order">{{ item.order }}</span>
     </template>
-    <template #cell-code="{ item }"
-      ><span class="criteria-page__code">{{ item.code }}</span></template
-    >
     <template #cell-name="{ item }">
       <button type="button" class="criteria-page__link" @click="emit('action', 'open', item)">
         {{ localized(item.name) }}
@@ -103,7 +99,7 @@ const columns = computed(() => [
     <template #cell-actions="{ item }">
       <AppMenu
         :actions="actionsFor(item, OPEN_SUBS)"
-        :label="t('components.actions.menuFor', { name: item.code })"
+        :label="t('components.actions.menuFor', { name: localized(item.name) })"
         @select="emit('action', $event, item)"
       />
     </template>

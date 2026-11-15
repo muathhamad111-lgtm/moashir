@@ -45,7 +45,6 @@ function unitOf(level, node) {
   return {
     level,
     id: node.id,
-    code: node.code,
     label: level === SCORE_LEVELS.POINT ? node.description : node.name,
   }
 }
@@ -59,7 +58,7 @@ function text(content) {
   <li :id="`committee-sub-${sub.id}`" class="review-sub" tabindex="-1">
     <div class="review-sub__head">
       <h3 class="review-sub__title">
-        <span class="review-sub__code u-ltr">{{ sub.code }}</span> {{ text(sub.name) }}
+        {{ text(sub.name) }}
       </h3>
       <Badge :variant="usesPoints ? 'info' : 'muted'">{{
         usesPoints
@@ -80,14 +79,14 @@ function text(content) {
     <div class="review-sub__scores">
       <div v-for="unit in units" :key="scoreFieldName(unit)" class="review-sub__point">
         <p v-if="unit.level === SCORE_LEVELS.POINT" class="review-sub__point-text">
-          <span class="review-sub__code u-ltr">{{ unit.code }}</span> {{ text(unit.label) }}
+          {{ text(unit.label) }}
         </p>
         <RawScoreField
           :name="scoreFieldName(unit)"
           :label="
             unit.level === SCORE_LEVELS.POINT
-              ? t('review.pointScoreLabel', { code: unit.code })
-              : t('review.directScoreLabel', { code: unit.code })
+              ? t('review.pointScoreLabel', { name: text(unit.label) })
+              : t('review.directScoreLabel', { name: text(unit.label) })
           "
           :maximum="maximum"
           :saved="savedScoreOf(evaluation.scores, unit)"
@@ -98,7 +97,7 @@ function text(content) {
     <BaseTextarea
       :model-value="note"
       :name="`committee-note-${sub.id}`"
-      :label="t('award.evaluation.subNote', { code: sub.code })"
+      :label="t('award.evaluation.subNote', { name: text(sub.name) })"
       :hint="t('award.evaluation.noteHint')"
       :rows="3"
       :error="noteError"

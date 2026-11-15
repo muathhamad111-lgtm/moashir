@@ -16,7 +16,6 @@ function unitOf(level, node, main, sub) {
   return {
     level,
     id: node.id,
-    code: node.code,
     mainId: main.id,
     subId: sub.id,
     label: level === SCORE_LEVELS.POINT ? node.description : node.name,

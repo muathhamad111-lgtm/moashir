@@ -19,6 +19,8 @@ const REGISTRATION_DEFAULTS = {
   termsAccepted: false,
   marketingConsent: false,
   hasStrategicPlan: '',
+  licenseNumber: '',
+  foundedOn: '',
 }
 
 export function useEntityRegistration() {

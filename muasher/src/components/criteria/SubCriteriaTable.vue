@@ -24,7 +24,6 @@ const { actionsFor } = useCriteriaRowActions(props.access)
 
 const columns = computed(() => [
   { key: 'order', label: t('criteria.columns.order') },
-  { key: 'code', label: t('criteria.columns.code') },
   { key: 'name', label: t('criteria.columns.name') },
   { key: 'weight', label: t('criteria.columns.weight') },
   { key: 'type', label: t('criteria.columns.evaluationType') },
@@ -62,9 +61,6 @@ function rowActions(sub) {
       />
       <span v-else class="criteria-page__order">{{ item.order }}</span>
     </template>
-    <template #cell-code="{ item }"
-      ><span class="criteria-page__code">{{ item.code }}</span></template
-    >
     <template #cell-name="{ item }">
       <button
         v-if="isGuided(item)"
@@ -103,7 +99,7 @@ function rowActions(sub) {
     <template #cell-actions="{ item }">
       <AppMenu
         :actions="rowActions(item)"
-        :label="t('components.actions.menuFor', { name: item.code })"
+        :label="t('components.actions.menuFor', { name: localized(item.name) })"
         @select="emit('action', $event, item)"
       />
     </template>

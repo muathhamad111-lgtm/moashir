@@ -36,7 +36,7 @@ it('saves the governance section, records every changed field and notifies the a
         ->assertOk()
         ->assertJsonPath('meta.section', 'governance')
         ->assertJsonPath('meta.changed_fields', ['governance_grade', 'employees_count', 'annual_beneficiaries_count', 'has_strategic_plan'])
-        ->assertJsonPath('data.governance_grade', '91.500')
+        ->assertJsonPath('data.governance_grade', '91.50')
         ->assertJsonPath('data.employees_count', 60)
         ->assertJsonPath('data.has_strategic_plan', null)
         ->assertJsonPath('data.profile_completion.percent', 93)
@@ -44,13 +44,13 @@ it('saves the governance section, records every changed field and notifies the a
         ->assertJsonPath('data.profile_completion.sections.2', ['key' => 'governance', 'state' => 'incomplete', 'missing_count' => 1, 'missing_fields' => ['has_strategic_plan']]);
 
     expect(historyOf($entity->id))->toBe([
-        'governance_grade' => [null, '91.500'],
+        'governance_grade' => [null, '91.50'],
         'employees_count' => [null, 60],
         'annual_beneficiaries_count' => [null, 3200],
         'has_strategic_plan' => [true, null],
     ])
         ->and(EntityProfileChange::query()->value('changed_by_user_id'))->toBe($owner->id)
-        ->and(Audit::query()->where('event', AuditEvent::EntityProfileUpdated->value)->sole()->new_values)->toMatchArray(['section' => 'governance', 'governance_grade' => '91.500']);
+        ->and(Audit::query()->where('event', AuditEvent::EntityProfileUpdated->value)->sole()->new_values)->toMatchArray(['section' => 'governance', 'governance_grade' => '91.50']);
     Notification::assertSentTo($admin, EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityCoreDataEdited);
     Notification::assertNotSentTo($owner, EntityNotification::class);
 });

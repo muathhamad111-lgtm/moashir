@@ -17,6 +17,7 @@ import {
   sheetFieldErrors,
   withinScale,
 } from '@/utils/assessments/scoreSheet'
+import { localizedText } from '@/utils/localizedText'
 import { logger } from '@/utils/logger'
 
 const props = defineProps({
@@ -28,7 +29,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue', 'done'])
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const toast = useToast()
 const values = reactive({})
 const errors = ref({})
@@ -120,7 +121,12 @@ watch(
           :key="scoreFieldName(unit)"
           v-model="values[scoreFieldName(unit)]"
           :name="`override-${scoreFieldName(unit)}`"
-          :label="t('review.override.itemLabel', { code: unit.code, max: maximum })"
+          :label="
+            t('review.override.itemLabel', {
+              name: localizedText(unit.label, locale),
+              max: maximum,
+            })
+          "
           :error="errors[scoreFieldName(unit)]"
           inputmode="decimal"
           input-dir="ltr"

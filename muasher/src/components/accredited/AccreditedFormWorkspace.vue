@@ -46,10 +46,10 @@ const { status, errorMessage, form, assessment, isEditable, isResubmission } = f
 const treeNodes = computed(() =>
   mains.value.map((main) => ({
     id: main.id,
-    label: `${main.code} ${localizedText(main.name, locale.value)}`,
+    label: localizedText(main.name, locale.value),
     children: main.subs.map((sub) => ({
       id: sub.id,
-      label: `${sub.code} ${localizedText(sub.name, locale.value)}`,
+      label: localizedText(sub.name, locale.value),
     })),
   })),
 )

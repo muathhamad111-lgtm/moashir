@@ -21,9 +21,7 @@ const improvements = computed(() => props.item.assessor?.improvementPoints ?? ''
     <header class="gap-item__header">
       <div class="gap-item__names">
         <p class="gap-item__main">{{ localizedText(item.mainName, locale) }}</p>
-        <h4 class="gap-item__title">
-          <bdi dir="ltr">{{ item.subCode }}</bdi> · {{ localizedText(item.subName, locale) }}
-        </h4>
+        <h4 class="gap-item__title">{{ localizedText(item.subName, locale) }}</h4>
       </div>
       <InsightPercent class="gap-item__percent" :value="item.percent" />
     </header>

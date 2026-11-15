@@ -1,4 +1,5 @@
 <script setup>
+import { percentText } from '@/utils/percentText'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
@@ -19,7 +20,7 @@ defineProps({
 })
 
 const emit = defineEmits(['retry'])
-const { t, locale } = useI18n()
+const { t, locale, n } = useI18n()
 
 const columns = computed(() => [
   { key: 'entity', label: t('award.work.columns.entity') },
@@ -81,7 +82,7 @@ function openLabel(row) {
       </span>
     </template>
     <template #cell-percent="{ item }"
-      ><bdi v-if="item.percent" class="u-ltr">{{ item.percent }}%</bdi
+      ><bdi v-if="item.percent" class="u-ltr">{{ percentText(n, t, item.percent) }}</bdi
       ><span v-else class="committee-member__note">{{
         t('award.work.notSubmitted')
       }}</span></template

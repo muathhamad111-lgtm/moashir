@@ -45,7 +45,7 @@ final class AssessmentRejected extends ApiException
         $fields = [];
 
         foreach ($missing as $unit) {
-            $fields[$unit->fieldKey()] = [__('errors.scores.item_missing', ['code' => $unit->code])];
+            $fields[$unit->fieldKey()] = [__('errors.scores.item_missing')];
         }
 
         return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'scores.incomplete', $fields, [], [

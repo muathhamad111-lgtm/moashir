@@ -23,7 +23,7 @@ export async function registerEntity(page, entity) {
   await chooseFirstNamed(page, 'cityId')
   await chooseFirstNamed(page, 'developmentSector')
   await chooseFirstNamed(page, 'orgSize')
-  await page.locator('[name="foundingYear"]').fill('2012')
+  await page.locator('[name="foundedOn"]').fill('2012-05-14')
   await page.locator('[name="governanceGrade"]').fill('88.5')
   await goToRegistrationAccountStep(page)
   await page.locator('[name="authorizedPersonName"]').fill(entity.person)

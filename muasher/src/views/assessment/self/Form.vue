@@ -6,7 +6,6 @@ import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
 import AssessmentNotice from '@/components/assessment/AssessmentNotice.vue'
-import SelfStartCard from '@/components/assessment/self/SelfStartCard.vue'
 import SelfAssessmentWorkspace from '@/components/assessment/self/SelfAssessmentWorkspace.vue'
 import { ENTRY_STATES, useSelfAssessmentEntry } from '@/composables/useSelfAssessmentEntry'
 import { useAssessmentResultHandoffStore } from '@/stores/assessmentResultHandoff'
@@ -26,8 +25,7 @@ const BLOCKED_KEYS = {
 const { t } = useI18n()
 const router = useRouter()
 const handoff = useAssessmentResultHandoffStore()
-const { state, draftId, publishedVersion, blockedCode, errorMessage, starting, locate, start } =
-  useSelfAssessmentEntry()
+const { state, draftId, blockedCode, errorMessage, locate } = useSelfAssessmentEntry()
 
 const blockedKey = computed(() => BLOCKED_KEYS[blockedCode.value] ?? 'entityNotActive')
 
@@ -71,12 +69,6 @@ onMounted(locate)
       live
       :title="t('assessment.self.blocked.title')"
       :message="t(`assessment.self.blocked.${blockedKey}`)"
-    />
-    <SelfStartCard
-      v-else-if="state === ENTRY_STATES.START"
-      :version="publishedVersion"
-      :starting="starting"
-      @start="start"
     />
     <SelfAssessmentWorkspace
       v-else-if="state === ENTRY_STATES.DRAFT"

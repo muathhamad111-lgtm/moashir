@@ -4,6 +4,7 @@ import { useField, useFormErrors } from 'vee-validate'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import { SECRET_PATTERNS } from '@/constants/integrations'
+import { westernizeInputDigits } from '@/utils/numerals'
 
 const props = defineProps({
   name: { type: String, required: true },
@@ -70,7 +71,7 @@ function remove(number) {
       <label class="phone-list__label" :for="inputId">{{ t('integrations.sms.newNumber') }}</label>
       <input
         :id="inputId"
-        v-model="draft"
+        :value="draft"
         class="field__control phone-list__input"
         type="tel"
         inputmode="tel"
@@ -79,6 +80,7 @@ function remove(number) {
         :placeholder="t('integrations.sms.numberPlaceholder')"
         :disabled="full"
         :aria-describedby="`${inputId}-hint`"
+        @input="draft = westernizeInputDigits($event.target)"
         @keydown.enter.prevent="add"
       />
       <BaseButton variant="secondary" size="sm" icon="plus" :disabled="full" @click="add">

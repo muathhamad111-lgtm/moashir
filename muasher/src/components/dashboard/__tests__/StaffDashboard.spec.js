@@ -100,7 +100,7 @@ describe('StaffDashboard', () => {
     expect(cards).toHaveLength(5)
     expect(cards[0].text()).toContain('بانتظار الإسناد')
     expect(cards[0].find('a').attributes('href')).toBe('/admin/requests')
-    expect(cards[1].text()).toContain('40%')
+    expect(cards[1].text()).toContain('40.00%')
     expect(cards[2].text()).toContain('يومان')
     expect(cards[3].find('.money-amount').exists()).toBe(true)
     expect(cards[4].text()).toContain('—')

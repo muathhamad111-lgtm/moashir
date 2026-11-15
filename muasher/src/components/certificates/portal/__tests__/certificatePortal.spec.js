@@ -82,7 +82,7 @@ describe('VerificationResult', () => {
     })
     expect(wrapper.classes()).toContain('verification-result--valid')
     expect(wrapper.text()).toContain('المستوى الفضي')
-    expect(wrapper.text()).toContain('74.5%')
+    expect(wrapper.text()).toContain('74.50%')
   })
 
   it.each([

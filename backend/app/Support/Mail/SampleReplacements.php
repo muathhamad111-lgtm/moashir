@@ -46,6 +46,7 @@ final class SampleReplacements
         'replaced' => ['نورة القحطاني', 'Noura Al-Qahtani'],
         'region' => ['منطقة الرياض', 'Riyadh Region'],
         'name' => ['الحوكمة والقيادة', 'Governance and leadership'],
+        'fields' => ['رقم الترخيص، تاريخ التأسيس', 'Licence number, Founding date'],
         'page' => ['الصفحة الرئيسية', 'Home page'],
         'content' => ['خبر إطلاق دورة الجائزة', 'The award cycle launch news item'],
         'reason' => ['أُعيد فتح التقييم لمراجعة شواهد المعيار الفرعي 2.3.', 'The assessment was reopened to review the evidence of sub-criterion 2.3.'],

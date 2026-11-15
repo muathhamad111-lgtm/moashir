@@ -336,8 +336,20 @@ describe('accredited mock — entity writes', () => {
       expiry_outcome: 'continue_as_submitted',
     })
     expect(form.body.data.completion_request.items).toEqual([
-      { sub_criterion_id: 202, code: 'M2.2', kind: 'cv', note: expect.any(String) },
-      { sub_criterion_id: 402, code: 'M4.2', kind: 'evidence', note: expect.any(String) },
+      {
+        sub_criterion_id: 202,
+        code: 'M2.2',
+        name: { ar: expect.any(String), en: 'Strategy Formulation and Deployment' },
+        kind: 'cv',
+        note: expect.any(String),
+      },
+      {
+        sub_criterion_id: 402,
+        code: 'M4.2',
+        name: { ar: expect.any(String), en: 'Financial Sustainability and Resource Management' },
+        kind: 'evidence',
+        note: expect.any(String),
+      },
     ])
     expect((await call('PUT', '/assessments/9106/cv', { cv: { 101: 'x' } })).body.code).toBe(
       'completion.item_not_requested',

@@ -47,7 +47,7 @@ const correcting = ref(null)
 function resetWeights() {
   editedWeights.value = subs.value.map((sub) => ({
     id: sub.id,
-    label: `${sub.code} ${localized(sub.name)}`,
+    label: localized(sub.name),
     weight: sub.weight,
     active: sub.active,
   }))
@@ -74,7 +74,7 @@ const crumbs = computed(() => [
     label: t('criteria.breadcrumb.mains'),
     to: { name: ROUTE_NAMES.ADMIN_CRITERIA, query: { version: version.value.id } },
   },
-  { label: `${main.value.code} ${localized(main.value.name)}` },
+  { label: localized(main.value.name) },
 ])
 
 function openForm(sub = null) {
@@ -118,7 +118,6 @@ function onAction(key, sub) {
         <div>
           <div class="criteria-page__title-row">
             <h1 class="criteria-page__title">{{ localized(main.name) }}</h1>
-            <Badge variant="muted">{{ main.code }}</Badge>
             <Badge variant="info">{{ t(`criteria.groups.${main.group}`) }}</Badge>
             <StatusBadge :status="main.active ? 'active' : 'inactive'" />
           </div>

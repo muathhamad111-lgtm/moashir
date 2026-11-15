@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { TIER_ORDER } from '@/constants/levels'
 import { isExpiredCertificate, shownValidityOf, tierPalette } from '@/utils/levelTier'
-import { scorePercentText } from '@/utils/percentText'
+import { percentText } from '@/utils/percentText'
 import { riyadhDateKey } from '@/utils/datetime'
 import LevelEmblem from './LevelEmblem.vue'
 import LevelValidityChip from './LevelValidityChip.vue'
@@ -52,7 +52,7 @@ const issuedOn = computed(() =>
       </p>
     </div>
     <bdi v-if="certificate?.percent" class="level-ribbon__percent" dir="ltr">
-      {{ scorePercentText(n, t, certificate.percent) }}
+      {{ percentText(n, t, certificate.percent) }}
     </bdi>
   </section>
 </template>

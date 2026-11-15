@@ -26,6 +26,7 @@ function toCompletionItem(raw) {
   return {
     subCriterionId: raw.subCriterionId ?? null,
     code: raw.code ?? '',
+    name: raw.name ?? null,
     kind: raw.kind ?? null,
     note: raw.note ?? null,
   }

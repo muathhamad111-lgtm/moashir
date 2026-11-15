@@ -53,7 +53,6 @@ async function open(item) {
       <div class="notifications-center__intro">
         <p class="notifications-center__eyebrow">{{ t('notifications.center.eyebrow') }}</p>
         <h1 class="notifications-center__title">{{ t('notifications.center.title') }}</h1>
-        <p class="notifications-center__subtitle">{{ t('notifications.center.subtitle') }}</p>
       </div>
       <BaseButton
         variant="secondary"

@@ -32,7 +32,6 @@ export function stationsOf(form) {
     const started = main.subs.some((sub) => isStarted(form, sub))
     return {
       id: main.id,
-      code: main.code,
       name: main.name,
       total: main.subs.length,
       complete,

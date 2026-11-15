@@ -5,7 +5,7 @@ import Card from '@/components/ui/Card.vue'
 import Badge from '@/components/ui/Badge.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import { localizedText } from '@/utils/localizedText'
-import { scorePercentText } from '@/utils/percentText'
+import { percentText } from '@/utils/percentText'
 
 const props = defineProps({
   result: { type: Object, required: true },
@@ -20,7 +20,7 @@ function text(content) {
 }
 
 function percent(value) {
-  return scorePercentText(n, t, value)
+  return percentText(n, t, value)
 }
 
 function subsOf(mainId) {
@@ -67,10 +67,7 @@ function panelId(mainId) {
               :aria-controls="panelId(main.criterionId)"
               @click="toggle(main.criterionId)"
             >
-              <span class="self-result__main-title">
-                <span class="u-ltr">{{ main.code }}</span>
-                {{ text(main.name) }}
-              </span>
+              <span class="self-result__main-title">{{ text(main.name) }}</span>
               <span class="self-result__main-score">
                 <Badge variant="info"
                   ><span class="u-ltr">{{ percent(main.percent) }}</span></Badge
@@ -101,10 +98,7 @@ function panelId(mainId) {
           >
             <li v-for="sub in subsOf(main.criterionId)" :key="sub.subId" class="self-result__sub">
               <div class="self-result__sub-row">
-                <span class="self-result__sub-name">
-                  <span class="u-ltr">{{ sub.code }}</span>
-                  {{ text(sub.name) }}
-                </span>
+                <span class="self-result__sub-name">{{ text(sub.name) }}</span>
                 <span class="self-result__sub-score">
                   <span v-if="sub.rawValue" class="self-result__sub-raw">
                     {{ t('assessment.self.result.rawValue', { raw: sub.rawValue }) }}
@@ -126,10 +120,7 @@ function panelId(mainId) {
                   :key="point.pointId"
                   class="self-result__point"
                 >
-                  <span class="self-result__point-name">
-                    <span class="u-ltr">{{ point.code }}</span>
-                    {{ text(point.description) }}
-                  </span>
+                  <span class="self-result__point-name">{{ text(point.description) }}</span>
                   <span class="self-result__sub-score">
                     <span v-if="point.rawValue" class="self-result__sub-raw">{{
                       t('assessment.self.result.rawValue', { raw: point.rawValue })

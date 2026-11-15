@@ -3,6 +3,7 @@
 @php
     $locale = $page->locale;
     $text = static fn (?array $value): string => (string) ($value[$locale] ?? $value['ar'] ?? '');
+    $percent = static fn (mixed $value): string => is_numeric($value) ? number_format((float) $value, 2, '.', '') : '';
     $result = $data['result'] ?? [];
     $change = $data['change'] ?? [];
     $standing = $data['certificate']['standing'] ?? 'not_issued';
@@ -47,7 +48,6 @@ h2.board__section { margin: 2.2mm 0 1.1mm; padding-inline-start: 2mm; border-inl
 .board__count { padding: 0.6mm 2.4mm; border-radius: 6mm; background: var(--color-secondary); font-weight: 600; }
 .board__bars { width: 100%; border-collapse: collapse; font-size: 8.4pt; }
 .board__bars td { padding: 0.55mm 1.4mm; border-bottom: 0.2mm solid var(--color-border); vertical-align: middle; }
-.board__bars .code { width: 9mm; font-family: var(--font-latin); white-space: nowrap; }
 .board__bars .name { width: 58mm; }
 .board__bars .track { position: relative; height: 3mm; background: var(--color-surface); border: 0.2mm solid var(--color-border); }
 .board__bars .fill { position: absolute; inset-block: 0; inset-inline-start: 0; background: var(--color-teal-deep); }
@@ -81,7 +81,7 @@ h2.board__section { margin: 2.2mm 0 1.1mm; padding-inline-start: 2mm; border-inl
 <section class="board__score">
   <div class="board__card board__card--dark">
     <h3>{{ __('insights.board.overall') }}</h3>
-    <bdi class="board__big" dir="ltr">{{ $data['score']['percent'] ?? '' }}%</bdi>
+    <bdi class="board__big" dir="ltr">{{ $percent($data['score']['percent'] ?? null) }}%</bdi>
     <div class="board__small"><bdi class="latin" dir="ltr">{{ $data['score']['earned'] ?? '' }} / {{ $data['score']['total_weight'] ?? '' }}</bdi></div>
   </div>
   <div class="board__card">
@@ -113,8 +113,8 @@ h2.board__section { margin: 2.2mm 0 1.1mm; padding-inline-start: 2mm; border-inl
       @forelse ($data[$block] ?? [] as $item)
         <article class="board__item">
           <div class="board__item-head">
-            <span><bdi class="latin">{{ $item['sub_code'] ?? '' }}</bdi> {{ $text($item['sub_name'] ?? null) }}</span>
-            <bdi class="num" dir="ltr">{{ $item['percent'] ?? '' }}%</bdi>
+            <span>{{ $text($item['sub_name'] ?? null) }}</span>
+            <bdi class="num" dir="ltr">{{ $percent($item['percent'] ?? null) }}%</bdi>
           </div>
           @if (($item['quote'] ?? null) !== null)
             <p dir="auto">«{{ $item['quote'] }}»</p>
@@ -152,10 +152,9 @@ h2.board__section { margin: 2.2mm 0 1.1mm; padding-inline-start: 2mm; border-inl
   <tbody>
     @foreach ($data['bars'] ?? [] as $bar)
       <tr>
-        <td class="code">{{ $bar['code'] ?? '' }}</td>
         <td class="name">{{ $text($bar['name'] ?? null) }}</td>
         <td><div class="track"><div class="fill" style="inline-size: {{ $bar['percent'] ?? '0' }}%"></div></div></td>
-        <td class="num"><bdi dir="ltr">{{ $bar['percent'] ?? '' }}%</bdi></td>
+        <td class="num"><bdi dir="ltr">{{ $percent($bar['percent'] ?? null) }}%</bdi></td>
         <td class="band">{{ __('insights.bands.'.($bar['band'] ?? 'emerging')) }}</td>
       </tr>
     @endforeach

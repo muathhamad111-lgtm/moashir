@@ -75,13 +75,8 @@
   gap: var(--space-1) var(--space-3);
 }
 
-.widget-criteria__code {
-  font-weight: var(--fw-semibold);
-  color: var(--theme-text-secondary);
-}
-
 .widget-criteria__name {
-  grid-column: 2 / -1;
+  grid-column: 1 / -1;
   font-size: var(--fs-sm);
 }
 

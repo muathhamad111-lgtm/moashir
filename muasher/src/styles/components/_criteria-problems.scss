@@ -42,17 +42,6 @@
   color: var(--theme-text);
 }
 
-.criteria-problems__code {
-  padding-block: var(--space-1);
-  padding-inline: var(--space-2);
-  border-radius: var(--radius-sm);
-  background-color: var(--theme-surface-raised);
-  border: var(--border-width) solid var(--theme-border);
-  font-family: var(--font-latin);
-  font-weight: var(--fw-semibold);
-  direction: ltr;
-}
-
 .criteria-problems__text {
   flex: 1 1 var(--size-control-min);
   font-size: var(--fs-sm);

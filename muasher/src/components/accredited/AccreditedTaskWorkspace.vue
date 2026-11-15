@@ -15,6 +15,8 @@ import AccreditedStepNav from './AccreditedStepNav.vue'
 import AccreditedCompleteness from './AccreditedCompleteness.vue'
 import AccreditedFormActions from './AccreditedFormActions.vue'
 import AccreditedSubmitDialog from './AccreditedSubmitDialog.vue'
+import SessionExtendDialog from '@/components/session/SessionExtendDialog.vue'
+import { useSessionExtensionPrompt } from '@/composables/useSessionExtensionPrompt'
 import { useAccreditedWorkspace } from '@/composables/useAccreditedWorkspace'
 import { usePathGuide } from '@/composables/usePathGuide'
 import { stationsOf, submissionProgressOf } from '@/utils/accredited/submissionProgress'
@@ -51,6 +53,10 @@ const {
   completeness,
 })
 const { status, errorMessage, form, assessment, isEditable, isResubmission } = formState
+const session = useSessionExtensionPrompt({
+  saveBeforeSignOut: () =>
+    isEditable.value && cvDrafts.dirty.value ? cvDrafts.save({ quiet: true }) : Promise.resolve(),
+})
 
 const stations = computed(() => stationsOf(form.value))
 const progress = computed(() => submissionProgressOf(form.value))
@@ -186,6 +192,13 @@ onMounted(guide.load)
           </BaseButton>
         </div>
       </MobileActionBar>
+      <SessionExtendDialog
+        :open="session.open.value"
+        :countdown="session.countdown.value"
+        :busy="session.busy.value"
+        @extend="session.extend"
+        @sign-out="session.signOut"
+      />
     </template>
   </div>
 </template>

@@ -28,9 +28,3 @@
 .rebind-summary__item {
   @include flex(row, baseline, flex-start, var(--space-2));
 }
-
-.rebind-summary__code {
-  font-weight: var(--fw-semibold);
-  color: var(--theme-accent-text);
-  font-variant-numeric: tabular-nums;
-}

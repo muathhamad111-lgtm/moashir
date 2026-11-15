@@ -1,4 +1,5 @@
 <script setup>
+import { percentText } from '@/utils/percentText'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
@@ -16,7 +17,7 @@ defineProps({
 })
 
 const emit = defineEmits(['retry'])
-const { t, locale } = useI18n()
+const { t, locale, n } = useI18n()
 
 const columns = computed(() => [
   { key: 'number', label: t('award.secretary.columns.number') },
@@ -63,9 +64,9 @@ const columns = computed(() => [
       </span>
     </template>
     <template #cell-average="{ item }">
-      <bdi v-if="item.average" class="u-ltr secretary-table__average"
-        >{{ item.average.percent }}%</bdi
-      >
+      <bdi v-if="item.average" class="u-ltr secretary-table__average">{{
+        percentText(n, t, item.average.percent)
+      }}</bdi>
       <span v-else class="committee-member__note">{{ t('award.secretary.noAverage') }}</span>
     </template>
     <template #cell-open="{ item }">

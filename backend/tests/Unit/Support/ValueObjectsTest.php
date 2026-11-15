@@ -28,3 +28,10 @@ it('requires both languages for localized text', function (): void {
         ->and(LocalizedText::fromArray(['ar' => 'المقيّم', 'en' => 'Assessor'])->toArray())->toBe(['ar' => 'المقيّم', 'en' => 'Assessor'])
         ->and(LocalizedText::fromTranslation('roles.assessor.label')->en)->toBe('Assessor');
 });
+
+it('joins translated items into one localized list', function (): void {
+    $list = LocalizedText::listOf(['entities.profile_fields.license_number', 'entities.profile_fields.founded_on']);
+
+    expect($list->ar)->toBe('رقم الترخيص، تاريخ التأسيس')
+        ->and($list->en)->toBe('Licence number, Founding date');
+});

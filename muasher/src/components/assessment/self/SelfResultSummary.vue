@@ -2,7 +2,7 @@
 import { useI18n } from 'vue-i18n'
 import Card from '@/components/ui/Card.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
-import { roundToOneDecimal, scorePercentText } from '@/utils/percentText'
+import { percentText, twoDecimals } from '@/utils/percentText'
 
 defineProps({
   result: { type: Object, required: true },
@@ -20,11 +20,11 @@ const { t, n } = useI18n()
           class="self-result__gauge"
           role="img"
           :aria-label="
-            t('assessment.self.result.percentAria', { percent: roundToOneDecimal(result.percent) })
+            t('assessment.self.result.percentAria', { percent: twoDecimals(result.percent) })
           "
         >
           <span class="self-result__gauge-value u-ltr">{{
-            scorePercentText(n, t, result.percent)
+            percentText(n, t, result.percent)
           }}</span>
         </div>
         <div class="self-result__score-detail">

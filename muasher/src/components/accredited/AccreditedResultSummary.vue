@@ -1,4 +1,5 @@
 <script setup>
+import { percentText } from '@/utils/percentText'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Card from '@/components/ui/Card.vue'
@@ -11,7 +12,7 @@ const props = defineProps({
 
 const LONG_VALUE_LENGTH = 5
 
-const { t } = useI18n()
+const { t, n } = useI18n()
 const isLongValue = computed(() => String(props.result.percent ?? '').length >= LONG_VALUE_LENGTH)
 </script>
 
@@ -26,7 +27,7 @@ const isLongValue = computed(() => String(props.result.percent ?? '').length >= 
         <span
           class="accredited-result-summary__value u-ltr"
           :class="{ 'accredited-result-summary__value--long': isLongValue }"
-          >{{ result.percent }}%</span
+          >{{ percentText(n, t, result.percent) }}</span
         >
       </div>
       <div class="accredited-result-summary__detail">

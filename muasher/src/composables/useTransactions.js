@@ -12,6 +12,7 @@ export const TRANSACTION_FILTERS = {
   from: '',
   to: '',
   entity_id: '',
+  mode: '',
 }
 
 export function useTransactions() {

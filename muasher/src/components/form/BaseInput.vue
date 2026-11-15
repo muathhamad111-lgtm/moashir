@@ -1,7 +1,10 @@
 <script setup>
 import FormField from './FormField.vue'
+import { westernizeInputDigits } from '@/utils/numerals'
 
-defineProps({
+const NUMBER_INPUT_MODES = ['numeric', 'decimal', 'tel']
+
+const props = defineProps({
   modelValue: { type: [String, Number], default: '' },
   label: { type: String, required: true },
   name: { type: String, required: true },
@@ -18,6 +21,14 @@ defineProps({
 })
 
 const emit = defineEmits(['update:modelValue', 'blur'])
+
+function onInput(event) {
+  const isNumberField = NUMBER_INPUT_MODES.includes(props.inputmode) || props.type === 'tel'
+  emit(
+    'update:modelValue',
+    isNumberField ? westernizeInputDigits(event.target) : event.target.value,
+  )
+}
 </script>
 
 <template>
@@ -46,7 +57,7 @@ const emit = defineEmits(['update:modelValue', 'blur'])
       :dir="inputDir"
       :aria-invalid="invalid || undefined"
       :aria-describedby="describedBy"
-      @input="emit('update:modelValue', $event.target.value)"
+      @input="onInput"
       @blur="emit('blur', $event)"
     />
   </FormField>

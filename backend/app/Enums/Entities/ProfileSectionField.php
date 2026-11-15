@@ -57,6 +57,14 @@ enum ProfileSectionField: string
         return $this !== self::OfficialEmail;
     }
 
+    public function labelKey(): string
+    {
+        return 'entities.profile_fields.'.match ($this) {
+            self::NameAr, self::NameEn => 'name',
+            default => $this->value,
+        };
+    }
+
     /**
      * @return list<self>
      */

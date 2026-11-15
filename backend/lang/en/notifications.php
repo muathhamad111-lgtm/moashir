@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 return [
 
+    'list_separator' => ', ',
+
     'staff_invited' => [
         'subject' => 'Invitation to join the platform team',
         'line' => 'The System Administrator has created an account for you on the Moashir platform. Use the button below to set your password and set up two-factor authentication.',
@@ -111,7 +113,7 @@ return [
         'REG-03' => [
             'entity' => [
                 'title' => 'Complete your entity profile',
-                'body' => 'Your account is verified. Complete the governance grade, the number of employees and the annual beneficiaries of :entity.',
+                'body' => 'Your account is verified. To complete the profile of :entity, add: :fields.',
             ],
         ],
         'REG-04' => [
@@ -465,11 +467,11 @@ return [
             'EVD-02' => [
                 'replace' => [
                     'title' => 'An evidence file was refused',
-                    'body' => 'An evidence file of the sub-criterion :code in your accredited assessment request :number did not pass the security check and was refused. Remove it and upload a clean copy in its place.',
+                    'body' => 'An evidence file of the sub-criterion “:name” in your accredited assessment request :number did not pass the security check and was refused. Remove it and upload a clean copy in its place.',
                 ],
                 'locked' => [
                     'title' => 'An evidence file was refused',
-                    'body' => 'An evidence file of the sub-criterion :code in your accredited assessment request :number did not pass the security check and was refused. The assessor does not see it and may ask you to provide a clean copy.',
+                    'body' => 'An evidence file of the sub-criterion “:name” in your accredited assessment request :number did not pass the security check and was refused. The assessor does not see it and may ask you to provide a clean copy.',
                 ],
             ],
         ],
@@ -587,11 +589,11 @@ return [
             'EVD-02' => [
                 'replace' => [
                     'title' => 'An evidence file was refused',
-                    'body' => 'An evidence file of the sub-criterion :code in your award request :number did not pass the security check and was refused. Remove it and upload a clean copy in its place.',
+                    'body' => 'An evidence file of the sub-criterion “:name” in your award request :number did not pass the security check and was refused. Remove it and upload a clean copy in its place.',
                 ],
                 'locked' => [
                     'title' => 'An evidence file was refused',
-                    'body' => 'An evidence file of the sub-criterion :code in your award request :number did not pass the security check and was refused. The assessor does not see it.',
+                    'body' => 'An evidence file of the sub-criterion “:name” in your award request :number did not pass the security check and was refused. The assessor does not see it.',
                 ],
             ],
         ],

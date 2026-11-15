@@ -91,11 +91,8 @@ onMounted(texts.load)
         <ul v-else class="maturity-texts__list">
           <li v-for="row in overrides" :key="row.id" class="maturity-texts__row">
             <MaturityBandChip :band="row.band" />
-            <p class="maturity-texts__criterion">
-              <bdi dir="ltr">{{ row.mainCriterionCode }}</bdi>
-              <span v-if="mainName(row.mainCriterionCode)">
-                · {{ mainName(row.mainCriterionCode) }}</span
-              >
+            <p v-if="mainName(row.mainCriterionCode)" class="maturity-texts__criterion">
+              {{ mainName(row.mainCriterionCode) }}
             </p>
             <span v-if="row.inPublishedVersion === false" class="maturity-texts__orphan">
               <AppIcon name="warning-triangle" />

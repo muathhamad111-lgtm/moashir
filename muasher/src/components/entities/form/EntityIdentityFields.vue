@@ -21,10 +21,7 @@ const { t } = useI18n()
         :label="t('entities.fields.nameEn')"
         :hint="t('entities.hints.nameEn')"
       />
-      <EntityUnifiedNumberField
-        :required="unifiedNumberRequired"
-        :hint="t('entities.hints.unifiedNumber')"
-      />
+      <EntityUnifiedNumberField :required="unifiedNumberRequired" />
       <FieldInput
         name="authorizedPersonName"
         :label="t('entities.fields.authorizedPersonName')"

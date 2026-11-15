@@ -25,11 +25,11 @@ final readonly class SubmissionGaps
         $fields = [];
 
         foreach ($this->missingCv as $sub) {
-            $fields['cv.'.$sub->id] = [__('errors.submission.cv_missing', ['code' => $sub->code])];
+            $fields['cv.'.$sub->id] = [__('errors.submission.cv_missing')];
         }
 
         foreach ($this->missingAttachments as $missing) {
-            $fields['attachments.'.$missing->subId.'.'.$missing->key] = [__('errors.submission.attachment_missing', ['code' => $missing->subCode])];
+            $fields['attachments.'.$missing->subId.'.'.$missing->key] = [__('errors.submission.attachment_missing')];
         }
 
         return $fields;

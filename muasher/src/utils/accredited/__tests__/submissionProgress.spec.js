@@ -35,11 +35,11 @@ const FORM = {
 describe('submission progress', () => {
   it('counts complete sub-criteria per station with the same gaps as submit', () => {
     expect(
-      stationsOf(FORM).map(({ code, complete, total, state }) => [code, complete, total, state]),
+      stationsOf(FORM).map(({ id, complete, total, state }) => [id, complete, total, state]),
     ).toEqual([
-      ['M1', 2, 2, STATION_STATES.COMPLETE],
-      ['M2', 0, 2, STATION_STATES.PARTIAL],
-      ['M3', 0, 1, STATION_STATES.EMPTY],
+      [1, 2, 2, STATION_STATES.COMPLETE],
+      [2, 0, 2, STATION_STATES.PARTIAL],
+      [3, 0, 1, STATION_STATES.EMPTY],
     ])
     expect(submissionProgressOf(FORM)).toEqual({ total: 5, complete: 2, remaining: 3 })
   })

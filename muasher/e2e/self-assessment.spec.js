@@ -49,18 +49,27 @@ function trackConsole(page) {
   return errors
 }
 
-async function fillEveryEmptyScore(page, value) {
-  const mains = page.locator('.criteria-tree__open')
-  const count = await mains.count()
-  for (let index = 0; index < count; index += 1) {
-    await mains.nth(index).click()
-    const inputs = page.locator('.self-main .raw-score input')
-    const fields = await inputs.count()
-    for (let field = 0; field < fields; field += 1) {
-      const input = inputs.nth(field)
-      if ((await input.inputValue()) === '') await input.fill(value)
-    }
+async function fillEmptyScoresOnStep(page, value) {
+  const inputs = page.locator('.self-main .raw-score input')
+  const fields = await inputs.count()
+  for (let field = 0; field < fields; field += 1) {
+    const input = inputs.nth(field)
+    if ((await input.inputValue()) === '') await input.fill(value)
   }
+}
+
+async function fillEveryEmptyScore(page, value) {
+  const next = page.locator('[data-testid="self-next"]')
+  await fillEmptyScoresOnStep(page, value)
+  while (await next.isVisible()) {
+    await next.click()
+    await fillEmptyScoresOnStep(page, value)
+  }
+}
+
+async function goToLastStep(page) {
+  const next = page.locator('[data-testid="self-next"]')
+  while (await next.isVisible()) await next.click()
 }
 
 test('the entity resumes its open draft, saves raw scores and sees the percent returned by the server', async ({
@@ -76,7 +85,13 @@ test('the entity resumes its open draft, saves raw scores and sees the percent r
     fullPage: true,
   })
 
-  await page.locator('.criteria-tree__open').nth(1).click()
+  await expect(page.locator('[data-testid="self-previous"]')).toHaveCount(0)
+  await page.locator('[data-testid="self-next"]').click()
+  await expect(page.locator('.self-main__step')).toContainText(
+    isEn(testInfo) ? 'Criterion 2' : 'المعيار 2',
+  )
+  await expect(page.locator('.self-main__title')).toBeFocused()
+  await expect(page.locator('[data-testid="self-previous"]')).toBeVisible()
   const empty = page.locator('.self-main .raw-score input').first()
   await expect(empty).toHaveValue('')
   await empty.fill('7.5')
@@ -97,7 +112,8 @@ test('an incomplete submission points to the first item without a score', async 
   await seedEntity(page, testInfo)
   await page.goto('/assessment/self')
   await expect(page.locator('.self-summary')).toBeVisible()
-  await page.locator('.self-actions .btn--primary').click()
+  await goToLastStep(page)
+  await page.locator('[data-testid="self-submit"]').click()
   await expect(page.locator('.toast--error').last()).toBeVisible()
   await expect(page.locator('.self-main .field__error').first()).toBeVisible()
   await expect(page.getByRole('alertdialog')).toHaveCount(0)
@@ -113,7 +129,7 @@ test('the entity completes the draft, confirms and sees the result immediately, 
   await page.goto('/assessment/self')
   await expect(page.locator('.self-summary')).toBeVisible()
   await fillEveryEmptyScore(page, '8')
-  await page.locator('.self-actions .btn--primary').click()
+  await page.locator('[data-testid="self-submit"]').click()
   const dialog = page.getByRole('alertdialog')
   await expect(dialog).toBeVisible()
   await expect(dialog.locator('.modal__message')).toHaveText('SLF-2026-000002')
@@ -146,21 +162,28 @@ test('the entity completes the draft, confirms and sees the result immediately, 
   expect(errors).toEqual([])
 })
 
-test('an entity without an open draft starts a new numbered self assessment', async ({
+test('an entity without an open draft starts a new numbered self assessment in one click from its journey', async ({
   page,
 }, testInfo) => {
   await seedEntity(page, testInfo, 6002)
-  await page.goto('/assessment/self')
-  const start = page.locator('.self-start')
-  await expect(start).toBeVisible()
-  await expect(start.locator('.self-start__facts li')).toHaveCount(3)
+  await page.goto('/dashboard')
+  const tile = page.locator('[data-testid="path-tile-self"]')
+  await expect(tile.locator('[data-testid="path-tile-history-self"]')).toHaveAttribute(
+    'href',
+    '/paths/self',
+  )
+  await tile.locator('[data-testid="path-tile-action-self"]').click()
+  await expect(page).toHaveURL(/\/assessment\/self$/)
+  await expect(page.locator('.self-summary__number')).toContainText('SLF-2026-000006')
+  await expect(page.locator('.self-summary__progress-value')).toContainText(/0/)
+  await expect(page.locator('.self-main__step')).toContainText(
+    isEn(testInfo) ? 'Criterion 1' : 'المعيار 1',
+  )
+  await expect(page.locator('.self-main__code')).toHaveCount(0)
   await page.screenshot({
     path: `test-results/self-start-${suffixOf(testInfo)}.png`,
     fullPage: true,
   })
-  await start.locator('.btn--primary').click()
-  await expect(page.locator('.self-summary__number')).toContainText('SLF-2026-000006')
-  await expect(page.locator('.self-summary__progress-value')).toContainText(/0/)
 })
 
 test('criteria update in progress blocks submission with the translated message but keeps saving', async ({
@@ -173,13 +196,14 @@ test('criteria update in progress blocks submission with the translated message 
   await expect(notice).toContainText(
     isEn(testInfo) ? 'Criteria update in progress' : 'جارٍ تحديث المعايير',
   )
-  await expect(page.locator('.self-actions .btn--primary')).toBeDisabled()
-  await expect(page.locator('.self-actions .btn--secondary')).toBeEnabled()
+  await goToLastStep(page)
+  await expect(page.locator('[data-testid="self-submit"]')).toBeDisabled()
+  await expect(page.locator('[data-testid="self-save"]')).toBeEnabled()
   await page.screenshot({
     path: `test-results/self-criteria-update-${suffixOf(testInfo)}.png`,
     fullPage: true,
   })
-  await page.locator('.self-actions .btn--secondary').click()
+  await page.locator('[data-testid="self-save"]').click()
   await expect(page.locator('.toast--success').last()).toBeVisible()
   await notice.locator('.btn').click()
   await expect(notice).toBeVisible()
@@ -195,7 +219,7 @@ test('a state conflict on save offers a refresh path', async ({ page }, testInfo
     status: 409,
     code: 'state.transition_illegal',
   })
-  await page.locator('.self-actions .btn--secondary').click()
+  await page.locator('[data-testid="self-save"]').click()
   const conflict = page.locator('.assessment-notice--danger')
   await expect(conflict).toBeVisible()
   await clearMockFault(page)
@@ -214,11 +238,13 @@ test('a frozen answer while saving turns the draft read-only', async ({ page }, 
     status: 409,
     code: 'entity.deleted',
   })
-  await page.locator('.self-actions .btn--secondary').click()
+  await page.locator('[data-testid="self-save"]').click()
   await expect(page.locator('.assessment-notice--frozen')).toBeVisible()
   await expect(page.locator('.self-summary .frozen-badge')).toBeVisible()
   await expect(page.locator('.self-main .raw-score input').first()).toBeDisabled()
-  await expect(page.locator('.self-actions .btn--primary')).toBeDisabled()
+  await expect(page.locator('[data-testid="self-save"]')).toBeDisabled()
+  await goToLastStep(page)
+  await expect(page.locator('[data-testid="self-submit"]')).toBeDisabled()
 })
 
 test('the result of an open draft shows the not-issued placeholder with its status', async ({
@@ -258,4 +284,28 @@ test('staff read a submitted result without any write action', async ({ page }, 
   await expect(page.locator('.assessment-notice--info')).toBeVisible()
   await expect(page.locator('.self-actions')).toHaveCount(0)
   await expect(page.locator('.assessment-record input')).toHaveCount(0)
+})
+
+test('the assessment asks to extend the session and saves then signs out when nobody answers', async ({
+  page,
+}, testInfo) => {
+  await page.clock.install()
+  await seedEntity(page, testInfo)
+  await page.goto('/assessment/self')
+  await expect(page.locator('.self-summary')).toBeVisible()
+  await page.clock.fastForward('02:00:00')
+  const dialog = page.getByRole('alertdialog')
+  await expect(dialog).toBeVisible()
+  await expect(dialog.locator('.session-extend__time')).toHaveText(/1[45]:\d\d/)
+  await page.screenshot({ path: `test-results/self-session-extend-${suffixOf(testInfo)}.png` })
+  await dialog.locator('.btn--primary').click()
+  await expect(dialog).toHaveCount(0)
+
+  await page.locator('[data-testid="self-next"]').click()
+  await page.locator('.self-main .raw-score input').first().fill('6')
+  await page.clock.fastForward('02:00:00')
+  await expect(page.getByRole('alertdialog')).toBeVisible()
+  await page.clock.fastForward('00:15:01')
+  await expect(page).toHaveURL(/\/auth\/login/)
+  await expect(page.locator('.toast--info').last()).toBeVisible()
 })

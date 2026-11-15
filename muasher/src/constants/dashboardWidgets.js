@@ -120,11 +120,7 @@ export const DASHBOARD_WIDGETS = Object.freeze({
     column('status', F.STATUS),
     column('createdAt', F.DATE),
   ),
-  criteria_progress: table(
-    column('code', F.REFERENCE),
-    column('name', F.LOCALIZED),
-    column('percent', F.PERCENT),
-  ),
+  criteria_progress: table(column('name', F.LOCALIZED), column('percent', F.PERCENT)),
   latest_result: facts(
     column('number', F.REFERENCE),
     column('path', F.PATH),

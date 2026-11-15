@@ -48,7 +48,6 @@ return [
         'certificate' => 'Certificate',
         'no_certificate' => 'No certificate was issued for this request',
         'results' => 'Results by main criterion',
-        'code' => 'Code',
         'criterion' => 'Criterion',
         'sub_criterion' => 'Sub-criterion',
         'weight' => 'Weight',

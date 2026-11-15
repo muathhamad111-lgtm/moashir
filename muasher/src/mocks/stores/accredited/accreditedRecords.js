@@ -37,6 +37,7 @@ export function boundSubsOf(record) {
       return {
         id: sub.id,
         code: sub.code,
+        name: { ...sub.name },
         mainId: main.id,
         hasCv: sub.hasCv,
         slotKeys: slots.map((slot) => slot.key),
@@ -52,6 +53,10 @@ export function subOfId(record, id) {
 
 export function idOfCode(subs, code) {
   return subs.find((sub) => sub.code === code)?.id ?? null
+}
+
+export function nameOfCode(subs, code) {
+  return subs.find((sub) => sub.code === code)?.name ?? null
 }
 
 export function presentEvidence(record) {

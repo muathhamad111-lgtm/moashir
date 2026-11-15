@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { formatNumber } from '@/utils/formatNumber'
-import { percentText } from '@/utils/percentText'
+import { wholePercentText } from '@/utils/percentText'
 import { formatRelativeTime } from '@/utils/datetime'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
@@ -39,7 +39,7 @@ const due = computed(() =>
           <bdi class="attention-item__reference" dir="ltr">{{ view.reference }}</bdi>
         </template>
         <template #percent>
-          <bdi dir="ltr">{{ percentText(n, t, view.percent) }}</bdi>
+          <bdi dir="ltr">{{ wholePercentText(n, t, view.percent) }}</bdi>
         </template>
       </i18n-t>
       <span v-if="due" class="attention-item__due">{{ due }}</span>

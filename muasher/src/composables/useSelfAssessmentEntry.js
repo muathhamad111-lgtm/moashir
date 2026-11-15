@@ -14,7 +14,6 @@ import { ROUTE_NAMES } from '@/constants/routeNames'
 
 export const ENTRY_STATES = {
   LOADING: 'loading',
-  START: 'start',
   DRAFT: 'draft',
   NO_CRITERIA: 'no-criteria',
   BLOCKED: 'blocked',
@@ -41,41 +40,16 @@ export function useSelfAssessmentEntry() {
   const toast = useToast()
   const state = ref(ENTRY_STATES.LOADING)
   const draftId = ref(null)
-  const publishedVersion = ref(null)
   const blockedCode = ref('')
   const errorMessage = ref('')
-  const starting = ref(false)
 
   function codeOf(error) {
     return error?.normalized?.code ?? null
   }
 
-  async function loadPublishedVersion() {
-    try {
-      const { data } = await assessmentsService.getPublishedCriteria()
-      publishedVersion.value = data
-      state.value = ENTRY_STATES.START
-    } catch (error) {
-      if (codeOf(error) !== CODES.NO_PUBLISHED_CRITERIA) throw error
-      state.value = ENTRY_STATES.NO_CRITERIA
-    }
-  }
-
-  async function locate() {
-    state.value = ENTRY_STATES.LOADING
-    errorMessage.value = ''
-    try {
-      const { data } = await assessmentsService.list(OPEN_DRAFT_QUERY)
-      if (data[0]) {
-        draftId.value = data[0].id
-        state.value = ENTRY_STATES.DRAFT
-        return
-      }
-      await loadPublishedVersion()
-    } catch (error) {
-      errorMessage.value = error?.normalized?.message ?? ''
-      state.value = ENTRY_STATES.ERROR
-    }
+  function fail(error) {
+    errorMessage.value = error?.normalized?.message ?? ''
+    state.value = ENTRY_STATES.ERROR
   }
 
   function openDraft(id) {
@@ -106,12 +80,10 @@ export function useSelfAssessmentEntry() {
       state.value = ENTRY_STATES.BLOCKED
       return
     }
-    toast.error(error?.normalized?.message || t('errors.unexpected'))
+    fail(error)
   }
 
   async function start() {
-    if (starting.value) return
-    starting.value = true
     logger.breadcrumb('form', 'assessments.startSelf.submit')
     try {
       const { data } = await assessmentsService.startSelf()
@@ -119,10 +91,20 @@ export function useSelfAssessmentEntry() {
       openDraft(data.id)
     } catch (error) {
       handleStartRejection(error)
-    } finally {
-      starting.value = false
     }
   }
 
-  return { state, draftId, publishedVersion, blockedCode, errorMessage, starting, locate, start }
+  async function locate() {
+    state.value = ENTRY_STATES.LOADING
+    errorMessage.value = ''
+    try {
+      const { data } = await assessmentsService.list(OPEN_DRAFT_QUERY)
+      if (data[0]) return openDraft(data[0].id)
+    } catch (error) {
+      return fail(error)
+    }
+    await start()
+  }
+
+  return { state, draftId, blockedCode, errorMessage, locate }
 }

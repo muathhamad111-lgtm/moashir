@@ -1,4 +1,5 @@
 <script setup>
+import { percentText } from '@/utils/percentText'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Card from '@/components/ui/Card.vue'
@@ -10,7 +11,7 @@ const props = defineProps({
   context: { type: Array, default: () => [] },
 })
 
-const { t, te, locale } = useI18n()
+const { t, te, locale, n } = useI18n()
 
 function enumLabel(prefix, value) {
   return value && te(`${prefix}.${value}`) ? t(`${prefix}.${value}`) : value
@@ -50,7 +51,7 @@ const facts = computed(() =>
         <li v-for="item in context" :key="item.id" class="review-entity__context-item">
           <PathBadge v-if="item.path" :path="item.path" :label="item.pathLabel" compact />
           <bdi dir="ltr">{{ item.number }}</bdi>
-          <span v-if="item.percent" class="u-ltr">{{ item.percent }}%</span>
+          <span v-if="item.percent" class="u-ltr">{{ percentText(n, t, item.percent) }}</span>
         </li>
       </ul>
     </div>

@@ -3,10 +3,12 @@ import { useI18n } from 'vue-i18n'
 import FieldInput from '@/components/form/FieldInput.vue'
 import FieldSelect from '@/components/form/FieldSelect.vue'
 import FieldPercent from '@/components/form/FieldPercent.vue'
+import FieldDate from '@/components/form/FieldDate.vue'
 import EntityUnifiedNumberField from '@/components/entities/form/EntityUnifiedNumberField.vue'
 import { useEntityOptions } from '@/composables/useEntityOptions'
 import { useRegionCityFields } from '@/composables/useRegionCityFields'
-import { GOVERNANCE_GRADE } from '@/constants/entityEnums'
+import { EARLIEST_FOUNDING_DATE, GOVERNANCE_GRADE } from '@/constants/entityEnums'
+import { riyadhDateKey } from '@/utils/datetime'
 
 const props = defineProps({
   regionOptions: { type: Array, required: true },
@@ -16,6 +18,7 @@ const props = defineProps({
 const { t } = useI18n()
 const { entityTypeOptions, sectorOptions, orgSizeOptions } = useEntityOptions()
 const { regionId, cityOptions } = useRegionCityFields(props.cityOptionsFor)
+const today = riyadhDateKey(new Date())
 </script>
 
 <template>
@@ -27,6 +30,12 @@ const { regionId, cityOptions } = useRegionCityFields(props.cityOptionsFor)
       required
     />
     <EntityUnifiedNumberField />
+    <FieldInput
+      name="licenseNumber"
+      inputmode="numeric"
+      input-dir="ltr"
+      :label="t('entities.fields.licenseNumber')"
+    />
     <FieldInput name="name.ar" input-dir="rtl" :label="t('entities.fields.nameAr')" required />
     <FieldInput name="name.en" input-dir="ltr" :label="t('entities.fields.nameEn')" required />
     <FieldSelect
@@ -54,10 +63,11 @@ const { regionId, cityOptions } = useRegionCityFields(props.cityOptionsFor)
       :options="orgSizeOptions"
       required
     />
-    <FieldInput
-      name="foundingYear"
-      inputmode="numeric"
-      :label="t('entities.fields.foundingYear')"
+    <FieldDate
+      name="foundedOn"
+      :label="t('entities.fields.foundedOn')"
+      :min="EARLIEST_FOUNDING_DATE"
+      :max="today"
       required
     />
     <FieldInput

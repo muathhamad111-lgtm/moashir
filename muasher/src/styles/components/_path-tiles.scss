@@ -88,9 +88,22 @@
   border-block-start: var(--border-width) solid var(--theme-border);
 }
 
-.path-tile__action {
-  align-self: flex-start;
+.path-tile__actions {
+  @include flex(row, center, flex-start, var(--space-4));
+  flex-wrap: wrap;
   margin-block-start: auto;
+}
+
+.path-tile__history {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--theme-accent-text);
+  text-decoration: underline;
+  text-underline-offset: var(--space-1);
+
+  &:focus-visible {
+    @include focus-ring;
+  }
 }
 
 .path-price {

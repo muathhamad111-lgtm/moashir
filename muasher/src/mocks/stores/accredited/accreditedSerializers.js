@@ -18,6 +18,7 @@ import {
   gapsOf,
   idOfCode,
   isOverdue,
+  nameOfCode,
   openCompletionOf,
   presentEvidence,
 } from './accreditedRecords'
@@ -81,6 +82,7 @@ export function completionResource(completion, subs) {
     items: completion.items.map((item) => ({
       subCriterionId: subs ? idOfCode(subs, item.subCode) : null,
       code: item.subCode,
+      name: subs ? nameOfCode(subs, item.subCode) : null,
       kind: item.kind,
       note: item.note,
     })),

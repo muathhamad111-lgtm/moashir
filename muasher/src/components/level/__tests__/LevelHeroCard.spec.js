@@ -59,10 +59,12 @@ describe('LevelHeroCard — Option A identity and progress', () => {
   it('shows the score once with its final value as the accessible text', () => {
     const wrapper = render()
     expect(wrapper.findAll('.level-hero__number')).toHaveLength(1)
-    expect(wrapper.find('.level-hero__number').text()).toBe('74.5')
+    expect(wrapper.find('.level-hero__number').text()).toBe('74.50')
     expect(wrapper.find('.level-hero__figure-value').attributes('aria-hidden')).toBe('true')
-    expect(wrapper.find('.level-hero__figure .level-hero__sr').text()).toBe('الدرجة المعتمدة 74.5%')
-    expect(wrapper.find('.level-hero__remaining').text()).toBe('تبقّى 5.5% لبلوغ المستوى الذهبي')
+    expect(wrapper.find('.level-hero__figure .level-hero__sr').text()).toBe(
+      'الدرجة المعتمدة 74.50%',
+    )
+    expect(wrapper.find('.level-hero__remaining').text()).toBe('تبقّى 5.50% لبلوغ المستوى الذهبي')
     expect(wrapper.find('.level-hero__journey-title').text()).toBe('رحلة التميّز')
     expect(wrapper.find('[data-testid="hero-next-level"]').exists()).toBe(true)
     expect(wrapper.find('.level-ring').exists()).toBe(false)
@@ -117,7 +119,7 @@ describe('LevelHeroCard — Option A identity and progress', () => {
       action: LEVEL_MINI_CARD.participation,
     })
     expect(wrapper.find('.level-hero__name').text()).toBe('شهادة مشاركة')
-    expect(wrapper.find('.level-hero__remaining').text()).toBe('تبقّى 6% لبلوغ المستوى البرونزي')
+    expect(wrapper.find('.level-hero__remaining').text()).toBe('تبقّى 6.00% لبلوغ المستوى البرونزي')
     expect(wrapper.find('[data-testid="level-hero-action"]').text()).toBe('عرض شهادة المشاركة')
   })
 
@@ -197,6 +199,6 @@ describe('LevelHeroCard — Option A identity and progress', () => {
     expect(silver.find('[data-testid="level-meta"]').text()).toBe(
       'Certificate CRT-2026-000003 · issued 2026-09-05',
     )
-    expect(silver.find('.level-hero__remaining').text()).toBe('5.5% to Gold level')
+    expect(silver.find('.level-hero__remaining').text()).toBe('5.50% to Gold level')
   })
 })

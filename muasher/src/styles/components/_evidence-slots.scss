@@ -37,11 +37,6 @@
   color: var(--theme-heading);
 }
 
-.evidence-slots__code {
-  margin-inline-end: var(--space-1);
-  color: var(--theme-accent-text);
-}
-
 .evidence-slots__files {
   @include flex(column, stretch, flex-start, var(--space-2));
   list-style: none;

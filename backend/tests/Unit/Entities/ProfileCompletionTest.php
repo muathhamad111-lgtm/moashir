@@ -127,3 +127,15 @@ it('leaves the official e-mail out of the contact fingerprint', function (): voi
 
     expect(ProfileSectionRevision::of($other, ProfileSection::Contact))->toBe(ProfileSectionRevision::of($values, ProfileSection::Contact));
 });
+
+it('lists the missing counted fields in profile order', function (): void {
+    $completion = ProfileCompletion::of(namaaProfile(['license_number' => null, 'employees_count' => null, 'founded_on' => null]));
+
+    expect($completion->missingFields())->toBe([ProfileSectionField::LicenseNumber, ProfileSectionField::FoundedOn, ProfileSectionField::EmployeesCount])
+        ->and(ProfileCompletion::of(namaaProfile())->missingFields())->toBe([]);
+});
+
+it('labels every counted profile field in both languages', function (ProfileSectionField $field): void {
+    expect(__($field->labelKey(), [], 'ar'))->not->toBe($field->labelKey())
+        ->and(__($field->labelKey(), [], 'en'))->not->toBe($field->labelKey());
+})->with(ProfileSectionField::counted());

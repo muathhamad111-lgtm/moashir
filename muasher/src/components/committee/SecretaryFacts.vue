@@ -1,4 +1,5 @@
 <script setup>
+import { percentText } from '@/utils/percentText'
 import { useI18n } from 'vue-i18n'
 import Badge from '@/components/ui/Badge.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
@@ -9,7 +10,7 @@ defineProps({
   detail: { type: Object, required: true },
 })
 
-const { t, locale } = useI18n()
+const { t, locale, n } = useI18n()
 </script>
 
 <template>
@@ -29,13 +30,17 @@ const { t, locale } = useI18n()
     <div class="request-facts__item">
       <dt>{{ t('award.secretary.initialResult') }}</dt>
       <dd>
-        <bdi v-if="detail.initialResult" class="u-ltr">{{ detail.initialResult.percent }}%</bdi>
+        <bdi v-if="detail.initialResult" class="u-ltr">{{
+          percentText(n, t, detail.initialResult.percent)
+        }}</bdi>
       </dd>
     </div>
     <div class="request-facts__item secretary-facts__average">
       <dt>{{ t('award.secretary.columns.average') }}</dt>
       <dd v-if="detail.average">
-        <bdi class="u-ltr secretary-facts__percent">{{ detail.average.percent }}%</bdi>
+        <bdi class="u-ltr secretary-facts__percent">{{
+          percentText(n, t, detail.average.percent)
+        }}</bdi>
         <span class="committee-member__note">{{
           t('award.secretary.averageMeta', {
             version: detail.average.version,
