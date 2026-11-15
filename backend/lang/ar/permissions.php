@@ -18,7 +18,6 @@ return [
     'entities.email_change.approve' => ['label' => 'اعتماد تغيير بريد الجهات', 'description' => 'اعتماد أو رفض طلب تغيير البريد الرسمي للجهة.'],
     'entities.delete' => ['label' => 'حذف الجهات واستعادتها', 'description' => 'نقل الجهة إلى الجهات المحذوفة واستعادتها.'],
     'entities.export' => ['label' => 'تصدير بيانات الجهات', 'description' => 'تصدير قوائم الجهات مع تسجيل كل عملية تصدير.'],
-    'privacy.requests.manage' => ['label' => 'إدارة طلبات أصحاب البيانات', 'description' => 'معالجة طلبات الاطلاع والتصحيح والحذف وفق نظام حماية البيانات الشخصية.'],
     'assessment.criteria.view' => ['label' => 'عرض المعايير المنشورة', 'description' => 'الاطلاع على المعايير المنشورة ومقياس التقييم.'],
     'assessment.history.view' => ['label' => 'عرض سجل التقييمات', 'description' => 'عرض التقييمات ونتائجها.'],
     'assessment.self.manage' => ['label' => 'إدارة التقييم الذاتي', 'description' => 'إنشاء التقييم الذاتي وحفظه وإرساله.'],

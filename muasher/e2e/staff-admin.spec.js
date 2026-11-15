@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test'
 import { seedSignedIn, seedScenario } from './support/session'
 import { settleFonts } from './support/screenshots'
 import { chooseNamed } from './support/dropdown'
+import { applyOpenListFilters, openListFilters, searchList } from './support/listFilters'
 
 const SHOTS = 'e2e/__screenshots__/37d'
 const VIEWPORTS = {
@@ -147,8 +148,10 @@ test.describe('notification types catalogue', () => {
     await signIn(page, testInfo, USERS.systemAdmin)
     await open(page, '/admin/settings/notifications', ROWS)
     await expect(page.locator('.notification-catalogue textarea')).toHaveCount(0)
-    await page.locator('.notification-catalogue__filters .dropdown-filter__trigger').first().click()
+    const filters = await openListFilters(page)
+    await filters.locator('.dropdown-field').first().click()
     await page.getByRole('option', { name: text(testInfo, 'Contact us', 'تواصل معنا') }).click()
+    await applyOpenListFilters(page)
     await expect(page.locator(ROWS).first()).toContainText('CNT-')
     await expect(page.locator(`${ROWS}:not(:has-text("CNT-"))`)).toHaveCount(0)
   })
@@ -206,35 +209,19 @@ test.describe('contact inbox', () => {
   test('filters by linked senders and searches', async ({ page }, testInfo) => {
     await signIn(page, testInfo, USERS.systemAdmin)
     await open(page, '/admin/contact-messages', ROWS)
-    await page.locator('.toolbar__search input').fill('البيان')
+    await searchList(page, 'البيان')
     await expect(page.locator(ROWS)).toHaveCount(1)
     await expect(page.locator(ROWS).first()).toContainText('CNT-2026-000051')
   })
 })
 
-test.describe('contact retention and privacy tools', () => {
+test.describe('contact retention', () => {
   test('the System Administrator saves the retention period', async ({ page }, testInfo) => {
     await signIn(page, testInfo, USERS.systemAdmin)
     await open(page, '/admin/settings/contact-messages', 'input[name="retentionMonths"]')
     await page.locator('input[name="retentionMonths"]').fill('12')
     await page.locator('.settings-section__footer button[type="submit"]').click()
     await expect(page.locator('.toast').first()).toContainText(text(testInfo, 'saved', 'حُفظت'))
-  })
-
-  test('exports and erases the contact messages of an address', async ({ page }, testInfo) => {
-    await signIn(page, testInfo, USERS.systemAdmin)
-    await open(page, '/admin/privacy-requests', '.contact-privacy')
-    await page.locator('.contact-privacy input[type="email"]').fill('finance@albayan.example.sa')
-    await page.locator('.contact-privacy textarea').fill('طلب صاحب البيانات رقم PR-2026-0012')
-    await page.locator('.contact-privacy button[type="submit"]').click()
-    await expect(page.locator('.contact-privacy__result')).toContainText('CNT-2026-000051')
-    await page
-      .getByRole('button', { name: text(testInfo, 'Delete the messages', 'حذف الرسائل') })
-      .click()
-    await page.locator('.modal .btn--danger').click()
-    await expect(page.locator('.contact-privacy__result')).toContainText(
-      text(testInfo, 'were deleted', 'حُذفت'),
-    )
   })
 })
 
@@ -367,7 +354,6 @@ const CAPTURES = [
     'input[name="retentionMonths"]',
     USERS.systemAdmin,
   ],
-  ['privacy-contact', '/admin/privacy-requests', '.contact-privacy', USERS.systemAdmin],
   [
     'request-certificate',
     '/admin/requests/9104',

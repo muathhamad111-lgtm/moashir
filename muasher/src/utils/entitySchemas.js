@@ -6,8 +6,6 @@ import {
   ORG_SIZES,
   PASSWORD_LENGTH,
   PHONE_PATTERN,
-  PRIVACY_DETAILS_LENGTH,
-  PRIVACY_REQUEST_KINDS,
   REASON_LENGTH,
   UNIFIED_NUMBER_PATTERN,
 } from '@/constants/entityEnums'
@@ -245,23 +243,5 @@ export function citySchema(t) {
     regionId: yupString().required(t('validation.required')),
     name: yupObject({ ar: requiredText(t, CITY_NAME_MAX), en: requiredText(t, CITY_NAME_MAX) }),
     sortOrder: optionalCount(t),
-  })
-}
-
-export function privacyRequestSchema(t) {
-  return yupObject({
-    entityId: yupString().required(t('validation.required')),
-    kind: choice(t, PRIVACY_REQUEST_KINDS),
-    details: yupString()
-      .trim()
-      .required(t('validation.required'))
-      .min(
-        PRIVACY_DETAILS_LENGTH.MIN,
-        t('validation.minChars', { min: PRIVACY_DETAILS_LENGTH.MIN }),
-      )
-      .max(
-        PRIVACY_DETAILS_LENGTH.MAX,
-        t('entities.validation.maxChars', { max: PRIVACY_DETAILS_LENGTH.MAX }),
-      ),
   })
 }

@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import FilterToolbar from '@/components/data-list/FilterToolbar.vue'
+import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
@@ -12,7 +12,6 @@ import EntityActionsHost from '@/components/entities/admin/EntityActionsHost.vue
 import { useEntityList } from '@/composables/useEntityList'
 import { useEntityExport } from '@/composables/useEntityExport'
 import { useRegions } from '@/composables/useRegions'
-import { useFilterDraft } from '@/composables/useFilterDraft'
 import { usePermissions } from '@/composables/usePermissions'
 import { ENTITY_ACTIONS } from '@/composables/useEntityActions'
 import { PERMISSIONS } from '@/constants/permissionKeys'
@@ -27,7 +26,6 @@ const { items, status, errorMessage, load, filters, paginator, stats, exportPara
 const { exporting, exportCsv } = useEntityExport()
 const actionsHost = ref(null)
 const { search } = filters
-const filterDraft = useFilterDraft(filters)
 
 const fullRecords = computed(() => items.value.some((item) => 'entityType' in item))
 
@@ -89,18 +87,14 @@ onMounted(regions.load)
 
     <StatsCards :stats="statCards" :loading="status === 'loading' && !stats" />
 
-    <FilterToolbar
+    <ListToolbar
       v-model:search="search"
       :search-placeholder="t('entities.admin.searchPlaceholder')"
-      :active-count="filterDraft.activeCount.value"
-      @open-filters="filterDraft.load"
-      @apply="filterDraft.apply"
-      @reset="filterDraft.resetDraft"
-      @clear="filterDraft.clear"
+      :filter-state="filters"
     >
-      <template #filters>
+      <template #filters="{ draft }">
         <EntityListFilters
-          :filters="filterDraft.draft"
+          :filters="draft"
           :region-options="regions.regionOptions.value"
           :full="fullRecords || status !== 'success'"
         />
@@ -116,7 +110,7 @@ onMounted(regions.load)
           {{ t('entities.admin.export') }}
         </BaseButton>
       </template>
-    </FilterToolbar>
+    </ListToolbar>
 
     <EntityTable
       :items="items"

@@ -2,6 +2,7 @@ import { Buffer } from 'node:buffer'
 import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
 import { closeSuccess, decisionAction } from './support/dialogs'
+import { openListFilters } from './support/listFilters'
 
 const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d/i
 const EXAMPLE_IBAN = 'SA03 8000 0000 6080 1016 7519'
@@ -221,11 +222,13 @@ test('Finance approves the selected transfers at once', async ({ page }, testInf
       ? ['Under review', 'Approved today', 'Rejected today']
       : ['قيد المراجعة', 'اعتُمدت اليوم', 'رُفضت اليوم'],
   )
-  await page.locator('.transfer-filters [role="combobox"]').first().click()
+  const filters = await openListFilters(page)
+  await filters.locator('.transfer-filters [role="combobox"]').first().click()
   await expect(page.locator('.dropdown-popup').getByRole('option')).toHaveText([
     isEn(testInfo) ? 'All accounts' : 'كل الحسابات',
     isEn(testInfo) ? 'Example Bank (example) · ends in 7519' : 'بنك المثال (مثال) · ينتهي بـ 7519',
   ])
+  await page.keyboard.press('Escape')
   await page.keyboard.press('Escape')
   await expect(page.locator('.transfer-queue__table tbody tr').nth(1)).toContainText(
     isEn(testInfo) ? 'Duplicate file' : 'ملف مكرر',

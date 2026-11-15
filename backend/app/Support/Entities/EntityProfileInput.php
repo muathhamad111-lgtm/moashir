@@ -92,7 +92,7 @@ final class EntityProfileInput
     public static function governanceRules(): array
     {
         return [
-            'governance_grade' => ['nullable', 'decimal:0,2', 'between:0,100'],
+            'governance_grade' => ['nullable', 'decimal:0,3', 'between:0,100'],
             'employees_count' => ['nullable', 'integer', 'min:0', 'max:10000000'],
             'annual_beneficiaries_count' => ['nullable', 'integer', 'min:0', 'max:100000000'],
             'has_strategic_plan' => ['present', 'nullable', 'boolean'],

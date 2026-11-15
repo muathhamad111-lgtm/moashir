@@ -22,8 +22,6 @@ enum PermissionKey: string
     case EntitiesDelete = 'entities.delete';
     case EntitiesExport = 'entities.export';
 
-    case PrivacyRequestsManage = 'privacy.requests.manage';
-
     case AssessmentCriteriaView = 'assessment.criteria.view';
     case AssessmentHistoryView = 'assessment.history.view';
     case AssessmentSelfManage = 'assessment.self.manage';
@@ -125,7 +123,6 @@ enum PermissionKey: string
         'entities.verification.resend',
         'entities.email_change.approve',
         'entities.delete',
-        'privacy.requests.manage',
         'bag.plan.approve',
         'bag.subscription.activate_free',
         'messaging.campaigns.send',
@@ -179,7 +176,6 @@ enum PermissionKey: string
         'notifications.' => PermissionModule::Dashboard,
         'entity.' => PermissionModule::Entity,
         'entities.' => PermissionModule::Entity,
-        'privacy.' => PermissionModule::Privacy,
         'assessment.score.' => PermissionModule::Requests,
         'assessment.context.' => PermissionModule::Requests,
         'assessment.' => PermissionModule::Assessment,

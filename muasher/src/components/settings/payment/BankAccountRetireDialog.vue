@@ -42,9 +42,7 @@ async function confirm() {
 <template>
   <DecisionDialog
     :model-value="modelValue"
-    :title="
-      t(`settings.bankAccounts.retire.${deactivating ? 'deactivate' : 'delete'}.title`)
-    "
+    :title="t(`settings.bankAccounts.retire.${deactivating ? 'deactivate' : 'delete'}.title`)"
     :message="accountLine"
     :confirm-label="
       deactivating ? t('settings.bankAccounts.retire.deactivate.confirm') : t('actions.delete')

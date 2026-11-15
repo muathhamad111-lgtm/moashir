@@ -10,6 +10,5 @@ return [
         'payments' => 'الدفع والإيصالات',
         'technical_support' => 'الدعم الفني',
         'other' => 'أخرى',
-        'privacy_request' => 'طلب يتعلق بالبيانات الشخصية',
     ],
 ];

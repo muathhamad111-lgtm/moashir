@@ -40,6 +40,7 @@ const resultOptions = computed(() =>
 const modeOptions = computed(() =>
   optionsOf('finance.events.allModes', Object.values(FINANCE_MODES), 'finance.filters.modes'),
 )
+const filterState = { filters: filters.filters, setFilter }
 </script>
 
 <template>
@@ -54,28 +55,26 @@ const modeOptions = computed(() =>
       <ListToolbar
         v-model:search="searchInput"
         :search-placeholder="t('finance.events.searchPlaceholder')"
+        :filter-state="filterState"
       >
-        <template #filters>
+        <template #filters="{ draft }">
           <AppSelect
-            variant="filter"
-            :model-value="filters.filters.source"
+            :model-value="draft.filters.source"
             :options="sourceOptions"
             :label="t('finance.events.source')"
-            @update:model-value="setFilter('source', $event)"
+            @update:model-value="draft.setFilter('source', $event)"
           />
           <AppSelect
-            variant="filter"
-            :model-value="filters.filters.result"
+            :model-value="draft.filters.result"
             :options="resultOptions"
             :label="t('finance.events.result')"
-            @update:model-value="setFilter('result', $event)"
+            @update:model-value="draft.setFilter('result', $event)"
           />
           <AppSelect
-            variant="filter"
-            :model-value="filters.filters.mode"
+            :model-value="draft.filters.mode"
             :options="modeOptions"
             :label="t('finance.events.mode')"
-            @update:model-value="setFilter('mode', $event)"
+            @update:model-value="draft.setFilter('mode', $event)"
           />
         </template>
       </ListToolbar>

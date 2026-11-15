@@ -116,3 +116,21 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+.expandable-search__close {
+  @include flex-center;
+  flex-shrink: 0;
+  inline-size: var(--space-8);
+  block-size: var(--space-8);
+  border-radius: var(--radius-circle);
+  color: var(--theme-text-muted);
+
+  &:hover {
+    color: var(--theme-text);
+    background-color: var(--theme-surface-raised);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}

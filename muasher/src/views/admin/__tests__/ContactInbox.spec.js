@@ -8,6 +8,7 @@ import { ROUTE_NAMES } from '@/constants/routeNames'
 import { createTestGlobals } from '@/test-utils'
 import { chooseNamedOption } from '@/test-utils/dropdown'
 import { sessionUserFor } from '@/test-utils/session'
+import { openListSearch } from '@/test-utils/listToolbar'
 
 vi.mock('@/services/contactInboxService', () => ({
   contactInboxService: {
@@ -107,7 +108,7 @@ describe('back-office contact inbox', () => {
   it('searches after two characters only', async () => {
     vi.useFakeTimers()
     const wrapper = await mountAt(InboxIndex, { name: ROUTE_NAMES.ADMIN_CONTACT_MESSAGES })
-    const input = wrapper.find('input[type="search"]')
+    const input = await openListSearch(wrapper)
     await input.setValue('ن')
     vi.advanceTimersByTime(400)
     await flushPromises()

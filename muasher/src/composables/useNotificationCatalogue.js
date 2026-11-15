@@ -24,11 +24,7 @@ export function useNotificationCatalogue() {
     }
   }
 
-  function resetFilters() {
-    Object.assign(filters, { module: '', category: '', audience: '' })
-  }
-
   watch(filters, load)
 
-  return { filters, types, total, status, errorMessage, load, resetFilters }
+  return { filters, types, total, status, errorMessage, load }
 }

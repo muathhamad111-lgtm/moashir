@@ -12,7 +12,6 @@ import {
 
 defineProps({
   filters: { type: Object, required: true },
-  panelId: { type: String, required: true },
 })
 
 const emit = defineEmits(['filter'])
@@ -44,7 +43,7 @@ const methodOptions = computed(() =>
 </script>
 
 <template>
-  <div :id="panelId" class="my-payment-filters" data-testid="my-payment-filters">
+  <div class="my-payment-filters" data-testid="my-payment-filters">
     <AppSelect
       :model-value="filters.status"
       :options="statusOptions"

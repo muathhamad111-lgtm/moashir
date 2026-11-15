@@ -1,7 +1,7 @@
 import { GOVERNANCE_GRADE } from '@/constants/entityEnums'
 import { toWesternDigits } from '@/utils/numerals'
 
-const GRADE_PATTERN = /^\d{1,3}(\.\d{1,2})?$/
+const GRADE_PATTERN = /^\d{1,3}(\.\d{1,3})?$/
 
 export function isValidGovernanceGrade(value) {
   const text = toWesternDigits(value)

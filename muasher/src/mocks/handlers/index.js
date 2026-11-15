@@ -9,7 +9,6 @@ import { entitiesHandlers } from './entities'
 import { entityProfileChangesHandlers } from './entityProfileChanges'
 import { entityLifecycleHandlers } from './entityLifecycle'
 import { entityEmailChangesHandlers } from './entityEmailChanges'
-import { privacyRequestsHandlers } from './privacyRequests'
 import { regionsHandlers } from './regions'
 import { assessmentsHandlers } from './assessments'
 import { knowledgeBaseHandlers, platformSettingsHandlers } from './settings'
@@ -79,7 +78,6 @@ export const handlers = [
   ...entityLifecycleHandlers,
   ...entityProfileChangesHandlers,
   ...entitiesHandlers,
-  ...privacyRequestsHandlers,
   ...regionsHandlers,
   ...awardHandlers,
   ...assessmentsHandlers,

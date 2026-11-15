@@ -98,10 +98,6 @@ describe('usePaymentsHub', () => {
       ),
     )
     expect(api.isFiltered.value).toBe(true)
-    api.clearFilters()
-    await flushPromises()
-    expect(api.activeFilterCount.value).toBe(0)
-    expect(api.isFiltered.value).toBe(false)
   })
 })
 

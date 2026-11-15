@@ -118,15 +118,15 @@ describe('TransactionFilters', () => {
       filters: { status: '', purpose: '', channel: '', method: '', mode: '', from: '', to: '' },
       sort: '-created_at',
     })
-    await wrapper.findAll('.dropdown-filter__trigger')[2].trigger('click')
+    await wrapper.findAll('.dropdown-field')[2].trigger('click')
     await wrapper.findAll('[role="option"]')[2].trigger('click')
-    await wrapper.findAll('.dropdown-filter__trigger')[4].trigger('click')
+    await wrapper.findAll('.dropdown-field')[4].trigger('click')
     await wrapper.findAll('[role="option"]')[1].trigger('click')
     expect(wrapper.emitted('filter')).toEqual([
       ['channel', 'bank_transfer'],
       ['mode', 'test'],
     ])
-    await wrapper.findAll('.dropdown-filter__trigger')[5].trigger('click')
+    await wrapper.findAll('.dropdown-field')[5].trigger('click')
     await wrapper.findAll('[role="option"]')[2].trigger('click')
     expect(wrapper.emitted('sort')).toEqual([['-total']])
   })

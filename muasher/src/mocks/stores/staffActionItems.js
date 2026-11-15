@@ -15,12 +15,6 @@ const ROLE_ITEMS = {
       link: '/admin/entities/email-changes',
     },
     {
-      key: 'handle_privacy_requests',
-      count: 1,
-      severity: 'warning',
-      link: '/admin/privacy-requests',
-    },
-    {
       key: 'answer_contact_messages',
       count: 2,
       severity: 'warning',

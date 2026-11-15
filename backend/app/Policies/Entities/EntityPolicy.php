@@ -117,11 +117,6 @@ final readonly class EntityPolicy
         return $actor->can(PermissionKey::EntitiesExport->value) && $this->scope->accessOf($actor) === EntityAccess::Full;
     }
 
-    public function exportPersonalData(User $actor): bool
-    {
-        return $actor->can(PermissionKey::PrivacyRequestsManage->value);
-    }
-
     private function statusOfOwn(User $actor, ?Entity $entity): ?EntityStatus
     {
         if ($entity instanceof Entity) {

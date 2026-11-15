@@ -36,7 +36,6 @@ const ADMIN_SCREENS = [
   '/admin/entities',
   '/admin/entities/deleted',
   '/admin/entities/email-changes',
-  '/admin/privacy-requests',
   '/admin/settings/cities',
   '/admin/permissions',
   '/admin/settings/assessment',

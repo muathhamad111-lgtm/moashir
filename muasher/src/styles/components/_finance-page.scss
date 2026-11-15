@@ -47,8 +47,7 @@
 
 .finance-page__range,
 .transaction-filters {
-  @include flex(row, flex-end, flex-start, var(--space-3));
-  flex-wrap: wrap;
+  display: contents;
 }
 
 .finance-page__note {

@@ -93,6 +93,7 @@ async function runCampaign(channel, cart) {
     toast.error(error?.normalized?.message || t('settings.carts.campaignFailed'))
   }
 }
+const filterState = { filters: filters.filters, setFilter }
 </script>
 
 <template>
@@ -105,21 +106,20 @@ async function runCampaign(channel, cart) {
     <ListToolbar
       v-model:search="searchInput"
       :search-placeholder="t('settings.carts.searchPlaceholder')"
+      :filter-state="filterState"
     >
-      <template #filters>
+      <template #filters="{ draft }">
         <AppSelect
-          variant="filter"
-          :model-value="filters.filters.purpose"
+          :model-value="draft.filters.purpose"
           :options="purposeOptions"
           :label="t('settings.carts.filterPurpose')"
-          @update:model-value="setFilter('purpose', $event)"
+          @update:model-value="draft.setFilter('purpose', $event)"
         />
         <AppSelect
-          variant="filter"
-          :model-value="filters.filters.contacted"
+          :model-value="draft.filters.contacted"
           :options="contactedOptions"
           :label="t('settings.carts.filterContacted')"
-          @update:model-value="setFilter('contacted', $event)"
+          @update:model-value="draft.setFilter('contacted', $event)"
         />
       </template>
     </ListToolbar>

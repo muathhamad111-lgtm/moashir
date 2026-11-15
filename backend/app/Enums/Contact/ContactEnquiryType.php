@@ -12,7 +12,6 @@ enum ContactEnquiryType: string
     case Payments = 'payments';
     case TechnicalSupport = 'technical_support';
     case Other = 'other';
-    case PrivacyRequest = 'privacy_request';
 
     /**
      * @return list<string>

@@ -8,6 +8,7 @@ import { guardMoyasar } from './support/moyasarGuard'
 import { settleFonts } from './support/screenshots'
 import { chooseNamed, namedSelect, openOption } from './support/dropdown'
 import { fillRegistrationEntityStep, goToRegistrationAccountStep } from './support/registration'
+import { openListFilters, searchList } from './support/listFilters'
 
 const SHOTS = 'e2e/__screenshots__/37b'
 const VIEWPORTS = {
@@ -215,7 +216,7 @@ test.describe('messages area', () => {
     await expect(page.locator('.message-thread textarea')).toHaveCount(0)
     await page.locator('.message-thread__closed .btn').click()
     const dialog = page.locator('.modal__panel')
-    await chooseNamed(dialog, 'enquiryType', 'privacy_request')
+    await chooseNamed(dialog, 'enquiryType', 'technical_support')
     await dialog
       .locator('textarea[name="message"]')
       .fill('نرجو تزويدنا بنسخة من البيانات المحفوظة لحساب الجهة.')
@@ -251,11 +252,10 @@ test.describe('payments area', () => {
     await open(page, '/payments', '.my-payments__table')
     await expect(page.locator('[role="tab"]')).toHaveCount(0)
     await expect(page.locator('.payment-stats__tile')).toHaveCount(4)
-    const toggle = page.locator('[data-testid="payments-filter-toggle"]')
-    await expect(toggle).toHaveAttribute('aria-expanded', 'false')
-    await toggle.click()
-    await expect(page.locator('[data-testid="my-payment-filters"]')).toBeVisible()
-    await page.locator('.payments-hub__search').fill('RCP-2026-000001')
+    const filters = await openListFilters(page)
+    await expect(filters.locator('[data-testid="my-payment-filters"]')).toBeAttached()
+    await page.keyboard.press('Escape')
+    await searchList(page, 'RCP-2026-000001')
     await expect(page.locator('.my-payments__row')).toHaveCount(1)
     const row = page.locator('.my-payments__row', { hasText: 'RCP-2026-000001' })
     await expect(row).toContainText('ACC-2026-000001')
@@ -380,7 +380,7 @@ test.describe('legal pages', () => {
     await open(page, '/', '.contact-form__form')
     await expect(page.locator('.contact-form .legal-consent a')).toHaveAttribute('href', '/privacy')
     await namedSelect(page.locator('.contact-form'), 'enquiryType').click()
-    await expect(openOption(page, 'privacy_request')).toHaveCount(1)
+    await expect(openOption(page, 'privacy_request')).toHaveCount(0)
   })
 })
 

@@ -4,7 +4,6 @@ export const CONTACT_ENQUIRY_TYPES = Object.freeze([
   'accredited_assessment',
   'payments',
   'technical_support',
-  'privacy_request',
   'other',
 ])
 

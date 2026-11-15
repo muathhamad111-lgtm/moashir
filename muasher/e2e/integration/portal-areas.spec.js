@@ -106,7 +106,7 @@ test('a signed-in message opens its thread and the follow-up reaches the backend
   await expect(page.locator('[role="tab"]')).toHaveCount(2)
   await page.locator('.portal-area__actions .btn--primary').click()
   const dialog = page.locator('.modal__panel')
-  await chooseNamed(dialog, 'enquiryType', 'privacy_request')
+  await chooseNamed(dialog, 'enquiryType', 'technical_support')
   await dialog
     .locator('textarea[name="message"]')
     .fill('نرجو تزويدنا بنسخة من البيانات المحفوظة في حساب الجهة.')

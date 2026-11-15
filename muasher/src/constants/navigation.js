@@ -224,13 +224,6 @@ export const APP_NAV_ITEMS = [
     routeName: ROUTE_NAMES.ADMIN_ENTITY_EMAIL_CHANGES,
   },
   {
-    id: 'admin-privacy-requests',
-    group: 'entities',
-    labelKey: 'nav.privacyRequests',
-    icon: 'user-shield',
-    routeName: ROUTE_NAMES.ADMIN_PRIVACY_REQUESTS,
-  },
-  {
     id: 'admin-users',
     group: 'administration',
     labelKey: 'nav.adminUsers',

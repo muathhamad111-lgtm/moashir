@@ -2,6 +2,7 @@ import { mkdirSync } from 'node:fs'
 import { test, expect } from '@playwright/test'
 import { seedPreferences, seedSignedIn } from './support/session'
 import { settleFonts } from './support/screenshots'
+import { openListFilters, searchList } from './support/listFilters'
 
 const SHOTS = 'e2e/__screenshots__/37c'
 const VIEWPORTS = {
@@ -86,9 +87,11 @@ test.describe('per-path queues', () => {
     await expect(page.locator(ROWS).first()).toContainText('ACC-2026-000005')
     await page.locator('.path-switch__link').nth(1).click()
     await expect(page).toHaveURL(/path=advanced/)
-    await expect(page.locator('.request-filters .dropdown-filter__trigger').first()).toContainText(
+    const filters = await openListFilters(page)
+    await expect(filters.locator('.dropdown-field').first()).toContainText(
       text(testInfo, 'Awaiting assignment', 'بانتظار'),
     )
+    await page.keyboard.press('Escape')
     await open(page, '/admin/requests?overdue=true', ROWS)
     await expect(page.locator(`${ROWS} .overdue-badge.badge--danger`).first()).toBeVisible()
     await expect(page.locator(`${ROWS} .overdue-badge:not(.badge--danger)`)).toHaveCount(0)
@@ -141,7 +144,7 @@ test.describe('users path access', () => {
   }, testInfo) => {
     await signIn(page, testInfo, USERS.systemAdmin)
     await open(page, '/admin/settings/users', ROWS)
-    await page.locator('.toolbar__search input').fill('David')
+    await searchList(page, 'David')
     const row = page.locator(ROWS).filter({ hasText: 'David Nguyen' })
     await expect(row).toHaveCount(1)
     await expect(row).toContainText(
@@ -157,7 +160,7 @@ test.describe('users path access', () => {
     await page.locator('.modal button[type="submit"]').click()
     await expect(row.locator('.path-badge--accredited')).toBeVisible()
 
-    await page.locator('.toolbar__search input').fill('Laura')
+    await searchList(page, 'Laura')
     const follower = page.locator(ROWS).filter({ hasText: 'Laura Bennett' })
     await expect(follower).toContainText(text(testInfo, 'All paths', 'كل المسارات'))
     await follower.locator('.dropdown-menu > button').click()
@@ -426,7 +429,7 @@ test.describe('staff paths screenshots', () => {
     await page.setViewportSize(VIEWPORTS.desktop)
     await signIn(page, testInfo, USERS.systemAdmin)
     await open(page, '/admin/settings/users', ROWS)
-    await page.locator('.toolbar__search input').fill('David')
+    await searchList(page, 'David')
     const row = page.locator(ROWS).filter({ hasText: 'David Nguyen' })
     await row.locator('.dropdown-menu > button').click()
     await page

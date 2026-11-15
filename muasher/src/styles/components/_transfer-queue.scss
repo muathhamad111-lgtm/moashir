@@ -28,8 +28,7 @@
 }
 
 .transfer-filters {
-  @include flex(row, center, flex-start, var(--space-3));
-  flex-wrap: wrap;
+  display: contents;
 }
 
 .transfers-page__panel .toolbar__filters,

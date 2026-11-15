@@ -18,7 +18,6 @@ return [
     'entities.email_change.approve' => ['label' => 'Approve entity email changes', 'description' => 'Approve or reject a pending change of an entity\'s official email.'],
     'entities.delete' => ['label' => 'Delete and restore entities', 'description' => 'Move an entity to deleted entities and restore it.'],
     'entities.export' => ['label' => 'Export entities', 'description' => 'Export entity lists; every export is audited.'],
-    'privacy.requests.manage' => ['label' => 'Manage data-subject requests', 'description' => 'Handle access, correction and deletion requests under the Personal Data Protection Law.'],
     'assessment.criteria.view' => ['label' => 'View published criteria', 'description' => 'Read the published criteria and the assessment scale.'],
     'assessment.history.view' => ['label' => 'View assessments history', 'description' => 'List assessments and their results.'],
     'assessment.self.manage' => ['label' => 'Manage self assessment', 'description' => 'Create, save and submit the self assessment.'],

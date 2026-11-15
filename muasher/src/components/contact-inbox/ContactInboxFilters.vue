@@ -3,7 +3,6 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppSelect from '@/components/form/AppSelect.vue'
 import BaseDatePicker from '@/components/form/BaseDatePicker.vue'
-import BaseButton from '@/components/ui/BaseButton.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import {
   CONTACT_ASSIGNEE_FILTERS,
@@ -16,10 +15,9 @@ const props = defineProps({
   filters: { type: Object, required: true },
   search: { type: String, default: '' },
   assignees: { type: Array, default: () => [] },
-  filtered: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['update:filter', 'update:search', 'reset'])
+const emit = defineEmits(['update:filter', 'update:search'])
 const { t } = useI18n()
 
 function withAll(allKey, options) {
@@ -61,6 +59,8 @@ const assigneeOptions = computed(() =>
 function update(key, value) {
   emit('update:filter', { key, value })
 }
+
+const filterState = { filters: props.filters, setFilter: update }
 </script>
 
 <template>
@@ -68,59 +68,49 @@ function update(key, value) {
     <ListToolbar
       :search="search"
       :search-placeholder="t('contactInbox.filters.search')"
+      :filter-state="filterState"
       @update:search="emit('update:search', $event)"
     >
-      <template #filters>
+      <template #filters="{ draft }">
         <AppSelect
-          variant="filter"
           :label="t('contactInbox.columns.status')"
-          :model-value="filters.status"
+          :model-value="draft.filters.status"
           :options="statusOptions"
-          @update:model-value="update('status', $event)"
+          @update:model-value="draft.setFilter('status', $event)"
         />
         <AppSelect
-          variant="filter"
           :label="t('contactInbox.columns.enquiryType')"
-          :model-value="filters.enquiryType"
+          :model-value="draft.filters.enquiryType"
           :options="typeOptions"
-          @update:model-value="update('enquiryType', $event)"
+          @update:model-value="draft.setFilter('enquiryType', $event)"
         />
         <AppSelect
-          variant="filter"
           :label="t('contactInbox.columns.sender')"
-          :model-value="filters.linked"
+          :model-value="draft.filters.linked"
           :options="linkedOptions"
-          @update:model-value="update('linked', $event)"
+          @update:model-value="draft.setFilter('linked', $event)"
         />
         <AppSelect
-          variant="filter"
           :label="t('contactInbox.columns.assignee')"
-          :model-value="filters.assignee"
+          :model-value="draft.filters.assignee"
           :options="assigneeOptions"
-          @update:model-value="update('assignee', $event)"
+          @update:model-value="draft.setFilter('assignee', $event)"
         />
-      </template>
-      <template v-if="filtered" #actions>
-        <BaseButton variant="ghost" size="sm" icon="x" @click="emit('reset')">
-          {{ t('contactInbox.filters.reset') }}
-        </BaseButton>
+        <BaseDatePicker
+          :model-value="draft.filters.from"
+          name="from"
+          :label="t('contactInbox.filters.from')"
+          :max="draft.filters.to || ''"
+          @update:model-value="draft.setFilter('from', $event)"
+        />
+        <BaseDatePicker
+          :model-value="draft.filters.to"
+          name="to"
+          :label="t('contactInbox.filters.to')"
+          :min="draft.filters.from || ''"
+          @update:model-value="draft.setFilter('to', $event)"
+        />
       </template>
     </ListToolbar>
-    <div class="contact-inbox__dates">
-      <BaseDatePicker
-        :model-value="filters.from"
-        name="from"
-        :label="t('contactInbox.filters.from')"
-        :max="filters.to || ''"
-        @update:model-value="update('from', $event)"
-      />
-      <BaseDatePicker
-        :model-value="filters.to"
-        name="to"
-        :label="t('contactInbox.filters.to')"
-        :min="filters.from || ''"
-        @update:model-value="update('to', $event)"
-      />
-    </div>
   </div>
 </template>

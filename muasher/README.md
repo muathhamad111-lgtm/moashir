@@ -213,8 +213,8 @@ the official e-mail change (`requires_approval`, with an approval queue), the st
 scope (full view for the System Administrator and the Requests Follower, contact view for the Finance
 Officer, nothing for other holders of `entities.view`), the lifecycle actions, deletion impact with a
 stale-list scenario (entity `ENT-006002` gains an open request after its first impact read), restore,
-Super Admin permanent deletion, the CSV and personal-data exports, data-subject requests and the city
-list. A mock Super Admin session is a descriptor with `superAdmin: true`.
+Super Admin permanent deletion, the CSV export and the city list (the personal-data export and the
+data-subject requests were removed on 2026-11-14). A mock Super Admin session is a descriptor with `superAdmin: true`.
 
 The integrations mocks (`src/mocks/handlers/{integrations,paymentIntegration,smsIntegration,emailIntegration,
 aiIntegration}.js`, `src/mocks/stores/integrations/*`) mirror the real backend contract of

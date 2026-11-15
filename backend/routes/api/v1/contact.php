@@ -5,7 +5,6 @@ declare(strict_types=1);
 use App\Enums\Identity\Ability;
 use App\Http\Controllers\Api\V1\Contact\ContactInboxController;
 use App\Http\Controllers\Api\V1\Contact\ContactMessageWorkflowController;
-use App\Http\Controllers\Api\V1\Contact\ContactPersonalDataController;
 use App\Http\Controllers\Api\V1\Contact\ContactSettingsController;
 use App\Http\Controllers\Api\V1\Contact\MyContactMessageController;
 use App\Http\Controllers\Api\V1\Contact\SubmitContactMessageController;
@@ -37,11 +36,6 @@ Route::middleware($signedIn)->group(function () use ($messages): void {
             Route::post('{contactMessage}/close', [ContactMessageWorkflowController::class, 'close'])->middleware(['can:manage,contactMessage', 'throttle:sensitive'])->name('close');
             Route::post('{contactMessage}/reopen', [ContactMessageWorkflowController::class, 'reopen'])->middleware(['can:manage,contactMessage', 'throttle:sensitive'])->name('reopen');
         });
-    });
-
-    Route::prefix('privacy/contact-messages')->name('privacy.contact-messages.')->middleware(["can:managePersonalData,{$messages}", 'throttle:exports'])->group(function (): void {
-        Route::post('export', [ContactPersonalDataController::class, 'export'])->name('export');
-        Route::post('erase', [ContactPersonalDataController::class, 'erase'])->name('erase');
     });
 
     Route::prefix('settings/contact-messages')->name('settings.contact-messages.')->middleware('can:'.Ability::ManageContactSettings->value)->group(function (): void {

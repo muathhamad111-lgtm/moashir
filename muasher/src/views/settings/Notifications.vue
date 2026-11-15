@@ -9,8 +9,7 @@ import { formatNumber } from '@/utils/formatNumber'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t, n } = useI18n()
-const { filters, types, total, status, errorMessage, load, resetFilters } =
-  useNotificationCatalogue()
+const { filters, types, total, status, errorMessage, load } = useNotificationCatalogue()
 
 const sectionStatus = computed(() => (status.value === 'forbidden' ? 'forbidden' : 'success'))
 const totalText = computed(() =>
@@ -36,7 +35,6 @@ onMounted(load)
       <NotificationCatalogueFilters
         :model-value="filters"
         @update:model-value="Object.assign(filters, $event)"
-        @reset="resetFilters"
       />
       <p v-if="status === 'success'" class="notification-catalogue__total" aria-live="polite">
         {{ totalText }}

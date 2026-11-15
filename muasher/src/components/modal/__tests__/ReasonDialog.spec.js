@@ -44,8 +44,12 @@ describe('ReasonDialog', () => {
     const panel = wrapper.find('.modal__panel')
     expect(wrapper.find('.modal__title').text()).toBe('رفض تغيير البريد')
     expect(wrapper.find('.modal__subtitle').text()).toBe('جمعية الأمل الخيرية')
-    expect(panel.attributes('aria-describedby')).toBe(wrapper.find('.modal__subtitle').attributes('id'))
-    expect(wrapper.find('.reason-dialog').findAll('p:not(.field__hint):not(.field__error)')).toHaveLength(0)
+    expect(panel.attributes('aria-describedby')).toBe(
+      wrapper.find('.modal__subtitle').attributes('id'),
+    )
+    expect(
+      wrapper.find('.reason-dialog').findAll('p:not(.field__hint):not(.field__error)'),
+    ).toHaveLength(0)
   })
 
   it('puts the action first and cancel second, with the danger style when destructive', () => {

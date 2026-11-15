@@ -21,9 +21,7 @@ import {
   softDelete,
 } from '../stores/entityLifecycle'
 import { sessionIsSuperAdmin } from '../stores/sessionPermissions'
-import { deletePrivacyRequestsOf } from '../stores/privacyRequestsStore'
 import { isDeleted } from '../stores/entitiesStore'
-import { personalDataPackage } from '../stores/entityPersonalData'
 
 const ENTITY_PATH = '/api/v1/entities/:id'
 
@@ -98,18 +96,7 @@ export const entityLifecycleHandlers = [
       const body = await readJson(request)
       assertReason(body, PERMANENT_REASON_MIN)
       const outcome = permanentlyDelete(entity, body)
-      deletePrivacyRequestsOf(entity.id)
       return envelope(outcome)
-    }),
-  ),
-
-  http.post(
-    `${ENTITY_PATH}/export`,
-    entityRoute(async ({ params, request }) => {
-      actorWith(P.PRIVACY_MANAGE)
-      const entity = boundEntity(params.id)
-      assertReason(await readJson(request))
-      return envelope(personalDataPackage(entity))
     }),
   ),
 ]

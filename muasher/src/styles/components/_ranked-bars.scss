@@ -34,7 +34,9 @@
 
   @include respond-to('md') {
     grid-template-areas: 'label bar value delta';
-    grid-template-columns: minmax(0, var(--size-bar-label)) minmax(0, 1fr) var(--space-12) var(--space-12);
+    grid-template-columns: minmax(0, var(--size-bar-label)) minmax(0, 1fr) var(--space-12) var(
+        --space-12
+      );
     min-block-size: var(--size-touch-target);
     padding-block: var(--space-0);
   }
@@ -46,7 +48,9 @@
   @include respond-to('md') {
     display: grid;
     grid-template-areas: 'label bar value delta';
-    grid-template-columns: minmax(0, var(--size-bar-label)) minmax(0, 1fr) var(--space-12) var(--space-12);
+    grid-template-columns: minmax(0, var(--size-bar-label)) minmax(0, 1fr) var(--space-12) var(
+        --space-12
+      );
     gap: var(--space-3);
   }
 }

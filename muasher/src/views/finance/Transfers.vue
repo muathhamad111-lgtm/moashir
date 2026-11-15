@@ -78,6 +78,12 @@ const references = computed(() =>
 const emptyKey = computed(() =>
   queue.tab.value === TRANSFER_REVIEW_TABS.UNDER_REVIEW ? 'underReview' : 'other',
 )
+const filterState = {
+  filters: filters.filters,
+  setFilter: queue.setFilter,
+  sort: filters.sort,
+  setSort: queue.setSort,
+}
 </script>
 
 <template>
@@ -106,14 +112,15 @@ const emptyKey = computed(() =>
           <ListToolbar
             v-model:search="searchInput"
             :search-placeholder="t('finance.transfers.searchPlaceholder')"
+            :filter-state="filterState"
           >
-            <template #filters>
+            <template #filters="{ draft }">
               <TransferQueueFilters
-                :filters="filters.filters"
-                :sort="filters.sort.value"
+                :filters="draft.filters"
+                :sort="draft.sort.value"
                 :accounts="queue.accounts.value"
-                @filter="queue.setFilter"
-                @sort="queue.setSort"
+                @filter="draft.setFilter"
+                @sort="draft.setSort"
               />
             </template>
           </ListToolbar>

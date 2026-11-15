@@ -2,14 +2,13 @@
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import FilterToolbar from '@/components/data-list/FilterToolbar.vue'
+import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import EntityListFilters from '@/components/entities/admin/EntityListFilters.vue'
 import EntityTable from '@/components/entities/admin/EntityTable.vue'
 import EntityActionsHost from '@/components/entities/admin/EntityActionsHost.vue'
 import { useEntityList } from '@/composables/useEntityList'
 import { useRegions } from '@/composables/useRegions'
-import { useFilterDraft } from '@/composables/useFilterDraft'
 import { ENTITY_ACTIONS } from '@/composables/useEntityActions'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import AppIcon from '@/components/ui/AppIcon.vue'
@@ -20,7 +19,6 @@ const regions = useRegions()
 const { items, status, errorMessage, load, filters, paginator } = useEntityList({ deleted: true })
 const actionsHost = ref(null)
 const { search } = filters
-const filterDraft = useFilterDraft(filters)
 
 function onAction(key, entity) {
   if (key === ENTITY_ACTIONS.VIEW)
@@ -45,22 +43,15 @@ onMounted(regions.load)
       <p>{{ t('entities.deleted.frozenNotice') }}</p>
     </aside>
 
-    <FilterToolbar
+    <ListToolbar
       v-model:search="search"
       :search-placeholder="t('entities.admin.searchPlaceholder')"
-      :active-count="filterDraft.activeCount.value"
-      @open-filters="filterDraft.load"
-      @apply="filterDraft.apply"
-      @reset="filterDraft.resetDraft"
-      @clear="filterDraft.clear"
+      :filter-state="filters"
     >
-      <template #filters>
-        <EntityListFilters
-          :filters="filterDraft.draft"
-          :region-options="regions.regionOptions.value"
-        />
+      <template #filters="{ draft }">
+        <EntityListFilters :filters="draft" :region-options="regions.regionOptions.value" />
       </template>
-    </FilterToolbar>
+    </ListToolbar>
 
     <EntityTable
       :items="items"

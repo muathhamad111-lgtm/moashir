@@ -13,6 +13,7 @@ import { AVAILABLE, savePathPrice } from './support/prices'
 import { paced } from './support/pacing'
 import { registerEntity } from './support/entities'
 import { squarePng } from './support/images'
+import { searchList } from '../support/listFilters'
 
 const RUN = Date.now().toString(36)
 const INVITED = { email: `reviewer.${RUN}@assessors.example.sa`, name: 'د. منى بنت فيصل العنزي' }
@@ -88,7 +89,7 @@ test('the System Administrator manages qualifications and the follower scope on 
   const qualified = await apiOk(page, 'GET', '/requests/assessors?path=accredited')
   expect(qualified.data.map((person) => person.id)).toContain(assessorId)
   await page.goto('/admin/settings/users')
-  await page.locator('.toolbar__search input').fill('assessor@')
+  await searchList(page, 'assessor@')
   const row = page.locator(ROWS).filter({ hasText: STAFF.assessor })
   await expect(row.locator('.path-badge')).toHaveCount(2)
   await row.locator('.dropdown-menu > button').click()
@@ -98,7 +99,7 @@ test('the System Administrator manages qualifications and the follower scope on 
   await expect(row.locator('.path-badge')).toHaveCount(1)
   const advanced = await apiOk(page, 'GET', '/requests/assessors?path=advanced')
   expect(advanced.data.map((person) => person.id)).not.toContain(assessorId)
-  await page.locator('.toolbar__search input').fill('requests.follower@')
+  await searchList(page, 'requests.follower@')
   const follower = page.locator(ROWS).filter({ hasText: STAFF.requestsFollower })
   await follower.locator('.dropdown-menu > button').click()
   await page.locator('[role="menuitem"]', { hasText: 'نطاق المتابعة' }).click()

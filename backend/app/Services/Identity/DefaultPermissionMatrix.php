@@ -52,7 +52,6 @@ final class DefaultPermissionMatrix
             P::NotificationsAuditView, P::DashboardExecutiveView,
             P::EntitiesView, P::EntitiesManage, P::EntitiesDeactivate, P::EntitiesReactivate,
             P::EntitiesVerificationResend, P::EntitiesEmailChangeApprove, P::EntitiesDelete, P::EntitiesExport,
-            P::PrivacyRequestsManage,
             P::AssessmentCriteriaView, P::AssessmentHistoryView, P::EvidenceView,
             P::RequestsQueueView, P::RequestsAssign, P::RequestsReviewRead, P::RequestsCompletionReturn,
             P::AssessmentContextView,

@@ -291,5 +291,16 @@ it('requires authentication for every staff entity endpoint', function (string $
     ['POST', '/api/v1/entities/{id}/restore'],
     ['DELETE', '/api/v1/entities/{id}/permanent'],
     ['POST', '/api/v1/entities/export'],
+]);
+
+it('no longer offers the personal-data export, the data-subject requests or the address tools', function (string $method, string $uri): void {
+    $entity = entityWithOwner();
+
+    switchTo(systemAdmin())->json($method, str_replace('{id}', (string) $entity->id, $uri), ['reason' => 'سبب موثق للطلب لدى الإدارة.'])->assertNotFound();
+})->with([
     ['POST', '/api/v1/entities/{id}/export'],
+    ['GET', '/api/v1/privacy/requests'],
+    ['GET', '/api/v1/privacy/entities'],
+    ['POST', '/api/v1/privacy/contact-messages/export'],
+    ['POST', '/api/v1/privacy/contact-messages/erase'],
 ]);

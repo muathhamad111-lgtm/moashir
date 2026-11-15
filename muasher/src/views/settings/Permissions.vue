@@ -1,7 +1,7 @@
 <script setup>
 import RouteTabs from '@/components/ui/RouteTabs.vue'
 import { USERS_SECTION_TABS } from '@/constants/navigation'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
@@ -24,7 +24,11 @@ const { localized, groupLabel, roleLabel, groupFilterOptions } = usePermissionsC
 
 const canManage = computed(() => can(PERMISSIONS.ROLES_MATRIX_MANAGE))
 const search = ref('')
-const groupFilter = ref('')
+const groupFilters = reactive({ group: '' })
+const filterState = {
+  filters: groupFilters,
+  setFilter: (key, value) => (groupFilters[key] = value),
+}
 
 onMounted(() => {
   load().catch(() => {})
@@ -33,7 +37,7 @@ onMounted(() => {
 const filteredRows = computed(() => {
   const term = search.value.trim().toLowerCase()
   return rows.value.filter((item) => {
-    if (groupFilter.value && item.module !== groupFilter.value) return false
+    if (groupFilters.group && item.module !== groupFilters.group) return false
     if (!term) return true
     const haystack = [item.key, item.label?.ar, item.label?.en]
       .filter(Boolean)
@@ -116,14 +120,14 @@ async function onSaved(changes) {
     <ListToolbar
       v-model:search="search"
       :search-placeholder="t('permissions.index.searchPlaceholder')"
+      :filter-state="filterState"
     >
-      <template #filters>
+      <template #filters="{ draft }">
         <AppSelect
-          variant="filter"
-          :model-value="groupFilter"
+          :model-value="draft.filters.group"
           :options="groupFilterOptions"
           :label="t('permissions.filters.group')"
-          @update:model-value="groupFilter = $event"
+          @update:model-value="draft.setFilter('group', $event)"
         />
       </template>
     </ListToolbar>

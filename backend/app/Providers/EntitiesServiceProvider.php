@@ -7,7 +7,6 @@ namespace App\Providers;
 use App\Contracts\Identity\EntityAccounts;
 use App\Models\Entities\City;
 use App\Models\Entities\Entity;
-use App\Models\Entities\PrivacyRequest;
 use App\Models\Entities\Region;
 use App\Models\Identity\EmailChangeRequest;
 use App\Services\Entities\EntityAccountDirectory;
@@ -37,7 +36,6 @@ final class EntitiesServiceProvider extends ServiceProvider
             ->whereKey((int) $value)
             ->firstOrFail());
 
-        Route::bind('privacyRequest', static fn (string $value): PrivacyRequest => PrivacyRequest::query()->whereKey((int) $value)->firstOrFail());
         Route::bind('region', static fn (string $value): Region => Region::query()->whereKey((int) $value)->firstOrFail());
         Route::bind('city', static fn (string $value): City => City::query()->whereKey((int) $value)->firstOrFail());
     }

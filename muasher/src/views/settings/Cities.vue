@@ -70,21 +70,20 @@ function onAction(key, city) {
     <ListToolbar
       v-model:search="search"
       :search-placeholder="t('entities.cities.searchPlaceholder')"
+      :filter-state="filters"
     >
-      <template #filters>
+      <template #filters="{ draft }">
         <AppSelect
-          variant="filter"
-          :model-value="filters.filters.regionId"
+          :model-value="draft.filters.regionId"
           :options="regionFilterOptions"
           :label="t('entities.filters.region')"
-          @update:model-value="filters.setFilter('regionId', $event)"
+          @update:model-value="draft.setFilter('regionId', $event)"
         />
         <AppSelect
-          variant="filter"
-          :model-value="filters.filters.active"
+          :model-value="draft.filters.active"
           :options="activeOptions"
           :label="t('entities.filters.status')"
-          @update:model-value="filters.setFilter('active', $event)"
+          @update:model-value="draft.setFilter('active', $event)"
         />
       </template>
       <template #actions>

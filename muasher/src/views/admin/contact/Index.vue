@@ -12,7 +12,7 @@ import { formatNumber } from '@/utils/formatNumber'
 
 const { t, n } = useI18n()
 const inbox = useContactInbox()
-const { filters, searchInput, paginator, stats, isFiltered, items, status, errorMessage } = inbox
+const { filters, searchInput, paginator, stats, items, status, errorMessage } = inbox
 const { assignees, load: loadAssignees } = useContactAssignees()
 
 useHead({ title: () => t('contactInbox.title') })
@@ -43,17 +43,14 @@ onMounted(loadAssignees)
       :filters="filters"
       :search="searchInput"
       :assignees="assignees"
-      :filtered="isFiltered"
       @update:search="searchInput = $event"
       @update:filter="inbox.setFilter($event.key, $event.value)"
-      @reset="inbox.reset"
     />
 
     <ContactInboxTable
       :items="items"
       :status="status"
       :error-message="errorMessage"
-      :filtered="isFiltered"
       @retry="inbox.load"
     />
 

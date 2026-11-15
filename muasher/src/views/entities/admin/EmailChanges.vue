@@ -1,4 +1,5 @@
 <script setup>
+import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DataTable from '@/components/data-list/DataTable.vue'
@@ -45,14 +46,17 @@ const columns = computed(() =>
         <h1 class="entities-admin__title">{{ t('entities.emailChanges.title') }}</h1>
         <p class="entities-admin__subtitle">{{ t('entities.emailChanges.subtitle') }}</p>
       </div>
-      <AppSelect
-        variant="filter"
-        :model-value="filters.filters.status"
-        :options="statusOptions"
-        :label="t('entities.filters.status')"
-        @update:model-value="filters.setFilter('status', $event)"
-      />
     </header>
+    <ListToolbar :searchable="false" :filter-state="filters">
+      <template #filters="{ draft }">
+        <AppSelect
+          :model-value="draft.filters.status"
+          :options="statusOptions"
+          :label="t('entities.filters.status')"
+          @update:model-value="draft.setFilter('status', $event)"
+        />
+      </template>
+    </ListToolbar>
 
     <DataTable
       :columns="columns"

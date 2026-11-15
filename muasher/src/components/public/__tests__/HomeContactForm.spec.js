@@ -51,7 +51,7 @@ async function submit(wrapper) {
 beforeEach(() => vi.clearAllMocks())
 
 describe('HomeContactForm', () => {
-  it('lists the seven enquiry types with the approved payments and privacy labels', () => {
+  it('lists the six enquiry types with the approved payments label and no personal-data type', () => {
     const wrapper = mountForm()
     const options = findSelect(wrapper, { name: 'enquiryType' }).props('options')
     expect(options.map((option) => option.value)).toEqual([
@@ -60,11 +60,9 @@ describe('HomeContactForm', () => {
       'accredited_assessment',
       'payments',
       'technical_support',
-      'privacy_request',
       'other',
     ])
     expect(options[3].label).toBe('الدفع والإيصالات')
-    expect(options[5].label).toBe('طلب يتعلق بالبيانات الشخصية')
     expect(wrapper.text()).not.toMatch(/فاتور|فواتير/)
     wrapper.unmount()
   })

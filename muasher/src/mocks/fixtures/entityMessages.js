@@ -99,8 +99,8 @@ export const entityMessages = {
     en: 'Choose an active city of the selected region.',
   },
   'field.governance_grade': {
-    ar: 'يجب أن تكون درجة الحوكمة رقمًا بين 0 و100 بمنزلتين عشريتين على الأكثر.',
-    en: 'The governance grade must be a number between 0 and 100 with at most two decimals.',
+    ar: 'يجب أن تكون درجة الحوكمة رقمًا بين 0 و100 بثلاث منازل عشرية على الأكثر.',
+    en: 'The governance grade must be a number between 0 and 100 with at most three decimals.',
   },
   'field.logo_type': {
     ar: 'يجب أن يكون الشعار بصيغة PNG أو JPEG.',

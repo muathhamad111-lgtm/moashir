@@ -118,21 +118,23 @@ function onAction(key, row) {
 
     <StatsCards :stats="statCards" :loading="status === 'loading' && !stats" />
 
-    <ListToolbar v-model:search="search" :search-placeholder="t('users.index.searchPlaceholder')">
-      <template #filters>
+    <ListToolbar
+      v-model:search="search"
+      :search-placeholder="t('users.index.searchPlaceholder')"
+      :filter-state="filters"
+    >
+      <template #filters="{ draft }">
         <AppSelect
-          variant="filter"
-          :model-value="filters.filters.role"
+          :model-value="draft.filters.role"
           :options="roleFilterOptions"
           :label="t('users.filters.role')"
-          @update:model-value="filters.setFilter('role', $event)"
+          @update:model-value="draft.setFilter('role', $event)"
         />
         <AppSelect
-          variant="filter"
-          :model-value="filters.filters.status"
+          :model-value="draft.filters.status"
           :options="statusFilterOptions"
           :label="t('users.filters.status')"
-          @update:model-value="filters.setFilter('status', $event)"
+          @update:model-value="draft.setFilter('status', $event)"
         />
       </template>
       <template v-if="canManage" #actions>

@@ -117,7 +117,7 @@ final class Entity extends Model
             'founding_year' => 'integer',
             'region_id' => 'integer',
             'city_id' => 'integer',
-            'governance_grade' => 'decimal:2',
+            'governance_grade' => 'decimal:3',
             'employees_count' => 'integer',
             'annual_beneficiaries_count' => 'integer',
             'has_strategic_plan' => 'boolean',
@@ -181,14 +181,6 @@ final class Entity extends Model
     public function emailChangeRequests(): HasMany
     {
         return $this->hasMany(EmailChangeRequest::class);
-    }
-
-    /**
-     * @return HasMany<PrivacyRequest, $this>
-     */
-    public function privacyRequests(): HasMany
-    {
-        return $this->hasMany(PrivacyRequest::class);
     }
 
     /**

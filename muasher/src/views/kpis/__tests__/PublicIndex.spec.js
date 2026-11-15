@@ -4,6 +4,7 @@ import PublicIndex from '@/views/kpis/PublicIndex.vue'
 import { kpisService } from '@/services/kpisService'
 import { contentService } from '@/services/contentService'
 import { createTestGlobals } from '@/test-utils'
+import { openListSearch } from '@/test-utils/listToolbar'
 
 vi.mock('@/services/kpisService', () => ({
   kpisService: { list: vi.fn(), listCategories: vi.fn(), listTypes: vi.fn() },
@@ -95,10 +96,11 @@ describe('KPI public index (server-driven catalog)', () => {
       page: 1,
       perPage: 12,
     })
-    await wrapper.find('.toolbar__search input').setValue('V')
+    const search = await openListSearch(wrapper)
+    await search.setValue('V')
     await settle()
     expect(kpisService.list.mock.lastCall[0]).not.toHaveProperty('search')
-    await wrapper.find('.toolbar__search input').setValue('Vol')
+    await search.setValue('Vol')
     await settle()
     expect(kpisService.list.mock.lastCall[0]).toMatchObject({
       search: 'Vol',
@@ -119,7 +121,7 @@ describe('KPI public index (server-driven catalog)', () => {
   it('shows the no-results state when the filtered page is empty', async () => {
     const wrapper = await mountView()
     kpisService.list.mockResolvedValue(page([]))
-    await wrapper.find('.toolbar__search input').setValue('Nothing here')
+    await (await openListSearch(wrapper)).setValue('Nothing here')
     await settle()
     expect(wrapper.findAll('.kpi-card')).toHaveLength(0)
     expect(wrapper.text()).toContain('No matching results')

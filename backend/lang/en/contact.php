@@ -10,6 +10,5 @@ return [
         'payments' => 'Payments and receipts',
         'technical_support' => 'Technical support',
         'other' => 'Other',
-        'privacy_request' => 'Personal data request',
     ],
 ];

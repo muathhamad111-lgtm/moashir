@@ -92,7 +92,8 @@ function download(file) {
 
 const offersCertificate = computed(() => assessment.value?.path === ACCREDITED_PATH)
 const completeMessage = computed(() => {
-  if (!fullyScored.value || scoreSheet.dirty.value) return t('review.confirmComplete.pendingMessage')
+  if (!fullyScored.value || scoreSheet.dirty.value)
+    return t('review.confirmComplete.pendingMessage')
   return offersCertificate.value
     ? t('review.confirmComplete.certificateMessage')
     : t('review.confirmComplete.message')

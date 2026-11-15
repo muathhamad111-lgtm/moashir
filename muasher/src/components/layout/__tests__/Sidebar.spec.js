@@ -64,7 +64,7 @@ describe('Sidebar', () => {
     const { wrapper } = factory({ roles: [ROLES.SYSTEM_ADMIN] })
     await wrapper.vm.$nextTick()
     const labels = wrapper.findAll('.sidebar__label').map((el) => el.text())
-    expect(wrapper.findAll('.sidebar__item')).toHaveLength(21)
+    expect(wrapper.findAll('.sidebar__item')).toHaveLength(20)
     expect(labels).toContain('المستخدمون')
     expect(labels).not.toContain('إدارة الصلاحيات')
     expect(labels).toEqual(

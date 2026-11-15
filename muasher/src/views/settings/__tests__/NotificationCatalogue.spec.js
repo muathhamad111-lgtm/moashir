@@ -4,6 +4,7 @@ import Notifications from '@/views/settings/Notifications.vue'
 import { notificationTypesService } from '@/services/notificationTypesService'
 import { createTestGlobals } from '@/test-utils'
 import { chooseLabelledOption } from '@/test-utils/dropdown'
+import { applyFilterDialog, openFilterDialog } from '@/test-utils/listToolbar'
 
 vi.mock('@/services/notificationTypesService', () => ({
   notificationTypesService: { list: vi.fn() },
@@ -31,7 +32,10 @@ const TYPES = [
 ]
 
 async function mountView(locale = 'ar') {
-  const wrapper = mount(Notifications, { global: createTestGlobals({ locale }) })
+  const wrapper = mount(Notifications, {
+    global: createTestGlobals({ locale }),
+    attachTo: document.body,
+  })
   await flushPromises()
   return wrapper
 }
@@ -63,8 +67,10 @@ describe('notification types catalogue (read-only)', () => {
 
   it('filters by module, category and audience on the server', async () => {
     const wrapper = await mountView('en')
+    await openFilterDialog(wrapper)
     await chooseLabelledOption(wrapper, 'Module', 'CNT')
     await chooseLabelledOption(wrapper, 'Audience', 'contact_handler')
+    await applyFilterDialog()
     expect(notificationTypesService.list).toHaveBeenLastCalledWith({
       module: 'CNT',
       category: '',

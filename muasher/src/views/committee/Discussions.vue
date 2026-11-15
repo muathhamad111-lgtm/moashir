@@ -1,4 +1,5 @@
 <script setup>
+import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
@@ -26,6 +27,7 @@ const statusOptions = computed(() => [
     label: t(`award.states.discussion.${value}`),
   })),
 ])
+const filterState = { filters: filters.filters, setFilter }
 </script>
 
 <template>
@@ -36,14 +38,17 @@ const statusOptions = computed(() => [
         <h1 class="cycles-page__title">{{ t('award.discussion.title') }}</h1>
         <p class="cycles-page__subtitle">{{ t('award.discussion.subtitle') }}</p>
       </div>
-      <AppSelect
-        variant="filter"
-        :model-value="filters.filters.status"
-        :options="statusOptions"
-        :label="t('award.work.filters.status')"
-        @update:model-value="setFilter('status', $event)"
-      />
     </header>
+    <ListToolbar :searchable="false" :filter-state="filterState">
+      <template #filters="{ draft }">
+        <AppSelect
+          :model-value="draft.filters.status"
+          :options="statusOptions"
+          :label="t('award.work.filters.status')"
+          @update:model-value="draft.setFilter('status', $event)"
+        />
+      </template>
+    </ListToolbar>
     <AssessmentNotice
       variant="info"
       :title="t('award.discussion.anonymousTitle')"

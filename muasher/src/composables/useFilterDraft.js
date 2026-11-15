@@ -1,14 +1,18 @@
 import { computed, reactive } from 'vue'
 
-function isSet(value) {
-  return value !== '' && value !== null && value !== undefined
+function blankValues(source) {
+  if (source.defaults) return { ...source.defaults }
+  return Object.fromEntries(Object.keys(source.filters).map((key) => [key, '']))
 }
 
-export function useFilterDraft(filters) {
-  const initialFilters = Object.fromEntries(Object.keys(filters.filters).map((key) => [key, '']))
-  const draft = reactive({ filters: { ...initialFilters }, sort: '' })
+export function useFilterDraft(source) {
+  const blank = blankValues(source)
+  const keys = Object.keys(blank)
+  const defaultSort = source.defaultSort ?? ''
+  const sortable = typeof source.setSort === 'function'
+  const draft = reactive({ filters: { ...blank }, sort: defaultSort })
 
-  const draftBinding = {
+  const binding = {
     filters: draft.filters,
     sort: computed(() => draft.sort),
     setFilter(key, value) {
@@ -19,26 +23,33 @@ export function useFilterDraft(filters) {
     },
   }
 
-  const activeCount = computed(() => Object.values(filters.filters).filter(isSet).length)
+  function isActive(key) {
+    const value = source.filters[key]
+    return value !== blank[key] && value !== '' && value !== null && value !== undefined
+  }
+
+  const activeCount = computed(() => keys.filter(isActive).length)
 
   function load() {
-    Object.assign(draft.filters, filters.filters)
-    draft.sort = filters.sort.value
+    keys.forEach((key) => (draft.filters[key] = source.filters[key] ?? blank[key]))
+    draft.sort = sortable ? (source.sort?.value ?? defaultSort) : defaultSort
   }
 
   function resetDraft() {
-    Object.assign(draft.filters, initialFilters)
-    draft.sort = ''
+    Object.assign(draft.filters, blank)
+    draft.sort = defaultSort
   }
 
   function apply() {
-    Object.entries(draft.filters).forEach(([key, value]) => filters.setFilter(key, value))
-    filters.setSort(draft.sort)
+    keys.forEach((key) => {
+      if (draft.filters[key] !== source.filters[key]) source.setFilter(key, draft.filters[key])
+    })
+    if (sortable && draft.sort !== (source.sort?.value ?? defaultSort)) source.setSort(draft.sort)
   }
 
   function clear() {
-    Object.keys(initialFilters).forEach((key) => filters.setFilter(key, ''))
+    keys.filter(isActive).forEach((key) => source.setFilter(key, blank[key]))
   }
 
-  return { draft: draftBinding, activeCount, load, resetDraft, apply, clear }
+  return { draft: binding, activeCount, load, resetDraft, apply, clear }
 }

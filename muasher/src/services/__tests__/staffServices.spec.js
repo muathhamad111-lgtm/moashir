@@ -4,7 +4,6 @@ import { notificationTypesService } from '@/services/notificationTypesService'
 import { certificatesService } from '@/services/certificatesService'
 import { contactInboxService } from '@/services/contactInboxService'
 import { contactSettingsService } from '@/services/contactSettingsService'
-import { contactPrivacyService } from '@/services/contactPrivacyService'
 import { legalVersionsService } from '@/services/legalVersionsService'
 import { auditLogService } from '@/services/auditLogService'
 import { logger } from '@/utils/logger'
@@ -88,7 +87,7 @@ describe('staff services on the real contracts', () => {
     ])
   })
 
-  it('reads and writes the contact retention and the privacy tools', async () => {
+  it('reads and writes the contact retention', async () => {
     respond('get', { retentionMonths: 24 })
     const { data } = await contactSettingsService.get()
     expect(data).toEqual({ retentionMonths: 24, retentionLimits: { min: 1, max: 120 } })
@@ -97,16 +96,6 @@ describe('staff services on the real contracts', () => {
     expect(apiClient.put).toHaveBeenCalledWith('/settings/contact-messages', {
       retentionMonths: 12,
     })
-    respond('post', { messages: [] })
-    await contactPrivacyService.exportByEmail({
-      email: 'a@example.sa',
-      reason: 'طلب صاحب البيانات',
-    })
-    await contactPrivacyService.eraseByEmail({ email: 'a@example.sa', reason: 'طلب صاحب البيانات' })
-    expect(apiClient.post.mock.calls.map(([path]) => path)).toEqual([
-      '/privacy/contact-messages/export',
-      '/privacy/contact-messages/erase',
-    ])
   })
 
   it('manages the legal versions', async () => {

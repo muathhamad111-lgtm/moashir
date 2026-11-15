@@ -3,7 +3,6 @@ import { useI18n } from 'vue-i18n'
 import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
 import { entityLifecycleService } from '@/services/entityLifecycleService'
-import { downloadJson } from '@/utils/download'
 import { localizedText } from '@/utils/localizedText'
 import { ENTITY_ACTIONS as A } from '@/composables/useEntityActions'
 
@@ -11,11 +10,6 @@ const REASON_ACTIONS = {
   [A.DEACTIVATE]: (entity, reason) => entityLifecycleService.deactivate(entity.id, reason),
   [A.REACTIVATE]: (entity, reason) => entityLifecycleService.reactivate(entity.id, reason),
   [A.RESTORE]: (entity, reason) => entityLifecycleService.restore(entity.id, reason),
-  [A.EXPORT_PERSONAL_DATA]: async (entity, reason) => {
-    const { data } = await entityLifecycleService.exportPersonalData(entity.id, reason)
-    downloadJson(data, `${entity.reference}-personal-data.json`)
-    return data
-  },
 }
 
 const DIALOG_ACTIONS = new Set([A.DELETE, A.PERMANENT_DELETE, A.EDIT])

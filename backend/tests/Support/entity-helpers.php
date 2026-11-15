@@ -5,13 +5,10 @@ declare(strict_types=1);
 use App\Data\Entities\OpenEntityRequest;
 use App\Enums\Entities\EntityRequestPath;
 use App\Enums\Entities\ProfileSection;
-use App\Enums\Identity\PermissionKey;
-use App\Enums\Identity\RoleKey;
 use App\Enums\Identity\TermsKind;
 use App\Models\Entities\City;
 use App\Models\Entities\Entity;
 use App\Models\Entities\Region;
-use App\Models\Identity\Role;
 use App\Models\Identity\TermsVersion;
 use App\Models\Identity\User;
 use App\Notifications\Identity\OtpCodeNotification;
@@ -23,7 +20,6 @@ use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Testing\TestResponse;
-use Spatie\Permission\PermissionRegistrar;
 use Tests\Support\FakeOpenRequestSource;
 use Tests\Support\RecordingErasureStep;
 use Tests\TestCase;
@@ -210,10 +206,4 @@ function recordErasureSteps(): RecordingErasureStep
     app()->tag([RecordingErasureStep::class], EntityEraser::TAG);
 
     return $step;
-}
-
-function grantPrivacyToContentOfficers(): void
-{
-    Role::findByName(RoleKey::ContentOfficer->value)->givePermissionTo(PermissionKey::PrivacyRequestsManage->value);
-    app(PermissionRegistrar::class)->forgetCachedPermissions();
 }

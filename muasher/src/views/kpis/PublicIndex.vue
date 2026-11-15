@@ -6,6 +6,7 @@ import { useKpisCatalog } from '@/composables/useKpisCatalog'
 import { usePublicPage } from '@/composables/usePublicPage'
 import { usePageSeo } from '@/composables/usePageSeo'
 import { ALL } from '@/composables/useKpiFilters'
+import { KPI_DEFAULT_SORT } from '@/constants/kpis'
 import { CMS_PAGE_KEYS } from '@/constants/cms'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import KpiCard from '@/components/kpis/KpiCard.vue'
@@ -54,6 +55,19 @@ const categoryTabs = computed(() => [
 function goToDetail(kpi) {
   router.push({ name: ROUTE_NAMES.PUBLIC_KPIS_DETAIL, params: { slug: kpi.slug } })
 }
+const filterState = {
+  filters,
+  defaults: { status: ALL, type: ALL, year: ALL, owner: '' },
+  setFilter: set,
+  sort: computed(() => filters.sort),
+  setSort: (value) => set('sort', value),
+  defaultSort: KPI_DEFAULT_SORT,
+}
+
+function setDraft(draft, key, value) {
+  if (key === 'sort') draft.setSort(value)
+  else draft.setFilter(key, value)
+}
 </script>
 
 <template>
@@ -82,14 +96,15 @@ function goToDetail(kpi) {
           :search="filters.search"
           :search-placeholder="t('kpis.page.searchPlaceholder')"
           class="kpis-page__toolbar"
+          :filter-state="filterState"
           @update:search="set('search', $event)"
         >
-          <template #filters>
+          <template #filters="{ draft }">
             <KpiCatalogFilters
-              :filters="filters"
+              :filters="{ ...draft.filters, sort: draft.sort.value }"
               :types="types"
               :localized="localized"
-              @change="set"
+              @change="(key, value) => setDraft(draft, key, value)"
             />
           </template>
         </ListToolbar>

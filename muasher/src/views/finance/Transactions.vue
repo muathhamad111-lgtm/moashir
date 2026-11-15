@@ -34,6 +34,7 @@ const { pagination, setPage } = paginator
 const exporter = useTransactionsExport()
 
 useHead({ title: () => t('finance.transactions.title') })
+const filterState = { filters: filters.filters, setFilter, sort: filters.sort, setSort }
 </script>
 
 <template>
@@ -64,13 +65,14 @@ useHead({ title: () => t('finance.transactions.title') })
       <ListToolbar
         v-model:search="searchInput"
         :search-placeholder="t('finance.transactions.searchPlaceholder')"
+        :filter-state="filterState"
       >
-        <template #filters>
+        <template #filters="{ draft }">
           <TransactionFilters
-            :filters="filters.filters"
-            :sort="filters.sort.value"
-            @filter="setFilter"
-            @sort="setSort"
+            :filters="draft.filters"
+            :sort="draft.sort.value"
+            @filter="draft.setFilter"
+            @sort="draft.setSort"
           />
         </template>
       </ListToolbar>

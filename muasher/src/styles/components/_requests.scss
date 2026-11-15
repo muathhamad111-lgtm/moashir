@@ -25,8 +25,7 @@
 }
 
 .request-filters {
-  @include flex(row, center, flex-start, var(--space-3));
-  flex-wrap: wrap;
+  display: contents;
 }
 
 .request-queue__link {

@@ -91,7 +91,7 @@ test('the entity edits one profile section and sees the change in the section hi
   })
 
   await governance.locator('.profile-section__edit').click()
-  await governance.locator('[name="governanceGrade"]').fill('90.125')
+  await governance.locator('[name="governanceGrade"]').fill('100.5')
   await governance.locator('[name="governanceGrade"]').blur()
   await expect(governance.locator('.field--error [name="governanceGrade"]')).toBeVisible()
 

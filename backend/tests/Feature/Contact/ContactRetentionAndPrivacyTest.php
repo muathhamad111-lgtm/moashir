@@ -80,66 +80,6 @@ it('protects and validates the retention setting', function (): void {
     Notification::assertSentTo($superAdmin, SecurityAlertNotification::class);
 });
 
-it('erases every message of an address on a data-subject request with a counts-only audit', function (): void {
-    $privacyOfficer = systemAdmin();
-    contactMessage(['sender_email' => 'sara.alabdullah@example.sa']);
-    closedContactMessage(1, ['sender_email' => 'sara.alabdullah@example.sa']);
-    $other = contactMessage(['sender_email' => 'nora.alqahtani@example.sa']);
-
-    switchTo($privacyOfficer)->postJson('/api/v1/privacy/contact-messages/erase', ['email' => 'Sara.AlAbdullah@example.sa', 'reason' => 'طلب حذف بيانات من صاحبة البيانات عبر البريد الرسمي.'])->assertOk()
-        ->assertExactJson(['data' => ['erased_messages' => 2, 'erased_entries' => 2], 'meta' => [], 'errors' => null]);
-
-    expect(ContactMessage::query()->pluck('id')->all())->toBe([$other->id]);
-
-    $audit = Audit::query()->where('event', AuditEvent::ContactMessagesErased->value)->sole();
-    expect($audit->new_values)->toEqual(['erased_messages' => 2, 'erased_entries' => 2, 'email' => 's***@example.sa'])
-        ->and($audit->reason)->toBe('طلب حذف بيانات من صاحبة البيانات عبر البريد الرسمي.')
-        ->and(HousekeepingRun::query()->where('task', HousekeepingTask::ContactMessageErasure)->exists())->toBeTrue();
-});
-
-it('exports the messages of an address on a data-subject request', function (): void {
-    contactMessage(['sender_email' => 'sara.alabdullah@example.sa', 'sender_mobile' => '+966551234567']);
-    contactMessage(['sender_email' => 'nora.alqahtani@example.sa']);
-
-    $package = switchTo(systemAdmin())->postJson('/api/v1/privacy/contact-messages/export', ['email' => 'sara.alabdullah@example.sa', 'reason' => 'طلب اطلاع على البيانات من صاحبة البيانات.'])->assertOk()
-        ->assertJsonPath('data.email', 'sara.alabdullah@example.sa')
-        ->assertJsonCount(1, 'data.messages')
-        ->assertJsonPath('data.messages.0.sender_mobile', '+966551234567')
-        ->assertJsonPath('data.messages.0.entries.0.body', CONTACT_MESSAGE_TEXT)
-        ->json('data');
-
-    expect($package)->toHaveKey('generated_at');
-    $audit = Audit::query()->where('event', AuditEvent::ContactMessagesExported->value)->sole();
-    expect($audit->new_values)->toEqual(['email' => 's***@example.sa', 'messages' => 1, 'format' => 'json'])
-        ->and($audit->tags)->toContain('privacy');
-});
-
-it('keeps the address tools to the holders of the data-subject permission', function (): void {
-    contactMessage(['sender_email' => 'sara.alabdullah@example.sa']);
-    $payload = ['email' => 'sara.alabdullah@example.sa', 'reason' => 'طلب حذف بيانات من صاحبة البيانات عبر البريد الرسمي.'];
-
-    switchTo(contentOfficer())->postJson('/api/v1/privacy/contact-messages/erase', $payload)->assertForbidden();
-    switchTo(contentOfficer())->postJson('/api/v1/privacy/contact-messages/export', $payload)->assertForbidden();
-    switchTo(systemAdmin())->postJson('/api/v1/privacy/contact-messages/erase', ['email' => 'sara.alabdullah@example.sa'])->assertUnprocessable()->assertJsonValidationErrors('reason');
-    switchTo(systemAdmin())->postJson('/api/v1/privacy/contact-messages/erase', ['email' => 'not-an-address', 'reason' => $payload['reason']])->assertUnprocessable()->assertJsonValidationErrors('email');
-
-    expect(ContactMessage::query()->count())->toBe(1);
-});
-
-it('adds the linked messages to the personal-data package of an entity', function (): void {
-    $entity = entityWithOwner();
-    $owner = ownerOf($entity);
-    $message = linkedContactMessage($owner);
-    contactMessage(['sender_email' => 'nora.alqahtani@example.sa']);
-    switchTo(contentOfficer())->postJson("/api/v1/admin/contact-messages/{$message->public_id}/notes", ['body' => 'ملاحظة داخلية خاصة بالفريق.'])->assertCreated();
-
-    $package = switchTo(systemAdmin())->postJson("/api/v1/entities/{$entity->id}/export", ['reason' => 'طلب اطلاع على البيانات من الجهة صاحبة الحساب.'])->assertOk()->json('data');
-
-    expect($package['contact_messages'])->toHaveCount(1)
-        ->and($package['contact_messages'][0]['reference'])->toBe($message->reference)
-        ->and(array_column($package['contact_messages'][0]['entries'], 'kind'))->toBe(['message']);
-});
-
 it('erases the linked messages when the entity is permanently deleted', function (): void {
     $entity = entityWithOwner();
     linkedContactMessage(ownerOf($entity));

@@ -37,14 +37,12 @@ const sortOptions = computed(() =>
 <template>
   <div class="cycle-filters">
     <AppSelect
-      variant="filter"
       :model-value="filters.status"
       :options="statusOptions"
       :label="t('filtering.filters.status')"
       @update:model-value="emit('filter', 'status', $event)"
     />
     <AppSelect
-      variant="filter"
       v-if="regions.length"
       :model-value="filters.regionId"
       :options="regionOptions"
@@ -52,7 +50,6 @@ const sortOptions = computed(() =>
       @update:model-value="emit('filter', 'regionId', $event)"
     />
     <AppSelect
-      variant="filter"
       :model-value="sort"
       :options="sortOptions"
       :label="t('filtering.filters.sort')"

@@ -2,7 +2,6 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { entitiesService } from '@/services/entitiesService'
 import { entityLifecycleService } from '@/services/entityLifecycleService'
 import { entityEmailChangesService } from '@/services/entityEmailChangesService'
-import { privacyRequestsService } from '@/services/privacyRequestsService'
 import { regionsService } from '@/services/regionsService'
 import { termsService } from '@/services/termsService'
 import { apiClient } from '@/api/client'
@@ -152,14 +151,10 @@ describe('entityLifecycleService', () => {
     }
     await entityLifecycleService.permanentlyDelete(7003, instruction)
     expect(apiClient.delete).toHaveBeenCalledWith('/entities/7003/permanent', { data: instruction })
-    await entityLifecycleService.exportPersonalData(6005, 'Access request number 41')
-    expect(apiClient.post).toHaveBeenCalledWith('/entities/6005/export', {
-      reason: 'Access request number 41',
-    })
   })
 })
 
-describe('approval, privacy, regions and terms services', () => {
+describe('approval, regions and terms services', () => {
   it('reaches the real paths', async () => {
     await entityEmailChangesService.list({ 'filter[status]': 'awaiting-approval' })
     expect(apiClient.get).toHaveBeenCalledWith('/admin/entity-email-changes', {
@@ -170,22 +165,6 @@ describe('approval, privacy, regions and terms services', () => {
     await entityEmailChangesService.reject(301, 'The new address is not official')
     expect(apiClient.post).toHaveBeenCalledWith('/admin/entity-email-changes/301/reject', {
       reason: 'The new address is not official',
-    })
-    await privacyRequestsService.create({
-      entityId: 6005,
-      kind: 'access',
-      details: 'Formal access request',
-    })
-    expect(apiClient.post).toHaveBeenCalledWith('/privacy/requests', {
-      entityId: 6005,
-      kind: 'access',
-      details: 'Formal access request',
-    })
-    await privacyRequestsService.fulfil(41)
-    expect(apiClient.post).toHaveBeenCalledWith('/privacy/requests/41/fulfil', {})
-    await privacyRequestsService.reject(41, 'Outside the scope of the law')
-    expect(apiClient.post).toHaveBeenCalledWith('/privacy/requests/41/reject', {
-      reason: 'Outside the scope of the law',
     })
     await regionsService.listRegions()
     expect(apiClient.get).toHaveBeenCalledWith('/regions')

@@ -34,11 +34,6 @@ final class ContactMessagePolicy
         return true;
     }
 
-    public function managePersonalData(User $actor): bool
-    {
-        return $actor->can(PermissionKey::PrivacyRequestsManage->value);
-    }
-
     private function handles(User $actor): bool
     {
         return $actor->can(PermissionKey::ContactMessagesManage->value);

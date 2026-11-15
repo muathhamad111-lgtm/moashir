@@ -85,8 +85,8 @@ it('lists the own profile changes newest first with bilingual labels and the nam
         ->assertJsonPath('data.2.field', 'governance_grade')
         ->assertJsonPath('data.2.section', 'governance')
         ->assertJsonPath('data.2.field_label', ['ar' => 'درجة الحوكمة', 'en' => 'Governance grade'])
-        ->assertJsonPath('data.2.old_value', '82.50')
-        ->assertJsonPath('data.2.new_value', '91.50')
+        ->assertJsonPath('data.2.old_value', '82.500')
+        ->assertJsonPath('data.2.new_value', '91.500')
         ->assertJsonPath('data.2.changed_at', '2026-11-01T09:00:00+00:00');
 
     $owner = ownerOf($entity);
@@ -241,13 +241,6 @@ it('reads a page of the history with the same number of queries whatever its siz
     $queriesFor(1);
 
     expect($queriesFor(3))->toBe($queriesFor(30));
-});
-
-it('is not reachable for a role holding only the privacy permission', function (): void {
-    grantPrivacyToContentOfficers();
-    $entity = entityWithOwner();
-
-    switchTo(staffUser(RoleKey::ContentOfficer))->getJson("/api/v1/entities/{$entity->id}/profile-changes")->assertForbidden();
 });
 
 it('names the staff member and their roles on the staff history only', function (): void {

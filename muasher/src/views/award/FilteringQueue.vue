@@ -70,6 +70,7 @@ const statCards = computed(() => {
 const decisionsClosed = computed(
   () => Boolean(cycle.value) && !CYCLE_FILTERING_STATUSES.includes(cycle.value.status),
 )
+const filterState = { filters: filters.filters, setFilter, sort: filters.sort, setSort }
 </script>
 
 <template>
@@ -102,14 +103,15 @@ const decisionsClosed = computed(
       <ListToolbar
         v-model:search="searchInput"
         :search-placeholder="t('filtering.queue.searchPlaceholder')"
+        :filter-state="filterState"
       >
-        <template #filters>
+        <template #filters="{ draft }">
           <FilteringFilters
-            :filters="filters.filters"
-            :sort="filters.sort.value"
+            :filters="draft.filters"
+            :sort="draft.sort.value"
             :regions="cycle?.regions ?? []"
-            @filter="setFilter"
-            @sort="setSort"
+            @filter="draft.setFilter"
+            @sort="draft.setSort"
           />
         </template>
       </ListToolbar>

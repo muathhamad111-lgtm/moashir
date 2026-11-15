@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
+import { applyOpenListFilters, openListFilters } from './support/listFilters'
 
 const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d/i
 
@@ -70,10 +71,12 @@ test.describe('Requests follower', () => {
       path: `test-results/requests-queue-${suffixOf(testInfo)}.png`,
       fullPage: true,
     })
-    await page.locator('.request-filters .dropdown-filter__trigger').first().click()
+    const filters = await openListFilters(page)
+    await filters.locator('.dropdown-field').first().click()
     await page
       .getByRole('option', { name: isEn(testInfo) ? 'Submitted' : 'مُرسل', exact: true })
       .click()
+    await applyOpenListFilters(page)
     await expect(rows).toHaveCount(1)
     await expect(rows.first()).toContainText('ACC-2026-000005')
     expect(errors).toEqual([])

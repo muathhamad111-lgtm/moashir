@@ -36,7 +36,7 @@ it('saves the governance section, records every changed field and notifies the a
         ->assertOk()
         ->assertJsonPath('meta.section', 'governance')
         ->assertJsonPath('meta.changed_fields', ['governance_grade', 'employees_count', 'annual_beneficiaries_count', 'has_strategic_plan'])
-        ->assertJsonPath('data.governance_grade', '91.50')
+        ->assertJsonPath('data.governance_grade', '91.500')
         ->assertJsonPath('data.employees_count', 60)
         ->assertJsonPath('data.has_strategic_plan', null)
         ->assertJsonPath('data.profile_completion.percent', 93)
@@ -44,13 +44,13 @@ it('saves the governance section, records every changed field and notifies the a
         ->assertJsonPath('data.profile_completion.sections.2', ['key' => 'governance', 'state' => 'incomplete', 'missing_count' => 1, 'missing_fields' => ['has_strategic_plan']]);
 
     expect(historyOf($entity->id))->toBe([
-        'governance_grade' => [null, '91.50'],
+        'governance_grade' => [null, '91.500'],
         'employees_count' => [null, 60],
         'annual_beneficiaries_count' => [null, 3200],
         'has_strategic_plan' => [true, null],
     ])
         ->and(EntityProfileChange::query()->value('changed_by_user_id'))->toBe($owner->id)
-        ->and(Audit::query()->where('event', AuditEvent::EntityProfileUpdated->value)->sole()->new_values)->toMatchArray(['section' => 'governance', 'governance_grade' => '91.50']);
+        ->and(Audit::query()->where('event', AuditEvent::EntityProfileUpdated->value)->sole()->new_values)->toMatchArray(['section' => 'governance', 'governance_grade' => '91.500']);
     Notification::assertSentTo($admin, EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityCoreDataEdited);
     Notification::assertNotSentTo($owner, EntityNotification::class);
 });
@@ -212,7 +212,7 @@ it('rejects invalid section data', function (ProfileSection $section, array $ove
     'classification with an unknown type' => [ProfileSection::Classification, ['entity_type' => 'family_fund'], 'entity_type'],
     'classification without a region' => [ProfileSection::Classification, ['region_id' => null], 'region_id'],
     'governance above 100' => [ProfileSection::Governance, ['governance_grade' => 101], 'governance_grade'],
-    'governance with three decimals' => [ProfileSection::Governance, ['governance_grade' => '82.505'], 'governance_grade'],
+    'governance with four decimals' => [ProfileSection::Governance, ['governance_grade' => '82.5051'], 'governance_grade'],
     'negative employees' => [ProfileSection::Governance, ['employees_count' => -1], 'employees_count'],
     'strategic plan not a yes or no' => [ProfileSection::Governance, ['has_strategic_plan' => 'sometimes'], 'has_strategic_plan'],
     'contact without the person name' => [ProfileSection::Contact, ['authorized_person_name' => ''], 'authorized_person_name'],

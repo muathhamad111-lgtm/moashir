@@ -320,30 +320,3 @@ export const emailChangesFixture = [
     decisionReason: null,
   },
 ]
-
-export const privacyRequestsFixture = [
-  {
-    id: 41,
-    entityId: 6001,
-    kind: 'access',
-    status: 'open',
-    details: 'طلبت الجهة عبر خطاب رسمي نسخة من بياناتها الشخصية المسجلة في المنصة.',
-    createdBy: { id: 2, name: 'منيرة بنت خالد العتيبي' },
-    decidedBy: null,
-    decisionNote: null,
-    decidedAt: null,
-    createdAt: '2026-10-27T08:30:00Z',
-  },
-  {
-    id: 37,
-    entityId: 5001,
-    kind: 'correction',
-    status: 'fulfilled',
-    details: 'تصحيح اسم الشخص المفوض وفق خطاب التفويض المحدث.',
-    createdBy: { id: 2, name: 'منيرة بنت خالد العتيبي' },
-    decidedBy: { id: 2, name: 'منيرة بنت خالد العتيبي' },
-    decisionNote: 'تم تحديث الاسم من ملف الجهة بعد التحقق من خطاب التفويض.',
-    decidedAt: '2026-10-02T11:00:00Z',
-    createdAt: '2026-10-01T09:00:00Z',
-  },
-]

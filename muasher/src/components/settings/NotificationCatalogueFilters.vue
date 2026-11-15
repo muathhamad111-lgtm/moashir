@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppSelect from '@/components/form/AppSelect.vue'
-import BaseButton from '@/components/ui/BaseButton.vue'
+import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import {
   NOTIFICATION_AUDIENCES,
   NOTIFICATION_CATEGORIES,
@@ -13,7 +13,7 @@ const props = defineProps({
   modelValue: { type: Object, required: true },
 })
 
-const emit = defineEmits(['update:modelValue', 'reset'])
+const emit = defineEmits(['update:modelValue'])
 const { t } = useI18n()
 
 function optionsOf(allKey, values, labelOf) {
@@ -38,42 +38,38 @@ const audienceOptions = computed(() =>
     t(`settings.notifications.catalogue.audiences.${value}`),
   ),
 )
-const filtered = computed(() => Object.values(props.modelValue).some(Boolean))
-
 function update(key, value) {
   emit('update:modelValue', { ...props.modelValue, [key]: value })
 }
+
+const filterState = { filters: props.modelValue, setFilter: update }
 </script>
 
 <template>
-  <div
+  <ListToolbar
     class="notification-catalogue__filters"
-    role="group"
-    :aria-label="t('settings.notifications.catalogue.filtersLabel')"
+    :searchable="false"
+    :filter-state="filterState"
   >
-    <AppSelect
-      variant="filter"
-      :label="t('settings.notifications.catalogue.columns.module')"
-      :model-value="modelValue.module"
-      :options="moduleOptions"
-      @update:model-value="update('module', $event)"
-    />
-    <AppSelect
-      variant="filter"
-      :label="t('settings.notifications.catalogue.columns.category')"
-      :model-value="modelValue.category"
-      :options="categoryOptions"
-      @update:model-value="update('category', $event)"
-    />
-    <AppSelect
-      variant="filter"
-      :label="t('settings.notifications.catalogue.audienceFilter')"
-      :model-value="modelValue.audience"
-      :options="audienceOptions"
-      @update:model-value="update('audience', $event)"
-    />
-    <BaseButton v-if="filtered" variant="ghost" size="sm" icon="x" @click="emit('reset')">
-      {{ t('settings.notifications.catalogue.reset') }}
-    </BaseButton>
-  </div>
+    <template #filters="{ draft }">
+      <AppSelect
+        :label="t('settings.notifications.catalogue.columns.module')"
+        :model-value="draft.filters.module"
+        :options="moduleOptions"
+        @update:model-value="draft.setFilter('module', $event)"
+      />
+      <AppSelect
+        :label="t('settings.notifications.catalogue.columns.category')"
+        :model-value="draft.filters.category"
+        :options="categoryOptions"
+        @update:model-value="draft.setFilter('category', $event)"
+      />
+      <AppSelect
+        :label="t('settings.notifications.catalogue.audienceFilter')"
+        :model-value="draft.filters.audience"
+        :options="audienceOptions"
+        @update:model-value="draft.setFilter('audience', $event)"
+      />
+    </template>
+  </ListToolbar>
 </template>

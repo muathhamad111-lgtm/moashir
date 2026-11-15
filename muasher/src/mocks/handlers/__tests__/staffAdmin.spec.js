@@ -112,7 +112,7 @@ describe('contact inbox mock', () => {
   })
 })
 
-describe('contact settings and privacy mock', () => {
+describe('contact settings mock', () => {
   it('keeps the retention inside its bounds', async () => {
     seedMockSession(ADMIN)
     expect((await call('GET', '/settings/contact-messages')).body.data.retentionMonths).toBe(24)
@@ -123,22 +123,6 @@ describe('contact settings and privacy mock', () => {
       (await call('PUT', '/settings/contact-messages', { retentionMonths: 12 })).body.data
         .retentionMonths,
     ).toBe(12)
-  })
-
-  it('exports without internal notes and counts the erased entries', async () => {
-    seedMockSession(ADMIN)
-    const exported = await call('POST', '/privacy/contact-messages/export', {
-      email: 'finance@albayan.example.sa',
-      reason: 'طلب صاحب البيانات رقم 12',
-    })
-    expect(exported.body.data.messages[0].entries.every((entry) => entry.kind !== 'note')).toBe(
-      true,
-    )
-    const erased = await call('POST', '/privacy/contact-messages/erase', {
-      email: 'finance@albayan.example.sa',
-      reason: 'طلب صاحب البيانات رقم 12',
-    })
-    expect(erased.body.data).toEqual({ erasedMessages: 1, erasedEntries: 2 })
   })
 })
 

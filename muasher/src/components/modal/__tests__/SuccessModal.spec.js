@@ -32,9 +32,7 @@ describe('SuccessModal + useSuccess', () => {
     factory()
     success.show()
     await flushPromises()
-    expect(document.querySelector('.modal__icon--success').getAttribute('aria-hidden')).toBe(
-      'true',
-    )
+    expect(document.querySelector('.modal__icon--success').getAttribute('aria-hidden')).toBe('true')
     expect(document.querySelector('.modal--centered')).not.toBeNull()
     expect(document.querySelector('.modal__title').textContent).toBe('تمت العملية بنجاح')
     const buttons = [...document.querySelectorAll('.modal__footer .btn')]

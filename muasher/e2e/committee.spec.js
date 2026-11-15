@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { seedScenario, seedSignedIn } from './support/session'
 import { chooseNamed, chooseValue } from './support/dropdown'
+import { searchList } from './support/listFilters'
 
 const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d/i
 
@@ -289,7 +290,7 @@ test.describe('Users, settings and criteria alignment', () => {
     const errors = trackConsole(page)
     await signIn(page, testInfo, USERS.systemAdmin)
     await page.goto('/admin/settings/users')
-    await page.locator('.toolbar__search input').fill('munira')
+    await searchList(page, 'munira')
     await expect(rows(page)).toHaveCount(1)
     const row = rows(page).filter({ hasText: 'munira.alotaibi' })
     await row.locator('.dropdown-menu > button').click()

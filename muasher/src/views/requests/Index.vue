@@ -84,6 +84,12 @@ async function loadCycles() {
 
 watch(path, loadAssessors)
 onMounted(() => Promise.all([loadAssessors(), loadCycles()]))
+const filterState = {
+  filters: filters.filters,
+  setFilter: queue.chooseFilter,
+  sort: filters.sort,
+  setSort: queue.setSort,
+}
 </script>
 
 <template>
@@ -113,16 +119,17 @@ onMounted(() => Promise.all([loadAssessors(), loadCycles()]))
             <ListToolbar
               v-model:search="searchInput"
               :search-placeholder="t('requests.index.searchPlaceholder')"
+              :filter-state="filterState"
             >
-              <template #filters>
+              <template #filters="{ draft }">
                 <RequestQueueFilters
                   :path="path"
-                  :filters="filters.filters"
-                  :sort="filters.sort.value"
+                  :filters="draft.filters"
+                  :sort="draft.sort.value"
                   :assessors="assessors"
                   :cycles="cycles"
-                  @filter="queue.chooseFilter"
-                  @sort="queue.setSort"
+                  @filter="draft.setFilter"
+                  @sort="draft.setSort"
                 />
               </template>
             </ListToolbar>

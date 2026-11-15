@@ -157,20 +157,13 @@ test('a portal message is answered from the inbox and the reply reaches the port
   await expect(entity.locator('.message-thread')).toContainText('أغلق')
 })
 
-test('the contact retention and the contact privacy export work on the backend', async () => {
+test('the contact retention works on the backend', async () => {
   const { page } = sessions.admin
   await page.goto('/admin/settings/contact-messages')
   await page.locator('input[name="retentionMonths"]').fill('18')
   await page.locator('.settings-section__footer button[type="submit"]').click()
   await expect(page.locator('.toast').first()).toContainText('حُفظت')
-  await page.goto('/admin/privacy-requests')
-  await page.locator('.contact-privacy input[type="email"]').fill(ENTITY.email)
-  await page
-    .locator('.contact-privacy textarea')
-    .fill('طلب صاحب البيانات للتحقق من التصدير في بيئة التكامل.')
-  await page.locator('.contact-privacy button[type="submit"]').click()
-  await expect(page.locator('.contact-privacy__result')).toContainText(flow.messageReference)
-  backendOnly('admin', /^\/api\/v1\/privacy\/contact-messages\/export$/)
+  backendOnly('admin', /^\/api\/v1\/settings\/contact-messages$/)
 })
 
 test('the Content Officer publishes a new privacy version and the public page shows it', async () => {

@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, toRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import AppSelect from '@/components/form/AppSelect.vue'
@@ -16,6 +16,12 @@ const props = defineProps({
 
 const emit = defineEmits(['update:search', 'filter', 'sort', 'create', 'reorder'])
 const { t } = useI18n()
+const filterState = {
+  filters: props.values,
+  setFilter: (key, value) => emit('filter', key, value),
+  sort: toRef(props, 'sort'),
+  setSort: (value) => emit('sort', value),
+}
 
 const flagOptions = (key) => [
   { value: '', label: t('kpis.admin.filters.all') },
@@ -42,35 +48,32 @@ const sortOptions = computed(() =>
     :search="search"
     :search-placeholder="t('kpis.admin.index.searchPlaceholder')"
     @update:search="emit('update:search', $event)"
+    :filter-state="filterState"
   >
-    <template #filters>
+    <template #filters="{ draft }">
       <AppSelect
-        variant="filter"
-        :model-value="values.published"
+        :model-value="draft.filters.published"
         :options="flagOptions('published')"
         :label="t('kpis.admin.filters.published.label')"
-        @update:model-value="emit('filter', 'published', $event)"
+        @update:model-value="draft.setFilter('published', $event)"
       />
       <AppSelect
-        variant="filter"
-        :model-value="values.featured"
+        :model-value="draft.filters.featured"
         :options="flagOptions('featured')"
         :label="t('kpis.admin.filters.featured.label')"
-        @update:model-value="emit('filter', 'featured', $event)"
+        @update:model-value="draft.setFilter('featured', $event)"
       />
       <AppSelect
-        variant="filter"
-        :model-value="values.categoryId"
+        :model-value="draft.filters.categoryId"
         :options="categoryOptions"
         :label="t('kpis.admin.fields.category')"
-        @update:model-value="emit('filter', 'categoryId', $event)"
+        @update:model-value="draft.setFilter('categoryId', $event)"
       />
       <AppSelect
-        variant="filter"
-        :model-value="sort || 'order'"
+        :model-value="draft.sort.value || 'order'"
         :options="sortOptions"
         :label="t('kpis.admin.sort.label')"
-        @update:model-value="emit('sort', $event)"
+        @update:model-value="draft.setSort($event)"
       />
     </template>
     <template #actions>

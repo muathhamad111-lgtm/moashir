@@ -224,27 +224,6 @@ test('the approver applies a verified official e-mail change', async ({ page }, 
   await expect(page.locator('.empty-state')).toBeVisible()
 })
 
-test('a data-subject request is recorded and fulfilled', async ({ page }, testInfo) => {
-  await seed(page, testInfo)
-  await page.goto('/admin/privacy-requests')
-  await expect(rows(page)).toHaveCount(1)
-  await page.getByRole('button', { name: /New request|طلب جديد/ }).click()
-  await dialog(page).locator('.dropdown-combobox__input').click()
-  await expect(page.locator('[role="listbox"] .dropdown-option__badge').first()).toBeVisible()
-  await dialog(page).locator('.dropdown-combobox__input').fill('ENT-006005')
-  await page.getByRole('option', { name: /ENT-006005/ }).click()
-  await chooseNamed(dialog(page), 'kind', 'access')
-  await dialog(page)
-    .locator('[name="details"]')
-    .fill('Formal letter asking for a copy of the personal data held by the platform.')
-  await dialog(page).locator('button[type="submit"]').click()
-  await expect(page.locator('.toast--success')).toBeVisible()
-  await expect(rows(page)).toHaveCount(2)
-  await rowAction(page, 'Formal letter', /Mark fulfilled|تمت التلبية/)
-  await dialog(page).locator('button[type="submit"]').click()
-  await expect(rows(page)).toHaveCount(1)
-})
-
 test('cities are added under a region and deactivated instead of deleted', async ({
   page,
 }, testInfo) => {
@@ -257,7 +236,7 @@ test('cities are added under a region and deactivated instead of deleted', async
   await dialog(page).locator('[name="name.en"]').fill('Al-Bad')
   await dialog(page).locator('button[type="submit"]').click()
   await expect(page.locator('.toast--success')).toBeVisible()
-  await page.locator('.toolbar__search input').fill(isEn(testInfo) ? 'Al-Bad' : 'البدع')
+  await searchList(page, isEn(testInfo) ? 'Al-Bad' : 'البدع')
   await expect(rows(page)).toHaveCount(1)
   await rowAction(page, 'al_bad', /^\s*(Deactivate|إيقاف)\s*$/)
   await expect(rows(page).first().locator('.badge--muted')).toBeVisible()

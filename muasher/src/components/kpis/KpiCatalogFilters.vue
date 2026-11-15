@@ -45,7 +45,6 @@ const sortOptions = computed(() =>
 <template>
   <div class="kpis-page__filters">
     <AppSelect
-      variant="filter"
       :label="t('kpis.page.filters.status')"
       :model-value="filters.status"
       :options="statusOptions"
@@ -53,14 +52,12 @@ const sortOptions = computed(() =>
     />
     <AppSelect
       v-if="types.length"
-      variant="filter"
       :label="t('kpis.page.filters.type')"
       :model-value="filters.type"
       :options="typeOptions"
       @update:model-value="emit('change', 'type', $event)"
     />
     <AppSelect
-      variant="filter"
       :label="t('kpis.page.filters.year')"
       :model-value="filters.year"
       :options="yearOptions"
@@ -78,7 +75,6 @@ const sortOptions = computed(() =>
       />
     </label>
     <AppSelect
-      variant="filter"
       :label="t('kpis.page.sort.label')"
       :model-value="filters.sort"
       :options="sortOptions"

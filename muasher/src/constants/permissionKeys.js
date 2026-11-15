@@ -13,7 +13,6 @@ export const PERMISSIONS = {
   ENTITIES_EMAIL_CHANGE_APPROVE: 'entities.email_change.approve',
   ENTITIES_DELETE: 'entities.delete',
   ENTITIES_EXPORT: 'entities.export',
-  PRIVACY_REQUESTS_MANAGE: 'privacy.requests.manage',
   ASSESSMENT_CRITERIA_VIEW: 'assessment.criteria.view',
   ASSESSMENT_HISTORY_VIEW: 'assessment.history.view',
   ASSESSMENT_SELF_MANAGE: 'assessment.self.manage',
@@ -97,7 +96,6 @@ export const KNOWN_PERMISSIONS = new Set(PERMISSION_KEYS)
 export const PERMISSION_MODULES = [
   'dashboard',
   'entity',
-  'privacy',
   'assessment',
   'requests',
   'award',

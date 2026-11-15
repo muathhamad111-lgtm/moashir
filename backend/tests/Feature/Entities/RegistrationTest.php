@@ -51,7 +51,7 @@ it('registers an entity pending verification and sends an e-mail code without re
 
     expect($entity->status)->toBe(EntityStatus::PendingVerification)
         ->and($entity->name->ar)->toBe('جمعية الأمل الخيرية')
-        ->and($entity->governance_grade)->toBe('87.45')
+        ->and($entity->governance_grade)->toBe('87.450')
         ->and($entity->hasCompleteProfile())->toBeFalse()
         ->and($entity->profileCompletion()->percent())->toBe(86)
         ->and($entity->unified_number)->toBe('7001234567')
@@ -245,7 +245,7 @@ it('rejects invalid registration data', function (Closure $mutate, string $field
     'inactive city' => [static fn (array $payload): array => [...$payload, 'city_id' => City::factory()->inactive()->create(['region_id' => $payload['region_id']])->id], 'city_id'],
     'governance above 100' => [static fn (array $payload): array => [...$payload, 'governance_grade' => '100.01'], 'governance_grade'],
     'governance below 0' => [static fn (array $payload): array => [...$payload, 'governance_grade' => '-1'], 'governance_grade'],
-    'governance with three decimals' => [static fn (array $payload): array => [...$payload, 'governance_grade' => '87.455'], 'governance_grade'],
+    'governance with four decimals' => [static fn (array $payload): array => [...$payload, 'governance_grade' => '87.4551'], 'governance_grade'],
     'governance as a band label' => [static fn (array $payload): array => [...$payload, 'governance_grade' => 'advanced'], 'governance_grade'],
     'negative employees' => [static fn (array $payload): array => [...$payload, 'employees_count' => -3], 'employees_count'],
     'strategic plan missing' => [static fn (array $payload): array => array_diff_key($payload, ['has_strategic_plan' => true]), 'has_strategic_plan'],

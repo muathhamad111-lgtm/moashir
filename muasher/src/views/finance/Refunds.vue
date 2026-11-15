@@ -1,4 +1,5 @@
 <script setup>
+import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
@@ -32,6 +33,7 @@ const purposeOptions = computed(() => [
 function downloadEvidence(refund) {
   downloads.download(refund.id, () => financeService.requestEvidenceDownload(refund.id))
 }
+const filterState = { filters: filters.filters, setFilter }
 </script>
 
 <template>
@@ -43,29 +45,30 @@ function downloadEvidence(refund) {
     />
     <FinanceNav />
     <Card>
-      <div class="finance-page__range">
-        <AppSelect
-          variant="filter"
-          :model-value="filters.filters.purpose"
-          :options="purposeOptions"
-          :label="t('finance.filters.service')"
-          @update:model-value="setFilter('purpose', $event)"
-        />
-        <BaseDatePicker
-          :model-value="filters.filters.from"
-          name="refunds-from"
-          :label="t('finance.filters.from')"
-          :max="filters.filters.to"
-          @update:model-value="setFilter('from', $event)"
-        />
-        <BaseDatePicker
-          :model-value="filters.filters.to"
-          name="refunds-to"
-          :label="t('finance.filters.to')"
-          :min="filters.filters.from"
-          @update:model-value="setFilter('to', $event)"
-        />
-      </div>
+      <ListToolbar :searchable="false" :filter-state="filterState">
+        <template #filters="{ draft }">
+          <AppSelect
+            :model-value="draft.filters.purpose"
+            :options="purposeOptions"
+            :label="t('finance.filters.service')"
+            @update:model-value="draft.setFilter('purpose', $event)"
+          />
+          <BaseDatePicker
+            :model-value="draft.filters.from"
+            name="refunds-from"
+            :label="t('finance.filters.from')"
+            :max="draft.filters.to"
+            @update:model-value="draft.setFilter('from', $event)"
+          />
+          <BaseDatePicker
+            :model-value="draft.filters.to"
+            name="refunds-to"
+            :label="t('finance.filters.to')"
+            :min="draft.filters.from"
+            @update:model-value="draft.setFilter('to', $event)"
+          />
+        </template>
+      </ListToolbar>
       <RefundsTable
         :items="items"
         :status="status"

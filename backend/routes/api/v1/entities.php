@@ -12,15 +12,12 @@ use App\Http\Controllers\Api\V1\Entities\EntityDeletionImpactController;
 use App\Http\Controllers\Api\V1\Entities\EntityEmailChangeController;
 use App\Http\Controllers\Api\V1\Entities\EntityProfileChangeController;
 use App\Http\Controllers\Api\V1\Entities\ExportEntitiesController;
-use App\Http\Controllers\Api\V1\Entities\ExportEntityPersonalDataController;
 use App\Http\Controllers\Api\V1\Entities\MyEmailChangeController;
 use App\Http\Controllers\Api\V1\Entities\MyEntityController;
 use App\Http\Controllers\Api\V1\Entities\MyEntityLogoController;
 use App\Http\Controllers\Api\V1\Entities\MyProfileChangeController;
 use App\Http\Controllers\Api\V1\Entities\MyProfileSectionController;
 use App\Http\Controllers\Api\V1\Entities\PermanentlyDeleteEntityController;
-use App\Http\Controllers\Api\V1\Entities\PrivacyEntityLookupController;
-use App\Http\Controllers\Api\V1\Entities\PrivacyRequestController;
 use App\Http\Controllers\Api\V1\Entities\ReactivateEntityController;
 use App\Http\Controllers\Api\V1\Entities\RegionController;
 use App\Http\Controllers\Api\V1\Entities\RegisterEntityController;
@@ -29,20 +26,18 @@ use App\Http\Controllers\Api\V1\Entities\RestoreEntityController;
 use App\Http\Controllers\Api\V1\Entities\SoftDeleteEntityController;
 use App\Models\Entities\City;
 use App\Models\Entities\Entity;
-use App\Models\Entities\PrivacyRequest;
 use App\Models\Identity\EmailChangeRequest;
 use Illuminate\Support\Facades\Route;
 
 $entities = Entity::class;
 $cities = City::class;
 $emailChanges = EmailChangeRequest::class;
-$privacyRequests = PrivacyRequest::class;
 
 Route::get('regions', [RegionController::class, 'index'])->middleware('throttle:public')->name('regions.index');
 Route::get('terms/current', CurrentTermsController::class)->middleware('throttle:public')->name('terms.current');
 Route::post('auth/register', RegisterEntityController::class)->middleware('throttle:register')->name('auth.register');
 
-Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'])->group(function () use ($entities, $cities, $emailChanges, $privacyRequests): void {
+Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'])->group(function () use ($entities, $cities, $emailChanges): void {
     Route::prefix('entities/me')->name('entities.me.')->group(function () use ($entities): void {
         Route::get('/', [MyEntityController::class, 'show'])->middleware("can:viewOwn,{$entities}")->name('show');
         Route::prefix('profile')->name('profile.')->middleware(["can:updateOwn,{$entities}", 'throttle:sensitive'])->group(function (): void {
@@ -74,7 +69,6 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
             Route::delete('{entity}', SoftDeleteEntityController::class)->middleware(['can:delete,entity', 'throttle:sensitive'])->name('destroy');
             Route::post('{entity}/restore', RestoreEntityController::class)->middleware(['can:restore,entity', 'throttle:sensitive'])->name('restore');
             Route::delete('{entity}/permanent', PermanentlyDeleteEntityController::class)->middleware(['can:forceDelete,entity', 'throttle:sensitive'])->name('force-delete');
-            Route::post('{entity}/export', ExportEntityPersonalDataController::class)->middleware(['can:exportPersonalData,entity', 'throttle:exports'])->name('personal-data.export');
         });
     });
 
@@ -82,16 +76,6 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
         Route::get('/', [EntityEmailChangeController::class, 'index'])->middleware("can:viewAny,{$emailChanges}")->name('index');
         Route::post('{emailChange}/approve', [EntityEmailChangeController::class, 'approve'])->whereNumber('emailChange')->middleware(["can:decide,{$emailChanges}", 'throttle:sensitive'])->name('approve');
         Route::post('{emailChange}/reject', [EntityEmailChangeController::class, 'reject'])->whereNumber('emailChange')->middleware(["can:decide,{$emailChanges}", 'throttle:sensitive'])->name('reject');
-    });
-
-    Route::get('privacy/entities', PrivacyEntityLookupController::class)->middleware(["can:lookupEntities,{$privacyRequests}", 'throttle:search'])->name('privacy-entities.index');
-
-    Route::prefix('privacy/requests')->name('privacy-requests.')->group(function () use ($privacyRequests): void {
-        Route::get('/', [PrivacyRequestController::class, 'index'])->middleware("can:viewAny,{$privacyRequests}")->name('index');
-        Route::post('/', [PrivacyRequestController::class, 'store'])->middleware(["can:create,{$privacyRequests}", 'throttle:sensitive'])->name('store');
-        Route::get('{privacyRequest}', [PrivacyRequestController::class, 'show'])->whereNumber('privacyRequest')->middleware("can:view,{$privacyRequests}")->name('show');
-        Route::post('{privacyRequest}/fulfil', [PrivacyRequestController::class, 'fulfil'])->whereNumber('privacyRequest')->middleware(["can:decide,{$privacyRequests}", 'throttle:sensitive'])->name('fulfil');
-        Route::post('{privacyRequest}/reject', [PrivacyRequestController::class, 'reject'])->whereNumber('privacyRequest')->middleware(["can:decide,{$privacyRequests}", 'throttle:sensitive'])->name('reject');
     });
 
     Route::get('cities', [CityController::class, 'index'])->middleware("can:viewAny,{$cities}")->name('cities.index');

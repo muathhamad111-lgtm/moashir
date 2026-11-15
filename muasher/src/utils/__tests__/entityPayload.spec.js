@@ -45,18 +45,19 @@ function values(overrides = {}) {
 }
 
 describe('governance grade', () => {
-  it('accepts 0 to 100 with at most two decimals and Eastern digits typed by the user', () => {
+  it('accepts 0 to 100 with at most three decimals and Eastern digits typed by the user', () => {
     expect(isValidGovernanceGrade('100')).toBe(true)
     expect(isValidGovernanceGrade('87.45')).toBe(true)
+    expect(isValidGovernanceGrade('87.456')).toBe(true)
     expect(isValidGovernanceGrade('')).toBe(true)
-    expect(isValidGovernanceGrade('87.456')).toBe(false)
-    expect(isValidGovernanceGrade('100.01')).toBe(false)
+    expect(isValidGovernanceGrade('87.4561')).toBe(false)
+    expect(isValidGovernanceGrade('100.001')).toBe(false)
     expect(isValidGovernanceGrade('-1')).toBe(false)
     const easternEightySeven = String.fromCharCode(0x668, 0x667)
     expect(toWesternDigits(easternEightySeven)).toBe('87')
-    expect(governanceGradePayload('87.5')).toBe('87.50')
+    expect(governanceGradePayload('87.5')).toBe('87.500')
     expect(governanceGradePayload(' ')).toBeNull()
-    expect(formatGovernanceGrade('86.5')).toBe('86.50%')
+    expect(formatGovernanceGrade('86.5')).toBe('86.500%')
   })
 })
 
@@ -78,7 +79,7 @@ describe('entity payload mapping', () => {
       foundingYear: 2009,
       regionId: 1,
       cityId: 1,
-      governanceGrade: '86.50',
+      governanceGrade: '86.500',
       employeesCount: 180,
       annualBeneficiariesCount: null,
       hasStrategicPlan: true,
@@ -190,7 +191,7 @@ describe('limitDecimalInput', () => {
   it('keeps digits and one point, then trims the whole and the decimal parts', () => {
     const limits = { integerDigits: 3, decimals: 2 }
     expect(limitDecimalInput('21343.5678', limits)).toBe('213.56')
-    expect(limitDecimalInput('9.1.2.3', limits)).toBe('9.12')
+    expect(limitDecimalInput('9.1.2', limits)).toBe('9.12')
     expect(limitDecimalInput('ab12', limits)).toBe('12')
     expect(limitDecimalInput('', limits)).toBe('')
     expect(limitDecimalInput('85.', limits)).toBe('85.')

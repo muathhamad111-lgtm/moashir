@@ -128,9 +128,7 @@ describe('ConfirmModal + useConfirm', () => {
     footerButtons()[1].focus()
     footerButtons()[1].dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }))
     expect(document.activeElement).toBe(close)
-    close.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true }),
-    )
+    close.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true }))
     expect(document.activeElement).toBe(footerButtons()[1])
   })
 })

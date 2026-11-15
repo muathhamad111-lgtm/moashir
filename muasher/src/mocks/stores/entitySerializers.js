@@ -163,22 +163,6 @@ export function ownEmailChangeResource(change) {
   return { status: change.status, policy: change.policy, newEmail: maskEmail(change.newEmail) }
 }
 
-export function privacyRequestResource(request) {
-  const entity = findEntity(request.entityId)
-  return {
-    id: request.id,
-    entity: entity ? entitySummary(entity) : null,
-    kind: request.kind,
-    status: request.status,
-    details: request.details,
-    createdBy: request.createdBy,
-    decidedBy: request.decidedBy,
-    decisionNote: request.decisionNote,
-    decidedAt: request.decidedAt,
-    createdAt: request.createdAt,
-  }
-}
-
 export function cityResource(city) {
   return {
     id: city.id,

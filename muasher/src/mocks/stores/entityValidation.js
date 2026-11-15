@@ -4,7 +4,8 @@ import { entityReject, fieldError } from './entityRejection'
 import { checkUnifiedNumber } from './entityUnifiedNumber'
 
 const PHONE_PATTERN = /^(05\d{8}|\+9665\d{8})$/
-const GRADE_PATTERN = /^\d{1,3}(\.\d{1,2})?$/
+const GOVERNANCE_DECIMALS = 3
+const GRADE_PATTERN = /^\d{1,3}(\.\d{1,3})?$/
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const MIN_FOUNDING_YEAR = 1900
 const PASSWORD_MIN = 12
@@ -120,7 +121,9 @@ export function profileFrom(body) {
     foundingYear: Number(body.foundingYear),
     regionId: Number(body.regionId),
     cityId: Number(body.cityId),
-    governanceGrade: blank(body.governanceGrade) ? null : Number(body.governanceGrade).toFixed(2),
+    governanceGrade: blank(body.governanceGrade)
+      ? null
+      : Number(body.governanceGrade).toFixed(GOVERNANCE_DECIMALS),
     employeesCount: optionalCount(body.employeesCount),
     annualBeneficiariesCount: optionalCount(body.annualBeneficiariesCount),
     hasStrategicPlan: strategicPlanFrom(body.hasStrategicPlan),

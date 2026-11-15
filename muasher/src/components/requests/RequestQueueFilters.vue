@@ -58,14 +58,12 @@ function setCycle(value) {
 <template>
   <div class="request-filters">
     <AppSelect
-      variant="filter"
       :model-value="filters.status"
       :options="statusOptions"
       :label="t('requests.filters.status')"
       @update:model-value="emit('filter', 'status', $event)"
     />
     <AppSelect
-      variant="filter"
       v-if="showsCycles"
       :model-value="filters.cycleId"
       :options="cycleOptions"
@@ -73,14 +71,12 @@ function setCycle(value) {
       @update:model-value="setCycle"
     />
     <AppSelect
-      variant="filter"
       :model-value="filters.overdue"
       :options="overdueOptions"
       :label="t('requests.filters.overdue')"
       @update:model-value="emit('filter', 'overdue', $event)"
     />
     <AppSelect
-      variant="filter"
       v-if="assessors.length"
       :model-value="filters.assessorId"
       :options="assessorOptions"
@@ -88,7 +84,6 @@ function setCycle(value) {
       @update:model-value="emit('filter', 'assessorId', $event)"
     />
     <AppSelect
-      variant="filter"
       :model-value="sort"
       :options="sortOptions"
       :label="t('requests.filters.sort')"

@@ -1,6 +1,7 @@
 import { Buffer } from 'node:buffer'
 import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
+import { applyOpenListFilters, openListFilters, searchList } from './support/listFilters'
 
 const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d/i
 const PAID_ACCREDITED = '3f0c9a52-6d1e-4b7a-9c21-5a1e00000001'
@@ -77,17 +78,18 @@ test('transactions are searched, filtered, sorted and exported as a CSV', async 
     fullPage: true,
   })
 
-  await page.locator('.toolbar__search input').fill(isEn(testInfo) ? 'Namaa' : 'نماء')
+  await searchList(page, isEn(testInfo) ? 'Namaa' : 'نماء')
   await expect(page.locator('.table__row')).toHaveCount(4)
   await expect(page.locator('.transactions-table__entity-name').first()).toContainText(
     isEn(testInfo) ? 'Namaa' : 'نماء',
   )
-  await page.locator('.toolbar__search input').fill('')
+  await searchList(page, '')
   await expect(page.locator('.table__row')).toHaveCount(10)
 
-  const filters = page.locator('.transaction-filters .dropdown-filter__trigger')
-  await filters.nth(0).click()
+  const filters = await openListFilters(page)
+  await filters.locator('.dropdown-field').nth(0).click()
   await page.getByRole('option', { name: isEn(testInfo) ? 'Failed' : 'لم تكتمل' }).click()
+  await applyOpenListFilters(page)
   await expect(page.locator('.table__row')).toHaveCount(2)
   const download = page.waitForEvent('download')
   await page.locator('.finance-header__actions .btn').click()

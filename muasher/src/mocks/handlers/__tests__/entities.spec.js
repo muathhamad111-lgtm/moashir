@@ -3,7 +3,6 @@ import { setupServer } from 'msw/node'
 import { entitiesHandlers } from '@/mocks/handlers/entities'
 import { entityLifecycleHandlers } from '@/mocks/handlers/entityLifecycle'
 import { entityEmailChangesHandlers } from '@/mocks/handlers/entityEmailChanges'
-import { privacyRequestsHandlers } from '@/mocks/handlers/privacyRequests'
 import { regionsHandlers } from '@/mocks/handlers/regions'
 import { authHandlers } from '@/mocks/handlers/auth'
 import { resetEntitiesMock } from '@/mocks/stores/entityMockReset'
@@ -15,7 +14,6 @@ const server = setupServer(
   ...entityEmailChangesHandlers,
   ...entityLifecycleHandlers,
   ...entitiesHandlers,
-  ...privacyRequestsHandlers,
   ...regionsHandlers,
   ...authHandlers,
 )
@@ -152,11 +150,11 @@ describe('entities mock — registration', () => {
     expect(verified.status).toBe(422)
   })
 
-  it('rejects a city outside the region, a grade with three decimals and missing terms acceptance', async () => {
+  it('rejects a city outside the region, a grade with four decimals and missing terms acceptance', async () => {
     const invalid = await call(
       'POST',
       '/auth/register',
-      registration({ city_id: 12, governance_grade: '90.125', terms_accepted: false }),
+      registration({ city_id: 12, governance_grade: '90.1255', terms_accepted: false }),
     )
     expect(invalid.status).toBe(422)
     expect(Object.keys(invalid.body.errors).sort()).toEqual([
@@ -440,27 +438,7 @@ describe('entities mock — lifecycle actions', () => {
   })
 })
 
-describe('entities mock — privacy requests and cities', () => {
-  it('creates, fulfils and refuses a second decision on a data-subject request', async () => {
-    as(SYSTEM_ADMIN)
-    const created = await call('POST', '/privacy/requests', {
-      entity_id: 6005,
-      kind: 'deletion',
-      details: 'Formal deletion request from the entity.',
-    })
-    expect(created.status).toBe(201)
-    const fulfilled = await call('POST', `/privacy/requests/${created.body.data.id}/fulfil`, {})
-    expect(fulfilled.body.data.status).toBe('fulfilled')
-    expect(
-      (await call('POST', `/privacy/requests/${created.body.data.id}/reject`, { reason: REASON }))
-        .status,
-    ).toBe(409)
-    const exported = await call('POST', '/entities/6005/export', { reason: REASON })
-    expect(exported.body.data.entity.reference).toBe('ENT-006005')
-    as(FOLLOWER)
-    expect((await call('GET', '/privacy/requests')).status).toBe(403)
-  })
-
+describe('entities mock — cities', () => {
   it('creates, renames and deactivates a city under entities.manage', async () => {
     as(SYSTEM_ADMIN)
     const created = await call('POST', '/regions/7/cities', { name: { ar: 'البدع', en: 'Al-Bad' } })

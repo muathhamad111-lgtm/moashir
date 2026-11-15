@@ -1,4 +1,4 @@
-import { computed, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useFilters } from '@/composables/useFilters'
 import { usePagination } from '@/composables/usePagination'
@@ -57,25 +57,12 @@ export function useContactInbox() {
     (value) => setFilter('status', statusFromQuery(value)),
   )
 
-  function reset() {
-    searchInput.value = ''
-    filters.reset()
-    Object.entries(EMPTY_FILTERS).forEach(([key, value]) => filters.setFilter(key, value))
-    paginator.setPage(1)
-  }
-
-  const isFiltered = computed(
-    () => Boolean(filters.search.value) || Object.values(filters.filters).some(Boolean),
-  )
-
   return {
     filters: filters.filters,
     searchInput,
     paginator,
     stats,
-    isFiltered,
     setFilter,
-    reset,
     ...table,
   }
 }

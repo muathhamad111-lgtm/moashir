@@ -162,7 +162,8 @@ async function openLastRowMenu(page, testInfo, theme, viewport) {
 
 async function openRoleFilter(page, testInfo, theme, viewport) {
   await openAs(page, testInfo, { theme, viewport, route: '/admin/settings/users' })
-  const filter = page.getByRole('combobox', {
+  await page.locator('.filter-dialog__toggle').click()
+  const filter = page.getByRole('dialog').getByRole('combobox', {
     name: isEn(testInfo) ? 'Role' : 'الدور',
     exact: true,
   })
@@ -234,10 +235,10 @@ for (const theme of THEMES) {
       await expect(trigger).toBeFocused()
     })
 
-    test('a toolbar filter is labelled, shows the active option and closes on Tab without a change', async ({
+    test('a list filter in the filter dialog is labelled, shows the active option and applies nothing before «Apply»', async ({
       page,
     }, testInfo) => {
-      const { filter, before } = await openRoleFilter(page, testInfo, theme, viewport)
+      const { filter } = await openRoleFilter(page, testInfo, theme, viewport)
       const surface = popup(page)
       const activeId = await filter.getAttribute('aria-activedescendant')
       await expect(surface.locator(`[id="${activeId}"]`)).toHaveClass(/is-active/)
@@ -245,7 +246,9 @@ for (const theme of THEMES) {
       await capture(page, testInfo, 'toolbar-filter', theme, viewport)
       await page.keyboard.press('Tab')
       await expect(surface).toHaveCount(0)
-      await expect(filter).toHaveText(before)
+      await page.keyboard.press('Escape')
+      await expect(page.getByRole('dialog')).toHaveCount(0)
+      await expect(page.locator('.filter-dialog__count')).toHaveCount(0)
     })
 
     test('the notification panel is a labelled dialog on screen', async ({ page }, testInfo) => {
@@ -291,7 +294,7 @@ for (const theme of THEMES) {
       await expect(trigger).toBeFocused()
     })
 
-    test('a toolbar filter opens as a sheet with a visible active option', async ({
+    test('a list filter in the filter dialog opens as a sheet with a visible active option', async ({
       page,
     }, testInfo) => {
       await openRoleFilter(page, testInfo, theme, viewport)

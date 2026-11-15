@@ -88,6 +88,7 @@ const sortOptions = computed(() =>
     label: t(`award.secretary.sorts.${value.startsWith('-') ? `${value.slice(1)}_desc` : value}`),
   })),
 )
+const filterState = { filters: filters.filters, setFilter, sort: filters.sort, setSort }
 </script>
 
 <template>
@@ -103,28 +104,26 @@ const sortOptions = computed(() =>
       <ListToolbar
         v-model:search="searchInput"
         :search-placeholder="t('award.secretary.searchPlaceholder')"
+        :filter-state="filterState"
       >
-        <template #filters>
+        <template #filters="{ draft }">
           <AppSelect
-            variant="filter"
-            :model-value="filters.filters.status"
+            :model-value="draft.filters.status"
             :options="statusOptions"
             :label="t('award.secretary.filters.status')"
-            @update:model-value="setFilter('status', $event)"
+            @update:model-value="draft.setFilter('status', $event)"
           />
           <AppSelect
-            variant="filter"
-            :model-value="filters.filters.regionId"
+            :model-value="draft.filters.regionId"
             :options="regionOptions"
             :label="t('award.secretary.filters.region')"
-            @update:model-value="setFilter('regionId', $event)"
+            @update:model-value="draft.setFilter('regionId', $event)"
           />
           <AppSelect
-            variant="filter"
-            :model-value="filters.sort.value"
+            :model-value="draft.sort.value"
             :options="sortOptions"
             :label="t('award.secretary.filters.sort')"
-            @update:model-value="setSort($event)"
+            @update:model-value="draft.setSort($event)"
           />
         </template>
       </ListToolbar>

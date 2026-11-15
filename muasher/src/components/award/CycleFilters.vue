@@ -24,14 +24,12 @@ const sortOptions = computed(() =>
 <template>
   <div class="cycle-filters">
     <AppSelect
-      variant="filter"
       :model-value="filters.status"
       :options="statusOptions"
       :label="t('cycles.filters.status')"
       @update:model-value="emit('filter', 'status', $event)"
     />
     <AppSelect
-      variant="filter"
       :model-value="sort"
       :options="sortOptions"
       :label="t('cycles.filters.sort')"

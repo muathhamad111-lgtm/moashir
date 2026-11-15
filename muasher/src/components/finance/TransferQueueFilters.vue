@@ -61,35 +61,30 @@ const sortOptions = computed(() =>
   <div class="transfer-filters">
     <AppSelect
       class="transfer-filters__account"
-      variant="filter"
       :model-value="filters.bankAccount"
       :options="accountOptions"
       :label="t('finance.transfers.filters.account')"
       @update:model-value="emit('filter', 'bankAccount', $event)"
     />
     <AppSelect
-      variant="filter"
       :model-value="filters.purpose"
       :options="purposeOptions"
       :label="t('finance.filters.service')"
       @update:model-value="emit('filter', 'purpose', $event)"
     />
     <AppSelect
-      variant="filter"
       :model-value="filters.mode"
       :options="modeOptions"
       :label="t('finance.filters.mode')"
       @update:model-value="emit('filter', 'mode', $event)"
     />
     <AppSelect
-      variant="filter"
       :model-value="filters.frozen"
       :options="frozenOptions"
       :label="t('finance.transfers.filters.frozenLabel')"
       @update:model-value="emit('filter', 'frozen', $event)"
     />
     <AppSelect
-      variant="filter"
       :model-value="sort"
       :options="sortOptions"
       :label="t('finance.filters.sort')"

@@ -537,7 +537,7 @@ php artisan moashir:criteria:install-seed     # idempotent: skipped as soon as a
   an entity's city belongs to its region.
 - `entities`: bilingual `name` (Arabic required, English optional), `entity_type` (`civil_association |
   civil_foundation | waqf`), `development_sector`, `org_size`, `founding_year`, `region_id`, `city_id`,
-  `governance_grade` (NCNP percentage `numeric(5,2)`, 0–100, sent as a decimal string `"87.45"`), `employees_count`,
+  `governance_grade` (NCNP percentage `numeric(6,3)` — up to three decimals since 2026-11-15, operator decision — 0–100, sent as a decimal string `"87.455"`), `employees_count`,
   `annual_beneficiaries_count`, `has_strategic_plan` (nullable since Task-82b: `null` = unanswered, P-6), `status` (`pending_verification | active | deactivated`),
   consent and lifecycle timestamps, soft delete (`deleted_at` = "Deleted entities"), `anonymized_at` (erased tombstone),
   and since Task-47 the registry details `license_number`, `founded_on`, `website_url` and the logo reference
@@ -552,7 +552,7 @@ php artisan moashir:criteria:install-seed     # idempotent: skipped as soon as a
   founding date, website and, since Task-82b, the authorized person's name, the mobile number — stored MASKED,
   `+9665*****567` — and the marketing consent); the official e-mail and the logo are never part of the history (they
   are audited instead). Each field belongs to one profile section (`EntityProfileField::section()`).
-- `privacy_requests`: PDPL data-subject requests (`access | correction | deletion`, `open → fulfilled | rejected`).
+- `privacy_requests`: dropped on 2026-11-14 (migration `2026_11_15_110000_remove_data_subject_requests`, operator decision).
 - `email_change_requests` (Identity table) now also carries entity requests (`entity_id`).
 
 ### Registration and sign-in
@@ -773,11 +773,8 @@ no notification. A staff decision after the cancellation answers 409 `state.tran
 | GET | `/entities/{entity}/deletion-impact` | `entities.delete` |
 | DELETE / POST | `/entities/{entity}`, `/entities/{entity}/restore` | `entities.delete` |
 | DELETE | `/entities/{entity}/permanent` | Super Admin only |
-| POST | `/entities/{entity}/export` (`reason`; JSON personal-data package, audited) | `privacy.requests.manage`, `throttle:exports` |
 | GET | `/admin/entity-email-changes` (`filter[status]`, default `awaiting_approval`) | `entities.email_change.approve` |
 | POST | `/admin/entity-email-changes/{id}/approve`, `/reject` (`reason`) | `entities.email_change.approve` |
-| GET / POST | `/privacy/requests`; GET `/privacy/requests/{id}`; POST `/privacy/requests/{id}/fulfil` (`reason?`), `/reject` (`reason`) | `privacy.requests.manage` |
-| GET | `/privacy/entities` (`search?` ≤ 100, `limit` 1..20, default 10) — entity picker of the data-subject request form: `[{ id, reference, name{ar,en}, is_deleted }]`, `meta.limit`; normalized Arabic or English name, official e-mail or reference (`ENT-000014`, `ent000014`); deleted entities included (`is_deleted: true`), erased ones never; ordered by Arabic name | `privacy.requests.manage` (no `entities.view` needed), `throttle:search` (60/min per user) |
 | GET | `/cities` (admin list, inactive included) | `entities.manage` |
 | POST / PUT / PATCH | `/regions/{region}/cities`, `/cities/{city}`, `/cities/{city}/active` | `entities.manage` |
 
@@ -2340,7 +2337,7 @@ items with a count, sorted danger → warning → info, then by due date. Keys: 
 `follow_up_overdue_requests`; assessor `start_reviews`, `continue_reviews`, `overdue_reviews`; committee
 `complete_committee_evaluations`, `answer_committee_discussions`; `decide_filtering`; secretary `approve_committee_results`,
 `approve_substitute_evaluations`; finance `record_refunds` (paid accredited payments that opened no request after 30 minutes,
-the PAY-08 duplicate case); `review_entity_email_changes`, `handle_privacy_requests`, `fix_criteria_draft`,
+the PAY-08 duplicate case); `review_entity_email_changes`, `fix_criteria_draft`,
 `publish_content_changes`, `answer_contact_messages` (Task-42), `read_contact_replies` (any signed-in sender with unread
 team replies, `info`, link `/messages/{uuid}` for one message or `/messages`, Task-46). Labels come from the SPA i18n by key.
 Every item carries `context` (Task-46): `null` for staff items; for entity items and `read_contact_replies` an object with
@@ -2850,8 +2847,6 @@ are answered by e-mail; signed-in senders by e-mail AND in the portal, and their
 | POST | `/admin/contact-messages/{id}/assign` | `contact.messages.manage`, `throttle:sensitive` | `{ assignee_id: int | null, reason? }` → `ContactMessage`; 422 `contact.assignee_not_eligible` |
 | POST | `/admin/contact-messages/{id}/notes`, `/replies` | `contact.messages.manage`, `throttle:content-write` | `{ body (2..5000), reason? }` → 201 `ContactMessage` |
 | POST | `/admin/contact-messages/{id}/close`, `/reopen` | `contact.messages.manage`, `throttle:sensitive` | `{ reason? }` → `ContactMessage` |
-| POST | `/privacy/contact-messages/export` | `privacy.requests.manage`, `throttle:exports` | `{ email, reason (10..1000) }` → `{ generated_at, email, messages[] }` |
-| POST | `/privacy/contact-messages/erase` | `privacy.requests.manage`, `throttle:exports` | `{ email, reason }` → `{ erased_messages, erased_entries }` |
 | GET / PUT | `/settings/contact-messages` | `settings.general.manage` (System Administrator), PUT `throttle:sensitive` | `{ retention_months, retention_limits{ min: 1, max: 120 } }`; PUT `{ retention_months, reason? }` (Super Admin: reason + SEC-04); audit `settings.contact_updated` |
 
 `ContactMessage` (staff) = `{ id, reference, status, enquiry_type, sender{ name, email, mobile, organization, locale },
@@ -2877,19 +2872,19 @@ Staff links: `/admin/contact-messages/{id}`. Guest e-mails use the language of t
 senders receive them in their profile language. Action Center: `answer_contact_messages` (count of `new` messages,
 warning, link `/admin/contact-messages?status=new`) for the holders of the permission.
 
-### Retention and data-subject requests (PDPL)
+### Retention
 - Closed messages are kept `contact.retention_months` months after closing (default **24**, 1..120, setting above); open
   messages are kept until closed. `moashir:contact-messages:purge-closed` (scheduled daily at 03:45, without overlapping)
   deletes the expired threads and writes a `housekeeping_runs` row (`task = contact_message_purge`, `counts {
   purged_messages, purged_entries, retention_months }`) and, when something was purged, the audit `contact_messages.purged`
   with the counts only.
-- Linked messages are part of the entity personal-data package (`POST /entities/{id}/export`, section `contact_messages`,
-  sender-visible entries only) and are erased by the permanent entity deletion (`Services\Contact\ContactMessageEraser`,
-  tagged erasure step).
-- Guest messages (and any message of an address): `POST /privacy/contact-messages/export` / `erase` by e-mail (holders of
-  `privacy.requests.manage`, reason required). The erasure writes a `housekeeping_runs` row (`contact_message_erasure`) and
-  the audit `privacy.contact_messages_erased` with counts and the masked address; the export writes
-  `privacy.contact_messages_exported` (masked address, message count; the audit subject is the exporting staff account).
+- Linked messages are erased by the permanent entity deletion (`Services\Contact\ContactMessageEraser`, tagged erasure
+  step).
+- The data-subject tooling (the request register, the entity personal-data export, the export / erase of the messages of an
+  address and the `privacy_request` enquiry type) was removed on 2026-11-14 by operator decision (migration
+  `2026_11_15_110000_remove_data_subject_requests`: remaps `privacy_request` messages to `other`, drops `privacy_requests`
+  and the `privacy.requests.manage` permission). Past `privacy.*` audit rows and `contact_message_erasure` housekeeping rows
+  stay readable (the `HousekeepingTask` case is kept for them).
 
 ## Entity portal contract (Task-46)
 Additive fields, filters and counts for the approved entity portal (`agents/analysis/analysis-entity-portal-contract.md`

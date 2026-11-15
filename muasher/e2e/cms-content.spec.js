@@ -2,6 +2,7 @@ import { Buffer } from 'node:buffer'
 import { test, expect } from '@playwright/test'
 import { seedLocale, seedSignedIn } from './support/session'
 import { closeSuccess, decisionAction } from './support/dialogs'
+import { searchList } from './support/listFilters'
 
 const SHOTS = 'e2e/__screenshots__/cms'
 
@@ -137,9 +138,9 @@ test('KPI catalog filters on the server and the detail page shows the value hist
     'aria-selected',
     'true',
   )
-  await page.locator('.toolbar__search input').fill('جمع')
+  await searchList(page, 'جمع')
   await expect(page.locator('.kpi-card').first()).toBeVisible()
-  await page.locator('.toolbar__search input').fill('')
+  await searchList(page, '')
   await page.locator('.kpis-page__tabs .tabs__tab').first().click()
   await page.locator('.kpi-card').first().click()
   await expect(page).toHaveURL(/\/kpis\/[a-z0-9-]+$/)

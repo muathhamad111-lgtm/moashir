@@ -81,14 +81,14 @@ function openManage(row) {
     <ListToolbar
       v-model:search="search"
       :search-placeholder="t('bagRequests.evaluator.searchPlaceholder')"
+      :filter-state="filters"
     >
-      <template #filters>
+      <template #filters="{ draft }">
         <AppSelect
-          variant="filter"
-          :model-value="filters.filters.status"
+          :model-value="draft.filters.status"
           :options="statusFilterOptions"
           :label="t('bagRequests.filters.status')"
-          @update:model-value="filters.setFilter('status', $event)"
+          @update:model-value="draft.setFilter('status', $event)"
         />
       </template>
     </ListToolbar>

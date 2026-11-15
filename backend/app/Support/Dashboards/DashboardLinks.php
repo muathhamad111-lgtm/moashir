@@ -10,8 +10,6 @@ final class DashboardLinks
 
     public const string ENTITY_EMAIL_CHANGES = '/admin/entities/email-changes';
 
-    public const string PRIVACY_REQUESTS = '/admin/privacy-requests';
-
     public const string USERS = '/admin/settings/users';
 
     public const string CYCLES = '/admin/award/cycles';

@@ -1,4 +1,5 @@
 <script setup>
+import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
@@ -34,6 +35,7 @@ const statusOptions = computed(() => [
   })),
 ])
 const overdue = computed(() => items.value.filter((row) => row.isOverdue).length)
+const filterState = { filters: filters.filters, setFilter }
 </script>
 
 <template>
@@ -52,24 +54,22 @@ const overdue = computed(() => items.value.filter((row) => row.isOverdue).length
       :message="t('award.work.overdueMessage')"
     />
     <Card>
-      <div class="toolbar">
-        <div class="toolbar__filters">
+      <ListToolbar :searchable="false" :filter-state="filterState">
+        <template #filters="{ draft }">
           <AppSelect
-            variant="filter"
-            :model-value="filters.filters.cycleId"
+            :model-value="draft.filters.cycleId"
             :options="cycleOptions"
             :label="t('award.work.filters.cycle')"
-            @update:model-value="setFilter('cycleId', $event)"
+            @update:model-value="draft.setFilter('cycleId', $event)"
           />
           <AppSelect
-            variant="filter"
-            :model-value="filters.filters.status"
+            :model-value="draft.filters.status"
             :options="statusOptions"
             :label="t('award.work.filters.status')"
-            @update:model-value="setFilter('status', $event)"
+            @update:model-value="draft.setFilter('status', $event)"
           />
-        </div>
-      </div>
+        </template>
+      </ListToolbar>
       <CommitteeAssignmentTable
         :items="items"
         :status="status"

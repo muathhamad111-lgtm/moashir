@@ -118,7 +118,6 @@
     "adminEntities": "Entities",
     "deletedEntities": "Deleted entities",
     "entityEmailChanges": "E-mail change requests",
-    "privacyRequests": "Data-subject requests",
     "financeOverview": "Financial summary",
     "financeTransactions": "Financial transactions",
     "financeRefunds": "Refunds",
@@ -1030,9 +1029,6 @@
       "entityEmailChanges": {
         "title": "E-mail change requests"
       },
-      "privacyRequests": {
-        "title": "Data-subject requests"
-      },
       "assessment": {
         "title": "Assessment request"
       },
@@ -1169,8 +1165,7 @@
             "accredited_assessment": "Accredited assessment",
             "payments": "Payments & receipts",
             "technical_support": "Technical support",
-            "other": "Other",
-            "privacy_request": "Personal data request"
+            "other": "Other"
           },
           "message": "Message",
           "consent": "I agree to the privacy policy and to the processing of my data to answer my enquiry.",
@@ -1675,7 +1670,6 @@
     "groups": {
       "dashboard": "Dashboard",
       "entity": "Entity",
-      "privacy": "Personal data protection",
       "assessment": "Assessment",
       "requests": "Requests",
       "award": "Award",
@@ -2066,11 +2060,6 @@
         "advanced": "Advanced assessment",
         "bag": "Quick Excellence Kit"
       },
-      "privacyKind": {
-        "access": "Access to personal data",
-        "correction": "Correction of personal data",
-        "deletion": "Deletion of personal data"
-      },
       "kept": {
         "payments_receipts_refunds": "Payments, payment receipts and recorded refunds with their bank-transfer evidence, kept for their 10-year retention and de-linked from the profile",
         "audit_log": "The audit log, untouched",
@@ -2116,7 +2105,7 @@
     "hints": {
       "nameEn": "Optional. Used in the English interface.",
       "phone": "Optional. A Saudi mobile number that starts with 05 and has 10 digits.",
-      "governanceGrade": "The NCNP governance percentage from 0 to 100, up to two decimals.",
+      "governanceGrade": "The NCNP governance percentage from 0 to 100, up to three decimals.",
       "metricsProfile": "The governance grade, employees and beneficiaries complete the entity profile.",
       "marketingConsent": "Optional and unticked by default. You can change it at any time from the entity profile.",
       "unifiedNumber": "10 digits."
@@ -2133,7 +2122,7 @@
       "count": "Enter a whole number of 0 or more",
       "foundingYear": "Enter a year between {min} and {max}",
       "phone": "Enter a Saudi mobile number that starts with 05 and has 10 digits",
-      "governanceGrade": "Enter a number from 0 to 100 with at most two decimals",
+      "governanceGrade": "Enter a number from 0 to 100 with at most three decimals",
       "passwordMin": "Must be at least {min} characters",
       "passwordMatch": "The passwords do not match",
       "termsRequired": "You must accept the terms and the privacy policy to register",
@@ -2243,8 +2232,7 @@
       "resendVerification": "Resend verification",
       "delete": "Delete",
       "restore": "Restore",
-      "permanentDelete": "Delete permanently",
-      "exportPersonalData": "Export personal data"
+      "permanentDelete": "Delete permanently"
     },
     "toasts": {
       "edit": "The entity details were updated.",
@@ -2254,7 +2242,6 @@
       "delete": "The entity was moved to Deleted entities.",
       "restore": "The entity was restored with its requests.",
       "permanentDelete": "The entity record was deleted permanently.",
-      "exportPersonalData": "The personal data package was downloaded.",
       "exported": "Exported {count} entities.",
       "exportFailed": "The export could not be prepared."
     },
@@ -2278,10 +2265,6 @@
       "restore": {
         "title": "Restore the entity",
         "message": "{name} · its requests are released"
-      },
-      "exportPersonalData": {
-        "title": "Export personal data",
-        "message": "{name}"
       }
     },
     "delete": {
@@ -2373,64 +2356,6 @@
       "rejected": "The e-mail change was rejected.",
       "emptyTitle": "No e-mail changes in this list",
       "emptyMessage": "Verified requests that need approval appear here."
-    },
-    "privacy": {
-      "title": "Data-subject requests",
-      "subtitle": "Access, correction and deletion requests under the Personal Data Protection Law. Every action is audited.",
-      "add": "New request",
-      "kind": "Request type",
-      "allKinds": "All types",
-      "columns": {
-        "entity": "Entity",
-        "kind": "Type",
-        "details": "Details",
-        "createdAt": "Recorded on",
-        "status": "Status",
-        "actions": "Decision"
-      },
-      "fulfil": "Mark fulfilled",
-      "reject": "Reject",
-      "fulfilTitle": "Fulfil the request",
-      "rejectTitle": "Reject the request",
-      "decisionMessage": "The decision closes the request.",
-      "noteLabel": "Decision note",
-      "emptyTitle": "No requests in this list",
-      "emptyMessage": "Record a request when an entity asks to access, correct or delete its personal data.",
-      "form": {
-        "title": "Record a data-subject request",
-        "entity": "Entity",
-        "entitySearch": "Search for the entity",
-        "kind": "Request type",
-        "details": "Request details",
-        "detailsHint": "At least {min} characters. Do not paste personal data that is not needed.",
-        "submit": "Record request"
-      },
-      "toasts": {
-        "created": "The request was recorded.",
-        "fulfil": "The request was marked fulfilled.",
-        "reject": "The request was rejected."
-      },
-      "contact": {
-        "title": "Contact messages of an e-mail address",
-        "intro": "For personal data requests from visitors who wrote to the platform without an account: export or delete their messages by e-mail address. Every action is recorded in the audit log.",
-        "email": "Sender e-mail address",
-        "reason": "Reason",
-        "reasonHint": "Such as the data subject's request number. 10 to 1000 characters.",
-        "export": "Export the messages",
-        "erase": "Delete the messages",
-        "eraseTitle": "Delete the messages of this address?",
-        "exportedCount": "Messages exported: {count}",
-        "erasedCount": "{messages} messages and {entries} entries were deleted.",
-        "downloadFile": "Download the file",
-        "errors": {
-          "email": "Enter a valid e-mail address.",
-          "reason": "Write a reason of {min} to {max} characters."
-        },
-        "toasts": {
-          "exported": "The export is ready.",
-          "erased": "The deletion is complete."
-        }
-      }
     },
     "cities": {
       "title": "Cities",
@@ -2544,7 +2469,6 @@
       "approve_substitute_evaluations": "Substitute evaluations to approve",
       "record_refunds": "Payments needing a recorded refund",
       "review_entity_email_changes": "Entity official e-mail changes to review",
-      "handle_privacy_requests": "Open personal data requests",
       "fix_criteria_draft": "Issues in the criteria draft",
       "publish_content_changes": "Content changes to publish",
       "answer_contact_messages": "New contact messages to handle",
@@ -3288,11 +3212,9 @@
       "description": "Review every notification type the platform sends: its channels, who receives it and whether it is mandatory.",
       "catalogue": {
         "readOnlyNote": "This list is read-only. Notification texts are part of the system, and each user chooses the optional channels in their own preferences.",
-        "filtersLabel": "Filter notification types",
         "allModules": "All modules",
         "allCategories": "All categories",
         "allAudiences": "All audiences",
-        "reset": "Clear filters",
         "total": "Types: {count}",
         "emptyTitle": "No matching types",
         "emptyMessage": "Change the filters to see other types.",
@@ -7622,11 +7544,6 @@
         "refunded": "Refunded"
       },
       "search": "Search by payment number, receipt number or authorized person",
-      "filters": {
-        "toggle": "Filters",
-        "active": "Filters, {count} active",
-        "clear": "Clear filters"
-      },
       "recordsTitle": "Payment records",
       "tableCaption": "Payments with their receipt and the amounts before and after VAT",
       "service": "{service} —",
@@ -7911,7 +7828,7 @@
         "unifiedNumber": "10 digits.",
         "licenseNumber": "Digits only, as on the entity's licence.",
         "foundedOn": "Day, month and year.",
-        "governanceGrade": "From the National Center, up to two decimals.",
+        "governanceGrade": "From the National Center, up to three decimals.",
         "phone": "Starts with 05 and has 10 digits.",
         "websiteUrl": "A full address that starts with https://"
       },
@@ -8726,8 +8643,7 @@
       "mine": "Assigned to me",
       "unassigned": "Not assigned",
       "from": "From date",
-      "to": "To date",
-      "reset": "Clear filters"
+      "to": "To date"
     },
     "empty": {
       "title": "No messages",
@@ -9427,6 +9343,9 @@
       "apply": "Apply",
       "reset": "Clear all",
       "clear": "Clear filters"
+    },
+    "search": {
+      "close": "Close search"
     }
   }
 }

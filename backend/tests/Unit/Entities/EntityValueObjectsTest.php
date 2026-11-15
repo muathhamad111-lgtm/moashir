@@ -24,18 +24,19 @@ it('resolves the English entity name when present', function (): void {
         ->and($name->equals(new EntityName('وقف الخير التنموي', 'Al-Khair Development Waqf')))->toBeTrue();
 });
 
-it('keeps governance grades as two-decimal percentages between 0 and 100', function (string|int $input, string $expected): void {
+it('keeps governance grades as three-decimal percentages between 0 and 100', function (string|int $input, string $expected): void {
     expect(GovernanceGrade::of($input)->toDecimal())->toBe($expected);
 })->with([
-    ['87.5', '87.50'],
-    ['0', '0.00'],
-    [100, '100.00'],
-    ['99.99', '99.99'],
+    ['87.5', '87.500'],
+    ['0', '0.000'],
+    [100, '100.000'],
+    ['99.99', '99.990'],
+    ['87.455', '87.455'],
 ]);
 
 it('rejects governance grades outside the percentage range or with more decimals', function (string $input): void {
     expect(fn (): GovernanceGrade => GovernanceGrade::of($input))->toThrow(InvalidArgumentException::class);
-})->with(['100.01', '-0.01', '87.455', 'advanced']);
+})->with(['100.001', '-0.01', '87.4555', 'advanced']);
 
 it('accepts a deletion only when the acknowledged requests match the open ones exactly', function (array $open, bool $confirm, array $acknowledged, bool $expected): void {
     expect(new SoftDeletionInstruction('سبب موثق للحذف.', $confirm, $acknowledged)->acknowledges($open))->toBe($expected);

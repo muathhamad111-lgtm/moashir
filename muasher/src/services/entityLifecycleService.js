@@ -46,7 +46,4 @@ export const entityLifecycleService = {
       payload,
     )
   },
-  exportPersonalData(id, reason) {
-    return reasonAction('exportPersonalData', id, 'export', reason)
-  },
 }

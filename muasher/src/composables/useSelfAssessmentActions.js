@@ -73,7 +73,10 @@ export function useSelfAssessmentActions({ formState, scoreSheet, onMissing, onS
     try {
       const { data } = await assessmentsService.submit(assessmentId(), sheetRequest('submit'))
       confirmOpen.value = false
-      success.show({ title: t('assessment.self.toasts.submitted'), message: formState.assessment.value.number })
+      success.show({
+        title: t('assessment.self.toasts.submitted'),
+        message: formState.assessment.value.number,
+      })
       onSubmitted(data)
     } catch (error) {
       confirmOpen.value = false

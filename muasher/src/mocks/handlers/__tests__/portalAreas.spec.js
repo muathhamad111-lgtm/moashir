@@ -81,15 +81,15 @@ describe('sender threads', () => {
   it('returns the id of a message sent while signed in and lists it', async () => {
     seedMockSession(NAMAA)
     const sent = await call('POST', '/contact-messages', {
-      enquiry_type: 'privacy_request',
-      message: 'نرجو تزويدنا بنسخة من بيانات حسابنا.',
+      enquiry_type: 'technical_support',
+      message: 'نرجو مساعدتنا في تحديث بيانات حسابنا.',
       privacy_consent: true,
       website: '',
     })
     expect(sent.status).toBe(201)
     expect(sent.body.data.id).toMatch(/^[0-9a-f-]{36}$/)
     const list = await call('GET', '/me/contact-messages?filter[status]=new')
-    expect(list.body.data[0].enquiry_type).toBe('privacy_request')
+    expect(list.body.data[0].enquiry_type).toBe('technical_support')
   })
 })
 

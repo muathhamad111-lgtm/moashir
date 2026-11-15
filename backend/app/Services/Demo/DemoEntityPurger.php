@@ -13,7 +13,6 @@ use App\Models\Contact\ContactMessage;
 use App\Models\Entities\Entity;
 use App\Models\Entities\EntityProfileChange;
 use App\Models\Entities\FrozenDeadline;
-use App\Models\Entities\PrivacyRequest;
 use App\Models\Files\StoredFile;
 use App\Models\Identity\EmailChangeRequest;
 use App\Models\Identity\User;
@@ -75,7 +74,6 @@ final readonly class DemoEntityPurger
             ->delete();
 
         EntityProfileChange::query()->where('entity_id', $entity->id)->toBase()->delete();
-        PrivacyRequest::query()->where('entity_id', $entity->id)->toBase()->delete();
         FrozenDeadline::query()->where('entity_id', $entity->id)->toBase()->delete();
         EntityPeriodStatus::query()->where('entity_id', $entity->id)->toBase()->delete();
         PeriodNotice::query()->where('entity_id', $entity->id)->toBase()->delete();

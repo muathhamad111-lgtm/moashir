@@ -58,12 +58,6 @@ export function usePaymentsHub({ perPage = DEFAULT_PER_PAGE } = {}) {
     list.load()
   }
 
-  function clearFilters() {
-    list.paginator.setPage(1)
-    list.searchInput.value = ''
-    list.filters.reset()
-  }
-
   function dropExpiredOrder(id) {
     pendingOrders.value = pendingOrders.value.filter((order) => order.id !== id)
     refresh()
@@ -79,7 +73,6 @@ export function usePaymentsHub({ perPage = DEFAULT_PER_PAGE } = {}) {
     activeFilterCount,
     isFiltered,
     refresh,
-    clearFilters,
     dropExpiredOrder,
   }
 }

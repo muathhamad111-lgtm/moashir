@@ -77,10 +77,7 @@ export function useTransferDecisions({ onDecided = () => {} } = {}) {
   function approve(reason = null) {
     const ids = approveTargets.value.map((target) => target.id)
     if (ids.length === 1)
-      return runSingle(
-        () => bankTransfersService.approve(ids[0], reason),
-        'approved',
-      )
+      return runSingle(() => bankTransfersService.approve(ids[0], reason), 'approved')
     return runBulk(() => bankTransfersService.bulkApprove(ids, reason))
   }
 
@@ -88,10 +85,7 @@ export function useTransferDecisions({ onDecided = () => {} } = {}) {
     const ids = rejectTargets.value.map((target) => target.id)
     const rejection = { rejectionReason, note }
     if (ids.length === 1)
-      return runSingle(
-        () => bankTransfersService.reject(ids[0], rejection, reason),
-        'rejected',
-      )
+      return runSingle(() => bankTransfersService.reject(ids[0], rejection, reason), 'rejected')
     return runBulk(() => bankTransfersService.bulkReject(ids, rejection, reason))
   }
 

@@ -13,7 +13,6 @@ export const ENTITY_ACTIONS = {
   DELETE: 'delete',
   RESTORE: 'restore',
   PERMANENT_DELETE: 'permanentDelete',
-  EXPORT_PERSONAL_DATA: 'exportPersonalData',
 }
 
 const ICONS = {
@@ -25,7 +24,6 @@ const ICONS = {
   delete: 'trash',
   restore: 'undo',
   permanentDelete: 'trash',
-  exportPersonalData: 'upload',
 }
 
 const DANGEROUS = new Set([
@@ -58,7 +56,6 @@ export function useEntityActions() {
     [ENTITY_ACTIONS.RESTORE]: (entity) => can(P.ENTITIES_DELETE) && entity.isDeleted === true,
     [ENTITY_ACTIONS.PERMANENT_DELETE]: (entity) =>
       auth.user?.isSuperAdmin === true && entity.isDeleted === true,
-    [ENTITY_ACTIONS.EXPORT_PERSONAL_DATA]: () => can(P.PRIVACY_REQUESTS_MANAGE),
   }
 
   function describe(key) {

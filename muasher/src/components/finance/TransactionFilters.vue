@@ -63,42 +63,36 @@ const sortOptions = computed(() =>
       @update:model-value="emit('filter', 'entity_id', $event)"
     />
     <AppSelect
-      variant="filter"
       :model-value="filters.status"
       :options="statusOptions"
       :label="t('finance.filters.status')"
       @update:model-value="emit('filter', 'status', $event)"
     />
     <AppSelect
-      variant="filter"
       :model-value="filters.purpose"
       :options="purposeOptions"
       :label="t('finance.filters.service')"
       @update:model-value="emit('filter', 'purpose', $event)"
     />
     <AppSelect
-      variant="filter"
       :model-value="filters.channel"
       :options="channelOptions"
       :label="t('finance.filters.channel')"
       @update:model-value="emit('filter', 'channel', $event)"
     />
     <AppSelect
-      variant="filter"
       :model-value="filters.method"
       :options="methodOptions"
       :label="t('finance.filters.method')"
       @update:model-value="emit('filter', 'method', $event)"
     />
     <AppSelect
-      variant="filter"
       :model-value="filters.mode"
       :options="modeOptions"
       :label="t('finance.filters.mode')"
       @update:model-value="emit('filter', 'mode', $event)"
     />
     <AppSelect
-      variant="filter"
       :model-value="sort"
       :options="sortOptions"
       :label="t('finance.filters.sort')"

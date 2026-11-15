@@ -1,16 +1,11 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { privacyRequestsService } from '@/services/privacyRequestsService'
 import { localizedText } from '@/utils/localizedText'
 
 const PICKER_SIZE = 10
 const MIN_TERM = 2
 
-function privacyLookup(search, size) {
-  return privacyRequestsService.lookupEntities({ search, limit: size })
-}
-
-export function useEntityPicker({ lookup = privacyLookup } = {}) {
+export function useEntityPicker({ lookup }) {
   const { t, locale } = useI18n()
   const options = ref([])
   const loading = ref(false)

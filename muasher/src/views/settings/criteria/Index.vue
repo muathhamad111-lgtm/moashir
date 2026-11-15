@@ -168,14 +168,14 @@ function onAction(key, row) {
       <ListToolbar
         v-model:search="search"
         :search-placeholder="t('criteria.index.searchPlaceholder')"
+        :filter-state="filters"
       >
-        <template #filters>
+        <template #filters="{ draft }">
           <AppSelect
-            variant="filter"
-            :model-value="filters.filters.active"
+            :model-value="draft.filters.active"
             :options="activeOptions"
             :label="t('criteria.filters.state')"
-            @update:model-value="filters.setFilter('active', $event)"
+            @update:model-value="draft.setFilter('active', $event)"
           />
         </template>
         <template v-if="access.canEditTree.value" #actions>

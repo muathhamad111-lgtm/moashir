@@ -24,11 +24,7 @@ async function expand() {
   input.value?.focus()
 }
 
-function collapseIfEmpty() {
-  if (!props.modelValue) opened.value = false
-}
-
-async function onEscape() {
+async function collapse() {
   emit('update:modelValue', '')
   opened.value = false
   await nextTick()
@@ -62,9 +58,16 @@ async function onEscape() {
         :placeholder="label"
         :aria-label="label"
         @input="emit('update:modelValue', $event.target.value)"
-        @blur="collapseIfEmpty"
-        @keydown.esc.prevent="onEscape"
+        @keydown.esc.prevent="collapse"
       />
+      <button
+        type="button"
+        class="expandable-search__close"
+        :aria-label="t('dataList.search.close')"
+        @click="collapse"
+      >
+        <AppIcon name="x" />
+      </button>
     </div>
   </div>
 </template>

@@ -176,19 +176,6 @@ export const permissionCatalogFixture = [
     grantable: false,
   },
   {
-    key: 'privacy.requests.manage',
-    module: 'privacy',
-    label: { ar: 'إدارة طلبات أصحاب البيانات', en: 'Manage data-subject requests' },
-    description: {
-      ar: 'معالجة طلبات الاطلاع والتصحيح والحذف وفق نظام حماية البيانات الشخصية.',
-      en: 'Handle access, correction and deletion requests under the Personal Data Protection Law.',
-    },
-    system: true,
-    lockedToRoles: [],
-    confidential: true,
-    grantable: true,
-  },
-  {
     key: 'assessment.criteria.view',
     module: 'assessment',
     label: { ar: 'عرض المعايير المنشورة', en: 'View published criteria' },
@@ -1148,7 +1135,6 @@ export const defaultRoleMatrixFixture = {
     'entities.email_change.approve',
     'entities.delete',
     'entities.export',
-    'privacy.requests.manage',
     'assessment.criteria.view',
     'assessment.history.view',
     'evidence.view',

@@ -1,6 +1,7 @@
 /* eslint-disable playwright/no-conditional-in-test, playwright/no-wait-for-timeout */
 import { test, expect } from '@playwright/test'
 import { seedLocale } from './support/session'
+import { searchList } from './support/listFilters'
 
 function localeSuffix(testInfo) {
   return testInfo.project.name === 'chromium-en-ltr' ? 'en-ltr' : 'ar-rtl'
@@ -105,7 +106,7 @@ test('public KPIs page renders the premium grid with tabs, search and show more'
     fullPage: true,
   })
 
-  await page.locator('.kpis-page__toolbar .toolbar__search input').fill('zzzznomatch')
+  await searchList(page, 'zzzznomatch')
   await expect(page.locator('.empty-state')).toBeVisible()
   await expect(page.locator('.kpi-card')).toHaveCount(0)
 

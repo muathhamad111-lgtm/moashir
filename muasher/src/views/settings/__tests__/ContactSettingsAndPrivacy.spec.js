@@ -1,10 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import ContactMessages from '@/views/settings/ContactMessages.vue'
-import ContactPrivacyTools from '@/components/entities/admin/ContactPrivacyTools.vue'
-import ConfirmModal from '@/components/modal/ConfirmModal.vue'
 import { contactSettingsService } from '@/services/contactSettingsService'
-import { contactPrivacyService } from '@/services/contactPrivacyService'
 import { changedContactSettings, contactSettingsSchema } from '@/utils/settings/contactSettingsForm'
 import { useAuthStore } from '@/stores/auth'
 import { createTestGlobals } from '@/test-utils'
@@ -12,9 +9,6 @@ import { sessionUserFor } from '@/test-utils/session'
 
 vi.mock('@/services/contactSettingsService', () => ({
   contactSettingsService: { get: vi.fn(), update: vi.fn() },
-}))
-vi.mock('@/services/contactPrivacyService', () => ({
-  contactPrivacyService: { exportByEmail: vi.fn(), eraseByEmail: vi.fn() },
 }))
 vi.mock('@/utils/download', () => ({ downloadJson: vi.fn(), downloadBlob: vi.fn() }))
 
@@ -67,70 +61,6 @@ describe('contact retention screen', () => {
     await vi.waitFor(() =>
       expect(contactSettingsService.update).toHaveBeenCalledWith({ retentionMonths: 12 }),
     )
-    wrapper.unmount()
-  })
-})
-
-describe('contact privacy tools', () => {
-  function mountTools() {
-    const globals = createTestGlobals({ locale: 'en' })
-    return mount(
-      {
-        components: { ContactPrivacyTools, ConfirmModal },
-        template: '<ContactPrivacyTools /><ConfirmModal />',
-      },
-      { global: globals, attachTo: document.body },
-    )
-  }
-
-  it('validates the address and the reason before calling the server', async () => {
-    const wrapper = mountTools()
-    await wrapper.find('form').trigger('submit')
-    expect(contactPrivacyService.exportByEmail).not.toHaveBeenCalled()
-    expect(wrapper.text()).toContain('Enter a valid e-mail address.')
-    wrapper.unmount()
-  })
-
-  it('exports the messages of an address and lists their references', async () => {
-    contactPrivacyService.exportByEmail.mockResolvedValue({
-      data: { messages: [{ reference: 'CNT-2026-000044' }] },
-    })
-    const wrapper = mountTools()
-    await wrapper.find('input[type="email"]').setValue('sara@example.sa')
-    await wrapper.find('textarea').setValue('طلب صاحب البيانات رقم 12')
-    await wrapper.find('form').trigger('submit')
-    await flushPromises()
-    expect(contactPrivacyService.exportByEmail).toHaveBeenCalledWith({
-      email: 'sara@example.sa',
-      reason: 'طلب صاحب البيانات رقم 12',
-    })
-    expect(wrapper.text()).toContain('Messages exported: 1')
-    expect(wrapper.text()).toContain('CNT-2026-000044')
-    wrapper.unmount()
-  })
-
-  it('erases only after the danger confirmation', async () => {
-    contactPrivacyService.eraseByEmail.mockResolvedValue({
-      data: { erasedMessages: 1, erasedEntries: 2 },
-    })
-    const wrapper = mountTools()
-    await wrapper.find('input[type="email"]').setValue('sara@example.sa')
-    await wrapper.find('textarea').setValue('طلب صاحب البيانات رقم 12')
-    const erase = wrapper
-      .findAll('button')
-      .find((button) => button.text() === 'Delete the messages')
-    await erase.trigger('click')
-    await flushPromises()
-    expect(contactPrivacyService.eraseByEmail).not.toHaveBeenCalled()
-    expect(document.querySelector('[role="alertdialog"] .modal__title').textContent).toBe(
-      'Delete the messages of this address?',
-    )
-    const accept = document.querySelector('.modal__footer .btn--danger')
-    expect(accept.textContent.trim()).toBe('Delete')
-    accept.click()
-    await flushPromises()
-    expect(contactPrivacyService.eraseByEmail).toHaveBeenCalled()
-    expect(wrapper.text()).toContain('1 messages and 2 entries were deleted.')
     wrapper.unmount()
   })
 })

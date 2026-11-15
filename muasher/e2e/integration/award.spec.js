@@ -8,6 +8,7 @@ import { FOOTER_LEGAL_PROBES, GUEST_SESSION_PROBE, watchApi } from './support/ap
 import { registerEntity } from './support/entities'
 import { EVIDENCE_PDF, api, apiOk, scoreSheetOf } from './support/api'
 import { chooseValue } from '../support/dropdown'
+import { searchList } from '../support/listFilters'
 
 const RUN = Date.now().toString(36)
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -203,7 +204,7 @@ test('the administrator invites a committee assessor from the users screen and t
   const mark = mailMark(COMMITTEE_ASSESSOR.email)
   await dialog.locator('button[type="submit"]').click()
   await expect(dialog).toBeHidden()
-  await page.locator('.toolbar__search input').fill(COMMITTEE_ASSESSOR.email)
+  await searchList(page, COMMITTEE_ASSESSOR.email)
   await expect(rows(page)).toHaveCount(1)
   await expect(rows(page).first()).toContainText('مدعو')
   await shot(page, 'users-invited')

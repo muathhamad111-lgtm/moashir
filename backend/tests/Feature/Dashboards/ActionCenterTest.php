@@ -2,12 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Enums\Entities\PrivacyRequestKind;
 use App\Enums\Identity\EmailChangePolicy;
 use App\Enums\Identity\EmailChangeStatus;
 use App\Enums\Identity\RoleKey;
 use App\Models\Cms\CmsPage;
-use App\Models\Entities\PrivacyRequest;
 use App\Models\Finance\Payment;
 use App\Models\Identity\EmailChangeRequest;
 use Illuminate\Support\Facades\Date;
@@ -100,15 +98,10 @@ it('shows administrative queues only to the holders of their permissions', funct
         'policy' => EmailChangePolicy::RequiresApproval,
         'status' => EmailChangeStatus::AwaitingApproval,
     ]);
-    PrivacyRequest::query()->create([
-        'entity_id' => $entity->id,
-        'kind' => PrivacyRequestKind::Access,
-        'details' => 'طلب نسخة من البيانات الشخصية المحفوظة لدى المنصة.',
-        'created_by_user_id' => systemAdmin()->id,
-    ]);
     draftVersion()->forceFill(['validation_errors' => [['code' => 'weights_mismatch']]])->save();
 
-    expect(actionItems(boardOf(systemAdmin()))->keys()->all())->toContain('review_entity_email_changes', 'handle_privacy_requests')
+    expect(actionItems(boardOf(systemAdmin()))->keys()->all())->toContain('review_entity_email_changes')
+        ->not->toContain('handle_privacy_requests')
         ->and(actionItems(boardOf(criteriaOfficer()))->keys()->all())->toBe(['fix_criteria_draft'])
         ->and(actionItems(boardOf(staffUser(RoleKey::FinanceOfficer)))->all())->toBe([]);
 });

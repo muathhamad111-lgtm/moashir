@@ -65,10 +65,6 @@ enum AuditEvent: string
     case EntityRestored = 'entity.restored';
     case EntityPermanentlyDeleted = 'security.entity.permanently_deleted';
     case EntitiesExported = 'entity.exported';
-    case PrivacyRequestCreated = 'privacy.request_created';
-    case PrivacyRequestFulfilled = 'privacy.request_fulfilled';
-    case PrivacyRequestRejected = 'privacy.request_rejected';
-    case PrivacyDataExported = 'privacy.data_exported';
     case CityCreated = 'city.created';
     case CityUpdated = 'city.updated';
     case CityToggled = 'city.toggled';
@@ -252,8 +248,6 @@ enum AuditEvent: string
     case ContactMessageClosed = 'contact_message.closed';
     case ContactMessageReopened = 'contact_message.reopened';
     case ContactMessagesPurged = 'contact_messages.purged';
-    case ContactMessagesErased = 'privacy.contact_messages_erased';
-    case ContactMessagesExported = 'privacy.contact_messages_exported';
     case ContactSettingsUpdated = 'settings.contact_updated';
     case AuthSettingsUpdated = 'settings.auth_updated';
     case AuditLogExported = 'audit.exported';

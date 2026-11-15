@@ -96,7 +96,7 @@ describe('ProfileSectionForm', () => {
 
   it('saves the full section with the base revision and emits saved', async () => {
     entitiesService.saveProfileSection.mockResolvedValue({
-      data: profileWith({ governanceGrade: '82.50' }),
+      data: profileWith({ governanceGrade: '82.500' }),
       meta: { section: 'governance', changedFields: ['governance_grade'] },
     })
     const { wrapper } = await factory()
@@ -105,7 +105,7 @@ describe('ProfileSectionForm', () => {
     await submit(wrapper)
     expect(entitiesService.saveProfileSection).toHaveBeenCalledWith('governance', {
       baseRevision: 'r-1',
-      governanceGrade: '82.50',
+      governanceGrade: '82.500',
       employeesCount: null,
       annualBeneficiariesCount: null,
       hasStrategicPlan: true,

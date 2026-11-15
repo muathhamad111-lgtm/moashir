@@ -1031,12 +1031,6 @@ export const appRoutes = [
     meta: { layout: 'app', titleKey: 'routes.admin.assessment.title', requiresAuth: true },
   },
   {
-    path: '/admin/privacy-requests',
-    name: ROUTE_NAMES.ADMIN_PRIVACY_REQUESTS,
-    component: () => import('@/views/entities/admin/PrivacyRequests.vue'),
-    meta: { layout: 'app', titleKey: 'routes.admin.privacyRequests.title', requiresAuth: true },
-  },
-  {
     path: '/admin/settings/cities',
     name: ROUTE_NAMES.ADMIN_SETTINGS_CITIES,
     component: () => import('@/views/settings/Cities.vue'),
