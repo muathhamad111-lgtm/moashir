@@ -971,8 +971,11 @@ export const homePageFixture = {
 }
 
 export const siteSettingsFixture = {
-  platformName: null,
-  platformDescription: null,
+  platformName: { ar: 'مؤشر', en: 'Moashir' },
+  platformDescription: {
+    ar: 'منصة رقمية لقياس النضج المؤسسي للجمعيات والمؤسسات الأهلية والأوقاف وفق نموذج التميّز في العمل الخيري.',
+    en: 'A digital platform that measures the institutional maturity of civil associations, civil foundations and endowments against the Charitable Work Excellence Model.',
+  },
   headerLinks: [
     { label: { ar: 'الرئيسية', en: 'Home' }, url: '/' },
     { label: { ar: 'جولة في المنصة', en: 'Platform tour' }, url: '/#tour' },

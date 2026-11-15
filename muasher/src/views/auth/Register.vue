@@ -5,6 +5,7 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 import WizardStepper from '@/components/wizard/WizardStepper.vue'
 import RegistrationEntityStep from '@/components/entities/registration/RegistrationEntityStep.vue'
 import RegistrationAccountStep from '@/components/entities/registration/RegistrationAccountStep.vue'
@@ -13,7 +14,7 @@ import { useRegistrationSteps } from '@/composables/useRegistrationSteps'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 
 const { t } = useI18n()
-const { form, status, load, regions } = useEntityRegistration()
+const { form, status, load, regions, underReview } = useEntityRegistration()
 const wizard = useRegistrationSteps(form)
 const stepPanel = useTemplateRef('stepPanel')
 
@@ -54,6 +55,20 @@ onMounted(load)
       :message="t('entities.registration.loadFailed')"
       @retry="load"
     />
+
+    <div
+      v-else-if="underReview"
+      class="auth-status auth-status--success"
+      role="status"
+      data-testid="registration-under-review"
+    >
+      <AppIcon name="check-circle" class="auth-status__icon" />
+      <p class="auth-status__title">{{ t('entities.registration.underReview.title') }}</p>
+      <p class="auth-status__text">{{ t('auth.failures.signIn.pendingReview') }}</p>
+      <router-link class="btn btn--secondary" :to="{ name: ROUTE_NAMES.PUBLIC_HOME }">
+        {{ t('entities.registration.underReview.home') }}
+      </router-link>
+    </div>
 
     <EmptyState
       v-else-if="status === 'unavailable'"

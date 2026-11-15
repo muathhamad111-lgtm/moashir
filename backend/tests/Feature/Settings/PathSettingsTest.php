@@ -37,7 +37,7 @@ it('serves the settings of each path with defaults', function (): void {
         ->assertJsonPath('data.review_sla_days', 14)
         ->assertJsonPath('data.is_paid', false)
         ->assertJsonPath('data.price', null);
-    test()->getJson(PATH_SETTINGS.'self')->assertNotFound();
+    test()->getJson(PATH_SETTINGS.'bag')->assertNotFound();
 });
 
 it('updates each path independently and audits every changed key', function (): void {

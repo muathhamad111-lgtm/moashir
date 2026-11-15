@@ -5,8 +5,10 @@ import { describe, expect, it } from 'vitest'
 import pending from '@/assets/icons/tts/pending.json'
 import { ICON_ALIASES, RTL_MIRRORED_ICONS } from '@/constants/icons'
 import { KPI_ICON_OPTIONS } from '@/constants/kpis'
+import { SOCIAL_PLATFORMS } from '@/constants/socialPlatforms'
 import {
   ICON_GLYPHS,
+  BRAND_ICON_NAMES,
   ICON_NAMES,
   INTERIM_GLYPHS,
   PENDING_ICONS,
@@ -42,7 +44,17 @@ describe('icon registry', () => {
     Object.keys(PENDING_ICONS).forEach((name) => expect(SVG_FILES).not.toContain(name))
     Object.keys(INTERIM_GLYPHS).forEach((name) => expect(SVG_FILES).not.toContain(name))
     WITHHELD_ICONS.forEach((name) => expect(SVG_FILES).not.toContain(name))
-    Object.keys(pending.brand).forEach((name) => expect(name).toMatch(/^brand-/))
+    expect(pending).not.toHaveProperty('brand')
+  })
+
+  it('draws the real logo of every social platform instead of a generic link', () => {
+    const socialIcons = [...new Set(Object.values(SOCIAL_PLATFORMS).map(({ icon }) => icon))]
+    expect([...BRAND_ICON_NAMES].sort()).toEqual([...socialIcons].sort())
+    socialIcons.forEach((name) => {
+      expect(resolveIcon(name).paths).toEqual(ICON_GLYPHS[name])
+      expect(resolveIcon(name).paths).not.toEqual(ICON_GLYPHS.link)
+      expect(resolveIcon(name).mirrorInRtl).toBe(false)
+    })
   })
 
   it('draws nothing for the withheld names whose stand-in would mislead', () => {

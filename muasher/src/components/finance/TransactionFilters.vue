@@ -3,16 +3,17 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppSelect from '@/components/form/AppSelect.vue'
 import BaseDatePicker from '@/components/form/BaseDatePicker.vue'
+import AppCombobox from '@/components/form/AppCombobox.vue'
 import TransactionEntityFilter from '@/components/finance/TransactionEntityFilter.vue'
 import { usePermissions } from '@/composables/usePermissions'
 import { PERMISSIONS } from '@/constants/permissionKeys'
+import { PAYMENT_PURPOSE_VALUES } from '@/constants/payments'
+import { TRANSACTION_SORTS } from '@/constants/finance'
 import {
-  PAYMENT_CHANNEL_VALUES,
-  PAYMENT_METHOD_VALUES,
-  PAYMENT_PURPOSE_VALUES,
-  PAYMENT_STATUS_VALUES,
-} from '@/constants/payments'
-import { FINANCE_MODES, TRANSACTION_SORTS } from '@/constants/finance'
+  LIST_FILTERS,
+  joinFilterValues,
+  splitFilterValue,
+} from '@/utils/finance/transactionFilterValues'
 
 defineProps({
   filters: { type: Object, required: true },
@@ -24,28 +25,22 @@ const { t } = useI18n()
 const { can } = usePermissions()
 const canPickEntity = computed(() => can(PERMISSIONS.ENTITIES_VIEW))
 
-function withAll(allKey, values, prefix) {
-  return [
-    { value: '', label: t(allKey) },
-    ...values.map((value) => ({ value, label: t(`${prefix}.${value}`) })),
-  ]
+// Labels only: a status explains itself on hover in the table, not inside the filter.
+function labelledOptions(group, values) {
+  return values.map((value) => ({ value, label: t(`finance.operations.${group}.${value}.label`) }))
 }
 
-const statusOptions = computed(() =>
-  withAll('finance.filters.allStatuses', PAYMENT_STATUS_VALUES, 'finance.status'),
-)
-const purposeOptions = computed(() =>
-  withAll('finance.filters.allServices', PAYMENT_PURPOSE_VALUES, 'finance.purposes'),
-)
-const channelOptions = computed(() =>
-  withAll('finance.filters.allChannels', PAYMENT_CHANNEL_VALUES, 'finance.channels'),
-)
-const methodOptions = computed(() =>
-  withAll('finance.filters.allMethods', PAYMENT_METHOD_VALUES, 'finance.methods'),
-)
-const modeOptions = computed(() => [
-  { value: '', label: t('finance.filters.modes.live') },
-  { value: FINANCE_MODES.TEST, label: t('finance.filters.modes.test') },
+const listFilters = computed(() => [
+  { key: 'type', group: 'types', options: labelledOptions('types', LIST_FILTERS.type) },
+  { key: 'status', group: 'statuses', options: labelledOptions('statuses', LIST_FILTERS.status) },
+])
+
+function emitList(key, values) {
+  emit('filter', key, joinFilterValues(values, LIST_FILTERS[key]))
+}
+const purposeOptions = computed(() => [
+  { value: '', label: t('finance.filters.allServices') },
+  ...PAYMENT_PURPOSE_VALUES.map((value) => ({ value, label: t(`finance.purposes.${value}`) })),
 ])
 const sortOptions = computed(() =>
   TRANSACTION_SORTS.map((value) => ({
@@ -57,46 +52,16 @@ const sortOptions = computed(() =>
 
 <template>
   <div class="transaction-filters">
-    <TransactionEntityFilter
-      v-if="canPickEntity"
-      :model-value="filters.entity_id"
-      @update:model-value="emit('filter', 'entity_id', $event)"
-    />
-    <AppSelect
-      :model-value="filters.status"
-      :options="statusOptions"
-      :label="t('finance.filters.status')"
-      @update:model-value="emit('filter', 'status', $event)"
-    />
-    <AppSelect
-      :model-value="filters.purpose"
-      :options="purposeOptions"
-      :label="t('finance.filters.service')"
-      @update:model-value="emit('filter', 'purpose', $event)"
-    />
-    <AppSelect
-      :model-value="filters.channel"
-      :options="channelOptions"
-      :label="t('finance.filters.channel')"
-      @update:model-value="emit('filter', 'channel', $event)"
-    />
-    <AppSelect
-      :model-value="filters.method"
-      :options="methodOptions"
-      :label="t('finance.filters.method')"
-      @update:model-value="emit('filter', 'method', $event)"
-    />
-    <AppSelect
-      :model-value="filters.mode"
-      :options="modeOptions"
-      :label="t('finance.filters.mode')"
-      @update:model-value="emit('filter', 'mode', $event)"
-    />
-    <AppSelect
-      :model-value="sort"
-      :options="sortOptions"
-      :label="t('finance.filters.sort')"
-      @update:model-value="emit('sort', $event)"
+    <AppCombobox
+      v-for="list in listFilters"
+      :key="list.key"
+      :class="`transaction-filters__${list.key}`"
+      :model-value="splitFilterValue(filters[list.key])"
+      :options="list.options"
+      :label="t(`finance.operations.${list.group}.title`)"
+      :placeholder="t(`finance.operations.${list.group}.all`)"
+      multiple
+      @update:model-value="emitList(list.key, $event)"
     />
     <BaseDatePicker
       :model-value="filters.from"
@@ -111,6 +76,23 @@ const sortOptions = computed(() =>
       :label="t('finance.filters.to')"
       :min="filters.from"
       @update:model-value="emit('filter', 'to', $event)"
+    />
+    <AppSelect
+      :model-value="filters.purpose"
+      :options="purposeOptions"
+      :label="t('finance.filters.service')"
+      @update:model-value="emit('filter', 'purpose', $event)"
+    />
+    <TransactionEntityFilter
+      v-if="canPickEntity"
+      :model-value="filters.entity_id"
+      @update:model-value="emit('filter', 'entity_id', $event)"
+    />
+    <AppSelect
+      :model-value="sort"
+      :options="sortOptions"
+      :label="t('finance.filters.sort')"
+      @update:model-value="emit('sort', $event)"
     />
   </div>
 </template>

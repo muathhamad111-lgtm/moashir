@@ -10,7 +10,7 @@ use App\Enums\Notifications\NotificationCode;
 use App\Models\Audit\Audit;
 use App\Models\Entities\City;
 use App\Models\Entities\Entity;
-use App\Models\Identity\OtpCode;
+use App\Models\Identity\RegistrationEmailVerification;
 use App\Models\Identity\TermsAcceptance;
 use App\Models\Identity\TermsVersion;
 use App\Models\Identity\User;
@@ -37,19 +37,21 @@ beforeEach(function (): void {
     Notification::fake();
 });
 
-it('registers an entity pending verification and sends an e-mail code without revealing it', function (): void {
-    $response = register(registrationPayload())
-        ->assertCreated()
-        ->assertJsonPath('data.step', 'otp_required')
-        ->assertJsonPath('data.requires_otp', true)
-        ->assertJsonPath('data.otp.channel', 'email')
-        ->assertJsonPath('data.otp.length', 6)
-        ->assertJsonStructure(['data' => ['otp' => ['challenge_id', 'expires_at', 'resend_available_at'], 'message'], 'meta', 'errors']);
+it('registers an entity with the verified official e-mail, holds it for staff review and opens no session', function (): void {
+    $administrator = systemAdmin();
 
+    register(registrationPayload())
+        ->assertCreated()
+        ->assertExactJson(['data' => ['step' => 'pending_review', 'message' => __('messages.registration_pending_review')], 'meta' => [], 'errors' => null]);
+
+    $this->getJson('/api/v1/auth/session')->assertUnauthorized();
     $owner = registeredOwner();
     $entity = Entity::query()->findOrFail($owner->entity_id);
+    $verified = Audit::query()->where('event', AuditEvent::EntityVerified->value)->sole();
 
-    expect($entity->status)->toBe(EntityStatus::PendingVerification)
+    expect($entity->status)->toBe(EntityStatus::PendingReview)
+        ->and($entity->verified_at)->not->toBeNull()
+        ->and($entity->approved_at)->toBeNull()
         ->and($entity->name->ar)->toBe('جمعية الأمل الخيرية')
         ->and($entity->governance_grade)->toBe('87.450')
         ->and($entity->hasCompleteProfile())->toBeFalse()
@@ -58,10 +60,13 @@ it('registers an entity pending verification and sends an e-mail code without re
         ->and($owner->roleKeys())->toBe([RoleKey::Entity])
         ->and($owner->name)->toBe('سلمان بن فهد العتيبي')
         ->and($owner->phone)->toBe('+966551234567')
-        ->and($owner->email_verified_at)->toBeNull()
+        ->and($owner->email_verified_at)->not->toBeNull()
         ->and($owner->mfa_required)->toBeFalse()
         ->and($owner->passwordHistories()->count())->toBe(1)
-        ->and(json_encode($response->json()))->not->toContain(otpCodeSentTo($owner));
+        ->and($verified->new_values)->toBe(['status' => 'pending_review']);
+    Notification::assertSentTo($administrator, EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityAwaitingReview);
+    Notification::assertNotSentTo($owner, EntityNotification::class, static fn (EntityNotification $notification): bool => in_array($notification->notice->code, [NotificationCode::EntityProfileIncomplete, NotificationCode::EntityRegistrationApproved], true));
+    Notification::assertNotSentTo($owner, OtpCodeNotification::class);
 });
 
 it('stores the terms acceptance with the version and the time of acceptance', function (): void {
@@ -110,7 +115,6 @@ it('notifies the entity and the system administrators of the registration', func
 
     Notification::assertSentTo(registeredOwner(), EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityRegistered);
     Notification::assertSentTo($admin, EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityRegistered);
-    Notification::assertSentTo(registeredOwner(), OtpCodeNotification::class);
 });
 
 it('audits the registration without personal data', function (): void {
@@ -124,45 +128,83 @@ it('audits the registration without personal data', function (): void {
         ->and($audit->new_values)->toHaveKeys(['status', 'entity_type', 'region_id', 'marketing_consent', 'terms_version_ids']);
 });
 
-it('activates the entity and signs it in when the e-mail code is verified', function (): void {
-    $challengeId = register(registrationPayload(['employees_count' => null]))->json('data.otp.challenge_id');
-    $owner = registeredOwner();
+it('consumes the e-mail token so it cannot register a second time', function (): void {
+    $payload = registrationPayload();
 
-    $this->postJson('/api/v1/auth/otp/verify', ['challenge_id' => $challengeId, 'code' => otpCodeSentTo($owner)])
-        ->assertOk()
+    register($payload)->assertCreated();
+    register([...$payload, 'unified_number' => '7001234568'])
+        ->assertUnprocessable()
+        ->assertJsonPath('code', 'registration.email_unverified')
+        ->assertJsonPath('errors.official_email.0', __('errors.registration.email_unverified'));
+
+    expect(Entity::query()->count())->toBe(1)
+        ->and(RegistrationEmailVerification::query()->sole()->token_used_at)->not->toBeNull();
+});
+
+it('activates the entity and signs it in on registration while the review is switched off', function (): void {
+    requireEntityRegistrationReview(false);
+    $administrator = systemAdmin();
+
+    register(registrationPayload(['employees_count' => null]))
+        ->assertCreated()
         ->assertJsonPath('data.step', 'authenticated')
         ->assertJsonPath('data.user.entity.status', 'active')
         ->assertJsonPath('data.user.entity.profile_completed', false)
         ->assertJsonPath('data.user.entity.name.ar', 'جمعية الأمل الخيرية');
 
+    $owner = registeredOwner();
+    $this->assertAuthenticatedAs($owner, 'web');
     $entity = Entity::query()->findOrFail($owner->entity_id);
+    $audit = Audit::query()->where('event', AuditEvent::EntityVerified->value)->sole();
 
     expect($entity->status)->toBe(EntityStatus::Active)
         ->and($entity->verified_at)->not->toBeNull()
-        ->and($owner->refresh()->email_verified_at)->not->toBeNull()
-        ->and(Audit::query()->where('event', AuditEvent::EntityVerified->value)->count())->toBe(1);
+        ->and($entity->approved_at)->not->toBeNull()
+        ->and($owner->email_verified_at)->not->toBeNull()
+        ->and($owner->last_login_at)->not->toBeNull()
+        ->and($audit->new_values)->toBe(['status' => 'active', 'approval' => 'automatic']);
     Notification::assertSentTo($owner, EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityProfileIncomplete);
+    Notification::assertSentTo($owner, EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityRegistrationApproved);
+    Notification::assertNotSentTo($administrator, EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityAwaitingReview);
+    Notification::assertNotSentTo($owner, OtpCodeNotification::class);
 });
 
-it('does not ask a verified entity with a complete profile to complete it', function (): void {
-    $challengeId = register(registrationPayload())->json('data.otp.challenge_id');
-    $owner = registeredOwner();
-    Entity::query()->findOrFail($owner->entity_id)->forceFill(['license_number' => '770000123', 'founded_on' => '2011-03-01'])->save();
+it('does not ask a legacy entity with a complete profile to complete it once it confirms its e-mail', function (): void {
+    requireEntityRegistrationReview(false);
+    $owner = ownerOf(entityWithOwner(static fn ($factory) => $factory->pendingVerification()));
+    $challengeId = signInWith($owner->email, defaultPassword())->assertOk()->json('data.otp.challenge_id');
 
-    $this->postJson('/api/v1/auth/otp/verify', ['challenge_id' => $challengeId, 'code' => otpCodeSentTo($owner)])->assertOk();
+    $this->postJson('/api/v1/auth/otp/verify', ['challenge_id' => $challengeId, 'code' => otpCodeSentTo($owner)])
+        ->assertOk()
+        ->assertJsonPath('data.step', 'authenticated')
+        ->assertJsonPath('data.user.entity.profile_completed', true);
 
+    Notification::assertSentTo($owner, EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityRegistrationApproved);
     Notification::assertNotSentTo($owner, EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityProfileIncomplete);
 });
 
 it('asks every newly verified entity for the licence number and the founding date the registration form does not carry', function (): void {
-    $challengeId = register(registrationPayload())->json('data.otp.challenge_id');
-    $owner = registeredOwner();
+    requireEntityRegistrationReview(false);
 
-    $this->postJson('/api/v1/auth/otp/verify', ['challenge_id' => $challengeId, 'code' => otpCodeSentTo($owner)])
-        ->assertOk()
+    register(registrationPayload())
+        ->assertCreated()
         ->assertJsonPath('data.user.entity.profile_completed', false);
 
-    Notification::assertSentTo($owner, EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityProfileIncomplete);
+    Notification::assertSentTo(registeredOwner(), EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityProfileIncomplete);
+});
+
+it('asks for two-factor enrolment instead of opening a session when the entity role requires it', function (): void {
+    requireEntityRegistrationReview(false);
+    signIn(systemAdmin())->putJson('/api/v1/settings/auth', ['two_factor_roles' => ['entity']])->assertOk();
+    $this->flushSession();
+    app('auth')->forgetGuards();
+
+    register(registrationPayload())
+        ->assertCreated()
+        ->assertJsonPath('data.step', 'mfa_enrollment');
+
+    $this->assertGuest('web');
+    expect(registeredOwner()->mfa_required)->toBeTrue();
 });
 
 it('returns the entity summary in the session of a signed-in entity', function (): void {
@@ -187,39 +229,71 @@ it('keeps the session entity summary empty for staff', function (): void {
     $this->getJson('/api/v1/auth/session')->assertOk()->assertJsonPath('data.entity', null);
 });
 
-it('asks an unverified entity signing in with its password for an e-mail code', function (): void {
-    register(registrationPayload())->assertCreated();
-    $owner = registeredOwner();
+it('asks a legacy entity still awaiting e-mail confirmation for an e-mail code when it signs in with its password', function (): void {
+    $owner = ownerOf(entityWithOwner(static fn ($factory) => $factory->pendingVerification()));
 
-    signInWith($owner->email, 'Wadi-Hanifa-Spring-2026')
+    signInWith($owner->email, defaultPassword())
         ->assertOk()
         ->assertJsonPath('data.step', 'otp_required')
         ->assertJsonPath('data.requires_otp', true);
 
     $this->getJson('/api/v1/auth/session')->assertUnauthorized();
     expect(Entity::query()->findOrFail($owner->entity_id)->status)->toBe(EntityStatus::PendingVerification);
-    Notification::assertSentToTimes($owner, OtpCodeNotification::class, 2);
+    Notification::assertSentToTimes($owner, OtpCodeNotification::class, 1);
 });
 
-it('answers an already registered e-mail exactly like a new one and creates nothing', function (): void {
+it('refuses an already registered e-mail once its owner has proven it and creates nothing', function (): void {
     entityWithOwner()->owner?->forceFill(['email' => 'info@alamal.example.sa'])->save();
     $entities = Entity::query()->count();
 
-    $known = register(registrationPayload())->assertCreated()->json('data');
+    register(registrationPayload())
+        ->assertUnprocessable()
+        ->assertJsonPath('code', 'registration.email_taken')
+        ->assertJsonPath('errors.official_email.0', __('errors.registration.email_taken'));
 
-    expect(array_keys($known))->toBe(['step', 'requires_otp', 'otp', 'message'])
-        ->and(array_keys($known['otp']))->toBe(['challenge_id', 'channel', 'length', 'expires_at', 'resend_available_at'])
-        ->and(Entity::query()->count())->toBe($entities)
-        ->and(OtpCode::query()->count())->toBe(0);
+    expect(Entity::query()->count())->toBe($entities)
+        ->and(RegistrationEmailVerification::query()->sole()->token_used_at)->toBeNull();
     Notification::assertNothingSent();
 });
 
 it('treats the official e-mail case-insensitively for duplicates', function (): void {
     entityWithOwner()->owner?->forceFill(['email' => 'info@alamal.example.sa'])->save();
 
-    register(registrationPayload(['official_email' => 'INFO@ALAMAL.example.sa']))->assertCreated();
+    register(registrationPayload(['official_email' => 'INFO@ALAMAL.example.sa']))->assertUnprocessable()->assertJsonPath('code', 'registration.email_taken');
 
     expect(User::query()->whereRaw('lower(email) = ?', ['info@alamal.example.sa'])->count())->toBe(1);
+});
+
+it('refuses a registration whose official e-mail was not verified', function (Closure $token): void {
+    register(registrationPayload(['email_verification_token' => $token()]))
+        ->assertUnprocessable()
+        ->assertJsonPath('code', 'registration.email_unverified')
+        ->assertJsonPath('errors.official_email.0', __('errors.registration.email_unverified'));
+
+    expect(Entity::query()->count())->toBe(0)
+        ->and(User::query()->where('email', 'info@alamal.example.sa')->exists())->toBeFalse();
+})->with([
+    'missing' => [static fn (): ?string => null],
+    'unknown' => [static fn (): string => str_repeat('x', 64)],
+    'issued for another address' => [static fn (): string => emailVerificationTokenFor('other@alamal.example.sa')],
+    'expired' => [static function (): string {
+        $token = emailVerificationTokenFor('info@alamal.example.sa');
+        test()->travel(31)->minutes();
+
+        return $token;
+    }],
+]);
+
+it('accepts the token of the same address typed in another letter case', function (): void {
+    register(registrationPayload(['official_email' => 'Info@Alamal.example.sa', 'email_verification_token' => emailVerificationTokenFor('info@alamal.example.sa')]))->assertCreated();
+});
+
+it('keeps the e-mail token usable when the registration is refused for another field', function (): void {
+    entityWithOwner(static fn ($factory) => $factory->state(['unified_number' => '7001234567']));
+    $token = emailVerificationTokenFor('info@alamal.example.sa');
+
+    register(registrationPayload(['email_verification_token' => $token]))->assertUnprocessable()->assertJsonValidationErrors(['unified_number']);
+    register(registrationPayload(['email_verification_token' => $token, 'unified_number' => '7001234568']))->assertCreated();
 });
 
 it('rejects invalid registration data', function (Closure $mutate, string $field): void {
@@ -294,8 +368,7 @@ it('rate limits registrations per address', function (): void {
 });
 
 it('never deletes an unverified registration automatically', function (): void {
-    register(registrationPayload())->assertCreated();
-    $owner = registeredOwner();
+    $owner = ownerOf(entityWithOwner(static fn ($factory) => $factory->pendingVerification()));
 
     $this->travel(800)->days();
     Artisan::call('moashir:prune-otp-codes');
@@ -303,4 +376,21 @@ it('never deletes an unverified registration automatically', function (): void {
 
     expect(Entity::query()->whereKey($owner->entity_id)->exists())->toBeTrue()
         ->and(User::query()->whereKey($owner->id)->exists())->toBeTrue();
+});
+
+it('asks an approved entity with an authenticator but an unconfirmed e-mail for the e-mail code before the authenticator', function (): void {
+    $owner = ownerOf(entityWithOwner());
+    $owner->forceFill([...totpAttributes(), 'email_verified_at' => null])->save();
+
+    $challengeId = signInWith($owner->email, defaultPassword())
+        ->assertOk()
+        ->assertJsonPath('data.step', 'otp_required')
+        ->json('data.otp.challenge_id');
+
+    $this->postJson('/api/v1/auth/otp/verify', ['challenge_id' => $challengeId, 'code' => otpCodeSentTo($owner)])
+        ->assertOk()
+        ->assertJsonPath('data.step', 'mfa_challenge');
+
+    $this->assertGuest('web');
+    expect($owner->refresh()->email_verified_at)->not->toBeNull();
 });

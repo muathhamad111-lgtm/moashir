@@ -26,6 +26,12 @@ describe('AppFooter', () => {
     expect(wrapper.find('.footer__platform').text()).toContain('Moashir')
   })
 
+  it('shows the default on-dark logo until a site logo is uploaded, then the uploaded one', () => {
+    expect(mountFooter().find('.footer__logo').attributes('src')).toMatch(/moashir-logo-on-dark/)
+    const uploaded = mountFooter({ branding: { siteLogo: '/api/v1/content/files/logo-site' } })
+    expect(uploaded.find('.footer__logo').attributes('src')).toContain('/content/files/logo-site')
+  })
+
   it('falls back to the home section links when no quick links are managed', () => {
     const links = mountFooter().findAll('.footer__nav .footer__link')
     expect(links.map((link) => link.text())).toEqual([

@@ -69,6 +69,7 @@ final readonly class SystemAdminBoardQuery implements DashboardBoardQuery
             new DashboardCard('entities_total', $entities['total'] ?? 0, link: Links::ENTITIES),
             new DashboardCard('entities_active', $entities['active'] ?? 0, link: Links::ENTITIES),
             new DashboardCard('entities_pending_verification', $entities['pending_verification'] ?? 0, link: Links::ENTITIES),
+            new DashboardCard('entities_pending_review', $entities['pending_review'] ?? 0, link: Links::ENTITIES),
             new DashboardCard('staff_users_active', User::query()->staff()->withoutSuperAdmins()->where('status', UserStatus::Active)->count(), link: Links::USERS),
             new DashboardCard('award_cycles_running', AwardCycle::query()->running()->count(), link: Links::CYCLES),
         ];

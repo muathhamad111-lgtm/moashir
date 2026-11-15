@@ -81,11 +81,10 @@ describe('financeService', () => {
   it('reaches every staff endpoint of the contract', async () => {
     apiClient.get.mockResolvedValue({ data: { data: {} } })
     apiClient.post.mockResolvedValue({ data: { data: {} } })
-    await financeService.getSummary({ from: '2026-10-01' })
     await financeService.listTransactions({ page: 1 })
     await financeService.getTransaction('p-1')
+    await financeService.listTransactionEvents('p-1')
     await financeService.getExport('e-1')
-    await financeService.listRefunds({})
     await financeService.listPaymentEvents({})
     await financeService.requestExportDownload('e-1')
     await financeService.requestEvidenceDownload('r-1')
@@ -96,11 +95,10 @@ describe('financeService', () => {
       reason: 'Confirmed in the gateway dashboard today.',
     })
     expect(apiClient.get.mock.calls.map((call) => call[0])).toEqual([
-      '/finance/summary',
       '/finance/transactions',
       '/finance/transactions/p-1',
+      '/finance/transactions/p-1/events',
       '/finance/exports/e-1',
-      '/finance/refunds',
       '/finance/payment-events',
     ])
     expect(apiClient.post.mock.calls.map((call) => call[0])).toEqual([

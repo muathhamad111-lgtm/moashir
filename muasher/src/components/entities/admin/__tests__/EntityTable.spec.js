@@ -26,6 +26,20 @@ function tiers(wrapper) {
   return wrapper.findAll('.level-badge').map((badge) => badge.attributes('data-tier'))
 }
 
+describe('EntityTable entity column', () => {
+  it('shows the name with the reference underneath, in one column without a reference header', () => {
+    for (const full of [true, false]) {
+      const wrapper = render([ROW], { full })
+      const headers = wrapper.findAll('th').map((th) => th.text())
+      expect(headers[0]).toBe('الجهة')
+      expect(headers).not.toContain('الرقم المرجعي')
+      const cell = wrapper.find('.entity-table__entity')
+      expect(cell.find('.entity-table__name').text()).toBe('جمعية إحسان الخيرية')
+      expect(cell.find('.entity-table__reference').text()).toBe('ENT-006002')
+    }
+  })
+})
+
 describe('EntityTable level column', () => {
   it('shows a compact level badge per row in the full and contact variants', () => {
     for (const full of [true, false]) {

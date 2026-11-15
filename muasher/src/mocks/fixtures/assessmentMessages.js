@@ -62,6 +62,10 @@ export const assessmentMessages = {
     en: 'The assessment criteria of this draft are being updated after the entity account was restored. Try submitting again shortly.',
   },
   'validation.required': { ar: 'حقل :attribute مطلوب.', en: 'The :attribute field is required.' },
+  'validation.prohibited': {
+    ar: 'لا يمكن تعديل هذا الحقل.',
+    en: 'This field cannot be changed.',
+  },
   'validation.invalid': {
     ar: 'القيمة المختارة في حقل :attribute غير صالحة.',
     en: 'The selected :attribute is invalid.',
@@ -322,6 +326,10 @@ export const assessmentMessages = {
   'user.self': {
     ar: 'لا يمكنك تنفيذ هذا الإجراء على حسابك.',
     en: 'You cannot perform this action on your own account.',
+  },
+  'user.password_reset_recently_sent': {
+    ar: 'أُرسل رابط لإعادة تعيين كلمة المرور لهذا المستخدم قبل قليل. انتظر دقيقة ثم أعد المحاولة.',
+    en: 'A password reset link was sent to this user moments ago. Wait a minute, then try again.',
   },
   'user.entity_status_managed': {
     ar: 'تتبع حسابات الجهات حالة الجهة نفسها.',

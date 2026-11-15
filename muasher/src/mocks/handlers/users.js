@@ -1,3 +1,4 @@
+import { HttpResponse } from 'msw'
 import { http } from '../contract/http'
 import { envelope } from '../contract/responses'
 import { paginate } from '../contract/pagination'
@@ -14,6 +15,10 @@ import {
   inviteStaffUser,
   listStaffUsers,
   resendStaffInvitation,
+  sendStaffPasswordResetLink,
+  revokeStaffSessions,
+  cancelStaffInvitation,
+  staffUsersCsv,
   resetStaffMfa,
   setAssessorQualifications,
   setRequestScope,
@@ -49,6 +54,21 @@ function actionRoute(act) {
 }
 
 export const usersHandlers = [
+  http.get(
+    `${USERS}/export`,
+    assessmentRoute(({ request }) => {
+      actorWith(PERMISSIONS.VIEW)
+      actorWith('users.export')
+      const { csv, count } = staffUsersCsv(new URL(request.url).searchParams)
+      return new HttpResponse(csv, {
+        headers: {
+          'Content-Type': 'text/csv; charset=UTF-8',
+          'Content-Disposition': 'attachment; filename=users.csv',
+          'X-Export-Row-Count': String(count),
+        },
+      })
+    }),
+  ),
   http.get(
     USERS,
     assessmentRoute(({ request }) => {
@@ -93,6 +113,23 @@ export const usersHandlers = [
   http.put(`${USER}/assessor-qualifications`, actionRoute(setAssessorQualifications)),
   http.put(`${USER}/request-scope`, actionRoute(setRequestScope)),
 
+  http.post(`${USER}/sessions/revoke`, actionRoute(revokeStaffSessions)),
+  http.delete(
+    `${USER}/invitation`,
+    assessmentRoute(({ params }) => {
+      const actor = actorWith(PERMISSIONS.MANAGE)
+      cancelStaffInvitation(actor, boundUser(params))
+      return new HttpResponse(null, { status: 204 })
+    }),
+  ),
+  http.post(
+    `${USER}/password/reset-link`,
+    assessmentRoute(({ params }) => {
+      const actor = actorWith(PERMISSIONS.MANAGE)
+      sendStaffPasswordResetLink(actor, boundUser(params))
+      return envelope(null, {}, { status: 202 })
+    }),
+  ),
   http.post(
     `${USER}/invitation/resend`,
     assessmentRoute(({ params }) => {

@@ -16,8 +16,10 @@ import PathHeaderCard from '@/components/paths/PathHeaderCard.vue'
 import PathPrice from '@/components/paths/PathPrice.vue'
 import PathPrimaryAction from '@/components/paths/PathPrimaryAction.vue'
 import PathRequestsList from '@/components/paths/PathRequestsList.vue'
+import { usePathNames } from '@/composables/usePathNames'
 
 const { t } = useI18n()
+const { pathName } = usePathNames()
 const store = useEntityPathsStore()
 const { paths, status } = storeToRefs(store)
 const summaries = usePathSummaries(paths)
@@ -26,7 +28,7 @@ const self = computed(() => paths.value?.self ?? null)
 const requests = usePathRequests(PATH_KEYS.SELF)
 const isFree = computed(() => isFreePath(self.value))
 
-useHead({ title: () => t('paths.names.self') })
+useHead({ title: () => pathName('self') })
 
 function reload() {
   store.load().catch(() => null)

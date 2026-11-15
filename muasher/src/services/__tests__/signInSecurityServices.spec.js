@@ -36,6 +36,7 @@ describe('authSettingsService', () => {
     expect((await authSettingsService.get()).data).toEqual({
       entitySignInCodeChannels: ['email'],
       generalEmailNotifications: false,
+      entityRegistrationReview: true,
       twoFactorEnabled: true,
       twoFactorRoles: ['system_admin'],
       smsStatus: 'test',
@@ -57,6 +58,7 @@ describe('authSettingsService', () => {
     expect((await authSettingsService.get()).data).toEqual({
       entitySignInCodeChannels: ['email', 'sms'],
       generalEmailNotifications: true,
+      entityRegistrationReview: true,
       twoFactorEnabled: true,
       twoFactorRoles: [],
       smsStatus: 'unavailable',

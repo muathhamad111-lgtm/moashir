@@ -6,6 +6,7 @@ namespace App\Services\Settings;
 
 use App\Data\Audit\AuditEntry;
 use App\Enums\Audit\AuditEvent;
+use App\Enums\Settings\LogoVariant;
 use App\Models\Settings\BrandingTheme;
 use App\Services\Audit\AuditRecorder;
 
@@ -14,15 +15,17 @@ final readonly class BrandingAuditTrail
     public function __construct(private AuditRecorder $audit) {}
 
     /**
-     * @return array{accent_token: string, logo_light_file_id: int|null, logo_dark_file_id: int|null}
+     * @return array<string, mixed>
      */
     public function snapshotOf(BrandingTheme $theme): array
     {
-        return [
-            'accent_token' => $theme->accent_token->value,
-            'logo_light_file_id' => $theme->logo_light_file_id,
-            'logo_dark_file_id' => $theme->logo_dark_file_id,
-        ];
+        $snapshot = ['accent_token' => $theme->accent_token->value];
+
+        foreach (LogoVariant::columns() as $column) {
+            $snapshot[$column] = $theme->getAttribute($column);
+        }
+
+        return $snapshot;
     }
 
     /**

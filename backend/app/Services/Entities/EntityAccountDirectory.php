@@ -29,6 +29,8 @@ final readonly class EntityAccountDirectory implements EntityAccounts
         return match (true) {
             ! $entity instanceof Entity, $entity->trashed() => EntityStanding::Closed,
             $entity->isPendingVerification() => EntityStanding::PendingVerification,
+            $entity->isPendingReview() => EntityStanding::PendingReview,
+            $entity->isRejected() => EntityStanding::Rejected,
             $entity->isDeactivated() => EntityStanding::Deactivated,
             default => EntityStanding::Active,
         };

@@ -15,10 +15,19 @@ function toPrice(raw) {
   }
 }
 
-export function toPathSettings(raw = {}) {
+function toIdentity(raw) {
   return {
     path: raw.path ?? null,
     pathLabel: raw.pathLabel ?? null,
+    description: toLocalized(raw.description) ?? { ar: '', en: '' },
+  }
+}
+
+// The self path only carries its description; reviewed paths add their review, upload and text settings.
+export function toPathSettings(raw = {}) {
+  if (raw.reviewSlaLimits === undefined && raw.uploadLimits === undefined) return toIdentity(raw)
+  return {
+    ...toIdentity(raw),
     reviewSlaDays: raw.reviewSlaDays ?? null,
     reviewSlaLimits: { min: raw.reviewSlaLimits?.min ?? 1, max: raw.reviewSlaLimits?.max ?? 120 },
     uploadLimits: {

@@ -1,4 +1,5 @@
 <script setup>
+// How the operation was paid and when each step happened (after the amounts on the receipt).
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { formatDate } from '@/utils/datetime'
@@ -33,9 +34,6 @@ function dateOf(value) {
   })
 }
 
-const entityName = computed(
-  () => props.transaction.entity.name?.[locale.value] || props.transaction.entity.name?.ar || '',
-)
 const transferAccount = computed(() => {
   const account = props.transaction.bankTransfer?.bankAccount
   return account
@@ -59,22 +57,6 @@ const stamps = computed(() =>
 
 <template>
   <dl class="payment-facts">
-    <div class="payment-facts__row">
-      <dt>{{ t('finance.fields.entity') }}</dt>
-      <dd>
-        {{ entityName }}
-        <bdi class="payment-facts__muted" dir="ltr">{{ transaction.entity.reference }}</bdi>
-        <bdi class="payment-facts__muted" dir="ltr">{{ transaction.entity.email }}</bdi>
-      </dd>
-    </div>
-    <div class="payment-facts__row">
-      <dt>{{ t('finance.fields.service') }}</dt>
-      <dd>{{ t(`finance.purposes.${transaction.purpose}`) }}</dd>
-    </div>
-    <div v-if="transaction.awardCycle" class="payment-facts__row" data-testid="payment-award-cycle">
-      <dt>{{ t('finance.fields.awardCycle') }}</dt>
-      <dd>{{ localizedText(transaction.awardCycle.name, locale) }}</dd>
-    </div>
     <div class="payment-facts__row">
       <dt>{{ t('finance.fields.channel') }}</dt>
       <dd>{{ t(`finance.channels.${transaction.channel ?? 'electronic'}`) }}</dd>

@@ -273,6 +273,10 @@ return [
         'new_email' => [
             'same_as_current' => 'The new e-mail must be different from the current one.',
         ],
+        'path_settings' => [
+            'not_applicable' => 'This setting does not apply to the self assessment path.',
+            'name_fixed' => 'The path name is fixed and cannot be edited.',
+        ],
         'price' => [
             'format' => 'The :attribute must be an amount in riyals written with two decimals, for example 1500.00.',
             'moved' => 'Prices are now edited in the path prices settings.',

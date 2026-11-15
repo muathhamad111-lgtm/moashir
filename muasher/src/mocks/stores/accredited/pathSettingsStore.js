@@ -1,6 +1,7 @@
 import { PATH_GUIDES_FIXTURE } from '../../fixtures/pathGuides'
 import { pathLabelOf } from '../../fixtures/pathLabels'
 import { priceInForce, quoteOfPrice } from '../finance/priceVersions'
+import { pathIdentityOf, resetPathIdentities, writePathIdentity } from '../paths/pathIdentityStore'
 import {
   ADVANCED_UPLOAD_DEFAULTS,
   EVIDENCE_TYPE_CATALOG,
@@ -11,7 +12,9 @@ import {
   writeAssessmentSettings,
 } from './assessmentSettingsStore'
 
-export const SETTINGS_PATHS = ['accredited', 'advanced']
+export const SETTINGS_PATHS = ['self', 'accredited', 'advanced']
+export const REVIEWED_SETTINGS_PATHS = ['accredited', 'advanced']
+const SELF_PATH = 'self'
 export const TEXT_KEYS = ['intro', 'instructions', 'afterSubmission']
 const PAID_PATH = 'accredited'
 const SLA_KEYS = { accredited: 'accreditedReviewSlaDays', advanced: 'advancedInitialReviewSlaDays' }
@@ -26,12 +29,13 @@ function copyTexts(source) {
 }
 
 export function resetPathSettings() {
+  resetPathIdentities()
   advancedUploads = {
     ...ADVANCED_UPLOAD_DEFAULTS,
     allowedTypes: [...ADVANCED_UPLOAD_DEFAULTS.allowedTypes],
   }
   texts = Object.fromEntries(
-    SETTINGS_PATHS.map((path) => [path, copyTexts(PATH_GUIDES_FIXTURE[path].entityTexts)]),
+    REVIEWED_SETTINGS_PATHS.map((path) => [path, copyTexts(PATH_GUIDES_FIXTURE[path].entityTexts)]),
   )
 }
 
@@ -54,9 +58,14 @@ export function pathTextsOf(path) {
 }
 
 export function pathSettingsResource(path) {
-  return {
+  const identity = {
     path,
     pathLabel: pathLabelOf(path),
+    description: pathIdentityOf(path).description,
+  }
+  if (path === SELF_PATH) return identity
+  return {
+    ...identity,
     reviewSlaDays: assessmentSettings()[SLA_KEYS[path]],
     reviewSlaLimits: { ...SLA_LIMITS },
     uploadLimits: uploadsOf(path),
@@ -69,6 +78,8 @@ export function pathSettingsResource(path) {
 }
 
 export function writePathSettings(path, changes) {
+  writePathIdentity(path, changes)
+  if (path === SELF_PATH) return
   if ('reviewSlaDays' in changes)
     writeAssessmentSettings({ [SLA_KEYS[path]]: changes.reviewSlaDays })
   const uploads = {

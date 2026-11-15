@@ -5,7 +5,7 @@ import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import { useFilters } from '@/composables/useFilters'
 import { createTestGlobals } from '@/test-utils'
 
-function mountToolbar() {
+function mountToolbar(slots = {}) {
   const state = {}
   const Host = defineComponent({
     setup() {
@@ -19,6 +19,7 @@ function mountToolbar() {
             filterState: state.filters,
           },
           {
+            ...slots,
             filters: ({ draft }) => {
               state.draft = draft
               return h('input', {
@@ -97,6 +98,31 @@ describe('ListToolbar', () => {
     reset.click()
     expect(state.draft.filters.status).toBe('')
     expect(state.filters.filters.status).toBe('active')
+    wrapper.unmount()
+  })
+
+  it('puts search and filter last, in the table top end corner after the page actions', () => {
+    const { wrapper } = mountToolbar({
+      actions: () => h('button', { class: 'page-action' }, 'Add'),
+    })
+    const children = wrapper.find('.filter-toolbar').element.children
+    expect([...children].map((child) => child.className)).toEqual([
+      'toolbar__actions',
+      'filter-toolbar__controls',
+    ])
+    expect(wrapper.find('.filter-toolbar__controls .expandable-search__toggle').exists()).toBe(true)
+    expect(wrapper.find('.filter-toolbar__controls .filter-dialog__toggle').exists()).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('always puts the export button last, after search and filter', () => {
+    const { wrapper } = mountToolbar({
+      actions: () => h('button', { class: 'page-action' }, 'Add'),
+      export: () => h('button', { class: 'page-export' }, 'Export'),
+    })
+    const buttons = wrapper.findAll('.filter-toolbar button').map((b) => b.classes()[0])
+    expect(buttons.at(-1)).toBe('page-export')
+    expect(buttons[0]).toBe('page-action')
     wrapper.unmount()
   })
 })

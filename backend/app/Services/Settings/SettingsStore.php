@@ -28,16 +28,29 @@ final readonly class SettingsStore
      */
     public function many(array $keys): array
     {
-        $stored = Setting::query()
-            ->whereIn('key', array_map(static fn (SettingKey $key): string => $key->value, $keys))
-            ->get()
-            ->keyBy('key');
-
+        $stored = $this->stored($keys);
         $values = [];
 
         foreach ($keys as $key) {
-            $setting = $stored->get($key->value);
-            $values[$key->value] = $setting instanceof Setting ? $setting->value : $key->defaultValue();
+            $values[$key->value] = array_key_exists($key->value, $stored) ? $stored[$key->value] : $key->defaultValue();
+        }
+
+        return $values;
+    }
+
+    /**
+     * Only the keys that were saved, without defaults.
+     *
+     * @param  list<SettingKey>  $keys
+     * @return array<string, mixed>
+     */
+    public function stored(array $keys): array
+    {
+        $values = [];
+        $settings = Setting::query()->whereIn('key', array_map(static fn (SettingKey $key): string => $key->value, $keys))->get();
+
+        foreach ($settings as $setting) {
+            $values[$setting->key] = $setting->value;
         }
 
         return $values;

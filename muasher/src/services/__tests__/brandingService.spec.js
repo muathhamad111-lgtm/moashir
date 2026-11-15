@@ -31,13 +31,13 @@ beforeEach(() => {
 })
 
 describe('brandingService', () => {
-  it('maps the snake_case theme resource to the SPA shape, keeping only the sidebar (dark-background) logo', async () => {
+  it('maps the snake_case theme resource to the SPA shape: sidebar logo, favicon and site logo', async () => {
     apiClient.get.mockResolvedValue({ data: { data: resource, meta: {}, errors: null } })
     const { data } = await brandingService.get()
     expect(apiClient.get).toHaveBeenCalledWith('/settings/branding')
     expect(data).toEqual({
       accentToken: 'teal',
-      logos: { dark: 'data:image/png;base64,LIGHT' },
+      logos: { dark: 'data:image/png;base64,LIGHT', favicon: null, site: null },
       palette: [
         {
           token: 'teal',
@@ -97,7 +97,7 @@ describe('brandingService', () => {
     expect(apiClient.post).toHaveBeenCalledTimes(1)
     expect(apiClient.post).toHaveBeenCalledWith('/settings/branding/reset', {})
     expect(data.accentToken).toBe('brand_default')
-    expect(data.logos).toEqual({ dark: null })
+    expect(data.logos).toEqual({ dark: null, favicon: null, site: null })
     expect(brandingService).not.toHaveProperty('resetLogo')
   })
 

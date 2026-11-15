@@ -25,8 +25,10 @@ return [
 
     'statuses' => [
         'pending_verification' => 'بانتظار التحقق',
+        'pending_review' => 'بانتظار المراجعة',
         'active' => 'نشطة',
         'deactivated' => 'موقوفة',
+        'rejected' => 'مرفوضة',
     ],
 
     'profile_fields' => [

@@ -6,6 +6,7 @@ namespace App\Data\Settings;
 
 use App\Data\Assessments\UploadLimits;
 use App\Data\Finance\PriceQuote;
+use App\Data\Paths\PathIdentity;
 use App\Enums\Assessments\AssessmentPath;
 use App\Support\ValueObjects\PathEntityTexts;
 
@@ -22,5 +23,6 @@ final readonly class PathSettingsView
         public bool $isPaid,
         public ?PriceQuote $price,
         public PathEntityTexts $texts,
+        public PathIdentity $identity,
     ) {}
 }

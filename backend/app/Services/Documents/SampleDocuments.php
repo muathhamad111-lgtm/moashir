@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Services\Documents;
 
 use App\Data\Documents\PdfDocument;
+use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Documents\DocumentTemplate;
+use App\Enums\Finance\PaymentPurpose;
+use App\Services\Paths\PathIdentityReader;
 use App\Support\HijriDate;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Config\Repository;
@@ -27,7 +30,7 @@ final readonly class SampleDocuments
         ['M8', 'قياس الأثر والنتائج', 'Impact measurement and results', '100.00', '92.50', '92.50'],
     ];
 
-    public function __construct(private Repository $config, private DocumentAssets $assets, private SampleBoardReports $boardReports) {}
+    public function __construct(private Repository $config, private DocumentAssets $assets, private SampleBoardReports $boardReports, private PathIdentityReader $paths) {}
 
     /**
      * @return array<string, PdfDocument>
@@ -72,7 +75,7 @@ final readonly class SampleDocuments
 
         return new PdfDocument(DocumentTemplate::FeedbackReport->value, [
             'number' => 'ACC-'.$completedAt->year.'-000045',
-            'path_label' => ['ar' => trans('assessments.paths.accredited', [], 'ar'), 'en' => trans('assessments.paths.accredited', [], 'en')],
+            'path_label' => $this->paths->nameOf(AssessmentPath::Accredited)->toArray(),
             'entity' => [
                 'name' => ['ar' => self::ENTITY_AR, 'en' => self::ENTITY_EN],
                 'reference' => 'ENT-000017',
@@ -150,7 +153,7 @@ final readonly class SampleDocuments
             'status' => 'issued',
             'issued_on' => $issuedAt->toDateString(),
             'issued_on_hijri' => $this->hijri($issuedAt),
-            'purpose_label' => ['ar' => trans('finance.purposes.accredited', [], 'ar'), 'en' => trans('finance.purposes.accredited', [], 'en')],
+            'purpose_label' => $this->paths->purposeLabelOf(PaymentPurpose::Accredited)->toArray(),
             'labels' => ['ar' => trans('finance.receipt', [], 'ar'), 'en' => trans('finance.receipt', [], 'en')],
         ]);
     }

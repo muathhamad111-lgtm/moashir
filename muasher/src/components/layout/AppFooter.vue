@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { usePublicHome } from '@/composables/useHomeContent'
 import { useBrandLogo } from '@/composables/useBrandLogo'
+import { useSiteBranding } from '@/composables/useSiteBranding'
 import { usePlatformIdentity } from '@/composables/usePlatformIdentity'
 import { HOME_ANCHORS, HOME_NAV_LINKS } from '@/constants/homeSections'
 import LegalLink from '@/components/legal/LegalLink.vue'
@@ -14,6 +15,8 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 const { t } = useI18n()
 const router = useRouter()
 const { logoOnDark } = useBrandLogo()
+const { siteLogo } = useSiteBranding()
+const brandLogo = computed(() => siteLogo.value || logoOnDark)
 const { siteSettings, localized } = usePublicHome()
 const { platformName, platformDescription } = usePlatformIdentity()
 
@@ -57,7 +60,7 @@ function onQuickLink(event, url) {
     <div class="footer__container">
       <div class="footer__top">
         <div class="footer__brand">
-          <img class="footer__logo" :src="logoOnDark" :alt="platformName" loading="lazy" />
+          <img class="footer__logo" :src="brandLogo" :alt="platformName" loading="lazy" />
           <p class="footer__tagline">{{ platformDescription }}</p>
         </div>
 

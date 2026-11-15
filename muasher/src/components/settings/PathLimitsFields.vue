@@ -41,10 +41,6 @@ const recomputesDueDates = computed(() => props.settings.path === ASSESSMENT_PAT
   </fieldset>
   <fieldset class="settings-form__group">
     <legend class="settings-form__legend">{{ t('settings.assessment.uploadsTitle') }}</legend>
-    <p class="settings-form__note" role="note">
-      <AppIcon name="info-circle" />
-      {{ t('settings.paths.uploadsNote') }}
-    </p>
     <div class="settings-form__grid">
       <FieldInput
         name="uploadMaxFileMb"

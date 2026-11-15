@@ -64,6 +64,7 @@ export const PERMISSIONS = {
   AI_KB_MANAGE: 'ai.kb.manage',
   AI_PROVIDER_MANAGE: 'ai.provider.manage',
   USERS_VIEW: 'users.view',
+  USERS_EXPORT: 'users.export',
   USERS_MANAGE: 'users.manage',
   ROLES_MATRIX_VIEW: 'roles.matrix.view',
   ROLES_MATRIX_MANAGE: 'roles.matrix.manage',

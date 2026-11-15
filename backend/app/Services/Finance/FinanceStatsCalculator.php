@@ -20,7 +20,8 @@ final class FinanceStatsCalculator
         count(*) filter (where status = 'refunded') as refunded_count,
         coalesce(sum(total) filter (where status = 'paid'), 0) * 100 as income_halalas,
         coalesce(sum(vat_amount) filter (where status = 'paid'), 0) * 100 as vat_halalas,
-        coalesce(sum(total) filter (where status = 'refunded'), 0) * 100 as refunded_halalas
+        coalesce(sum(total) filter (where status = 'refunded'), 0) * 100 as refunded_halalas,
+        coalesce(sum(total), 0) * 100 as value_halalas
         SQL;
 
     /**
@@ -38,6 +39,7 @@ final class FinanceStatsCalculator
             $this->money($row['income_halalas'] ?? null),
             $this->money($row['vat_halalas'] ?? null),
             $this->money($row['refunded_halalas'] ?? null),
+            $this->money($row['value_halalas'] ?? null),
         );
     }
 

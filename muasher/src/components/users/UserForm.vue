@@ -146,7 +146,6 @@ const capabilities = computed(() => {
             {{ capability }}
           </li>
         </ul>
-        <p class="user-form__hint-note">{{ t('users.form.capabilitiesNote') }}</p>
       </div>
     </div>
   </FormModal>

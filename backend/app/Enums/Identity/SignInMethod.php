@@ -13,4 +13,5 @@ enum SignInMethod: string
     case RecoveryCode = 'recovery_code';
     case TotpEnrollment = 'totp_enrollment';
     case Invitation = 'invitation';
+    case Registration = 'registration';
 }

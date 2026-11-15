@@ -1,4 +1,5 @@
 <script setup>
+import BaseButton from '@/components/ui/BaseButton.vue'
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
@@ -36,6 +37,9 @@ onMounted(regions.load)
         <h1 class="entities-admin__title">{{ t('entities.deleted.title') }}</h1>
         <p class="entities-admin__subtitle">{{ t('entities.deleted.subtitle') }}</p>
       </div>
+      <BaseButton variant="secondary" icon="arrow-left" :to="{ name: ROUTE_NAMES.ADMIN_ENTITIES }">
+        {{ t('entities.admin.backToEntities') }}
+      </BaseButton>
     </header>
 
     <aside class="entities-admin__notice" role="note">

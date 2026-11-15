@@ -8,6 +8,7 @@ use App\Data\Settings\PathSettingsView;
 use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Settings\PathSetting;
 use App\Services\Assessments\UploadLimitsReader;
+use App\Services\Paths\PathIdentityReader;
 use App\Services\Paths\PathPricingReader;
 use App\Support\ScalarValue;
 use App\Support\ValueObjects\PathEntityTexts;
@@ -19,6 +20,7 @@ final readonly class PathSettingsReader
         private UploadLimitsReader $limits,
         private PathPricingReader $pricing,
         private AssessmentSettingsReader $assessment,
+        private PathIdentityReader $identities,
     ) {}
 
     public function read(AssessmentPath $path): PathSettingsView
@@ -33,6 +35,7 @@ final readonly class PathSettingsReader
             $pricing->requiresPayment(),
             $pricing->price,
             $this->textsOf($path),
+            $this->identities->of($path),
         );
     }
 

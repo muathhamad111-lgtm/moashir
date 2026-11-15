@@ -249,14 +249,15 @@ test.describe('Super Admin and settings', () => {
     page,
   }, testInfo) => {
     await signIn(page, testInfo, STAFF.systemAdmin)
-    await page.goto('/admin/settings/assessment')
+    await page.goto('/admin/settings/assessment?tab=accredited')
     const sla = page.locator('input[name="reviewSlaDays"]')
+    const save = page.locator('#path-settings-accredited button[type="submit"]')
     await expect(sla).toHaveValue('14')
     await sla.fill('500')
-    await page.locator('.path-settings .btn--primary').click()
+    await save.click()
     await expect(page.locator('.field__error').first()).toBeVisible()
     await sla.fill('21')
-    await page.locator('.path-settings .btn--primary').click()
+    await save.click()
     await expect(page.locator('.toast--success').first()).toBeVisible()
     await page.screenshot({
       path: `test-results/settings-assessment-${suffixOf(testInfo)}.png`,

@@ -41,27 +41,25 @@ function financeLedger(): array
     ];
 }
 
-it('summarizes live collections by service without any gateway fee', function (): void {
+it('totals live collections in the ledger stats without any gateway fee', function (): void {
     financeLedger();
 
-    $response = switchTo(financeOfficer())->getJson('/api/v1/finance/summary')->assertOk()
-        ->assertJsonPath('meta.live_only', true)
-        ->assertJsonPath('data.transactions_count', 4)
-        ->assertJsonPath('data.completed_count', 2)
-        ->assertJsonPath('data.incomplete_count', 1)
-        ->assertJsonPath('data.refunded_count', 1)
-        ->assertJsonPath('data.total_income', '2300.00')
-        ->assertJsonPath('data.total_vat', '300.00')
-        ->assertJsonPath('data.total_refunded', '1150.00')
-        ->assertJsonPath('data.currency', 'SAR')
-        ->assertJsonPath('data.by_purpose.0.purpose', 'accredited')
-        ->assertJsonPath('data.by_purpose.0.completed_count', 1)
-        ->assertJsonPath('data.by_purpose.1.purpose', 'bag')
-        ->assertJsonPath('data.by_purpose.1.completed_count', 1);
+    $response = switchTo(financeOfficer())->getJson('/api/v1/finance/transactions')->assertOk()
+        ->assertJsonPath('meta.stats.transactions_count', 4)
+        ->assertJsonPath('meta.stats.completed_count', 2)
+        ->assertJsonPath('meta.stats.incomplete_count', 1)
+        ->assertJsonPath('meta.stats.refunded_count', 1)
+        ->assertJsonPath('meta.stats.total_income', '2300.00')
+        ->assertJsonPath('meta.stats.total_vat', '300.00')
+        ->assertJsonPath('meta.stats.total_refunded', '1150.00')
+        ->assertJsonPath('meta.stats.transactions_value', '4600.00')
+        ->assertJsonPath('meta.stats.currency', 'SAR');
 
-    expect((string) $response->getContent())->not->toContain('fee')->and((string) $response->getContent())->not->toContain('net');
-    $this->getJson('/api/v1/finance/summary?from=2020-01-01&to=2020-12-31')->assertOk()->assertJsonPath('data.transactions_count', 0);
-    $this->getJson('/api/v1/finance/summary?from=2026-12-01&to=2026-01-01')->assertUnprocessable();
+    expect((string) $response->getContent())->not->toContain('fee')->and((string) $response->getContent())->not->toContain('"net');
+    $this->getJson('/api/v1/finance/transactions?filter[purpose]=accredited')->assertOk()->assertJsonPath('meta.stats.completed_count', 1);
+    $this->getJson('/api/v1/finance/transactions?filter[purpose]=bag')->assertOk()->assertJsonPath('meta.stats.completed_count', 1);
+    $this->getJson('/api/v1/finance/transactions?filter[from]=2020-01-01&filter[to]=2020-12-31')->assertOk()->assertJsonPath('meta.stats.transactions_count', 0);
+    $this->getJson('/api/v1/finance/transactions?filter[from]=2026-12-01&filter[to]=2026-01-01')->assertUnprocessable();
 });
 
 it('lists live transactions with search, filters, sort and stats', function (): void {
@@ -141,7 +139,6 @@ it('lets the System Administrator read financial operations and keeps everyone e
 
     foreach ([staffUser(RoleKey::Assessor), staffUser(RoleKey::RequestFollower), staffUser(RoleKey::ContentOfficer), ownerOf(entityWithOwner())] as $user) {
         switchTo($user)->getJson('/api/v1/finance/transactions')->assertForbidden();
-        $this->getJson('/api/v1/finance/summary')->assertForbidden();
         $this->postJson('/api/v1/finance/transactions/export')->assertForbidden();
     }
 });

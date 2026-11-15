@@ -1,6 +1,5 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
 import { useValidatedForm } from '@/composables/useValidatedForm'
 import { useRegions } from '@/composables/useRegions'
 import { useToast } from '@/composables/useToast'
@@ -9,11 +8,12 @@ import { useAuthFlowStore } from '@/stores/authFlow'
 import { termsService } from '@/services/termsService'
 import { registrationSchema } from '@/utils/entitySchemas'
 import { emptyProfileValues, registrationPayload } from '@/utils/entityPayload'
-import { AUTH_FLOW_INTENTS } from '@/constants/loginSteps'
-import { ROUTE_NAMES } from '@/constants/routeNames'
+import { useLoginOutcome } from '@/composables/useLoginOutcome'
+import { AUTH_FLOW_INTENTS, LOGIN_STEPS } from '@/constants/loginSteps'
 
 const REGISTRATION_DEFAULTS = {
   officialEmail: '',
+  emailVerificationToken: '',
   password: '',
   passwordConfirmation: '',
   termsAccepted: false,
@@ -23,13 +23,14 @@ const REGISTRATION_DEFAULTS = {
 
 export function useEntityRegistration() {
   const { t } = useI18n()
-  const router = useRouter()
   const toast = useToast()
+  const { continueAfter } = useLoginOutcome()
   const auth = useAuthStore()
   const authFlow = useAuthFlowStore()
   const regions = useRegions()
   const terms = ref(null)
   const termsStatus = ref('loading')
+  const underReview = ref(false)
 
   async function loadTerms() {
     termsStatus.value = 'loading'
@@ -59,15 +60,20 @@ export function useEntityRegistration() {
     keepValuesOnUnmount: true,
     submit: async (values) => {
       const outcome = await auth.register(registrationPayload(values, terms.value))
+      // The e-mail is already proven: the entity is either waiting for staff review or signed in.
+      if (outcome.step === LOGIN_STEPS.PENDING_REVIEW) {
+        underReview.value = true
+        return
+      }
+      if (outcome.message) toast.info(outcome.message)
       authFlow.setChallenge({
-        challenge: outcome.otp,
+        challenge: null,
         officialEmail: values.officialEmail.trim(),
         intent: AUTH_FLOW_INTENTS.REGISTER,
       })
-      if (outcome.message) toast.info(outcome.message)
-      await router.push({ name: ROUTE_NAMES.AUTH_OTP })
+      await continueAfter(outcome)
     },
   })
 
-  return { form, status, load, regions }
+  return { form, status, load, regions, underReview }
 }

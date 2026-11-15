@@ -1,3 +1,5 @@
+@use '../mixins' as *;
+
 .table-wrap {
   position: relative;
   inline-size: 100%;
@@ -37,4 +39,47 @@
 .table--loading {
   opacity: var(--opacity-disabled);
   pointer-events: none;
+}
+
+// Row actions: direct icon buttons, then the "more" menu (three vertical dots).
+.row-actions {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: nowrap;
+}
+
+// Every table's "more actions" trigger reads as a clear bordered button, the same size as the row buttons.
+.table .row-actions .btn--icon,
+.table .dropdown-menu > .btn--icon {
+  @include flex-center;
+  inline-size: var(--size-toolbar-control);
+  block-size: var(--size-toolbar-control);
+  padding: 0;
+  border-color: var(--theme-border);
+  border-radius: var(--radius-md);
+  color: var(--theme-text);
+
+  .app-icon {
+    font-size: var(--icon-size-md);
+  }
+}
+
+.table .row-actions .row-actions__button--danger {
+  color: var(--theme-danger-text);
+
+  &:hover:not(:disabled) {
+    border-color: var(--theme-danger-text);
+  }
+}
+
+.table .row-actions .row-actions__button--success {
+  color: var(--theme-success-text);
+
+  &:hover:not(:disabled) {
+    border-color: var(--theme-success-text);
+  }
+}
+
+.table__cell--actions {
+  inline-size: 1%;
+  white-space: nowrap;
 }

@@ -14,6 +14,7 @@ function toAuthSettings(raw = {}) {
   return {
     entitySignInCodeChannels: normalizedCodeChannels(raw.entitySignInCodeChannels),
     generalEmailNotifications: raw.generalEmailNotifications !== false,
+    entityRegistrationReview: raw.entityRegistrationReview !== false,
     twoFactorEnabled: raw.twoFactorEnabled !== false,
     twoFactorRoles: Array.isArray(raw.twoFactorRoles) ? [...raw.twoFactorRoles] : [],
     smsStatus: smsStatusOf(raw.smsStatus),

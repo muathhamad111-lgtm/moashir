@@ -215,9 +215,9 @@
 @use 'components/payment-facts';
 @use 'components/receipt-card';
 @use 'components/payment-detail';
-@use 'components/finance-nav';
 @use 'components/finance-page';
 @use 'components/transactions-table';
+@use 'components/transaction-events';
 @use 'components/transaction-detail';
 @use 'components/refund-form';
 @use 'components/refund-evidence';
@@ -244,9 +244,7 @@
 @use 'components/widget-levels';
 @use 'components/branding';
 @use 'components/accent-swatch';
-@use 'components/contrast-check';
 @use 'components/contrast-fail';
-@use 'components/branding-preview';
 @use 'components/logo-variant';
 @use 'components/account';
 @use 'components/account-avatar';

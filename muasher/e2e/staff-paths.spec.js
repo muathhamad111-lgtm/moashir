@@ -180,27 +180,25 @@ test.describe('users path access', () => {
 })
 
 test.describe('per-path and certificate settings', () => {
-  test('each path keeps its own limits and entity texts, with a read-only price', async ({
+  test('each path keeps its own name, limits, entity texts and price card', async ({
     page,
   }, testInfo) => {
     await signIn(page, testInfo, USERS.systemAdmin)
-    await open(page, '/admin/settings/assessment', 'input[name="reviewSlaDays"]')
+    await open(page, '/admin/settings/assessment?tab=accredited', 'input[name="reviewSlaDays"]')
+    await expect(page.locator('input[name^="name."]')).toHaveCount(0)
     await expect(page.locator('input[name="price"]')).toHaveCount(0)
-    await expect(page.locator('.path-settings .pricing-breakdown')).toContainText('1,150.00')
-    await expect(page.locator('[data-testid="path-price-moved"] a')).toHaveAttribute(
-      'href',
-      '/admin/settings/prices',
-    )
+    await expect(page.locator('[data-testid="price-row-accredited"]')).toBeVisible()
     await page
       .locator('textarea[name="entityTexts.afterSubmission.ar"]')
       .fill('يبدأ المقيّم المراجعة بعد الإرسال.')
     await page.locator('textarea[name="entityTexts.afterSubmission.en"]').fill('')
-    await page.locator('.path-settings .btn--primary').click()
-    await expect(page.locator('.path-settings .field__error')).toHaveCount(1)
+    const pathForm = page.locator('#path-settings-accredited')
+    await pathForm.locator('button[type="submit"]').click()
+    await expect(pathForm.locator('.field__error')).toHaveCount(1)
     await page
       .locator('textarea[name="entityTexts.afterSubmission.en"]')
       .fill('The assessor starts the review after submission.')
-    await page.locator('.path-settings .btn--primary').click()
+    await pathForm.locator('button[type="submit"]').click()
     await expect(page.locator('.toast--success').first()).toBeVisible()
     await page
       .getByRole('tab', {
@@ -222,11 +220,12 @@ test.describe('per-path and certificate settings', () => {
   }, testInfo) => {
     await signIn(page, testInfo, USERS.systemAdmin)
     await open(page, '/admin/settings/certificates', 'input[name="levelThresholds.bronze"]')
+    await expect(page).toHaveURL(/\/admin\/settings\/assessment\?tab=general/)
     await expect(page.locator('.level-ranges__item')).toHaveCount(5)
     await expect(page.locator('.certificate-editor')).toHaveCount(0)
     await page.locator('input[name="levelThresholds.gold"]').fill('65')
     await expect(page.locator('.level-ranges__empty')).toBeVisible()
-    await page.locator('button[form="certificate-settings-form"]').click()
+    await page.locator('#certificate-settings-levels button[type="submit"]').click()
     await expect(page.locator('.field__error').first()).toContainText(
       text(
         testInfo,
@@ -235,8 +234,7 @@ test.describe('per-path and certificate settings', () => {
       ),
     )
     await page.locator('input[name="levelThresholds.gold"]').fill('82.5')
-    await page.locator('.toggle-switch').first().click()
-    await page.locator('button[form="certificate-settings-form"]').click()
+    await page.locator('#certificate-settings-levels button[type="submit"]').click()
     await expect(page.locator('.toast--success').first()).toBeVisible()
     await expect(page.locator('input[name="levelThresholds.gold"]')).toHaveValue('82.50')
     await expect(page.locator('.level-ranges__item').nth(2)).toContainText('82.49')
@@ -374,7 +372,7 @@ const CAPTURES = [
   {
     name: 'path-settings',
     user: USERS.systemAdmin,
-    path: '/admin/settings/assessment',
+    path: '/admin/settings/assessment?tab=accredited',
     ready: 'input[name="reviewSlaDays"]',
   },
   {

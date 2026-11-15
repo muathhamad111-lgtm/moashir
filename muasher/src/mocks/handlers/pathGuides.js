@@ -3,6 +3,7 @@ import { http } from '../contract/http'
 import { envelope, errorResponse } from '../contract/responses'
 import { PATH_GUIDES_FIXTURE } from '../fixtures/pathGuides'
 import { pathTextsOf } from '../stores/accredited/pathSettingsStore'
+import { pathIdentities } from '../stores/paths/pathIdentityStore'
 import { pathPricingOf } from '../stores/finance/priceVersions'
 import { awardPricing } from '../stores/award/awardPricing'
 
@@ -16,6 +17,11 @@ function priceFieldsOf(path) {
 const GUIDE_LATENCY_MS = 150
 
 export const pathGuidesHandlers = [
+  http.get('/api/v1/content/assessment-paths', async () => {
+    await delay(GUIDE_LATENCY_MS)
+    return envelope(pathIdentities())
+  }),
+
   http.get('/api/v1/content/assessment-paths/:path', async ({ params }) => {
     await delay(GUIDE_LATENCY_MS)
     const guide = PATH_GUIDES_FIXTURE[params.path]

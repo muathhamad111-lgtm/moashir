@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Badge from '@/components/ui/Badge.vue'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import { EVENT_RESULT_VARIANTS } from '@/constants/finance'
 import { formatDate } from '@/utils/datetime'
 
 defineProps({
@@ -14,15 +15,6 @@ defineProps({
 
 const emit = defineEmits(['retry'])
 const { t, te, locale } = useI18n()
-
-const RESULT_VARIANTS = {
-  applied: 'success',
-  pending: 'warning',
-  ignored: 'muted',
-  rejected: 'danger',
-  unmatched: 'warning',
-  late_payment: 'danger',
-}
 
 const columns = computed(() => [
   { key: 'createdAt', label: t('finance.fields.date') },
@@ -82,7 +74,7 @@ function typeOf(value) {
       item.mode ? t(`finance.filters.modes.${item.mode}`) : t('finance.common.none')
     }}</template>
     <template #cell-result="{ item }">
-      <Badge v-if="item.result" :variant="RESULT_VARIANTS[item.result] ?? 'muted'">{{
+      <Badge v-if="item.result" :variant="EVENT_RESULT_VARIANTS[item.result] ?? 'muted'">{{
         t(`finance.events.results.${item.result}`)
       }}</Badge>
       <span v-if="item.errorCode" class="payment-events__error"

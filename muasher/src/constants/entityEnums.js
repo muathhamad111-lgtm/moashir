@@ -4,8 +4,10 @@ export const ORG_SIZES = ['small', 'medium', 'large']
 
 export const ENTITY_STATUSES = {
   PENDING_VERIFICATION: 'pending-verification',
+  PENDING_REVIEW: 'pending-review',
   ACTIVE: 'active',
   DEACTIVATED: 'deactivated',
+  REJECTED: 'rejected',
 }
 
 export const ENTITY_REQUEST_PATHS = ['accredited', 'advanced', 'bag']

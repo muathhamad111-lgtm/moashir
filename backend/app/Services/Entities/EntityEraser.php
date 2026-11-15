@@ -83,6 +83,7 @@ final readonly class EntityEraser
             'marketing_consent_at' => null,
             'marketing_unsubscribed_at' => null,
             'deactivation_reason' => null,
+            'rejection_reason' => null,
             'deletion_reason' => null,
             'verification_reminded_at' => null,
             'unified_number' => null,

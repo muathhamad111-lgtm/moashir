@@ -17,13 +17,9 @@ function signInCodeChallengeFor(User $user): string
     return (string) requestSignInCode($user->email)->assertOk()->json('data.otp.challenge_id');
 }
 
-function decoyRegistrationChallenge(): string
+function decoySignInChallenge(): string
 {
-    $existing = ownerOf(entityWithOwner());
-
-    return (string) test()->postJson('/api/v1/auth/register', registrationPayload(['official_email' => $existing->email]))
-        ->assertCreated()
-        ->json('data.otp.challenge_id');
+    return (string) requestSignInCode('nobody@alamal.example.sa')->assertOk()->json('data.otp.challenge_id');
 }
 
 it('rejects reuse of a consumed code', function (): void {
@@ -51,8 +47,8 @@ it('voids the challenge after five wrong codes while the account lockout allows 
     $this->postJson('/api/v1/auth/otp/verify', ['challenge_id' => $challengeId, 'code' => lastOtpCodeSentTo($owner)])->assertUnprocessable()->assertJsonPath('code', 'otp.challenge_invalid');
 });
 
-it('gives a decoy registration challenge the same wrong-code behaviour as a real one', function (): void {
-    $challengeId = decoyRegistrationChallenge();
+it('gives a decoy challenge the same wrong-code behaviour as a real one', function (): void {
+    $challengeId = decoySignInChallenge();
 
     foreach (range(1, 4) as $attempt) {
         $this->postJson('/api/v1/auth/otp/verify', ['challenge_id' => $challengeId, 'code' => '123456'])->assertJsonPath('code', 'otp.invalid');
@@ -62,7 +58,7 @@ it('gives a decoy registration challenge the same wrong-code behaviour as a real
 });
 
 it('applies the resend cooldown to decoy challenges', function (): void {
-    $challengeId = decoyRegistrationChallenge();
+    $challengeId = decoySignInChallenge();
 
     $this->postJson('/api/v1/auth/otp/resend', ['challenge_id' => $challengeId])->assertTooManyRequests()->assertJsonPath('code', 'otp.cooldown');
 
@@ -108,14 +104,36 @@ it('never answers a challenge of another purpose on the sign-in endpoints', func
 
 it('stores the sign-in code with its own purpose so verifying it never confirms the e-mail', function (): void {
     $owner = ownerOf(entityWithOwner());
-    $owner->forceFill(['email_verified_at' => null])->save();
     $challengeId = signInCodeChallengeFor($owner);
 
     expect(OtpCode::query()->where('challenge_id', $challengeId)->value('purpose'))->toBe(OtpPurpose::SignInCode);
 
-    $this->postJson('/api/v1/auth/otp/verify', ['challenge_id' => $challengeId, 'code' => lastOtpCodeSentTo($owner)])->assertOk();
+    $owner->forceFill(['email_verified_at' => null])->save();
 
-    expect($owner->refresh()->email_verified_at)->toBeNull();
+    $this->postJson('/api/v1/auth/otp/verify', ['challenge_id' => $challengeId, 'code' => lastOtpCodeSentTo($owner)])
+        ->assertOk()
+        ->assertJsonPath('data.step', 'otp_required');
+
+    $this->assertGuest('web');
+    expect($owner->refresh()->email_verified_at)->toBeNull()
+        ->and(OtpCode::query()->where('user_id', $owner->id)->latest('id')->value('purpose'))->toBe(OtpPurpose::Login);
+});
+
+it('sends an approved entity whose e-mail is unconfirmed an e-mail confirmation code instead of a sign-in code', function (): void {
+    allowSignInCodeChannels('email', 'sms');
+    $owner = verifiedMobileOwner();
+    $owner->forceFill(['email_verified_at' => null])->save();
+
+    $challengeId = requestSignInCode($owner->phone ?? '')->assertOk()->assertJsonPath('data.otp.channel', 'email')->json('data.otp.challenge_id');
+
+    expect(OtpCode::query()->where('challenge_id', $challengeId)->value('purpose'))->toBe(OtpPurpose::Login);
+
+    $this->postJson('/api/v1/auth/otp/verify', ['challenge_id' => $challengeId, 'code' => lastOtpCodeSentTo($owner)])
+        ->assertOk()
+        ->assertJsonPath('data.step', 'authenticated');
+
+    $this->assertAuthenticatedAs($owner, 'web');
+    expect($owner->refresh()->email_verified_at)->not->toBeNull();
 });
 
 it('refuses a sign-in code challenge that belongs to a staff account', function (): void {

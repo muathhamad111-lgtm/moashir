@@ -5,7 +5,7 @@ import Register from '@/views/auth/Register.vue'
 import { termsService } from '@/services/termsService'
 import { regionsService } from '@/services/regionsService'
 import { authService } from '@/services/authService'
-import { useAuthFlowStore } from '@/stores/authFlow'
+import OtpInput from '@/components/form/OtpInput.vue'
 import { createTestGlobals } from '@/test-utils'
 import {
   chooseNamedOption,
@@ -16,7 +16,14 @@ import {
 
 vi.mock('@/services/termsService', () => ({ termsService: { current: vi.fn() } }))
 vi.mock('@/services/regionsService', () => ({ regionsService: { listRegions: vi.fn() } }))
-vi.mock('@/services/authService', () => ({ authService: { register: vi.fn() } }))
+vi.mock('@/services/authService', () => ({
+  authService: {
+    register: vi.fn(),
+    requestRegistrationEmailCode: vi.fn(),
+    resendRegistrationEmailCode: vi.fn(),
+    verifyRegistrationEmailCode: vi.fn(),
+  },
+}))
 
 const TERMS = {
   terms: { id: 3, kind: 'terms', version: '2026-10', body: { ar: 'نص الشروط', en: 'Terms text' } },
@@ -99,6 +106,14 @@ async function fill(wrapper, overrides = {}) {
   await setValues(wrapper, ACCOUNT_VALUES)
 }
 
+async function proveEmail(wrapper) {
+  await wrapper.find('[data-testid="email-check-send"]').trigger('click')
+  await settle()
+  wrapper.findComponent(OtpInput).vm.$emit('update:modelValue', '482913')
+  await wrapper.find('[data-testid="email-check-verify"]').trigger('click')
+  await settle()
+}
+
 function stepFieldNames(wrapper) {
   return [
     ...new Set(
@@ -111,8 +126,18 @@ beforeEach(() => {
   vi.clearAllMocks()
   termsService.current.mockResolvedValue({ data: TERMS })
   regionsService.listRegions.mockResolvedValue({ data: REGIONS })
-  authService.register.mockResolvedValue({
-    data: { step: 'otp_required', otp: { challengeId: 'c-1', length: 6 }, message: 'Code sent' },
+  authService.register.mockResolvedValue({ data: { step: 'pending_review' } })
+  authService.requestRegistrationEmailCode.mockResolvedValue({
+    data: {
+      challengeId: 'c-1',
+      channel: 'email',
+      length: 6,
+      expiresAt: new Date(Date.now() + 600000).toISOString(),
+      resendAvailableAt: new Date(Date.now() + 60000).toISOString(),
+    },
+  })
+  authService.verifyRegistrationEmailCode.mockResolvedValue({
+    data: { emailVerificationToken: 'proof-1' },
   })
 })
 
@@ -182,15 +207,24 @@ describe('Register', () => {
     expect(wrapper.find('[name="unifiedNumber"]').element.value).toBe('7000000901')
   })
 
-  it('blocks the submission until the terms are accepted, then registers and opens the OTP step', async () => {
-    const { wrapper, globals } = await mountRegister()
-    const push = vi.spyOn(globals.router, 'push').mockResolvedValue(undefined)
+  it('needs the terms and the proven e-mail, then registers and says the entity is under review', async () => {
+    const { wrapper } = await mountRegister()
     await fill(wrapper)
     await wrapper.find('form').trigger('submit')
     await settle()
     expect(authService.register).not.toHaveBeenCalled()
     expect(wrapper.text()).toContain('You must accept the terms and the privacy policy to register')
+    expect(wrapper.text()).toContain('Verify the official e-mail first.')
 
+    await proveEmail(wrapper)
+    expect(authService.requestRegistrationEmailCode).toHaveBeenCalledWith({
+      officialEmail: ACCOUNT_VALUES.officialEmail,
+    })
+    expect(authService.verifyRegistrationEmailCode).toHaveBeenCalledWith({
+      challengeId: 'c-1',
+      code: '482913',
+    })
+    expect(wrapper.find('[data-testid="email-check-done"]').exists()).toBe(true)
     await wrapper.find('[name="termsAccepted"]').setValue(true)
     await wrapper.find('form').trigger('submit')
     await settle()
@@ -210,10 +244,22 @@ describe('Register', () => {
         termsAccepted: true,
         marketingConsent: false,
         passwordConfirmation: 'Wafa-Charity-Account-2026',
+        emailVerificationToken: 'proof-1',
       }),
     )
-    expect(useAuthFlowStore().intent).toBe('register')
-    expect(push).toHaveBeenCalledWith({ name: 'auth.otp' })
+    expect(wrapper.find('[data-testid="registration-under-review"]').text()).toContain(
+      'reviewing it',
+    )
+  })
+
+  it('drops the proof when the e-mail is edited after it was verified', async () => {
+    const { wrapper } = await mountRegister()
+    await fill(wrapper)
+    await proveEmail(wrapper)
+    await wrapper.find('[name="officialEmail"]').setValue('other@alwafa.example.sa')
+    await settle()
+    expect(wrapper.find('[data-testid="email-check-done"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="email-check-send"]').exists()).toBe(true)
   })
 
   it('keeps the unified number digits only and returns to the entity step on a duplicate', async () => {
@@ -229,6 +275,7 @@ describe('Register', () => {
     expect(input.element.value).toBe('7000000901')
     expect(input.attributes()).toMatchObject({ inputmode: 'numeric', dir: 'ltr', maxlength: '10' })
     await fill(wrapper)
+    await proveEmail(wrapper)
     await wrapper.find('[name="termsAccepted"]').setValue(true)
     await wrapper.find('form').trigger('submit')
     await settle()

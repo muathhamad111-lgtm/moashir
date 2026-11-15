@@ -1,16 +1,13 @@
 import { useSettingsEditor } from '@/composables/useSettingsEditor'
-import { usePermissions } from '@/composables/usePermissions'
 import { pathSettingsService } from '@/services/pathSettingsService'
-import { PERMISSIONS } from '@/constants/permissionKeys'
 import {
   changedPathSettings,
   pathSettingsSchema,
   pathSettingsValues,
 } from '@/utils/settings/pathSettingsForm'
 
-export function usePathSettings(path) {
-  const { can } = usePermissions()
-  const editor = useSettingsEditor({
+export function usePathSettings(path, { onSaved } = {}) {
+  return useSettingsEditor({
     read: () => pathSettingsService.get(path),
     write: (payload) => pathSettingsService.update(path, payload),
     schema: (t, settings) => pathSettingsSchema(t, settings),
@@ -18,6 +15,6 @@ export function usePathSettings(path) {
     changesOf: (settings, values) => changedPathSettings(settings, values),
     messages: { saved: 'settings.paths.saved', unchanged: 'settings.assessment.unchanged' },
     action: `settings.assessment.paths.${path}.update`,
+    onSaved,
   })
-  return { ...editor, canEditPrices: can(PERMISSIONS.SETTINGS_PRICES_MANAGE) }
 }

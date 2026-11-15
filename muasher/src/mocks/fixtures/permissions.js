@@ -824,6 +824,19 @@ export const permissionCatalogFixture = [
     grantable: false,
   },
   {
+    key: 'users.export',
+    module: 'admin',
+    label: { ar: 'تصدير المستخدمين', en: 'Export users' },
+    description: {
+      ar: 'تصدير قائمة المستخدمين مع تسجيل كل عملية تصدير.',
+      en: 'Export the user list; every export is audited.',
+    },
+    system: true,
+    lockedToRoles: [],
+    confidential: true,
+    grantable: true,
+  },
+  {
     key: 'users.manage',
     module: 'admin',
     label: { ar: 'إدارة المستخدمين', en: 'Manage users' },
@@ -1167,6 +1180,7 @@ export const defaultRoleMatrixFixture = {
     'ai.kb.manage',
     'ai.provider.manage',
     'users.view',
+    'users.export',
     'users.manage',
     'roles.matrix.view',
     'roles.matrix.manage',

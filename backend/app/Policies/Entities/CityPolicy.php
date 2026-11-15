@@ -14,11 +14,6 @@ final class CityPolicy
         return $actor->can(PermissionKey::EntitiesManage->value);
     }
 
-    public function create(User $actor): bool
-    {
-        return $actor->can(PermissionKey::EntitiesManage->value);
-    }
-
     public function update(User $actor): bool
     {
         return $actor->can(PermissionKey::EntitiesManage->value);

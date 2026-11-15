@@ -1,6 +1,10 @@
 import { apiClient } from '@/api/client'
 import { domainRequests } from './domainRequest'
 import { toUser, toUserStats } from './mappers/users'
+import { withJsonErrorBody } from './mappers/blobError'
+import { toDownload } from './mappers/download'
+
+const EXPORT_FALLBACK_NAME = 'users.csv'
 
 const { read, write } = domainRequests('users', 'user')
 
@@ -67,6 +71,30 @@ export const usersService = {
         payload,
       ),
     )
+  },
+
+  sendPasswordResetLink(userId) {
+    return write(
+      'sendPasswordResetLink',
+      () => apiClient.post(`/users/${userId}/password/reset-link`, {}),
+      {},
+    )
+  },
+
+  revokeSessions(userId, payload = {}) {
+    return action('revokeSessions', userId, 'sessions/revoke', payload)
+  },
+
+  cancelInvitation(userId) {
+    return write('cancelInvitation', () => apiClient.delete(`/users/${userId}/invitation`), {})
+  },
+
+  exportCsv(params = {}) {
+    const execute = () =>
+      withJsonErrorBody(apiClient.get('/users/export', { params, responseType: 'blob' })).then(
+        (response) => toDownload(response, EXPORT_FALLBACK_NAME),
+      )
+    return read('exportCsv', execute, params)
   },
 
   resendInvitation(userId) {

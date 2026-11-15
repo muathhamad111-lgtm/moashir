@@ -23,12 +23,19 @@ export function updateBrandingAccent(token) {
   return theme
 }
 
+const LOGO_KEYS = Object.freeze({
+  light: 'logoLight',
+  dark: 'logoDark',
+  favicon: 'favicon',
+  site: 'logoSite',
+})
+
 function logoKey(variant) {
-  return variant === 'light' ? 'logoLight' : 'logoDark'
+  return LOGO_KEYS[variant]
 }
 
 export function isLogoVariant(variant) {
-  return variant === 'light' || variant === 'dark'
+  return Object.hasOwn(LOGO_KEYS, variant)
 }
 
 export function storeBrandingLogo(variant, file) {

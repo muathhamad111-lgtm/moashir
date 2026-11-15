@@ -8,10 +8,7 @@
 }
 
 .accent-swatches__legend {
-  padding: 0;
-  margin-block-end: var(--space-3);
-  font-weight: var(--fw-semibold);
-  color: var(--theme-heading);
+  @include visually-hidden;
 }
 
 .accent-swatches__grid {

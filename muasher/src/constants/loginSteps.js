@@ -3,6 +3,7 @@ export const LOGIN_STEPS = {
   MFA_CHALLENGE: 'mfa_challenge',
   MFA_ENROLLMENT: 'mfa_enrollment',
   OTP_REQUIRED: 'otp_required',
+  PENDING_REVIEW: 'pending_review',
 }
 
 export const AUTH_FLOW_INTENTS = {

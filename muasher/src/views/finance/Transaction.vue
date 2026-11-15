@@ -14,8 +14,10 @@ import PricingBreakdown from '@/components/payments/PricingBreakdown.vue'
 import ReceiptCard from '@/components/payments/ReceiptCard.vue'
 import TestModeNotice from '@/components/payments/TestModeNotice.vue'
 import TransactionFacts from '@/components/finance/TransactionFacts.vue'
+import TransactionParties from '@/components/finance/TransactionParties.vue'
 import LinkedRequestCard from '@/components/finance/LinkedRequestCard.vue'
 import RefundRecord from '@/components/finance/RefundRecord.vue'
+import TransactionEventsCard from '@/components/finance/TransactionEventsCard.vue'
 import RefundFormDialog from '@/components/finance/RefundFormDialog.vue'
 import ManualSettleDialog from '@/components/finance/ManualSettleDialog.vue'
 import { useTransactionDetail } from '@/composables/useTransactionDetail'
@@ -61,10 +63,28 @@ onMounted(load)
 
 <template>
   <section class="finance-page transaction-detail">
-    <RouterLink class="transaction-detail__back" :to="{ name: ROUTE_NAMES.FINANCE_TRANSACTIONS }">
-      <AppIcon name="arrow-left" />
-      {{ t('finance.transaction.back') }}
-    </RouterLink>
+    <div class="transaction-detail__top">
+      <RouterLink class="transaction-detail__back" :to="{ name: ROUTE_NAMES.FINANCE_TRANSACTIONS }">
+        <AppIcon name="arrow-left" />
+        {{ t('finance.transaction.back') }}
+      </RouterLink>
+      <div
+        v-if="status === 'success' && (canRecordRefund || canSettle)"
+        class="transaction-detail__actions"
+      >
+        <BaseButton v-if="canRecordRefund" variant="primary" icon="undo" @click="refundOpen = true">
+          {{ t('finance.refund.open') }}
+        </BaseButton>
+        <BaseButton
+          v-if="canSettle"
+          variant="secondary"
+          icon="user-shield"
+          @click="settleOpen = true"
+        >
+          {{ t('finance.settle.open') }}
+        </BaseButton>
+      </div>
+    </div>
 
     <div v-if="status === 'loading'" class="transaction-detail__loading" aria-busy="true">
       <Skeleton variant="block" />
@@ -78,42 +98,6 @@ onMounted(load)
     />
 
     <template v-else>
-      <header class="transaction-detail__header">
-        <div>
-          <p class="transaction-detail__eyebrow">{{ t('finance.transaction.eyebrow') }}</p>
-          <h1 class="transaction-detail__title">
-            <bdi dir="ltr">{{ transaction.reference }}</bdi>
-          </h1>
-        </div>
-        <div class="transaction-detail__badges">
-          <PaymentStatusBadge :status="transaction.status" />
-          <Badge v-if="transaction.latePaid" variant="danger">{{
-            t('finance.transactions.latePaid')
-          }}</Badge>
-          <Badge v-if="transaction.manuallySettled" variant="info">{{
-            t('finance.transactions.manuallySettled')
-          }}</Badge>
-        </div>
-        <div class="transaction-detail__actions">
-          <BaseButton
-            v-if="canRecordRefund"
-            variant="primary"
-            icon="undo"
-            @click="refundOpen = true"
-          >
-            {{ t('finance.refund.open') }}
-          </BaseButton>
-          <BaseButton
-            v-if="canSettle"
-            variant="secondary"
-            icon="user-shield"
-            @click="settleOpen = true"
-          >
-            {{ t('finance.settle.open') }}
-          </BaseButton>
-        </div>
-      </header>
-
       <ul v-if="canRecordRefund || canSettle" class="transaction-detail__hints">
         <li v-if="canRecordRefund" class="submit-hint">
           <AppIcon name="landmark" />
@@ -131,7 +115,24 @@ onMounted(load)
       </p>
 
       <div class="transaction-detail__layout">
-        <Card :title="t('finance.transaction.collected')">
+        <Card class="transaction-detail__receipt">
+          <template #header>
+            <div class="transaction-detail__header">
+              <h1 class="transaction-detail__title">
+                <bdi dir="ltr">{{ transaction.reference }}</bdi>
+              </h1>
+              <div class="transaction-detail__badges">
+                <PaymentStatusBadge :status="transaction.status" />
+                <Badge v-if="transaction.latePaid" variant="danger">{{
+                  t('finance.transactions.latePaid')
+                }}</Badge>
+                <Badge v-if="transaction.manuallySettled" variant="info">{{
+                  t('finance.transactions.manuallySettled')
+                }}</Badge>
+              </div>
+            </div>
+          </template>
+          <TransactionParties :transaction="transaction" />
           <PricingBreakdown :pricing="transaction.pricing" />
           <TransactionFacts :transaction="transaction" />
         </Card>
@@ -161,6 +162,7 @@ onMounted(load)
             :downloading="downloads.busy.evidence === true"
             @download="downloads.download('evidence', detail.requestEvidenceLink)"
           />
+          <TransactionEventsCard :payment-id="id" />
         </div>
       </div>
 

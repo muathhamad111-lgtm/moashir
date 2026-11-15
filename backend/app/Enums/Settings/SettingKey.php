@@ -65,6 +65,7 @@ enum SettingKey: string
     case ContactRetentionMonths = 'contact.retention_months';
     case EntitySignInCodeChannels = 'auth.entity_sign_in_code_channels';
     case GeneralEmailNotifications = 'auth.general_email_notifications';
+    case EntityRegistrationReview = 'auth.entity_registration_review';
     case TwoFactorEnabled = 'auth.two_factor_enabled';
     case TwoFactorRoles = 'auth.two_factor_roles';
     case InsightsGapThresholds = 'insights.gap_thresholds';
@@ -77,6 +78,9 @@ enum SettingKey: string
     case PeriodicCertificateValidity = 'periodic.certificate_validity';
     case PeriodicPaidDraftReminderDays = 'periodic.paid_draft_reminder_days';
     case PeriodicRolloutFrom = 'periodic.rollout_from';
+    case SelfPathDescription = 'paths.self.description';
+    case AccreditedPathDescription = 'paths.accredited.description';
+    case AdvancedPathDescription = 'paths.advanced.description';
 
     public function group(): SettingGroup
     {
@@ -95,7 +99,8 @@ enum SettingKey: string
             self::AdvancedEvidenceMaxFilesPerSub, self::ContactRetentionMonths, self::PeriodicNoticeDaysBefore,
             self::PeriodicPaidDraftReminderDays => SettingType::Integer,
             self::VatRate, self::AdvancedDisqualificationScore => SettingType::Decimal,
-            self::AccreditedCertificateIssuance, self::GeneralEmailNotifications, self::TwoFactorEnabled => SettingType::Boolean,
+            self::AccreditedCertificateIssuance, self::GeneralEmailNotifications, self::EntityRegistrationReview,
+            self::TwoFactorEnabled => SettingType::Boolean,
             default => SettingType::Json,
         };
     }
@@ -129,7 +134,7 @@ enum SettingKey: string
             self::CertificateLevelThresholds => CertificateLevel::DEFAULT_THRESHOLDS,
             self::AccreditedCertificateIssuance => true,
             self::EntitySignInCodeChannels => [OtpChannel::Email->value],
-            self::GeneralEmailNotifications, self::TwoFactorEnabled => true,
+            self::GeneralEmailNotifications, self::EntityRegistrationReview, self::TwoFactorEnabled => true,
             self::TwoFactorRoles => RoleKey::staffValues(),
             self::ContactRetentionMonths => 24,
             self::InsightsGapThresholds => GapThresholds::DEFAULTS,
@@ -140,6 +145,9 @@ enum SettingKey: string
             self::PeriodicAudience => PeriodicAudience::ActiveVerifiedEntities->value,
             self::PeriodicCertificateValidity => CertificateValidityRule::NextPeriodEnd->value,
             self::PeriodicPaidDraftReminderDays => 7,
+            self::SelfPathDescription => LocalizedText::fromTranslation('assessments.path_descriptions.self')->toArray(),
+            self::AccreditedPathDescription => LocalizedText::fromTranslation('assessments.path_descriptions.accredited')->toArray(),
+            self::AdvancedPathDescription => LocalizedText::fromTranslation('assessments.path_descriptions.advanced')->toArray(),
             self::PaymentApplePayDomainConfirmation, self::PaymentStcPayActivationConfirmation, self::EmailTestAddress,
             self::VatRegistrationNumber, self::PeriodicRolloutFrom => null,
         };

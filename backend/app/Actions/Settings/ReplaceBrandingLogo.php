@@ -8,6 +8,7 @@ use App\Data\Settings\BrandingLogoUpload;
 use App\Models\Files\StoredFile;
 use App\Models\Identity\User;
 use App\Models\Settings\BrandingTheme;
+use App\Services\Cms\PublicContentCache;
 use App\Services\Files\StoredFileRemover;
 use App\Services\Platform\TransactionLock;
 use App\Services\Settings\BrandingAuditTrail;
@@ -24,6 +25,7 @@ final readonly class ReplaceBrandingLogo
         private StoredFileRemover $remover,
         private TransactionLock $lock,
         private BrandingAuditTrail $audit,
+        private PublicContentCache $publicContent,
     ) {}
 
     public function handle(User $actor, BrandingLogoUpload $upload): StoredFile
@@ -43,6 +45,7 @@ final readonly class ReplaceBrandingLogo
 
             $this->audit->record($theme, $before, 'logo_'.$upload->variant->value);
             $this->reason->alertIfSuperAdmin($actor);
+            DB::afterCommit(fn () => $this->publicContent->forgetSiteSettings());
 
             return $logo;
         });

@@ -8,7 +8,6 @@ use App\Contracts\Assessments\AssessmentState;
 use App\Contracts\Assessments\ReviewedAssessmentState;
 use App\Data\Assessments\ReviewStages;
 use App\Enums\Entities\EntityRequestPath;
-use App\Support\ValueObjects\LocalizedText;
 use LogicException;
 
 enum AssessmentPath: string
@@ -125,11 +124,6 @@ enum AssessmentPath: string
     public function isReviewed(): bool
     {
         return $this !== self::SelfAssessment;
-    }
-
-    public function label(): LocalizedText
-    {
-        return LocalizedText::fromTranslation('assessments.paths.'.$this->value);
     }
 
     public function followsCriteriaEdits(): bool

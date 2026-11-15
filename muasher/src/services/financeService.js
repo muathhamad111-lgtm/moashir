@@ -28,10 +28,6 @@ async function exportResult(response) {
 }
 
 export const financeService = {
-  getSummary(params = {}) {
-    return read('getSummary', () => apiClient.get('/finance/summary', { params }), params)
-  },
-
   listTransactions(params = {}) {
     return read(
       'listTransactions',
@@ -75,10 +71,6 @@ export const financeService = {
     )
   },
 
-  listRefunds(params = {}) {
-    return read('listRefunds', () => apiClient.get('/finance/refunds', { params }), params)
-  },
-
   requestEvidenceDownload(refundId) {
     return write(
       'requestEvidenceDownload',
@@ -111,6 +103,12 @@ export const financeService = {
       () => apiClient.post(`/finance/payments/${paymentId}/manual-settle`, payload),
       payload,
     ).then(transactionEnvelope)
+  },
+
+  listTransactionEvents(paymentId) {
+    return read('listTransactionEvents', () =>
+      apiClient.get(`/finance/transactions/${paymentId}/events`),
+    )
   },
 
   listPaymentEvents(params = {}) {

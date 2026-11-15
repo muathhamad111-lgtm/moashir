@@ -1,6 +1,6 @@
 import { onMounted, ref } from 'vue'
 import { siteSettingsService } from '@/services/siteSettingsService'
-import { SITE_SETTINGS_LIMITS } from '@/constants/cms'
+import { SITE_SETTINGS_LIMITS, SOCIAL_PLATFORM_KEYS } from '@/constants/cms'
 
 function bilingual(value) {
   return { ar: value?.ar ?? '', en: value?.en ?? '' }
@@ -18,6 +18,19 @@ function trimmedLinks(rows) {
   return rows.map((row) => ({ label: trimmed(row.label), url: row.url.trim() }))
 }
 
+function socialRowsOf(links) {
+  return SOCIAL_PLATFORM_KEYS.map((platform) => ({
+    platform,
+    url: (links ?? []).find((link) => link.platform === platform)?.url ?? '',
+  }))
+}
+
+export function filledSocialLinks(rows) {
+  return rows
+    .map((row) => ({ platform: row.platform, url: row.url.trim() }))
+    .filter((row) => row.url !== '')
+}
+
 function pick(payload, fields) {
   return fields ? Object.fromEntries(fields.map((field) => [field, payload[field]])) : payload
 }
@@ -27,7 +40,7 @@ export function draftOf(settings) {
     platformName: bilingual(settings?.platformName),
     platformDescription: bilingual(settings?.platformDescription),
     headerLinks: linksOf(settings?.headerLinks),
-    social: (settings?.social ?? []).map((row) => ({ platform: row.platform, url: row.url ?? '' })),
+    social: socialRowsOf(settings?.social),
     contact: {
       email: settings?.contact?.email ?? '',
       phone: settings?.contact?.phone ?? '',
@@ -49,7 +62,7 @@ export function payloadOf(draft) {
     platformName: trimmed(draft.platformName),
     platformDescription: trimmed(draft.platformDescription),
     headerLinks: trimmedLinks(draft.headerLinks),
-    social: draft.social.map((row) => ({ platform: row.platform, url: row.url.trim() })),
+    social: filledSocialLinks(draft.social),
     contact: {
       email: draft.contact.email.trim() || null,
       phone: draft.contact.phone.trim() || null,

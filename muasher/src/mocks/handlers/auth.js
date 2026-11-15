@@ -1,16 +1,13 @@
 import { delay } from 'msw'
 import { http } from '../contract/http'
 import { envelope, errorResponse, noContent } from '../contract/responses'
-import { requestLocale } from '../contract/locale'
 import { MOCK_PASSWORD, OTP_CONFIG, SIGN_IN_IDENTIFIER_KINDS } from '../fixtures/auth'
-import { entityNotices } from '../fixtures/entityMessages'
 import { sessionPayload } from '../stores/accounts'
 import { currentSessionUser, endMockSession } from '../stores/sessionStore'
 import {
   OTP_PURPOSES,
   SIGN_IN_PURPOSES,
   acceptsCode,
-  challengePayload,
   consumeChallenge,
   createChallenge,
   findChallenge,
@@ -21,6 +18,7 @@ import {
   ENTITY_STANDING,
   completeVerification,
   registerEntity,
+  validateRegistration,
   standingOf,
 } from '../stores/entityRegistration'
 import { entityRoute, readJson } from '../stores/entityRejection'
@@ -41,6 +39,12 @@ import { SIGN_IN_STEPS, continueSignIn, isStaff, otpRequired, signIn } from '../
 import { failsRandomly } from '../contract/faults'
 import { authField, authReject, authRoute } from './authRoute'
 import { mfaHandlers } from './mfa'
+import { registrationEmailHandlers } from './registrationEmail'
+import {
+  consumeEmailVerificationToken,
+  emailTokenValid,
+  normalizedEmail,
+} from '../stores/registrationEmail'
 import { signInCodeHandlers } from './signInCode'
 import { authSettingsHandlers } from './authSettings'
 import { phoneVerificationHandlers } from './phoneVerification'
@@ -83,10 +87,16 @@ function issueCode(account, channel = 'email', purpose = OTP_PURPOSES.LOGIN) {
   return createChallenge(account, channel, purpose)
 }
 
+function assertNotUnderReview(standing) {
+  if (standing === ENTITY_STANDING.PENDING_REVIEW) throw authReject.pendingReview()
+  if (standing === ENTITY_STANDING.REJECTED) throw authReject.rejected()
+}
+
 function entitySignIn(account) {
   const standing = standingOf(account.record)
   if (standing === ENTITY_STANDING.CLOSED) throw authReject.credentials()
   if (standing === ENTITY_STANDING.DEACTIVATED) throw authReject.deactivated()
+  assertNotUnderReview(standing)
   if (standing === ENTITY_STANDING.VERIFY) return otpRequired(issueCode(account))
   return continueSignIn(account)
 }
@@ -97,8 +107,9 @@ function passwordSignIn(account) {
 
 function verifiedAccount(challenge) {
   if (challenge.account.kind !== 'entity') return challenge.account
-  const entity = findEntity(challenge.account.record.id)
-  return { kind: 'entity', record: completeVerification(entity) }
+  const entity = completeVerification(findEntity(challenge.account.record.id))
+  assertNotUnderReview(standingOf(entity))
+  return { kind: 'entity', record: entity }
 }
 
 function completeSignIn(challenge) {
@@ -147,18 +158,24 @@ export const authHandlers = [
     })
   }),
 
+  ...registrationEmailHandlers,
+
   http.post(
     '/api/v1/auth/register',
     entityRoute(async ({ request }) => {
-      const created = registerEntity(await readJson(request))
-      const account = created ? { kind: 'entity', record: created } : null
-      const message = entityNotices.registrationOtpSent[requestLocale(request)]
-      const otp = challengePayload(createChallenge(account, 'email'))
-      return envelope(
-        { step: SIGN_IN_STEPS.OTP_REQUIRED, requiresOtp: true, otp, message },
-        {},
-        { status: 201 },
-      )
+      const body = await readJson(request)
+      validateRegistration(body)
+      const email = normalizedEmail(body.officialEmail)
+      if (!emailTokenValid(body.emailVerificationToken, email))
+        throw authReject.validation({ officialEmail: [authField('registration.email_unverified')] })
+      const created = registerEntity(body)
+      if (!created)
+        throw authReject.validation({ officialEmail: [authField('registration.email_taken')] })
+      consumeEmailVerificationToken(body.emailVerificationToken)
+      completeVerification(created)
+      if (standingOf(created) === ENTITY_STANDING.PENDING_REVIEW)
+        return envelope({ step: SIGN_IN_STEPS.PENDING_REVIEW }, {}, { status: 201 })
+      return signIn({ kind: 'entity', record: created })
     }),
   ),
 

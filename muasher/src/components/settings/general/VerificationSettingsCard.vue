@@ -7,6 +7,7 @@ import SettingsCardState from './SettingsCardState.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import { useAuthSettings } from '@/composables/useAuthSettings'
+import FieldToggle from '@/components/form/FieldToggle.vue'
 
 const { t } = useI18n()
 const {
@@ -36,6 +37,16 @@ onMounted(load)
       <fieldset class="settings-form__group">
         <legend class="settings-form__legend">{{ t('settings.general.verificationTitle') }}</legend>
         <SignInCodeChannels :sms-status="settings.smsStatus" :sms-locked="smsLocked" />
+      </fieldset>
+      <fieldset class="settings-form__group">
+        <legend class="settings-form__legend">
+          {{ t('settings.general.registrationReview.title') }}
+        </legend>
+        <FieldToggle
+          name="entityRegistrationReview"
+          :label="t('settings.general.registrationReview.label')"
+          :description="t('settings.general.registrationReview.description')"
+        />
       </fieldset>
       <fieldset class="settings-form__group">
         <legend class="settings-form__legend">{{ t('settings.general.twoFactor.title') }}</legend>

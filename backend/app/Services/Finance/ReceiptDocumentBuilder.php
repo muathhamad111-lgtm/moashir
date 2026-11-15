@@ -8,7 +8,9 @@ use App\Data\Documents\PdfDocument;
 use App\Enums\Documents\DocumentTemplate;
 use App\Enums\Documents\DocumentWatermark;
 use App\Enums\Finance\PaymentChannel;
+use App\Enums\Finance\PaymentPurpose;
 use App\Models\Finance\PaymentReceipt;
+use App\Services\Paths\PathIdentityReader;
 use App\Support\HijriDate;
 use App\Support\ScalarValue;
 use App\Support\ValueObjects\LocalizedText;
@@ -21,7 +23,7 @@ final readonly class ReceiptDocumentBuilder
 
     public const string VOID_WATERMARK = DocumentWatermark::Void->value;
 
-    public function __construct(private Repository $config) {}
+    public function __construct(private Repository $config, private PathIdentityReader $paths) {}
 
     public function for(PaymentReceipt $receipt): PdfDocument
     {
@@ -53,7 +55,9 @@ final readonly class ReceiptDocumentBuilder
      */
     private function purposeLabelOf(PaymentReceipt $receipt): array
     {
-        $label = LocalizedText::fromTranslation('finance.purposes.'.ScalarValue::string($receipt->snapshot['purpose'] ?? null))->toArray();
+        $purpose = ScalarValue::string($receipt->snapshot['purpose'] ?? null);
+        $known = PaymentPurpose::tryFrom($purpose);
+        $label = ($known instanceof PaymentPurpose ? $this->paths->purposeLabelOf($known) : LocalizedText::fromTranslation('finance.purposes.'.$purpose))->toArray();
         $cycle = $receipt->snapshot[ReceiptSnapshotBuilder::AWARD_CYCLE] ?? null;
         $name = is_array($cycle) ? ($cycle['name'] ?? null) : null;
 

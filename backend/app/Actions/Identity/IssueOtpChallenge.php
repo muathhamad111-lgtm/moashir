@@ -12,6 +12,7 @@ use App\Enums\Identity\OtpChannel;
 use App\Notifications\Identity\OtpCodeNotification;
 use App\Services\Identity\AuthenticationEventRecorder;
 use App\Services\Identity\AuthSettings;
+use App\Services\Identity\OtpCodeGenerator;
 use App\Services\Identity\OtpCodeStore;
 use App\Services\Identity\OtpIssueThrottle;
 use App\Support\ValueObjects\EmailAddress;
@@ -26,6 +27,7 @@ final readonly class IssueOtpChallenge
         private OtpCodeStore $store,
         private AuthenticationEventRecorder $events,
         private SmsAvailability $sms,
+        private OtpCodeGenerator $codes,
     ) {}
 
     public function handle(OtpDelivery $delivery): OtpChallenge
@@ -33,7 +35,7 @@ final readonly class IssueOtpChallenge
         $this->throttle->hit($delivery->user);
 
         $channel = $this->effectiveChannel($delivery);
-        $code = $this->generateCode();
+        $code = $this->codes->generate();
         $otp = $this->store->open($delivery, $channel, $code, $this->maskedDestination($delivery, $channel));
 
         $this->send($delivery, $channel, $code);
@@ -60,13 +62,6 @@ final readonly class IssueOtpChallenge
         return ! $delivery->recipientOverride instanceof EmailAddress
             && $user->phone !== null
             && ($user->phone_verified_at !== null || $delivery->purpose->maySendToUnverifiedPhone());
-    }
-
-    private function generateCode(): string
-    {
-        $length = $this->settings->otpLength();
-
-        return str_pad((string) random_int(0, (10 ** $length) - 1), $length, '0', STR_PAD_LEFT);
     }
 
     private function maskedDestination(OtpDelivery $delivery, OtpChannel $channel): string

@@ -173,10 +173,6 @@ export const entityMessages = {
 }
 
 export const entityNotices = {
-  registrationOtpSent: {
-    ar: 'إذا كان بالإمكان التسجيل بهذا البريد الإلكتروني فقد أرسلنا إليه رمز التحقق.',
-    en: 'If this e-mail can be registered, a verification code has been sent to it.',
-  },
   emailChangeOtpSent: {
     ar: 'أرسلنا رمز التحقق إلى البريد الإلكتروني الجديد.',
     en: 'A verification code has been sent to the new e-mail address.',

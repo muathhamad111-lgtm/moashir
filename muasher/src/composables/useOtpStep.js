@@ -6,7 +6,12 @@ import { useOtpChallenge } from '@/composables/useOtpChallenge'
 import { useLoginOutcome } from '@/composables/useLoginOutcome'
 import { useToast } from '@/composables/useToast'
 import { logger } from '@/utils/logger'
-import { codeFailureOf, endsTheChallenge, failureText } from '@/utils/auth/authFailures'
+import {
+  codeFailureOf,
+  endsTheChallenge,
+  failureText,
+  isAccountStanding,
+} from '@/utils/auth/authFailures'
 import { channelIconOf, otpDestinationOf } from '@/utils/auth/otpDestination'
 import { AUTH_FLOW_INTENTS } from '@/constants/loginSteps'
 import { CODE_FAILURES } from '@/constants/signIn'
@@ -37,6 +42,7 @@ export function useOtpStep() {
   )
   const channelIcon = computed(() => channelIconOf(otp.channel.value))
   const ended = computed(() => Boolean(failure.value) && endsTheChallenge(failure.value))
+  const standing = computed(() => isAccountStanding(failure.value))
   const locked = computed(() => submitting.value || otp.expired.value || ended.value)
 
   function reject(error) {
@@ -97,6 +103,7 @@ export function useOtpStep() {
 
   return {
     otp,
+    standing,
     code,
     codeError,
     failure,

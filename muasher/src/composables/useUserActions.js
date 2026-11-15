@@ -4,6 +4,8 @@ import { usersService } from '@/services/usersService'
 import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
 import { useAuthStore } from '@/stores/auth'
+import { usePermissions } from '@/composables/usePermissions'
+import { PERMISSIONS } from '@/constants/permissionKeys'
 import { USER_ACTIONS as A, USER_STATUSES as S } from '@/constants/users'
 import { isQualifiableUser, isScopableUser } from '@/utils/users/pathAccessRoles'
 
@@ -20,6 +22,11 @@ const REASON_ACTIONS = {
     required: true,
     destructive: true,
   },
+  [A.REVOKE_SESSIONS]: {
+    run: (id, payload) => usersService.revokeSessions(id, payload),
+    required: false,
+    destructive: true,
+  },
 }
 
 const ACTION_ICONS = {
@@ -28,23 +35,31 @@ const ACTION_ICONS = {
   [A.ACTIVATE]: 'user-check',
   [A.UNLOCK]: 'lock-open',
   [A.RESEND_INVITATION]: 'send',
+  [A.SEND_PASSWORD_RESET]: 'envelope',
+  [A.REVOKE_SESSIONS]: 'logout',
+  [A.CANCEL_INVITATION]: 'trash',
+  [A.ACTIVITY]: 'clock',
   [A.RESET_MFA]: 'lock',
   [A.QUALIFICATIONS]: 'graduation-cap',
   [A.REQUEST_SCOPE]: 'route',
 }
 
-const DANGER = [A.SUSPEND, A.RESET_MFA]
+const DANGER = [A.SUSPEND, A.RESET_MFA, A.REVOKE_SESSIONS, A.CANCEL_INVITATION]
 
-function availableKeys(user, selfId) {
+function availableKeys(user, selfId, canViewAudit) {
   const keys = [A.EDIT]
   const isSelf = user.id === selfId
   if (user.status === S.ACTIVE && !isSelf) keys.push(A.SUSPEND)
   if (user.status === S.SUSPENDED) keys.push(A.ACTIVATE)
   if (user.status === S.LOCKED) keys.push(A.UNLOCK)
   if ([S.INVITED, S.EXPIRED].includes(user.status)) keys.push(A.RESEND_INVITATION)
+  if ([S.INVITED, S.EXPIRED].includes(user.status) && !isSelf) keys.push(A.CANCEL_INVITATION)
+  if (user.status === S.ACTIVE && !isSelf) keys.push(A.SEND_PASSWORD_RESET)
   if (user.mfaEnabled && !isSelf) keys.push(A.RESET_MFA)
   if (isQualifiableUser(user) && !isSelf) keys.push(A.QUALIFICATIONS)
   if (isScopableUser(user) && !isSelf) keys.push(A.REQUEST_SCOPE)
+  if (![S.INVITED, S.EXPIRED].includes(user.status) && !isSelf) keys.push(A.REVOKE_SESSIONS)
+  if (canViewAudit) keys.push(A.ACTIVITY)
   return keys
 }
 
@@ -53,6 +68,7 @@ export function useUserActions({ onChanged }) {
   const toast = useToast()
   const auth = useAuthStore()
   const { confirm } = useConfirm()
+  const { can } = usePermissions()
   const pending = ref(null)
 
   const dialogOpen = computed({
@@ -74,7 +90,7 @@ export function useUserActions({ onChanged }) {
   })
 
   function actionsFor(user) {
-    return availableKeys(user, auth.user?.id ?? null).map((key) => ({
+    return availableKeys(user, auth.user?.id ?? null, can(PERMISSIONS.AUDIT_VIEW)).map((key) => ({
       key,
       label: t(`users.actions.${key}`),
       icon: ACTION_ICONS[key],
@@ -91,17 +107,25 @@ export function useUserActions({ onChanged }) {
     return data
   }
 
-  async function resendInvitation(user) {
+  // Confirm-only actions: no reason, the server e-mails the user and the list reloads.
+  const CONFIRM_ACTIONS = {
+    [A.RESEND_INVITATION]: (id) => usersService.resendInvitation(id),
+    [A.SEND_PASSWORD_RESET]: (id) => usersService.sendPasswordResetLink(id),
+    [A.CANCEL_INVITATION]: (id) => usersService.cancelInvitation(id),
+  }
+  const CONFIRM_LABELS = { [A.CANCEL_INVITATION]: 'users.actions.cancelInvitation' }
+
+  async function confirmAndSend(key, user) {
     const accepted = await confirm({
-      title: t('users.actionDialogs.resendInvitation.title'),
+      title: t(`users.actionDialogs.${key}.title`),
       message: user.name,
-      confirmLabel: t('actions.send'),
-      variant: 'confirm',
+      confirmLabel: t(CONFIRM_LABELS[key] ?? 'actions.send'),
+      variant: CONFIRM_LABELS[key] ? 'danger' : 'confirm',
     })
     if (!accepted) return
     try {
-      await usersService.resendInvitation(user.id)
-      toast.success(t('users.toasts.resendInvitation', { name: user.name }))
+      await CONFIRM_ACTIONS[key](user.id)
+      toast.success(t(`users.toasts.${key}`, { name: user.name }))
       onChanged()
     } catch (error) {
       toast.error(error?.normalized?.message || t('errors.unexpected'))
@@ -109,7 +133,7 @@ export function useUserActions({ onChanged }) {
   }
 
   function start(key, user) {
-    if (key === A.RESEND_INVITATION) return resendInvitation(user)
+    if (CONFIRM_ACTIONS[key]) return confirmAndSend(key, user)
     pending.value = { key, user }
     return null
   }

@@ -19,7 +19,11 @@ const QUEUE_PERMISSION = 'requests.queue.view'
 let users = []
 let nextId = 500000
 
+const RESET_LINK_THROTTLE_MS = 60_000
+const resetLinksSentAt = new Map()
+
 export function resetStaffUsers() {
+  resetLinksSentAt.clear()
   users = usersFixture.map((user) => ({
     ...user,
     roles: [...user.roles],
@@ -233,6 +237,36 @@ export function unlockStaffUser(user, body) {
   return user
 }
 
+export function revokeStaffSessions(actor, user, body) {
+  reasonOf(body, false)
+  assertNotSelf(actor, user)
+  return user
+}
+
+export function cancelStaffInvitation(actor, user) {
+  assertNotSelf(actor, user)
+  assertState(user, ['invited', 'expired'], 'cancel_invitation')
+  users = users.filter((candidate) => candidate.id !== user.id)
+}
+
+const CSV_COLUMNS = ['name', 'email', 'roles', 'status', 'last_login_at', 'created_at']
+
+function csvCell(value) {
+  const text = String(value ?? '')
+  return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text
+}
+
+// Mirrors GET /users/export: the filtered list as CSV with a BOM so Excel reads Arabic.
+export function staffUsersCsv(query) {
+  const { rows } = listStaffUsers(query)
+  const lines = rows.map((user) =>
+    [user.name, user.email, user.roles.join(' | '), user.status, user.lastLoginAt, user.createdAt]
+      .map(csvCell)
+      .join(','),
+  )
+  return { csv: `\uFEFF${[CSV_COLUMNS.join(','), ...lines].join('\n')}\n`, count: rows.length }
+}
+
 export function resetStaffMfa(actor, user, body) {
   reasonOf(body, true)
   assertNotSelf(actor, user)
@@ -243,6 +277,16 @@ export function resetStaffMfa(actor, user, body) {
 export function resendStaffInvitation(user) {
   assertState(user, ['invited', 'expired'], 'resend_invitation')
   user.status = 'invited'
+}
+
+// Mirrors SendUserPasswordResetLink: active users only, never the own account, one link per minute.
+export function sendStaffPasswordResetLink(actor, user, now = Date.now()) {
+  if (actor.id === user.id) throw assessmentReject.coded(422, 'user.self')
+  assertState(user, ['active'], 'send_password_reset')
+  if (now - (resetLinksSentAt.get(user.id) ?? -Infinity) < RESET_LINK_THROTTLE_MS) {
+    throw assessmentReject.coded(429, 'user.password_reset_recently_sent')
+  }
+  resetLinksSentAt.set(user.id, now)
 }
 
 function holds(user, permission) {

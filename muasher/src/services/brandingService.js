@@ -1,5 +1,10 @@
 import { apiClient } from '@/api/client'
-import { LOGO_VARIANT_BY_SURFACE } from '@/constants/branding'
+import {
+  FAVICON_SURFACE,
+  LOGO_VARIANT_BY_SURFACE,
+  SIDEBAR_LOGO_SURFACE,
+  SITE_LOGO_SURFACE,
+} from '@/constants/branding'
 import { contentImageUrl } from '@/utils/contentImage'
 import { payloadShape } from '@/utils/payloadShape'
 import { serviceRequest } from './serviceRequest'
@@ -16,7 +21,9 @@ function toPaletteEntry(entry) {
 
 function toLogos(data) {
   return {
-    dark: contentImageUrl(data.logoLight) || null,
+    [SIDEBAR_LOGO_SURFACE]: contentImageUrl(data.logoLight) || null,
+    [FAVICON_SURFACE]: contentImageUrl(data.favicon) || null,
+    [SITE_LOGO_SURFACE]: contentImageUrl(data.logoSite) || null,
   }
 }
 

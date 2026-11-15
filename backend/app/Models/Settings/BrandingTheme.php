@@ -14,12 +14,16 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property AccentToken $accent_token
  * @property int|null $logo_light_file_id
+ * @property int|null $favicon_file_id
+ * @property int|null $site_logo_file_id
  * @property int|null $logo_dark_file_id
  * @property int|null $updated_by_user_id
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read StoredFile|null $logoLight
  * @property-read StoredFile|null $logoDark
+ * @property-read StoredFile|null $favicon
+ * @property-read StoredFile|null $siteLogo
  */
 final class BrandingTheme extends Model
 {
@@ -36,7 +40,7 @@ final class BrandingTheme extends Model
 
     public static function current(): self
     {
-        return self::query()->with(['logoLight', 'logoDark'])->findOrFail(self::SINGLETON_ID);
+        return self::query()->with(['logoLight', 'logoDark', 'favicon', 'siteLogo'])->findOrFail(self::SINGLETON_ID);
     }
 
     /**
@@ -63,5 +67,21 @@ final class BrandingTheme extends Model
     public function logoDark(): BelongsTo
     {
         return $this->belongsTo(StoredFile::class, 'logo_dark_file_id');
+    }
+
+    /**
+     * @return BelongsTo<StoredFile, $this>
+     */
+    public function favicon(): BelongsTo
+    {
+        return $this->belongsTo(StoredFile::class, 'favicon_file_id');
+    }
+
+    /**
+     * @return BelongsTo<StoredFile, $this>
+     */
+    public function siteLogo(): BelongsTo
+    {
+        return $this->belongsTo(StoredFile::class, 'site_logo_file_id');
     }
 }

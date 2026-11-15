@@ -45,6 +45,7 @@ export const STATUS_VARIANTS = {
   inactive: 'muted',
   deactivated: 'danger',
   'pending-verification': 'warning',
+  'pending-review': 'info',
 
   'awaiting-otp': 'muted',
   'awaiting-approval': 'warning',

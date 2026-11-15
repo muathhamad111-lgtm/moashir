@@ -3,7 +3,6 @@ import { toRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
-import PathPrice from '@/components/paths/PathPrice.vue'
 import PathPriceFields from './PathPriceFields.vue'
 import PathPriceVersion from './PathPriceVersion.vue'
 import PathPriceHistory from './PathPriceHistory.vue'
@@ -41,15 +40,8 @@ const historyId = `price-history-panel-${props.row.key}`
       <h2 :id="`price-row-title-${row.key}`" class="path-price-row__title">
         {{ t(`settings.prices.rows.${row.key}.title`) }}
       </h2>
-      <PathPrice class="path-price-row__entity" :pricing="row.pricing" />
     </header>
-    <p class="path-price-row__lead">{{ t(`settings.prices.rows.${row.key}.lead`) }}</p>
-    <div class="path-price-row__versions">
-      <PathPriceVersion
-        :version="row.inForce"
-        :title="t('settings.prices.inForce')"
-        :test-id="`price-in-force-${row.key}`"
-      />
+    <div v-if="row.scheduled" class="path-price-row__versions">
       <PathPriceVersion
         v-if="row.scheduled"
         :version="row.scheduled"

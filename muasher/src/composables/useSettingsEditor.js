@@ -9,7 +9,16 @@ import { firstFieldErrors } from '@/utils/payments/financeErrors'
 const REASON_REQUIRED = 'reason_required'
 const FORBIDDEN = 403
 
-export function useSettingsEditor({ read, write, schema, valuesOf, changesOf, messages, action }) {
+export function useSettingsEditor({
+  read,
+  write,
+  schema,
+  valuesOf,
+  changesOf,
+  messages,
+  action,
+  onSaved = () => {},
+}) {
   const { t } = useI18n()
   const toast = useToast()
   const auth = useAuthStore()
@@ -48,7 +57,9 @@ export function useSettingsEditor({ read, write, schema, valuesOf, changesOf, me
     saving.value = true
     logger.breadcrumb('form', action, { fields: Object.keys(payload) })
     try {
-      apply((await write(payload)).data)
+      const { data } = await write(payload)
+      apply(data)
+      onSaved(data)
       toast.success(t(messages.saved))
       return true
     } catch (error) {

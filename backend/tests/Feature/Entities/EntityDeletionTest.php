@@ -149,6 +149,8 @@ it('rejects every action on a deleted entity with 409 entity.deleted', function 
 })->with([
     'deactivate' => ['POST', '/deactivate', ['reason' => 'سبب موثق للإجراء الإداري.']],
     'reactivate' => ['POST', '/reactivate', ['reason' => 'سبب موثق للإجراء الإداري.']],
+    'approve' => ['POST', '/approve', []],
+    'reject' => ['POST', '/reject', ['reason' => 'سبب موثق للإجراء الإداري.']],
     'resend verification' => ['POST', '/verification/resend', []],
     'edit on behalf' => ['PUT', '', ['profile']],
 ]);

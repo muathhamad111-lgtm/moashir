@@ -2,12 +2,12 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DataTable from '@/components/data-list/DataTable.vue'
-import AppMenu from '@/components/ui/AppMenu.vue'
+import RowActions from '@/components/data-list/RowActions.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import FrozenBadge from '@/components/entities/FrozenBadge.vue'
 import LevelBadge from '@/components/level/LevelBadge.vue'
 import { displayTierOf, reassessmentOf } from '@/utils/levelTier'
-import { useEntityActions } from '@/composables/useEntityActions'
+import { ENTITY_INLINE_ACTIONS, useEntityActions } from '@/composables/useEntityActions'
 import { useEntityDisplay } from '@/composables/useEntityDisplay'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 
@@ -28,17 +28,9 @@ const { rowActionsFor } = useEntityActions()
 const { localized, enumLabel, date, dateTime } = useEntityDisplay()
 
 const COLUMN_SETS = {
-  full: ['reference', 'name', 'level', 'entityType', 'region', 'status', 'createdAt', 'actions'],
-  contact: [
-    'reference',
-    'name',
-    'level',
-    'authorizedPersonName',
-    'officialEmail',
-    'status',
-    'actions',
-  ],
-  deleted: ['reference', 'name', 'region', 'deletedAt', 'status', 'actions'],
+  full: ['name', 'level', 'entityType', 'region', 'status', 'createdAt', 'actions'],
+  contact: ['name', 'level', 'authorizedPersonName', 'officialEmail', 'status', 'actions'],
+  deleted: ['name', 'region', 'deletedAt', 'status', 'actions'],
 }
 
 function tierOf(item) {
@@ -61,16 +53,16 @@ const columns = computed(() => {
     :empty-message="emptyMessage"
     @retry="emit('retry')"
   >
-    <template #cell-reference="{ item }">
-      <span class="entity-table__reference u-ltr">{{ item.reference }}</span>
-    </template>
     <template #cell-name="{ item }">
-      <router-link
-        class="entity-table__name"
-        :to="{ name: ROUTE_NAMES.ADMIN_ENTITY, params: { id: item.id } }"
-      >
-        {{ localized(item.name) }}
-      </router-link>
+      <span class="entity-table__entity">
+        <router-link
+          class="entity-table__name"
+          :to="{ name: ROUTE_NAMES.ADMIN_ENTITY, params: { id: item.id } }"
+        >
+          {{ localized(item.name) }}
+        </router-link>
+        <span class="entity-table__reference u-ltr">{{ item.reference }}</span>
+      </span>
     </template>
     <template #cell-level="{ item }">
       <LevelBadge
@@ -94,9 +86,10 @@ const columns = computed(() => {
       </span>
     </template>
     <template #cell-actions="{ item }">
-      <AppMenu
+      <RowActions
         :actions="rowActionsFor(item)"
-        :label="t('entities.actions.menu', { name: localized(item.name) })"
+        :name="localized(item.name)"
+        :inline-keys="ENTITY_INLINE_ACTIONS"
         @select="emit('action', $event, item)"
       />
     </template>

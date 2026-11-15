@@ -1,5 +1,6 @@
 import { cmsState, findPage, sectionsOf } from './cmsState'
 import { withFallback } from './contentValidation'
+import { getBrandingTheme } from '../brandingStore'
 
 const CONTENT_FIELDS = [
   'title',
@@ -142,6 +143,10 @@ export function publicSiteSettings() {
     },
     showFeaturedKpis: settings.showFeaturedKpis,
     featuredKpiLimit: settings.featuredKpiLimit,
+    branding: {
+      siteLogo: clone(getBrandingTheme().logoSite ?? null),
+      favicon: clone(getBrandingTheme().favicon ?? null),
+    },
   }
 }
 

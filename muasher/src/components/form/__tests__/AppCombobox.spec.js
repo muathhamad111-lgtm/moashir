@@ -100,6 +100,15 @@ describe('AppCombobox', () => {
     document.body.removeEventListener('keydown', outer)
   })
 
+  it('drops the placeholder hint once a multiple choice holds values', async () => {
+    const empty = mountCombobox({ multiple: true, modelValue: [], placeholder: 'All members' })
+    expect(input(empty).attributes('placeholder')).toBe('All members')
+    const chosen = mountCombobox({ multiple: true, modelValue: [11], placeholder: 'All members' })
+    expect(input(chosen).attributes('placeholder')).toBe(' ')
+    empty.unmount()
+    chosen.unmount()
+  })
+
   it('keeps the list open for multiple values, shows removable tags and removes the last with Backspace', async () => {
     const wrapper = mountCombobox({ multiple: true, modelValue: [11] })
     expect(wrapper.find('.dropdown-tag').text()).toContain('أمين الجائزة')

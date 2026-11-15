@@ -28,8 +28,8 @@ final class UpdateSiteSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            ...LocalizedFieldRules::optional('platform_name', 120),
-            ...LocalizedFieldRules::optional('platform_description', 300),
+            ...LocalizedFieldRules::complete('platform_name', 120),
+            ...LocalizedFieldRules::complete('platform_description', 300),
             'social' => ['sometimes', 'array', 'max:10'],
             'social.*' => ['required', 'array:platform,url'],
             'social.*.platform' => ['required', 'distinct', Rule::enum(SocialPlatform::class)],

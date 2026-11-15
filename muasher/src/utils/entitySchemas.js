@@ -169,6 +169,7 @@ export function registrationSchema(t) {
       .required(t('validation.required'))
       .email(t('validation.email'))
       .max(EMAIL_MAX),
+    emailVerificationToken: yupString().required(t('entities.registration.emailVerify.required')),
     password: yupString()
       .required(t('validation.required'))
       .min(PASSWORD_LENGTH.MIN, t('entities.validation.passwordMin', { min: PASSWORD_LENGTH.MIN }))

@@ -23,7 +23,36 @@ function postOutcome(action, path, body, { expectedStatuses = [], ...context } =
   ).then((envelope) => mapData(envelope, toLoginOutcome))
 }
 
+function postCode(action, path, body) {
+  return serviceRequest(
+    action,
+    () => apiClient.post(path, body, AUTH_FLOW_CONFIG),
+    { entity: 'registration-email', payloadShape: payloadShape(body) },
+    { expectedStatuses: SIGN_IN_REJECTIONS },
+  )
+}
+
 export const authService = {
+  // The official e-mail is proven inside the registration form, before the registration is sent.
+  requestRegistrationEmailCode({ officialEmail }) {
+    return postCode('auth.registrationEmail.request', '/auth/register/email-code', {
+      officialEmail,
+    })
+  },
+
+  resendRegistrationEmailCode({ challengeId }) {
+    return postCode('auth.registrationEmail.resend', '/auth/register/email-code/resend', {
+      challengeId,
+    })
+  },
+
+  verifyRegistrationEmailCode({ challengeId, code }) {
+    return postCode('auth.registrationEmail.verify', '/auth/register/email-code/verify', {
+      challengeId,
+      code,
+    })
+  },
+
   register(payload) {
     return postOutcome('auth.register', '/auth/register', payload, {
       entity: 'entity',

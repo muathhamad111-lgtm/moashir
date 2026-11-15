@@ -179,7 +179,8 @@ it('gives a decoy the channel a real account would get, on request and on resend
     Notification::assertNothingSent();
 });
 
-it('sends a pending entity its registration code by e-mail and signs it in once verified', function (): void {
+it('sends a pending entity its registration code by e-mail and signs it in once verified while the review is switched off', function (): void {
+    requireEntityRegistrationReview(false);
     allowSignInCodeChannels('email', 'sms');
     $entity = entityWithOwner(static fn ($factory) => $factory->pendingVerification());
     $owner = ownerOf($entity);
@@ -192,6 +193,19 @@ it('sends a pending entity its registration code by e-mail and signs it in once 
 
     $this->assertAuthenticatedAs($owner, 'web');
     expect($entity->refresh()->isPendingVerification())->toBeFalse()
+        ->and($owner->refresh()->email_verified_at)->not->toBeNull();
+});
+
+it('confirms the e-mail of a pending entity with its registration code, then answers that the registration is under review', function (): void {
+    $entity = entityWithOwner(static fn ($factory) => $factory->pendingVerification());
+    $owner = ownerOf($entity);
+
+    $challengeId = requestSignInCode($owner->email)->assertOk()->assertJsonPath('data.otp.channel', 'email')->json('data.otp.challenge_id');
+
+    verifySignInCode($challengeId, lastOtpCodeSentTo($owner))->assertForbidden()->assertJsonPath('code', 'auth.entity_pending_review');
+
+    $this->assertGuest('web');
+    expect($entity->refresh()->isPendingReview())->toBeTrue()
         ->and($owner->refresh()->email_verified_at)->not->toBeNull();
 });
 

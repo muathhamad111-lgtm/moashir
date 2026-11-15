@@ -6,6 +6,7 @@ import { sessionCan, sessionIsSuperAdmin } from '../stores/sessionPermissions'
 import {
   CODE_CHANNELS,
   authSettingsResource,
+  setEntityRegistrationReview,
   setGeneralEmailNotifications,
   setTwoFactorPolicy,
   setSignInCodeChannels,
@@ -16,6 +17,7 @@ import { authField, authReject, authRoute } from './authRoute'
 const PERMISSION = 'settings.auth.manage'
 const CHANNELS_FIELD = 'entitySignInCodeChannels'
 const GENERAL_EMAIL_FIELD = 'generalEmailNotifications'
+const REGISTRATION_REVIEW_FIELD = 'entityRegistrationReview'
 const TWO_FACTOR_FIELD = 'twoFactorEnabled'
 const TWO_FACTOR_ROLES_FIELD = 'twoFactorRoles'
 const ROLE_VALUES = [
@@ -79,11 +81,10 @@ function channelsOf(body) {
   return body[CHANNELS_FIELD]
 }
 
-function generalEmailOf(body) {
-  if (!(GENERAL_EMAIL_FIELD in body)) return undefined
-  if (typeof body[GENERAL_EMAIL_FIELD] !== 'boolean')
-    throw fieldError(GENERAL_EMAIL_FIELD, 'field.invalid')
-  return body[GENERAL_EMAIL_FIELD]
+function booleanOf(body, field) {
+  if (!(field in body)) return undefined
+  if (typeof body[field] !== 'boolean') throw fieldError(field, 'field.invalid')
+  return body[field]
 }
 
 function twoFactorOf(body) {
@@ -120,12 +121,14 @@ export const authSettingsHandlers = [
       assertManager()
       const body = await readJson(request)
       const channels = channelsOf(body)
-      const generalEmail = generalEmailOf(body)
+      const generalEmail = booleanOf(body, GENERAL_EMAIL_FIELD)
+      const registrationReview = booleanOf(body, REGISTRATION_REVIEW_FIELD)
       const twoFactor = twoFactorOf(body)
       const reason = reasonOf(body)
       if (sessionIsSuperAdmin() && !reason) throw authReject.reasonRequired()
       if (channels !== undefined) setSignInCodeChannels(channels)
       if (generalEmail !== undefined) setGeneralEmailNotifications(generalEmail)
+      if (registrationReview !== undefined) setEntityRegistrationReview(registrationReview)
       setTwoFactorPolicy(twoFactor)
       return envelope(authSettingsResource())
     }, LATENCY.WRITE),

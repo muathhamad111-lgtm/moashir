@@ -2,7 +2,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { brandingService } from '@/services/brandingService'
 import { useBrandingStore } from '@/stores/branding'
-import { DEFAULT_ACCENT_TOKEN, LOGO_SURFACES } from '@/constants/branding'
+import { DEFAULT_ACCENT_TOKEN, LOGO_DIMENSIONS, LOGO_SURFACES } from '@/constants/branding'
 import {
   accentContrastPairs,
   passesAllContrast,
@@ -22,7 +22,7 @@ function bySurface(build) {
 export function useBrandingEditor({ auto = true } = {}) {
   const { locale } = useI18n()
   const branding = useBrandingStore()
-  const logos = bySurface(() => useLogoSelection())
+  const logos = bySurface((surface) => useLogoSelection(LOGO_DIMENSIONS[surface]))
   const { prompt: reasonPrompt, reasonExtra } = useSuperAdminReason()
 
   const palette = ref([])
@@ -48,7 +48,6 @@ export function useBrandingEditor({ auto = true } = {}) {
       (surface) => logos[surface].previewUrl.value || logoForSurface(savedLogos.value, surface),
     ),
   )
-  const customLogos = computed(() => bySurface((surface) => Boolean(savedLogos.value[surface])))
 
   watch(draftToken, () => {
     rejectedPairs.value = []
@@ -132,7 +131,6 @@ export function useBrandingEditor({ auto = true } = {}) {
     canSave,
     busy,
     previewLogos,
-    customLogos,
     logos,
     status,
     saving,

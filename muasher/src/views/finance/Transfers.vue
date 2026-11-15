@@ -1,4 +1,6 @@
 <script setup>
+import { ROUTE_NAMES } from '@/constants/routeNames'
+import BaseButton from '@/components/ui/BaseButton.vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
@@ -8,7 +10,6 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
-import FinanceNav from '@/components/finance/FinanceNav.vue'
 import FinancePageHeader from '@/components/finance/FinancePageHeader.vue'
 import TransferQueueFilters from '@/components/finance/TransferQueueFilters.vue'
 import TransferQueueTable from '@/components/finance/TransferQueueTable.vue'
@@ -92,8 +93,17 @@ const filterState = {
       :eyebrow="t('finance.eyebrow')"
       :title="t('finance.transfers.title')"
       :subtitle="t('finance.transfers.subtitle')"
-    />
-    <FinanceNav />
+    >
+      <template #actions>
+        <BaseButton
+          variant="secondary"
+          icon="arrow-left"
+          :to="{ name: ROUTE_NAMES.FINANCE_TRANSACTIONS }"
+        >
+          {{ t('finance.operations.backToTransactions') }}
+        </BaseButton>
+      </template>
+    </FinancePageHeader>
 
     <StatsCards
       :stats="stats"

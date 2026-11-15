@@ -189,10 +189,18 @@ describe('CMS mock — Content Officer writes (Task-33 §3 #6-#24)', () => {
 
   it('stores the platform identity and the header menu, and serves them on the public home', async () => {
     const saved = await call('PATCH', '/admin/content/site-settings', {
-      platformName: { ar: 'منصة مؤشر', en: '' },
+      platformName: { ar: 'منصة مؤشر', en: 'Moashir platform' },
       headerLinks: [{ label: { ar: 'المسارات', en: 'Paths' }, url: '/#paths' }],
     })
-    expect(saved.body.data.platformName).toEqual({ ar: 'منصة مؤشر', en: '' })
+    expect(saved.body.data.platformName).toEqual({ ar: 'منصة مؤشر', en: 'Moashir platform' })
+    const emptyName = await call('PATCH', '/admin/content/site-settings', {
+      platformName: { ar: '', en: 'Moashir' },
+      platformDescription: { ar: 'وصف', en: ' ' },
+    })
+    expect(Object.keys(emptyName.body.errors).sort()).toEqual([
+      'platformDescription.en',
+      'platformName.ar',
+    ])
     const refused = await call('PATCH', '/admin/content/site-settings', {
       headerLinks: [{ label: { ar: '', en: '' }, url: 'javascript:alert(1)' }],
     })
@@ -202,7 +210,10 @@ describe('CMS mock — Content Officer writes (Task-33 §3 #6-#24)', () => {
     ])
     await call('POST', '/admin/content/pages/home/publish')
     const home = await call('GET', '/content/home')
-    expect(home.body.data.siteSettings.platformName).toEqual({ ar: 'منصة مؤشر', en: 'منصة مؤشر' })
+    expect(home.body.data.siteSettings.platformName).toEqual({
+      ar: 'منصة مؤشر',
+      en: 'Moashir platform',
+    })
     expect(home.body.data.siteSettings.headerLinks[0].url).toBe('/#paths')
   })
 

@@ -5,12 +5,14 @@ import { nextStepView } from '@/utils/nextStepView'
 import BrandPattern from '@/components/ui/BrandPattern.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import NextStepPayment from './NextStepPayment.vue'
+import { usePathNames } from '@/composables/usePathNames'
 
 const props = defineProps({
   step: { type: Object, required: true },
 })
 
 const { t } = useI18n()
+const { pathName } = usePathNames()
 const view = computed(() => nextStepView(props.step))
 </script>
 
@@ -32,7 +34,7 @@ const view = computed(() => nextStepView(props.step))
         <template #date>
           <bdi dir="ltr">{{ view.date }}</bdi>
         </template>
-        <template #path>{{ t(`paths.names.${view.pathKey}`) }}</template>
+        <template #path>{{ pathName(view.pathKey) }}</template>
         <template #reference>
           <bdi dir="ltr">{{ step.context.paymentReference }}</bdi>
         </template>

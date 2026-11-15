@@ -44,6 +44,7 @@ return [
             'request_per_identifier_per_ten_minutes' => 3,
             'request_per_ip_per_ten_minutes' => 10,
             'sign_in_sms_per_hour' => 100,
+            'registration_email_token_minutes' => 30,
         ],
         'lockout' => [
             'max_attempts' => (int) env('AUTH_LOCKOUT_MAX_ATTEMPTS', 5),

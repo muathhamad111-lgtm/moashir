@@ -4,41 +4,46 @@ import { useI18n } from 'vue-i18n'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import PathBadge from '@/components/ui/PathBadge.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
+import PathIdentityFields from '@/components/settings/paths/PathIdentityFields.vue'
 import PathLimitsFields from '@/components/settings/PathLimitsFields.vue'
-import PathPriceFields from '@/components/settings/PathPriceFields.vue'
 import PathEntityTextFields from '@/components/settings/PathEntityTextFields.vue'
+import PathPriceCard from '@/components/settings/paths/PathPriceCard.vue'
+import CertificateSettingsCard from '@/components/settings/paths/CertificateSettingsCard.vue'
 import { usePathSettings } from '@/composables/usePathSettings'
+import { usePathIdentityStore } from '@/stores/pathIdentity'
+import { usePermissions } from '@/composables/usePermissions'
+import { PERMISSIONS } from '@/constants/permissionKeys'
 import { ASSESSMENT_PATHS } from '@/constants/assessment'
+import { PATH_PRICE_KEYS } from '@/constants/paths'
 
 const props = defineProps({
   path: { type: String, required: true },
 })
 
 const { t } = useI18n()
-const {
-  status,
-  errorMessage,
-  settings,
-  saving,
-  reasonOpen,
-  load,
-  submit,
-  confirmReason,
-  canEditPrices,
-} = usePathSettings(props.path)
+const { can } = usePermissions()
+const managesPath = can(PERMISSIONS.SETTINGS_ASSESSMENT_MANAGE)
+const managesPrice = can(PERMISSIONS.SETTINGS_PRICES_MANAGE)
+const managesCertificates = can(PERMISSIONS.SETTINGS_CERTIFICATES_MANAGE)
+const identities = usePathIdentityStore()
+const { status, errorMessage, settings, saving, reasonOpen, load, submit, confirmReason } =
+  usePathSettings(props.path, {
+    onSaved: (saved) => identities.replace(props.path, { description: saved.description }),
+  })
 const formId = `path-settings-${props.path}`
-const showsPrice = computed(
-  () => props.path === ASSESSMENT_PATHS.ACCREDITED || settings.value?.isPaid === true,
-)
+const reviewed = computed(() => props.path !== ASSESSMENT_PATHS.SELF)
+const issuesCertificates = computed(() => props.path === ASSESSMENT_PATHS.ACCREDITED)
 
-onMounted(load)
+onMounted(() => {
+  if (managesPath) load()
+})
 </script>
 
 <template>
   <div class="path-settings">
-    <div v-if="status === 'loading'" class="path-settings__loading" aria-busy="true">
+    <template v-if="!managesPath" />
+    <div v-else-if="status === 'loading'" class="path-settings__loading" aria-busy="true">
       <Skeleton variant="block" />
       <Skeleton variant="text" :count="4" />
     </div>
@@ -50,19 +55,27 @@ onMounted(load)
       novalidate
       @submit.prevent="submit"
     >
-      <p class="path-settings__intro">
-        <PathBadge :path="path" :label="settings.pathLabel" />
-        <span>{{ t('settings.paths.intro') }}</span>
-      </p>
-      <PathLimitsFields :settings="settings" />
-      <PathPriceFields v-if="showsPrice" :settings="settings" :can-edit-prices="canEditPrices" />
-      <PathEntityTextFields />
+      <PathIdentityFields />
+      <template v-if="reviewed">
+        <PathEntityTextFields />
+        <PathLimitsFields :settings="settings" />
+      </template>
       <div class="path-settings__actions">
         <BaseButton type="submit" variant="primary" :loading="saving" icon="save">{{
           t('actions.save')
         }}</BaseButton>
       </div>
     </form>
+    <PathPriceCard v-if="managesPrice" :price-key="PATH_PRICE_KEYS[path]" />
+    <CertificateSettingsCard v-if="issuesCertificates && managesCertificates" part="issuance" />
+    <section
+      v-else-if="!issuesCertificates"
+      class="path-settings__card"
+      :aria-label="t('settings.paths.certificatesTitle')"
+    >
+      <h2 class="path-settings__card-title">{{ t('settings.paths.certificatesTitle') }}</h2>
+      <p class="path-settings__card-note">{{ t('settings.paths.noCertificates') }}</p>
+    </section>
     <ReasonDialog
       v-model="reasonOpen"
       :title="t('settings.assessment.reasonTitle')"

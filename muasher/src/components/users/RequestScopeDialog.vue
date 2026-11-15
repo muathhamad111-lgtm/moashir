@@ -9,6 +9,7 @@ import { useValidatedForm } from '@/composables/useValidatedForm'
 import { useAuthStore } from '@/stores/auth'
 import { usersService } from '@/services/usersService'
 import { REVIEWED_PATHS } from '@/constants/paths'
+import { usePathNames } from '@/composables/usePathNames'
 import {
   SCOPE_CHOICES,
   requestScopePayload,
@@ -23,6 +24,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'saved'])
 const { t } = useI18n()
+const { pathName } = usePathNames()
 const auth = useAuthStore()
 
 const scopeOptions = computed(() =>
@@ -32,7 +34,7 @@ const scopeOptions = computed(() =>
   })),
 )
 const pathOptions = computed(() =>
-  REVIEWED_PATHS.map((value) => ({ value, label: t(`paths.labels.${value}`) })),
+  REVIEWED_PATHS.map((value) => ({ value, label: pathName(value) })),
 )
 
 const form = useValidatedForm({

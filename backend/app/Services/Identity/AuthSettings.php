@@ -41,6 +41,11 @@ final readonly class AuthSettings
         return max(1, $this->number('otp.per_user_per_day'));
     }
 
+    public function registrationEmailTokenMinutes(): int
+    {
+        return max(1, $this->number('otp.registration_email_token_minutes'));
+    }
+
     public function signInSmsPerHour(): int
     {
         return max(1, $this->number('otp.sign_in_sms_per_hour'));

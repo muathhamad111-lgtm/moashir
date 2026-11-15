@@ -4,6 +4,7 @@ import { findFile, findPayment, receiptOf, refundOf } from './financeState'
 import { entityNameOf, entityReferenceOf } from './receiptSnapshot'
 import { ownTransferResource, transferDetailsOf } from './bankTransferRecords'
 import { cycleRefOf } from '../award/cycleRef'
+import { transactionTypeOf } from './financeQueries'
 
 function pricingOf(payment) {
   return {
@@ -66,8 +67,23 @@ export function receiptResource(receipt) {
   }
 }
 
-export function transactionResource(payment) {
+function refundSummaryOf(refund) {
+  if (!refund) return null
   return {
+    id: refund.id,
+    amount: refund.amount,
+    currency: refund.currency,
+    refundedOn: refund.refundedOn,
+    transferReference: refund.transferReference,
+    recordedBy: { id: refund.recordedBy.id, name: refund.recordedBy.name },
+    hasEvidence: findFile(refund.evidenceFileId) !== null,
+  }
+}
+
+export function transactionResource(payment) {
+  const refund = refundOf(payment.id)
+  return {
+    type: transactionTypeOf(payment),
     id: payment.id,
     reference: payment.reference,
     receiptNumber: receiptOf(payment.id)?.number ?? null,
@@ -87,7 +103,8 @@ export function transactionResource(payment) {
     pricing: pricingOf(payment),
     latePaid: payment.latePaidAt !== null,
     manuallySettled: payment.manuallySettledAt !== null,
-    hasRefund: refundOf(payment.id) !== null,
+    hasRefund: refund !== null,
+    refund: refundSummaryOf(refund),
     createdAt: payment.createdAt,
     paidAt: payment.paidAt,
     refundedAt: payment.refundedAt,
@@ -136,7 +153,7 @@ export function transactionDetailResource(payment) {
     latePaidAt: payment.latePaidAt,
     manuallySettledAt: payment.manuallySettledAt,
     receipt: receipt ? receiptResource(receipt) : null,
-    refund: refund ? refundResource(refund) : null,
+    refund: refund ? { ...refundSummaryOf(refund), ...refundResource(refund) } : null,
     bankTransfer: transferDetailsOf(payment),
     linkedRequest: linkedRequestOf(payment.id),
   }
@@ -161,6 +178,19 @@ export function paymentEventResource(event) {
     providerRef: maskedReference(event.providerPaymentId),
     createdAt: event.createdAt,
     processedAt: event.processedAt,
+  }
+}
+
+// The operation's own log: never the payload, IP, signature or error details.
+export function transactionEventResource(event) {
+  return {
+    id: event.id,
+    createdAt: event.createdAt,
+    source: event.source,
+    type: event.eventType,
+    result: event.result,
+    mode: event.mode,
+    providerReference: maskedReference(event.providerPaymentId),
   }
 }
 

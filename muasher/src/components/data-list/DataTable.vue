@@ -22,6 +22,13 @@ const props = defineProps({
 const emit = defineEmits(['retry'])
 const { t } = useI18n()
 
+// The actions column takes only the width of its buttons; the other columns share the rest.
+const ACTIONS_COLUMN = 'actions'
+
+function cellClass(column) {
+  return column.key === ACTIONS_COLUMN ? 'table__cell--actions' : null
+}
+
 function keyOf(item, index) {
   return item[props.rowKey] ?? index
 }
@@ -37,7 +44,13 @@ function keyOf(item, index) {
     >
       <thead class="table__head">
         <tr>
-          <th v-for="column in columns" :key="column.key" class="table__cell" scope="col">
+          <th
+            v-for="column in columns"
+            :key="column.key"
+            class="table__cell"
+            :class="cellClass(column)"
+            scope="col"
+          >
             {{ column.label }}
           </th>
         </tr>
@@ -45,14 +58,24 @@ function keyOf(item, index) {
       <tbody>
         <template v-if="status === 'loading'">
           <tr v-for="row in skeletonRows" :key="`skeleton-${row}`" class="table__row">
-            <td v-for="column in columns" :key="column.key" class="table__cell">
+            <td
+              v-for="column in columns"
+              :key="column.key"
+              class="table__cell"
+              :class="cellClass(column)"
+            >
               <Skeleton variant="text" />
             </td>
           </tr>
         </template>
         <template v-else>
           <tr v-for="(item, index) in items" :key="keyOf(item, index)" class="table__row">
-            <td v-for="column in columns" :key="column.key" class="table__cell">
+            <td
+              v-for="column in columns"
+              :key="column.key"
+              class="table__cell"
+              :class="cellClass(column)"
+            >
               <slot :name="`cell-${column.key}`" :item="item">
                 {{ item[column.key] }}
               </slot>

@@ -8,6 +8,7 @@ import { authHandlers } from '@/mocks/handlers/auth'
 import { resetEntitiesMock } from '@/mocks/stores/entityMockReset'
 import { setEmailChangePolicy } from '@/mocks/stores/entityEmailChanges'
 import { DEV_OTP_CODE } from '@/mocks/fixtures/auth'
+import { setEntityRegistrationReview } from '@/mocks/stores/authSettingsStore'
 import { MOCK_API_BASE, clearMockSession, seedMockSession, wireFetch } from '@/test-utils/mockApi'
 
 const server = setupServer(
@@ -115,39 +116,73 @@ describe('entities mock — registration', () => {
     }
   }
 
-  it('creates a pending entity, answers otp_required and activates it on the first verification', async () => {
-    const created = await call('POST', '/auth/register', registration())
-    expect(created.status).toBe(201)
-    expect(created.body.data.step).toBe('otp_required')
-    const verified = await call('POST', '/auth/otp/verify', {
-      challenge_id: created.body.data.otp.challenge_id,
+  async function verifiedToken(email = 'info@alwafa.example.sa') {
+    const sent = await call('POST', '/auth/register/email-code', { official_email: email })
+    const verified = await call('POST', '/auth/register/email-code/verify', {
+      challenge_id: sent.body.data.challenge_id,
       code: DEV_OTP_CODE,
     })
-    expect(verified.body.data.step).toBe('authenticated')
-    expect(verified.body.data.user.entity).toMatchObject({
+    return verified.body.data.email_verification_token
+  }
+
+  it('proves the e-mail with a code, then registers the entity for staff review', async () => {
+    const sent = await call('POST', '/auth/register/email-code', {
+      official_email: 'info@alwafa.example.sa',
+    })
+    expect(Object.keys(sent.body.data).sort()).toEqual([
+      'challenge_id',
+      'channel',
+      'expires_at',
+      'length',
+      'resend_available_at',
+    ])
+    const wrong = await call('POST', '/auth/register/email-code/verify', {
+      challenge_id: sent.body.data.challenge_id,
+      code: '000000',
+    })
+    expect(wrong.body.code).toBe('otp.invalid')
+    const unproven = await call('POST', '/auth/register', registration())
+    expect(Object.keys(unproven.body.errors)).toEqual(['official_email'])
+    const token = await verifiedToken()
+    const created = await call(
+      'POST',
+      '/auth/register',
+      registration({ email_verification_token: token }),
+    )
+    expect([created.status, created.body.data.step]).toEqual([201, 'pending_review'])
+    const reused = await call(
+      'POST',
+      '/auth/register',
+      registration({ email_verification_token: token, unified_number: '7000000902' }),
+    )
+    expect(Object.keys(reused.body.errors)).toEqual(['official_email'])
+  })
+
+  it('signs the entity in straight away when the review is switched off', async () => {
+    setEntityRegistrationReview(false)
+    const token = await verifiedToken()
+    const created = await call(
+      'POST',
+      '/auth/register',
+      registration({ email_verification_token: token }),
+    )
+    expect(created.body.data.step).toBe('authenticated')
+    expect(created.body.data.user.entity).toMatchObject({
       status: 'active',
       profile_completed: false,
     })
   })
 
-  it('answers a used e-mail with the identical body and a decoy challenge', async () => {
+  it('refuses a proven e-mail that already belongs to an entity', async () => {
+    const email = 'info@albirr-riyadh.example.sa'
+    const token = await verifiedToken(email)
     const duplicate = await call(
       'POST',
       '/auth/register',
-      registration({ official_email: 'info@albirr-riyadh.example.sa' }),
+      registration({ official_email: email, email_verification_token: token }),
     )
-    expect(duplicate.status).toBe(201)
-    expect(Object.keys(duplicate.body.data).sort()).toEqual([
-      'message',
-      'otp',
-      'requires_otp',
-      'step',
-    ])
-    const verified = await call('POST', '/auth/otp/verify', {
-      challenge_id: duplicate.body.data.otp.challenge_id,
-      code: DEV_OTP_CODE,
-    })
-    expect(verified.status).toBe(422)
+    expect(duplicate.status).toBe(422)
+    expect(duplicate.body.errors.official_email[0]).toContain('already belongs to an entity')
   })
 
   it('rejects a city outside the region, a grade with four decimals and missing terms acceptance', async () => {
@@ -277,10 +312,12 @@ describe('entities mock — staff list and record scope', () => {
     const list = await call('GET', '/entities?per_page=5&filter[status]=pending_verification')
     expect(list.body.data.map((item) => item.id).sort()).toEqual([7001, 7004])
     expect(list.body.meta.stats).toMatchObject({
-      total: 10,
+      total: 11,
       active: 7,
       pending_verification: 2,
+      pending_review: 1,
       deactivated: 1,
+      rejected: 0,
     })
     expect(list.body.data[0]).toHaveProperty('official_email')
     const searched = await call('GET', `/entities?search=${encodeURIComponent('احسان')}`)

@@ -92,6 +92,11 @@ final readonly class EntityPolicy
         return $actor->can(PermissionKey::EntitiesReactivate->value);
     }
 
+    public function review(User $actor): bool
+    {
+        return $actor->can(PermissionKey::EntitiesManage->value);
+    }
+
     public function resendVerification(User $actor): bool
     {
         return $actor->can(PermissionKey::EntitiesVerificationResend->value);

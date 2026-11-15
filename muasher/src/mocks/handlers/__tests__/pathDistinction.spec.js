@@ -167,6 +167,7 @@ describe('per-path settings', () => {
     seedMockSession(SYSTEM_ADMIN)
     const accredited = (await call('GET', '/settings/assessment/paths/accredited')).body.data
     expect(Object.keys(accredited).sort()).toEqual([
+      'description',
       'entity_texts',
       'evidence_type_catalog',
       'is_paid',
@@ -181,9 +182,29 @@ describe('per-path settings', () => {
     expect(accredited.price.price_before_vat).toBe('1000.00')
     const advanced = (await call('GET', '/settings/assessment/paths/advanced')).body.data
     expect(advanced).toMatchObject({ is_paid: false, price: null })
-    expect((await call('GET', '/settings/assessment/paths/self')).status).toBe(404)
+    const self = (await call('GET', '/settings/assessment/paths/self')).body.data
+    expect(Object.keys(self).sort()).toEqual(['description', 'path', 'path_label'])
+    expect((await call('GET', '/settings/assessment/paths/bag')).status).toBe(404)
     seedMockSession(SULTAN)
     expect((await call('GET', '/settings/assessment/paths/accredited')).status).toBe(403)
+  })
+
+  it('keeps path names fixed, edits descriptions and serves both publicly', async () => {
+    seedMockSession(SYSTEM_ADMIN)
+    const renamed = await call('PUT', '/settings/assessment/paths/self', {
+      name: { ar: 'اسم جديد', en: 'New name' },
+    })
+    expect([renamed.status, Object.keys(renamed.body.errors)]).toEqual([422, ['name']])
+    const described = await call('PUT', '/settings/assessment/paths/self', {
+      description: { ar: 'وصف جديد للتقييم الذاتي', en: 'A new self assessment description' },
+    })
+    expect(described.body.data.description.en).toBe('A new self assessment description')
+    const refused = await call('PUT', '/settings/assessment/paths/self', { review_sla_days: 5 })
+    expect([refused.status, Object.keys(refused.body.errors)]).toEqual([422, ['review_sla_days']])
+    const listed = (await call('GET', '/content/assessment-paths')).body.data
+    expect(listed.map((item) => item.path)).toEqual(['self', 'accredited', 'advanced'])
+    expect(listed[0].name.en).toBe('Self assessment')
+    expect(listed[0].description.en).toBe('A new self assessment description')
   })
 
   it('updates limits and texts, keeps the price read-only and serves the texts to the entity guide', async () => {

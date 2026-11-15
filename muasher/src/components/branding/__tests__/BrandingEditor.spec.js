@@ -43,32 +43,29 @@ beforeEach(() => {
 })
 
 describe('Visual identity editor (System Administrator)', () => {
-  it('lists the 9 palette options with bilingual labels and the lock notice', async () => {
+  it('lists the 9 palette options with bilingual labels under «Color palette», with no lock notice', async () => {
     const { wrapper } = await mountView('en')
     expect(wrapper.findAll('.accent-swatch')).toHaveLength(9)
     expect(wrapper.text()).toContain('Brand default')
-    expect(wrapper.find('.branding-page__lock').text()).toContain('System Administrator')
+    expect(wrapper.find('.branding-page__lock').exists()).toBe(false)
+    expect(wrapper.text()).toContain('Color palette')
+    expect(wrapper.text()).not.toContain('Accent color')
     wrapper.unmount()
   })
 
-  it('previews the selected accent in dark and light frames, both with the dark sidebar logo', async () => {
+  it('shows no live preview; a chosen accent stays a draft until it is saved', async () => {
     const { wrapper } = await mountView()
     await wrapper.findAll('.accent-swatch__input')[6].setValue(true)
-    const frames = wrapper.findAll('.branding-preview__frame')
-    expect(frames.map((frame) => frame.attributes('data-theme'))).toEqual(['dark', 'light'])
-    frames.forEach((frame) => expect(frame.attributes('data-accent')).toBe('amber'))
-    const logos = frames.map((frame) => frame.find('.branding-preview__logo').attributes('src'))
-    expect(logos[0]).toMatch(/moashir-logo-on-dark/)
-    expect(logos[1]).toBe(logos[0])
+    expect(wrapper.find('.branding-page__preview').exists()).toBe(false)
+    expect(wrapper.find('.branding-preview__frame').exists()).toBe(false)
     expect(useBrandingStore().accentToken).toBe('brand_default')
     wrapper.unmount()
   })
 
-  it('shows a passing AA contrast check for the selected color', async () => {
+  it('shows no contrast check section', async () => {
     const { wrapper } = await mountView('en')
-    const rows = wrapper.findAll('.contrast-check__row')
-    expect(rows).toHaveLength(4)
-    rows.forEach((row) => expect(row.text()).toContain('Passes AA'))
+    expect(wrapper.find('.contrast-check').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('Contrast check')
     wrapper.unmount()
   })
 
@@ -85,29 +82,59 @@ describe('Visual identity editor (System Administrator)', () => {
     wrapper.unmount()
   })
 
-  it('offers only the dark-background logo used by the always-dark sidebar, on the brand default', async () => {
+  it('offers the back-office logo, the favicon and the public site logo with their exact specs', async () => {
     const { wrapper } = await mountView('en')
     const fields = wrapper.findAll('.logo-variant')
-    expect(fields.map((field) => field.attributes('data-surface'))).toEqual(['dark'])
-    expect(fields[0].text()).toContain('Logo for dark backgrounds')
-    expect(fields[0].text()).toContain('Shown in the sidebar in both light and dark modes')
-    expect(fields[0].text()).toContain('Brand default')
-    expect(wrapper.text()).not.toContain('Logo for light backgrounds')
+    expect(fields.map((field) => field.attributes('data-surface'))).toEqual([
+      'dark',
+      'favicon',
+      'site',
+    ])
+    expect(fields[0].text()).toContain('Back-office logo')
+    expect(fields[0].text()).toContain(
+      'PNG with a transparent background — \u2066432×144\u2069 px — up to 1 MB',
+    )
+    expect(fields[1].text()).toContain('Tab icon (favicon)')
+    expect(fields[1].text()).toContain('512×512\u2069 px')
+    expect(fields[2].text()).toContain('Public site logo')
+    expect(fields[2].text()).toContain('480×160\u2069 px')
+    expect(wrapper.find('.logo-variant .badge').exists()).toBe(false)
     expect(wrapper.find('.logo-variant__image').attributes('src')).toMatch(/moashir-logo-on-dark/)
     wrapper.unmount()
   })
 
-  it('shows the saved dark-background logo in both preview frames and ignores a stored light one', async () => {
+  it('accepts a logo whose size differs from the spec and says so', async () => {
+    const OriginalImage = globalThis.Image
+    globalThis.Image = class {
+      set src(_) {
+        this.naturalWidth = 300
+        this.naturalHeight = 200
+        queueMicrotask(() => this.onload())
+      }
+    }
+    const { wrapper } = await mountView('en')
+    const uploads = wrapper.findAllComponents({ name: 'BaseFileUpload' })
+    uploads[1].vm.$emit('select', [new File(['png'], 'icon.png', { type: 'image/png' })])
+    await flushPromises()
+    const favicon = wrapper.findAll('.logo-variant')[1]
+    expect(favicon.find('.logo-variant__warning').text()).toBe(
+      'The image is \u2066300×200\u2069 px, not the expected \u2066512×512\u2069. You can still save it.',
+    )
+    expect(favicon.find('.field__error').exists()).toBe(false)
+    expect(
+      wrapper.find('.branding-page__actions .btn--primary').attributes('disabled'),
+    ).toBeUndefined()
+    globalThis.Image = OriginalImage
+    wrapper.unmount()
+  })
+
+  it('shows the saved dark-background logo in its field and ignores a stored light one', async () => {
     brandingService.get.mockResolvedValue(
       theme('brand_default', { dark: 'blob:on-dark', light: 'blob:on-light' }),
     )
     const { wrapper } = await mountView('en')
-    const frames = wrapper.findAll('.branding-preview__frame')
-    frames.forEach((frame) =>
-      expect(frame.find('.branding-preview__logo').attributes('src')).toBe('blob:on-dark'),
-    )
+    expect(wrapper.find('.logo-variant__image').attributes('src')).toBe('blob:on-dark')
     expect(wrapper.html()).not.toContain('blob:on-light')
-    expect(wrapper.find('.logo-variant').text()).toContain('Custom logo')
     wrapper.unmount()
   })
 
@@ -139,13 +166,10 @@ describe('Visual identity editor (System Administrator)', () => {
   it('uploads the selected logo with its dark-background surface on save', async () => {
     const { wrapper } = await mountView()
     const uploads = wrapper.findAllComponents({ name: 'BaseFileUpload' })
-    expect(uploads).toHaveLength(1)
+    expect(uploads).toHaveLength(3)
     uploads[0].vm.$emit('select', [new File(['png'], 'logo-light.png', { type: 'image/png' })])
     await flushPromises()
     expect(wrapper.find('.logo-variant__image').attributes('src')).toBe('blob:preview')
-    wrapper
-      .findAll('.branding-preview__logo')
-      .forEach((logo) => expect(logo.attributes('src')).toBe('blob:preview'))
     await wrapper.find('.branding-page__actions .btn--primary').trigger('click')
     await flushPromises()
     expect(brandingService.uploadLogo).toHaveBeenCalledTimes(1)
@@ -166,10 +190,7 @@ describe('Visual identity editor (System Administrator)', () => {
     await flushPromises()
     expect(brandingService.reset).toHaveBeenCalledTimes(1)
     expect(useBrandingStore().accentToken).toBe('brand_default')
-    expect(useBrandingStore().logos).toEqual({ dark: null })
-    wrapper
-      .findAll('.logo-variant')
-      .forEach((field) => expect(field.text()).toContain('Brand default'))
+    expect(useBrandingStore().logos).toEqual({ dark: null, favicon: null, site: null })
     wrapper.unmount()
   })
 
@@ -182,7 +203,7 @@ describe('Visual identity editor (System Administrator)', () => {
     useConfirm().accept()
     await flushPromises()
     expect(useBrandingStore().accentToken).toBe('coral')
-    expect(wrapper.findAll('.logo-variant')[0].text()).toContain('Custom logo')
+    expect(wrapper.findAll('.logo-variant__image')[0].attributes('src')).toBe('blob:on-dark')
     expect(useToast().toasts.at(-1)).toMatchObject({
       type: 'error',
       message: 'Could not save the identity. Please try again.',

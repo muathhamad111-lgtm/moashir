@@ -23,6 +23,7 @@ use App\Models\Entities\City;
 use App\Models\Entities\Region;
 use App\Models\Identity\User;
 use App\Services\Entities\EntityAccountCreator;
+use App\Services\Entities\EntityApproval;
 use App\Support\ValueObjects\EmailAddress;
 use App\Support\ValueObjects\EntityName;
 use App\Support\ValueObjects\LicenseNumber;
@@ -62,6 +63,7 @@ final readonly class DemoEntityInstaller
     public function __construct(
         private EntityAccountCreator $creator,
         private VerifyEntityRegistration $verify,
+        private EntityApproval $approval,
         private DemoPasswordGenerator $passwords,
         private DemoRecords $records,
     ) {}
@@ -103,6 +105,10 @@ final readonly class DemoEntityInstaller
         ));
         $owner = $entity->owner()->firstOrFail();
         $this->verify->handle($owner);
+
+        if ($entity->refresh()->isPendingReview()) {
+            $this->approval->approve($entity);
+        }
 
         $this->records->remember(DemoRecordKind::Entity, $entity->id);
         $this->records->remember(DemoRecordKind::User, $owner->id);

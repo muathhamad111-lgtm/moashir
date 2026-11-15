@@ -1,78 +1,63 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
-import BaseButton from '@/components/ui/BaseButton.vue'
-import BaseInput from '@/components/form/BaseInput.vue'
-import AppSelect from '@/components/form/AppSelect.vue'
-import { SITE_SETTINGS_LIMITS, SOCIAL_PLATFORM_KEYS } from '@/constants/cms'
+import AppIcon from '@/components/ui/AppIcon.vue'
+import { SOCIAL_PLATFORMS } from '@/constants/socialPlatforms'
+import { filledSocialLinks } from '@/composables/useSiteSettingsEditor'
 
 const rows = defineModel('rows', { type: Array, required: true })
 
-defineProps({
+const props = defineProps({
   errorOf: { type: Function, required: true },
   disabled: { type: Boolean, default: false },
 })
 
 const { t } = useI18n()
+const baseId = useId()
 
-const platformOptions = computed(() =>
-  SOCIAL_PLATFORM_KEYS.map((platform) => ({
-    value: platform,
-    label: t(`settings.homepage.siteSettings.platforms.${platform}`),
-  })),
-)
-const unusedPlatform = computed(() =>
-  SOCIAL_PLATFORM_KEYS.find((platform) => !rows.value.some((row) => row.platform === platform)),
-)
-const canAdd = computed(
-  () => rows.value.length < SITE_SETTINGS_LIMITS.socialMax && Boolean(unusedPlatform.value),
-)
+const submittedOrder = computed(() => filledSocialLinks(rows.value).map((row) => row.platform))
 
-function add() {
-  rows.value.push({ platform: unusedPlatform.value, url: '' })
+function errorFor(platform) {
+  const index = submittedOrder.value.indexOf(platform)
+  return index === -1 ? '' : props.errorOf(`social.${index}.url`)
 }
 </script>
 
 <template>
-  <fieldset class="site-settings__group">
+  <fieldset class="site-settings__group social-links">
     <legend class="site-settings__legend">{{ t('settings.homepage.siteSettings.social') }}</legend>
-    <ul v-if="rows.length" class="site-settings__rows">
-      <li v-for="(row, index) in rows" :key="`social-${index}`" class="site-settings__row">
-        <AppSelect
-          v-model="row.platform"
-          :name="`socialPlatform-${index}`"
-          :label="t('settings.homepage.siteSettings.platform')"
-          :options="platformOptions"
-          :error="errorOf(`social.${index}.platform`)"
-        />
-        <BaseInput
-          v-model="row.url"
-          :name="`socialUrl-${index}`"
-          :label="t('settings.homepage.siteSettings.url')"
-          :hint="t('settings.homepage.siteSettings.socialUrlHint')"
-          :error="errorOf(`social.${index}.url`)"
-          input-dir="ltr"
-        />
-        <BaseButton
-          variant="ghost"
-          size="sm"
-          icon="trash"
-          icon-only
-          :disabled="disabled"
-          :aria-label="t('settings.homepage.siteSettings.removeSocial')"
-          @click="rows.splice(index, 1)"
-        />
+    <p class="site-settings__hint">{{ t('settings.homepage.siteSettings.socialHint') }}</p>
+    <ul class="social-links__list">
+      <li v-for="row in rows" :key="row.platform" class="social-links__row">
+        <span :id="`${baseId}-${row.platform}`" class="social-links__platform">
+          <AppIcon :name="SOCIAL_PLATFORMS[row.platform].icon" />
+          {{ t(SOCIAL_PLATFORMS[row.platform].labelKey) }}
+        </span>
+        <div class="social-links__field">
+          <input
+            v-model="row.url"
+            class="social-links__input"
+            type="url"
+            dir="ltr"
+            :name="`social-${row.platform}`"
+            :placeholder="SOCIAL_PLATFORMS[row.platform].example"
+            :disabled="disabled"
+            :aria-labelledby="`${baseId}-${row.platform}`"
+            :aria-invalid="errorFor(row.platform) ? 'true' : undefined"
+            :aria-describedby="
+              errorFor(row.platform) ? `${baseId}-${row.platform}-error` : undefined
+            "
+          />
+          <p
+            v-if="errorFor(row.platform)"
+            :id="`${baseId}-${row.platform}-error`"
+            class="field__error"
+            role="alert"
+          >
+            {{ errorFor(row.platform) }}
+          </p>
+        </div>
       </li>
     </ul>
-    <p v-else class="site-settings__empty">{{ t('settings.homepage.siteSettings.noSocial') }}</p>
-    <BaseButton
-      variant="secondary"
-      size="sm"
-      icon="plus"
-      :disabled="disabled || !canAdd"
-      @click="add"
-    >
-      {{ t('settings.homepage.siteSettings.addSocial') }}
-    </BaseButton>
   </fieldset>
 </template>

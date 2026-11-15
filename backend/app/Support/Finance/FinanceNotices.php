@@ -11,6 +11,7 @@ use App\Enums\Finance\PaymentPurpose;
 use App\Enums\Notifications\NotificationCode;
 use App\Models\Finance\BankAccount;
 use App\Models\Finance\Payment;
+use App\Services\Paths\PathIdentityReader;
 use App\Support\ValueObjects\LocalizedText;
 
 final class FinanceNotices
@@ -110,7 +111,7 @@ final class FinanceNotices
     {
         return [
             'reference' => $payment->reference,
-            'purpose' => LocalizedText::fromTranslation('finance.purposes.'.$payment->purpose->value),
+            'purpose' => app(PathIdentityReader::class)->purposeLabelOf($payment->purpose),
             'amount' => LocalizedText::fromTranslationWith('finance.amount', [
                 'amount' => $payment->total,
                 'currency' => LocalizedText::fromTranslation('finance.currencies.'.$payment->currency),

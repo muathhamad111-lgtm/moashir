@@ -7,6 +7,8 @@ import { ENTITY_STATUSES as S } from '@/constants/entityEnums'
 export const ENTITY_ACTIONS = {
   VIEW: 'view',
   EDIT: 'edit',
+  APPROVE: 'approve',
+  REJECT: 'reject',
   DEACTIVATE: 'deactivate',
   REACTIVATE: 'reactivate',
   RESEND_VERIFICATION: 'resendVerification',
@@ -18,7 +20,9 @@ export const ENTITY_ACTIONS = {
 const ICONS = {
   view: 'eye',
   edit: 'pen',
-  deactivate: 'ban',
+  approve: 'check',
+  reject: 'x',
+  deactivate: 'lock',
   reactivate: 'check-circle',
   resendVerification: 'send',
   delete: 'trash',
@@ -26,11 +30,29 @@ const ICONS = {
   permanentDelete: 'trash',
 }
 
+// Shown as direct row buttons: view, edit and the decision that fits the status; the rest stay in the menu.
+export const ENTITY_INLINE_ACTIONS = Object.freeze([
+  ENTITY_ACTIONS.VIEW,
+  ENTITY_ACTIONS.EDIT,
+  ENTITY_ACTIONS.APPROVE,
+  ENTITY_ACTIONS.REJECT,
+  ENTITY_ACTIONS.DEACTIVATE,
+  ENTITY_ACTIONS.REACTIVATE,
+])
+
+const POSITIVE = new Set([ENTITY_ACTIONS.APPROVE])
+
 const DANGEROUS = new Set([
+  ENTITY_ACTIONS.REJECT,
   ENTITY_ACTIONS.DEACTIVATE,
   ENTITY_ACTIONS.DELETE,
   ENTITY_ACTIONS.PERMANENT_DELETE,
 ])
+
+function variantOf(key) {
+  if (DANGEROUS.has(key)) return 'danger'
+  return POSITIVE.has(key) ? 'success' : undefined
+}
 
 export function useEntityActions() {
   const { t } = useI18n()
@@ -44,6 +66,14 @@ export function useEntityActions() {
   const RULES = {
     [ENTITY_ACTIONS.EDIT]: (entity) =>
       can(P.ENTITIES_MANAGE) && isFullRecord(entity) && !entity.isDeleted,
+    [ENTITY_ACTIONS.APPROVE]: (entity) =>
+      can(P.ENTITIES_MANAGE) &&
+      !entity.isDeleted &&
+      [S.PENDING_REVIEW, S.REJECTED].includes(entity.status),
+    [ENTITY_ACTIONS.REJECT]: (entity) =>
+      can(P.ENTITIES_MANAGE) &&
+      !entity.isDeleted &&
+      [S.PENDING_VERIFICATION, S.PENDING_REVIEW].includes(entity.status),
     [ENTITY_ACTIONS.DEACTIVATE]: (entity) =>
       can(P.ENTITIES_DEACTIVATE) && !entity.isDeleted && entity.status === S.ACTIVE,
     [ENTITY_ACTIONS.REACTIVATE]: (entity) =>
@@ -63,7 +93,7 @@ export function useEntityActions() {
       key,
       label: t(`entities.actions.${key}`),
       icon: ICONS[key],
-      variant: DANGEROUS.has(key) ? 'danger' : undefined,
+      variant: variantOf(key),
     }
   }
 

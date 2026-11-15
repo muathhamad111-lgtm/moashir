@@ -13,7 +13,6 @@ use App\Http\Controllers\Api\V1\Finance\CheckoutOptionsController;
 use App\Http\Controllers\Api\V1\Finance\ExportTransactionsController;
 use App\Http\Controllers\Api\V1\Finance\FinanceExportController;
 use App\Http\Controllers\Api\V1\Finance\FinanceReceiptController;
-use App\Http\Controllers\Api\V1\Finance\FinanceSummaryController;
 use App\Http\Controllers\Api\V1\Finance\ManualSettlementController;
 use App\Http\Controllers\Api\V1\Finance\MoyasarWebhookController;
 use App\Http\Controllers\Api\V1\Finance\PaymentController;
@@ -22,13 +21,13 @@ use App\Http\Controllers\Api\V1\Finance\PaymentReceiptController;
 use App\Http\Controllers\Api\V1\Finance\RefundController;
 use App\Http\Controllers\Api\V1\Finance\ServicePricesController;
 use App\Http\Controllers\Api\V1\Finance\TransactionController;
+use App\Http\Controllers\Api\V1\Finance\TransactionEventController;
 use App\Http\Controllers\Api\V1\Finance\TransferProofController;
 use App\Http\Controllers\Api\V1\Finance\VerifyPaymentController;
 use App\Http\Middleware\EnsureJsonRequest;
 use App\Http\Middleware\ValidateDownloadSignature;
 use App\Models\Finance\CheckoutIntent;
 use App\Models\Finance\Payment;
-use App\Models\Finance\Refund;
 use Illuminate\Support\Facades\Route;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
@@ -59,10 +58,10 @@ Route::middleware($signedIn)->group(function () use ($payments): void {
     });
 
     Route::prefix('finance')->name('finance.')->group(function () use ($payments): void {
-        Route::get('summary', FinanceSummaryController::class)->middleware("can:viewOperations,{$payments}")->name('summary');
         Route::get('transactions', [TransactionController::class, 'index'])->middleware("can:viewOperations,{$payments}")->name('transactions.index');
         Route::post('transactions/export', ExportTransactionsController::class)->middleware(["can:export,{$payments}", 'throttle:exports'])->name('transactions.export');
         Route::get('transactions/{payment}', [TransactionController::class, 'show'])->whereUuid('payment')->middleware("can:viewOperations,{$payments}")->name('transactions.show');
+        Route::get('transactions/{payment}/events', TransactionEventController::class)->whereUuid('payment')->middleware("can:viewOperations,{$payments}")->name('transactions.events');
         Route::get('payment-events', PaymentEventController::class)->middleware("can:viewEvents,{$payments}")->name('payment-events.index');
 
         Route::prefix('bank-transfers')->name('bank-transfers.')->group(function () use ($payments): void {
@@ -82,7 +81,6 @@ Route::middleware($signedIn)->group(function () use ($payments): void {
         Route::whereUuid(['payment', 'receipt', 'refund', 'financeExport'])->group(function (): void {
             Route::post('payments/{payment}/refunds', [RefundController::class, 'store'])->middleware(['can:recordRefund,payment', 'throttle:sensitive'])->name('refunds.store');
             Route::post('payments/{payment}/manual-settle', ManualSettlementController::class)->middleware(['can:manualSettle,payment', 'throttle:sensitive'])->name('payments.manual-settle');
-            Route::get('refunds', [RefundController::class, 'index'])->middleware('can:viewAny,'.Refund::class)->name('refunds.index');
             Route::get('refunds/{refund}', [RefundController::class, 'show'])->middleware('can:view,refund')->name('refunds.show');
             Route::post('refunds/{refund}/evidence/download', [RefundController::class, 'downloadEvidence'])->middleware(['can:downloadEvidence,refund', 'throttle:downloads'])->name('refunds.evidence.download');
             Route::post('receipts/{receipt}/download', [FinanceReceiptController::class, 'download'])->middleware(['can:download,receipt', 'throttle:downloads'])->name('receipts.download');

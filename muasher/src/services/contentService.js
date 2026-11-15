@@ -29,6 +29,13 @@ export const contentService = {
       { entity: 'certificate-levels' },
     )
   },
+  listPathIdentities() {
+    return serviceRequest(
+      'content.listPathIdentities',
+      () => apiClient.get('/content/assessment-paths'),
+      { entity: 'path-identities' },
+    )
+  },
   getPathGuide(path) {
     return serviceRequest(
       'content.getPathGuide',

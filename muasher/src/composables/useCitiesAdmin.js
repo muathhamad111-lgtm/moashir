@@ -1,4 +1,4 @@
-import { computed, onMounted, reactive } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTable } from '@/composables/useTable'
 import { useFilters } from '@/composables/useFilters'
@@ -19,7 +19,6 @@ export function useCitiesAdmin() {
     filters,
     pagination: paginator,
   })
-  const editor = reactive({ open: false, city: null })
 
   const regionFilterOptions = computed(() => [
     { value: '', label: t('entities.filters.allRegions') },
@@ -36,11 +35,6 @@ export function useCitiesAdmin() {
     return localizedText(region?.name, locale.value)
   }
 
-  function openEditor(city = null) {
-    editor.city = city
-    editor.open = true
-  }
-
   async function toggle(city) {
     try {
       await regionsService.setCityActive(city.id, !city.isActive)
@@ -55,26 +49,15 @@ export function useCitiesAdmin() {
     }
   }
 
-  async function afterSave() {
-    toast.success(
-      t(editor.city ? 'entities.cities.toasts.updated' : 'entities.cities.toasts.created'),
-    )
-    await Promise.all([table.load(), regions.load()])
-  }
-
   onMounted(regions.load)
 
   return {
     ...table,
     filters,
     paginator,
-    regions,
-    editor,
     regionFilterOptions,
     activeOptions,
     regionName,
-    openEditor,
     toggle,
-    afterSave,
   }
 }

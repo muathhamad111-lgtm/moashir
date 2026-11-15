@@ -51,9 +51,10 @@ describe('AppIcon', () => {
     expect(svg.find('path').attributes('d')).toBe(ICON_GLYPHS.star[0])
   })
 
-  it('draws the brand logos with the generic link glyph until official marks exist', () => {
+  it('draws the official brand logo, not the generic link glyph', () => {
     const svg = render({ name: 'brand-linkedin' })
-    expect(svg.find('path').attributes('d')).toBe(ICON_GLYPHS.link[0])
+    expect(svg.find('path').attributes('d')).toBe(ICON_GLYPHS['brand-linkedin'][0])
+    expect(svg.find('path').attributes('d')).not.toBe(ICON_GLYPHS.link[0])
   })
 
   it('flips the undo glyph permanently and spins the spinner', () => {

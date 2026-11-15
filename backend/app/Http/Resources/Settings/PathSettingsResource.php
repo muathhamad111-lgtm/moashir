@@ -7,7 +7,6 @@ namespace App\Http\Resources\Settings;
 use App\Data\Assessments\UploadLimits;
 use App\Data\Settings\PathSettingsView;
 use App\Enums\Files\EvidenceFileType;
-use App\Support\Assessments\PathPresenter;
 use App\Support\Finance\PriceQuotePresenter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -25,7 +24,7 @@ final class PathSettingsResource extends JsonResource
         $view = $this->resource;
 
         return [
-            ...PathPresenter::of($view->path),
+            ...new PathIdentitySettingsResource($view->identity)->toArray($request),
             'review_sla_days' => $view->reviewSlaDays,
             'review_sla_limits' => $view->slaLimits,
             'upload_limits' => $view->uploadLimits->toArray(),

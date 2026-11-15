@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Entities;
 
 use App\Enums\Entities\EntityRequestPath;
+use App\Support\Assessments\PathPresenter;
 
 final readonly class OpenEntityRequest
 {
@@ -30,8 +31,7 @@ final readonly class OpenEntityRequest
         return [
             'id' => $this->id,
             'number' => $this->number,
-            'path' => $this->path->value,
-            'path_label' => $this->path->label()->toArray(),
+            ...PathPresenter::ofRequestPath($this->path),
             'status' => $this->status,
             'cycle_id' => $this->cycleId,
             'is_frozen' => $this->isFrozen,

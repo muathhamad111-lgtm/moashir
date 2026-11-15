@@ -28,6 +28,8 @@ final readonly class SignInGuard
         }
 
         match ($this->entityAccounts->standingOf($user)) {
+            EntityStanding::PendingReview => throw AuthenticationRejected::entityPendingReview(),
+            EntityStanding::Rejected => throw AuthenticationRejected::entityRejected(),
             EntityStanding::Deactivated => throw AuthenticationRejected::accountDeactivated(),
             EntityStanding::Closed => throw AuthenticationRejected::invalidCredentials(),
             default => null,
@@ -41,8 +43,18 @@ final readonly class SignInGuard
         }
     }
 
-    public function awaitsEntityVerification(User $user): bool
+    /**
+     * An entity account gets no session until its owner proves the official e-mail: either the
+     * registration predates the e-mail check on the form, or staff approved it before the address
+     * was confirmed.
+     */
+    public function awaitsEmailConfirmation(User $user): bool
     {
-        return $this->entityAccounts->standingOf($user) === EntityStanding::PendingVerification;
+        if ($user->entity_id === null) {
+            return false;
+        }
+
+        return $user->email_verified_at === null
+            || $this->entityAccounts->standingOf($user) === EntityStanding::PendingVerification;
     }
 }

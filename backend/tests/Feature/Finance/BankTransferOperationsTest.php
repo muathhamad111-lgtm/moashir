@@ -115,7 +115,7 @@ it('shows the channel in transactions, filters by it and details the transfer', 
         ->assertJsonPath('data.bank_transfer.reviewed_by.id', $reviewer->id);
 });
 
-it('exports the channel and the destination bank and counts transfers in the summary', function (): void {
+it('exports the channel and the destination bank and counts transfers in the ledger stats', function (): void {
     $account = bankAccount();
     $paid = liveBankTransfer($account);
     liveBankTransfer(bankAccount(['iban' => fictionalIban(1)]), PaymentStatus::UnderReview);
@@ -127,12 +127,12 @@ it('exports the channel and the destination bank and counts transfers in the sum
 
     expect($csv)->toContain('قناة الدفع')->toContain('تحويل بنكي')->toContain('بنك المثال (مثال)')->toContain('دفع إلكتروني');
 
-    $summary = $this->getJson('/api/v1/finance/summary')->assertOk()
-        ->assertJsonPath('data.transactions_count', 3)
-        ->assertJsonPath('data.incomplete_count', 1)
-        ->json('data.by_channel');
-
-    expect(collect($summary)->keyBy('channel')->map(static fn (array $row): int => $row['transactions_count'])->all())->toBe(['electronic' => 1, 'bank_transfer' => 2]);
+    $this->getJson('/api/v1/finance/transactions')->assertOk()
+        ->assertJsonPath('meta.stats.transactions_count', 3)
+        ->assertJsonPath('meta.stats.incomplete_count', 1);
+    $this->getJson('/api/v1/finance/transactions?filter[channel]=electronic')->assertOk()->assertJsonPath('meta.stats.transactions_count', 1);
+    $this->getJson('/api/v1/finance/transactions?filter[channel]=bank_transfer')->assertOk()->assertJsonPath('meta.stats.transactions_count', 2);
+    $this->getJson('/api/v1/finance/transactions?filter[type]=bank_transfer')->assertOk()->assertJsonPath('meta.stats.transactions_count', 2);
 });
 
 it('keeps an entity whose transfer is under review out of the abandoned carts', function (): void {

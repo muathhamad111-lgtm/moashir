@@ -12,10 +12,12 @@ import { deletionImpactResource, entityResourceFor } from '../stores/entitySeria
 import { ERASURE_KEPT_RECORDS } from '@/constants/entityEnums'
 import { PERMANENT_REASON_MIN, assertReason } from '../stores/entityValidation'
 import {
+  approve,
   deactivate,
   deletionImpactOf,
   permanentlyDelete,
   reactivate,
+  reject,
   resendVerification,
   restore,
   softDelete,
@@ -45,6 +47,16 @@ function superAdmin() {
 }
 
 export const entityLifecycleHandlers = [
+  http.post(
+    `${ENTITY_PATH}/approve`,
+    entityRoute(({ params }) => {
+      const user = actorWith(P.MANAGE)
+      return resourceOf(user, approve(boundEntity(params.id)))
+    }),
+  ),
+
+  http.post(`${ENTITY_PATH}/reject`, reasonAction(P.MANAGE, reject)),
+
   http.post(`${ENTITY_PATH}/deactivate`, reasonAction(P.DEACTIVATE, deactivate)),
 
   http.post(`${ENTITY_PATH}/reactivate`, reasonAction(P.REACTIVATE, reactivate)),

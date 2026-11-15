@@ -17,6 +17,7 @@ final readonly class AuthSettingsView
     public function __construct(
         public array $entitySignInCodeChannels,
         public bool $generalEmailNotifications,
+        public bool $entityRegistrationReview,
         public bool $twoFactorEnabled,
         public array $twoFactorRoles,
         public SmsGatewayStatus $smsStatus,

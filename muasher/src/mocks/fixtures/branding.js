@@ -44,4 +44,6 @@ export const brandingDefaultsFixture = {
   accentToken: 'brand_default',
   logoLight: null,
   logoDark: null,
+  favicon: null,
+  logoSite: null,
 }

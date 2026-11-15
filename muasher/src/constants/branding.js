@@ -22,17 +22,28 @@ export const CONTRAST_SURFACES = {
 
 export const LOGO_RULES = {
   maxBytes: 1048576,
-  mimeTypes: ['image/png', 'image/svg+xml'],
-  accept: '.png,.svg,image/png,image/svg+xml',
+  maxMegabytes: 1,
+  mimeTypes: ['image/png'],
+  accept: '.png,image/png',
 }
 
 export const SIDEBAR_LOGO_SURFACE = 'dark'
+export const FAVICON_SURFACE = 'favicon'
+export const SITE_LOGO_SURFACE = 'site'
 
-export const LOGO_SURFACES = [SIDEBAR_LOGO_SURFACE]
+export const LOGO_SURFACES = [SIDEBAR_LOGO_SURFACE, FAVICON_SURFACE, SITE_LOGO_SURFACE]
 
 export const LOGO_VARIANT_BY_SURFACE = {
-  dark: 'light',
+  [SIDEBAR_LOGO_SURFACE]: 'light',
+  [FAVICON_SURFACE]: 'favicon',
+  [SITE_LOGO_SURFACE]: 'site',
 }
+
+export const LOGO_DIMENSIONS = Object.freeze({
+  [SIDEBAR_LOGO_SURFACE]: Object.freeze({ width: 432, height: 144 }),
+  [FAVICON_SURFACE]: Object.freeze({ width: 512, height: 512 }),
+  [SITE_LOGO_SURFACE]: Object.freeze({ width: 480, height: 160 }),
+})
 
 export function isKnownAccent(token) {
   return ACCENT_TOKENS.includes(token)

@@ -49,6 +49,10 @@ export function formatRiyadhDate(value, locale) {
   return value ? formatDate(value, locale, { dateStyle: 'medium', timeZone: RIYADH }) : ''
 }
 
+export function formatRiyadhTime(value, locale) {
+  return value ? formatDate(value, locale, { timeStyle: 'short', timeZone: RIYADH }) : ''
+}
+
 export function formatRiyadhLongDate(value, locale) {
   return value ? formatDate(value, locale, { dateStyle: 'long', timeZone: RIYADH }) : ''
 }

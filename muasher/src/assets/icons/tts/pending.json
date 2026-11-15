@@ -73,12 +73,5 @@
     "user-slash": "user",
     "user-x": "user"
   },
-  "brand": {
-    "brand-facebook": "link",
-    "brand-instagram": "link",
-    "brand-linkedin": "link",
-    "brand-x": "link",
-    "brand-youtube": "link"
-  },
   "withheld": ["flask", "language", "pause", "phone"]
 }

@@ -22,6 +22,7 @@ const t = (key) => key
 
 const ACCREDITED = toPathSettings({
   path: 'accredited',
+  description: { ar: 'وصف', en: 'Description' },
   reviewSlaDays: 14,
   reviewSlaLimits: { min: 1, max: 120 },
   uploadLimits: { maxFileMb: 20, allowedTypes: ['pdf', 'docx'], maxFilesPerSub: 10 },
@@ -65,6 +66,33 @@ describe('per-path settings form', () => {
     const values = { ...pathSettingsValues(unpriced), reviewSlaDays: '20' }
     await expect(pathSettingsSchema(t, unpriced).validate(values)).resolves.toBeTruthy()
     expect(changedPathSettings(unpriced, values)).toEqual({ reviewSlaDays: 20 })
+  })
+
+  it('requires the description in both languages and sends only what changed', async () => {
+    const values = pathSettingsValues(ACCREDITED)
+    expect(values).not.toHaveProperty('name')
+    values.description = { ar: 'وصف جديد', en: '' }
+    const failure = await pathSettingsSchema(t, ACCREDITED)
+      .validate(values, { abortEarly: false })
+      .catch((error) => error)
+    expect(failure.inner.map((issue) => issue.path)).toEqual(['description.en'])
+    values.description.en = 'New description'
+    expect(changedPathSettings(ACCREDITED, values)).toEqual({
+      description: { ar: 'وصف جديد', en: 'New description' },
+    })
+  })
+
+  it('handles only the description of the self assessment', () => {
+    const self = toPathSettings({
+      path: 'self',
+      description: { ar: 'وصف', en: 'Description' },
+    })
+    const values = pathSettingsValues(self)
+    expect(Object.keys(values)).toEqual(['description'])
+    values.description = { ar: 'وصف جديد', en: 'New description' }
+    expect(changedPathSettings(self, values)).toEqual({
+      description: { ar: 'وصف جديد', en: 'New description' },
+    })
   })
 
   it('needs both languages of a text and limits within the bounds', async () => {
@@ -126,10 +154,14 @@ describe('sign-in security form', () => {
     expect(values).toEqual({
       entitySignInCodeChannels: ['email'],
       generalEmailNotifications: true,
+      entityRegistrationReview: true,
       twoFactorEnabled: true,
       twoFactorRoles: [],
     })
     expect(changedAuthSettings(EMAIL_ONLY, values)).toEqual({})
+    expect(changedAuthSettings(EMAIL_ONLY, { ...values, entityRegistrationReview: false })).toEqual(
+      { entityRegistrationReview: false },
+    )
     expect(
       changedAuthSettings(EMAIL_ONLY, { ...values, generalEmailNotifications: false }),
     ).toEqual({ generalEmailNotifications: false })

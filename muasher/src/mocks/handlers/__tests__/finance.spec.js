@@ -86,8 +86,10 @@ const TRANSACTION_KEYS = [
   'purpose',
   'receipt_number',
   'reference',
+  'refund',
   'refunded_at',
   'status',
+  'type',
   'updated_at',
 ]
 const DETAIL_EXTRA_KEYS = [
@@ -103,7 +105,6 @@ const DETAIL_EXTRA_KEYS = [
   'manually_settled_at',
   'provider_payment_id',
   'receipt',
-  'refund',
   'rejected_at',
   'verified_at',
 ]
@@ -158,6 +159,7 @@ const STATS_KEYS = [
   'total_refunded',
   'total_vat',
   'transactions_count',
+  'transactions_value',
 ]
 
 function keys(value) {
@@ -490,7 +492,18 @@ describe('finance staff mock contract', () => {
     expect(body.meta.stats).toMatchObject({ refunded_count: 1, total_refunded: '1150.00' })
     const detail = await call(`/finance/transactions/${SEEDED_IDS.refunded}`)
     expect(keys(detail.body.data)).toEqual([...TRANSACTION_KEYS, ...DETAIL_EXTRA_KEYS].sort())
-    expect(keys(detail.body.data.refund)).toEqual(REFUND_KEYS)
+    expect(keys(detail.body.data.refund)).toEqual([...REFUND_KEYS, 'has_evidence'].sort())
+    const refunded = body.data.find((item) => item.id === SEEDED_IDS.refunded)
+    expect(refunded.type).toBe('refund')
+    expect(keys(refunded.refund)).toEqual([
+      'amount',
+      'currency',
+      'has_evidence',
+      'id',
+      'recorded_by',
+      'refunded_on',
+      'transfer_reference',
+    ])
     expect(detail.body.data.receipt.status).toBe('voided')
     const test = await call('/finance/transactions?filter[mode]=test')
     expect(test.body.data.map((item) => item.reference)).toContain('PAY-2026-000006')
@@ -541,18 +554,45 @@ describe('finance staff mock contract', () => {
     ).toBe(true)
   })
 
-  it('summarises live payments by purpose', async () => {
+  it('filters by several operation types and statuses, with the stats following them', async () => {
     as(FINANCE_OFFICER)
-    const { body } = await call('/finance/summary')
-    expect(keys(body.data)).toEqual([...STATS_KEYS, 'by_channel', 'by_purpose'].sort())
-    expect(body.data.by_purpose.map((row) => row.purpose)).toEqual([
-      'accredited',
-      'bag',
-      'self',
-      'award',
-    ])
-    expect(body.meta).toEqual({ live_only: true })
-    expect((await call('/finance/summary?from=2026-13-01')).status).toBe(422)
+    const refunds = await call('/finance/transactions?filter[type][]=refund')
+    expect(refunds.body.data.map((item) => item.type)).toEqual(['refund'])
+    const mixed = await call(
+      '/finance/transactions?filter[type][]=electronic&filter[type][]=refund&per_page=100',
+    )
+    expect(new Set(mixed.body.data.map((item) => item.type))).toEqual(
+      new Set(['electronic', 'refund']),
+    )
+    expect(mixed.body.meta.stats.transactions_count).toBe(mixed.body.data.length)
+    const statuses = await call(
+      '/finance/transactions?filter[status][]=failed&filter[status][]=awaiting_payment&per_page=100',
+    )
+    expect(
+      statuses.body.data.every((item) => ['failed', 'created', 'pending'].includes(item.status)),
+    ).toBe(true)
+    expect(statuses.body.data.some((item) => item.status === 'failed')).toBe(true)
+    expect((await call('/finance/transactions?filter[type][]=cash')).status).toBe(422)
+  })
+
+  it("lists an operation's own events without sensitive details", async () => {
+    as(FINANCE_OFFICER)
+    const events = await call(`/finance/transactions/${SEEDED_IDS.refunded}/events`)
+    expect(events.status).toBe(200)
+    expect(events.body.meta).toEqual({ limit: 50, has_more: false })
+    events.body.data.forEach((event) =>
+      expect(keys(event)).toEqual([
+        'created_at',
+        'id',
+        'mode',
+        'provider_reference',
+        'result',
+        'source',
+        'type',
+      ]),
+    )
+    as(ENTITY)
+    expect((await call(`/finance/transactions/${SEEDED_IDS.refunded}/events`)).status).toBe(403)
   })
 
   it('streams a small export and queues a large one until it is ready', async () => {
@@ -749,13 +789,15 @@ describe('finance staff mock contract', () => {
     expect(closed.body.code).toBe('state.transition_illegal')
   })
 
-  it('lists refunds and abandoned carts with masked e-mails and consent', async () => {
+  it('downloads refund evidence and lists abandoned carts with masked e-mails and consent', async () => {
     as(SYSTEM_ADMIN)
-    const refunds = await call('/finance/refunds')
-    expect(keys(refunds.body.data[0])).toEqual(REFUND_KEYS)
-    const evidence = await call(`/finance/refunds/${refunds.body.data[0].id}/evidence/download`, {
-      method: 'POST',
-    })
+    const detail = await call(`/finance/transactions/${SEEDED_IDS.refunded}`)
+    const evidence = await call(
+      `/finance/refunds/${detail.body.data.refund.id}/evidence/download`,
+      {
+        method: 'POST',
+      },
+    )
     expect(evidence.body.data.file_name).toBe('bank-transfer-receipt.pdf')
     const carts = await call('/messaging/abandoned-carts?filter[contacted]=false')
     expect(keys(carts.body.data[0])).toEqual([

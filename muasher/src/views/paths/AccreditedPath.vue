@@ -16,8 +16,10 @@ import PathPrice from '@/components/paths/PathPrice.vue'
 import PathPrimaryAction from '@/components/paths/PathPrimaryAction.vue'
 import AccreditedPeriodCard from '@/components/paths/AccreditedPeriodCard.vue'
 import PathRequestsList from '@/components/paths/PathRequestsList.vue'
+import { usePathNames } from '@/composables/usePathNames'
 
 const { t, locale } = useI18n()
+const { pathName } = usePathNames()
 const page = useAccreditedPathPage()
 const requests = usePathRequests(PATH_KEYS.ACCREDITED)
 const { status, paths, accredited, summary, offersNextPeriod, starting } = page
@@ -28,12 +30,12 @@ const prePeriodic = computed(
   () => accredited.value?.openRequest?.periodState === PERIOD_STATES.PRE_PERIODIC,
 )
 
-useHead({ title: () => t('paths.names.accredited') })
+useHead({ title: () => pathName('accredited') })
 </script>
 
 <template>
   <section class="path-page" data-testid="path-page-accredited">
-    <PathHeader :path-key="PATH_KEYS.ACCREDITED" :lead="t('paths.pages.accredited.lead')">
+    <PathHeader :path-key="PATH_KEYS.ACCREDITED">
       <template v-if="prePeriodic" #chips>
         <p class="path-header__chip" data-testid="path-pre-periodic">
           {{ localizedText(accredited.openRequest.periodLabel, locale) }}

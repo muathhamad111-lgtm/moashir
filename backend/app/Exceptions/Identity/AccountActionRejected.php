@@ -20,6 +20,11 @@ final class AccountActionRejected extends ApiException
         return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'user.entity_status_managed'));
     }
 
+    public static function passwordResetRecentlySent(): self
+    {
+        return new self(new ApiError(Response::HTTP_TOO_MANY_REQUESTS, 'user.password_reset_recently_sent'));
+    }
+
     public static function invalidToken(): self
     {
         return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'token.invalid'));

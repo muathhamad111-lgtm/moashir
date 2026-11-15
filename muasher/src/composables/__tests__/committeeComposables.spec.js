@@ -4,6 +4,8 @@ import { useAuthStore } from '@/stores/auth'
 import { sessionUserFor } from '@/test-utils/session'
 import { useCommitteeNotes } from '@/composables/useCommitteeNotes'
 import { useUserActions } from '@/composables/useUserActions'
+import { useConfirm } from '@/composables/useConfirm'
+import { usersService } from '@/services/usersService'
 import { useCycleBindings } from '@/composables/useCycleBindings'
 import { criteriaService } from '@/services/criteriaService'
 import { decisionPayload } from '@/utils/award/secretaryDecision'
@@ -38,19 +40,31 @@ describe('user account actions', () => {
     expect(keys({ id: 2, status: 'active', mfaEnabled: true })).toEqual([
       'edit',
       'suspend',
+      'sendPasswordReset',
       'resetMfa',
+      'revokeSessions',
+      'activity',
     ])
-    expect(keys({ id: 3, status: 'suspended', mfaEnabled: false })).toEqual(['edit', 'activate'])
+    expect(keys({ id: 3, status: 'suspended', mfaEnabled: false })).toEqual([
+      'edit',
+      'activate',
+      'revokeSessions',
+      'activity',
+    ])
     expect(keys({ id: 4, status: 'locked', mfaEnabled: true })).toEqual([
       'edit',
       'unlock',
       'resetMfa',
+      'revokeSessions',
+      'activity',
     ])
     expect(keys({ id: 5, status: 'expired', mfaEnabled: false })).toEqual([
       'edit',
       'resendInvitation',
+      'cancelInvitation',
+      'activity',
     ])
-    expect(keys({ id: 1, status: 'active', mfaEnabled: true })).toEqual(['edit'])
+    expect(keys({ id: 1, status: 'active', mfaEnabled: true })).toEqual(['edit', 'activity'])
   })
 
   it('offers the path access editors to assessors and followers other than the own account', () => {
@@ -62,8 +76,27 @@ describe('user account actions', () => {
     expect(keys({ id: 22, status: 'active', roles: ['finance_officer'] })).toEqual([
       'edit',
       'suspend',
+      'sendPasswordReset',
+      'revokeSessions',
+      'activity',
     ])
-    expect(keys({ id: 1, status: 'active', roles: ['system_admin'] })).toEqual(['edit'])
+    expect(keys({ id: 1, status: 'active', roles: ['system_admin'] })).toEqual(['edit', 'activity'])
+  })
+
+  it('confirms, then e-mails a password reset link and reloads the list', async () => {
+    const onChanged = vi.fn()
+    const { api, globals } = withSetup(() => useUserActions({ onChanged }))
+    useAuthStore(globals.pinia).setUser(sessionUserFor(['system_admin'], { id: 1 }))
+    const send = vi.spyOn(usersService, 'sendPasswordResetLink').mockResolvedValue({ data: null })
+    const { confirmState, accept } = useConfirm()
+    const pending = api.start('sendPasswordReset', { id: 2, name: 'Sara', status: 'active' })
+    expect(confirmState.title).toBe('Send a password reset link?')
+    expect(confirmState.message).toBe('Sara')
+    accept()
+    await pending
+    expect(send).toHaveBeenCalledWith(2)
+    expect(onChanged).toHaveBeenCalledOnce()
+    send.mockRestore()
   })
 
   it('asks a required reason for suspension and an optional one for reactivation', () => {

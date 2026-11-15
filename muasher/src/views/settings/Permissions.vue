@@ -1,12 +1,11 @@
 <script setup>
-import RouteTabs from '@/components/ui/RouteTabs.vue'
-import { USERS_SECTION_TABS } from '@/constants/navigation'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
-import AppMenu from '@/components/ui/AppMenu.vue'
+import RowActions from '@/components/data-list/RowActions.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
 import Badge from '@/components/ui/Badge.vue'
 import AppSelect from '@/components/form/AppSelect.vue'
 import PermissionForm from '@/components/permissions/PermissionForm.vue'
@@ -15,6 +14,7 @@ import { usePermissions } from '@/composables/usePermissions'
 import { usePermissionMatrix } from '@/composables/usePermissionMatrix'
 import { usePermissionsCatalog } from '@/composables/usePermissionsCatalog'
 import { PERMISSIONS } from '@/constants/permissionKeys'
+import { ROUTE_NAMES } from '@/constants/routeNames'
 
 const { t } = useI18n()
 const toast = useToast()
@@ -108,12 +108,11 @@ async function onSaved(changes) {
 <template>
   <section class="permissions-page">
     <header class="permissions-page__header">
-      <div>
-        <h1 class="permissions-page__title">{{ t('permissions.index.title') }}</h1>
-        <p class="permissions-page__subtitle">{{ t('permissions.index.subtitle') }}</p>
-      </div>
+      <h1 class="permissions-page__title">{{ t('permissions.index.title') }}</h1>
+      <BaseButton variant="secondary" icon="arrow-left" :to="{ name: ROUTE_NAMES.ADMIN_USERS }">{{
+        t('permissions.index.backToUsers')
+      }}</BaseButton>
     </header>
-    <RouteTabs :tabs="USERS_SECTION_TABS" :label="t('nav.usersSection')" />
 
     <StatsCards :stats="statCards" :loading="tableStatus === 'loading' && !rows.length" />
 
@@ -168,11 +167,7 @@ async function onSaved(changes) {
         </div>
       </template>
       <template #cell-actions="{ item }">
-        <AppMenu
-          :actions="rowActions"
-          :label="t('components.actions.menuFor', { name: localized(item.label) })"
-          @select="openEdit(item)"
-        />
+        <RowActions :actions="rowActions" :name="localized(item.label)" @select="openEdit(item)" />
       </template>
     </DataTable>
 

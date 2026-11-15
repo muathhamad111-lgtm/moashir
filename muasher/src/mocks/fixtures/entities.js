@@ -292,6 +292,20 @@ export const entitiesFixture = [
     verifiedAt: '2026-06-03T08:05:00Z',
     owner: owner(7005, 'منصور بن حمد العجمي', 'info@athar-taif.example.sa'),
   }),
+  record({
+    id: 7006,
+    name: { ar: 'جمعية غراس للتنمية الأسرية', en: 'Ghiras Family Development Society' },
+    entityType: 'civil_association',
+    developmentSector: 'social',
+    orgSize: 'small',
+    foundingYear: 2022,
+    regionId: 1,
+    cityId: 2,
+    status: 'pending-review',
+    createdAt: '2026-11-14T09:20:00Z',
+    verifiedAt: '2026-11-14T09:31:00Z',
+    owner: owner(7006, 'هيفاء بنت سالم القحطاني', 'info@ghiras-family.example.sa'),
+  }),
 ]
 
 export const emailChangesFixture = [

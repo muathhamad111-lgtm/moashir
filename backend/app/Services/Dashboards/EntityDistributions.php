@@ -34,7 +34,9 @@ final class EntityDistributions
             'total' => ['true', []],
             'active' => ['status = ?', [EntityStatus::Active->value]],
             'pending_verification' => ['status = ?', [EntityStatus::PendingVerification->value]],
+            'pending_review' => ['status = ?', [EntityStatus::PendingReview->value]],
             'deactivated' => ['status = ?', [EntityStatus::Deactivated->value]],
+            'rejected' => ['status = ?', [EntityStatus::Rejected->value]],
         ]);
     }
 

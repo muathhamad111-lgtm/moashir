@@ -191,16 +191,17 @@ it('refuses payments that are not paid and a second refund', function (): void {
     expect(Refund::query()->count())->toBe(1);
 });
 
-it('lists and shows recorded refunds to finance and lets them download the evidence through a short signed link', function (): void {
+it('lists refunded transactions and shows recorded refunds to finance and lets them download the evidence through a short signed link', function (): void {
     ['payment' => $payment] = refundablePayment();
     $finance = financeOfficer();
     switchTo($finance)->post(refundEndpoint($payment), refundPayload($payment), ['Accept' => 'application/json'])->assertCreated();
     $refund = Refund::query()->sole();
 
-    switchTo($finance)->getJson('/api/v1/finance/refunds')->assertOk()
+    switchTo($finance)->getJson('/api/v1/finance/transactions?filter[mode]=test&filter[type]=refund')->assertOk()
         ->assertJsonPath('meta.pagination.total', 1)
-        ->assertJsonPath('data.0.id', $refund->public_id);
-    $this->getJson('/api/v1/finance/refunds?filter[purpose]=bag')->assertOk()->assertJsonPath('meta.pagination.total', 0);
+        ->assertJsonPath('data.0.id', $payment->public_id)
+        ->assertJsonPath('data.0.refund.id', $refund->public_id);
+    $this->getJson('/api/v1/finance/transactions?filter[mode]=test&filter[type]=refund&filter[purpose]=bag')->assertOk()->assertJsonPath('meta.pagination.total', 0);
     $this->getJson("/api/v1/finance/refunds/{$refund->public_id}")->assertOk()->assertJsonPath('data.transfer_reference', 'TRF-2026-55871');
 
     $link = $this->postJson("/api/v1/finance/refunds/{$refund->public_id}/evidence/download")->assertOk()
@@ -225,7 +226,7 @@ it('keeps refund records and evidence away from entities and other staff', funct
     $refund = Refund::query()->sole();
 
     foreach ([$owner, staffUser(RoleKey::Assessor)] as $user) {
-        switchTo($user)->getJson('/api/v1/finance/refunds')->assertForbidden();
+        switchTo($user)->getJson('/api/v1/finance/transactions?filter[mode]=test&filter[type]=refund')->assertForbidden();
         $this->getJson("/api/v1/finance/refunds/{$refund->public_id}")->assertForbidden();
         $this->postJson("/api/v1/finance/refunds/{$refund->public_id}/evidence/download")->assertForbidden();
     }

@@ -58,6 +58,17 @@ describe('PublicNavbar', () => {
     expect(wrapper.find('.public-navbar__logo').attributes('alt')).toBe('Moashir platform')
   })
 
+  it('shows the uploaded public site logo instead of the brand default', () => {
+    const globals = createTestGlobals({ locale: 'en' })
+    usePublicHomeStore(globals.pinia).siteSettings = {
+      branding: { siteLogo: { fileId: 'f1', url: '/api/v1/content/files/f1' }, favicon: null },
+    }
+    mountNavbar(globals)
+    expect(wrapper.find('.public-navbar__logo').attributes('src')).toMatch(
+      /\/api\/v1\/content\/files\/f1$/,
+    )
+  })
+
   it('shows no header link once the managed menu is emptied', () => {
     const globals = createTestGlobals({ locale: 'en' })
     usePublicHomeStore(globals.pinia).siteSettings = { headerLinks: [] }

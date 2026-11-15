@@ -39,6 +39,10 @@ return [
     'credentials' => [
         'invalid' => 'The sign-in details are incorrect.',
     ],
+    'auth' => [
+        'entity_pending_review' => 'Your entity registration is under review by the Moashir platform team. You will receive an e-mail once it is approved.',
+        'entity_rejected' => 'Your entity registration was rejected. Contact the Moashir platform team for details.',
+    ],
     'phone' => [
         'missing' => 'Add a mobile number to your account before verifying it.',
         'already_verified' => 'This mobile number is already verified.',
@@ -76,6 +80,7 @@ return [
     'user' => [
         'self' => 'You cannot perform this action on your own account.',
         'entity_status_managed' => 'Entity accounts follow the status of their entity.',
+        'password_reset_recently_sent' => 'A password reset link was sent to this user moments ago. Wait a minute, then try again.',
     ],
     'permission' => [
         'unknown' => 'One or more permissions are not recognised.',
@@ -102,6 +107,8 @@ return [
     ],
     'registration' => [
         'terms_unavailable' => 'Registration is not available at the moment. Please try again later.',
+        'email_unverified' => 'Verify this e-mail address with the code sent to it before submitting the registration.',
+        'email_taken' => 'This e-mail address already belongs to an account. Sign in, or use another official e-mail address.',
     ],
     'export' => [
         'too_large' => 'The export is too large. Narrow the filters and try again.',

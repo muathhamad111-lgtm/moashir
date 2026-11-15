@@ -22,6 +22,7 @@ it('counts entities, staff and live payments on the System Administrator board',
     $first = entityWithOwner();
     $second = entityWithOwner(static fn ($factory) => $factory->incompleteProfile());
     entityWithOwner(static fn ($factory) => $factory->pendingVerification());
+    entityWithOwner(static fn ($factory) => $factory->pendingReview());
     entityWithOwner(static fn ($factory) => $factory->deactivated());
     entityWithOwner()->delete();
     storedPaidPayment($first);
@@ -33,18 +34,19 @@ it('counts entities, staff and live payments on the System Administrator board',
     $cards = boardCards($response);
 
     expect($cards->all())->toMatchArray([
-        'entities_total' => 4,
+        'entities_total' => 5,
         'entities_active' => 2,
         'entities_pending_verification' => 1,
+        'entities_pending_review' => 1,
         'staff_users_active' => 1,
         'payments_paid' => 2,
         'payments_open' => 1,
     ])
         ->and($cards->get('payments_collected'))->toBe('2300.00')
         ->and($cards->get('refunds_total'))->toBe('0.00')
-        ->and(collect(boardWidget($response, 'entities_by_sector'))->sum('count'))->toBe(4)
+        ->and(collect(boardWidget($response, 'entities_by_sector'))->sum('count'))->toBe(5)
         ->and(collect(boardWidget($response, 'entities_by_governance'))->pluck('count', 'key')->all())->toBe([
-            'below_50' => 0, 'from_50_to_69' => 0, 'from_70_to_84' => 3, 'from_85_to_100' => 0, 'not_reported' => 1,
+            'below_50' => 0, 'from_50_to_69' => 0, 'from_70_to_84' => 4, 'from_85_to_100' => 0, 'not_reported' => 1,
         ])
         ->and(collect(boardWidget($response, 'entities_by_region'))->firstWhere('region_id', $first->region_id)['count'] ?? null)->toBe(1)
         ->and(collect($response->json('data.cards'))->firstWhere('key', 'payments_collected')['format'] ?? null)->toBe('money');

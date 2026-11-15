@@ -18,6 +18,7 @@ final readonly class AuthSettingsReader
         private SmsAvailability $sms,
         private IntegrationSettings $integrations,
         private GeneralEmailNotifications $generalEmail,
+        private EntityRegistrationReview $registrationReview,
         private MfaRequirement $mfa,
     ) {}
 
@@ -26,6 +27,7 @@ final readonly class AuthSettingsReader
         return new AuthSettingsView(
             $this->codeChannels->allowed(),
             $this->generalEmail->isEnabled(),
+            $this->registrationReview->isRequired(),
             $this->mfa->isEnabled(),
             $this->mfa->requiredRoles(),
             $this->smsStatus(),

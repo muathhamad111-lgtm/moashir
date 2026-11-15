@@ -18,6 +18,7 @@ vi.mock('@/services/financeSettingsService', () => ({
 const SETTINGS = {
   entitySignInCodeChannels: ['email'],
   generalEmailNotifications: true,
+  entityRegistrationReview: true,
   twoFactorEnabled: true,
   twoFactorRoles: ['system_admin', 'assessor'],
   smsStatus: 'test',
@@ -86,8 +87,9 @@ describe('General settings', () => {
     expect(wrapper.find('h1').text()).toBe('عام')
     expect(wrapper.findAll('.settings-form__legend').map((legend) => legend.text())).toEqual([
       'آلية التحقق',
+      'تسجيل الجهات الجديدة',
       'التحقق الثنائي',
-      'الضريبة',
+      'الإدارة المالية',
     ])
     expect(box('codeChannelEmail').element.checked).toBe(true)
     expect(wrapper.find('.sign-in-channels__warning').exists()).toBe(false)
@@ -105,6 +107,16 @@ describe('General settings', () => {
     await box('codeChannelEmail').setValue(false)
     await saveVerification()
     expect(authSettingsService.update).toHaveBeenCalledWith({ generalEmailNotifications: false })
+  })
+
+  it('switches the staff review of new entities off and sends only that change', async () => {
+    await mountScreen()
+    const toggle = wrapper.find('input[name="entityRegistrationReview"]')
+    expect(toggle.element.checked).toBe(true)
+    expect(wrapper.text()).toContain('Staff review before activation')
+    await toggle.setValue(false)
+    await saveVerification()
+    expect(authSettingsService.update).toHaveBeenCalledWith({ entityRegistrationReview: false })
   })
 
   it('disables SMS until the gateway is enabled, while the rest can still be saved', async () => {

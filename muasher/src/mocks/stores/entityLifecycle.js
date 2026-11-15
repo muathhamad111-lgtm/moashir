@@ -24,6 +24,28 @@ export function deactivate(entity, reason) {
   return entity
 }
 
+export function approve(entity) {
+  assertNotFrozen(entity)
+  if (!['pending-review', 'rejected'].includes(entity.status))
+    throw entityReject.illegalTransition()
+  entity.status = 'active'
+  entity.approvedAt = new Date().toISOString()
+  entity.rejectedAt = null
+  entity.rejectionReason = null
+  return entity
+}
+
+export function reject(entity, reason) {
+  assertNotFrozen(entity)
+  if (!['pending-verification', 'pending-review'].includes(entity.status)) {
+    throw entityReject.illegalTransition()
+  }
+  entity.status = 'rejected'
+  entity.rejectedAt = new Date().toISOString()
+  entity.rejectionReason = reason
+  return entity
+}
+
 export function reactivate(entity) {
   assertNotFrozen(entity)
   assertStatus(entity, 'deactivated')

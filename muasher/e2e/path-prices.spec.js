@@ -81,19 +81,22 @@ async function approveTransfer(page, testInfo, paymentId) {
   await expect(page.locator('.transfer-decision-line')).toBeVisible()
 }
 
-test.describe('«أسعار المسارات» and the priced self path', () => {
+test.describe('path prices in «إدارة المسارات» and the priced self path', () => {
   test('prices card → paused accredited page → «ادفع وابدأ» → paid self receipt', async ({
     page,
   }, testInfo) => {
     test.setTimeout(120000)
     await signIn(page, testInfo, USERS.admin)
-    await open(page, '/admin/settings/prices', '[data-testid="path-prices"]')
-    await expect(page.locator('.path-price-row')).toHaveCount(4)
+    await open(page, '/admin/settings/prices', '[data-testid="price-row-self"]')
+    await expect(page.locator('.path-price-row')).toHaveCount(1)
     await savePrice(page, 'self', { price: '100.00' })
-    await savePrice(page, 'accredited', { availability: 'paused' })
-    await expect(row(page, 'self').locator('[data-testid="price-in-force-self"]')).toContainText(
-      '115.00',
+    await expect(row(page, 'self').locator('input[name="priceBeforeVat"]')).toHaveValue('100.00')
+    await open(
+      page,
+      '/admin/settings/assessment?tab=accredited',
+      '[data-testid="price-row-accredited"]',
     )
+    await savePrice(page, 'accredited', { availability: 'paused' })
     await row(page, 'accredited').locator('[data-testid="price-history-toggle-accredited"]').click()
     const history = row(page, 'accredited').locator('[data-testid="price-history-accredited"]')
     await expect(history.locator('tbody tr')).toHaveCount(2)
@@ -150,7 +153,7 @@ test.describe('«أسعار المسارات» and the priced self path', () => 
   }, testInfo) => {
     test.setTimeout(90000)
     await signIn(page, testInfo, USERS.admin)
-    await open(page, '/admin/settings/prices', '[data-testid="path-prices"]')
+    await open(page, '/admin/settings/prices', '[data-testid="price-row-self"]')
     await savePrice(page, 'self', { price: '100.00' })
     await signIn(page, testInfo, USERS.ruwad)
     await page.goto('/assessment/self/pay')

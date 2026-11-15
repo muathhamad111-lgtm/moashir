@@ -25,8 +25,10 @@ return [
 
     'statuses' => [
         'pending_verification' => 'Pending verification',
+        'pending_review' => 'Pending review',
         'active' => 'Active',
         'deactivated' => 'Deactivated',
+        'rejected' => 'Rejected',
     ],
 
     'profile_fields' => [

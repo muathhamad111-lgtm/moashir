@@ -20,6 +20,11 @@ final class UserPolicy
         return $this->authorizeOn($actor, $target, PermissionKey::UsersView);
     }
 
+    public function export(User $actor): bool
+    {
+        return $actor->can(PermissionKey::UsersView->value) && $actor->can(PermissionKey::UsersExport->value);
+    }
+
     public function create(User $actor): bool
     {
         return $actor->can(PermissionKey::UsersManage->value);

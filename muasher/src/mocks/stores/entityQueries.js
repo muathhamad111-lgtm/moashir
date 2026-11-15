@@ -2,7 +2,7 @@ import { allEntities, isDeleted } from './entitiesStore'
 import { normalizeSearchText } from './searchIndex'
 import { levelRankOf, matchesLevelFilter } from './entityLevels'
 
-const STATUSES = ['pending-verification', 'active', 'deactivated']
+const STATUSES = ['pending-verification', 'pending-review', 'active', 'deactivated', 'rejected']
 
 const SORT_KEYS = {
   name: (entity) => normalizeSearchText(entity.name.ar),

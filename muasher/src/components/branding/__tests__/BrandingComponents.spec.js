@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import AccentSwatchPicker from '@/components/branding/AccentSwatchPicker.vue'
-import ContrastCheck from '@/components/branding/ContrastCheck.vue'
 import { createTestGlobals } from '@/test-utils'
 
 const palette = [
@@ -22,23 +21,5 @@ describe('AccentSwatchPicker', () => {
     await radios[1].setValue(true)
     expect(wrapper.emitted('update:modelValue')[0]).toEqual(['teal'])
     expect(wrapper.findAll('.accent-swatch__chip')[1].attributes('data-accent')).toBe('teal')
-  })
-})
-
-describe('ContrastCheck', () => {
-  it('shows each ratio with a text badge, never color alone', () => {
-    const wrapper = mount(ContrastCheck, {
-      props: {
-        pairs: [
-          { key: 'fill', ratio: 10.49, passes: true },
-          { key: 'light', ratio: 3.1, passes: false },
-        ],
-      },
-      global: createTestGlobals({ locale: 'en' }),
-    })
-    const rows = wrapper.findAll('.contrast-check__row')
-    expect(rows[0].text()).toContain('10.49:1')
-    expect(rows[0].text()).toContain('Passes AA')
-    expect(rows[1].text()).toContain('Fails AA')
   })
 })

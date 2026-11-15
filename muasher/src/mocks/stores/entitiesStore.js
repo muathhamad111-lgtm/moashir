@@ -1,5 +1,6 @@
 import { ENTITY_REFERENCE_PREFIX, entitiesFixture } from '../fixtures/entities'
 import { hasFullProfile } from './entityProfileSections'
+import { registrationReviewRequired } from './authSettingsStore'
 
 const ANONYMIZED_DOMAIN = 'erased.invalid'
 
@@ -141,9 +142,16 @@ export function setOwnerEmail(entity, email) {
   entity.owner.email = email
 }
 
+// Confirming the e-mail activates the entity, or parks it for staff review when the setting asks for it.
 export function markVerified(entity) {
+  const now = new Date().toISOString()
+  entity.verifiedAt = now
+  if (registrationReviewRequired()) {
+    entity.status = 'pending-review'
+    return
+  }
   entity.status = 'active'
-  entity.verifiedAt = new Date().toISOString()
+  entity.approvedAt = now
 }
 
 export function anonymize(entity) {

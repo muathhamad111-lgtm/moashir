@@ -8,6 +8,8 @@ const SIGN_IN_BY_CODE = Object.freeze({
   [CODES.CREDENTIALS_INVALID]: SIGN_IN_FAILURES.CREDENTIALS,
   [CODES.ACCOUNT_LOCKED]: SIGN_IN_FAILURES.LOCKED,
   [CODES.ACCOUNT_DEACTIVATED]: SIGN_IN_FAILURES.DEACTIVATED,
+  [CODES.ENTITY_PENDING_REVIEW]: SIGN_IN_FAILURES.PENDING_REVIEW,
+  [CODES.ENTITY_REJECTED]: SIGN_IN_FAILURES.REJECTED,
   [CODES.RATE_LIMITED]: SIGN_IN_FAILURES.THROTTLED,
   [CODES.OTP_COOLDOWN]: SIGN_IN_FAILURES.THROTTLED,
 })
@@ -20,12 +22,18 @@ const CODE_BY_ERROR = Object.freeze({
   [CODES.ACCOUNT_LOCKED]: CODE_FAILURES.LOCKED,
   [CODES.OTP_COOLDOWN]: CODE_FAILURES.COOLDOWN,
   [CODES.RATE_LIMITED]: CODE_FAILURES.COOLDOWN,
+  [CODES.ENTITY_PENDING_REVIEW]: CODE_FAILURES.PENDING_REVIEW,
+  [CODES.ENTITY_REJECTED]: CODE_FAILURES.REJECTED,
 })
+
+// The code was right, but the entity's registration decides what happens next: nothing to retry.
+const ACCOUNT_STANDINGS = Object.freeze([CODE_FAILURES.PENDING_REVIEW, CODE_FAILURES.REJECTED])
 
 const ENDS_THE_CHALLENGE = Object.freeze([
   CODE_FAILURES.CHALLENGE,
   CODE_FAILURES.ATTEMPTS,
   CODE_FAILURES.LOCKED,
+  ...ACCOUNT_STANDINGS,
 ])
 
 function errorCodeOf(error) {
@@ -56,6 +64,10 @@ export function codeRequestFailureOf(error) {
 export function codeFailureOf(error) {
   const fallback = isTooManyRequests(error) ? CODE_FAILURES.COOLDOWN : CODE_FAILURES.UNEXPECTED
   return { kind: CODE_BY_ERROR[errorCodeOf(error)] ?? fallback, minutes: waitMinutesOf(error) }
+}
+
+export function isAccountStanding(failure) {
+  return ACCOUNT_STANDINGS.includes(failure?.kind)
 }
 
 export function endsTheChallenge(failure) {

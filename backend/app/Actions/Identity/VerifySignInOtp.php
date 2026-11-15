@@ -34,13 +34,14 @@ final readonly class VerifySignInOtp
         }
 
         $this->confirmEmail($user);
+        $this->guard->assertCanSignIn($user);
 
         return $this->completeSignIn->handle($user, SignInMethod::EmailVerificationCode);
     }
 
     private function confirmEmail(User $user): void
     {
-        if ($this->guard->awaitsEntityVerification($user)) {
+        if ($this->guard->awaitsEmailConfirmation($user)) {
             $this->entityAccounts->confirmVerification($user);
         }
 

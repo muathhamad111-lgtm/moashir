@@ -94,6 +94,7 @@ export function registrationPayload(values, terms) {
     ...profilePayload(values),
     ...unifiedNumberPayload(values.unifiedNumber),
     officialEmail: values.officialEmail.trim(),
+    emailVerificationToken: values.emailVerificationToken,
     password: values.password,
     passwordConfirmation: values.passwordConfirmation,
     termsVersionId: terms.terms.id,

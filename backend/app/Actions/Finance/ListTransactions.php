@@ -15,6 +15,8 @@ final readonly class ListTransactions
 {
     public const array RELATIONS = ['receipt', 'refund', 'entity.owner', 'bankTransfer.bankAccount', 'awardCycle'];
 
+    private const array REFUND_RELATIONS = ['refund.recordedBy:id,name', 'refund.evidenceFile:id'];
+
     public function __construct(private TransactionQuery $query, private FinanceStatsCalculator $stats) {}
 
     /**
@@ -22,7 +24,7 @@ final readonly class ListTransactions
      */
     public function handle(TransactionFilters $filters): LengthAwarePaginator
     {
-        return $this->query->sorted($filters)->with(self::RELATIONS)->paginate($filters->perPage);
+        return $this->query->sorted($filters)->with([...self::RELATIONS, ...self::REFUND_RELATIONS])->paginate($filters->perPage);
     }
 
     public function statsOf(TransactionFilters $filters): FinanceStats

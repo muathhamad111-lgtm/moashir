@@ -16,6 +16,9 @@ const filterDraft = props.filterState ? useFilterDraft(props.filterState) : null
 
 <template>
   <div class="toolbar filter-toolbar">
+    <div v-if="$slots.actions" class="toolbar__actions">
+      <slot name="actions" />
+    </div>
     <div class="filter-toolbar__controls">
       <ExpandableSearch
         v-if="searchable"
@@ -33,9 +36,7 @@ const filterDraft = props.filterState ? useFilterDraft(props.filterState) : null
       >
         <slot name="filters" :draft="filterDraft.draft" />
       </FilterDialog>
-    </div>
-    <div v-if="$slots.actions" class="toolbar__actions">
-      <slot name="actions" />
+      <slot name="export" />
     </div>
   </div>
 </template>

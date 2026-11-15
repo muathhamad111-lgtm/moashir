@@ -16,10 +16,12 @@ import { usePermissions } from '@/composables/usePermissions'
 import { ENTITY_ACTIONS } from '@/composables/useEntityActions'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import { accessFor } from '@/constants/routeAccess'
 
 const { t } = useI18n()
 const router = useRouter()
-const { can } = usePermissions()
+const { can, canAccess } = usePermissions()
+const canOpen = (routeName) => canAccess(accessFor(routeName))
 const regions = useRegions()
 const { items, status, errorMessage, load, filters, paginator, stats, exportParams } =
   useEntityList()
@@ -41,6 +43,12 @@ const statCards = computed(() => [
     icon: 'check-circle',
     value: stats.value?.active ?? 0,
     label: t('entities.stats.active'),
+  },
+  {
+    id: 'pending-review',
+    icon: 'clipboard-check',
+    value: stats.value?.pendingReview ?? 0,
+    label: t('entities.stats.pendingReview'),
   },
   {
     id: 'pending',
@@ -68,17 +76,21 @@ onMounted(regions.load)
 <template>
   <section class="entities-admin">
     <header class="entities-admin__header">
-      <div>
-        <h1 class="entities-admin__title">{{ t('entities.admin.title') }}</h1>
-        <p class="entities-admin__subtitle">{{ t('entities.admin.subtitle') }}</p>
-      </div>
+      <h1 class="entities-admin__title">{{ t('entities.admin.title') }}</h1>
       <div class="entities-admin__links">
         <BaseButton
-          v-if="can(PERMISSIONS.ENTITIES_DELETE)"
-          variant="ghost"
-          size="sm"
+          v-if="canOpen(ROUTE_NAMES.ADMIN_ENTITY_EMAIL_CHANGES)"
+          variant="secondary"
+          icon="envelope"
+          :to="{ name: ROUTE_NAMES.ADMIN_ENTITY_EMAIL_CHANGES }"
+        >
+          {{ t('nav.entityEmailChanges') }}
+        </BaseButton>
+        <BaseButton
+          v-if="canOpen(ROUTE_NAMES.ADMIN_ENTITIES_DELETED)"
+          variant="secondary"
           icon="undo"
-          @click="router.push({ name: ROUTE_NAMES.ADMIN_ENTITIES_DELETED })"
+          :to="{ name: ROUTE_NAMES.ADMIN_ENTITIES_DELETED }"
         >
           {{ t('nav.deletedEntities') }}
         </BaseButton>
@@ -99,11 +111,11 @@ onMounted(regions.load)
           :full="fullRecords || status !== 'success'"
         />
       </template>
-      <template v-if="can(PERMISSIONS.ENTITIES_EXPORT)" #actions>
+      <template v-if="can(PERMISSIONS.ENTITIES_EXPORT)" #export>
         <BaseButton
           variant="secondary"
           size="sm"
-          icon="doc"
+          icon="download"
           :loading="exporting"
           @click="exportCsv(exportParams)"
         >

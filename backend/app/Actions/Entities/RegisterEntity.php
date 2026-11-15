@@ -4,52 +4,63 @@ declare(strict_types=1);
 
 namespace App\Actions\Entities;
 
-use App\Actions\Identity\IssueOtpChallenge;
+use App\Actions\Identity\CompleteSignIn;
 use App\Data\Audit\AuditEntry;
 use App\Data\Entities\EntityRegistrationData;
-use App\Data\Identity\OtpChallenge;
-use App\Data\Identity\OtpDelivery;
+use App\Data\Identity\LoginOutcome;
 use App\Enums\Audit\AuditEvent;
-use App\Enums\Identity\OtpChannel;
-use App\Enums\Identity\OtpPurpose;
+use App\Enums\Identity\SignInMethod;
+use App\Exceptions\Entities\RegistrationRejected;
 use App\Models\Entities\Entity;
 use App\Models\Identity\User;
 use App\Services\Audit\AuditRecorder;
 use App\Services\Entities\EntityAccountCreator;
-use App\Services\Identity\DecoyOtpChallenges;
+use App\Services\Entities\RegistrationEmailTokens;
 use App\Support\Entities\EntityUniqueViolation;
-use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * Registers an entity whose official e-mail was already proven on the registration form, then
+ * confirms it exactly like a verified registration: held for staff review, or activated and signed in.
+ */
 final readonly class RegisterEntity
 {
     public function __construct(
+        private RegistrationEmailTokens $emailTokens,
         private EntityAccountCreator $creator,
-        private IssueOtpChallenge $issueChallenge,
-        private DecoyOtpChallenges $decoys,
+        private VerifyEntityRegistration $verifyRegistration,
         private AuditRecorder $audit,
-        private Hasher $hasher,
+        private CompleteSignIn $completeSignIn,
     ) {}
 
-    public function handle(EntityRegistrationData $data): OtpChallenge
+    public function handle(EntityRegistrationData $data, ?string $emailVerificationToken): LoginOutcome
     {
-        if (User::query()->withTrashed()->withEmail($data->officialEmail)->exists()) {
-            return $this->decoy($data);
-        }
-
         try {
-            $entity = DB::transaction(fn (): Entity => $this->register($data));
+            $owner = DB::transaction(function () use ($data, $emailVerificationToken): User {
+                $this->emailTokens->consume($emailVerificationToken, $data->officialEmail);
+                $this->assertAddressFree($data);
+
+                $owner = $this->register($data)->owner()->firstOrFail();
+                $this->verifyRegistration->handle($owner);
+
+                return $owner;
+            });
         } catch (UniqueConstraintViolationException $violation) {
             $this->rethrowIfEntityField($violation);
 
-            return $this->decoy($data);
+            throw RegistrationRejected::emailTaken();
         }
 
-        $owner = $entity->owner()->firstOrFail();
+        return $this->outcomeFor($owner->refresh());
+    }
 
-        return $this->issueChallenge->handle(new OtpDelivery($owner, OtpChannel::Email, OtpPurpose::Login));
+    private function assertAddressFree(EntityRegistrationData $data): void
+    {
+        if (User::query()->withTrashed()->withEmail($data->officialEmail)->exists()) {
+            throw RegistrationRejected::emailTaken();
+        }
     }
 
     private function register(EntityRegistrationData $data): Entity
@@ -67,6 +78,17 @@ final readonly class RegisterEntity
         return $entity;
     }
 
+    private function outcomeFor(User $owner): LoginOutcome
+    {
+        $entity = Entity::query()->findOrFail($owner->entity_id);
+
+        if (! $entity->isActive()) {
+            return LoginOutcome::pendingReview();
+        }
+
+        return $this->completeSignIn->handle($owner, SignInMethod::Registration);
+    }
+
     private function rethrowIfEntityField(UniqueConstraintViolationException $violation): void
     {
         $validation = EntityUniqueViolation::toValidation($violation);
@@ -74,12 +96,5 @@ final readonly class RegisterEntity
         if ($validation instanceof ValidationException) {
             throw $validation;
         }
-    }
-
-    private function decoy(EntityRegistrationData $data): OtpChallenge
-    {
-        $this->hasher->make($data->password);
-
-        return $this->decoys->issue(OtpChannel::Email);
     }
 }

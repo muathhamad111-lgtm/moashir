@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Services\Cms;
 
 use App\Models\Cms\SiteSettings;
+use App\Models\Settings\BrandingTheme;
+use App\Support\Files\PublicAssetLink;
 use App\Support\ValueObjects\LocalizedContent;
 
 final readonly class PublicSiteSettings
@@ -16,7 +18,7 @@ final readonly class PublicSiteSettings
      */
     public function read(): array
     {
-        return $this->cache->siteSettings(fn (): array => $this->present(SiteSettings::current()));
+        return $this->cache->siteSettings(fn (): array => [...$this->present(SiteSettings::current()), 'branding' => $this->branding(BrandingTheme::current())]);
     }
 
     /**
@@ -45,6 +47,14 @@ final readonly class PublicSiteSettings
             'show_featured_kpis' => $settings->show_featured_kpis,
             'featured_kpi_limit' => $settings->featured_kpi_limit,
         ];
+    }
+
+    /**
+     * @return array{site_logo: array{file_id: string, url: string}|null, favicon: array{file_id: string, url: string}|null}
+     */
+    private function branding(BrandingTheme $theme): array
+    {
+        return ['site_logo' => PublicAssetLink::of($theme->siteLogo), 'favicon' => PublicAssetLink::of($theme->favicon)];
     }
 
     /**

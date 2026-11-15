@@ -2,6 +2,7 @@
 import { useI18n } from 'vue-i18n'
 import FieldInput from '@/components/form/FieldInput.vue'
 import TermsConsentFields from '@/components/entities/form/TermsConsentFields.vue'
+import RegistrationEmailCheck from '@/components/entities/registration/RegistrationEmailCheck.vue'
 
 const { t } = useI18n()
 </script>
@@ -31,6 +32,7 @@ const { t } = useI18n()
         :label="t('entities.fields.officialEmail')"
         required
       />
+      <RegistrationEmailCheck class="entity-form__wide" />
       <FieldInput
         name="password"
         type="password"

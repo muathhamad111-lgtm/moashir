@@ -34,6 +34,7 @@ it('shows e-mail as the only entity sign-in code channel by default, the SMS gat
         ->assertExactJson(['data' => [
             'entity_sign_in_code_channels' => ['email'],
             'general_email_notifications' => true,
+            'entity_registration_review' => true,
             'two_factor_enabled' => true,
             'two_factor_roles' => RoleKey::staffValues(),
             'sms_status' => 'live',
@@ -54,6 +55,40 @@ it('turns the e-mail of general notifications off, audits it and raises no sign-
         ->and($audit->new_values)->toBe([SettingKey::GeneralEmailNotifications->value => false])
         ->and($audit->user_id)->toBe($actor->id);
     Notification::assertNotSentTo($actor, SecurityAlertNotification::class);
+});
+
+it('switches the mandatory entity registration review off, audits it and raises no sign-in channel alert', function (): void {
+    $actor = systemAdmin();
+    signIn($actor);
+
+    $this->putJson(AUTH_SETTINGS, ['entity_registration_review' => false])
+        ->assertOk()
+        ->assertJsonPath('data.entity_registration_review', false)
+        ->assertJsonPath('data.general_email_notifications', true);
+
+    $audit = Audit::query()->where('event', AuditEvent::AuthSettingsUpdated->value)->sole();
+    expect($audit->old_values)->toBe([SettingKey::EntityRegistrationReview->value => true])
+        ->and($audit->new_values)->toBe([SettingKey::EntityRegistrationReview->value => false])
+        ->and($audit->user_id)->toBe($actor->id);
+    Notification::assertNotSentTo($actor, SecurityAlertNotification::class);
+    $this->getJson(AUTH_SETTINGS)->assertJsonPath('data.entity_registration_review', false);
+});
+
+it('keeps entities already awaiting review on hold when the review is switched off', function (): void {
+    $entity = entityWithOwner(static fn ($factory) => $factory->pendingReview());
+    signIn(systemAdmin());
+
+    $this->putJson(AUTH_SETTINGS, ['entity_registration_review' => false])->assertOk();
+
+    expect($entity->refresh()->isPendingReview())->toBeTrue();
+});
+
+it('denies the registration review switch to staff without settings.auth.manage', function (): void {
+    signIn(staffUser(RoleKey::RequestFollower));
+
+    $this->putJson(AUTH_SETTINGS, ['entity_registration_review' => false])->assertForbidden();
+
+    expect(Setting::query()->where('key', SettingKey::EntityRegistrationReview->value)->exists())->toBeFalse();
 });
 
 it('reports the SMS gateway as unavailable or in test mode', function (): void {
@@ -185,4 +220,6 @@ it('validates the payload', function (array $payload, string $field): void {
     'short reason' => [['entity_sign_in_code_channels' => ['email', 'sms'], 'reason' => 'قصير'], 'reason'],
     'general e-mail not a boolean' => [['general_email_notifications' => 'sometimes'], 'general_email_notifications'],
     'general e-mail null' => [['general_email_notifications' => null], 'general_email_notifications'],
+    'registration review not a boolean' => [['entity_registration_review' => 'sometimes'], 'entity_registration_review'],
+    'registration review null' => [['entity_registration_review' => null], 'entity_registration_review'],
 ]);

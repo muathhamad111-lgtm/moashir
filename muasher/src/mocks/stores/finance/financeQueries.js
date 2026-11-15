@@ -31,6 +31,20 @@ const SEARCH_MAX = 100
 
 const PURPOSES = ['accredited', 'bag', 'self', 'award']
 
+// The operations ledger speaks the API's status words; `awaiting_payment` groups the unpaid orders.
+const LEDGER_STATUSES = {
+  created: ['created'],
+  pending: ['pending'],
+  under_review: ['under-review'],
+  paid: ['paid'],
+  failed: ['failed'],
+  rejected: ['rejected'],
+  cancelled: ['cancelled'],
+  refunded: ['refunded'],
+  awaiting_payment: ['created', 'pending'],
+}
+export const TRANSACTION_TYPES = ['electronic', 'bank_transfer', 'refund']
+
 export const LIST_RULES = {
   mine: {
     status: PAYMENT_STATUS_VALUES,
@@ -41,7 +55,8 @@ export const LIST_RULES = {
     to: 'date',
   },
   transactions: {
-    status: PAYMENT_STATUS_VALUES,
+    type: TRANSACTION_TYPES,
+    status: Object.keys(LEDGER_STATUSES),
     purpose: PURPOSES,
     channel: ['electronic', 'bank_transfer'],
     method: ['creditcard', 'mada', 'applepay', 'stcpay'],
@@ -50,7 +65,6 @@ export const LIST_RULES = {
     to: 'date',
     entityId: 'id',
   },
-  refunds: { purpose: PURPOSES, from: 'date', to: 'date' },
   events: {
     source: ['checkout', 'verification', 'webhook', 'expiry', 'reconciliation', 'admin'],
     result: ['applied', 'pending', 'ignored', 'rejected', 'unmatched', 'late_payment'],
@@ -69,17 +83,19 @@ export const TRANSACTION_SORTS = {
   '-updated_at': ['updatedAt', -1],
 }
 
+// `filter[key]=a` stays a string; `filter[key][]=a&filter[key][]=b` becomes a list.
 function filterEntries(query) {
-  const entries = []
+  const entries = {}
   query.forEach((value, key) => {
-    const match = /^filter\[(\w+)\]$/.exec(key)
-    if (match) entries.push([match[1], value])
+    const match = /^filter\[(\w+)\](\[\])?$/.exec(key)
+    if (!match) return
+    entries[match[1]] = match[2] ? [...(entries[match[1]] ?? []), value] : value
   })
-  return entries
+  return Object.entries(entries)
 }
 
 function listedValues(value) {
-  return String(value).split(',')
+  return Array.isArray(value) ? value : String(value).split(',')
 }
 
 function matchesList(filter, value) {
@@ -199,9 +215,18 @@ function ownPaymentMatches(payment, term) {
   return !term || matchesAny(ownSearchFields(payment), term)
 }
 
+function matchesLedgerStatus(filter, status) {
+  return !filter || listedValues(filter).some((value) => LEDGER_STATUSES[value].includes(status))
+}
+
+export function transactionTypeOf(payment) {
+  return payment.status === 'refunded' ? 'refund' : (payment.channel ?? 'electronic')
+}
+
 function matchesPaymentFilters(payment, filters) {
   return (
-    (!filters.status || payment.status === filters.status) &&
+    matchesList(filters.type, transactionTypeOf(payment)) &&
+    matchesLedgerStatus(filters.status, payment.status) &&
     (!filters.purpose || payment.purpose === filters.purpose) &&
     (!filters.method || payment.method === filters.method) &&
     (!filters.channel || (payment.channel ?? 'electronic') === filters.channel) &&
@@ -257,6 +282,9 @@ export function statsOf(payments) {
     totalIncome: sumWhere(payments, 'paid', 'total'),
     totalVat: sumWhere(payments, 'paid', 'vatAmount'),
     totalRefunded: sumWhere(payments, 'refunded', 'total'),
+    transactionsValue: fromMinor(
+      payments.reduce((sum, payment) => sum + toMinor(payment.total), 0),
+    ),
     currency: 'SAR',
   }
 }

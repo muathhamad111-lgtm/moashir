@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
 import { clearMockFault, forceMockFault } from './support/mockFaults'
-import { chooseNamed } from './support/dropdown'
 import { searchList } from './support/listFilters'
 
 const SYSTEM_ADMIN = {
@@ -57,7 +56,7 @@ test('the System Administrator lists, filters and exports entities', async ({ pa
   await seed(page, testInfo)
   await page.goto('/admin/entities')
   await expect(rows(page)).toHaveCount(10)
-  await expect(page.locator('.stats-card__value').first()).toHaveText('10')
+  await expect(page.locator('.stats-card__value').first()).toHaveText('11')
   await page.screenshot({
     path: `test-results/entities-admin-list-${suffix(testInfo)}.png`,
     fullPage: true,
@@ -78,7 +77,11 @@ test('deactivation needs a reason and reactivation follows the separate permissi
 }, testInfo) => {
   await seed(page, testInfo)
   await page.goto('/admin/entities')
-  await rowAction(page, isEn(testInfo) ? 'Athar' : 'أثر', /^\s*(Deactivate|إيقاف الحساب)\s*$/)
+  await rows(page)
+    .filter({ hasText: isEn(testInfo) ? 'Athar' : 'أثر' })
+    .first()
+    .locator('.row-actions [data-action="deactivate"]')
+    .click()
   await dialog(page).locator('[name="reason"]').fill('short')
   await dialog(page).locator('button[type="submit"]').click()
   await expect(dialog(page).locator('.field__error')).toBeVisible()
@@ -224,22 +227,41 @@ test('the approver applies a verified official e-mail change', async ({ page }, 
   await expect(page.locator('.empty-state')).toBeVisible()
 })
 
-test('cities are added under a region and deactivated instead of deleted', async ({
+test('staff approve a registration under review and reject a pending one, with ✓ / ✗ in the row', async ({
+  page,
+}, testInfo) => {
+  await seed(page, testInfo)
+  await page.goto('/admin/entities')
+  const review = rows(page).filter({ hasText: isEn(testInfo) ? 'Ghiras' : 'غراس' })
+  await expect(review.locator('.badge')).toContainText(
+    isEn(testInfo) ? 'Pending review' : 'بانتظار المراجعة',
+  )
+  await review.locator('.row-actions [data-action="approve"]').click()
+  await dialog(page).locator('button[type="submit"]').click()
+  await expect(page.locator('.toast--success')).toBeVisible()
+  await expect(review.locator('.row-actions [data-action="deactivate"]')).toBeVisible()
+
+  const pending = rows(page).filter({ hasText: isEn(testInfo) ? 'Suqya' : 'سقيا' })
+  await pending.locator('.row-actions [data-action="reject"]').click()
+  await dialog(page).locator('[name="reason"]').fill(REASON)
+  await dialog(page).locator('button[type="submit"]').click()
+  await expect(pending.locator('.badge')).toContainText(isEn(testInfo) ? 'Rejected' : 'مرفوض')
+  await expect(pending.locator('.row-actions [data-action="approve"]')).toBeVisible()
+})
+
+test('cities are a fixed list: each row only switches the city on or off', async ({
   page,
 }, testInfo) => {
   await seed(page, testInfo)
   await page.goto('/admin/settings/cities')
   await expect(rows(page).first()).toBeVisible()
-  await page.getByRole('button', { name: /Add city|إضافة مدينة/ }).click()
-  await chooseNamed(dialog(page), 'regionId', '7')
-  await dialog(page).locator('[name="name.ar"]').fill('البدع')
-  await dialog(page).locator('[name="name.en"]').fill('Al-Bad')
-  await dialog(page).locator('button[type="submit"]').click()
+  await expect(page.getByRole('button', { name: /Add city|إضافة مدينة/ })).toHaveCount(0)
+  await expect(rows(page).first().locator('.dropdown-menu')).toHaveCount(0)
+  const toggle = rows(page).first().getByRole('switch')
+  await expect(toggle).toBeChecked()
+  await rows(page).first().locator('.toggle-switch__track').click()
   await expect(page.locator('.toast--success')).toBeVisible()
-  await searchList(page, isEn(testInfo) ? 'Al-Bad' : 'البدع')
-  await expect(rows(page)).toHaveCount(1)
-  await rowAction(page, 'al_bad', /^\s*(Deactivate|إيقاف)\s*$/)
-  await expect(rows(page).first().locator('.badge--muted')).toBeVisible()
+  await expect(rows(page).first().getByRole('switch')).not.toBeChecked()
 })
 
 test('a forced list error shows the error state and the retry reloads the entities', async ({

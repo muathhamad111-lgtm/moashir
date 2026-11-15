@@ -18,6 +18,14 @@ export const authMessages = {
     en: 'The account is temporarily locked. Please try again later.',
   },
   account_deactivated: { ar: 'هذا الحساب غير نشط.', en: 'This account is not active.' },
+  'auth.entity_pending_review': {
+    ar: 'طلب تسجيل جهتك قيد المراجعة لدى فريق منصة مؤشر، وسيصلك بريد عند اعتماده.',
+    en: 'Your entity registration is being reviewed by the Moashir team. You will get an e-mail once it is approved.',
+  },
+  'auth.entity_rejected': {
+    ar: 'رُفض طلب تسجيل جهتك. تواصل مع فريق منصة مؤشر للاستفسار.',
+    en: 'Your entity registration was rejected. Contact the Moashir team for details.',
+  },
   'credentials.invalid': {
     ar: 'بيانات الدخول غير صحيحة.',
     en: 'The sign-in details are incorrect.',
@@ -62,6 +70,15 @@ export const authMessages = {
     en: "Enter your official e-mail, your Saudi mobile number (05XXXXXXXX) or your entity's unified national number (10 digits).",
   },
   'field.invalid': { ar: 'القيمة المدخلة غير صالحة.', en: 'The value is not valid.' },
+  'field.email': { ar: 'أدخل بريدًا إلكترونيًا صحيحًا.', en: 'Enter a valid e-mail address.' },
+  'registration.email_unverified': {
+    ar: 'تحقق من البريد الرسمي أولًا.',
+    en: 'Verify the official e-mail first.',
+  },
+  'registration.email_taken': {
+    ar: 'هذا البريد مسجّل لجهة أخرى. سجّل الدخول أو استعد كلمة المرور.',
+    en: 'This e-mail already belongs to an entity. Sign in or reset the password.',
+  },
   'channels.email_required': {
     ar: 'يجب أن يبقى البريد الإلكتروني مسموحًا به، فهو القناة التي تضمن وصول رمز الدخول إلى كل جهة.',
     en: 'E-mail must stay allowed: every entity can always receive its sign-in code by e-mail.',

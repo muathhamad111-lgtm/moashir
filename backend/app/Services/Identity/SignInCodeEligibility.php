@@ -12,7 +12,11 @@ use App\Models\Identity\User;
 
 final readonly class SignInCodeEligibility
 {
-    public function __construct(private EntityAccounts $entityAccounts, private OtpIssueThrottle $throttle) {}
+    public function __construct(
+        private EntityAccounts $entityAccounts,
+        private OtpIssueThrottle $throttle,
+        private SignInGuard $guard,
+    ) {}
 
     public function of(?User $user): SignInCodeVerdict
     {
@@ -33,7 +37,7 @@ final readonly class SignInCodeEligibility
             $user->isLocked() => SignInCodeVerdict::Locked,
             $user->status !== UserStatus::Active, $standing->blocksSignIn() => SignInCodeVerdict::Inactive,
             ! $this->throttle->allows($user) => SignInCodeVerdict::Throttled,
-            $standing === EntityStanding::PendingVerification => SignInCodeVerdict::RegistrationCode,
+            $this->guard->awaitsEmailConfirmation($user) => SignInCodeVerdict::RegistrationCode,
             default => SignInCodeVerdict::SignInCode,
         };
     }

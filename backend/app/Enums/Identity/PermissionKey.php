@@ -82,6 +82,7 @@ enum PermissionKey: string
 
     case UsersView = 'users.view';
     case UsersManage = 'users.manage';
+    case UsersExport = 'users.export';
     case RolesMatrixView = 'roles.matrix.view';
     case RolesMatrixManage = 'roles.matrix.manage';
     case AuditView = 'audit.view';

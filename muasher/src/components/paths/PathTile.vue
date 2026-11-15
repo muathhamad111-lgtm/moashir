@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { ENTITY_PATH_ICONS, PATH_ROUTES } from '@/constants/entityPaths'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import PathPrice from './PathPrice.vue'
+import { usePathNames } from '@/composables/usePathNames'
 
 const props = defineProps({
   pathKey: { type: String, required: true },
@@ -12,6 +13,7 @@ const props = defineProps({
 })
 
 const { t } = useI18n()
+const { pathName } = usePathNames()
 const titleId = computed(() => `path-tile-${props.pathKey}`)
 const tagKey = computed(() => `paths.tile.tags.${props.pathKey}`)
 const cadence = computed(() => props.path?.cadence ?? null)
@@ -27,7 +29,7 @@ const cadence = computed(() => props.path?.cadence ?? null)
   >
     <header class="path-tile__head">
       <span class="path-tile__icon"><AppIcon :name="ENTITY_PATH_ICONS[pathKey]" /></span>
-      <h3 :id="titleId" class="path-tile__title">{{ t(`paths.names.${pathKey}`) }}</h3>
+      <h3 :id="titleId" class="path-tile__title">{{ pathName(pathKey) }}</h3>
     </header>
     <p class="path-tile__tag">
       {{ cadence ? t(`paths.cadence.${cadence}`) : t(tagKey) }}

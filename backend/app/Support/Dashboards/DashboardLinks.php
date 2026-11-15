@@ -32,7 +32,7 @@ final class DashboardLinks
 
     public const string FINANCE_TRANSACTIONS = '/finance/transactions';
 
-    public const string FINANCE_REFUNDS = '/finance/refunds';
+    public const string FINANCE_REFUNDS = self::FINANCE_TRANSACTIONS.'?type=refund';
 
     public const string CRITERIA = '/admin/settings/criteria';
 

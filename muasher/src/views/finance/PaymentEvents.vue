@@ -1,4 +1,6 @@
 <script setup>
+import { ROUTE_NAMES } from '@/constants/routeNames'
+import BaseButton from '@/components/ui/BaseButton.vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
@@ -6,7 +8,6 @@ import Card from '@/components/ui/Card.vue'
 import AppSelect from '@/components/form/AppSelect.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
-import FinanceNav from '@/components/finance/FinanceNav.vue'
 import FinancePageHeader from '@/components/finance/FinancePageHeader.vue'
 import PaymentEventsTable from '@/components/finance/PaymentEventsTable.vue'
 import { useFinanceList } from '@/composables/useFinanceList'
@@ -49,8 +50,17 @@ const filterState = { filters: filters.filters, setFilter }
       :eyebrow="t('finance.eyebrow')"
       :title="t('finance.events.title')"
       :subtitle="t('finance.events.subtitle')"
-    />
-    <FinanceNav />
+    >
+      <template #actions>
+        <BaseButton
+          variant="secondary"
+          icon="arrow-left"
+          :to="{ name: ROUTE_NAMES.FINANCE_TRANSACTIONS }"
+        >
+          {{ t('finance.operations.backToTransactions') }}
+        </BaseButton>
+      </template>
+    </FinancePageHeader>
     <Card>
       <ListToolbar
         v-model:search="searchInput"

@@ -83,3 +83,33 @@ export const FINANCE_SETTINGS_RULES = {
 }
 
 export const ABANDONED_CART_CONTACTED = ['true', 'false']
+
+// «العمليات المالية» filters: the operation type and the statuses an operation can be in.
+export const TRANSACTION_TYPES = Object.freeze(['electronic', 'bank_transfer', 'refund'])
+
+export const TRANSACTION_STATUS_FILTERS = Object.freeze([
+  'paid',
+  'awaiting_payment',
+  'under_review',
+  'rejected',
+  'failed',
+  'cancelled',
+  'refunded',
+])
+
+// A row's status key in the definitions (created and pending both read as «بانتظار الدفع»).
+export const STATUS_DEFINITION_KEY = Object.freeze({
+  created: 'awaiting_payment',
+  pending: 'awaiting_payment',
+  'under-review': 'under_review',
+})
+
+// Badge colour of a processed payment event's outcome.
+export const EVENT_RESULT_VARIANTS = Object.freeze({
+  applied: 'success',
+  pending: 'warning',
+  ignored: 'muted',
+  rejected: 'danger',
+  unmatched: 'warning',
+  late_payment: 'danger',
+})

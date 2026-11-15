@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { useAuthStore } from '@/stores/auth'
 import { useBrandLogo } from '@/composables/useBrandLogo'
+import { useSiteBranding } from '@/composables/useSiteBranding'
 import { useFocusTrap } from '@/composables/useFocusTrap'
 import { usePlatformIdentity } from '@/composables/usePlatformIdentity'
 import LocaleSwitcher from '@/components/ui/LocaleSwitcher.vue'
@@ -22,6 +23,8 @@ const emit = defineEmits(['update:open', 'navigate'])
 const { t } = useI18n()
 const auth = useAuthStore()
 const { themedLogo } = useBrandLogo()
+const { siteLogo } = useSiteBranding()
+const brandLogo = computed(() => siteLogo.value || themedLogo.value)
 const { platformName } = usePlatformIdentity()
 const panelRef = ref(null)
 const isOpen = computed(() => props.open)
@@ -47,7 +50,7 @@ const { onKeydown } = useFocusTrap(panelRef, { isActive: isOpen, onEscape: close
           :aria-label="t('nav.menuTitle')"
         >
           <div class="nav-drawer__head">
-            <img class="nav-drawer__logo" :src="themedLogo" :alt="platformName" />
+            <img class="nav-drawer__logo" :src="brandLogo" :alt="platformName" />
             <button
               type="button"
               class="nav-drawer__close"

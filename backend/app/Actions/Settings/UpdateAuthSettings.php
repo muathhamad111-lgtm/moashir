@@ -36,7 +36,7 @@ final readonly class UpdateAuthSettings
 
         $this->reason->record($actor, $update->reason);
 
-        [$channelsChanged, $emailChanged, $twoFactorChanged] = DB::transaction(function () use ($actor, $update): array {
+        [$channelsChanged, $otherChanged, $twoFactorChanged] = DB::transaction(function () use ($actor, $update): array {
             $this->lock->lock(self::SECTION);
             $twoFactorChanged = $this->putTwoFactor($actor, $update);
 
@@ -44,12 +44,15 @@ final readonly class UpdateAuthSettings
                 $this->applyTwoFactor->handle();
             }
 
-            return [$this->putChannels($actor, $update), $this->putGeneralEmail($actor, $update), $twoFactorChanged];
+            $emailChanged = $this->putGeneralEmail($actor, $update);
+            $reviewChanged = $this->putRegistrationReview($actor, $update);
+
+            return [$this->putChannels($actor, $update), $emailChanged || $reviewChanged, $twoFactorChanged];
         });
 
         $this->raiseAlerts($channelsChanged, $twoFactorChanged);
 
-        if ($channelsChanged || $emailChanged || $twoFactorChanged) {
+        if ($channelsChanged || $otherChanged || $twoFactorChanged) {
             $this->reason->alertIfSuperAdmin($actor);
         }
     }
@@ -85,5 +88,11 @@ final readonly class UpdateAuthSettings
     {
         return $update->generalEmailNotifications !== null
             && $this->store->put(SettingKey::GeneralEmailNotifications, $update->generalEmailNotifications, AuditEvent::AuthSettingsUpdated, $actor);
+    }
+
+    private function putRegistrationReview(User $actor, AuthSettingsUpdate $update): bool
+    {
+        return $update->entityRegistrationReview !== null
+            && $this->store->put(SettingKey::EntityRegistrationReview, $update->entityRegistrationReview, AuditEvent::AuthSettingsUpdated, $actor);
     }
 }

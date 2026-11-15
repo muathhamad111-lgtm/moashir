@@ -9,10 +9,12 @@ import NewMessageDialog from '@/components/messages/NewMessageDialog.vue'
 import { useToast } from '@/composables/useToast'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { REQUEST_TABS } from '@/constants/entityPaths'
+import { usePathNames } from '@/composables/usePathNames'
 
 const ENQUIRY_TYPE = 'accredited_assessment'
 
 const { t } = useI18n()
+const { pathName, pathDescription } = usePathNames()
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
@@ -30,7 +32,7 @@ const breadcrumbs = computed(() => [
   },
   {
     key: 'accredited',
-    label: t('paths.names.accredited'),
+    label: pathName('accredited'),
     to: { name: ROUTE_NAMES.PATHS_ACCREDITED },
   },
   {
@@ -61,8 +63,8 @@ function onMessageCreated({ id, reference }) {
   <section class="portal-area accredited-task-page">
     <PortalAreaHeader
       :breadcrumbs="breadcrumbs"
-      :title="t('paths.names.accredited')"
-      :subtitle="t('paths.pages.accredited.lead')"
+      :title="pathName('accredited')"
+      :subtitle="pathDescription('accredited', 'paths.pages.accredited.lead')"
     />
     <div id="accredited-form-panel" class="portal-area__body accredited-task-page__body">
       <AccreditedTaskWorkspace

@@ -13,6 +13,7 @@ import PortalLayout from '@/components/layout/PortalLayout.vue'
 import { useLocale } from '@/composables/useLocale'
 import { useTheme } from '@/composables/useTheme'
 import { usePlatformIdentity } from '@/composables/usePlatformIdentity'
+import { useSiteBranding } from '@/composables/useSiteBranding'
 import { useBrandingStore } from '@/stores/branding'
 import { useAuthStore } from '@/stores/auth'
 import { layoutKeyFor } from '@/utils/portalAudience'
@@ -34,6 +35,26 @@ const backOfficeAccent = computed(() =>
 )
 
 const { platformName, siteName } = usePlatformIdentity()
+const { favicon } = useSiteBranding()
+
+const DEFAULT_ICON_LINKS = [
+  { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+  { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' },
+  { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' },
+  { rel: 'icon', href: '/favicon.ico', sizes: 'any' },
+  { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
+]
+const MANIFEST_LINK = { rel: 'manifest', href: '/site.webmanifest' }
+
+const iconLinks = computed(() => [
+  ...(favicon.value
+    ? [
+        { rel: 'icon', type: 'image/png', href: favicon.value },
+        { rel: 'apple-touch-icon', href: favicon.value },
+      ]
+    : DEFAULT_ICON_LINKS),
+  MANIFEST_LINK,
+])
 
 useHead({
   htmlAttrs: {
@@ -44,14 +65,7 @@ useHead({
   },
   title: () => (route.meta.titleKey ? t(route.meta.titleKey) : platformName.value),
   titleTemplate: (title) => (title ? `${title} | ${siteName.value}` : siteName.value),
-  link: [
-    { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
-    { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' },
-    { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' },
-    { rel: 'icon', href: '/favicon.ico', sizes: 'any' },
-    { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
-    { rel: 'manifest', href: '/site.webmanifest' },
-  ],
+  link: iconLinks,
   meta: [
     { name: 'description', content: () => t('meta.description') },
     { name: 'theme-color', content: BRAND_THEME_COLOR },

@@ -24,12 +24,14 @@ const { t } = useI18n()
         <BaseInput
           v-model="draft.platformName.ar"
           name="platformNameAr"
+          required
           :label="t('identity.general.nameAr')"
           :error="errorOf('platformName.ar')"
         />
         <BaseInput
           v-model="draft.platformName.en"
           name="platformNameEn"
+          required
           :label="t('identity.general.nameEn')"
           :error="errorOf('platformName.en')"
           input-dir="ltr"
@@ -37,6 +39,7 @@ const { t } = useI18n()
         <BaseTextarea
           v-model="draft.platformDescription.ar"
           name="platformDescriptionAr"
+          required
           :rows="3"
           :label="t('identity.general.descriptionAr')"
           :error="errorOf('platformDescription.ar')"
@@ -44,12 +47,12 @@ const { t } = useI18n()
         <BaseTextarea
           v-model="draft.platformDescription.en"
           name="platformDescriptionEn"
+          required
           :rows="3"
           :label="t('identity.general.descriptionEn')"
           :error="errorOf('platformDescription.en')"
         />
       </div>
-      <p class="site-settings__hint">{{ t('identity.general.fallbackHint') }}</p>
     </fieldset>
 
     <fieldset class="site-settings__group">

@@ -27,9 +27,12 @@ async function retrySection(page, selector) {
 test('renders the settings hub with launcher cards', async ({ page }) => {
   await page.goto('/admin/settings')
   await expect(page.locator('.settings-hub__title')).toBeVisible()
-  await expect(page.locator('.settings-hub__card')).toHaveCount(19)
+  await expect(page.locator('.settings-hub__card')).toHaveCount(17)
   await expect(page.locator('a.settings-hub__card[href="/admin/settings/finance"]')).toHaveCount(0)
-  await expect(page.locator('a.settings-hub__card[href="/admin/settings/prices"]')).toBeVisible()
+  await expect(page.locator('a.settings-hub__card[href="/admin/settings/prices"]')).toHaveCount(0)
+  await expect(
+    page.locator('a.settings-hub__card[href="/admin/settings/assessment"]'),
+  ).toBeVisible()
 })
 
 test('the old sign-in security address opens the general screen with the verification mechanism', async ({
@@ -38,7 +41,8 @@ test('the old sign-in security address opens the general screen with the verific
   await page.goto('/admin/settings/sign-in')
   await expect(page).toHaveURL(/\/admin\/settings\/general$/)
   await retrySection(page, '.sign-in-channels')
-  await expect(page.locator('.toggle-switch')).toHaveCount(1)
+  await expect(page.locator('.toggle-switch')).toHaveCount(2)
+  await expect(page.locator('input[name="entityRegistrationReview"]')).toBeChecked()
   await expect(page.locator('input[name="codeChannelEmail"]')).toBeChecked()
   await expect(page.locator('input[name="codeChannelEmail"]')).toBeEnabled()
   await expect(page.locator('input[name="codeChannelSms"]')).not.toBeChecked()
@@ -65,7 +69,7 @@ test('payment screen shows stored secrets as metadata only and empty write-only 
 test('assessment screen exposes the review deadline and the evidence upload limits', async ({
   page,
 }) => {
-  await page.goto('/admin/settings/assessment')
+  await page.goto('/admin/settings/assessment?tab=accredited')
   await retrySection(page, 'input[name="reviewSlaDays"]')
   await expect(page.locator('input[name="reviewSlaDays"]')).toHaveValue('14')
   await expect(page.locator('input[name="uploadMaxFileMb"]')).toHaveValue('20')

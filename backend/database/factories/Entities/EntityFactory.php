@@ -69,6 +69,16 @@ final class EntityFactory extends Factory
         return $this->state(['status' => EntityStatus::PendingVerification, 'verified_at' => null]);
     }
 
+    public function pendingReview(): self
+    {
+        return $this->state(['status' => EntityStatus::PendingReview]);
+    }
+
+    public function rejected(): self
+    {
+        return $this->state(['status' => EntityStatus::Rejected, 'rejected_at' => Date::now(), 'rejection_reason' => 'بيانات الترخيص المرفقة لا تطابق سجل الجهة لدى المركز الوطني.']);
+    }
+
     public function deactivated(): self
     {
         return $this->state(['status' => EntityStatus::Deactivated, 'deactivated_at' => Date::now(), 'deactivation_reason' => 'توقف نشاط الجهة مؤقتًا بطلب من مجلس الإدارة.']);

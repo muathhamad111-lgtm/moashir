@@ -24,6 +24,7 @@ defineProps({
         </span>
         <span class="stats-card__value">{{ stat.value }}</span>
         <span class="stats-card__label">{{ stat.label }}</span>
+        <span v-if="stat.detail" class="stats-card__detail">{{ stat.detail }}</span>
       </div>
     </template>
   </div>

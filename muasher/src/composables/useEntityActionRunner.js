@@ -7,6 +7,8 @@ import { localizedText } from '@/utils/localizedText'
 import { ENTITY_ACTIONS as A } from '@/composables/useEntityActions'
 
 const REASON_ACTIONS = {
+  [A.APPROVE]: (entity, reason) => entityLifecycleService.approve(entity.id, reason),
+  [A.REJECT]: (entity, reason) => entityLifecycleService.reject(entity.id, reason),
   [A.DEACTIVATE]: (entity, reason) => entityLifecycleService.deactivate(entity.id, reason),
   [A.REACTIVATE]: (entity, reason) => entityLifecycleService.reactivate(entity.id, reason),
   [A.RESTORE]: (entity, reason) => entityLifecycleService.restore(entity.id, reason),

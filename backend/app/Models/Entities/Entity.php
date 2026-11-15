@@ -59,6 +59,9 @@ use Illuminate\Support\Facades\Date;
  * @property int|null $logo_file_id
  * @property EntityStatus $status
  * @property Carbon|null $verified_at
+ * @property Carbon|null $approved_at
+ * @property Carbon|null $rejected_at
+ * @property string|null $rejection_reason
  * @property Carbon|null $profile_completed_at
  * @property Carbon|null $deactivated_at
  * @property string|null $deactivation_reason
@@ -125,6 +128,8 @@ final class Entity extends Model
             'logo_file_id' => 'integer',
             'status' => EntityStatus::class,
             'verified_at' => 'datetime',
+            'approved_at' => 'datetime',
+            'rejected_at' => 'datetime',
             'profile_completed_at' => 'datetime',
             'deactivated_at' => 'datetime',
             'marketing_consent_at' => 'datetime',
@@ -280,6 +285,16 @@ final class Entity extends Model
     public function isPendingVerification(): bool
     {
         return $this->status === EntityStatus::PendingVerification;
+    }
+
+    public function isPendingReview(): bool
+    {
+        return $this->status === EntityStatus::PendingReview;
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status === EntityStatus::Rejected;
     }
 
     public function isActive(): bool

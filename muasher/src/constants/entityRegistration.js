@@ -24,6 +24,7 @@ export const REGISTRATION_STEPS = Object.freeze([
       'authorizedPersonName',
       'phone',
       'officialEmail',
+      'emailVerificationToken',
       'password',
       'passwordConfirmation',
       'termsAccepted',

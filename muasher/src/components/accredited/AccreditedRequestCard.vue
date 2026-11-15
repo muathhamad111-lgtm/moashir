@@ -6,6 +6,7 @@ import StatusBadge from '@/components/ui/StatusBadge.vue'
 import ProgressMeter from '@/components/ui/ProgressMeter.vue'
 import { formatRelativeTime } from '@/utils/datetime'
 import { localizedText } from '@/utils/localizedText'
+import { usePathNames } from '@/composables/usePathNames'
 
 const props = defineProps({
   assessment: { type: Object, required: true },
@@ -14,6 +15,7 @@ const props = defineProps({
 })
 
 const { t, locale } = useI18n()
+const { pathName } = usePathNames()
 const period = computed(() => localizedText(props.assessment.periodLabel, locale.value))
 const savedAt = computed(() =>
   props.assessment.updatedAt ? formatRelativeTime(props.assessment.updatedAt, locale.value) : '',
@@ -25,7 +27,7 @@ const savedAt = computed(() =>
     <div class="request-card__head">
       <div class="request-card__identity">
         <h2 id="request-card-title" class="request-card__title">
-          {{ t(`paths.names.${assessment.path === 'advanced' ? 'award' : 'accredited'}`) }}
+          {{ pathName(assessment.path === 'advanced' ? 'advanced' : 'accredited') }}
           <span aria-hidden="true">·</span>
           <bdi dir="ltr">{{ assessment.number }}</bdi>
           <template v-if="period">

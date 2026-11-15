@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\Audit\AuditEvent;
+use App\Enums\Cms\CmsPageKey;
 use App\Enums\Files\StoredFilePurpose;
 use App\Enums\Identity\RoleKey;
 use App\Models\Audit\Audit;
@@ -110,6 +111,28 @@ it('uploads a light and a dark logo, replaces the previous file and serves them 
     $this->get('/api/v1/content/files/'.$first)->assertNotFound();
     $this->get('/api/v1/content/files/'.$second)->assertOk()->assertHeader('Content-Type', 'image/png');
     expect(StoredFile::query()->ofPurpose(StoredFilePurpose::BrandingLogo)->count())->toBe(2);
+});
+
+it('stores the favicon and the public site logo and shows them on the public site, refreshed after each change', function (): void {
+    cmsSection();
+    publishPage(CmsPageKey::Home, systemAdmin());
+    $this->getJson('/api/v1/content/home')->assertJsonPath('data.site_settings.branding', ['site_logo' => null, 'favicon' => null]);
+
+    $favicon = $this->post(BRANDING.'/logo', ['file' => pngImage('favicon.png', 300, 200), 'variant' => 'favicon'], ['Accept' => 'application/json'])
+        ->assertOk()->json('data.file_id');
+    $siteLogo = $this->post(BRANDING.'/logo', ['file' => pngImage('site.png', 480, 160), 'variant' => 'site'], ['Accept' => 'application/json'])
+        ->assertOk()->json('data.file_id');
+
+    $this->getJson(BRANDING)
+        ->assertJsonPath('data.favicon.file_id', $favicon)
+        ->assertJsonPath('data.logo_site.file_id', $siteLogo);
+    $this->getJson('/api/v1/content/home')
+        ->assertJsonPath('data.site_settings.branding.favicon.file_id', $favicon)
+        ->assertJsonPath('data.site_settings.branding.site_logo.file_id', $siteLogo);
+
+    $this->postJson(BRANDING.'/reset')->assertOk()->assertJsonPath('data.favicon', null)->assertJsonPath('data.logo_site', null);
+    $this->getJson('/api/v1/content/home')->assertJsonPath('data.site_settings.branding', ['site_logo' => null, 'favicon' => null]);
+    $this->get('/api/v1/content/files/'.$favicon)->assertNotFound();
 });
 
 it('refuses every SVG logo, even a plain one, as an unsupported type', function (string $markup): void {

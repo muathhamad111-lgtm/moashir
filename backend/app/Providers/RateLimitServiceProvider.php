@@ -36,6 +36,9 @@ final class RateLimitServiceProvider extends ServiceProvider
             Limit::perMinutes(self::TEN_MINUTES, self::otpRequestLimit('request_per_ip_per_ten_minutes', 10))->by('otp-request-ip|'.$request->ip()),
         ]);
 
+        RateLimiter::for('registration-email-code', static fn (Request $request): Limit => Limit::perMinutes(self::TEN_MINUTES, self::otpRequestLimit('request_per_ip_per_ten_minutes', 10))
+            ->by('registration-email-code|'.$request->ip()));
+
         RateLimiter::for('otp-resend', static fn (Request $request): Limit => Limit::perMinutes(self::TEN_MINUTES, 5)->by('otp-resend|'.$request->ip()));
 
         RateLimiter::for('otp-verify', static fn (Request $request): Limit => Limit::perMinute(10)->by('otp-verify|'.$request->ip()));

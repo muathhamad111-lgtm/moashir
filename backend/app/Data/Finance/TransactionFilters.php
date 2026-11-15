@@ -9,16 +9,22 @@ use App\Enums\Finance\PaymentInstrument;
 use App\Enums\Finance\PaymentPurpose;
 use App\Enums\Finance\PaymentStatus;
 use App\Enums\Finance\TransactionSort;
+use App\Enums\Finance\TransactionType;
 use App\Enums\Integrations\IntegrationMode;
+use App\Support\Finance\TransactionStatusFilter;
 use App\Support\ScalarValue;
 use App\Support\ValueObjects\SearchTerm;
 use Carbon\CarbonImmutable;
 
 final readonly class TransactionFilters
 {
+    /**
+     * @param  list<PaymentStatus>  $statuses  an empty list means every status
+     * @param  list<TransactionType>  $types  an empty list means every type
+     */
     public function __construct(
         public ?SearchTerm $search = null,
-        public ?PaymentStatus $status = null,
+        public array $statuses = [],
         public ?PaymentPurpose $purpose = null,
         public ?PaymentInstrument $method = null,
         public ?CarbonImmutable $from = null,
@@ -28,21 +34,26 @@ final readonly class TransactionFilters
         public int $perPage = 15,
         public ?PaymentChannel $channel = null,
         public ?int $entityId = null,
+        public array $types = [],
     ) {}
 
     public function forLiveMode(): self
     {
-        return new self($this->search, $this->status, $this->purpose, $this->method, $this->from, $this->to, IntegrationMode::Live, $this->sort, $this->perPage, $this->channel, $this->entityId);
+        return new self(
+            $this->search, $this->statuses, $this->purpose, $this->method, $this->from, $this->to, IntegrationMode::Live,
+            $this->sort, $this->perPage, $this->channel, $this->entityId, $this->types,
+        );
     }
 
     /**
-     * @return array<string, scalar|null>
+     * @return array<string, scalar|list<string>|null>
      */
     public function toArray(): array
     {
         return [
             'search' => $this->search?->value,
-            'status' => $this->status?->value,
+            'status' => array_map(static fn (PaymentStatus $status): string => $status->value, $this->statuses),
+            'type' => array_map(static fn (TransactionType $type): string => $type->value, $this->types),
             'purpose' => $this->purpose?->value,
             'method' => $this->method?->value,
             'channel' => $this->channel?->value,
@@ -55,6 +66,8 @@ final readonly class TransactionFilters
     }
 
     /**
+     * Rebuilds the filters an export stored; older exports kept a single status / type string.
+     *
      * @param  array<string, mixed>  $values
      */
     public static function fromArray(array $values): self
@@ -66,7 +79,7 @@ final readonly class TransactionFilters
 
         return new self(
             $search === '' ? null : new SearchTerm($search),
-            PaymentStatus::tryFrom(ScalarValue::string($values['status'] ?? null)),
+            TransactionStatusFilter::resolve(self::listOf($values['status'] ?? null)),
             PaymentPurpose::tryFrom(ScalarValue::string($values['purpose'] ?? null)),
             PaymentInstrument::tryFrom(ScalarValue::string($values['method'] ?? null)),
             $from === '' ? null : CarbonImmutable::parse($from),
@@ -75,6 +88,17 @@ final readonly class TransactionFilters
             TransactionSort::tryFrom(ScalarValue::string($values['sort'] ?? null)) ?? TransactionSort::NewestFirst,
             channel: PaymentChannel::tryFrom(ScalarValue::string($values['channel'] ?? null)),
             entityId: ctype_digit($entityId) ? (int) $entityId : null,
+            types: TransactionType::resolve(self::listOf($values['type'] ?? null)),
         );
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function listOf(mixed $stored): array
+    {
+        $values = is_array($stored) ? $stored : [$stored];
+
+        return array_values(array_map(static fn (mixed $value): string => ScalarValue::string($value), $values));
     }
 }

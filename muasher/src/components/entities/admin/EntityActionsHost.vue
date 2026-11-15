@@ -8,10 +8,12 @@ import EntityEditDialog from './EntityEditDialog.vue'
 import { useEntityActionRunner } from '@/composables/useEntityActionRunner'
 import { ENTITY_ACTIONS as A } from '@/composables/useEntityActions'
 import { localizedText } from '@/utils/localizedText'
+import { useAuthStore } from '@/stores/auth'
 
 const emit = defineEmits(['done'])
 
 const { t, locale } = useI18n()
+const auth = useAuthStore()
 const { state, run, reasonAction, finish, closeDialog } = useEntityActionRunner({
   onDone: (outcome) => emit('done', outcome),
 })
@@ -41,7 +43,8 @@ defineExpose({ run })
     v-model="state.reasonOpen"
     :title="t(`entities.reasonDialogs.${state.reasonKey}.title`)"
     :subtitle="t(`entities.reasonDialogs.${state.reasonKey}.message`, { name: entityName })"
-    :destructive="state.reasonKey === 'deactivate'"
+    :destructive="['deactivate', 'reject'].includes(state.reasonKey)"
+    :optional="state.reasonKey === 'approve' && !auth.isSuperAdmin"
     :submit-label="t(`entities.actions.${state.reasonKey}`)"
     :action="reasonAction"
     :action-name="`entities.${state.reasonKey}.submit`"

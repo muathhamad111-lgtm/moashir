@@ -80,7 +80,7 @@
   transform: translateY(-50%);
   font-size: var(--fs-sm);
   color: var(--theme-text-muted);
-  background-color: var(--theme-surface-raised);
+  background-color: transparent;
   border-radius: var(--radius-sm);
   pointer-events: none;
   @include truncate;

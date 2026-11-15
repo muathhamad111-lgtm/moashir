@@ -9,6 +9,7 @@ use App\Models\Finance\BankTransfer;
 use App\Models\Finance\PaymentReceipt;
 use App\Models\Finance\Refund;
 use App\Support\Finance\LinkedRequestPresenter;
+use App\Support\Finance\RefundPresenter;
 use App\Support\Finance\StaffTransferPresenter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -38,7 +39,7 @@ final class TransactionDetailResource extends JsonResource
             'late_paid_at' => $payment->late_paid_at?->toIso8601String(),
             'manually_settled_at' => $payment->manually_settled_at?->toIso8601String(),
             'receipt' => $payment->receipt instanceof PaymentReceipt ? new ReceiptResource($payment->receipt)->toArray($request) : null,
-            'refund' => $payment->refund instanceof Refund ? new RefundResource($payment->refund)->toArray($request) : null,
+            'refund' => $payment->refund instanceof Refund ? [...RefundPresenter::summaryOf($payment->refund), ...new RefundResource($payment->refund)->toArray($request)] : null,
             'rejected_at' => $payment->rejected_at?->toIso8601String(),
             'bank_transfer' => $payment->bankTransfer instanceof BankTransfer ? StaffTransferPresenter::detailsOf($payment->bankTransfer) : null,
             'linked_request' => LinkedRequestPresenter::of($this->resource->linkedRequest),

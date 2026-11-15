@@ -1,16 +1,16 @@
 <script setup>
 import { computed, onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { storeToRefs } from 'pinia'
 import { useEntityPathsStore } from '@/stores/entityPaths'
 import { usePathSummaries } from '@/composables/usePathSummaries'
 import { ENTITY_PATH_ICONS, PATH_ORDER, PATH_ROUTES } from '@/constants/entityPaths'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
+import { usePathNames } from '@/composables/usePathNames'
 
 const emit = defineEmits(['navigate'])
 
-const { t } = useI18n()
+const { pathName } = usePathNames()
 const store = useEntityPathsStore()
 const { paths, status } = storeToRefs(store)
 const summaries = usePathSummaries(paths)
@@ -37,7 +37,7 @@ onMounted(() => store.ensureLoaded())
         >
           <span class="paths-sheet__icon"><AppIcon :name="ENTITY_PATH_ICONS[row.key]" /></span>
           <span class="paths-sheet__text">
-            <span class="paths-sheet__name">{{ t(`paths.names.${row.key}`) }}</span>
+            <span class="paths-sheet__name">{{ pathName(row.key) }}</span>
             <span v-if="row.status" class="paths-sheet__status">{{ row.status }}</span>
           </span>
           <AppIcon class="paths-sheet__chevron" name="chevron-right" />

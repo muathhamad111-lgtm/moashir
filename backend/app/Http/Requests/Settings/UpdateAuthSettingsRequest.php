@@ -18,6 +18,8 @@ final class UpdateAuthSettingsRequest extends FormRequest
 
     private const string GENERAL_EMAIL = 'general_email_notifications';
 
+    private const string REGISTRATION_REVIEW = 'entity_registration_review';
+
     private const string TWO_FACTOR = 'two_factor_enabled';
 
     private const string TWO_FACTOR_ROLES = 'two_factor_roles';
@@ -31,6 +33,7 @@ final class UpdateAuthSettingsRequest extends FormRequest
             self::CHANNELS => ['sometimes', 'required', 'array', 'list', 'max:'.count(OtpChannel::cases())],
             self::CHANNELS.'.*' => ['required', 'string', 'distinct', Rule::enum(OtpChannel::class)],
             self::GENERAL_EMAIL => ['sometimes', 'required', 'boolean'],
+            self::REGISTRATION_REVIEW => ['sometimes', 'required', 'boolean'],
             self::TWO_FACTOR => ['sometimes', 'required', 'boolean'],
             self::TWO_FACTOR_ROLES => ['sometimes', 'present', 'array', 'list', 'max:'.count(RoleKey::cases())],
             self::TWO_FACTOR_ROLES.'.*' => ['required', 'string', 'distinct', Rule::enum(RoleKey::class)],
@@ -61,6 +64,7 @@ final class UpdateAuthSettingsRequest extends FormRequest
         return new AuthSettingsUpdate(
             $this->has(self::CHANNELS) ? $this->channels() : null,
             $this->has(self::GENERAL_EMAIL) ? $this->boolean(self::GENERAL_EMAIL) : null,
+            $this->has(self::REGISTRATION_REVIEW) ? $this->boolean(self::REGISTRATION_REVIEW) : null,
             $this->has(self::TWO_FACTOR) ? $this->boolean(self::TWO_FACTOR) : null,
             $this->has(self::TWO_FACTOR_ROLES) ? $this->twoFactorRoles() : null,
             $this->filled('reason') ? $this->string('reason')->trim()->toString() : null,

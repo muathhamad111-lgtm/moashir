@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\V1\Entities\ApproveEntityController;
 use App\Http\Controllers\Api\V1\Entities\CancelMyEmailChangeController;
 use App\Http\Controllers\Api\V1\Entities\CityController;
 use App\Http\Controllers\Api\V1\Entities\ConfirmMyEmailChangeController;
@@ -21,9 +22,13 @@ use App\Http\Controllers\Api\V1\Entities\PermanentlyDeleteEntityController;
 use App\Http\Controllers\Api\V1\Entities\ReactivateEntityController;
 use App\Http\Controllers\Api\V1\Entities\RegionController;
 use App\Http\Controllers\Api\V1\Entities\RegisterEntityController;
+use App\Http\Controllers\Api\V1\Entities\RegistrationEmailCodeController;
+use App\Http\Controllers\Api\V1\Entities\RejectEntityController;
 use App\Http\Controllers\Api\V1\Entities\ResendEntityVerificationController;
+use App\Http\Controllers\Api\V1\Entities\ResendRegistrationEmailCodeController;
 use App\Http\Controllers\Api\V1\Entities\RestoreEntityController;
 use App\Http\Controllers\Api\V1\Entities\SoftDeleteEntityController;
+use App\Http\Controllers\Api\V1\Entities\VerifyRegistrationEmailCodeController;
 use App\Models\Entities\City;
 use App\Models\Entities\Entity;
 use App\Models\Identity\EmailChangeRequest;
@@ -36,6 +41,9 @@ $emailChanges = EmailChangeRequest::class;
 Route::get('regions', [RegionController::class, 'index'])->middleware('throttle:public')->name('regions.index');
 Route::get('terms/current', CurrentTermsController::class)->middleware('throttle:public')->name('terms.current');
 Route::post('auth/register', RegisterEntityController::class)->middleware('throttle:register')->name('auth.register');
+Route::post('auth/register/email-code', RegistrationEmailCodeController::class)->middleware('throttle:registration-email-code')->name('auth.register.email-code');
+Route::post('auth/register/email-code/verify', VerifyRegistrationEmailCodeController::class)->middleware('throttle:otp-verify')->name('auth.register.email-code.verify');
+Route::post('auth/register/email-code/resend', ResendRegistrationEmailCodeController::class)->middleware('throttle:otp-resend')->name('auth.register.email-code.resend');
 
 Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'])->group(function () use ($entities, $cities, $emailChanges): void {
     Route::prefix('entities/me')->name('entities.me.')->group(function () use ($entities): void {
@@ -64,6 +72,8 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
             Route::get('{entity}/profile-changes', EntityProfileChangeController::class)->middleware('can:viewProfileChanges,entity')->name('profile-changes');
             Route::post('{entity}/deactivate', DeactivateEntityController::class)->middleware(['can:deactivate,entity', 'throttle:sensitive'])->name('deactivate');
             Route::post('{entity}/reactivate', ReactivateEntityController::class)->middleware(['can:reactivate,entity', 'throttle:sensitive'])->name('reactivate');
+            Route::post('{entity}/approve', ApproveEntityController::class)->middleware(['can:review,entity', 'throttle:sensitive'])->name('approve');
+            Route::post('{entity}/reject', RejectEntityController::class)->middleware(['can:review,entity', 'throttle:sensitive'])->name('reject');
             Route::post('{entity}/verification/resend', ResendEntityVerificationController::class)->middleware(['can:resendVerification,entity', 'throttle:sensitive'])->name('verification.resend');
             Route::get('{entity}/deletion-impact', EntityDeletionImpactController::class)->middleware('can:delete,entity')->name('deletion-impact');
             Route::delete('{entity}', SoftDeleteEntityController::class)->middleware(['can:delete,entity', 'throttle:sensitive'])->name('destroy');
@@ -79,7 +89,5 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
     });
 
     Route::get('cities', [CityController::class, 'index'])->middleware("can:viewAny,{$cities}")->name('cities.index');
-    Route::post('regions/{region}/cities', [CityController::class, 'store'])->whereNumber('region')->middleware(["can:create,{$cities}", 'throttle:sensitive'])->name('regions.cities.store');
-    Route::put('cities/{city}', [CityController::class, 'update'])->whereNumber('city')->middleware(["can:update,{$cities}", 'throttle:sensitive'])->name('cities.update');
     Route::patch('cities/{city}/active', [CityController::class, 'toggle'])->whereNumber('city')->middleware(["can:update,{$cities}", 'throttle:sensitive'])->name('cities.active');
 });

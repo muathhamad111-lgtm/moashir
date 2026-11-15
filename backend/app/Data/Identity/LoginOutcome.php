@@ -30,6 +30,11 @@ final readonly class LoginOutcome
         return new self(LoginStep::MfaEnrollment);
     }
 
+    public static function pendingReview(): self
+    {
+        return new self(LoginStep::PendingReview);
+    }
+
     public static function otpRequired(OtpChallenge $otp): self
     {
         return new self(LoginStep::OtpRequired, null, $otp);

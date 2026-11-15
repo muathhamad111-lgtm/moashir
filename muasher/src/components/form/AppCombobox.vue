@@ -62,6 +62,10 @@ const comboboxAria = computed(() => ({
   'aria-expanded': combo.isOpen.value ? 'true' : 'false',
   'aria-controls': combo.isOpen.value ? listboxId : undefined,
 }))
+// Once a multiple choice holds values, its tags say it all; the "all …" hint would contradict them.
+const inputPlaceholder = computed(() =>
+  props.multiple && combo.selectedOptions.value.length ? ' ' : props.placeholder || ' ',
+)
 const doneLabel = computed(() => {
   const count = combo.selectedValues.value.length
   return t('components.dropdown.done', { count }, count)
@@ -136,7 +140,7 @@ watch(
         autocomplete="off"
         :name="name || undefined"
         :value="combo.inputText.value"
-        :placeholder="placeholder || ' '"
+        :placeholder="inputPlaceholder"
         :readonly="isCompact"
         :disabled="disabled"
         v-bind="comboboxAria"

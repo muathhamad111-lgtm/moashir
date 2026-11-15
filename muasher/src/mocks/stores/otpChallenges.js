@@ -7,6 +7,7 @@ export const OTP_PURPOSES = {
   SIGN_IN_CODE: 'sign_in_code',
   EMAIL_CHANGE: 'email_change',
   PHONE: 'phone',
+  REGISTRATION_EMAIL: 'registration_email',
 }
 
 export const SIGN_IN_PURPOSES = Object.freeze([OTP_PURPOSES.LOGIN, OTP_PURPOSES.SIGN_IN_CODE])

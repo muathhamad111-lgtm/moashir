@@ -9,6 +9,7 @@ export const SIGN_IN_STEPS = Object.freeze({
   MFA_CHALLENGE: 'mfa_challenge',
   MFA_ENROLLMENT: 'mfa_enrollment',
   OTP_REQUIRED: 'otp_required',
+  PENDING_REVIEW: 'pending_review',
 })
 
 let pending = null

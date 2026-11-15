@@ -11,6 +11,7 @@ export function authSettingsSchema() {
   return object({
     entitySignInCodeChannels: array(string().oneOf(OTP_CHANNEL_VALUES)),
     generalEmailNotifications: boolean(),
+    entityRegistrationReview: boolean(),
     twoFactorEnabled: boolean(),
     twoFactorRoles: array(string().oneOf(ROLE_KEYS)),
   })
@@ -20,6 +21,7 @@ export function authSettingsValues(settings) {
   return {
     entitySignInCodeChannels: normalizedCodeChannels(settings.entitySignInCodeChannels),
     generalEmailNotifications: settings.generalEmailNotifications !== false,
+    entityRegistrationReview: settings.entityRegistrationReview !== false,
     twoFactorEnabled: settings.twoFactorEnabled !== false,
     twoFactorRoles: orderedRoles(settings.twoFactorRoles),
   }
@@ -51,10 +53,18 @@ function changedGeneralEmail(settings, values) {
     : { generalEmailNotifications: next }
 }
 
+function changedRegistrationReview(settings, values) {
+  const next = Boolean(values.entityRegistrationReview)
+  return next === (settings.entityRegistrationReview !== false)
+    ? {}
+    : { entityRegistrationReview: next }
+}
+
 export function changedAuthSettings(settings, values) {
   return {
     ...changedChannels(settings, values),
     ...changedGeneralEmail(settings, values),
+    ...changedRegistrationReview(settings, values),
     ...changedTwoFactor(settings, values),
   }
 }

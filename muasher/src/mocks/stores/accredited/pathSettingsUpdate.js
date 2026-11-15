@@ -2,6 +2,10 @@ import { assessmentReject, fieldMessage } from '../assessments/assessmentRejecti
 import { reasonError, throwIfErrors, trimmed } from './accreditedValidation'
 import { EVIDENCE_TYPE_CATALOG, SLA_LIMITS, UPLOAD_LIMITS } from './assessmentSettingsStore'
 import { TEXT_KEYS, writePathSettings } from './pathSettingsStore'
+import { PATH_DESCRIPTION_MAX } from '../paths/pathIdentityStore'
+
+const IDENTITY_RULES = { description: PATH_DESCRIPTION_MAX }
+const SELF_KEYS = ['description', 'reason']
 
 const INTEGER_RULES = {
   reviewSlaDays: SLA_LIMITS,
@@ -60,8 +64,37 @@ function textErrors(body, errors) {
   })
 }
 
+// Path names are fixed: a name in the request is refused, as on the server.
+function nameErrors(body, errors) {
+  if ('name' in body) errors.name = invalid('validation.prohibited')
+}
+
+function identityErrors(body, errors) {
+  Object.entries(IDENTITY_RULES).forEach(([field, max]) => {
+    if (!(field in body)) return
+    ;['ar', 'en'].forEach((language) => {
+      const text = trimmed(body[field]?.[language])
+      if (!text) errors[`${field}.${language}`] = invalid('validation.required')
+      else if (text.length > max)
+        errors[`${field}.${language}`] = invalid('validation.max_chars', { max })
+    })
+  })
+}
+
+function selfErrors(path, body, errors) {
+  if (path !== 'self') return
+  Object.keys(body)
+    .filter((key) => !SELF_KEYS.includes(key))
+    .forEach((key) => {
+      errors[key] = invalid()
+    })
+}
+
 export function updatePathSettings(user, path, body) {
   const errors = {}
+  nameErrors(body, errors)
+  identityErrors(body, errors)
+  selfErrors(path, body, errors)
   integerErrors(body, errors)
   typesErrors(body, errors)
   priceErrors(body, errors)

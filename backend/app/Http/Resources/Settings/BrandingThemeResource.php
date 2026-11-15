@@ -34,6 +34,8 @@ final class BrandingThemeResource extends JsonResource
             'accent_token' => $theme->accent_token->value,
             'logo_light' => PublicAssetLink::of($theme->logoLight),
             'logo_dark' => PublicAssetLink::of($theme->logoDark),
+            'favicon' => PublicAssetLink::of($theme->favicon),
+            'logo_site' => PublicAssetLink::of($theme->siteLogo),
             'palette' => array_map(static fn (PaletteColor $color): array => [
                 'token' => $color->token->value,
                 'hex' => $color->fill,

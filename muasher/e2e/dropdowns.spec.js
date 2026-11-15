@@ -133,10 +133,10 @@ async function openFieldSelect(page, testInfo, theme, viewport) {
 }
 
 async function openDialogSelect(page, testInfo, theme, viewport) {
-  await openAs(page, testInfo, { theme, viewport, route: '/admin/settings/cities' })
-  await page.getByRole('button', { name: /Add city|إضافة مدينة/ }).click()
+  await openAs(page, testInfo, { theme, viewport, route: '/admin/kpis' })
+  await page.locator('.toolbar__actions .btn--primary').click()
   const dialog = page.locator('.modal__panel')
-  const trigger = namedSelect(dialog, 'regionId')
+  const trigger = namedSelect(dialog, 'kpiCategoryId')
   await trigger.click()
   return { dialog, trigger }
 }

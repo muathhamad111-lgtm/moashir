@@ -51,6 +51,7 @@ async function onSubmit() {
       v-else
       class="site-settings__form"
       :aria-busy="saving || undefined"
+      novalidate
       @submit.prevent="onSubmit"
     >
       <slot v-bind="{ draft, errorOf, saving }" />

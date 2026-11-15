@@ -1,10 +1,17 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import logoOnDark from '@/assets/logos/moashir-logo-on-dark.svg'
+import logoOnLight from '@/assets/logos/moashir-logo-on-light.svg'
 import { useBrandingStore } from '@/stores/branding'
-import { SIDEBAR_LOGO_SURFACE } from '@/constants/branding'
+import { FAVICON_SURFACE, SIDEBAR_LOGO_SURFACE, SITE_LOGO_SURFACE } from '@/constants/branding'
 
-export const DEFAULT_BACK_OFFICE_LOGOS = Object.freeze({ [SIDEBAR_LOGO_SURFACE]: logoOnDark })
+const DEFAULT_FAVICON = '/android-chrome-512x512.png'
+
+export const DEFAULT_BACK_OFFICE_LOGOS = Object.freeze({
+  [SIDEBAR_LOGO_SURFACE]: logoOnDark,
+  [FAVICON_SURFACE]: DEFAULT_FAVICON,
+  [SITE_LOGO_SURFACE]: logoOnLight,
+})
 
 export function logoForSurface(logos, surface) {
   return logos?.[surface] || DEFAULT_BACK_OFFICE_LOGOS[surface]

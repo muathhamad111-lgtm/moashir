@@ -2,12 +2,15 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DataTable from '@/components/data-list/DataTable.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
 import Badge from '@/components/ui/Badge.vue'
 import MoneyAmount from '@/components/payments/MoneyAmount.vue'
 import PaymentStatusBadge from '@/components/payments/PaymentStatusBadge.vue'
 import PaymentChannelCell from '@/components/payments/portal/PaymentChannelCell.vue'
+import Tooltip from '@/components/ui/Tooltip.vue'
 import { ROUTE_NAMES } from '@/constants/routeNames'
-import { formatDate } from '@/utils/datetime'
+import { STATUS_DEFINITION_KEY } from '@/constants/finance'
+import { formatRiyadhDate, formatRiyadhTime } from '@/utils/datetime'
 
 defineProps({
   items: { type: Array, required: true },
@@ -18,13 +21,11 @@ defineProps({
 const emit = defineEmits(['retry'])
 const { t, locale } = useI18n()
 
+// The service, payment reference and receipt share one column; the channel and method another.
 const columns = computed(() => [
-  { key: 'reference', label: t('finance.fields.reference') },
-  { key: 'receiptNumber', label: t('finance.fields.receiptNumber') },
-  { key: 'purpose', label: t('finance.fields.service') },
+  { key: 'operation', label: t('finance.transactions.columns.operation') },
   { key: 'entity', label: t('finance.fields.entity') },
-  { key: 'channel', label: t('finance.fields.channel') },
-  { key: 'method', label: t('finance.fields.method') },
+  { key: 'payment', label: t('finance.transactions.columns.payment') },
   { key: 'status', label: t('finance.fields.status') },
   { key: 'beforeVat', label: t('finance.pricing.beforeVatShort') },
   { key: 'vat', label: t('finance.pricing.vatShort') },
@@ -33,16 +34,14 @@ const columns = computed(() => [
   { key: 'actions', label: t('components.actions.label') },
 ])
 
-function nameOf(entity) {
-  return entity.name?.[locale.value] || entity.name?.ar || ''
+// Hovering or focusing a status shows what it means.
+function statusDefinition(status) {
+  const key = STATUS_DEFINITION_KEY[status] ?? status
+  return t(`finance.operations.statuses.${key}.definition`)
 }
 
-function dateOf(value) {
-  return formatDate(value, locale.value, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    timeZone: 'Asia/Riyadh',
-  })
+function nameOf(entity) {
+  return entity.name?.[locale.value] || entity.name?.ar || ''
 }
 </script>
 
@@ -56,38 +55,57 @@ function dateOf(value) {
     :empty-message="t('finance.transactions.emptyMessage')"
     @retry="emit('retry')"
   >
-    <template #cell-reference="{ item }">
-      <span class="transactions-table__reference">
-        <bdi dir="ltr">{{ item.reference }}</bdi>
-        <Badge v-if="item.isTest" variant="warning">{{ t('finance.testMode.badge') }}</Badge>
-        <Badge v-if="item.latePaid" variant="danger">{{
-          t('finance.transactions.latePaid')
-        }}</Badge>
-        <Badge v-if="item.manuallySettled" variant="info">{{
-          t('finance.transactions.manuallySettled')
-        }}</Badge>
+    <template #cell-operation="{ item }">
+      <span class="transactions-table__stack">
+        <span class="transactions-table__title">{{ t(`finance.purposes.${item.purpose}`) }}</span>
+        <span class="transactions-table__reference">
+          <bdi dir="ltr">{{ item.reference }}</bdi>
+          <Badge v-if="item.isTest" variant="warning">{{ t('finance.testMode.badge') }}</Badge>
+          <Badge v-if="item.latePaid" variant="danger">{{
+            t('finance.transactions.latePaid')
+          }}</Badge>
+          <Badge v-if="item.manuallySettled" variant="info">{{
+            t('finance.transactions.manuallySettled')
+          }}</Badge>
+        </span>
+        <i18n-t
+          v-if="item.receiptNumber"
+          keypath="finance.transactions.receiptLine"
+          scope="global"
+          tag="span"
+          class="transactions-table__muted"
+        >
+          <template #number
+            ><bdi class="transactions-table__nowrap" dir="ltr">{{
+              item.receiptNumber
+            }}</bdi></template
+          >
+        </i18n-t>
       </span>
     </template>
-    <template #cell-receiptNumber="{ item }">
-      <bdi v-if="item.receiptNumber" class="transactions-table__nowrap" dir="ltr">{{
-        item.receiptNumber
-      }}</bdi>
-      <span v-else class="transactions-table__muted">{{ t('finance.common.none') }}</span>
-    </template>
-    <template #cell-purpose="{ item }">{{ t(`finance.purposes.${item.purpose}`) }}</template>
     <template #cell-entity="{ item }">
-      <span class="transactions-table__entity">
-        <span class="transactions-table__entity-name">{{ nameOf(item.entity) }}</span>
-        <bdi class="transactions-table__entity-email" dir="ltr">{{ item.entity.email }}</bdi>
+      <span class="transactions-table__stack">
+        <span class="transactions-table__title">{{ nameOf(item.entity) }}</span>
+        <bdi class="transactions-table__muted" dir="ltr">{{ item.entity.email }}</bdi>
       </span>
     </template>
-    <template #cell-channel="{ item }"
-      ><PaymentChannelCell :payment="item" :with-method="false"
-    /></template>
-    <template #cell-method="{ item }">{{
-      item.method ? t(`finance.methods.${item.method}`) : t('finance.common.none')
-    }}</template>
-    <template #cell-status="{ item }"><PaymentStatusBadge :status="item.status" /></template>
+    <template #cell-payment="{ item }">
+      <span class="transactions-table__stack">
+        <PaymentChannelCell :payment="item" :with-method="false" />
+        <span v-if="item.method" class="transactions-table__muted">{{
+          t(`finance.methods.${item.method}`)
+        }}</span>
+      </span>
+    </template>
+    <template #cell-status="{ item }">
+      <Tooltip :text="statusDefinition(item.status)">
+        <template #default="{ describedBy }">
+          <span class="transactions-table__status" tabindex="0" :aria-describedby="describedBy">
+            <PaymentStatusBadge :status="item.status" />
+          </span>
+        </template>
+      </Tooltip>
+    </template>
     <template #cell-beforeVat="{ item }"
       ><MoneyAmount :value="item.pricing.priceBeforeVat" :currency="item.pricing.currency"
     /></template>
@@ -97,17 +115,27 @@ function dateOf(value) {
     <template #cell-total="{ item }"
       ><MoneyAmount :value="item.pricing.total" :currency="item.pricing.currency" strong
     /></template>
-    <template #cell-updatedAt="{ item }"
-      ><span class="transactions-table__date">{{ dateOf(item.updatedAt) }}</span></template
-    >
+    <template #cell-updatedAt="{ item }">
+      <time class="transactions-table__stack transactions-table__date" :datetime="item.updatedAt">
+        <span>{{ formatRiyadhDate(item.updatedAt, locale) }}</span>
+        <span>{{ formatRiyadhTime(item.updatedAt, locale) }}</span>
+      </time>
+    </template>
     <template #cell-actions="{ item }">
-      <RouterLink
-        class="transactions-table__link"
-        :to="{ name: ROUTE_NAMES.FINANCE_TRANSACTION, params: { id: item.id } }"
-      >
-        {{ t('finance.transactions.details') }}
-        <span class="transactions-table__link-context">{{ item.reference }}</span>
-      </RouterLink>
+      <Tooltip :text="t('finance.transactions.view')">
+        <template #default="{ describedBy }">
+          <BaseButton
+            variant="secondary"
+            size="sm"
+            icon="eye"
+            icon-only
+            class="transactions-table__view"
+            :to="{ name: ROUTE_NAMES.FINANCE_TRANSACTION, params: { id: item.id } }"
+            :aria-label="`${t('finance.transactions.view')} — ${item.reference}`"
+            :aria-describedby="describedBy"
+          />
+        </template>
+      </Tooltip>
     </template>
   </DataTable>
 </template>

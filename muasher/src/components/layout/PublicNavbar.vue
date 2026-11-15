@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { useBrandLogo } from '@/composables/useBrandLogo'
+import { useSiteBranding } from '@/composables/useSiteBranding'
 import { useSectionSpy } from '@/composables/useSectionSpy'
 import { usePublicNavLinks } from '@/composables/usePublicNavLinks'
 import { usePlatformIdentity } from '@/composables/usePlatformIdentity'
@@ -21,6 +22,8 @@ const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const { themedLogo } = useBrandLogo()
+const { siteLogo } = useSiteBranding()
+const brandLogo = computed(() => siteLogo.value || themedLogo.value)
 const menuOpen = ref(false)
 const isHome = computed(() => route.name === ROUTE_NAMES.PUBLIC_HOME)
 const { links, spyAnchors } = usePublicNavLinks()
@@ -57,7 +60,7 @@ watch(
     <span class="public-navbar__backdrop" aria-hidden="true"></span>
     <div class="public-navbar__inner">
       <router-link class="public-navbar__brand" :to="{ name: ROUTE_NAMES.PUBLIC_HOME }">
-        <img class="navbar__logo public-navbar__logo" :src="themedLogo" :alt="platformName" />
+        <img class="navbar__logo public-navbar__logo" :src="brandLogo" :alt="platformName" />
       </router-link>
       <nav class="public-navbar__menu" :aria-label="t('nav.publicLabel')">
         <PublicNavLinks :links="links" :is-active="isActive" @navigate="onNavigate" />

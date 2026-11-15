@@ -9,17 +9,22 @@ const props = defineProps({
   group: { type: String, required: true },
 })
 
+// A registration under review is news, not an error: it reads as a calm notice.
+const NOTICE_KINDS = ['pendingReview']
+
 const { t } = useI18n()
 const text = computed(() => failureText(t, props.group, props.failure))
+const isNotice = computed(() => NOTICE_KINDS.includes(props.failure.kind))
 </script>
 
 <template>
   <div
-    class="auth-status auth-status--danger auth-failure"
+    class="auth-status auth-failure"
+    :class="isNotice ? 'auth-status--success' : 'auth-status--danger'"
     :data-failure="failure.kind"
-    role="alert"
+    :role="isNotice ? 'status' : 'alert'"
   >
-    <AppIcon name="warning-triangle" class="auth-status__icon" />
+    <AppIcon :name="isNotice ? 'check-circle' : 'warning-triangle'" class="auth-status__icon" />
     <p class="auth-status__text">{{ text }}</p>
   </div>
 </template>

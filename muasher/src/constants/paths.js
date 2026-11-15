@@ -5,6 +5,21 @@ export const REVIEWED_PATHS = Object.freeze([
   ASSESSMENT_PATHS.ADVANCED,
 ])
 
+// The managed paths in «إدارة المسارات», in tab order.
+export const MANAGED_PATHS = Object.freeze([
+  ASSESSMENT_PATHS.SELF,
+  ASSESSMENT_PATHS.ACCREDITED,
+  ASSESSMENT_PATHS.ADVANCED,
+])
+
+// Each path's row in the price list (the award is priced under «award»; the kit has its own row).
+export const PATH_PRICE_KEYS = Object.freeze({
+  [ASSESSMENT_PATHS.SELF]: 'self',
+  [ASSESSMENT_PATHS.ACCREDITED]: 'accredited',
+  [ASSESSMENT_PATHS.ADVANCED]: 'award',
+})
+export const KIT_PRICE_KEY = 'bag'
+
 export const PATH_ICONS = Object.freeze({
   [ASSESSMENT_PATHS.SELF]: 'list-check',
   [ASSESSMENT_PATHS.ACCREDITED]: 'clipboard-check',
@@ -30,3 +45,4 @@ export const PATH_NAV_KINDS = Object.freeze({
 export const PATH_ENTITY_TEXTS = Object.freeze(['intro', 'instructions', 'afterSubmission'])
 
 export const PATH_TEXT_MAX = 2000
+export const PATH_DESCRIPTION_MAX = 500

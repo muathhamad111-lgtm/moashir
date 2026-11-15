@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Finance\PaymentPurpose;
 use App\Enums\Identity\Ability;
 use App\Enums\Settings\PathSetting;
@@ -17,6 +18,7 @@ use App\Http\Controllers\Api\V1\Settings\CertificateSettingsController;
 use App\Http\Controllers\Api\V1\Settings\FinanceSettingsController;
 use App\Http\Controllers\Api\V1\Settings\InsightsSettingsController;
 use App\Http\Controllers\Api\V1\Settings\PathGuideController;
+use App\Http\Controllers\Api\V1\Settings\PathIdentityController;
 use App\Http\Controllers\Api\V1\Settings\PathSettingsController;
 use App\Http\Controllers\Api\V1\Settings\PaymentChannelsController;
 use App\Http\Controllers\Api\V1\Settings\PeriodicSettingsController;
@@ -42,7 +44,7 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
     Route::get('assessment/periodic', [PeriodicSettingsController::class, 'show'])->middleware($assessment)->name('assessment.periodic.show');
     Route::put('assessment/periodic', [PeriodicSettingsController::class, 'update'])->middleware([$assessment, 'throttle:sensitive'])->name('assessment.periodic.update');
     Route::post('assessment/periodic/preview', [PeriodicSettingsController::class, 'preview'])->middleware([$assessment, 'throttle:sensitive'])->name('assessment.periodic.preview');
-    Route::whereIn('path', PathSetting::pathValues())->group(function () use ($assessment): void {
+    Route::whereIn('path', AssessmentPath::values())->group(function () use ($assessment): void {
         Route::get('assessment/paths/{path}', [PathSettingsController::class, 'show'])->middleware($assessment)->name('assessment.paths.show');
         Route::put('assessment/paths/{path}', [PathSettingsController::class, 'update'])->middleware([$assessment, 'throttle:sensitive'])->name('assessment.paths.update');
     });
@@ -81,6 +83,10 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
         });
     });
 });
+
+Route::get('content/assessment-paths', PathIdentityController::class)
+    ->middleware('throttle:public')
+    ->name('content.assessment-paths.index');
 
 Route::get('content/assessment-paths/{path}', PathGuideController::class)
     ->whereIn('path', PathSetting::pathValues())

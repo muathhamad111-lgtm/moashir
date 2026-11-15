@@ -21,6 +21,18 @@ final class LocalizedFieldRules
     /**
      * @return array<string, list<string>>
      */
+    public static function complete(string $field, int $max): array
+    {
+        return [
+            $field => ['sometimes', 'required', 'array:ar,en'],
+            $field.'.ar' => ['required_with:'.$field, 'string', 'max:'.$max],
+            $field.'.en' => ['required_with:'.$field, 'string', 'max:'.$max],
+        ];
+    }
+
+    /**
+     * @return array<string, list<string>>
+     */
     public static function required(string $field, int $max, bool $partial = false): array
     {
         return [

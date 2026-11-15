@@ -55,4 +55,23 @@ describe('DataTable', () => {
     await wrapper.find('.error-state__retry button').trigger('click')
     expect(wrapper.emitted('retry')).toHaveLength(1)
   })
+
+  it('marks only the actions column so it takes the width of its buttons', () => {
+    const wrapper = mount(DataTable, {
+      props: {
+        columns: [
+          { key: 'name', label: 'Name' },
+          { key: 'actions', label: 'Actions' },
+        ],
+        items: [{ id: 1, name: 'A' }],
+        status: 'success',
+        emptyTitle: 'Empty',
+      },
+      global: createTestGlobals(),
+    })
+    const marked = (selector) =>
+      wrapper.findAll(selector).map((cell) => cell.classes().includes('table__cell--actions'))
+    expect(marked('th')).toEqual([false, true])
+    expect(marked('tbody td')).toEqual([false, true])
+  })
 })

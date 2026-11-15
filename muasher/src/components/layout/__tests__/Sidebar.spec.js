@@ -64,19 +64,13 @@ describe('Sidebar', () => {
     const { wrapper } = factory({ roles: [ROLES.SYSTEM_ADMIN] })
     await wrapper.vm.$nextTick()
     const labels = wrapper.findAll('.sidebar__label').map((el) => el.text())
-    expect(wrapper.findAll('.sidebar__item')).toHaveLength(20)
+    expect(wrapper.findAll('.sidebar__item')).toHaveLength(14)
     expect(labels).toContain('المستخدمون')
     expect(labels).not.toContain('إدارة الصلاحيات')
-    expect(labels).toEqual(
-      expect.arrayContaining([
-        'الملخص المالي',
-        'العمليات المالية',
-        'الاستردادات',
-        'أحداث الدفع',
-        'صندوق الرسائل',
-        'المستخدمون',
-      ]),
-    )
+    expect(labels).toEqual(expect.arrayContaining(['المالية', 'صندوق الرسائل', 'المستخدمون']))
+    expect(labels).not.toContain('الملخص المالي')
+    expect(labels).not.toContain('الاستردادات')
+    expect(labels).not.toContain('أحداث الدفع')
     expect(labels).not.toContain('التقييم الذاتي')
     expect(labels).not.toContain('لجنة المقيّمين')
   })
@@ -100,13 +94,22 @@ describe('Sidebar', () => {
     const headless = wrapper
       .findAll('.sidebar__menu--headless .sidebar__label')
       .map((el) => el.text())
-    expect(headless).toEqual(['لوحة المعلومات', 'اللوحة التنفيذية', 'المستخدمون', 'صندوق الرسائل'])
+    expect(headless).toEqual([
+      'لوحة المعلومات',
+      'اللوحة التنفيذية',
+      'الجهات',
+      'المالية',
+      'المستخدمون',
+      'صندوق الرسائل',
+    ])
+    expect(wrapper.text()).not.toContain('الجهات المحذوفة')
+    expect(wrapper.text()).not.toContain('طلبات تغيير البريد')
     expect(wrapper.text()).not.toContain('الإشعارات')
     const captions = wrapper.findAll('.sidebar__caption').map((el) => el.text())
-    expect(captions).toEqual(['إدارة الجهات', 'الطلبات والتقييم', 'الجائزة', 'المالية'])
+    expect(captions).toEqual(['الطلبات والتقييم', 'الجائزة'])
     const group = wrapper.find('.sidebar__group')
     expect(group.attributes('role')).toBe('group')
-    expect(group.attributes('aria-labelledby')).toBe('sidebar-group-entities')
+    expect(group.attributes('aria-labelledby')).toBe('sidebar-group-assessment')
   })
 
   it('shows the union of modules for a multi-role user without any role switcher', async () => {
@@ -160,29 +163,31 @@ describe('Sidebar', () => {
 
   it('expands the group of the active route and folds the other groups', async () => {
     const { wrapper, globals } = factory({ roles: [ROLES.SYSTEM_ADMIN], extra: { id: 41 } })
-    await globals.router.push('/admin/entities')
+    await globals.router.push('/admin/requests')
     await flushPromises()
-    const toggle = wrapper.find('#sidebar-group-entities')
+    const toggle = wrapper.find('#sidebar-group-assessment')
     expect(toggle.attributes('aria-expanded')).toBe('true')
-    expect(toggle.attributes('aria-controls')).toBe('sidebar-menu-entities')
-    expect(wrapper.find('#sidebar-menu-entities').classes()).not.toContain('sidebar__menu--closed')
-    expect(wrapper.find('#sidebar-group-finance').attributes('aria-expanded')).toBe('false')
-    expect(wrapper.find('#sidebar-menu-finance').classes()).toContain('sidebar__menu--closed')
+    expect(toggle.attributes('aria-controls')).toBe('sidebar-menu-assessment')
+    expect(wrapper.find('#sidebar-menu-assessment').classes()).not.toContain(
+      'sidebar__menu--closed',
+    )
+    expect(wrapper.find('#sidebar-group-award').attributes('aria-expanded')).toBe('false')
+    expect(wrapper.find('#sidebar-menu-award').classes()).toContain('sidebar__menu--closed')
   })
 
   it('remembers the toggled groups per user and survives a broken stored value', async () => {
     localStorage.setItem('muasher.sidebar.groups.42', '{broken')
     const first = factory({ roles: [ROLES.SYSTEM_ADMIN], extra: { id: 42 } })
     await flushPromises()
-    await first.wrapper.find('#sidebar-group-finance').trigger('click')
-    expect(first.wrapper.find('#sidebar-group-finance').attributes('aria-expanded')).toBe('true')
-    expect(JSON.parse(localStorage.getItem('muasher.sidebar.groups.42'))).toContain('finance')
+    await first.wrapper.find('#sidebar-group-award').trigger('click')
+    expect(first.wrapper.find('#sidebar-group-award').attributes('aria-expanded')).toBe('true')
+    expect(JSON.parse(localStorage.getItem('muasher.sidebar.groups.42'))).toContain('award')
     const again = factory({ roles: [ROLES.SYSTEM_ADMIN], extra: { id: 42 } })
     await flushPromises()
-    expect(again.wrapper.find('#sidebar-group-finance').attributes('aria-expanded')).toBe('true')
+    expect(again.wrapper.find('#sidebar-group-award').attributes('aria-expanded')).toBe('true')
     const other = factory({ roles: [ROLES.SYSTEM_ADMIN], extra: { id: 43 } })
     await flushPromises()
-    expect(other.wrapper.find('#sidebar-group-finance').attributes('aria-expanded')).toBe('false')
+    expect(other.wrapper.find('#sidebar-group-award').attributes('aria-expanded')).toBe('false')
   })
 
   it('marks the item of the current route (and its child routes) as active with aria-current', async () => {

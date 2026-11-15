@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Actions\Settings;
 
 use App\Enums\Settings\AccentToken;
+use App\Enums\Settings\LogoVariant;
 use App\Models\Files\StoredFile;
 use App\Models\Identity\User;
 use App\Models\Settings\BrandingTheme;
+use App\Services\Cms\PublicContentCache;
 use App\Services\Files\StoredFileRemover;
 use App\Services\Platform\TransactionLock;
 use App\Services\Settings\BrandingAuditTrail;
@@ -21,6 +23,7 @@ final readonly class ResetBranding
         private TransactionLock $lock,
         private StoredFileRemover $remover,
         private BrandingAuditTrail $audit,
+        private PublicContentCache $publicContent,
     ) {}
 
     public function handle(User $actor, ?string $reason): void
@@ -31,12 +34,12 @@ final readonly class ResetBranding
             $this->lock->lock(BrandingTheme::LOCK);
             $theme = BrandingTheme::query()->lockForUpdate()->findOrFail(BrandingTheme::SINGLETON_ID);
             $before = $this->audit->snapshotOf($theme);
-            $logoIds = array_values(array_filter([$theme->logo_light_file_id, $theme->logo_dark_file_id]));
+            $columns = LogoVariant::columns();
+            $logoIds = array_values(array_filter(array_map(static fn (string $column): mixed => $theme->getAttribute($column), $columns)));
 
             $theme->forceFill([
                 'accent_token' => AccentToken::BrandDefault,
-                'logo_light_file_id' => null,
-                'logo_dark_file_id' => null,
+                ...array_fill_keys($columns, null),
                 'updated_by_user_id' => $actor->id,
             ])->save();
 
@@ -46,6 +49,7 @@ final readonly class ResetBranding
 
             $this->audit->record($theme, $before, 'reset');
             $this->reason->alertIfSuperAdmin($actor);
+            DB::afterCommit(fn () => $this->publicContent->forgetSiteSettings());
         });
     }
 }

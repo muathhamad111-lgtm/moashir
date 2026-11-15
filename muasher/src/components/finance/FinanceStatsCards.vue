@@ -28,47 +28,32 @@ const cards = computed(() => [
     id: 'income',
     icon: 'sar',
     value: money(props.stats?.totalIncome),
-    label: t('finance.stats.totalIncome'),
-  },
-  {
-    id: 'vat',
-    icon: 'percent',
-    value: money(props.stats?.totalVat),
-    label: t('finance.stats.totalVat'),
+    label: t('finance.operations.cards.income'),
   },
   {
     id: 'refunded',
     icon: 'undo',
     value: money(props.stats?.totalRefunded),
-    label: t('finance.stats.totalRefunded'),
+    label: t('finance.operations.cards.refunded'),
   },
   {
-    id: 'count',
+    id: 'operations',
     icon: 'menu',
     value: count(props.stats?.transactionsCount),
-    label: t('finance.stats.transactions'),
+    label: t('finance.operations.cards.operations'),
+    detail: t('finance.operations.cards.operationsValue', {
+      value: money(props.stats?.transactionsValue),
+    }),
   },
   {
-    id: 'completed',
-    icon: 'check-circle',
-    value: count(props.stats?.completedCount),
-    label: t('finance.stats.completed'),
-  },
-  {
-    id: 'incomplete',
-    icon: 'refresh-dots',
-    value: count(props.stats?.incompleteCount),
-    label: t('finance.stats.incomplete'),
-  },
-  {
-    id: 'refundedCount',
-    icon: 'undo',
-    value: count(props.stats?.refundedCount),
-    label: t('finance.stats.refundedCount'),
+    id: 'vat',
+    icon: 'percent',
+    value: money(props.stats?.totalVat),
+    label: t('finance.operations.cards.vat'),
   },
 ])
 </script>
 
 <template>
-  <StatsCards :stats="cards" :loading="loading" :skeleton-count="7" />
+  <StatsCards :stats="cards" :loading="loading" :skeleton-count="4" />
 </template>

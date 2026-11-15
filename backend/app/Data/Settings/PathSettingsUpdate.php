@@ -6,6 +6,7 @@ namespace App\Data\Settings;
 
 use App\Enums\Files\EvidenceFileType;
 use App\Enums\Settings\PathEntityText;
+use App\Enums\Settings\PathIdentityField;
 use App\Enums\Settings\PathSetting;
 use App\Support\ValueObjects\LocalizedText;
 
@@ -24,7 +25,18 @@ final readonly class PathSettingsUpdate
         public ?int $maxFilesPerSub = null,
         public array $textChanges = [],
         public ?string $reason = null,
+        public ?LocalizedText $description = null,
     ) {}
+
+    /**
+     * @return array<value-of<PathIdentityField>, LocalizedText>
+     */
+    public function identityValues(): array
+    {
+        return array_filter([
+            PathIdentityField::Description->value => $this->description,
+        ], static fn (?LocalizedText $value): bool => $value instanceof LocalizedText);
+    }
 
     /**
      * @return array<value-of<PathSetting>, int|list<string>>
@@ -43,6 +55,6 @@ final readonly class PathSettingsUpdate
 
     public function isEmpty(): bool
     {
-        return $this->scalarValues() === [] && $this->textChanges === [];
+        return $this->scalarValues() === [] && $this->textChanges === [] && $this->identityValues() === [];
     }
 }

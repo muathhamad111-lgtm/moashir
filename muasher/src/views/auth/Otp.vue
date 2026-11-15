@@ -27,6 +27,7 @@ const {
   destination,
   channelIcon,
   ended,
+  standing,
   locked,
 } = step
 
@@ -67,7 +68,7 @@ onMounted(() => {
     </header>
 
     <OtpChallengeEnded
-      v-if="isCode && ended"
+      v-if="isCode && ended && !standing"
       :failure="failure"
       :request-route="signInRoute(SIGN_IN_METHODS.CODE)"
     />

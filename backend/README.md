@@ -776,7 +776,7 @@ no notification. A staff decision after the cancellation answers 409 `state.tran
 | GET | `/admin/entity-email-changes` (`filter[status]`, default `awaiting_approval`) | `entities.email_change.approve` |
 | POST | `/admin/entity-email-changes/{id}/approve`, `/reject` (`reason`) | `entities.email_change.approve` |
 | GET | `/cities` (admin list, inactive included) | `entities.manage` |
-| POST / PUT / PATCH | `/regions/{region}/cities`, `/cities/{city}`, `/cities/{city}/active` | `entities.manage` |
+| PATCH | `/cities/{city}/active` (`active`) — the only city write; the list itself is fixed | `entities.manage` |
 
 State changes use `throttle:sensitive` (20/min) unless stated. Illegal transitions answer 409
 `state.transition_illegal`. Notifications REG-01 … REG-10 are queued after commit (in-app + e-mail as listed in
@@ -1295,7 +1295,8 @@ rollout to 2025-10-01, generates the periods and attaches them to the demo resul
 | PUT | `/assessments/{assessment}/review/scores`, `/review/feedback` | `can:score`, `throttle:assessment-write` |
 | POST | `/assessments/{assessment}/scores/override`, `/reopen`, `/transition/force` | `can:override` (Super Admin only), `throttle:sensitive` |
 | GET / PUT | `/settings/assessment` | `can:settings.assessment-section.manage` (`settings.assessment.manage`), PUT `throttle:sensitive` |
-| GET / PUT | `/settings/assessment/paths/{accredited\|advanced}` | same ability (+ `settings.finance.edit-field` for `price`), PUT `throttle:sensitive` |
+| GET / PUT | `/settings/assessment/paths/{self\|accredited\|advanced}` | same ability (+ `settings.finance.edit-field` for `price`), PUT `throttle:sensitive` |
+| GET | `/content/assessment-paths` (names and descriptions of the three paths) | public, `throttle:public` |
 | GET | `/content/assessment-paths/{accredited\|advanced}` | public, `throttle:public` |
 
 Notification links (SPA routes): entity `/assessment/accredited`, `/assessment/accredited/result/{id}`,
@@ -2459,7 +2460,14 @@ value). Labels `path_label{ar,en}` come from `lang/*/assessments.php` (`paths.*`
   `requests`, `latest_result`, `activity`, `pipeline`, `requests_by_path`).
 
 ### Per-path settings
-- `GET /settings/assessment/paths/{accredited|advanced}` (`settings.assessment.manage`; `self` answers 404) → `{ path, path_label,
+- Path names and descriptions («إدارة المسارات», since 2026-11-15): every path (`self` included) carries `name{ar,en}` and
+  `description{ar,en}` (PUT: both languages when sent, name ≤ 120, description ≤ 500), stored in `paths.{path}.name|description`
+  and read only through `App\Services\Paths\PathIdentityReader` (cached, cleared after commit on save; defaults
+  `assessments.paths.*` / `assessments.path_descriptions.*`). Every `path_label` (resources, notifications, PDFs, receipts, CSV
+  exports) is that name. `GET /settings/assessment/paths/self` → `{ path, path_label, name, description }` only; the reviewed-only
+  keys below are `prohibited` on `self` (422). Public list: `GET /content/assessment-paths` → `[{ path, name, description }]`
+  (self, accredited, advanced).
+- `GET /settings/assessment/paths/{accredited|advanced}` (`settings.assessment.manage`) → `{ path, path_label, name, description,
   review_sla_days, review_sla_limits{min,max}, upload_limits{ max_file_mb, allowed_types[], max_files_per_sub },
   upload_limit_bounds{ max_file_mb: 100, max_files_per_sub: 50 }, evidence_type_catalog[], is_paid, price{ price_before_vat,
   vat_rate, vat_amount, total, currency } | null, entity_texts{ intro, instructions, after_submission } }` (each text `{ar,en}` or

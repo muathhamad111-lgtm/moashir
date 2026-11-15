@@ -118,10 +118,6 @@
     "adminEntities": "Entities",
     "deletedEntities": "Deleted entities",
     "entityEmailChanges": "E-mail change requests",
-    "financeOverview": "Financial summary",
-    "financeTransactions": "Financial transactions",
-    "financeRefunds": "Refunds",
-    "financePaymentEvents": "Payment events",
     "requestsAssigned": "My Assigned Requests",
     "awardCommitteeDiscussions": "Committee discussions",
     "tour": "Platform tour",
@@ -148,8 +144,7 @@
     },
     "contactMessages": "Inbox",
     "auditLog": "Audit log",
-    "financeTransfers": "Transfer review",
-    "usersSection": "Users sections"
+    "finance": "Finance"
   },
   "footer": {
     "copyright": "All rights reserved © {year} — Moashir platform",
@@ -289,6 +284,7 @@
     "national_winner": "National winner",
     "archived": "Archived",
     "pending_verification": "Pending verification",
+    "pending_review": "Pending review",
     "awaiting_approval": "Awaiting approval",
     "awaiting_otp": "Awaiting code",
     "rejected": "Rejected",
@@ -948,7 +944,7 @@
           "title": "General Settings"
         },
         "assessment": {
-          "title": "Assessment Settings"
+          "title": "Path management"
         },
         "certificates": {
           "title": "Certificate Settings"
@@ -1613,11 +1609,11 @@
   "permissions": {
     "index": {
       "title": "Permissions Management",
-      "subtitle": "Choose which roles hold each permission and edit its labels. Permission keys are defined by the system and are never created or deleted from the interface.",
       "searchPlaceholder": "Search by name or key",
       "emptyTitle": "No matching permissions",
       "emptyMessage": "No permission matches your current search criteria.",
-      "errorMessage": "We couldn't load the permissions. Please try again."
+      "errorMessage": "We couldn't load the permissions. Please try again.",
+      "backToUsers": "Back to users"
     },
     "stats": {
       "total": "Total permissions",
@@ -1679,11 +1675,12 @@
   "users": {
     "index": {
       "title": "Users",
-      "subtitle": "Invite staff users, assign their roles and manage their account access.",
       "searchPlaceholder": "Search by name or email…",
       "add": "Invite user",
       "emptyTitle": "No users match your filters",
-      "emptyMessage": "Adjust your search or filters, or add the first platform user."
+      "emptyMessage": "Adjust your search or filters, or add the first platform user.",
+      "rolesLink": "Roles & permissions",
+      "export": "Export CSV"
     },
     "stats": {
       "total": "Total users",
@@ -1711,9 +1708,13 @@
       "suspend": "Suspend",
       "unlock": "Unlock",
       "resendInvitation": "Resend invitation",
+      "sendPasswordReset": "Send password reset link",
       "resetMfa": "Reset MFA",
       "qualifications": "Qualified paths",
-      "requestScope": "Follow-up scope"
+      "requestScope": "Follow-up scope",
+      "revokeSessions": "Sign out everywhere",
+      "cancelInvitation": "Cancel invitation",
+      "activity": "Activity log"
     },
     "lastLogin": {
       "never": "Never signed in"
@@ -1730,8 +1731,7 @@
       "createTitle": "Invite user",
       "editTitle": "Edit user",
       "create": "Send invitation",
-      "capabilitiesTitle": "This role can access",
-      "capabilitiesNote": "Access is derived from the role and shown for reference only — it is not editable here."
+      "capabilitiesTitle": "This role can access"
     },
     "validation": {
       "roleRequired": "Select at least one role for this user"
@@ -1744,7 +1744,12 @@
       "unlock": "{name} was unlocked.",
       "resetMfa": "Two-factor authentication of {name} was reset.",
       "resendInvitation": "A new invitation was sent to {name}.",
-      "pathAccess": "The paths of {name} were updated."
+      "sendPasswordReset": "A password reset link was sent to {name}.",
+      "pathAccess": "The paths of {name} were updated.",
+      "revokeSessions": "All sessions of {name} were ended.",
+      "cancelInvitation": "The invitation of {name} was cancelled.",
+      "exported": "{count} users exported.",
+      "exportFailed": "The export file could not be prepared."
     },
     "roleLabels": {
       "system_admin": "System Administrator",
@@ -1778,9 +1783,6 @@
       "suspended": "Suspended",
       "expired": "Invitation expired"
     },
-    "mfa": {
-      "enabled": "MFA"
-    },
     "actionDialogs": {
       "suspend": {
         "title": "Suspend the account",
@@ -1800,6 +1802,16 @@
       },
       "resendInvitation": {
         "title": "Resend the invitation?"
+      },
+      "sendPasswordReset": {
+        "title": "Send a password reset link?"
+      },
+      "revokeSessions": {
+        "title": "Sign out everywhere",
+        "message": "{name} · all sessions end; the account stays active"
+      },
+      "cancelInvitation": {
+        "title": "Cancel the invitation?"
       }
     },
     "pathAccess": {
@@ -2001,6 +2013,8 @@
         "locked": "The account is temporarily locked after repeated failed attempts.",
         "deactivated": "This account is not active. Contact the Moashir team.",
         "throttled": "Too many attempts in a short time.",
+        "pendingReview": "We received your entity registration and the Moashir team is reviewing it. You will get an e-mail once it is approved.",
+        "rejected": "Your entity registration was rejected. Contact the Moashir team for details.",
         "unexpected": "Signing in is not possible right now. Try again shortly."
       },
       "codeRequest": {
@@ -2014,6 +2028,8 @@
         "attempts": "A wrong code was entered too many times. Go back to sign in to get a new code.",
         "locked": "The account is temporarily locked after repeated failed attempts.",
         "cooldown": "Too many codes were requested in a short time.",
+        "pendingReview": "We received your entity registration and the Moashir team is reviewing it. You will get an e-mail once it is approved.",
+        "rejected": "Your entity registration was rejected. Contact the Moashir team for details.",
         "unexpected": "The code cannot be checked right now. Try again."
       },
       "phone": {
@@ -2139,7 +2155,21 @@
         "account": "Authorized person & sign-in"
       },
       "next": "Next",
-      "back": "Back"
+      "back": "Back",
+      "emailVerify": {
+        "send": "Verify the e-mail",
+        "sent": "We sent a verification code to your e-mail; it is valid for {minutes} minutes.",
+        "codeLabel": "Verification code",
+        "confirm": "Confirm the code",
+        "resend": "Resend the code",
+        "resendIn": "Resend in {seconds}s",
+        "done": "The e-mail is verified.",
+        "required": "Verify the official e-mail first."
+      },
+      "underReview": {
+        "title": "Registration received",
+        "home": "Back to home"
+      }
     },
     "profile": {
       "refreshFailed": "The latest entity details could not be loaded."
@@ -2163,20 +2193,20 @@
     },
     "admin": {
       "title": "Entities",
-      "subtitle": "Registered entities with their status, location and classification.",
       "searchPlaceholder": "Name or e-mail",
       "export": "Export CSV",
       "emptyTitle": "No entities match these filters",
-      "emptyMessage": "Change the search or the filters to see more entities."
+      "emptyMessage": "Change the search or the filters to see more entities.",
+      "backToEntities": "Back to entities"
     },
     "stats": {
       "total": "All entities",
       "active": "Active",
+      "pendingReview": "Pending review",
       "pendingVerification": "Pending verification",
       "deactivated": "Deactivated"
     },
     "columns": {
-      "reference": "Reference",
       "name": "Entity",
       "entityType": "Type",
       "region": "Region",
@@ -2218,6 +2248,8 @@
       "menu": "Actions for {name}",
       "view": "View record",
       "edit": "Edit on behalf",
+      "approve": "Approve entity",
+      "reject": "Reject registration",
       "deactivate": "Deactivate",
       "reactivate": "Reactivate",
       "resendVerification": "Resend verification",
@@ -2227,6 +2259,8 @@
     },
     "toasts": {
       "edit": "The entity details were updated.",
+      "approve": "The entity was approved and is now active.",
+      "reject": "The registration was rejected and the entity was told why.",
       "deactivate": "The entity was deactivated and its sessions ended.",
       "reactivate": "The entity was reactivated.",
       "resendVerification": "A verification reminder was sent to the entity.",
@@ -2249,6 +2283,10 @@
         "title": "Deactivate the entity",
         "message": "{name} · signed out at once"
       },
+      "reject": {
+        "title": "Reject the entity registration",
+        "message": "{name} · the reason is e-mailed to them"
+      },
       "reactivate": {
         "title": "Reactivate the entity",
         "message": "{name}"
@@ -2256,6 +2294,10 @@
       "restore": {
         "title": "Restore the entity",
         "message": "{name} · its requests are released"
+      },
+      "approve": {
+        "title": "Approve the entity registration",
+        "message": "{name} · it becomes active and gets the approval e-mail"
       }
     },
     "delete": {
@@ -2350,34 +2392,19 @@
     },
     "cities": {
       "title": "Cities",
-      "subtitle": "The city list of each region used in registration. Deactivate a city instead of deleting it.",
       "searchPlaceholder": "Search cities",
       "allStates": "All cities",
-      "add": "Add city",
-      "edit": "Edit",
-      "activate": "Activate",
-      "deactivate": "Deactivate",
-      "createTitle": "Add a city",
-      "editTitle": "Edit the city",
-      "nameAr": "City name in Arabic",
-      "nameEn": "City name in English",
-      "sortOrder": "Display order",
-      "sortOrderHint": "Optional. Lower numbers appear first.",
       "emptyTitle": "No cities match these filters",
       "columns": {
         "name": "City",
-        "code": "Code",
         "region": "Region",
-        "sortOrder": "Order",
-        "status": "Status",
-        "actions": "Actions"
+        "status": "Status"
       },
       "toasts": {
-        "created": "The city was added.",
-        "updated": "The city was updated.",
         "activated": "The city was activated.",
         "deactivated": "The city was deactivated."
-      }
+      },
+      "activeLabel": "Enable {name}"
     },
     "consent": {
       "marketing": "I agree to receive news and offers from the platform by e-mail and SMS"
@@ -2473,6 +2500,7 @@
       "entities_total": "Entities",
       "entities_active": "Active entities",
       "entities_pending_verification": "Entities pending verification",
+      "entities_pending_review": "Entities pending review",
       "staff_users_active": "Active team accounts",
       "award_cycles_running": "Running award cycles",
       "award_cycles_total": "Award cycles",
@@ -2893,15 +2921,11 @@
       "sections": {
         "general": {
           "title": "General",
-          "desc": "Verification, two-factor authentication, tax and contact messages."
+          "desc": "Verification, two-factor authentication, financial management and contact messages."
         },
         "assessment": {
-          "title": "Assessment",
-          "desc": "The settings of each assessment path and the defaults of award cycles."
-        },
-        "certificates": {
-          "title": "Certificates",
-          "desc": "Certificate issuance and the excellence level thresholds."
+          "title": "Path management",
+          "desc": "Each path’s description, texts, deadline, evidence uploads, price and certificates."
         },
         "notifications": {
           "title": "Notification types",
@@ -2951,10 +2975,6 @@
           "title": "Maturity texts",
           "desc": "Generic and per-criterion interpretation texts for the maturity stages."
         },
-        "prices": {
-          "title": "Path prices",
-          "desc": "Each path price before VAT, its availability, effective date and change history."
-        },
         "auditLog": {
           "title": "Audit log",
           "desc": "Append-only record of every security-relevant action: who, when and from where."
@@ -2982,12 +3002,8 @@
         "addressAr": "Address (Arabic)",
         "addressEn": "Address (English)",
         "social": "Social links",
-        "platform": "Platform",
         "url": "URL",
         "urlHint": "A site path starting with /, an anchor starting with # or an https:// link.",
-        "addSocial": "Add social link",
-        "removeSocial": "Remove social link",
-        "noSocial": "No social links added yet.",
         "linkLabelAr": "Label (Arabic)",
         "linkLabelEn": "Label (English)",
         "addLink": "Add quick link",
@@ -2996,18 +3012,10 @@
         "moveDown": "Move link down",
         "save": "Save site settings",
         "error": "Could not load the site settings.",
-        "platforms": {
-          "x": "X",
-          "linkedin": "LinkedIn",
-          "youtube": "YouTube",
-          "instagram": "Instagram",
-          "facebook": "Facebook"
-        },
         "toasts": {
           "saved": "Site settings saved",
           "saveFailed": "Could not save the site settings"
         },
-        "socialUrlHint": "A full https:// link.",
         "seo": "Search engines",
         "seoTitleAr": "Default search title (Arabic)",
         "seoTitleEn": "Default search title (English)",
@@ -3018,7 +3026,8 @@
         "showFeaturedKpisHint": "They appear only when at least 3 indicators are published and featured.",
         "featuredKpiLimit": "Number of featured indicators",
         "featuredKpiLimitHint": "Between 3 and 6.",
-        "featuredDescription": "The featured indicators shown on the homepage. Changes apply at once."
+        "featuredDescription": "The featured indicators shown on the homepage. Changes apply at once.",
+        "socialHint": "Leave a link empty to hide that platform on the site."
       }
     },
     "general": {
@@ -3031,15 +3040,19 @@
         "roles": "Accounts that require two-factor authentication"
       },
       "tax": {
-        "title": "Tax",
+        "title": "Financial management",
         "vatNumber": "VAT registration number (optional)",
         "vatRate": "VAT (%)",
         "orderValidity": "Payment order validity (minutes)"
+      },
+      "registrationReview": {
+        "title": "New entity registrations",
+        "label": "Staff review before activation",
+        "description": "When off, an entity is activated as soon as it confirms its e-mail."
       }
     },
     "assessment": {
       "title": "Assessment settings",
-      "description": "The settings of each assessment path, the general upload limit and the defaults of new award cycles.",
       "deadlinesTitle": "Review deadline",
       "reviewSlaDaysHint": "Between {min} and {max} days from submission.",
       "slaNote": "Changing the deadline moves the due date of every open request by the difference.",
@@ -3231,10 +3244,8 @@
     },
     "paths": {
       "generalTab": "General settings",
-      "intro": "These settings apply to the requests of this path only.",
       "reviewSlaDays": "Review deadline (days)",
-      "uploadsNote": "These limits apply to the evidence of this path only.",
-      "priceTitle": "Path price",
+      "priceTitle": "Price",
       "textsTitle": "Texts shown to the entity",
       "textsNote": "These texts appear in the path guide of the entity. Enter each text in both Arabic and English or leave both empty, up to {max} characters per language.",
       "texts": {
@@ -3249,10 +3260,13 @@
       "saved": "The path settings were saved.",
       "validation": {
         "textMax": "Up to {max} characters.",
-        "textPair": "Enter the text in both languages or leave both empty."
+        "textPair": "Enter the text in both languages or leave both empty.",
+        "required": "This field is required."
       },
-      "noPrice": "No payment is requested for this path now: it is free, or its price is not set yet and it stays unavailable to entities until it is.",
-      "priceMoved": "The path price and availability are edited in Path prices."
+      "title": "Path management",
+      "description": "Path description",
+      "certificatesTitle": "Certificates",
+      "noCertificates": "This path issues no certificates for now."
     },
     "certificates": {
       "title": "Certificate settings",
@@ -3513,23 +3527,18 @@
       "reasonTitle": "Reason for the price change",
       "rows": {
         "self": {
-          "title": "Self assessment",
-          "lead": "When priced, the entity pays before the draft opens."
+          "title": "Self assessment"
         },
         "accredited": {
-          "title": "Accredited assessment",
-          "lead": "A price of 0 opens the request directly, without a payment step."
+          "title": "Accredited assessment"
         },
         "award": {
-          "title": "Award (default price)",
-          "lead": "Copied into the fee of each new cycle. The cycle fee is edited in the cycle setup until applications open."
+          "title": "Award (default price)"
         },
         "bag": {
-          "title": "Quick Excellence Kit",
-          "lead": "The Kit price and availability. The Kit marketing content stays in its own settings."
+          "title": "Quick Excellence Kit"
         }
       },
-      "inForce": "Price in force",
       "scheduled": "Scheduled price",
       "unset": "No price is set yet. The path stays unavailable until it is set.",
       "system": "System",
@@ -4650,9 +4659,7 @@
     "groups": {
       "entity": "Entity workspace",
       "assessment": "Requests and assessment",
-      "award": "Award",
-      "finance": "Finance",
-      "entities": "Entity administration"
+      "award": "Award"
     }
   },
   "account": {
@@ -4700,32 +4707,32 @@
   "branding": {
     "title": "Brand identity",
     "subtitle": "The platform's name and description, the logos and colors, and the public site menus. Each user sees what their permissions allow.",
-    "locked": "This setting is restricted to the System Administrator, and every change is recorded in the audit log.",
     "loadError": "Could not load the identity settings.",
     "emptyTitle": "No palette available",
     "emptyMessage": "The platform did not return the approved palette for your account.",
     "accent": {
-      "title": "Accent color",
-      "hint": "Pick one color from the approved palette. Every color is tested for WCAG 2.1 AA contrast in dark and light modes.",
+      "title": "Color palette",
       "legend": "Approved palette"
     },
     "logo": {
-      "title": "Back-office logo",
-      "hint": "Upload a logo for dark backgrounds. The sidebar is dark in both light and dark modes, so it always shows this logo.",
-      "custom": "Custom logo",
-      "brandDefault": "Brand default",
-      "invalidType": "File type not allowed. Use PNG or SVG.",
+      "title": "Logos",
+      "invalidType": "File type not allowed. Use PNG.",
       "tooLarge": "The file is larger than 1 MB.",
       "surfaces": {
         "dark": {
-          "label": "Logo for dark backgrounds",
-          "hint": "Shown in the sidebar in both light and dark modes. Use a light-colored logo: PNG or SVG with a transparent background, up to 1 MB.",
-          "preview": "Logo shown on dark backgrounds"
+          "label": "Back-office logo"
+        },
+        "favicon": {
+          "label": "Tab icon (favicon)"
+        },
+        "site": {
+          "label": "Public site logo"
         }
-      }
+      },
+      "spec": "PNG with a transparent background — ⁦{width}×{height}⁩ px — up to {megabytes} MB",
+      "dimensionsMismatch": "The image is ⁦{width}×{height}⁩ px, not the expected ⁦{expectedWidth}×{expectedHeight}⁩. You can still save it."
     },
     "contrast": {
-      "title": "Contrast check",
       "pairs": {
         "light": {
           "accent_text_on_content": "Accent as text in light mode",
@@ -4735,22 +4742,7 @@
           "accent_on_content": "Accent as text in dark mode",
           "text_on_accent": "Text on the accent in dark mode"
         }
-      },
-      "ratio": "{ratio}:1",
-      "pass": "Passes AA",
-      "fail": "Fails AA"
-    },
-    "preview": {
-      "title": "Live preview",
-      "hint": "Preview before saving; the identity applies to every user once saved.",
-      "dark": "Dark mode",
-      "light": "Light mode",
-      "menuDashboard": "Dashboard",
-      "menuRequests": "Assessment requests",
-      "menuNotifications": "Notifications",
-      "heading": "Assessment requests",
-      "link": "View request details",
-      "button": "Assign to an assessor"
+      }
     },
     "actions": {
       "save": "Save identity",
@@ -5655,22 +5647,28 @@
     },
     "transactions": {
       "title": "Financial transactions",
-      "subtitle": "Every payment with its price before VAT, VAT and total.",
-      "statsLiveOnly": "Statistics include live payments only. Choose Test payments in the environment filter to review test payments.",
       "searchPlaceholder": "Reference, receipt, gateway reference, entity or authorized person",
       "emptyTitle": "No transactions",
       "emptyMessage": "No transaction matches the filters.",
-      "details": "Details",
       "latePaid": "Late payment",
-      "manuallySettled": "Settled manually"
+      "manuallySettled": "Settled manually",
+      "columns": {
+        "operation": "Operation",
+        "payment": "Payment"
+      },
+      "receiptLine": "Receipt {number}",
+      "view": "View details"
     },
     "transaction": {
       "title": "Transaction details",
-      "eyebrow": "Transaction",
       "back": "Back to transactions",
       "notFound": "Transaction not found",
-      "collected": "Collected amount",
-      "latePaidNote": "The gateway confirmed this payment after the order was cancelled. The order stays cancelled; return the amount outside the platform and record the refund."
+      "latePaidNote": "The gateway confirmed this payment after the order was cancelled. The order stays cancelled; return the amount outside the platform and record the refund.",
+      "events": {
+        "title": "Operation log",
+        "empty": "No events are recorded for this operation.",
+        "limited": "Only the latest 50 events are shown."
+      }
     },
     "export": {
       "action": "Export CSV",
@@ -6102,6 +6100,64 @@
       "status": "Status",
       "progress": "Sub-criteria completed",
       "openEntity": "Open the entity record"
+    },
+    "operations": {
+      "types": {
+        "title": "Operation type",
+        "all": "All types",
+        "electronic": {
+          "label": "Electronic payment"
+        },
+        "bank_transfer": {
+          "label": "Bank transfer"
+        },
+        "refund": {
+          "label": "Refund"
+        }
+      },
+      "statuses": {
+        "title": "Status",
+        "all": "All statuses",
+        "paid": {
+          "label": "Paid",
+          "definition": "The payment is complete and the receipt was issued."
+        },
+        "awaiting_payment": {
+          "label": "Awaiting payment",
+          "definition": "The entity started an electronic payment that is not complete yet."
+        },
+        "under_review": {
+          "label": "Transfer receipt awaiting approval",
+          "definition": "The transfer receipt was uploaded and waits for the finance officer’s review."
+        },
+        "rejected": {
+          "label": "Rejected",
+          "definition": "The finance officer rejected the transfer receipt with a reason, such as a mismatched amount or a transfer that did not arrive."
+        },
+        "failed": {
+          "label": "Payment failed",
+          "definition": "The gateway or the bank declined the operation, such as insufficient funds or an expired card."
+        },
+        "cancelled": {
+          "label": "Cancelled",
+          "definition": "The order expired or the entity cancelled it before paying."
+        },
+        "refunded": {
+          "label": "Refunded",
+          "definition": "The full amount was returned to the entity."
+        }
+      },
+      "cards": {
+        "income": "Total revenue",
+        "refunded": "Total refunded",
+        "operations": "Operations",
+        "operationsValue": "worth {value}",
+        "vat": "Total VAT"
+      },
+      "pageTitle": "Financial operations",
+      "reviewTransfers": "Review transfers",
+      "reviewTransfersCount": "Review transfers ({count})",
+      "backToTransactions": "Back to financial operations"
     }
   },
   "review": {
@@ -9286,8 +9342,7 @@
       "nameAr": "Platform name (Arabic)",
       "nameEn": "Platform name (English)",
       "descriptionAr": "Platform description (Arabic)",
-      "descriptionEn": "Platform description (English)",
-      "fallbackHint": "If the name or the description is left empty, the platform's default text is shown."
+      "descriptionEn": "Platform description (English)"
     },
     "menus": {
       "description": "The links of the public site header menu and footer menu, and their order.",

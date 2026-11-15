@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions\Identity;
 
+use App\Enums\Identity\OtpVerification;
 use App\Exceptions\ApiException;
 use App\Http\Responses\ApiError;
 use Illuminate\Http\Response;
@@ -20,6 +21,16 @@ final class OtpRejected extends ApiException
     public function isCooldown(): bool
     {
         return $this->error()->code === 'otp.cooldown';
+    }
+
+    public static function fromVerification(OtpVerification $result): self
+    {
+        return match ($result) {
+            OtpVerification::Expired => self::expired(),
+            OtpVerification::AttemptsExceeded => self::attemptsExceeded(),
+            OtpVerification::InvalidCode => self::invalidCode(),
+            default => self::challengeInvalid(),
+        };
     }
 
     public static function invalidCode(): self

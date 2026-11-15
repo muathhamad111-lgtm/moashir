@@ -36,6 +36,7 @@ final class RegisterEntityRequest extends FormRequest
             'name.en' => ['required', 'string', 'max:200'],
             'unified_number' => EntityProfileInput::unifiedNumberRules(null),
             'official_email' => ['required', 'string', 'email:filter', 'max:254'],
+            'email_verification_token' => ['nullable', 'string', 'max:128'],
             'password' => $passwords->rules(),
             'terms_version_id' => ['required', 'integer', $this->mustBe($this->currentTerms, 'terms_version_id')],
             'privacy_version_id' => [$this->currentPrivacy instanceof TermsVersion ? 'required' : 'prohibited', 'integer', $this->mustBe($this->currentPrivacy, 'privacy_version_id')],
@@ -57,6 +58,11 @@ final class RegisterEntityRequest extends FormRequest
             $this->boolean('marketing_consent'),
             Locale::tryFrom(app()->getLocale()) ?? Locale::Arabic,
         );
+    }
+
+    public function emailVerificationToken(): ?string
+    {
+        return $this->filled('email_verification_token') ? $this->string('email_verification_token')->toString() : null;
     }
 
     /**

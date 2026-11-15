@@ -31,7 +31,7 @@ export const ICON_GLYPHS = glyphsOf(SVG_SOURCES)
 
 export const INTERIM_GLYPHS = glyphsOf(INTERIM_SOURCES)
 
-export const PENDING_ICONS = Object.freeze({ ...pending.glyph, ...pending.brand })
+export const PENDING_ICONS = Object.freeze({ ...pending.glyph })
 
 export const WITHHELD_ICONS = Object.freeze([...pending.withheld])
 
@@ -46,8 +46,17 @@ export const ICON_NAMES = Object.freeze(
   ].sort(),
 )
 
+const BRAND_ICON_PREFIX = 'brand-'
+
+export const BRAND_ICON_NAMES = Object.freeze(
+  Object.keys(ICON_GLYPHS).filter((name) => name.startsWith(BRAND_ICON_PREFIX)),
+)
+
+// Brand logos belong to their platforms, so they never appear in the generic icon pickers.
 export const PICKABLE_ICON_NAMES = Object.freeze(
-  [...new Set([...Object.keys(ICON_GLYPHS), ...Object.keys(pending.glyph)])].sort(),
+  [...new Set([...Object.keys(ICON_GLYPHS), ...Object.keys(pending.glyph)])]
+    .filter((name) => !BRAND_ICON_NAMES.includes(name))
+    .sort(),
 )
 
 const PLAIN = Object.freeze({ flipped: false, spinning: false })

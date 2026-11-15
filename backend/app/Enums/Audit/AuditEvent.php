@@ -8,12 +8,16 @@ enum AuditEvent: string
 {
     case UserInvited = 'user.invited';
     case UserReinvited = 'user.reinvited';
+    case UserInvitationCancelled = 'user.invitation_cancelled';
     case UserActivated = 'user.activated';
     case UserRolesChanged = 'user.roles_changed';
     case UserSuspended = 'user.suspended';
     case UserReactivated = 'user.reactivated';
     case UserUnlocked = 'user.unlocked';
+    case UserSessionsRevoked = 'user.sessions_revoked';
+    case UsersExported = 'user.exported';
     case UserMfaReset = 'user.mfa_reset';
+    case UserPasswordResetLinkSent = 'user.password_reset_link_sent';
     case UserAssessorQualificationsChanged = 'user.assessor_qualifications_changed';
     case UserRequestPathsChanged = 'user.request_paths_changed';
     case UserAvatarUploaded = 'user.avatar_uploaded';
@@ -57,6 +61,8 @@ enum AuditEvent: string
     case EntityLogoRemoved = 'entity.logo_removed';
     case EntityDeactivated = 'entity.deactivated';
     case EntityReactivated = 'entity.reactivated';
+    case EntityApproved = 'entity.approved';
+    case EntityRejected = 'entity.rejected';
     case EntityVerificationResent = 'entity.verification_resent';
     case EntityEmailChangeRequested = 'entity.email_change_requested';
     case EntityEmailChangeApproved = 'entity.email_change_approved';

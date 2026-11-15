@@ -20,4 +20,5 @@ enum SettingGroup: string
     case Insights = 'insights';
     case Finance = 'finance';
     case Periodic = 'periodic';
+    case Paths = 'paths';
 }

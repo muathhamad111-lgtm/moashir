@@ -16,6 +16,7 @@ final readonly class AuthSettingsUpdate
     public function __construct(
         public ?array $entitySignInCodeChannels,
         public ?bool $generalEmailNotifications,
+        public ?bool $entityRegistrationReview,
         public ?bool $twoFactorEnabled,
         public ?array $twoFactorRoles,
         public ?string $reason,
@@ -25,6 +26,7 @@ final readonly class AuthSettingsUpdate
     {
         return $this->entitySignInCodeChannels === null
             && $this->generalEmailNotifications === null
+            && $this->entityRegistrationReview === null
             && $this->twoFactorEnabled === null
             && $this->twoFactorRoles === null;
     }

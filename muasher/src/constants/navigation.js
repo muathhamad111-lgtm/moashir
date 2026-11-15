@@ -3,10 +3,8 @@ import { PERMISSIONS } from './permissionKeys'
 import { ROUTE_NAMES } from './routeNames'
 import { PATH_NAV_KINDS } from './paths'
 
-export const USERS_SECTION_TABS = Object.freeze([
-  { routeName: ROUTE_NAMES.ADMIN_USERS, labelKey: 'nav.adminUsers' },
-  { routeName: ROUTE_NAMES.ADMIN_PERMISSIONS, labelKey: 'nav.adminPermissions' },
-])
+// Below this navbar width the settings link, theme toggle and language switch move into the user menu.
+export const NAVBAR_TOOLS_INLINE_MIN_WIDTH = 480
 
 export const APP_NAV_ITEMS = [
   {
@@ -22,6 +20,30 @@ export const APP_NAV_ITEMS = [
     labelKey: 'nav.executiveDashboard',
     icon: 'chart-line',
     routeName: ROUTE_NAMES.APP_DASHBOARD_EXECUTIVE,
+  },
+  {
+    id: 'admin-entities',
+    group: 'overview',
+    labelKey: 'nav.adminEntities',
+    icon: 'building',
+    routeName: ROUTE_NAMES.ADMIN_ENTITIES,
+    // Deleted entities and e-mail change requests open from buttons on the entities page.
+    activeOn: [ROUTE_NAMES.ADMIN_ENTITIES_DELETED, ROUTE_NAMES.ADMIN_ENTITY_EMAIL_CHANGES],
+  },
+  {
+    id: 'finance',
+    group: 'overview',
+    labelKey: 'nav.finance',
+    icon: 'sar',
+    routeName: ROUTE_NAMES.FINANCE_TRANSACTIONS,
+    // Transfer review, operation details, exports and payment events open from the finance pages.
+    activeOn: [
+      ROUTE_NAMES.FINANCE_TRANSACTION,
+      ROUTE_NAMES.FINANCE_TRANSFERS,
+      ROUTE_NAMES.FINANCE_TRANSFER,
+      ROUTE_NAMES.FINANCE_EXPORT,
+      ROUTE_NAMES.FINANCE_PAYMENT_EVENTS,
+    ],
   },
   {
     id: 'entity-profile',
@@ -168,62 +190,6 @@ export const APP_NAV_ITEMS = [
     routeName: ROUTE_NAMES.BAG_MANAGE,
   },
   {
-    id: 'finance-overview',
-    group: 'finance',
-    labelKey: 'nav.financeOverview',
-    icon: 'pie-chart',
-    routeName: ROUTE_NAMES.FINANCE_OVERVIEW,
-  },
-  {
-    id: 'finance-transactions',
-    group: 'finance',
-    labelKey: 'nav.financeTransactions',
-    icon: 'sar',
-    routeName: ROUTE_NAMES.FINANCE_TRANSACTIONS,
-  },
-  {
-    id: 'finance-transfers',
-    group: 'finance',
-    labelKey: 'nav.financeTransfers',
-    icon: 'inbox',
-    routeName: ROUTE_NAMES.FINANCE_TRANSFERS,
-  },
-  {
-    id: 'finance-refunds',
-    group: 'finance',
-    labelKey: 'nav.financeRefunds',
-    icon: 'undo',
-    routeName: ROUTE_NAMES.FINANCE_REFUNDS,
-  },
-  {
-    id: 'finance-payment-events',
-    group: 'finance',
-    labelKey: 'nav.financePaymentEvents',
-    icon: 'menu',
-    routeName: ROUTE_NAMES.FINANCE_PAYMENT_EVENTS,
-  },
-  {
-    id: 'admin-entities',
-    group: 'entities',
-    labelKey: 'nav.adminEntities',
-    icon: 'building',
-    routeName: ROUTE_NAMES.ADMIN_ENTITIES,
-  },
-  {
-    id: 'admin-deleted-entities',
-    group: 'entities',
-    labelKey: 'nav.deletedEntities',
-    icon: 'undo',
-    routeName: ROUTE_NAMES.ADMIN_ENTITIES_DELETED,
-  },
-  {
-    id: 'admin-entity-email-changes',
-    group: 'entities',
-    labelKey: 'nav.entityEmailChanges',
-    icon: 'envelope',
-    routeName: ROUTE_NAMES.ADMIN_ENTITY_EMAIL_CHANGES,
-  },
-  {
     id: 'admin-users',
     group: 'administration',
     labelKey: 'nav.adminUsers',
@@ -243,10 +209,8 @@ export const APP_NAV_ITEMS = [
 export const NAV_GROUPS = [
   { id: 'overview', headless: true },
   { id: 'entity', labelKey: 'shell.groups.entity' },
-  { id: 'entities', labelKey: 'shell.groups.entities' },
   { id: 'assessment', labelKey: 'shell.groups.assessment' },
   { id: 'award', labelKey: 'shell.groups.award' },
-  { id: 'finance', labelKey: 'shell.groups.finance' },
   { id: 'administration', headless: true },
 ]
 

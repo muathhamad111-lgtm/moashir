@@ -3,9 +3,11 @@
 declare(strict_types=1);
 
 use App\Data\Entities\OpenEntityRequest;
+use App\Enums\Audit\AuditEvent;
 use App\Enums\Entities\EntityRequestPath;
 use App\Enums\Entities\ProfileSection;
 use App\Enums\Identity\TermsKind;
+use App\Enums\Settings\SettingKey;
 use App\Models\Entities\City;
 use App\Models\Entities\Entity;
 use App\Models\Entities\Region;
@@ -14,8 +16,12 @@ use App\Models\Identity\User;
 use App\Notifications\Identity\OtpCodeNotification;
 use App\Services\Entities\EntityEraser;
 use App\Services\Entities\OpenRequestDirectory;
+use App\Services\Entities\RegistrationEmailCodes;
+use App\Services\Entities\RegistrationEmailTokens;
+use App\Services\Settings\SettingsStore;
 use App\Support\Entities\ProfileFieldValues;
 use App\Support\Entities\ProfileSectionRevision;
+use App\Support\ValueObjects\EmailAddress;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Notification;
@@ -53,7 +59,7 @@ function registrationPayload(array $overrides = []): array
     $city = regionWithCity();
     $terms = TermsVersion::query()->current()->where('kind', TermsKind::Terms->value)->first() ?? publishTerms();
 
-    return [
+    $payload = [
         'name' => ['ar' => 'جمعية الأمل الخيرية', 'en' => 'Al-Amal Charitable Association'],
         'authorized_person_name' => 'سلمان بن فهد العتيبي',
         'official_email' => 'info@alamal.example.sa',
@@ -76,6 +82,35 @@ function registrationPayload(array $overrides = []): array
         'marketing_consent' => false,
         ...$overrides,
     ];
+
+    return withEmailVerificationToken($payload, $overrides);
+}
+
+/**
+ * Adds a token proving the payload's official e-mail, unless the test sets the token itself or the
+ * address is not a valid e-mail (the request is then refused before the token is looked at).
+ *
+ * @param  array<string, mixed>  $payload
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
+ */
+function withEmailVerificationToken(array $payload, array $overrides): array
+{
+    $email = $payload['official_email'] ?? null;
+
+    if (array_key_exists('email_verification_token', $overrides) || ! is_string($email) || filter_var(mb_strtolower(trim($email)), FILTER_VALIDATE_EMAIL) === false) {
+        return $payload;
+    }
+
+    return [...$payload, 'email_verification_token' => emailVerificationTokenFor($email)];
+}
+
+function emailVerificationTokenFor(string $email): string
+{
+    $verification = app(RegistrationEmailCodes::class)->open(new EmailAddress($email), '000000');
+    $verification->forceFill(['consumed_at' => Date::now()])->save();
+
+    return app(RegistrationEmailTokens::class)->issue($verification)->token;
 }
 
 /**
@@ -133,6 +168,11 @@ function entityWithOwner(?Closure $state = null): Entity
     $factory = Entity::factory()->withOwner();
 
     return ($state instanceof Closure ? $state($factory) : $factory)->create()->refresh();
+}
+
+function requireEntityRegistrationReview(bool $required): void
+{
+    app(SettingsStore::class)->put(SettingKey::EntityRegistrationReview, $required, AuditEvent::AuthSettingsUpdated, null);
 }
 
 function ownerOf(Entity $entity): User

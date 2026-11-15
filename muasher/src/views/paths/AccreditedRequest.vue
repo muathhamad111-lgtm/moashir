@@ -21,8 +21,10 @@ import RequestFeedbackTab from '@/components/paths/request/RequestFeedbackTab.vu
 import RequestCertificateTab from '@/components/paths/request/RequestCertificateTab.vue'
 import RequestToolsTab from '@/components/paths/request/RequestToolsTab.vue'
 import RequestKitTab from '@/components/paths/request/RequestKitTab.vue'
+import { usePathNames } from '@/composables/usePathNames'
 
 const { t, locale } = useI18n()
+const { pathName } = usePathNames()
 const { assessmentId, record, status, tabs, activeTab, selectTab, load, resultState } =
   useAccreditedRequest()
 
@@ -37,7 +39,7 @@ const title = computed(() =>
 const trail = computed(() => [
   {
     key: 'accredited',
-    label: t('paths.names.accredited'),
+    label: pathName('accredited'),
     to: { name: ROUTE_NAMES.PATHS_ACCREDITED },
   },
   { key: 'request', label: record.value?.number ?? '', isReference: true },

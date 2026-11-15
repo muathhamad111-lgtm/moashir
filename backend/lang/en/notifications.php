@@ -188,6 +188,24 @@ return [
                 'body' => 'The account of :entity on the Moashir platform was closed by the platform administration. Contact the administration for details.',
             ],
         ],
+        'REG-11' => [
+            'staff' => [
+                'title' => 'Entity awaiting registration review',
+                'body' => ':entity (:reference) confirmed its e-mail, and its registration awaits approval or rejection.',
+            ],
+        ],
+        'REG-12' => [
+            'entity' => [
+                'title' => 'Entity registration approved',
+                'body' => 'The registration of :entity on the Moashir platform was approved. You can now sign in.',
+            ],
+        ],
+        'REG-13' => [
+            'entity' => [
+                'title' => 'Entity registration rejected',
+                'body' => 'The registration of :entity on the Moashir platform was rejected. You can contact the platform team for details. Reason for rejection: :reason',
+            ],
+        ],
     ],
     'criteria' => [
         'scopes' => [

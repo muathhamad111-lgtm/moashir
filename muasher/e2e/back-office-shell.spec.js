@@ -234,23 +234,12 @@ test('branding: System Administrator picks an accent, the back office applies it
   await expect(page.locator('html')).toHaveAttribute('data-accent', 'brand_default')
 
   await page.locator('.accent-swatch').nth(6).click()
-  await expect(page.locator('.branding-preview__frame').first()).toHaveAttribute(
-    'data-accent',
-    'amber',
-  )
+  await expect(page.locator('.branding-preview__frame')).toHaveCount(0)
   await expect(page.locator('html')).toHaveAttribute('data-accent', 'brand_default')
-  await expect(page.locator('.contrast-check .badge--success')).toHaveCount(4)
+  await expect(page.locator('.contrast-check')).toHaveCount(0)
 
-  await expect(page.locator('.logo-variant')).toHaveCount(1)
-  await expect(page.locator('.logo-variant')).toHaveAttribute('data-surface', 'dark')
-  for (const mode of ['dark', 'light']) {
-    const frame = page.locator(`.branding-preview__frame[data-theme="${mode}"]`)
-    await expect(frame.locator('.branding-preview__logo')).toHaveAttribute('src', SIDEBAR_LOGO)
-    const sidebar = await frame
-      .locator('.branding-preview__sidebar')
-      .evaluate((element) => getComputedStyle(element).backgroundColor)
-    expect(sidebar).toBe(SIDEBAR_BY_THEME[mode].background)
-  }
+  await expect(page.locator('.logo-variant')).toHaveCount(3)
+  await expect(page.locator('.logo-variant').first()).toHaveAttribute('data-surface', 'dark')
 
   await page.locator('.branding-page__actions .btn--primary').click()
   await expect(page.locator('html')).toHaveAttribute('data-accent', 'amber')
@@ -264,7 +253,7 @@ test('branding: System Administrator picks an accent, the back office applies it
   expect(errors).toEqual([])
 })
 
-test('branding: the dark-background logo drives the sidebar in light mode, previewed, and returned to the brand default by the global reset only', async ({
+test('branding: the dark-background logo drives the sidebar in light mode and is returned to the brand default by the global reset only', async ({
   page,
 }, testInfo) => {
   const errors = trackConsole(page)
@@ -278,16 +267,15 @@ test('branding: the dark-background logo drives the sidebar in light mode, previ
   await expect(page.locator('.logo-variant[data-surface="light"]')).toHaveCount(0)
   const darkField = page.locator('.logo-variant[data-surface="dark"]')
   await darkField.locator('input[type="file"]').setInputFiles({
-    name: 'moashir-on-dark.svg',
-    mimeType: 'image/svg+xml',
+    name: 'moashir-on-dark.png',
+    mimeType: 'image/png',
     buffer: Buffer.from(
-      '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="48"><rect width="160" height="48" rx="8" fill="#f5f8f8"/></svg>',
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+      'base64',
     ),
   })
   await expect(darkField.locator('.logo-variant__image')).toHaveAttribute('src', /^blob:/)
-  await expect(page.locator('.branding-preview__logo')).toHaveCount(2)
-  for (const logo of await page.locator('.branding-preview__logo').all())
-    await expect(logo).toHaveAttribute('src', /^blob:/)
+  await expect(darkField.locator('.logo-variant__warning')).toBeVisible()
   await page.locator('.branding-page__actions .btn--primary').click()
   await expect(page.locator('.toast').first()).toBeVisible()
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
@@ -295,7 +283,6 @@ test('branding: the dark-background logo drives the sidebar in light mode, previ
     'src',
     /^\/api\/v1\/content\/files\/[0-9a-f-]{36}$/,
   )
-  await expect(darkField.locator('.badge--info')).toBeVisible()
   await expect(page.locator('.logo-variant button:not(.file-upload__dropzone)')).toHaveCount(0)
   await page.screenshot({
     path: `${SHOTS}/branding-logo-light-mode-${suffix(testInfo)}.png`,
@@ -309,7 +296,6 @@ test('branding: the dark-background logo drives the sidebar in light mode, previ
   await page.locator('.branding-page__actions .btn--ghost').click()
   await decisionAction(page).click()
   await expect(page.locator('.sidebar__logo')).toHaveAttribute('src', SIDEBAR_LOGO)
-  await expect(darkField.locator('.badge--info')).toHaveCount(0)
   await expect(darkField.locator('.logo-variant__image')).toHaveAttribute('src', SIDEBAR_LOGO)
   expect(errors).toEqual([])
 })

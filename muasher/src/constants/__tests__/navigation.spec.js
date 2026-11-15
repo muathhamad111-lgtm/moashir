@@ -20,7 +20,8 @@ describe('navigation constants', () => {
     const granted = new Set([PERMISSIONS.DASHBOARD_VIEW, PERMISSIONS.FINANCE_OPERATIONS_VIEW])
     const canAccess = (access) => !access || access.anyOf.some((key) => granted.has(key))
     const groups = groupNavItems(filterNavByAccess(APP_NAV_ITEMS, canAccess))
-    expect(groups.map((group) => group.id)).toEqual(['overview', 'finance'])
+    expect(groups.map((group) => group.id)).toEqual(['overview'])
+    expect(groups[0].items.map((item) => item.id)).toEqual(['dashboard', 'finance'])
   })
 
   it('treats child route names as active for their parent item', () => {

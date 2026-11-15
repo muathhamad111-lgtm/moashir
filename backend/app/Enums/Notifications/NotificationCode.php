@@ -21,6 +21,9 @@ enum NotificationCode: string
     case EntityEmailChangeRequested = 'REG-08';
     case EntityEmailChangeDecided = 'REG-09';
     case EntityDeletionChanged = 'REG-10';
+    case EntityAwaitingReview = 'REG-11';
+    case EntityRegistrationApproved = 'REG-12';
+    case EntityRegistrationRejected = 'REG-13';
     case SuperAdminLogin = 'SEC-01';
     case SuperAdminMfaFailed = 'SEC-02';
     case SuperAdminGrantChanged = 'SEC-03';
@@ -132,7 +135,7 @@ enum NotificationCode: string
             self::StaffInvited, self::PasswordResetRequested, self::OtpCode,
             self::CriteriaMainWeightChanged, self::CriteriaSubCreated, self::CriteriaGuidingPointsEnabled,
             self::CriteriaDirectEvaluationEnabled, self::EntityRegistered, self::EntityProfileIncomplete,
-            self::EntityVerificationReminder, self::EntityEmailChangeRequested, self::PaymentStarted,
+            self::EntityVerificationReminder, self::EntityEmailChangeRequested, self::EntityAwaitingReview, self::PaymentStarted,
             self::PaymentOrderCancelled, self::PaymentRefundRequired, self::ProviderRefundReported,
             self::BankTransferSubmitted, self::BankTransferRejected,
             self::AccreditedFormOpened, self::AccreditedSubmitted, self::AccreditedAwaitingAssignment,
@@ -144,7 +147,7 @@ enum NotificationCode: string
             self::QualifiedForNational, self::NationalResultApproved, self::CommitteeDiscussionOpened,
             self::ContactMessageReceived, self::ContactFollowUpReceived, self::ContactMessageAssigned => NotificationCategory::ActionRequired,
             self::AccountStatusChanged, self::CriteriaMainCreated, self::CriteriaScaleChanged,
-            self::CriteriaEditedWithScope, self::EntityCoreDataEdited, self::EntityReactivated,
+            self::CriteriaEditedWithScope, self::EntityCoreDataEdited, self::EntityReactivated, self::EntityRegistrationApproved,
             self::EntityEmailChangeDecided, self::SelfAssessmentStarted, self::SelfAssessmentDraftSaved,
             self::SelfAssessmentSubmitted, self::SelfAssessmentResultAvailable, self::SmsGatewayTestPassed,
             self::AiProviderUpdated, self::PaymentSucceeded, self::PaymentRefundRecorded, self::PaymentReceiptIssued,

@@ -10,6 +10,8 @@ export const SIGN_IN_FAILURES = Object.freeze({
   CREDENTIALS: 'credentials',
   LOCKED: 'locked',
   DEACTIVATED: 'deactivated',
+  PENDING_REVIEW: 'pendingReview',
+  REJECTED: 'rejected',
   THROTTLED: 'throttled',
   UNEXPECTED: 'unexpected',
 })
@@ -21,6 +23,8 @@ export const CODE_FAILURES = Object.freeze({
   ATTEMPTS: 'attempts',
   LOCKED: 'locked',
   COOLDOWN: 'cooldown',
+  PENDING_REVIEW: 'pendingReview',
+  REJECTED: 'rejected',
   UNEXPECTED: 'unexpected',
 })
 
@@ -28,6 +32,8 @@ export const AUTH_ERROR_CODES = Object.freeze({
   CREDENTIALS_INVALID: 'credentials.invalid',
   ACCOUNT_LOCKED: 'account_locked',
   ACCOUNT_DEACTIVATED: 'account_deactivated',
+  ENTITY_PENDING_REVIEW: 'auth.entity_pending_review',
+  ENTITY_REJECTED: 'auth.entity_rejected',
   RATE_LIMITED: 'rate_limited',
   OTP_INVALID: 'otp.invalid',
   OTP_EXPIRED: 'otp.expired',

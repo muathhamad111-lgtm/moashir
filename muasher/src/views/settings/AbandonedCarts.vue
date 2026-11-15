@@ -8,7 +8,6 @@ import Pagination from '@/components/data-list/Pagination.vue'
 import AppMenu from '@/components/ui/AppMenu.vue'
 import AppSelect from '@/components/form/AppSelect.vue'
 import Badge from '@/components/ui/Badge.vue'
-import FinanceNav from '@/components/finance/FinanceNav.vue'
 import ComingSoonChip from '@/components/portal/ComingSoonChip.vue'
 import { useFinanceList } from '@/composables/useFinanceList'
 import { useConfirm } from '@/composables/useConfirm'
@@ -102,7 +101,6 @@ const filterState = { filters: filters.filters, setFilter }
     :description="t('settings.carts.description')"
     status="success"
   >
-    <FinanceNav />
     <ListToolbar
       v-model:search="searchInput"
       :search-placeholder="t('settings.carts.searchPlaceholder')"

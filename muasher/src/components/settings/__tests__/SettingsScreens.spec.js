@@ -2,7 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { setActivePinia } from 'pinia'
 import PathSettingsPanel from '@/components/settings/PathSettingsPanel.vue'
-import Certificates from '@/views/settings/Certificates.vue'
+import CertificateSettingsCard from '@/components/settings/paths/CertificateSettingsCard.vue'
+import { pricesSettingsService } from '@/services/pricesSettingsService'
 import { pathSettingsService } from '@/services/pathSettingsService'
 import { certificateSettingsService } from '@/services/certificateSettingsService'
 import { toPathSettings } from '@/services/mappers/pathSettings'
@@ -13,13 +14,23 @@ import { sessionUserFor } from '@/test-utils/session'
 vi.mock('@/services/pathSettingsService', () => ({
   pathSettingsService: { get: vi.fn(), update: vi.fn() },
 }))
+vi.mock('@/services/pricesSettingsService', () => ({
+  pricesSettingsService: { get: vi.fn(), history: vi.fn(), update: vi.fn() },
+}))
 vi.mock('@/services/certificateSettingsService', () => ({
   certificateSettingsService: { get: vi.fn(), update: vi.fn() },
 }))
 
+const IDENTITY = {
+  description: { ar: 'وصف المسار', en: 'Path description' },
+}
+
 function settingsOf(path, isPaid) {
+  if (path === 'self') return toPathSettings({ path, ...IDENTITY })
   return toPathSettings({
     path,
+    ...IDENTITY,
+    reviewSlaLimits: { min: 1, max: 120 },
     reviewSlaDays: 14,
     uploadLimits: { maxFileMb: 20, allowedTypes: ['pdf'], maxFilesPerSub: 5 },
     evidenceTypeCatalog: ['pdf', 'docx'],
@@ -48,6 +59,9 @@ function mountWith(component, props = {}) {
 }
 
 beforeEach(() => {
+  pricesSettingsService.get.mockResolvedValue({
+    data: { rows: [], limits: {}, vatRate: '15.00' },
+  })
   pathSettingsService.get.mockImplementation((path) =>
     Promise.resolve({ data: settingsOf(path, path === 'accredited') }),
   )
@@ -66,30 +80,40 @@ afterEach(() => {
 })
 
 describe('per-path settings panel', () => {
-  it('shows the price read-only on the paid path and points to the path prices', async () => {
+  it('edits the description, texts, deadline and uploads of a reviewed path, never its name', async () => {
     mountWith(PathSettingsPanel, { path: 'accredited' })
     await flushPromises()
     expect(pathSettingsService.get).toHaveBeenCalledWith('accredited')
-    expect(wrapper.find('input[name="price"]').exists()).toBe(false)
-    expect(wrapper.find('.pricing-breakdown').text()).toContain('1,150.00')
-    expect(wrapper.find('[data-testid="path-price-moved"]').exists()).toBe(true)
-    expect(wrapper.findAll('textarea')).toHaveLength(6)
-    wrapper.unmount()
-    mountWith(PathSettingsPanel, { path: 'advanced' })
-    await flushPromises()
-    expect(wrapper.find('[data-testid="path-price-moved"]').exists()).toBe(false)
-    expect(wrapper.find('.path-settings__intro .path-badge--advanced').exists()).toBe(true)
+    expect(wrapper.find('input[name^="name."]').exists()).toBe(false)
+    expect(wrapper.find('textarea[name="description.en"]').element.value).toBe('Path description')
+    expect(wrapper.find('input[name="reviewSlaDays"]').exists()).toBe(true)
+    expect(wrapper.findAll('textarea[name^="entityTexts."]')).toHaveLength(6)
+    expect(wrapper.find('.path-settings__intro').exists()).toBe(false)
+    expect(wrapper.find('input[name="accreditedIssuanceEnabled"]').exists()).toBe(true)
   })
 
-  it('keeps the price section and its link on the accredited path while no price is in force', async () => {
-    pathSettingsService.get.mockResolvedValueOnce({ data: settingsOf('accredited', false) })
-    mountWith(PathSettingsPanel, { path: 'accredited' })
-    await flushPromises()
-    expect(wrapper.find('.pricing-breakdown').exists()).toBe(false)
-    expect(wrapper.text()).toContain('No payment is requested for this path now')
-    expect(wrapper.find('[data-testid="path-price-moved"] a').attributes('href')).toBe(
-      '/admin/settings/prices',
+  it('sends only the changed description of a path', async () => {
+    pathSettingsService.update.mockImplementation((path, payload) =>
+      Promise.resolve({ data: settingsOf(path, false), payload }),
     )
+    mountWith(PathSettingsPanel, { path: 'advanced' })
+    await flushPromises()
+    await wrapper.find('textarea[name="description.en"]').setValue('The annual award')
+    await wrapper.find('form.settings-form').trigger('submit')
+    await vi.waitFor(() =>
+      expect(pathSettingsService.update).toHaveBeenCalledWith('advanced', {
+        description: { ar: 'وصف المسار', en: 'The annual award' },
+      }),
+    )
+  })
+
+  it('manages only the description of the self assessment, with no certificates', async () => {
+    mountWith(PathSettingsPanel, { path: 'self' })
+    await flushPromises()
+    expect(wrapper.find('textarea[name="description.ar"]').exists()).toBe(true)
+    expect(wrapper.find('input[name="reviewSlaDays"]').exists()).toBe(false)
+    expect(wrapper.find('textarea[name^="entityTexts."]').exists()).toBe(false)
+    expect(wrapper.text()).toContain('This path issues no certificates for now.')
   })
 
   it('offers a retry when the settings cannot be read', async () => {
@@ -106,15 +130,21 @@ describe('per-path settings panel', () => {
 })
 
 describe('certificate settings', () => {
-  it('shows the issuance switch, the four thresholds and the resulting levels', async () => {
-    mountWith(Certificates)
+  it('shows the four thresholds and the resulting levels in the general card', async () => {
+    mountWith(CertificateSettingsCard, { part: 'levels' })
     await flushPromises()
-    expect(wrapper.find('.toggle-switch').exists()).toBe(true)
+    expect(wrapper.find('.toggle-switch').exists()).toBe(false)
     expect(wrapper.findAll('input[name^="levelThresholds."]')).toHaveLength(4)
     const ranges = wrapper.findAll('.level-ranges__item')
     expect(ranges).toHaveLength(5)
     expect(ranges[0].text()).toContain('Below')
     expect(ranges[4].text()).toContain('and above')
-    expect(wrapper.find('.certificate-editor').exists()).toBe(false)
+  })
+
+  it('shows only the issuing switch in the accredited card', async () => {
+    mountWith(CertificateSettingsCard, { part: 'issuance' })
+    await flushPromises()
+    expect(wrapper.find('.toggle-switch').exists()).toBe(true)
+    expect(wrapper.find('input[name^="levelThresholds."]').exists()).toBe(false)
   })
 })

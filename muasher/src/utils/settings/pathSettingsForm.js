@@ -1,5 +1,5 @@
 import { array, object, string } from 'yup'
-import { PATH_ENTITY_TEXTS, PATH_TEXT_MAX } from '@/constants/paths'
+import { PATH_DESCRIPTION_MAX, PATH_ENTITY_TEXTS, PATH_TEXT_MAX } from '@/constants/paths'
 import { integerField } from '@/utils/accredited/assessmentSettingsForm'
 import { toWesternDigits } from '@/utils/numerals'
 
@@ -30,10 +30,34 @@ function textPair(t) {
   )
 }
 
+// Path names are fixed; only the description is managed here.
+const IDENTITY_FIELDS = Object.freeze({ description: PATH_DESCRIPTION_MAX })
+
+function requiredPair(t, max) {
+  const side = string()
+    .trim()
+    .required(t('settings.paths.validation.required'))
+    .max(max, t('settings.paths.validation.textMax', { max }))
+  return object({ ar: side, en: side })
+}
+
+function identitySchema(t) {
+  return Object.fromEntries(
+    Object.entries(IDENTITY_FIELDS).map(([field, max]) => [field, requiredPair(t, max)]),
+  )
+}
+
+// The self assessment has no reviewer and no evidence: only its description is managed.
+function managesReview(settings) {
+  return settings?.reviewSlaLimits !== undefined
+}
+
 export function pathSettingsSchema(t, settings) {
+  if (!managesReview(settings)) return object(identitySchema(t))
   const limits = settings?.reviewSlaLimits ?? { min: 1, max: 120 }
   const bounds = settings?.uploadLimitBounds ?? { maxFileMb: 100, maxFilesPerSub: 50 }
   return object({
+    ...identitySchema(t),
     reviewSlaDays: integerField(t, limits),
     uploadMaxFileMb: integerField(t, { min: 1, max: bounds.maxFileMb }),
     evidenceMaxFilesPerSub: integerField(t, { min: 1, max: bounds.maxFilesPerSub }),
@@ -42,8 +66,19 @@ export function pathSettingsSchema(t, settings) {
   })
 }
 
+function identityValues(settings) {
+  return Object.fromEntries(
+    Object.keys(IDENTITY_FIELDS).map((field) => [
+      field,
+      { ar: settings[field]?.ar ?? '', en: settings[field]?.en ?? '' },
+    ]),
+  )
+}
+
 export function pathSettingsValues(settings) {
+  if (!managesReview(settings)) return identityValues(settings)
   return {
+    ...identityValues(settings),
     ...Object.fromEntries(
       Object.entries(INTEGER_FIELDS).map(([field, read]) => [field, String(read(settings) ?? '')]),
     ),
@@ -91,8 +126,19 @@ function changedIntegers(settings, values) {
   )
 }
 
+function changedIdentity(settings, values) {
+  const changes = {}
+  for (const field of Object.keys(IDENTITY_FIELDS)) {
+    const next = { ar: textOf(values[field]?.ar), en: textOf(values[field]?.en) }
+    const stored = settings[field] ?? {}
+    if (next.ar !== (stored.ar ?? '') || next.en !== (stored.en ?? '')) changes[field] = next
+  }
+  return changes
+}
+
 export function changedPathSettings(settings, values) {
-  const changes = changedIntegers(settings, values)
+  if (!managesReview(settings)) return changedIdentity(settings, values)
+  const changes = { ...changedIdentity(settings, values), ...changedIntegers(settings, values) }
   if (!sameTypes(values.evidenceAllowedTypes, settings.uploadLimits.allowedTypes))
     changes.evidenceAllowedTypes = [...values.evidenceAllowedTypes]
   const texts = changedTexts(settings, values)

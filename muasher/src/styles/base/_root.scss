@@ -138,6 +138,7 @@
   --t-base: #{$t-base};
   --t-slow: #{$t-slow};
   --ease: #{$ease};
+  --ease-spring: #{$ease-spring};
   --ease-brand: #{$ease-brand};
   --ease-in-out: #{$ease-in-out};
   --ease-out: #{$ease-out};
@@ -193,6 +194,7 @@
   --size-prose-max: #{$size-prose-max};
   --size-auth-card: #{$size-auth-card};
   --size-tooltip-max: #{$size-tooltip-max};
+  --size-social-platform: #{$size-social-platform};
   --size-touch-target: #{$size-touch-target};
   --size-swatch-min: #{$size-swatch-min};
   --size-navbar: #{$size-navbar};
@@ -203,6 +205,13 @@
   --size-logo-preview: #{$size-logo-preview};
   --size-maintenance-art: #{$size-maintenance-art};
   --size-search: #{$size-search};
+  --size-search-min: #{$size-search-min};
+  --size-toolbar-control: #{$size-toolbar-control};
+  --size-toolbar-close: #{$size-toolbar-close};
+  --size-entity-name: #{$size-entity-name};
+  --size-stats-card-min: #{$size-stats-card-min};
+  --size-switch-width: #{$size-switch-width};
+  --size-switch-height: #{$size-switch-height};
   --size-search-popup: #{$size-search-popup};
   --size-search-popup-max-block: #{$size-search-popup-max-block};
   --size-qr-code: #{$size-qr-code};

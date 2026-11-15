@@ -16,8 +16,10 @@ import PathPrice from '@/components/paths/PathPrice.vue'
 import PathPrimaryAction from '@/components/paths/PathPrimaryAction.vue'
 import AwardCycleCard from '@/components/paths/AwardCycleCard.vue'
 import PathRequestsList from '@/components/paths/PathRequestsList.vue'
+import { usePathNames } from '@/composables/usePathNames'
 
 const { t } = useI18n()
+const { pathName } = usePathNames()
 const store = useEntityPathsStore()
 const { paths, status } = storeToRefs(store)
 const summaries = usePathSummaries(paths)
@@ -26,7 +28,7 @@ const award = computed(() => paths.value?.award ?? null)
 const visible = computed(() => award.value && summary.value?.state !== AWARD_STATES.HIDDEN)
 const requests = usePathRequests(PATH_KEYS.AWARD)
 
-useHead({ title: () => t('paths.names.award') })
+useHead({ title: () => pathName('advanced') })
 
 function reload() {
   store.load().catch(() => null)
@@ -37,7 +39,7 @@ onMounted(reload)
 
 <template>
   <section class="path-page" data-testid="path-page-award">
-    <PathHeader :path-key="PATH_KEYS.AWARD" :lead="t('paths.pages.award.lead')">
+    <PathHeader :path-key="PATH_KEYS.AWARD">
       <Skeleton v-if="status === 'loading' && !paths" variant="block" :count="3" />
       <template v-else-if="visible">
         <AwardCycleCard :award="award" />

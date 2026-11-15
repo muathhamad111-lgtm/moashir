@@ -53,10 +53,8 @@ const ADMIN_SCREENS = [
   '/admin/award/secretary',
   '/admin/award/results',
   '/admin/requests',
-  '/finance',
   '/finance/transactions',
   '/finance/transfers',
-  '/finance/refunds',
   '/finance/payment-events',
   '/account',
 ]

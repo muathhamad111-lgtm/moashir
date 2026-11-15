@@ -48,6 +48,8 @@ describe('Brand identity — general tab', () => {
     expect(wrapper.find('input[name="platformNameEn"]').element.value).toBe('Moashir')
     await wrapper.find('input[name="platformNameAr"]').setValue(' مؤشر ')
     await wrapper.find('textarea[name="platformDescriptionEn"]').setValue('Excellence')
+    expect(wrapper.find('input[name="platformNameAr"]').attributes('required')).toBeDefined()
+    expect(wrapper.text()).not.toContain("platform's default text")
     await wrapper.find('.site-settings__form').trigger('submit')
     await flushPromises()
     const payload = siteSettingsService.update.mock.calls[0][0]
@@ -64,6 +66,36 @@ describe('Brand identity — general tab', () => {
     wrapper.unmount()
   })
 
+  it('lists one fixed row per platform and sends only the filled links', async () => {
+    const wrapper = await mountForm(IdentityGeneralSettings)
+    const rows = wrapper.findAll('.social-links__row')
+    expect(rows.map((row) => row.find('input').attributes('name'))).toEqual([
+      'social-x',
+      'social-linkedin',
+      'social-youtube',
+      'social-instagram',
+      'social-facebook',
+    ])
+    expect(wrapper.find('input[name="social-x"]').element.value).toBe(
+      'https://x.com/moashir.example',
+    )
+    expect(wrapper.find('input[name="social-youtube"]').attributes('placeholder')).toBe(
+      'https://www.youtube.com/@account',
+    )
+    expect(wrapper.findAll('.social-links button')).toHaveLength(0)
+    expect(wrapper.text()).toContain('Leave a link empty to hide that platform on the site.')
+    await wrapper
+      .find('input[name="social-youtube"]')
+      .setValue(' https://www.youtube.com/@moashir ')
+    await wrapper.find('input[name="social-x"]').setValue('')
+    await wrapper.find('.site-settings__form').trigger('submit')
+    await flushPromises()
+    expect(siteSettingsService.update.mock.calls[0][0].social).toEqual([
+      { platform: 'youtube', url: 'https://www.youtube.com/@moashir' },
+    ])
+    wrapper.unmount()
+  })
+
   it('maps the server field errors to their fields', async () => {
     siteSettingsService.update.mockRejectedValue(
       Object.assign(new Error('invalid'), {
@@ -77,6 +109,7 @@ describe('Brand identity — general tab', () => {
     await wrapper.find('.site-settings__form').trigger('submit')
     await flushPromises()
     expect(wrapper.text()).toContain('The link must start with https://.')
+    expect(wrapper.find('input[name="social-x"]').attributes('aria-invalid')).toBe('true')
     wrapper.unmount()
   })
 })

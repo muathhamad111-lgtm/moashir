@@ -51,13 +51,16 @@ async function fillRefund(page, file) {
   return dialog
 }
 
-test('the finance officer reads the live summary by service', async ({ page }, testInfo) => {
+test('the finance section opens on the operations with their summary cards', async ({
+  page,
+}, testInfo) => {
   const errors = trackConsole(page)
   await seedStaff(page, testInfo, STAFF.financeOfficer)
   await page.goto('/finance')
-  await expect(page.locator('.stats-card')).toHaveCount(7)
-  await expect(page.locator('.purpose-breakdown tbody tr')).toHaveCount(4)
-  await expect(page.locator('.finance-nav__link')).toHaveCount(4)
+  await expect(page).toHaveURL(/\/finance\/transactions$/)
+  await expect(page.locator('.stats-card')).toHaveCount(4)
+  await expect(page.locator('.finance-nav__link')).toHaveCount(0)
+  await expect(page.locator('thead th')).toHaveCount(9)
   await page.screenshot({
     path: `test-results/finance-summary-${suffixOf(testInfo)}.png`,
     fullPage: true,
@@ -80,19 +83,21 @@ test('transactions are searched, filtered, sorted and exported as a CSV', async 
 
   await searchList(page, isEn(testInfo) ? 'Namaa' : 'نماء')
   await expect(page.locator('.table__row')).toHaveCount(4)
-  await expect(page.locator('.transactions-table__entity-name').first()).toContainText(
-    isEn(testInfo) ? 'Namaa' : 'نماء',
-  )
+  await expect(
+    page.locator('.table__row td:nth-child(2) .transactions-table__title').first(),
+  ).toContainText(isEn(testInfo) ? 'Namaa' : 'نماء')
   await searchList(page, '')
   await expect(page.locator('.table__row')).toHaveCount(10)
 
   const filters = await openListFilters(page)
-  await filters.locator('.dropdown-field').nth(0).click()
-  await page.getByRole('option', { name: isEn(testInfo) ? 'Failed' : 'لم تكتمل' }).click()
+  await filters.locator('.dropdown-combobox').nth(1).click()
+  await page.getByRole('option', { name: isEn(testInfo) ? 'Payment failed' : 'فشل الدفع' }).click()
+  await page.keyboard.press('Escape')
+  await expect(filters.locator('.dropdown-tag')).toHaveCount(1)
   await applyOpenListFilters(page)
   await expect(page.locator('.table__row')).toHaveCount(2)
   const download = page.waitForEvent('download')
-  await page.locator('.finance-header__actions .btn').click()
+  await page.locator('.filter-toolbar__controls .btn:has([data-icon="download"])').click()
   expect((await download).suggestedFilename()).toMatch(/^transactions-\d{8}-\d{6}\.csv$/)
   expect(errors).toEqual([])
 })
@@ -101,7 +106,7 @@ test('a large export is queued and downloaded once it is ready', async ({ page }
   await seedStaff(page, testInfo, STAFF.financeOfficer)
   await page.goto('/finance/transactions')
   await expect(page.locator('.table__row')).toHaveCount(10)
-  await page.locator('.finance-header__actions .btn').click()
+  await page.locator('.filter-toolbar__controls .btn:has([data-icon="download"])').click()
   await expect(page).toHaveURL(/\/finance\/exports\/[0-9a-f-]{36}$/)
   await expect(page.locator('.payment-notice--info')).toBeVisible()
   await expect(page.locator('.payment-notice--success')).toBeVisible({ timeout: 15000 })
@@ -197,14 +202,19 @@ test('the payment events log is for the System Administrator only', async ({ pag
   await expect(page).toHaveURL(/\/403$/)
 })
 
-test('refunds and abandoned carts are listed for their permission holders', async ({
+test('refunds open from the operations, and abandoned carts are listed for their permission holders', async ({
   page,
 }, testInfo) => {
   await seedStaff(page, testInfo, STAFF.systemAdmin)
   await page.goto('/finance/refunds')
+  await expect(page).toHaveURL(/\/finance\/transactions$/)
+  await page.goto('/finance/transactions?type=refund')
   await expect(page.locator('.table__row')).toHaveCount(1)
+  await expect(page.locator('.filter-dialog__count')).toHaveText('1')
+  await page.locator('.transactions-table__view').first().click()
+  await expect(page.locator('.transaction-events')).toBeVisible()
   const download = page.waitForEvent('download')
-  await page.locator('.refunds-table__evidence .btn').click()
+  await page.locator('.card:has(.refund-record) .card__footer .btn').click()
   expect((await download).suggestedFilename()).toBe('bank-transfer-receipt.pdf')
   await page.goto('/admin/settings/abandoned-carts')
   await expect(page.locator('.table__row')).toHaveCount(4)

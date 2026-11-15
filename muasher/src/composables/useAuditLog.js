@@ -1,5 +1,6 @@
 import { computed, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { usePagination } from '@/composables/usePagination'
 import { useTable } from '@/composables/useTable'
 import { useToast } from '@/composables/useToast'
@@ -15,6 +16,16 @@ function emptyFilters() {
   return Object.fromEntries(AUDIT_FILTER_KEYS.map((key) => [key, '']))
 }
 
+// A link may open the log already filtered (e.g. «سجل النشاط» of a user sets actorId).
+function filtersFromQuery(query) {
+  return Object.fromEntries(
+    AUDIT_FILTER_KEYS.filter((key) => typeof query?.[key] === 'string' && query[key]).map((key) => [
+      key,
+      query[key],
+    ]),
+  )
+}
+
 function trimmed(values) {
   return Object.fromEntries(
     Object.entries(values).map(([key, value]) => [key, String(value ?? '').trim()]),
@@ -24,8 +35,9 @@ function trimmed(values) {
 export function useAuditLog() {
   const { t } = useI18n()
   const toast = useToast()
-  const draft = reactive(emptyFilters())
-  const applied = reactive(emptyFilters())
+  const initial = { ...emptyFilters(), ...filtersFromQuery(useRoute()?.query) }
+  const draft = reactive({ ...initial })
+  const applied = reactive({ ...initial })
   const fieldErrors = ref({})
   const forbidden = ref(false)
   const exporting = ref(false)

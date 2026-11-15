@@ -8,11 +8,13 @@ use App\Data\Settings\PathSettingsUpdate;
 use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Audit\AuditEvent;
 use App\Enums\Notifications\NotificationCode;
+use App\Enums\Settings\PathIdentityField;
 use App\Enums\Settings\PathSetting;
 use App\Exceptions\Settings\SettingsRejected;
 use App\Jobs\Assessments\RecomputeAccreditedDueDatesJob;
 use App\Models\Identity\User;
 use App\Services\Notifications\SecurityAlerter;
+use App\Services\Paths\PathIdentityCache;
 use App\Services\Settings\PathSettingsReader;
 use App\Services\Settings\SettingsLock;
 use App\Services\Settings\SettingsStore;
@@ -29,6 +31,7 @@ final readonly class UpdatePathSettings
         private PathSettingsReader $reader,
         private RequestContext $context,
         private SecurityAlerter $alerter,
+        private PathIdentityCache $identities,
     ) {}
 
     public function handle(User $actor, AssessmentPath $path, PathSettingsUpdate $update): void
@@ -69,6 +72,26 @@ final readonly class UpdatePathSettings
 
         if ($update->textChanges !== [] && $this->writeTexts($actor, $path, $update)) {
             $changed[] = PathSetting::EntityTexts->value;
+        }
+
+        return [...$changed, ...$this->writeIdentity($actor, $path, $update)];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function writeIdentity(User $actor, AssessmentPath $path, PathSettingsUpdate $update): array
+    {
+        $changed = [];
+
+        foreach ($update->identityValues() as $field => $text) {
+            if ($this->store->put(PathIdentityField::from($field)->keyFor($path), $text->toArray(), AuditEvent::AssessmentSettingsUpdated, $actor)) {
+                $changed[] = $field;
+            }
+        }
+
+        if ($changed !== []) {
+            DB::afterCommit(fn () => $this->identities->forget());
         }
 
         return $changed;

@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Finance;
 
+use App\Enums\Finance\TransactionType;
 use App\Models\Finance\Payment;
+use App\Models\Finance\Refund;
 use App\Support\Award\AwardCycleRefPresenter;
 use App\Support\Finance\PaymentPresenter;
+use App\Support\Finance\RefundPresenter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -28,6 +31,7 @@ final class TransactionResource extends JsonResource
             'receipt_number' => $payment->receipt?->number,
             'purpose' => $payment->purpose->value,
             'award_cycle' => $payment->award_cycle_id === null ? null : AwardCycleRefPresenter::of($payment->awardCycle),
+            'type' => TransactionType::of($payment->channel, $payment->status)->value,
             'channel' => $payment->channel->value,
             'status' => $payment->status->value,
             'is_test' => $payment->isTest(),
@@ -43,6 +47,7 @@ final class TransactionResource extends JsonResource
             'late_paid' => $payment->late_paid_at !== null,
             'manually_settled' => $payment->manually_settled_at !== null,
             'has_refund' => $payment->refund !== null,
+            'refund' => $payment->refund instanceof Refund ? RefundPresenter::summaryOf($payment->refund) : null,
             'created_at' => $payment->created_at->toIso8601String(),
             'paid_at' => $payment->paid_at?->toIso8601String(),
             'refunded_at' => $payment->refunded_at?->toIso8601String(),

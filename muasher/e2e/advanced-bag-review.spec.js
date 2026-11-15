@@ -260,7 +260,7 @@ test.describe('Advanced — staff', () => {
   test('admin financial operations renders clean', async ({ page }, testInfo) => {
     await reviewPage(page, testInfo, {
       path: '/finance/transactions',
-      titleSelector: '.finance-header__title',
+      titleSelector: '.finance-page__title',
       name: 'admin-operations',
       session: STAFF,
     })

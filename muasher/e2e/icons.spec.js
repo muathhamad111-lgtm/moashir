@@ -10,7 +10,10 @@ const PENDING = JSON.parse(readFileSync(`${ICON_DIR}/pending.json`, 'utf8'))
 const SVG_NAMES = readdirSync(ICON_DIR)
   .filter((file) => file.endsWith('.svg'))
   .map((file) => file.slice(0, -'.svg'.length))
-const PICKABLE = [...new Set([...SVG_NAMES, ...Object.keys(PENDING.glyph)])].sort()
+// Brand logos belong to their platforms and are kept out of the icon pickers.
+const PICKABLE = [...new Set([...SVG_NAMES, ...Object.keys(PENDING.glyph)])]
+  .filter((name) => !name.startsWith('brand-'))
+  .sort()
 const VIEWPORTS = {
   desktop: { width: 1440, height: 900 },
   mobile: { width: 390, height: 844 },

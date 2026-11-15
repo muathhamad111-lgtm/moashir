@@ -62,7 +62,7 @@ final class DefaultPermissionMatrix
             P::CriteriaView, P::CriteriaPublish,
             P::ContentHomeManage, P::ContentKpisManage, P::ContentInsightsManage, P::ContactMessagesManage,
             P::AiKbManage, P::AiProviderManage,
-            P::UsersView, P::UsersManage, P::RolesMatrixView, P::RolesMatrixManage, P::AuditView, P::AuditExport,
+            P::UsersView, P::UsersManage, P::UsersExport, P::RolesMatrixView, P::RolesMatrixManage, P::AuditView, P::AuditExport,
             P::SettingsGeneralManage, P::SettingsBrandingManage, P::SettingsAuthManage, P::SettingsAssessmentManage,
             P::SettingsCertificatesManage, P::SettingsPaymentManage, P::SettingsSmsManage, P::SettingsEmailManage,
             P::SettingsNotificationsManage, P::SettingsPricesManage, P::MessagingCampaignsSend,

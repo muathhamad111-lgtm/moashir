@@ -1,10 +1,14 @@
-import { describe, expect, it } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { describe, expect, it, vi } from 'vitest'
+import { flushPromises, mount } from '@vue/test-utils'
 import { setActivePinia } from 'pinia'
-import FinanceNav from '@/components/finance/FinanceNav.vue'
 import RefundEvidenceField from '@/components/finance/RefundEvidenceField.vue'
 import RefundRecord from '@/components/finance/RefundRecord.vue'
 import TransactionFilters from '@/components/finance/TransactionFilters.vue'
+import TransactionsTable from '@/components/finance/TransactionsTable.vue'
+import TransactionEventsCard from '@/components/finance/TransactionEventsCard.vue'
+import TransactionParties from '@/components/finance/TransactionParties.vue'
+import TransactionFacts from '@/components/finance/TransactionFacts.vue'
+import { financeService } from '@/services/financeService'
 import { useAuthStore } from '@/stores/auth'
 import { sessionUserFor } from '@/test-utils/session'
 import { createTestGlobals } from '@/test-utils'
@@ -35,43 +39,6 @@ const REFUND = {
   },
   createdAt: '2026-09-02T09:20:00Z',
 }
-
-describe('FinanceNav', () => {
-  it('shows only the sections the permissions allow', () => {
-    const officer = mountWith(FinanceNav, {}, { roles: ['finance_officer'] })
-    expect(officer.findAll('.finance-nav__link').map((link) => link.text())).toEqual([
-      'Summary',
-      'Transactions',
-      'Transfer review',
-      'Refunds',
-    ])
-    const admin = mountWith(FinanceNav, {}, { roles: ['system_admin'] })
-    expect(admin.findAll('.finance-nav__link').map((link) => link.text())).toEqual([
-      'Summary',
-      'Transactions',
-      'Transfer review',
-      'Refunds',
-      'Payment events',
-      'Abandoned carts',
-      'Prices and VAT',
-    ])
-  })
-
-  it('denies unknown permission keys and renders nothing for a single section', () => {
-    const unknown = mountWith(
-      FinanceNav,
-      {},
-      { extra: { permissions: ['finance.anything', 'finance.everything.manage'] } },
-    )
-    expect(unknown.find('.finance-nav').exists()).toBe(false)
-    const single = mountWith(
-      FinanceNav,
-      {},
-      { extra: { permissions: ['finance.anything', 'finance.refunds.manage'] } },
-    )
-    expect(single.find('.finance-nav').exists()).toBe(false)
-  })
-})
 
 describe('RefundEvidenceField', () => {
   const file = new File(['%PDF-1.4'], 'bank-transfer-receipt.pdf', { type: 'application/pdf' })
@@ -113,21 +80,184 @@ describe('RefundRecord', () => {
 })
 
 describe('TransactionFilters', () => {
-  it('emits the filter key and value chosen, and the sort', async () => {
+  const FILTERS = { type: '', status: '', purpose: '', from: '', to: '', entity_id: '' }
+
+  function comboboxes(wrapper) {
+    return wrapper.findAllComponents({ name: 'AppCombobox' })
+  }
+
+  it('offers the operation type and the status as multi-select dropdowns', () => {
+    const wrapper = mountWith(TransactionFilters, { filters: { ...FILTERS }, sort: '-created_at' })
+    const [type, status] = comboboxes(wrapper)
+    expect(type.props('label')).toBe('Operation type')
+    expect(type.props('multiple')).toBe(true)
+    expect(type.props('options').map((option) => option.value)).toEqual([
+      'electronic',
+      'bank_transfer',
+      'refund',
+    ])
+    expect(status.props('label')).toBe('Status')
+    expect(status.props('multiple')).toBe(true)
+    expect(status.props('options')).toHaveLength(7)
+    expect(wrapper.find('[name="transactions-from"]').exists()).toBe(true)
+    expect(wrapper.find('[name="transactions-to"]').exists()).toBe(true)
+  })
+
+  it('lists the choices by name only; definitions stay on the table status', async () => {
+    const wrapper = mountWith(TransactionFilters, { filters: { ...FILTERS }, sort: '-created_at' })
+    const [type, status] = comboboxes(wrapper)
+    expect(
+      [...type.props('options'), ...status.props('options')].every(
+        (option) => option.description === undefined,
+      ),
+    ).toBe(true)
+    await status.find('input').trigger('keydown', { key: 'ArrowDown' })
+    const failed = status
+      .findAll('[role="option"]')
+      .find((option) => option.text().includes('Payment failed'))
+    expect(failed.text()).toBe('Payment failed')
+  })
+
+  it('keeps the chosen values comma-separated in the catalogue order', async () => {
     const wrapper = mountWith(TransactionFilters, {
-      filters: { status: '', purpose: '', channel: '', method: '', mode: '', from: '', to: '' },
+      filters: { ...FILTERS, type: 'refund', status: 'under_review' },
       sort: '-created_at',
     })
-    await wrapper.findAll('.dropdown-field')[2].trigger('click')
-    await wrapper.findAll('[role="option"]')[2].trigger('click')
-    await wrapper.findAll('.dropdown-field')[4].trigger('click')
-    await wrapper.findAll('[role="option"]')[1].trigger('click')
+    const [type, status] = comboboxes(wrapper)
+    expect(type.props('modelValue')).toEqual(['refund'])
+    type.vm.$emit('update:modelValue', ['refund', 'electronic'])
+    status.vm.$emit('update:modelValue', ['under_review', 'paid', 'unknown'])
+    status.vm.$emit('update:modelValue', [])
     expect(wrapper.emitted('filter')).toEqual([
-      ['channel', 'bank_transfer'],
-      ['mode', 'test'],
+      ['type', 'electronic,refund'],
+      ['status', 'paid,under_review'],
+      ['status', ''],
     ])
-    await wrapper.findAll('.dropdown-field')[5].trigger('click')
-    await wrapper.findAll('[role="option"]')[2].trigger('click')
-    expect(wrapper.emitted('sort')).toEqual([['-total']])
+  })
+})
+
+describe('TransactionsTable', () => {
+  const ROW = {
+    id: 'p-9',
+    reference: 'PAY-2026-000009',
+    receiptNumber: 'RCP-2026-000009',
+    purpose: 'accredited',
+    entity: { name: { ar: 'جمعية تجريبية', en: 'Sample Association' }, email: 'info@example.org' },
+    channel: 'electronic',
+    method: 'mada',
+    status: 'paid',
+    pricing: { priceBeforeVat: '1000.00', vatAmount: '150.00', total: '1150.00', currency: 'SAR' },
+    updatedAt: '2026-11-10T09:00:00Z',
+  }
+
+  it('groups the service with its references and the channel with its method', () => {
+    const wrapper = mountWith(TransactionsTable, { items: [ROW], status: 'success' })
+    const headers = wrapper.findAll('th').map((header) => header.text())
+    expect(headers.slice(0, 3)).toEqual(['Operation', 'Entity', 'Payment'])
+    expect(headers).not.toContain('Payment reference')
+    expect(headers).not.toContain('Payment method')
+    const cells = wrapper.findAll('tbody td')
+    expect(cells[0].text()).toContain('PAY-2026-000009')
+    expect(cells[0].text()).toContain('Receipt RCP-2026-000009')
+    const payment = cells[2].findAll('.transactions-table__stack > *')
+    expect(payment).toHaveLength(2)
+    expect(payment[1].text()).toBe('mada')
+    const updated = wrapper.find('time.transactions-table__date').findAll('span')
+    expect(updated.map((line) => line.text())).toEqual(['Nov 10, 2026', '12:00 PM'])
+  })
+
+  it('explains the status when the pointer rests on it', async () => {
+    const wrapper = mountWith(TransactionsTable, {
+      items: [{ ...ROW, status: 'failed' }],
+      status: 'success',
+    })
+    await wrapper.find('.transactions-table__status').trigger('mouseenter')
+    await wrapper.find('.tooltip').trigger('mouseenter')
+    expect(wrapper.find('[role="tooltip"]').text()).toContain('declined the operation')
+  })
+
+  it('opens the operation from an eye icon instead of a details word', () => {
+    const wrapper = mountWith(TransactionsTable, { items: [ROW], status: 'success' })
+    const view = wrapper.find('.transactions-table__view')
+    expect(view.element.tagName).toBe('A')
+    expect(view.attributes('href')).toContain('p-9')
+    expect(view.attributes('aria-label')).toBe('View details — PAY-2026-000009')
+    expect(view.find('.btn__label').exists()).toBe(false)
+  })
+})
+
+describe('TransactionEventsCard', () => {
+  const EVENT = {
+    id: 41,
+    createdAt: '2026-11-10T09:00:00Z',
+    source: 'webhook',
+    type: 'payment.paid',
+    result: 'applied',
+    mode: 'live',
+    providerReference: '…a1b2c3',
+  }
+
+  it("lists the operation's events with their outcome and masked gateway reference", async () => {
+    const list = vi
+      .spyOn(financeService, 'listTransactionEvents')
+      .mockResolvedValue({ data: [EVENT], meta: { limit: 50, hasMore: true } })
+    const wrapper = mountWith(TransactionEventsCard, { paymentId: 'p-9' })
+    await flushPromises()
+    expect(list).toHaveBeenCalledWith('p-9')
+    const items = wrapper.findAll('.transaction-events__item')
+    expect(items).toHaveLength(1)
+    expect(items[0].find('.badge').text()).toBe('Applied')
+    expect(items[0].text()).toContain('…a1b2c3')
+    expect(wrapper.text()).toContain('Only the latest 50 events are shown.')
+    list.mockRestore()
+  })
+
+  it('says so when the operation has no events, and offers a retry on failure', async () => {
+    const list = vi
+      .spyOn(financeService, 'listTransactionEvents')
+      .mockResolvedValueOnce({ data: [], meta: { limit: 50, hasMore: false } })
+      .mockRejectedValueOnce({ normalized: { message: 'Unavailable' } })
+    const empty = mountWith(TransactionEventsCard, { paymentId: 'p-1' })
+    await flushPromises()
+    expect(empty.text()).toContain('No events are recorded for this operation.')
+    const failed = mountWith(TransactionEventsCard, { paymentId: 'p-2' })
+    await flushPromises()
+    expect(failed.findComponent({ name: 'ErrorState' }).exists()).toBe(true)
+    list.mockRestore()
+  })
+})
+
+describe('transaction receipt sections', () => {
+  const PAYMENT = {
+    id: 'p-11',
+    purpose: 'bag',
+    awardCycle: null,
+    channel: 'electronic',
+    method: 'mada',
+    cardLast4: '4242',
+    providerPaymentId: 'gw_000011',
+    failureReason: null,
+    entity: {
+      reference: 'ENT-005001',
+      name: { ar: 'جمعية تجريبية', en: 'Sample Association' },
+      email: 'info@example.org',
+    },
+    createdAt: '2026-10-31T09:00:00Z',
+  }
+
+  it('opens with the service and the entity, without the entity e-mail', () => {
+    const wrapper = mountWith(TransactionParties, { transaction: PAYMENT })
+    expect(wrapper.findAll('dt').map((term) => term.text())).toEqual(['Service', 'Entity'])
+    expect(wrapper.text()).toContain('Sample Association')
+    expect(wrapper.text()).toContain('ENT-005001')
+    expect(wrapper.text()).not.toContain('info@example.org')
+  })
+
+  it('keeps the payment details after the amounts, without repeating the parties', () => {
+    const wrapper = mountWith(TransactionFacts, { transaction: PAYMENT })
+    const terms = wrapper.findAll('dt').map((term) => term.text())
+    expect(terms.slice(0, 2)).toEqual(['Payment channel', 'Payment method'])
+    expect(terms).not.toContain('Entity')
+    expect(terms).not.toContain('Service')
   })
 })

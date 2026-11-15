@@ -4,6 +4,7 @@ import { authHandlers } from '@/mocks/handlers/auth'
 import { entitiesHandlers } from '@/mocks/handlers/entities'
 import { resetEntitiesMock } from '@/mocks/stores/entityMockReset'
 import { findEntity } from '@/mocks/stores/entitiesStore'
+import { setEntityRegistrationReview } from '@/mocks/stores/authSettingsStore'
 import { resetAuthMock } from '@/mocks/stores/authMockReset'
 import { resetIntegrationsState, smsState } from '@/mocks/stores/integrations/integrationsState'
 import { DEV_OTP_CODE, MOCK_PASSWORD } from '@/mocks/fixtures/auth'
@@ -128,8 +129,26 @@ describe('sign-in mock: password (Task-61 contract)', () => {
     expect(first.body.data).toMatchObject({ step: 'otp_required', requires_otp: true })
     expect(first.body.data.otp.channel).toBe('email')
     const verified = await verify(first.body.data.otp)
+    expect(verified.status).toBe(403)
+    expect(verified.body.code).toBe('auth.entity_pending_review')
+    expect(findEntity(7001).status).toBe('pending-review')
+  })
+
+  it('activates a pending entity on its code when the registration review is switched off', async () => {
+    setEntityRegistrationReview(false)
+    const first = await signIn('info@suqya-tabuk.example.sa')
+    const verified = await verify(first.body.data.otp)
     expect(verified.body.data.step).toBe('authenticated')
     expect(findEntity(7001).status).toBe('active')
+  })
+
+  it('refuses to sign in an entity under review or rejected, with its own message', async () => {
+    findEntity(7001).status = 'pending-review'
+    expect((await signIn('info@suqya-tabuk.example.sa')).body.code).toBe(
+      'auth.entity_pending_review',
+    )
+    findEntity(7001).status = 'rejected'
+    expect((await signIn('info@suqya-tabuk.example.sa')).body.code).toBe('auth.entity_rejected')
   })
 
   it('keeps staff on the authenticator', async () => {
@@ -210,7 +229,7 @@ describe('sign-in mock: one-time code (Task-61 contract)', () => {
       unknown: false,
       staff: false,
       deactivated: false,
-      pending: true,
+      pending: false,
     })
   })
 
@@ -326,6 +345,7 @@ describe('sign-in security setting mock', () => {
     expect((await call('GET', '/settings/auth')).body.data).toEqual({
       entity_sign_in_code_channels: ['email'],
       general_email_notifications: true,
+      entity_registration_review: true,
       two_factor_enabled: true,
       two_factor_roles: [
         'system_admin',

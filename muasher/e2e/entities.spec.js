@@ -44,7 +44,7 @@ async function fillRegistration(page) {
   await page.locator('[name="passwordConfirmation"]').fill('Wafa-Charity-Account-2026')
 }
 
-test('an entity registers with terms, verifies the OTP and lands on its profile', async ({
+test('an entity proves its e-mail inside the form, registers and is told it is under review', async ({
   page,
 }, testInfo) => {
   await seedLocale(page, localeOf(testInfo))
@@ -55,27 +55,29 @@ test('an entity registers with terms, verifies the OTP and lands on its profile'
   await page.keyboard.press('Escape')
   await fillRegistration(page)
   await expect(page.locator('[name="marketingConsent"]')).not.toBeChecked()
+  await checkbox(page, 'termsAccepted').click()
 
   await page.locator('form button[type="submit"]').click()
-  await expect(
-    checkbox(page, 'termsAccepted').locator('xpath=..').locator('.field__error'),
-  ).toBeVisible()
-  await expect(page.locator('.accordion__trigger')).toHaveCount(0)
-  await checkbox(page, 'termsAccepted').click()
+  const check = page.getByTestId('registration-email-check')
+  await expect(check.locator('.field__error')).toContainText(
+    isEn(testInfo) ? 'Verify the official e-mail first' : 'تحقق من البريد الرسمي أولًا',
+  )
+
+  await page.getByTestId('email-check-send').click()
+  await typeCode(page, '000000')
+  await expect(check.locator('.field__error')).toBeVisible()
+  await typeCode(page, DEV_OTP_CODE)
+  await expect(page.getByTestId('email-check-done')).toBeVisible()
   await page.screenshot({
     path: `test-results/entities-register-${suffix(testInfo)}.png`,
     fullPage: true,
   })
 
   await page.locator('form button[type="submit"]').click()
-  await expect(page).toHaveURL(/\/auth\/otp/)
-  await typeCode(page, DEV_OTP_CODE)
-  await expect(page).toHaveURL(/\/entity\/profile\?welcome=1/)
-  await expect(page.locator('.profile-header__name')).toContainText(
-    isEn(testInfo) ? 'Al-Wafa Charity' : 'جمعية الوفاء الخيرية',
-  )
-  await expect(page.locator('.completion-prompt')).toBeVisible()
-  await expect(page.getByTestId('profile-completeness')).toContainText('66')
+  const notice = page.getByTestId('registration-under-review')
+  await expect(notice).toHaveAttribute('role', 'status')
+  await expect(notice).toContainText(isEn(testInfo) ? 'reviewing it' : 'قيد المراجعة')
+  await expect(page).toHaveURL(/\/auth\/register/)
 })
 
 test('the entity edits one profile section and sees the change in the section history', async ({

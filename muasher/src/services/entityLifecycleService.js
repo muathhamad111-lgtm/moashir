@@ -15,6 +15,12 @@ export const entityLifecycleService = {
   reactivate(id, reason) {
     return reasonAction('reactivate', id, 'reactivate', reason)
   },
+  approve(id, reason = '') {
+    return reasonAction('approve', id, 'approve', reason || null)
+  },
+  reject(id, reason) {
+    return reasonAction('reject', id, 'reject', reason)
+  },
   restore(id, reason) {
     return reasonAction('restore', id, 'restore', reason)
   },

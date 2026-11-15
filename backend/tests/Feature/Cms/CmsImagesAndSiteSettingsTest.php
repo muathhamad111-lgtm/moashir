@@ -150,26 +150,27 @@ it('stores the platform name, description and header menu, and serves them with 
     $editor = contentOfficer();
     publishPage(CmsPageKey::Home, $editor);
     $this->getJson('/api/v1/content/home')
-        ->assertJsonPath('data.site_settings.platform_name', null)
+        ->assertJsonPath('data.site_settings.platform_name', ['ar' => 'مؤشر', 'en' => 'Moashir'])
+        ->assertJsonPath('data.site_settings.platform_description.en', 'A digital platform that measures the institutional maturity of civil associations, civil foundations and endowments against the Charitable Work Excellence Model.')
         ->assertJsonCount(6, 'data.site_settings.header_links')
         ->assertJsonPath('data.site_settings.header_links.0', ['label' => ['ar' => 'الرئيسية', 'en' => 'Home'], 'url' => '/'])
         ->assertJsonPath('data.site_settings.header_links.4.url', '/kpis');
 
     $this->patchJson('/api/v1/admin/content/site-settings', [
         'platform_name' => ['ar' => 'منصة مؤشر', 'en' => 'Moashir'],
-        'platform_description' => ['ar' => 'قياس التميز', 'en' => ''],
+        'platform_description' => ['ar' => 'قياس التميز', 'en' => 'Measuring excellence'],
         'header_links' => [
             ['label' => ['ar' => 'الرئيسية', 'en' => 'Home'], 'url' => '/'],
             ['label' => ['ar' => 'المسارات', 'en' => 'Paths'], 'url' => '/#paths'],
         ],
     ])->assertOk()
         ->assertJsonPath('data.platform_name', ['ar' => 'منصة مؤشر', 'en' => 'Moashir'])
-        ->assertJsonPath('data.platform_description', ['ar' => 'قياس التميز', 'en' => ''])
+        ->assertJsonPath('data.platform_description', ['ar' => 'قياس التميز', 'en' => 'Measuring excellence'])
         ->assertJsonPath('data.header_links.1.url', '/#paths');
 
     $this->getJson('/api/v1/content/home')
         ->assertJsonPath('data.site_settings.platform_name.en', 'Moashir')
-        ->assertJsonPath('data.site_settings.platform_description', ['ar' => 'قياس التميز', 'en' => 'قياس التميز'])
+        ->assertJsonPath('data.site_settings.platform_description', ['ar' => 'قياس التميز', 'en' => 'Measuring excellence'])
         ->assertJsonPath('data.site_settings.header_links.0.label', ['ar' => 'الرئيسية', 'en' => 'Home']);
 
     $audit = Audit::query()->where('event', AuditEvent::CmsSiteSettingsUpdated->value)->sole();
@@ -200,6 +201,9 @@ it('rejects unknown keys and invalid site settings values', function (array $pay
     'header link label too long' => [['header_links' => [['label' => ['ar' => str_repeat('ر', 41), 'en' => 'Link'], 'url' => '/']]], 'header_links.0.label.ar'],
     'too many header links' => [['header_links' => array_fill(0, 9, ['label' => ['ar' => 'رابط', 'en' => 'Link'], 'url' => '/'])], 'header_links'],
     'platform name too long' => [['platform_name' => ['ar' => str_repeat('م', 121), 'en' => 'Moashir']], 'platform_name.ar'],
+    'empty Arabic platform name' => [['platform_name' => ['ar' => '', 'en' => 'Moashir']], 'platform_name.ar'],
+    'empty English platform description' => [['platform_description' => ['ar' => 'وصف', 'en' => '  ']], 'platform_description.en'],
+    'null platform name' => [['platform_name' => null], 'platform_name'],
     'featured limit too high' => [['featured_kpi_limit' => 9], 'featured_kpi_limit'],
     'invalid e-mail' => [['contact' => ['email' => 'not-an-email']], 'contact.email'],
 ]);

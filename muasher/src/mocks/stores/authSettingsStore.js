@@ -6,6 +6,7 @@ const DEFAULT_CHANNELS = Object.freeze([CODE_CHANNELS.EMAIL])
 
 let channels = [...DEFAULT_CHANNELS]
 let generalEmailNotifications = true
+let entityRegistrationReview = true
 const STAFF_ROLES = Object.freeze([
   'system_admin',
   'criteria_officer',
@@ -22,6 +23,7 @@ let twoFactorRoles = [...STAFF_ROLES]
 export function resetAuthSettings() {
   channels = [...DEFAULT_CHANNELS]
   generalEmailNotifications = true
+  entityRegistrationReview = true
   twoFactorEnabled = true
   twoFactorRoles = [...STAFF_ROLES]
 }
@@ -38,6 +40,7 @@ export function authSettingsResource() {
   return {
     entitySignInCodeChannels: signInCodeChannelsAllowed(),
     generalEmailNotifications,
+    entityRegistrationReview,
     twoFactorEnabled,
     twoFactorRoles: [...twoFactorRoles],
     smsStatus: smsGatewayStatus(),
@@ -47,6 +50,14 @@ export function authSettingsResource() {
 export function setTwoFactorPolicy({ enabled, roles }) {
   if (enabled !== undefined) twoFactorEnabled = enabled
   if (roles !== undefined) twoFactorRoles = [...roles]
+}
+
+export function registrationReviewRequired() {
+  return entityRegistrationReview
+}
+
+export function setEntityRegistrationReview(enabled) {
+  entityRegistrationReview = enabled
 }
 
 export function setGeneralEmailNotifications(enabled) {

@@ -43,6 +43,12 @@ function checkLinks(errors, field, links, max) {
   })
 }
 
+function checkComplete(errors, field, value) {
+  ;['ar', 'en'].forEach((locale) => {
+    errors.check(String(value?.[locale] ?? '').trim() !== '', `${field}.${locale}`, 'required')
+  })
+}
+
 function normalizedLinks(links) {
   return links.map((link) => ({ label: normalizeLocalized(link.label), url: link.url.trim() }))
 }
@@ -68,6 +74,9 @@ function validate(body) {
   Object.keys(body)
     .filter((key) => !FIELDS.includes(key))
     .forEach((key) => errors.add(key, 'unknownKey'))
+  if (body.platformName !== undefined) checkComplete(errors, 'platformName', body.platformName)
+  if (body.platformDescription !== undefined)
+    checkComplete(errors, 'platformDescription', body.platformDescription)
   if (body.social !== undefined) checkSocial(errors, body.social)
   if (body.quickLinks !== undefined)
     checkLinks(errors, 'quickLinks', body.quickLinks, SITE_SETTINGS_LIMITS.quickLinksMax)

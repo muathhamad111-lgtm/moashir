@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Actions\Finance\ListRefunds;
 use App\Contracts\Finance\LinkedRequestReader;
 use App\Contracts\Finance\OpenedRequestLookup;
 use App\Contracts\Finance\ServicePriceSource;
+use App\Http\Resources\Finance\RefundResource;
 use App\Models\Assessments\EvidenceBundle;
 use App\Models\Assessments\EvidenceFile;
 use App\Models\Files\StoredFile;
@@ -75,7 +75,7 @@ final class FinanceServiceProvider extends ServiceProvider
             ->firstOrFail());
 
         Route::bind('refund', static fn (string $value): Refund => Refund::query()
-            ->with(ListRefunds::RELATIONS)
+            ->with(RefundResource::RELATIONS)
             ->where('public_id', $value)
             ->firstOrFail());
 

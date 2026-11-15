@@ -169,18 +169,18 @@ describe('router guards — payments and finance', () => {
 
   it('gates the finance screens by permission key, events for settings.payment.manage only', async () => {
     signIn([ROLES.FINANCE_OFFICER])
-    expect((await visit('/finance')).name).toBe(ROUTE_NAMES.FINANCE_OVERVIEW)
+    expect((await visit('/finance')).name).toBe(ROUTE_NAMES.FINANCE_TRANSACTIONS)
     expect((await visit(`/finance/transactions/${PAYMENT}`)).name).toBe(
       ROUTE_NAMES.FINANCE_TRANSACTION,
     )
-    expect((await visit('/finance/refunds')).name).toBe(ROUTE_NAMES.FINANCE_REFUNDS)
+    expect((await visit('/finance/refunds')).name).toBe(ROUTE_NAMES.FINANCE_TRANSACTIONS)
     expect((await visit('/finance/payment-events')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
     expect((await visit('/admin/settings/finance')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
     expect((await visit('/payments')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
     signIn([ROLES.SYSTEM_ADMIN])
     expect((await visit('/finance/payment-events')).name).toBe(ROUTE_NAMES.FINANCE_PAYMENT_EVENTS)
     expect((await visit('/admin/settings/finance')).name).toBe(ROUTE_NAMES.ADMIN_SETTINGS_GENERAL)
-    expect((await visit('/admin/operations')).name).toBe(ROUTE_NAMES.FINANCE_OVERVIEW)
+    expect((await visit('/admin/operations')).name).toBe(ROUTE_NAMES.FINANCE_TRANSACTIONS)
   })
 
   it('denies unknown permission keys on every finance route', async () => {

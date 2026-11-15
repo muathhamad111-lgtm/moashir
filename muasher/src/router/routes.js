@@ -725,8 +725,7 @@ export const appRoutes = [
   {
     path: '/finance',
     name: ROUTE_NAMES.FINANCE_OVERVIEW,
-    component: () => import('@/views/finance/Overview.vue'),
-    meta: { layout: 'app', titleKey: 'routes.finance.overview.title', requiresAuth: true },
+    redirect: { name: ROUTE_NAMES.FINANCE_TRANSACTIONS },
   },
   {
     path: '/finance/transactions',
@@ -757,8 +756,7 @@ export const appRoutes = [
   {
     path: '/finance/refunds',
     name: ROUTE_NAMES.FINANCE_REFUNDS,
-    component: () => import('@/views/finance/Refunds.vue'),
-    meta: { layout: 'app', titleKey: 'routes.finance.refunds.title', requiresAuth: true },
+    redirect: { name: ROUTE_NAMES.FINANCE_TRANSACTIONS },
   },
   {
     path: `/finance/exports/:id(${UUID_PARAM})`,
@@ -820,12 +818,7 @@ export const appRoutes = [
   {
     path: '/admin/settings/certificates',
     name: ROUTE_NAMES.ADMIN_SETTINGS_CERTIFICATES,
-    component: () => import('@/views/settings/Certificates.vue'),
-    meta: {
-      layout: 'app',
-      titleKey: 'routes.admin.settings.certificates.title',
-      requiresAuth: true,
-    },
+    redirect: { name: ROUTE_NAMES.ADMIN_SETTINGS_ASSESSMENT, query: { tab: 'general' } },
   },
   {
     path: '/admin/settings/integrations',
@@ -885,8 +878,7 @@ export const appRoutes = [
   {
     path: '/admin/settings/prices',
     name: ROUTE_NAMES.ADMIN_SETTINGS_PRICES,
-    component: () => import('@/views/settings/Prices.vue'),
-    meta: { layout: 'app', titleKey: 'routes.admin.settings.prices.title', requiresAuth: true },
+    redirect: { name: ROUTE_NAMES.ADMIN_SETTINGS_ASSESSMENT },
   },
   {
     path: '/admin/settings/ai',

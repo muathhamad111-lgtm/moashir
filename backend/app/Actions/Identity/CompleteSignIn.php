@@ -25,7 +25,7 @@ final readonly class CompleteSignIn
 
     public function handle(User $user, SignInMethod $method, ?OtpChannel $codeChannel = null): LoginOutcome
     {
-        if ($this->guard->awaitsEntityVerification($user)) {
+        if ($this->guard->awaitsEmailConfirmation($user)) {
             return LoginOutcome::otpRequired($this->issueChallenge->handle(new OtpDelivery($user, OtpChannel::Email, OtpPurpose::Login)));
         }
 

@@ -111,6 +111,32 @@ describe('users mock — real contract', () => {
     expect((await call('POST', '/users/2/invitation/resend')).status).toBe(409)
   })
 
+  it('e-mails an active user a reset link once a minute, never a suspended one or the own account', async () => {
+    expect((await call('POST', '/users/3/password/reset-link')).status).toBe(202)
+    const repeated = await call('POST', '/users/3/password/reset-link')
+    expect(repeated.status).toBe(429)
+    expect(repeated.body.code).toBe('user.password_reset_recently_sent')
+    expect((await call('POST', '/users/4/password/reset-link')).body.code).toBe(
+      'state.transition_illegal',
+    )
+    expect((await call('POST', '/users/1/password/reset-link')).body.code).toBe('user.self')
+  })
+
+  it('ends the sessions of another user, cancels a pending invitation and exports the list', async () => {
+    expect((await call('POST', '/users/2/sessions/revoke', {})).body.data.status).toBe('active')
+    expect((await call('POST', '/users/1/sessions/revoke', {})).body.code).toBe('user.self')
+    expect((await call('DELETE', '/users/2/invitation')).body.code).toBe('state.transition_illegal')
+    expect((await call('DELETE', '/users/4/invitation')).status).toBe(204)
+    expect((await call('GET', '/users/4')).status).toBe(404)
+    const exported = await wireFetch(`${MOCK_API_BASE}/users/export?filter[status]=active`, {
+      headers: { 'accept-language': 'en' },
+    })
+    expect(exported.headers.get('content-type')).toContain('text/csv')
+    const csv = await exported.text()
+    expect(csv.split('\n')[0]).toContain('name,email,roles,status')
+    expect(Number(exported.headers.get('x-export-row-count'))).toBeGreaterThan(0)
+  })
+
   it('refuses actions on the own account and denies readers without the permission', async () => {
     const self = await call('POST', '/users/1/suspend', { reason: REASON })
     expect(self.status).toBe(422)

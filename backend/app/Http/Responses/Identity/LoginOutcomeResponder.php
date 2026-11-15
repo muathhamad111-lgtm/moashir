@@ -47,6 +47,7 @@ final readonly class LoginOutcomeResponder
                 'otp' => new OtpChallengeResource($outcome->otp)->resolve($this->request),
                 'message' => __('messages.otp_sent'),
             ] : [],
+            LoginStep::PendingReview => ['message' => __('messages.registration_pending_review')],
         };
     }
 }

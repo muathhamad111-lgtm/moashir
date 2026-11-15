@@ -6,6 +6,23 @@ import { useAuthStore } from '@/stores/auth'
 import { notificationsService } from '@/services/notificationsService'
 import { createTestGlobals } from '@/test-utils'
 import { sessionUserFor } from '@/test-utils/session'
+import { useElementWidth } from '@/composables/useElementWidth'
+import { NAVBAR_TOOLS_INLINE_MIN_WIDTH } from '@/constants/navigation'
+
+vi.mock('@/composables/useElementWidth', async () => {
+  const { ref } = await import('vue')
+  return { useElementWidth: vi.fn(() => ref(Number.POSITIVE_INFINITY)) }
+})
+
+async function mountNarrow(roles) {
+  const { ref } = await import('vue')
+  useElementWidth.mockReturnValueOnce(ref(NAVBAR_TOOLS_INLINE_MIN_WIDTH - 1))
+  return mountWithRoles(roles)
+}
+
+function menuLabels(wrapper) {
+  return wrapper.findAll('[role="menuitem"]').map((item) => item.text())
+}
 
 async function mountWithRoles(roles) {
   const globals = createTestGlobals()
@@ -133,5 +150,40 @@ describe('TopNavbar', () => {
       expect(wrapper.find('.global-search input[role="combobox"]').exists()).toBe(visible)
       wrapper.unmount()
     }
+  })
+
+  it('keeps settings, theme and language in the bar on a wide navbar', async () => {
+    const wrapper = await mountWithRoles(['system_admin'])
+    expect(wrapper.find('.navbar__settings').exists()).toBe(true)
+    expect(wrapper.find('.navbar__locale').exists()).toBe(true)
+    const labels = menuLabels(wrapper)
+    expect(labels.some((label) => label.includes('الإعدادات'))).toBe(false)
+    expect(labels.some((label) => label.includes('English'))).toBe(false)
+  })
+
+  it('moves settings, theme and language into the user menu on a narrow navbar', async () => {
+    const wrapper = await mountNarrow(['system_admin'])
+    expect(wrapper.find('.navbar__settings').exists()).toBe(false)
+    expect(wrapper.find('.navbar__locale').exists()).toBe(false)
+    expect(wrapper.find('.notification-bell').exists()).toBe(true)
+    expect(menuLabels(wrapper)).toEqual([
+      'حسابي',
+      'الإعدادات',
+      'التبديل إلى الوضع النهاري',
+      'English',
+      'تسجيل الخروج',
+    ])
+  })
+
+  it('switches the theme from the narrow user menu', async () => {
+    const wrapper = await mountNarrow(['entity'])
+    const ui = useUiStore()
+    const before = ui.theme
+    const themeItem = wrapper
+      .findAll('[role="menuitem"]')
+      .find((item) => item.text().startsWith('التبديل إلى'))
+    await themeItem.trigger('click')
+    expect(ui.theme).not.toBe(before)
+    expect(menuLabels(wrapper).some((label) => label.includes('الإعدادات'))).toBe(false)
   })
 })
