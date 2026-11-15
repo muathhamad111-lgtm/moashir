@@ -66,6 +66,14 @@ return [
         ],
     ],
 
+    'users' => [
+        'avatar' => [
+            'max_kb' => 2048,
+            'min_side_px' => 200,
+            'max_side_px' => 2000,
+        ],
+    ],
+
     'assessment' => [
         'scale_kind' => env('ASSESSMENT_SCALE_KIND', 'of_10'),
         'draft_notice_cooldown_minutes' => 60,

@@ -218,9 +218,9 @@ test.describe('contact inbox', () => {
 test.describe('contact retention', () => {
   test('the System Administrator saves the retention period', async ({ page }, testInfo) => {
     await signIn(page, testInfo, USERS.systemAdmin)
-    await open(page, '/admin/settings/contact-messages', 'input[name="retentionMonths"]')
+    await open(page, '/admin/settings/general', 'input[name="retentionMonths"]')
     await page.locator('input[name="retentionMonths"]').fill('12')
-    await page.locator('.settings-section__footer button[type="submit"]').click()
+    await page.locator('[data-testid="contact-retention-settings"] button[type="submit"]').click()
     await expect(page.locator('.toast').first()).toContainText(text(testInfo, 'saved', 'حُفظت'))
   })
 })
@@ -350,7 +350,7 @@ const CAPTURES = [
   ],
   [
     'contact-settings',
-    '/admin/settings/contact-messages',
+    '/admin/settings/general',
     'input[name="retentionMonths"]',
     USERS.systemAdmin,
   ],

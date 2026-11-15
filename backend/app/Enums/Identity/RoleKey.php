@@ -16,6 +16,17 @@ enum RoleKey: string
     case FinanceOfficer = 'finance_officer';
     case Entity = 'entity';
 
+    /**
+     * @return list<string>
+     */
+    public static function staffValues(): array
+    {
+        return array_values(array_map(
+            static fn (self $role): string => $role->value,
+            array_filter(self::cases(), static fn (self $role): bool => $role->isStaff()),
+        ));
+    }
+
     public function isStaff(): bool
     {
         return $this !== self::Entity;

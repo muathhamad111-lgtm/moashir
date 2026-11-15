@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { usePublicHome } from '@/composables/useHomeContent'
 import { useBrandLogo } from '@/composables/useBrandLogo'
+import { usePlatformIdentity } from '@/composables/usePlatformIdentity'
 import { HOME_ANCHORS, HOME_NAV_LINKS } from '@/constants/homeSections'
 import LegalLink from '@/components/legal/LegalLink.vue'
 import { FOOTER_LEGAL_LINKS } from '@/constants/footer'
@@ -14,6 +15,7 @@ const { t } = useI18n()
 const router = useRouter()
 const { logoOnDark } = useBrandLogo()
 const { siteSettings, localized } = usePublicHome()
+const { platformName, platformDescription } = usePlatformIdentity()
 
 const year = new Date().getFullYear()
 
@@ -55,8 +57,8 @@ function onQuickLink(event, url) {
     <div class="footer__container">
       <div class="footer__top">
         <div class="footer__brand">
-          <img class="footer__logo" :src="logoOnDark" :alt="t('app.name')" loading="lazy" />
-          <p class="footer__tagline">{{ t('footer.description') }}</p>
+          <img class="footer__logo" :src="logoOnDark" :alt="platformName" loading="lazy" />
+          <p class="footer__tagline">{{ platformDescription }}</p>
         </div>
 
         <nav v-if="quickLinks.length" class="footer__nav" :aria-label="t('nav.footerLabel')">

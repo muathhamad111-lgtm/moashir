@@ -11,6 +11,7 @@ use App\Enums\Identity\PermissionKey;
 use App\Models\Identity\Permission;
 use App\Models\Identity\Role;
 use App\Models\Identity\User;
+use App\Services\Identity\AccountAvatarResolver;
 use App\Services\Identity\SessionClock;
 use App\Services\Identity\SessionTimeouts;
 use Illuminate\Database\Eloquent\Collection;
@@ -22,6 +23,7 @@ final readonly class ResolveSessionContext
         private SessionTimeouts $timeouts,
         private EntityAccounts $entityAccounts,
         private CommitteeAppointmentsReader $committeeAppointments,
+        private AccountAvatarResolver $avatars,
     ) {}
 
     public function handle(User $user): SessionContext
@@ -37,6 +39,7 @@ final readonly class ResolveSessionContext
             $this->timeouts->idleMinutesFor($user),
             $this->entityAccounts->sessionSummaryOf($user),
             $this->committeeAppointments->of($user),
+            $this->avatars->of($user),
         );
     }
 

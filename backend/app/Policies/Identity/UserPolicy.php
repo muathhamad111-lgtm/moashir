@@ -40,6 +40,11 @@ final class UserPolicy
         return $this->authorizeOn($actor, $target, PermissionKey::UsersManage);
     }
 
+    public function manageOwnAvatar(User $actor): bool
+    {
+        return ! $actor->isEntityUser();
+    }
+
     private function authorizeOn(User $actor, User $target, PermissionKey $permission): Response
     {
         if ($target->isSuperAdmin()) {

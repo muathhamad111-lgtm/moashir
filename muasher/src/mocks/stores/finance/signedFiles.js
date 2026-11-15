@@ -74,12 +74,15 @@ function verifiedLink(url, user) {
   return fileId
 }
 
+export async function storedFileBody(file) {
+  return fileContents.get(file.id) ?? (await transferProofSample(file)) ?? placeholderContent(file)
+}
+
 export async function fileDownloadResponse(request, user) {
   const file = findFile(verifiedLink(new URL(request.url), user))
   if (!file) throw financeReject.notFound()
   if (file.scanStatus !== 'clean') throw financeReject.fileNotClean()
-  const body =
-    fileContents.get(file.id) ?? (await transferProofSample(file)) ?? placeholderContent(file)
+  const body = await storedFileBody(file)
   return new HttpResponse(body, {
     status: 200,
     headers: {

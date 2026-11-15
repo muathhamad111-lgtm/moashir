@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
-import ContactMessages from '@/views/settings/ContactMessages.vue'
+import ContactRetentionCard from '@/components/settings/general/ContactRetentionCard.vue'
 import { contactSettingsService } from '@/services/contactSettingsService'
 import { changedContactSettings, contactSettingsSchema } from '@/utils/settings/contactSettingsForm'
 import { useAuthStore } from '@/stores/auth'
@@ -49,14 +49,16 @@ describe('contact retention form rules', () => {
   })
 })
 
-describe('contact retention screen', () => {
-  it('saves a new retention period', async () => {
+describe('contact retention card in the general settings', () => {
+  it('keeps digits only and saves a new retention period', async () => {
     const globals = createTestGlobals({ locale: 'en' })
     useAuthStore(globals.pinia).setUser(sessionUserFor(['system_admin']))
-    const wrapper = mount(ContactMessages, { global: globals, attachTo: document.body })
+    const wrapper = mount(ContactRetentionCard, { global: globals, attachTo: document.body })
     await flushPromises()
-    expect(wrapper.text()).toContain('A whole number from 1 to 120 months.')
-    await wrapper.find('input[name="retentionMonths"]').setValue('12')
+    expect(wrapper.find('legend').text()).toBe('Contact messages')
+    const input = wrapper.find('input[name="retentionMonths"]')
+    await input.setValue('1a2-')
+    expect(input.element.value).toBe('12')
     await wrapper.find('form').trigger('submit')
     await vi.waitFor(() =>
       expect(contactSettingsService.update).toHaveBeenCalledWith({ retentionMonths: 12 }),

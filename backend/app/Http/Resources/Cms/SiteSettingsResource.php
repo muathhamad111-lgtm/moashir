@@ -22,6 +22,8 @@ final class SiteSettingsResource extends JsonResource
         $contact = $settings->contact ?? [];
 
         return [
+            'platform_name' => $settings->platform_name?->toArray(),
+            'platform_description' => $settings->platform_description?->toArray(),
             'social' => $settings->social,
             'contact' => [
                 'email' => $contact['email'] ?? null,
@@ -30,6 +32,7 @@ final class SiteSettingsResource extends JsonResource
             ],
             'footer_note' => $settings->footer_note?->toArray(),
             'quick_links' => $settings->quick_links,
+            'header_links' => $settings->header_links,
             'seo' => [
                 'title' => $settings->seo['title'] ?? null,
                 'description' => $settings->seo['description'] ?? null,

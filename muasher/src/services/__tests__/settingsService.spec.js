@@ -17,28 +17,20 @@ beforeEach(() => {
 })
 
 describe('settingsService', () => {
-  it('gets the general section from its own endpoint and no longer offers the sign-in modes', async () => {
-    apiClient.get.mockResolvedValue({ data: envelope })
-    await settingsService.getGeneral()
-    expect(apiClient.get).toHaveBeenCalledWith('/settings/general')
+  it('no longer offers the general section, now served by the auth and site settings', () => {
+    expect(settingsService).not.toHaveProperty('getGeneral')
+    expect(settingsService).not.toHaveProperty('updateGeneral')
     expect(settingsService).not.toHaveProperty('getOtp')
   })
 
-  it('updates a section via PUT and logs only the payload SHAPE (never a value)', async () => {
-    apiClient.put.mockResolvedValue({ data: envelope })
-    await settingsService.updateGeneral({
-      platformName: { ar: 'منصة مؤشر', en: 'Moashir' },
-      contactEmail: 'info@moashir.example.sa',
-    })
-    expect(apiClient.put).toHaveBeenCalledWith('/settings/general', {
-      platformName: { ar: 'منصة مؤشر', en: 'Moashir' },
-      contactEmail: 'info@moashir.example.sa',
-    })
+  it('logs only the payload SHAPE of an upload (never a value)', async () => {
+    apiClient.post.mockResolvedValue({ data: envelope })
+    await settingsService.uploadKbFile({ name: 'guide-moashir.example.pdf' })
     const breadcrumb = logger.breadcrumb.mock.calls.find(
-      (call) => call[1] === 'settings.updateGeneral',
+      (call) => call[1] === 'settings.uploadKbFile',
     )
-    expect(breadcrumb[2].payloadShape).toEqual(['platformName', 'contactEmail'])
-    expect(JSON.stringify(breadcrumb[2])).not.toContain('example.sa')
+    expect(breadcrumb[2].payloadShape).toEqual(['name'])
+    expect(JSON.stringify(breadcrumb[2])).not.toContain('example')
   })
 
   it('manages KB files (list/upload/approve/remove/retrain)', async () => {
@@ -69,10 +61,10 @@ describe('settingsService', () => {
   it('reports failures to Sentry and rethrows (never swallows)', async () => {
     const failure = new Error('boom')
     apiClient.get.mockRejectedValue(failure)
-    await expect(settingsService.getGeneral()).rejects.toBe(failure)
+    await expect(settingsService.listKbFiles()).rejects.toBe(failure)
     expect(logger.error).toHaveBeenCalledWith(
       failure,
-      expect.objectContaining({ action: 'settings.getGeneral' }),
+      expect.objectContaining({ action: 'settings.listKbFiles' }),
     )
   })
 })

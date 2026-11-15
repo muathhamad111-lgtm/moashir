@@ -3,15 +3,18 @@
 declare(strict_types=1);
 
 use App\Data\Entities\EntityNotice;
+use App\Enums\Audit\AuditEvent;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Notifications\NotificationChannel;
 use App\Enums\Notifications\NotificationCode;
+use App\Enums\Settings\SettingKey;
 use App\Models\Identity\User;
 use App\Models\Notifications\Notification;
 use App\Models\Notifications\NotificationPreference;
 use App\Notifications\Channels\InAppChannel;
 use App\Notifications\Entities\EntityNotification;
 use App\Services\Entities\ErasedOwnerAnonymizer;
+use App\Services\Settings\SettingsStore;
 use App\Support\ValueObjects\LocalizedText;
 use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Notifications\Events\NotificationSkipped;
@@ -147,6 +150,19 @@ it('skips the e-mail of a type the recipient turned off and still delivers it in
     Event::assertDispatched(NotificationSent::class, static fn (NotificationSent $event): bool => $event->notifiable->is($owner) && $event->channel === InAppChannel::class);
     Event::assertDispatched(NotificationSent::class, static fn (NotificationSent $event): bool => $event->notifiable->is($other) && $event->channel === 'mail');
     expect(Notification::query()->where('user_id', $owner->id)->where('code', 'SELF-03')->count())->toBe(1);
+});
+
+it('stops the e-mail of every general type when the platform turns it off, and still e-mails mandatory types', function (): void {
+    Event::fake([NotificationSent::class, NotificationSkipped::class]);
+    app(SettingsStore::class)->put(SettingKey::GeneralEmailNotifications, false, AuditEvent::AuthSettingsUpdated, null);
+    $owner = ownerOf(entityWithOwner());
+
+    sendEntityNotice($owner, NotificationCode::SelfAssessmentSubmitted);
+    sendEntityNotice($owner, NotificationCode::PaymentSucceeded);
+
+    Event::assertDispatched(NotificationSkipped::class, static fn (NotificationSkipped $event): bool => $event->notifiable->is($owner) && $event->channel === 'mail' && $event->notification->notificationCode() === NotificationCode::SelfAssessmentSubmitted);
+    Event::assertDispatched(NotificationSent::class, static fn (NotificationSent $event): bool => $event->channel === 'mail' && $event->notification->notificationCode() === NotificationCode::PaymentSucceeded);
+    Event::assertDispatched(NotificationSent::class, static fn (NotificationSent $event): bool => $event->channel === InAppChannel::class && $event->notification->notificationCode() === NotificationCode::SelfAssessmentSubmitted);
 });
 
 it('always e-mails a mandatory type, even with a stored opt-out row', function (): void {

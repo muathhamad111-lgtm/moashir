@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import PublicNavbar from '@/components/layout/PublicNavbar.vue'
 import { useAuthStore } from '@/stores/auth'
+import { usePublicHomeStore } from '@/stores/publicHome'
 import { createTestGlobals } from '@/test-utils'
 
 let wrapper = null
@@ -33,6 +34,35 @@ describe('PublicNavbar', () => {
     expect(links[4].attributes('href')).toBe('/kpis')
     expect(wrapper.find('.public-navbar__login-full').text()).toBe('تسجيل الدخول')
     expect(wrapper.text()).toContain('إنشاء حساب جهة')
+  })
+
+  it('renders the managed header menu with anchors, pages and external links', () => {
+    const globals = createTestGlobals({ locale: 'en' })
+    usePublicHomeStore(globals.pinia).siteSettings = {
+      platformName: { ar: 'منصة مؤشر', en: 'Moashir platform' },
+      headerLinks: [
+        { label: { ar: 'المسارات', en: 'Paths' }, url: '/#paths' },
+        { label: { ar: 'المؤشرات', en: 'Indicators' }, url: '/kpis' },
+        { label: { ar: 'الدليل', en: 'Guide' }, url: 'https://guide.example.sa' },
+      ],
+    }
+    mountNavbar(globals)
+    const links = wrapper.findAll('.public-navbar__menu .public-nav-links__link')
+    expect(links.map((link) => link.text())).toEqual(['Paths', 'Indicators', 'Guide'])
+    expect(links.map((link) => link.attributes('href'))).toEqual([
+      '/#paths',
+      '/kpis',
+      'https://guide.example.sa',
+    ])
+    expect(links[2].attributes('rel')).toBe('noopener noreferrer')
+    expect(wrapper.find('.public-navbar__logo').attributes('alt')).toBe('Moashir platform')
+  })
+
+  it('shows no header link once the managed menu is emptied', () => {
+    const globals = createTestGlobals({ locale: 'en' })
+    usePublicHomeStore(globals.pinia).siteSettings = { headerLinks: [] }
+    mountNavbar(globals)
+    expect(wrapper.findAll('.public-navbar__menu .public-nav-links__link')).toHaveLength(0)
   })
 
   it('shows the dashboard action instead of sign-in when authenticated', () => {

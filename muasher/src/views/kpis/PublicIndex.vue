@@ -18,8 +18,10 @@ import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import { usePlatformIdentity } from '@/composables/usePlatformIdentity'
 
 const { t } = useI18n()
+const { platformName } = usePlatformIdentity()
 const router = useRouter()
 const catalog = useKpisCatalog()
 const {
@@ -76,7 +78,7 @@ function setDraft(draft, key, value) {
       <div class="kpis-page__hero-inner">
         <span class="kpis-page__eyebrow">
           <AppIcon name="chart-line" />
-          {{ t('app.name') }}
+          {{ platformName }}
         </span>
         <h1 class="kpis-page__title">{{ heroTitle }}</h1>
         <p class="kpis-page__subtitle">{{ heroSubtitle }}</p>

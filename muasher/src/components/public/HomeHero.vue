@@ -14,6 +14,7 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import BrandPattern from '@/components/ui/BrandPattern.vue'
 import HeroPreviewCard from '@/components/public/HeroPreviewCard.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import { usePlatformIdentity } from '@/composables/usePlatformIdentity'
 
 const props = defineProps({
   section: { type: Object, required: true },
@@ -23,6 +24,7 @@ const props = defineProps({
 const router = useRouter()
 const auth = useAuthStore()
 const { t } = useI18n()
+const { platformName } = usePlatformIdentity()
 const { paused, toggle: toggleMotion } = useAmbientMotion()
 const { isVisible: isMotionControlVisible } = useMotionControls()
 
@@ -31,7 +33,7 @@ const secondaryCta = computed(
   () => items.value.find((item) => roleOf(item) === 'secondary-cta') ?? null,
 )
 const points = computed(() => items.value.filter((item) => roleOf(item) === 'point'))
-const eyebrow = computed(() => props.localized(props.section.meta?.eyebrow) || t('app.name'))
+const eyebrow = computed(() => props.localized(props.section.meta?.eyebrow) || platformName.value)
 const titleWords = computed(() => splitWords(props.localized(props.section.title)))
 const highlightWords = computed(() => splitWords(props.localized(props.section.meta?.highlight)))
 const lead = computed(

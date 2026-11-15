@@ -43,7 +43,10 @@ describe('navigation constants', () => {
     expect(
       APP_NAV_ITEMS.filter((item) => !navAccessOf(item)?.anyOf?.length).map((item) => item.id),
     ).toEqual([])
-    expect(accessFor('admin.branding').anyOf).toEqual([PERMISSIONS.SETTINGS_BRANDING_MANAGE])
+    expect(accessFor('admin.branding').anyOf).toEqual([
+      PERMISSIONS.SETTINGS_BRANDING_MANAGE,
+      PERMISSIONS.CONTENT_HOME_MANAGE,
+    ])
   })
 })
 

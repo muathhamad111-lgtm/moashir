@@ -179,7 +179,7 @@ describe('router guards — payments and finance', () => {
     expect((await visit('/payments')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
     signIn([ROLES.SYSTEM_ADMIN])
     expect((await visit('/finance/payment-events')).name).toBe(ROUTE_NAMES.FINANCE_PAYMENT_EVENTS)
-    expect((await visit('/admin/settings/finance')).name).toBe(ROUTE_NAMES.ADMIN_SETTINGS_FINANCE)
+    expect((await visit('/admin/settings/finance')).name).toBe(ROUTE_NAMES.ADMIN_SETTINGS_GENERAL)
     expect((await visit('/admin/operations')).name).toBe(ROUTE_NAMES.FINANCE_OVERVIEW)
   })
 

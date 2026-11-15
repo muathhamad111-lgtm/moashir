@@ -9,11 +9,16 @@ use App\Models\Identity\User;
 use App\Notifications\Contracts\HasNotificationCode;
 use App\Services\Notifications\NotificationPreferences;
 use App\Services\Notifications\NotificationTypeCatalog;
+use App\Services\Settings\GeneralEmailNotifications;
 use Illuminate\Notifications\Events\NotificationSending;
 
 final readonly class SkipDisabledDeliveryChannel
 {
-    public function __construct(private NotificationTypeCatalog $catalog, private NotificationPreferences $preferences) {}
+    public function __construct(
+        private NotificationTypeCatalog $catalog,
+        private NotificationPreferences $preferences,
+        private GeneralEmailNotifications $generalEmail,
+    ) {}
 
     public function handle(NotificationSending $event): ?bool
     {
@@ -27,6 +32,10 @@ final readonly class SkipDisabledDeliveryChannel
 
         if (! $this->catalog->of($code)->allowsOptOut($channel)) {
             return null;
+        }
+
+        if ($channel === NotificationChannel::Email && ! $this->generalEmail->isEnabled()) {
+            return false;
         }
 
         return $this->preferences->isDisabled($event->notifiable->id, $code, $channel) ? false : null;

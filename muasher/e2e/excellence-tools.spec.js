@@ -226,16 +226,16 @@ test.describe('excellence tools — staff and settings', () => {
     await expect(rules).toContainText('2')
   })
 
-  test('lets the System Administrator set the VAT number and shows the reminder when empty', async ({
+  test('lets the System Administrator set the optional VAT number in the general settings', async ({
     page,
   }, testInfo) => {
     await seedSignedIn(page, ADMIN, { locale: localeOf(testInfo), theme: 'light' })
-    await open(page, '/admin/settings/finance', 'input[name="vatRegistrationNumber"]')
-    await expect(page.locator('[data-testid="vat-number-reminder"]')).toBeVisible()
+    await open(page, '/admin/settings/general', 'input[name="vatRegistrationNumber"]')
     await page.locator('input[name="vatRegistrationNumber"]').fill('300012345600003')
-    await capture(page, 'settings-finance-vat', testInfo)
-    await page.locator('button[form="finance-settings-form"]').click()
-    await expect(page.locator('[data-testid="vat-number-reminder"]')).toHaveCount(0)
+    await capture(page, 'settings-general-vat', testInfo)
+    await page.locator('[data-testid="tax-settings"] .btn--primary').click()
+    await expect(page.locator('.toast--success').last()).toBeVisible()
+    await expect(page.locator('input[name="vatRegistrationNumber"]')).toHaveValue('300012345600003')
   })
 
   test('lets the assessor write the summary under review', async ({ page }, testInfo) => {

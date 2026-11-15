@@ -8,6 +8,7 @@ import { useRequestPathNav } from '@/composables/useRequestPathNav'
 import { useSidebarGroups } from '@/composables/useSidebarGroups'
 import { useUiStore } from '@/stores/ui'
 import { useBackOfficeLogo } from '@/composables/useBackOfficeLogo'
+import { useSidebarTooltip } from '@/composables/useSidebarTooltip'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import {
   APP_NAV_ITEMS,
@@ -42,6 +43,12 @@ const activeGroupId = computed(
   () => groups.value.find((group) => group.items.some(isActive))?.id ?? null,
 )
 const { isExpanded, toggle } = useSidebarGroups(activeGroupId)
+const tooltip = useSidebarTooltip()
+
+function onHint(label, element) {
+  if (label) tooltip.show(label, element)
+  else tooltip.hide()
+}
 </script>
 
 <template>
@@ -54,11 +61,11 @@ const { isExpanded, toggle } = useSidebarGroups(activeGroupId)
       <img class="sidebar__logo" :src="sidebarLogo" :alt="t('shell.brandHome')" />
     </router-link>
 
-    <div class="sidebar__scroll">
+    <div class="sidebar__scroll" @scroll.passive="tooltip.hide">
       <template v-for="group in groups" :key="group.id">
         <ul v-if="group.headless" class="sidebar__menu sidebar__menu--headless">
           <li v-for="item in group.items" :key="item.id" class="sidebar__entry">
-            <SidebarItem :item="item" :active="isActive(item)" :collapsed="sidebarCollapsed" />
+            <SidebarItem :item="item" :active="isActive(item)" @hint="onHint" />
           </li>
         </ul>
         <div
@@ -90,11 +97,21 @@ const { isExpanded, toggle } = useSidebarGroups(activeGroupId)
             :class="{ 'sidebar__menu--closed': !isExpanded(group.id) }"
           >
             <li v-for="item in group.items" :key="item.id" class="sidebar__entry">
-              <SidebarItem :item="item" :active="isActive(item)" :collapsed="sidebarCollapsed" />
+              <SidebarItem :item="item" :active="isActive(item)" @hint="onHint" />
             </li>
           </ul>
         </div>
       </template>
     </div>
+    <Teleport to="body">
+      <span
+        v-if="tooltip.hint.value"
+        class="sidebar-tooltip"
+        role="tooltip"
+        :style="tooltip.style.value"
+      >
+        {{ tooltip.hint.value.label }}
+      </span>
+    </Teleport>
   </nav>
 </template>

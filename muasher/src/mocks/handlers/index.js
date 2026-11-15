@@ -11,7 +11,7 @@ import { entityLifecycleHandlers } from './entityLifecycle'
 import { entityEmailChangesHandlers } from './entityEmailChanges'
 import { regionsHandlers } from './regions'
 import { assessmentsHandlers } from './assessments'
-import { knowledgeBaseHandlers, platformSettingsHandlers } from './settings'
+import { knowledgeBaseHandlers } from './settings'
 import { notificationTypesHandlers } from './notificationTypes'
 import { certificateSettingsHandlers } from './certificateSettings'
 import { integrationsHandlers } from './integrations'
@@ -46,6 +46,7 @@ import { dashboardHandlers } from './dashboard'
 import { entityBoardHandlers } from './entityBoard'
 import { brandingHandlers } from './branding'
 import { profileHandlers } from './profile'
+import { accountAvatarHandlers } from './accountAvatar'
 import { searchHandlers } from './search'
 import { sanctumHandlers } from './sanctum'
 import { contactMessagesHandlers } from './contactMessages'
@@ -86,7 +87,6 @@ export const handlers = [
   ...smsIntegrationHandlers,
   ...emailIntegrationHandlers,
   ...aiIntegrationHandlers,
-  ...platformSettingsHandlers,
   ...notificationTypesHandlers,
   ...paymentsHandlers,
   ...moyasarSandboxHandlers,
@@ -116,5 +116,6 @@ export const handlers = [
   ...dashboardHandlers,
   ...brandingHandlers,
   ...profileHandlers,
+  ...accountAvatarHandlers,
   ...searchHandlers,
 ]

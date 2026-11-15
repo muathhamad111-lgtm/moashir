@@ -10,6 +10,7 @@ import EmptyState from '@/components/feedback/EmptyState.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import PermissionModuleCard from '@/components/account/PermissionModuleCard.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import ProfilePhotoCard from '@/components/account/ProfilePhotoCard.vue'
 
 const { t, locale } = useI18n()
 const auth = useAuthStore()
@@ -22,6 +23,7 @@ const displayName = computed(() => {
 })
 
 const email = computed(() => auth.user?.email ?? auth.user?.officialEmail ?? '')
+const isEntityAccount = computed(() => auth.isEntity || Boolean(auth.user?.entityId))
 </script>
 
 <template>
@@ -30,6 +32,12 @@ const email = computed(() => auth.user?.email ?? auth.user?.officialEmail ?? '')
       <h1 class="page-header__title">{{ t('account.title') }}</h1>
       <p class="page-header__subtitle">{{ t('account.subtitle') }}</p>
     </header>
+
+    <ProfilePhotoCard v-if="!isEntityAccount" />
+    <p v-else class="account-page__note" data-testid="profile-photo-entity-hint">
+      <AppIcon name="info-circle" />
+      {{ t('account.avatar.entityHint') }}
+    </p>
 
     <div class="account-page__grid">
       <Card :title="t('account.identity.title')" class="account-page__identity">

@@ -194,9 +194,9 @@ test.describe('entity sign-in: password or code', () => {
     const email = page.locator('input[name="codeChannelEmail"]')
     const sms = page.locator('input[name="codeChannelSms"]')
     await expect(email).toBeChecked()
-    await expect(email).toBeDisabled()
+    await expect(email).toBeEnabled()
     await expect(sms).not.toBeChecked()
-    await expect(page.locator('.sign-in-channels__warning')).toBeVisible()
+    await expect(page.locator('.sign-in-channels__warning')).toHaveCount(0)
     await page.locator('label.checkbox:has([name="codeChannelSms"])').click()
     await expect(sms).toBeChecked()
     const saved = page.waitForResponse(
@@ -204,7 +204,7 @@ test.describe('entity sign-in: password or code', () => {
         new URL(response.url()).pathname === '/api/v1/settings/auth' &&
         response.request().method() === 'PUT',
     )
-    await page.locator('.settings-section button[type="submit"]').click()
+    await page.locator('[data-testid="verification-settings"] button[type="submit"]').click()
     expect((await saved).status()).toBe(200)
     await expect(page.locator('.toast').first()).toBeVisible()
     await signOut(page)

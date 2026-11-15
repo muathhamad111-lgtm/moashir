@@ -11,6 +11,7 @@ use App\Enums\Identity\RoleKey;
 use App\Enums\Identity\SessionGroup;
 use App\Enums\Identity\ThemePreference;
 use App\Enums\Identity\UserStatus;
+use App\Models\Files\StoredFile;
 use App\Models\Notifications\Notification;
 use App\Observers\Identity\UserPhoneIndexObserver;
 use App\Support\Search\SearchTextNormalizer;
@@ -23,6 +24,7 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -42,6 +44,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon|null $phone_verified_at
  * @property string|null $password
  * @property int|null $entity_id
+ * @property int|null $avatar_file_id
  * @property bool $password_change_required
  * @property bool $is_super_admin
  * @property UserStatus $status
@@ -103,14 +106,14 @@ final class User extends Authenticatable implements Auditable, HasLocalePreferen
     /**
      * @var list<string>
      */
-    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'is_super_admin', 'phone_index'];
+    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'is_super_admin', 'phone_index', 'avatar_file_id'];
 
     /**
      * @var list<string>
      */
     protected array $auditExclude = [
         'password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes',
-        'failed_login_attempts', 'last_login_at', 'last_login_ip', 'phone', 'phone_index',
+        'failed_login_attempts', 'last_login_at', 'last_login_ip', 'phone', 'phone_index', 'avatar_file_id',
     ];
 
     /**
@@ -136,6 +139,14 @@ final class User extends Authenticatable implements Auditable, HasLocalePreferen
             'locked_until' => 'datetime',
             'deactivated_at' => 'datetime',
         ];
+    }
+
+    /**
+     * @return BelongsTo<StoredFile, $this>
+     */
+    public function avatar(): BelongsTo
+    {
+        return $this->belongsTo(StoredFile::class, 'avatar_file_id');
     }
 
     /**

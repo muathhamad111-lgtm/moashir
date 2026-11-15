@@ -145,6 +145,45 @@ it('reads and partially updates the site settings, audits them and refreshes the
         ->and($audit->old_values['featured_kpi_limit'])->toBe(6);
 });
 
+it('stores the platform name, description and header menu, and serves them with a fallback language', function (): void {
+    cmsSection();
+    $editor = contentOfficer();
+    publishPage(CmsPageKey::Home, $editor);
+    $this->getJson('/api/v1/content/home')
+        ->assertJsonPath('data.site_settings.platform_name', null)
+        ->assertJsonCount(6, 'data.site_settings.header_links')
+        ->assertJsonPath('data.site_settings.header_links.0', ['label' => ['ar' => 'الرئيسية', 'en' => 'Home'], 'url' => '/'])
+        ->assertJsonPath('data.site_settings.header_links.4.url', '/kpis');
+
+    $this->patchJson('/api/v1/admin/content/site-settings', [
+        'platform_name' => ['ar' => 'منصة مؤشر', 'en' => 'Moashir'],
+        'platform_description' => ['ar' => 'قياس التميز', 'en' => ''],
+        'header_links' => [
+            ['label' => ['ar' => 'الرئيسية', 'en' => 'Home'], 'url' => '/'],
+            ['label' => ['ar' => 'المسارات', 'en' => 'Paths'], 'url' => '/#paths'],
+        ],
+    ])->assertOk()
+        ->assertJsonPath('data.platform_name', ['ar' => 'منصة مؤشر', 'en' => 'Moashir'])
+        ->assertJsonPath('data.platform_description', ['ar' => 'قياس التميز', 'en' => ''])
+        ->assertJsonPath('data.header_links.1.url', '/#paths');
+
+    $this->getJson('/api/v1/content/home')
+        ->assertJsonPath('data.site_settings.platform_name.en', 'Moashir')
+        ->assertJsonPath('data.site_settings.platform_description', ['ar' => 'قياس التميز', 'en' => 'قياس التميز'])
+        ->assertJsonPath('data.site_settings.header_links.0.label', ['ar' => 'الرئيسية', 'en' => 'Home']);
+
+    $audit = Audit::query()->where('event', AuditEvent::CmsSiteSettingsUpdated->value)->sole();
+    expect(array_keys($audit->new_values))->toEqualCanonicalizing(['platform_name', 'platform_description', 'header_links']);
+});
+
+it('lets the content officer empty the header menu', function (): void {
+    signIn(contentOfficer());
+
+    $this->patchJson('/api/v1/admin/content/site-settings', ['header_links' => []])
+        ->assertOk()
+        ->assertJsonPath('data.header_links', []);
+});
+
 it('rejects unknown keys and invalid site settings values', function (array $payload, string $field): void {
     signIn(staffUser(RoleKey::SystemAdmin));
 
@@ -157,6 +196,10 @@ it('rejects unknown keys and invalid site settings values', function (array $pay
     'unknown platform' => [['social' => [['platform' => 'myspace', 'url' => 'https://example.sa']]], 'social.0.platform'],
     'unsafe quick link' => [['quick_links' => [['label' => ['ar' => 'رابط'], 'url' => 'javascript:void(0)']]], 'quick_links.0.url'],
     'empty quick link label' => [['quick_links' => [['label' => ['ar' => '', 'en' => ''], 'url' => '/kpis']]], 'quick_links.0.label.ar'],
+    'unsafe header link' => [['header_links' => [['label' => ['ar' => 'رابط', 'en' => 'Link'], 'url' => 'javascript:void(0)']]], 'header_links.0.url'],
+    'header link label too long' => [['header_links' => [['label' => ['ar' => str_repeat('ر', 41), 'en' => 'Link'], 'url' => '/']]], 'header_links.0.label.ar'],
+    'too many header links' => [['header_links' => array_fill(0, 9, ['label' => ['ar' => 'رابط', 'en' => 'Link'], 'url' => '/'])], 'header_links'],
+    'platform name too long' => [['platform_name' => ['ar' => str_repeat('م', 121), 'en' => 'Moashir']], 'platform_name.ar'],
     'featured limit too high' => [['featured_kpi_limit' => 9], 'featured_kpi_limit'],
     'invalid e-mail' => [['contact' => ['email' => 'not-an-email']], 'contact.email'],
 ]);

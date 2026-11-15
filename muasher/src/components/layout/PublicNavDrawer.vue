@@ -5,6 +5,7 @@ import { ROUTE_NAMES } from '@/constants/routeNames'
 import { useAuthStore } from '@/stores/auth'
 import { useBrandLogo } from '@/composables/useBrandLogo'
 import { useFocusTrap } from '@/composables/useFocusTrap'
+import { usePlatformIdentity } from '@/composables/usePlatformIdentity'
 import LocaleSwitcher from '@/components/ui/LocaleSwitcher.vue'
 import ThemeToggle from '@/components/ui/ThemeToggle.vue'
 import PublicNavLinks from './PublicNavLinks.vue'
@@ -12,6 +13,7 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   open: { type: Boolean, required: true },
+  links: { type: Array, required: true },
   isActive: { type: Function, required: true },
 })
 
@@ -20,6 +22,7 @@ const emit = defineEmits(['update:open', 'navigate'])
 const { t } = useI18n()
 const auth = useAuthStore()
 const { themedLogo } = useBrandLogo()
+const { platformName } = usePlatformIdentity()
 const panelRef = ref(null)
 const isOpen = computed(() => props.open)
 
@@ -44,7 +47,7 @@ const { onKeydown } = useFocusTrap(panelRef, { isActive: isOpen, onEscape: close
           :aria-label="t('nav.menuTitle')"
         >
           <div class="nav-drawer__head">
-            <img class="nav-drawer__logo" :src="themedLogo" :alt="t('app.name')" />
+            <img class="nav-drawer__logo" :src="themedLogo" :alt="platformName" />
             <button
               type="button"
               class="nav-drawer__close"
@@ -56,6 +59,7 @@ const { onKeydown } = useFocusTrap(panelRef, { isActive: isOpen, onEscape: close
           </div>
           <nav class="nav-drawer__nav" :aria-label="t('nav.publicLabel')">
             <PublicNavLinks
+              :links="links"
               variant="drawer"
               :is-active="isActive"
               @navigate="(event, link) => emit('navigate', event, link)"

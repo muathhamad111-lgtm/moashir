@@ -22,10 +22,6 @@ export const HOME_NAV_LINKS = Object.freeze([
   { id: HOME_ANCHORS.contact, labelKey: 'nav.contact' },
 ])
 
-export const HOME_SPY_ANCHORS = Object.freeze(
-  HOME_NAV_LINKS.filter((link) => !link.routeName).map((link) => link.id),
-)
-
 export const TOUR_STEP_MS = 5000
 
 export const SECTION_ALIGN = Object.freeze({ start: 'start', center: 'center' })

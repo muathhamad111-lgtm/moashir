@@ -201,7 +201,9 @@ test('unified workspace: module groups, no role switcher, profile lists roles an
   await expect(page).toHaveURL(/\/account$/)
   await expect(page.locator('.account-page__role-list .badge')).toHaveCount(2)
   await expect(page.locator('.permission-module').first()).toBeVisible()
-  await expect(page.locator('.account-page input, .account-page select')).toHaveCount(0)
+  await expect(
+    page.locator('.account-page input:not([type="file"]), .account-page select'),
+  ).toHaveCount(0)
   await page.screenshot({ path: `${SHOTS}/account-${suffix(testInfo)}.png`, fullPage: true })
   expect(errors).toEqual([])
 })
@@ -227,7 +229,7 @@ test('branding: System Administrator picks an accent, the back office applies it
 }, testInfo) => {
   const errors = trackConsole(page)
   await seedSession(page, { roles: ['system_admin'], locale: isEn(testInfo) ? 'en' : 'ar' })
-  await page.goto('/admin/branding')
+  await page.goto('/admin/branding?tab=visual')
   await expect(page.locator('.accent-swatch')).toHaveCount(9)
   await expect(page.locator('html')).toHaveAttribute('data-accent', 'brand_default')
 
@@ -271,7 +273,7 @@ test('branding: the dark-background logo drives the sidebar in light mode, previ
     locale: isEn(testInfo) ? 'en' : 'ar',
     theme: 'light',
   })
-  await page.goto('/admin/branding')
+  await page.goto('/admin/branding?tab=visual')
   await expect(page.locator('.sidebar__logo')).toHaveAttribute('src', SIDEBAR_LOGO)
   await expect(page.locator('.logo-variant[data-surface="light"]')).toHaveCount(0)
   const darkField = page.locator('.logo-variant[data-surface="dark"]')
@@ -312,11 +314,21 @@ test('branding: the dark-background logo drives the sidebar in light mode, previ
   expect(errors).toEqual([])
 })
 
-test('branding is hidden from and forbidden to non-administrators', async ({ page }, testInfo) => {
+test('the visual identity tab is hidden from the content officer', async ({ page }, testInfo) => {
   await seedSession(page, {
-    roles: ['content_officer', 'finance_officer'],
+    roles: ['content_officer'],
     locale: isEn(testInfo) ? 'en' : 'ar',
   })
+  await page.goto('/admin/branding?tab=visual')
+  await expect(page.locator('.tabs__tab')).toHaveCount(2)
+  await expect(page.locator('.accent-swatch')).toHaveCount(0)
+  await expect(page.locator('#identity-general-heading')).toBeVisible()
+})
+
+test('brand identity is hidden from and forbidden to staff without either permission', async ({
+  page,
+}, testInfo) => {
+  await seedSession(page, { roles: ['finance_officer'], locale: isEn(testInfo) ? 'en' : 'ar' })
   await page.goto('/dashboard')
   await expect(page.locator('.sidebar a[href="/admin/branding"]')).toHaveCount(0)
   await page.goto('/admin/branding')
@@ -367,4 +379,20 @@ test('settings hub on the new shell offers the branding card to the System Admin
     path: `${SHOTS}/settings-hub-light-${suffix(testInfo)}.png`,
     fullPage: true,
   })
+})
+
+test('the System Administrator header keeps every control on one row at a narrow tablet width', async ({
+  page,
+}, testInfo) => {
+  await page.setViewportSize({ width: 466, height: 900 })
+  await seedSession(page, { roles: ['system_admin'], locale: isEn(testInfo) ? 'en' : 'ar' })
+  await page.goto('/admin/settings')
+  const navbar = page.locator('header.navbar--app')
+  await expect(navbar.locator('.navbar__avatar')).toBeVisible()
+
+  const rowTops = await navbar.evaluate((header) =>
+    [...header.children].map((child) => Math.round(child.getBoundingClientRect().top)),
+  )
+  expect(new Set(rowTops).size).toBe(1)
+  expect(await navbar.evaluate((header) => header.scrollWidth <= header.clientWidth)).toBe(true)
 })

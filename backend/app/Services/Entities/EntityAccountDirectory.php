@@ -9,12 +9,14 @@ use App\Contracts\Identity\EntityAccounts;
 use App\Data\Identity\EntitySessionSummary;
 use App\Enums\Identity\EntityStanding;
 use App\Models\Entities\Entity;
+use App\Models\Files\StoredFile;
 use App\Models\Identity\User;
 use App\Support\ValueObjects\UnifiedNumber;
+use Illuminate\Contracts\Auth\Access\Gate;
 
 final readonly class EntityAccountDirectory implements EntityAccounts
 {
-    public function __construct(private VerifyEntityRegistration $verifyRegistration) {}
+    public function __construct(private VerifyEntityRegistration $verifyRegistration, private Gate $gate) {}
 
     public function standingOf(User $user): EntityStanding
     {
@@ -52,6 +54,18 @@ final readonly class EntityAccountDirectory implements EntityAccounts
             $entity->status->value,
             $entity->hasCompleteProfile(),
         );
+    }
+
+    public function logoOf(User $user): ?StoredFile
+    {
+        $entity = $user->entity_id === null ? null : Entity::query()->with('logo')->find($user->entity_id);
+        $logo = $entity?->logo;
+
+        if (! $logo instanceof StoredFile || ! $logo->isScannedClean() || $this->gate->forUser($user)->denies('viewLogo', $entity)) {
+            return null;
+        }
+
+        return $logo;
     }
 
     public function ownerWithUnifiedNumber(UnifiedNumber $number): ?User

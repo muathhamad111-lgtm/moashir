@@ -1,35 +1,41 @@
 <script setup>
-import { useI18n } from 'vue-i18n'
-import { HOME_ANCHORS, HOME_NAV_LINKS } from '@/constants/homeSections'
-import { ROUTE_NAMES } from '@/constants/routeNames'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 defineProps({
+  links: { type: Array, required: true },
   isActive: { type: Function, required: true },
   variant: { type: String, default: 'bar' },
 })
 
 const emit = defineEmits(['navigate'])
-const { t } = useI18n()
-
-function targetOf(link) {
-  if (link.routeName) return { name: link.routeName }
-  if (link.id === HOME_ANCHORS.hero) return { name: ROUTE_NAMES.PUBLIC_HOME }
-  return { name: ROUTE_NAMES.PUBLIC_HOME, hash: `#${link.id}` }
-}
 </script>
 
 <template>
   <ul class="public-nav-links" :class="`public-nav-links--${variant}`">
-    <li v-for="link in HOME_NAV_LINKS" :key="link.id">
+    <li v-for="link in links" :key="link.key">
+      <a
+        v-if="link.href"
+        class="public-nav-links__link"
+        :href="link.href"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <span>{{ link.label }}</span>
+        <AppIcon
+          v-if="variant === 'drawer'"
+          name="chevron-right"
+          class="public-nav-links__chevron"
+        />
+      </a>
       <router-link
+        v-else
         class="public-nav-links__link"
         :class="{ 'is-active': isActive(link) }"
-        :to="targetOf(link)"
+        :to="link.to"
         :aria-current="isActive(link) ? 'location' : undefined"
         @click="emit('navigate', $event, link)"
       >
-        <span>{{ t(link.labelKey) }}</span>
+        <span>{{ link.label }}</span>
         <AppIcon
           v-if="variant === 'drawer'"
           name="chevron-right"

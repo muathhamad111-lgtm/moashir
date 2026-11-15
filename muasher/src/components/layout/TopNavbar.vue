@@ -18,6 +18,7 @@ import AppMenu from '@/components/ui/AppMenu.vue'
 import Badge from '@/components/ui/Badge.vue'
 import GlobalSearch from '@/components/search/GlobalSearch.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import AccountAvatar from '@/components/account/AccountAvatar.vue'
 
 const { t, locale } = useI18n()
 const router = useRouter()
@@ -37,8 +38,6 @@ const displayName = computed(() => {
   if (!name) return t('nav.userFallback')
   return typeof name === 'object' ? (name[locale.value] ?? name.ar ?? name.en ?? '') : name
 })
-
-const initial = computed(() => Array.from(displayName.value.trim())[0] ?? '')
 
 const roleLabels = computed(() => auth.roles.map((role) => t(`users.roleLabels.${role}`)))
 
@@ -109,7 +108,7 @@ function onUserAction(key) {
           @select="onUserAction"
         >
           <template #trigger>
-            <span aria-hidden="true">{{ initial }}</span>
+            <AccountAvatar />
           </template>
           <template #header>
             <div class="navbar__user-head">

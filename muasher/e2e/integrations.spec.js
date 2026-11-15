@@ -257,23 +257,24 @@ test('sms providers, Saudi test numbers, test send and the Msegat template check
   )
 })
 
-test('e-mail moves from the environment bootstrap to settings with the DNS checklist and a test e-mail', async ({
+test('e-mail moves from the environment bootstrap to settings with a test e-mail and no DNS checklist', async ({
   page,
 }, testInfo) => {
   test.setTimeout(60000)
   await seed(page, testInfo)
   await page.goto('/admin/settings/email')
-  await expect(page.locator('.environment-note')).toBeVisible()
-  await expect(card(page, 0)).toContainText(/Source: environment|المصدر: متغيرات البيئة/)
+  await expect(page.locator('.environment-note')).toHaveCount(0)
+  await expect(card(page, 0).locator('.integration-card__desc, .badge')).toHaveCount(0)
+  await expect(page.locator('[data-testid="email-test-mode"]')).toBeHidden()
   await button(page, /Test connection|اختبار الاتصال/).click()
   await expect(page.locator('.test-result')).toContainText(
     /Encrypted connection and sign-in|الاتصال المشفّر وتسجيل الدخول/,
   )
-  const dns = page.locator('.dns-checklist__item')
-  await expect(dns.nth(0)).toContainText(/Found|موجود/)
-  await expect(dns.nth(2)).toContainText(/Not found|غير موجود/)
+  await expect(page.locator('.dns-checklist')).toHaveCount(0)
+  await expect(page.locator('.provider-steps')).toHaveCount(0)
 
   await radio(page, 'mode', 'test').click()
+  await expect(page.locator('[data-testid="email-test-mode"]')).toBeVisible()
   await saveButton(page).click()
   await expect(
     page
@@ -288,8 +289,6 @@ test('e-mail moves from the environment bootstrap to settings with the DNS check
   await page.locator('input[name="password"]').fill(FAKE.smtpPassword)
   await save(page)
   await expectNoSecretAnywhere(page, FAKE.smtpPassword)
-  await expect(card(page, 0)).toContainText(/Source: settings|المصدر: الإعدادات/)
-  await expect(page.locator('.environment-note')).toHaveCount(0)
 
   await page.locator('input[name="recipient"]').fill('it-team@moashir.example.sa')
   await button(page, /^Send test e-mail$|^إرسال بريد تجريبي$/).click()

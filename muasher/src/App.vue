@@ -12,6 +12,7 @@ import AuthLayout from '@/components/layout/AuthLayout.vue'
 import PortalLayout from '@/components/layout/PortalLayout.vue'
 import { useLocale } from '@/composables/useLocale'
 import { useTheme } from '@/composables/useTheme'
+import { usePlatformIdentity } from '@/composables/usePlatformIdentity'
 import { useBrandingStore } from '@/stores/branding'
 import { useAuthStore } from '@/stores/auth'
 import { layoutKeyFor } from '@/utils/portalAudience'
@@ -32,6 +33,8 @@ const backOfficeAccent = computed(() =>
   layoutKey.value === 'app' ? branding.accentToken : undefined,
 )
 
+const { platformName, siteName } = usePlatformIdentity()
+
 useHead({
   htmlAttrs: {
     lang: () => locale.value,
@@ -39,8 +42,8 @@ useHead({
     'data-theme': () => theme.value,
     'data-accent': () => backOfficeAccent.value,
   },
-  title: () => (route.meta.titleKey ? t(route.meta.titleKey) : t('app.name')),
-  titleTemplate: (title) => (title ? `${title} | ${t('meta.siteName')}` : t('meta.siteName')),
+  title: () => (route.meta.titleKey ? t(route.meta.titleKey) : platformName.value),
+  titleTemplate: (title) => (title ? `${title} | ${siteName.value}` : siteName.value),
   link: [
     { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
     { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' },

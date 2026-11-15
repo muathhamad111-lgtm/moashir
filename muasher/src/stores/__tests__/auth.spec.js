@@ -160,3 +160,28 @@ describe('auth store — cookie session, nothing in browser storage', () => {
     expect(auth.isAuthenticated).toBe(false)
   })
 })
+
+describe('auth store — account avatar', () => {
+  it('applies a new avatar without touching the rest of the session', () => {
+    const auth = useAuthStore()
+    auth.setUser(user)
+    auth.applyAvatar({ source: 'photo', url: '/api/v1/me/avatar?v=1' })
+    expect(auth.user).toMatchObject({ id: 5001, avatar: { source: 'photo' } })
+    auth.applyAvatar(undefined)
+    expect(auth.user.avatar).toBeNull()
+  })
+
+  it('refreshes only the avatar from the session and keeps the user when that fails', async () => {
+    const auth = useAuthStore()
+    auth.setUser(user)
+    authService.session.mockResolvedValueOnce({
+      data: { ...user, name: 'Changed', avatar: { source: 'entity_logo', url: '/x' } },
+    })
+    await auth.refreshAvatar()
+    expect(auth.user.avatar).toEqual({ source: 'entity_logo', url: '/x' })
+    expect(auth.user.name).toBe('Entity')
+    authService.session.mockRejectedValueOnce(new Error('offline'))
+    await auth.refreshAvatar()
+    expect(auth.user).toMatchObject({ id: 5001, avatar: { source: 'entity_logo' } })
+  })
+})

@@ -94,6 +94,7 @@ export const SITE_SETTINGS_LIMITS = Object.freeze({
   featuredMax: 6,
   socialMax: 10,
   quickLinksMax: 12,
+  headerLinksMax: 8,
 })
 
 export const SOCIAL_PLATFORM_KEYS = Object.freeze([

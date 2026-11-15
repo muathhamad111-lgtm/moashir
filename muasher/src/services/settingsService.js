@@ -3,19 +3,6 @@ import { payloadShape } from '@/utils/payloadShape'
 import { serviceRequest } from './serviceRequest'
 
 export const settingsService = {
-  getGeneral() {
-    return serviceRequest('settings.getGeneral', () => apiClient.get('/settings/general'), {
-      entity: 'settings-general',
-    })
-  },
-  updateGeneral(payload) {
-    return serviceRequest(
-      'settings.updateGeneral',
-      () => apiClient.put('/settings/general', payload),
-      { entity: 'settings-general', payloadShape: payloadShape(payload) },
-    )
-  },
-
   listKbFiles(params = {}) {
     return serviceRequest(
       'settings.listKbFiles',

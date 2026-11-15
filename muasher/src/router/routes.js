@@ -798,7 +798,6 @@ export const appRoutes = [
     name: ROUTE_NAMES.ADMIN_SETTINGS_GENERAL,
     component: () => import('@/views/settings/General.vue'),
     meta: {
-      awaitsBackend: true,
       layout: 'app',
       titleKey: 'routes.admin.settings.general.title',
       requiresAuth: true,
@@ -806,13 +805,7 @@ export const appRoutes = [
   },
   {
     path: '/admin/settings/sign-in',
-    name: ROUTE_NAMES.ADMIN_SETTINGS_SIGN_IN,
-    component: () => import('@/views/settings/SignInSecurity.vue'),
-    meta: {
-      layout: 'app',
-      titleKey: 'routes.admin.settings.signIn.title',
-      requiresAuth: true,
-    },
+    redirect: { name: ROUTE_NAMES.ADMIN_SETTINGS_GENERAL },
   },
   {
     path: '/admin/settings/assessment',
@@ -887,9 +880,7 @@ export const appRoutes = [
   },
   {
     path: '/admin/settings/finance',
-    name: ROUTE_NAMES.ADMIN_SETTINGS_FINANCE,
-    component: () => import('@/views/settings/Finance.vue'),
-    meta: { layout: 'app', titleKey: 'routes.admin.settings.finance.title', requiresAuth: true },
+    redirect: { name: ROUTE_NAMES.ADMIN_SETTINGS_GENERAL },
   },
   {
     path: '/admin/settings/prices',
@@ -1050,13 +1041,7 @@ export const appRoutes = [
   },
   {
     path: '/admin/settings/contact-messages',
-    name: ROUTE_NAMES.ADMIN_SETTINGS_CONTACT_MESSAGES,
-    component: () => import('@/views/settings/ContactMessages.vue'),
-    meta: {
-      layout: 'app',
-      titleKey: 'routes.admin.settings.contactMessages.title',
-      requiresAuth: true,
-    },
+    redirect: { name: ROUTE_NAMES.ADMIN_SETTINGS_GENERAL },
   },
   {
     path: '/admin/audit-log',

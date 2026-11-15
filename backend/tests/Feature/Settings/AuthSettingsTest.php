@@ -26,16 +26,34 @@ function isSignInChannelsAlert(SecurityAlertNotification $alert): bool
     return $alert->code() === NotificationCode::EntitySignInCodeChannelsChanged;
 }
 
-it('shows e-mail as the only entity sign-in code channel by default, the SMS gateway state and staff TOTP as mandatory', function (): void {
+it('shows e-mail as the only entity sign-in code channel by default, the SMS gateway state and two-factor for every staff role', function (): void {
     signIn(systemAdmin());
 
     $this->getJson(AUTH_SETTINGS)
         ->assertOk()
         ->assertExactJson(['data' => [
             'entity_sign_in_code_channels' => ['email'],
+            'general_email_notifications' => true,
+            'two_factor_enabled' => true,
+            'two_factor_roles' => RoleKey::staffValues(),
             'sms_status' => 'live',
-            'staff_totp_required' => true,
         ], 'meta' => [], 'errors' => null]);
+});
+
+it('turns the e-mail of general notifications off, audits it and raises no sign-in channel alert', function (): void {
+    $actor = systemAdmin();
+    signIn($actor);
+
+    $this->putJson(AUTH_SETTINGS, ['general_email_notifications' => false])
+        ->assertOk()
+        ->assertJsonPath('data.general_email_notifications', false)
+        ->assertJsonPath('data.entity_sign_in_code_channels', ['email']);
+
+    $audit = Audit::query()->where('event', AuditEvent::AuthSettingsUpdated->value)->sole();
+    expect($audit->old_values)->toBe([SettingKey::GeneralEmailNotifications->value => true])
+        ->and($audit->new_values)->toBe([SettingKey::GeneralEmailNotifications->value => false])
+        ->and($audit->user_id)->toBe($actor->id);
+    Notification::assertNotSentTo($actor, SecurityAlertNotification::class);
 });
 
 it('reports the SMS gateway as unavailable or in test mode', function (): void {
@@ -165,4 +183,6 @@ it('validates the payload', function (array $payload, string $field): void {
     'too many channels' => [['entity_sign_in_code_channels' => ['email', 'sms', 'email']], 'entity_sign_in_code_channels'],
     'e-mail missing' => [['entity_sign_in_code_channels' => ['sms']], 'entity_sign_in_code_channels'],
     'short reason' => [['entity_sign_in_code_channels' => ['email', 'sms'], 'reason' => 'قصير'], 'reason'],
+    'general e-mail not a boolean' => [['general_email_notifications' => 'sometimes'], 'general_email_notifications'],
+    'general e-mail null' => [['general_email_notifications' => null], 'general_email_notifications'],
 ]);

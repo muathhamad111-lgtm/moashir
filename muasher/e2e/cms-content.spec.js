@@ -112,14 +112,15 @@ test('a section item is added with an uploaded image and hidden from the draft',
   await page.screenshot({ path: `${SHOTS}/items-${suffix(testInfo)}.png`, fullPage: true })
 })
 
-test('site settings refuse an unsafe link with the server field error', async ({
+test('the brand identity menus refuse an unsafe header link with the server field error', async ({
   page,
 }, testInfo) => {
   await signInAs(page, ['content_officer'], testInfo)
-  await openEditor(page)
-  await page.locator('.tabs__tab').last().click()
+  await page.goto('/admin/branding?tab=menus')
+  await expect(page.locator('.tabs__tab')).toHaveCount(2)
   await expect(page.locator('.site-settings__form')).toBeVisible()
-  await page.locator('input[name="quickUrl-0"]').fill('javascript:alert(1)')
+  await expect(page.locator('input[name="headerLinksUrl-0"]')).toHaveValue('/')
+  await page.locator('input[name="headerLinksUrl-0"]').fill('javascript:alert(1)')
   await page.locator('.site-settings__footer .btn--primary').click()
   await expect(
     page.locator('.site-settings__form .field__error, .site-settings__form [role="alert"]').first(),
@@ -192,7 +193,7 @@ test('KPI administration: create, record a value and reorder everything by drag 
 
 test('the Super Admin gives a reason before the identity changes', async ({ page }, testInfo) => {
   await signInAs(page, [], testInfo, { superAdmin: true, name: 'Super Admin' })
-  await page.goto('/admin/branding')
+  await page.goto('/admin/branding?tab=visual')
   await expect(page.locator('.accent-swatch')).toHaveCount(9)
   await page.locator('.accent-swatch').nth(2).click()
   await page.locator('.branding-page__actions .btn--primary').click()

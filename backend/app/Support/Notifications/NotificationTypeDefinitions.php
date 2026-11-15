@@ -37,6 +37,7 @@ final class NotificationTypeDefinitions
         'SEC-05' => ['IE', [A::SuperAdmin], true],
         'SEC-06' => ['IE', [A::SuperAdmin], true],
         'SEC-07' => ['IE', [A::SuperAdmin, A::SystemAdmin], true],
+        'SEC-08' => ['IE', [A::SuperAdmin, A::SystemAdmin], true],
         'STD-01' => ['I', [A::CriteriaOfficer, A::SystemAdmin], false],
         'STD-02' => ['I', [A::CriteriaOfficer, A::SystemAdmin], false],
         'STD-03' => ['I', [A::CriteriaOfficer], false],

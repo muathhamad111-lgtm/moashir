@@ -133,6 +133,7 @@
 @use 'components/settings-form';
 @use 'components/path-prices';
 @use 'components/sign-in-security';
+@use 'components/general-settings';
 @use 'components/phone-otp';
 @use 'components/homepage-cms';
 @use 'components/cms-editor';
@@ -221,7 +222,6 @@
 @use 'components/refund-form';
 @use 'components/refund-evidence';
 @use 'components/payment-events';
-@use 'components/finance-preview';
 @use 'components/selection-checkbox';
 @use 'components/method-option';
 @use 'components/channels-card';
@@ -249,6 +249,8 @@
 @use 'components/branding-preview';
 @use 'components/logo-variant';
 @use 'components/account';
+@use 'components/account-avatar';
+@use 'components/profile-photo';
 @use 'components/maintenance';
 @use 'components/page-header';
 @use 'components/publication-control';

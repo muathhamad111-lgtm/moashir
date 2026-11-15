@@ -6,9 +6,9 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 const props = defineProps({
   item: { type: Object, required: true },
   active: { type: Boolean, default: false },
-  collapsed: { type: Boolean, default: false },
 })
 
+const emit = defineEmits(['hint'])
 const { t } = useI18n()
 const label = computed(() => props.item.label ?? t(props.item.labelKey))
 </script>
@@ -20,7 +20,10 @@ const label = computed(() => props.item.label ?? t(props.item.labelKey))
     :to="{ name: item.routeName, query: item.query }"
     :aria-current="active ? 'page' : undefined"
     :aria-label="item.accessibleLabel ?? label"
-    :title="collapsed ? label : undefined"
+    @mouseenter="emit('hint', label, $event.currentTarget)"
+    @focus="emit('hint', label, $event.currentTarget)"
+    @mouseleave="emit('hint', null)"
+    @blur="emit('hint', null)"
   >
     <AppIcon :name="item.icon" class="sidebar__icon" />
     <span class="sidebar__label">{{ label }}</span>

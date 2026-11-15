@@ -211,20 +211,21 @@ test('refunds and abandoned carts are listed for their permission holders', asyn
   await expect(page.locator('.settings-form__contact').first()).toContainText('***@')
 })
 
-test('finance settings edit prices and VAT with a server preview', async ({ page }, testInfo) => {
+test('the general settings edit the VAT rate from the tax card', async ({ page }, testInfo) => {
   const errors = trackConsole(page)
   await seedStaff(page, testInfo, STAFF.systemAdmin)
   await page.goto('/admin/settings/finance')
+  await expect(page).toHaveURL(/\/admin\/settings\/general$/)
   await expect(page.locator('input[name="vatRate"]')).toHaveValue('15.00')
   await page.screenshot({
     path: `test-results/finance-settings-${suffixOf(testInfo)}.png`,
     fullPage: true,
   })
   await page.locator('input[name="vatRate"]').fill('5')
-  await page.locator('.settings-section .btn--primary').click()
+  await page.locator('[data-testid="tax-settings"] .btn--primary').click()
   await expect(page.locator('.toast--success').last()).toBeVisible()
   await expect(page.locator('input[name="vatRate"]')).toHaveValue('5.00')
-  await expect(page.locator('.finance-preview__card').first()).toContainText('1,050.00')
+  await expect(page.locator('.finance-preview__card')).toHaveCount(0)
   expect(errors).toEqual([])
 })
 
@@ -232,14 +233,10 @@ test('the Super Admin gives a reason before a finance setting changes', async ({
   page,
 }, testInfo) => {
   await seedStaff(page, testInfo, STAFF.superAdmin)
-  await page.goto('/admin/settings/finance')
+  await page.goto('/admin/settings/general')
   await expect(page.locator('input[name="bagPrice"]')).toHaveCount(0)
-  await expect(page.locator('[data-testid="finance-prices-moved"] a')).toHaveAttribute(
-    'href',
-    '/admin/settings/prices',
-  )
   await page.locator('input[name="vatRate"]').fill('5')
-  await page.locator('.settings-section .btn--primary').click()
+  await page.locator('[data-testid="tax-settings"] .btn--primary').click()
   const dialog = page.getByRole('dialog')
   await dialog.locator('textarea[name="reason"]').fill('Approved VAT change for the next cycle.')
   await dialog.locator('button[type="submit"]').click()

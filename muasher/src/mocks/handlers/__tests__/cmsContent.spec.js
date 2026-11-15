@@ -187,6 +187,25 @@ describe('CMS mock — Content Officer writes (Task-33 §3 #6-#24)', () => {
     expect(Object.keys(refused.body.errors).sort()).toEqual(['colour', 'featuredKpiLimit'])
   })
 
+  it('stores the platform identity and the header menu, and serves them on the public home', async () => {
+    const saved = await call('PATCH', '/admin/content/site-settings', {
+      platformName: { ar: 'منصة مؤشر', en: '' },
+      headerLinks: [{ label: { ar: 'المسارات', en: 'Paths' }, url: '/#paths' }],
+    })
+    expect(saved.body.data.platformName).toEqual({ ar: 'منصة مؤشر', en: '' })
+    const refused = await call('PATCH', '/admin/content/site-settings', {
+      headerLinks: [{ label: { ar: '', en: '' }, url: 'javascript:alert(1)' }],
+    })
+    expect(Object.keys(refused.body.errors).sort()).toEqual([
+      'headerLinks.0.label.ar',
+      'headerLinks.0.url',
+    ])
+    await call('POST', '/admin/content/pages/home/publish')
+    const home = await call('GET', '/content/home')
+    expect(home.body.data.siteSettings.platformName).toEqual({ ar: 'منصة مؤشر', en: 'منصة مؤشر' })
+    expect(home.body.data.siteSettings.headerLinks[0].url).toBe('/#paths')
+  })
+
   it('denies the CMS to a role without content.home.manage', async () => {
     seedMockSession({ id: 7002, roles: ['finance_officer'] })
     expect((await call('GET', '/admin/content/pages')).status).toBe(403)

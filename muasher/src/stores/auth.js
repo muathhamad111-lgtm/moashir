@@ -33,6 +33,13 @@ export const useAuthStore = defineStore('auth', {
       if (!this.user) return
       this.user = { ...this.user, ...patch }
     },
+    applyAvatar(avatar) {
+      this.patchUser({ avatar: avatar ?? null })
+    },
+    async refreshAvatar() {
+      const session = await authService.session().catch(() => null)
+      if (session) this.applyAvatar(session.data?.avatar)
+    },
     ensureSession() {
       if (this.sessionChecked) return Promise.resolve(this.user)
       if (!pendingSessionCheck) {

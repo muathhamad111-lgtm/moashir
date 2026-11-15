@@ -303,12 +303,12 @@ test('connected modules answer from the server and the modules awaiting their ba
   expect(api.unexpected([...GUEST_PROBES, PAYMENT_UNAVAILABLE, PAGE_NOT_PUBLISHED])).toEqual([])
 })
 
-test('the platform settings screen shows coming soon to the administrator', async () => {
+test('the general settings screen shows the verification mechanism to the administrator', async () => {
   const { page, api } = sessions.admin
   await visit(page, '/admin/settings/general')
-  await expect(page.locator('.coming-soon')).toBeVisible()
-  await shot(page, 'admin-settings-general-coming-soon')
-  expect(api.sourcesOf(/^\/api\/v1\/settings\/general$/)).toEqual([])
+  await expect(page.locator('.sign-in-channels')).toBeVisible()
+  await shot(page, 'admin-settings-general')
+  expect(api.sourcesOf(/^\/api\/v1\/settings\/auth$/)).toEqual([SOURCES.BACKEND])
   expect(api.unexpected(GUEST_PROBES)).toEqual([])
 })
 

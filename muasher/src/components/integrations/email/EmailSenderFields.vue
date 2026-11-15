@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useField } from 'vee-validate'
 import { useI18n } from 'vue-i18n'
 import FieldInput from '@/components/form/FieldInput.vue'
 import FieldRadio from '@/components/form/FieldRadio.vue'
@@ -7,6 +8,8 @@ import FieldToggle from '@/components/form/FieldToggle.vue'
 import { INTEGRATION_MODES } from '@/constants/integrations'
 
 const { t } = useI18n()
+const { value: mode } = useField('mode')
+const isTestMode = computed(() => mode.value === INTEGRATION_MODES.TEST)
 const modeOptions = computed(() =>
   Object.values(INTEGRATION_MODES).map((value) => ({
     value,
@@ -45,15 +48,17 @@ const modeOptions = computed(() =>
       />
     </div>
     <FieldRadio name="mode" :label="t('integrations.email.fields.mode')" :options="modeOptions" />
-    <p class="field__hint">{{ t('integrations.email.modeHint') }}</p>
-    <FieldInput
-      name="testAddress"
-      type="email"
-      :label="t('integrations.email.fields.testAddress')"
-      input-dir="ltr"
-      autocomplete="off"
-      :hint="t('integrations.email.fields.testAddressHint')"
-    />
+    <div v-show="isTestMode" class="email-sender__test" data-testid="email-test-mode">
+      <p class="field__hint">{{ t('integrations.email.modeHint') }}</p>
+      <FieldInput
+        name="testAddress"
+        type="email"
+        :label="t('integrations.email.fields.testAddress')"
+        input-dir="ltr"
+        autocomplete="off"
+        :hint="t('integrations.email.fields.testAddressHint')"
+      />
+    </div>
     <FieldToggle
       name="active"
       :label="t('integrations.email.fields.active')"

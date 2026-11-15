@@ -1,3 +1,5 @@
+import { toAvatar } from './avatar'
+
 function roleKeyOf(role) {
   return typeof role === 'string' ? role : (role?.key ?? null)
 }
@@ -33,6 +35,7 @@ export function toSessionUser(raw = {}) {
     passwordChangeRequired: raw.passwordChangeRequired === true,
     entityId: raw.entityId ?? entity?.id ?? null,
     entity,
+    avatar: toAvatar(raw.avatar),
     committeeAppointments: [...(raw.committeeAppointments ?? [])],
     assessorQualifications: [...(raw.assessorQualifications ?? [])],
     requestScope: toRequestScope(raw.requestScope),

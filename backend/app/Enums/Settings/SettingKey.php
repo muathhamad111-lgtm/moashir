@@ -9,6 +9,7 @@ use App\Enums\Certificates\CertificateLevel;
 use App\Enums\Files\EvidenceFileType;
 use App\Enums\Finance\PaymentChannel;
 use App\Enums\Identity\OtpChannel;
+use App\Enums\Identity\RoleKey;
 use App\Enums\Integrations\CardNetwork;
 use App\Enums\Integrations\CheckoutPattern;
 use App\Enums\Integrations\IntegrationKind;
@@ -63,6 +64,9 @@ enum SettingKey: string
     case AccreditedCertificateIssuance = 'certificates.accredited_issuance_enabled';
     case ContactRetentionMonths = 'contact.retention_months';
     case EntitySignInCodeChannels = 'auth.entity_sign_in_code_channels';
+    case GeneralEmailNotifications = 'auth.general_email_notifications';
+    case TwoFactorEnabled = 'auth.two_factor_enabled';
+    case TwoFactorRoles = 'auth.two_factor_roles';
     case InsightsGapThresholds = 'insights.gap_thresholds';
     case InsightsMaturityBands = 'insights.maturity_bands';
     case VatRegistrationNumber = 'finance.vat_registration_number';
@@ -91,7 +95,7 @@ enum SettingKey: string
             self::AdvancedEvidenceMaxFilesPerSub, self::ContactRetentionMonths, self::PeriodicNoticeDaysBefore,
             self::PeriodicPaidDraftReminderDays => SettingType::Integer,
             self::VatRate, self::AdvancedDisqualificationScore => SettingType::Decimal,
-            self::AccreditedCertificateIssuance => SettingType::Boolean,
+            self::AccreditedCertificateIssuance, self::GeneralEmailNotifications, self::TwoFactorEnabled => SettingType::Boolean,
             default => SettingType::Json,
         };
     }
@@ -125,6 +129,8 @@ enum SettingKey: string
             self::CertificateLevelThresholds => CertificateLevel::DEFAULT_THRESHOLDS,
             self::AccreditedCertificateIssuance => true,
             self::EntitySignInCodeChannels => [OtpChannel::Email->value],
+            self::GeneralEmailNotifications, self::TwoFactorEnabled => true,
+            self::TwoFactorRoles => RoleKey::staffValues(),
             self::ContactRetentionMonths => 24,
             self::InsightsGapThresholds => GapThresholds::DEFAULTS,
             self::InsightsMaturityBands => MaturityBounds::DEFAULTS,

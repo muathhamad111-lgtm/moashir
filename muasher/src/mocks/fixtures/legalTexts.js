@@ -51,7 +51,9 @@ export const legalTextsFixture = {
           ],
           true,
         ),
-        paragraph('لتقديم طلب يتعلق بالبيانات الشخصية اختاروا هذا النوع في نموذج «تواصل معنا».'),
+        paragraph(
+          'قدّموا طلبكم عبر نموذج «تواصل معنا» مع ذكر نوع الطلب (اطلاع أو نسخة أو تصحيح أو إتلاف).',
+        ),
       ],
       en: [
         paragraph('Draft for legal review — last updated: [[approval date]]'),
@@ -83,7 +85,9 @@ export const legalTextsFixture = {
           ],
           true,
         ),
-        paragraph('To submit a personal data request, choose that type in the Contact us form.'),
+        paragraph(
+          'Submit your request through the Contact us form, stating the type of request (access, copy, correction or destruction).',
+        ),
       ],
     },
   },

@@ -75,7 +75,8 @@
   color: var(--theme-heading);
 }
 
-.site-settings__desc {
+.site-settings__desc,
+.site-settings__hint {
   margin: 0;
   color: var(--theme-text-muted);
   font-size: var(--fs-sm);

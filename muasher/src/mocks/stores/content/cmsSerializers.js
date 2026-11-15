@@ -119,6 +119,12 @@ export function siteSettingsResource() {
 export function publicSiteSettings() {
   const settings = cmsState.siteSettings
   return {
+    platformName: withFallback(settings.platformName),
+    platformDescription: withFallback(settings.platformDescription),
+    headerLinks: (settings.headerLinks ?? []).map((link) => ({
+      label: withFallback(link.label),
+      url: link.url,
+    })),
     social: clone(settings.social),
     contact: {
       email: settings.contact?.email ?? null,

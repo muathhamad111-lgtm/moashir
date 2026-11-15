@@ -17,6 +17,7 @@ import { usePermissions } from '@/composables/usePermissions'
 import { THEMES } from '@/constants/themes'
 import PortalMenuEntry from '@/components/portal/PortalMenuEntry.vue'
 import LevelBadge from '@/components/level/LevelBadge.vue'
+import AccountAvatar from '@/components/account/AccountAvatar.vue'
 import { useEntityLevel } from '@/composables/useEntityLevel'
 import { PORTAL_TOOLS } from '@/constants/portal'
 
@@ -69,7 +70,7 @@ onMounted(() => entityStore.loadProfile().catch(() => null))
     </header>
 
     <div class="portal-more__identity">
-      <span class="portal-more__avatar" aria-hidden="true">{{ identity.initial.value }}</span>
+      <span class="portal-more__avatar" aria-hidden="true"><AccountAvatar /></span>
       <span class="portal-more__names">
         <span class="portal-more__entity">{{ identity.entityName.value }}</span>
         <span class="portal-more__user"

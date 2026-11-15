@@ -24,21 +24,9 @@ const sections = computed(() => [
     group: 'platform',
   },
   {
-    key: 'signIn',
-    to: ROUTE_NAMES.ADMIN_SETTINGS_SIGN_IN,
-    icon: 'shield-info',
-    group: 'platform',
-  },
-  {
     key: 'assessment',
     to: ROUTE_NAMES.ADMIN_SETTINGS_ASSESSMENT,
     icon: 'list-check',
-    group: 'platform',
-  },
-  {
-    key: 'finance',
-    to: ROUTE_NAMES.ADMIN_SETTINGS_FINANCE,
-    icon: 'sar',
     group: 'platform',
   },
   {
@@ -57,12 +45,6 @@ const sections = computed(() => [
     key: 'notifications',
     to: ROUTE_NAMES.ADMIN_SETTINGS_NOTIFICATIONS,
     icon: 'bell',
-    group: 'platform',
-  },
-  {
-    key: 'contactMessages',
-    to: ROUTE_NAMES.ADMIN_SETTINGS_CONTACT_MESSAGES,
-    icon: 'envelope',
     group: 'platform',
   },
   {

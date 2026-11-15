@@ -28,6 +28,7 @@ enum NotificationCode: string
     case SuperAdminAssignmentRejected = 'SEC-05';
     case IntegrationSecretReplaced = 'SEC-06';
     case EntitySignInCodeChannelsChanged = 'SEC-07';
+    case TwoFactorPolicyChanged = 'SEC-08';
     case CriteriaMainCreated = 'STD-01';
     case CriteriaMainWeightChanged = 'STD-02';
     case CriteriaSubCreated = 'STD-03';

@@ -13,8 +13,10 @@ function smsStatusOf(raw) {
 function toAuthSettings(raw = {}) {
   return {
     entitySignInCodeChannels: normalizedCodeChannels(raw.entitySignInCodeChannels),
+    generalEmailNotifications: raw.generalEmailNotifications !== false,
+    twoFactorEnabled: raw.twoFactorEnabled !== false,
+    twoFactorRoles: Array.isArray(raw.twoFactorRoles) ? [...raw.twoFactorRoles] : [],
     smsStatus: smsStatusOf(raw.smsStatus),
-    staffTotpRequired: raw.staffTotpRequired === true,
   }
 }
 

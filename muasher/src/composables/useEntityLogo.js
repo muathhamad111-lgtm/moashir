@@ -2,24 +2,20 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { entitiesService } from '@/services/entitiesService'
 import { useEntityStore } from '@/stores/entity'
+import { useAuthStore } from '@/stores/auth'
 import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
 import { imageDimensionsOf } from '@/utils/imageDimensions'
 import { logoDimensionIssue, logoFileIssue } from '@/utils/entityLogoRules'
 import { ENTITY_LOGO_LINK_LIFETIME_MS } from '@/constants/entityProfile'
-
-function serverMessage(failure, t) {
-  const normalized = failure?.normalized ?? {}
-  const field = normalized.fieldErrors?.file
-  if (field) return Array.isArray(field) ? field[0] : field
-  return normalized.message || t('errors.unexpected')
-}
+import { fileUploadMessage } from '@/utils/fileUploadError'
 
 export function useEntityLogo() {
   const { t } = useI18n()
   const toast = useToast()
   const { confirm } = useConfirm()
   const entityStore = useEntityStore()
+  const auth = useAuthStore()
   const busy = ref(false)
   const error = ref('')
   let loadedAt = Date.now()
@@ -37,9 +33,10 @@ export function useEntityLogo() {
       const { data } = await entitiesService.uploadLogo(file)
       entityStore.applyProfile(data)
       loadedAt = Date.now()
+      auth.refreshAvatar()
       toast.success(t('portal.profile.logo.uploaded'))
     } catch (failure) {
-      error.value = serverMessage(failure, t)
+      error.value = fileUploadMessage(failure, t('errors.unexpected'))
     } finally {
       busy.value = false
     }
@@ -59,8 +56,9 @@ export function useEntityLogo() {
     try {
       const { data } = await entitiesService.removeLogo()
       entityStore.applyProfile(data)
+      auth.refreshAvatar()
     } catch (failure) {
-      error.value = serverMessage(failure, t)
+      error.value = fileUploadMessage(failure, t('errors.unexpected'))
     } finally {
       busy.value = false
     }

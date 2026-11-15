@@ -24,5 +24,6 @@ final readonly class SessionContext
         public int $idleTimeoutMinutes,
         public ?EntitySessionSummary $entity = null,
         public array $committeeAppointments = [],
+        public ?AccountAvatar $avatar = null,
     ) {}
 }

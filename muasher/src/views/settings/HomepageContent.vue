@@ -6,12 +6,12 @@ import { ROUTE_NAMES } from '@/constants/routeNames'
 import { CMS_PAGE_ORDER } from '@/constants/cms'
 import Tabs from '@/components/ui/Tabs.vue'
 import CmsPageEditor from '@/components/cms/CmsPageEditor.vue'
-import SiteSettingsEditor from '@/components/settings/SiteSettingsEditor.vue'
+import FeaturedKpisSettings from '@/components/settings/FeaturedKpisSettings.vue'
 import LegalVersionsPanel from '@/components/legal/admin/LegalVersionsPanel.vue'
 import { LEGAL_VERSIONED_KINDS } from '@/constants/legal'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
-const SITE_SETTINGS_TAB = 'site_settings'
+const FEATURED_KPIS_TAB = 'featured_kpis'
 const LEGAL_TAB_PREFIX = 'legal_'
 
 const { t } = useI18n()
@@ -23,7 +23,7 @@ const tabs = computed(() => [
     value: `${LEGAL_TAB_PREFIX}${kind}`,
     label: t(`legalAdmin.kinds.${kind}`),
   })),
-  { value: SITE_SETTINGS_TAB, label: t('cms.pages.siteSettings') },
+  { value: FEATURED_KPIS_TAB, label: t('cms.pages.featuredKpis') },
 ])
 const legalKind = computed(() =>
   activeTab.value.startsWith(LEGAL_TAB_PREFIX)
@@ -44,7 +44,7 @@ const legalKind = computed(() =>
     </header>
 
     <Tabs v-model="activeTab" :tabs="tabs" class="homepage-cms__tabs">
-      <SiteSettingsEditor v-if="activeTab === SITE_SETTINGS_TAB" />
+      <FeaturedKpisSettings v-if="activeTab === FEATURED_KPIS_TAB" />
       <LegalVersionsPanel v-else-if="legalKind" :key="activeTab" :kind="legalKind" />
       <CmsPageEditor v-else :key="activeTab" :page-key="activeTab" />
     </Tabs>

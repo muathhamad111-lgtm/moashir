@@ -16,6 +16,8 @@ enum AuditEvent: string
     case UserMfaReset = 'user.mfa_reset';
     case UserAssessorQualificationsChanged = 'user.assessor_qualifications_changed';
     case UserRequestPathsChanged = 'user.request_paths_changed';
+    case UserAvatarUploaded = 'user.avatar_uploaded';
+    case UserAvatarRemoved = 'user.avatar_removed';
     case RolePermissionsChanged = 'role.permissions_changed';
     case PermissionLabelUpdated = 'permission.label_updated';
     case RoleAssignmentRejected = 'security.role_assignment_rejected';

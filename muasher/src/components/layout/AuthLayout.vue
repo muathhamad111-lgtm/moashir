@@ -8,8 +8,10 @@ import LocaleSwitcher from '@/components/ui/LocaleSwitcher.vue'
 import ThemeToggle from '@/components/ui/ThemeToggle.vue'
 import BrandPattern from '@/components/ui/BrandPattern.vue'
 import AuthValuePanel from '@/components/auth/AuthValuePanel.vue'
+import { usePlatformIdentity } from '@/composables/usePlatformIdentity'
 
 const { t } = useI18n()
+const { platformName } = usePlatformIdentity()
 const route = useRoute()
 const { logoOnDark } = useBrandLogo()
 
@@ -37,7 +39,7 @@ const isMaintenance = computed(() => route.name === ROUTE_NAMES.PUBLIC_MAINTENAN
     <aside class="auth-layout__brand brand-surface" :aria-label="t('auth.panel.label')">
       <BrandPattern variant="lattice" />
       <div class="auth-layout__brand-inner">
-        <img class="auth-layout__logo" :src="logoOnDark" :alt="t('app.name')" />
+        <img class="auth-layout__logo" :src="logoOnDark" :alt="platformName" />
         <AuthValuePanel />
       </div>
     </aside>

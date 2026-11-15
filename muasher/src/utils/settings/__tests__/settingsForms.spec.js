@@ -123,9 +123,18 @@ describe('sign-in security form', () => {
 
   it('sends the full channel list only when it changed', () => {
     const values = authSettingsValues(EMAIL_ONLY)
-    expect(values).toEqual({ entitySignInCodeChannels: ['email'] })
+    expect(values).toEqual({
+      entitySignInCodeChannels: ['email'],
+      generalEmailNotifications: true,
+      twoFactorEnabled: true,
+      twoFactorRoles: [],
+    })
     expect(changedAuthSettings(EMAIL_ONLY, values)).toEqual({})
+    expect(
+      changedAuthSettings(EMAIL_ONLY, { ...values, generalEmailNotifications: false }),
+    ).toEqual({ generalEmailNotifications: false })
     const withSms = {
+      ...values,
       entitySignInCodeChannels: withSmsChannel(values.entitySignInCodeChannels, true),
     }
     expect(changedAuthSettings(EMAIL_ONLY, withSms)).toEqual({
@@ -133,6 +142,19 @@ describe('sign-in security form', () => {
     })
     expect(withSmsChannel(['email', 'sms'], false)).toEqual(['email'])
     expect(withSmsChannel([], true)).toEqual(['email', 'sms'])
+  })
+
+  it('sends the two-factor switch and the role list only when they changed', () => {
+    const current = { ...EMAIL_ONLY, twoFactorEnabled: true, twoFactorRoles: ['system_admin'] }
+    const values = authSettingsValues(current)
+    expect(changedAuthSettings(current, values)).toEqual({})
+    expect(
+      changedAuthSettings(current, {
+        ...values,
+        twoFactorEnabled: false,
+        twoFactorRoles: ['entity', 'system_admin'],
+      }),
+    ).toEqual({ twoFactorEnabled: false, twoFactorRoles: ['system_admin', 'entity'] })
   })
 
   it('locks the change only while SMS is unavailable and not saved', () => {

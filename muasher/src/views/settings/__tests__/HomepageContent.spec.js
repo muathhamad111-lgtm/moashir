@@ -101,7 +101,7 @@ beforeEach(() => {
 })
 
 describe('Public site content editor (Content Officer)', () => {
-  it('offers one tab per CMS page, the two legal texts and the site settings, homepage first', async () => {
+  it('offers one tab per CMS page, the legal texts and the featured indicators, homepage first', async () => {
     const { wrapper } = await mountView()
     expect(wrapper.findAll('.tabs__tab').map((tab) => tab.text())).toEqual([
       'Homepage',
@@ -113,7 +113,7 @@ describe('Public site content editor (Content Officer)', () => {
       'Accessibility statement',
       'Terms of use',
       'Privacy policy',
-      'Site settings',
+      'Featured indicators',
     ])
     expect(cmsService.getPage).toHaveBeenCalledWith('home')
     expect(wrapper.findAll('.cms-section-row')).toHaveLength(3)
@@ -228,7 +228,7 @@ describe('Public site content editor (Content Officer)', () => {
     wrapper.unmount()
   })
 
-  it('edits and saves the site settings with the featured indicator settings', async () => {
+  it('saves only the featured indicator settings from their tab', async () => {
     siteSettingsService.update.mockImplementation((payload) =>
       Promise.resolve({ data: { ...SETTINGS, ...payload } }),
     )
@@ -238,18 +238,19 @@ describe('Public site content editor (Content Officer)', () => {
     await chooseNamedOption(wrapper, 'featuredKpiLimit', 4)
     await wrapper.find('.site-settings__form').trigger('submit')
     await flushPromises()
-    expect(siteSettingsService.update).toHaveBeenCalledWith(
-      expect.objectContaining({ featuredKpiLimit: 4, showFeaturedKpis: true }),
-    )
+    expect(siteSettingsService.update).toHaveBeenCalledWith({
+      showFeaturedKpis: true,
+      featuredKpiLimit: 4,
+    })
     wrapper.unmount()
   })
 
-  it('maps the server field errors of the site settings to their fields', async () => {
+  it('maps the server field errors of the featured indicators to their field', async () => {
     siteSettingsService.update.mockRejectedValue(
       Object.assign(new Error('invalid'), {
         normalized: {
           message: 'The submitted data is invalid.',
-          fieldErrors: { 'social.0.url': ['The link must start with https://.'] },
+          fieldErrors: { featuredKpiLimit: ['The limit must be between 3 and 6.'] },
         },
       }),
     )
@@ -258,7 +259,7 @@ describe('Public site content editor (Content Officer)', () => {
     await flushPromises()
     await wrapper.find('.site-settings__form').trigger('submit')
     await flushPromises()
-    expect(wrapper.text()).toContain('The link must start with https://.')
+    expect(wrapper.text()).toContain('The limit must be between 3 and 6.')
     wrapper.unmount()
   })
 })

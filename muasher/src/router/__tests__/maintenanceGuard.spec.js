@@ -144,11 +144,18 @@ describe('maintenance guard (Q-96)', () => {
 })
 
 describe('branding route', () => {
-  it('is forbidden for a non-admin staff member', async () => {
-    useAuthStore().setUser(sessionUserFor([ROLES.CONTENT_OFFICER], { id: 'u2' }))
+  it('is forbidden for a staff member who manages neither branding nor the public content', async () => {
+    useAuthStore().setUser(sessionUserFor([ROLES.FINANCE_OFFICER], { id: 'u2' }))
     const router = freshRouter()
     await router.push('/admin/branding')
     expect(router.currentRoute.value.name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
+  })
+
+  it('is reachable by the content officer for the general and menus tabs', async () => {
+    useAuthStore().setUser(sessionUserFor([ROLES.CONTENT_OFFICER], { id: 'u4' }))
+    const router = freshRouter()
+    await router.push('/admin/branding')
+    expect(router.currentRoute.value.name).toBe(ROUTE_NAMES.ADMIN_BRANDING)
   })
 
   it('is reachable by the System Administrator', async () => {

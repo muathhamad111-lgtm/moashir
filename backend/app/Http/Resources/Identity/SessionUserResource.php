@@ -8,6 +8,7 @@ use App\Data\Identity\CommitteeAppointment;
 use App\Data\Identity\SessionContext;
 use App\Enums\Identity\AssessorQualification;
 use App\Support\Assessments\RequestScopePresenter;
+use App\Support\Identity\AccountAvatarLink;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -38,6 +39,7 @@ final class SessionUserResource extends JsonResource
             'password_change_required' => $user->password_change_required,
             'entity_id' => $user->entity_id,
             'entity' => $this->resource->entity?->toArray(),
+            'avatar' => AccountAvatarLink::of($this->resource->avatar),
             'committee_appointments' => array_map(static fn (CommitteeAppointment $appointment): array => $appointment->toArray(), $this->resource->committeeAppointments),
             'session_expires_at' => $this->resource->expiresAt?->toIso8601String(),
             'idle_timeout_minutes' => $this->resource->idleTimeoutMinutes,

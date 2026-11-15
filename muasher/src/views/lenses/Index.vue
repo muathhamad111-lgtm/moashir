@@ -7,8 +7,10 @@ import { PUBLIC_PAGE_STATES } from '@/constants/cms'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import { usePlatformIdentity } from '@/composables/usePlatformIdentity'
 
 const { t } = useI18n()
+const { platformName } = usePlatformIdentity()
 const { state, load, localized, title, lead, rule, lenses } = useLensesContent()
 
 const heroTitle = computed(() => title.value || t('lenses.title'))
@@ -23,7 +25,7 @@ usePageSeo({ title: () => title.value, description: () => lead.value })
       <div class="lenses-page__hero-inner">
         <span class="lenses-page__eyebrow">
           <AppIcon name="layers" />
-          {{ t('app.name') }}
+          {{ platformName }}
         </span>
         <h1 class="lenses-page__title">{{ heroTitle }}</h1>
         <p class="lenses-page__subtitle">{{ heroLead }}</p>

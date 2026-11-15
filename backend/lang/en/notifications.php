@@ -83,6 +83,10 @@ return [
             'title' => 'Entity sign-in code channels changed',
             'body' => 'The channels allowed for the one-time sign-in codes of entity accounts (e-mail, text message) were changed.',
         ],
+        'SEC-08' => [
+            'title' => 'Two-factor policy changed',
+            'body' => 'Two-factor authentication was turned on or off, or the roles that require it were changed.',
+        ],
         'SEC-05' => [
             'title' => 'Rejected Super Admin assignment',
             'body' => 'An attempt to assign the Super Admin role through the platform was rejected.',

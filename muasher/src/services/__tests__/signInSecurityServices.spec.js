@@ -22,19 +22,23 @@ beforeEach(() => {
 describe('authSettingsService', () => {
   it('reads and changes the entity sign-in code channels through /settings/auth', async () => {
     apiClient.get.mockResolvedValue(
-      respond({ entitySignInCodeChannels: ['email'], smsStatus: 'test', staffTotpRequired: true }),
+      respond({
+        entitySignInCodeChannels: ['email'],
+        generalEmailNotifications: false,
+        twoFactorEnabled: true,
+        twoFactorRoles: ['system_admin'],
+        smsStatus: 'test',
+      }),
     )
     apiClient.put.mockResolvedValue(
-      respond({
-        entitySignInCodeChannels: ['sms', 'email'],
-        smsStatus: 'live',
-        staffTotpRequired: true,
-      }),
+      respond({ entitySignInCodeChannels: ['sms', 'email'], smsStatus: 'live' }),
     )
     expect((await authSettingsService.get()).data).toEqual({
       entitySignInCodeChannels: ['email'],
+      generalEmailNotifications: false,
+      twoFactorEnabled: true,
+      twoFactorRoles: ['system_admin'],
       smsStatus: 'test',
-      staffTotpRequired: true,
     })
     const payload = {
       entitySignInCodeChannels: ['email', 'sms'],
@@ -52,8 +56,10 @@ describe('authSettingsService', () => {
     apiClient.get.mockResolvedValue(respond({ entitySignInCodeChannels: ['sms', 'pigeon'] }))
     expect((await authSettingsService.get()).data).toEqual({
       entitySignInCodeChannels: ['email', 'sms'],
+      generalEmailNotifications: true,
+      twoFactorEnabled: true,
+      twoFactorRoles: [],
       smsStatus: 'unavailable',
-      staffTotpRequired: false,
     })
   })
 

@@ -69,7 +69,27 @@ describe('Account profile — my roles and permissions (Q-42)', () => {
 
   it('is read-only: no form controls to change roles or permissions', async () => {
     const wrapper = await mountView()
-    expect(wrapper.findAll('input, select, textarea')).toHaveLength(0)
+    const sections = wrapper.findAll('.account-page__grid, .account-page__permissions')
+    expect(sections.flatMap((section) => section.findAll('input, select, textarea'))).toHaveLength(
+      0,
+    )
+  })
+
+  it('offers the profile photo section to a person account', async () => {
+    const wrapper = await mountView()
+    expect(wrapper.find('[data-testid="profile-photo"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="profile-photo-entity-hint"]').exists()).toBe(false)
+  })
+
+  it('points an entity account to the entity logo instead of a personal photo', async () => {
+    const globals = createTestGlobals({ locale: 'en' })
+    useAuthStore(globals.pinia).user = { name: 'Entity', roles: ['entity'], entityId: 5001 }
+    const wrapper = mount(Profile, { global: globals })
+    await flushPromises()
+    expect(wrapper.find('[data-testid="profile-photo"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="profile-photo-entity-hint"]').text()).toContain(
+      'entity profile',
+    )
   })
 
   it('offers retry when loading fails', async () => {

@@ -15,6 +15,9 @@ use Illuminate\Support\Carbon;
  * @property array<string, mixed>|null $contact
  * @property LocalizedContent|null $footer_note
  * @property list<array{label: array<string, string>, url: string}> $quick_links
+ * @property list<array{label: array<string, string>, url: string}> $header_links
+ * @property LocalizedContent|null $platform_name
+ * @property LocalizedContent|null $platform_description
  * @property array<string, mixed>|null $seo
  * @property int $featured_kpi_limit
  * @property bool $show_featured_kpis
@@ -33,7 +36,7 @@ final class SiteSettings extends Model
     /**
      * @var list<string>
      */
-    protected $fillable = ['social', 'contact', 'footer_note', 'quick_links', 'seo', 'featured_kpi_limit', 'show_featured_kpis'];
+    protected $fillable = ['platform_name', 'platform_description', 'social', 'contact', 'footer_note', 'quick_links', 'header_links', 'seo', 'featured_kpi_limit', 'show_featured_kpis'];
 
     public static function current(): self
     {
@@ -46,10 +49,13 @@ final class SiteSettings extends Model
     protected function casts(): array
     {
         return [
+            'platform_name' => LocalizedContentCast::class,
+            'platform_description' => LocalizedContentCast::class,
             'social' => 'array',
             'contact' => 'array',
             'footer_note' => LocalizedContentCast::class,
             'quick_links' => 'array',
+            'header_links' => 'array',
             'seo' => 'array',
             'featured_kpi_limit' => 'integer',
             'show_featured_kpis' => 'boolean',

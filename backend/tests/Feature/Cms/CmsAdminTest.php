@@ -42,6 +42,7 @@ it('denies the content editor to roles without content.home.manage', function (R
     $this->patchJson(CMS_ADMIN.'/sections/'.$section->id, ['title' => ['ar' => 'عنوان']])->assertForbidden();
     $this->postJson(CMS_ADMIN.'/pages/home/publish')->assertForbidden();
     $this->patchJson(CMS_ADMIN.'/site-settings', ['show_featured_kpis' => false])->assertForbidden();
+    $this->patchJson(CMS_ADMIN.'/site-settings', ['platform_name' => ['ar' => 'اسم', 'en' => 'Name']])->assertForbidden();
 })->with([RoleKey::FinanceOfficer, RoleKey::CriteriaOfficer, RoleKey::Entity]);
 
 it('asks guests to sign in before editing content', function (): void {

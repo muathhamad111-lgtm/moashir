@@ -8,6 +8,7 @@ import { ROUTE_NAMES } from '@/constants/routeNames'
 import AppPopover from '@/components/ui/AppPopover.vue'
 import PortalMenuEntry from './PortalMenuEntry.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import AccountAvatar from '@/components/account/AccountAvatar.vue'
 import LevelBadge from '@/components/level/LevelBadge.vue'
 import { useEntityLevel } from '@/composables/useEntityLevel'
 
@@ -38,7 +39,7 @@ async function onSignOut() {
     :trigger-label="t('portal.account.open', { name: identity.entityName.value })"
   >
     <template #trigger="{ isOpen }">
-      <span class="account-menu__avatar" aria-hidden="true">{{ identity.initial.value }}</span>
+      <span class="account-menu__avatar" aria-hidden="true"><AccountAvatar /></span>
       <span class="account-menu__names">
         <span class="account-menu__entity">{{ identity.entityName.value }}</span>
         <span class="account-menu__user">{{ identity.userName.value }}</span>
@@ -52,9 +53,9 @@ async function onSignOut() {
           {{ t('portal.account.title') }}
         </h2>
         <div class="account-menu__header">
-          <span class="account-menu__avatar account-menu__avatar--lg" aria-hidden="true">{{
-            identity.initial.value
-          }}</span>
+          <span class="account-menu__avatar account-menu__avatar--lg" aria-hidden="true">
+            <AccountAvatar />
+          </span>
           <span class="account-menu__identity">
             <span class="account-menu__identity-entity">{{ identity.entityName.value }}</span>
             <span class="account-menu__identity-user"

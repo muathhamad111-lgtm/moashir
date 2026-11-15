@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Settings;
 
+use App\Actions\Identity\ApplyTwoFactorPolicy;
 use App\Data\Settings\AuthSettingsUpdate;
 use App\Enums\Audit\AuditEvent;
 use App\Enums\Notifications\NotificationCode;
@@ -24,6 +25,7 @@ final readonly class UpdateAuthSettings
         private SettingsLock $lock,
         private SettingsChangeReason $reason,
         private SecurityAlerter $alerter,
+        private ApplyTwoFactorPolicy $applyTwoFactor,
     ) {}
 
     public function handle(User $actor, AuthSettingsUpdate $update): void
@@ -34,17 +36,54 @@ final readonly class UpdateAuthSettings
 
         $this->reason->record($actor, $update->reason);
 
-        $changed = DB::transaction(function () use ($actor, $update): bool {
+        [$channelsChanged, $emailChanged, $twoFactorChanged] = DB::transaction(function () use ($actor, $update): array {
             $this->lock->lock(self::SECTION);
+            $twoFactorChanged = $this->putTwoFactor($actor, $update);
 
-            return $this->store->put(SettingKey::EntitySignInCodeChannels, $update->channelValues(), AuditEvent::AuthSettingsUpdated, $actor);
+            if ($twoFactorChanged) {
+                $this->applyTwoFactor->handle();
+            }
+
+            return [$this->putChannels($actor, $update), $this->putGeneralEmail($actor, $update), $twoFactorChanged];
         });
 
-        if (! $changed) {
-            return;
+        $this->raiseAlerts($channelsChanged, $twoFactorChanged);
+
+        if ($channelsChanged || $emailChanged || $twoFactorChanged) {
+            $this->reason->alertIfSuperAdmin($actor);
+        }
+    }
+
+    private function raiseAlerts(bool $channelsChanged, bool $twoFactorChanged): void
+    {
+        if ($channelsChanged) {
+            $this->alerter->raiseToAdministrators(NotificationCode::EntitySignInCodeChannelsChanged);
         }
 
-        $this->alerter->raiseToAdministrators(NotificationCode::EntitySignInCodeChannelsChanged);
-        $this->reason->alertIfSuperAdmin($actor);
+        if ($twoFactorChanged) {
+            $this->alerter->raiseToAdministrators(NotificationCode::TwoFactorPolicyChanged);
+        }
+    }
+
+    private function putTwoFactor(User $actor, AuthSettingsUpdate $update): bool
+    {
+        $enabled = $update->twoFactorEnabled !== null
+            && $this->store->put(SettingKey::TwoFactorEnabled, $update->twoFactorEnabled, AuditEvent::AuthSettingsUpdated, $actor);
+        $roles = $update->twoFactorRoles !== null
+            && $this->store->put(SettingKey::TwoFactorRoles, $update->twoFactorRoleValues(), AuditEvent::AuthSettingsUpdated, $actor);
+
+        return $enabled || $roles;
+    }
+
+    private function putChannels(User $actor, AuthSettingsUpdate $update): bool
+    {
+        return $update->entitySignInCodeChannels !== null
+            && $this->store->put(SettingKey::EntitySignInCodeChannels, $update->channelValues(), AuditEvent::AuthSettingsUpdated, $actor);
+    }
+
+    private function putGeneralEmail(User $actor, AuthSettingsUpdate $update): bool
+    {
+        return $update->generalEmailNotifications !== null
+            && $this->store->put(SettingKey::GeneralEmailNotifications, $update->generalEmailNotifications, AuditEvent::AuthSettingsUpdated, $actor);
     }
 }

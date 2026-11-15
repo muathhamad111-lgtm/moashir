@@ -10,8 +10,23 @@ function trimmed(value) {
   return { ar: value.ar.trim(), en: value.en.trim() }
 }
 
+function linksOf(rows) {
+  return (rows ?? []).map((row) => ({ label: bilingual(row.label), url: row.url ?? '' }))
+}
+
+function trimmedLinks(rows) {
+  return rows.map((row) => ({ label: trimmed(row.label), url: row.url.trim() }))
+}
+
+function pick(payload, fields) {
+  return fields ? Object.fromEntries(fields.map((field) => [field, payload[field]])) : payload
+}
+
 export function draftOf(settings) {
   return {
+    platformName: bilingual(settings?.platformName),
+    platformDescription: bilingual(settings?.platformDescription),
+    headerLinks: linksOf(settings?.headerLinks),
     social: (settings?.social ?? []).map((row) => ({ platform: row.platform, url: row.url ?? '' })),
     contact: {
       email: settings?.contact?.email ?? '',
@@ -19,10 +34,7 @@ export function draftOf(settings) {
       address: bilingual(settings?.contact?.address),
     },
     footerNote: bilingual(settings?.footerNote),
-    quickLinks: (settings?.quickLinks ?? []).map((row) => ({
-      label: bilingual(row.label),
-      url: row.url ?? '',
-    })),
+    quickLinks: linksOf(settings?.quickLinks),
     seo: {
       title: bilingual(settings?.seo?.title),
       description: bilingual(settings?.seo?.description),
@@ -34,6 +46,9 @@ export function draftOf(settings) {
 
 export function payloadOf(draft) {
   return {
+    platformName: trimmed(draft.platformName),
+    platformDescription: trimmed(draft.platformDescription),
+    headerLinks: trimmedLinks(draft.headerLinks),
     social: draft.social.map((row) => ({ platform: row.platform, url: row.url.trim() })),
     contact: {
       email: draft.contact.email.trim() || null,
@@ -41,14 +56,14 @@ export function payloadOf(draft) {
       address: trimmed(draft.contact.address),
     },
     footerNote: trimmed(draft.footerNote),
-    quickLinks: draft.quickLinks.map((row) => ({ label: trimmed(row.label), url: row.url.trim() })),
+    quickLinks: trimmedLinks(draft.quickLinks),
     seo: { title: trimmed(draft.seo.title), description: trimmed(draft.seo.description) },
     featuredKpiLimit: Number(draft.featuredKpiLimit),
     showFeaturedKpis: Boolean(draft.showFeaturedKpis),
   }
 }
 
-export function useSiteSettingsEditor({ auto = true } = {}) {
+export function useSiteSettingsEditor({ auto = true, fields = null } = {}) {
   const status = ref('loading')
   const draft = ref(draftOf(null))
   const saving = ref(false)
@@ -69,7 +84,7 @@ export function useSiteSettingsEditor({ auto = true } = {}) {
     saving.value = true
     fieldErrors.value = {}
     try {
-      const { data } = await siteSettingsService.update(payloadOf(draft.value))
+      const { data } = await siteSettingsService.update(pick(payloadOf(draft.value), fields))
       draft.value = draftOf(data)
       return data
     } catch (error) {

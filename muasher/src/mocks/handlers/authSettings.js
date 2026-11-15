@@ -6,6 +6,8 @@ import { sessionCan, sessionIsSuperAdmin } from '../stores/sessionPermissions'
 import {
   CODE_CHANNELS,
   authSettingsResource,
+  setGeneralEmailNotifications,
+  setTwoFactorPolicy,
   setSignInCodeChannels,
 } from '../stores/authSettingsStore'
 import { SMS_GATEWAY_STATUS, smsGatewayStatus } from '../stores/smsAvailability'
@@ -13,6 +15,20 @@ import { authField, authReject, authRoute } from './authRoute'
 
 const PERMISSION = 'settings.auth.manage'
 const CHANNELS_FIELD = 'entitySignInCodeChannels'
+const GENERAL_EMAIL_FIELD = 'generalEmailNotifications'
+const TWO_FACTOR_FIELD = 'twoFactorEnabled'
+const TWO_FACTOR_ROLES_FIELD = 'twoFactorRoles'
+const ROLE_VALUES = [
+  'system_admin',
+  'criteria_officer',
+  'request_follower',
+  'assessor',
+  'filtering_officer',
+  'award_secretary',
+  'content_officer',
+  'finance_officer',
+  'entity',
+]
 const KNOWN_CHANNELS = Object.values(CODE_CHANNELS)
 const REASON_LENGTH = { MIN: 10, MAX: 1000 }
 const LATENCY = { READ: 220, WRITE: 360 }
@@ -63,6 +79,32 @@ function channelsOf(body) {
   return body[CHANNELS_FIELD]
 }
 
+function generalEmailOf(body) {
+  if (!(GENERAL_EMAIL_FIELD in body)) return undefined
+  if (typeof body[GENERAL_EMAIL_FIELD] !== 'boolean')
+    throw fieldError(GENERAL_EMAIL_FIELD, 'field.invalid')
+  return body[GENERAL_EMAIL_FIELD]
+}
+
+function twoFactorOf(body) {
+  const policy = {}
+  if (TWO_FACTOR_FIELD in body) {
+    if (typeof body[TWO_FACTOR_FIELD] !== 'boolean')
+      throw fieldError(TWO_FACTOR_FIELD, 'field.invalid')
+    policy.enabled = body[TWO_FACTOR_FIELD]
+  }
+  if (TWO_FACTOR_ROLES_FIELD in body) {
+    const roles = body[TWO_FACTOR_ROLES_FIELD]
+    if (!Array.isArray(roles)) throw fieldError(TWO_FACTOR_ROLES_FIELD, 'field.invalid')
+    const invalid = roles.findIndex(
+      (role, index) => !ROLE_VALUES.includes(role) || roles.indexOf(role) !== index,
+    )
+    if (invalid !== -1) throw fieldError(`${TWO_FACTOR_ROLES_FIELD}.${invalid}`, 'field.invalid')
+    policy.roles = roles
+  }
+  return policy
+}
+
 export const authSettingsHandlers = [
   http.get(
     '/api/v1/settings/auth',
@@ -78,9 +120,13 @@ export const authSettingsHandlers = [
       assertManager()
       const body = await readJson(request)
       const channels = channelsOf(body)
+      const generalEmail = generalEmailOf(body)
+      const twoFactor = twoFactorOf(body)
       const reason = reasonOf(body)
       if (sessionIsSuperAdmin() && !reason) throw authReject.reasonRequired()
       if (channels !== undefined) setSignInCodeChannels(channels)
+      if (generalEmail !== undefined) setGeneralEmailNotifications(generalEmail)
+      setTwoFactorPolicy(twoFactor)
       return envelope(authSettingsResource())
     }, LATENCY.WRITE),
   ),

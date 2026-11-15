@@ -67,9 +67,44 @@ describe('TopNavbar', () => {
     expect(badges).toEqual(['متابع طلبات التقييم', 'مسؤول المحتوى'])
   })
 
-  it('uses the user initial as the avatar trigger', async () => {
+  it('shows the generic person icon as the avatar of a staff user without a photo', async () => {
     const wrapper = await mountWithRoles(['system_admin'])
-    expect(wrapper.find('.navbar__avatar').text()).toBe('T')
+    const avatar = wrapper.find('.navbar__avatar')
+    expect(avatar.text()).toBe('')
+    expect(avatar.find('img').exists()).toBe(false)
+    expect(avatar.find('[data-icon="user"]').exists()).toBe(true)
+  })
+
+  it('shows the uploaded photo of a staff user in the avatar', async () => {
+    const globals = createTestGlobals()
+    useAuthStore(globals.pinia).setUser(
+      sessionUserFor(['assessor'], {
+        name: 'Test User',
+        avatar: { source: 'photo', url: '/api/v1/me/avatar?v=abc' },
+      }),
+    )
+    const wrapper = mount(TopNavbar, { global: globals })
+    await flushPromises()
+    const image = wrapper.find('.navbar__avatar img')
+    expect(image.attributes('src')).toBe('/api/v1/me/avatar?v=abc')
+    expect(image.attributes('alt')).toBe('الصورة الشخصية لـ Test User')
+    expect(image.classes()).not.toContain('account-avatar__image--logo')
+  })
+
+  it('shows the entity logo as the avatar of an entity account', async () => {
+    const globals = createTestGlobals()
+    useAuthStore(globals.pinia).setUser(
+      sessionUserFor(['entity'], {
+        name: 'Test User',
+        entity: { id: 5001, name: { ar: 'جمعية البر', en: 'Al-Birr Society' } },
+        avatar: { source: 'entity_logo', url: '/api/v1/me/avatar?v=logo' },
+      }),
+    )
+    const wrapper = mount(TopNavbar, { global: globals })
+    await flushPromises()
+    const image = wrapper.find('.navbar__avatar img')
+    expect(image.attributes('alt')).toBe('شعار جمعية البر')
+    expect(image.classes()).toContain('account-avatar__image--logo')
   })
 
   it('toggles the sidebar through the ui store with aria-expanded', async () => {

@@ -325,9 +325,34 @@ describe('sign-in security setting mock', () => {
     seedMockSession(SYSTEM_ADMIN)
     expect((await call('GET', '/settings/auth')).body.data).toEqual({
       entity_sign_in_code_channels: ['email'],
+      general_email_notifications: true,
+      two_factor_enabled: true,
+      two_factor_roles: [
+        'system_admin',
+        'criteria_officer',
+        'request_follower',
+        'assessor',
+        'filtering_officer',
+        'award_secretary',
+        'content_officer',
+        'finance_officer',
+      ],
       sms_status: 'test',
-      staff_totp_required: true,
     })
+    const policy = await call('PUT', '/settings/auth', {
+      two_factor_enabled: false,
+      two_factor_roles: ['entity'],
+    })
+    expect(policy.body.data).toMatchObject({
+      two_factor_enabled: false,
+      two_factor_roles: ['entity'],
+    })
+    const unknownRole = await call('PUT', '/settings/auth', { two_factor_roles: ['captain'] })
+    expect(unknownRole.status).toBe(422)
+    const turnedOff = await call('PUT', '/settings/auth', { general_email_notifications: false })
+    expect(turnedOff.body.data.general_email_notifications).toBe(false)
+    const refused = await call('PUT', '/settings/auth', { general_email_notifications: 'no' })
+    expect(refused.status).toBe(422)
   })
 
   it('saves the channels, reports the SMS status and keeps an unchanged value', async () => {

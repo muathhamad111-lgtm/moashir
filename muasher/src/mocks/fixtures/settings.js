@@ -1,27 +1,3 @@
-export const generalFixture = {
-  platformName: {
-    ar: 'منصة مؤشر للتميز المؤسسي',
-    en: 'Moashir Institutional Excellence Platform',
-  },
-  tagline: {
-    ar: 'قياس وتطوير التميز في القطاع غير الربحي',
-    en: 'Measuring and developing excellence in the non-profit sector',
-  },
-  logo: { name: 'muasher-logo.svg', url: '/assets/brand/muasher-logo.svg' },
-  primaryColor: '#3DE9AD',
-  secondaryColor: '#D9F7F7',
-  content: {
-    ar: 'منصة مؤشر تمكّن الجمعيات والمؤسسات الأهلية من قياس أدائها وفق نموذج التميز، وتقديم تقييمات ذاتية ومعتمدة ومتقدمة.',
-    en: 'Moashir enables associations and non-profit foundations to measure their performance against the excellence model through self, accredited, and advanced assessments.',
-  },
-  contactEmail: 'support@moashir.example.sa',
-  contactPhone: '+966112004000',
-  contactAddress: {
-    ar: 'الرياض، حي العليا، طريق الملك فهد',
-    en: 'Riyadh, Al Olaya District, King Fahd Road',
-  },
-}
-
 export const assessmentFixture = {
   scale: 'of-10',
   advancedMinEntityAge: 3,

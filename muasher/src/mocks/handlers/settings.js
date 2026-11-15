@@ -1,9 +1,8 @@
 import { HttpResponse, delay } from 'msw'
 import { http } from '../contract/http'
-import { generalFixture, kbFilesFixture } from '../fixtures/settings'
+import { kbFilesFixture } from '../fixtures/settings'
 import { failsRandomly } from '../contract/faults'
 
-const general = { ...generalFixture }
 let kbFiles = kbFilesFixture.map((item) => ({ ...item }))
 
 let kbSeed = 900
@@ -17,21 +16,6 @@ function errorResponse(message, status, fieldErrors = {}) {
 }
 
 const maybeFail = failsRandomly(0.06)
-
-export const platformSettingsHandlers = [
-  http.get('/api/v1/settings/general', async () => {
-    await delay(300)
-    if (maybeFail(0.05)) return errorResponse('Failed to load general settings', 503)
-    return envelope({ ...general })
-  }),
-  http.put('/api/v1/settings/general', async ({ request }) => {
-    await delay(420)
-    if (maybeFail()) return errorResponse('Could not save general settings', 500)
-    const body = await request.json()
-    Object.assign(general, body)
-    return envelope({ ...general })
-  }),
-]
 
 export const knowledgeBaseHandlers = [
   http.get('/api/v1/settings/ai/kb-files', async () => {

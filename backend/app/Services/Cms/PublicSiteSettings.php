@@ -27,6 +27,8 @@ final readonly class PublicSiteSettings
         $contact = $settings->contact ?? [];
 
         return [
+            'platform_name' => $settings->platform_name?->withFallback(),
+            'platform_description' => $settings->platform_description?->withFallback(),
             'social' => $settings->social,
             'contact' => [
                 'email' => $contact['email'] ?? null,
@@ -34,7 +36,8 @@ final readonly class PublicSiteSettings
                 'address' => $this->text($contact['address'] ?? null),
             ],
             'footer_note' => $settings->footer_note?->withFallback(),
-            'quick_links' => array_map(fn (array $link): array => ['label' => $this->text($link['label']), 'url' => $link['url']], $settings->quick_links),
+            'quick_links' => $this->links($settings->quick_links),
+            'header_links' => $this->links($settings->header_links),
             'seo' => [
                 'title' => $this->text($settings->seo['title'] ?? null),
                 'description' => $this->text($settings->seo['description'] ?? null),
@@ -42,6 +45,15 @@ final readonly class PublicSiteSettings
             'show_featured_kpis' => $settings->show_featured_kpis,
             'featured_kpi_limit' => $settings->featured_kpi_limit,
         ];
+    }
+
+    /**
+     * @param  list<array{label: array<string, string>, url: string}>  $links
+     * @return list<array{label: array{ar: string, en: string}|null, url: string}>
+     */
+    private function links(array $links): array
+    {
+        return array_map(fn (array $link): array => ['label' => $this->text($link['label']), 'url' => $link['url']], $links);
     }
 
     /**

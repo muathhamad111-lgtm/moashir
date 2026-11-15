@@ -85,7 +85,7 @@ it('reads every legal draft with its title, the draft line and the placeholders 
         ->and(array_column($parser->parse($text->body->ar)->toArray(), 'type'))->toBe(array_column($parser->parse($text->body->en)->toArray(), 'type'));
 })->with(LegalDocument::cases());
 
-it('keeps the privacy policy tables, the AI section and the values filled by the PM', function (): void {
+it('keeps the privacy policy tables, the AI section, the values filled by the PM and the approved request wording', function (): void {
     $body = new LegalDocumentSource()->read(LegalDocument::PrivacyPolicy)->body;
     $blocks = new RichTextParser()->parse($body->en)->toArray();
     $tables = array_values(array_filter($blocks, static fn (array $block): bool => $block['type'] === 'table'));
@@ -94,8 +94,11 @@ it('keeps the privacy policy tables, the AI section and the values filled by the
         ->and($tables[0]['header'])->toBe(['Data category', 'Retention period'])
         ->and($tables[0]['rows'])->toContain(['Encrypted backups', '30 days, then destroyed'])
         ->and($body->en)->toContain('## 17. AI assistant')
-        ->and($body->en)->toContain('"Personal data request"')
-        ->and($body->ar)->toContain('«طلب يتعلق بالبيانات الشخصية»')
+        ->and($body->en)->toContain('stating the type of request (access, copy, correction or destruction)')
+        ->and($body->en)->not->toContain('Personal data request')
+        ->and($body->ar)->toContain('مع ذكر نوع الطلب (اطلاع أو نسخة أو تصحيح أو إتلاف)')
+        ->and($body->ar)->not->toContain('طلب يتعلق بالبيانات الشخصية')
+        ->and($body->ar)->not->toContain('طلبات الخصوصية')
         ->and($body->ar)->toContain('| النسخ الاحتياطية المشفّرة | 30 يوماً، ثم تُتلف |');
 });
 

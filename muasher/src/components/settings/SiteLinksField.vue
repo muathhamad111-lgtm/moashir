@@ -2,12 +2,17 @@
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseInput from '@/components/form/BaseInput.vue'
-import { SITE_SETTINGS_LIMITS } from '@/constants/cms'
 import { moveIndex } from '@/utils/reorder'
 
 const rows = defineModel('rows', { type: Array, required: true })
 
 defineProps({
+  field: { type: String, required: true },
+  legend: { type: String, required: true },
+  hint: { type: String, default: '' },
+  max: { type: Number, required: true },
+  addLabel: { type: String, required: true },
+  emptyText: { type: String, required: true },
   errorOf: { type: Function, required: true },
   disabled: { type: Boolean, default: false },
 })
@@ -22,25 +27,24 @@ function move(index, offset) {
 
 <template>
   <fieldset class="site-settings__group">
-    <legend class="site-settings__legend">
-      {{ t('settings.homepage.siteSettings.quickLinks') }}
-    </legend>
+    <legend class="site-settings__legend">{{ legend }}</legend>
+    <p v-if="hint" class="site-settings__hint">{{ hint }}</p>
     <ul v-if="rows.length" class="site-settings__rows">
       <li
         v-for="(row, index) in rows"
-        :key="`quick-${index}`"
+        :key="`${field}-${index}`"
         class="site-settings__row site-settings__row--stack"
       >
         <div class="site-settings__grid">
           <BaseInput
             v-model="row.label.ar"
-            :name="`quickLabelAr-${index}`"
+            :name="`${field}LabelAr-${index}`"
             :label="t('settings.homepage.siteSettings.linkLabelAr')"
-            :error="errorOf(`quickLinks.${index}.label.ar`)"
+            :error="errorOf(`${field}.${index}.label.ar`)"
           />
           <BaseInput
             v-model="row.label.en"
-            :name="`quickLabelEn-${index}`"
+            :name="`${field}LabelEn-${index}`"
             :label="t('settings.homepage.siteSettings.linkLabelEn')"
             input-dir="ltr"
           />
@@ -48,10 +52,10 @@ function move(index, offset) {
         <div class="site-settings__row site-settings__row--inline">
           <BaseInput
             v-model="row.url"
-            :name="`quickUrl-${index}`"
+            :name="`${field}Url-${index}`"
             :label="t('settings.homepage.siteSettings.url')"
             :hint="t('settings.homepage.siteSettings.urlHint')"
-            :error="errorOf(`quickLinks.${index}.url`)"
+            :error="errorOf(`${field}.${index}.url`)"
             input-dir="ltr"
           />
           <div class="site-settings__row-actions">
@@ -86,15 +90,15 @@ function move(index, offset) {
         </div>
       </li>
     </ul>
-    <p v-else class="site-settings__empty">{{ t('settings.homepage.siteSettings.noLinks') }}</p>
+    <p v-else class="site-settings__empty">{{ emptyText }}</p>
     <BaseButton
       variant="secondary"
       size="sm"
       icon="plus"
-      :disabled="disabled || rows.length >= SITE_SETTINGS_LIMITS.quickLinksMax"
+      :disabled="disabled || rows.length >= max"
       @click="rows.push({ label: { ar: '', en: '' }, url: '' })"
     >
-      {{ t('settings.homepage.siteSettings.addLink') }}
+      {{ addLabel }}
     </BaseButton>
   </fieldset>
 </template>

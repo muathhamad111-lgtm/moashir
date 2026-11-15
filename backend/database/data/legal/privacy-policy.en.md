@@ -74,7 +74,7 @@ When a certificate is verified we keep the verification result, its time and an 
 
 ### 3.9 Notifications, change records and requests
 
-In-platform notifications, those sent by e-mail or text message, and your preferences for them. Also the history of changes to the entity profile, requests to change the official e-mail address (old and new address), and the privacy requests you submit.
+In-platform notifications, those sent by e-mail or text message, and your preferences for them. Also the history of changes to the entity profile, requests to change the official e-mail address (old and new address).
 
 ### 3.10 Platform staff and assessor data
 
@@ -130,7 +130,7 @@ We do not sell or rent your personal data. We make it available only to the foll
 
 ### 8.1 Within the platform
 
-- Platform staff, each according to their permissions and only as far as their work requires: the System Administrator, the Assessment Requests Follower, the Finance Officer, the Content Officer, and anyone granted the privacy-requests permission or the inbox permission.
+- Platform staff, each according to their permissions and only as far as their work requires: the System Administrator, the Assessment Requests Follower, the Finance Officer, the Content Officer, and anyone granted the inbox permission.
 - The assessor assigned to your entity's request, who sees only the entity data, texts and evidence of that request. The assessor's identity is not disclosed to you.
 - A limited number of system owners with full permissions; every action they take is recorded in the audit log together with the reason for any exceptional action.
 
@@ -197,9 +197,9 @@ You can exercise some of these rights directly from your account: viewing and up
 
 ## 12. How to exercise your rights
 
-- Submit your request through the "Contact us" form by choosing the enquiry type "Personal data request", or through [[data protection e-mail]].
+- Submit your request through the "Contact us" form or through [[data protection e-mail]], stating the type of request (access, copy, correction or destruction).
 - If you send the request while signed in, it is linked to your entity's account. If you send it without signing in, we verify your identity by corresponding with the same e-mail address, and we may ask for proof of capacity before acting on the request.
-- We record every request and respond within 30 days. This period may be extended by a further 30 days where acting on the request needs disproportionate effort or where requests are numerous, after informing you of the extension and its reasons.
+- We document every request and respond within 30 days. This period may be extended by a further 30 days where acting on the request needs disproportionate effort or where requests are numerous, after informing you of the extension and its reasons.
 - We may decline a request that is repetitive, clearly unfounded or needs disproportionate effort, and we will tell you the reason.
 - When we correct or destroy your data, we inform the parties to which it was disclosed, where possible.
 - The entity's official e-mail address is changed by verifying the new address with a code sent to it; the change then takes effect according to the approval procedure adopted on the platform, and the old address is notified.

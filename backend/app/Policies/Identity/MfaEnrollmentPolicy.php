@@ -10,6 +10,6 @@ final class MfaEnrollmentPolicy
 {
     public function enroll(User $user): bool
     {
-        return ! $user->isEntityUser();
+        return ! $user->isEntityUser() || $user->requiresMfa();
     }
 }

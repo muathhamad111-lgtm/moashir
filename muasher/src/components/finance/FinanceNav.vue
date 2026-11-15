@@ -21,7 +21,7 @@ const LINKS = [
     name: ROUTE_NAMES.ADMIN_SETTINGS_ABANDONED_CARTS,
     icon: 'shopping-bag',
   },
-  { key: 'settings', name: ROUTE_NAMES.ADMIN_SETTINGS_FINANCE, icon: 'sar' },
+  { key: 'settings', name: ROUTE_NAMES.ADMIN_SETTINGS_GENERAL, icon: 'sar' },
 ]
 
 const { t } = useI18n()

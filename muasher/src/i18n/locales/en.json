@@ -114,7 +114,7 @@
     "userFallback": "My account",
     "backToHome": "Back to home",
     "account": "My account",
-    "branding": "Identity and colors",
+    "branding": "Brand identity",
     "adminEntities": "Entities",
     "deletedEntities": "Deleted entities",
     "entityEmailChanges": "E-mail change requests",
@@ -983,15 +983,6 @@
         "aiKnowledgeBase": {
           "title": "Assistant knowledge base"
         },
-        "finance": {
-          "title": "VAT and payment orders"
-        },
-        "signIn": {
-          "title": "Sign-in security"
-        },
-        "contactMessages": {
-          "title": "Contact message settings"
-        },
         "maturityTexts": {
           "title": "Maturity texts"
         },
@@ -1015,7 +1006,7 @@
         "title": "Permissions Management"
       },
       "branding": {
-        "title": "Identity and colors"
+        "title": "Brand identity"
       },
       "entities": {
         "title": "Entities"
@@ -2891,7 +2882,7 @@
     },
     "hub": {
       "title": "Settings",
-      "subtitle": "The platform's central control center — configure every module from one place.",
+      "subtitle": "The platform's central control center.",
       "backToHub": "Back to settings",
       "groups": {
         "platform": "Platform",
@@ -2902,7 +2893,7 @@
       "sections": {
         "general": {
           "title": "General",
-          "desc": "Platform name, logo, content and contact details."
+          "desc": "Verification, two-factor authentication, tax and contact messages."
         },
         "assessment": {
           "title": "Assessment",
@@ -2942,31 +2933,19 @@
         },
         "homepage": {
           "title": "Public site content",
-          "desc": "Edit the homepage and the public pages, publish them and manage the site settings."
+          "desc": "Edit the homepage and the public pages and publish them."
         },
         "aiKnowledgeBase": {
           "title": "Assistant knowledge base",
           "desc": "Files the AI assistant answers from."
         },
         "branding": {
-          "title": "Identity and colors",
-          "desc": "Back-office logo and the one accent color shared by every user."
+          "title": "Brand identity",
+          "desc": "The platform's name and description, logos, colors and header and footer menus."
         },
         "cities": {
           "title": "Cities",
           "desc": "City list of each region used in registration."
-        },
-        "finance": {
-          "title": "VAT and payment orders",
-          "desc": "The VAT rate, the payment order validity and the VAT registration number."
-        },
-        "signIn": {
-          "title": "Sign-in security",
-          "desc": "Entity sign-in and verification code channels."
-        },
-        "contactMessages": {
-          "title": "Contact messages",
-          "desc": "How long closed messages are kept before deletion."
         },
         "maturityTexts": {
           "title": "Maturity texts",
@@ -2992,10 +2971,8 @@
     },
     "homepage": {
       "title": "Public site content",
-      "description": "Edit the public pages, publish or unpublish them, and manage the global site settings.",
+      "description": "Edit the homepage and the public pages and publish them.",
       "siteSettings": {
-        "title": "Site settings",
-        "description": "Footer, contact details, social links, quick links, search-engine text and featured indicators shared by the public site. Changes apply at once.",
         "footerNote": "Footer note",
         "footerNoteAr": "Footer note (Arabic)",
         "footerNoteEn": "Footer note (English)",
@@ -3011,12 +2988,10 @@
         "addSocial": "Add social link",
         "removeSocial": "Remove social link",
         "noSocial": "No social links added yet.",
-        "quickLinks": "Quick links",
         "linkLabelAr": "Label (Arabic)",
         "linkLabelEn": "Label (English)",
         "addLink": "Add quick link",
-        "removeLink": "Remove quick link",
-        "noLinks": "No quick links added yet.",
+        "removeLink": "Remove link",
         "moveUp": "Move link up",
         "moveDown": "Move link down",
         "save": "Save site settings",
@@ -3042,31 +3017,25 @@
         "showFeaturedKpis": "Show featured indicators on the homepage",
         "showFeaturedKpisHint": "They appear only when at least 3 indicators are published and featured.",
         "featuredKpiLimit": "Number of featured indicators",
-        "featuredKpiLimitHint": "Between 3 and 6."
+        "featuredKpiLimitHint": "Between 3 and 6.",
+        "featuredDescription": "The featured indicators shown on the homepage. Changes apply at once."
       }
     },
     "general": {
-      "title": "General Settings",
-      "description": "The platform identity, branding, content, and contact details.",
-      "identity": "Platform identity",
-      "platformNameAr": "Platform name (Arabic)",
-      "platformNameEn": "Platform name (English)",
-      "taglineAr": "Tagline (Arabic)",
-      "taglineEn": "Tagline (English)",
-      "logo": "Platform logo",
-      "logoHint": "SVG or PNG, transparent background recommended.",
-      "branding": "Brand colors",
-      "primaryColor": "Primary color",
-      "secondaryColor": "Secondary color",
-      "contentTitle": "Introductory content",
-      "contentAr": "Content (Arabic)",
-      "contentEn": "Content (English)",
-      "contact": "Contact information",
-      "contactEmail": "Contact email",
-      "contactPhone": "Contact phone",
-      "contactAddressAr": "Address (Arabic)",
-      "contactAddressEn": "Address (English)",
-      "brandingMoved": "Back-office colors and logo now live on a dedicated screen restricted to the System Administrator:"
+      "title": "General",
+      "verificationTitle": "Verification mechanism",
+      "twoFactor": {
+        "title": "Two-factor authentication",
+        "enable": "Turn on two-factor authentication",
+        "superAdmin": "Always required for the Super Admin.",
+        "roles": "Accounts that require two-factor authentication"
+      },
+      "tax": {
+        "title": "Tax",
+        "vatNumber": "VAT registration number (optional)",
+        "vatRate": "VAT (%)",
+        "orderValidity": "Payment order validity (minutes)"
+      }
     },
     "assessment": {
       "title": "Assessment settings",
@@ -3313,37 +3282,21 @@
       }
     },
     "signIn": {
-      "title": "Sign-in security",
-      "description": "Entity sign-in and verification code channels.",
-      "entityTitle": "Entity accounts",
-      "statement": "Entity accounts sign in with a password or a one-time verification code, without a second factor.",
       "channels": {
         "legend": "Verification code channels",
-        "help": "The channels allowed to send the entity sign-in code.",
         "email": "E-mail",
-        "emailAlways": "Always allowed; it cannot be turned off.",
         "sms": "SMS",
-        "smsHelp": "Used when the entity signs in with its verified mobile. If SMS fails, the code goes by e-mail.",
-        "smsUnavailable": "The SMS gateway is not configured.",
+        "smsUnavailable": "Requires the SMS gateway to be enabled first.",
         "smsSetup": "Set up the SMS gateway",
-        "smsTest": "Test mode: messages reach test numbers only."
-      },
-      "alwaysTitle": "Always applies",
-      "always": {
-        "staffTotp": "The authenticator app stays mandatory for staff and Super Admin accounts.",
-        "audited": "Every change is recorded in the audit log and the System Administrators are notified."
+        "emailGeneral": "Turning it off stops e-mail for general notifications only."
       },
       "saved": "The sign-in security setting was saved.",
       "unchanged": "There are no changes to save.",
       "reasonTitle": "Reason for the change"
     },
     "contactMessages": {
-      "title": "Contact message settings",
-      "description": "Sets how long \"Contact us\" messages are kept after they are closed; they are then deleted automatically under the data retention policy.",
-      "retentionTitle": "Retention period",
-      "retentionNote": "Open messages are kept until they are closed; the period starts on the closing date.",
-      "retentionMonths": "Retention after closing (months)",
-      "retentionHint": "A whole number from {min} to {max} months.",
+      "title": "Contact messages",
+      "retentionMonths": "Keep closed messages for (months)",
       "saved": "The retention period was saved.",
       "validation": {
         "whole": "Enter a whole number from {min} to {max}."
@@ -4721,11 +4674,32 @@
       "empty": "No permissions are granted to your account.",
       "count": "{count} permission | {count} permissions"
     },
-    "loadError": "Could not load your roles and permissions."
+    "loadError": "Could not load your roles and permissions.",
+    "avatar": {
+      "title": "Profile photo",
+      "hint": "Your photo appears in the top navigation bar instead of the default icon.",
+      "rules": "A PNG or JPEG image up to 2 MB, between {min} and {max} pixels on each side.",
+      "upload": "Upload photo",
+      "replace": "Change photo",
+      "remove": "Remove photo",
+      "choose": "Choose a profile photo file",
+      "uploaded": "Your profile photo was saved.",
+      "removed": "Your profile photo was removed.",
+      "removeTitle": "Remove profile photo",
+      "removeMessage": "Your profile photo will be removed and the default icon shown instead.",
+      "photoAlt": "Profile photo of {name}",
+      "logoAlt": "Logo of {name}",
+      "entityHint": "Your entity logo is used as your account picture; change it from the entity profile.",
+      "errors": {
+        "type": "The photo must be a PNG or JPEG image.",
+        "size": "The photo must not exceed 2 MB.",
+        "dimensions": "The photo must be between 200 and 2000 pixels on each side."
+      }
+    }
   },
   "branding": {
-    "title": "Identity and colors",
-    "subtitle": "The back-office logo and the one accent color shared by every user. The public site is not affected.",
+    "title": "Brand identity",
+    "subtitle": "The platform's name and description, the logos and colors, and the public site menus. Each user sees what their permissions allow.",
     "locked": "This setting is restricted to the System Administrator, and every change is recorded in the audit log.",
     "loadError": "Could not load the identity settings.",
     "emptyTitle": "No palette available",
@@ -5216,9 +5190,7 @@
     },
     "email": {
       "title": "E-mail (SMTP)",
-      "description": "The outgoing mail server, the sender identity and the DNS records of the sending domain.",
       "smtpTitle": "Outgoing mail server",
-      "smtpDesc": "Use the SMTP account of your mail provider. Encryption is always on.",
       "senderTitle": "Sender and sending mode",
       "modeHint": "In test mode every message goes to the test mailbox only.",
       "fields": {
@@ -5249,41 +5221,12 @@
         "starttls": "STARTTLS",
         "tls": "TLS"
       },
-      "dns": {
-        "title": "DNS checklist of the sending domain",
-        "hint": "The connection test reads the SPF and DMARC records of the sender domain. DKIM needs the selector from your mail provider.",
-        "notChecked": "Not checked",
-        "found": "Found",
-        "missing": "Not found",
-        "records": {
-          "spf": {
-            "name": "SPF",
-            "desc": "A TXT record that lists the servers allowed to send for the domain."
-          },
-          "dkim": {
-            "name": "DKIM",
-            "desc": "The signing key published by your mail provider."
-          },
-          "dmarc": {
-            "name": "DMARC",
-            "desc": "A TXT record at _dmarc of the domain with the policy."
-          }
-        },
-        "foundPolicy": "Found (policy {policy})",
-        "providerCheck": "Check with your mail provider"
-      },
       "testSendTitle": "Send test e-mail",
       "testSendDesc": "Sends one fixed bilingual message.",
       "sendTest": "Send test e-mail",
       "testSent": "The test e-mail was sent.",
       "validation": {
         "testAddressRequired": "Required in test mode"
-      },
-      "checklist": {
-        "mailbox": "Create the mailbox or relay account at your mail provider.",
-        "spf": "Publish an SPF record that lists the mail server of the provider.",
-        "dkim": "Publish the DKIM key given by your mail provider.",
-        "dmarc": "Publish a DMARC record at _dmarc of the sending domain."
       },
       "testRedirected": "The test e-mail was sent to the test mailbox because e-mail is in test mode."
     },
@@ -5867,17 +5810,6 @@
       }
     },
     "settings": {
-      "title": "VAT and payment orders",
-      "description": "The VAT rate, the payment order validity and the VAT registration number.",
-      "taxTitle": "VAT and order validity",
-      "vatRate": "VAT rate (%)",
-      "vatHint": "One rate for every paid service, from 0 to 100.",
-      "orderValidity": "Payment order validity (minutes)",
-      "orderValidityHint": "From {min} to {max} minutes.",
-      "readOnly": "You can view this value but not change it.",
-      "previewTitle": "Price preview",
-      "previewHint": "Calculated by the platform with the saved values.",
-      "priceUnset": "The price is not set yet, so this service cannot be paid.",
       "saved": "The finance settings were saved.",
       "failed": "The finance settings could not be saved.",
       "unchanged": "Nothing has changed.",
@@ -5887,12 +5819,6 @@
         "validity": "Enter a whole number of minutes from {min} to {max}.",
         "vatNumber": "Enter 15 digits that start and end with 3, without spaces."
       },
-      "vatNumberTitle": "Platform VAT registration number",
-      "vatNumber": "Platform VAT registration number — optional",
-      "vatNumberHint": "15 digits that start and end with 3. It appears on new receipts only and may be left empty.",
-      "vatNumberReminder": "The platform VAT registration number is not set; receipts will not show it until it is set. This is a reminder only; it blocks neither payments nor receipts.",
-      "adminOnly": "System Administrator only",
-      "pricesMoved": "Path prices and availability are edited in Path prices. The prices below are shown for reference only.",
       "openPrices": "Open Path prices"
     },
     "validation": {
@@ -7042,8 +6968,8 @@
       "bag_details": "Quick Excellence Kit",
       "lenses": "Analytical lenses",
       "kpis": "Indicators page",
-      "siteSettings": "Site settings",
-      "accessibility": "Accessibility statement"
+      "accessibility": "Accessibility statement",
+      "featuredKpis": "Featured indicators"
     },
     "languages": {
       "ar": "Arabic",
@@ -9346,6 +9272,32 @@
     },
     "search": {
       "close": "Close search"
+    }
+  },
+  "identity": {
+    "tabs": {
+      "general": "General",
+      "visual": "Visual identity",
+      "menus": "Menus"
+    },
+    "general": {
+      "description": "The platform's name and description, the footer note, the contact details, the social links and the search-engine text of the public site.",
+      "platform": "Platform",
+      "nameAr": "Platform name (Arabic)",
+      "nameEn": "Platform name (English)",
+      "descriptionAr": "Platform description (Arabic)",
+      "descriptionEn": "Platform description (English)",
+      "fallbackHint": "If the name or the description is left empty, the platform's default text is shown."
+    },
+    "menus": {
+      "description": "The links of the public site header menu and footer menu, and their order.",
+      "header": "Header menu",
+      "headerHint": "Shown at the top of the public site in this order. You can edit or remove any link, or add a new one.",
+      "addHeaderLink": "Add header link",
+      "headerEmpty": "The header menu is empty; no links will be shown.",
+      "footer": "Footer menu",
+      "footerHint": "Shown in the public site footer. If left empty, the default links are shown.",
+      "footerEmpty": "The default footer links are shown."
     }
   }
 }

@@ -12,6 +12,7 @@ use App\Enums\Identity\UserStatus;
 use App\Events\Entities\EntityRegistered;
 use App\Models\Entities\Entity;
 use App\Models\Identity\User;
+use App\Services\Identity\MfaRequirement;
 use App\Services\Identity\TermsAcceptanceRecorder;
 
 final readonly class EntityAccountCreator
@@ -20,6 +21,7 @@ final readonly class EntityAccountCreator
         private ApplyNewPassword $applyPassword,
         private TermsAcceptanceRecorder $terms,
         private MarketingConsentRecorder $consent,
+        private MfaRequirement $mfaRequirement,
     ) {}
 
     public function create(EntityRegistrationData $data): Entity
@@ -45,6 +47,7 @@ final readonly class EntityAccountCreator
     private function createOwner(Entity $entity, EntityRegistrationData $data): User
     {
         $owner = new User;
+        $mfaRequired = $this->mfaRequirement->isRequiredFor([RoleKey::Entity]);
         User::withoutAuditing(static fn (): bool => $owner->forceFill([
             'name' => $data->contact->authorizedPersonName,
             'email' => $data->officialEmail->value,
@@ -52,7 +55,7 @@ final readonly class EntityAccountCreator
             'locale' => $data->locale,
             'entity_id' => $entity->id,
             'status' => UserStatus::Active,
-            'mfa_required' => false,
+            'mfa_required' => $mfaRequired,
         ])->save());
         $owner->assignRole(RoleKey::Entity->value);
 

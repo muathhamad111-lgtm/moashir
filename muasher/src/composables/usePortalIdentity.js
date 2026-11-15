@@ -19,9 +19,8 @@ export function usePortalIdentity() {
   const entityName = computed(
     () => localizedName(auth.user?.entity?.name, locale.value) || userName.value,
   )
-  const initial = computed(() => Array.from(entityName.value.trim())[0] ?? '')
   const email = computed(() => auth.user?.email ?? '')
   const roleLabel = computed(() => t('portal.account.roleLine'))
 
-  return { userName, firstName, entityName, initial, email, roleLabel }
+  return { userName, firstName, entityName, email, roleLabel }
 }

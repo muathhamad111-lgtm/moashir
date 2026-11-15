@@ -16,7 +16,11 @@ use Illuminate\Validation\Validator;
 
 final class UpdateSiteSettingsRequest extends FormRequest
 {
-    private const array FIELDS = ['social', 'contact', 'footer_note', 'quick_links', 'seo', 'featured_kpi_limit', 'show_featured_kpis'];
+    private const array FIELDS = ['platform_name', 'platform_description', 'social', 'contact', 'footer_note', 'quick_links', 'header_links', 'seo', 'featured_kpi_limit', 'show_featured_kpis'];
+
+    private const array LOCALIZED_FIELDS = ['platform_name', 'platform_description', 'footer_note'];
+
+    private const array LINK_LISTS = ['quick_links', 'header_links'];
 
     /**
      * @return array<string, mixed>
@@ -24,6 +28,8 @@ final class UpdateSiteSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
+            ...LocalizedFieldRules::optional('platform_name', 120),
+            ...LocalizedFieldRules::optional('platform_description', 300),
             'social' => ['sometimes', 'array', 'max:10'],
             'social.*' => ['required', 'array:platform,url'],
             'social.*.platform' => ['required', 'distinct', Rule::enum(SocialPlatform::class)],
@@ -37,6 +43,10 @@ final class UpdateSiteSettingsRequest extends FormRequest
             'quick_links.*' => ['required', 'array:label,url'],
             ...LocalizedFieldRules::required('quick_links.*.label', 80),
             'quick_links.*.url' => ['required', 'string', 'max:300', new SafeLinkUrl],
+            'header_links' => ['sometimes', 'array', 'max:8'],
+            'header_links.*' => ['required', 'array:label,url'],
+            ...LocalizedFieldRules::required('header_links.*.label', 40),
+            'header_links.*.url' => ['required', 'string', 'max:300', new SafeLinkUrl],
             'seo' => ['sometimes', 'nullable', 'array:title,description'],
             ...LocalizedFieldRules::optional('seo.title', 120),
             ...LocalizedFieldRules::optional('seo.description', 300),
@@ -74,15 +84,16 @@ final class UpdateSiteSettingsRequest extends FormRequest
             $attributes['contact'] = $this->contact();
         }
 
-        if ($this->has('footer_note')) {
-            $attributes['footer_note'] = $this->localized($this->input('footer_note'));
+        foreach (self::LOCALIZED_FIELDS as $field) {
+            if ($this->has($field)) {
+                $attributes[$field] = $this->localized($this->input($field));
+            }
         }
 
-        if ($this->has('quick_links')) {
-            $attributes['quick_links'] = array_values(array_map(fn (array $link): array => [
-                'label' => $this->localized($link['label'] ?? null)?->toArray(),
-                'url' => trim(ScalarValue::string($link['url'] ?? null)),
-            ], $this->listOf('quick_links')));
+        foreach (self::LINK_LISTS as $field) {
+            if ($this->has($field)) {
+                $attributes[$field] = $this->links($field);
+            }
         }
 
         if ($this->has('seo')) {
@@ -115,6 +126,17 @@ final class UpdateSiteSettingsRequest extends FormRequest
             'phone' => $this->filled('contact.phone') ? $this->string('contact.phone')->trim()->toString() : null,
             'address' => $this->localized($this->input('contact.address'))?->toArray(),
         ];
+    }
+
+    /**
+     * @return list<array{label: array<string, string>|null, url: string}>
+     */
+    private function links(string $field): array
+    {
+        return array_values(array_map(fn (array $link): array => [
+            'label' => $this->localized($link['label'] ?? null)?->toArray(),
+            'url' => trim(ScalarValue::string($link['url'] ?? null)),
+        ], $this->listOf($field)));
     }
 
     private function localized(mixed $value): ?LocalizedContent

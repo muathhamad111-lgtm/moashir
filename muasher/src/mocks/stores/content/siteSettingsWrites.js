@@ -5,6 +5,9 @@ import { createFieldErrors, hasLocalizedText, normalizeLocalized } from './conte
 import { siteSettingsResource } from './cmsSerializers'
 
 const FIELDS = [
+  'platformName',
+  'platformDescription',
+  'headerLinks',
   'social',
   'contact',
   'footerNote',
@@ -32,13 +35,16 @@ function checkSocial(errors, social) {
   })
 }
 
-function checkQuickLinks(errors, links) {
-  if (!Array.isArray(links) || links.length > SITE_SETTINGS_LIMITS.quickLinksMax)
-    return errors.add('quickLinks', 'required')
+function checkLinks(errors, field, links, max) {
+  if (!Array.isArray(links) || links.length > max) return errors.add(field, 'required')
   links.forEach((link, index) => {
-    errors.check(hasLocalizedText(link?.label), `quickLinks.${index}.label.ar`, 'localized')
-    errors.check(isSafeLink(link?.url ?? ''), `quickLinks.${index}.url`, 'linkSafe')
+    errors.check(hasLocalizedText(link?.label), `${field}.${index}.label.ar`, 'localized')
+    errors.check(isSafeLink(link?.url ?? ''), `${field}.${index}.url`, 'linkSafe')
   })
+}
+
+function normalizedLinks(links) {
+  return links.map((link) => ({ label: normalizeLocalized(link.label), url: link.url.trim() }))
 }
 
 function checkContact(errors, contact) {
@@ -63,7 +69,10 @@ function validate(body) {
     .filter((key) => !FIELDS.includes(key))
     .forEach((key) => errors.add(key, 'unknownKey'))
   if (body.social !== undefined) checkSocial(errors, body.social)
-  if (body.quickLinks !== undefined) checkQuickLinks(errors, body.quickLinks)
+  if (body.quickLinks !== undefined)
+    checkLinks(errors, 'quickLinks', body.quickLinks, SITE_SETTINGS_LIMITS.quickLinksMax)
+  if (body.headerLinks !== undefined)
+    checkLinks(errors, 'headerLinks', body.headerLinks, SITE_SETTINGS_LIMITS.headerLinksMax)
   if (body.contact !== undefined) checkContact(errors, body.contact)
   if (body.featuredKpiLimit !== undefined) checkLimit(errors, body.featuredKpiLimit)
   errors.throwIfAny()
@@ -73,12 +82,11 @@ function normalized(body) {
   const changes = {}
   if (body.social !== undefined)
     changes.social = body.social.map(({ platform, url }) => ({ platform, url: url.trim() }))
-  if (body.quickLinks !== undefined) {
-    changes.quickLinks = body.quickLinks.map((link) => ({
-      label: normalizeLocalized(link.label),
-      url: link.url.trim(),
-    }))
-  }
+  if (body.quickLinks !== undefined) changes.quickLinks = normalizedLinks(body.quickLinks)
+  if (body.headerLinks !== undefined) changes.headerLinks = normalizedLinks(body.headerLinks)
+  if (body.platformName !== undefined) changes.platformName = normalizeLocalized(body.platformName)
+  if (body.platformDescription !== undefined)
+    changes.platformDescription = normalizeLocalized(body.platformDescription)
   if (body.contact !== undefined) {
     changes.contact = body.contact
       ? {

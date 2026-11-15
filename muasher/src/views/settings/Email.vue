@@ -5,12 +5,9 @@ import SettingsSection from '@/components/settings/SettingsSection.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import IntegrationCard from '@/components/integrations/IntegrationCard.vue'
-import EnvironmentSourceNote from '@/components/integrations/EnvironmentSourceNote.vue'
 import ConnectionTestPanel from '@/components/integrations/ConnectionTestPanel.vue'
-import ProviderStepsChecklist from '@/components/integrations/ProviderStepsChecklist.vue'
 import SmtpFields from '@/components/integrations/email/SmtpFields.vue'
 import EmailSenderFields from '@/components/integrations/email/EmailSenderFields.vue'
-import DnsChecklist from '@/components/integrations/email/DnsChecklist.vue'
 import EmailTestSend from '@/components/integrations/email/EmailTestSend.vue'
 import EmailCampaignComposer from '@/components/integrations/email/EmailCampaignComposer.vue'
 import { SHOWS_MODULES_AWAITING_BACKEND } from '@/constants/buildPosture'
@@ -33,7 +30,7 @@ const {
   submit,
   confirmReason,
 } = email
-const { onTested, dnsRecords, cardStatus, clientSteps } = email
+const { onTested } = email
 const runTest = () => emailIntegrationService.testConnection()
 
 onMounted(load)
@@ -42,18 +39,12 @@ onMounted(load)
 <template>
   <SettingsSection
     :title="t('integrations.email.title')"
-    :description="t('integrations.email.description')"
     :status="status"
     :error-message="errorMessage"
     @retry="load"
   >
     <form id="email-integration-form" class="integration-form" novalidate @submit.prevent="submit">
-      <EnvironmentSourceNote v-if="fromEnvironment" />
-      <IntegrationCard
-        :title="t('integrations.email.smtpTitle')"
-        :description="t('integrations.email.smtpDesc')"
-        :status="cardStatus"
-      >
+      <IntegrationCard :title="t('integrations.email.smtpTitle')">
         <SmtpFields
           :password-meta="resource.password"
           :password-hint="
@@ -70,10 +61,6 @@ onMounted(load)
       <IntegrationCard :title="t('integrations.email.senderTitle')">
         <EmailSenderFields />
       </IntegrationCard>
-      <div class="integration-form__columns">
-        <DnsChecklist :records="dnsRecords" />
-        <ProviderStepsChecklist :title="t('integrations.clientStepsTitle')" :steps="clientSteps" />
-      </div>
     </form>
 
     <EmailTestSend />

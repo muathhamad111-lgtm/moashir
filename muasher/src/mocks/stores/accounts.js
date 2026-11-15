@@ -10,6 +10,7 @@ import {
   referenceOf,
 } from './entitiesStore'
 import { permissionsOf } from './sessionPermissions'
+import { avatarOf } from './accountAvatars'
 import { qualificationsOf, requestScopeOf } from './staffUsers'
 import { findRole } from './permissionsStore'
 import { profileLocaleOf } from './preferencesStore'
@@ -101,6 +102,7 @@ export function sessionPayload(descriptor) {
     passwordChangeRequired: false,
     entityId: entity?.id ?? null,
     entity: entity ? entitySummary(entity) : null,
+    avatar: avatarOf({ ...descriptor, entityId: entity?.id ?? null }),
     committeeAppointments: committeeAppointmentsOf(descriptor),
     assessorQualifications: entity ? [] : qualificationsOf(descriptor.id),
     requestScope: requestScopeOf(descriptor.id, { superAdmin: descriptor.superAdmin === true }),

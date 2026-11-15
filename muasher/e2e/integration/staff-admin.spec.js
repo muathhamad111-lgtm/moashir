@@ -159,9 +159,9 @@ test('a portal message is answered from the inbox and the reply reaches the port
 
 test('the contact retention works on the backend', async () => {
   const { page } = sessions.admin
-  await page.goto('/admin/settings/contact-messages')
+  await page.goto('/admin/settings/general')
   await page.locator('input[name="retentionMonths"]').fill('18')
-  await page.locator('.settings-section__footer button[type="submit"]').click()
+  await page.locator('[data-testid="contact-retention-settings"] button[type="submit"]').click()
   await expect(page.locator('.toast').first()).toContainText('حُفظت')
   backendOnly('admin', /^\/api\/v1\/settings\/contact-messages$/)
 })

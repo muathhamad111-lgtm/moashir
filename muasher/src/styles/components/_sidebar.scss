@@ -254,3 +254,19 @@
     transition: none;
   }
 }
+
+.sidebar-tooltip {
+  position: fixed;
+  z-index: var(--z-tooltip);
+  transform: translateY(-50%);
+  padding-block: var(--space-1);
+  padding-inline: var(--space-3);
+  max-inline-size: var(--size-tooltip-max);
+  inline-size: max-content;
+  border-radius: var(--radius-md);
+  background-color: var(--color-dark);
+  color: var(--color-secondary);
+  border: var(--border-width) solid var(--theme-border);
+  font-size: var(--fs-sm);
+  pointer-events: none;
+}

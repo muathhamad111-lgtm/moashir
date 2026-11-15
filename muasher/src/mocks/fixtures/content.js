@@ -971,6 +971,16 @@ export const homePageFixture = {
 }
 
 export const siteSettingsFixture = {
+  platformName: null,
+  platformDescription: null,
+  headerLinks: [
+    { label: { ar: 'الرئيسية', en: 'Home' }, url: '/' },
+    { label: { ar: 'جولة في المنصة', en: 'Platform tour' }, url: '/#tour' },
+    { label: { ar: 'مسارات التقييم', en: 'Assessment paths' }, url: '/#paths' },
+    { label: { ar: 'نموذج التميّز', en: 'Excellence model' }, url: '/#model' },
+    { label: { ar: 'مؤشرات الأداء', en: 'Performance Indicators' }, url: '/kpis' },
+    { label: { ar: 'تواصل معنا', en: 'Contact us' }, url: '/#contact' },
+  ],
   social: [
     { platform: 'x', url: 'https://x.com/moashir.example' },
     { platform: 'linkedin', url: 'https://www.linkedin.com/company/moashir-example' },
