@@ -41,13 +41,11 @@ describe('demo-free wording (J-4)', () => {
     expect(hits(en, ENGLISH_DEMO_WORDS)).toEqual([])
   })
 
-  it('uses the neutral receipt, verification and hero texts in both languages', () => {
+  it('uses the neutral receipt and verification texts in both languages', () => {
     expect(ar.finance.receipt.notProof).toBe('غير معتمد كإثبات دفع')
     expect(en.finance.receipt.notProof).toBe('Not valid as proof of payment')
     expect(ar.verify.results.unverifiable.title).toBe('غير صالحة للتحقق')
     expect(en.verify.results.unverifiable.title).toBe('Not valid for verification')
-    expect(ar.public.home.preview.label).toBe('معاينة تقرير النضج')
-    expect(en.public.home.preview.label).toBe('Maturity report preview')
   })
 
   it('never says test to the entity in its payment notices', () => {

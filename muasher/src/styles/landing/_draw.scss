@@ -1,0 +1,49 @@
+@use 'tokens' as *;
+
+.lp-glyph {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lp-draw .lp-glyph :is(path, circle) {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 0.65s cubic-bezier(0.65, 0, 0.35, 1) var(--dd, 0.05s);
+}
+
+.lp-draw.is-revealed .lp-glyph :is(path, circle) {
+  stroke-dashoffset: 0;
+}
+
+.lp-spot {
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s;
+    background: radial-gradient(
+      260px circle at var(--mx, 50%) var(--my, 50%),
+      color-mix(in srgb, var(--lp-aqua) 22%, transparent),
+      transparent 70%
+    );
+  }
+
+  &:hover::before {
+    opacity: 1;
+  }
+
+  > * {
+    position: relative;
+  }
+}

@@ -281,9 +281,11 @@ it('replaces the demo home page with the current demo content on request', funct
         ->and(Artisan::output())->toContain('replaced with the current demo content');
 
     $this->getJson('/api/v1/content/home')->assertOk()
-        ->assertJsonPath('data.sections.0.title.ar', 'قِس تميّزك المؤسسي،')
-        ->assertJsonPath('data.sections.4.meta.variant', 'journey');
-    expect($home->sections()->count())->toBe(9)
+        ->assertJsonPath('data.sections.0.title.ar', 'قِس تميّزك المؤسسي')
+        ->assertJsonPath('data.sections.5.meta.variant', 'journey')
+        ->assertJsonCount(14, 'data.sections');
+    expect($home->sections()->count())->toBe(15)
+        ->and($home->sections()->where('key', 'partners')->value('is_enabled'))->toBeFalse()
         ->and($home->sections()->onlyTrashed()->count())->toBeGreaterThan(0);
 });
 

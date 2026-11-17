@@ -57,7 +57,7 @@ test('a Content Officer edits a home section in the draft, publishes it and the 
 
   await page.locator('.publication-control__view').click()
   await expect(page).toHaveURL(/\/$/)
-  await expect(page.locator('.home-hero__title')).toContainText(EDITED_TITLE[localeOf(testInfo)], {
+  await expect(page.locator('#lp-hero-title')).toContainText(EDITED_TITLE[localeOf(testInfo)], {
     timeout: 15000,
   })
 })
@@ -87,7 +87,9 @@ test('a section item is added with an uploaded image and hidden from the draft',
 }, testInfo) => {
   await signInAs(page, ['content_officer'], testInfo)
   await openEditor(page)
-  const journey = page.locator('.sortable-list__row').filter({ hasText: 'entity-journey' })
+  const journey = page
+    .locator('.sortable-list__row')
+    .filter({ has: page.locator('.cms-section-row__key', { hasText: /^journey$/ }) })
   await journey.locator('.cms-section-row__actions .btn--ghost').first().click()
   const items = page.locator('.modal').last()
   await expect(items.locator('.cms-items__row')).toHaveCount(6)
@@ -119,7 +121,7 @@ test('the brand identity menus refuse an unsafe header link with the server fiel
   await page.goto('/admin/branding?tab=menus')
   await expect(page.locator('.tabs__tab')).toHaveCount(2)
   await expect(page.locator('.site-settings__form')).toBeVisible()
-  await expect(page.locator('input[name="headerLinksUrl-0"]')).toHaveValue('/')
+  await expect(page.locator('input[name="headerLinksUrl-0"]')).toHaveValue('/#model')
   await page.locator('input[name="headerLinksUrl-0"]').fill('javascript:alert(1)')
   await page.locator('.site-settings__footer .btn--primary').click()
   await expect(
@@ -223,7 +225,7 @@ test('public pages render the published CMS content in both directions', async (
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await seedLocale(page, localeOf(testInfo))
   for (const [path, selector, name] of [
-    ['/', '.home-hero__title', 'home'],
+    ['/', '#lp-hero-title', 'home'],
     ['/kpis', '.kpi-card', 'kpis'],
     ['/lenses', '.lens-card', 'lenses'],
     ['/assessment/accredited', '.accredited-intro__benefit', 'accredited-intro'],

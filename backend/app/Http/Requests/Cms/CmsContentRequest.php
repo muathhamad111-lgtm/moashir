@@ -7,10 +7,13 @@ namespace App\Http\Requests\Cms;
 use App\Data\Cms\CmsContentChanges;
 use App\Data\Files\ImageChange;
 use App\Enums\Cms\CmsAvailability;
+use App\Enums\Cms\CmsSectionType;
+use App\Models\Cms\CmsSection;
 use App\Rules\BoundedContentMeta;
 use App\Rules\FontAwesomeIcon;
 use App\Rules\FreeOfHtmlMarkup;
 use App\Rules\SafeLinkUrl;
+use App\Support\Cms\Meta\MetaFieldSet;
 use App\Support\Localization\LocalizedFieldRules;
 use App\Support\RichText\RichTextSanitizer;
 use App\Support\ValueObjects\LocalizedContent;
@@ -25,8 +28,19 @@ abstract class CmsContentRequest extends FormRequest
 
     private const string RICH_TEXT_FIELD = 'description';
 
+    abstract protected function metaFields(): MetaFieldSet;
+
+    /**
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return $this->metaFields()->attributeNames();
+    }
+
     protected function prepareForValidation(): void
     {
+        $this->cleanMeta();
         $description = $this->input(self::RICH_TEXT_FIELD);
 
         if (! is_array($description)) {
@@ -63,6 +77,7 @@ abstract class CmsContentRequest extends FormRequest
             'image_file_id' => ['sometimes', 'nullable', 'uuid'],
             'meta' => ['sometimes', 'nullable', new BoundedContentMeta(config()->integer('moashir.cms.meta_max_bytes'))],
             'meta.availability' => ['sometimes', Rule::enum(CmsAvailability::class)],
+            ...$this->metaFields()->rules(),
         ];
     }
 
@@ -107,6 +122,22 @@ abstract class CmsContentRequest extends FormRequest
         }
 
         return new CmsContentChanges($attributes, $this->imageChange());
+    }
+
+    protected function routeSectionType(): ?CmsSectionType
+    {
+        $section = $this->route('section');
+
+        return $section instanceof CmsSection ? $section->type : null;
+    }
+
+    private function cleanMeta(): void
+    {
+        $meta = $this->input('meta');
+
+        if (is_array($meta)) {
+            $this->merge(['meta' => $this->metaFields()->cleaned($meta)]);
+        }
     }
 
     private function imageChange(): ?ImageChange

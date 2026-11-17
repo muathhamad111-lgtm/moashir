@@ -187,8 +187,17 @@ function toPricing(raw) {
   }
 }
 
+function toPathPricingMap(raw) {
+  if (!raw || typeof raw !== 'object') return {}
+  return Object.fromEntries(Object.entries(raw).map(([key, value]) => [key, toPathPricing(value)]))
+}
+
 export function toServicePrices(raw = {}) {
-  return { accredited: toPricing(raw.accredited), bag: toPricing(raw.bag) }
+  return {
+    accredited: toPricing(raw.accredited),
+    bag: toPricing(raw.bag),
+    paths: toPathPricingMap(raw.paths),
+  }
 }
 
 export function toAssessmentSettings(raw = {}) {

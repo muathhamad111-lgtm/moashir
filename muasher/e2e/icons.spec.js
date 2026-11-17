@@ -28,7 +28,7 @@ const USERS = {
   contentOfficer: { roles: ['content_officer'], name: 'Content Officer' },
 }
 const SCREENS = [
-  { key: 'home', path: '/', ready: '.home-hero__title', header: '.public-navbar' },
+  { key: 'home', path: '/', ready: '#lp-hero-title', header: '.lp-top', icons: 'button svg' },
   {
     key: 'portal-home',
     path: '/dashboard',
@@ -95,11 +95,13 @@ function drawnIcons(locator) {
   return locator.evaluateAll((icons) =>
     icons.map((icon) => {
       const box = icon.getBoundingClientRect()
+      const reference = icon.querySelector('use')?.getAttribute('href')
+      const source = reference ? document.querySelector(reference) : icon
       return {
-        name: icon.dataset.icon,
+        name: icon.dataset.icon ?? reference,
         width: box.width,
         height: box.height,
-        path: icon.querySelector('path')?.getAttribute('d')?.length ?? 0,
+        path: source?.querySelector('path')?.getAttribute('d')?.length ?? 0,
       }
     }),
   )
@@ -156,7 +158,9 @@ test.describe('TTS icons', () => {
         for (const [device, viewport] of Object.entries(VIEWPORTS)) {
           await page.setViewportSize(viewport)
           await open(page, screen)
-          const headerIcons = page.locator(`${screen.header} svg.app-icon:visible`)
+          const headerIcons = page.locator(
+            `${screen.header} ${screen.icons ?? 'svg.app-icon'}:visible`,
+          )
           await expect(headerIcons.first()).toBeVisible()
           await expectDrawn(headerIcons)
           expect(await fontAwesomeLeftovers(page)).toEqual({ classes: 0, iconElements: 0 })

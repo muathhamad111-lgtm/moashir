@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, defineAsyncComponent } from 'vue'
 import { useHead } from '@unhead/vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
@@ -19,7 +19,13 @@ import { useTtsShell } from '@/composables/useTtsShell'
 import { BRAND_THEME_COLOR } from '@/constants/branding'
 import { THEMES } from '@/constants/themes'
 
-const LAYOUTS = { app: AppLayout, portal: PortalLayout, public: PublicLayout, auth: AuthLayout }
+const LAYOUTS = {
+  app: AppLayout,
+  portal: PortalLayout,
+  public: PublicLayout,
+  auth: AuthLayout,
+  landing: defineAsyncComponent(() => import('@/components/layout/LandingLayout.vue')),
+}
 
 const { t } = useI18n()
 const route = useRoute()

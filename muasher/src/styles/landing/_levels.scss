@@ -1,0 +1,357 @@
+@use 'tokens' as *;
+
+.lp-lv {
+  display: grid;
+  gap: 30px;
+  max-width: 920px;
+  margin-inline: auto;
+
+  &__show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(24px, 5vw, 56px);
+  }
+
+  &__seal {
+    position: relative;
+    width: clamp(120px, 18vw, 180px);
+    aspect-ratio: 1;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 8%;
+      border-radius: 50%;
+      background: radial-gradient(closest-side, var(--sg, transparent), transparent);
+      filter: blur(18px);
+      opacity: 0.7;
+      transition: background 0.6s;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 2%;
+      border-radius: 50%;
+      border: 2px solid var(--sg, transparent);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    &.is-ringing::after {
+      animation: lp-seal-ring 0.8s ease-out;
+    }
+
+    img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: auto;
+    }
+  }
+
+  &__info {
+    display: grid;
+    gap: 2px;
+
+    > span {
+      color: var(--lp-ink-3);
+      font-size: 0.9rem;
+    }
+  }
+
+  &__num {
+    justify-self: start;
+    font-size: clamp(3rem, 7vw, 4.6rem);
+    font-weight: 700;
+    line-height: 1.05;
+    font-variant-numeric: tabular-nums;
+
+    span {
+      display: inline-block;
+      min-width: 2ch;
+      text-align: center;
+    }
+
+    small {
+      margin-inline-start: 4px;
+      font-size: 0.45em;
+      font-weight: 600;
+      color: var(--lp-ink-3);
+    }
+  }
+
+  &__name {
+    font-size: 1.2rem;
+    color: var(--tier-ink, var(--lp-ink));
+    animation: lp-name-in 0.5s $lp-ease;
+  }
+
+  &__scale {
+    position: relative;
+    padding-block: 18px 6px;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+
+    &.is-dragging {
+      cursor: grabbing;
+    }
+
+    &:has(.lp-lv__range:focus-visible) {
+      outline: 2px solid var(--lp-accent);
+      outline-offset: 8px;
+      border-radius: 10px;
+    }
+  }
+
+  &__track {
+    position: relative;
+    height: 12px;
+    border-radius: 8px;
+    background: var(--lp-line);
+  }
+
+  &__zone {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    inset-inline-start: calc(var(--a) * 1%);
+    width: calc((var(--b) - var(--a)) * 1%);
+    background: var(--c);
+    opacity: 0.3;
+    transition:
+      opacity 0.45s,
+      transform 0.45s $lp-ease,
+      box-shadow 0.45s;
+
+    &:first-child {
+      border-start-start-radius: 8px;
+      border-end-start-radius: 8px;
+    }
+
+    &:nth-last-child(2) {
+      border-start-end-radius: 8px;
+      border-end-end-radius: 8px;
+    }
+
+    &.is-on {
+      z-index: 1;
+      opacity: 1;
+      transform: scaleY(1.6);
+      border-radius: 6px;
+      box-shadow: 0 4px 14px -4px var(--c);
+    }
+  }
+
+  &__thumb {
+    position: absolute;
+    top: 100%;
+    inset-inline-start: calc(var(--v, 84) * 1%);
+    width: 26px;
+    height: 26px;
+    margin-inline-start: -13px;
+    margin-block-start: 4px;
+    color: var(--lp-ink);
+    transition: scale 0.25s $lp-ease;
+
+    svg {
+      width: 100%;
+      height: 100%;
+      fill: currentColor;
+    }
+  }
+
+  &__scale:hover &__thumb,
+  &__scale.is-dragging &__thumb {
+    scale: 1.2;
+  }
+
+  &__ticks {
+    position: relative;
+    height: 22px;
+    margin-block-start: 34px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--lp-ink-3);
+
+    span {
+      position: absolute;
+      inset-inline-start: calc(var(--x) * 1%);
+      translate: -50% 0;
+    }
+
+    span:first-child {
+      translate: 0 0;
+    }
+
+    span:last-child {
+      translate: -100% 0;
+    }
+  }
+
+  &__range {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &__hint {
+    margin-block-start: -10px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--lp-ink-3);
+  }
+
+  &__tiers {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+
+    button {
+      display: grid;
+      gap: 2px;
+      width: 100%;
+      padding: 14px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--lp-line);
+      background: var(--lp-surface);
+      text-align: center;
+      cursor: pointer;
+      transition:
+        border-color 0.35s,
+        background-color 0.35s,
+        translate 0.35s $lp-ease;
+
+      &:hover {
+        border-color: var(--lp-line-strong);
+      }
+
+      &[aria-pressed='true'] {
+        translate: 0 -3px;
+        border-color: var(--lp-ink);
+        background: var(--lp-surface-2);
+      }
+    }
+
+    b {
+      font-size: 0.92rem;
+    }
+
+    span {
+      font-size: 0.8rem;
+      color: var(--lp-ink-3);
+    }
+  }
+
+  &__notes {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    text-align: center;
+    font-size: 0.9rem;
+
+    p:first-child {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--lp-ink-2);
+    }
+
+    svg {
+      width: 18px;
+      height: 18px;
+      color: var(--lp-accent);
+    }
+
+    .lp-muted {
+      font-size: 0.82rem;
+    }
+  }
+}
+
+[dir='rtl'] .lp-lv__ticks {
+  span {
+    translate: 50% 0;
+  }
+
+  span:first-child {
+    translate: 0 0;
+  }
+
+  span:last-child {
+    translate: 100% 0;
+  }
+}
+
+.lp-seal-swap-enter-active {
+  animation: lp-seal-in 0.45s cubic-bezier(0.2, 0.8, 0.25, 1) both;
+}
+
+.lp-seal-swap-leave-active {
+  animation: lp-seal-out 0.28s cubic-bezier(0.55, 0, 0.8, 0.3) both;
+}
+
+@keyframes lp-seal-in {
+  from {
+    opacity: 0;
+    transform: scale(1.1);
+    filter: blur(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes lp-seal-out {
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+    filter: blur(4px);
+  }
+}
+
+@keyframes lp-seal-ring {
+  from {
+    opacity: 0.9;
+    transform: scale(0.92);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.28);
+  }
+}
+
+@keyframes lp-name-in {
+  from {
+    opacity: 0;
+    translate: 0 10px;
+  }
+
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@media (min-width: $lp-bp-md) {
+  .lp-lv__tiers {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (max-width: $lp-bp-sm) {
+  .lp-lv__ticks span:first-child,
+  .lp-lv__ticks span:last-child {
+    display: none;
+  }
+}

@@ -24,4 +24,6 @@ enum CmsSectionType: string
     case CycleBox = 'cycle_box';
     case Winners = 'winners';
     case Logos = 'logos';
+    case About = 'about';
+    case Levels = 'levels';
 }

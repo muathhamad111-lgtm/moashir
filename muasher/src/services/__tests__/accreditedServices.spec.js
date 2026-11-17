@@ -300,6 +300,10 @@ describe('assessor review, overrides, settings and prices', () => {
           currency: 'SAR',
         },
         bag: null,
+        paths: {
+          self: { price: null, isFree: true, availability: 'available' },
+          award: { price: null, isFree: false, availability: 'available' },
+        },
       }),
     )
     const prices = await servicePricesService.getServicePrices()
@@ -313,6 +317,10 @@ describe('assessor review, overrides, settings and prices', () => {
         currency: 'SAR',
       },
       bag: null,
+      paths: {
+        self: { price: null, isFree: true, availability: 'available' },
+        award: { price: null, isFree: false, availability: 'available' },
+      },
     })
   })
 

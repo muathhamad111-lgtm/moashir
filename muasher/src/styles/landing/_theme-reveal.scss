@@ -1,0 +1,39 @@
+::view-transition-old(root),
+::view-transition-new(root) {
+  mix-blend-mode: normal;
+}
+
+html.lp-vt-run::view-transition-group(root) {
+  animation-duration: 6s;
+}
+
+html.lp-vt-run::view-transition-old(root) {
+  z-index: 1;
+  animation: lp-vt-hold 6s linear;
+}
+
+html.lp-vt-run::view-transition-new(root) {
+  z-index: 2;
+  animation: lp-vt-hold 6s linear;
+  clip-path: circle(var(--lp-vtr, 0px) at var(--lp-vtx, 0px) var(--lp-vty, 0px));
+}
+
+html.lp-vt-run .lp-top {
+  backdrop-filter: none !important;
+}
+
+html.lp-vt-run .lp *,
+html.lp-vt-run .lp *::before,
+html.lp-vt-run .lp *::after {
+  transition: none !important;
+}
+
+@keyframes lp-vt-hold {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 1;
+  }
+}

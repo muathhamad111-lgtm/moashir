@@ -6,6 +6,8 @@ namespace App\Http\Requests\Cms;
 
 use App\Data\Cms\NewCmsSection;
 use App\Enums\Cms\CmsSectionType;
+use App\Support\Cms\Meta\MetaFieldSet;
+use App\Support\Cms\MetaSchemas\SectionMetaSchemas;
 use Illuminate\Validation\Rule;
 
 final class StoreCmsSectionRequest extends CmsContentRequest
@@ -23,6 +25,13 @@ final class StoreCmsSectionRequest extends CmsContentRequest
             'enabled' => ['sometimes', 'boolean'],
             'background' => ['sometimes', 'nullable', 'string', 'max:30', 'regex:/^[a-z][a-z0-9-]*$/'],
         ];
+    }
+
+    protected function metaFields(): MetaFieldSet
+    {
+        $type = $this->input('type');
+
+        return new MetaFieldSet(SectionMetaSchemas::of(is_string($type) ? CmsSectionType::tryFrom($type) : null)->sectionFields());
     }
 
     public function section(): NewCmsSection

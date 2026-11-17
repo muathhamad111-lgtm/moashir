@@ -7,6 +7,7 @@ import { PICKABLE_ICON_NAMES } from '@/utils/icons/iconRegistry'
 import LocalizedFields from './LocalizedFields.vue'
 import ContentImageField from './ContentImageField.vue'
 import ContentDisplayFields from './ContentDisplayFields.vue'
+import ContentMetaFields from './ContentMetaFields.vue'
 
 defineProps({
   sectionType: { type: String, required: true },
@@ -67,5 +68,6 @@ const { value: image } = useField('image')
     </fieldset>
 
     <ContentDisplayFields :section-type="sectionType" :for-item="forItem" />
+    <ContentMetaFields :section-type="sectionType" :for-item="forItem" />
   </div>
 </template>

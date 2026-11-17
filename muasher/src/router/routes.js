@@ -26,7 +26,7 @@ export const appRoutes = [
     path: '/',
     name: ROUTE_NAMES.PUBLIC_HOME,
     component: () => import('@/views/public/Home.vue'),
-    meta: { layout: 'public', titleKey: 'routes.public.home.title', hideAssistant: true },
+    meta: { layout: 'landing', titleKey: 'routes.public.home.title', hideAssistant: true },
   },
   {
     path: '/kpis',

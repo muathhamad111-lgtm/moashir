@@ -1136,16 +1136,8 @@
       "message": "This section’s content hasn’t been published yet. Please check back soon."
     },
     "home": {
-      "empty": {
-        "title": "The homepage is being prepared",
-        "message": "Homepage content hasn’t been published yet. Please check back shortly."
-      },
       "comingSoon": "Coming soon",
       "contact": {
-        "email": "Email",
-        "phone": "Phone",
-        "address": "Address",
-        "social": "Social media accounts",
         "form": {
           "title": "Send a message",
           "signedIn": "We use your account details to reply, and your message also appears in your “Inbox”.",
@@ -1177,97 +1169,9 @@
           "sendAnother": "Send another message"
         }
       },
-      "paths": {
-        "features": "What this path offers",
-        "badges": {
-          "free": "Free",
-          "available": "Available now",
-          "soon": "Coming soon"
-        },
-        "priceNote": "SAR — VAT not included"
-      },
-      "model": {
-        "count": "{count} criteria"
-      },
-      "stats": {
-        "label": "Featured performance indicators"
-      },
-      "preview": {
-        "label": "Maturity report preview",
-        "scoreLabel": "Score",
-        "levelNote": "After a completed accredited assessment"
-      },
-      "tour": {
-        "stepsLabel": "Tour steps",
-        "progress": "Step {n} of {total}",
-        "pause": "Pause autoplay",
-        "play": "Resume autoplay",
-        "screens": {
-          "register": {
-            "panel": "Institutional assessment portal",
-            "title": "Register a new entity",
-            "fields": {
-              "entityName": "Entity name in Arabic",
-              "entityType": "Entity type",
-              "region": "Region and city",
-              "email": "Official e-mail"
-            },
-            "submit": "Create the account"
-          },
-          "path": {
-            "title": "Choose the assessment path",
-            "tiles": {
-              "self": "Self assessment",
-              "accredited": "Accredited assessment",
-              "advanced": "Advanced assessment"
-            }
-          },
-          "evidence": {
-            "title": "Evidence for administrative leadership",
-            "dropzone": "Drop the files here or choose them from your device",
-            "files": {
-              "plan": "Strategic plan.pdf",
-              "policies": "Policies and procedures manual.pdf",
-              "report": "Annual report.pdf"
-            },
-            "verified": "Verified"
-          },
-          "review": {
-            "title": "Assessor review",
-            "rows": {
-              "leadership": "Administrative leadership",
-              "planning": "Strategic planning",
-              "people": "People and volunteers management"
-            },
-            "states": {
-              "done": "Completed",
-              "review": "In review"
-            },
-            "note": "Completion requested for one piece of evidence"
-          },
-          "result": {
-            "title": "Accredited assessment result",
-            "level": "Gold level",
-            "certificate": "Download the certificate",
-            "report": "Feedback report"
-          }
-        }
-      },
-      "journey": {
-        "stagesLabel": "Entity journey stages"
-      },
       "percent": "{value}%",
-      "motion": {
-        "pause": "Pause animation",
-        "play": "Play animation"
-      },
       "levels": {
-        "eyebrow": "Excellence levels",
-        "title": "A certificate that reflects your level",
-        "verification": "Every certificate carries a verification code and a QR code to confirm it is genuine.",
-        "range": "{min}–{max}",
-        "andAbove": "and above",
-        "error": "We couldn’t load the excellence levels. Please try again."
+        "range": "{min}–{max}"
       }
     },
     "hero": {
@@ -7159,7 +7063,8 @@
       "text": "Text",
       "cta": "Button",
       "media": "Image and appearance",
-      "display": "Display options"
+      "display": "Display options",
+      "sectionContent": "Section content on the home page"
     },
     "fields": {
       "inLanguage": "{label} ({language})",
@@ -7191,11 +7096,16 @@
       },
       "variantOptions": {
         "journey": "Entity journey",
-        "cta": "Call-to-action banner"
+        "cta": "Call-to-action banner",
+        "band": "Mid-page call to action"
       },
       "roleOptions": {
         "point": "Highlight point",
-        "secondary-cta": "Secondary button"
+        "secondary-cta": "Secondary button",
+        "audience": "Audience",
+        "goal": "Goal",
+        "step": "Step",
+        "tool": "Tool"
       }
     },
     "image": {
@@ -7212,7 +7122,9 @@
       "link": "Use a site path starting with /, an anchor starting with #, a mailto: address or an https:// link.",
       "icon": "Choose an icon from the list.",
       "key": "Start with a lowercase English letter and use lowercase letters, digits, hyphens or underscores.",
-      "background": "Use lowercase English letters, digits and hyphens only."
+      "background": "Use lowercase English letters, digits and hyphens only.",
+      "bothLanguages": "Enter the text in both Arabic and English, or leave both empty.",
+      "range": "Enter a whole number from {min} to {max}."
     },
     "sectionTypes": {
       "hero": "Hero",
@@ -7232,7 +7144,85 @@
       "pricing_box": "Fees box",
       "cycle_box": "Cycle box",
       "winners": "Winners",
-      "logos": "Cards / logos"
+      "logos": "Cards / logos",
+      "about": "About the platform",
+      "levels": "Excellence levels"
+    },
+    "metaFields": {
+      "highlight": "Highlighted part of the title",
+      "scoreCaption": "Score caption above the trophy",
+      "keyWords": "Highlighted words (separate with commas)",
+      "audienceLabel": "Audience heading",
+      "goalsTitle": "Goals heading",
+      "ideaLabel": "\"Idea\" label",
+      "costLabel": "\"Cost\" label",
+      "freeLabel": "Free path label",
+      "stepLabel": "\"Step\" label",
+      "tagAll": "All-paths tag",
+      "tagAccredited": "Accredited path tag",
+      "tagAward": "Award tag",
+      "resultLabel": "Result label",
+      "hint": "Slider hint",
+      "verifyNote": "Certificate verification note",
+      "settingsNote": "Threshold settings note",
+      "sampleScore": "Default slider score",
+      "noticeTitle": "Notice title",
+      "noticeText": "Notice text",
+      "howLabel": "\"How does it work?\" label",
+      "howText": "\"How does it work?\" text",
+      "note": "Note below the list",
+      "badgeLabel": "Badge text",
+      "emailLabel": "Email label",
+      "phoneLabel": "Phone label",
+      "addressLabel": "Address label",
+      "socialLabel": "Social accounts label",
+      "inputLabel": "Question field text",
+      "fallbackReply": "Reply when no answer exists",
+      "glyph": "Drawn icon",
+      "path": "Path used for the price",
+      "costNote": "Cost text when no price is set",
+      "tags": "Paths this step applies to",
+      "screen": "Step screen",
+      "rangeHint": "A whole number from {min} to {max}"
+    },
+    "metaOptions": {
+      "glyph": {
+        "people": "People",
+        "institution": "Institution",
+        "endowment": "Endowment (sprout)",
+        "gauge": "Gauge",
+        "gap_bars": "Gap bars",
+        "medal": "Medal",
+        "lens": "Lens",
+        "trophy": "Trophy",
+        "growth": "Growth",
+        "grid": "Criteria grid",
+        "clipboard": "Checklist",
+        "shield": "Shield",
+        "stairs": "Stairs",
+        "cycle": "Follow-up cycle",
+        "target": "Target",
+        "document": "Document",
+        "map": "Map"
+      },
+      "path": {
+        "self": "Self-assessment",
+        "accredited": "Accredited assessment",
+        "advanced": "Award (advanced assessment)"
+      },
+      "tags": {
+        "all": "All paths",
+        "accredited": "Accredited",
+        "award": "Award"
+      },
+      "screen": {
+        "register": "Entity registration",
+        "choose_path": "Choosing a path",
+        "evidence": "Evidence upload",
+        "review": "Review status",
+        "result": "Result and certificate",
+        "improvement": "Improvement plan"
+      }
     }
   },
   "portal": {
@@ -9354,6 +9344,127 @@
       "footer": "Footer menu",
       "footerHint": "Shown in the public site footer. If left empty, the default links are shown.",
       "footerEmpty": "The default footer links are shown."
+    }
+  },
+  "landing": {
+    "skipToContent": "Skip to content",
+    "header": {
+      "home": "{name}, back to top",
+      "start": "Start an assessment",
+      "language": "العربية — switch the page to Arabic",
+      "languageCode": "ar",
+      "toLight": "Switch to light mode",
+      "toDark": "Switch to dark mode"
+    },
+    "hero": {
+      "trophyAlt": "Charitable Work Excellence Model award trophy"
+    },
+    "stats": {
+      "label": "Performance indicators"
+    },
+    "levels": {
+      "rangeBelow": "Below {max}",
+      "rangeOpen": "{min} and above",
+      "valueText": "{value}% — {level}",
+      "rangeLabel": "Move the slider to choose a result"
+    },
+    "paths": {
+      "currency": "SAR",
+      "beforeVat": "before VAT",
+      "vatLine": "VAT {rate}%: {vat} SAR · total {total} SAR",
+      "soon": "Coming soon"
+    },
+    "screens": {
+      "register": {
+        "title": "Entity registration",
+        "name": "Entity name",
+        "nameValue": "Your entity's name",
+        "type": "Entity type",
+        "typeValue": "Civil association",
+        "region": "Region",
+        "regionValue": "Choose a region",
+        "submit": "Create account"
+      },
+      "paths": {
+        "title": "Choose a path",
+        "subtitle": "Three independent paths",
+        "self": "Self-assessment",
+        "accredited": "Accredited assessment",
+        "advanced": "Award (advanced assessment)",
+        "free": "Free",
+        "cycleFee": "Entry fee set per cycle"
+      },
+      "evidence": {
+        "title": "Assessment and evidence",
+        "progress": "75% of sub-criteria complete",
+        "plan": "Strategic plan document",
+        "governance": "Governance structure and bylaws",
+        "satisfaction": "Beneficiary satisfaction report",
+        "risks": "Risk management register",
+        "states": {
+          "ok": "Uploaded",
+          "wait": "Uploading",
+          "need": "Required"
+        }
+      },
+      "review": {
+        "title": "Request status",
+        "sent": "Submitted",
+        "assigned": "Assigned to a qualified assessor",
+        "review": "Under review",
+        "complete": "Complete",
+        "now": "Now"
+      },
+      "result": {
+        "title": "Result",
+        "score": "84%",
+        "level": "Gold level",
+        "report": "Feedback report",
+        "qr": "QR verification code"
+      },
+      "plan": {
+        "title": "Gap treatment map",
+        "high": "Stage 1 · high priority",
+        "medium": "Stage 2 · medium priority",
+        "low": "Stage 3 · low priority",
+        "states": {
+          "ok": "Complete",
+          "wait": "In progress",
+          "need": "Upcoming"
+        }
+      }
+    },
+    "gapMap": {
+      "title": "Gap treatment map",
+      "actual": "Actual",
+      "gap": "Gap",
+      "target": "Target",
+      "rows": {
+        "leadership": "Administrative leadership",
+        "strategy": "Strategic planning",
+        "people": "Human resources and volunteers",
+        "resources": "Resources and partnerships",
+        "operations": "Operations and services"
+      },
+      "phases": {
+        "high": "Stage 1 · high priority",
+        "medium": "Stage 2 · medium priority",
+        "low": "Stage 3 · low priority"
+      }
+    },
+    "assistant": {
+      "ask": "Type your question",
+      "send": "Send"
+    },
+    "contact": {
+      "socialLink": "The platform on {platform}"
+    },
+    "footer": {
+      "developedBy": "Developed by",
+      "developer": "Technical Transformation Company"
+    },
+    "state": {
+      "errorTitle": "The page could not be loaded"
     }
   }
 }

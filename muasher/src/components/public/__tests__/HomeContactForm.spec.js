@@ -129,6 +129,21 @@ describe('HomeContactForm', () => {
     wrapper.unmount()
   })
 
+  it('shows a bilingual staff name as text in the active language', async () => {
+    const wrapper = mountForm({
+      user: {
+        id: 8,
+        name: { ar: 'مدير النظام', en: 'System Administrator' },
+        email: 'admin@moashir.example.sa',
+        roles: ['system_admin'],
+        permissions: [],
+      },
+    })
+    await settle()
+    expect(wrapper.find('input[name="name"]').element.value).toBe('مدير النظام')
+    wrapper.unmount()
+  })
+
   it('prefills the identity of a signed-in sender as read-only and sends only the message fields', async () => {
     contactMessagesService.submit.mockResolvedValue({ data: { reference: 'CNT-2026-000015' } })
     const wrapper = mountForm({

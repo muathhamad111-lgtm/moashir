@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Services\Demo;
 
+use App\Services\Cms\Landing\LandingContentSource;
 use RuntimeException;
 
-final class DemoContentSource
+final readonly class DemoContentSource
 {
     private const string PATH = 'data/demo/public-content.json';
+
+    public function __construct(private LandingContentSource $landing) {}
 
     /**
      * @return array<string, mixed>
@@ -27,7 +30,24 @@ final class DemoContentSource
             $content[(string) $key] = $value;
         }
 
-        return $content;
+        return $this->withLanding($content);
+    }
+
+    /**
+     * @param  array<string, mixed>  $content
+     * @return array<string, mixed>
+     */
+    private function withLanding(array $content): array
+    {
+        $landing = $this->landing->read();
+        $pages = is_array($content['pages'] ?? null) ? $content['pages'] : [];
+        $settings = is_array($content['site_settings'] ?? null) ? $content['site_settings'] : [];
+
+        return [
+            ...$content,
+            'pages' => ['home' => $landing->page, ...$pages],
+            'site_settings' => [...$settings, 'header_links' => $landing->headerLinks, 'quick_links' => $landing->quickLinks],
+        ];
     }
 
     /**

@@ -32,7 +32,7 @@ async function retryFor(page, selector) {
 async function reloadUntil(page, url, selector) {
   for (let attempt = 0; attempt < 8; attempt += 1) {
     await page.goto(url)
-    await retryFor(page, '.home-hero__title')
+    await retryFor(page, '#lp-hero-title')
     if (
       await page
         .locator(selector)
@@ -89,12 +89,12 @@ test('an unknown slug renders the branded not-found state with a back link', asy
 test('the homepage stats strip shows the featured published indicators only', async ({
   page,
 }, testInfo) => {
-  await reloadUntil(page, '/', '.home-stats__item')
-  const items = page.locator('.home-stats__item')
+  await reloadUntil(page, '/', '.lp-stat')
+  const items = page.locator('.lp-stat')
   await expect(items.first()).toBeVisible()
   expect(await items.count()).toBeLessThanOrEqual(4)
-  await expect(page.locator('.home-kpi-promo')).toHaveCount(0)
-  await expect(items.first().locator('.home-stats__value')).not.toHaveText('')
+  await expect(items.first().locator('b')).not.toHaveText('')
+  await expect(page.locator('.lp-stats__note a')).toHaveAttribute('href', '/kpis')
 
   await page.screenshot({
     path: `test-results/task3c-home-preview-${localeSuffix(testInfo)}.png`,

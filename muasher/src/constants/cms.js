@@ -24,6 +24,8 @@ export const CMS_PAGE_ROUTES = Object.freeze({
 
 export const CMS_SECTION_TYPES = Object.freeze([
   'hero',
+  'about',
+  'levels',
   'paths',
   'excellence_model',
   'how_it_works',
@@ -45,13 +47,16 @@ export const CMS_SECTION_TYPES = Object.freeze([
 
 export const CMS_SECTION_VARIANTS = Object.freeze({
   how_it_works: ['journey'],
-  rich_text: ['cta'],
+  rich_text: ['cta', 'band'],
 })
 
 export const CMS_AVAILABILITY = Object.freeze(['live', 'coming_soon'])
 
 export const CMS_ITEM_ROLES = Object.freeze({
   hero: ['point', 'secondary-cta'],
+  about: ['audience', 'goal'],
+  bag_promo: ['step', 'tool'],
+  rich_text: ['secondary-cta'],
 })
 
 export const CMS_LIMITS = Object.freeze({

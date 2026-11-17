@@ -60,7 +60,7 @@ export function useContactForm({ enquiryType = '', onSubmitted = () => {} } = {}
 
   function applyIdentity() {
     if (isGuest.value) return
-    form.setFieldValue('name', auth.user?.name ?? '', false)
+    form.setFieldValue('name', localizedText(auth.user?.name, locale.value), false)
     form.setFieldValue('email', auth.user?.email ?? '', false)
     form.setFieldValue('organization', localizedText(auth.user?.entity?.name, locale.value), false)
   }

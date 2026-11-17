@@ -1,4 +1,4 @@
-import { mixed as yupMixed, object as yupObject, string as yupString } from 'yup'
+import { array as yupArray, mixed as yupMixed, object as yupObject, string as yupString } from 'yup'
 import {
   CMS_BACKGROUND_PATTERN,
   CMS_LIMITS,
@@ -42,8 +42,50 @@ export function iconSchema(t) {
   )
 }
 
-function contentShape(t) {
+function pairedLanguage(t, max, other) {
+  return yupString()
+    .max(max, t('cms.validation.maxChars', { max }))
+    .test('both-languages', t('cms.validation.bothLanguages'), function (value) {
+      return Boolean(value?.trim()) || !this.parent?.[other]?.trim()
+    })
+}
+
+function bothLanguages(t, max) {
+  return yupObject({ ar: pairedLanguage(t, max, 'en'), en: pairedLanguage(t, max, 'ar') })
+}
+
+function metaFieldSchema(t, field) {
+  if (field.kind === 'localized') return bothLanguages(t, field.max)
+  if (field.kind === 'choices') {
+    return yupArray().of(yupString().oneOf([...field.options], t('validation.required')))
+  }
+  if (field.kind === 'integer') {
+    return yupString().test(
+      'range',
+      t('cms.validation.range', { min: field.min, max: field.max }),
+      (value) => {
+        if (value === '' || value === null || value === undefined) return true
+        const number = Number(value)
+        return Number.isInteger(number) && number >= field.min && number <= field.max
+      },
+    )
+  }
+  return yupString().test(
+    'choice',
+    t('validation.required'),
+    (value) => !value || field.options.includes(value),
+  )
+}
+
+export function metaFieldsSchema(t, fields = []) {
+  return yupObject(
+    Object.fromEntries(fields.map((field) => [field.key, metaFieldSchema(t, field)])),
+  )
+}
+
+function contentShape(t, metaFields = []) {
   return {
+    metaFields: metaFieldsSchema(t, metaFields),
     title: localizedSchema(t, CMS_LOCALIZED_LIMITS.title),
     subtitle: localizedSchema(t, CMS_LOCALIZED_LIMITS.subtitle),
     description: localizedSchema(t, CMS_LOCALIZED_LIMITS.description),
@@ -58,13 +100,13 @@ function contentShape(t) {
   }
 }
 
-export function contentSchema(t) {
-  return yupObject(contentShape(t))
+export function contentSchema(t, metaFields = []) {
+  return yupObject(contentShape(t, metaFields))
 }
 
-export function newSectionSchema(t) {
+export function newSectionSchema(t, metaFields = []) {
   return yupObject({
-    ...contentShape(t),
+    ...contentShape(t, metaFields),
     key: yupString()
       .trim()
       .required(t('validation.required'))

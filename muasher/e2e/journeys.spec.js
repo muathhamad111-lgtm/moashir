@@ -85,8 +85,8 @@ test.describe('Journeys — Notes 8a/8b/8c', () => {
     page,
   }, testInfo) => {
     await seedEntity(page, isEn(testInfo) ? 'en' : 'ar')
-    await gotoWithRetry(page, '/', '.home-paths')
-    const cta = page.locator('.home-path--calm .home-path__cta .btn')
+    await gotoWithRetry(page, '/', '.lp-path')
+    const cta = page.locator('.lp-path[data-path="self"] .lp-btn')
     await expect(cta).toBeVisible({ timeout: 15000 })
     await cta.click()
     await page.waitForURL(/\/assessment\/self$/, { timeout: 15000 })
@@ -98,8 +98,8 @@ test.describe('Journeys — Notes 8a/8b/8c', () => {
     page,
   }, testInfo) => {
     await localeOnly(page, isEn(testInfo) ? 'en' : 'ar')
-    await gotoWithRetry(page, '/', '.home-paths')
-    const cta = page.locator('.home-path--calm .home-path__cta .btn')
+    await gotoWithRetry(page, '/', '.lp-path')
+    const cta = page.locator('.lp-path[data-path="self"] .lp-btn')
     await expect(cta).toBeVisible({ timeout: 15000 })
     await cta.click()
     await expect(page).toHaveURL(/\/auth\/login\?redirect=(%2F|\/)assessment(%2F|\/)self/)

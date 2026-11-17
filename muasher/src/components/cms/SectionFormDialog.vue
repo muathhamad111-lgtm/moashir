@@ -1,5 +1,5 @@
 <script setup>
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import FormModal from '@/components/modal/FormModal.vue'
 import FieldInput from '@/components/form/FieldInput.vue'
@@ -9,6 +9,7 @@ import { useValidatedForm } from '@/composables/useValidatedForm'
 import { CMS_SECTION_TYPES } from '@/constants/cms'
 import { contentFormValues, contentPayload } from '@/utils/cmsPayload'
 import { contentSchema, newSectionSchema } from '@/utils/cmsSchemas'
+import { metaFieldsFor } from '@/constants/cmsMetaFields'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -26,15 +27,25 @@ const typeOptions = computed(() =>
 )
 
 function initialValues() {
-  return { key: '', type: 'rich_text', ...contentFormValues(props.section) }
+  return { key: '', type: DEFAULT_TYPE, ...contentFormValues(props.section) }
 }
 
+const DEFAULT_TYPE = 'rich_text'
+const chosenType = ref(DEFAULT_TYPE)
+const currentType = computed(() => (isCreate.value ? chosenType.value : props.section.type))
+const metaFields = computed(() => metaFieldsFor(currentType.value ?? '', false))
+
 const form = useValidatedForm({
-  schema: computed(() => (isCreate.value ? newSectionSchema(t) : contentSchema(t))),
+  schema: computed(() =>
+    isCreate.value ? newSectionSchema(t, metaFields.value) : contentSchema(t, metaFields.value),
+  ),
   initialValues: initialValues(),
   action: 'cms.section.save',
   submit: async (values) => {
-    const payload = contentPayload(values, props.section, { withBackground: true })
+    const payload = contentPayload(values, props.section, {
+      withBackground: true,
+      metaFields: metaFields.value,
+    })
     await props.save(
       isCreate.value ? { ...payload, key: values.key.trim(), type: values.type } : payload,
     )
@@ -42,7 +53,14 @@ const form = useValidatedForm({
   },
 })
 
-const sectionType = computed(() => (isCreate.value ? form.values.type : props.section.type))
+const sectionType = computed(() => currentType.value ?? '')
+
+watch(
+  () => form.values.type,
+  (type) => {
+    chosenType.value = type || DEFAULT_TYPE
+  },
+)
 
 watch(
   () => props.modelValue,

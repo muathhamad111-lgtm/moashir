@@ -21,9 +21,3 @@ export const HOME_NAV_LINKS = Object.freeze([
   { id: 'kpis', labelKey: 'nav.kpis', routeName: ROUTE_NAMES.PUBLIC_KPIS },
   { id: HOME_ANCHORS.contact, labelKey: 'nav.contact' },
 ])
-
-export const TOUR_STEP_MS = 5000
-
-export const SECTION_ALIGN = Object.freeze({ start: 'start', center: 'center' })
-
-export const PATH_ACCENTS = Object.freeze(['calm', 'accredited', 'award'])

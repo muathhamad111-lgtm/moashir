@@ -123,17 +123,16 @@ test('the published homepage reaches the public site with the server image', asy
   const { page, api } = sessions.guest
   await page.goto('/')
   await expect(page).toHaveURL(/\/$/)
-  await expect(page.locator('.home-hero__title')).toContainText(HERO.titleAr)
+  await expect(page.locator('#lp-hero-title')).toContainText(HERO.titleAr)
   await shot(page, 'public-home')
   expect(api.sourcesOf(/^\/api\/v1\/content\/home$/)).toEqual([SOURCES.BACKEND])
   expect(api.unexpected([GUEST_SESSION_PROBE, PAGE_NOT_PUBLISHED, ...FOOTER_LEGAL_PROBES])).toEqual(
     [],
   )
-  // The approved hero (Task-41) shows the illustrative maturity card, not the section image, so the
-  // uploaded image is checked through the public content API and its file route.
   const home = await apiOk(page, 'GET', '/content/home')
   const hero = (home.data?.sections ?? []).find((section) => section.key === HERO.key)
   expect(hero?.image?.url).toMatch(/^\/api\/v1\/content\/files\/[0-9a-f-]{36}$/)
+  await expect(page.locator('.lp-hero__glass img')).toHaveAttribute('src', hero.image.url)
   const width = await page.evaluate(async (url) => {
     const image = new Image()
     image.src = url

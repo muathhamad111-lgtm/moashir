@@ -11,12 +11,11 @@ use App\Models\Cms\CmsSection;
 use App\Models\Cms\CmsSectionItem;
 use App\Models\Cms\SiteSettings;
 use App\Models\Identity\User;
+use App\Support\Cms\CmsContentDefinition;
 use Illuminate\Support\Facades\Date;
 
 final readonly class DemoPagesInstaller
 {
-    private const array CONTENT_FIELDS = ['title', 'subtitle', 'description', 'cta_label', 'cta_url', 'icon', 'meta'];
-
     public function __construct(private PublishCmsPage $publish) {}
 
     /**
@@ -73,30 +72,15 @@ final readonly class DemoPagesInstaller
 
         foreach (DemoContentSource::listOf($definition, 'sections') as $position => $sectionData) {
             $section = new CmsSection;
-            $section->fill([...$this->contentOf($sectionData), 'key' => $sectionData['key'] ?? 'section-'.$position, 'type' => $sectionData['type'] ?? 'rich_text', 'background' => $sectionData['background'] ?? null]);
-            $section->forceFill(['cms_page_id' => $page->id, 'sort_order' => $position + 1, 'updated_by_user_id' => $editor->id])->save();
+            $section->fill([...CmsContentDefinition::attributesOf($sectionData, ['background']), 'key' => $sectionData['key'] ?? 'section-'.$position, 'type' => $sectionData['type'] ?? 'rich_text']);
+            $section->forceFill(['cms_page_id' => $page->id, 'is_enabled' => CmsContentDefinition::isEnabled($sectionData), 'sort_order' => $position + 1, 'updated_by_user_id' => $editor->id])->save();
 
-            foreach (DemoContentSource::listOf($sectionData, 'items') as $itemPosition => $itemData) {
+            foreach (CmsContentDefinition::itemsOf($sectionData) as $itemPosition => $itemData) {
                 $item = new CmsSectionItem;
-                $item->fill($this->contentOf($itemData));
-                $item->forceFill(['cms_section_id' => $section->id, 'sort_order' => $itemPosition + 1, 'updated_by_user_id' => $editor->id])->save();
+                $item->fill(CmsContentDefinition::attributesOf($itemData));
+                $item->forceFill(['cms_section_id' => $section->id, 'is_enabled' => CmsContentDefinition::isEnabled($itemData), 'sort_order' => $itemPosition + 1, 'updated_by_user_id' => $editor->id])->save();
             }
         }
-    }
-
-    /**
-     * @param  array<array-key, mixed>  $data
-     * @return array<string, mixed>
-     */
-    private function contentOf(array $data): array
-    {
-        $fields = [];
-
-        foreach (self::CONTENT_FIELDS as $field) {
-            $fields[$field] = $data[$field] ?? null;
-        }
-
-        return $fields;
     }
 
     /**
@@ -116,6 +100,7 @@ final readonly class DemoPagesInstaller
             'contact' => $values['contact'] ?? null,
             'footer_note' => $values['footer_note'] ?? null,
             'quick_links' => $values['quick_links'] ?? [],
+            'header_links' => $values['header_links'] ?? $settings->header_links,
         ]);
         $settings->forceFill(['updated_by_user_id' => $editor->id])->save();
     }

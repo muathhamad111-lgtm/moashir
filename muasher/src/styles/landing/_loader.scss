@@ -1,0 +1,94 @@
+@use 'tokens' as *;
+
+.lp-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  place-items: center;
+  background: var(--lp-bg);
+  transition:
+    opacity 0.7s ease,
+    visibility 0.7s;
+
+  &.is-leaving {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  &__mark {
+    width: clamp(92px, 12vw, 128px);
+    height: auto;
+    overflow: visible;
+    transition: scale 0.7s $lp-ease;
+
+    .is-leaving & {
+      scale: 1.12;
+    }
+  }
+
+  &__track {
+    fill: none;
+    stroke: var(--lp-line);
+    stroke-width: 3;
+  }
+
+  &__ring {
+    fill: none;
+    stroke: $lp-teal;
+    stroke-width: 3.5;
+    stroke-linecap: round;
+    stroke-dasharray: 100;
+    transform: scaleX(-1) rotate(-90deg);
+    transform-origin: 100px 100px;
+  }
+
+  &__spin {
+    transform-origin: 100px 100px;
+    animation: lp-loader-spin 2.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  }
+
+  &__star {
+    fill: var(--lp-ink);
+    fill-opacity: 0;
+    stroke: var(--lp-ink);
+    stroke-width: 2.6;
+    stroke-linejoin: round;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    animation: lp-loader-draw 1.1s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+  }
+}
+
+[data-theme='dark'] .lp {
+  .lp-loader__ring {
+    stroke: var(--lp-aqua);
+  }
+
+  .lp-loader__star {
+    fill: var(--lp-aqua);
+    stroke: var(--lp-aqua);
+  }
+}
+
+@keyframes lp-loader-spin {
+  from {
+    rotate: 0deg;
+  }
+
+  to {
+    rotate: 180deg;
+  }
+}
+
+@keyframes lp-loader-draw {
+  70% {
+    stroke-dashoffset: 0;
+    fill-opacity: 0;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+    fill-opacity: 1;
+  }
+}

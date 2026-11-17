@@ -18,18 +18,29 @@ const ENTITY = {
 }
 
 const PUBLIC_SCREENS = [
-  { key: 'home', path: '/', ready: '.home-hero__title', settled: '.home-stats__item' },
+  {
+    key: 'home',
+    path: '/',
+    ready: '#lp-hero-title',
+    settled: '.lp-stat',
+    pattern: '.lp-hero__bg',
+    primary: '.lp-hero__copy .lp-btn--fill',
+  },
   {
     key: 'login',
     path: '/auth/login',
     ready: '.auth-layout__brand',
     settled: '.auth-layout__card form',
+    pattern: '.brand-pattern',
+    primary: '.btn--primary',
   },
   {
     key: 'register',
     path: '/auth/register',
     ready: '.auth-layout__brand',
     settled: '.auth-layout__card form',
+    pattern: '.brand-pattern',
+    primary: '.btn--primary',
   },
 ]
 
@@ -86,11 +97,8 @@ for (const theme of ['dark', 'light']) {
 
           await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
           await expect(page.locator('html')).toHaveAttribute('dir', dirOf(testInfo))
-          await expect(page.locator('.brand-pattern').first()).toHaveAttribute(
-            'aria-hidden',
-            'true',
-          )
-          expect(await contrastOf(page, '.btn--primary')).toBeGreaterThanOrEqual(AA_TEXT)
+          await expect(page.locator(screen.pattern).first()).toHaveAttribute('aria-hidden', 'true')
+          expect(await contrastOf(page, screen.primary)).toBeGreaterThanOrEqual(AA_TEXT)
 
           await page.screenshot({
             path: `${SHOTS}/${screen.key}-${theme}-${viewportName}-${suffixOf(testInfo)}.png`,
@@ -126,27 +134,29 @@ for (const theme of ['dark', 'light']) {
   }
 }
 
-test('home hero and footer use the official on-dark logo, patterns and featured indicators', async ({
+test('home header and footer use the themed official logos over decorative patterns, with the featured indicators', async ({
   page,
 }, testInfo) => {
   await seedPreferences(page, { locale: localeOf(testInfo), theme: 'light' })
   await openScreen(page, PUBLIC_SCREENS[0])
 
-  await expect(page.locator('.home-hero.brand-surface .brand-pattern--lattice')).toHaveAttribute(
-    'aria-hidden',
-    'true',
+  await expect(page.locator('.lp-hero__bg')).toHaveAttribute('aria-hidden', 'true')
+  await expect(page.locator('.lp-hero__glass img')).not.toHaveAttribute('alt', '')
+  await expect(page.locator('.lp-stat').first()).toBeVisible()
+  expect(await contrastOf(page, '.lp-stat b')).toBeGreaterThanOrEqual(AA_TEXT)
+  expect(await contrastOf(page, '#lp-hero-title')).toBeGreaterThanOrEqual(AA_TEXT)
+  await expect(page.locator('.lp-top__brand img:visible')).toHaveAttribute(
+    'src',
+    /moashir-logo-on-light/,
   )
-  await expect(page.locator('.home-hero__mark')).toHaveAttribute('alt', '')
-  await expect(page.locator('.home-stats__item').first()).toBeVisible()
-  expect(await contrastOf(page, '.home-stats__value')).toBeGreaterThanOrEqual(AA_TEXT)
-  expect(await contrastOf(page, '.home-hero__title')).toBeGreaterThanOrEqual(AA_TEXT)
-  await expect(page.locator('.home-path--award .home-path__availability')).toBeVisible()
-  await expect(page.locator('.navbar__logo')).toHaveAttribute('src', /moashir-logo-on-light/)
 
-  const footer = page.locator('.footer')
+  const footer = page.locator('.lp-foot')
   await footer.scrollIntoViewIfNeeded()
-  await expect(page.locator('.footer__logo')).toHaveAttribute('src', /moashir-logo-on-dark/)
-  expect(await contrastOf(page, '.footer__link')).toBeGreaterThanOrEqual(AA_TEXT)
+  await expect(page.locator('.lp-foot__brand img:visible')).toHaveAttribute(
+    'src',
+    /moashir-logo-on-light/,
+  )
+  expect(await contrastOf(page, '.lp-foot__nav a')).toBeGreaterThanOrEqual(AA_TEXT)
   await footer.screenshot({ path: `${SHOTS}/footer-light-${suffixOf(testInfo)}.png` })
 })
 

@@ -1,6 +1,6 @@
 # components/layout
 
-The layouts, wired through `meta.layout` (`public` | `auth` | `app`) in `src/App.vue`. An `app` route opens in
+The layouts, wired through `meta.layout` (`public` | `landing` | `auth` | `app`) in `src/App.vue`. `LandingLayout` serves the home page only (the CMS-driven landing: its own header, loader, footer and assistant, styles in `styles/landing/`). An `app` route opens in
 `PortalLayout` for entity-only accounts and in `AppLayout` for every other account (`utils/portalAudience.js`), so every
 route keeps its path for both audiences:
 

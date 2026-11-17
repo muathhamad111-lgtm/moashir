@@ -6,6 +6,7 @@ import ContentFormFields from './ContentFormFields.vue'
 import { useValidatedForm } from '@/composables/useValidatedForm'
 import { contentFormValues, contentPayload } from '@/utils/cmsPayload'
 import { contentSchema } from '@/utils/cmsSchemas'
+import { metaFieldsFor } from '@/constants/cmsMetaFields'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -18,12 +19,14 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 const { t } = useI18n()
 
+const metaFields = computed(() => metaFieldsFor(props.sectionType, true))
+
 const form = useValidatedForm({
-  schema: computed(() => contentSchema(t)),
+  schema: computed(() => contentSchema(t, metaFields.value)),
   initialValues: contentFormValues(props.item),
   action: 'cms.item.save',
   submit: async (values) => {
-    await props.save(contentPayload(values, props.item))
+    await props.save(contentPayload(values, props.item, { metaFields: metaFields.value }))
     emit('update:modelValue', false)
   },
 })

@@ -47,26 +47,20 @@ async function settleTurn(page, selector) {
   await expect(page.locator(selector).first()).toBeVisible({ timeout: 10000 })
 }
 
-test('landing renders hero, stats, tour, path cards, published model, levels and journey', async ({
+test('landing renders hero, stats, path cards, the model stages, levels and journey', async ({
   page,
 }, testInfo) => {
   await page.goto('/')
-  await retryFor(page, '.home-hero__title')
-  await expect(page.locator('.home-hero__title')).not.toBeEmpty()
+  await retryFor(page, '#lp-hero-title')
+  await expect(page.locator('#lp-hero-title')).not.toBeEmpty()
 
-  await retryFor(page, '.home-path')
-  await expect(page.locator('.home-path')).toHaveCount(3)
+  await retryFor(page, '.lp-path')
+  await expect(page.locator('.lp-path')).toHaveCount(3)
+  await expect(page.locator('#model .lp-cycle__step')).toHaveCount(4)
+  await expect(page.locator('#journey .lp-jr')).toHaveCount(6)
 
-  await expect(page.locator('#tour .home-tour__step')).toHaveCount(5)
-  await expect(page.locator('#journey .home-journey__stage')).toHaveCount(6)
-
-  await retryFor(page, '.criteria-model__band')
-  await expect(page.locator('.criteria-model__band')).toHaveCount(3)
-  await expect(page.locator('.criteria-model__cell')).toHaveCount(9)
-
-  await retryFor(page, '#levels .home-level')
-  await expect(page.locator('#levels .home-level')).toHaveCount(4)
-  await expect(page.locator('.home-kpi-promo')).toHaveCount(0)
+  await retryFor(page, '#levels .lp-lv__tiers button')
+  await expect(page.locator('#levels .lp-lv__tiers button')).toHaveCount(5)
 
   await page.screenshot({
     path: `test-results/task3-landing-${localeSuffix(testInfo)}.png`,
@@ -153,23 +147,17 @@ test('AI chat widget opens, answers a KB question and returns the KB-miss fallba
   await settleTurn(page, '.chat-message--miss')
 })
 
-test('home section links scroll to the tour and paths, and the tour respects reduced motion', async ({
-  page,
-}, testInfo) => {
+test('home header links scroll to the paths and the levels', async ({ page }, testInfo) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/')
-  await retryFor(page, '.home-hero__title')
+  await retryFor(page, '#lp-hero-title')
   const english = testInfo.project.name === 'chromium-en-ltr'
-  const links = page.locator('.public-navbar__menu .public-nav-links__link')
+  const links = page.locator('.lp-top__nav .lp-top__link')
 
   await links.filter({ hasText: english ? 'Assessment paths' : 'مسارات التقييم' }).click()
   await expect(page.locator('#paths')).toBeInViewport()
 
-  await links.filter({ hasText: english ? 'Platform tour' : 'جولة في المنصة' }).click()
-  await expect(page.locator('#tour')).toBeInViewport()
-  const toggle = page.locator('.home-tour__toggle')
-  await expect(toggle).toHaveAttribute('aria-pressed', 'false')
-  await page.locator('.home-tour__step').nth(3).click()
-  await expect(page.locator('.home-tour__step').nth(3)).toHaveAttribute('aria-current', 'step')
-  await expect(page.locator('.home-tour__pager-dot').nth(3)).toHaveClass(/is-active/)
+  await links.filter({ hasText: english ? 'Excellence levels' : 'مستويات التميّز' }).click()
+  await expect(page.locator('#levels')).toBeInViewport()
 })

@@ -253,6 +253,26 @@ belongs to `moashir`.
   `chgrp -R --from=:moashir-<env> moashir` on the same paths, then `bash /opt/moashir/deploy.previous/provision.sh system <env>`.
 - Kit: `mv /opt/moashir/deploy /opt/moashir/deploy.failed && mv /opt/moashir/deploy.previous /opt/moashir/deploy`.
 
+## Landing page content (post-deploy, once per environment)
+
+- When: once per environment, after the release carrying the landing v5 page is live and its migrations ran
+  (staging first, then production). It does not need `APP_DEMO_DATA`.
+- Command (the PM runs it on the server):
+
+  ```
+  sudo -u moashir-<env> php8.4 /var/www/moashir/<env>/current/backend/artisan moashir:content:install-landing
+  ```
+
+  Options: `--editor=<e-mail>` records that active staff account (it must be allowed to manage the public content)
+  instead of the default (the first active Content Officer, else the System Administrator); `--force` reinstalls
+  even when the home page already holds the landing sections.
+- Effect, in one transaction: the current home sections and their items are soft-deleted (kept for recovery), the 15
+  landing sections from `backend/database/data/content/landing-home.json` are created (the partners section is
+  created disabled until the logos are uploaded and approved), header and quick links are replaced only while they
+  are empty or still the previously shipped defaults, and the home page is published (audited).
+- A second run prints "nothing was changed". Images of the removed sections are cleaned on publish, as for any removed
+  section. Then check `/` in Arabic and English and `GET /api/v1/content/home`.
+
 ## Manual smoke checks (both environments)
 
 - Open the site in Arabic and English; the language switch works; no browser console errors.
