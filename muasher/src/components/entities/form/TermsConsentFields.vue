@@ -10,7 +10,5 @@ const { t } = useI18n()
   <div class="entity-form__group">
     <FieldCheckbox name="termsAccepted" :label="t('entities.registration.termsAccepted')" />
     <LegalConsentNote :kinds="['terms', 'privacy']" />
-    <FieldCheckbox name="marketingConsent" :label="t('entities.consent.marketing')" />
-    <p class="entity-form__hint">{{ t('entities.hints.marketingConsent') }}</p>
   </div>
 </template>

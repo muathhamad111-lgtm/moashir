@@ -111,7 +111,6 @@ export function registrationPayload(values, terms) {
     passwordConfirmation: values.passwordConfirmation,
     termsVersionId: terms.terms.id,
     termsAccepted: values.termsAccepted === true,
-    marketingConsent: values.marketingConsent === true,
   }
   return terms.privacy ? { ...payload, privacyVersionId: terms.privacy.id } : payload
 }

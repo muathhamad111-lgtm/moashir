@@ -27,6 +27,7 @@ export const AWARD_STATES = Object.freeze({
   HIDDEN: 'hidden',
   LATE_PAYMENT: 'latePayment',
   DRAFT: 'draft',
+  NEEDS_COMPLETION: 'needsCompletion',
   SUBMITTED: 'submitted',
   ANNOUNCED: 'announced',
   AWAITING_PAYMENT: 'awaitingPayment',
@@ -94,6 +95,7 @@ export function awardStateOf(award) {
   const request = award.openRequest
   if (request && award.windowClosedBeforePayment) return AWARD_STATES.LATE_PAYMENT
   if (request?.status === ACC.DRAFT) return AWARD_STATES.DRAFT
+  if (request?.status === ACC.NEEDS_COMPLETION) return AWARD_STATES.NEEDS_COMPLETION
   if (request) return AWARD_STATES.SUBMITTED
   if (award.announced && award.lastResult) return AWARD_STATES.ANNOUNCED
   if (award.awaitingPayment) return AWARD_STATES.AWAITING_PAYMENT

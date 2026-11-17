@@ -1,10 +1,13 @@
 <script setup>
+import { useFormValues } from 'vee-validate'
 import { useI18n } from 'vue-i18n'
 import FieldInput from '@/components/form/FieldInput.vue'
+import PasswordPolicyHints from '@/components/auth/PasswordPolicyHints.vue'
 import TermsConsentFields from '@/components/entities/form/TermsConsentFields.vue'
-import RegistrationEmailCheck from '@/components/entities/registration/RegistrationEmailCheck.vue'
+import RegistrationEmailField from '@/components/entities/registration/RegistrationEmailField.vue'
 
 const { t } = useI18n()
+const values = useFormValues()
 </script>
 
 <template>
@@ -24,15 +27,7 @@ const { t } = useI18n()
         autocomplete="tel"
         :label="t('entities.fields.phone')"
       />
-      <FieldInput
-        name="officialEmail"
-        type="email"
-        input-dir="ltr"
-        autocomplete="email"
-        :label="t('entities.fields.officialEmail')"
-        required
-      />
-      <RegistrationEmailCheck class="entity-form__wide" />
+      <RegistrationEmailField class="entity-form__wide" />
       <FieldInput
         name="password"
         type="password"
@@ -46,6 +41,12 @@ const { t } = useI18n()
         autocomplete="new-password"
         :label="t('entities.fields.passwordConfirmation')"
         required
+      />
+      <PasswordPolicyHints
+        id="registration-password-policy"
+        class="entity-form__wide"
+        :password="values.password ?? ''"
+        :confirmation="values.passwordConfirmation ?? ''"
       />
     </div>
     <TermsConsentFields />

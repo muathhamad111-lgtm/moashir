@@ -17,7 +17,6 @@ const REGISTRATION_DEFAULTS = {
   password: '',
   passwordConfirmation: '',
   termsAccepted: false,
-  marketingConsent: false,
   hasStrategicPlan: '',
   licenseNumber: '',
   foundedOn: '',

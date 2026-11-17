@@ -44,7 +44,7 @@ test.describe('direction B — entity home tiers', () => {
     await page.setViewportSize(DESKTOP)
   })
 
-  test('shows the silver level from the latest issued certificate with re-assessment', async ({
+  test('shows the silver level from the latest issued certificate, no re-assessment for a draft', async ({
     page,
   }, testInfo) => {
     await seedSignedIn(page, NAMAA, { locale: localeOf(testInfo), theme: 'light' })
@@ -52,7 +52,7 @@ test.describe('direction B — entity home tiers', () => {
     const hero = page.locator('.level-hero')
     await expect(hero).toHaveAttribute('data-tier', 'silver')
     await expect(hero.locator('.level-emblem__seal')).toBeVisible()
-    await expect(hero.locator('[data-testid="level-reassessment"]')).toBeVisible()
+    await expect(hero.locator('[data-testid="level-reassessment"]')).toHaveCount(0)
     await expect(page.locator('.account-menu__level .level-badge')).toHaveAttribute(
       'data-tier',
       'silver',

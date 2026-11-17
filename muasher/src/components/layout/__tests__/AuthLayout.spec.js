@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
 import { ROUTE_NAMES } from '@/constants/routeNames'
@@ -27,12 +27,18 @@ describe('AuthLayout', () => {
     wrapper.unmount()
   })
 
-  it('names the aside and keeps only the logo and a decorative trophy, without value cards', () => {
+  it('names the aside and keeps only the glowing logo, without the trophy or value cards', () => {
     const wrapper = mountLayout()
     const aside = wrapper.find('aside')
     expect(aside.attributes('aria-label')).toBe('عن منصة مؤشر')
     expect(aside.find('.auth-layout__logo').attributes('alt')).toBe('مؤشر')
-    expect(aside.find('.auth-layout__trophy').attributes('aria-hidden')).toBe('true')
+    expect(aside.findAll('img')).toHaveLength(1)
+    expect(aside.find('.auth-layout__trophy').exists()).toBe(false)
+    for (const part of ['halo', 'orbit', 'sheen']) {
+      expect(
+        aside.find(`.auth-layout__emblem .auth-layout__${part}`).attributes('aria-hidden'),
+      ).toBe('true')
+    }
     expect(aside.find('.auth-layout__pattern').attributes('aria-hidden')).toBe('true')
     expect(aside.findAll('h2')).toHaveLength(0)
     expect(aside.findAll('li')).toHaveLength(0)
@@ -61,6 +67,22 @@ describe('AuthLayout', () => {
     await flushPromises()
     expect(ui.theme).toBe('dark')
     wrapper.unmount()
+  })
+
+  it.each([
+    [true, true],
+    [false, false],
+  ])('uses the landing cursor only for a fine pointer (fine: %s)', (fine, expected) => {
+    vi.stubGlobal('matchMedia', (query) => ({
+      matches: fine,
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }))
+    const wrapper = mountLayout()
+    expect(wrapper.classes().includes('lp-has-cursor')).toBe(expected)
+    wrapper.unmount()
+    vi.unstubAllGlobals()
   })
 
   it('drops the back-to-home link on the maintenance page', async () => {

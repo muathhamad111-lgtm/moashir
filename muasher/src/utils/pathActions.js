@@ -1,5 +1,6 @@
 import { ROUTE_NAMES as R } from '@/constants/routeNames'
 import { REQUEST_TABS } from '@/constants/entityPaths'
+import { ACCREDITED_STATUSES as ACC } from '@/constants/accredited'
 import {
   ACCREDITED_STATES as A,
   AWARD_STATES as W,
@@ -58,14 +59,15 @@ const ACCREDITED_ACTIONS = {
   [A.APPLY]: applyAccredited,
 }
 
+function awardFormRoute(id) {
+  return { name: R.ASSESSMENT_ADVANCED_FORM, params: { id: String(id) } }
+}
+
 const AWARD_ACTIONS = {
   [W.AWAITING_PAYMENT]: (path) => action('viewPayment', paymentRoute(path.awaitingPayment)),
   [W.ELIGIBLE]: () => action('applyAward', { name: R.ASSESSMENT_ADVANCED }),
-  [W.DRAFT]: (path) =>
-    action('continueAward', {
-      name: R.ASSESSMENT_ADVANCED_FORM,
-      params: { id: String(path.openRequest.id) },
-    }),
+  [W.DRAFT]: (path) => action('continueAward', awardFormRoute(path.openRequest.id)),
+  [W.NEEDS_COMPLETION]: (path) => action('complete', awardFormRoute(path.openRequest.id)),
   [W.ANNOUNCED]: (path) =>
     action('viewAwardResult', {
       name: R.ASSESSMENT_ADVANCED_RESULT,
@@ -90,6 +92,7 @@ export function requestTabRoute(assessmentId, tab = REQUEST_TABS.REQUEST) {
 }
 
 const SELF_DRAFT = 'draft'
+const AWARD_EDITABLE = Object.freeze([ACC.DRAFT, ACC.NEEDS_COMPLETION])
 
 const ROW_ACTIONS = {
   self: (row) => {
@@ -99,9 +102,7 @@ const ROW_ACTIONS = {
   accredited: (row) => ({ name: R.PATHS_ACCREDITED_REQUEST, params: { id: String(row.id) } }),
   award: (row) => {
     if (row.result) return { name: R.ASSESSMENT_ADVANCED_RESULT, params: { id: String(row.id) } }
-    return row.isOpen && row.status === SELF_DRAFT
-      ? { name: R.ASSESSMENT_ADVANCED_FORM, params: { id: String(row.id) } }
-      : null
+    return row.isOpen && AWARD_EDITABLE.includes(row.status) ? awardFormRoute(row.id) : null
   },
 }
 

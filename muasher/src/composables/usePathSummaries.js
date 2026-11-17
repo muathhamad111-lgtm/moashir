@@ -135,6 +135,7 @@ const AWARD_STATUS_LINES = {
   [W.AWAITING_PAYMENT]: (award, text) => awaitingLine(award.awaitingPayment, text),
   [W.UNAVAILABLE]: (award, text) => text.t(`${ROOT}.unavailable`),
   [W.DRAFT]: awardRequestLine,
+  [W.NEEDS_COMPLETION]: awardRequestLine,
   [W.SUBMITTED]: awardRequestLine,
   [W.ANNOUNCED]: (award, text) =>
     text.t(`${ROOT}.award.announced`, { percent: text.percent(award.lastResult.percent) }),

@@ -22,7 +22,12 @@ const EMAIL_FORMAT = string().trim().required().email()
  */
 export function useRegistrationEmail() {
   const { t } = useI18n()
-  const { value: email, validate: validateEmail } = useField('officialEmail')
+  const {
+    value: email,
+    errorMessage: emailError,
+    handleBlur: blurEmail,
+    validate: validateEmail,
+  } = useField('officialEmail')
   const { value: token, errorMessage: tokenError } = useField('emailVerificationToken')
   const otp = useOtpChallenge()
   const state = ref(EMAIL_CHECK_STATES.IDLE)
@@ -113,5 +118,19 @@ export function useRegistrationEmail() {
     })
   }
 
-  return { state, code, error, busy, otp, tokenError, send, resend, verify, reset }
+  return {
+    email,
+    emailError,
+    blurEmail,
+    state,
+    code,
+    error,
+    busy,
+    otp,
+    tokenError,
+    send,
+    resend,
+    verify,
+    reset,
+  }
 }

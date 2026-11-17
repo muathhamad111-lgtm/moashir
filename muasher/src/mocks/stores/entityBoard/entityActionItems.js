@@ -15,6 +15,7 @@ const LINKS = {
   profile: '/entity/profile',
   self: '/assessment/self',
   accredited: '/assessment/accredited',
+  advanced: '/assessment/advanced',
   payments: '/payments',
   messages: '/messages',
 }
@@ -72,6 +73,7 @@ function requestItems(entityId) {
   const selfDrafts = recordsIn(entityId, 'self', 'draft')
   const drafts = recordsIn(entityId, 'accredited', 'draft')
   const completions = recordsIn(entityId, 'accredited', 'needs-completion')
+  const awardCompletions = recordsIn(entityId, 'advanced', 'needs-completion')
   return [
     item('submit_self_draft', selfDrafts.length, 'info', LINKS.self, {
       context: requestContext(selfDrafts),
@@ -84,6 +86,9 @@ function requestItems(entityId) {
     item('complete_accredited_request', completions.length, 'danger', LINKS.accredited, {
       dueAt: earliestDeadline(completions),
       context: requestContext(completions),
+    }),
+    item('complete_advanced_request', awardCompletions.length, 'danger', LINKS.advanced, {
+      dueAt: earliestDeadline(awardCompletions),
     }),
   ]
 }

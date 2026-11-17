@@ -73,6 +73,23 @@ describe('path states (03 §19.2 header states)', () => {
     expect(selfStateOf({ pricing: AVAILABLE, openDraft: { id: 3 } })).toBe('draft')
   })
 
+  it('sends an award request returned for completion to its form', () => {
+    const returned = {
+      pricing: AVAILABLE,
+      windowState: 'open',
+      eligibility: { eligible: true, reason: null },
+      openRequest: { id: 9201, number: 'ADV-2026-000001', status: 'needs-completion' },
+    }
+    const form = { name: 'assessment.advanced.form', params: { id: '9201' } }
+    expect(awardStateOf(returned)).toBe('needsCompletion')
+    expect(awardAction('needsCompletion', returned)).toMatchObject({
+      labelKey: 'paths.actions.complete',
+      to: form,
+    })
+    expect(rowAction('award', { id: 9201, isOpen: true, status: 'needs-completion' })).toEqual(form)
+    expect(rowAction('award', { id: 9201, isOpen: true, status: 'submitted' })).toBeNull()
+  })
+
   it('gives a missed-period row no action', () => {
     expect(rowAction('accredited', { id: null, rowType: 'missed_period' })).toBeNull()
     expect(rowAction('accredited', { id: 9, isFrozen: false })).toEqual({

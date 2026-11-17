@@ -49,6 +49,14 @@ describe('entity board mock (Task-46 contract)', () => {
     expect(body.meta.total).toBe(body.data.reduce((sum, item) => sum + item.count, 0))
   })
 
+  it('lists the award request returned for completion with its deadline', async () => {
+    seedMockSession(NAMAA)
+    const { body } = await get('/dashboard/action-center')
+    const award = body.data.find((item) => item.key === 'complete_advanced_request')
+    expect(award).toMatchObject({ count: 1, severity: 'danger', link: '/assessment/advanced' })
+    expect(award.dueAt).toEqual(expect.any(String))
+  })
+
   it('answers no items to staff and 401 to guests', async () => {
     seedMockSession({ id: 1, roles: ['system_admin'] })
     expect((await get('/dashboard/action-center')).body.data).toEqual([])

@@ -61,3 +61,45 @@
   margin: 0;
   padding-inline-start: var(--space-5);
 }
+
+.password-policy--live .password-policy__list {
+  gap: var(--space-2);
+  padding-inline-start: 0;
+  list-style: none;
+}
+
+.password-policy--live .password-policy__rule {
+  @include flex(row, flex-start, flex-start, var(--space-2));
+
+  &[data-state='info']::before {
+    content: '';
+    flex: none;
+    inline-size: 6px;
+    block-size: 6px;
+    margin-block-start: 0.5em;
+    margin-inline: 5px;
+    border-radius: 50%;
+    background-color: var(--theme-text-muted);
+  }
+
+  &[data-state='met'] {
+    color: var(--theme-success-text);
+  }
+}
+
+.password-policy__mark {
+  flex: none;
+  inline-size: 16px;
+  block-size: 16px;
+  margin-block-start: 0.1em;
+}
+
+.password-policy__mark--open {
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  opacity: 0.7;
+}
+
+.password-policy__state {
+  @include visually-hidden;
+}

@@ -193,10 +193,30 @@ describe('Register', () => {
       'password',
       'passwordConfirmation',
       'termsAccepted',
-      'marketingConsent',
     ])
     expect(wrapper.findAll('.entity-register__step .field__hint')).toHaveLength(0)
-    expect(wrapper.find('[name="marketingConsent"]').element.checked).toBe(false)
+    expect(wrapper.find('[name="marketingConsent"]').exists()).toBe(false)
+  })
+
+  it('puts the e-mail check inside a full-width e-mail field and follows the password rules', async () => {
+    const { wrapper } = await mountRegister()
+    await fill(wrapper)
+    const field = wrapper.find('.email-check__field')
+    expect(field.find('input[name="officialEmail"]').attributes('dir')).toBe('ltr')
+    expect(field.find('[data-testid="email-check-send"]').text()).toBe('Verify')
+    expect(
+      wrapper.find('.entity-form__wide[data-testid="registration-email-check"]').exists(),
+    ).toBe(true)
+    const policy = wrapper.find('#registration-password-policy')
+    expect(policy.find('[data-rule="length"]').attributes('data-state')).toBe('met')
+    expect(policy.find('[data-rule="match"]').attributes('data-state')).toBe('met')
+    await wrapper.find('[name="passwordConfirmation"]').setValue('Wafa')
+    expect(policy.find('[data-rule="match"]').attributes('data-state')).toBe('pending')
+
+    await wrapper.find('[data-testid="email-check-send"]').trigger('click')
+    await settle()
+    expect(field.find('[data-testid="email-check-send"]').exists()).toBe(false)
+    expect(field.find('.email-check__badge').text()).toBe('Code sent')
   })
 
   it('keeps the entity answers when going back a step', async () => {
@@ -243,11 +263,11 @@ describe('Register', () => {
         termsVersionId: 3,
         privacyVersionId: 4,
         termsAccepted: true,
-        marketingConsent: false,
         passwordConfirmation: 'Wafa-Charity-Account-2026',
         emailVerificationToken: 'proof-1',
       }),
     )
+    expect(authService.register.mock.calls[0][0]).not.toHaveProperty('marketingConsent')
     expect(wrapper.find('[data-testid="registration-under-review"]').text()).toContain(
       'reviewing it',
     )

@@ -85,7 +85,7 @@ describe('entity payload mapping', () => {
     })
   })
 
-  it('sends the current terms and privacy versions and the explicit marketing choice at registration', () => {
+  it('sends the current terms and privacy versions at registration without a marketing choice', () => {
     const form = {
       ...emptyProfileValues(),
       ...values(),
@@ -93,7 +93,6 @@ describe('entity payload mapping', () => {
       password: 'p',
       passwordConfirmation: 'p',
       termsAccepted: true,
-      marketingConsent: false,
     }
     const payload = registrationPayload(
       { ...form, unifiedNumber: '7000000901', foundedOn: '2009-04-20', licenseNumber: ' ١٢٣٤ ' },
@@ -105,11 +104,11 @@ describe('entity payload mapping', () => {
       termsVersionId: 3,
       privacyVersionId: 4,
       termsAccepted: true,
-      marketingConsent: false,
       foundedOn: '2009-04-20',
       foundingYear: 2009,
       licenseNumber: '1234',
     })
+    expect(payload).not.toHaveProperty('marketingConsent')
     expect(
       registrationPayload(
         { ...form, foundedOn: '2009-04-20', licenseNumber: '' },
@@ -140,7 +139,6 @@ describe('entity schemas', () => {
       password: 'short',
       passwordConfirmation: 'other',
       termsAccepted: false,
-      marketingConsent: false,
     }
     const errors = await schema
       .validate(form, { abortEarly: false })
@@ -157,7 +155,6 @@ describe('entity schemas', () => {
         'foundedOn',
       ]),
     )
-    expect(errors).not.toContain('marketingConsent')
     expect(errors).not.toContain('licenseNumber')
     expect(errors).not.toContain('foundingYear')
     expect(errors).not.toContain('governanceGrade')

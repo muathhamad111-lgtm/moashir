@@ -57,12 +57,13 @@ describe('tier mapping', () => {
     expect(tierOf({ certificate: cert, accredited })).toBe(tier)
   })
 
-  it('shows re-assessment only when a level is held and an accredited request is open', () => {
+  it('shows re-assessment only when a level is held and a new accredited request was sent', () => {
     expect(showsReassessment({ certificate: certificate(), accredited: open('assigned') })).toBe(
       true,
     )
     expect(showsReassessment({ certificate: certificate(), accredited: null })).toBe(false)
     expect(showsReassessment({ certificate: null, accredited: open('assigned') })).toBe(false)
+    expect(showsReassessment({ certificate: certificate(), accredited: open('draft') })).toBe(false)
     expect(
       showsReassessment({ certificate: certificate({ level: null }), accredited: open('draft') }),
     ).toBe(false)

@@ -54,7 +54,17 @@ test('an entity proves its e-mail inside the form, registers and is told it is u
   await expect(page.locator('[role="listbox"] [role="option"]')).toHaveCount(3)
   await page.keyboard.press('Escape')
   await fillRegistration(page)
-  await expect(page.locator('[name="marketingConsent"]')).not.toBeChecked()
+  await expect(page.locator('[name="marketingConsent"]')).toHaveCount(0)
+  const policy = page.locator('#registration-password-policy')
+  await expect(policy.locator('[data-rule="length"]')).toHaveAttribute('data-state', 'met')
+  await expect(policy.locator('[data-rule="match"]')).toHaveAttribute('data-state', 'met')
+  const emailBox = await page.locator('.email-check__field [name="officialEmail"]').boundingBox()
+  const sendBox = await page
+    .locator('.email-check__field')
+    .getByTestId('email-check-send')
+    .boundingBox()
+  expect(sendBox.x > emailBox.x + emailBox.width / 2).toBe(isEn(testInfo))
+  expect(sendBox.x + sendBox.width < emailBox.x + emailBox.width / 2).toBe(!isEn(testInfo))
   await checkbox(page, 'termsAccepted').click()
 
   await page.locator('form button[type="submit"]').click()

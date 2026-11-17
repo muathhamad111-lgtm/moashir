@@ -1,7 +1,6 @@
 @use '../landing/tokens' as *;
 
 $auth-split: 1024px;
-$auth-wide: 1280px;
 $auth-card-wide: 34rem;
 
 .lp-auth {
@@ -154,15 +153,61 @@ $auth-card-wide: 34rem;
   padding: 18px 20px;
 }
 
-.auth-layout__logo {
+.auth-layout__emblem {
+  position: relative;
+  display: grid;
+  place-items: center;
   inline-size: 100%;
   max-inline-size: var(--size-auth-logo-compact);
-  block-size: auto;
-  object-fit: contain;
+
+  > * {
+    grid-area: 1 / 1;
+  }
 }
 
-.auth-layout__trophy {
+.auth-layout__logo {
+  position: relative;
+  inline-size: 100%;
+  block-size: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 18px rgba(152, 216, 211, 0.28));
+}
+
+.auth-layout__halo {
+  position: absolute;
+  inset: -60% -35%;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    rgba(152, 216, 211, 0.38),
+    rgba(41, 145, 145, 0.16) 55%,
+    transparent
+  );
+  animation: lp-auth-breathe 5s ease-in-out infinite;
+}
+
+.auth-layout__orbit {
   display: none;
+}
+
+.auth-layout__sheen {
+  position: relative;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+  mask: url('@/assets/logos/moashir-logo-on-dark.svg') center / 100% 100% no-repeat;
+  background: linear-gradient(
+      105deg,
+      transparent 38%,
+      rgba(255, 255, 255, 0.9) 50%,
+      transparent 62%
+    )
+    no-repeat;
+  background-size: 260% 100%;
+  background-position: 130% 0;
+  animation: lp-band-sheen 6s $lp-ease infinite;
 }
 
 .lp-auth .entity-form__grid > * {
@@ -241,44 +286,53 @@ $auth-card-wide: 34rem;
     padding: 64px 40px 48px;
   }
 
-  .auth-layout__logo {
+  .auth-layout__emblem {
     max-inline-size: var(--size-auth-logo);
   }
 
-  .auth-layout__trophy {
-    position: relative;
-    display: block;
-    inline-size: clamp(150px, 13vw, 200px);
-    animation: lp-final-float 6s ease-in-out infinite;
-
-    img {
-      display: block;
-      inline-size: 100%;
-      block-size: auto;
-      filter: drop-shadow(0 26px 34px rgba(0, 0, 0, 0.55))
-        drop-shadow(0 0 40px rgba(152, 216, 211, 0.16));
-    }
-  }
-
-  .auth-layout__reflect {
+  .auth-layout__orbit {
     position: absolute;
-    inset-block-start: 100%;
-    inset-inline-start: 0;
-    scale: 1 -1;
-    opacity: 0.14;
-    filter: none !important;
-    mask-image: linear-gradient(to top, #000, transparent 24%);
+    display: block;
+    inline-size: 128%;
+    aspect-ratio: 1;
+    pointer-events: none;
+    border-radius: 50%;
+    border: 1px solid rgba(217, 247, 247, 0.08);
+    background: conic-gradient(
+      from 0deg,
+      transparent 0 62%,
+      rgba(152, 216, 211, 0.05) 70%,
+      rgba(152, 216, 211, 0.85) 88%,
+      transparent 90% 100%
+    );
+    mask: radial-gradient(closest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
+    animation: lp-auth-orbit 10s linear infinite;
   }
 }
 
-@media (min-width: $auth-wide) {
-  .auth-layout__trophy {
-    inline-size: clamp(180px, 14vw, 220px);
+@keyframes lp-auth-breathe {
+  0%,
+  100% {
+    opacity: 0.6;
+    scale: 0.92;
+  }
+
+  50% {
+    opacity: 1;
+    scale: 1.06;
+  }
+}
+
+@keyframes lp-auth-orbit {
+  to {
+    rotate: 1turn;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .auth-layout__trophy {
+  .auth-layout__halo,
+  .auth-layout__orbit,
+  .auth-layout__sheen {
     animation: none;
   }
 }

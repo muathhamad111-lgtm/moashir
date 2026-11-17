@@ -1,14 +1,18 @@
 import { FIXTURE_ENTITY_ID } from './assessments'
+import { ACCREDITED_FIXTURE_IDS } from './accreditedRequests'
 import { computePricing } from './bagProduct'
 
 export { FIXTURE_ENTITY_ID }
 
-export const BAG_SOURCE_ASSESSMENT_ID = 9102
+// The kit is built on the main entity's (Namaa's) latest accredited result.
+export const BAG_SOURCE_ASSESSMENT_ID = ACCREDITED_FIXTURE_IDS.completedEarlier
+export const BAG_SOURCE_REQUEST_NUMBER = 'ACC-2026-000003'
 export const BAG_SUBSCRIPTION_ID = 'bag-5001'
 
 export function seedReference() {
   return {
     assessmentId: BAG_SOURCE_ASSESSMENT_ID,
+    number: BAG_SOURCE_REQUEST_NUMBER,
     version: 1,
     kind: 'accredited',
     completedAt: '2026-06-22T11:00:00+03:00',

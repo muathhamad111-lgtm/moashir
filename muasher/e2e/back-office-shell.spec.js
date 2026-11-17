@@ -170,6 +170,20 @@ for (const { state, prepare } of SIDEBAR_STATES) {
   })
 }
 
+test('the top bar controls stay readable on hover', async ({ page }, testInfo) => {
+  await seedSession(page, {
+    roles: ['request_follower', 'content_officer'],
+    locale: isEn(testInfo) ? 'en' : 'ar',
+  })
+  await page.goto('/admin/requests')
+  await expect(page.locator('html')).toHaveAttribute('data-shell', 'tts')
+
+  for (const control of ['.navbar__locale', '.navbar__settings']) {
+    await page.locator(control).hover()
+    expect(await contrastOf(page, `${control}:hover`)).toBeGreaterThanOrEqual(AA_TEXT)
+  }
+})
+
 test('unified workspace: module groups, no role switcher, profile lists roles and permissions', async ({
   page,
 }, testInfo) => {

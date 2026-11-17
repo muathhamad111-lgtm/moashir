@@ -41,6 +41,12 @@ export const OPEN_ACCREDITED_STATUSES = Object.freeze([
   S.NEEDS_COMPLETION,
 ])
 
+// A certified entity is "under re-assessment" only once its new request has been sent;
+// an unsent draft does not count.
+export const SUBMITTED_ACCREDITED_STATUSES = Object.freeze(
+  OPEN_ACCREDITED_STATUSES.filter((status) => status !== S.DRAFT),
+)
+
 export const LEVEL_CERTIFICATE_STATUS = 'issued'
 
 export const LEVEL_MINI_CARD = Object.freeze({

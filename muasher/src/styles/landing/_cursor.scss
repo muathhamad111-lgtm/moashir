@@ -11,7 +11,7 @@ $cursor-hot: image-set(
   url('@/assets/landing/cursor/hot@2x.png') 2x
 );
 
-.lp.lp-has-cursor {
+:is(.lp, .lp-auth).lp-has-cursor {
   &,
   *:not(input, textarea, select) {
     cursor:
@@ -19,8 +19,8 @@ $cursor-hot: image-set(
       auto;
   }
 
-  :is(.lp-deep, .lp-final, .lp-band__box),
-  :is(.lp-deep, .lp-final, .lp-band__box) *:not(input, textarea, select) {
+  :is(.lp-deep, .lp-final, .lp-band__box, .auth-layout__brand),
+  :is(.lp-deep, .lp-final, .lp-band__box, .auth-layout__brand) *:not(input, textarea, select) {
     cursor:
       $cursor-light 1 1,
       auto;
@@ -34,7 +34,7 @@ $cursor-hot: image-set(
   }
 }
 
-[data-theme='dark'] .lp.lp-has-cursor {
+[data-theme='dark'] :is(.lp, .lp-auth).lp-has-cursor {
   &,
   *:not(input, textarea, select) {
     cursor:

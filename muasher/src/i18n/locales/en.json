@@ -1881,9 +1881,12 @@
     "passwordPolicy": {
       "title": "Password rules",
       "length": "From {MIN} to {MAX} characters.",
+      "match": "The password and its confirmation match.",
       "breached": "Not a known leaked password.",
       "history": "Not one of the last five passwords of your account.",
-      "unique": "Use a password you do not use on other sites."
+      "unique": "Use a password you do not use on other sites.",
+      "met": "Met:",
+      "pending": "Not met yet:"
     },
     "invitation": {
       "title": "Activate your Moashir account",
@@ -2011,8 +2014,7 @@
       "nameEn": "Optional. Used in the English interface.",
       "phone": "Optional. A Saudi mobile number that starts with 05 and has 10 digits.",
       "governanceGrade": "The NCNP governance percentage from 0 to 100, up to two decimals.",
-      "metricsProfile": "The governance grade, employees and beneficiaries complete the entity profile.",
-      "marketingConsent": "Optional and unticked by default. You can change it at any time from the entity profile."
+      "metricsProfile": "The governance grade, employees and beneficiaries complete the entity profile."
     },
     "sections": {
       "identity": "Entity and authorized person",
@@ -2054,13 +2056,14 @@
       "next": "Next",
       "back": "Back",
       "emailVerify": {
-        "send": "Verify the e-mail",
+        "send": "Verify",
         "sent": "We sent a verification code to your e-mail; it is valid for {minutes} minutes.",
+        "codeSent": "Code sent",
         "codeLabel": "Verification code",
         "confirm": "Confirm the code",
         "resend": "Resend the code",
         "resendIn": "Resend in {seconds}s",
-        "done": "The e-mail is verified.",
+        "done": "Verified",
         "required": "Verify the official e-mail first."
       },
       "underReview": {
@@ -2294,9 +2297,6 @@
         "deactivated": "The city was deactivated."
       },
       "activeLabel": "Enable {name}"
-    },
-    "consent": {
-      "marketing": "I agree to receive news and offers from the platform by e-mail and SMS"
     },
     "history": {
       "title": "Profile change history",
@@ -4244,7 +4244,7 @@
         "message": "Your improvement period has closed. You can return to the accredited assessment to be re-evaluated."
       },
       "returnToAccredited": "Return to the accredited assessment",
-      "reference": "Built on accredited assessment #{id} (version {version}) — a frozen snapshot the Kit never edits.",
+      "reference": "Built on accredited assessment {number} (version {version}) — a frozen snapshot the Kit never edits.",
       "comparison": {
         "title": "Compare before & after",
         "desc": "After re-assessment, see the improvement on each criterion against your reference result."
@@ -4256,9 +4256,9 @@
       "history": {
         "title": "Your previous kits",
         "lead": "The kits you worked through and were re-assessed on.",
-        "before": "Before {score}%",
-        "after": "After {score}%",
-        "gain": "+{points} pts"
+        "before": "Before {score}",
+        "after": "After {score}",
+        "gain": "+{points} pt | +{points} pts"
       }
     },
     "manage": {
@@ -8371,6 +8371,7 @@
         },
         "award": {
           "draft": "Continue the award form",
+          "needsCompletion": "Complete the request",
           "submitted": "View the request",
           "announced": "View the result",
           "none": "Learn about the award",

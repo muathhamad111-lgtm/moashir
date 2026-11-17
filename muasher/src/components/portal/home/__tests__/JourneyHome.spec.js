@@ -384,6 +384,13 @@ describe('JourneyHome (D1 / M1)', () => {
   })
 
   it('shows the gold hero with the seal, the threshold track and the remaining percent', async () => {
+    accreditedService.getCurrent.mockResolvedValue({
+      data: {
+        awaitingPayment: null,
+        active: { ...ACTIVE, status: 'submitted' },
+        latestClosed: null,
+      },
+    })
     certificatesService.listCards.mockImplementation((params) =>
       Promise.resolve({ data: params.perPage === 1 ? [GOLD] : [] }),
     )

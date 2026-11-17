@@ -57,12 +57,10 @@
   }
 }
 
-.btn--ghost {
-  @include in-tts-shell {
-    &:hover:not(:disabled) {
-      background-color: var(--brand-primary-tint);
-    }
-  }
+// The shell prefix adds no weight here: ghost buttons on the dark top bars set their own
+// hover fill, and a heavier tint rule would put white text on a near-white background.
+:where(:root[data-shell='tts']) .btn--ghost:hover:not(:disabled) {
+  background-color: var(--brand-primary-tint);
 }
 
 .btn--danger {

@@ -63,7 +63,7 @@ function boxOf(page, selector) {
 test.describe('auth brand panel — semantics', () => {
   test.use({ viewport: VIEWPORTS.desktop })
 
-  test('the form comes first and the named aside holds only the logo and a decorative trophy', async ({
+  test('the form comes first and the named aside holds only the glowing logo', async ({
     page,
   }, testInfo) => {
     await seedPreferences(page, { locale: localeOf(testInfo) })
@@ -83,8 +83,44 @@ test.describe('auth brand panel — semantics', () => {
     await expect(aside.getByRole('heading')).toHaveCount(0)
     await expect(aside.getByRole('listitem')).toHaveCount(0)
     await expect(page.locator('.auth-value-card, .auth-value-panel__heading')).toHaveCount(0)
-    await expect(aside.locator('.auth-layout__trophy')).toHaveAttribute('aria-hidden', 'true')
-    await expect(aside.locator('.auth-layout__trophy img').first()).toBeVisible()
+    await expect(aside.locator('.auth-layout__trophy')).toHaveCount(0)
+    await expect(aside.locator('img')).toHaveCount(1)
+    await expect(aside.locator('.auth-layout__logo')).toBeVisible()
+    for (const part of ['.auth-layout__halo', '.auth-layout__orbit', '.auth-layout__sheen']) {
+      await expect(aside.locator(part)).toHaveAttribute('aria-hidden', 'true')
+    }
+    const animations = await aside
+      .locator('.auth-layout__halo, .auth-layout__orbit, .auth-layout__sheen')
+      .evaluateAll((parts) => parts.map((part) => getComputedStyle(part).animationName))
+    expect(animations).toEqual(['lp-auth-breathe', 'lp-auth-orbit', 'lp-band-sheen'])
+  })
+
+  test('the logo glow stands still for reduced motion', async ({ page }, testInfo) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await seedPreferences(page, { locale: localeOf(testInfo) })
+    await open(page, '/auth/login')
+    const animations = await page
+      .locator('.auth-layout__halo, .auth-layout__orbit, .auth-layout__sheen')
+      .evaluateAll((parts) => parts.map((part) => getComputedStyle(part).animationName))
+    expect(animations).toEqual(['none', 'none', 'none'])
+  })
+
+  test('the landing cursor follows the pointer on the auth pages', async ({ page }, testInfo) => {
+    await seedPreferences(page, { locale: localeOf(testInfo), theme: 'light' })
+    await open(page, '/auth/login')
+    await expect(page.locator('.auth-layout')).toHaveClass(/lp-has-cursor/)
+    const cursorOf = (selector) =>
+      page
+        .locator(selector)
+        .first()
+        .evaluate((node) => getComputedStyle(node).cursor)
+    const card = await cursorOf('.auth-layout__card')
+    const brand = await cursorOf('.auth-layout__brand')
+    const button = await cursorOf('.auth-layout__card .btn--primary')
+    for (const cursor of [card, brand, button]) expect(cursor).toMatch(/url\(|image-set/)
+    expect(new Set([card, brand, button]).size).toBe(3)
+    expect(button).toMatch(/pointer$/)
+    expect(await cursorOf('.auth-layout__card input')).toBe('text')
   })
 
   test('the header row offers home, language and theme like the landing page', async ({
@@ -146,7 +182,8 @@ test.describe('auth brand panel — layout', () => {
     const main = await boxOf(page, 'main.auth-layout__content')
     expect(aside.y).toBe(main.y)
     expect(aside.x < main.x).toBe(isEn(testInfo))
-    await expect(page.locator('.auth-layout__trophy')).toBeInViewport()
+    await expect(page.locator('.auth-layout__emblem')).toBeInViewport()
+    await expect(page.locator('.auth-layout__orbit')).toBeVisible()
     await expect(page.locator('.auth-layout__card')).toBeInViewport()
     await noHorizontalOverflow(page)
   })
@@ -179,7 +216,8 @@ test.describe('auth brand panel — layout', () => {
     expect(aside.y + aside.height).toBeLessThanOrEqual(main.y + 1)
     expect(aside.height).toBeLessThan(180)
     await expect(page.locator('.auth-layout__logo')).toBeVisible()
-    await expect(page.locator('.auth-layout__trophy')).toBeHidden()
+    await expect(page.locator('.auth-layout__orbit')).toBeHidden()
+    await expect(page.locator('.auth-layout__halo')).toBeVisible()
     await expect(page.locator('main h1')).toBeInViewport()
     await noHorizontalOverflow(page)
   })

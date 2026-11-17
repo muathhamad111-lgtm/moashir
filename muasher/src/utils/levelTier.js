@@ -5,6 +5,7 @@ import {
   LEVEL_TIERS,
   METAL_TIERS,
   OPEN_ACCREDITED_STATUSES,
+  SUBMITTED_ACCREDITED_STATUSES,
   TIER_ORDER,
 } from '@/constants/levels'
 
@@ -55,8 +56,12 @@ export function reassessmentOf(tier, hasOpenRequest = false) {
   return isMetalTier(tier) && hasOpenRequest === true
 }
 
+function hasSubmittedAccredited(current) {
+  return SUBMITTED_ACCREDITED_STATUSES.includes(current?.active?.status)
+}
+
 export function showsReassessment({ certificate = null, accredited = null } = {}) {
-  return isMetalTier(certificate?.level) && hasOpenAccredited(accredited)
+  return isMetalTier(certificate?.level) && hasSubmittedAccredited(accredited)
 }
 
 export function miniCardOf(tier) {

@@ -29,7 +29,6 @@ export const REGISTRATION_STEPS = Object.freeze([
       'password',
       'passwordConfirmation',
       'termsAccepted',
-      'marketingConsent',
     ]),
   }),
 ])

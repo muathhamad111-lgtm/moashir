@@ -3,6 +3,7 @@ import { mkdirSync } from 'node:fs'
 import { test, expect } from '@playwright/test'
 import { seedIncompleteProfile, seedSignedIn } from './support/session'
 import { settleFonts } from './support/screenshots'
+import { AA_TEXT, contrastOf } from './support/contrast'
 
 const SHOTS = 'e2e/__screenshots__/37a'
 const VIEWPORTS = {
@@ -113,6 +114,8 @@ test.describe('entity portal shell', () => {
     await expect(html).toHaveAttribute('data-theme', 'light')
     await expect(html).toHaveAttribute('data-shell', 'tts')
     await expect(page.locator('.portal-top-bar__tool.btn--icon')).toHaveCount(0)
+    await page.locator('.portal-top-bar__tool').hover()
+    expect(await contrastOf(page, '.portal-top-bar__tool:hover')).toBeGreaterThanOrEqual(AA_TEXT)
     const locale = localeOf(testInfo)
     await page.locator('.portal-top-bar__tool').click()
     await expect(html).toHaveAttribute('lang', locale === 'ar' ? 'en' : 'ar')

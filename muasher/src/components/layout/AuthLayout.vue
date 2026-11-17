@@ -8,10 +8,7 @@ import { usePlatformIdentity } from '@/composables/usePlatformIdentity'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import LandingSprite from '@/components/landing/LandingSprite.vue'
 import LandingThemeSwitch from '@/components/landing/LandingThemeSwitch.vue'
-import trophy from '@/assets/landing/trophy.webp'
-import trophySmall from '@/assets/landing/trophy-sm.webp'
-
-const TROPHY_SIZES = '(max-width: 1279px) 220px, 300px'
+import { hasFinePointer } from '@/utils/landing/pointer'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -20,11 +17,11 @@ const { platformName } = usePlatformIdentity()
 const { logoOnDark } = useBrandLogo()
 
 const isMaintenance = computed(() => route.name === ROUTE_NAMES.PUBLIC_MAINTENANCE)
-const trophySrcset = `${trophySmall} 420w, ${trophy} 720w`
+const customCursor = hasFinePointer()
 </script>
 
 <template>
-  <div class="auth-layout lp-auth">
+  <div class="auth-layout lp-auth" :class="{ 'lp-has-cursor': customCursor }">
     <LandingSprite />
     <main class="auth-layout__content">
       <div class="auth-layout__meta">
@@ -57,23 +54,11 @@ const trophySrcset = `${trophySmall} 420w, ${trophy} 720w`
     <aside class="auth-layout__brand" :aria-label="t('auth.panel.label')">
       <div class="auth-layout__pattern" aria-hidden="true"></div>
       <div class="auth-layout__brand-inner">
-        <img class="auth-layout__logo" :src="logoOnDark" :alt="platformName" />
-        <div class="auth-layout__trophy" aria-hidden="true">
-          <img
-            :src="trophy"
-            :srcset="trophySrcset"
-            :sizes="TROPHY_SIZES"
-            alt=""
-            width="720"
-            height="1157"
-          />
-          <img
-            class="auth-layout__reflect"
-            :src="trophy"
-            :srcset="trophySrcset"
-            :sizes="TROPHY_SIZES"
-            alt=""
-          />
+        <div class="auth-layout__emblem">
+          <span class="auth-layout__halo" aria-hidden="true"></span>
+          <span class="auth-layout__orbit" aria-hidden="true"></span>
+          <img class="auth-layout__logo" :src="logoOnDark" :alt="platformName" />
+          <span class="auth-layout__sheen" aria-hidden="true"></span>
         </div>
       </div>
     </aside>

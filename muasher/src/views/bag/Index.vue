@@ -12,6 +12,8 @@ import GapCard from '@/components/bag/GapCard.vue'
 import BagIntro from '@/components/bag/BagIntro.vue'
 import { useBagEntity } from '@/composables/useBag'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import { isolate } from '@/utils/bidi'
+import { percentText } from '@/utils/percentText'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t, n } = useI18n()
@@ -96,7 +98,7 @@ const helperFiles = computed(() =>
             <AppIcon name="lock" class="bag__reference-icon" />
             <span>{{
               t('bag.index.reference', {
-                id: n(reference.assessmentId, 'id'),
+                number: isolate(reference.number),
                 version: n(reference.version, 'id'),
               })
             }}</span>
@@ -181,14 +183,22 @@ const helperFiles = computed(() =>
               </div>
               <div class="bag__history-scores">
                 <span class="bag__history-score">{{
-                  t('bag.index.history.before', { score: n(kit.referenceScorePercent, 'default') })
+                  t('bag.index.history.before', {
+                    score: percentText(n, t, kit.referenceScorePercent),
+                  })
                 }}</span>
                 <AppIcon name="arrow-right" class="bag__history-arrow" />
                 <span class="bag__history-score bag__history-score--after">{{
-                  t('bag.index.history.after', { score: n(kit.reassessedScorePercent, 'default') })
+                  t('bag.index.history.after', {
+                    score: percentText(n, t, kit.reassessedScorePercent),
+                  })
                 }}</span>
                 <span class="bag__history-gain">{{
-                  t('bag.index.history.gain', { points: n(kit.improvementPoints, 'default') })
+                  t(
+                    'bag.index.history.gain',
+                    { points: n(kit.improvementPoints, 'default') },
+                    kit.improvementPoints,
+                  )
                 }}</span>
               </div>
             </li>

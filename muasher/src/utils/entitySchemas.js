@@ -185,7 +185,6 @@ export function registrationSchema(t) {
         return value === this.parent.password
       }),
     termsAccepted: yupBoolean().oneOf([true], t('entities.validation.termsRequired')),
-    marketingConsent: yupBoolean(),
   })
 }
 

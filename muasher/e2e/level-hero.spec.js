@@ -126,7 +126,8 @@ test.describe('entity home level card — states', () => {
     const hero = await openHome(page, PERSONAS.silver, { locale: localeOf(testInfo) })
     await expect(hero.locator('.level-hero__number')).toHaveText('74.54')
     await expect(hero.locator('.level-hero__figure .level-hero__sr')).toHaveText(copy.score)
-    await expect(hero.locator('[data-testid="level-reassessment"]')).toBeVisible()
+    // Namaa's new accredited request is still an unsent draft, so no re-assessment chip.
+    await expect(hero.locator('[data-testid="level-reassessment"]')).toHaveCount(0)
     await expect(hero.locator('[data-testid="level-meta"]')).toContainText('CRT-2026-000003')
     await expect(hero.locator('[data-testid="hero-next-level"]')).toBeVisible()
   })
