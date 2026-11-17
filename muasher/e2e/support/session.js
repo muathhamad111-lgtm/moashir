@@ -33,6 +33,11 @@ export function seedScenario(page, scenario) {
   return page.context().addCookies([{ name: MOCK_SCENARIO_COOKIE, value: scenario, url: APP_URL }])
 }
 
+// Namaa's profile is complete by default; this scenario empties its registry and governance details.
+export function seedIncompleteProfile(page) {
+  return seedScenario(page, 'profile-incomplete')
+}
+
 export function seedLocale(page, locale) {
   if (!locale) return Promise.resolve()
   return page.context().addCookies([{ name: LOCALE_COOKIE, value: locale, url: APP_URL }])

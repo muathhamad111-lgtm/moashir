@@ -3,44 +3,78 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useBrandLogo } from '@/composables/useBrandLogo'
-import { ROUTE_NAMES } from '@/constants/routeNames'
-import LocaleSwitcher from '@/components/ui/LocaleSwitcher.vue'
-import ThemeToggle from '@/components/ui/ThemeToggle.vue'
-import BrandPattern from '@/components/ui/BrandPattern.vue'
-import AuthValuePanel from '@/components/auth/AuthValuePanel.vue'
+import { useLocale } from '@/composables/useLocale'
 import { usePlatformIdentity } from '@/composables/usePlatformIdentity'
+import { ROUTE_NAMES } from '@/constants/routeNames'
+import LandingSprite from '@/components/landing/LandingSprite.vue'
+import LandingThemeSwitch from '@/components/landing/LandingThemeSwitch.vue'
+import trophy from '@/assets/landing/trophy.webp'
+import trophySmall from '@/assets/landing/trophy-sm.webp'
+
+const TROPHY_SIZES = '(max-width: 1279px) 220px, 300px'
 
 const { t } = useI18n()
-const { platformName } = usePlatformIdentity()
 const route = useRoute()
+const { toggleLocale } = useLocale()
+const { platformName } = usePlatformIdentity()
 const { logoOnDark } = useBrandLogo()
 
 const isMaintenance = computed(() => route.name === ROUTE_NAMES.PUBLIC_MAINTENANCE)
+const trophySrcset = `${trophySmall} 420w, ${trophy} 720w`
 </script>
 
 <template>
-  <div class="auth-layout">
+  <div class="auth-layout lp-auth">
+    <LandingSprite />
     <main class="auth-layout__content">
-      <div class="auth-layout__card">
-        <slot />
-      </div>
       <div class="auth-layout__meta">
-        <LocaleSwitcher />
-        <ThemeToggle />
         <router-link
           v-if="!isMaintenance"
           class="auth-layout__link"
           :to="{ name: ROUTE_NAMES.PUBLIC_HOME }"
         >
+          <svg class="auth-layout__back" viewBox="0 0 100 100" aria-hidden="true">
+            <use href="#lp-i-arrow" />
+          </svg>
           {{ t('nav.backToHome') }}
         </router-link>
+        <div class="auth-layout__controls">
+          <button
+            type="button"
+            class="lp-top__icon-btn lp-top__locale"
+            :aria-label="t('landing.header.language')"
+            @click="toggleLocale"
+          >
+            <span :lang="t('landing.header.languageCode')">{{ t('locale.switchShort') }}</span>
+          </button>
+          <LandingThemeSwitch />
+        </div>
+      </div>
+      <div class="auth-layout__card">
+        <slot />
       </div>
     </main>
-    <aside class="auth-layout__brand brand-surface" :aria-label="t('auth.panel.label')">
-      <BrandPattern variant="lattice" />
+    <aside class="auth-layout__brand" :aria-label="t('auth.panel.label')">
+      <div class="auth-layout__pattern" aria-hidden="true"></div>
       <div class="auth-layout__brand-inner">
         <img class="auth-layout__logo" :src="logoOnDark" :alt="platformName" />
-        <AuthValuePanel />
+        <div class="auth-layout__trophy" aria-hidden="true">
+          <img
+            :src="trophy"
+            :srcset="trophySrcset"
+            :sizes="TROPHY_SIZES"
+            alt=""
+            width="720"
+            height="1157"
+          />
+          <img
+            class="auth-layout__reflect"
+            :src="trophy"
+            :srcset="trophySrcset"
+            :sizes="TROPHY_SIZES"
+            alt=""
+          />
+        </div>
       </div>
     </aside>
   </div>

@@ -46,11 +46,9 @@
 @use 'components/global-search';
 @use 'components/app-layout';
 @use 'components/reveal';
-@use 'components/brand-surface';
 @use 'components/brand-pattern';
 @use 'components/public-layout';
 @use 'components/auth-layout';
-@use 'components/auth-value-panel';
 @use 'components/footer';
 @use 'components/route-stub';
 @use 'components/dev-home';
@@ -88,7 +86,6 @@
 @use 'components/profile-chip';
 @use 'components/profile-completeness';
 @use 'components/profile-history-drawer';
-@use 'components/profile-account-card';
 @use 'components/profile-notice';
 @use 'components/logo-dialog';
 @use 'components/dashboard';

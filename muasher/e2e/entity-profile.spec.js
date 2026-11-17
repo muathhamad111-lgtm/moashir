@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { seedSignedIn } from './support/session'
+import { seedIncompleteProfile, seedSignedIn } from './support/session'
 import { clearMockFault, forceMockFault } from './support/mockFaults'
 import { closeSuccess, decisionAction } from './support/dialogs'
 import { AA_TEXT, contrastOf } from './support/contrast'
@@ -29,7 +29,13 @@ function dirOf(testInfo) {
   return localeOf(testInfo) === 'en' ? 'en-ltr' : 'ar-rtl'
 }
 
-async function openProfile(page, testInfo, user, { theme = 'light', viewport = DESKTOP } = {}) {
+async function openProfile(
+  page,
+  testInfo,
+  user,
+  { theme = 'light', viewport = DESKTOP, incomplete = false } = {},
+) {
+  if (incomplete) await seedIncompleteProfile(page)
   await seedSignedIn(page, user, { locale: localeOf(testInfo), theme })
   await page.setViewportSize(viewport)
   await page.goto('/entity/profile')
@@ -52,7 +58,7 @@ async function shoot(page, testInfo, name) {
 }
 
 test('reads the incomplete profile, edits one section and saves it', async ({ page }, testInfo) => {
-  await openProfile(page, testInfo, NAMAA)
+  await openProfile(page, testInfo, NAMAA, { incomplete: true })
   await expect(page.getByTestId('portal-page-title')).toHaveText(
     localeOf(testInfo) === 'en' ? 'Entity profile' : 'ملف الجهة',
   )
@@ -79,7 +85,7 @@ test('reads the incomplete profile, edits one section and saves it', async ({ pa
 })
 
 test('«Add» opens the section focused on that field', async ({ page }, testInfo) => {
-  await openProfile(page, testInfo, NAMAA)
+  await openProfile(page, testInfo, NAMAA, { incomplete: true })
   const identity = section(page, 'identity')
   await identity.locator('[data-field="licenseNumber"] .profile-missing__add').click()
   await expect(identity.locator('[name="licenseNumber"]')).toBeFocused()
@@ -105,7 +111,7 @@ test('shows field errors and the summary when the section is invalid', async ({
 })
 
 test('a stale save reloads the section with a short message', async ({ page }, testInfo) => {
-  await openProfile(page, testInfo, NAMAA)
+  await openProfile(page, testInfo, NAMAA, { incomplete: true })
   const governance = section(page, 'governance')
   await governance.locator('.profile-section__edit').click()
   await governance.locator('[name="employeesCount"]').fill('14')
@@ -221,7 +227,7 @@ test('the 390 px read-only layout, and a dark-mode preference that the portal ig
 test('the compact facts row and the missing marker keep AA contrast', async ({
   page,
 }, testInfo) => {
-  await openProfile(page, testInfo, NAMAA)
+  await openProfile(page, testInfo, NAMAA, { incomplete: true })
   for (const selector of ['.profile-facts__label', '.profile-facts__value']) {
     expect(await contrastOf(page, selector)).toBeGreaterThanOrEqual(AA_TEXT)
   }

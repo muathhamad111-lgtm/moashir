@@ -172,7 +172,7 @@
   }
 }
 
-[data-theme='dark'] .lp .lp-theme-switch {
+[data-theme='dark'] :is(.lp, .lp-auth) .lp-theme-switch {
   .lp-theme-switch__sun {
     opacity: 0;
     rotate: 90deg;

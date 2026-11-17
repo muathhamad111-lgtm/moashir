@@ -270,3 +270,10 @@ html:has(.lp) {
 html[lang='ar'] .lp {
   font-size: 1.08rem;
 }
+
+.lp-sprite {
+  position: absolute;
+  inline-size: 0;
+  block-size: 0;
+  overflow: hidden;
+}

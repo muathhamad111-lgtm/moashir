@@ -1,6 +1,7 @@
 import { ENTITY_REFERENCE_PREFIX, entitiesFixture } from '../fixtures/entities'
 import { hasFullProfile } from './entityProfileSections'
 import { registrationReviewRequired } from './authSettingsStore'
+import { applyProfileScenario } from './entityProfileScenario'
 
 const ANONYMIZED_DOMAIN = 'erased.invalid'
 
@@ -30,7 +31,7 @@ function cloneRecord(record) {
 }
 
 export function resetEntitiesStore() {
-  entities = entitiesFixture.map(cloneRecord)
+  entities = applyProfileScenario(entitiesFixture.map(cloneRecord))
   nextEntityId = Math.max(...entities.map((entity) => entity.id)) + 1
 }
 

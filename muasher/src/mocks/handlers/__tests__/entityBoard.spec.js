@@ -6,6 +6,7 @@ import { resetAssessmentsStore } from '@/mocks/stores/assessments/assessmentsSto
 import { resetEntitiesMock } from '@/mocks/stores/entityMockReset'
 import { resetFinanceState } from '@/mocks/stores/finance/financeState'
 import { MOCK_API_BASE, clearMockSession, mockFetch, seedMockSession } from '@/test-utils/mockApi'
+import { resetProfileScenarioAfterEach, startWithIncompleteProfile } from './profileScenarioSupport'
 import { setRandomFaults } from '@/mocks/contract/faults'
 
 const server = setupServer(...entityBoardHandlers, ...dashboardHandlers)
@@ -30,9 +31,11 @@ afterEach(() => {
   clearMockSession()
 })
 afterAll(() => server.close())
+resetProfileScenarioAfterEach()
 
 describe('entity board mock (Task-46 contract)', () => {
   it('lists the entity Action Center items with their context', async () => {
+    startWithIncompleteProfile()
     seedMockSession(NAMAA)
     const { status, body } = await get('/dashboard/action-center')
     expect(status).toBe(200)

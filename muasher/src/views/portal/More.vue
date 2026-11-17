@@ -27,7 +27,7 @@ const { toggleLocale } = useLocale()
 const counts = usePortalCountsStore()
 const { unreadNotifications, unreadReplies } = storeToRefs(counts)
 const entityStore = useEntityStore()
-const { tier, reassessment } = useEntityLevel()
+const { ready, tier, reassessment } = useEntityLevel()
 const { canAccess } = usePermissions()
 const tools = computed(() => PORTAL_TOOLS.filter((tool) => canAccess(accessFor(tool.routeName))))
 
@@ -70,7 +70,7 @@ onMounted(() => entityStore.loadProfile().catch(() => null))
         <span class="portal-more__user"
           >{{ identity.userName.value }} · {{ identity.roleLabel.value }}</span
         >
-        <LevelBadge :tier="tier" size="s" :reassessment="reassessment" />
+        <LevelBadge v-if="ready" :tier="tier" size="s" :reassessment="reassessment" />
       </span>
     </div>
 

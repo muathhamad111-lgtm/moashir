@@ -15,7 +15,7 @@ const props = defineProps({
   canEdit: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['change-logo', 'logo-expired'])
+const emit = defineEmits(['change-logo', 'logo-expired', 'history'])
 const { t, locale } = useI18n()
 
 const name = computed(() => localizedText(props.profile.name, locale.value))
@@ -68,6 +68,15 @@ const statusKey = computed(() => ACCOUNT_STATUS_KEYS[props.profile.status] ?? 'a
               <span class="profile-header__status-dot" aria-hidden="true"></span>
               {{ t(`portal.profile.status.${statusKey}`) }}
             </span>
+            <button
+              type="button"
+              class="profile-header__history"
+              data-testid="profile-history-open"
+              @click="emit('history')"
+            >
+              <AppIcon name="clock" />
+              <span>{{ t('portal.profile.history.title') }}</span>
+            </button>
           </div>
         </div>
       </div>

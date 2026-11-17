@@ -12,6 +12,7 @@ import { resetEntitiesMock } from '@/mocks/stores/entityMockReset'
 import { resetFinanceState } from '@/mocks/stores/finance/financeState'
 import { removeEntityLogo, storeEntityLogo } from '@/mocks/stores/entityLogo'
 import { MOCK_API_BASE, clearMockSession, seedMockSession, wireFetch } from '@/test-utils/mockApi'
+import { resetProfileScenarioAfterEach, startWithIncompleteProfile } from './profileScenarioSupport'
 
 const server = setupServer(
   ...legalHandlers,
@@ -50,6 +51,7 @@ afterEach(() => {
   clearMockSession()
 })
 afterAll(() => server.close())
+resetProfileScenarioAfterEach()
 
 describe('sender threads', () => {
   it('reads a thread with its entries, marks it seen and answers it', async () => {
@@ -155,6 +157,7 @@ describe('payments tabs and assessment counts', () => {
 
 describe('entity registry details and logo', () => {
   it('stores the registry details by section and refuses http websites', async () => {
+    startWithIncompleteProfile()
     seedMockSession(NAMAA)
     const me = (await call('GET', '/entities/me')).body.data
     const revision = (key) => me.profile_sections.find((section) => section.key === key).revision

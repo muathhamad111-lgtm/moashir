@@ -26,6 +26,7 @@ const pending = computed(() => props.profile.pendingEmailChange)
     :value="profile.officialEmail ?? ''"
     :missing="field.missing"
     ltr
+    wide
     data-testid="profile-official-email"
   >
     <span v-if="pending" class="profile-field__pending" role="status">

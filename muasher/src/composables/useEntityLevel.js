@@ -13,8 +13,19 @@ export function useEntityLevel({ auto = true } = {}) {
   const tier = computed(() => tierOf(sources.value))
   const reassessment = computed(() => showsReassessment(sources.value))
   const miniCard = computed(() => miniCardOf(tier.value))
+  // Until the level is loaded the tier reads «none»; callers hide the badge instead of showing it.
+  const ready = computed(() => status.value === 'success')
 
   if (auto) onMounted(() => store.ensureLoaded())
 
-  return { certificate, accredited, status, tier, reassessment, miniCard, load: () => store.load() }
+  return {
+    certificate,
+    accredited,
+    status,
+    ready,
+    tier,
+    reassessment,
+    miniCard,
+    load: () => store.load(),
+  }
 }

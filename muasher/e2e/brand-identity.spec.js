@@ -31,16 +31,16 @@ const PUBLIC_SCREENS = [
     path: '/auth/login',
     ready: '.auth-layout__brand',
     settled: '.auth-layout__card form',
-    pattern: '.brand-pattern',
-    primary: '.btn--primary',
+    pattern: '.auth-layout__pattern',
+    primary: '.auth-layout__card .btn--primary',
   },
   {
     key: 'register',
     path: '/auth/register',
     ready: '.auth-layout__brand',
     settled: '.auth-layout__card form',
-    pattern: '.brand-pattern',
-    primary: '.btn--primary',
+    pattern: '.auth-layout__pattern',
+    primary: '.auth-layout__card .btn--primary',
   },
 ]
 
@@ -160,18 +160,15 @@ test('home header and footer use the themed official logos over decorative patte
   await footer.screenshot({ path: `${SHOTS}/footer-light-${suffixOf(testInfo)}.png` })
 })
 
-test('sign-in brand panel shows the on-dark logo over the lattice pattern', async ({
+test('sign-in brand panel shows the on-dark logo over the arrow pattern', async ({
   page,
 }, testInfo) => {
   await seedPreferences(page, { locale: localeOf(testInfo), theme: 'light' })
   await openScreen(page, PUBLIC_SCREENS[1])
 
   await expect(page.locator('.auth-layout__logo')).toHaveAttribute('src', /moashir-logo-on-dark/)
-  await expect(page.locator('.auth-layout__brand .brand-pattern--lattice')).toHaveAttribute(
-    'aria-hidden',
-    'true',
-  )
-  expect(await contrastOf(page, '.auth-value-card__title')).toBeGreaterThanOrEqual(AA_TEXT)
+  await expect(page.locator('.auth-layout__pattern')).toHaveAttribute('aria-hidden', 'true')
+  expect(await contrastOf(page, '.auth-form__title')).toBeGreaterThanOrEqual(AA_TEXT)
 })
 
 test('the favicon and app icons follow the identity', async ({ page }) => {

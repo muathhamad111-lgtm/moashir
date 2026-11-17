@@ -34,7 +34,7 @@ const COPY = {
     expiring: /^تنتهي خلال 18 يومًا · \d{4}-\d{2}-\d{2}$/,
     expired: /^منتهية · \d{4}-\d{2}-\d{2}$/,
     valid: /^سارية · حتى \d{4}-\d{2}-\d{2}$/,
-    score: 'الدرجة المعتمدة 74.50%',
+    score: 'الدرجة المعتمدة 74.54%',
     top: 'بلغت جهتك أعلى مستوى في النموذج',
   },
   en: {
@@ -52,7 +52,7 @@ const COPY = {
     expiring: /^Expires in 18 days · \d{4}-\d{2}-\d{2}$/,
     expired: /^Expired · \d{4}-\d{2}-\d{2}$/,
     valid: /^Valid · until \d{4}-\d{2}-\d{2}$/,
-    score: 'Accredited score 74.50%',
+    score: 'Accredited score 74.54%',
     top: 'Your entity has reached the highest level',
   },
 }
@@ -124,7 +124,7 @@ test.describe('entity home level card — states', () => {
   }, testInfo) => {
     const copy = COPY[localeOf(testInfo)]
     const hero = await openHome(page, PERSONAS.silver, { locale: localeOf(testInfo) })
-    await expect(hero.locator('.level-hero__number')).toHaveText('74.50')
+    await expect(hero.locator('.level-hero__number')).toHaveText('74.54')
     await expect(hero.locator('.level-hero__figure .level-hero__sr')).toHaveText(copy.score)
     await expect(hero.locator('[data-testid="level-reassessment"]')).toBeVisible()
     await expect(hero.locator('[data-testid="level-meta"]')).toContainText('CRT-2026-000003')
@@ -227,7 +227,7 @@ test.describe('entity home level card — motion', () => {
     await page.setViewportSize(DESKTOP)
     const hero = await openHome(page, PERSONAS.silver, { locale: localeOf(testInfo) })
     await expect(hero).not.toHaveClass(/level-hero--(pending|playing)/)
-    await expect(hero.locator('.level-hero__number')).toHaveText('74.50')
+    await expect(hero.locator('.level-hero__number')).toHaveText('74.54')
     const running = await page.evaluate(() =>
       document
         .getAnimations()
@@ -256,7 +256,7 @@ test.describe('entity home level card — motion', () => {
     )
     await expect(hero.locator('.level-hero__figure-value')).toHaveAttribute('aria-hidden', 'true')
     await expect(hero).toHaveAttribute('data-phase', 'static', { timeout: 5000 })
-    await expect(hero.locator('.level-hero__number')).toHaveText('74.50')
+    await expect(hero.locator('.level-hero__number')).toHaveText('74.54')
     await page.goto('/payments')
     await page.goto('/dashboard')
     await expect(page.locator(HERO)).toHaveAttribute('data-phase', 'static', { timeout: 15000 })

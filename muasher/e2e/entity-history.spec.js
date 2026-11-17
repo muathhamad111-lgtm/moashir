@@ -22,7 +22,7 @@ const historyRows = (page) => page.locator('.profile-history tbody tr')
 test('the entity sees its own change history without staff names', async ({ page }, testInfo) => {
   await seed(page, testInfo, ENTITY)
   await page.goto('/entity/profile')
-  await page.getByTestId('profile-history-card').locator('button').click()
+  await page.getByTestId('profile-history-open').click()
   const drawer = page.getByTestId('profile-history-drawer')
   await expect(drawer.getByTestId('profile-history-entry')).toHaveCount(4)
   await expect(drawer.getByTestId('profile-history-entry').nth(1)).toContainText(

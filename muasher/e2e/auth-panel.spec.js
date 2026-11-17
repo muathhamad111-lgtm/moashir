@@ -11,20 +11,7 @@ const VIEWPORTS = {
 }
 const DEV_OVERLAYS =
   '#__vue-devtools-container__, #vue-inspector-container { display: none !important; }'
-const COPY = {
-  ar: {
-    label: 'عن منصة مؤشر',
-    titles: ['معايير معلنة وموحّدة', 'تقييم مستقل ومحايد', 'نتائج تقود إلى التحسين'],
-  },
-  en: {
-    label: 'About Moashir',
-    titles: [
-      'Published, unified standards',
-      'Independent, impartial review',
-      'Results that drive improvement',
-    ],
-  },
-}
+const PANEL_LABEL = { ar: 'عن منصة مؤشر', en: 'About Moashir' }
 const AUTH_PAGES = [
   { path: '/auth/login', ready: '[name="identifier"]' },
   { path: '/auth/register', ready: '.auth-layout__card form' },
@@ -36,7 +23,7 @@ const SCREENS = [
   { name: 'login', path: '/auth/login', fullPage: false },
   { name: 'register', path: '/auth/register', fullPage: true },
 ]
-const PANEL_TEXT = ['.auth-value-card__title', '.auth-value-card__body']
+const FORM_TEXT = ['.auth-form__title', '.auth-form__switch', '.auth-layout__link']
 
 mkdirSync(SHOTS, { recursive: true })
 
@@ -76,10 +63,9 @@ function boxOf(page, selector) {
 test.describe('auth brand panel — semantics', () => {
   test.use({ viewport: VIEWPORTS.desktop })
 
-  test('the form comes first and the aside is named without a tagline', async ({
+  test('the form comes first and the named aside holds only the logo and a decorative trophy', async ({
     page,
   }, testInfo) => {
-    const copy = COPY[localeOf(testInfo)]
     await seedPreferences(page, { locale: localeOf(testInfo) })
     await open(page, '/auth/login')
 
@@ -92,27 +78,28 @@ test.describe('auth brand panel — semantics', () => {
     await expect(page.locator('h1')).toHaveCount(1)
     await expect(page.locator('main h1')).toHaveCount(1)
 
-    const aside = page.getByRole('complementary', { name: copy.label })
+    const aside = page.getByRole('complementary', { name: PANEL_LABEL[localeOf(testInfo)] })
     await expect(aside).toBeVisible()
-    await expect(aside.getByRole('heading', { level: 2 })).toHaveText(copy.titles)
-    await expect(page.locator('.auth-value-panel__heading')).toHaveCount(0)
-    await expect(aside.getByRole('list').getByRole('listitem')).toHaveCount(3)
-    await expect(page.locator('.auth-value-panel__footnote')).toHaveCount(0)
-    await expect(page.locator('.auth-layout__tagline, .illustration-slot')).toHaveCount(0)
+    await expect(aside.getByRole('heading')).toHaveCount(0)
+    await expect(aside.getByRole('listitem')).toHaveCount(0)
+    await expect(page.locator('.auth-value-card, .auth-value-panel__heading')).toHaveCount(0)
+    await expect(aside.locator('.auth-layout__trophy')).toHaveAttribute('aria-hidden', 'true')
+    await expect(aside.locator('.auth-layout__trophy img').first()).toBeVisible()
   })
 
-  test('the panel icons are the approved decorative glyphs', async ({ page }, testInfo) => {
-    await seedPreferences(page, { locale: localeOf(testInfo) })
+  test('the header row offers home, language and theme like the landing page', async ({
+    page,
+  }, testInfo) => {
+    await seedPreferences(page, { locale: localeOf(testInfo), theme: 'light' })
     await open(page, '/auth/login')
-
-    const icons = page.locator('aside.auth-layout__brand svg.app-icon')
-    await expect(icons).toHaveCount(3)
-    const names = await icons.evaluateAll((nodes) => nodes.map((node) => node.dataset.icon))
-    expect(names).toEqual(['list-check', 'user-check', 'chart-line'])
-    for (const icon of await icons.all()) {
-      await expect(icon).toHaveAttribute('aria-hidden', 'true')
-      await expect(icon).toHaveAttribute('focusable', 'false')
-    }
+    const toggle = page.locator('.auth-layout__meta .lp-theme-switch')
+    await expect(toggle).toHaveAttribute('aria-checked', 'false')
+    await toggle.click()
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+    await page.locator('.auth-layout__meta .lp-top__locale').click()
+    await expect(page.locator('html')).toHaveAttribute('lang', isEn(testInfo) ? 'ar' : 'en')
+    await page.locator('.auth-layout__link').click()
+    await expect(page).toHaveURL(/\/$/)
   })
 
   test('the login header carries the title only', async ({ page }, testInfo) => {
@@ -123,23 +110,28 @@ test.describe('auth brand panel — semantics', () => {
   })
 
   test('every auth page shares the same panel', async ({ page }, testInfo) => {
-    const copy = COPY[localeOf(testInfo)]
     await seedPreferences(page, { locale: localeOf(testInfo) })
     for (const { path, ready } of AUTH_PAGES) {
       await open(page, path, ready)
-      await expect(page.getByRole('complementary', { name: copy.label })).toBeVisible()
-      await expect(page.locator('.auth-value-card')).toHaveCount(3)
+      await expect(
+        page.getByRole('complementary', { name: PANEL_LABEL[localeOf(testInfo)] }),
+      ).toBeVisible()
+      await expect(page.locator('.auth-value-card')).toHaveCount(0)
       await expect(page.locator('h1')).toHaveCount(1)
     }
   })
 
-  test('panel text keeps AA contrast over the brand surface', async ({ page }, testInfo) => {
-    await seedPreferences(page, { locale: localeOf(testInfo), theme: 'light' })
-    await open(page, '/auth/login')
-    for (const selector of PANEL_TEXT) {
-      expect(await contrastOf(page, selector)).toBeGreaterThanOrEqual(AA_TEXT)
-    }
-  })
+  for (const theme of ['light', 'dark']) {
+    test(`form text and the primary button keep AA contrast in the ${theme} theme`, async ({
+      page,
+    }, testInfo) => {
+      await seedPreferences(page, { locale: localeOf(testInfo), theme })
+      await open(page, '/auth/login')
+      for (const selector of [...FORM_TEXT, '.auth-layout__card .btn--primary']) {
+        expect(await contrastOf(page, selector), selector).toBeGreaterThanOrEqual(AA_TEXT)
+      }
+    })
+  }
 })
 
 test.describe('auth brand panel — layout', () => {
@@ -152,14 +144,14 @@ test.describe('auth brand panel — layout', () => {
 
     const aside = await boxOf(page, 'aside.auth-layout__brand')
     const main = await boxOf(page, 'main.auth-layout__content')
-    expect(aside.width).toBe(main.width)
     expect(aside.y).toBe(main.y)
     expect(aside.x < main.x).toBe(isEn(testInfo))
-    await expect(page.locator('.auth-value-card').first()).toBeVisible()
-    await expect(page.locator('.auth-value-card').last()).toBeInViewport()
+    await expect(page.locator('.auth-layout__trophy')).toBeInViewport()
+    await expect(page.locator('.auth-layout__card')).toBeInViewport()
+    await noHorizontalOverflow(page)
   })
 
-  test('the panel stays in view while the long register form scrolls on a tall viewport', async ({
+  test('the panel stays in view while the long register form scrolls', async ({
     page,
   }, testInfo) => {
     await page.setViewportSize(VIEWPORTS.desktop)
@@ -169,10 +161,15 @@ test.describe('auth brand panel — layout', () => {
     await page.evaluate(() => window.scrollTo(0, 900))
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
     await expect(page.locator('.auth-layout__logo')).toBeInViewport()
-    await expect(page.locator('.auth-value-card').last()).toBeInViewport()
+    const card = await boxOf(page, '.auth-layout__card')
+    const fields = await page
+      .locator('.auth-layout__card .entity-form__grid')
+      .evaluate((grid) => grid.getBoundingClientRect())
+    expect(fields.left).toBeGreaterThanOrEqual(card.x)
+    expect(fields.right).toBeLessThanOrEqual(card.x + card.width)
   })
 
-  test('mobile shows a compact header above the form without cards', async ({ page }, testInfo) => {
+  test('mobile shows a compact logo band above the form', async ({ page }, testInfo) => {
     await page.setViewportSize(VIEWPORTS.mobile)
     await seedPreferences(page, { locale: localeOf(testInfo) })
     await open(page, '/auth/login')
@@ -180,10 +177,9 @@ test.describe('auth brand panel — layout', () => {
     const aside = await boxOf(page, 'aside.auth-layout__brand')
     const main = await boxOf(page, 'main.auth-layout__content')
     expect(aside.y + aside.height).toBeLessThanOrEqual(main.y + 1)
+    expect(aside.height).toBeLessThan(180)
     await expect(page.locator('.auth-layout__logo')).toBeVisible()
-    await expect(page.locator('.auth-value-panel__heading')).toHaveCount(0)
-    await expect(page.locator('.auth-value-panel__list')).toBeHidden()
-    await expect(page.getByRole('complementary').getByRole('listitem')).toHaveCount(0)
+    await expect(page.locator('.auth-layout__trophy')).toBeHidden()
     await expect(page.locator('main h1')).toBeInViewport()
     await noHorizontalOverflow(page)
   })
@@ -208,16 +204,4 @@ test.describe('auth brand panel — screenshots', () => {
       }
     }
   }
-
-  test('register scrolled light desktop', async ({ page }, testInfo) => {
-    await page.setViewportSize(VIEWPORTS.desktop)
-    await seedPreferences(page, { locale: localeOf(testInfo), theme: 'light' })
-    await open(page, '/auth/register')
-    await page.evaluate(() => window.scrollTo(0, 900))
-    await expect(page.locator('.auth-value-card').last()).toBeInViewport()
-    await settleFonts(page)
-    await page.screenshot({
-      path: `${SHOTS}/register-scrolled-light-desktop-${suffixOf(testInfo)}.png`,
-    })
-  })
 })

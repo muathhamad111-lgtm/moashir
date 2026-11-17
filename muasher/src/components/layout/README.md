@@ -26,14 +26,13 @@ route keeps its path for both audiences:
   LocaleSwitcher, settings shortcut, NotificationBell, avatar user menu (My account, entity profile, sign out).
   No theme toggle.
 - `PublicLayout` / `PublicNavbar` / `AppFooter` — public pages (base `.navbar` styles).
-- `AuthLayout` — centered card in `<main>` first, then the brand panel `<aside>` (logo on dark +
-  `auth/AuthValuePanel`: an `h2` that names the aside and the three value cards from
-  `constants/authPanel.js`). The aside sits at the
-  inline start through CSS `order`; below `lg` it is a compact header (logo + heading); from `lg`
-  with a tall viewport its inner column is sticky. Also hosts the maintenance page.
+- `AuthLayout` — the landing look (`.lp-auth`, landing tokens): `<main>` first with a top row (back-to-home link,
+  language button, landing theme switch) and the form card, then the brand panel `<aside>` (deep band, arrow
+  pattern, logo on dark and the floating trophy). The aside sits at the inline start through CSS `order`; below `lg`
+  it is a compact logo band; from `lg` its inner column is sticky. Also hosts the maintenance page.
 
 Styling: `_sidebar.scss`, `_identity-card.scss`, `_navbar.scss`,
-`_app-layout.scss`, `_portal-layout.scss`, `_portal-top-bar.scss`, `_attention-strip.scss`, `_mobile-tab-bar.scss`, `_public-layout.scss`, `_auth-layout.scss`, `_auth-value-panel.scss`, `_footer.scss`. No style block or
+`_app-layout.scss`, `_portal-layout.scss`, `_portal-top-bar.scss`, `_attention-strip.scss`, `_mobile-tab-bar.scss`, `_public-layout.scss`, `_auth-layout.scss`, `_footer.scss`. No style block or
 inline style in any `.vue`.
 The TTS look of the shared components inside the back office (buttons, fields, tables, menus, tabs, pagination,
 modals, badges, stats cards) lives in `src/styles/tts/` and applies only under `:root[data-shell='tts']`

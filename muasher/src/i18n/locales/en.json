@@ -1772,21 +1772,7 @@
       }
     },
     "panel": {
-      "label": "About Moashir",
-      "values": {
-        "standards": {
-          "title": "Published, unified standards",
-          "body": "One reference model. Every entity is measured against the same criteria and weights."
-        },
-        "review": {
-          "title": "Independent, impartial review",
-          "body": "Accredited assessors review the evidence using a documented methodology."
-        },
-        "improvement": {
-          "title": "Results that drive improvement",
-          "body": "A report on strengths and improvement areas for each criterion, plus indicators to track progress across cycles."
-        }
-      }
+      "label": "About Moashir"
     },
     "otp": {
       "title": "Verification code",
@@ -7851,7 +7837,6 @@
       },
       "history": {
         "title": "Profile change history",
-        "viewAll": "View full history",
         "allSections": "All sections",
         "filterLabel": "Filter the history by section",
         "empty": "No changes have been recorded yet.",

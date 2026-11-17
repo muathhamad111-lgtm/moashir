@@ -1,7 +1,7 @@
 /* eslint-disable playwright/no-conditional-in-test */
 import { mkdirSync } from 'node:fs'
 import { test, expect } from '@playwright/test'
-import { seedSignedIn } from './support/session'
+import { seedIncompleteProfile, seedSignedIn } from './support/session'
 import { settleFonts } from './support/screenshots'
 
 const SHOTS = 'e2e/__screenshots__/37a'
@@ -75,6 +75,7 @@ test.describe('entity portal shell', () => {
   })
 
   test('shows the attention strip with context and expands it inline', async ({ page }) => {
+    await seedIncompleteProfile(page)
     await open(page, '/dashboard', '[data-testid="attention-strip"]')
     const strip = page.locator('[data-testid="attention-strip"]')
     await expect(strip.locator('.attention-strip__list--desktop .attention-item')).toHaveCount(3)
@@ -209,6 +210,7 @@ test.describe('mobile portal', () => {
   })
 
   test('uses the bottom tab bar on hubs and the More screen for the rest', async ({ page }) => {
+    await seedIncompleteProfile(page)
     await open(page, '/dashboard', '.mobile-tab-bar')
     await expect(page.locator('[data-testid="portal-side-nav"]')).toBeHidden()
     await expect(page.locator('.attention-strip__mobile .attention-item')).toHaveCount(1)

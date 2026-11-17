@@ -17,7 +17,7 @@ const router = useRouter()
 const identity = usePortalIdentity()
 const { signOut } = usePortalSession()
 const popoverRef = ref(null)
-const { tier, reassessment } = useEntityLevel()
+const { ready, tier, reassessment } = useEntityLevel()
 
 function dismiss() {
   popoverRef.value?.dismiss()
@@ -44,7 +44,13 @@ async function onSignOut() {
         <span class="account-menu__entity">{{ identity.entityName.value }}</span>
         <span class="account-menu__user">{{ identity.userName.value }}</span>
       </span>
-      <LevelBadge class="account-menu__level" :tier="tier" size="s" :reassessment="reassessment" />
+      <LevelBadge
+        v-if="ready"
+        class="account-menu__level"
+        :tier="tier"
+        size="s"
+        :reassessment="reassessment"
+      />
       <AppIcon :name="isOpen ? 'chevron-up' : 'chevron-down'" class="account-menu__chevron" />
     </template>
     <template #default="{ headingId }">

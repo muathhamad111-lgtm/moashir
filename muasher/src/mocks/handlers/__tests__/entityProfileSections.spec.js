@@ -6,6 +6,7 @@ import { entityProfileChangesHandlers } from '@/mocks/handlers/entityProfileChan
 import { regionsHandlers } from '@/mocks/handlers/regions'
 import { resetEntitiesMock } from '@/mocks/stores/entityMockReset'
 import { MOCK_API_BASE, clearMockSession, seedMockSession, wireFetch } from '@/test-utils/mockApi'
+import { resetProfileScenarioAfterEach, startWithIncompleteProfile } from './profileScenarioSupport'
 
 const server = setupServer(
   ...entityEmailChangesHandlers,
@@ -52,9 +53,11 @@ afterEach(() => {
   clearMockSession()
 })
 afterAll(() => server.close())
+resetProfileScenarioAfterEach()
 
 describe('entity profile sections mock (Task-82b contract)', () => {
   it('counts 15 fields and reports the incomplete mock at 60 % by section', async () => {
+    startWithIncompleteProfile()
     seedMockSession(NAMAA)
     const { profile_completion: completion } = (await call('GET', '/entities/me')).body.data
     expect(completion).toMatchObject({ percent: 60, counted: 15, completed_count: 9 })
@@ -77,6 +80,7 @@ describe('entity profile sections mock (Task-82b contract)', () => {
   })
 
   it('saves one section, reports the changed fields and moves to 80 %', async () => {
+    startWithIncompleteProfile()
     seedMockSession(NAMAA)
     const saved = await call(
       'PATCH',

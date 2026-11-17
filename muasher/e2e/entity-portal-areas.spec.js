@@ -2,7 +2,7 @@ import { mkdirSync } from 'node:fs'
 import { deflateSync } from 'node:zlib'
 import { Buffer } from 'node:buffer'
 import { test, expect } from '@playwright/test'
-import { seedPreferences, seedSignedIn } from './support/session'
+import { seedIncompleteProfile, seedPreferences, seedSignedIn } from './support/session'
 import { forceMockFault } from './support/mockFaults'
 import { guardMoyasar } from './support/moyasarGuard'
 import { settleFonts } from './support/screenshots'
@@ -285,6 +285,7 @@ test.describe('organization profile', () => {
   })
 
   test('saves the identity section with the licence and the founding date', async ({ page }) => {
+    await seedIncompleteProfile(page)
     await open(page, '/entity/profile', '[data-section="identity"]')
     const percent = page.locator('.profile-completeness__percent')
     await expect(percent).toHaveText('60%')

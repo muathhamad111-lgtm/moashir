@@ -275,7 +275,7 @@ export const certificatesFixture = [
     levelLabel: LEVEL_LABELS.silver,
     status: 'issued',
     isTest: false,
-    percent: '74.50',
+    percent: '74.54',
     request: request(ACCREDITED_FIXTURE_IDS.completedEarlier, 'ACC-2026-000003'),
     entity: {
       id: 6001,
@@ -301,7 +301,7 @@ export const certificatesFixture = [
     levelLabel: LEVEL_LABELS.silver,
     status: 'superseded',
     isTest: false,
-    percent: '74.50',
+    percent: '74.54',
     request: request(ACCREDITED_FIXTURE_IDS.completedEarlier, 'ACC-2026-000003'),
     entity: {
       id: 6001,

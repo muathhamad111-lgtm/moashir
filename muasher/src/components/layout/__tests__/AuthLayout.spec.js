@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { createTestGlobals } from '@/test-utils'
+import { useUiStore } from '@/stores/ui'
 
 const FORM_SLOT = '<h1 class="auth-form__title">تسجيل الدخول</h1><form class="login-form"></form>'
 
@@ -26,40 +27,39 @@ describe('AuthLayout', () => {
     wrapper.unmount()
   })
 
-  it('names the aside without a tagline and keeps the form h1 the only h1', () => {
+  it('names the aside and keeps only the logo and a decorative trophy, without value cards', () => {
     const wrapper = mountLayout()
     const aside = wrapper.find('aside')
     expect(aside.attributes('aria-label')).toBe('عن منصة مؤشر')
-    expect(aside.find('.auth-value-panel__heading').exists()).toBe(false)
-    expect(wrapper.findAll('h1')).toHaveLength(1)
-    expect(wrapper.find('main h1').exists()).toBe(true)
-    expect(aside.findAll('h2')).toHaveLength(3)
-    wrapper.unmount()
-  })
-
-  it('shows the on-dark logo over the lattice and no illustration or tagline', () => {
-    const wrapper = mountLayout()
-    const aside = wrapper.find('aside')
     expect(aside.find('.auth-layout__logo').attributes('alt')).toBe('مؤشر')
-    expect(aside.find('.brand-pattern--lattice').exists()).toBe(true)
-    expect(aside.find('.illustration-slot').exists()).toBe(false)
-    expect(aside.find('.auth-layout__tagline').exists()).toBe(false)
-    expect(aside.text()).not.toContain('بوابة التقييم المؤسسي')
+    expect(aside.find('.auth-layout__trophy').attributes('aria-hidden')).toBe('true')
+    expect(aside.find('.auth-layout__pattern').attributes('aria-hidden')).toBe('true')
+    expect(aside.findAll('h2')).toHaveLength(0)
+    expect(aside.findAll('li')).toHaveLength(0)
+    expect(aside.find('.auth-value-card').exists()).toBe(false)
+    expect(wrapper.findAll('h1')).toHaveLength(1)
     wrapper.unmount()
   })
 
-  it('renders the English panel copy in English', () => {
+  it('names the aside in English', () => {
     const wrapper = mountLayout(createTestGlobals({ locale: 'en' }))
     expect(wrapper.find('aside').attributes('aria-label')).toBe('About Moashir')
-    expect(wrapper.find('aside h2').text()).toBe('Published, unified standards')
-    expect(wrapper.find('aside .auth-value-panel__footnote').exists()).toBe(false)
     wrapper.unmount()
   })
 
-  it('offers locale/theme switchers and a back-to-home link', () => {
-    const wrapper = mountLayout()
-    expect(wrapper.find('.auth-layout__meta').text()).toContain('English')
+  it('offers the language button, the theme switch and a back-to-home link', async () => {
+    const globals = createTestGlobals()
+    const wrapper = mountLayout(globals)
+    const ui = useUiStore(globals.pinia)
+    ui.setTheme('light')
+    await flushPromises()
+    expect(wrapper.find('.lp-top__locale').text()).toBe('EN')
     expect(wrapper.find('.auth-layout__link').text()).toBe('العودة إلى الرئيسية')
+    const toggle = wrapper.find('.lp-theme-switch')
+    expect(toggle.attributes('role')).toBe('switch')
+    await toggle.trigger('click')
+    await flushPromises()
+    expect(ui.theme).toBe('dark')
     wrapper.unmount()
   })
 
@@ -68,7 +68,7 @@ describe('AuthLayout', () => {
     await globals.router.push({ name: ROUTE_NAMES.PUBLIC_MAINTENANCE })
     const wrapper = mountLayout(globals)
     expect(wrapper.find('.auth-layout__link').exists()).toBe(false)
-    expect(wrapper.find('aside h2').exists()).toBe(true)
+    expect(wrapper.find('aside .auth-layout__logo').exists()).toBe(true)
     wrapper.unmount()
   })
 })

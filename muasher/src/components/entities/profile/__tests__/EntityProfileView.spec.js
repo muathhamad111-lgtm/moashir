@@ -258,9 +258,10 @@ describe('EntityProfileView', () => {
     wrapper.unmount()
   })
 
-  it('opens the history drawer from the history card with «كل الأقسام» first and selected', async () => {
+  it('opens the history drawer from the header with «كل الأقسام» first and selected', async () => {
     const wrapper = await factory()
-    await wrapper.find('.profile-history-card__link').trigger('click')
+    expect(wrapper.find('[data-testid="profile-account-card"]').exists()).toBe(false)
+    await wrapper.find('[data-testid="profile-history-open"]').trigger('click')
     await flushPromises()
     const chips = wrapper.findAll('[data-testid="profile-history-drawer"] .history-drawer__chip')
     expect(chips.at(0).text()).toBe('كل الأقسام')

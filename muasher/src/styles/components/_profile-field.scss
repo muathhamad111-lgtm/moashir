@@ -23,6 +23,12 @@
   font-size: var(--fs-base);
   font-weight: var(--fw-semibold);
   overflow-wrap: anywhere;
+
+  // Emails and links break only when they cannot fit, never at a hyphen mid-address.
+  bdi[dir='ltr'] {
+    max-inline-size: 100%;
+    overflow-wrap: break-word;
+  }
 }
 
 .profile-field__empty {

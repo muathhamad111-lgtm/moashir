@@ -6,8 +6,6 @@ import ProfileCompletionPrompt from '@/components/entities/ProfileCompletionProm
 import EntityIdentityHeader from './EntityIdentityHeader.vue'
 import EntityLogoDialog from './EntityLogoDialog.vue'
 import ProfileCompletenessCard from './ProfileCompletenessCard.vue'
-import ProfileAccountCard from './ProfileAccountCard.vue'
-import ProfileHistoryCard from './ProfileHistoryCard.vue'
 import ProfileHistoryDrawer from './ProfileHistoryDrawer.vue'
 import ProfileSectionCard from './ProfileSectionCard.vue'
 import { useProfileEditor } from '@/composables/useProfileEditor'
@@ -74,6 +72,7 @@ function fixSection(section) {
       :certificate="certificate"
       :can-edit="canEdit"
       @change-logo="logoOpen = true"
+      @history="openHistory()"
       @logo-expired="logo.refreshExpiredLink"
     />
     <div class="entity-profile__body">
@@ -100,8 +99,6 @@ function fixSection(section) {
             @fix="fixSection"
             @complete="completeProfile"
           />
-          <ProfileAccountCard />
-          <ProfileHistoryCard @open="openHistory()" />
         </aside>
         <div class="entity-profile__sections">
           <ProfileSectionCard

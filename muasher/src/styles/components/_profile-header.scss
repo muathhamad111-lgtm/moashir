@@ -58,7 +58,8 @@
   font-weight: var(--fw-bold);
 }
 
-.profile-header__logo-action {
+.profile-header__logo-action,
+.profile-header__history {
   @include flex(row, center, center, var(--space-1));
   min-block-size: var(--size-touch-target);
   padding-inline: var(--space-3);

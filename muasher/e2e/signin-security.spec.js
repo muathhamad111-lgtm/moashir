@@ -1,6 +1,6 @@
 import { mkdirSync } from 'node:fs'
 import { test, expect } from '@playwright/test'
-import { seedPreferences, seedSignedIn } from './support/session'
+import { seedIncompleteProfile, seedPreferences, seedSignedIn } from './support/session'
 import { settleFonts } from './support/screenshots'
 import {
   DEV_OTP_CODE,
@@ -287,6 +287,7 @@ test.describe('unified national number and mobile verification', () => {
   test('the entity profile edits the number and verifies the mobile by SMS', async ({
     page,
   }, testInfo) => {
+    await seedIncompleteProfile(page)
     await seedSignedIn(page, USERS.namaa, { locale: localeOf(testInfo) })
     await open(page, '/entity/profile', '[data-section="identity"]')
     const identity = page.locator('[data-section="identity"]')
