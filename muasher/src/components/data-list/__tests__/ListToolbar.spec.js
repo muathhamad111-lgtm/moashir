@@ -4,6 +4,9 @@ import { flushPromises, mount } from '@vue/test-utils'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import { useFilters } from '@/composables/useFilters'
 import { createTestGlobals } from '@/test-utils'
+import ExpandableSearch from '@/components/data-list/ExpandableSearch.vue'
+import { useAuthStore } from '@/stores/auth'
+import { sessionUserFor } from '@/test-utils/session'
 
 function mountToolbar(slots = {}) {
   const state = {}
@@ -124,5 +127,20 @@ describe('ListToolbar', () => {
     expect(buttons.at(-1)).toBe('page-export')
     expect(buttons[0]).toBe('page-action')
     wrapper.unmount()
+  })
+
+  it('shows the search as an open field in the back office, as in the unified design', async () => {
+    const globals = createTestGlobals({ locale: 'en' })
+    useAuthStore(globals.pinia).setUser(sessionUserFor(['system_admin']))
+    await globals.router.push('/dashboard')
+    const wrapper = mount(ExpandableSearch, {
+      props: { modelValue: '', placeholder: 'Search entities' },
+      global: globals,
+    })
+    expect(wrapper.find('.expandable-search__toggle').exists()).toBe(false)
+    expect(wrapper.find('input[type="search"]').attributes('placeholder')).toBe('Search entities')
+    expect(wrapper.find('.expandable-search__close').exists()).toBe(false)
+    await wrapper.setProps({ modelValue: 'Amal' })
+    expect(wrapper.find('.expandable-search__close').exists()).toBe(true)
   })
 })

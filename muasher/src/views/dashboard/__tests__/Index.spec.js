@@ -4,9 +4,13 @@ import DashboardIndex from '@/views/dashboard/Index.vue'
 import { useAuthStore } from '@/stores/auth'
 import { createTestGlobals } from '@/test-utils'
 import { dashboardService } from '@/services/dashboardService'
+import { sessionUserFor } from '@/test-utils/session'
 
 vi.mock('@/services/dashboardService', () => ({
-  dashboardService: { getBoard: vi.fn(() => new Promise(() => {})) },
+  dashboardService: {
+    getBoard: vi.fn(() => new Promise(() => {})),
+    getOverview: vi.fn(() => new Promise(() => {})),
+  },
 }))
 
 function mountWithRoles(roles) {
@@ -43,5 +47,23 @@ describe('dashboard entry (Index.vue)', () => {
     expect(wrapper.findComponent({ name: 'JourneyHome' }).exists()).toBe(true)
     expect(wrapper.find('.dashboard__title').exists()).toBe(false)
     expect(dashboardService.getBoard).not.toHaveBeenCalled()
+  })
+
+  it('shows the platform overview after the actions to permission holders only, in place of the admin board', () => {
+    ;[
+      [['system_admin'], true],
+      [['finance_officer'], false],
+      [['request_follower', 'assessor'], false],
+    ].forEach(([roles, shows]) => {
+      const globals = createTestGlobals({ locale: 'ar' })
+      useAuthStore(globals.pinia).setUser(sessionUserFor(roles))
+      const wrapper = shallowMount(DashboardIndex, {
+        global: { plugins: globals.plugins, renderStubDefaultSlot: true },
+      })
+      const staff = wrapper.findComponent({ name: 'StaffDashboard' })
+      expect(wrapper.findComponent({ name: 'ExecutiveOverview' }).exists()).toBe(shows)
+      expect(staff.exists()).toBe(true)
+      expect(staff.props('coveredBoards')).toEqual(shows ? ['system_admin'] : [])
+    })
   })
 })

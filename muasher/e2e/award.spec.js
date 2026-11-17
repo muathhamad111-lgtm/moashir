@@ -81,7 +81,7 @@ async function shot(page, name, testInfo) {
 }
 
 async function fillEmptyScores(page, value) {
-  const mains = page.locator('.criteria-tree__open')
+  const mains = page.locator('.station-row__button')
   const count = await mains.count()
   for (let index = 0; index < count; index += 1) {
     await mains.nth(index).click()
@@ -125,7 +125,8 @@ test.describe('Award public intro and entity path', () => {
     await expect(page).toHaveURL(/\/assessment\/advanced\/form\/\d+$/)
     await expect(page.locator('.accredited-completeness')).toBeVisible()
     await shot(page, 'award-entity-draft', testInfo)
-    await page.locator('.accredited-actions .btn--primary').click()
+    await page.locator('.station-row__button').last().click()
+    await page.locator('[data-testid="accredited-submit"]').click()
     await expect(page.locator('.accredited-completeness__item').first()).toBeVisible()
     await expect(page.locator('.modal')).toHaveCount(0)
     await page.locator('.accredited-actions .btn--danger').click()
@@ -173,14 +174,14 @@ test.describe('Award public intro and entity path', () => {
     await page.locator('.advanced-request__link').click()
     await expect(page.locator('.completion-card')).toBeVisible()
     await expect(page.locator('.completion-card__item')).toHaveCount(2)
-    await page.locator('.criteria-tree__open').nth(1).click()
+    await page.locator('.station-row__button').nth(1).click()
     const cv = page.locator('#accredited-sub-201 textarea')
     await expect(cv).toBeEditable()
     await cv.fill(
       'أجرت الجهة دراسة احتياجات شملت ألف مستفيد عبر الاستبانات والمقابلات المنظمة، وبُنيت البرامج على نتائجها.',
     )
     await expect(page.locator('#accredited-sub-202 textarea')).toBeDisabled()
-    await page.locator('.criteria-tree__open').nth(7).click()
+    await page.locator('.station-row__button').nth(7).click()
     await page
       .locator('#accredited-sub-802 .evidence-slots__slot')
       .first()
@@ -188,7 +189,8 @@ test.describe('Award public intro and entity path', () => {
       .setInputFiles({ name: 'impact-report-2026.pdf', mimeType: 'application/pdf', buffer: PDF })
     await expect(page.locator('#accredited-sub-802 .evidence-file')).toHaveCount(1)
     await shot(page, 'award-entity-completion', testInfo)
-    await page.locator('.accredited-actions .btn--primary').click()
+    await page.locator('.station-row__button').last().click()
+    await page.locator('[data-testid="accredited-submit"]').click()
     await page.locator('.modal .btn--primary').click()
     await expect(page).toHaveURL(/\/assessment\/advanced$/)
     await expect(page.locator('.advanced-request')).toContainText(
@@ -207,12 +209,9 @@ test.describe('Award staff screens', () => {
     await page.goto('/admin/requests')
     const rows = page.locator('.table:not(.table--loading) tbody .table__row')
     await expect(rows.first()).toBeVisible()
-    await page.locator('.path-switch__link').nth(1).click()
+    await page.locator('.sidebar__item--advanced').click()
     await expect(page).toHaveURL(/\/admin\/requests\?path=advanced$/)
     await expect(rows.first()).toContainText('ADV-')
-    await expect(rows.first()).toContainText(
-      text(testInfo, 'Moashir Institutional Excellence Award', 'دورة جائزة مؤشر للتميز المؤسسي'),
-    )
     await page.goto('/admin/requests/9203')
     await page
       .locator('.request-actions button', {

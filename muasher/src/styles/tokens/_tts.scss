@@ -1,0 +1,127 @@
+@use 'sass:map';
+
+$tts-neutral: (
+  0: #fafafa,
+  25: #f8f8f8,
+  50: #f0eff0,
+  100: #e3e1e5,
+  200: #c9c5cc,
+  300: #afaab3,
+  400: #8c8593,
+  500: #736c7a,
+  600: #403c44,
+  700: #2e2b31,
+  800: #201e21,
+  900: #100f10,
+);
+$tts-white: #ffffff;
+
+$tts-status: (
+  'danger': (
+    'soft': #fef0f0,
+    'solid': #f83a3a,
+    'text': #a20606,
+    'border': #fed8d8,
+    'ink': #7b0404,
+  ),
+  'success': (
+    'soft': #effefa,
+    'solid': #40c4aa,
+    'text': #1f6b5c,
+    'border': #ddf3ef,
+    'ink': #184e44,
+  ),
+  'warning': (
+    'soft': #fff3e0,
+    'solid': #ffa31a,
+    'text': #7a4900,
+    'border': #ffe9c7,
+    'ink': #7a4900,
+  ),
+  'info': (
+    'soft': #f0fbff,
+    'solid': #33cfff,
+    'text': #116b97,
+    'border': #d1f0fa,
+    'ink': #0c4e6e,
+  ),
+);
+
+$tts-default-primary: #98d8d3;
+$tts-default-on-primary: #100f10;
+$tts-default-primary-text: #547774;
+$tts-default-secondary: #0a2325;
+$tts-default-on-secondary: #ffffff;
+
+$tts-radius-control: 12px;
+$tts-radius-menu-item: 12px;
+$tts-radius-header: 14px;
+$tts-radius-card: 16px;
+$tts-radius-icon-tile: 10px;
+
+$tts-header-height: 3.875rem;
+$tts-sidebar-width: 17.5rem;
+$tts-page-gutter-sm: 1rem;
+$tts-page-gutter: 2.5rem;
+// A form section puts its title beside its fields only from this holder width.
+$tts-form-aside-min: 48rem;
+$tts-page-top: 1.5rem;
+$tts-body-gap: 1.5rem;
+$tts-body-gap-lg: 2.5rem;
+$tts-overlay-strong: 13%;
+$tts-overlay-hover: 22%;
+$tts-logo-height: 3rem;
+$tts-overlay-soft: 60%;
+$tts-primary-tint: 10%;
+$tts-primary-hover: 88%;
+
+$tts-control-height-sm: 2rem;
+$tts-control-height-md: 2.375rem;
+$tts-control-height-lg: 2.75rem;
+$tts-field-height: 2.75rem;
+$tts-search-height: 2.5rem;
+$tts-search-width: 17.5rem;
+$tts-radius-control-sm: 9px;
+$tts-radius-control-md: 11px;
+$tts-radius-field: 10px;
+$tts-radius-option: 8px;
+$tts-radius-checkbox: 5px;
+$tts-popup-shadow: 0 8px 42px rgba(10, 9, 11, 0.12);
+$tts-modal-shadow: 0 0 42px rgba(10, 9, 11, 0.24);
+$tts-toast-bg: rgba(56, 53, 59, 0.87);
+$tts-fs-xxs: 12px;
+$tts-fs-xs: 13px;
+$tts-fs-sm: 14px;
+$tts-fs-heading-md: 18px;
+$tts-fs-heading-lg: 20px;
+$tts-fs-display-xxs: 24px;
+$tts-fs-stat: 28px;
+$tts-fs-stat-min: 18px;
+// The card's content width minus its icon and gap (4rem), shared by ~5 font-sizes of a
+// long amount such as 22,425.00: full size whenever it fits, smaller only when it would overflow.
+$tts-fs-stat-fluid: calc((100cqi - 4rem) / 5);
+$tts-lh-display-xxs: 34px;
+$tts-lh-label-sm: 20px;
+$tts-lh-heading-lg: 28px;
+$tts-fw-label: 500;
+$tts-pagination-item: 2rem;
+$tts-empty-art: 4.5rem;
+$tts-stat-icon: 2.5rem;
+$tts-stat-icon-solid: 3rem;
+$tts-badge-dot: 0.375rem;
+$tts-switch-width: 2.5rem;
+$tts-switch-height: 1.5625rem;
+$tts-checkbox-size: 1.125rem;
+
+@function tts-neutral($step) {
+  @return map.get($tts-neutral, $step);
+}
+
+@function tts-status($name, $role) {
+  @return map.get(map.get($tts-status, $name), $role);
+}
+
+// Data-viz palette (validated with the dataviz checks on white): categorical slots in a
+// fixed order, and a one-hue ordinal ramp for ordered bands such as governance grades.
+$tts-chart-series: (#2a78d6, #eb6834, #1baf7a);
+$tts-chart-ordinal: (#86b6ef, #5598e7, #2a78d6, #1c5cab);

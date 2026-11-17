@@ -1,0 +1,402 @@
+@use '../mixins' as *;
+
+// Shared chart anatomy: recessive hairline grid, 2px lines, columns capped at 24px with a
+// rounded end, a 10% area wash, and text in text tokens (never the series colour).
+.chart {
+  position: relative;
+  margin: 0;
+  min-inline-size: 0;
+}
+
+.chart__plot {
+  position: relative;
+  border-radius: var(--radius-md);
+
+  // The plot reads left to right in both languages; its text must too, or an inherited
+  // RTL direction flips text-anchor and pushes axis labels into the plot.
+  svg {
+    display: block;
+    overflow: visible;
+    direction: ltr;
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.chart__grid line {
+  stroke: var(--chart-grid);
+  stroke-width: 1;
+}
+
+.chart__tick {
+  fill: var(--chart-axis);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  dominant-baseline: middle;
+}
+
+.chart__line {
+  fill: none;
+  stroke: var(--chart-series);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.chart__area {
+  fill: var(--chart-series);
+  fill-opacity: 0.08;
+}
+
+.chart__bar {
+  fill: var(--chart-series);
+}
+
+.chart__band {
+  fill: var(--chart-grid);
+}
+
+.chart__focus line {
+  stroke: var(--chart-axis);
+  stroke-width: 1;
+}
+
+.chart__dot {
+  fill: var(--chart-series);
+  stroke: var(--theme-surface-solid);
+  stroke-width: 2;
+}
+
+.chart__hit {
+  fill: transparent;
+  cursor: crosshair;
+}
+
+.chart-legend {
+  @include flex(row, center, flex-start, var(--space-2) var(--space-4));
+  flex-wrap: wrap;
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-secondary);
+
+  &--stacked {
+    @include flex(column, stretch, flex-start, var(--space-2));
+    margin: 0;
+  }
+}
+
+.chart-legend__item {
+  @include flex(row, center, flex-start, var(--space-2));
+}
+
+.chart-legend__toggle {
+  @include flex(row, center, flex-start, var(--space-2));
+  min-block-size: var(--size-toolbar-control);
+  padding-inline: var(--space-3);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-pill);
+  background-color: var(--theme-surface-solid);
+  color: var(--theme-text);
+  font: inherit;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+
+  &[aria-pressed='false'] {
+    color: var(--theme-text-muted);
+
+    .chart-legend__swatch {
+      background-color: transparent;
+      box-shadow: inset 0 0 0 var(--border-width) var(--chart-axis);
+    }
+  }
+
+  &:hover {
+    border-color: var(--theme-border-strong);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.chart-legend__swatch {
+  inline-size: var(--space-3);
+  block-size: var(--space-3);
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background-color: var(--chart-swatch, var(--level-graphic, var(--chart-muted)));
+}
+
+.chart-legend__label {
+  flex: 1;
+}
+
+.chart-legend__link {
+  color: var(--theme-accent-text);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+
+  &:hover {
+    color: var(--theme-heading);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.chart-legend__value {
+  color: var(--theme-heading);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-legend__share {
+  min-inline-size: 3.5em;
+  color: var(--theme-text-muted);
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-tooltip {
+  position: absolute;
+  inset-block-start: 0;
+  left: var(--chart-tooltip-x);
+  z-index: var(--z-tooltip);
+  min-inline-size: 10rem;
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface-solid);
+  box-shadow: var(--shadow-md);
+  font-size: var(--fs-xs);
+  pointer-events: none;
+  transform: translateX(var(--space-3));
+
+  &--flip {
+    transform: translateX(calc(-100% - var(--space-3)));
+  }
+}
+
+.chart-tooltip__title {
+  margin: 0 0 var(--space-1);
+  color: var(--theme-heading);
+  font-weight: var(--fw-semibold);
+}
+
+.chart-tooltip__rows {
+  margin: 0;
+}
+
+.chart-tooltip__row {
+  @include flex(row, center, space-between, var(--space-3));
+
+  dt {
+    @include flex(row, center, flex-start, var(--space-2));
+    color: var(--theme-text-secondary);
+  }
+
+  dd {
+    margin: 0;
+    color: var(--theme-heading);
+    font-weight: var(--fw-semibold);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.chart-tooltip__swatch {
+  inline-size: var(--space-2);
+  block-size: var(--space-2);
+  border-radius: var(--radius-circle);
+  background-color: var(--chart-swatch);
+}
+
+.chart-table {
+  @include visually-hidden;
+}
+
+.chart-donut {
+  position: relative;
+  inline-size: min(100%, 11rem);
+  margin-inline: auto;
+}
+
+.chart-donut__ring {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+}
+
+.chart-donut__slice {
+  fill: var(--chart-series, var(--level-graphic));
+  stroke: var(--theme-surface-solid);
+  stroke-width: 2;
+}
+
+.chart-donut__empty {
+  fill: none;
+  stroke: var(--chart-grid);
+  stroke-width: 24;
+}
+
+.chart-donut__total {
+  @include flex(column, center, center);
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  pointer-events: none;
+}
+
+.chart-donut__total-value {
+  color: var(--theme-heading);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+}
+
+.chart-donut__total-label {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}
+
+.chart--donut {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: center;
+
+  // Ring beside its legend only when the panel (an inline-size container) has room.
+  @container (min-width: 28rem) {
+    grid-template-columns: 11rem minmax(0, 1fr);
+  }
+}
+
+.chart--gauge {
+  @include flex(column, center, flex-start, var(--space-1));
+  text-align: center;
+}
+
+.chart-gauge__arc {
+  inline-size: min(100%, 14rem);
+  block-size: auto;
+}
+
+.chart-gauge__track,
+.chart-gauge__fill {
+  fill: none;
+  stroke-width: 18;
+  stroke-linecap: round;
+}
+
+.chart-gauge__track {
+  stroke: var(--chart-grid);
+}
+
+.chart-gauge__fill {
+  stroke: var(--chart-single);
+}
+
+.chart-gauge__value {
+  margin: calc(var(--space-8) * -1) 0 0;
+  color: var(--theme-heading);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+}
+
+.chart-gauge__note {
+  margin: 0;
+  color: var(--theme-text-muted);
+  font-size: var(--fs-sm);
+}
+
+// A whole split into parts: a thin segmented bar over the list of its parts.
+.chart--segmented {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.chart-segmented__bar {
+  @include flex(row, stretch, flex-start, var(--space-1));
+  block-size: var(--space-2);
+}
+
+.chart-segmented__part {
+  flex-basis: 0;
+  min-inline-size: var(--space-1);
+  border-radius: var(--radius-pill);
+  background-color: var(--chart-series);
+}
+
+.chart-segmented__list {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chart-segmented__row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
+  color: var(--theme-text);
+}
+
+.chart-segmented__share {
+  color: var(--theme-heading);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-segmented__count,
+.chart-progress__count {
+  color: var(--theme-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+// A ranked share list: each row names its part, then a thin bar of its share.
+.chart-progress {
+  @include flex(column, stretch, flex-start, var(--space-4));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chart-progress__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  row-gap: var(--space-2);
+  font-size: var(--fs-sm);
+  color: var(--theme-text);
+}
+
+.chart-progress__figures {
+  @include flex(row, baseline, flex-end, var(--space-1));
+  color: var(--theme-heading);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-progress__track {
+  grid-column: 1 / -1;
+  block-size: var(--space-1);
+  border-radius: var(--radius-pill);
+  background-color: var(--chart-grid);
+  overflow: hidden;
+}
+
+.chart-progress__fill {
+  display: block;
+  block-size: 100%;
+  border-radius: var(--radius-pill);
+  background-color: var(--chart-single);
+}
+
+.chart-progress__empty {
+  margin: 0;
+  color: var(--theme-text-muted);
+  font-size: var(--fs-sm);
+}

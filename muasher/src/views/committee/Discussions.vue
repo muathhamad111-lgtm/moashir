@@ -21,7 +21,7 @@ const { pagination, setPage } = paginator
 useHead({ title: () => t('award.discussion.title') })
 
 const statusOptions = computed(() => [
-  { value: '', label: t('award.work.filters.allStatuses') },
+  { value: '', label: t('dataList.filter.all') },
   ...Object.values(DISCUSSION_STATUSES).map((value) => ({
     value,
     label: t(`award.states.discussion.${value}`),

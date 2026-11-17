@@ -11,7 +11,6 @@ import { ROUTE_NAMES } from '@/constants/routeNames'
 import { NAVBAR_TOOLS_INLINE_MIN_WIDTH } from '@/constants/navigation'
 import { SEARCH_INLINE_MIN_NAVBAR_WIDTH, canUseGlobalSearch } from '@/constants/globalSearch'
 import LocaleSwitcher from '@/components/ui/LocaleSwitcher.vue'
-import ThemeToggle from '@/components/ui/ThemeToggle.vue'
 import NotificationBell from '@/components/notifications/NotificationBell.vue'
 import AppMenu from '@/components/ui/AppMenu.vue'
 import Badge from '@/components/ui/Badge.vue'
@@ -61,7 +60,6 @@ const roleLabels = computed(() => auth.roles.map((role) => t(`users.roleLabels.$
     <div class="navbar__actions">
       <template v-if="!menuHoldsTools">
         <LocaleSwitcher class="navbar__locale" />
-        <ThemeToggle />
         <router-link
           v-if="canAccessSettings"
           class="btn btn--ghost btn--icon navbar__settings"

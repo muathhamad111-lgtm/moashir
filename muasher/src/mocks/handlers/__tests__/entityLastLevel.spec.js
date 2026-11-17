@@ -120,8 +120,8 @@ describe('entity last level mock — counting', () => {
   it('moves expired entities out of their level bars on the dashboard chart', async () => {
     seedMockSession(ADMIN)
     setScenario(CERTIFICATE_SCENARIOS.EXPIRED)
-    const summary = (await call('/dashboard/summary?board=system_admin')).body.data
-    const bars = summary.widgets.find((widget) => widget.key === 'entities_by_level').data
+    const overview = (await call('/dashboard/overview')).body.data
+    const bars = overview.snapshot.find((widget) => widget.key === 'entities_by_level').data
     const counts = Object.fromEntries(bars.map((bar) => [bar.key, bar.count]))
     expect([
       counts.participation,

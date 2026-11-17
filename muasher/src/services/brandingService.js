@@ -10,13 +10,19 @@ import { payloadShape } from '@/utils/payloadShape'
 import { serviceRequest } from './serviceRequest'
 import { DOMAIN_REJECTIONS } from './domainRequest'
 
-function toPaletteEntry(entry) {
+function toScheme(scheme) {
+  if (!scheme) return null
   return {
-    token: entry.token,
-    hex: entry.hex,
-    textOnLightHex: entry.textOnLightHex,
-    label: entry.label ?? null,
+    primary: scheme.primary,
+    onPrimary: scheme.onPrimary,
+    primaryText: scheme.primaryText,
+    secondary: scheme.secondary,
+    onSecondary: scheme.onSecondary,
   }
+}
+
+function toColors(colors) {
+  return colors ? { primary: colors.primary, secondary: colors.secondary } : null
 }
 
 function toLogos(data) {
@@ -30,9 +36,10 @@ function toLogos(data) {
 function toTheme(data) {
   if (!data) return null
   return {
-    accentToken: data.accentToken,
+    colors: { primary: data.primaryColor, secondary: data.secondaryColor },
+    scheme: toScheme(data.scheme),
+    defaultColors: toColors(data.defaultColors),
     logos: toLogos(data),
-    palette: (data.palette ?? []).map(toPaletteEntry),
     updatedAt: data.updatedAt ?? null,
   }
 }
@@ -59,8 +66,8 @@ export const brandingService = {
   get() {
     return themeRequest('branding.get', () => apiClient.get('/settings/branding'))
   },
-  update({ accentToken, reason = null }) {
-    const payload = withReason({ accentToken }, reason)
+  update({ primaryColor, secondaryColor, reason = null }) {
+    const payload = withReason({ primaryColor, secondaryColor }, reason)
     return themeRequest('branding.update', () => apiClient.put('/settings/branding', payload), {
       payloadShape: payloadShape(payload),
     })

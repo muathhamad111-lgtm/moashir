@@ -17,29 +17,23 @@ defineProps({
 const emit = defineEmits(['filter'])
 const { t } = useI18n()
 
-function withAll(allKey, values, prefix) {
+function withAll(values, prefix) {
   return [
-    { value: '', label: t(allKey) },
+    { value: '', label: t('dataList.filter.all') },
     ...values.map((value) => ({ value, label: t(`${prefix}.${value}`) })),
   ]
 }
 
 const statusOptions = computed(() => [
-  { value: '', label: t('finance.filters.allStatuses') },
+  { value: '', label: t('dataList.filter.all') },
   ...Object.entries(MY_PAYMENT_STATUS_GROUPS).map(([group, statuses]) => ({
     value: statuses.join(','),
     label: t(`portal.payments.statusGroups.${group}`),
   })),
 ])
-const purposeOptions = computed(() =>
-  withAll('finance.filters.allServices', PAYMENT_PURPOSE_VALUES, 'finance.purposes'),
-)
-const channelOptions = computed(() =>
-  withAll('finance.filters.allChannels', PAYMENT_CHANNEL_VALUES, 'finance.channels'),
-)
-const methodOptions = computed(() =>
-  withAll('finance.filters.allMethods', PAYMENT_METHOD_VALUES, 'finance.methods'),
-)
+const purposeOptions = computed(() => withAll(PAYMENT_PURPOSE_VALUES, 'finance.purposes'))
+const channelOptions = computed(() => withAll(PAYMENT_CHANNEL_VALUES, 'finance.channels'))
+const methodOptions = computed(() => withAll(PAYMENT_METHOD_VALUES, 'finance.methods'))
 </script>
 
 <template>

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Settings;
 
-use App\Enums\Settings\AccentToken;
+use App\Data\Settings\BrandColors;
 use App\Models\Files\StoredFile;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +12,8 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
- * @property AccentToken $accent_token
+ * @property string $primary_color
+ * @property string $secondary_color
  * @property int|null $logo_light_file_id
  * @property int|null $favicon_file_id
  * @property int|null $site_logo_file_id
@@ -43,14 +44,9 @@ final class BrandingTheme extends Model
         return self::query()->with(['logoLight', 'logoDark', 'favicon', 'siteLogo'])->findOrFail(self::SINGLETON_ID);
     }
 
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    public function colors(): BrandColors
     {
-        return [
-            'accent_token' => AccentToken::class,
-        ];
+        return new BrandColors($this->primary_color, $this->secondary_color);
     }
 
     /**

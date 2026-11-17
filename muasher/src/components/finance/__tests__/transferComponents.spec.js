@@ -192,7 +192,7 @@ describe('TransferQueueFilters', () => {
     })
     const accountSelect = wrapper.findAllComponents(AppSelect)[0]
     expect(accountSelect.props('options')).toEqual([
-      { value: '', label: 'All accounts' },
+      { value: '', label: 'All' },
       { value: 'a-1', label: 'Example Bank · ends in 7519' },
       { value: 'a-2', label: 'Sample Bank · ends in 7890 (Inactive)' },
       { value: 'a-3', label: 'Al-Waha Bank · ends in 0011 (Archived)' },

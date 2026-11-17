@@ -8,22 +8,24 @@ import DashboardBoardNav from './DashboardBoardNav.vue'
 import DashboardCards from './DashboardCards.vue'
 import DashboardWidget from './DashboardWidget.vue'
 import { useStaffDashboard } from '@/composables/useStaffDashboard'
-import { EXECUTIVE_BOARD } from '@/constants/dashboardBoards'
 import { formatRiyadhDateTime } from '@/utils/datetime'
 
 const props = defineProps({
-  fixedBoard: { type: String, default: '' },
+  // Boards whose figures the overview above already covers: their section is not repeated.
+  coveredBoards: { type: Array, default: () => [] },
 })
 
 const { t, locale } = useI18n()
-const { summary, status, errorMessage, board, boards, load } = useStaffDashboard({
-  fixedBoard: props.fixedBoard || null,
-})
+const { summary, status, errorMessage, board, boards, load } = useStaffDashboard()
 
-const switchableBoards = computed(() => boards.value.filter((item) => item !== EXECUTIVE_BOARD))
-const showsBoardNav = computed(
-  () => !props.fixedBoard && switchableBoards.value.length > 1 && Boolean(board.value),
+const shownBoards = computed(() =>
+  boards.value.filter((item) => !props.coveredBoards.includes(item)),
 )
+const showsBoard = computed(
+  () => Boolean(board.value) && !props.coveredBoards.includes(board.value),
+)
+// Offered whenever another board can be opened, even while the current one is covered.
+const showsBoardNav = computed(() => shownBoards.value.some((item) => item !== board.value))
 const boardTitle = computed(() => (board.value ? t(`dashboard.boards.${board.value}`) : ''))
 
 const generatedAt = computed(() =>
@@ -35,14 +37,15 @@ onMounted(load)
 
 <template>
   <div class="staff-dashboard">
-    <DashboardBoardNav v-if="showsBoardNav" :boards="switchableBoards" :current="board" />
-    <ActionCenter
-      v-if="!fixedBoard"
-      :items="summary?.actionCenter ?? []"
-      :loading="status === 'loading'"
-    />
+    <ActionCenter :items="summary?.actionCenter ?? []" :loading="status === 'loading'" />
+    <slot />
+    <DashboardBoardNav v-if="showsBoardNav" :boards="shownBoards" :current="board" />
 
-    <div v-if="status === 'loading'" class="staff-dashboard__loading" aria-busy="true">
+    <div
+      v-if="status === 'loading' && !coveredBoards.length"
+      class="staff-dashboard__loading"
+      aria-busy="true"
+    >
       <Skeleton variant="block" :count="2" />
     </div>
     <ErrorState
@@ -51,13 +54,12 @@ onMounted(load)
       @retry="load"
     />
     <section
-      v-else-if="summary"
+      v-else-if="summary && showsBoard"
       class="staff-dashboard__board"
-      :aria-labelledby="fixedBoard ? undefined : 'dashboard-board-title'"
-      :aria-label="fixedBoard ? boardTitle : undefined"
+      aria-labelledby="dashboard-board-title"
       :data-board="board"
     >
-      <h2 v-if="!fixedBoard" id="dashboard-board-title" class="staff-dashboard__board-title">
+      <h2 id="dashboard-board-title" class="staff-dashboard__board-title">
         {{ boardTitle }}
       </h2>
       <DashboardCards :cards="summary.cards" />

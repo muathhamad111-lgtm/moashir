@@ -41,10 +41,10 @@ export const permissionCatalogFixture = [
   {
     key: 'dashboard.executive.view',
     module: 'dashboard',
-    label: { ar: 'عرض اللوحة التنفيذية', en: 'View the executive dashboard' },
+    label: { ar: 'عرض النظرة العامة في لوحة المعلومات', en: 'View the dashboard overview' },
     description: {
-      ar: 'لوحة تنفيذية للقراءة فقط مبنية على البيانات القائمة.',
-      en: 'Read-only executive board built from existing data.',
+      ar: 'مؤشرات المنصة ورسوماتها لفترة زمنية مختارة مقارنةً بالفترة السابقة، للقراءة فقط.',
+      en: 'Read-only platform indicators and charts for a chosen period, compared with the previous one.',
     },
     system: true,
     lockedToRoles: [],

@@ -43,7 +43,6 @@ const savedAt = computed(() =>
           }}</Badge>
         </div>
       </div>
-      <slot name="actions" />
     </div>
     <ProgressMeter
       :label="t('portal.assessments.current.progress')"

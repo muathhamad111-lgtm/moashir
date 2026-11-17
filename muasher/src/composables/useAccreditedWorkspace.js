@@ -8,7 +8,7 @@ import { useAccreditedSubmit } from '@/composables/useAccreditedSubmit'
 import { useConfirm } from '@/composables/useConfirm'
 import { acceptOf } from '@/utils/accredited/evidenceRules'
 
-export function useAccreditedWorkspace({ assessmentId, onSubmitted, completeness }) {
+export function useAccreditedWorkspace({ assessmentId, onSubmitted }) {
   const { t } = useI18n()
   const { confirm } = useConfirm()
   const formState = useAccreditedForm(assessmentId)
@@ -21,7 +21,7 @@ export function useAccreditedWorkspace({ assessmentId, onSubmitted, completeness
     cvDrafts,
     onRejected: rejection.handle,
     onSubmitted,
-    onIncomplete: () => nextTick(() => completeness.value?.focus()),
+    onIncomplete: () => revealFirstMissing(),
   })
   const activeMainId = ref(null)
   const refreshing = ref(false)
@@ -33,6 +33,8 @@ export function useAccreditedWorkspace({ assessmentId, onSubmitted, completeness
     () => mains.value.find((main) => main.id === activeMainId.value) ?? mains.value[0] ?? null,
   )
   const activeIndex = computed(() => mains.value.indexOf(activeMain.value))
+  const previousMain = computed(() => mains.value[activeIndex.value - 1] ?? null)
+  const nextMain = computed(() => mains.value[activeIndex.value + 1] ?? null)
 
   watch(
     () => form.value?.cv,
@@ -50,6 +52,12 @@ export function useAccreditedWorkspace({ assessmentId, onSubmitted, completeness
     if (main) activeMainId.value = main.id
     await nextTick()
     document.getElementById(`accredited-sub-${subId}`)?.focus()
+  }
+
+  function revealFirstMissing() {
+    const missing = form.value?.missing
+    const first = missing?.missingCv?.[0] ?? missing?.missingAttachments?.[0] ?? null
+    return first?.subCriterionId ? revealSub(first.subCriterionId) : Promise.resolve()
   }
 
   async function onRemove(row) {
@@ -86,6 +94,8 @@ export function useAccreditedWorkspace({ assessmentId, onSubmitted, completeness
     mains,
     activeMain,
     activeIndex,
+    previousMain,
+    nextMain,
     refreshing,
     selectMain,
     revealSub,

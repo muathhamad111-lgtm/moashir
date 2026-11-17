@@ -1,0 +1,109 @@
+@use 'sass:list';
+@use '../tokens' as *;
+
+:root[data-shell='tts'] {
+  --brand-primary: #{$tts-default-primary};
+  --brand-on-primary: #{$tts-default-on-primary};
+  --brand-primary-text: #{$tts-default-primary-text};
+  --brand-secondary: #{$tts-default-secondary};
+  --brand-on-secondary: #{$tts-default-on-secondary};
+  --brand-primary-tint: color-mix(
+    in srgb,
+    var(--brand-primary) #{$tts-primary-tint},
+    #{$tts-white}
+  );
+  --brand-primary-hover: color-mix(
+    in srgb,
+    var(--brand-primary) #{$tts-primary-hover},
+    #{tts-neutral(900)}
+  );
+  --brand-on-secondary-overlay: color-mix(
+    in srgb,
+    var(--brand-on-secondary) #{$tts-overlay-strong},
+    transparent
+  );
+  --brand-on-secondary-hover: color-mix(
+    in srgb,
+    var(--brand-on-secondary) #{$tts-overlay-hover},
+    transparent
+  );
+  --brand-on-secondary-soft: color-mix(
+    in srgb,
+    var(--brand-on-secondary) #{$tts-overlay-soft},
+    var(--brand-secondary)
+  );
+
+  color-scheme: light;
+  --theme-bg: #{tts-neutral(25)};
+  --theme-surface: #{$tts-white};
+  --theme-surface-raised: #{tts-neutral(0)};
+  --theme-surface-solid: #{$tts-white};
+  --theme-bar-bg: #{$tts-white};
+  --theme-tint: #{tts-neutral(0)};
+  --theme-text: #{tts-neutral(600)};
+  --theme-text-secondary: #{tts-neutral(600)};
+  --theme-text-muted: #{tts-neutral(500)};
+  --theme-heading: #{tts-neutral(900)};
+  --theme-border: #{tts-neutral(50)};
+  --theme-border-strong: #{tts-neutral(200)};
+  --theme-input-border: #{tts-neutral(200)};
+  --theme-accent: var(--brand-primary);
+  --theme-accent-text: var(--brand-primary-text);
+  --theme-on-accent: var(--brand-on-primary);
+  --theme-accent-soft: var(--brand-primary-tint);
+  --theme-accent-hover: var(--brand-primary-hover);
+  --theme-danger-text: #{tts-status('danger', 'text')};
+  --theme-danger-soft: #{tts-status('danger', 'soft')};
+  --theme-success-text: #{tts-status('success', 'text')};
+  --theme-success-soft: #{tts-status('success', 'soft')};
+  --theme-warning-text: #{tts-status('warning', 'text')};
+  --theme-warning-soft: #{tts-status('warning', 'soft')};
+  --theme-info-text: #{tts-status('info', 'text')};
+  --content-bg: var(--theme-bg);
+  --navbar-bg: var(--brand-secondary);
+  --focus-ring-color: var(--brand-primary-text);
+  --btn-radius: #{$tts-radius-control};
+  --card-radius: #{$tts-radius-card};
+  --card-shadow: none;
+  --data-ink: var(--brand-primary-text);
+  --data-track: #{tts-neutral(50)};
+
+  --sidebar-bg: #{$tts-white};
+  --sidebar-border: #{tts-neutral(50)};
+  --sidebar-text: #{tts-neutral(600)};
+  --sidebar-caption: #{tts-neutral(500)};
+  --sidebar-hover-bg: #{tts-neutral(50)};
+  --sidebar-hover-text: #{tts-neutral(900)};
+  --sidebar-active-bg: var(--brand-primary);
+  --sidebar-active-text: var(--brand-on-primary);
+  --sidebar-count-bg: #{tts-neutral(50)};
+  --sidebar-focus-ring: var(--brand-primary-text);
+  --sidebar-divider: #{tts-neutral(50)};
+  --sidebar-path-accredited: var(--path-accredited-text);
+  --sidebar-path-advanced: var(--path-advanced-text);
+
+  --chart-series-1: #{list.nth($tts-chart-series, 1)};
+  --chart-series-2: #{list.nth($tts-chart-series, 2)};
+  --chart-series-3: #{list.nth($tts-chart-series, 3)};
+  --chart-ordinal-1: #{list.nth($tts-chart-ordinal, 1)};
+  --chart-ordinal-2: #{list.nth($tts-chart-ordinal, 2)};
+  --chart-ordinal-3: #{list.nth($tts-chart-ordinal, 3)};
+  --chart-ordinal-4: #{list.nth($tts-chart-ordinal, 4)};
+  --chart-single: var(--brand-primary-text);
+  --chart-muted: #{tts-neutral(200)};
+  --chart-level-none: #{tts-neutral(200)};
+  --chart-level-progress: #{tts-neutral(400)};
+  --chart-level-participation: #{tts-neutral(600)};
+  --chart-grid: #{tts-neutral(50)};
+  --chart-axis: #{tts-neutral(500)};
+
+  --tts-header-height: #{$tts-header-height};
+  --tts-sidebar-width: #{$tts-sidebar-width};
+  --tts-page-gutter: #{$tts-page-gutter-sm};
+  --tts-page-top: #{$tts-page-gutter-sm};
+  --tts-body-gap: #{$tts-body-gap};
+  --tts-radius-header: #{$tts-radius-header};
+  --tts-logo-height: #{$tts-logo-height};
+  --tts-radius-menu-item: #{$tts-radius-menu-item};
+  --tts-radius-icon-tile: #{$tts-radius-icon-tile};
+}

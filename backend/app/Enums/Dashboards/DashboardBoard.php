@@ -18,7 +18,6 @@ enum DashboardBoard: string
     case CriteriaOfficer = 'criteria_officer';
     case FinanceOfficer = 'finance_officer';
     case Entity = 'entity';
-    case Executive = 'executive';
 
     public static function ofRole(RoleKey $role): self
     {

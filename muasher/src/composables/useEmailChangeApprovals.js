@@ -27,7 +27,7 @@ export function useEmailChangeApprovals() {
 
   const statusOptions = computed(() => [
     ...FILTER_STATUSES.map((value) => ({ value, label: t(statusLabelKey(value)) })),
-    { value: 'all', label: t('entities.emailChanges.allStatuses') },
+    { value: 'all', label: t('dataList.filter.all') },
   ])
 
   function entityName(change) {

@@ -3,6 +3,7 @@ import { flushPromises } from '@vue/test-utils'
 import { computed } from 'vue'
 import { withSetup } from '@/test-utils/withSetup'
 import { useRequestQueue } from '@/composables/useRequestQueue'
+import { useFilterDraft } from '@/composables/useFilterDraft'
 import { requestsService } from '@/services/requestsService'
 
 vi.mock('@/services/requestsService', () => ({
@@ -34,7 +35,7 @@ async function mountAt(path) {
 
 describe('useRequestQueue', () => {
   it('serves the path of the link with the status of that path', async () => {
-    const { api, globals } = await mountAt('/admin/requests')
+    const { globals } = await mountAt('/admin/requests')
     expect(lastParams()).toMatchObject({ 'filter[path]': 'accredited' })
     await globals.router.push('/admin/requests?status=submitted,awaiting_review_assignment')
     await flushPromises()
@@ -50,7 +51,6 @@ describe('useRequestQueue', () => {
       'filter[path]': 'advanced',
       'filter[status]': 'awaiting-review-assignment',
     })
-    expect(api.linkQuery.value).toEqual({ status: 'submitted,awaiting_review_assignment' })
   })
 
   it('applies the overdue link and drops the link status once the user picks a status', async () => {
@@ -63,5 +63,21 @@ describe('useRequestQueue', () => {
     expect(globals.router.currentRoute.value.query.status).toBeUndefined()
     expect(lastParams()).toMatchObject({ 'filter[status]': 'completed' })
     expect(api.pathCounts.value).toEqual(COUNTS)
+  })
+
+  it('does not count the path from the sidebar as an applied filter', async () => {
+    const { api, globals } = await mountAt('/admin/requests?path=advanced')
+    const draft = withSetup(() =>
+      useFilterDraft({
+        filters: api.filters.filters,
+        defaults: api.filterDefaults,
+        setFilter: api.chooseFilter,
+      }),
+    ).api
+    expect(api.filters.filters.path).toBe('advanced')
+    expect(draft.activeCount.value).toBe(0)
+    await globals.router.push('/admin/requests?path=advanced&overdue=true')
+    await flushPromises()
+    expect(draft.activeCount.value).toBe(1)
   })
 })

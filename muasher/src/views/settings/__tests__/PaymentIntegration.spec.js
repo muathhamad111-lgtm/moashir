@@ -221,7 +221,7 @@ describe('Payment integration screen', () => {
       .findAll('input[type="radio"]')
       .find((input) => input.element.value === 'live')
     expect(live.attributes('disabled')).toBeDefined()
-    expect(wrapper.find('.test-mode-banner').text()).toContain('Test mode — no real charge.')
+    expect(wrapper.find('.test-mode-banner').text()).toContain('Preview mode — no real charge.')
     wrapper.unmount()
   })
 

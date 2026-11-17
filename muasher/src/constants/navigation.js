@@ -15,13 +15,6 @@ export const APP_NAV_ITEMS = [
     routeName: ROUTE_NAMES.APP_DASHBOARD,
   },
   {
-    id: 'executive-dashboard',
-    group: 'overview',
-    labelKey: 'nav.executiveDashboard',
-    icon: 'chart-line',
-    routeName: ROUTE_NAMES.APP_DASHBOARD_EXECUTIVE,
-  },
-  {
     id: 'admin-entities',
     group: 'overview',
     labelKey: 'nav.adminEntities',

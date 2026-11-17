@@ -98,8 +98,12 @@ test('the entity completes the form: CV, evidence with scan states, refused file
   const errors = trackConsole(page)
   await signIn(page, testInfo, ENTITIES.namaa)
   await page.goto('/assessment/accredited/form/9101')
-  const completeness = page.locator('.accredited-completeness')
-  await expect(completeness.locator('.accredited-completeness__item')).toHaveCount(3)
+  const progress = page.locator('.request-card [role="progressbar"]')
+  const remaining = async () =>
+    Number(await progress.getAttribute('aria-valuemax')) -
+    Number(await progress.getAttribute('aria-valuenow'))
+  await expect.poll(remaining).toBe(2)
+  await expect(page.locator('.accredited-task-page .guide-aside')).toHaveCount(0)
   await page.screenshot({
     path: `test-results/accredited-form-${suffixOf(testInfo)}.png`,
     fullPage: true,
@@ -112,7 +116,7 @@ test('the entity completes the form: CV, evidence with scan states, refused file
     .locator('.evidence-file--refused .evidence-upload__input')
     .setInputFiles(pdf('audited-statements-2025-final.pdf'))
   await expect(governance.locator('.evidence-file--refused')).toHaveCount(0)
-  await expect(completeness.locator('.accredited-completeness__item')).toHaveCount(2)
+  await expect.poll(remaining).toBe(1)
 
   await openMain(page, 7)
   const impact = page.locator('#accredited-sub-802')
@@ -145,9 +149,10 @@ test('the entity completes the form: CV, evidence with scan states, refused file
   await page.locator('.modal .btn--danger').click()
   await expect(impact.locator('.evidence-file--refused')).toHaveCount(0)
 
-  await page.locator('.accredited-actions .btn--secondary').click()
-  await expect(completeness).toHaveClass(/accredited-completeness--done/)
-  await page.locator('.accredited-actions .btn--primary').click()
+  await page.locator('[data-testid="accredited-save"]').click()
+  await expect.poll(remaining).toBe(0)
+  await page.locator('.station-row__button').last().click()
+  await page.locator('[data-testid="accredited-submit"]').click()
   await page.locator('.modal .btn--primary').click()
   await expect(page).toHaveURL(/\/paths\/accredited\/9101\?tab=request$/)
   await expect(page.locator('.request-page__badges')).toContainText(
@@ -189,7 +194,8 @@ test('a completion request limits edits to the listed items and shows the deadli
     .locator('.evidence-upload__input')
     .setInputFiles(pdf('audited-statements-2025.pdf'))
   await expect(page.locator('#accredited-sub-402 .scan-status').first()).toBeVisible()
-  await page.locator('.accredited-actions .btn--primary').click()
+  await page.locator('.station-row__button').last().click()
+  await page.locator('[data-testid="accredited-submit"]').click()
   await page.locator('.modal .btn--primary').click()
   await expect(page).toHaveURL(/\/paths\/accredited\/9106\?tab=request$/)
   await expect(page.locator('.request-page__badges')).toContainText(
@@ -251,7 +257,7 @@ test('the accredited form asks to extend the session after two hours of filling 
   await page.clock.install()
   await signIn(page, testInfo, ENTITIES.namaa)
   await page.goto('/assessment/accredited/form/9101')
-  await expect(page.locator('.accredited-completeness')).toBeVisible()
+  await expect(page.locator('.station-row')).toBeVisible()
   await page.clock.fastForward('02:00:00')
   const dialog = page.getByRole('alertdialog')
   await expect(dialog).toBeVisible()

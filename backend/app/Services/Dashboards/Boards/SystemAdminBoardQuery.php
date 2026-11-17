@@ -8,8 +8,6 @@ use App\Contracts\Dashboards\DashboardBoardQuery;
 use App\Data\Dashboards\BoardContent;
 use App\Data\Dashboards\DashboardCard;
 use App\Data\Dashboards\DashboardWidget;
-use App\Enums\Assessments\AccreditedAssessmentStatus;
-use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Dashboards\CardFormat;
 use App\Enums\Dashboards\DashboardBoard;
 use App\Enums\Identity\UserStatus;
@@ -17,7 +15,6 @@ use App\Models\Award\AwardCycle;
 use App\Models\Identity\User;
 use App\Services\Dashboards\ActivityTimeline;
 use App\Services\Dashboards\AssessmentTotals;
-use App\Services\Dashboards\CriteriaAverages;
 use App\Services\Dashboards\EntityDistributions;
 use App\Services\Dashboards\PaymentTotals;
 use App\Support\Dashboards\DashboardLinks as Links;
@@ -25,15 +22,12 @@ use Illuminate\Support\Facades\Date;
 
 final readonly class SystemAdminBoardQuery implements DashboardBoardQuery
 {
-    private const int LOWEST_CRITERIA = 10;
-
     private const int ACTIVITY_ITEMS = 10;
 
     public function __construct(
         private EntityDistributions $entities,
         private AssessmentTotals $assessments,
         private PaymentTotals $payments,
-        private CriteriaAverages $criteria,
         private ActivityTimeline $activity,
     ) {}
 
@@ -44,16 +38,8 @@ final readonly class SystemAdminBoardQuery implements DashboardBoardQuery
 
     public function build(User $user): BoardContent
     {
+        // The distributions and the weakest criteria live in the executive overview above the board.
         return new BoardContent([...$this->platformCards(), ...$this->assessmentCards(), ...$this->paymentCards()], [
-            new DashboardWidget('entities_by_region', $this->entities->byRegion()),
-            new DashboardWidget('entities_by_sector', $this->entities->bySector()),
-            new DashboardWidget('entities_by_founding_decade', $this->entities->byFoundingDecade()),
-            new DashboardWidget('entities_by_governance', $this->entities->byGovernance()),
-            new DashboardWidget('entities_by_level', $this->entities->byLevel()),
-            new DashboardWidget('lowest_criteria', $this->criteria->lowestMains(
-                $this->assessments->operational()->where('path', AssessmentPath::Accredited)->where('status', AccreditedAssessmentStatus::Completed->value),
-                self::LOWEST_CRITERIA,
-            )),
             new DashboardWidget('activity', $this->activity->latest(self::ACTIVITY_ITEMS)),
         ]);
     }

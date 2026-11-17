@@ -1,41 +1,10 @@
+import { LOWEST_CRITERIA } from './overviewSnapshot'
+
 const PATH_LABELS = {
   self: { ar: 'التقييم الذاتي', en: 'Self assessment' },
   accredited: { ar: 'التقييم المعتمد', en: 'Accredited assessment' },
   advanced: { ar: 'التقييم المتقدم (الجائزة)', en: 'Advanced assessment (Award)' },
 }
-
-const REGIONS = [
-  { regionId: 1, code: 'RYD', name: { ar: 'منطقة الرياض', en: 'Riyadh Region' }, count: 18 },
-  { regionId: 2, code: 'MKK', name: { ar: 'منطقة مكة المكرمة', en: 'Makkah Region' }, count: 11 },
-  { regionId: 5, code: 'EST', name: { ar: 'المنطقة الشرقية', en: 'Eastern Province' }, count: 9 },
-  {
-    regionId: 3,
-    code: 'MDN',
-    name: { ar: 'منطقة المدينة المنورة', en: 'Madinah Region' },
-    count: 4,
-  },
-]
-
-const LOWEST_CRITERIA = [
-  {
-    code: '4',
-    name: { ar: 'إدارة الموارد', en: 'Resource management' },
-    averagePercent: '58.40',
-    results: 6,
-  },
-  {
-    code: '7',
-    name: { ar: 'قياس الأثر', en: 'Impact measurement' },
-    averagePercent: '61.25',
-    results: 6,
-  },
-  {
-    code: '2',
-    name: { ar: 'التخطيط الاستراتيجي', en: 'Strategic planning' },
-    averagePercent: '66.10',
-    results: 6,
-  },
-]
 
 function card(key, value, { format = 'count', link = null } = {}) {
   return { key, value, format, link }
@@ -70,17 +39,6 @@ export const STAFF_BOARDS = {
       card('payments_collected', '10350.00', { format: 'money', link: '/finance' }),
     ],
     widgets: [
-      { key: 'entities_by_region', data: REGIONS },
-      {
-        key: 'entities_by_sector',
-        data: [
-          { key: 'social', count: 16 },
-          { key: 'educational', count: 11 },
-          { key: 'health', count: 8 },
-          { key: 'developmental', count: 7 },
-        ],
-      },
-      { key: 'lowest_criteria', data: LOWEST_CRITERIA },
       {
         key: 'activity',
         data: [
@@ -102,18 +60,6 @@ export const STAFF_BOARDS = {
           },
         ],
       },
-    ],
-  },
-  executive: {
-    cards: [
-      card('entities_total', 42),
-      card('accredited_assessments_completed', 6),
-      card('accredited_average_percent', '74.30', { format: 'percent' }),
-      card('payments_collected', '10350.00', { format: 'money' }),
-    ],
-    widgets: [
-      { key: 'entities_by_region', data: REGIONS },
-      { key: 'lowest_criteria', data: LOWEST_CRITERIA },
     ],
   },
   request_follower: {

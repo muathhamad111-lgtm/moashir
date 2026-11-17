@@ -2,6 +2,7 @@
 import { computed, nextTick, ref, useId, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import { useTtsShell } from '@/composables/useTtsShell'
 
 const props = defineProps({
   modelValue: { type: String, default: '' },
@@ -14,9 +15,11 @@ const inputId = useId()
 const input = useTemplateRef('input')
 const toggle = useTemplateRef('toggle')
 const opened = ref(false)
+const { isTtsShell } = useTtsShell()
 
 const label = computed(() => props.placeholder || t('common.search'))
-const isExpanded = computed(() => opened.value || Boolean(props.modelValue))
+const isExpanded = computed(() => isTtsShell.value || opened.value || Boolean(props.modelValue))
+const canClose = computed(() => !isTtsShell.value || Boolean(props.modelValue))
 
 async function expand() {
   opened.value = true
@@ -61,6 +64,7 @@ async function collapse() {
         @keydown.esc.prevent="collapse"
       />
       <button
+        v-if="canClose"
         type="button"
         class="expandable-search__close"
         :aria-label="t('dataList.search.close')"

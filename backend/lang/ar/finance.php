@@ -50,7 +50,7 @@ return [
     'demo_bank_account' => [
         'bank_name' => 'بنك المثال (مثال)',
         'account_holder_name' => 'منصة مؤشر (مثال)',
-        'payer_note' => 'حساب تجريبي للعرض فقط. لا تحوّل إليه أي مبلغ.',
+        'payer_note' => 'حساب للعرض فقط. لا تحوّل إليه أي مبلغ.',
     ],
     'receipt' => [
         'vat_registration_number' => 'الرقم الضريبي',

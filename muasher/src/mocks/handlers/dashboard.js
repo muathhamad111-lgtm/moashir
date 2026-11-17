@@ -11,33 +11,25 @@ import { DASHBOARD_BOARDS } from '@/constants/dashboardBoards'
 import { reviewerActionItem } from './bankTransfers'
 import { allEntities, isDeleted, isErased } from '../stores/entitiesStore'
 import { entitiesByLevel } from '../stores/entityLevels'
+import { overviewErrors, overviewFor } from '../stores/dashboardOverview'
 
 const LATENCY_MS = 320
 const ENTITY_BOARD = 'entity'
-const EXECUTIVE_BOARD = 'executive'
 const EXECUTIVE_PERMISSION = 'dashboard.executive.view'
 const COMMITTEE_SCENARIO = 'committee'
 const GENERATED_AT = '2026-11-05T06:00:00+00:00'
-const LEVEL_BOARDS = ['system_admin', EXECUTIVE_BOARD]
 
 function heldBoards(user) {
   const fromRoles = user.superAdmin ? ['system_admin'] : user.roles
   const held = new Set(fromRoles.filter((role) => DASHBOARD_BOARDS.includes(role)))
   if (user.roles.includes('assessor') && activeScenario() === COMMITTEE_SCENARIO)
     held.add('committee_assessor')
-  if (user.superAdmin || sessionCan(EXECUTIVE_PERMISSION)) held.add(EXECUTIVE_BOARD)
   return DASHBOARD_BOARDS.filter((board) => held.has(board))
 }
 
-function levelWidget() {
+function levelCounts() {
   const counted = allEntities().filter((entity) => !isDeleted(entity) && !isErased(entity))
-  return { key: 'entities_by_level', data: entitiesByLevel(counted) }
-}
-
-function boardContent(board) {
-  const content = STAFF_BOARDS[board]
-  if (!LEVEL_BOARDS.includes(board)) return content
-  return { ...content, widgets: [...content.widgets, levelWidget()] }
+  return entitiesByLevel(counted)
 }
 
 function actionItemsOf(user) {
@@ -70,9 +62,22 @@ export const dashboardHandlers = [
       board,
       landingBoard: landing,
       availableBoards: boards,
-      ...boardContent(board),
+      ...STAFF_BOARDS[board],
       actionCenter: actionItemsOf(user),
       generatedAt: GENERATED_AT,
     })
+  }),
+  http.get('/api/v1/dashboard/overview', async ({ request }) => {
+    await delay(LATENCY_MS)
+    const user = currentSessionUser()
+    if (!user) return errorResponse(401, 'unauthenticated', 'Unauthenticated.')
+    if (!user.superAdmin && !sessionCan(EXECUTIVE_PERMISSION))
+      return errorResponse(403, 'forbidden', 'This action is unauthorized.')
+    const params = new URL(request.url).searchParams
+    const query = { period: params.get('period'), from: params.get('from'), to: params.get('to') }
+    const errors = overviewErrors(query)
+    if (Object.keys(errors).length)
+      return errorResponse(422, 'validation_failed', Object.values(errors)[0][0], errors)
+    return envelope(overviewFor(query, levelCounts()))
   }),
 ]

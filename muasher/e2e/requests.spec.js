@@ -39,7 +39,7 @@ function trackConsole(page) {
 }
 
 async function fillEmptyScores(page, value) {
-  const mains = page.locator('.criteria-tree__open')
+  const mains = page.locator('.station-row__button')
   const count = await mains.count()
   for (let index = 0; index < count; index += 1) {
     await mains.nth(index).click()
@@ -126,7 +126,8 @@ test.describe('Requests follower', () => {
       isEn(testInfo) ? 'Read-only view' : 'عرض للقراءة فقط',
     )
     await expect(page.locator('.raw-score input').first()).toBeDisabled()
-    await expect(page.locator('.review-actions .btn')).toHaveCount(0)
+    await expect(page.locator('.review-actions .btn--secondary')).toHaveCount(0)
+    await expect(page.locator('[data-testid="review-complete"]')).toHaveCount(0)
     await page.locator('.review-page__title-row .btn--secondary').click()
     await expect(page).toHaveURL(/\/admin\/requests\/9108\/evidence-bundles\/[0-9a-f-]{36}$/)
     await expect(page.locator('.bundle-card__note')).toBeVisible()
@@ -156,7 +157,7 @@ test.describe('Assessor', () => {
     await expect(rows.filter({ hasText: 'ACC-2026-000008' })).toHaveCount(1)
 
     await page.goto('/admin/requests/9107/review')
-    await page.locator('.review-actions .btn--primary').click()
+    await page.locator('[data-testid="review-start"]').click()
     await expect(page.locator('.review-header')).toContainText(
       isEn(testInfo) ? 'Under review' : 'قيد المراجعة',
     )

@@ -25,22 +25,16 @@ const { pagination, setPage } = paginator
 
 useHead({ title: () => t('finance.events.title') })
 
-function optionsOf(allKey, values, prefix) {
+function optionsOf(values, prefix) {
   return [
-    { value: '', label: t(allKey) },
+    { value: '', label: t('dataList.filter.all') },
     ...values.map((value) => ({ value, label: t(`${prefix}.${value}`) })),
   ]
 }
 
-const sourceOptions = computed(() =>
-  optionsOf('finance.events.allSources', PAYMENT_EVENT_SOURCES, 'finance.events.sources'),
-)
-const resultOptions = computed(() =>
-  optionsOf('finance.events.allResults', PAYMENT_EVENT_RESULTS, 'finance.events.results'),
-)
-const modeOptions = computed(() =>
-  optionsOf('finance.events.allModes', Object.values(FINANCE_MODES), 'finance.filters.modes'),
-)
+const sourceOptions = computed(() => optionsOf(PAYMENT_EVENT_SOURCES, 'finance.events.sources'))
+const resultOptions = computed(() => optionsOf(PAYMENT_EVENT_RESULTS, 'finance.events.results'))
+const modeOptions = computed(() => optionsOf(Object.values(FINANCE_MODES), 'finance.filters.modes'))
 const filterState = { filters: filters.filters, setFilter }
 </script>
 

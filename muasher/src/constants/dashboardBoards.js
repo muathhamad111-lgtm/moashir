@@ -9,10 +9,9 @@ export const DASHBOARD_BOARDS = Object.freeze([
   'criteria_officer',
   'finance_officer',
   'entity',
-  'executive',
 ])
 
-export const EXECUTIVE_BOARD = 'executive'
+export const SYSTEM_ADMIN_BOARD = 'system_admin'
 
 export const BOARD_QUERY_KEY = 'board'
 

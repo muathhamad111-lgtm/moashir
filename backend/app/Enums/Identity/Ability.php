@@ -45,4 +45,5 @@ enum Ability: string
     case ApproveNationalResults = 'award.results-board.approve-national';
     case AnnounceAwardResults = 'award.results-board.announce';
     case ViewDashboard = 'dashboard.summary.view';
+    case ViewExecutiveOverview = 'dashboard.overview.view';
 }

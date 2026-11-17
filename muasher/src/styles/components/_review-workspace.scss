@@ -6,22 +6,16 @@
   @include flex(column, stretch, flex-start, var(--space-4));
 }
 
-.review-workspace__layout {
-  display: grid;
-  gap: var(--space-5);
-  grid-template-columns: 1fr;
+.review-workspace__main {
+  min-inline-size: 0;
 
-  @include respond-to(lg) {
-    grid-template-columns: minmax(0, var(--size-panel)) minmax(0, 1fr);
-    align-items: start;
+  &:focus {
+    outline: none;
   }
 }
 
-.review-workspace__nav {
-  @include respond-to(lg) {
-    position: sticky;
-    inset-block-start: var(--space-4);
-  }
+.review-main__heading {
+  @include flex(column, flex-start, flex-start, var(--space-1));
 }
 
 .review-header {

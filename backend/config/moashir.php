@@ -28,6 +28,11 @@ return [
         'export_max_rows' => 10000,
     ],
 
+    'dashboard' => [
+        // The longest custom window the overview accepts, in days (three years).
+        'overview_max_days' => 1096,
+    ],
+
     'health' => [
         'queue_heartbeat_max_age_seconds' => 300,
         'min_free_disk_mb' => (int) (env('HEALTH_MIN_FREE_DISK_MB') ?: 1024),
@@ -189,22 +194,16 @@ return [
         'logo_max_kb' => 1024,
         'logo_max_side_px' => 4096,
         'minimum_contrast' => '4.5',
+        'default_colors' => [
+            'primary' => '#98d8d3',
+            'secondary' => '#0a2325',
+        ],
         'surfaces' => [
-            'on_accent' => '#0a2325',
-            'light_content' => '#f5f8f8',
-            'dark_content' => '#0a2325',
+            'paper' => '#ffffff',
+            'ink' => '#100f10',
+            'content' => '#f8f8f8',
         ],
-        'palette' => [
-            'brand_default' => ['fill' => '#98d8d3', 'text_on_light' => '#1d7470'],
-            'emerald' => ['fill' => '#17c78e', 'text_on_light' => '#08704e'],
-            'teal' => ['fill' => '#33d1c4', 'text_on_light' => '#0b7068'],
-            'cyan' => ['fill' => '#3aafc9', 'text_on_light' => '#136f84'],
-            'sky' => ['fill' => '#6cb8f5', 'text_on_light' => '#1c5f9a'],
-            'lavender' => ['fill' => '#a9a3f7', 'text_on_light' => '#5146c9'],
-            'amber' => ['fill' => '#f4a72a', 'text_on_light' => '#8a5a00'],
-            'coral' => ['fill' => '#f98c6e', 'text_on_light' => '#a63d1f'],
-            'lime' => ['fill' => '#a7db4f', 'text_on_light' => '#4d7314'],
-        ],
+        'shade_step' => 0.05,
     ],
 
     'integrations' => [

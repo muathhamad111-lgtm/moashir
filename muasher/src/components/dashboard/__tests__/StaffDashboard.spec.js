@@ -71,10 +71,10 @@ const SUMMARY = {
   generatedAt: '2026-11-05T06:00:00+00:00',
 }
 
-async function mountOn(query = {}, locale = 'ar') {
+async function mountOn(query = {}, locale = 'ar', options = {}) {
   const globals = createTestGlobals({ locale })
   await globals.router.push({ name: ROUTE_NAMES.APP_DASHBOARD, query })
-  const wrapper = mount(StaffDashboard, { global: globals })
+  const wrapper = mount(StaffDashboard, { global: globals, ...options })
   await flushPromises()
   return { wrapper, router: globals.router }
 }
@@ -149,5 +149,39 @@ describe('StaffDashboard', () => {
     await wrapper.find('.error-state__retry button').trigger('click')
     await flushPromises()
     expect(wrapper.find('[data-board="request_follower"]').exists()).toBe(true)
+  })
+
+  it('opens with the actions, then the slotted overview, then the board', async () => {
+    const { wrapper } = await mountOn({}, 'ar', {
+      slots: { default: '<section class="overview-stub">overview</section>' },
+    })
+    const roles = {
+      'action-center': 'actions',
+      'overview-stub': 'overview',
+      'staff-dashboard__board': 'board',
+    }
+    const order = [...wrapper.element.children]
+      .map((child) => Object.keys(roles).find((name) => child.classList.contains(name)))
+      .filter(Boolean)
+      .map((name) => roles[name])
+    expect(order).toEqual(['actions', 'overview', 'board'])
+  })
+
+  it('leaves out a board the overview covers, keeping the actions and the other boards', async () => {
+    dashboardService.getBoard.mockResolvedValue({
+      data: {
+        ...SUMMARY,
+        board: 'system_admin',
+        landingBoard: 'system_admin',
+        availableBoards: ['system_admin', 'assessor', 'finance_officer'],
+      },
+    })
+    const { wrapper } = await mountOn({}, 'ar', { props: { coveredBoards: ['system_admin'] } })
+    expect(wrapper.find('.staff-dashboard__board').exists()).toBe(false)
+    expect(wrapper.find('.action-center').exists()).toBe(true)
+    expect(wrapper.findAll('.dashboard-board-nav__link').map((link) => link.text())).toEqual([
+      'لوحة المقيّم',
+      'اللوحة المالية',
+    ])
   })
 })

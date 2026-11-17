@@ -160,6 +160,9 @@ return [
     'uuid' => 'The :attribute field must be a valid UUID.',
 
     'custom' => [
+        'overview_period' => [
+            'too_long' => 'A custom period cannot be longer than :days days.',
+        ],
         'vat_registration_number' => [
             'regex' => 'The VAT registration number has 15 Western digits (0-9) with no spaces, and starts and ends with 3.',
         ],
@@ -290,6 +293,8 @@ return [
     ],
 
     'attributes' => [
+        'primary_color' => 'primary color',
+        'secondary_color' => 'secondary color',
         'meta.availability' => 'availability',
         'vat_registration_number' => 'VAT registration number',
         'gap_thresholds' => 'strengths and gaps thresholds',

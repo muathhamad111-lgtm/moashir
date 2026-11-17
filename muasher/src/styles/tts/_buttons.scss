@@ -1,0 +1,87 @@
+@use '../mixins' as *;
+@use '../tokens' as *;
+
+.btn {
+  @include in-tts-shell {
+    min-block-size: $tts-control-height-md;
+    padding-block: 0;
+    padding-inline: var(--space-4);
+    gap: var(--space-1);
+    border-radius: $tts-radius-control-md;
+    font-size: $tts-fs-sm;
+    font-weight: $tts-fw-label;
+    line-height: $tts-lh-label-sm;
+
+    &:hover:not(:disabled) {
+      box-shadow: none;
+    }
+  }
+}
+
+.btn--sm {
+  @include in-tts-shell {
+    min-block-size: $tts-control-height-sm;
+    padding-inline: var(--space-3);
+    border-radius: $tts-radius-control-sm;
+    font-size: $tts-fs-xs;
+  }
+}
+
+.btn--lg,
+.btn--xl {
+  @include in-tts-shell {
+    min-block-size: $tts-control-height-lg;
+    padding-inline: var(--space-4);
+    border-radius: $tts-radius-control;
+    font-size: $tts-fs-sm;
+  }
+}
+
+.btn--primary {
+  @include in-tts-shell {
+    border-color: var(--brand-primary);
+  }
+}
+
+.btn--secondary {
+  @include in-tts-shell {
+    border-color: tts-neutral(100);
+    background-color: tts-neutral(0);
+    color: tts-neutral(600);
+
+    &:hover:not(:disabled) {
+      border-color: tts-neutral(200);
+      background-color: tts-neutral(50);
+      color: tts-neutral(900);
+    }
+  }
+}
+
+.btn--ghost {
+  @include in-tts-shell {
+    &:hover:not(:disabled) {
+      background-color: var(--brand-primary-tint);
+    }
+  }
+}
+
+.btn--danger {
+  @include in-tts-shell {
+    border-color: tts-status('danger', 'text');
+    background-color: tts-status('danger', 'text');
+    color: $tts-white;
+  }
+}
+
+.btn--icon {
+  @include in-tts-shell {
+    min-inline-size: $tts-control-height-md;
+    padding-inline: 0;
+  }
+}
+
+.btn--icon.btn--sm {
+  @include in-tts-shell {
+    min-inline-size: $tts-control-height-sm;
+  }
+}

@@ -139,6 +139,24 @@ describe('PortalLayout', () => {
     expect(wrapper.text()).not.toContain('حساب الجهة')
   })
 
+  it('follows the unified back-office layout: top bar first, then the side navigation and the content', async () => {
+    const wrapper = await at('/dashboard')
+    expect(wrapper.find('.portal-layout > .portal-top-bar').exists()).toBe(true)
+    expect(wrapper.find('.portal-layout__body > .side-nav').exists()).toBe(true)
+    expect(wrapper.find('.portal-layout__body .portal-layout__main .page-content').exists()).toBe(
+      true,
+    )
+    const collapse = wrapper.find('.portal-top-bar [data-testid="portal-nav-collapse"]')
+    expect(collapse.attributes('aria-expanded')).toBe('true')
+    expect(collapse.find('svg').attributes('data-icon')).toBe('menu')
+    expect(wrapper.find('.side-nav [data-testid="portal-nav-collapse"]').exists()).toBe(false)
+    expect(wrapper.find('.side-nav .identity-card__logo').attributes('src')).toMatch(
+      /moashir-logo-on-light/,
+    )
+    expect(wrapper.find('.side-nav [data-testid="sidebar-preview-platform"]').exists()).toBe(true)
+    expect(wrapper.find('[aria-label^="التبديل إلى"]').exists()).toBe(false)
+  })
+
   it('collapses the side navigation and remembers the choice for the same user', async () => {
     const wrapper = await at('/dashboard')
     await wrapper.find('[data-testid="portal-nav-collapse"]').trigger('click')

@@ -6,10 +6,13 @@ namespace App\Http\Controllers\Api\V1\Dashboards;
 
 use App\Actions\Dashboards\BuildActionCenter;
 use App\Actions\Dashboards\BuildDashboardSummary;
+use App\Actions\Dashboards\BuildExecutiveOverview;
 use App\Data\Dashboards\ActionItem;
 use App\Http\Requests\Dashboards\DashboardSummaryRequest;
+use App\Http\Requests\Dashboards\ExecutiveOverviewRequest;
 use App\Http\Resources\Dashboards\ActionItemResource;
 use App\Http\Resources\Dashboards\DashboardSummaryResource;
+use App\Http\Resources\Dashboards\ExecutiveOverviewResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\Identity\User;
 use Illuminate\Container\Attributes\CurrentUser;
@@ -21,6 +24,11 @@ final class DashboardController
     public function summary(DashboardSummaryRequest $request, #[CurrentUser] User $user, BuildDashboardSummary $buildSummary): JsonResponse
     {
         return ApiResponse::resource(new DashboardSummaryResource($buildSummary->handle($user, $request->board())));
+    }
+
+    public function overview(ExecutiveOverviewRequest $request, BuildExecutiveOverview $buildOverview): JsonResponse
+    {
+        return ApiResponse::resource(new ExecutiveOverviewResource($buildOverview->handle($request->period())));
     }
 
     public function actionCenter(#[CurrentUser] User $user, BuildActionCenter $buildActionCenter): JsonResponse

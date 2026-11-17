@@ -1,18 +1,21 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 
-export function useElementWidth(target, fallback) {
+const FALLBACK_WIDTH = 560
+
+// The live width of an element, for charts drawn in real pixels (crisp text at any size).
+export function useElementWidth(target, fallback = FALLBACK_WIDTH) {
   const width = ref(fallback)
   let observer = null
 
-  function measure(entries) {
-    const measured = Math.round(entries[0]?.contentRect?.width ?? 0)
-    if (measured > 0) width.value = measured
-  }
-
   onMounted(() => {
-    if (!target.value || typeof ResizeObserver === 'undefined') return
-    observer = new ResizeObserver(measure)
-    observer.observe(target.value)
+    const element = target.value
+    if (!element) return
+    width.value = element.clientWidth || fallback
+    if (typeof ResizeObserver === 'undefined') return
+    observer = new ResizeObserver(([entry]) => {
+      width.value = Math.round(entry.contentRect.width) || fallback
+    })
+    observer.observe(element)
   })
 
   onBeforeUnmount(() => observer?.disconnect())

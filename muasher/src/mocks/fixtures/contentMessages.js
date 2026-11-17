@@ -51,13 +51,9 @@ export const contentMessages = {
     ar: 'نوع المؤشر هذا مستخدم في مؤشرات. يمكنك تعطيله بدلًا من حذفه.',
     en: 'This indicator type is used by indicators. Deactivate it instead.',
   },
-  'token.unknown': {
-    ar: 'اللون المختار ليس ضمن لوحة الألوان المعتمدة.',
-    en: 'The selected color is not part of the approved palette.',
-  },
   contrast_fail: {
-    ar: 'اللون المختار لا يحقق نسبة التباين المطلوبة وفق المستوى AA من معايير WCAG 2.1 في الوضعين الفاتح والداكن.',
-    en: 'The selected color does not meet the WCAG 2.1 AA contrast ratio in light and dark mode.',
+    ar: 'اللون المختار لا يحقق نسبة التباين 4.5:1 مع نص مقروء وفق المستوى AA من معايير WCAG 2.1.',
+    en: 'The selected color does not meet the WCAG 2.1 AA contrast ratio of 4.5:1 with readable text.',
   },
   'file.content_mismatch': {
     ar: 'نوع الملف غير مسموح أو أن محتواه لا يطابق امتداده.',
@@ -98,6 +94,10 @@ export const contentFieldMessages = {
     en: 'The value must be between :min and :max.',
   },
   email: { ar: 'أدخل بريدًا إلكترونيًا صالحًا.', en: 'Enter a valid e-mail address.' },
+  hexColor: {
+    ar: 'أدخل اللون برمز من ست خانات مثل #1d7470.',
+    en: 'Enter the color as a six-digit code such as #1d7470.',
+  },
   futureDate: {
     ar: 'لا يمكن أن يكون تاريخ القراءة في المستقبل.',
     en: 'The measurement date cannot be in the future.',

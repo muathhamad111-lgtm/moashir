@@ -4,11 +4,9 @@ import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
 import Card from '@/components/ui/Card.vue'
 import Tabs from '@/components/ui/Tabs.vue'
-import PathBadge from '@/components/ui/PathBadge.vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
-import RequestPathSwitch from '@/components/requests/RequestPathSwitch.vue'
 import RequestQueueFilters from '@/components/requests/RequestQueueFilters.vue'
 import RequestQueueTable from '@/components/requests/RequestQueueTable.vue'
 import PreparingRequestsPanel from '@/components/requests/PreparingRequestsPanel.vue'
@@ -23,7 +21,6 @@ import { ASSESSMENT_PATHS } from '@/constants/assessment'
 import { CYCLE_STATUSES } from '@/constants/advanced'
 import { QUEUE_STAGES } from '@/constants/accredited'
 import { PERMISSIONS } from '@/constants/permissionKeys'
-import { ROUTE_NAMES } from '@/constants/routeNames'
 import { followedPathsOf, pathCountOf } from '@/utils/requestPaths'
 
 const CYCLE_LIST_SIZE = 50
@@ -36,25 +33,13 @@ const queue = useRequestQueue(paths)
 const { items, status, errorMessage, load, filters, paginator, searchInput, stats, path } = queue
 const { pagination, setPage } = paginator
 const statCards = useQueueStatCards(stats)
-const { stage, stageQuery } = useQueueStage()
+const { stage } = useQueueStage()
 const assessors = ref([])
 const cycles = ref([])
 
 useHead({ title: () => t('requests.index.title') })
 
-const switchEntries = computed(() =>
-  paths.value.map((value) => {
-    const entry = pathCountOf(queue.pathCounts.value, value)
-    return {
-      path: value,
-      pathLabel: entry?.pathLabel ?? null,
-      countLabel: entry ? t('nav.pathCounts.queue', { count: entry.awaitingAssignment }) : '',
-    }
-  }),
-)
 const currentCount = computed(() => pathCountOf(queue.pathCounts.value, path.value))
-const currentLabel = computed(() => currentCount.value?.pathLabel ?? null)
-const keptQuery = computed(() => ({ ...queue.linkQuery.value, ...stageQuery.value }))
 
 function stageTab(value, key, count) {
   const label = t(`requests.tabs.${key}`)
@@ -86,6 +71,7 @@ watch(path, loadAssessors)
 onMounted(() => Promise.all([loadAssessors(), loadCycles()]))
 const filterState = {
   filters: filters.filters,
+  defaults: queue.filterDefaults,
   setFilter: queue.chooseFilter,
   sort: filters.sort,
   setSort: queue.setSort,
@@ -96,20 +82,9 @@ const filterState = {
   <section class="requests-page">
     <header class="requests-page__header">
       <p class="requests-page__eyebrow">{{ t('requests.index.eyebrow') }}</p>
-      <div class="requests-page__title-row">
-        <h1 class="requests-page__title">{{ t('requests.index.title') }}</h1>
-        <PathBadge :path="path" :label="currentLabel" />
-      </div>
+      <h1 class="requests-page__title">{{ t('requests.index.title') }}</h1>
       <p class="requests-page__subtitle">{{ t('requests.index.subtitle') }}</p>
     </header>
-    <RequestPathSwitch
-      v-if="paths.length > 1"
-      :entries="switchEntries"
-      :current="path"
-      :route-name="ROUTE_NAMES.REQUESTS_INDEX"
-      :label="t('requests.index.pathSwitchLabel')"
-      :kept-query="keptQuery"
-    />
     <StatsCards :stats="statCards" :loading="!stats && status === 'loading'" />
     <Card>
       <Tabs v-model="stage" :tabs="stageTabs">

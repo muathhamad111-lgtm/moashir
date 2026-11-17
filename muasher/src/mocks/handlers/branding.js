@@ -1,18 +1,15 @@
 import { delay } from 'msw'
 import { http } from '../contract/http'
 import { envelope } from '../contract/responses'
-import { LOGO_RULES } from '@/constants/branding'
-import { accentContrastPairs } from '@/utils/brandingContrast'
-import { brandingPaletteFixture } from '../fixtures/branding'
+import { DEFAULT_BRAND_COLORS, LOGO_RULES } from '@/constants/branding'
+import { brandContrastPairs, deriveBrandScheme, normalizeHex } from '@/utils/brandingContrast'
 import {
   getBrandingTheme,
   isLogoVariant,
-  paletteEntry,
   resetBrandingTheme,
   storeBrandingLogo,
-  updateBrandingAccent,
+  updateBrandingColors,
 } from '../stores/brandingStore'
-import { sessionCan } from '../stores/sessionPermissions'
 import { contentReject, contentRoute, readJson } from '../stores/content/contentRejection'
 import {
   CONTENT_PERMISSIONS,
@@ -25,9 +22,10 @@ import { validateImage } from '../stores/content/imageUploads'
 const REASON_MIN = 10
 const MINIMUM_CONTRAST = '4.5'
 
-function themeResource(user) {
-  const canManage = user.superAdmin || sessionCan(CONTENT_PERMISSIONS.BRANDING)
-  return { ...getBrandingTheme(), palette: canManage ? brandingPaletteFixture : [] }
+function themeResource() {
+  const theme = getBrandingTheme()
+  const scheme = deriveBrandScheme({ primary: theme.primaryColor, secondary: theme.secondaryColor })
+  return { ...theme, scheme, defaultColors: { ...DEFAULT_BRAND_COLORS } }
 }
 
 function requireReason(user, reason) {
@@ -40,8 +38,20 @@ function requireReason(user, reason) {
   if (user.superAdmin && !text) throw contentReject.reasonRequired()
 }
 
-function failingPairs(entry) {
-  return accentContrastPairs(entry)
+function requireColors(body) {
+  const colors = {
+    primary: normalizeHex(body.primaryColor),
+    secondary: normalizeHex(body.secondaryColor),
+  }
+  const errors = createFieldErrors()
+  errors.check(colors.primary, 'primaryColor', 'hexColor')
+  errors.check(colors.secondary, 'secondaryColor', 'hexColor')
+  errors.throwIfAny()
+  return colors
+}
+
+function failingPairs(colors) {
+  return brandContrastPairs(deriveBrandScheme(colors))
     .filter((pair) => !pair.passes)
     .map((pair) => ({
       pair: pair.key,
@@ -52,12 +62,12 @@ function failingPairs(entry) {
     }))
 }
 
-function applyAccent(token) {
-  const entry = paletteEntry(token)
-  if (!entry) throw contentReject.tokenUnknown()
-  const failures = failingPairs(entry)
-  if (failures.length) throw contentReject.contrastFail(failures)
-  updateBrandingAccent(token)
+function applyColors(colors) {
+  const failures = failingPairs(colors)
+  if (failures.length) {
+    throw contentReject.contrastFail(failures, `${failures[0].pair.split('.')[0]}Color`)
+  }
+  updateBrandingColors(colors)
 }
 
 export const brandingHandlers = [
@@ -65,7 +75,8 @@ export const brandingHandlers = [
     '/api/v1/settings/branding',
     contentRoute(async () => {
       await delay(40)
-      return envelope(themeResource(signedInActor()))
+      signedInActor()
+      return envelope(themeResource())
     }),
   ),
 
@@ -74,9 +85,10 @@ export const brandingHandlers = [
     contentRoute(async ({ request }) => {
       const user = requireContentPermission(CONTENT_PERMISSIONS.BRANDING)
       const body = await readJson(request)
+      const colors = requireColors(body)
       requireReason(user, body.reason)
-      applyAccent(body.accentToken)
-      return envelope(themeResource(user))
+      applyColors(colors)
+      return envelope(themeResource())
     }),
   ),
 
@@ -100,7 +112,7 @@ export const brandingHandlers = [
       const user = requireContentPermission(CONTENT_PERMISSIONS.BRANDING)
       requireReason(user, (await readJson(request)).reason)
       resetBrandingTheme()
-      return envelope(themeResource(user))
+      return envelope(themeResource())
     }),
   ),
 ]

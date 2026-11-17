@@ -17,17 +17,17 @@ const { t } = useI18n()
 const currentYear = new Date().getFullYear()
 
 const statusOptions = computed(() => [
-  { value: ALL, label: t('kpis.page.filters.allStatuses') },
+  { value: ALL, label: t('dataList.filter.all') },
   ...KPI_STATUS_KEYS.map((key) => ({ value: key, label: t(`kpis.statuses.${key}`) })),
 ])
 
 const typeOptions = computed(() => [
-  { value: ALL, label: t('kpis.page.filters.allTypes') },
+  { value: ALL, label: t('dataList.filter.all') },
   ...props.types.map((type) => ({ value: type.id, label: props.localized(type.name) })),
 ])
 
 const yearOptions = computed(() => [
-  { value: ALL, label: t('kpis.page.filters.allYears') },
+  { value: ALL, label: t('dataList.filter.all') },
   ...Array.from({ length: KPI_YEAR_FILTER_SPAN }, (_, index) => {
     const year = currentYear - index
     return { value: year, label: String(year) }

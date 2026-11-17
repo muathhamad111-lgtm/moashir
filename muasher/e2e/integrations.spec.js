@@ -115,9 +115,9 @@ test('payment keys are write-only, live needs a passing test and values can be c
   await expectNoSecretAnywhere(page, FAKE.liveSecret)
   await expect(keyPair(page, 1).locator('.secret-input__last4').first()).toContainText('5432')
 
-  await button(keyPair(page, 1), /Test connection|اختبار الاتصال/).click()
+  await button(keyPair(page, 1), /Check connection|التحقق من الاتصال/).click()
   await expect(keyPair(page, 1).locator('.test-result')).toContainText(
-    /Connection test passed|نجح اختبار الاتصال/,
+    /Connection check passed|نجح التحقق من الاتصال/,
   )
   await expect(page.locator('input[name="mode"][value="live"]')).toBeEnabled()
   await radio(page, 'mode', 'live').click()
@@ -168,14 +168,14 @@ test('a rejected key shows the failed checks, the translated error kind and the 
   await page.goto('/admin/settings/payment')
   await storeLiveKeys(page, FAKE.revokedLive)
   const live = keyPair(page, 1)
-  await button(live, /Test connection|اختبار الاتصال/).click()
+  await button(live, /Check connection|التحقق من الاتصال/).click()
   await expect(live.locator('.provider-feedback')).toContainText(
     /rejected the credentials|رفض المزوّد بيانات الاعتماد/,
   )
   await expect(live.locator('.test-result--failed')).toContainText(/Secret key|المفتاح السري/)
   await expect(live.locator('.last-test')).toContainText(/Failed|فشل/)
   for (let attempt = 0; attempt < 3; attempt += 1) {
-    await button(live, /Test connection|اختبار الاتصال/).click()
+    await button(live, /Check connection|التحقق من الاتصال/).click()
     await expect(live.locator('.connection-test .btn--loading')).toHaveCount(0)
   }
   await expect(live.locator('.provider-feedback--rate_limited')).toContainText(
@@ -192,7 +192,7 @@ test('production in test mode shows the banner and asks for a reason when leavin
   await page.goto('/admin/settings/payment')
   await expect(page.locator('.test-mode-banner')).toContainText(/no real charge|لا يوجد خصم فعلي/)
   await storeLiveKeys(page)
-  await button(keyPair(page, 1), /Test connection|اختبار الاتصال/).click()
+  await button(keyPair(page, 1), /Check connection|التحقق من الاتصال/).click()
   await expect(keyPair(page, 1).locator('.test-result')).toBeVisible()
   await radio(page, 'mode', 'live').click()
   await save(page)
@@ -229,12 +229,12 @@ test('sms providers, Saudi test numbers, test send and the Msegat template check
   await save(page)
 
   await page.locator('input[name="recipient"]').fill('+966500000009')
-  await button(page, /^Send test SMS$|^إرسال رسالة تجريبية$/).click()
+  await button(page, /^Send a check SMS$|^إرسال رسالة تحقق$/).click()
   await expect(page.locator('.provider-feedback--rejected')).toContainText(
-    /allowed test numbers|أرقام الاختبار المسموح بها/,
+    /allowed preview numbers|أرقام المعاينة المسموح بها/,
   )
   await page.locator('input[name="recipient"]').fill('+966500000003')
-  await button(page, /^Send test SMS$|^إرسال رسالة تجريبية$/).click()
+  await button(page, /^Send a check SMS$|^إرسال رسالة تحقق$/).click()
   await expect(page.locator('.provider-feedback--success')).toContainText(/Taqnyat|تقنيات/)
 
   await radio(page, 'activeProvider', 'msegat').click()
@@ -266,7 +266,7 @@ test('e-mail moves from the environment bootstrap to settings with a test e-mail
   await expect(page.locator('.environment-note')).toHaveCount(0)
   await expect(card(page, 0).locator('.integration-card__desc, .badge')).toHaveCount(0)
   await expect(page.locator('[data-testid="email-test-mode"]')).toBeHidden()
-  await button(page, /Test connection|اختبار الاتصال/).click()
+  await button(page, /Check connection|التحقق من الاتصال/).click()
   await expect(page.locator('.test-result')).toContainText(
     /Encrypted connection and sign-in|الاتصال المشفّر وتسجيل الدخول/,
   )
@@ -280,7 +280,7 @@ test('e-mail moves from the environment bootstrap to settings with a test e-mail
     page
       .locator('input[name="testAddress"]')
       .locator('xpath=ancestor::div[contains(@class,"field")][1]'),
-  ).toContainText(/Required in test mode|مطلوب في وضع الاختبار/)
+  ).toContainText(/Required in preview mode|مطلوب في وضع المعاينة/)
   await expect(card(page, 0).locator('.secret-input')).toContainText(
     /Enter the value before you save|أدخل القيمة قبل الحفظ/,
   )
@@ -291,9 +291,9 @@ test('e-mail moves from the environment bootstrap to settings with a test e-mail
   await expectNoSecretAnywhere(page, FAKE.smtpPassword)
 
   await page.locator('input[name="recipient"]').fill('it-team@moashir.example.sa')
-  await button(page, /^Send test e-mail$|^إرسال بريد تجريبي$/).click()
+  await button(page, /^Send a check e-mail$|^إرسال بريد تحقق$/).click()
   await expect(page.locator('.provider-feedback--success')).toContainText(
-    /test mailbox|بريد الاختبار/,
+    /preview mailbox|بريد المعاينة/,
   )
   await page.screenshot({
     path: `test-results/integrations-email-${suffix(testInfo)}.png`,
@@ -330,7 +330,7 @@ test('an ai provider needs a key, a model and its own data transfer acknowledgem
   )
   await expect(card(page, 0)).toContainText(/Active|مفعّل/)
 
-  await button(openai, /Test answer|اختبار إجابة/).click()
+  await button(openai, /Preview an answer|معاينة إجابة/).click()
   await expect(openai.locator('.ai-answer__result')).toContainText('gpt-4.1-mini')
   await page.screenshot({
     path: `test-results/integrations-ai-${suffix(testInfo)}.png`,

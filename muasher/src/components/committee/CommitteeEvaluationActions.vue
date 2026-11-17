@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseTextarea from '@/components/form/BaseTextarea.vue'
+import CriterionStepButtons from '@/components/assessment/CriterionStepButtons.vue'
 import { COMMITTEE_LIMITS } from '@/constants/committee'
 
 const props = defineProps({
@@ -11,9 +12,11 @@ const props = defineProps({
   canScore: { type: Boolean, default: false },
   complete: { type: Boolean, default: false },
   generalNote: { type: String, default: '' },
+  isFirst: { type: Boolean, default: true },
+  isLast: { type: Boolean, default: true },
 })
 
-const emit = defineEmits(['save', 'submit', 'update:generalNote'])
+const emit = defineEmits(['save', 'submit', 'update:generalNote', 'previous', 'next'])
 const { t } = useI18n()
 const noteError = computed(() =>
   props.generalNote.length > COMMITTEE_LIMITS.NOTE_MAX
@@ -25,6 +28,7 @@ const noteError = computed(() =>
 <template>
   <div class="review-actions committee-actions" role="group" :aria-label="t('review.actionsLabel')">
     <BaseTextarea
+      v-if="isLast"
       :model-value="generalNote"
       name="committee-general-note"
       :label="t('award.evaluation.generalNote')"
@@ -37,8 +41,16 @@ const noteError = computed(() =>
     <p class="review-actions__status" aria-live="polite">
       {{ dirty ? t('review.unsaved') : t('review.allSaved') }}
     </p>
-    <div v-if="canScore" class="review-actions__buttons">
+    <CriterionStepButtons
+      class="review-actions__buttons"
+      :is-first="isFirst"
+      :is-last="isLast"
+      :disabled="Boolean(busy)"
+      @previous="emit('previous')"
+      @next="emit('next')"
+    >
       <BaseButton
+        v-if="canScore"
         variant="secondary"
         icon="save"
         :loading="busy === 'save'"
@@ -46,16 +58,20 @@ const noteError = computed(() =>
         @click="emit('save')"
         >{{ t('review.save') }}</BaseButton
       >
-      <BaseButton
-        variant="primary"
-        icon="send"
-        :loading="busy === 'submit'"
-        :disabled="Boolean(busy)"
-        @click="emit('submit')"
-        >{{ t('award.evaluation.submit') }}</BaseButton
-      >
-    </div>
-    <p v-if="canScore && !complete" class="review-actions__hint">
+      <template #last>
+        <BaseButton
+          v-if="canScore"
+          variant="primary"
+          icon="send"
+          data-testid="committee-submit"
+          :loading="busy === 'submit'"
+          :disabled="Boolean(busy)"
+          @click="emit('submit')"
+          >{{ t('award.evaluation.submit') }}</BaseButton
+        >
+      </template>
+    </CriterionStepButtons>
+    <p v-if="canScore && isLast && !complete" class="review-actions__hint">
       {{ t('award.evaluation.submitHint') }}
     </p>
   </div>

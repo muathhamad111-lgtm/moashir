@@ -31,11 +31,11 @@ const { items, status, errorMessage, load, filters, paginator, searchInput, setF
 const { pagination, setPage } = paginator
 
 const purposeOptions = computed(() => [
-  { value: '', label: t('settings.carts.allPurposes') },
+  { value: '', label: t('dataList.filter.all') },
   ...CART_PURPOSE_VALUES.map((value) => ({ value, label: t(`finance.purposes.${value}`) })),
 ])
 const contactedOptions = computed(() => [
-  { value: '', label: t('settings.carts.allContacts') },
+  { value: '', label: t('dataList.filter.all') },
   ...ABANDONED_CART_CONTACTED.map((value) => ({
     value,
     label: t(`settings.carts.contacted.${value}`),

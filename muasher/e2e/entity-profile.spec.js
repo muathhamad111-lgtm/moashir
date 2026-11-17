@@ -207,13 +207,15 @@ test('the 390 px layout puts completeness first and does not overflow', async ({
   await shoot(page, testInfo, '12-mobile-validation-error')
 })
 
-test('the 390 px read-only layout and the dark mode', async ({ page }, testInfo) => {
+test('the 390 px read-only layout, and a dark-mode preference that the portal ignores', async ({
+  page,
+}, testInfo) => {
   await openProfile(page, testInfo, SUSPENDED, { viewport: MOBILE })
   await shoot(page, testInfo, '13-mobile-read-only')
   await expect(page.getByTestId('profile-read-only')).toBeVisible()
   await openProfile(page, testInfo, NAMAA, { theme: 'dark' })
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
-  await shoot(page, testInfo, '14-desktop-dark')
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+  await shoot(page, testInfo, '14-desktop-dark-preference')
 })
 
 test('the compact facts row and the missing marker keep AA contrast', async ({

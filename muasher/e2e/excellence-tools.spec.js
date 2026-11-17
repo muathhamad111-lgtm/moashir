@@ -240,7 +240,9 @@ test.describe('excellence tools — staff and settings', () => {
 
   test('lets the assessor write the summary under review', async ({ page }, testInfo) => {
     await seedSignedIn(page, ASSESSOR, { locale: localeOf(testInfo), theme: 'light' })
-    await open(page, `/admin/requests/${UNDER_REVIEW}/review`, '[data-testid="review-summary"]')
+    await open(page, `/admin/requests/${UNDER_REVIEW}/review`, '.station-row__button')
+    await page.locator('.station-row__button').last().click()
+    await expect(page.locator('[data-testid="review-summary"]')).toBeVisible()
     await page.locator('textarea[name="assessor-summary"]').fill('ملخص تجريبي لنتيجة التقييم.')
     await page.locator('[data-testid="review-summary-save"]').click()
     await expect(page.locator('[data-testid="review-summary-version"]')).toBeVisible()

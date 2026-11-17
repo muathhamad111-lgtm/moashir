@@ -25,8 +25,11 @@ const { t } = useI18n()
 // The actions column takes only the width of its buttons; the other columns share the rest.
 const ACTIONS_COLUMN = 'actions'
 
+const DATE_COLUMN_SUFFIX = 'At'
+
 function cellClass(column) {
-  return column.key === ACTIONS_COLUMN ? 'table__cell--actions' : null
+  if (column.key === ACTIONS_COLUMN) return 'table__cell--actions'
+  return column.date || column.key.endsWith(DATE_COLUMN_SUFFIX) ? 'table__cell--date' : null
 }
 
 function keyOf(item, index) {

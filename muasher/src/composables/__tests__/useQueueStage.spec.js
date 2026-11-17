@@ -10,7 +10,6 @@ describe('useQueueStage', () => {
     const { api, globals } = withSetup(() => useQueueStage())
     await globals.router.push('/admin/requests?path=accredited&stage=preparing')
     expect(api.stage.value).toBe('preparing')
-    expect(api.stageQuery.value).toEqual({ stage: 'preparing' })
     api.stage.value = 'queue'
     await flushPromises()
     expect(globals.router.currentRoute.value.query).toEqual({ path: 'accredited' })

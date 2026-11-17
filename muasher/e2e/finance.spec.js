@@ -112,7 +112,7 @@ test('payments made in test mode are one filter away; the default lists actual p
   const filters = await openListFilters(page)
   await filters.locator('.transaction-filters__mode .dropdown-field').click()
   await page
-    .getByRole('option', { name: isEn(testInfo) ? 'Test payments' : 'مدفوعات الاختبار' })
+    .getByRole('option', { name: isEn(testInfo) ? 'Preview payments' : 'مدفوعات المعاينة' })
     .click()
   await applyOpenListFilters(page)
   const testBadge = page.locator('.transactions-table__reference .badge--warning')

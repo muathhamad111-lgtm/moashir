@@ -9,7 +9,6 @@ use App\Data\Dashboards\HeldBoards;
 use App\Data\Identity\CommitteeAppointment;
 use App\Enums\Award\AwardCycleStatus;
 use App\Enums\Dashboards\DashboardBoard;
-use App\Enums\Identity\PermissionKey;
 use App\Exceptions\Dashboards\DashboardRejected;
 use App\Models\Identity\User;
 
@@ -40,10 +39,6 @@ final readonly class BoardHoldings
 
         if ($seated) {
             $boards[] = DashboardBoard::CommitteeAssessor;
-        }
-
-        if ($user->can(PermissionKey::DashboardExecutiveView->value)) {
-            $boards[] = DashboardBoard::Executive;
         }
 
         $unique = [];

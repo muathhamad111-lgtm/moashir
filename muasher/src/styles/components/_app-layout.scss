@@ -1,27 +1,37 @@
 @use '../mixins' as *;
+@use '../tokens' as *;
 
 .app-layout {
-  @include flex(row, stretch, flex-start);
+  --tts-sidebar-offset: calc(var(--tts-page-top) + var(--tts-header-height) + var(--tts-body-gap));
+  @include flex(column, stretch, flex-start, var(--tts-body-gap));
   min-block-size: 100vh;
-  flex: 1;
+  padding-block: var(--tts-page-top) var(--space-8);
+  padding-inline: var(--tts-page-gutter);
   background-color: var(--content-bg);
+
+  @include respond-to('lg') {
+    --tts-page-gutter: #{$tts-page-gutter};
+    --tts-page-top: #{$tts-page-top};
+  }
 }
 
-.app-layout__main {
-  @include flex(column, stretch, flex-start);
+.app-layout__body {
+  @include flex(row, flex-start, flex-start, var(--space-3));
   flex: 1;
   min-inline-size: 0;
-  background-color: var(--content-bg);
+
+  @include respond-to('md') {
+    gap: var(--tts-body-gap);
+  }
+
+  @include respond-to('lg') {
+    gap: #{$tts-body-gap-lg};
+  }
 }
 
 .app-layout__content {
   flex: 1;
   min-inline-size: 0;
-  padding: var(--space-4);
-
-  @include respond-to('md') {
-    padding: var(--space-6);
-  }
 
   &:focus {
     outline: none;
@@ -34,7 +44,7 @@
   inset-block-start: var(--space-4);
   z-index: var(--z-toast);
   padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-md);
+  border-radius: var(--btn-radius, var(--radius-md));
   background-color: var(--theme-accent);
   color: var(--theme-on-accent);
   transform: translateY(-200%);

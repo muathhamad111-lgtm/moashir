@@ -225,7 +225,7 @@ test('Finance approves the selected transfers at once', async ({ page }, testInf
   const filters = await openListFilters(page)
   await filters.locator('.transfer-filters [role="combobox"]').first().click()
   await expect(page.locator('.dropdown-popup').getByRole('option')).toHaveText([
-    isEn(testInfo) ? 'All accounts' : 'كل الحسابات',
+    isEn(testInfo) ? 'All' : 'الكل',
     isEn(testInfo) ? 'Example Bank (example) · ends in 7519' : 'بنك المثال (مثال) · ينتهي بـ 7519',
   ])
   await page.keyboard.press('Escape')

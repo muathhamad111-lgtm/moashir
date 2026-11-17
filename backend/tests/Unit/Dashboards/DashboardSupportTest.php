@@ -25,7 +25,7 @@ it('orders the boards by the landing precedence of the requirements', function (
         DashboardBoard::SystemAdmin, DashboardBoard::AwardSecretary, DashboardBoard::FilteringOfficer,
         DashboardBoard::RequestFollower, DashboardBoard::Assessor, DashboardBoard::CommitteeAssessor,
         DashboardBoard::ContentOfficer, DashboardBoard::CriteriaOfficer, DashboardBoard::FinanceOfficer,
-        DashboardBoard::Entity, DashboardBoard::Executive,
+        DashboardBoard::Entity,
     ];
 
     $precedences = array_map(static fn (DashboardBoard $board): int => $board->precedence(), $order);

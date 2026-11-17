@@ -38,12 +38,12 @@ export function useUsers() {
   )
 
   const roleFilterOptions = computed(() => [
-    { value: '', label: t('users.filters.allRoles') },
+    { value: '', label: t('dataList.filter.all') },
     ...roleOptions.value,
   ])
 
   const statusFilterOptions = computed(() => [
-    { value: '', label: t('users.filters.allStatuses') },
+    { value: '', label: t('dataList.filter.all') },
     ...USER_STATUS_LIST.map((status) => ({ value: status, label: t(`users.statuses.${status}`) })),
   ])
 

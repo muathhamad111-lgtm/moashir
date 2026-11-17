@@ -1,6 +1,6 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
-import { LOGO_SURFACES } from '@/constants/branding'
+import { BRAND_COLOR_ROLES, DEFAULT_BRAND_COLORS, LOGO_SURFACES } from '@/constants/branding'
 import { useBrandingEditor } from '@/composables/useBrandingEditor'
 import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
@@ -9,8 +9,8 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import LogoVariantField from '@/components/branding/LogoVariantField.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
-import EmptyState from '@/components/feedback/EmptyState.vue'
-import AccentSwatchPicker from '@/components/branding/AccentSwatchPicker.vue'
+import BrandColorField from '@/components/branding/BrandColorField.vue'
+import BrandContrastNotice from '@/components/branding/BrandContrastNotice.vue'
 import ContrastFailNotice from '@/components/branding/ContrastFailNotice.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 
@@ -19,8 +19,12 @@ const toast = useToast()
 const { confirm } = useConfirm()
 
 const {
-  palette,
-  draftToken,
+  draftColors,
+  draftScheme,
+  isDefault,
+  contrastPairs,
+  setColor,
+  fillDefaultColors,
   rejectedPairs,
   reasonPrompt,
   canSave,
@@ -30,7 +34,6 @@ const {
   status,
   saving,
   resetting,
-  localized,
   load,
   save,
   reset,
@@ -68,23 +71,34 @@ async function onReset() {
 
     <ErrorState v-else-if="status === 'error'" :message="t('branding.loadError')" @retry="load" />
 
-    <EmptyState
-      v-else-if="status === 'empty'"
-      icon="palette"
-      :title="t('branding.emptyTitle')"
-      :message="t('branding.emptyMessage')"
-    />
-
     <div v-else class="branding-page__layout">
       <div class="branding-page__form">
-        <Card :title="t('branding.accent.title')">
+        <Card :title="t('branding.colors.title')">
+          <p class="brand-colors__hint">{{ t('branding.colors.hint') }}</p>
           <ContrastFailNotice :pairs="rejectedPairs" />
-          <AccentSwatchPicker
-            v-model="draftToken"
-            :palette="palette"
-            :localized="localized"
+          <div class="brand-colors__fields">
+            <BrandColorField
+              v-for="role in BRAND_COLOR_ROLES"
+              :key="role"
+              :role="role"
+              :model-value="draftColors[role]"
+              :fallback="DEFAULT_BRAND_COLORS[role]"
+              :disabled="busy"
+              @update:model-value="setColor(role, $event)"
+            />
+          </div>
+          <BaseButton
+            v-if="!isDefault"
+            class="brand-colors__default"
+            variant="ghost"
+            size="sm"
+            icon="undo"
             :disabled="busy"
-          />
+            @click="fillDefaultColors"
+          >
+            {{ t('branding.colors.restoreDefault') }}
+          </BaseButton>
+          <BrandContrastNotice :pairs="contrastPairs" :scheme="draftScheme" />
         </Card>
 
         <Card :title="t('branding.logo.title')">

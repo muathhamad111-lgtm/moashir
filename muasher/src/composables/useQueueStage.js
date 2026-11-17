@@ -16,9 +16,5 @@ export function useQueueStage() {
       router.replace({ query })
     },
   })
-  const stageQuery = computed(() =>
-    stage.value === QUEUE_STAGES.PREPARING ? { stage: QUEUE_STAGES.PREPARING } : {},
-  )
-
-  return { stage, stageQuery }
+  return { stage }
 }

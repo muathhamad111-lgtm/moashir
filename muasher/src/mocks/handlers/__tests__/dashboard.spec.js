@@ -41,7 +41,7 @@ describe('staff dashboard mock (Task-35 contract)', () => {
       expect(typeof card.key).toBe('string')
       expect(['count', 'percent', 'money', 'days', 'date']).toContain(card.format)
     })
-    expect(body.data.widgets.map((widget) => widget.key)).toContain('entities_by_region')
+    expect(body.data.widgets.map((widget) => widget.key)).toEqual(['activity'])
   })
 
   it('carries the Action Center items of every held role without context', async () => {
@@ -63,7 +63,56 @@ describe('staff dashboard mock (Task-35 contract)', () => {
     expect((await summary()).status).toBe(401)
   })
 
-  it('knows every board key of the backend', () => {
-    expect(DASHBOARD_BOARDS).toHaveLength(11)
+  it('knows every board key of the backend; the executive view is the overview, not a board', () => {
+    expect(DASHBOARD_BOARDS).toHaveLength(10)
+    expect(DASHBOARD_BOARDS).not.toContain('executive')
+  })
+})
+
+async function overview(query = '') {
+  const response = await mockFetch(`${MOCK_API_BASE}/dashboard/overview${query}`)
+  return { status: response.status, body: await response.json() }
+}
+
+describe('executive overview mock', () => {
+  it('serves the month to date with a comparison, trends, paths and the snapshot', async () => {
+    seedMockSession({ id: 1, roles: ['system_admin'] })
+    const { status, body } = await overview()
+    expect(status).toBe(200)
+    expect(body.data.period.preset).toBe('month')
+    expect(body.data.period.from.endsWith('-01')).toBe(true)
+    expect(body.data.cards.map((card) => card.key)).toEqual([
+      'new_entities',
+      'requests_submitted',
+      'assessments_completed',
+      'accredited_average_percent',
+      'payments_collected',
+      'entities_active',
+    ])
+    expect(body.data.trends.bucket).toBe('day')
+    expect(body.data.trends.series.entities).toHaveLength(body.data.trends.buckets.length)
+    expect(body.data.paths.map((row) => row.path)).toEqual(['self', 'accredited', 'advanced'])
+    expect(body.data.snapshot.map((widget) => widget.key)).toContain('entities_by_level')
+  })
+
+  it('buckets a long custom period by month and refuses a malformed one', async () => {
+    seedMockSession({ id: 1, roles: ['system_admin'] })
+    const { body } = await overview('?period=custom&from=2025-01-01&to=2025-12-31')
+    expect(body.data.trends.bucket).toBe('month')
+    expect(body.data.trends.buckets).toHaveLength(12)
+    expect(body.data.previousPeriod).toEqual({ from: '2024-01-02', to: '2024-12-31' })
+
+    const reversed = await overview('?period=custom&from=2025-12-31&to=2025-01-01')
+    expect(reversed.status).toBe(422)
+    expect(Object.keys(reversed.body.errors)).toEqual(['to'])
+    expect((await overview('?period=custom')).body.errors).toHaveProperty('from')
+    expect((await overview('?period=decade')).status).toBe(422)
+  })
+
+  it('keeps the overview to holders of the executive permission', async () => {
+    seedMockSession({ id: 41, roles: ['finance_officer'] })
+    expect((await overview()).status).toBe(403)
+    clearMockSession()
+    expect((await overview()).status).toBe(401)
   })
 })

@@ -25,7 +25,6 @@ use App\Services\Dashboards\Boards\CommitteeAssessorBoardQuery;
 use App\Services\Dashboards\Boards\ContentOfficerBoardQuery;
 use App\Services\Dashboards\Boards\CriteriaOfficerBoardQuery;
 use App\Services\Dashboards\Boards\EntityBoardQuery;
-use App\Services\Dashboards\Boards\ExecutiveBoardQuery;
 use App\Services\Dashboards\Boards\FilteringOfficerBoardQuery;
 use App\Services\Dashboards\Boards\FinanceOfficerBoardQuery;
 use App\Services\Dashboards\Boards\RequestFollowerBoardQuery;
@@ -39,7 +38,6 @@ final class DashboardServiceProvider extends ServiceProvider
     {
         $this->app->tag([
             SystemAdminBoardQuery::class,
-            ExecutiveBoardQuery::class,
             RequestFollowerBoardQuery::class,
             AssessorBoardQuery::class,
             CommitteeAssessorBoardQuery::class,

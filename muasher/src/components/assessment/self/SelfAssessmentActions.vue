@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import CriterionStepButtons from '@/components/assessment/CriterionStepButtons.vue'
 
 const props = defineProps({
   saving: { type: Boolean, default: false },
@@ -33,17 +34,14 @@ const hint = computed(() => {
       <AppIcon name="lock" />
       {{ t('assessment.self.actions.submitHint') }}
     </p>
-    <div class="self-actions__buttons">
-      <BaseButton
-        v-if="!isFirst"
-        variant="ghost"
-        icon="arrow-left"
-        data-testid="self-previous"
-        :disabled="busy"
-        @click="emit('previous')"
-      >
-        {{ t('assessment.self.actions.previous') }}
-      </BaseButton>
+    <CriterionStepButtons
+      class="self-actions__buttons"
+      :is-first="isFirst"
+      :is-last="isLast"
+      :disabled="busy"
+      @previous="emit('previous')"
+      @next="emit('next')"
+    >
       <BaseButton
         variant="secondary"
         icon="save"
@@ -52,29 +50,20 @@ const hint = computed(() => {
         :disabled="readOnly || busy"
         @click="emit('save')"
       >
-        {{ t('assessment.self.actions.saveDraft') }}
+        {{ t('components.steps.saveDraft') }}
       </BaseButton>
-      <BaseButton
-        v-if="!isLast"
-        variant="primary"
-        icon-end="arrow-right"
-        data-testid="self-next"
-        :disabled="busy"
-        @click="emit('next')"
-      >
-        {{ t('assessment.self.actions.next') }}
-      </BaseButton>
-      <BaseButton
-        v-else
-        variant="primary"
-        icon="send"
-        data-testid="self-submit"
-        :loading="submitting"
-        :disabled="readOnly || submitBlocked || busy"
-        @click="emit('submit')"
-      >
-        {{ t('assessment.self.actions.submit') }}
-      </BaseButton>
-    </div>
+      <template #last>
+        <BaseButton
+          variant="primary"
+          icon="send"
+          data-testid="self-submit"
+          :loading="submitting"
+          :disabled="readOnly || submitBlocked || busy"
+          @click="emit('submit')"
+        >
+          {{ t('assessment.self.actions.submit') }}
+        </BaseButton>
+      </template>
+    </CriterionStepButtons>
   </footer>
 </template>

@@ -3,26 +3,23 @@ import { computed, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
-import { useBrandLogo } from '@/composables/useBrandLogo'
 import { useEntityLevel } from '@/composables/useEntityLevel'
 import { usePortalCountsStore } from '@/stores/portalCounts'
 import { PORTAL_SIDE_NAV_ITEMS, PORTAL_TOOL_ROUTES, PORTAL_TOOLS } from '@/constants/portal'
-import { ROUTE_NAMES } from '@/constants/routeNames'
 import { accessFor } from '@/constants/routeAccess'
 import { usePermissions } from '@/composables/usePermissions'
 import { useHiddenPaths } from '@/composables/useHiddenPaths'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import LevelMiniCard from '@/components/level/LevelMiniCard.vue'
+import SidebarIdentityCard from '@/components/layout/SidebarIdentityCard.vue'
 import PortalSideNavItem from './PortalSideNavItem.vue'
 
-const props = defineProps({
+defineProps({
   collapsed: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['toggle'])
 const { t } = useI18n()
 const route = useRoute()
-const { logoOnDark } = useBrandLogo()
 const { tier, miniCard } = useEntityLevel()
 const counts = storeToRefs(usePortalCountsStore())
 const toolsId = useId()
@@ -44,10 +41,6 @@ function countOf(item) {
 function isActive(item) {
   return item.routes.includes(route.name)
 }
-
-function toggleLabel() {
-  return props.collapsed ? t('portal.sideNav.expand') : t('portal.sideNav.collapse')
-}
 </script>
 
 <template>
@@ -57,22 +50,7 @@ function toggleLabel() {
     :aria-label="t('portal.nav.label')"
     data-testid="portal-side-nav"
   >
-    <div class="side-nav__head">
-      <router-link class="side-nav__brand" :to="{ name: ROUTE_NAMES.APP_DASHBOARD }">
-        <img class="side-nav__logo" :src="logoOnDark" :alt="t('portal.brandHome')" />
-      </router-link>
-      <button
-        type="button"
-        class="side-nav__collapse"
-        :aria-expanded="!collapsed"
-        :aria-label="toggleLabel()"
-        :title="toggleLabel()"
-        data-testid="portal-nav-collapse"
-        @click="emit('toggle')"
-      >
-        <AppIcon :name="collapsed ? 'chevron-right' : 'chevron-left'" />
-      </button>
-    </div>
+    <SidebarIdentityCard :home-label="t('portal.brandHome')" :collapsed="collapsed" />
 
     <ul class="side-nav__list">
       <li v-for="item in PORTAL_SIDE_NAV_ITEMS" :key="item.key">

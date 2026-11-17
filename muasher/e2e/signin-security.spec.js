@@ -465,7 +465,11 @@ test.describe('sign-in and security screenshots', () => {
           await open(page, shot.path, shot.ready)
           await (shot.prepare ?? NOTHING_TO_PREPARE)(page)
           await expect(page.locator(shot.settled ?? shot.ready).first()).toBeVisible()
-          await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
+          const backOffice = (await page.locator('html').getAttribute('data-shell')) === 'tts'
+          await expect(page.locator('html')).toHaveAttribute(
+            'data-theme',
+            backOffice ? 'light' : theme,
+          )
           await noHorizontalOverflow(page)
           await page.evaluate(() => window.scrollTo(0, 0))
           await settleFonts(page)

@@ -13,7 +13,7 @@ const emit = defineEmits(['filter', 'sort'])
 const { t } = useI18n()
 
 const statusOptions = computed(() => [
-  { value: '', label: t('cycles.filters.allStatuses') },
+  { value: '', label: t('dataList.filter.all') },
   ...CYCLE_STATUS_LIST.map((value) => ({ value, label: t(`cycles.statuses.${value}`) })),
 ])
 const sortOptions = computed(() =>

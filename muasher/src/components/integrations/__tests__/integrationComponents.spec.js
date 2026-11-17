@@ -47,10 +47,10 @@ describe('ConnectionTestPanel', () => {
     const wrapper = mountWith(ConnectionTestPanel, { run })
     await wrapper.find('button').trigger('click')
     await flushPromises()
-    expect(wrapper.find('.test-result__summary').text()).toContain('Connection test passed')
+    expect(wrapper.find('.test-result__summary').text()).toContain('Connection check passed')
     expect(wrapper.text()).toContain('Account status and balance')
     expect(wrapper.text()).toContain('1250.00 SAR')
-    expect(wrapper.text()).toContain('Confirmed by sending a test SMS')
+    expect(wrapper.text()).toContain('Confirmed by sending a check SMS')
     expect(wrapper.emitted('settled')).toHaveLength(1)
   })
 
@@ -77,7 +77,7 @@ describe('ConnectionTestPanel', () => {
     await wrapper.find('button').trigger('click')
     await flushPromises()
     expect(wrapper.find('.test-result--failed .test-result__summary').text()).toContain(
-      'Connection test failed',
+      'Connection check failed',
     )
     expect(wrapper.text()).toContain('Key prefixes of the environment')
     expect(wrapper.text()).toContain('must both start with the prefix of this environment')
@@ -167,7 +167,7 @@ describe('status badges', () => {
       mode: 'live',
       lastTest: null,
     })
-    expect(wrapper.text()).toContain('Configured — not tested')
+    expect(wrapper.text()).toContain('Configured — not checked')
     expect(wrapper.text()).toContain('Source: environment (bootstrap)')
     expect(wrapper.text()).toContain('Live')
   })

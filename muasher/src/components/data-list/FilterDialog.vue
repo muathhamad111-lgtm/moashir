@@ -48,7 +48,7 @@ function apply() {
       {{ t('dataList.filter.clear') }}
     </BaseButton>
 
-    <BaseModal v-model="isOpen" :title="t('dataList.filter.title')" size="md">
+    <BaseModal v-model="isOpen" :title="t('dataList.filter.title')" size="md" layout="drawer">
       <div class="filter-dialog__fields">
         <slot />
       </div>

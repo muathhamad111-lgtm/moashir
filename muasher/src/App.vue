@@ -14,10 +14,10 @@ import { useLocale } from '@/composables/useLocale'
 import { useTheme } from '@/composables/useTheme'
 import { usePlatformIdentity } from '@/composables/usePlatformIdentity'
 import { useSiteBranding } from '@/composables/useSiteBranding'
-import { useBrandingStore } from '@/stores/branding'
-import { useAuthStore } from '@/stores/auth'
-import { layoutKeyFor } from '@/utils/portalAudience'
+import { useBrandSchemeStyle } from '@/composables/useBrandSchemeStyle'
+import { useTtsShell } from '@/composables/useTtsShell'
 import { BRAND_THEME_COLOR } from '@/constants/branding'
+import { THEMES } from '@/constants/themes'
 
 const LAYOUTS = { app: AppLayout, portal: PortalLayout, public: PublicLayout, auth: AuthLayout }
 
@@ -25,13 +25,15 @@ const { t } = useI18n()
 const route = useRoute()
 const { locale, dir } = useLocale()
 const { theme } = useTheme()
-const branding = useBrandingStore()
-const auth = useAuthStore()
+const { layoutKey, isTtsShell } = useTtsShell()
 
-const layoutKey = computed(() => layoutKeyFor(route.meta.layout, auth.roles))
 const layout = computed(() => LAYOUTS[layoutKey.value] ?? PublicLayout)
-const backOfficeAccent = computed(() =>
-  layoutKey.value === 'app' ? branding.accentToken : undefined,
+const documentTheme = computed(() => (isTtsShell.value ? THEMES.light : theme.value))
+const brandSchemeCss = useBrandSchemeStyle()
+const brandStyles = computed(() =>
+  isTtsShell.value && brandSchemeCss.value
+    ? [{ key: 'brand-scheme', textContent: brandSchemeCss.value }]
+    : [],
 )
 
 const { platformName, siteName } = usePlatformIdentity()
@@ -60,12 +62,13 @@ useHead({
   htmlAttrs: {
     lang: () => locale.value,
     dir: () => dir.value,
-    'data-theme': () => theme.value,
-    'data-accent': () => backOfficeAccent.value,
+    'data-theme': () => documentTheme.value,
+    'data-shell': () => (isTtsShell.value ? 'tts' : undefined),
   },
   title: () => (route.meta.titleKey ? t(route.meta.titleKey) : platformName.value),
   titleTemplate: (title) => (title ? `${title} | ${siteName.value}` : siteName.value),
   link: iconLinks,
+  style: brandStyles,
   meta: [
     { name: 'description', content: () => t('meta.description') },
     { name: 'theme-color', content: BRAND_THEME_COLOR },

@@ -32,7 +32,13 @@ beforeEach(() => {
   vi.clearAllMocks()
   siteSettingsService.get.mockResolvedValue({ data: {} })
   brandingService.get.mockResolvedValue({
-    data: { accentToken: 'brand_default', logos: { dark: null }, palette: [], updatedAt: null },
+    data: {
+      colors: { primary: '#98d8d3', secondary: '#0a2325' },
+      scheme: null,
+      defaultColors: { primary: '#98d8d3', secondary: '#0a2325' },
+      logos: { dark: null },
+      updatedAt: null,
+    },
   })
 })
 

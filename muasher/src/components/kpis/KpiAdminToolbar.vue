@@ -24,12 +24,12 @@ const filterState = {
 }
 
 const flagOptions = (key) => [
-  { value: '', label: t('kpis.admin.filters.all') },
+  { value: '', label: t('dataList.filter.all') },
   { value: 'true', label: t(`kpis.admin.filters.${key}.yes`) },
   { value: 'false', label: t(`kpis.admin.filters.${key}.no`) },
 ]
 const categoryOptions = computed(() => [
-  { value: '', label: t('kpis.admin.filters.allCategories') },
+  { value: '', label: t('dataList.filter.all') },
   ...props.categories.map((category) => ({
     value: category.id,
     label: props.localized(category.name),

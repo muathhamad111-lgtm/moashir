@@ -64,7 +64,7 @@ describe('Sidebar', () => {
     const { wrapper } = factory({ roles: [ROLES.SYSTEM_ADMIN] })
     await wrapper.vm.$nextTick()
     const labels = wrapper.findAll('.sidebar__label').map((el) => el.text())
-    expect(wrapper.findAll('.sidebar__item')).toHaveLength(14)
+    expect(wrapper.findAll('.sidebar__item')).toHaveLength(13)
     expect(labels).toContain('المستخدمون')
     expect(labels).not.toContain('إدارة الصلاحيات')
     expect(labels).toEqual(expect.arrayContaining(['المالية', 'صندوق الرسائل', 'المستخدمون']))
@@ -88,20 +88,13 @@ describe('Sidebar', () => {
     )
   })
 
-  it('lists the dashboards first without a caption, then groups items by module', async () => {
+  it('lists the dashboard first without a caption, then groups items by module', async () => {
     const { wrapper } = factory({ roles: [ROLES.SYSTEM_ADMIN] })
     await wrapper.vm.$nextTick()
     const headless = wrapper
       .findAll('.sidebar__menu--headless .sidebar__label')
       .map((el) => el.text())
-    expect(headless).toEqual([
-      'لوحة المعلومات',
-      'اللوحة التنفيذية',
-      'الجهات',
-      'المالية',
-      'المستخدمون',
-      'صندوق الرسائل',
-    ])
+    expect(headless).toEqual(['لوحة المعلومات', 'الجهات', 'المالية', 'المستخدمون', 'صندوق الرسائل'])
     expect(wrapper.text()).not.toContain('الجهات المحذوفة')
     expect(wrapper.text()).not.toContain('طلبات تغيير البريد')
     expect(wrapper.text()).not.toContain('الإشعارات')
@@ -210,38 +203,20 @@ describe('Sidebar', () => {
     expect(labels).not.toContain('سجل التدقيق')
   })
 
-  it('renders the brand logo linking to the dashboard', () => {
+  it('opens with the platform card: the on-light logo linking to the dashboard', () => {
     const { wrapper } = factory()
-    expect(wrapper.find('.sidebar__brand').attributes('href')).toBe('/dashboard')
-    expect(wrapper.find('.sidebar__logo').attributes('alt')).toBe(
-      'مؤشر، الانتقال إلى لوحة المعلومات',
-    )
+    expect(wrapper.find('.identity-card__brand').attributes('href')).toBe('/dashboard')
+    const logo = wrapper.find('.identity-card__logo')
+    expect(logo.attributes('alt')).toBe('مؤشر، الانتقال إلى لوحة المعلومات')
+    expect(logo.attributes('src')).toBe(DEFAULT_BACK_OFFICE_LOGOS.site)
   })
 
-  it('always shows the logo for a dark background, in dark mode and in light mode', async () => {
+  it('prefers the uploaded site logo, made for a light background', async () => {
     const { wrapper, globals } = factory()
-    const ui = useUiStore(globals.pinia)
-    ui.setTheme('dark')
+    useBrandingStore(globals.pinia).apply({ logos: { dark: 'blob:on-dark', site: 'blob:site' } })
     await wrapper.vm.$nextTick()
-    expect(wrapper.find('.sidebar__logo').attributes('src')).toBe(DEFAULT_BACK_OFFICE_LOGOS.dark)
-    ui.setTheme('light')
-    await wrapper.vm.$nextTick()
-    expect(wrapper.find('.sidebar__logo').attributes('src')).toBe(DEFAULT_BACK_OFFICE_LOGOS.dark)
+    expect(wrapper.find('.identity-card__logo').attributes('src')).toBe('blob:site')
   })
-
-  it.each(['dark', 'light'])(
-    'prefers the custom dark-background logo in %s mode',
-    async (theme) => {
-      const { wrapper, globals } = factory()
-      useUiStore(globals.pinia).setTheme(theme)
-      useBrandingStore(globals.pinia).apply({
-        accentToken: 'brand_default',
-        logos: { dark: 'blob:on-dark', light: 'blob:on-light' },
-      })
-      await wrapper.vm.$nextTick()
-      expect(wrapper.find('.sidebar__logo').attributes('src')).toBe('blob:on-dark')
-    },
-  )
 
   it('collapses via the ui store keeping accessible names', async () => {
     const { wrapper, globals } = factory({ roles: [ROLES.ENTITY] })
@@ -250,6 +225,7 @@ describe('Sidebar', () => {
     await wrapper.vm.$nextTick()
     expect(wrapper.classes()).toContain('sidebar--collapsed')
     expect(wrapper.find('.sidebar__item').attributes('aria-label')).toBeTruthy()
+    expect(wrapper.find('.identity-card').classes()).toContain('identity-card--collapsed')
   })
 
   it('is a nav landmark with an accessible label', () => {
@@ -258,11 +234,15 @@ describe('Sidebar', () => {
     expect(wrapper.attributes('aria-label')).toBe('التنقل الرئيسي')
   })
 
-  it('marks only the executive dashboard as current on its page', async () => {
+  it('has no separate executive dashboard; its old link lands on the dashboard', async () => {
     const { wrapper, globals } = factory({ roles: [ROLES.SYSTEM_ADMIN] })
     await globals.router.push('/dashboard/executive')
     await flushPromises()
+    expect(globals.router.currentRoute.value.path).toBe('/dashboard')
     const current = wrapper.findAll('[aria-current="page"]').map((el) => el.text())
-    expect(current).toEqual(['اللوحة التنفيذية'])
+    expect(current).toEqual(['لوحة المعلومات'])
+    expect(wrapper.findAll('.sidebar__label').map((el) => el.text())).not.toContain(
+      'اللوحة التنفيذية',
+    )
   })
 })

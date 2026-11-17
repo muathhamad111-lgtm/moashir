@@ -87,10 +87,13 @@ async function completeAccreditedForm(page, copy) {
   await expect(impact.locator('.scan-status').first()).toContainText(copy.clean, {
     timeout: 20000,
   })
-  await page.locator('.accredited-actions .btn--secondary').click()
-  await expect(page.locator('.accredited-completeness')).toHaveClass(
-    /accredited-completeness--done/,
+  await page.locator('[data-testid="accredited-save"]').click()
+  const progress = page.locator('.request-card [role="progressbar"]')
+  await expect(progress).toHaveAttribute(
+    'aria-valuenow',
+    (await progress.getAttribute('aria-valuemax')) ?? '',
   )
+  await page.locator('.station-row__button').last().click()
 }
 
 test('submitting a request asks one short question, then confirms the success', async ({
@@ -102,7 +105,7 @@ test('submitting a request asks one short question, then confirms the success', 
   await completeAccreditedForm(page, copy)
   await expect(page.locator('.accredited-actions__hint')).toBeVisible()
 
-  await page.locator('.accredited-actions .btn--primary').click()
+  await page.locator('[data-testid="accredited-submit"]').click()
   const dialog = alertDialog(page)
   await expectConcise(dialog, {
     title: copy.submitTitle,
@@ -113,7 +116,7 @@ test('submitting a request asks one short question, then confirms the success', 
   await page.keyboard.press('Escape')
   await expect(dialog).toHaveCount(0)
 
-  await page.locator('.accredited-actions .btn--primary').click()
+  await page.locator('[data-testid="accredited-submit"]').click()
   await alertDialog(page).locator('.modal__footer .btn--primary').click()
   await expect(page).toHaveURL(/\/paths\/accredited\/9101\?tab=request$/)
   const done = successDialog(page)

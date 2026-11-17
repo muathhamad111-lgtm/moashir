@@ -19,7 +19,7 @@ final readonly class BrandingAuditTrail
      */
     public function snapshotOf(BrandingTheme $theme): array
     {
-        $snapshot = ['accent_token' => $theme->accent_token->value];
+        $snapshot = ['primary_color' => $theme->primary_color, 'secondary_color' => $theme->secondary_color];
 
         foreach (LogoVariant::columns() as $column) {
             $snapshot[$column] = $theme->getAttribute($column);

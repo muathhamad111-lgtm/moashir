@@ -9,6 +9,7 @@ use App\Enums\Identity\RoleKey;
 use App\Models\Audit\Audit;
 use App\Models\Files\StoredFile;
 use App\Models\Settings\BrandingTheme;
+use App\Support\Branding\ContrastRatio;
 use Illuminate\Support\Facades\Notification;
 
 const BRANDING = '/api/v1/settings/branding';
@@ -19,79 +20,102 @@ beforeEach(function (): void {
     Notification::fake();
 });
 
-it('shows the same theme to every signed-in user without the palette', function (RoleKey $role): void {
+it('shows the same theme with its derived readable colours to every signed-in user', function (RoleKey $role): void {
     signIn($role === RoleKey::Entity ? entityUser() : staffUser($role))->getJson(BRANDING)
         ->assertOk()
-        ->assertJsonPath('data.accent_token', 'brand_default')
+        ->assertJsonPath('data.primary_color', '#98d8d3')
+        ->assertJsonPath('data.secondary_color', '#0a2325')
+        ->assertJsonPath('data.scheme', [
+            'primary' => '#98d8d3',
+            'on_primary' => '#100f10',
+            'primary_text' => '#547774',
+            'secondary' => '#0a2325',
+            'on_secondary' => '#ffffff',
+        ])
+        ->assertJsonPath('data.default_colors', ['primary' => '#98d8d3', 'secondary' => '#0a2325'])
         ->assertJsonPath('data.logo_light', null)
-        ->assertJsonPath('data.palette', []);
+        ->assertJsonMissingPath('data.palette');
 })->with([RoleKey::Entity, RoleKey::Assessor, RoleKey::ContentOfficer]);
 
-it('lists the controlled palette to the System Administrator', function (): void {
-    signIn(systemAdmin())->getJson(BRANDING)
-        ->assertOk()
-        ->assertJsonCount(9, 'data.palette')
-        ->assertJsonPath('data.palette.0', [
-            'token' => 'brand_default',
-            'hex' => '#98d8d3',
-            'text_on_light_hex' => '#1d7470',
-            'label' => ['ar' => 'ألوان الهوية الافتراضية', 'en' => 'Brand default'],
-        ]);
-});
-
-it('lets the System Administrator pick an accent from the palette and audits the change', function (): void {
+it('lets the System Administrator choose any primary and secondary colour and audits the change', function (): void {
     $admin = systemAdmin();
 
-    signIn($admin)->putJson(BRANDING, ['accent_token' => 'teal'])
+    signIn($admin)->putJson(BRANDING, ['primary_color' => '#D4088C', 'secondary_color' => '#4a2a7d'])
         ->assertOk()
-        ->assertJsonPath('data.accent_token', 'teal');
+        ->assertJsonPath('data.primary_color', '#d4088c')
+        ->assertJsonPath('data.secondary_color', '#4a2a7d')
+        ->assertJsonPath('data.scheme.on_primary', '#ffffff')
+        ->assertJsonPath('data.scheme.primary_text', '#d4088c')
+        ->assertJsonPath('data.scheme.on_secondary', '#ffffff');
 
     $audit = Audit::query()->where('event', AuditEvent::BrandingUpdated->value)->sole();
-    expect($audit->old_values['accent_token'])->toBe('brand_default')
-        ->and($audit->new_values['accent_token'])->toBe('teal')
+    expect($audit->old_values)->toMatchArray(['primary_color' => '#98d8d3', 'secondary_color' => '#0a2325'])
+        ->and($audit->new_values)->toMatchArray(['primary_color' => '#d4088c', 'secondary_color' => '#4a2a7d'])
         ->and($audit->user_id)->toBe($admin->id)
-        ->and($audit->tags)->toBe('accent');
+        ->and($audit->tags)->toBe('colors');
 });
 
-it('refuses a token outside the controlled palette and a free hex value', function (string $token): void {
-    signIn(systemAdmin())->putJson(BRANDING, ['accent_token' => $token])
+it('derives a darker readable text shade for a light primary colour', function (): void {
+    signIn(systemAdmin())->putJson(BRANDING, ['primary_color' => '#ffe066', 'secondary_color' => '#0a2325'])
+        ->assertOk()
+        ->assertJsonPath('data.scheme.on_primary', '#100f10')
+        ->assertJsonPath('data.scheme.primary_text', fn (string $hex): bool => $hex !== '#ffe066'
+            && ContrastRatio::between($hex, '#f8f8f8') >= 4.5);
+});
+
+it('does not audit a save that keeps the same colours', function (): void {
+    signIn(systemAdmin())->putJson(BRANDING, ['primary_color' => '#98D8D3', 'secondary_color' => '#0a2325'])->assertOk();
+
+    expect(Audit::query()->where('event', AuditEvent::BrandingUpdated->value)->count())->toBe(0);
+});
+
+it('refuses missing or malformed colours', function (array $payload, string $field): void {
+    signIn(systemAdmin())->putJson(BRANDING, $payload)
         ->assertUnprocessable()
-        ->assertJsonPath('code', 'token.unknown');
+        ->assertJsonValidationErrors([$field]);
 
-    expect(BrandingTheme::current()->accent_token->value)->toBe('brand_default');
-})->with(['purple', '#ff00ff']);
+    expect(BrandingTheme::current()->primary_color)->toBe('#98d8d3');
+})->with([
+    'missing primary' => [['secondary_color' => '#0a2325'], 'primary_color'],
+    'named colour' => [['primary_color' => 'purple', 'secondary_color' => '#0a2325'], 'primary_color'],
+    'short hex' => [['primary_color' => '#fff', 'secondary_color' => '#0a2325'], 'primary_color'],
+    'css injection' => [['primary_color' => '#98d8d3', 'secondary_color' => '#000000;}body{display:none'], 'secondary_color'],
+]);
 
-it('refuses a palette colour that fails the AA contrast check in light or dark mode', function (): void {
-    config()->set('moashir.branding.palette.amber', ['fill' => '#1a2b2c', 'text_on_light' => '#e9f0f0']);
-
-    signIn(systemAdmin())->putJson(BRANDING, ['accent_token' => 'amber'])
+it('refuses a mid-tone colour on which neither light nor dark text reaches AA contrast', function (): void {
+    signIn(systemAdmin())->putJson(BRANDING, ['primary_color' => '#777777', 'secondary_color' => '#777777'])
         ->assertUnprocessable()
         ->assertJsonPath('code', 'contrast_fail')
-        ->assertJsonPath('meta.pairs.0.pair', 'light.accent_text_on_content')
+        ->assertJsonValidationErrors(['primary_color', 'secondary_color'])
+        ->assertJsonPath('meta.pairs.0.pair', 'primary.text_on_fill')
         ->assertJsonPath('meta.pairs.0.minimum', '4.5')
-        ->assertJsonCount(4, 'meta.pairs');
+        ->assertJsonPath('meta.pairs.1.pair', 'secondary.text_on_fill')
+        ->assertJsonCount(2, 'meta.pairs');
 
-    expect(BrandingTheme::current()->accent_token->value)->toBe('brand_default')
+    expect(BrandingTheme::current()->primary_color)->toBe('#98d8d3')
         ->and(Audit::query()->where('event', AuditEvent::BrandingUpdated->value)->count())->toBe(0);
 });
 
 it('keeps branding locked to the System Administrator', function (RoleKey $role): void {
     signIn($role === RoleKey::Entity ? entityUser() : staffUser($role));
 
-    $this->putJson(BRANDING, ['accent_token' => 'teal'])->assertForbidden();
+    $this->putJson(BRANDING, ['primary_color' => '#d4088c', 'secondary_color' => '#4a2a7d'])->assertForbidden();
     $this->postJson(BRANDING.'/reset')->assertForbidden();
     $this->post(BRANDING.'/logo', ['file' => pngImage(), 'variant' => 'light'], ['Accept' => 'application/json'])->assertForbidden();
+
+    expect(BrandingTheme::current()->primary_color)->toBe('#98d8d3');
 })->with([RoleKey::ContentOfficer, RoleKey::RequestFollower, RoleKey::Entity]);
 
-it('asks guests to sign in before reading the theme', function (): void {
+it('asks guests to sign in before reading or changing the theme', function (): void {
     $this->getJson(BRANDING)->assertUnauthorized();
+    $this->putJson(BRANDING, ['primary_color' => '#d4088c', 'secondary_color' => '#4a2a7d'])->assertUnauthorized();
 });
 
 it('requires a reason from the Super Admin and records it with the change', function (): void {
     signIn(superAdmin());
 
-    $this->putJson(BRANDING, ['accent_token' => 'sky'])->assertUnprocessable()->assertJsonPath('code', 'reason_required');
-    $this->putJson(BRANDING, ['accent_token' => 'sky', 'reason' => 'توحيد لون لوحة التحكم مع هوية الحملة الحالية.'])->assertOk();
+    $this->putJson(BRANDING, ['primary_color' => '#1c5f9a', 'secondary_color' => '#0a2325'])->assertUnprocessable()->assertJsonPath('code', 'reason_required');
+    $this->putJson(BRANDING, ['primary_color' => '#1c5f9a', 'secondary_color' => '#0a2325', 'reason' => 'توحيد لون لوحة التحكم مع هوية الحملة الحالية.'])->assertOk();
 
     expect(Audit::query()->where('event', AuditEvent::BrandingUpdated->value)->sole()->reason)->toBe('توحيد لون لوحة التحكم مع هوية الحملة الحالية.');
 });
@@ -177,16 +201,17 @@ it('rejects an unknown logo variant', function (): void {
         ->assertUnprocessable()->assertJsonValidationErrors(['variant']);
 });
 
-it('resets the accent and both logos to the brand defaults and audits the reset', function (): void {
+it('resets the colours and the logos to the brand defaults and audits the reset', function (): void {
     signIn(systemAdmin());
-    $this->putJson(BRANDING, ['accent_token' => 'coral'])->assertOk();
+    $this->putJson(BRANDING, ['primary_color' => '#a63d1f', 'secondary_color' => '#4a2a7d'])->assertOk();
     $logo = $this->post(BRANDING.'/logo', ['file' => pngImage(), 'variant' => 'dark'], ['Accept' => 'application/json'])->json('data.file_id');
 
     $this->postJson(BRANDING.'/reset')
         ->assertOk()
-        ->assertJsonPath('data.accent_token', 'brand_default')
+        ->assertJsonPath('data.primary_color', '#98d8d3')
+        ->assertJsonPath('data.secondary_color', '#0a2325')
         ->assertJsonPath('data.logo_dark', null);
 
     $this->get('/api/v1/content/files/'.$logo)->assertNotFound();
-    expect(Audit::query()->where('event', AuditEvent::BrandingUpdated->value)->where('tags', 'reset')->sole()->old_values['accent_token'])->toBe('coral');
+    expect(Audit::query()->where('event', AuditEvent::BrandingUpdated->value)->where('tags', 'reset')->sole()->old_values['primary_color'])->toBe('#a63d1f');
 });

@@ -12,4 +12,7 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
     ->group(function (): void {
         Route::get('summary', [DashboardController::class, 'summary'])->name('summary');
         Route::get('action-center', [DashboardController::class, 'actionCenter'])->name('action-center');
+        Route::get('overview', [DashboardController::class, 'overview'])
+            ->middleware('can:'.Ability::ViewExecutiveOverview->value)
+            ->name('overview');
     });

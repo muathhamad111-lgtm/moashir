@@ -70,7 +70,7 @@ const columns = computed(() => [
   { key: 'role', label: t('users.columns.role') },
   { key: 'paths', label: t('users.columns.paths') },
   { key: 'status', label: t('users.columns.status') },
-  { key: 'lastLogin', label: t('users.columns.lastLogin') },
+  { key: 'lastLogin', label: t('users.columns.lastLogin'), date: true },
   ...(canManage.value ? [{ key: 'actions', label: t('components.actions.label') }] : []),
 ])
 

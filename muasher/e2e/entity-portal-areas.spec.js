@@ -111,7 +111,7 @@ test.describe('assessments area', () => {
     )
   })
 
-  test('opens the accredited form as a task screen with stations, guide and step navigation', async ({
+  test('opens the accredited form as a full-width task screen with stations and step navigation', async ({
     page,
   }) => {
     await open(page, '/paths/accredited', '[data-testid="path-status-card"]')
@@ -121,18 +121,13 @@ test.describe('assessments area', () => {
     await expect(page.locator('.portal-breadcrumb')).toContainText('ACC-2026-000004')
     await expect(page.locator('.request-card [role="progressbar"]')).toBeVisible()
     await expect(page.locator('.station-row__button')).toHaveCount(9)
-    await expect(page.locator('.guide-aside__step').first()).toBeVisible()
-    await page.locator('.step-nav__button--next').click()
+    await expect(page.locator('.guide-aside')).toHaveCount(0)
+    await expect(page.locator('[data-testid="step-counter"]')).toBeVisible()
+    await page.locator('[data-testid="step-next"]').click()
     await expect(page.locator('.station-row__button').nth(1)).toHaveAttribute(
       'aria-current',
       'step',
     )
-    await page.locator('.guide-aside__card .btn--secondary').click()
-    await expect(namedSelect(page.locator('.modal__panel'), 'enquiryType')).toHaveAttribute(
-      'data-value',
-      'accredited_assessment',
-    )
-    await page.keyboard.press('Escape')
   })
 })
 

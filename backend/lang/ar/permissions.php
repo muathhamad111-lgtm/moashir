@@ -7,7 +7,7 @@ return [
     'dashboard.view' => ['label' => 'عرض لوحة المعلومات', 'description' => 'فتح لوحة المعلومات الخاصة بالدور ومركز الإجراءات.'],
     'notifications.view' => ['label' => 'عرض الإشعارات الخاصة', 'description' => 'عرض الإشعارات الخاصة وتعليمها كمقروءة.'],
     'notifications.audit.view' => ['label' => 'عرض سجل تسليم الإشعارات', 'description' => 'معرفة من استلم الإشعار أو اطلع عليه.'],
-    'dashboard.executive.view' => ['label' => 'عرض اللوحة التنفيذية', 'description' => 'لوحة تنفيذية للقراءة فقط مبنية على البيانات القائمة.'],
+    'dashboard.executive.view' => ['label' => 'عرض النظرة العامة في لوحة المعلومات', 'description' => 'مؤشرات المنصة ورسوماتها لفترة زمنية مختارة مقارنةً بالفترة السابقة، للقراءة فقط.'],
     'entity.profile.view' => ['label' => 'عرض ملف الجهة', 'description' => 'الاطلاع على ملف الجهة الخاص.'],
     'entity.profile.edit' => ['label' => 'تعديل ملف الجهة', 'description' => 'تعديل بيانات ملف الجهة الخاص.'],
     'entities.view' => ['label' => 'عرض الجهات', 'description' => 'الاطلاع على سجلات الجهات في القوائم والطلبات.'],

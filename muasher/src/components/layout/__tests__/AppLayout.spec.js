@@ -20,14 +20,14 @@ beforeEach(() => {
 })
 
 describe('AppLayout', () => {
-  it('composes TopNavbar + Sidebar around a main content slot', async () => {
+  it('puts the top bar above a body of side bar and main content slot', async () => {
     const wrapper = mount(AppLayout, {
       slots: { default: '<p class="page">محتوى الشاشة</p>' },
       global: createTestGlobals(),
     })
     await flushPromises()
-    expect(wrapper.find('.navbar').exists()).toBe(true)
-    expect(wrapper.find('.sidebar').exists()).toBe(true)
+    expect(wrapper.find('.app-layout > .navbar--app').exists()).toBe(true)
+    expect(wrapper.find('.app-layout__body > .sidebar').exists()).toBe(true)
     expect(wrapper.find('main.app-layout__content .page').text()).toBe('محتوى الشاشة')
   })
 })

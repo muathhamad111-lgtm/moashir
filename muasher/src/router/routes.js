@@ -118,16 +118,8 @@ export const appRoutes = [
       requiresAuth: true,
     },
   },
-  {
-    path: '/dashboard/executive',
-    name: ROUTE_NAMES.APP_DASHBOARD_EXECUTIVE,
-    component: () => import('@/views/dashboard/Executive.vue'),
-    meta: {
-      layout: 'app',
-      titleKey: 'routes.app.dashboardExecutive.title',
-      requiresAuth: true,
-    },
-  },
+  // The executive dashboard is the overview at the top of /dashboard now; old links still land.
+  { path: '/dashboard/executive', redirect: { name: ROUTE_NAMES.APP_DASHBOARD } },
   {
     path: '/entity/profile',
     name: ROUTE_NAMES.ENTITY_PROFILE,

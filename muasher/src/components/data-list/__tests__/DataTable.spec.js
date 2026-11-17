@@ -74,4 +74,23 @@ describe('DataTable', () => {
     expect(marked('th')).toEqual([false, true])
     expect(marked('tbody td')).toEqual([false, true])
   })
+
+  it('keeps date columns on one line', () => {
+    const wrapper = mount(DataTable, {
+      props: {
+        columns: [
+          { key: 'name', label: 'Name' },
+          { key: 'createdAt', label: 'Created' },
+        ],
+        items: [{ id: 1, name: 'A', createdAt: '2026-11-14' }],
+        status: 'success',
+        emptyTitle: 'Empty',
+      },
+      global: createTestGlobals(),
+    })
+    const marked = wrapper
+      .findAll('tbody td')
+      .map((cell) => cell.classes().includes('table__cell--date'))
+    expect(marked).toEqual([false, true])
+  })
 })

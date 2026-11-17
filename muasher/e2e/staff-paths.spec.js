@@ -69,13 +69,14 @@ test.describe('per-path queues', () => {
     await expect(entries).toHaveCount(2)
     await expect(entries.first()).toHaveClass(/is-active/)
     await expect(entries.first().locator('.sidebar__count')).toHaveText('1')
-    await expect(page.locator(`${ROWS} .path-badge--accredited`).first()).toBeVisible()
-    await expect(page.locator(`${ROWS} .path-badge--advanced`)).toHaveCount(0)
+    await expect(page.locator(ROWS).first()).toContainText('ACC-')
+    await expect(page.locator(`${ROWS} .path-badge`)).toHaveCount(0)
     await entries.nth(1).click()
     await expect(page).toHaveURL(/\/admin\/requests\?path=advanced$/)
     await expect(page.locator(ROWS).first()).toContainText('ADV-')
-    await expect(page.locator('.path-switch__link.is-active .path-badge--advanced')).toBeVisible()
-    await expect(page.locator(`${ROWS} .path-badge--accredited`)).toHaveCount(0)
+    await expect(entries.nth(1)).toHaveClass(/is-active/)
+    await expect(page.locator('.requests-page__header .path-badge, .path-switch')).toHaveCount(0)
+    await expect(page.locator(ROWS, { hasText: 'ACC-' })).toHaveCount(0)
   })
 
   test('maps a dashboard status link to the status of each path and the overdue link to its filter', async ({
@@ -85,8 +86,11 @@ test.describe('per-path queues', () => {
     await open(page, '/admin/requests?status=submitted,awaiting_review_assignment', ROWS)
     await expect(page.locator(ROWS)).toHaveCount(1)
     await expect(page.locator(ROWS).first()).toContainText('ACC-2026-000005')
-    await page.locator('.path-switch__link').nth(1).click()
-    await expect(page).toHaveURL(/path=advanced/)
+    await open(
+      page,
+      '/admin/requests?status=submitted,awaiting_review_assignment&path=advanced',
+      ROWS,
+    )
     const filters = await openListFilters(page)
     await expect(filters.locator('.dropdown-field').first()).toContainText(
       text(testInfo, 'Awaiting assignment', 'بانتظار'),
@@ -101,9 +105,8 @@ test.describe('per-path queues', () => {
     await signIn(page, testInfo, USERS.scopedFollower)
     await open(page, '/admin/requests?path=advanced', ROWS)
     await expect(page.locator('.sidebar__item--advanced')).toHaveCount(0)
-    await expect(page.locator('.path-switch')).toHaveCount(0)
-    await expect(page.locator('.requests-page__title-row .path-badge--accredited')).toBeVisible()
-    await expect(page.locator(`${ROWS} .path-badge--advanced`)).toHaveCount(0)
+    await expect(page.locator('.sidebar__item--accredited')).toHaveClass(/is-active/)
+    await expect(page.locator(ROWS, { hasText: 'ADV-' })).toHaveCount(0)
   })
 
   test('the assessor reviews per qualified path', async ({ page }, testInfo) => {
@@ -336,9 +339,13 @@ test.describe('staff sidebar', () => {
     await open(page, '/admin/requests', ROWS)
     await page.mouse.wheel(0, 4000)
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
-    const box = await page.locator('.sidebar').boundingBox()
-    expect(Math.abs(box.y)).toBeLessThanOrEqual(1)
-    expect(Math.round(box.height)).toBe(VIEWPORTS.desktop.height)
+    const sidebar = page.locator('.sidebar')
+    const stickyTop = await sidebar.evaluate((element) =>
+      Number.parseFloat(getComputedStyle(element).insetBlockStart),
+    )
+    const box = await sidebar.boundingBox()
+    expect(Math.abs(box.y - stickyTop)).toBeLessThanOrEqual(1)
+    expect(box.y + box.height).toBeLessThanOrEqual(VIEWPORTS.desktop.height)
     const requests = page.locator('#sidebar-group-assessment')
     await expect(requests).toHaveAttribute('aria-expanded', 'true')
     const award = page.locator('#sidebar-group-award')
@@ -409,7 +416,7 @@ function prepareShot(page, testInfo, shot, theme) {
 
 test.describe('staff paths screenshots', () => {
   for (const shot of CAPTURES) {
-    for (const theme of ['light', 'dark']) {
+    for (const theme of shot.user ? ['light'] : ['light', 'dark']) {
       for (const [viewport, size] of Object.entries(VIEWPORTS)) {
         test(`${shot.name} ${theme} ${viewport}`, async ({ page }, testInfo) => {
           await page.setViewportSize(size)

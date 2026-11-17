@@ -50,7 +50,7 @@ return [
     'demo_bank_account' => [
         'bank_name' => 'Example Bank (example)',
         'account_holder_name' => 'Moashir Platform (example)',
-        'payer_note' => 'Demo account for display only. Do not transfer any amount to it.',
+        'payer_note' => 'Account for display only. Do not transfer any amount to it.',
     ],
     'receipt' => [
         'vat_registration_number' => 'VAT registration number',

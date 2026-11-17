@@ -2,13 +2,13 @@ import { describe, expect, it } from 'vitest'
 import ar from '@/i18n/locales/ar.json'
 import en from '@/i18n/locales/en.json'
 
-const ARABIC_DEMO_WORDS = /تجريبي|توضيحي|مثال|عينة/
-const ENGLISH_DEMO_WORDS = /\b(demo|trial|sample|example)s?\b/i
+// No test or trial wording anywhere: test modes are called «المعاينة» / "preview" (operator decision 2026-11-16).
+const ARABIC_DEMO_WORDS = /تجريبي|تجربة|توضيحي|مثال|عينة|ختبر|اختبار|وهمي/
+const ENGLISH_DEMO_WORDS = /\b(demo|trial|sample|example|test|tested|testing|sandbox|mock)s?\b/i
 const OWN_ASSOCIATION = /جمعيتك|جمعيتكم|حساب الجمعية|ملف الجمعية/
 
 const KEPT = [
   { prefix: 'gallery.', reason: 'DW-10 dev-only component gallery' },
-  { prefix: 'integrations.', reason: 'DW-9 staff provider test-mode terms' },
   { prefix: 'settings.bankAccounts.example', reason: 'DW-5 example IBAN until the real account' },
   {
     prefix: 'portal.transfer.details.ibanExample',

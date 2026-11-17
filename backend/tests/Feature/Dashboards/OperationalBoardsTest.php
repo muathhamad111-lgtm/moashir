@@ -32,6 +32,7 @@ it('counts entities, staff and live payments on the System Administrator board',
 
     $response = boardOf(systemAdmin(), 'system_admin');
     $cards = boardCards($response);
+    $overview = overviewOf(systemAdmin());
 
     expect($cards->all())->toMatchArray([
         'entities_total' => 5,
@@ -44,11 +45,12 @@ it('counts entities, staff and live payments on the System Administrator board',
     ])
         ->and($cards->get('payments_collected'))->toBe('2300.00')
         ->and($cards->get('refunds_total'))->toBe('0.00')
-        ->and(collect(boardWidget($response, 'entities_by_sector'))->sum('count'))->toBe(5)
-        ->and(collect(boardWidget($response, 'entities_by_governance'))->pluck('count', 'key')->all())->toBe([
+        ->and(collect(overviewWidget($overview, 'entities_by_sector'))->sum('count'))->toBe(5)
+        ->and(collect(overviewWidget($overview, 'entities_by_governance'))->pluck('count', 'key')->all())->toBe([
             'below_50' => 0, 'from_50_to_69' => 0, 'from_70_to_84' => 4, 'from_85_to_100' => 0, 'not_reported' => 1,
         ])
-        ->and(collect(boardWidget($response, 'entities_by_region'))->firstWhere('region_id', $first->region_id)['count'] ?? null)->toBe(1)
+        ->and(collect(overviewWidget($overview, 'entities_by_region'))->firstWhere('region_id', $first->region_id)['count'] ?? null)->toBe(1)
+        ->and(collect($response->json('data.widgets'))->pluck('key')->all())->toBe(['activity'])
         ->and(collect($response->json('data.cards'))->firstWhere('key', 'payments_collected')['format'] ?? null)->toBe('money');
 });
 
@@ -75,7 +77,7 @@ it('builds the request boards from scoped, non-frozen requests', function (): vo
         ->and(boardWidget($secondBoard, 'weakest_criteria'))->toBe([]);
 
     $admin = boardOf(systemAdmin(), 'system_admin');
-    expect(collect(boardWidget($admin, 'lowest_criteria'))->pluck('average_percent', 'code')->all())->toBe(['M2' => '75.00', 'M1' => '78.00'])
+    expect(collect(overviewWidget(overviewOf(systemAdmin()), 'lowest_criteria'))->pluck('average_percent', 'code')->all())->toBe(['M2' => '75.00', 'M1' => '78.00'])
         ->and(boardWidget($admin, 'activity'))->not->toBeEmpty();
 
     Entity::query()->whereKey($waiting->entity_id)->firstOrFail()->delete();

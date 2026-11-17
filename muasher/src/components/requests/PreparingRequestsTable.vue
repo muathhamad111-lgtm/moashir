@@ -3,7 +3,6 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import DataTable from '@/components/data-list/DataTable.vue'
-import PathBadge from '@/components/ui/PathBadge.vue'
 import ProgressMeter from '@/components/ui/ProgressMeter.vue'
 import DateStamp from '@/components/accredited/DateStamp.vue'
 import RequestPaymentSummary from '@/components/requests/RequestPaymentSummary.vue'
@@ -25,7 +24,7 @@ const columns = computed(() => [
   { key: 'payment', label: t('requests.awaitingEntity.columns.payment') },
   { key: 'openedAt', label: t('requests.awaitingEntity.columns.openedAt') },
   { key: 'progress', label: t('requests.awaitingEntity.columns.progress') },
-  { key: 'lastActivity', label: t('requests.awaitingEntity.columns.lastActivity') },
+  { key: 'lastActivity', label: t('requests.awaitingEntity.columns.lastActivity'), date: true },
   { key: 'open', label: t('components.actions.label') },
 ])
 </script>
@@ -41,10 +40,7 @@ const columns = computed(() => [
     @retry="emit('retry')"
   >
     <template #cell-number="{ item }">
-      <span class="request-queue__path">
-        <bdi dir="ltr" class="preparing-requests__number">{{ item.number }}</bdi>
-        <PathBadge v-if="item.path" :path="item.path" :label="item.pathLabel" compact />
-      </span>
+      <bdi dir="ltr" class="preparing-requests__number">{{ item.number }}</bdi>
     </template>
     <template #cell-entity="{ item }">
       <span>{{ localizedText(item.entity?.name, locale) }}</span>

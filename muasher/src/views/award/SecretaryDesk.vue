@@ -72,11 +72,11 @@ const statCards = computed(() => {
   ]
 })
 const statusOptions = computed(() => [
-  { value: '', label: t('award.secretary.filters.allStatuses') },
+  { value: '', label: t('dataList.filter.all') },
   ...SECRETARY_STATUSES.map((value) => ({ value, label: t(statusLabelKey(value)) })),
 ])
 const regionOptions = computed(() => [
-  { value: '', label: t('award.secretary.filters.allRegions') },
+  { value: '', label: t('dataList.filter.all') },
   ...(cycle.value?.regions ?? []).map((region) => ({
     value: String(region.id),
     label: localizedText(region.name, locale.value),

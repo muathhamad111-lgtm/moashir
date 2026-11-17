@@ -5,16 +5,6 @@
   padding-block-start: var(--space-4);
 }
 
-.preparing-requests__note {
-  @include flex(row, center, flex-start, var(--space-2));
-  margin: 0;
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
-  background-color: var(--color-info-soft);
-  color: var(--theme-info-text);
-  font-size: var(--fs-sm);
-}
-
 .preparing-requests__number {
   font-weight: var(--fw-semibold);
   color: var(--theme-heading);

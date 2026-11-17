@@ -2,12 +2,15 @@
 import { useI18n } from 'vue-i18n'
 import Badge from '@/components/ui/Badge.vue'
 import AccreditedSubPanel from './AccreditedSubPanel.vue'
+import CriterionStepCounter from '@/components/assessment/CriterionStepCounter.vue'
 import { formatNumber } from '@/utils/formatNumber'
 import { localizedText } from '@/utils/localizedText'
 
 defineProps({
   main: { type: Object, required: true },
   station: { type: Object, required: true },
+  step: { type: Number, required: true },
+  total: { type: Number, required: true },
   workspace: { type: Object, required: true },
 })
 
@@ -19,6 +22,7 @@ const { t, n, locale } = useI18n()
   <section class="station-panel" :aria-labelledby="`station-${main.id}`">
     <header class="station-panel__head">
       <div class="station-panel__heading">
+        <CriterionStepCounter :step="step" :total="total" />
         <h2 :id="`station-${main.id}`" class="station-panel__title">
           {{ localizedText(main.name, locale) }}
         </h2>

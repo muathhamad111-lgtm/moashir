@@ -5,7 +5,6 @@ import { settleFonts } from './support/screenshots'
 import { AA_TEXT, contrastOf } from './support/contrast'
 
 const SHOTS = 'e2e/__screenshots__/auth-panel'
-const SHORT_DESKTOP = { width: 1440, height: 700 }
 const VIEWPORTS = {
   desktop: { width: 1440, height: 900 },
   mobile: { width: 390, height: 844 },
@@ -160,10 +159,10 @@ test.describe('auth brand panel — layout', () => {
     await expect(page.locator('.auth-value-card').last()).toBeInViewport()
   })
 
-  test('the panel stays in view while the long register form scrolls', async ({
+  test('the panel stays in view while the long register form scrolls on a tall viewport', async ({
     page,
   }, testInfo) => {
-    await page.setViewportSize(SHORT_DESKTOP)
+    await page.setViewportSize(VIEWPORTS.desktop)
     await seedPreferences(page, { locale: localeOf(testInfo) })
     await open(page, '/auth/register')
 

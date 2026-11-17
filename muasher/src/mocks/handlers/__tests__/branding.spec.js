@@ -41,31 +41,46 @@ afterAll(() => {
 })
 
 describe('branding mock (settings.branding.manage — hard-locked)', () => {
-  it('serves the same theme to every user but the palette only to the System Administrator', async () => {
+  it('serves the same theme and its derived scheme to every signed-in user', async () => {
     signInAs(['content_officer'])
     const staff = await call('GET', '/settings/branding')
-    expect(staff.body.data.accentToken).toBeTruthy()
-    expect(staff.body.data.palette).toEqual([])
-    signInAs(['system_admin'])
-    const admin = await call('GET', '/settings/branding')
-    expect(admin.body.data.palette).toHaveLength(9)
+    expect(staff.body.data.primaryColor).toBe('#98d8d3')
+    expect(staff.body.data.scheme).toMatchObject({ primary: '#98d8d3', onPrimary: '#100f10' })
+    expect(staff.body.data.defaultColors).toEqual({ primary: '#98d8d3', secondary: '#0a2325' })
+    expect(staff.body.data).not.toHaveProperty('palette')
   })
 
   it('rejects updates from any other role with 403', async () => {
     signInAs(['content_officer', 'finance_officer'])
-    const res = await call('PUT', '/settings/branding', { accentToken: 'teal' })
+    const res = await call('PUT', '/settings/branding', {
+      primaryColor: '#d4088c',
+      secondaryColor: '#4a2a7d',
+    })
     expect(res.status).toBe(403)
   })
 
-  it('accepts palette tokens only (no free hex)', async () => {
+  it('accepts any readable hex colour and refuses malformed or unreadable ones', async () => {
     signInAs(['system_admin'])
-    const bad = await call('PUT', '/settings/branding', { accentToken: '#ff0000' })
-    expect(bad.status).toBe(422)
-    expect(bad.body.code).toBe('token.unknown')
-    const good = await call('PUT', '/settings/branding', { accentToken: 'lavender' })
-    expect(good.body.data.accentToken).toBe('lavender')
+    const malformed = await call('PUT', '/settings/branding', {
+      primaryColor: 'purple',
+      secondaryColor: '#0a2325',
+    })
+    expect(malformed.status).toBe(422)
+    expect(malformed.body.errors).toHaveProperty('primaryColor')
+    const unreadable = await call('PUT', '/settings/branding', {
+      primaryColor: '#98d8d3',
+      secondaryColor: '#777777',
+    })
+    expect(unreadable.body.code).toBe('contrast_fail')
+    expect(unreadable.body.meta.pairs[0].pair).toBe('secondary.text_on_fill')
+    const good = await call('PUT', '/settings/branding', {
+      primaryColor: '#D4088C',
+      secondaryColor: '#4a2a7d',
+    })
+    expect(good.body.data.primaryColor).toBe('#d4088c')
+    expect(good.body.data.scheme.onSecondary).toBe('#ffffff')
     const reset = await call('POST', '/settings/branding/reset')
-    expect(reset.body.data.accentToken).toBe('brand_default')
+    expect(reset.body.data.primaryColor).toBe('#98d8d3')
   })
 
   it('stores one logo per background variant; only the global reset returns both to the brand default', async () => {
@@ -92,16 +107,17 @@ describe('branding mock (settings.branding.manage — hard-locked)', () => {
 
   it('requires a reason from the Super Admin before any identity change', async () => {
     seedMockSession({ id: 1, roles: [], superAdmin: true })
-    const missing = await call('PUT', '/settings/branding', { accentToken: 'teal' })
+    const colors = { primaryColor: '#0b7068', secondaryColor: '#0a2325' }
+    const missing = await call('PUT', '/settings/branding', colors)
     expect(missing.status).toBe(422)
     expect(missing.body.code).toBe('reason_required')
-    const short = await call('PUT', '/settings/branding', { accentToken: 'teal', reason: 'short' })
+    const short = await call('PUT', '/settings/branding', { ...colors, reason: 'short' })
     expect(short.body.errors).toHaveProperty('reason')
     const accepted = await call('PUT', '/settings/branding', {
-      accentToken: 'teal',
+      ...colors,
       reason: 'Approved by the identity committee',
     })
-    expect(accepted.body.data.accentToken).toBe('teal')
+    expect(accepted.body.data.primaryColor).toBe('#0b7068')
   })
 
   it('rejects the global reset from non-administrators with 403', async () => {

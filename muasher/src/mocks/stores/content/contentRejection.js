@@ -48,8 +48,7 @@ export const contentReject = {
   measurementExists: () => codeOnField(422, 'kpi.measurement_exists', 'measuredOn'),
   catalogInUse: (kind, kpiCount) =>
     new MockRejection(409, `${kind}.in_use`, { meta: { kpiCount } }),
-  tokenUnknown: () => codeOnField(422, 'token.unknown', 'accentToken'),
-  contrastFail: (pairs) => codeOnField(422, 'contrast_fail', 'accentToken', { meta: { pairs } }),
+  contrastFail: (pairs, field) => codeOnField(422, 'contrast_fail', field, { meta: { pairs } }),
 }
 
 export function contentRoute(resolve) {

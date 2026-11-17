@@ -85,36 +85,23 @@ test.describe('Task-68 — staff', () => {
       .toBe(true)
   })
 
-  test('opens the filtered list from the entities-by-level dashboard widget', async ({
+  test('opens the filtered list from the entities-by-level chart of the overview', async ({
     page,
   }, testInfo) => {
     await seedSignedIn(page, ADMIN, { locale: localeOf(testInfo), theme: 'light' })
-    await open(page, '/dashboard', '[data-widget="entities_by_level"]')
-    const widget = page.locator('[data-widget="entities_by_level"]')
-    await expect(widget.locator('.widget-levels__row')).toHaveCount(7)
-    await expect(widget.locator('.widget-levels__row').first()).toHaveAttribute(
-      'data-level',
-      'none',
-    )
-    await expect(widget.locator('.widget-levels__row').last()).toHaveAttribute(
-      'data-level',
-      'diamond',
-    )
-    await expect(widget.locator('[data-level="in_progress"] a')).toHaveCount(0)
-    await expect(widget.locator('[data-level="gold"] .widget-levels__value')).toHaveText('1')
-    const track = await widget.locator('[data-level="gold"] .widget-levels__track').boundingBox()
-    const fill = await widget.locator('[data-level="gold"] .widget-levels__fill').boundingBox()
-    expect(fill.width).toBeLessThan(track.width)
-    const startGap = {
-      ar: track.x + track.width - (fill.x + fill.width),
-      en: fill.x - track.x,
-    }[localeOf(testInfo)]
-    expect(Math.abs(startGap)).toBeLessThan(1)
+    await open(page, '/dashboard', '[data-panel="levels"] .chart-donut__slice')
+    const panel = page.locator('[data-panel="levels"]')
+    const items = panel.locator('.chart-legend__item')
+    await expect(items).toHaveCount(7)
+    await expect(items.first()).toHaveAttribute('data-segment', 'none')
+    await expect(items.last()).toHaveAttribute('data-segment', 'diamond')
+    await expect(panel.locator('[data-segment="in_progress"] a')).toHaveCount(0)
+    await expect(panel.locator('[data-segment="gold"] .chart-legend__value')).toHaveText('1')
     await settleFonts(page)
-    await widget.screenshot({
+    await panel.screenshot({
       path: `${SHOTS}/dashboard-entities-by-level-${suffixOf(testInfo)}.png`,
     })
-    await widget.locator('[data-level="diamond"] a').click()
+    await panel.locator('[data-segment="diamond"] a').click()
     await expect(page).toHaveURL(/\/admin\/entities\?level=diamond/)
     await expect(rows(page)).toHaveCount(1)
     await expect(rows(page).first().locator('.level-badge')).toHaveAttribute('data-tier', 'diamond')
@@ -124,12 +111,12 @@ test.describe('Task-68 — staff', () => {
     page,
   }, testInfo) => {
     await seedSignedIn(page, ADMIN, { locale: localeOf(testInfo), theme: 'light' })
-    await open(page, '/dashboard', '[data-widget="lowest_criteria"] .widget-criteria__fill')
-    const gaps = await page.locator('.widget-bars__track, .widget-criteria__track').evaluateAll(
+    await open(page, '/dashboard', '[data-panel="criteria"] .widget-criteria__fill')
+    const gaps = await page.locator('.chart-progress__track, .widget-criteria__track').evaluateAll(
       (tracks, rtl) => {
         return tracks.map((track) => {
           const box = track.getBoundingClientRect()
-          const fill = track.querySelector('rect').getBoundingClientRect()
+          const fill = track.querySelector('rect, .chart-progress__fill').getBoundingClientRect()
           const startGap = rtl ? box.right - fill.right : fill.left - box.left
           return { startGap, partial: fill.width < box.width - 1 }
         })
@@ -139,9 +126,9 @@ test.describe('Task-68 — staff', () => {
     expect(gaps.length).toBeGreaterThan(4)
     expect(gaps.some((gap) => gap.partial)).toBe(true)
     expect(gaps.every((gap) => Math.abs(gap.startGap) < 1)).toBe(true)
-    for (const key of ['entities_by_region', 'lowest_criteria']) {
+    for (const key of ['regions', 'criteria']) {
       await settleFonts(page)
-      await page.locator(`[data-widget="${key}"]`).screenshot({
+      await page.locator(`[data-panel="${key}"]`).screenshot({
         path: `${SHOTS}/dashboard-${key}-${suffixOf(testInfo)}.png`,
       })
     }

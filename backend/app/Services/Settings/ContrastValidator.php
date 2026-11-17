@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Settings;
 
+use App\Data\Settings\BrandColorScheme;
 use App\Data\Settings\ContrastCheck;
-use App\Data\Settings\PaletteColor;
 use App\Support\Branding\ContrastRatio;
 use Illuminate\Contracts\Config\Repository;
 
@@ -16,24 +16,21 @@ final readonly class ContrastValidator
     /**
      * @return list<ContrastCheck>
      */
-    public function check(PaletteColor $color): array
+    public function check(BrandColorScheme $scheme): array
     {
-        $onAccent = $this->surface('on_accent');
-
         return [
-            $this->pair('light.accent_text_on_content', $color->textOnLight, $this->surface('light_content')),
-            $this->pair('light.text_on_accent', $onAccent, $color->fill),
-            $this->pair('dark.accent_on_content', $color->fill, $this->surface('dark_content')),
-            $this->pair('dark.text_on_accent', $onAccent, $color->fill),
+            $this->pair('primary.text_on_fill', $scheme->onPrimary, $scheme->primary),
+            $this->pair('primary.text_on_content', $scheme->primaryText, $this->surface('content')),
+            $this->pair('secondary.text_on_fill', $scheme->onSecondary, $scheme->secondary),
         ];
     }
 
     /**
      * @return list<ContrastCheck>
      */
-    public function failures(PaletteColor $color): array
+    public function failures(BrandColorScheme $scheme): array
     {
-        return array_values(array_filter($this->check($color), static fn (ContrastCheck $check): bool => ! $check->passes));
+        return array_values(array_filter($this->check($scheme), static fn (ContrastCheck $check): bool => ! $check->passes));
     }
 
     private function pair(string $name, string $foreground, string $background): ContrastCheck

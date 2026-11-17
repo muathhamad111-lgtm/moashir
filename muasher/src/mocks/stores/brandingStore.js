@@ -1,4 +1,4 @@
-import { brandingDefaultsFixture, brandingPaletteFixture } from '../fixtures/branding'
+import { brandingDefaultsFixture } from '../fixtures/branding'
 import { registerUpload } from './content/publicFiles'
 
 const theme = { ...brandingDefaultsFixture, updatedAt: null }
@@ -9,16 +9,9 @@ export function getBrandingTheme() {
   return theme
 }
 
-export function paletteEntry(token) {
-  return brandingPaletteFixture.find((entry) => entry.token === token) ?? null
-}
-
-export function isPaletteToken(token) {
-  return paletteEntry(token) !== null
-}
-
-export function updateBrandingAccent(token) {
-  theme.accentToken = token
+export function updateBrandingColors({ primary, secondary }) {
+  theme.primaryColor = primary
+  theme.secondaryColor = secondary
   theme.updatedAt = new Date().toISOString()
   return theme
 }

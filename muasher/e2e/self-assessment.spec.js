@@ -59,7 +59,7 @@ async function fillEmptyScoresOnStep(page, value) {
 }
 
 async function fillEveryEmptyScore(page, value) {
-  const next = page.locator('[data-testid="self-next"]')
+  const next = page.locator('[data-testid="step-next"]')
   await fillEmptyScoresOnStep(page, value)
   while (await next.isVisible()) {
     await next.click()
@@ -68,7 +68,7 @@ async function fillEveryEmptyScore(page, value) {
 }
 
 async function goToLastStep(page) {
-  const next = page.locator('[data-testid="self-next"]')
+  const next = page.locator('[data-testid="step-next"]')
   while (await next.isVisible()) await next.click()
 }
 
@@ -85,13 +85,13 @@ test('the entity resumes its open draft, saves raw scores and sees the percent r
     fullPage: true,
   })
 
-  await expect(page.locator('[data-testid="self-previous"]')).toHaveCount(0)
-  await page.locator('[data-testid="self-next"]').click()
-  await expect(page.locator('.self-main__step')).toContainText(
+  await expect(page.locator('[data-testid="step-previous"]')).toHaveCount(0)
+  await page.locator('[data-testid="step-next"]').click()
+  await expect(page.locator('.step-counter')).toContainText(
     isEn(testInfo) ? 'Criterion 2' : 'المعيار 2',
   )
   await expect(page.locator('.self-main__title')).toBeFocused()
-  await expect(page.locator('[data-testid="self-previous"]')).toBeVisible()
+  await expect(page.locator('[data-testid="step-previous"]')).toBeVisible()
   const empty = page.locator('.self-main .raw-score input').first()
   await expect(empty).toHaveValue('')
   await empty.fill('7.5')
@@ -176,7 +176,7 @@ test('an entity without an open draft starts a new numbered self assessment in o
   await expect(page).toHaveURL(/\/assessment\/self$/)
   await expect(page.locator('.self-summary__number')).toContainText('SLF-2026-000006')
   await expect(page.locator('.self-summary__progress-value')).toContainText(/0/)
-  await expect(page.locator('.self-main__step')).toContainText(
+  await expect(page.locator('.step-counter')).toContainText(
     isEn(testInfo) ? 'Criterion 1' : 'المعيار 1',
   )
   await expect(page.locator('.self-main__code')).toHaveCount(0)
@@ -301,7 +301,7 @@ test('the assessment asks to extend the session and saves then signs out when no
   await dialog.locator('.btn--primary').click()
   await expect(dialog).toHaveCount(0)
 
-  await page.locator('[data-testid="self-next"]').click()
+  await page.locator('[data-testid="step-next"]').click()
   await page.locator('.self-main .raw-score input').first().fill('6')
   await page.clock.fastForward('02:00:00')
   await expect(page.getByRole('alertdialog')).toBeVisible()

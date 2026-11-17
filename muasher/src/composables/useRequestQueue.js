@@ -8,6 +8,15 @@ import { overdueFromLink, statusForPath } from '@/utils/requestPaths'
 
 const LINK_FILTERS = ['status', 'overdue']
 
+// The filters a user sets in the filter dialog. The path is not one: it comes from the
+// sidebar entry, so it never counts as an applied filter.
+const DIALOG_FILTER_DEFAULTS = Object.freeze({
+  cycleId: '',
+  status: '',
+  overdue: '',
+  assessorId: '',
+})
+
 export function useRequestQueue(paths) {
   const counts = useRequestPathCountsStore()
   const { route, path, linkStatus, linkOverdue, dropLinkFilter } = useRequestPathRoute(paths)
@@ -24,11 +33,6 @@ export function useRequestQueue(paths) {
   })
   const stats = computed(() => list.meta.value.stats ?? null)
   const pathCounts = computed(() => list.meta.value.pathCounts ?? counts.queue)
-  const linkQuery = computed(() =>
-    Object.fromEntries(
-      LINK_FILTERS.filter((key) => route.query[key]).map((key) => [key, route.query[key]]),
-    ),
-  )
 
   watch(path, (next) => {
     list.setFilter('path', next)
@@ -54,5 +58,12 @@ export function useRequestQueue(paths) {
     list.setFilter(key, value)
   }
 
-  return { ...list, path, stats, pathCounts, linkQuery, chooseFilter }
+  return {
+    ...list,
+    path,
+    stats,
+    pathCounts,
+    chooseFilter,
+    filterDefaults: DIALOG_FILTER_DEFAULTS,
+  }
 }

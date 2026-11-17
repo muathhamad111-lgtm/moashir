@@ -80,7 +80,6 @@
     "home": "Home",
     "kpis": "Performance Indicators",
     "dashboard": "Dashboard",
-    "executiveDashboard": "Executive dashboard",
     "entityProfile": "Organization Profile",
     "assessmentHistory": "Assessment History",
     "assessmentSelf": "Self Assessment",
@@ -162,6 +161,12 @@
     "facebook": "Facebook"
   },
   "components": {
+    "steps": {
+      "counter": "Criterion {step} of {total}",
+      "previous": "Previous",
+      "next": "Next",
+      "saveDraft": "Save draft"
+    },
     "datePicker": {
       "day": "DD",
       "month": "MM",
@@ -440,8 +445,7 @@
       "attachments": "Attachments"
     },
     "filters": {
-      "state": "Status",
-      "allStates": "All statuses"
+      "state": "Status"
     },
     "groups": {
       "enablers": "Enablers",
@@ -779,9 +783,6 @@
     "app": {
       "dashboard": {
         "title": "Dashboard"
-      },
-      "dashboardExecutive": {
-        "title": "Executive dashboard"
       }
     },
     "entity": {
@@ -1314,11 +1315,8 @@
       },
       "filters": {
         "status": "Status",
-        "allStatuses": "All statuses",
         "type": "Indicator type",
-        "allTypes": "All types",
         "year": "Measurement year",
-        "allYears": "All years",
         "owner": "Owner",
         "ownerPlaceholder": "Search by owner…"
       },
@@ -1403,8 +1401,6 @@
         "featured": "On the homepage"
       },
       "filters": {
-        "all": "All",
-        "allCategories": "All categories",
         "published": {
           "label": "Publication state",
           "yes": "Published",
@@ -1636,8 +1632,7 @@
       "roles": "Linked roles"
     },
     "filters": {
-      "group": "Module",
-      "allGroups": "All modules"
+      "group": "Module"
     },
     "actions": {
       "edit": "Edit"
@@ -1707,9 +1702,7 @@
     },
     "filters": {
       "role": "Role",
-      "status": "Status",
-      "allRoles": "All roles",
-      "allStatuses": "All statuses"
+      "status": "Status"
     },
     "actions": {
       "edit": "Edit user",
@@ -2239,14 +2232,8 @@
       "sector": "Sector",
       "size": "Size",
       "sort": "Sort",
-      "allStatuses": "All statuses",
-      "allRegions": "All regions",
-      "allTypes": "All types",
-      "allSectors": "All sectors",
-      "allSizes": "All sizes",
       "level": "Level",
-      "expiredLevel": "Expired level",
-      "allLevels": "All levels"
+      "expiredLevel": "Expired level"
     },
     "sorts": {
       "-created_at": "Newest first",
@@ -2384,7 +2371,6 @@
     "emailChanges": {
       "title": "Official e-mail changes",
       "subtitle": "Verified e-mail changes of entities awaiting your decision.",
-      "allStatuses": "All requests",
       "columns": {
         "entity": "Entity",
         "oldEmail": "Current e-mail",
@@ -2407,7 +2393,6 @@
     "cities": {
       "title": "Cities",
       "searchPlaceholder": "Search cities",
-      "allStates": "All cities",
       "emptyTitle": "No cities match these filters",
       "columns": {
         "name": "City",
@@ -2478,8 +2463,7 @@
       "content_officer": "Content board",
       "criteria_officer": "Criteria board",
       "finance_officer": "Finance board",
-      "entity": "Entity board",
-      "executive": "Executive board"
+      "entity": "Entity board"
     },
     "actions": {
       "complete_profile": "Complete the entity profile",
@@ -2517,12 +2501,8 @@
       "entities_pending_review": "Entities pending review",
       "staff_users_active": "Active team accounts",
       "award_cycles_running": "Running award cycles",
-      "award_cycles_total": "Award cycles",
       "self_assessments": "Self assessments",
-      "self_assessments_completed": "Completed self assessments",
       "accredited_requests": "Accredited assessment requests",
-      "accredited_assessments_completed": "Completed accredited assessments",
-      "accredited_average_percent": "Average accredited result",
       "advanced_requests": "Advanced assessment requests",
       "open_requests": "Open requests",
       "completed_assessments": "Completed assessments",
@@ -2710,6 +2690,77 @@
     "levels": {
       "openList": "Show the {level} entities in the entities list",
       "hint": "Select a level to open the entities list filtered by it."
+    },
+    "overview": {
+      "title": "Platform overview",
+      "range": "{from} to {to}",
+      "comparedWith": "compared with {range}",
+      "print": "Print dashboard",
+      "period": {
+        "label": "Period",
+        "presets": {
+          "month": "This month",
+          "quarter": "This quarter",
+          "year": "This year",
+          "custom": "Custom period"
+        },
+        "from": "From",
+        "to": "To",
+        "apply": "Show period"
+      },
+      "cardsLabel": "Period indicators",
+      "cards": {
+        "new_entities": "Entities registered",
+        "requests_submitted": "Requests submitted",
+        "assessments_completed": "Assessments completed",
+        "accredited_average_percent": "Accredited assessment average",
+        "payments_collected": "Amounts collected",
+        "entities_active": "Active entities"
+      },
+      "delta": {
+        "points": "{value} pts",
+        "ratio": "{value}%",
+        "flat": "No change",
+        "fromZero": "New",
+        "context": "vs previous period"
+      },
+      "previousValue": "Previous period:",
+      "previousText": "Previous period: {value}",
+      "currentState": "Current state",
+      "notes": {
+        "period": "In the selected period",
+        "snapshot": "Current state"
+      },
+      "charts": {
+        "activity": "Platform activity",
+        "accreditedAverage": "Accredited assessment average",
+        "revenue": "Amounts collected",
+        "paths": "Requests by path",
+        "levels": "Entities by level",
+        "governance": "Entities by governance grade",
+        "decades": "Entities by founding decade"
+      },
+      "series": {
+        "entities": "Entities registered",
+        "requests": "Requests submitted",
+        "completed": "Assessments completed",
+        "collected": "Amounts collected",
+        "submitted": "Requests submitted"
+      },
+      "categories": {
+        "date": "Date",
+        "path": "Path",
+        "level": "Level",
+        "band": "Governance grade",
+        "decade": "Founding decade",
+        "entities": "Entities"
+      },
+      "money": "SAR {amount}",
+      "pathShort": {
+        "self": "Self",
+        "accredited": "Accredited",
+        "advanced": "Award"
+      }
     }
   },
   "assessment": {
@@ -2738,9 +2789,6 @@
       "unverifiedNote": "Self assessment is unverified — no evidence or CV is uploaded, and it does not feed the analytical lenses or the Quick Excellence Kit.",
       "directLabel": "Score of {name}",
       "pointsHint": "This sub-criterion is evaluated on its guiding points — score each point below.",
-      "steps": {
-        "counter": "Criterion {step} of {total}"
-      },
       "tree": {
         "mainMeta": "Weight {weight}",
         "points": "{count} guiding points",
@@ -2756,8 +2804,6 @@
         "message": "Criteria must be published before you can run a self assessment."
       },
       "actions": {
-        "previous": "Previous",
-        "next": "Next",
         "saveDraft": "Save draft",
         "submit": "Submit and view result",
         "readOnlyHint": "This assessment is read-only.",
@@ -2949,7 +2995,7 @@
         },
         "sms": {
           "title": "SMS",
-          "desc": "Msegat / Taqnyat provider, templates, and test send."
+          "desc": "Msegat / Taqnyat provider, templates, and send check."
         },
         "email": {
           "title": "Email",
@@ -3138,7 +3184,6 @@
       "description": "Entities that started paying for the accredited assessment or the Quick Excellence Kit and have no paid order after 24 hours.",
       "searchPlaceholder": "Search by entity or email",
       "filterPurpose": "Service",
-      "allPurposes": "All services",
       "channels": {
         "email": "email",
         "sms": "SMS"
@@ -3161,7 +3206,6 @@
       "campaignFailed": "The marketing message could not be sent",
       "emptyTitle": "No abandoned carts",
       "emptyMessage": "Every entity that viewed a paid path has completed its payment.",
-      "allContacts": "Contacted or not",
       "filterContacted": "Contact",
       "contacted": {
         "true": "Contacted",
@@ -3202,9 +3246,6 @@
       "description": "Review every notification type the platform sends: its channels, who receives it and whether it is mandatory.",
       "catalogue": {
         "readOnlyNote": "This list is read-only. Notification texts are part of the system, and each user chooses the optional channels in their own preferences.",
-        "allModules": "All modules",
-        "allCategories": "All categories",
-        "allAudiences": "All audiences",
         "total": "Types: {count}",
         "emptyTitle": "No matching types",
         "emptyMessage": "Change the filters to see other types.",
@@ -3350,7 +3391,7 @@
       },
       "alerts": {
         "noAccount": "Bank transfer cannot be saved before at least one active bank account is added.",
-        "gatewayNotReady": "The payment gateway is not ready: the keys and the connection test of the selected mode must be completed before the payment channels are saved.",
+        "gatewayNotReady": "The payment gateway is not ready: the keys and the connection check of the selected mode must be completed before the payment channels are saved.",
         "openGateway": "Open mode and keys",
         "noReviewer": "No user can review transfers. Bank transfer receipts will wait for review until a reviewer is added.",
         "openUsers": "Users and roles"
@@ -3359,7 +3400,7 @@
       "save": "Save payment channels",
       "saved": "Payment channels for entities saved.",
       "saveFailed": "The payment channels could not be saved.",
-      "notOffered": "Not offered to entities: electronic payment is not in the current channels. Keys can still be prepared and tested."
+      "notOffered": "Not offered to entities: electronic payment is not in the current channels. Keys can still be prepared and checked."
     },
     "bankAccounts": {
       "title": "Bank accounts for transfers",
@@ -3645,7 +3686,6 @@
       "versionValue": "Version {number}",
       "openedAt": "Opened on",
       "submittedAt": "Submitted on",
-      "navLabel": "Criteria of the request",
       "guidanceTitle": "Guiding points (for reference)",
       "requestedItem": "Requested by the assessor",
       "actionsLabel": "Form actions",
@@ -3989,7 +4029,7 @@
       "ADV-29": "Committee discussion opened",
       "ADV-31": "Advanced request withdrawn",
       "INT-01": "SMS sending failed",
-      "INT-03": "Payment gateway test failed",
+      "INT-03": "Payment gateway check failed",
       "INT-04": "External service down",
       "AI-05": "AI provider connection failed",
       "PAY-02": "Payment succeeded",
@@ -4014,8 +4054,7 @@
       "subtitle": "Assign the requests of the selected path to assessors qualified for it, follow their progress and act on overdue reviews.",
       "searchPlaceholder": "Search by request number, entity name or e-mail",
       "emptyTitle": "No requests match",
-      "emptyMessage": "Submitted requests of this path appear here.",
-      "pathSwitchLabel": "Request queue paths"
+      "emptyMessage": "Submitted requests of this path appear here."
     },
     "stats": {
       "total": "Total requests",
@@ -4032,21 +4071,16 @@
       "dueAt": "Due",
       "cycle": "Award cycle",
       "region": "Region",
-      "pathAndCycle": "Path or cycle",
       "path": "Path"
     },
     "filters": {
       "status": "Status",
-      "allStatuses": "All statuses",
       "overdue": "Timeliness",
-      "allRequests": "All requests",
       "overdueOnly": "Overdue only",
       "onTimeOnly": "On time only",
       "assessor": "Assessor",
-      "allAssessors": "All assessors",
       "sort": "Sort",
-      "cycle": "Award cycle",
-      "allCycles": "All cycles"
+      "cycle": "Award cycle"
     },
     "sorts": {
       "desc_submitted_at": "Newest submissions first",
@@ -4096,8 +4130,7 @@
         "completed": "Completed"
       },
       "emptyTitle": "No requests in this tab",
-      "emptyMessage": "Requests assigned to you appear here.",
-      "pathSwitchLabel": "Paths of my assigned requests"
+      "emptyMessage": "Requests assigned to you appear here."
     },
     "assignment": {
       "assignedAt": "Assigned on",
@@ -4228,10 +4261,6 @@
       "withCount": "{label} ({count})"
     },
     "awaitingEntity": {
-      "note": {
-        "accredited": "Requests whose fee is paid but that the entity has not sent yet. They need no assignment now and join the assignment queue automatically when sent.",
-        "advanced": "Requests the entity has started but not sent yet. They need no assignment now and join the assignment queue automatically when sent."
-      },
       "columns": {
         "payment": "Payment",
         "openedAt": "Opened on",
@@ -4462,7 +4491,6 @@
       "evaluator": "Evaluator"
     },
     "filters": {
-      "allStatuses": "All statuses",
       "status": "Status"
     },
     "referenceValue": "Accredited {score}%",
@@ -4667,7 +4695,9 @@
       "entity": "Entity workspace",
       "assessment": "Requests and assessment",
       "award": "Award"
-    }
+    },
+    "previewPlatform": "Preview platform",
+    "opensInNewTab": " (opens in a new tab)"
   },
   "account": {
     "title": "My account",
@@ -4715,11 +4745,20 @@
     "title": "Brand identity",
     "subtitle": "The platform's name and description, the logos and colors, and the public site menus. Each user sees what their permissions allow.",
     "loadError": "Could not load the identity settings.",
-    "emptyTitle": "No palette available",
-    "emptyMessage": "The platform did not return the approved palette for your account.",
-    "accent": {
-      "title": "Color palette",
-      "legend": "Approved palette"
+    "colors": {
+      "title": "Back-office colors",
+      "hint": "The primary color shows on buttons, the active side-bar item and links; the secondary color is the top bar background.",
+      "primary": {
+        "label": "Primary color",
+        "hint": "Buttons, the active side-bar item, links and the focus ring"
+      },
+      "secondary": {
+        "label": "Secondary color",
+        "hint": "Top bar background and secondary highlights"
+      },
+      "picker": "Pick the {role} from the color palette",
+      "invalid": "Enter the color as a six-digit code such as #1d7470.",
+      "restoreDefault": "Use the Moashir default colors"
     },
     "logo": {
       "title": "Logos",
@@ -4740,14 +4779,16 @@
       "dimensionsMismatch": "The image is ⁦{width}×{height}⁩ px, not the expected ⁦{expectedWidth}×{expectedHeight}⁩. You can still save it."
     },
     "contrast": {
+      "ratio": "{ratio}:1",
+      "shadeNote": "The primary color is light on the page background, so links and text use a darker shade of it:",
+      "blocked": "Cannot save: choose a color that reaches 4.5:1 with white or dark text.",
       "pairs": {
-        "light": {
-          "accent_text_on_content": "Accent as text in light mode",
-          "text_on_accent": "Text on the accent in light mode"
+        "primary": {
+          "text_on_fill": "Text on the primary color (buttons and the active item)",
+          "text_on_content": "Primary color as text on the page background (links)"
         },
-        "dark": {
-          "accent_on_content": "Accent as text in dark mode",
-          "text_on_accent": "Text on the accent in dark mode"
+        "secondary": {
+          "text_on_fill": "Text on the secondary color (top bar)"
         }
       }
     },
@@ -4833,9 +4874,9 @@
     },
     "status": {
       "not_configured": "Not configured",
-      "configured_untested": "Configured — not tested",
-      "test_passed": "Test passed",
-      "test_failed": "Test failed",
+      "configured_untested": "Configured — not checked",
+      "test_passed": "Check passed",
+      "test_failed": "Check failed",
       "active": "Active"
     },
     "source": {
@@ -4843,13 +4884,13 @@
       "environment": "Source: environment (bootstrap)"
     },
     "mode": {
-      "test": "Test",
+      "test": "Preview",
       "live": "Live"
     },
     "lastTest": {
-      "never": "Not tested yet",
-      "at": "Last tested at {at}",
-      "atBy": "Last tested at {at} by {by}",
+      "never": "Not checked yet",
+      "at": "Last checked at {at}",
+      "atBy": "Last checked at {at} by {by}",
       "passed": "Passed",
       "failed": "Failed: {reason}"
     },
@@ -4867,21 +4908,21 @@
       "unknown": "The provider returned an unexpected answer."
     },
     "actions": {
-      "testConnection": "Test connection"
+      "testConnection": "Check connection"
     },
     "feedback": {
-      "testPassed": "Connection test passed",
+      "testPassed": "Connection check passed",
       "latency": "({ms} ms)",
       "checkOk": "Passed",
-      "rateLimited": "Too many tests. Wait a minute and try again.",
-      "rateLimitedIn": "Too many tests. Try again in {seconds} seconds.",
+      "rateLimited": "Too many checks. Wait a minute and try again.",
+      "rateLimitedIn": "Too many checks. Try again in {seconds} seconds.",
       "forbidden": "You are not allowed to run this action.",
       "invalid": "Complete the required details first.",
       "unexpected": "Something went wrong. Try again.",
-      "saveKeysFirst": "Save the keys first, then run the test.",
-      "testFailed": "Connection test failed",
+      "saveKeysFirst": "Save the keys first, then run the check.",
+      "testFailed": "Connection check failed",
       "checkFailed": "Failed",
-      "saveDetailsFirst": "Save the required details first, then run the test."
+      "saveDetailsFirst": "Save the required details first, then run the check."
     },
     "checks": {
       "intents_available": "Payment intents",
@@ -4925,7 +4966,7 @@
           "SAR": "SAR"
         },
         "senderVerifiedBy": {
-          "test_sms": "Confirmed by sending a test SMS"
+          "test_sms": "Confirmed by sending a check SMS"
         },
         "publishableKeyCheck": {
           "validated_at_first_checkout": "Checked at the first payment"
@@ -4970,13 +5011,13 @@
       "prefix": "Must start with {prefix}",
       "maxChars": "Must be at most {max} characters",
       "integerBetween": "A whole number from {min} to {max}",
-      "hostname": "Enter a host name such as smtp.example.sa",
+      "hostname": "Enter a host name such as smtp.domain.sa",
       "saudiMobile": "Use a Saudi mobile number such as +9665XXXXXXXX",
       "secretRequired": "Enter the value before you save"
     },
     "overview": {
       "title": "Integrations",
-      "description": "The status of each external service the platform uses. Open a card to manage its keys and tests.",
+      "description": "The status of each external service the platform uses. Open a card to manage its keys and checks.",
       "provider": "Provider: {provider}",
       "noProvider": "No active provider",
       "manage": "Manage {kind}",
@@ -4995,22 +5036,22 @@
       "methodsTitle": "Payment methods",
       "selectedMode": "Selected environment",
       "liveReady": "The live environment is ready to be selected.",
-      "liveNotReady": "The live environment needs both live keys and a passing live connection test.",
-      "productionReasonHint": "In production, switching from live to test mode asks for a reason.",
+      "liveNotReady": "The live environment needs both live keys and a passing live connection check.",
+      "productionReasonHint": "In production, switching from live to preview mode asks for a reason.",
       "pairs": {
-        "test": "Test environment",
+        "test": "Preview environment",
         "live": "Live environment"
       },
       "fields": {
         "environment": "Environment",
         "active": "Payment gateway active",
-        "activeHint": "Needs a passing connection test of the selected environment.",
+        "activeHint": "Needs a passing connection check of the selected environment.",
         "publishableKey": {
-          "test": "Publishable key — test",
+          "test": "Publishable key — preview",
           "live": "Publishable key — live"
         },
         "secretKey": {
-          "test": "Secret key — test",
+          "test": "Secret key — preview",
           "live": "Secret key — live"
         },
         "webhookSecret": "Moyasar webhook secret token",
@@ -5047,8 +5088,8 @@
         "reasonMessage": "Registering replaces the secret token."
       },
       "testBanner": {
-        "title": "Test mode — no real charge.",
-        "body": "Payments use the Moyasar test keys and no money is collected."
+        "title": "Preview mode — no real charge.",
+        "body": "Payments use the Moyasar preview keys and no money is collected."
       },
       "copy": {
         "webhookUrl": "Webhook URL",
@@ -5108,14 +5149,14 @@
     },
     "sms": {
       "title": "SMS",
-      "description": "One active provider sends every message. Both providers can be configured and tested.",
+      "description": "One active provider sends every message. Both providers can be configured and checked.",
       "generalTitle": "Provider and sending mode",
-      "modeHint": "In test mode messages go only to the allowed test numbers; a test message to any other number is refused.",
+      "modeHint": "In preview mode messages go only to the allowed preview numbers; a check message to any other number is refused.",
       "testRecipientsHint": "Up to {max} Saudi mobile numbers in the format +9665XXXXXXXX.",
       "fields": {
         "activeProvider": "Active SMS provider",
         "mode": "Sending mode",
-        "testRecipients": "Allowed test numbers",
+        "testRecipients": "Allowed preview numbers",
         "senderName": "Sender name",
         "recipient": "Recipient number",
         "provider": "Provider"
@@ -5125,11 +5166,11 @@
         "taqnyat": "Taqnyat",
         "msegat": "Msegat"
       },
-      "newNumber": "New test number",
+      "newNumber": "New preview number",
       "numberPlaceholder": "+9665XXXXXXXX",
       "addNumber": "Add number",
       "removeNumber": "Remove {number}",
-      "noTestNumbers": "No test numbers yet.",
+      "noTestNumbers": "No preview numbers yet.",
       "numbersFull": "The list holds at most {max} numbers.",
       "taqnyat": {
         "description": "Taqnyat sends with a bearer token and a registered sender name.",
@@ -5161,11 +5202,11 @@
         "gsm": "Latin characters",
         "unicode": "Arabic or other characters"
       },
-      "testSendTitle": "Send test SMS",
+      "testSendTitle": "Send a check SMS",
       "testSendDesc": "Sends one real message through the chosen provider.",
-      "recipientHint": "A Saudi mobile number such as +9665XXXXXXXX. In test mode it must be one of the allowed test numbers.",
-      "sendTest": "Send test SMS",
-      "testSent": "The test message was sent through {provider}.",
+      "recipientHint": "A Saudi mobile number such as +9665XXXXXXXX. In preview mode it must be one of the allowed preview numbers.",
+      "sendTest": "Send a check SMS",
+      "testSent": "The check message was sent through {provider}.",
       "validation": {
         "requiredForActive": "Required for the active provider",
         "senderPattern": "Use English letters and digits only",
@@ -5191,7 +5232,7 @@
       "title": "E-mail (SMTP)",
       "smtpTitle": "Outgoing mail server",
       "senderTitle": "Sender and sending mode",
-      "modeHint": "In test mode every message goes to the test mailbox only.",
+      "modeHint": "In preview mode every message goes to the preview mailbox only.",
       "fields": {
         "host": "SMTP host",
         "hostHint": "A public host name. Internal addresses are refused.",
@@ -5209,8 +5250,8 @@
         "fromNameAr": "Sender name (Arabic)",
         "fromNameEn": "Sender name (English)",
         "mode": "Sending mode",
-        "testAddress": "Test mailbox",
-        "testAddressHint": "Required in test mode.",
+        "testAddress": "Preview mailbox",
+        "testAddressHint": "Required in preview mode.",
         "active": "E-mail active",
         "activeHint": "Needs the server details and the password.",
         "recipient": "Recipient address",
@@ -5220,24 +5261,24 @@
         "starttls": "STARTTLS",
         "tls": "TLS"
       },
-      "testSendTitle": "Send test e-mail",
+      "testSendTitle": "Send a check e-mail",
       "testSendDesc": "Sends one fixed bilingual message.",
-      "sendTest": "Send test e-mail",
-      "testSent": "The test e-mail was sent.",
+      "sendTest": "Send a check e-mail",
+      "testSent": "The check e-mail was sent.",
       "validation": {
-        "testAddressRequired": "Required in test mode"
+        "testAddressRequired": "Required in preview mode"
       },
-      "testRedirected": "The test e-mail was sent to the test mailbox because e-mail is in test mode."
+      "testRedirected": "The check e-mail was sent to the preview mailbox because e-mail is in preview mode."
     },
     "ai": {
       "title": "AI provider",
-      "description": "The providers that answer the public assistant, with the data transfer controls. Both providers can be saved and tested; one at most is active.",
+      "description": "The providers that answer the public assistant, with the data transfer controls. Both providers can be saved and checked; one at most is active.",
       "assistantTitle": "Assistant",
-      "modeHint": "In test mode the assistant answers only in the administrator preview.",
+      "modeHint": "In preview mode the assistant answers only in the administrator preview.",
       "loadModels": "Load models",
       "noModels": "The provider returned no models for this key.",
       "modelsLoaded": "{count} models loaded.",
-      "testAnswer": "Test answer",
+      "testAnswer": "Preview an answer",
       "testAnswerHint": "Sends one short fixed question to prove billing and quota.",
       "answerUsage": "{ms} ms, {input} input tokens, {output} output tokens",
       "answerSummary": "{model} · {finish} · {usage}",
@@ -5315,7 +5356,7 @@
         "anthropic": "Anthropic"
       },
       "activationHint": "A provider can be activated after its key and model are saved and its data transfer acknowledgement is recorded.",
-      "saveKeyAndModelFirst": "Save the key and the model first, then run the test.",
+      "saveKeyAndModelFirst": "Save the key and the model first, then run the check.",
       "requestReference": "Provider request reference",
       "checklist": {
         "provider_account_and_billing": "Create the provider account and an API key, and set up billing.",
@@ -5357,7 +5398,7 @@
       "rate_limited": "Too many attempts. Wait a minute and try again.",
       "integration": {
         "not_configured": "This integration is not configured yet. Save its details first.",
-        "test_required": "Run a successful connection test of this environment before activating it.",
+        "test_required": "Run a successful connection check of this environment before activating it.",
         "configuration_incomplete": "Complete the required details of this provider before activating it."
       },
       "ai": {
@@ -5370,13 +5411,13 @@
         "apple_pay_file_missing": "No Apple Pay domain association file has been uploaded."
       },
       "sms": {
-        "recipient_not_in_test_numbers": "In test mode, test messages can be sent only to the allowed test numbers.",
+        "recipient_not_in_test_numbers": "In preview mode, check messages can be sent only to the allowed preview numbers.",
         "template_not_approved": "This text does not match any approved Msegat template of the sender.",
         "templates_not_loaded": "Load the approved Msegat templates before saving the message templates."
       },
       "email": {
         "host_not_allowed": "This mail server address is not allowed. Use the public host name of the mail server.",
-        "test_address_required": "Enter a test mailbox before switching e-mail to test mode."
+        "test_address_required": "Enter a preview mailbox before switching e-mail to preview mode."
       }
     }
   },
@@ -5432,14 +5473,14 @@
     },
     "testMode": {
       "staff": {
-        "title": "Test mode: no real charge is made.",
-        "body": "The payment gateway runs in test mode. Payments made here are excluded from statistics and get a receipt marked \"Not valid as proof of payment\", without an official number."
+        "title": "Preview mode: no real charge is made.",
+        "body": "The payment gateway runs in preview mode. Payments made here are excluded from statistics and get a receipt marked \"Not valid as proof of payment\", without an official number."
       },
       "entity": {
         "title": "No real amount is charged.",
         "body": "This payment gets a receipt that is not valid as proof of payment."
       },
-      "badge": "Test"
+      "badge": "Preview"
     },
     "fields": {
       "reference": "Payment reference",
@@ -5476,17 +5517,12 @@
       "sort": "Sort by",
       "from": "From date",
       "to": "To date",
-      "allStatuses": "All statuses",
       "entity": "Entity",
-      "allEntities": "All entities",
-      "allServices": "All services",
-      "allMethods": "All methods",
       "modes": {
         "live": "Live payments",
-        "test": "Test payments"
+        "test": "Preview payments"
       },
-      "channel": "Payment channel",
-      "allChannels": "All channels"
+      "channel": "Payment channel"
     },
     "sorts": {
       "desc_created_at": "Newest first",
@@ -5780,9 +5816,6 @@
       "mode": "Environment",
       "result": "Result",
       "providerRef": "Gateway reference",
-      "allSources": "All sources",
-      "allResults": "All results",
-      "allModes": "All environments",
       "signed": "Verified",
       "unmatched": "Not matched to a payment",
       "emptyTitle": "No payment events",
@@ -5942,13 +5975,11 @@
       },
       "filters": {
         "account": "Receiving account",
-        "allAccounts": "All accounts",
         "accountWithState": "{account} ({state})",
         "accountStates": {
           "inactive": "Inactive",
           "archived": "Archived"
         },
-        "allModes": "All modes",
         "frozenLabel": "Frozen entities",
         "frozen": {
           "0": "Excluded",
@@ -6017,7 +6048,7 @@
         "amountDue": "Amount due"
       },
       "modes": {
-        "test": "Test",
+        "test": "Preview",
         "live": "Live"
       },
       "detail": {
@@ -6111,7 +6142,6 @@
     "operations": {
       "types": {
         "title": "Operation type",
-        "all": "All types",
         "electronic": {
           "label": "Electronic payment"
         },
@@ -6124,7 +6154,6 @@
       },
       "statuses": {
         "title": "Status",
-        "all": "All statuses",
         "paid": {
           "label": "Paid",
           "definition": "The payment is complete and the receipt was issued."
@@ -6170,7 +6199,6 @@
   "review": {
     "title": "Assessor review",
     "backToRequest": "Back to the request",
-    "navLabel": "Criteria of the review",
     "readOnly": "Read only",
     "progress": "Scoring progress",
     "progressLabel": "{scored} of {required} items scored",
@@ -6319,7 +6347,6 @@
       "requests": "Requests"
     },
     "filters": {
-      "allStatuses": "All statuses",
       "status": "Status",
       "sort": "Sort"
     },
@@ -6508,9 +6535,7 @@
       "message": "You can review the initial assessments now. Qualify and disqualify become available once the submissions of the cycle are closed."
     },
     "filters": {
-      "allStatuses": "All statuses",
       "status": "Status",
-      "allRegions": "All regions",
       "region": "Region",
       "sort": "Sort"
     },
@@ -6713,9 +6738,7 @@
       "overdueMessage": "Submit them as soon as possible; the Award Secretary is notified of overdue evaluations.",
       "filters": {
         "cycle": "Cycle",
-        "status": "Status",
-        "allCycles": "All cycles",
-        "allStatuses": "All statuses"
+        "status": "Status"
       },
       "columns": {
         "entity": "Entity",
@@ -6822,9 +6845,7 @@
       "filters": {
         "status": "Status",
         "region": "Region",
-        "sort": "Sort",
-        "allStatuses": "All states",
-        "allRegions": "All regions"
+        "sort": "Sort"
       },
       "sorts": {
         "submitted_at_desc": "Newest submission",
@@ -7236,9 +7257,6 @@
       "title": "Account menu",
       "entityProfile": "Organization profile",
       "language": "Language",
-      "theme": "Appearance",
-      "themeLight": "Light",
-      "themeDark": "Dark",
       "help": "Help and guides",
       "roleLine": "Organization account owner"
     },
@@ -7733,18 +7751,7 @@
         },
         "subsOf": "{done} of {total} sub-criteria",
         "subComplete": "Complete",
-        "subPending": "Awaiting evidence",
-        "guide": "Guide for this station",
-        "protectedTitle": "Your evidence is protected",
-        "protectedText": "Files are scanned automatically and stored inside the Kingdom; only the assigned assessor can see them.",
-        "questionTitle": "A question about the evidence?",
-        "questionAction": "Message the Moashir team",
-        "stepNav": "Move between criteria",
-        "previous": "Previous: {name}",
-        "next": "Next: {name}",
-        "asideLabel": "Station guide and help",
-        "saveShort": "Save",
-        "nextShort": "Next criterion"
+        "subPending": "Awaiting evidence"
       }
     },
     "unsaved": {
@@ -8611,14 +8618,10 @@
     },
     "filters": {
       "search": "Search by reference, name, e-mail or organisation",
-      "allStatuses": "All statuses",
-      "allTypes": "All enquiry types",
-      "anySender": "All senders",
       "linked": {
         "true": "Registered senders",
         "false": "Visitors"
       },
-      "anyAssignee": "All handlers",
       "mine": "Assigned to me",
       "unassigned": "Not assigned",
       "from": "From date",
@@ -9321,7 +9324,8 @@
       "title": "Filter results",
       "apply": "Apply",
       "reset": "Clear all",
-      "clear": "Clear filters"
+      "clear": "Clear filters",
+      "all": "All"
     },
     "search": {
       "close": "Close search"

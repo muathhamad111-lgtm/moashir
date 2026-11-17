@@ -50,12 +50,14 @@ beforeEach(() => {
 })
 
 describe('TopNavbar', () => {
-  it('renders no page title, plus the locale switcher, theme toggle, bell, and user menu', async () => {
+  it('renders no logo, no page title, no theme toggle, plus the locale switcher, bell and user menu', async () => {
     const globals = createTestGlobals()
     await globals.router.push('/dashboard')
     const wrapper = mount(TopNavbar, { global: globals })
     await flushPromises()
     expect(wrapper.find('.navbar__title').exists()).toBe(false)
+    expect(wrapper.find('img.navbar__logo').exists()).toBe(false)
+    expect(wrapper.find('[aria-label^="التبديل إلى"]').exists()).toBe(false)
     expect(wrapper.text()).toContain('English')
     expect(wrapper.find('.notification-bell').exists()).toBe(true)
     expect(wrapper.find('.navbar__user .dropdown-menu').exists()).toBe(true)
@@ -152,7 +154,7 @@ describe('TopNavbar', () => {
     }
   })
 
-  it('keeps settings, theme and language in the bar on a wide navbar', async () => {
+  it('keeps settings and language in the bar on a wide navbar', async () => {
     const wrapper = await mountWithRoles(['system_admin'])
     expect(wrapper.find('.navbar__settings').exists()).toBe(true)
     expect(wrapper.find('.navbar__locale').exists()).toBe(true)
@@ -161,29 +163,11 @@ describe('TopNavbar', () => {
     expect(labels.some((label) => label.includes('English'))).toBe(false)
   })
 
-  it('moves settings, theme and language into the user menu on a narrow navbar', async () => {
+  it('moves settings and language, but no theme switch, into the user menu on a narrow navbar', async () => {
     const wrapper = await mountNarrow(['system_admin'])
     expect(wrapper.find('.navbar__settings').exists()).toBe(false)
     expect(wrapper.find('.navbar__locale').exists()).toBe(false)
     expect(wrapper.find('.notification-bell').exists()).toBe(true)
-    expect(menuLabels(wrapper)).toEqual([
-      'حسابي',
-      'الإعدادات',
-      'التبديل إلى الوضع النهاري',
-      'English',
-      'تسجيل الخروج',
-    ])
-  })
-
-  it('switches the theme from the narrow user menu', async () => {
-    const wrapper = await mountNarrow(['entity'])
-    const ui = useUiStore()
-    const before = ui.theme
-    const themeItem = wrapper
-      .findAll('[role="menuitem"]')
-      .find((item) => item.text().startsWith('التبديل إلى'))
-    await themeItem.trigger('click')
-    expect(ui.theme).not.toBe(before)
-    expect(menuLabels(wrapper).some((label) => label.includes('الإعدادات'))).toBe(false)
+    expect(menuLabels(wrapper)).toEqual(['حسابي', 'الإعدادات', 'English', 'تسجيل الخروج'])
   })
 })

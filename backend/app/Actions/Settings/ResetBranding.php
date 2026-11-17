@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Actions\Settings;
 
-use App\Enums\Settings\AccentToken;
 use App\Enums\Settings\LogoVariant;
 use App\Models\Files\StoredFile;
 use App\Models\Identity\User;
@@ -13,6 +12,7 @@ use App\Services\Cms\PublicContentCache;
 use App\Services\Files\StoredFileRemover;
 use App\Services\Platform\TransactionLock;
 use App\Services\Settings\BrandingAuditTrail;
+use App\Services\Settings\DefaultBrandColors;
 use App\Services\Settings\SettingsChangeReason;
 use Illuminate\Support\Facades\DB;
 
@@ -24,6 +24,7 @@ final readonly class ResetBranding
         private StoredFileRemover $remover,
         private BrandingAuditTrail $audit,
         private PublicContentCache $publicContent,
+        private DefaultBrandColors $defaults,
     ) {}
 
     public function handle(User $actor, ?string $reason): void
@@ -37,8 +38,11 @@ final readonly class ResetBranding
             $columns = LogoVariant::columns();
             $logoIds = array_values(array_filter(array_map(static fn (string $column): mixed => $theme->getAttribute($column), $columns)));
 
+            $defaults = $this->defaults->get();
+
             $theme->forceFill([
-                'accent_token' => AccentToken::BrandDefault,
+                'primary_color' => $defaults->primary,
+                'secondary_color' => $defaults->secondary,
                 ...array_fill_keys($columns, null),
                 'updated_by_user_id' => $actor->id,
             ])->save();

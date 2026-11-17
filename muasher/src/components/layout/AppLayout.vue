@@ -14,9 +14,9 @@ onMounted(() => branding.ensureLoaded())
 <template>
   <div class="app-layout">
     <a class="app-layout__skip" href="#app-main">{{ t('shell.skipToContent') }}</a>
-    <Sidebar />
-    <div class="app-layout__main">
-      <TopNavbar />
+    <TopNavbar />
+    <div class="app-layout__body">
+      <Sidebar />
       <main id="app-main" class="app-layout__content" tabindex="-1">
         <slot />
       </main>

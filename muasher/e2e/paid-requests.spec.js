@@ -56,7 +56,7 @@ test('the System Administrator finds a paid draft in its own tab and follows it 
 
   await tabs.nth(1).click()
   await expect(page).toHaveURL(/stage=preparing/)
-  await expect(page.locator('.preparing-requests__note')).toBeVisible()
+  await expect(page.locator('.preparing-requests__note')).toHaveCount(0)
   const row = page.locator('tbody tr', { hasText: DRAFT_NUMBER })
   await expect(row).toContainText('PAY-2026-000012')
   await expect(row.locator('[role="progressbar"]')).toBeVisible()

@@ -830,12 +830,12 @@ return [
             'body' => 'An SMS could not be sent through :provider (:error). Review the SMS settings and the provider account.',
         ],
         'INT-02' => [
-            'title' => 'SMS gateway test passed',
-            'body' => 'The connection test of the SMS provider :provider passed.',
+            'title' => 'SMS gateway check passed',
+            'body' => 'The connection check of the SMS provider :provider passed.',
         ],
         'INT-03' => [
-            'title' => 'Payment gateway test failed',
-            'body' => 'The connection test of the payment gateway failed (:error). Review the payment settings.',
+            'title' => 'Payment gateway check failed',
+            'body' => 'The connection check of the payment gateway failed (:error). Review the payment settings.',
         ],
         'INT-04' => [
             'title' => 'External service unavailable',
@@ -847,7 +847,7 @@ return [
         ],
         'AI-04' => [
             'title' => 'AI provider settings updated',
-            'body' => 'The AI provider, model or API key was changed. Run a connection test.',
+            'body' => 'The AI provider, model or API key was changed. Run a connection check.',
         ],
         'AI-05' => [
             'title' => 'AI provider connection failed',

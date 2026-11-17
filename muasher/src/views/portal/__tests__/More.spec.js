@@ -47,12 +47,11 @@ describe('More (M4)', () => {
     expect(services[1].find('.portal-menu-entry__value').exists()).toBe(false)
   })
 
-  it('shows the account and preference entries in English', async () => {
+  it('shows the account entries in English, with no appearance switch', async () => {
     const wrapper = await factory('en')
     const account = wrapper.findAll('.portal-more__group')[2]
     expect(account.findAll('.portal-menu-entry__label').map((label) => label.text())).toEqual([
       'Language',
-      'Appearance',
       'Help and guides',
     ])
     expect(account.findAll('.portal-menu-entry__value')[0].text()).toBe('العربية')

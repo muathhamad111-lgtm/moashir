@@ -1,25 +1,10 @@
 @use '../mixins' as *;
 
-.accredited-main__title {
-  margin: 0;
-  font-size: var(--fs-lg);
-  font-weight: var(--fw-semibold);
-  color: var(--theme-heading);
-}
-
-.accredited-main__description,
 .accredited-sub__description {
   margin-block: 0 var(--space-3);
   font-size: var(--fs-sm);
   line-height: var(--lh-relaxed);
   color: var(--theme-text-muted);
-}
-
-.accredited-main__subs {
-  @include flex(column, stretch, flex-start, var(--space-5));
-  list-style: none;
-  margin: 0;
-  padding: 0;
 }
 
 .accredited-sub {

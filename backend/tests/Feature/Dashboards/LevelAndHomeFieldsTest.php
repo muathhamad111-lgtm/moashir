@@ -67,7 +67,7 @@ function evidenceOn(Assessment $assessment, MalwareScanStatus $scan, EvidenceSta
     ]);
 }
 
-it('counts entities by level on the System Administrator and executive boards', function (string $board): void {
+it('counts entities by level in the executive overview', function (): void {
     entityWithOwner();
     openAccreditedRequestFor(entityWithOwner());
     levelledEntity('50.00');
@@ -80,7 +80,7 @@ it('counts entities by level on the System Administrator and executive boards', 
     certifyResult(accreditedResultFor($suspended, homeCriteria(), homeMarks('75.00')));
     levelledEntity('95.00')->delete();
 
-    expect(boardWidget(boardOf(systemAdmin(), $board), 'entities_by_level'))->toBe([
+    expect(overviewWidget(overviewOf(systemAdmin()), 'entities_by_level'))->toBe([
         ['key' => 'none', 'count' => 2],
         ['key' => 'in_progress', 'count' => 1],
         ['key' => 'participation', 'count' => 1],
@@ -89,31 +89,31 @@ it('counts entities by level on the System Administrator and executive boards', 
         ['key' => 'gold', 'count' => 2],
         ['key' => 'diamond', 'count' => 0],
     ]);
-})->with(['system_admin', 'executive']);
+});
 
 it('answers every bucket with zero when there are no entities', function (): void {
-    expect(collect(boardWidget(boardOf(systemAdmin(), 'system_admin'), 'entities_by_level'))->pluck('count', 'key')->all())->toBe([
+    expect(collect(overviewWidget(overviewOf(systemAdmin()), 'entities_by_level'))->pluck('count', 'key')->all())->toBe([
         'none' => 0, 'in_progress' => 0, 'participation' => 0, 'bronze' => 0, 'silver' => 0, 'gold' => 0, 'diamond' => 0,
     ]);
 });
 
-it('keeps the boards with the level widget at a constant number of queries', function (): void {
+it('keeps the overview with the level widget at a constant number of queries', function (): void {
     $admin = systemAdmin();
     levelledEntity('85.00');
-    $before = [dashboardQueryCount($admin, 'system_admin'), dashboardQueryCount($admin, 'executive')];
+    $before = overviewQueryCount($admin);
 
     levelledEntity('50.00');
     levelledEntity('95.00');
     openAccreditedRequestFor(entityWithOwner());
 
-    expect([dashboardQueryCount($admin, 'system_admin'), dashboardQueryCount($admin, 'executive')])->toBe($before);
+    expect(overviewQueryCount($admin))->toBe($before);
 });
 
 it('does not show the level widget on boards without the global entity view', function (RoleKey $role): void {
     $user = $role === RoleKey::Entity ? ownerOf(entityWithOwner()) : staffUser($role);
 
     switchTo($user)->getJson(DASHBOARD.'?board=system_admin')->assertForbidden()->assertJsonPath('code', 'board.not_held');
-    switchTo($user)->getJson(DASHBOARD.'?board=executive')->assertForbidden();
+    switchTo($user)->getJson(DASHBOARD_OVERVIEW)->assertForbidden();
     expect(collect(boardOf($user)->json('data.widgets'))->pluck('key'))->not->toContain('entities_by_level');
 })->with([RoleKey::FinanceOfficer, RoleKey::RequestFollower, RoleKey::Entity]);
 

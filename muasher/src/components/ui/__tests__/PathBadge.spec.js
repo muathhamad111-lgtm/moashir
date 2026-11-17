@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import PathBadge from '@/components/ui/PathBadge.vue'
-import RequestPathSwitch from '@/components/requests/RequestPathSwitch.vue'
 import { createTestGlobals } from '@/test-utils'
 
 function render(component, props, locale = 'en') {
@@ -25,25 +24,5 @@ describe('PathBadge', () => {
     const unknown = render(PathBadge, { path: 'leaders' })
     expect(unknown.classes()).toContain('path-badge--other')
     expect(unknown.text()).toBe('leaders')
-  })
-})
-
-describe('RequestPathSwitch', () => {
-  it('links every path with its count and marks the current one', () => {
-    const wrapper = render(RequestPathSwitch, {
-      entries: [
-        { path: 'accredited', pathLabel: null, countLabel: '3 awaiting assignment' },
-        { path: 'advanced', pathLabel: null, countLabel: '' },
-      ],
-      current: 'advanced',
-      routeName: 'requests.index',
-      label: 'Request queue paths',
-    })
-    const links = wrapper.findAll('a')
-    expect(wrapper.find('nav').attributes('aria-label')).toBe('Request queue paths')
-    expect(links[0].attributes('href')).toBe('/admin/requests?path=accredited')
-    expect(links[0].text()).toContain('3 awaiting assignment')
-    expect(links[1].attributes('aria-current')).toBe('page')
-    expect(links[0].attributes('aria-current')).toBeUndefined()
   })
 })

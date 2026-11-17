@@ -3,9 +3,9 @@
 @use 'base/root';
 @use 'themes/dark';
 @use 'themes/light';
-@use 'themes/accent';
 @use 'themes/b-shell';
 @use 'themes/insights';
+@use 'themes/tts-shell';
 @use 'base/typography';
 @use 'base/global';
 @use 'base/rtl';
@@ -28,7 +28,6 @@
 @use 'components/pagination';
 @use 'components/badge';
 @use 'components/path-badge';
-@use 'components/path-switch';
 @use 'components/path-access-form';
 @use 'components/path-settings';
 @use 'components/level-ranges';
@@ -42,6 +41,7 @@
 @use 'components/wizard';
 @use 'components/notifications';
 @use 'components/sidebar';
+@use 'components/identity-card';
 @use 'components/navbar';
 @use 'components/global-search';
 @use 'components/app-layout';
@@ -56,7 +56,6 @@
 @use 'components/dev-home';
 @use 'components/gallery';
 @use 'components/weight-editor';
-@use 'components/criteria-tree';
 @use 'components/criteria';
 @use 'components/criteria-version';
 @use 'components/criteria-problems';
@@ -124,6 +123,7 @@
 @use 'components/self-summary';
 @use 'components/self-workspace';
 @use 'components/session-extend';
+@use 'components/criterion-steps';
 @use 'components/self-actions';
 @use 'components/rebind-summary';
 @use 'components/result-pending';
@@ -241,9 +241,11 @@
 @use 'components/staff-dashboard';
 @use 'components/route-tabs';
 @use 'components/dashboard-widgets';
+@use 'components/charts';
+@use 'components/executive-overview';
 @use 'components/widget-levels';
 @use 'components/branding';
-@use 'components/accent-swatch';
+@use 'components/brand-colors';
 @use 'components/contrast-fail';
 @use 'components/logo-variant';
 @use 'components/account';
@@ -317,3 +319,11 @@
 @use 'components/maturity';
 @use 'components/board-reports';
 @use 'components/insights-admin';
+@use 'tts/buttons' as tts-buttons;
+@use 'tts/fields' as tts-fields;
+@use 'tts/popups' as tts-popups;
+@use 'tts/data' as tts-data;
+@use 'tts/page' as tts-page;
+@use 'tts/portal' as tts-portal;
+@use 'tts/list' as tts-list;
+@use 'tts/form-sections' as tts-form-sections;

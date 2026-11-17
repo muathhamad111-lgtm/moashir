@@ -20,7 +20,7 @@ function isStarted(form, sub) {
   )
 }
 
-function stateOf(complete, total, started) {
+export function stationStateOf(complete, total, started) {
   if (total > 0 && complete === total) return STATION_STATES.COMPLETE
   return complete > 0 || started ? STATION_STATES.PARTIAL : STATION_STATES.EMPTY
 }
@@ -35,7 +35,7 @@ export function stationsOf(form) {
       name: main.name,
       total: main.subs.length,
       complete,
-      state: stateOf(complete, main.subs.length, started),
+      state: stationStateOf(complete, main.subs.length, started),
     }
   })
 }

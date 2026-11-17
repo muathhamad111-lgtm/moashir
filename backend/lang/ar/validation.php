@@ -160,6 +160,9 @@ return [
     'uuid' => 'يجب أن يكون حقل :attribute معرف UUID صحيحًا.',
 
     'custom' => [
+        'overview_period' => [
+            'too_long' => 'لا يمكن أن تتجاوز الفترة المخصصة :days يومًا.',
+        ],
         'vat_registration_number' => [
             'regex' => 'الرقم الضريبي يتكون من 15 رقمًا بالأرقام الإنجليزية (0-9) دون مسافات، ويبدأ بالرقم 3 وينتهي به.',
         ],
@@ -290,6 +293,8 @@ return [
     ],
 
     'attributes' => [
+        'primary_color' => 'اللون الرئيسي',
+        'secondary_color' => 'اللون الثانوي',
         'meta.availability' => 'حالة الإتاحة',
         'vat_registration_number' => 'الرقم الضريبي',
         'gap_thresholds' => 'حدود القوة والفجوات',

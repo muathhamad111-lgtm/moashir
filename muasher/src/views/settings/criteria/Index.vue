@@ -74,7 +74,7 @@ const versionOptions = computed(() =>
 )
 
 const activeOptions = computed(() => [
-  { value: '', label: t('criteria.filters.allStates') },
+  { value: '', label: t('dataList.filter.all') },
   { value: 'true', label: t('status.active') },
   { value: 'false', label: t('status.inactive') },
 ])

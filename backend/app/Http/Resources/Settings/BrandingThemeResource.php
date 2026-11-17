@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Settings;
 
-use App\Data\Settings\PaletteColor;
+use App\Data\Settings\BrandColors;
+use App\Data\Settings\BrandColorScheme;
 use App\Models\Settings\BrandingTheme;
 use App\Support\Files\PublicAssetLink;
 use Illuminate\Http\Request;
@@ -15,10 +16,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 final class BrandingThemeResource extends JsonResource
 {
-    /**
-     * @param  list<PaletteColor>  $palette
-     */
-    public function __construct(BrandingTheme $theme, private readonly array $palette)
+    public function __construct(BrandingTheme $theme, private readonly BrandColorScheme $scheme, private readonly BrandColors $defaults)
     {
         parent::__construct($theme);
     }
@@ -31,17 +29,14 @@ final class BrandingThemeResource extends JsonResource
         $theme = $this->resource;
 
         return [
-            'accent_token' => $theme->accent_token->value,
+            'primary_color' => $theme->primary_color,
+            'secondary_color' => $theme->secondary_color,
+            'scheme' => $this->scheme->toArray(),
+            'default_colors' => ['primary' => $this->defaults->primary, 'secondary' => $this->defaults->secondary],
             'logo_light' => PublicAssetLink::of($theme->logoLight),
             'logo_dark' => PublicAssetLink::of($theme->logoDark),
             'favicon' => PublicAssetLink::of($theme->favicon),
             'logo_site' => PublicAssetLink::of($theme->siteLogo),
-            'palette' => array_map(static fn (PaletteColor $color): array => [
-                'token' => $color->token->value,
-                'hex' => $color->fill,
-                'text_on_light_hex' => $color->textOnLight,
-                'label' => ['ar' => __('branding.palette.'.$color->token->value, [], 'ar'), 'en' => __('branding.palette.'.$color->token->value, [], 'en')],
-            ], $this->palette),
             'updated_at' => $theme->updated_at->toIso8601String(),
         ];
     }

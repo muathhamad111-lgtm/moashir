@@ -16,11 +16,11 @@ const emit = defineEmits(['filter', 'sort'])
 const { t, locale } = useI18n()
 
 const statusOptions = computed(() => [
-  { value: '', label: t('filtering.filters.allStatuses') },
+  { value: '', label: t('dataList.filter.all') },
   ...FILTERING_STATUSES.map((value) => ({ value, label: t(statusLabelKey(value)) })),
 ])
 const regionOptions = computed(() => [
-  { value: '', label: t('filtering.filters.allRegions') },
+  { value: '', label: t('dataList.filter.all') },
   ...props.regions.map((region) => ({
     value: String(region.id),
     label: localizedText(region.name, locale.value),

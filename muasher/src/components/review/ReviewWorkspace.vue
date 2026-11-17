@@ -1,10 +1,10 @@
 <script setup>
-import { computed, onMounted, ref, toRef, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, toRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
-import CriteriaTree from '@/components/criteria/CriteriaTree.vue'
+import AccreditedStations from '@/components/accredited/AccreditedStations.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import ReviewHeader from './ReviewHeader.vue'
 import ReviewEntityCard from './ReviewEntityCard.vue'
@@ -23,13 +23,14 @@ import { useReasonPrompt } from '@/composables/useReasonPrompt'
 import { useSignedDownload } from '@/composables/useSignedDownload'
 import { useAuthStore } from '@/stores/auth'
 import { evidenceService } from '@/services/evidenceService'
-import { localizedText } from '@/utils/localizedText'
+import { useCriterionSteps } from '@/composables/useCriterionSteps'
+import { scoredStationsOf } from '@/utils/assessments/scoredStations'
 
 const props = defineProps({
   assessmentId: { type: Number, required: true },
 })
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const auth = useAuthStore()
 const reviewState = useAssessorReview(toRef(props, 'assessmentId'))
 const {
@@ -49,39 +50,31 @@ const askReason = () => (auth.isSuperAdmin ? reasonPrompt.prompt() : Promise.res
 const actions = useReviewActions({ reviewState, scoreSheet, feedback, askReason })
 const downloads = useSignedDownload()
 const workspace = { reviewState, scoreSheet, feedback, actions, downloads }
-const activeMainId = ref(null)
+const panelTop = ref(null)
 const completionOpen = ref(false)
 const overrideOpen = ref(false)
 const completeOpen = ref(false)
 const ACCREDITED_PATH = 'accredited'
 
 const mains = computed(() => review.value?.criteria?.mains ?? [])
-const activeMain = computed(
-  () => mains.value.find((main) => main.id === activeMainId.value) ?? mains.value[0] ?? null,
-)
+const steps = useCriterionSteps(mains)
+const activeMain = steps.current
+const stations = computed(() => scoredStationsOf(mains.value, units.value, scoreSheet.sheet.values))
 const dirty = computed(() => scoreSheet.dirty.value || feedback.dirty.value)
 const fullyScored = computed(
   () => review.value && review.value.progress.scored === review.value.progress.required,
 )
-const treeNodes = computed(() =>
-  mains.value.map((main) => ({
-    id: main.id,
-    label: localizedText(main.name, locale.value),
-    children: main.subs.map((sub) => ({
-      id: sub.id,
-      label: localizedText(sub.name, locale.value),
-    })),
-  })),
-)
-
 watch(review, (current, previous) => {
   if (!current || current === previous) return
   if (!scoreSheet.dirty.value) scoreSheet.resetFrom(current.scores)
   if (!feedback.dirty.value) feedback.resetFrom(current.feedback)
 })
 
-function selectNode({ node, parent }) {
-  activeMainId.value = parent ? parent.id : node.id
+async function showStep(move) {
+  move()
+  await nextTick()
+  panelTop.value?.scrollIntoView({ block: 'start' })
+  panelTop.value?.focus()
 }
 
 function download(file) {
@@ -128,24 +121,24 @@ onMounted(reviewState.load)
         @override="overrideOpen = true"
       />
       <ReviewEntityCard :entity="review.entity" :context="review.context" />
-      <div class="review-workspace__layout">
-        <aside class="review-workspace__nav" :aria-label="t('review.navLabel')">
-          <CriteriaTree
-            :nodes="treeNodes"
-            :active-id="activeMain?.id ?? null"
-            @select="selectNode"
-          />
-        </aside>
+      <AccreditedStations
+        :stations="stations"
+        :active-id="activeMain?.id ?? null"
+        @select="showStep(() => steps.goToMain($event))"
+      />
+      <div ref="panelTop" class="review-workspace__main" tabindex="-1">
         <ReviewMainPanel
           v-if="activeMain"
           :key="activeMain.id"
           :main="activeMain"
+          :step="steps.position.value + 1"
+          :total="steps.total.value"
           :workspace="workspace"
           @download="download"
         />
       </div>
       <ReviewSummaryCard
-        v-if="offersCertificate"
+        v-if="offersCertificate && steps.isLast.value"
         :assessment-id="assessment.id"
         :summary="review.summary"
         :editable="canScore"
@@ -160,6 +153,10 @@ onMounted(reviewState.load)
         :can-start="canStart"
         :can-request-completion="canRequestCompletion"
         :complete="fullyScored"
+        :is-first="steps.isFirst.value"
+        :is-last="steps.isLast.value"
+        @previous="showStep(steps.previous)"
+        @next="showStep(steps.next)"
         @start="actions.startReview"
         @save="actions.saveAll"
         @request-completion="completionOpen = true"

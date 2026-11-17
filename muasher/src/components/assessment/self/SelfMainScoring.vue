@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import Card from '@/components/ui/Card.vue'
 import Badge from '@/components/ui/Badge.vue'
 import RawScoreField from '@/components/assessment/RawScoreField.vue'
+import CriterionStepCounter from '@/components/assessment/CriterionStepCounter.vue'
 import { EVALUATION_TYPES } from '@/constants/criteria'
 import { SCORE_LEVELS } from '@/constants/assessment'
 import { savedScoreOf, scoreFieldName } from '@/utils/assessments/scoreSheet'
@@ -44,7 +45,7 @@ defineExpose({ focusTitle })
   <Card class="self-main">
     <template #header>
       <div class="self-main__head">
-        <p class="self-main__step">{{ t('assessment.self.steps.counter', { step, total }) }}</p>
+        <CriterionStepCounter :step="step" :total="total" />
         <h2 ref="title" class="self-main__title" tabindex="-1">{{ text(main.name) }}</h2>
       </div>
     </template>

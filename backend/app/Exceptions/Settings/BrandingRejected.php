@@ -11,20 +11,19 @@ use Illuminate\Http\Response;
 
 final class BrandingRejected extends ApiException
 {
-    public static function tokenUnknown(): self
-    {
-        return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'token.unknown', [
-            'accent_token' => [__('errors.token.unknown')],
-        ]));
-    }
-
     /**
      * @param  list<ContrastCheck>  $failures
      */
     public static function contrastFail(array $failures): self
     {
-        return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'contrast_fail', [
-            'accent_token' => [__('errors.contrast_fail')],
-        ], [], ['pairs' => array_map(static fn (ContrastCheck $check): array => $check->toArray(), $failures)]));
+        $fields = [];
+
+        foreach ($failures as $check) {
+            $fields[$check->field()] = [__('errors.contrast_fail')];
+        }
+
+        return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'contrast_fail', $fields, [], [
+            'pairs' => array_map(static fn (ContrastCheck $check): array => $check->toArray(), $failures),
+        ]));
     }
 }

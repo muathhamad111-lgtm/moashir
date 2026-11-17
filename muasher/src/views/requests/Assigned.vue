@@ -10,8 +10,6 @@ import DataTable from '@/components/data-list/DataTable.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import DateStamp from '@/components/accredited/DateStamp.vue'
 import OverdueBadge from '@/components/accredited/OverdueBadge.vue'
-import PathBadge from '@/components/ui/PathBadge.vue'
-import RequestPathSwitch from '@/components/requests/RequestPathSwitch.vue'
 import { useAssignedRequests } from '@/composables/useAssignedRequests'
 import { useAuthStore } from '@/stores/auth'
 import { useRequestPathCountsStore } from '@/stores/requestPathCounts'
@@ -40,21 +38,9 @@ const tabs = computed(() =>
     return { value, label: count === undefined ? label : `${label} (${count})` }
   }),
 )
-const switchEntries = computed(() =>
-  paths.value.map((value) => {
-    const entry = pathCountOf(pathCounts.value, value)
-    const open = entry ? entry.new + entry.inProgress : null
-    return {
-      path: value,
-      pathLabel: entry?.pathLabel ?? null,
-      countLabel: open === null ? '' : t('nav.pathCounts.assigned', { count: open }),
-    }
-  }),
-)
 const columns = computed(() => [
   { key: 'number', label: t('requests.columns.number') },
   { key: 'entity', label: t('requests.columns.entity') },
-  { key: 'cycle', label: t('requests.columns.pathAndCycle') },
   { key: 'status', label: t('requests.columns.status') },
   { key: 'assignedAt', label: t('requests.assignment.assignedAt') },
   { key: 'dueAt', label: t('requests.columns.dueAt') },
@@ -65,19 +51,9 @@ const columns = computed(() => [
   <section class="requests-page">
     <header class="requests-page__header">
       <p class="requests-page__eyebrow">{{ t('requests.index.eyebrow') }}</p>
-      <div class="requests-page__title-row">
-        <h1 class="requests-page__title">{{ t('requests.assigned.title') }}</h1>
-        <PathBadge :path="path" :label="current?.pathLabel ?? null" />
-      </div>
+      <h1 class="requests-page__title">{{ t('requests.assigned.title') }}</h1>
       <p class="requests-page__subtitle">{{ t('requests.assigned.subtitle') }}</p>
     </header>
-    <RequestPathSwitch
-      v-if="paths.length > 1"
-      :entries="switchEntries"
-      :current="path"
-      :route-name="ROUTE_NAMES.REQUESTS_ASSIGNED"
-      :label="t('requests.assigned.pathSwitchLabel')"
-    />
     <Card>
       <Tabs v-model="tab" :tabs="tabs" />
       <DataTable
@@ -101,14 +77,6 @@ const columns = computed(() => [
           <span v-if="item.entity?.region" class="request-queue__muted">{{
             localizedText(item.entity.region.name, locale)
           }}</span>
-        </template>
-        <template #cell-cycle="{ item }">
-          <span class="request-queue__path">
-            <PathBadge v-if="item.path" :path="item.path" :label="item.pathLabel" compact />
-            <span v-if="item.awardCycle" class="request-queue__muted">{{
-              localizedText(item.awardCycle.name, locale)
-            }}</span>
-          </span>
         </template>
         <template #cell-status="{ item }"><StatusBadge :status="item.status" /></template>
         <template #cell-assignedAt="{ item }"

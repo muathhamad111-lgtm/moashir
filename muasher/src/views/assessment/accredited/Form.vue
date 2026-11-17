@@ -5,22 +5,16 @@ import { useRoute, useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import PortalAreaHeader from '@/components/portal/PortalAreaHeader.vue'
 import AccreditedTaskWorkspace from '@/components/accredited/AccreditedTaskWorkspace.vue'
-import NewMessageDialog from '@/components/messages/NewMessageDialog.vue'
-import { useToast } from '@/composables/useToast'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { REQUEST_TABS } from '@/constants/entityPaths'
 import { usePathNames } from '@/composables/usePathNames'
-
-const ENQUIRY_TYPE = 'accredited_assessment'
 
 const { t } = useI18n()
 const { pathName, pathDescription } = usePathNames()
 const route = useRoute()
 const router = useRouter()
-const toast = useToast()
 const assessmentId = computed(() => Number(route.params.id))
 const number = ref('')
-const contactOpen = ref(false)
 
 useHead({ title: () => t('accredited.form.title') })
 
@@ -52,11 +46,6 @@ function onSubmitted() {
 function onLoaded(assessment) {
   number.value = assessment.number
 }
-
-function onMessageCreated({ id, reference }) {
-  toast.success(t('portal.messages.dialog.sent', { reference }))
-  if (id) router.push({ name: ROUTE_NAMES.MESSAGES_THREAD, params: { id } })
-}
 </script>
 
 <template>
@@ -72,13 +61,7 @@ function onMessageCreated({ id, reference }) {
         :assessment-id="assessmentId"
         @submitted="onSubmitted"
         @loaded="onLoaded"
-        @contact="contactOpen = true"
       />
     </div>
-    <NewMessageDialog
-      v-model="contactOpen"
-      :enquiry-type="ENQUIRY_TYPE"
-      @created="onMessageCreated"
-    />
   </section>
 </template>

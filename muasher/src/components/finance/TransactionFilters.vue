@@ -45,7 +45,7 @@ const modeOptions = computed(() => [
   { value: INTEGRATION_MODES.TEST, label: t(`finance.filters.modes.${INTEGRATION_MODES.TEST}`) },
 ])
 const purposeOptions = computed(() => [
-  { value: '', label: t('finance.filters.allServices') },
+  { value: '', label: t('dataList.filter.all') },
   ...PAYMENT_PURPOSE_VALUES.map((value) => ({ value, label: t(`finance.purposes.${value}`) })),
 ])
 const sortOptions = computed(() =>
@@ -65,7 +65,7 @@ const sortOptions = computed(() =>
       :model-value="splitFilterValue(filters[list.key])"
       :options="list.options"
       :label="t(`finance.operations.${list.group}.title`)"
-      :placeholder="t(`finance.operations.${list.group}.all`)"
+      :placeholder="t('dataList.filter.all')"
       multiple
       @update:model-value="emitList(list.key, $event)"
     />

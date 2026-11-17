@@ -1,10 +1,8 @@
 <script setup>
 import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { PATH_ICONS } from '@/constants/paths'
-import { localizedText } from '@/utils/localizedText'
 import AppIcon from '@/components/ui/AppIcon.vue'
-import { usePathNames } from '@/composables/usePathNames'
+import { usePathLabelText } from '@/composables/usePathLabelText'
 
 const props = defineProps({
   path: { type: String, required: true },
@@ -12,15 +10,11 @@ const props = defineProps({
   compact: { type: Boolean, default: false },
 })
 
-const { te, locale } = useI18n()
-const { pathName } = usePathNames()
-
 const known = computed(() => Boolean(PATH_ICONS[props.path]))
-const text = computed(() => {
-  const served = localizedText(props.label, locale.value)
-  if (served) return served
-  return te(`paths.labels.${props.path}`) ? pathName(props.path) : props.path
-})
+const text = usePathLabelText(
+  () => props.path,
+  () => props.label,
+)
 </script>
 
 <template>

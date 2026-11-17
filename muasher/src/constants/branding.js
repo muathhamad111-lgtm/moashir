@@ -1,24 +1,16 @@
 export const BRAND_THEME_COLOR = '#0a2325'
 
-export const DEFAULT_ACCENT_TOKEN = 'brand_default'
+export const DEFAULT_BRAND_COLORS = Object.freeze({ primary: '#98d8d3', secondary: '#0a2325' })
 
-export const ACCENT_TOKENS = [
-  'brand_default',
-  'emerald',
-  'teal',
-  'cyan',
-  'sky',
-  'lavender',
-  'amber',
-  'coral',
-  'lime',
-]
+export const BRAND_SURFACES = Object.freeze({
+  paper: '#ffffff',
+  ink: '#100f10',
+  content: '#f8f8f8',
+})
 
-export const CONTRAST_SURFACES = {
-  onAccent: '#0a2325',
-  darkContent: '#0a2325',
-  lightContent: '#f5f8f8',
-}
+export const BRAND_SHADE_STEP = 0.05
+
+export const BRAND_COLOR_ROLES = Object.freeze(['primary', 'secondary'])
 
 export const LOGO_RULES = {
   maxBytes: 1048576,
@@ -44,7 +36,3 @@ export const LOGO_DIMENSIONS = Object.freeze({
   [FAVICON_SURFACE]: Object.freeze({ width: 512, height: 512 }),
   [SITE_LOGO_SURFACE]: Object.freeze({ width: 480, height: 160 }),
 })
-
-export function isKnownAccent(token) {
-  return ACCENT_TOKENS.includes(token)
-}

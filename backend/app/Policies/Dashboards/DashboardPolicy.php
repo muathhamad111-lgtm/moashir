@@ -13,4 +13,9 @@ final class DashboardPolicy
     {
         return $user->can(PermissionKey::DashboardView->value);
     }
+
+    public function viewOverview(User $user): bool
+    {
+        return $user->can(PermissionKey::DashboardExecutiveView->value);
+    }
 }

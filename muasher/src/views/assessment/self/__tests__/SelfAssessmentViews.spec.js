@@ -63,7 +63,7 @@ describe('self assessment form view', () => {
     const { wrapper } = await mountView(SelfForm)
     expect(assessmentsService.startSelf).toHaveBeenCalledTimes(1)
     expect(assessmentsService.getForm).toHaveBeenCalledWith(9002)
-    expect(wrapper.find('.self-main__step').text()).toBe('Criterion 1 of 1')
+    expect(wrapper.find('.step-counter').text()).toBe('Criterion 1 of 1')
   })
 
   it('shows the branded empty state when no criteria are published', async () => {

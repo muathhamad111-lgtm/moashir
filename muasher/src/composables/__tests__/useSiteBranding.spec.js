@@ -27,7 +27,7 @@ describe('useSiteBranding', () => {
 
   it('prefers the favicon of the signed-in theme', () => {
     setActivePinia(createPinia())
-    useBrandingStore().apply({ accentToken: 'brand_default', logos: { favicon: 'blob:icon' } })
+    useBrandingStore().apply({ logos: { favicon: 'blob:icon' } })
     const { favicon } = useSiteBranding()
     expect(favicon.value).toBe('blob:icon')
   })

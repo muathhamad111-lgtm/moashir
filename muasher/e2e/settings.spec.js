@@ -62,7 +62,7 @@ test('payment screen shows stored secrets as metadata only and empty write-only 
     await expect(input).toHaveValue('')
   }
   await expect(
-    page.getByRole('button', { name: /test connection|اختبار الاتصال/i }).first(),
+    page.getByRole('button', { name: /check connection|التحقق من الاتصال/i }).first(),
   ).toBeVisible()
 })
 

@@ -2,8 +2,8 @@
   --field-label-backdrop: var(--theme-surface-solid);
   background-color: var(--theme-surface);
   border: var(--border-width) solid var(--theme-border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
+  border-radius: var(--card-radius, var(--radius-xl));
+  box-shadow: var(--card-shadow, var(--shadow-sm));
 }
 
 .card__header {

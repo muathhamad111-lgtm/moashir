@@ -16,25 +16,23 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 const { t } = useI18n()
 
-function optionsOf(allKey, values, labelOf) {
+function optionsOf(values, labelOf) {
   return [
-    { value: '', label: t(allKey) },
+    { value: '', label: t('dataList.filter.all') },
     ...values.map((value) => ({ value, label: labelOf(value) })),
   ]
 }
 
 const moduleOptions = computed(() =>
-  optionsOf('settings.notifications.catalogue.allModules', NOTIFICATION_MODULES, (value) =>
-    t(`notifications.modules.${value}`),
-  ),
+  optionsOf(NOTIFICATION_MODULES, (value) => t(`notifications.modules.${value}`)),
 )
 const categoryOptions = computed(() =>
-  optionsOf('settings.notifications.catalogue.allCategories', NOTIFICATION_CATEGORIES, (value) =>
+  optionsOf(NOTIFICATION_CATEGORIES, (value) =>
     t(`settings.notifications.catalogue.categories.${value}`),
   ),
 )
 const audienceOptions = computed(() =>
-  optionsOf('settings.notifications.catalogue.allAudiences', NOTIFICATION_AUDIENCES, (value) =>
+  optionsOf(NOTIFICATION_AUDIENCES, (value) =>
     t(`settings.notifications.catalogue.audiences.${value}`),
   ),
 )

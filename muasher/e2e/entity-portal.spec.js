@@ -104,14 +104,16 @@ test.describe('entity portal shell', () => {
     await expect(page.locator('.path-guide-card').first()).toBeVisible()
   })
 
-  test('the top bar switches the language and the theme in place', async ({ page }, testInfo) => {
+  test('the top bar switches the language in place and offers no theme switch', async ({
+    page,
+  }, testInfo) => {
     await open(page, '/dashboard', '.portal-bell')
     const html = page.locator('html')
     await expect(html).toHaveAttribute('data-theme', 'light')
-    await page.locator('.portal-top-bar__tool.btn--icon').click()
-    await expect(html).toHaveAttribute('data-theme', 'dark')
+    await expect(html).toHaveAttribute('data-shell', 'tts')
+    await expect(page.locator('.portal-top-bar__tool.btn--icon')).toHaveCount(0)
     const locale = localeOf(testInfo)
-    await page.locator('.portal-top-bar__tool:not(.btn--icon)').click()
+    await page.locator('.portal-top-bar__tool').click()
     await expect(html).toHaveAttribute('lang', locale === 'ar' ? 'en' : 'ar')
     await expect(page).toHaveURL(/\/dashboard$/)
   })

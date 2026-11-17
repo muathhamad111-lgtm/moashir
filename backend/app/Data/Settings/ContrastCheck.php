@@ -15,6 +15,11 @@ final readonly class ContrastCheck
         public bool $passes,
     ) {}
 
+    public function field(): string
+    {
+        return explode('.', $this->pair)[0].'_color';
+    }
+
     /**
      * @return array{pair: string, foreground: string, background: string, ratio: string, minimum: string}
      */

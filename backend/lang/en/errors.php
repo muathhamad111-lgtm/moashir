@@ -70,9 +70,8 @@ return [
     ],
     'token' => [
         'invalid' => 'This link is invalid or has expired.',
-        'unknown' => 'The selected color is not part of the approved palette.',
     ],
-    'contrast_fail' => 'The selected color does not meet the WCAG 2.1 AA contrast ratio in light and dark mode.',
+    'contrast_fail' => 'The selected color does not meet the WCAG 2.1 AA contrast ratio of 4.5:1 with readable text.',
     'invitation' => [
         'expired' => 'This invitation has expired. Please ask the System Administrator for a new one.',
         'invalid' => 'This invitation is invalid.',
@@ -170,7 +169,7 @@ return [
     'provider_unavailable' => 'This service is temporarily unavailable. Please try again later.',
     'integration' => [
         'not_configured' => 'This integration is not configured yet. Save its credentials first.',
-        'test_required' => 'Run a successful connection test of this environment before activating it.',
+        'test_required' => 'Run a successful connection check of this environment before activating it.',
         'configuration_incomplete' => 'Complete the required fields of this provider before activating it.',
     ],
     'ai' => [
@@ -216,13 +215,13 @@ return [
         'payee_fields_immutable' => 'Payee details cannot be changed after saving. Add a new account, then deactivate or delete the old one.',
     ],
     'sms' => [
-        'recipient_not_in_test_numbers' => 'In test mode, messages can be sent only to the allowed test numbers.',
+        'recipient_not_in_test_numbers' => 'In preview mode, messages can be sent only to the allowed preview numbers.',
         'template_not_approved' => 'This text does not match any approved Msegat template of the sender.',
         'templates_not_loaded' => 'Load the approved Msegat templates before saving the message templates.',
     ],
     'email' => [
         'host_not_allowed' => 'This mail server address is not allowed. Use the public host name of the mail server.',
-        'test_address_required' => 'Enter a test mailbox before switching e-mail to test mode.',
+        'test_address_required' => 'Enter a preview mailbox before switching e-mail to preview mode.',
     ],
     'webhook' => [
         'unauthenticated' => 'The notification could not be verified.',

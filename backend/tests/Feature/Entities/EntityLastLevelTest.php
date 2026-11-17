@@ -357,17 +357,17 @@ it('exports the counted level only and records the expired filter in the audit',
     'no level keeps the expired and the never certified entities' => ['none', 2],
 ]);
 
-it('counts an expired entity under no level or in progress on the level charts, never at its old level', function (string $board): void {
+it('counts an expired entity under no level or in progress on the level charts, never at its old level', function (): void {
     expiredSilverEntity();
     $reassessed = expiredSilverEntity();
     insightsAssessment($reassessed, lastLevelCriteria(), AssessmentPath::Accredited, AccreditedAssessmentStatus::UnderReview);
     validGoldEntity();
     atRiyadh(LAST_LEVEL_VIEW_DAY);
 
-    expect(collect(boardWidget(boardOf(systemAdmin(), $board), 'entities_by_level'))->pluck('count', 'key')->all())->toBe([
+    expect(collect(overviewWidget(overviewOf(systemAdmin()), 'entities_by_level'))->pluck('count', 'key')->all())->toBe([
         'none' => 1, 'in_progress' => 1, 'participation' => 0, 'bronze' => 0, 'silver' => 0, 'gold' => 1, 'diamond' => 0,
     ]);
-})->with(['system_admin', 'executive']);
+});
 
 it('keeps the entities list and record closed to roles without the entities permission', function (RoleKey $role): void {
     $expired = expiredSilverEntity();

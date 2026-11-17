@@ -83,8 +83,7 @@ async function navigateInApp(page, path) {
 async function expectGutter(page, selector) {
   const gap = await page.evaluate((target) => {
     const box = document.querySelector(target).getBoundingClientRect()
-    const main = document.querySelector('main').getBoundingClientRect()
-    return Math.min(box.left - main.left, main.right - box.right)
+    return Math.min(box.left, document.documentElement.clientWidth - box.right)
   }, selector)
   expect(gap).toBeGreaterThanOrEqual(16)
 }
@@ -162,8 +161,9 @@ test.describe('accredited flow (page 20, flow 1)', () => {
       say(testInfo, 'Clean', 'سليم'),
       { timeout: 15000 },
     )
-    await page.locator('.accredited-actions .btn--secondary').click()
-    await page.locator('.accredited-actions .btn--primary').click()
+    await page.locator('[data-testid="accredited-save"]').click()
+    await page.locator('.station-row__button').last().click()
+    await page.locator('[data-testid="accredited-submit"]').click()
     const dialog = page.locator('[role="alertdialog"]')
     await expect(dialog.locator('.modal__message')).toHaveText(
       say(testInfo, 'Period: Q4 2026', 'الفترة: الربع الرابع 2026'),

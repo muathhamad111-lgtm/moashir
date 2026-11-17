@@ -247,7 +247,8 @@ test.describe('staff certificate and review completion', () => {
   }, testInfo) => {
     await signIn(page, testInfo, USERS.assessor)
     await open(page, '/admin/requests/9108/review', '.review-header')
-    await page.locator('.review-actions .btn--primary').click()
+    await page.locator('.station-row__button').last().click()
+    await page.locator('[data-testid="review-complete"]').click()
     const dialog = page.getByRole('alertdialog')
     await expect(dialog.locator('.modal__title')).toHaveText(
       text(testInfo, 'Complete the assessment?', 'إكمال التقييم؟'),

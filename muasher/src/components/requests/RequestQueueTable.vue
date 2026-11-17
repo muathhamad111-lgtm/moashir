@@ -6,7 +6,6 @@ import DataTable from '@/components/data-list/DataTable.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import DateStamp from '@/components/accredited/DateStamp.vue'
 import OverdueBadge from '@/components/accredited/OverdueBadge.vue'
-import PathBadge from '@/components/ui/PathBadge.vue'
 import LevelBadge from '@/components/level/LevelBadge.vue'
 import { displayTierOf } from '@/utils/levelTier'
 import { ROUTE_NAMES } from '@/constants/routeNames'
@@ -25,7 +24,6 @@ const { t, locale } = useI18n()
 const columns = computed(() => [
   { key: 'number', label: t('requests.columns.number') },
   { key: 'entity', label: t('requests.columns.entity') },
-  { key: 'path', label: t('requests.columns.pathAndCycle') },
   ...(props.showsRegion ? [{ key: 'region', label: t('requests.columns.region') }] : []),
   { key: 'status', label: t('requests.columns.status') },
   { key: 'assessor', label: t('requests.columns.assessor') },
@@ -61,14 +59,6 @@ const columns = computed(() => [
           size="s"
           :certificate="item.entity.lastLevel"
         />
-      </span>
-    </template>
-    <template #cell-path="{ item }">
-      <span class="request-queue__path">
-        <PathBadge v-if="item.path" :path="item.path" :label="item.pathLabel" compact />
-        <span v-if="item.awardCycle" class="request-queue__muted">{{
-          localizedText(item.awardCycle.name, locale)
-        }}</span>
       </span>
     </template>
     <template #cell-region="{ item }">{{

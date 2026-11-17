@@ -1,14 +1,14 @@
 import { computed, onMounted, ref, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { brandingService } from '@/services/brandingService'
 import { useBrandingStore } from '@/stores/branding'
-import { DEFAULT_ACCENT_TOKEN, LOGO_DIMENSIONS, LOGO_SURFACES } from '@/constants/branding'
+import { DEFAULT_BRAND_COLORS, LOGO_DIMENSIONS, LOGO_SURFACES } from '@/constants/branding'
 import {
-  accentContrastPairs,
+  brandContrastPairs,
+  deriveBrandScheme,
+  normalizeHex,
   passesAllContrast,
   serverContrastPairs,
 } from '@/utils/brandingContrast'
-import { localizedText } from '@/utils/localizedText'
 import { logoForSurface } from './useBackOfficeLogo'
 import { useLogoSelection } from './useLogoSelection'
 import { useSuperAdminReason } from './useSuperAdminReason'
@@ -19,15 +19,21 @@ function bySurface(build) {
   return Object.fromEntries(LOGO_SURFACES.map((surface) => [surface, build(surface)]))
 }
 
+function sameColors(first, second) {
+  return (
+    normalizeHex(first.primary) === normalizeHex(second.primary) &&
+    normalizeHex(first.secondary) === normalizeHex(second.secondary)
+  )
+}
+
 export function useBrandingEditor({ auto = true } = {}) {
-  const { locale } = useI18n()
   const branding = useBrandingStore()
   const logos = bySurface((surface) => useLogoSelection(LOGO_DIMENSIONS[surface]))
   const { prompt: reasonPrompt, reasonExtra } = useSuperAdminReason()
 
-  const palette = ref([])
-  const savedToken = ref(DEFAULT_ACCENT_TOKEN)
-  const draftToken = ref(DEFAULT_ACCENT_TOKEN)
+  const savedColors = ref({ ...DEFAULT_BRAND_COLORS })
+  const draftColors = ref({ ...DEFAULT_BRAND_COLORS })
+  const defaultColors = ref({ ...DEFAULT_BRAND_COLORS })
   const savedLogos = ref(bySurface(() => null))
   const status = ref('loading')
   const saving = ref(false)
@@ -35,13 +41,13 @@ export function useBrandingEditor({ auto = true } = {}) {
   const rejectedPairs = ref([])
 
   const busy = computed(() => saving.value || resetting.value)
-  const selectedEntry = computed(
-    () => palette.value.find((entry) => entry.token === draftToken.value) ?? null,
-  )
-  const contrastPairs = computed(() => accentContrastPairs(selectedEntry.value))
+  const draftScheme = computed(() => deriveBrandScheme(draftColors.value))
+  const contrastPairs = computed(() => brandContrastPairs(draftScheme.value))
   const contrastOk = computed(() => passesAllContrast(contrastPairs.value))
+  const colorsChanged = computed(() => !sameColors(draftColors.value, savedColors.value))
+  const isDefault = computed(() => sameColors(draftColors.value, defaultColors.value))
   const hasPendingLogo = computed(() => LOGO_SURFACES.some((surface) => logos[surface].file.value))
-  const isDirty = computed(() => draftToken.value !== savedToken.value || hasPendingLogo.value)
+  const isDirty = computed(() => colorsChanged.value || hasPendingLogo.value)
   const canSave = computed(() => isDirty.value && contrastOk.value && !busy.value)
   const previewLogos = computed(() =>
     bySurface(
@@ -49,18 +55,26 @@ export function useBrandingEditor({ auto = true } = {}) {
     ),
   )
 
-  watch(draftToken, () => {
-    rejectedPairs.value = []
-  })
+  watch(
+    draftColors,
+    () => {
+      rejectedPairs.value = []
+    },
+    { deep: true },
+  )
 
-  function localized(value) {
-    return localizedText(value, locale.value)
+  function setColor(role, value) {
+    draftColors.value = { ...draftColors.value, [role]: value }
+  }
+
+  function fillDefaultColors() {
+    draftColors.value = { ...defaultColors.value }
   }
 
   function applyTheme(theme) {
-    palette.value = theme.palette
-    savedToken.value = theme.accentToken
-    draftToken.value = theme.accentToken
+    savedColors.value = { ...theme.colors }
+    draftColors.value = { ...theme.colors }
+    defaultColors.value = { ...(theme.defaultColors ?? DEFAULT_BRAND_COLORS) }
     savedLogos.value = bySurface((surface) => theme.logos?.[surface] ?? null)
     branding.apply(theme)
   }
@@ -70,7 +84,7 @@ export function useBrandingEditor({ auto = true } = {}) {
     try {
       const { data } = await brandingService.get()
       applyTheme(data)
-      status.value = data.palette.length ? 'success' : 'empty'
+      status.value = 'success'
     } catch {
       status.value = 'error'
     }
@@ -109,7 +123,11 @@ export function useBrandingEditor({ auto = true } = {}) {
     if (!canSave.value) return Promise.resolve(false)
     return withReason(saving, async (reason) => {
       await uploadPendingLogos(reason)
-      return brandingService.update({ accentToken: draftToken.value, reason })
+      return brandingService.update({
+        primaryColor: normalizeHex(draftColors.value.primary),
+        secondaryColor: normalizeHex(draftColors.value.secondary),
+        reason,
+      })
     })
   }
 
@@ -120,10 +138,11 @@ export function useBrandingEditor({ auto = true } = {}) {
   if (auto) onMounted(load)
 
   return {
-    palette,
-    draftToken,
-    savedToken,
-    selectedEntry,
+    draftColors,
+    draftScheme,
+    isDefault,
+    setColor,
+    fillDefaultColors,
     contrastPairs,
     contrastOk,
     rejectedPairs,
@@ -136,7 +155,6 @@ export function useBrandingEditor({ auto = true } = {}) {
     saving,
     resetting,
     reasonPrompt,
-    localized,
     load,
     save,
     reset,

@@ -20,19 +20,17 @@ const props = defineProps({
 const emit = defineEmits(['update:filter', 'update:search'])
 const { t } = useI18n()
 
-function withAll(allKey, options) {
-  return [{ value: '', label: t(allKey) }, ...options]
+function withAll(options) {
+  return [{ value: '', label: t('dataList.filter.all') }, ...options]
 }
 
 const statusOptions = computed(() =>
   withAll(
-    'contactInbox.filters.allStatuses',
     CONTACT_INBOX_STATUSES.map((value) => ({ value, label: t(`portal.messages.status.${value}`) })),
   ),
 )
 const typeOptions = computed(() =>
   withAll(
-    'contactInbox.filters.allTypes',
     CONTACT_ENQUIRY_TYPES.map((value) => ({
       value,
       label: t(`public.home.contact.form.enquiryTypes.${value}`),
@@ -41,7 +39,6 @@ const typeOptions = computed(() =>
 )
 const linkedOptions = computed(() =>
   withAll(
-    'contactInbox.filters.anySender',
     CONTACT_LINKED_FILTERS.map((value) => ({
       value,
       label: t(`contactInbox.filters.linked.${value}`),
@@ -49,7 +46,7 @@ const linkedOptions = computed(() =>
   ),
 )
 const assigneeOptions = computed(() =>
-  withAll('contactInbox.filters.anyAssignee', [
+  withAll([
     { value: CONTACT_ASSIGNEE_FILTERS.ME, label: t('contactInbox.filters.mine') },
     { value: CONTACT_ASSIGNEE_FILTERS.NONE, label: t('contactInbox.filters.unassigned') },
     ...props.assignees.map((person) => ({ value: String(person.id), label: person.name })),

@@ -24,7 +24,7 @@ it('builds the global boards with a constant number of queries', function (): vo
     $content = contentOfficer();
     storedPaidPayment();
     Kpi::factory()->create();
-    $before = [dashboardQueryCount($admin, 'system_admin'), dashboardQueryCount($admin, 'executive'), dashboardQueryCount($finance, 'finance_officer'), dashboardQueryCount($content, 'content_officer')];
+    $before = [dashboardQueryCount($admin, 'system_admin'), overviewQueryCount($admin), dashboardQueryCount($finance, 'finance_officer'), dashboardQueryCount($content, 'content_officer')];
 
     for ($index = 0; $index < 4; $index++) {
         storedPaidPayment(null, $index % 2 === 0 ? IntegrationMode::Live : IntegrationMode::Test);
@@ -33,7 +33,7 @@ it('builds the global boards with a constant number of queries', function (): vo
         entityWithOwner(static fn ($factory) => $factory->pendingVerification());
     }
 
-    $after = [dashboardQueryCount($admin, 'system_admin'), dashboardQueryCount($admin, 'executive'), dashboardQueryCount($finance, 'finance_officer'), dashboardQueryCount($content, 'content_officer')];
+    $after = [dashboardQueryCount($admin, 'system_admin'), overviewQueryCount($admin), dashboardQueryCount($finance, 'finance_officer'), dashboardQueryCount($content, 'content_officer')];
 
     expect($after)->toBe($before)->and(max($after))->toBeLessThanOrEqual(MAX_DASHBOARD_QUERIES);
 });

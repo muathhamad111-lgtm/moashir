@@ -11,18 +11,21 @@ vi.mock('@/utils/logger', () => ({
   logger: { breadcrumb: vi.fn(), error: vi.fn(), info: vi.fn() },
 }))
 
+const scheme = {
+  primary: '#d4088c',
+  onPrimary: '#ffffff',
+  primaryText: '#d4088c',
+  secondary: '#4a2a7d',
+  onSecondary: '#ffffff',
+}
+
 const resource = {
-  accentToken: 'teal',
+  primaryColor: '#d4088c',
+  secondaryColor: '#4a2a7d',
+  scheme,
+  defaultColors: { primary: '#98d8d3', secondary: '#0a2325' },
   logoLight: { fileId: 6, url: 'data:image/png;base64,LIGHT' },
   logoDark: { fileId: 7, url: 'data:image/png;base64,AAAA' },
-  palette: [
-    {
-      token: 'teal',
-      hex: '#33d1c4',
-      textOnLightHex: '#0b7068',
-      label: { ar: 'فيروزي', en: 'Teal' },
-    },
-  ],
   updatedAt: '2026-10-31T09:00:00Z',
 }
 
@@ -36,28 +39,25 @@ describe('brandingService', () => {
     const { data } = await brandingService.get()
     expect(apiClient.get).toHaveBeenCalledWith('/settings/branding')
     expect(data).toEqual({
-      accentToken: 'teal',
+      colors: { primary: '#d4088c', secondary: '#4a2a7d' },
+      scheme,
+      defaultColors: { primary: '#98d8d3', secondary: '#0a2325' },
       logos: { dark: 'data:image/png;base64,LIGHT', favicon: null, site: null },
-      palette: [
-        {
-          token: 'teal',
-          hex: '#33d1c4',
-          textOnLightHex: '#0b7068',
-          label: { ar: 'فيروزي', en: 'Teal' },
-        },
-      ],
       updatedAt: '2026-10-31T09:00:00Z',
     })
   })
 
-  it('sends the accent as a snake_case token id only', async () => {
+  it('sends the primary and secondary colours only', async () => {
     apiClient.put.mockResolvedValue({ data: { data: resource, meta: {}, errors: null } })
-    await brandingService.update({ accentToken: 'amber' })
-    expect(apiClient.put).toHaveBeenCalledWith('/settings/branding', { accentToken: 'amber' })
+    await brandingService.update({ primaryColor: '#d4088c', secondaryColor: '#4a2a7d' })
+    expect(apiClient.put).toHaveBeenCalledWith('/settings/branding', {
+      primaryColor: '#d4088c',
+      secondaryColor: '#4a2a7d',
+    })
     expect(logger.breadcrumb).toHaveBeenCalledWith(
       'service',
       'branding.update',
-      expect.objectContaining({ payloadShape: ['accentToken'] }),
+      expect.objectContaining({ payloadShape: ['primaryColor', 'secondaryColor'] }),
     )
   })
 
@@ -85,10 +85,10 @@ describe('brandingService', () => {
     expect(apiClient.post.mock.calls[0][1].get('variant')).toBe('light')
   })
 
-  it('resets the accent and the logo through the single global reset verb', async () => {
+  it('resets the colours and the logo through the single global reset verb', async () => {
     apiClient.post.mockResolvedValue({
       data: {
-        data: { ...resource, accentToken: 'brand_default', logoLight: null, logoDark: null },
+        data: { ...resource, primaryColor: '#98d8d3', logoLight: null, logoDark: null },
         meta: {},
         errors: null,
       },
@@ -96,16 +96,16 @@ describe('brandingService', () => {
     const { data } = await brandingService.reset()
     expect(apiClient.post).toHaveBeenCalledTimes(1)
     expect(apiClient.post).toHaveBeenCalledWith('/settings/branding/reset', {})
-    expect(data.accentToken).toBe('brand_default')
+    expect(data.colors.primary).toBe('#98d8d3')
     expect(data.logos).toEqual({ dark: null, favicon: null, site: null })
     expect(brandingService).not.toHaveProperty('resetLogo')
   })
 
-  it('sends the Super Admin reason with the accent, the reset and each logo', async () => {
+  it('sends the Super Admin reason with the colours, the reset and each logo', async () => {
     apiClient.put.mockResolvedValue({ data: { data: resource, meta: {}, errors: null } })
     apiClient.post.mockResolvedValue({ data: { data: resource, meta: {}, errors: null } })
     const reason = 'Aligning the back office with the approved identity'
-    await brandingService.update({ accentToken: 'teal', reason })
+    await brandingService.update({ primaryColor: '#d4088c', secondaryColor: '#4a2a7d', reason })
     await brandingService.reset({ reason })
     await brandingService.uploadLogo(
       new File(['logo'], 'logo.png', { type: 'image/png' }),
@@ -113,7 +113,8 @@ describe('brandingService', () => {
       reason,
     )
     expect(apiClient.put).toHaveBeenCalledWith('/settings/branding', {
-      accentToken: 'teal',
+      primaryColor: '#d4088c',
+      secondaryColor: '#4a2a7d',
       reason,
     })
     expect(apiClient.post).toHaveBeenNthCalledWith(1, '/settings/branding/reset', { reason })
@@ -123,14 +124,18 @@ describe('brandingService', () => {
   it('treats the contrast rejection as an expected answer', async () => {
     const rejected = Object.assign(new Error('contrast'), { response: { status: 422 } })
     apiClient.put.mockRejectedValue(rejected)
-    await expect(brandingService.update({ accentToken: 'lime' })).rejects.toBe(rejected)
+    await expect(
+      brandingService.update({ primaryColor: '#777777', secondaryColor: '#0a2325' }),
+    ).rejects.toBe(rejected)
     expect(logger.error).not.toHaveBeenCalled()
   })
 
   it('reports failures through the logger and rethrows', async () => {
     const failure = Object.assign(new Error('unavailable'), { response: { status: 503 } })
     apiClient.put.mockRejectedValue(failure)
-    await expect(brandingService.update({ accentToken: 'teal' })).rejects.toBe(failure)
+    await expect(
+      brandingService.update({ primaryColor: '#d4088c', secondaryColor: '#4a2a7d' }),
+    ).rejects.toBe(failure)
     expect(logger.error).toHaveBeenCalledWith(
       failure,
       expect.objectContaining({ action: 'branding.update' }),

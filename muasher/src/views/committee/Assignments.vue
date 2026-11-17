@@ -21,14 +21,14 @@ const { pagination, setPage } = paginator
 useHead({ title: () => t('award.work.title') })
 
 const cycleOptions = computed(() => [
-  { value: '', label: t('award.work.filters.allCycles') },
+  { value: '', label: t('dataList.filter.all') },
   ...appointments.value.map((appointment) => ({
     value: String(appointment.awardCycleId),
     label: localizedText(appointment.cycleName, locale.value),
   })),
 ])
 const statusOptions = computed(() => [
-  { value: '', label: t('award.work.filters.allStatuses') },
+  { value: '', label: t('dataList.filter.all') },
   ...ASSIGNMENT_FILTERS.map((value) => ({
     value,
     label: t(`award.states.row.${toCanonicalStatus(value)}`),

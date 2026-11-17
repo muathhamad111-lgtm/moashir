@@ -15,8 +15,6 @@ final class DocumentAssets
 
     private const array FONTS = [
         'montserrat-latin-variable.woff2' => 'font/woff2',
-        'alexandria-arabic-700.woff2' => 'font/woff2',
-        'alexandria-arabic-800.woff2' => 'font/woff2',
         'IBMPlexSansArabic-Regular.ttf' => 'font/ttf',
         'IBMPlexSansArabic-SemiBold.ttf' => 'font/ttf',
         'IBMPlexSansArabic-Bold.ttf' => 'font/ttf',

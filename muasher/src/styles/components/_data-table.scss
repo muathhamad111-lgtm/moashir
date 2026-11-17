@@ -79,6 +79,10 @@
   }
 }
 
+.table__cell--date {
+  white-space: nowrap;
+}
+
 .table__cell--actions {
   inline-size: 1%;
   white-space: nowrap;

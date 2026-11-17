@@ -126,7 +126,7 @@ describe('TransactionFilters', () => {
     expect(failed.text()).toBe('Payment failed')
   })
 
-  it('offers actual payments by default and test payments on request', async () => {
+  it('offers actual payments by default and preview payments on request', async () => {
     const wrapper = mountWith(TransactionFilters, { filters: { ...FILTERS }, sort: '-created_at' })
     const mode = wrapper
       .findAllComponents({ name: 'AppSelect' })
@@ -134,7 +134,7 @@ describe('TransactionFilters', () => {
     expect(mode.props('modelValue')).toBe('')
     expect(mode.props('options').map((option) => [option.value, option.label])).toEqual([
       ['', 'Live payments'],
-      ['test', 'Test payments'],
+      ['test', 'Preview payments'],
     ])
     mode.vm.$emit('update:modelValue', 'test')
     expect(wrapper.emitted('filter')).toEqual([['mode', 'test']])

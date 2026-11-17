@@ -150,12 +150,12 @@ describe('SelfAssessmentActions', () => {
     const first = mountWith(SelfAssessmentActions, { isFirst: true, isLast: false })
     expect(labels(first)).toEqual(['Save draft', 'Next'])
     expect(first.find('.submit-hint').exists()).toBe(false)
-    await first.find('[data-testid="self-next"]').trigger('click')
+    await first.find('[data-testid="step-next"]').trigger('click')
     expect(first.emitted('next')).toHaveLength(1)
 
     const middle = mountWith(SelfAssessmentActions, { isFirst: false, isLast: false })
     expect(labels(middle)).toEqual(['Previous', 'Save draft', 'Next'])
-    await middle.find('[data-testid="self-previous"]').trigger('click')
+    await middle.find('[data-testid="step-previous"]').trigger('click')
     expect(middle.emitted('previous')).toHaveLength(1)
 
     const last = mountWith(SelfAssessmentActions, { isFirst: false, isLast: true })

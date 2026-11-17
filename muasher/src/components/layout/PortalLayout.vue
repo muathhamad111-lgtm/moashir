@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { usePortalCountsStore } from '@/stores/portalCounts'
 import { useActionCenterStore } from '@/stores/actionCenter'
+import { useBrandingStore } from '@/stores/branding'
 import { useEntityLevel } from '@/composables/useEntityLevel'
 import { useLevelAchieved } from '@/composables/useLevelAchieved'
 import { useSideNavCollapsed } from '@/composables/useSideNavCollapsed'
@@ -19,6 +20,7 @@ const { t } = useI18n()
 const route = useRoute()
 const counts = usePortalCountsStore()
 const actionCenter = useActionCenterStore()
+const branding = useBrandingStore()
 const { certificate, tier } = useEntityLevel()
 const achieved = useLevelAchieved(certificate)
 const { collapsed, toggle } = useSideNavCollapsed()
@@ -27,6 +29,7 @@ const isTask = computed(() => isTaskScreen(route.name))
 const isMobileTask = computed(() => isMobileTaskScreen(route.name))
 
 onMounted(() => {
+  branding.ensureLoaded()
   counts.refreshAll()
   actionCenter.ensureLoaded()
 })
@@ -49,14 +52,16 @@ watch(
     }"
   >
     <a class="portal-layout__skip" href="#portal-main">{{ t('shell.skipToContent') }}</a>
-    <PortalSideNav class="portal-layout__nav" :collapsed="collapsed" @toggle="toggle" />
-    <div class="portal-layout__column">
-      <PortalTopBar />
-      <AttentionStrip v-if="!isTask" class="portal-layout__strip" />
-      <main id="portal-main" class="portal-layout__main" tabindex="-1">
-        <slot />
-      </main>
-      <PortalFooter />
+    <PortalTopBar :nav-collapsed="collapsed" @toggle-nav="toggle" />
+    <div class="portal-layout__body">
+      <PortalSideNav class="portal-layout__nav" :collapsed="collapsed" />
+      <div class="portal-layout__column">
+        <AttentionStrip v-if="!isTask" class="portal-layout__strip" />
+        <main id="portal-main" class="portal-layout__main" tabindex="-1">
+          <slot />
+        </main>
+        <PortalFooter />
+      </div>
     </div>
     <MobileTabBar v-if="!isMobileTask" class="portal-layout__tabs" />
     <LevelAchievedDialog

@@ -118,16 +118,16 @@ async function openSession(browser, key) {
 }
 
 async function fillEveryEmptyScore(page, value) {
-  const mains = page.locator('.criteria-tree__open')
-  const count = await mains.count()
-  for (let index = 0; index < count; index += 1) {
-    await mains.nth(index).click()
+  const next = page.locator('[data-testid="step-next"]')
+  for (;;) {
     const inputs = page.locator('.self-main .raw-score input')
     const fields = await inputs.count()
     for (let field = 0; field < fields; field += 1) {
       const input = inputs.nth(field)
       if ((await input.inputValue()) === '') await input.fill(value)
     }
+    if (!(await next.isVisible())) break
+    await next.click()
   }
 }
 
@@ -175,7 +175,7 @@ test('a second sign-in of the administrator passes the authenticator challenge',
 test('the administrator reads the published criteria tree from the server', async () => {
   const { page, api } = sessions.admin
   await visit(page, '/admin/settings/criteria')
-  await expect(page.locator('.criteria-tree, .criteria-version').first()).toBeVisible()
+  await expect(page.locator('.criteria-version').first()).toBeVisible()
   await shot(page, 'admin-criteria')
   expect(api.unexpected(GUEST_PROBES)).toEqual([])
 })

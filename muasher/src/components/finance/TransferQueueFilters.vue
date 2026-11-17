@@ -29,15 +29,15 @@ function accountLabel(account) {
 }
 
 const accountOptions = computed(() => [
-  { value: '', label: t('finance.transfers.filters.allAccounts') },
+  { value: '', label: t('dataList.filter.all') },
   ...props.accounts.map((account) => ({ value: account.id, label: accountLabel(account) })),
 ])
 const purposeOptions = computed(() => [
-  { value: '', label: t('finance.filters.allServices') },
+  { value: '', label: t('dataList.filter.all') },
   ...PAYMENT_PURPOSE_VALUES.map((value) => ({ value, label: t(`finance.purposes.${value}`) })),
 ])
 const modeOptions = computed(() => [
-  { value: '', label: t('finance.transfers.filters.allModes') },
+  { value: '', label: t('dataList.filter.all') },
   ...Object.values(FINANCE_MODES).map((value) => ({
     value,
     label: t(`finance.filters.modes.${value}`),

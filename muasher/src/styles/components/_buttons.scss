@@ -6,7 +6,7 @@
   padding-block: var(--space-2);
   padding-inline: var(--space-4);
   border: var(--border-width) solid transparent;
-  border-radius: var(--radius-md);
+  border-radius: var(--btn-radius, var(--radius-md));
   font-family: inherit;
   font-size: var(--fs-base);
   font-weight: var(--fw-semibold);

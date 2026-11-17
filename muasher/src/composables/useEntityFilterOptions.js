@@ -19,8 +19,8 @@ function levelLabelKey(value) {
 export function useEntityFilterOptions(regionOptions) {
   const { t } = useI18n()
 
-  function withAll(allKey, options) {
-    return [{ value: '', label: t(`entities.filters.${allKey}`) }, ...options]
+  function withAll(options) {
+    return [{ value: '', label: t('dataList.filter.all') }, ...options]
   }
 
   function enumOptions(group, values) {
@@ -30,21 +30,15 @@ export function useEntityFilterOptions(regionOptions) {
   return {
     statusOptions: computed(() =>
       withAll(
-        'allStatuses',
         Object.values(ENTITY_STATUSES).map((value) => ({ value, label: t(statusLabelKey(value)) })),
       ),
     ),
-    regionFilterOptions: computed(() => withAll('allRegions', regionOptions.value)),
-    typeOptions: computed(() => withAll('allTypes', enumOptions('entityType', ENTITY_TYPES))),
-    sectorOptions: computed(() =>
-      withAll('allSectors', enumOptions('developmentSector', DEVELOPMENT_SECTORS)),
-    ),
-    sizeOptions: computed(() => withAll('allSizes', enumOptions('orgSize', ORG_SIZES))),
+    regionFilterOptions: computed(() => withAll(regionOptions.value)),
+    typeOptions: computed(() => withAll(enumOptions('entityType', ENTITY_TYPES))),
+    sectorOptions: computed(() => withAll(enumOptions('developmentSector', DEVELOPMENT_SECTORS))),
+    sizeOptions: computed(() => withAll(enumOptions('orgSize', ORG_SIZES))),
     levelOptions: computed(() =>
-      withAll(
-        'allLevels',
-        LEVEL_FILTER_VALUES.map((value) => ({ value, label: t(levelLabelKey(value)) })),
-      ),
+      withAll(LEVEL_FILTER_VALUES.map((value) => ({ value, label: t(levelLabelKey(value)) }))),
     ),
     sortOptions: computed(() =>
       ENTITY_SORTS.map((value) => ({ value, label: t(`entities.sorts.${value}`) })),

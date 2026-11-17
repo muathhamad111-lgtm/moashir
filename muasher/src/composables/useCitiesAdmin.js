@@ -21,11 +21,11 @@ export function useCitiesAdmin() {
   })
 
   const regionFilterOptions = computed(() => [
-    { value: '', label: t('entities.filters.allRegions') },
+    { value: '', label: t('dataList.filter.all') },
     ...regions.regionOptions.value,
   ])
   const activeOptions = computed(() => [
-    { value: '', label: t('entities.cities.allStates') },
+    { value: '', label: t('dataList.filter.all') },
     { value: 'true', label: t('status.active') },
     { value: 'false', label: t('status.inactive') },
   ])

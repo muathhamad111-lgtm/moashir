@@ -6,7 +6,6 @@ import { storeToRefs } from 'pinia'
 import { usePortalIdentity } from '@/composables/usePortalIdentity'
 import { usePortalSession } from '@/composables/usePortalSession'
 import { useLocale } from '@/composables/useLocale'
-import { useTheme } from '@/composables/useTheme'
 import { usePortalCountsStore } from '@/stores/portalCounts'
 import { useEntityStore } from '@/stores/entity'
 import { formatNumber } from '@/utils/formatNumber'
@@ -14,7 +13,6 @@ import { wholePercentText } from '@/utils/percentText'
 import { ROUTE_NAMES as R } from '@/constants/routeNames'
 import { accessFor } from '@/constants/routeAccess'
 import { usePermissions } from '@/composables/usePermissions'
-import { THEMES } from '@/constants/themes'
 import PortalMenuEntry from '@/components/portal/PortalMenuEntry.vue'
 import LevelBadge from '@/components/level/LevelBadge.vue'
 import AccountAvatar from '@/components/account/AccountAvatar.vue'
@@ -26,7 +24,6 @@ const router = useRouter()
 const identity = usePortalIdentity()
 const { signOut } = usePortalSession()
 const { toggleLocale } = useLocale()
-const { theme, toggleTheme } = useTheme()
 const counts = usePortalCountsStore()
 const { unreadNotifications, unreadReplies } = storeToRefs(counts)
 const entityStore = useEntityStore()
@@ -49,9 +46,6 @@ const notificationsValue = computed(() =>
 )
 const profileValue = computed(() =>
   profilePercent.value === null ? '' : wholePercentText(n, t, profilePercent.value),
-)
-const themeValue = computed(() =>
-  theme.value === THEMES.dark ? t('portal.account.themeDark') : t('portal.account.themeLight'),
 )
 
 async function onSignOut() {
@@ -137,12 +131,6 @@ onMounted(() => entityStore.loadProfile().catch(() => null))
           :label="t('portal.account.language')"
           :value="t('locale.switchLabel')"
           @select="toggleLocale"
-        />
-        <PortalMenuEntry
-          icon="moon-fill"
-          :label="t('portal.account.theme')"
-          :value="themeValue"
-          @select="toggleTheme"
         />
         <PortalMenuEntry
           icon="question-circle"

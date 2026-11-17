@@ -7,7 +7,7 @@ return [
     'dashboard.view' => ['label' => 'View the dashboard', 'description' => 'Open the role dashboard and the Action Center.'],
     'notifications.view' => ['label' => 'View own notifications', 'description' => 'List and mark own notifications as read.'],
     'notifications.audit.view' => ['label' => 'View notification delivery log', 'description' => 'See who received or opened a notification.'],
-    'dashboard.executive.view' => ['label' => 'View the executive dashboard', 'description' => 'Read-only executive board built from existing data.'],
+    'dashboard.executive.view' => ['label' => 'View the dashboard overview', 'description' => 'Read-only platform indicators and charts for a chosen period, compared with the previous one.'],
     'entity.profile.view' => ['label' => 'View own entity profile', 'description' => 'Read the entity\'s own profile.'],
     'entity.profile.edit' => ['label' => 'Edit own entity profile', 'description' => 'Edit the entity\'s own profile data.'],
     'entities.view' => ['label' => 'View entities', 'description' => 'Read entity records in lists, requests and queues.'],

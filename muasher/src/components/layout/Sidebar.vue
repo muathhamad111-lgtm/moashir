@@ -7,9 +7,7 @@ import { usePermissions } from '@/composables/usePermissions'
 import { useRequestPathNav } from '@/composables/useRequestPathNav'
 import { useSidebarGroups } from '@/composables/useSidebarGroups'
 import { useUiStore } from '@/stores/ui'
-import { useBackOfficeLogo } from '@/composables/useBackOfficeLogo'
 import { useSidebarTooltip } from '@/composables/useSidebarTooltip'
-import { ROUTE_NAMES } from '@/constants/routeNames'
 import {
   APP_NAV_ITEMS,
   filterNavByAccess,
@@ -17,6 +15,7 @@ import {
   isNavItemActive,
 } from '@/constants/navigation'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import SidebarIdentityCard from './SidebarIdentityCard.vue'
 import SidebarItem from './SidebarItem.vue'
 
 const { t } = useI18n()
@@ -24,7 +23,6 @@ const route = useRoute()
 const { canAccess } = usePermissions()
 const ui = useUiStore()
 const { sidebarCollapsed } = storeToRefs(ui)
-const { sidebarLogo } = useBackOfficeLogo()
 const pathNav = useRequestPathNav()
 
 const allowedItems = computed(() => filterNavByAccess(APP_NAV_ITEMS, canAccess))
@@ -57,9 +55,7 @@ function onHint(label, element) {
     :class="{ 'sidebar--collapsed': sidebarCollapsed }"
     :aria-label="t('nav.sidebarLabel')"
   >
-    <router-link class="sidebar__brand" :to="{ name: ROUTE_NAMES.APP_DASHBOARD }">
-      <img class="sidebar__logo" :src="sidebarLogo" :alt="t('shell.brandHome')" />
-    </router-link>
+    <SidebarIdentityCard :home-label="t('shell.brandHome')" :collapsed="sidebarCollapsed" />
 
     <div class="sidebar__scroll" @scroll.passive="tooltip.hide">
       <template v-for="group in groups" :key="group.id">

@@ -107,10 +107,10 @@ describe('entity level mock — queue, dashboards and the entity home', () => {
     expect(ehsan.entity).not.toHaveProperty('level_certificate_number')
   })
 
-  it('returns entities_by_level with fixed keys and zero counts kept', async () => {
+  it('returns entities_by_level in the overview with fixed keys and zero counts kept', async () => {
     seedMockSession(ADMIN)
-    const { body } = await call('/dashboard/summary?board=system_admin')
-    const widget = body.data.widgets.find((item) => item.key === 'entities_by_level')
+    const { body } = await call('/dashboard/overview')
+    const widget = body.data.snapshot.find((item) => item.key === 'entities_by_level')
     expect(widget.data.map((item) => item.key)).toEqual([
       'none',
       'in_progress',

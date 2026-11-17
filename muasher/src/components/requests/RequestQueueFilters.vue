@@ -23,23 +23,23 @@ const showsCycles = computed(
   () => props.path === ASSESSMENT_PATHS.ADVANCED && props.cycles.length > 0,
 )
 const cycleOptions = computed(() => [
-  { value: '', label: t('requests.filters.allCycles') },
+  { value: '', label: t('dataList.filter.all') },
   ...props.cycles.map((cycle) => ({
     value: String(cycle.id),
     label: `${localizedText(cycle.name, locale.value)} ${cycle.year}`,
   })),
 ])
 const statusOptions = computed(() => [
-  { value: '', label: t('requests.filters.allStatuses') },
+  { value: '', label: t('dataList.filter.all') },
   ...queueStatusesOf(props.path).map((value) => ({ value, label: t(statusLabelKey(value)) })),
 ])
 const overdueOptions = computed(() => [
-  { value: '', label: t('requests.filters.allRequests') },
+  { value: '', label: t('dataList.filter.all') },
   { value: 'true', label: t('requests.filters.overdueOnly') },
   { value: 'false', label: t('requests.filters.onTimeOnly') },
 ])
 const assessorOptions = computed(() => [
-  { value: '', label: t('requests.filters.allAssessors') },
+  { value: '', label: t('dataList.filter.all') },
   ...props.assessors.map((assessor) => ({ value: String(assessor.id), label: assessor.name })),
 ])
 const sortOptions = computed(() =>

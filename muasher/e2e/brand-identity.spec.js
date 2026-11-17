@@ -109,7 +109,11 @@ for (const theme of ['dark', 'light']) {
           )
           await openScreen(page, screen)
 
-          await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
+          const unified = (await page.locator('html').getAttribute('data-shell')) === 'tts'
+          await expect(page.locator('html')).toHaveAttribute(
+            'data-theme',
+            unified ? 'light' : theme,
+          )
           expect(await contrastOf(page, screen.ready)).toBeGreaterThanOrEqual(AA_TEXT)
 
           await page.screenshot({
@@ -174,24 +178,24 @@ test('the favicon and app icons follow the identity', async ({ page }) => {
   expect(manifest.theme_color).toBe('#0a2325')
 })
 
-test('light mode: public navigation keeps the on-light logo while the staff sidebar stays dark with the on-dark logo', async ({
+test('dark mode: the public pages stay dark while the back office is always light, with the on-light logo at the top of its sidebar', async ({
   page,
 }, testInfo) => {
-  await seedPreferences(page, { locale: localeOf(testInfo), theme: 'light' })
+  await seedPreferences(page, { locale: localeOf(testInfo), theme: 'dark' })
   await openScreen(page, PUBLIC_SCREENS[0])
-  await expect(page.locator('.navbar__logo')).toHaveAttribute('src', /moashir-logo-on-light/)
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
 
   await seedSignedIn(
     page,
     { id: 7001, roles: ['system_admin'], name: { ar: 'نورة بنت سعد', en: 'Noura Saad' } },
-    { locale: localeOf(testInfo), theme: 'light' },
+    { locale: localeOf(testInfo), theme: 'dark' },
   )
   await page.goto('/admin/settings')
-  await expect(page.locator('.sidebar__logo')).toHaveAttribute('src', /moashir-logo-on-dark/)
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
-  expect(
-    await page.locator('.sidebar').evaluate((element) => getComputedStyle(element).backgroundImage),
-  ).toContain('linear-gradient')
+  await expect(page.locator('.sidebar .identity-card__logo')).toHaveAttribute(
+    'src',
+    /moashir-logo-on-light/,
+  )
   expect(await contrastOf(page, '.sidebar__item:not(.is-active):visible')).toBeGreaterThanOrEqual(
     AA_TEXT,
   )

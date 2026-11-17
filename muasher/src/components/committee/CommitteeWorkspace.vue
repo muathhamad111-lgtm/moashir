@@ -1,10 +1,10 @@
 <script setup>
-import { computed, onMounted, ref, toRef, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, toRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
-import CriteriaTree from '@/components/criteria/CriteriaTree.vue'
+import AccreditedStations from '@/components/accredited/AccreditedStations.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import CommitteeEvaluationHeader from './CommitteeEvaluationHeader.vue'
 import CommitteeEvaluationNotices from './CommitteeEvaluationNotices.vue'
@@ -19,13 +19,14 @@ import { useSuperAdminReason } from '@/composables/useSuperAdminReason'
 import { useSignedDownload } from '@/composables/useSignedDownload'
 import { useConfirm } from '@/composables/useConfirm'
 import { evidenceService } from '@/services/evidenceService'
-import { localizedText } from '@/utils/localizedText'
+import { useCriterionSteps } from '@/composables/useCriterionSteps'
+import { scoredStationsOf } from '@/utils/assessments/scoredStations'
 
 const props = defineProps({
   assignmentId: { type: Number, required: true },
 })
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const { confirm } = useConfirm()
 const state = useCommitteeEvaluation(toRef(props, 'assignmentId'))
 const { status, errorMessage, evaluation, units, canScore } = state
@@ -40,35 +41,27 @@ const actions = useCommitteeEvaluationActions({
 })
 const downloads = useSignedDownload()
 const workspace = { state, scoreSheet, notes, actions, downloads }
-const activeMainId = ref(null)
+const panelTop = ref(null)
 
 const mains = computed(() => evaluation.value?.criteria?.mains ?? [])
-const activeMain = computed(
-  () => mains.value.find((main) => main.id === activeMainId.value) ?? mains.value[0] ?? null,
-)
+const steps = useCriterionSteps(mains)
+const activeMain = steps.current
+const stations = computed(() => scoredStationsOf(mains.value, units.value, scoreSheet.sheet.values))
 const dirty = computed(() => scoreSheet.dirty.value || notes.dirty.value)
 const fullyScored = computed(
   () => evaluation.value && evaluation.value.progress.scored === evaluation.value.progress.required,
 )
-const treeNodes = computed(() =>
-  mains.value.map((main) => ({
-    id: main.id,
-    label: localizedText(main.name, locale.value),
-    children: main.subs.map((sub) => ({
-      id: sub.id,
-      label: localizedText(sub.name, locale.value),
-    })),
-  })),
-)
-
 watch(evaluation, (current, previous) => {
   if (!current || current === previous) return
   if (!scoreSheet.dirty.value) scoreSheet.resetFrom(current.scores)
   if (!notes.dirty.value) notes.resetFrom(current.notes)
 })
 
-function selectNode({ node, parent }) {
-  activeMainId.value = parent ? parent.id : node.id
+async function showStep(move) {
+  move()
+  await nextTick()
+  panelTop.value?.scrollIntoView({ block: 'start' })
+  panelTop.value?.focus()
 }
 
 function download(file) {
@@ -121,18 +114,18 @@ onMounted(state.load)
         @refresh="refresh"
       />
       <CommitteeEntityCard :entity="evaluation.assignment.entity" />
-      <div class="review-workspace__layout">
-        <aside class="review-workspace__nav" :aria-label="t('review.navLabel')">
-          <CriteriaTree
-            :nodes="treeNodes"
-            :active-id="activeMain?.id ?? null"
-            @select="selectNode"
-          />
-        </aside>
+      <AccreditedStations
+        :stations="stations"
+        :active-id="activeMain?.id ?? null"
+        @select="showStep(() => steps.goToMain($event))"
+      />
+      <div ref="panelTop" class="review-workspace__main" tabindex="-1">
         <CommitteeMainPanel
           v-if="activeMain"
           :key="activeMain.id"
           :main="activeMain"
+          :step="steps.position.value + 1"
+          :total="steps.total.value"
           :workspace="workspace"
           @download="download"
         />
@@ -143,6 +136,10 @@ onMounted(state.load)
         :can-score="canScore"
         :complete="fullyScored"
         :general-note="notes.draft.value.general"
+        :is-first="steps.isFirst.value"
+        :is-last="steps.isLast.value"
+        @previous="showStep(steps.previous)"
+        @next="showStep(steps.next)"
         @update:general-note="notes.setGeneral"
         @save="actions.save"
         @submit="onSubmit"

@@ -194,8 +194,9 @@ test('KPI administration: create, record a value and reorder everything by drag 
 test('the Super Admin gives a reason before the identity changes', async ({ page }, testInfo) => {
   await signInAs(page, [], testInfo, { superAdmin: true, name: 'Super Admin' })
   await page.goto('/admin/branding?tab=visual')
-  await expect(page.locator('.accent-swatch')).toHaveCount(9)
-  await page.locator('.accent-swatch').nth(2).click()
+  const primary = page.locator('.brand-color-field[data-role="primary"] input[type="text"]')
+  await expect(primary).toHaveValue('#98d8d3')
+  await primary.fill('#0b7068')
   await page.locator('.branding-page__actions .btn--primary').click()
   const dialog = page.locator('.modal').last()
   await expect(dialog.locator('textarea')).toBeVisible()
@@ -207,7 +208,13 @@ test('the Super Admin gives a reason before the identity changes', async ({ page
     fullPage: true,
   })
   await dialog.locator('.modal__footer .btn--primary').click()
-  await expect(page.locator('html')).toHaveAttribute('data-accent', 'teal')
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue('--brand-primary').trim(),
+      ),
+    )
+    .toBe('#0b7068')
 })
 
 test('public pages render the published CMS content in both directions', async ({

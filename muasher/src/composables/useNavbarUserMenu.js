@@ -4,11 +4,9 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { usePermissions } from '@/composables/usePermissions'
 import { useLocale } from '@/composables/useLocale'
-import { useTheme } from '@/composables/useTheme'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { accessFor } from '@/constants/routeAccess'
-import { THEMES } from '@/constants/themes'
 
 const ROUTES_BY_ACTION = Object.freeze({
   account: ROUTE_NAMES.ACCOUNT_PROFILE,
@@ -16,17 +14,12 @@ const ROUTES_BY_ACTION = Object.freeze({
   settings: ROUTE_NAMES.ADMIN_SETTINGS,
 })
 
-/**
- * The navbar user menu. On a narrow navbar (`holdsTools`) it also carries the
- * settings link, the theme toggle and the language switch, which the bar then hides.
- */
 export function useNavbarUserMenu({ holdsTools }) {
   const { t } = useI18n()
   const router = useRouter()
   const auth = useAuthStore()
   const { can, canAccess } = usePermissions()
   const { toggleLocale } = useLocale()
-  const { theme, toggleTheme } = useTheme()
 
   const canAccessSettings = computed(() => canAccess(accessFor(ROUTE_NAMES.ADMIN_SETTINGS)))
 
@@ -34,9 +27,6 @@ export function useNavbarUserMenu({ holdsTools }) {
     ...(canAccessSettings.value
       ? [{ key: 'settings', label: t('nav.adminSettings'), icon: 'gear' }]
       : []),
-    theme.value === THEMES.dark
-      ? { key: 'theme', label: t('theme.switchToLight'), icon: 'sun-fill' }
-      : { key: 'theme', label: t('theme.switchToDark'), icon: 'moon-fill' },
     { key: 'locale', label: t('locale.switchLabel'), icon: 'globe' },
   ])
 
@@ -54,7 +44,7 @@ export function useNavbarUserMenu({ holdsTools }) {
     router.push({ name: ROUTE_NAMES.AUTH_LOGIN })
   }
 
-  const HANDLERS = { logout: signOut, theme: toggleTheme, locale: toggleLocale }
+  const HANDLERS = { logout: signOut, locale: toggleLocale }
 
   function select(key) {
     if (HANDLERS[key]) return HANDLERS[key]()
