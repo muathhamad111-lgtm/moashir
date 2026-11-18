@@ -1,30 +1,20 @@
-import { nextTick, watch } from 'vue'
-
-const FOCUSABLE =
-  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+import { nextTick, onBeforeUnmount, toValue, watch } from 'vue'
+import { focusablesIn, trapTabKey } from '@/utils/a11y/focusables'
 
 export function useFocusTrap(containerRef, { isActive, onEscape }) {
   let previouslyFocused = null
 
-  function focusables() {
-    return Array.from(containerRef.value?.querySelectorAll(FOCUSABLE) ?? [])
+  function focusInitial() {
+    const container = containerRef.value
+    const preferred = container?.querySelector('[data-autofocus]')
+    ;(preferred ?? focusablesIn(container)[0] ?? container)?.focus()
   }
 
-  function cycle(event) {
-    const elements = focusables()
-    if (!elements.length) {
-      event.preventDefault()
-      return
+  function restoreFocus() {
+    if (previouslyFocused instanceof HTMLElement && previouslyFocused !== document.body) {
+      previouslyFocused.focus()
     }
-    const first = elements[0]
-    const last = elements[elements.length - 1]
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault()
-      last.focus()
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault()
-      first.focus()
-    }
+    previouslyFocused = null
   }
 
   function onKeydown(event) {
@@ -33,18 +23,25 @@ export function useFocusTrap(containerRef, { isActive, onEscape }) {
       onEscape()
       return
     }
-    if (event.key === 'Tab') cycle(event)
+    if (event.key === 'Tab') trapTabKey(event, containerRef.value)
   }
 
-  watch(isActive, async (active) => {
-    if (active) {
+  watch(
+    isActive,
+    async (active) => {
+      if (!active) {
+        restoreFocus()
+        return
+      }
       previouslyFocused = document.activeElement
       await nextTick()
-      focusables()[0]?.focus()
-      return
-    }
-    if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus()
-    previouslyFocused = null
+      focusInitial()
+    },
+    { immediate: true },
+  )
+
+  onBeforeUnmount(() => {
+    if (toValue(isActive)) restoreFocus()
   })
 
   return { onKeydown }

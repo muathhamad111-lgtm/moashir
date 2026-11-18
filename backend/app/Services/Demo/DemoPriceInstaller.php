@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Demo;
 
 use App\Data\Prices\PriceChange;
+use App\Data\Prices\PriceChangeOutcome;
 use App\Enums\Assessments\PathAvailability;
 use App\Enums\Finance\PaymentPurpose;
 use App\Models\Finance\ServicePriceVersion;
@@ -28,6 +29,6 @@ final readonly class DemoPriceInstaller
 
         $change = new PriceChange(new Money(self::ACCREDITED_PRICE_BEFORE_VAT), PathAvailability::Available, null, null, null);
 
-        DB::transaction(fn () => $this->writer->write($systemAdmin, PaymentPurpose::Accredited, $change));
+        DB::transaction(fn (): PriceChangeOutcome => $this->writer->write($systemAdmin, PaymentPurpose::Accredited, $change));
     }
 }

@@ -71,7 +71,7 @@ stop_legacy_environment() {
 verify_environment_user() {
     local environment="$1" user
     user="$(environment_user "${environment}")"
-    [[ "$(stat -c '%U' "$(environment_env_file "${environment}")")" == "${user}" ]] || die ".env of ${environment} does not belong to ${user}."
+    [[ "$(stat -c '%G' "$(environment_env_file "${environment}")")" == "${user}" ]] || die ".env of ${environment} is not readable by the group ${user}."
     grep -qx "user = ${user}" "${MOASHIR_FPM_POOL_DIR}/moashir-${environment}.conf" || die "The PHP-FPM pool of ${environment} does not run as ${user}."
     grep -qx "user=${user}" "/etc/supervisor/conf.d/moashir-${environment}-horizon.conf" || die "Horizon of ${environment} does not run as ${user}."
     info "${environment} runs as ${user} (files, PHP-FPM pool, Horizon, scheduler)."

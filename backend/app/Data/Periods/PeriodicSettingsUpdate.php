@@ -26,8 +26,8 @@ final readonly class PeriodicSettingsUpdate
 
     public function isEmpty(): bool
     {
-        return $this->cadence === null && $this->noticeDays === null && $this->reminderDays === null && $this->audience === null
-            && $this->certificateValidity === null && $this->paidDraftReminderDays === null;
+        return ! $this->cadence instanceof PeriodCadence && $this->noticeDays === null && $this->reminderDays === null && ! $this->audience instanceof PeriodicAudience
+            && ! $this->certificateValidity instanceof CertificateValidityRule && $this->paidDraftReminderDays === null;
     }
 
     public function appliedTo(PeriodicSettings $current): PeriodicSettings

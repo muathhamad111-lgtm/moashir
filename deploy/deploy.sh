@@ -8,6 +8,8 @@ readonly REMOTE_KIT="/opt/moashir/deploy"
 readonly REMOTE_INCOMING="/var/lib/moashir-deploy/incoming"
 readonly ENVIRONMENT="${1:-}"
 readonly ACTION="${2:-deploy}"
+readonly SPA_MOCK_MARKERS='mockServiceWorker|\[MSW\]|setupWorker'
+readonly SPA_TEXT_FILES=(--include='*.js' --include='*.mjs' --include='*.css' --include='*.html')
 
 usage() {
     cat <<'USAGE'
@@ -139,6 +141,44 @@ prepare_kit() {
     fi
 }
 
+spa_env_value() {
+    local file="$1" key="$2" value
+    [[ -f ${file} ]] || return 0
+    value="$(sed -n "s/^${key}=//p" "${file}" | tail -n 1 | tr -d "\r\"'")"
+    printf '%s' "${value}"
+}
+
+assert_api_base_url() {
+    local app="$1" value
+    if [[ -n ${VITE_API_BASE_URL+set} ]]; then
+        value="${VITE_API_BASE_URL}"
+    else
+        value="$(spa_env_value "${app}/.env.${ENVIRONMENT}" VITE_API_BASE_URL)"
+    fi
+
+    [[ -n ${value//[[:space:]]/} ]] || die "VITE_API_BASE_URL is empty for the ${ENVIRONMENT} build (muasher/.env.${ENVIRONMENT}); without it the SPA ships the mock layer. Nothing was uploaded."
+}
+
+first_match() {
+    grep -rlE "$1" "${SPA_TEXT_FILES[@]}" "$2" | head -n 1 || true
+}
+
+assert_release_build() {
+    local dist="$1" found
+    [[ ! -e ${dist}/mockServiceWorker.js ]] || die "The ${ENVIRONMENT} SPA build contains mockServiceWorker.js (mock layer). Nothing was uploaded."
+
+    found="$(find "${dist}" -type f -name '*.map' -print -quit)"
+    [[ -z ${found} ]] || die "The ${ENVIRONMENT} SPA build contains a source map (${found#"${dist}/"}). Nothing was uploaded."
+
+    found="$(first_match 'sourceMappingURL=' "${dist}")"
+    [[ -z ${found} ]] || die "The ${ENVIRONMENT} SPA build references a source map in ${found#"${dist}/"}. Nothing was uploaded."
+
+    found="$(first_match "${SPA_MOCK_MARKERS}" "${dist}")"
+    [[ -z ${found} ]] || die "The ${ENVIRONMENT} SPA build contains the mock layer (MSW) in ${found#"${dist}/"}. Nothing was uploaded."
+
+    info "SPA build checked: API base URL set, no mock layer, no source maps."
+}
+
 build_frontend() {
     local build="$1" label="$2"
     local source="${ROOT_DIR}/muasher"
@@ -153,6 +193,8 @@ build_frontend() {
         cp "${build}/muasher/.env.${ENVIRONMENT}.example" "${build}/muasher/.env.${ENVIRONMENT}"
     fi
 
+    assert_api_base_url "${build}/muasher"
+
     info "Building the SPA in ${ENVIRONMENT} mode (release ${label})."
     (
         cd "${build}/muasher"
@@ -161,6 +203,7 @@ build_frontend() {
     )
 
     [[ -f "${build}/muasher/dist/index.html" ]] || die "The SPA build produced no dist/index.html."
+    assert_release_build "${build}/muasher/dist"
     mkdir -p "${build}/release/frontend"
     cp -R "${build}/muasher/dist/." "${build}/release/frontend/"
 }

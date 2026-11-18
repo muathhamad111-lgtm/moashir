@@ -50,10 +50,10 @@ starts on a new in-Kingdom host provisioned with this kit (section "New host"). 
 | Item | Location |
 |---|---|
 | System users | `moashir-staging`, `moashir-production` (no login shell, homes `/var/lib/moashir-<env>`, member of `clamav`) |
-| Releases | `/var/www/moashir/<env>/releases/<UTC timestamp>/{backend,frontend,REVISION}`, `current` symlink, 3 kept |
-| Shared files | `/var/www/moashir/<env>/shared/.env` (600, owner `moashir-<env>`), `shared/storage`, `shared/tmp` |
+| Releases | `/var/www/moashir/<env>/releases/<UTC timestamp>/{backend,frontend,REVISION}`, `current` symlink, 3 kept; owned by root and read-only for `moashir-<env>` except `backend/bootstrap/cache` (section "Release ownership and PHP-FPM hardening") |
+| Shared files | `/var/www/moashir/<env>/shared/.env` (640, `root:moashir-<env>`), `shared/storage` and `shared/tmp` (owner `moashir-<env>`); `<env>`, `releases` and `shared` are `root:root` 0711 |
 | Database owner credentials | `/etc/moashir/<env>/database-owner.env` (root only, used for migrations) |
-| PHP-FPM | pool `moashir-<env>` running as `moashir-<env>`, socket `/run/php/php8.4-fpm-moashir-<env>.sock` (group `www-data`, 660) |
+| PHP-FPM | pool `moashir-<env>` running as `moashir-<env>`, socket `/run/php/php8.4-fpm-moashir-<env>.sock` (group `www-data`, 660); `chdir`, `open_basedir` and `disable_functions` set (section "Release ownership and PHP-FPM hardening") |
 | Redis | `moashir-redis@<env>.service`, config `/etc/moashir-redis/<env>.conf`, data `/var/lib/moashir-redis-<env>`, unix socket only |
 | Queue | Supervisor program `moashir-<env>-horizon` (user `moashir-<env>`) |
 | Scheduler | `/etc/cron.d/moashir-<env>` (every minute, user `moashir-<env>`) |
@@ -244,7 +244,7 @@ belongs to `moashir`.
 - Redis cutover of an environment:
 
   ```
-  install -m 600 -o moashir-<env> -g moashir-<env> /etc/moashir/<env>/env.before-redis-cutover /var/www/moashir/<env>/shared/.env
+  install -m 640 -o root -g moashir-<env> /etc/moashir/<env>/env.before-redis-cutover /var/www/moashir/<env>/shared/.env
   ```
 
   then `sudo -u moashir-<env> php8.4 /var/www/moashir/<env>/current/backend/artisan config:cache` and
@@ -288,13 +288,19 @@ belongs to `moashir`.
 The automatic smoke checks (`deploy/deploy.sh <env> smoke`) cover:
 - HTTP answers and security headers;
 - every upload route limit, plus the JSON 413 on the other routes;
-- the `.env` mode and owner, `APP_DEBUG`, and the posture;
+- the `.env` mode and owner (640, `root:moashir-<env>`), `APP_DEBUG`, and the posture;
+- that the release code, `vendor`, the SPA and the `.env` are read-only for the environment user, while the shared
+  storage, `shared/tmp` and `bootstrap/cache` stay writable;
+- whether the PHP-FPM pool sets `open_basedir` and `disable_functions` (a `warn` line until
+  `provision.sh fpm-pool <env>` has run);
 - that Horizon and the PHP-FPM workers run as the environment user;
 - the private Redis (socket path, mode, no TCP);
 - ClamAV, and the PDF renderer;
 - the backup key and timer.
 
-Missing off-server target and a missing recent backup are `warn` lines.
+Missing off-server target and a missing recent backup are `warn` lines. The off-server target stays a warning so
+that deployments are not blocked, but it is REQUIRED before go-live (the warning text says so in `backup-run`,
+`backup-check`, `smoke` and `provision.sh status`).
 
 ## Demo data (demo posture only)
 
@@ -521,7 +527,13 @@ namespaces, so the kit installs an AppArmor profile that allows them for this bi
 3. checks with `ldd` that no library is missing, then writes and loads the AppArmor profile. It switches the
    `current` symlink atomically, starts the binary once as each environment user, and keeps the current and the
    previous version;
-4. sets `PDF_RENDERER=chromium`, `PDF_CHROME_BINARY` and `PDF_RENDER_TIMEOUT_SECONDS=60` in each `.env` when they
+4. installs `/etc/systemd/system/php8.4-fpm.service.d/moashir-chrome-sandbox.conf`
+   (`deploy/systemd/php-fpm-chrome-sandbox.conf`). Ubuntu's `php8.4-fpm.service` sets `RestrictNamespaces=true`,
+   which stops the Chrome sandbox inside web requests ("No usable sandbox"; the board and feedback report PDFs
+   failed). The drop-in allows only the `user pid net` namespaces. When it changes, the phase runs `php-fpm8.4 -t`
+   and RESTARTS `php8.4-fpm`, which briefly restarts every pool on the server. Undo: delete the drop-in,
+   `systemctl daemon-reload`, `systemctl restart php8.4-fpm`;
+5. sets `PDF_RENDERER=chromium`, `PDF_CHROME_BINARY` and `PDF_RENDER_TIMEOUT_SECONDS=60` in each `.env` when they
    are empty.
 
 Then deploy so the configuration cache picks the variables up. The smoke checks render the sample documents and
@@ -574,6 +586,141 @@ Then run `deploy/deploy.sh <env> smoke`.
 its label (release id and commit) in `APP_RELEASE` / `SENTRY_RELEASE`, rebuilds the configuration cache and
 restarts Horizon. Migrations are forward-only and are NOT reverted; a schema problem is fixed with a new migration.
 Data recovery uses the backups (section "Backups and restore").
+
+## Release ownership and PHP-FPM hardening (audit M-2, L-4)
+
+A compromised PHP process (remote code execution, unsafe deserialisation, a malicious package) must not be able
+to rewrite the application code, `vendor` or the `.env` and keep that access. Every activation applies this
+layout. It is idempotent and converts a server that was deployed the old way (all files owned by the app user):
+
+| Path | Owner:group | Mode (dirs / files) | Environment user |
+|---|---|---|---|
+| `/var/www/moashir/<env>`, `releases/`, `shared/` | `root:root` | 0711 | traverse only |
+| `releases/<id>` (code, `vendor`, `REVISION`, the `storage` and `.env` links) | `root:moashir-<env>` | 0750 / 0640; `<id>`, `backend`, `backend/public` 0751 | read only |
+| `releases/<id>/frontend` | `root:www-data` | 0750 / 0640 | none (Nginx reads it) |
+| `releases/<id>/backend/bootstrap/cache` | `moashir-<env>` | 0750 / 0640 | read and write |
+| `shared/.env` | `root:moashir-<env>` | 0640 | read only |
+| `shared/storage`, `shared/tmp`, `/var/log/moashir/<env>` | `moashir-<env>` | unchanged | read and write |
+
+Activation order (`remote/activate-release.sh`):
+1. posture guard; refuse an environment that still runs as the shared legacy user;
+2. receive the release; `secure_environment_tree` makes `<env>`, `releases`, `shared` root-owned and the `.env`
+   `root:moashir-<env>` 0640;
+3. seal the new release (`lib/ownership.sh`). Only an empty `backend/vendor` and `backend/bootstrap/cache` belong
+   to the app user while Composer runs;
+4. `composer install` as the app user with a fresh, throw-away `COMPOSER_HOME` and `COMPOSER_CACHE_DIR`, so
+   nothing the app user could have planted in its home (cache, global plugins, configuration) reaches `vendor`.
+   Every deployment therefore downloads the packages again;
+5. migrations, grants, reference data and the four caches;
+6. seal every kept release: the new one including its `vendor`, and the previous ones from an old-style deploy.
+   The owner changes in the same call that keeps the group, and the release dir, `backend` and `backend/public`
+   keep 0751 throughout, so the live release keeps serving while it is converted;
+7. switch `current`, restart Horizon, keep 3 releases.
+
+A failure before step 7 leaves the live release serving: only its ownership and the `.env` mode may already be
+converted, and both stay readable by the app user. Rollback is unchanged and still works. The kept releases
+stay read-only except `bootstrap/cache`, where `rollback` and `super-admin` rebuild `config:cache`. `env_set_key`
+keeps the file's owner and mode, so the `APP_RELEASE` update leaves the `.env` at 0640.
+
+Writers checked:
+- artisan `config:cache`, `route:cache`, `event:cache` and `package:discover` write `bootstrap/cache`;
+- `view:cache`, logs, the maintenance flag, the file cache, the spatie backup temp directory and the application
+  archives write the shared storage;
+- PHP-FPM uploads and temporary files, and the PDF profile directories, use `shared/tmp`;
+- Horizon, the scheduler and the queue workers run under the PHP CLI as the app user in the shared storage and
+  `/tmp`;
+- the supervisor and scheduler logs go to `/var/log/moashir/<env>`;
+- the kit backups, the log archive and the restore test run as root;
+- `storage:link` is not used (Nginx serves no public storage).
+
+PHP-FPM pool (`php-fpm/pool.conf.template`; the PHP CLI, Horizon, the scheduler and Composer are not affected):
+- `chdir = /var/www/moashir/<env>/shared/tmp`. This is required. Symfony Process, which chrome-php uses to start
+  the PDF renderer, passes `getcwd()` to `is_dir()` before `proc_open`. With the old `chdir = /` and
+  `open_basedir`, every PDF fails with `The provided cwd "/" does not exist` (reproduced on a local php-fpm run).
+- `open_basedir = /var/www/moashir/<env>/:/var/log/moashir/<env>/:/opt/moashir/chrome-headless-shell/:/run/clamav/:/run/moashir-redis-<env>/`:
+  - `<env>/` covers the releases (`$realpath_root`), the `.env`, the shared storage and `shared/tmp`
+    (`sys_temp_dir`, `upload_tmp_dir`);
+  - the log directory covers `error_log`;
+  - the Chrome root is needed because the application checks `is_file` / `is_executable` on `PDF_CHROME_BINARY`
+    before printing;
+  - the ClamAV and Redis socket directories are included for clarity. A local php-fpm 8.5 run showed that
+    `open_basedir` does not restrict unix-socket connections, so the separation of those sockets rests on their
+    file modes (660, private group).
+- `disable_functions = exec,passthru,shell_exec,system,popen,pcntl_exec,proc_nice,phpinfo,symlink,link`. The
+  backend was searched (`app/`, `config/`, `routes/` and every non-dev package in `vendor/`):
+  - the web runtime never calls these functions, or it checks `function_exists` first. Examples: Symfony Process
+    `isSigchildEnabled` (`phpinfo`), `ExecutableFinder` (`exec`), Symfony Mime `FileBinaryMimeTypeGuesser`
+    (`shell_exec`; the fileinfo guesser is used instead), ramsey/uuid node lookup (`passthru`) and the chrome-php
+    auto-discovery (`shell_exec`, unused because `PDF_CHROME_BINARY` is always passed);
+  - `symlink` / `link` are used only by `storage:link` (CLI, not used);
+  - `proc_open`, `proc_get_status`, `proc_terminate`, `proc_close` and `posix_kill` stay enabled, because the
+    feedback-report and board-report PDFs are rendered inside the web request (chrome-php starts Chrome through
+    Symfony Process). `putenv` stays enabled for Dotenv.
+- Local evidence (php-fpm 8.5 with the rendered template, on a FastCGI probe):
+  - the ten functions report disabled and `/etc` is invisible;
+  - Symfony Process runs; a chrome-headless-shell `Page.printToPDF` returns a PDF;
+  - fileinfo MIME detection and `tempnam(sys_get_temp_dir())` work;
+  - `php-fpm -t` passes.
+
+Apply on a server (operator, root):
+
+```
+deploy/deploy.sh <env> sync-kit                                  # from the workstation
+bash /opt/moashir/deploy/provision.sh fpm-pool <env>             # on the server: render, php-fpm8.4 -t, reload
+```
+
+`fpm-pool` keeps the replaced pool as `/etc/php/8.4/fpm/pool.d/moashir-<env>.conf.previous`, which is not loaded.
+To undo it:
+
+```
+cp -p /etc/php/8.4/fpm/pool.d/moashir-<env>.conf.previous /etc/php/8.4/fpm/pool.d/moashir-<env>.conf
+php-fpm8.4 -t && systemctl reload php8.4-fpm
+```
+
+After any change, exercise the PDF downloads, an evidence upload and the CMS image upload. Then check that
+`grep -c 'open_basedir restriction' /var/log/moashir/<env>/php-fpm-error.log` stays 0.
+
+Residual risk: `bootstrap/cache` and the compiled views in `shared/storage/framework/views` hold PHP that Laravel
+executes, and both must stay writable. A compromised PHP process can still plant code there until the next
+deployment, which brings a fresh `bootstrap/cache` and recompiles the views under the new release path. Moving the
+compiled views into the release would need a backend configuration change and is not done.
+
+## SPA build checks (audit L-2)
+
+`deploy.sh` checks the build before anything is uploaded, for staging and production. The checks run in the
+deploy path only; the CI e2e mock build does not use `deploy.sh`. The deploy stops when:
+- `VITE_API_BASE_URL` is empty in the build environment (the exported variable, or `muasher/.env.<env>`, which
+  is copied from `.env.<env>.example` when missing). Without it, the SPA build posture becomes `mock`;
+- `dist/mockServiceWorker.js` exists, or a built `.js`, `.mjs`, `.css` or `.html` file contains
+  `mockServiceWorker`, `[MSW]` or `setupWorker`. A local build showed that none of these appears in a
+  real or demo build, and all of them appear in a mock build;
+- a `*.map` file exists or a built file contains `sourceMappingURL=`.
+
+## Moyasar checkout script integrity (audit L-1, not enabled)
+
+The checkout loads the pinned `https://cdn.moyasar.com/mpf/1.15.0/moyasar.js` (backend default). Its SHA-384, computed
+on 2026-11-18 (two identical downloads, `last-modified` 2025-02-22, 94,354 bytes), is:
+
+```
+sha384-oqe0guC0MTOY4t+u48OQadqsLshSsqG5o7n/m4Vezbh5hSreN6eP5LVE0/QYlnTw
+```
+
+Do NOT set `MOYASAR_FORM_SCRIPT_INTEGRITY` yet. When an integrity value is present, the SPA loader also sets
+`crossOrigin = "anonymous"`. The CDN currently returns no `Access-Control-Allow-Origin` header, even with an
+`Origin` request header, so the browser would block the script and payments would stop. Before enabling SRI:
+1. confirm that the CDN sends `Access-Control-Allow-Origin` for the site origin
+   (`curl -sI -H 'Origin: https://<domain>' <url>`), or self-host the pinned file (a development change);
+2. recompute the hash yourself:
+
+   ```
+   curl -fsSL <url> | openssl dgst -sha384 -binary | openssl base64 -A
+   ```
+
+3. set `MOYASAR_FORM_SCRIPT_INTEGRITY=sha384-<value>` in `shared/.env` on staging, then deploy (the deploy runs
+   `config:cache`);
+4. complete one TEST-mode checkout before production.
+
+A new Moyasar version needs a new URL and a new hash.
 
 ## Secrets scan (before every push)
 
@@ -708,9 +855,9 @@ removes the PDF renderer; its libraries may stay. ClamAV and the swap file may s
   root only.
 - On a shared IP, the TLS protocol negotiation follows the default server of another site (section "TLS").
 - HTTP/2 is not enabled on purpose: enabling it on the shared `:443` socket would change the other sites.
-- `open_basedir` is not set in the PHP-FPM pools. The separate users and private directories (0711 / 0750 / 600)
-  already keep the environments apart. `open_basedir` needs a staging trial covering ClamAV, the PDF renderer
-  and Redis sockets before it is enabled.
+- `open_basedir` and `disable_functions` are set in the PHP-FPM pools (section "Release ownership and PHP-FPM
+  hardening"). `open_basedir` does not restrict unix-socket connections, and `bootstrap/cache` and the compiled
+  views stay writable by the application user until the next deployment.
 - The PDF renderer is a browser binary outside apt: it is only updated by the monthly bump above.
 - Backup encryption keys live on the server (root only) with an offline escrow. A root compromise of the live
   server can read them; the live data is exposed in that case anyway.

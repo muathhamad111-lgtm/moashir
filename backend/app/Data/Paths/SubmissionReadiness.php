@@ -13,7 +13,7 @@ final readonly class SubmissionReadiness
 
     public function canSubmitNow(): bool
     {
-        return $this->block === null;
+        return ! $this->block instanceof SubmissionBlock;
     }
 
     /**

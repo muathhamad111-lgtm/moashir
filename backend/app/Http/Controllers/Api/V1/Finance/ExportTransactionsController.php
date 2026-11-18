@@ -8,6 +8,7 @@ use App\Actions\Finance\ExportTransactions;
 use App\Http\Requests\Finance\IndexTransactionsRequest;
 use App\Http\Resources\Finance\FinanceExportResource;
 use App\Http\Responses\ApiResponse;
+use App\Http\Responses\CsvDownloadResponse;
 use App\Models\Identity\User;
 use App\Services\Finance\TransactionCsvWriter;
 use Illuminate\Container\Attributes\CurrentUser;
@@ -18,7 +19,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class ExportTransactionsController
 {
-    public function __invoke(IndexTransactionsRequest $request, #[CurrentUser] User $actor, ExportTransactions $exportTransactions, TransactionCsvWriter $writer): JsonResponse|StreamedResponse
+    public function __invoke(IndexTransactionsRequest $request, #[CurrentUser] User $actor, ExportTransactions $exportTransactions, TransactionCsvWriter $writer, CsvDownloadResponse $csv): JsonResponse|StreamedResponse
     {
         $export = $exportTransactions->handle($actor, $request->filters(), app()->getLocale());
         $payments = $export->payments;
@@ -29,16 +30,8 @@ final class ExportTransactionsController
 
         $locale = $export->export->locale;
 
-        return response()->streamDownload(static function () use ($writer, $payments, $locale): void {
-            $stream = fopen('php://output', 'wb');
-
-            if ($stream !== false) {
-                $writer->write($payments, $locale, $stream);
-                fclose($stream);
-            }
-        }, $export->fileName, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'X-Export-Row-Count' => (string) $export->export->row_count,
-        ]);
+        return $csv->stream($export->fileName, $export->export->row_count, static function ($stream) use ($writer, $payments, $locale): void {
+            $writer->write($payments, $locale, $stream);
+        });
     }
 }

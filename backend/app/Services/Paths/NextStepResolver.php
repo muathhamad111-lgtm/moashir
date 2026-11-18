@@ -12,6 +12,7 @@ use App\Enums\Assessments\AdvancedAssessmentStatus;
 use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Award\AwardWindowState;
 use App\Enums\Dashboards\NextStepKey;
+use App\Enums\Periods\EntityPeriodState;
 use App\Models\Assessments\Assessment;
 use App\Models\Finance\Payment;
 use App\Models\Identity\User;
@@ -137,7 +138,7 @@ final class NextStepResolver
         $accredited = $paths->accredited;
         $state = $accredited->period->stateValue();
 
-        if (! $accredited->period->isLive() || $state === null || ! $state->invitesSubmission() || ! $accredited->apply->canStart()) {
+        if (! $accredited->period->isLive() || ! $state instanceof EntityPeriodState || ! $state->invitesSubmission() || ! $accredited->apply->canStart()) {
             return null;
         }
 

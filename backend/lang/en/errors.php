@@ -111,6 +111,7 @@ return [
     ],
     'export' => [
         'too_large' => 'The export is too large. Narrow the filters and try again.',
+        'stream_unavailable' => 'The export file could not be prepared. Please try again later.',
     ],
     'order' => [
         'incomplete' => 'The new order must list every item of the list exactly once.',

@@ -29,7 +29,7 @@ final readonly class PriceRowReader
     public function all(): PriceRows
     {
         return new PriceRows(
-            array_map(fn (PaymentPurpose $purpose): PriceRow => $this->read($purpose), self::ROW_ORDER),
+            array_map($this->read(...), self::ROW_ORDER),
             $this->finance->vatRate(),
             $this->window->current(),
         );

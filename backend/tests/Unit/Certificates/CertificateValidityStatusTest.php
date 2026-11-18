@@ -52,7 +52,7 @@ it('follows the configured threshold instead of a fixed number of days', functio
 });
 
 it('refuses a negative countdown', function (): void {
-    expect(fn () => new CertificateValidityStatus(CertificateValidityState::Valid, -1))->toThrow(InvalidArgumentException::class);
+    expect(fn (): CertificateValidityStatus => new CertificateValidityStatus(CertificateValidityState::Valid, -1))->toThrow(InvalidArgumentException::class);
 });
 
 it('gives a validity only to an issued certificate', function (CertificateStatus $status, ?CertificateValidityState $expected): void {

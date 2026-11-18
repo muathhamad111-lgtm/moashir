@@ -79,9 +79,12 @@ it('locks the account whatever identifier the failures used', function (): void 
         signInWith($identifier, 'Wrong-Password-2026!')->assertJsonPath('code', 'credentials.invalid');
     }
 
-    signInWith('7012345678', 'Wrong-Password-2026!')->assertStatus(423)->assertJsonPath('code', 'account_locked');
-    signInWith($owner->email, defaultPassword())->assertStatus(423);
-    expect(AuthenticationEvent::query()->where('user_id', $owner->id)->where('type', AuthEventType::LoginFailed)->count())->toBe(5);
+    signInWith('7012345678', 'Wrong-Password-2026!')->assertUnprocessable()->assertJsonPath('code', 'credentials.invalid');
+    expect($owner->refresh()->isLocked())->toBeTrue()
+        ->and(AuthenticationEvent::query()->where('user_id', $owner->id)->where('type', AuthEventType::LoginFailed)->count())->toBe(5);
+
+    signInWith($owner->email, defaultPassword())->assertUnprocessable()->assertJsonPath('code', 'credentials.invalid');
+    $this->assertGuest('web');
 });
 
 it('throttles one identifier across addresses and one address across identifiers', function (): void {

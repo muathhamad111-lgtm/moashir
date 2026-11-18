@@ -3,6 +3,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { authService } from '@/services/authService'
 import { LOGIN_STEPS } from '@/constants/loginSteps'
+import { STORAGE_KEYS } from '@/constants/storageKeys'
 
 vi.mock('@/services/authService', () => ({
   UNAUTHENTICATED_STATUS: 401,
@@ -158,6 +159,27 @@ describe('auth store — cookie session, nothing in browser storage', () => {
     const signedOut = await auth.logout()
     expect(signedOut).toBe(false)
     expect(auth.isAuthenticated).toBe(false)
+  })
+
+  it('logout forgets the recent searches of every user and keeps the other preferences', async () => {
+    authService.logout.mockResolvedValue({})
+    localStorage.setItem(`${STORAGE_KEYS.recentSearches}.5001`, JSON.stringify(['Al-Amal']))
+    localStorage.setItem(`${STORAGE_KEYS.recentSearches}.5002`, JSON.stringify(['Al-Noor']))
+    localStorage.setItem(STORAGE_KEYS.theme, 'dark')
+    const auth = useAuthStore()
+    auth.setUser(user)
+    await auth.logout()
+    expect(localStorage.getItem(`${STORAGE_KEYS.recentSearches}.5001`)).toBeNull()
+    expect(localStorage.getItem(`${STORAGE_KEYS.recentSearches}.5002`)).toBeNull()
+    expect(localStorage.getItem(STORAGE_KEYS.theme)).toBe('dark')
+  })
+
+  it('forgets the recent searches when the session ends without a logout', () => {
+    localStorage.setItem(`${STORAGE_KEYS.recentSearches}.5001`, JSON.stringify(['Al-Amal']))
+    const auth = useAuthStore()
+    auth.setUser(user)
+    auth.clearSession()
+    expect(localStorage.length).toBe(0)
   })
 })
 

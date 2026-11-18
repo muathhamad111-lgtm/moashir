@@ -8,7 +8,7 @@ use App\Actions\Award\ApproveCommitteeAverage;
 use App\Actions\Award\ApproveSubstitute;
 use App\Actions\Award\RecomputeCommitteeAverage;
 use App\Actions\Award\ReturnToCommittee;
-use App\Actions\Award\ShowSecretaryRequest;
+use App\Actions\Award\ShowDecidedSecretaryRequest;
 use App\Http\Requests\Award\CycleActionRequest;
 use App\Http\Requests\Award\ReturnToCommitteeRequest;
 use App\Http\Requests\Award\SecretaryNoteRequest;
@@ -24,7 +24,7 @@ use Illuminate\Http\Response;
 
 final readonly class SecretaryDecisionController
 {
-    public function __construct(private ShowSecretaryRequest $show) {}
+    public function __construct(private ShowDecidedSecretaryRequest $show) {}
 
     public function recompute(CycleActionRequest $request, AwardCycle $cycle, Assessment $assessment, #[CurrentUser] User $actor, RecomputeCommitteeAverage $recompute): JsonResponse
     {
@@ -59,8 +59,6 @@ final readonly class SecretaryDecisionController
      */
     private function detail(Assessment $assessment, array $meta = []): JsonResponse
     {
-        $fresh = Assessment::query()->findOrFail($assessment->id);
-
-        return ApiResponse::resource(new SecretaryRequestDetailResource($this->show->handle($fresh)), Response::HTTP_OK, $meta);
+        return ApiResponse::resource(new SecretaryRequestDetailResource($this->show->handle($assessment)), Response::HTTP_OK, $meta);
     }
 }

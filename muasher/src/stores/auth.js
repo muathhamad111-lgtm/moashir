@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { authService, UNAUTHENTICATED_STATUS } from '@/services/authService'
 import { ROLES } from '@/constants/roles'
 import { LOGIN_STEPS } from '@/constants/loginSteps'
+import { forgetRecentSearches } from '@/utils/recentSearchesStorage'
 
 let pendingSessionCheck = null
 
@@ -28,6 +29,7 @@ export const useAuthStore = defineStore('auth', {
     clearSession() {
       this.user = null
       this.sessionChecked = true
+      forgetRecentSearches()
     },
     patchUser(patch) {
       if (!this.user) return

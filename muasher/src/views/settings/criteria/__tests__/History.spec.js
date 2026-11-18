@@ -70,7 +70,7 @@ describe('criteria History', () => {
     expect(rows[1].text()).toContain('Reason: Annual review of the model')
     expect(rows[1].text()).toContain('3 open requests')
     expect(rows[1].text()).toContain('Khalid Al-Omari')
-    expect(rows[1].find('.change-list__item').text()).toContain('400.00 → 500.00')
+    expect(rows[1].find('.criteria-change-list__item').text()).toContain('400.00 → 500.00')
   })
 
   it('labels a text correction and an unknown editor', async () => {

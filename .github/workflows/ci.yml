@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   backend:
-    name: Backend (Pint, Larastan, Rector, Pest, audit)
+    name: Backend (Pint, Larastan, Rector, PHPMD, Pest, audit)
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     defaults:
@@ -76,11 +76,12 @@ jobs:
       - run: composer lint
       - run: composer analyse
       - run: composer refactor:check
+      - run: composer complexity
       - run: composer test
       - run: composer security
 
   frontend:
-    name: Frontend (lint, unit, build, audit)
+    name: Frontend (lint, format, unit, build, audit)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     defaults:
@@ -99,6 +100,7 @@ jobs:
 
       - run: npm ci --no-fund
       - run: npm run lint
+      - run: npm run format:check
       - name: Lint left the tree unchanged
         run: git diff --exit-code
       - run: npm run test:unit

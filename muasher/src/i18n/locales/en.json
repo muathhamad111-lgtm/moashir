@@ -18,9 +18,6 @@
     "no": "No",
     "listSeparator": ", "
   },
-  "stub": {
-    "note": "This screen is part of the foundation skeleton and will be built in the next development phase."
-  },
   "actions": {
     "reload": "Reload data",
     "close": "Close",
@@ -1254,24 +1251,6 @@
       "percent": "{value}%",
       "levels": {
         "range": "{min}–{max}"
-      }
-    },
-    "hero": {
-      "headline": "The Charitable Work Excellence Model Platform",
-      "subtitle": "Moashir measures the maturity and excellence of non-profit organizations against an integrated institutional model and guides them toward deeper, sustainable impact.",
-      "start": "Start assessment"
-    },
-    "paths": {
-      "title": "Assessment paths",
-      "subtitle": "Three progressive paths that match your organization’s readiness and goals.",
-      "self": {
-        "cta": "Start self assessment"
-      },
-      "accredited": {
-        "cta": "Request accredited assessment"
-      },
-      "advanced": {
-        "cta": "Enter the Award"
       }
     },
     "model": {
@@ -3833,19 +3812,6 @@
     "currency": {
       "SAR": "SAR"
     }
-  },
-  "evidence": {
-    "title": "Evidence & attachments",
-    "required": "Required",
-    "optional": "Optional",
-    "add": "Add file",
-    "uploading": "Uploading…",
-    "chooseFor": "Choose a file for {name}",
-    "remove": "Remove {name}",
-    "requiredMissing": "{count} required attachments are still missing.",
-    "requiredComplete": "All required attachments have been uploaded.",
-    "sizeKb": "{size} KB",
-    "sizeMb": "{size} MB"
   },
   "feedback": {
     "eyebrow": "Feedback report",

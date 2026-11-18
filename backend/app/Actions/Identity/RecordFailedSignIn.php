@@ -23,11 +23,14 @@ final readonly class RecordFailedSignIn
             throw AuthenticationRejected::invalidCredentials();
         }
 
-        $this->events->forUser(AuthEventType::LoginFailed, $user, ['identifier_type' => $identifier->type->value]);
+        if ($user->isLocked()) {
+            $this->events->forUser(AuthEventType::LoginFailed, $user, ['identifier_type' => $identifier->type->value, 'locked' => true]);
 
-        if ($this->lockout->recordFailure($user)) {
-            throw $this->lockout->rejection();
+            throw AuthenticationRejected::invalidCredentials();
         }
+
+        $this->events->forUser(AuthEventType::LoginFailed, $user, ['identifier_type' => $identifier->type->value]);
+        $this->lockout->recordFailure($user);
 
         throw AuthenticationRejected::invalidCredentials();
     }

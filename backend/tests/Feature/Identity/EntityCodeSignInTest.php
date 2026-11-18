@@ -269,7 +269,7 @@ it('counts wrong codes and wrong passwords toward one lockout, then refuses code
     verifySignInCode($challengeId, $code)->assertStatus(423);
     $this->travel(61)->seconds();
     $this->postJson('/api/v1/auth/otp/resend', ['challenge_id' => $challengeId])->assertStatus(423);
-    signInWith($owner->email, defaultPassword())->assertStatus(423);
+    signInWith($owner->email, defaultPassword())->assertUnprocessable()->assertJsonPath('code', 'credentials.invalid');
 
     Notification::fake();
     requestSignInCode($owner->email)->assertOk()->assertJsonPath('data.step', 'otp_required');

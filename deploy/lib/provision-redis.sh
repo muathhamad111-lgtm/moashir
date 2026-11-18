@@ -151,7 +151,7 @@ redis_cutover_rollback() {
     [[ -n ${environment} ]] || return 0
     user="$(environment_user "${environment}")"
     warn "Redis cutover of ${environment} failed; restoring the previous .env."
-    install -m 600 -o "${user}" -g "${user}" "$(redis_cutover_backup "${environment}")" "$(environment_env_file "${environment}")" || true
+    install -m "${MOASHIR_ENV_FILE_MODE}" -o root -g "${user}" "$(redis_cutover_backup "${environment}")" "$(environment_env_file "${environment}")" || true
     artisan "${environment}" config:cache || true
     fpm_test_and_reload || true
     supervisorctl start "moashir-${environment}-horizon" >/dev/null 2>&1 || true

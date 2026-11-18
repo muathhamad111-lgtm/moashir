@@ -219,6 +219,7 @@ env_set_key() {
     fi
 
     chown --reference="${file}" "${temporary}"
+    chmod --reference="${file}" "${temporary}"
     mv -f "${temporary}" "${file}"
 }
 

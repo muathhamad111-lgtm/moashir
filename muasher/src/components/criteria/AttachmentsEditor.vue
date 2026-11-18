@@ -2,6 +2,7 @@
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import { keepRowKey, rowKeyOf } from '@/utils/rowKey'
 
 const props = defineProps({
   modelValue: { type: Array, default: () => [] },
@@ -23,16 +24,20 @@ function removeAttachment(index) {
   update(props.modelValue.filter((_, i) => i !== index))
 }
 
-function setName(index, locale, value) {
+function replaceAt(index, change) {
   update(
     props.modelValue.map((item, i) =>
-      i === index ? { ...item, name: { ...item.name, [locale]: value } } : item,
+      i === index ? keepRowKey(item, { ...item, ...change(item) }) : item,
     ),
   )
 }
 
+function setName(index, locale, value) {
+  replaceAt(index, (item) => ({ name: { ...item.name, [locale]: value } }))
+}
+
 function setRequired(index, value) {
-  update(props.modelValue.map((item, i) => (i === index ? { ...item, required: value } : item)))
+  replaceAt(index, () => ({ required: value }))
 }
 </script>
 
@@ -42,7 +47,7 @@ function setRequired(index, value) {
     <p class="attachments-editor__hint">{{ t('criteria.attachments.hint') }}</p>
 
     <ul v-if="modelValue.length" class="attachments-editor__list">
-      <li v-for="(item, index) in modelValue" :key="index" class="attachments-editor__row">
+      <li v-for="(item, index) in modelValue" :key="rowKeyOf(item)" class="attachments-editor__row">
         <div class="attachments-editor__names">
           <label class="field">
             <span class="field__label">{{ t('criteria.attachments.nameAr') }}</span>

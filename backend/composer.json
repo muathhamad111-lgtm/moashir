@@ -14,7 +14,7 @@
         "bacon/bacon-qr-code": "3.1.1",
         "chrome-php/chrome": "1.16.1",
         "laravel/fortify": "1.41.0",
-        "laravel/framework": "13.39.0",
+        "laravel/framework": "13.43.0",
         "laravel/horizon": "5.50.1",
         "laravel/sanctum": "4.3.3",
         "laravel/tinker": "3.0.2",
@@ -36,6 +36,7 @@
         "nunomaduro/collision": "8.9.5",
         "pestphp/pest": "5.3.4",
         "pestphp/pest-plugin-laravel": "5.0.1",
+        "phpmd/phpmd": "3.0.0",
         "rector/rector": "2.8.3"
     },
     "autoload": {
@@ -90,6 +91,9 @@
         "refactor:check": [
             "PAO_DISABLE=1 ./vendor/bin/rector process --dry-run"
         ],
+        "complexity": [
+            "PAO_DISABLE=1 ./vendor/bin/phpmd analyze app --ruleset=phpmd.xml --baseline-file=phpmd.baseline.xml --no-progress"
+        ],
         "test:coverage": [
             "@php artisan config:clear --ansi",
             "PAO_DISABLE=1 XDEBUG_MODE=coverage ./vendor/bin/pest --coverage"
@@ -101,6 +105,7 @@
             "@lint",
             "@analyse",
             "@refactor:check",
+            "@complexity",
             "@test",
             "@test:parallel",
             "@security"
@@ -127,6 +132,7 @@
         "lint": "Check the code style with Laravel Pint.",
         "analyse": "Run Larastan at level max.",
         "refactor:check": "Show pending Rector refactors without applying them.",
+        "complexity": "Check the DEVELOPMENT_STANDARDS section 17.2 complexity and size limits with PHPMD; violations not in phpmd.baseline.xml fail.",
         "test": "Run the Pest suite (architecture, unit and feature tests).",
         "test:parallel": "Run the Pest suite in parallel processes, each on its own moashir_testing_test_<token> database.",
         "security": "Audit the locked dependencies for known vulnerabilities.",

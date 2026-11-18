@@ -2,6 +2,7 @@
 set -Eeuo pipefail
 
 source /opt/moashir/deploy/lib/common.sh
+source /opt/moashir/deploy/lib/ownership.sh
 
 readonly ENVIRONMENT="${1:-}"
 readonly RELEASE="${2:-}"
@@ -38,20 +39,21 @@ receive_release() {
     find "${incoming}" -mindepth 1 -maxdepth 1 -mmin "+${STALE_UPLOAD_MINUTES}" -exec rm -rf {} +
 }
 
+assert_own_runtime_user() {
+    environment_uses_own_user "${ENVIRONMENT}" \
+        || die "${ENVIRONMENT} still runs as the shared user ${MOASHIR_LEGACY_USER}. Run provision.sh migrate-user ${ENVIRONMENT} first."
+}
+
 prepare_permissions() {
-    chown -R "${APP_USER}:${APP_USER}" "${RELEASE_DIR}"
-    find "${RELEASE_DIR}" -type d -exec chmod 0750 {} +
-    find "${RELEASE_DIR}" -type f -exec chmod 0640 {} +
-    chgrp -R "${MOASHIR_WEB_GROUP}" "${RELEASE_DIR}/frontend"
-    chmod 0751 "${RELEASE_DIR}" "${BACKEND}" "${BACKEND}/public"
-    chmod 0750 "${BACKEND}/artisan"
+    seal_release "${RELEASE_DIR}" "${APP_USER}"
+    grant_release_vendor "${RELEASE_DIR}" "${APP_USER}"
 }
 
 link_shared() {
     rm -rf "${BACKEND}/storage"
     ln -sfn "${ENV_DIR}/shared/storage" "${BACKEND}/storage"
     ln -sfn "${ENV_DIR}/shared/.env" "${BACKEND}/.env"
-    chown -h "${APP_USER}:${APP_USER}" "${BACKEND}/storage" "${BACKEND}/.env"
+    chown -h "root:${APP_USER}" "${BACKEND}/storage" "${BACKEND}/.env"
 }
 
 label_release() {
@@ -64,8 +66,16 @@ label_release() {
 }
 
 install_dependencies() {
-    (cd "${BACKEND}" && as_app "${ENVIRONMENT}" env COMPOSER_PROCESS_TIMEOUT=1200 "${MOASHIR_PHP_BIN}" "$(composer_bin)" install \
-        --no-dev --optimize-autoloader --no-interaction --no-progress --prefer-dist)
+    local composer_home status=0
+    composer_home="$(mktemp -d)"
+    chown "${APP_USER}:${APP_USER}" "${composer_home}"
+
+    (cd "${BACKEND}" && as_app "${ENVIRONMENT}" env COMPOSER_HOME="${composer_home}" COMPOSER_CACHE_DIR="${composer_home}/cache" \
+        COMPOSER_PROCESS_TIMEOUT=1200 "${MOASHIR_PHP_BIN}" "$(composer_bin)" install \
+        --no-dev --optimize-autoloader --no-interaction --no-progress --prefer-dist) || status=$?
+
+    rm -rf "${composer_home}"
+    return "${status}"
 }
 
 run_migrations() {
@@ -133,11 +143,18 @@ remove_old_releases() {
     done < <(find "${ENV_DIR}/releases" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort -r | tail -n "+$((MOASHIR_KEEP_RELEASES + 1))")
 }
 
+seal_releases() {
+    seal_all_releases "${ENVIRONMENT}" "${APP_USER}"
+    info "Releases are owned by root and read-only for ${APP_USER}; only backend/bootstrap/cache and the shared storage stay writable."
+}
+
 main() {
     assert_posture "${ENVIRONMENT}"
+    assert_own_runtime_user
     receive_release
     [[ -d "${BACKEND}" && -f "${RELEASE_DIR}/frontend/index.html" ]] || die "Release ${RELEASE} is incomplete."
 
+    secure_environment_tree "${ENVIRONMENT}"
     prepare_permissions
     link_shared
     label_release
@@ -146,6 +163,7 @@ main() {
     apply_database_grants
     install_reference_data
     build_caches
+    seal_releases
     switch_current
     restart_workers
     remove_old_releases

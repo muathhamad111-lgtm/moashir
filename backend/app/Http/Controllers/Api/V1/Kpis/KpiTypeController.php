@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Kpis;
 
 use App\Actions\Kpis\CreateKpiType;
+use App\Actions\Kpis\ListKpiTypes;
 use App\Actions\Kpis\RemoveKpiType;
 use App\Actions\Kpis\UpdateKpiType;
 use App\Http\Requests\Kpis\KpiTypeRequest;
@@ -17,9 +18,9 @@ use Illuminate\Http\Response;
 
 final class KpiTypeController
 {
-    public function index(Request $request): JsonResponse
+    public function index(Request $request, ListKpiTypes $types): JsonResponse
     {
-        return ApiResponse::data(KpiTypeResource::collection(KpiType::query()->listed()->get())->resolve($request));
+        return ApiResponse::data(KpiTypeResource::collection($types->handle())->resolve($request));
     }
 
     public function store(KpiTypeRequest $request, CreateKpiType $create): JsonResponse

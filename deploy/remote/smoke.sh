@@ -3,6 +3,7 @@ set -Eeuo pipefail
 
 source /opt/moashir/deploy/lib/common.sh
 source /opt/moashir/deploy/lib/backup.sh
+source /opt/moashir/deploy/lib/ownership.sh
 
 readonly ENVIRONMENT="${1:-}"
 readonly KIB=1024
@@ -15,6 +16,8 @@ DOMAIN="$(environment_domain "${ENVIRONMENT}")"
 readonly DOMAIN
 USER_NAME="$(environment_user "${ENVIRONMENT}")"
 readonly USER_NAME
+ENV_DIR="$(environment_dir "${ENVIRONMENT}")"
+readonly ENV_DIR
 FAILURES=0
 BODY_DIR=""
 
@@ -77,7 +80,36 @@ upload_refused_as_json() {
 }
 
 env_mode_is_private() {
-    [[ "$(stat -c '%a %U' "$(environment_env_file "${ENVIRONMENT}")")" == "600 ${USER_NAME}" ]]
+    [[ "$(stat -c '%a %U %G' "$(environment_env_file "${ENVIRONMENT}")")" == "${MOASHIR_ENV_FILE_MODE#0} root ${USER_NAME}" ]]
+}
+
+writable_by_app() {
+    sudo -u "${USER_NAME}" -- test -w "$1"
+}
+
+release_is_read_only_for_app() {
+    local release path
+    release="$(readlink -f "${ENV_DIR}/current")"
+    for path in "${ENV_DIR}" "${ENV_DIR}/releases" "${ENV_DIR}/shared" "$(environment_env_file "${ENVIRONMENT}")" \
+        "${release}" "${release}/backend" "${release}/backend/app" "${release}/backend/artisan" "${release}/backend/public/index.php" \
+        "${release}/${RELEASE_VENDOR_PATH}" "${release}/${RELEASE_VENDOR_PATH}/autoload.php" "${release}/frontend/index.html"; do
+        [[ -e ${path} ]] || return 1
+        ! writable_by_app "${path}" || return 1
+    done
+}
+
+runtime_paths_are_writable() {
+    local release path
+    release="$(readlink -f "${ENV_DIR}/current")"
+    for path in "${ENV_DIR}/shared/storage/logs" "${ENV_DIR}/shared/storage/framework/views" "${ENV_DIR}/shared/storage/framework/cache" \
+        "${ENV_DIR}/shared/storage/app/private" "${ENV_DIR}/shared/tmp" "${release}/${RELEASE_CACHE_PATH}"; do
+        writable_by_app "${path}" || return 1
+    done
+}
+
+fpm_pool_is_hardened() {
+    local pool="${MOASHIR_FPM_POOL_DIR}/moashir-${ENVIRONMENT}.conf"
+    grep -q '^php_admin_value\[open_basedir\] = ' "${pool}" && grep -q '^php_admin_value\[disable_functions\] = ' "${pool}"
 }
 
 debug_is_off() {
@@ -192,7 +224,10 @@ check_upload_limits() {
 }
 
 check_isolation() {
-    check ".env is mode 600 and owned by ${USER_NAME}" env_mode_is_private
+    check ".env is mode ${MOASHIR_ENV_FILE_MODE#0}, owned by root, readable by the group ${USER_NAME}" env_mode_is_private
+    check "release code, vendor, SPA and .env are read-only for ${USER_NAME}" release_is_read_only_for_app
+    check "shared storage, tmp and bootstrap/cache are writable by ${USER_NAME}" runtime_paths_are_writable
+    advise "PHP-FPM pool sets open_basedir and disable_functions (provision.sh fpm-pool ${ENVIRONMENT})" fpm_pool_is_hardened
     check "APP_DEBUG is false" debug_is_off
     check "posture: $(environment_is_demo "${ENVIRONMENT}" && printf 'demo, fictional data only' || printf 'real operation, .env ready')" posture_is_consistent
     check "Horizon runs as ${USER_NAME}" horizon_runs_as_environment_user
@@ -219,7 +254,7 @@ check_services() {
 check_backups() {
     check "backup encryption key is root-only (400)" backup_key_is_root_only
     check "daily backup timer is enabled" systemctl is-enabled --quiet "moashir-backup@${ENVIRONMENT}.timer"
-    advise "off-server backup target configured" backup_target_configured "${ENVIRONMENT}"
+    advise "off-server backup target configured (required before go-live)" backup_target_configured "${ENVIRONMENT}"
     advise "a backup completed within ${BACKUP_MAX_AGE_HOURS} hours" backup_is_recent
 }
 

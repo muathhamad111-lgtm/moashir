@@ -42,10 +42,10 @@ final class CriteriaEditEventResource extends JsonResource
      */
     private function versionOf(?CriteriaVersion $version): ?array
     {
-        return $version === null ? null : [
+        return $version instanceof CriteriaVersion ? [
             'id' => $version->id,
             'version_number' => $version->version_number,
             'label' => $version->label?->toArray(),
-        ];
+        ] : null;
     }
 }

@@ -50,4 +50,21 @@ describe('AttachmentsEditor', () => {
     expect(emitted).toHaveLength(1)
     expect(emitted[0].name.en).toBe('A')
   })
+
+  it('keeps each remaining row element when an earlier row is removed', async () => {
+    const first = { name: { ar: 'أ', en: 'A' }, required: true }
+    const second = { name: { ar: 'ب', en: 'B' }, required: false }
+    const wrapper = mountEditor([first, second])
+    const secondRow = wrapper.findAll('.attachments-editor__row')[1].element
+    await wrapper.setProps({ modelValue: [second] })
+    expect(wrapper.find('.attachments-editor__row').element).toBe(secondRow)
+  })
+
+  it('keeps the row element while its name is edited', async () => {
+    const wrapper = mountEditor([{ name: { ar: '', en: 'Plan' }, required: false }])
+    const row = wrapper.find('.attachments-editor__row').element
+    await wrapper.findAll('.field__control')[0].setValue('الخطة')
+    await wrapper.setProps({ modelValue: wrapper.emitted('update:modelValue').at(-1)[0] })
+    expect(wrapper.find('.attachments-editor__row').element).toBe(row)
+  })
 })

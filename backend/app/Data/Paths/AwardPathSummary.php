@@ -28,7 +28,7 @@ final readonly class AwardPathSummary
 
     public function isEligible(): bool
     {
-        return $this->ineligibility === null;
+        return ! $this->ineligibility instanceof AwardIneligibility;
     }
 
     public function isAnnounced(): bool

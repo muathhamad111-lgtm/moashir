@@ -50,13 +50,14 @@
 @use 'components/public-layout';
 @use 'components/auth-layout';
 @use 'components/footer';
-@use 'components/route-stub';
 @use 'components/dev-home';
 @use 'components/gallery';
 @use 'components/weight-editor';
 @use 'components/criteria';
 @use 'components/criteria-version';
 @use 'components/criteria-problems';
+@use 'components/criteria-change-list';
+@use 'components/criteria-publish-preview';
 @use 'components/scope-choice';
 @use 'components/publish-dialog';
 @use 'components/weight-budget';
@@ -89,7 +90,6 @@
 @use 'components/profile-notice';
 @use 'components/logo-dialog';
 @use 'components/dashboard';
-@use 'components/score-input';
 @use 'components/self-form';
 @use 'components/self-result';
 @use 'components/assessment-notice';
@@ -124,7 +124,6 @@
 @use 'components/kpis-admin';
 @use 'components/kpi-catalog';
 @use 'components/fee-summary';
-@use 'components/evidence-uploader';
 @use 'components/accredited-intro';
 @use 'components/accredited-form';
 @use 'components/accredited-workspace';
@@ -183,7 +182,6 @@
 @use 'components/money-amount';
 @use 'components/pricing-breakdown';
 @use 'components/test-mode-notice';
-@use 'components/service-fees';
 @use 'components/payment-notice';
 @use 'components/checkout';
 @use 'components/checkout-summary';
@@ -217,7 +215,6 @@
 @use 'components/filtering';
 @use 'components/action-center';
 @use 'components/staff-dashboard';
-@use 'components/route-tabs';
 @use 'components/dashboard-widgets';
 @use 'components/charts';
 @use 'components/executive-overview';

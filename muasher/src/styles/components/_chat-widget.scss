@@ -379,8 +379,9 @@
   }
 
   &:focus-visible {
-    outline: none;
-    border-color: var(--color-primary);
+    --focus-ring-color: var(--theme-accent-text);
+    @include focus-ring;
+    border-color: var(--theme-accent-text);
   }
 
   &:disabled {

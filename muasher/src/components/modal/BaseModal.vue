@@ -1,8 +1,9 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from 'vue'
+import { computed, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import { MODAL_ROLES, MODAL_TONES } from '@/constants/modal'
+import { useFocusTrap } from '@/composables/useFocusTrap'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -39,10 +40,6 @@ const { t } = useI18n()
 const panelRef = ref(null)
 const titleId = useId()
 const subtitleId = useId()
-let previouslyFocused = null
-
-const FOCUSABLE =
-  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
 const isCentered = computed(() => Boolean(props.icon))
 const description = computed(() => props.describedBy || (props.subtitle ? subtitleId : undefined))
@@ -52,58 +49,19 @@ function close() {
   emit('close')
 }
 
-function focusables() {
-  return Array.from(panelRef.value?.querySelectorAll(FOCUSABLE) ?? [])
-}
+const { onKeydown: trapKeydown } = useFocusTrap(panelRef, {
+  isActive: () => props.modelValue,
+  onEscape: close,
+})
 
 function onKeydown(event) {
   emit('interact')
-  if (event.key === 'Escape') {
-    event.stopPropagation()
-    close()
-    return
-  }
-  if (event.key !== 'Tab') return
-  const elements = focusables()
-  if (!elements.length) {
-    event.preventDefault()
-    panelRef.value?.focus()
-    return
-  }
-  const first = elements[0]
-  const last = elements[elements.length - 1]
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault()
-    last.focus()
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault()
-    first.focus()
-  }
+  trapKeydown(event)
 }
 
 function onBackdropClick() {
   if (props.closeOnBackdrop) close()
 }
-
-watch(
-  () => props.modelValue,
-  async (open) => {
-    if (open) {
-      previouslyFocused = document.activeElement
-      await nextTick()
-      const preferred = panelRef.value?.querySelector('[data-autofocus]')
-      ;(preferred ?? focusables()[0] ?? panelRef.value)?.focus()
-    } else if (previouslyFocused instanceof HTMLElement) {
-      previouslyFocused.focus()
-      previouslyFocused = null
-    }
-  },
-  { immediate: true },
-)
-
-onBeforeUnmount(() => {
-  if (props.modelValue && previouslyFocused instanceof HTMLElement) previouslyFocused.focus()
-})
 </script>
 
 <template>

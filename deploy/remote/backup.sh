@@ -155,7 +155,7 @@ main() {
         info "Backup ${set} stored off-server ($(target_location "${ENVIRONMENT}"))."
     else
         backup_record_state "${ENVIRONMENT}" last-backup "${set} $(date -u +%s) local-only"
-        warn "No off-server target is configured: ${set} stays on this server only. Fill in $(backup_target_file "${ENVIRONMENT}") (RUNBOOK: Backups)."
+        warn "No off-server target is configured: ${set} stays on this server only. An off-server target inside the Kingdom is REQUIRED before go-live: fill in $(backup_target_file "${ENVIRONMENT}") (RUNBOOK: Backups)."
     fi
 
     prune_local

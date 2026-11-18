@@ -130,26 +130,6 @@
   }
 }
 
-.route-tabs__link {
-  @include in-tts-shell {
-    min-block-size: $tts-control-height-md;
-    border-color: tts-neutral(50);
-    border-radius: $tts-radius-control-md;
-    background-color: $tts-white;
-    color: tts-neutral(600);
-    font-size: $tts-fs-sm;
-    font-weight: $tts-fw-label;
-  }
-}
-
-.route-tabs__link--current {
-  @include in-tts-shell {
-    border-color: var(--brand-primary);
-    background-color: var(--brand-primary);
-    color: var(--brand-on-primary);
-  }
-}
-
 .pagination__item {
   @include in-tts-shell {
     min-inline-size: $tts-pagination-item;

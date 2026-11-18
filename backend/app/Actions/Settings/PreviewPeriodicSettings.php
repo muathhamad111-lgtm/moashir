@@ -28,7 +28,7 @@ final readonly class PreviewPeriodicSettings
         $lastStarted = $this->periods->lastStarted($today);
         $plan = PeriodPlanner::plan($settings, $today, $lastStarted?->window(LocalDay::timezone())->endsOn);
         $existing = array_values($this->periods->upcoming()->all());
-        $removed = array_values(array_filter($existing, static fn (AssessmentPeriod $period): bool => self::matching($period->window(LocalDay::timezone()), $plan->upcoming) === null));
+        $removed = array_values(array_filter($existing, static fn (AssessmentPeriod $period): bool => ! self::matching($period->window(LocalDay::timezone()), $plan->upcoming) instanceof PeriodWindow));
 
         return new PeriodicPreview(
             $settings,

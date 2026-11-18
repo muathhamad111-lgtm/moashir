@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Kpis;
 
 use App\Actions\Kpis\CreateKpiCategory;
+use App\Actions\Kpis\ListKpiCategories;
 use App\Actions\Kpis\RemoveKpiCategory;
 use App\Actions\Kpis\UpdateKpiCategory;
 use App\Http\Requests\Kpis\KpiCategoryRequest;
@@ -17,9 +18,9 @@ use Illuminate\Http\Response;
 
 final class KpiCategoryController
 {
-    public function index(Request $request): JsonResponse
+    public function index(Request $request, ListKpiCategories $categories): JsonResponse
     {
-        return ApiResponse::data(KpiCategoryResource::collection(KpiCategory::query()->listed()->get())->resolve($request));
+        return ApiResponse::data(KpiCategoryResource::collection($categories->handle())->resolve($request));
     }
 
     public function store(KpiCategoryRequest $request, CreateKpiCategory $create): JsonResponse

@@ -8,6 +8,7 @@ use App\Contracts\Finance\PurchaseEligibilityCheck;
 use App\Data\Finance\OrderTerms;
 use App\Enums\Finance\PaymentPurpose;
 use App\Exceptions\Award\AwardRejected;
+use App\Models\Assessments\Assessment;
 use App\Models\Award\AwardCycle;
 use App\Models\Entities\Entity;
 use Illuminate\Support\Facades\Date;
@@ -34,7 +35,7 @@ final readonly class AwardPurchaseCheck implements PurchaseEligibilityCheck
 
         $request = $this->ledger->requestIn($entity->id, $cycle->id);
 
-        if ($request !== null) {
+        if ($request instanceof Assessment) {
             throw AwardRejected::requestExists($request->id);
         }
 

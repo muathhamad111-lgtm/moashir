@@ -12,7 +12,9 @@ const props = defineProps({
 const { t, locale } = useI18n()
 const cycle = computed(() => props.award.cycle)
 const regions = computed(() =>
-  (cycle.value?.regions ?? []).map((region) => localizedText(region.name, locale.value)).join('، '),
+  (cycle.value?.regions ?? [])
+    .map((region) => localizedText(region.name, locale.value))
+    .join(t('common.listSeparator')),
 )
 const nextStart = computed(() => isoDate(props.award.nextCycle?.submissionStart ?? null))
 </script>

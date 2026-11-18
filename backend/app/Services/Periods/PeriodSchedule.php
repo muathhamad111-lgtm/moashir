@@ -86,12 +86,6 @@ final readonly class PeriodSchedule
      */
     private function isPlanned(PeriodWindow $window, array $windows): bool
     {
-        foreach ($windows as $candidate) {
-            if ($candidate->sameAs($window)) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($windows, fn (PeriodWindow $candidate): bool => $candidate->sameAs($window));
     }
 }

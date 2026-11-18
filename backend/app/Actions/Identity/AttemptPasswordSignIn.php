@@ -11,7 +11,6 @@ use App\Services\Identity\SignInAccountResolver;
 use App\Services\Identity\SignInGuard;
 use App\Support\ValueObjects\SignInIdentifier;
 use Illuminate\Contracts\Hashing\Hasher;
-use Illuminate\Support\Str;
 
 final readonly class AttemptPasswordSignIn
 {
@@ -30,18 +29,23 @@ final readonly class AttemptPasswordSignIn
         $hashedPassword = $user?->password;
 
         if (! $user instanceof User || $hashedPassword === null) {
-            $this->hasher->check($password, $this->hasher->make(Str::random(32)));
+            $this->spendOneHashCost($password);
             $this->recordFailure->handle($identifier, null);
         }
 
-        $this->guard->assertNotLocked($user);
+        $passwordMatches = $this->hasher->check($password, $hashedPassword);
 
-        if (! $this->hasher->check($password, $hashedPassword)) {
+        if (! $passwordMatches || $user->isLocked()) {
             $this->recordFailure->handle($identifier, $user);
         }
 
         $this->guard->assertCanSignIn($user);
 
         return $this->completeSignIn->handle($user, SignInMethod::Password);
+    }
+
+    private function spendOneHashCost(string $password): void
+    {
+        $this->hasher->make($password);
     }
 }

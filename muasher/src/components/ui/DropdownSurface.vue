@@ -3,7 +3,7 @@ import { ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAnchoredPopup } from '@/composables/useAnchoredPopup'
 import { DROPDOWN_PLACEMENTS } from '@/constants/dropdown'
-import { trapTabKey } from '@/utils/dropdown/focusables'
+import { trapTabKey } from '@/utils/a11y/focusables'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({

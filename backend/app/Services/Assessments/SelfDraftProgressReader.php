@@ -35,12 +35,6 @@ final readonly class SelfDraftProgressReader
      */
     private function isScored(ScoringSub $sub, array $missing): bool
     {
-        foreach ($sub->scorableUnits() as $unit) {
-            if (in_array($unit->key(), $missing, true)) {
-                return false;
-            }
-        }
-
-        return true;
+        return array_all($sub->scorableUnits(), fn (ScorableUnit $unit): bool => ! in_array($unit->key(), $missing, true));
     }
 }

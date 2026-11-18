@@ -118,7 +118,7 @@ it('passes the per-type meta rules of every shipped section and item', function 
         $nodes = [[$schema->sectionFields(), $section], ...array_map(static fn (array $item): array => [$schema->itemFields(), $item], $section['items'])];
 
         foreach ($nodes as [$fields, $node]) {
-            $validator = Validator::make(['meta' => $node['meta'] ?? []], (new MetaFieldSet($fields))->rules());
+            $validator = Validator::make(['meta' => $node['meta'] ?? []], new MetaFieldSet($fields)->rules());
             expect($validator->errors()->all())->toBe([], $section['key']);
         }
     }

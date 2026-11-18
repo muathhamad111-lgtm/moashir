@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<phpmd-baseline>
+  <violation rule="PHPMD\Rule\Design\ExcessiveParameterList" file="app/Actions/Award/ApproveSubstitute.php" method="handle"/>
+  <violation rule="PHPMD\Rule\Design\ExcessiveParameterList" file="app/Actions/Award/CloseCommitteeDiscussion.php" method="handle"/>
+  <violation rule="PHPMD\Rule\Design\ExcessiveParameterList" file="app/Actions/Award/SetAwardRank.php" method="handle"/>
+  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="app/Exceptions/Assessments/AssessmentRejected.php"/>
+  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="app/Exceptions/Award/AwardRejected.php"/>
+  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="app/Exceptions/Award/CommitteeRejected.php"/>
+  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="app/Exceptions/Console/DemoDataRefused.php"/>
+  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="app/Exceptions/Console/SuperAdminCommandRejected.php"/>
+  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="app/Exceptions/Finance/PaymentRejected.php"/>
+  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="app/Exceptions/Integrations/IntegrationRejected.php"/>
+  <violation rule="PHPMD\Rule\Design\ExcessiveParameterList" file="app/Http/Controllers/Api/V1/Assessments/SubmitAssessmentController.php" method="__invoke"/>
+  <violation rule="PHPMD\Rule\Design\ExcessiveParameterList" file="app/Http/Controllers/Api/V1/Award/SecretaryDecisionController.php" method="approveSubstitution"/>
+  <violation rule="PHPMD\Rule\Design\ExcessiveParameterList" file="app/Http/Controllers/Api/V1/Award/SecretaryDiscussionController.php" method="close"/>
+  <violation rule="PHPMD\Rule\Design\ExcessiveParameterList" file="app/Http/Controllers/Api/V1/Cms/CmsSectionItemController.php" method="update"/>
+  <violation rule="PHPMD\Rule\Design\ExcessiveParameterList" file="app/Http/Controllers/Api/V1/Cms/ToggleCmsSectionItemController.php" method="__invoke"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="app/Http/Requests/Award/CycleAttributesRequest.php" method="cycleAttributes"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="app/Http/Requests/Cms/UpdateSiteSettingsRequest.php" method="changes"/>
+  <violation rule="PHPMD\Rule\Design\ExcessiveParameterList" file="app/Integrations/Fakes/FakePaymentGateway.php" method="recordPayment"/>
+  <violation rule="PHPMD\Rule\Design\ExcessiveClassLength" file="app/Models/Assessments/Assessment.php"/>
+  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="app/Models/Assessments/Assessment.php"/>
+  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="app/Models/Award/AwardCycle.php"/>
+  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="app/Models/Entities/Entity.php"/>
+  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="app/Models/Identity/User.php"/>
+  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="app/Policies/Assessments/AssessmentPolicy.php"/>
+  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="app/Policies/Entities/EntityPolicy.php"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="app/Policies/Files/StoredFilePolicy.php" method="download"/>
+  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="app/Policies/Finance/PaymentPolicy.php"/>
+  <violation rule="PHPMD\Rule\Design\ExcessiveMethodLength" file="app/Providers/AuthorizationServiceProvider.php" method="boot"/>
+  <violation rule="PHPMD\Rule\Design\ExcessiveMethodLength" file="app/Providers/RateLimitServiceProvider.php" method="boot"/>
+  <violation rule="PHPMD\Rule\Design\ExcessiveParameterList" file="app/Services/Assessments/FeedbackSheetWriter.php" method="apply"/>
+  <violation rule="PHPMD\Rule\Design\ExcessiveParameterList" file="app/Services/Award/FilteringDecisionRecorder.php" method="record"/>
+  <violation rule="PHPMD\Rule\Design\ExcessiveParameterList" file="app/Services/Award/FilteringGate.php" method="enter"/>
+  <violation rule="PHPMD\Rule\Design\ExcessiveParameterList" file="app/Services/Award/SecretaryGate.php" method="enter"/>
+  <violation rule="PHPMD\Rule\Design\ExcessiveParameterList" file="app/Services/Files/FileIntake.php" method="store"/>
+  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="app/Services/Finance/FinanceSettings.php"/>
+  <violation rule="PHPMD\Rule\Design\ExcessiveParameterList" file="app/Services/Finance/PaymentEventRecorder.php" method="record"/>
+  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="app/Services/Identity/AuthSettings.php"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="app/Services/Integrations/CredentialWriter.php" method="apply"/>
+  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="app/Support/Assessments/AssessmentLinks.php"/>
+  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="app/Support/Entities/EntityProfileInput.php"/>
+</phpmd-baseline>

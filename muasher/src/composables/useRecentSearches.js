@@ -1,11 +1,11 @@
 import { ref, watch } from 'vue'
-import { STORAGE_KEYS } from '@/constants/storageKeys'
 import {
   PERSONAL_DATA_PATTERNS,
   RECENT_SEARCHES_LIMIT,
   SEARCH_MAX_LENGTH,
   SEARCH_MIN_LENGTH,
 } from '@/constants/globalSearch'
+import { recentSearchesKey } from '@/utils/recentSearchesStorage'
 
 export function isStorableSearch(text) {
   const term = typeof text === 'string' ? text.trim() : ''
@@ -13,14 +13,10 @@ export function isStorableSearch(text) {
   return !PERSONAL_DATA_PATTERNS.some((pattern) => pattern.test(term))
 }
 
-function storageKey(userId) {
-  return `${STORAGE_KEYS.recentSearches}.${userId}`
-}
-
 function read(userId) {
   if (!userId) return []
   try {
-    const parsed = JSON.parse(localStorage.getItem(storageKey(userId)) ?? '[]')
+    const parsed = JSON.parse(localStorage.getItem(recentSearchesKey(userId)) ?? '[]')
     return Array.isArray(parsed)
       ? parsed.filter(isStorableSearch).slice(0, RECENT_SEARCHES_LIMIT)
       : []
@@ -38,7 +34,7 @@ export function useRecentSearches(userId) {
 
   function persist(next) {
     items.value = next
-    localStorage.setItem(storageKey(userId.value), JSON.stringify(next))
+    localStorage.setItem(recentSearchesKey(userId.value), JSON.stringify(next))
   }
 
   function remember(text) {
@@ -53,7 +49,7 @@ export function useRecentSearches(userId) {
   function clear() {
     if (!userId.value) return
     items.value = []
-    localStorage.removeItem(storageKey(userId.value))
+    localStorage.removeItem(recentSearchesKey(userId.value))
   }
 
   return { items, remember, clear }

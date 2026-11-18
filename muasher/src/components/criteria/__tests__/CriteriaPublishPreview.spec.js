@@ -47,31 +47,33 @@ describe('CriteriaPublishPreview', () => {
   it('summarizes the changes and asks for a scope before stating the impact', () => {
     const wrapper = mountPreview()
 
-    expect(wrapper.find('.publish-preview__summary').text()).toBe(
+    expect(wrapper.find('.criteria-publish-preview__summary').text()).toBe(
       '2 changes; 1 of them affect scores.',
     )
-    expect(wrapper.find('.publish-preview__impact').text()).toContain('Choose an edit scope')
+    expect(wrapper.find('.criteria-publish-preview__impact').text()).toContain(
+      'Choose an edit scope',
+    )
   })
 
   it('states how many open requests each scope moves', async () => {
     const wrapper = mountPreview({ scope: 'all' })
-    expect(wrapper.find('.publish-preview__impact').text()).toContain(
+    expect(wrapper.find('.criteria-publish-preview__impact').text()).toContain(
       '4 open requests move to the new version; scores of unchanged items are kept.',
     )
 
     await wrapper.setProps({ scope: 'new_only' })
-    expect(wrapper.find('.publish-preview__impact').text()).toContain(
+    expect(wrapper.find('.criteria-publish-preview__impact').text()).toContain(
       'Open requests stay on version 3',
     )
 
     await wrapper.setProps({ scope: 'reset_open' })
-    expect(wrapper.find('.publish-preview__impact').text()).toContain(
+    expect(wrapper.find('.criteria-publish-preview__impact').text()).toContain(
       'all their scores are cleared',
     )
   })
 
   it('lists each change with its node, label, changed fields and weight', () => {
-    const items = mountPreview().findAll('.change-list__item')
+    const items = mountPreview().findAll('.criteria-change-list__item')
 
     expect(items).toHaveLength(2)
     expect(items[0].text()).toContain('Changed')
@@ -86,15 +88,17 @@ describe('CriteriaPublishPreview', () => {
   it('renders the Arabic texts', () => {
     const wrapper = mountPreview({ scope: 'all' }, 'ar')
 
-    expect(wrapper.find('.publish-preview__title').text()).toBe('ما الذي سيتغير')
-    expect(wrapper.find('.change-list__item').text()).toContain('معيار فرعي')
+    expect(wrapper.find('.criteria-publish-preview__title').text()).toBe('ما الذي سيتغير')
+    expect(wrapper.find('.criteria-change-list__item').text()).toContain('معيار فرعي')
   })
 
   it('says when the draft matches the published version', () => {
     const wrapper = mountPreview({ preview: { ...preview, changeCount: 0, changes: [] } })
 
-    expect(wrapper.find('.publish-preview__summary').text()).toBe('No differences from version 3.')
-    expect(wrapper.find('.publish-preview__details').exists()).toBe(false)
+    expect(wrapper.find('.criteria-publish-preview__summary').text()).toBe(
+      'No differences from version 3.',
+    )
+    expect(wrapper.find('.criteria-publish-preview__details').exists()).toBe(false)
   })
 
   it('offers a retry when the comparison fails', async () => {

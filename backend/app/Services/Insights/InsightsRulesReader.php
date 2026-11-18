@@ -12,9 +12,12 @@ use App\Support\ValueObjects\MaturityBounds;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use InvalidArgumentException;
+use Psr\Log\LoggerInterface;
 
-final class InsightsRulesReader
+final readonly class InsightsRulesReader
 {
+    public function __construct(private LoggerInterface $logger) {}
+
     public function read(): InsightsRules
     {
         $rows = Setting::query()
@@ -31,20 +34,49 @@ final class InsightsRulesReader
 
     private function gapsFrom(?Setting $row): GapThresholds
     {
+        if (! $row instanceof Setting) {
+            return GapThresholds::defaults();
+        }
+
         try {
-            return is_array($row?->value) ? GapThresholds::fromArray($row->value) : GapThresholds::defaults();
+            return GapThresholds::fromArray($this->storedArrayOf($row));
         } catch (InvalidArgumentException) {
+            $this->warnFallback($row);
+
             return GapThresholds::defaults();
         }
     }
 
     private function bandsFrom(?Setting $row): MaturityBounds
     {
-        try {
-            return is_array($row?->value) ? MaturityBounds::fromArray($row->value) : MaturityBounds::defaults();
-        } catch (InvalidArgumentException) {
+        if (! $row instanceof Setting) {
             return MaturityBounds::defaults();
         }
+
+        try {
+            return MaturityBounds::fromArray($this->storedArrayOf($row));
+        } catch (InvalidArgumentException) {
+            $this->warnFallback($row);
+
+            return MaturityBounds::defaults();
+        }
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    private function storedArrayOf(Setting $row): array
+    {
+        if (! is_array($row->value)) {
+            throw new InvalidArgumentException('The stored insights rule is not a map.');
+        }
+
+        return $row->value;
+    }
+
+    private function warnFallback(Setting $row): void
+    {
+        $this->logger->warning('insights.rules_fell_back_to_defaults', ['setting_id' => $row->id, 'setting_key' => $row->key]);
     }
 
     /**

@@ -13,7 +13,7 @@ final readonly class ApplyReadiness
 
     public function canStart(): bool
     {
-        return $this->block === null;
+        return ! $this->block instanceof ApplyBlock;
     }
 
     /**

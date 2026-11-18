@@ -17,7 +17,7 @@ request_slowlog_timeout = 10s
 slowlog = {{LOG_DIR}}/php-fpm-slow.log
 catch_workers_output = no
 security.limit_extensions = .php
-chdir = /
+chdir = {{WORKING_DIR}}
 
 env[TMPDIR] = {{ENV_DIR}}/shared/tmp
 
@@ -31,3 +31,5 @@ php_admin_value[post_max_size] = {{POST_LIMIT_PHP}}
 php_admin_value[upload_tmp_dir] = {{ENV_DIR}}/shared/tmp
 php_admin_value[sys_temp_dir] = {{ENV_DIR}}/shared/tmp
 php_admin_flag[allow_url_include] = off
+php_admin_value[open_basedir] = {{OPEN_BASEDIR}}
+php_admin_value[disable_functions] = {{DISABLED_FUNCTIONS}}

@@ -61,6 +61,26 @@ export default defineConfig([
   },
 
   {
+    name: 'app/complexity-limits',
+    files: ['src/**/*.{js,vue}'],
+    ignores: ['src/mocks/**', 'src/test-utils/**', 'src/**/__tests__/**'],
+    rules: {
+      complexity: ['error', 10],
+      'max-depth': ['error', 3],
+      'max-params': ['error', 5],
+      'max-lines-per-function': ['error', { max: 50, skipBlankLines: true, skipComments: true }],
+    },
+  },
+
+  {
+    name: 'app/component-length',
+    files: ['src/**/*.vue'],
+    rules: {
+      'max-lines': ['error', { max: 200, skipBlankLines: true, skipComments: true }],
+    },
+  },
+
+  {
     ...pluginPlaywright.configs['flat/recommended'],
     files: ['e2e/**/*.{test,spec}.{js,ts,jsx,tsx}'],
   },

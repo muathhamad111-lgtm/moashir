@@ -56,7 +56,7 @@ check_last_backup() {
 check_target() {
     local sets count newest
     if ! backup_target_configured "${ENVIRONMENT}"; then
-        line warn "NO OFF-SERVER TARGET: fill in $(backup_target_file "${ENVIRONMENT}") (S3-compatible or SFTP, inside the Kingdom)"
+        line warn "NO OFF-SERVER TARGET (REQUIRED before go-live): fill in $(backup_target_file "${ENVIRONMENT}") (S3-compatible or SFTP, inside the Kingdom)"
         return
     fi
 

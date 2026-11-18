@@ -75,7 +75,7 @@ it('counts wrong TOTP codes toward the account lockout across pending sign-ins a
 
     expect($user->refresh()->isLocked())->toBeTrue();
     Notification::assertSentTo($administrator, AccountLockedNotification::class);
-    signInWith($user->email, defaultPassword())->assertStatus(423)->assertJsonPath('code', 'account_locked');
+    signInWith($user->email, defaultPassword())->assertUnprocessable()->assertJsonPath('code', 'credentials.invalid');
     $this->assertGuest('web');
 });
 

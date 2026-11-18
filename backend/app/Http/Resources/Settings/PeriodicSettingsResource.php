@@ -37,8 +37,8 @@ final class PeriodicSettingsResource extends JsonResource
             'cadence_effective_from' => $current instanceof AssessmentPeriod && $current->cadence !== $settings->cadence ? $current->ends_on->addDay()->toDateString() : null,
             'current_period' => PeriodPresenter::optional($current),
             'upcoming_periods' => array_map(static fn (AssessmentPeriod $period): ?array => PeriodPresenter::upcoming($period, $settings->noticeDays), $view->upcoming),
-            'defaults' => self::defaults(),
-            'limits' => self::limits(),
+            'defaults' => $this->defaults(),
+            'limits' => $this->limits(),
             'updated_at' => $view->updatedAt?->toIso8601String(),
         ];
     }
@@ -46,7 +46,7 @@ final class PeriodicSettingsResource extends JsonResource
     /**
      * @return array<string, array{notice_days_before: int, reminder_days_before_end: list<int>}>
      */
-    private static function defaults(): array
+    private function defaults(): array
     {
         $defaults = [];
 
@@ -60,7 +60,7 @@ final class PeriodicSettingsResource extends JsonResource
     /**
      * @return array{days_max: array<string, int>, reminders_max_items: int, paid_draft_reminder_days: array{min: int, max: int}}
      */
-    private static function limits(): array
+    private function limits(): array
     {
         $daysMax = [];
 

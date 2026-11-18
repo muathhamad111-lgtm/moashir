@@ -6,7 +6,6 @@ namespace App\Http\Resources\Settings;
 
 use App\Data\Periods\PeriodicPreview;
 use App\Data\Periods\PlannedPeriod;
-use App\Models\Assessments\AssessmentPeriod;
 use App\Support\Periods\PeriodPresenter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -30,7 +29,7 @@ final class PeriodicSettingsPreviewResource extends JsonResource
             'cadence_effective_from' => $preview->cadenceEffectiveFrom?->toDateString(),
             'first_period' => $upcoming[0] ?? null,
             'upcoming_periods' => $upcoming,
-            'removed_periods' => array_map(static fn (AssessmentPeriod $period): array => PeriodPresenter::period($period), $preview->removed),
+            'removed_periods' => array_map(PeriodPresenter::period(...), $preview->removed),
             'corrections_to_send' => $preview->correctionsToSend,
         ];
     }

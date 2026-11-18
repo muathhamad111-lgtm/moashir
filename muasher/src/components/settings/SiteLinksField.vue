@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseInput from '@/components/form/BaseInput.vue'
 import { moveIndex } from '@/utils/reorder'
+import { rowKeyOf } from '@/utils/rowKey'
 
 const rows = defineModel('rows', { type: Array, required: true })
 
@@ -32,7 +33,7 @@ function move(index, offset) {
     <ul v-if="rows.length" class="site-settings__rows">
       <li
         v-for="(row, index) in rows"
-        :key="`${field}-${index}`"
+        :key="rowKeyOf(row)"
         class="site-settings__row site-settings__row--stack"
       >
         <div class="site-settings__grid">

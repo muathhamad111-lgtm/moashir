@@ -4,6 +4,7 @@ set -Eeuo pipefail
 KIT_SOURCE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly KIT_SOURCE
 source "${KIT_SOURCE}/lib/common.sh"
+source "${KIT_SOURCE}/lib/ownership.sh"
 source "${KIT_SOURCE}/lib/backup.sh"
 source "${KIT_SOURCE}/lib/provision-users.sh"
 source "${KIT_SOURCE}/lib/provision-database.sh"
@@ -23,6 +24,7 @@ readonly CLAMAV_SIGNATURE_WAIT_SECONDS=900
 readonly REQUIRED_PHP_MODULES=(pdo_pgsql redis mbstring dom curl zip intl pcntl posix fileinfo tokenizer gd)
 readonly CLAMAV_PACKAGES=(clamav clamav-daemon clamav-freshclam)
 readonly SYSTEM_PACKAGES=(gnupg redis-server)
+readonly FPM_DISABLED_FUNCTIONS="exec,passthru,shell_exec,system,popen,pcntl_exec,proc_nice,phpinfo,symlink,link"
 
 FPM_NEEDS_RELOAD=0
 
@@ -55,6 +57,7 @@ Existing server (RUNBOOK: Applying Task-52 to an existing server):
 Other:
   deploy-user                    non-root deploy user for CI (MOASHIR_DEPLOY_PUBLIC_KEY_FILE=<public key file>)
   pdf-renderer [env|all]         pinned Chrome for Testing headless shell (monthly version bump)
+  fpm-pool [env|all]             re-render the PHP-FPM pool (open_basedir, disable_functions), test and reload
   status [env|all]               read-only summary (no secrets)
 USAGE
 }
@@ -198,7 +201,7 @@ ensure_directories() {
     log_dir="$(environment_log_dir "${environment}")"
 
     secure_base_directory
-    install -d -m 0711 -o "${user}" -g "${user}" "${dir}" "${dir}/releases" "${dir}/shared"
+    secure_environment_tree "${environment}"
     install -d -m 0750 -o "${user}" -g "${user}" \
         "${dir}/shared/storage" \
         "${dir}/shared/storage/app" \
@@ -267,7 +270,7 @@ ensure_env_file() {
     user="$(environment_user "${environment}")"
 
     if [[ ! -f ${env_file} ]]; then
-        install -m 600 -o "${user}" -g "${user}" "${template}" "${env_file}"
+        install -m "${MOASHIR_ENV_FILE_MODE}" -o root -g "${user}" "${template}" "${env_file}"
         env_set_key "${env_file}" APP_KEY "base64:$(openssl rand -base64 32)"
         env_set_key "${env_file}" BACKUP_ARCHIVE_PASSWORD "$(generate_secret)"
         info "Created ${env_file} from the template (real-operation posture) with a new APP_KEY."
@@ -282,12 +285,31 @@ ensure_env_file() {
         fi
     done <"${template}"
 
-    chown "${user}:${user}" "${env_file}"
-    chmod 600 "${env_file}"
+    secure_env_file "${environment}"
+}
+
+fpm_open_basedir() {
+    local environment="$1"
+    printf '%s/:%s/:%s/:%s/:%s/' \
+        "$(environment_dir "${environment}")" \
+        "$(environment_log_dir "${environment}")" \
+        "${CHROME_ROOT}" \
+        "/run/clamav" \
+        "$(dirname "$(environment_redis_socket "${environment}")")"
+}
+
+keep_previous_fpm_pool() {
+    local rendered="$1" pool="$2"
+    if [[ -f ${pool} ]] && ! cmp -s "${rendered}" "${pool}"; then
+        cp -p "${pool}" "${pool}.previous"
+    fi
 }
 
 ensure_fpm_pool() {
-    local environment="$1" rendered max_children
+    local environment="$1" rendered max_children pool working_dir
+    pool="${MOASHIR_FPM_POOL_DIR}/moashir-${environment}.conf"
+    working_dir="$(environment_dir "${environment}")/shared/tmp"
+    [[ -d ${working_dir} ]] || die "${working_dir} is missing; run provision.sh system ${environment} first."
     rendered="$(mktemp)"
     max_children=3
     [[ ${environment} == "production" ]] && max_children=5
@@ -300,10 +322,14 @@ ensure_fpm_pool() {
         "FPM_MAX_CHILDREN=${max_children}" \
         "LOG_DIR=$(environment_log_dir "${environment}")" \
         "ENV_DIR=$(environment_dir "${environment}")" \
+        "WORKING_DIR=${working_dir}" \
+        "OPEN_BASEDIR=$(fpm_open_basedir "${environment}")" \
+        "DISABLED_FUNCTIONS=${FPM_DISABLED_FUNCTIONS}" \
         "UPLOAD_LIMIT_PHP=${EVIDENCE_UPLOAD_CEILING_MB}M" \
         "POST_LIMIT_PHP=$((EVIDENCE_UPLOAD_CEILING_MB + 1))M"
 
-    if install_if_changed "${rendered}" "${MOASHIR_FPM_POOL_DIR}/moashir-${environment}.conf" 0644 root:root; then
+    keep_previous_fpm_pool "${rendered}" "${pool}"
+    if install_if_changed "${rendered}" "${pool}" 0644 root:root; then
         FPM_NEEDS_RELOAD=1
         info "PHP-FPM pool moashir-${environment} written (user $(environment_user "${environment}"))."
     fi
@@ -362,6 +388,25 @@ provision_environment() {
     provision_backups "${environment}"
 }
 
+fpm_pool_phase() {
+    local scope="$1" environment
+    FPM_NEEDS_RELOAD=0
+    preflight
+    install_kit
+
+    while IFS= read -r environment; do
+        [[ -d "$(environment_dir "${environment}")" ]] || die "${environment} is not installed on this server; run provision.sh system ${environment}."
+        assert_environment_migrated "${environment}"
+        ensure_fpm_pool "${environment}"
+    done < <(environments_in_scope "${scope}")
+
+    if [[ ${FPM_NEEDS_RELOAD} -eq 1 ]]; then
+        fpm_test_and_reload
+        return
+    fi
+    info "PHP-FPM pools unchanged."
+}
+
 pdf_renderer_phase() {
     local scope="$1"
     preflight
@@ -414,7 +459,7 @@ environment_status() {
     status_line "database" "$(database_exists "${environment}" "$(environment_database "${environment}")" && printf present || printf missing)"
     status_line "PDF renderer" "$(environment_env_value "${environment}" PDF_RENDERER)"
     status_line "backup key" "$([[ -s "$(backup_key_file "${environment}")" ]] && printf present || printf missing)"
-    status_line "off-server target" "$(backup_target_driver "${environment}" | grep . || printf 'NOT CONFIGURED')"
+    status_line "off-server target" "$(backup_target_driver "${environment}" | grep . || printf 'NOT CONFIGURED (required before go-live)')"
     status_line "last backup" "$(backup_read_state "${environment}" last-backup | awk '{ print $1, $3 }' | grep . || printf none)"
 }
 
@@ -449,6 +494,7 @@ main() {
         postgresql) preflight_os && provision_postgresql ;;
         postgresql-repository) preflight_os && install_pgdg_repository ;;
         pdf-renderer) pdf_renderer_phase "${2:-all}" ;;
+        fpm-pool) fpm_pool_phase "${2:-all}" ;;
         nginx-bootstrap) nginx_bootstrap "${2:-all}" ;;
         certificates) certificates "${2:-all}" ;;
         nginx-final) nginx_final "${2:-all}" ;;

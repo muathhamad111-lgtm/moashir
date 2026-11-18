@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Cms;
 
+use App\Actions\Cms\GetCmsHomePage;
+use App\Actions\Cms\ListCmsPages;
 use App\Actions\Cms\UpdateCmsPageDetails;
 use App\Http\Requests\Cms\UpdateCmsPageRequest;
 use App\Http\Resources\Cms\CmsPageResource;
@@ -20,16 +22,14 @@ use Illuminate\Http\Request;
 
 final class CmsPageController
 {
-    public function index(Request $request): JsonResponse
+    public function index(Request $request, ListCmsPages $pages): JsonResponse
     {
-        $pages = CmsPage::query()->orderBy('id')->get();
-
-        return ApiResponse::data(CmsPageSummaryResource::collection($pages)->resolve($request));
+        return ApiResponse::data(CmsPageSummaryResource::collection($pages->handle())->resolve($request));
     }
 
-    public function home(Request $request, CmsSectionLoader $loader): JsonResponse
+    public function home(Request $request, GetCmsHomePage $home, CmsSectionLoader $loader): JsonResponse
     {
-        $page = CmsPage::query()->where('key', 'home')->firstOrFail();
+        $page = $home->handle();
         $sections = $loader->ofPage($page);
 
         return ApiResponse::data([

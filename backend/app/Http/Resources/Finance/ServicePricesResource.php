@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Resources\Finance;
 
 use App\Data\Finance\ServicePrices;
-use App\Data\Paths\PathPricing;
 use App\Support\Finance\PriceQuotePresenter;
 use App\Support\Paths\PathPricingPresenter;
 use Illuminate\Http\Request;
@@ -24,7 +23,7 @@ final class ServicePricesResource extends JsonResource
         return [
             'accredited' => PriceQuotePresenter::present($this->resource->accredited),
             'bag' => PriceQuotePresenter::present($this->resource->bag),
-            'paths' => array_map(static fn (PathPricing $pricing): array => PathPricingPresenter::present($pricing), $this->resource->paths),
+            'paths' => array_map(PathPricingPresenter::present(...), $this->resource->paths),
         ];
     }
 }

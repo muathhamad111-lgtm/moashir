@@ -8,7 +8,7 @@ contracts live in the repository root (`CLAUDE.md`, `references/`, `agents/analy
 
 | Concern | Choice (pinned in `composer.json`) |
 |---|---|
-| Runtime | PHP 8.4+ (8.4 in Sail, 8.5 verified locally), Laravel 13.39 |
+| Runtime | PHP 8.4+ (8.4 in Sail, 8.5 verified locally), Laravel 13.43 |
 | Database | PostgreSQL 17 (Sail) — PostgreSQL 16 accepted for local development |
 | Auth | Sanctum SPA cookies (bearer tokens disabled), Fortify TOTP (headless, routes ignored) |
 | Authorization | spatie/laravel-permission 8 (code-defined catalog) + Policies, Super Admin via `Gate::before` |
@@ -18,7 +18,7 @@ contracts live in the repository root (`CLAUDE.md`, `references/`, `agents/analy
 | Headers | `SetSecurityHeaders` middleware + spatie/laravel-csp (`default-src 'none'; frame-ancestors 'none'`) |
 | Backups | spatie/laravel-backup (encrypted archive, disk from `BACKUP_DISK`) |
 | PDF documents | chrome-php/chrome 1.16.1 driving a pinned Chrome for Testing `chrome-headless-shell`; QR codes with bacon/bacon-qr-code 3.1.1 |
-| Quality | Pest 5 (architecture, unit, feature), Larastan level max, Pint, Rector, `composer audit` |
+| Quality | Pest 5 (architecture, unit, feature), Larastan level max, Pint, Rector, PHPMD, `composer audit` |
 
 ## Setup
 
@@ -194,6 +194,9 @@ their Laravel meaning. Production must use `APP_ENV=production`, `APP_DEBUG=fals
   document must send a `Referer`/`Origin` (use `Referrer-Policy: strict-origin-when-cross-origin` on the
   SPA, not `no-referrer`) so Sanctum recognises it as stateful.
 - Every authenticated route carries a `can:` ability (enforced by `tests/Feature/Platform/RouteAuthorizationTest.php`).
+- CSV exports (`/entities/export`, `/users/export`, `/audit-logs/export`, `/finance/transactions/export`) stream through
+  `Http\Responses\CsvDownloadResponse`, which opens the output stream before any header is sent; if it cannot be
+  opened the request answers 503 `export.stream_unavailable` (reported to GlitchTip) instead of an empty file.
 
 ### Identity endpoints
 
@@ -303,13 +306,18 @@ Super Admin accounts answer 404 on every `/users/{user}` path for every caller a
   `2026_11_05_140200` cleared the TOTP data of every entity account (one `mfa_disabled` event each, `meta.reason:
   entity_second_factor_cancelled`). Staff enrolment is unchanged.
 - **One lockout for every factor (SEC-08, SEC-09).** Wrong passwords, wrong sign-in and registration codes and wrong TOTP /
-  recovery codes all increment the same `users.failed_login_attempts`; at 5 the account is locked 15 minutes (423
-  `account_locked` + `Retry-After`), `locked` is recorded, and USR-02 goes to the user and every System Administrator.
+  recovery codes all increment the same `users.failed_login_attempts`; at 5 the account is locked 15 minutes, `locked`
+  is recorded, and USR-02 goes to the user and every System Administrator. The code and TOTP paths answer the locking
+  attempt with 423 `account_locked` + `Retry-After`; the password path answers it with 422 `credentials.invalid`.
   A locked account cannot verify a code or a TOTP from any session or address. A successful sign-in resets the counter.
   Codes are also limited per account: 5 per 10 minutes and 20 per day (`otp.per_user_per_ten_minutes`,
   `otp.per_user_per_day`; 429 `otp.cooldown` on password sign-in and resend, a silent decoy on `/auth/otp/request`), on
   top of the per-address limiters. A locked account gets no sign-in code (decoy, reason `locked`); verify and resend
-  answer 423; the password path answers 423 (known pre-existing signal G-6, kept for the security matrix).
+  answer 423. The password path never reveals the lock (audit finding F-3, 2026-11-18): while the account is locked,
+  every password attempt, including the right password, answers 422 `credentials.invalid` exactly like an unknown
+  account, records `login_failed` with `meta.locked: true`, and leaves the counter and `locked_until` unchanged. The
+  password is still hashed, so the timing matches. An unknown identifier costs exactly one password hash, like a
+  known one. The owner learns about the lock from the USR-02 e-mail; the System Administrator can unlock earlier.
 - **Accounts without a password** (created from the console, e.g. the Super Admin before the first-password link is
   used) cannot sign in; they set a password through `POST /auth/password/forgot` → the e-mailed reset link.
 - **MFA enrolment (SEC-23).** `POST /auth/mfa/enroll` and `/auth/mfa/confirm` run under `session.timeouts`; a
@@ -2923,11 +2931,18 @@ B-01 … B-07). No field was removed or renamed; no new permission key, package 
 composer lint            # Pint --test
 composer analyse         # Larastan, level max
 composer refactor:check  # Rector --dry-run
+composer complexity      # PHPMD with phpmd.xml (section 17.2 limits); new violations outside phpmd.baseline.xml fail
 composer test            # Pest: Arch, Unit, Feature (PostgreSQL database moashir_testing)
 composer test:parallel   # the same suite in parallel processes (moashir_testing_test_<token> per process)
 composer security        # composer audit
 composer quality         # all of the above, in order (sequential and parallel test runs)
 ```
+
+`phpmd.xml` enforces cyclomatic complexity 10, method length 50, class length 300, 5 parameters and 10 public methods
+(getters and `is`/`has`/`with` methods excluded). Constructors are exempt from the parameter limit: DTO constructors are
+the remedy section 3 prescribes for long parameter lists, and constructor dependencies are a section 4.2 SHOULD.
+`phpmd.baseline.xml` lists the existing offenders; regenerate it only after fixing one with
+`./vendor/bin/phpmd analyze app --ruleset=phpmd.xml --update-baseline`, never to accept new code.
 
 `composer.json` sets `config.process-timeout` to 1200 seconds: the sequential suite takes several minutes and Composer's
 default of 300 seconds stopped `composer quality` before it finished. CI uses the same value.

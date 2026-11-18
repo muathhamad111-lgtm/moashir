@@ -11,6 +11,7 @@
     "lint:oxlint": "oxlint . --fix",
     "lint:eslint": "eslint . --fix --cache",
     "format": "prettier --write --experimental-cli src/ e2e/",
+    "format:check": "prettier --check src e2e",
     "test": "run-s lint test:unit",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",

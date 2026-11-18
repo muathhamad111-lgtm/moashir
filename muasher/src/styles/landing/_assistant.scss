@@ -180,9 +180,9 @@
       color: var(--lp-ink);
       font: 500 0.9rem $lp-font;
 
-      &:focus {
-        outline: none;
+      &:focus-visible {
         border-color: var(--lp-accent);
+        border-radius: 10px;
       }
     }
   }

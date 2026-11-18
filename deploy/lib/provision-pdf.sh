@@ -72,6 +72,27 @@ ensure_chrome_apparmor() {
     info "AppArmor profile ${CHROME_APPARMOR_PROFILE} loaded (user namespaces for the headless shell only; the Chrome sandbox stays on)."
 }
 
+readonly FPM_SANDBOX_DROPIN_DIR="/etc/systemd/system/php8.4-fpm.service.d"
+readonly FPM_SANDBOX_DROPIN="${FPM_SANDBOX_DROPIN_DIR}/moashir-chrome-sandbox.conf"
+
+ensure_fpm_allows_chrome_sandbox() {
+    local copy
+    copy="$(mktemp)"
+    cp "${MOASHIR_KIT}/systemd/php-fpm-chrome-sandbox.conf" "${copy}"
+    install -d -m 0755 -o root -g root "${FPM_SANDBOX_DROPIN_DIR}"
+
+    if ! install_if_changed "${copy}" "${FPM_SANDBOX_DROPIN}" 0644 root:root; then
+        info "php8.4-fpm already allows the Chrome sandbox namespaces."
+        return
+    fi
+
+    systemctl daemon-reload
+    php-fpm8.4 -t || die "php-fpm8.4 -t failed; php8.4-fpm was not restarted. Remove ${FPM_SANDBOX_DROPIN} and run systemctl daemon-reload."
+    # A namespace restriction only changes when the service starts, so this needs a restart (every pool on the server).
+    systemctl restart php8.4-fpm
+    info "php8.4-fpm restarted with ${FPM_SANDBOX_DROPIN} (user, pid and net namespaces allowed for the Chrome sandbox)."
+}
+
 activate_chrome_version() {
     local link="${CHROME_ROOT}/current" next="${CHROME_ROOT}/current.next"
     ln -sfn "$(chrome_version_dir "${CHROME_HEADLESS_VERSION}")" "${next}"
@@ -124,6 +145,7 @@ provision_pdf_renderer() {
     ensure_chrome_headless_shell
     ensure_chrome_libraries
     ensure_chrome_apparmor
+    ensure_fpm_allows_chrome_sandbox
     activate_chrome_version
     prune_chrome_versions
 

@@ -1,0 +1,26 @@
+.criteria-publish-preview {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-md);
+  background: var(--theme-surface-raised);
+}
+
+.criteria-publish-preview__title {
+  margin: 0;
+  font-size: var(--fs-base);
+}
+
+.criteria-publish-preview__note,
+.criteria-publish-preview__summary,
+.criteria-publish-preview__impact {
+  margin: 0;
+}
+
+.criteria-publish-preview__impact {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  color: var(--theme-text-muted);
+}

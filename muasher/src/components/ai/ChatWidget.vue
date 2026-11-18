@@ -2,6 +2,7 @@
 import { nextTick, ref, useId, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAiChat } from '@/composables/useAiChat'
+import { useFocusTrap } from '@/composables/useFocusTrap'
 import ChatMessage from './ChatMessage.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
@@ -11,7 +12,6 @@ const { availability, messages, sending, lastError, localized, send, retry } = u
 const isOpen = ref(false)
 const draft = ref('')
 const panelRef = ref(null)
-const inputRef = ref(null)
 const threadRef = ref(null)
 const launcherRef = ref(null)
 const panelId = useId()
@@ -19,17 +19,8 @@ const titleId = useId()
 
 const SUGGESTION_KEYS = ['whatIs', 'paths', 'criteria', 'register']
 
-const FOCUSABLE =
-  'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-
-function focusables() {
-  return Array.from(panelRef.value?.querySelectorAll(FOCUSABLE) ?? [])
-}
-
-async function open() {
+function open() {
   isOpen.value = true
-  await nextTick()
-  inputRef.value?.focus()
 }
 
 function close() {
@@ -42,25 +33,7 @@ function toggle() {
   else open()
 }
 
-function onKeydown(event) {
-  if (event.key === 'Escape') {
-    event.stopPropagation()
-    close()
-    return
-  }
-  if (event.key !== 'Tab') return
-  const elements = focusables()
-  if (!elements.length) return
-  const first = elements[0]
-  const last = elements[elements.length - 1]
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault()
-    last.focus()
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault()
-    first.focus()
-  }
-}
+const { onKeydown } = useFocusTrap(panelRef, { isActive: isOpen, onEscape: close })
 
 async function scrollToEnd() {
   await nextTick()
@@ -219,8 +192,8 @@ watch(sending, () => scrollToEnd())
         <div class="chat-widget__composer-row">
           <input
             :id="`${panelId}-input`"
-            ref="inputRef"
             v-model="draft"
+            data-autofocus
             type="text"
             class="chat-widget__input"
             :placeholder="$t('ai.placeholder')"
