@@ -10,6 +10,7 @@ use App\Models\Assessments\AssessmentResultSnapshot;
 use App\Models\Assessments\AssessmentScore;
 use App\Models\Audit\Audit;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
 beforeEach(function (): void {
@@ -33,6 +34,44 @@ it('lists the requests assigned to the assessor by tab', function (): void {
     test()->getJson('/api/v1/requests/assigned?filter[tab]=late')->assertUnprocessable();
 
     switchTo(requestFollower())->getJson('/api/v1/requests/assigned')->assertForbidden();
+});
+
+it('shows the scoring progress of each assigned request in the list', function (): void {
+    $version = publishedAccreditedCriteria();
+    $assessor = assessorUser();
+    $new = assignedAccreditedRequest($version, $assessor);
+    $started = reviewedAccreditedRequest($version, $assessor);
+    $policyId = (string) subOf($version, 'M1.1')->id;
+    switchTo($assessor)->putJson("/api/v1/assessments/{$started->id}/review/scores", ['scores' => ['subs' => [$policyId => '7']]])->assertOk();
+    test()->putJson("/api/v1/assessments/{$started->id}/review/scores", ['scores' => ['subs' => [$policyId => '8']]])->assertOk();
+
+    test()->getJson('/api/v1/requests/assigned?filter[tab]=new')->assertOk()
+        ->assertJsonPath('data.0.id', $new->id)
+        ->assertJsonPath('data.0.review_progress', ['scored' => 0, 'required' => 4]);
+    test()->getJson('/api/v1/requests/assigned?filter[tab]=in_progress')->assertOk()
+        ->assertJsonPath('data.0.id', $started->id)
+        ->assertJsonPath('data.0.review_progress', ['scored' => 1, 'required' => 4]);
+});
+
+it('reads the scoring progress of a whole page without a query per request', function (): void {
+    $version = publishedAccreditedCriteria();
+    $assessor = assessorUser();
+    assignedAccreditedRequest($version, $assessor);
+    $countQueries = static function () use ($assessor): int {
+        switchTo($assessor)->getJson('/api/v1/requests/assigned')->assertOk();
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        test()->getJson('/api/v1/requests/assigned')->assertOk();
+        $count = count(DB::getQueryLog());
+        DB::disableQueryLog();
+
+        return $count;
+    };
+    $onePage = $countQueries();
+    assignedAccreditedRequest($version, $assessor);
+    assignedAccreditedRequest($version, $assessor);
+
+    expect($countQueries())->toBe($onePage);
 });
 
 it('opens the review in edit mode for the assignee and read only for the followers', function (): void {

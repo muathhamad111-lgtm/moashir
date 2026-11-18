@@ -34,7 +34,7 @@ final readonly class SummarizeFilteringQueue
 
         $below = $this->queue->filtered($cycle, $filters->withoutStatus())
             ->where('status', AdvancedAssessmentStatus::AwaitingFiltering)
-            ->whereHas('currentResult', static fn (Builder $snapshot): Builder => $snapshot->where('percent', '<', $cycle->disqualification_score->toDecimal()))
+            ->whereHas('currentResult', static fn (Builder $snapshot): Builder => $snapshot->where('percent', '<', $cycle->disqualification_score->lowestDisplayedAtLeast()->toDecimal()))
             ->count();
 
         return ['disqualification_score' => $cycle->disqualification_score->toDisplay(), 'counts' => $byStatus, 'below_threshold' => $below];

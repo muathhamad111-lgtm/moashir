@@ -15,16 +15,6 @@ export const SCALE_KINDS = {
   RELATIVE: 'relative',
 }
 
-export const SCALE_MAX = {
-  [SCALE_KINDS.OF_10]: 10,
-  [SCALE_KINDS.RELATIVE]: 100,
-}
-
-export const SCALE_STEP = {
-  [SCALE_KINDS.OF_10]: 1,
-  [SCALE_KINDS.RELATIVE]: 5,
-}
-
 export const SCORE_LEVELS = {
   SUB: 'sub',
   POINT: 'point',

@@ -35,10 +35,6 @@ const ROLE_ITEMS = {
       link: '/admin/requests?overdue=true',
     },
   ],
-  assessor: [
-    { key: 'start_reviews', count: 1, severity: 'warning', link: '/admin/requests/assigned' },
-    { key: 'continue_reviews', count: 2, severity: 'info', link: '/admin/requests/assigned' },
-  ],
   content_officer: [
     {
       key: 'publish_content_changes',

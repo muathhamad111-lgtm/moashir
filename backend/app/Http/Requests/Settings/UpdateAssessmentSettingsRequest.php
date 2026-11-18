@@ -8,6 +8,7 @@ use App\Data\Assessments\UploadLimits;
 use App\Data\Settings\AdvancedSettingsUpdate;
 use App\Data\Settings\AssessmentSettingsUpdate;
 use App\Enums\Award\CommitteeEntityVisibility;
+use App\Enums\Criteria\ScaleKind;
 use App\Enums\Files\EvidenceFileType;
 use App\Services\Settings\AssessmentSettingsReader;
 use App\Support\ValueObjects\Percent;
@@ -34,6 +35,7 @@ final class UpdateAssessmentSettingsRequest extends FormRequest
             'advanced_disqualification_score' => ['sometimes', 'required', 'numeric', 'between:0,100', 'regex:/^\d{1,3}(\.\d{1,2})?$/'],
             'advanced_initial_review_sla_days' => ['sometimes', 'required', 'integer', 'between:'.$sla['min'].','.$sla['max']],
             'committee_entity_data_visibility' => ['sometimes', 'required', Rule::enum(CommitteeEntityVisibility::class)],
+            'scale_kind' => ['sometimes', 'required', Rule::enum(ScaleKind::class)],
             'reason' => ['nullable', 'string', 'min:10', 'max:1000'],
         ];
     }
@@ -53,6 +55,7 @@ final class UpdateAssessmentSettingsRequest extends FormRequest
             ),
             $this->enum('committee_entity_data_visibility', CommitteeEntityVisibility::class),
             $this->filled('general_upload_max_file_mb') ? $this->integer('general_upload_max_file_mb') : null,
+            $this->enum('scale_kind', ScaleKind::class),
         );
     }
 

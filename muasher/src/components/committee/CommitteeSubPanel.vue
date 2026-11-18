@@ -78,14 +78,11 @@ function text(content) {
     />
     <div class="review-sub__scores">
       <div v-for="unit in units" :key="scoreFieldName(unit)" class="review-sub__point">
-        <p v-if="unit.level === SCORE_LEVELS.POINT" class="review-sub__point-text">
-          {{ text(unit.label) }}
-        </p>
         <RawScoreField
           :name="scoreFieldName(unit)"
           :label="
             unit.level === SCORE_LEVELS.POINT
-              ? t('review.pointScoreLabel', { name: text(unit.label) })
+              ? text(unit.label)
               : t('review.directScoreLabel', { name: text(unit.label) })
           "
           :maximum="maximum"

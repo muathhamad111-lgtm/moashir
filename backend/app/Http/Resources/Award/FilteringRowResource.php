@@ -53,6 +53,6 @@ final class FilteringRowResource extends JsonResource
             return null;
         }
 
-        return $snapshot->percent->tenThousandths >= $cycle->disqualification_score->tenThousandths;
+        return ! $snapshot->percent->isDisplayedBelow($cycle->disqualification_score);
     }
 }

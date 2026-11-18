@@ -5,6 +5,19 @@ const TWO_DECIMALS = new Intl.NumberFormat('en-u-nu-latn', {
   maximumFractionDigits: 2,
 })
 
+const COMPACT_DECIMALS = new Intl.NumberFormat('en-u-nu-latn', {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+  useGrouping: false,
+})
+
+// A score or scale bound without padding zeros: «10», «7.5», «8.25».
+export function compactDecimal(value) {
+  if (value === null || value === undefined || value === '') return ''
+  const numeric = Number(value)
+  return Number.isNaN(numeric) ? String(value) : COMPACT_DECIMALS.format(numeric)
+}
+
 export function twoDecimals(value) {
   if (value === null || value === undefined || value === '') return ''
   const numeric = Number(value)

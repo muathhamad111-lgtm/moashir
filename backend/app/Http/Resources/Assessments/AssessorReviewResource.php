@@ -40,6 +40,7 @@ final class AssessorReviewResource extends JsonResource
             'evidence' => EvidencePresenter::list($review->evidence->evidence, $subs),
             'feedback' => (object) new FeedbackView($assessment, $review->feedback, $subs)->bySubId(),
             'summary' => AssessmentSummaryPresenter::present($review->summary),
+            'criteria_update' => $review->criteriaUpdate === null ? null : new CriteriaMoveSummaryResource($review->criteriaUpdate)->toArray($request),
             'completion_request' => CompletionRequestPresenter::present($review->completionRequest, $subs),
             'context' => array_map(static fn (Assessment $other): array => [
                 'id' => $other->id,

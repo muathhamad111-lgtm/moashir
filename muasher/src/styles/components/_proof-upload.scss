@@ -109,7 +109,7 @@
 }
 
 .proof-chip__bar {
+  @include pill-progress;
   flex: 1;
   block-size: var(--size-meter);
-  accent-color: var(--theme-accent);
 }

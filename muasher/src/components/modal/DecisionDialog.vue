@@ -19,6 +19,7 @@ const props = defineProps({
   },
   icon: { type: String, default: '' },
   busy: { type: Boolean, default: false },
+  size: { type: String, default: 'sm' },
 })
 
 const emit = defineEmits(['update:modelValue', 'confirm'])
@@ -36,7 +37,7 @@ function dismiss() {
 <template>
   <BaseModal
     :model-value="modelValue"
-    size="sm"
+    :size="size"
     :role="MODAL_ROLES.ALERT_DIALOG"
     :title="title"
     :icon="icon || DECISION_ICONS[tone]"

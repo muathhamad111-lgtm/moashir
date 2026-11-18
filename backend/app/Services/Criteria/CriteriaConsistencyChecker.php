@@ -70,8 +70,12 @@ final class CriteriaConsistencyChecker
 
         $allocated = ActiveWeights::total($sub->guidingPoints);
 
-        return $allocated->isGreaterThan($sub->weight)
-            ? new ConsistencyProblem(CriteriaNodeType::Sub, $sub->id, $sub->code, ConsistencyProblemCode::PointsExceedSub, $sub->weight, $allocated, $sub->name)
-            : null;
+        if ($allocated->equals($sub->weight)) {
+            return null;
+        }
+
+        $code = $allocated->isGreaterThan($sub->weight) ? ConsistencyProblemCode::PointsExceedSub : ConsistencyProblemCode::PointsBelowSub;
+
+        return new ConsistencyProblem(CriteriaNodeType::Sub, $sub->id, $sub->code, $code, $sub->weight, $allocated, $sub->name);
     }
 }

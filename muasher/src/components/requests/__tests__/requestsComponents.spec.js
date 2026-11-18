@@ -33,6 +33,30 @@ describe('RequestActionsCard', () => {
     ).toEqual(['Download all evidence'])
   })
 
+  it('names the review button for the assignee by the stage, «Open the review» for others', () => {
+    const history = (assessorId) => [{ id: 1, status: 'active', assessor: { id: assessorId } }]
+    const reviewButton = (status, assessorId, roles) =>
+      labels(
+        render(
+          RequestActionsCard,
+          {
+            detail: {
+              id: 9107,
+              path: 'accredited',
+              status,
+              assignmentHistory: history(assessorId),
+            },
+          },
+          { roles },
+        ),
+      )[0]
+    expect(reviewButton('assigned', 7001, ['assessor'])).toBe('Start the assessment')
+    expect(reviewButton('under-review', 7001, ['assessor'])).toBe('Continue the assessment')
+    expect(reviewButton('needs-completion', 7001, ['assessor'])).toBe('Continue the assessment')
+    expect(reviewButton('completed', 7001, ['assessor'])).toBe('View the assessment')
+    expect(reviewButton('under-review', 10, ['request_follower'])).toBe('Open the review')
+  })
+
   it('shows reopen and status change to the Super Admin only', () => {
     const detail = {
       id: 9102,
@@ -144,12 +168,25 @@ describe('ReviewNotices', () => {
     completionRequest: null,
   })
 
+  it('puts the start button inside the not-started notice for the assignee only', async () => {
+    const assignee = render(ReviewNotices, { review: review('assigned'), canStart: true })
+    const start = assignee.find('[data-testid="review-start"]')
+    expect(start.text()).toBe('Start the assessment')
+    await start.trigger('click')
+    expect(assignee.emitted('start')).toHaveLength(1)
+    expect(
+      render(ReviewNotices, { review: review('assigned') })
+        .find('[data-testid="review-start"]')
+        .exists(),
+    ).toBe(false)
+  })
+
   it('explains the read-only view, the start and the wait for the entity', () => {
     expect(render(ReviewNotices, { review: review('under-review', 'read_only') }).text()).toContain(
       'Read-only view',
     )
     expect(render(ReviewNotices, { review: review('assigned') }).text()).toContain(
-      'The review has not started',
+      'The assessment has not started',
     )
     expect(render(ReviewNotices, { review: review('needs-completion') }).text()).toContain(
       'Waiting for the entity',

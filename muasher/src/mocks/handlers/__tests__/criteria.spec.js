@@ -149,6 +149,46 @@ describe('criteria mock — weight guards', () => {
     expect(detail.body.data.subs.map((sub) => sub.weight)).toEqual(['333.34', '333.33', '333.33'])
   })
 
+  it('saves several sub-criterion weights in one atomic request', async () => {
+    await openDraft()
+    const [main] = await draftMains()
+    const subs = (await call('GET', `/criteria/mains/${main.id}`)).body.data.subs
+    const over = await call('PUT', `/criteria/mains/${main.id}/subs/weights`, {
+      weights: [{ id: subs[2].id, weight: '400.00' }],
+    })
+    expect(over.status).toBe(422)
+    expect(over.body).toMatchObject({
+      code: 'criteria.weights_exceed_parent',
+      meta: { total: '1150.00', capacity: '1000.00' },
+    })
+    const saved = await call('PUT', `/criteria/mains/${main.id}/subs/weights`, {
+      weights: [
+        { id: subs[0].id, weight: '450.00' },
+        { id: subs[2].id, weight: '200.00' },
+      ],
+    })
+    expect(saved.status).toBe(200)
+    expect(saved.body.data.map((sub) => sub.weight)).toEqual(['450.00', '350.00', '200.00'])
+  })
+
+  it('saves guiding-point weights in one request and refuses them under equal distribution', async () => {
+    await openDraft()
+    const [main] = await draftMains()
+    const subs = (await call('GET', `/criteria/mains/${main.id}`)).body.data.subs
+    const points = (await call('GET', `/criteria/subs/${subs[1].id}`)).body.data.points
+    const saved = await call('PUT', `/criteria/subs/${subs[1].id}/points/weights`, {
+      weights: [
+        { id: points[0].id, weight: '150.00' },
+        { id: points[1].id, weight: '200.00' },
+      ],
+    })
+    expect(saved.body.data.map((point) => point.weight)).toEqual(['150.00', '200.00'])
+    const foreign = await call('PUT', `/criteria/subs/${subs[0].id}/points/weights`, {
+      weights: [{ id: points[0].id, weight: '100.00' }],
+    })
+    expect(foreign.body.code).toBe('criteria.weights_distributed_equally')
+  })
+
   it('needs a confirmation with the point count before switching to direct evaluation', async () => {
     await openDraft()
     const [main] = await draftMains()
@@ -195,6 +235,71 @@ describe('criteria mock — publish with scope and text corrections', () => {
       problem: 'weights_mismatch',
       expectedWeight: '1000.00',
       actualWeight: '750.00',
+    })
+  })
+
+  it('blocks a publish while guiding points use less than their sub-criterion weight', async () => {
+    const draft = await openDraft()
+    const [main] = await draftMains()
+    const sub = (await call('GET', `/criteria/mains/${main.id}`)).body.data.subs[1]
+    const points = (await call('GET', `/criteria/subs/${sub.id}`)).body.data.points
+    await call('PATCH', `/criteria/points/${points[0].id}/active`, { active: false })
+    as(SYSTEM_ADMIN)
+    const rejected = await call('POST', `/criteria/versions/${draft.id}/publish`, {
+      confirm: true,
+      scope: 'all',
+    })
+    expect(rejected.status).toBe(422)
+    expect(rejected.body.meta.problems[0]).toMatchObject({
+      nodeType: 'sub',
+      nodeId: sub.id,
+      problem: 'points_below_sub',
+    })
+  })
+
+  it('previews the changes of a draft and the open requests each scope moves', async () => {
+    const draft = await openDraft()
+    const [main] = await draftMains()
+    const renamed = await call('PUT', `/criteria/mains/${main.id}`, {
+      name: { ar: 'القيادة المؤسسية', en: 'Institutional leadership' },
+      weight: '1000.00',
+    })
+    expect(renamed.status).toBe(200)
+    const { status, body } = await call('GET', `/criteria/versions/${draft.id}/changes`)
+    expect(status).toBe(200)
+    expect(body.data).toMatchObject({
+      replaces: { id: 1, versionNumber: 1 },
+      changeCount: 1,
+      scoreAffectingCount: 0,
+    })
+    expect(body.data.changes[0]).toMatchObject({
+      nodeType: 'main',
+      code: main.code,
+      change: 'modified',
+      fields: ['name'],
+      scoreAffecting: false,
+      label: { en: 'Institutional leadership' },
+    })
+    expect(body.data.reboundOpenAssessments.map((entry) => entry.scope)).toEqual([
+      'all',
+      'new_only',
+      'reset_open',
+    ])
+    const onPublished = await call('GET', '/criteria/versions/1/changes')
+    expect(onPublished.status).toBe(409)
+  })
+
+  it('records a structural publication in the edit history, newest first', async () => {
+    const draft = await openDraft()
+    as(SYSTEM_ADMIN)
+    await call('POST', `/criteria/versions/${draft.id}/publish`, { confirm: true, scope: 'all' })
+    const { status, body } = await call('GET', '/criteria/edit-events')
+    expect(status).toBe(200)
+    expect(body.data[0]).toMatchObject({
+      kind: 'structural',
+      scope: 'all',
+      fromVersion: { id: 1, versionNumber: 1 },
+      toVersion: { id: draft.id },
     })
   })
 

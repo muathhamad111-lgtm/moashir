@@ -289,6 +289,8 @@ describe('assessor review, overrides, settings and prices', () => {
       advancedMinEntityAgeYears: 3,
       advancedDisqualificationScore: null,
       committeeEntityDataVisibility: null,
+      scaleKind: null,
+      publishedScaleKind: null,
     })
     apiClient.get.mockResolvedValue(
       answer({

@@ -6,10 +6,12 @@ namespace App\Services\Settings;
 
 use App\Data\Settings\AssessmentSettingsView;
 use App\Enums\Assessments\AssessmentPath;
+use App\Models\Criteria\CriteriaVersion;
 use App\Services\Assessments\AccreditedReviewSla;
 use App\Services\Assessments\UploadLimitsReader;
 use App\Services\Award\CommitteeVisibilityReader;
 use App\Services\Award\CycleDefaultsReader;
+use App\Services\Criteria\CriteriaSettings;
 use App\Services\Files\FileSettings;
 use App\Support\ScalarValue;
 use Illuminate\Contracts\Config\Repository;
@@ -23,6 +25,7 @@ final readonly class AssessmentSettingsReader
         private CommitteeVisibilityReader $committeeVisibility,
         private FileSettings $files,
         private Repository $config,
+        private CriteriaSettings $criteria,
     ) {}
 
     public function read(): AssessmentSettingsView
@@ -34,6 +37,8 @@ final readonly class AssessmentSettingsReader
             $this->files->maxUploadMegabytes(),
             $this->cycleDefaults->read(),
             $this->committeeVisibility->read(),
+            $this->criteria->scaleKind(),
+            CriteriaVersion::query()->published()->first()?->scale_kind,
         );
     }
 

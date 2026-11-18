@@ -109,6 +109,7 @@ export const ROUTE_NAMES = {
   ADMIN_CRITERIA: 'admin.criteria',
   ADMIN_CRITERIA_MAIN: 'admin.criteria.main',
   ADMIN_CRITERIA_SUB: 'admin.criteria.sub',
+  ADMIN_CRITERIA_HISTORY: 'admin.criteria.history',
   ADMIN_USERS: 'admin.users',
   ADMIN_PERMISSIONS: 'admin.permissions',
   ADMIN_BRANDING: 'admin.branding',

@@ -153,8 +153,13 @@ export function toAssignedRow(raw = {}) {
     startedAt: raw.startedAt ?? null,
     completionDeadline: raw.completionDeadline ?? null,
     awardCycle: toCycleSummary(raw.awardCycle),
+    reviewProgress: toReviewProgress(raw.reviewProgress),
     ...toClock(raw),
   }
+}
+
+function toReviewProgress(raw) {
+  return raw ? { scored: raw.scored ?? 0, required: raw.required ?? 0 } : null
 }
 
 export function toQueuePathCount(raw = {}) {

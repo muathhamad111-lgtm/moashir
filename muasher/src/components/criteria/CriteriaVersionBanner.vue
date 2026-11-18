@@ -7,6 +7,7 @@ import { CRITERIA_VERSION_STATUSES as STATUS } from '@/constants/criteria'
 import { SCALE_KINDS } from '@/constants/assessment'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import { useCriteria } from '@/composables/useCriteria'
 
 const props = defineProps({
   version: { type: Object, required: true },
@@ -14,6 +15,7 @@ const props = defineProps({
 })
 
 const { t, locale } = useI18n()
+const { localized } = useCriteria()
 
 const VARIANTS = {
   [STATUS.DRAFT]: { tone: 'info', icon: 'pen' },
@@ -28,9 +30,11 @@ const SCALE_LABELS = {
 
 const variant = computed(() => VARIANTS[props.version.status] ?? VARIANTS[STATUS.ARCHIVED])
 const number = computed(() => props.version.versionNumber)
-const title = computed(() =>
-  t(`criteria.version.${props.version.status}Title`, { number: number.value }),
-)
+const title = computed(() => {
+  const base = t(`criteria.version.${props.version.status}Title`, { number: number.value })
+  const label = localized(props.version.label)
+  return label ? t('criteria.version.titleWithLabel', { title: base, label }) : base
+})
 const message = computed(() => t(`criteria.version.${props.version.status}Message`))
 const showDraftNote = computed(
   () => Boolean(props.openDraft) && props.openDraft.id !== props.version.id,

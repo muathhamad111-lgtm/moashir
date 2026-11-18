@@ -25,5 +25,6 @@ final readonly class AssessorReview
         public ?AssessmentCompletionRequest $completionRequest,
         public array $context,
         public ?AssessmentSummary $summary = null,
+        public ?CriteriaMoveSummary $criteriaUpdate = null,
     ) {}
 }

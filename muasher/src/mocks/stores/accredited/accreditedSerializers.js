@@ -4,6 +4,7 @@ import {
   assessmentResource,
   resultResource,
   scoresResource,
+  scoringProgressOf,
   subRows,
 } from '../assessments/selfSerializers'
 import { criteriaUpdateOf } from '../assessments/criteriaMoves'
@@ -207,6 +208,7 @@ export function assignedRow(record, viewer) {
     startedAt: assignment?.startedAt ?? null,
     completionDeadline: openCompletionOf(record)?.deadlineAt ?? null,
     awardCycle: cycleSummaryOf(record),
+    reviewProgress: scoringProgressOf(record),
     ...clockOf(record),
   }
 }

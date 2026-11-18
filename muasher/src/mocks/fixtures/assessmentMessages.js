@@ -34,8 +34,8 @@ export const assessmentMessages = {
     en: 'Score every item before submitting the self assessment.',
   },
   'scores.item_missing': {
-    ar: 'البند :code لم يُقيَّم بعد.',
-    en: 'The item :code has no score yet.',
+    ar: 'هذا البند لم يُقيَّم بعد.',
+    en: 'This item has no score yet.',
   },
   'score.use_points': {
     ar: 'يُقيَّم هذا المعيار الفرعي من خلال نقاطه الاسترشادية.',

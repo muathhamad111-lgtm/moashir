@@ -45,6 +45,7 @@ export const CONSISTENCY_PROBLEMS = {
   WEIGHTS_MISMATCH: 'weights_mismatch',
   NO_ACTIVE_POINT: 'no_active_point',
   POINTS_EXCEED_SUB: 'points_exceed_sub',
+  POINTS_BELOW_SUB: 'points_below_sub',
 }
 
 export const CRITERIA_ERROR_CODES = {

@@ -175,7 +175,7 @@ test.describe('notification centre', () => {
     await open(page, '/notifications', '.notification-center-item')
     await expect(page.locator('[role="tablist"] [role="tab"]')).toHaveCount(2)
     expect(await page.locator('.notification-day-group').count()).toBeGreaterThanOrEqual(2)
-    await expect(page.locator('.notification-center-item')).toHaveCount(6)
+    await expect(page.locator('.notification-center-item')).toHaveCount(8)
     await page.locator('[role="tab"]').nth(1).click()
     await expect(page).toHaveURL(/tab=unread/)
     await expect(page.locator('.notification-center-item')).toHaveCount(2)

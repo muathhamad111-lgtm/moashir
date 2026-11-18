@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Assessments;
 
-use App\Models\Assessments\Assessment;
+use App\Data\Assessments\AssignedRequest;
 use App\Models\Assessments\AssessmentAssignment;
 use App\Support\Assessments\PathPresenter;
 use App\Support\Assessments\ReviewClockPresenter;
@@ -15,7 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @property-read Assessment $resource
+ * @property-read AssignedRequest $resource
  */
 final class AssignedRequestResource extends JsonResource
 {
@@ -24,7 +24,7 @@ final class AssignedRequestResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $assessment = $this->resource;
+        $assessment = $this->resource->assessment;
         $assignment = $assessment->assignments->last();
 
         return [
@@ -37,6 +37,7 @@ final class AssignedRequestResource extends JsonResource
             'started_at' => $assignment instanceof AssessmentAssignment ? $assignment->started_at?->toIso8601String() : null,
             'completion_deadline' => $assessment->openCompletionRequest?->deadline_at->toIso8601String(),
             'award_cycle' => CyclePresenter::summary($assessment->awardCycle),
+            'review_progress' => $this->resource->progress->toArray(),
             ...ReviewClockPresenter::of($assessment),
         ];
     }

@@ -31,6 +31,15 @@
   color: var(--theme-heading);
 }
 
+.review-page__number {
+  margin-inline-start: var(--space-2);
+  font-family: var(--font-latin);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-medium);
+  color: var(--theme-text-muted);
+  white-space: nowrap;
+}
+
 .request-detail__entity {
   @include flex(row, center, flex-start, var(--space-2));
   flex-wrap: wrap;
@@ -67,6 +76,11 @@
   @include flex(row, flex-end, space-between, var(--space-3));
   flex-wrap: wrap;
   inline-size: 100%;
+}
+
+.review-page__actions {
+  @include flex(row, center, flex-end, var(--space-2));
+  flex-wrap: wrap;
 }
 
 .request-facts {

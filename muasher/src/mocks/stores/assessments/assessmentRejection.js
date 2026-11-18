@@ -39,10 +39,7 @@ export const assessmentReject = {
   scoresIncomplete: (missing) =>
     new MockRejection(422, 'scores.incomplete', {
       fields: Object.fromEntries(
-        missing.map((unit) => [
-          `scores.${unit.level}s.${unit.id}`,
-          single('scores.item_missing', { code: unit.code }),
-        ]),
+        missing.map((unit) => [`scores.${unit.level}s.${unit.id}`, single('scores.item_missing')]),
       ),
       meta: { missing },
     }),

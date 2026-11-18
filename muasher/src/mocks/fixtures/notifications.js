@@ -383,6 +383,10 @@ export const notificationsFixture = [
 
 export const ENTITY_REPLY_THREAD_ID = '7c2f4e1a-52b0-4c8e-9a31-0000000000a1'
 
+// The inbox of the sample organization (Namaa, 6001), one notification per real event of its
+// journey. Recent events are relative to now so they stay recent (the award return mirrors the
+// award fixture's day offsets); older ones carry the dates of the matching payment, request or
+// certificate fixtures.
 export const entityNotificationsFixture = [
   {
     code: 'CNT-02',
@@ -399,23 +403,82 @@ export const entityNotificationsFixture = [
     link: `/messages/${ENTITY_REPLY_THREAD_ID}`,
   },
   {
-    code: 'ACC-01',
-    minutesAgo: 2 * 24 * 60,
+    code: 'ADV-25',
+    minutesAgo: 3 * 24 * 60,
     isRead: false,
+    path: 'advanced',
+    title: {
+      ar: 'أُعيد طلب الجائزة ADV-2026-000001 لاستكماله',
+      en: 'Award request ADV-2026-000001 was returned for completion',
+    },
+    body: {
+      ar: 'أكمل البنود المطلوبة وأعد إرسال الطلب قبل انتهاء مهلة الاستكمال.',
+      en: 'Complete the requested items and send the request again before the completion deadline.',
+    },
+    link: '/assessment/advanced',
+  },
+  {
+    code: 'ADV-04',
+    minutesAgo: 12 * 24 * 60,
+    isRead: true,
+    path: 'advanced',
+    title: {
+      ar: 'أُرسل طلب الجائزة ADV-2026-000001',
+      en: 'Award request ADV-2026-000001 was sent',
+    },
+    body: {
+      ar: 'استلمنا طلبك في دورة الجائزة، وستصلك المستجدات هنا.',
+      en: 'We received your request in the award cycle; updates will reach you here.',
+    },
+    link: '/paths/award',
+  },
+  {
+    code: 'PAY-06',
+    createdAt: '2026-10-04T10:20:00Z',
+    isRead: true,
+    title: {
+      ar: 'صدر إيصال الدفع لحقيبة التميز السريع',
+      en: 'The payment receipt of the Quick Excellence Kit was issued',
+    },
+    body: {
+      ar: 'إيصال الدفع متاح للتنزيل من صفحة الدفع والإيصالات.',
+      en: 'The payment receipt is available to download from the payments and receipts page.',
+    },
+    link: '/payments',
+  },
+  {
+    code: 'ACC-09',
+    createdAt: '2026-09-05T08:00:00Z',
+    isRead: true,
     path: 'accredited',
     title: {
-      ar: 'فُتح نموذج التقييم المعتمد لرفع الشواهد',
-      en: 'The accredited assessment form is open for evidence',
+      ar: 'صدرت شهادة المستوى الفضي CRT-2026-000003',
+      en: 'The silver level certificate CRT-2026-000003 was issued',
+    },
+    body: {
+      ar: 'شهادة جهتك متاحة للعرض والتنزيل من صفحة شهاداتي.',
+      en: 'Your organization certificate is available to view and download from My certificates.',
+    },
+    link: '/certificates',
+  },
+  {
+    code: 'ACC-01',
+    createdAt: '2026-09-03T07:26:00Z',
+    isRead: true,
+    path: 'accredited',
+    title: {
+      ar: 'فُتح نموذج التقييم المعتمد ACC-2026-000004 لرفع الشواهد',
+      en: 'The accredited assessment form ACC-2026-000004 is open for evidence',
     },
     body: {
       ar: 'يمكنك الآن رفع شواهد كل معيار فرعي، ثم إرسال الطلب إلى المقيّم.',
       en: 'You can now upload the evidence of every sub-criterion and send the request to the assessor.',
     },
-    link: '/paths/accredited',
+    link: '/paths/accredited/9101',
   },
   {
     code: 'PAY-06',
-    minutesAgo: 2 * 24 * 60 + 15,
+    createdAt: '2026-09-03T07:22:00Z',
     isRead: true,
     title: {
       ar: 'صدر إيصال الدفع للتقييم المعتمد',
@@ -428,43 +491,18 @@ export const entityNotificationsFixture = [
     link: '/payments',
   },
   {
-    code: 'PAY-07',
-    minutesAgo: 3 * 24 * 60,
+    code: 'ACC-08',
+    createdAt: '2026-09-02T13:00:00Z',
     isRead: true,
+    path: 'accredited',
     title: {
-      ar: 'أُلغي طلب دفع تلقائياً بعد انتهاء صلاحيته',
-      en: 'A payment order was cancelled automatically after it expired',
+      ar: 'اكتمل التقييم المعتمد ACC-2026-000003',
+      en: 'Accredited assessment ACC-2026-000003 is complete',
     },
     body: {
-      ar: 'انتهت صلاحية طلب الدفع قبل إتمامه. يمكنك إنشاء طلب جديد متى شئت.',
-      en: 'The payment order expired before it was completed. You can create a new order at any time.',
+      ar: 'نتيجة جهتك متاحة الآن مع ملاحظات المقيّم لكل معيار.',
+      en: "Your organization's result is now available with the assessor's notes on every criterion.",
     },
-    link: '/payments',
-  },
-  {
-    code: 'SELF-04',
-    minutesAgo: 9 * 24 * 60,
-    isRead: true,
-    path: 'self',
-    title: {
-      ar: 'صدرت نتيجة التقييم الذاتي لجهتك',
-      en: 'The self-assessment result of your organization is available',
-    },
-    body: {
-      ar: 'اطّلع على نتيجة كل معيار في صفحة النتيجة.',
-      en: 'Review the detailed result of every criterion on the result page.',
-    },
-    link: '/paths/self',
-  },
-  {
-    code: 'REG-03',
-    minutesAgo: 14 * 24 * 60,
-    isRead: true,
-    title: { ar: 'أكمل بيانات ملف الجهة', en: 'Complete your organization profile' },
-    body: {
-      ar: 'أكمل بيانات الجهة المطلوبة قبل البدء في مسارات التقييم.',
-      en: 'Please complete the required organization data before starting the assessment paths.',
-    },
-    link: '/entity/profile',
+    link: '/paths/accredited/9104',
   },
 ]

@@ -7,8 +7,10 @@ import BaseTextarea from '@/components/form/BaseTextarea.vue'
 import CriteriaScopeChoice from './CriteriaScopeChoice.vue'
 import CriteriaProblemList from './CriteriaProblemList.vue'
 import CriteriaCycleBindings from './CriteriaCycleBindings.vue'
+import CriteriaPublishPreview from './CriteriaPublishPreview.vue'
 import { usePublishCriteria } from '@/composables/usePublishCriteria'
 import { useCycleBindings } from '@/composables/useCycleBindings'
+import { usePublicationPreview } from '@/composables/usePublicationPreview'
 import { useAuthStore } from '@/stores/auth'
 import { logger } from '@/utils/logger'
 import { CRITERIA_REASON_MIN_LENGTH } from '@/constants/criteria'
@@ -24,6 +26,7 @@ const { t } = useI18n()
 const auth = useAuthStore()
 const { submitting, problems, fieldErrors, errorMessage, publish, reset } = usePublishCriteria()
 const cycles = useCycleBindings()
+const preview = usePublicationPreview()
 
 const scope = ref(null)
 const reason = ref('')
@@ -43,8 +46,13 @@ watch(
     localErrors.value = {}
     reset()
     cycles.load(props.version.id)
+    loadPreview()
   },
 )
+
+function loadPreview() {
+  if (replacesPublished.value) preview.load(props.version.id)
+}
 
 function validate() {
   const errors = {}
@@ -112,6 +120,15 @@ function close() {
         v-model="scope"
         :error="scopeError"
         :disabled="submitting"
+      />
+
+      <CriteriaPublishPreview
+        v-if="replacesPublished"
+        :preview="preview.preview.value"
+        :loading="preview.loading.value"
+        :failed="preview.failed.value"
+        :scope="scope"
+        @retry="loadPreview"
       />
 
       <BaseTextarea

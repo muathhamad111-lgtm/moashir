@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   compareWeights,
   equalShares,
+  formatDisplayWeight,
   formatWeight,
   fromHundredths,
   isAcceptableWeight,
@@ -73,5 +74,12 @@ describe('weight — two-decimal strings without float drift', () => {
     expect(formatWeight('1000', 'en')).toBe('1,000.00')
     expect(formatWeight('133.34', 'ar')).toBe('133.34')
     expect(formatWeight('133.34', 'ar')).not.toMatch(/[\u0660-\u0669]/)
+  })
+
+  it('shows whole weights without decimals for display and keeps real fractions', () => {
+    expect(formatDisplayWeight('1000.00', 'ar')).toBe('1,000')
+    expect(formatDisplayWeight('133.34', 'en')).toBe('133.34')
+    expect(formatDisplayWeight('250.50', 'ar')).toBe('250.5')
+    expect(formatDisplayWeight('700.00', 'ar')).not.toMatch(/[\u0660-\u0669]/)
   })
 })

@@ -250,6 +250,44 @@ describe('accredited mock — requests queue and assignment', () => {
   })
 })
 
+describe('accredited mock — assessor list and home', () => {
+  it('gives each assigned row the same scoring progress as its review screen', async () => {
+    seedMockSession(SULTAN)
+    const rows = (await call('GET', '/requests/assigned?filter[tab]=in_progress')).body.data
+    const review = await call('GET', `/assessments/${rows[0].id}/review`)
+    expect(rows[0].review_progress).toEqual(review.body.data.progress)
+    expect(rows[0].review_progress.required).toBeGreaterThan(0)
+  })
+
+  it('computes the assessor home from the same assigned requests as the list', async () => {
+    seedMockSession(SULTAN)
+    const tabs = ['new', 'in_progress']
+    const [fresh, started] = await Promise.all(
+      tabs.map(async (tab) => {
+        const paths = ['accredited', 'advanced']
+        const pages = await Promise.all(
+          paths.map((path) =>
+            call('GET', `/requests/assigned?filter[tab]=${tab}&filter[path]=${path}`),
+          ),
+        )
+        return pages.flatMap((page) => page.body.data)
+      }),
+    )
+    const board = (await call('GET', '/dashboard/summary?board=assessor')).body.data
+    const card = (key) => board.cards.find((item) => item.key === key).value
+    expect(card('to_start')).toBe(fresh.length)
+    const reviewing = started.filter((row) => row.status !== 'needs_completion')
+    expect(card('in_progress')).toBe(reviewing.length)
+    const dueSoon = board.widgets.find((widget) => widget.key === 'due_soon').data
+    expect(dueSoon.map((row) => row.id).sort()).toEqual(
+      [...fresh, ...started].map((row) => row.id).sort(),
+    )
+    const items = Object.fromEntries(board.action_center.map((item) => [item.key, item.count]))
+    expect(items.start_reviews).toBe(card('to_start'))
+    expect(items.continue_reviews).toBe(card('in_progress'))
+  })
+})
+
 describe('accredited mock — assessor review', () => {
   it('lists the assigned tabs and gives the edit mode to the assignee only', async () => {
     seedMockSession(SULTAN)
@@ -510,6 +548,8 @@ describe('accredited mock — Super Admin overrides and settings', () => {
       'evidence_max_files_per_sub',
       'evidence_type_catalog',
       'general_upload_max_file_mb',
+      'published_version',
+      'scale_kind',
       'upload_max_file_mb',
     ])
     expect(body.data).toMatchObject({
@@ -529,6 +569,12 @@ describe('accredited mock — Super Admin overrides and settings', () => {
         })
       ).status,
     ).toBe(422)
+    expect((await call('PUT', '/settings/assessment', { scale_kind: 'out_of_5' })).status).toBe(422)
+    const scale = await call('PUT', '/settings/assessment', { scale_kind: 'relative' })
+    expect(scale.body.data).toMatchObject({
+      scale_kind: 'relative',
+      published_version: { scale_kind: 'of_10' },
+    })
     const advanced = await call('PUT', '/settings/assessment', {
       advanced_disqualification_score: '65.5',
       advanced_min_entity_age_years: 5,

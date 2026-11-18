@@ -28,7 +28,7 @@ describe('RawScoreField', () => {
     const wrapper = mountField({ value: '7.50', saved: { rawValue: '7.50', percent: '75.00' } })
     await flushPromises()
     expect(wrapper.find('label').text()).toBe('Score of M1.1.1')
-    expect(wrapper.find('.field__hint').text()).toBe('Saved 7.50 of 10.00, reflected as 75.00%')
+    expect(wrapper.find('.field__hint').text()).toBe('Saved 7.5 of 10, reflected as 75.00%')
     expect(wrapper.find('.raw-score--saved').exists()).toBe(true)
   })
 
@@ -36,7 +36,7 @@ describe('RawScoreField', () => {
     const wrapper = mountField({ value: '7.50', saved: { rawValue: '7.50', percent: '75.00' } })
     await wrapper.find('input').setValue('9')
     await flushPromises()
-    expect(wrapper.find('.field__hint').text()).toBe('Not saved yet, out of 10.00')
+    expect(wrapper.find('.field__hint').text()).toBe('Not saved yet, out of 10')
     expect(wrapper.text()).not.toContain('90')
   })
 
@@ -46,7 +46,7 @@ describe('RawScoreField', () => {
     expect(same.find('.field__hint').text()).toContain('Saved')
     const empty = mountField()
     await flushPromises()
-    expect(empty.find('.field__hint').text()).toBe('Enter a score from 0 to 10.00')
+    expect(empty.find('.field__hint').text()).toBe('Enter a score from 0 to 10')
   })
 
   it('is disabled when read-only and keeps the decimal keyboard', async () => {

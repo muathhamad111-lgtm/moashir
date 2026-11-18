@@ -2,7 +2,6 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
-import { RouterLink } from 'vue-router'
 import Card from '@/components/ui/Card.vue'
 import Tabs from '@/components/ui/Tabs.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
@@ -10,12 +9,13 @@ import DataTable from '@/components/data-list/DataTable.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import DateStamp from '@/components/accredited/DateStamp.vue'
 import OverdueBadge from '@/components/accredited/OverdueBadge.vue'
+import AssignedRequestProgress from '@/components/requests/AssignedRequestProgress.vue'
+import AssignedRequestActions from '@/components/requests/AssignedRequestActions.vue'
 import { useAssignedRequests } from '@/composables/useAssignedRequests'
 import { useAuthStore } from '@/stores/auth'
 import { useRequestPathCountsStore } from '@/stores/requestPathCounts'
 import { assignedPathsOf, pathCountOf } from '@/utils/requestPaths'
 import { ASSIGNED_TABS } from '@/constants/accredited'
-import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
 
 const TAB_COUNT_KEYS = { new: 'new', in_progress: 'inProgress', completed: 'completed' }
@@ -39,11 +39,11 @@ const tabs = computed(() =>
   }),
 )
 const columns = computed(() => [
-  { key: 'number', label: t('requests.columns.number') },
-  { key: 'entity', label: t('requests.columns.entity') },
-  { key: 'status', label: t('requests.columns.status') },
-  { key: 'assignedAt', label: t('requests.assignment.assignedAt') },
+  { key: 'request', label: t('requests.assigned.columns.request') },
+  { key: 'state', label: t('requests.assigned.columns.state') },
   { key: 'dueAt', label: t('requests.columns.dueAt') },
+  { key: 'progress', label: t('requests.assigned.columns.progress') },
+  { key: 'actions', label: t('requests.assigned.columns.actions') },
 ])
 </script>
 
@@ -65,28 +65,37 @@ const columns = computed(() => [
         :empty-message="t('requests.assigned.emptyMessage')"
         @retry="load"
       >
-        <template #cell-number="{ item }">
-          <RouterLink
-            class="request-queue__link"
-            :to="{ name: ROUTE_NAMES.REQUESTS_REVIEW, params: { id: item.id } }"
-            ><bdi dir="ltr">{{ item.number }}</bdi></RouterLink
-          >
-        </template>
-        <template #cell-entity="{ item }">
-          {{ localizedText(item.entity?.name, locale) }}
+        <template #cell-request="{ item }">
+          <span class="assigned-request__entity">{{
+            localizedText(item.entity?.name, locale)
+          }}</span>
+          <bdi class="assigned-request__number" dir="ltr">{{ item.number }}</bdi>
           <span v-if="item.entity?.region" class="request-queue__muted">{{
             localizedText(item.entity.region.name, locale)
           }}</span>
         </template>
-        <template #cell-status="{ item }"><StatusBadge :status="item.status" /></template>
-        <template #cell-assignedAt="{ item }"
-          ><DateStamp :value="item.assignedAt" :with-time="false"
-        /></template>
+        <template #cell-state="{ item }">
+          <StatusBadge :status="item.status" />
+          <span v-if="item.assignedAt" class="request-queue__muted"
+            >{{ t('requests.assigned.assignedOn') }}
+            <DateStamp :value="item.assignedAt" :with-time="false"
+          /></span>
+        </template>
         <template #cell-dueAt="{ item }">
           <span class="request-queue__due">
             <DateStamp :value="item.completionDeadline ?? item.dueAt" :with-time="false" />
             <OverdueBadge v-if="item.dueAt && !item.completedAt" :overdue="item.isOverdue" />
           </span>
+        </template>
+        <template #cell-progress="{ item }">
+          <AssignedRequestProgress :progress="item.reviewProgress" />
+        </template>
+        <template #cell-actions="{ item }">
+          <AssignedRequestActions
+            :request-id="item.id"
+            :request-number="item.number"
+            :status="item.status"
+          />
         </template>
       </DataTable>
       <Pagination

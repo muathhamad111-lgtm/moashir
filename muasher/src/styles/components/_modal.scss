@@ -38,6 +38,10 @@
   .modal--lg & {
     inline-size: min(90vw, var(--size-modal-lg));
   }
+
+  .modal--xl & {
+    inline-size: min(94vw, var(--size-modal-xl));
+  }
 }
 
 .modal__header {

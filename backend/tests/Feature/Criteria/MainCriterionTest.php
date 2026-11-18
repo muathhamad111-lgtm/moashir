@@ -46,6 +46,17 @@ it('lists the main criteria of the draft with their weight summary', function ()
         ->assertJsonPath('meta.pagination.total', 1);
 });
 
+it('reports the total weight of the active main criteria whatever the list filters', function (): void {
+    $draft = balancedDraft();
+    mainIn($draft, 'M2', '500.00', 2);
+    mainIn($draft, 'M3', '300.00', 3)->forceFill(['is_active' => false])->save();
+    signIn(criteriaOfficer());
+
+    $this->getJson('/api/v1/criteria/mains?filter[active]=false')->assertOk()
+        ->assertJsonPath('meta.pagination.total', 1)
+        ->assertJsonPath('meta.version.active_weight_total', '1500.00');
+});
+
 it('falls back to the published version and accepts an explicit version', function (): void {
     $published = publishVersion(balancedDraft());
     $other = draftVersion();

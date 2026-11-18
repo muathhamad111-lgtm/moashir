@@ -4,6 +4,7 @@ import Card from '@/components/ui/Card.vue'
 import ReviewSubPanel from './ReviewSubPanel.vue'
 import CriterionStepCounter from '@/components/assessment/CriterionStepCounter.vue'
 import { localizedText } from '@/utils/localizedText'
+import { formatDisplayWeight } from '@/utils/weight'
 
 defineProps({
   main: { type: Object, required: true },
@@ -26,7 +27,7 @@ const { t, locale } = useI18n()
         </h2>
       </div>
       <span class="review-main__weight">{{
-        t('assessment.self.tree.mainMeta', { weight: main.weight })
+        t('assessment.self.tree.mainMeta', { weight: formatDisplayWeight(main.weight, locale) })
       }}</span>
     </template>
     <ul class="review-main__subs">

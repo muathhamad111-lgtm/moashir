@@ -15,6 +15,11 @@ const props = defineProps({
     validator: (value) => ['equal', 'manual'].includes(value),
   },
   disabled: { type: Boolean, default: false },
+  level: {
+    type: String,
+    default: 'subs',
+    validator: (value) => ['subs', 'points'].includes(value),
+  },
 })
 
 const emit = defineEmits(['update:children', 'update:mode'])
@@ -33,16 +38,19 @@ const STATUS = {
 }
 
 const status = computed(() => STATUS[summary.value.state])
+const messages = computed(() =>
+  props.level === 'points' ? 'criteria.weights.points' : 'criteria.weights',
+)
 
 const statusMessage = computed(() => {
   if (summary.value.state === 'over') {
-    return t('criteria.weights.overAllocated', {
+    return t(`${messages.value}.overAllocated`, {
       over: weight(summary.value.remaining.replace('-', '')),
     })
   }
   if (summary.value.state === 'under')
-    return t('criteria.weights.underAllocated', { remaining: weight(summary.value.remaining) })
-  return t('criteria.weights.balanced')
+    return t(`${messages.value}.underAllocated`, { remaining: weight(summary.value.remaining) })
+  return t(`${messages.value}.balanced`)
 })
 
 function setMode(mode) {
@@ -129,7 +137,7 @@ function isEditable(child) {
     <p v-else class="weight-editor__empty">{{ t('criteria.weights.noChildren') }}</p>
 
     <p v-if="mode === 'equal'" class="weight-editor__note">
-      {{ t('criteria.weights.equalActive') }}
+      {{ t(`${messages.value}.equalActive`) }}
     </p>
     <p class="weight-editor__status" :class="`weight-editor__status--${status.tone}`" role="status">
       <AppIcon :name="status.icon" />

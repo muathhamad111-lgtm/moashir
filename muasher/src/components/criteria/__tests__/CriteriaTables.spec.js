@@ -83,4 +83,17 @@ describe('criteria management tables', () => {
       true,
     )
   })
+
+  it('shows the share of each active main criterion in the total weight', () => {
+    const wrapper = render(MainCriteriaTable, {
+      items: [MAIN, { ...MAIN, id: 2, code: 'M2', weight: '300.00', active: false }],
+      status: 'success',
+      access: ACCESS,
+      totalWeight: '400.00',
+    })
+    const rows = wrapper.findAll('tbody tr')
+
+    expect(rows[0].text()).toContain('25% of the total')
+    expect(rows[1].text()).not.toContain('of the total')
+  })
 })

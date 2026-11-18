@@ -43,4 +43,20 @@ describe('Tabs', () => {
     await tabButtons[0].trigger('keydown', { key: 'ArrowRight' })
     expect(wrapper.emitted('update:modelValue')[0]).toEqual(['previous'])
   })
+
+  it('moves forward with the arrow that follows the reading direction', async () => {
+    const rtl = mount(Tabs, {
+      props: { modelValue: 'current', tabs },
+      attachTo: document.body,
+      attrs: { dir: 'rtl' },
+    })
+    await rtl.findAll('[role="tab"]')[0].trigger('keydown', { key: 'ArrowLeft' })
+    expect(rtl.emitted('update:modelValue')[0]).toEqual(['previous'])
+    rtl.unmount()
+
+    const ltr = mount(Tabs, { props: { modelValue: 'previous', tabs }, attachTo: document.body })
+    await ltr.findAll('[role="tab"]')[1].trigger('keydown', { key: 'ArrowLeft' })
+    expect(ltr.emitted('update:modelValue')[0]).toEqual(['current'])
+    ltr.unmount()
+  })
 })

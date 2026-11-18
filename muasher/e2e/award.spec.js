@@ -259,11 +259,7 @@ test.describe('Award staff screens', () => {
     await expect(page.locator('.table__row', { hasText: 'ADV-' }).first()).toBeVisible()
     await page.goto('/admin/requests/9202/review')
     await expect(page.locator('.review-actions')).toBeVisible()
-    await expect(
-      page.locator('.review-actions button', {
-        hasText: text(testInfo, 'Request completion', 'طلب استكمال'),
-      }),
-    ).toHaveCount(0)
+    await expect(page.locator('[data-testid="review-request-completion"]')).toHaveCount(0)
     await fillEmptyScores(page, '7')
     await page.locator('.review-actions .btn--primary').click()
     await page.locator('.modal .btn--primary').click()

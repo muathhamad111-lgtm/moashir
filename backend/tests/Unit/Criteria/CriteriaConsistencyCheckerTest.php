@@ -53,9 +53,9 @@ function problemCodes(CriteriaVersion $version): array
     return array_map(static fn (ConsistencyProblem $problem): string => $problem->problem->value.':'.$problem->code, (new CriteriaConsistencyChecker)->check($version)->problems);
 }
 
-it('accepts a tree whose sub-criteria match the main weight and whose points stay within the sub weight', function (): void {
+it('accepts a tree whose sub-criteria match the main weight and whose points match the sub weight', function (): void {
     $version = memoryVersion([memoryMain(1, '1000', [
-        memorySub(11, '600', EvaluationType::GuidingPoints, [memoryPoint(111, '300'), memoryPoint(112, '250')]),
+        memorySub(11, '600', EvaluationType::GuidingPoints, [memoryPoint(111, '350'), memoryPoint(112, '250'), memoryPoint(113, '90', false)]),
         memorySub(12, '400', EvaluationType::Direct),
     ])]);
 
@@ -81,6 +81,17 @@ it('reports every inconsistent node and ignores inactive items', function (): vo
     ]);
 
     expect(problemCodes($version))->toBe(['weights_mismatch:M1', 'points_exceed_sub:S11', 'no_active_point:S21']);
+});
+
+it('requires the active guiding points to use the whole sub-criterion weight', function (): void {
+    $version = memoryVersion([memoryMain(1, '600', [
+        memorySub(11, '600', EvaluationType::GuidingPoints, [memoryPoint(111, '300'), memoryPoint(112, '250'), memoryPoint(113, '50', false)]),
+    ])]);
+    $problem = (new CriteriaConsistencyChecker)->check($version)->problems[0];
+
+    expect(problemCodes($version))->toBe(['points_below_sub:S11'])
+        ->and($problem->expected?->toDecimal())->toBe('600.00')
+        ->and($problem->actual?->toDecimal())->toBe('550.00');
 });
 
 it('ignores guiding points under a directly evaluated sub-criterion', function (): void {

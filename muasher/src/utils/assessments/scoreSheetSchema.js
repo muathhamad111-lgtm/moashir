@@ -1,5 +1,6 @@
 import { object, string } from 'yup'
 import { isFilled, isRawScore, scoreFieldName, withinScale } from './scoreSheet'
+import { compactDecimal } from '@/utils/percentText'
 
 export function scoreSheetSchema(t, units, maximum) {
   const field = string()
@@ -11,7 +12,7 @@ export function scoreSheetSchema(t, units, maximum) {
     )
     .test(
       'raw-range',
-      t('assessment.self.validation.range', { max: maximum }),
+      t('assessment.self.validation.range', { max: compactDecimal(maximum) }),
       (value) => !isFilled(value) || !isRawScore(value) || withinScale(value, maximum),
     )
   return object(Object.fromEntries(units.map((unit) => [scoreFieldName(unit), field])))

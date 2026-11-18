@@ -225,6 +225,238 @@
   @include visually-hidden;
 }
 
+.station-row--compact {
+  --station-partial-fill: color-mix(in srgb, var(--color-warning) 40%, var(--theme-surface));
+  gap: 0;
+  padding-block: var(--space-2);
+  padding-inline: var(--space-3);
+  border-radius: var(--radius-lg);
+
+  .station-row__head {
+    @include visually-hidden;
+  }
+
+  // Every column keeps room for a visible connector; narrow screens scroll the row instead of
+  // squeezing the circles.
+  .station-row__list {
+    grid-auto-columns: minmax(calc(var(--size-icon-box) + var(--space-5)), 1fr);
+    gap: var(--space-1);
+    padding-block-end: 0;
+    scroll-snap-type: x proximity;
+
+    // Room for the celebration burst once the whole row fits without scrolling.
+    @include respond-to('lg') {
+      overflow: visible;
+    }
+  }
+
+  .station-row__button {
+    flex-direction: row;
+    justify-content: center;
+    gap: var(--space-1);
+    padding: var(--space-1);
+    scroll-snap-align: center;
+  }
+
+  .station-row__marker {
+    flex-shrink: 0;
+    aspect-ratio: 1;
+  }
+
+  // A connected stepper: a line runs from each circle to the next. It fills (animated) up to the
+  // current criterion and turns green after a complete one.
+  .station-row__item {
+    position: relative;
+  }
+
+  .station-row__item:not(:last-child)::before,
+  .station-row__item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: calc(50% + var(--size-icon-box) / 2 + var(--space-1));
+    inline-size: calc(100% + var(--space-1) - var(--size-icon-box) - var(--space-2));
+    block-size: var(--border-width-thick);
+    border-radius: var(--radius-pill);
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  .station-row__item:not(:last-child)::before {
+    background-color: var(--theme-border);
+  }
+
+  .station-row__item:not(:last-child)::after {
+    background-color: var(--theme-accent-text);
+    transform: translateY(-50%) scaleX(0);
+    transform-origin: left center;
+
+    [dir='rtl'] & {
+      transform-origin: right center;
+    }
+  }
+
+  .station-row__item--reached:not(:last-child)::after,
+  .station-row__item--done:not(:last-child)::after {
+    transform: translateY(-50%) scaleX(1);
+  }
+
+  .station-row__item--done:not(:last-child)::after {
+    background-color: var(--color-success-text);
+  }
+
+  @include motion-safe {
+    .station-row__item:not(:last-child)::after {
+      transition:
+        transform var(--t-slow) var(--ease),
+        background-color var(--t-slow) var(--ease);
+    }
+  }
+
+  .station-row__button {
+    position: relative;
+    z-index: 1;
+  }
+
+  // Only the numbered circles show; names are tooltips and, with the counts, screen-reader text.
+  .station-row__name,
+  .station-row__count {
+    @include visually-hidden;
+  }
+
+  // State lives in the circle itself: a pie fill for partial, solid with a check when complete.
+  .station-row__button--partial .station-row__marker {
+    background: conic-gradient(
+      var(--station-partial-fill) var(--station-progress, 0%),
+      var(--theme-surface) 0
+    );
+  }
+
+  // The current criterion keeps its state colours and gains an outer ring.
+  .station-row__button.is-active .station-row__marker {
+    border-color: var(--theme-heading);
+    background-color: var(--theme-surface);
+    color: var(--theme-heading);
+    box-shadow:
+      0 0 0 var(--border-width-thick) var(--theme-surface),
+      0 0 0 calc(var(--border-width-thick) * 2) var(--theme-heading);
+  }
+
+  .station-row__button--partial.is-active .station-row__marker {
+    background: conic-gradient(
+      var(--station-partial-fill) var(--station-progress, 0%),
+      var(--theme-surface) 0
+    );
+  }
+
+  // Complete reads at a glance: deep green with a white check (about 5:1), current one included.
+  .station-row__button--complete .station-row__marker,
+  .station-row__button--complete.is-active .station-row__marker {
+    position: relative;
+    border-color: var(--color-success-text);
+    background-color: var(--color-success-text);
+    color: var(--color-white);
+
+    svg {
+      font-size: var(--fs-lg);
+    }
+  }
+
+  // Celebration when a criterion turns complete: the check pops in and a burst leaves the circle.
+  @include motion-safe {
+    .is-celebrating .station-row__marker {
+      animation: station-pop var(--t-slow) var(--ease) both;
+
+      svg {
+        animation: station-check-in 0.5s var(--ease) 0.1s both;
+      }
+
+      &::before,
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: var(--radius-circle);
+        pointer-events: none;
+      }
+
+      &::before {
+        border: var(--border-width-thick) solid var(--color-success);
+        animation: station-ring 0.9s var(--ease) both;
+      }
+
+      &::after {
+        inset: 50%;
+        inline-size: 0.3rem;
+        block-size: 0.3rem;
+        margin: -0.15rem;
+        box-shadow:
+          0 -1.4rem 0 var(--color-success),
+          1.2rem -0.7rem 0 var(--color-warning),
+          1.2rem 0.7rem 0 var(--color-success),
+          0 1.4rem 0 var(--theme-accent),
+          -1.2rem 0.7rem 0 var(--color-warning),
+          -1.2rem -0.7rem 0 var(--theme-accent);
+        animation: station-burst 0.9s var(--ease) both;
+      }
+    }
+  }
+}
+
+@keyframes station-pop {
+  0% {
+    transform: scale(0.8);
+  }
+
+  60% {
+    transform: scale(1.15);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes station-check-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.2) rotate(-30deg);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes station-ring {
+  0% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+
+@keyframes station-burst {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.3);
+  }
+}
+
 .station-panel {
   @include flex(column, stretch, flex-start, var(--space-4));
 }

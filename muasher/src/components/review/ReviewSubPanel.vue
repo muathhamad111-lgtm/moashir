@@ -62,10 +62,9 @@ function unit(level, node) {
     <div class="review-sub__scores">
       <template v-if="usesPoints">
         <div v-for="point in sub.points" :key="point.id" class="review-sub__point">
-          <p class="review-sub__point-text">{{ text(point.description) }}</p>
           <RawScoreField
             :name="scoreFieldName(unit(SCORE_LEVELS.POINT, point))"
-            :label="t('review.pointScoreLabel', { name: text(point.description) })"
+            :label="text(point.description)"
             :maximum="maximum"
             :saved="savedScoreOf(review.scores, unit(SCORE_LEVELS.POINT, point))"
             :disabled="disabled"

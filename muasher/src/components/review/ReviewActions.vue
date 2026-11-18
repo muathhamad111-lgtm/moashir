@@ -7,14 +7,11 @@ defineProps({
   busy: { type: String, default: '' },
   dirty: { type: Boolean, default: false },
   canScore: { type: Boolean, default: false },
-  canStart: { type: Boolean, default: false },
-  canRequestCompletion: { type: Boolean, default: false },
-  complete: { type: Boolean, default: false },
   isFirst: { type: Boolean, default: true },
   isLast: { type: Boolean, default: true },
 })
 
-const emit = defineEmits(['start', 'save', 'requestCompletion', 'complete', 'previous', 'next'])
+const emit = defineEmits(['save', 'complete', 'previous', 'next'])
 const { t } = useI18n()
 </script>
 
@@ -31,15 +28,6 @@ const { t } = useI18n()
       @previous="emit('previous')"
       @next="emit('next')"
     >
-      <BaseButton
-        v-if="canStart"
-        variant="primary"
-        icon="play"
-        data-testid="review-start"
-        :loading="busy === 'start'"
-        @click="emit('start')"
-        >{{ t('review.start') }}</BaseButton
-      >
       <template v-if="canScore">
         <BaseButton
           variant="secondary"
@@ -48,14 +36,6 @@ const { t } = useI18n()
           :disabled="!dirty || Boolean(busy)"
           @click="emit('save')"
           >{{ t('review.save') }}</BaseButton
-        >
-        <BaseButton
-          v-if="canRequestCompletion"
-          variant="secondary"
-          icon="reply"
-          :disabled="Boolean(busy)"
-          @click="emit('requestCompletion')"
-          >{{ t('review.requestCompletion') }}</BaseButton
         >
       </template>
       <template #last>
@@ -71,8 +51,5 @@ const { t } = useI18n()
         >
       </template>
     </CriterionStepButtons>
-    <p v-if="canScore && isLast && !complete" class="review-actions__hint">
-      {{ t('review.completeHint') }}
-    </p>
   </div>
 </template>

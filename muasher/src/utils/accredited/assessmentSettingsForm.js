@@ -1,6 +1,7 @@
 import { object, string } from 'yup'
 
 import { ENTITY_VISIBILITY_LIST } from '@/constants/committee'
+import { SCALE_KINDS } from '@/constants/assessment'
 import { toWesternDigits } from '@/utils/numerals'
 
 export const UPLOAD_BOUNDS = {
@@ -52,6 +53,7 @@ export function assessmentSettingsSchema(t) {
     advancedMinEntityAgeYears: integerField(t, ADVANCED_BOUNDS.minEntityAgeYears),
     advancedDisqualificationScore: scoreField(t),
     committeeEntityDataVisibility: string().oneOf(ENTITY_VISIBILITY_LIST, t('validation.required')),
+    scaleKind: string().oneOf([...Object.values(SCALE_KINDS), ''], t('validation.required')),
   })
 }
 
@@ -60,6 +62,7 @@ export function settingsFormValues(settings) {
     ...Object.fromEntries(INTEGER_FIELDS.map((field) => [field, String(settings[field] ?? '')])),
     advancedDisqualificationScore: String(settings.advancedDisqualificationScore ?? ''),
     committeeEntityDataVisibility: settings.committeeEntityDataVisibility ?? '',
+    scaleKind: settings.scaleKind ?? '',
   }
 }
 
@@ -87,5 +90,7 @@ export function changedAssessmentSettings(settings, values) {
     values.committeeEntityDataVisibility !== settings.committeeEntityDataVisibility
   )
     changes.committeeEntityDataVisibility = values.committeeEntityDataVisibility
+  if (isKnown(settings.scaleKind) && values.scaleKind !== settings.scaleKind)
+    changes.scaleKind = values.scaleKind
   return changes
 }

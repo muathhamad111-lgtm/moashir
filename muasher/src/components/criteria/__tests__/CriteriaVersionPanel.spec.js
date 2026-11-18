@@ -63,13 +63,42 @@ describe('CriteriaVersionPanel', () => {
     expect(buttonLabels(wrapper)).toEqual(['Check consistency', 'Publish'])
   })
 
-  it('emits the new draft after "edit published"', async () => {
+  it('creates a labelled draft from the chosen version and emits it', async () => {
     criteriaService.createDraft.mockResolvedValue({ data: { id: 4, versionNumber: 2 } })
-    const wrapper = mountPanel(['criteria_officer'], { version: published, draft: null, published })
+    const wrapper = mountPanel(['criteria_officer'], {
+      version: published,
+      draft: null,
+      published,
+      versions: [published],
+    })
     await wrapper.find('.criteria-version__actions button').trigger('click')
     await flushPromises()
-    expect(criteriaService.createDraft).toHaveBeenCalledWith({})
+
+    await wrapper.find('input[name="labelAr"]').setValue('مراجعة 2027')
+    await wrapper.find('input[name="labelEn"]').setValue('2027 review')
+    const draftForm = wrapper
+      .findAll('form')
+      .find((form) => form.find('input[name="labelAr"]').exists())
+    await draftForm.trigger('submit')
+    await vi.waitFor(() => expect(criteriaService.createDraft).toHaveBeenCalled())
+    await flushPromises()
+
+    expect(criteriaService.createDraft).toHaveBeenCalledWith({
+      cloneFromVersionId: 1,
+      label: { ar: 'مراجعة 2027', en: '2027 review' },
+    })
     expect(wrapper.emitted('changed')[0]).toEqual([{ versionId: 4 }])
+  })
+
+  it('shows the version label in the banner title', () => {
+    const wrapper = mountPanel(['criteria_officer'], {
+      version: { ...published, label: { ar: 'الإصدار الأساسي', en: 'Base model' } },
+      draft: null,
+      published,
+    })
+    expect(wrapper.find('.criteria-version--success').text()).toContain(
+      'Published version 1 — Base model',
+    )
   })
 
   it('reports a consistent draft after the check', async () => {

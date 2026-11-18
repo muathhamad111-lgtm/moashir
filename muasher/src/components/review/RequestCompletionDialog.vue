@@ -5,8 +5,8 @@ import { useI18n } from 'vue-i18n'
 import FormModal from '@/components/modal/FormModal.vue'
 import FieldTextarea from '@/components/form/FieldTextarea.vue'
 import FieldRadio from '@/components/form/FieldRadio.vue'
-import BaseCheckbox from '@/components/form/BaseCheckbox.vue'
-import BaseInput from '@/components/form/BaseInput.vue'
+import CompletionItemPicker from './CompletionItemPicker.vue'
+import CompletionSelectionSummary from './CompletionSelectionSummary.vue'
 import BaseDatePicker from '@/components/form/BaseDatePicker.vue'
 import { useValidatedForm } from '@/composables/useValidatedForm'
 import { assessorReviewService } from '@/services/assessorReviewService'
@@ -17,7 +17,6 @@ import {
   deadlineBounds,
   itemOptions,
 } from '@/utils/accredited/completionForm'
-import { localizedText } from '@/utils/localizedText'
 import { formatRiyadhDate } from '@/utils/datetime'
 
 const props = defineProps({
@@ -28,6 +27,8 @@ const props = defineProps({
   send: { type: Function, default: null },
   bounds: { type: Object, default: null },
   variant: { type: String, default: 'assessor' },
+  // The criterion the assessor is on opens first in the picker.
+  activeMainId: { type: Number, default: null },
 })
 
 const emit = defineEmits(['update:modelValue', 'done'])
@@ -66,13 +67,16 @@ const form = useValidatedForm({
 const { value: items, errorMessage: itemsError } = useField('items')
 const { value: deadline, errorMessage: deadlineError } = useField('deadline')
 
-const groups = computed(() => {
-  const options = itemOptions(props.criteria)
-  return props.criteria.mains.map((main) => ({
+const allOptions = computed(() => itemOptions(props.criteria))
+const groups = computed(() =>
+  props.criteria.mains.map((main) => ({
     main,
-    options: options.filter((option) => main.subs.some((sub) => sub.id === option.sub.id)),
-  }))
-})
+    options: allOptions.value.filter((option) => main.subs.some((sub) => sub.id === option.sub.id)),
+  })),
+)
+const selectedOptions = computed(() =>
+  allOptions.value.filter((option) => (items.value ?? []).includes(option.key)),
+)
 const outcomeOptions = computed(() =>
   Object.values(EXPIRY_OUTCOMES).map((value) => ({
     value,
@@ -83,6 +87,11 @@ const outcomeOptions = computed(() =>
 function toggle(key, checked) {
   const others = (items.value ?? []).filter((item) => item !== key)
   items.value = checked ? [...others, key] : others
+}
+
+function toggleAll(keys, checked) {
+  const others = (items.value ?? []).filter((item) => !keys.includes(item))
+  items.value = checked ? [...others, ...keys] : others
 }
 
 watch(
@@ -100,7 +109,7 @@ watch(
 <template>
   <FormModal
     :model-value="modelValue"
-    size="lg"
+    size="xl"
     :title="t(`${copy}.title`)"
     :busy="form.submitting.value"
     :submit-label="t(`${copy}.submit`)"
@@ -108,77 +117,62 @@ watch(
     @submit="form.onSubmit"
   >
     <div class="completion-dialog">
-      <FieldTextarea
-        name="notes"
-        :label="t('review.completion.notes')"
-        :hint="
-          t('review.completion.notesHint', {
-            min: ACCREDITED_LIMITS.COMPLETION_NOTES_MIN,
-            max: ACCREDITED_LIMITS.COMPLETION_NOTES_MAX,
-          })
-        "
-        :rows="4"
-        required
+      <CompletionItemPicker
+        v-if="modelValue"
+        :groups="groups"
+        :selected="items ?? []"
+        :open-main-id="activeMainId"
+        @toggle="toggle"
+        @toggle-many="toggleAll"
       />
-      <fieldset
-        class="completion-dialog__items"
-        :aria-describedby="itemsError ? 'completion-items-error' : undefined"
-      >
-        <legend class="completion-dialog__legend">{{ t('review.completion.items') }}</legend>
-        <div v-for="group in groups" :key="group.main.id" class="completion-dialog__group">
-          <p class="completion-dialog__main">{{ localizedText(group.main.name, locale) }}</p>
-          <div v-for="option in group.options" :key="option.key" class="completion-dialog__option">
-            <BaseCheckbox
-              :name="`item-${option.key}`"
-              :label="
-                t('review.completion.itemLabel', {
-                  name: localizedText(option.sub.name, locale),
-                  kind: t(`accredited.completion.kinds.${option.kind}`),
-                })
-              "
-              :model-value="(items ?? []).includes(option.key)"
-              @update:model-value="toggle(option.key, $event)"
-            />
-            <BaseInput
-              v-if="(items ?? []).includes(option.key)"
-              v-model="notes[option.key]"
-              :name="`note-${option.key}`"
-              :label="t('review.completion.itemNote')"
-              :hint="
-                t('review.completion.itemNoteHint', {
-                  max: ACCREDITED_LIMITS.COMPLETION_ITEM_NOTE_MAX,
-                })
-              "
-            />
-          </div>
-        </div>
-        <p v-if="itemsError" id="completion-items-error" class="field__error" role="alert">
-          {{ itemsError }}
+      <CompletionSelectionSummary
+        :options="selectedOptions"
+        :notes="notes"
+        :error="itemsError"
+        @remove="toggle($event, false)"
+        @note="(key, value) => (notes[key] = value)"
+      />
+      <section class="completion-dialog__details" aria-labelledby="completion-details-title">
+        <h3 id="completion-details-title" class="completion-dialog__details-title">
+          {{ t('review.completion.detailsTitle') }}
+        </h3>
+        <FieldTextarea
+          class="completion-dialog__notes"
+          name="notes"
+          :label="t('review.completion.notes')"
+          :hint="
+            t('review.completion.notesHint', {
+              min: ACCREDITED_LIMITS.COMPLETION_NOTES_MIN,
+              max: ACCREDITED_LIMITS.COMPLETION_NOTES_MAX,
+            })
+          "
+          :rows="3"
+          required
+        />
+        <BaseDatePicker
+          v-model="deadline"
+          name="deadline"
+          :label="t('review.completion.deadline')"
+          :min="bounds.min"
+          :max="bounds.max"
+          :hint="
+            t(`${copy}.deadlineHint`, {
+              days: ACCREDITED_LIMITS.COMPLETION_DEADLINE_MAX_DAYS,
+              date: maxLabel,
+            })
+          "
+          :error="deadlineError"
+          required
+        />
+        <FieldRadio
+          name="expiryOutcome"
+          :label="t('review.completion.expiryOutcome')"
+          :options="outcomeOptions"
+        />
+        <p class="completion-dialog__outcome-hint" role="note">
+          {{ t('review.completion.expiryHint') }}
         </p>
-      </fieldset>
-      <BaseDatePicker
-        v-model="deadline"
-        name="deadline"
-        :label="t('review.completion.deadline')"
-        :min="bounds.min"
-        :max="bounds.max"
-        :hint="
-          t(`${copy}.deadlineHint`, {
-            days: ACCREDITED_LIMITS.COMPLETION_DEADLINE_MAX_DAYS,
-            date: maxLabel,
-          })
-        "
-        :error="deadlineError"
-        required
-      />
-      <FieldRadio
-        name="expiryOutcome"
-        :label="t('review.completion.expiryOutcome')"
-        :options="outcomeOptions"
-      />
-      <p class="completion-dialog__outcome-hint" role="note">
-        {{ t('review.completion.expiryHint') }}
-      </p>
+      </section>
     </div>
   </FormModal>
 </template>

@@ -1,14 +1,14 @@
-import { boundTree } from './assessments/assessmentsStore'
-import { feedbackNotes, feedbackRatios } from '../fixtures/certificates'
+import { boundTree, sheetOf } from './assessments/assessmentsStore'
+import {
+  computeSelfResult,
+  decimalWeight,
+  displayEarned,
+  displayPercent,
+} from './assessments/selfScoring'
+import { feedbackNotes } from '../fixtures/certificates'
 import { certificates } from './certificatesStore'
 import { currentSummaryOf } from './insights/assessorSummaries'
-
-const DEFAULT_RATIO = 0.72
-const HIJRI = { ar: '10 ربيع الأول 1448 هـ', en: '10 Rabi al-Awwal 1448 AH' }
-
-function fixed(value) {
-  return Number(value).toFixed(2)
-}
+import { formatHijriDate } from '@/utils/datetime'
 
 function notesOf(subId) {
   const [first, ...rest] = (feedbackNotes[subId]?.ar ?? '').split('. ')
@@ -18,34 +18,47 @@ function notesOf(subId) {
   }
 }
 
-function subFigures(sub) {
-  const ratio = feedbackRatios[sub.id] ?? DEFAULT_RATIO
-  const weight = Number(sub.weight ?? 0)
+// The report shows the request's own result: the figures of its result page and certificate.
+function resultOf(record, tree) {
+  return record.result ?? computeSelfResult(tree, sheetOf(record), record.scaleKind)
+}
+
+function byId(units) {
+  return new Map(units.map((unit) => [unit.id, unit]))
+}
+
+function figuresOf(scored) {
+  return {
+    weight: decimalWeight(scored.weight),
+    earned: displayEarned(scored.earned),
+    percent: displayPercent(scored.percent),
+  }
+}
+
+function subFigures(sub, scored) {
   return {
     subId: sub.id,
     code: sub.code,
     name: sub.name,
-    weight: fixed(weight),
-    earned: fixed(weight * ratio),
-    percent: fixed(ratio * 100),
+    ...figuresOf(scored),
     ...notesOf(sub.id),
     notes: null,
   }
 }
 
-function mainFigures(main) {
-  const subs = main.subs.map(subFigures)
-  const weight = subs.reduce((sum, sub) => sum + Number(sub.weight), 0)
-  const earned = subs.reduce((sum, sub) => sum + Number(sub.earned), 0)
+function mainFigures(main, scored) {
+  const scoredSubs = byId(scored.subs)
   return {
     criterionId: main.id,
     code: main.code,
     name: main.name,
-    weight: fixed(weight),
-    earned: fixed(earned),
-    percent: fixed(weight ? (earned / weight) * 100 : 0),
-    subs,
+    ...figuresOf(scored),
+    subs: main.subs.map((sub) => subFigures(sub, scoredSubs.get(sub.id))),
   }
+}
+
+function hijriOf(value) {
+  return { ar: formatHijriDate(value, 'ar'), en: formatHijriDate(value, 'en') }
 }
 
 function certificateOf(record) {
@@ -73,9 +86,9 @@ export function feedbackReportOf(record, entity) {
   }
   const tree = record.status === 'completed' ? boundTree(record) : null
   if (!tree) return { ...identity, available: false }
-  const criteria = tree.mains.map(mainFigures)
-  const total = criteria.reduce((sum, main) => sum + Number(main.earned), 0)
-  const maxTotal = criteria.reduce((sum, main) => sum + Number(main.weight), 0)
+  const result = resultOf(record, tree)
+  const scoredMains = byId(result.mains)
+  const criteria = tree.mains.map((main) => mainFigures(main, scoredMains.get(main.id)))
   return {
     ...identity,
     available: true,
@@ -84,10 +97,10 @@ export function feedbackReportOf(record, entity) {
     entity,
     completedAt: record.completedAt,
     completedOn: String(record.completedAt).slice(0, 10),
-    completedOnHijri: HIJRI,
-    total: fixed(total),
-    maxTotal: fixed(maxTotal),
-    percent: fixed(maxTotal ? (total / maxTotal) * 100 : 0),
+    completedOnHijri: hijriOf(record.completedAt),
+    total: displayEarned(result.total),
+    maxTotal: decimalWeight(result.totalWeight),
+    percent: displayPercent(result.percent),
     certificate: certificateOf(record),
     assessorSummary: assessorSummaryOf(record),
     criteria,

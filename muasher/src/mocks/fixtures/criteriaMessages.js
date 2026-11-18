@@ -67,6 +67,18 @@ export const criteriaErrorMessages = {
     ar: 'يؤدي التحويل إلى التقييم المباشر إلى حذف :count من النقاط الاسترشادية. أكّد للمتابعة.',
     en: 'Switching to direct evaluation deletes :count guiding points. Confirm to continue.',
   },
+  'criteria.node_not_a_child': {
+    ar: 'هذا العنصر لا يتبع المعيار الذي تُوزَّع أوزانه.',
+    en: 'This item does not belong to the criterion whose weights are being distributed.',
+  },
+  'criteria.weights_exceed_parent': {
+    ar: 'مجموع الأوزان المفعّلة :total يتجاوز وزن المعيار الأعلى البالغ :capacity.',
+    en: 'The active weights total :total, which exceeds the parent criterion weight of :capacity.',
+  },
+  'criteria.weights_distributed_equally': {
+    ar: 'يوزّع هذا المعيار وزنه بالتساوي. اختر التوزيع اليدوي قبل تعديل الأوزان.',
+    en: 'This criterion distributes its weight equally. Switch to manual distribution before editing the weights.',
+  },
   'criteria.node_not_in_version': {
     ar: 'هذا العنصر لا ينتمي إلى إصدار المعايير المحدد.',
     en: 'This item does not belong to the selected criteria version.',
@@ -107,6 +119,10 @@ export const criteriaProblemMessages = {
   points_exceed_sub: {
     ar: 'مجموع أوزان النقاط الاسترشادية المفعّلة في :code يساوي :actual، وهو يتجاوز وزن المعيار الفرعي البالغ :expected.',
     en: 'The active guiding points of :code total :actual, which exceeds the sub-criterion weight of :expected.',
+  },
+  points_below_sub: {
+    ar: 'مجموع أوزان النقاط الاسترشادية المفعّلة في :code يساوي :actual، ويجب أن يساوي وزن المعيار الفرعي البالغ :expected.',
+    en: 'The active guiding points of :code total :actual, but they must equal the sub-criterion weight of :expected.',
   },
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { toQueueRow, toRequestDetail } from '@/services/mappers/requests'
+import { toAssignedRow, toQueueRow, toRequestDetail } from '@/services/mappers/requests'
 
 const LAST_LEVEL = {
   level: 'silver',
@@ -30,5 +30,17 @@ describe('request mappers — entity level', () => {
     expect(
       toQueueRow({ id: 9102, entity: { ...ENTITY, lastLevel: undefined } }).entity.lastLevel,
     ).toBeNull()
+  })
+})
+
+describe('request mappers — assigned row progress', () => {
+  it('keeps the scoring progress of an assigned request and tolerates its absence', () => {
+    expect(
+      toAssignedRow({ id: 1, reviewProgress: { scored: 10, required: 26 } }).reviewProgress,
+    ).toEqual({
+      scored: 10,
+      required: 26,
+    })
+    expect(toAssignedRow({ id: 1 }).reviewProgress).toBeNull()
   })
 })

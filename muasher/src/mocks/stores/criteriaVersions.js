@@ -19,6 +19,7 @@ import {
 import { consistencyProblems } from './criteriaRules'
 import { criteriaNotices } from './criteriaNotices'
 import { reject } from './criteriaRejection'
+import { assessmentSettings } from './accredited/assessmentSettingsStore'
 
 function now() {
   return new Date().toISOString()
@@ -179,7 +180,7 @@ export function markPublished(draft, previous) {
     })
   Object.assign(draft, {
     status: STATUS.PUBLISHED,
-    scaleKind: ACTIVE_SCALE_KIND,
+    scaleKind: assessmentSettings().scaleKind ?? ACTIVE_SCALE_KIND,
     publishedAt: timestamp,
     updatedAt: timestamp,
   })

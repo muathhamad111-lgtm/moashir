@@ -6,6 +6,7 @@ import { sessionCan } from '../stores/sessionPermissions'
 import { entityActionItems } from '../stores/entityBoard/entityActionItems'
 import { staffActionItems } from '../stores/staffActionItems'
 import { STAFF_BOARDS } from '../fixtures/staffBoards'
+import { assessorActionItems, assessorBoard } from '../stores/accredited/assessorBoard'
 import { activeScenario } from '../stores/committee/committeeScenario'
 import { DASHBOARD_BOARDS } from '@/constants/dashboardBoards'
 import { reviewerActionItem } from './bankTransfers'
@@ -17,14 +18,19 @@ const LATENCY_MS = 320
 const ENTITY_BOARD = 'entity'
 const EXECUTIVE_PERMISSION = 'dashboard.executive.view'
 const COMMITTEE_SCENARIO = 'committee'
+const ASSESSOR_ROLE = 'assessor'
 const GENERATED_AT = '2026-11-05T06:00:00+00:00'
 
 function heldBoards(user) {
   const fromRoles = user.superAdmin ? ['system_admin'] : user.roles
   const held = new Set(fromRoles.filter((role) => DASHBOARD_BOARDS.includes(role)))
-  if (user.roles.includes('assessor') && activeScenario() === COMMITTEE_SCENARIO)
+  if (user.roles.includes(ASSESSOR_ROLE) && activeScenario() === COMMITTEE_SCENARIO)
     held.add('committee_assessor')
   return DASHBOARD_BOARDS.filter((board) => held.has(board))
+}
+
+function boardContentOf(board, user) {
+  return board === ASSESSOR_ROLE ? assessorBoard(user) : STAFF_BOARDS[board]
 }
 
 function levelCounts() {
@@ -35,8 +41,10 @@ function levelCounts() {
 function actionItemsOf(user) {
   const entityItems = user.roles.includes(ENTITY_BOARD) ? entityActionItems(user) : []
   const reviewItem = user.roles.includes(ENTITY_BOARD) ? null : reviewerActionItem(user)
+  const assessorItems = user.roles.includes(ASSESSOR_ROLE) ? assessorActionItems(user) : []
   return [
     ...(reviewItem ? [reviewItem] : []),
+    ...assessorItems,
     ...staffActionItems(user.superAdmin ? ['system_admin'] : user.roles),
     ...entityItems,
   ]
@@ -56,13 +64,14 @@ export const dashboardHandlers = [
     const boards = heldBoards(user)
     const landing = boards.find((board) => board !== ENTITY_BOARD) ?? boards[0]
     const board = requested ?? landing
-    if (!boards.includes(board) || !STAFF_BOARDS[board])
+    const content = boards.includes(board) ? boardContentOf(board, user) : null
+    if (!content)
       return errorResponse(403, 'board.not_held', 'This dashboard is not available to you.')
     return envelope({
       board,
       landingBoard: landing,
       availableBoards: boards,
-      ...STAFF_BOARDS[board],
+      ...content,
       actionCenter: actionItemsOf(user),
       generatedAt: GENERATED_AT,
     })

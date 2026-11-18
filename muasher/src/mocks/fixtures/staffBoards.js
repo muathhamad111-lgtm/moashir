@@ -1,5 +1,3 @@
-import { LOWEST_CRITERIA } from './overviewSnapshot'
-
 const PATH_LABELS = {
   self: { ar: 'التقييم الذاتي', en: 'Self assessment' },
   accredited: { ar: 'التقييم المعتمد', en: 'Accredited assessment' },
@@ -90,33 +88,6 @@ export const STAFF_BOARDS = {
           { assessorId: 11, name: 'أ. منيرة بنت علي الشهري', active: 1, completed: 2 },
         ],
       },
-    ],
-  },
-  assessor: {
-    cards: [
-      card('to_start', 1, { link: '/admin/requests/assigned' }),
-      card('in_progress', 2, { link: '/admin/requests/assigned' }),
-      card('awaiting_entity', 1, { link: '/admin/requests/assigned' }),
-      card('overdue', 0, { link: '/admin/requests/assigned' }),
-      card('completed', 5, { link: '/admin/requests/assigned' }),
-      card('average_duration_days', '6.50', { format: 'days' }),
-    ],
-    widgets: [
-      {
-        key: 'due_soon',
-        data: [
-          {
-            id: 14,
-            number: 'ACC-2026-000014',
-            ...path('accredited'),
-            status: 'under-review',
-            entityName: { ar: 'مؤسسة نماء للتنمية', en: 'Namaa Development Foundation' },
-            dueAt: '2026-11-08T20:59:00+00:00',
-            isOverdue: false,
-          },
-        ],
-      },
-      { key: 'weakest_criteria', data: LOWEST_CRITERIA.slice(0, 2) },
     ],
   },
   committee_assessor: {

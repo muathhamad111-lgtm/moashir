@@ -82,3 +82,12 @@ export function formatWeight(value, locale = 'en') {
     numberingSystem: 'latn',
   }).format(toHundredths(value) / HUNDREDTHS)
 }
+
+// Read-only display: whole weights show no decimals («1,000»), fractional ones keep theirs.
+export function formatDisplayWeight(value, locale = 'en') {
+  return new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+    numberingSystem: 'latn',
+  }).format(toHundredths(value) / HUNDREDTHS)
+}

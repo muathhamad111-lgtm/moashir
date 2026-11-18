@@ -57,7 +57,7 @@ describe('notifications mock (Task-35 contract)', () => {
     )
     expect(first.code).toBe('CNT-02')
     expect(body.meta.unreadCount).toBe(2)
-    expect(body.meta.pagination).toMatchObject({ page: 1, perPage: 3, total: 6 })
+    expect(body.meta.pagination).toMatchObject({ page: 1, perPage: 3, total: 8 })
   })
 
   it('filters unread, marks one read and archives one', async () => {
@@ -68,7 +68,7 @@ describe('notifications mock (Task-35 contract)', () => {
     expect((await call('GET', '/notifications/unread-count')).body.data.count).toBe(1)
     const archived = await call('PATCH', `/notifications/${target.id}/archive`)
     expect(archived.body.data.archivedAt).toBeTruthy()
-    expect((await call('GET', '/notifications')).body.meta.pagination.total).toBe(5)
+    expect((await call('GET', '/notifications')).body.meta.pagination.total).toBe(7)
     expect((await call('GET', '/notifications?filter[archived]=true')).body.data).toHaveLength(1)
   })
 

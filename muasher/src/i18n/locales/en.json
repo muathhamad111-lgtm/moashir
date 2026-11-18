@@ -430,7 +430,9 @@
       "emptyTitle": "No main criteria in this version",
       "emptyMessage": "Add the first main criterion, then add its sub-criteria and guiding points.",
       "noVersionsTitle": "No criteria version yet",
-      "noVersionsMessage": "Start with an empty draft, build the criteria tree, then publish it so assessments can use it."
+      "noVersionsMessage": "Start with an empty draft, build the criteria tree, then publish it so assessments can use it.",
+      "totalWeight": "Total weight of the active main criteria: {weight}",
+      "share": "{value}% of the total"
     },
     "columns": {
       "order": "Order",
@@ -496,14 +498,20 @@
       "check": "Check consistency",
       "publish": "Publish",
       "correctLabel": "Correct version name",
-      "consistent": "The weights are consistent. The draft is ready to publish."
+      "consistent": "The weights are consistent. The draft is ready to publish.",
+      "titleWithLabel": "{title} — {label}",
+      "optionWithLabel": "Version {number} — {label} ({status})"
     },
     "draft": {
       "created": "Draft version {number} created as a copy of the published version.",
       "createdEmpty": "Empty draft version {number} created.",
       "discarded": "Draft version {number} discarded.",
       "discardTitle": "Discard draft version {number}?",
-      "discardMessage": "The published version is not affected."
+      "discardMessage": "The published version is not affected.",
+      "dialogTitle": "Create a new draft",
+      "dialogSubtitle": "The tree of the chosen version is copied into a draft that you edit before publishing.",
+      "source": "Source version",
+      "create": "Create the draft"
     },
     "publish": {
       "dialogTitle": "Publish criteria version {number}",
@@ -532,7 +540,51 @@
       "reasonRequired": "Enter the reason for this change.",
       "blockedTitle": "Publishing is blocked until these items are fixed",
       "success": "Version {number} was published",
-      "affectedOpen": "No open request affected. | 1 open request affected. | {count} open requests affected."
+      "affectedOpen": "No open request affected. | 1 open request affected. | {count} open requests affected.",
+      "preview": {
+        "title": "What will change",
+        "loading": "Comparing with the published version…",
+        "error": "The comparison with the published version could not be prepared.",
+        "none": "No differences from version {number}.",
+        "summary": "No changes. | 1 change; {scoreAffecting} of it affects scores. | {count} changes; {scoreAffecting} of them affect scores.",
+        "showList": "Show the changes",
+        "scoreAffecting": "Affects scores",
+        "changedFields": "Changed: {fields}",
+        "weightChange": "{before} → {after}",
+        "impact": {
+          "pick": "Choose an edit scope to see its effect on open requests.",
+          "all": "No open request moves. | 1 open request moves to the new version; scores of unchanged items are kept. | {count} open requests move to the new version; scores of unchanged items are kept.",
+          "new_only": "Open requests stay on version {number}; only new requests use the new version.",
+          "reset_open": "No open request moves. | 1 open request moves to the new version and all its scores are cleared. | {count} open requests move to the new version and all their scores are cleared."
+        },
+        "changeTypes": {
+          "added": "Added",
+          "removed": "Removed",
+          "modified": "Changed",
+          "text_corrected": "Text correction"
+        },
+        "nodeTypes": {
+          "main": "Main criterion",
+          "sub": "Sub-criterion",
+          "point": "Guiding point",
+          "attachment": "Required attachment",
+          "version": "Version"
+        },
+        "fields": {
+          "name": "name",
+          "description": "description",
+          "weight": "weight",
+          "active": "active state",
+          "order": "order",
+          "distribute_equally": "equal distribution",
+          "group": "model group",
+          "evaluation_type": "evaluation type",
+          "has_cv": "CV field",
+          "assessor_note_label": "assessor note prompt",
+          "attachments": "required attachments",
+          "label": "version name"
+        }
+      }
     },
     "problems": {
       "title": "Weight consistency problems",
@@ -540,6 +592,7 @@
       "weights_mismatch": "The active sub-criteria of {name} total {actual}, but they must equal the main criterion weight of {expected}.",
       "no_active_point": "The sub-criterion {name} is evaluated on guiding points but has no active guiding point.",
       "points_exceed_sub": "The active guiding points of {name} total {actual}, which exceeds the sub-criterion weight of {expected}.",
+      "points_below_sub": "The active guiding points of {name} total {actual}, but they must equal the sub-criterion weight of {expected}.",
       "fix": "Fix {name}",
       "fixVersion": "Review the main criteria"
     },
@@ -615,7 +668,14 @@
       "equalActive": "The weight is split equally over the active sub-criteria; the remainder goes to the first items.",
       "reset": "Reset",
       "save": "Save weights",
-      "modeSaved": "Distribution mode saved."
+      "modeSaved": "Distribution mode saved.",
+      "pointsEditorTitle": "Weight distribution across guiding points",
+      "points": {
+        "balanced": "The active guiding points match the sub-criterion weight.",
+        "underAllocated": "{remaining} left to complete the sub-criterion weight; the version cannot be published until it is complete.",
+        "overAllocated": "The active guiding points exceed the sub-criterion weight by {over}.",
+        "equalActive": "The weight is split equally over the active guiding points; the remainder goes to the first points."
+      }
     },
     "budget": {
       "mainCapacity": "Main criterion weight",
@@ -678,12 +738,6 @@
       "count": "No attachments | 1 attachment | {count} attachments",
       "none": "None"
     },
-    "tree": {
-      "label": "Criteria tree",
-      "empty": "No criteria to display.",
-      "noChildren": "No child items.",
-      "open": "Open"
-    },
     "validation": {
       "weightFormat": "Enter a weight greater than zero with at most two decimals, up to 100000.",
       "exceedsRemaining": "The weight cannot exceed the remaining weight of {remaining}.",
@@ -736,6 +790,31 @@
           "title": "Move them to the new version",
           "description": "Every draft cycle is bound to the version you are publishing now."
         }
+      }
+    },
+    "history": {
+      "open": "Edit history",
+      "title": "Criteria edit history",
+      "subtitle": "Every publication of a new version and every text correction, with its scope, its effect on open requests and who made it.",
+      "emptyTitle": "No edits yet",
+      "emptyMessage": "Each publication that replaces a published version and each text correction appears here.",
+      "version": "Version {number}",
+      "versionWithLabel": "Version {number} — {label}",
+      "to": "to {version}",
+      "reason": "Reason: {reason}",
+      "noChanges": "No change details",
+      "unknownEditor": "Unknown",
+      "affected": "No open request affected | 1 open request | {count} open requests",
+      "kinds": {
+        "textCorrection": "Text correction"
+      },
+      "columns": {
+        "date": "Date",
+        "versions": "Version",
+        "kind": "Type and scope",
+        "changes": "Changes",
+        "impact": "Open requests affected",
+        "editor": "Made by"
       }
     }
   },
@@ -1003,6 +1082,9 @@
         },
         "sub": {
           "title": "Sub-criterion Details"
+        },
+        "history": {
+          "title": "Criteria edit history"
         }
       },
       "users": {
@@ -3035,7 +3117,11 @@
         "full": "Full entity data"
       },
       "generalUploadsTitle": "General upload limit",
-      "generalUploadsNote": "Applies to uploads other than assessment evidence, such as refund evidence. Evidence limits are set on each path."
+      "generalUploadsNote": "Applies to uploads other than assessment evidence, such as refund evidence. Evidence limits are set on each path.",
+      "scaleTitle": "Assessment scale",
+      "scale": "Score scale",
+      "scaleHint": "The scale applies to the criteria version published after saving; existing requests and award cycles keep their scale.",
+      "scaleHintPublished": "The published version uses the “{scale}” scale. The chosen scale applies to the criteria version published after saving; existing requests and award cycles keep their scale."
     },
     "sms": {
       "broadcastTitle": "Send messages",
@@ -3644,10 +3730,10 @@
       "items": "Items to complete",
       "kinds": {
         "cv": "CV entry",
-        "evidence": "Evidence"
+        "evidence": "Attachments"
       },
       "outcomes": {
-        "continue_as_submitted": "The review continues with the data available",
+        "continue_as_submitted": "The assessment continues with the data available",
         "decline": "The request is closed as incomplete"
       },
       "statuses": {
@@ -4020,7 +4106,24 @@
         "completed": "Completed"
       },
       "emptyTitle": "No requests in this tab",
-      "emptyMessage": "Requests assigned to you appear here."
+      "emptyMessage": "Requests assigned to you appear here.",
+      "columns": {
+        "request": "Request",
+        "state": "Status",
+        "progress": "Scoring progress",
+        "actions": "Actions"
+      },
+      "assignedOn": "Assigned on",
+      "progress": {
+        "remaining": "{count} left",
+        "done": "Scoring complete"
+      },
+      "actions": {
+        "view": "View",
+        "start": "Start the assessment",
+        "continue": "Continue the assessment",
+        "viewReview": "View the assessment"
+      }
     },
     "assignment": {
       "assignedAt": "Assigned on",
@@ -6087,7 +6190,7 @@
     }
   },
   "review": {
-    "title": "Assessor review",
+    "title": "Request assessment",
     "backToRequest": "Back to the request",
     "readOnly": "Read only",
     "progress": "Scoring progress",
@@ -6106,20 +6209,18 @@
     },
     "cvTitle": "CV entry",
     "noCv": "No CV entry was written.",
-    "evidenceTitle": "No clean evidence | 1 clean evidence file | {count} clean evidence files",
-    "noEvidence": "No clean evidence is available for this sub-criterion.",
+    "evidenceTitle": "Attachments ({count})",
+    "noEvidence": "No attachments for this sub-criterion.",
     "directScoreLabel": "Score of {name}",
-    "pointScoreLabel": "Score of guiding point {name}",
     "feedbackLegend": "Feedback to the entity",
     "feedbackOptional": "Optional. The entity sees these fields with the result, without your name.",
-    "actionsLabel": "Review actions",
+    "actionsLabel": "Assessment actions",
     "unsaved": "You have unsaved scores or feedback.",
     "allSaved": "Everything is saved.",
-    "start": "Start the review",
+    "start": "Start the assessment",
     "save": "Save",
     "requestCompletion": "Request completion",
     "complete": "Complete the assessment",
-    "completeHint": "Every item needs a saved score before completion. Feedback is optional.",
     "confirmComplete": {
       "title": "Complete the assessment?",
       "message": "The result is published to the entity. This cannot be undone.",
@@ -6127,19 +6228,19 @@
       "confirm": "Complete",
       "certificateMessage": "The result is published and the certificate is issued automatically. This cannot be undone."
     },
-    "startTitle": "The review has not started",
-    "startMessage": "Start the review to score the items and write feedback.",
+    "startTitle": "The assessment has not started",
+    "startMessage": "Start the assessment to score the items and write feedback.",
     "waitingTitle": "Waiting for the entity",
-    "waitingMessage": "The entity is completing the requested items. The review resumes after the resubmission or at the deadline.",
+    "waitingMessage": "The entity is completing the requested items. The assessment resumes after the resubmission or at the deadline.",
     "readOnlyTitle": "Read-only view",
     "readOnlyMessage": "Only the assigned assessor can score this request while it is open.",
-    "frozenMessage": "The entity account was deleted. The review is paused until the account is restored.",
+    "frozenMessage": "The entity account was deleted. The assessment is paused until the account is restored.",
     "conflict": {
       "title": "The request changed",
       "message": "This action is not possible in the current state. Refresh to see the latest state."
     },
     "unavailable": {
-      "title": "The review is not available",
+      "title": "The assessment is not available",
       "message": "This request is not assigned to you or your account cannot read it."
     },
     "reasonTitle": "Reason for the Super Admin action",
@@ -6147,8 +6248,6 @@
       "title": "Request completion from the entity",
       "notes": "Notes to the entity",
       "notesHint": "Between {min} and {max} characters.",
-      "items": "Items to complete",
-      "itemLabel": "{name}: {kind}",
       "itemNote": "Note on this item",
       "itemNoteHint": "Optional, up to {max} characters.",
       "deadline": "Completion deadline",
@@ -6159,7 +6258,19 @@
       "validation": {
         "deadline": "Choose a date from today up to {days} days ahead.",
         "items": "Choose at least one item."
-      }
+      },
+      "selectedCount": "{selected} of {total}",
+      "search": "Search sub-criteria",
+      "columnSub": "Sub-criterion",
+      "selectColumn": "Select {kind} for every sub-criterion of {main}",
+      "itemCell": "{sub} — {kind}",
+      "noMatches": "No matching sub-criteria.",
+      "selectedTitle": "Selected items ({count})",
+      "selectedEmpty": "Pick the items to complete from the table.",
+      "remove": "Remove {name}",
+      "detailsTitle": "Request details",
+      "addNote": "Add a note",
+      "addNoteFor": "Add a note on {name}"
     },
     "override": {
       "noticeTitle": "Published result",
@@ -6175,22 +6286,19 @@
     "toasts": {
       "fixErrors": "Correct the highlighted scores first.",
       "saved": "Scores and feedback were saved.",
-      "started": "The review started.",
+      "started": "The assessment started.",
       "completed": "The assessment is complete"
     },
     "summary": {
-      "title": "Assessor summary · optional",
+      "title": "Assessor summary",
       "lead": "A short summary of the whole result, in your own words.",
       "label": "Assessor summary (optional)",
       "help": "The entity sees this summary in the feedback report and the board reports. Do not include your name or personal data.",
       "counter": "{count} / {max}",
-      "save": "Save the summary",
       "saved": "The assessor summary was saved.",
       "cleared": "The assessor summary was cleared.",
       "version": "Version {version} · saved",
-      "lastSaved": "Last saved {date}",
       "empty": "No assessor summary was added.",
-      "emptyHint": "No assessor summary added (optional).",
       "errors": {
         "tooLong": "The summary is longer than 2000 characters.",
         "notApplicable": "The assessor summary applies to accredited assessments only.",
@@ -6199,7 +6307,13 @@
         "invalid": "Check the summary text and try again.",
         "failed": "The summary could not be saved. Try again."
       }
-    }
+    },
+    "sections": {
+      "assessment": "Assessment",
+      "request": "Request details",
+      "entity": "Entity details"
+    },
+    "evidenceDownload": "Download"
   },
   "cycles": {
     "statuses": {
@@ -6666,7 +6780,6 @@
       "generalNote": "General note",
       "generalNoteHint": "Optional. One note on the whole evaluation for the Award Secretary.",
       "submit": "Submit the evaluation",
-      "submitHint": "Every item must be scored before submitting.",
       "confirmSubmit": {
         "title": "Submit the evaluation?",
         "message": "Your scores and notes are locked after submission.",

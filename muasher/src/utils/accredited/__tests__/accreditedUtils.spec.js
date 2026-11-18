@@ -122,7 +122,16 @@ describe('assessment settings form', () => {
     advancedMinEntityAgeYears: 3,
     advancedDisqualificationScore: '60.00',
     committeeEntityDataVisibility: 'name_only',
+    scaleKind: 'of-10',
   }
+
+  it('sends the chosen assessment scale only when it changes', () => {
+    const values = settingsFormValues(settings)
+    expect(changedAssessmentSettings(settings, values)).toEqual({})
+    expect(changedAssessmentSettings(settings, { ...values, scaleKind: 'relative' })).toEqual({
+      scaleKind: 'relative',
+    })
+  })
 
   it('sends only the changed general keys and never the legacy path aliases', () => {
     const values = { ...settingsFormValues(settings), generalUploadMaxFileMb: '٣٠' }
@@ -132,6 +141,7 @@ describe('assessment settings form', () => {
       'advancedMinEntityAgeYears',
       'committeeEntityDataVisibility',
       'generalUploadMaxFileMb',
+      'scaleKind',
     ])
   })
 

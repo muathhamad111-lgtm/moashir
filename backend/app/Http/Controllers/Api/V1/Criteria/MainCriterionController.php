@@ -34,6 +34,7 @@ final class MainCriterionController
                 'version_number' => $page->version->version_number,
                 'status' => $page->version->status->value,
                 'label' => $page->version->label?->toArray(),
+                'active_weight_total' => $page->activeWeightTotal?->toDecimal(),
             ] : null,
         ]);
     }

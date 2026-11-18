@@ -215,7 +215,6 @@
 }
 
 .review-summary__lead,
-.review-summary__meta,
 .review-summary__empty {
   margin: 0;
   color: var(--theme-text-muted);
@@ -242,11 +241,6 @@
     color: var(--theme-danger-text);
     font-weight: var(--fw-semibold);
   }
-}
-
-.review-summary__actions {
-  @include flex(row, center, flex-start, var(--space-3));
-  flex-wrap: wrap;
 }
 
 .review-summary__text,

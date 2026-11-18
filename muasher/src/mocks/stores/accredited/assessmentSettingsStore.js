@@ -12,9 +12,11 @@ const DEFAULTS = {
   advancedDisqualificationScore: '60.00',
   advancedInitialReviewSlaDays: 14,
   committeeEntityDataVisibility: 'name_only',
+  scaleKind: 'of-10',
 }
 
 export const COMMITTEE_VISIBILITIES = ['name_only', 'code_only', 'full']
+export const SCALE_KIND_VALUES = ['of-10', 'relative']
 
 let settings = { ...DEFAULTS, evidenceAllowedTypes: [...DEFAULTS.evidenceAllowedTypes] }
 

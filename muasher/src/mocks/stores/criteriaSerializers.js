@@ -49,6 +49,11 @@ export function versionSummary(version) {
         versionNumber: version.versionNumber,
         status: version.status,
         label: version.label,
+        activeWeightTotal: fromHundredths(
+          mainsOf(version.id)
+            .filter((main) => main.active)
+            .reduce((total, main) => total + main.weight, 0),
+        ),
       }
     : null
 }

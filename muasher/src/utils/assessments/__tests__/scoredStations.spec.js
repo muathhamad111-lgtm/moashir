@@ -32,8 +32,21 @@ describe('scoredStationsOf', () => {
       'point-121': '6',
       'point-122': '',
     })
-    expect(stations[0]).toMatchObject({ id: 1, total: 2, complete: 1, state: 'partial' })
-    expect(stations[1]).toMatchObject({ id: 2, total: 1, complete: 0, state: 'empty' })
+    expect(stations[0]).toMatchObject({
+      id: 1,
+      total: 2,
+      complete: 1,
+      scored: 2,
+      scorable: 3,
+      state: 'partial',
+    })
+    expect(stations[1]).toMatchObject({
+      id: 2,
+      complete: 0,
+      scored: 0,
+      scorable: 1,
+      state: 'empty',
+    })
   })
 
   it('marks a station complete once all its sub-criteria are scored', () => {
@@ -44,5 +57,10 @@ describe('scoredStationsOf', () => {
       'sub-21': '9',
     })
     expect(stations.map((station) => station.state)).toEqual(['complete', 'complete'])
+  })
+
+  it('marks a station partial as soon as one item is scored, before any sub-criterion is done', () => {
+    const [first] = scoredStationsOf(MAINS, units, { 'point-121': '6' })
+    expect(first).toMatchObject({ complete: 0, scored: 1, scorable: 3, state: 'partial' })
   })
 })

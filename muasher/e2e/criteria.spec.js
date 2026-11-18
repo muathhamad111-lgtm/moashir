@@ -55,6 +55,10 @@ async function rowAction(page, rowText, actionName) {
 
 async function startDraft(page) {
   await page.getByRole('button', { name: /create a draft copy|إنشاء نسخة مسودة/ }).click()
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: /Create the draft|إنشاء المسودة/ })
+    .click()
   await expect(page.locator('.criteria-version--info')).toBeVisible()
   await expect(rows(page)).toHaveCount(9)
 }
@@ -178,7 +182,7 @@ test('capture the criteria editor and the publish dialog with the three scopes',
     fullPage: true,
   })
   await page.locator('.table__row .criteria-page__link').first().click()
-  await expect(page.locator('.weight-budget')).toBeVisible()
+  await expect(page.locator('.weight-editor')).toBeVisible()
   await page.screenshot({
     path: `test-results/criteria-editor-sub-${suffixOf(testInfo)}.png`,
     fullPage: true,
@@ -243,4 +247,58 @@ test('the System Administrator reads the criteria without any tree or text editi
   ).toHaveCount(0)
   await rows(page).first().locator('.dropdown-menu > button').click()
   await expect(page.getByRole('menuitem')).toHaveCount(1)
+})
+
+test('building a draft: add a main criterion and a sub-criterion, save the weights in one step, then discard the draft', async ({
+  page,
+}, testInfo) => {
+  await useTallViewport(page)
+  await seed(page, testInfo)
+  await openCriteria(page)
+  await startDraft(page)
+
+  await page.getByRole('button', { name: /Add main criterion|إضافة معيار رئيسي/ }).click()
+  const mainDialog = page.getByRole('dialog')
+  await mainDialog.locator('input[name="nameAr"]').fill('تميز الحوكمة')
+  await mainDialog.locator('input[name="nameEn"]').fill('Governance Excellence')
+  await mainDialog.locator('input[name="weight"]').fill('500')
+  await mainDialog.getByRole('button', { name: /^\s*(Add|إضافة)\s*$/ }).click()
+  await expect(rows(page)).toHaveCount(10)
+
+  await rows(page)
+    .filter({ hasText: isEn(testInfo) ? 'Governance Excellence' : 'تميز الحوكمة' })
+    .first()
+    .locator('.criteria-page__link')
+    .click()
+  await expect(page.locator('.criteria-page__breadcrumb')).toBeVisible()
+  await page
+    .getByRole('button', { name: /Add sub-criterion|إضافة معيار فرعي/ })
+    .first()
+    .click()
+  const subDialog = page.getByRole('dialog')
+  await subDialog.locator('input[name="subNameAr"]').fill('الإفصاح والشفافية')
+  await subDialog.locator('input[name="subNameEn"]').fill('Disclosure and Transparency')
+  await subDialog.locator('input[name="subWeight"]').fill('300')
+  await subDialog.getByRole('button', { name: /^\s*(Add|إضافة)\s*$/ }).click()
+  await expect(page.locator('.weight-editor__input')).toHaveCount(1)
+
+  const save = page.getByRole('button', { name: /Save weights|حفظ الأوزان/ })
+  await page.locator('.weight-editor__input').fill('600')
+  await expect(page.locator('.weight-editor__status--danger')).toBeVisible()
+  await expect(save).toBeDisabled()
+  await page.locator('.weight-editor__input').fill('500')
+  await expect(save).toBeEnabled()
+  await save.click()
+  await expect(page.locator('.weight-editor__status--success')).toBeVisible()
+  await expect(page.locator('.weight-editor__input')).toHaveValue('500.00')
+
+  await page.locator('.criteria-page__crumb').first().click()
+  await expect(rows(page)).toHaveCount(10)
+  await page.getByRole('button', { name: /Discard draft|حذف المسودة/ }).click()
+  await page
+    .getByRole('alertdialog')
+    .getByRole('button', { name: /^\s*(Delete|حذف)\s*$/ })
+    .click()
+  await expect(page.locator('.criteria-version--success')).toBeVisible()
+  await expect(rows(page)).toHaveCount(9)
 })

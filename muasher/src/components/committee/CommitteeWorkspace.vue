@@ -115,6 +115,7 @@ onMounted(state.load)
       />
       <CommitteeEntityCard :entity="evaluation.assignment.entity" />
       <AccreditedStations
+        compact
         :stations="stations"
         :active-id="activeMain?.id ?? null"
         @select="showStep(() => steps.goToMain($event))"
@@ -134,7 +135,6 @@ onMounted(state.load)
         :busy="actions.busy.value"
         :dirty="dirty"
         :can-score="canScore"
-        :complete="fullyScored"
         :general-note="notes.draft.value.general"
         :is-first="steps.isFirst.value"
         :is-last="steps.isLast.value"

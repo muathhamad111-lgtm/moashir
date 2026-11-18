@@ -321,6 +321,10 @@ test.describe('Users, settings and criteria alignment', () => {
     await signIn(page, testInfo, { id: 3, roles: ['criteria_officer'] })
     await page.goto('/admin/settings/criteria')
     await page.locator('.criteria-version-panel .btn--primary').first().click()
+    await page
+      .getByRole('dialog')
+      .getByRole('button', { name: text(testInfo, 'Create the draft', 'إنشاء المسودة') })
+      .click()
     await expect(page.locator('.cycle-bindings')).toContainText(
       text(testInfo, 'stays on its criteria version', 'تبقى دورة الجائزة الجارية'),
     )

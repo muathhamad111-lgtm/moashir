@@ -18,14 +18,14 @@ import { useCriteriaVersions } from '@/composables/useCriteriaVersions'
 import { useCriteriaNodeActions } from '@/composables/useCriteriaNodeActions'
 import { useDraftLifecycle } from '@/composables/useDraftLifecycle'
 import { criteriaService } from '@/services/criteriaService'
-import { statusLabelKey } from '@/utils/canonicalStatus'
+import { criteriaVersionOption } from '@/utils/criteriaVersionOption'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { CRITERIA_NODE_TYPES } from '@/constants/criteria'
 
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
-const { localized } = useCriteria()
+const { localized, weight } = useCriteria()
 const versions = useCriteriaVersions()
 const lifecycle = useDraftLifecycle()
 
@@ -64,13 +64,7 @@ const reorderable = computed(
 )
 
 const versionOptions = computed(() =>
-  versions.versions.value.map((version) => ({
-    value: version.id,
-    label: t('criteria.version.option', {
-      number: version.versionNumber,
-      status: t(statusLabelKey(version.status)),
-    }),
-  })),
+  versions.versions.value.map((version) => criteriaVersionOption(t, localized, version)),
 )
 
 const activeOptions = computed(() => [
@@ -131,15 +125,24 @@ function onAction(key, row) {
         <h1 class="criteria-page__title">{{ t('criteria.index.title') }}</h1>
         <p class="criteria-page__subtitle">{{ t('criteria.index.subtitle') }}</p>
       </div>
-      <div v-if="versionOptions.length > 1" class="criteria-page__version-picker">
-        <span class="criteria-page__picker-label">{{ t('criteria.version.picker') }}</span>
-        <AppSelect
-          variant="filter"
-          :model-value="currentVersion?.id ?? null"
-          :options="versionOptions"
-          :label="t('criteria.version.picker')"
-          @update:model-value="selectVersion"
-        />
+      <div class="criteria-page__header-actions">
+        <BaseButton
+          variant="secondary"
+          size="sm"
+          icon="docs"
+          :to="{ name: ROUTE_NAMES.ADMIN_CRITERIA_HISTORY }"
+          >{{ t('criteria.history.open') }}</BaseButton
+        >
+        <div v-if="versionOptions.length > 1" class="criteria-page__version-picker">
+          <span class="criteria-page__picker-label">{{ t('criteria.version.picker') }}</span>
+          <AppSelect
+            variant="filter"
+            :model-value="currentVersion?.id ?? null"
+            :options="versionOptions"
+            :label="t('criteria.version.picker')"
+            @update:model-value="selectVersion"
+          />
+        </div>
       </div>
     </header>
 
@@ -148,6 +151,7 @@ function onAction(key, row) {
       :version="currentVersion"
       :draft="versions.draft.value"
       :published="versions.published.value"
+      :versions="versions.versions.value"
       @changed="onVersionChanged"
     />
 
@@ -185,12 +189,16 @@ function onAction(key, row) {
         </template>
       </ListToolbar>
 
+      <p v-if="listedVersion?.activeWeightTotal" class="criteria-page__subtitle">
+        {{ t('criteria.index.totalWeight', { weight: weight(listedVersion.activeWeightTotal) }) }}
+      </p>
       <MainCriteriaTable
         :items="items"
         :status="status"
         :error-message="errorMessage"
         :access="access"
         :reorderable="reorderable"
+        :total-weight="listedVersion?.activeWeightTotal ?? null"
         @action="onAction"
         @move="(index, delta) => nodeActions.move(items, index, delta)"
         @retry="load"

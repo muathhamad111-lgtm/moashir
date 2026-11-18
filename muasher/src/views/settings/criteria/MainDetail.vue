@@ -5,14 +5,13 @@ import { useRoute, useRouter } from 'vue-router'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
-import Card from '@/components/ui/Card.vue'
 import Badge from '@/components/ui/Badge.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import CriteriaBreadcrumb from '@/components/criteria/CriteriaBreadcrumb.vue'
 import CriteriaVersionBanner from '@/components/criteria/CriteriaVersionBanner.vue'
 import WeightBudget from '@/components/criteria/WeightBudget.vue'
-import WeightDistributionEditor from '@/components/criteria/WeightDistributionEditor.vue'
+import CriteriaWeightsCard from '@/components/criteria/CriteriaWeightsCard.vue'
 import SubCriteriaTable from '@/components/criteria/SubCriteriaTable.vue'
 import SubCriterionForm from '@/components/criteria/SubCriterionForm.vue'
 import CriteriaTextCorrectionDialog from '@/components/criteria/CriteriaTextCorrectionDialog.vue'
@@ -21,10 +20,8 @@ import { useCriteriaAccess } from '@/composables/useCriteriaAccess'
 import { useMainCriterionDetail } from '@/composables/useMainCriterionDetail'
 import { useCriteriaNodeActions } from '@/composables/useCriteriaNodeActions'
 import { useEvaluationTypeSwitch } from '@/composables/useEvaluationTypeSwitch'
-import { useWeightDistribution } from '@/composables/useWeightDistribution'
 import { criteriaService } from '@/services/criteriaService'
 import { compareWeights } from '@/utils/weight'
-import { weightChanges } from '@/utils/criteriaOrder'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { CRITERIA_NODE_TYPES as NODE } from '@/constants/criteria'
 
@@ -39,33 +36,25 @@ const access = useCriteriaAccess(version)
 const nodeActions = useCriteriaNodeActions(NODE.SUB, refresh, () => mainId.value)
 const { toggleType } = useEvaluationTypeSwitch()
 
-const editedWeights = ref([])
 const formOpen = ref(false)
 const editing = ref(null)
 const correcting = ref(null)
 
-function resetWeights() {
-  editedWeights.value = subs.value.map((sub) => ({
+const weightItems = computed(() =>
+  subs.value.map((sub) => ({
     id: sub.id,
     label: localized(sub.name),
     weight: sub.weight,
     active: sub.active,
-  }))
-}
+  })),
+)
+const saveMode = (distributeEqually) =>
+  criteriaService.updateMain(mainId.value, { distributeEqually })
+const saveWeights = (weights) => criteriaService.saveSubWeights(mainId.value, weights)
 
-watch(subs, resetWeights)
 onMounted(load)
 watch(mainId, load)
 
-const distribution = useWeightDistribution({
-  saveParentMode: (distributeEqually) =>
-    criteriaService.updateMain(mainId.value, { distributeEqually }),
-  saveChildWeight: (id, weight) => criteriaService.updateSub(id, { weight }),
-  reload: refresh,
-})
-
-const mode = computed(() => (main.value?.distributeEqually ? 'equal' : 'manual'))
-const weightsDirty = computed(() => weightChanges(editedWeights.value, subs.value).length > 0)
 const addBlocked = computed(
   () => !main.value.distributeEqually && compareWeights(main.value.remainingWeight, '0') <= 0,
 )
@@ -146,36 +135,20 @@ function onAction(key, sub) {
         </div>
       </header>
 
-      <Card v-if="access.canEditTree.value" :title="t('criteria.weights.editorTitle')">
-        <WeightDistributionEditor
-          v-model:children="editedWeights"
-          :mode="mode"
-          :parent-weight="main.weight"
-          :disabled="distribution.saving.value"
-          @update:mode="distribution.changeMode"
-        />
+      <CriteriaWeightsCard
+        v-if="access.canEditTree.value"
+        :title="t('criteria.weights.editorTitle')"
+        :parent-weight="main.weight"
+        :distribute-equally="main.distributeEqually"
+        :items="weightItems"
+        :save-mode="saveMode"
+        :save-weights="saveWeights"
+        :reload="refresh"
+      >
         <p v-if="addBlocked" class="criteria-page__hint" role="note">
           {{ t('criteria.budget.exhaustedSubs') }}
         </p>
-        <template v-if="mode === 'manual'" #footer>
-          <div class="criteria-page__weight-actions">
-            <BaseButton
-              variant="ghost"
-              :disabled="!weightsDirty || distribution.saving.value"
-              @click="resetWeights"
-              >{{ t('criteria.weights.reset') }}</BaseButton
-            >
-            <BaseButton
-              variant="primary"
-              :loading="distribution.saving.value"
-              :disabled="!weightsDirty"
-              @click="distribution.saveWeights(editedWeights, subs)"
-            >
-              {{ t('criteria.weights.save') }}
-            </BaseButton>
-          </div>
-        </template>
-      </Card>
+      </CriteriaWeightsCard>
       <WeightBudget
         v-else
         :capacity="main.weight"

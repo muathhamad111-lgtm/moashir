@@ -2,6 +2,7 @@ $size-sidebar-collapsed: 4.5rem;
 $size-modal-sm: 24rem;
 $size-modal-md: 36rem;
 $size-modal-lg: 48rem;
+$size-modal-xl: 68rem;
 $size-menu-max-block: 20rem;
 $size-panel: 24rem;
 $size-control-min: 12rem;
@@ -12,6 +13,8 @@ $size-auth-card: 28rem;
 $size-tooltip-max: 16rem;
 $size-social-platform: 10rem;
 $size-touch-target: 2.75rem;
+// WCAG 2.2 SC 2.5.8 minimum target size (24 × 24 CSS px).
+$size-target-min: 1.5rem;
 $size-swatch-min: 8rem;
 $size-navbar: 4.5rem;
 $size-sidebar-logo-collapsed: 2.5rem;

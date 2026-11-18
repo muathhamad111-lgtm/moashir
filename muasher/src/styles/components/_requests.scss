@@ -52,3 +52,27 @@
   @include flex(row, center, flex-start, var(--space-2));
   flex-wrap: wrap;
 }
+
+.assigned-request__entity {
+  display: block;
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.assigned-request__number {
+  display: block;
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+  color: var(--theme-text-secondary);
+}
+
+// Kept narrow so the request column (entity name) gets the room.
+.assigned-request__progress {
+  inline-size: 8rem;
+}
+
+.assigned-request__actions {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}

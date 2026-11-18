@@ -85,7 +85,7 @@ function republishWithNewSubWeights(string $scope): CriteriaVersion
 {
     return republishCriteria($scope, static function (CriteriaVersion $draft): void {
         subOf($draft, 'M1.1')->forceFill(['weight' => Weight::of('500.00')])->save();
-        subOf($draft, 'M1.2')->forceFill(['weight' => Weight::of('500.00')])->save();
+        mainOf($draft, 'M1')->forceFill(['weight' => Weight::of('900.00')])->save();
     });
 }
 

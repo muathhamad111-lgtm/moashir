@@ -238,16 +238,20 @@ test.describe('excellence tools — staff and settings', () => {
     await expect(page.locator('input[name="vatRegistrationNumber"]')).toHaveValue('300012345600003')
   })
 
-  test('lets the assessor write the summary under review', async ({ page }, testInfo) => {
+  test('lets the assessor write the summary in the completion dialog', async ({
+    page,
+  }, testInfo) => {
     await seedSignedIn(page, ASSESSOR, { locale: localeOf(testInfo), theme: 'light' })
     await open(page, `/admin/requests/${UNDER_REVIEW}/review`, '.station-row__button')
     await page.locator('.station-row__button').last().click()
-    await expect(page.locator('[data-testid="review-summary"]')).toBeVisible()
+    await page.locator('[data-testid="review-complete"]').click()
+    await expect(page.locator('.modal [data-testid="review-summary"]')).toBeVisible()
     await page.locator('textarea[name="assessor-summary"]').fill('ملخص تجريبي لنتيجة التقييم.')
-    await page.locator('[data-testid="review-summary-save"]').click()
-    await expect(page.locator('[data-testid="review-summary-version"]')).toBeVisible()
-    await page.locator('[data-testid="review-summary"]').scrollIntoViewIfNeeded()
     await capture(page, 'assessor-summary', testInfo, { fullPage: false })
+    await page.locator('.modal__footer .btn').first().click()
+    await expect(page.locator('.toast--success').first()).toContainText(
+      localeOf(testInfo) === 'en' ? 'The assessor summary was saved.' : 'حُفظ ملخص المقيّم.',
+    )
   })
 
   test('lets the Content Officer read the maturity texts', async ({ page }, testInfo) => {

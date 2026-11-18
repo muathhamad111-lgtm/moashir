@@ -206,5 +206,7 @@ export function toAssessmentSettings(raw = {}) {
     advancedMinEntityAgeYears: raw.advancedMinEntityAgeYears ?? null,
     advancedDisqualificationScore: raw.advancedDisqualificationScore ?? null,
     committeeEntityDataVisibility: raw.committeeEntityDataVisibility ?? null,
+    scaleKind: raw.scaleKind ?? null,
+    publishedScaleKind: raw.publishedVersion?.scaleKind ?? null,
   }
 }

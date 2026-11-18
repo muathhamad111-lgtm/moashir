@@ -409,7 +409,9 @@ describe('self assessment mock — start, save and submit', () => {
       id: units[6].id,
       code: units[6].code,
     })
-    expect(body.errors[`scores.${units[6].group}.${units[6].id}`][0]).toContain(units[6].code)
+    expect(body.errors[`scores.${units[6].group}.${units[6].id}`][0]).toBe(
+      'This item has no score yet.',
+    )
   })
 
   it('submits with the last scores and answers with the immutable result, then 409 on a second submit', async () => {

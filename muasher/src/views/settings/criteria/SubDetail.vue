@@ -12,6 +12,8 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import CriteriaBreadcrumb from '@/components/criteria/CriteriaBreadcrumb.vue'
 import CriteriaVersionBanner from '@/components/criteria/CriteriaVersionBanner.vue'
 import WeightBudget from '@/components/criteria/WeightBudget.vue'
+import CriteriaWeightsCard from '@/components/criteria/CriteriaWeightsCard.vue'
+import SubCriterionFacts from '@/components/criteria/SubCriterionFacts.vue'
 import GuidingPointsTable from '@/components/criteria/GuidingPointsTable.vue'
 import GuidingPointForm from '@/components/criteria/GuidingPointForm.vue'
 import CriteriaTextCorrectionDialog from '@/components/criteria/CriteriaTextCorrectionDialog.vue'
@@ -20,13 +22,14 @@ import { useCriteriaAccess } from '@/composables/useCriteriaAccess'
 import { useSubCriterionDetail } from '@/composables/useSubCriterionDetail'
 import { useCriteriaNodeActions } from '@/composables/useCriteriaNodeActions'
 import { useEvaluationTypeSwitch } from '@/composables/useEvaluationTypeSwitch'
+import { criteriaService } from '@/services/criteriaService'
 import { compareWeights } from '@/utils/weight'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { CRITERIA_NODE_TYPES as NODE, EVALUATION_TYPES } from '@/constants/criteria'
 
 const { t } = useI18n()
 const route = useRoute()
-const { localized, weight } = useCriteria()
+const { localized } = useCriteria()
 
 const mainId = computed(() => Number(route.params.mainId))
 const subId = computed(() => Number(route.params.subId))
@@ -68,33 +71,17 @@ const crumbs = computed(() => [
   { label: localized(sub.value.name) },
 ])
 
-const facts = computed(() => [
-  { key: 'weight', label: t('criteria.fields.weight'), value: weight(sub.value.weight) },
-  {
-    key: 'available',
-    label: t('criteria.sub.availableFromMain'),
-    value: weight(sub.value.availableWeight),
-  },
-  {
-    key: 'cv',
-    label: t('criteria.sub.cvField'),
-    value: sub.value.hasCv ? t('criteria.sub.enabled') : t('criteria.sub.disabled'),
-  },
-  {
-    key: 'note',
-    label: t('criteria.sub.assessorNoteField'),
-    value: localized(sub.value.assessorNoteLabel) || t('criteria.sub.noPrompt'),
-  },
-  {
-    key: 'attachments',
-    label: t('criteria.columns.attachments'),
-    value: t(
-      'criteria.attachments.count',
-      { count: sub.value.attachments.length },
-      sub.value.attachments.length,
-    ),
-  },
-])
+const weightItems = computed(() =>
+  points.value.map((point) => ({
+    id: point.id,
+    label: localized(point.description),
+    weight: point.weight,
+    active: point.active,
+  })),
+)
+const saveMode = (distributeEqually) =>
+  criteriaService.updateSub(subId.value, { distributeEqually })
+const saveWeights = (weights) => criteriaService.savePointWeights(subId.value, weights)
 
 function openForm(point = null) {
   editing.value = point
@@ -160,19 +147,30 @@ function onAction(key, point) {
       </header>
       <p v-if="sub.description" class="criteria-page__subtitle">{{ localized(sub.description) }}</p>
 
-      <dl class="criteria-page__facts">
-        <div v-for="fact in facts" :key="fact.key" class="criteria-page__fact">
-          <dt>{{ fact.label }}</dt>
-          <dd>{{ fact.value }}</dd>
-        </div>
-      </dl>
+      <SubCriterionFacts :sub="sub" />
 
       <Card v-if="!isGuidingPoints" :title="t('criteria.sub.directTitle')">
         <p class="criteria-page__direct-text">{{ t('criteria.sub.directExplanation') }}</p>
       </Card>
 
       <template v-else>
+        <CriteriaWeightsCard
+          v-if="access.canEditTree.value && points.length"
+          :title="t('criteria.weights.pointsEditorTitle')"
+          level="points"
+          :parent-weight="sub.weight"
+          :distribute-equally="sub.distributeEqually"
+          :items="weightItems"
+          :save-mode="saveMode"
+          :save-weights="saveWeights"
+          :reload="refresh"
+        >
+          <p v-if="addBlocked" class="criteria-page__hint" role="note">
+            {{ t('criteria.budget.exhaustedPoints') }}
+          </p>
+        </CriteriaWeightsCard>
         <WeightBudget
+          v-else
           :capacity="sub.weight"
           :allocated="sub.allocatedPointWeight"
           :capacity-label="t('criteria.budget.subCapacity')"

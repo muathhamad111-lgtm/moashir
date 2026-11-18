@@ -10,6 +10,7 @@ import ReorderButtons from './ReorderButtons.vue'
 import { useCriteria } from '@/composables/useCriteria'
 import { useCriteriaRowActions } from '@/composables/useCriteriaRowActions'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import { percentOf } from '@/utils/weight'
 
 const props = defineProps({
   items: { type: Array, required: true },
@@ -17,11 +18,17 @@ const props = defineProps({
   errorMessage: { type: String, default: '' },
   access: { type: Object, required: true },
   reorderable: { type: Boolean, default: false },
+  totalWeight: { type: String, default: null },
 })
 
 const emit = defineEmits(['action', 'move', 'retry', 'add'])
 const { t } = useI18n()
 const { localized, weight } = useCriteria()
+
+function shareOf(item) {
+  if (!item.active || !props.totalWeight || Number(props.totalWeight) === 0) return ''
+  return t('criteria.index.share', { value: percentOf(item.weight, props.totalWeight) })
+}
 const { actionsFor } = useCriteriaRowActions(props.access)
 
 const OPEN_SUBS = { label: 'criteria.actions.openSubs', icon: 'diagram' }
@@ -82,6 +89,7 @@ const columns = computed(() => [
             : t('criteria.distribution.manual')
         }}
       </span>
+      <span v-if="shareOf(item)" class="criteria-page__sub-count">{{ shareOf(item) }}</span>
     </template>
     <template #cell-balance="{ item }">
       <Badge v-if="item.weightBalanced" variant="success">

@@ -173,8 +173,8 @@ test('a completion request limits edits to the listed items and shows the deadli
   await expect(notice).not.toContainText('M2.2')
   await expect(notice).toContainText(
     isEn(testInfo)
-      ? 'The review continues with the data available'
-      : 'تستمر المراجعة بالبيانات المتاحة',
+      ? 'The assessment continues with the data available'
+      : 'يستمر التقييم بالبيانات المتاحة',
   )
   await expect(notice.locator('.date-stamp__hijri')).toBeVisible()
   await page.screenshot({

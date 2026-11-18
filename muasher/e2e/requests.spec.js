@@ -161,13 +161,13 @@ test.describe('Assessor', () => {
     await expect(page.locator('.review-header')).toContainText(
       isEn(testInfo) ? 'Under review' : 'قيد المراجعة',
     )
-    await page.locator('.review-actions .btn--secondary').nth(1).click()
+    await page.locator('[data-testid="review-request-completion"]').click()
     const dialog = page.locator('.modal')
     await dialog
       .locator('textarea')
       .first()
       .fill('يرجى إرفاق القوائم المالية المدققة للعام الأخير وتحديث وصف الخطة الاستراتيجية.')
-    await dialog.locator('.completion-dialog__option .checkbox input').nth(1).check()
+    await dialog.locator('.completion-dialog__option input').nth(1).check()
     await dialog
       .locator('input[type="date"]')
       .fill(new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10))

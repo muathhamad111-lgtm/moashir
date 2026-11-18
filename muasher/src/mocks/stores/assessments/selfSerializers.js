@@ -69,9 +69,17 @@ function scoresByLevel(record, units) {
   return { subs: byLevel[SCORE_LEVELS.SUB], points: byLevel[SCORE_LEVELS.POINT] }
 }
 
-export function scoresResource(record) {
+export function scoringProgressOf(record) {
   const units = scorableUnits(boundTree(record))
   const sheet = sheetOf(record)
+  return {
+    scored: units.filter((unit) => sheet.has(unitKey(unit.level, unit.id))).length,
+    required: units.length,
+  }
+}
+
+export function scoresResource(record) {
+  const units = scorableUnits(boundTree(record))
   return {
     assessment: assessmentResource(record),
     scale: {
@@ -79,10 +87,7 @@ export function scoresResource(record) {
       maximum: decimalRaw(scaleMaximumHundredths(record.scaleKind)),
     },
     scores: scoresByLevel(record, units),
-    progress: {
-      scored: units.filter((unit) => sheet.has(unitKey(unit.level, unit.id))).length,
-      required: units.length,
-    },
+    progress: scoringProgressOf(record),
   }
 }
 

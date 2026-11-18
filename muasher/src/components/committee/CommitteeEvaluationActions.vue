@@ -10,7 +10,6 @@ const props = defineProps({
   busy: { type: String, default: '' },
   dirty: { type: Boolean, default: false },
   canScore: { type: Boolean, default: false },
-  complete: { type: Boolean, default: false },
   generalNote: { type: String, default: '' },
   isFirst: { type: Boolean, default: true },
   isLast: { type: Boolean, default: true },
@@ -71,8 +70,5 @@ const noteError = computed(() =>
         >
       </template>
     </CriterionStepButtons>
-    <p v-if="canScore && isLast && !complete" class="review-actions__hint">
-      {{ t('award.evaluation.submitHint') }}
-    </p>
   </div>
 </template>

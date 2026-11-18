@@ -60,6 +60,7 @@ enum SettingKey: string
     case AdvancedDisqualificationScore = 'assessment.advanced_disqualification_score';
     case AdvancedInitialReviewSlaDays = 'assessment.advanced_initial_review_sla_days';
     case CommitteeEntityDataVisibility = 'assessment.committee_entity_data_visibility';
+    case AssessmentScaleKind = 'assessment.scale_kind';
     case CertificateLevelThresholds = 'certificates.level_thresholds';
     case AccreditedCertificateIssuance = 'certificates.accredited_issuance_enabled';
     case ContactRetentionMonths = 'contact.retention_months';
@@ -91,7 +92,7 @@ enum SettingKey: string
     {
         return match ($this) {
             self::PaymentMode, self::PaymentCheckoutPattern, self::SmsMode, self::EmailMode, self::EmailTestAddress,
-            self::AiMode, self::AiPlacement, self::CommitteeEntityDataVisibility, self::VatRegistrationNumber,
+            self::AiMode, self::AiPlacement, self::CommitteeEntityDataVisibility, self::AssessmentScaleKind, self::VatRegistrationNumber,
             self::PeriodicCadence, self::PeriodicAudience, self::PeriodicCertificateValidity, self::PeriodicRolloutFrom => SettingType::String,
             self::PaymentOrderValidityMinutes, self::AbandonedCartAfterHours, self::FilesMaxSizeMb,
             self::AccreditedReviewSlaDays, self::AdvancedMinEntityAgeYears, self::AdvancedInitialReviewSlaDays,
@@ -149,7 +150,7 @@ enum SettingKey: string
             self::AccreditedPathDescription => LocalizedText::fromTranslation('assessments.path_descriptions.accredited')->toArray(),
             self::AdvancedPathDescription => LocalizedText::fromTranslation('assessments.path_descriptions.advanced')->toArray(),
             self::PaymentApplePayDomainConfirmation, self::PaymentStcPayActivationConfirmation, self::EmailTestAddress,
-            self::VatRegistrationNumber, self::PeriodicRolloutFrom => null,
+            self::VatRegistrationNumber, self::PeriodicRolloutFrom, self::AssessmentScaleKind => null,
         };
     }
 

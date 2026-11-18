@@ -4,7 +4,7 @@ import { useField } from 'vee-validate'
 import { useI18n } from 'vue-i18n'
 import BaseInput from '@/components/form/BaseInput.vue'
 import { isFilled, sameRawValue } from '@/utils/assessments/scoreSheet'
-import { twoDecimals } from '@/utils/percentText'
+import { compactDecimal, twoDecimals } from '@/utils/percentText'
 
 const props = defineProps({
   name: { type: String, required: true },
@@ -21,16 +21,18 @@ const isSaved = computed(
   () => Boolean(props.saved) && sameRawValue(value.value, props.saved.rawValue),
 )
 
+const max = computed(() => compactDecimal(props.maximum))
+
 const hint = computed(() => {
   if (isSaved.value) {
     return t('assessment.self.score.saved', {
-      raw: props.saved.rawValue,
-      max: props.maximum,
+      raw: compactDecimal(props.saved.rawValue),
+      max: max.value,
       percent: twoDecimals(props.saved.percent),
     })
   }
-  if (isFilled(value.value)) return t('assessment.self.score.unsaved', { max: props.maximum })
-  return t('assessment.self.score.empty', { max: props.maximum })
+  if (isFilled(value.value)) return t('assessment.self.score.unsaved', { max: max.value })
+  return t('assessment.self.score.empty', { max: max.value })
 })
 </script>
 

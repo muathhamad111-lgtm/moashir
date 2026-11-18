@@ -1,10 +1,11 @@
 import { http } from '../contract/http'
 import { envelope, noContent } from '../contract/responses'
 import { criteriaProblemMessages } from '../fixtures/criteriaMessages'
-import { findVersion, liveVersions } from '../stores/criteriaStore'
+import { editEvents, findVersion, liveVersions } from '../stores/criteriaStore'
 import { consistencyProblems } from '../stores/criteriaRules'
 import { versionResource } from '../stores/criteriaSerializers'
 import { createDraft, discardDraft } from '../stores/criteriaVersions'
+import { publicationPreview } from '../stores/criteriaPreview'
 import { correctTexts, publishVersion } from '../stores/criteriaPublishing'
 import { interpolate, requestLocale } from '../stores/criteriaRejection'
 import { FieldCollector } from '../stores/criteriaValidation'
@@ -45,7 +46,41 @@ function withMessage(entry, locale) {
   }
 }
 
+function versionRef(versionId) {
+  const version = findVersion(versionId)
+  return version
+    ? { id: version.id, versionNumber: version.versionNumber, label: version.label ?? null }
+    : null
+}
+
+function editEventResource(event) {
+  return {
+    id: event.id,
+    kind: event.kind,
+    scope: event.scope,
+    fromVersion: versionRef(event.fromVersionId),
+    toVersion: event.toVersionId ? versionRef(event.toVersionId) : null,
+    changeCount: event.changeCount ?? 0,
+    scoreAffectingCount: event.rescoredCodes?.length ?? 0,
+    changes: [],
+    affectedOpenCount: event.affectedOpenCount ?? 0,
+    reason: event.reason ?? null,
+    editedBy: { id: event.actorId, name: null },
+    createdAt: event.createdAt,
+  }
+}
+
 export const criteriaVersionHandlers = [
+  http.get(
+    '/api/v1/criteria/edit-events',
+    criteriaRoute(({ request }) => {
+      actorWith(CAN.VIEW)
+      const query = new URL(request.url).searchParams
+      const page = paginate([...editEvents()].reverse(), query)
+      return envelope(page.items.map(editEventResource), { pagination: page.pagination })
+    }),
+  ),
+
   http.get(
     BASE,
     criteriaRoute(({ request }) => {
@@ -99,6 +134,14 @@ export const criteriaVersionHandlers = [
         { consistent: problems.length === 0, problems },
         { awardCycles: cycleBindingsSummary() },
       )
+    }),
+  ),
+
+  http.get(
+    `${BASE}/:versionId/changes`,
+    criteriaRoute(({ params }) => {
+      actorWith(CAN.VIEW)
+      return envelope(publicationPreview(found(findVersion(params.versionId))))
     }),
   ),
 

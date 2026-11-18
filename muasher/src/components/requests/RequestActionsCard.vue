@@ -8,8 +8,13 @@ import { usePermissions } from '@/composables/usePermissions'
 import { useAuthStore } from '@/stores/auth'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { ROUTE_NAMES } from '@/constants/routeNames'
-import { ACCREDITED_STATUSES, FORCE_BLOCKED_STATUSES } from '@/constants/accredited'
+import {
+  ACCREDITED_STATUSES,
+  ASSIGNMENT_STATUSES,
+  FORCE_BLOCKED_STATUSES,
+} from '@/constants/accredited'
 import { ASSESSMENT_PATHS } from '@/constants/assessment'
+import { reviewActionKey } from '@/utils/reviewAction'
 
 const props = defineProps({
   detail: { type: Object, required: true },
@@ -32,6 +37,17 @@ const mayReview = computed(
   () =>
     canAny([PERMISSIONS.REQUESTS_REVIEW_READ, PERMISSIONS.ASSESSMENT_SCORE_MANAGE]) &&
     props.detail.assignmentHistory.length > 0,
+)
+const isAssignee = computed(() =>
+  props.detail.assignmentHistory.some(
+    (assignment) =>
+      assignment.status === ASSIGNMENT_STATUSES.ACTIVE && assignment.assessor?.id === auth.user?.id,
+  ),
+)
+const reviewLabel = computed(() =>
+  isAssignee.value
+    ? t(`requests.assigned.actions.${reviewActionKey(props.detail.status)}`)
+    : t('requests.actions.openReview'),
 )
 const mayBundle = computed(() => can(PERMISSIONS.EVIDENCE_VIEW))
 const mayReopen = computed(
@@ -76,7 +92,7 @@ function openReview() {
         t('requests.actions.return')
       }}</BaseButton>
       <BaseButton v-if="mayReview" variant="secondary" icon="clipboard-check" @click="openReview">{{
-        t('requests.actions.openReview')
+        reviewLabel
       }}</BaseButton>
       <BaseButton
         v-if="mayBundle"

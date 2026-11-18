@@ -9,8 +9,10 @@ import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import ReviewHeader from './ReviewHeader.vue'
 import ReviewEntityCard from './ReviewEntityCard.vue'
 import ReviewNotices from './ReviewNotices.vue'
+import ReviewSections from './ReviewSections.vue'
 import ReviewMainPanel from './ReviewMainPanel.vue'
 import ReviewActions from './ReviewActions.vue'
+import ReviewCompletionAction from './ReviewCompletionAction.vue'
 import RequestCompletionDialog from './RequestCompletionDialog.vue'
 import ScoreOverrideDialog from './ScoreOverrideDialog.vue'
 import CompleteReviewDialog from './CompleteReviewDialog.vue'
@@ -29,6 +31,9 @@ import { scoredStationsOf } from '@/utils/assessments/scoredStations'
 const props = defineProps({
   assessmentId: { type: Number, required: true },
 })
+
+// The page shows the request number beside its title.
+const emit = defineEmits(['loaded'])
 
 const { t } = useI18n()
 const auth = useAuthStore()
@@ -66,6 +71,7 @@ const fullyScored = computed(
 )
 watch(review, (current, previous) => {
   if (!current || current === previous) return
+  emit('loaded', current.assessment.number)
   if (!scoreSheet.dirty.value) scoreSheet.resetFrom(current.scores)
   if (!feedback.dirty.value) feedback.resetFrom(current.feedback)
 })
@@ -114,62 +120,69 @@ onMounted(reviewState.load)
     />
     <template v-else-if="review">
       <ReviewHeader :review="review" />
+      <ReviewCompletionAction v-if="canRequestCompletion" @open="completionOpen = true" />
       <ReviewNotices
         :review="review"
         :conflict-code="actions.conflictCode.value"
+        :can-start="canStart"
+        :starting="actions.busy.value === 'start'"
+        @start="actions.startReview"
         @refresh="refresh"
         @override="overrideOpen = true"
       />
-      <ReviewEntityCard :entity="review.entity" :context="review.context" />
-      <AccreditedStations
-        :stations="stations"
-        :active-id="activeMain?.id ?? null"
-        @select="showStep(() => steps.goToMain($event))"
-      />
-      <div ref="panelTop" class="review-workspace__main" tabindex="-1">
-        <ReviewMainPanel
-          v-if="activeMain"
-          :key="activeMain.id"
-          :main="activeMain"
-          :step="steps.position.value + 1"
-          :total="steps.total.value"
-          :workspace="workspace"
-          @download="download"
-        />
-      </div>
-      <ReviewSummaryCard
-        v-if="offersCertificate && steps.isLast.value"
-        :assessment-id="assessment.id"
-        :summary="review.summary"
-        :editable="canScore"
-        :ask-reason="askReason"
-        :requires-reason="auth.isSuperAdmin"
-        @saved="reviewState.patch({ summary: $event })"
-      />
-      <ReviewActions
-        :busy="actions.busy.value"
-        :dirty="dirty"
-        :can-score="canScore"
-        :can-start="canStart"
-        :can-request-completion="canRequestCompletion"
-        :complete="fullyScored"
-        :is-first="steps.isFirst.value"
-        :is-last="steps.isLast.value"
-        @previous="showStep(steps.previous)"
-        @next="showStep(steps.next)"
-        @start="actions.startReview"
-        @save="actions.saveAll"
-        @request-completion="completionOpen = true"
-        @complete="completeOpen = true"
-      />
+      <ReviewSections :request-id="assessment.id">
+        <template #assessment>
+          <AccreditedStations
+            compact
+            :stations="stations"
+            :active-id="activeMain?.id ?? null"
+            @select="showStep(() => steps.goToMain($event))"
+          />
+          <div ref="panelTop" class="review-workspace__main" tabindex="-1">
+            <ReviewMainPanel
+              v-if="activeMain"
+              :key="activeMain.id"
+              :main="activeMain"
+              :step="steps.position.value + 1"
+              :total="steps.total.value"
+              :workspace="workspace"
+              @download="download"
+            />
+          </div>
+          <ReviewSummaryCard
+            v-if="offersCertificate && steps.isLast.value && !canScore"
+            :summary="review.summary"
+          />
+          <ReviewActions
+            :busy="actions.busy.value"
+            :dirty="dirty"
+            :can-score="canScore"
+            :is-first="steps.isFirst.value"
+            :is-last="steps.isLast.value"
+            @previous="showStep(steps.previous)"
+            @next="showStep(steps.next)"
+            @save="actions.saveAll"
+            @complete="completeOpen = true"
+          />
+        </template>
+        <template #entity>
+          <ReviewEntityCard :entity="review.entity" :context="review.context" />
+        </template>
+      </ReviewSections>
       <CompleteReviewDialog
         v-model="completeOpen"
         :message="completeMessage"
-        :summary-missing="offersCertificate && !review.summary"
+        :assessment-id="assessment.id"
+        :offers-summary="offersCertificate"
+        :summary="review.summary"
+        :ask-reason="askReason"
+        :requires-reason="auth.isSuperAdmin"
+        @saved="reviewState.patch({ summary: $event })"
         @confirm="actions.complete"
       />
       <RequestCompletionDialog
         v-model="completionOpen"
+        :active-main-id="activeMain?.id ?? null"
         :assessment-id="assessment.id"
         :criteria="review.criteria"
         :ask-reason="askReason"

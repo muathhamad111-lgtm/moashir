@@ -10,9 +10,11 @@ import { ACCREDITED_STATUSES, REVIEW_MODES } from '@/constants/accredited'
 const props = defineProps({
   review: { type: Object, required: true },
   conflictCode: { type: String, default: '' },
+  canStart: { type: Boolean, default: false },
+  starting: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['refresh', 'override'])
+const emit = defineEmits(['refresh', 'override', 'start'])
 const { t } = useI18n()
 const auth = useAuthStore()
 
@@ -56,7 +58,19 @@ const mayOverride = computed(
       variant="info"
       :title="t('review.startTitle')"
       :message="t('review.startMessage')"
-    />
+    >
+      <template v-if="canStart" #action>
+        <BaseButton
+          variant="primary"
+          size="sm"
+          icon="play"
+          data-testid="review-start"
+          :loading="starting"
+          @click="emit('start')"
+          >{{ t('review.start') }}</BaseButton
+        >
+      </template>
+    </AssessmentNotice>
     <AssessmentNotice
       v-if="waitsForEntity"
       variant="warning"

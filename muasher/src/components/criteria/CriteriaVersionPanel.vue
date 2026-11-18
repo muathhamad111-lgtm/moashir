@@ -7,6 +7,7 @@ import CriteriaProblemList from './CriteriaProblemList.vue'
 import CriteriaPublishDialog from './CriteriaPublishDialog.vue'
 import CriteriaTextCorrectionDialog from './CriteriaTextCorrectionDialog.vue'
 import CriteriaCycleBindings from './CriteriaCycleBindings.vue'
+import CriteriaDraftDialog from './CriteriaDraftDialog.vue'
 import { useCycleBindings } from '@/composables/useCycleBindings'
 import { useCriteriaAccess } from '@/composables/useCriteriaAccess'
 import { useConsistencyCheck } from '@/composables/usePublishCriteria'
@@ -20,6 +21,7 @@ const props = defineProps({
   version: { type: Object, required: true },
   draft: { type: Object, default: null },
   published: { type: Object, default: null },
+  versions: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(['changed'])
@@ -31,7 +33,7 @@ const cycles = useCycleBindings()
 
 const publishOpen = ref(false)
 const correctionOpen = ref(false)
-const creating = ref(false)
+const draftDialogOpen = ref(false)
 
 function loadBindings() {
   if (access.isDraft.value) cycles.load(props.version.id)
@@ -51,11 +53,9 @@ const canStartDraft = computed(
   () => access.isFrozen.value && access.canManage.value && !props.draft,
 )
 
-async function startDraft() {
-  creating.value = true
-  const draft = await lifecycle.createDraft({ fromPublished: Boolean(props.published) })
-  creating.value = false
-  if (draft) emit('changed', { versionId: draft.id })
+async function cloneDraft(payload) {
+  const draft = await lifecycle.cloneDraft(payload)
+  emit('changed', { versionId: draft.id })
 }
 
 async function discard() {
@@ -92,8 +92,7 @@ function onCorrected(outcome) {
           v-if="canStartDraft"
           variant="primary"
           icon="copy"
-          :loading="creating"
-          @click="startDraft"
+          @click="draftDialogOpen = true"
         >
           {{ t('criteria.version.editPublished') }}
         </BaseButton>
@@ -148,6 +147,13 @@ function onCorrected(outcome) {
       {{ t('criteria.version.consistent') }}
     </p>
 
+    <CriteriaDraftDialog
+      v-if="canStartDraft"
+      v-model="draftDialogOpen"
+      :versions="versions"
+      :source-id="version.id"
+      :create="cloneDraft"
+    />
     <CriteriaPublishDialog
       v-if="access.isDraft.value"
       v-model="publishOpen"

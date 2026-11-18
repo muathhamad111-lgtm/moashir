@@ -21,8 +21,8 @@ const assessorNotes = {
     en: 'The strategy rests on a documented beneficiary needs study over the past two years and a good environmental analysis. Updating the study annually and linking its findings directly to initiatives is suggested.',
   },
   202: {
-    ar: 'الخطة الاستراتيجية معتمدة وواضحة، وخطة النشر متوفرة لكنها بحاجة إلى مؤشرات تنفيذ أدق على مستوى الإدارات. مستوى الأداء جيد بشكل عام.',
-    en: 'The strategic plan is approved and clear, and a deployment plan exists but needs sharper execution indicators at the department level. Overall performance is good.',
+    ar: 'الخطة الاستراتيجية معتمدة وواضحة، وخطة النشر متوفرة لكنها بحاجة إلى مؤشرات تنفيذ أدق على مستوى الإدارات. يُوصى بربط كل مبادرة بمؤشر تنفيذ ومسؤول عنه.',
+    en: 'The strategic plan is approved and clear, and a deployment plan exists but needs sharper execution indicators at the department level. Linking every initiative to an execution indicator and an owner is recommended.',
   },
   301: {
     ar: 'خطة التدريب السنوية مبنية على تحليل فجوات المهارات، وبرنامج المتطوعين منظم. يُوصى بقياس أثر التدريب على الأداء بشكل كمّي.',
@@ -41,24 +41,20 @@ const assessorNotes = {
     en: 'Financial statements are audited and financial sustainability is good, but income-source diversification remains limited; activating the approved income diversification plan is recommended.',
   },
   501: {
-    ar: 'منهجية تصميم البرامج واضحة ومبنية على احتياجات المستفيدين، مع دليل معتمد للبرامج والخدمات. مستوى جيد جدًا.',
-    en: 'The program design methodology is clear and grounded in beneficiary needs, with an approved programs and services manual. A very good level.',
+    ar: 'منهجية تصميم البرامج واضحة ومبنية على احتياجات المستفيدين، مع دليل معتمد للبرامج والخدمات. يُوصى بإشراك المستفيدين في مراجعة البرامج قبل إطلاقها.',
+    en: 'The program design methodology is clear and grounded in beneficiary needs, with an approved programs and services manual. Involving beneficiaries in reviewing programs before launch is recommended.',
   },
   502: {
     ar: 'خرائط العمليات متوفرة ويتم تحسينها، غير أن التحسين المستمر بحاجة إلى دورية موثقة ومؤشرات كفاءة أوضح.',
     en: 'Process maps exist and are being improved, yet continuous improvement needs a documented cadence and clearer efficiency indicators.',
   },
-  503: {
-    ar: 'خطة التحول الرقمي معتمدة ومرتبطة بالأهداف التشغيلية، مع تقدم ملموس. يُوصى بتسريع رقمنة خدمات المستفيدين.',
-    en: 'The digital transformation plan is approved and linked to operational goals, with tangible progress. Accelerating the digitization of beneficiary services is recommended.',
-  },
   601: {
-    ar: 'مؤشرات رضا المستفيدين مرتفعة وموثقة عبر استبيانات دورية، مع ولاء واضح. أداء متميز في هذا المعيار.',
-    en: 'Beneficiary satisfaction indicators are high and documented through periodic surveys, with clear loyalty. Distinguished performance on this criterion.',
+    ar: 'خطة التحول الرقمي معتمدة ومرتبطة بالأهداف التشغيلية، مع تقدم ملموس في إدارة المعرفة. يُوصى بتسريع رقمنة خدمات المستفيدين.',
+    en: 'The digital transformation plan is approved and linked to operational goals, with tangible progress in knowledge management. Accelerating the digitization of beneficiary services is recommended.',
   },
   602: {
-    ar: 'تقارير قياس الأثر تُظهر نتائج إيجابية على المستفيدين، مع منهجية قياس سليمة يمكن تعزيزها بمقارنات مرجعية.',
-    en: 'Impact measurement reports show positive results for beneficiaries, with a sound methodology that could be reinforced with benchmarking.',
+    ar: 'تُوثّق الجهة الدروس المستفادة من برامجها وتشاركها بين فرقها. يُوصى بآلية معتمدة لجمع الأفكار المبتكرة وتقييمها وقياس أثر ما يُنفّذ منها.',
+    en: 'The organization documents the lessons learned from its programs and shares them across its teams. An approved mechanism to collect, assess and measure the impact of implemented innovative ideas is recommended.',
   },
   701: {
     ar: 'نتائج رضا الموظفين والمتطوعين جيدة ومعدلات الاستبقاء مستقرة. يُوصى بتحليل أسباب المغادرة لتقليلها.',
@@ -69,29 +65,21 @@ const assessorNotes = {
     en: 'Professional development programs are in place with a positive impact, but documenting career development paths needs improvement.',
   },
   801: {
-    ar: 'الأثر المجتمعي موثق ومرتبط بمستهدفات رؤية 2030، مع مبادرات نوعية. يُقترح توسيع نطاق قياس الأثر ليشمل الاستدامة طويلة المدى.',
-    en: 'Community impact is documented and linked to Vision 2030 targets, with quality initiatives. Broadening impact measurement to include long-term sustainability is suggested.',
+    ar: 'مؤشرات رضا المستفيدين جيدة وموثقة عبر استبيانات دورية، مع ولاء واضح. يُوصى بتحليل الشكاوى وربط نتائجها بخطط تحسين الخدمات.',
+    en: 'Beneficiary satisfaction indicators are good and documented through periodic surveys, with clear loyalty. Analyzing complaints and linking the findings to service improvement plans is recommended.',
   },
-}
-
-const completedSubRatios = {
-  101: 0.82,
-  102: 0.75,
-  103: 0.9,
-  201: 0.78,
-  202: 0.8,
-  301: 0.76,
-  302: 0.7,
-  401: 0.72,
-  402: 0.68,
-  501: 0.85,
-  502: 0.65,
-  503: 0.6,
-  601: 0.88,
-  602: 0.82,
-  701: 0.74,
-  702: 0.7,
-  801: 0.8,
+  802: {
+    ar: 'تقارير قياس الأثر تُظهر نتائج إيجابية على المستفيدين بمنهجية قياس سليمة. يُوصى بتعزيزها بمقارنات مرجعية وقياس الأثر على المدى الطويل.',
+    en: 'Impact measurement reports show positive results for beneficiaries with a sound methodology. Reinforcing them with benchmarking and long-term impact measurement is recommended.',
+  },
+  901: {
+    ar: 'النتائج المالية والتشغيلية مستقرة وتحققت معظم مستهدفات الموازنة. يُوصى بعرض اتجاه النتائج لثلاث سنوات على الأقل مع مقارنتها بجهات مماثلة.',
+    en: 'Financial and operational results are stable and most budget targets were met. Presenting at least three years of trends compared with similar organizations is recommended.',
+  },
+  902: {
+    ar: 'مؤشرات الأداء المؤسسي معرّفة ومرتبطة بالخطة الاستراتيجية. يُوصى بتحديد مستهدفات سنوية لكل مؤشر وتحليل أسباب الانحراف عنها.',
+    en: 'Organizational performance indicators are defined and linked to the strategic plan. Setting annual targets for every indicator and analyzing the causes of deviation is recommended.',
+  },
 }
 
 const ACCREDITED_LABEL = { ar: 'التقييم المعتمد', en: 'Accredited assessment' }
@@ -323,5 +311,4 @@ export const certificatesFixture = [
   verificationUrl: verificationUrl(certificate.verificationCode),
 }))
 
-export const feedbackRatios = completedSubRatios
 export const feedbackNotes = assessorNotes

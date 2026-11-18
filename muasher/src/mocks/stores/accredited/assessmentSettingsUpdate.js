@@ -1,8 +1,11 @@
+import { CRITERIA_VERSION_STATUSES as STATUS } from '@/constants/criteria'
+import { versionWithStatus } from '../criteriaStore'
 import { assessmentReject, fieldMessage } from '../assessments/assessmentRejection'
 import { isOpen } from '../assessments/assessmentsStore'
 import { dispatchQueuedJob } from '../mockQueue'
 import {
   COMMITTEE_VISIBILITIES,
+  SCALE_KIND_VALUES,
   EVIDENCE_TYPE_CATALOG,
   SLA_LIMITS,
   UPLOAD_LIMITS,
@@ -73,6 +76,10 @@ function validatedChanges(body) {
       changes.committeeEntityDataVisibility = body.committeeEntityDataVisibility
     else errors.committeeEntityDataVisibility = [fieldMessage('validation.invalid', {}, 'settings')]
   }
+  if ('scaleKind' in body) {
+    if (SCALE_KIND_VALUES.includes(body.scaleKind)) changes.scaleKind = body.scaleKind
+    else errors.scaleKind = [fieldMessage('validation.invalid', {}, 'settings')]
+  }
   const reason = reasonError(body.reason)
   if (reason) errors.reason = reason
   throwIfErrors(errors)
@@ -99,6 +106,11 @@ export function updateAssessmentSettings(user, body) {
   return after
 }
 
+function publishedScale() {
+  const published = versionWithStatus(STATUS.PUBLISHED)
+  return published ? { scaleKind: published.scaleKind } : null
+}
+
 export function assessmentSettingsResource() {
   const settings = assessmentSettings()
   return {
@@ -113,5 +125,7 @@ export function assessmentSettingsResource() {
     advancedDisqualificationScore: settings.advancedDisqualificationScore,
     advancedInitialReviewSlaDays: settings.advancedInitialReviewSlaDays,
     committeeEntityDataVisibility: settings.committeeEntityDataVisibility,
+    scaleKind: settings.scaleKind,
+    publishedVersion: publishedScale(),
   }
 }

@@ -135,11 +135,16 @@ return [
         'points_confirm_required' => 'Switching to direct evaluation deletes the guiding points of this sub-criterion.',
         'points_confirm_required_detail' => 'Switching to direct evaluation deletes :count guiding points. Confirm to continue.',
         'node_not_in_version' => 'This item does not belong to the selected criteria version.',
+        'node_not_a_child' => 'This item does not belong to the criterion whose weights are being distributed.',
+        'weights_exceed_parent' => 'The new weights exceed the weight of the parent criterion.',
+        'weights_exceed_parent_detail' => 'The active weights total :total, which exceeds the parent criterion weight of :capacity.',
+        'weights_distributed_equally' => 'This criterion distributes its weight equally. Switch to manual distribution before editing the weights.',
         'problems' => [
             'no_active_main' => 'The version needs at least one active main criterion.',
             'weights_mismatch' => 'The active sub-criteria of “:name” total :actual, but they must equal the main criterion weight of :expected.',
             'no_active_point' => 'The sub-criterion “:name” is evaluated on guiding points but has no active guiding point.',
             'points_exceed_sub' => 'The active guiding points of “:name” total :actual, which exceeds the sub-criterion weight of :expected.',
+            'points_below_sub' => 'The active guiding points of “:name” total :actual, but they must equal the sub-criterion weight of :expected.',
         ],
     ],
     'self' => [

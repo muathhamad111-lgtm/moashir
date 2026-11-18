@@ -10,6 +10,7 @@ import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import { useAssessmentSettings } from '@/composables/useAssessmentSettings'
 import { ADVANCED_BOUNDS, UPLOAD_BOUNDS } from '@/utils/accredited/assessmentSettingsForm'
 import { ENTITY_VISIBILITY_LIST } from '@/constants/committee'
+import { SCALE_KINDS } from '@/constants/assessment'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
@@ -21,6 +22,23 @@ const visibilityOptions = computed(() =>
     value,
     label: t(`settings.assessment.visibility.${value}`),
   })),
+)
+
+const SCALE_LABELS = {
+  [SCALE_KINDS.OF_10]: 'criteria.scale.of10',
+  [SCALE_KINDS.RELATIVE]: 'criteria.scale.relative',
+}
+
+const scaleOptions = computed(() =>
+  Object.values(SCALE_KINDS).map((value) => ({ value, label: t(SCALE_LABELS[value]) })),
+)
+
+const scaleHint = computed(() =>
+  settings.value?.publishedScaleKind
+    ? t('settings.assessment.scaleHintPublished', {
+        scale: t(SCALE_LABELS[settings.value.publishedScaleKind]),
+      })
+    : t('settings.assessment.scaleHint'),
 )
 
 onMounted(load)
@@ -40,6 +58,16 @@ onMounted(load)
       novalidate
       @submit.prevent="submit"
     >
+      <fieldset class="settings-form__group">
+        <legend class="settings-form__legend">{{ t('settings.assessment.scaleTitle') }}</legend>
+        <FieldSelect
+          name="scaleKind"
+          :label="t('settings.assessment.scale')"
+          :options="scaleOptions"
+          :hint="scaleHint"
+          required
+        />
+      </fieldset>
       <fieldset class="settings-form__group">
         <legend class="settings-form__legend">
           {{ t('settings.assessment.generalUploadsTitle') }}

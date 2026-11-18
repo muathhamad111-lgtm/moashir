@@ -33,15 +33,19 @@ function focusTab(index) {
   select(props.tabs[next])
 }
 
+// The arrow that points along the reading direction moves forward: ← in Arabic, → in English.
+function stepOf(event) {
+  const isRtl = getComputedStyle(event.currentTarget).direction === 'rtl'
+  const forwardKey = isRtl ? 'ArrowLeft' : 'ArrowRight'
+  return event.key === forwardKey ? 1 : -1
+}
+
 function onKeydown(event, index) {
   switch (event.key) {
     case 'ArrowRight':
-      event.preventDefault()
-      focusTab(index + 1)
-      break
     case 'ArrowLeft':
       event.preventDefault()
-      focusTab(index - 1)
+      focusTab(index + stepOf(event))
       break
     case 'Home':
       event.preventDefault()

@@ -54,8 +54,13 @@ function fromStaffFixture(item) {
   }
 }
 
+// A fixture dates its event either absolutely (createdAt) or relative to now (minutesAgo).
+function entityCreatedAt(item, now) {
+  return item.createdAt ?? new Date(now - item.minutesAgo * MINUTE_MS).toISOString()
+}
+
 function fromEntityFixture(item, now) {
-  const createdAt = new Date(now - item.minutesAgo * MINUTE_MS).toISOString()
+  const createdAt = entityCreatedAt(item, now)
   return {
     ...stored({ ...item, recipientRole: ENTITY_ROLE }),
     readAt: item.isRead ? createdAt : null,

@@ -128,17 +128,6 @@ describe('complete dialog of the assessor review', () => {
     expect(wrapper.emitted('update:modelValue')[0]).toEqual([false])
     wrapper.unmount()
   })
-
-  it('notes a missing assessor summary', async () => {
-    const wrapper = mount(CompleteReviewDialog, {
-      props: { modelValue: true, message: 'Complete?', summaryMissing: true },
-      global: createTestGlobals({ locale: 'en' }),
-      attachTo: document.body,
-    })
-    await flushPromises()
-    expect(document.querySelector('[data-testid="summary-missing-hint"]')).not.toBeNull()
-    wrapper.unmount()
-  })
 })
 
 describe('request queue region column', () => {

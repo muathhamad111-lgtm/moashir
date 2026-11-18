@@ -19,13 +19,20 @@
   color: var(--theme-heading);
 }
 
+// Two widgets per row only when each gets at least 28rem (a table widget needs that room);
+// never more than two columns.
 .staff-dashboard__widgets {
+  --widget-gap: var(--space-4);
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-4);
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, max(28rem, calc((100% - var(--widget-gap)) / 2))), 1fr)
+  );
+  gap: var(--widget-gap);
 
-  @include respond-to('lg') {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  // An odd last widget takes the whole row instead of leaving half of it empty.
+  > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
   }
 }
 

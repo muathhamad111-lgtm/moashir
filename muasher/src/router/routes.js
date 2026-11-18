@@ -934,6 +934,16 @@ export const appRoutes = [
     },
   },
   {
+    path: '/admin/settings/criteria/history',
+    name: ROUTE_NAMES.ADMIN_CRITERIA_HISTORY,
+    component: () => import('@/views/settings/criteria/History.vue'),
+    meta: {
+      layout: 'app',
+      titleKey: 'routes.admin.criteria.history.title',
+      requiresAuth: true,
+    },
+  },
+  {
     path: '/admin/settings/criteria/:mainId',
     name: ROUTE_NAMES.ADMIN_CRITERIA_MAIN,
     component: () => import('@/views/settings/criteria/MainDetail.vue'),

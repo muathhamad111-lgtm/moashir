@@ -17,6 +17,7 @@ import {
   versionSummary,
 } from '../stores/criteriaSerializers'
 import * as tree from '../stores/criteriaTree'
+import { distributePointWeights, distributeSubWeights } from '../stores/criteriaWeights'
 import { fieldMessage, reject } from '../stores/criteriaRejection'
 import { CRITERIA_VERSION_STATUSES as STATUS } from '@/constants/criteria'
 import {
@@ -153,6 +154,16 @@ const mainHandlers = [
     }),
   ),
 
+  http.put(
+    `${API}/mains/:mainId/subs/weights`,
+    criteriaRoute(async ({ request, params }) => {
+      const actor = actorWith(CAN.MANAGE)
+      const main = found(findMain(params.mainId))
+      const subs = distributeSubWeights(actor, main, await readBody(request))
+      return envelope(subs.map(subResource))
+    }),
+  ),
+
   http.post(
     `${API}/mains/:mainId/subs/reorder`,
     criteriaRoute(async ({ request, params }) => {
@@ -230,6 +241,16 @@ const subHandlers = [
         {},
         { status: 201 },
       )
+    }),
+  ),
+
+  http.put(
+    `${API}/subs/:subId/points/weights`,
+    criteriaRoute(async ({ request, params }) => {
+      const actor = actorWith(CAN.MANAGE)
+      const sub = found(findSub(params.subId))
+      const points = distributePointWeights(actor, sub, await readBody(request))
+      return envelope(points.map(pointResource))
     }),
   ),
 

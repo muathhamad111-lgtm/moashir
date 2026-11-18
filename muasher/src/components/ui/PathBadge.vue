@@ -26,6 +26,6 @@ const text = usePathLabelText(
     ]"
   >
     <AppIcon :name="PATH_ICONS[path] ?? 'route'" class="path-badge__icon" />
-    <span class="path-badge__label">{{ text }}</span>
+    <span class="path-badge__label" :title="text">{{ text }}</span>
   </span>
 </template>
