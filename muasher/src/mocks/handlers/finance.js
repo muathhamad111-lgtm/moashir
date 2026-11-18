@@ -124,7 +124,7 @@ export const financeHandlers = [
       const query = queryOf(request)
       const filters = listFilters(query, 'transactions', { searchable: true, sortable: true })
       return listResponse(sortedTransactions(filters), query, transactionResource, {
-        stats: statsOf(filteredTransactions(filters, 'live')),
+        stats: statsOf(filteredTransactions(filters)),
       })
     }),
   ),

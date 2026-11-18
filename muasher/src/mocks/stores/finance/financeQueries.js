@@ -244,9 +244,10 @@ function compareBy([field, direction]) {
   }
 }
 
-export function filteredTransactions(filters, mode = filters.mode ?? 'live') {
+// No mode means both: confirmed preview payments count as revenue too (operator decision, 2026-11-18).
+export function filteredTransactions(filters) {
   return financeState()
-    .payments.filter((payment) => payment.mode === mode)
+    .payments.filter((payment) => !filters.mode || payment.mode === filters.mode)
     .filter(
       (payment) =>
         matchesPaymentFilters(payment, filters) && paymentMatches(payment, filters.search),

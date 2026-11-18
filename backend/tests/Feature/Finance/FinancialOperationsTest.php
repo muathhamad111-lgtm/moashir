@@ -41,37 +41,40 @@ function financeLedger(): array
     ];
 }
 
-it('totals live collections in the ledger stats without any gateway fee', function (): void {
+it('totals confirmed collections of both modes in the ledger stats without any gateway fee', function (): void {
     financeLedger();
 
     $response = switchTo(financeOfficer())->getJson('/api/v1/finance/transactions')->assertOk()
-        ->assertJsonPath('meta.stats.transactions_count', 4)
-        ->assertJsonPath('meta.stats.completed_count', 2)
+        ->assertJsonPath('meta.stats.transactions_count', 5)
+        ->assertJsonPath('meta.stats.completed_count', 3)
         ->assertJsonPath('meta.stats.incomplete_count', 1)
         ->assertJsonPath('meta.stats.refunded_count', 1)
-        ->assertJsonPath('meta.stats.total_income', '2300.00')
-        ->assertJsonPath('meta.stats.total_vat', '300.00')
+        ->assertJsonPath('meta.stats.total_income', '3450.00')
+        ->assertJsonPath('meta.stats.total_vat', '450.00')
         ->assertJsonPath('meta.stats.total_refunded', '1150.00')
-        ->assertJsonPath('meta.stats.transactions_value', '4600.00')
+        ->assertJsonPath('meta.stats.transactions_value', '5750.00')
         ->assertJsonPath('meta.stats.currency', 'SAR');
 
     expect((string) $response->getContent())->not->toContain('fee')->and((string) $response->getContent())->not->toContain('"net');
-    $this->getJson('/api/v1/finance/transactions?filter[purpose]=accredited')->assertOk()->assertJsonPath('meta.stats.completed_count', 1);
+    $this->getJson('/api/v1/finance/transactions?filter[purpose]=accredited')->assertOk()->assertJsonPath('meta.stats.completed_count', 2);
+    $this->getJson('/api/v1/finance/transactions?filter[mode]=live')->assertOk()
+        ->assertJsonPath('meta.stats.completed_count', 2)
+        ->assertJsonPath('meta.stats.total_income', '2300.00');
     $this->getJson('/api/v1/finance/transactions?filter[purpose]=bag')->assertOk()->assertJsonPath('meta.stats.completed_count', 1);
     $this->getJson('/api/v1/finance/transactions?filter[from]=2020-01-01&filter[to]=2020-12-31')->assertOk()->assertJsonPath('meta.stats.transactions_count', 0);
     $this->getJson('/api/v1/finance/transactions?filter[from]=2026-12-01&filter[to]=2026-01-01')->assertUnprocessable();
 });
 
-it('lists live transactions with search, filters, sort and stats', function (): void {
+it('lists transactions of both modes with search, filters, sort and stats', function (): void {
     ['paid' => $paid, 'test' => $test] = financeLedger();
     switchTo(financeOfficer());
 
     $this->getJson('/api/v1/finance/transactions')->assertOk()
-        ->assertJsonPath('meta.pagination.total', 4)
-        ->assertJsonPath('meta.stats.total_income', '2300.00')
-        ->assertJsonPath('meta.stats.transactions_count', 4);
+        ->assertJsonPath('meta.pagination.total', 5)
+        ->assertJsonPath('meta.stats.total_income', '3450.00')
+        ->assertJsonPath('meta.stats.transactions_count', 5);
 
-    $this->getJson('/api/v1/finance/transactions?search='.urlencode('الواحه'))->assertOk()
+    $this->getJson('/api/v1/finance/transactions?filter[mode]=live&search='.urlencode('الواحه'))->assertOk()
         ->assertJsonPath('meta.pagination.total', 1)
         ->assertJsonPath('data.0.id', $paid->public_id)
         ->assertJsonPath('data.0.entity.name.en', 'Al-Waha Charitable Association')
@@ -89,7 +92,11 @@ it('lists live transactions with search, filters, sort and stats', function (): 
         ->assertJsonPath('meta.pagination.total', 1)
         ->assertJsonPath('data.0.id', $test->public_id)
         ->assertJsonPath('data.0.is_test', true)
-        ->assertJsonPath('meta.stats.transactions_count', 4);
+        ->assertJsonPath('meta.stats.transactions_count', 1)
+        ->assertJsonPath('meta.stats.total_income', '1150.00');
+    $this->getJson('/api/v1/finance/transactions?filter[mode]=live')->assertOk()
+        ->assertJsonPath('meta.pagination.total', 4)
+        ->assertJsonPath('meta.stats.total_income', '2300.00');
 });
 
 it('filters transactions by entity and searches by the authorized person', function (): void {
@@ -143,18 +150,18 @@ it('lets the System Administrator read financial operations and keeps everyone e
     }
 });
 
-it('streams an audited CSV export of live transactions only', function (): void {
+it('streams an audited CSV export of the transactions of both modes', function (): void {
     ['paid' => $paid, 'test' => $test] = financeLedger();
     $paid->forceFill(['entity_name' => ['ar' => '=جمعية الأمل الخيرية', 'en' => 'Al-Amal']])->save();
     $finance = financeOfficer();
 
     $response = switchTo($finance)->post('/api/v1/finance/transactions/export', [], ['Accept' => 'application/json'])->assertOk()
-        ->assertHeader('X-Export-Row-Count', '4');
+        ->assertHeader('X-Export-Row-Count', '5');
     $csv = $response->streamedContent();
 
     expect($csv)->toStartWith("\u{FEFF}")
         ->and($csv)->toContain($paid->reference)
-        ->and($csv)->not->toContain($test->reference)
+        ->and($csv)->toContain($test->reference)
         ->and($csv)->toContain("'=جمعية الأمل الخيرية")
         ->and($csv)->toContain('مرجع الدفع')
         ->and(FinanceExport::query()->sole()->status)->toBe(FinanceExportStatus::Streamed)
@@ -167,14 +174,14 @@ it('prepares a large export in the background and notifies the requester', funct
     $finance = financeOfficer();
 
     $exportId = (string) switchTo($finance)->postJson('/api/v1/finance/transactions/export')->assertAccepted()
-        ->assertJsonPath('data.row_count', 4)
+        ->assertJsonPath('data.row_count', 5)
         ->json('data.id');
 
     $this->getJson("/api/v1/finance/exports/{$exportId}")->assertOk()->assertJsonPath('data.status', 'ready');
     $url = (string) $this->postJson("/api/v1/finance/exports/{$exportId}/download")->assertOk()->json('data.url');
     $csv = $this->get($url)->assertOk()->streamedContent();
 
-    expect(substr_count($csv, "\n"))->toBe(5)
+    expect(substr_count($csv, "\n"))->toBe(6)
         ->and(financeNoticeSent($finance, NotificationCode::FinanceExportReady))->toBeTrue();
 
     switchTo(systemAdmin())->getJson("/api/v1/finance/exports/{$exportId}")->assertNotFound();

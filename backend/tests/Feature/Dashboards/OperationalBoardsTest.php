@@ -18,7 +18,7 @@ beforeEach(function (): void {
     Date::setTestNow('2026-11-03 08:00:00');
 });
 
-it('counts entities, staff and live payments on the System Administrator board', function (): void {
+it('counts entities, staff and confirmed payments of both modes on the System Administrator board', function (): void {
     $first = entityWithOwner();
     $second = entityWithOwner(static fn ($factory) => $factory->incompleteProfile());
     entityWithOwner(static fn ($factory) => $factory->pendingVerification());
@@ -40,10 +40,10 @@ it('counts entities, staff and live payments on the System Administrator board',
         'entities_pending_verification' => 1,
         'entities_pending_review' => 1,
         'staff_users_active' => 1,
-        'payments_paid' => 2,
+        'payments_paid' => 3,
         'payments_open' => 1,
     ])
-        ->and($cards->get('payments_collected'))->toBe('2300.00')
+        ->and($cards->get('payments_collected'))->toBe('3450.00')
         ->and($cards->get('refunds_total'))->toBe('0.00')
         ->and(collect(overviewWidget($overview, 'entities_by_sector'))->sum('count'))->toBe(5)
         ->and(collect(overviewWidget($overview, 'entities_by_governance'))->pluck('count', 'key')->all())->toBe([
@@ -117,7 +117,7 @@ it('shows the entity its own result, requests, payments card and unread notifica
         ->and(boardWidget($strangerBoard, 'payments_card')['receipts_count'] ?? null)->toBe(0);
 });
 
-it('reports live revenue, receipts and daily payments on the finance board', function (): void {
+it('reports confirmed revenue of both modes, official receipts and daily payments on the finance board', function (): void {
     storedPaidPayment();
     storedPaidPayment();
     storedPaidPayment(null, IntegrationMode::Test);
@@ -126,10 +126,10 @@ it('reports live revenue, receipts and daily payments on the finance board', fun
     $cards = boardCards($response);
 
     expect($cards->all())->toMatchArray([
-        'revenue' => '2300.00', 'vat_collected' => '300.00', 'payments_paid' => 2, 'receipts_issued' => 2, 'refunds_count' => 0,
+        'revenue' => '3450.00', 'vat_collected' => '450.00', 'payments_paid' => 3, 'receipts_issued' => 2, 'refunds_count' => 0,
     ])
-        ->and(boardWidget($response, 'daily_payments'))->toBe([['date' => '2026-11-03', 'count' => 2, 'total' => '2300.00']])
-        ->and(boardWidget($response, 'by_service'))->toBe([['purpose' => 'accredited', 'count' => 2, 'total' => '2300.00']]);
+        ->and(boardWidget($response, 'daily_payments'))->toBe([['date' => '2026-11-03', 'count' => 3, 'total' => '3450.00']])
+        ->and(boardWidget($response, 'by_service'))->toBe([['purpose' => 'accredited', 'count' => 3, 'total' => '3450.00']]);
 });
 
 it('counts pages and indicators on the content board', function (): void {

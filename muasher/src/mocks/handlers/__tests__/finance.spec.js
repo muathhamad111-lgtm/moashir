@@ -482,12 +482,12 @@ describe('My Payments and receipts mock contract', () => {
 })
 
 describe('finance staff mock contract', () => {
-  it('shapes transactions, stats and the detail exactly, live payments by default', async () => {
+  it('shapes transactions, stats and the detail exactly, both modes by default', async () => {
     as(FINANCE_OFFICER)
     const { body } = await call('/finance/transactions?per_page=50')
     expect(keys(body.data[0])).toEqual(TRANSACTION_KEYS)
     expect(keys(body.data[0].entity)).toEqual(['email', 'id', 'name', 'reference'])
-    expect(body.data.every((item) => item.is_test === false)).toBe(true)
+    expect(body.data.some((item) => item.is_test)).toBe(true)
     expect(keys(body.meta.stats)).toEqual(STATS_KEYS)
     expect(body.meta.stats).toMatchObject({ refunded_count: 1, total_refunded: '1150.00' })
     const detail = await call(`/finance/transactions/${SEEDED_IDS.refunded}`)
@@ -507,6 +507,11 @@ describe('finance staff mock contract', () => {
     expect(detail.body.data.receipt.status).toBe('voided')
     const test = await call('/finance/transactions?filter[mode]=test')
     expect(test.body.data.map((item) => item.reference)).toContain('PAY-2026-000006')
+    expect(test.body.data.every((item) => item.is_test)).toBe(true)
+    const live = await call('/finance/transactions?filter[mode]=live&per_page=50')
+    expect(live.body.data.every((item) => item.is_test === false)).toBe(true)
+    const income = (response) => Number(response.body.meta.stats.total_income)
+    expect(income(live) + income(test)).toBe(income({ body }))
   })
 
   it('searches by entity name in Arabic and English, sorts and rejects bad input', async () => {

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\Identity\RoleKey;
+use App\Enums\Integrations\IntegrationMode;
 use App\Models\Entities\Entity;
 use App\Models\Finance\Payment;
 use App\Models\Identity\Role;
@@ -86,6 +87,19 @@ it('counts registrations and collections inside the period and the previous one,
         ->and($trends['series']['collected'][$day['2026-11-05']])->toBe('1150.00')
         ->and($trends['series']['collected'][$day['2026-11-06']])->toBe('0.00')
         ->and($trends['series']['collected'][$day['2026-11-07']])->toBe('1150.00');
+});
+
+it('counts a confirmed preview payment in the collections, as revenue of its own', function (): void {
+    $entity = registeredAt('2026-11-02 09:00:00');
+    paidAt($entity, '2026-11-05 10:00:00');
+    $preview = storedPaidPayment($entity, IntegrationMode::Test);
+    $preview->forceFill(['paid_at' => '2026-11-05 11:00:00'])->saveQuietly();
+
+    $response = overviewOf(systemAdmin(), 'period=month');
+    $day = array_flip($response->json('data.trends.buckets'));
+
+    expect(overviewCards($response)->get('payments_collected')['value'])->toBe('2300.00')
+        ->and($response->json('data.trends.series.collected')[$day['2026-11-05']])->toBe('2300.00');
 });
 
 it('counts submitted and completed requests by path in the period', function (): void {

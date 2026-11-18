@@ -29,13 +29,12 @@ final readonly class ExportTransactions
 
     public function handle(User $actor, TransactionFilters $filters, string $locale): TransactionsExport
     {
-        $liveFilters = $filters->forLiveMode();
-        $rowCount = $this->query->filtered($liveFilters)->count();
+        $rowCount = $this->query->filtered($filters)->count();
         $isQueued = $rowCount > $this->settings->exportSyncMaxRows();
 
         $export = FinanceExport::query()->create([
             'requested_by_user_id' => $actor->id,
-            'filters' => $liveFilters->toArray(),
+            'filters' => $filters->toArray(),
             'row_count' => $rowCount,
             'locale' => $locale === 'en' ? 'en' : 'ar',
             'status' => $isQueued ? FinanceExportStatus::Queued : FinanceExportStatus::Streamed,
@@ -43,7 +42,7 @@ final readonly class ExportTransactions
 
         $this->audit->record(new AuditEntry(AuditEvent::FinanceExported, $export, [], [
             'row_count' => $rowCount,
-            'filters' => $liveFilters->toArray(),
+            'filters' => $filters->toArray(),
             'queued' => $isQueued,
         ], ['export']));
 
@@ -53,7 +52,7 @@ final readonly class ExportTransactions
             return new TransactionsExport($export, self::fileName(), null);
         }
 
-        return new TransactionsExport($export, self::fileName(), $this->query->filtered($liveFilters)->with(ListTransactions::RELATIONS)->lazyById(self::CHUNK));
+        return new TransactionsExport($export, self::fileName(), $this->query->filtered($filters)->with(ListTransactions::RELATIONS)->lazyById(self::CHUNK));
     }
 
     public static function fileName(): string

@@ -113,7 +113,7 @@ function exportRecord(user, rows, status, locale) {
 
 export function exportTransactions(user, filters, request) {
   const locale = requestLocale(request)
-  const rows = filteredTransactions(filters, 'live')
+  const rows = filteredTransactions(filters)
   if (rows.length > MOCK_QUEUE_THRESHOLD)
     return { queued: exportRecord(user, rows, 'queued', locale) }
   const record = exportRecord(user, rows, 'streamed', locale)

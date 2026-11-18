@@ -34,7 +34,7 @@ final readonly class FinanceOfficerBoardQuery implements DashboardBoardQuery
 
     public function build(User $user): BoardContent
     {
-        $totals = $this->payments->live();
+        $totals = $this->payments->confirmed();
 
         return new BoardContent([
             new DashboardCard('revenue', $totals['collected'], CardFormat::Money, Links::FINANCE),
@@ -58,7 +58,7 @@ final readonly class FinanceOfficerBoardQuery implements DashboardBoardQuery
         $timezone = $this->config->string('app.display_timezone');
         $since = Date::now($timezone)->startOfDay()->subDays(self::DAILY_WINDOW_DAYS - 1);
 
-        return array_values(Payment::query()->live()->toBase()
+        return array_values(Payment::query()->toBase()
             ->where('status', PaymentStatus::Paid->value)
             ->where('paid_at', '>=', $since->utc())
             ->selectRaw('cast((paid_at at time zone ?) as date) as day, count(*) as payments, cast(sum(total) as numeric(14, 2)) as total', [$timezone])
@@ -82,7 +82,7 @@ final readonly class FinanceOfficerBoardQuery implements DashboardBoardQuery
      */
     private function byService(): array
     {
-        return array_values(Payment::query()->live()->toBase()
+        return array_values(Payment::query()->toBase()
             ->where('status', PaymentStatus::Paid->value)
             ->selectRaw('purpose, count(*) as payments, cast(sum(total) as numeric(14, 2)) as total')
             ->groupBy('purpose')

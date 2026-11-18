@@ -10,6 +10,7 @@ use App\Enums\Finance\PaymentInstrument;
 use App\Enums\Finance\PaymentPurpose;
 use App\Enums\Finance\PaymentStatus;
 use App\Enums\Finance\TransactionType;
+use App\Enums\Integrations\IntegrationMode;
 use App\Models\Finance\Payment;
 use App\Support\ValueObjects\SearchTerm;
 use Illuminate\Database\Eloquent\Builder;
@@ -24,7 +25,7 @@ final readonly class TransactionQuery
     public function filtered(TransactionFilters $filters): Builder
     {
         $query = Payment::query()
-            ->where('mode', $filters->mode)
+            ->when($filters->mode instanceof IntegrationMode, static fn (Builder $query): Builder => $query->where('mode', $filters->mode))
             ->when($filters->entityId !== null, static fn (Builder $inner): Builder => $inner->where('entity_id', $filters->entityId))
             ->when($filters->statuses !== [], static fn (Builder $query): Builder => $query->whereIn('status', self::valuesOf($filters->statuses)))
             ->when($filters->types !== [], static fn (Builder $query): Builder => $query->where(static fn (Builder $inner): Builder => self::ofTypes($inner, $filters->types)))

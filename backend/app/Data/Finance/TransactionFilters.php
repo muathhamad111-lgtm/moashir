@@ -21,6 +21,7 @@ final readonly class TransactionFilters
     /**
      * @param  list<PaymentStatus>  $statuses  an empty list means every status
      * @param  list<TransactionType>  $types  an empty list means every type
+     * @param  IntegrationMode|null  $mode  null means both modes: confirmed preview payments count as revenue too
      */
     public function __construct(
         public ?SearchTerm $search = null,
@@ -29,21 +30,13 @@ final readonly class TransactionFilters
         public ?PaymentInstrument $method = null,
         public ?CarbonImmutable $from = null,
         public ?CarbonImmutable $to = null,
-        public IntegrationMode $mode = IntegrationMode::Live,
+        public ?IntegrationMode $mode = null,
         public TransactionSort $sort = TransactionSort::NewestFirst,
         public int $perPage = 15,
         public ?PaymentChannel $channel = null,
         public ?int $entityId = null,
         public array $types = [],
     ) {}
-
-    public function forLiveMode(): self
-    {
-        return new self(
-            $this->search, $this->statuses, $this->purpose, $this->method, $this->from, $this->to, IntegrationMode::Live,
-            $this->sort, $this->perPage, $this->channel, $this->entityId, $this->types,
-        );
-    }
 
     /**
      * @return array<string, scalar|list<string>|null>
@@ -60,7 +53,7 @@ final readonly class TransactionFilters
             'entity_id' => $this->entityId,
             'from' => $this->from?->toDateString(),
             'to' => $this->to?->toDateString(),
-            'mode' => $this->mode->value,
+            'mode' => $this->mode?->value,
             'sort' => $this->sort->value,
         ];
     }
@@ -84,7 +77,7 @@ final readonly class TransactionFilters
             PaymentInstrument::tryFrom(ScalarValue::string($values['method'] ?? null)),
             $from === '' ? null : CarbonImmutable::parse($from),
             $to === '' ? null : CarbonImmutable::parse($to),
-            IntegrationMode::tryFrom(ScalarValue::string($values['mode'] ?? null)) ?? IntegrationMode::Live,
+            IntegrationMode::tryFrom(ScalarValue::string($values['mode'] ?? null)),
             TransactionSort::tryFrom(ScalarValue::string($values['sort'] ?? null)) ?? TransactionSort::NewestFirst,
             channel: PaymentChannel::tryFrom(ScalarValue::string($values['channel'] ?? null)),
             entityId: ctype_digit($entityId) ? (int) $entityId : null,

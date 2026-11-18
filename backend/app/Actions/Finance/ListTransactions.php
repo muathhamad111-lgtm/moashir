@@ -29,6 +29,6 @@ final readonly class ListTransactions
 
     public function statsOf(TransactionFilters $filters): FinanceStats
     {
-        return $this->stats->overall($this->query->filtered($filters->forLiveMode()));
+        return $this->stats->overall($this->query->filtered($filters));
     }
 }

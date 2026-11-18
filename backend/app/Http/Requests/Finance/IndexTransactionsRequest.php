@@ -57,7 +57,7 @@ final class IndexTransactionsRequest extends FormRequest
             method: PaymentInstrument::tryFrom($this->string('filter.method')->toString()),
             from: $this->dateOf('filter.from'),
             to: $this->dateOf('filter.to'),
-            mode: IntegrationMode::tryFrom($this->string('filter.mode')->toString()) ?? IntegrationMode::Live,
+            mode: IntegrationMode::tryFrom($this->string('filter.mode')->toString()),
             sort: TransactionSort::tryFrom($this->string('sort')->toString()) ?? TransactionSort::NewestFirst,
             perPage: $this->integer('per_page', 15),
             channel: PaymentChannel::tryFrom($this->string('filter.channel')->toString()),

@@ -83,7 +83,7 @@ final readonly class PeriodActivity
     private function collected(ReportingPeriod $period): string
     {
         $row = AggregateRow::fetch(
-            Payment::query()->live()->where('status', PaymentStatus::Paid->value)
+            Payment::query()->where('status', PaymentStatus::Paid->value)
                 ->where('paid_at', '>=', $period->start->toIso8601String())
                 ->where('paid_at', '<', $period->end->toIso8601String()),
             'cast(coalesce(sum(total), 0) as numeric(14, 2)) as collected',

@@ -5364,7 +5364,7 @@
     "testMode": {
       "staff": {
         "title": "Preview mode: no real charge is made.",
-        "body": "The payment gateway runs in preview mode. Payments made here are excluded from statistics and get a receipt marked \"Not valid as proof of payment\", without an official number."
+        "body": "This payment was made in preview mode. It counts as revenue once confirmed, and gets a receipt marked \"Not valid as proof of payment\", without an official number."
       },
       "entity": {
         "title": "No real amount is charged.",

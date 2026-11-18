@@ -39,10 +39,13 @@ const listFilters = computed(() => [
 function emitList(key, values) {
   emit('filter', key, joinFilterValues(values, LIST_FILTERS[key]))
 }
-// The API lists actual payments unless test payments are asked for, so the empty value means «actual».
+// The API lists both modes unless one is asked for, and the totals follow the same rows.
 const modeOptions = computed(() => [
-  { value: '', label: t(`finance.filters.modes.${INTEGRATION_MODES.LIVE}`) },
-  { value: INTEGRATION_MODES.TEST, label: t(`finance.filters.modes.${INTEGRATION_MODES.TEST}`) },
+  { value: '', label: t('dataList.filter.all') },
+  ...[INTEGRATION_MODES.LIVE, INTEGRATION_MODES.TEST].map((value) => ({
+    value,
+    label: t(`finance.filters.modes.${value}`),
+  })),
 ])
 const purposeOptions = computed(() => [
   { value: '', label: t('dataList.filter.all') },

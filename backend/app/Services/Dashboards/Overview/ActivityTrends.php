@@ -82,7 +82,7 @@ final readonly class ActivityTrends
     private function collected(ReportingPeriod $period): array
     {
         return $this->grouped(
-            Payment::query()->live()->where('status', PaymentStatus::Paid->value),
+            Payment::query()->where('status', PaymentStatus::Paid->value),
             'paid_at',
             $period,
             'cast(coalesce(sum(total), 0) as numeric(14, 2))',

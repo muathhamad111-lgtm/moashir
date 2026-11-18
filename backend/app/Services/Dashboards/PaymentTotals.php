@@ -9,6 +9,8 @@ use App\Models\Finance\Payment;
 use App\Support\Dashboards\AggregateRow;
 use App\Support\ScalarValue;
 
+// Confirmed money counts as revenue whatever the payment mode: the operator decided on 2026-11-18 that an
+// approved bank transfer or a paid card payment counts even while the platform runs in preview mode.
 final class PaymentTotals
 {
     private const string MONEY_ZERO = '0.00';
@@ -16,10 +18,10 @@ final class PaymentTotals
     /**
      * @return array{collected: string, vat_collected: string, refunded: string, paid_count: int, open_count: int, refunded_count: int}
      */
-    public function live(): array
+    public function confirmed(): array
     {
         $open = PaymentStatus::openValues();
-        $row = AggregateRow::fetch(Payment::query()->live(), 'cast(coalesce(sum(total) filter (where status = ?), 0) as numeric(14, 2)) as collected, '
+        $row = AggregateRow::fetch(Payment::query(), 'cast(coalesce(sum(total) filter (where status = ?), 0) as numeric(14, 2)) as collected, '
             .'cast(coalesce(sum(vat_amount) filter (where status = ?), 0) as numeric(14, 2)) as vat_collected, '
             .'cast(coalesce(sum(total) filter (where status = ?), 0) as numeric(14, 2)) as refunded, '
             .'count(*) filter (where status = ?) as paid_count, '

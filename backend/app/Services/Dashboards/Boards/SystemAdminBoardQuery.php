@@ -83,7 +83,7 @@ final readonly class SystemAdminBoardQuery implements DashboardBoardQuery
      */
     private function paymentCards(): array
     {
-        $payments = $this->payments->live();
+        $payments = $this->payments->confirmed();
 
         return [
             new DashboardCard('payments_collected', $payments['collected'], CardFormat::Money, Links::FINANCE),
