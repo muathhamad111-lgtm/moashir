@@ -136,6 +136,12 @@ export const PORTAL_SIDE_NAV_ITEMS = Object.freeze([
     routes: PORTAL_AREA_ROUTES[A.CERTIFICATES],
   },
   {
+    key: 'bag',
+    routeName: R.BAG_INDEX,
+    icon: 'briefcase',
+    routes: [R.BAG_INDEX, R.BAG_COMPARISON],
+  },
+  {
     key: 'payments',
     routeName: R.PAYMENTS_MINE,
     icon: 'credit-card',

@@ -37,14 +37,15 @@ describe('More (M4)', () => {
     const services = wrapper.findAll('.portal-more__group')[0].findAll('.portal-menu-entry')
     expect(services.map((entry) => entry.find('.portal-menu-entry__label').text())).toEqual([
       'صندوق الرسائل',
+      'حقيبة التميز السريع',
       'مدفوعاتي',
       'الإشعارات',
       'ملف الجهة',
     ])
     expect(services[0].find('.portal-menu-entry__value').text()).toBe('1 جديد')
-    expect(services[2].find('.portal-menu-entry__value').text()).toBe('2')
-    expect(services[3].find('.portal-menu-entry__value').text()).toBe('80%')
-    expect(services[1].find('.portal-menu-entry__value').exists()).toBe(false)
+    expect(services[3].find('.portal-menu-entry__value').text()).toBe('2')
+    expect(services[4].find('.portal-menu-entry__value').text()).toBe('80%')
+    expect(services[2].find('.portal-menu-entry__value').exists()).toBe(false)
   })
 
   it('shows the account entries in English, with no appearance switch', async () => {

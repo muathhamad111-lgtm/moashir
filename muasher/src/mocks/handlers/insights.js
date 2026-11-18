@@ -19,6 +19,7 @@ import {
   hasSelfResult,
   isEligible,
   openAccreditedRequestOf,
+  sentAccreditedRequestOf,
   resultRefOf,
   snapshotRecordsOf,
 } from '../stores/insights/insightsResults'
@@ -100,12 +101,12 @@ function ctaOf(reason, open) {
 
 function overviewOf(entityId, offersActions) {
   const selected = eligibleResultsOf(entityId)[0] ?? null
-  const open = openAccreditedRequestOf(entityId)
+  const sent = sentAccreditedRequestOf(entityId)
   return {
     selected: selected ? resultRefOf(selected) : null,
     exclusions: exclusionsOf(entityId),
     emptyState: emptyStateOf(entityId, offersActions),
-    inProgressRequest: selected && open ? { assessmentId: open.id } : null,
+    inProgressRequest: selected && sent ? { assessmentId: sent.id } : null,
     rules: rulesVersions(),
   }
 }

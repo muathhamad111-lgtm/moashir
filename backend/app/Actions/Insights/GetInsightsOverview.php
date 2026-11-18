@@ -30,13 +30,14 @@ final readonly class GetInsightsOverview
         $candidates = $this->results->of($viewer, $entity);
         $selected = $this->selector->latest($candidates);
         $exclusions = $this->selector->exclusionsNewerThan($selected, $candidates);
-        $openRequestId = $this->results->coversAccredited($viewer) ? $this->activity->openAccreditedRequestId($entity->id) : null;
+        $coversAccredited = $this->results->coversAccredited($viewer);
+        $openRequestId = $coversAccredited ? $this->activity->openAccreditedRequestId($entity->id) : null;
 
         return new InsightsOverview(
             $selected,
             $exclusions,
             $selected instanceof ResultCandidate ? null : $this->emptyStateOf($entity, $exclusions, $openRequestId),
-            $openRequestId,
+            $coversAccredited ? $this->activity->sentAccreditedRequestId($entity->id) : null,
             $this->rules->read(),
             $viewer->entity_id === $entity->id,
         );

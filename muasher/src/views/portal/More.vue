@@ -30,6 +30,7 @@ const entityStore = useEntityStore()
 const { ready, tier, reassessment } = useEntityLevel()
 const { canAccess } = usePermissions()
 const tools = computed(() => PORTAL_TOOLS.filter((tool) => canAccess(accessFor(tool.routeName))))
+const canSeeBag = computed(() => canAccess(accessFor(R.BAG_INDEX)))
 
 const profilePercent = computed(() => entityStore.profile?.profileCompletion?.percent ?? null)
 const repliesValue = computed(() =>
@@ -84,6 +85,12 @@ onMounted(() => entityStore.loadProfile().catch(() => null))
           :label="t('portal.nav.messages')"
           :value="repliesValue"
           :to="{ name: R.MESSAGES_INDEX }"
+        />
+        <PortalMenuEntry
+          v-if="canSeeBag"
+          icon="briefcase"
+          :label="t('portal.sideNav.items.bag')"
+          :to="{ name: R.BAG_INDEX }"
         />
         <PortalMenuEntry
           icon="credit-card"

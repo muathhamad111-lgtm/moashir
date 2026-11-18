@@ -2,6 +2,7 @@
 
 $auth-split: 1024px;
 $auth-card-wide: 34rem;
+$auth-two-columns: 28rem;
 
 .lp-auth {
   @include lp-light;
@@ -118,6 +119,8 @@ $auth-card-wide: 34rem;
   border: 1px solid var(--lp-line);
   box-shadow: var(--lp-shadow);
 
+  container: auth-card / inline-size;
+
   &:has(.entity-form__grid) {
     max-inline-size: $auth-card-wide;
   }
@@ -214,7 +217,11 @@ $auth-card-wide: 34rem;
   min-inline-size: 0;
 }
 
-@media (min-width: 640px) {
+.lp-auth .entity-form__grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@container auth-card (min-width: #{$auth-two-columns}) {
   .lp-auth .entity-form__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

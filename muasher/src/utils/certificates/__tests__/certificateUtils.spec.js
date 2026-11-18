@@ -3,12 +3,12 @@ import { ISSUING_STAGES, issuingRequestsOf } from '@/utils/certificates/issuingR
 import { normalizeVerificationCode } from '@/utils/certificates/verificationCode'
 
 describe('issuing requests', () => {
-  it('lists the open accredited request and completed requests without a certificate', () => {
+  it('lists the sent accredited request and completed requests without a certificate', () => {
     const items = issuingRequestsOf({
       active: {
         id: 14,
         number: 'ACC-2026-000014',
-        status: 'draft',
+        status: 'submitted',
         createdAt: '2026-11-01T08:00:00Z',
       },
       completed: [
@@ -35,6 +35,7 @@ describe('issuing requests', () => {
 
   it('ignores a completed active request and returns nothing without requests', () => {
     expect(issuingRequestsOf({ active: { id: 3, status: 'completed' } })).toEqual([])
+    expect(issuingRequestsOf({ active: { id: 4, status: 'draft' } })).toEqual([])
     expect(issuingRequestsOf({})).toEqual([])
   })
 })

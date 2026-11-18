@@ -61,8 +61,9 @@ test.describe('entity portal shell', () => {
     await open(page, '/dashboard', '.journey-hero__title')
     await expect(page.locator('.sidebar')).toHaveCount(0)
     const nav = page.locator('[data-testid="portal-side-nav"]')
-    await expect(nav.locator('.side-nav__list').first().locator('.side-nav-item')).toHaveCount(10)
+    await expect(nav.locator('.side-nav__list').first().locator('.side-nav-item')).toHaveCount(11)
     await expect(nav.locator('[data-testid="side-nav-paths"]')).toBeVisible()
+    await expect(nav.locator('.side-nav-item[href="/bag"]')).toBeVisible()
     await expect(nav.locator('.side-nav-item.is-active')).toHaveAttribute('href', '/dashboard')
     await expect(
       nav.locator('.side-nav-item[href="/messages"] .side-nav-item__count'),
@@ -222,8 +223,9 @@ test.describe('mobile portal', () => {
     await page.locator('.mobile-tab-bar__tab[href="/more"]').click()
     await expect(page).toHaveURL(/\/more$/)
     const services = page.locator('.portal-more__group').first().locator('.portal-menu-entry')
-    await expect(services).toHaveCount(4)
-    await expect(services.nth(3).locator('.portal-menu-entry__value')).toHaveText('60%')
+    await expect(services).toHaveCount(5)
+    await expect(services.nth(1)).toHaveAttribute('href', '/bag')
+    await expect(services.nth(4).locator('.portal-menu-entry__value')).toHaveText('60%')
     await noHorizontalOverflow(page)
   })
 })

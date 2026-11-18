@@ -85,6 +85,19 @@ it('keeps the previous result selected while a new accredited request is open', 
         ->assertJsonPath('data.in_progress_request.assessment_id', $open->id);
 });
 
+it('does not report an unsent draft as a request in progress', function (): void {
+    $version = insightsCriteria();
+    $entity = entityWithOwner();
+    $completed = accreditedResultFor($entity, $version, OVERVIEW_MARKS);
+    insightsAssessment($entity, $version, AssessmentPath::Accredited, AccreditedAssessmentStatus::Submitted)
+        ->forceFill(['status' => AccreditedAssessmentStatus::Draft, 'submitted_at' => null, 'due_at' => null, 'review_sla_days' => null])
+        ->saveQuietly();
+
+    switchTo(ownerOf($entity))->getJson('/api/v1/entities/me/insights')->assertOk()
+        ->assertJsonPath('data.selected.assessment_id', $completed->id)
+        ->assertJsonPath('data.in_progress_request', null);
+});
+
 it('lists the eligible accredited results newest first, paginated, without self or excluded results', function (): void {
     $version = insightsCriteria();
     $entity = entityWithOwner();

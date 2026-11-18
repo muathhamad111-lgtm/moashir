@@ -25,6 +25,9 @@ const counts = storeToRefs(usePortalCountsStore())
 const toolsId = useId()
 const { canAccess } = usePermissions()
 const tools = computed(() => PORTAL_TOOLS.filter((tool) => canAccess(accessFor(tool.routeName))))
+const items = computed(() =>
+  PORTAL_SIDE_NAV_ITEMS.filter((item) => item.children || canAccess(accessFor(item.routeName))),
+)
 const onToolPage = computed(() => PORTAL_TOOL_ROUTES.includes(route.name))
 const toolsOpen = ref(onToolPage.value)
 const showTools = computed(() => toolsOpen.value || onToolPage.value)
@@ -53,7 +56,7 @@ function isActive(item) {
     <SidebarIdentityCard :home-label="t('portal.brandHome')" :collapsed="collapsed" />
 
     <ul class="side-nav__list">
-      <li v-for="item in PORTAL_SIDE_NAV_ITEMS" :key="item.key">
+      <li v-for="item in items" :key="item.key">
         <template v-if="item.children">
           <p
             class="side-nav__section"

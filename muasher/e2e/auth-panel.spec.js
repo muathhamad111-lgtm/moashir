@@ -9,6 +9,7 @@ const VIEWPORTS = {
   desktop: { width: 1440, height: 900 },
   mobile: { width: 390, height: 844 },
 }
+const DATE_FIELD_VIEWPORTS = { ...VIEWPORTS, split: { width: 1024, height: 768 } }
 const DEV_OVERLAYS =
   '#__vue-devtools-container__, #vue-inspector-container { display: none !important; }'
 const PANEL_LABEL = { ar: 'عن منصة مؤشر', en: 'About Moashir' }
@@ -205,6 +206,34 @@ test.describe('auth brand panel — layout', () => {
     expect(fields.left).toBeGreaterThanOrEqual(card.x)
     expect(fields.right).toBeLessThanOrEqual(card.x + card.width)
   })
+
+  for (const [viewport, size] of Object.entries(DATE_FIELD_VIEWPORTS)) {
+    test(`the founding date fits its field on the ${viewport} register form`, async ({
+      page,
+    }, testInfo) => {
+      await page.setViewportSize(size)
+      await seedPreferences(page, { locale: localeOf(testInfo) })
+      await open(page, '/auth/register')
+      await settleFonts(page)
+      const layout = await page.locator('.datepicker').evaluate((group) => {
+        const field = group.closest('.field').getBoundingClientRect()
+        const box = group.getBoundingClientRect()
+        const parts = [...group.querySelectorAll('.datepicker__segment, .datepicker__calendar')]
+        const rects = parts.map((part) => part.getBoundingClientRect())
+        return {
+          spill: Math.max(
+            ...rects.map((rect) => Math.max(box.left - rect.left, rect.right - box.right)),
+          ),
+          fillsField: Math.abs(box.width - field.width) <= 1,
+          narrowest: Math.min(...rects.map((rect) => rect.width)),
+        }
+      })
+      expect(layout.spill).toBeLessThanOrEqual(0.5)
+      expect(layout.fillsField).toBe(true)
+      expect(layout.narrowest).toBeGreaterThan(20)
+      await noHorizontalOverflow(page)
+    })
+  }
 
   test('mobile shows a compact logo band above the form', async ({ page }, testInfo) => {
     await page.setViewportSize(VIEWPORTS.mobile)

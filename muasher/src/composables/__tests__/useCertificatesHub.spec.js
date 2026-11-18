@@ -23,7 +23,7 @@ beforeEach(() => {
     meta: { statusCounts: { issued: 1, suspended: 1, revoked: 0, superseded: 1 } },
   })
   accreditedService.getCurrent.mockResolvedValue({
-    data: { active: { id: 14, number: 'ACC-2026-000014', status: 'draft' } },
+    data: { active: { id: 14, number: 'ACC-2026-000014', status: 'submitted' } },
   })
   assessmentsService.list.mockResolvedValue({
     data: [

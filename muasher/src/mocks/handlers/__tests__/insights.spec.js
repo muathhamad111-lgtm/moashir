@@ -71,6 +71,13 @@ describe('insights mock — overview, results and library', () => {
     expect(results.body.meta.pagination.per_page).toBe(15)
   })
 
+  it('does not report an unsent draft as a request in progress', async () => {
+    seedMockSession({ id: 7601, roles: ['entity'], entityId: 6001 })
+    const { body } = await call('GET', '/entities/me/insights')
+    expect(body.data.selected.number).toBe('ACC-2026-000003')
+    expect(body.data.in_progress_request).toBeNull()
+  })
+
   it('answers the in-progress and no-result empty states with an action', async () => {
     seedMockSession(RAWABI)
     const progress = await call('GET', '/entities/me/insights')

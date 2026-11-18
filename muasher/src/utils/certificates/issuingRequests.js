@@ -1,9 +1,10 @@
-import { ACCREDITED_STATUSES } from '@/constants/accredited'
+import { SUBMITTED_ACCREDITED_STATUSES } from '@/constants/levels'
 
 export const ISSUING_STAGES = Object.freeze({ REVIEW: 'review', ISSUING: 'issuing' })
 
+// Only a sent request is on its way to a certificate; an unsent draft is not.
 function activeEntry(active) {
-  if (!active || active.status === ACCREDITED_STATUSES.COMPLETED) return null
+  if (!SUBMITTED_ACCREDITED_STATUSES.includes(active?.status)) return null
   return {
     id: active.id,
     number: active.number,

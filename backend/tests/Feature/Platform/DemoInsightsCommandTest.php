@@ -228,7 +228,7 @@ it('leaves existing drafts, self results, payments and receipts of the demo enti
         ->and(Assessment::query()->where('path', AssessmentPath::Accredited)->where('status', AccreditedAssessmentStatus::Draft)->pluck('entity_id')->all())->toEqualCanonicalizing($openDrafts);
     switchTo(ownerOf($gold))->getJson('/api/v1/entities/me/insights')->assertOk()
         ->assertJsonPath('data.selected.certificate.level', 'gold')
-        ->assertJsonPath('data.in_progress_request.assessment_id', Assessment::query()->where('entity_id', $gold->id)->where('status', AccreditedAssessmentStatus::Draft)->value('id'));
+        ->assertJsonPath('data.in_progress_request', null);
 });
 
 it('never changes an entity that the demo did not create', function (): void {

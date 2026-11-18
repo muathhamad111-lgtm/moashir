@@ -1,4 +1,5 @@
 import { ASSESSMENT_PATHS } from '@/constants/assessment'
+import { ACCREDITED_STATUSES } from '@/constants/accredited'
 import { allAssessments, isOpen } from '../assessments/assessmentsStore'
 import { displayPercent } from '../assessments/selfScoring'
 import { certificates } from '../certificatesStore'
@@ -67,6 +68,15 @@ export function exclusionsOf(entityId) {
 
 export function openAccreditedRequestOf(entityId) {
   return accreditedOfEntity(entityId).find((record) => isOpen(record)) ?? null
+}
+
+// Mirrors EntityAssessmentActivity::sentAccreditedRequestId: an unsent draft is not "in progress".
+export function sentAccreditedRequestOf(entityId) {
+  return (
+    accreditedOfEntity(entityId).find(
+      (record) => isOpen(record) && record.status !== ACCREDITED_STATUSES.DRAFT,
+    ) ?? null
+  )
 }
 
 export function hasSelfResult(entityId) {
