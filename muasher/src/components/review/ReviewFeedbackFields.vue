@@ -7,9 +7,11 @@ defineProps({
   subId: { type: Number, required: true },
   fields: { type: Object, required: true },
   disabled: { type: Boolean, default: false },
+  noteLabel: { type: String, default: '' },
 })
 
 const emit = defineEmits(['update'])
+const NOTES_FIELD = 'notes'
 const { t } = useI18n()
 
 function errorOf(value) {
@@ -30,6 +32,7 @@ function errorOf(value) {
       :name="`feedback-${subId}-${field}`"
       :label="t(`accredited.feedback.${field}`)"
       :rows="3"
+      :hint="field === NOTES_FIELD ? noteLabel : ''"
       :error="errorOf(fields[field])"
       :disabled="disabled"
       @update:model-value="emit('update', { field, value: $event })"

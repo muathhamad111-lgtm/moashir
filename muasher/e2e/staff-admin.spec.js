@@ -88,7 +88,6 @@ async function capture(page, name) {
 
 test.describe('staff dashboards on the board contract', () => {
   for (const [key, user, board] of [
-    ['system-admin', USERS.systemAdmin, 'system_admin'],
     ['follower', { id: 28, roles: ['request_follower'] }, 'request_follower'],
     ['filtering officer', USERS.follower, 'filtering_officer'],
     ['assessor', USERS.assessor, 'assessor'],
@@ -107,6 +106,19 @@ test.describe('staff dashboards on the board contract', () => {
       expect(errors).toEqual([])
     })
   }
+
+  test('the System Administrator lands on the platform overview in place of a board', async ({
+    page,
+  }, testInfo) => {
+    const errors = trackConsole(page)
+    await signIn(page, testInfo, USERS.systemAdmin)
+    await open(page, '/dashboard', '[data-testid="executive-overview"]')
+    await expect(page.locator('.overview-cards__card').first()).toBeVisible()
+    await expect(page.locator('.overview-panel').first()).toBeVisible()
+    await expect(page.locator('.action-center__title')).toBeVisible()
+    await expect(page.locator('[data-board="system_admin"]')).toHaveCount(0)
+    expect(errors).toEqual([])
+  })
 
   test('the committee board joins the boards of an appointed assessor', async ({
     page,
@@ -339,7 +351,7 @@ test.describe('audit log', () => {
 })
 
 const CAPTURES = [
-  ['dashboard', '/dashboard', '[data-board="system_admin"]', USERS.systemAdmin],
+  ['dashboard', '/dashboard', '[data-testid="executive-overview"]', USERS.systemAdmin],
   ['dashboard-follower', '/dashboard', '[data-board="request_follower"]', USERS.multiRole],
   ['notification-types', '/admin/settings/notifications', ROWS, USERS.systemAdmin],
   ['contact-inbox', '/admin/contact-messages', ROWS, USERS.systemAdmin],

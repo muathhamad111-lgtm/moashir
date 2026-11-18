@@ -5,7 +5,7 @@ import Card from '@/components/ui/Card.vue'
 import Badge from '@/components/ui/Badge.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import { localizedText } from '@/utils/localizedText'
-import { percentText } from '@/utils/percentText'
+import { percentText, pointsText } from '@/utils/percentText'
 
 const props = defineProps({
   result: { type: Object, required: true },
@@ -75,8 +75,8 @@ function panelId(mainId) {
                 <span class="self-result__main-earned u-ltr">
                   {{
                     t('assessment.self.result.earnedOf', {
-                      earned: main.earned,
-                      weight: main.weight,
+                      earned: pointsText(main.earned),
+                      weight: pointsText(main.weight),
                     })
                   }}
                 </span>
@@ -107,8 +107,8 @@ function panelId(mainId) {
                   <span class="self-result__sub-earned u-ltr">
                     {{
                       t('assessment.self.result.earnedOf', {
-                        earned: sub.earned,
-                        weight: sub.weight,
+                        earned: pointsText(sub.earned),
+                        weight: pointsText(sub.weight),
                       })
                     }}
                   </span>

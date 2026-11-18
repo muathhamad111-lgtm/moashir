@@ -54,10 +54,12 @@ function cvOf(fixture, tree) {
   )
 }
 
+// A fixture carries its own feedback map, or picks shared entries by sub-criterion code.
 function feedbackOf(fixture) {
-  return Object.fromEntries(
-    fixture.feedbackCodes.map((code) => [code, { ...feedbackFixture[code] }]),
-  )
+  const entries = fixture.feedback
+    ? Object.entries(fixture.feedback)
+    : fixture.feedbackCodes.map((code) => [code, feedbackFixture[code]])
+  return Object.fromEntries(entries.map(([code, entry]) => [code, { ...entry }]))
 }
 
 function assignmentRows(fixture) {

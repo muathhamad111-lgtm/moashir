@@ -190,8 +190,8 @@ describe('self assessment result view', () => {
       locale: 'ar',
     })
     expect(wrapper.find('.self-result__gauge-value').text()).toBe('77.18%')
-    expect(wrapper.find('.self-result__score-total').text()).toContain('6329.17')
-    expect(wrapper.find('.self-result__score-total').text()).toContain('8200.00')
+    expect(wrapper.find('.self-result__score-total').text()).toContain('6,329.17')
+    expect(wrapper.find('.self-result__score-total').text()).toContain('8,200.00')
   })
 
   it('shows the missing state on 404', async () => {

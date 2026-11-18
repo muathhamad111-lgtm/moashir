@@ -95,6 +95,7 @@ watch(assessment, (value) => {
       />
       <AccreditedNotices
         :assessment="assessment"
+        :criteria-update="form.criteriaUpdate"
         :completion-request="form.completionRequest"
         :conflict-code="rejection.conflictCode.value"
         :refreshing="refreshing"

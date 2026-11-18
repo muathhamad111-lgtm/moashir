@@ -308,7 +308,7 @@ describe('result components', () => {
       ],
     }
     const wrapper = mountWith(SelfResultBreakdown, { result })
-    expect(wrapper.find('.self-result__main-earned').text()).toBe('769.17 / 1000.00')
+    expect(wrapper.find('.self-result__main-earned').text()).toBe('769.17 / 1,000.00')
     expect(wrapper.find('.self-result__bar').attributes('value')).toBe('76.92')
     expect(wrapper.find('.self-result__point').text()).toContain('Score 8.50')
     expect(wrapper.find('.self-result__point').text()).toContain('85.00%')

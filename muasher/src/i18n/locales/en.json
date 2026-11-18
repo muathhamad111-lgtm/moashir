@@ -1283,7 +1283,8 @@
       "resultsHint": "The outcomes the organization achieves.",
       "error": "We couldn’t load the excellence model. Please try again.",
       "creativity": "Creativity and learning",
-      "creativityHint": "How the organization innovates and learns to improve."
+      "creativityHint": "How the organization innovates and learns to improve.",
+      "criteriaTitle": "The main criteria published in the model"
     },
     "services": {
       "title": "Support services",
@@ -2848,6 +2849,12 @@
         "scopes": {
           "all": "unchanged items keep their scores",
           "reset_open": "all scores were reset"
+        },
+        "titleRequest": "Your request moved from criteria version {from} to version {to}",
+        "titleReview": "This request moved from criteria version {from} to version {to}",
+        "triggersRequest": {
+          "criteria_edit": "The criteria were updated on {date} and applied to open requests ({scope}).",
+          "entity_restore": "The entity account was restored on {date} and the request moved to the published criteria ({scope})."
         }
       },
       "missing": {
@@ -6313,7 +6320,10 @@
       "request": "Request details",
       "entity": "Entity details"
     },
-    "evidenceDownload": "Download"
+    "evidenceDownload": "Download",
+    "evidenceMissing": "The entity did not attach this file.",
+    "evidenceOther": "Other attachments",
+    "evidenceRequired": "Required"
   },
   "cycles": {
     "statuses": {

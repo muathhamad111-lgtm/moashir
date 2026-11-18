@@ -1,7 +1,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
 import { localizedText } from '@/utils/localizedText'
-import { percentText } from '@/utils/percentText'
+import { percentText, pointsText } from '@/utils/percentText'
 
 const FIELDS = [
   { key: 'strengths', tone: 'strengths' },
@@ -35,7 +35,12 @@ function percentOf(value) {
           <span class="feedback-report__sub-score">
             <bdi dir="ltr">{{ percentOf(sub.percent) }}</bdi>
             <span class="feedback-report__sub-points">
-              {{ t('feedback.report.points', { earned: sub.earned, weight: sub.weight }) }}
+              {{
+                t('feedback.report.points', {
+                  earned: pointsText(sub.earned),
+                  weight: pointsText(sub.weight),
+                })
+              }}
             </span>
           </span>
         </div>

@@ -5,6 +5,7 @@ import Card from '@/components/ui/Card.vue'
 import Badge from '@/components/ui/Badge.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import { pointsText } from '@/utils/percentText'
 
 const props = defineProps({
   gap: { type: Object, required: true },
@@ -50,15 +51,15 @@ const priorityVariant = computed(() => PRIORITY_VARIANTS[props.gap.priority] ?? 
     <div class="gap-card__scores">
       <div class="gap-card__score">
         <span class="gap-card__score-label">{{ $t('bag.gap.current') }}</span>
-        <span class="gap-card__score-value">{{ n(gap.current, 'default') }}</span>
+        <span class="gap-card__score-value">{{ pointsText(gap.current) }}</span>
       </div>
       <div class="gap-card__score">
         <span class="gap-card__score-label">{{ $t('bag.gap.target') }}</span>
-        <span class="gap-card__score-value">{{ n(gap.target, 'default') }}</span>
+        <span class="gap-card__score-value">{{ pointsText(gap.target) }}</span>
       </div>
       <div class="gap-card__score gap-card__score--gap">
         <span class="gap-card__score-label">{{ $t('bag.gap.gap') }}</span>
-        <span class="gap-card__score-value">{{ n(gap.gap, 'default') }}</span>
+        <span class="gap-card__score-value">{{ pointsText(gap.gap) }}</span>
       </div>
     </div>
 
@@ -73,9 +74,7 @@ const priorityVariant = computed(() => PRIORITY_VARIANTS[props.gap.priority] ?? 
       <span class="gap-card__bar-fill" :style="{ '--gap-fill': `${gapPercent}%` }"></span>
     </div>
     <p class="gap-card__bar-caption">
-      {{
-        $t('bag.gap.gapOfTarget', { gap: n(gap.gap, 'default'), target: n(gap.target, 'default') })
-      }}
+      {{ $t('bag.gap.gapOfTarget', { gap: pointsText(gap.gap), target: pointsText(gap.target) }) }}
     </p>
 
     <div v-if="gap.consultantNote" class="gap-card__note">

@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { feedbackReportOf } from '@/mocks/stores/feedbackReports'
 import { findAssessment, resetAssessmentsStore } from '@/mocks/stores/assessments/assessmentsStore'
 import { ACCREDITED_FIXTURE_IDS } from '@/mocks/fixtures/accreditedRequests'
-import { feedbackNotes } from '@/mocks/fixtures/certificates'
 import { formatHijriDate } from '@/utils/datetime'
 
 const NAMAA_REQUEST_ID = ACCREDITED_FIXTURE_IDS.completedEarlier
@@ -39,10 +38,14 @@ describe('feedback report mock', () => {
     expect(completedOnHijri.ar).toContain('20')
   })
 
-  it('has an assessor note for every sub-criterion of the tree', () => {
-    const subIds = reportOfNamaa().criteria.flatMap((main) => main.subs.map((sub) => sub.subId))
-    expect(subIds).toHaveLength(19)
-    expect(Object.keys(feedbackNotes).map(Number).sort()).toEqual([...subIds].sort())
+  it("quotes the request's own assessor feedback for every sub-criterion", () => {
+    const record = findAssessment(NAMAA_REQUEST_ID)
+    const subs = reportOfNamaa().criteria.flatMap((main) => main.subs)
+    expect(subs).toHaveLength(19)
+    for (const sub of subs) {
+      expect(sub.strengths).toBe(record.feedback[sub.code].strengths)
+      expect(sub.improvementPoints).toBe(record.feedback[sub.code].improvementPoints)
+    }
     expect(subOf(reportOfNamaa(), 601).strengths).toContain('التحول الرقمي')
   })
 })

@@ -2,7 +2,7 @@
 import { useI18n } from 'vue-i18n'
 import Card from '@/components/ui/Card.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
-import { percentText, twoDecimals } from '@/utils/percentText'
+import { percentText, pointsText, twoDecimals } from '@/utils/percentText'
 
 defineProps({
   result: { type: Object, required: true },
@@ -29,7 +29,12 @@ const { t, n } = useI18n()
         </div>
         <div class="self-result__score-detail">
           <p class="self-result__score-total">
-            {{ t('assessment.self.result.totalOf', { total: result.total, max: result.maxTotal }) }}
+            {{
+              t('assessment.self.result.totalOf', {
+                total: pointsText(result.total),
+                max: pointsText(result.maxTotal),
+              })
+            }}
           </p>
           <p class="self-result__score-hint">{{ t('assessment.self.result.totalHint') }}</p>
         </div>

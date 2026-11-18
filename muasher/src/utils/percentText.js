@@ -24,6 +24,11 @@ export function twoDecimals(value) {
   return Number.isNaN(numeric) ? String(value) : TWO_DECIMALS.format(numeric)
 }
 
+// Points read the same on every screen: thousands separator and two decimals, «6,112.50».
+export function pointsText(value) {
+  return twoDecimals(value)
+}
+
 export function percentText(n, t, value) {
   return t('public.home.percent', { value: twoDecimals(value) })
 }

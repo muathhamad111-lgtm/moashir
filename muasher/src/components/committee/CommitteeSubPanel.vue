@@ -95,7 +95,7 @@ function text(content) {
       :model-value="note"
       :name="`committee-note-${sub.id}`"
       :label="t('award.evaluation.subNote', { name: text(sub.name) })"
-      :hint="t('award.evaluation.noteHint')"
+      :hint="text(sub.assessorNoteLabel) || t('award.evaluation.noteHint')"
       :rows="3"
       :error="noteError"
       :disabled="disabled"

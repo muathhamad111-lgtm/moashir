@@ -4,7 +4,12 @@ import { useI18n } from 'vue-i18n'
 import AssessmentNotice from '@/components/assessment/AssessmentNotice.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import CompletionRequestCard from './CompletionRequestCard.vue'
-import { ACCREDITED_CODES as CODES, ENTITY_EDITABLE_STATUSES } from '@/constants/accredited'
+import CriteriaRebindSummary from '@/components/assessment/self/CriteriaRebindSummary.vue'
+import {
+  ACCREDITED_CODES as CODES,
+  ACCREDITED_STATUSES,
+  ENTITY_EDITABLE_STATUSES,
+} from '@/constants/accredited'
 import { AWARD_CODES } from '@/constants/advanced'
 import { ASSESSMENT_PATHS } from '@/constants/assessment'
 
@@ -13,11 +18,18 @@ const props = defineProps({
   completionRequest: { type: Object, default: null },
   conflictCode: { type: String, default: '' },
   refreshing: { type: Boolean, default: false },
+  criteriaUpdate: { type: Object, default: null },
 })
 
 const emit = defineEmits(['refresh'])
+const CLOSED_STATUSES = [
+  ACCREDITED_STATUSES.COMPLETED,
+  ACCREDITED_STATUSES.REFUNDED,
+  ACCREDITED_STATUSES.DECLINED,
+]
 const { t } = useI18n()
 
+const isClosed = computed(() => CLOSED_STATUSES.includes(props.assessment.status))
 const isLockedStatus = computed(() => !ENTITY_EDITABLE_STATUSES.includes(props.assessment.status))
 const CONFLICT_KEYS = {
   [CODES.DEADLINE_PASSED]: 'deadlinePassed',
@@ -45,6 +57,11 @@ function noticeKey(name, part) {
       variant="frozen"
       :title="t('accredited.notices.frozen.title')"
       :message="t('accredited.notices.frozen.message')"
+    />
+    <CriteriaRebindSummary
+      v-if="criteriaUpdate && !isClosed"
+      context="request"
+      :update="criteriaUpdate"
     />
     <AssessmentNotice
       v-if="assessment.criteriaUpdateInProgress"

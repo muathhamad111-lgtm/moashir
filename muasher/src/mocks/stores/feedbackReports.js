@@ -5,16 +5,17 @@ import {
   displayEarned,
   displayPercent,
 } from './assessments/selfScoring'
-import { feedbackNotes } from '../fixtures/certificates'
 import { certificates } from './certificatesStore'
 import { currentSummaryOf } from './insights/assessorSummaries'
 import { formatHijriDate } from '@/utils/datetime'
 
-function notesOf(subId) {
-  const [first, ...rest] = (feedbackNotes[subId]?.ar ?? '').split('. ')
+// The assessor's own feedback on the request, as its feedback tab and excellence tools show it.
+function notesOf(record, sub) {
+  const feedback = record.feedback?.[sub.code] ?? {}
   return {
-    strengths: first || null,
-    improvementPoints: rest.join('. ') || null,
+    strengths: feedback.strengths ?? null,
+    improvementPoints: feedback.improvementPoints ?? null,
+    notes: feedback.notes ?? null,
   }
 }
 
@@ -35,25 +36,24 @@ function figuresOf(scored) {
   }
 }
 
-function subFigures(sub, scored) {
+function subFigures(record, sub, scored) {
   return {
     subId: sub.id,
     code: sub.code,
     name: sub.name,
     ...figuresOf(scored),
-    ...notesOf(sub.id),
-    notes: null,
+    ...notesOf(record, sub),
   }
 }
 
-function mainFigures(main, scored) {
+function mainFigures(record, main, scored) {
   const scoredSubs = byId(scored.subs)
   return {
     criterionId: main.id,
     code: main.code,
     name: main.name,
     ...figuresOf(scored),
-    subs: main.subs.map((sub) => subFigures(sub, scoredSubs.get(sub.id))),
+    subs: main.subs.map((sub) => subFigures(record, sub, scoredSubs.get(sub.id))),
   }
 }
 
@@ -88,7 +88,7 @@ export function feedbackReportOf(record, entity) {
   if (!tree) return { ...identity, available: false }
   const result = resultOf(record, tree)
   const scoredMains = byId(result.mains)
-  const criteria = tree.mains.map((main) => mainFigures(main, scoredMains.get(main.id)))
+  const criteria = tree.mains.map((main) => mainFigures(record, main, scoredMains.get(main.id)))
   return {
     ...identity,
     available: true,

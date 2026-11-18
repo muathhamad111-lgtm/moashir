@@ -1,21 +1,36 @@
 <script setup>
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import BaseButton from '@/components/ui/BaseButton.vue'
-import { formatFileSize } from '@/utils/payments/amountFormat'
+import Badge from '@/components/ui/Badge.vue'
+import ReviewEvidenceCards from './ReviewEvidenceCards.vue'
 import { formatNumber } from '@/utils/formatNumber'
+import { localizedText } from '@/utils/localizedText'
 
-defineProps({
+const props = defineProps({
   files: { type: Array, required: true },
   downloading: { type: Object, required: true },
+  slots: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(['download'])
 const { t, n, locale } = useI18n()
 
-function extensionOf(fileName) {
-  const dot = fileName.lastIndexOf('.')
-  return dot > 0 ? fileName.slice(dot + 1).toUpperCase() : ''
-}
+const groups = computed(() => {
+  if (!props.slots.length) return null
+  const keys = new Set(props.slots.map((slot) => slot.key))
+  const bySlot = props.slots
+    .map((slot) => ({
+      key: slot.key,
+      name: localizedText(slot.name, locale.value),
+      required: slot.required === true,
+      files: props.files.filter((file) => file.attachmentKey === slot.key),
+    }))
+    .filter((group) => group.files.length || group.required)
+  const others = props.files.filter((file) => !keys.has(file.attachmentKey))
+  return others.length
+    ? [...bySlot, { key: '', name: t('review.evidenceOther'), required: false, files: others }]
+    : bySlot
+})
 </script>
 
 <!-- Evidence as small download cards: the file name, its type and size, one clear download button. -->
@@ -24,28 +39,27 @@ function extensionOf(fileName) {
     <p class="review-evidence__title">
       {{ t('review.evidenceTitle', { count: formatNumber(n, files.length) }) }}
     </p>
-    <ul v-if="files.length" class="review-evidence__list">
-      <li v-for="file in files" :key="file.id" class="review-evidence__card" :title="file.fileName">
-        <span class="review-evidence__type" aria-hidden="true">{{
-          extensionOf(file.fileName)
-        }}</span>
-        <span class="review-evidence__meta">
-          <bdi class="review-evidence__name" dir="ltr">{{ file.fileName }}</bdi>
-          <span class="review-evidence__size">{{
-            t('accredited.evidence.sizeKb', { size: formatFileSize(file.sizeBytes, locale) })
-          }}</span>
-        </span>
-        <BaseButton
-          variant="secondary"
-          size="sm"
-          icon="download"
-          :loading="Boolean(downloading[file.id])"
-          :aria-label="t('accredited.evidence.download', { name: file.fileName })"
-          @click="emit('download', file)"
-          >{{ t('review.evidenceDownload') }}</BaseButton
-        >
-      </li>
-    </ul>
+    <template v-if="groups">
+      <section v-for="group in groups" :key="group.key" class="review-evidence__group">
+        <p class="review-evidence__slot">
+          <span>{{ group.name }}</span>
+          <Badge v-if="group.required" variant="info">{{ t('review.evidenceRequired') }}</Badge>
+        </p>
+        <ReviewEvidenceCards
+          v-if="group.files.length"
+          :files="group.files"
+          :downloading="downloading"
+          @download="emit('download', $event)"
+        />
+        <p v-else class="review-evidence__empty">{{ t('review.evidenceMissing') }}</p>
+      </section>
+    </template>
+    <ReviewEvidenceCards
+      v-else-if="files.length"
+      :files="files"
+      :downloading="downloading"
+      @download="emit('download', $event)"
+    />
     <p v-else class="review-evidence__empty">{{ t('review.noEvidence') }}</p>
   </div>
 </template>

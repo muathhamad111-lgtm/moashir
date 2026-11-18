@@ -229,6 +229,7 @@ export function reviewResource(record, { mode, context }) {
     feedback: feedbackBySubId(record, subs),
     completionRequest: completionResource(openCompletionOf(record), subs),
     context,
+    criteriaUpdate: criteriaUpdateOf(record),
   }
 }
 

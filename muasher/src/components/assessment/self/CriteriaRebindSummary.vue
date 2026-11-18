@@ -7,7 +7,18 @@ import { localizedText } from '@/utils/localizedText'
 
 const props = defineProps({
   update: { type: Object, required: true },
+  context: {
+    type: String,
+    default: 'self',
+    validator: (value) => ['self', 'request', 'review'].includes(value),
+  },
 })
+
+const TITLE_KEYS = {
+  self: 'assessment.self.rebind.title',
+  request: 'assessment.self.rebind.titleRequest',
+  review: 'assessment.self.rebind.titleReview',
+}
 
 const { t, locale } = useI18n()
 
@@ -22,8 +33,9 @@ const movedOn = computed(() =>
       })
     : '',
 )
+const triggersKey = computed(() => (props.context === 'self' ? 'triggers' : 'triggersRequest'))
 const message = computed(() =>
-  t(`assessment.self.rebind.triggers.${props.update.trigger}`, {
+  t(`assessment.self.rebind.${triggersKey.value}.${props.update.trigger}`, {
     date: movedOn.value,
     scope: t(`assessment.self.rebind.scopes.${props.update.scope}`),
   }),
@@ -40,7 +52,7 @@ function labelOf(item) {
   <AssessmentNotice
     variant="info"
     :title="
-      t('assessment.self.rebind.title', {
+      t(TITLE_KEYS[context], {
         from: update.fromVersionNumber,
         to: update.toVersionNumber,
       })

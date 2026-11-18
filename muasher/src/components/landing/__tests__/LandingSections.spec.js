@@ -27,12 +27,25 @@ import {
 } from './landingTestKit'
 
 vi.mock('@/services/contentService', () => ({
-  contentService: { getHome: vi.fn(), getCertificateLevels: vi.fn() },
+  contentService: { getHome: vi.fn(), getCertificateLevels: vi.fn(), getModelCriteria: vi.fn() },
 }))
 vi.mock('@/services/servicePricesService', () => ({
   servicePricesService: { getServicePrices: vi.fn() },
 }))
 vi.mock('@/services/kpisService', () => ({ kpisService: { getFeatured: vi.fn() } }))
+
+const MODEL_CRITERIA = [
+  { id: 1, code: 'M1', order: 1, group: 'enablers', name: { ar: 'القيادة', en: 'Leadership' } },
+  { id: 2, code: 'M2', order: 2, group: 'enablers', name: { ar: 'التخطيط', en: 'Planning' } },
+  {
+    id: 3,
+    code: 'M3',
+    order: 3,
+    group: 'creativity_learning',
+    name: { ar: 'الابتكار', en: 'Innovation' },
+  },
+  { id: 4, code: 'M4', order: 4, group: 'results', name: { ar: 'النتائج', en: 'Outcomes' } },
+]
 
 async function mounted(component, key, options = {}) {
   const section = options.section ?? landingSection(key)
@@ -44,6 +57,7 @@ async function mounted(component, key, options = {}) {
 beforeEach(() => {
   stubBrowser()
   contentService.getCertificateLevels.mockResolvedValue({ data: { levels: LEVELS } })
+  contentService.getModelCriteria.mockResolvedValue({ data: MODEL_CRITERIA })
   servicePricesService.getServicePrices.mockResolvedValue({ data: PRICES })
   kpisService.getFeatured.mockResolvedValue({ data: FEATURED, meta: { minimum: 3 } })
 })
@@ -124,6 +138,45 @@ describe('LandingModel', () => {
     expect(wrapper.findAll('.lp-cycle__step')).toHaveLength(section.items.length)
     expect(wrapper.findAll('.lp-glyph')).toHaveLength(section.items.length)
     expect(wrapper.find('h2').text()).toContain(section.meta.highlight.ar)
+  })
+
+  it('lists the published main criteria by group under the cycle', async () => {
+    const { wrapper } = await mounted(LandingModel, 'model')
+    const groups = wrapper.findAll('.lp-model-criteria__group')
+
+    expect(wrapper.find('#lp-model-criteria-title').text()).toBe(
+      'المعايير الرئيسية المنشورة في النموذج',
+    )
+    expect(groups).toHaveLength(3)
+    expect(groups[0].find('h4').text()).toBe('الممكّنات')
+    expect(groups[0].findAll('.lp-tag').map((tag) => tag.text())).toEqual(['القيادة', 'التخطيط'])
+    expect(wrapper.findAll('.lp-cycle .lp-tag')).toHaveLength(0)
+  })
+
+  it('names the groups and criteria in English', async () => {
+    const { wrapper } = await mounted(LandingModel, 'model', { locale: 'en' })
+    const groups = wrapper.findAll('.lp-model-criteria__group')
+
+    expect(groups[0].find('h4').text()).toBe('Enablers')
+    expect(groups[2].findAll('.lp-tag').map((tag) => tag.text())).toEqual(['Outcomes'])
+  })
+
+  it('shows nothing extra when the published criteria cannot be loaded', async () => {
+    contentService.getModelCriteria.mockRejectedValue(new Error('offline'))
+    const { wrapper, section } = await mounted(LandingModel, 'model')
+
+    expect(wrapper.find('.lp-model-criteria').exists()).toBe(false)
+    expect(wrapper.findAll('.lp-cycle__step')).toHaveLength(section.items.length)
+  })
+
+  it('reserves the space with a busy state while the criteria load', async () => {
+    contentService.getModelCriteria.mockReturnValue(new Promise(() => {}))
+    const { wrapper } = await mounted(LandingModel, 'model')
+    const block = wrapper.find('.lp-model-criteria')
+
+    expect(block.classes()).toContain('is-loading')
+    expect(block.attributes('aria-busy')).toBe('true')
+    expect(block.find('.lp-model-criteria__groups').exists()).toBe(false)
   })
 })
 

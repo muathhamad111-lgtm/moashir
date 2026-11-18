@@ -1,4 +1,4 @@
-import { toAssessment, toAssessmentScores, toEntitySummary } from './assessments'
+import { toAssessment, toAssessmentScores, toCriteriaUpdate, toEntitySummary } from './assessments'
 import { toCompletionRequest, toCvSheet, toEvidenceList, toFeedbackFields } from './accredited'
 import { toClock, toPlace } from './requests'
 
@@ -54,6 +54,7 @@ export function toAssessorReview(raw = {}) {
     completionRequest: toCompletionRequest(raw.completionRequest),
     context: (raw.context ?? []).map(toContextItem),
     summary: toAssessorSummary(raw.summary),
+    criteriaUpdate: toCriteriaUpdate(raw.criteriaUpdate),
   }
 }
 

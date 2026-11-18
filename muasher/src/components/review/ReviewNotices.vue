@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import AssessmentNotice from '@/components/assessment/AssessmentNotice.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import CompletionRequestCard from '@/components/accredited/CompletionRequestCard.vue'
+import CriteriaRebindSummary from '@/components/assessment/self/CriteriaRebindSummary.vue'
 import { useAuthStore } from '@/stores/auth'
 import { ACCREDITED_STATUSES, REVIEW_MODES } from '@/constants/accredited'
 
@@ -21,6 +22,14 @@ const auth = useAuthStore()
 const status = computed(() => props.review.assessment.status)
 const isReadOnly = computed(() => props.review.mode === REVIEW_MODES.READ_ONLY)
 const waitsForEntity = computed(() => status.value === ACCREDITED_STATUSES.NEEDS_COMPLETION)
+const CLOSED_STATUSES = [
+  ACCREDITED_STATUSES.COMPLETED,
+  ACCREDITED_STATUSES.REFUNDED,
+  ACCREDITED_STATUSES.DECLINED,
+]
+const showsCriteriaUpdate = computed(
+  () => Boolean(props.review.criteriaUpdate) && !CLOSED_STATUSES.includes(status.value),
+)
 const mayOverride = computed(
   () => auth.isSuperAdmin && status.value === ACCREDITED_STATUSES.COMPLETED,
 )
@@ -71,6 +80,11 @@ const mayOverride = computed(
         >
       </template>
     </AssessmentNotice>
+    <CriteriaRebindSummary
+      v-if="showsCriteriaUpdate"
+      context="review"
+      :update="review.criteriaUpdate"
+    />
     <AssessmentNotice
       v-if="waitsForEntity"
       variant="warning"

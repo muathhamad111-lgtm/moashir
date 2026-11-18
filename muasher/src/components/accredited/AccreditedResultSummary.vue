@@ -1,5 +1,5 @@
 <script setup>
-import { percentText } from '@/utils/percentText'
+import { percentText, pointsText } from '@/utils/percentText'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Card from '@/components/ui/Card.vue'
@@ -32,7 +32,12 @@ const isLongValue = computed(() => String(props.result.percent ?? '').length >= 
       </div>
       <div class="accredited-result-summary__detail">
         <p class="accredited-result-summary__total">
-          {{ t('accredited.result.totalOf', { total: result.total, max: result.maxTotal }) }}
+          {{
+            t('accredited.result.totalOf', {
+              total: pointsText(result.total),
+              max: pointsText(result.maxTotal),
+            })
+          }}
         </p>
         <p class="accredited-result-summary__meta">
           {{ t('accredited.result.completedAt') }}

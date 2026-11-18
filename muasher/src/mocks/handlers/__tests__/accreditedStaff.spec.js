@@ -47,6 +47,7 @@ const REVIEW_KEYS = [
   'completion_request',
   'context',
   'criteria',
+  'criteria_update',
   'cv',
   'due_at',
   'entity',

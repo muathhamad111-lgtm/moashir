@@ -57,6 +57,9 @@ test('landing renders hero, stats, path cards, the model stages, levels and jour
   await retryFor(page, '.lp-path')
   await expect(page.locator('.lp-path')).toHaveCount(3)
   await expect(page.locator('#model .lp-cycle__step')).toHaveCount(4)
+  await retryFor(page, '#model .lp-model-criteria .lp-tag')
+  await expect(page.locator('#model .lp-model-criteria .lp-tag')).toHaveCount(9)
+  await expect(page.locator('#model .lp-model-criteria__group')).toHaveCount(3)
   await expect(page.locator('#journey .lp-jr')).toHaveCount(6)
 
   await retryFor(page, '#levels .lp-lv__tiers button')

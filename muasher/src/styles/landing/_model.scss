@@ -148,3 +148,59 @@
     transform: scale(1);
   }
 }
+
+.lp-model-criteria {
+  margin-block-start: 56px;
+
+  &.is-loading {
+    min-block-size: 96px;
+  }
+
+  &__title {
+    margin-block: 0 20px;
+    text-align: center;
+    font-size: 1.15rem;
+  }
+
+  &__groups {
+    display: grid;
+    gap: 16px;
+  }
+
+  &__group {
+    padding: 18px 20px;
+    border: 1px solid var(--lp-line);
+    border-radius: 18px;
+    background: var(--lp-surface);
+    text-align: start;
+  }
+
+  &__name {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  &__hint {
+    margin-block: 4px 12px;
+    color: var(--lp-ink-2);
+    font-size: 0.9rem;
+  }
+
+  &__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+}
+
+@media (min-width: $lp-bp-journey) {
+  .lp-model-criteria {
+    &.is-loading {
+      min-block-size: 200px;
+    }
+
+    &__groups {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+}
