@@ -30,6 +30,14 @@ const FILTER_STATUSES = ['not-started', 'in-progress', 'completed']
 const NOTE_MAX = 5000
 const NOTES_MAX_ITEMS = 500
 
+// Mirrors backend MyCommitteeAssignmentsQuery: the viewer's live rows, optionally in one cycle.
+function seatedRows(user, cycleId) {
+  return committeeState.assignments
+    .filter((row) => row.status !== 'voided' && findSeat(row.seatId).userId === user.id)
+    .filter((row) => !isFrozen(findAssessment(row.assessmentId)))
+    .filter((row) => !cycleId || row.cycleId === Number(cycleId))
+}
+
 export function myRows(user, query) {
   const cycleId = query.get('filter[cycleId]')
   const status = query.get('filter[status]')
@@ -37,13 +45,21 @@ export function myRows(user, query) {
     throw assessmentReject.validation({
       'filter.status': [fieldMessage('validation.invalid', {}, 'filter')],
     })
-  const rows = committeeState.assignments
-    .filter((row) => row.status !== 'voided' && findSeat(row.seatId).userId === user.id)
-    .filter((row) => !isFrozen(findAssessment(row.assessmentId)))
-    .filter((row) => !cycleId || row.cycleId === Number(cycleId))
+  const rows = seatedRows(user, cycleId)
     .filter((row) => !status || row.status === status)
     .sort((left, right) => right.id - left.id)
   return paginate(rows, query)
+}
+
+// Mirrors backend CountMyCommitteeAssignments: per-status counts for the tabs, cycle filter only.
+export function myStatusCounts(user, query) {
+  const rows = seatedRows(user, query.get('filter[cycleId]'))
+  return Object.fromEntries(
+    FILTER_STATUSES.map((status) => [
+      toCanonicalStatus(status),
+      rows.filter((row) => row.status === status).length,
+    ]),
+  )
 }
 
 export function authorizeOwnRow(user, row) {

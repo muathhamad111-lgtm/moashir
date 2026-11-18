@@ -3901,6 +3901,7 @@
     "center": {
       "eyebrow": "Notifications",
       "title": "Everything about your organization, as it happens",
+      "staffTitle": "Everything about your tasks and requests, as it happens",
       "unread": "Unread",
       "markAllRead": "Mark all as read",
       "archive": "Archive",
@@ -4710,7 +4711,11 @@
     "workspace": "All your roles share one workspace: each role's modules appear in the sidebar and their tasks are combined under “Pending actions”.",
     "roles": {
       "title": "My roles",
-      "empty": "No roles are assigned to your account."
+      "empty": "No roles are assigned to your account.",
+      "committeeSeats": "Assessors committee seats",
+      "committeeSeat": "Assessors committee member",
+      "substituteSeat": "Assessors committee substitute",
+      "committeePeriod": "From {start} to {end}"
     },
     "permissions": {
       "title": "My permissions",
@@ -6321,9 +6326,9 @@
       "entity": "Entity details"
     },
     "evidenceDownload": "Download",
-    "evidenceMissing": "The entity did not attach this file.",
+    "evidenceRequired": "Required",
     "evidenceOther": "Other attachments",
-    "evidenceRequired": "Required"
+    "evidenceMissing": "The entity did not attach this file."
   },
   "cycles": {
     "statuses": {
@@ -6747,7 +6752,7 @@
     "work": {
       "eyebrow": "Assessors committee",
       "title": "My committee assessments",
-      "subtitle": "The entities distributed to you in the award cycles where you sit on the committee.",
+      "subtitle": "The entities qualified for committee assessment in the award cycles where you sit on the committee.",
       "overdueTitle": "One evaluation is past the committee end | {count} evaluations are past the committee end",
       "overdueMessage": "Submit them as soon as possible; the Award Secretary is notified of overdue evaluations.",
       "filters": {
@@ -6756,20 +6761,15 @@
       },
       "columns": {
         "entity": "Entity",
-        "cycle": "Cycle",
         "status": "Status",
         "dueAt": "Due",
-        "percent": "My total",
-        "open": "Evaluation"
+        "percent": "My total"
       },
       "emptyTitle": "Nothing to assess",
-      "emptyMessage": "No entity is distributed to you yet.",
+      "emptyMessage": "No entities with this status in this tab.",
       "substitute": "Substitute",
       "returned": "Returned",
       "notSubmitted": "Not submitted",
-      "start": "Start",
-      "continue": "Continue",
-      "view": "View",
       "dueAt": "Due"
     },
     "evaluation": {

@@ -11,10 +11,12 @@ import NotificationDayGroup from '@/components/notifications/NotificationDayGrou
 import NotificationPreferencesCard from '@/components/notifications/NotificationPreferencesCard.vue'
 import { useNotificationsCenter } from '@/composables/useNotificationsCenter'
 import { isInternalPath } from '@/utils/internalPath'
+import { useAuthStore } from '@/stores/auth'
 
 const PANEL_ID = 'notifications-panel'
 
 const { t } = useI18n()
+const auth = useAuthStore()
 const route = useRoute()
 const router = useRouter()
 
@@ -52,7 +54,9 @@ async function open(item) {
     <header class="notifications-center__hero">
       <div class="notifications-center__intro">
         <p class="notifications-center__eyebrow">{{ t('notifications.center.eyebrow') }}</p>
-        <h1 class="notifications-center__title">{{ t('notifications.center.title') }}</h1>
+        <h1 class="notifications-center__title">
+          {{ t(auth.isEntity ? 'notifications.center.title' : 'notifications.center.staffTitle') }}
+        </h1>
       </div>
       <BaseButton
         variant="secondary"

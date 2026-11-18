@@ -33,13 +33,14 @@ const ROW_KEYS = [
   'membership_status',
   'percent',
   'returned_at',
+  'review_progress',
   'started_at',
   'status',
   'submitted_at',
   'substitute_approved_at',
 ]
 const EVALUATION_KEYS = [
-  ...ROW_KEYS.filter((key) => !['cycle', 'entity'].includes(key)),
+  ...ROW_KEYS.filter((key) => !['cycle', 'entity', 'review_progress'].includes(key)),
   'assignment',
   'assignment_id',
   'criteria',
@@ -221,6 +222,19 @@ describe('committee mock — blind evaluation', () => {
     expect((await call('GET', '/committee/me/assignments')).status).toBe(403)
   })
 
+  it('gives each row its scoring progress and counts the rows per status for the tabs', async () => {
+    resetWorld('committee')
+    seedMockSession(P.DAVID)
+    const { body } = await call('GET', '/committee/me/assignments')
+    expect(body.meta.status_counts).toEqual({ not_started: 0, in_progress: 1, completed: 2 })
+    const started = body.data.find((row) => row.status === 'in_progress')
+    const evaluation = await call('GET', `/committee/me/assignments/${started.id}`)
+    expect(started.review_progress).toEqual(evaluation.body.data.progress)
+    const filtered = await call('GET', '/committee/me/assignments?filter[status]=completed')
+    expect(filtered.body.data).toHaveLength(2)
+    expect(filtered.body.meta.status_counts.in_progress).toBe(1)
+  })
+
   it('serves the evaluation without the initial result and hides other rows', async () => {
     resetWorld('committee')
     const mine = await rowOf(P.DAVID, 9204)
@@ -323,6 +337,7 @@ describe('committee mock — discussions', () => {
     seedMockSession(P.DAVID)
     const { body } = await call('GET', '/committee/me/discussions')
     expect(body.data).toHaveLength(1)
+    expect(body.meta.status_counts).toEqual({ open: 1, closed: 0, cancelled: 0 })
     const discussion = body.data[0]
     expect(keys(discussion)).toEqual([
       'accepts_entries',

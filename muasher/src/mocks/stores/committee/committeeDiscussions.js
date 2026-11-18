@@ -101,14 +101,26 @@ export function myDiscussions(user, query) {
     throw assessmentReject.validation({
       'filter.status': [fieldMessage('validation.invalid', {}, 'filter')],
     })
-  const rows = committeeState.discussions
-    .filter(
-      (discussion) =>
-        seatIdsOf(user, discussion).length && !isFrozen(findAssessment(discussion.assessmentId)),
-    )
+  const rows = seatedDiscussions(user)
     .filter((discussion) => !status || discussion.status === status)
     .sort((left, right) => right.id - left.id)
   return paginate(rows, query)
+}
+
+// Mirrors backend MyCommitteeDiscussionsQuery: discussions on requests the viewer assesses.
+function seatedDiscussions(user) {
+  return committeeState.discussions.filter(
+    (discussion) =>
+      seatIdsOf(user, discussion).length && !isFrozen(findAssessment(discussion.assessmentId)),
+  )
+}
+
+// Mirrors backend CountMyCommitteeDiscussions: per-status counts for the tabs.
+export function myDiscussionCounts(user) {
+  const rows = seatedDiscussions(user)
+  return Object.fromEntries(
+    STATUSES.map((status) => [status, rows.filter((row) => row.status === status).length]),
+  )
 }
 
 function validatedOpening(body) {

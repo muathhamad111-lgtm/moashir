@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
+import ReviewSections from '@/components/review/ReviewSections.vue'
 import AccreditedStations from '@/components/accredited/AccreditedStations.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import CommitteeEvaluationHeader from './CommitteeEvaluationHeader.vue'
@@ -113,37 +114,43 @@ onMounted(state.load)
         :conflict-code="actions.conflictCode.value"
         @refresh="refresh"
       />
-      <CommitteeEntityCard :entity="evaluation.assignment.entity" />
-      <AccreditedStations
-        compact
-        :stations="stations"
-        :active-id="activeMain?.id ?? null"
-        @select="showStep(() => steps.goToMain($event))"
-      />
-      <div ref="panelTop" class="review-workspace__main" tabindex="-1">
-        <CommitteeMainPanel
-          v-if="activeMain"
-          :key="activeMain.id"
-          :main="activeMain"
-          :step="steps.position.value + 1"
-          :total="steps.total.value"
-          :workspace="workspace"
-          @download="download"
-        />
-      </div>
-      <CommitteeEvaluationActions
-        :busy="actions.busy.value"
-        :dirty="dirty"
-        :can-score="canScore"
-        :general-note="notes.draft.value.general"
-        :is-first="steps.isFirst.value"
-        :is-last="steps.isLast.value"
-        @previous="showStep(steps.previous)"
-        @next="showStep(steps.next)"
-        @update:general-note="notes.setGeneral"
-        @save="actions.save"
-        @submit="onSubmit"
-      />
+      <ReviewSections>
+        <template #assessment>
+          <AccreditedStations
+            compact
+            :stations="stations"
+            :active-id="activeMain?.id ?? null"
+            @select="showStep(() => steps.goToMain($event))"
+          />
+          <div ref="panelTop" class="review-workspace__main" tabindex="-1">
+            <CommitteeMainPanel
+              v-if="activeMain"
+              :key="activeMain.id"
+              :main="activeMain"
+              :step="steps.position.value + 1"
+              :total="steps.total.value"
+              :workspace="workspace"
+              @download="download"
+            />
+          </div>
+          <CommitteeEvaluationActions
+            :busy="actions.busy.value"
+            :dirty="dirty"
+            :can-score="canScore"
+            :general-note="notes.draft.value.general"
+            :is-first="steps.isFirst.value"
+            :is-last="steps.isLast.value"
+            @previous="showStep(steps.previous)"
+            @next="showStep(steps.next)"
+            @update:general-note="notes.setGeneral"
+            @save="actions.save"
+            @submit="onSubmit"
+          />
+        </template>
+        <template #entity>
+          <CommitteeEntityCard :entity="evaluation.assignment.entity" />
+        </template>
+      </ReviewSections>
       <ReasonDialog
         v-model="reasons.prompt.open.value"
         :title="t('review.reasonTitle')"

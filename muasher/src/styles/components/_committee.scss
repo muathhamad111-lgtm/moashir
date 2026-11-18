@@ -28,7 +28,10 @@
   flex-wrap: wrap;
 }
 
+// A floor width keeps the entity name readable when the table scrolls on a phone.
 .committee-work__entity {
+  display: block;
+  min-inline-size: 10rem;
   font-weight: var(--fw-semibold);
   color: var(--theme-heading);
 }

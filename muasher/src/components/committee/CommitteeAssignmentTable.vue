@@ -2,12 +2,13 @@
 import { percentText } from '@/utils/percentText'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RouterLink } from 'vue-router'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Badge from '@/components/ui/Badge.vue'
 import DateStamp from '@/components/accredited/DateStamp.vue'
 import OverdueBadge from '@/components/accredited/OverdueBadge.vue'
 import AwardStateBadge from './AwardStateBadge.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
+import AssignedRequestProgress from '@/components/requests/AssignedRequestProgress.vue'
 import { ASSIGNMENT_STATUSES, SEAT_STATUSES } from '@/constants/committee'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { committeeEntityLabel } from '@/utils/award/committeeEntity'
@@ -24,19 +25,25 @@ const { t, locale, n } = useI18n()
 
 const columns = computed(() => [
   { key: 'entity', label: t('award.work.columns.entity') },
-  { key: 'cycle', label: t('award.work.columns.cycle') },
   { key: 'status', label: t('award.work.columns.status') },
   { key: 'dueAt', label: t('award.work.columns.dueAt') },
+  { key: 'progress', label: t('requests.assigned.columns.progress') },
   { key: 'percent', label: t('award.work.columns.percent') },
-  { key: 'open', label: t('award.work.columns.open') },
+  { key: 'open', label: t('requests.assigned.columns.actions') },
 ])
 
+function isClosed(row) {
+  return (
+    row.status === ASSIGNMENT_STATUSES.COMPLETED || row.membershipStatus !== SEAT_STATUSES.ACTIVE
+  )
+}
+
+// Same wording as the assessor's assigned requests: start, continue, or view the assessment.
 function openLabel(row) {
-  if (row.status === ASSIGNMENT_STATUSES.COMPLETED || row.membershipStatus !== SEAT_STATUSES.ACTIVE)
-    return t('award.work.view')
+  if (isClosed(row)) return t('requests.assigned.actions.viewReview')
   return row.status === ASSIGNMENT_STATUSES.NOT_STARTED
-    ? t('award.work.start')
-    : t('award.work.continue')
+    ? t('requests.assigned.actions.start')
+    : t('requests.assigned.actions.continue')
 }
 </script>
 
@@ -54,11 +61,11 @@ function openLabel(row) {
       <bdi class="committee-work__entity" :class="{ 'u-ltr': item.entity?.code }">{{
         committeeEntityLabel(item.entity, locale)
       }}</bdi>
-      <span v-if="item.entity?.region" class="committee-member__note">{{
+      <span v-if="item.entity?.region" class="request-queue__muted">{{
         localizedText(item.entity.region.name, locale)
       }}</span>
+      <span class="request-queue__muted">{{ localizedText(item.cycle?.name, locale) }}</span>
     </template>
-    <template #cell-cycle="{ item }">{{ localizedText(item.cycle?.name, locale) }}</template>
     <template #cell-status="{ item }">
       <span class="committee-work__badges">
         <AwardStateBadge kind="row" :status="item.status" />
@@ -87,11 +94,15 @@ function openLabel(row) {
         t('award.work.notSubmitted')
       }}</span></template
     >
+    <template #cell-progress="{ item }">
+      <AssignedRequestProgress :progress="item.reviewProgress" />
+    </template>
     <template #cell-open="{ item }">
-      <RouterLink
-        class="cycle-table__link"
+      <BaseButton
+        :variant="isClosed(item) ? 'secondary' : 'primary'"
+        size="sm"
         :to="{ name: ROUTE_NAMES.AWARD_COMMITTEE_SCORE, params: { assignment: item.id } }"
-        >{{ openLabel(item) }}</RouterLink
+        >{{ openLabel(item) }}</BaseButton
       >
     </template>
   </DataTable>

@@ -93,11 +93,13 @@
 }
 
 .review-bar__item {
-  min-inline-size: 0;
+  flex-shrink: 0;
 }
 
+// Only the entity name gives way (with an ellipsis) when the line is short.
 .review-bar__item--entity {
   flex: 0 1 auto;
+  min-inline-size: 0;
 
   dd {
     display: block;
@@ -113,13 +115,20 @@
   color: var(--theme-text-secondary);
 }
 
+.review-bar__muted {
+  color: var(--theme-text-secondary);
+}
+
 .review-bar__icon {
   color: var(--theme-text-muted);
 }
 
+// The divider only makes sense on one line (from md up); a wrapped bar drops it.
 .review-bar__item--progress {
-  padding-inline-start: var(--space-3);
-  border-inline-start: var(--border-width) solid var(--theme-border);
+  @include respond-to('md') {
+    padding-inline-start: var(--space-3);
+    border-inline-start: var(--border-width) solid var(--theme-border);
+  }
 }
 
 .review-bar__progress {
@@ -188,9 +197,19 @@
 // The tabs sit close under the context bar: shorter tab row, no extra space above the panel.
 .review-sections .tabs__tab {
   padding-block: var(--space-2);
+  padding-inline: var(--space-3);
+
+  @include respond-to('md') {
+    padding-inline: var(--space-4);
+  }
 
   @include in-tts-shell {
     padding-block: var(--space-2);
+    padding-inline: var(--space-3);
+
+    @include respond-to('md') {
+      padding-inline: var(--space-4);
+    }
   }
 }
 

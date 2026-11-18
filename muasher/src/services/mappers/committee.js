@@ -67,6 +67,9 @@ export function toAssignmentRow(raw = {}) {
     startedAt: raw.startedAt ?? null,
     submittedAt: raw.submittedAt ?? null,
     returnedAt: raw.returnedAt ?? null,
+    reviewProgress: raw.reviewProgress
+      ? { scored: raw.reviewProgress.scored ?? 0, required: raw.reviewProgress.required ?? 0 }
+      : null,
   }
 }
 

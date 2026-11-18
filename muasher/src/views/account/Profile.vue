@@ -8,6 +8,7 @@ import Badge from '@/components/ui/Badge.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
+import CommitteeSeatsList from '@/components/account/CommitteeSeatsList.vue'
 import PermissionModuleCard from '@/components/account/PermissionModuleCard.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import ProfilePhotoCard from '@/components/account/ProfilePhotoCard.vue'
@@ -24,6 +25,7 @@ const displayName = computed(() => {
 
 const email = computed(() => auth.user?.email ?? auth.user?.officialEmail ?? '')
 const isEntityAccount = computed(() => auth.isEntity || Boolean(auth.user?.entityId))
+const committeeSeats = computed(() => auth.committeeAppointments)
 </script>
 
 <template>
@@ -72,6 +74,7 @@ const isEntityAccount = computed(() => auth.isEntity || Boolean(auth.user?.entit
           </li>
         </ul>
         <p v-else class="account-page__muted">{{ t('account.roles.empty') }}</p>
+        <CommitteeSeatsList v-if="committeeSeats.length" :appointments="committeeSeats" />
       </Card>
     </div>
 

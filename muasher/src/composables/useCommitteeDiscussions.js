@@ -2,14 +2,14 @@ import { useI18n } from 'vue-i18n'
 import { useFinanceList } from '@/composables/useFinanceList'
 import { useToast } from '@/composables/useToast'
 import { committeeWorkService } from '@/services/committeeWorkService'
-import { COMMITTEE_LIMITS } from '@/constants/committee'
+import { COMMITTEE_LIMITS, DISCUSSION_STATUSES } from '@/constants/committee'
 
 export function useCommitteeDiscussions() {
   const { t } = useI18n()
   const toast = useToast()
   const list = useFinanceList({
     fetcher: (params) => committeeWorkService.listDiscussions(params),
-    initialFilters: { status: '' },
+    initialFilters: { status: DISCUSSION_STATUSES.OPEN },
     perPage: COMMITTEE_LIMITS.PER_PAGE,
   })
 

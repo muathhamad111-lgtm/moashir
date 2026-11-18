@@ -250,8 +250,8 @@ test('the committee assessor scores the entity blindly and submits the evaluatio
   const { page, api: watch } = sessions.committee
   await page.goto('/admin/committee/assignments')
   await expect(rows(page)).toHaveCount(1)
-  await rows(page).first().locator('.cycle-table__link').click()
-  await expect(page.locator('.committee-entity, .review-entity').first()).toBeVisible()
+  await rows(page).first().locator('a.btn').click()
+  await expect(page.locator('.review-bar')).toBeVisible()
   await fillEmptyScores(page, '9')
   await page.locator('.committee-actions .btn--secondary').click()
   await expect(page.locator('.review-actions__status')).toContainText('كل شيء محفوظ')

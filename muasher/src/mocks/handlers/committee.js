@@ -34,6 +34,7 @@ import {
   evaluationMode,
   latestReturnNote,
   myRows,
+  myStatusCounts,
   saveCommitteeNotes,
   saveCommitteeScores,
   submitEvaluation,
@@ -46,6 +47,7 @@ import {
 import {
   memberDiscussionResource,
   myDiscussions,
+  myDiscussionCounts,
   respondToDiscussion,
 } from '../stores/committee/committeeDiscussions'
 import { optionalReason } from '../stores/accredited/accreditedValidation'
@@ -163,10 +165,11 @@ export const committeeHandlers = [
       const user = signedInActor()
       authorizeOwnWork(user)
       runAccreditedSchedule()
-      const { items, pagination } = myRows(user, queryOf(request))
+      const query = queryOf(request)
+      const { items, pagination } = myRows(user, query)
       return envelope(
         items.map((row) => assignmentRowResource(row, findAssessment(row.assessmentId))),
-        { pagination },
+        { pagination, statusCounts: myStatusCounts(user, query) },
       )
     }),
   ),
@@ -197,7 +200,7 @@ export const committeeHandlers = [
       const { items, pagination } = myDiscussions(user, queryOf(request))
       return envelope(
         items.map((discussion) => memberDiscussionResource(discussion, user)),
-        { pagination },
+        { pagination, statusCounts: myDiscussionCounts(user) },
       )
     }),
   ),

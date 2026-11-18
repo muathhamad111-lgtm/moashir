@@ -4,8 +4,9 @@ import { useI18n } from 'vue-i18n'
 import Tabs from '@/components/ui/Tabs.vue'
 import ReviewRequestTab from './ReviewRequestTab.vue'
 
-defineProps({
-  requestId: { type: Number, required: true },
+// Without a request id (the blind committee evaluation) only the assessment and entity tabs show.
+const props = defineProps({
+  requestId: { type: Number, default: null },
 })
 
 const SECTIONS = { ASSESSMENT: 'assessment', REQUEST: 'request', ENTITY: 'entity' }
@@ -13,7 +14,9 @@ const SECTIONS = { ASSESSMENT: 'assessment', REQUEST: 'request', ENTITY: 'entity
 const { t } = useI18n()
 const section = ref(SECTIONS.ASSESSMENT)
 const sections = computed(() =>
-  Object.values(SECTIONS).map((value) => ({ value, label: t(`review.sections.${value}`) })),
+  Object.values(SECTIONS)
+    .filter((value) => value !== SECTIONS.REQUEST || props.requestId !== null)
+    .map((value) => ({ value, label: t(`review.sections.${value}`) })),
 )
 </script>
 

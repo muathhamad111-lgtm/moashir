@@ -14,6 +14,7 @@ use App\Notifications\Entities\EntityNotification;
 use App\Services\Settings\SettingsStore;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
 beforeEach(function (): void {
@@ -78,6 +79,43 @@ it('shows the committee assessor a blind evaluation with the entity data allowed
 
     app(SettingsStore::class)->put(SettingKey::CommitteeEntityDataVisibility, 'full', AuditEvent::AssessmentSettingsUpdated, systemAdmin());
     test()->getJson(myAssignmentPath($row))->assertOk()->assertJsonPath('data.assignment.entity.reference', $assessment->entity->reference());
+});
+
+it('lists each committee assignment with its scoring progress and counts the rows per status', function (): void {
+    $scenario = committeeScenario(2, 2);
+    [$first, $second] = $scenario['requests'];
+    [$assessor, $other] = $scenario['assessors'];
+    $started = committeeRowOf($assessor, $first);
+    switchTo($assessor)->putJson(myAssignmentPath($started, 'scores'), ['scores' => selfScores($scenario['version'], ['M1.1' => '7'])])->assertOk();
+    submitCommitteeEvaluation($other, $second, $scenario['version'])->assertOk();
+
+    $list = switchTo($assessor)->getJson('/api/v1/committee/me/assignments')->assertOk()
+        ->assertJsonPath('meta.status_counts', ['not_started' => 1, 'in_progress' => 1, 'completed' => 0]);
+    $progress = collect($list->json('data'))->mapWithKeys(static fn (array $row): array => [$row['id'] => $row['review_progress']]);
+    expect($progress[$started->id])->toBe(['scored' => 1, 'required' => 4])
+        ->and($progress[committeeRowOf($assessor, $second)->id])->toBe(['scored' => 0, 'required' => 4]);
+
+    test()->getJson('/api/v1/committee/me/assignments?filter[status]=in_progress')->assertOk()
+        ->assertJsonPath('meta.pagination.total', 1)
+        ->assertJsonPath('meta.status_counts.not_started', 1);
+    switchTo($other)->getJson('/api/v1/committee/me/assignments')->assertOk()
+        ->assertJsonPath('meta.status_counts', ['not_started' => 1, 'in_progress' => 0, 'completed' => 1]);
+});
+
+it('reads the committee progress of a whole page without a query per assignment', function (): void {
+    $assessor = committeeScenario(3, 1)['assessors'][0];
+    $countQueries = static function (int $perPage) use ($assessor): int {
+        switchTo($assessor)->getJson("/api/v1/committee/me/assignments?per_page={$perPage}")->assertOk();
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        test()->getJson("/api/v1/committee/me/assignments?per_page={$perPage}")->assertOk()->assertJsonCount($perPage, 'data');
+        $count = count(DB::getQueryLog());
+        DB::disableQueryLog();
+
+        return $count;
+    };
+
+    expect($countQueries(3))->toBe($countQueries(1));
 });
 
 it('records versioned scores and notes and starts the evaluation on the first save', function (): void {

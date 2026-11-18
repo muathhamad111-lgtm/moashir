@@ -6,7 +6,6 @@ namespace App\Services\Assessments;
 
 use App\Data\Assessments\ReviewProgress;
 use App\Data\Assessments\ScorableUnit;
-use App\Data\Assessments\ScoringTree;
 use App\Models\Assessments\Assessment;
 use App\Models\Assessments\AssessmentScore;
 
@@ -30,25 +29,10 @@ final readonly class ReviewProgressReader
 
         foreach ($assessments as $assessment) {
             $tree = $treesByVersion[$assessment->criteria_version_id] ??= $this->trees->build($assessment->loadMissing('criteriaVersion')->criteriaVersion);
-            $progress[$assessment->id] = $this->progressOf($tree, $scoredKeys[$assessment->id] ?? []);
+            $progress[$assessment->id] = ReviewProgress::of($tree, $scoredKeys[$assessment->id] ?? []);
         }
 
         return $progress;
-    }
-
-    /**
-     * @param  array<string, true>  $scoredKeys
-     */
-    private function progressOf(ScoringTree $tree, array $scoredKeys): ReviewProgress
-    {
-        $units = $tree->scorableUnits();
-        $scored = 0;
-
-        foreach ($units as $unit) {
-            $scored += isset($scoredKeys[$unit->key()]) ? 1 : 0;
-        }
-
-        return new ReviewProgress($scored, count($units));
     }
 
     /**

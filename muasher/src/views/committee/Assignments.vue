@@ -4,17 +4,19 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
 import Card from '@/components/ui/Card.vue'
+import Tabs from '@/components/ui/Tabs.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import AppSelect from '@/components/form/AppSelect.vue'
 import AssessmentNotice from '@/components/assessment/AssessmentNotice.vue'
 import CommitteeAssignmentTable from '@/components/committee/CommitteeAssignmentTable.vue'
 import { useCommitteeAssignments } from '@/composables/useCommitteeAssignments'
-import { ASSIGNMENT_FILTERS } from '@/constants/committee'
+import { useCountedTabs } from '@/composables/useCountedTabs'
+import { ASSIGNMENT_FILTERS, ASSIGNMENT_STATUSES } from '@/constants/committee'
 import { localizedText } from '@/utils/localizedText'
 import { toCanonicalStatus } from '@/utils/canonicalStatus'
 
 const { t, locale } = useI18n()
-const { items, status, errorMessage, load, filters, paginator, setFilter, appointments } =
+const { items, status, errorMessage, load, filters, paginator, setFilter, appointments, meta } =
   useCommitteeAssignments()
 const { pagination, setPage } = paginator
 
@@ -27,15 +29,23 @@ const cycleOptions = computed(() => [
     label: localizedText(appointment.cycleName, locale.value),
   })),
 ])
-const statusOptions = computed(() => [
-  { value: '', label: t('dataList.filter.all') },
-  ...ASSIGNMENT_FILTERS.map((value) => ({
-    value,
-    label: t(`award.states.row.${toCanonicalStatus(value)}`),
-  })),
-])
+const COUNT_KEYS = {
+  [ASSIGNMENT_STATUSES.NOT_STARTED]: 'notStarted',
+  [ASSIGNMENT_STATUSES.IN_PROGRESS]: 'inProgress',
+  [ASSIGNMENT_STATUSES.COMPLETED]: 'completed',
+}
+// One tab per status with its count, like the assessor's assigned requests.
+const { tabs, tab } = useCountedTabs({
+  values: ASSIGNMENT_FILTERS,
+  labelOf: (value) => t(`award.states.row.${toCanonicalStatus(value)}`),
+  countOf: (value) => meta.value.statusCounts?.[COUNT_KEYS[value]],
+  counts: computed(() => meta.value.statusCounts),
+  current: () => filters.filters.status,
+  select: (value) => setFilter('status', value),
+})
 const overdue = computed(() => items.value.filter((row) => row.isOverdue).length)
-const filterState = { filters: filters.filters, setFilter }
+// The status lives in the tabs; the filter drawer only holds the cycle.
+const filterState = { filters: filters.filters, setFilter, defaults: { cycleId: '' } }
 </script>
 
 <template>
@@ -54,6 +64,7 @@ const filterState = { filters: filters.filters, setFilter }
       :message="t('award.work.overdueMessage')"
     />
     <Card>
+      <Tabs v-model="tab" :tabs="tabs" />
       <ListToolbar :searchable="false" :filter-state="filterState">
         <template #filters="{ draft }">
           <AppSelect
@@ -61,12 +72,6 @@ const filterState = { filters: filters.filters, setFilter }
             :options="cycleOptions"
             :label="t('award.work.filters.cycle')"
             @update:model-value="draft.setFilter('cycleId', $event)"
-          />
-          <AppSelect
-            :model-value="draft.filters.status"
-            :options="statusOptions"
-            :label="t('award.work.filters.status')"
-            @update:model-value="draft.setFilter('status', $event)"
           />
         </template>
       </ListToolbar>

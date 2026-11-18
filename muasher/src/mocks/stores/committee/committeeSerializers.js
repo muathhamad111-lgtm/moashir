@@ -73,6 +73,7 @@ export function assignmentRowResource(row, record) {
     startedAt: row.startedAt,
     submittedAt: row.submittedAt,
     returnedAt: row.returnedAt,
+    reviewProgress: committeeProgressOf(row, record),
   }
 }
 
@@ -99,11 +100,16 @@ export function committeeScoresResource(row, record) {
       maximum: decimalRaw(scaleMaximumHundredths(record.scaleKind)),
     },
     scores: scoresByGroup(row, record, units),
-    progress: {
-      scored: units.filter((unit) => row.scores[unitKey(unit.level, unit.id)] !== undefined).length,
-      required: units.length,
-    },
+    progress: committeeProgressOf(row, record),
     percent: percentOf(row),
+  }
+}
+
+export function committeeProgressOf(row, record) {
+  const units = scorableUnits(boundTree(record))
+  return {
+    scored: units.filter((unit) => row.scores[unitKey(unit.level, unit.id)] !== undefined).length,
+    required: units.length,
   }
 }
 

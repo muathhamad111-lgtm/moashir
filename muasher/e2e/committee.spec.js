@@ -118,16 +118,18 @@ test.describe('Committee assessor', () => {
     const errors = trackConsole(page)
     await signIn(page, testInfo, USERS.david, 'committee')
     await page.goto('/admin/committee/assignments')
-    await expect(rows(page)).toHaveCount(3)
+    // The list opens on the first tab with rows: Ruwad is the one evaluation in progress.
+    await expect(page.locator('.tabs__tab')).toHaveCount(3)
+    await expect(rows(page)).toHaveCount(1)
     await shot(page, 'committee-assignments', testInfo)
     await rows(page)
       .filter({ hasText: text(testInfo, 'Ruwad Education Foundation', 'مؤسسة رواد التعليم') })
-      .locator('.cycle-table__link')
+      .locator('a.btn')
       .click()
     await expect(page.locator('.committee-workspace .assessment-notice').first()).toContainText(
       text(testInfo, 'Independent evaluation', 'تقييم مستقل'),
     )
-    await expect(page.locator('.committee-entity')).toContainText(
+    await expect(page.locator('.review-bar')).toContainText(
       text(testInfo, 'Ruwad Education Foundation', 'مؤسسة رواد التعليم'),
     )
     await fillEmptyScores(page, '8')

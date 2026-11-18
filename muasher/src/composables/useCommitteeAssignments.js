@@ -2,13 +2,13 @@ import { computed } from 'vue'
 import { useFinanceList } from '@/composables/useFinanceList'
 import { committeeWorkService } from '@/services/committeeWorkService'
 import { useAuthStore } from '@/stores/auth'
-import { COMMITTEE_LIMITS } from '@/constants/committee'
+import { ASSIGNMENT_STATUSES, COMMITTEE_LIMITS } from '@/constants/committee'
 
 export function useCommitteeAssignments() {
   const auth = useAuthStore()
   const list = useFinanceList({
     fetcher: (params) => committeeWorkService.listAssignments(params),
-    initialFilters: { cycleId: '', status: '' },
+    initialFilters: { cycleId: '', status: ASSIGNMENT_STATUSES.NOT_STARTED },
     perPage: COMMITTEE_LIMITS.PER_PAGE,
   })
   const appointments = computed(() => auth.committeeAppointments)

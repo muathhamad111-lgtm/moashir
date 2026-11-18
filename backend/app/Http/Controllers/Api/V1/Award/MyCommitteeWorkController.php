@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Award;
 
+use App\Actions\Award\CountMyCommitteeAssignments;
+use App\Actions\Award\CountMyCommitteeDiscussions;
 use App\Actions\Award\ListMyCommitteeAssignments;
 use App\Actions\Award\ListMyCommitteeDiscussions;
 use App\Actions\Award\RecordDiscussionEntry;
@@ -24,18 +26,19 @@ use Illuminate\Http\Response;
 
 final class MyCommitteeWorkController
 {
-    public function assignments(IndexMyCommitteeAssignmentsRequest $request, #[CurrentUser] User $viewer, ListMyCommitteeAssignments $list): JsonResponse
+    public function assignments(IndexMyCommitteeAssignmentsRequest $request, #[CurrentUser] User $viewer, ListMyCommitteeAssignments $list, CountMyCommitteeAssignments $count): JsonResponse
     {
-        $page = $list->handle($viewer, $request->filters());
+        $filters = $request->filters();
+        $page = $list->handle($viewer, $filters);
         $items = [];
 
         foreach ($page->paginator->items() as $assignment) {
             if ($assignment instanceof CommitteeAssignment) {
-                $items[] = new CommitteeAssignmentRowResource($assignment, $page->visibility)->resolve($request);
+                $items[] = new CommitteeAssignmentRowResource($assignment, $page->visibility, $page->progress[$assignment->id] ?? null)->resolve($request);
             }
         }
 
-        return ApiResponse::page($page->paginator, $items);
+        return ApiResponse::page($page->paginator, $items, ['status_counts' => $count->handle($viewer, $filters->cycleId)]);
     }
 
     public function show(CommitteeAssignment $assignment, #[CurrentUser] User $viewer, ShowCommitteeEvaluation $show): JsonResponse
@@ -43,7 +46,7 @@ final class MyCommitteeWorkController
         return ApiResponse::resource(new CommitteeEvaluationResource($show->handle($viewer, $assignment)));
     }
 
-    public function discussions(IndexMyCommitteeDiscussionsRequest $request, #[CurrentUser] User $viewer, ListMyCommitteeDiscussions $list): JsonResponse
+    public function discussions(IndexMyCommitteeDiscussionsRequest $request, #[CurrentUser] User $viewer, ListMyCommitteeDiscussions $list, CountMyCommitteeDiscussions $count): JsonResponse
     {
         $page = $list->handle($viewer, $request->status(), $request->perPage());
         $items = [];
@@ -54,7 +57,7 @@ final class MyCommitteeWorkController
             }
         }
 
-        return ApiResponse::page($page->paginator, $items);
+        return ApiResponse::page($page->paginator, $items, ['status_counts' => $count->handle($viewer)]);
     }
 
     public function respond(RecordDiscussionEntryRequest $request, CommitteeDiscussion $discussion, #[CurrentUser] User $actor, RecordDiscussionEntry $record): JsonResponse

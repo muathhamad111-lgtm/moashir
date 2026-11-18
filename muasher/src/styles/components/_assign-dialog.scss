@@ -53,8 +53,11 @@
   border-radius: var(--radius-md);
 }
 
+// Fixed layout: the two choice columns keep their width and the sub-criterion name takes the
+// rest, so the table never grows past a phone-width dialog.
 .completion-picker__table {
   inline-size: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: var(--fs-sm);
 
@@ -68,7 +71,7 @@
   }
 
   td {
-    inline-size: 6rem;
+    padding-inline: var(--space-1);
     text-align: center;
   }
 
@@ -83,7 +86,14 @@
   }
 
   thead th + th {
+    inline-size: 4.5rem;
+    padding-inline: var(--space-1);
     text-align: center;
+    white-space: normal;
+
+    @include respond-to('md') {
+      inline-size: 6rem;
+    }
   }
 }
 
@@ -128,7 +138,9 @@
 }
 
 .completion-picker__count {
+  flex-shrink: 0;
   margin-inline-start: auto;
+  white-space: nowrap;
   padding-inline: var(--space-2);
   border-radius: var(--radius-pill);
   background-color: var(--theme-surface-raised);

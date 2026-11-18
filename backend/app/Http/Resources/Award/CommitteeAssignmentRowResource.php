@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Award;
 
+use App\Data\Assessments\ReviewProgress;
 use App\Enums\Award\CommitteeEntityVisibility;
 use App\Models\Award\CommitteeAssignment;
 use App\Support\Award\CommitteeEntityPresenter;
@@ -16,7 +17,7 @@ use Illuminate\Support\Facades\Date;
  */
 final class CommitteeAssignmentRowResource extends JsonResource
 {
-    public function __construct(CommitteeAssignment $resource, private readonly CommitteeEntityVisibility $visibility)
+    public function __construct(CommitteeAssignment $resource, private readonly CommitteeEntityVisibility $visibility, private readonly ?ReviewProgress $progress = null)
     {
         parent::__construct($resource);
     }
@@ -44,6 +45,7 @@ final class CommitteeAssignmentRowResource extends JsonResource
             'started_at' => $assignment->started_at?->toIso8601String(),
             'submitted_at' => $assignment->submitted_at?->toIso8601String(),
             'returned_at' => $assignment->returned_at?->toIso8601String(),
+            'review_progress' => $this->progress?->toArray(),
         ];
     }
 }

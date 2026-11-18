@@ -15,8 +15,15 @@ async function openCentre(page) {
   await expect(page.locator('.notification-center-item').first()).toBeVisible({ timeout: 10000 })
 }
 
-test('staff read the same notification centre inside the back-office shell', async ({ page }) => {
+test('staff read the same notification centre inside the back-office shell', async ({
+  page,
+}, testInfo) => {
   await openCentre(page)
+  await expect(page.locator('.notifications-center__title')).toHaveText(
+    testInfo.project.name === 'chromium-en-ltr'
+      ? 'Everything about your tasks and requests, as it happens'
+      : 'مستجدات مهامك وطلباتك أولاً بأول',
+  )
   await expect(page.locator('.sidebar')).toBeVisible()
   await expect(page.locator('[role="tablist"] [role="tab"]')).toHaveCount(2)
   await expect(page.locator('.notification-day-group').first()).toBeVisible()
