@@ -182,14 +182,16 @@ describe('follower path scope', function (): void {
         submittedAdvancedRequest($cycle, $version);
         submittedAdvancedRequest($cycle, $version);
 
-        $scoped = boardOf(followerOfPaths(AssessmentPath::Accredited), 'request_follower');
-        $global = boardOf(requestFollower(), 'request_follower');
+        $scopedFollower = followerOfPaths(AssessmentPath::Accredited);
+        $globalFollower = requestFollower();
+        $scoped = boardOf($scopedFollower, 'request_follower');
+        $global = boardOf($globalFollower, 'request_follower');
 
         expect(boardCards($scoped)->get('awaiting_assignment'))->toBe(1)
             ->and(boardWidget($scoped, 'requests_by_path'))->toBe([['path' => 'accredited', 'path_label' => ['ar' => 'التقييم المعتمد', 'en' => 'Accredited assessment'], 'count' => 1]])
-            ->and(actionItems($scoped)->get('assign_requests')['count'] ?? null)->toBe(1)
+            ->and(actionItems($scopedFollower)->get('assign_requests')['count'] ?? null)->toBe(1)
             ->and(boardCards($global)->get('awaiting_assignment'))->toBe(3)
-            ->and(actionItems($global)->get('assign_requests')['count'] ?? null)->toBe(3)
+            ->and(actionItems($globalFollower)->get('assign_requests')['count'] ?? null)->toBe(3)
             ->and(collect(boardWidget($global, 'requests_by_path'))->pluck('count', 'path')->all())->toBe(['accredited' => 1, 'advanced' => 2]);
     });
 });

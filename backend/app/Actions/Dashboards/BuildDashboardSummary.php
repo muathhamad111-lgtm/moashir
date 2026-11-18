@@ -17,7 +17,6 @@ final readonly class BuildDashboardSummary
     public function __construct(
         private BoardHoldings $holdings,
         private DashboardBoardQueries $queries,
-        private BuildActionCenter $actionCenter,
     ) {}
 
     public function handle(User $user, ?DashboardBoard $requested): DashboardSummary
@@ -33,7 +32,6 @@ final readonly class BuildDashboardSummary
             $board,
             $held,
             $this->queries->for($board)->build($user),
-            $this->actionCenter->handle($user),
             Date::now(),
         );
     }

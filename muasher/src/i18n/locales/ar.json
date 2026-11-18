@@ -92,9 +92,8 @@
     "certificates": "الشهادات",
     "bag": "حقيبة التميز السريع",
     "payments": "مدفوعاتي",
-    "bagManage": "إدارة الحقيبة",
     "bagRequests": "طلبات الحقيبة",
-    "bagEvaluator": "حقائبي المسندة",
+    "bagEvaluator": "حقيبة التميز السريع",
     "notifications": "الإشعارات",
     "adminKpis": "إدارة المؤشرات",
     "adminCriteria": "إعداد المعايير",
@@ -126,12 +125,12 @@
     "closeMenu": "إغلاق القائمة",
     "byPath": {
       "queue": {
-        "accredited": "طلبات المعتمد",
-        "advanced": "طلبات المتقدم"
+        "accredited": "التقييم المعتمد",
+        "advanced": "التقييم المتقدم"
       },
       "assigned": {
-        "accredited": "مراجعات المعتمد",
-        "advanced": "مراجعات المتقدم"
+        "accredited": "التقييم المعتمد",
+        "advanced": "التقييم المتقدم"
       }
     },
     "pathCounts": {
@@ -140,7 +139,8 @@
     },
     "contactMessages": "صندوق الرسائل",
     "auditLog": "سجل التدقيق",
-    "finance": "المالية"
+    "finance": "المالية",
+    "pendingCount": "{count} بانتظار إجراء"
   },
   "footer": {
     "copyright": "جميع الحقوق محفوظة © {year} — منصة مؤشر",
@@ -229,6 +229,9 @@
     },
     "success": {
       "title": "تمت العملية بنجاح"
+    },
+    "table": {
+      "sortBy": "الترتيب حسب {column}"
     }
   },
   "status": {
@@ -2394,14 +2397,6 @@
     "greeting": "أهلًا بك، {name}",
     "greetingAnonymous": "أهلًا بك",
     "loadError": "تعذّر تحميل لوحة المعلومات.",
-    "actionCenter": {
-      "title": "إجراءات مطلوبة",
-      "emptyTitle": "لا توجد إجراءات مطلوبة",
-      "emptyMessage": "أنجزت كل ما يتطلب تدخّلك حاليًا. أحسنت!",
-      "countLabel": "العدد: {count}",
-      "due": "الموعد {time}",
-      "totalLabel": "مجموع العناصر المطلوبة: {count}"
-    },
     "boardsLabel": "لوحاتي",
     "cardsLabel": "المؤشرات الرئيسة",
     "generatedAt": "آخر تحديث للبيانات",
@@ -2416,35 +2411,6 @@
       "criteria_officer": "لوحة المعايير",
       "finance_officer": "اللوحة المالية",
       "entity": "لوحة الجهة"
-    },
-    "actions": {
-      "complete_profile": "إكمال ملف الجهة",
-      "submit_self_draft": "مسودات تقييم ذاتي بانتظار الإرسال",
-      "submit_accredited_draft": "مسودات تقييم معتمد بانتظار الإرسال",
-      "complete_accredited_request": "طلبات معتمدة تحتاج إلى استكمال",
-      "complete_advanced_request": "طلبات متقدمة تحتاج إلى استكمال",
-      "submit_advanced_draft": "مسودات تقييم متقدم بانتظار الإرسال",
-      "complete_payment": "طلبات دفع بانتظار الإكمال",
-      "assign_requests": "طلبات بانتظار إسناد مقيّم",
-      "follow_up_overdue_requests": "طلبات تجاوزت مدة المراجعة",
-      "start_reviews": "مراجعات بانتظار البدء",
-      "continue_reviews": "مراجعات قيد التنفيذ",
-      "overdue_reviews": "مراجعات متأخرة",
-      "complete_committee_evaluations": "تقييمات لجنة بانتظار الإكمال",
-      "answer_committee_discussions": "نقاشات لجنة بانتظار ردّك",
-      "decide_filtering": "طلبات بانتظار قرار التصفية",
-      "approve_committee_results": "نتائج لجنة بانتظار الاعتماد",
-      "approve_substitute_evaluations": "تقييمات بديلة بانتظار الاعتماد",
-      "record_refunds": "مدفوعات تحتاج إلى تسجيل استرداد",
-      "review_entity_email_changes": "طلبات تغيير البريد الرسمي للجهات",
-      "fix_criteria_draft": "ملاحظات على مسودة المعايير",
-      "publish_content_changes": "تعديلات محتوى بانتظار النشر",
-      "answer_contact_messages": "رسائل تواصل جديدة بانتظار المتابعة",
-      "read_contact_replies": "ردود جديدة على رسائلك",
-      "review_bank_transfers": "حوالات بانتظار الاعتماد",
-      "bank_transfer_under_review": "تحويلك قيد المراجعة",
-      "bank_transfer_rejected": "رُفض التحويل: قدّم طلب دفع جديد",
-      "award_paid_after_window": "رسوم جائزة دُفعت بعد انتهاء نافذة التقديم"
     },
     "cards": {
       "entities_total": "إجمالي الجهات",
@@ -2503,7 +2469,8 @@
       "sub_criteria": "المعايير الفرعية",
       "guiding_points": "النقاط الإرشادية",
       "open_assessments_on_published": "تقييمات مفتوحة على الإصدار المنشور",
-      "draft_problems": "ملاحظات المسودة"
+      "draft_problems": "ملاحظات المسودة",
+      "due_within_week": "تستحق خلال 7 أيام"
     },
     "widgets": {
       "empty": "لا توجد بيانات بعد.",
@@ -2520,11 +2487,9 @@
         "requests_by_path": "الطلبات حسب المسار",
         "by_service": "المدفوعات حسب الخدمة",
         "lowest_criteria": "المعايير الأدنى أداءً",
-        "weakest_criteria": "أضعف المعايير في تقييماتي",
         "activity": "آخر التحديثات على الطلبات",
         "pipeline": "الطلبات حسب المسار والحالة",
         "assessors": "المقيّمون الأكثر انشغالًا",
-        "due_soon": "مراجعات يقترب موعدها",
         "top_entities": "أعلى الجهات في متوسط اللجنة",
         "latest_tasks": "آخر مهام اللجنة",
         "latest_edits": "آخر تعديلات المحتوى",
@@ -2713,6 +2678,35 @@
         "accredited": "المعتمد",
         "advanced": "الجائزة"
       }
+    },
+    "assessorOverview": {
+      "openTitle": "مراجعاتي المفتوحة",
+      "breakdownLabel": "المراجعات المفتوحة حسب الحالة",
+      "cardsLabel": "مؤشرات المقيّم",
+      "cards": {
+        "overdue": "مراجعات متأخرة",
+        "due_within_week": "تستحق خلال 7 أيام",
+        "completed": "مراجعات مكتملة",
+        "average_duration_days": "متوسط مدة المراجعة",
+        "average_result_percent": "متوسط النتائج التي منحتها",
+        "completion_requests": "طلبات الاستكمال المرسلة"
+      },
+      "charts": {
+        "completed": "المراجعات المكتملة",
+        "openByStatus": "مراجعاتي المفتوحة حسب الحالة",
+        "byPath": "المراجعات المكتملة حسب المسار",
+        "averageResult": "متوسط النتائج التي منحتها",
+        "levels": "المستويات التي منحتها"
+      },
+      "series": {
+        "completed": "مراجعات مكتملة"
+      },
+      "categories": {
+        "status": "الحالة",
+        "reviews": "المراجعات",
+        "results": "النتائج"
+      },
+      "belowLevels": "دون المستويات"
     }
   },
   "assessment": {
@@ -4073,7 +4067,7 @@
     },
     "assigned": {
       "title": "الطلبات المسندة إليّ",
-      "subtitle": "الطلبات المسندة إليك مرتبة حسب تاريخ الاستحقاق.",
+      "subtitle": "الطلبات المسندة إليك، مرتبة حسب تاريخ الاستحقاق. اضغط عنوان أي عمود لتغيير الترتيب.",
       "tabs": {
         "new": "جديدة",
         "in_progress": "قيد العمل",
@@ -4085,9 +4079,9 @@
         "request": "الطلب",
         "state": "الحالة",
         "progress": "تقدّم التقييم",
-        "actions": "الإجراءات"
+        "actions": "الإجراءات",
+        "assignedAt": "تاريخ الإسناد"
       },
-      "assignedOn": "أُسند في",
       "progress": {
         "remaining": "المتبقي {count}",
         "done": "اكتمل التقييم"
@@ -4097,6 +4091,9 @@
         "start": "بدء التقييم",
         "continue": "استكمال التقييم",
         "viewReview": "عرض التقييم"
+      },
+      "filters": {
+        "status": "الحالة"
       }
     },
     "assignment": {
@@ -4398,7 +4395,8 @@
           "self": "التقييم الذاتي",
           "advanced": "التقييم المتقدم"
         }
-      }
+      },
+      "back": "العودة إلى طلبات الحقيبة"
     },
     "comparison": {
       "eyebrow": "قياس الأثر",
@@ -4660,11 +4658,14 @@
     "brandHome": "مؤشر، الانتقال إلى لوحة المعلومات",
     "groups": {
       "entity": "مساحة الجهة",
-      "assessment": "الطلبات والتقييم",
+      "assessment": "طلبات التقييم",
       "award": "الجائزة"
     },
     "previewPlatform": "معاينة المنصة",
-    "opensInNewTab": " (تفتح في تبويب جديد)"
+    "opensInNewTab": " (تفتح في تبويب جديد)",
+    "copyPlatformLink": "نسخ رابط المنصة",
+    "platformLinkCopied": "تم نسخ رابط المنصة",
+    "platformLinkCopyFailed": "تعذّر نسخ الرابط، انسخه من شريط العنوان بعد فتح المعاينة"
   },
   "account": {
     "title": "حسابي",
@@ -6743,10 +6744,6 @@
       "back": "العودة إلى تقييماتي",
       "status": "الحالة",
       "myTotal": "مجموعي",
-      "blindTitle": "تقييم مستقل",
-      "blindMessage": "قيّم كل بند على مقياس الدورة دون الاطلاع على التقييم الأولي أو تقييمات بقية مقيّمي اللجنة. تبقى ملاحظاتك داخل اللجنة.",
-      "lockedTitle": "أُرسل وأُقفل",
-      "lockedMessage": "لا يُفتح هذا التقييم إلا إذا أعاد أمين الجائزة الطلب إلى اللجنة.",
       "returnedTitle": "أعاده أمين الجائزة بتاريخ {date}",
       "conflictTitle": "تغيّر هذا التقييم",
       "conflictMessage": "لا يمكن حفظ التقييم في حالته الحالية. حدّث الصفحة لعرض آخر حالة.",

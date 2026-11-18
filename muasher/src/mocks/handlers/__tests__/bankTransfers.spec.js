@@ -462,10 +462,8 @@ describe('finance bank-transfer review mock contract', () => {
 
   it('shows the reviewer action item with the count of transfers under review', async () => {
     seedMockSession(OFFICER)
-    const { body } = await call('/dashboard/summary')
-    expect(
-      body.data.action_center.find((item) => item.key === 'review_bank_transfers'),
-    ).toMatchObject({
+    const { body } = await call('/dashboard/action-center')
+    expect(body.data.find((item) => item.key === 'review_bank_transfers')).toMatchObject({
       count: 3,
       link: '/finance/transfers',
     })

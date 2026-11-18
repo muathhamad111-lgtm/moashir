@@ -279,13 +279,41 @@ describe('accredited mock — assessor list and home', () => {
     expect(card('to_start')).toBe(fresh.length)
     const reviewing = started.filter((row) => row.status !== 'needs_completion')
     expect(card('in_progress')).toBe(reviewing.length)
-    const dueSoon = board.widgets.find((widget) => widget.key === 'due_soon').data
-    expect(dueSoon.map((row) => row.id).sort()).toEqual(
-      [...fresh, ...started].map((row) => row.id).sort(),
-    )
-    const items = Object.fromEntries(board.action_center.map((item) => [item.key, item.count]))
+    expect(board.widgets).toEqual([])
+    expect(board.cards.map((item) => item.key)).toEqual([
+      'to_start',
+      'in_progress',
+      'awaiting_entity',
+      'overdue',
+      'due_within_week',
+    ])
+    const center = (await call('GET', '/dashboard/action-center')).body.data
+    const items = Object.fromEntries(center.map((item) => [item.key, item.count]))
     expect(items.start_reviews).toBe(card('to_start'))
     expect(items.continue_reviews).toBe(card('in_progress'))
+  })
+})
+
+describe('accredited mock — assigned list order', () => {
+  it('sorts by due date by default, by assignment date or status on request, and refuses others', async () => {
+    seedMockSession(SULTAN)
+    const ids = async (sort) =>
+      (
+        await call(
+          'GET',
+          `/requests/assigned?filter[path]=accredited${sort ? `&sort=${sort}` : ''}`,
+        )
+      ).body.data
+    const byDue = await ids('')
+    const dues = byDue.map((row) => row.due_at ?? '')
+    expect([...dues].sort()).toEqual(dues)
+    expect((await ids('-due_at')).map((row) => row.id)).toEqual(
+      byDue.map((row) => row.id).reverse(),
+    )
+    const assigned = (await ids('-assigned_at')).map((row) => row.assigned_at)
+    expect([...assigned].sort().reverse()).toEqual(assigned)
+    expect((await ids('status')).length).toBe(byDue.length)
+    expect((await call('GET', '/requests/assigned?sort=entity')).status).toBe(422)
   })
 })
 

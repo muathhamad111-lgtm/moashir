@@ -13,6 +13,7 @@ import { reviewerActionItem } from './bankTransfers'
 import { allEntities, isDeleted, isErased } from '../stores/entitiesStore'
 import { entitiesByLevel } from '../stores/entityLevels'
 import { overviewErrors, overviewFor } from '../stores/dashboardOverview'
+import { assessorOverviewFor } from '../stores/assessorOverview'
 
 const LATENCY_MS = 320
 const ENTITY_BOARD = 'entity'
@@ -51,6 +52,16 @@ function actionItemsOf(user) {
 }
 
 export const dashboardHandlers = [
+  http.get('/api/v1/dashboard/action-center', async () => {
+    await delay(LATENCY_MS)
+    const user = currentSessionUser()
+    if (!user) return errorResponse(401, 'unauthenticated', 'Unauthenticated.')
+    const items = actionItemsOf(user)
+    return envelope(items, {
+      total: items.reduce((sum, item) => sum + item.count, 0),
+      generatedAt: new Date().toISOString(),
+    })
+  }),
   http.get('/api/v1/dashboard/summary', async ({ request }) => {
     const requested = new URL(request.url).searchParams.get('board')
     if (requested === ENTITY_BOARD) return undefined
@@ -72,7 +83,6 @@ export const dashboardHandlers = [
       landingBoard: landing,
       availableBoards: boards,
       ...content,
-      actionCenter: actionItemsOf(user),
       generatedAt: GENERATED_AT,
     })
   }),
@@ -88,5 +98,18 @@ export const dashboardHandlers = [
     if (Object.keys(errors).length)
       return errorResponse(422, 'validation_failed', Object.values(errors)[0][0], errors)
     return envelope(overviewFor(query, levelCounts()))
+  }),
+  http.get('/api/v1/dashboard/assessor-overview', async ({ request }) => {
+    await delay(LATENCY_MS)
+    const user = currentSessionUser()
+    if (!user) return errorResponse(401, 'unauthenticated', 'Unauthenticated.')
+    if (!user.roles.includes(ASSESSOR_ROLE))
+      return errorResponse(403, 'forbidden', 'This action is unauthorized.')
+    const params = new URL(request.url).searchParams
+    const query = { period: params.get('period'), from: params.get('from'), to: params.get('to') }
+    const errors = overviewErrors(query)
+    if (Object.keys(errors).length)
+      return errorResponse(422, 'validation_failed', Object.values(errors)[0][0], errors)
+    return envelope(assessorOverviewFor(user, query))
   }),
 ]

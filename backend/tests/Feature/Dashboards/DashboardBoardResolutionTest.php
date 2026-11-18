@@ -22,7 +22,8 @@ it('lands every single-role user on the board of their role', function (RoleKey 
         ->assertJsonPath('data.board', $role->value)
         ->assertJsonPath('data.landing_board', $role->value)
         ->assertJsonPath('data.available_boards', [$role->value])
-        ->assertJsonStructure(['data' => ['cards' => [['key', 'value', 'format', 'link']], 'widgets', 'action_center', 'generated_at']]);
+        ->assertJsonStructure(['data' => ['cards' => [['key', 'value', 'format', 'link']], 'widgets', 'generated_at']])
+        ->assertJsonMissingPath('data.action_center');
 })->with(RoleKey::cases());
 
 it('lands the Super Admin on the System Administrator board; the executive view is the overview, not a board', function (): void {

@@ -95,6 +95,8 @@ afterEach(() => {
 })
 afterAll(() => server.close())
 
+const STATUS_ORDER = ['not_started', 'in_progress', 'completed']
+
 describe('committee mock — roster', () => {
   it('lets managers appoint candidates with SoD checks and readers only read', async () => {
     resetWorld('qualified')
@@ -233,6 +235,20 @@ describe('committee mock — blind evaluation', () => {
     const filtered = await call('GET', '/committee/me/assignments?filter[status]=completed')
     expect(filtered.body.data).toHaveLength(2)
     expect(filtered.body.meta.status_counts.in_progress).toBe(1)
+  })
+
+  it('sorts the rows by status or committee end and refuses an unknown sort', async () => {
+    resetWorld('committee')
+    seedMockSession(P.DAVID)
+    const order = STATUS_ORDER
+    const statuses = async (sort) =>
+      (await call('GET', `/committee/me/assignments?sort=${sort}`)).body.data.map(
+        (row) => row.status,
+      )
+    const ascending = await statuses('status')
+    expect([...ascending].sort((a, b) => order.indexOf(a) - order.indexOf(b))).toEqual(ascending)
+    expect(await statuses('-status')).toEqual([...ascending].reverse())
+    expect((await call('GET', '/committee/me/assignments?sort=entity')).status).toBe(422)
   })
 
   it('serves the evaluation without the initial result and hides other rows', async () => {

@@ -3,12 +3,13 @@ import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
-import ActionCenter from './ActionCenter.vue'
 import DashboardBoardNav from './DashboardBoardNav.vue'
 import DashboardCards from './DashboardCards.vue'
 import DashboardWidget from './DashboardWidget.vue'
+import AssessorOverview from './overview/AssessorOverview.vue'
 import { useStaffDashboard } from '@/composables/useStaffDashboard'
 import { formatRiyadhDateTime } from '@/utils/datetime'
+import { ASSESSOR_BOARD } from '@/constants/dashboardBoards'
 
 const props = defineProps({
   // Boards whose figures the overview above already covers: their section is not repeated.
@@ -37,7 +38,6 @@ onMounted(load)
 
 <template>
   <div class="staff-dashboard">
-    <ActionCenter :items="summary?.actionCenter ?? []" :loading="status === 'loading'" />
     <slot />
     <DashboardBoardNav v-if="showsBoardNav" :boards="shownBoards" :current="board" />
 
@@ -59,11 +59,16 @@ onMounted(load)
       aria-labelledby="dashboard-board-title"
       :data-board="board"
     >
-      <h2 id="dashboard-board-title" class="staff-dashboard__board-title">
+      <h2
+        id="dashboard-board-title"
+        class="staff-dashboard__board-title"
+        :class="{ 'staff-dashboard__board-title--hidden': board === ASSESSOR_BOARD }"
+      >
         {{ boardTitle }}
       </h2>
-      <DashboardCards :cards="summary.cards" />
-      <div class="staff-dashboard__widgets">
+      <AssessorOverview v-if="board === ASSESSOR_BOARD" :live-cards="summary.cards" />
+      <DashboardCards v-else :cards="summary.cards" />
+      <div v-if="summary.widgets.length" class="staff-dashboard__widgets">
         <DashboardWidget
           v-for="widget in summary.widgets"
           :key="widget.key"

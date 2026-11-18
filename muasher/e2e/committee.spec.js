@@ -118,17 +118,17 @@ test.describe('Committee assessor', () => {
     const errors = trackConsole(page)
     await signIn(page, testInfo, USERS.david, 'committee')
     await page.goto('/admin/committee/assignments')
-    // The list opens on the first tab with rows: Ruwad is the one evaluation in progress.
-    await expect(page.locator('.tabs__tab')).toHaveCount(3)
-    await expect(rows(page)).toHaveCount(1)
+    // One list of every evaluation, soonest due first; the status lives in the filter drawer.
+    await expect(page.locator('.tabs__tab')).toHaveCount(0)
+    await expect(rows(page)).toHaveCount(3)
+    await expect(page.locator('th[aria-sort="ascending"]')).toHaveCount(1)
     await shot(page, 'committee-assignments', testInfo)
     await rows(page)
       .filter({ hasText: text(testInfo, 'Ruwad Education Foundation', 'مؤسسة رواد التعليم') })
       .locator('a.btn')
       .click()
-    await expect(page.locator('.committee-workspace .assessment-notice').first()).toContainText(
-      text(testInfo, 'Independent evaluation', 'تقييم مستقل'),
-    )
+    await expect(page.locator('.review-bar')).toBeVisible()
+    await expect(page.locator('.committee-workspace .assessment-notice')).toHaveCount(0)
     await expect(page.locator('.review-bar')).toContainText(
       text(testInfo, 'Ruwad Education Foundation', 'مؤسسة رواد التعليم'),
     )
@@ -143,8 +143,8 @@ test.describe('Committee assessor', () => {
     await shot(page, 'committee-evaluation', testInfo)
     await page.locator('.committee-actions .btn--primary').click()
     await page.locator('.modal .btn--primary').click()
-    await expect(page.locator('.committee-workspace')).toContainText(
-      text(testInfo, 'Submitted and locked', 'أُرسل وأُقفل'),
+    await expect(page.locator('.review-bar')).toContainText(
+      text(testInfo, 'Read only', 'للقراءة فقط'),
     )
     await expect(page.locator('.committee-actions .btn--primary')).toHaveCount(0)
     expect(errors).toEqual([])

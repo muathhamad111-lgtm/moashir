@@ -143,18 +143,21 @@ test.describe('Requests follower', () => {
 })
 
 test.describe('Assessor', () => {
-  test('the assessor sees the assigned tabs, starts a review and requests completion with an expiry outcome', async ({
+  test('the assessor sees one sortable list of assigned requests, starts a review and requests completion with an expiry outcome', async ({
     page,
   }, testInfo) => {
     const errors = trackConsole(page)
     await signIn(page, testInfo, STAFF.assessor)
     await page.goto('/admin/requests/assigned')
     const rows = page.locator('.table:not(.table--loading) tbody .table__row')
-    await expect(rows).toHaveCount(1)
-    await expect(rows).toContainText('ACC-2026-000007')
-    await page.locator('.tabs__tab').nth(1).click()
-    await expect(rows).toHaveCount(1)
+    // One list of every assigned request (no tabs), soonest due first.
+    await expect(page.locator('.tabs__tab')).toHaveCount(0)
+    await expect(rows.filter({ hasText: 'ACC-2026-000007' })).toHaveCount(1)
     await expect(rows.filter({ hasText: 'ACC-2026-000008' })).toHaveCount(1)
+    const due = page.getByRole('columnheader', { name: isEn(testInfo) ? 'Due' : 'الاستحقاق' })
+    await expect(due).toHaveAttribute('aria-sort', 'ascending')
+    await due.getByRole('button').click()
+    await expect(due).toHaveAttribute('aria-sort', 'descending')
 
     await page.goto('/admin/requests/9107/review')
     await page.locator('[data-testid="review-start"]').click()

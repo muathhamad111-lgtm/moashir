@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Assessments;
 
 use App\Actions\Assessments\ListAssignedRequests;
+use App\Data\Assessments\AssignedRequestsQuery;
 use App\Data\Assessments\PathCount;
 use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Identity\AssessorQualification;
@@ -24,7 +25,7 @@ final class AssignedRequestController
         $pathCounts = $counts->forAssessor($assessor, $qualified);
         $path = $request->assessmentPath() ?? ($pathCounts === [] ? AssessmentPath::Accredited : $pathCounts[0]->path);
 
-        return ApiResponse::paginated($list->handle($assessor, $path, $request->tab(), $request->perPage()), AssignedRequestResource::class, [
+        return ApiResponse::paginated($list->handle($assessor, new AssignedRequestsQuery($path, $request->tab(), $request->order(), $request->perPage())), AssignedRequestResource::class, [
             'path' => $path->value,
             'path_counts' => array_map(static fn (PathCount $count): array => $count->toArray(), $pathCounts),
         ]);

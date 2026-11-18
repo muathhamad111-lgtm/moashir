@@ -6,6 +6,7 @@ import { storeToRefs } from 'pinia'
 import { usePermissions } from '@/composables/usePermissions'
 import { useRequestPathNav } from '@/composables/useRequestPathNav'
 import { useSidebarGroups } from '@/composables/useSidebarGroups'
+import { useSidebarPendingCounts } from '@/composables/useSidebarPendingCounts'
 import { useUiStore } from '@/stores/ui'
 import { useSidebarTooltip } from '@/composables/useSidebarTooltip'
 import {
@@ -13,6 +14,7 @@ import {
   filterNavByAccess,
   groupNavItems,
   isNavItemActive,
+  SHORT_MENU_MAX_ITEMS,
 } from '@/constants/navigation'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import SidebarIdentityCard from './SidebarIdentityCard.vue'
@@ -24,12 +26,16 @@ const { canAccess } = usePermissions()
 const ui = useUiStore()
 const { sidebarCollapsed } = storeToRefs(ui)
 const pathNav = useRequestPathNav()
+const { withPendingCounts } = useSidebarPendingCounts()
 
 const allowedItems = computed(() => filterNavByAccess(APP_NAV_ITEMS, canAccess))
 const pathKinds = computed(() =>
   allowedItems.value.filter((item) => item.pathEntries).map((item) => item.pathEntries),
 )
-const groups = computed(() => groupNavItems(pathNav.expand(allowedItems.value)))
+const shownItems = computed(() => withPendingCounts(pathNav.expand(allowedItems.value)))
+const groups = computed(() => groupNavItems(shownItems.value))
+// A short menu keeps every group open under a plain heading: nothing to fold.
+const isShortMenu = computed(() => shownItems.value.length <= SHORT_MENU_MAX_ITEMS)
 
 pathNav.follow(pathKinds)
 
@@ -40,7 +46,8 @@ function isActive(item) {
 const activeGroupId = computed(
   () => groups.value.find((group) => group.items.some(isActive))?.id ?? null,
 )
-const { isExpanded, toggle } = useSidebarGroups(activeGroupId)
+const sidebarGroups = useSidebarGroups(activeGroupId)
+const isExpanded = (id) => isShortMenu.value || sidebarGroups.isExpanded(id)
 const tooltip = useSidebarTooltip()
 
 function onHint(label, element) {
@@ -70,13 +77,21 @@ function onHint(label, element) {
           role="group"
           :aria-labelledby="`sidebar-group-${group.id}`"
         >
+          <p
+            v-if="isShortMenu"
+            :id="`sidebar-group-${group.id}`"
+            class="sidebar__caption sidebar__caption--static"
+          >
+            {{ t(group.labelKey) }}
+          </p>
           <button
+            v-else
             :id="`sidebar-group-${group.id}`"
             type="button"
             class="sidebar__caption"
             :aria-expanded="isExpanded(group.id) ? 'true' : 'false'"
             :aria-controls="`sidebar-menu-${group.id}`"
-            @click="toggle(group.id)"
+            @click="sidebarGroups.toggle(group.id)"
           >
             <span class="sidebar__caption-text">{{ t(group.labelKey) }}</span>
             <span

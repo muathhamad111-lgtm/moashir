@@ -72,8 +72,8 @@ test('the dashboard opens with the platform overview for the System Administrato
   const sections = await page
     .locator('.staff-dashboard > *')
     .evaluateAll((nodes) => nodes.map((node) => node.className))
-  expect(sections[0]).toContain('action-center')
-  expect(sections[1]).toContain('executive-overview')
+  expect(sections[0]).toContain('executive-overview')
+  await expect(page.locator('.action-center')).toHaveCount(0)
   await expect(page.locator('.sidebar__item[href="/dashboard/executive"]')).toHaveCount(0)
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.screenshot({ path: `${SHOTS}/overview-${locale(testInfo)}.png`, fullPage: true })
@@ -98,4 +98,24 @@ test('the old executive link lands on the dashboard, and the overview stays with
   await expect(page).toHaveURL(/\/dashboard$/)
   await expect(page.locator('[data-board="finance_officer"]')).toBeVisible()
   await expect(page.locator('[data-testid="executive-overview"]')).toHaveCount(0)
+})
+
+test('the assessor home is its overview: live tiles, period tiles and five charts, no Action Center', async ({
+  page,
+}, testInfo) => {
+  await seedRoles(page, testInfo, ['assessor'], 10)
+  await page.goto('/dashboard')
+  const overview = page.locator('[data-testid="assessor-overview"]')
+  await expect(overview).toBeVisible()
+  await expect(page.locator('#dashboard-board-title')).toHaveClass(/--hidden/)
+  await expect(page.locator('.action-center')).toHaveCount(0)
+  await expect(overview.locator('[data-card="open"]')).toHaveClass(/overview-cards__card--featured/)
+  await expect(overview.locator('.assessor-cards__state')).toHaveCount(3)
+  await expect(overview.locator('.assessor-cards > li')).toHaveCount(7)
+  await expect(overview.locator('.overview-panel')).toHaveCount(5)
+  await overview.locator('[data-period="year"]').click()
+  await expect(page).toHaveURL(/period=year/)
+  await expect(overview.locator('[data-period="year"]')).toHaveAttribute('aria-pressed', 'true')
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.screenshot({ path: `${SHOTS}/assessor-${locale(testInfo)}.png`, fullPage: true })
 })

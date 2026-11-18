@@ -9,9 +9,13 @@ import { ROLES } from '@/constants/roles'
 import { createTestGlobals } from '@/test-utils'
 import { sessionUserFor } from '@/test-utils/session'
 import { requestsService } from '@/services/requestsService'
+import { dashboardService } from '@/services/dashboardService'
 
 vi.mock('@/services/requestsService', () => ({
   requestsService: { listQueue: vi.fn(), listAssigned: vi.fn() },
+}))
+vi.mock('@/services/dashboardService', () => ({
+  dashboardService: { getActionCenter: vi.fn() },
 }))
 
 const QUEUE_COUNTS = [
@@ -23,6 +27,7 @@ beforeEach(() => {
   localStorage.clear()
   requestsService.listQueue.mockResolvedValue({ data: [], meta: { pathCounts: QUEUE_COUNTS } })
   requestsService.listAssigned.mockResolvedValue({ data: [], meta: { pathCounts: [] } })
+  dashboardService.getActionCenter.mockResolvedValue({ data: [], generatedAt: null })
 })
 
 function factory({ roles = [], locale = 'ar', extra = {} } = {}) {
@@ -99,7 +104,7 @@ describe('Sidebar', () => {
     expect(wrapper.text()).not.toContain('طلبات تغيير البريد')
     expect(wrapper.text()).not.toContain('الإشعارات')
     const captions = wrapper.findAll('.sidebar__caption').map((el) => el.text())
-    expect(captions).toEqual(['الطلبات والتقييم', 'الجائزة'])
+    expect(captions).toEqual(['طلبات التقييم', 'الجائزة'])
     const group = wrapper.find('.sidebar__group')
     expect(group.attributes('role')).toBe('group')
     expect(group.attributes('aria-labelledby')).toBe('sidebar-group-assessment')
@@ -109,8 +114,8 @@ describe('Sidebar', () => {
     const { wrapper } = factory({ roles: [ROLES.REQUEST_FOLLOWER, ROLES.CONTENT_OFFICER] })
     await wrapper.vm.$nextTick()
     const labels = wrapper.findAll('.sidebar__label').map((el) => el.text())
-    expect(labels).toContain('طلبات المعتمد')
-    expect(labels).toContain('طلبات المتقدم')
+    expect(labels).toContain('التقييم المعتمد')
+    expect(labels).toContain('التقييم المتقدم')
     expect(labels).toContain('صندوق الرسائل')
     expect(labels).not.toContain('إدارة المؤشرات')
     expect(labels).not.toContain('الهوية والألوان')
@@ -122,12 +127,12 @@ describe('Sidebar', () => {
     await flushPromises()
     const entries = wrapper.findAll('.sidebar__item--accredited, .sidebar__item--advanced')
     expect(entries.map((entry) => entry.find('.sidebar__label').text())).toEqual([
-      'طلبات المعتمد',
-      'طلبات المتقدم',
+      'التقييم المعتمد',
+      'التقييم المتقدم',
     ])
     expect(entries[0].attributes('href')).toBe('/admin/requests?path=accredited')
     expect(entries[0].find('.sidebar__count').text()).toBe('3')
-    expect(entries[0].attributes('aria-label')).toBe('طلبات المعتمد — 3 بانتظار الإسناد')
+    expect(entries[0].attributes('aria-label')).toBe('التقييم المعتمد — 3 بانتظار الإسناد')
     expect(entries[1].find('.sidebar__count').exists()).toBe(false)
   })
 
@@ -138,8 +143,8 @@ describe('Sidebar', () => {
     })
     await flushPromises()
     const labels = wrapper.findAll('.sidebar__label').map((el) => el.text())
-    expect(labels).toContain('طلبات المعتمد')
-    expect(labels).not.toContain('طلبات المتقدم')
+    expect(labels).toContain('التقييم المعتمد')
+    expect(labels).not.toContain('التقييم المتقدم')
   })
 
   it('lists the assigned reviews per qualified path and marks the path of the route active', async () => {
@@ -151,7 +156,7 @@ describe('Sidebar', () => {
     await flushPromises()
     const active = wrapper.findAll('.sidebar__item.is-active')
     expect(active).toHaveLength(1)
-    expect(active[0].text()).toContain('مراجعات المتقدم')
+    expect(active[0].text()).toContain('التقييم المتقدم')
   })
 
   it('expands the group of the active route and folds the other groups', async () => {
@@ -244,5 +249,39 @@ describe('Sidebar', () => {
     expect(wrapper.findAll('.sidebar__label').map((el) => el.text())).not.toContain(
       'اللوحة التنفيذية',
     )
+  })
+
+  it('shows a short menu whole, under plain group headings that do not fold', async () => {
+    const { wrapper } = factory({ roles: [ROLES.ASSESSOR] })
+    await flushPromises()
+    expect(wrapper.findAll('.sidebar__item').length).toBeLessThanOrEqual(10)
+    const headings = wrapper.findAll('.sidebar__caption')
+    expect(headings.length).toBeGreaterThan(0)
+    headings.forEach((heading) => {
+      expect(heading.element.tagName).toBe('P')
+      expect(heading.attributes('aria-expanded')).toBeUndefined()
+    })
+    expect(wrapper.findAll('.sidebar__menu--closed')).toHaveLength(0)
+    expect(wrapper.findAll('.sidebar__label').map((el) => el.text())).toContain(
+      'حقيبة التميز السريع',
+    )
+  })
+
+  it('counts the pending work on the menu item its link opens', async () => {
+    dashboardService.getActionCenter.mockResolvedValue({
+      data: [
+        { key: 'answer_contact_messages', count: 2, link: '/admin/contact-messages?status=new' },
+        { key: 'review_entity_email_changes', count: 1, link: '/admin/entities/email-changes' },
+      ],
+      generatedAt: null,
+    })
+    const { wrapper } = factory({ roles: [ROLES.SYSTEM_ADMIN] })
+    await flushPromises()
+    const item = (label) =>
+      wrapper.findAll('.sidebar__item').find((el) => el.find('.sidebar__label').text() === label)
+    expect(item('صندوق الرسائل').find('.sidebar__count').text()).toBe('2')
+    expect(item('صندوق الرسائل').attributes('aria-label')).toBe('صندوق الرسائل — 2 بانتظار إجراء')
+    expect(item('الجهات').find('.sidebar__count').text()).toBe('1')
+    expect(item('المستخدمون').find('.sidebar__count').exists()).toBe(false)
   })
 })

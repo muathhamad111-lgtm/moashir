@@ -111,12 +111,11 @@ test.describe('per-path queues', () => {
 
   test('the assessor reviews per qualified path', async ({ page }, testInfo) => {
     await signIn(page, testInfo, USERS.assessor)
-    await open(page, '/admin/requests/assigned?path=advanced', '.tabs__tab')
+    await open(page, '/admin/requests/assigned?path=advanced', ROWS)
     await expect(page.locator('.sidebar__item--accredited, .sidebar__item--advanced')).toHaveCount(
       2,
     )
     await expect(page.locator('.sidebar__item--advanced')).toHaveClass(/is-active/)
-    await page.getByRole('tab').nth(1).click()
     await expect(page.locator(ROWS).first()).toContainText('ADV-')
   })
 })
@@ -331,11 +330,21 @@ test.describe('password recovery and invitations', () => {
 })
 
 test.describe('staff sidebar', () => {
-  test('stays in view while the page scrolls and folds its groups with a remembered state', async ({
+  test('a short menu shows its groups open under plain headings', async ({ page }, testInfo) => {
+    await page.setViewportSize(VIEWPORTS.desktop)
+    await signIn(page, testInfo, USERS.follower)
+    await open(page, '/admin/requests', ROWS)
+    const requests = page.locator('#sidebar-group-assessment')
+    await expect(requests).toHaveClass(/sidebar__caption--static/)
+    await expect(requests).not.toHaveAttribute('aria-expanded', /.*/)
+    await expect(page.locator('.sidebar__menu--closed')).toHaveCount(0)
+  })
+
+  test('stays in view while the page scrolls and folds a long menu with a remembered state', async ({
     page,
   }, testInfo) => {
     await page.setViewportSize(VIEWPORTS.desktop)
-    await signIn(page, testInfo, USERS.follower)
+    await signIn(page, testInfo, USERS.systemAdmin)
     await open(page, '/admin/requests', ROWS)
     await page.mouse.wheel(0, 4000)
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
@@ -368,7 +377,7 @@ const CAPTURES = [
     path: '/admin/requests?path=advanced',
     ready: ROWS,
   },
-  { name: 'assigned', user: USERS.assessor, path: '/admin/requests/assigned', ready: '.tabs__tab' },
+  { name: 'assigned', user: USERS.assessor, path: '/admin/requests/assigned', ready: ROWS },
   {
     name: 'request-detail',
     user: USERS.follower,

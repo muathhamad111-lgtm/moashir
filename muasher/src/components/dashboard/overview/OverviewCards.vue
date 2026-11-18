@@ -1,9 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import AppIcon from '@/components/ui/AppIcon.vue'
-import DashboardValue from '../DashboardValue.vue'
-import OverviewDelta from './OverviewDelta.vue'
+import OverviewCard from './OverviewCard.vue'
 import { OVERVIEW_CARD_ICONS, OVERVIEW_CARD_ORDER } from '@/constants/dashboardOverview'
 
 const props = defineProps({
@@ -29,28 +27,11 @@ const ordered = computed(() => [...props.cards].sort((a, b) => rank(a) - rank(b)
       :class="{ 'overview-cards__card--featured': index === 0 }"
       :data-card="card.key"
     >
-      <span class="overview-cards__icon" aria-hidden="true">
-        <AppIcon :name="OVERVIEW_CARD_ICONS[card.key] ?? 'pie-chart'" />
-      </span>
-      <span class="overview-cards__body">
-        <span class="overview-cards__value">
-          <DashboardValue :value="card.value" :format="card.format" />
-        </span>
-        <span class="overview-cards__label">{{ t(`dashboard.overview.cards.${card.key}`) }}</span>
-        <OverviewDelta
-          v-if="card.previous !== null"
-          :value="card.value"
-          :previous="card.previous"
-          :format="card.format"
-        />
-        <span v-else class="overview-cards__previous">{{
-          t('dashboard.overview.currentState')
-        }}</span>
-      </span>
-      <span v-if="card.previous !== null" class="overview-cards__previous overview-cards__was">
-        {{ t('dashboard.overview.previousValue') }}
-        <DashboardValue :value="card.previous" :format="card.format" />
-      </span>
+      <OverviewCard
+        :card="card"
+        :label="t(`dashboard.overview.cards.${card.key}`)"
+        :icon="OVERVIEW_CARD_ICONS[card.key] ?? 'pie-chart'"
+      />
     </li>
   </ul>
 </template>

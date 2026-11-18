@@ -59,7 +59,7 @@ it('builds the request boards from scoped, non-frozen requests', function (): vo
     $first = assessorUser();
     $second = assessorUser();
     $completed = completedAccreditedRequest($version, $first);
-    $inReview = reviewedAccreditedRequest($version, $second);
+    reviewedAccreditedRequest($version, $second);
     $waiting = submittedAccreditedRequest($version);
 
     $follower = boardCards(boardOf(requestFollower(), 'request_follower'));
@@ -69,12 +69,9 @@ it('builds the request boards from scoped, non-frozen requests', function (): vo
 
     $firstBoard = boardOf($first, 'assessor');
     $secondBoard = boardOf($second, 'assessor');
-    expect(boardCards($firstBoard)->all())->toMatchArray(['to_start' => 0, 'in_progress' => 0, 'completed' => 1])
-        ->and(boardWidget($firstBoard, 'due_soon'))->toBe([])
-        ->and(collect(boardWidget($firstBoard, 'weakest_criteria'))->pluck('average_percent', 'code')->all())->toBe(['M2' => '75.00', 'M1' => '78.00'])
-        ->and(boardCards($secondBoard)->all())->toMatchArray(['in_progress' => 1, 'completed' => 0])
-        ->and(collect(boardWidget($secondBoard, 'due_soon'))->pluck('id')->all())->toBe([$inReview->id])
-        ->and(boardWidget($secondBoard, 'weakest_criteria'))->toBe([]);
+    expect(boardCards($firstBoard)->all())->toBe(['to_start' => 0, 'in_progress' => 0, 'awaiting_entity' => 0, 'overdue' => 0, 'due_within_week' => 0])
+        ->and($firstBoard->json('data.widgets'))->toBe([])
+        ->and(boardCards($secondBoard)->all())->toMatchArray(['in_progress' => 1, 'to_start' => 0]);
 
     $admin = boardOf(systemAdmin(), 'system_admin');
     expect(collect(overviewWidget(overviewOf(systemAdmin()), 'lowest_criteria'))->pluck('average_percent', 'code')->all())->toBe(['M2' => '75.00', 'M1' => '78.00'])

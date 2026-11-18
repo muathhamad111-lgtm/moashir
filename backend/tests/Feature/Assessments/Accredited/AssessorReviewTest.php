@@ -36,6 +36,27 @@ it('lists the requests assigned to the assessor by tab', function (): void {
     switchTo(requestFollower())->getJson('/api/v1/requests/assigned')->assertForbidden();
 });
 
+it('sorts the assigned requests by due date, assignment date or status, in either direction', function (): void {
+    $version = publishedAccreditedCriteria();
+    $assessor = assessorUser();
+    Date::setTestNow('2026-11-01 08:00:00');
+    $first = reviewedAccreditedRequest($version, $assessor);
+    Date::setTestNow('2026-11-05 08:00:00');
+    $second = assignedAccreditedRequest($version, $assessor);
+    $first->forceFill(['due_at' => '2026-11-30 08:00:00'])->saveQuietly();
+    $second->forceFill(['due_at' => '2026-11-20 08:00:00'])->saveQuietly();
+    $ids = static fn (string $sort): array => collect(switchTo($assessor)->getJson('/api/v1/requests/assigned'.($sort === '' ? '' : '?sort='.$sort))->assertOk()->json('data'))->pluck('id')->all();
+
+    expect($ids(''))->toBe([$second->id, $first->id])
+        ->and($ids('-due_at'))->toBe([$first->id, $second->id])
+        ->and($ids('-assigned_at'))->toBe([$second->id, $first->id])
+        ->and($ids('assigned_at'))->toBe([$first->id, $second->id])
+        ->and($ids('status'))->toBe([$second->id, $first->id])
+        ->and($ids('-status'))->toBe([$first->id, $second->id]);
+
+    test()->getJson('/api/v1/requests/assigned?sort=entity')->assertUnprocessable()->assertJsonValidationErrors(['sort']);
+});
+
 it('shows the scoring progress of each assigned request in the list', function (): void {
     $version = publishedAccreditedCriteria();
     $assessor = assessorUser();

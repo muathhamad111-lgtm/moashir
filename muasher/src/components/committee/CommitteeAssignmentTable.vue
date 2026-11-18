@@ -18,15 +18,16 @@ defineProps({
   items: { type: Array, required: true },
   status: { type: String, required: true },
   errorMessage: { type: String, default: '' },
+  sort: { type: String, default: '' },
 })
 
-const emit = defineEmits(['retry'])
+const emit = defineEmits(['retry', 'sort'])
 const { t, locale, n } = useI18n()
 
 const columns = computed(() => [
   { key: 'entity', label: t('award.work.columns.entity') },
-  { key: 'status', label: t('award.work.columns.status') },
-  { key: 'dueAt', label: t('award.work.columns.dueAt') },
+  { key: 'status', label: t('award.work.columns.status'), sortKey: 'status' },
+  { key: 'dueAt', label: t('award.work.columns.dueAt'), sortKey: 'due_at' },
   { key: 'progress', label: t('requests.assigned.columns.progress') },
   { key: 'percent', label: t('award.work.columns.percent') },
   { key: 'open', label: t('requests.assigned.columns.actions') },
@@ -55,6 +56,8 @@ function openLabel(row) {
     :error-message="errorMessage"
     :empty-title="t('award.work.emptyTitle')"
     :empty-message="t('award.work.emptyMessage')"
+    :sort="sort"
+    @sort="emit('sort', $event)"
     @retry="emit('retry')"
   >
     <template #cell-entity="{ item }">

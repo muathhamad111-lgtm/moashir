@@ -11,7 +11,10 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
-final class ExecutiveOverviewRequest extends FormRequest
+/**
+ * The reporting period of a dashboard overview: a preset, or a custom range of past days.
+ */
+final class OverviewPeriodRequest extends FormRequest
 {
     private const string DAY_FORMAT = 'Y-m-d';
 

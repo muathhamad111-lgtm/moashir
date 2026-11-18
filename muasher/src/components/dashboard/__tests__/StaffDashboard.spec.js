@@ -58,16 +58,6 @@ const SUMMARY = {
     },
     { key: 'unknown_widget', data: [] },
   ],
-  actionCenter: [
-    {
-      key: 'assign_requests',
-      count: 3,
-      severity: 'warning',
-      link: '/admin/requests',
-      dueAt: null,
-      context: null,
-    },
-  ],
   generatedAt: '2026-11-05T06:00:00+00:00',
 }
 
@@ -151,12 +141,11 @@ describe('StaffDashboard', () => {
     expect(wrapper.find('[data-board="request_follower"]').exists()).toBe(true)
   })
 
-  it('opens with the actions, then the slotted overview, then the board', async () => {
+  it('opens with the slotted overview, then the board, without an Action Center', async () => {
     const { wrapper } = await mountOn({}, 'ar', {
       slots: { default: '<section class="overview-stub">overview</section>' },
     })
     const roles = {
-      'action-center': 'actions',
       'overview-stub': 'overview',
       'staff-dashboard__board': 'board',
     }
@@ -164,10 +153,11 @@ describe('StaffDashboard', () => {
       .map((child) => Object.keys(roles).find((name) => child.classList.contains(name)))
       .filter(Boolean)
       .map((name) => roles[name])
-    expect(order).toEqual(['actions', 'overview', 'board'])
+    expect(order).toEqual(['overview', 'board'])
+    expect(wrapper.find('.action-center').exists()).toBe(false)
   })
 
-  it('leaves out a board the overview covers, keeping the actions and the other boards', async () => {
+  it('leaves out a board the overview covers, keeping the other boards', async () => {
     dashboardService.getBoard.mockResolvedValue({
       data: {
         ...SUMMARY,
@@ -178,7 +168,6 @@ describe('StaffDashboard', () => {
     })
     const { wrapper } = await mountOn({}, 'ar', { props: { coveredBoards: ['system_admin'] } })
     expect(wrapper.find('.staff-dashboard__board').exists()).toBe(false)
-    expect(wrapper.find('.action-center').exists()).toBe(true)
     expect(wrapper.findAll('.dashboard-board-nav__link').map((link) => link.text())).toEqual([
       'لوحة المقيّم',
       'اللوحة المالية',

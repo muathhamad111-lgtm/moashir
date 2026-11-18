@@ -139,7 +139,7 @@ it('opens the draft for a transfer approved after the window, flags it and lists
     $draft = Assessment::query()->where('payment_id', $payment->id)->sole();
     expect($draft->status)->toBe(AdvancedAssessmentStatus::Draft)
         ->and(boardWidget(boardOf($owner, 'entity'), 'paths')['award']['window_closed_before_payment'])->toBeTrue()
-        ->and(actionItems(boardOf(financeOfficer()))->firstWhere('key', 'award_paid_after_window'))->toMatchArray(['count' => 1, 'link' => '/finance/transactions?purpose=award&status=paid']);
+        ->and(actionItems(financeOfficer())->firstWhere('key', 'award_paid_after_window'))->toMatchArray(['count' => 1, 'link' => '/finance/transactions?purpose=award&status=paid']);
 
     switchTo($owner)->postJson("/api/v1/assessments/{$draft->id}/submit")->assertConflict()->assertJsonPath('code', 'cycle.submission_closed');
 });

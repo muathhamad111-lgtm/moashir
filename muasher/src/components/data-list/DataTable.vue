@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
+import DataTableHeader from './DataTableHeader.vue'
 
 const props = defineProps({
   columns: { type: Array, required: true },
@@ -17,9 +18,11 @@ const props = defineProps({
   emptyTitle: { type: String, default: '' },
   emptyMessage: { type: String, default: '' },
   errorMessage: { type: String, default: '' },
+  // The current sort ("column" or "-column"); columns with a `sortKey` sort on click.
+  sort: { type: String, default: '' },
 })
 
-const emit = defineEmits(['retry'])
+const emit = defineEmits(['retry', 'sort'])
 const { t } = useI18n()
 
 // The actions column takes only the width of its buttons; the other columns share the rest.
@@ -47,15 +50,14 @@ function keyOf(item, index) {
     >
       <thead class="table__head">
         <tr>
-          <th
+          <DataTableHeader
             v-for="column in columns"
             :key="column.key"
-            class="table__cell"
             :class="cellClass(column)"
-            scope="col"
-          >
-            {{ column.label }}
-          </th>
+            :column="column"
+            :sort="sort"
+            @sort="emit('sort', $event)"
+          />
         </tr>
       </thead>
       <tbody>

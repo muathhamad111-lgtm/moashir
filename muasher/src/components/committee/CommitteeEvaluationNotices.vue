@@ -1,34 +1,22 @@
 <script setup>
-import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import AssessmentNotice from '@/components/assessment/AssessmentNotice.vue'
-import { ASSIGNMENT_STATUSES } from '@/constants/committee'
 import { formatDate } from '@/utils/datetime'
 
-const props = defineProps({
+// The notices that call for attention: a return from the secretary, a carried-over evaluation,
+// a save conflict. Independence and the lock read from the header's chips.
+defineProps({
   evaluation: { type: Object, required: true },
   conflictCode: { type: String, default: '' },
 })
 
 const emit = defineEmits(['refresh'])
 const { t, locale } = useI18n()
-const submitted = computed(() => props.evaluation.status === ASSIGNMENT_STATUSES.COMPLETED)
 </script>
 
 <template>
   <div class="review-notices">
-    <AssessmentNotice
-      variant="info"
-      :title="t('award.evaluation.blindTitle')"
-      :message="t('award.evaluation.blindMessage')"
-    />
-    <AssessmentNotice
-      v-if="submitted"
-      variant="info"
-      :title="t('award.evaluation.lockedTitle')"
-      :message="t('award.evaluation.lockedMessage')"
-    />
     <AssessmentNotice
       v-if="evaluation.returnNote"
       variant="warning"

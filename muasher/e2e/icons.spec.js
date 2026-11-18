@@ -140,9 +140,12 @@ test.describe('TTS icons', () => {
     page,
   }, testInfo) => {
     await page.setViewportSize(VIEWPORTS.desktop)
-    await prepare(page, testInfo, USERS.follower)
-    await open(page, SCREENS[2])
+    // A long menu (the System Administrator's) folds its groups behind directional chevrons;
+    // a short menu has plain headings and no chevron.
+    await prepare(page, testInfo, USERS.systemAdmin)
+    await open(page, { ...SCREENS[2], user: USERS.systemAdmin })
     const chevron = page.locator('.sidebar__chevron svg[data-icon="chevron-right"]').first()
+    await expect(chevron).toBeVisible()
     await expect(chevron).toHaveCSS('scale', isEn(testInfo) ? 'none' : '-1 1')
     await expect(page.locator('.navbar svg[data-icon="bell"]').first()).toHaveCSS('scale', 'none')
     await expect(page.locator('.navbar svg[data-icon="menu"]').first()).toHaveCSS('scale', 'none')

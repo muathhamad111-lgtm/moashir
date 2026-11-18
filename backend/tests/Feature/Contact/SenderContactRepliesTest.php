@@ -129,7 +129,7 @@ it('reminds a signed-in sender of unread replies in the action center', function
     replyAsTeam($first);
     test()->travel(1)->minutes();
 
-    $item = actionItems(boardOf($owner))->get('read_contact_replies');
+    $item = actionItems($owner)->get('read_contact_replies');
 
     expect($item)->toBe([
         'key' => 'read_contact_replies',
@@ -142,7 +142,7 @@ it('reminds a signed-in sender of unread replies in the action center', function
 
     replyAsTeam($second);
     test()->travel(1)->minutes();
-    $both = actionItems(boardOf($owner))->get('read_contact_replies');
+    $both = actionItems($owner)->get('read_contact_replies');
 
     expect($both['count'] ?? null)->toBe(2)
         ->and($both['link'] ?? null)->toBe('/messages')
@@ -151,7 +151,7 @@ it('reminds a signed-in sender of unread replies in the action center', function
     switchTo($owner)->patchJson("/api/v1/me/contact-messages/{$first->public_id}/seen")->assertOk();
     switchTo($owner)->patchJson("/api/v1/me/contact-messages/{$second->public_id}/seen")->assertOk();
 
-    expect(actionItems(boardOf($owner))->has('read_contact_replies'))->toBeFalse();
+    expect(actionItems($owner)->has('read_contact_replies'))->toBeFalse();
 });
 
 it('returns the message id only for a submission linked to the signed-in sender', function (): void {

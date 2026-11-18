@@ -657,9 +657,15 @@ export const appRoutes = [
     meta: { layout: 'app', titleKey: 'routes.payments.return.title', requiresAuth: true },
   },
   {
+    // A Kit plan always belongs to one request: without it, the assessor picks one first.
     path: '/bag/manage',
+    redirect: { name: ROUTE_NAMES.BAG_EVALUATOR_REQUESTS },
+  },
+  {
+    path: '/bag/manage/:request',
     name: ROUTE_NAMES.BAG_MANAGE,
     component: () => import('@/views/bag/Manage.vue'),
+    props: true,
     meta: {
       awaitsBackend: true,
       layout: 'app',

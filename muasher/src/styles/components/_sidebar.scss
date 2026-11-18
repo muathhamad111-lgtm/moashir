@@ -76,6 +76,15 @@
   }
 }
 
+// A short menu's group heading only names the group: no fold control.
+.sidebar__caption--static {
+  cursor: default;
+
+  &:hover {
+    color: var(--sidebar-caption);
+  }
+}
+
 .sidebar__chevron {
   @include flex-center;
   flex-shrink: 0;

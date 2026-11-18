@@ -56,3 +56,24 @@ export const OVERVIEW_CARD_ICONS = Object.freeze({
   accredited_average_percent: 'pie-chart',
   entities_active: 'users-two',
 })
+
+// The assessor board: the open reviews by state (the featured tile), the live alerts, then the
+// period tiles in reading order.
+export const ASSESSOR_OPEN_STATES = Object.freeze(['to_start', 'in_progress', 'awaiting_entity'])
+
+export const ASSESSOR_ALERT_CARDS = Object.freeze([
+  Object.freeze({ key: 'overdue', tone: 'danger', icon: 'warning-triangle' }),
+  Object.freeze({ key: 'due_within_week', tone: 'warning', icon: 'clock' }),
+])
+
+export const ASSESSOR_CARD_ICONS = Object.freeze({
+  completed: 'check-circle',
+  average_duration_days: 'calendar',
+  average_result_percent: 'pie-chart',
+  completion_requests: 'docs',
+})
+
+// Period tiles where a fall is an improvement.
+export const ASSESSOR_LOWER_IS_BETTER = Object.freeze(['average_duration_days'])
+
+export const ASSESSOR_PATHS = Object.freeze(['accredited', 'advanced'])

@@ -87,3 +87,35 @@
   inline-size: 1%;
   white-space: nowrap;
 }
+
+// A sortable heading: the label and its direction as one button; an unsorted column shows a
+// faint arrow so the header reads as clickable.
+.table__sort {
+  @include flex(row, center, flex-start, var(--space-1));
+  min-block-size: var(--size-target-min);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--theme-heading);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.table__sort-icon {
+  flex-shrink: 0;
+  opacity: 0.35;
+
+  .table__sort.is-sorted & {
+    opacity: 1;
+  }
+}

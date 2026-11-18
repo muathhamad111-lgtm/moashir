@@ -13,6 +13,8 @@ export const DASHBOARD_BOARDS = Object.freeze([
 
 export const SYSTEM_ADMIN_BOARD = 'system_admin'
 
+export const ASSESSOR_BOARD = 'assessor'
+
 export const BOARD_QUERY_KEY = 'board'
 
 export const CARD_FORMATS = Object.freeze({
@@ -21,12 +23,4 @@ export const CARD_FORMATS = Object.freeze({
   MONEY: 'money',
   DAYS: 'days',
   DATE: 'date',
-})
-
-export const ACTION_SEVERITY_ORDER = Object.freeze(['danger', 'warning', 'info'])
-
-export const ACTION_ICONS = Object.freeze({
-  danger: 'warning-triangle',
-  warning: 'clock',
-  info: 'info-circle',
 })

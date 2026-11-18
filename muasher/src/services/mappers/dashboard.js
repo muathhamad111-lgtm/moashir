@@ -56,7 +56,6 @@ export function toEntityBoard(raw = {}) {
     acceptedEvidenceCount: toCount(cardValue(raw, 'accepted_evidence_count')),
     latestResult: toLatestResult(widgetData(raw, 'latest_result')),
     paymentsCard: widgetData(raw, 'payments_card'),
-    actionCenter: toActionItems(raw?.actionCenter),
     level: toLevelWidget(widgetData(raw, 'level')),
     paths: toPathsWidget(widgetData(raw, 'paths')),
     nextStep: toNextStep(widgetData(raw, 'next_step')),
@@ -83,7 +82,6 @@ export function toDashboardSummary(raw = {}) {
     availableBoards: raw.availableBoards ?? [],
     cards: (raw.cards ?? []).map(toCard).filter((card) => card.key),
     widgets: (raw.widgets ?? []).map(toWidget).filter((widget) => widget.key),
-    actionCenter: toActionItems(raw.actionCenter),
     generatedAt: raw.generatedAt ?? null,
   }
 }

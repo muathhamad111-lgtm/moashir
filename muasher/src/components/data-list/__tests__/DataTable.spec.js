@@ -93,4 +93,23 @@ describe('DataTable', () => {
       .map((cell) => cell.classes().includes('table__cell--date'))
     expect(marked).toEqual([false, true])
   })
+
+  it('makes a column with a sortKey a sort button that reports the next order', async () => {
+    const sortable = [
+      { key: 'entity', label: 'الجهة' },
+      { key: 'dueAt', label: 'الاستحقاق', sortKey: 'due_at' },
+      { key: 'assignedAt', label: 'تاريخ الإسناد', sortKey: 'assigned_at', sortFirst: 'desc' },
+    ]
+    const wrapper = factory({ columns: sortable, sort: 'due_at' })
+    const headers = wrapper.findAll('th')
+    expect(headers[0].attributes('aria-sort')).toBeUndefined()
+    expect(headers[0].find('button').exists()).toBe(false)
+    expect(headers[1].attributes('aria-sort')).toBe('ascending')
+    expect(headers[2].attributes('aria-sort')).toBe('none')
+    await headers[1].find('button').trigger('click')
+    await headers[2].find('button').trigger('click')
+    expect(wrapper.emitted('sort')).toEqual([['-due_at'], ['-assigned_at']])
+    await wrapper.setProps({ sort: '-due_at' })
+    expect(wrapper.findAll('th')[1].attributes('aria-sort')).toBe('descending')
+  })
 })

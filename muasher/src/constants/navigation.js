@@ -6,6 +6,9 @@ import { PATH_NAV_KINDS } from './paths'
 // Below this navbar width the settings link, theme toggle and language switch move into the user menu.
 export const NAVBAR_TOOLS_INLINE_MIN_WIDTH = 480
 
+// A menu this short shows every group open under a plain heading; longer menus fold their groups.
+export const SHORT_MENU_MAX_ITEMS = 10
+
 export const APP_NAV_ITEMS = [
   {
     id: 'dashboard',
@@ -174,13 +177,8 @@ export const APP_NAV_ITEMS = [
     labelKey: 'nav.bagEvaluator',
     icon: 'briefcase',
     routeName: ROUTE_NAMES.BAG_EVALUATOR_REQUESTS,
-  },
-  {
-    id: 'bag-manage',
-    group: 'assessment',
-    labelKey: 'nav.bagManage',
-    icon: 'list-check',
-    routeName: ROUTE_NAMES.BAG_MANAGE,
+    // A Kit plan opens from its row in the list.
+    activeOn: [ROUTE_NAMES.BAG_MANAGE],
   },
   {
     id: 'admin-users',

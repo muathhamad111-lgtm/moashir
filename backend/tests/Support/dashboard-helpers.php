@@ -27,12 +27,14 @@ function boardWidget(TestResponse $response, string $key): mixed
     return collect($response->json('data.widgets'))->firstWhere('key', $key)['data'] ?? null;
 }
 
+const ACTION_CENTER = '/api/v1/dashboard/action-center';
+
 /**
  * @return Collection<string, array<string, mixed>>
  */
-function actionItems(TestResponse $response): Collection
+function actionItems(User $user): Collection
 {
-    return collect($response->json('data.action_center'))->keyBy('key');
+    return collect(switchTo($user)->getJson(ACTION_CENTER)->assertOk()->json('data'))->keyBy('key');
 }
 
 function dashboardQueryCount(User $user, string $board): int

@@ -80,18 +80,9 @@ export const DASHBOARD_WIDGETS = Object.freeze({
   requests_by_path: bars(BAR_LABELS.PATH),
   by_service: bars(BAR_LABELS.PURPOSE, { amountKey: 'total' }),
   lowest_criteria: Object.freeze({ kind: WIDGET_KINDS.CRITERIA }),
-  weakest_criteria: Object.freeze({ kind: WIDGET_KINDS.CRITERIA }),
   activity: Object.freeze({ kind: WIDGET_KINDS.TIMELINE }),
   pipeline: table(column('path', F.PATH), column('status', F.STATUS), column('count', F.NUMBER)),
   assessors: table(column('name'), column('active', F.NUMBER), column('completed', F.NUMBER)),
-  due_soon: table(
-    column('number', F.REFERENCE),
-    column('path', F.PATH),
-    column('entityName', F.LOCALIZED),
-    column('status', F.STATUS),
-    column('dueAt', F.DATETIME),
-    column('isOverdue', F.BOOLEAN),
-  ),
   top_entities: table(
     column('number', F.REFERENCE),
     column('entityName', F.LOCALIZED),

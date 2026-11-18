@@ -98,7 +98,7 @@ test.describe('Bag', () => {
 
   test('bag manage (assessor/consultant) renders clean', async ({ page }, testInfo) => {
     await reviewPage(page, testInfo, {
-      path: '/bag/manage',
+      path: '/bag/manage/bag-req-7003',
       titleSelector: '.bag-manage__title',
       okSelector: '.bag-manage__title, .empty-state',
       name: 'bag-manage',

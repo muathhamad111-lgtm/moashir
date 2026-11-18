@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Requests\Assessments;
 
 use App\Enums\Assessments\AssessmentPath;
+use App\Enums\Assessments\AssignedRequestsSort;
 use App\Enums\Assessments\AssignedRequestsTab;
 use App\Enums\Settings\PathSetting;
+use App\Support\ListOrder;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -21,6 +23,7 @@ final class IndexAssignedRequestsRequest extends FormRequest
             'filter' => ['nullable', 'array:tab,path'],
             'filter.tab' => ['nullable', Rule::enum(AssignedRequestsTab::class)],
             'filter.path' => ['nullable', Rule::in(PathSetting::pathValues())],
+            'sort' => ['nullable', 'string', Rule::in(ListOrder::queryValues(array_column(AssignedRequestsSort::cases(), 'value')))],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];
@@ -34,6 +37,11 @@ final class IndexAssignedRequestsRequest extends FormRequest
     public function assessmentPath(): ?AssessmentPath
     {
         return AssessmentPath::tryFrom($this->string('filter.path')->toString());
+    }
+
+    public function order(): ListOrder
+    {
+        return ListOrder::fromQuery($this->string('sort')->toString(), AssignedRequestsSort::DueAt->value);
     }
 
     public function perPage(): int

@@ -13,7 +13,7 @@ const PAYMENT_TOTAL = 1150
 const DAY_KEY = /^\d{4}-\d{2}-\d{2}$/
 const DAILY_CEILING = Object.freeze({ entities: 4, requests: 3, completed: 2 })
 
-function keyOf(date) {
+export function keyOf(date) {
   return date.toISOString().slice(0, 10)
 }
 
@@ -25,11 +25,11 @@ export function riyadhToday() {
   return dayOf(new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Riyadh' }).format(new Date()))
 }
 
-function addDays(date, days) {
+export function addDays(date, days) {
   return new Date(date.getTime() + days * DAY_MS)
 }
 
-function daysBetween(start, end) {
+export function daysBetween(start, end) {
   return Math.round((end - start) / DAY_MS)
 }
 
@@ -70,7 +70,7 @@ export function overviewErrors({ period, from, to }) {
   return errors
 }
 
-function windowOf({ period, from, to }) {
+export function windowOf({ period, from, to }) {
   const preset = OVERVIEW_PRESETS.includes(period) ? period : DEFAULT_OVERVIEW_PERIOD
   if (preset === OVERVIEW_PERIODS.CUSTOM)
     return { preset, start: dayOf(from), end: addDays(dayOf(to), 1) }
@@ -78,7 +78,7 @@ function windowOf({ period, from, to }) {
   return { preset, start: presetStart(preset, today), end: addDays(today, 1) }
 }
 
-function bucketOf(days) {
+export function bucketOf(days) {
   if (days <= DAILY_UP_TO) return 'day'
   return days <= WEEKLY_UP_TO ? 'week' : 'month'
 }
@@ -96,7 +96,7 @@ function nextBucket(date, bucket) {
   return addDays(date, 1)
 }
 
-function totals(start, end, series) {
+export function totals(start, end, series) {
   let sum = 0
   for (let day = start; day < end; day = addDays(day, 1)) sum += daily(keyOf(day), series)
   return sum
@@ -116,18 +116,33 @@ function figures(start, end) {
   }
 }
 
-function trendsOf(start, end, bucket) {
+// One value per bucket of the window, each from the days the bucket covers inside it.
+export function bucketValues(start, end, bucket, valueOf) {
   const buckets = []
-  const series = { entities: [], requests: [], completed: [], collected: [] }
+  const values = []
   for (let cursor = bucketStart(start, bucket); cursor < end; cursor = nextBucket(cursor, bucket)) {
     const from = cursor < start ? start : cursor
     const until = nextBucket(cursor, bucket) < end ? nextBucket(cursor, bucket) : end
     buckets.push(keyOf(cursor))
-    for (const key of ['entities', 'requests', 'completed'])
-      series[key].push(totals(from, until, key))
-    series.collected.push((totals(from, until, 'requests') * PAYMENT_TOTAL).toFixed(2))
+    values.push(valueOf(from, until))
   }
-  return { bucket, buckets, series }
+  return { buckets, values }
+}
+
+function trendsOf(start, end, bucket) {
+  const seriesOf = (valueOf) => bucketValues(start, end, bucket, valueOf).values
+  return {
+    bucket,
+    buckets: bucketValues(start, end, bucket, () => 0).buckets,
+    series: {
+      entities: seriesOf((from, until) => totals(from, until, 'entities')),
+      requests: seriesOf((from, until) => totals(from, until, 'requests')),
+      completed: seriesOf((from, until) => totals(from, until, 'completed')),
+      collected: seriesOf((from, until) =>
+        (totals(from, until, 'requests') * PAYMENT_TOTAL).toFixed(2),
+      ),
+    },
+  }
 }
 
 function card(key, value, previous, format = 'count') {

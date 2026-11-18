@@ -2,7 +2,7 @@ import { apiClient } from '@/api/client'
 import { payloadShape } from '@/utils/payloadShape'
 import { serviceRequest } from './serviceRequest'
 import { toActionItems, toDashboardSummary, toEntityBoard } from './mappers/dashboard'
-import { toExecutiveOverview } from './mappers/dashboardOverview'
+import { toAssessorOverview, toExecutiveOverview } from './mappers/dashboardOverview'
 
 const ENTITY_BOARD = 'entity'
 const BOARD_REJECTIONS = [403, 422]
@@ -40,6 +40,15 @@ export const dashboardService = {
       { entity: 'dashboard', paramsShape: payloadShape(query) },
       { expectedStatuses: OVERVIEW_REJECTIONS },
     ).then((envelope) => ({ ...envelope, data: toExecutiveOverview(envelope.data) }))
+  },
+
+  getAssessorOverview(query = {}) {
+    return serviceRequest(
+      'dashboard.getAssessorOverview',
+      () => apiClient.get('/dashboard/assessor-overview', { params: query }),
+      { entity: 'dashboard', paramsShape: payloadShape(query) },
+      { expectedStatuses: OVERVIEW_REJECTIONS },
+    ).then((envelope) => ({ ...envelope, data: toAssessorOverview(envelope.data) }))
   },
 
   getActionCenter() {

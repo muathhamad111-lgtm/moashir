@@ -64,7 +64,7 @@ function rowActions(row) {
 }
 
 function openManage(row) {
-  router.push({ name: ROUTE_NAMES.BAG_MANAGE, query: { request: row.id } })
+  router.push({ name: ROUTE_NAMES.BAG_MANAGE, params: { request: row.id } })
 }
 </script>
 

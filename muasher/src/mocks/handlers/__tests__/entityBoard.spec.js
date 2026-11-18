@@ -57,9 +57,10 @@ describe('entity board mock (Task-46 contract)', () => {
     expect(award.dueAt).toEqual(expect.any(String))
   })
 
-  it('answers no items to staff and 401 to guests', async () => {
+  it('answers a staff user with the staff items only, and 401 to guests', async () => {
     seedMockSession({ id: 1, roles: ['system_admin'] })
-    expect((await get('/dashboard/action-center')).body.data).toEqual([])
+    const keys = (await get('/dashboard/action-center')).body.data.map((item) => item.key)
+    expect(keys).not.toContain('complete_payment')
     clearMockSession()
     expect((await get('/dashboard/action-center')).status).toBe(401)
   })
@@ -73,7 +74,7 @@ describe('entity board mock (Task-46 contract)', () => {
     expect(latest).toMatchObject({ assessmentId: 9104, path: 'accredited' })
     expect(latest.pathLabel).toEqual({ ar: 'التقييم المعتمد', en: 'Accredited assessment' })
     expect(body.data.widgets.map((widget) => widget.key)).toContain('payments_card')
-    expect(Array.isArray(body.data.actionCenter)).toBe(true)
+    expect(body.data).not.toHaveProperty('actionCenter')
   })
 
   it('leaves the staff boards to the staff dashboard mock', async () => {

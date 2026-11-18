@@ -16,6 +16,8 @@ const props = defineProps({
   value: { type: [Number, String, null], default: null },
   previous: { type: [Number, String, null], default: null },
   format: { type: String, required: true },
+  // A falling value is the good news here (a shorter review time): the colours swap.
+  lowerIsBetter: { type: Boolean, default: false },
 })
 
 const { t, n } = useI18n()
@@ -44,7 +46,7 @@ const text = computed(() => {
   <span
     v-if="delta"
     class="overview-delta"
-    :class="`overview-delta--${delta.direction}`"
+    :class="[`overview-delta--${delta.direction}`, { 'overview-delta--inverse': lowerIsBetter }]"
     :data-direction="delta.direction"
   >
     <AppIcon v-if="ICONS[delta.direction]" :name="ICONS[delta.direction]" :mirror="false" />

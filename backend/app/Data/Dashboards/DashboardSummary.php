@@ -9,14 +9,10 @@ use Carbon\CarbonInterface;
 
 final readonly class DashboardSummary
 {
-    /**
-     * @param  list<ActionItem>  $actionCenter
-     */
     public function __construct(
         public DashboardBoard $board,
         public HeldBoards $heldBoards,
         public BoardContent $content,
-        public array $actionCenter,
         public CarbonInterface $generatedAt,
     ) {}
 }

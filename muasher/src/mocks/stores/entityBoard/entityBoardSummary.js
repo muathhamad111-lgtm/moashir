@@ -2,7 +2,6 @@ import { allAssessments, exposesResult } from '../assessments/assessmentsStore'
 import { assessmentResource } from '../assessments/selfSerializers'
 import { financeState } from '../finance/financeState'
 import { inboxOf } from '../notificationsStore'
-import { entityActionItems } from './entityActionItems'
 import { eligibleResultsOf } from '../insights/insightsResults'
 import { strengthsGapsOf } from '../insights/insightsTools'
 import { levelWidgetOf, pathsWidgetOf } from '../periodic/pathsBoard'
@@ -124,7 +123,6 @@ export function entityBoardSummary(user, now = new Date()) {
       { key: 'payments_card', data: entityId ? paymentsCardOf(entityId) : null },
       ...pathWidgets(entityId),
     ],
-    actionCenter: entityActionItems(user),
     generatedAt: now.toISOString(),
   }
 }

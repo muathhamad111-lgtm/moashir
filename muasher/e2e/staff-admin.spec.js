@@ -90,7 +90,6 @@ test.describe('staff dashboards on the board contract', () => {
   for (const [key, user, board] of [
     ['follower', { id: 28, roles: ['request_follower'] }, 'request_follower'],
     ['filtering officer', USERS.follower, 'filtering_officer'],
-    ['assessor', USERS.assessor, 'assessor'],
     ['finance', USERS.finance, 'finance_officer'],
     ['content', USERS.content, 'content_officer'],
     ['secretary', USERS.secretary, 'award_secretary'],
@@ -102,7 +101,7 @@ test.describe('staff dashboards on the board contract', () => {
       await open(page, '/dashboard', `[data-board="${board}"]`)
       await expect(page.locator('.dashboard-cards__item').first()).toBeVisible()
       await expect(page.locator('.dashboard-widget').first()).toBeVisible()
-      await expect(page.locator('.action-center__title')).toBeVisible()
+      await expect(page.locator('.action-center')).toHaveCount(0)
       expect(errors).toEqual([])
     })
   }
@@ -115,7 +114,7 @@ test.describe('staff dashboards on the board contract', () => {
     await open(page, '/dashboard', '[data-testid="executive-overview"]')
     await expect(page.locator('.overview-cards__card').first()).toBeVisible()
     await expect(page.locator('.overview-panel').first()).toBeVisible()
-    await expect(page.locator('.action-center__title')).toBeVisible()
+    await expect(page.locator('.action-center')).toHaveCount(0)
     await expect(page.locator('[data-board="system_admin"]')).toHaveCount(0)
     expect(errors).toEqual([])
   })
@@ -129,7 +128,7 @@ test.describe('staff dashboards on the board contract', () => {
     await expect(page.locator('[data-widget="cycles"] tbody tr')).toHaveCount(1)
   })
 
-  test('a multi-role account switches boards without a role switcher and keeps one Action Center', async ({
+  test('a multi-role account switches boards without a role switcher; the pending work stays on the sidebar', async ({
     page,
   }, testInfo) => {
     await signIn(page, testInfo, USERS.multiRole)
@@ -137,21 +136,23 @@ test.describe('staff dashboards on the board contract', () => {
     const links = page.locator('.dashboard-board-nav__link')
     await expect(links).toHaveCount(2)
     await expect(links.first()).toHaveAttribute('aria-current', 'page')
-    const items = await page.locator('.action-center__item').count()
+    const counts = await page.locator('.sidebar__count').count()
     await links.nth(1).click()
     await expect(page).toHaveURL(/board=assessor/)
-    await expect(page.locator('[data-board="assessor"]')).toBeVisible()
-    await expect(page.locator('.action-center__item')).toHaveCount(items)
-    await page.locator('.action-center__link').first().click()
-    await expect(page).toHaveURL(/\/admin\/requests/)
+    await expect(page.locator('[data-testid="assessor-overview"]')).toBeVisible()
+    await expect(page.locator('.sidebar__count')).toHaveCount(counts)
   })
 
-  test('the Action Center deep link opens the new contact messages', async ({ page }, testInfo) => {
+  test('the pending contact messages count on the inbox item, which opens the inbox', async ({
+    page,
+  }, testInfo) => {
     await signIn(page, testInfo, USERS.systemAdmin)
-    await open(page, '/dashboard', '[data-action="answer_contact_messages"]')
-    await page.locator('[data-action="answer_contact_messages"] a').click()
-    await expect(page).toHaveURL(/\/admin\/contact-messages\?status=new$/)
-    await expect(page.locator(ROWS)).toHaveCount(1)
+    await open(page, '/dashboard', '[data-testid="executive-overview"]')
+    const inbox = page.locator('.sidebar__item[href="/admin/contact-messages"]')
+    await expect(inbox.locator('.sidebar__count')).toHaveText('2')
+    await inbox.click()
+    await expect(page).toHaveURL(/\/admin\/contact-messages$/)
+    await expect(page.locator(ROWS).first()).toBeVisible()
   })
 })
 

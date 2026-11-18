@@ -38,3 +38,22 @@ export function toExecutiveOverview(raw = {}) {
     generatedAt: raw.generatedAt ?? null,
   }
 }
+
+function toCount(value) {
+  return Number(value) || 0
+}
+
+export function toAssessorOverview(raw = {}) {
+  return {
+    period: { ...toWindow(raw.period), preset: raw.period?.preset ?? 'month' },
+    previousPeriod: toWindow(raw.previousPeriod),
+    cards: (raw.cards ?? []).map(toCard).filter((card) => card.key),
+    trends: toTrends(raw.trends),
+    paths: (raw.paths ?? []).map((row) => ({
+      path: row?.path ?? '',
+      completed: toCount(row?.completed),
+    })),
+    levels: (raw.levels ?? []).map((row) => ({ key: row?.key ?? '', count: toCount(row?.count) })),
+    generatedAt: raw.generatedAt ?? null,
+  }
+}

@@ -92,9 +92,8 @@
     "certificates": "Certificates",
     "bag": "Quick Excellence Kit",
     "payments": "My Payments",
-    "bagManage": "Kit Management",
     "bagRequests": "Kit Requests",
-    "bagEvaluator": "My Assigned Bags",
+    "bagEvaluator": "Quick Excellence Kit",
     "notifications": "Notifications",
     "adminKpis": "Manage Indicators",
     "adminCriteria": "Criteria Setup",
@@ -126,12 +125,12 @@
     "closeMenu": "Close the menu",
     "byPath": {
       "queue": {
-        "accredited": "Accredited",
-        "advanced": "Advanced"
+        "accredited": "Accredited assessment",
+        "advanced": "Advanced assessment"
       },
       "assigned": {
-        "accredited": "My accredited",
-        "advanced": "My advanced"
+        "accredited": "Accredited assessment",
+        "advanced": "Advanced assessment"
       }
     },
     "pathCounts": {
@@ -140,7 +139,8 @@
     },
     "contactMessages": "Inbox",
     "auditLog": "Audit log",
-    "finance": "Finance"
+    "finance": "Finance",
+    "pendingCount": "{count} awaiting action"
   },
   "footer": {
     "copyright": "All rights reserved © {year} — Moashir platform",
@@ -229,6 +229,9 @@
     },
     "success": {
       "title": "Completed successfully"
+    },
+    "table": {
+      "sortBy": "Sort by {column}"
     }
   },
   "status": {
@@ -2394,14 +2397,6 @@
     "greeting": "Welcome, {name}",
     "greetingAnonymous": "Welcome",
     "loadError": "Failed to load the dashboard.",
-    "actionCenter": {
-      "title": "Pending actions",
-      "emptyTitle": "No pending actions",
-      "emptyMessage": "You are all caught up. Nice work!",
-      "countLabel": "Count: {count}",
-      "due": "Due {time}",
-      "totalLabel": "Items needing action: {count}"
-    },
     "boardsLabel": "My boards",
     "cardsLabel": "Key indicators",
     "generatedAt": "Data last updated",
@@ -2416,35 +2411,6 @@
       "criteria_officer": "Criteria board",
       "finance_officer": "Finance board",
       "entity": "Entity board"
-    },
-    "actions": {
-      "complete_profile": "Complete the entity profile",
-      "submit_self_draft": "Self assessment drafts to submit",
-      "submit_accredited_draft": "Accredited assessment drafts to submit",
-      "complete_accredited_request": "Accredited requests to complete",
-      "complete_advanced_request": "Advanced requests to complete",
-      "submit_advanced_draft": "Advanced assessment drafts to submit",
-      "complete_payment": "Payment orders to complete",
-      "assign_requests": "Requests waiting for an assessor",
-      "follow_up_overdue_requests": "Requests past the review time",
-      "start_reviews": "Reviews to start",
-      "continue_reviews": "Reviews in progress",
-      "overdue_reviews": "Overdue reviews",
-      "complete_committee_evaluations": "Committee evaluations to complete",
-      "answer_committee_discussions": "Committee discussions waiting for you",
-      "decide_filtering": "Requests waiting for a filtering decision",
-      "approve_committee_results": "Committee results to approve",
-      "approve_substitute_evaluations": "Substitute evaluations to approve",
-      "record_refunds": "Payments needing a recorded refund",
-      "review_entity_email_changes": "Entity official e-mail changes to review",
-      "fix_criteria_draft": "Issues in the criteria draft",
-      "publish_content_changes": "Content changes to publish",
-      "answer_contact_messages": "New contact messages to handle",
-      "read_contact_replies": "New replies to your messages",
-      "review_bank_transfers": "Transfers awaiting approval",
-      "bank_transfer_under_review": "Your transfer is under review",
-      "bank_transfer_rejected": "Transfer rejected: submit a new payment request",
-      "award_paid_after_window": "Award fees paid after the submission window closed"
     },
     "cards": {
       "entities_total": "Entities",
@@ -2503,7 +2469,8 @@
       "sub_criteria": "Sub-criteria",
       "guiding_points": "Guiding points",
       "open_assessments_on_published": "Open assessments on the published version",
-      "draft_problems": "Draft issues"
+      "draft_problems": "Draft issues",
+      "due_within_week": "Due within 7 days"
     },
     "widgets": {
       "empty": "No data yet.",
@@ -2520,11 +2487,9 @@
         "requests_by_path": "Requests by path",
         "by_service": "Payments by service",
         "lowest_criteria": "Lowest-performing criteria",
-        "weakest_criteria": "Weakest criteria in my assessments",
         "activity": "Latest request updates",
         "pipeline": "Requests by path and status",
         "assessors": "Busiest assessors",
-        "due_soon": "Reviews due soon",
         "top_entities": "Top entities by committee average",
         "latest_tasks": "Latest committee tasks",
         "latest_edits": "Latest content edits",
@@ -2713,6 +2678,35 @@
         "accredited": "Accredited",
         "advanced": "Award"
       }
+    },
+    "assessorOverview": {
+      "openTitle": "My open reviews",
+      "breakdownLabel": "Open reviews by status",
+      "cardsLabel": "Assessor indicators",
+      "cards": {
+        "overdue": "Overdue reviews",
+        "due_within_week": "Due within 7 days",
+        "completed": "Completed reviews",
+        "average_duration_days": "Average review time",
+        "average_result_percent": "Average result I gave",
+        "completion_requests": "Completion requests sent"
+      },
+      "charts": {
+        "completed": "Completed reviews",
+        "openByStatus": "My open reviews by status",
+        "byPath": "Completed reviews by path",
+        "averageResult": "Average result I gave",
+        "levels": "Levels I gave"
+      },
+      "series": {
+        "completed": "Completed reviews"
+      },
+      "categories": {
+        "status": "Status",
+        "reviews": "Reviews",
+        "results": "Results"
+      },
+      "belowLevels": "Below the levels"
     }
   },
   "assessment": {
@@ -4073,7 +4067,7 @@
     },
     "assigned": {
       "title": "My assigned requests",
-      "subtitle": "Requests assigned to you, ordered by due date.",
+      "subtitle": "The requests assigned to you, soonest due first. Select a column heading to change the order.",
       "tabs": {
         "new": "New",
         "in_progress": "In progress",
@@ -4085,9 +4079,9 @@
         "request": "Request",
         "state": "Status",
         "progress": "Scoring progress",
-        "actions": "Actions"
+        "actions": "Actions",
+        "assignedAt": "Assigned on"
       },
-      "assignedOn": "Assigned on",
       "progress": {
         "remaining": "{count} left",
         "done": "Scoring complete"
@@ -4097,6 +4091,9 @@
         "start": "Start the assessment",
         "continue": "Continue the assessment",
         "viewReview": "View the assessment"
+      },
+      "filters": {
+        "status": "Status"
       }
     },
     "assignment": {
@@ -4398,7 +4395,8 @@
           "self": "Self-assessment",
           "advanced": "Advanced assessment"
         }
-      }
+      },
+      "back": "Back to the Kit requests"
     },
     "comparison": {
       "eyebrow": "Impact measurement",
@@ -4660,11 +4658,14 @@
     "brandHome": "Moashir, go to the dashboard",
     "groups": {
       "entity": "Entity workspace",
-      "assessment": "Requests and assessment",
+      "assessment": "Assessment requests",
       "award": "Award"
     },
     "previewPlatform": "Preview platform",
-    "opensInNewTab": " (opens in a new tab)"
+    "opensInNewTab": " (opens in a new tab)",
+    "copyPlatformLink": "Copy the platform link",
+    "platformLinkCopied": "Platform link copied",
+    "platformLinkCopyFailed": "Could not copy the link. Open the preview and copy it from the address bar"
   },
   "account": {
     "title": "My account",
@@ -6743,10 +6744,6 @@
       "back": "Back to my assessments",
       "status": "Status",
       "myTotal": "My total",
-      "blindTitle": "Independent evaluation",
-      "blindMessage": "Score each item on the cycle scale without the initial assessment or the other committee assessors. Your notes stay inside the committee.",
-      "lockedTitle": "Submitted and locked",
-      "lockedMessage": "This evaluation reopens only if the Award Secretary returns the request to the committee.",
       "returnedTitle": "Returned by the Award Secretary on {date}",
       "conflictTitle": "This evaluation changed",
       "conflictMessage": "The evaluation cannot be saved in its current state. Refresh it to see the latest state.",

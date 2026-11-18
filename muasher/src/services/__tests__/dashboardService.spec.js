@@ -45,7 +45,6 @@ describe('dashboardService', () => {
           widgets: [
             { key: 'pipeline', data: [{ path: 'accredited', status: 'submitted', count: 3 }] },
           ],
-          actionCenter: [{ key: 'assign_requests', count: 3, severity: 'warning', link: '/x' }],
           generatedAt: '2026-11-05T06:00:00+00:00',
         },
       },
@@ -59,7 +58,7 @@ describe('dashboardService', () => {
       { key: 'awaiting_assignment', value: 3, format: 'count', link: '/admin/requests' },
     ])
     expect(data.widgets[0].key).toBe('pipeline')
-    expect(data.actionCenter[0]).toMatchObject({ key: 'assign_requests', context: null })
+    expect(data).not.toHaveProperty('actionCenter')
     expect(logger.breadcrumb).toHaveBeenCalledWith(
       'service',
       'dashboard.getSummary',
@@ -80,7 +79,7 @@ describe('dashboardService', () => {
     expect(logger.error).not.toHaveBeenCalled()
   })
 
-  it('reads the entity board widgets and its Action Center', async () => {
+  it('reads the entity board widgets; the Action Center has an endpoint of its own', async () => {
     apiClient.get.mockResolvedValue({
       data: {
         data: {
@@ -93,7 +92,6 @@ describe('dashboardService', () => {
             { key: 'payments_card', data: { receiptsCount: 1 } },
           ],
           cards: [{ key: 'accepted_evidence_count', value: 7, format: 'count', link: null }],
-          actionCenter: [ACTION_ITEM, { ...ACTION_ITEM, key: 'complete_payment', count: 0 }],
         },
       },
     })
@@ -104,7 +102,7 @@ describe('dashboardService', () => {
     expect(data.latestResult).toMatchObject({ assessmentId: 9, percent: '78.00' })
     expect(data.paymentsCard).toEqual({ receiptsCount: 1 })
     expect(data.acceptedEvidenceCount).toBe(7)
-    expect(data.actionCenter).toEqual([ACTION_ITEM])
+    expect(data).not.toHaveProperty('actionCenter')
   })
 
   it('keeps the evidence count null when the board has no such card', async () => {

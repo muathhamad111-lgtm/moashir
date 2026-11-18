@@ -189,6 +189,72 @@
   }
 }
 
+// The assessor board: four columns on wide screens; the open-reviews tile spans two and lists its
+// states; a live alert takes its tone only while it counts something.
+.assessor-overview {
+  @include flex(column, stretch, flex-start, var(--space-5));
+}
+
+.assessor-cards {
+  @include respond-to('xl') {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.assessor-cards__open {
+  @include respond-to('sm') {
+    grid-column: span 2;
+  }
+}
+
+.assessor-cards__states {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: var(--space-2) 0 0;
+  border-block-start: var(--border-width) solid
+    color-mix(in srgb, var(--brand-on-primary) 25%, transparent);
+  list-style: none;
+}
+
+.assessor-cards__state {
+  @include flex(row, center, flex-start, var(--space-2));
+  padding-block: var(--space-1);
+  padding-inline: var(--space-3);
+  border-radius: var(--radius-pill);
+  background-color: color-mix(in srgb, var(--brand-on-primary) 12%, transparent);
+  font-size: var(--fs-sm);
+}
+
+.assessor-cards__alert--danger {
+  border-color: var(--theme-danger-text);
+  background-color: var(--theme-danger-soft);
+
+  .overview-cards__icon {
+    background-color: var(--theme-surface-solid);
+    color: var(--theme-danger-text);
+  }
+
+  .overview-cards__value {
+    color: var(--theme-danger-text);
+  }
+}
+
+.assessor-cards__alert--warning {
+  border-color: var(--theme-warning-text);
+  background-color: var(--theme-warning-soft);
+
+  .overview-cards__icon {
+    background-color: var(--theme-surface-solid);
+    color: var(--theme-warning-text);
+  }
+
+  .overview-cards__value {
+    color: var(--theme-warning-text);
+  }
+}
+
 .overview-delta {
   @include flex(row, center, flex-start, var(--space-1));
   flex-wrap: wrap;
@@ -205,6 +271,16 @@
 
   &--flat {
     color: var(--theme-text-muted);
+  }
+}
+
+.overview-delta--inverse {
+  &.overview-delta--up {
+    color: var(--theme-danger-text);
+  }
+
+  &.overview-delta--down {
+    color: var(--theme-success-text);
   }
 }
 
@@ -290,7 +366,6 @@
   .app-layout__skip,
   .executive-overview__tools,
   .dashboard-board-nav,
-  .action-center,
   .chat-widget,
   .chart-tooltip {
     display: none !important;

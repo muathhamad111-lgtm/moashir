@@ -38,17 +38,41 @@ function seatedRows(user, cycleId) {
     .filter((row) => !cycleId || row.cycleId === Number(cycleId))
 }
 
-export function myRows(user, query) {
-  const cycleId = query.get('filter[cycleId]')
-  const status = query.get('filter[status]')
+// Mirrors backend CommitteeAssignmentsOrdering: by the cycle's committee end (soonest first by
+// default) or by status in workflow order; the row id breaks ties in the same direction.
+const SORT_VALUE = {
+  due_at: (row) => findCycle(row.cycleId)?.committeeEnd ?? '',
+  status: (row) => FILTER_STATUSES.indexOf(row.status),
+}
+
+function sortRows(rows, sort) {
+  const descending = sort.startsWith('-')
+  const valueOf = SORT_VALUE[sort.replace('-', '')]
+  const sign = descending ? -1 : 1
+  return [...rows].sort((left, right) => {
+    const a = valueOf(left)
+    const b = valueOf(right)
+    return (a === b ? left.id - right.id : a < b ? -1 : 1) * sign
+  })
+}
+
+function checkRowQuery(status, sort) {
+  const errors = {}
   if (status && !FILTER_STATUSES.includes(status))
-    throw assessmentReject.validation({
-      'filter.status': [fieldMessage('validation.invalid', {}, 'filter')],
-    })
-  const rows = seatedRows(user, cycleId)
-    .filter((row) => !status || row.status === status)
-    .sort((left, right) => right.id - left.id)
-  return paginate(rows, query)
+    errors['filter.status'] = [fieldMessage('validation.invalid', {}, 'filter')]
+  if (!SORT_VALUE[sort.replace('-', '')])
+    errors.sort = [fieldMessage('validation.invalid', {}, 'sort')]
+  if (Object.keys(errors).length) throw assessmentReject.validation(errors)
+}
+
+export function myRows(user, query) {
+  const status = query.get('filter[status]')
+  const sort = query.get('sort') || 'due_at'
+  checkRowQuery(status, sort)
+  const rows = seatedRows(user, query.get('filter[cycleId]')).filter(
+    (row) => !status || row.status === status,
+  )
+  return paginate(sortRows(rows, sort), query)
 }
 
 // Mirrors backend CountMyCommitteeAssignments: per-status counts for the tabs, cycle filter only.

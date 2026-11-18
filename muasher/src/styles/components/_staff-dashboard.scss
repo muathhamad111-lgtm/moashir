@@ -19,6 +19,11 @@
   color: var(--theme-heading);
 }
 
+// The assessor's home is the board alone: its name stays for screen readers only.
+.staff-dashboard__board-title--hidden {
+  @include visually-hidden;
+}
+
 // Two widgets per row only when each gets at least 28rem (a table widget needs that room);
 // never more than two columns.
 .staff-dashboard__widgets {

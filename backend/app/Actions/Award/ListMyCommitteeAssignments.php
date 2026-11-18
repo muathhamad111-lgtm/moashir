@@ -9,6 +9,7 @@ use App\Data\Award\CommitteeWorkPage;
 use App\Enums\Award\CommitteeAssignmentStatus;
 use App\Models\Award\CommitteeAssignment;
 use App\Models\Identity\User;
+use App\Services\Award\CommitteeAssignmentsOrdering;
 use App\Services\Award\CommitteeProgressReader;
 use App\Services\Award\CommitteeVisibilityReader;
 use App\Services\Award\MyCommitteeAssignmentsQuery;
@@ -20,6 +21,7 @@ final readonly class ListMyCommitteeAssignments
         private MyCommitteeAssignmentsQuery $assignments,
         private CommitteeVisibilityReader $visibility,
         private CommitteeProgressReader $progress,
+        private CommitteeAssignmentsOrdering $ordering,
     ) {}
 
     /**
@@ -30,8 +32,7 @@ final readonly class ListMyCommitteeAssignments
         $page = $this->assignments->for($viewer, $filters->cycleId)
             ->with(['assessment.entity.region', 'assessment.entity.city', 'assessment.entity.owner', 'assessment.region', 'assessment.criteriaVersion', 'awardCycle', 'member'])
             ->when($filters->status instanceof CommitteeAssignmentStatus, static fn (Builder $query): Builder => $query->where('status', $filters->status))
-            ->orderByRaw("case status when 'in_progress' then 0 when 'not_started' then 1 else 2 end")
-            ->orderBy('id')
+            ->tap(fn (Builder $query) => $this->ordering->apply($query, $filters->order))
             ->paginate($filters->perPage);
 
         return new CommitteeWorkPage($page, $this->visibility->read(), [], $this->progress->readMany(array_values($page->items())));

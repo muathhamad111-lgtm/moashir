@@ -25,7 +25,7 @@ it('describes the single request, the single order and the profile completion of
     $draft = startedSelfAssessment($owner);
     $payment = Payment::factory()->forEntity($entity)->create();
 
-    $items = actionItems(boardOf($owner));
+    $items = actionItems($owner);
     $percent = switchTo($owner)->getJson('/api/v1/entities/me')->assertOk()->json('data.profile_completion.percent');
 
     expect($items->get('complete_profile')['context'] ?? null)->toBe([...EMPTY_CONTEXT, 'percent' => 80])
@@ -38,7 +38,7 @@ it('gives the single accredited draft its reference and the number of remaining 
     publishedAccreditedCriteria();
     $assessment = openedAccreditedRequest();
 
-    $item = actionItems(boardOf(ownerOf($assessment->entity)))->get('submit_accredited_draft');
+    $item = actionItems(ownerOf($assessment->entity))->get('submit_accredited_draft');
 
     expect($item['link'] ?? null)->toBe('/assessment/accredited')
         ->and($item['context'] ?? null)->toBe([...EMPTY_CONTEXT, 'assessment_id' => $assessment->id, 'reference' => $assessment->request_number, 'remaining_subs' => 2]);
@@ -55,7 +55,7 @@ it('gives the returned accredited request its reference', function (): void {
         'expiry_outcome' => 'continue_as_submitted',
     ])->assertOk();
 
-    $item = actionItems(boardOf(ownerOf($assessment->entity)))->get('complete_accredited_request');
+    $item = actionItems(ownerOf($assessment->entity))->get('complete_accredited_request');
 
     expect($item['context'] ?? null)->toBe([...EMPTY_CONTEXT, 'assessment_id' => $assessment->id, 'reference' => $assessment->request_number]);
 });
@@ -65,7 +65,7 @@ it('keeps only the empty keys when an item counts more than one record', functio
     Payment::factory()->forEntity($entity)->create();
     Payment::factory()->forEntity($entity)->create(['purpose' => PaymentPurpose::Bag]);
 
-    $item = actionItems(boardOf(ownerOf($entity)))->get('complete_payment');
+    $item = actionItems(ownerOf($entity))->get('complete_payment');
 
     expect($item['count'] ?? null)->toBe(2)
         ->and($item['context'] ?? null)->toBe(EMPTY_CONTEXT);

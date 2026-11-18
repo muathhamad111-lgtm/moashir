@@ -52,6 +52,7 @@ import {
 } from '../stores/accredited/assignments'
 import { staffNameOf } from '../stores/accredited/staffDirectory'
 import { runAccreditedSchedule } from '../stores/accredited/scheduler'
+import { isAssignedSort, sortAssigned } from '../stores/accredited/assignedSort'
 
 const REQUEST = '/api/v1/requests/:assessment'
 const NUMERIC_ID = /^\d+$/
@@ -165,15 +166,17 @@ function checkAssignedFilters(query) {
     errors['filter.tab'] = [fieldMessage('validation.invalid', {}, 'filter')]
   if (path && !REVIEWED_PATHS.includes(path))
     errors['filter.path'] = [fieldMessage('validation.invalid', {}, 'filter')]
+  if (!isAssignedSort(query.get('sort')))
+    errors.sort = [fieldMessage('validation.invalid', {}, 'sort')]
   if (Object.keys(errors).length) throw assessmentReject.validation(errors)
   return tab
 }
 
-function assignedFor(records, tab, path) {
-  return records
+function assignedFor(records, { tab, path, sort, viewerId }) {
+  const shown = records
     .filter((record) => record.path === path)
     .filter((record) => !tab || TABS[tab].includes(record.status))
-    .sort((a, b) => ((a.dueAt ?? '') < (b.dueAt ?? '') ? -1 : 1))
+  return sortAssigned(shown, { sort, statusOrder: Object.values(TABS).flat(), viewerId })
 }
 
 export const requestsHandlers = [
@@ -229,7 +232,8 @@ export const requestsHandlers = [
       const records = reviewedBy(user)
       const pathCounts = assignedPathCounts(records, qualificationsOf(user.id), TABS)
       const path = assignedPathOf(query.get('filter[path]'), pathCounts)
-      const { items, pagination } = paginate(assignedFor(records, tab, path), query)
+      const shown = assignedFor(records, { tab, path, sort: query.get('sort'), viewerId: user.id })
+      const { items, pagination } = paginate(shown, query)
       return envelope(
         items.map((record) => assignedRow(record, user)),
         { pagination, path, pathCounts },

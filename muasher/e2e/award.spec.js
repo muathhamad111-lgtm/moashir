@@ -255,7 +255,6 @@ test.describe('Award staff screens', () => {
     const errors = trackConsole(page)
     await signIn(page, testInfo, USERS.assessor)
     await page.goto('/admin/requests/assigned?path=advanced')
-    await page.getByRole('tab').nth(1).click()
     await expect(page.locator('.table__row', { hasText: 'ADV-' }).first()).toBeVisible()
     await page.goto('/admin/requests/9202/review')
     await expect(page.locator('.review-actions')).toBeVisible()

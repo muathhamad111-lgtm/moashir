@@ -214,7 +214,9 @@ test('unified workspace: module groups, no role switcher, profile lists roles an
   expect(errors).toEqual([])
 })
 
-test('Action Center aggregates the tasks of every held role', async ({ page }, testInfo) => {
+test('the pending tasks of every held role show as counts on the sidebar, with no Action Center', async ({
+  page,
+}, testInfo) => {
   await seedSession(page, {
     roles: ['request_follower', 'content_officer'],
     locale: isEn(testInfo) ? 'en' : 'ar',
@@ -222,8 +224,8 @@ test('Action Center aggregates the tasks of every held role', async ({ page }, t
   await page.goto('/dashboard')
   await expect(page.locator('[data-board="request_follower"]')).toBeVisible()
   await expect(page.locator('.dashboard-board-nav__link')).toHaveCount(2)
-  await expect(page.locator('[data-action="assign_requests"]')).toBeVisible()
-  await expect(page.locator('[data-action="publish_content_changes"]')).toBeVisible()
+  await expect(page.locator('.action-center')).toHaveCount(0)
+  await expect(page.locator('.sidebar__count').first()).toBeVisible()
   await page.screenshot({
     path: `${SHOTS}/dashboard-unified-${suffix(testInfo)}.png`,
     fullPage: true,

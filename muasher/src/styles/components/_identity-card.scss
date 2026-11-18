@@ -1,13 +1,9 @@
 @use '../mixins' as *;
 @use '../tokens' as *;
 
-// The platform card at the top of the back-office sidebar and the portal side nav
-// (TTS model): the logo, then a «preview the platform» link to the public site.
+// The platform block at the top of the back-office sidebar and the portal side nav (TTS model):
+// the logo, then the split «preview the platform» control (open in a new tab | copy the link).
 @mixin identity-card-compact {
-  padding: 0;
-  border: 0;
-  background-color: transparent;
-
   .identity-card__brand {
     justify-content: center;
   }
@@ -17,24 +13,32 @@
     block-size: auto;
   }
 
-  .identity-card__preview {
+  .identity-card__actions {
     align-self: center;
     inline-size: var(--size-toolbar-control);
-    padding: 0;
+    border: 0;
+    background-color: transparent;
   }
 
-  .identity-card__label {
+  .identity-card__preview {
+    padding: 0;
+    border: var(--border-width) solid var(--theme-border-strong);
+    border-radius: var(--btn-radius);
+  }
+
+  .identity-card__preview-icon {
+    display: inline-flex;
+  }
+
+  .identity-card__label,
+  .identity-card__copy {
     @include visually-hidden;
   }
 }
 
 .identity-card {
   @include flex(column, stretch, flex-start, var(--space-3));
-  padding: var(--space-3);
   margin-block-end: var(--space-2);
-  border: var(--border-width) solid var(--sidebar-border);
-  border-radius: var(--card-radius);
-  background-color: var(--theme-bg);
 
   &--collapsed {
     @include identity-card-compact;
@@ -64,17 +68,27 @@
   object-fit: contain;
 }
 
-.identity-card__preview {
-  @include flex(row, center, center, var(--space-2));
+.identity-card__actions {
+  display: flex;
+  align-items: stretch;
   min-block-size: var(--size-toolbar-control);
-  padding-inline: var(--space-3);
   border: var(--border-width) solid var(--theme-border-strong);
   border-radius: var(--btn-radius);
   background-color: var(--sidebar-bg);
+  overflow: hidden;
+}
+
+.identity-card__preview,
+.identity-card__copy {
+  @include flex(row, center, center, var(--space-2));
+  border: 0;
+  background-color: transparent;
   color: var(--sidebar-hover-text);
+  font: inherit;
   font-size: var(--fs-sm);
   font-weight: var(--fw-medium);
   text-decoration: none;
+  cursor: pointer;
   transition: background-color var(--t-fast) var(--ease);
 
   &:hover {
@@ -84,7 +98,24 @@
   &:focus-visible {
     @include focus-ring;
     outline-color: var(--sidebar-focus-ring);
+    outline-offset: calc(-1 * var(--border-width-thick));
   }
+}
+
+.identity-card__preview {
+  flex: 1;
+  min-inline-size: 0;
+  padding-inline: var(--space-3);
+}
+
+.identity-card__preview-icon {
+  display: none;
+}
+
+.identity-card__copy {
+  flex-shrink: 0;
+  inline-size: var(--size-toolbar-control);
+  border-inline-start: var(--border-width) solid var(--theme-border-strong);
 }
 
 .identity-card__hint {
@@ -92,7 +123,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .identity-card__preview {
+  .identity-card__preview,
+  .identity-card__copy {
     transition: none;
   }
 }

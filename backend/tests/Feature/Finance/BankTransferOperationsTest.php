@@ -156,7 +156,7 @@ it('shows the entity a pending transfer, then a rejected one until a new request
     ['owner' => $owner, 'account' => $account] = transferPayingEntity();
     $payment = submittedTransfer($owner, $account);
 
-    $items = actionItems(boardOf($owner));
+    $items = actionItems($owner);
     expect($items->get('bank_transfer_under_review'))->toMatchArray(['count' => 1, 'severity' => 'info', 'link' => '/payments'])
         ->and($items->get('bank_transfer_under_review')['context']['payment_id'] ?? null)->toBe($payment->public_id)
         ->and($items->has('complete_payment'))->toBeFalse()
@@ -164,22 +164,22 @@ it('shows the entity a pending transfer, then a rejected one until a new request
 
     rejectTransfer(transferReviewer(), $payment)->assertOk();
 
-    $items = actionItems(boardOf($owner));
+    $items = actionItems($owner);
     expect($items->get('bank_transfer_rejected'))->toMatchArray(['count' => 1, 'severity' => 'danger'])
         ->and($items->has('bank_transfer_under_review'))->toBeFalse();
 
     submittedTransfer($owner, $account, SAMPLE_PDF.'%second');
 
-    expect(actionItems(boardOf($owner))->has('bank_transfer_rejected'))->toBeFalse();
+    expect(actionItems($owner)->has('bank_transfer_rejected'))->toBeFalse();
 });
 
 it('shows reviewers how many transfers await approval and nobody else', function (): void {
     ['owner' => $owner, 'account' => $account] = transferPayingEntity();
     submittedTransfer($owner, $account);
 
-    expect(actionItems(boardOf(transferReviewer()))->get('review_bank_transfers'))->toMatchArray(['count' => 1, 'severity' => 'warning', 'link' => '/finance/transfers'])
-        ->and(actionItems(boardOf(systemAdmin()))->has('review_bank_transfers'))->toBeFalse()
-        ->and(actionItems(boardOf(staffUser(RoleKey::ContentOfficer)))->has('review_bank_transfers'))->toBeFalse();
+    expect(actionItems(transferReviewer())->get('review_bank_transfers'))->toMatchArray(['count' => 1, 'severity' => 'warning', 'link' => '/finance/transfers'])
+        ->and(actionItems(systemAdmin())->has('review_bank_transfers'))->toBeFalse()
+        ->and(actionItems(staffUser(RoleKey::ContentOfficer))->has('review_bank_transfers'))->toBeFalse();
 });
 
 it('lists a transfer under review among the open requests of an entity to delete', function (): void {

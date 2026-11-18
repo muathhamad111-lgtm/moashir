@@ -102,6 +102,22 @@ it('lists each committee assignment with its scoring progress and counts the row
         ->assertJsonPath('meta.status_counts', ['not_started' => 1, 'in_progress' => 0, 'completed' => 1]);
 });
 
+it('sorts the committee assignments by status or due date and refuses an unknown sort', function (): void {
+    $scenario = committeeScenario(2, 1);
+    [$first, $second] = $scenario['requests'];
+    $assessor = $scenario['assessors'][0];
+    $started = committeeRowOf($assessor, $second);
+    $waiting = committeeRowOf($assessor, $first);
+    switchTo($assessor)->putJson(myAssignmentPath($started, 'scores'), ['scores' => selfScores($scenario['version'], ['M1.1' => '7'])])->assertOk();
+    $ids = static fn (string $sort): array => collect(switchTo($assessor)->getJson('/api/v1/committee/me/assignments?sort='.$sort)->assertOk()->json('data'))->pluck('id')->all();
+
+    expect($ids('status'))->toBe([$waiting->id, $started->id])
+        ->and($ids('-status'))->toBe([$started->id, $waiting->id])
+        ->and($ids('due_at'))->toBe(collect([$waiting->id, $started->id])->sort()->values()->all());
+
+    test()->getJson('/api/v1/committee/me/assignments?sort=entity')->assertUnprocessable()->assertJsonValidationErrors(['sort']);
+});
+
 it('reads the committee progress of a whole page without a query per assignment', function (): void {
     $assessor = committeeScenario(3, 1)['assessors'][0];
     $countQueries = static function (int $perPage) use ($assessor): int {

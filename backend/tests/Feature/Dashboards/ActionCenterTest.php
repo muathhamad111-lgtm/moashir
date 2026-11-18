@@ -12,8 +12,6 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
-const ACTION_CENTER = '/api/v1/dashboard/action-center';
-
 beforeEach(function (): void {
     Storage::fake('local');
     Notification::fake();
@@ -28,8 +26,7 @@ it('lists the entity\'s own pending work with deadlines, most severe first', fun
     $payment = Payment::factory()->forEntity($entity)->create();
     Payment::factory()->forEntity(entityWithOwner())->create();
 
-    $response = boardOf($owner);
-    $items = actionItems($response);
+    $items = actionItems($owner);
 
     expect($items->keys()->all())->toBe(['complete_payment', 'complete_profile', 'submit_self_draft'])
         ->and($items->get('complete_payment'))->toBe([
@@ -54,7 +51,7 @@ it('asks the entity to complete a returned accredited request before its deadlin
         'expiry_outcome' => 'continue_as_submitted',
     ])->assertOk();
 
-    $item = actionItems(boardOf(ownerOf($assessment->entity)))->get('complete_accredited_request');
+    $item = actionItems(ownerOf($assessment->entity))->get('complete_accredited_request');
 
     expect($item)->toMatchArray(['count' => 1, 'severity' => 'danger', 'link' => '/assessment/accredited', 'due_at' => '2026-11-10T08:00:00+00:00']);
 });
@@ -67,14 +64,14 @@ it('gives followers the assignment and overdue queues and assessors their own re
     submittedAccreditedRequest($version);
     $assigned->forceFill(['due_at' => Date::now()->subDay()])->save();
 
-    $follower = actionItems(boardOf(requestFollower()));
+    $follower = actionItems(requestFollower());
     expect($follower->keys()->all())->toBe(['follow_up_overdue_requests', 'assign_requests'])
         ->and($follower->get('assign_requests')['count'] ?? null)->toBe(1);
 
-    $mine = actionItems(boardOf($assessor));
+    $mine = actionItems($assessor);
     expect($mine->keys()->all())->toBe(['overdue_reviews', 'start_reviews'])
         ->and($mine->get('start_reviews')['link'] ?? null)->toBe('/admin/requests/assigned')
-        ->and(actionItems(boardOf($other))->all())->toBe([]);
+        ->and(actionItems($other)->all())->toBe([]);
 });
 
 it('aggregates the tasks of every held role in one action center', function (): void {
@@ -84,8 +81,8 @@ it('aggregates the tasks of every held role in one action center', function (): 
 
     $user = staffUser(RoleKey::RequestFollower, RoleKey::ContentOfficer);
 
-    expect(actionItems(boardOf($user, 'content_officer'))->keys()->all())->toBe(['assign_requests', 'publish_content_changes'])
-        ->and(actionItems(boardOf(contentOfficer()))->keys()->all())->toBe(['publish_content_changes']);
+    expect(actionItems($user)->keys()->all())->toBe(['assign_requests', 'publish_content_changes'])
+        ->and(actionItems(contentOfficer())->keys()->all())->toBe(['publish_content_changes']);
 });
 
 it('shows administrative queues only to the holders of their permissions', function (): void {
@@ -100,10 +97,10 @@ it('shows administrative queues only to the holders of their permissions', funct
     ]);
     draftVersion()->forceFill(['validation_errors' => [['code' => 'weights_mismatch']]])->save();
 
-    expect(actionItems(boardOf(systemAdmin()))->keys()->all())->toContain('review_entity_email_changes')
+    expect(actionItems(systemAdmin())->keys()->all())->toContain('review_entity_email_changes')
         ->not->toContain('handle_privacy_requests')
-        ->and(actionItems(boardOf(criteriaOfficer()))->keys()->all())->toBe(['fix_criteria_draft'])
-        ->and(actionItems(boardOf(staffUser(RoleKey::FinanceOfficer)))->all())->toBe([]);
+        ->and(actionItems(criteriaOfficer())->keys()->all())->toBe(['fix_criteria_draft'])
+        ->and(actionItems(staffUser(RoleKey::FinanceOfficer))->all())->toBe([]);
 });
 
 it('asks finance to record a refund for a paid accredited payment that opened no request', function (): void {
@@ -112,22 +109,22 @@ it('asks finance to record a refund for a paid accredited payment that opened no
     storedPaidPayment();
     openedAccreditedRequest();
 
-    $finance = actionItems(boardOf(staffUser(RoleKey::FinanceOfficer)));
+    $finance = actionItems(staffUser(RoleKey::FinanceOfficer));
 
     expect($finance->get('record_refunds'))->toMatchArray(['count' => 1, 'severity' => 'danger', 'link' => '/finance/transactions?status=paid'])
-        ->and(actionItems(boardOf(contentOfficer()))->has('record_refunds'))->toBeFalse();
+        ->and(actionItems(contentOfficer())->has('record_refunds'))->toBeFalse();
 });
 
 it('reminds committee assessors of pending evaluations and secretaries of results to approve', function (): void {
     $scenario = committeeScenario(1, 1);
     [$seated] = $scenario['assessors'];
 
-    expect(actionItems(boardOf($seated))->get('complete_committee_evaluations'))->toMatchArray(['count' => 1, 'link' => '/admin/committee/assignments']);
+    expect(actionItems($seated)->get('complete_committee_evaluations'))->toMatchArray(['count' => 1, 'link' => '/admin/committee/assignments']);
 
     submitCommitteeEvaluation($seated, $scenario['requests'][0], $scenario['version'])->assertOk();
 
-    expect(actionItems(boardOf($seated))->has('complete_committee_evaluations'))->toBeFalse()
-        ->and(actionItems(boardOf($scenario['secretary']))->get('approve_committee_results'))->toMatchArray(['count' => 1, 'link' => '/admin/award/secretary']);
+    expect(actionItems($seated)->has('complete_committee_evaluations'))->toBeFalse()
+        ->and(actionItems($scenario['secretary'])->get('approve_committee_results'))->toMatchArray(['count' => 1, 'link' => '/admin/award/secretary']);
 });
 
 it('serves the action center on its own with the total of the counts', function (): void {

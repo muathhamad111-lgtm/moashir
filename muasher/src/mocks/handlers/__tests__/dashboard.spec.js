@@ -23,6 +23,11 @@ afterEach(() => {
 })
 afterAll(() => server.close())
 
+async function assessorOverview(query = '') {
+  const response = await mockFetch(`${MOCK_API_BASE}/dashboard/assessor-overview${query}`)
+  return { status: response.status, body: await response.json() }
+}
+
 describe('staff dashboard mock (Task-35 contract)', () => {
   it('lands on the highest board and lists the union of held boards', async () => {
     seedMockSession({ id: 8, roles: ['request_follower', 'assessor'] })
@@ -44,12 +49,14 @@ describe('staff dashboard mock (Task-35 contract)', () => {
     expect(body.data.widgets.map((widget) => widget.key)).toEqual(['activity'])
   })
 
-  it('carries the Action Center items of every held role without context', async () => {
+  it('serves the Action Center items of every held role from its own endpoint, not the summary', async () => {
     seedMockSession({ id: 1, roles: ['system_admin'] })
     const { body } = await summary()
-    const keys = body.data.actionCenter.map((item) => item.key)
+    expect(body.data).not.toHaveProperty('actionCenter')
+    const center = await (await mockFetch(`${MOCK_API_BASE}/dashboard/action-center`)).json()
+    const keys = center.data.map((item) => item.key)
     expect(keys).toEqual(expect.arrayContaining(['assign_requests', 'answer_contact_messages']))
-    body.data.actionCenter.forEach((item) => expect(item.context).toBeNull())
+    center.data.forEach((item) => expect(item.context).toBeNull())
   })
 
   it('refuses a board that is not held and an unknown board', async () => {
@@ -114,5 +121,34 @@ describe('executive overview mock', () => {
     expect((await overview()).status).toBe(403)
     clearMockSession()
     expect((await overview()).status).toBe(401)
+  })
+
+  it('serves an assessor their period figures, trend, paths and levels; others are refused', async () => {
+    seedMockSession({ id: 10, roles: ['assessor'] })
+    const { status, body } = await assessorOverview('?period=year')
+    expect(status).toBe(200)
+    expect(body.data.period.preset).toBe('year')
+    expect(body.data.cards.map((card) => card.key)).toEqual([
+      'completed',
+      'average_duration_days',
+      'average_result_percent',
+      'completion_requests',
+    ])
+    const completed = body.data.cards[0].value
+    expect(body.data.trends.series.completed.reduce((sum, value) => sum + value, 0)).toBe(completed)
+    expect(body.data.paths.reduce((sum, row) => sum + row.completed, 0)).toBe(completed)
+    expect(body.data.levels.map((row) => row.key)).toEqual([
+      'diamond',
+      'gold',
+      'silver',
+      'bronze',
+      'none',
+    ])
+    expect((await assessorOverview('?period=custom&from=2026-11-10')).status).toBe(422)
+
+    seedMockSession({ id: 1, roles: ['system_admin'] })
+    expect((await assessorOverview()).status).toBe(403)
+    clearMockSession()
+    expect((await assessorOverview()).status).toBe(401)
   })
 })

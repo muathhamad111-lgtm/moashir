@@ -278,14 +278,6 @@
       "count": 1
     }
   },
-  "src/composables/useExecutiveOverview.js": {
-    "complexity": {
-      "count": 1
-    },
-    "max-lines-per-function": {
-      "count": 1
-    }
-  },
   "src/composables/useFinanceSettings.js": {
     "max-lines-per-function": {
       "count": 1

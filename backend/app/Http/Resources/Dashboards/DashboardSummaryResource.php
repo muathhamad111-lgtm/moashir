@@ -37,7 +37,6 @@ final class DashboardSummaryResource extends JsonResource
                 'key' => $widget->key,
                 'data' => $widget->data,
             ], $summary->content->widgets),
-            'action_center' => ActionItemResource::collection($summary->actionCenter)->resolve($request),
             'generated_at' => $summary->generatedAt->toIso8601String(),
         ];
     }

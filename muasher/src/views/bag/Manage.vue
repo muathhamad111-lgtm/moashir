@@ -12,9 +12,15 @@ import BaseFileUpload from '@/components/form/BaseFileUpload.vue'
 import GapCard from '@/components/bag/GapCard.vue'
 import GapGuidanceEditor from '@/components/bag/GapGuidanceEditor.vue'
 import BagContextTracks from '@/components/bag/BagContextTracks.vue'
+import BagManageHeader from '@/components/bag/BagManageHeader.vue'
 import { useBagConsultant } from '@/composables/useBag'
 import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
+
+// The Kit request whose plan this page builds: it opens from a row of the assessor's Kit requests.
+defineProps({
+  request: { type: String, required: true },
+})
 
 const { t } = useI18n()
 const { confirm } = useConfirm()
@@ -103,12 +109,7 @@ async function onSaveGuidance(gap, payload) {
     />
 
     <template v-else>
-      <header class="bag-manage__header">
-        <div>
-          <p class="bag-manage__eyebrow">{{ t('bag.manage.eyebrow') }}</p>
-          <h1 class="bag-manage__title">{{ t('bag.manage.title') }}</h1>
-        </div>
-      </header>
+      <BagManageHeader :request-id="request" />
 
       <p class="bag-manage__intro">{{ t('bag.manage.intro') }}</p>
 

@@ -3,7 +3,8 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
 import Card from '@/components/ui/Card.vue'
-import Tabs from '@/components/ui/Tabs.vue'
+import ListToolbar from '@/components/data-list/ListToolbar.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
@@ -24,24 +25,55 @@ const { t, locale } = useI18n()
 const auth = useAuthStore()
 const counts = useRequestPathCountsStore()
 const paths = computed(() => assignedPathsOf(auth.user, counts.assigned))
-const { items, status, errorMessage, load, tab, path, pathCounts, paginator } =
-  useAssignedRequests(paths)
+const {
+  items,
+  status,
+  errorMessage,
+  load,
+  filters,
+  sort,
+  setFilter,
+  setSort,
+  path,
+  pathCounts,
+  paginator,
+} = useAssignedRequests(paths)
 const { pagination, setPage } = paginator
 
 useHead({ title: () => t('requests.assigned.title') })
 
 const current = computed(() => pathCountOf(pathCounts.value, path.value))
-const tabs = computed(() =>
-  Object.values(ASSIGNED_TABS).map((value) => {
-    const label = t(`requests.assigned.tabs.${value}`)
-    const count = current.value?.[TAB_COUNT_KEYS[value]]
-    return { value, label: count === undefined ? label : `${label} (${count})` }
-  }),
-)
+function countOf(key) {
+  return current.value?.[key]
+}
+// All the requests by default; the filter narrows them to one status group, with its count.
+const statusOptions = computed(() => {
+  const groups = Object.values(ASSIGNED_TABS).map((value) => ({
+    value,
+    label: t(`requests.assigned.tabs.${value}`),
+    count: countOf(TAB_COUNT_KEYS[value]),
+  }))
+  const total = groups.every((group) => group.count === undefined)
+    ? undefined
+    : groups.reduce((sum, group) => sum + (group.count ?? 0), 0)
+  return [{ value: '', label: t('dataList.filter.all'), count: total }, ...groups].map(
+    (option) => ({
+      value: option.value,
+      label: option.count === undefined ? option.label : `${option.label} (${option.count})`,
+    }),
+  )
+})
+const filterState = { filters, setFilter, defaults: { tab: '' } }
 const columns = computed(() => [
   { key: 'request', label: t('requests.assigned.columns.request') },
-  { key: 'state', label: t('requests.assigned.columns.state') },
-  { key: 'dueAt', label: t('requests.columns.dueAt') },
+  { key: 'state', label: t('requests.assigned.columns.state'), sortKey: 'status' },
+  {
+    key: 'assignedAt',
+    label: t('requests.assigned.columns.assignedAt'),
+    sortKey: 'assigned_at',
+    sortFirst: 'desc',
+  },
+  { key: 'dueAt', label: t('requests.columns.dueAt'), sortKey: 'due_at' },
   { key: 'progress', label: t('requests.assigned.columns.progress') },
   { key: 'actions', label: t('requests.assigned.columns.actions') },
 ])
@@ -55,9 +87,20 @@ const columns = computed(() => [
       <p class="requests-page__subtitle">{{ t('requests.assigned.subtitle') }}</p>
     </header>
     <Card>
-      <Tabs v-model="tab" :tabs="tabs" />
+      <ListToolbar :searchable="false" :filter-state="filterState">
+        <template #filters="{ draft }">
+          <AppSelect
+            :model-value="draft.filters.tab"
+            :options="statusOptions"
+            :label="t('requests.assigned.filters.status')"
+            @update:model-value="draft.setFilter('tab', $event)"
+          />
+        </template>
+      </ListToolbar>
       <DataTable
         :columns="columns"
+        :sort="sort"
+        @sort="setSort"
         :items="items"
         :status="status"
         :error-message="errorMessage"
@@ -76,10 +119,9 @@ const columns = computed(() => [
         </template>
         <template #cell-state="{ item }">
           <StatusBadge :status="item.status" />
-          <span v-if="item.assignedAt" class="request-queue__muted"
-            >{{ t('requests.assigned.assignedOn') }}
-            <DateStamp :value="item.assignedAt" :with-time="false"
-          /></span>
+        </template>
+        <template #cell-assignedAt="{ item }">
+          <DateStamp v-if="item.assignedAt" :value="item.assignedAt" :with-time="false" />
         </template>
         <template #cell-dueAt="{ item }">
           <span class="request-queue__due">
