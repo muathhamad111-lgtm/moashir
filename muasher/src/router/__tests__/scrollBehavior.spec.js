@@ -12,4 +12,17 @@ describe('scrollBehavior', () => {
       top: 0,
     })
   })
+
+  it('keeps the position when a page that opts in only changes its query', () => {
+    const workspace = {
+      path: '/admin/settings/criteria',
+      hash: '',
+      meta: { keepsScrollOnQuery: true },
+    }
+    expect(scrollBehavior(workspace, { path: '/admin/settings/criteria', hash: '' })).toBe(false)
+    expect(scrollBehavior(workspace, { path: '/admin', hash: '' })).toEqual({ top: 0 })
+    expect(
+      scrollBehavior({ path: '/kpis', hash: '', meta: {} }, { path: '/kpis', hash: '' }),
+    ).toEqual({ top: 0 })
+  })
 })

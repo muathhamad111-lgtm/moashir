@@ -38,17 +38,9 @@ export function useCriteriaProblemNodes(versionId, problems) {
   }
 
   function linkFor(problem) {
-    const indexRoute = { name: ROUTE_NAMES.ADMIN_CRITERIA, query: { version: versionId.value } }
-    if (!problem.nodeId) return indexRoute
-    if (isMain(problem)) {
-      return { name: ROUTE_NAMES.ADMIN_CRITERIA_MAIN, params: { mainId: problem.nodeId } }
-    }
-    const sub = nodeOf(problem)
-    if (!sub) return indexRoute
-    return {
-      name: ROUTE_NAMES.ADMIN_CRITERIA_SUB,
-      params: { mainId: sub.mainCriterionId, subId: problem.nodeId },
-    }
+    const query = { version: versionId.value }
+    if (!problem.nodeId) return { name: ROUTE_NAMES.ADMIN_CRITERIA, query }
+    return { name: ROUTE_NAMES.ADMIN_CRITERIA, query: { ...query, node: keyOf(problem) } }
   }
 
   return { nodeOf, linkFor }

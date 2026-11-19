@@ -8,7 +8,7 @@ import FrozenBadge from '@/components/entities/FrozenBadge.vue'
 import LevelBadge from '@/components/level/LevelBadge.vue'
 import EntityLastAssessment from './EntityLastAssessment.vue'
 import { displayTierOf, reassessmentOf } from '@/utils/levelTier'
-import { ENTITY_INLINE_ACTIONS, useEntityActions } from '@/composables/useEntityActions'
+import { entityInlineActionsFor, useEntityActions } from '@/composables/useEntityActions'
 import { useEntityDisplay } from '@/composables/useEntityDisplay'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 
@@ -29,16 +29,7 @@ const { rowActionsFor } = useEntityActions()
 const { localized, enumLabel, date, dateTime } = useEntityDisplay()
 
 const COLUMN_SETS = {
-  full: [
-    'name',
-    'level',
-    'lastAssessment',
-    'entityType',
-    'region',
-    'status',
-    'createdAt',
-    'actions',
-  ],
+  full: ['name', 'level', 'lastAssessment', 'typeRegion', 'statusRegistered', 'actions'],
   contact: ['name', 'level', 'authorizedPersonName', 'officialEmail', 'status', 'actions'],
   deleted: ['name', 'region', 'deletedAt', 'status', 'actions'],
 }
@@ -75,22 +66,39 @@ const columns = computed(() => {
       </span>
     </template>
     <template #cell-level="{ item }">
-      <LevelBadge
-        :tier="tierOf(item)"
-        size="s"
-        :reassessment="reassessmentOf(tierOf(item), item.hasOpenAccreditedRequest)"
-        :certificate="item.lastLevel"
-      />
+      <span class="entity-table__level">
+        <LevelBadge
+          :tier="tierOf(item)"
+          size="s"
+          :reassessment="reassessmentOf(tierOf(item), item.hasOpenAccreditedRequest)"
+          :certificate="item.lastLevel"
+        />
+      </span>
     </template>
     <template #cell-lastAssessment="{ item }">
       <EntityLastAssessment :assessment="item.lastAccreditedAssessment" />
     </template>
-    <template #cell-entityType="{ item }">{{ enumLabel('entityType', item.entityType) }}</template>
+    <template #cell-typeRegion="{ item }">
+      <span class="entity-table__stack">
+        <span>{{ enumLabel('entityType', item.entityType) }}</span>
+        <span class="entity-table__muted">{{ localized(item.region?.name) }}</span>
+      </span>
+    </template>
+    <template #cell-statusRegistered="{ item }">
+      <span class="entity-table__stack">
+        <span class="entity-table__status">
+          <StatusBadge :status="item.status" />
+          <FrozenBadge v-if="item.isFrozen" />
+        </span>
+        <span class="entity-table__muted">{{
+          t('entities.registeredOn', { date: date(item.createdAt) })
+        }}</span>
+      </span>
+    </template>
     <template #cell-region="{ item }">{{ localized(item.region?.name) }}</template>
     <template #cell-officialEmail="{ item }">
       <span class="u-ltr">{{ item.officialEmail }}</span>
     </template>
-    <template #cell-createdAt="{ item }">{{ date(item.createdAt) }}</template>
     <template #cell-deletedAt="{ item }">{{ dateTime(item.deletedAt) }}</template>
     <template #cell-status="{ item }">
       <span class="entity-table__status">
@@ -102,7 +110,7 @@ const columns = computed(() => {
       <RowActions
         :actions="rowActionsFor(item)"
         :name="localized(item.name)"
-        :inline-keys="ENTITY_INLINE_ACTIONS"
+        :inline-keys="entityInlineActionsFor(item)"
         @select="emit('action', $event, item)"
       />
     </template>

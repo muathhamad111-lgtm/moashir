@@ -147,10 +147,11 @@ it('validates the new draft payload', function (array $payload, string $field): 
     'non numeric source' => [['clone_from_version_id' => 'latest'], 'clone_from_version_id'],
 ]);
 
-it('keeps draft creation away from the system administrator', function (): void {
-    signIn(systemAdmin());
-
+it('lets the system administrator open a draft and keeps it away from roles without criteria.manage', function (): void {
+    signIn(staffUser(RoleKey::RequestFollower));
     $this->postJson('/api/v1/criteria/versions', [])->assertForbidden();
+
+    switchTo(systemAdmin())->postJson('/api/v1/criteria/versions', [])->assertCreated();
 });
 
 it('discards a draft, hides its tree and audits the discard', function (): void {

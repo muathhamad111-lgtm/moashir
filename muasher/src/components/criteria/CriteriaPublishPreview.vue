@@ -10,6 +10,11 @@ const props = defineProps({
   loading: { type: Boolean, default: false },
   failed: { type: Boolean, default: false },
   scope: { type: String, default: null },
+  part: {
+    type: String,
+    default: 'all',
+    validator: (value) => ['all', 'changes', 'impact'].includes(value),
+  },
 })
 
 const emit = defineEmits(['retry'])
@@ -33,7 +38,9 @@ const impact = computed(() => {
 
 <template>
   <section class="criteria-publish-preview" :aria-busy="loading || undefined">
-    <h3 class="criteria-publish-preview__title">{{ t('criteria.publish.preview.title') }}</h3>
+    <h3 v-if="part !== 'impact'" class="criteria-publish-preview__title">
+      {{ t('criteria.publish.preview.title') }}
+    </h3>
 
     <p v-if="loading" class="criteria-publish-preview__note">
       {{ t('criteria.publish.preview.loading') }}
@@ -45,7 +52,7 @@ const impact = computed(() => {
       </BaseButton>
     </div>
     <template v-else-if="preview?.replaces">
-      <p class="criteria-publish-preview__summary">
+      <p v-if="part !== 'impact'" class="criteria-publish-preview__summary">
         <template v-if="preview.changeCount">
           {{
             t(
@@ -59,11 +66,15 @@ const impact = computed(() => {
           t('criteria.publish.preview.none', { number: replacedNumber })
         }}</template>
       </p>
-      <p class="criteria-publish-preview__impact">
+      <p v-if="part !== 'changes'" class="criteria-publish-preview__impact">
         <AppIcon name="shield-info" />
         <span aria-live="polite">{{ impact }}</span>
       </p>
-      <details v-if="changes.length" class="criteria-publish-preview__details">
+      <details
+        v-if="part !== 'impact' && changes.length"
+        class="criteria-publish-preview__details"
+        :open="part === 'changes'"
+      >
         <summary>{{ t('criteria.publish.preview.showList') }}</summary>
         <CriteriaChangeList :changes="changes" />
       </details>

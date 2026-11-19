@@ -23,6 +23,7 @@ final class StoreMainCriterionRequest extends CriteriaFormRequest
             ...$this->weightRules('required'),
             'distribute_equally' => ['sometimes', 'boolean'],
             'group' => ['sometimes', Rule::enum(CriterionGroup::class)],
+            ...$this->scoringTypeRules('default_scoring_type'),
             'active' => ['sometimes', 'boolean'],
         ];
     }
@@ -35,6 +36,7 @@ final class StoreMainCriterionRequest extends CriteriaFormRequest
             $this->weight() ?? Weight::zero(),
             $this->boolean('distribute_equally'),
             $this->enum('group', CriterionGroup::class) ?? CriterionGroup::Enablers,
+            $this->scoringType('default_scoring_type'),
         );
     }
 

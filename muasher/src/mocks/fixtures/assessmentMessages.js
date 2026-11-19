@@ -38,8 +38,8 @@ export const assessmentMessages = {
     en: 'This item has no score yet.',
   },
   'score.use_points': {
-    ar: 'يُقيَّم هذا المعيار الفرعي من خلال نقاطه الاسترشادية.',
-    en: 'This sub-criterion is scored through its guiding points.',
+    ar: 'يُقيَّم هذا المعيار الفرعي من خلال مؤشراته.',
+    en: 'This sub-criterion is scored through its indicators.',
   },
   'score.item_not_in_version': {
     ar: 'هذا البند ليس ضمن إصدار المعايير المرتبط بهذا التقييم.',
@@ -430,7 +430,7 @@ export const assessmentAttributes = {
   reason: { ar: 'السبب', en: 'reason' },
   scores: { ar: 'الدرجات', en: 'scores' },
   'scores.subs': { ar: 'درجة المعيار الفرعي', en: 'sub-criterion score' },
-  'scores.points': { ar: 'درجة النقطة الاسترشادية', en: 'guiding point score' },
+  'scores.points': { ar: 'درجة المؤشر', en: 'indicator score' },
   filter: { ar: 'عوامل التصفية', en: 'filter' },
   sort: { ar: 'الترتيب', en: 'sort' },
   page: { ar: 'الصفحة', en: 'page' },

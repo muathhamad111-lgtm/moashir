@@ -178,6 +178,21 @@ export function versionTree(version) {
   }
 }
 
+export function workspaceTree(version) {
+  const mains = mainsOf(version.id)
+  return {
+    version: versionResource(version),
+    activeWeightTotal: fromHundredths(activeTotal(mains)),
+    mains: mains.map((main) => ({
+      ...mainResource(main),
+      subs: subsOf(main.id).map((sub) => ({
+        ...subResource(sub),
+        points: pointsOf(sub.id).map(pointResource),
+      })),
+    })),
+  }
+}
+
 export function publishedTree() {
   const published = versionWithStatus(STATUS.PUBLISHED)
   return published ? versionTree(published) : null

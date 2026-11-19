@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Requests\Criteria;
 
 use App\Data\Criteria\AttachmentRequirementData;
+use App\Enums\Criteria\ScoringType;
 use App\Support\ValueObjects\LocalizedText;
 use App\Support\ValueObjects\Weight;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Enum;
 
 abstract class CriteriaFormRequest extends FormRequest
 {
@@ -37,6 +40,19 @@ abstract class CriteriaFormRequest extends FormRequest
     protected function weightRules(string $presence): array
     {
         return ['weight' => [...$this->presence($presence), 'numeric', 'decimal:0,2', 'gt:0', 'max:'.self::MAX_WEIGHT]];
+    }
+
+    /**
+     * @return array<string, list<string|Enum>>
+     */
+    protected function scoringTypeRules(string ...$fields): array
+    {
+        return array_fill_keys($fields, ['sometimes', Rule::enum(ScoringType::class)]);
+    }
+
+    protected function scoringType(string $field): ?ScoringType
+    {
+        return $this->enum($field, ScoringType::class);
     }
 
     /**

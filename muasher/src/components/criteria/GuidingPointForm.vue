@@ -1,13 +1,13 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { object as yupObject, boolean as yupBoolean, string as yupString } from 'yup'
-import FormModal from '@/components/modal/FormModal.vue'
 import BaseTextarea from '@/components/form/BaseTextarea.vue'
 import BaseInput from '@/components/form/BaseInput.vue'
 import BaseCheckbox from '@/components/form/BaseCheckbox.vue'
 import AttachmentsEditor from './AttachmentsEditor.vue'
 import { useValidatedForm } from '@/composables/useValidatedForm'
+import { useFormShell } from '@/composables/useFormShell'
 import { useCriteria } from '@/composables/useCriteria'
 import { renameFieldErrors } from '@/services/mappers/fieldErrors'
 import { requiredText, weightText } from '@/utils/criteriaSchemas'
@@ -18,6 +18,8 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
+  inline: { type: Boolean, default: false },
+  readonly: { type: Boolean, default: false },
   point: { type: Object, default: null },
   sub: { type: Object, required: true },
   save: { type: Function, required: true },
@@ -91,13 +93,20 @@ const form = useValidatedForm({
   },
 })
 
-watch(
-  () => props.modelValue,
-  (open) => {
-    if (!open) return
-    form.resetForm({ values: valuesOf(props.point) })
-    attachments.value = cloneAttachments(props.point?.attachments)
+const formShell = useFormShell(
+  {
+    inline: () => props.inline,
+    open: () => props.modelValue,
+    record: () => props.point,
+    reset: () => {
+      form.resetForm({ values: valuesOf(props.point) })
+      attachments.value = cloneAttachments(props.point?.attachments)
+    },
   },
+  emit,
+)
+const shellProps = computed(() =>
+  props.inline ? { readonly: props.readonly } : { modelValue: props.modelValue, size: 'lg' },
 )
 
 const [descriptionAr] = form.defineField('descriptionAr')
@@ -107,13 +116,19 @@ const [active] = form.defineField('active')
 </script>
 
 <template>
-  <FormModal
-    :model-value="modelValue"
-    size="lg"
+  <component
+    :is="formShell.shell.value"
+    v-bind="shellProps"
     :busy="form.submitting.value"
-    :title="isEdit ? t('criteria.point.editTitle') : t('criteria.point.createTitle')"
+    :title="
+      inline
+        ? t('criteria.workspace.details.dataTitle')
+        : isEdit
+          ? t('criteria.point.editTitle')
+          : t('criteria.point.createTitle')
+    "
     :submit-label="isEdit ? t('actions.save') : t('criteria.point.create')"
-    @update:model-value="emit('update:modelValue', $event)"
+    @update:model-value="formShell.toggle"
     @submit="form.onSubmit"
   >
     <div class="criteria-form">
@@ -158,5 +173,5 @@ const [active] = form.defineField('active')
         :label="t('criteria.fields.active')"
       />
     </div>
-  </FormModal>
+  </component>
 </template>

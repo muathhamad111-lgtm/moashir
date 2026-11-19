@@ -20,6 +20,7 @@ final readonly class CriteriaNodeWriter
         private CriteriaCodeAllocator $codes,
         private SiblingOrder $order,
         private AttachmentRequirementWriter $attachments,
+        private CriteriaSettings $settings,
     ) {}
 
     public function addMain(CriteriaVersion $version, MainCriterionAttributes $attributes, bool $isActive): MainCriterion
@@ -27,6 +28,7 @@ final readonly class CriteriaNodeWriter
         $main = new MainCriterion;
         $this->fillMain($main, $attributes);
         $main->forceFill([
+            'default_scoring_type' => $attributes->defaultScoringType ?? $this->settings->scaleKind()->scoringType(),
             'criteria_version_id' => $version->id,
             'code' => $this->codes->nextMainCode(),
             'sort_order' => $this->order->nextPosition($version->mainCriteria()),
@@ -40,7 +42,10 @@ final readonly class CriteriaNodeWriter
     {
         $sub = new SubCriterion;
         $this->fillSub($sub, $attributes);
+        $scoringType = $attributes->scoringType ?? $main->default_scoring_type;
         $sub->forceFill([
+            'scoring_type' => $scoringType,
+            'default_point_scoring_type' => $attributes->defaultPointScoringType ?? $scoringType,
             'main_criterion_id' => $main->id,
             'code' => $this->codes->nextSubCode($main),
             'evaluation_type' => $attributes->evaluationType,
@@ -57,6 +62,7 @@ final readonly class CriteriaNodeWriter
         $point = new GuidingPoint;
         $this->fillPoint($point, $attributes);
         $point->forceFill([
+            'scoring_type' => $attributes->scoringType ?? $sub->default_point_scoring_type,
             'sub_criterion_id' => $sub->id,
             'code' => $this->codes->nextPointCode($sub),
             'sort_order' => $this->order->nextPosition($sub->guidingPoints()),
@@ -76,6 +82,7 @@ final readonly class CriteriaNodeWriter
             'distribute_equally' => $attributes->distributeEqually,
             'group' => $attributes->group,
         ]);
+        $main->fill(array_filter(['default_scoring_type' => $attributes->defaultScoringType]));
     }
 
     public function fillSub(SubCriterion $sub, SubCriterionAttributes $attributes): void
@@ -88,6 +95,10 @@ final readonly class CriteriaNodeWriter
             'has_cv' => $attributes->hasCv,
             'assessor_note_label' => $attributes->assessorNoteLabel,
         ]);
+        $sub->fill(array_filter([
+            'scoring_type' => $attributes->scoringType,
+            'default_point_scoring_type' => $attributes->defaultPointScoringType,
+        ]));
     }
 
     public function fillPoint(GuidingPoint $point, GuidingPointAttributes $attributes): void
@@ -96,6 +107,7 @@ final readonly class CriteriaNodeWriter
             'description' => $attributes->description,
             'weight' => $this->requireWeight($attributes->weight),
         ]);
+        $point->fill(array_filter(['scoring_type' => $attributes->scoringType]));
     }
 
     public function replaceAttachments(SubCriterion|GuidingPoint $owner, SubCriterionAttributes|GuidingPointAttributes $attributes): void

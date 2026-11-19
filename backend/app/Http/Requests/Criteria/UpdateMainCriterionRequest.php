@@ -22,6 +22,7 @@ final class UpdateMainCriterionRequest extends CriteriaFormRequest
             ...$this->weightRules('sometimes'),
             'distribute_equally' => ['sometimes', 'boolean'],
             'group' => ['sometimes', Rule::enum(CriterionGroup::class)],
+            ...$this->scoringTypeRules('default_scoring_type'),
         ];
     }
 
@@ -33,6 +34,7 @@ final class UpdateMainCriterionRequest extends CriteriaFormRequest
             $this->weight() ?? $current->weight,
             $this->has('distribute_equally') ? $this->boolean('distribute_equally') : $current->distribute_equally,
             $this->enum('group', CriterionGroup::class) ?? $current->group,
+            $this->scoringType('default_scoring_type') ?? $current->default_scoring_type,
         );
     }
 }

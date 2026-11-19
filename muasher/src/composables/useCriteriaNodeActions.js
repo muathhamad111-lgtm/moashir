@@ -30,6 +30,13 @@ const SERVICES = {
   },
 }
 
+function announceCorrection(t, outcome) {
+  const count = outcome?.meta?.changeCount ?? 0
+  toast.success(
+    count ? t('criteria.correction.success', { count }, count) : t('criteria.correction.noChanges'),
+  )
+}
+
 export function useCriteriaNodeActions(kind, reload, parentId = () => null) {
   const { t } = useI18n()
   const { confirm } = useConfirm()
@@ -37,10 +44,10 @@ export function useCriteriaNodeActions(kind, reload, parentId = () => null) {
   const api = SERVICES[kind]
 
   async function save(id, payload) {
-    if (id) await api.update(id, payload)
-    else await api.create(payload, parentId())
+    const result = id ? await api.update(id, payload) : await api.create(payload, parentId())
     toast.success(t(`criteria.toasts.${kind}${id ? 'Updated' : 'Created'}`))
     await reload()
+    return result?.data ?? null
   }
 
   function toggle(row) {
@@ -64,24 +71,22 @@ export function useCriteriaNodeActions(kind, reload, parentId = () => null) {
     })
   }
 
-  function move(items, index, delta) {
-    const ids = movedIds(items, index, delta)
-    if (!ids) return null
+  function reorder(ids) {
     return run(() => api.reorder(ids, parentId()), {
       success: 'criteria.toasts.reordered',
       failure: 'criteria.toasts.reorderFailed',
     })
   }
 
+  function move(items, index, delta) {
+    const ids = movedIds(items, index, delta)
+    return ids ? reorder(ids) : null
+  }
+
   function corrected(outcome) {
-    const count = outcome?.meta?.changeCount ?? 0
-    toast.success(
-      count
-        ? t('criteria.correction.success', { count }, count)
-        : t('criteria.correction.noChanges'),
-    )
+    announceCorrection(t, outcome)
     return reload()
   }
 
-  return { save, toggle, remove, move, corrected }
+  return { save, toggle, remove, move, reorder, corrected }
 }

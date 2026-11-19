@@ -30,15 +30,22 @@ const ICONS = {
   permanentDelete: 'trash',
 }
 
-// Shown as direct row buttons: view, edit and the decision that fits the status; the rest stay in the menu.
-export const ENTITY_INLINE_ACTIONS = Object.freeze([
-  ENTITY_ACTIONS.VIEW,
-  ENTITY_ACTIONS.EDIT,
-  ENTITY_ACTIONS.APPROVE,
-  ENTITY_ACTIONS.REJECT,
-  ENTITY_ACTIONS.DEACTIVATE,
-  ENTITY_ACTIONS.REACTIVATE,
-])
+const A = ENTITY_ACTIONS
+
+const INLINE_BY_STATUS = Object.freeze({
+  [S.PENDING_REVIEW]: [A.VIEW, A.APPROVE, A.REJECT],
+  [S.PENDING_VERIFICATION]: [A.VIEW, A.RESEND_VERIFICATION, A.REJECT],
+  [S.REJECTED]: [A.VIEW, A.APPROVE],
+  [S.ACTIVE]: [A.VIEW, A.EDIT, A.DEACTIVATE],
+  [S.DEACTIVATED]: [A.VIEW, A.REACTIVATE],
+})
+
+const INLINE_WHEN_DELETED = Object.freeze([A.VIEW, A.RESTORE])
+
+export function entityInlineActionsFor(entity) {
+  if (entity.isDeleted) return INLINE_WHEN_DELETED
+  return INLINE_BY_STATUS[entity.status] ?? [A.VIEW, A.EDIT]
+}
 
 const POSITIVE = new Set([ENTITY_ACTIONS.APPROVE])
 

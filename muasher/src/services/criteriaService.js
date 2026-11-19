@@ -35,6 +35,11 @@ export const criteriaService = {
       entity: 'criteria-version',
     })
   },
+  getTree(versionId) {
+    return send('getTree', () => apiClient.get(`/criteria/versions/${versionId}/tree`), {
+      entity: 'criteria-version',
+    })
+  },
   createDraft(payload = {}) {
     return write(
       'createDraft',

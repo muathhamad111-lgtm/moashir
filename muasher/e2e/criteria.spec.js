@@ -25,6 +25,8 @@ const CRITERIA = {
     en: 'Excellence Culture and Leading by Example',
   },
   planning: { ar: 'التخطيط الاستراتيجي', en: 'Strategic Planning' },
+  governance: { ar: 'تميز الحوكمة', en: 'Governance Excellence' },
+  disclosure: { ar: 'الإفصاح والشفافية', en: 'Disclosure and Transparency' },
 }
 
 function nameOf(testInfo, key) {
@@ -39,63 +41,68 @@ function seed(page, testInfo, user = OFFICER) {
   return seedSignedIn(page, user, { locale: isEn(testInfo) ? 'en' : 'ar' })
 }
 
-const rows = (page) => page.locator('.table:not(.table--loading) tbody .table__row')
+const mains = (page) => page.locator('.criteria-tree__scroll > .criteria-tree__list > li')
+const barTitle = (page) => page.locator('.criteria-bar__title')
+const detailsTitle = (page) => page.locator('.criteria-details__title')
 
 async function openCriteria(page) {
   await page.goto('/admin/settings/criteria')
-  await expect(page.locator('.criteria-version')).toBeVisible()
-  await expect(rows(page)).toHaveCount(9)
-}
-
-async function rowAction(page, rowText, actionName) {
-  const row = rows(page).filter({ hasText: rowText }).first()
-  await row.locator('.dropdown-menu > button').click()
-  await page.getByRole('menuitem', { name: actionName }).click()
+  await expect(page.locator('.criteria-bar')).toBeVisible()
+  await expect(mains(page)).toHaveCount(9)
 }
 
 async function startDraft(page) {
-  await page.getByRole('button', { name: /create a draft copy|إنشاء نسخة مسودة/ }).click()
-  await page
-    .getByRole('dialog')
-    .getByRole('button', { name: /Create the draft|إنشاء المسودة/ })
-    .click()
-  await expect(page.locator('.criteria-version--info')).toBeVisible()
-  await expect(rows(page)).toHaveCount(9)
+  await page.getByRole('button', { name: /Start editing|بدء التعديل/ }).click()
+  await expect(barTitle(page)).toContainText(/Unpublished changes|تعديلات غير منشورة/)
 }
 
-async function openMain(page, name) {
-  await rows(page).filter({ hasText: name }).first().locator('.criteria-page__link').click()
-  await expect(page.locator('.criteria-page__breadcrumb')).toBeVisible()
-  await expect(page.locator('.table__row').first()).toBeVisible()
+async function selectNode(page, name) {
+  await page.locator('.criteria-tree__select', { hasText: name }).first().click()
+  await expect(detailsTitle(page)).toHaveText(name)
+}
+
+async function expectIndicatorCount(page, name, count) {
+  const sub = page.locator('.criteria-tree__item', {
+    has: page.locator('.criteria-tree__select', { hasText: name }),
+  })
+  await expect(sub.last().locator('.criteria-tree__list > li')).toHaveCount(count)
 }
 
 async function useTallViewport(page) {
   await page.setViewportSize({ width: 1280, height: 1500 })
 }
 
-async function backToVersion(page) {
-  await page.locator('.criteria-page__crumb').first().click()
-  await expect(rows(page)).toHaveCount(9)
+function nodeButton(page, name) {
+  return page.locator('.criteria-details__actions').getByRole('button', { name })
 }
 
-test('the published version is read-only and offers a draft copy and text corrections', async ({
+async function reviewToApply(page) {
+  await page.getByRole('button', { name: /Review and publish|مراجعة ونشر/ }).click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.locator('.criteria-review__ready')).toBeVisible()
+  await dialog.getByRole('button', { name: /^\s*(Next|التالي)\s*$/ }).click()
+  await dialog.getByRole('button', { name: /^\s*(Next|التالي)\s*$/ }).click()
+  await expect(dialog.locator('.scope-choice__option')).toHaveCount(3)
+  return dialog
+}
+
+test('the published version is read-only, starts editing in one click and offers text corrections', async ({
   page,
 }, testInfo) => {
   await seed(page, testInfo)
   await openCriteria(page)
-  await expect(page.locator('.criteria-version--success')).toContainText(/1/)
+  await expect(barTitle(page)).toContainText(/1/)
   await expect(
     page.getByRole('button', { name: /Add main criterion|إضافة معيار رئيسي/ }),
   ).toHaveCount(0)
-  await expect(
-    page.getByRole('button', { name: /create a draft copy|إنشاء نسخة مسودة/ }),
-  ).toBeVisible()
-  await rows(page).first().locator('.dropdown-menu > button').click()
-  await expect(page.getByRole('menuitem', { name: /Correct text|تصحيح النص/ })).toBeVisible()
-  await expect(page.getByRole('menuitem', { name: /^\s*(Edit|تعديل)\s*$/ })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /Start editing|بدء التعديل/ })).toBeVisible()
+  await selectNode(page, nameOf(testInfo, 'leadership'))
+  await expect(page.locator('.form-panel__footer')).toHaveCount(0)
+  await expect(nodeButton(page, /Correct text|تصحيح النص/)).toBeVisible()
+  await expect(nodeButton(page, /^\s*(Delete|حذف)\s*$/)).toHaveCount(0)
 })
 
-test('editing published criteria: clone, blocked publish with links to fix, then publish with a scope', async ({
+test('editing: a blocking note links to its criterion, the fix clears it, then review and publish with a scope', async ({
   page,
 }, testInfo) => {
   test.setTimeout(60000)
@@ -103,113 +110,95 @@ test('editing published criteria: clone, blocked publish with links to fix, then
   await seed(page, testInfo)
   await openCriteria(page)
   await startDraft(page)
+  await expect(page.locator('.criteria-bar__meta--success')).toBeVisible()
 
-  await openMain(page, nameOf(testInfo, 'leadership'))
+  await selectNode(page, nameOf(testInfo, 'leadership'))
   await expect(page.locator('.weight-editor')).toBeVisible()
   await expect(
-    page.getByRole('button', { name: /Add sub-criterion|إضافة معيار فرعي/ }),
-  ).toBeDisabled()
-  await expect(page.locator('.criteria-page__hint')).toBeVisible()
-  await rowAction(page, nameOf(testInfo, 'excellence'), /Deactivate|إيقاف/)
-  await expect(page.locator('.weight-editor__status--warning')).toBeVisible()
-  await expect(
-    page.getByRole('button', { name: /Add sub-criterion|إضافة معيار فرعي/ }),
-  ).toBeEnabled()
+    page.getByRole('button', {
+      name: /Split the weight equally and add|توزيع الوزن بالتساوي وإضافة/,
+    }),
+  ).toBeVisible()
+  await selectNode(page, nameOf(testInfo, 'excellence'))
+  await nodeButton(page, /Deactivate|إيقاف/).click()
+  await expect(page.locator('.criteria-bar__meta--danger')).toBeVisible()
+  await expect(page.locator('.criteria-tree__marker--attention')).toHaveCount(1)
 
-  await backToVersion(page)
-  await page.getByRole('button', { name: /Check consistency|التحقق من الاتساق/ }).click()
-  await expect(page.locator('.criteria-version-panel .criteria-problems')).toContainText(
-    nameOf(testInfo, 'leadership'),
-  )
-  await expect(page.locator('.criteria-version-panel .criteria-problems')).not.toContainText(/M\d/)
-
-  await page.getByRole('button', { name: /^\s*(Publish|نشر)\s*$/ }).click()
+  await page.getByRole('button', { name: /Review and publish|مراجعة ونشر/ }).click()
   const dialog = page.getByRole('dialog')
-  await expect(dialog.locator('.scope-choice__option')).toHaveCount(3)
-  await dialog.locator('.scope-choice__option').first().click()
-  await dialog.locator('button[type="submit"]').click()
   await expect(dialog.locator('.criteria-problems')).toContainText(nameOf(testInfo, 'leadership'))
+  await expect(dialog.locator('.criteria-problems')).not.toContainText(/M\d/)
+  await expect(dialog.getByRole('button', { name: /^\s*(Next|التالي)\s*$/ })).toHaveCount(0)
   await page.screenshot({
-    path: `test-results/criteria-publish-blocked-${suffixOf(testInfo)}.png`,
+    path: `test-results/criteria-review-blocked-${suffixOf(testInfo)}.png`,
     fullPage: true,
   })
-
   await dialog.locator('.criteria-problems__fix').first().click()
-  await expect(page.locator('.weight-editor')).toBeVisible()
-  await rowAction(page, nameOf(testInfo, 'excellence'), /Activate|تفعيل/)
-  await expect(page.locator('.weight-editor__status--success')).toBeVisible()
+  await expect(detailsTitle(page)).toHaveText(nameOf(testInfo, 'leadership'))
 
-  await backToVersion(page)
-  await page.getByRole('button', { name: /^\s*(Publish|نشر)\s*$/ }).click()
-  await dialog.locator('.scope-choice__option').nth(2).click()
-  await dialog
+  await selectNode(page, nameOf(testInfo, 'excellence'))
+  await nodeButton(page, /Activate|تفعيل/).click()
+  await expect(page.locator('.criteria-bar__meta--success')).toBeVisible()
+
+  const apply = await reviewToApply(page)
+  await apply.locator('.scope-choice__option').nth(2).click()
+  await apply
     .locator('textarea[name="publishReason"]')
     .fill(
       isEn(testInfo) ? 'Annual review of the criteria weights.' : 'مراجعة سنوية لأوزان المعايير.',
     )
-  await dialog.locator('button[type="submit"]').click()
+  await apply.locator('button[type="submit"]').click()
   await expect(successDialog(page).locator('.modal__title')).toContainText(/2/)
   await closeSuccess(page)
-  await expect(page.locator('.criteria-version--success')).toContainText(/2/)
+  await expect(barTitle(page)).toContainText(/Published criteria|المعايير المنشورة/)
+  await expect(barTitle(page)).toContainText(/2/)
 })
 
-test('capture the criteria editor and the publish dialog with the three scopes', async ({
-  page,
-}, testInfo) => {
+test('capture the criteria workspace and the review dialog', async ({ page }, testInfo) => {
   await useTallViewport(page)
   await seed(page, testInfo)
   await openCriteria(page)
   await startDraft(page)
   await page.screenshot({
-    path: `test-results/criteria-index-draft-${suffixOf(testInfo)}.png`,
+    path: `test-results/criteria-workspace-draft-${suffixOf(testInfo)}.png`,
     fullPage: true,
   })
-
-  await page.getByRole('button', { name: /^\s*(Publish|نشر)\s*$/ }).click()
-  const dialog = page.getByRole('dialog')
-  await expect(dialog.locator('.scope-choice__description')).toHaveCount(3)
-  await expect(dialog.locator('.scope-choice__closed-note')).toBeVisible()
-  await dialog.locator('.scope-choice__option').first().click()
+  await selectNode(page, nameOf(testInfo, 'leadership'))
   await page.screenshot({
-    path: `test-results/criteria-publish-dialog-${suffixOf(testInfo)}.png`,
+    path: `test-results/criteria-workspace-main-${suffixOf(testInfo)}.png`,
     fullPage: true,
   })
-  await dialog.getByRole('button', { name: /Cancel|إلغاء/ }).click()
-
-  await openMain(page, nameOf(testInfo, 'leadership'))
+  await selectNode(page, nameOf(testInfo, 'direction'))
+  await expect(page.locator('.criteria-evaluation__option.is-current')).toBeVisible()
   await page.screenshot({
-    path: `test-results/criteria-editor-main-${suffixOf(testInfo)}.png`,
+    path: `test-results/criteria-workspace-sub-${suffixOf(testInfo)}.png`,
     fullPage: true,
   })
-  await page.locator('.table__row .criteria-page__link').first().click()
-  await expect(page.locator('.weight-editor')).toBeVisible()
+  const apply = await reviewToApply(page)
+  await expect(apply.locator('.scope-choice__closed-note')).toBeVisible()
+  await apply.locator('.scope-choice__option').first().click()
   await page.screenshot({
-    path: `test-results/criteria-editor-sub-${suffixOf(testInfo)}.png`,
+    path: `test-results/criteria-review-apply-${suffixOf(testInfo)}.png`,
     fullPage: true,
   })
 })
 
-test('switching a guiding-points sub-criterion to direct evaluation warns with the point count', async ({
+test('switching a sub-criterion with indicators to direct evaluation warns with the indicator count', async ({
   page,
 }, testInfo) => {
   await seed(page, testInfo)
   await openCriteria(page)
   await startDraft(page)
-  await openMain(page, nameOf(testInfo, 'leadership'))
-  await expect(
-    page.locator('.table__head th').filter({ hasText: /^\s*(Code|الرمز)\s*$/ }),
-  ).toHaveCount(0)
-  await expect(rows(page).first()).not.toContainText(/M\d/)
-  await rowAction(
-    page,
-    nameOf(testInfo, 'direction'),
-    /Switch to direct evaluation|التحويل إلى التقييم المباشر/,
-  )
+  await selectNode(page, nameOf(testInfo, 'leadership'))
+  await selectNode(page, nameOf(testInfo, 'direction'))
+  await page
+    .getByRole('button', { name: /Switch to direct evaluation|التحويل إلى التقييم المباشر/ })
+    .click()
   const confirm = page.getByRole('alertdialog')
   await expect(confirm).toContainText('3')
   await page.screenshot({ path: `test-results/criteria-switch-warning-${suffixOf(testInfo)}.png` })
   await confirm.getByRole('button', { name: /Cancel|إلغاء/ }).click()
-  await expect(rows(page).filter({ hasText: nameOf(testInfo, 'direction') })).toContainText(/3/)
+  await expectIndicatorCount(page, nameOf(testInfo, 'direction'), 3)
 })
 
 test('a text correction on the published version changes the name in place', async ({
@@ -218,7 +207,8 @@ test('a text correction on the published version changes the name in place', asy
   await useTallViewport(page)
   await seed(page, testInfo)
   await openCriteria(page)
-  await rowAction(page, nameOf(testInfo, 'planning'), /Correct text|تصحيح النص/)
+  await selectNode(page, nameOf(testInfo, 'planning'))
+  await nodeButton(page, /Correct text|تصحيح النص/).click()
   const dialog = page.getByRole('dialog')
   await expect(dialog.locator('.criteria-form__note--emphasis')).toBeVisible()
   await dialog.locator('input[name="correctionPrimaryAr"]').fill('التخطيط الاستراتيجي المؤسسي')
@@ -230,26 +220,37 @@ test('a text correction on the published version changes the name in place', asy
   await dialog.locator('button[type="submit"]').click()
   await expect(page.locator('.toast--success').last()).toBeVisible()
   await expect(
-    rows(page).filter({
+    page.locator('.criteria-tree__select', {
       hasText: isEn(testInfo) ? 'Institutional Strategic Planning' : 'التخطيط الاستراتيجي المؤسسي',
     }),
   ).toHaveCount(1)
-  await expect(page.locator('.criteria-version--success')).toBeVisible()
+  await expect(barTitle(page)).toContainText(/Published criteria|المعايير المنشورة/)
 })
 
-test('the System Administrator reads the criteria without any tree or text editing', async ({
+test('the System Administrator opens a draft and edits the tree like the Criteria Officer', async ({
   page,
 }, testInfo) => {
   await seed(page, testInfo, SYSTEM_ADMIN)
   await openCriteria(page)
+  await startDraft(page)
   await expect(
-    page.getByRole('button', { name: /create a draft copy|إنشاء نسخة مسودة/ }),
-  ).toHaveCount(0)
-  await rows(page).first().locator('.dropdown-menu > button').click()
-  await expect(page.getByRole('menuitem')).toHaveCount(1)
+    page.getByRole('button', { name: /Add main criterion|إضافة معيار رئيسي/ }),
+  ).toBeEnabled()
 })
 
-test('building a draft: add a main criterion and a sub-criterion, save the weights in one step, then discard the draft', async ({
+test('an old link to a main criterion opens it selected in the workspace', async ({
+  page,
+}, testInfo) => {
+  await seed(page, testInfo)
+  await openCriteria(page)
+  await selectNode(page, nameOf(testInfo, 'leadership'))
+  const selected = new URL(page.url()).searchParams.get('node')
+  await page.goto(`/admin/settings/criteria/${selected.replace('main-', '')}`)
+  await expect(page).toHaveURL(new RegExp(`node=${selected}`))
+  await expect(detailsTitle(page)).toHaveText(nameOf(testInfo, 'leadership'))
+})
+
+test('building a draft: add a main criterion and a sub-criterion, reorder, save the weights, then discard', async ({
   page,
 }, testInfo) => {
   await useTallViewport(page)
@@ -263,42 +264,39 @@ test('building a draft: add a main criterion and a sub-criterion, save the weigh
   await mainDialog.locator('input[name="nameEn"]').fill('Governance Excellence')
   await mainDialog.locator('input[name="weight"]').fill('500')
   await mainDialog.getByRole('button', { name: /^\s*(Add|إضافة)\s*$/ }).click()
-  await expect(rows(page)).toHaveCount(10)
+  const governance = nameOf(testInfo, 'governance')
+  await expect(mains(page)).toHaveCount(10)
+  await expect(detailsTitle(page)).toHaveText(governance)
 
-  await rows(page)
-    .filter({ hasText: isEn(testInfo) ? 'Governance Excellence' : 'تميز الحوكمة' })
-    .first()
-    .locator('.criteria-page__link')
-    .click()
-  await expect(page.locator('.criteria-page__breadcrumb')).toBeVisible()
-  await page
-    .getByRole('button', { name: /Add sub-criterion|إضافة معيار فرعي/ })
-    .first()
-    .click()
+  await page.getByRole('button', { name: /^\s*(Add sub-criterion|إضافة معيار فرعي)\s*$/ }).click()
   const subDialog = page.getByRole('dialog')
   await subDialog.locator('input[name="subNameAr"]').fill('الإفصاح والشفافية')
   await subDialog.locator('input[name="subNameEn"]').fill('Disclosure and Transparency')
   await subDialog.locator('input[name="subWeight"]').fill('300')
   await subDialog.getByRole('button', { name: /^\s*(Add|إضافة)\s*$/ }).click()
-  await expect(page.locator('.weight-editor__input')).toHaveCount(1)
+  await expect(detailsTitle(page)).toHaveText(nameOf(testInfo, 'disclosure'))
 
+  await page.locator('.criteria-details__path-link').nth(1).click()
+  await expect(detailsTitle(page)).toHaveText(governance)
   const save = page.getByRole('button', { name: /Save weights|حفظ الأوزان/ })
   await page.locator('.weight-editor__input').fill('600')
   await expect(page.locator('.weight-editor__status--danger')).toBeVisible()
   await expect(save).toBeDisabled()
   await page.locator('.weight-editor__input').fill('500')
-  await expect(save).toBeEnabled()
   await save.click()
   await expect(page.locator('.weight-editor__status--success')).toBeVisible()
   await expect(page.locator('.weight-editor__input')).toHaveValue('500.00')
 
-  await page.locator('.criteria-page__crumb').first().click()
-  await expect(rows(page)).toHaveCount(10)
-  await page.getByRole('button', { name: /Discard draft|حذف المسودة/ }).click()
+  await page
+    .getByRole('button', { name: new RegExp(`(Move|نقل) ${governance} (up|إلى الأعلى)`) })
+    .click()
+  await expect(mains(page).nth(8)).toContainText(governance)
+
+  await page.getByRole('button', { name: /Discard changes|إلغاء التعديلات/ }).click()
   await page
     .getByRole('alertdialog')
     .getByRole('button', { name: /^\s*(Delete|حذف)\s*$/ })
     .click()
-  await expect(page.locator('.criteria-version--success')).toBeVisible()
-  await expect(rows(page)).toHaveCount(9)
+  await expect(barTitle(page)).toContainText(/Published criteria|المعايير المنشورة/)
+  await expect(mains(page)).toHaveCount(9)
 })

@@ -5,7 +5,7 @@ declare(strict_types=1);
 return [
 
     'system_admin' => ['label' => 'System Administrator', 'description' => 'Operational administration of users, settings, content and integrations within the granted permissions.'],
-    'criteria_officer' => ['label' => 'Criteria Setup Officer', 'description' => 'Manages the main criteria, sub-criteria, guiding points, weights and evaluation types.'],
+    'criteria_officer' => ['label' => 'Criteria Setup Officer', 'description' => 'Manages the main criteria, sub-criteria, indicators, weights and evaluation methods.'],
     'request_follower' => ['label' => 'Assessment Requests Follower', 'description' => 'Receives accredited and advanced requests, assigns them to assessors and follows up on delays.'],
     'assessor' => ['label' => 'Assessor', 'description' => 'Assesses assigned requests, reviews evidence, scores and writes notes.'],
     'filtering_officer' => ['label' => 'Filtering Officer', 'description' => 'Reviews initial assessments in the award cycles they belong to and qualifies entities for the assessors committee.'],

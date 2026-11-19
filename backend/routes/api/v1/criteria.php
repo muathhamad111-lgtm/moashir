@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Api\V1\Criteria\CheckCriteriaVersionController;
 use App\Http\Controllers\Api\V1\Criteria\CorrectCriteriaTextController;
 use App\Http\Controllers\Api\V1\Criteria\CriteriaEditEventController;
+use App\Http\Controllers\Api\V1\Criteria\CriteriaTreeController;
 use App\Http\Controllers\Api\V1\Criteria\CriteriaVersionController;
 use App\Http\Controllers\Api\V1\Criteria\GuidingPointActivationController;
 use App\Http\Controllers\Api\V1\Criteria\GuidingPointController;
@@ -38,6 +39,7 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
         Route::post('versions', [CriteriaVersionController::class, 'store'])->middleware(["can:create,{$versions}", 'throttle:criteria-write'])->name('versions.store');
         Route::get('versions/{version}', [CriteriaVersionController::class, 'show'])->middleware('can:view,version')->name('versions.show');
         Route::delete('versions/{version}', [CriteriaVersionController::class, 'destroy'])->middleware(['can:discard,version', 'throttle:criteria-write'])->name('versions.destroy');
+        Route::get('versions/{version}/tree', CriteriaTreeController::class)->middleware('can:view,version')->name('versions.tree');
         Route::get('versions/{version}/check', CheckCriteriaVersionController::class)->middleware('can:view,version')->name('versions.check');
         Route::get('versions/{version}/changes', PreviewCriteriaPublicationController::class)->middleware('can:view,version')->name('versions.changes');
         Route::post('versions/{version}/publish', PublishCriteriaVersionController::class)->middleware(['can:publish,version', 'throttle:sensitive'])->name('versions.publish');

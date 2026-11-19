@@ -172,6 +172,30 @@ test.describe('notification types catalogue', () => {
   })
 })
 
+test.describe('admin lists at 1440px', () => {
+  test('the users and entities tables fit without a sideways scroll', async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await signIn(page, testInfo, USERS.systemAdmin)
+    for (const path of ['/admin/settings/users', '/admin/entities']) {
+      await open(page, path, ROWS)
+      const overflow = await page
+        .locator('.table-wrap')
+        .first()
+        .evaluate((wrap) => wrap.scrollWidth - wrap.clientWidth)
+      expect(overflow).toBeLessThanOrEqual(1)
+    }
+    await open(page, '/admin/settings/users', ROWS)
+    await expect(
+      page.locator(`${ROWS} .users-page__identity .users-page__email`).first(),
+    ).toBeVisible()
+    await expect(
+      page.locator(`${ROWS} .users-page__state .users-page__last-login`).first(),
+    ).toBeVisible()
+  })
+})
+
 test.describe('notification texts', () => {
   test('the System Administrator edits a text with a variable, saves it and restores the original', async ({
     page,

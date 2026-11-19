@@ -1172,6 +1172,7 @@ export const defaultRoleMatrixFixture = {
     'bag.subscription.activate_free',
     'bag.admin.manage',
     'criteria.view',
+    'criteria.manage',
     'criteria.publish',
     'content.home.manage',
     'content.kpis.manage',
@@ -1340,8 +1341,8 @@ export const rolesFixture = [
     key: 'criteria_officer',
     label: { ar: 'مسؤول إعداد المعايير', en: 'Criteria Setup Officer' },
     description: {
-      ar: 'يدير المعايير الرئيسية والفرعية والنقاط الاسترشادية والأوزان وأنواع التقييم.',
-      en: 'Manages the main criteria, sub-criteria, guiding points, weights and evaluation types.',
+      ar: 'يدير المعايير الرئيسية والفرعية والمؤشرات والأوزان وطرق التقييم.',
+      en: 'Manages the main criteria, sub-criteria, indicators, weights and evaluation methods.',
     },
     assignable: true,
     cycleScoped: false,

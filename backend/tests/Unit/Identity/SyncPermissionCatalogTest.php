@@ -12,7 +12,7 @@ it('is idempotent', function (): void {
 
     expect(Permission::query()->count())->toBe(89)
         ->and(Role::query()->count())->toBe(9)
-        ->and(Role::query()->where('name', 'system_admin')->firstOrFail()->permissions()->count())->toBe(64);
+        ->and(Role::query()->where('name', 'system_admin')->firstOrFail()->permissions()->count())->toBe(65);
 });
 
 it('keeps the labels and matrix changes made by administrators', function (): void {

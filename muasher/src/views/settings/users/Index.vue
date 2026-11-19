@@ -65,18 +65,18 @@ const exporter = useUsersExport()
 const router = useRouter()
 
 const columns = computed(() => [
-  { key: 'name', label: t('users.columns.name') },
-  { key: 'email', label: t('users.columns.email') },
+  { key: 'name', label: t('users.columns.user') },
   { key: 'role', label: t('users.columns.role') },
   { key: 'paths', label: t('users.columns.paths') },
   { key: 'status', label: t('users.columns.status') },
-  { key: 'lastLogin', label: t('users.columns.lastLogin'), date: true },
   ...(canManage.value ? [{ key: 'actions', label: t('components.actions.label') }] : []),
 ])
 
 function lastLoginLabel(value) {
   if (!value) return t('users.lastLogin.never')
-  return formatDate(value, locale.value, { dateStyle: 'medium', timeStyle: 'short' })
+  return t('users.lastLogin.at', {
+    when: formatDate(value, locale.value, { dateStyle: 'medium', timeStyle: 'short' }),
+  })
 }
 
 const formOpen = ref(false)
@@ -179,10 +179,10 @@ function onAction(key, row) {
         }}</BaseButton>
       </template>
       <template #cell-name="{ item }">
-        <span class="users-page__name">{{ item.name }}</span>
-      </template>
-      <template #cell-email="{ item }">
-        <a class="users-page__email" :href="`mailto:${item.email}`" dir="ltr">{{ item.email }}</a>
+        <span class="users-page__identity">
+          <span class="users-page__name">{{ item.name }}</span>
+          <a class="users-page__email" :href="`mailto:${item.email}`" dir="ltr">{{ item.email }}</a>
+        </span>
       </template>
       <template #cell-role="{ item }">
         <span class="users-page__roles">
@@ -193,10 +193,10 @@ function onAction(key, row) {
       </template>
       <template #cell-paths="{ item }"><UserPathAccessCell :user="item" /></template>
       <template #cell-status="{ item }">
-        <UserStatusBadge :status="item.status" />
-      </template>
-      <template #cell-lastLogin="{ item }">
-        <span class="users-page__last-login">{{ lastLoginLabel(item.lastLoginAt) }}</span>
+        <span class="users-page__state">
+          <UserStatusBadge :status="item.status" />
+          <span class="users-page__last-login">{{ lastLoginLabel(item.lastLoginAt) }}</span>
+        </span>
       </template>
       <template #cell-actions="{ item }">
         <RowActions

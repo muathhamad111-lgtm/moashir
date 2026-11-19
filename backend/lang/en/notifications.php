@@ -228,8 +228,8 @@ return [
             'body' => 'The sub-criterion :name was added. Complete its weight and evaluation type.',
         ],
         'STD-04' => [
-            'title' => 'Guiding-point evaluation enabled',
-            'body' => 'The sub-criterion :name is now evaluated on guiding points. Define its guiding points.',
+            'title' => 'Indicator evaluation enabled',
+            'body' => 'The sub-criterion :name is now evaluated on indicators. Define its indicators.',
         ],
         'STD-05' => [
             'title' => 'Direct evaluation enabled',

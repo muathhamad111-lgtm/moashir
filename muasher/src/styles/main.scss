@@ -55,10 +55,11 @@
 @use 'components/gallery';
 @use 'components/weight-editor';
 @use 'components/criteria';
-@use 'components/criteria-version';
 @use 'components/criteria-problems';
 @use 'components/criteria-change-list';
 @use 'components/criteria-publish-preview';
+@use 'components/criteria-workspace';
+@use 'components/form-panel';
 @use 'components/scope-choice';
 @use 'components/publish-dialog';
 @use 'components/weight-budget';

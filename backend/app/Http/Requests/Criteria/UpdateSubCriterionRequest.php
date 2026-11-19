@@ -22,6 +22,7 @@ final class UpdateSubCriterionRequest extends CriteriaFormRequest
             ...$this->attachmentRules(),
             'distribute_equally' => ['sometimes', 'boolean'],
             'has_cv' => ['sometimes', 'boolean'],
+            ...$this->scoringTypeRules('scoring_type', 'default_point_scoring_type'),
             'evaluation_type' => ['prohibited'],
             'active' => ['prohibited'],
         ];
@@ -38,6 +39,8 @@ final class UpdateSubCriterionRequest extends CriteriaFormRequest
             $this->has('has_cv') ? $this->boolean('has_cv') : $current->has_cv,
             $this->has('assessor_note_label') ? $this->localizedText('assessor_note_label') : $current->assessor_note_label,
             $this->attachments(),
+            $this->scoringType('scoring_type') ?? $current->scoring_type,
+            $this->scoringType('default_point_scoring_type') ?? $current->default_point_scoring_type,
         );
     }
 }

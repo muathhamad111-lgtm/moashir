@@ -11,6 +11,7 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 const TRIGGER_CLASSES = Object.freeze({
   [MENU_TRIGGERS.icon]: 'btn btn--ghost btn--sm btn--icon',
   [MENU_TRIGGERS.avatar]: 'navbar__avatar',
+  [MENU_TRIGGERS.button]: 'btn btn--secondary btn--sm',
 })
 
 const DANGER = 'danger'

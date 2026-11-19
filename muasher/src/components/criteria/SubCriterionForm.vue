@@ -1,14 +1,14 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { object as yupObject, boolean as yupBoolean, string as yupString } from 'yup'
-import FormModal from '@/components/modal/FormModal.vue'
 import BaseInput from '@/components/form/BaseInput.vue'
 import BaseTextarea from '@/components/form/BaseTextarea.vue'
 import BaseCheckbox from '@/components/form/BaseCheckbox.vue'
 import BaseRadio from '@/components/form/BaseRadio.vue'
 import AttachmentsEditor from './AttachmentsEditor.vue'
 import { useValidatedForm } from '@/composables/useValidatedForm'
+import { useFormShell } from '@/composables/useFormShell'
 import { useCriteria } from '@/composables/useCriteria'
 import { renameFieldErrors } from '@/services/mappers/fieldErrors'
 import { pairedText, requiredText, weightText } from '@/utils/criteriaSchemas'
@@ -19,6 +19,8 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
+  inline: { type: Boolean, default: false },
+  readonly: { type: Boolean, default: false },
   criterion: { type: Object, default: null },
   main: { type: Object, required: true },
   save: { type: Function, required: true },
@@ -129,13 +131,20 @@ const form = useValidatedForm({
   },
 })
 
-watch(
-  () => props.modelValue,
-  (open) => {
-    if (!open) return
-    form.resetForm({ values: valuesOf(props.criterion) })
-    attachments.value = cloneAttachments(props.criterion?.attachments)
+const formShell = useFormShell(
+  {
+    inline: () => props.inline,
+    open: () => props.modelValue,
+    record: () => props.criterion,
+    reset: () => {
+      form.resetForm({ values: valuesOf(props.criterion) })
+      attachments.value = cloneAttachments(props.criterion?.attachments)
+    },
   },
+  emit,
+)
+const shellProps = computed(() =>
+  props.inline ? { readonly: props.readonly } : { modelValue: props.modelValue, size: 'lg' },
 )
 
 const [nameAr] = form.defineField('nameAr')
@@ -154,13 +163,19 @@ const isGuidingPoints = computed(() => evaluationType.value === EVALUATION_TYPES
 </script>
 
 <template>
-  <FormModal
-    :model-value="modelValue"
-    size="lg"
+  <component
+    :is="formShell.shell.value"
+    v-bind="shellProps"
     :busy="form.submitting.value"
-    :title="isEdit ? t('criteria.sub.editTitle') : t('criteria.sub.createTitle')"
+    :title="
+      inline
+        ? t('criteria.workspace.details.dataTitle')
+        : isEdit
+          ? t('criteria.sub.editTitle')
+          : t('criteria.sub.createTitle')
+    "
     :submit-label="isEdit ? t('actions.save') : t('criteria.sub.create')"
-    @update:model-value="emit('update:modelValue', $event)"
+    @update:model-value="formShell.toggle"
     @submit="form.onSubmit"
   >
     <div class="criteria-form">
@@ -270,5 +285,5 @@ const isGuidingPoints = computed(() => evaluationType.value === EVALUATION_TYPES
         />
       </div>
     </div>
-  </FormModal>
+  </component>
 </template>

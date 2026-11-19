@@ -96,12 +96,25 @@
   white-space: nowrap;
 }
 
+.entity-table__stack {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+}
+
+.entity-table__muted {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}
+
+.entity-table__level .level-badge__chip {
+  white-space: normal;
+}
+
 .entity-last-assessment {
   @include flex(column, flex-start, flex-start, var(--space-1));
-  white-space: nowrap;
 }
 
 .entity-last-assessment__percent {
+  white-space: nowrap;
   font-weight: var(--fw-semibold);
   font-variant-numeric: tabular-nums;
   color: var(--theme-heading);

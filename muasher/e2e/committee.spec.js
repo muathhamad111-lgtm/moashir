@@ -316,24 +316,24 @@ test.describe('Users, settings and criteria alignment', () => {
     expect(errors).toEqual([])
   })
 
-  test('the criteria editor explains that the running cycle keeps its version and offers keep or move', async ({
+  test('the criteria review explains that the running cycle keeps its version and offers keep or move', async ({
     page,
   }, testInfo) => {
     const errors = trackConsole(page)
     await signIn(page, testInfo, { id: 3, roles: ['criteria_officer'] })
     await page.goto('/admin/settings/criteria')
-    await page.locator('.criteria-version-panel .btn--primary').first().click()
+    await page.getByRole('button', { name: text(testInfo, 'Start editing', 'بدء التعديل') }).click()
     await page
-      .getByRole('dialog')
-      .getByRole('button', { name: text(testInfo, 'Create the draft', 'إنشاء المسودة') })
+      .getByRole('button', { name: text(testInfo, 'Review and publish', 'مراجعة ونشر') })
       .click()
+    const next = page
+      .getByRole('dialog')
+      .getByRole('button', { name: text(testInfo, 'Next', 'التالي') })
+    await next.click()
+    await next.click()
     await expect(page.locator('.cycle-bindings')).toContainText(
       text(testInfo, 'stays on its criteria version', 'تبقى دورة الجائزة الجارية'),
     )
-    await page
-      .locator('.criteria-version-panel button', { hasText: text(testInfo, 'Publish', 'نشر') })
-      .first()
-      .click()
     const dialog = page.locator('.modal__panel')
     await expect(dialog.locator('.cycle-bindings__option')).toHaveCount(2)
     await expect(dialog.locator('.cycle-bindings__option.is-selected')).toContainText(

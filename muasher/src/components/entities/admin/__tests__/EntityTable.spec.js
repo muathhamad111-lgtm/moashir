@@ -122,7 +122,7 @@ describe('EntityTable last accredited assessment column', () => {
       { locale: 'en' },
     )
     const headers = wrapper.findAll('th').map((th) => th.text())
-    expect(headers).toContain('Last accredited assessment')
+    expect(headers).toContain('Last accredited')
     const [assessed, never] = wrapper.findAll('.entity-last-assessment')
     expect(assessed.find('.entity-last-assessment__percent').text()).toBe('72.97%')
     expect(assessed.find('.entity-last-assessment__date').text()).toContain('2026')
@@ -133,5 +133,42 @@ describe('EntityTable last accredited assessment column', () => {
     const wrapper = render([ROW], { full: false })
     expect(wrapper.find('.entity-last-assessment').exists()).toBe(false)
     expect(wrapper.findAll('th').map((th) => th.text())).not.toContain('آخر تقييم معتمد')
+  })
+})
+
+describe('EntityTable merged columns', () => {
+  it('shows type with region and status with the registration date in two columns', () => {
+    const wrapper = render([{ ...ROW, region: { name: { ar: 'منطقة الرياض', en: 'Riyadh' } } }], {
+      locale: 'en',
+    })
+    const headers = wrapper.findAll('th').map((th) => th.text())
+    expect(headers).toContain('Type and region')
+    expect(headers).not.toContain('Registered on')
+    const stacks = wrapper.findAll('.entity-table__stack')
+    expect(stacks[0].text()).toContain('Riyadh')
+    expect(stacks[1].find('.status-badge, .badge').exists()).toBe(true)
+    expect(stacks[1].text()).toContain('Registered')
+  })
+})
+
+describe('entity row buttons by status', () => {
+  it('shows the buttons each status needs and keeps the rest in the menu', async () => {
+    const { entityInlineActionsFor } = await import('@/composables/useEntityActions')
+    expect(entityInlineActionsFor({ status: 'pending-review' })).toEqual([
+      'view',
+      'approve',
+      'reject',
+    ])
+    expect(entityInlineActionsFor({ status: 'pending-verification' })).toEqual([
+      'view',
+      'resendVerification',
+      'reject',
+    ])
+    expect(entityInlineActionsFor({ status: 'active' })).toEqual(['view', 'edit', 'deactivate'])
+    expect(entityInlineActionsFor({ status: 'deactivated' })).toEqual(['view', 'reactivate'])
+    expect(entityInlineActionsFor({ status: 'active', isDeleted: true })).toEqual([
+      'view',
+      'restore',
+    ])
   })
 })

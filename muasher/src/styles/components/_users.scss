@@ -22,6 +22,11 @@
   color: var(--theme-heading);
 }
 
+.users-page__identity,
+.users-page__state {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+}
+
 .users-page__name {
   font-weight: var(--fw-medium);
   color: var(--theme-text);
@@ -29,6 +34,8 @@
 
 .users-page__email {
   color: var(--theme-accent-text);
+  font-size: var(--fs-sm);
+  overflow-wrap: anywhere;
   text-align: start;
 
   &:hover {

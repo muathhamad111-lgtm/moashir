@@ -1,13 +1,13 @@
 <script setup>
-import { computed, watch } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { object as yupObject, boolean as yupBoolean, string as yupString } from 'yup'
-import FormModal from '@/components/modal/FormModal.vue'
 import BaseInput from '@/components/form/BaseInput.vue'
 import BaseTextarea from '@/components/form/BaseTextarea.vue'
 import BaseCheckbox from '@/components/form/BaseCheckbox.vue'
 import AppSelect from '@/components/form/AppSelect.vue'
 import { useValidatedForm } from '@/composables/useValidatedForm'
+import { useFormShell } from '@/composables/useFormShell'
 import { renameFieldErrors } from '@/services/mappers/fieldErrors'
 import { pairedText, requiredText, weightText } from '@/utils/criteriaSchemas'
 import { normalizeWeight } from '@/utils/weight'
@@ -20,6 +20,8 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
+  inline: { type: Boolean, default: false },
+  readonly: { type: Boolean, default: false },
   criterion: { type: Object, default: null },
   save: { type: Function, required: true },
 })
@@ -95,11 +97,19 @@ const form = useValidatedForm({
   },
 })
 
-watch(
-  () => props.modelValue,
-  (open) => {
-    if (open) form.resetForm({ values: valuesOf(props.criterion) })
+const formShell = useFormShell(
+  {
+    inline: () => props.inline,
+    open: () => props.modelValue,
+    record: () => props.criterion,
+    reset: () => {
+      form.resetForm({ values: valuesOf(props.criterion) })
+    },
   },
+  emit,
+)
+const shellProps = computed(() =>
+  props.inline ? { readonly: props.readonly } : { modelValue: props.modelValue, size: 'lg' },
 )
 
 const [nameAr] = form.defineField('nameAr')
@@ -113,13 +123,19 @@ const [active] = form.defineField('active')
 </script>
 
 <template>
-  <FormModal
-    :model-value="modelValue"
-    size="lg"
+  <component
+    :is="formShell.shell.value"
+    v-bind="shellProps"
     :busy="form.submitting.value"
-    :title="isEdit ? t('criteria.main.editTitle') : t('criteria.main.createTitle')"
+    :title="
+      inline
+        ? t('criteria.workspace.details.dataTitle')
+        : isEdit
+          ? t('criteria.main.editTitle')
+          : t('criteria.main.createTitle')
+    "
     :submit-label="isEdit ? t('actions.save') : t('criteria.main.create')"
-    @update:model-value="emit('update:modelValue', $event)"
+    @update:model-value="formShell.toggle"
     @submit="form.onSubmit"
   >
     <div class="criteria-form">
@@ -191,5 +207,5 @@ const [active] = form.defineField('active')
         <span>{{ t('criteria.fields.orderNote') }}</span>
       </p>
     </div>
-  </FormModal>
+  </component>
 </template>

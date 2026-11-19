@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\Audit\AuditEvent;
+use App\Enums\Identity\RoleKey;
 use App\Models\Audit\Audit;
 use App\Models\Criteria\CriteriaVersion;
 use App\Models\Criteria\MainCriterion;
@@ -116,5 +117,5 @@ it('validates the weights and edits drafts only for criteria managers', function
     test()->putJson(subsWeightsPath($main), weightsPayload($draft, ['M1.1' => '0']))->assertUnprocessable()->assertJsonValidationErrors('weights.0.weight');
     test()->putJson(subsWeightsPath(mainOf($published, 'M1')), weightsPayload($published, ['M1.1' => '500']))->assertConflict()
         ->assertJsonPath('code', 'criteria.version_not_draft');
-    switchTo(systemAdmin())->putJson(subsWeightsPath($main), weightsPayload($draft, ['M1.1' => '500']))->assertForbidden();
+    switchTo(staffUser(RoleKey::RequestFollower))->putJson(subsWeightsPath($main), weightsPayload($draft, ['M1.1' => '500']))->assertForbidden();
 });

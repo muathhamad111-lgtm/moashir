@@ -7,6 +7,7 @@ use App\Enums\Criteria\CriteriaChangeType;
 use App\Enums\Criteria\CriteriaNodeType;
 use App\Enums\Criteria\CriterionGroup;
 use App\Enums\Criteria\EvaluationType;
+use App\Enums\Criteria\ScoringType;
 use App\Models\Criteria\CriteriaVersion;
 use App\Models\Criteria\MainCriterion;
 use App\Models\Criteria\SubCriterion;
@@ -27,14 +28,14 @@ function diffVersion(string $mainWeight, array $subs): CriteriaVersion
         $subModels[] = (new SubCriterion)->forceFill([
             'id' => ++$id, 'code' => $code, 'name' => ['ar' => 'معيار فرعي '.$code, 'en' => 'Sub-criterion '.$code],
             'weight' => Weight::of($weight), 'distribute_equally' => false, 'evaluation_type' => $type, 'has_cv' => true,
-            'is_active' => true, 'sort_order' => $id,
+            'scoring_type' => ScoringType::Score, 'default_point_scoring_type' => ScoringType::Score, 'is_active' => true, 'sort_order' => $id,
         ])->setRelation('guidingPoints', new Collection)->setRelation('attachmentRequirements', new Collection);
     }
 
     $main = (new MainCriterion)->forceFill([
         'id' => 1, 'code' => 'M1', 'name' => ['ar' => 'القيادة الإدارية', 'en' => 'Administrative Leadership'],
         'weight' => Weight::of($mainWeight), 'distribute_equally' => false, 'group' => CriterionGroup::Enablers,
-        'is_active' => true, 'sort_order' => 1,
+        'default_scoring_type' => ScoringType::Score, 'is_active' => true, 'sort_order' => 1,
     ])->setRelation('subCriteria', new Collection($subModels));
 
     return (new CriteriaVersion)->setRelation('mainCriteria', new Collection([$main]));

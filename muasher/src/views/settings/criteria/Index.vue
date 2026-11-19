@@ -1,219 +1,171 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute, useRouter } from 'vue-router'
-import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import AppSelect from '@/components/form/AppSelect.vue'
+import Skeleton from '@/components/feedback/Skeleton.vue'
+import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
-import MainCriterionForm from '@/components/criteria/MainCriterionForm.vue'
-import MainCriteriaTable from '@/components/criteria/MainCriteriaTable.vue'
-import CriteriaVersionPanel from '@/components/criteria/CriteriaVersionPanel.vue'
+import CriteriaWorkspaceBar from '@/components/criteria/workspace/CriteriaWorkspaceBar.vue'
+import CriteriaTree from '@/components/criteria/workspace/CriteriaTree.vue'
+import CriteriaNodeDetails from '@/components/criteria/workspace/CriteriaNodeDetails.vue'
+import CriteriaVersionOverview from '@/components/criteria/workspace/CriteriaVersionOverview.vue'
+import CriteriaReviewDialog from '@/components/criteria/workspace/CriteriaReviewDialog.vue'
+import CriteriaCreateDialogs from '@/components/criteria/workspace/CriteriaCreateDialogs.vue'
+import CriteriaDraftDialog from '@/components/criteria/CriteriaDraftDialog.vue'
 import CriteriaTextCorrectionDialog from '@/components/criteria/CriteriaTextCorrectionDialog.vue'
-import { useTable } from '@/composables/useTable'
-import { useFilters } from '@/composables/useFilters'
-import { useCriteria } from '@/composables/useCriteria'
+import { useCriteriaWorkspace } from '@/composables/useCriteriaWorkspace'
+import { useCriteriaWorkspaceEditing } from '@/composables/useCriteriaWorkspaceEditing'
 import { useCriteriaAccess } from '@/composables/useCriteriaAccess'
-import { useCriteriaVersions } from '@/composables/useCriteriaVersions'
-import { useCriteriaNodeActions } from '@/composables/useCriteriaNodeActions'
 import { useDraftLifecycle } from '@/composables/useDraftLifecycle'
-import { criteriaService } from '@/services/criteriaService'
-import { criteriaVersionOption } from '@/utils/criteriaVersionOption'
-import { ROUTE_NAMES } from '@/constants/routeNames'
-import { CRITERIA_NODE_TYPES } from '@/constants/criteria'
+import { success } from '@/composables/useSuccess'
+import { publishSummary } from '@/utils/criteriaPublishSummary'
 
 const { t } = useI18n()
-const route = useRoute()
-const router = useRouter()
-const { localized, weight } = useCriteria()
-const versions = useCriteriaVersions()
+const workspace = useCriteriaWorkspace()
+const editing = useCriteriaWorkspaceEditing(workspace)
 const lifecycle = useDraftLifecycle()
+const access = useCriteriaAccess(workspace.version)
+const { versions } = workspace
 
-const selectedId = computed(() => (route.query.version ? Number(route.query.version) : null))
-const listedVersion = ref(null)
-const currentVersion = computed(
-  () => versions.findVersion(listedVersion.value?.id) ?? listedVersion.value,
-)
-const access = useCriteriaAccess(currentVersion)
+const reviewOpen = ref(false)
+const cloneOpen = ref(false)
+const canEdit = computed(() => access.canEditTree.value)
 
-const filters = useFilters({ active: '' })
-const { search } = filters
-const { items, status, errorMessage, load } = useTable({
-  fetcher: async (params) => {
-    const envelope = await criteriaService.listMains({
-      ...params,
-      version: selectedId.value ?? undefined,
-      perPage: 100,
-    })
-    listedVersion.value = envelope.meta?.version ?? null
-    return envelope
-  },
-  filters,
-})
+onMounted(workspace.load)
 
-async function reloadAll() {
-  await Promise.all([versions.load(), load()])
+async function afterVersionChange() {
+  await workspace.showVersion(null)
+  await workspace.reload()
 }
 
-onMounted(() => versions.load())
-watch(selectedId, () => load())
-
-const nodeActions = useCriteriaNodeActions(CRITERIA_NODE_TYPES.MAIN, reloadAll)
-const reorderable = computed(
-  () => access.canEditTree.value && !search.value && !filters.filters.active,
-)
-
-const versionOptions = computed(() =>
-  versions.versions.value.map((version) => criteriaVersionOption(t, localized, version)),
-)
-
-const activeOptions = computed(() => [
-  { value: '', label: t('dataList.filter.all') },
-  { value: 'true', label: t('status.active') },
-  { value: 'false', label: t('status.inactive') },
-])
-
-const formOpen = ref(false)
-const editing = ref(null)
-const correcting = ref(null)
-
-function selectVersion(versionId) {
-  router.replace({
-    name: ROUTE_NAMES.ADMIN_CRITERIA,
-    query: versionId ? { version: versionId } : {},
-  })
-}
-
-function onVersionChanged({ versionId }) {
-  if (versionId === selectedId.value) return reloadAll()
-  selectVersion(versionId)
-  return versions.load()
-}
-
-function openSubs(row) {
-  router.push({ name: ROUTE_NAMES.ADMIN_CRITERIA_MAIN, params: { mainId: row.id } })
-}
-
-function openForm(row = null) {
-  editing.value = row
-  formOpen.value = true
-}
-
-async function startFirstDraft() {
-  const draft = await lifecycle.createDraft({ fromPublished: false })
-  if (draft) onVersionChanged({ versionId: draft.id })
-}
-
-const saveMain = ({ id, payload }) => nodeActions.save(id, payload)
-
-function onAction(key, row) {
-  const handlers = {
-    open: () => openSubs(row),
-    edit: () => openForm(row),
-    toggle: () => nodeActions.toggle(row),
-    delete: () => nodeActions.remove(row, localized(row.name)),
-    correct: () => (correcting.value = { type: CRITERIA_NODE_TYPES.MAIN, node: row }),
+async function startEditing() {
+  if (await lifecycle.createDraft({ fromPublished: Boolean(versions.published.value) })) {
+    await afterVersionChange()
   }
-  handlers[key]?.()
+}
+
+async function cloneDraft(payload) {
+  await lifecycle.cloneDraft(payload)
+  await afterVersionChange()
+}
+
+async function discard() {
+  if (await lifecycle.discardDraft(workspace.version.value)) await afterVersionChange()
+}
+
+async function onPublished(outcome) {
+  success.show(publishSummary(t, outcome))
+  await afterVersionChange()
 }
 </script>
 
 <template>
-  <section class="criteria-page">
+  <section class="criteria-workspace">
     <header class="criteria-page__header">
       <div>
         <h1 class="criteria-page__title">{{ t('criteria.index.title') }}</h1>
-        <p class="criteria-page__subtitle">{{ t('criteria.index.subtitle') }}</p>
-      </div>
-      <div class="criteria-page__header-actions">
-        <BaseButton
-          variant="secondary"
-          size="sm"
-          icon="docs"
-          :to="{ name: ROUTE_NAMES.ADMIN_CRITERIA_HISTORY }"
-          >{{ t('criteria.history.open') }}</BaseButton
-        >
-        <div v-if="versionOptions.length > 1" class="criteria-page__version-picker">
-          <span class="criteria-page__picker-label">{{ t('criteria.version.picker') }}</span>
-          <AppSelect
-            variant="filter"
-            :model-value="currentVersion?.id ?? null"
-            :options="versionOptions"
-            :label="t('criteria.version.picker')"
-            @update:model-value="selectVersion"
-          />
-        </div>
+        <p class="criteria-page__subtitle">{{ t('criteria.workspace.subtitle') }}</p>
       </div>
     </header>
 
-    <CriteriaVersionPanel
-      v-if="currentVersion"
-      :version="currentVersion"
-      :draft="versions.draft.value"
-      :published="versions.published.value"
-      :versions="versions.versions.value"
-      @changed="onVersionChanged"
-    />
-
+    <div
+      v-if="workspace.status.value === 'loading' && !workspace.tree.value"
+      class="criteria-page__loading"
+    >
+      <Skeleton variant="block" />
+      <Skeleton variant="text" :count="6" />
+    </div>
     <EmptyState
-      v-if="versions.status.value === 'empty' && status !== 'loading'"
+      v-else-if="workspace.status.value === 'empty'"
       :title="t('criteria.index.noVersionsTitle')"
       :message="t('criteria.index.noVersionsMessage')"
       icon="hierarchy"
     >
       <template v-if="access.canManage.value" #action>
-        <BaseButton variant="primary" icon="plus" @click="startFirstDraft">{{
-          t('criteria.version.createEmptyDraft')
-        }}</BaseButton>
+        <BaseButton variant="primary" icon="plus" @click="startEditing">
+          {{ t('criteria.version.createEmptyDraft') }}
+        </BaseButton>
       </template>
     </EmptyState>
+    <ErrorState
+      v-else-if="workspace.status.value === 'error'"
+      :message="workspace.errorMessage.value"
+      @retry="workspace.reload"
+    />
 
-    <template v-else>
-      <ListToolbar
-        v-model:search="search"
-        :search-placeholder="t('criteria.index.searchPlaceholder')"
-        :filter-state="filters"
-      >
-        <template #filters="{ draft }">
-          <AppSelect
-            :model-value="draft.filters.active"
-            :options="activeOptions"
-            :label="t('criteria.filters.state')"
-            @update:model-value="draft.setFilter('active', $event)"
-          />
-        </template>
-        <template v-if="access.canEditTree.value" #actions>
-          <BaseButton variant="primary" size="sm" icon="plus" @click="openForm()">{{
-            t('criteria.index.add')
-          }}</BaseButton>
-        </template>
-      </ListToolbar>
+    <template v-else-if="workspace.version.value && workspace.tree.value">
+      <CriteriaWorkspaceBar
+        :version="workspace.version.value"
+        :draft="versions.draft.value"
+        :versions="versions.versions.value"
+        :problem-count="workspace.problems.value.length"
+        :can-manage="access.canManage.value"
+        :can-publish="access.canPublish.value"
+        @start="startEditing"
+        @review="reviewOpen = true"
+        @discard="discard"
+        @clone="cloneOpen = true"
+        @correct-name="editing.correctVersionName"
+        @show-version="workspace.showVersion"
+      />
 
-      <p v-if="listedVersion?.activeWeightTotal" class="criteria-page__subtitle">
-        {{ t('criteria.index.totalWeight', { weight: weight(listedVersion.activeWeightTotal) }) }}
-      </p>
-      <MainCriteriaTable
-        :items="items"
-        :status="status"
-        :error-message="errorMessage"
-        :access="access"
-        :reorderable="reorderable"
-        :total-weight="listedVersion?.activeWeightTotal ?? null"
-        @action="onAction"
-        @move="(index, delta) => nodeActions.move(items, index, delta)"
-        @retry="load"
-        @add="openForm()"
+      <div class="criteria-workspace__layout">
+        <CriteriaTree
+          :index="workspace.index.value"
+          :selected-key="workspace.selected.value?.key ?? null"
+          :can-edit="canEdit"
+          @select="workspace.select"
+          @add="editing.startCreate"
+          @reorder="editing.reorder"
+        />
+        <CriteriaNodeDetails
+          v-if="workspace.selected.value"
+          :key="workspace.selected.value.key"
+          :item="workspace.selected.value"
+          :index="workspace.index.value"
+          :path="workspace.selectedPath.value"
+          :can-edit="canEdit"
+          :can-correct="access.canCorrectText.value"
+          :save-node="editing.saveSelected"
+          :reload="workspace.reload"
+          @select="workspace.select"
+          @add="editing.startCreate"
+          @toggle="editing.toggleSelected"
+          @remove="editing.removeSelected"
+          @correct="editing.correctSelected"
+        />
+        <CriteriaVersionOverview
+          v-else
+          :tree="workspace.tree.value"
+          :index="workspace.index.value"
+          :can-edit="canEdit"
+          @add="editing.startCreate(null)"
+        />
+      </div>
+
+      <CriteriaCreateDialogs v-if="canEdit" :editing="editing" />
+      <CriteriaReviewDialog
+        v-if="access.canPublishDraft.value"
+        v-model="reviewOpen"
+        :version="workspace.version.value"
+        :published="versions.published.value"
+        @published="onPublished"
+      />
+      <CriteriaDraftDialog
+        v-if="access.canManage.value && !versions.draft.value"
+        v-model="cloneOpen"
+        :versions="versions.versions.value"
+        :source-id="workspace.version.value.id"
+        :create="cloneDraft"
+      />
+      <CriteriaTextCorrectionDialog
+        v-if="access.canCorrectText.value"
+        :model-value="editing.correction.value.open"
+        :version="workspace.version.value"
+        :target="editing.correction.value.target"
+        @update:model-value="editing.closeCorrection"
+        @corrected="editing.corrected"
       />
     </template>
-
-    <MainCriterionForm v-model="formOpen" :criterion="editing" :save="saveMain" />
-    <CriteriaTextCorrectionDialog
-      v-if="currentVersion && access.canCorrectText.value"
-      :model-value="Boolean(correcting)"
-      :version="currentVersion"
-      :target="correcting"
-      @update:model-value="correcting = $event ? correcting : null"
-      @corrected="nodeActions.corrected"
-    />
   </section>
 </template>

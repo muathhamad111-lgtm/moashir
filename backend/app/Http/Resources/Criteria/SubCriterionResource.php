@@ -32,6 +32,8 @@ final class SubCriterionResource extends JsonResource
             'weight' => $sub->weight->toDecimal(),
             'distribute_equally' => $sub->distribute_equally,
             'evaluation_type' => $sub->evaluation_type->value,
+            'scoring_type' => $sub->scoring_type->value,
+            'default_point_scoring_type' => $sub->default_point_scoring_type->value,
             'has_cv' => $sub->has_cv,
             'assessor_note_label' => $sub->assessor_note_label?->toArray(),
             'attachments' => AttachmentRequirementResource::collection($sub->attachmentRequirements)->resolve($request),

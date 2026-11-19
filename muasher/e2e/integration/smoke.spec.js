@@ -175,7 +175,7 @@ test('a second sign-in of the administrator passes the authenticator challenge',
 test('the administrator reads the published criteria tree from the server', async () => {
   const { page, api } = sessions.admin
   await visit(page, '/admin/settings/criteria')
-  await expect(page.locator('.criteria-version').first()).toBeVisible()
+  await expect(page.locator('.criteria-bar')).toBeVisible()
   await shot(page, 'admin-criteria')
   expect(api.unexpected(GUEST_PROBES)).toEqual([])
 })

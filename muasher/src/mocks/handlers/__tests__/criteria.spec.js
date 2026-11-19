@@ -66,11 +66,15 @@ describe('criteria mock — authorization mirrors the backend abilities', () => 
     expect(denied.body.code).toBe('forbidden')
   })
 
-  it('lets the System Administrator read and publish but never edit the tree', async () => {
+  it('lets the System Administrator open a draft and edit the tree like the Criteria Officer', async () => {
     as(SYSTEM_ADMIN)
     expect((await call('GET', '/criteria/mains')).status).toBe(200)
-    expect((await call('POST', '/criteria/versions', {})).status).toBe(403)
-    expect((await call('PUT', '/criteria/mains/1', { weight: '10' })).status).toBe(403)
+    expect((await call('POST', '/criteria/versions', {})).status).toBe(201)
+    const created = await call('POST', '/criteria/mains', {
+      name: { ar: 'معيار', en: 'Criterion' },
+      weight: '10',
+    })
+    expect(created.status).toBe(201)
   })
 })
 
@@ -103,6 +107,18 @@ describe('criteria mock — versions and the published seed', () => {
     const mains = await draftMains()
     expect(mains[0]).toMatchObject({ code: 'M1', versionId: draft.id })
     expect(mains[0].id).not.toBe(1)
+  })
+
+  it('serves the whole draft tree with inactive nodes for the workspace', async () => {
+    const draft = await openDraft()
+    const firstMain = (await draftMains())[0]
+    await call('PATCH', `/criteria/mains/${firstMain.id}/active`, { active: false })
+    const tree = await call('GET', `/criteria/versions/${draft.id}/tree`)
+    expect(tree.status).toBe(200)
+    expect(tree.body.data.version).toMatchObject({ id: draft.id, status: 'draft' })
+    expect(tree.body.data.mains).toHaveLength(9)
+    expect(tree.body.data.mains[0]).toMatchObject({ code: 'M1', active: false })
+    expect(tree.body.data.mains[0].subs[0].points.length).toBeGreaterThan(0)
   })
 
   it('discards a draft but never a published version', async () => {

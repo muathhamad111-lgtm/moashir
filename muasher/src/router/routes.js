@@ -948,6 +948,7 @@ export const appRoutes = [
       layout: 'app',
       titleKey: 'routes.admin.criteria.title',
       requiresAuth: true,
+      keepsScrollOnQuery: true,
     },
   },
   {
@@ -963,22 +964,18 @@ export const appRoutes = [
   {
     path: '/admin/settings/criteria/:mainId',
     name: ROUTE_NAMES.ADMIN_CRITERIA_MAIN,
-    component: () => import('@/views/settings/criteria/MainDetail.vue'),
-    meta: {
-      layout: 'app',
-      titleKey: 'routes.admin.criteria.main.title',
-      requiresAuth: true,
-    },
+    redirect: (to) => ({
+      name: ROUTE_NAMES.ADMIN_CRITERIA,
+      query: { node: `main-${to.params.mainId}` },
+    }),
   },
   {
     path: '/admin/settings/criteria/:mainId/subs/:subId',
     name: ROUTE_NAMES.ADMIN_CRITERIA_SUB,
-    component: () => import('@/views/settings/criteria/SubDetail.vue'),
-    meta: {
-      layout: 'app',
-      titleKey: 'routes.admin.criteria.sub.title',
-      requiresAuth: true,
-    },
+    redirect: (to) => ({
+      name: ROUTE_NAMES.ADMIN_CRITERIA,
+      query: { node: `sub-${to.params.subId}` },
+    }),
   },
   {
     path: '/admin/settings/users',

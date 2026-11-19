@@ -31,6 +31,7 @@ final class MainCriterionResource extends JsonResource
             'weight' => $main->weight->toDecimal(),
             'distribute_equally' => $main->distribute_equally,
             'group' => $main->group->value,
+            'default_scoring_type' => $main->default_scoring_type->value,
             'active' => $main->is_active,
             'order' => $main->sort_order,
             'sub_count' => $main->subCriteria->count(),

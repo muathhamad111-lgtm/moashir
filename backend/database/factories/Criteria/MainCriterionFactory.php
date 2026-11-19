@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Factories\Criteria;
 
 use App\Enums\Criteria\CriterionGroup;
+use App\Enums\Criteria\ScoringType;
 use App\Models\Criteria\CriteriaVersion;
 use App\Models\Criteria\MainCriterion;
 use App\Support\ValueObjects\Weight;
@@ -32,6 +33,7 @@ final class MainCriterionFactory extends Factory
             'weight' => Weight::of('1000.00'),
             'distribute_equally' => false,
             'group' => CriterionGroup::Enablers,
+            'default_scoring_type' => ScoringType::Score,
             'is_active' => true,
             'sort_order' => $position,
         ];

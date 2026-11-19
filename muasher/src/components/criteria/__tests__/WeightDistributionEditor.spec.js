@@ -68,4 +68,13 @@ describe('WeightDistributionEditor', () => {
         .every((input) => input.attributes('disabled') !== undefined),
     ).toBe(true)
   })
+
+  it.each([
+    ['subs', 'The weight is split equally over the active sub-criteria'],
+    ['points', 'The weight is split equally over the active indicators'],
+  ])('explains the equal split of the %s level in words', (level, text) => {
+    const note = mountEditor({ mode: 'equal', level }).find('.weight-editor__note').text()
+    expect(note).toContain(text)
+    expect(note).not.toContain('undefined')
+  })
 })

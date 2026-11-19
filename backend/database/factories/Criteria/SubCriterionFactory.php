@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Factories\Criteria;
 
 use App\Enums\Criteria\EvaluationType;
+use App\Enums\Criteria\ScoringType;
 use App\Models\Criteria\MainCriterion;
 use App\Models\Criteria\SubCriterion;
 use App\Support\ValueObjects\Weight;
@@ -32,6 +33,8 @@ final class SubCriterionFactory extends Factory
             'weight' => Weight::of('500.00'),
             'distribute_equally' => false,
             'evaluation_type' => EvaluationType::GuidingPoints,
+            'scoring_type' => ScoringType::Score,
+            'default_point_scoring_type' => ScoringType::Score,
             'has_cv' => true,
             'is_active' => true,
             'sort_order' => $position,

@@ -192,6 +192,6 @@ it('denies guiding point writes to roles without criteria.manage', function (Rol
     $this->postJson('/api/v1/criteria/subs/'.$sub->id.'/points/reorder', ['ordered_ids' => [$point->id]])->assertForbidden();
     $this->deleteJson('/api/v1/criteria/points/'.$point->id)->assertForbidden();
 })->with([
-    'system administrator' => [RoleKey::SystemAdmin],
+    'request follower' => [RoleKey::RequestFollower],
     'assessor' => [RoleKey::Assessor],
 ]);

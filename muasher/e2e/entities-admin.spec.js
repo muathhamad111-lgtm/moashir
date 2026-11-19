@@ -47,11 +47,6 @@ function checkbox(scope, name) {
   return scope.locator(`label.checkbox:has([name="${name}"])`)
 }
 
-async function rowAction(page, rowText, actionName) {
-  await rows(page).filter({ hasText: rowText }).first().locator('.dropdown-menu > button').click()
-  await page.getByRole('menuitem', { name: actionName }).click()
-}
-
 test('the entities list shows the last accredited assessment and sorts by its percent', async ({
   page,
 }, testInfo) => {
@@ -61,7 +56,7 @@ test('the entities list shows the last accredited assessment and sorts by its pe
   await expect(
     page
       .locator('.table th')
-      .filter({ hasText: isEn(testInfo) ? 'Last accredited assessment' : 'آخر تقييم معتمد' }),
+      .filter({ hasText: isEn(testInfo) ? 'Last accredited' : 'آخر تقييم معتمد' }),
   ).toHaveCount(1)
   await applyListFilters(page, { 'entity-sort': '-last_assessment_percent' })
   const percents = rows(page).locator('.entity-last-assessment__percent')
@@ -170,7 +165,11 @@ test('a deleted entity is restored from the Deleted entities section', async ({
   await page.goto('/admin/entities/deleted')
   await expect(rows(page)).toHaveCount(2)
   await expect(page.locator('.entities-admin__notice')).toBeVisible()
-  await rowAction(page, isEn(testInfo) ? 'Iemar' : 'إعمار', /^\s*(Restore|استعادة)\s*$/)
+  await rows(page)
+    .filter({ hasText: isEn(testInfo) ? 'Iemar' : 'إعمار' })
+    .first()
+    .getByRole('button', { name: /^(Restore|استعادة)/ })
+    .click()
   await dialog(page).locator('[name="reason"]').fill(REASON)
   await dialog(page).locator('button[type="submit"]').click()
   await expect(page.locator('.toast--success')).toBeVisible()

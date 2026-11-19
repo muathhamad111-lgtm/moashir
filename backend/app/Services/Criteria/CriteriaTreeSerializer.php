@@ -61,6 +61,7 @@ final class CriteriaTreeSerializer
             'description' => $sub->description?->toArray(),
             'weight' => $sub->weight->toDecimal(),
             'evaluation_type' => $sub->evaluation_type->value,
+            'scoring_type' => $sub->scoring_type->value,
             'has_cv' => $sub->has_cv,
             'assessor_note_label' => $sub->assessor_note_label?->toArray(),
             'attachments' => $this->attachments($sub->attachmentRequirements),
@@ -79,6 +80,7 @@ final class CriteriaTreeSerializer
             'order' => $point->sort_order,
             'description' => $point->description->toArray(),
             'weight' => $point->weight->toDecimal(),
+            'scoring_type' => $point->scoring_type->value,
             'attachments' => $this->attachments($point->attachmentRequirements),
         ];
     }

@@ -27,6 +27,7 @@ export const SELECT_VARIANTS = Object.freeze({
 export const MENU_TRIGGERS = Object.freeze({
   icon: 'icon',
   avatar: 'avatar',
+  button: 'button',
 })
 
 export const POPUP_SIDES = Object.freeze({

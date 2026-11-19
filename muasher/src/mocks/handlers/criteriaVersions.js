@@ -3,7 +3,7 @@ import { envelope, noContent } from '../contract/responses'
 import { criteriaProblemMessages } from '../fixtures/criteriaMessages'
 import { editEvents, findVersion, liveVersions } from '../stores/criteriaStore'
 import { consistencyProblems } from '../stores/criteriaRules'
-import { versionResource } from '../stores/criteriaSerializers'
+import { versionResource, workspaceTree } from '../stores/criteriaSerializers'
 import { createDraft, discardDraft } from '../stores/criteriaVersions'
 import { publicationPreview } from '../stores/criteriaPreview'
 import { correctTexts, publishVersion } from '../stores/criteriaPublishing'
@@ -120,6 +120,14 @@ export const criteriaVersionHandlers = [
       actorWith(CAN.MANAGE)
       discardDraft(found(findVersion(params.versionId)))
       return noContent()
+    }),
+  ),
+
+  http.get(
+    `${BASE}/:versionId/tree`,
+    criteriaRoute(({ params }) => {
+      actorWith(CAN.VIEW)
+      return envelope(workspaceTree(found(findVersion(params.versionId))))
     }),
   ),
 

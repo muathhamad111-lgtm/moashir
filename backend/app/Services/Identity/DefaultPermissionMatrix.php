@@ -59,7 +59,7 @@ final class DefaultPermissionMatrix
             P::AwardSecretaryReview, P::AwardResultsView, P::AwardResultsAnnounce,
             P::ReportsFeedbackView, P::ReportsInsightsView, P::CertificatesManage,
             P::BagRequestsView, P::BagRequestsAssign, P::BagPlanApprove, P::BagSubscriptionActivateFree, P::BagAdminManage,
-            P::CriteriaView, P::CriteriaPublish,
+            P::CriteriaView, P::CriteriaManage, P::CriteriaPublish,
             P::ContentHomeManage, P::ContentKpisManage, P::ContentInsightsManage, P::ContactMessagesManage,
             P::AiKbManage, P::AiProviderManage,
             P::UsersView, P::UsersManage, P::UsersExport, P::RolesMatrixView, P::RolesMatrixManage, P::AuditView, P::AuditExport,

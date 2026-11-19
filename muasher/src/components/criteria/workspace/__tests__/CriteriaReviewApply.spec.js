@@ -1,27 +1,32 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { setActivePinia } from 'pinia'
-import CriteriaPublishDialog from '@/components/criteria/CriteriaPublishDialog.vue'
+import CriteriaReviewApply from '@/components/criteria/workspace/CriteriaReviewApply.vue'
 import { criteriaService } from '@/services/criteriaService'
 import { useAuthStore } from '@/stores/auth'
 import { createTestGlobals } from '@/test-utils'
 import { sessionUserFor } from '@/test-utils/session'
 
 vi.mock('@/services/criteriaService', () => ({
-  criteriaService: { publishVersion: vi.fn(), getMain: vi.fn() },
+  criteriaService: { publishVersion: vi.fn(), getMain: vi.fn(), checkVersion: vi.fn() },
 }))
 
 const draft = { id: 4, versionNumber: 2, status: 'draft' }
 const published = { id: 1, versionNumber: 1, status: 'published' }
+const preview = {
+  preview: { value: { replaces: { versionNumber: 1 }, reboundOpenAssessments: [] } },
+  loading: { value: false },
+  failed: { value: false },
+  load: vi.fn(),
+}
 
-function mountDialog(props = {}, { superAdmin = false } = {}) {
+function mountApply(props = {}, { superAdmin = false } = {}) {
   const globals = createTestGlobals({ locale: 'en' })
   setActivePinia(globals.pinia)
   useAuthStore().setUser(sessionUserFor(['criteria_officer'], { isSuperAdmin: superAdmin }))
-  return mount(CriteriaPublishDialog, {
-    props: { modelValue: true, version: draft, published, ...props },
-    global: { ...globals, stubs: { teleport: true } },
-    attachTo: document.body,
+  return mount(CriteriaReviewApply, {
+    props: { version: draft, published, preview, ...props },
+    global: globals,
   })
 }
 
@@ -30,7 +35,6 @@ function inconsistent() {
     normalized: {
       code: 'criteria.weights_inconsistent',
       message: 'The criteria cannot be published until the weights are consistent.',
-      fieldErrors: { 'nodes.main.11': ['M1 is off'] },
       meta: {
         problems: [
           {
@@ -49,26 +53,15 @@ function inconsistent() {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  criteriaService.checkVersion.mockResolvedValue({ data: {}, meta: {} })
   criteriaService.getMain.mockResolvedValue({
     data: { main: { id: 11, code: 'M1', name: { ar: 'القيادة', en: 'Leadership' } } },
   })
 })
 
-describe('CriteriaPublishDialog', () => {
-  it('explains the three scopes with their effect and the protection of closed results', () => {
-    const wrapper = mountDialog()
-    const options = wrapper.findAll('.scope-choice__option')
-    expect(options).toHaveLength(3)
-    expect(options[0].text()).toContain('keep the scores of unchanged items')
-    expect(options[1].text()).toContain('new requests')
-    expect(options[2].text()).toContain('all their scores are cleared')
-    expect(wrapper.find('.scope-choice__closed-note').text()).toContain(
-      'Only text corrections reach them',
-    )
-  })
-
+describe('CriteriaReviewApply', () => {
   it('requires a scope before publishing over a published version', async () => {
-    const wrapper = mountDialog()
+    const wrapper = mountApply()
     await wrapper.find('form').trigger('submit')
     expect(wrapper.find('.scope-choice .field__error').text()).toBe(
       'Choose where the change applies.',
@@ -81,7 +74,7 @@ describe('CriteriaPublishDialog', () => {
       data: { id: 4, versionNumber: 2 },
       meta: { effect: { scope: 'reset_open' } },
     })
-    const wrapper = mountDialog()
+    const wrapper = mountApply()
     await wrapper.findAll('.scope-choice__input')[2].setValue(true)
     await wrapper
       .find('textarea[name="publishReason"]')
@@ -93,35 +86,40 @@ describe('CriteriaPublishDialog', () => {
       reason: 'Annual review of the criteria weights.',
     })
     expect(wrapper.emitted('published')[0][0].meta.effect.scope).toBe('reset_open')
-    expect(wrapper.emitted('update:modelValue').at(-1)).toEqual([false])
   })
 
-  it('lists the offending nodes with links to fix them when the weights are inconsistent', async () => {
+  it('links each offending node to its place in the workspace when publishing is refused', async () => {
     criteriaService.publishVersion.mockRejectedValue(inconsistent())
-    const wrapper = mountDialog()
+    const wrapper = mountApply()
     await wrapper.findAll('.scope-choice__input')[0].setValue(true)
     await wrapper.find('form').trigger('submit')
     await flushPromises()
     const problem = wrapper.find('.criteria-problems__item')
-    expect(criteriaService.getMain).toHaveBeenCalledWith(11)
     expect(problem.text()).toContain('The active sub-criteria of Leadership total 750.00')
-    expect(problem.text()).not.toContain('M1')
-    expect(problem.find('a').text()).toBe('Fix Leadership')
-    expect(problem.find('a').attributes('href')).toBe('/admin/settings/criteria/11')
+    expect(problem.find('a').attributes('href')).toBe(
+      '/admin/settings/criteria?version=4&node=main-11',
+    )
     expect(wrapper.emitted('published')).toBeUndefined()
   })
 
   it('needs no scope for the very first publication', () => {
-    const wrapper = mountDialog({ published: null })
+    const wrapper = mountApply({ published: null })
     expect(wrapper.find('.scope-choice').exists()).toBe(false)
     expect(wrapper.text()).toContain('first published version')
   })
 
   it('makes the reason mandatory for the Super Admin', async () => {
-    const wrapper = mountDialog({}, { superAdmin: true })
+    const wrapper = mountApply({}, { superAdmin: true })
     await wrapper.findAll('.scope-choice__input')[1].setValue(true)
     await wrapper.find('form').trigger('submit')
     expect(wrapper.text()).toContain('Enter the reason for this change.')
     expect(criteriaService.publishVersion).not.toHaveBeenCalled()
+  })
+
+  it('goes back to the previous step', async () => {
+    const wrapper = mountApply()
+    const back = wrapper.findAll('button').find((button) => button.text() === 'Back')
+    await back.trigger('click')
+    expect(wrapper.emitted('back')).toHaveLength(1)
   })
 })

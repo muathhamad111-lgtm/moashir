@@ -278,7 +278,7 @@ it('denies sub-criterion writes to roles without criteria.manage', function (Rol
     $this->patchJson('/api/v1/criteria/subs/'.$sub->id.'/active', ['active' => false])->assertForbidden();
     $this->deleteJson('/api/v1/criteria/subs/'.$sub->id)->assertForbidden();
 })->with([
-    'system administrator' => [RoleKey::SystemAdmin],
+    'request follower' => [RoleKey::RequestFollower],
     'filtering officer' => [RoleKey::FilteringOfficer],
 ]);
 

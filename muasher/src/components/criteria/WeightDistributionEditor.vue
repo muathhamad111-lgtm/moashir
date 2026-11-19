@@ -137,7 +137,7 @@ function isEditable(child) {
     <p v-else class="weight-editor__empty">{{ t('criteria.weights.noChildren') }}</p>
 
     <p v-if="mode === 'equal'" class="weight-editor__note">
-      {{ t(`${messages.value}.equalActive`) }}
+      {{ t(`${messages}.equalActive`) }}
     </p>
     <p class="weight-editor__status" :class="`weight-editor__status--${status.tone}`" role="status">
       <AppIcon :name="status.icon" />

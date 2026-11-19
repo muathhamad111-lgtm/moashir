@@ -288,6 +288,18 @@ it('shows a main criterion with its sub-criteria', function (): void {
         ->assertJsonPath('data.subs.1.available_weight', '400.00');
 });
 
+it('lets the System Administrator manage the criteria tree of a draft', function (): void {
+    $draft = balancedDraft();
+    $administrator = systemAdmin();
+    signIn($administrator);
+
+    $created = $this->postJson('/api/v1/criteria/mains', mainPayload())->assertCreated()->assertJsonPath('data.version_id', $draft->id);
+    $this->putJson('/api/v1/criteria/mains/'.$created->json('data.id'), ['weight' => '700'])->assertOk()->assertJsonPath('data.weight', '700.00');
+    $this->patchJson('/api/v1/criteria/mains/'.$created->json('data.id').'/active', ['active' => false])->assertOk();
+
+    expect(Audit::query()->where('event', AuditEvent::CriteriaMainCreated->value)->where('user_id', $administrator->id)->exists())->toBeTrue();
+});
+
 it('denies main criterion writes to roles without criteria.manage', function (RoleKey $role): void {
     $main = mainOf(balancedDraft(), 'M1');
     signIn(staffUser($role));
@@ -298,7 +310,7 @@ it('denies main criterion writes to roles without criteria.manage', function (Ro
     $this->postJson('/api/v1/criteria/mains/reorder', ['ordered_ids' => [$main->id]])->assertForbidden();
     $this->deleteJson('/api/v1/criteria/mains/'.$main->id)->assertForbidden();
 })->with([
-    'system administrator' => [RoleKey::SystemAdmin],
+    'request follower' => [RoleKey::RequestFollower],
     'assessor' => [RoleKey::Assessor],
     'content officer' => [RoleKey::ContentOfficer],
 ]);
