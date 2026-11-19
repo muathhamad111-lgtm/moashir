@@ -102,6 +102,22 @@ describe('executive overview mock', () => {
     expect(body.data.snapshot.map((widget) => widget.key)).toContain('entities_by_level')
   })
 
+  it('places the period on the map: region figures add up their cities, requests match the card', async () => {
+    seedMockSession({ id: 1, roles: ['system_admin'] })
+    const { body } = await overview()
+    const { regions, cities } = body.data.geography
+    const sum = (rows, key) => rows.reduce((total, row) => total + row[key], 0)
+    const requestsCard = body.data.cards.find((card) => card.key === 'requests_submitted')
+    expect(regions).toHaveLength(13)
+    expect(cities.every((city) => city.latitude !== null && city.longitude !== null)).toBe(true)
+    expect(sum(regions, 'requests')).toBe(requestsCard.value)
+    for (const region of regions) {
+      const own = cities.filter((city) => city.regionId === region.regionId)
+      expect(region.entities).toBe(sum(own, 'entities'))
+    }
+    expect(body.data.snapshot.map((widget) => widget.key)).not.toContain('entities_by_region')
+  })
+
   it('buckets a long custom period by month and refuses a malformed one', async () => {
     seedMockSession({ id: 1, roles: ['system_admin'] })
     const { body } = await overview('?period=custom&from=2025-01-01&to=2025-12-31')

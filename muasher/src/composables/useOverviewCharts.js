@@ -138,14 +138,13 @@ export function useOverviewCharts(overview) {
   function shareRows(key, label) {
     return (Array.isArray(snapshotData(overview, key)) ? snapshotData(overview, key) : []).map(
       (item, index) => ({
-        key: String(item.key ?? item.regionId ?? index),
+        key: String(item.key ?? index),
         label: barLabelOf(label, item, { t, te, locale: locale.value }),
         value: Number(item.count) || 0,
       }),
     )
   }
 
-  const regions = computed(() => shareRows('entities_by_region', BAR_LABELS.NAME))
   const sectors = computed(() => shareRows('entities_by_sector', BAR_LABELS.SECTOR))
 
   function widget(key) {
@@ -160,7 +159,6 @@ export function useOverviewCharts(overview) {
     levels,
     governance,
     decades,
-    regions,
     sectors,
     widget,
   }

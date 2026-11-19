@@ -49,7 +49,7 @@ it('counts entities, staff and confirmed payments of both modes on the System Ad
         ->and(collect(overviewWidget($overview, 'entities_by_governance'))->pluck('count', 'key')->all())->toBe([
             'below_50' => 0, 'from_50_to_69' => 0, 'from_70_to_84' => 4, 'from_85_to_100' => 0, 'not_reported' => 1,
         ])
-        ->and(collect(overviewWidget($overview, 'entities_by_region'))->firstWhere('region_id', $first->region_id)['count'] ?? null)->toBe(1)
+        ->and(collect($overview->json('data.geography.regions'))->firstWhere('region_id', $first->region_id)['entities'] ?? null)->toBe(1)
         ->and(collect($response->json('data.widgets'))->pluck('key')->all())->toBe(['activity'])
         ->and(collect($response->json('data.cards'))->firstWhere('key', 'payments_collected')['format'] ?? null)->toBe('money');
 });

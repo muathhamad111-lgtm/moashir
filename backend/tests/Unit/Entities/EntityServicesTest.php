@@ -125,6 +125,11 @@ it('ships a valid seed of the 13 regions with unique codes and bilingual names',
             ->and(array_unique($cityCodes))->toHaveCount(count($cityCodes))
             ->and($region->name->en)->not->toBe('')
             ->and(preg_match('/[\x{0660}-\x{0669}]/u', $region->name->ar))->toBe(0);
+
+        foreach ($region->cities as $city) {
+            expect($city->coordinates?->latitude)->toBeGreaterThan(16.0)->toBeLessThan(32.5)
+                ->and($city->coordinates?->longitude)->toBeGreaterThan(34.5)->toBeLessThan(56.0);
+        }
     }
 });
 

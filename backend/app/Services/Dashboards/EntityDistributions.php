@@ -8,7 +8,6 @@ use App\Enums\Certificates\EntityLevel;
 use App\Enums\Certificates\EntityLevelBucket;
 use App\Enums\Entities\EntityStatus;
 use App\Models\Entities\Entity;
-use App\Models\Entities\Region;
 use App\Support\Certificates\EntityLevelQuery;
 use App\Support\Dashboards\AggregateRow;
 use App\Support\ScalarValue;
@@ -38,23 +37,6 @@ final class EntityDistributions
             'deactivated' => ['status = ?', [EntityStatus::Deactivated->value]],
             'rejected' => ['status = ?', [EntityStatus::Rejected->value]],
         ]);
-    }
-
-    /**
-     * @return list<array{region_id: int, code: string, name: array<string, string>, count: int}>
-     */
-    public function byRegion(): array
-    {
-        $counts = $this->entities()->toBase()->selectRaw('region_id, count(*) as total')->groupBy('region_id')->pluck('total', 'region_id');
-
-        return array_values(Region::query()->orderBy('sort_order')->orderBy('id')->get(['id', 'code', 'name'])
-            ->map(static fn (Region $region): array => [
-                'region_id' => $region->id,
-                'code' => $region->code,
-                'name' => $region->name->toArray(),
-                'count' => ScalarValue::int($counts->get($region->id)),
-            ])
-            ->all());
     }
 
     /**

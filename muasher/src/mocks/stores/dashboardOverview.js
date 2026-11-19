@@ -4,6 +4,7 @@ import {
   OVERVIEW_PRESETS,
 } from '@/constants/dashboardOverview'
 import { OVERVIEW_SNAPSHOT } from '../fixtures/overviewSnapshot'
+import { geographyFor } from './dashboardGeography'
 
 const DAY_MS = 86400000
 const MAX_DAYS = 1096
@@ -173,6 +174,7 @@ export function overviewFor(query, levels) {
       { path: 'advanced', submitted: now.requests - now.accredited, completed: null },
     ],
     snapshot: [{ key: 'entities_by_level', data: levels }, ...OVERVIEW_SNAPSHOT],
+    geography: geographyFor(now.requests),
     generatedAt: new Date().toISOString(),
   }
 }

@@ -40,7 +40,7 @@ final readonly class InstallRegionsSeed
         foreach ($seed->cities as $citySeed) {
             $city = City::query()->firstOrCreate(
                 ['region_id' => $region->id, 'code' => $citySeed->code],
-                ['name' => $citySeed->name, 'sort_order' => $citySeed->sortOrder],
+                ['name' => $citySeed->name, 'sort_order' => $citySeed->sortOrder, 'latitude' => $citySeed->coordinates?->latitude, 'longitude' => $citySeed->coordinates?->longitude],
             );
             $added += $city->wasRecentlyCreated ? 1 : 0;
         }

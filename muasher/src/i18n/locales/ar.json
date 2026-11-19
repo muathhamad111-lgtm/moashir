@@ -2478,7 +2478,6 @@
       "results": "عدد النتائج: {count}",
       "transition": "{verb} ← {status}",
       "titles": {
-        "entities_by_region": "الجهات حسب المنطقة",
         "by_region": "الطلبات حسب المنطقة",
         "entities_by_sector": "الجهات حسب القطاع التنموي",
         "entities_by_founding_decade": "الجهات حسب عقد التأسيس",
@@ -2655,7 +2654,8 @@
         "paths": "الطلبات حسب المسار",
         "levels": "الجهات حسب المستوى",
         "governance": "الجهات حسب درجة الحوكمة",
-        "decades": "الجهات حسب عقد التأسيس"
+        "decades": "الجهات حسب عقد التأسيس",
+        "geography": "التوزيع الجغرافي"
       },
       "series": {
         "entities": "الجهات المسجّلة",
@@ -2677,6 +2677,28 @@
         "self": "الذاتي",
         "accredited": "المعتمد",
         "advanced": "الجائزة"
+      },
+      "geography": {
+        "metricsLabel": "المؤشر المعروض على الخريطة",
+        "metrics": {
+          "entities": "الجهات المسجلة",
+          "requests": "طلبات التقييم",
+          "averagePercent": "متوسط النتيجة",
+          "collected": "الإيرادات المحصّلة"
+        },
+        "mapCaption": "خريطة المملكة حسب {metric}",
+        "legend": "مفتاح الخريطة",
+        "upTo": "حتى {value}",
+        "none": "لا بيانات",
+        "topRegions": "أعلى المناطق",
+        "citiesOf": "مدن {region}",
+        "noCities": "لا توجد مدن بقيم في هذه المنطقة.",
+        "note": "الجهات: الوضع الحالي، وبقية المؤشرات خلال الفترة المختارة"
+      },
+      "criteria": {
+        "results": "مبني على {count} نتيجة",
+        "resultsRange": "مبني على {min} إلى {max} نتيجة",
+        "caption": "متوسط نتيجة كل معيار رئيسي بالنسبة المئوية"
       }
     },
     "assessorOverview": {

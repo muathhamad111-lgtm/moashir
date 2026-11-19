@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Entities;
 
+use App\Support\ValueObjects\Coordinates;
 use App\Support\ValueObjects\LocalizedText;
 
 final readonly class CitySeed
@@ -12,5 +13,6 @@ final readonly class CitySeed
         public string $code,
         public LocalizedText $name,
         public int $sortOrder,
+        public ?Coordinates $coordinates = null,
     ) {}
 }

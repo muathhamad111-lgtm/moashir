@@ -1,150 +1,150 @@
 {
-    "source": "The 13 administrative regions of the Kingdom of Saudi Arabia (ISO 3166-2:SA order) with their main cities; the city list is maintained by the System Administrator after installation.",
+    "source": "The 13 administrative regions of the Kingdom of Saudi Arabia (ISO 3166-2:SA order) with their main cities; the city list is maintained by the System Administrator after installation. City coordinates come from Wikidata (CC0), checked against Natural Earth region boundaries (public domain).",
     "regions": [
         {
             "code": "riyadh",
             "name": { "ar": "منطقة الرياض", "en": "Riyadh Region" },
             "cities": [
-                { "code": "riyadh", "name": { "ar": "الرياض", "en": "Riyadh" } },
-                { "code": "diriyah", "name": { "ar": "الدرعية", "en": "Diriyah" } },
-                { "code": "kharj", "name": { "ar": "الخرج", "en": "Al-Kharj" } },
-                { "code": "majmaah", "name": { "ar": "المجمعة", "en": "Al-Majmaah" } },
-                { "code": "dawadmi", "name": { "ar": "الدوادمي", "en": "Al-Dawadmi" } },
-                { "code": "wadi_aldawasir", "name": { "ar": "وادي الدواسر", "en": "Wadi Al-Dawasir" } },
-                { "code": "zulfi", "name": { "ar": "الزلفي", "en": "Al-Zulfi" } },
-                { "code": "shaqra", "name": { "ar": "شقراء", "en": "Shaqra" } },
-                { "code": "afif", "name": { "ar": "عفيف", "en": "Afif" } },
-                { "code": "quwayiyah", "name": { "ar": "القويعية", "en": "Al-Quwayiyah" } }
+                { "code": "riyadh", "name": { "ar": "الرياض", "en": "Riyadh" }, "latitude": 24.638, "longitude": 46.715 },
+                { "code": "diriyah", "name": { "ar": "الدرعية", "en": "Diriyah" }, "latitude": 24.733, "longitude": 46.576 },
+                { "code": "kharj", "name": { "ar": "الخرج", "en": "Al-Kharj" }, "latitude": 24.148, "longitude": 47.305 },
+                { "code": "majmaah", "name": { "ar": "المجمعة", "en": "Al-Majmaah" }, "latitude": 25.904, "longitude": 45.346 },
+                { "code": "dawadmi", "name": { "ar": "الدوادمي", "en": "Al-Dawadmi" }, "latitude": 24.662, "longitude": 44.383 },
+                { "code": "wadi_aldawasir", "name": { "ar": "وادي الدواسر", "en": "Wadi Al-Dawasir" }, "latitude": 20.464, "longitude": 44.787 },
+                { "code": "zulfi", "name": { "ar": "الزلفي", "en": "Al-Zulfi" }, "latitude": 26.300, "longitude": 44.800 },
+                { "code": "shaqra", "name": { "ar": "شقراء", "en": "Shaqra" }, "latitude": 25.248, "longitude": 45.253 },
+                { "code": "afif", "name": { "ar": "عفيف", "en": "Afif" }, "latitude": 23.903, "longitude": 42.948 },
+                { "code": "quwayiyah", "name": { "ar": "القويعية", "en": "Al-Quwayiyah" }, "latitude": 24.046, "longitude": 45.266 }
             ]
         },
         {
             "code": "makkah",
             "name": { "ar": "منطقة مكة المكرمة", "en": "Makkah Region" },
             "cities": [
-                { "code": "makkah", "name": { "ar": "مكة المكرمة", "en": "Makkah" } },
-                { "code": "jeddah", "name": { "ar": "جدة", "en": "Jeddah" } },
-                { "code": "taif", "name": { "ar": "الطائف", "en": "Taif" } },
-                { "code": "rabigh", "name": { "ar": "رابغ", "en": "Rabigh" } },
-                { "code": "qunfudhah", "name": { "ar": "القنفذة", "en": "Al-Qunfudhah" } },
-                { "code": "lith", "name": { "ar": "الليث", "en": "Al-Lith" } },
-                { "code": "jumum", "name": { "ar": "الجموم", "en": "Al-Jumum" } },
-                { "code": "khulais", "name": { "ar": "خليص", "en": "Khulais" } }
+                { "code": "makkah", "name": { "ar": "مكة المكرمة", "en": "Makkah" }, "latitude": 21.423, "longitude": 39.826 },
+                { "code": "jeddah", "name": { "ar": "جدة", "en": "Jeddah" }, "latitude": 21.529, "longitude": 39.161 },
+                { "code": "taif", "name": { "ar": "الطائف", "en": "Taif" }, "latitude": 21.267, "longitude": 40.417 },
+                { "code": "rabigh", "name": { "ar": "رابغ", "en": "Rabigh" }, "latitude": 22.786, "longitude": 39.044 },
+                { "code": "qunfudhah", "name": { "ar": "القنفذة", "en": "Al-Qunfudhah" }, "latitude": 19.142, "longitude": 41.080 },
+                { "code": "lith", "name": { "ar": "الليث", "en": "Al-Lith" }, "latitude": 20.154, "longitude": 40.287 },
+                { "code": "jumum", "name": { "ar": "الجموم", "en": "Al-Jumum" }, "latitude": 21.627, "longitude": 39.703 },
+                { "code": "khulais", "name": { "ar": "خليص", "en": "Khulais" }, "latitude": 22.154, "longitude": 39.318 }
             ]
         },
         {
             "code": "madinah",
             "name": { "ar": "منطقة المدينة المنورة", "en": "Madinah Region" },
             "cities": [
-                { "code": "madinah", "name": { "ar": "المدينة المنورة", "en": "Madinah" } },
-                { "code": "yanbu", "name": { "ar": "ينبع", "en": "Yanbu" } },
-                { "code": "ula", "name": { "ar": "العلا", "en": "AlUla" } },
-                { "code": "badr", "name": { "ar": "بدر", "en": "Badr" } },
-                { "code": "khaybar", "name": { "ar": "خيبر", "en": "Khaybar" } },
-                { "code": "henakiyah", "name": { "ar": "الحناكية", "en": "Al-Henakiyah" } },
-                { "code": "mahd_aldhahab", "name": { "ar": "مهد الذهب", "en": "Mahd Al-Dhahab" } }
+                { "code": "madinah", "name": { "ar": "المدينة المنورة", "en": "Madinah" }, "latitude": 24.470, "longitude": 39.610 },
+                { "code": "yanbu", "name": { "ar": "ينبع", "en": "Yanbu" }, "latitude": 24.089, "longitude": 38.062 },
+                { "code": "ula", "name": { "ar": "العلا", "en": "AlUla" }, "latitude": 26.609, "longitude": 37.924 },
+                { "code": "badr", "name": { "ar": "بدر", "en": "Badr" }, "latitude": 23.917, "longitude": 38.933 },
+                { "code": "khaybar", "name": { "ar": "خيبر", "en": "Khaybar" }, "latitude": 25.699, "longitude": 39.292 },
+                { "code": "henakiyah", "name": { "ar": "الحناكية", "en": "Al-Henakiyah" }, "latitude": 24.912, "longitude": 40.663 },
+                { "code": "mahd_aldhahab", "name": { "ar": "مهد الذهب", "en": "Mahd Al-Dhahab" }, "latitude": 23.504, "longitude": 40.860 }
             ]
         },
         {
             "code": "eastern",
             "name": { "ar": "المنطقة الشرقية", "en": "Eastern Province" },
             "cities": [
-                { "code": "dammam", "name": { "ar": "الدمام", "en": "Dammam" } },
-                { "code": "khobar", "name": { "ar": "الخبر", "en": "Al-Khobar" } },
-                { "code": "dhahran", "name": { "ar": "الظهران", "en": "Dhahran" } },
-                { "code": "ahsa", "name": { "ar": "الأحساء", "en": "Al-Ahsa" } },
-                { "code": "qatif", "name": { "ar": "القطيف", "en": "Al-Qatif" } },
-                { "code": "jubail", "name": { "ar": "الجبيل", "en": "Al-Jubail" } },
-                { "code": "hafr_albatin", "name": { "ar": "حفر الباطن", "en": "Hafar Al-Batin" } },
-                { "code": "khafji", "name": { "ar": "الخفجي", "en": "Al-Khafji" } },
-                { "code": "ras_tanura", "name": { "ar": "رأس تنورة", "en": "Ras Tanura" } }
+                { "code": "dammam", "name": { "ar": "الدمام", "en": "Dammam" }, "latitude": 26.433, "longitude": 50.100 },
+                { "code": "khobar", "name": { "ar": "الخبر", "en": "Al-Khobar" }, "latitude": 26.300, "longitude": 50.217 },
+                { "code": "dhahran", "name": { "ar": "الظهران", "en": "Dhahran" }, "latitude": 26.267, "longitude": 50.150 },
+                { "code": "ahsa", "name": { "ar": "الأحساء", "en": "Al-Ahsa" }, "latitude": 25.380, "longitude": 49.589 },
+                { "code": "qatif", "name": { "ar": "القطيف", "en": "Al-Qatif" }, "latitude": 26.575, "longitude": 49.997 },
+                { "code": "jubail", "name": { "ar": "الجبيل", "en": "Al-Jubail" }, "latitude": 25.400, "longitude": 49.650 },
+                { "code": "hafr_albatin", "name": { "ar": "حفر الباطن", "en": "Hafar Al-Batin" }, "latitude": 28.434, "longitude": 45.964 },
+                { "code": "khafji", "name": { "ar": "الخفجي", "en": "Al-Khafji" }, "latitude": 28.421, "longitude": 48.496 },
+                { "code": "ras_tanura", "name": { "ar": "رأس تنورة", "en": "Ras Tanura" }, "latitude": 26.706, "longitude": 50.053 }
             ]
         },
         {
             "code": "qassim",
             "name": { "ar": "منطقة القصيم", "en": "Al-Qassim Region" },
             "cities": [
-                { "code": "buraidah", "name": { "ar": "بريدة", "en": "Buraidah" } },
-                { "code": "unaizah", "name": { "ar": "عنيزة", "en": "Unaizah" } },
-                { "code": "rass", "name": { "ar": "الرس", "en": "Al-Rass" } },
-                { "code": "bukayriyah", "name": { "ar": "البكيرية", "en": "Al-Bukayriyah" } },
-                { "code": "mithnab", "name": { "ar": "المذنب", "en": "Al-Mithnab" } }
+                { "code": "buraidah", "name": { "ar": "بريدة", "en": "Buraidah" }, "latitude": 26.333, "longitude": 43.967 },
+                { "code": "unaizah", "name": { "ar": "عنيزة", "en": "Unaizah" }, "latitude": 26.084, "longitude": 43.994 },
+                { "code": "rass", "name": { "ar": "الرس", "en": "Al-Rass" }, "latitude": 25.867, "longitude": 43.500 },
+                { "code": "bukayriyah", "name": { "ar": "البكيرية", "en": "Al-Bukayriyah" }, "latitude": 26.144, "longitude": 43.659 },
+                { "code": "mithnab", "name": { "ar": "المذنب", "en": "Al-Mithnab" }, "latitude": 25.859, "longitude": 44.223 }
             ]
         },
         {
             "code": "hail",
             "name": { "ar": "منطقة حائل", "en": "Hail Region" },
             "cities": [
-                { "code": "hail", "name": { "ar": "حائل", "en": "Hail" } },
-                { "code": "baqaa", "name": { "ar": "بقعاء", "en": "Baqaa" } },
-                { "code": "ghazalah", "name": { "ar": "الغزالة", "en": "Al-Ghazalah" } }
+                { "code": "hail", "name": { "ar": "حائل", "en": "Hail" }, "latitude": 27.517, "longitude": 41.683 },
+                { "code": "baqaa", "name": { "ar": "بقعاء", "en": "Baqaa" }, "latitude": 27.685, "longitude": 42.550 },
+                { "code": "ghazalah", "name": { "ar": "الغزالة", "en": "Al-Ghazalah" }, "latitude": 26.167, "longitude": 40.917 }
             ]
         },
         {
             "code": "tabuk",
             "name": { "ar": "منطقة تبوك", "en": "Tabuk Region" },
             "cities": [
-                { "code": "tabuk", "name": { "ar": "تبوك", "en": "Tabuk" } },
-                { "code": "wajh", "name": { "ar": "الوجه", "en": "Al-Wajh" } },
-                { "code": "duba", "name": { "ar": "ضباء", "en": "Duba" } },
-                { "code": "tayma", "name": { "ar": "تيماء", "en": "Tayma" } },
-                { "code": "umluj", "name": { "ar": "أملج", "en": "Umluj" } },
-                { "code": "haql", "name": { "ar": "حقل", "en": "Haql" } }
+                { "code": "tabuk", "name": { "ar": "تبوك", "en": "Tabuk" }, "latitude": 28.397, "longitude": 36.579 },
+                { "code": "wajh", "name": { "ar": "الوجه", "en": "Al-Wajh" }, "latitude": 26.283, "longitude": 36.417 },
+                { "code": "duba", "name": { "ar": "ضباء", "en": "Duba" }, "latitude": 27.349, "longitude": 35.696 },
+                { "code": "tayma", "name": { "ar": "تيماء", "en": "Tayma" }, "latitude": 27.626, "longitude": 38.548 },
+                { "code": "umluj", "name": { "ar": "أملج", "en": "Umluj" }, "latitude": 25.025, "longitude": 37.265 },
+                { "code": "haql", "name": { "ar": "حقل", "en": "Haql" }, "latitude": 29.286, "longitude": 34.939 }
             ]
         },
         {
             "code": "northern_borders",
             "name": { "ar": "منطقة الحدود الشمالية", "en": "Northern Borders Region" },
             "cities": [
-                { "code": "arar", "name": { "ar": "عرعر", "en": "Arar" } },
-                { "code": "rafha", "name": { "ar": "رفحاء", "en": "Rafha" } },
-                { "code": "turaif", "name": { "ar": "طريف", "en": "Turaif" } }
+                { "code": "arar", "name": { "ar": "عرعر", "en": "Arar" }, "latitude": 30.983, "longitude": 41.017 },
+                { "code": "rafha", "name": { "ar": "رفحاء", "en": "Rafha" }, "latitude": 29.628, "longitude": 43.521 },
+                { "code": "turaif", "name": { "ar": "طريف", "en": "Turaif" }, "latitude": 31.667, "longitude": 38.664 }
             ]
         },
         {
             "code": "jazan",
             "name": { "ar": "منطقة جازان", "en": "Jazan Region" },
             "cities": [
-                { "code": "jazan", "name": { "ar": "جازان", "en": "Jazan" } },
-                { "code": "sabya", "name": { "ar": "صبيا", "en": "Sabya" } },
-                { "code": "abu_arish", "name": { "ar": "أبو عريش", "en": "Abu Arish" } },
-                { "code": "samtah", "name": { "ar": "صامطة", "en": "Samtah" } }
+                { "code": "jazan", "name": { "ar": "جازان", "en": "Jazan" }, "latitude": 16.889, "longitude": 42.561 },
+                { "code": "sabya", "name": { "ar": "صبيا", "en": "Sabya" }, "latitude": 17.155, "longitude": 42.627 },
+                { "code": "abu_arish", "name": { "ar": "أبو عريش", "en": "Abu Arish" }, "latitude": 16.969, "longitude": 42.833 },
+                { "code": "samtah", "name": { "ar": "صامطة", "en": "Samtah" }, "latitude": 16.596, "longitude": 42.944 }
             ]
         },
         {
             "code": "najran",
             "name": { "ar": "منطقة نجران", "en": "Najran Region" },
             "cities": [
-                { "code": "najran", "name": { "ar": "نجران", "en": "Najran" } },
-                { "code": "sharurah", "name": { "ar": "شرورة", "en": "Sharurah" } }
+                { "code": "najran", "name": { "ar": "نجران", "en": "Najran" }, "latitude": 17.492, "longitude": 44.132 },
+                { "code": "sharurah", "name": { "ar": "شرورة", "en": "Sharurah" }, "latitude": 17.483, "longitude": 47.117 }
             ]
         },
         {
             "code": "bahah",
             "name": { "ar": "منطقة الباحة", "en": "Al-Bahah Region" },
             "cities": [
-                { "code": "bahah", "name": { "ar": "الباحة", "en": "Al-Bahah" } },
-                { "code": "baljurashi", "name": { "ar": "بلجرشي", "en": "Baljurashi" } },
-                { "code": "mandaq", "name": { "ar": "المندق", "en": "Al-Mandaq" } }
+                { "code": "bahah", "name": { "ar": "الباحة", "en": "Al-Bahah" }, "latitude": 20.013, "longitude": 41.468 },
+                { "code": "baljurashi", "name": { "ar": "بلجرشي", "en": "Baljurashi" }, "latitude": 19.859, "longitude": 41.557 },
+                { "code": "mandaq", "name": { "ar": "المندق", "en": "Al-Mandaq" }, "latitude": 20.108, "longitude": 41.288 }
             ]
         },
         {
             "code": "jouf",
             "name": { "ar": "منطقة الجوف", "en": "Al-Jouf Region" },
             "cities": [
-                { "code": "sakaka", "name": { "ar": "سكاكا", "en": "Sakaka" } },
-                { "code": "dumat_aljandal", "name": { "ar": "دومة الجندل", "en": "Dumat Al-Jandal" } },
-                { "code": "qurayyat", "name": { "ar": "القريات", "en": "Al-Qurayyat" } }
+                { "code": "sakaka", "name": { "ar": "سكاكا", "en": "Sakaka" }, "latitude": 29.970, "longitude": 40.200 },
+                { "code": "dumat_aljandal", "name": { "ar": "دومة الجندل", "en": "Dumat Al-Jandal" }, "latitude": 29.811, "longitude": 39.868 },
+                { "code": "qurayyat", "name": { "ar": "القريات", "en": "Al-Qurayyat" }, "latitude": 31.332, "longitude": 37.343 }
             ]
         },
         {
             "code": "asir",
             "name": { "ar": "منطقة عسير", "en": "Asir Region" },
             "cities": [
-                { "code": "abha", "name": { "ar": "أبها", "en": "Abha" } },
-                { "code": "khamis_mushait", "name": { "ar": "خميس مشيط", "en": "Khamis Mushait" } },
-                { "code": "bisha", "name": { "ar": "بيشة", "en": "Bisha" } },
-                { "code": "namas", "name": { "ar": "النماص", "en": "Al-Namas" } },
-                { "code": "muhayil", "name": { "ar": "محايل عسير", "en": "Muhayil Asir" } }
+                { "code": "abha", "name": { "ar": "أبها", "en": "Abha" }, "latitude": 18.217, "longitude": 42.500 },
+                { "code": "khamis_mushait", "name": { "ar": "خميس مشيط", "en": "Khamis Mushait" }, "latitude": 18.300, "longitude": 42.733 },
+                { "code": "bisha", "name": { "ar": "بيشة", "en": "Bisha" }, "latitude": 20.000, "longitude": 42.600 },
+                { "code": "namas", "name": { "ar": "النماص", "en": "Al-Namas" }, "latitude": 19.120, "longitude": 42.130 },
+                { "code": "muhayil", "name": { "ar": "محايل عسير", "en": "Muhayil Asir" }, "latitude": 18.546, "longitude": 42.049 }
             ]
         }
     ]

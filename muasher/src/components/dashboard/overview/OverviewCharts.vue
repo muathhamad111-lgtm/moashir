@@ -7,7 +7,8 @@ import DonutChart from '@/components/charts/DonutChart.vue'
 import GaugeChart from '@/components/charts/GaugeChart.vue'
 import SegmentedBar from '@/components/charts/SegmentedBar.vue'
 import ProgressList from '@/components/charts/ProgressList.vue'
-import WidgetCriteria from '../widgets/WidgetCriteria.vue'
+import OverviewCriteriaBars from './OverviewCriteriaBars.vue'
+import OverviewGeography from './OverviewGeography.vue'
 import OverviewPanel from './OverviewPanel.vue'
 import { useOverviewCharts } from '@/composables/useOverviewCharts'
 import { useOverviewFormats } from '@/composables/useOverviewFormats'
@@ -85,6 +86,16 @@ const W = (key) => t(`dashboard.widgets.titles.${key}`)
     </OverviewPanel>
 
     <OverviewPanel
+      class="overview-panel--map"
+      data-panel="geography"
+      :title="T('geography')"
+      icon="location"
+      :note="t('dashboard.overview.geography.note')"
+      wide
+    >
+      <OverviewGeography :overview="overview" />
+    </OverviewPanel>
+    <OverviewPanel
       data-panel="average"
       :title="T('accreditedAverage')"
       icon="gauge"
@@ -105,22 +116,14 @@ const W = (key) => t(`dashboard.widgets.titles.${key}`)
         :format-share="format.share"
       />
     </OverviewPanel>
+
     <OverviewPanel
-      data-panel="regions"
-      :title="W('entities_by_region')"
-      icon="location"
+      class="overview-panel--fit"
+      data-panel="sectors"
+      :title="W('entities_by_sector')"
+      icon="layers"
       :note="now"
     >
-      <ProgressList
-        :rows="charts.regions.value"
-        :caption="W('entities_by_region')"
-        :format-value="format.count"
-        :format-share="format.share"
-        :empty-text="t('dashboard.widgets.empty')"
-      />
-    </OverviewPanel>
-
-    <OverviewPanel data-panel="sectors" :title="W('entities_by_sector')" icon="layers" :note="now">
       <ProgressList
         :rows="charts.sectors.value"
         :caption="W('entities_by_sector')"
@@ -129,7 +132,13 @@ const W = (key) => t(`dashboard.widgets.titles.${key}`)
         :empty-text="t('dashboard.widgets.empty')"
       />
     </OverviewPanel>
-    <OverviewPanel data-panel="decades" :title="T('decades')" icon="calendar" :note="now">
+    <OverviewPanel
+      class="overview-panel--fit"
+      data-panel="decades"
+      :title="T('decades')"
+      icon="calendar"
+      :note="now"
+    >
       <ColumnChart
         :categories="charts.decades.value.categories"
         :series="charts.decades.value.series"
@@ -139,12 +148,13 @@ const W = (key) => t(`dashboard.widgets.titles.${key}`)
       />
     </OverviewPanel>
     <OverviewPanel
+      class="overview-panel--fit"
       data-panel="criteria"
       :title="W('lowest_criteria')"
       icon="warning-triangle"
       :note="now"
     >
-      <WidgetCriteria :data="charts.widget('lowest_criteria').data" />
+      <OverviewCriteriaBars :data="charts.widget('lowest_criteria').data" />
     </OverviewPanel>
   </div>
 </template>

@@ -27,6 +27,33 @@ function toPath(raw = {}) {
   return { path: raw.path ?? '', submitted: count(raw.submitted), completed: count(raw.completed) }
 }
 
+function toCoordinate(value) {
+  return value === null || value === undefined ? null : Number(value)
+}
+
+// One region or city on the overview map; a city's id and coordinates are absent for a region.
+function toPlace(raw = {}) {
+  return {
+    regionId: raw.regionId ?? null,
+    cityId: raw.cityId ?? null,
+    code: raw.code ?? '',
+    name: raw.name ?? null,
+    latitude: toCoordinate(raw.latitude),
+    longitude: toCoordinate(raw.longitude),
+    entities: Number(raw.entities) || 0,
+    requests: Number(raw.requests) || 0,
+    averagePercent: raw.averagePercent ?? null,
+    collected: raw.collected ?? '0.00',
+  }
+}
+
+function toGeography(raw = {}) {
+  return {
+    regions: (raw?.regions ?? []).map(toPlace).filter((place) => place.code),
+    cities: (raw?.cities ?? []).map(toPlace).filter((place) => place.code),
+  }
+}
+
 export function toExecutiveOverview(raw = {}) {
   return {
     period: { ...toWindow(raw.period), preset: raw.period?.preset ?? 'month' },
@@ -35,6 +62,7 @@ export function toExecutiveOverview(raw = {}) {
     trends: toTrends(raw.trends),
     paths: (raw.paths ?? []).map(toPath),
     snapshot: (raw.snapshot ?? []).filter((widget) => widget?.key),
+    geography: toGeography(raw.geography),
     generatedAt: raw.generatedAt ?? null,
   }
 }

@@ -2478,7 +2478,6 @@
       "results": "Results: {count}",
       "transition": "{verb} → {status}",
       "titles": {
-        "entities_by_region": "Entities by region",
         "by_region": "Requests by region",
         "entities_by_sector": "Entities by development sector",
         "entities_by_founding_decade": "Entities by founding decade",
@@ -2655,7 +2654,8 @@
         "paths": "Requests by path",
         "levels": "Entities by level",
         "governance": "Entities by governance grade",
-        "decades": "Entities by founding decade"
+        "decades": "Entities by founding decade",
+        "geography": "Geographic distribution"
       },
       "series": {
         "entities": "Entities registered",
@@ -2677,6 +2677,28 @@
         "self": "Self",
         "accredited": "Accredited",
         "advanced": "Award"
+      },
+      "geography": {
+        "metricsLabel": "Measure shown on the map",
+        "metrics": {
+          "entities": "Registered entities",
+          "requests": "Assessment requests",
+          "averagePercent": "Average result",
+          "collected": "Revenue collected"
+        },
+        "mapCaption": "Map of the Kingdom by {metric}",
+        "legend": "Map key",
+        "upTo": "Up to {value}",
+        "none": "No data",
+        "topRegions": "Top regions",
+        "citiesOf": "Cities of {region}",
+        "noCities": "No city in this region has a value.",
+        "note": "Entities: as they stand now; the other measures: within the selected period"
+      },
+      "criteria": {
+        "results": "Based on {count} results",
+        "resultsRange": "Based on {min} to {max} results",
+        "caption": "Average result of each main criterion, in percent"
       }
     },
     "assessorOverview": {

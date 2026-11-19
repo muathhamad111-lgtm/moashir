@@ -44,6 +44,7 @@ final class ExecutiveOverviewResource extends JsonResource
                 'key' => $widget->key,
                 'data' => $widget->data,
             ], $overview->snapshot),
+            'geography' => $overview->geography,
             'generated_at' => $overview->generatedAt->toIso8601String(),
         ];
     }

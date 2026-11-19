@@ -34,6 +34,23 @@ const OVERVIEW = toExecutiveOverview({
   snapshot: [
     { key: 'entities_by_level', data: [{ key: 'gold', count: 2 }] },
     { key: 'entities_by_governance', data: [{ key: 'from_70_to_84', count: 5 }] },
+    {
+      key: 'lowest_criteria',
+      data: [
+        {
+          code: 'M2',
+          name: { ar: 'التخطيط', en: 'Planning' },
+          averagePercent: '59.56',
+          results: 4,
+        },
+        {
+          code: 'M5',
+          name: { ar: 'الابتكار', en: 'Innovation' },
+          averagePercent: '60.00',
+          results: 4,
+        },
+      ],
+    },
   ],
   generatedAt: '2026-11-17T08:00:00+00:00',
 })
@@ -86,9 +103,9 @@ describe('ExecutiveOverview', () => {
       'Entities by level',
       'Amounts collected',
       'Requests by path',
+      'Geographic distribution',
       'Accredited assessment average',
       'Entities by governance grade',
-      'Entities by region',
       'Entities by development sector',
       'Entities by founding decade',
       'Lowest-performing criteria',
@@ -105,6 +122,18 @@ describe('ExecutiveOverview', () => {
       'payments_collected',
     )
     expect(wrapper.find('.chart--gauge svg').attributes('aria-label')).toContain('79')
+  })
+
+  it('ranks the lowest criteria as horizontal bars and states the result count once', async () => {
+    const { wrapper } = await mountAt('/dashboard', 'en')
+    const panel = wrapper.find('[data-panel="criteria"]')
+    expect(panel.findAll('.ranked-bars__label').map((label) => label.text())).toEqual([
+      'Planning',
+      'Innovation',
+    ])
+    expect(panel.find('.ranked-bars__value').text()).toBe('59.56%')
+    expect(panel.find('.overview-criteria__note').text()).toBe('Based on 4 results')
+    expect(panel.find('.widget-criteria').exists()).toBe(false)
   })
 
   it('switches presets through the address and asks the server again', async () => {

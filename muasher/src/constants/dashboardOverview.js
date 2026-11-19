@@ -77,3 +77,16 @@ export const ASSESSOR_CARD_ICONS = Object.freeze({
 export const ASSESSOR_LOWER_IS_BETTER = Object.freeze(['average_duration_days'])
 
 export const ASSESSOR_PATHS = Object.freeze(['accredited', 'advanced'])
+
+// The overview map's measures, each with the formatter that renders its value.
+export const GEOGRAPHY_METRICS = Object.freeze([
+  Object.freeze({ key: 'entities', format: 'count' }),
+  Object.freeze({ key: 'requests', format: 'count' }),
+  Object.freeze({ key: 'averagePercent', format: 'percent' }),
+  Object.freeze({ key: 'collected', format: 'money' }),
+])
+
+export const DEFAULT_GEOGRAPHY_METRIC = 'entities'
+
+// Four shades of one hue, light to dark; an empty region stays neutral.
+export const GEOGRAPHY_STEPS = 4

@@ -316,6 +316,19 @@
       grid-column: span 2;
     }
   }
+
+  // The closing row keeps each panel at its own height: nothing follows it, so a long
+  // criteria list never stretches its neighbours into empty cards.
+  &--fit {
+    align-self: start;
+  }
+
+  // The map sits beside two short panels stacked in the third column.
+  @include respond-to('xl') {
+    &--map {
+      grid-row: span 2;
+    }
+  }
 }
 
 .overview-panel__head {

@@ -111,12 +111,14 @@ test.describe('Task-68 — staff', () => {
     page,
   }, testInfo) => {
     await seedSignedIn(page, ADMIN, { locale: localeOf(testInfo), theme: 'light' })
-    await open(page, '/dashboard', '[data-panel="criteria"] .widget-criteria__fill')
-    const gaps = await page.locator('.chart-progress__track, .widget-criteria__track').evaluateAll(
+    await open(page, '/dashboard', '[data-panel="criteria"] .ranked-bars__fill')
+    const gaps = await page.locator('.chart-progress__track, .ranked-bars__bar').evaluateAll(
       (tracks, rtl) => {
         return tracks.map((track) => {
           const box = track.getBoundingClientRect()
-          const fill = track.querySelector('rect, .chart-progress__fill').getBoundingClientRect()
+          const fill = track
+            .querySelector('.ranked-bars__fill, .chart-progress__fill')
+            .getBoundingClientRect()
           const startGap = rtl ? box.right - fill.right : fill.left - box.left
           return { startGap, partial: fill.width < box.width - 1 }
         })
@@ -126,7 +128,7 @@ test.describe('Task-68 — staff', () => {
     expect(gaps.length).toBeGreaterThan(4)
     expect(gaps.some((gap) => gap.partial)).toBe(true)
     expect(gaps.every((gap) => Math.abs(gap.startGap) < 1)).toBe(true)
-    for (const key of ['regions', 'criteria']) {
+    for (const key of ['geography', 'criteria']) {
       await settleFonts(page)
       await page.locator(`[data-panel="${key}"]`).screenshot({
         path: `${SHOTS}/dashboard-${key}-${suffixOf(testInfo)}.png`,

@@ -1,16 +1,4 @@
 // The platform snapshot of the executive overview (as it stands now, whatever the period).
-export const REGIONS = [
-  { regionId: 1, code: 'RYD', name: { ar: 'منطقة الرياض', en: 'Riyadh Region' }, count: 18 },
-  { regionId: 2, code: 'MKK', name: { ar: 'منطقة مكة المكرمة', en: 'Makkah Region' }, count: 11 },
-  { regionId: 5, code: 'EST', name: { ar: 'المنطقة الشرقية', en: 'Eastern Province' }, count: 9 },
-  {
-    regionId: 3,
-    code: 'MDN',
-    name: { ar: 'منطقة المدينة المنورة', en: 'Madinah Region' },
-    count: 4,
-  },
-]
-
 export const LOWEST_CRITERIA = [
   {
     code: '4',
@@ -43,7 +31,6 @@ export const OVERVIEW_SNAPSHOT = [
       { key: 'not_reported', count: 5 },
     ],
   },
-  { key: 'entities_by_region', data: REGIONS },
   {
     key: 'entities_by_sector',
     data: [

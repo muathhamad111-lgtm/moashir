@@ -90,6 +90,32 @@ test('the dashboard opens with the platform overview for the System Administrato
   await page.screenshot({ path: `${SHOTS}/overview-print-${locale(testInfo)}.png`, fullPage: true })
 })
 
+test('the overview map shades the regions, switches the measure and lists a region’s cities', async ({
+  page,
+}, testInfo) => {
+  await seedRoles(page, testInfo, ['system_admin'], 7000)
+  await page.goto('/dashboard')
+  const map = page.locator('[data-panel="geography"]')
+  await expect(map.locator('.region-map__region')).toHaveCount(13)
+  await expect(map.locator('.region-map__city').first()).toBeVisible()
+  await expect(map.locator('[data-region="riyadh"]')).toHaveAttribute('aria-pressed', 'true')
+
+  await map.locator('[data-metric="collected"]').click()
+  await expect(map.locator('[data-metric="collected"]')).toHaveAttribute('aria-pressed', 'true')
+  await map.locator('[data-region="makkah"]').focus()
+  await page.keyboard.press('Enter')
+  await expect(map.locator('[data-testid="geography-cities"] h4')).toContainText(
+    locale(testInfo) === 'en' ? 'Makkah' : 'مكة',
+  )
+  const panels = await page
+    .locator('[data-panel="geography"], [data-panel="average"], [data-panel="governance"]')
+    .evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().height))
+  // The map spans two rows beside the gauge and the governance bar, so no row is left half empty.
+  expect(Math.abs(panels[0] - panels[1] - panels[2])).toBeLessThan(40)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await map.screenshot({ path: `${SHOTS}/overview-map-${locale(testInfo)}.png` })
+})
+
 test('the old executive link lands on the dashboard, and the overview stays with its permission', async ({
   page,
 }, testInfo) => {

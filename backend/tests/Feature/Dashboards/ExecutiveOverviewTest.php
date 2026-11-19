@@ -102,6 +102,26 @@ it('counts a confirmed preview payment in the collections, as revenue of its own
         ->and($response->json('data.trends.series.collected')[$day['2026-11-05']])->toBe('2300.00');
 });
 
+it('places each region and city on the map with its entities, requests, average and collections', function (): void {
+    $completed = completedAccreditedRequest(publishedAccreditedCriteria(), assessorUser());
+    $entity = $completed->entity;
+    $entity->city->forceFill(['latitude' => 24.638, 'longitude' => 46.715])->saveQuietly();
+    paidAt($entity, '2026-11-05 10:00:00');
+    paidAt($entity, '2026-10-05 10:00:00');
+    $quiet = entityWithOwner();
+
+    $response = overviewOf(systemAdmin(), 'period=month');
+    $regions = collect($response->json('data.geography.regions'))->keyBy('region_id');
+    $cities = collect($response->json('data.geography.cities'))->keyBy('city_id');
+    $figures = ['entities' => 1, 'requests' => 1, 'average_percent' => '77.00', 'collected' => overviewCards($response)->get('payments_collected')['value']];
+
+    expect($regions->get($entity->region_id))->toMatchArray([...$figures, 'code' => $entity->region->code])
+        ->and($cities->get($entity->city_id))->toMatchArray([...$figures, 'region_id' => $entity->region_id, 'latitude' => 24.638, 'longitude' => 46.715])
+        ->and($regions->get($quiet->region_id))->toMatchArray(['entities' => 1, 'requests' => 0, 'average_percent' => null, 'collected' => '0.00'])
+        ->and($cities->get($quiet->city_id)['latitude'])->toBeNull()
+        ->and(collect($response->json('data.snapshot'))->pluck('key')->all())->not->toContain('entities_by_region');
+});
+
 it('counts submitted and completed requests by path in the period', function (): void {
     $version = publishedAccreditedCriteria();
     completedAccreditedRequest($version, assessorUser());

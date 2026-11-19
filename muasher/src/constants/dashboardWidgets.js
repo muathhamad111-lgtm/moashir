@@ -70,7 +70,6 @@ const COMMITTEE_CYCLES = table(
 )
 
 export const DASHBOARD_WIDGETS = Object.freeze({
-  entities_by_region: bars(BAR_LABELS.NAME),
   by_region: bars(BAR_LABELS.NAME),
   entities_by_sector: bars(BAR_LABELS.SECTOR),
   entities_by_founding_decade: bars(BAR_LABELS.DECADE),
