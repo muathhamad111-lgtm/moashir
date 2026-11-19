@@ -24,6 +24,13 @@ import { LEVEL_FILTERS } from '../stores/entityLevels'
 import { applyProfile, isDeleted } from '../stores/entitiesStore'
 import { applyUnifiedNumber } from '../stores/entityUnifiedNumber'
 import { removeEntityLogo, storeEntityLogo } from '../stores/entityLogo'
+import {
+  removeVatCertificate,
+  storeVatCertificate,
+  vatCertificateFileOf,
+} from '../stores/entityBilling'
+import { findFile } from '../stores/finance/financeState'
+import { signedDownloadOf } from '../stores/finance/signedFiles'
 import { assertProfile, assertReason, contactFrom, profileFrom } from '../stores/entityValidation'
 import { sessionCan } from '../stores/sessionPermissions'
 import { entitiesCsv, exportFileName } from '../stores/entityCsv'
@@ -104,6 +111,33 @@ export const entitiesHandlers = [
     entityRoute(() => {
       const { entity } = ownEditableEntity()
       return envelope(ownResource(removeEntityLogo(entity)))
+    }),
+  ),
+
+  http.post(
+    '/api/v1/entities/me/vat-certificate',
+    entityRoute(async ({ request }) => {
+      const { entity } = ownEditableEntity()
+      const form = await request.formData()
+      await storeVatCertificate(entity, form.get('file'))
+      return envelope(ownResource(entity), {}, { status: 201 })
+    }),
+  ),
+
+  http.delete(
+    '/api/v1/entities/me/vat-certificate',
+    entityRoute(() => {
+      const { entity } = ownEditableEntity()
+      return envelope(ownResource(removeVatCertificate(entity)))
+    }),
+  ),
+
+  http.post(
+    '/api/v1/entities/me/vat-certificate/download',
+    entityRoute(() => {
+      const user = ownEntityActor(P.PROFILE_VIEW)
+      const file = vatCertificateFileOf(ownEntityOf(user), findFile)
+      return envelope(signedDownloadOf(user, file))
     }),
   ),
 

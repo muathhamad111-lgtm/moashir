@@ -58,6 +58,35 @@ describe('PublicNavbar', () => {
     expect(wrapper.find('.public-navbar__logo').attributes('alt')).toBe('Moashir platform')
   })
 
+  it('renders a managed sub-menu as a dropdown button with its links', async () => {
+    const globals = createTestGlobals({ locale: 'en' })
+    usePublicHomeStore(globals.pinia).siteSettings = {
+      headerLinks: [
+        { label: { ar: 'الرئيسية', en: 'Home' }, url: '/', children: [] },
+        {
+          label: { ar: 'المزيد', en: 'More' },
+          url: null,
+          children: [
+            { label: { ar: 'المؤشرات', en: 'Indicators' }, url: '/kpis' },
+            { label: { ar: 'الخصوصية', en: 'Privacy' }, url: '/privacy' },
+          ],
+        },
+      ],
+    }
+    mountNavbar(globals)
+    const trigger = wrapper.find('.public-navbar__menu .public-nav-group__trigger')
+    expect(trigger.text()).toBe('More')
+    expect(trigger.attributes('aria-expanded')).toBe('false')
+    await trigger.trigger('click')
+    expect(trigger.attributes('aria-expanded')).toBe('true')
+    const links = wrapper.findAll('.public-navbar__menu .public-nav-group__link')
+    expect(links.map((link) => link.attributes('href'))).toEqual(['/kpis', '/privacy'])
+    await wrapper
+      .find('.public-navbar__menu .public-nav-group')
+      .trigger('keydown', { key: 'Escape' })
+    expect(trigger.attributes('aria-expanded')).toBe('false')
+  })
+
   it('shows the uploaded public site logo instead of the brand default', () => {
     const globals = createTestGlobals({ locale: 'en' })
     usePublicHomeStore(globals.pinia).siteSettings = {

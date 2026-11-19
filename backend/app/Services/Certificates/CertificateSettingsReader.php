@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Certificates;
 
 use App\Data\Certificates\CertificateSettingsView;
+use App\Enums\Certificates\CertificateIssuanceMode;
 use App\Enums\Settings\SettingKey;
 use App\Services\Settings\SettingsStore;
 use App\Support\ValueObjects\LevelThresholds;
@@ -15,7 +16,7 @@ final readonly class CertificateSettingsReader
 
     public function read(): CertificateSettingsView
     {
-        return new CertificateSettingsView($this->accreditedIssuanceEnabled(), $this->thresholds());
+        return new CertificateSettingsView($this->accreditedIssuanceMode(), $this->thresholds());
     }
 
     public function thresholds(): LevelThresholds
@@ -25,8 +26,15 @@ final readonly class CertificateSettingsReader
         return is_array($stored) ? LevelThresholds::fromArray($stored) : LevelThresholds::defaults();
     }
 
-    public function accreditedIssuanceEnabled(): bool
+    public function accreditedIssuanceMode(): CertificateIssuanceMode
     {
-        return $this->store->get(SettingKey::AccreditedCertificateIssuance) !== false;
+        $stored = $this->store->get(SettingKey::AccreditedCertificateIssuanceMode);
+
+        return is_string($stored) ? CertificateIssuanceMode::tryFrom($stored) ?? CertificateIssuanceMode::Automatic : CertificateIssuanceMode::Automatic;
+    }
+
+    public function issuesAutomatically(): bool
+    {
+        return $this->accreditedIssuanceMode() === CertificateIssuanceMode::Automatic;
     }
 }

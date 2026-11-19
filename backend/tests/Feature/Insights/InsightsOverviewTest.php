@@ -13,6 +13,7 @@ const OVERVIEW_MARKS = ['M1.1' => '70.00', 'M1.2' => '70.00', 'M2.1' => '70.00',
 
 beforeEach(function (): void {
     Notification::fake();
+    activateInsightsKit();
 });
 
 it('selects the latest eligible accredited result and reports the rules versions', function (): void {

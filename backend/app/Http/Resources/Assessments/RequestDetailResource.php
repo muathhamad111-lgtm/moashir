@@ -44,7 +44,7 @@ final class RequestDetailResource extends JsonResource
     {
         $paid = ['paid' => $detail->isPaid];
 
-        if (! $detail->revealsStaffIdentities) {
+        if (! $detail->revealsStaffIdentities || ! RequestPaymentPresenter::revealsDetailsTo($request->user())) {
             return $paid;
         }
 

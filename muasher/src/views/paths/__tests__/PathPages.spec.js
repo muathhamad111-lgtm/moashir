@@ -3,6 +3,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { setActivePinia } from 'pinia'
 import AccreditedPath from '@/views/paths/AccreditedPath.vue'
 import AwardPath from '@/views/paths/AwardPath.vue'
+import SelfPath from '@/views/paths/SelfPath.vue'
 import AccreditedRequest from '@/views/paths/AccreditedRequest.vue'
 import { dashboardService } from '@/services/dashboardService'
 import { accreditedService } from '@/services/accreditedService'
@@ -137,6 +138,64 @@ describe('accredited path page', () => {
       'Currently unavailable',
     )
     expect(wrapper.find('[data-testid="path-primary-action"]').exists()).toBe(false)
+  })
+})
+
+const SELF = {
+  pricing: { price: null, isFree: true, availability: 'available' },
+  openDraft: null,
+  awaitingPayment: null,
+  lastResult: {
+    assessmentId: 9001,
+    number: 'SLF-2026-009001',
+    percent: '72.97',
+    completedAt: '2026-11-19T08:00:00Z',
+  },
+}
+
+function boardWithSelf(self) {
+  const data = board()
+  return { ...data, paths: { ...data.paths, self } }
+}
+
+describe('self path page (compact header)', () => {
+  it('keeps the header to one slim band: title, chips, last result and the action', async () => {
+    dashboardService.getEntityBoard.mockResolvedValue({ data: boardWithSelf(SELF) })
+    const wrapper = await mountAt(SelfPath, '/paths/self')
+    const header = wrapper.find('[data-testid="path-header-self"]')
+    expect(header.classes()).toContain('path-header--compact')
+    expect(header.find('.path-header__lead').exists()).toBe(false)
+    expect(header.find('.path-header__heading').text()).toContain('اختياري · لا يمنح مستوى')
+    expect(header.find('[data-testid="path-free-chip"]').exists()).toBe(true)
+    const status = header.find('[data-testid="path-status-card"]')
+    expect(status.attributes('data-state')).toBe('start')
+    expect(status.text()).toContain('آخر نتيجة')
+    expect(status.text()).toContain('72.97')
+    expect(status.text()).not.toContain('2026-11-19')
+    expect(status.find('[data-testid="path-primary-action"]').exists()).toBe(true)
+  })
+
+  it('shows the price inline instead of the free chip when the self path is paid', async () => {
+    const paid = {
+      ...SELF,
+      lastResult: null,
+      pricing: { price: PRICE, isFree: false, availability: 'available' },
+    }
+    dashboardService.getEntityBoard.mockResolvedValue({ data: boardWithSelf(paid) })
+    const wrapper = await mountAt(SelfPath, '/paths/self', 'en')
+    const header = wrapper.find('[data-testid="path-header-self"]')
+    expect(header.find('[data-testid="path-free-chip"]').exists()).toBe(false)
+    expect(header.find('[data-testid="path-price"]').text()).toContain('before VAT')
+    expect(header.find('[data-testid="path-status-card"]').text()).toContain(
+      'No self assessment yet',
+    )
+  })
+
+  it('leaves the other path headers in their full layout', async () => {
+    const wrapper = await mountAt(AccreditedPath, '/paths/accredited')
+    const header = wrapper.find('[data-testid="path-header-accredited"]')
+    expect(header.classes()).not.toContain('path-header--compact')
+    expect(header.find('.path-header__lead').exists()).toBe(true)
   })
 })
 

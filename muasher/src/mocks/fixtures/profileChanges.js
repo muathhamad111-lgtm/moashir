@@ -20,6 +20,15 @@ export const PROFILE_FIELD_LABELS = Object.freeze({
   },
   phone: { ar: 'رقم الجوال', en: 'Mobile number' },
   marketing_consent: { ar: 'أخبار المنصة وعروضها', en: 'Platform news and offers' },
+  address_building_number: { ar: 'رقم المبنى', en: 'Building number' },
+  address_street: { ar: 'الشارع', en: 'Street' },
+  address_district: { ar: 'الحي', en: 'District' },
+  address_city: { ar: 'المدينة (العنوان الوطني)', en: 'City (national address)' },
+  address_postal_code: { ar: 'الرمز البريدي', en: 'Postal code' },
+  address_additional_number: { ar: 'الرقم الإضافي', en: 'Additional number' },
+  address_short_code: { ar: 'العنوان المختصر', en: 'Short address' },
+  vat_registered: { ar: 'التسجيل في ضريبة القيمة المضافة', en: 'VAT registration' },
+  vat_number: { ar: 'الرقم الضريبي', en: 'VAT registration number' },
 })
 
 const SYSTEM_ADMIN_ROLE = {

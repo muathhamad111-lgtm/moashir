@@ -35,6 +35,13 @@ function namaaProfile(array $overrides = [], string $ownerName = 'سارة بن�
         'license_number' => '770000123',
         'founded_on' => '2015-03-01',
         'website_url' => null,
+        'address_building_number' => '2154',
+        'address_street' => 'شارع الأمير سلطان',
+        'address_district' => 'حي الروضة',
+        'address_city' => 'جدة',
+        'address_postal_code' => '23435',
+        'address_additional_number' => '8027',
+        'vat_registered' => false,
         ...$overrides,
     ]);
     $entity->setRelation('owner', new User()->forceFill(['name' => $ownerName, 'email' => 'info@namaa.example.sa']));
@@ -53,16 +60,17 @@ function namaaMockGaps(): array
     ];
 }
 
-it('reports the design mock at 60 percent with three missing fields in identity and governance', function (): void {
+it('reports the design mock at 72 percent with three missing fields in identity and governance', function (): void {
     expect(ProfileCompletion::of(namaaProfile(namaaMockGaps()))->toArray())->toBe([
-        'percent' => 60,
-        'counted' => 15,
-        'completed_count' => 9,
+        'percent' => 72,
+        'counted' => 22,
+        'completed_count' => 16,
         'sections' => [
             ['key' => 'identity', 'state' => 'incomplete', 'missing_count' => 3, 'missing_fields' => ['unified_number', 'license_number', 'founded_on']],
             ['key' => 'classification', 'state' => 'complete', 'missing_count' => 0, 'missing_fields' => []],
             ['key' => 'governance', 'state' => 'incomplete', 'missing_count' => 3, 'missing_fields' => ['governance_grade', 'employees_count', 'annual_beneficiaries_count']],
             ['key' => 'contact', 'state' => 'complete', 'missing_count' => 0, 'missing_fields' => []],
+            ['key' => 'billing', 'state' => 'complete', 'missing_count' => 0, 'missing_fields' => []],
         ],
     ]);
 });
@@ -74,11 +82,24 @@ it('floors the share of the filled counted fields', function (array $overrides, 
         ->and($completion->completedCount())->toBe($completed)
         ->and($completion->isComplete())->toBe($isComplete);
 })->with([
-    'every counted field' => [[], 100, 15, true],
-    'governance saved after the mock' => [['unified_number' => null, 'license_number' => null, 'founded_on' => null], 80, 12, false],
-    'legacy record without a unified number' => [['unified_number' => null], 93, 14, false],
-    'fourteen of fifteen floors to 93' => [['employees_count' => null], 93, 14, false],
+    'every counted field' => [[], 100, 22, true],
+    'governance saved after the mock' => [['unified_number' => null, 'license_number' => null, 'founded_on' => null], 86, 19, false],
+    'legacy record without a unified number' => [['unified_number' => null], 95, 21, false],
+    'twenty-one of twenty-two floors to 95' => [['employees_count' => null], 95, 21, false],
+    'no billing data yet' => [['address_building_number' => null, 'address_street' => null, 'address_district' => null, 'address_city' => null, 'address_postal_code' => null, 'address_additional_number' => null, 'vat_registered' => null], 68, 15, false],
 ]);
+
+it('counts the VAT number and certificate only when the entity is registered for VAT', function (): void {
+    $registered = ProfileCompletion::of(namaaProfile(['vat_registered' => true, 'vat_number' => '310123456700003']));
+    $notRegistered = ProfileCompletion::of(namaaProfile(['vat_registered' => false]));
+
+    expect($registered->counted())->toBe(24)
+        ->and($registered->missingIn(ProfileSection::Billing))->toBe([ProfileSectionField::VatCertificate])
+        ->and($registered->isSectionComplete(ProfileSection::Billing))->toBeFalse()
+        ->and(ProfileCompletion::of(namaaProfile(['vat_registered' => true, 'vat_certificate_file_id' => 91]))->missingIn(ProfileSection::Billing))->toBe([ProfileSectionField::VatNumber])
+        ->and($notRegistered->counted())->toBe(22)
+        ->and($notRegistered->isSectionComplete(ProfileSection::Billing))->toBeTrue();
+});
 
 it('treats a year-only founding record as a missing founding date', function (): void {
     $completion = ProfileCompletion::of(namaaProfile(['founded_on' => null, 'founding_year' => 2015]));
@@ -106,7 +127,8 @@ it('never counts the optional fields', function (): void {
     $completion = ProfileCompletion::of(namaaProfile(['name' => ['ar' => 'مؤسسة نماء للتنمية', 'en' => null], 'website_url' => null]));
 
     expect($completion->isComplete())->toBeTrue()
-        ->and(fn (): ProfileCompletion => new ProfileCompletion([ProfileSectionField::Phone]))->toThrow(InvalidArgumentException::class);
+        ->and(fn (): ProfileCompletion => new ProfileCompletion([ProfileSectionField::Phone], []))->toThrow(InvalidArgumentException::class)
+        ->and(fn (): ProfileCompletion => new ProfileCompletion([ProfileSectionField::NameAr], [ProfileSectionField::VatNumber]))->toThrow(InvalidArgumentException::class);
 });
 
 it('fingerprints a section on its own editable values only', function (): void {

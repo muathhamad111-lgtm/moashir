@@ -50,7 +50,7 @@ function anotherTransfer(BankAccount $account, ?string $contents = null): Paymen
     return submittedTransfer(ownerOf(entityWithOwner()), $account, $contents ?? SAMPLE_PDF.'%'.fake()->uuid());
 }
 
-it('lists transfers awaiting approval oldest first, test ones included, with the counts', function (): void {
+it('lists transfers awaiting approval oldest first, all of them live, with the counts', function (): void {
     ['account' => $account, 'payment' => $first] = transferUnderReview();
     $second = anotherTransfer($account);
     $rejected = anotherTransfer($account);
@@ -62,7 +62,7 @@ it('lists transfers awaiting approval oldest first, test ones included, with the
         ->assertJsonPath('meta.counts.under_review', 2)
         ->assertJsonPath('data.0.id', $first->public_id)
         ->assertJsonPath('data.0.status', 'under_review')
-        ->assertJsonPath('data.0.is_test', true)
+        ->assertJsonPath('data.0.is_test', false)
         ->assertJsonPath('data.0.pricing.total', ACCREDITED_TOTAL)
         ->assertJsonPath('data.0.bank_account.iban', EXAMPLE_IBAN)
         ->assertJsonPath('data.0.proof.scan_status', 'clean')
@@ -73,7 +73,7 @@ it('lists transfers awaiting approval oldest first, test ones included, with the
     $this->getJson(BANK_TRANSFERS.'?sort=-submitted_at')->assertJsonPath('data.0.id', $second->public_id);
     $this->getJson(BANK_TRANSFERS.'?filter[status]=rejected')->assertJsonPath('meta.pagination.total', 1)->assertJsonPath('data.0.rejection_reason', 'not_received');
     $this->getJson(BANK_TRANSFERS.'?filter[status]=all')->assertJsonPath('meta.pagination.total', 3);
-    $this->getJson(BANK_TRANSFERS.'?filter[mode]=live')->assertJsonPath('meta.pagination.total', 0);
+    $this->getJson(BANK_TRANSFERS.'?filter[mode]=test')->assertJsonPath('meta.pagination.total', 0);
     $this->getJson(BANK_TRANSFERS.'?filter[bank_account]='.$account->public_id)->assertJsonPath('meta.pagination.total', 2);
     $this->getJson(BANK_TRANSFERS.'?filter[bank_account]='.fake()->uuid())->assertJsonPath('meta.pagination.total', 0);
     $this->getJson(BANK_TRANSFERS.'?search='.urlencode($second->reference))->assertJsonPath('meta.pagination.total', 1);
@@ -157,7 +157,7 @@ it('refuses guests', function (): void {
     $this->postJson(bankTransferUrl($payment, 'approve'))->assertUnauthorized();
 });
 
-it('approves a transfer: the payment is paid, a TEST receipt is issued, the request opens and everyone is told', function (): void {
+it('approves a transfer: the payment is paid, an official numbered receipt is issued, the request opens and everyone is told', function (): void {
     publishedAccreditedCriteria();
     ['owner' => $owner, 'payment' => $payment] = transferUnderReview();
     $reviewer = transferReviewer();
@@ -167,8 +167,8 @@ it('approves a transfer: the payment is paid, a TEST receipt is issued, the requ
         ->assertOk()
         ->assertJsonPath('data.status', 'paid')
         ->assertJsonPath('data.reviewed_by', ['id' => $reviewer->id, 'name' => $reviewer->name])
-        ->assertJsonPath('data.receipt.number', null)
-        ->assertJsonPath('data.receipt.is_test', true);
+        ->assertJsonPath('data.receipt.number', 'RCP-'.now('Asia/Riyadh')->year.'-000001')
+        ->assertJsonPath('data.receipt.is_test', false);
 
     $payment->refresh();
     $receipt = PaymentReceipt::query()->where('payment_id', $payment->id)->sole();

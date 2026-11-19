@@ -15,33 +15,42 @@ final readonly class ProfileCompletion
     private const int FULL = 100;
 
     /**
+     * @param  list<ProfileSectionField>  $counted
      * @param  list<ProfileSectionField>  $missing
      */
-    public function __construct(private array $missing)
+    public function __construct(private array $counted, private array $missing)
     {
-        foreach ($missing as $field) {
+        foreach ($counted as $field) {
             if (! $field->isCounted()) {
-                throw new InvalidArgumentException('An optional profile field is never missing: '.$field->value.'.');
+                throw new InvalidArgumentException('An optional profile field is never counted: '.$field->value.'.');
+            }
+        }
+
+        foreach ($missing as $field) {
+            if (! in_array($field, $counted, true)) {
+                throw new InvalidArgumentException('Only a counted profile field can be missing: '.$field->value.'.');
             }
         }
     }
 
     public static function of(ProfileFieldValues $values): self
     {
-        return new self(array_values(array_filter(
-            ProfileSectionField::counted(),
+        $counted = $values->countedFields();
+
+        return new self($counted, array_values(array_filter(
+            $counted,
             static fn (ProfileSectionField $field): bool => ! $values->isFilled($field),
         )));
     }
 
     public function counted(): int
     {
-        return count(ProfileSectionField::counted());
+        return count($this->counted);
     }
 
     public function completedCount(): int
     {
-        return $this->counted() - count(array_unique(array_map(static fn (ProfileSectionField $field): string => $field->value, $this->missing)));
+        return $this->counted() - count($this->missingFields());
     }
 
     public function percent(): int
@@ -54,12 +63,17 @@ final readonly class ProfileCompletion
         return $this->completedCount() === $this->counted();
     }
 
+    public function isSectionComplete(ProfileSection $section): bool
+    {
+        return $this->missingIn($section) === [];
+    }
+
     /**
      * @return list<ProfileSectionField>
      */
     public function missingFields(): array
     {
-        return array_values(array_filter(ProfileSectionField::counted(), fn (ProfileSectionField $field): bool => in_array($field, $this->missing, true)));
+        return array_values(array_filter($this->counted, fn (ProfileSectionField $field): bool => in_array($field, $this->missing, true)));
     }
 
     /**

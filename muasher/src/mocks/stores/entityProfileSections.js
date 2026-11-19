@@ -9,8 +9,12 @@ function blank(value) {
   return value === null || value === undefined || String(value).trim() === ''
 }
 
-function field(key, requirement, read, { editable = true } = {}) {
-  return { key, requirement, read, editable }
+function field(key, requirement, read, { editable = true, dependsOnVat = false } = {}) {
+  return { key, requirement, read, editable, dependsOnVat }
+}
+
+function vatField(key, read, options = {}) {
+  return field(key, REQUIRED, read, { ...options, dependsOnVat: true })
 }
 
 export const PROFILE_SECTION_CATALOG = Object.freeze([
@@ -59,6 +63,27 @@ export const PROFILE_SECTION_CATALOG = Object.freeze([
       field('marketing_consent', OPTIONAL, (entity) => entity.marketingConsentAt !== null),
     ],
   },
+  {
+    key: 'billing',
+    fields: [
+      field('address_building_number', REQUIRED, (entity) => entity.addressBuildingNumber ?? null),
+      field('address_street', REQUIRED, (entity) => entity.addressStreet ?? null),
+      field('address_district', REQUIRED, (entity) => entity.addressDistrict ?? null),
+      field('address_city', REQUIRED, (entity) => entity.addressCity ?? null),
+      field('address_postal_code', REQUIRED, (entity) => entity.addressPostalCode ?? null),
+      field(
+        'address_additional_number',
+        REQUIRED,
+        (entity) => entity.addressAdditionalNumber ?? null,
+      ),
+      field('address_short_code', OPTIONAL, (entity) => entity.addressShortCode ?? null),
+      field('vat_registered', REQUIRED, (entity) => entity.vatRegistered ?? null),
+      vatField('vat_number', (entity) => entity.vatNumber ?? null),
+      vatField('vat_certificate', (entity) => entity.vatCertificate?.id ?? null, {
+        editable: false,
+      }),
+    ],
+  },
 ])
 
 export const PROFILE_SECTION_KEYS = Object.freeze(
@@ -69,8 +94,8 @@ export function sectionOf(key) {
   return PROFILE_SECTION_CATALOG.find((section) => section.key === key) ?? null
 }
 
-function isCounted(entry) {
-  return entry.requirement !== OPTIONAL
+function isCounted(entry, entity) {
+  return entry.requirement !== OPTIONAL && (!entry.dependsOnVat || entity.vatRegistered === true)
 }
 
 function hashWith(seed, text) {
@@ -102,7 +127,7 @@ export function profileSectionsOf(entity) {
 
 function missingOf(entity, section) {
   return section.fields
-    .filter((entry) => isCounted(entry) && blank(entry.read(entity)))
+    .filter((entry) => isCounted(entry, entity) && blank(entry.read(entity)))
     .map((entry) => entry.key)
 }
 
@@ -116,7 +141,9 @@ export function profileCompletionOf(entity) {
       missingFields,
     }
   })
-  const counted = PROFILE_SECTION_CATALOG.flatMap((section) => section.fields).filter(isCounted)
+  const counted = PROFILE_SECTION_CATALOG.flatMap((section) => section.fields).filter((entry) =>
+    isCounted(entry, entity),
+  )
   const missing = sections.reduce((total, section) => total + section.missingCount, 0)
   const completedCount = counted.length - missing
   return {
@@ -125,6 +152,13 @@ export function profileCompletionOf(entity) {
     completedCount,
     sections,
   }
+}
+
+export function hasCompleteBilling(entity) {
+  return (
+    profileCompletionOf(entity).sections.find((section) => section.key === 'billing')
+      ?.missingCount === 0
+  )
 }
 
 export function hasFullProfile(entity) {

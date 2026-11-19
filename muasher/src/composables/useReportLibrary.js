@@ -1,4 +1,5 @@
 import { computed, ref, unref } from 'vue'
+import { isKitLocked } from '@/constants/insights'
 import { insightsService } from '@/services/insightsService'
 
 export function useReportLibrary(entityId = null) {
@@ -24,8 +25,8 @@ export function useReportLibrary(entityId = null) {
     try {
       rows.value = await fetchPage(1)
       status.value = 'ready'
-    } catch {
-      status.value = 'error'
+    } catch (error) {
+      status.value = isKitLocked(error) ? 'locked' : 'error'
     }
   }
 

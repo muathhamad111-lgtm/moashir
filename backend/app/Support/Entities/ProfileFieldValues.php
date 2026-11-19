@@ -40,7 +40,30 @@ final readonly class ProfileFieldValues
             ProfileSectionField::Phone => $this->owner?->phone,
             ProfileSectionField::WebsiteUrl => $this->entity->website_url,
             ProfileSectionField::MarketingConsent => $this->entity->marketing_consent_at !== null,
+            ProfileSectionField::AddressBuildingNumber => $this->entity->address_building_number,
+            ProfileSectionField::AddressStreet => $this->entity->address_street,
+            ProfileSectionField::AddressDistrict => $this->entity->address_district,
+            ProfileSectionField::AddressCity => $this->entity->address_city,
+            ProfileSectionField::AddressPostalCode => $this->entity->address_postal_code,
+            ProfileSectionField::AddressAdditionalNumber => $this->entity->address_additional_number,
+            ProfileSectionField::AddressShortCode => $this->entity->address_short_code,
+            ProfileSectionField::VatRegistered => $this->entity->vat_registered,
+            ProfileSectionField::VatNumber => $this->entity->vat_number,
+            ProfileSectionField::VatCertificate => $this->entity->vat_certificate_file_id,
         };
+    }
+
+    public function isCounted(ProfileSectionField $field): bool
+    {
+        return $field->isCounted() && (! $field->dependsOnVatRegistration() || $this->entity->isVatRegistered());
+    }
+
+    /**
+     * @return list<ProfileSectionField>
+     */
+    public function countedFields(): array
+    {
+        return array_values(array_filter(ProfileSectionField::cases(), $this->isCounted(...)));
     }
 
     public function isFilled(ProfileSectionField $field): bool

@@ -134,6 +134,7 @@ export function accreditedFormResource(record, viewer) {
     completionRequest: completionResource(openCompletionOf(record), subs),
     uploadLimits: uploadLimits(),
     criteriaUpdate: criteriaUpdateOf(record),
+    passedStations: [...(record.passedStations ?? [])],
   }
 }
 

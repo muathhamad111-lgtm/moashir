@@ -6,6 +6,7 @@ import FieldDigits from '@/components/form/FieldDigits.vue'
 import FieldDate from '@/components/form/FieldDate.vue'
 import FieldSelect from '@/components/form/FieldSelect.vue'
 import FieldCheckbox from '@/components/form/FieldCheckbox.vue'
+import FieldRadio from '@/components/form/FieldRadio.vue'
 import { useEntityOptions } from '@/composables/useEntityOptions'
 import { riyadhDateKey } from '@/utils/datetime'
 import { fieldLabelKey } from '@/utils/entityProfile/sections'
@@ -32,6 +33,7 @@ const OPTION_SOURCES = {
   developmentSector: () => options.sectorOptions.value,
   orgSize: () => options.orgSizeOptions.value,
   strategicPlan: () => options.strategicPlanOptions.value,
+  yesNo: () => options.strategicPlanOptions.value,
   region: () => props.regionOptions,
   city: () => props.cityOptions,
 }
@@ -63,6 +65,14 @@ const selectOptions = computed(() => OPTION_SOURCES[config.value.options]?.() ??
     :hint="hint"
     :options="selectOptions"
     :placeholder="t('common.select')"
+    :required="field.required"
+  />
+  <FieldRadio
+    v-else-if="config.kind === 'radio'"
+    class="profile-field-input--wide"
+    :name="field.name"
+    :label="t(`portal.profile.questions.${field.name}`)"
+    :options="selectOptions"
     :required="field.required"
   />
   <FieldCheckbox

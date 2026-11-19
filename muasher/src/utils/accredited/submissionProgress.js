@@ -1,4 +1,5 @@
 import { evidenceOfSub } from './evidenceRules'
+import { ENTITY_EDITABLE_STATUSES } from '@/constants/accredited'
 
 export const STATION_STATES = Object.freeze({
   COMPLETE: 'complete',
@@ -20,6 +21,18 @@ function isStarted(form, sub) {
   )
 }
 
+function isDraft(form) {
+  return ENTITY_EDITABLE_STATUSES.includes(form?.assessment?.status)
+}
+
+// While the entity still works on the form, a sub with nothing missing (all its evidence optional)
+// counts as complete only once the entity added something to it or moved past its station.
+function isMainSubComplete(form, main, sub, gaps) {
+  if (gaps.has(sub.id)) return false
+  if (!isDraft(form)) return true
+  return isStarted(form, sub) || (form.passedStations ?? []).includes(main.id)
+}
+
 export function stationStateOf(complete, total, started) {
   if (total > 0 && complete === total) return STATION_STATES.COMPLETE
   return complete > 0 || started ? STATION_STATES.PARTIAL : STATION_STATES.EMPTY
@@ -28,7 +41,7 @@ export function stationStateOf(complete, total, started) {
 export function stationsOf(form) {
   const gaps = gapSubIds(form?.missing)
   return (form?.criteria?.mains ?? []).map((main) => {
-    const complete = main.subs.filter((sub) => !gaps.has(sub.id)).length
+    const complete = main.subs.filter((sub) => isMainSubComplete(form, main, sub, gaps)).length
     const started = main.subs.some((sub) => isStarted(form, sub))
     return {
       id: main.id,
@@ -48,5 +61,9 @@ export function submissionProgressOf(form) {
 }
 
 export function isSubComplete(form, subId) {
-  return !gapSubIds(form?.missing).has(subId)
+  const main = (form?.criteria?.mains ?? []).find((item) =>
+    item.subs.some((sub) => sub.id === subId),
+  )
+  const sub = main?.subs.find((item) => item.id === subId)
+  return Boolean(sub) && isMainSubComplete(form, main, sub, gapSubIds(form?.missing))
 }

@@ -87,12 +87,13 @@ async function completeAccreditedForm(page, copy) {
   await expect(impact.locator('.scan-status').first()).toContainText(copy.clean, {
     timeout: 20000,
   })
-  await page.locator('[data-testid="accredited-save"]').click()
-  const progress = page.locator('.request-card [role="progressbar"]')
-  await expect(progress).toHaveAttribute(
-    'aria-valuenow',
-    (await progress.getAttribute('aria-valuemax')) ?? '',
+  // Wait for the saved CV; optional-only subs of unpassed stations may still read open in the
+  // progress bar, which does not block the submission.
+  const saved = page.waitForResponse(
+    (response) => response.url().endsWith('/cv') && response.request().method() === 'PUT',
   )
+  await page.locator('[data-testid="accredited-save"]').click()
+  await saved
   await page.locator('.station-row__button').last().click()
 }
 

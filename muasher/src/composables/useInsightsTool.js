@@ -1,5 +1,5 @@
 import { ref, unref, watch } from 'vue'
-import { INSIGHTS_ERROR_CODES } from '@/constants/insights'
+import { INSIGHTS_ERROR_CODES, isKitLocked } from '@/constants/insights'
 
 const NOT_FOUND = 404
 const CONFLICT = 409
@@ -11,6 +11,7 @@ export function useInsightsTool(loader, assessmentId) {
 
   function fail(error) {
     const normalized = error?.normalized ?? {}
+    if (isKitLocked(error)) return 'locked'
     if (normalized.status === CONFLICT && normalized.code === INSIGHTS_ERROR_CODES.NOT_ELIGIBLE) {
       reason.value = normalized.meta?.reason ?? ''
       return 'ineligible'

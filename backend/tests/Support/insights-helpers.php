@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Actions\Certificates\IssueAccreditedCertificate;
 use App\Actions\Certificates\RevokeCertificate;
+use App\Contracts\Insights\KitActivation;
 use App\Data\Assessments\ScoredUnit;
 use App\Data\Assessments\ScoreSheet;
 use App\Enums\Assessments\AccreditedAssessmentStatus;
@@ -167,4 +168,24 @@ function setInsightsRules(array $gaps = [], array $bands = []): void
 function insightsStaff(): User
 {
     return systemAdmin();
+}
+
+/**
+ * The Kit backend is not built yet, so the real binding never unlocks the tools; tests that cover
+ * the tools themselves stand in an activated Kit.
+ */
+function activateInsightsKit(): void
+{
+    app()->bind(KitActivation::class, static fn (): KitActivation => new class implements KitActivation
+    {
+        public function isActiveFor(Assessment $assessment): bool
+        {
+            return true;
+        }
+
+        public function hasActiveKit(int $entityId): bool
+        {
+            return true;
+        }
+    });
 }

@@ -51,6 +51,16 @@ return [
         'authorized_person_name' => 'Authorized account manager',
         'phone' => 'Mobile number',
         'marketing_consent' => 'Platform news and offers',
+        'address_building_number' => 'Building number',
+        'address_street' => 'Street',
+        'address_district' => 'District',
+        'address_city' => 'City (national address)',
+        'address_postal_code' => 'Postal code',
+        'address_additional_number' => 'Additional number',
+        'address_short_code' => 'Short address',
+        'vat_registered' => 'VAT registration',
+        'vat_number' => 'VAT registration number',
+        'vat_certificate' => 'VAT registration certificate',
     ],
 
     'export' => [

@@ -15,6 +15,7 @@ const BOARD_MARKS = ['M1.1' => '85.00', 'M1.2' => '45.00', 'M2.1' => '75.00', 'M
 
 beforeEach(function (): void {
     Notification::fake();
+    activateInsightsKit();
 });
 
 it('exports the board report through a signed link bound to the requester and audits every download', function (): void {

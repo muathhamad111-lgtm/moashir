@@ -62,9 +62,9 @@ test('reads the incomplete profile, edits one section and saves it', async ({ pa
   await expect(page.getByTestId('portal-page-title')).toHaveText(
     localeOf(testInfo) === 'en' ? 'Entity profile' : 'ملف الجهة',
   )
-  await expect(page.getByTestId('profile-completeness')).toContainText('60')
+  await expect(page.getByTestId('profile-completeness')).toContainText('75')
   await expect(section(page, 'governance').getByTestId('profile-missing')).toHaveCount(3)
-  await expect(page.getByTestId('attention-strip')).not.toContainText(/60/)
+  await expect(page.getByTestId('profile-completion-banner')).toHaveCount(0)
   await shoot(page, testInfo, '01-desktop-incomplete')
 
   const governance = section(page, 'governance')
@@ -80,7 +80,7 @@ test('reads the incomplete profile, edits one section and saves it', async ({ pa
   await expect(governance.locator('.profile-section__status-text--success')).toBeVisible()
   await expect(governance.locator('.profile-section__edit')).toBeFocused()
   await expect(governance.getByTestId('profile-section-state')).toHaveClass(/--complete/)
-  await expect(page.getByTestId('profile-completeness')).toContainText('80')
+  await expect(page.getByTestId('profile-completeness')).toContainText('87')
   await shoot(page, testInfo, '03-desktop-saved')
 })
 

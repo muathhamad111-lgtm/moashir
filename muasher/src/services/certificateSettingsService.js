@@ -1,12 +1,15 @@
 import { apiClient } from '@/api/client'
 import { domainRequests } from './domainRequest'
-import { CERTIFICATE_LEVELS } from '@/constants/certificates'
+import { CERTIFICATE_LEVELS, ISSUANCE_MODES } from '@/constants/certificates'
 
 const { read, write } = domainRequests('certificateSettings', 'settings-certificates')
 
 function toCertificateSettings(raw = {}) {
   return {
-    accreditedIssuanceEnabled: raw.accreditedIssuanceEnabled === true,
+    accreditedIssuanceMode:
+      raw.accreditedIssuanceMode === ISSUANCE_MODES.MANUAL
+        ? ISSUANCE_MODES.MANUAL
+        : ISSUANCE_MODES.AUTOMATIC,
     levelThresholds: Object.fromEntries(
       CERTIFICATE_LEVELS.map((level) => [level, raw.levelThresholds?.[level] ?? null]),
     ),

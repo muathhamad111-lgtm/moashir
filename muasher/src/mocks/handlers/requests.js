@@ -41,6 +41,8 @@ import {
   lastActivityOf,
   progressSummaryOf,
   requestPaymentOf,
+  revealsPaymentDetails,
+  staffPaymentOf,
 } from '../stores/accredited/requestPayments'
 import { qualificationsOf, requestScopeOf } from '../stores/staffUsers'
 import { sessionCan } from '../stores/sessionPermissions'
@@ -119,7 +121,7 @@ function detailResource(record, viewer) {
     ...queueRow(record, staffNameOf),
     payment: {
       paid: findPayment(record.paymentId)?.status === 'paid',
-      ...(reveals ? (requestPaymentOf(record) ?? {}) : {}),
+      ...(reveals && revealsPaymentDetails() ? (requestPaymentOf(record) ?? {}) : {}),
     },
     record: recordResource(record, viewer),
     assignmentHistory: assignments.map((assignment) => assignmentItem(assignment, reveals)),
@@ -141,7 +143,7 @@ function preparingRow(record) {
     entity: row.entity,
     awardCycle: row.awardCycle,
     openedAt: record.createdAt,
-    payment: requestPaymentOf(record),
+    payment: staffPaymentOf(record),
     progress: progressSummaryOf(record),
     lastActivityAt: lastActivityOf(record),
   }

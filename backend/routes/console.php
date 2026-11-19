@@ -7,7 +7,7 @@ use App\Jobs\Finance\ReconcilePendingPaymentsJob;
 use App\Jobs\Platform\RecordQueueHeartbeat;
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::command('moashir:expire-invitations')->hourly()->withoutOverlapping();
+Schedule::command('moashir:expire-invitations')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('moashir:prune-otp-codes')->hourly()->withoutOverlapping();
 Schedule::command('auth:clear-resets')->hourly();
 Schedule::command('moashir:assessments:sweep-criteria-update-holds')->everyTenMinutes()->withoutOverlapping();

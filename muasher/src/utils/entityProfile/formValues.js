@@ -54,6 +54,15 @@ const READERS = Object.freeze({
   phone: (profile) => localPhone(profile.phone),
   websiteUrl: (profile) => text(profile.websiteUrl),
   marketingConsent: (profile) => profile.marketingConsent === true,
+  addressBuildingNumber: (profile) => text(profile.addressBuildingNumber),
+  addressStreet: (profile) => text(profile.addressStreet),
+  addressDistrict: (profile) => text(profile.addressDistrict),
+  addressCity: (profile) => text(profile.addressCity),
+  addressPostalCode: (profile) => text(profile.addressPostalCode),
+  addressAdditionalNumber: (profile) => text(profile.addressAdditionalNumber),
+  addressShortCode: (profile) => text(profile.addressShortCode),
+  vatRegistered: (profile) => planValue(profile.vatRegistered),
+  vatNumber: (profile) => text(profile.vatNumber),
 })
 
 const WRITERS = Object.freeze({
@@ -75,7 +84,21 @@ const WRITERS = Object.freeze({
   phone: nullableText,
   websiteUrl: (value) => nullableText(String(value ?? '').trim()),
   marketingConsent: (value) => value === true,
+  addressBuildingNumber: nullableText,
+  addressStreet: nullableText,
+  addressDistrict: nullableText,
+  addressCity: nullableText,
+  addressPostalCode: nullableText,
+  addressAdditionalNumber: nullableText,
+  addressShortCode: (value) => nullableText(value)?.toUpperCase() ?? null,
+  vatRegistered: planPayload,
+  vatNumber: nullableText,
 })
+
+function withoutUnregisteredVat(payload) {
+  if (!('vatRegistered' in payload) || payload.vatRegistered === true) return payload
+  return { ...payload, vatNumber: null }
+}
 
 export function editableFieldsOf(fields) {
   return fields.filter((name) => !PROFILE_READ_ONLY_FIELDS.includes(name) && READERS[name])
@@ -89,8 +112,10 @@ export function sectionFormValues(profile, fields) {
 }
 
 export function sectionPayload(values, fields, baseRevision) {
-  return editableFieldsOf(fields).reduce(
-    (payload, name) => writePath(payload, name, WRITERS[name](readPath(values, name))),
-    { baseRevision },
+  return withoutUnregisteredVat(
+    editableFieldsOf(fields).reduce(
+      (payload, name) => writePath(payload, name, WRITERS[name](readPath(values, name))),
+      { baseRevision },
+    ),
   )
 }

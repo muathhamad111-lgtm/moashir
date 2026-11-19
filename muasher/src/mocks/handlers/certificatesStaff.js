@@ -5,7 +5,13 @@ import { currentSessionUser } from '../stores/sessionStore'
 import { sessionCan, sessionIsSuperAdmin } from '../stores/sessionPermissions'
 import { certificateResource, certificates } from '../stores/certificatesStore'
 import { findAssessment } from '../stores/assessments/assessmentsStore'
-import { actorDisplayName } from '../stores/actorName'
+import {
+  actorName,
+  forRequest,
+  issuedTemplate,
+  newCertificate,
+} from '../stores/requestCertificates'
+import { certificateSettingsResource } from '../stores/certificateSettingsStore'
 
 const LATENCY_MS = 280
 const MANAGE = 'certificates.manage'
@@ -16,11 +22,6 @@ const REVOCABLE = ['issued', 'suspended']
 const REISSUABLE = ['issued', 'suspended', 'revoked']
 const CURRENT = ['issued', 'suspended']
 const COMPLETED = 'completed'
-const state = { sequence: 40 }
-
-function actorName() {
-  return actorDisplayName(currentSessionUser(), '')
-}
 
 function staffView(certificate) {
   return {
@@ -39,64 +40,10 @@ function reasonError(body) {
   })
 }
 
-function nextNumber() {
-  state.sequence += 1
-  return `CRT-2026-${String(state.sequence).padStart(6, '0')}`
-}
-
-function nextCode() {
-  return `MOCK-${String(state.sequence).padStart(4, '0')}-ISSU-ED26-QRCD-VRFY-0001`
-}
-
-function newCertificate(template, extra) {
-  return {
-    ...template,
-    id: crypto.randomUUID(),
-    number: nextNumber(),
-    verificationCode: nextCode(),
-    status: 'issued',
-    issuedAt: new Date().toISOString(),
-    revokedAt: null,
-    revokedReason: null,
-    revokedBy: null,
-    supersededAt: null,
-    suspendedAt: null,
-    issuedBy: { id: currentSessionUser()?.id ?? null, name: actorName() },
-    ...extra,
-  }
-}
-
-function forRequest(assessmentId) {
-  return certificates
-    .filter((certificate) => certificate.request?.id === Number(assessmentId))
-    .sort((left, right) => new Date(right.issuedAt) - new Date(left.issuedAt))
-}
-
 function manageable(id) {
   if (!sessionCan(MANAGE)) return { refusal: errorResponse(404, 'not_found', 'Not found.') }
   const certificate = certificates.find((item) => item.id === id)
   return certificate ? { certificate } : { refusal: errorResponse(404, 'not_found', 'Not found.') }
-}
-
-function issuedTemplate(record) {
-  const earlier = forRequest(record.id)[0]
-  if (earlier) return earlier
-  return {
-    entityId: record.entityId,
-    kind: 'accredited',
-    level: 'silver',
-    levelLabel: { ar: 'المستوى الفضي', en: 'Silver level' },
-    isTest: false,
-    percent: '78.00',
-    request: { id: record.id, number: record.number, path: 'accredited', pathLabel: null },
-    entity: {
-      id: record.entityId,
-      reference: `ENT-00${record.entityId}`,
-      name: record.entityName ?? null,
-    },
-    replaces: null,
-    hasPdf: true,
-  }
 }
 
 export const certificatesStaffHandlers = [
@@ -108,6 +55,21 @@ export const certificatesStaffHandlers = [
     const items = forRequest(assessmentId).map(staffView)
     return envelope(items, {
       pagination: { page: 1, perPage: 20, total: items.length, lastPage: 1 },
+      accreditedIssuanceMode: certificateSettingsResource().accreditedIssuanceMode,
+    })
+  }),
+
+  http.get('/api/v1/assessments/:id/certificate', async ({ params }) => {
+    await delay(LATENCY_MS)
+    const record = findAssessment(Number(params.id))
+    if (!record || record.path !== 'accredited')
+      return errorResponse(404, 'not_found', 'Not found.')
+    if (!sessionCan(ISSUE) && !sessionIsSuperAdmin())
+      return errorResponse(403, 'forbidden', 'Forbidden.')
+    const current = forRequest(record.id).find((item) => CURRENT.includes(item.status)) ?? null
+    return envelope({
+      certificate: current ? staffView(current) : null,
+      issuanceMode: certificateSettingsResource().accreditedIssuanceMode,
     })
   }),
 

@@ -52,7 +52,7 @@ it('shows the own receipt and renders it as a bilingual PDF with the Hijri date'
         ->and(Audit::query()->where('event', AuditEvent::FileDownloaded->value)->count())->toBe(1);
 });
 
-it('prints only the neutral line on a test-mode receipt and names its file after the payment reference', function (): void {
+it('prints a test-mode receipt without any proof disclaimer and names its file after the payment reference', function (): void {
     ['gateway' => $gateway, 'owner' => $owner] = payingEntity();
     $payment = paidPayment($owner, $gateway);
     $receipt = PaymentReceipt::query()->sole();
@@ -61,8 +61,8 @@ it('prints only the neutral line on a test-mode receipt and names its file after
 
     expect($receipt->is_test)->toBeTrue()
         ->and($document->watermark)->toBeNull()
-        ->and($html)->toContain('غير معتمد كإثبات دفع')
-        ->and($html)->toContain('Not valid as proof of payment')
+        ->and($html)->not->toContain('غير معتمد كإثبات دفع')
+        ->and($html)->not->toContain('Not valid as proof of payment')
         ->and($html)->not->toContain('class="watermark"')
         ->and($html)->not->toContain('تجريبي')
         ->and($html)->not->toContain('اختبار')

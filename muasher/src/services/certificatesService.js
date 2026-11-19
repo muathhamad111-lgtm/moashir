@@ -54,6 +54,24 @@ export const certificatesService = {
     return certificatesService.list(params).then((envelope) => ({
       ...envelope,
       data: (envelope.data ?? []).map(toStaffCertificate),
+      issuanceMode: envelope.meta?.accreditedIssuanceMode ?? null,
+    }))
+  },
+
+  // The assigned assessor's view of the request: its current certificate and the issuance mode.
+  requestState(assessmentId) {
+    return serviceRequest(
+      'certificates.requestState',
+      () => apiClient.get(`/assessments/${assessmentId}/certificate`),
+      { entity: 'certificate' },
+    ).then((envelope) => ({
+      ...envelope,
+      data: {
+        certificate: envelope.data?.certificate
+          ? toStaffCertificate(envelope.data.certificate)
+          : null,
+        issuanceMode: envelope.data?.issuanceMode ?? null,
+      },
     }))
   },
 

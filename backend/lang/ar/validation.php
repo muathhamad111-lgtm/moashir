@@ -160,6 +160,23 @@ return [
     'uuid' => 'يجب أن يكون حقل :attribute معرف UUID صحيحًا.',
 
     'custom' => [
+        'address_building_number' => [
+            'regex' => 'رقم المبنى 4 أرقام (0-9)، مثل 7421.',
+        ],
+        'address_postal_code' => [
+            'regex' => 'الرمز البريدي 5 أرقام (0-9)، مثل 12214.',
+        ],
+        'address_additional_number' => [
+            'regex' => 'الرقم الإضافي 4 أرقام (0-9)، مثل 3365.',
+        ],
+        'address_short_code' => [
+            'regex' => 'العنوان المختصر 4 أحرف إنجليزية ثم 4 أرقام، مثل RRRD2929.',
+        ],
+        'vat_number' => [
+            'regex' => 'الرقم الضريبي يتكون من 15 رقمًا بالأرقام الإنجليزية (0-9) دون مسافات، ويبدأ بالرقم 3 وينتهي به.',
+            'required_if_accepted' => 'أدخل الرقم الضريبي لأن الجهة مسجّلة في ضريبة القيمة المضافة.',
+            'prohibited_if_declined' => 'احذف الرقم الضريبي لأن الجهة غير مسجّلة في ضريبة القيمة المضافة.',
+        ],
         'overview_period' => [
             'too_long' => 'لا يمكن أن تتجاوز الفترة المخصصة :days يومًا.',
         ],
@@ -261,6 +278,13 @@ return [
         'terms_version_id' => [
             'not_current' => 'يجب قبول النسخة الحالية من الشروط والأحكام.',
         ],
+        'notification_channels' => [
+            'mandatory' => 'لا يمكن إيقاف قنوات الإشعار الإلزامي أو تشغيلها.',
+        ],
+        'notification_text' => [
+            'unknown_variable' => 'المتغير :variable غير متاح لهذا الإشعار.',
+            'required_variable' => 'أبقِ المتغير :variable؛ هذا الإشعار إلزامي ويحتاجه.',
+        ],
         'q' => [
             'searchable' => 'يجب أن تحتوي عبارة البحث على :min من الحروف أو الأرقام على الأقل.',
         ],
@@ -293,6 +317,15 @@ return [
     ],
 
     'attributes' => [
+        'address_building_number' => 'رقم المبنى',
+        'address_street' => 'الشارع',
+        'address_district' => 'الحي',
+        'address_city' => 'المدينة',
+        'address_postal_code' => 'الرمز البريدي',
+        'address_additional_number' => 'الرقم الإضافي',
+        'address_short_code' => 'العنوان المختصر',
+        'vat_registered' => 'التسجيل في ضريبة القيمة المضافة',
+        'vat_number' => 'الرقم الضريبي',
         'primary_color' => 'اللون الرئيسي',
         'secondary_color' => 'اللون الثانوي',
         'meta.availability' => 'حالة الإتاحة',

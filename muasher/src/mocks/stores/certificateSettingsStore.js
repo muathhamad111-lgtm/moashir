@@ -2,8 +2,9 @@ import { assessmentReject, fieldMessage } from './assessments/assessmentRejectio
 import { reasonError, throwIfErrors, trimmed } from './accredited/accreditedValidation'
 
 export const LEVEL_ORDER = ['bronze', 'silver', 'gold', 'diamond']
+export const ISSUANCE_MODES = Object.freeze({ AUTOMATIC: 'automatic', MANUAL: 'manual' })
 const DEFAULTS = {
-  accreditedIssuanceEnabled: true,
+  accreditedIssuanceMode: ISSUANCE_MODES.AUTOMATIC,
   levelThresholds: { bronze: '60.00', silver: '70.00', gold: '80.00', diamond: '90.00' },
 }
 const PERCENT = /^\d{1,3}(\.\d{1,2})?$/
@@ -18,7 +19,7 @@ resetCertificateSettings()
 
 export function certificateSettingsResource() {
   return {
-    accreditedIssuanceEnabled: settings.accreditedIssuanceEnabled,
+    accreditedIssuanceMode: settings.accreditedIssuanceMode,
     levelThresholds: { ...settings.levelThresholds },
   }
 }
@@ -47,8 +48,11 @@ function thresholdErrors(thresholds, errors) {
 
 function validated(body) {
   const errors = {}
-  if ('accreditedIssuanceEnabled' in body && typeof body.accreditedIssuanceEnabled !== 'boolean')
-    errors.accreditedIssuanceEnabled = [fieldMessage('validation.boolean', {}, 'settings')]
+  if (
+    'accreditedIssuanceMode' in body &&
+    !Object.values(ISSUANCE_MODES).includes(body.accreditedIssuanceMode)
+  )
+    errors.accreditedIssuanceMode = [fieldMessage('validation.invalid', {}, 'settings')]
   if ('levelThresholds' in body) thresholdErrors(body.levelThresholds, errors)
   const reason = reasonError(body.reason)
   if (reason) errors.reason = reason
@@ -60,8 +64,8 @@ export function updateCertificateSettings(user, body) {
   const changes = Object.keys(body).filter((key) => key !== 'reason')
   if (!changes.length) return
   if (user.superAdmin && !trimmed(body.reason)) throw assessmentReject.reasonRequired()
-  if ('accreditedIssuanceEnabled' in body)
-    settings.accreditedIssuanceEnabled = body.accreditedIssuanceEnabled
+  if ('accreditedIssuanceMode' in body)
+    settings.accreditedIssuanceMode = body.accreditedIssuanceMode
   if ('levelThresholds' in body)
     settings.levelThresholds = Object.fromEntries(
       LEVEL_ORDER.map((level) => [level, Number(body.levelThresholds[level]).toFixed(2)]),

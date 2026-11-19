@@ -1,9 +1,10 @@
 import { findCity, findRegion } from './regionsStore'
 import { findEntity, hasCompleteProfile, isDeleted, referenceOf } from './entitiesStore'
-import { profileCompletionOf, profileSectionsOf } from './entityProfileSections'
+import { hasCompleteBilling, profileCompletionOf, profileSectionsOf } from './entityProfileSections'
 import { findFile } from './finance/financeState'
 import { signedDownloadOf } from './finance/signedFiles'
 import { entityLevelFields, hasOpenAccreditedRequest } from './entityLevels'
+import { lastAccreditedAssessmentOf } from './entityLastAssessment'
 
 export const ENTITY_ACCESS = { FULL: 'full', CONTACT: 'contact', NONE: 'none' }
 
@@ -47,6 +48,37 @@ export function entityProfileOf(entity) {
   }
 }
 
+function vatCertificateOf(entity) {
+  const certificate = entity.vatCertificate
+  return certificate
+    ? {
+        id: certificate.id,
+        name: certificate.name,
+        sizeBytes: certificate.sizeBytes,
+        uploadedAt: certificate.uploadedAt,
+      }
+    : null
+}
+
+export function entityBillingOf(entity) {
+  return {
+    addressBuildingNumber: entity.addressBuildingNumber ?? null,
+    addressStreet: entity.addressStreet ?? null,
+    addressDistrict: entity.addressDistrict ?? null,
+    addressCity: entity.addressCity ?? null,
+    addressPostalCode: entity.addressPostalCode ?? null,
+    addressAdditionalNumber: entity.addressAdditionalNumber ?? null,
+    addressShortCode: entity.addressShortCode ?? null,
+    vatRegistered: entity.vatRegistered ?? null,
+    vatNumber: entity.vatNumber ?? null,
+    vatCertificate: vatCertificateOf(entity),
+  }
+}
+
+function entityBilling(entity) {
+  return { ...entityBillingOf(entity), billingComplete: hasCompleteBilling(entity) }
+}
+
 function entityContact(entity) {
   return {
     authorizedPersonName: entity.owner.name,
@@ -72,6 +104,7 @@ export function ownEntityResource(entity, { awaitingChange = null, canEdit = fal
     ...entitySummary(entity),
     ...entityProfileOf(entity),
     ...entityContact(entity),
+    ...entityBilling(entity),
     marketingConsent: entity.marketingConsentAt !== null,
     marketingConsentAt: entity.marketingConsentAt,
     pendingEmailChange: pendingChange(awaitingChange),
@@ -97,8 +130,10 @@ function staffEntityResource(entity, viewer) {
     ...entitySummary(entity),
     ...entityLevelFields(entity),
     hasOpenAccreditedRequest: hasOpenAccreditedRequest(entity.id),
+    lastAccreditedAssessment: lastAccreditedAssessmentOf(entity.id),
     ...entityProfileOf(entity),
     ...entityContact(entity),
+    ...entityBilling(entity),
     logo: staffLogoOf(entity, viewer),
     marketingConsent: entity.marketingConsentAt !== null,
     deactivatedAt: entity.deactivatedAt,

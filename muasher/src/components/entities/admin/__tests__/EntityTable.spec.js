@@ -108,3 +108,30 @@ describe('EntityTable last level (LC-5)', () => {
     expect(wrapper.find('.level-badge__chip').exists()).toBe(true)
   })
 })
+
+describe('EntityTable last accredited assessment column', () => {
+  it('shows the percent and the date of the last accredited assessment in one column', () => {
+    const wrapper = render(
+      [
+        {
+          ...ROW,
+          lastAccreditedAssessment: { percent: '72.97', completedAt: '2026-11-19T09:00:00Z' },
+        },
+        { ...ROW, id: 6003, lastAccreditedAssessment: null },
+      ],
+      { locale: 'en' },
+    )
+    const headers = wrapper.findAll('th').map((th) => th.text())
+    expect(headers).toContain('Last accredited assessment')
+    const [assessed, never] = wrapper.findAll('.entity-last-assessment')
+    expect(assessed.find('.entity-last-assessment__percent').text()).toBe('72.97%')
+    expect(assessed.find('.entity-last-assessment__date').text()).toContain('2026')
+    expect(never.text()).toBe('Not assessed yet')
+  })
+
+  it('keeps the result out of the contact variant', () => {
+    const wrapper = render([ROW], { full: false })
+    expect(wrapper.find('.entity-last-assessment').exists()).toBe(false)
+    expect(wrapper.findAll('th').map((th) => th.text())).not.toContain('آخر تقييم معتمد')
+  })
+})

@@ -51,6 +51,26 @@ describe('submission progress', () => {
     expect(isSubComplete(FORM, 22)).toBe(false)
   })
 
+  it('keeps optional-only sub-criteria open in a draft until their station is passed', () => {
+    const draft = { ...FORM, assessment: { status: 'draft' }, evidence: [], passedStations: [] }
+    expect(stationsOf(draft)[0]).toMatchObject({ complete: 0, state: STATION_STATES.EMPTY })
+    expect(isSubComplete(draft, 11)).toBe(false)
+    const passed = { ...draft, passedStations: [1] }
+    expect(stationsOf(passed)[0]).toMatchObject({ complete: 2, state: STATION_STATES.COMPLETE })
+    expect(isSubComplete(passed, 11)).toBe(true)
+    expect(isSubComplete({ ...passed, passedStations: [2] }, 22)).toBe(false)
+  })
+
+  it('counts an optional-only sub with its own evidence as complete before the station is passed', () => {
+    const draft = {
+      ...FORM,
+      assessment: { status: 'draft' },
+      evidence: [{ id: 'e2', subCriterionId: 11, scanStatus: 'clean' }],
+      passedStations: [],
+    }
+    expect(stationsOf(draft)[0]).toMatchObject({ complete: 1, state: STATION_STATES.PARTIAL })
+  })
+
   it('handles a form that is not loaded yet', () => {
     expect(stationsOf(null)).toEqual([])
     expect(submissionProgressOf(null)).toEqual({ total: 0, complete: 0, remaining: 0 })

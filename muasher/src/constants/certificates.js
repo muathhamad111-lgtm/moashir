@@ -43,6 +43,8 @@ export const VERIFICATION_CODE_PATTERN = /^[0-9A-Za-z-\s]{4,60}$/
 
 export const CERTIFICATE_LEVELS = Object.freeze(['bronze', 'silver', 'gold', 'diamond'])
 
+export const ISSUANCE_MODES = Object.freeze({ AUTOMATIC: 'automatic', MANUAL: 'manual' })
+
 export const LEVEL_THRESHOLD_PATTERN = /^\d{1,3}(\.\d{1,2})?$/
 
 // The certificate settings card shows either the issuing switch (accredited tab) or the level

@@ -164,16 +164,7 @@ describe('accredited mock — requests queue and assignment', () => {
     expect(keys(detail.body.data)).toEqual(
       [...ROW_KEYS, 'assignment_history', 'completion_requests', 'payment', 'record'].sort(),
     )
-    expect(keys(detail.body.data.payment)).toEqual([
-      'channel',
-      'is_test',
-      'paid',
-      'paid_at',
-      'receipt',
-      'reference',
-      'status',
-    ])
-    expect(detail.body.data.payment.paid).toBe(true)
+    expect(detail.body.data.payment).toEqual({ paid: true })
     expect(keys(detail.body.data.assignment_history[0])).toEqual([
       'assessor',
       'assigned_at',

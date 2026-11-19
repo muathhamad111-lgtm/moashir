@@ -18,20 +18,17 @@ import { reviewActionKey } from '@/utils/reviewAction'
 
 const props = defineProps({
   detail: { type: Object, required: true },
-  canAssign: { type: Boolean, default: false },
-  canReassign: { type: Boolean, default: false },
   bundleRequesting: { type: Boolean, default: false },
   canReturn: { type: Boolean, default: false },
   canWithdraw: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['assign', 'reassign', 'bundle', 'reopen', 'force', 'return', 'withdraw'])
+const emit = defineEmits(['bundle', 'reopen', 'force', 'return', 'withdraw'])
 const { t } = useI18n()
 const router = useRouter()
 const { can, canAny } = usePermissions()
 const auth = useAuthStore()
 
-const mayAssign = computed(() => can(PERMISSIONS.REQUESTS_ASSIGN))
 const isAccredited = computed(() => props.detail.path === ASSESSMENT_PATHS.ACCREDITED)
 const mayReview = computed(
   () =>
@@ -74,20 +71,6 @@ function openReview() {
       <h2 class="card__title-text">{{ t('requests.detail.actions') }}</h2>
     </template>
     <div class="request-actions__buttons">
-      <BaseButton
-        v-if="mayAssign && canAssign"
-        variant="primary"
-        icon="user-check"
-        @click="emit('assign')"
-        >{{ t('requests.actions.assign') }}</BaseButton
-      >
-      <BaseButton
-        v-if="mayAssign && canReassign"
-        variant="secondary"
-        icon="pen"
-        @click="emit('reassign')"
-        >{{ t('requests.actions.reassign') }}</BaseButton
-      >
       <BaseButton v-if="canReturn" variant="secondary" icon="reply" @click="emit('return')">{{
         t('requests.actions.return')
       }}</BaseButton>

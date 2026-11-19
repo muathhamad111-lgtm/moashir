@@ -1,5 +1,5 @@
 <script setup>
-import { toRef } from 'vue'
+import { computed, toRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
 import FieldInput from '@/components/form/FieldInput.vue'
@@ -18,9 +18,9 @@ const props = defineProps({
 })
 
 const { t } = useI18n()
-const { form, status, terms, termsRequired, loadTerms } = useInvitationAcceptance(
-  toRef(props, 'token'),
-)
+const { form, status, terms, termsRequired, load } = useInvitationAcceptance(toRef(props, 'token'))
+
+const isTokenState = computed(() => ['invalid', 'expired'].includes(status.value))
 
 useHead({ title: () => t('auth.invitation.title') })
 </script>
@@ -29,7 +29,7 @@ useHead({ title: () => t('auth.invitation.title') })
   <section class="auth-form">
     <header class="auth-form__header">
       <h1 class="auth-form__title">{{ t('auth.invitation.title') }}</h1>
-      <p class="auth-form__subtitle">{{ t('auth.invitation.subtitle') }}</p>
+      <p v-if="!isTokenState" class="auth-form__subtitle">{{ t('auth.invitation.subtitle') }}</p>
     </header>
 
     <div v-if="status === 'loading'" class="auth-form__body" aria-busy="true">
@@ -38,9 +38,9 @@ useHead({ title: () => t('auth.invitation.title') })
     <ErrorState
       v-else-if="status === 'error'"
       :message="t('auth.invitation.loadFailed')"
-      @retry="loadTerms"
+      @retry="load"
     />
-    <InvitationTokenState v-else-if="status !== 'ready'" :state="status" />
+    <InvitationTokenState v-else-if="isTokenState" :state="status" />
 
     <form v-else class="auth-form__body" novalidate @submit.prevent="form.onSubmit">
       <fieldset class="auth-form__group" :disabled="form.submitting.value">
@@ -75,7 +75,7 @@ useHead({ title: () => t('auth.invitation.title') })
       </div>
     </form>
 
-    <p class="auth-form__switch">
+    <p v-if="!isTokenState" class="auth-form__switch">
       <router-link class="auth-form__link" :to="{ name: ROUTE_NAMES.AUTH_LOGIN }">
         {{ t('auth.recovery.backToLogin') }}
       </router-link>

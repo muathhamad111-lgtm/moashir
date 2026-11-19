@@ -6,7 +6,6 @@ import NotificationCatalogueFilters from '@/components/settings/NotificationCata
 import NotificationCatalogueTable from '@/components/settings/NotificationCatalogueTable.vue'
 import { useNotificationCatalogue } from '@/composables/useNotificationCatalogue'
 import { formatNumber } from '@/utils/formatNumber'
-import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t, n } = useI18n()
 const { filters, types, total, status, errorMessage, load } = useNotificationCatalogue()
@@ -28,10 +27,6 @@ onMounted(load)
     @retry="load"
   >
     <div class="notification-catalogue">
-      <p class="notification-catalogue__note" role="note">
-        <AppIcon name="info-circle" />
-        {{ t('settings.notifications.catalogue.readOnlyNote') }}
-      </p>
       <NotificationCatalogueFilters
         :model-value="filters"
         @update:model-value="Object.assign(filters, $event)"

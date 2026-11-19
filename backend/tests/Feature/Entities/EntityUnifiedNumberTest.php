@@ -106,7 +106,7 @@ it('shows an existing entity without the number as missing a required field', fu
     switchTo(ownerOf($entity))->getJson('/api/v1/entities/me')->assertOk()
         ->assertJsonPath('data.unified_number', null)
         ->assertJsonPath('data.profile_completed', false)
-        ->assertJsonPath('data.profile_completion.percent', 93)
+        ->assertJsonPath('data.profile_completion.percent', 95)
         ->assertJsonPath('data.profile_completion.sections.0.missing_fields', ['unified_number'])
         ->assertJsonPath('data.profile_sections.0.fields.2', ['key' => 'unified_number', 'requirement' => 'required']);
 });

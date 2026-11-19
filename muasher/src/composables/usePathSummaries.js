@@ -44,6 +44,14 @@ function selfStatus(self, state, text) {
   })
 }
 
+// The compact self path header shows the last result without its date; the list below dates it.
+function selfBrief(self, state, text) {
+  const isResultLine =
+    !self.openDraft && self.lastResult && ![S.AWAITING_PAYMENT, S.UNAVAILABLE].includes(state)
+  if (!isResultLine) return selfStatus(self, state, text)
+  return text.t(`${ROOT}.self.lastResultShort`, { percent: text.percent(self.lastResult.percent) })
+}
+
 function selfSummary(self, text) {
   const state = selfStateOf(self)
   if (state === S.HIDDEN) return { key: PATH_KEYS.SELF, state, lines: [], status: '' }
@@ -51,6 +59,7 @@ function selfSummary(self, text) {
     key: PATH_KEYS.SELF,
     state,
     status: selfStatus(self, state, text),
+    brief: selfBrief(self, state, text),
     lines: [],
     action: selfAction(state, self),
   }

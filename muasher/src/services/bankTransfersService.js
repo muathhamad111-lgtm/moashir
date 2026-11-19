@@ -53,6 +53,15 @@ export const bankTransfersService = {
     )
   },
 
+  requestVatCertificateDownload(paymentId) {
+    return write(
+      'requestVatCertificateDownload',
+      () => apiClient.post(`${PATH}/${paymentId}/vat-certificate/download`),
+      {},
+      [NOT_FOUND],
+    )
+  },
+
   approve(paymentId, reason = null) {
     const payload = withReason({}, reason)
     return write(

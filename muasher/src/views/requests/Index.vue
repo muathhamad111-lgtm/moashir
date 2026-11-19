@@ -10,6 +10,7 @@ import Pagination from '@/components/data-list/Pagination.vue'
 import RequestQueueFilters from '@/components/requests/RequestQueueFilters.vue'
 import RequestQueueTable from '@/components/requests/RequestQueueTable.vue'
 import PreparingRequestsPanel from '@/components/requests/PreparingRequestsPanel.vue'
+import AssignAssessorDialog from '@/components/requests/AssignAssessorDialog.vue'
 import { useRequestQueue } from '@/composables/useRequestQueue'
 import { useQueueStatCards } from '@/composables/useQueueStatCards'
 import { useQueueStage } from '@/composables/useQueueStage'
@@ -22,10 +23,11 @@ import { CYCLE_STATUSES } from '@/constants/advanced'
 import { QUEUE_STAGES } from '@/constants/accredited'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { followedPathsOf, pathCountOf } from '@/utils/requestPaths'
+import { localizedText } from '@/utils/localizedText'
 
 const CYCLE_LIST_SIZE = 50
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { can } = usePermissions()
 const auth = useAuthStore()
 const paths = computed(() => followedPathsOf(auth.user))
@@ -36,6 +38,9 @@ const statCards = useQueueStatCards(stats)
 const { stage } = useQueueStage()
 const assessors = ref([])
 const cycles = ref([])
+const canAssign = computed(() => can(PERMISSIONS.REQUESTS_ASSIGN))
+const assignment = ref(null)
+const assignOpen = ref(false)
 
 useHead({ title: () => t('requests.index.title') })
 
@@ -50,12 +55,17 @@ function stageTab(value, key, count) {
 }
 
 const stageTabs = computed(() => [
-  stageTab(QUEUE_STAGES.QUEUE, 'assignmentQueue', currentCount.value?.total),
+  stageTab(QUEUE_STAGES.QUEUE, 'assignmentQueue', stats.value?.total ?? currentCount.value?.total),
   stageTab(QUEUE_STAGES.PREPARING, 'awaitingEntity', currentCount.value?.preparing),
 ])
 
+function openAssign({ item, mode }) {
+  assignment.value = { item, mode }
+  assignOpen.value = true
+}
+
 async function loadAssessors() {
-  if (!can(PERMISSIONS.REQUESTS_ASSIGN)) return
+  if (!canAssign.value) return
   const { data } = await requestsService.listAssessors({ path: path.value }).catch(() => ({}))
   assessors.value = data ?? []
 }
@@ -113,7 +123,9 @@ const filterState = {
               :status="status"
               :error-message="errorMessage"
               :shows-region="path === ASSESSMENT_PATHS.ADVANCED"
+              :can-assign="canAssign"
               @retry="load"
+              @assign="openAssign"
             />
             <Pagination
               v-if="status === 'success' && pagination.lastPage > 1"
@@ -125,5 +137,15 @@ const filterState = {
         </template>
       </Tabs>
     </Card>
+    <AssignAssessorDialog
+      v-if="assignment"
+      v-model="assignOpen"
+      :request-id="assignment.item.id"
+      :mode="assignment.mode"
+      :entity-name="localizedText(assignment.item.entity?.name, locale)"
+      :path="assignment.item.path ?? ''"
+      :path-label="assignment.item.pathLabel"
+      @done="load"
+    />
   </section>
 </template>

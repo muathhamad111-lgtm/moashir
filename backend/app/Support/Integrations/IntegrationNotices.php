@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Integrations;
 
 use App\Data\Entities\EntityNotice;
+use App\Data\Notifications\NoticeText;
 use App\Enums\Notifications\NotificationCode;
 use App\Support\ValueObjects\LocalizedText;
 
@@ -18,14 +19,7 @@ final class IntegrationNotices
     public static function for(NotificationCode $code, array $replacements = []): EntityNotice
     {
         $key = 'notifications.integrations.'.$code->value;
-        $notice = new EntityNotice(
-            $code,
-            LocalizedText::fromTranslationWith($key.'.title', $replacements),
-            LocalizedText::fromTranslationWith($key.'.body', $replacements),
-            self::SETTINGS_LINK,
-            true,
-            true,
-        );
+        $notice = EntityNotice::fromText($code, new NoticeText($key, $replacements), self::SETTINGS_LINK);
 
         return $code->sendsMail() ? $notice : $notice->inAppOnly();
     }

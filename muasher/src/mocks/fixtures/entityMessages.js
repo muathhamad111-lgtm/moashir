@@ -102,6 +102,50 @@ export const entityMessages = {
     ar: 'يجب أن تكون درجة الحوكمة رقمًا بين 0 و100 بثلاث منازل عشرية على الأكثر.',
     en: 'The governance grade must be a number between 0 and 100 with at most three decimals.',
   },
+  'field.building_number': {
+    ar: 'رقم المبنى 4 أرقام (0-9)، مثل 7421.',
+    en: 'The building number has 4 digits (0-9), e.g. 7421.',
+  },
+  'field.postal_code': {
+    ar: 'الرمز البريدي 5 أرقام (0-9)، مثل 12214.',
+    en: 'The postal code has 5 digits (0-9), e.g. 12214.',
+  },
+  'field.additional_number': {
+    ar: 'الرقم الإضافي 4 أرقام (0-9)، مثل 3365.',
+    en: 'The additional number has 4 digits (0-9), e.g. 3365.',
+  },
+  'field.short_code': {
+    ar: 'العنوان المختصر 4 أحرف إنجليزية ثم 4 أرقام، مثل RRRD2929.',
+    en: 'The short address is 4 Latin letters followed by 4 digits, e.g. RRRD2929.',
+  },
+  'field.vat_number': {
+    ar: 'الرقم الضريبي يتكون من 15 رقمًا بالأرقام الإنجليزية (0-9) دون مسافات، ويبدأ بالرقم 3 وينتهي به.',
+    en: 'The VAT registration number has 15 Western digits (0-9) with no spaces, and starts and ends with 3.',
+  },
+  'field.vat_number_required': {
+    ar: 'أدخل الرقم الضريبي لأن الجهة مسجّلة في ضريبة القيمة المضافة.',
+    en: 'Enter the VAT registration number because the entity is registered for VAT.',
+  },
+  'field.vat_number_prohibited': {
+    ar: 'احذف الرقم الضريبي لأن الجهة غير مسجّلة في ضريبة القيمة المضافة.',
+    en: 'Remove the VAT registration number because the entity is not registered for VAT.',
+  },
+  'field.vat_certificate_type': {
+    ar: 'يجب أن تكون شهادة التسجيل الضريبي ملف PDF.',
+    en: 'The VAT registration certificate must be a PDF file.',
+  },
+  'field.vat_certificate_size': {
+    ar: 'يجب ألا يتجاوز حجم شهادة التسجيل الضريبي 5 ميجابايت.',
+    en: 'The VAT registration certificate must not exceed 5 MB.',
+  },
+  'entity.vat_not_registered': {
+    ar: 'اختر «نعم» في سؤال التسجيل في ضريبة القيمة المضافة واحفظ بيانات الفوترة أولًا، ثم ارفع شهادة التسجيل الضريبي.',
+    en: 'Answer «Yes» to the VAT registration question and save the billing details first, then upload the VAT registration certificate.',
+  },
+  'entity.vat_certificate_missing': {
+    ar: 'لا توجد شهادة تسجيل ضريبي مرفوعة لهذه الجهة.',
+    en: 'This entity has no VAT registration certificate uploaded.',
+  },
   'field.logo_type': {
     ar: 'يجب أن يكون الشعار بصيغة PNG أو JPEG.',
     en: 'The logo must be a PNG or JPEG image.',

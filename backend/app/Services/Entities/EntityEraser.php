@@ -90,6 +90,15 @@ final readonly class EntityEraser
             'license_number' => null,
             'founded_on' => null,
             'website_url' => null,
+            'address_building_number' => null,
+            'address_street' => null,
+            'address_district' => null,
+            'address_city' => null,
+            'address_postal_code' => null,
+            'address_additional_number' => null,
+            'address_short_code' => null,
+            'vat_registered' => null,
+            'vat_number' => null,
             'anonymized_at' => $erasedAt,
         ])->save();
     }

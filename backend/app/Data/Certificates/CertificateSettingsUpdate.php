@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Data\Certificates;
 
+use App\Enums\Certificates\CertificateIssuanceMode;
 use App\Enums\Settings\SettingKey;
 use App\Support\ValueObjects\LevelThresholds;
 
 final readonly class CertificateSettingsUpdate
 {
     public function __construct(
-        public ?bool $accreditedIssuanceEnabled,
+        public ?CertificateIssuanceMode $accreditedIssuanceMode,
         public ?LevelThresholds $levelThresholds,
         public ?string $reason,
     ) {}
@@ -27,8 +28,8 @@ final readonly class CertificateSettingsUpdate
     {
         $values = [];
 
-        if ($this->accreditedIssuanceEnabled !== null) {
-            $values[SettingKey::AccreditedCertificateIssuance->value] = $this->accreditedIssuanceEnabled;
+        if ($this->accreditedIssuanceMode instanceof CertificateIssuanceMode) {
+            $values[SettingKey::AccreditedCertificateIssuanceMode->value] = $this->accreditedIssuanceMode->value;
         }
 
         if ($this->levelThresholds instanceof LevelThresholds) {

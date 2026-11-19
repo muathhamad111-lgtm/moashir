@@ -44,6 +44,7 @@ it('increments the server-managed version on a real change only and audits befor
 });
 
 it('shows the new rules version in the tools right after a change', function (): void {
+    activateInsightsKit();
     $assessment = accreditedResultFor(entityWithOwner(), insightsCriteria(), ['M1.1' => '55.00', 'M1.2' => '55.00', 'M2.1' => '55.00', 'M2.2' => '55.00']);
     signIn(systemAdmin());
     $this->putJson(INSIGHTS_SETTINGS, ['gap_thresholds' => ['critical_below' => '60.00', 'strength_from' => '80.00']])->assertOk();

@@ -10,11 +10,17 @@ const props = defineProps({
   title: { type: String, default: '' },
   lead: { type: String, default: '' },
   trail: { type: Array, default: () => [] },
+  variant: {
+    type: String,
+    default: 'full',
+    validator: (value) => ['full', 'compact'].includes(value),
+  },
 })
 
 const { t, te } = useI18n()
 const { pathName, pathDescription } = usePathNames()
 
+const isCompact = computed(() => props.variant === 'compact')
 const leadFallbackKey = computed(() => {
   const key = `paths.pages.${props.pathKey}.lead`
   return te(key) ? key : ''
@@ -31,13 +37,22 @@ const breadcrumbs = computed(() => [
 </script>
 
 <template>
-  <header class="b-band path-header" :data-testid="`path-header-${pathKey}`">
+  <header
+    class="b-band path-header"
+    :class="{ 'path-header--compact': isCompact }"
+    :data-testid="`path-header-${pathKey}`"
+  >
     <div class="b-band__inner path-header__inner">
       <div class="path-header__intro">
         <PortalBreadcrumb class="path-header__crumbs" :items="breadcrumbs" />
-        <h1 class="path-header__title">{{ title || pathName(pathKey) }}</h1>
-        <p v-if="leadText" class="path-header__lead">{{ leadText }}</p>
-        <slot name="chips" />
+        <div class="path-header__heading">
+          <h1 class="path-header__title">{{ title || pathName(pathKey) }}</h1>
+          <slot v-if="isCompact" name="chips" />
+        </div>
+        <template v-if="!isCompact">
+          <p v-if="leadText" class="path-header__lead">{{ leadText }}</p>
+          <slot name="chips" />
+        </template>
       </div>
       <div v-if="$slots.default" class="path-header__cards">
         <slot />

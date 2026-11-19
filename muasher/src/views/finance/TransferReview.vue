@@ -14,6 +14,7 @@ import ProofViewer from '@/components/finance/ProofViewer.vue'
 import TransferRequestFacts from '@/components/finance/TransferRequestFacts.vue'
 import TransferDecisionLine from '@/components/finance/TransferDecisionLine.vue'
 import LinkedRequestCard from '@/components/finance/LinkedRequestCard.vue'
+import TransferBillingCard from '@/components/finance/TransferBillingCard.vue'
 import DuplicateProofNotice from '@/components/finance/DuplicateProofNotice.vue'
 import ApproveTransferDialog from '@/components/finance/ApproveTransferDialog.vue'
 import RejectTransferDialog from '@/components/finance/RejectTransferDialog.vue'
@@ -112,6 +113,12 @@ onMounted(review.load)
           <Card :title="t('finance.transfers.detail.requestTitle')">
             <TransferRequestFacts :transfer="transfer" />
           </Card>
+
+          <TransferBillingCard
+            :payment-id="transfer.id"
+            :billing="transfer.billing"
+            :complete="transfer.billingComplete === true"
+          />
 
           <LinkedRequestCard
             v-if="REQUEST_PURPOSE_VALUES.includes(transfer.purpose)"

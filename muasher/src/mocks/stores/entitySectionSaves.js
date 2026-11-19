@@ -14,6 +14,7 @@ import { applyRegistry, checkRegistry } from './entityRegistry'
 import { checkUnifiedNumber } from './entityUnifiedNumber'
 import { setMarketingConsent } from './entitiesStore'
 import { sectionRevision } from './entityProfileSections'
+import { BILLING_KEYS, applyBilling, checkBilling } from './entityBilling'
 
 const NAME_MAX = 200
 const PERSON_NAME = { MIN: 3, MAX: 150 }
@@ -23,6 +24,7 @@ const SECTION_KEYS = Object.freeze({
   classification: ['entityType', 'developmentSector', 'orgSize', 'regionId', 'cityId'],
   governance: ['governanceGrade', 'employeesCount', 'annualBeneficiariesCount', 'hasStrategicPlan'],
   contact: ['authorizedPersonName', 'phone', 'websiteUrl', 'marketingConsent'],
+  billing: BILLING_KEYS,
 })
 
 function checkPresent(errors, body, keys) {
@@ -77,6 +79,7 @@ const CHECKS = {
   classification: checkClassification,
   governance: checkGovernance,
   contact: checkContact,
+  billing: checkBilling,
 }
 
 export function assertSection(section, body, entity) {
@@ -131,6 +134,7 @@ const APPLY = {
     applyRegistry(entity, { websiteUrl: body.websiteUrl })
     setMarketingConsent(entity, body.marketingConsent)
   },
+  billing: applyBilling,
 }
 
 export function applySection(section, entity, body) {

@@ -13,11 +13,13 @@ use App\Enums\Entities\EntityProfileField;
 use App\Enums\Entities\EntityStatus;
 use App\Enums\Entities\EntityType;
 use App\Enums\Entities\OrgSize;
+use App\Enums\Entities\ProfileSection;
 use App\Models\Assessments\Assessment;
 use App\Models\Certificates\Certificate;
 use App\Models\Files\StoredFile;
 use App\Models\Identity\EmailChangeRequest;
 use App\Models\Identity\User;
+use App\Support\Assessments\LastAccreditedAssessmentQuery;
 use App\Support\Entities\ProfileFieldValues;
 use App\Support\Periods\LocalDay;
 use App\Support\Search\SearchTextNormalizer;
@@ -57,6 +59,16 @@ use Illuminate\Support\Facades\Date;
  * @property CarbonImmutable|null $founded_on
  * @property string|null $website_url
  * @property int|null $logo_file_id
+ * @property string|null $address_building_number
+ * @property string|null $address_street
+ * @property string|null $address_district
+ * @property string|null $address_city
+ * @property string|null $address_postal_code
+ * @property string|null $address_additional_number
+ * @property string|null $address_short_code
+ * @property bool|null $vat_registered
+ * @property string|null $vat_number
+ * @property int|null $vat_certificate_file_id
  * @property EntityStatus $status
  * @property Carbon|null $verified_at
  * @property Carbon|null $approved_at
@@ -79,8 +91,10 @@ use Illuminate\Support\Facades\Date;
  * @property-read City $city
  * @property-read User|null $owner
  * @property-read StoredFile|null $logo
+ * @property-read StoredFile|null $vatCertificate
  * @property-read Certificate|null $levelCertificate
  * @property-read Certificate|null $lastLevelCertificate
+ * @property-read Assessment|null $lastAccreditedAssessment
  */
 final class Entity extends Model
 {
@@ -104,7 +118,8 @@ final class Entity extends Model
     protected $fillable = [
         'name', 'entity_type', 'development_sector', 'org_size', 'founding_year', 'region_id', 'city_id',
         'governance_grade', 'employees_count', 'annual_beneficiaries_count', 'has_strategic_plan', 'license_number',
-        'founded_on', 'website_url', 'unified_number',
+        'founded_on', 'website_url', 'unified_number', 'address_building_number', 'address_street', 'address_district',
+        'address_city', 'address_postal_code', 'address_additional_number', 'address_short_code', 'vat_registered', 'vat_number',
     ];
 
     /**
@@ -126,6 +141,8 @@ final class Entity extends Model
             'has_strategic_plan' => 'boolean',
             'founded_on' => 'immutable_date',
             'logo_file_id' => 'integer',
+            'vat_registered' => 'boolean',
+            'vat_certificate_file_id' => 'integer',
             'status' => EntityStatus::class,
             'verified_at' => 'datetime',
             'approved_at' => 'datetime',
@@ -170,6 +187,14 @@ final class Entity extends Model
     public function logo(): BelongsTo
     {
         return $this->belongsTo(StoredFile::class, 'logo_file_id');
+    }
+
+    /**
+     * @return BelongsTo<StoredFile, $this>
+     */
+    public function vatCertificate(): BelongsTo
+    {
+        return $this->belongsTo(StoredFile::class, 'vat_certificate_file_id');
     }
 
     /**
@@ -219,6 +244,19 @@ final class Entity extends Model
             ['issued_at' => 'max', 'id' => 'max'],
             static function (Builder $certificates): void {
                 self::constrainToIssuedAccredited($certificates);
+            },
+        );
+    }
+
+    /**
+     * @return HasOne<Assessment, $this>
+     */
+    public function lastAccreditedAssessment(): HasOne
+    {
+        return $this->hasOne(Assessment::class)->ofMany(
+            ['completed_at' => 'max', 'id' => 'max'],
+            static function (Builder $assessments): void {
+                LastAccreditedAssessmentQuery::constrain($assessments);
             },
         );
     }
@@ -315,6 +353,16 @@ final class Entity extends Model
     public function hasCompleteProfile(): bool
     {
         return $this->profileCompletion()->isComplete();
+    }
+
+    public function hasCompleteBilling(): bool
+    {
+        return $this->profileCompletion()->isSectionComplete(ProfileSection::Billing);
+    }
+
+    public function isVatRegistered(): bool
+    {
+        return $this->vat_registered === true;
     }
 
     public function profileCompletion(): ProfileCompletion

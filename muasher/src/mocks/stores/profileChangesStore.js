@@ -32,6 +32,15 @@ const TRACKED_FIELDS = Object.freeze({
   phone: (entity) => maskedPhone(entity.owner?.phone),
   website_url: (entity) => entity.websiteUrl,
   marketing_consent: (entity) => entity.marketingConsentAt !== null,
+  address_building_number: (entity) => entity.addressBuildingNumber ?? null,
+  address_street: (entity) => entity.addressStreet ?? null,
+  address_district: (entity) => entity.addressDistrict ?? null,
+  address_city: (entity) => entity.addressCity ?? null,
+  address_postal_code: (entity) => entity.addressPostalCode ?? null,
+  address_additional_number: (entity) => entity.addressAdditionalNumber ?? null,
+  address_short_code: (entity) => entity.addressShortCode ?? null,
+  vat_registered: (entity) => entity.vatRegistered ?? null,
+  vat_number: (entity) => entity.vatNumber ?? null,
 })
 
 const PLACE_FIELDS = { region_id: findRegion, city_id: findCity }

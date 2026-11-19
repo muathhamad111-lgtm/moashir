@@ -114,7 +114,8 @@ function transferPaymentOf({ user, entity, purpose, quote, key, cycle }) {
     purpose,
     awardCycleId: cycle?.id ?? null,
     channel: 'bank_transfer',
-    mode: 'test',
+    // A bank transfer has no sandbox: approved transfers are live in every environment.
+    mode: 'live',
     idempotencyKey: key,
     providerIntentId: null,
     providerPaymentId: null,

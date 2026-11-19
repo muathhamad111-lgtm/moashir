@@ -102,7 +102,9 @@ test('the entity completes the form: CV, evidence with scan states, refused file
   const remaining = async () =>
     Number(await progress.getAttribute('aria-valuemax')) -
     Number(await progress.getAttribute('aria-valuenow'))
-  await expect.poll(remaining).toBe(2)
+  // Two missing items plus three optional-only sub-criteria in stations the entity has not passed
+  // yet; only the station being left is passed, so the skipped ones stay open.
+  await expect.poll(remaining).toBe(5)
   await expect(page.locator('.accredited-task-page .guide-aside')).toHaveCount(0)
   await page.screenshot({
     path: `test-results/accredited-form-${suffixOf(testInfo)}.png`,
@@ -116,7 +118,7 @@ test('the entity completes the form: CV, evidence with scan states, refused file
     .locator('.evidence-file--refused .evidence-upload__input')
     .setInputFiles(pdf('audited-statements-2025-final.pdf'))
   await expect(governance.locator('.evidence-file--refused')).toHaveCount(0)
-  await expect.poll(remaining).toBe(1)
+  await expect.poll(remaining).toBe(4)
 
   await openMain(page, 7)
   const impact = page.locator('#accredited-sub-802')
@@ -150,7 +152,7 @@ test('the entity completes the form: CV, evidence with scan states, refused file
   await expect(impact.locator('.evidence-file--refused')).toHaveCount(0)
 
   await page.locator('[data-testid="accredited-save"]').click()
-  await expect.poll(remaining).toBe(0)
+  await expect.poll(remaining).toBe(3)
   await page.locator('.station-row__button').last().click()
   await page.locator('[data-testid="accredited-submit"]').click()
   await page.locator('.modal .btn--primary').click()

@@ -6,6 +6,7 @@ import { useSuperAdminReason } from '@/composables/useSuperAdminReason'
 import { useToast } from '@/composables/useToast'
 import { success } from '@/composables/useSuccess'
 import { PERMISSIONS } from '@/constants/permissionKeys'
+import { ISSUANCE_MODES } from '@/constants/certificates'
 
 const CURRENT_STATUSES = ['issued', 'suspended']
 const REVOCABLE = ['issued', 'suspended']
@@ -20,6 +21,7 @@ export function useRequestCertificates(requestId) {
   const status = ref('idle')
   const errorMessage = ref('')
   const issuing = ref(false)
+  const issuanceMode = ref(null)
 
   const canManage = computed(() => can(PERMISSIONS.CERTIFICATES_MANAGE))
   const canIssue = computed(() => can(PERMISSIONS.CERTIFICATES_ISSUE_ACCREDITED))
@@ -27,13 +29,33 @@ export function useRequestCertificates(requestId) {
     () => certificates.value.find((item) => CURRENT_STATUSES.includes(item.status)) ?? null,
   )
   const history = computed(() => certificates.value.filter((item) => item !== current.value))
+  const issuesAutomatically = computed(() => issuanceMode.value === ISSUANCE_MODES.AUTOMATIC)
+
+  // Manual issuance waits for the assessor's button; automatic issuance never shows it.
+  function issueStepOf(completed) {
+    if (!completed || status.value !== 'success' || current.value) return null
+    if (issuesAutomatically.value) return 'pending'
+    return canIssue.value ? 'issue' : null
+  }
+
+  // Managers read the whole history; the assigned assessor reads only the current state.
+  async function fetchCertificates() {
+    if (canManage.value) {
+      const envelope = await certificatesService.listForRequest(requestId.value)
+      return { list: envelope.data, mode: envelope.issuanceMode }
+    }
+    const { data } = await certificatesService.requestState(requestId.value)
+    return { list: data.certificate ? [data.certificate] : [], mode: data.issuanceMode }
+  }
 
   async function load() {
-    if (!canManage.value) return
+    if (!canManage.value && !canIssue.value) return
     status.value = 'loading'
     errorMessage.value = ''
     try {
-      certificates.value = (await certificatesService.listForRequest(requestId.value)).data
+      const { list, mode } = await fetchCertificates()
+      certificates.value = list
+      issuanceMode.value = mode
       status.value = 'success'
     } catch (error) {
       errorMessage.value = error?.normalized?.message ?? ''
@@ -94,6 +116,8 @@ export function useRequestCertificates(requestId) {
     issuing,
     canManage,
     canIssue,
+    issuesAutomatically,
+    issueStepOf,
     reasonPrompt,
     load,
     issue,

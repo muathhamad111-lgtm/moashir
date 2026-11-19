@@ -35,6 +35,7 @@ export const financeReject = {
       fields: { state: [state], attempted: [attempted] },
     }),
   entityDeleted: () => new MockRejection(409, 'entity.deleted'),
+  vatCertificateMissing: () => new MockRejection(404, 'entity.vat_certificate_missing'),
   channelNotSupported: () => new MockRejection(409, 'payment.channel_not_supported'),
   channelNotAvailable: () => codeField(422, 'payment.channel_not_available', 'channel'),
   openOrderExists: (payment) =>

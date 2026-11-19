@@ -1,6 +1,5 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
-import Badge from '@/components/ui/Badge.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { canDownloadReceipt } from '@/utils/payments/myPaymentRow'
@@ -19,7 +18,9 @@ const { t } = useI18n()
     <bdi v-if="payment.receipt?.number" class="receipt-cell__number" dir="ltr">{{
       payment.receipt.number
     }}</bdi>
-    <Badge v-else-if="payment.receipt" variant="warning">{{ t('finance.receipt.notProof') }}</Badge>
+    <span v-else-if="payment.receipt" class="receipt-cell__none">{{
+      t('finance.receipt.noNumber')
+    }}</span>
     <span v-else class="receipt-cell__none">{{ t('finance.common.none') }}</span>
 
     <span v-if="canDownloadReceipt(payment)" class="receipt-cell__actions">

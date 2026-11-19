@@ -3,10 +3,15 @@ import { useI18n } from 'vue-i18n'
 import ProfileFieldCell from './ProfileFieldCell.vue'
 import PhoneField from './PhoneField.vue'
 import OfficialEmailField from './OfficialEmailField.vue'
+import VatCertificateCell from './VatCertificateCell.vue'
 import { useProfileFieldDisplay } from '@/composables/useProfileFieldDisplay'
-import { fieldLabelKey } from '@/utils/entityProfile/sections'
+import { fieldLabelKey, shownFieldsOf } from '@/utils/entityProfile/sections'
 
-const SPECIAL_CELLS = Object.freeze({ phone: PhoneField, officialEmail: OfficialEmailField })
+const SPECIAL_CELLS = Object.freeze({
+  phone: PhoneField,
+  officialEmail: OfficialEmailField,
+  vatCertificate: VatCertificateCell,
+})
 
 defineProps({
   section: { type: Object, required: true },
@@ -21,7 +26,10 @@ const display = useProfileFieldDisplay()
 
 <template>
   <dl class="profile-section__grid">
-    <template v-for="field in section.fields" :key="field.name">
+    <template
+      v-for="field in shownFieldsOf(section.fields, profile.vatRegistered)"
+      :key="field.name"
+    >
       <component
         :is="SPECIAL_CELLS[field.name]"
         v-if="SPECIAL_CELLS[field.name]"

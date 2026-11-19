@@ -37,6 +37,16 @@ export function requestPaymentOf(record) {
   return withId ? { ...summary, id: payment.id } : summary
 }
 
+export function staffPaymentOf(record) {
+  const payment = record.paymentId ? findPayment(record.paymentId) : null
+  if (!payment || linksFinance()) return requestPaymentOf(record)
+  return { status: payment.status, isTest: payment.mode === 'test' }
+}
+
+export function revealsPaymentDetails() {
+  return linksFinance()
+}
+
 export function progressSummaryOf(record) {
   const progress = accreditedProgressOf(record)
   return progress ? { subsComplete: progress.subsComplete, subsTotal: progress.subsTotal } : null

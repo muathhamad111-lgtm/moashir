@@ -11,7 +11,7 @@ import { useSideNavCollapsed } from '@/composables/useSideNavCollapsed'
 import { isMobileTaskScreen, isTaskScreen } from '@/utils/portalAudience'
 import PortalSideNav from '@/components/portal/PortalSideNav.vue'
 import PortalTopBar from '@/components/portal/PortalTopBar.vue'
-import AttentionStrip from '@/components/portal/AttentionStrip.vue'
+import ProfileCompletionBanner from '@/components/portal/ProfileCompletionBanner.vue'
 import MobileTabBar from '@/components/portal/MobileTabBar.vue'
 import PortalFooter from '@/components/portal/PortalFooter.vue'
 import LevelAchievedDialog from '@/components/level/LevelAchievedDialog.vue'
@@ -56,7 +56,7 @@ watch(
     <div class="portal-layout__body">
       <PortalSideNav class="portal-layout__nav" :collapsed="collapsed" />
       <div class="portal-layout__column">
-        <AttentionStrip v-if="!isTask" class="portal-layout__strip" />
+        <ProfileCompletionBanner v-if="!isTask" class="portal-layout__strip" />
         <main id="portal-main" class="portal-layout__main" tabindex="-1">
           <slot />
         </main>

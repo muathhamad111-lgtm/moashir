@@ -51,6 +51,16 @@ return [
         'authorized_person_name' => 'الشخص المفوّض بإدارة الحساب',
         'phone' => 'رقم الجوال',
         'marketing_consent' => 'أخبار المنصة وعروضها',
+        'address_building_number' => 'رقم المبنى',
+        'address_street' => 'الشارع',
+        'address_district' => 'الحي',
+        'address_city' => 'المدينة (العنوان الوطني)',
+        'address_postal_code' => 'الرمز البريدي',
+        'address_additional_number' => 'الرقم الإضافي',
+        'address_short_code' => 'العنوان المختصر',
+        'vat_registered' => 'التسجيل في ضريبة القيمة المضافة',
+        'vat_number' => 'الرقم الضريبي',
+        'vat_certificate' => 'شهادة التسجيل الضريبي',
     ],
 
     'export' => [

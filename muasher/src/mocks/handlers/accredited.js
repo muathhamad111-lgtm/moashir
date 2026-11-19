@@ -27,7 +27,7 @@ import {
   evidenceList,
   visibleEvidence,
 } from '../stores/accredited/accreditedSerializers'
-import { saveAccreditedCv } from '../stores/accredited/entityWorkflow'
+import { passSubmissionStation, saveAccreditedCv } from '../stores/accredited/entityWorkflow'
 import {
   evidenceDownload,
   removeEvidence,
@@ -144,6 +144,17 @@ export const accreditedHandlers = [
       const record = boundRecord(params)
       authorizeManageOwn(user, record, ACCREDITED_PERMISSIONS.ACCREDITED_MANAGE)
       return envelope(cvResource(saveAccreditedCv(user, record, await readJson(request))))
+    }),
+  ),
+
+  http.put(
+    `${ASSESSMENT}/stations/:main/passed`,
+    numericRoute(async ({ params, request }) => {
+      const user = signedInActor()
+      const record = boundRecord(params)
+      authorizeManageOwn(user, record, ACCREDITED_PERMISSIONS.ACCREDITED_MANAGE)
+      const body = await readJson(request)
+      return envelope({ passedStations: passSubmissionStation(user, record, params.main, body) })
     }),
   ),
 

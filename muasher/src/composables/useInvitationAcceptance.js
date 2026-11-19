@@ -3,11 +3,16 @@ import { useI18n } from 'vue-i18n'
 import { useValidatedForm } from '@/composables/useValidatedForm'
 import { useLoginOutcome } from '@/composables/useLoginOutcome'
 import { useAuthStore } from '@/stores/auth'
+import { authService } from '@/services/authService'
 import { termsService } from '@/services/termsService'
 import { AUTH_FLOW_INTENTS } from '@/constants/loginSteps'
 import { invitationPayload, invitationSchema } from '@/utils/auth/passwordForms'
 
 const TOKEN_STATES = { 404: 'invalid', 410: 'expired' }
+
+function tokenStateOf(error) {
+  return TOKEN_STATES[error?.normalized?.status] ?? null
+}
 
 export function useInvitationAcceptance(token) {
   const { t } = useI18n()
@@ -17,14 +22,17 @@ export function useInvitationAcceptance(token) {
   const terms = ref(null)
   const termsRequired = computed(() => Boolean(terms.value?.terms))
 
-  async function loadTerms() {
+  async function load() {
     status.value = 'loading'
     try {
-      const { data } = await termsService.current()
+      const [, { data }] = await Promise.all([
+        authService.checkInvitation(token.value),
+        termsService.current(),
+      ])
       terms.value = data
       status.value = 'ready'
-    } catch {
-      status.value = 'error'
+    } catch (error) {
+      status.value = tokenStateOf(error) ?? 'error'
     }
   }
 
@@ -37,7 +45,7 @@ export function useInvitationAcceptance(token) {
       try {
         outcome = await auth.acceptInvitation(token.value, invitationPayload(values, terms.value))
       } catch (error) {
-        const state = TOKEN_STATES[error?.normalized?.status]
+        const state = tokenStateOf(error)
         if (!state) throw error
         status.value = state
         return
@@ -46,7 +54,7 @@ export function useInvitationAcceptance(token) {
     },
   })
 
-  onMounted(loadTerms)
+  onMounted(load)
 
-  return { form, status, terms, termsRequired, loadTerms }
+  return { form, status, terms, termsRequired, load }
 }

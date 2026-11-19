@@ -12,9 +12,16 @@
   }
 }
 
-.attention-strip {
+.profile-banner {
   @include in-tts-shell {
-    border: var(--border-width) solid tts-status('warning', 'border');
+    padding: 0;
+  }
+}
+
+.profile-banner__inner {
+  @include in-tts-shell {
+    max-inline-size: none;
+    border-color: tts-status('warning', 'border');
     border-radius: var(--card-radius);
     background-color: tts-status('warning', 'soft');
   }
@@ -90,12 +97,6 @@
   @include in-tts-shell {
     max-inline-size: none;
     padding-inline: 0;
-  }
-}
-
-.attention-strip__inner {
-  @include in-tts-shell {
-    max-inline-size: none;
   }
 }
 

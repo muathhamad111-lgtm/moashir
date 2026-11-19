@@ -16,6 +16,7 @@ use App\Providers\EntitiesServiceProvider;
 use App\Providers\FinanceServiceProvider;
 use App\Providers\IntegrationServiceProvider;
 use App\Providers\NotificationMailServiceProvider;
+use App\Providers\NotificationTextsServiceProvider;
 use App\Providers\RateLimitServiceProvider;
 use App\Providers\SearchServiceProvider;
 
@@ -34,6 +35,7 @@ return [
     FinanceServiceProvider::class,
     IntegrationServiceProvider::class,
     NotificationMailServiceProvider::class,
+    NotificationTextsServiceProvider::class,
     RateLimitServiceProvider::class,
     SearchServiceProvider::class,
 ];

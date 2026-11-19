@@ -171,3 +171,62 @@
 .path-header-card__group {
   white-space: nowrap;
 }
+
+// Compact variant: one slim band — title and chips on one side, status and action on the other.
+.path-header--compact .path-header__inner {
+  gap: var(--space-3);
+  padding-block: var(--space-4) var(--space-5);
+
+  @include respond-to('md') {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  @include respond-to('lg') {
+    padding-block: var(--space-5) var(--space-6);
+  }
+}
+
+.path-header--compact .path-header__intro {
+  gap: var(--space-1);
+  min-inline-size: 0;
+}
+
+.path-header__heading {
+  @include flex(row, center, flex-start, var(--space-2) var(--space-3));
+  flex-wrap: wrap;
+}
+
+.path-header--compact .path-header__title {
+  margin: 0;
+  font-size: var(--fs-2xl);
+}
+
+.path-header--compact .path-header__cards {
+  @include flex(row, center, flex-start, var(--space-3) var(--space-4));
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.path-header__status {
+  @include flex(row, center, flex-start, var(--space-3));
+  flex-wrap: wrap;
+}
+
+.path-header__status-text {
+  margin: 0;
+  color: var(--band-ink);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+
+.path-header__skeleton {
+  inline-size: 16rem;
+}
+
+.path-header--compact .path-price,
+.path-header--compact .money-amount,
+.path-header--compact .money-amount__currency {
+  color: var(--band-ink);
+}

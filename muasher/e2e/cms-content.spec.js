@@ -1,6 +1,7 @@
 import { Buffer } from 'node:buffer'
 import { test, expect } from '@playwright/test'
-import { seedLocale, seedSignedIn } from './support/session'
+import { seedLocale, seedScenario, seedSignedIn } from './support/session'
+import { chooseNamed } from './support/dropdown'
 import { closeSuccess, decisionAction } from './support/dialogs'
 import { searchList } from './support/listFilters'
 
@@ -120,14 +121,59 @@ test('the brand identity menus refuse an unsafe header link with the server fiel
   await signInAs(page, ['content_officer'], testInfo)
   await page.goto('/admin/branding?tab=menus')
   await expect(page.locator('.tabs__tab')).toHaveCount(2)
-  await expect(page.locator('.site-settings__form')).toBeVisible()
-  await expect(page.locator('input[name="headerLinksUrl-0"]')).toHaveValue('/#model')
-  await page.locator('input[name="headerLinksUrl-0"]').fill('javascript:alert(1)')
+  const header = page.locator('.menu-editor').first()
+  await expect(header.locator('.menu-tree__select').first()).toHaveAttribute('aria-current', 'true')
+  await chooseNamed(header, 'headerLinks-0-type', 'custom')
+  await header.locator('input[name="headerLinks-0-url"]').fill('javascript:alert(1)')
   await page.locator('.site-settings__footer .btn--primary').click()
-  await expect(
-    page.locator('.site-settings__form .field__error, .site-settings__form [role="alert"]').first(),
-  ).toBeVisible()
+  await expect(header.locator('.menu-panel .field__error').first()).toBeVisible()
+  await expect(header.locator('.menu-tree__item').first()).toHaveClass(/is-invalid/)
   await page.screenshot({ path: `${SHOTS}/site-settings-${suffix(testInfo)}.png`, fullPage: true })
+})
+
+test('the brand identity menus hide a link and group sub-links under a main item', async ({
+  page,
+}, testInfo) => {
+  await signInAs(page, ['content_officer'], testInfo)
+  await page.goto('/admin/branding?tab=menus')
+  const header = page.locator('.menu-editor').first()
+  await expect(header.locator('.menu-tree__select').first()).toBeVisible({ timeout: 15000 })
+  await header.locator('.menu-panel .toggle-switch__track').click()
+  await expect(header.locator('.menu-tree__item').first()).toHaveClass(/is-hidden/)
+  await header.locator('.menu-tree__actions').nth(1).locator('button').first().click()
+  await header.locator('input[name="headerLinks-1-children-0-label-ar"]').fill('الشروط والأحكام')
+  await header.locator('input[name="headerLinks-1-children-0-label-en"]').fill('Terms')
+  await chooseNamed(header, 'headerLinks-1-children-0-page', '/terms')
+  await expect(header.locator('.menu-tree--nested .menu-tree__select')).toHaveCount(1)
+  await page.locator('.site-settings__footer .btn--primary').click()
+  await expect(page.locator('.toast').first()).toBeVisible()
+  await header.locator('.menu-tree__select').nth(1).click()
+  await expect(header.locator('.menu-panel__note')).toBeVisible()
+  await page.screenshot({ path: `${SHOTS}/menus-${suffix(testInfo)}.png`, fullPage: true })
+})
+
+test('the public header shows a managed sub-menu as a dropdown that closes with Escape', async ({
+  page,
+}, testInfo) => {
+  await seedLocale(page, localeOf(testInfo))
+  await seedScenario(page, 'menu-dropdown')
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+  const trigger = page.locator('.lp-nav-group__trigger')
+  await expect(trigger).toBeVisible({ timeout: 15000 })
+  await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+  await trigger.click()
+  const panel = page.locator(`#${await trigger.getAttribute('aria-controls')}`)
+  await expect(panel).toBeVisible()
+  await expect(panel.locator('a')).toHaveCount(2)
+  await page.keyboard.press('Escape')
+  await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+  await expect(trigger).toBeFocused()
+  await page.goto('/kpis')
+  const publicTrigger = page.locator('.public-navbar__menu .public-nav-group__trigger')
+  await expect(publicTrigger).toBeVisible({ timeout: 15000 })
+  await publicTrigger.click()
+  await expect(page.locator('.public-navbar__menu .public-nav-group__link')).toHaveCount(2)
 })
 
 test('KPI catalog filters on the server and the detail page shows the value history', async ({

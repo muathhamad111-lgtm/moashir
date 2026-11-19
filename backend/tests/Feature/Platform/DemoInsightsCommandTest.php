@@ -124,6 +124,7 @@ function demoRowsOf(string $model, string $column, int $id): array
 }
 
 it('adds every excellence-tools case to a demo installed before them', function (): void {
+    activateInsightsKit();
     enableDemoData();
     installDemoPrerequisites();
     installDemoWithoutInsights();
@@ -193,6 +194,7 @@ it('writes the same audit events as the fresh install and keeps the revocation r
 });
 
 it('leaves existing drafts, self results, payments and receipts of the demo entities untouched', function (): void {
+    activateInsightsKit();
     enableDemoData();
     installDemoPrerequisites();
     installDemoWithoutInsights();

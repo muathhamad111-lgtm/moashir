@@ -33,6 +33,7 @@ final class StoredFilePolicy
             $file->purpose === StoredFilePurpose::EvidenceBundle && $owner instanceof EvidenceBundle => 'download',
             $file->purpose === StoredFilePurpose::CertificatePdf && $owner instanceof Certificate => 'download',
             $file->purpose === StoredFilePurpose::EntityLogo && $owner instanceof Entity && $owner->logo_file_id === $file->id => 'viewLogo',
+            $file->purpose === StoredFilePurpose::VatCertificate && $owner instanceof Entity && $owner->vat_certificate_file_id === $file->id => 'viewVatCertificate',
             default => null,
         };
 

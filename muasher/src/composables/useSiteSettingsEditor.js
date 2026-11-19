@@ -1,6 +1,7 @@
 import { onMounted, ref } from 'vue'
 import { siteSettingsService } from '@/services/siteSettingsService'
 import { SITE_SETTINGS_LIMITS, SOCIAL_PLATFORM_KEYS } from '@/constants/cms'
+import { footerDraftOf, footerPayloadOf, headerDraftOf, headerPayloadOf } from '@/utils/siteMenu'
 
 function bilingual(value) {
   return { ar: value?.ar ?? '', en: value?.en ?? '' }
@@ -8,14 +9,6 @@ function bilingual(value) {
 
 function trimmed(value) {
   return { ar: value.ar.trim(), en: value.en.trim() }
-}
-
-function linksOf(rows) {
-  return (rows ?? []).map((row) => ({ label: bilingual(row.label), url: row.url ?? '' }))
-}
-
-function trimmedLinks(rows) {
-  return rows.map((row) => ({ label: trimmed(row.label), url: row.url.trim() }))
 }
 
 function socialRowsOf(links) {
@@ -39,7 +32,7 @@ export function draftOf(settings) {
   return {
     platformName: bilingual(settings?.platformName),
     platformDescription: bilingual(settings?.platformDescription),
-    headerLinks: linksOf(settings?.headerLinks),
+    headerLinks: headerDraftOf(settings?.headerLinks),
     social: socialRowsOf(settings?.social),
     contact: {
       email: settings?.contact?.email ?? '',
@@ -47,7 +40,7 @@ export function draftOf(settings) {
       address: bilingual(settings?.contact?.address),
     },
     footerNote: bilingual(settings?.footerNote),
-    quickLinks: linksOf(settings?.quickLinks),
+    quickLinks: footerDraftOf(settings?.quickLinks),
     seo: {
       title: bilingual(settings?.seo?.title),
       description: bilingual(settings?.seo?.description),
@@ -61,7 +54,7 @@ export function payloadOf(draft) {
   return {
     platformName: trimmed(draft.platformName),
     platformDescription: trimmed(draft.platformDescription),
-    headerLinks: trimmedLinks(draft.headerLinks),
+    headerLinks: headerPayloadOf(draft.headerLinks),
     social: filledSocialLinks(draft.social),
     contact: {
       email: draft.contact.email.trim() || null,
@@ -69,7 +62,7 @@ export function payloadOf(draft) {
       address: trimmed(draft.contact.address),
     },
     footerNote: trimmed(draft.footerNote),
-    quickLinks: trimmedLinks(draft.quickLinks),
+    quickLinks: footerPayloadOf(draft.quickLinks),
     seo: { title: trimmed(draft.seo.title), description: trimmed(draft.seo.description) },
     featuredKpiLimit: Number(draft.featuredKpiLimit),
     showFeaturedKpis: Boolean(draft.showFeaturedKpis),

@@ -9,6 +9,7 @@ use App\Data\Finance\BankTransferSubmission;
 use App\Data\Finance\CreatedPayment;
 use App\Enums\Files\StoredFilePurpose;
 use App\Enums\Finance\PaymentChannel;
+use App\Enums\Integrations\IntegrationMode;
 use App\Exceptions\Finance\PaymentRejected;
 use App\Models\Entities\Entity;
 use App\Models\Files\StoredFile;
@@ -54,7 +55,8 @@ final readonly class SubmitBankTransferPayment
         $submission = new BankTransferSubmission($order->purpose, $order->idempotencyKey, $order->bankAccountId, $quote, $this->acceptProof($actor, $order), $cycle);
 
         try {
-            return $this->present(DB::transaction(fn (): Payment => $this->opener->open($actor, $entity, $submission)), false);
+            // A bank transfer has no sandbox: once Finance approves it, the money is real in every environment.
+            return $this->present(DB::transaction(fn (): Payment => $this->opener->open($actor, $entity, $submission, IntegrationMode::Live)), false);
         } catch (Throwable $failure) {
             $this->remover->remove($submission->proof);
 

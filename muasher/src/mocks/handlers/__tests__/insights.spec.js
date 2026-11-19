@@ -72,23 +72,32 @@ describe('insights mock — overview, results and library', () => {
   })
 
   it('does not report an unsent draft as a request in progress', async () => {
-    seedMockSession({ id: 7601, roles: ['entity'], entityId: 6001 })
-    const { body } = await call('GET', '/entities/me/insights')
+    seedMockSession(ADMIN)
+    const { body } = await call('GET', '/entities/6001/insights')
     expect(body.data.selected.number).toBe('ACC-2026-000003')
     expect(body.data.in_progress_request).toBeNull()
   })
 
-  it('answers the in-progress and no-result empty states with an action', async () => {
+  it('locks the tools for an entity without an active Kit and keeps the empty states for staff', async () => {
     seedMockSession(RAWABI)
-    const progress = await call('GET', '/entities/me/insights')
-    expect(progress.body.data.empty_state.reason).toBe('in_progress')
-    expect(progress.body.data.empty_state.cta.kind).toBe('view_request')
+    const locked = await call('GET', '/entities/me/insights')
+    expect([locked.status, locked.body.code]).toEqual([403, 'insights.kit_required'])
     seedMockSession(IEMAR)
-    const none = await call('GET', '/entities/me/insights')
-    expect(none.body.data.empty_state).toEqual({
-      reason: 'no_verified_result',
-      cta: { kind: 'start_accredited', assessment_id: null },
-    })
+    expect((await call('GET', '/entities/me/insights')).body.code).toBe('insights.kit_required')
+    seedMockSession(ADMIN)
+    const progress = await call('GET', '/entities/6003/insights')
+    expect(progress.body.data.empty_state.reason).toBe('in_progress')
+    const none = await call('GET', '/entities/7002/insights')
+    expect(none.body.data.empty_state.reason).toBe('no_verified_result')
+  })
+
+  it('opens the tools of the result whose Kit is active and locks the older result for the entity', async () => {
+    seedMockSession(ALBIRR)
+    expect((await call('GET', `/assessments/${LATEST}/insights/maturity`)).status).toBe(200)
+    const older = await call('GET', `/assessments/${PREVIOUS}/insights/maturity`)
+    expect([older.status, older.body.code]).toEqual([403, 'insights.kit_required'])
+    seedMockSession(ADMIN)
+    expect((await call('GET', `/assessments/${PREVIOUS}/insights/maturity`)).status).toBe(200)
   })
 
   it('gives staff the same overview without actions and denies an entity the staff route', async () => {
@@ -121,7 +130,7 @@ describe('insights mock — overview, results and library', () => {
 
 describe('insights mock — tools', () => {
   it('classifies every sub-criterion exactly once and orders gaps by lost points', async () => {
-    seedMockSession(ALBIRR)
+    seedMockSession(ADMIN)
     const { body } = await call('GET', `/assessments/${PREVIOUS}/insights/strengths-gaps`)
     const { counts, items } = body.data
     const total = counts.strength + counts.opportunity + counts.critical_gap
@@ -142,6 +151,7 @@ describe('insights mock — tools', () => {
     expect(latest.body.data.previous.assessment_id).toBe(PREVIOUS)
     expect(latest.body.data.overall.delta_pp).toMatch(/^[+-]?\d+\.\d{2}$/)
     expect(latest.body.data.mains[0].comparison).toBe('matched')
+    seedMockSession(ADMIN)
     const earliest = await call('GET', `/assessments/${PREVIOUS}/insights/maturity`)
     expect(earliest.body.data.previous).toBeNull()
     expect(earliest.body.data.mains[0].comparison).toBe('no_previous')
@@ -200,7 +210,6 @@ describe('insights mock — settings and maturity texts', () => {
       version: 2,
     })
     expect(changed.body.data.aligned).toBe(false)
-    seedMockSession(ALBIRR)
     const tool = await call('GET', `/assessments/${PREVIOUS}/insights/strengths-gaps`)
     expect(tool.body.data.rules.version).toBe(2)
     tool.body.data.items.critical_gaps.forEach((item) =>

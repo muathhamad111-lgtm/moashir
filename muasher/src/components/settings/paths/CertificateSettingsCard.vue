@@ -4,12 +4,16 @@ import { useI18n } from 'vue-i18n'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import FieldInput from '@/components/form/FieldInput.vue'
-import FieldToggle from '@/components/form/FieldToggle.vue'
+import FieldRadio from '@/components/form/FieldRadio.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import CertificateLevelRanges from '@/components/settings/CertificateLevelRanges.vue'
 import { useCertificateSettings } from '@/composables/useCertificateSettings'
-import { CERTIFICATE_LEVELS, CERTIFICATE_SETTING_PARTS as PARTS } from '@/constants/certificates'
+import {
+  CERTIFICATE_LEVELS,
+  CERTIFICATE_SETTING_PARTS as PARTS,
+  ISSUANCE_MODES,
+} from '@/constants/certificates'
 import { levelRangesOf } from '@/utils/settings/certificateSettingsForm'
 
 const props = defineProps({
@@ -25,6 +29,12 @@ const { status, errorMessage, settings, form, saving, reasonOpen, load, submit, 
   useCertificateSettings()
 const ranges = computed(() => levelRangesOf(form.values.levelThresholds))
 const formId = `certificate-settings-${props.part}`
+const modeOptions = computed(() =>
+  Object.values(ISSUANCE_MODES).map((mode) => ({
+    value: mode,
+    label: t(`settings.certificates.issuanceModes.${mode}`),
+  })),
+)
 const title = computed(() =>
   props.part === PARTS.ISSUANCE
     ? t('settings.paths.certificatesTitle')
@@ -46,12 +56,16 @@ onMounted(load)
       novalidate
       @submit.prevent="submit"
     >
-      <FieldToggle
-        v-if="part === PARTS.ISSUANCE"
-        name="accreditedIssuanceEnabled"
-        :label="t('settings.certificates.issuance')"
-        :description="t('settings.certificates.issuanceDesc')"
-      />
+      <template v-if="part === PARTS.ISSUANCE">
+        <FieldRadio
+          name="accreditedIssuanceMode"
+          :label="t('settings.certificates.issuance')"
+          :options="modeOptions"
+        />
+        <p class="field__hint">
+          {{ t(`settings.certificates.issuanceHints.${form.values.accreditedIssuanceMode}`) }}
+        </p>
+      </template>
       <template v-else>
         <div class="settings-form__grid">
           <FieldInput

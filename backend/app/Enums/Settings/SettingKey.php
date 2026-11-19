@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Enums\Settings;
 
 use App\Enums\Award\CommitteeEntityVisibility;
+use App\Enums\Certificates\CertificateIssuanceMode;
 use App\Enums\Certificates\CertificateLevel;
 use App\Enums\Files\EvidenceFileType;
 use App\Enums\Finance\PaymentChannel;
@@ -62,7 +63,7 @@ enum SettingKey: string
     case CommitteeEntityDataVisibility = 'assessment.committee_entity_data_visibility';
     case AssessmentScaleKind = 'assessment.scale_kind';
     case CertificateLevelThresholds = 'certificates.level_thresholds';
-    case AccreditedCertificateIssuance = 'certificates.accredited_issuance_enabled';
+    case AccreditedCertificateIssuanceMode = 'certificates.accredited_issuance_mode';
     case ContactRetentionMonths = 'contact.retention_months';
     case EntitySignInCodeChannels = 'auth.entity_sign_in_code_channels';
     case GeneralEmailNotifications = 'auth.general_email_notifications';
@@ -93,14 +94,15 @@ enum SettingKey: string
         return match ($this) {
             self::PaymentMode, self::PaymentCheckoutPattern, self::SmsMode, self::EmailMode, self::EmailTestAddress,
             self::AiMode, self::AiPlacement, self::CommitteeEntityDataVisibility, self::AssessmentScaleKind, self::VatRegistrationNumber,
-            self::PeriodicCadence, self::PeriodicAudience, self::PeriodicCertificateValidity, self::PeriodicRolloutFrom => SettingType::String,
+            self::PeriodicCadence, self::PeriodicAudience, self::PeriodicCertificateValidity, self::PeriodicRolloutFrom,
+            self::AccreditedCertificateIssuanceMode => SettingType::String,
             self::PaymentOrderValidityMinutes, self::AbandonedCartAfterHours, self::FilesMaxSizeMb,
             self::AccreditedReviewSlaDays, self::AdvancedMinEntityAgeYears, self::AdvancedInitialReviewSlaDays,
             self::AccreditedUploadMaxFileMb, self::AccreditedEvidenceMaxFilesPerSub, self::AdvancedUploadMaxFileMb,
             self::AdvancedEvidenceMaxFilesPerSub, self::ContactRetentionMonths, self::PeriodicNoticeDaysBefore,
             self::PeriodicPaidDraftReminderDays => SettingType::Integer,
             self::VatRate, self::AdvancedDisqualificationScore => SettingType::Decimal,
-            self::AccreditedCertificateIssuance, self::GeneralEmailNotifications, self::EntityRegistrationReview,
+            self::GeneralEmailNotifications, self::EntityRegistrationReview,
             self::TwoFactorEnabled => SettingType::Boolean,
             default => SettingType::Json,
         };
@@ -133,7 +135,7 @@ enum SettingKey: string
             self::AdvancedInitialReviewSlaDays => 14,
             self::CommitteeEntityDataVisibility => CommitteeEntityVisibility::NameOnly->value,
             self::CertificateLevelThresholds => CertificateLevel::DEFAULT_THRESHOLDS,
-            self::AccreditedCertificateIssuance => true,
+            self::AccreditedCertificateIssuanceMode => CertificateIssuanceMode::Automatic->value,
             self::EntitySignInCodeChannels => [OtpChannel::Email->value],
             self::GeneralEmailNotifications, self::EntityRegistrationReview, self::TwoFactorEnabled => true,
             self::TwoFactorRoles => RoleKey::staffValues(),

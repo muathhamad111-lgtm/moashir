@@ -1,7 +1,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
 import SiteSettingsForm from './SiteSettingsForm.vue'
-import SiteLinksField from './SiteLinksField.vue'
+import MenuEditor from './menus/MenuEditor.vue'
 import { SITE_SETTINGS_LIMITS } from '@/constants/cms'
 
 const FIELDS = ['headerLinks', 'quickLinks']
@@ -17,18 +17,19 @@ const { t } = useI18n()
     :description="t('identity.menus.description')"
     :fields="FIELDS"
   >
-    <SiteLinksField
+    <MenuEditor
       v-model:rows="draft.headerLinks"
       field="headerLinks"
       :legend="t('identity.menus.header')"
       :hint="t('identity.menus.headerHint')"
       :max="SITE_SETTINGS_LIMITS.headerLinksMax"
+      :max-children="SITE_SETTINGS_LIMITS.headerChildrenMax"
       :add-label="t('identity.menus.addHeaderLink')"
       :empty-text="t('identity.menus.headerEmpty')"
       :error-of="errorOf"
       :disabled="saving"
     />
-    <SiteLinksField
+    <MenuEditor
       v-model:rows="draft.quickLinks"
       field="quickLinks"
       :legend="t('identity.menus.footer')"

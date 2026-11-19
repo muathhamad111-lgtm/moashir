@@ -96,6 +96,27 @@
   white-space: nowrap;
 }
 
+.entity-last-assessment {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+  white-space: nowrap;
+}
+
+.entity-last-assessment__percent {
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--theme-heading);
+}
+
+.entity-last-assessment__date {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}
+
+.entity-last-assessment--none {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-sm);
+}
+
 .entity-table__name {
   font-weight: var(--fw-semibold);
   color: var(--theme-accent-text);

@@ -103,6 +103,13 @@ export function passwordRecoveryHandlers({ continueSignIn }) {
       return envelope({ message: say(request, 'reset') })
     }),
 
+    http.get('/api/v1/auth/invitations/:token', async ({ params, request }) => {
+      await delay(LATENCY_MS)
+      const found = invitationUser(params.token)
+      if (!found.user) return errorResponse(found.status, found.code, say(request, found.key))
+      return envelope({ usable: true })
+    }),
+
     http.post('/api/v1/auth/invitations/:token/accept', async ({ params, request }) => {
       await delay(LATENCY_MS)
       const found = invitationUser(params.token)

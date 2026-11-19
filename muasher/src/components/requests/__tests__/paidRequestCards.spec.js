@@ -58,10 +58,11 @@ describe('RequestPaymentCard', () => {
     expect(wrapper.find('button').exists()).toBe(false)
   })
 
-  it('names an unnumbered receipt with the neutral line in Arabic', () => {
+  it('names an unnumbered receipt «دون رقم» in Arabic without a proof disclaimer', () => {
     const payment = { ...PAYMENT, receipt: { number: null, status: 'issued', isTest: true } }
     const wrapper = render(RequestPaymentCard, { payment }, ['request_follower'], 'ar')
-    expect(wrapper.text()).toContain('غير معتمد كإثبات دفع')
+    expect(wrapper.text()).toContain('دون رقم')
+    expect(wrapper.text()).not.toContain('غير معتمد كإثبات دفع')
     expect(wrapper.text()).not.toContain('اختبار')
     expect(wrapper.text()).toContain('الدفع')
   })

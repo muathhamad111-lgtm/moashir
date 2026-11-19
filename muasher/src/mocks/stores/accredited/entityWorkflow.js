@@ -1,5 +1,5 @@
 import { toCanonicalStatus } from '@/utils/canonicalStatus'
-import { entityOf } from '../assessments/assessmentsStore'
+import { boundTree, entityOf } from '../assessments/assessmentsStore'
 import { assessmentReject, fieldMessage } from '../assessments/assessmentRejection'
 import { ACTORS, actorOf, transition, visibleActorId } from '../assessments/statusHistory'
 import { isDeleted } from '../entitiesStore'
@@ -87,6 +87,18 @@ export function saveAccreditedCv(user, record, body) {
   })
   touch(record)
   return record
+}
+
+// Mirrors PUT /assessments/{id}/stations/{main}/passed: idempotent, bound mains only.
+export function passSubmissionStation(user, record, mainId, body = {}) {
+  const id = Number(mainId)
+  if (!boundTree(record).mains.some((main) => main.id === id))
+    throw assessmentReject.coded(422, 'assessment.main_not_in_version', 'main_criterion_id')
+  enterEntityGate(user, record, { verb: 'save_cv', reason: optionalReason(body) })
+  const passed = new Set(record.passedStations ?? [])
+  passed.add(id)
+  record.passedStations = [...passed].sort((first, second) => first - second)
+  return record.passedStations
 }
 
 function submissionFields(gaps) {

@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Requests\Settings;
 
 use App\Data\Certificates\CertificateSettingsUpdate;
+use App\Enums\Certificates\CertificateIssuanceMode;
 use App\Enums\Certificates\CertificateLevel;
 use App\Support\ValueObjects\LevelThresholds;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 
@@ -21,7 +23,7 @@ final class UpdateCertificateSettingsRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'accredited_issuance_enabled' => ['sometimes', 'required', 'boolean'],
+            'accredited_issuance_mode' => ['sometimes', 'required', 'string', Rule::enum(CertificateIssuanceMode::class)],
             'level_thresholds' => ['sometimes', 'required', 'array:'.implode(',', CertificateLevel::values())],
             'reason' => ['nullable', 'string', 'min:10', 'max:1000'],
         ];
@@ -48,7 +50,7 @@ final class UpdateCertificateSettingsRequest extends FormRequest
     public function toUpdate(): CertificateSettingsUpdate
     {
         return new CertificateSettingsUpdate(
-            $this->has('accredited_issuance_enabled') ? $this->boolean('accredited_issuance_enabled') : null,
+            $this->has('accredited_issuance_mode') ? $this->enum('accredited_issuance_mode', CertificateIssuanceMode::class) : null,
             $this->has('level_thresholds') ? $this->thresholds() : null,
             $this->filled('reason') ? $this->string('reason')->trim()->toString() : null,
         );

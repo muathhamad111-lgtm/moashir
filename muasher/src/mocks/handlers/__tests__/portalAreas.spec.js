@@ -169,7 +169,7 @@ describe('entity registry details and logo', () => {
       founded_on: '2012-03-01',
     })
     expect(saved.body.data).toMatchObject({ license_number: '000123', founding_year: 2012 })
-    expect(saved.body.data.profile_completion.percent).toBe(80)
+    expect(saved.body.data.profile_completion.percent).toBe(87)
     const refused = await call('PATCH', '/entities/me/profile/contact', {
       base_revision: revision('contact'),
       authorized_person_name: me.authorized_person_name,

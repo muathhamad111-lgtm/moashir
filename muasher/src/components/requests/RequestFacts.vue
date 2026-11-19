@@ -12,6 +12,7 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   detail: { type: Object, required: true },
+  showsIdentity: { type: Boolean, default: true },
 })
 
 const { t, locale } = useI18n()
@@ -22,14 +23,14 @@ const showsPaidFlag = computed(
 
 <template>
   <dl class="request-facts">
-    <div class="request-facts__item">
+    <div v-if="showsIdentity" class="request-facts__item">
       <dt>{{ t('requests.columns.entity') }}</dt>
       <dd>
         {{ localizedText(detail.entity?.name, locale) }}
         <bdi dir="ltr" class="request-facts__reference">{{ detail.entity?.reference }}</bdi>
       </dd>
     </div>
-    <div v-if="detail.path" class="request-facts__item">
+    <div v-if="showsIdentity && detail.path" class="request-facts__item">
       <dt>{{ t('requests.columns.path') }}</dt>
       <dd><PathBadge :path="detail.path" :label="detail.pathLabel" /></dd>
     </div>

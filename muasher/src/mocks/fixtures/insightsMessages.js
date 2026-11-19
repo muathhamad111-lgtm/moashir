@@ -1,4 +1,8 @@
 export const insightsMessages = {
+  'insights.kit_required': {
+    ar: 'تُفتح أدوات التميّز بعد تفعيل حقيبة التميز السريع لهذه النتيجة.',
+    en: 'The excellence tools open once the Quick Excellence Kit is activated for this result.',
+  },
   'insights.result_not_eligible': {
     ar: 'هذه النتيجة غير متاحة لأدوات التميّز.',
     en: 'This result is not available for the excellence tools.',

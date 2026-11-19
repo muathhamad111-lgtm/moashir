@@ -87,9 +87,6 @@
   </tbody>
 </table>
 
-@if (($data['is_test'] ?? false) === true)
-  <p class="receipt__notice">{{ $labelsAr['not_valid_as_proof'] ?? '' }}<span lang="en" dir="ltr">{{ $labelsEn['not_valid_as_proof'] ?? '' }}</span></p>
-@endif
 @if (($data['status'] ?? null) === 'voided')
   <p class="receipt__notice">{{ $labelsAr['void_notice'] ?? '' }}<span lang="en" dir="ltr">{{ $labelsEn['void_notice'] ?? '' }}</span></p>
 @endif

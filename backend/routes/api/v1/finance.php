@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\V1\Finance\ServicePricesController;
 use App\Http\Controllers\Api\V1\Finance\TransactionController;
 use App\Http\Controllers\Api\V1\Finance\TransactionEventController;
 use App\Http\Controllers\Api\V1\Finance\TransferProofController;
+use App\Http\Controllers\Api\V1\Finance\TransferVatCertificateController;
 use App\Http\Controllers\Api\V1\Finance\VerifyPaymentController;
 use App\Http\Middleware\EnsureJsonRequest;
 use App\Http\Middleware\ValidateDownloadSignature;
@@ -73,6 +74,7 @@ Route::middleware($signedIn)->group(function () use ($payments): void {
             Route::whereUuid('bankTransfer')->group(function () use ($payments): void {
                 Route::get('{bankTransfer}', [BankTransferController::class, 'show'])->middleware("can:viewTransfers,{$payments}")->name('show');
                 Route::post('{bankTransfer}/proof/download', [TransferProofController::class, 'staff'])->middleware(["can:viewTransfers,{$payments}", 'throttle:downloads'])->name('proof.download');
+                Route::post('{bankTransfer}/vat-certificate/download', TransferVatCertificateController::class)->middleware(["can:viewTransfers,{$payments}", 'throttle:downloads'])->name('vat-certificate.download');
                 Route::post('{bankTransfer}/approve', [BankTransferDecisionController::class, 'approve'])->middleware(["can:reviewTransfers,{$payments}", 'throttle:sensitive'])->name('approve');
                 Route::post('{bankTransfer}/reject', [BankTransferDecisionController::class, 'reject'])->middleware(["can:reviewTransfers,{$payments}", 'throttle:sensitive'])->name('reject');
             });

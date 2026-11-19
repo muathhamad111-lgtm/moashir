@@ -88,7 +88,7 @@ test('a new entity lands in the portal shell with its path tiles on the real con
     page.locator('[data-testid="path-tile-accredited"] .path-price__muted'),
   ).toBeVisible()
   await expect(page.locator('[data-testid="next-step"] .next-step__title')).toBeVisible()
-  await expect(page.locator('[data-testid="attention-strip"]')).toContainText('%')
+  await expect(page.locator('[data-testid="profile-completion-banner"]')).toContainText('%')
   for (const path of PORTAL_CONTRACTS) expect(api.sourcesOf(path)).toEqual([SOURCES.BACKEND])
   await shot(page, 'home')
   expect(api.unexpected([GUEST_SESSION_PROBE, ...FOOTER_LEGAL_PROBES])).toEqual([])

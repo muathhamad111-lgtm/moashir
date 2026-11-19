@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\Audit\AuditEvent;
+use App\Enums\Certificates\CertificateIssuanceMode;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Integrations\IntegrationMode;
 use App\Enums\Notifications\NotificationCode;
@@ -81,13 +82,13 @@ it('still rejects a non-boolean issue_certificate flag from an older client', fu
         ->assertJsonValidationErrors('issue_certificate');
 });
 
-it('lets the assessor issue the certificate later when issuance was off at completion, once', function (): void {
+it('lets the assessor issue the certificate later when issuance was manual at completion, once', function (): void {
     $version = publishedAccreditedCriteria();
     $assessor = assessorUser();
     $assessment = scoredAccreditedReview($version, $assessor);
-    setAccreditedCertificateIssuance(false);
+    setAccreditedCertificateIssuance(CertificateIssuanceMode::Manual);
     switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/complete")->assertOk();
-    setAccreditedCertificateIssuance(true);
+    setAccreditedCertificateIssuance(CertificateIssuanceMode::Automatic);
     expect(Certificate::query()->count())->toBe(0);
 
     $created = switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/certificate")->assertCreated()
@@ -102,9 +103,9 @@ it('lets only the assessor who completed the request issue its certificate', fun
     $version = publishedAccreditedCriteria();
     $assessor = assessorUser();
     $assessment = scoredAccreditedReview($version, $assessor);
-    setAccreditedCertificateIssuance(false);
+    setAccreditedCertificateIssuance(CertificateIssuanceMode::Manual);
     switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/complete")->assertOk();
-    setAccreditedCertificateIssuance(true);
+    setAccreditedCertificateIssuance(CertificateIssuanceMode::Automatic);
 
     switchTo(assessorUser())->postJson("/api/v1/assessments/{$assessment->id}/certificate")->assertNotFound();
     switchTo(ownerOf($assessment->entity))->postJson("/api/v1/assessments/{$assessment->id}/certificate")->assertForbidden();
@@ -124,16 +125,41 @@ it('refuses a certificate for a request that is not completed', function (): voi
         ->assertJsonPath('code', 'certificate.assessment_not_completed');
 });
 
-it('issues nothing while accredited certificate issuance is turned off', function (): void {
-    setAccreditedCertificateIssuance(false);
+it('issues nothing on completion in manual mode, so the entity sees no certificate until the assessor issues it', function (): void {
+    setAccreditedCertificateIssuance(CertificateIssuanceMode::Manual);
     $version = publishedAccreditedCriteria();
     $assessor = assessorUser();
     $assessment = completedAccreditedRequest($version, $assessor);
+    $owner = ownerOf($assessment->entity);
 
     expect(Certificate::query()->count())->toBe(0);
-    switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/certificate")
-        ->assertUnprocessable()
-        ->assertJsonPath('code', 'certificate.issuance_disabled');
+    switchTo($owner)->getJson('/api/v1/certificates')->assertOk()->assertJsonPath('meta.pagination.total', 0);
+    switchTo($assessor)->getJson("/api/v1/assessments/{$assessment->id}/certificate")
+        ->assertOk()
+        ->assertJsonPath('data.certificate', null)
+        ->assertJsonPath('data.issuance_mode', 'manual');
+    switchTo(systemAdmin())->getJson("/api/v1/certificates?filter[assessment_id]={$assessment->id}")
+        ->assertOk()
+        ->assertJsonPath('meta.accredited_issuance_mode', 'manual');
+
+    $issued = switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/certificate")->assertCreated()->json('data.id');
+    switchTo($assessor)->getJson("/api/v1/assessments/{$assessment->id}/certificate")->assertJsonPath('data.certificate.id', $issued);
+    expect(Certificate::query()->count())->toBe(1);
+});
+
+it('tells the assessor in automatic mode that the certificate is already issued and keeps the state to the assessor', function (): void {
+    $version = publishedAccreditedCriteria();
+    $assessor = assessorUser();
+    $assessment = completedAccreditedRequest($version, $assessor);
+    $issued = Certificate::query()->sole();
+
+    switchTo($assessor)->getJson("/api/v1/assessments/{$assessment->id}/certificate")
+        ->assertOk()
+        ->assertJsonPath('data.issuance_mode', 'automatic')
+        ->assertJsonPath('data.certificate.id', $issued->public_id)
+        ->assertJsonPath('data.certificate.status', 'issued');
+    switchTo(assessorUser())->getJson("/api/v1/assessments/{$assessment->id}/certificate")->assertNotFound();
+    switchTo(ownerOf($assessment->entity))->getJson("/api/v1/assessments/{$assessment->id}/certificate")->assertForbidden();
 });
 
 it('flags the certificate of a request opened by a test-mode payment internally, with a regular number, no watermark and the neutral line', function (): void {
@@ -168,9 +194,9 @@ it('asks the Super Admin for a reason before issuing a certificate', function ()
     $version = publishedAccreditedCriteria();
     $assessor = assessorUser();
     $assessment = scoredAccreditedReview($version, $assessor);
-    setAccreditedCertificateIssuance(false);
+    setAccreditedCertificateIssuance(CertificateIssuanceMode::Manual);
     switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/complete")->assertOk();
-    setAccreditedCertificateIssuance(true);
+    setAccreditedCertificateIssuance(CertificateIssuanceMode::Automatic);
     $superAdmin = superAdmin();
 
     switchTo($superAdmin)->postJson("/api/v1/assessments/{$assessment->id}/certificate")->assertUnprocessable()->assertJsonPath('code', 'reason_required');

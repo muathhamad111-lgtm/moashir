@@ -24,6 +24,7 @@ import { PERMISSIONS } from '@/constants/permissionKeys'
 import { profileChangesService } from '@/services/profileChangesService'
 import { useEntityRecord } from '@/composables/useEntityRecord'
 import { useEntityDisplay } from '@/composables/useEntityDisplay'
+import { useBillingRows } from '@/composables/useBillingRows'
 import { ENTITY_ACTIONS } from '@/composables/useEntityActions'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import AppIcon from '@/components/ui/AppIcon.vue'
@@ -65,6 +66,7 @@ const DELETION_ROWS = ['deletedAt', 'deletionReason']
 const { t } = useI18n()
 const router = useRouter()
 const { rowsOf, localized } = useEntityDisplay()
+const billingRows = useBillingRows()
 const { can } = usePermissions()
 const showsLevelCard = computed(() => can(PERMISSIONS.CERTIFICATES_MANAGE))
 const hasOpenRequest = computed(() => entity.value?.hasOpenAccreditedRequest === true)
@@ -100,6 +102,7 @@ const sections = computed(() => {
     ...deletion,
     { key: 'details', rows: rowsOf(entity.value, DETAIL_ROWS) },
     contact,
+    { key: 'billing', rows: billingRows.rowsOf(entity.value) },
     lifecycle,
   ]
 })

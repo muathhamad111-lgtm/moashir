@@ -157,16 +157,109 @@ test.describe('staff dashboards on the board contract', () => {
 })
 
 test.describe('notification types catalogue', () => {
-  test('is read-only and filters by module', async ({ page }, testInfo) => {
+  test('lists every type and filters by module', async ({ page }, testInfo) => {
     await signIn(page, testInfo, USERS.systemAdmin)
     await open(page, '/admin/settings/notifications', ROWS)
-    await expect(page.locator('.notification-catalogue textarea')).toHaveCount(0)
+    await expect(
+      page.locator(`${ROWS} a[href^="/admin/settings/notifications/"]`).first(),
+    ).toBeVisible()
     const filters = await openListFilters(page)
     await filters.locator('.dropdown-field').first().click()
     await page.getByRole('option', { name: text(testInfo, 'Contact us', 'تواصل معنا') }).click()
     await applyOpenListFilters(page)
     await expect(page.locator(ROWS).first()).toContainText('CNT-')
     await expect(page.locator(`${ROWS}:not(:has-text("CNT-"))`)).toHaveCount(0)
+  })
+})
+
+test.describe('notification texts', () => {
+  test('the System Administrator edits a text with a variable, saves it and restores the original', async ({
+    page,
+  }, testInfo) => {
+    await signIn(page, testInfo, USERS.systemAdmin)
+    await open(page, '/admin/settings/notifications', ROWS)
+    await page.locator(`${ROWS} a[href="/admin/settings/notifications/REG-01"]`).click()
+    await expect(page).toHaveURL(/\/admin\/settings\/notifications\/REG-01$/)
+    const tabs = page.getByRole('tab')
+    await expect(tabs).toHaveCount(2)
+    const title = page.locator('textarea[name="entities.REG-01.entity-title-ar"]')
+    await title.fill('مرحبًا')
+    await page.locator('.notification-variables__chip').first().click()
+    await expect(title).toHaveValue('مرحبًا :entity')
+    await page.locator('.notification-text button[type="submit"]').click()
+    await expect(page.locator('.notification-text__status')).toContainText(
+      text(testInfo, 'Edited text', 'نص معدّل'),
+    )
+    await page
+      .getByRole('button', {
+        name: text(testInfo, 'Restore the original text', 'استعادة النص الأصلي'),
+      })
+      .click()
+    await page.locator('.modal__panel .btn--primary, .modal__panel .btn--danger').last().click()
+    await expect(page.locator('.notification-text__status')).toContainText(
+      text(testInfo, 'Original text', 'النص الأصلي'),
+    )
+    await expect(title).not.toHaveValue('مرحبًا :entity')
+  })
+
+  test('the System Administrator switches a channel off and the catalogue shows it', async ({
+    page,
+  }, testInfo) => {
+    await signIn(page, testInfo, USERS.systemAdmin)
+    await open(page, '/admin/settings/notifications/REG-01', '.notification-channels')
+    const email = page.locator('input[name="channel-email"]')
+    await expect(email).toBeChecked()
+    await page
+      .locator('.toggle-switch:has(input[name="channel-email"]) .toggle-switch__track')
+      .click()
+    await expect(email).not.toBeChecked()
+    await page
+      .getByRole('link', {
+        name: text(testInfo, 'Back to notification types', 'العودة إلى أنواع الإشعارات'),
+      })
+      .click()
+    const row = page.locator(`${ROWS}:has-text("REG-01")`)
+    await expect(row.locator('.notification-catalogue__chips').first().locator('li')).toHaveCount(1)
+  })
+
+  test('the System Administrator switches SMS on and writes the text message', async ({
+    page,
+  }, testInfo) => {
+    await signIn(page, testInfo, USERS.systemAdmin)
+    await open(page, '/admin/settings/notifications/REG-01', '.notification-channels')
+    await page
+      .locator('.toggle-switch:has(input[name="channel-sms"]) .toggle-switch__track')
+      .click()
+    await expect(page.locator('input[name="channel-sms"]')).toBeChecked()
+    const arabic = page.locator('textarea[name="entities.REG-01.entity-sms-ar"]')
+    await arabic.fill('سجّلت')
+    await page.locator('.notification-variables__chip').first().click()
+    await page.locator('textarea[name="entities.REG-01.entity-sms-en"]').fill('Registered')
+    await page.locator('.notification-text button[type="submit"]').click()
+    await expect(page.locator('.notification-text__sms-approval')).toContainText(
+      text(testInfo, 'No approval needed', 'لا يتطلب اعتمادًا'),
+    )
+    await expect(arabic).toHaveValue('سجّلت :entity')
+  })
+
+  test('a mandatory notification locks its channels', async ({ page }, testInfo) => {
+    await signIn(page, testInfo, USERS.systemAdmin)
+    await open(page, '/admin/settings/notifications/USR-01', '.notification-channels')
+    await expect(
+      page.locator('.notification-channels input[role="switch"]:not([disabled])'),
+    ).toHaveCount(0)
+  })
+
+  test('a mandatory notification keeps its required variables', async ({ page }, testInfo) => {
+    await signIn(page, testInfo, USERS.systemAdmin)
+    await open(page, '/admin/settings/notifications/USR-01', '.notification-text')
+    await expect(page.locator('.notification-variables__chip.is-required')).toHaveCount(1)
+    await page.locator('textarea[name="staff_invited-expiry-ar"]').fill('صالحة لمدة قصيرة')
+    await page.locator('.notification-text button[type="submit"]').click()
+    await expect(page.locator('textarea[name="staff_invited-expiry-ar"]')).toHaveAttribute(
+      'aria-invalid',
+      'true',
+    )
   })
 })
 

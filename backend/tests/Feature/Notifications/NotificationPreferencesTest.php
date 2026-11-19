@@ -186,7 +186,7 @@ it('removes the preferences of an anonymized entity owner', function (): void {
     expect(NotificationPreference::query()->where('user_id', $owner->id)->exists())->toBeFalse();
 });
 
-it('shows the System Administrator the read-only notification type catalogue', function (): void {
+it('shows the System Administrator the notification type catalogue with the enabled channels', function (): void {
     $response = signIn(systemAdmin())->getJson(NOTIFICATION_TYPES)
         ->assertOk()
         ->assertJsonPath('meta.total', count(NotificationCode::cases()));
@@ -201,6 +201,7 @@ it('shows the System Administrator the read-only notification type catalogue', f
         'audiences' => ['super_admin'],
         'is_mandatory' => true,
         'user_configurable_channels' => [],
+        'enabled_channels' => ['in_app', 'email'],
     ])
         ->and($types->get('ACC-05')['user_configurable_channels'] ?? null)->toBe(['email'])
         ->and($types->get('ADV-09')['audiences'] ?? null)->toBe(['committee_assessor']);

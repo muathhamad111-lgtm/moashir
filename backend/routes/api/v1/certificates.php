@@ -37,6 +37,9 @@ Route::middleware($signedIn)->group(function () use ($viewReport): void {
     });
 
     Route::prefix('assessments')->name('assessments.')->whereNumber('assessment')->group(function () use ($viewReport): void {
+        Route::get('{assessment}/certificate', [AccreditedCertificateController::class, 'show'])
+            ->middleware('can:'.Ability::IssueAccreditedCertificate->value.',assessment')
+            ->name('certificate.show');
         Route::post('{assessment}/certificate', [AccreditedCertificateController::class, 'store'])
             ->middleware(['can:'.Ability::IssueAccreditedCertificate->value.',assessment', 'throttle:sensitive'])
             ->name('certificate.store');

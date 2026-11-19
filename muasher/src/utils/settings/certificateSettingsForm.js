@@ -1,5 +1,9 @@
-import { boolean, object, string } from 'yup'
-import { CERTIFICATE_LEVELS, LEVEL_THRESHOLD_PATTERN } from '@/constants/certificates'
+import { object, string } from 'yup'
+import {
+  CERTIFICATE_LEVELS,
+  ISSUANCE_MODES,
+  LEVEL_THRESHOLD_PATTERN,
+} from '@/constants/certificates'
 import { toWesternDigits } from '@/utils/numerals'
 
 const PERCENT_MAX = 100
@@ -31,7 +35,7 @@ export function isAscending(thresholds) {
 
 export function certificateSettingsSchema(t) {
   return object({
-    accreditedIssuanceEnabled: boolean(),
+    accreditedIssuanceMode: string().oneOf(Object.values(ISSUANCE_MODES)),
     levelThresholds: object(
       Object.fromEntries(CERTIFICATE_LEVELS.map((level) => [level, thresholdField(t)])),
     ).test('ascending', t('settings.certificates.validation.ascending'), (value, context) => {
@@ -50,15 +54,15 @@ export function certificateSettingsSchema(t) {
 
 export function certificateSettingsValues(settings) {
   return {
-    accreditedIssuanceEnabled: settings.accreditedIssuanceEnabled,
+    accreditedIssuanceMode: settings.accreditedIssuanceMode,
     levelThresholds: { ...settings.levelThresholds },
   }
 }
 
 export function changedCertificateSettings(settings, values) {
   const changes = {}
-  if (values.accreditedIssuanceEnabled !== settings.accreditedIssuanceEnabled)
-    changes.accreditedIssuanceEnabled = values.accreditedIssuanceEnabled
+  if (values.accreditedIssuanceMode !== settings.accreditedIssuanceMode)
+    changes.accreditedIssuanceMode = values.accreditedIssuanceMode
   const next = Object.fromEntries(
     CERTIFICATE_LEVELS.map((level) => [level, displayOf(values.levelThresholds[level])]),
   )

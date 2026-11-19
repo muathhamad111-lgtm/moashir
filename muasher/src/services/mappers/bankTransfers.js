@@ -2,6 +2,7 @@ import { toPathPricing } from './paths'
 import { PAYMENT_CHANNEL_VALUES } from '@/constants/payments'
 import { BANK_ACCOUNT_STATES } from '@/constants/bankTransfer'
 import { toRequestStatus } from './accreditedStatus'
+import { billingCompleteOf, toBilling } from './billing'
 
 const ACCOUNT_STATE_VALUES = Object.values(BANK_ACCOUNT_STATES)
 
@@ -150,6 +151,8 @@ export function toStaffTransfer(raw = {}) {
     rejectedAt: raw.rejectedAt ?? null,
     receipt: raw.receipt ?? null,
     linkedRequest: toLinkedRequest(raw.linkedRequest),
+    billing: toBilling(raw.billing),
+    billingComplete: billingCompleteOf(raw),
   }
 }
 

@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
+import InsightsKitLocked from './InsightsKitLocked.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import ComingSoonChip from '@/components/portal/ComingSoonChip.vue'
 import ReportLibraryRow from './ReportLibraryRow.vue'
@@ -76,6 +77,7 @@ onMounted(library.load)
       :message="t('insights.loadError')"
       @retry="library.load"
     />
+    <InsightsKitLocked v-else-if="status === 'locked'" />
     <template v-else>
       <p v-if="!rows.length" class="report-library__empty">{{ t('insights.library.empty') }}</p>
       <section

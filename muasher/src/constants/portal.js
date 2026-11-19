@@ -203,6 +203,4 @@ export const PORTAL_TASK_ROUTES = Object.freeze([
 
 export const PORTAL_MOBILE_TASK_ROUTES = Object.freeze([R.MESSAGES_THREAD])
 
-export const ATTENTION_STRIP_DESKTOP_LIMIT = 3
-
 export const JOURNEY_GLANCE_NOTIFICATIONS = 3

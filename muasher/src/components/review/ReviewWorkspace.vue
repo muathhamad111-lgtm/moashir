@@ -18,6 +18,7 @@ import ScoreOverrideDialog from './ScoreOverrideDialog.vue'
 import CompleteReviewDialog from './CompleteReviewDialog.vue'
 import ReviewSummaryCard from './ReviewSummaryCard.vue'
 import { useAssessorReview } from '@/composables/useAssessorReview'
+import { useCompleteMessageKey } from '@/composables/useCertificateIssuanceMode'
 import { useSelfScoreSheet } from '@/composables/useSelfScoreSheet'
 import { useReviewFeedback } from '@/composables/useReviewFeedback'
 import { useReviewActions } from '@/composables/useReviewActions'
@@ -90,13 +91,12 @@ function download(file) {
 }
 
 const offersCertificate = computed(() => assessment.value?.path === ACCREDITED_PATH)
-const completeMessage = computed(() => {
-  if (!fullyScored.value || scoreSheet.dirty.value)
-    return t('review.confirmComplete.pendingMessage')
-  return offersCertificate.value
-    ? t('review.confirmComplete.certificateMessage')
-    : t('review.confirmComplete.message')
+const messageKey = useCompleteMessageKey({
+  assessmentId: toRef(props, 'assessmentId'),
+  offersCertificate,
+  hasPendingChanges: computed(() => !fullyScored.value || scoreSheet.dirty.value),
 })
+const completeMessage = computed(() => t(messageKey.value))
 
 async function refresh() {
   actions.clearConflict()

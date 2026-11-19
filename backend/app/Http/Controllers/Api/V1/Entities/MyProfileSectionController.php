@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1\Entities;
 
 use App\Actions\Entities\SaveOwnProfileSection;
 use App\Data\Entities\ProfileSectionSaved;
+use App\Http\Requests\Entities\UpdateBillingSectionRequest;
 use App\Http\Requests\Entities\UpdateClassificationSectionRequest;
 use App\Http\Requests\Entities\UpdateContactSectionRequest;
 use App\Http\Requests\Entities\UpdateGovernanceSectionRequest;
@@ -35,6 +36,11 @@ final class MyProfileSectionController
     }
 
     public function contact(UpdateContactSectionRequest $request, #[CurrentUser] User $owner, SaveOwnProfileSection $save): JsonResponse
+    {
+        return $this->saved($save->handle($owner, $request->update()));
+    }
+
+    public function billing(UpdateBillingSectionRequest $request, #[CurrentUser] User $owner, SaveOwnProfileSection $save): JsonResponse
     {
         return $this->saved($save->handle($owner, $request->update()));
     }

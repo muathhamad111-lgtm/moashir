@@ -182,7 +182,8 @@ test('the entity pays by transfer, Finance rejects it, and a new request is appr
 
   await signIn(page, testInfo, USERS.entity)
   await page.goto(`/payments/${second}`)
-  await expect(page.locator('.receipt-card--test')).toBeVisible()
+  await expect(page.locator('.receipt-card')).toBeVisible()
+  await expect(page.locator('.receipt-card__watermark')).toHaveCount(0)
   await expect(page.locator('.transfer-record')).toBeVisible()
   await page.goto('/payments')
   await expect(page.locator('.my-payments__table')).toContainText(

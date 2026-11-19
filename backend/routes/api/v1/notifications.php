@@ -6,6 +6,7 @@ use App\Enums\Identity\Ability;
 use App\Http\Controllers\Api\V1\Notifications\NotificationController;
 use App\Http\Controllers\Api\V1\Notifications\NotificationPreferenceController;
 use App\Http\Controllers\Api\V1\Notifications\NotificationStateController;
+use App\Http\Controllers\Api\V1\Notifications\NotificationTemplateController;
 use App\Http\Controllers\Api\V1\Notifications\NotificationTypeController;
 use App\Models\Notifications\Notification;
 use Illuminate\Support\Facades\Route;
@@ -27,4 +28,13 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
     Route::get('settings/notifications/types', [NotificationTypeController::class, 'index'])
         ->middleware('can:viewCatalog,'.Notification::class)
         ->name('settings.notifications.types.index');
+
+    Route::prefix('settings/notifications')->name('settings.notifications.')->middleware('can:viewCatalog,'.Notification::class)->group(function (): void {
+        Route::get('types/{code}', [NotificationTemplateController::class, 'show'])->name('types.show');
+        Route::patch('types/{code}/channels', [NotificationTemplateController::class, 'updateChannels'])->middleware('throttle:sensitive')->name('types.channels.update');
+        Route::put('texts/{templateKey}', [NotificationTemplateController::class, 'update'])
+            ->where('templateKey', '[A-Za-z0-9_.\-]+')->middleware('throttle:sensitive')->name('texts.update');
+        Route::delete('texts/{templateKey}', [NotificationTemplateController::class, 'destroy'])
+            ->where('templateKey', '[A-Za-z0-9_.\-]+')->middleware('throttle:sensitive')->name('texts.destroy');
+    });
 });

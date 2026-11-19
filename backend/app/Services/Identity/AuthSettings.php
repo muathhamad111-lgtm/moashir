@@ -9,6 +9,8 @@ use Illuminate\Contracts\Config\Repository;
 
 final readonly class AuthSettings
 {
+    public const int MAX_INVITATION_TTL_MINUTES = 60;
+
     public function __construct(private Repository $config) {}
 
     public function otpLength(): int
@@ -66,9 +68,9 @@ final readonly class AuthSettings
         return $this->number('password.history');
     }
 
-    public function invitationTtlHours(): int
+    public function invitationTtlMinutes(): int
     {
-        return $this->number('invitation_ttl_hours');
+        return min(self::MAX_INVITATION_TTL_MINUTES, max(1, $this->number('invitation_ttl_minutes')));
     }
 
     public function pendingAuthenticationTtlMinutes(): int

@@ -77,6 +77,8 @@ export const REVIEW_MODES = { EDIT: 'edit', READ_ONLY: 'read_only' }
 
 export const ASSIGNED_TABS = { NEW: 'new', IN_PROGRESS: 'in_progress', COMPLETED: 'completed' }
 
+export const ASSIGNMENT_MODES = Object.freeze({ ASSIGN: 'assign', REASSIGN: 'reassign' })
+
 export const ASSIGNMENT_STATUSES = {
   ACTIVE: 'active',
   REASSIGNED: 'reassigned',
@@ -102,7 +104,6 @@ export const DEFAULT_QUEUE_SORT = '-submitted_at'
 export const ACCREDITED_LIMITS = {
   CV_MAX: 10000,
   FEEDBACK_MAX: 5000,
-  COMPLETION_NOTES_MIN: 10,
   COMPLETION_NOTES_MAX: 2000,
   COMPLETION_ITEM_NOTE_MAX: 500,
   COMPLETION_DEADLINE_MAX_DAYS: 60,

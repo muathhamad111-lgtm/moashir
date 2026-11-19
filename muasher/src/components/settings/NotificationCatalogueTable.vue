@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Badge from '@/components/ui/Badge.vue'
 import { NOTIFICATION_CATEGORY_TONES } from '@/constants/notificationCatalogue'
+import { ROUTE_NAMES } from '@/constants/routeNames'
 
 defineProps({
   types: { type: Array, default: () => [] },
@@ -15,10 +16,12 @@ const emit = defineEmits(['retry'])
 const { t, te } = useI18n()
 
 const columns = computed(() =>
-  ['code', 'name', 'module', 'category', 'channels', 'audiences', 'preference'].map((key) => ({
-    key,
-    label: t(`settings.notifications.catalogue.columns.${key}`),
-  })),
+  ['code', 'name', 'module', 'category', 'channels', 'audiences', 'preference', 'texts'].map(
+    (key) => ({
+      key,
+      label: t(`settings.notifications.catalogue.columns.${key}`),
+    }),
+  ),
 )
 
 function typeName(code) {
@@ -67,7 +70,7 @@ function preferenceOf(type) {
     </template>
     <template #cell-channels="{ item }">
       <ul class="notification-catalogue__chips">
-        <li v-for="label in channelList(item.channels)" :key="label">{{ label }}</li>
+        <li v-for="label in channelList(item.enabledChannels)" :key="label">{{ label }}</li>
       </ul>
     </template>
     <template #cell-audiences="{ item }">
@@ -81,6 +84,15 @@ function preferenceOf(type) {
         :class="{ 'notification-catalogue__preference--locked': item.isMandatory }"
         >{{ preferenceOf(item) }}</span
       >
+    </template>
+    <template #cell-texts="{ item }">
+      <router-link
+        class="btn btn--secondary btn--sm"
+        :to="{ name: ROUTE_NAMES.ADMIN_SETTINGS_NOTIFICATION_TEXTS, params: { code: item.code } }"
+        :aria-label="t('settings.notifications.texts.editLabel', { name: typeName(item.code) })"
+      >
+        {{ t('settings.notifications.texts.edit') }}
+      </router-link>
     </template>
   </DataTable>
 </template>

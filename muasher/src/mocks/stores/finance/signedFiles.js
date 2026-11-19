@@ -78,6 +78,14 @@ export async function storedFileBody(file) {
   return fileContents.get(file.id) ?? (await transferProofSample(file)) ?? placeholderContent(file)
 }
 
+// Same shape as the API (Symfony `HeaderUtils::makeDisposition`): an ASCII `download.ext`
+// fallback in `filename` and the real UTF-8 name in `filename*`.
+function attachmentDisposition(fileName) {
+  const extension = (fileName.split('.').pop() ?? '').replace(/[^A-Za-z0-9]/g, '')
+  const fallback = extension && fileName.includes('.') ? `download.${extension}` : 'download'
+  return `attachment; filename=${fallback}; filename*=utf-8''${encodeURIComponent(fileName)}`
+}
+
 export async function fileDownloadResponse(request, user) {
   const file = findFile(verifiedLink(new URL(request.url), user))
   if (!file) throw financeReject.notFound()
@@ -87,7 +95,7 @@ export async function fileDownloadResponse(request, user) {
     status: 200,
     headers: {
       'Content-Type': file.mimeType,
-      'Content-Disposition': `attachment; filename="${file.name}"`,
+      'Content-Disposition': attachmentDisposition(file.name),
       'Cache-Control': 'no-store',
       'X-Content-Type-Options': 'nosniff',
     },

@@ -95,7 +95,12 @@ async function goTo(mainId) {
         :criteria="form.criteria"
         @reveal="revealSub"
       />
-      <AccreditedStations :stations="stations" :active-id="activeMain?.id ?? null" @select="goTo" />
+      <AccreditedStations
+        compact
+        :stations="stations"
+        :active-id="activeMain?.id ?? null"
+        @select="goTo"
+      />
       <div ref="panelTop" class="accredited-workspace__main" tabindex="-1">
         <AccreditedStationPanel
           v-if="activeMain && activeStation"

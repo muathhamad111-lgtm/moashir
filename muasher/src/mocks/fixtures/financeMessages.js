@@ -28,6 +28,10 @@ export const financeMessages = {
     ar: 'هذا الإجراء غير مسموح به في الحالة الحالية.',
     en: 'This action is not allowed in the current state.',
   },
+  'entity.vat_certificate_missing': {
+    ar: 'لا توجد شهادة تسجيل ضريبي مرفوعة لهذه الجهة.',
+    en: 'This entity has no VAT registration certificate uploaded.',
+  },
   'entity.deleted': {
     ar: 'حساب الجهة محذوف، ولا يمكن تنفيذ هذا الإجراء.',
     en: 'The entity account is deleted, so this action is not possible.',

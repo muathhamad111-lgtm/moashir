@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Finance;
 
 use App\Data\Entities\EntityNotice;
+use App\Data\Notifications\NoticeText;
 use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Finance\BankAccountChange;
 use App\Enums\Finance\PaymentPurpose;
@@ -51,7 +52,7 @@ final class FinanceNotices
         $noteLine = LocalizedText::fromTranslationWith('notifications.payments.'.NotificationCode::BankTransferRejected->value.'.entity.note', ['note' => $note]);
         $body = new LocalizedText($notice->body->ar.' '.$noteLine->ar, $notice->body->en.' '.$noteLine->en);
 
-        return new EntityNotice($notice->code, $notice->title, $body, $notice->link, $notice->viaMail, $notice->viaInApp, $notice->path);
+        return new EntityNotice($notice->code, $notice->title, $body, $notice->link, $notice->viaMail, $notice->viaInApp, $notice->path, $notice->text);
     }
 
     public static function bankAccountChanged(BankAccount $account, BankAccountChange $change): EntityNotice
@@ -63,14 +64,7 @@ final class FinanceNotices
             'change' => LocalizedText::fromTranslation('finance.bank_account_changes.'.$change->value),
         ];
 
-        return new EntityNotice(
-            NotificationCode::BankAccountsChanged,
-            LocalizedText::fromTranslationWith($key.'.title', $replacements),
-            LocalizedText::fromTranslationWith($key.'.body', $replacements),
-            FinanceLinks::paymentSettings(),
-            true,
-            true,
-        );
+        return EntityNotice::fromText(NotificationCode::BankAccountsChanged, new NoticeText($key, $replacements), FinanceLinks::paymentSettings());
     }
 
     private static function build(NotificationCode $code, string $audience, Payment $payment, ?string $link): EntityNotice
@@ -78,15 +72,7 @@ final class FinanceNotices
         $key = 'notifications.payments.'.$code->value.'.'.$audience;
         $replacements = self::replacementsOf($payment);
 
-        return new EntityNotice(
-            $code,
-            LocalizedText::fromTranslationWith($key.'.title', $replacements),
-            LocalizedText::fromTranslationWith($key.'.body', $replacements),
-            $link,
-            true,
-            true,
-            $payment->purpose === PaymentPurpose::Accredited ? AssessmentPath::Accredited : null,
-        );
+        return EntityNotice::fromText($code, new NoticeText($key, $replacements), $link, $payment->purpose === PaymentPurpose::Accredited ? AssessmentPath::Accredited : null);
     }
 
     public static function exportReady(string $exportPublicId, int $rowCount): EntityNotice
@@ -94,14 +80,7 @@ final class FinanceNotices
         $key = 'notifications.payments.'.NotificationCode::FinanceExportReady->value;
         $replacements = ['transactions' => LocalizedText::fromChoice('quantities.transactions', $rowCount)];
 
-        return new EntityNotice(
-            NotificationCode::FinanceExportReady,
-            LocalizedText::fromTranslationWith($key.'.title', $replacements),
-            LocalizedText::fromTranslationWith($key.'.body', $replacements),
-            FinanceLinks::export($exportPublicId),
-            false,
-            true,
-        );
+        return EntityNotice::fromText(NotificationCode::FinanceExportReady, new NoticeText($key, $replacements), FinanceLinks::export($exportPublicId))->inAppOnly();
     }
 
     /**

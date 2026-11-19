@@ -84,11 +84,10 @@ test('the entity pays through the Moyasar form, the server verifies it and an un
     fullPage: true,
   })
   await page.locator('.payment-return__link--primary').first().click()
-  await expect(page.locator('.receipt-card--test')).toBeVisible()
+  await expect(page.locator('.receipt-card')).toBeVisible()
   await expect(page.locator('.receipt-card__number')).not.toContainText('RCP-')
-  await expect(page.locator('.receipt-card__watermark')).toHaveText(
-    /^(غير معتمد كإثبات دفع|Not valid as proof of payment)$/,
-  )
+  await expect(page.locator('.receipt-card__watermark')).toHaveCount(0)
+  await expect(page.locator('main')).not.toContainText(/غير معتمد كإثبات دفع|proof of payment/i)
   await expect(page.locator('main')).not.toContainText(/اختبار|تجريبي|\b(test|demo)\b/i)
 
   expect(platformBodies.some((body) => /card|cvc|cvv|number|sandbox_outcome/i.test(body))).toBe(

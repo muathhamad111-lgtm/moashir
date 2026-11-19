@@ -17,7 +17,7 @@ beforeEach(function (): void {
     publishedAccreditedCriteria();
 });
 
-it('lists the paid drafts of operational entities with the payment, the progress and the last entity activity', function (): void {
+it('lists the paid drafts of operational entities with the payment status only, the progress and the last entity activity', function (): void {
     $version = CriteriaVersion::query()->published()->firstOrFail();
     $draft = openedAccreditedRequest();
     $started = readyAccreditedDraft($version);
@@ -36,13 +36,7 @@ it('lists the paid drafts of operational entities with the payment, the progress
         ->and($rows[$draft->id]['status'])->toBe('draft')
         ->and($rows[$draft->id]['number'])->toBe($draft->request_number)
         ->and($rows[$draft->id]['opened_at'])->toBe($draft->created_at->toIso8601String())
-        ->and($rows[$draft->id]['payment']['reference'])->toBe($payment->reference)
-        ->and($rows[$draft->id]['payment']['channel'])->toBe($payment->channel->value)
-        ->and($rows[$draft->id]['payment']['status'])->toBe('paid')
-        ->and($rows[$draft->id]['payment']['paid_at'])->toBe($payment->paid_at?->toIso8601String())
-        ->and($rows[$draft->id]['payment']['receipt']['number'])->toBe($payment->receipt?->number)
-        ->and($rows[$draft->id]['payment'])->not->toHaveKey('id')
-        ->and($rows[$draft->id]['payment']['receipt'])->not->toHaveKey('id')
+        ->and($rows[$draft->id]['payment'])->toBe(['status' => 'paid', 'is_test' => $payment->isTest()])
         ->and($rows[$draft->id]['progress'])->toBe(['subs_complete' => 1, 'subs_total' => 3])
         ->and($rows[$started->id]['progress'])->toBe(['subs_complete' => 3, 'subs_total' => 3])
         ->and(Date::parse($rows[$started->id]['last_activity_at'])->greaterThanOrEqualTo($started->created_at))->toBeTrue();
@@ -66,13 +60,17 @@ it('keeps the paid drafts out of the assignment queue and its statistics, and co
     test()->getJson(PREPARING_REQUESTS)->assertOk()->assertJsonPath('meta.path_counts.0.preparing', 2);
 });
 
-it('gives the payment and receipt identifiers only to holders of the finance permissions', function (): void {
+it('gives the payment details and identifiers only to holders of the finance permissions', function (): void {
     $draft = openedAccreditedRequest();
     $payment = $draft->payment()->with('receipt')->firstOrFail();
 
     $row = switchTo(systemAdmin())->getJson(PREPARING_REQUESTS)->assertOk()->json('data.0');
 
     expect($row['payment']['id'])->toBe($payment->public_id)
+        ->and($row['payment']['reference'])->toBe($payment->reference)
+        ->and($row['payment']['channel'])->toBe($payment->channel->value)
+        ->and($row['payment']['paid_at'])->toBe($payment->paid_at?->toIso8601String())
+        ->and($row['payment']['receipt']['number'])->toBe($payment->receipt?->number)
         ->and($row['payment']['receipt']['id'])->toBe($payment->receipt?->public_id);
 });
 
@@ -138,7 +136,7 @@ it('never lets a paid draft be assigned', function (): void {
     expect($draft->refresh()->status->value)->toBe('draft');
 });
 
-it('shows the payment card on the request detail by audience', function (): void {
+it('shows the payment details on the request detail to finance viewers and only the paid flag to others', function (): void {
     $version = CriteriaVersion::query()->published()->firstOrFail();
     $assessor = assessorUser();
     $assessment = assignedAccreditedRequest($version, $assessor);
@@ -154,10 +152,8 @@ it('shows the payment card on the request detail by audience', function (): void
         ->assertJsonPath('data.payment.receipt.id', $payment->receipt?->public_id);
     expect($admin->json('data.payment.paid_at'))->toBe($payment->paid_at?->toIso8601String());
 
-    $follower = switchTo(requestFollower())->getJson("/api/v1/requests/{$assessment->id}")->assertOk()
-        ->assertJsonPath('data.payment.reference', $payment->reference);
-    expect($follower->json('data.payment'))->not->toHaveKey('id')
-        ->and($follower->json('data.payment.receipt'))->not->toHaveKey('id');
+    $follower = switchTo(requestFollower())->getJson("/api/v1/requests/{$assessment->id}")->assertOk();
+    expect($follower->json('data.payment'))->toBe(['paid' => true]);
 
     $own = switchTo($assessor)->getJson("/api/v1/requests/{$assessment->id}")->assertOk();
     expect($own->json('data.payment'))->toBe(['paid' => true]);

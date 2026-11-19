@@ -10,11 +10,10 @@ use App\Enums\Audit\AuditEvent;
 use App\Enums\Identity\InvitationStatus;
 use App\Enums\Identity\SignInMethod;
 use App\Enums\Identity\UserStatus;
-use App\Exceptions\Identity\AccountActionRejected;
 use App\Models\Identity\TermsVersion;
-use App\Models\Identity\UserInvitation;
+use App\Models\Identity\User;
 use App\Services\Audit\AuditRecorder;
-use App\Services\Identity\SecretHasher;
+use App\Services\Identity\UsableInvitationFinder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +21,7 @@ use Illuminate\Support\Facades\DB;
 final readonly class AcceptInvitation
 {
     public function __construct(
-        private SecretHasher $hasher,
+        private UsableInvitationFinder $invitations,
         private ApplyNewPassword $applyPassword,
         private AuditRecorder $audit,
         private CompleteSignIn $completeSignIn,
@@ -31,40 +30,32 @@ final readonly class AcceptInvitation
 
     public function handle(string $token, string $password, ?TermsVersion $terms): LoginOutcome
     {
-        $invitation = $this->findUsableInvitation($token);
-        $user = $invitation->user;
+        $user = DB::transaction(function () use ($token, $password, $terms): User {
+            $invitation = $this->invitations->findForUpdate($token);
+            $user = $invitation->user;
 
-        DB::transaction(function () use ($invitation, $user, $password, $terms): void {
             $invitation->forceFill(['status' => InvitationStatus::Accepted, 'accepted_at' => Date::now()])->save();
             $user->forceFill(['status' => UserStatus::Active, 'email_verified_at' => Date::now()])->save();
             $this->applyPassword->handle($user, $password);
-
-            if ($terms instanceof TermsVersion) {
-                $user->termsAcceptances()->create([
-                    'terms_version_id' => $terms->id,
-                    'ip_address' => $this->request->ip(),
-                    'user_agent' => $this->request->userAgent(),
-                ]);
-            }
-
+            $this->recordTermsAcceptance($user, $terms);
             $this->audit->record(new AuditEntry(AuditEvent::UserActivated, $user));
+
+            return $user;
         });
 
         return $this->completeSignIn->handle($user, SignInMethod::Invitation);
     }
 
-    private function findUsableInvitation(string $token): UserInvitation
+    private function recordTermsAcceptance(User $user, ?TermsVersion $terms): void
     {
-        $invitation = UserInvitation::query()->where('token_hash', $this->hasher->hash($token))->first();
-
-        if ($invitation === null || $invitation->status === InvitationStatus::Accepted || $invitation->status === InvitationStatus::Revoked) {
-            throw AccountActionRejected::invitationInvalid();
+        if (! $terms instanceof TermsVersion) {
+            return;
         }
 
-        if (! $invitation->isUsable()) {
-            throw AccountActionRejected::invitationExpired();
-        }
-
-        return $invitation;
+        $user->termsAcceptances()->create([
+            'terms_version_id' => $terms->id,
+            'ip_address' => $this->request->ip(),
+            'user_agent' => $this->request->userAgent(),
+        ]);
     }
 }

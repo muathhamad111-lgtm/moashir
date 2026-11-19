@@ -6,7 +6,8 @@ namespace App\Http\Requests\Cms;
 
 use App\Data\Cms\SiteSettingsChanges;
 use App\Enums\Cms\SocialPlatform;
-use App\Rules\SafeLinkUrl;
+use App\Support\Cms\Menus\SiteMenuItems;
+use App\Support\Cms\Menus\SiteMenuRules;
 use App\Support\Localization\LocalizedFieldRules;
 use App\Support\ScalarValue;
 use App\Support\ValueObjects\LocalizedContent;
@@ -19,8 +20,6 @@ final class UpdateSiteSettingsRequest extends FormRequest
     private const array FIELDS = ['platform_name', 'platform_description', 'social', 'contact', 'footer_note', 'quick_links', 'header_links', 'seo', 'featured_kpi_limit', 'show_featured_kpis'];
 
     private const array LOCALIZED_FIELDS = ['platform_name', 'platform_description', 'footer_note'];
-
-    private const array LINK_LISTS = ['quick_links', 'header_links'];
 
     /**
      * @return array<string, mixed>
@@ -39,14 +38,8 @@ final class UpdateSiteSettingsRequest extends FormRequest
             'contact.phone' => ['nullable', 'string', 'max:30', 'regex:/^\+?[0-9 ]{6,30}$/'],
             ...LocalizedFieldRules::optional('contact.address', 300),
             ...LocalizedFieldRules::optional('footer_note', 500),
-            'quick_links' => ['sometimes', 'array', 'max:12'],
-            'quick_links.*' => ['required', 'array:label,url'],
-            ...LocalizedFieldRules::required('quick_links.*.label', 80),
-            'quick_links.*.url' => ['required', 'string', 'max:300', new SafeLinkUrl],
-            'header_links' => ['sometimes', 'array', 'max:8'],
-            'header_links.*' => ['required', 'array:label,url'],
-            ...LocalizedFieldRules::required('header_links.*.label', 40),
-            'header_links.*.url' => ['required', 'string', 'max:300', new SafeLinkUrl],
+            ...SiteMenuRules::footer('quick_links'),
+            ...SiteMenuRules::header('header_links'),
             'seo' => ['sometimes', 'nullable', 'array:title,description'],
             ...LocalizedFieldRules::optional('seo.title', 120),
             ...LocalizedFieldRules::optional('seo.description', 300),
@@ -90,10 +83,12 @@ final class UpdateSiteSettingsRequest extends FormRequest
             }
         }
 
-        foreach (self::LINK_LISTS as $field) {
-            if ($this->has($field)) {
-                $attributes[$field] = $this->links($field);
-            }
+        if ($this->has('quick_links')) {
+            $attributes['quick_links'] = SiteMenuItems::footer($this->listOf('quick_links'));
+        }
+
+        if ($this->has('header_links')) {
+            $attributes['header_links'] = SiteMenuItems::header($this->listOf('header_links'));
         }
 
         if ($this->has('seo')) {
@@ -126,17 +121,6 @@ final class UpdateSiteSettingsRequest extends FormRequest
             'phone' => $this->filled('contact.phone') ? $this->string('contact.phone')->trim()->toString() : null,
             'address' => $this->localized($this->input('contact.address'))?->toArray(),
         ];
-    }
-
-    /**
-     * @return list<array{label: array<string, string>|null, url: string}>
-     */
-    private function links(string $field): array
-    {
-        return array_values(array_map(fn (array $link): array => [
-            'label' => $this->localized($link['label'] ?? null)?->toArray(),
-            'url' => trim(ScalarValue::string($link['url'] ?? null)),
-        ], $this->listOf($field)));
     }
 
     private function localized(mixed $value): ?LocalizedContent

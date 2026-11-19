@@ -1,6 +1,8 @@
 import { boolean as yupBoolean, object as yupObject, string as yupString } from 'yup'
 import { entityProfileShape, registryShape, unifiedNumberField } from '@/utils/entitySchemas'
+import { VAT_DEPENDENT_FIELDS } from '@/constants/entityProfile'
 import { editableFieldsOf } from './formValues'
+import { billingRules } from './billingSchema'
 
 function rulesOf(t, today) {
   const profile = entityProfileShape(t)
@@ -24,11 +26,16 @@ function rulesOf(t, today) {
     phone: profile.phone,
     websiteUrl: registry.websiteUrl,
     marketingConsent: yupBoolean(),
+    ...billingRules(t),
   }
 }
 
 function withRequirement(t, rule, required) {
   return required && rule.type === 'string' ? rule.required(t('validation.required')) : rule
+}
+
+function isRequired(name, required) {
+  return required.includes(name) && !VAT_DEPENDENT_FIELDS.includes(name)
 }
 
 function nest(shape) {
@@ -51,7 +58,7 @@ export function profileSectionSchema(t, { fields, required, today }) {
   const shape = Object.fromEntries(
     editableFieldsOf(fields).map((name) => [
       name,
-      withRequirement(t, rules[name], required.includes(name)),
+      withRequirement(t, rules[name], isRequired(name, required)),
     ]),
   )
   return yupObject(nest(shape))

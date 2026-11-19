@@ -19,6 +19,7 @@ enum StoredFilePurpose: string
     case EntityLogo = 'entity_logo';
     case TransferProof = 'transfer_proof';
     case UserAvatar = 'user_avatar';
+    case VatCertificate = 'vat_certificate';
 
     private const array PUBLIC_ASSETS = ['apple_pay_domain_association', 'cms_image', 'kpi_image', 'branding_logo'];
 
@@ -33,6 +34,7 @@ enum StoredFilePurpose: string
         'branding_logo' => ['png' => ['image/png']],
         'entity_logo' => ['png' => ['image/png'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg']],
         'user_avatar' => ['png' => ['image/png'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg']],
+        'vat_certificate' => ['pdf' => ['application/pdf']],
     ];
 
     /**

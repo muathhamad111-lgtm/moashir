@@ -7,6 +7,7 @@ import Card from '@/components/ui/Card.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import TestModeNotice from '@/components/payments/TestModeNotice.vue'
+import BillingDetailsNotice from '@/components/payments/BillingDetailsNotice.vue'
 import CheckoutSummary from '@/components/payments/CheckoutSummary.vue'
 import CheckoutStateNotice from '@/components/payments/CheckoutStateNotice.vue'
 import CheckoutChannelNotice from '@/components/payments/CheckoutChannelNotice.vue'
@@ -119,6 +120,7 @@ function onSubmitted(submitted) {
     </header>
 
     <TestModeNotice v-if="isTest" />
+    <BillingDetailsNotice />
 
     <div class="checkout__layout">
       <div class="checkout__main">

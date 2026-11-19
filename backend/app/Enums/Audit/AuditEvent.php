@@ -59,6 +59,8 @@ enum AuditEvent: string
     case EntityUpdatedByStaff = 'entity.updated_by_staff';
     case EntityLogoUploaded = 'entity.logo_uploaded';
     case EntityLogoRemoved = 'entity.logo_removed';
+    case EntityVatCertificateUploaded = 'entity.vat_certificate_uploaded';
+    case EntityVatCertificateRemoved = 'entity.vat_certificate_removed';
     case EntityDeactivated = 'entity.deactivated';
     case EntityReactivated = 'entity.reactivated';
     case EntityApproved = 'entity.approved';
@@ -190,6 +192,7 @@ enum AuditEvent: string
     case BankTransferSubmitted = 'payment.transfer_submitted';
     case BankTransferApproved = 'payment.transfer_approved';
     case BankTransferRejected = 'payment.transfer_rejected';
+    case BankTransferPromotedToLive = 'payment.transfer_promoted_to_live';
     case PaymentChannelsUpdated = 'settings.payment_channels_updated';
     case BankAccountCreated = 'bank_account.created';
     case BankAccountUpdated = 'bank_account.updated';

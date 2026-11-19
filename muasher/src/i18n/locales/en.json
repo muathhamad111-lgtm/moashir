@@ -1083,6 +1083,9 @@
         },
         "prices": {
           "title": "Path prices"
+        },
+        "notificationTexts": {
+          "title": "Notification texts"
         }
       },
       "criteria": {
@@ -1966,7 +1969,7 @@
     "invitation": {
       "title": "Activate your Moashir account",
       "subtitle": "Choose a password for your account and accept the terms to finish the activation. You then set up two-factor authentication.",
-      "loadFailed": "The current terms could not be loaded. Try again.",
+      "loadFailed": "The invitation link could not be checked or the terms could not be loaded. Try again.",
       "password": "Password",
       "passwordConfirmation": "Confirm the password",
       "termsTitle": "Terms and conditions",
@@ -1975,10 +1978,10 @@
       "states": {
         "expired": {
           "title": "The invitation has expired",
-          "message": "An invitation is valid for 72 hours. Ask the System Administrator to send it to your e-mail again."
+          "message": "An invitation is valid for one hour at most. Ask the System Administrator to send it to your e-mail again."
         },
         "invalid": {
-          "title": "The invitation link is not valid",
+          "title": "The invitation link is no longer valid",
           "message": "The link is wrong, was already used or the invitation was revoked. If you already activated your account, sign in with your password."
         }
       }
@@ -2191,7 +2194,8 @@
       "officialEmail": "Official e-mail",
       "deletedAt": "Deleted on",
       "actions": "Actions",
-      "level": "Level"
+      "level": "Level",
+      "lastAssessment": "Last accredited assessment"
     },
     "filters": {
       "status": "Status",
@@ -2211,7 +2215,11 @@
       "-governance_grade": "Highest governance grade",
       "governance_grade": "Lowest governance grade",
       "-level": "Level (highest first)",
-      "level": "Level (lowest first)"
+      "level": "Level (lowest first)",
+      "-last_assessed_at": "Last accredited assessment (newest first)",
+      "last_assessed_at": "Last accredited assessment (oldest first)",
+      "-last_assessment_percent": "Last accredited percent (highest first)",
+      "last_assessment_percent": "Last accredited percent (lowest first)"
     },
     "actions": {
       "menu": "Actions for {name}",
@@ -2318,7 +2326,8 @@
         "details": "Entity details",
         "contact": "Contact",
         "lifecycle": "Account history",
-        "deletion": "Deletion"
+        "deletion": "Deletion",
+        "billing": "Billing details"
       },
       "logo": {
         "title": "Entity logo",
@@ -2400,6 +2409,9 @@
       "notVerified": "Not verified",
       "codeLabel": "Verification code digit",
       "verifiedToast": "The mobile number is verified."
+    },
+    "lastAssessment": {
+      "none": "Not assessed yet"
     }
   },
   "dashboard": {
@@ -2754,8 +2766,8 @@
       }
     },
     "score": {
-      "decrease": "Decrease the score",
-      "increase": "Increase the score",
+      "decrease": "Decrease {label}",
+      "increase": "Increase {label}",
       "percentUnit": "%",
       "ofTen": "/ {max}",
       "reflected": "Reflected as {percent}%"
@@ -3045,9 +3057,6 @@
         "linkLabelAr": "Label (Arabic)",
         "linkLabelEn": "Label (English)",
         "addLink": "Add quick link",
-        "removeLink": "Remove link",
-        "moveUp": "Move link up",
-        "moveDown": "Move link down",
         "save": "Save site settings",
         "error": "Could not load the site settings.",
         "toasts": {
@@ -3233,7 +3242,6 @@
       "title": "Notification types",
       "description": "Review every notification type the platform sends: its channels, who receives it and whether it is mandatory.",
       "catalogue": {
-        "readOnlyNote": "This list is read-only. Notification texts are part of the system, and each user chooses the optional channels in their own preferences.",
         "total": "Types: {count}",
         "emptyTitle": "No matching types",
         "emptyMessage": "Change the filters to see other types.",
@@ -3248,7 +3256,8 @@
           "category": "Category",
           "channels": "Channels",
           "audiences": "Sent to",
-          "preference": "User preferences"
+          "preference": "User preferences",
+          "texts": "Texts"
         },
         "categories": {
           "action_required": "Action required",
@@ -3277,6 +3286,186 @@
           "contact_handler": "Contact message handlers"
         },
         "audienceFilter": "Audience"
+      },
+      "texts": {
+        "description": "Edit this notification's texts in Arabic and English. The edited text is sent from now on in every channel the notification uses.",
+        "back": "Back to notification types",
+        "variables": "Available variables — select one to insert it at the cursor",
+        "insert": "Insert {label} ({name})",
+        "insertRequired": "Insert {label} ({name}), required",
+        "requiredHint": "The highlighted variables are required because this notification is mandatory; it cannot be saved without them.",
+        "customized": "Edited text",
+        "shipped": "Original text",
+        "arabic": "In Arabic",
+        "english": "In English",
+        "save": "Save text",
+        "reset": "Restore the original text",
+        "resetTitle": "Restore the original text?",
+        "resetMessage": "The edited text will be deleted and the notification goes back to the platform's original text.",
+        "resetDone": "The original text was restored.",
+        "saved": "The text was saved and will be used in upcoming notifications.",
+        "saveFailed": "The text could not be saved. Try again.",
+        "missingTitle": "Notification type not found",
+        "missingMessage": "Check the link or go back to the notification types.",
+        "noTexts": "This notification's text is generated by the platform and cannot be edited.",
+        "edit": "Edit texts",
+        "editLabel": "Edit the texts of {name}",
+        "parts": {
+          "subject": "E-mail subject",
+          "line": "Message text",
+          "action": "Button text",
+          "expiry": "Validity line",
+          "advice": "Advice line",
+          "adminTitle": "Administrator notice title",
+          "adminBody": "Administrator notice text",
+          "ignore": "Ignore line",
+          "neverShare": "Do-not-share warning",
+          "title": "Title",
+          "body": "Text",
+          "continueAsSubmitted": "Outcome: continue as submitted",
+          "decline": "Outcome: decline",
+          "note": "Note line",
+          "received": "Receipt line",
+          "next": "Next step line",
+          "intro": "Opening line",
+          "guestFollowUp": "Guest follow-up line",
+          "sms": "Text message"
+        },
+        "variants": {
+          "single": "Notification text",
+          "staff_invited": "Staff invitation",
+          "account_locked": "Account locked",
+          "account_status": "Account status",
+          "suspended": "Suspended",
+          "active": "Reactivated",
+          "mfa_reset": "Two-factor reset",
+          "password_reset": "Password reset",
+          "otp": "Verification code",
+          "super_admin_email_changed": "Super Admin e-mail change",
+          "entity": "To the entity",
+          "staff": "To the platform team",
+          "approver": "To the approver",
+          "staff_applied": "To the platform team once applied",
+          "applied": "When applied",
+          "rejected": "When rejected",
+          "staff_deleted": "To the platform team on deletion",
+          "staff_restored": "To the platform team on restore",
+          "assessments": "Assessments",
+          "criteria_update_stalled": "Criteria update stalled",
+          "paid_request_opening_failed": "Paid request could not open",
+          "accredited_opening_failed": "Accredited assessment could not open",
+          "assessor": "To the assessor",
+          "released": "When unassigned",
+          "refunded": "When refunded",
+          "resubmitted": "When resubmitted",
+          "outcomes": "Deadline outcomes",
+          "continued": "When continued",
+          "declined": "When declined as incomplete",
+          "replace": "When replaced",
+          "locked": "When locked",
+          "draft": "Draft",
+          "apply": "Application",
+          "entity_winner": "To the winning entity",
+          "entity_non_winner": "To an entity that did not win",
+          "session": "Committee session",
+          "agreed_outcome": "Agreed outcome",
+          "opinion": "Opinion",
+          "approve": "Approval",
+          "request_edit": "Edit request",
+          "staff_transfer": "To the platform team for a bank transfer",
+          "payments": "Payments",
+          "issues": "Payment issues",
+          "verification_rejected": "Verification rejected",
+          "unexpected_status": "Unexpected status",
+          "unmatched_live_webhook": "Unmatched payment notice",
+          "files": "Files",
+          "quarantined": "File quarantined",
+          "infected_upload": "Infected upload",
+          "scan_abandoned": "File scan abandoned",
+          "contact": "Contact",
+          "acknowledgement": "Acknowledgement",
+          "reply": "Reply"
+        },
+        "variableNames": {
+          "amount": "Amount",
+          "assessor": "Assessor name",
+          "automatic_retries": "Automatic retries",
+          "average": "Average",
+          "bank": "Bank name",
+          "certificate": "Certificate number",
+          "change": "Change",
+          "changes": "Changes",
+          "committee_end": "Committee stage end",
+          "content": "Content",
+          "count": "Count",
+          "cycle": "Award cycle name",
+          "days": "Number of days",
+          "deadline": "Deadline",
+          "duration": "Validity",
+          "email": "E-mail",
+          "ending": "Account ending",
+          "ends_on": "End date",
+          "entities": "Entities",
+          "entity": "Entity name",
+          "error": "Error description",
+          "fields": "Fields",
+          "file": "File name",
+          "files": "Files",
+          "frozen_requests": "Frozen requests",
+          "label": "Description",
+          "name": "Name",
+          "note": "Note",
+          "number": "Request number",
+          "open_evaluations": "Open evaluations",
+          "open_requests": "Open requests",
+          "outcome": "Outcome",
+          "page": "Page name",
+          "paid_drafts": "Paid drafts",
+          "pending_entities": "Entities waiting",
+          "pending_transfers": "Transfers waiting",
+          "percent": "Percent",
+          "period": "Period name",
+          "previous": "Previous value",
+          "provider": "Provider name",
+          "purpose": "Payment purpose",
+          "rank": "Rank",
+          "reason": "Reason",
+          "reference": "Reference number",
+          "region": "Region",
+          "replaced": "Replaced",
+          "scope": "Scope",
+          "starts_on": "Start date",
+          "submission_end": "Submission end",
+          "threshold": "Required threshold",
+          "transactions": "Transactions",
+          "type": "Type",
+          "version": "Version",
+          "weight": "Weight",
+          "weight_problems": "Weight problems",
+          "winners": "Winners"
+        },
+        "sms": {
+          "unsaved": "Write the text message in Arabic and English, then save it to see its approval.",
+          "locales": {
+            "ar": "Arabic",
+            "en": "English"
+          },
+          "approval": {
+            "approved": "Approved in Msegat",
+            "pending": "Awaiting Msegat approval — will not be sent",
+            "not_required": "No approval needed",
+            "templates_not_loaded": "Msegat templates not loaded yet — will not be sent"
+          }
+        }
+      },
+      "channels": {
+        "title": "Delivery channels",
+        "lockedMandatory": "Mandatory notification: its channels cannot be switched off.",
+        "lockedChannel": "Mandatory notification: this channel cannot be changed.",
+        "addedHint": "Added for this notification; it does not ship with it.",
+        "saved": "The notification channels were saved.",
+        "saveFailed": "The channels could not be saved. Try again.",
+        "smsHint": "Sent only to recipients with a mobile number, and only with a text approved in Msegat when the account is restricted to templates."
       }
     },
     "paths": {
@@ -3310,7 +3499,14 @@
       "description": "The issuance of accredited certificates and the minimum percentage of each excellence level.",
       "issuanceTitle": "Issuance",
       "issuance": "Issue accredited certificates",
-      "issuanceDesc": "When off, no new accredited certificate is issued; certificates already issued stay valid.",
+      "issuanceModes": {
+        "automatic": "Automatic when the assessment is completed",
+        "manual": "Manual, by the assessor"
+      },
+      "issuanceHints": {
+        "automatic": "The certificate is issued as soon as the assessor approves the result; the assessor sees no issue button.",
+        "manual": "The certificate is not issued, and the entity does not see it, until the assigned assessor issues it."
+      },
       "levelsTitle": "Excellence level thresholds",
       "levelsNote": "The level of a certificate follows the approved percentage with two decimals. Every issued certificate keeps the thresholds it was issued with.",
       "minimum": "Minimum — {level} (%)",
@@ -3691,7 +3887,7 @@
         "message": "Your account cannot open this request."
       },
       "toasts": {
-        "cvSaved": "The CV entries were saved.",
+        "cvSaved": "Draft saved. You can come back to finish it at any time.",
         "incomplete": "Complete the missing items before submitting. | One item is still missing. | {count} items are still missing.",
         "submitted": "Your request was sent for review",
         "resubmitted": "Your request was resent"
@@ -4079,6 +4275,14 @@
       "return": "Return for completion",
       "withdraw": "Withdraw the request"
     },
+    "rowActions": {
+      "assign": "Assign",
+      "assignFor": "Assign request {number} to an assessor",
+      "reassign": "Reassign",
+      "reassignFor": "Reassign request {number}",
+      "view": "View the request",
+      "viewFor": "View request {number}"
+    },
     "assign": {
       "title": "Assign an assessor",
       "reassignTitle": "Reassign to another assessor",
@@ -4239,7 +4443,8 @@
       "reissueTitle": "Re-issue the certificate",
       "afterCompletion": "The certificate is issued once the assessor approves the result.",
       "none": "No certificate has been issued for this request yet.",
-      "issueNote": "The request was approved without a certificate. You can issue it now.",
+      "autoPending": "The certificate is issued automatically once the assessment is completed and appears here shortly.",
+      "issueNote": "The assessment is completed. Issue the certificate so the entity can see it.",
       "issue": "Issue the certificate",
       "history": "Earlier certificates of this request",
       "reason": "Reason: {reason}",
@@ -5478,11 +5683,11 @@
     "testMode": {
       "staff": {
         "title": "Preview mode: no real charge is made.",
-        "body": "This payment was made in preview mode. It counts as revenue once confirmed, and gets a receipt marked \"Not valid as proof of payment\", without an official number."
+        "body": "This payment was made in preview mode. It counts as revenue once confirmed, and gets a receipt without an official number."
       },
       "entity": {
         "title": "No real amount is charged.",
-        "body": "This payment gets a receipt that is not valid as proof of payment."
+        "body": "This payment gets a receipt without an official number."
       },
       "badge": "Preview"
     },
@@ -5572,7 +5777,12 @@
       "feesAtCheckout": "The price before VAT, the VAT and the total are calculated by the platform when you start the payment.",
       "channelLabel": "Payment method",
       "referenceOnSubmit": "Order number: created when you send",
-      "backToPath": "Back to the path page"
+      "backToPath": "Back to the path page",
+      "billingNotice": {
+        "title": "The billing details in your entity profile are incomplete",
+        "body": "You can pay now, but Finance needs the national address and the VAT details for its tax records.",
+        "link": "Complete the billing details"
+      }
     },
     "return": {
       "eyebrow": "Payment result",
@@ -5648,7 +5858,6 @@
     "receipt": {
       "title": "Payment receipt",
       "noNumber": "No number",
-      "notProof": "Not valid as proof of payment",
       "voidNote": "VOID — this receipt was voided because a refund was recorded.",
       "status": {
         "issued": "Issued",
@@ -6130,6 +6339,12 @@
       "success": {
         "approved": "The transfer was approved",
         "rejected": "The transfer was rejected"
+      },
+      "billing": {
+        "title": "Billing details",
+        "incomplete": "Billing details incomplete",
+        "incompleteHint": "The entity has not completed the billing details in its profile. Payment does not depend on them, but Finance needs them for its tax records.",
+        "downloadCertificate": "Download VAT registration certificate"
       }
     },
     "linkedRequest": {
@@ -6237,7 +6452,8 @@
       "message": "The result is published to the entity. This cannot be undone.",
       "pendingMessage": "Unsaved changes are saved first.",
       "confirm": "Complete",
-      "certificateMessage": "The result is published and the certificate is issued automatically. This cannot be undone."
+      "certificateMessage": "The result is published and the certificate is issued automatically. This cannot be undone.",
+      "manualCertificateMessage": "The result is published to the entity; you then issue the certificate from the request page. This cannot be undone."
     },
     "startTitle": "The assessment has not started",
     "startMessage": "Start the assessment to score the items and write feedback.",
@@ -6258,7 +6474,7 @@
     "completion": {
       "title": "Request completion from the entity",
       "notes": "Notes to the entity",
-      "notesHint": "Between {min} and {max} characters.",
+      "notesHint": "Up to {max} characters.",
       "itemNote": "Note on this item",
       "itemNoteHint": "Optional, up to {max} characters.",
       "deadline": "Completion deadline",
@@ -7358,69 +7574,10 @@
       "copyright": "© {year} Moashir platform",
       "help": "Help and guides"
     },
-    "strip": {
-      "title": "Needs your attention",
-      "open": "Open",
-      "due": "Due {time}",
-      "showAll": "Show all",
-      "showLess": "Show less",
-      "more": "+ {items}",
-      "separator": " · ",
-      "items": {
-        "complete_profile": {
-          "percent": "Complete the organization profile — {percent}",
-          "plain": "Complete the organization profile"
-        },
-        "submit_self_draft": {
-          "single": "Complete the self assessment {reference}",
-          "many": "No self-assessment drafts | {count} self-assessment draft awaiting submission | {count} self-assessment drafts awaiting submission"
-        },
-        "submit_accredited_draft": {
-          "remaining": "Ready to submit · {reference} | {count} sub-criterion without evidence · {reference} | {count} sub-criteria without evidence · {reference}",
-          "single": "Complete the evidence of {reference}",
-          "many": "No accredited drafts | {count} accredited draft awaiting submission | {count} accredited drafts awaiting submission"
-        },
-        "complete_accredited_request": {
-          "single": "Completion requested for {reference}",
-          "many": "No requests to complete | {count} request needs completion | {count} requests need completion"
-        },
-        "complete_advanced_request": {
-          "single": "Completion requested for the advanced request {reference}",
-          "many": "No advanced requests to complete | {count} advanced request needs completion | {count} advanced requests need completion"
-        },
-        "submit_advanced_draft": {
-          "single": "Submit the advanced request {reference}",
-          "many": "No advanced drafts | {count} advanced draft awaiting submission | {count} advanced drafts awaiting submission"
-        },
-        "complete_payment": {
-          "single": "Payment order awaiting completion · {reference}",
-          "many": "No pending payment orders | {count} payment order awaiting completion | {count} payment orders awaiting completion"
-        },
-        "read_contact_replies": {
-          "single": "New reply to your message {reference}",
-          "many": "No new replies to your messages | {count} new reply to your messages | {count} new replies to your messages"
-        },
-        "bank_transfer_under_review": {
-          "single": "Your transfer is under review · {reference}",
-          "many": "No transfers under review | {count} transfer under review | {count} transfers under review"
-        },
-        "bank_transfer_rejected": {
-          "single": "Transfer rejected: submit a new payment request · {reference}",
-          "many": "No rejected transfers | {count} transfer rejected: submit a new payment request | {count} transfers rejected: submit new payment requests"
-        }
-      },
-      "short": {
-        "complete_profile": "Organization profile",
-        "submit_self_draft": "Self assessment",
-        "submit_accredited_draft": "Accredited evidence",
-        "complete_accredited_request": "Request completion",
-        "complete_advanced_request": "Advanced completion",
-        "submit_advanced_draft": "Advanced assessment",
-        "complete_payment": "Payment order",
-        "read_contact_replies": "New reply to your messages",
-        "bank_transfer_under_review": "Transfer under review",
-        "bank_transfer_rejected": "New payment request"
-      }
+    "profileBanner": {
+      "title": "Your entity profile is incomplete",
+      "progress": "{percent} complete",
+      "action": "Complete profile"
     },
     "home": {
       "loadError": "Your organization journey could not be loaded. Please try again.",
@@ -7738,7 +7895,8 @@
           }
         }
       },
-      "viewDetails": "View details"
+      "viewDetails": "View details",
+      "viewRejection": "View the rejection reason and details"
     },
     "certificates": {
       "eyebrow": "Certificates",
@@ -7881,7 +8039,8 @@
         "identity": "Identity & registration",
         "classification": "Classification & location",
         "governance": "Governance & figures",
-        "contact": "Contact & account owner"
+        "contact": "Contact & account owner",
+        "billing": "Billing details"
       },
       "state": {
         "complete": "Complete",
@@ -7909,12 +8068,27 @@
         "authorizedPersonName": "Authorised account manager",
         "phone": "Mobile number",
         "websiteUrl": "Website",
-        "marketingConsent": "Platform news and offers"
+        "marketingConsent": "Platform news and offers",
+        "addressBuildingNumber": "Building number",
+        "addressStreet": "Street",
+        "addressDistrict": "District",
+        "addressCity": "City",
+        "addressPostalCode": "Postal code",
+        "addressAdditionalNumber": "Additional number",
+        "addressShortCode": "Short address (optional)",
+        "vatRegistered": "VAT registration",
+        "vatNumber": "VAT registration number",
+        "vatCertificate": "VAT registration certificate"
       },
       "hints": {
         "governanceGrade": "From the National Center, up to two decimals.",
         "phone": "Starts with 05 and has 10 digits.",
-        "websiteUrl": "A full address that starts with https://"
+        "websiteUrl": "A full address that starts with https://",
+        "addressBuildingNumber": "4 digits as in the national address, e.g. 7421.",
+        "addressPostalCode": "5 digits, e.g. 12214.",
+        "addressAdditionalNumber": "4 digits, e.g. 3365.",
+        "addressShortCode": "4 Latin letters then 4 digits, e.g. RRRD2929.",
+        "vatNumber": "15 digits that start and end with 3."
       },
       "values": {
         "subscribed": "Subscribed",
@@ -8001,6 +8175,31 @@
           "size": "The logo must not exceed 2 MB.",
           "dimensions": "Each side of the image must be between 200 and 2000 pixels."
         }
+      },
+      "questions": {
+        "vatRegistered": "Is your entity registered for VAT?"
+      },
+      "billing": {
+        "validation": {
+          "buildingNumber": "The building number has 4 digits (0-9).",
+          "postalCode": "The postal code has 5 digits (0-9).",
+          "additionalNumber": "The additional number has 4 digits (0-9).",
+          "shortCode": "The short address is 4 Latin letters then 4 digits, e.g. RRRD2929.",
+          "vatNumber": "The VAT registration number has 15 digits that start and end with 3."
+        },
+        "certificate": {
+          "hint": "A PDF file of up to {max} MB.",
+          "saveFirst": "Save «Yes» and the VAT registration number first, then upload the VAT registration certificate.",
+          "download": "Download certificate",
+          "uploaded": "The VAT registration certificate was uploaded.",
+          "removeTitle": "Delete the VAT registration certificate?",
+          "removeMessage": "The uploaded certificate will be deleted, and the billing details stay incomplete until you upload a new one.",
+          "errors": {
+            "required": "Choose the certificate file.",
+            "type": "Upload the certificate as a PDF.",
+            "size": "The file is larger than {max} MB."
+          }
+        }
       }
     },
     "checkoutMethod": {
@@ -8070,9 +8269,9 @@
         "announced": "Copied: {label}."
       },
       "guidance": {
-        "fullAmount": "Transfer the full amount in one transfer from the entity's account.",
-        "unifiedNumber": "Write your entity's unified national number in the transfer description.",
-        "platformOnly": "Check the account details inside the platform only; we never e-mail them."
+        "fullAmount": "Transfer the full amount due in one transfer from the entity's official bank account.",
+        "unifiedNumber": "Write your entity's unified national number in the transfer's purpose or notes field so Finance can match your transfer.",
+        "platformOnly": "Rely only on the account details shown here; we never send them by e-mail or message."
       },
       "proof": {
         "title": "Bank transfer receipt",
@@ -8407,6 +8606,7 @@
       "self": {
         "draft": "Draft in progress · {number}",
         "lastResult": "Last result: {percent} · {date}",
+        "lastResultShort": "Last result: {percent}",
         "noResult": "No self assessment yet"
       },
       "accredited": {
@@ -9410,6 +9610,11 @@
       "lead": "Read only, exactly as the entity sees it. The list shows the verified results within your account's scope.",
       "readOnly": "Read only",
       "tabsLabel": "Excellence tools"
+    },
+    "kitLocked": {
+      "title": "The excellence tools open once the Quick Excellence Kit is activated",
+      "message": "Strengths and gaps, maturity analysis and board reports for your accredited result open after the Kit is activated for it.",
+      "action": "Quick Excellence Kit"
     }
   },
   "dataList": {
@@ -9443,12 +9648,48 @@
     "menus": {
       "description": "The links of the public site header menu and footer menu, and their order.",
       "header": "Header menu",
-      "headerHint": "Shown at the top of the public site in this order. You can edit or remove any link, or add a new one.",
+      "headerHint": "Shown at the top of the public site in this order. Pick a link to edit it, drag it to reorder, and add links under it to show them in a dropdown.",
       "addHeaderLink": "Add header link",
       "headerEmpty": "The header menu is empty; no links will be shown.",
       "footer": "Footer menu",
-      "footerHint": "Shown in the public site footer. If left empty, the default links are shown.",
-      "footerEmpty": "The default footer links are shown."
+      "footerHint": "Shown in the public site footer in this order. When empty, the default links are shown.",
+      "footerEmpty": "The default footer links are shown.",
+      "untitled": "Untitled link",
+      "hiddenBadge": "Hidden",
+      "groupBadge": "Dropdown ({count})",
+      "invalidBadge": "Needs a fix",
+      "addChild": "Add a sub-link under {name}",
+      "panelTitle": "Link details",
+      "visible": "Shown on the site",
+      "visibleHint": "Turn it off to hide the link for now without deleting it.",
+      "groupNote": "This link is a main menu item that opens a dropdown with {count} sub-links, so it needs no link of its own.",
+      "linkType": "Link type",
+      "linkTypes": {
+        "page": "A platform page or section",
+        "custom": "Custom link"
+      },
+      "page": "Page or section",
+      "remove": "Delete link",
+      "selectHint": "Pick a link from the list to edit it.",
+      "targets": {
+        "home": "Home",
+        "about": "Home — About the platform",
+        "model": "Home — Excellence model",
+        "paths": "Home — Assessment paths",
+        "journey": "Home — Assessment journey",
+        "levels": "Home — Maturity levels",
+        "kit": "Home — Quick Excellence Kit",
+        "lensesBrief": "Home — Lenses",
+        "leaders": "Home — Leaders",
+        "partners": "Home — Partners",
+        "contact": "Home — Contact us",
+        "kpis": "Performance indicators page",
+        "lenses": "Lenses page",
+        "verify": "Certificate verification page",
+        "terms": "Terms and conditions page",
+        "privacy": "Privacy policy page",
+        "accessibility": "Accessibility page"
+      }
     }
   },
   "landing": {

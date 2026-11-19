@@ -12,7 +12,7 @@ use App\Support\FrontendUrl;
 
 final class StaffInvitationNotification extends QueuedNotification
 {
-    public function __construct(private readonly string $token, private readonly int $validHours)
+    public function __construct(private readonly string $token, private readonly int $validMinutes)
     {
         parent::__construct();
     }
@@ -31,6 +31,6 @@ final class StaffInvitationNotification extends QueuedNotification
             ->subject(__('notifications.staff_invited.subject'))
             ->line(__('notifications.staff_invited.line'))
             ->action(__('notifications.staff_invited.action'), FrontendUrl::to('auth/invitations/'.$this->token))
-            ->line(__('notifications.staff_invited.expiry', ['duration' => trans_choice('quantities.hours', $this->validHours)]));
+            ->line(__('notifications.staff_invited.expiry', ['duration' => trans_choice('quantities.minutes', $this->validMinutes)]));
     }
 }

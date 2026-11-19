@@ -127,7 +127,7 @@ test.describe('qualified assignment', () => {
     await signIn(page, testInfo, USERS.follower)
     await open(page, '/admin/requests/9105', '.request-actions')
     await expect(page.locator('.request-detail__number .path-badge--accredited')).toBeVisible()
-    await page.locator('.request-actions .btn--primary').click()
+    await page.locator('.request-detail__heading [data-testid="request-assign"]').click()
     const dialog = page.locator('.modal')
     await expect(dialog.locator('.assign-dialog__option').first()).toBeVisible()
     await expect(dialog.locator('.assign-dialog__path .path-badge--accredited')).toBeVisible()
@@ -305,18 +305,31 @@ test.describe('password recovery and invitations', () => {
     )
   })
 
+  test('a used invitation link shows that it is no longer valid instead of the password form', async ({
+    page,
+  }, testInfo) => {
+    await seedPreferences(page, { locale: isEn(testInfo) ? 'en' : 'ar' })
+    await open(page, '/auth/invitations/invite-used-2026', '[data-testid="invitation-state"]')
+    const state = page.locator('[data-testid="invitation-state"]')
+    await expect(state).toHaveAttribute('role', 'alert')
+    await expect(state).toContainText(
+      text(testInfo, 'The invitation link is no longer valid', 'رابط الدعوة لم يعد صالحًا'),
+    )
+    await expect(page.locator('[name="password"]')).toHaveCount(0)
+    await expect(page.locator('form button[type="submit"]')).toHaveCount(0)
+    await state.getByRole('link').click()
+    await expect(page).toHaveURL(/\/auth\/login/)
+  })
+
   test('an invited staff member activates the account and goes on to two-factor enrolment', async ({
     page,
   }, testInfo) => {
     await seedPreferences(page, { locale: isEn(testInfo) ? 'en' : 'ar' })
-    await open(page, '/auth/invitations/invite-expired-2026', '[name="password"]')
-    await page.locator('[name="password"]').fill(STRONG)
-    await page.locator('[name="passwordConfirmation"]').fill(STRONG)
-    await page.locator('[name="termsAccepted"]').check()
-    await page.locator('form button[type="submit"]').click()
+    await open(page, '/auth/invitations/invite-expired-2026', '[data-testid="invitation-state"]')
     await expect(page.locator('.auth-status--danger')).toContainText(
       text(testInfo, 'The invitation has expired', 'انتهت صلاحية الدعوة'),
     )
+    await expect(page.locator('[name="password"]')).toHaveCount(0)
     await open(page, '/auth/invitations/invite-sarah-whitfield-2026', '[name="password"]')
     await expect(page.locator('.legal-consent')).toBeVisible()
     await page.locator('[name="password"]').fill(STRONG)
@@ -473,7 +486,7 @@ test.describe('staff paths screenshots', () => {
     await page.setViewportSize(VIEWPORTS.desktop)
     await signIn(page, testInfo, USERS.follower, 'dark')
     await open(page, '/admin/requests/9105', '.request-actions')
-    await page.locator('.request-actions .btn--primary').click()
+    await page.locator('.request-detail__heading [data-testid="request-assign"]').click()
     await expect(page.locator('.modal .assign-dialog__option').first()).toBeVisible()
     await capture(page, `assign-dialog-dark-desktop-${suffixOf(testInfo)}`)
   })

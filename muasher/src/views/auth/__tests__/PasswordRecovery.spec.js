@@ -14,6 +14,7 @@ vi.mock('@/services/authService', () => ({
   authService: {
     requestPasswordReset: vi.fn(),
     resetPassword: vi.fn(),
+    checkInvitation: vi.fn(),
     acceptInvitation: vi.fn(),
     session: vi.fn(),
   },
@@ -55,6 +56,7 @@ function rejection(status, code, fieldErrors = {}) {
 
 beforeEach(() => {
   termsService.current.mockResolvedValue({ data: TERMS })
+  authService.checkInvitation.mockResolvedValue({ data: { usable: true } })
 })
 
 afterEach(() => {
@@ -170,7 +172,7 @@ describe('invitation', () => {
 
   it.each([
     [410, 'invitation.expired', 'The invitation has expired'],
-    [404, 'invitation.invalid', 'The invitation link is not valid'],
+    [404, 'invitation.invalid', 'The invitation link is no longer valid'],
   ])('shows the %s state of the token', async (status, code, title) => {
     authService.acceptInvitation.mockImplementation(
       () => new Promise((resolve, reject) => setTimeout(() => reject(rejection(status, code)), 15)),
@@ -182,6 +184,43 @@ describe('invitation', () => {
     await settle()
     expect(wrapper.find('.auth-status--danger').text()).toContain(title)
     expect(wrapper.find('form').exists()).toBe(false)
+  })
+
+  it('checks the link on load before showing the form', async () => {
+    mountView(AcceptInvitation, { token: 'invite-sarah-whitfield-2026' })
+    await settle()
+    expect(authService.checkInvitation).toHaveBeenCalledWith('invite-sarah-whitfield-2026')
+    expect(wrapper.find('form').exists()).toBe(true)
+  })
+
+  it.each([
+    [404, 'invitation.invalid', 'The invitation link is no longer valid'],
+    [410, 'invitation.expired', 'The invitation has expired'],
+  ])(
+    'shows the %s state with a sign-in button instead of the form when the link is opened',
+    async (status, code, title) => {
+      authService.checkInvitation.mockRejectedValue(rejection(status, code))
+      mountView(AcceptInvitation, { token: 'invite-used-2026' })
+      await settle()
+      const state = wrapper.find('[data-testid="invitation-state"]')
+      expect(state.attributes('role')).toBe('alert')
+      expect(state.text()).toContain(title)
+      expect(state.find('a').attributes('href')).toBe('/auth/login')
+      expect(wrapper.find('form').exists()).toBe(false)
+      expect(wrapper.find('[name="password"]').exists()).toBe(false)
+      expect(wrapper.find('.auth-form__switch').exists()).toBe(false)
+    },
+  )
+
+  it('offers a retry when the link check fails for another reason', async () => {
+    authService.checkInvitation.mockRejectedValueOnce(rejection(429, 'rate_limited'))
+    mountView(AcceptInvitation, { token: 'invite-sarah-whitfield-2026' })
+    await settle()
+    expect(wrapper.find('form').exists()).toBe(false)
+    await wrapper.find('.error-state button').trigger('click')
+    await settle()
+    expect(authService.checkInvitation).toHaveBeenCalledTimes(2)
+    expect(wrapper.find('form').exists()).toBe(true)
   })
 
   it('lets the user retry when the terms cannot be loaded', async () => {

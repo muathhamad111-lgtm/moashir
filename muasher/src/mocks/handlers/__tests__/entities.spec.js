@@ -234,13 +234,14 @@ describe('entities mock — own profile', () => {
       governance_grade: '86.50',
       marketing_consent: true,
       can_edit: true,
-      profile_completion: { percent: 100, counted: 15, completed_count: 15 },
+      profile_completion: { percent: 100, counted: 22, completed_count: 22 },
     })
     expect(own.body.data.profile_sections.map((section) => section.key)).toEqual([
       'identity',
       'classification',
       'governance',
       'contact',
+      'billing',
     ])
   })
 

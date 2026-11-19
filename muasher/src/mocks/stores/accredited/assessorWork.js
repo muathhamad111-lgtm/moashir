@@ -11,6 +11,7 @@ import { isAdvanced, stagesOf } from '../assessments/reviewedPaths'
 import { announceInitialCompleted } from '../award/awardNotices'
 import { recordSnapshot } from './resultSnapshots'
 import { writeSummary } from '../insights/assessorSummaries'
+import { issueOnCompletion } from '../requestCertificates'
 import {
   isPlainObject,
   isPositiveInteger,
@@ -25,7 +26,7 @@ const FEEDBACK_FIELDS = ['strengths', 'improvementPoints', 'notes']
 const FEEDBACK_MAX = 5000
 const SUMMARY_MAX = 2000
 const FEEDBACK_MAX_ITEMS = 500
-const NOTES = { MIN: 10, MAX: 2000 }
+const NOTES = { MIN: 1, MAX: 2000 }
 const ITEMS_MAX = 100
 const ITEM_NOTE_MAX = 500
 const KINDS = ['cv', 'evidence']
@@ -272,6 +273,7 @@ function missingUnits(record) {
 function finishReview(record, at) {
   if (!isAdvanced(record)) {
     Object.assign(record, { status: STATES.COMPLETED, completedAt: at, updatedAt: at })
+    issueOnCompletion(record)
     return
   }
   Object.assign(record, { status: stagesOf(record).done, initialAssessedAt: at, updatedAt: at })

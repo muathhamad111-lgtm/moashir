@@ -19,7 +19,7 @@ final readonly class ShowBankTransfer
 
     public function handle(Payment $payment, User $viewer): StaffBankTransferDetail
     {
-        $payment->loadMissing(BankTransferQuery::RELATIONS);
+        $payment->loadMissing([...BankTransferQuery::RELATIONS, 'entity.vatCertificate']);
         $transfer = $payment->bankTransfer;
         $duplicates = $transfer instanceof BankTransfer ? $this->duplicates->otherPaymentsWithProofOf($transfer) : [];
 

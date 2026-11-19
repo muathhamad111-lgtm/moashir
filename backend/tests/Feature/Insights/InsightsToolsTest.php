@@ -13,6 +13,7 @@ const FULL_MARKS_70 = ['M1.1' => '70.00', 'M1.2' => '70.00', 'M2.1' => '70.00', 
 
 beforeEach(function (): void {
     Notification::fake();
+    activateInsightsKit();
 });
 
 it('classifies the sub-criteria of the selected accredited result with the assessor texts quoted verbatim', function (): void {

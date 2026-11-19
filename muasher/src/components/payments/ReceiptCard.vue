@@ -43,10 +43,7 @@ function hijri(value) {
 
 <template>
   <Card>
-    <article
-      class="receipt-card"
-      :class="{ 'receipt-card--voided': isVoided, 'receipt-card--test': receipt.isTest }"
-    >
+    <article class="receipt-card" :class="{ 'receipt-card--voided': isVoided }">
       <header class="receipt-card__header">
         <div>
           <p class="receipt-card__eyebrow">{{ t('finance.receipt.title') }}</p>
@@ -62,9 +59,6 @@ function hijri(value) {
         </div>
       </header>
 
-      <p v-if="receipt.isTest" class="receipt-card__watermark" role="note">
-        {{ t('finance.receipt.notProof') }}
-      </p>
       <p v-if="isVoided" class="receipt-card__watermark receipt-card__watermark--void" role="note">
         {{ t('finance.receipt.voidNote') }}
       </p>

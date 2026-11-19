@@ -126,6 +126,10 @@ export const assessmentMessages = {
     ar: 'تجري معالجة سداد رسوم التقييم المعتمد، وسيُفتح طلبك خلال وقت قصير.',
     en: 'Your accredited assessment payment is being processed. Your request will open shortly.',
   },
+  'assessment.main_not_in_version': {
+    ar: 'هذا المعيار الرئيسي ليس ضمن نسخة المعايير المعتمدة لهذا التقييم.',
+    en: 'This main criterion is not part of the criteria version of this assessment.',
+  },
   'assessment.sub_not_in_version': {
     ar: 'هذا المعيار الفرعي ليس ضمن نسخة المعايير المعتمدة لهذا التقييم.',
     en: 'This sub-criterion is not part of the criteria version of this assessment.',

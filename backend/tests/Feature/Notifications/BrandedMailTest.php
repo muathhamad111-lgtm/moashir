@@ -121,7 +121,7 @@ it('shows the code large, isolated left to right and selectable, with the validi
 });
 
 it('shows the reset and invitation buttons with the raw link below them and the expiry plural', function (): void {
-    config(['moashir.auth.invitation_ttl_hours' => 2]);
+    config(['moashir.auth.invitation_ttl_minutes' => 2]);
     $reset = brandedSample('USR-04', Locale::Arabic);
     $invitation = brandedSample('USR-01', Locale::Arabic);
     $resetUrl = config()->string('moashir.frontend_url').'/auth/reset-password/';
@@ -131,7 +131,7 @@ it('shows the reset and invitation buttons with the raw link below them and the 
         ->and($reset->html)->toContain('word-break: break-all')
         ->and($reset->html)->toContain('هذا الرابط صالح لمدة 60 دقيقة ويُستخدم مرة واحدة.')
         ->and($reset->text)->toContain('إعادة تعيين كلمة المرور: '.$resetUrl)
-        ->and($invitation->html)->toContain('هذه الدعوة صالحة لمدة ساعتين وتُستخدم مرة واحدة.')
+        ->and($invitation->html)->toContain('هذه الدعوة صالحة لمدة دقيقتين وتُستخدم مرة واحدة.')
         ->and($invitation->subject)->toBe('منصة مؤشر — دعوة للانضمام إلى فريق المنصة');
 });
 

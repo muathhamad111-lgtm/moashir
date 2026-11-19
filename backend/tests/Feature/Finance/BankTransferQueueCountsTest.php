@@ -50,7 +50,7 @@ it('counts the approvals and rejections decided on the current Riyadh calendar d
         ->assertJsonPath('meta.pagination.total', 0)
         ->assertJsonPath('meta.counts', queueCounts(1, 1, 1));
 
-    expect($approved->refresh()->isTest())->toBeTrue();
+    expect($approved->refresh()->isTest())->toBeFalse();
 
     $this->travelTo(CarbonImmutable::parse('2026-11-06 21:00:00', 'UTC'));
     switchTo($reviewer)->getJson(TRANSFER_QUEUE)->assertJsonPath('meta.counts', queueCounts(1, 0, 0));

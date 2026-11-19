@@ -8,6 +8,7 @@ use App\Data\Assessments\SubmissionForm;
 use App\Models\Assessments\Assessment;
 use App\Models\Identity\User;
 use App\Services\Assessments\CriteriaMoveSummaryReader;
+use App\Services\Assessments\PassedStations;
 use App\Services\Assessments\SubmissionContentReader;
 use App\Services\Assessments\SubmissionGapsReader;
 use App\Services\Assessments\UploadLimitsReader;
@@ -21,6 +22,7 @@ final readonly class GetSubmissionForm
         private SubmissionGapsReader $gaps,
         private UploadLimitsReader $limits,
         private CriteriaMoveSummaryReader $moves,
+        private PassedStations $stations,
     ) {}
 
     public function handle(User $viewer, Assessment $assessment): SubmissionForm
@@ -35,6 +37,7 @@ final readonly class GetSubmissionForm
             $assessment->loadMissing('openCompletionRequest')->openCompletionRequest,
             $this->limits->read($assessment->path),
             $this->moves->latestFor($assessment),
+            $this->stations->of($assessment),
         );
     }
 }

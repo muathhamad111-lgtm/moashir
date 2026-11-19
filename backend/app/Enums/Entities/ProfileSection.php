@@ -10,6 +10,7 @@ enum ProfileSection: string
     case Classification = 'classification';
     case Governance = 'governance';
     case Contact = 'contact';
+    case Billing = 'billing';
 
     /**
      * @return list<ProfileSectionField>

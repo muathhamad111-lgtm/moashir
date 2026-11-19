@@ -142,7 +142,6 @@ watch(
           :label="t('review.completion.notes')"
           :hint="
             t('review.completion.notesHint', {
-              min: ACCREDITED_LIMITS.COMPLETION_NOTES_MIN,
               max: ACCREDITED_LIMITS.COMPLETION_NOTES_MAX,
             })
           "

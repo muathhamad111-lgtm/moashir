@@ -5,6 +5,7 @@ import { useAccreditedRejection } from '@/composables/useAccreditedRejection'
 import { useCvDrafts } from '@/composables/useCvDrafts'
 import { useEvidenceUploads } from '@/composables/useEvidenceUploads'
 import { useAccreditedSubmit } from '@/composables/useAccreditedSubmit'
+import { usePassedStations } from '@/composables/usePassedStations'
 import { useConfirm } from '@/composables/useConfirm'
 import { acceptOf } from '@/utils/accredited/evidenceRules'
 
@@ -16,6 +17,11 @@ export function useAccreditedWorkspace({ assessmentId, onSubmitted }) {
   const rejection = useAccreditedRejection(formState)
   const cvDrafts = useCvDrafts({ formState, onRejected: rejection.handle })
   const uploads = useEvidenceUploads({ formState, onRejected: rejection.handle })
+  const passedStations = usePassedStations({
+    assessmentId,
+    formState,
+    onRejected: rejection.handle,
+  })
   const submitter = useAccreditedSubmit({
     formState,
     cvDrafts,
@@ -43,8 +49,12 @@ export function useAccreditedWorkspace({ assessmentId, onSubmitted }) {
     },
   )
 
+  // Moving forward past a station records it as passed; going back or jumping to a gap does not.
   function selectMain(mainId) {
+    const leaving = activeMain.value
     activeMainId.value = mainId
+    const target = mains.value.findIndex((main) => main.id === mainId)
+    if (leaving && target > mains.value.indexOf(leaving)) passedStations.pass(leaving.id)
   }
 
   async function revealSub(subId) {

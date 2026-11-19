@@ -14,6 +14,7 @@ import RequestFacts from '@/components/requests/RequestFacts.vue'
 import PathBadge from '@/components/ui/PathBadge.vue'
 import LevelBadge from '@/components/level/LevelBadge.vue'
 import RequestActionsCard from '@/components/requests/RequestActionsCard.vue'
+import RequestAssignButton from '@/components/requests/RequestAssignButton.vue'
 import RequestPaymentCard from '@/components/requests/RequestPaymentCard.vue'
 import RequestCertificateCard from '@/components/requests/RequestCertificateCard.vue'
 import AssignmentHistoryList from '@/components/requests/AssignmentHistoryList.vue'
@@ -30,7 +31,7 @@ import { useSignedDownload } from '@/composables/useSignedDownload'
 import { financeService } from '@/services/financeService'
 import { usePermissions } from '@/composables/usePermissions'
 import { assessmentOverridesService } from '@/services/assessmentOverridesService'
-import { ACCREDITED_LIMITS, ACCREDITED_STATUSES } from '@/constants/accredited'
+import { ACCREDITED_LIMITS, ACCREDITED_STATUSES, ASSIGNMENT_MODES } from '@/constants/accredited'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
@@ -41,17 +42,8 @@ const { t, locale } = useI18n()
 const route = useRoute()
 const { can } = usePermissions()
 const requestId = computed(() => Number(route.params.id))
-const {
-  status,
-  errorMessage,
-  detail,
-  canAssign,
-  canReassign,
-  canReturn,
-  canWithdraw,
-  load,
-  apply,
-} = useRequestDetail(requestId)
+const { status, errorMessage, detail, assignmentMode, canReturn, canWithdraw, load, apply } =
+  useRequestDetail(requestId)
 const returning = useReturnForCompletion()
 const { prompt: reasonPrompt, reasonExtra } = useSuperAdminReason()
 const returnOpen = ref(false)
@@ -59,7 +51,7 @@ const withdrawOpen = ref(false)
 const bundles = useEvidenceBundleRequest(requestId)
 const receipts = useSignedDownload()
 const assignOpen = ref(false)
-const assignMode = ref('assign')
+const dialogMode = ref(ASSIGNMENT_MODES.ASSIGN)
 const reopenOpen = ref(false)
 const forceOpen = ref(false)
 
@@ -78,7 +70,7 @@ function downloadReceipt(receiptId) {
 }
 
 function openAssign(mode) {
-  assignMode.value = mode
+  dialogMode.value = mode
   assignOpen.value = true
 }
 
@@ -110,19 +102,29 @@ onMounted(load)
         <AppIcon name="arrow-left" />
         {{ t('requests.detail.back') }}
       </RouterLink>
-      <h1 class="request-detail__title">{{ t('requests.detail.title') }}</h1>
-      <p v-if="detail" class="request-detail__number">
-        <bdi dir="ltr">{{ detail.number }}</bdi>
-        <PathBadge v-if="detail.path" :path="detail.path" :label="detail.pathLabel" />
-      </p>
-      <p v-if="detail?.entity" class="request-detail__entity" data-testid="request-entity">
-        <span>{{ localizedText(detail.entity.name, locale) }}</span>
-        <LevelBadge
-          :tier="displayTierOf(detail.entity)"
-          size="s"
-          :certificate="detail.entity.lastLevel"
+      <div class="request-detail__heading">
+        <div class="request-detail__identity">
+          <h1 class="request-detail__title">{{ t('requests.detail.title') }}</h1>
+          <p v-if="detail" class="request-detail__number">
+            <bdi dir="ltr">{{ detail.number }}</bdi>
+            <PathBadge v-if="detail.path" :path="detail.path" :label="detail.pathLabel" />
+          </p>
+          <p v-if="detail?.entity" class="request-detail__entity" data-testid="request-entity">
+            <span>{{ localizedText(detail.entity.name, locale) }}</span>
+            <bdi dir="ltr" class="request-detail__reference">{{ detail.entity.reference }}</bdi>
+            <LevelBadge
+              :tier="displayTierOf(detail.entity)"
+              size="s"
+              :certificate="detail.entity.lastLevel"
+            />
+          </p>
+        </div>
+        <RequestAssignButton
+          v-if="status === 'ready' && assignmentMode"
+          :mode="assignmentMode"
+          @assign="openAssign"
         />
-      </p>
+      </div>
     </header>
     <div v-if="status === 'loading'" class="request-detail__loading" aria-busy="true">
       <Skeleton variant="block" />
@@ -141,7 +143,10 @@ onMounted(load)
           <template #header
             ><h2 class="card__title-text">{{ t('requests.detail.requestInfo') }}</h2></template
           >
-          <RequestFacts :detail="detail" />
+          <RequestFacts :detail="detail" :shows-identity="false" />
+          <div v-if="assignmentMode" class="request-detail__assign">
+            <RequestAssignButton :mode="assignmentMode" @assign="openAssign" />
+          </div>
         </Card>
         <Card v-for="completion in detail.completionRequests" :key="completion.id">
           <CompletionRequestCard :request="completion" show-status />
@@ -168,11 +173,7 @@ onMounted(load)
         />
         <RequestActionsCard
           :detail="detail"
-          :can-assign="canAssign"
-          :can-reassign="canReassign"
           :bundle-requesting="bundles.requesting.value"
-          @assign="openAssign('assign')"
-          @reassign="openAssign('reassign')"
           @bundle="bundles.requestBundle"
           :can-return="canReturn"
           :can-withdraw="canWithdraw"
@@ -191,7 +192,7 @@ onMounted(load)
       <AssignAssessorDialog
         v-model="assignOpen"
         :request-id="detail.id"
-        :mode="assignMode"
+        :mode="dialogMode"
         :entity-name="localizedText(detail.entity?.name, locale)"
         :path="detail.path ?? ''"
         :path-label="detail.pathLabel"

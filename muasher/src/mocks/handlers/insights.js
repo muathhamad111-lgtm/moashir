@@ -23,6 +23,7 @@ import {
   resultRefOf,
   snapshotRecordsOf,
 } from '../stores/insights/insightsResults'
+import { entityHasActiveKit, kitUnlocksTools } from '../stores/periodic/requestPeriods'
 import { executiveSummaryOf, maturityOf, strengthsGapsOf } from '../stores/insights/insightsTools'
 import { requestLocale } from '../contract/locale'
 import {
@@ -48,6 +49,7 @@ const MESSAGES = { ...assessmentMessages, ...insightsMessages }
 const reject = {
   forbidden: () => new MockRejection(403, 'forbidden'),
   notFound: () => new MockRejection(404, 'not_found'),
+  kitRequired: () => new MockRejection(403, 'insights.kit_required'),
   notEligible: (reason) =>
     new MockRejection(409, 'insights.result_not_eligible', { meta: { reason } }),
 }
@@ -70,6 +72,7 @@ function isStaffReader(user) {
 
 function ownEntityOf(user) {
   if (!user.entityId || !sessionCan(OWN_VIEW)) throw reject.forbidden()
+  if (!entityHasActiveKit(Number(user.entityId))) throw reject.kitRequired()
   return Number(user.entityId)
 }
 
@@ -179,6 +182,8 @@ function eligibleRecord(user, id) {
   if (!record || record.path === ASSESSMENT_PATHS.SELF) throw reject.notFound()
   if (!user.superAdmin && !sessionCan(OWN_VIEW) && !sessionCan(STAFF_VIEW)) throw reject.forbidden()
   if (!canViewRecord(user, record)) throw reject.notFound()
+  if (!user.superAdmin && !isStaffReader(user) && !kitUnlocksTools(record))
+    throw reject.kitRequired()
   if (record.path !== ASSESSMENT_PATHS.ACCREDITED) throw reject.notEligible('not_accredited')
   if (!record.result || !record.completedAt) throw reject.notEligible('not_completed')
   if (!isEligible(record)) throw reject.notEligible(exclusionReasonOf(record) ?? 'not_completed')

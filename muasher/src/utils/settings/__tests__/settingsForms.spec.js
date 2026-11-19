@@ -110,7 +110,7 @@ describe('per-path settings form', () => {
 
 describe('certificate settings form', () => {
   const settings = {
-    accreditedIssuanceEnabled: true,
+    accreditedIssuanceMode: 'automatic',
     levelThresholds: { bronze: '60.00', silver: '70.00', gold: '80.00', diamond: '90.00' },
   }
 
@@ -118,9 +118,9 @@ describe('certificate settings form', () => {
     const values = certificateSettingsValues(settings)
     expect(changedCertificateSettings(settings, values)).toEqual({})
     values.levelThresholds.silver = '72.5'
-    values.accreditedIssuanceEnabled = false
+    values.accreditedIssuanceMode = 'manual'
     expect(changedCertificateSettings(settings, values)).toEqual({
-      accreditedIssuanceEnabled: false,
+      accreditedIssuanceMode: 'manual',
       levelThresholds: { bronze: '60.00', silver: '72.50', gold: '80.00', diamond: '90.00' },
     })
   })

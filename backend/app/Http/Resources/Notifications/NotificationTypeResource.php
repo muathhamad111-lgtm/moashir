@@ -7,6 +7,7 @@ namespace App\Http\Resources\Notifications;
 use App\Data\Notifications\NotificationType;
 use App\Enums\Notifications\NotificationAudience;
 use App\Enums\Notifications\NotificationChannel;
+use App\Services\Notifications\SystemNotificationChannels;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -30,6 +31,7 @@ final class NotificationTypeResource extends JsonResource
             'audiences' => array_map(static fn (NotificationAudience $audience): string => $audience->value, $type->audiences),
             'is_mandatory' => $type->isMandatory,
             'user_configurable_channels' => array_map(static fn (NotificationChannel $channel): string => $channel->value, $type->configurableChannels()),
+            'enabled_channels' => array_map(static fn (NotificationChannel $channel): string => $channel->value, app(SystemNotificationChannels::class)->enabledOf($type)),
         ];
     }
 }

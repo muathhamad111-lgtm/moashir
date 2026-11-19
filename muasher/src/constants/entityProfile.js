@@ -3,6 +3,7 @@ export const PROFILE_SECTION_ICONS = Object.freeze({
   classification: 'location',
   governance: 'chart-bar',
   contact: 'envelope',
+  billing: 'sar',
 })
 
 export const PROFILE_REQUIREMENTS = Object.freeze({
@@ -26,7 +27,11 @@ export const PROFILE_SAVE_STATES = Object.freeze({
 
 export const PROFILE_STALE_CODE = 'profile.section_stale'
 
-export const PROFILE_READ_ONLY_FIELDS = Object.freeze(['officialEmail'])
+export const PROFILE_READ_ONLY_FIELDS = Object.freeze(['officialEmail', 'vatCertificate'])
+
+export const PROFILE_FILE_FIELDS = Object.freeze(['vatCertificate'])
+
+export const VAT_DEPENDENT_FIELDS = Object.freeze(['vatNumber', 'vatCertificate'])
 
 export const PROFILE_LTR_FIELDS = Object.freeze([
   'name.en',
@@ -36,6 +41,11 @@ export const PROFILE_LTR_FIELDS = Object.freeze([
   'officialEmail',
   'phone',
   'websiteUrl',
+  'addressBuildingNumber',
+  'addressPostalCode',
+  'addressAdditionalNumber',
+  'addressShortCode',
+  'vatNumber',
 ])
 
 export const PROFILE_FIELD_INPUTS = Object.freeze({
@@ -76,6 +86,48 @@ export const PROFILE_FIELD_INPUTS = Object.freeze({
     hint: 'websiteUrl',
   },
   marketingConsent: { kind: 'checkbox' },
+  addressBuildingNumber: {
+    kind: 'text',
+    inputDir: 'ltr',
+    inputmode: 'numeric',
+    hint: 'addressBuildingNumber',
+  },
+  addressStreet: { kind: 'text', autocomplete: 'address-line1' },
+  addressDistrict: { kind: 'text', autocomplete: 'address-line2' },
+  addressCity: { kind: 'text', autocomplete: 'address-level2' },
+  addressPostalCode: {
+    kind: 'text',
+    inputDir: 'ltr',
+    inputmode: 'numeric',
+    autocomplete: 'postal-code',
+    hint: 'addressPostalCode',
+  },
+  addressAdditionalNumber: {
+    kind: 'text',
+    inputDir: 'ltr',
+    inputmode: 'numeric',
+    hint: 'addressAdditionalNumber',
+  },
+  addressShortCode: { kind: 'text', inputDir: 'ltr', hint: 'addressShortCode' },
+  vatRegistered: { kind: 'radio', options: 'yesNo' },
+  vatNumber: { kind: 'text', inputDir: 'ltr', inputmode: 'numeric', hint: 'vatNumber' },
+})
+
+export const BILLING_PATTERNS = Object.freeze({
+  BUILDING_NUMBER: /^\d{4}$/,
+  POSTAL_CODE: /^\d{5}$/,
+  ADDITIONAL_NUMBER: /^\d{4}$/,
+  SHORT_CODE: /^[A-Za-z]{4}\d{4}$/,
+  VAT_NUMBER: /^3\d{13}3$/,
+})
+
+export const BILLING_TEXT_LIMITS = Object.freeze({ STREET: 150, DISTRICT: 150, CITY: 100 })
+
+export const VAT_CERTIFICATE_RULES = Object.freeze({
+  types: ['application/pdf'],
+  accept: '.pdf,application/pdf',
+  maxBytes: 5 * 1024 * 1024,
+  maxMb: 5,
 })
 
 export const ENTITY_LOGO_RULES = Object.freeze({

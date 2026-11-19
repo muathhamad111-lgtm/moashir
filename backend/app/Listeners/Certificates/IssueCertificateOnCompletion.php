@@ -35,7 +35,7 @@ final class IssueCertificateOnCompletion implements ShouldQueue
 
     public function handle(AssessmentCompleted $event): void
     {
-        if (! $this->settings->accreditedIssuanceEnabled()) {
+        if (! $this->settings->issuesAutomatically()) {
             return;
         }
 

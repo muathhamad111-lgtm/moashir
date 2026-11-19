@@ -6,6 +6,7 @@ import RowActions from '@/components/data-list/RowActions.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import FrozenBadge from '@/components/entities/FrozenBadge.vue'
 import LevelBadge from '@/components/level/LevelBadge.vue'
+import EntityLastAssessment from './EntityLastAssessment.vue'
 import { displayTierOf, reassessmentOf } from '@/utils/levelTier'
 import { ENTITY_INLINE_ACTIONS, useEntityActions } from '@/composables/useEntityActions'
 import { useEntityDisplay } from '@/composables/useEntityDisplay'
@@ -28,7 +29,16 @@ const { rowActionsFor } = useEntityActions()
 const { localized, enumLabel, date, dateTime } = useEntityDisplay()
 
 const COLUMN_SETS = {
-  full: ['name', 'level', 'entityType', 'region', 'status', 'createdAt', 'actions'],
+  full: [
+    'name',
+    'level',
+    'lastAssessment',
+    'entityType',
+    'region',
+    'status',
+    'createdAt',
+    'actions',
+  ],
   contact: ['name', 'level', 'authorizedPersonName', 'officialEmail', 'status', 'actions'],
   deleted: ['name', 'region', 'deletedAt', 'status', 'actions'],
 }
@@ -71,6 +81,9 @@ const columns = computed(() => {
         :reassessment="reassessmentOf(tierOf(item), item.hasOpenAccreditedRequest)"
         :certificate="item.lastLevel"
       />
+    </template>
+    <template #cell-lastAssessment="{ item }">
+      <EntityLastAssessment :assessment="item.lastAccreditedAssessment" />
     </template>
     <template #cell-entityType="{ item }">{{ enumLabel('entityType', item.entityType) }}</template>
     <template #cell-region="{ item }">{{ localized(item.region?.name) }}</template>

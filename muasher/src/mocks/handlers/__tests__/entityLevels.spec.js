@@ -80,6 +80,23 @@ describe('entity level mock — staff list', () => {
     expect(ascending.at(-1)).toBe('diamond')
   })
 
+  it('serves the last completed accredited assessment and sorts by it, never-assessed last', async () => {
+    seedMockSession(ADMIN)
+    const rows = (await call(`${LIST}&sort=-last_assessed_at`)).body.data
+    const assessed = rows.filter((row) => row.last_accredited_assessment)
+    expect(assessed.length).toBeGreaterThan(0)
+    expect(assessed[0].last_accredited_assessment.percent).toMatch(/^\d+\.\d{2}$/)
+    const dates = assessed.map((row) => row.last_accredited_assessment.completed_at)
+    expect(dates).toEqual([...dates].sort().reverse())
+    expect(rows.at(-1).last_accredited_assessment).toBeNull()
+    const byPercent = (await call(`${LIST}&sort=last_assessment_percent`)).body.data
+    const percents = byPercent
+      .filter((row) => row.last_accredited_assessment?.percent)
+      .map((row) => Number(row.last_accredited_assessment.percent))
+    expect(percents).toEqual([...percents].sort((a, b) => a - b))
+    expect(byPercent.at(-1).last_accredited_assessment).toBeNull()
+  })
+
   it('rejects an unknown level and the in-progress bucket with 422', async () => {
     seedMockSession(ADMIN)
     for (const value of ['platinum', 'in_progress']) {

@@ -24,10 +24,6 @@ export function completionSchema(
     notes: string()
       .trim()
       .required(t('validation.required'))
-      .min(
-        ACCREDITED_LIMITS.COMPLETION_NOTES_MIN,
-        t('validation.minChars', { min: ACCREDITED_LIMITS.COMPLETION_NOTES_MIN }),
-      )
       .max(
         ACCREDITED_LIMITS.COMPLETION_NOTES_MAX,
         t('entities.validation.maxChars', { max: ACCREDITED_LIMITS.COMPLETION_NOTES_MAX }),

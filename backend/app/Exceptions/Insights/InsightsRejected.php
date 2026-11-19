@@ -16,6 +16,11 @@ final class InsightsRejected extends ApiException
         return new self(new ApiError(Response::HTTP_CONFLICT, 'insights.result_not_eligible', [], [], ['reason' => $reason->value]));
     }
 
+    public static function kitRequired(): self
+    {
+        return new self(new ApiError(Response::HTTP_FORBIDDEN, 'insights.kit_required'));
+    }
+
     public static function genericTextNotDeletable(): self
     {
         return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'insights.generic_text_not_deletable'));

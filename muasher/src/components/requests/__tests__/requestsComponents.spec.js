@@ -5,6 +5,7 @@ import { createTestGlobals } from '@/test-utils'
 import { useAuthStore } from '@/stores/auth'
 import { sessionUserFor } from '@/test-utils/session'
 import RequestActionsCard from '../RequestActionsCard.vue'
+import RequestAssignButton from '../RequestAssignButton.vue'
 import AssignmentHistoryList from '../AssignmentHistoryList.vue'
 import RequestQueueFilters from '../RequestQueueFilters.vue'
 import ReviewNotices from '@/components/review/ReviewNotices.vue'
@@ -21,16 +22,11 @@ function labels(wrapper) {
 }
 
 describe('RequestActionsCard', () => {
-  it('shows assignment to the follower and hides it from the assessor', () => {
+  it('leaves assignment to the page buttons', () => {
     const detail = { id: 9105, path: 'accredited', status: 'submitted', assignmentHistory: [] }
-    expect(
-      labels(
-        render(RequestActionsCard, { detail, canAssign: true }, { roles: ['request_follower'] }),
-      ),
-    ).toEqual(['Assign an assessor', 'Download all evidence'])
-    expect(
-      labels(render(RequestActionsCard, { detail, canAssign: true }, { roles: ['assessor'] })),
-    ).toEqual(['Download all evidence'])
+    expect(labels(render(RequestActionsCard, { detail }, { roles: ['request_follower'] }))).toEqual(
+      ['Download all evidence'],
+    )
   })
 
   it('names the review button for the assignee by the stage, «Open the review» for others', () => {
@@ -103,12 +99,22 @@ describe('RequestActionsCard', () => {
           RequestActionsCard,
           {
             detail: { id: 9105, path: 'accredited', status: 'submitted', assignmentHistory: [] },
-            canAssign: true,
           },
           { roles: [], extra: { permissions: ['requests.assign.all'] } },
         ),
       ),
     ).toEqual([])
+  })
+})
+
+describe('RequestAssignButton', () => {
+  it('labels a first assignment and a reassignment and emits the mode', async () => {
+    const assign = render(RequestAssignButton, { mode: 'assign' })
+    const reassign = render(RequestAssignButton, { mode: 'reassign' })
+    expect([assign.text(), reassign.text()]).toEqual(['Assign an assessor', 'Reassign'])
+    expect(assign.classes()).toContain('btn--primary')
+    await reassign.trigger('click')
+    expect(reassign.emitted('assign')).toEqual([['reassign']])
   })
 })
 

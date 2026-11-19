@@ -12,17 +12,19 @@ use App\Http\Resources\Files\SignedDownloadResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\Certificates\Certificate;
 use App\Models\Identity\User;
+use App\Services\Certificates\CertificateSettingsReader;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\JsonResponse;
 
 final class CertificateController
 {
-    public function index(IndexCertificatesRequest $request, #[CurrentUser] User $viewer, ListCertificates $listCertificates): JsonResponse
+    public function index(IndexCertificatesRequest $request, #[CurrentUser] User $viewer, ListCertificates $listCertificates, CertificateSettingsReader $settings): JsonResponse
     {
         $filters = $request->filters();
 
         return ApiResponse::paginated($listCertificates->handle($viewer, $filters), CertificateResource::class, [
             'status_counts' => $listCertificates->statusCountsOf($viewer, $filters),
+            'accredited_issuance_mode' => $settings->accreditedIssuanceMode()->value,
         ]);
     }
 

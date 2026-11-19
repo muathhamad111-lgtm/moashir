@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Contracts\Insights\KitActivation;
 use App\Contracts\Platform\DownloadStreamOpener;
 use App\Http\Responses\PhpOutputStreamOpener;
+use App\Services\Insights\UnbuiltKitActivation;
 use App\Services\Platform\Readiness\DatabaseReadiness;
 use App\Services\Platform\Readiness\DiskSpaceReadiness;
 use App\Services\Platform\Readiness\MalwareScannerReadiness;
@@ -35,6 +37,7 @@ final class AppServiceProvider extends ServiceProvider
     {
         $this->app->scoped(RequestContext::class);
         $this->app->bind(DownloadStreamOpener::class, PhpOutputStreamOpener::class);
+        $this->app->bind(KitActivation::class, UnbuiltKitActivation::class);
         $this->app->tag(self::READINESS_CHECKS, ReadinessProbe::TAG);
         Fortify::ignoreRoutes();
     }

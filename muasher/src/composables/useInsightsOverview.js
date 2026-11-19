@@ -1,5 +1,6 @@
 import { ref, unref } from 'vue'
 import { insightsService } from '@/services/insightsService'
+import { isKitLocked } from '@/constants/insights'
 
 const MAX_RESULT_PAGES = 10
 
@@ -26,8 +27,8 @@ export function useInsightsOverview(entityId = null) {
       overview.value = summary.data
       results.value = list
       status.value = 'ready'
-    } catch {
-      status.value = 'error'
+    } catch (error) {
+      status.value = isKitLocked(error) ? 'locked' : 'error'
     }
   }
 

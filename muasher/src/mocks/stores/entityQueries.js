@@ -1,6 +1,7 @@
 import { allEntities, isDeleted } from './entitiesStore'
 import { normalizeSearchText } from './searchIndex'
 import { levelRankOf, matchesLevelFilter } from './entityLevels'
+import { lastAssessedAtOf, lastAssessmentPercentOf } from './entityLastAssessment'
 
 const STATUSES = ['pending-verification', 'pending-review', 'active', 'deactivated', 'rejected']
 
@@ -11,6 +12,8 @@ const SORT_KEYS = {
   governance_grade: (entity) =>
     entity.governanceGrade === null ? -1 : Number(entity.governanceGrade),
   level: levelRankOf,
+  last_assessed_at: lastAssessedAtOf,
+  last_assessment_percent: lastAssessmentPercentOf,
 }
 
 export const SORTABLE = Object.keys(SORT_KEYS).flatMap((key) => [key, `-${key}`])
@@ -56,12 +59,18 @@ function scoped(filters) {
     .filter((entity) => matchesFilters(entity, filters))
 }
 
+function nullsLast(a, b) {
+  if (a === b) return 0
+  return a === null ? 1 : -1
+}
+
 function compareBy(sort) {
   const descending = sort.startsWith('-')
   const valueOf = SORT_KEYS[descending ? sort.slice(1) : sort] ?? SORT_KEYS.created_at
   return (left, right) => {
     const a = valueOf(left)
     const b = valueOf(right)
+    if (a === null || b === null) return nullsLast(a, b) || left.id - right.id
     const order = a < b ? -1 : a > b ? 1 : 0
     return (descending ? -order : order) || left.id - right.id
   }

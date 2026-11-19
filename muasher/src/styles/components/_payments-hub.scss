@@ -348,6 +348,15 @@
   font-size: var(--fs-xs);
 }
 
+.payment-action__icons {
+  @include flex(row, center, flex-start, var(--space-1));
+}
+
+.payment-action--icon {
+  min-inline-size: var(--size-touch-target);
+  padding-inline: 0;
+}
+
 .payment-action {
   @include flex(row, center, center, var(--space-2));
   position: relative;

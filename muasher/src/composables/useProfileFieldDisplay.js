@@ -45,6 +45,16 @@ export function useProfileFieldDisplay() {
     websiteUrl: (profile) => profile.websiteUrl,
     marketingConsent: (profile) =>
       t(`portal.profile.values.${profile.marketingConsent ? 'subscribed' : 'notSubscribed'}`),
+    addressBuildingNumber: (profile) => profile.addressBuildingNumber,
+    addressStreet: (profile) => profile.addressStreet,
+    addressDistrict: (profile) => profile.addressDistrict,
+    addressCity: (profile) => profile.addressCity,
+    addressPostalCode: (profile) => profile.addressPostalCode,
+    addressAdditionalNumber: (profile) => profile.addressAdditionalNumber,
+    addressShortCode: (profile) => profile.addressShortCode,
+    vatRegistered: (profile) => yesNo(profile.vatRegistered),
+    vatNumber: (profile) => profile.vatNumber,
+    vatCertificate: (profile) => profile.vatCertificate?.name,
   }
 
   function valueOf(profile, name) {

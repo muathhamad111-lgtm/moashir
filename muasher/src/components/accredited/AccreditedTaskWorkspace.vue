@@ -101,7 +101,12 @@ watch(assessment, (value) => {
         :refreshing="refreshing"
         @refresh="refresh"
       />
-      <AccreditedStations :stations="stations" :active-id="activeMain?.id ?? null" @select="goTo" />
+      <AccreditedStations
+        compact
+        :stations="stations"
+        :active-id="activeMain?.id ?? null"
+        @select="goTo"
+      />
       <div ref="panelTop" class="accredited-task__main" tabindex="-1">
         <AccreditedStationPanel
           v-if="activeMain && activeStation"

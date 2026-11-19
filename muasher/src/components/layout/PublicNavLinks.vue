@@ -1,5 +1,6 @@
 <script setup>
 import AppIcon from '@/components/ui/AppIcon.vue'
+import PublicNavGroup from './PublicNavGroup.vue'
 
 defineProps({
   links: { type: Array, required: true },
@@ -13,8 +14,15 @@ const emit = defineEmits(['navigate'])
 <template>
   <ul class="public-nav-links" :class="`public-nav-links--${variant}`">
     <li v-for="link in links" :key="link.key">
+      <PublicNavGroup
+        v-if="link.children"
+        :group="link"
+        :is-active="isActive"
+        :variant="variant"
+        @navigate="(event, child) => emit('navigate', event, child)"
+      />
       <a
-        v-if="link.href"
+        v-else-if="link.href"
         class="public-nav-links__link"
         :href="link.href"
         target="_blank"

@@ -14,6 +14,7 @@ import { ROUTE_NAMES } from '@/constants/routeNames'
 import { useAuthStore } from '@/stores/auth'
 import LandingLink from '@/components/landing/LandingLink.vue'
 import LandingThemeSwitch from '@/components/landing/LandingThemeSwitch.vue'
+import LandingNavGroup from '@/components/landing/LandingNavGroup.vue'
 
 const DEEP_LINE = 38
 const READING_LINE = 0.35
@@ -70,8 +71,14 @@ watch(() => route.fullPath, close)
 
       <nav id="lp-nav" class="lp-top__nav" :aria-label="t('nav.publicLabel')">
         <template v-for="link in links" :key="link.key">
+          <LandingNavGroup
+            v-if="link.children"
+            :group="link"
+            :current="current"
+            @navigate="close"
+          />
           <a
-            v-if="link.href"
+            v-else-if="link.href"
             class="lp-top__link"
             :href="link.href"
             target="_blank"

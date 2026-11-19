@@ -40,6 +40,31 @@
   white-space: nowrap;
 }
 
+.request-detail__heading {
+  @include flex(row, flex-end, space-between, var(--space-4));
+  flex-wrap: wrap;
+  inline-size: 100%;
+}
+
+.request-detail__identity {
+  @include flex(column, flex-start, flex-start, var(--space-2));
+  min-inline-size: 0;
+}
+
+.request-detail__reference {
+  font-family: var(--font-latin);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-regular);
+  color: var(--theme-text-muted);
+}
+
+.request-detail__assign {
+  @include flex(row, center, flex-start, var(--space-3));
+  margin-block-start: var(--space-5);
+  padding-block-start: var(--space-4);
+  border-block-start: var(--border-width) solid var(--theme-border);
+}
+
 .request-detail__entity {
   @include flex(row, center, flex-start, var(--space-2));
   flex-wrap: wrap;

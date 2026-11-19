@@ -11,6 +11,7 @@ use App\Enums\Identity\RoleKey;
 use App\Integrations\Fakes\FakeFileScanner;
 use App\Models\Audit\Audit;
 use App\Models\Cms\CmsSection;
+use App\Models\Cms\SiteSettings;
 use App\Models\Files\StoredFile;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
@@ -153,7 +154,7 @@ it('stores the platform name, description and header menu, and serves them with 
         ->assertJsonPath('data.site_settings.platform_name', ['ar' => 'مؤشر', 'en' => 'Moashir'])
         ->assertJsonPath('data.site_settings.platform_description.en', 'A digital platform that measures the institutional maturity of civil associations, civil foundations and endowments against the Charitable Work Excellence Model.')
         ->assertJsonCount(6, 'data.site_settings.header_links')
-        ->assertJsonPath('data.site_settings.header_links.0', ['label' => ['ar' => 'الرئيسية', 'en' => 'Home'], 'url' => '/'])
+        ->assertJsonPath('data.site_settings.header_links.0', ['label' => ['ar' => 'الرئيسية', 'en' => 'Home'], 'url' => '/', 'children' => []])
         ->assertJsonPath('data.site_settings.header_links.4.url', '/kpis');
 
     $this->patchJson('/api/v1/admin/content/site-settings', [
@@ -175,6 +176,53 @@ it('stores the platform name, description and header menu, and serves them with 
 
     $audit = Audit::query()->where('event', AuditEvent::CmsSiteSettingsUpdated->value)->sole();
     expect(array_keys($audit->new_values))->toEqualCanonicalizing(['platform_name', 'platform_description', 'header_links']);
+});
+
+it('stores a header sub-menu and hidden links, and serves only the visible ones', function (): void {
+    cmsSection();
+    $editor = contentOfficer();
+    publishPage(CmsPageKey::Home, $editor);
+    $kpis = ['label' => ['ar' => 'مؤشرات الأداء', 'en' => 'Performance indicators'], 'url' => '/kpis'];
+
+    $this->patchJson('/api/v1/admin/content/site-settings', [
+        'header_links' => [
+            ['label' => ['ar' => 'الرئيسية', 'en' => 'Home'], 'url' => '/', 'is_visible' => true],
+            ['label' => ['ar' => 'عن المنصة', 'en' => 'About'], 'url' => '/ignored', 'is_visible' => true, 'children' => [
+                [...$kpis, 'is_visible' => true],
+                ['label' => ['ar' => 'الخصوصية', 'en' => 'Privacy'], 'url' => '/privacy', 'is_visible' => false],
+            ]],
+            ['label' => ['ar' => 'مخفي', 'en' => 'Hidden'], 'url' => '/#paths', 'is_visible' => false],
+            ['label' => ['ar' => 'مجموعة مخفية الروابط', 'en' => 'Empty group'], 'is_visible' => true, 'children' => [[...$kpis, 'is_visible' => false]]],
+        ],
+        'quick_links' => [
+            [...$kpis, 'is_visible' => false],
+            ['label' => ['ar' => 'تواصل معنا', 'en' => ''], 'url' => '#contact'],
+        ],
+    ])->assertOk()
+        ->assertJsonCount(4, 'data.header_links')
+        ->assertJsonPath('data.header_links.1.url', null)
+        ->assertJsonPath('data.header_links.1.children.1', ['label' => ['ar' => 'الخصوصية', 'en' => 'Privacy'], 'is_visible' => false, 'url' => '/privacy'])
+        ->assertJsonPath('data.header_links.2.is_visible', false)
+        ->assertJsonPath('data.quick_links.0.is_visible', false)
+        ->assertJsonPath('data.quick_links.1.is_visible', true);
+
+    $this->getJson('/api/v1/content/home')
+        ->assertJsonCount(2, 'data.site_settings.header_links')
+        ->assertJsonPath('data.site_settings.header_links.1', ['label' => ['ar' => 'عن المنصة', 'en' => 'About'], 'url' => null, 'children' => [$kpis]])
+        ->assertJsonPath('data.site_settings.quick_links', [['label' => ['ar' => 'تواصل معنا', 'en' => 'تواصل معنا'], 'url' => '#contact']]);
+});
+
+it('treats links saved before the visibility switch as visible', function (): void {
+    cmsSection();
+    $editor = contentOfficer();
+    publishPage(CmsPageKey::Home, $editor);
+    SiteSettings::current()->forceFill(['quick_links' => [['label' => ['ar' => 'مؤشرات الأداء', 'en' => 'KPIs'], 'url' => '/kpis']]])->save();
+    signIn($editor);
+
+    $this->getJson('/api/v1/admin/content/site-settings')
+        ->assertJsonPath('data.quick_links.0.is_visible', true)
+        ->assertJsonPath('data.header_links.0.children', []);
+    $this->getJson('/api/v1/content/home')->assertJsonPath('data.site_settings.quick_links.0.url', '/kpis');
 });
 
 it('lets the content officer empty the header menu', function (): void {
@@ -200,6 +248,12 @@ it('rejects unknown keys and invalid site settings values', function (array $pay
     'unsafe header link' => [['header_links' => [['label' => ['ar' => 'رابط', 'en' => 'Link'], 'url' => 'javascript:void(0)']]], 'header_links.0.url'],
     'header link label too long' => [['header_links' => [['label' => ['ar' => str_repeat('ر', 41), 'en' => 'Link'], 'url' => '/']]], 'header_links.0.label.ar'],
     'too many header links' => [['header_links' => array_fill(0, 9, ['label' => ['ar' => 'رابط', 'en' => 'Link'], 'url' => '/'])], 'header_links'],
+    'header link without link or children' => [['header_links' => [['label' => ['ar' => 'رابط', 'en' => 'Link'], 'url' => null, 'children' => []]]], 'header_links.0.url'],
+    'unsafe sub-menu link' => [['header_links' => [['label' => ['ar' => 'المزيد', 'en' => 'More'], 'children' => [['label' => ['ar' => 'رابط', 'en' => 'Link'], 'url' => 'javascript:void(0)']]]]], 'header_links.0.children.0.url'],
+    'sub-menu of a sub-menu' => [['header_links' => [['label' => ['ar' => 'المزيد', 'en' => 'More'], 'children' => [['label' => ['ar' => 'رابط', 'en' => 'Link'], 'url' => '/kpis', 'children' => []]]]]], 'header_links.0.children.0'],
+    'too many sub-menu links' => [['header_links' => [['label' => ['ar' => 'المزيد', 'en' => 'More'], 'children' => array_fill(0, 9, ['label' => ['ar' => 'رابط', 'en' => 'Link'], 'url' => '/kpis'])]]], 'header_links.0.children'],
+    'non-boolean visibility' => [['quick_links' => [['label' => ['ar' => 'رابط', 'en' => 'Link'], 'url' => '/kpis', 'is_visible' => 'sometimes']]], 'quick_links.0.is_visible'],
+    'children on a footer link' => [['quick_links' => [['label' => ['ar' => 'رابط', 'en' => 'Link'], 'url' => '/kpis', 'children' => []]]], 'quick_links.0'],
     'platform name too long' => [['platform_name' => ['ar' => str_repeat('م', 121), 'en' => 'Moashir']], 'platform_name.ar'],
     'empty Arabic platform name' => [['platform_name' => ['ar' => '', 'en' => 'Moashir']], 'platform_name.ar'],
     'empty English platform description' => [['platform_description' => ['ar' => 'وصف', 'en' => '  ']], 'platform_description.en'],

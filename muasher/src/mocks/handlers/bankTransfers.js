@@ -8,6 +8,7 @@ import {
   signedInActor,
 } from '../stores/finance/financeAccess'
 import { findFile, transferOf } from '../stores/finance/financeState'
+import { findEntity } from '../stores/entitiesStore'
 import { financeReject, financeRoute, readJson } from '../stores/finance/financeRejection'
 import { page, validatedPaging } from '../stores/finance/financeQueries'
 import { signedDownloadOf } from '../stores/finance/signedFiles'
@@ -49,6 +50,13 @@ function reviewer() {
 function cleanProofOf(payment) {
   const file = findFile(transferOf(payment.id).proofFileId)
   if (!file || file.scanStatus !== 'clean') throw financeReject.fileNotClean()
+  return file
+}
+
+function payerCertificateOf(payment) {
+  const certificate = findEntity(payment.entityId)?.vatCertificate
+  const file = certificate ? findFile(certificate.id) : null
+  if (!file) throw financeReject.vatCertificateMissing()
   return file
 }
 
@@ -130,6 +138,15 @@ export const bankTransfersHandlers = [
       const user = viewer()
       const payment = reviewablePayment(params.payment)
       return envelope(signedDownloadOf(user, cleanProofOf(payment)))
+    }),
+  ),
+
+  http.post(
+    `${BASE}/:payment/vat-certificate/download`,
+    financeRoute(({ params }) => {
+      const user = viewer()
+      const payment = reviewablePayment(params.payment)
+      return envelope(signedDownloadOf(user, payerCertificateOf(payment)))
     }),
   ),
 

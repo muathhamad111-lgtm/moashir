@@ -83,7 +83,12 @@ export function toAccreditedForm(raw = {}) {
     completionRequest: toCompletionRequest(raw.completionRequest),
     uploadLimits: toUploadLimits(raw.uploadLimits),
     criteriaUpdate: toCriteriaUpdate(raw.criteriaUpdate),
+    passedStations: toPassedStations(raw.passedStations),
   }
+}
+
+export function toPassedStations(raw) {
+  return (raw ?? []).map(Number)
 }
 
 export function toCvSaved(raw = {}) {

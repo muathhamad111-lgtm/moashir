@@ -21,6 +21,10 @@ export const ENTITY_SORTS = [
   'governance_grade',
   '-level',
   'level',
+  '-last_assessed_at',
+  'last_assessed_at',
+  '-last_assessment_percent',
+  'last_assessment_percent',
 ]
 
 export const EMAIL_CHANGE_STATUSES = {

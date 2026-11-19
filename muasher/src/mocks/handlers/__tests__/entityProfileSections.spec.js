@@ -56,11 +56,11 @@ afterAll(() => server.close())
 resetProfileScenarioAfterEach()
 
 describe('entity profile sections mock (Task-82b contract)', () => {
-  it('counts 15 fields and reports the incomplete mock at 60 % by section', async () => {
+  it('counts 24 fields for a VAT-registered entity and reports the incomplete mock at 75 % by section', async () => {
     startWithIncompleteProfile()
     seedMockSession(NAMAA)
     const { profile_completion: completion } = (await call('GET', '/entities/me')).body.data
-    expect(completion).toMatchObject({ percent: 60, counted: 15, completed_count: 9 })
+    expect(completion).toMatchObject({ percent: 75, counted: 24, completed_count: 18 })
     expect(completion.sections).toEqual([
       {
         key: 'identity',
@@ -76,10 +76,11 @@ describe('entity profile sections mock (Task-82b contract)', () => {
         missing_fields: ['governance_grade', 'employees_count', 'annual_beneficiaries_count'],
       },
       { key: 'contact', state: 'complete', missing_count: 0, missing_fields: [] },
+      { key: 'billing', state: 'complete', missing_count: 0, missing_fields: [] },
     ])
   })
 
-  it('saves one section, reports the changed fields and moves to 80 %', async () => {
+  it('saves one section, reports the changed fields and moves to 87 %', async () => {
     startWithIncompleteProfile()
     seedMockSession(NAMAA)
     const saved = await call(
@@ -92,7 +93,7 @@ describe('entity profile sections mock (Task-82b contract)', () => {
       section: 'governance',
       changed_fields: ['governance_grade', 'employees_count', 'annual_beneficiaries_count'],
     })
-    expect(saved.body.data.profile_completion.percent).toBe(80)
+    expect(saved.body.data.profile_completion.percent).toBe(87)
   })
 
   it('answers 409 profile.section_stale with the current revision', async () => {

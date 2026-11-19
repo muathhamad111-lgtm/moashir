@@ -7,7 +7,7 @@ use App\Enums\Entities\ProfileFieldRequirement;
 use App\Enums\Entities\ProfileSection;
 use App\Enums\Entities\ProfileSectionField;
 
-it('lists the four sections and their fields in display order', function (): void {
+it('lists the five sections and their fields in display order', function (): void {
     $fields = array_combine(
         array_map(static fn (ProfileSection $section): string => $section->value, ProfileSection::cases()),
         array_map(static fn (ProfileSection $section): array => array_map(static fn (ProfileSectionField $field): string => $field->value, $section->fields()), ProfileSection::cases()),
@@ -18,6 +18,10 @@ it('lists the four sections and their fields in display order', function (): voi
         'classification' => ['entity_type', 'development_sector', 'org_size', 'region_id', 'city_id'],
         'governance' => ['governance_grade', 'employees_count', 'annual_beneficiaries_count', 'has_strategic_plan'],
         'contact' => ['official_email', 'authorized_person_name', 'phone', 'website_url', 'marketing_consent'],
+        'billing' => [
+            'address_building_number', 'address_street', 'address_district', 'address_city', 'address_postal_code',
+            'address_additional_number', 'address_short_code', 'vat_registered', 'vat_number', 'vat_certificate',
+        ],
     ]);
 });
 
@@ -44,12 +48,30 @@ it('defines one requirement level per field', function (ProfileSectionField $fie
     [ProfileSectionField::Phone, ProfileFieldRequirement::Optional],
     [ProfileSectionField::WebsiteUrl, ProfileFieldRequirement::Optional],
     [ProfileSectionField::MarketingConsent, ProfileFieldRequirement::Optional],
+    [ProfileSectionField::AddressBuildingNumber, ProfileFieldRequirement::Required],
+    [ProfileSectionField::AddressStreet, ProfileFieldRequirement::Required],
+    [ProfileSectionField::AddressDistrict, ProfileFieldRequirement::Required],
+    [ProfileSectionField::AddressCity, ProfileFieldRequirement::Required],
+    [ProfileSectionField::AddressPostalCode, ProfileFieldRequirement::Required],
+    [ProfileSectionField::AddressAdditionalNumber, ProfileFieldRequirement::Required],
+    [ProfileSectionField::AddressShortCode, ProfileFieldRequirement::Optional],
+    [ProfileSectionField::VatRegistered, ProfileFieldRequirement::Required],
+    [ProfileSectionField::VatNumber, ProfileFieldRequirement::Required],
+    [ProfileSectionField::VatCertificate, ProfileFieldRequirement::Required],
 ]);
 
-it('counts fifteen fields and edits every field but the official e-mail in its section', function (): void {
-    expect(ProfileSectionField::counted())->toHaveCount(15)
+it('can count twenty-four fields and edits every field but the official e-mail and the VAT certificate in its section', function (): void {
+    expect(ProfileSectionField::counted())->toHaveCount(24)
         ->and(array_map(static fn (ProfileSectionField $field): string => $field->value, ProfileSection::Contact->editableFields()))
-        ->toBe(['authorized_person_name', 'phone', 'website_url', 'marketing_consent']);
+        ->toBe(['authorized_person_name', 'phone', 'website_url', 'marketing_consent'])
+        ->and(array_map(static fn (ProfileSectionField $field): string => $field->value, ProfileSection::Billing->editableFields()))
+        ->not->toContain('vat_certificate');
+});
+
+it('makes only the VAT number and certificate depend on the VAT registration answer', function (): void {
+    $dependent = array_values(array_filter(ProfileSectionField::cases(), static fn (ProfileSectionField $field): bool => $field->dependsOnVatRegistration()));
+
+    expect($dependent)->toBe([ProfileSectionField::VatNumber, ProfileSectionField::VatCertificate]);
 });
 
 it('maps every history field to one section', function (): void {
@@ -63,6 +85,10 @@ it('maps every history field to one section', function (): void {
         ['entity_type', 'development_sector', 'org_size', 'region_id', 'city_id'],
         ['governance_grade', 'employees_count', 'annual_beneficiaries_count', 'has_strategic_plan'],
         ['website_url', 'authorized_person_name', 'phone', 'marketing_consent'],
+        [
+            'address_building_number', 'address_street', 'address_district', 'address_city', 'address_postal_code',
+            'address_additional_number', 'address_short_code', 'vat_registered', 'vat_number',
+        ],
     ])->and(array_merge(...$history))->toHaveCount(count(EntityProfileField::cases()));
 });
 

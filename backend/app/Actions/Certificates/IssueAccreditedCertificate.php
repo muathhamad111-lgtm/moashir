@@ -15,14 +15,12 @@ use App\Models\Assessments\AssessmentResultSnapshot;
 use App\Models\Certificates\Certificate;
 use App\Services\Assessments\AssessmentRowLock;
 use App\Services\Certificates\CertificateIssuer;
-use App\Services\Certificates\CertificateSettingsReader;
 use App\Services\Certificates\CertificateSupersession;
 use Illuminate\Support\Facades\DB;
 
 final readonly class IssueAccreditedCertificate
 {
     public function __construct(
-        private CertificateSettingsReader $settings,
         private AssessmentRowLock $rows,
         private CertificateIssuer $issuer,
         private CertificateSupersession $supersession,
@@ -30,10 +28,6 @@ final readonly class IssueAccreditedCertificate
 
     public function handle(Assessment $assessment, ?int $issuerId): Certificate
     {
-        if (! $this->settings->accreditedIssuanceEnabled()) {
-            throw CertificateRejected::issuanceDisabled();
-        }
-
         return DB::transaction(function () use ($assessment, $issuerId): Certificate {
             $locked = $this->rows->lock($assessment->id);
             $result = $this->completedResultOf($locked);

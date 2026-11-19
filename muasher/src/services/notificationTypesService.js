@@ -10,6 +10,7 @@ export function toNotificationType(raw = {}) {
     module: raw.module ?? '',
     category: raw.category ?? '',
     channels: raw.channels ?? [],
+    enabledChannels: raw.enabledChannels ?? raw.channels ?? [],
     audiences: raw.audiences ?? [],
     isMandatory: raw.isMandatory === true,
     userConfigurableChannels: raw.userConfigurableChannels ?? [],

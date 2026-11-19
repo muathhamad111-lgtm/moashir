@@ -78,7 +78,7 @@ it('creates a bank-transfer request with its receipt under review and tells the 
         ->assertJsonPath('meta.idempotent_replay', false)
         ->assertJsonPath('data.channel', 'bank_transfer')
         ->assertJsonPath('data.status', 'under_review')
-        ->assertJsonPath('data.is_test', true)
+        ->assertJsonPath('data.is_test', false)
         ->assertJsonPath('data.expires_at', null)
         ->assertJsonPath('data.checkout', null)
         ->assertJsonPath('data.pricing.total', ACCREDITED_TOTAL)
@@ -356,10 +356,10 @@ it('refuses to cancel a bound card order, a bank transfer or another entity orde
     switchTo(financeOfficer())->postJson('/api/v1/payments/'.$paid->public_id.'/cancel')->assertForbidden();
 });
 
-it('uses live mode for bank transfers only in real production', function (): void {
+it('opens bank transfers in live mode in every environment', function (): void {
     ['owner' => $owner, 'account' => $account] = transferPayingEntity();
 
-    expect(submittedTransfer($owner, $account)->mode)->toBe(IntegrationMode::Test);
+    expect(submittedTransfer($owner, $account)->mode)->toBe(IntegrationMode::Live);
 });
 
 it('counts the bank-transfer request as the open order of its entity in My Payments', function (): void {

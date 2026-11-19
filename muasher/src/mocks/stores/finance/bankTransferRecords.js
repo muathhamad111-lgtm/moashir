@@ -3,6 +3,8 @@ import { linkedRequestOf } from '../accredited/requestPayments'
 import { riyadhDateKey } from '@/utils/datetime'
 import { financeEntityEmails } from '../../fixtures/finance'
 import { findEntity } from '../entitiesStore'
+import { entityBillingOf } from '../entitySerializers'
+import { hasCompleteBilling } from '../entityProfileSections'
 import { financeState, findBankAccount, findFile, receiptOf, transferOf } from './financeState'
 import { entityNameOf, entityReferenceOf } from './receiptSnapshot'
 
@@ -130,8 +132,14 @@ export function staffTransferResource(payment, { detail = false } = {}) {
     paidAt: payment.paidAt,
     rejectedAt: payment.rejectedAt ?? null,
     receipt: receiptSummaryOf(payment),
-    ...(detail ? { linkedRequest: linkedRequestOf(payment.id) } : {}),
+    ...(detail ? { linkedRequest: linkedRequestOf(payment.id), ...billingOfPayer(payment) } : {}),
   }
+}
+
+function billingOfPayer(payment) {
+  const entity = findEntity(payment.entityId)
+  if (!entity) return { billing: null, billingComplete: false }
+  return { billing: entityBillingOf(entity), billingComplete: hasCompleteBilling(entity) }
 }
 
 export function pendingTransfersOn(accountId) {

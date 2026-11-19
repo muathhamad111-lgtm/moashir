@@ -16,7 +16,11 @@ use Illuminate\Database\UniqueConstraintViolationException;
 
 final readonly class EntityProfileWriter
 {
-    public function __construct(private EntityProfileDiff $diff, private MarketingConsentRecorder $consent) {}
+    public function __construct(
+        private EntityProfileDiff $diff,
+        private MarketingConsentRecorder $consent,
+        private EntityVatCertificateDetacher $vatCertificates,
+    ) {}
 
     public function writeProfile(Entity $entity, EntityProfileData $profile, EntityContactData $contact, ?User $actor): EntityProfileChangeSet
     {
@@ -32,6 +36,7 @@ final readonly class EntityProfileWriter
             ->merge($this->diff->ofConsent($entity, $write->marketingConsent));
 
         $entity->fill($attributes);
+        $this->vatCertificates->detachUnlessRegistered($entity);
         $this->writeContact($owner, $write->contact);
         $entity->syncProfileCompletedAt();
         $this->save($entity);

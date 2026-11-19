@@ -15,6 +15,7 @@ use App\Enums\Files\StoredFilePurpose;
 use App\Enums\Finance\PaymentChannel;
 use App\Enums\Finance\PaymentPurpose;
 use App\Enums\Finance\TransferRejectionReason;
+use App\Enums\Integrations\IntegrationMode;
 use App\Enums\Settings\SettingKey;
 use App\Exceptions\Console\DemoDataRefused;
 use App\Models\Entities\Entity;
@@ -88,6 +89,6 @@ final readonly class DemoBankTransferInstaller
         );
         $submission = new BankTransferSubmission(PaymentPurpose::Accredited, Str::uuid()->toString(), $account->public_id, $quote, $proof);
 
-        return DB::transaction(fn (): Payment => $this->opener->open($owner->user, $entity, $submission));
+        return DB::transaction(fn (): Payment => $this->opener->open($owner->user, $entity, $submission, IntegrationMode::Test));
     }
 }

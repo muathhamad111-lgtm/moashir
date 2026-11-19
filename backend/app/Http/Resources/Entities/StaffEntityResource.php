@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources\Entities;
 
 use App\Models\Entities\Entity;
+use App\Support\Assessments\LastAccreditedAssessmentPresenter;
 use App\Support\Certificates\EntityLevelPresenter;
 use App\Support\Entities\EntityPresenter;
 use Illuminate\Http\Request;
@@ -27,9 +28,12 @@ final class StaffEntityResource extends JsonResource
             ...EntityLevelPresenter::of($entity),
             'last_level' => EntityLevelPresenter::lastLevelOf($entity),
             'has_open_accredited_request' => EntityLevelPresenter::hasOpenAccreditedRequest($entity),
+            'last_accredited_assessment' => LastAccreditedAssessmentPresenter::of($entity),
             ...EntityPresenter::profile($entity),
             ...EntityPresenter::registry($entity, $request),
             ...EntityPresenter::contact($entity),
+            ...EntityPresenter::billing($entity, $request),
+            'billing_complete' => $entity->hasCompleteBilling(),
             'marketing_consent' => $entity->marketing_consent_at !== null,
             'approved_at' => $entity->approved_at?->toIso8601String(),
             'rejected_at' => $entity->rejected_at?->toIso8601String(),

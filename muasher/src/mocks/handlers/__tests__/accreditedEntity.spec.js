@@ -67,6 +67,7 @@ const FORM_KEYS = [
   'cv',
   'evidence',
   'missing',
+  'passed_stations',
   'upload_limits',
 ]
 const EVIDENCE_KEYS = [
@@ -234,6 +235,26 @@ describe('accredited mock — entity writes', () => {
     expect((await call('PUT', '/assessments/9101/cv', { cv: { 802: 'x' } })).status).toBe(403)
     seedMockSession(ALBIRR)
     expect((await call('PUT', '/assessments/9101/cv', { cv: { 802: 'x' } })).status).toBe(404)
+  })
+
+  it('records passed stations once, refuses unbound mains and keeps them to the owner', async () => {
+    seedMockSession(NAMAA)
+    const form = await call('GET', '/assessments/9101/form')
+    expect(form.body.data.passed_stations).toEqual([])
+    const [first] = form.body.data.criteria.mains
+    const passed = await call('PUT', `/assessments/9101/stations/${first.id}/passed`)
+    expect([passed.status, passed.body.data.passed_stations]).toEqual([200, [first.id]])
+    const again = await call('PUT', `/assessments/9101/stations/${first.id}/passed`)
+    expect(again.body.data.passed_stations).toEqual([first.id])
+    expect((await call('GET', '/assessments/9101/form')).body.data.passed_stations).toEqual([
+      first.id,
+    ])
+    const unknown = await call('PUT', '/assessments/9101/stations/99999/passed')
+    expect([unknown.status, unknown.body.code]).toEqual([422, 'assessment.main_not_in_version'])
+    seedMockSession(FOLLOWER)
+    expect((await call('PUT', `/assessments/9101/stations/${first.id}/passed`)).status).toBe(403)
+    seedMockSession(ALBIRR)
+    expect((await call('PUT', `/assessments/9101/stations/${first.id}/passed`)).status).toBe(404)
   })
 
   it('refuses submission with the missing items, then submits with a due date', async () => {

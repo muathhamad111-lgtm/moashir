@@ -1,4 +1,8 @@
-import { PROFILE_REQUIREMENTS, PROFILE_SECTION_STATES } from '@/constants/entityProfile'
+import {
+  PROFILE_REQUIREMENTS,
+  PROFILE_SECTION_STATES,
+  VAT_DEPENDENT_FIELDS,
+} from '@/constants/entityProfile'
 
 const EMPTY_STATE = Object.freeze({
   state: PROFILE_SECTION_STATES.COMPLETE,
@@ -46,6 +50,14 @@ export function sectionViewsOf(profile) {
       fields: section.fields.map((field) => fieldView(field, state.missingFields)),
     }
   })
+}
+
+export function isFieldShown(name, vatRegistered) {
+  return vatRegistered === true || !VAT_DEPENDENT_FIELDS.includes(name)
+}
+
+export function shownFieldsOf(fields, vatRegistered) {
+  return fields.filter((field) => isFieldShown(field.name, vatRegistered))
 }
 
 export function firstMissingOf(sections) {

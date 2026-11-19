@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Cms;
 
+use App\Data\Notifications\NoticeText;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Notifications\NotificationCode;
 use App\Support\ValueObjects\LocalizedText;
@@ -21,6 +22,7 @@ final readonly class ContentNotice
         public LocalizedText $body,
         public string $link,
         public array $recipientRoles,
+        public ?NoticeText $text = null,
     ) {}
 
     /**
@@ -30,12 +32,8 @@ final readonly class ContentNotice
     {
         $key = 'notifications.content.'.$code->value;
 
-        return new self(
-            $code,
-            LocalizedText::fromTranslationWith($key.'.title', $replacements),
-            LocalizedText::fromTranslationWith($key.'.body', $replacements),
-            $link,
-            self::RECIPIENTS,
-        );
+        $text = new NoticeText($key, $replacements);
+
+        return new self($code, $text->title(), $text->body(), $link, self::RECIPIENTS, $text);
     }
 }

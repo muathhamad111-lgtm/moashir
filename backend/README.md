@@ -141,7 +141,7 @@ variable switches it off, and the table holds digests only, never a password. Ma
 | `SESSION_IDLE_SUPER_ADMIN_MINUTES`, `SESSION_IDLE_STAFF_MINUTES`, `SESSION_IDLE_ENTITY_MINUTES`, `SESSION_ABSOLUTE_HOURS` | Idle (15 / 30 / 60) and absolute (12 h) session timeouts |
 | `AUTH_OTP_EXPIRY_SECONDS`, `AUTH_OTP_RESEND_COOLDOWN_SECONDS`, `AUTH_OTP_MAX_ATTEMPTS` | OTP policy (300 s, 60 s, 5) |
 | `AUTH_LOCKOUT_MAX_ATTEMPTS`, `AUTH_LOCKOUT_MINUTES` | Lockout policy (5 attempts, 15 min) |
-| `AUTH_PASSWORD_RESET_TTL_MINUTES`, `AUTH_INVITATION_TTL_HOURS` | Reset link (60 min) and invitation (72 h) validity |
+| `AUTH_PASSWORD_RESET_TTL_MINUTES`, `AUTH_INVITATION_TTL_MINUTES` | Reset link (60 min) and invitation (60 min, capped at 60 in code; the old `AUTH_INVITATION_TTL_HOURS` is ignored) validity |
 | `SUPER_ADMIN_INITIAL_EMAIL`, `SUPER_ADMIN_MAX_ACCOUNTS` | Console bootstrap of the first Super Admin; account cap |
 | `SECURITY_ALERT_MAIL` | Security mailbox that receives SEC-xx alerts in addition to the Super Admins |
 | `SECURITY_HSTS_MAX_AGE` | HSTS max-age sent on HTTPS responses |
@@ -665,6 +665,54 @@ organisation attributes; retention = the entity's lifetime, cleared by the perma
 - Demo entities (`moashir:demo:install`) carry fictional licence numbers `880000101`–`880000103`, founding dates and
   `example.sa` websites.
 
+### Billing details (report row 49, operator decision 2026-11-19)
+Finance issues the official tax document from its own system (the platform issues payment receipts only, no ZATCA).
+The entity keeps the data Finance needs in the profile section `billing`. Incomplete billing data WARNS and never
+blocks a payment. Data dictionary (all on `entities`, migration `2026_11_19_200000`; organisation data, not personal
+data; retention = the entity's lifetime, cleared by the permanent deletion):
+
+| Column | Type | Rule | NDMO class |
+|---|---|---|---|
+| `address_building_number` | `varchar(4)` null | exactly 4 Western digits; CHECK `^[0-9]{4}$` | I |
+| `address_street` | `varchar(150)` null | free text | I |
+| `address_district` | `varchar(150)` null | free text | I |
+| `address_city` | `varchar(100)` null | free text (the national-address city; `city_id` stays the classification city) | I |
+| `address_postal_code` | `varchar(5)` null | exactly 5 Western digits; CHECK `^[0-9]{5}$` | I |
+| `address_additional_number` | `varchar(4)` null | exactly 4 Western digits; CHECK `^[0-9]{4}$` | I |
+| `address_short_code` | `varchar(8)` null | optional; 4 Latin letters + 4 digits, stored upper-case; CHECK `^[A-Z]{4}[0-9]{4}$` | I |
+| `vat_registered` | `boolean` null | the answer to «هل جهتك مسجّلة في ضريبة القيمة المضافة؟»; `null` = not answered | I |
+| `vat_number` | `varchar(15)` null | 15 digits starting and ending with 3 (`Support\ValueObjects\VatRegistrationNumber`); CHECK: only when `vat_registered` is true | I |
+| `vat_certificate_file_id` | `bigint` null → `stored_files.id` (restrict) | purpose `vat_certificate`, PDF only, private disk, class C; CHECK: only when `vat_registered` is true | C |
+
+- **Section.** `PATCH /entities/me/profile/billing` (`UpdateBillingSectionRequest`): every key present, the six address
+  parts required, `address_short_code` nullable, `vat_registered` required boolean, `vat_number` `required_if_accepted`
+  and `prohibited_if_declined` on `vat_registered`. Answering «no» clears the VAT number and removes the certificate in
+  the same save (`Services\Entities\EntityVatCertificateDetacher`, audited `entity.vat_certificate_removed`, file
+  removed after commit). History rows for the nine editable fields; `entity.profile_updated` audit as for the other
+  sections.
+- **Completion.** The six address parts and `vat_registered` are `required` profile fields (22 counted fields). The VAT
+  number and the certificate are counted only when `vat_registered` is true (24 counted fields)
+  (`ProfileSectionField::dependsOnVatRegistration()`, `ProfileFieldValues::countedFields()`). `billing_complete` =
+  the billing section has no missing field (`Entity::hasCompleteBilling()`).
+- **Certificate.** `POST /entities/me/vat-certificate` (multipart `file`, PDF only, ≤ `moashir.entities.vat_certificate.max_kb`
+  = 5120 KB; extension, detected type and `%PDF` magic bytes checked, ClamAV scan through `FileIntake`, random path
+  `files/vat-certificate/YYYY/MM/<uuid>.pdf`, attached to the entity) → 201 with the own entity; refused with 409
+  `entity.vat_not_registered` unless `vat_registered` is true (checked again under the row lock). The previous
+  certificate is removed after commit. `DELETE /entities/me/vat-certificate` → 200 (idempotent). Audits
+  `entity.vat_certificate_uploaded` (public ids, MIME type, size, SHA-256) and `entity.vat_certificate_removed`.
+  Policy `can:updateOwn`; upload `throttle:uploads`, delete `throttle:sensitive`.
+- **Downloads.** `POST /entities/me/vat-certificate/download` (`can:viewOwn`) and
+  `POST /finance/bank-transfers/{bankTransfer}/vat-certificate/download` (`can:viewTransfers`) answer a signed
+  `GET /files/{file}/download` link (5 minutes, bound to the viewer); no certificate → 404
+  `entity.vat_certificate_missing`. The file policy (`EntityPolicy::viewVatCertificate`) allows the owner and Finance
+  (`finance.transfers.review` or `finance.operations.view`) only; anyone else → 404.
+- **Read.** `OwnEntityResource` and `StaffEntityResource` carry the billing keys flat (`address_*`, `vat_registered`,
+  `vat_number`, `vat_certificate { id, name, size_bytes, uploaded_at } | null`) and `billing_complete`. The staff
+  bank-transfer detail (`GET /finance/bank-transfers/{bankTransfer}`, also the approve / reject answers) carries
+  `billing { …the same keys… }` and `billing_complete`.
+- **Permanent deletion.** `EntityVatCertificateEraser` (erasure step) removes the certificate; the eraser clears the
+  billing columns.
+
 ### Official e-mail change (Q-103)
 `POST /entities/me/email/change { new_email }` sends an OTP to the NEW address. `POST /entities/me/email/confirm
 { challenge_id, code }` then follows the policy snapshot taken at request time: `requires_approval` → status
@@ -682,16 +730,18 @@ no notification. A staff decision after the cancellation answers 409 `state.tran
 - **Sections** (`Enums\Entities\ProfileSection`): `identity` (`name.ar`, `name.en`, `unified_number`, `license_number`,
   `founded_on`), `classification` (`entity_type`, `development_sector`, `org_size`, `region_id`, `city_id`),
   `governance` (`governance_grade`, `employees_count`, `annual_beneficiaries_count`, `has_strategic_plan`), `contact`
-  (`official_email`, `authorized_person_name`, `phone`, `website_url`, `marketing_consent`). Each field
+  (`official_email`, `authorized_person_name`, `phone`, `website_url`, `marketing_consent`), `billing` (see "Billing
+  details"). Each field
   (`Enums\Entities\ProfileSectionField`) has ONE requirement level (`ProfileFieldRequirement`: `required`,
-  `completion`, `optional`); `required` + `completion` = the 15 counted fields.
+  `completion`, `optional`); `required` + `completion` = the counted fields (22, or 24 when the entity is registered
+  for VAT).
 - **`GET /entities/me`** adds `can_edit` (the `updateOwn` policy on the loaded entity), `profile_sections [{ key,
   revision, fields[{ key, requirement }] }]` and `profile_completion { percent, counted, completed_count, sections[{ key,
-  state: complete|incomplete, missing_count, missing_fields[] }] }`. `percent` = floor(100 × completed_count / 15). A
+  state: complete|incomplete, missing_count, missing_fields[] }] }`. `percent` = floor(100 × completed_count / counted). A
   year-only founding record (`founded_on` null) is missing; `has_strategic_plan: false` is answered, `null` is missing;
   `0` is a filled number. One place: `Support\Entities\ProfileFieldValues` + `Support\ValueObjects\ProfileCompletion`;
   `Entity::hasCompleteProfile()` = 100 % (`profile_completed`, `profile_completed_at`, `complete_profile`, REG-03).
-- **`PATCH /entities/me/profile/{identity|classification|governance|contact}`** (`can:updateOwn`, `throttle:sensitive`;
+- **`PATCH /entities/me/profile/{identity|classification|governance|contact|billing}`** (`can:updateOwn`, `throttle:sensitive`;
   one Form Request per section). Every field of the section must be present (nullable ones may be `null`) plus
   `base_revision` = the section's `revision`. `official_email` is prohibited in `contact`. The action locks the entity
   (and its owner) row, compares the revision (SHA-256 of the section's editable values, 32 hex characters,
@@ -768,7 +818,9 @@ no notification. A staff decision after the cancellation answers 409 `state.tran
 | GET | `/terms/current` (`{ terms, privacy }`) | public, `throttle:public` |
 | POST | `/auth/register` | public, `throttle:register` (5/hour per IP) |
 | GET | `/entities/me` | `entity.profile.view` (own entity); answers `can_edit`, `profile_sections`, `profile_completion { percent, counted, completed_count, sections[] }` (Task-82b) and `license_number`, `founded_on`, `website_url`, `logo { id, url, uploaded_at } \| null` (Task-47) |
-| PATCH | `/entities/me/profile/{identity\|classification\|governance\|contact}` | `entity.profile.edit`, own ACTIVE entity; `throttle:sensitive`; 409 `profile.section_stale` (Task-82b) |
+| PATCH | `/entities/me/profile/{identity\|classification\|governance\|contact\|billing}` | `entity.profile.edit`, own ACTIVE entity; `throttle:sensitive`; 409 `profile.section_stale` (Task-82b; `billing` row 49) |
+| POST / DELETE | `/entities/me/vat-certificate` (POST multipart `file`, PDF) | `entity.profile.edit` (own, active entity); POST `throttle:uploads` → 201 (409 `entity.vat_not_registered`), DELETE `throttle:sensitive` → 200 |
+| POST | `/entities/me/vat-certificate/download` | `entity.profile.view` (own entity); `throttle:downloads`; 404 `entity.vat_certificate_missing` |
 | POST / DELETE | `/entities/me/logo` (POST multipart `file`) | `entity.profile.edit` (own, active entity); POST `throttle:uploads` → 201, DELETE `throttle:sensitive` → 200; both answer the own entity |
 | POST | `/entities/me/email/change`, `/entities/me/email/confirm`, `/entities/me/email/cancel` | `entity.profile.edit`, own ACTIVE entity; `throttle:email-change` (3/10 min) / `throttle:otp-verify` / `throttle:sensitive` |
 | GET | `/entities/me/profile-changes` (`page`, `per_page`, `section`) | `entity.profile.view` (own entity) |

@@ -471,7 +471,9 @@ describe('My Payments and receipts mock contract', () => {
     const path = link.body.data.url.replace(window.location.origin, '')
     const file = await wireFetch(`${window.location.origin}${path}`)
     expect(file.status).toBe(200)
-    expect(file.headers.get('content-disposition')).toContain('RCP-2026-000001.pdf')
+    expect(file.headers.get('content-disposition')).toBe(
+      "attachment; filename=download.pdf; filename*=utf-8''RCP-2026-000001.pdf",
+    )
     as(OTHER_ENTITY)
     expect((await wireFetch(`${window.location.origin}${path}`)).status).toBe(403)
     expect((await call(`/payments/${SEEDED_IDS.paidAccredited}/receipt`)).status).toBe(404)

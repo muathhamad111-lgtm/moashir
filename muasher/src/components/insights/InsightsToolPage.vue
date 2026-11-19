@@ -8,6 +8,7 @@ import InsightsResultSelector from './InsightsResultSelector.vue'
 import InsightsSourceLine from './InsightsSourceLine.vue'
 import InsightsEmptyState from './InsightsEmptyState.vue'
 import InsightsNotices from './InsightsNotices.vue'
+import InsightsKitLocked from './InsightsKitLocked.vue'
 import { useInsightsOverview } from '@/composables/useInsightsOverview'
 import { useQuerySelection } from '@/composables/useInsightsSelection'
 
@@ -53,6 +54,7 @@ onMounted(load)
     <div class="insights-page__body">
       <Skeleton v-if="status === 'loading'" variant="block" :count="3" />
       <ErrorState v-else-if="status === 'error'" :message="t('insights.loadError')" @retry="load" />
+      <InsightsKitLocked v-else-if="status === 'locked'" />
       <InsightsEmptyState v-else-if="emptyState && !selectedId" :empty-state="emptyState" />
       <template v-else-if="selectedId">
         <InsightsNotices :overview="overview" />

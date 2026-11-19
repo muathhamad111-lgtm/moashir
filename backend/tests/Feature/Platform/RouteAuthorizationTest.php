@@ -18,6 +18,7 @@ const PUBLIC_API_ROUTES = [
     'auth.password.forgot',
     'auth.password.reset',
     'auth.invitations.accept',
+    'auth.invitations.show',
     'content.model-criteria',
     'regions.index',
     'terms.current',

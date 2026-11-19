@@ -39,8 +39,8 @@ it('saves the governance section, records every changed field and notifies the a
         ->assertJsonPath('data.governance_grade', '91.50')
         ->assertJsonPath('data.employees_count', 60)
         ->assertJsonPath('data.has_strategic_plan', null)
-        ->assertJsonPath('data.profile_completion.percent', 93)
-        ->assertJsonPath('data.profile_completion.completed_count', 14)
+        ->assertJsonPath('data.profile_completion.percent', 95)
+        ->assertJsonPath('data.profile_completion.completed_count', 21)
         ->assertJsonPath('data.profile_completion.sections.2', ['key' => 'governance', 'state' => 'incomplete', 'missing_count' => 1, 'missing_fields' => ['has_strategic_plan']]);
 
     expect(historyOf($entity->id))->toBe([

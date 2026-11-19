@@ -16,6 +16,8 @@ defineProps({
     validator: (value) => ['loading', 'error', 'forbidden', 'success'].includes(value),
   },
   errorMessage: { type: String, default: '' },
+  backTo: { type: Object, default: null },
+  backLabel: { type: String, default: '' },
 })
 
 const emit = defineEmits(['retry'])
@@ -25,9 +27,12 @@ const { t } = useI18n()
 <template>
   <section class="settings-section">
     <header class="settings-section__header">
-      <RouterLink :to="{ name: ROUTE_NAMES.ADMIN_SETTINGS }" class="settings-section__back">
+      <RouterLink
+        :to="backTo ?? { name: ROUTE_NAMES.ADMIN_SETTINGS }"
+        class="settings-section__back"
+      >
         <AppIcon name="arrow-left" />
-        {{ t('settings.hub.backToHub') }}
+        {{ backLabel || t('settings.hub.backToHub') }}
       </RouterLink>
       <h1 class="settings-section__title">{{ title }}</h1>
       <p v-if="description" class="settings-section__desc">{{ description }}</p>

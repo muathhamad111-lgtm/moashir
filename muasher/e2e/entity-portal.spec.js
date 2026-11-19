@@ -76,16 +76,19 @@ test.describe('entity portal shell', () => {
     await expect(title).toHaveText(await nav.locator('.side-nav-item.is-active').innerText())
   })
 
-  test('shows the attention strip with context and expands it inline', async ({ page }) => {
+  test('shows the profile banner only while the profile is incomplete and opens the profile', async ({
+    page,
+  }) => {
+    await open(page, '/dashboard', '[data-testid="next-step"]')
+    await expect(page.locator('[data-testid="profile-completion-banner"]')).toHaveCount(0)
     await seedIncompleteProfile(page)
-    await open(page, '/dashboard', '[data-testid="attention-strip"]')
-    const strip = page.locator('[data-testid="attention-strip"]')
-    await expect(strip.locator('.attention-strip__list--desktop .attention-item')).toHaveCount(3)
-    await expect(strip).toContainText('ACC-2026-000004')
-    await expect(strip).toContainText('60%')
-    await strip.locator('.attention-item').filter({ hasText: 'ACC-2026-000004' }).first().click()
-    await expect(page).toHaveURL(/\/assessment\/accredited\/form\/9101$/)
-    await expect(page.locator('[data-testid="attention-strip"]')).toHaveCount(0)
+    await open(page, '/dashboard', '[data-testid="profile-completion-banner"]')
+    const banner = page.locator('[data-testid="profile-completion-banner"]')
+    await expect(banner).toContainText('75%')
+    await expect(banner).not.toContainText('ACC-2026-000004')
+    await banner.locator('[data-testid="profile-completion-action"]').click()
+    await expect(page).toHaveURL(/\/entity\/profile$/)
+    await expect(banner).toHaveCount(0)
   })
 
   test('opens the account menu as a popover, moves focus inside and closes with Escape', async ({
@@ -217,15 +220,14 @@ test.describe('mobile portal', () => {
     await seedIncompleteProfile(page)
     await open(page, '/dashboard', '.mobile-tab-bar')
     await expect(page.locator('[data-testid="portal-side-nav"]')).toBeHidden()
-    await expect(page.locator('.attention-strip__mobile .attention-item')).toHaveCount(1)
-    await expect(page.locator('.attention-strip__summary')).toBeVisible()
+    await expect(page.locator('[data-testid="profile-completion-action"]')).toBeVisible()
     await noHorizontalOverflow(page)
     await page.locator('.mobile-tab-bar__tab[href="/more"]').click()
     await expect(page).toHaveURL(/\/more$/)
     const services = page.locator('.portal-more__group').first().locator('.portal-menu-entry')
     await expect(services).toHaveCount(5)
     await expect(services.nth(1)).toHaveAttribute('href', '/bag')
-    await expect(services.nth(4).locator('.portal-menu-entry__value')).toHaveText('60%')
+    await expect(services.nth(4).locator('.portal-menu-entry__value')).toHaveText('75%')
     await noHorizontalOverflow(page)
   })
 })
@@ -253,8 +255,6 @@ test.describe('portal screenshots', () => {
           await capture(page, `account-menu-${suffix}`, { fullPage: false })
           await page.keyboard.press('Escape')
         } else {
-          await page.locator('[data-testid="attention-strip"] .attention-strip__toggle').click()
-          await capture(page, `strip-expanded-${suffix}`, { fullPage: false })
           await open(page, '/more', '.portal-more__identity')
           await capture(page, `more-${suffix}`)
         }

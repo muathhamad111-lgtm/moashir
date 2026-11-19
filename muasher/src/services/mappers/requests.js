@@ -91,10 +91,10 @@ function toRequestReceipt(raw) {
 }
 
 export function toRequestPayment(raw) {
-  if (!raw?.reference) return null
+  if (!raw?.status) return null
   return {
     id: raw.id ?? null,
-    reference: raw.reference,
+    reference: raw.reference ?? null,
     channel: raw.channel ?? null,
     status: raw.status ?? null,
     isTest: raw.isTest === true,
@@ -128,7 +128,10 @@ export function toPreparingRow(raw = {}) {
 export function toRequestDetail(raw = {}) {
   return {
     ...toQueueRow(raw),
-    payment: { paid: raw.payment?.paid === true, details: toRequestPayment(raw.payment) },
+    payment: {
+      paid: raw.payment?.paid === true,
+      details: raw.payment?.reference ? toRequestPayment(raw.payment) : null,
+    },
     record: toAssessmentRecord(raw.record),
     assignmentHistory: (raw.assignmentHistory ?? []).map(toAssignment),
     completionRequests: (raw.completionRequests ?? []).map(toCompletionRequest),

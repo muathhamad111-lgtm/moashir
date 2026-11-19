@@ -15,6 +15,11 @@
   color: var(--theme-text);
 }
 
+.radio-group--required .radio-group__legend::after {
+  content: ' *';
+  color: var(--color-danger);
+}
+
 .radio-group--inline .radio-group__options {
   flex-direction: row;
   flex-wrap: wrap;

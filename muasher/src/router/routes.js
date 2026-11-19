@@ -910,6 +910,17 @@ export const appRoutes = [
     },
   },
   {
+    path: '/admin/settings/notifications/:code([A-Z]+[0-9]?-[0-9]+)',
+    name: ROUTE_NAMES.ADMIN_SETTINGS_NOTIFICATION_TEXTS,
+    component: () => import('@/views/settings/NotificationTypeTexts.vue'),
+    props: true,
+    meta: {
+      layout: 'app',
+      titleKey: 'routes.admin.settings.notificationTexts.title',
+      requiresAuth: true,
+    },
+  },
+  {
     path: '/admin/settings/homepage',
     name: ROUTE_NAMES.ADMIN_SETTINGS_HOMEPAGE,
     component: () => import('@/views/settings/HomepageContent.vue'),

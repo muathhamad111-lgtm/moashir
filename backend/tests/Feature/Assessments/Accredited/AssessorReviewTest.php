@@ -253,7 +253,27 @@ it('validates a completion request', function (): void {
         'expiry_outcome' => 'decline',
     ])->assertUnprocessable()->assertJsonValidationErrors(['deadline_at']);
 
+    test()->postJson("/api/v1/assessments/{$assessment->id}/request-completion", [
+        'notes' => str_repeat('ن', 2001),
+        'items' => [['sub_criterion_id' => subOf($version, 'M1.1')->id, 'kind' => 'cv']],
+        'deadline_at' => Date::now()->addDays(3)->toIso8601String(),
+        'expiry_outcome' => 'decline',
+    ])->assertUnprocessable()->assertJsonValidationErrors(['notes']);
+
     expect($assessment->refresh()->status->value)->toBe('under_review');
+});
+
+it('accepts a short completion note because the notes have no minimum length', function (): void {
+    $version = publishedAccreditedCriteria();
+    $assessor = assessorUser();
+    $assessment = reviewedAccreditedRequest($version, $assessor);
+
+    switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/request-completion", [
+        'notes' => 'أرفق السيرة',
+        'items' => [['sub_criterion_id' => subOf($version, 'M1.1')->id, 'kind' => 'cv']],
+        'deadline_at' => Date::now()->addDays(3)->toIso8601String(),
+        'expiry_outcome' => 'decline',
+    ])->assertOk();
 });
 
 it('refuses to complete an assessment with missing scores', function (): void {

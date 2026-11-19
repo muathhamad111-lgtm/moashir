@@ -42,8 +42,9 @@ describe('demo-free wording (J-4)', () => {
   })
 
   it('uses the neutral receipt and verification texts in both languages', () => {
-    expect(ar.finance.receipt.notProof).toBe('غير معتمد كإثبات دفع')
-    expect(en.finance.receipt.notProof).toBe('Not valid as proof of payment')
+    expect(ar.finance.receipt.noNumber).toBe('دون رقم')
+    expect(JSON.stringify(ar)).not.toContain('غير معتمد كإثبات دفع')
+    expect(JSON.stringify(en)).not.toMatch(/not valid as proof of payment/i)
     expect(ar.verify.results.unverifiable.title).toBe('غير صالحة للتحقق')
     expect(en.verify.results.unverifiable.title).toBe('Not valid for verification')
   })

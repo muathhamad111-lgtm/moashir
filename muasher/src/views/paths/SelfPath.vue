@@ -12,7 +12,6 @@ import ErrorState from '@/components/feedback/ErrorState.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import PathHeader from '@/components/paths/PathHeader.vue'
-import PathHeaderCard from '@/components/paths/PathHeaderCard.vue'
 import PathPrice from '@/components/paths/PathPrice.vue'
 import PathPrimaryAction from '@/components/paths/PathPrimaryAction.vue'
 import PathRequestsList from '@/components/paths/PathRequestsList.vue'
@@ -39,7 +38,7 @@ onMounted(reload)
 
 <template>
   <section class="path-page" data-testid="path-page-self">
-    <PathHeader :path-key="PATH_KEYS.SELF">
+    <PathHeader :path-key="PATH_KEYS.SELF" variant="compact">
       <template #chips>
         <div class="path-header__chips">
           <p class="path-header__chip">{{ t('paths.tile.tags.self') }}</p>
@@ -53,29 +52,17 @@ onMounted(reload)
           </p>
         </div>
       </template>
-      <Skeleton v-if="status === 'loading' && !paths" variant="block" :count="2" />
+      <Skeleton v-if="status === 'loading' && !paths" class="path-header__skeleton" />
       <template v-else-if="summary && summary.state !== SELF_STATES.HIDDEN">
-        <PathHeaderCard
-          :eyebrow="t('paths.pages.status')"
-          test-id="path-status-card"
-          :data-state="summary.state"
-        >
-          <p class="path-header-card__text">{{ summary.status }}</p>
-          <template #actions>
-            <PathPrimaryAction :action="summary.action" />
-          </template>
-        </PathHeaderCard>
-        <PathHeaderCard v-if="!isFree" :eyebrow="t('paths.pages.price')">
-          <PathPrice :pricing="self?.pricing ?? null" detailed />
-        </PathHeaderCard>
+        <PathPrice v-if="!isFree" :pricing="self?.pricing ?? null" />
+        <div class="path-header__status" data-testid="path-status-card" :data-state="summary.state">
+          <p class="path-header__status-text">{{ summary.brief }}</p>
+          <PathPrimaryAction :action="summary.action" />
+        </div>
       </template>
-      <PathHeaderCard
-        v-else-if="summary"
-        :eyebrow="t('paths.pages.status')"
-        test-id="path-unavailable-card"
-      >
-        <p class="path-header-card__text">{{ t('paths.summary.unavailable') }}</p>
-      </PathHeaderCard>
+      <p v-else-if="summary" class="path-header__status-text" data-testid="path-unavailable-card">
+        {{ t('paths.summary.unavailable') }}
+      </p>
     </PathHeader>
     <div class="path-page__body">
       <ErrorState

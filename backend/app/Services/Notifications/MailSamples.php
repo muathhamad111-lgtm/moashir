@@ -23,6 +23,7 @@ use App\Notifications\Identity\PasswordResetLinkNotification;
 use App\Notifications\Identity\SecurityAlertNotification;
 use App\Notifications\Identity\StaffInvitationNotification;
 use App\Notifications\Identity\SuperAdminEmailChangedNotification;
+use App\Services\Identity\AuthSettings;
 use App\Support\Mail\NotificationTexts;
 use App\Support\Mail\SampleReplacements;
 use App\Support\ValueObjects\LocalizedText;
@@ -82,7 +83,7 @@ final readonly class MailSamples
         'CNT' => '/admin/contact-messages',
     ];
 
-    public function __construct(private Repository $config) {}
+    public function __construct(private Repository $config, private AuthSettings $authSettings) {}
 
     /**
      * @return list<MailSample>
@@ -134,7 +135,7 @@ final readonly class MailSamples
         $account = $this->account($locale);
 
         return match ($code) {
-            NotificationCode::StaffInvited => [new MailSample('USR-01', new StaffInvitationNotification(self::LINK_TOKEN, $this->config->integer('moashir.auth.invitation_ttl_hours')), $account)],
+            NotificationCode::StaffInvited => [new MailSample('USR-01', new StaffInvitationNotification(self::LINK_TOKEN, $this->authSettings->invitationTtlMinutes()), $account)],
             NotificationCode::AccountLocked => [new MailSample('USR-02', new AccountLockedNotification(self::RECIPIENT_ID, $this->config->integer('moashir.auth.lockout.minutes')), $account)],
             NotificationCode::AccountStatusChanged => [
                 new MailSample('USR-03.suspended', new AccountStatusChangedNotification(UserStatus::Suspended), $account),

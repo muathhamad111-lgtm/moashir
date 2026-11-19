@@ -240,11 +240,11 @@ describe('per-path settings', () => {
 })
 
 describe('certificate settings', () => {
-  it('reads and updates the issuance switch and the ascending thresholds', async () => {
+  it('reads and updates the issuance mode and the ascending thresholds', async () => {
     seedMockSession(SYSTEM_ADMIN)
     const { body } = await call('GET', '/settings/certificates')
     expect(body.data).toEqual({
-      accredited_issuance_enabled: true,
+      accredited_issuance_mode: 'automatic',
       level_thresholds: { bronze: '60.00', silver: '70.00', gold: '80.00', diamond: '90.00' },
     })
     const descending = await call('PUT', '/settings/certificates', {
@@ -252,11 +252,11 @@ describe('certificate settings', () => {
     })
     expect(descending.status).toBe(422)
     const saved = await call('PUT', '/settings/certificates', {
-      accredited_issuance_enabled: false,
+      accredited_issuance_mode: 'manual',
       level_thresholds: { bronze: '65.5', silver: '72', gold: '84', diamond: '95' },
     })
     expect(saved.body.data).toEqual({
-      accredited_issuance_enabled: false,
+      accredited_issuance_mode: 'manual',
       level_thresholds: { bronze: '65.50', silver: '72.00', gold: '84.00', diamond: '95.00' },
     })
     const levels = (await call('GET', '/content/certificate-levels')).body.data

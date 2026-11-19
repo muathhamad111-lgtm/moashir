@@ -60,7 +60,7 @@ return [
             'max_length' => 128,
             'history' => 5,
         ],
-        'invitation_ttl_hours' => (int) env('AUTH_INVITATION_TTL_HOURS', 72),
+        'invitation_ttl_minutes' => (int) env('AUTH_INVITATION_TTL_MINUTES', 60),
         'pending_authentication_ttl_minutes' => 10,
         'session' => [
             'idle_minutes' => [
@@ -108,6 +108,9 @@ return [
             'max_kb' => 2048,
             'min_side_px' => 200,
             'max_side_px' => 2000,
+        ],
+        'vat_certificate' => [
+            'max_kb' => 5120,
         ],
     ],
 

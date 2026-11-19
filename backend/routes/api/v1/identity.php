@@ -37,6 +37,7 @@ use App\Http\Controllers\Api\V1\Identity\RevokeUserSessionsController;
 use App\Http\Controllers\Api\V1\Identity\RoleController;
 use App\Http\Controllers\Api\V1\Identity\RolePermissionsController;
 use App\Http\Controllers\Api\V1\Identity\SendUserPasswordResetLinkController;
+use App\Http\Controllers\Api\V1\Identity\ShowInvitationController;
 use App\Http\Controllers\Api\V1\Identity\StartMfaEnrollmentController;
 use App\Http\Controllers\Api\V1\Identity\SuspendUserController;
 use App\Http\Controllers\Api\V1\Identity\UnlockUserController;
@@ -60,6 +61,7 @@ Route::prefix('auth')->name('auth.')->group(function (): void {
     Route::post('mfa/confirm', ConfirmMfaEnrollmentController::class)->middleware(['throttle:mfa', 'session.timeouts'])->name('mfa.confirm');
     Route::post('password/forgot', ForgotPasswordController::class)->middleware('throttle:password-reset')->name('password.forgot');
     Route::post('password/reset', ResetPasswordController::class)->middleware('throttle:password-reset')->name('password.reset');
+    Route::get('invitations/{token}', ShowInvitationController::class)->middleware('throttle:invitation-check')->name('invitations.show');
     Route::post('invitations/{token}/accept', AcceptInvitationController::class)->middleware('throttle:invitation')->name('invitations.accept');
 });
 

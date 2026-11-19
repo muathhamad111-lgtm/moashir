@@ -26,7 +26,7 @@ const props = defineProps({
 const { t, locale } = useI18n()
 const { can } = usePermissions()
 const certificates = useRequestCertificates(toRef(props, 'requestId'))
-const { current, history, status, errorMessage, issuing, canManage, canIssue } = certificates
+const { current, history, status, errorMessage, issuing, canManage } = certificates
 const downloads = useSignedDownload({
   errorPrefix: 'portal.certificates.errors',
   fallbackKey: 'portal.certificates.errors.failed',
@@ -39,7 +39,14 @@ const reasonOpen = computed({
   },
 })
 
-const showsIssue = computed(() => props.completed && canIssue.value && !current.value)
+const hasContent = computed(
+  () =>
+    props.completed ||
+    status.value === 'error' ||
+    Boolean(current.value) ||
+    history.value.length > 0,
+)
+const issueStep = computed(() => certificates.issueStepOf(props.completed))
 const showsFeedback = computed(() => props.completed && can(PERMISSIONS.REPORTS_FEEDBACK_VIEW))
 
 function download(certificate) {
@@ -65,7 +72,7 @@ onMounted(certificates.load)
 </script>
 
 <template>
-  <Card class="request-certificate">
+  <Card v-if="hasContent" class="request-certificate">
     <template #header>
       <h2 class="card__title-text">{{ t('requests.certificate.title') }}</h2>
     </template>
@@ -106,11 +113,14 @@ onMounted(certificates.load)
       <p v-else-if="!completed" class="request-certificate__note">
         {{ t('requests.certificate.afterCompletion') }}
       </p>
+      <p v-else-if="issueStep === 'pending'" class="request-certificate__note">
+        {{ t('requests.certificate.autoPending') }}
+      </p>
       <p v-else-if="canManage" class="request-certificate__note">
         {{ t('requests.certificate.none') }}
       </p>
 
-      <div v-if="showsIssue" class="request-certificate__issue">
+      <div v-if="issueStep === 'issue'" class="request-certificate__issue">
         <p class="request-certificate__note">{{ t('requests.certificate.issueNote') }}</p>
         <BaseButton
           variant="primary"

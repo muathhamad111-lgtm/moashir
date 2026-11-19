@@ -9,6 +9,7 @@ use App\Enums\Certificates\EntityLevelFilter;
 use App\Models\Entities\Entity;
 use App\Models\Identity\User;
 use App\Services\Entities\EntityRecordScope;
+use App\Support\Assessments\LastAccreditedAssessmentQuery;
 use App\Support\Certificates\EntityLevelQuery;
 use App\Support\ValueObjects\SearchTerm;
 use Illuminate\Database\Eloquent\Builder;
@@ -18,7 +19,7 @@ final readonly class ListEntities
 {
     public const array SORTABLE = [
         'name', '-name', 'created_at', '-created_at', 'founding_year', '-founding_year', 'governance_grade', '-governance_grade',
-        'level', '-level',
+        'level', '-level', 'last_assessed_at', '-last_assessed_at', 'last_assessment_percent', '-last_assessment_percent',
     ];
 
     public function __construct(private EntityRecordScope $scope) {}
@@ -29,7 +30,7 @@ final readonly class ListEntities
     public function handle(User $actor, EntityListFilters $filters): LengthAwarePaginator
     {
         $query = $this->filteredQuery($actor, $filters)
-            ->with(['owner', 'region', 'city', 'logo', EntityLevelQuery::RELATION, EntityLevelQuery::DISPLAY_RELATION])
+            ->with(['owner', 'region', 'city', 'logo', 'vatCertificate', EntityLevelQuery::RELATION, EntityLevelQuery::DISPLAY_RELATION, LastAccreditedAssessmentQuery::RELATION, LastAccreditedAssessmentQuery::RESULT_RELATION])
             ->withExists(EntityLevelQuery::openAccreditedRequestFlag());
         $this->applySort($query, $filters->sort);
 
@@ -85,6 +86,12 @@ final readonly class ListEntities
 
         if ($column === 'level') {
             EntityLevelQuery::orderBy($query, $direction);
+
+            return;
+        }
+
+        if (in_array($column, LastAccreditedAssessmentQuery::SORTS, true)) {
+            LastAccreditedAssessmentQuery::orderBy($query, $column, $direction);
 
             return;
         }

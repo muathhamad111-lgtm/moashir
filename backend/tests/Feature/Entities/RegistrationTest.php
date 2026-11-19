@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Enums\Audit\AuditEvent;
 use App\Enums\Entities\EntityStatus;
+use App\Enums\Entities\ProfileSection;
+use App\Enums\Entities\ProfileSectionField;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Identity\TermsKind;
 use App\Enums\Notifications\NotificationCode;
@@ -33,6 +35,10 @@ function registeredOwner(string $email = 'info@alamal.example.sa'): User
     return User::query()->where('email', $email)->firstOrFail();
 }
 
+const REGISTRATION_BILLING_GAPS_AR = 'رقم المبنى، الشارع، الحي، المدينة (العنوان الوطني)، الرمز البريدي، الرقم الإضافي، التسجيل في ضريبة القيمة المضافة';
+
+const REGISTRATION_BILLING_GAPS_EN = 'Building number, Street, District, City (national address), Postal code, Additional number, VAT registration';
+
 beforeEach(function (): void {
     Notification::fake();
 });
@@ -55,7 +61,7 @@ it('registers an entity with the verified official e-mail, holds it for staff re
         ->and($entity->name->ar)->toBe('جمعية الأمل الخيرية')
         ->and($entity->governance_grade)->toBe('87.45')
         ->and($entity->hasCompleteProfile())->toBeFalse()
-        ->and($entity->profileCompletion()->percent())->toBe(86)
+        ->and($entity->profileCompletion()->percent())->toBe(59)
         ->and($entity->unified_number)->toBe('7001234567')
         ->and($owner->roleKeys())->toBe([RoleKey::Entity])
         ->and($owner->name)->toBe('سلمان بن فهد العتيبي')
@@ -191,8 +197,8 @@ it('names only the profile fields still missing in the completion reminder', fun
         ->assertJsonPath('data.user.entity.profile_completed', false);
 
     Notification::assertSentTo(registeredOwner(), EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityProfileIncomplete
-        && $notification->notice->body->ar === 'تم التحقق من حسابك. لاستكمال الملف التعريفي لـ جمعية الأمل الخيرية أضف: رقم الترخيص، تاريخ التأسيس.'
-        && $notification->notice->body->en === 'Your account is verified. To complete the profile of Al-Amal Charitable Association, add: Licence number, Founding date.');
+        && $notification->notice->body->ar === 'تم التحقق من حسابك. لاستكمال الملف التعريفي لـ جمعية الأمل الخيرية أضف: رقم الترخيص، تاريخ التأسيس، '.REGISTRATION_BILLING_GAPS_AR.'.'
+        && $notification->notice->body->en === 'Your account is verified. To complete the profile of Al-Amal Charitable Association, add: Licence number, Founding date, '.REGISTRATION_BILLING_GAPS_EN.'.');
 });
 
 it('names the governance figures in the completion reminder when the registration leaves them empty', function (): void {
@@ -201,23 +207,26 @@ it('names the governance figures in the completion reminder when the registratio
     register(registrationPayload(['license_number' => '1234', 'founded_on' => '2011-04-20', 'governance_grade' => null, 'employees_count' => null]))->assertCreated();
 
     Notification::assertSentTo(registeredOwner(), EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityProfileIncomplete
-        && str_ends_with($notification->notice->body->ar, 'أضف: درجة الحوكمة، عدد الموظفين.')
-        && str_ends_with($notification->notice->body->en, 'add: Governance grade, Number of employees.'));
+        && str_ends_with($notification->notice->body->ar, 'أضف: درجة الحوكمة، عدد الموظفين، '.REGISTRATION_BILLING_GAPS_AR.'.')
+        && str_ends_with($notification->notice->body->en, 'add: Governance grade, Number of employees, '.REGISTRATION_BILLING_GAPS_EN.'.'));
 });
 
-it('completes the profile from the registration form when it carries the licence number and the founding date', function (): void {
+it('leaves only the billing details to complete when the registration carries the licence number and the founding date', function (): void {
     requireEntityRegistrationReview(false);
 
     register(registrationPayload(['license_number' => '1234', 'founded_on' => '2011-04-20']))
         ->assertCreated()
-        ->assertJsonPath('data.user.entity.profile_completed', true);
+        ->assertJsonPath('data.user.entity.profile_completed', false);
 
     $entity = Entity::query()->firstOrFail();
 
     expect($entity->license_number)->toBe('1234')
         ->and($entity->founded_on?->toDateString())->toBe('2011-04-20')
-        ->and($entity->founding_year)->toBe(2011);
-    Notification::assertNotSentTo(registeredOwner(), EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityProfileIncomplete);
+        ->and($entity->founding_year)->toBe(2011)
+        ->and(array_map(static fn (ProfileSectionField $field): ProfileSection => $field->section(), $entity->profileCompletion()->missingFields()))
+        ->each->toBe(ProfileSection::Billing);
+    Notification::assertSentTo(registeredOwner(), EntityNotification::class, static fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::EntityProfileIncomplete
+        && str_ends_with($notification->notice->body->ar, 'أضف: '.REGISTRATION_BILLING_GAPS_AR.'.'));
 });
 
 it('refuses a licence number already held by another entity', function (): void {

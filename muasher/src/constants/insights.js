@@ -101,7 +101,13 @@ export const INSIGHTS_TOOLS = Object.freeze({
 
 export const INSIGHTS_ERROR_CODES = Object.freeze({
   NOT_ELIGIBLE: 'insights.result_not_eligible',
+  KIT_REQUIRED: 'insights.kit_required',
 })
+
+// The entity's tools stay locked until the Quick Excellence Kit is activated for the result.
+export function isKitLocked(error) {
+  return error?.normalized?.code === INSIGHTS_ERROR_CODES.KIT_REQUIRED
+}
 
 export const RESULT_QUERY_KEY = 'result'
 export const STRENGTHS_PREVIEW_COUNT = 6

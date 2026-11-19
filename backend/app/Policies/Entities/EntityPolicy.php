@@ -8,6 +8,7 @@ use App\Enums\Entities\EntityAccess;
 use App\Enums\Entities\EntityStatus;
 use App\Enums\Identity\PermissionKey;
 use App\Models\Entities\Entity;
+use App\Models\Finance\Payment;
 use App\Models\Identity\User;
 use App\Services\Entities\EntityRecordScope;
 use Illuminate\Auth\Access\Response;
@@ -64,6 +65,15 @@ final readonly class EntityPolicy
         }
 
         return $actor->entity_id === $entity->id && $this->viewOwn($actor) ? Response::allow() : Response::denyAsNotFound();
+    }
+
+    public function viewVatCertificate(User $actor, Entity $entity): Response
+    {
+        if ($actor->entity_id !== null) {
+            return $actor->entity_id === $entity->id && $this->viewOwn($actor) ? Response::allow() : Response::denyAsNotFound();
+        }
+
+        return $actor->can('viewTransfers', Payment::class) ? Response::allow() : Response::denyAsNotFound();
     }
 
     public function viewProfileChanges(User $actor, Entity $entity): Response

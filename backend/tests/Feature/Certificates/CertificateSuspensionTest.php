@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\Audit\AuditEvent;
+use App\Enums\Certificates\CertificateIssuanceMode;
 use App\Enums\Notifications\NotificationCode;
 use App\Models\Audit\Audit;
 use App\Models\Certificates\Certificate;
@@ -107,7 +108,7 @@ it('lets the System Administrator revoke a suspended certificate', function (): 
 });
 
 it('leaves a request without certificate untouched on reopen', function (): void {
-    setAccreditedCertificateIssuance(false);
+    setAccreditedCertificateIssuance(CertificateIssuanceMode::Manual);
     $assessment = completedAccreditedRequest(publishedAccreditedCriteria(), assessorUser());
 
     switchTo(superAdmin())->postJson("/api/v1/assessments/{$assessment->id}/reopen", ['reason' => SUPER_ADMIN_REASON])->assertOk();

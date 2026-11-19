@@ -25,6 +25,16 @@ enum ProfileSectionField: string
     case Phone = 'phone';
     case WebsiteUrl = 'website_url';
     case MarketingConsent = 'marketing_consent';
+    case AddressBuildingNumber = 'address_building_number';
+    case AddressStreet = 'address_street';
+    case AddressDistrict = 'address_district';
+    case AddressCity = 'address_city';
+    case AddressPostalCode = 'address_postal_code';
+    case AddressAdditionalNumber = 'address_additional_number';
+    case AddressShortCode = 'address_short_code';
+    case VatRegistered = 'vat_registered';
+    case VatNumber = 'vat_number';
+    case VatCertificate = 'vat_certificate';
 
     public function section(): ProfileSection
     {
@@ -33,6 +43,8 @@ enum ProfileSectionField: string
             self::EntityType, self::DevelopmentSector, self::OrgSize, self::Region, self::City => ProfileSection::Classification,
             self::GovernanceGrade, self::EmployeesCount, self::AnnualBeneficiariesCount, self::HasStrategicPlan => ProfileSection::Governance,
             self::OfficialEmail, self::AuthorizedPersonName, self::Phone, self::WebsiteUrl, self::MarketingConsent => ProfileSection::Contact,
+            self::AddressBuildingNumber, self::AddressStreet, self::AddressDistrict, self::AddressCity, self::AddressPostalCode,
+            self::AddressAdditionalNumber, self::AddressShortCode, self::VatRegistered, self::VatNumber, self::VatCertificate => ProfileSection::Billing,
         };
     }
 
@@ -40,10 +52,12 @@ enum ProfileSectionField: string
     {
         return match ($this) {
             self::NameAr, self::UnifiedNumber, self::EntityType, self::DevelopmentSector, self::OrgSize, self::Region, self::City,
-            self::OfficialEmail, self::AuthorizedPersonName => ProfileFieldRequirement::Required,
+            self::OfficialEmail, self::AuthorizedPersonName, self::AddressBuildingNumber, self::AddressStreet, self::AddressDistrict,
+            self::AddressCity, self::AddressPostalCode, self::AddressAdditionalNumber, self::VatRegistered, self::VatNumber,
+            self::VatCertificate => ProfileFieldRequirement::Required,
             self::LicenseNumber, self::FoundedOn, self::GovernanceGrade, self::EmployeesCount, self::AnnualBeneficiariesCount,
             self::HasStrategicPlan => ProfileFieldRequirement::Completion,
-            self::NameEn, self::Phone, self::WebsiteUrl, self::MarketingConsent => ProfileFieldRequirement::Optional,
+            self::NameEn, self::Phone, self::WebsiteUrl, self::MarketingConsent, self::AddressShortCode => ProfileFieldRequirement::Optional,
         };
     }
 
@@ -54,7 +68,12 @@ enum ProfileSectionField: string
 
     public function isEditable(): bool
     {
-        return $this !== self::OfficialEmail;
+        return $this !== self::OfficialEmail && $this !== self::VatCertificate;
+    }
+
+    public function dependsOnVatRegistration(): bool
+    {
+        return $this === self::VatNumber || $this === self::VatCertificate;
     }
 
     public function labelKey(): string

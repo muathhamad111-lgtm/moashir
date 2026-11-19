@@ -4,6 +4,7 @@ import FormField from './FormField.vue'
 import PasswordRevealButton from './PasswordRevealButton.vue'
 import { usePasswordReveal } from '@/composables/usePasswordReveal'
 import { westernizeInputDigits } from '@/utils/numerals'
+import { applyInputFilter } from '@/utils/inputFilter'
 
 const NUMBER_INPUT_MODES = ['numeric', 'decimal', 'tel']
 const PASSWORD_TYPE = 'password'
@@ -22,6 +23,7 @@ const props = defineProps({
   inputmode: { type: String, default: undefined },
   autocomplete: { type: String, default: undefined },
   inputDir: { type: String, default: undefined },
+  filter: { type: Function, default: null },
 })
 
 const emit = defineEmits(['update:modelValue', 'blur'])
@@ -32,10 +34,8 @@ const controlType = computed(() => (isPassword.value && revealed.value ? 'text' 
 
 function onInput(event) {
   const isNumberField = NUMBER_INPUT_MODES.includes(props.inputmode) || props.type === 'tel'
-  emit(
-    'update:modelValue',
-    isNumberField ? westernizeInputDigits(event.target) : event.target.value,
-  )
+  const value = isNumberField ? westernizeInputDigits(event.target) : event.target.value
+  emit('update:modelValue', props.filter ? applyInputFilter(event.target, props.filter) : value)
 }
 </script>
 
@@ -51,7 +51,10 @@ function onInput(event) {
     :disabled="disabled"
     :filled="Boolean(String(modelValue).length)"
   >
-    <div class="field__frame" :class="{ 'field__frame--reveal': isPassword }">
+    <div
+      class="field__frame"
+      :class="{ 'field__frame--reveal': isPassword, 'field__frame--addon': $slots.addon }"
+    >
       <input
         :id="id"
         class="field__control"
@@ -77,6 +80,7 @@ function onInput(event) {
         :disabled="disabled"
         @toggle="toggle"
       />
+      <slot name="addon" :id="id" />
     </div>
   </FormField>
 </template>

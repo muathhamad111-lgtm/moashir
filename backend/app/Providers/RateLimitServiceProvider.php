@@ -50,6 +50,8 @@ final class RateLimitServiceProvider extends ServiceProvider
             Limit::perMinutes(self::TEN_MINUTES, 10)->by('password-reset-ip|'.$request->ip()),
         ]);
 
+        RateLimiter::for('invitation-check', static fn (Request $request): Limit => Limit::perMinute(10)->by('invitation-check|'.$request->ip()));
+
         RateLimiter::for('invitation', static fn (Request $request): Limit => Limit::perMinute(5)->by('invitation|'.$request->ip()));
 
         RateLimiter::for('search', static fn (Request $request): Limit => Limit::perMinute(60)->by('search|'.self::subject($request)));

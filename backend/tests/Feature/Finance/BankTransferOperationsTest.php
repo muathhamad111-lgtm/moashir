@@ -58,7 +58,7 @@ it('refuses to verify a bank-transfer payment with the gateway', function (): vo
 });
 
 it('ignores a gateway payment that names a bank-transfer request and asks finance to return the money', function (): void {
-    ['gateway' => $gateway] = payingEntity();
+    ['gateway' => $gateway] = payingEntity(IntegrationMode::Live);
     $account = bankAccount();
     enablePaymentChannels(PaymentChannel::BankTransfer);
     $owner = ownerOf(entityWithOwner());
@@ -101,7 +101,7 @@ it('shows the channel in transactions, filters by it and details the transfer', 
     storedPaidPayment(null, IntegrationMode::Test);
     switchTo(financeOfficer());
 
-    $this->getJson('/api/v1/finance/transactions?filter[mode]=test&filter[channel]=bank_transfer')
+    $this->getJson('/api/v1/finance/transactions?filter[mode]=live&filter[channel]=bank_transfer')
         ->assertOk()
         ->assertJsonPath('meta.pagination.total', 1)
         ->assertJsonPath('data.0.channel', 'bank_transfer')

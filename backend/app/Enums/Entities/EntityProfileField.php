@@ -24,6 +24,15 @@ enum EntityProfileField: string
     case AuthorizedPersonName = 'authorized_person_name';
     case Phone = 'phone';
     case MarketingConsent = 'marketing_consent';
+    case AddressBuildingNumber = 'address_building_number';
+    case AddressStreet = 'address_street';
+    case AddressDistrict = 'address_district';
+    case AddressCity = 'address_city';
+    case AddressPostalCode = 'address_postal_code';
+    case AddressAdditionalNumber = 'address_additional_number';
+    case AddressShortCode = 'address_short_code';
+    case VatRegistered = 'vat_registered';
+    case VatNumber = 'vat_number';
 
     public function section(): ProfileSection
     {
@@ -32,6 +41,8 @@ enum EntityProfileField: string
             self::EntityType, self::DevelopmentSector, self::OrgSize, self::Region, self::City => ProfileSection::Classification,
             self::GovernanceGrade, self::EmployeesCount, self::AnnualBeneficiariesCount, self::HasStrategicPlan => ProfileSection::Governance,
             self::AuthorizedPersonName, self::Phone, self::WebsiteUrl, self::MarketingConsent => ProfileSection::Contact,
+            self::AddressBuildingNumber, self::AddressStreet, self::AddressDistrict, self::AddressCity, self::AddressPostalCode,
+            self::AddressAdditionalNumber, self::AddressShortCode, self::VatRegistered, self::VatNumber => ProfileSection::Billing,
         };
     }
 

@@ -326,6 +326,7 @@ it('publishes the legal drafts and the accessibility page with the demo and keep
 });
 
 it('installs fictional accredited and self results that show every excellence-tools case', function (): void {
+    activateInsightsKit();
     enableDemoData();
     installDemoPrerequisites();
     runDemoCommand('moashir:demo:install', demoAccountsDirectory().'/accounts.txt');

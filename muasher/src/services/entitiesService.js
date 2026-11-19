@@ -5,6 +5,7 @@ import { toDownload } from './mappers/download'
 import { withOwnEntity } from './mappers/ownEntity'
 
 const EXPORT_FALLBACK_NAME = 'entities.csv'
+const NOT_FOUND = 404
 
 const { read, write } = domainRequests('entities', 'entity')
 
@@ -28,6 +29,32 @@ export const entitiesService = {
   },
   removeLogo() {
     return write('removeLogo', () => apiClient.delete('/entities/me/logo'), {}).then(withOwnEntity)
+  },
+  uploadVatCertificate(file) {
+    const body = new FormData()
+    body.append('file', file)
+    return write(
+      'uploadVatCertificate',
+      () => apiClient.post('/entities/me/vat-certificate', body),
+      {
+        file: file.type,
+      },
+    ).then(withOwnEntity)
+  },
+  removeVatCertificate() {
+    return write(
+      'removeVatCertificate',
+      () => apiClient.delete('/entities/me/vat-certificate'),
+      {},
+    ).then(withOwnEntity)
+  },
+  requestVatCertificateDownload() {
+    return write(
+      'requestVatCertificateDownload',
+      () => apiClient.post('/entities/me/vat-certificate/download'),
+      {},
+      [NOT_FOUND],
+    )
   },
   cancelEmailChange() {
     return write(

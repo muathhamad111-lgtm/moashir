@@ -67,7 +67,7 @@ beforeEach(() => {
   )
   certificateSettingsService.get.mockResolvedValue({
     data: {
-      accreditedIssuanceEnabled: true,
+      accreditedIssuanceMode: 'automatic',
       levelThresholds: { bronze: '60.00', silver: '70.00', gold: '80.00', diamond: '90.00' },
     },
   })
@@ -89,7 +89,7 @@ describe('per-path settings panel', () => {
     expect(wrapper.find('input[name="reviewSlaDays"]').exists()).toBe(true)
     expect(wrapper.findAll('textarea[name^="entityTexts."]')).toHaveLength(6)
     expect(wrapper.find('.path-settings__intro').exists()).toBe(false)
-    expect(wrapper.find('input[name="accreditedIssuanceEnabled"]').exists()).toBe(true)
+    expect(wrapper.findAll('input[name="accreditedIssuanceMode"]')).toHaveLength(2)
   })
 
   it('sends only the changed description of a path', async () => {
@@ -141,10 +141,11 @@ describe('certificate settings', () => {
     expect(ranges[4].text()).toContain('and above')
   })
 
-  it('shows only the issuing switch in the accredited card', async () => {
+  it('shows only the issuance mode choice in the accredited card', async () => {
     mountWith(CertificateSettingsCard, { part: 'issuance' })
     await flushPromises()
-    expect(wrapper.find('.toggle-switch').exists()).toBe(true)
+    expect(wrapper.findAll('input[name="accreditedIssuanceMode"]')).toHaveLength(2)
+    expect(wrapper.text()).toContain('Automatic when the assessment is completed')
     expect(wrapper.find('input[name^="levelThresholds."]').exists()).toBe(false)
   })
 })

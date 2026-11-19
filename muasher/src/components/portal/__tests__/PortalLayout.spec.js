@@ -78,11 +78,11 @@ beforeEach(() => {
 })
 
 describe('PortalLayout', () => {
-  it('renders the slim top bar, the strip, the page and the mobile tab bar on hub screens', async () => {
+  it('renders the slim top bar, the profile banner, the page and the mobile tab bar on hub screens', async () => {
     const wrapper = await at('/dashboard')
     expect(wrapper.find('.portal-top-bar').exists()).toBe(true)
     expect(wrapper.find('.sidebar').exists()).toBe(false)
-    expect(wrapper.find('.attention-strip').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="profile-completion-banner"]').exists()).toBe(true)
     expect(wrapper.find('.page-content').exists()).toBe(true)
     expect(wrapper.find('.mobile-tab-bar').exists()).toBe(true)
     expect(wrapper.find('.side-nav').exists()).toBe(true)
@@ -115,17 +115,17 @@ describe('PortalLayout', () => {
     expect(wrapper.find('.portal-bell__dot').exists()).toBe(false)
   })
 
-  it('hides the strip and the tab bar on task screens', async () => {
+  it('hides the profile banner and the tab bar on task screens', async () => {
     const wrapper = await at('/assessment/accredited/form/14')
     expect(wrapper.classes()).toContain('portal-layout--task')
-    expect(wrapper.find('.attention-strip').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="profile-completion-banner"]').exists()).toBe(false)
     expect(wrapper.find('.mobile-tab-bar').exists()).toBe(false)
   })
 
-  it('keeps the strip on desktop but drops the tab bar on the mobile-only task screen', async () => {
+  it('keeps the profile banner on desktop but drops the tab bar on the mobile-only task screen', async () => {
     const wrapper = await at('/messages/7c2f4e1a-52b0-4c8e-9a31-0000000000a1')
     expect(wrapper.classes()).toContain('portal-layout--mobile-task')
-    expect(wrapper.find('.attention-strip').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="profile-completion-banner"]').exists()).toBe(true)
     expect(wrapper.find('.mobile-tab-bar').exists()).toBe(false)
   })
 

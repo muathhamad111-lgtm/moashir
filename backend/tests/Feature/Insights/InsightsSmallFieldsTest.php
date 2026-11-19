@@ -17,6 +17,7 @@ const SMALL_FIELDS_MARKS = ['M1.1' => '85.00', 'M1.2' => '45.00', 'M2.1' => '75.
 
 beforeEach(function (): void {
     Notification::fake();
+    activateInsightsKit();
 });
 
 function executiveSummaryUrl(Assessment $assessment): string

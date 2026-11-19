@@ -221,12 +221,23 @@ describe('review, reason prompt, intro and detail', () => {
     requestsService.get.mockResolvedValue({
       data: { id: 9105, status: 'submitted', isFrozen: false },
     })
-    const { api } = withSetup(() => useRequestDetail(ref(9105)))
+    const { api, globals } = withSetup(() => useRequestDetail(ref(9105)))
+    useAuthStore(globals.pinia).setUser(sessionUserFor(['request_follower']))
     await api.load()
-    expect([api.canAssign.value, api.canReassign.value]).toEqual([true, false])
+    expect(api.assignmentMode.value).toBe('assign')
     api.apply({ id: 9105, status: 'under-review', isFrozen: false })
-    expect([api.canAssign.value, api.canReassign.value]).toEqual([false, true])
+    expect(api.assignmentMode.value).toBe('reassign')
     api.apply({ id: 9105, status: 'under-review', isFrozen: true })
-    expect(api.canReassign.value).toBe(false)
+    expect(api.assignmentMode.value).toBeNull()
+  })
+
+  it('offers no assignment without the assign permission', async () => {
+    requestsService.get.mockResolvedValue({
+      data: { id: 9105, status: 'submitted', isFrozen: false },
+    })
+    const { api, globals } = withSetup(() => useRequestDetail(ref(9105)))
+    useAuthStore(globals.pinia).setUser(sessionUserFor(['assessor']))
+    await api.load()
+    expect(api.assignmentMode.value).toBeNull()
   })
 })

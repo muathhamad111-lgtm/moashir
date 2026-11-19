@@ -1,4 +1,5 @@
 import { FIXTURE_ENTITY_LOGO } from './entityLogos'
+import { billingOf } from './entityBilling'
 
 export const ENTITY_REFERENCE_PREFIX = 'ENT-'
 
@@ -45,6 +46,7 @@ function record(fields) {
     websiteUrl: null,
     logo: null,
     ...registryOf(fields),
+    ...billingOf(fields.id),
     name: { ar: '', en: null },
     governanceGrade: null,
     employeesCount: null,

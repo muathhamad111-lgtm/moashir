@@ -16,6 +16,7 @@ const TYPES = [
     module: 'CNT',
     category: 'action_required',
     channels: ['in_app', 'email'],
+    enabledChannels: ['in_app'],
     audiences: ['contact_handler'],
     isMandatory: false,
     userConfigurableChannels: ['email'],
@@ -25,6 +26,7 @@ const TYPES = [
     module: 'SEC',
     category: 'alert',
     channels: ['in_app', 'email'],
+    enabledChannels: ['in_app', 'email'],
     audiences: ['system_admin', 'super_admin'],
     isMandatory: true,
     userConfigurableChannels: [],
@@ -45,7 +47,7 @@ beforeEach(() => {
   notificationTypesService.list.mockResolvedValue({ data: TYPES, meta: { total: 2 } })
 })
 
-describe('notification types catalogue (read-only)', () => {
+describe('notification types catalogue', () => {
   it('lists the types with their channels, audiences and preference rule', async () => {
     const wrapper = await mountView()
     const rows = wrapper.findAll('tbody tr')
@@ -56,6 +58,9 @@ describe('notification types catalogue (read-only)', () => {
     expect(rows[0].text()).toContain('يستطيع المستخدم إيقاف: البريد الإلكتروني')
     expect(rows[1].text()).toContain('إلزامي')
     expect(wrapper.text()).toContain('عدد الأنواع: 2')
+    expect(rows[0].findAll('.notification-catalogue__chips')[0].findAll('li')).toHaveLength(1)
+    expect(rows[0].find('a').attributes('href')).toBe('/admin/settings/notifications/CNT-01')
+    expect(rows[0].find('a').text()).toBe('تعديل النصوص')
   })
 
   it('offers no editing control at all', async () => {

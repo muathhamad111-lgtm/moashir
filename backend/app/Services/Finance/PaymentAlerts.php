@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Services\Finance;
 
 use App\Data\Entities\EntityNotice;
+use App\Data\Notifications\NoticeText;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Notifications\NotificationCode;
 use App\Models\Finance\Payment;
 use App\Services\Entities\EntityNotifier;
 use App\Support\Finance\FinanceNotices;
 use App\Support\Integrations\IntegrationNotices;
-use App\Support\ValueObjects\LocalizedText;
 use Illuminate\Contracts\Cache\Repository as Cache;
 use Illuminate\Contracts\Config\Repository as Config;
 
@@ -44,14 +44,8 @@ final readonly class PaymentAlerts
             $notice = IntegrationNotices::for(NotificationCode::ExternalServiceDown);
             $key = 'notifications.payments.issues.'.$issue;
 
-            $this->notifier->toRole(RoleKey::SystemAdmin, new EntityNotice(
-                $notice->code,
-                LocalizedText::fromTranslation($key.'.title'),
-                LocalizedText::fromTranslation($key.'.body'),
-                $notice->link,
-                $notice->viaMail,
-                $notice->viaInApp,
-            ), null);
+            $text = new NoticeText($key, []);
+            $this->notifier->toRole(RoleKey::SystemAdmin, new EntityNotice($notice->code, $text->title(), $text->body(), $notice->link, $notice->viaMail, $notice->viaInApp, null, $text), null);
         }
     }
 

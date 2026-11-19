@@ -6,11 +6,17 @@ import ProfileFieldInput from './ProfileFieldInput.vue'
 import ProfileFieldCell from './ProfileFieldCell.vue'
 import ProfileFormNotice from './ProfileFormNotice.vue'
 import ProfileSectionFooter from './ProfileSectionFooter.vue'
+import VatCertificateUpload from './VatCertificateUpload.vue'
 import { useProfileSectionForm } from '@/composables/useProfileSectionForm'
 import { useProfileFieldDisplay } from '@/composables/useProfileFieldDisplay'
 import { readPath } from '@/utils/entityProfile/paths'
-import { fieldLabelKey, nextMissingAfter } from '@/utils/entityProfile/sections'
-import { PROFILE_READ_ONLY_FIELDS, PROFILE_SAVE_STATES as S } from '@/constants/entityProfile'
+import { fieldLabelKey, nextMissingAfter, shownFieldsOf } from '@/utils/entityProfile/sections'
+import { isVatRegisteredAnswer } from '@/utils/entityProfile/billingSchema'
+import {
+  PROFILE_FILE_FIELDS,
+  PROFILE_READ_ONLY_FIELDS,
+  PROFILE_SAVE_STATES as S,
+} from '@/constants/entityProfile'
 
 const props = defineProps({
   section: { type: Object, required: true },
@@ -31,8 +37,11 @@ const { form, status, isDirty, errorFields, submit } = useProfileSectionForm(
 )
 
 const cityOptions = computed(() => props.cityOptionsFor(form.values.regionId))
+const shownFields = computed(() =>
+  shownFieldsOf(props.section.fields, isVatRegisteredAnswer(form.values.vatRegistered)),
+)
 const blankMissing = computed(() =>
-  props.section.fields
+  shownFields.value
     .filter((field) => field.counted && !PROFILE_READ_ONLY_FIELDS.includes(field.name))
     .map((field) => field.name)
     .filter((name) => String(readPath(form.values, name) ?? '').trim() === ''),
@@ -95,8 +104,9 @@ onMounted(() => nextTick(() => focusOn(props.focusField)))
       <legend class="profile-section__legend">
         {{ t(`portal.profile.sections.${section.key}`) }}
       </legend>
-      <template v-for="field in section.fields" :key="field.name">
-        <dl v-if="isReadOnly(field)" class="profile-section__readonly">
+      <template v-for="field in shownFields" :key="field.name">
+        <VatCertificateUpload v-if="PROFILE_FILE_FIELDS.includes(field.name)" :field="field" />
+        <dl v-else-if="isReadOnly(field)" class="profile-section__readonly">
           <ProfileFieldCell
             :label="t(fieldLabelKey(field.name))"
             :value="display.valueOf(profile, field.name)"

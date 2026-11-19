@@ -27,16 +27,16 @@ final readonly class IssueInvitation
             ->each(static fn (UserInvitation $previous): bool => $previous->forceFill(['status' => InvitationStatus::Revoked])->save());
 
         $token = Str::random(self::TOKEN_LENGTH);
-        $validHours = $this->settings->invitationTtlHours();
+        $validMinutes = $this->settings->invitationTtlMinutes();
 
         $invitation = $invitee->invitations()->create([
             'token_hash' => $this->hasher->hash($token),
             'status' => InvitationStatus::Pending,
             'invited_by_user_id' => $actor->id,
-            'expires_at' => Date::now()->addHours($validHours),
+            'expires_at' => Date::now()->addMinutes($validMinutes),
         ]);
 
-        $invitee->notify(new StaffInvitationNotification($token, $validHours));
+        $invitee->notify(new StaffInvitationNotification($token, $validMinutes));
 
         return $invitation;
     }

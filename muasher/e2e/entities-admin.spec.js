@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
 import { clearMockFault, forceMockFault } from './support/mockFaults'
-import { searchList } from './support/listFilters'
+import { applyListFilters, searchList } from './support/listFilters'
 
 const SYSTEM_ADMIN = {
   id: 2,
@@ -51,6 +51,24 @@ async function rowAction(page, rowText, actionName) {
   await rows(page).filter({ hasText: rowText }).first().locator('.dropdown-menu > button').click()
   await page.getByRole('menuitem', { name: actionName }).click()
 }
+
+test('the entities list shows the last accredited assessment and sorts by its percent', async ({
+  page,
+}, testInfo) => {
+  await seed(page, testInfo)
+  await page.goto('/admin/entities')
+  await expect(rows(page)).toHaveCount(10)
+  await expect(
+    page
+      .locator('.table th')
+      .filter({ hasText: isEn(testInfo) ? 'Last accredited assessment' : 'آخر تقييم معتمد' }),
+  ).toHaveCount(1)
+  await applyListFilters(page, { 'entity-sort': '-last_assessment_percent' })
+  const percents = rows(page).locator('.entity-last-assessment__percent')
+  await expect(percents.first()).toHaveText('77.15%')
+  await expect(percents.nth(1)).toHaveText('74.54%')
+  await expect(rows(page).last().locator('.entity-last-assessment--none')).toBeVisible()
+})
 
 test('the System Administrator lists, filters and exports entities', async ({ page }, testInfo) => {
   await seed(page, testInfo)

@@ -20,6 +20,7 @@ const OPEN_STAGES = ['submitted', 'assigned', 'under-review', 'needs-completion'
 const PRE_PERIODIC_LABEL = { ar: 'قبل التقييم الدوري', en: 'Before periodic assessment' }
 const PENDING_LABEL = { ar: 'تُحدَّد عند الإرسال', en: 'Set on submission' }
 const KIT_SEED = { 'ACC-2026-000001': 'active' }
+const UNLOCKING_KIT_STATUSES = ['active', 'closed']
 
 const NO_PERIOD = { periodState: null, period: null, periodLabel: null }
 
@@ -73,6 +74,16 @@ export function kitOf(record) {
   const latest = latestCompletedOf(record.entityId)
   if (!latest || latest.id !== record.id) return { status: null, requestId: null }
   return { status: KIT_SEED[record.number] ?? 'offered', requestId: null }
+}
+
+// The excellence tools of a result open once its Kit is activated (operator 2026-11-19).
+export function kitUnlocksTools(record) {
+  return UNLOCKING_KIT_STATUSES.includes(kitOf(record).status)
+}
+
+export function entityHasActiveKit(entityId) {
+  const latest = latestCompletedOf(entityId)
+  return Boolean(latest) && kitUnlocksTools(latest)
 }
 
 export function availableTabsOf(record) {

@@ -9,6 +9,7 @@ use App\Data\Finance\BankTransferSubmission;
 use App\Data\Finance\OrderTerms;
 use App\Enums\Audit\AuditEvent;
 use App\Enums\Finance\PaymentChannel;
+use App\Enums\Integrations\IntegrationMode;
 use App\Events\Finance\BankTransferSubmitted;
 use App\Exceptions\Finance\BankAccountRejected;
 use App\Models\Entities\Entity;
@@ -21,13 +22,13 @@ use Illuminate\Support\Facades\Date;
 
 final readonly class BankTransferOrderOpener
 {
-    public function __construct(private PaymentOrderOpener $orders, private BankTransferMode $mode, private AuditRecorder $audit) {}
+    public function __construct(private PaymentOrderOpener $orders, private AuditRecorder $audit) {}
 
-    public function open(User $actor, Entity $entity, BankTransferSubmission $submission): Payment
+    public function open(User $actor, Entity $entity, BankTransferSubmission $submission, IntegrationMode $mode): Payment
     {
         $proof = $submission->proof;
         $account = $this->selectableAccount($submission->bankAccountId);
-        $terms = new OrderTerms($submission->purpose, PaymentChannel::BankTransfer, $submission->quote, $this->mode->current(), $submission->idempotencyKey, $submission->cycle);
+        $terms = new OrderTerms($submission->purpose, PaymentChannel::BankTransfer, $submission->quote, $mode, $submission->idempotencyKey, $submission->cycle);
         $payment = $this->orders->open($actor, $entity, $terms)->payment;
 
         $transfer = BankTransfer::query()->create([

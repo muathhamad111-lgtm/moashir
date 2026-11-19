@@ -6,8 +6,8 @@ route keeps its path for both audiences:
 
 - `PortalLayout` — entity portal (Figma page 14): skip link, `portal/PortalTopBar` (logo, رحلتي · تقييماتي ·
   شهاداتي · مدفوعاتي · صندوق الرسائل with the unread-reply badge, bell, account menu overlay; logo, bell and avatar → `/more`
-  below `lg`), `portal/AttentionStrip` on hub screens, the `<main id="portal-main">` slot, `portal/PortalFooter` and
-  `portal/MobileTabBar` below `lg`. Task screens (`PORTAL_TASK_ROUTES` in `constants/portal.js`) hide the strip and the
+  below `lg`), `portal/ProfileCompletionBanner` on hub screens (only while the entity profile is incomplete), the `<main id="portal-main">` slot, `portal/PortalFooter` and
+  `portal/MobileTabBar` below `lg`. Task screens (`PORTAL_TASK_ROUTES` in `constants/portal.js`) hide the banner and the
   tab bar; the thread route hides them on mobile only.
 
 - `AppLayout` — back-office shell on the TTS Panel Design System "Modern layout": skip link, a floating
@@ -32,7 +32,7 @@ route keeps its path for both audiences:
   it is a compact logo band; from `lg` its inner column is sticky. Also hosts the maintenance page.
 
 Styling: `_sidebar.scss`, `_identity-card.scss`, `_navbar.scss`,
-`_app-layout.scss`, `_portal-layout.scss`, `_portal-top-bar.scss`, `_attention-strip.scss`, `_mobile-tab-bar.scss`, `_public-layout.scss`, `_auth-layout.scss`, `_footer.scss`. No style block or
+`_app-layout.scss`, `_portal-layout.scss`, `_portal-top-bar.scss`, `_profile-banner.scss`, `_mobile-tab-bar.scss`, `_public-layout.scss`, `_auth-layout.scss`, `_footer.scss`. No style block or
 inline style in any `.vue`.
 The TTS look of the shared components inside the back office (buttons, fields, tables, menus, tabs, pagination,
 modals, badges, stats cards) lives in `src/styles/tts/` and applies only under `:root[data-shell='tts']`

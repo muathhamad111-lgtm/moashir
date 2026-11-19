@@ -89,18 +89,18 @@ describe('completion request form', () => {
     })
   })
 
-  it('validates notes length, at least one item and a deadline inside the window', async () => {
+  it('requires notes of any length, at least one item and a deadline inside the window', async () => {
     const bounds = deadlineBounds(new Date('2026-11-01T09:00:00Z'))
     expect(bounds).toEqual({ min: '2026-11-01', max: '2026-12-30' })
     const schema = completionSchema(t, bounds)
     await expect(
       schema.validate(
-        { notes: 'قصير', items: [], deadline: '2027-01-15', expiryOutcome: 'decline' },
+        { notes: '  ', items: [], deadline: '2027-01-15', expiryOutcome: 'decline' },
         { abortEarly: false },
       ),
     ).rejects.toMatchObject({
       errors: expect.arrayContaining([
-        expect.stringContaining('validation.minChars'),
+        'validation.required',
         'review.completion.validation.items',
         expect.stringContaining('review.completion.validation.deadline'),
       ]),
@@ -111,6 +111,14 @@ describe('completion request form', () => {
         items: ['101:cv'],
         deadline: '2026-11-10',
         expiryOutcome: 'continue_as_submitted',
+      }),
+    ).resolves.toBeTruthy()
+    await expect(
+      schema.validate({
+        notes: 'اهلا',
+        items: ['101:cv'],
+        deadline: '2026-11-10',
+        expiryOutcome: 'decline',
       }),
     ).resolves.toBeTruthy()
   })

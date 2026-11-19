@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\Audit\AuditEvent;
+use App\Enums\Certificates\CertificateIssuanceMode;
 use App\Enums\Settings\SettingKey;
 use App\Models\Assessments\Assessment;
 use App\Models\Certificates\Certificate;
@@ -35,7 +36,7 @@ function setLevelThresholds(array $thresholds): void
     app(SettingsStore::class)->put(SettingKey::CertificateLevelThresholds, $thresholds, AuditEvent::CertificateSettingsUpdated, null);
 }
 
-function setAccreditedCertificateIssuance(bool $enabled): void
+function setAccreditedCertificateIssuance(CertificateIssuanceMode $mode): void
 {
-    app(SettingsStore::class)->put(SettingKey::AccreditedCertificateIssuance, $enabled, AuditEvent::CertificateSettingsUpdated, null);
+    app(SettingsStore::class)->put(SettingKey::AccreditedCertificateIssuanceMode, $mode->value, AuditEvent::CertificateSettingsUpdated, null);
 }

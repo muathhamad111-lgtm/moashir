@@ -7,6 +7,7 @@ const props = defineProps({
   name: { type: String, required: true },
   label: { type: String, required: true },
   options: { type: Array, required: true },
+  required: { type: Boolean, default: false },
 })
 
 const { value, errorMessage } = useField(toRef(props, 'name'))
@@ -19,6 +20,7 @@ const { value, errorMessage } = useField(toRef(props, 'name'))
     :label="label"
     :options="options"
     :error="errorMessage"
+    :required="required"
     inline
   />
 </template>

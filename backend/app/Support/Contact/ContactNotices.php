@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Contact;
 
 use App\Data\Entities\EntityNotice;
+use App\Data\Notifications\NoticeText;
 use App\Enums\Notifications\NotificationCode;
 use App\Models\Contact\ContactMessage;
 use App\Support\ValueObjects\LocalizedText;
@@ -17,14 +18,7 @@ final class ContactNotices
     {
         $replacements = ['reference' => $message->reference, 'type' => self::enquiryTypeOf($message)];
 
-        return new EntityNotice(
-            $code,
-            LocalizedText::fromTranslationWith(self::ROOT.$code->value.'.title', $replacements),
-            LocalizedText::fromTranslationWith(self::ROOT.$code->value.'.body', $replacements),
-            ContactLinks::staff($message),
-            true,
-            true,
-        );
+        return EntityNotice::fromText($code, new NoticeText(self::ROOT.$code->value, $replacements), ContactLinks::staff($message));
     }
 
     public static function enquiryTypeOf(ContactMessage $message): LocalizedText

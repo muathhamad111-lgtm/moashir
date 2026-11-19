@@ -19,7 +19,7 @@ final class CertificateSettingsResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'accredited_issuance_enabled' => $this->resource->accreditedIssuanceEnabled,
+            'accredited_issuance_mode' => $this->resource->accreditedIssuanceMode->value,
             'level_thresholds' => $this->resource->levelThresholds->toArray(),
         ];
     }

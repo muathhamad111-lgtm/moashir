@@ -29,10 +29,7 @@ export function bankAccountsSeed() {
       accountHolderName: { ar: 'منصة مؤشر — حساب الرسوم', en: 'Moashir Platform — fees account' },
       iban: EXAMPLE_IBAN,
       accountNumber: null,
-      payerNote: {
-        ar: 'حوّل من الحساب البنكي الرسمي للجهة.',
-        en: "Transfer from the entity's official bank account.",
-      },
+      payerNote: null,
       displayOrder: 1,
       isActive: true,
       activatedAt: '2026-10-20T07:00:00Z',

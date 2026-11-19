@@ -99,6 +99,8 @@ return [
         'open_requests_confirmation_required' => 'This entity has open requests. Review the list and confirm the deletion to continue.',
         'not_soft_deleted' => 'Only an entity in the Deleted entities section can be deleted permanently.',
         'verification_cooldown' => 'A verification reminder was sent recently. Please try again later.',
+        'vat_not_registered' => 'Answer «Yes» to the VAT registration question and save the billing details first, then upload the VAT registration certificate.',
+        'vat_certificate_missing' => 'This entity has no VAT registration certificate uploaded.',
     ],
     'email_change' => [
         'pending_approval' => 'An official e-mail change is already awaiting approval.',
@@ -163,6 +165,7 @@ return [
     ],
     'assessment' => [
         'sub_not_in_version' => 'This sub-criterion is not part of the criteria version of this assessment.',
+        'main_not_in_version' => 'This main criterion is not part of the criteria version of this assessment.',
         'not_assignee' => 'Only the assessor assigned to this request can do this.',
         'assignment_required' => 'This request has no assigned assessor.',
         'result_required' => 'This request has no computed result yet.',
@@ -269,7 +272,6 @@ return [
         'render_failed' => 'The document could not be generated. Please try again later.',
     ],
     'certificate' => [
-        'issuance_disabled' => 'Issuing accredited certificates is turned off in the certificate settings.',
         'assessment_not_completed' => 'A certificate can be issued only for a completed accredited assessment.',
         'not_issued' => 'This certificate is not in force.',
         'revoked' => 'This certificate was revoked and can no longer be downloaded.',
@@ -282,6 +284,7 @@ return [
     ],
     'insights' => [
         'result_not_eligible' => 'This result is not available for the excellence tools.',
+        'kit_required' => 'The excellence tools open once the Quick Excellence Kit is activated for this result.',
         'generic_text_not_deletable' => 'The generic text of a maturity band cannot be deleted; edit it instead.',
     ],
     'accredited' => [

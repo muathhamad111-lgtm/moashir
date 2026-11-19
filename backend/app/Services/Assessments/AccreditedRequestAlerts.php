@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Services\Assessments;
 
 use App\Data\Entities\EntityNotice;
+use App\Data\Notifications\NoticeText;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Notifications\NotificationCode;
 use App\Models\Finance\Payment;
 use App\Services\Entities\EntityNotifier;
-use App\Support\ValueObjects\LocalizedText;
 use Illuminate\Contracts\Cache\Repository as Cache;
 use Illuminate\Contracts\Config\Repository as Config;
 
@@ -39,13 +39,7 @@ final readonly class AccreditedRequestAlerts
             return;
         }
 
-        $this->notifier->toRole(RoleKey::SystemAdmin, new EntityNotice(
-            NotificationCode::RequestProcessingFailed,
-            LocalizedText::fromTranslation($key.'.title'),
-            LocalizedText::fromTranslationWith($key.'.body', ['reference' => $payment->reference]),
-            null,
-            false,
-            true,
-        ), null);
+        $notice = EntityNotice::fromText(NotificationCode::RequestProcessingFailed, new NoticeText($key, ['reference' => $payment->reference]), null);
+        $this->notifier->toRole(RoleKey::SystemAdmin, $notice->inAppOnly(), null);
     }
 }

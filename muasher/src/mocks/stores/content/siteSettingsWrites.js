@@ -35,11 +35,26 @@ function checkSocial(errors, social) {
   })
 }
 
+function checkLink(errors, path, link) {
+  errors.check(hasLocalizedText(link?.label), `${path}.label.ar`, 'localized')
+  errors.check(isSafeLink(link?.url ?? ''), `${path}.url`, 'linkSafe')
+}
+
 function checkLinks(errors, field, links, max) {
   if (!Array.isArray(links) || links.length > max) return errors.add(field, 'required')
+  links.forEach((link, index) => checkLink(errors, `${field}.${index}`, link))
+}
+
+function checkHeaderLinks(errors, links) {
+  const { headerLinksMax, headerChildrenMax } = SITE_SETTINGS_LIMITS
+  if (!Array.isArray(links) || links.length > headerLinksMax)
+    return errors.add('headerLinks', 'required')
   links.forEach((link, index) => {
-    errors.check(hasLocalizedText(link?.label), `${field}.${index}.label.ar`, 'localized')
-    errors.check(isSafeLink(link?.url ?? ''), `${field}.${index}.url`, 'linkSafe')
+    const path = `headerLinks.${index}`
+    const children = link?.children ?? []
+    if (!children.length) return checkLink(errors, path, link)
+    errors.check(hasLocalizedText(link?.label), `${path}.label.ar`, 'localized')
+    checkLinks(errors, `${path}.children`, children, headerChildrenMax)
   })
 }
 
@@ -50,7 +65,23 @@ function checkComplete(errors, field, value) {
 }
 
 function normalizedLinks(links) {
-  return links.map((link) => ({ label: normalizeLocalized(link.label), url: link.url.trim() }))
+  return links.map((link) => ({
+    label: normalizeLocalized(link.label),
+    url: link.url.trim(),
+    isVisible: link.isVisible !== false,
+  }))
+}
+
+function normalizedHeaderLinks(links) {
+  return links.map((link) => {
+    const children = normalizedLinks(link.children ?? [])
+    return {
+      label: normalizeLocalized(link.label),
+      url: children.length ? null : link.url.trim(),
+      isVisible: link.isVisible !== false,
+      children,
+    }
+  })
 }
 
 function checkContact(errors, contact) {
@@ -80,8 +111,7 @@ function validate(body) {
   if (body.social !== undefined) checkSocial(errors, body.social)
   if (body.quickLinks !== undefined)
     checkLinks(errors, 'quickLinks', body.quickLinks, SITE_SETTINGS_LIMITS.quickLinksMax)
-  if (body.headerLinks !== undefined)
-    checkLinks(errors, 'headerLinks', body.headerLinks, SITE_SETTINGS_LIMITS.headerLinksMax)
+  if (body.headerLinks !== undefined) checkHeaderLinks(errors, body.headerLinks)
   if (body.contact !== undefined) checkContact(errors, body.contact)
   if (body.featuredKpiLimit !== undefined) checkLimit(errors, body.featuredKpiLimit)
   errors.throwIfAny()
@@ -92,7 +122,7 @@ function normalized(body) {
   if (body.social !== undefined)
     changes.social = body.social.map(({ platform, url }) => ({ platform, url: url.trim() }))
   if (body.quickLinks !== undefined) changes.quickLinks = normalizedLinks(body.quickLinks)
-  if (body.headerLinks !== undefined) changes.headerLinks = normalizedLinks(body.headerLinks)
+  if (body.headerLinks !== undefined) changes.headerLinks = normalizedHeaderLinks(body.headerLinks)
   if (body.platformName !== undefined) changes.platformName = normalizeLocalized(body.platformName)
   if (body.platformDescription !== undefined)
     changes.platformDescription = normalizeLocalized(body.platformDescription)

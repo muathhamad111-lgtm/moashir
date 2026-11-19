@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
+import InsightsKitLocked from './InsightsKitLocked.vue'
 
 const props = defineProps({
   status: { type: String, required: true },
@@ -20,6 +21,7 @@ const message = computed(() => {
 
 <template>
   <ErrorState v-if="status === 'error'" :message="t('insights.loadError')" @retry="emit('retry')" />
+  <InsightsKitLocked v-else-if="status === 'locked'" />
   <EmptyState
     v-else
     icon="lock"

@@ -9,6 +9,7 @@ export const UNAUTHENTICATED_STATUS = 401
 const AUTH_FLOW_CONFIG = { skipSessionExpiry: true }
 const AUTH_REJECTIONS = [422, 429]
 const INVITATION_REJECTIONS = [404, 410, 422, 429]
+const INVITATION_CHECK_REJECTIONS = [404, 410, 429]
 
 function mapData(envelope, mapper) {
   return { ...envelope, data: mapper(envelope?.data ?? {}) }
@@ -131,6 +132,15 @@ export const authService = {
       () => apiClient.post('/auth/password/reset', body, AUTH_FLOW_CONFIG),
       { entity: 'password-reset', payloadShape: payloadShape(body) },
       { expectedStatuses: AUTH_REJECTIONS },
+    )
+  },
+
+  checkInvitation(token) {
+    return serviceRequest(
+      'auth.checkInvitation',
+      () => apiClient.get(`/auth/invitations/${encodeURIComponent(token)}`, AUTH_FLOW_CONFIG),
+      { entity: 'invitation' },
+      { expectedStatuses: INVITATION_CHECK_REJECTIONS },
     )
   },
 

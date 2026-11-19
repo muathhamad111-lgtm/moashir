@@ -41,7 +41,7 @@ final class PreparingRequestResource extends JsonResource
             'entity' => [...EntityPresenter::summary($assessment->entity), 'level' => EntityLevelPresenter::levelOf($assessment->entity)?->value],
             'award_cycle' => CyclePresenter::summary($assessment->awardCycle),
             'opened_at' => $assessment->created_at->toIso8601String(),
-            'payment' => RequestPaymentPresenter::of($assessment->payment, $request->user()),
+            'payment' => RequestPaymentPresenter::forStaff($assessment->payment, $request->user()),
             'progress' => $this->progressOf($this->resource->progress),
             'last_activity_at' => ($assessment->entity_activity_at ?? $assessment->created_at)->toIso8601String(),
             ...PeriodPresenter::attribution($assessment),

@@ -11,11 +11,6 @@ use Illuminate\Http\Response;
 
 final class CertificateRejected extends ApiException
 {
-    public static function issuanceDisabled(): self
-    {
-        return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'certificate.issuance_disabled'));
-    }
-
     public static function assessmentNotCompleted(): self
     {
         return new self(new ApiError(Response::HTTP_CONFLICT, 'certificate.assessment_not_completed'));

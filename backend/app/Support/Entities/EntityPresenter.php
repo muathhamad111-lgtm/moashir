@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Entities;
 
 use App\Http\Resources\Entities\EntityLogoResource;
+use App\Http\Resources\Entities\VatCertificateResource;
 use App\Models\Entities\City;
 use App\Models\Entities\Entity;
 use App\Models\Entities\Region;
@@ -59,6 +60,27 @@ final class EntityPresenter
             'founded_on' => $entity->founded_on?->toDateString(),
             'website_url' => $entity->website_url,
             'logo' => $entity->logo instanceof StoredFile ? new EntityLogoResource($entity->logo)->toArray($request) : null,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function billing(Entity $entity, Request $request): array
+    {
+        $certificate = $entity->vatCertificate;
+
+        return [
+            'address_building_number' => $entity->address_building_number,
+            'address_street' => $entity->address_street,
+            'address_district' => $entity->address_district,
+            'address_city' => $entity->address_city,
+            'address_postal_code' => $entity->address_postal_code,
+            'address_additional_number' => $entity->address_additional_number,
+            'address_short_code' => $entity->address_short_code,
+            'vat_registered' => $entity->vat_registered,
+            'vat_number' => $entity->vat_number,
+            'vat_certificate' => $certificate instanceof StoredFile ? new VatCertificateResource($certificate)->toArray($request) : null,
         ];
     }
 

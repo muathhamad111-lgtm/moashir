@@ -115,33 +115,87 @@ describe('Brand identity — general tab', () => {
 })
 
 describe('Brand identity — menus tab', () => {
-  it('lists the current header links ready to edit', async () => {
+  function treeButtons(wrapper, index) {
+    return wrapper.findAll('fieldset')[index].findAll('.menu-tree__select')
+  }
+
+  it('lists the links as a tree and edits the selected one in the side panel', async () => {
     const wrapper = await mountForm(IdentityMenusSettings)
-    expect(wrapper.find('input[name="headerLinksLabelEn-0"]').element.value).toBe('Home')
-    expect(wrapper.find('input[name="headerLinksUrl-1"]').element.value).toBe('/kpis')
-    expect(wrapper.find('input[name="quickLinksUrl-0"]').element.value).toBe('/')
+    const header = treeButtons(wrapper, 0)
+    expect(header.map((button) => button.text())).toEqual(['Home', 'Performance Indicators'])
+    expect(header[0].attributes('aria-current')).toBe('true')
+    expect(wrapper.find('input[name="headerLinks-0-label-en"]').element.value).toBe('Home')
+    await header[1].trigger('click')
+    expect(header[1].attributes('aria-current')).toBe('true')
+    expect(wrapper.find('input[name="headerLinks-1-label-en"]').element.value).toBe(
+      'Performance Indicators',
+    )
+    expect(wrapper.findAll('fieldset')[0].find('.menu-panel').text()).toContain(
+      'Performance indicators page',
+    )
+    expect(treeButtons(wrapper, 1)[0].text()).toBe('Home')
     wrapper.unmount()
   })
 
-  it('edits, removes and adds header links and saves both menus only', async () => {
+  it('hides a link, adds a dropdown sub-link and saves both menus only', async () => {
     const wrapper = await mountForm(IdentityMenusSettings)
-    await wrapper.find('input[name="headerLinksLabelEn-0"]').setValue('Start')
-    const headerMenu = wrapper.findAll('fieldset')[0]
-    await headerMenu.findAll('button[aria-label="Remove link"]')[1].trigger('click')
-    const addHeader = wrapper.findAll('button').find((b) => b.text() === 'Add header link')
-    await addHeader.trigger('click')
-    await wrapper.find('input[name="headerLinksLabelAr-1"]').setValue('المسارات')
-    await wrapper.find('input[name="headerLinksLabelEn-1"]').setValue('Paths')
-    await wrapper.find('input[name="headerLinksUrl-1"]').setValue('/#paths')
+    const header = wrapper.findAll('fieldset')[0]
+    await header.find('input[name="headerLinks-0-visible"]').setValue(false)
+    expect(header.find('.menu-tree__item').classes()).toContain('is-hidden')
+    expect(header.find('.menu-tree__item').text()).toContain('Hidden')
+    await header
+      .find('button[aria-label="Add a sub-link under Performance Indicators"]')
+      .trigger('click')
+    await header.find('input[name="headerLinks-1-children-0-label-ar"]').setValue('الشروط')
+    await header.find('input[name="headerLinks-1-children-0-label-en"]').setValue('Terms')
+    expect(header.findAll('.menu-tree__item')[1].text()).toContain('Dropdown (1)')
+    await header.findAll('.menu-tree__select')[1].trigger('click')
+    expect(header.find('.menu-panel__note').text()).toContain('opens a dropdown with 1 sub-links')
     await wrapper.find('.site-settings__form').trigger('submit')
     await flushPromises()
     expect(siteSettingsService.update).toHaveBeenCalledWith({
       headerLinks: [
-        { label: { ar: 'الرئيسية', en: 'Start' }, url: '/' },
-        { label: { ar: 'المسارات', en: 'Paths' }, url: '/#paths' },
+        { label: { ar: 'الرئيسية', en: 'Home' }, url: '/', isVisible: false, children: [] },
+        {
+          label: { ar: 'مؤشرات الأداء', en: 'Performance Indicators' },
+          url: null,
+          isVisible: true,
+          children: [{ label: { ar: 'الشروط', en: 'Terms' }, url: '/', isVisible: true }],
+        },
       ],
-      quickLinks: [{ label: { ar: 'الرئيسية', en: 'Home' }, url: '/' }],
+      quickLinks: [{ label: { ar: 'الرئيسية', en: 'Home' }, url: '/', isVisible: true }],
     })
+    wrapper.unmount()
+  })
+
+  it('adds a custom link, reorders and removes links', async () => {
+    siteSettingsService.get.mockResolvedValue({
+      data: {
+        ...SETTINGS,
+        quickLinks: [{ label: { ar: 'موقع', en: 'Site' }, url: 'https://moashir.example.sa' }],
+      },
+    })
+    const wrapper = await mountForm(IdentityMenusSettings)
+    const footer = wrapper.findAll('fieldset')[1]
+    expect(footer.find('input[name="quickLinks-0-url"]').element.value).toBe(
+      'https://moashir.example.sa',
+    )
+    const header = wrapper.findAll('fieldset')[0]
+    const moveUp = header
+      .findAll('button')
+      .find((button) => button.attributes('aria-label') === 'Move “Performance Indicators” up')
+    await moveUp.trigger('click')
+    expect(treeButtons(wrapper, 0).map((button) => button.text())).toEqual([
+      'Performance Indicators',
+      'Home',
+    ])
+    await header.findAll('.menu-tree__select')[0].trigger('click')
+    await header.findAll('.menu-panel__foot button')[0].trigger('click')
+    expect(treeButtons(wrapper, 0).map((button) => button.text())).toEqual(['Home'])
+    const add = header.findAll('button').find((button) => button.text() === 'Add header link')
+    await add.trigger('click')
+    expect(treeButtons(wrapper, 0)).toHaveLength(2)
+    expect(treeButtons(wrapper, 0)[1].attributes('aria-current')).toBe('true')
     wrapper.unmount()
   })
 
@@ -165,6 +219,7 @@ describe('Brand identity — menus tab', () => {
     await wrapper.find('.site-settings__form').trigger('submit')
     await flushPromises()
     expect(wrapper.text()).toContain('The link is not safe.')
+    expect(wrapper.find('.menu-tree__item').classes()).toContain('is-invalid')
     wrapper.unmount()
   })
 })

@@ -57,3 +57,87 @@ describe('RawScoreField', () => {
     expect(input.attributes('inputmode')).toBe('decimal')
   })
 })
+
+describe('RawScoreField stepper', () => {
+  function buttons(wrapper) {
+    const [decrease, increase] = wrapper.findAll('.score-stepper__button')
+    return { decrease, increase }
+  }
+
+  it('offers labelled decrease and increase buttons inside the field', async () => {
+    const wrapper = mountField({ value: '7.5' })
+    await flushPromises()
+    const { decrease, increase } = buttons(wrapper)
+    const input = wrapper.find('input')
+    expect(decrease.attributes('aria-label')).toBe('Decrease Score of M1.1.1')
+    expect(increase.attributes('aria-label')).toBe('Increase Score of M1.1.1')
+    expect(increase.attributes('aria-controls')).toBe(input.attributes('id'))
+    expect(wrapper.find('.field__frame--addon .score-stepper').exists()).toBe(true)
+    await increase.trigger('click')
+    await flushPromises()
+    expect(input.element.value).toBe('8.5')
+    await decrease.trigger('click')
+    await decrease.trigger('click')
+    await flushPromises()
+    expect(input.element.value).toBe('6.5')
+    expect(wrapper.find('.field__hint').text()).toBe('Not saved yet, out of 10')
+  })
+
+  it('starts an empty field from zero and stops at the bounds', async () => {
+    const wrapper = mountField()
+    await flushPromises()
+    const { decrease, increase } = buttons(wrapper)
+    expect(decrease.attributes('disabled')).toBeDefined()
+    await increase.trigger('click')
+    await flushPromises()
+    expect(wrapper.find('input').element.value).toBe('1')
+    await wrapper.find('input').setValue('10')
+    await flushPromises()
+    expect(increase.attributes('disabled')).toBeDefined()
+    expect(decrease.attributes('disabled')).toBeUndefined()
+  })
+
+  it('steps with the up and down arrow keys and still accepts typed values', async () => {
+    const wrapper = mountField({ value: '3' })
+    await flushPromises()
+    const input = wrapper.find('input')
+    await input.trigger('keydown', { key: 'ArrowUp' })
+    await flushPromises()
+    expect(input.element.value).toBe('4')
+    await input.trigger('keydown', { key: 'ArrowDown' })
+    await input.trigger('keydown', { key: 'ArrowDown' })
+    await flushPromises()
+    expect(input.element.value).toBe('2')
+    await input.setValue('7.25')
+    await flushPromises()
+    expect(input.element.value).toBe('7.25')
+  })
+
+  it('disables both buttons and the arrow keys when the field is read-only', async () => {
+    const wrapper = mountField({ value: '5', disabled: true })
+    await flushPromises()
+    const { decrease, increase } = buttons(wrapper)
+    expect(decrease.attributes('disabled')).toBeDefined()
+    expect(increase.attributes('disabled')).toBeDefined()
+    await wrapper.find('input').trigger('keydown', { key: 'ArrowUp' })
+    await flushPromises()
+    expect(wrapper.find('input').element.value).toBe('5')
+  })
+})
+
+describe('RawScoreField typing', () => {
+  it.each([
+    ['10تال', '10'],
+    ['٧٫٥', '7.5'],
+    ['1,5', '1.5'],
+    ['7.555', '7.55'],
+    ['abc', ''],
+  ])('keeps only the number when %s is typed or pasted', async (typed, kept) => {
+    const wrapper = mountField()
+    await flushPromises()
+    const input = wrapper.find('input')
+    await input.setValue(typed)
+    await flushPromises()
+    expect(input.element.value).toBe(kept)
+  })
+})

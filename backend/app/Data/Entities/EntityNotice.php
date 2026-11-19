@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Entities;
 
+use App\Data\Notifications\NoticeText;
 use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Notifications\NotificationCode;
 use App\Support\ValueObjects\LocalizedText;
@@ -22,40 +23,34 @@ final readonly class EntityNotice
         public bool $viaMail,
         public bool $viaInApp,
         public ?AssessmentPath $path = null,
+        public ?NoticeText $text = null,
     ) {}
+
+    public static function fromText(NotificationCode $code, NoticeText $text, ?string $link, ?AssessmentPath $path = null): self
+    {
+        return new self($code, $text->title(), $text->body(), $link, true, true, $path, $text);
+    }
 
     /**
      * @param  array<string, LocalizedText|string>  $replacements
      */
     public static function for(NotificationCode $code, string $audience, array $replacements, ?string $link): self
     {
-        return new self(
-            $code,
-            LocalizedText::fromTranslationWith(self::key($code, $audience, 'title'), $replacements),
-            LocalizedText::fromTranslationWith(self::key($code, $audience, 'body'), $replacements),
-            $link,
-            true,
-            true,
-        );
+        return self::fromText($code, new NoticeText('notifications.entities.'.$code->value.'.'.$audience, $replacements), $link);
     }
 
     public function inAppOnly(): self
     {
-        return new self($this->code, $this->title, $this->body, $this->link, false, true, $this->path);
+        return new self($this->code, $this->title, $this->body, $this->link, false, true, $this->path, $this->text);
     }
 
     public function mailOnly(): self
     {
-        return new self($this->code, $this->title, $this->body, $this->link, true, false, $this->path);
+        return new self($this->code, $this->title, $this->body, $this->link, true, false, $this->path, $this->text);
     }
 
     public function forPath(AssessmentPath $path): self
     {
-        return new self($this->code, $this->title, $this->body, $this->link, $this->viaMail, $this->viaInApp, $path);
-    }
-
-    private static function key(NotificationCode $code, string $audience, string $part): string
-    {
-        return 'notifications.entities.'.$code->value.'.'.$audience.'.'.$part;
+        return new self($this->code, $this->title, $this->body, $this->link, $this->viaMail, $this->viaInApp, $path, $this->text);
     }
 }

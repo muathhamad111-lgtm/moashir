@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Periods;
 
 use App\Data\Entities\EntityNotice;
+use App\Data\Notifications\NoticeText;
 use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Notifications\NotificationCode;
 use App\Support\ValueObjects\LocalizedText;
@@ -24,14 +25,6 @@ final class PeriodNotices
     {
         $root = self::ROOT.$code->value.'.'.$key;
 
-        return new EntityNotice(
-            $code,
-            LocalizedText::fromTranslationWith($root.'.title', $replacements),
-            LocalizedText::fromTranslationWith($root.'.body', $replacements),
-            $link,
-            true,
-            true,
-            AssessmentPath::Accredited,
-        );
+        return EntityNotice::fromText($code, new NoticeText($root, $replacements), $link, AssessmentPath::Accredited);
     }
 }

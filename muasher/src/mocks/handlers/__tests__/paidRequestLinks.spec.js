@@ -58,20 +58,13 @@ afterEach(() => {
 afterAll(() => server.close())
 
 describe('paid requests waiting for the entity', () => {
-  it('lists the paid drafts with the payment, progress and last activity, outside the queue', async () => {
+  it('lists the paid drafts with the payment status only, progress and last activity, outside the queue', async () => {
     seedMockSession(FOLLOWER)
     const { body } = await call('/requests/preparing?filter[path]=accredited')
     const row = body.data.find((item) => item.id === ACCREDITED_FIXTURE_IDS.draft)
     expect(keys(row)).toEqual(PREPARING_KEYS)
     expect(row.status).toBe('draft')
-    expect(keys(row.payment)).toEqual([
-      'channel',
-      'is_test',
-      'paid_at',
-      'receipt',
-      'reference',
-      'status',
-    ])
+    expect(keys(row.payment)).toEqual(['is_test', 'status'])
     expect(row.progress.subs_total).toBeGreaterThan(row.progress.subs_complete)
     expect(body.meta.path_counts[0].preparing).toBe(body.meta.pagination.total)
     const queue = await call('/requests?filter[path]=accredited')
@@ -83,6 +76,7 @@ describe('paid requests waiting for the entity', () => {
     seedMockSession(ADMIN)
     const admin = await call('/requests/preparing')
     expect(admin.body.data[0].payment.id).toBe(DRAFT_PAYMENT)
+    expect(admin.body.data[0].payment.reference).toBeTruthy()
     seedMockSession(OFFICER)
     expect((await call('/requests/preparing')).status).toBe(403)
   })

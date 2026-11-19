@@ -35,6 +35,18 @@ function defaultLink(link, t, router) {
   return linkOf(`/#${link.id}`, t(link.labelKey), link.id)
 }
 
+function managedLink(link, index, localized) {
+  const label = localized(link.label)
+  if (!link.children?.length) return linkOf(link.url, label, `${index}-${link.url}`)
+  return {
+    key: `group-${index}`,
+    label,
+    children: link.children.map((child, childIndex) =>
+      linkOf(child.url, localized(child.label), `${index}-${childIndex}-${child.url}`),
+    ),
+  }
+}
+
 export function usePublicNavLinks() {
   const { t } = useI18n()
   const router = useRouter()
@@ -43,12 +55,15 @@ export function usePublicNavLinks() {
   const links = computed(() => {
     const managed = siteSettings.value?.headerLinks
     if (!Array.isArray(managed)) return HOME_NAV_LINKS.map((link) => defaultLink(link, t, router))
-    return managed.map((link, index) =>
-      linkOf(link.url, localized(link.label), `${index}-${link.url}`),
-    )
+    return managed.map((link, index) => managedLink(link, index, localized))
   })
 
-  const spyAnchors = computed(() => links.value.map((link) => link.anchor).filter(Boolean))
+  const spyAnchors = computed(() =>
+    links.value
+      .flatMap((link) => (link.children ? link.children : [link]))
+      .map((link) => link.anchor)
+      .filter(Boolean),
+  )
 
   return { links, spyAnchors }
 }

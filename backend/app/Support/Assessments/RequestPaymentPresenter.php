@@ -20,7 +20,7 @@ final class RequestPaymentPresenter
             return null;
         }
 
-        $linksFinance = self::linksFinance($viewer);
+        $linksFinance = self::revealsDetailsTo($viewer);
         $summary = [
             'reference' => $payment->reference,
             'channel' => $payment->channel->value,
@@ -31,6 +31,20 @@ final class RequestPaymentPresenter
         ];
 
         return $linksFinance ? [...$summary, 'id' => $payment->public_id] : $summary;
+    }
+
+    /**
+     * Staff outside finance see whether a request is paid, never the payment's reference, channel or receipt.
+     *
+     * @return array<string, mixed>|null
+     */
+    public static function forStaff(?Payment $payment, mixed $viewer): ?array
+    {
+        if (! $payment instanceof Payment || self::revealsDetailsTo($viewer)) {
+            return self::of($payment, $viewer);
+        }
+
+        return ['status' => $payment->status->value, 'is_test' => $payment->isTest()];
     }
 
     /**
@@ -47,7 +61,7 @@ final class RequestPaymentPresenter
         return $linksFinance ? [...$summary, 'id' => $receipt->public_id] : $summary;
     }
 
-    private static function linksFinance(mixed $viewer): bool
+    public static function revealsDetailsTo(mixed $viewer): bool
     {
         return $viewer instanceof User && $viewer->can(PermissionKey::FinanceOperationsView->value);
     }

@@ -10,6 +10,7 @@ final readonly class SubmissionForm
 {
     /**
      * @param  array<string, mixed>  $criteria
+     * @param  list<int>  $passedStations
      */
     public function __construct(
         public CvSheet $cv,
@@ -19,5 +20,6 @@ final readonly class SubmissionForm
         public ?AssessmentCompletionRequest $completionRequest,
         public UploadLimits $uploadLimits,
         public ?CriteriaMoveSummary $criteriaUpdate,
+        public array $passedStations,
     ) {}
 }

@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\Assessments\AssessorReviewController;
 use App\Http\Controllers\Api\V1\Assessments\EvidenceBundleController;
 use App\Http\Controllers\Api\V1\Assessments\EvidenceController;
 use App\Http\Controllers\Api\V1\Assessments\SelfAssessmentController;
+use App\Http\Controllers\Api\V1\Assessments\SubmissionStationController;
 use App\Http\Controllers\Api\V1\Assessments\SubmitAssessmentController;
 use App\Models\Assessments\Assessment;
 use Illuminate\Support\Facades\Route;
@@ -37,6 +38,7 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
             Route::post('{assessment}/submit', SubmitAssessmentController::class)->middleware(['can:submit,assessment', 'throttle:sensitive'])->name('submit');
             Route::get('{assessment}/result', AssessmentResultController::class)->middleware('can:viewResult,assessment')->name('result');
             Route::put('{assessment}/cv', [AccreditedAssessmentController::class, 'saveCv'])->middleware(['can:saveCv,assessment', 'throttle:assessment-write'])->name('cv.update');
+            Route::put('{assessment}/stations/{mainCriterion}/passed', SubmissionStationController::class)->whereNumber('mainCriterion')->middleware(['can:saveCv,assessment', 'throttle:assessment-write'])->name('stations.pass');
 
             Route::get('{assessment}/evidence', [EvidenceController::class, 'index'])->middleware('can:viewEvidence,assessment')->name('evidence.index');
             Route::post('{assessment}/evidence', [EvidenceController::class, 'store'])->middleware(['can:manageEvidence,assessment', 'throttle:uploads'])->name('evidence.store');

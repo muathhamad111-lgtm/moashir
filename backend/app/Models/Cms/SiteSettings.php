@@ -14,8 +14,8 @@ use Illuminate\Support\Carbon;
  * @property list<array{platform: string, url: string}> $social
  * @property array<string, mixed>|null $contact
  * @property LocalizedContent|null $footer_note
- * @property list<array{label: array<string, string>, url: string}> $quick_links
- * @property list<array{label: array<string, string>, url: string}> $header_links
+ * @property list<array{label: array<string, string>, url: string, is_visible?: bool}> $quick_links
+ * @property list<array{label: array<string, string>, url: string|null, is_visible?: bool, children?: list<array{label: array<string, string>, url: string, is_visible?: bool}>}> $header_links
  * @property LocalizedContent|null $platform_name
  * @property LocalizedContent|null $platform_description
  * @property array<string, mixed>|null $seo

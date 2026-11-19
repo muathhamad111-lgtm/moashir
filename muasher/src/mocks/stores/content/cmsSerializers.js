@@ -1,6 +1,13 @@
 import { cmsState, findPage, sectionsOf } from './cmsState'
 import { withFallback } from './contentValidation'
 import { getBrandingTheme } from '../brandingStore'
+import {
+  editableFooterLinks,
+  editableHeaderLinks,
+  publicFooterLinks,
+  publicHeaderLinks,
+} from './siteMenus'
+import { scenarioHeaderLinks } from './menuScenario'
 
 const CONTENT_FIELDS = [
   'title',
@@ -109,6 +116,8 @@ export function siteSettingsResource() {
   const contact = settings.contact ?? {}
   return {
     ...settings,
+    headerLinks: editableHeaderLinks(settings.headerLinks),
+    quickLinks: editableFooterLinks(settings.quickLinks),
     contact: {
       email: contact.email ?? null,
       phone: contact.phone ?? null,
@@ -122,10 +131,7 @@ export function publicSiteSettings() {
   return {
     platformName: withFallback(settings.platformName),
     platformDescription: withFallback(settings.platformDescription),
-    headerLinks: (settings.headerLinks ?? []).map((link) => ({
-      label: withFallback(link.label),
-      url: link.url,
-    })),
+    headerLinks: publicHeaderLinks(scenarioHeaderLinks(settings.headerLinks)),
     social: clone(settings.social),
     contact: {
       email: settings.contact?.email ?? null,
@@ -133,10 +139,7 @@ export function publicSiteSettings() {
       address: withFallback(settings.contact?.address),
     },
     footerNote: withFallback(settings.footerNote),
-    quickLinks: settings.quickLinks.map((link) => ({
-      label: withFallback(link.label),
-      url: link.url,
-    })),
+    quickLinks: publicFooterLinks(settings.quickLinks),
     seo: {
       title: withFallback(settings.seo?.title),
       description: withFallback(settings.seo?.description),

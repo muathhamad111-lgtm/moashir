@@ -104,6 +104,7 @@ export const ROUTE_NAMES = {
   ADMIN_SETTINGS_AI: 'admin.settings.ai',
   ADMIN_SETTINGS_AI_KNOWLEDGE_BASE: 'admin.settings.aiKnowledgeBase',
   ADMIN_SETTINGS_NOTIFICATIONS: 'admin.settings.notifications',
+  ADMIN_SETTINGS_NOTIFICATION_TEXTS: 'admin.settings.notifications.texts',
   ADMIN_SETTINGS_HOMEPAGE: 'admin.settings.homepage',
   ADMIN_SETTINGS_MATURITY_TEXTS: 'admin.settings.maturityTexts',
   ADMIN_CRITERIA: 'admin.criteria',

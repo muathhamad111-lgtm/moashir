@@ -45,7 +45,7 @@ it('describes every section with its fields, their requirement levels and a revi
 
     $sections = switchTo(ownerOf($entity))->getJson('/api/v1/entities/me')->assertOk()->json('data.profile_sections');
 
-    expect(array_column($sections, 'key'))->toBe(['identity', 'classification', 'governance', 'contact'])
+    expect(array_column($sections, 'key'))->toBe(['identity', 'classification', 'governance', 'contact', 'billing'])
         ->and($sections[0]['fields'])->toBe([
             ['key' => 'name.ar', 'requirement' => 'required'],
             ['key' => 'name.en', 'requirement' => 'optional'],

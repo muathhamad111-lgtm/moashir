@@ -160,6 +160,23 @@ return [
     'uuid' => 'The :attribute field must be a valid UUID.',
 
     'custom' => [
+        'address_building_number' => [
+            'regex' => 'The building number has 4 digits (0-9), e.g. 7421.',
+        ],
+        'address_postal_code' => [
+            'regex' => 'The postal code has 5 digits (0-9), e.g. 12214.',
+        ],
+        'address_additional_number' => [
+            'regex' => 'The additional number has 4 digits (0-9), e.g. 3365.',
+        ],
+        'address_short_code' => [
+            'regex' => 'The short address is 4 Latin letters followed by 4 digits, e.g. RRRD2929.',
+        ],
+        'vat_number' => [
+            'regex' => 'The VAT registration number has 15 Western digits (0-9) with no spaces, and starts and ends with 3.',
+            'required_if_accepted' => 'Enter the VAT registration number because the entity is registered for VAT.',
+            'prohibited_if_declined' => 'Remove the VAT registration number because the entity is not registered for VAT.',
+        ],
         'overview_period' => [
             'too_long' => 'A custom period cannot be longer than :days days.',
         ],
@@ -261,6 +278,13 @@ return [
         'terms_version_id' => [
             'not_current' => 'You must accept the current version of the terms and conditions.',
         ],
+        'notification_channels' => [
+            'mandatory' => 'The channels of a mandatory notification cannot be switched off or on.',
+        ],
+        'notification_text' => [
+            'unknown_variable' => 'The variable :variable is not available for this notification.',
+            'required_variable' => 'Keep the variable :variable; this notification is mandatory and needs it.',
+        ],
         'q' => [
             'searchable' => 'The search term must contain at least :min letters or digits.',
         ],
@@ -288,11 +312,20 @@ return [
             'window' => 'Choose a date from :min to :max.',
         ],
         'vat_rate' => [
-            'format' => 'The :attribute must be a percentage between 0 and 100 with at most two decimals, for example 15.00.',
+            'format' => 'The :attribute must be a percentage between 0 and 100 with at most two decimals, e.g. 15.00.',
         ],
     ],
 
     'attributes' => [
+        'address_building_number' => 'building number',
+        'address_street' => 'street',
+        'address_district' => 'district',
+        'address_city' => 'city',
+        'address_postal_code' => 'postal code',
+        'address_additional_number' => 'additional number',
+        'address_short_code' => 'short address',
+        'vat_registered' => 'VAT registration',
+        'vat_number' => 'VAT registration number',
         'primary_color' => 'primary color',
         'secondary_color' => 'secondary color',
         'meta.availability' => 'availability',

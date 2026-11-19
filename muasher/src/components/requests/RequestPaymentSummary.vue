@@ -21,13 +21,13 @@ const { t } = useI18n()
         :to="{ name: ROUTE_NAMES.FINANCE_TRANSACTION, params: { id: payment.id } }"
         ><bdi dir="ltr">{{ payment.reference }}</bdi></RouterLink
       >
-      <bdi v-else dir="ltr">{{ payment.reference }}</bdi>
+      <bdi v-else-if="payment.reference" dir="ltr">{{ payment.reference }}</bdi>
     </span>
     <bdi v-if="payment.receipt?.number" dir="ltr" class="request-queue__muted">{{
       payment.receipt.number
     }}</bdi>
-    <span v-else-if="payment.receipt?.isTest" class="request-queue__muted">{{
-      t('finance.receipt.notProof')
+    <span v-else-if="payment.receipt" class="request-queue__muted">{{
+      t('finance.receipt.noNumber')
     }}</span>
   </span>
 </template>

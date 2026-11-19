@@ -60,3 +60,44 @@ describe('RequestQueueTable last level (LC-5)', () => {
     expect(wrapper.find('[data-testid="level-validity"]').text()).toContain('Expired')
   })
 })
+
+describe('RequestQueueTable row actions', () => {
+  function mountTable(items, canAssign) {
+    return mount(RequestQueueTable, {
+      props: { items, status: 'success', canAssign },
+      global: createTestGlobals({ locale: 'en' }),
+    })
+  }
+
+  const ASSIGNED = {
+    ...ROW,
+    id: 9103,
+    number: 'ACC-2026-000060',
+    status: 'under-review',
+    assessor: { id: 7001, name: 'Sultan Al-Qarni' },
+  }
+  const FROZEN = { ...ROW, id: 9104, number: 'ACC-2026-000061', isFrozen: true }
+  const COMPLETED = { ...ASSIGNED, id: 9105, number: 'ACC-2026-000062', status: 'completed' }
+
+  it('offers «Assign» on an unassigned row and «Reassign» on one in progress, and emits the mode', async () => {
+    const wrapper = mountTable([ROW, ASSIGNED, FROZEN, COMPLETED], true)
+    const buttons = wrapper.findAll('[data-testid="queue-row-assign"]')
+    expect(buttons.map((button) => button.text())).toEqual(['Assign', 'Reassign'])
+    expect(buttons[0].attributes('aria-label')).toBe(
+      'Assign request ACC-2026-000058 to an assessor',
+    )
+    expect(buttons[0].classes()).toContain('btn--primary')
+    await buttons[1].trigger('click')
+    expect(wrapper.emitted('assign')).toEqual([[{ item: ASSIGNED, mode: 'reassign' }]])
+  })
+
+  it('shows only the view link to a user who cannot assign', () => {
+    const wrapper = mountTable([ROW, ASSIGNED], false)
+    expect(wrapper.findAll('[data-testid="queue-row-assign"]')).toHaveLength(0)
+    const views = wrapper.findAll('.table__cell--actions a')
+    expect(views.map((link) => link.attributes('aria-label'))).toEqual([
+      'View request ACC-2026-000058',
+      'View request ACC-2026-000060',
+    ])
+  })
+})

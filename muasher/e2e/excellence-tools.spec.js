@@ -72,15 +72,22 @@ test.describe('excellence tools — entity', () => {
     await capture(page, 'strengths-gaps', testInfo)
   })
 
-  test('keeps the selected result in the query string across the tools', async ({ page }) => {
-    await open(page, '/tools/strengths-and-gaps', '[data-testid="insights-selector"]')
+  test('keeps the selected result in the query string and locks a result without an active Kit', async ({
+    page,
+  }) => {
+    await open(
+      page,
+      `/tools/strengths-and-gaps?result=${LATEST}`,
+      '[data-testid="insights-selector"]',
+    )
+    await page.locator('.insights-links__link').nth(1).click()
+    await expect(page).toHaveURL(new RegExp(`/tools/maturity\\?result=${LATEST}`))
+    await expect(page.locator('[data-testid="maturity-comparison"]')).toBeVisible()
     await page.locator('[data-testid="insights-selector"] .dropdown-field').click()
     await page.getByRole('option').nth(1).click()
     await expect(page).toHaveURL(new RegExp(`result=${PREVIOUS}`))
     await expect(page.locator('[data-testid="insights-source"]')).toContainText('ACC-2025-000012')
-    await page.locator('.insights-links__link').nth(1).click()
-    await expect(page).toHaveURL(new RegExp(`/tools/maturity\\?result=${PREVIOUS}`))
-    await expect(page.locator('[data-testid="maturity-comparison"]')).toBeVisible()
+    await expect(page.locator('[data-testid="insights-kit-locked"]')).toBeVisible()
   })
 
   test('shows maturity bands with the delta against the earlier result', async ({
@@ -117,8 +124,8 @@ test.describe('excellence tools — entity', () => {
 
   test('renders the three tools in dark mode', async ({ page }, testInfo) => {
     await page.addInitScript(() => localStorage.setItem('muasher.theme', 'dark'))
-    await open(page, `/tools/strengths-and-gaps?result=${PREVIOUS}`, '[data-testid="gap-column"]')
-    await expect(page.locator('.insight-chip--critical').first()).toBeVisible()
+    await open(page, `/tools/strengths-and-gaps?result=${LATEST}`, '[data-testid="gap-column"]')
+    await expect(page.locator('[data-testid="gap-column"]').first()).toBeVisible()
     await capture(page, 'strengths-gaps-dark', testInfo)
     await open(page, '/tools/maturity', '[data-testid="maturity-card"]')
     await capture(page, 'maturity-dark', testInfo)
@@ -156,15 +163,16 @@ test.describe('excellence tools — empty states and entry points', () => {
     await page.setViewportSize(DESKTOP)
   })
 
-  test('shows the in-progress empty state with the request CTA', async ({ page }, testInfo) => {
+  test('locks the tools of an entity without an active Kit and links to the Kit', async ({
+    page,
+  }, testInfo) => {
     await seedSignedIn(page, RAWABI, { locale: localeOf(testInfo), theme: 'light' })
-    await open(page, '/tools/strengths-and-gaps', '[data-testid="insights-empty"]')
-    await expect(page.locator('[data-testid="insights-empty"]')).toHaveAttribute(
-      'data-reason',
-      'in_progress',
+    await open(page, '/tools/strengths-and-gaps', '[data-testid="insights-kit-locked"]')
+    await expect(page.locator('[data-testid="insights-kit-locked"] a')).toHaveAttribute(
+      'href',
+      '/bag',
     )
-    await expect(page.locator('[data-testid="insights-empty"] .btn--primary')).toBeVisible()
-    await capture(page, 'empty-in-progress', testInfo)
+    await capture(page, 'kit-locked', testInfo)
   })
 
   test('links the home hero and the accredited result to the tools', async ({ page }, testInfo) => {
