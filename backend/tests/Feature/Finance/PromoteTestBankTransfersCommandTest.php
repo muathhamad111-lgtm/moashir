@@ -10,7 +10,9 @@ use App\Enums\Platform\DemoRecordKind;
 use App\Models\Assessments\Assessment;
 use App\Models\Audit\Audit;
 use App\Models\Certificates\Certificate;
+use App\Models\Criteria\CriteriaVersion;
 use App\Models\Finance\Payment;
+use App\Models\Identity\User;
 use App\Models\Platform\DemoRecord;
 use App\Services\Certificates\VerificationCode;
 use Illuminate\Support\Facades\Notification;
@@ -25,11 +27,26 @@ beforeEach(function (): void {
  * A request paid by an entity bank transfer that still opened in test mode (rule BT-3 before
  * 2026-11-19) and completed with a test certificate.
  */
-function legacyTestTransferRequest(): Assessment
+function legacyTestTransferRequest(?User $assessor = null, bool $completed = true, ?CriteriaVersion $version = null): Assessment
 {
-    $assessor = assessorUser();
-    $assessment = scoredAccreditedReview(publishedAccreditedCriteria(), $assessor);
-    Payment::query()->whereKey($assessment->payment_id)->update([
+    $assessor ??= assessorUser();
+    $assessment = scoredAccreditedReview($version ?? publishedAccreditedCriteria(), $assessor);
+    asTestTransfer($assessment->payment_id);
+
+    if ($completed) {
+        switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/complete")->assertOk();
+        app('auth')->forgetGuards();
+    }
+
+    return $assessment->refresh();
+}
+
+/**
+ * Turns a payment into the legacy state: an entity bank transfer recorded in test mode.
+ */
+function asTestTransfer(int $paymentId): void
+{
+    Payment::query()->whereKey($paymentId)->update([
         'channel' => PaymentChannel::BankTransfer->value,
         'mode' => IntegrationMode::Test->value,
         'provider' => null,
@@ -41,10 +58,6 @@ function legacyTestTransferRequest(): Assessment
         'card_last4' => null,
         'expires_at' => null,
     ]);
-    switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/complete")->assertOk();
-    app('auth')->forgetGuards();
-
-    return $assessment->refresh();
 }
 
 it('lists the test-mode bank transfers on a dry run and changes nothing', function (): void {
@@ -115,4 +128,72 @@ it('leaves test card payments and the transfers of demo entities untouched', fun
     expect(Payment::query()->findOrFail($demo->payment_id)->mode)->toBe(IntegrationMode::Test)
         ->and($card->refresh()->mode)->toBe(IntegrationMode::Test)
         ->and(Certificate::query()->sole()->is_test)->toBeTrue();
+});
+
+it('promotes a reopened request without touching its suspended test certificate, whose next issue is official', function (): void {
+    $assessor = assessorUser();
+    $assessment = legacyTestTransferRequest($assessor);
+    $suspended = Certificate::query()->sole();
+    switchTo(superAdmin())->postJson("/api/v1/assessments/{$assessment->id}/reopen", ['reason' => PROMOTION_REASON])->assertOk();
+    app('auth')->forgetGuards();
+
+    $this->artisan('moashir:finance:promote-test-transfers', ['--reason' => PROMOTION_REASON])
+        ->expectsOutputToContain('Promoted 1 bank transfers.')
+        ->assertSuccessful();
+
+    $audit = Audit::query()->where('event', AuditEvent::BankTransferPromotedToLive->value)->sole();
+    expect(Payment::query()->findOrFail($assessment->payment_id)->mode)->toBe(IntegrationMode::Live)
+        ->and($suspended->refresh()->status)->toBe(CertificateStatus::Suspended)
+        ->and($suspended->is_test)->toBeTrue()
+        ->and($audit->new_values['reissued_certificates'])->toBe([])
+        ->and($audit->new_values['skipped_certificates'])->toBe([['number' => $suspended->number, 'reason' => 'assessment_not_completed']]);
+
+    switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/complete")->assertOk();
+    $official = Certificate::query()->where('status', CertificateStatus::Issued)->sole();
+
+    expect($official->is_test)->toBeFalse()
+        ->and($official->replaces_certificate_id)->toBe($suspended->id);
+});
+
+it('promotes a draft request that has no certificate yet', function (): void {
+    $assessment = legacyTestTransferRequest(completed: false);
+
+    $this->artisan('moashir:finance:promote-test-transfers', ['--reason' => PROMOTION_REASON])
+        ->expectsOutputToContain('Promoted 1 bank transfers.')
+        ->assertSuccessful();
+
+    expect(Payment::query()->findOrFail($assessment->payment_id)->mode)->toBe(IntegrationMode::Live)
+        ->and(Certificate::query()->count())->toBe(0)
+        ->and(Audit::query()->where('event', AuditEvent::BankTransferPromotedToLive->value)->sole()->new_values['skipped_certificates'])->toBe([]);
+});
+
+it('promotes a rejected transfer that never opened a request', function (): void {
+    ['owner' => $owner, 'account' => $account] = transferPayingEntity();
+    $payment = submittedTransfer($owner, $account);
+    rejectTransfer(transferReviewer(), $payment)->assertOk();
+    Payment::query()->whereKey($payment->id)->update(['mode' => IntegrationMode::Test->value]);
+    app('auth')->forgetGuards();
+
+    $this->artisan('moashir:finance:promote-test-transfers', ['--reason' => PROMOTION_REASON])
+        ->expectsOutputToContain('Promoted 1 bank transfers.')
+        ->assertSuccessful();
+
+    expect($payment->refresh()->mode)->toBe(IntegrationMode::Live);
+});
+
+it('reports a payment that fails, leaves it unchanged and still promotes the others', function (): void {
+    $version = publishedAccreditedCriteria();
+    $broken = legacyTestTransferRequest(version: $version);
+    $healthy = legacyTestTransferRequest(version: $version);
+    $brokenReference = Payment::query()->findOrFail($broken->payment_id)->reference;
+    $broken->entity->delete();
+
+    $this->artisan('moashir:finance:promote-test-transfers', ['--reason' => PROMOTION_REASON])
+        ->expectsOutputToContain('Promoted 1 bank transfers.')
+        ->expectsOutputToContain($brokenReference)
+        ->assertFailed();
+
+    expect(Payment::query()->findOrFail($broken->payment_id)->mode)->toBe(IntegrationMode::Test)
+        ->and(Payment::query()->findOrFail($healthy->payment_id)->mode)->toBe(IntegrationMode::Live)
+        ->and(Audit::query()->where('event', AuditEvent::BankTransferPromotedToLive->value)->count())->toBe(1);
 });

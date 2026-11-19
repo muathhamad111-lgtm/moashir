@@ -39,10 +39,17 @@ final class PromoteTestBankTransfersCommand extends Command
             return self::INVALID;
         }
 
-        $promoted = $promote->handle($reason);
-        $this->components->info(sprintf('Promoted %d bank transfers.', count($promoted)));
-        $this->components->bulletList($promoted);
+        $result = $promote->handle($reason);
+        $this->components->info(sprintf('Promoted %d bank transfers.', count($result->promoted)));
+        $this->components->bulletList($result->promoted);
 
-        return self::SUCCESS;
+        if (! $result->hasFailures()) {
+            return self::SUCCESS;
+        }
+
+        $this->components->error(sprintf('%d bank transfers were left unchanged:', count($result->failed)));
+        $this->components->bulletList(array_map(static fn (string $reference, string $code): string => "{$reference}: {$code}", array_keys($result->failed), $result->failed));
+
+        return self::FAILURE;
     }
 }
