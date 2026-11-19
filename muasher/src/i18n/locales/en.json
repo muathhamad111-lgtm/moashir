@@ -232,6 +232,16 @@
     },
     "table": {
       "sortBy": "Sort by {column}"
+    },
+    "passwordReveal": {
+      "password": {
+        "show": "Show password",
+        "hide": "Hide password"
+      },
+      "secret": {
+        "show": "Show the entered value",
+        "hide": "Hide the entered value"
+      }
     }
   },
   "status": {

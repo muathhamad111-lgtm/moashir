@@ -1,8 +1,12 @@
 <script setup>
+import { computed, toRef } from 'vue'
 import FormField from './FormField.vue'
+import PasswordRevealButton from './PasswordRevealButton.vue'
+import { usePasswordReveal } from '@/composables/usePasswordReveal'
 import { westernizeInputDigits } from '@/utils/numerals'
 
 const NUMBER_INPUT_MODES = ['numeric', 'decimal', 'tel']
+const PASSWORD_TYPE = 'password'
 
 const props = defineProps({
   modelValue: { type: [String, Number], default: '' },
@@ -21,6 +25,10 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue', 'blur'])
+const { revealed, toggle } = usePasswordReveal(toRef(props, 'modelValue'))
+
+const isPassword = computed(() => props.type === PASSWORD_TYPE)
+const controlType = computed(() => (isPassword.value && revealed.value ? 'text' : props.type))
 
 function onInput(event) {
   const isNumberField = NUMBER_INPUT_MODES.includes(props.inputmode) || props.type === 'tel'
@@ -34,6 +42,7 @@ function onInput(event) {
 <template>
   <FormField
     v-slot="{ id, describedBy, invalid }"
+    :class="{ 'field--revealable': isPassword }"
     :label="label"
     :name="name"
     :error="error"
@@ -42,23 +51,32 @@ function onInput(event) {
     :disabled="disabled"
     :filled="Boolean(String(modelValue).length)"
   >
-    <input
-      :id="id"
-      class="field__control"
-      :type="type"
-      :name="name"
-      :value="modelValue"
-      placeholder=" "
-      :disabled="disabled"
-      :readonly="readonly"
-      :required="required"
-      :inputmode="inputmode"
-      :autocomplete="autocomplete"
-      :dir="inputDir"
-      :aria-invalid="invalid || undefined"
-      :aria-describedby="describedBy"
-      @input="onInput"
-      @blur="emit('blur', $event)"
-    />
+    <div class="field__frame" :class="{ 'field__frame--reveal': isPassword }">
+      <input
+        :id="id"
+        class="field__control"
+        :type="controlType"
+        :name="name"
+        :value="modelValue"
+        placeholder=" "
+        :disabled="disabled"
+        :readonly="readonly"
+        :required="required"
+        :inputmode="inputmode"
+        :autocomplete="autocomplete"
+        :dir="inputDir"
+        :aria-invalid="invalid || undefined"
+        :aria-describedby="describedBy"
+        @input="onInput"
+        @blur="emit('blur', $event)"
+      />
+      <PasswordRevealButton
+        v-if="isPassword"
+        :revealed="revealed"
+        :controls="id"
+        :disabled="disabled"
+        @toggle="toggle"
+      />
+    </div>
   </FormField>
 </template>

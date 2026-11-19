@@ -277,9 +277,7 @@ test('e-mail moves from the environment bootstrap to settings with a test e-mail
   await expect(page.locator('[data-testid="email-test-mode"]')).toBeVisible()
   await saveButton(page).click()
   await expect(
-    page
-      .locator('input[name="testAddress"]')
-      .locator('xpath=ancestor::div[contains(@class,"field")][1]'),
+    page.locator('.field', { has: page.locator('input[name="testAddress"]') }),
   ).toContainText(/Required in preview mode|مطلوب في وضع المعاينة/)
   await expect(card(page, 0).locator('.secret-input')).toContainText(
     /Enter the value before you save|أدخل القيمة قبل الحفظ/,

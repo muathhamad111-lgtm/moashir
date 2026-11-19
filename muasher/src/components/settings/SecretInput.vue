@@ -5,6 +5,8 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import { SECRET_ACTIONS, isSecretStored } from '@/utils/integrations/secretValue'
 import { formatDate } from '@/utils/datetime'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import PasswordRevealButton from '@/components/form/PasswordRevealButton.vue'
+import { usePasswordReveal } from '@/composables/usePasswordReveal'
 
 const props = defineProps({
   modelValue: { type: Object, default: () => ({ action: SECRET_ACTIONS.KEEP, value: '' }) },
@@ -28,6 +30,8 @@ const stored = computed(() => isSecretStored(props.meta))
 const action = computed(() => props.modelValue?.action ?? SECRET_ACTIONS.KEEP)
 const entering = computed(() => !stored.value || action.value === SECRET_ACTIONS.REPLACE)
 const clearing = computed(() => stored.value && action.value === SECRET_ACTIONS.CLEAR)
+const typedValue = computed(() => props.modelValue?.value ?? '')
+const { revealed, toggle } = usePasswordReveal(typedValue)
 
 const updatedLine = computed(() => {
   if (!props.meta?.updatedAt) return ''
@@ -67,21 +71,30 @@ function onInput(event) {
     <span v-else :id="labelId" class="secret-input__label">{{ label }}</span>
 
     <div v-if="entering" class="secret-input__entry">
-      <input
-        :id="controlId"
-        class="field__control secret-input__control"
-        type="password"
-        :name="name"
-        :value="modelValue?.value ?? ''"
-        :disabled="disabled"
-        autocomplete="off"
-        autocapitalize="off"
-        spellcheck="false"
-        dir="ltr"
-        :aria-invalid="Boolean(error) || undefined"
-        :aria-describedby="describedBy"
-        @input="onInput"
-      />
+      <div class="field__frame field__frame--reveal secret-input__field">
+        <input
+          :id="controlId"
+          class="field__control secret-input__control"
+          :type="revealed ? 'text' : 'password'"
+          :name="name"
+          :value="typedValue"
+          :disabled="disabled"
+          autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
+          dir="ltr"
+          :aria-invalid="Boolean(error) || undefined"
+          :aria-describedby="describedBy"
+          @input="onInput"
+        />
+        <PasswordRevealButton
+          :revealed="revealed"
+          :controls="controlId"
+          subject="secret"
+          :disabled="disabled"
+          @toggle="toggle"
+        />
+      </div>
       <BaseButton
         v-if="stored"
         variant="ghost"
