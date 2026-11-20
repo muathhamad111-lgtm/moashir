@@ -106,3 +106,21 @@
   cursor: not-allowed;
   opacity: var(--opacity-disabled);
 }
+
+// The open requests a scope reaches (publish review page): under the text on phones, at the end from md.
+.scope-choice__reach {
+  grid-column: 3;
+  justify-self: start;
+
+  @include respond-to('md') {
+    grid-column: 4;
+    grid-row: 1;
+    justify-self: end;
+  }
+}
+
+.scope-choice__option:has(.scope-choice__reach) {
+  @include respond-to('md') {
+    grid-template-columns: auto auto 1fr auto;
+  }
+}

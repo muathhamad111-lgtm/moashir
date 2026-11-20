@@ -3,11 +3,14 @@ import { computed, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { CRITERIA_EDIT_SCOPE_ORDER, CRITERIA_EDIT_SCOPES } from '@/constants/criteria'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import Badge from '@/components/ui/Badge.vue'
 
-defineProps({
+const props = defineProps({
   modelValue: { type: String, default: null },
   error: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
+  // [{ scope, count }]: how many open requests each scope moves to the new version (publish preview).
+  counts: { type: Array, default: null },
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -26,8 +29,18 @@ const options = computed(() =>
     icon: ICONS[scope],
     title: t(`criteria.publish.scopes.${scope}.title`),
     description: t(`criteria.publish.scopes.${scope}.description`),
+    reach: reachOf(scope),
   })),
 )
+
+function reachOf(scope) {
+  if (!props.counts) return null
+  const count = props.counts.find((entry) => entry.scope === scope)?.count ?? 0
+  return {
+    variant: count ? 'warning' : 'success',
+    text: t('criteria.review.scopeReach', { count }, count),
+  }
+}
 
 const errorId = computed(() => `${baseId}-error`)
 </script>
@@ -66,6 +79,9 @@ const errorId = computed(() => `${baseId}-error`)
             option.description
           }}</span>
         </span>
+        <Badge v-if="option.reach" class="scope-choice__reach" :variant="option.reach.variant">
+          {{ option.reach.text }}
+        </Badge>
       </label>
     </div>
     <p class="scope-choice__closed-note">

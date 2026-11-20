@@ -17,21 +17,6 @@ const FOLLOWER = { id: 8, roles: ['request_follower'] }
 const ADMIN = { id: 1, roles: ['system_admin'] }
 const OFFICER = { id: 22, roles: ['finance_officer'] }
 const DRAFT_PAYMENT = '3f0c9a52-6d1e-4b7a-9c21-5a1e00000012'
-const PREPARING_KEYS = [
-  'award_cycle',
-  'entity',
-  'id',
-  'is_frozen',
-  'last_activity_at',
-  'number',
-  'opened_at',
-  'path',
-  'path_label',
-  'payment',
-  'progress',
-  'status',
-]
-
 async function call(path) {
   const response = await wireFetch(`${MOCK_API_BASE}${path}`, {
     headers: { 'accept-language': 'en' },
@@ -57,34 +42,36 @@ afterEach(() => {
 })
 afterAll(() => server.close())
 
-describe('paid requests waiting for the entity', () => {
-  it('lists the paid drafts with the payment status only, progress and last activity, outside the queue', async () => {
+describe('paid drafts in the request list', () => {
+  it('lists a paid draft with its progress in the list and in the preparing stage', async () => {
     seedMockSession(FOLLOWER)
-    const { body } = await call('/requests/preparing?filter[path]=accredited')
-    const row = body.data.find((item) => item.id === ACCREDITED_FIXTURE_IDS.draft)
-    expect(keys(row)).toEqual(PREPARING_KEYS)
+    const all = await call('/requests?filter[path]=accredited')
+    const row = all.body.data.find((item) => item.id === ACCREDITED_FIXTURE_IDS.draft)
     expect(row.status).toBe('draft')
-    expect(keys(row.payment)).toEqual(['is_test', 'status'])
+    expect(row.assessor).toBeNull()
     expect(row.progress.subs_total).toBeGreaterThan(row.progress.subs_complete)
-    expect(body.meta.path_counts[0].preparing).toBe(body.meta.pagination.total)
-    const queue = await call('/requests?filter[path]=accredited')
-    expect(queue.body.data.map((item) => item.id)).not.toContain(ACCREDITED_FIXTURE_IDS.draft)
-    expect(queue.body.meta.path_counts[0].preparing).toBe(body.meta.pagination.total)
+    expect(row.opened_at).toBeTruthy()
+    expect(Object.keys(row.payment).sort()).toEqual(['is_test', 'status'])
+    const preparing = await call('/requests?filter[path]=accredited&filter[stage]=preparing')
+    expect(preparing.body.data.map((item) => item.status)).toEqual(
+      preparing.body.data.map(() => 'draft'),
+    )
+    expect(all.body.meta.stats.by_stage.preparing).toBe(preparing.body.meta.pagination.total)
+    expect(all.body.meta.path_counts[0].preparing).toBe(preparing.body.meta.pagination.total)
   })
 
-  it('gives the finance identifiers to finance holders only and refuses Finance the list', async () => {
+  it('gives the finance identifiers of a draft payment to finance holders only', async () => {
     seedMockSession(ADMIN)
-    const admin = await call('/requests/preparing')
-    expect(admin.body.data[0].payment.id).toBe(DRAFT_PAYMENT)
-    expect(admin.body.data[0].payment.reference).toBeTruthy()
-    seedMockSession(OFFICER)
-    expect((await call('/requests/preparing')).status).toBe(403)
+    const { body } = await call('/requests?filter[stage]=preparing')
+    expect(body.data[0].payment.id).toBe(DRAFT_PAYMENT)
+    expect(body.data[0].payment.reference).toBeTruthy()
   })
 
-  it('refuses the assignment filters on the paid drafts', async () => {
+  it('refuses an unknown stage and keeps the list from Finance', async () => {
     seedMockSession(FOLLOWER)
-    expect((await call('/requests/preparing?filter[status]=draft')).status).toBe(422)
-    expect((await call('/requests/preparing?sort=-submitted_at')).status).toBe(422)
+    expect((await call('/requests?filter[stage]=archived')).status).toBe(422)
+    seedMockSession(OFFICER)
+    expect((await call('/requests?filter[stage]=preparing')).status).toBe(403)
   })
 })
 

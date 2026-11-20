@@ -1,20 +1,17 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import Badge from '@/components/ui/Badge.vue'
 import AppMenu from '@/components/ui/AppMenu.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import { useCriteria } from '@/composables/useCriteria'
-import { ROUTE_NAMES } from '@/constants/routeNames'
 import { MENU_TRIGGERS } from '@/constants/dropdown'
 import { CRITERIA_VERSION_STATUSES as STATUS } from '@/constants/criteria'
 
 const props = defineProps({
   version: { type: Object, required: true },
   draft: { type: Object, default: null },
-  versions: { type: Array, required: true },
   problemCount: { type: Number, default: 0 },
   canManage: { type: Boolean, default: false },
   canPublish: { type: Boolean, default: false },
@@ -22,7 +19,6 @@ const props = defineProps({
 
 const emit = defineEmits(['start', 'review', 'discard', 'clone', 'correct-name', 'show-version'])
 const { t } = useI18n()
-const router = useRouter()
 const { localized } = useCriteria()
 
 const isDraft = computed(() => props.version.status === STATUS.DRAFT)
@@ -50,27 +46,15 @@ const meta = computed(() => {
 })
 const canStart = computed(() => props.canManage && !isDraft.value && !props.draft)
 
+// Versions and their history live in the «الإصدارات» tab; this menu keeps the version actions.
 const menuActions = computed(() => [
-  { key: 'history', label: t('criteria.history.open'), icon: 'docs' },
   ...(canStart.value
     ? [{ key: 'clone', label: t('criteria.workspace.bar.clone'), icon: 'copy' }]
     : []),
   ...(props.canManage && !isDraft.value
     ? [{ key: 'correct-name', label: t('criteria.version.correctLabel'), icon: 'pen-line' }]
     : []),
-  ...props.versions
-    .filter((version) => version.id !== props.version.id)
-    .map((version) => ({
-      key: `version-${version.id}`,
-      label: t(`criteria.workspace.bar.show.${version.status}`, { number: version.versionNumber }),
-    })),
 ])
-
-function onMenu(key) {
-  if (key === 'history') return router.push({ name: ROUTE_NAMES.ADMIN_CRITERIA_HISTORY })
-  if (key.startsWith('version-')) return emit('show-version', Number(key.slice('version-'.length)))
-  return emit(key)
-}
 </script>
 
 <template>
@@ -109,12 +93,13 @@ function onMenu(key) {
         {{ t('criteria.workspace.bar.backToCurrent') }}
       </BaseButton>
       <AppMenu
+        v-if="menuActions.length"
         :trigger="MENU_TRIGGERS.button"
         :actions="menuActions"
-        :label="t('criteria.workspace.bar.versions')"
-        @select="onMenu"
+        :label="t('criteria.workspace.bar.more')"
+        @select="emit($event)"
       >
-        <template #trigger>{{ t('criteria.workspace.bar.versions') }}</template>
+        <template #trigger>{{ t('criteria.workspace.bar.more') }}</template>
       </AppMenu>
     </div>
   </section>

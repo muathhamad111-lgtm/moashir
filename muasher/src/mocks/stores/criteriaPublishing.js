@@ -23,6 +23,7 @@ import {
   scoreAffectingCodes,
 } from './criteriaVersions'
 import { announceCriteriaEdit, openAssessmentsBoundTo } from './criteriaEditHooks'
+import { publicationPreview } from './criteriaPreview'
 import { criteriaNotices } from './criteriaNotices'
 import { CriteriaRejection, fieldMessage, reject } from './criteriaRejection'
 import { FieldCollector, readDescription, readLocalized, readReason } from './criteriaValidation'
@@ -89,6 +90,8 @@ export function publishVersion(actor, version, body) {
   if (previous) assertReason(actor, instruction.reason)
   const count = previous ? changeCount(previous, version) : 0
   const rescoredCodes = previous ? scoreAffectingCodes(previous, version) : []
+  // Like the API, the event keeps the change list of the publication (the versions tab shows it).
+  const changes = previous ? publicationPreview(version).changes : []
   const effect = editEffect('structural', instruction.scope)
   const affectedOpenCount =
     previous && effect.rebindsOpenAssessments ? openAssessmentsBoundTo(previous.id) : 0
@@ -106,6 +109,7 @@ export function publishVersion(actor, version, body) {
     toVersionId: version.id,
     affectedOpenCount,
     changeCount: count,
+    changes,
     rescoredCodes,
     reason: instruction.reason,
     actorId: actor.id,

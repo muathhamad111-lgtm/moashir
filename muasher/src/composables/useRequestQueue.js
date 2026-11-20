@@ -1,12 +1,16 @@
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useFinanceList } from '@/composables/useFinanceList'
 import { useRequestPathRoute } from '@/composables/useRequestPathRoute'
 import { useRequestPathCountsStore } from '@/stores/requestPathCounts'
 import { requestsService } from '@/services/requestsService'
-import { DEFAULT_QUEUE_SORT } from '@/constants/accredited'
+import { DEFAULT_QUEUE_SORT, QUEUE_STAGES } from '@/constants/accredited'
 import { overdueFromLink, statusForPath } from '@/utils/requestPaths'
 
 const LINK_FILTERS = ['status', 'overdue']
+
+function stageFilterOf(stage) {
+  return stage === QUEUE_STAGES.ALL ? '' : stage
+}
 
 // The filters a user sets in the filter dialog. The path is not one: it comes from the
 // sidebar entry, so it never counts as an applied filter.
@@ -17,13 +21,15 @@ const DIALOG_FILTER_DEFAULTS = Object.freeze({
   assessorId: '',
 })
 
-export function useRequestQueue(paths) {
+// stage: the list's stage filter (a computed ref from useQueueStage); «all» sends no stage.
+export function useRequestQueue(paths, stage = ref(QUEUE_STAGES.ALL)) {
   const counts = useRequestPathCountsStore()
   const { route, path, linkStatus, linkOverdue, dropLinkFilter } = useRequestPathRoute(paths)
   const list = useFinanceList({
     fetcher: (params) => requestsService.listQueue(params),
     initialFilters: {
       path: path.value,
+      stage: stageFilterOf(stage.value),
       cycleId: '',
       status: linkStatus.value,
       overdue: linkOverdue.value,
@@ -40,6 +46,7 @@ export function useRequestQueue(paths) {
     list.setFilter('cycleId', '')
     list.setFilter('assessorId', '')
   })
+  watch(stage, (next) => list.setFilter('stage', stageFilterOf(next)))
   watch(
     () => route.query.status,
     (raw) => raw && list.setFilter('status', statusForPath(raw, path.value)),

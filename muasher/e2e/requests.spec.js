@@ -55,6 +55,32 @@ const REASON = 'إعادة توزيع الطلبات بين المقيّمين �
 const OVERRIDE_REASON = 'تصحيح الدرجة بعد مراجعة اللجنة الفنية للشواهد المرفقة مع الطلب.'
 
 test.describe('Requests follower', () => {
+  // Admin review 2026-11-20 (R1): the assessor stays in every state; a reassigned request is marked.
+  test('the list keeps the assessor of a completed request and marks a reassigned one', async ({
+    page,
+  }, testInfo) => {
+    const errors = trackConsole(page)
+    await signIn(page, testInfo, STAFF.follower)
+    await page.goto('/admin/requests?stage=closed')
+    const completed = page.locator('tbody tr', { hasText: 'ACC-2026-000003' })
+    await expect(completed.locator('.request-queue__assessor')).toBeVisible()
+    await expect(completed).not.toContainText(isEn(testInfo) ? 'Not assigned' : 'غير مُسند')
+    await page
+      .locator('.stats-card', { hasText: isEn(testInfo) ? 'In progress' : 'قيد العمل' })
+      .click()
+    await expect(page).toHaveURL(/stage=in_progress/)
+    const moved = page.locator('tbody tr', { hasText: 'ACC-2026-000008' })
+    await expect(moved.locator('.request-queue__assessor')).toContainText(
+      isEn(testInfo) ? 'Reassigned' : 'أُعيد الإسناد',
+    )
+    await expect(page.locator('.requests-page__subtitle')).toHaveCount(0)
+    await page.screenshot({
+      path: `test-results/requests-queue-stages-${suffixOf(testInfo)}.png`,
+      fullPage: true,
+    })
+    expect(errors).toEqual([])
+  })
+
   test('the queue shows stats, overdue with icon and text, and filters by status', async ({
     page,
   }, testInfo) => {
@@ -79,7 +105,7 @@ test.describe('Requests follower', () => {
     await applyOpenListFilters(page)
     await expect(rows).toHaveCount(1)
     await expect(rows.first()).toContainText('ACC-2026-000005')
-    await expect(page.getByRole('tab', { selected: true })).toContainText('(1)')
+    await expect(page.locator('.queue-stages__chip[aria-pressed="true"]')).toContainText('(1)')
     expect(errors).toEqual([])
   })
 

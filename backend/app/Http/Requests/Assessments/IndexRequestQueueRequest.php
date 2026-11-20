@@ -8,6 +8,7 @@ use App\Actions\Assessments\ListRequestQueue;
 use App\Data\Assessments\RequestQueueFilters;
 use App\Data\Periods\PeriodFilter;
 use App\Enums\Assessments\AssessmentPath;
+use App\Enums\Assessments\QueueStage;
 use App\Services\Assessments\QueuePathSelector;
 use App\Support\Periods\PeriodFilterRules;
 use App\Support\ValueObjects\SearchTerm;
@@ -24,9 +25,10 @@ final class IndexRequestQueueRequest extends FormRequest
         $followed = array_map(static fn (AssessmentPath $path): string => $path->value, $this->followedPaths());
 
         return [
-            'filter' => ['nullable', 'array:path,status,overdue,assessor_id,cycle_id,period_id'],
+            'filter' => ['nullable', 'array:path,stage,status,overdue,assessor_id,cycle_id,period_id'],
+            'filter.stage' => ['nullable', Rule::enum(QueueStage::class)],
             'filter.path' => ['nullable', Rule::in($followed)],
-            'filter.status' => ['nullable', Rule::in($this->queuePath()->queueStateValues())],
+            'filter.status' => ['nullable', Rule::in(QueueStage::All->stateValuesOf($this->queuePath()))],
             'filter.overdue' => ['nullable', Rule::in(['true', 'false', '1', '0'])],
             'filter.assessor_id' => ['nullable', 'integer', 'min:1'],
             'filter.cycle_id' => in_array(AssessmentPath::Advanced->value, $followed, true) ? ['nullable', 'integer', 'min:1'] : ['prohibited'],
@@ -52,6 +54,7 @@ final class IndexRequestQueueRequest extends FormRequest
             $this->filled('sort') ? $this->string('sort')->toString() : '-submitted_at',
             $this->integer('per_page', 15),
             PeriodFilter::fromInput($this->input('filter.period_id')),
+            $this->enum('filter.stage', QueueStage::class) ?? QueueStage::All,
         );
     }
 

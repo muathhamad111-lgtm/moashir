@@ -11,6 +11,10 @@ import { useOwnIdentityChanges } from '@/composables/useOwnIdentityChanges'
 import { useEntityDisplay } from '@/composables/useEntityDisplay'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 
+const props = defineProps({
+  returnTo: { type: String, default: '/account' },
+})
+
 const { t } = useI18n()
 const auth = useAuthStore()
 const { dateTime } = useEntityDisplay()
@@ -52,7 +56,7 @@ onMounted(load)
       <BaseButton
         v-if="!auth.user?.hasNationalId"
         variant="primary"
-        :to="{ name: ROUTE_NAMES.ACCOUNT_COMPLETE_IDENTITY, query: { redirect: '/account' } }"
+        :to="{ name: ROUTE_NAMES.ACCOUNT_COMPLETE_IDENTITY, query: { redirect: props.returnTo } }"
       >
         {{ t('nationalIdentity.card.add') }}
       </BaseButton>

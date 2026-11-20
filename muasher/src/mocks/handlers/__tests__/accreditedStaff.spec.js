@@ -34,6 +34,7 @@ const ROW_KEYS = [
   'id',
   'is_frozen',
   'is_overdue',
+  'is_reassigned',
   'number',
   'path',
   'path_label',
@@ -41,6 +42,8 @@ const ROW_KEYS = [
   'status',
   'submitted_at',
 ]
+// A list row adds the entity's progress while it prepares the request (admin review 2026-11-20).
+const LIST_ROW_KEYS = [...ROW_KEYS, 'last_activity_at', 'opened_at', 'payment', 'progress'].sort()
 const REVIEW_KEYS = [
   'assessment',
   'completed_at',
@@ -110,11 +113,12 @@ describe('accredited mock — requests queue and assignment', () => {
     vi.useFakeTimers({ now: new Date('2026-11-05T09:00:00Z'), toFake: ['Date'] })
     seedMockSession(FOLLOWER)
     const { body } = await call('GET', '/requests?filter[path]=accredited')
-    expect(keys(body.data[0])).toEqual(ROW_KEYS)
-    expect(body.data.map((row) => row.id)).not.toContain(9101)
+    expect(keys(body.data[0])).toEqual(LIST_ROW_KEYS)
+    expect(body.data.map((row) => row.id)).toContain(9101)
     expect(body.meta.stats).toEqual({
-      total: 8,
+      total: 9,
       by_status: {
+        draft: 1,
         submitted: 1,
         assigned: 1,
         under_review: 1,
@@ -123,6 +127,7 @@ describe('accredited mock — requests queue and assignment', () => {
         refunded: 1,
         declined_incomplete: 0,
       },
+      by_stage: { preparing: 1, awaiting_assignment: 1, in_progress: 3, closed: 4, overdue: 2 },
       overdue: 2,
     })
     expect(
@@ -148,7 +153,7 @@ describe('accredited mock — requests queue and assignment', () => {
       (await call('GET', '/requests?sort=due_at&filter[path]=accredited')).body.data[0].id,
     ).toBe(9109)
     expect((await call('GET', '/requests?sort=number')).status).toBe(422)
-    expect((await call('GET', '/requests?filter[status]=draft')).status).toBe(422)
+    expect((await call('GET', '/requests?filter[status]=awaiting_payment')).status).toBe(422)
     seedMockSession(NAMAA)
     expect((await call('GET', '/requests')).status).toBe(403)
   })

@@ -3,11 +3,14 @@ import { flushPromises, mount } from '@vue/test-utils'
 import Profile from '@/views/account/Profile.vue'
 import { profileService } from '@/services/profileService'
 import { useAuthStore } from '@/stores/auth'
-import { groupPermissionsByModule } from '@/composables/useMyPermissions'
 import { createTestGlobals } from '@/test-utils'
 
 vi.mock('@/services/profileService', () => ({
   profileService: { getMyPermissions: vi.fn() },
+}))
+
+vi.mock('@/services/authService', () => ({
+  authService: { changePassword: vi.fn() },
 }))
 
 vi.mock('@/services/identityService', () => ({
@@ -54,7 +57,7 @@ beforeEach(() => {
   profileService.getMyPermissions.mockResolvedValue({ data: payload })
 })
 
-describe('Account profile — my roles and permissions (Q-42)', () => {
+describe('Account profile — my roles, without the permissions list', () => {
   it('shows the account identity and every granted role', async () => {
     const wrapper = await mountView()
     expect(wrapper.text()).toContain('نورة بنت سعد')
@@ -63,20 +66,17 @@ describe('Account profile — my roles and permissions (Q-42)', () => {
     expect(roles).toEqual(['متابع طلبات التقييم', 'مسؤول المحتوى'])
   })
 
-  it('groups permissions by module in catalog order with bilingual labels', async () => {
+  it('does not list the granted permissions', async () => {
     const wrapper = await mountView('en')
-    const titles = wrapper.findAll('.permission-module__title').map((el) => el.text())
-    expect(titles).toEqual(['Dashboard', 'Requests', 'Content'])
-    expect(wrapper.text()).toContain('Manage KPIs')
-    expect(wrapper.find('.permission-module__count').text()).toBe('1 permission')
+    expect(wrapper.find('#account-permissions-title').exists()).toBe(false)
+    expect(wrapper.find('.permission-module').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('Manage KPIs')
   })
 
-  it('is read-only: no form controls to change roles or permissions', async () => {
+  it('keeps roles and identity read-only and offers the password change in place', async () => {
     const wrapper = await mountView()
-    const sections = wrapper.findAll('.account-page__grid, .account-page__permissions')
-    expect(sections.flatMap((section) => section.findAll('input, select, textarea'))).toHaveLength(
-      0,
-    )
+    expect(wrapper.find('.account-page__grid').findAll('input, select, textarea')).toHaveLength(0)
+    expect(wrapper.find('[data-testid="change-password-form"]').exists()).toBe(true)
   })
 
   it('offers the profile photo section to a person account', async () => {
@@ -102,23 +102,12 @@ describe('Account profile — my roles and permissions (Q-42)', () => {
     expect(wrapper.find('.error-state').exists()).toBe(true)
     await wrapper.find('.error-state__retry .btn').trigger('click')
     await flushPromises()
-    expect(wrapper.findAll('.permission-module')).toHaveLength(3)
+    expect(wrapper.findAll('.account-page__role-list .badge')).toHaveLength(2)
   })
 
-  it('shows the empty state when no permission is granted', async () => {
+  it('says so when no role is assigned', async () => {
     profileService.getMyPermissions.mockResolvedValue({ data: { roles: [], permissions: [] } })
     const wrapper = await mountView('en')
-    expect(wrapper.find('.empty-state').text()).toContain('No permissions')
     expect(wrapper.text()).toContain('No roles are assigned')
-  })
-})
-
-describe('groupPermissionsByModule', () => {
-  it('puts unknown modules last', () => {
-    const groups = groupPermissionsByModule([
-      { key: 'x', module: 'future', label: 'x' },
-      { key: 'y', module: 'dashboard', label: 'y' },
-    ])
-    expect(groups.map((group) => group.module)).toEqual(['dashboard', 'future'])
   })
 })

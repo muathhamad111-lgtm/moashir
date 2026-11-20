@@ -184,7 +184,7 @@ test('the top bar controls stay readable on hover', async ({ page }, testInfo) =
   }
 })
 
-test('unified workspace: module groups, no role switcher, profile lists roles and permissions', async ({
+test('unified workspace: module groups, no role switcher, profile lists roles without a permissions list', async ({
   page,
 }, testInfo) => {
   const errors = trackConsole(page)
@@ -206,10 +206,10 @@ test('unified workspace: module groups, no role switcher, profile lists roles an
   await page.getByRole('menuitem').first().click()
   await expect(page).toHaveURL(/\/account$/)
   await expect(page.locator('.account-page__role-list .badge')).toHaveCount(2)
-  await expect(page.locator('.permission-module').first()).toBeVisible()
-  await expect(
-    page.locator('.account-page input:not([type="file"]), .account-page select'),
-  ).toHaveCount(0)
+  await expect(page.locator('.permission-module')).toHaveCount(0)
+  await expect(page.locator('#account-permissions-title')).toHaveCount(0)
+  await expect(page.locator('.account-page__grid input, .account-page__grid select')).toHaveCount(0)
+  await expect(page.getByTestId('change-password-form')).toBeVisible()
   await page.screenshot({ path: `${SHOTS}/account-${suffix(testInfo)}.png`, fullPage: true })
   expect(errors).toEqual([])
 })

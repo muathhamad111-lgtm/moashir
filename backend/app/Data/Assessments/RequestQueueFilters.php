@@ -6,6 +6,7 @@ namespace App\Data\Assessments;
 
 use App\Data\Periods\PeriodFilter;
 use App\Enums\Assessments\AssessmentPath;
+use App\Enums\Assessments\QueueStage;
 use App\Support\ValueObjects\SearchTerm;
 
 final readonly class RequestQueueFilters
@@ -20,5 +21,14 @@ final readonly class RequestQueueFilters
         public string $sort = '-submitted_at',
         public int $perPage = 15,
         public ?PeriodFilter $period = null,
+        public QueueStage $stage = QueueStage::All,
     ) {}
+
+    /**
+     * The same filters over every stage: the stage counts read from it.
+     */
+    public function acrossStages(): self
+    {
+        return new self($this->path, $this->status, $this->overdue, $this->assessorId, $this->cycleId, $this->search, $this->sort, $this->perPage, $this->period);
+    }
 }

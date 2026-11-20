@@ -17,7 +17,7 @@ const ROW = {
 }
 
 describe('RequestQueueTable entity level', () => {
-  it('puts a compact level badge beside the entity name, «بلا مستوى» without a level', () => {
+  it('puts a compact level badge under the entity name in the request column, «بلا مستوى» without a level', () => {
     const wrapper = mount(RequestQueueTable, {
       props: {
         items: [ROW, { ...ROW, id: 9102, entity: { ...ROW.entity, id: 6003, level: null } }],
@@ -25,7 +25,7 @@ describe('RequestQueueTable entity level', () => {
       },
       global: createTestGlobals(),
     })
-    const badges = wrapper.findAll('.request-queue__entity .level-badge--s')
+    const badges = wrapper.findAll('.request-queue__request .level-badge--s')
     expect(badges.map((badge) => badge.attributes('data-tier'))).toEqual(['gold', 'none'])
     expect(badges[1].text()).toContain('بلا مستوى')
   })
@@ -54,7 +54,7 @@ describe('RequestQueueTable last level (LC-5)', () => {
       },
       global: createTestGlobals({ locale: 'en' }),
     })
-    const badge = wrapper.find('.request-queue__entity .level-badge')
+    const badge = wrapper.find('.request-queue__request .level-badge')
     expect(badge.attributes('data-tier')).toBe('silver')
     expect(badge.classes()).toContain('level-badge--expired')
     expect(wrapper.find('[data-testid="level-validity"]').text()).toContain('Expired')
@@ -99,5 +99,54 @@ describe('RequestQueueTable row actions', () => {
       'View request ACC-2026-000058',
       'View request ACC-2026-000060',
     ])
+  })
+})
+
+// Admin review 2026-11-20 (R1).
+describe('RequestQueueTable merged request column, draft progress and assessor', () => {
+  function mountTable(items, locale = 'ar') {
+    return mount(RequestQueueTable, {
+      props: { items, status: 'success' },
+      global: createTestGlobals({ locale }),
+    })
+  }
+
+  it('shows the number, the entity name and its level in one request column', () => {
+    const wrapper = mountTable([ROW])
+    const headers = wrapper.findAll('th').map((cell) => cell.text())
+    expect(headers).not.toContain('الجهة')
+    const cell = wrapper.find('.request-queue__request')
+    expect(cell.find('a[href="/admin/requests/9101"]').text()).toBe('ACC-2026-000058')
+    expect(cell.find('.request-queue__entity-name').text()).toBe('جمعية إحسان')
+    expect(cell.find('.level-badge').exists()).toBe(true)
+  })
+
+  it('shows a draft as being prepared with the entity progress and no assessor yet', () => {
+    const draft = { ...ROW, status: 'draft', progress: { complete: 3, total: 19 } }
+    const wrapper = mountTable([draft], 'en')
+    expect(wrapper.find('.request-queue__preparing').text()).toContain('Being prepared')
+    expect(wrapper.find('[role="progressbar"]').attributes('aria-valuenow')).toBe('3')
+    expect(wrapper.text()).not.toContain('Unassigned')
+  })
+
+  it('keeps the assessor of a completed request and marks a reassigned one', () => {
+    const completed = {
+      ...ROW,
+      status: 'completed',
+      assessor: { id: 7001, name: 'د. سلطان القرني' },
+      isReassigned: false,
+    }
+    const moved = {
+      ...ROW,
+      id: 9102,
+      status: 'under-review',
+      assessor: { id: 7002, name: 'أ. هند الزهراني' },
+      isReassigned: true,
+    }
+    const wrapper = mountTable([completed, moved])
+    const cells = wrapper.findAll('.request-queue__assessor')
+    expect(cells[0].text()).toBe('د. سلطان القرني')
+    expect(cells[1].text()).toContain('أ. هند الزهراني')
+    expect(cells[1].text()).toContain('أُعيد الإسناد')
   })
 })

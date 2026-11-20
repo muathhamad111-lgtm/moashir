@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Assessments;
 
 use App\Data\Assessments\RequestDetail;
+use App\Enums\Assessments\AssignmentStatus;
 use App\Enums\Finance\PaymentStatus;
 use App\Models\Assessments\Assessment;
 use App\Models\Assessments\AssessmentAssignment;
@@ -25,7 +26,8 @@ final readonly class ShowRequest
 
     public function handle(User $viewer, Assessment $assessment): RequestDetail
     {
-        $assessment->loadMissing(['entity.'.EntityLevelQuery::RELATION, 'entity.'.EntityLevelQuery::DISPLAY_RELATION, 'activeAssignment.assessor', 'openCompletionRequest', 'payment.receipt', 'awardCycle', 'region']);
+        $assessment->loadMissing(['entity.'.EntityLevelQuery::RELATION, 'entity.'.EntityLevelQuery::DISPLAY_RELATION, 'openCompletionRequest', 'payment.receipt', 'awardCycle', 'region']);
+        $assessment->load('latestAssignment.assessor')->loadExists(['assignments as was_reassigned' => static fn (Builder $reassigned): Builder => $reassigned->where('status', AssignmentStatus::Reassigned)]);
         $revealsIdentities = $this->scope->accessOf($viewer, $assessment)->revealsStaffIdentities();
         $assignments = AssessmentAssignment::query()
             ->with(['assessor', 'assignedBy'])

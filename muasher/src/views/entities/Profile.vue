@@ -6,6 +6,8 @@ import { useHead } from '@unhead/vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EntityProfileView from '@/components/entities/profile/EntityProfileView.vue'
+import ChangePasswordCard from '@/components/account/ChangePasswordCard.vue'
+import NationalIdentityCard from '@/components/account/NationalIdentityCard.vue'
 import { useEntityStore } from '@/stores/entity'
 import { useRegions } from '@/composables/useRegions'
 import { useEntityLevel } from '@/composables/useEntityLevel'
@@ -63,4 +65,8 @@ onMounted(load)
     :city-options-for="regions.cityOptionsFor"
     @refresh="refresh"
   />
+  <div v-if="status === 'success'" class="entity-profile__body entity-profile__account">
+    <ChangePasswordCard />
+    <NationalIdentityCard class="entity-profile__national-identity" :return-to="route.path" />
+  </div>
 </template>

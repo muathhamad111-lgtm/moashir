@@ -2,21 +2,20 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
-import { useMyPermissions } from '@/composables/useMyPermissions'
+import { useMyRoles } from '@/composables/useMyRoles'
 import Card from '@/components/ui/Card.vue'
 import Badge from '@/components/ui/Badge.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
-import EmptyState from '@/components/feedback/EmptyState.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import CommitteeSeatsList from '@/components/account/CommitteeSeatsList.vue'
-import PermissionModuleCard from '@/components/account/PermissionModuleCard.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import ProfilePhotoCard from '@/components/account/ProfilePhotoCard.vue'
 import NationalIdentityCard from '@/components/account/NationalIdentityCard.vue'
+import ChangePasswordCard from '@/components/account/ChangePasswordCard.vue'
 
 const { t, locale } = useI18n()
 const auth = useAuthStore()
-const { roles, modules, status, load, localized } = useMyPermissions()
+const { roles, status, load, localized } = useMyRoles()
 
 const displayName = computed(() => {
   const name = auth.user?.name
@@ -81,32 +80,6 @@ const committeeSeats = computed(() => auth.committeeAppointments)
       <NationalIdentityCard class="account-page__national-identity" />
     </div>
 
-    <section class="account-page__permissions" aria-labelledby="account-permissions-title">
-      <header class="account-page__section-head">
-        <h2 id="account-permissions-title" class="account-page__section-title">
-          {{ t('account.permissions.title') }}
-        </h2>
-        <p class="account-page__muted">{{ t('account.permissions.subtitle') }}</p>
-      </header>
-
-      <div v-if="status === 'loading'" class="account-page__module-grid">
-        <Skeleton v-for="i in 3" :key="i" variant="block" />
-      </div>
-      <ErrorState v-else-if="status === 'error'" :message="t('account.loadError')" @retry="load" />
-      <EmptyState
-        v-else-if="modules.length === 0"
-        icon="shield-info"
-        :title="t('account.permissions.empty')"
-      />
-      <div v-else class="account-page__module-grid">
-        <PermissionModuleCard
-          v-for="group in modules"
-          :key="group.module"
-          :module="group.module"
-          :items="group.items"
-          :localized="localized"
-        />
-      </div>
-    </section>
+    <ChangePasswordCard />
   </section>
 </template>

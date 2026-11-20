@@ -296,9 +296,9 @@ test.describe('Task-84 — S3 request queue and S4 request detail', () => {
         page,
       }, testInfo) => {
         await signIn(page, FOLLOWER, testInfo, { scenario: state.scenario, theme })
-        await open(page, '/admin/requests', '.request-queue__entity .level-badge')
+        await open(page, '/admin/requests', '.request-queue__request .level-badge')
         const cell = page
-          .locator('.request-queue__entity')
+          .locator('.request-queue__request')
           .filter({ has: page.locator(`.level-badge[data-tier="${EHSAN.tier}"]`) })
           .first()
         await expect(cell).toBeVisible()

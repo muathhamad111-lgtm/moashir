@@ -335,6 +335,25 @@ describe('criteria mock — publish with scope and text corrections', () => {
     })
   })
 
+  it('keeps the change list of a publication in its edit event, like the API', async () => {
+    const draft = await openDraft()
+    const [main] = await draftMains()
+    await call('PUT', `/criteria/mains/${main.id}`, {
+      name: { ar: 'القيادة المؤسسية', en: 'Institutional leadership' },
+      weight: '1000.00',
+    })
+    as(SYSTEM_ADMIN)
+    await call('POST', `/criteria/versions/${draft.id}/publish`, { confirm: true, scope: 'all' })
+    const { body } = await call('GET', '/criteria/edit-events')
+    expect(body.data[0].changes).toHaveLength(1)
+    expect(body.data[0].changes[0]).toMatchObject({
+      code: main.code,
+      change: 'modified',
+      fields: ['name'],
+      label: { en: 'Institutional leadership' },
+    })
+  })
+
   it('requires a scope when a published version is replaced and archives the previous one', async () => {
     const draft = await openDraft()
     as(SYSTEM_ADMIN)

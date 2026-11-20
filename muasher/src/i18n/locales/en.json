@@ -505,21 +505,13 @@
       "success": "Version {number} was published",
       "affectedOpen": "No open request affected. | 1 open request affected. | {count} open requests affected.",
       "preview": {
-        "title": "What will change",
         "loading": "Comparing with the published version…",
         "error": "The comparison with the published version could not be prepared.",
         "none": "No differences from version {number}.",
         "summary": "No changes. | 1 change; {scoreAffecting} of it affects scores. | {count} changes; {scoreAffecting} of them affect scores.",
-        "showList": "Show the changes",
         "scoreAffecting": "Affects scores",
         "changedFields": "Changed: {fields}",
         "weightChange": "{before} → {after}",
-        "impact": {
-          "pick": "Choose an edit scope to see its effect on open requests.",
-          "all": "No open request moves. | 1 open request moves to the new version; scores of unchanged items are kept. | {count} open requests move to the new version; scores of unchanged items are kept.",
-          "new_only": "Open requests stay on version {number}; only new requests use the new version.",
-          "reset_open": "No open request moves. | 1 open request moves to the new version and all its scores are cleared. | {count} open requests move to the new version and all their scores are cleared."
-        },
         "changeTypes": {
           "added": "Added",
           "removed": "Removed",
@@ -745,31 +737,6 @@
         }
       }
     },
-    "history": {
-      "open": "Edit history",
-      "title": "Criteria edit history",
-      "subtitle": "Every publication of a new version and every text correction, with its scope, its effect on open requests and who made it.",
-      "emptyTitle": "No edits yet",
-      "emptyMessage": "Each publication that replaces a published version and each text correction appears here.",
-      "version": "Version {number}",
-      "versionWithLabel": "Version {number} — {label}",
-      "to": "to {version}",
-      "reason": "Reason: {reason}",
-      "noChanges": "No change details",
-      "unknownEditor": "Unknown",
-      "affected": "No open request affected | 1 open request | {count} open requests",
-      "kinds": {
-        "textCorrection": "Text correction"
-      },
-      "columns": {
-        "date": "Date",
-        "versions": "Version",
-        "kind": "Type and scope",
-        "changes": "Changes",
-        "impact": "Open requests affected",
-        "editor": "Made by"
-      }
-    },
     "workspace": {
       "subtitle": "Pick a main criterion in the strip to see its sub-criteria, indicators and weights, and open any item to see or edit it.",
       "tree": {
@@ -809,17 +776,11 @@
         "review": "Review and publish",
         "discard": "Discard changes",
         "backToCurrent": "Back to the current version",
-        "versions": "Versions",
         "clone": "Start editing from another version",
-        "show": {
-          "draft": "Show the unpublished changes (version {number})",
-          "published": "Show published version {number}",
-          "archived": "Show archived version {number}"
-        }
+        "more": "More"
       },
       "review": {
         "title": "Review and publish version {number}",
-        "stepsLabel": "Review steps",
         "steps": {
           "notes": "Notes",
           "changes": "Changes",
@@ -923,6 +884,83 @@
         "review": "Review"
       },
       "reviewHint": "Check what will be added; you can go back to any step to change it."
+    },
+    "review": {
+      "crumb": "Review and publish",
+      "subtitle": {
+        "replace": "Three steps: fix what blocks publishing, check the changes, then choose who they apply to.",
+        "first": "Two steps: fix what blocks publishing, then publish the first version."
+      },
+      "unavailableTitle": "Nothing to review",
+      "unavailableMessage": "This page is for unpublished changes that you may publish. Start editing from the criteria page.",
+      "backToCriteria": "Back to the criteria",
+      "publish": "Publish version {number}",
+      "becomes": "becomes",
+      "versionLevel": "The version itself",
+      "groupCount": "No changes | 1 change | {count} changes",
+      "whole": {
+        "added": "New in this version.",
+        "removed": "Removed in this version."
+      },
+      "tags": {
+        "added": "New item",
+        "removed": "Removed",
+        "needsNewScore": "Needs a new score",
+        "keepsScore": "Keeps its score",
+        "textOnly": "Text only"
+      },
+      "scopeReach": "No open request affected | Affects 1 open request | Affects {count} open requests",
+      "attachmentCount": "No attachments | 1 attachment | {count} attachments",
+      "done": {
+        "changes": "No changes | 1 change published | {count} changes published"
+      }
+    },
+    "pageTabs": {
+      "label": "Criteria settings pages",
+      "criteria": "Criteria",
+      "versions": "Versions"
+    },
+    "versions": {
+      "subtitle": "Every version with when it was published, who it applies to, what it did to open requests and who published it.",
+      "name": "Version {number}",
+      "nameWithLabel": "Version {number} — {label}",
+      "status": {
+        "draft": "Being edited",
+        "published": "Published",
+        "archived": "Archived"
+      },
+      "columns": {
+        "version": "Version",
+        "published": "Published",
+        "scope": "Applies to",
+        "affected": "Open requests affected",
+        "actions": "Actions"
+      },
+      "reason": "Reason:",
+      "affected": "No open request affected | 1 open request | {count} open requests",
+      "whatChanged": "What changed",
+      "open": "Show in the criteria"
+    },
+    "changes": {
+      "title": "What changed in version {number}",
+      "fromTo": "From {from} to {to}",
+      "publishedOn": "Published on {date}",
+      "by": "Published by {name}",
+      "tilesLabel": "Filter the changes",
+      "tiles": {
+        "keepsScore": "Keeps its score",
+        "needsNewScore": "Needs a new score",
+        "added": "New items"
+      },
+      "search": "Search",
+      "searchPlaceholder": "Search by name or code",
+      "noMatch": "No item matches the filter or the search.",
+      "noStructural": "This publication changed no item.",
+      "noComparison": "Nothing to compare: this is the first published version, or it is not published yet.",
+      "notFoundTitle": "Version not found",
+      "notFoundMessage": "Go back to the list of versions and pick one.",
+      "corrections": "Text corrections after publishing",
+      "correctionCount": "No corrections | 1 text correction | {count} text corrections"
     }
   },
   "routes": {
@@ -1187,8 +1225,14 @@
       },
       "criteria": {
         "title": "Criteria Setup",
-        "history": {
-          "title": "Criteria edit history"
+        "review": {
+          "title": "Review and publish criteria"
+        },
+        "versions": {
+          "title": "Criteria versions"
+        },
+        "versionChanges": {
+          "title": "What changed in the version"
         }
       },
       "users": {
@@ -4349,10 +4393,9 @@
     "index": {
       "eyebrow": "Assessment requests",
       "title": "Requests queue",
-      "subtitle": "Assign the requests of the selected path to assessors qualified for it, follow their progress and act on overdue reviews.",
       "searchPlaceholder": "Search by request number, entity name or e-mail",
       "emptyTitle": "No requests match",
-      "emptyMessage": "Submitted requests of this path appear here."
+      "emptyMessage": "This path's requests appear here from opening to closing."
     },
     "stats": {
       "total": "Total requests",
@@ -4582,24 +4625,19 @@
       },
       "revokeHint": "The entity sees the reason; it is never public · at least {min} characters"
     },
-    "tabs": {
-      "assignmentQueue": "In the assignment queue",
-      "awaitingEntity": "Waiting for the entity",
+    "stages": {
+      "label": "Request stage",
+      "all": "All",
+      "preparing": "Being prepared",
+      "awaitingAssignment": "Awaiting assignment",
+      "inProgress": "In progress",
+      "overdue": "Overdue",
+      "closed": "Closed",
       "withCount": "{label} ({count})"
     },
-    "awaitingEntity": {
-      "columns": {
-        "payment": "Payment",
-        "openedAt": "Opened on",
-        "progress": "Entity progress",
-        "lastActivity": "Entity last active"
-      },
-      "progressLabel": "Sub-criteria completed",
-      "noPayment": "No payment",
-      "open": "Open",
-      "emptyTitle": "No requests waiting for the entity",
-      "emptyMessage": "Requests open to the entity appear here until it sends them."
-    }
+    "reassigned": "Reassigned",
+    "progressLabel": "Sub-criteria completed",
+    "noAssessorYet": "—"
   },
   "bag": {
     "gap": {
@@ -5032,7 +5070,7 @@
   },
   "account": {
     "title": "My account",
-    "subtitle": "Your account details and the roles and permissions granted to you.",
+    "subtitle": "Your account details, your assigned roles and your password.",
     "identity": {
       "title": "Account details",
       "name": "Name",
@@ -5047,13 +5085,16 @@
       "substituteSeat": "Assessors committee substitute",
       "committeePeriod": "From {start} to {end}"
     },
-    "permissions": {
-      "title": "My permissions",
-      "subtitle": "Grouped by module. Permissions are granted by the System Administrator and cannot be changed on this page.",
-      "empty": "No permissions are granted to your account.",
-      "count": "{count} permission | {count} permissions"
+    "password": {
+      "title": "Change password",
+      "subtitle": "Enter your current password, then the new one. You stay signed in here; your other sessions end when you save.",
+      "current": "Current password",
+      "new": "New password",
+      "confirmation": "Confirm new password",
+      "submit": "Save password",
+      "saved": "Your new password was saved, and your sessions on other devices were ended."
     },
-    "loadError": "Could not load your roles and permissions.",
+    "loadError": "Could not load your roles.",
     "avatar": {
       "title": "Profile photo",
       "hint": "Your photo appears in the top navigation bar instead of the default icon.",

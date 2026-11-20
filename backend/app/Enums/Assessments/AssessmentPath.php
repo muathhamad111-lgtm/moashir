@@ -8,6 +8,7 @@ use App\Contracts\Assessments\AssessmentState;
 use App\Contracts\Assessments\ReviewedAssessmentState;
 use App\Data\Assessments\ReviewStages;
 use App\Enums\Entities\EntityRequestPath;
+use Closure;
 use LogicException;
 
 enum AssessmentPath: string
@@ -88,6 +89,23 @@ enum AssessmentPath: string
             self::Accredited => AccreditedAssessmentStatus::valuesOf(...AccreditedAssessmentStatus::queueStates()),
             self::Advanced => AdvancedAssessmentStatus::valuesOf(...AdvancedAssessmentStatus::queueStates()),
         };
+    }
+
+    /**
+     * The request-queue states that pass a check, e.g. the open ones.
+     *
+     * @param  Closure(ReviewedAssessmentState): bool  $matches
+     * @return list<string>
+     */
+    public function queueStateValuesWhere(Closure $matches): array
+    {
+        return array_values(array_map(
+            static fn (ReviewedAssessmentState $state): string => (string) $state->value,
+            array_filter(
+                $this->states(),
+                static fn (AssessmentState $state): bool => $state instanceof ReviewedAssessmentState && $state->isInRequestQueue() && $matches($state),
+            ),
+        ));
     }
 
     /**

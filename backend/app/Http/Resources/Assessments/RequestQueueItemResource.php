@@ -28,7 +28,7 @@ final class RequestQueueItemResource extends JsonResource
     public function toArray(Request $request): array
     {
         $assessment = $this->resource;
-        $assignment = $assessment->activeAssignment;
+        $assignment = $assessment->latestAssignment;
 
         return [
             'id' => $assessment->id,
@@ -42,6 +42,7 @@ final class RequestQueueItemResource extends JsonResource
                 'last_level' => EntityLevelPresenter::lastLevelOf($assessment->entity),
             ],
             'assessor' => $assignment instanceof AssessmentAssignment ? ['id' => $assignment->assessor_user_id, 'name' => $assignment->assessor->name] : null,
+            'is_reassigned' => (bool) $assessment->was_reassigned,
             'assigned_at' => $assignment?->created_at->toIso8601String(),
             'completion_deadline' => $assessment->openCompletionRequest?->deadline_at->toIso8601String(),
             'award_cycle' => CyclePresenter::summary($assessment->awardCycle),

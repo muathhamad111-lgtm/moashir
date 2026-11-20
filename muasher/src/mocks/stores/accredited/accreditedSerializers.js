@@ -14,7 +14,6 @@ import { findRegion } from '../regionsStore'
 import { entityLevelOf, lastLevelOf } from '../entityLevels'
 import { uploadLimits } from './assessmentSettingsStore'
 import {
-  activeAssignment,
   boundSubsOf,
   gapsOf,
   boundMainsOf,
@@ -187,8 +186,13 @@ function queueEntityOf(entity) {
     : null
 }
 
+// The latest assignment in any status: its assessor stays on the request after the review ends.
+function latestAssignmentOf(record) {
+  return record.assignments.at(-1) ?? null
+}
+
 export function queueRow(record, staffName) {
-  const assignment = activeAssignment(record)
+  const assignment = latestAssignmentOf(record)
   return {
     id: record.id,
     number: record.number,
@@ -198,6 +202,7 @@ export function queueRow(record, staffName) {
     isFrozen: isFrozen(record),
     entity: queueEntityOf(entityOf(record)),
     assessor: assessorOf(assignment, staffName),
+    isReassigned: record.assignments.some((item) => item.status === 'reassigned'),
     assignedAt: assignment?.createdAt ?? null,
     completionDeadline: openCompletionOf(record)?.deadlineAt ?? null,
     awardCycle: cycleSummaryOf(record),

@@ -135,25 +135,6 @@
   color: var(--theme-text-muted);
 }
 
-.criteria-review__steps {
-  @include flex(row, center, flex-start, var(--space-2));
-  flex-wrap: wrap;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-size: var(--fs-sm);
-  color: var(--theme-text-muted);
-}
-
-.criteria-review__step {
-  @include flex(row, center, flex-start, var(--space-1));
-
-  &.is-current {
-    color: var(--theme-heading);
-    font-weight: var(--fw-semibold);
-  }
-}
-
 .criteria-review__ready {
   @include flex(row, center, flex-start, var(--space-2));
   margin: 0;

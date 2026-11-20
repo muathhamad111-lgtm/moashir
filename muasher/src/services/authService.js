@@ -135,6 +135,17 @@ export const authService = {
     )
   },
 
+  // Changes the signed-in user's own password; the API keeps this session and ends the others.
+  changePassword({ currentPassword, password, passwordConfirmation }) {
+    const body = { currentPassword, password, passwordConfirmation }
+    return serviceRequest(
+      'auth.changePassword',
+      () => apiClient.post('/auth/password/change', body),
+      { entity: 'password-change', payloadShape: payloadShape(body) },
+      { expectedStatuses: AUTH_REJECTIONS },
+    )
+  },
+
   checkInvitation(token) {
     return serviceRequest(
       'auth.checkInvitation',

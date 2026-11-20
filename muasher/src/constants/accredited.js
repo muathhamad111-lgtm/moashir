@@ -148,4 +148,16 @@ export const ACCREDITED_CODES = {
 
 export const ACCREDITED_REQUEST_PREFIX = 'ACC'
 
-export const QUEUE_STAGES = Object.freeze({ QUEUE: 'queue', PREPARING: 'preparing' })
+// The quick filters of the request list (admin review 2026-11-20), as the API names them.
+export const QUEUE_STAGES = Object.freeze({
+  ALL: 'all',
+  PREPARING: 'preparing',
+  AWAITING_ASSIGNMENT: 'awaiting_assignment',
+  IN_PROGRESS: 'in_progress',
+  OVERDUE: 'overdue',
+  CLOSED: 'closed',
+})
+
+export const QUEUE_STAGE_LIST = Object.values(QUEUE_STAGES).filter(
+  (stage) => stage !== QUEUE_STAGES.ALL,
+)

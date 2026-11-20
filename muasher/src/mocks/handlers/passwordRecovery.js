@@ -3,13 +3,14 @@ import { assignNationalId } from '../stores/identityStore'
 import { isValidNationalId } from '@/utils/identity/nationalId'
 import { delay } from 'msw'
 import { http } from '../contract/http'
-import { envelope, errorResponse } from '../contract/responses'
+import { envelope, errorResponse, noContent } from '../contract/responses'
 import { requestLocale } from '../contract/locale'
 import { MOCK_PASSWORD, PASSWORD_RULES, RECOVERY_TOKENS } from '../fixtures/auth'
 import { findAccountByEmail } from '../stores/accounts'
 import { currentTerms } from '../stores/termsStore'
 import { findStaffUser } from '../stores/staffUsers'
 import { readJson } from '../stores/entityRejection'
+import { currentSessionUser } from '../stores/sessionStore'
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const LATENCY_MS = 200
@@ -32,6 +33,10 @@ const MESSAGES = {
   confirmed: {
     ar: 'تأكيد كلمة المرور غير مطابق.',
     en: 'The password confirmation does not match.',
+  },
+  currentPassword: {
+    ar: 'كلمة المرور الحالية غير صحيحة.',
+    en: 'The current password is incorrect.',
   },
   history: {
     ar: 'لا يمكن استخدام إحدى كلمات المرور الخمس الأخيرة.',
@@ -72,6 +77,13 @@ function validationFailure(request, fields) {
   return errorResponse(422, 'validation_failed', Object.values(fields)[0][0], fields)
 }
 
+// Mirrors ChangePasswordRequest: the current password first, then the same policy as a reset.
+function changeErrors(request, body) {
+  if (body.currentPassword !== MOCK_PASSWORD)
+    return { currentPassword: [say(request, 'currentPassword')] }
+  return passwordErrors(request, body, { withHistory: true })
+}
+
 function invitationUser(token) {
   const target = RECOVERY_TOKENS.INVITATIONS[token]
   if (target === 'expired')
@@ -108,6 +120,14 @@ export function passwordRecoveryHandlers({ continueSignIn }) {
       if (!account || body.token === RECOVERY_TOKENS.EXPIRED_RESET)
         return errorResponse(422, 'token.invalid', say(request, 'tokenInvalid'))
       return envelope({ message: say(request, 'reset') })
+    }),
+
+    http.post('/api/v1/auth/password/change', async ({ request }) => {
+      await delay(LATENCY_MS)
+      if (!currentSessionUser()) return errorResponse(401, 'unauthenticated', 'Unauthenticated.')
+      const fields = changeErrors(request, await readJson(request))
+      if (Object.keys(fields).length) return validationFailure(request, fields)
+      return noContent()
     }),
 
     http.get('/api/v1/auth/invitations/:token', async ({ params, request }) => {

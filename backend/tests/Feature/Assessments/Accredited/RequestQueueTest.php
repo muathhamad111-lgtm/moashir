@@ -17,27 +17,31 @@ beforeEach(function (): void {
     Notification::fake();
 });
 
-it('lists the submitted accredited requests of operational entities with SLA data and stats', function (): void {
+it('lists the accredited requests of operational entities with SLA data and stats', function (): void {
     $version = publishedAccreditedCriteria();
-    openedAccreditedRequest();
+    $draft = openedAccreditedRequest();
     $submitted = submittedAccreditedRequest($version);
     $frozen = submittedAccreditedRequest($version);
     $frozen->entity->delete();
     $overdue = submittedAccreditedRequest($version);
     $overdue->forceFill(['due_at' => Date::now()->subDay()])->save();
 
-    $response = switchTo(requestFollower())->getJson('/api/v1/requests')->assertOk()
-        ->assertJsonPath('meta.pagination.total', 2)
-        ->assertJsonPath('meta.stats.total', 2)
+    switchTo(requestFollower())->getJson('/api/v1/requests')->assertOk()
+        ->assertJsonPath('meta.pagination.total', 3)
+        ->assertJsonPath('meta.stats.total', 3)
+        ->assertJsonPath('meta.stats.by_status.draft', 1)
         ->assertJsonPath('meta.stats.by_status.submitted', 2)
         ->assertJsonPath('meta.stats.overdue', 1);
+
+    $response = test()->getJson('/api/v1/requests?filter[stage]=awaiting_assignment')->assertOk()->assertJsonPath('meta.pagination.total', 2);
 
     expect(collect($response->json('data'))->pluck('id')->sort()->values()->all())->toBe(collect([$submitted->id, $overdue->id])->sort()->values()->all());
 
     test()->getJson('/api/v1/requests?filter[overdue]=true')->assertOk()->assertJsonPath('meta.pagination.total', 1)->assertJsonPath('data.0.is_overdue', true);
     test()->getJson('/api/v1/requests?filter[overdue]=false')->assertOk()->assertJsonPath('data.0.id', $submitted->id);
     test()->getJson('/api/v1/requests?search='.$submitted->request_number)->assertOk()->assertJsonPath('meta.pagination.total', 1);
-    test()->getJson('/api/v1/requests?filter[status]=draft')->assertUnprocessable();
+    test()->getJson('/api/v1/requests?filter[status]=draft')->assertOk()->assertJsonPath('data.0.id', $draft->id);
+    test()->getJson('/api/v1/requests?filter[status]=awaiting_payment')->assertUnprocessable();
     test()->getJson('/api/v1/requests?sort=-entity')->assertUnprocessable();
 });
 

@@ -81,3 +81,57 @@
   flex-wrap: nowrap;
   white-space: nowrap;
 }
+
+// Request list (admin review 2026-11-20): stage chips and the merged request column.
+.queue-stages {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  padding-block-end: var(--space-4);
+}
+
+.queue-stages__chip {
+  padding: var(--space-2) var(--space-4);
+  font: inherit;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-secondary);
+  background-color: var(--theme-surface);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  min-block-size: var(--size-touch-target);
+
+  &:hover {
+    color: var(--theme-heading);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &.is-active {
+    font-weight: var(--fw-semibold);
+    color: var(--theme-accent-text);
+    background-color: var(--theme-accent-soft);
+    border-color: var(--theme-accent);
+  }
+}
+
+.request-queue__request {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+}
+
+.request-queue__entity-name {
+  color: var(--theme-heading);
+}
+
+.request-queue__preparing {
+  @include flex(column, stretch, flex-start, var(--space-2));
+}
+
+.request-queue__progress {
+  min-inline-size: var(--size-filter-min);
+}
+
+.request-queue__assessor {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+}

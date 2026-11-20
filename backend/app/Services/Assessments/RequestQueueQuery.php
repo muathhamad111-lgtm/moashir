@@ -7,6 +7,7 @@ namespace App\Services\Assessments;
 use App\Data\Assessments\RequestQueueFilters;
 use App\Data\Periods\PeriodFilter;
 use App\Enums\Assessments\AssessmentPath;
+use App\Enums\Assessments\QueueStage;
 use App\Models\Assessments\Assessment;
 use App\Services\Entities\EntityFreezeGuard;
 use App\Services\Periods\PeriodScopes;
@@ -24,7 +25,11 @@ final readonly class RequestQueueQuery
      */
     public function filtered(RequestQueueFilters $filters): Builder
     {
-        $query = $this->queued([$filters->path]);
+        $query = $this->inStates([$filters->path], static fn (AssessmentPath $path): array => $filters->stage->stateValuesOf($path));
+
+        if ($filters->stage === QueueStage::Overdue) {
+            $this->overdue($query);
+        }
 
         if ($filters->status !== null) {
             $query->where('status', $filters->status);
@@ -47,7 +52,7 @@ final readonly class RequestQueueQuery
         }
 
         if ($filters->period instanceof PeriodFilter) {
-            $this->periods->submittedIn($query, $filters->period);
+            $this->inPeriod($query, $filters->path, $filters->period);
         }
 
         return $query;
@@ -84,6 +89,24 @@ final readonly class RequestQueueQuery
                 }
             })
             ->where('due_at', '<', Date::now());
+    }
+
+    /**
+     * A submitted request belongs to the period it was submitted in; a draft to the period it was opened in.
+     *
+     * @param  Builder<Assessment>  $query
+     */
+    private function inPeriod(Builder $query, AssessmentPath $path, PeriodFilter $period): void
+    {
+        $query->where(function (Builder $inPeriod) use ($path, $period): void {
+            $inPeriod
+                ->where(function (Builder $submitted) use ($path, $period): void {
+                    $this->periods->submittedIn($submitted->whereIn('status', $path->queueStateValues()), $period);
+                })
+                ->orWhere(function (Builder $draft) use ($path, $period): void {
+                    $this->periods->openedIn($draft->whereIn('status', $path->preparingStateValues()), $period);
+                });
+        });
     }
 
     /**

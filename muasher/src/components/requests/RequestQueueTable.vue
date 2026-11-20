@@ -1,15 +1,14 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RouterLink } from 'vue-router'
 import DataTable from '@/components/data-list/DataTable.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import Tooltip from '@/components/ui/Tooltip.vue'
-import StatusBadge from '@/components/ui/StatusBadge.vue'
 import DateStamp from '@/components/accredited/DateStamp.vue'
 import OverdueBadge from '@/components/accredited/OverdueBadge.vue'
-import LevelBadge from '@/components/level/LevelBadge.vue'
-import { displayTierOf } from '@/utils/levelTier'
+import RequestQueueRequestCell from './RequestQueueRequestCell.vue'
+import RequestQueueStatusCell from './RequestQueueStatusCell.vue'
+import RequestQueueAssessorCell from './RequestQueueAssessorCell.vue'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { localizedText } from '@/utils/localizedText'
 import { assignmentModeOf } from '@/utils/assessments/reviewStages'
@@ -28,7 +27,6 @@ const { t, locale } = useI18n()
 
 const columns = computed(() => [
   { key: 'number', label: t('requests.columns.number') },
-  { key: 'entity', label: t('requests.columns.entity') },
   ...(props.showsRegion ? [{ key: 'region', label: t('requests.columns.region') }] : []),
   { key: 'status', label: t('requests.columns.status') },
   { key: 'assessor', label: t('requests.columns.assessor') },
@@ -57,30 +55,13 @@ function detailRouteOf(item) {
     @retry="emit('retry')"
   >
     <template #cell-number="{ item }">
-      <RouterLink class="request-queue__link" :to="detailRouteOf(item)">
-        <bdi dir="ltr">{{ item.number }}</bdi>
-      </RouterLink>
-    </template>
-    <template #cell-entity="{ item }">
-      <span class="request-queue__entity">
-        <span>{{ localizedText(item.entity?.name, locale) }}</span>
-        <LevelBadge
-          v-if="item.entity"
-          :tier="displayTierOf(item.entity)"
-          size="s"
-          :certificate="item.entity.lastLevel"
-        />
-      </span>
+      <RequestQueueRequestCell :item="item" :to="detailRouteOf(item)" />
     </template>
     <template #cell-region="{ item }">{{
       item.region ? localizedText(item.region.name, locale) : ''
     }}</template>
-    <template #cell-status="{ item }"><StatusBadge :status="item.status" /></template>
-    <template #cell-assessor="{ item }">
-      <span :class="{ 'request-queue__muted': !item.assessor }">{{
-        item.assessor?.name ?? t('requests.unassigned')
-      }}</span>
-    </template>
+    <template #cell-status="{ item }"><RequestQueueStatusCell :item="item" /></template>
+    <template #cell-assessor="{ item }"><RequestQueueAssessorCell :item="item" /></template>
     <template #cell-submittedAt="{ item }"
       ><DateStamp :value="item.submittedAt" :with-time="false"
     /></template>

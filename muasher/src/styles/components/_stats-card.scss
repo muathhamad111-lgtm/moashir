@@ -83,3 +83,19 @@
   font-size: var(--fs-sm);
   color: var(--theme-text-secondary);
 }
+
+// A card that filters its list (request queue stages).
+.stats-card--selectable {
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &.is-active {
+    border-color: var(--theme-accent);
+    box-shadow: 0 0 0 var(--border-width) var(--theme-accent);
+  }
+}

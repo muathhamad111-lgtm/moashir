@@ -3,13 +3,12 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
 import Card from '@/components/ui/Card.vue'
-import Tabs from '@/components/ui/Tabs.vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import RequestQueueFilters from '@/components/requests/RequestQueueFilters.vue'
 import RequestQueueTable from '@/components/requests/RequestQueueTable.vue'
-import PreparingRequestsPanel from '@/components/requests/PreparingRequestsPanel.vue'
+import QueueStageChips from '@/components/requests/QueueStageChips.vue'
 import AssignAssessorDialog from '@/components/requests/AssignAssessorDialog.vue'
 import { useRequestQueue } from '@/composables/useRequestQueue'
 import { useQueueStatCards } from '@/composables/useQueueStatCards'
@@ -20,9 +19,9 @@ import { requestsService } from '@/services/requestsService'
 import { awardCycleService } from '@/services/awardCycleService'
 import { ASSESSMENT_PATHS } from '@/constants/assessment'
 import { CYCLE_STATUSES } from '@/constants/advanced'
-import { QUEUE_STAGES } from '@/constants/accredited'
 import { PERMISSIONS } from '@/constants/permissionKeys'
-import { followedPathsOf, pathCountOf } from '@/utils/requestPaths'
+import { followedPathsOf } from '@/utils/requestPaths'
+import { stageCountsOf } from '@/utils/assessments/queueStages'
 import { localizedText } from '@/utils/localizedText'
 
 const CYCLE_LIST_SIZE = 50
@@ -31,11 +30,12 @@ const { t, locale } = useI18n()
 const { can } = usePermissions()
 const auth = useAuthStore()
 const paths = computed(() => followedPathsOf(auth.user))
-const queue = useRequestQueue(paths)
+const { stage } = useQueueStage()
+const queue = useRequestQueue(paths, stage)
 const { items, status, errorMessage, load, filters, paginator, searchInput, stats, path } = queue
 const { pagination, setPage } = paginator
 const statCards = useQueueStatCards(stats)
-const { stage } = useQueueStage()
+const stageCounts = computed(() => stageCountsOf(stats.value))
 const assessors = ref([])
 const cycles = ref([])
 const canAssign = computed(() => can(PERMISSIONS.REQUESTS_ASSIGN))
@@ -43,21 +43,6 @@ const assignment = ref(null)
 const assignOpen = ref(false)
 
 useHead({ title: () => t('requests.index.title') })
-
-const currentCount = computed(() => pathCountOf(queue.pathCounts.value, path.value))
-
-function stageTab(value, key, count) {
-  const label = t(`requests.tabs.${key}`)
-  return {
-    value,
-    label: count === undefined ? label : t('requests.tabs.withCount', { label, count }),
-  }
-}
-
-const stageTabs = computed(() => [
-  stageTab(QUEUE_STAGES.QUEUE, 'assignmentQueue', stats.value?.total ?? currentCount.value?.total),
-  stageTab(QUEUE_STAGES.PREPARING, 'awaitingEntity', currentCount.value?.preparing),
-])
 
 function openAssign({ item, mode }) {
   assignment.value = { item, mode }
@@ -93,49 +78,48 @@ const filterState = {
     <header class="requests-page__header">
       <p class="requests-page__eyebrow">{{ t('requests.index.eyebrow') }}</p>
       <h1 class="requests-page__title">{{ t('requests.index.title') }}</h1>
-      <p class="requests-page__subtitle">{{ t('requests.index.subtitle') }}</p>
     </header>
-    <StatsCards :stats="statCards" :loading="!stats && status === 'loading'" />
+    <StatsCards
+      :stats="statCards"
+      :loading="!stats && status === 'loading'"
+      selectable
+      :active="stage"
+      @select="stage = $event"
+    />
     <Card>
-      <Tabs v-model="stage" :tabs="stageTabs">
-        <template #default="{ active }">
-          <PreparingRequestsPanel v-if="active === QUEUE_STAGES.PREPARING" :path="path" />
-          <template v-else>
-            <ListToolbar
-              v-model:search="searchInput"
-              :search-placeholder="t('requests.index.searchPlaceholder')"
-              :filter-state="filterState"
-            >
-              <template #filters="{ draft }">
-                <RequestQueueFilters
-                  :path="path"
-                  :filters="draft.filters"
-                  :sort="draft.sort.value"
-                  :assessors="assessors"
-                  :cycles="cycles"
-                  @filter="draft.setFilter"
-                  @sort="draft.setSort"
-                />
-              </template>
-            </ListToolbar>
-            <RequestQueueTable
-              :items="items"
-              :status="status"
-              :error-message="errorMessage"
-              :shows-region="path === ASSESSMENT_PATHS.ADVANCED"
-              :can-assign="canAssign"
-              @retry="load"
-              @assign="openAssign"
-            />
-            <Pagination
-              v-if="status === 'success' && pagination.lastPage > 1"
-              :page="pagination.page"
-              :last-page="pagination.lastPage"
-              @update:page="setPage($event)"
-            />
-          </template>
+      <QueueStageChips v-model="stage" :counts="stageCounts" />
+      <ListToolbar
+        v-model:search="searchInput"
+        :search-placeholder="t('requests.index.searchPlaceholder')"
+        :filter-state="filterState"
+      >
+        <template #filters="{ draft }">
+          <RequestQueueFilters
+            :path="path"
+            :filters="draft.filters"
+            :sort="draft.sort.value"
+            :assessors="assessors"
+            :cycles="cycles"
+            @filter="draft.setFilter"
+            @sort="draft.setSort"
+          />
         </template>
-      </Tabs>
+      </ListToolbar>
+      <RequestQueueTable
+        :items="items"
+        :status="status"
+        :error-message="errorMessage"
+        :shows-region="path === ASSESSMENT_PATHS.ADVANCED"
+        :can-assign="canAssign"
+        @retry="load"
+        @assign="openAssign"
+      />
+      <Pagination
+        v-if="status === 'success' && pagination.lastPage > 1"
+        :page="pagination.page"
+        :last-page="pagination.lastPage"
+        @update:page="setPage($event)"
+      />
     </Card>
     <AssignAssessorDialog
       v-if="assignment"

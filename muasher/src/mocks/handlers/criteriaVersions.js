@@ -62,7 +62,7 @@ function editEventResource(event) {
     toVersion: event.toVersionId ? versionRef(event.toVersionId) : null,
     changeCount: event.changeCount ?? 0,
     scoreAffectingCount: event.rescoredCodes?.length ?? 0,
-    changes: [],
+    changes: event.changes ?? [],
     affectedOpenCount: event.affectedOpenCount ?? 0,
     reason: event.reason ?? null,
     editedBy: { id: event.actorId, name: null },

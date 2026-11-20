@@ -6,7 +6,6 @@ import BaseTextarea from '@/components/form/BaseTextarea.vue'
 import CriteriaScopeChoice from '@/components/criteria/CriteriaScopeChoice.vue'
 import CriteriaProblemList from '@/components/criteria/CriteriaProblemList.vue'
 import CriteriaCycleBindings from '@/components/criteria/CriteriaCycleBindings.vue'
-import CriteriaPublishPreview from '@/components/criteria/CriteriaPublishPreview.vue'
 import { usePublishCriteria } from '@/composables/usePublishCriteria'
 import { useCycleBindings } from '@/composables/useCycleBindings'
 import { useAuthStore } from '@/stores/auth'
@@ -66,7 +65,7 @@ async function submit() {
 
 <template>
   <form
-    class="publish-dialog"
+    class="criteria-review-page__section publish-dialog"
     :aria-busy="submitting || undefined"
     novalidate
     @submit.prevent="submit"
@@ -79,14 +78,11 @@ async function submit() {
       show-choice
     />
     <template v-if="replacesPublished">
-      <CriteriaScopeChoice v-model="scope" :error="scopeError" :disabled="submitting" />
-      <CriteriaPublishPreview
-        part="impact"
-        :preview="preview.preview.value"
-        :loading="preview.loading.value"
-        :failed="preview.failed.value"
-        :scope="scope"
-        @retry="preview.load(version.id)"
+      <CriteriaScopeChoice
+        v-model="scope"
+        :error="scopeError"
+        :disabled="submitting"
+        :counts="preview.preview.value?.reboundOpenAssessments ?? null"
       />
       <BaseTextarea
         v-model="reason"
@@ -114,12 +110,17 @@ async function submit() {
     />
     <p v-else-if="errorMessage" class="publish-dialog__error" role="alert">{{ errorMessage }}</p>
 
-    <footer class="modal__footer">
-      <BaseButton type="submit" variant="primary" :loading="submitting">
-        {{ t('actions.publish') }}
-      </BaseButton>
-      <BaseButton variant="secondary" :disabled="submitting" @click="emit('back')">
+    <footer class="criteria-review-page__bar">
+      <BaseButton
+        variant="secondary"
+        icon="arrow-left"
+        :disabled="submitting"
+        @click="emit('back')"
+      >
         {{ t('criteria.workspace.review.back') }}
+      </BaseButton>
+      <BaseButton type="submit" variant="primary" icon="upload" :loading="submitting">
+        {{ t('criteria.review.publish', { number: version.versionNumber }) }}
       </BaseButton>
     </footer>
   </form>

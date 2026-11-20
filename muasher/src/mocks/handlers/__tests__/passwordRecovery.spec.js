@@ -3,7 +3,8 @@ import { setupServer } from 'msw/node'
 import { handlers } from '@/mocks/handlers'
 import { resetStaffUsers } from '@/mocks/stores/staffUsers'
 import { resetTermsStore } from '@/mocks/stores/termsStore'
-import { MOCK_API_BASE, clearMockSession, wireFetch } from '@/test-utils/mockApi'
+import { MOCK_API_BASE, clearMockSession, seedMockSession, wireFetch } from '@/test-utils/mockApi'
+import { MOCK_PASSWORD } from '@/mocks/fixtures/auth'
 
 const server = setupServer(...handlers)
 const STRONG = 'Namaa-Strong-2026!'
@@ -87,5 +88,23 @@ describe('password recovery mock', () => {
     const activated = await accept('invite-sarah-whitfield-2026')
     expect(activated.body.data.step).toBe('mfa_enrollment')
     expect((await accept('invite-sarah-whitfield-2026')).status).toBe(404)
+  })
+
+  it('changes the signed-in user own password after checking the current one', async () => {
+    const change = (extra = {}) =>
+      call('POST', '/auth/password/change', {
+        current_password: MOCK_PASSWORD,
+        password: STRONG,
+        password_confirmation: STRONG,
+        ...extra,
+      })
+    expect((await change()).status).toBe(401)
+    seedMockSession({ id: 8, roles: ['assessor'] })
+    const wrongCurrent = await change({ current_password: 'Not-The-Password-1' })
+    expect(wrongCurrent.status).toBe(422)
+    expect(wrongCurrent.body.errors).toHaveProperty('current_password')
+    const reused = await change({ password: MOCK_PASSWORD, password_confirmation: MOCK_PASSWORD })
+    expect(reused.body.errors).toHaveProperty('password')
+    expect((await change()).status).toBe(204)
   })
 })

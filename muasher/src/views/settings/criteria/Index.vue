@@ -1,15 +1,16 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
+import CriteriaPageTabs from '@/components/criteria/CriteriaPageTabs.vue'
 import CriteriaWorkspaceBar from '@/components/criteria/workspace/CriteriaWorkspaceBar.vue'
 import CriteriaMainStrip from '@/components/criteria/workspace/CriteriaMainStrip.vue'
 import CriteriaMainBoard from '@/components/criteria/workspace/CriteriaMainBoard.vue'
 import CriteriaNodeSheet from '@/components/criteria/workspace/CriteriaNodeSheet.vue'
-import CriteriaReviewDialog from '@/components/criteria/workspace/CriteriaReviewDialog.vue'
 import CriteriaCreateDialogs from '@/components/criteria/workspace/CriteriaCreateDialogs.vue'
 import CriteriaDraftDialog from '@/components/criteria/CriteriaDraftDialog.vue'
 import CriteriaTextCorrectionDialog from '@/components/criteria/CriteriaTextCorrectionDialog.vue'
@@ -17,19 +18,18 @@ import { useCriteriaWorkspace } from '@/composables/useCriteriaWorkspace'
 import { useCriteriaWorkspaceEditing } from '@/composables/useCriteriaWorkspaceEditing'
 import { useCriteriaAccess } from '@/composables/useCriteriaAccess'
 import { useDraftLifecycle } from '@/composables/useDraftLifecycle'
-import { success } from '@/composables/useSuccess'
-import { publishSummary } from '@/utils/criteriaPublishSummary'
 import { moveIndex } from '@/utils/reorder'
 import { CRITERIA_NODE_TYPES as NODE } from '@/constants/criteria'
+import { ROUTE_NAMES } from '@/constants/routeNames'
 
 const { t } = useI18n()
+const router = useRouter()
 const workspace = useCriteriaWorkspace()
 const editing = useCriteriaWorkspaceEditing(workspace)
 const lifecycle = useDraftLifecycle()
 const access = useCriteriaAccess(workspace.version)
 const { versions } = workspace
 
-const reviewOpen = ref(false)
 const cloneOpen = ref(false)
 const canEdit = computed(() => access.canEditTree.value)
 const sheetTab = ref('basics')
@@ -73,9 +73,8 @@ async function discard() {
   if (await lifecycle.discardDraft(workspace.version.value)) await afterVersionChange()
 }
 
-async function onPublished(outcome) {
-  success.show(publishSummary(t, outcome))
-  await afterVersionChange()
+function openReview() {
+  router.push({ name: ROUTE_NAMES.ADMIN_CRITERIA_REVIEW })
 }
 </script>
 
@@ -87,6 +86,7 @@ async function onPublished(outcome) {
         <p class="criteria-page__subtitle">{{ t('criteria.workspace.subtitle') }}</p>
       </div>
     </header>
+    <CriteriaPageTabs />
 
     <div
       v-if="workspace.status.value === 'loading' && !workspace.tree.value"
@@ -117,12 +117,11 @@ async function onPublished(outcome) {
       <CriteriaWorkspaceBar
         :version="workspace.version.value"
         :draft="versions.draft.value"
-        :versions="versions.versions.value"
         :problem-count="workspace.problems.value.length"
         :can-manage="access.canManage.value"
         :can-publish="access.canPublish.value"
         @start="startEditing"
-        @review="reviewOpen = true"
+        @review="openReview"
         @discard="discard"
         @clone="cloneOpen = true"
         @correct-name="editing.correctVersionName"
@@ -187,13 +186,6 @@ async function onPublished(outcome) {
       />
 
       <CriteriaCreateDialogs v-if="canEdit" :editing="editing" />
-      <CriteriaReviewDialog
-        v-if="access.canPublishDraft.value"
-        v-model="reviewOpen"
-        :version="workspace.version.value"
-        :published="versions.published.value"
-        @published="onPublished"
-      />
       <CriteriaDraftDialog
         v-if="access.canManage.value && !versions.draft.value"
         v-model="cloneOpen"

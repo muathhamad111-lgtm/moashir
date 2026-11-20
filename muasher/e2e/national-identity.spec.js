@@ -11,6 +11,12 @@ const SYSTEM_ADMIN = {
   roles: ['system_admin'],
   name: { ar: 'منيرة بنت خالد العتيبي', en: 'Munira Al-Otaibi' },
 }
+const ENTITY_OWNER = {
+  id: 6001,
+  roles: ['entity'],
+  entityId: 6001,
+  name: { ar: 'نورة بنت فهد العتيبي', en: 'Noura Fahad Al-Otaibi' },
+}
 const VALID_ID = '1000000008'
 const BAD_ID = '1000000009'
 const REASON_TEXT = 'Correcting a spelling mistake in the registered name.'
@@ -113,4 +119,25 @@ test('the System Administrator chooses which accounts must give a national ID', 
   )
   await card.locator('button[type="submit"]').click()
   expect((await saved).status()).toBe(200)
+})
+
+test('an entity account adds its national ID and then sees it on the entity profile', async ({
+  page,
+}, testInfo) => {
+  await seedScenario(page, 'national-id-required')
+  await seed(page, testInfo, ENTITY_OWNER)
+  await page.goto('/entity/profile')
+
+  await expect(page).toHaveURL(/\/account\/complete-identity\?redirect=.*entity.*profile/)
+  await page.locator('input[name="nationalId"]').fill(VALID_ID)
+  await submit(page)
+
+  await expect(page).toHaveURL(/\/entity\/profile$/)
+  await expect(page.getByTestId('profile-completeness')).toBeVisible()
+  const card = page.locator('.entity-profile__national-identity')
+  await expect(card).toContainText(say(testInfo, 'National ID', 'رقم الهوية'))
+  await expect(card.locator('[data-testid="national-id-masked"]')).toHaveText('••••••0008')
+  await expect(
+    card.getByRole('button', { name: say(testInfo, 'Request a change', 'طلب تعديل') }),
+  ).toBeVisible()
 })

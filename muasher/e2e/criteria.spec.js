@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
-import { closeSuccess, successDialog } from './support/dialogs'
 
 const OFFICER = {
   id: 7101,
@@ -108,14 +107,24 @@ async function useTallViewport(page) {
   await page.setViewportSize({ width: 1280, height: 1500 })
 }
 
-async function reviewToApply(page) {
+// «مراجعة ونشر» is a full page (UX-A3): notes → changes → apply, with the step buttons in a sticky bar.
+const reviewPage = (page) => page.locator('.criteria-review-page')
+const reviewNext = (page) => reviewPage(page).getByRole('button', { name: /^\s*(Next|التالي)\s*$/ })
+
+async function openReview(page) {
   await page.getByRole('button', { name: /Review and publish|مراجعة ونشر/ }).click()
-  const dialog = page.getByRole('dialog')
-  await expect(dialog.locator('.criteria-review__ready')).toBeVisible()
-  await dialog.getByRole('button', { name: /^\s*(Next|التالي)\s*$/ }).click()
-  await dialog.getByRole('button', { name: /^\s*(Next|التالي)\s*$/ }).click()
-  await expect(dialog.locator('.scope-choice__option')).toHaveCount(3)
-  return dialog
+  await expect(page).toHaveURL(/\/admin\/settings\/criteria\/review$/)
+  return reviewPage(page)
+}
+
+async function reviewToApply(page) {
+  const review = await openReview(page)
+  await expect(review.locator('.criteria-review__ready')).toBeVisible()
+  await reviewNext(page).click()
+  await expect(review.locator('.criteria-review-page__count')).toBeVisible()
+  await reviewNext(page).click()
+  await expect(review.locator('.scope-choice__option')).toHaveCount(3)
+  return review
 }
 
 test('the published version is read-only, starts editing in one click and offers text corrections', async ({
@@ -169,16 +178,15 @@ test('editing: a blocking note links to its criterion, the fix clears it, then r
   await expect(page.locator('.criteria-strip__step.is-attention')).toHaveCount(1)
   await expect(page.locator('.criteria-board__alert')).toBeVisible()
 
-  await page.getByRole('button', { name: /Review and publish|مراجعة ونشر/ }).click()
-  const dialog = page.getByRole('dialog')
-  await expect(dialog.locator('.criteria-problems')).toContainText(nameOf(testInfo, 'leadership'))
-  await expect(dialog.locator('.criteria-problems')).not.toContainText(/M\d/)
-  await expect(dialog.getByRole('button', { name: /^\s*(Next|التالي)\s*$/ })).toHaveCount(0)
+  const review = await openReview(page)
+  await expect(review.locator('.criteria-problems')).toContainText(nameOf(testInfo, 'leadership'))
+  await expect(review.locator('.criteria-problems')).not.toContainText(/M\d/)
+  await expect(reviewNext(page)).toBeDisabled()
   await page.screenshot({
     path: `test-results/criteria-review-blocked-${suffixOf(testInfo)}.png`,
     fullPage: true,
   })
-  await dialog.locator('.criteria-problems__fix').first().click()
+  await review.locator('.criteria-problems__fix').first().click()
   await expect(sheetTitle(page)).toHaveText(nameOf(testInfo, 'leadership'))
   await closeSheet(page)
 
@@ -195,13 +203,62 @@ test('editing: a blocking note links to its criterion, the fix clears it, then r
       isEn(testInfo) ? 'Annual review of the criteria weights.' : 'مراجعة سنوية لأوزان المعايير.',
     )
   await apply.locator('button[type="submit"]').click()
-  await expect(successDialog(page).locator('.modal__title')).toContainText(/2/)
-  await closeSuccess(page)
+  const done = page.locator('.criteria-publish-done')
+  await expect(done).toContainText(/2/)
+  await done.getByRole('link', { name: /Back to the criteria|العودة إلى المعايير/ }).click()
   await expect(barTitle(page)).toContainText(/Published criteria|المعايير المنشورة/)
   await expect(barTitle(page)).toContainText(/2/)
 })
 
-test('capture the criteria workspace and the review dialog', async ({ page }, testInfo) => {
+test('versions tab: a published version shows what changed, by tile and by search', async ({
+  page,
+}, testInfo) => {
+  await useTallViewport(page)
+  await seed(page, testInfo)
+  await openCriteria(page)
+  await startDraft(page)
+  await openNode(page, nameOf(testInfo, 'direction'))
+  const saving = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'PUT' && /\/criteria\/subs\//.test(response.url()),
+  )
+  await sheet(page).locator('input[name="subNameEn"]').fill('Strategic Direction and Values')
+  await sheet(page).locator('.form-panel button[type="submit"]').click()
+  expect((await saving).status()).toBe(200)
+  await closeSheet(page)
+
+  const apply = await reviewToApply(page)
+  await apply.locator('.scope-choice__option').first().click()
+  await apply.locator('button[type="submit"]').click()
+  const done = page.locator('.criteria-publish-done')
+  await expect(done).toContainText(/2/)
+  await done.getByRole('link', { name: /Back to the criteria|العودة إلى المعايير/ }).click()
+
+  await page
+    .locator('.criteria-page-tabs')
+    .getByRole('link', { name: /^\s*(Versions|الإصدارات)\s*$/ })
+    .click()
+  await expect(page).toHaveURL(/\/admin\/settings\/criteria\/versions$/)
+  await page
+    .getByRole('link', { name: /What changed|ما الذي تغيّر/ })
+    .first()
+    .click()
+  await expect(page.locator('.criteria-page__title')).toContainText(/2/)
+  const tiles = page.locator('.criteria-change-tile')
+  await expect(tiles).toHaveCount(3)
+  await expect(tiles.first()).toContainText('1')
+  await expect(page.locator('.criteria-change')).toHaveCount(1)
+  // Only the English name changed, so both languages show the English before → after.
+  await expect(page.locator('.criteria-change__after')).toHaveText('Strategic Direction and Values')
+  await page.screenshot({
+    path: `test-results/criteria-version-changes-${suffixOf(testInfo)}.png`,
+    fullPage: true,
+  })
+  await tiles.nth(2).click()
+  await expect(page.locator('.criteria-change')).toHaveCount(0)
+})
+
+test('capture the criteria workspace and the review page', async ({ page }, testInfo) => {
   await useTallViewport(page)
   await seed(page, testInfo)
   await openCriteria(page)

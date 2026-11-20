@@ -184,4 +184,21 @@ describe('authService', () => {
     await authService.logout()
     expect(apiClient.post).toHaveBeenCalledWith('/auth/logout', {}, AUTH_FLOW)
   })
+
+  it('changes the own password with POST inside the session without logging the values', async () => {
+    apiClient.post.mockResolvedValue({ data: '' })
+    await authService.changePassword({
+      currentPassword: 'Old-Pass-2026!',
+      password: 'New-Pass-2026!',
+      passwordConfirmation: 'New-Pass-2026!',
+    })
+    expect(apiClient.post).toHaveBeenCalledWith('/auth/password/change', {
+      currentPassword: 'Old-Pass-2026!',
+      password: 'New-Pass-2026!',
+      passwordConfirmation: 'New-Pass-2026!',
+    })
+    const breadcrumb = JSON.stringify(logger.breadcrumb.mock.calls)
+    expect(breadcrumb).not.toContain('Old-Pass-2026!')
+    expect(breadcrumb).not.toContain('New-Pass-2026!')
+  })
 })

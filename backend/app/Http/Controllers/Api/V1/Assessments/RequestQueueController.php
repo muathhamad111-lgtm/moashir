@@ -10,7 +10,7 @@ use App\Actions\Assessments\SummarizeRequestQueue;
 use App\Data\Assessments\PathCount;
 use App\Http\Requests\Assessments\IndexRequestQueueRequest;
 use App\Http\Resources\Assessments\RequestDetailResource;
-use App\Http\Resources\Assessments\RequestQueueItemResource;
+use App\Http\Resources\Assessments\RequestQueueRowResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\Assessments\Assessment;
 use App\Models\Identity\User;
@@ -24,7 +24,7 @@ final class RequestQueueController
     {
         $filters = $request->filters();
 
-        return ApiResponse::paginated($list->handle($filters), RequestQueueItemResource::class, [
+        return ApiResponse::paginated($list->handle($filters), RequestQueueRowResource::class, [
             'stats' => $summarize->handle($filters),
             'path' => $filters->path->value,
             'path_counts' => array_map(static fn (PathCount $count): array => $count->toArray(), $counts->forQueue($request->followedPaths())),

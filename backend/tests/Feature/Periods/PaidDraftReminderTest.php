@@ -66,11 +66,11 @@ it('denies the reminder to users without requests.assign and hides it from other
         ->and(financeNoticeSent(ownerOf($draft->entity), NotificationCode::AccreditedPaidDraftReminder))->toBeFalse();
 });
 
-it('shows the reminder state and the end of the current period on the preparing tab', function (): void {
+it('shows the reminder state and the end of the current period on the preparing stage of the request list', function (): void {
     $draft = openedAccreditedRequest();
     $follower = requestFollower();
 
-    switchTo($follower)->getJson('/api/v1/requests/preparing')->assertOk()
+    switchTo($follower)->getJson('/api/v1/requests?filter[stage]=preparing')->assertOk()
         ->assertJsonPath('data.0.period_state', 'pending')
         ->assertJsonPath('data.0.period', null)
         ->assertJsonPath('data.0.period_label.en', 'Set on submission')
@@ -81,7 +81,7 @@ it('shows the reminder state and the end of the current period on the preparing 
 
     switchTo($follower)->postJson("/api/v1/requests/{$draft->id}/remind")->assertOk();
 
-    switchTo($follower)->getJson('/api/v1/requests/preparing')->assertOk()
+    switchTo($follower)->getJson('/api/v1/requests?filter[stage]=preparing')->assertOk()
         ->assertJsonPath('data.0.last_reminded_at', '2027-02-01T07:00:00+00:00')
         ->assertJsonPath('data.0.can_remind', false)
         ->assertJsonPath('data.0.next_remind_at', '2027-02-02T07:00:00+00:00');
@@ -90,11 +90,11 @@ it('shows the reminder state and the end of the current period on the preparing 
     $viewer->givePermissionTo(PermissionKey::RequestsQueueView->value);
 
     atRiyadh('2027-02-03 10:00');
-    switchTo($viewer)->getJson('/api/v1/requests/preparing')->assertOk()->assertJsonPath('data.0.can_remind', false);
-    switchTo($follower)->getJson('/api/v1/requests/preparing')->assertOk()->assertJsonPath('data.0.can_remind', true);
+    switchTo($viewer)->getJson('/api/v1/requests?filter[stage]=preparing')->assertOk()->assertJsonPath('data.0.can_remind', false);
+    switchTo($follower)->getJson('/api/v1/requests?filter[stage]=preparing')->assertOk()->assertJsonPath('data.0.can_remind', true);
 });
 
-it('filters the preparing tab by the period in which the draft was opened', function (): void {
+it('filters the preparing stage by the period in which the draft was opened', function (): void {
     atRiyadh('2026-12-20 10:00');
     $early = openedAccreditedRequest();
     atRiyadh('2027-02-01 10:00');
@@ -102,9 +102,9 @@ it('filters the preparing tab by the period in which the draft was opened', func
     $follower = requestFollower();
     $q1 = periodByKey('2027-Q1')->id;
 
-    expect(collect(switchTo($follower)->getJson("/api/v1/requests/preparing?filter[period_id]={$q1}")->assertOk()->json('data'))->pluck('id')->all())->toBe([$current->id])
-        ->and(collect(switchTo($follower)->getJson('/api/v1/requests/preparing?filter[period_id]=none')->assertOk()->json('data'))->pluck('id')->all())->toBe([$early->id]);
+    expect(collect(switchTo($follower)->getJson("/api/v1/requests?filter[stage]=preparing&filter[period_id]={$q1}")->assertOk()->json('data'))->pluck('id')->all())->toBe([$current->id])
+        ->and(collect(switchTo($follower)->getJson('/api/v1/requests?filter[stage]=preparing&filter[period_id]=none')->assertOk()->json('data'))->pluck('id')->all())->toBe([$early->id]);
 
-    switchTo($follower)->getJson('/api/v1/requests/preparing?filter[period_id]=999999')->assertUnprocessable()->assertJsonValidationErrors('filter.period_id');
-    switchTo($follower)->getJson('/api/v1/requests/preparing?filter[period_id]=Q1')->assertUnprocessable()->assertJsonValidationErrors('filter.period_id');
+    switchTo($follower)->getJson('/api/v1/requests?filter[stage]=preparing&filter[period_id]=999999')->assertUnprocessable()->assertJsonValidationErrors('filter.period_id');
+    switchTo($follower)->getJson('/api/v1/requests?filter[stage]=preparing&filter[period_id]=Q1')->assertUnprocessable()->assertJsonValidationErrors('filter.period_id');
 });

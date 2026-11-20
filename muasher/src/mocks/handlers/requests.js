@@ -28,8 +28,7 @@ import {
   queueRow,
 } from '../stores/accredited/accreditedSerializers'
 import {
-  preparingFiltersFrom,
-  preparingRecords,
+  inChosenStage,
   queueFiltersFrom,
   queuePage,
   queuePathCounts,
@@ -131,21 +130,14 @@ function detailResource(record, viewer) {
   }
 }
 
-function preparingRow(record) {
-  const row = queueRow(record, staffNameOf)
+// A list row: the queue row, plus the entity's progress while it still prepares the request.
+function listRow(record) {
   return {
-    id: row.id,
-    number: row.number,
-    path: row.path,
-    pathLabel: row.pathLabel,
-    status: row.status,
-    isFrozen: row.isFrozen,
-    entity: row.entity,
-    awardCycle: row.awardCycle,
+    ...queueRow(record, staffNameOf),
     openedAt: record.createdAt,
-    payment: staffPaymentOf(record),
-    progress: progressSummaryOf(record),
     lastActivityAt: lastActivityOf(record),
+    progress: record.status === 'draft' ? progressSummaryOf(record) : null,
+    payment: staffPaymentOf(record),
   }
 }
 
@@ -192,31 +184,10 @@ export const requestsHandlers = [
       const followed = followedPaths(user)
       const filters = queueFiltersFrom(query, followed)
       const records = queueRecords(filters, normalizeSearchText)
-      const { items, pagination } = queuePage(records, query)
-      return envelope(
-        items.map((record) => queueRow(record, staffNameOf)),
-        {
-          pagination,
-          stats: queueStats(records, filters),
-          path: filters.paths[0],
-          pathCounts: queuePathCounts(followed),
-        },
-      )
-    }),
-  ),
-
-  http.get(
-    '/api/v1/requests/preparing',
-    assessmentRoute(({ request }) => {
-      const user = signedInActor()
-      authorizeQueue(user)
-      runAccreditedSchedule()
-      const query = new URL(request.url).searchParams
-      const followed = followedPaths(user)
-      const filters = preparingFiltersFrom(query, followed)
-      const { items, pagination } = queuePage(preparingRecords(filters, normalizeSearchText), query)
-      return envelope(items.map(preparingRow), {
+      const { items, pagination } = queuePage(inChosenStage(records, filters), query)
+      return envelope(items.map(listRow), {
         pagination,
+        stats: queueStats(records, filters),
         path: filters.paths[0],
         pathCounts: queuePathCounts(followed),
       })

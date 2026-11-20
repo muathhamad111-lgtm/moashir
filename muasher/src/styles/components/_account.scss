@@ -69,66 +69,30 @@
   color: var(--theme-text-muted);
 }
 
-.account-page__section-head {
-  @include flex(column, flex-start, flex-start, var(--space-1));
-  margin-block-end: var(--space-4);
+.change-password-card__form {
+  @include flex(column, stretch, flex-start, var(--space-4));
+  margin-block-start: var(--space-4);
 }
 
-.account-page__section-title {
-  margin: 0;
-  @include heading(var(--fs-xl));
-}
-
-.account-page__module-grid {
+.change-password-card__fields {
   display: grid;
   gap: var(--space-4);
-  grid-template-columns: 1fr;
-
-  @include respond-to('md') {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @include respond-to('xl') {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.permission-module {
-  @include flex(column, stretch, flex-start, var(--space-3));
-  padding: var(--space-5);
-  border: var(--border-width) solid var(--theme-border);
-  border-radius: var(--radius-xl);
-  background-color: var(--theme-surface);
-}
-
-.permission-module__header {
-  @include flex(row, center, space-between, var(--space-3));
-}
-
-.permission-module__title {
-  margin: 0;
-  @include heading(var(--fs-lg));
-}
-
-.permission-module__count {
-  font-size: var(--fs-xs);
-  color: var(--theme-text-muted);
-}
-
-.permission-module__list {
-  @include flex(column, stretch, flex-start, var(--space-2));
   margin: 0;
   padding: 0;
-  list-style: none;
+  border: 0;
+  grid-template-columns: minmax(0, 1fr);
+
+  @include respond-to('md') {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .password-policy {
+    grid-column: 1 / -1;
+  }
 }
 
-.permission-module__item {
-  @include flex(row, center, flex-start, var(--space-2));
-  font-size: var(--fs-sm);
-}
-
-.permission-module__icon {
-  color: var(--theme-accent-text);
+.change-password-card__actions {
+  @include flex(row, center, flex-end, var(--space-3));
 }
 
 // Cycle committee seats under the roles: a cycle appointment, not a permanent role.
@@ -168,4 +132,9 @@
 .committee-seats__item > .badge {
   grid-column: 2;
   grid-row: 1 / span 3;
+}
+
+// Account cards under the entity profile reuse its body container; the body above already gives the gap.
+.entity-profile__account {
+  padding-block-start: 0;
 }

@@ -327,14 +327,14 @@ test.describe('Users, settings and criteria alignment', () => {
       .getByRole('button', { name: text(testInfo, 'Review and publish', 'مراجعة ونشر') })
       .click()
     const next = page
-      .getByRole('dialog')
+      .locator('.criteria-review-page')
       .getByRole('button', { name: text(testInfo, 'Next', 'التالي') })
     await next.click()
     await next.click()
     await expect(page.locator('.cycle-bindings')).toContainText(
       text(testInfo, 'stays on its criteria version', 'تبقى دورة الجائزة الجارية'),
     )
-    const dialog = page.locator('.modal__panel')
+    const dialog = page.locator('.criteria-review-page')
     await expect(dialog.locator('.cycle-bindings__option')).toHaveCount(2)
     await expect(dialog.locator('.cycle-bindings__option.is-selected')).toContainText(
       text(testInfo, 'Keep them on their current version', 'إبقاؤها على إصدارها الحالي'),

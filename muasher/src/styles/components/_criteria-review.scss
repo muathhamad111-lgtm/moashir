@@ -1,0 +1,303 @@
+@use '../mixins' as *;
+
+// Review and publish as a full page (design/admin-ux §A.3.5) and the grouped list of changes.
+
+.criteria-review-page {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.criteria-review-page__steps {
+  padding: var(--space-3);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-surface);
+}
+
+.criteria-review-page__section {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.criteria-review-page__count {
+  margin: 0;
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+// The step buttons stay in reach while the list of changes scrolls.
+.criteria-review-page__bar {
+  @include flex(row, center, space-between, var(--space-3));
+  position: sticky;
+  inset-block-end: var(--space-4);
+  z-index: var(--z-sticky);
+  padding: var(--space-3);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-surface);
+  box-shadow: var(--shadow-md);
+}
+
+.criteria-change-groups {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.criteria-change-group {
+  overflow: hidden;
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-surface);
+}
+
+.criteria-change-group__head {
+  @include flex(row, center, flex-start, var(--space-2));
+  padding-block: var(--space-3);
+  padding-inline: var(--space-4);
+  border-block-end: var(--border-width) solid var(--theme-border);
+  background-color: var(--theme-tint);
+}
+
+.criteria-change-group__title {
+  flex: 1;
+  margin: 0;
+  font-size: var(--fs-base);
+  color: var(--theme-heading);
+}
+
+.criteria-change-group__count {
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.criteria-change-group__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.criteria-change {
+  display: grid;
+  gap: var(--space-2);
+  padding-block: var(--space-3);
+  padding-inline: var(--space-4);
+
+  & + & {
+    border-block-start: var(--border-width) solid var(--theme-border);
+  }
+
+  @include respond-to('md') {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.5fr) auto;
+    align-items: center;
+    gap: var(--space-4);
+  }
+}
+
+.criteria-change__node {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.criteria-change__name {
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.criteria-change__kind {
+  font-size: var(--fs-xs);
+  color: var(--theme-text-muted);
+}
+
+.criteria-change__whole {
+  margin: 0;
+  color: var(--theme-text-muted);
+}
+
+.criteria-change__fields {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.criteria-change__field {
+  @include flex(row, baseline, flex-start, var(--space-2));
+  flex-wrap: wrap;
+
+  dt {
+    font-size: var(--fs-sm);
+    color: var(--theme-text-muted);
+
+    // The field names are shared with sentences («Changed: name, weight»), so they start lower-case.
+    &::first-letter {
+      text-transform: uppercase;
+    }
+
+    &::after {
+      content: ':';
+    }
+  }
+
+  dd {
+    @include flex(row, center, flex-start, var(--space-2));
+    flex-wrap: wrap;
+    margin: 0;
+  }
+}
+
+.criteria-change__before {
+  color: var(--theme-text-muted);
+}
+
+.criteria-change__after {
+  text-decoration: none;
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.criteria-change__arrow {
+  flex: none;
+  color: var(--theme-text-muted);
+}
+
+.criteria-change__sr {
+  @include visually-hidden;
+}
+
+.criteria-change__tags {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+
+  @include respond-to('md') {
+    justify-content: flex-end;
+  }
+}
+
+.criteria-publish-done {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-4);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-surface);
+  text-align: center;
+}
+
+.criteria-publish-done__icon {
+  font-size: var(--fs-3xl);
+  color: var(--theme-success-text);
+}
+
+.criteria-publish-done__title {
+  margin: 0;
+  font-size: var(--fs-xl);
+  color: var(--theme-heading);
+}
+
+.criteria-publish-done__facts {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--theme-text-muted);
+}
+
+// The versions tab and the "What changed" page (design §A.3.1, §B.3.6).
+
+.criteria-page-tabs {
+  margin-block-start: calc(var(--space-2) * -1);
+}
+
+.criteria-versions__name {
+  display: block;
+  margin-block-end: var(--space-1);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.criteria-versions__actions {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.criteria-change-filters {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.criteria-change-filters__tiles {
+  display: grid;
+  gap: var(--space-3);
+
+  @include respond-to('md') {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.criteria-change-tile {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+  text-align: start;
+  cursor: pointer;
+  transition:
+    border-color var(--t-fast) var(--ease),
+    background-color var(--t-fast) var(--ease);
+
+  &:hover {
+    border-color: var(--theme-accent);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &[aria-pressed='true'] {
+    border-color: var(--theme-accent);
+    background-color: var(--theme-accent-soft);
+  }
+}
+
+.criteria-change-tile__count {
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  color: var(--theme-heading);
+}
+
+.criteria-change-filters__search {
+  max-inline-size: 28rem;
+}
+
+.criteria-version-changes {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.criteria-version-corrections {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.criteria-version-corrections__title {
+  margin: 0;
+  font-size: var(--fs-lg);
+  color: var(--theme-heading);
+}
+
+.criteria-version-corrections__item {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.criteria-version-corrections__head {
+  margin: 0;
+  font-size: var(--fs-base);
+  color: var(--theme-heading);
+}

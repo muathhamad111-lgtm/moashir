@@ -1,19 +1,14 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ACCREDITED_STATUSES } from '@/constants/accredited'
-import { ADVANCED_STATUSES } from '@/constants/advanced'
+import { QUEUE_STAGES } from '@/constants/accredited'
 
-const AWAITING = [ACCREDITED_STATUSES.SUBMITTED, ADVANCED_STATUSES.AWAITING_ASSIGNMENT]
-const IN_PROGRESS = [
-  ACCREDITED_STATUSES.ASSIGNED,
-  ACCREDITED_STATUSES.UNDER_REVIEW,
-  ACCREDITED_STATUSES.NEEDS_COMPLETION,
-  ADVANCED_STATUSES.UNDER_INITIAL_ASSESSMENT,
+// The stat cards of the request list; each card's id is the stage it filters.
+const CARDS = [
+  { id: QUEUE_STAGES.ALL, icon: 'inbox', label: 'requests.stats.total' },
+  { id: QUEUE_STAGES.AWAITING_ASSIGNMENT, icon: 'user-clock', label: 'requests.stats.awaiting' },
+  { id: QUEUE_STAGES.IN_PROGRESS, icon: 'clipboard-check', label: 'requests.stats.inProgress' },
+  { id: QUEUE_STAGES.OVERDUE, icon: 'clock', label: 'requests.stats.overdue' },
 ]
-
-function sumOf(byStatus, keys) {
-  return keys.reduce((sum, key) => sum + (byStatus[key] ?? 0), 0)
-}
 
 export function useQueueStatCards(stats) {
   const { t } = useI18n()
@@ -21,31 +16,11 @@ export function useQueueStatCards(stats) {
   return computed(() => {
     const value = stats.value
     if (!value) return []
-    return [
-      {
-        id: 'total',
-        icon: 'inbox',
-        value: value.total,
-        label: t('requests.stats.total'),
-      },
-      {
-        id: 'awaiting',
-        icon: 'user-clock',
-        value: sumOf(value.byStatus, AWAITING),
-        label: t('requests.stats.awaiting'),
-      },
-      {
-        id: 'progress',
-        icon: 'clipboard-check',
-        value: sumOf(value.byStatus, IN_PROGRESS),
-        label: t('requests.stats.inProgress'),
-      },
-      {
-        id: 'overdue',
-        icon: 'clock',
-        value: value.overdue,
-        label: t('requests.stats.overdue'),
-      },
-    ]
+    return CARDS.map((card) => ({
+      id: card.id,
+      icon: card.icon,
+      label: t(card.label),
+      value: card.id === QUEUE_STAGES.ALL ? value.total : (value.byStage[card.id] ?? 0),
+    }))
   })
 }

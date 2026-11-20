@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  toAssignedRow,
-  toPreparingRow,
-  toQueueRow,
-  toRequestDetail,
-} from '@/services/mappers/requests'
+import { toAssignedRow, toQueueRow, toRequestDetail } from '@/services/mappers/requests'
 
 const LAST_LEVEL = {
   level: 'silver',
@@ -72,10 +67,5 @@ describe('request mappers — payment by audience', () => {
       paid: true,
       details: null,
     })
-  })
-
-  it('keeps a status-only payment on the awaiting-entity row', () => {
-    const row = toPreparingRow({ id: 2, payment: { status: 'paid', isTest: false } })
-    expect(row.payment).toMatchObject({ status: 'paid', reference: null, receipt: null })
   })
 })

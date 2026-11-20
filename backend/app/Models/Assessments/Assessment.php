@@ -72,6 +72,8 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, AssessmentStatusTransition> $transitions
  * @property-read Payment|null $payment
  * @property-read AssessmentAssignment|null $activeAssignment
+ * @property-read AssessmentAssignment|null $latestAssignment
+ * @property-read bool|null $was_reassigned
  * @property-read Collection<int, AssessmentAssignment> $assignments
  * @property-read AssessmentCompletionRequest|null $openCompletionRequest
  * @property-read AwardCycle|null $awardCycle
@@ -211,6 +213,16 @@ final class Assessment extends Model
     public function activeAssignment(): HasOne
     {
         return $this->hasOne(AssessmentAssignment::class)->active();
+    }
+
+    /**
+     * The request's latest assignment in any status: its assessor stays on the request after the review ends.
+     *
+     * @return HasOne<AssessmentAssignment, $this>
+     */
+    public function latestAssignment(): HasOne
+    {
+        return $this->hasOne(AssessmentAssignment::class)->latestOfMany();
     }
 
     /**
@@ -373,6 +385,17 @@ final class Assessment extends Model
     protected function ownedBy(Builder $query, int $entityId): void
     {
         $query->where('entity_id', $entityId);
+    }
+
+    /**
+     * Adds `was_reassigned`: the request was moved from one assessor to another at least once.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withReassignment(Builder $query): void
+    {
+        $query->withExists(['assignments as was_reassigned' => static fn (Builder $reassigned): Builder => $reassigned->where('status', AssignmentStatus::Reassigned)]);
     }
 
     /**

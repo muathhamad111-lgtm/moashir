@@ -8,6 +8,7 @@ import { pathLabelOf } from '../../fixtures/pathLabels'
 
 const FILTER_KEYS = [
   'filter[path]',
+  'filter[stage]',
   'filter[status]',
   'filter[overdue]',
   'filter[assessorId]',
@@ -18,9 +19,25 @@ const SORTABLE = ['submittedAt', 'dueAt', 'status', 'createdAt']
 const OVERDUE_VALUES = { true: true, 1: true, false: false, 0: false }
 const SEARCH_MAX = 100
 const PREPARING_STATE = 'draft'
-const PREPARING_FILTER_KEYS = ['filter[path]', 'filter[cycleId]']
-const PREPARING_SORTS = ['created_at', '-created_at']
 const MAX_PER_PAGE = 100
+
+// The request list's stages (admin review 2026-11-20), as the API defines them.
+const STAGES = {
+  all: (record, rules) => record.status === PREPARING_STATE || rules.inQueue(record.status),
+  preparing: (record) => record.status === PREPARING_STATE,
+  awaiting_assignment: (record, rules) => record.status === rules.stages.awaiting,
+  in_progress: (record, rules) =>
+    rules.inQueue(record.status) &&
+    rules.isOpen(record.status) &&
+    record.status !== rules.stages.awaiting,
+  overdue: (record) => isOverdue(record),
+  closed: (record, rules) => rules.inQueue(record.status) && !rules.isOpen(record.status),
+}
+const COUNTED_STAGES = ['preparing', 'awaiting_assignment', 'in_progress', 'closed']
+
+function inStage(record, stage) {
+  return STAGES[stage](record, pathRules(record.path))
+}
 
 function sortFieldOf(raw) {
   const field = raw.replace(/^-/, '').replace(/_([a-z])/g, (match, letter) => letter.toUpperCase())
@@ -38,7 +55,7 @@ function pathsOf(query, followed) {
 }
 
 function statesOf(paths) {
-  return [...new Set(paths.flatMap((path) => pathRules(path).queueStates))]
+  return [PREPARING_STATE, ...new Set(paths.flatMap((path) => pathRules(path).queueStates))]
 }
 
 function checkFilters(query, followed, errors) {
@@ -46,6 +63,8 @@ function checkFilters(query, followed, errors) {
     invalid(errors, 'filter')
   const path = query.get('filter[path]')
   if (path && !followed.includes(path)) invalid(errors, 'filter.path')
+  const stage = query.get('filter[stage]')
+  if (stage && !Object.hasOwn(STAGES, stage)) invalid(errors, 'filter.stage')
   const status = query.get('filter[status]')
   if (status && !statesOf(pathsOf(query, followed)).includes(status))
     invalid(errors, 'filter.status')
@@ -82,6 +101,7 @@ export function queueFiltersFrom(query, followed = REVIEWED_PATHS) {
   const overdue = query.get('filter[overdue]')
   return {
     paths: pathsOf(query, followed),
+    stage: query.get('filter[stage]') || 'all',
     cycleId: query.get('filter[cycleId]') ? Number(query.get('filter[cycleId]')) : null,
     status: query.get('filter[status]') || null,
     overdue: overdue ? OVERDUE_VALUES[overdue] : null,
@@ -100,13 +120,18 @@ function matchesSearch(record, needle, normalize) {
   )
 }
 
+// A draft has no submission date yet: it sorts by its opening date. Rows with no due date sort last.
+function sortValueOf(record, field) {
+  return field === 'submittedAt' ? (record.submittedAt ?? record.createdAt) : record[field]
+}
+
 function compareBy(field, descending) {
   return (left, right) => {
-    const a = left[field]
-    const b = right[field]
+    const a = sortValueOf(left, field)
+    const b = sortValueOf(right, field)
     if (a === b) return right.id - left.id
-    if (a === null) return descending ? 1 : -1
-    if (b === null) return descending ? -1 : 1
+    if (a === null || a === undefined) return 1
+    if (b === null || b === undefined) return -1
     const order = a < b ? -1 : 1
     return descending ? -order : order
   }
@@ -120,6 +145,10 @@ function matchesFilters(record, filters) {
   return filters.assessorId === null || activeAssignment(record)?.assessorId === filters.assessorId
 }
 
+function listedRecords() {
+  return reviewedRecords().filter((record) => inStage(record, 'all') && !isFrozen(record))
+}
+
 function queuedRecords() {
   return reviewedRecords().filter(
     (record) => pathRules(record.path).inQueue(record.status) && !isFrozen(record),
@@ -127,9 +156,7 @@ function queuedRecords() {
 }
 
 function preparingAll() {
-  return reviewedRecords().filter(
-    (record) => record.status === PREPARING_STATE && !isFrozen(record),
-  )
+  return listedRecords().filter((record) => record.status === PREPARING_STATE)
 }
 
 export function queuePathCounts(followed) {
@@ -150,8 +177,9 @@ export function queuePathCounts(followed) {
   })
 }
 
+// Every request matching the filters over all stages; the page then keeps the chosen stage.
 export function queueRecords(filters, normalize) {
-  return queuedRecords()
+  return listedRecords()
     .filter(
       (record) =>
         matchesFilters(record, filters) && matchesSearch(record, filters.search, normalize),
@@ -159,8 +187,22 @@ export function queueRecords(filters, normalize) {
     .sort(compareBy(sortFieldOf(filters.sort), filters.sort.startsWith('-')))
 }
 
+export function inChosenStage(records, filters) {
+  return records.filter((record) => inStage(record, filters.stage))
+}
+
 function wireKeyOf(status) {
   return status.replace(/-([a-z])/g, (match, letter) => letter.toUpperCase())
+}
+
+function stageCountsOf(records) {
+  return Object.fromEntries([
+    ...COUNTED_STAGES.map((stage) => [
+      stage,
+      records.filter((record) => inStage(record, stage)).length,
+    ]),
+    ['overdue', records.filter((record) => isOverdue(record)).length],
+  ])
 }
 
 export function queueStats(records, filters) {
@@ -172,41 +214,11 @@ export function queueStats(records, filters) {
         records.filter((record) => record.status === status).length,
       ]),
     ),
+    byStage: stageCountsOf(records),
     overdue: records.filter((record) => isOverdue(record)).length,
   }
 }
 
 export function queuePage(records, query) {
   return paginate(records, query)
-}
-
-export function preparingFiltersFrom(query, followed = REVIEWED_PATHS) {
-  const errors = {}
-  if (
-    [...query.keys()].some(
-      (key) => key.startsWith('filter[') && !PREPARING_FILTER_KEYS.includes(key),
-    )
-  )
-    invalid(errors, 'filter')
-  const path = query.get('filter[path]')
-  if (path && !followed.includes(path)) invalid(errors, 'filter.path')
-  const sort = query.get('sort')
-  if (sort && !PREPARING_SORTS.includes(sort)) invalid(errors, 'sort', 'sort')
-  if ((query.get('search') ?? '').length > SEARCH_MAX)
-    errors.search = [fieldMessage('validation.max_chars', { max: SEARCH_MAX }, 'filter')]
-  throwIfErrors(errors)
-  return {
-    paths: pathsOf(query, followed),
-    cycleId: query.get('filter[cycleId]') ? Number(query.get('filter[cycleId]')) : null,
-    search: (query.get('search') ?? '').trim().toLowerCase(),
-    descending: sort === '-created_at',
-  }
-}
-
-export function preparingRecords(filters, normalize) {
-  return preparingAll()
-    .filter((record) => filters.paths.includes(record.path))
-    .filter((record) => filters.cycleId === null || record.awardCycleId === filters.cycleId)
-    .filter((record) => matchesSearch(record, filters.search, normalize))
-    .sort(compareBy('createdAt', filters.descending))
 }

@@ -41,32 +41,31 @@ function horizontalOverflow(page) {
   )
 }
 
-test('the System Administrator finds a paid draft in its own tab and follows it to the payment', async ({
+test('the System Administrator finds a paid draft in the request list and follows it to the payment', async ({
   page,
 }, testInfo) => {
   const errors = trackConsole(page)
   await page.setViewportSize(DESKTOP)
   await signIn(page, testInfo, USERS.systemAdmin)
   await page.goto('/admin/requests?path=accredited')
-  const tabs = page.locator('.tabs__tab')
-  await expect(tabs.nth(1)).toContainText(
-    isEn(testInfo) ? 'Waiting for the entity' : 'بانتظار استكمال الجهة',
-  )
-  await expect(page.locator('.request-queue__link', { hasText: DRAFT_NUMBER })).toHaveCount(0)
-
-  await tabs.nth(1).click()
-  await expect(page).toHaveURL(/stage=preparing/)
-  await expect(page.locator('.preparing-requests__note')).toHaveCount(0)
+  // Admin review 2026-11-20: one list; a draft shows «قيد الإعداد» with the entity's progress.
+  await expect(page.locator('.tabs__tab')).toHaveCount(0)
   const row = page.locator('tbody tr', { hasText: DRAFT_NUMBER })
-  await expect(row).toContainText('PAY-2026-000012')
+  await expect(row.locator('.request-queue__preparing')).toContainText(
+    isEn(testInfo) ? 'Being prepared' : 'قيد الإعداد',
+  )
   await expect(row.locator('[role="progressbar"]')).toBeVisible()
+
+  await page.locator('.queue-stages__chip[data-stage="preparing"]').click()
+  await expect(page).toHaveURL(/stage=preparing/)
+  await expect(page.locator('tbody tr')).toHaveCount(1)
   await expect(page.locator('.stats-card')).toHaveCount(4)
   await page.screenshot({
     path: `test-results/paid-requests-tab-${suffixOf(testInfo)}.png`,
     fullPage: true,
   })
 
-  await row.locator(`a[href^="/admin/requests/"]`).click()
+  await row.locator(`a[href^="/admin/requests/"]`).first().click()
   const card = page.locator('[data-testid="request-payment-card"]')
   await expect(card).toContainText('PAY-2026-000012')
   await page.screenshot({
@@ -80,14 +79,14 @@ test('the System Administrator finds a paid draft in its own tab and follows it 
   expect(errors).toEqual([])
 })
 
-test('a deep link opens the paid drafts tab for the follower on mobile', async ({
+test('a deep link opens the preparing stage for the follower on mobile', async ({
   page,
 }, testInfo) => {
   await page.setViewportSize(MOBILE)
   await signIn(page, testInfo, USERS.follower)
   await page.goto('/admin/requests?path=accredited&stage=preparing')
-  await expect(page.locator('.tabs__tab[aria-selected="true"]')).toContainText(
-    isEn(testInfo) ? 'Waiting for the entity' : 'بانتظار استكمال الجهة',
+  await expect(page.locator('.queue-stages__chip[aria-pressed="true"]')).toContainText(
+    isEn(testInfo) ? 'Being prepared' : 'قيد الإعداد',
   )
   await expect(page.locator('tbody tr', { hasText: DRAFT_NUMBER })).toBeVisible()
   await page.screenshot({

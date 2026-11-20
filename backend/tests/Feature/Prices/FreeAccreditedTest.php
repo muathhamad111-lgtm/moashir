@@ -40,7 +40,7 @@ it('opens a free accredited request directly as a draft with no payment anywhere
         ->assertJsonPath('data.pricing', ['price' => null, 'is_free' => true, 'availability' => 'available'])
         ->assertJsonPath('data.active.payment', null);
     switchTo($owner)->getJson("/api/v1/assessments/{$id}")->assertOk()->assertJsonPath('data.payment', null);
-    switchTo(systemAdmin())->getJson('/api/v1/requests/preparing')->assertOk();
+    switchTo(systemAdmin())->getJson('/api/v1/requests?filter[stage]=preparing')->assertOk();
     switchTo(systemAdmin())->getJson('/api/v1/finance/transactions')->assertOk()->assertJsonPath('meta.stats.transactions_count', 0);
 
     switchTo($owner)->postJson(ACCREDITED_START)->assertConflict()->assertJsonPath('code', 'accredited.request_open')->assertJsonPath('meta.assessment_id', $id);

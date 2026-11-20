@@ -32,13 +32,17 @@ it('lists the advanced requests in the follower queue by path, cycle and status'
         ->assertJsonPath('meta.path_counts.0.total', 1)
         ->assertJsonPath('meta.path_counts.1.path', 'advanced')
         ->assertJsonPath('meta.path_counts.1.awaiting_assignment', 1);
+    // The advanced draft is listed too, in its own «preparing» stage (admin review 2026-11-20).
     test()->getJson('/api/v1/requests?filter[path]=advanced')->assertOk()
         ->assertJsonPath('meta.stats.by_status.awaiting_review_assignment', 1)
+        ->assertJsonPath('meta.stats.by_stage.preparing', 1)
+        ->assertJsonPath('meta.pagination.total', 2);
+    test()->getJson('/api/v1/requests?filter[path]=advanced&filter[stage]=awaiting_assignment')->assertOk()
         ->assertJsonPath('meta.pagination.total', 1)
         ->assertJsonPath('data.0.id', $advanced->id)
         ->assertJsonPath('data.0.award_cycle.id', $cycle->id)
         ->assertJsonPath('data.0.region.id', $cycle->regions->firstOrFail()->id);
-    test()->getJson("/api/v1/requests?filter[cycle_id]={$cycle->id}")->assertOk()->assertJsonPath('meta.pagination.total', 1);
+    test()->getJson("/api/v1/requests?filter[cycle_id]={$cycle->id}&filter[stage]=awaiting_assignment")->assertOk()->assertJsonPath('meta.pagination.total', 1);
     test()->getJson('/api/v1/requests?filter[path]=accredited&filter[status]=awaiting_review_assignment')->assertUnprocessable();
     test()->getJson('/api/v1/requests?filter[path]=self')->assertUnprocessable();
     test()->getJson("/api/v1/requests/{$accredited->id}")->assertOk()->assertJsonPath('data.award_cycle', null);

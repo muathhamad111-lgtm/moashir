@@ -1,4 +1,4 @@
-import { QUEUE_STATUSES } from '@/constants/accredited'
+import { QUEUE_STAGE_LIST, QUEUE_STATUSES } from '@/constants/accredited'
 import { ADVANCED_QUEUE_STATUSES } from '@/constants/advanced'
 import { toAssessmentRecord, toEntitySummary } from './assessments'
 import { toCompletionRequest } from './accredited'
@@ -45,6 +45,7 @@ export function toQueueRow(raw = {}) {
     isFrozen: raw.isFrozen === true,
     entity: toQueueEntity(raw.entity),
     assessor: toPerson(raw.assessor),
+    isReassigned: raw.isReassigned === true,
     assignedAt: raw.assignedAt ?? null,
     completionDeadline: raw.completionDeadline ?? null,
     awardCycle: toCycleSummary(raw.awardCycle),
@@ -53,11 +54,27 @@ export function toQueueRow(raw = {}) {
   }
 }
 
+// A queue row adds the entity's progress while it still prepares the request.
+export function toQueueListRow(raw = {}) {
+  return {
+    ...toQueueRow(raw),
+    openedAt: raw.openedAt ?? null,
+    lastActivityAt: raw.lastActivityAt ?? null,
+    progress: toProgressSummary(raw.progress),
+    payment: toRequestPayment(raw.payment),
+  }
+}
+
+function toStageCounts(raw = {}) {
+  return Object.fromEntries(QUEUE_STAGE_LIST.map((stage) => [stage, raw[stage] ?? 0]))
+}
+
 export function toQueueStats(raw) {
   if (!raw) return null
   return {
     total: raw.total ?? 0,
     byStatus: toStatusCounts(raw.byStatus, STATS_STATUSES),
+    byStage: toStageCounts(raw.byStage),
     overdue: raw.overdue ?? 0,
   }
 }
@@ -106,23 +123,6 @@ export function toRequestPayment(raw) {
 export function toProgressSummary(raw) {
   if (!raw) return null
   return { complete: raw.subsComplete ?? 0, total: raw.subsTotal ?? 0 }
-}
-
-export function toPreparingRow(raw = {}) {
-  return {
-    id: raw.id ?? null,
-    number: raw.number ?? '',
-    path: raw.path ?? null,
-    pathLabel: raw.pathLabel ?? null,
-    status: toRequestStatus(raw.status),
-    isFrozen: raw.isFrozen === true,
-    entity: toQueueEntity(raw.entity),
-    awardCycle: toCycleSummary(raw.awardCycle),
-    openedAt: raw.openedAt ?? null,
-    payment: toRequestPayment(raw.payment),
-    progress: toProgressSummary(raw.progress),
-    lastActivityAt: raw.lastActivityAt ?? null,
-  }
 }
 
 export function toRequestDetail(raw = {}) {

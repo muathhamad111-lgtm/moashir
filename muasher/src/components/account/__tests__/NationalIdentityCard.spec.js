@@ -22,11 +22,16 @@ const PENDING = {
   decidedAt: null,
 }
 
-async function mountCard(user, changes = [], locale = 'ar') {
+async function mountCard(
+  user,
+  changes = [],
+  locale = 'ar',
+  { roles = ['assessor'], props = {} } = {},
+) {
   identityService.myChanges.mockResolvedValue({ data: changes })
   const globals = createTestGlobals({ locale })
-  useAuthStore(globals.pinia).setUser(sessionUserFor(['assessor'], user))
-  const wrapper = mount(NationalIdentityCard, { global: globals, attachTo: document.body })
+  useAuthStore(globals.pinia).setUser(sessionUserFor(roles, user))
+  const wrapper = mount(NationalIdentityCard, { props, global: globals, attachTo: document.body })
   await flushPromises()
   return { wrapper, globals }
 }
@@ -49,6 +54,22 @@ describe('national identity card', () => {
     const { wrapper } = await mountCard({ hasNationalId: false }, [], 'en')
     expect(wrapper.text()).toContain('Add national ID')
     expect(wrapper.text()).not.toContain('Request a change')
+    wrapper.unmount()
+  })
+
+  it.each([
+    [undefined, '/account'],
+    ['/entity/profile', '/entity/profile'],
+  ])('brings the user back to %s after adding the number', async (returnTo, expected) => {
+    const props = returnTo ? { returnTo } : {}
+    const { wrapper } = await mountCard({ hasNationalId: false }, [], 'en', {
+      roles: ['entity'],
+      props,
+    })
+    const link = wrapper.findAll('a').find((anchor) => anchor.text() === 'Add national ID')
+    const target = new URL(link.attributes('href'), 'https://moashir.test')
+    expect(target.pathname).toBe('/account/complete-identity')
+    expect(target.searchParams.get('redirect')).toBe(expected)
     wrapper.unmount()
   })
 

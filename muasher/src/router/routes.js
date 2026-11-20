@@ -952,12 +952,39 @@ export const appRoutes = [
     },
   },
   {
+    // The edit history now lives in the versions tab (UX-A3); old links land there.
     path: '/admin/settings/criteria/history',
     name: ROUTE_NAMES.ADMIN_CRITERIA_HISTORY,
-    component: () => import('@/views/settings/criteria/History.vue'),
+    redirect: { name: ROUTE_NAMES.ADMIN_CRITERIA_VERSIONS },
+  },
+  {
+    path: '/admin/settings/criteria/versions',
+    name: ROUTE_NAMES.ADMIN_CRITERIA_VERSIONS,
+    component: () => import('@/views/settings/criteria/Versions.vue'),
     meta: {
       layout: 'app',
-      titleKey: 'routes.admin.criteria.history.title',
+      titleKey: 'routes.admin.criteria.versions.title',
+      requiresAuth: true,
+    },
+  },
+  {
+    path: '/admin/settings/criteria/versions/:versionId(\\d+)',
+    name: ROUTE_NAMES.ADMIN_CRITERIA_VERSION_CHANGES,
+    component: () => import('@/views/settings/criteria/VersionChanges.vue'),
+    props: (route) => ({ versionId: Number(route.params.versionId) }),
+    meta: {
+      layout: 'app',
+      titleKey: 'routes.admin.criteria.versionChanges.title',
+      requiresAuth: true,
+    },
+  },
+  {
+    path: '/admin/settings/criteria/review',
+    name: ROUTE_NAMES.ADMIN_CRITERIA_REVIEW,
+    component: () => import('@/views/settings/criteria/Review.vue'),
+    meta: {
+      layout: 'app',
+      titleKey: 'routes.admin.criteria.review.title',
       requiresAuth: true,
     },
   },

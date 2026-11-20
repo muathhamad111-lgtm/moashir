@@ -4,26 +4,20 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Assessments;
 
-use App\Data\Assessments\PreparingRequest;
+use App\Data\Assessments\RequestQueueRow;
 use App\Data\Assessments\SubmissionProgress;
 use App\Enums\Identity\PermissionKey;
 use App\Models\Identity\User;
 use App\Support\Assessments\PaidDraftReminderWindow;
-use App\Support\Assessments\PathPresenter;
 use App\Support\Assessments\RequestPaymentPresenter;
-use App\Support\Assessments\StatusMask;
-use App\Support\Award\CyclePresenter;
-use App\Support\Certificates\EntityLevelPresenter;
-use App\Support\Entities\EntityPresenter;
-use App\Support\Periods\PeriodPresenter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Date;
 
 /**
- * @property-read PreparingRequest $resource
+ * @property-read RequestQueueRow $resource
  */
-final class PreparingRequestResource extends JsonResource
+final class RequestQueueRowResource extends JsonResource
 {
     /**
      * @return array<string, mixed>
@@ -33,18 +27,11 @@ final class PreparingRequestResource extends JsonResource
         $assessment = $this->resource->assessment;
 
         return [
-            'id' => $assessment->id,
-            'number' => $assessment->request_number,
-            ...PathPresenter::of($assessment->path),
-            'status' => StatusMask::statusFor($assessment, $request->user()),
-            'is_frozen' => $assessment->isFrozen(),
-            'entity' => [...EntityPresenter::summary($assessment->entity), 'level' => EntityLevelPresenter::levelOf($assessment->entity)?->value],
-            'award_cycle' => CyclePresenter::summary($assessment->awardCycle),
+            ...new RequestQueueItemResource($assessment)->toArray($request),
             'opened_at' => $assessment->created_at->toIso8601String(),
-            'payment' => RequestPaymentPresenter::forStaff($assessment->payment, $request->user()),
-            'progress' => $this->progressOf($this->resource->progress),
             'last_activity_at' => ($assessment->entity_activity_at ?? $assessment->created_at)->toIso8601String(),
-            ...PeriodPresenter::attribution($assessment),
+            'progress' => $this->progressOf($this->resource->progress),
+            'payment' => RequestPaymentPresenter::forStaff($assessment->payment, $request->user()),
             ...$this->reminderOf($request),
         ];
     }

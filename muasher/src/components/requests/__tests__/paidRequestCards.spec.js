@@ -5,7 +5,6 @@ import { createTestGlobals } from '@/test-utils'
 import { useAuthStore } from '@/stores/auth'
 import { sessionUserFor } from '@/test-utils/session'
 import RequestPaymentCard from '../RequestPaymentCard.vue'
-import PreparingRequestsTable from '../PreparingRequestsTable.vue'
 import RequestFacts from '../RequestFacts.vue'
 import LinkedRequestCard from '@/components/finance/LinkedRequestCard.vue'
 
@@ -84,37 +83,6 @@ describe('RequestFacts payment flag', () => {
     })
     expect(assessorView.text()).toContain('Fee')
     expect(staffView.text()).not.toContain('Fee')
-  })
-})
-
-describe('PreparingRequestsTable', () => {
-  it('shows the payment, progress and open link of each paid draft', () => {
-    const item = {
-      id: 9101,
-      number: 'ACC-2026-000004',
-      path: 'accredited',
-      pathLabel: LINKED.pathLabel,
-      status: 'draft',
-      entity: {
-        name: { en: 'Namaa Development Foundation' },
-        reference: 'ENT-006001',
-        level: null,
-      },
-      openedAt: '2026-09-03T07:26:00Z',
-      payment: PAYMENT,
-      progress: { complete: 18, total: 19 },
-      lastActivityAt: '2026-09-03T07:40:00Z',
-    }
-    const wrapper = render(PreparingRequestsTable, { items: [item], status: 'success' })
-    expect(wrapper.text()).toContain('Namaa Development Foundation')
-    expect(wrapper.text()).toContain('PAY-2026-000012')
-    expect(wrapper.find('[role="progressbar"]').attributes('aria-valuenow')).toBe('18')
-    expect(wrapper.find('a[href="/admin/requests/9101"]').exists()).toBe(true)
-  })
-
-  it('shows the empty state', () => {
-    const wrapper = render(PreparingRequestsTable, { items: [], status: 'empty' })
-    expect(wrapper.text()).toContain('No requests waiting for the entity')
   })
 })
 

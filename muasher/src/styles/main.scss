@@ -57,8 +57,7 @@
 @use 'components/weight-editor';
 @use 'components/criteria';
 @use 'components/criteria-problems';
-@use 'components/criteria-change-list';
-@use 'components/criteria-publish-preview';
+@use 'components/criteria-review';
 @use 'components/criteria-workspace';
 @use 'components/criteria-board';
 @use 'components/form-panel';
@@ -179,7 +178,6 @@
 @use 'components/reference-text';
 @use 'components/requests';
 @use 'components/request-detail';
-@use 'components/preparing-requests';
 @use 'components/request-payment';
 @use 'components/assignment-history';
 @use 'components/assign-dialog';

@@ -35,6 +35,13 @@ export function resetPasswordSchema(t) {
   return yupObject({ email: emailField(t), ...newPasswordShape(t) })
 }
 
+export function changePasswordSchema(t) {
+  return yupObject({
+    currentPassword: yupString().required(t('validation.required')),
+    ...newPasswordShape(t),
+  })
+}
+
 export function invitationSchema(t, { termsRequired, nationalIdRequired = false }) {
   return yupObject({
     ...newPasswordShape(t),
@@ -49,6 +56,14 @@ export function resetPayload(token, values) {
   return {
     token,
     email: values.email.trim(),
+    password: values.password,
+    passwordConfirmation: values.passwordConfirmation,
+  }
+}
+
+export function changePasswordPayload(values) {
+  return {
+    currentPassword: values.currentPassword,
     password: values.password,
     passwordConfirmation: values.passwordConfirmation,
   }

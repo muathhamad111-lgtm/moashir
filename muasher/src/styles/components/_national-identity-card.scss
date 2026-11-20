@@ -77,3 +77,19 @@
 .national-identity-card__value {
   white-space: nowrap;
 }
+
+// The label is long («رقم الهوية الوطنية أو الإقامة»); on a narrow card the value moves under it
+// instead of being squeezed to one letter per line.
+.national-identity-card .account-page__fact {
+  flex-wrap: wrap;
+  row-gap: var(--space-1);
+
+  dt {
+    flex-shrink: 1;
+  }
+
+  dd {
+    min-inline-size: max-content;
+    overflow-wrap: normal;
+  }
+}

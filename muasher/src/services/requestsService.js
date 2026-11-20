@@ -4,9 +4,8 @@ import {
   toAssignedPathCount,
   toAssignedRow,
   toEligibleAssessor,
-  toPreparingRow,
+  toQueueListRow,
   toQueuePathCount,
-  toQueueRow,
   toQueueStats,
   toRequestDetail,
 } from './mappers/requests'
@@ -32,7 +31,7 @@ export const requestsService = {
     return read('listQueue', () => apiClient.get('/requests', { params: query }), query).then(
       (envelope) => ({
         ...envelope,
-        data: (envelope.data ?? []).map(toQueueRow),
+        data: (envelope.data ?? []).map(toQueueListRow),
         meta: {
           ...envelope.meta,
           stats: toQueueStats(envelope.meta?.stats),
@@ -41,22 +40,6 @@ export const requestsService = {
         },
       }),
     )
-  },
-
-  listPreparing(params = {}) {
-    return read(
-      'listPreparing',
-      () => apiClient.get('/requests/preparing', { params }),
-      params,
-    ).then((envelope) => ({
-      ...envelope,
-      data: (envelope.data ?? []).map(toPreparingRow),
-      meta: {
-        ...envelope.meta,
-        path: envelope.meta?.path ?? null,
-        pathCounts: (envelope.meta?.pathCounts ?? []).map(toQueuePathCount),
-      },
-    }))
   },
 
   get(requestId) {
