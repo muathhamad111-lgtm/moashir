@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import Card from '@/components/ui/Card.vue'
-import Skeleton from '@/components/feedback/Skeleton.vue'
+import PageLoading from '@/components/feedback/PageLoading.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
@@ -75,10 +75,7 @@ watch(cycleId, editor.load)
         <CycleStatusBadge v-if="cycle" :status="cycle.status" />
       </div>
     </header>
-    <div v-if="status === 'loading'" class="cycle-editor__loading" aria-busy="true">
-      <Skeleton variant="block" />
-      <Skeleton variant="text" :count="6" />
-    </div>
+    <PageLoading v-if="status === 'loading'" />
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="editor.load" />
     <EmptyState
       v-else-if="status === 'missing'"

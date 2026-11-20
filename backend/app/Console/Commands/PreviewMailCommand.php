@@ -9,7 +9,7 @@ use App\Enums\Identity\Locale;
 use App\Enums\Notifications\NotificationCode;
 use App\Services\Notifications\MailPreviewRenderer;
 use App\Services\Notifications\MailSamples;
-use App\Support\StringList;
+use App\Support\Mail\SampleLocales;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -28,7 +28,7 @@ final class PreviewMailCommand extends Command
     {
         $output = rtrim((string) $this->option('out'), DIRECTORY_SEPARATOR);
         $code = NotificationCode::tryFrom((string) $this->argument('code'));
-        $locales = $this->locales();
+        $locales = SampleLocales::from($this->option('locale'));
         $error = $this->inputError($output !== '' && $files->isDirectory($output) && $files->isWritable($output), $code, $locales);
 
         if ($error !== null || $locales === null) {
@@ -62,27 +62,6 @@ final class PreviewMailCommand extends Command
             $locales === null => 'The --locale option accepts ar and en only.',
             default => null,
         };
-    }
-
-    /**
-     * @return list<Locale>|null
-     */
-    private function locales(): ?array
-    {
-        $requested = StringList::from($this->option('locale'));
-        $locales = [];
-
-        foreach ($requested === [] ? ['ar', 'en'] : $requested as $value) {
-            $locale = Locale::tryFrom($value);
-
-            if (! $locale instanceof Locale) {
-                return null;
-            }
-
-            $locales[] = $locale;
-        }
-
-        return $locales;
     }
 
     private function write(Filesystem $files, string $base, RenderedMail $mail): void

@@ -44,6 +44,26 @@ describe('submission progress', () => {
     expect(submissionProgressOf(FORM)).toEqual({ total: 5, complete: 2, remaining: 3 })
   })
 
+  it("keeps a station open until its main criterion's required attachments are uploaded", () => {
+    const plan = { key: 'plan', required: true }
+    const mains = FORM.criteria.mains.map((main) =>
+      main.id === 1 ? { ...main, attachments: [plan] } : main,
+    )
+    const gap = { mainCriterionId: 1, attachmentKey: 'plan' }
+    const missing = { ...FORM.missing, missingMainAttachments: [gap] }
+    const form = { ...FORM, criteria: { mains }, missing }
+    expect(stationsOf(form)[0]).toMatchObject({
+      complete: 2,
+      total: 2,
+      units: { complete: 2, total: 3 },
+      state: STATION_STATES.PARTIAL,
+    })
+    expect(submissionProgressOf(form)).toEqual({ total: 6, complete: 2, remaining: 4 })
+    const done = { ...form, missing: { ...FORM.missing, missingMainAttachments: [] } }
+    expect(stationsOf(done)[0].state).toBe(STATION_STATES.COMPLETE)
+    expect(submissionProgressOf(done)).toEqual({ total: 6, complete: 3, remaining: 3 })
+  })
+
   it('treats a saved CV as started and reads one sub at a time', () => {
     const form = { ...FORM, evidence: [], cv: { 31: 'نص السيرة' } }
     expect(stationsOf(form)[2].state).toBe(STATION_STATES.PARTIAL)

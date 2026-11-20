@@ -58,7 +58,7 @@ it('agrees with the submission rules once every gap is closed', function (): voi
     switchTo($owner)->getJson(ACCREDITED_CURRENT)->assertOk()
         ->assertJsonPath('data.active.progress', ['subs_total' => 3, 'subs_complete' => 3, 'remaining' => []]);
     switchTo($owner)->getJson("/api/v1/assessments/{$assessment->id}/form")->assertOk()
-        ->assertJsonPath('data.missing', ['missing_cv' => [], 'missing_attachments' => []]);
+        ->assertJsonPath('data.missing', ['missing_cv' => [], 'missing_attachments' => [], 'missing_main_attachments' => []]);
 });
 
 it('hides the progress once the request has been submitted', function (): void {

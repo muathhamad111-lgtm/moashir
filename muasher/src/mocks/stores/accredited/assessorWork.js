@@ -5,7 +5,7 @@ import { ACTORS, transition, visibleActorId } from '../assessments/statusHistory
 import { parseScoreSheet, validateScoreRequest } from '../assessments/scoreInput'
 import { scorableUnits, unitKey } from '../assessments/selfScoring'
 import { STATES } from './accreditedStates'
-import { activeAssignment, nowIso, subOfId, touch } from './accreditedRecords'
+import { activeAssignment, mainOfId, nowIso, subOfId, touch } from './accreditedRecords'
 import { assertNotFrozen } from './entityWorkflow'
 import { isAdvanced, stagesOf } from '../assessments/reviewedPaths'
 import { announceInitialCompleted } from '../award/awardNotices'
@@ -181,16 +181,27 @@ function deadlineError(value) {
   return null
 }
 
+// An item names a sub-criterion or a main criterion (its own attachments), never both.
+function targetErrors(item, index, errors) {
+  const hasMain = item?.mainCriterionId !== undefined && item?.mainCriterionId !== null
+  if (hasMain && item?.subCriterionId !== undefined && item?.subCriterionId !== null) {
+    errors[`items.${index}.subCriterionId`] = [
+      fieldMessage('validation.invalid', {}, 'subCriterionId'),
+    ]
+    return
+  }
+  const field = hasMain ? 'mainCriterionId' : 'subCriterionId'
+  if (!isPositiveInteger(item?.[field]))
+    errors[`items.${index}.${field}`] = [fieldMessage('validation.required', {}, field)]
+}
+
 export function itemErrors(items, errors) {
   if (!Array.isArray(items) || !items.length || items.length > ITEMS_MAX) {
     errors.items = [fieldMessage('validation.required', {}, 'items')]
     return
   }
   items.forEach((item, index) => {
-    if (!isPositiveInteger(item?.subCriterionId))
-      errors[`items.${index}.subCriterionId`] = [
-        fieldMessage('validation.required', {}, 'subCriterionId'),
-      ]
+    targetErrors(item, index, errors)
     if (!KINDS.includes(item?.kind))
       errors[`items.${index}.kind`] = [fieldMessage('validation.invalid', {}, 'items')]
     if (item?.note && (typeof item.note !== 'string' || item.note.length > ITEM_NOTE_MAX)) {
@@ -215,7 +226,21 @@ function validateCompletion(body) {
   throwIfErrors(errors)
 }
 
+function mainCompletionItem(record, item, index) {
+  const main = mainOfId(record, item.mainCriterionId)
+  if (!main)
+    throw assessmentReject.coded(
+      422,
+      'assessment.main_not_in_version',
+      `items.${index}.mainCriterionId`,
+    )
+  if (item.kind !== 'evidence')
+    throw assessmentReject.coded(422, 'cv.not_allowed', `items.${index}.kind`)
+  return { mainCode: main.code, kind: item.kind, note: trimmed(item.note) || null }
+}
+
 export function completionItem(record, item, index) {
+  if (item.mainCriterionId) return mainCompletionItem(record, item, index)
   const sub = subOfId(record, item.subCriterionId)
   if (!sub)
     throw assessmentReject.coded(

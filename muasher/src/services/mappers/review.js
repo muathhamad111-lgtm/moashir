@@ -50,6 +50,7 @@ export function toAssessorReview(raw = {}) {
     criteria: raw.criteria ?? null,
     cv: toCvSheet(raw.cv),
     evidence: toEvidenceList(raw.evidence),
+    lateAttachmentKeys: raw.lateAttachmentKeys ?? [],
     feedback: toFeedbackSheet(raw.feedback),
     completionRequest: toCompletionRequest(raw.completionRequest),
     context: (raw.context ?? []).map(toContextItem),

@@ -38,6 +38,7 @@ final class AssessorReviewResource extends JsonResource
             'criteria' => $review->criteria,
             'cv' => (object) $review->cv->bodiesBySubId(),
             'evidence' => EvidencePresenter::list($review->evidence->evidence, $subs),
+            'late_attachment_keys' => $review->evidence->lateAttachmentKeys,
             'feedback' => (object) new FeedbackView($assessment, $review->feedback, $subs)->bySubId(),
             'summary' => AssessmentSummaryPresenter::present($review->summary),
             'criteria_update' => $review->criteriaUpdate === null ? null : new CriteriaMoveSummaryResource($review->criteriaUpdate)->toArray($request),

@@ -4,7 +4,7 @@ import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
 import Card from '@/components/ui/Card.vue'
-import Skeleton from '@/components/feedback/Skeleton.vue'
+import PageLoading from '@/components/feedback/PageLoading.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import ReassessmentRow from '@/components/bag/ReassessmentRow.vue'
 import { useBagReassessment } from '@/composables/useBag'
@@ -31,10 +31,7 @@ onMounted(load)
 
 <template>
   <section class="bag-comparison">
-    <div v-if="status === 'loading'" class="bag-comparison__loading">
-      <Skeleton variant="block" />
-      <Skeleton variant="text" :count="5" />
-    </div>
+    <PageLoading v-if="status === 'loading'" />
 
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
 

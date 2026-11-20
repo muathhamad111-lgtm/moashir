@@ -10,9 +10,9 @@ it('is idempotent', function (): void {
     app(SyncPermissionCatalog::class)->handle();
     app(SyncPermissionCatalog::class)->handle();
 
-    expect(Permission::query()->count())->toBe(89)
+    expect(Permission::query()->count())->toBe(90)
         ->and(Role::query()->count())->toBe(9)
-        ->and(Role::query()->where('name', 'system_admin')->firstOrFail()->permissions()->count())->toBe(65);
+        ->and(Role::query()->where('name', 'system_admin')->firstOrFail()->permissions()->count())->toBe(66);
 });
 
 it('keeps the labels and matrix changes made by administrators', function (): void {

@@ -20,15 +20,17 @@ export function useInvitationAcceptance(token) {
   const { continueAfter } = useLoginOutcome()
   const status = ref('loading')
   const terms = ref(null)
+  const nationalIdRequired = ref(false)
   const termsRequired = computed(() => Boolean(terms.value?.terms))
 
   async function load() {
     status.value = 'loading'
     try {
-      const [, { data }] = await Promise.all([
+      const [invitation, { data }] = await Promise.all([
         authService.checkInvitation(token.value),
         termsService.current(),
       ])
+      nationalIdRequired.value = invitation?.data?.nationalIdRequired === true
       terms.value = data
       status.value = 'ready'
     } catch (error) {
@@ -37,8 +39,13 @@ export function useInvitationAcceptance(token) {
   }
 
   const form = useValidatedForm({
-    schema: computed(() => invitationSchema(t, { termsRequired: termsRequired.value })),
-    initialValues: { password: '', passwordConfirmation: '', termsAccepted: false },
+    schema: computed(() =>
+      invitationSchema(t, {
+        termsRequired: termsRequired.value,
+        nationalIdRequired: nationalIdRequired.value,
+      }),
+    ),
+    initialValues: { password: '', passwordConfirmation: '', termsAccepted: false, nationalId: '' },
     action: 'auth.invitation.submit',
     submit: async (values) => {
       let outcome
@@ -56,5 +63,5 @@ export function useInvitationAcceptance(token) {
 
   onMounted(load)
 
-  return { form, status, terms, termsRequired, load }
+  return { form, status, terms, termsRequired, nationalIdRequired, load }
 }

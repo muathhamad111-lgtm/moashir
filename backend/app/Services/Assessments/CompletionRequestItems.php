@@ -11,8 +11,8 @@ use App\Models\Assessments\Assessment;
 use App\Models\Assessments\AssessmentCompletionRequest;
 
 /**
- * The items of a completion request as the entity's e-mail lists them: each stored sub-criterion code named from
- * the request's own criteria version.
+ * The items of a completion request as the entity's e-mail lists them: each stored main criterion or sub-criterion
+ * code, named from the request's own criteria version.
  */
 final readonly class CompletionRequestItems
 {
@@ -24,8 +24,8 @@ final readonly class CompletionRequestItems
 
         return new RequestedItems(array_map(
             static fn (array $item): RequestedItem => new RequestedItem(
-                $item['sub_code'],
-                $subs->withCode($item['sub_code'])?->name,
+                AssessmentCompletionRequest::codeOf($item),
+                $subs->nameOf(AssessmentCompletionRequest::codeOf($item)),
                 CompletionItemKind::from($item['kind']),
                 $item['note'],
             ),

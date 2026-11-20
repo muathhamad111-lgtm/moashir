@@ -179,7 +179,7 @@ it('issues signed evidence downloads to the owner and the assigned assessor only
     $url = (string) switchTo($assessor)->postJson($endpoint)->assertOk()->assertJsonPath('data.file_name', 'سياسة-الحوكمة.pdf')->json('data.url');
 
     expect(test()->get($url)->assertOk()->streamedContent())->toStartWith('%PDF-')
-        ->and(Audit::query()->where('event', AuditEvent::FileDownloaded->value)->count())->toBe(1);
+        ->and(Audit::query()->where('event', AuditEvent::FileAccessed->value)->count())->toBe(1);
 
     switchTo(ownerOf($assessment->entity))->postJson($endpoint)->assertOk();
     switchTo(requestFollower())->postJson($endpoint)->assertOk();

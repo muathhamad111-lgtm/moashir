@@ -30,6 +30,23 @@ function picker(props = {}, locale = 'ar') {
 }
 
 describe('CompletionItemPicker', () => {
+  it("offers the main criterion's own attachments as an evidence-only first row", async () => {
+    const main = { id: 1, name: { ar: 'القيادة', en: 'Leadership' }, subs: [SUB_A] }
+    const mainOption = { key: 'main-1:evidence', main, sub: null, kind: 'evidence' }
+    const wrapper = picker(
+      { groups: [{ main, options: [mainOption, { key: '11:cv', sub: SUB_A, kind: 'cv' }] }] },
+      'en',
+    )
+    const rows = wrapper.findAll('.completion-picker__row')
+    expect(rows.map((row) => row.find('th').text())).toEqual([
+      'Main criterion evidence',
+      'Direction',
+    ])
+    expect(rows[0].findAll('input')).toHaveLength(1)
+    await wrapper.find('input[name="item-main-1:evidence"]').setValue(true)
+    expect(wrapper.emitted('toggle')[0]).toEqual(['main-1:evidence', true])
+  })
+
   it('opens the current criterion only, with a count per group and a dash where no CV exists', () => {
     const wrapper = picker({ openMainId: 2, selected: ['21:evidence'] })
     expect(wrapper.findAll('.completion-picker__row').map((row) => row.find('th').text())).toEqual([

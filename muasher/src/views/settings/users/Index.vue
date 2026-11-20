@@ -16,6 +16,9 @@ import RowActions from '@/components/data-list/RowActions.vue'
 import UserPathAccessCell from '@/components/users/UserPathAccessCell.vue'
 import AssessorQualificationsDialog from '@/components/users/AssessorQualificationsDialog.vue'
 import RequestScopeDialog from '@/components/users/RequestScopeDialog.vue'
+import NameCorrectionDialog from '@/components/users/NameCorrectionDialog.vue'
+import IdentityHistoryDialog from '@/components/users/IdentityHistoryDialog.vue'
+import { useUserIdentityActions } from '@/composables/useUserIdentityActions'
 import { useTable } from '@/composables/useTable'
 import { useFilters } from '@/composables/useFilters'
 import { useSearchPrefill } from '@/composables/useSearchPrefill'
@@ -32,7 +35,12 @@ import { formatDate } from '@/utils/datetime'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { accessFor } from '@/constants/routeAccess'
 import { PERMISSIONS } from '@/constants/permissionKeys'
-import { PATH_ACCESS_ACTIONS, USER_ACTIONS, USER_INLINE_ACTIONS } from '@/constants/users'
+import {
+  IDENTITY_ACTIONS,
+  PATH_ACCESS_ACTIONS,
+  USER_ACTIONS,
+  USER_INLINE_ACTIONS,
+} from '@/constants/users'
 
 const { t, locale } = useI18n()
 const toast = useToast()
@@ -47,6 +55,8 @@ const { pagination, setPage } = paginator
 const stats = ref(null)
 const canManage = computed(() => can(PERMISSIONS.USERS_MANAGE))
 const canViewRoles = computed(() => canAccess(accessFor(ROUTE_NAMES.ADMIN_PERMISSIONS)))
+const canReviewIdentity = computed(() => canAccess(accessFor(ROUTE_NAMES.ADMIN_IDENTITY_CHANGES)))
+const identity = useUserIdentityActions()
 
 const { items, status, errorMessage, load } = useTable({
   fetcher: async (params) => {
@@ -107,6 +117,7 @@ function onAction(key, row) {
   if (key === USER_ACTIONS.ACTIVITY)
     return router.push({ name: ROUTE_NAMES.ADMIN_AUDIT_LOG, query: { actorId: row.id } })
   if (PATH_ACCESS_ACTIONS.includes(key)) return pathAccess.open(key, row)
+  if (IDENTITY_ACTIONS.includes(key)) return identity.open(key, row)
   actions.start(key, row)
 }
 </script>
@@ -121,6 +132,13 @@ function onAction(key, row) {
         icon="lock"
         :to="{ name: ROUTE_NAMES.ADMIN_PERMISSIONS }"
         >{{ t('users.index.rolesLink') }}</BaseButton
+      >
+      <BaseButton
+        v-if="canReviewIdentity"
+        variant="secondary"
+        icon="doc"
+        :to="{ name: ROUTE_NAMES.ADMIN_IDENTITY_CHANGES }"
+        >{{ t('nationalIdentity.review.link') }}</BaseButton
       >
     </header>
 
@@ -228,6 +246,19 @@ function onAction(key, row) {
       v-model="pathAccess.scopeOpen.value"
       :user="pathAccess.user.value"
       @saved="pathAccess.saved"
+    />
+    <NameCorrectionDialog
+      v-if="canManage"
+      v-model="identity.correction.open"
+      :user="identity.correction.user"
+      :action="identity.submitCorrection"
+    />
+    <IdentityHistoryDialog
+      v-model="identity.history.open"
+      :user="identity.history.user"
+      :status="identity.history.status"
+      :items="identity.history.items"
+      @retry="identity.loadHistory(identity.history.user)"
     />
     <ReasonDialog
       v-if="actions.dialog.value"

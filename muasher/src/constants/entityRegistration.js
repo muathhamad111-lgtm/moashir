@@ -23,6 +23,7 @@ export const REGISTRATION_STEPS = Object.freeze([
     labelKey: 'entities.registration.steps.account',
     fields: Object.freeze([
       'authorizedPersonName',
+      'nationalId',
       'phone',
       'officialEmail',
       'emailVerificationToken',

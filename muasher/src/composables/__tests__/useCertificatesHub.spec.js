@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { withSetup } from '@/test-utils/withSetup'
+import { visitStubRoute } from '@/test-utils/stubRoute'
 import { useCertificatesHub } from '@/composables/useCertificatesHub'
 import { certificatesService } from '@/services/certificatesService'
 import { accreditedService } from '@/services/accreditedService'
@@ -46,7 +47,8 @@ describe('useCertificatesHub', () => {
   })
 
   it('shows the previous certificates on their tab and fails as one block', async () => {
-    const { api } = withSetup(() => useCertificatesHub())
+    const { api, globals } = withSetup(() => useCertificatesHub())
+    await visitStubRoute(globals.router)
     await flushPromises()
     api.tab.value = 'previous'
     await vi.waitFor(() =>

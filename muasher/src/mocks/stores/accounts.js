@@ -14,6 +14,8 @@ import { avatarOf } from './accountAvatars'
 import { qualificationsOf, requestScopeOf } from './staffUsers'
 import { findRole } from './permissionsStore'
 import { profileLocaleOf } from './preferencesStore'
+import { nationalIdRequiredFor } from './authSettingsStore'
+import { maskNationalId, nationalIdOf } from './identityStore'
 import { DEFAULT_LOCALE } from '@/constants/locales'
 
 const HOUR_MS = 60 * 60 * 1000
@@ -100,6 +102,11 @@ export function sessionPayload(descriptor) {
     isSuperAdmin: descriptor.superAdmin === true,
     mfaEnabled: !entity,
     passwordChangeRequired: false,
+    nationalIdRequired: nationalIdRequiredFor(descriptor.roles, {
+      superAdmin: descriptor.superAdmin === true,
+    }),
+    hasNationalId: nationalIdOf(descriptor.id) !== null,
+    nationalIdMasked: maskNationalId(nationalIdOf(descriptor.id)),
     entityId: entity?.id ?? null,
     entity: entity ? entitySummary(entity) : null,
     avatar: avatarOf({ ...descriptor, entityId: entity?.id ?? null }),

@@ -71,7 +71,9 @@ const allOptions = computed(() => itemOptions(props.criteria))
 const groups = computed(() =>
   props.criteria.mains.map((main) => ({
     main,
-    options: allOptions.value.filter((option) => main.subs.some((sub) => sub.id === option.sub.id)),
+    options: allOptions.value.filter((option) =>
+      option.sub ? main.subs.some((sub) => sub.id === option.sub.id) : option.main.id === main.id,
+    ),
   })),
 )
 const selectedOptions = computed(() =>

@@ -37,6 +37,12 @@ it('shows e-mail as the only entity sign-in code channel by default, the SMS gat
             'entity_registration_review' => true,
             'two_factor_enabled' => true,
             'two_factor_roles' => RoleKey::staffValues(),
+            'national_id_enabled' => false,
+            'national_id_roles' => [],
+            'file_access_roles' => [
+                'system_admin', 'request_follower', 'assessor', 'filtering_officer',
+                'award_secretary', 'finance_officer', 'entity',
+            ],
             'sms_status' => 'live',
         ], 'meta' => [], 'errors' => null]);
 });

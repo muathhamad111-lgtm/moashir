@@ -75,6 +75,8 @@ const EVIDENCE_KEYS = [
   'code',
   'file_name',
   'id',
+  'level',
+  'main_criterion_id',
   'mime_type',
   'scan_status',
   'size_bytes',
@@ -196,6 +198,7 @@ describe('accredited mock — entity reads', () => {
         { sub_criterion_id: 402, code: 'M4.2', attachment_key: 'sub_402_1' },
         { sub_criterion_id: 802, code: 'M8.2', attachment_key: 'sub_802_1' },
       ],
+      missing_main_attachments: [],
     })
     expect(body.data.cv['101']).toContain('الرؤية')
     seedMockSession(ALBIRR)
@@ -358,6 +361,7 @@ describe('accredited mock — entity writes', () => {
     })
     expect(form.body.data.completion_request.items).toEqual([
       {
+        main_criterion_id: null,
         sub_criterion_id: 202,
         code: 'M2.2',
         name: { ar: expect.any(String), en: 'Strategy Formulation and Deployment' },
@@ -365,6 +369,7 @@ describe('accredited mock — entity writes', () => {
         note: expect.any(String),
       },
       {
+        main_criterion_id: null,
         sub_criterion_id: 402,
         code: 'M4.2',
         name: { ar: expect.any(String), en: 'Financial Sustainability and Resource Management' },

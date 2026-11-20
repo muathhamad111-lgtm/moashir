@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import Card from '@/components/ui/Card.vue'
-import Skeleton from '@/components/feedback/Skeleton.vue'
+import PageLoading from '@/components/feedback/PageLoading.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
@@ -87,7 +87,7 @@ async function approve() {
         )
       "
     />
-    <div v-if="status === 'loading'" aria-busy="true"><Skeleton variant="block" /></div>
+    <PageLoading v-if="status === 'loading'" />
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="board.load" />
     <EmptyState
       v-else-if="status === 'missing' || status === 'blocked'"

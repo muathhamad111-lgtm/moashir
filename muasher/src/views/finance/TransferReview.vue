@@ -5,7 +5,7 @@ import { useHead } from '@unhead/vue'
 import Card from '@/components/ui/Card.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
-import Skeleton from '@/components/feedback/Skeleton.vue'
+import PageLoading from '@/components/feedback/PageLoading.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
 import MoneyAmount from '@/components/payments/MoneyAmount.vue'
@@ -52,10 +52,7 @@ onMounted(review.load)
       {{ t('finance.transfers.detail.back') }}
     </RouterLink>
 
-    <div v-if="status === 'loading'" class="transfer-review__loading" aria-busy="true">
-      <Skeleton variant="block" />
-      <Skeleton variant="text" :count="6" />
-    </div>
+    <PageLoading v-if="status === 'loading'" />
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="review.load()" />
     <EmptyState
       v-else-if="status === 'not-found'"

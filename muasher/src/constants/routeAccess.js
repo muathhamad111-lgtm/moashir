@@ -174,6 +174,7 @@ export const ROUTE_ACCESS = {
   [R.ADMIN_CONTACT_MESSAGES]: { anyOf: [P.CONTACT_MESSAGES_MANAGE] },
   [R.ADMIN_CONTACT_MESSAGE]: { anyOf: [P.CONTACT_MESSAGES_MANAGE] },
   [R.ADMIN_AUDIT_LOG]: { anyOf: [P.AUDIT_VIEW] },
+  [R.ADMIN_IDENTITY_CHANGES]: { anyOf: [P.USERS_IDENTITY_CHANGES_REVIEW] },
 }
 
 export function accessFor(routeName) {

@@ -46,8 +46,9 @@ final readonly class UpdateAuthSettings
 
             $emailChanged = $this->putGeneralEmail($actor, $update);
             $reviewChanged = $this->putRegistrationReview($actor, $update);
+            $nationalIdChanged = $this->putNationalId($actor, $update);
 
-            return [$this->putChannels($actor, $update), $emailChanged || $reviewChanged, $twoFactorChanged];
+            return [$this->putChannels($actor, $update), $emailChanged || $reviewChanged || $nationalIdChanged, $twoFactorChanged];
         });
 
         $this->raiseAlerts($channelsChanged, $twoFactorChanged);
@@ -74,6 +75,16 @@ final readonly class UpdateAuthSettings
             && $this->store->put(SettingKey::TwoFactorEnabled, $update->twoFactorEnabled, AuditEvent::AuthSettingsUpdated, $actor);
         $roles = $update->twoFactorRoles !== null
             && $this->store->put(SettingKey::TwoFactorRoles, $update->twoFactorRoleValues(), AuditEvent::AuthSettingsUpdated, $actor);
+
+        return $enabled || $roles;
+    }
+
+    private function putNationalId(User $actor, AuthSettingsUpdate $update): bool
+    {
+        $enabled = $update->nationalIdEnabled !== null
+            && $this->store->put(SettingKey::NationalIdEnabled, $update->nationalIdEnabled, AuditEvent::AuthSettingsUpdated, $actor);
+        $roles = $update->nationalIdRoles !== null
+            && $this->store->put(SettingKey::NationalIdRoles, $update->nationalIdRoleValues(), AuditEvent::AuthSettingsUpdated, $actor);
 
         return $enabled || $roles;
     }

@@ -30,6 +30,7 @@ final class CancelledInviteeRemover
                 'email' => $pseudonym.self::RELEASED_DOMAIN,
                 'phone' => null,
                 'phone_verified_at' => null,
+                'national_id' => null,
             ])->save();
             $invitee->delete();
         });

@@ -6,7 +6,7 @@ import { useHead } from '@unhead/vue'
 import Card from '@/components/ui/Card.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
-import Skeleton from '@/components/feedback/Skeleton.vue'
+import PageLoading from '@/components/feedback/PageLoading.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
 import AssessmentNotice from '@/components/assessment/AssessmentNotice.vue'
@@ -68,10 +68,7 @@ onMounted(filtering.load)
         <bdi dir="ltr">{{ row.number }}</bdi> <StatusBadge :status="row.status" />
       </p>
     </header>
-    <div v-if="status === 'loading'" class="request-detail__loading" aria-busy="true">
-      <Skeleton variant="block" />
-      <Skeleton variant="text" :count="6" />
-    </div>
+    <PageLoading v-if="status === 'loading'" />
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="filtering.load" />
     <EmptyState
       v-else-if="status === 'missing'"

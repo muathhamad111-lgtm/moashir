@@ -120,6 +120,20 @@ final class AssessmentRejected extends ApiException
         ], [], ['max_files_per_sub' => $maximum]));
     }
 
+    public static function mainEvidenceFull(string $field, int $maximum): self
+    {
+        return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'attachment.main_full', [
+            $field => [__('errors.attachment.main_full', ['max' => $maximum])],
+        ], [], ['max_files_per_sub' => $maximum]));
+    }
+
+    public static function slotEvidenceFull(string $field, int $maximum): self
+    {
+        return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'attachment.slot_full', [
+            $field => [__('errors.attachment.slot_full', ['max' => $maximum])],
+        ], [], ['max_files' => $maximum]));
+    }
+
     /**
      * @param  array<string, list<string>>  $fields
      * @param  array<string, mixed>  $meta

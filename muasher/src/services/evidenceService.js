@@ -9,10 +9,12 @@ function mapData(request, mapper) {
   return request.then((envelope) => ({ ...envelope, data: mapper(envelope.data) }))
 }
 
-function uploadForm({ file, subCriterionId, attachmentKey, reason }) {
+// An upload names a main criterion (one of its attachments) or a sub-criterion.
+function uploadForm({ file, mainCriterionId, subCriterionId, attachmentKey, reason }) {
   const form = new FormData()
   form.append('file', file)
-  form.append('subCriterionId', String(subCriterionId))
+  if (mainCriterionId) form.append('mainCriterionId', String(mainCriterionId))
+  else form.append('subCriterionId', String(subCriterionId))
   if (attachmentKey) form.append('attachmentKey', attachmentKey)
   if (reason) form.append('reason', reason)
   return form
@@ -30,7 +32,8 @@ export const evidenceService = {
 
   upload(assessmentId, upload) {
     const shape = {
-      subCriterionId: upload.subCriterionId,
+      mainCriterionId: upload.mainCriterionId ?? null,
+      subCriterionId: upload.subCriterionId ?? null,
       attachmentKey: upload.attachmentKey ?? null,
       file: 'file',
     }

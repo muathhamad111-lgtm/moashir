@@ -6,14 +6,18 @@ namespace App\Http\Requests\Entities;
 
 use App\Data\Entities\EntityRegistrationData;
 use App\Enums\Identity\Locale;
+use App\Enums\Identity\RoleKey;
 use App\Enums\Identity\TermsKind;
 use App\Exceptions\Entities\RegistrationRejected;
 use App\Models\Identity\TermsVersion;
+use App\Rules\SaudiNationalId;
 use App\Services\Identity\CurrentTermsVersions;
+use App\Services\Identity\NationalIdRequirement;
 use App\Services\Identity\PasswordPolicy;
 use App\Support\Entities\EntityProfileInput;
 use App\Support\ScalarValue;
 use App\Support\ValueObjects\EmailAddress;
+use App\Support\ValueObjects\NationalId;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -26,7 +30,7 @@ final class RegisterEntityRequest extends FormRequest
     /**
      * @return array<string, mixed>
      */
-    public function rules(PasswordPolicy $passwords, CurrentTermsVersions $terms): array
+    public function rules(PasswordPolicy $passwords, CurrentTermsVersions $terms, NationalIdRequirement $nationalId): array
     {
         $this->currentTerms = $terms->of(TermsKind::Terms) ?? throw RegistrationRejected::termsUnavailable();
         $this->currentPrivacy = $terms->of(TermsKind::Privacy);
@@ -44,6 +48,7 @@ final class RegisterEntityRequest extends FormRequest
             'privacy_version_id' => [$this->currentPrivacy instanceof TermsVersion ? 'required' : 'prohibited', 'integer', $this->mustBe($this->currentPrivacy, 'privacy_version_id')],
             'terms_accepted' => ['accepted'],
             'marketing_consent' => ['sometimes', 'boolean'],
+            'national_id' => $nationalId->isRequiredForRoles([RoleKey::Entity]) ? ['required', 'string', 'max:20', new SaudiNationalId] : ['exclude'],
         ];
     }
 
@@ -68,6 +73,7 @@ final class RegisterEntityRequest extends FormRequest
             $this->acceptedTermsVersionIds(),
             $this->boolean('marketing_consent'),
             Locale::tryFrom(app()->getLocale()) ?? Locale::Arabic,
+            isset($validated['national_id']) ? new NationalId(ScalarValue::string($validated['national_id'])) : null,
         );
     }
 

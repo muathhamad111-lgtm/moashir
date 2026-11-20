@@ -42,26 +42,46 @@ export function completionSchema(
   })
 }
 
+const MAIN_PREFIX = 'main-'
+
 function itemKey(subId, kind) {
   return `${subId}:${kind}`
+}
+
+function mainItemKey(mainId) {
+  return `${MAIN_PREFIX}${mainId}:${COMPLETION_ITEM_KINDS.EVIDENCE}`
+}
+
+// A key names a sub-criterion item ("12:cv") or a main criterion's own attachments ("main-3:evidence").
+function targetOf(key) {
+  const [node, kind] = key.split(':')
+  return node.startsWith(MAIN_PREFIX)
+    ? { mainCriterionId: Number(node.slice(MAIN_PREFIX.length)), kind }
+    : { subCriterionId: Number(node), kind }
 }
 
 export function completionPayload(values, notesByItem) {
   return {
     notes: values.notes.trim(),
     items: values.items.map((key) => {
-      const [subCriterionId, kind] = key.split(':')
       const note = (notesByItem[key] ?? '').trim()
-      return { subCriterionId: Number(subCriterionId), kind, ...(note ? { note } : {}) }
+      return { ...targetOf(key), ...(note ? { note } : {}) }
     }),
     deadlineAt: endOfRiyadhDay(values.deadline),
     expiryOutcome: values.expiryOutcome,
   }
 }
 
+function mainOptions(main) {
+  if (!main.attachments?.length) return []
+  return [{ key: mainItemKey(main.id), main, sub: null, kind: COMPLETION_ITEM_KINDS.EVIDENCE }]
+}
+
+// Per main criterion: its own attachments (when it asks for any), then each sub's CV and evidence.
 export function itemOptions(criteria) {
-  return (criteria?.mains ?? []).flatMap((main) =>
-    main.subs.flatMap((sub) => [
+  return (criteria?.mains ?? []).flatMap((main) => [
+    ...mainOptions(main),
+    ...main.subs.flatMap((sub) => [
       ...(sub.hasCv
         ? [{ key: itemKey(sub.id, COMPLETION_ITEM_KINDS.CV), sub, kind: COMPLETION_ITEM_KINDS.CV }]
         : []),
@@ -71,5 +91,5 @@ export function itemOptions(criteria) {
         kind: COMPLETION_ITEM_KINDS.EVIDENCE,
       },
     ]),
-  )
+  ])
 }

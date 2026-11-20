@@ -7,24 +7,15 @@ namespace App\Services\Notifications;
 use App\Data\Mail\MailSample;
 use App\Data\Mail\RenderedMail;
 use App\Enums\Identity\Locale;
-use App\Exceptions\Console\MailSampleNotRendered;
-use Illuminate\Mail\MailManager;
-use Illuminate\Notifications\Channels\MailChannel;
-use Illuminate\Support\Traits\Localizable;
-use Symfony\Component\Mime\Email;
 use Symfony\Component\Mime\Part\DataPart;
 
 final readonly class MailPreviewRenderer
 {
-    use Localizable;
-
-    private const string MAILER = 'array';
-
-    public function __construct(private MailManager $mail, private MailChannel $channel) {}
+    public function __construct(private MailSampleComposer $composer) {}
 
     public function render(MailSample $sample, Locale $locale): RenderedMail
     {
-        $email = $this->withLocale($locale->value, fn (): Email => $this->send($sample));
+        $email = $this->composer->compose($sample, $locale);
         $html = $this->body($email->getHtmlBody());
         $inline = array_values(array_filter($email->getAttachments(), static fn (DataPart $part): bool => $part->getDisposition() === 'inline'));
 
@@ -35,22 +26,6 @@ final readonly class MailPreviewRenderer
             $this->body($email->getTextBody()),
             count($inline),
         );
-    }
-
-    private function send(MailSample $sample): Email
-    {
-        $previous = $this->mail->getDefaultDriver();
-        $this->mail->setDefaultDriver(self::MAILER);
-
-        try {
-            $sent = $this->channel->send($sample->notifiable, $sample->notification);
-        } finally {
-            $this->mail->setDefaultDriver($previous);
-        }
-
-        $email = $sent?->getSymfonySentMessage()->getOriginalMessage();
-
-        return $email instanceof Email ? $email : throw MailSampleNotRendered::named($sample->name);
     }
 
     /**

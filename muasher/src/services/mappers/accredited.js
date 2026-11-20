@@ -7,6 +7,8 @@ import { toApplyGate, toPathPricing, toPeriodic, toRequestPeriod, toSubmissionGa
 export function toEvidence(raw = {}) {
   return {
     id: raw.id ?? null,
+    level: raw.level ?? 'sub',
+    mainCriterionId: raw.mainCriterionId ?? null,
     subCriterionId: raw.subCriterionId ?? null,
     code: raw.code ?? '',
     attachmentKey: raw.attachmentKey ?? null,
@@ -24,6 +26,7 @@ export function toEvidenceList(items) {
 
 function toCompletionItem(raw) {
   return {
+    mainCriterionId: raw.mainCriterionId ?? null,
     subCriterionId: raw.subCriterionId ?? null,
     code: raw.code ?? '',
     name: raw.name ?? null,
@@ -62,10 +65,19 @@ function toMissingItem(raw) {
   }
 }
 
+function toMissingMainItem(raw) {
+  return {
+    mainCriterionId: raw.mainCriterionId ?? null,
+    code: raw.code ?? '',
+    attachmentKey: raw.attachmentKey ?? null,
+  }
+}
+
 function toMissing(raw) {
   return {
     missingCv: (raw?.missingCv ?? []).map(toMissingItem),
     missingAttachments: (raw?.missingAttachments ?? []).map(toMissingItem),
+    missingMainAttachments: (raw?.missingMainAttachments ?? []).map(toMissingMainItem),
   }
 }
 

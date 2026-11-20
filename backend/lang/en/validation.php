@@ -189,6 +189,12 @@ return [
         'maturity_bands' => [
             'ascending' => 'The maturity band starts must be above zero, rise from Developing to Mature and Leading, and not exceed 100.',
         ],
+        'name' => [
+            'requires_correction_request' => 'The name of an account in use changes only through a name correction request, approved by a second reviewer.',
+        ],
+        'national_id' => [
+            'invalid' => 'Enter a valid 10-digit national ID or Iqama number.',
+        ],
         'iban' => [
             'format' => 'A Saudi IBAN has 24 characters: SA, two check digits, the bank code and 18 letters or digits.',
             'checksum' => 'This IBAN is not valid: its check digits do not match the rest of the number. Check it character by character.',
@@ -348,6 +354,7 @@ return [
         'account_holder_name.ar' => 'Arabic account holder name',
         'account_holder_name.en' => 'English account holder name',
         'iban' => 'IBAN',
+        'national_id' => 'national ID or Iqama number',
         'account_number' => 'account number',
         'payer_note' => 'note to entities',
         'payer_note.ar' => 'Arabic note to entities',

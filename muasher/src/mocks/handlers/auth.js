@@ -1,9 +1,13 @@
+import { nationalIdRequiredFor } from '../stores/authSettingsStore'
+import { assignNationalId } from '../stores/identityStore'
+import { isValidNationalId } from '@/utils/identity/nationalId'
 import { delay } from 'msw'
 import { http } from '../contract/http'
 import { envelope, errorResponse, noContent } from '../contract/responses'
 import { MOCK_PASSWORD, OTP_CONFIG, SIGN_IN_IDENTIFIER_KINDS } from '../fixtures/auth'
 import { sessionPayload } from '../stores/accounts'
 import { currentSessionUser, endMockSession } from '../stores/sessionStore'
+import { sessionLatencyMs } from '../stores/sessionLatency'
 import {
   OTP_PURPOSES,
   SIGN_IN_PURPOSES,
@@ -165,6 +169,9 @@ export const authHandlers = [
     entityRoute(async ({ request }) => {
       const body = await readJson(request)
       validateRegistration(body)
+      const nationalIdRequired = nationalIdRequiredFor(['entity'])
+      if (nationalIdRequired && !isValidNationalId(body.nationalId))
+        throw authReject.validation({ nationalId: [authField('field.required')] })
       const email = normalizedEmail(body.officialEmail)
       if (!emailTokenValid(body.emailVerificationToken, email))
         throw authReject.validation({ officialEmail: [authField('registration.email_unverified')] })
@@ -173,6 +180,7 @@ export const authHandlers = [
         throw authReject.validation({ officialEmail: [authField('registration.email_taken')] })
       consumeEmailVerificationToken(body.emailVerificationToken)
       completeVerification(created)
+      if (nationalIdRequired) assignNationalId(created.id, body.nationalId)
       if (standingOf(created) === ENTITY_STANDING.PENDING_REVIEW)
         return envelope({ step: SIGN_IN_STEPS.PENDING_REVIEW }, {}, { status: 201 })
       return signIn({ kind: 'entity', record: created })
@@ -232,7 +240,7 @@ export const authHandlers = [
   }),
 
   http.get('/api/v1/auth/session', async () => {
-    await delay(120)
+    await delay(sessionLatencyMs())
     const user = currentSessionUser()
     if (!user) return errorResponse(401, 'unauthenticated', 'Unauthenticated.')
     return envelope(sessionPayload(user))

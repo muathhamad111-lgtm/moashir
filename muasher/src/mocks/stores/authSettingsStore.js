@@ -1,4 +1,5 @@
 import { smsGatewayStatus } from './smsAvailability'
+import { activeScenario } from './committee/committeeScenario'
 
 export const CODE_CHANNELS = Object.freeze({ EMAIL: 'email', SMS: 'sms' })
 
@@ -19,6 +20,23 @@ const STAFF_ROLES = Object.freeze([
 ])
 let twoFactorEnabled = true
 let twoFactorRoles = [...STAFF_ROLES]
+const FILE_ACCESS_ROLES = Object.freeze([
+  'system_admin',
+  'request_follower',
+  'assessor',
+  'filtering_officer',
+  'award_secretary',
+  'finance_officer',
+  'entity',
+])
+export const NATIONAL_ID_REQUIRED_SCENARIO = 'national-id-required'
+
+function scenarioRequiresNationalId() {
+  return activeScenario() === NATIONAL_ID_REQUIRED_SCENARIO
+}
+
+let nationalIdEnabled = scenarioRequiresNationalId()
+let nationalIdRoles = scenarioRequiresNationalId() ? [...FILE_ACCESS_ROLES] : []
 
 export function resetAuthSettings() {
   channels = [...DEFAULT_CHANNELS]
@@ -26,6 +44,8 @@ export function resetAuthSettings() {
   entityRegistrationReview = true
   twoFactorEnabled = true
   twoFactorRoles = [...STAFF_ROLES]
+  nationalIdEnabled = scenarioRequiresNationalId()
+  nationalIdRoles = scenarioRequiresNationalId() ? [...FILE_ACCESS_ROLES] : []
 }
 
 export function signInCodeChannelsAllowed() {
@@ -44,7 +64,20 @@ export function authSettingsResource() {
     twoFactorEnabled,
     twoFactorRoles: [...twoFactorRoles],
     smsStatus: smsGatewayStatus(),
+    nationalIdEnabled,
+    nationalIdRoles: [...nationalIdRoles],
+    fileAccessRoles: [...FILE_ACCESS_ROLES],
   }
+}
+
+export function setNationalIdPolicy({ enabled, roles }) {
+  if (enabled !== undefined) nationalIdEnabled = enabled
+  if (roles !== undefined) nationalIdRoles = [...roles]
+}
+
+export function nationalIdRequiredFor(roles, { superAdmin = false } = {}) {
+  if (!nationalIdEnabled) return false
+  return superAdmin || roles.some((role) => nationalIdRoles.includes(role))
 }
 
 export function setTwoFactorPolicy({ enabled, roles }) {

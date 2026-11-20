@@ -6,9 +6,11 @@ namespace App\Services\Entities;
 
 use App\Enums\Identity\UserStatus;
 use App\Models\Files\StoredFile;
+use App\Models\Identity\IdentityChangeRequest;
 use App\Models\Identity\OtpCode;
 use App\Models\Identity\PasswordHistory;
 use App\Models\Identity\User;
+use App\Models\Identity\UserIdentityChange;
 use App\Models\Notifications\Notification;
 use App\Models\Notifications\NotificationPreference;
 use App\Services\Files\StoredFileRemover;
@@ -28,6 +30,8 @@ final readonly class ErasedOwnerAnonymizer
         $this->sessions->terminateAll($owner);
         OtpCode::query()->where('user_id', $owner->id)->delete();
         PasswordHistory::query()->where('user_id', $owner->id)->delete();
+        UserIdentityChange::query()->where('user_id', $owner->id)->delete();
+        IdentityChangeRequest::query()->where('user_id', $owner->id)->delete();
         Notification::query()->where('user_id', $owner->id)->delete();
         NotificationPreference::query()->where('user_id', $owner->id)->delete();
         DB::table('password_reset_tokens')->whereRaw('lower(email) = ?', [mb_strtolower($owner->email)])->delete();
@@ -41,6 +45,7 @@ final readonly class ErasedOwnerAnonymizer
                 'email_verified_at' => null,
                 'phone' => null,
                 'phone_verified_at' => null,
+                'national_id' => null,
                 'password' => null,
                 'two_factor_secret' => null,
                 'two_factor_recovery_codes' => null,

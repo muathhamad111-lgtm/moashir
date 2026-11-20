@@ -5,6 +5,7 @@ import { filesService } from '@/services/filesService'
 import { downloadBlob } from '@/utils/download'
 import { financeErrorMessage } from '@/utils/payments/financeErrors'
 import { PROOF_ZOOM } from '@/constants/bankTransfer'
+import { FILE_INTENTS } from '@/constants/files'
 
 export const PREVIEW_STATES = Object.freeze({
   IDLE: 'idle',
@@ -34,16 +35,16 @@ export function useProofPreview(requestLink) {
   const canZoomIn = computed(() => zoom.value < PROOF_ZOOM.MAX)
   const canZoomOut = computed(() => zoom.value > PROOF_ZOOM.MIN)
 
-  async function fetchFile() {
+  async function fetchFile(intent) {
     const { data: link } = await requestLink()
-    return filesService.fetchSignedFile(link)
+    return filesService.fetchSignedFile(link, { intent })
   }
 
   async function load() {
     if (state.value === PREVIEW_STATES.LOADING) return
     state.value = PREVIEW_STATES.LOADING
     try {
-      const file = await fetchFile()
+      const file = await fetchFile(FILE_INTENTS.VIEW)
       blob = file.blob
       fileName.value = file.fileName
       revoke(objectUrl.value)
@@ -58,7 +59,9 @@ export function useProofPreview(requestLink) {
     if (downloading.value) return
     downloading.value = true
     try {
-      const file = blob ? { blob, fileName: fileName.value } : await fetchFile()
+      const file = blob
+        ? { blob, fileName: fileName.value }
+        : await fetchFile(FILE_INTENTS.DOWNLOAD)
       downloadBlob(file.blob, file.fileName)
     } catch (error) {
       toast.error(financeErrorMessage(i18n, error, 'finance.downloads.failed'))

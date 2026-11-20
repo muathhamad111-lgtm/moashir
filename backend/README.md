@@ -2466,6 +2466,19 @@ registration, payment receipt, accredited result, certificate issued, contact re
 every variant of that code. Each sample gives `<name>.<locale>.html` (logo as a data URI, opens in a browser) and
 `<name>.<locale>.txt` (subject + plain-text part).
 
+Real-client check (staging or local only; fictional data; sent through the saved SMTP settings):
+
+```
+php artisan moashir:mail:send-samples [CODE] --to=<inbox> [--to=<inbox>] [--locale=ar] [--locale=en]
+```
+
+Sends the same samples as the preview (main e-mails, or every variant of one code) to 1–3 test inboxes, one message per
+sample and inbox, through the `settings` mailer whatever `MAIL_MAILER` is. Refused in production (always), in any
+environment other than `staging` / `local`, and while no active, complete SMTP integration exists (Settings >
+Integrations). In SMTP test mode the integration's test address receives them instead. Each run writes one audit row
+`integration.mail_samples_sent` on the SMTP integration (sample names, count sent, recipient domains only, ok / error
+kind); a refused message stops the run.
+
 ## Path distinction (phase 1, operator decision Session 24)
 
 One `assessor` role; each assessor is qualified for one or more paths; a Requests Follower can be limited to one or more paths;

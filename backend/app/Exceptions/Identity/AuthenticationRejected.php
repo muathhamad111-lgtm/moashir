@@ -44,4 +44,9 @@ final class AuthenticationRejected extends ApiException
     {
         return new self(new ApiError(Response::HTTP_FORBIDDEN, 'password.change_required'));
     }
+
+    public static function nationalIdRequired(): self
+    {
+        return new self(new ApiError(Response::HTTP_FORBIDDEN, 'identity.national_id_required'));
+    }
 }

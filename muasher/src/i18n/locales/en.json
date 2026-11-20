@@ -766,49 +766,25 @@
       }
     },
     "workspace": {
-      "subtitle": "Pick a criterion in the tree to see and edit its details, weights and evaluation method in one place.",
+      "subtitle": "Pick a main criterion in the strip to see its sub-criteria, indicators and weights, and open any item to see or edit it.",
       "tree": {
-        "title": "Criteria tree",
         "addMain": "Add main criterion",
-        "search": "Search the criteria",
-        "searchPlaceholder": "Criterion name or code",
-        "attentionOnly": "Only what needs fixing ({count})",
         "empty": "This version has no criteria yet.",
-        "noMatch": "No matching criteria.",
-        "toggle": "Show or hide the items under {name}",
-        "attention": "The weights under this criterion do not add up",
-        "attachments": "One required attachment | One required attachment | {count} required attachments",
-        "direct": "Direct",
-        "add": {
-          "main": "Add a sub-criterion to {name}",
-          "sub": "Add an indicator to {name}"
-        }
+        "attention": "The weights under this criterion do not add up"
       },
       "details": {
         "dataTitle": "Details",
         "subWeightsTitle": "Weight split over the sub-criteria",
         "pointWeightsTitle": "Weight split over the indicators",
-        "mainFull": "The main criterion’s weight is fully split over its sub-criteria.",
         "shareAndAddSub": "Split the weight equally and add a sub-criterion",
-        "subFull": "The sub-criterion’s weight is fully split over its indicators.",
-        "shareAndAddPoint": "Split the weight equally and add an indicator",
         "addPoint": "Add indicator",
         "evaluationTitle": "Evaluation method",
         "path": "Where this criterion sits",
-        "allCriteria": "All criteria",
         "kind": {
           "main": "Main criterion",
           "sub": "Sub-criterion",
           "point": "Indicator"
         }
-      },
-      "overview": {
-        "title": "Version overview",
-        "mains": "Main criteria",
-        "subs": "Sub-criteria",
-        "points": "Indicators",
-        "totalWeight": "Total weight of the active criteria",
-        "hint": "Pick a criterion in the tree to see and edit its details."
       },
       "bar": {
         "label": "Criteria status",
@@ -868,6 +844,55 @@
         "applyToAll": "Apply to all indicators",
         "saved": "Scoring type saved.",
         "applied": "Type applied to all indicators."
+      },
+      "viewOnly": "View only. Start editing to change the criteria; nobody is affected until you publish.",
+      "strip": {
+        "label": "Main criteria",
+        "subs": "1 sub-criterion | 1 sub-criterion | {count} sub-criteria",
+        "emptyHint": "Add the first main criterion to start building the model."
+      },
+      "board": {
+        "splitLabel": "Weight split over the sub-criteria",
+        "missing": "Remaining {weight}",
+        "over": "Over by {weight}",
+        "optional": "Optional",
+        "maxFiles": "Up to 1 file | Up to 1 file | Up to {count} files",
+        "details": "Details",
+        "shareOfMain": "of the main criterion",
+        "shareOfModel": "of the model",
+        "shareOfParent": "of its parent",
+        "pointsValue": "{weight} points",
+        "pointsTitle": "Indicators",
+        "pointsCount": "1 indicator | 1 indicator | {count} indicators",
+        "noPoints": "No indicators yet.",
+        "noSubs": "No sub-criteria yet.",
+        "directNote": "Scored directly with one value ({type}); attachments are at the sub-criterion level.",
+        "defaultType": "Default type: {type}",
+        "unbalanced": "{allocated} of {weight} is allocated; the total must equal the criterion weight before publishing.",
+        "splitEqually": "Split equally",
+        "splitManually": "Edit the split by hand",
+        "mainAttachments": "Main-criterion attachments"
+      },
+      "sheet": {
+        "tabs": {
+          "basics": "Basics",
+          "weight": "Weight",
+          "evaluation": "Evaluation",
+          "attachments": "Attachments",
+          "advanced": "Advanced",
+          "subs": "Sub-criteria",
+          "points": "Indicators"
+        },
+        "tabHasErrors": "This tab has fields to correct",
+        "more": "Actions for {name}",
+        "weightInParent": "This item's weight is edited in its parent's weight split.",
+        "openParent": "Open {name}",
+        "open": "Open",
+        "yes": "Yes",
+        "no": "No",
+        "discardTitle": "Discard the changes?",
+        "discardMessage": "This item's changes are not saved and will be lost if you continue.",
+        "discardConfirm": "Discard changes"
       }
     },
     "scoringTypes": {
@@ -1183,6 +1208,9 @@
       },
       "auditLog": {
         "title": "Audit log"
+      },
+      "identityChanges": {
+        "title": "Identity change requests"
       }
     },
     "dev": {
@@ -1202,7 +1230,10 @@
       }
     },
     "account": {
-      "title": "My account"
+      "title": "My account",
+      "completeIdentity": {
+        "title": "Complete your identity details"
+      }
     },
     "finance": {
       "overview": {
@@ -1747,7 +1778,9 @@
       "requestScope": "Follow-up scope",
       "revokeSessions": "Sign out everywhere",
       "cancelInvitation": "Cancel invitation",
-      "activity": "Activity log"
+      "activity": "Activity log",
+      "nameCorrection": "Correct name",
+      "identityHistory": "Identity history"
     },
     "lastLogin": {
       "never": "Never signed in",
@@ -3156,6 +3189,14 @@
         "title": "New entity registrations",
         "label": "Staff review before activation",
         "description": "When off, an entity is activated as soon as it confirms its e-mail."
+      },
+      "nationalId": {
+        "title": "National ID on files",
+        "enable": "Require the national ID for selected accounts",
+        "description": "Required accounts are asked for the number at their next action. Others are stamped with their name only. Always required for the Super Admin while this is on.",
+        "roles": "Accounts that must provide a national ID",
+        "withFileAccess": "{role} (opens files)",
+        "uncovered": "These roles open files but are not selected: {roles}. Their files are stamped with the name only."
       }
     },
     "assessment": {
@@ -3987,7 +4028,14 @@
       "toasts": {
         "uploaded": "{name} was uploaded and is being scanned.",
         "removed": "{name} was removed."
-      }
+      },
+      "mainTitle": "Main criterion evidence",
+      "mainHint": "Attachments the main criterion asks for as a whole, not for one sub-criterion.",
+      "limitsMain": "Up to {max} MB per file and {count} files for this main criterion. Allowed types: {types}.",
+      "fullMain": "This main criterion has reached its maximum of {count} files.",
+      "indicatorGroup": "Indicator attachments: {name}",
+      "slotRule": "Accepted types: {types}. Files: up to {count}.",
+      "slotFull": "This attachment has reached its maximum of {count} files."
     },
     "completion": {
       "title": "Completion request from the assessor",
@@ -4017,7 +4065,8 @@
       "done": "All required CV entries and attachments are provided.",
       "hint": "The list updates after every save or upload.",
       "cv": "CV entry",
-      "attachment": "Attachment: {name}"
+      "attachment": "Attachment: {name}",
+      "mainAttachment": "Main criterion attachment: {name}"
     },
     "notices": {
       "frozen": {
@@ -4214,6 +4263,8 @@
       "USR-03": "Account status changed",
       "USR-04": "Password reset request",
       "USR-05": "Super Admin e-mail changed",
+      "USR-06": "Identity change request waiting",
+      "USR-07": "Identity change request decided",
       "REG-01": "Organization account created",
       "REG-02": "Verification code",
       "REG-03": "Profile completion reminder",
@@ -6557,7 +6608,9 @@
       "remove": "Remove {name}",
       "detailsTitle": "Request details",
       "addNote": "Add a note",
-      "addNoteFor": "Add a note on {name}"
+      "addNoteFor": "Add a note on {name}",
+      "mainRow": "Main criterion evidence",
+      "mainItem": "Main criterion evidence: {main}"
     },
     "override": {
       "noticeTitle": "Published result",
@@ -6603,7 +6656,10 @@
     "evidenceDownload": "Download",
     "evidenceRequired": "Required",
     "evidenceOther": "Other attachments",
-    "evidenceMissing": "The entity did not attach this file."
+    "evidenceMissing": "The entity did not attach this file.",
+    "mainEvidenceTitle": "Main criterion evidence",
+    "evidenceIndicator": "Indicator attachments: {name}",
+    "evidenceLate": "Required attachment added after submission"
   },
   "cycles": {
     "statuses": {
@@ -9870,6 +9926,94 @@
     },
     "state": {
       "errorTitle": "The page could not be loaded"
+    }
+  },
+  "nationalIdentity": {
+    "field": {
+      "label": "National ID or Iqama number",
+      "purpose": "Printed on the files you open, to protect confidential documents.",
+      "required": "Enter your national ID or Iqama number.",
+      "invalid": "Enter a valid 10-digit national ID or Iqama number."
+    },
+    "fields": {
+      "name": "Full name",
+      "national_id": "National ID"
+    },
+    "complete": {
+      "title": "Complete your identity details",
+      "subtitle": "Your account must have a national ID or Iqama number before you continue. You enter it once; later changes need an approved request.",
+      "submit": "Save and continue",
+      "signOut": "Sign out"
+    },
+    "card": {
+      "title": "National ID",
+      "missing": "Not added yet",
+      "locked": "Your name and national ID change only through a request approved by the administration.",
+      "pending": "Your change request of {date} is under review.",
+      "cancel": "Cancel request",
+      "add": "Add national ID",
+      "requestChange": "Request a change",
+      "history": "My change requests"
+    },
+    "change": {
+      "title": "Request a change to your identity details",
+      "subtitle": "Fill in only what changes. The administration reviews the request before it applies.",
+      "newName": "New full name",
+      "newNationalId": "New national ID or Iqama number",
+      "currentPassword": "Current password",
+      "reason": "Reason for the change",
+      "submit": "Send request",
+      "submitted": "Your change request was sent for review.",
+      "cancelled": "Your change request was cancelled.",
+      "nothing": "Change the name or the national ID.",
+      "nameLength": "The name must be {min} to {max} characters.",
+      "reasonLength": "The reason must be {min} to {max} characters.",
+      "passwordRequired": "Enter your current password to change the national ID."
+    },
+    "correction": {
+      "title": "Request a name correction",
+      "subtitle": "A second reviewer approves the correction before it applies.",
+      "submit": "Send for review",
+      "submitted": "The name correction was sent for review.",
+      "lockedHint": "The name of an account in use changes only through a name correction request."
+    },
+    "history": {
+      "title": "Identity history",
+      "empty": "No identity changes yet.",
+      "loadFailed": "The identity history could not be loaded.",
+      "change": "From {from} to {to}",
+      "meta": "{date} · approved by {approver}"
+    },
+    "review": {
+      "title": "Identity change requests",
+      "subtitle": "Requests to change a user's name or national ID. Nobody decides their own request.",
+      "link": "Identity change requests",
+      "statusFilter": "Status",
+      "emptyTitle": "No requests",
+      "emptyMessage": "No identity change request matches this filter.",
+      "columns": {
+        "user": "User",
+        "fields": "Changes",
+        "requestedAt": "Requested on",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "view": "View request",
+      "approve": "Approve",
+      "reject": "Reject",
+      "approveTitle": "Approve the change",
+      "rejectTitle": "Reject the change",
+      "note": "Note",
+      "approved": "The change was approved and applied.",
+      "rejected": "The change was rejected.",
+      "detailTitle": "Identity change request",
+      "submittedBy": "Submitted by",
+      "currentName": "Current name",
+      "requestedName": "Requested name",
+      "currentNationalId": "Current national ID",
+      "requestedNationalId": "Requested national ID",
+      "viewAudited": "Opening this request is recorded in the audit log.",
+      "loadFailed": "The request could not be loaded."
     }
   }
 }

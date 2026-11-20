@@ -8,7 +8,7 @@ use App\Support\Security\SensitiveUrl;
 
 final class AuditValueRedactor
 {
-    private const string SECRET_KEY = '/(password|secret|token|api_?key|code_hash|two_factor|recovery|signature|bearer|credential|phone_index|identifier_hash)/i';
+    private const string SECRET_KEY = '/(password|secret|token|api_?key|code_hash|two_factor|recovery|signature|bearer|credential|phone_index|identifier_hash|national_id)/i';
 
     /**
      * @param  array<array-key, mixed>|null  $values

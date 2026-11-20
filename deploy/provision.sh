@@ -24,6 +24,10 @@ readonly CLAMAV_SIGNATURE_WAIT_SECONDS=900
 readonly REQUIRED_PHP_MODULES=(pdo_pgsql redis mbstring dom curl zip intl pcntl posix fileinfo tokenizer gd)
 readonly CLAMAV_PACKAGES=(clamav clamav-daemon clamav-freshclam)
 readonly SYSTEM_PACKAGES=(gnupg redis-server)
+readonly WATERMARK_PACKAGES=(
+    qpdf libreoffice-writer-nogui libreoffice-calc-nogui libreoffice-impress-nogui
+    fonts-crosextra-carlito fonts-crosextra-caladea fonts-liberation fonts-noto-core
+)
 readonly FPM_DISABLED_FUNCTIONS="exec,passthru,shell_exec,system,popen,pcntl_exec,proc_nice,phpinfo,symlink,link"
 
 FPM_NEEDS_RELOAD=0
@@ -131,7 +135,7 @@ missing_packages() {
         fi
     done
 
-    for package in "${CLAMAV_PACKAGES[@]}" "${CHROME_PACKAGES[@]}" "${SYSTEM_PACKAGES[@]}"; do
+    for package in "${CLAMAV_PACKAGES[@]}" "${CHROME_PACKAGES[@]}" "${SYSTEM_PACKAGES[@]}" "${WATERMARK_PACKAGES[@]}"; do
         dpkg-query -W -f='${Status}' "${package}" 2>/dev/null | grep -q "install ok installed" || missing+=("${package}")
     done
 

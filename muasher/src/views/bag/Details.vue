@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import Skeleton from '@/components/feedback/Skeleton.vue'
+import PageLoading from '@/components/feedback/PageLoading.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import BagIntro from '@/components/bag/BagIntro.vue'
 import { useBagDetailsContent } from '@/composables/useIntroPageContent'
@@ -57,10 +57,7 @@ function goToPay() {
 
 <template>
   <section class="bag-details">
-    <div v-if="status === 'loading'" class="bag-details__loading">
-      <Skeleton variant="block" />
-      <Skeleton variant="text" :count="5" />
-    </div>
+    <PageLoading v-if="status === 'loading'" />
 
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
 

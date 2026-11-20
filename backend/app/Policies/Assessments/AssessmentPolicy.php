@@ -144,7 +144,7 @@ final readonly class AssessmentPolicy
 
     public function viewEvidenceBundle(User $actor, Assessment $assessment, EvidenceBundle $bundle): Response
     {
-        if ($bundle->assessment_id !== $assessment->id || (! $actor->isSuperAdmin() && ! $bundle->isRequestedBy($actor->id))) {
+        if ($bundle->assessment_id !== $assessment->id || ! $bundle->isRequestedBy($actor->id)) {
             return Response::denyAsNotFound();
         }
 

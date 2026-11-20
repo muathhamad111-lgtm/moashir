@@ -35,6 +35,20 @@ export const NOTIFICATION_TYPE_CATALOG = [
     isMandatory: true,
   },
   {
+    code: 'USR-06',
+    channels: 'I',
+    audiences: ['system_admin'],
+    category: 'action_required',
+    isMandatory: true,
+  },
+  {
+    code: 'USR-07',
+    channels: 'I',
+    audiences: ['account_holder'],
+    category: 'informational',
+    isMandatory: true,
+  },
+  {
     code: 'REG-01',
     channels: 'IE',
     audiences: ['entity', 'system_admin'],

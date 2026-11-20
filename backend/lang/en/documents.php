@@ -16,6 +16,11 @@ return [
         'VOID' => 'VOID',
     ],
 
+    'viewer_stamp' => [
+        'title' => 'Viewer stamp',
+        'footer' => 'Viewed by :viewer · :time (Riyadh time) · Trace :trace',
+    ],
+
     'certificate' => [
         'title' => 'Accredited Assessment Certificate',
         'participation_title' => 'Certificate of Participation',

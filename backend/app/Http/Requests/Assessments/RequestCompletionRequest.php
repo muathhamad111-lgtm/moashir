@@ -25,7 +25,8 @@ final class RequestCompletionRequest extends FormRequest
         return [
             'notes' => ['required', 'string', 'max:2000'],
             'items' => ['required', 'array', 'min:1', 'max:'.self::MAX_ITEMS],
-            'items.*.sub_criterion_id' => ['required', 'integer', 'min:1'],
+            'items.*.sub_criterion_id' => ['required_without:items.*.main_criterion_id', 'prohibits:items.*.main_criterion_id', 'integer', 'min:1'],
+            'items.*.main_criterion_id' => ['required_without:items.*.sub_criterion_id', 'integer', 'min:1'],
             'items.*.kind' => ['required', Rule::enum(CompletionItemKind::class)],
             'items.*.note' => ['nullable', 'string', 'max:500'],
             'deadline_at' => ['required', 'date', 'after:now', 'before_or_equal:'.$latest],

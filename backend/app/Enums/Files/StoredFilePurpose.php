@@ -20,6 +20,7 @@ enum StoredFilePurpose: string
     case TransferProof = 'transfer_proof';
     case UserAvatar = 'user_avatar';
     case VatCertificate = 'vat_certificate';
+    case OfficeRendition = 'office_rendition';
 
     private const array PUBLIC_ASSETS = ['apple_pay_domain_association', 'cms_image', 'kpi_image', 'branding_logo'];
 
@@ -75,6 +76,19 @@ enum StoredFilePurpose: string
     public static function servedImageValues(): array
     {
         return self::SERVED_IMAGES;
+    }
+
+    public function isWatermarked(): bool
+    {
+        return in_array($this, self::watermarked(), true);
+    }
+
+    /**
+     * @return list<self>
+     */
+    public static function watermarked(): array
+    {
+        return [self::AssessmentEvidence, self::TransferProof, self::RefundEvidence, self::VatCertificate];
     }
 
     public function isConfidential(): bool

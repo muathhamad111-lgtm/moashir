@@ -59,7 +59,7 @@ final class SubmissionCoverageReader
 
         foreach ($evidence as $file) {
             if ($file->countsTowardRequirements()) {
-                $provided[$file->assessment_id][$file->sub_code.'|'.$file->attachment_key] = true;
+                $provided[$file->assessment_id][$file->ownerCode().'|'.$file->attachment_key] = true;
             }
         }
 

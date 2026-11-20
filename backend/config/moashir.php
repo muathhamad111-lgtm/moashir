@@ -90,7 +90,7 @@ return [
         'summary_max_chars' => 2000,
         'completion_deadline_max_days' => 60,
         'evidence_bundle_sync_max_bytes' => 20 * 1024 * 1024,
-        'evidence_bundle_ttl_hours' => 24,
+        'evidence_bundle_ttl_hours' => 2,
         'sla_days_limits' => ['min' => 1, 'max' => 120],
         'open_paid_requests_after_minutes' => 10,
     ],
@@ -164,6 +164,21 @@ return [
         'render_queue_wait_seconds' => 30,
         'render_slot_key' => 'documents:pdf-render',
         'download_ttl_minutes' => 5,
+    ],
+
+    'watermark' => [
+        'render_slot_key' => 'documents:stamp-render',
+        'render_slots' => (int) (env('WATERMARK_RENDER_SLOTS') ?: 1),
+        'qpdf_binary' => env('QPDF_BINARY') ?: 'qpdf',
+        'pdfinfo_binary' => env('PDFINFO_BINARY') ?: 'pdfinfo',
+        'pdftocairo_binary' => env('PDFTOCAIRO_BINARY') ?: 'pdftocairo',
+        'soffice_binary' => env('SOFFICE_BINARY') ?: 'soffice',
+        'tool_timeout_seconds' => 120,
+        'conversion_timeout_seconds' => 180,
+        'conversion_slot_wait_seconds' => 5,
+        'max_source_bytes' => (int) (env('WATERMARK_MAX_SOURCE_MB') ?: 50) * 1024 * 1024,
+        'image_max_pixels' => 40_000_000,
+        'jpeg_quality' => 90,
     ],
 
     'certificates' => [

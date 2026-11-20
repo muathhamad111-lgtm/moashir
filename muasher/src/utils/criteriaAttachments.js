@@ -32,6 +32,11 @@ function payloadOf(item) {
   }
 }
 
+// True when the editor rows differ from the record's attachments (an added, removed or edited row).
+export function attachmentsEdited(items, source) {
+  return JSON.stringify(items) !== JSON.stringify(cloneAttachments(source))
+}
+
 export function attachmentsPayload(items) {
   return items.filter((item) => !isBlank(item.name)).map(payloadOf)
 }

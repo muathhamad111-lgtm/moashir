@@ -10,12 +10,14 @@ import AppLayout from '@/components/layout/AppLayout.vue'
 import PublicLayout from '@/components/layout/PublicLayout.vue'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
 import PortalLayout from '@/components/layout/PortalLayout.vue'
+import AppLoadingScreen from '@/components/feedback/AppLoadingScreen.vue'
 import { useLocale } from '@/composables/useLocale'
 import { useTheme } from '@/composables/useTheme'
 import { usePlatformIdentity } from '@/composables/usePlatformIdentity'
 import { useSiteBranding } from '@/composables/useSiteBranding'
 import { useBrandSchemeStyle } from '@/composables/useBrandSchemeStyle'
 import { useTtsShell } from '@/composables/useTtsShell'
+import { useDeferredVisibility } from '@/composables/useDeferredVisibility'
 import { BRAND_THEME_COLOR } from '@/constants/branding'
 import { THEMES } from '@/constants/themes'
 
@@ -33,6 +35,13 @@ const { locale, dir } = useLocale()
 const { theme } = useTheme()
 const { layoutKey, isTtsShell } = useTtsShell()
 
+// Until the first navigation resolves (the session check, the guards, the page chunk) the
+// route is the router's start location: no layout is known yet, so the official waiting page
+// stands in rather than the public chrome. Once the route resolves the layout mounts beneath
+// it (the page starts loading its data) while the screen keeps its minimum time.
+const isBooting = computed(() => route.matched.length === 0)
+const bootMarkVisible = useDeferredVisibility(isBooting)
+const showsBootScreen = computed(() => isBooting.value || bootMarkVisible.value)
 const layout = computed(() => LAYOUTS[layoutKey.value] ?? PublicLayout)
 const documentTheme = computed(() => (isTtsShell.value ? THEMES.light : theme.value))
 const brandSchemeCss = useBrandSchemeStyle()
@@ -96,9 +105,10 @@ useHead({
 </script>
 
 <template>
-  <component :is="layout">
+  <component :is="layout" v-if="!isBooting">
     <router-view />
   </component>
+  <AppLoadingScreen v-if="showsBootScreen" variant="screen" :shows-mark="bootMarkVisible" />
   <AppToast />
   <ConfirmModal />
   <SuccessModal />

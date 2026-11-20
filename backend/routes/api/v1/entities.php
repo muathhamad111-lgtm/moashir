@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\V1\Entities\ReactivateEntityController;
 use App\Http\Controllers\Api\V1\Entities\RegionController;
 use App\Http\Controllers\Api\V1\Entities\RegisterEntityController;
 use App\Http\Controllers\Api\V1\Entities\RegistrationEmailCodeController;
+use App\Http\Controllers\Api\V1\Entities\RegistrationOptionsController;
 use App\Http\Controllers\Api\V1\Entities\RejectEntityController;
 use App\Http\Controllers\Api\V1\Entities\ResendEntityVerificationController;
 use App\Http\Controllers\Api\V1\Entities\ResendRegistrationEmailCodeController;
@@ -41,6 +42,7 @@ $emailChanges = EmailChangeRequest::class;
 
 Route::get('regions', [RegionController::class, 'index'])->middleware('throttle:public')->name('regions.index');
 Route::get('terms/current', CurrentTermsController::class)->middleware('throttle:public')->name('terms.current');
+Route::get('auth/register/options', RegistrationOptionsController::class)->middleware('throttle:public')->name('auth.register.options');
 Route::post('auth/register', RegisterEntityController::class)->middleware('throttle:register')->name('auth.register');
 Route::post('auth/register/email-code', RegistrationEmailCodeController::class)->middleware('throttle:registration-email-code')->name('auth.register.email-code');
 Route::post('auth/register/email-code/verify', VerifyRegistrationEmailCodeController::class)->middleware('throttle:otp-verify')->name('auth.register.email-code.verify');

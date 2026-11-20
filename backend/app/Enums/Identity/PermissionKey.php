@@ -83,6 +83,7 @@ enum PermissionKey: string
     case UsersView = 'users.view';
     case UsersManage = 'users.manage';
     case UsersExport = 'users.export';
+    case UsersIdentityChangesReview = 'users.identity_changes.review';
     case RolesMatrixView = 'roles.matrix.view';
     case RolesMatrixManage = 'roles.matrix.manage';
     case AuditView = 'audit.view';
@@ -123,6 +124,7 @@ enum PermissionKey: string
         'entities.reactivate',
         'entities.verification.resend',
         'entities.email_change.approve',
+        'users.identity_changes.review',
         'entities.delete',
         'bag.plan.approve',
         'bag.subscription.activate_free',

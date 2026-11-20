@@ -8,4 +8,9 @@ enum Locale: string
 {
     case Arabic = 'ar';
     case English = 'en';
+
+    public function direction(): string
+    {
+        return $this === self::English ? 'ltr' : 'rtl';
+    }
 }

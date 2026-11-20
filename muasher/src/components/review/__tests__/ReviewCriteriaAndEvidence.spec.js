@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { setActivePinia } from 'pinia'
 import ReviewEvidenceList from '@/components/review/ReviewEvidenceList.vue'
+import MainEvidenceReview from '@/components/review/MainEvidenceReview.vue'
 import ReviewFeedbackFields from '@/components/review/ReviewFeedbackFields.vue'
 import ReviewNotices from '@/components/review/ReviewNotices.vue'
 import AccreditedNotices from '@/components/accredited/AccreditedNotices.vue'
@@ -37,7 +38,11 @@ const UPDATE = {
 
 describe('ReviewEvidenceList', () => {
   it('groups the files under their required attachments and flags a missing required one', () => {
-    const wrapper = mountWith(ReviewEvidenceList, { files: FILES, downloading: {}, slots: SLOTS })
+    const wrapper = mountWith(ReviewEvidenceList, {
+      files: FILES,
+      downloading: {},
+      groups: [{ key: 'own', point: null, slots: SLOTS }],
+    })
     const groups = wrapper.findAll('.review-evidence__group')
 
     expect(groups).toHaveLength(3)
@@ -51,11 +56,71 @@ describe('ReviewEvidenceList', () => {
     expect(wrapper.text()).not.toContain('Board minutes')
   })
 
+  it('lists indicator attachments under their indicator and marks a required one added after the submission', () => {
+    const point = { id: 7, description: { ar: 'نشر الخطة', en: 'Plan shared with staff' } }
+    const survey = {
+      key: 'survey',
+      name: { ar: 'الاستبيان', en: 'Survey results' },
+      required: true,
+    }
+    const wrapper = mountWith(ReviewEvidenceList, {
+      files: FILES,
+      downloading: {},
+      groups: [
+        { key: 'own', point: null, slots: SLOTS },
+        { key: 'point-7', point, slots: [survey] },
+      ],
+      lateKeys: ['survey'],
+    })
+
+    expect(wrapper.find('.review-evidence__indicator').text()).toBe(
+      'Indicator attachments: Plan shared with staff',
+    )
+    const late = wrapper
+      .findAll('.review-evidence__group')
+      .find((group) => group.text().includes('Survey results'))
+    expect(late.text()).toContain('Required attachment added after submission')
+    expect(wrapper.text().match(/added after submission/g)).toHaveLength(1)
+  })
+
   it('keeps the flat card list when the sub-criterion has no attachment requirements', () => {
     const wrapper = mountWith(ReviewEvidenceList, { files: FILES, downloading: {} })
 
     expect(wrapper.find('.review-evidence__group').exists()).toBe(false)
     expect(wrapper.findAll('.review-evidence__card')).toHaveLength(2)
+  })
+})
+
+describe('MainEvidenceReview', () => {
+  it("shows the main criterion's own files and marks a required attachment added after the submission", () => {
+    const plan = { key: 'plan', name: { ar: 'الخطة', en: 'Strategic plan' }, required: true }
+    const wrapper = mountWith(MainEvidenceReview, {
+      main: { id: 1, attachments: [plan] },
+      evidence: [
+        { id: 1, level: 'main', mainCriterionId: 1, attachmentKey: 'plan', fileName: 'plan.pdf' },
+        { id: 2, level: 'sub', subCriterionId: 1, attachmentKey: 'plan', fileName: 'sub.pdf' },
+      ],
+      downloading: {},
+      lateKeys: ['plan'],
+    })
+
+    expect(wrapper.find('.review-main-evidence__title').text()).toBe('Main criterion evidence')
+    expect(wrapper.findAll('.review-evidence__card')).toHaveLength(1)
+    expect(wrapper.text()).toContain('plan.pdf')
+    expect(wrapper.text()).toContain('Required attachment added after submission')
+  })
+})
+
+describe('MainEvidenceReview without anything to review', () => {
+  it('stays hidden when the main criterion has optional attachments only and no files', () => {
+    const photos = { key: 'photos', name: { ar: 'الصور', en: 'Photos' }, required: false }
+    const wrapper = mountWith(MainEvidenceReview, {
+      main: { id: 1, attachments: [photos] },
+      evidence: [],
+      downloading: {},
+    })
+
+    expect(wrapper.find('.review-main-evidence').exists()).toBe(false)
   })
 })
 

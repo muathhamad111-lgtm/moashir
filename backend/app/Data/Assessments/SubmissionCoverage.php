@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Data\Assessments;
 
+use App\Contracts\Assessments\EvidenceNode;
+
 final readonly class SubmissionCoverage
 {
     /**
@@ -20,11 +22,11 @@ final readonly class SubmissionCoverage
     /**
      * @return list<string>
      */
-    public function missingSlotKeysOf(BoundSub $sub): array
+    public function missingSlotKeysOf(EvidenceNode $node): array
     {
         return array_values(array_filter(
-            $sub->requiredSlotKeys(),
-            fn (string $key): bool => ! isset($this->providedSlots[$sub->code.'|'.$key]),
+            $node->requiredSlotKeys(),
+            fn (string $key): bool => ! isset($this->providedSlots[$node->nodeCode().'|'.$key]),
         ));
     }
 

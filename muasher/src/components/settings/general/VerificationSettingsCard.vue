@@ -3,6 +3,7 @@ import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SignInCodeChannels from '@/components/settings/SignInCodeChannels.vue'
 import TwoFactorPolicyFields from './TwoFactorPolicyFields.vue'
+import NationalIdPolicyFields from './NationalIdPolicyFields.vue'
 import SettingsCardState from './SettingsCardState.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
@@ -51,6 +52,10 @@ onMounted(load)
       <fieldset class="settings-form__group">
         <legend class="settings-form__legend">{{ t('settings.general.twoFactor.title') }}</legend>
         <TwoFactorPolicyFields />
+      </fieldset>
+      <fieldset class="settings-form__group">
+        <legend class="settings-form__legend">{{ t('settings.general.nationalId.title') }}</legend>
+        <NationalIdPolicyFields :file-access-roles="settings.fileAccessRoles" />
       </fieldset>
       <div class="general-settings__actions">
         <BaseButton type="submit" variant="primary" :loading="saving" icon="save">

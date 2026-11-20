@@ -12,6 +12,7 @@ final readonly class AuthSettingsUpdate
     /**
      * @param  list<OtpChannel>|null  $entitySignInCodeChannels
      * @param  list<RoleKey>|null  $twoFactorRoles
+     * @param  list<RoleKey>|null  $nationalIdRoles
      */
     public function __construct(
         public ?array $entitySignInCodeChannels,
@@ -20,6 +21,8 @@ final readonly class AuthSettingsUpdate
         public ?bool $twoFactorEnabled,
         public ?array $twoFactorRoles,
         public ?string $reason,
+        public ?bool $nationalIdEnabled = null,
+        public ?array $nationalIdRoles = null,
     ) {}
 
     public function isEmpty(): bool
@@ -28,7 +31,9 @@ final readonly class AuthSettingsUpdate
             && $this->generalEmailNotifications === null
             && $this->entityRegistrationReview === null
             && $this->twoFactorEnabled === null
-            && $this->twoFactorRoles === null;
+            && $this->twoFactorRoles === null
+            && $this->nationalIdEnabled === null
+            && $this->nationalIdRoles === null;
     }
 
     /**
@@ -45,5 +50,13 @@ final readonly class AuthSettingsUpdate
     public function twoFactorRoleValues(): array
     {
         return array_map(static fn (RoleKey $role): string => $role->value, $this->twoFactorRoles ?? []);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function nationalIdRoleValues(): array
+    {
+        return array_map(static fn (RoleKey $role): string => $role->value, $this->nationalIdRoles ?? []);
     }
 }

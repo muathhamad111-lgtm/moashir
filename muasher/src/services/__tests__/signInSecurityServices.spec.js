@@ -40,6 +40,9 @@ describe('authSettingsService', () => {
       twoFactorEnabled: true,
       twoFactorRoles: ['system_admin'],
       smsStatus: 'test',
+      nationalIdEnabled: false,
+      nationalIdRoles: [],
+      fileAccessRoles: [],
     })
     const payload = {
       entitySignInCodeChannels: ['email', 'sms'],
@@ -62,6 +65,9 @@ describe('authSettingsService', () => {
       twoFactorEnabled: true,
       twoFactorRoles: [],
       smsStatus: 'unavailable',
+      nationalIdEnabled: false,
+      nationalIdRoles: [],
+      fileAccessRoles: [],
     })
   })
 

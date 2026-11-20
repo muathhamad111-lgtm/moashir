@@ -54,6 +54,7 @@ const REVIEW_KEYS = [
   'evidence',
   'feedback',
   'is_overdue',
+  'late_attachment_keys',
   'mode',
   'progress',
   'scale',

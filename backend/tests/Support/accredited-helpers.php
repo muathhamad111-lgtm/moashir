@@ -27,6 +27,15 @@ const SUPER_ADMIN_REASON = 'تصحيح إداري معتمد بخطاب رسمي
 
 function publishedAccreditedCriteria(ScaleKind $scale = ScaleKind::OutOfTen): CriteriaVersion
 {
+    return publishVersion(draftAccreditedCriteria(), $scale);
+}
+
+/**
+ * The accredited test tree as a draft: M1 (M1.1 direct with two attachments, M1.2 on indicators M1.2.1 / M1.2.2),
+ * M2 (M2.1 direct without CV, M2.2 inactive).
+ */
+function draftAccreditedCriteria(): CriteriaVersion
+{
     $version = draftVersion();
     $leadership = mainIn($version, 'M1', '1000.00');
     $policy = directSubIn($leadership, 'M1.1', '600.00');
@@ -50,7 +59,7 @@ function publishedAccreditedCriteria(ScaleKind $scale = ScaleKind::OutOfTen): Cr
         'sort_order' => 2,
     ]);
 
-    return publishVersion($version->refresh(), $scale);
+    return $version->refresh();
 }
 
 function openedAccreditedRequest(?Entity $entity = null): Assessment

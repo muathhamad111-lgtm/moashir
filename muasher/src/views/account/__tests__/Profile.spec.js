@@ -10,6 +10,10 @@ vi.mock('@/services/profileService', () => ({
   profileService: { getMyPermissions: vi.fn() },
 }))
 
+vi.mock('@/services/identityService', () => ({
+  identityService: { myChanges: vi.fn().mockResolvedValue({ data: [] }) },
+}))
+
 const payload = {
   roles: [
     {

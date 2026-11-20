@@ -12,6 +12,7 @@ import CommitteeSeatsList from '@/components/account/CommitteeSeatsList.vue'
 import PermissionModuleCard from '@/components/account/PermissionModuleCard.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import ProfilePhotoCard from '@/components/account/ProfilePhotoCard.vue'
+import NationalIdentityCard from '@/components/account/NationalIdentityCard.vue'
 
 const { t, locale } = useI18n()
 const auth = useAuthStore()
@@ -76,6 +77,8 @@ const committeeSeats = computed(() => auth.committeeAppointments)
         <p v-else class="account-page__muted">{{ t('account.roles.empty') }}</p>
         <CommitteeSeatsList v-if="committeeSeats.length" :appointments="committeeSeats" />
       </Card>
+
+      <NationalIdentityCard class="account-page__national-identity" />
     </div>
 
     <section class="account-page__permissions" aria-labelledby="account-permissions-title">

@@ -8,6 +8,7 @@ use App\Http\Middleware\AssignRequestId;
 use App\Http\Middleware\EnforceSessionTimeouts;
 use App\Http\Middleware\EnsureJsonRequest;
 use App\Http\Middleware\EnsureMfaSatisfied;
+use App\Http\Middleware\EnsureNationalIdProvided;
 use App\Http\Middleware\EnsurePasswordChangeNotRequired;
 use App\Http\Middleware\RejectOversizedPayload;
 use App\Http\Middleware\SetLocale;
@@ -40,9 +41,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'session.timeouts' => EnforceSessionTimeouts::class,
             'mfa' => EnsureMfaSatisfied::class,
-            'password.current' => EnsurePasswordChangeNotRequired::class,
+            'password.changed' => EnsurePasswordChangeNotRequired::class,
             'payload.limit' => RejectOversizedPayload::class,
         ]);
+        $middleware->group('password.current', [EnsurePasswordChangeNotRequired::class, EnsureNationalIdProvided::class]);
         $middleware->redirectGuestsTo(fn (): ?string => null);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -55,5 +57,5 @@ return Application::configure(basePath: dirname(__DIR__))
                 ? app(ApiExceptionRenderer::class)->render($exception)
                 : null,
         );
-        $exceptions->dontFlash(['password', 'password_confirmation', 'current_password', 'code', 'recovery_code', 'token']);
+        $exceptions->dontFlash(['password', 'password_confirmation', 'current_password', 'code', 'recovery_code', 'token', 'national_id']);
     })->create();

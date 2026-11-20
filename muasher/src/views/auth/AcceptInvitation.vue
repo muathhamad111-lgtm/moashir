@@ -10,6 +10,7 @@ import ErrorState from '@/components/feedback/ErrorState.vue'
 import PasswordPolicyHints from '@/components/auth/PasswordPolicyHints.vue'
 import InvitationTokenState from '@/components/auth/InvitationTokenState.vue'
 import LegalConsentNote from '@/components/legal/LegalConsentNote.vue'
+import NationalIdField from '@/components/identity/NationalIdField.vue'
 import { useInvitationAcceptance } from '@/composables/useInvitationAcceptance'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 
@@ -18,7 +19,9 @@ const props = defineProps({
 })
 
 const { t } = useI18n()
-const { form, status, terms, termsRequired, load } = useInvitationAcceptance(toRef(props, 'token'))
+const { form, status, terms, termsRequired, nationalIdRequired, load } = useInvitationAcceptance(
+  toRef(props, 'token'),
+)
 
 const isTokenState = computed(() => ['invalid', 'expired'].includes(status.value))
 
@@ -59,6 +62,9 @@ useHead({ title: () => t('auth.invitation.title') })
           required
         />
         <PasswordPolicyHints id="invitation-password-policy" />
+      </fieldset>
+      <fieldset v-if="nationalIdRequired" class="auth-form__group">
+        <NationalIdField />
       </fieldset>
       <fieldset v-if="termsRequired" class="auth-form__group">
         <legend class="auth-form__legend">{{ t('auth.invitation.termsTitle') }}</legend>

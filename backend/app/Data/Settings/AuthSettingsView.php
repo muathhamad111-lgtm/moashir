@@ -13,6 +13,8 @@ final readonly class AuthSettingsView
     /**
      * @param  list<OtpChannel>  $entitySignInCodeChannels
      * @param  list<RoleKey>  $twoFactorRoles
+     * @param  list<RoleKey>  $nationalIdRoles
+     * @param  list<RoleKey>  $fileAccessRoles
      */
     public function __construct(
         public array $entitySignInCodeChannels,
@@ -21,5 +23,8 @@ final readonly class AuthSettingsView
         public bool $twoFactorEnabled,
         public array $twoFactorRoles,
         public SmsGatewayStatus $smsStatus,
+        public bool $nationalIdEnabled,
+        public array $nationalIdRoles,
+        public array $fileAccessRoles,
     ) {}
 }

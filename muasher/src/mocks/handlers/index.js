@@ -5,6 +5,7 @@ import { contentHandlers } from './content'
 import { aiHandlers } from './ai'
 import { usersHandlers } from './users'
 import { authHandlers } from './auth'
+import { identityHandlers } from './identity'
 import { entitiesHandlers } from './entities'
 import { entityProfileChangesHandlers } from './entityProfileChanges'
 import { entityLifecycleHandlers } from './entityLifecycle'
@@ -60,6 +61,7 @@ import { auditLogsHandlers } from './auditLogs'
 
 export const handlers = [
   ...sanctumHandlers,
+  ...identityHandlers,
   ...kpisHandlers,
   ...notificationsHandlers,
   ...criteriaHandlers,

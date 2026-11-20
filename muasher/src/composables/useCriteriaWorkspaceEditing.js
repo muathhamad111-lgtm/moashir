@@ -20,7 +20,7 @@ export function useCriteriaWorkspaceEditing(workspace) {
   async function removeSelected() {
     const item = workspace.selected.value
     if (await selectedActions().remove(item.node, localized(nodeLabel(item)))) {
-      workspace.select(item.parentKey)
+      workspace.select(null)
     }
   }
 

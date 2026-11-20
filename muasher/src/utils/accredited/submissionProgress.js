@@ -1,4 +1,4 @@
-import { evidenceOfSub } from './evidenceRules'
+import { evidenceOfMain, evidenceOfSub } from './evidenceRules'
 import { ENTITY_EDITABLE_STATUSES } from '@/constants/accredited'
 
 export const STATION_STATES = Object.freeze({
@@ -33,30 +33,53 @@ function isMainSubComplete(form, main, sub, gaps) {
   return isStarted(form, sub) || (form.passedStations ?? []).includes(main.id)
 }
 
+function mainGapIds(missing) {
+  return new Set((missing?.missingMainAttachments ?? []).map((item) => item.mainCriterionId))
+}
+
+// A main criterion's own required attachments count as one more unit of its station.
+function mainUnitOf(form, main, mainGaps) {
+  const counted = (main.attachments ?? []).some((slot) => slot.required)
+  return {
+    total: counted ? 1 : 0,
+    complete: counted && !mainGaps.has(main.id) ? 1 : 0,
+    started: evidenceOfMain(form.evidence ?? [], main.id).length > 0,
+  }
+}
+
 export function stationStateOf(complete, total, started) {
   if (total > 0 && complete === total) return STATION_STATES.COMPLETE
   return complete > 0 || started ? STATION_STATES.PARTIAL : STATION_STATES.EMPTY
 }
 
+// total / complete count the subs (the station badge); units add the main criterion's own
+// required attachments, so a station is complete and the form ready only with them.
 export function stationsOf(form) {
   const gaps = gapSubIds(form?.missing)
+  const mainGaps = mainGapIds(form?.missing)
   return (form?.criteria?.mains ?? []).map((main) => {
     const complete = main.subs.filter((sub) => isMainSubComplete(form, main, sub, gaps)).length
-    const started = main.subs.some((sub) => isStarted(form, sub))
+    const mainUnit = mainUnitOf(form, main, mainGaps)
+    const started = mainUnit.started || main.subs.some((sub) => isStarted(form, sub))
+    const units = {
+      total: main.subs.length + mainUnit.total,
+      complete: complete + mainUnit.complete,
+    }
     return {
       id: main.id,
       name: main.name,
       total: main.subs.length,
       complete,
-      state: stationStateOf(complete, main.subs.length, started),
+      units,
+      state: stationStateOf(units.complete, units.total, started),
     }
   })
 }
 
 export function submissionProgressOf(form) {
   const stations = stationsOf(form)
-  const total = stations.reduce((sum, station) => sum + station.total, 0)
-  const complete = stations.reduce((sum, station) => sum + station.complete, 0)
+  const total = stations.reduce((sum, station) => sum + station.units.total, 0)
+  const complete = stations.reduce((sum, station) => sum + station.units.complete, 0)
   return { total, complete, remaining: total - complete }
 }
 

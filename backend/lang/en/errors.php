@@ -68,6 +68,16 @@ return [
     'password' => [
         'change_required' => 'You must set a new password before continuing.',
     ],
+    'identity_change' => [
+        'already_pending' => 'You already have a change request under review. Wait for its decision or cancel it first.',
+        'nothing_to_change' => 'The requested values match the current ones. Change at least one value.',
+        'own_request' => 'You cannot decide a request that you submitted or that concerns your own account.',
+    ],
+    'identity' => [
+        'national_id_required' => 'Add your national ID or Iqama number before continuing.',
+        'national_id_locked' => 'Your national ID is already recorded. To change it, submit a change request for review.',
+        'national_id_unavailable' => 'This number cannot be used. Contact the platform support team.',
+    ],
     'token' => [
         'invalid' => 'This link is invalid or has expired.',
     ],
@@ -256,6 +266,10 @@ return [
         'not_ready' => 'This export is not ready yet.',
     ],
     'file' => [
+        'watermark_failed' => 'This file could not be prepared for viewing. Contact the platform support team.',
+        'conversion_failed' => 'This file could not be converted to PDF for viewing. Contact the platform support team.',
+        'preparing' => 'This file is being prepared for viewing. Try again in a minute.',
+        'too_large_to_stamp' => 'This file is too large to be prepared for viewing. Contact the platform support team.',
         'content_mismatch' => 'The file type is not allowed or its content does not match its extension.',
         'infected' => 'The file was rejected by the malware scan.',
         'scan_failed' => 'The file could not be scanned for malware. Please try again later.',
@@ -300,8 +314,10 @@ return [
         'deadline_after_committee_start' => 'The completion deadline cannot be later than the committee assessment start of the cycle (:date).',
     ],
     'attachment' => [
-        'key_invalid' => 'This attachment type is not defined for the sub-criterion.',
+        'key_invalid' => 'This attachment type is not defined for this criterion.',
         'sub_full' => 'This sub-criterion already has the maximum of :max evidence files.',
+        'main_full' => 'This main criterion already has the maximum of :max evidence files.',
+        'slot_full' => 'This attachment already has the maximum of :max files.',
     ],
     'submission' => [
         'incomplete' => 'Complete the required CV entries and attachments before submitting the request.',

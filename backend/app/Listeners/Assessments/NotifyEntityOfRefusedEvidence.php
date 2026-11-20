@@ -40,15 +40,15 @@ final readonly class NotifyEntityOfRefusedEvidence
             $code->value.'.'.($this->acceptsReplacement($evidence->assessment) ? 'replace' : 'locked'),
             $evidence->assessment,
             AssessmentLinks::entityFormOf($evidence->assessment),
-            ['name' => $this->subNameOf($evidence)],
+            ['name' => $this->criterionNameOf($evidence)],
         )->inAppOnly());
     }
 
-    private function subNameOf(EvidenceFile $evidence): LocalizedText|string
+    private function criterionNameOf(EvidenceFile $evidence): LocalizedText|string
     {
         $version = $evidence->assessment->criteriaVersion;
 
-        return ($version instanceof CriteriaVersion ? $this->subs->of($version)->withCode($evidence->sub_code)?->name : null) ?? $evidence->sub_code;
+        return ($version instanceof CriteriaVersion ? $this->subs->of($version)->nameOf($evidence->ownerCode()) : null) ?? $evidence->ownerCode();
     }
 
     private function concernsEntity(Assessment $assessment): bool

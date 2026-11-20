@@ -163,12 +163,20 @@ export const assessmentMessages = {
     en: 'The completion deadline of this request has passed. The request now follows the outcome set by the assessor.',
   },
   'attachment.key_invalid': {
-    ar: 'نوع المرفق هذا غير معرّف لهذا المعيار الفرعي.',
-    en: 'This attachment type is not defined for the sub-criterion.',
+    ar: 'نوع المرفق هذا غير معرّف لهذا المعيار.',
+    en: 'This attachment type is not defined for this criterion.',
   },
   'attachment.sub_full': {
     ar: 'بلغ هذا المعيار الفرعي الحد الأقصى من ملفات الشواهد وهو :max.',
     en: 'This sub-criterion already has the maximum of :max evidence files.',
+  },
+  'attachment.main_full': {
+    ar: 'بلغ هذا المعيار الرئيسي الحد الأقصى من ملفات الشواهد وهو :max.',
+    en: 'This main criterion already has the maximum of :max evidence files.',
+  },
+  'attachment.slot_full': {
+    ar: 'بلغ هذا المرفق الحد الأقصى من الملفات وهو :max.',
+    en: 'This attachment already has the maximum of :max files.',
   },
   'submission.incomplete': {
     ar: 'أكمل السير والمرفقات المطلوبة قبل إرسال الطلب.',

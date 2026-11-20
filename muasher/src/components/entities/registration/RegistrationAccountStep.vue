@@ -5,6 +5,11 @@ import FieldInput from '@/components/form/FieldInput.vue'
 import PasswordPolicyHints from '@/components/auth/PasswordPolicyHints.vue'
 import TermsConsentFields from '@/components/entities/form/TermsConsentFields.vue'
 import RegistrationEmailField from '@/components/entities/registration/RegistrationEmailField.vue'
+import NationalIdField from '@/components/identity/NationalIdField.vue'
+
+defineProps({
+  nationalIdRequired: { type: Boolean, default: false },
+})
 
 const { t } = useI18n()
 const values = useFormValues()
@@ -19,6 +24,7 @@ const values = useFormValues()
         autocomplete="name"
         required
       />
+      <NationalIdField v-if="nationalIdRequired" />
       <FieldInput
         name="phone"
         type="tel"

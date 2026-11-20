@@ -25,8 +25,20 @@ final class AuthSettingsResource extends JsonResource
             'general_email_notifications' => $this->resource->generalEmailNotifications,
             'entity_registration_review' => $this->resource->entityRegistrationReview,
             'two_factor_enabled' => $this->resource->twoFactorEnabled,
-            'two_factor_roles' => array_map(static fn (RoleKey $role): string => $role->value, $this->resource->twoFactorRoles),
+            'two_factor_roles' => $this->roleValues($this->resource->twoFactorRoles),
             'sms_status' => $this->resource->smsStatus->value,
+            'national_id_enabled' => $this->resource->nationalIdEnabled,
+            'national_id_roles' => $this->roleValues($this->resource->nationalIdRoles),
+            'file_access_roles' => $this->roleValues($this->resource->fileAccessRoles),
         ];
+    }
+
+    /**
+     * @param  list<RoleKey>  $roles
+     * @return list<string>
+     */
+    private function roleValues(array $roles): array
+    {
+        return array_map(static fn (RoleKey $role): string => $role->value, $roles);
     }
 }

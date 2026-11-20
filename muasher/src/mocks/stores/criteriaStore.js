@@ -50,7 +50,10 @@ function seedAttachments(ownerType, ownerId, items) {
       ownerId,
       key: `${ownerType}_${ownerId}_${index + 1}`,
       name: { ...item.name },
+      guidance: item.guidance ? { ...item.guidance } : null,
       required: item.required,
+      allowedTypes: item.allowedTypes ? [...item.allowedTypes] : null,
+      maxFiles: item.maxFiles ?? null,
       order: index + 1,
     })
   })
@@ -90,6 +93,7 @@ function seedTree() {
       order: mainIndex + 1,
     }
     state.mains.push(main)
+    seedAttachments('main', main.id, seedMain.attachments ?? [])
     seedMain.subs.forEach((seedSub, subIndex) => {
       const sub = {
         id: main.id * SUB_IDS_PER_MAIN + subIndex + 1,

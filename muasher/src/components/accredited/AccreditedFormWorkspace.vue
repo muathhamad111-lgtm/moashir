@@ -38,6 +38,7 @@ const {
   refreshing,
   selectMain,
   revealSub,
+  revealMain,
   onRemove,
   refresh,
 } = useAccreditedWorkspace({
@@ -94,6 +95,7 @@ async function goTo(mainId) {
         :missing="form.missing"
         :criteria="form.criteria"
         @reveal="revealSub"
+        @reveal-main="revealMain"
       />
       <AccreditedStations
         compact
@@ -110,9 +112,9 @@ async function goTo(mainId) {
           :step="activeIndex + 1"
           :total="mains.length"
           :workspace="workspace"
-          @upload="uploads.upload($event.sub.id, $event.key, $event.file)"
+          @upload="uploads.upload($event.owner, $event.attachment, $event.file)"
           @remove="onRemove"
-          @replace="uploads.replace($event.file, $event.replacement)"
+          @replace="uploads.replace($event.file, $event.attachment, $event.replacement)"
           @download="uploads.download"
         />
         <AccreditedFormActions

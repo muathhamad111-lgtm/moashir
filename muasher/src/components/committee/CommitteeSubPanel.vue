@@ -10,7 +10,7 @@ import { EVALUATION_TYPES } from '@/constants/criteria'
 import { SCORE_LEVELS } from '@/constants/assessment'
 import { COMMITTEE_LIMITS } from '@/constants/committee'
 import { savedScoreOf, scoreFieldName } from '@/utils/assessments/scoreSheet'
-import { evidenceOfSub } from '@/utils/accredited/evidenceRules'
+import { evidenceOfSub, slotGroupsOf } from '@/utils/accredited/evidenceRules'
 import { localizedText } from '@/utils/localizedText'
 
 const props = defineProps({
@@ -73,6 +73,7 @@ function text(content) {
     </div>
     <ReviewEvidenceList
       :files="files"
+      :groups="slotGroupsOf(sub)"
       :downloading="workspace.downloads.busy"
       @download="emit('download', $event)"
     />

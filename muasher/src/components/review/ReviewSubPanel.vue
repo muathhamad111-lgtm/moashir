@@ -8,7 +8,7 @@ import ReviewFeedbackFields from './ReviewFeedbackFields.vue'
 import { EVALUATION_TYPES } from '@/constants/criteria'
 import { SCORE_LEVELS } from '@/constants/assessment'
 import { savedScoreOf, scoreFieldName } from '@/utils/assessments/scoreSheet'
-import { evidenceOfSub, slotsOf } from '@/utils/accredited/evidenceRules'
+import { evidenceOfSub, slotGroupsOf } from '@/utils/accredited/evidenceRules'
 import { localizedText } from '@/utils/localizedText'
 
 const props = defineProps({
@@ -56,7 +56,8 @@ function unit(level, node) {
     </div>
     <ReviewEvidenceList
       :files="files"
-      :slots="slotsOf(sub)"
+      :groups="slotGroupsOf(sub)"
+      :late-keys="review.lateAttachmentKeys"
       :downloading="workspace.downloads.busy"
       @download="emit('download', $event)"
     />

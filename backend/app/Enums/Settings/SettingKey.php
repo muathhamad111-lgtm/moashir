@@ -70,6 +70,8 @@ enum SettingKey: string
     case EntityRegistrationReview = 'auth.entity_registration_review';
     case TwoFactorEnabled = 'auth.two_factor_enabled';
     case TwoFactorRoles = 'auth.two_factor_roles';
+    case NationalIdEnabled = 'auth.national_id_enabled';
+    case NationalIdRoles = 'auth.national_id_roles';
     case InsightsGapThresholds = 'insights.gap_thresholds';
     case InsightsMaturityBands = 'insights.maturity_bands';
     case VatRegistrationNumber = 'finance.vat_registration_number';
@@ -103,7 +105,7 @@ enum SettingKey: string
             self::PeriodicPaidDraftReminderDays => SettingType::Integer,
             self::VatRate, self::AdvancedDisqualificationScore => SettingType::Decimal,
             self::GeneralEmailNotifications, self::EntityRegistrationReview,
-            self::TwoFactorEnabled => SettingType::Boolean,
+            self::TwoFactorEnabled, self::NationalIdEnabled => SettingType::Boolean,
             default => SettingType::Json,
         };
     }
@@ -139,6 +141,8 @@ enum SettingKey: string
             self::EntitySignInCodeChannels => [OtpChannel::Email->value],
             self::GeneralEmailNotifications, self::EntityRegistrationReview, self::TwoFactorEnabled => true,
             self::TwoFactorRoles => RoleKey::staffValues(),
+            self::NationalIdEnabled => false,
+            self::NationalIdRoles => [],
             self::ContactRetentionMonths => 24,
             self::InsightsGapThresholds => GapThresholds::DEFAULTS,
             self::InsightsMaturityBands => MaturityBounds::DEFAULTS,

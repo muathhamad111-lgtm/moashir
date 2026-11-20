@@ -2,6 +2,7 @@
 import { useI18n } from 'vue-i18n'
 import Badge from '@/components/ui/Badge.vue'
 import AccreditedSubPanel from './AccreditedSubPanel.vue'
+import AccreditedMainEvidence from './AccreditedMainEvidence.vue'
 import CriterionStepCounter from '@/components/assessment/CriterionStepCounter.vue'
 import { formatNumber } from '@/utils/formatNumber'
 import { localizedText } from '@/utils/localizedText'
@@ -39,6 +40,15 @@ const { t, n, locale } = useI18n()
         }}
       </Badge>
     </header>
+    <AccreditedMainEvidence
+      v-if="main.attachments?.length"
+      :main="main"
+      :workspace="workspace"
+      @upload="emit('upload', $event)"
+      @remove="emit('remove', $event)"
+      @replace="emit('replace', $event)"
+      @download="emit('download', $event)"
+    />
     <ul class="station-panel__subs">
       <AccreditedSubPanel
         v-for="sub in main.subs"

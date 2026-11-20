@@ -144,8 +144,13 @@ export const authService = {
     )
   },
 
-  acceptInvitation(token, { password, passwordConfirmation, termsVersionId }) {
-    const body = { password, passwordConfirmation, termsVersionId }
+  acceptInvitation(token, { password, passwordConfirmation, termsVersionId, nationalId }) {
+    const body = {
+      password,
+      passwordConfirmation,
+      termsVersionId,
+      ...(nationalId ? { nationalId } : {}),
+    }
     return postOutcome(
       'auth.acceptInvitation',
       `/auth/invitations/${encodeURIComponent(token)}/accept`,

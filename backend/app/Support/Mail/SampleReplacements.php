@@ -44,6 +44,7 @@ final class SampleReplacements
         'cycle' => ['دورة جائزة التميز 2026', 'Excellence Award 2026 cycle'],
         'assessor' => ['خالد المطيري', 'Khalid Al-Mutairi'],
         'replaced' => ['نورة القحطاني', 'Noura Al-Qahtani'],
+        'user' => ['سارة العتيبي', 'Sara Al-Otaibi'],
         'region' => ['منطقة الرياض', 'Riyadh Region'],
         'name' => ['الحوكمة والقيادة', 'Governance and leadership'],
         'fields' => ['رقم الترخيص، تاريخ التأسيس', 'Licence number, Founding date'],

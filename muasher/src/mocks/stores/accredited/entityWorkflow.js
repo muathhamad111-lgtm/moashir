@@ -6,7 +6,14 @@ import { isDeleted } from '../entitiesStore'
 import { assessmentSettings } from './assessmentSettingsStore'
 import { STATES, acceptsEntityContent } from './accreditedStates'
 import { addDays } from './dates'
-import { gapsOf, nowIso, openCompletionOf, subOfId, touch } from './accreditedRecords'
+import {
+  gapsOf,
+  isRequestedCode,
+  nowIso,
+  openCompletionOf,
+  subOfId,
+  touch,
+} from './accreditedRecords'
 import { isPlainObject, optionalReason, reasonError, throwIfErrors } from './accreditedValidation'
 import { isAdvanced } from '../assessments/reviewedPaths'
 import { ADVANCED_STATES } from '../award/advancedStates'
@@ -44,10 +51,8 @@ function deadlinePassed(record) {
   return Boolean(completion) && new Date(completion.deadlineAt).getTime() <= Date.now()
 }
 
-export function isRequestedItem(record, sub, kind) {
-  if (record.status !== STATES.NEEDS_COMPLETION) return true
-  const completion = openCompletionOf(record)
-  return Boolean(completion?.items.some((item) => item.subCode === sub.code && item.kind === kind))
+export function isRequestedItem(record, node, kind) {
+  return isRequestedCode(record, node.code, kind)
 }
 
 function validateCvBody(body) {
@@ -112,6 +117,12 @@ function submissionFields(gaps) {
     ...Object.fromEntries(
       gaps.missingAttachments.map((item) => [
         `attachments.${item.subCriterionId}.${item.attachmentKey}`,
+        [fieldMessage('submission.attachment_missing', { code: item.code })],
+      ]),
+    ),
+    ...Object.fromEntries(
+      gaps.missingMainAttachments.map((item) => [
+        `mainAttachments.${item.mainCriterionId}.${item.attachmentKey}`,
         [fieldMessage('submission.attachment_missing', { code: item.code })],
       ]),
     ),
@@ -193,7 +204,7 @@ export function submitReviewedRequest(user, record, body) {
   if (record.criteriaUpdatePendingSince !== null) throw assessmentReject.criteriaUpdateInProgress()
   if (isAdvanced(record)) assertAdvancedConditions(record)
   const gaps = gapsOf(record)
-  if (gaps.missingCv.length || gaps.missingAttachments.length)
+  if (gaps.missingCv.length || gaps.missingAttachments.length || gaps.missingMainAttachments.length)
     throw assessmentReject.submissionIncomplete(gaps, submissionFields(gaps))
   const at = nowIso()
   if (isAdvanced(record)) advancedSubmission(user, record, at)

@@ -8,6 +8,7 @@ import {
   authSettingsResource,
   setEntityRegistrationReview,
   setGeneralEmailNotifications,
+  setNationalIdPolicy,
   setTwoFactorPolicy,
   setSignInCodeChannels,
 } from '../stores/authSettingsStore'
@@ -20,6 +21,8 @@ const GENERAL_EMAIL_FIELD = 'generalEmailNotifications'
 const REGISTRATION_REVIEW_FIELD = 'entityRegistrationReview'
 const TWO_FACTOR_FIELD = 'twoFactorEnabled'
 const TWO_FACTOR_ROLES_FIELD = 'twoFactorRoles'
+const NATIONAL_ID_FIELD = 'nationalIdEnabled'
+const NATIONAL_ID_ROLES_FIELD = 'nationalIdRoles'
 const ROLE_VALUES = [
   'system_admin',
   'criteria_officer',
@@ -87,20 +90,19 @@ function booleanOf(body, field) {
   return body[field]
 }
 
-function twoFactorOf(body) {
+function rolePolicyOf(body, enabledField, rolesField) {
   const policy = {}
-  if (TWO_FACTOR_FIELD in body) {
-    if (typeof body[TWO_FACTOR_FIELD] !== 'boolean')
-      throw fieldError(TWO_FACTOR_FIELD, 'field.invalid')
-    policy.enabled = body[TWO_FACTOR_FIELD]
+  if (enabledField in body) {
+    if (typeof body[enabledField] !== 'boolean') throw fieldError(enabledField, 'field.invalid')
+    policy.enabled = body[enabledField]
   }
-  if (TWO_FACTOR_ROLES_FIELD in body) {
-    const roles = body[TWO_FACTOR_ROLES_FIELD]
-    if (!Array.isArray(roles)) throw fieldError(TWO_FACTOR_ROLES_FIELD, 'field.invalid')
+  if (rolesField in body) {
+    const roles = body[rolesField]
+    if (!Array.isArray(roles)) throw fieldError(rolesField, 'field.invalid')
     const invalid = roles.findIndex(
       (role, index) => !ROLE_VALUES.includes(role) || roles.indexOf(role) !== index,
     )
-    if (invalid !== -1) throw fieldError(`${TWO_FACTOR_ROLES_FIELD}.${invalid}`, 'field.invalid')
+    if (invalid !== -1) throw fieldError(`${rolesField}.${invalid}`, 'field.invalid')
     policy.roles = roles
   }
   return policy
@@ -123,13 +125,15 @@ export const authSettingsHandlers = [
       const channels = channelsOf(body)
       const generalEmail = booleanOf(body, GENERAL_EMAIL_FIELD)
       const registrationReview = booleanOf(body, REGISTRATION_REVIEW_FIELD)
-      const twoFactor = twoFactorOf(body)
+      const twoFactor = rolePolicyOf(body, TWO_FACTOR_FIELD, TWO_FACTOR_ROLES_FIELD)
+      const nationalId = rolePolicyOf(body, NATIONAL_ID_FIELD, NATIONAL_ID_ROLES_FIELD)
       const reason = reasonOf(body)
       if (sessionIsSuperAdmin() && !reason) throw authReject.reasonRequired()
       if (channels !== undefined) setSignInCodeChannels(channels)
       if (generalEmail !== undefined) setGeneralEmailNotifications(generalEmail)
       if (registrationReview !== undefined) setEntityRegistrationReview(registrationReview)
       setTwoFactorPolicy(twoFactor)
+      setNationalIdPolicy(nationalId)
       return envelope(authSettingsResource())
     }, LATENCY.WRITE),
   ),

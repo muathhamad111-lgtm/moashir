@@ -63,7 +63,10 @@ describe('password recovery mock', () => {
 
   it('answers the invitation check like the API: usable, expired or invalid', async () => {
     const check = (token) => call('GET', `/auth/invitations/${token}`)
-    expect((await check('invite-sarah-whitfield-2026')).body.data).toEqual({ usable: true })
+    expect((await check('invite-sarah-whitfield-2026')).body.data).toEqual({
+      usable: true,
+      national_id_required: false,
+    })
     expect((await check('invite-expired-2026')).status).toBe(410)
     const used = await check('invite-used-2026')
     expect(used.status).toBe(404)

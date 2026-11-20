@@ -69,31 +69,3 @@ export function ancestorsOf(index, key) {
 export function nodeLabel(item) {
   return item.type === NODE.POINT ? item.node.description : item.node.name
 }
-
-function matchesTerm(item, term, localized) {
-  const label = nodeLabel(item)
-  return [localized(label), label?.ar, label?.en, item.node.code]
-    .filter(Boolean)
-    .some((text) => text.toLowerCase().includes(term))
-}
-
-function matchesFilter(item, { term, attentionOnly }, localized) {
-  if (attentionOnly && !item.attention) return false
-  return !term || matchesTerm(item, term, localized)
-}
-
-export function visibleKeys(index, filter, localized) {
-  const term = (filter.term ?? '').trim().toLowerCase()
-  if (!term && !filter.attentionOnly) return null
-  const visible = new Set()
-  for (const item of index.values()) {
-    if (!matchesFilter(item, { term, attentionOnly: filter.attentionOnly }, localized)) continue
-    visible.add(item.key)
-    ancestorsOf(index, item.key).forEach((key) => visible.add(key))
-  }
-  return visible
-}
-
-export function attentionCount(index) {
-  return [...index.values()].filter((item) => item.attention).length
-}

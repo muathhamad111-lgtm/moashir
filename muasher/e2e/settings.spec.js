@@ -41,12 +41,13 @@ test('the old sign-in security address opens the general screen with the verific
   await page.goto('/admin/settings/sign-in')
   await expect(page).toHaveURL(/\/admin\/settings\/general$/)
   await retrySection(page, '.sign-in-channels')
-  await expect(page.locator('.toggle-switch')).toHaveCount(2)
+  await expect(page.locator('.toggle-switch')).toHaveCount(3)
   await expect(page.locator('input[name="entityRegistrationReview"]')).toBeChecked()
   await expect(page.locator('input[name="codeChannelEmail"]')).toBeChecked()
   await expect(page.locator('input[name="codeChannelEmail"]')).toBeEnabled()
   await expect(page.locator('input[name="codeChannelSms"]')).not.toBeChecked()
   await expect(page.locator('input[name="twoFactorEnabled"]')).toBeChecked()
+  await expect(page.locator('input[name="nationalIdEnabled"]')).not.toBeChecked()
 })
 
 test('payment screen shows stored secrets as metadata only and empty write-only inputs', async ({

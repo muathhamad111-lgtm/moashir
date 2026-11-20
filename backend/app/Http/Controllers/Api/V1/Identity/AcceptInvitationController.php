@@ -13,6 +13,6 @@ final class AcceptInvitationController
 {
     public function __invoke(string $token, AcceptInvitationRequest $request, AcceptInvitation $acceptInvitation, LoginOutcomeResponder $responder): JsonResponse
     {
-        return $responder->respond($acceptInvitation->handle($token, $request->password(), $request->acceptedTerms()));
+        return $responder->respond($acceptInvitation->handle($token, $request->acceptance()));
     }
 }

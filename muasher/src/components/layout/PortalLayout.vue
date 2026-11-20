@@ -15,6 +15,8 @@ import ProfileCompletionBanner from '@/components/portal/ProfileCompletionBanner
 import MobileTabBar from '@/components/portal/MobileTabBar.vue'
 import PortalFooter from '@/components/portal/PortalFooter.vue'
 import LevelAchievedDialog from '@/components/level/LevelAchievedDialog.vue'
+import AppLoadingScreen from '@/components/feedback/AppLoadingScreen.vue'
+import { usePageLoading } from '@/composables/usePageLoading'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -24,6 +26,7 @@ const branding = useBrandingStore()
 const { certificate, tier } = useEntityLevel()
 const achieved = useLevelAchieved(certificate)
 const { collapsed, toggle } = useSideNavCollapsed()
+const isLoadingPage = usePageLoading()
 
 const isTask = computed(() => isTaskScreen(route.name))
 const isMobileTask = computed(() => isMobileTaskScreen(route.name))
@@ -57,8 +60,9 @@ watch(
       <PortalSideNav class="portal-layout__nav" :collapsed="collapsed" />
       <div class="portal-layout__column">
         <ProfileCompletionBanner v-if="!isTask" class="portal-layout__strip" />
-        <main id="portal-main" class="portal-layout__main" tabindex="-1">
+        <main id="portal-main" class="portal-layout__main" tabindex="-1" :aria-busy="isLoadingPage">
           <slot />
+          <AppLoadingScreen v-if="isLoadingPage" variant="overlay" />
         </main>
         <PortalFooter />
       </div>

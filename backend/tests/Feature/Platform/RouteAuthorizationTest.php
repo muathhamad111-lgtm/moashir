@@ -23,6 +23,7 @@ const PUBLIC_API_ROUTES = [
     'regions.index',
     'terms.current',
     'auth.register',
+    'auth.register.options',
     'auth.register.email-code',
     'auth.register.email-code.verify',
     'auth.register.email-code.resend',

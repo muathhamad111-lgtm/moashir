@@ -7,9 +7,9 @@ use App\Enums\Identity\PermissionModule;
 use App\Enums\Identity\RoleKey;
 use App\Services\Identity\DefaultPermissionMatrix;
 
-it('defines 89 unique permission keys in the module.resource.action format', function (): void {
-    expect(PermissionKey::values())->toHaveCount(89)
-        ->and(array_unique(PermissionKey::values()))->toHaveCount(89);
+it('defines 90 unique permission keys in the module.resource.action format', function (): void {
+    expect(PermissionKey::values())->toHaveCount(90)
+        ->and(array_unique(PermissionKey::values()))->toHaveCount(90);
 
     foreach (PermissionKey::cases() as $key) {
         expect($key->value)->toMatch('/^[a-z_]+(\.[a-z_]+){1,3}$/');
@@ -29,11 +29,11 @@ it('places the keys in their catalog modules', function (PermissionKey $key, Per
     [PermissionKey::PaymentsOwnCreate, PermissionModule::Finance],
 ]);
 
-it('marks exactly the twelve independent grantable keys', function (): void {
+it('marks exactly the thirteen independent grantable keys', function (): void {
     $grantable = array_values(array_filter(PermissionKey::cases(), static fn (PermissionKey $key): bool => $key->isGrantable()));
 
-    expect($grantable)->toHaveCount(12)
-        ->and($grantable)->toContain(PermissionKey::BagPlanApprove, PermissionKey::EntitiesDelete, PermissionKey::DashboardExecutiveView, PermissionKey::ContactMessagesManage, PermissionKey::FinanceTransfersReview, PermissionKey::SettingsPricesManage);
+    expect($grantable)->toHaveCount(13)
+        ->and($grantable)->toContain(PermissionKey::BagPlanApprove, PermissionKey::EntitiesDelete, PermissionKey::DashboardExecutiveView, PermissionKey::ContactMessagesManage, PermissionKey::FinanceTransfersReview, PermissionKey::SettingsPricesManage, PermissionKey::UsersIdentityChangesReview);
 });
 
 it('seeds the bank-transfer review to the finance officer as a confidential, grantable, unlocked key', function (): void {

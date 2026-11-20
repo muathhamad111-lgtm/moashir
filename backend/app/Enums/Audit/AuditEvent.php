@@ -22,6 +22,13 @@ enum AuditEvent: string
     case UserRequestPathsChanged = 'user.request_paths_changed';
     case UserAvatarUploaded = 'user.avatar_uploaded';
     case UserAvatarRemoved = 'user.avatar_removed';
+    case UserNationalIdRecorded = 'user.national_id_recorded';
+    case IdentityChangeRequested = 'user.identity_change_requested';
+    case IdentityChangeApproved = 'user.identity_change_approved';
+    case IdentityChangeRejected = 'user.identity_change_rejected';
+    case IdentityChangeCancelled = 'user.identity_change_cancelled';
+    case IdentityChangeViewed = 'user.identity_change_viewed';
+    case FileAccessed = 'file.accessed';
     case RolePermissionsChanged = 'role.permissions_changed';
     case PermissionLabelUpdated = 'permission.label_updated';
     case RoleAssignmentRejected = 'security.role_assignment_rejected';
@@ -178,6 +185,7 @@ enum AuditEvent: string
     case SmsTemplatesLoaded = 'integration.sms_templates_loaded';
     case SmsTestSent = 'integration.sms_test_sent';
     case EmailTestSent = 'integration.email_test_sent';
+    case MailSamplesSent = 'integration.mail_samples_sent';
     case AiTestAnswered = 'integration.ai_test_answered';
     case PaymentCreated = 'payment.created';
     case PaymentCheckoutOpened = 'payment.checkout_opened';

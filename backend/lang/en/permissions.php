@@ -70,6 +70,7 @@ return [
     'ai.provider.manage' => ['label' => 'Manage the AI provider', 'description' => 'Set the AI provider, model and key.'],
     'users.view' => ['label' => 'View users', 'description' => 'List and read user accounts.'],
     'users.manage' => ['label' => 'Manage users', 'description' => 'Invite, edit, activate and suspend users and set their roles.'],
+    'users.identity_changes.review' => ['label' => 'Review identity change requests', 'description' => 'Approve or reject requests to change a user\'s name or national ID; every decision is audited and kept in the user\'s identity history.'],
     'users.export' => ['label' => 'Export users', 'description' => 'Download the user list as a CSV file; every export is audited.'],
     'roles.matrix.view' => ['label' => 'View roles and permissions', 'description' => 'Read the permission catalog and the role matrix.'],
     'roles.matrix.manage' => ['label' => 'Manage roles and permissions', 'description' => 'Edit the role matrix and permission labels.'],

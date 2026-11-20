@@ -850,6 +850,19 @@ export const permissionCatalogFixture = [
     grantable: false,
   },
   {
+    key: 'users.identity_changes.review',
+    module: 'admin',
+    label: { ar: 'مراجعة طلبات تعديل بيانات الهوية', en: 'Review identity change requests' },
+    description: {
+      ar: 'اعتماد أو رفض طلبات تعديل اسم المستخدم أو رقم هويته، ويُسجَّل كل قرار في سجل التدقيق وفي سجل هوية المستخدم.',
+      en: "Approve or reject requests to change a user's name or national ID; every decision is audited and kept in the user's identity history.",
+    },
+    system: true,
+    lockedToRoles: [],
+    confidential: true,
+    grantable: true,
+  },
+  {
     key: 'roles.matrix.view',
     module: 'admin',
     label: { ar: 'عرض الأدوار والصلاحيات', en: 'View roles and permissions' },
@@ -1183,6 +1196,7 @@ export const defaultRoleMatrixFixture = {
     'users.view',
     'users.export',
     'users.manage',
+    'users.identity_changes.review',
     'roles.matrix.view',
     'roles.matrix.manage',
     'audit.view',

@@ -2,6 +2,7 @@
 import { useI18n } from 'vue-i18n'
 import Card from '@/components/ui/Card.vue'
 import CommitteeSubPanel from './CommitteeSubPanel.vue'
+import MainEvidenceReview from '@/components/review/MainEvidenceReview.vue'
 import CriterionStepCounter from '@/components/assessment/CriterionStepCounter.vue'
 import { localizedText } from '@/utils/localizedText'
 import { formatDisplayWeight } from '@/utils/weight'
@@ -30,6 +31,13 @@ const { t, locale } = useI18n()
         t('assessment.self.tree.mainMeta', { weight: formatDisplayWeight(main.weight, locale) })
       }}</span>
     </template>
+    <MainEvidenceReview
+      v-if="main.attachments?.length"
+      :main="main"
+      :evidence="workspace.state.evaluation.value.evidence"
+      :downloading="workspace.downloads.busy"
+      @download="emit('download', $event)"
+    />
     <ul class="review-main__subs">
       <CommitteeSubPanel
         v-for="sub in main.subs"

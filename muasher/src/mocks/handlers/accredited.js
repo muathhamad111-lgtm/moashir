@@ -18,7 +18,7 @@ import {
   authorizeViewBundle,
   authorizeViewEvidence,
 } from '../stores/accredited/accreditedAccess'
-import { accreditedOf, boundSubsOf } from '../stores/accredited/accreditedRecords'
+import { accreditedOf, boundMainsOf, boundSubsOf } from '../stores/accredited/accreditedRecords'
 import { isAccreditedOpen } from '../stores/accredited/accreditedStates'
 import {
   bundleResource,
@@ -180,7 +180,13 @@ export const accreditedHandlers = [
       const record = boundRecord(params)
       authorizeManageOwn(user, record, ACCREDITED_PERMISSIONS.EVIDENCE_MANAGE)
       const row = await uploadEvidence(user, record, await request.formData())
-      return envelope(evidenceItem(row, boundSubsOf(record)), {}, { status: 201 })
+      return envelope(
+        evidenceItem(row, boundSubsOf(record), boundMainsOf(record)),
+        {},
+        {
+          status: 201,
+        },
+      )
     }),
   ),
 

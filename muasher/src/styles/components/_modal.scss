@@ -179,6 +179,7 @@
 }
 
 .modal--drawer {
+  z-index: var(--z-drawer);
   padding: 0;
 
   &.is-open {
@@ -193,5 +194,10 @@
     border-block: 0;
     border-inline-end: 0;
     border-radius: 0;
+  }
+
+  // A drawer that holds a full editor (the criteria sheet) asks for the large width.
+  &.modal--lg .modal__panel {
+    inline-size: min(100vw, var(--size-modal-lg));
   }
 }

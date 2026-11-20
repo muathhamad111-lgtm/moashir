@@ -62,6 +62,18 @@ export const assessmentReject = {
       meta: { maxFilesPerSub: max },
       params: { max },
     }),
+  mainFull: (max) =>
+    new MockRejection(422, 'attachment.main_full', {
+      fields: { mainCriterionId: single('attachment.main_full', { max }) },
+      meta: { maxFilesPerSub: max },
+      params: { max },
+    }),
+  slotFull: (max) =>
+    new MockRejection(422, 'attachment.slot_full', {
+      fields: { attachmentKey: single('attachment.slot_full', { max }) },
+      meta: { maxFiles: max },
+      params: { max },
+    }),
   notAssignee: () => new MockRejection(403, 'assessment.not_assignee'),
   notQualified: (qualification, path) =>
     new MockRejection(422, 'assessor.not_qualified', {

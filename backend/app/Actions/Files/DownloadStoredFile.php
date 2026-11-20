@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Files;
 
 use App\Data\Audit\AuditEntry;
+use App\Data\Files\DownloadClaim;
 use App\Data\Files\FileDownload;
 use App\Enums\Audit\AuditEvent;
 use App\Exceptions\Files\FileRejected;
@@ -12,14 +13,19 @@ use App\Models\Files\StoredFile;
 use App\Models\Identity\User;
 use App\Services\Audit\AuditRecorder;
 use App\Services\Files\StoredFileDisk;
+use App\Services\Watermark\WatermarkedFileDelivery;
 
 final readonly class DownloadStoredFile
 {
-    public function __construct(private StoredFileDisk $disk, private AuditRecorder $audit) {}
+    public function __construct(
+        private StoredFileDisk $disk,
+        private AuditRecorder $audit,
+        private WatermarkedFileDelivery $watermarked,
+    ) {}
 
-    public function handle(User $actor, StoredFile $file, int $boundUserId): FileDownload
+    public function handle(User $actor, StoredFile $file, DownloadClaim $claim): FileDownload
     {
-        if ($boundUserId !== $actor->id) {
+        if ($claim->boundUserId !== $actor->id) {
             throw FileRejected::signatureInvalid();
         }
 
@@ -27,6 +33,15 @@ final readonly class DownloadStoredFile
             throw FileRejected::notClean();
         }
 
+        if ($file->purpose->isWatermarked()) {
+            return $this->watermarked->deliver($actor, $file, $claim->intent);
+        }
+
+        return $this->original($file);
+    }
+
+    private function original(StoredFile $file): FileDownload
+    {
         $stream = $this->disk->readStream($file);
 
         if ($file->purpose->isConfidential()) {

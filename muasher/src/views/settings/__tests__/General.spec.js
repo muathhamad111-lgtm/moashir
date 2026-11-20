@@ -89,6 +89,7 @@ describe('General settings', () => {
       'آلية التحقق',
       'تسجيل الجهات الجديدة',
       'التحقق الثنائي',
+      'رقم الهوية على الملفات',
       'الإدارة المالية',
     ])
     expect(box('codeChannelEmail').element.checked).toBe(true)

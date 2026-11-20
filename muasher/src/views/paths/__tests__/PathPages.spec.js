@@ -224,7 +224,7 @@ describe('Task-80 path states', () => {
     expect(wrapper.find('[data-testid="path-price"]').text()).toContain('مجاني')
     const action = wrapper.find('[data-testid="path-primary-action"]')
     expect(action.element.tagName).toBe('BUTTON')
-    const push = vi.spyOn(wrapper.vm.$router, 'push')
+    const push = vi.spyOn(wrapper.vm.$router, 'push').mockResolvedValue()
     await action.trigger('click')
     await flushPromises()
     expect(accreditedService.startFree).toHaveBeenCalledTimes(1)
@@ -245,7 +245,7 @@ describe('Task-80 path states', () => {
       normalized: { status: 409, code: 'path.payment_required', meta: {} },
     })
     const wrapper = await mountAt(AccreditedPath, '/paths/accredited')
-    const push = vi.spyOn(wrapper.vm.$router, 'push')
+    const push = vi.spyOn(wrapper.vm.$router, 'push').mockResolvedValue()
     await wrapper.find('[data-testid="path-primary-action"]').trigger('click')
     await flushPromises()
     expect(push).toHaveBeenCalledWith({ name: 'assessment.accredited.pay' })

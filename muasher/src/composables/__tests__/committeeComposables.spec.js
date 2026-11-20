@@ -43,12 +43,16 @@ describe('user account actions', () => {
       'sendPasswordReset',
       'resetMfa',
       'revokeSessions',
+      'nameCorrection',
+      'identityHistory',
       'activity',
     ])
     expect(keys({ id: 3, status: 'suspended', mfaEnabled: false })).toEqual([
       'edit',
       'activate',
       'revokeSessions',
+      'nameCorrection',
+      'identityHistory',
       'activity',
     ])
     expect(keys({ id: 4, status: 'locked', mfaEnabled: true })).toEqual([
@@ -56,15 +60,22 @@ describe('user account actions', () => {
       'unlock',
       'resetMfa',
       'revokeSessions',
+      'nameCorrection',
+      'identityHistory',
       'activity',
     ])
     expect(keys({ id: 5, status: 'expired', mfaEnabled: false })).toEqual([
       'edit',
       'resendInvitation',
       'cancelInvitation',
+      'identityHistory',
       'activity',
     ])
-    expect(keys({ id: 1, status: 'active', mfaEnabled: true })).toEqual(['edit', 'activity'])
+    expect(keys({ id: 1, status: 'active', mfaEnabled: true })).toEqual([
+      'edit',
+      'identityHistory',
+      'activity',
+    ])
   })
 
   it('offers the path access editors to assessors and followers other than the own account', () => {
@@ -78,9 +89,15 @@ describe('user account actions', () => {
       'suspend',
       'sendPasswordReset',
       'revokeSessions',
+      'nameCorrection',
+      'identityHistory',
       'activity',
     ])
-    expect(keys({ id: 1, status: 'active', roles: ['system_admin'] })).toEqual(['edit', 'activity'])
+    expect(keys({ id: 1, status: 'active', roles: ['system_admin'] })).toEqual([
+      'edit',
+      'identityHistory',
+      'activity',
+    ])
   })
 
   it('confirms, then e-mails a password reset link and reloads the list', async () => {

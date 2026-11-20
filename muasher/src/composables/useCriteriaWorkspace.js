@@ -38,9 +38,11 @@ export function useCriteriaWorkspace() {
     problems: treeState.problems,
     selected: selection.selected,
     selectedPath: selection.selectedPath,
+    board: selection.board,
     load: versions.load,
     reload,
     select: selection.select,
+    showMain: selection.showMain,
     showVersion: selection.showVersion,
   }
 }

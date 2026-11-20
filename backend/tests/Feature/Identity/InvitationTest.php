@@ -172,7 +172,7 @@ it('tells the invitation page that a fresh link is usable without returning pers
 
     $this->getJson("/api/v1/auth/invitations/{$token}")
         ->assertOk()
-        ->assertExactJson(['data' => ['usable' => true]]);
+        ->assertExactJson(['data' => ['usable' => true, 'national_id_required' => false]]);
 });
 
 it('answers a used, revoked or unknown link with the same invalid response', function (string $case): void {
@@ -260,4 +260,34 @@ it('rejects a second acceptance that was racing the first one', function (): voi
 
     $this->postJson("/api/v1/auth/invitations/{$token}/accept", $payload)->assertNotFound()->assertJsonPath('code', 'invitation.invalid');
     expect(User::query()->where('email', 'new.assessor@moashir.example.sa')->firstOrFail()->invitations()->where('status', InvitationStatus::Accepted)->count())->toBe(1);
+});
+
+it('asks an invitee for the national ID only when their role is required, and stores it', function (): void {
+    requireNationalIdFor(RoleKey::Assessor);
+    $token = inviteStaff(systemAdmin());
+
+    $this->getJson("/api/v1/auth/invitations/{$token}")->assertOk()->assertJsonPath('data.national_id_required', true);
+    $this->postJson("/api/v1/auth/invitations/{$token}/accept", ['password' => INVITEE_PASSWORD, 'password_confirmation' => INVITEE_PASSWORD])
+        ->assertUnprocessable()
+        ->assertJsonPath('code', 'identity.national_id_required');
+
+    $this->postJson("/api/v1/auth/invitations/{$token}/accept", [
+        'password' => INVITEE_PASSWORD,
+        'password_confirmation' => INVITEE_PASSWORD,
+        'national_id' => fictionalNationalId(808),
+    ])->assertOk();
+
+    expect(User::query()->where('email', 'new.assessor@moashir.example.sa')->sole()->national_id)->toBe(fictionalNationalId(808));
+});
+
+it('ignores a national ID sent by an invitee whose role is not required', function (): void {
+    $token = inviteStaff(systemAdmin());
+
+    $this->postJson("/api/v1/auth/invitations/{$token}/accept", [
+        'password' => INVITEE_PASSWORD,
+        'password_confirmation' => INVITEE_PASSWORD,
+        'national_id' => fictionalNationalId(909),
+    ])->assertOk();
+
+    expect(User::query()->where('email', 'new.assessor@moashir.example.sa')->sole()->national_id)->toBeNull();
 });

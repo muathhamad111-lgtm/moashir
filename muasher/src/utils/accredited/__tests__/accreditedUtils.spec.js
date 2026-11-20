@@ -7,6 +7,9 @@ import {
   hasAllowedExtension,
   hasPendingScan,
   isRequested,
+  slotGroupsOf,
+  slotMaxFilesOf,
+  slotTypesOf,
   slotsOf,
 } from '../evidenceRules'
 import { completionPayload, completionSchema, deadlineBounds, itemOptions } from '../completionForm'
@@ -54,16 +57,69 @@ describe('evidence rules', () => {
       { subCriterionId: 101, attachmentKey: 'sub_101_1', scanStatus: 'infected' },
       { subCriterionId: 101, attachmentKey: null, scanStatus: 'pending' },
     ]
-    expect(evidenceOfSlot(evidence, 101, 'sub_101_1').some(countsTowardSlot)).toBe(false)
+    const sub = (id) => ({ level: 'sub', id })
+    expect(evidenceOfSlot(evidence, sub(101), 'sub_101_1').some(countsTowardSlot)).toBe(false)
     expect(hasPendingScan(evidence)).toBe(true)
-    const request = { items: [{ subCriterionId: 202, kind: 'cv' }] }
-    expect(isRequested(request, 202, 'cv')).toBe(true)
-    expect(isRequested(request, 202, 'evidence')).toBe(false)
-    expect(isRequested(null, 202, 'cv')).toBe(false)
+    const request = {
+      items: [
+        { subCriterionId: 202, kind: 'cv' },
+        { mainCriterionId: 2, subCriterionId: null, kind: 'evidence' },
+      ],
+    }
+    expect(isRequested(request, sub(202), 'cv')).toBe(true)
+    expect(isRequested(request, sub(202), 'evidence')).toBe(false)
+    expect(isRequested(request, { level: 'main', id: 2 }, 'evidence')).toBe(true)
+    expect(isRequested(request, sub(2), 'evidence')).toBe(false)
+    expect(isRequested(null, sub(202), 'cv')).toBe(false)
+  })
+
+  it('keeps a main criterion file apart from a sub-criterion with the same id', () => {
+    const evidence = [
+      { level: 'main', mainCriterionId: 1, subCriterionId: null, attachmentKey: 'plan' },
+      { level: 'sub', mainCriterionId: null, subCriterionId: 1, attachmentKey: 'plan' },
+    ]
+    expect(evidenceOfSlot(evidence, { level: 'main', id: 1 }, 'plan')).toEqual([evidence[0]])
+    expect(evidenceOfSlot(evidence, { level: 'sub', id: 1 }, 'plan')).toEqual([evidence[1]])
+  })
+
+  it('takes the slot types and file count within the path settings, as the server does', () => {
+    const limits = { allowedTypes: ['pdf', 'docx'], maxFilesPerSub: 10 }
+    expect(slotTypesOf({ allowedTypes: ['pdf', 'png'] }, limits)).toEqual(['pdf'])
+    expect(slotTypesOf({ allowedTypes: ['png'] }, limits)).toEqual(['pdf', 'docx'])
+    expect(slotTypesOf(null, limits)).toEqual(['pdf', 'docx'])
+    expect(slotMaxFilesOf({ maxFiles: 3 }, limits)).toBe(3)
+    expect(slotMaxFilesOf({ maxFiles: 30 }, limits)).toBe(10)
+    expect(slotMaxFilesOf({ maxFiles: null }, limits)).toBe(10)
+  })
+
+  it('groups a sub-criterion slots: its own first, then each indicator with attachments', () => {
+    const groups = slotGroupsOf({
+      attachments: [{ key: 'own' }],
+      points: [
+        { id: 1, attachments: [] },
+        { id: 2, attachments: [{ key: 'survey' }] },
+      ],
+    })
+    expect(groups.map((group) => [group.key, group.slots.map((slot) => slot.key)])).toEqual([
+      ['own', ['own']],
+      ['point-2', ['survey']],
+    ])
   })
 })
 
 describe('completion request form', () => {
+  it('offers a main criterion its own attachments only and sends it as a main criterion item', () => {
+    const options = itemOptions({
+      mains: [{ id: 3, attachments: [{ key: 'plan' }], subs: [{ id: 702, hasCv: false }] }],
+    })
+    expect(options.map((option) => option.key)).toEqual(['main-3:evidence', '702:evidence'])
+    const payload = completionPayload(
+      { notes: 'x', items: ['main-3:evidence'], deadline: '2026-11-20', expiryOutcome: 'decline' },
+      {},
+    )
+    expect(payload.items).toEqual([{ mainCriterionId: 3, kind: 'evidence' }])
+  })
+
   it('offers CV items only for CV sub-criteria and builds the payload with the end of the Riyadh day', () => {
     const options = itemOptions({
       mains: [{ subs: [SUB, { id: 702, code: 'M7.2', hasCv: false, points: [] }] }],

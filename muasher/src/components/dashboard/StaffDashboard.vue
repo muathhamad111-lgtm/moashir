@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import Skeleton from '@/components/feedback/Skeleton.vue'
+import PageLoading from '@/components/feedback/PageLoading.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import DashboardBoardNav from './DashboardBoardNav.vue'
 import DashboardCards from './DashboardCards.vue'
@@ -41,13 +41,7 @@ onMounted(load)
     <slot />
     <DashboardBoardNav v-if="showsBoardNav" :boards="shownBoards" :current="board" />
 
-    <div
-      v-if="status === 'loading' && !coveredBoards.length"
-      class="staff-dashboard__loading"
-      aria-busy="true"
-    >
-      <Skeleton variant="block" :count="2" />
-    </div>
+    <PageLoading v-if="status === 'loading' && !coveredBoards.length" />
     <ErrorState
       v-else-if="status === 'error'"
       :message="errorMessage || t('dashboard.loadError')"

@@ -4,9 +4,12 @@ import { useI18n } from 'vue-i18n'
 import TopNavbar from './TopNavbar.vue'
 import Sidebar from './Sidebar.vue'
 import { useBrandingStore } from '@/stores/branding'
+import AppLoadingScreen from '@/components/feedback/AppLoadingScreen.vue'
+import { usePageLoading } from '@/composables/usePageLoading'
 
 const { t } = useI18n()
 const branding = useBrandingStore()
+const isLoadingPage = usePageLoading()
 
 onMounted(() => branding.ensureLoaded())
 </script>
@@ -17,8 +20,9 @@ onMounted(() => branding.ensureLoaded())
     <TopNavbar />
     <div class="app-layout__body">
       <Sidebar />
-      <main id="app-main" class="app-layout__content" tabindex="-1">
+      <main id="app-main" class="app-layout__content" tabindex="-1" :aria-busy="isLoadingPage">
         <slot />
+        <AppLoadingScreen v-if="isLoadingPage" variant="overlay" />
       </main>
     </div>
   </div>

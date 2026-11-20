@@ -3,7 +3,7 @@ import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
 import Card from '@/components/ui/Card.vue'
-import Skeleton from '@/components/feedback/Skeleton.vue'
+import PageLoading from '@/components/feedback/PageLoading.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
 import PaymentStatusBadge from '@/components/payments/PaymentStatusBadge.vue'
@@ -52,10 +52,7 @@ onMounted(load)
       {{ t('finance.detail.back') }}
     </RouterLink>
 
-    <div v-if="status === 'loading'" class="payment-detail__loading" aria-busy="true">
-      <Skeleton variant="block" />
-      <Skeleton variant="text" :count="5" />
-    </div>
+    <PageLoading v-if="status === 'loading'" />
     <ErrorState v-else-if="status === 'error'" :message="errorMessage" @retry="load" />
     <EmptyState
       v-else-if="status === 'not-found'"

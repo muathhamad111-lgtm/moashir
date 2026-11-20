@@ -26,23 +26,31 @@ const kindLabel = (kind) => t(`accredited.completion.kinds.${kind}`)
 const optionOf = (row, kind) => row.options.find((option) => option.kind === kind) ?? null
 const isSelected = (option) => props.selected.includes(option.key)
 
-// Rows per main criterion, narrowed by the search; a search shows every matching group open.
+// Rows per main criterion, narrowed by the search; a search shows every matching group open. The
+// main criterion's own attachments come first, as one evidence-only row.
 const rows = computed(() => {
   const term = search.value.trim()
   return props.groups
     .map((group) => ({
       main: group.main,
       options: group.options,
+      mainOption: matchesTerm(group.main, term)
+        ? (group.options.find((option) => !option.sub) ?? null)
+        : null,
       subs: group.main.subs
         .map((sub) => ({
           sub,
-          options: group.options.filter((option) => option.sub.id === sub.id),
+          options: group.options.filter((option) => option.sub?.id === sub.id),
         }))
         .filter((row) => row.options.length)
         .filter((row) => !term || matchesQuery(name(row.sub.name), term)),
     }))
-    .filter((group) => group.subs.length)
+    .filter((group) => group.subs.length || group.mainOption)
 })
+
+function matchesTerm(main, term) {
+  return !term || matchesQuery(name(main.name), term)
+}
 
 const isOpen = (group) => Boolean(search.value) || expanded.value.has(group.main.id)
 
@@ -113,6 +121,22 @@ function columnChecked(group, kind) {
             </td>
           </tr>
           <template v-if="isOpen(group)">
+            <tr v-if="group.mainOption" class="completion-picker__row">
+              <th scope="row">{{ t('review.completion.mainRow') }}</th>
+              <td class="completion-dialog__option">
+                <span class="completion-picker__none" aria-hidden="true">—</span>
+              </td>
+              <td class="completion-dialog__option">
+                <input
+                  type="checkbox"
+                  class="completion-picker__check"
+                  :name="`item-${group.mainOption.key}`"
+                  :checked="isSelected(group.mainOption)"
+                  :aria-label="t('review.completion.mainItem', { main: name(group.main.name) })"
+                  @change="emit('toggle', group.mainOption.key, $event.target.checked)"
+                />
+              </td>
+            </tr>
             <tr v-for="row in group.subs" :key="row.sub.id" class="completion-picker__row">
               <th scope="row">{{ name(row.sub.name) }}</th>
               <td v-for="kind in KINDS" :key="kind" class="completion-dialog__option">

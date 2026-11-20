@@ -79,6 +79,9 @@ function onKeydown(event, index) {
         @keydown="onKeydown($event, index)"
       >
         {{ tab.label }}
+        <span v-if="tab.badge" class="tabs__badge" :aria-label="tab.badgeLabel || undefined">{{
+          tab.badge
+        }}</span>
       </button>
     </div>
     <div

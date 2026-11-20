@@ -12,10 +12,12 @@ import { useFormShell } from '@/composables/useFormShell'
 import { useCriteria } from '@/composables/useCriteria'
 import { renameFieldErrors } from '@/services/mappers/fieldErrors'
 import { pairedText, requiredText, weightText } from '@/utils/criteriaSchemas'
-import { cloneAttachments, attachmentsPayload } from '@/utils/criteriaAttachments'
+import { attachmentsPayload, cloneAttachments } from '@/utils/criteriaAttachments'
 import { compareWeights, normalizeWeight } from '@/utils/weight'
 import { CRITERIA_DESCRIPTION_MAX_LENGTH, EVALUATION_TYPES } from '@/constants/criteria'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import { useFormSections } from '@/composables/useFormSections'
+import { SUB_FIELD_SECTIONS } from '@/utils/criteriaFormSections'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -24,9 +26,12 @@ const props = defineProps({
   criterion: { type: Object, default: null },
   main: { type: Object, required: true },
   save: { type: Function, required: true },
+  // In the editor sheet: the tab to show (basics | attachments | advanced). Empty = every field.
+  // The sheet edits the weight in the parent's split only, so this form neither shows nor sends it.
+  section: { type: String, default: '' },
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'section-errors', 'dirty'])
 const { t } = useI18n()
 const { locale, weight: formatted } = useCriteria()
 
@@ -41,6 +46,7 @@ const FIELD_ALIASES = {
 
 const isEdit = computed(() => Boolean(props.criterion))
 const parentDistributes = computed(() => Boolean(props.main.distributeEqually))
+const weightElsewhere = computed(() => parentDistributes.value || Boolean(props.section))
 const attachments = ref([])
 
 const available = computed(() => {
@@ -54,7 +60,7 @@ const evaluationOptions = computed(() => [
 ])
 
 function weightRule() {
-  if (parentDistributes.value) return yupString()
+  if (weightElsewhere.value) return yupString()
   const capped = weightText(t, { max: available.value, locale: locale.value })
   const free = weightText(t)
   if (isEdit.value) return props.criterion.active ? capped : free
@@ -107,7 +113,7 @@ function payloadOf(values) {
     hasCv: values.hasCv,
     attachments: attachmentsPayload(attachments.value),
   }
-  if (!parentDistributes.value) payload.weight = normalizeWeight(values.weight)
+  if (!weightElsewhere.value) payload.weight = normalizeWeight(values.weight)
   if (isEdit.value) return payload
   return {
     ...payload,
@@ -160,6 +166,17 @@ const [hasCv] = form.defineField('hasCv')
 const [active] = form.defineField('active')
 
 const isGuidingPoints = computed(() => evaluationType.value === EVALUATION_TYPES.GUIDING_POINTS)
+
+const sections = useFormSections(
+  {
+    section: () => props.section,
+    fieldSections: SUB_FIELD_SECTIONS,
+    attachments,
+    record: () => props.criterion,
+  },
+  form,
+  emit,
+)
 </script>
 
 <template>
@@ -169,7 +186,7 @@ const isGuidingPoints = computed(() => evaluationType.value === EVALUATION_TYPES
     :busy="form.submitting.value"
     :title="
       inline
-        ? t('criteria.workspace.details.dataTitle')
+        ? sections.title.value
         : isEdit
           ? t('criteria.sub.editTitle')
           : t('criteria.sub.createTitle')
@@ -179,7 +196,7 @@ const isGuidingPoints = computed(() => evaluationType.value === EVALUATION_TYPES
     @submit="form.onSubmit"
   >
     <div class="criteria-form">
-      <div class="criteria-form__grid">
+      <div v-show="sections.shows('basics')" class="criteria-form__grid">
         <BaseInput
           v-model="nameAr"
           dir="rtl"
@@ -198,7 +215,7 @@ const isGuidingPoints = computed(() => evaluationType.value === EVALUATION_TYPES
         />
       </div>
       <BaseInput
-        v-if="!parentDistributes"
+        v-if="!weightElsewhere"
         v-model="weight"
         name="subWeight"
         :label="t('criteria.fields.weight')"
@@ -206,7 +223,7 @@ const isGuidingPoints = computed(() => evaluationType.value === EVALUATION_TYPES
         :error="form.errors.value.weight"
         required
       />
-      <p v-else class="criteria-form__note" role="note">
+      <p v-else-if="!sections.inSheet.value" class="criteria-form__note" role="note">
         <AppIcon name="scale" />
         <span>{{ t('criteria.fields.equalWeightNote') }}</span>
       </p>
@@ -228,12 +245,13 @@ const isGuidingPoints = computed(() => evaluationType.value === EVALUATION_TYPES
           }}</span>
         </p>
       </template>
-      <p v-else class="criteria-form__note" role="note">
+      <p v-else-if="!sections.inSheet.value" class="criteria-form__note" role="note">
         <AppIcon name="info-circle" />
         <span>{{ t('criteria.evaluationType.editNote') }}</span>
       </p>
 
       <BaseTextarea
+        v-show="sections.shows('basics')"
         v-model="descriptionAr"
         dir="rtl"
         name="subDescriptionAr"
@@ -242,6 +260,7 @@ const isGuidingPoints = computed(() => evaluationType.value === EVALUATION_TYPES
         :error="form.errors.value.descriptionAr"
       />
       <BaseTextarea
+        v-show="sections.shows('basics')"
         v-model="descriptionEn"
         dir="ltr"
         name="subDescriptionEn"
@@ -249,7 +268,7 @@ const isGuidingPoints = computed(() => evaluationType.value === EVALUATION_TYPES
         :label="t('criteria.fields.descriptionEn')"
         :error="form.errors.value.descriptionEn"
       />
-      <div class="criteria-form__grid">
+      <div v-show="sections.shows('advanced')" class="criteria-form__grid">
         <BaseInput
           v-model="noteAr"
           dir="rtl"
@@ -267,11 +286,15 @@ const isGuidingPoints = computed(() => evaluationType.value === EVALUATION_TYPES
         />
       </div>
 
-      <AttachmentsEditor v-model="attachments" :errors="form.serverErrors.value" />
+      <AttachmentsEditor
+        v-show="sections.shows('attachments')"
+        v-model="attachments"
+        :errors="form.serverErrors.value"
+      />
 
-      <div class="criteria-form__toggles">
+      <div v-show="sections.shows('advanced')" class="criteria-form__toggles">
         <BaseCheckbox
-          v-if="isGuidingPoints"
+          v-if="isGuidingPoints && !sections.inSheet.value"
           v-model="distributeEqually"
           name="subDistributeEqually"
           :label="t('criteria.fields.distributeEquallyPoints')"

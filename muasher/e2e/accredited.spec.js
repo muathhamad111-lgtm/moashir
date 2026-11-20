@@ -163,6 +163,40 @@ test('the entity completes the form: CV, evidence with scan states, refused file
   expect(errors).toEqual([])
 })
 
+test('the entity uploads a main criterion attachment within its own type and file limit', async ({
+  page,
+}, testInfo) => {
+  const errors = trackConsole(page)
+  await signIn(page, testInfo, ENTITIES.namaa)
+  await page.goto('/assessment/accredited/form/9101')
+  await openMain(page, 0)
+  const block = page.locator('.accredited-main-evidence')
+  await expect(block.locator('.accredited-main-evidence__title')).toHaveText(
+    isEn(testInfo) ? 'Main criterion evidence' : 'شواهد المعيار الرئيسي',
+  )
+  const slot = block.locator('.evidence-slots__slot')
+  await expect(slot).toHaveCount(1)
+  await expect(slot.locator('.evidence-slots__guidance')).toContainText(
+    isEn(testInfo) ? 'approved by the board' : 'مجلس الإدارة',
+  )
+  await expect(slot.locator('.evidence-slots__rule')).toContainText('pdf')
+  await expect(slot.locator('.evidence-upload__input')).toHaveAttribute('accept', '.pdf')
+
+  await slot.locator('.evidence-upload__input').setInputFiles(pdf('strategic-plan-2026.pdf'))
+  await expect(slot.locator('.scan-status')).toContainText(isEn(testInfo) ? 'Clean' : 'سليم', {
+    timeout: 15000,
+  })
+  await slot.locator('.evidence-upload__input').last().setInputFiles(pdf('plan-annex.pdf'))
+  await expect(slot.locator('.evidence-file')).toHaveCount(2)
+  await expect(slot.locator('.evidence-slots__full')).toBeVisible()
+  await expect(slot.locator('.evidence-upload button').last()).toBeDisabled()
+  await page.screenshot({
+    path: `test-results/accredited-main-evidence-${suffixOf(testInfo)}.png`,
+    fullPage: true,
+  })
+  expect(errors).toEqual([])
+})
+
 test('a completion request limits edits to the listed items and shows the deadline and the expiry outcome', async ({
   page,
 }, testInfo) => {

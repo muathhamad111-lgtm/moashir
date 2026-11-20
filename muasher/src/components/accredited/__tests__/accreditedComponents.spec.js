@@ -10,6 +10,7 @@ import AccreditedCurrentCard from '../AccreditedCurrentCard.vue'
 import AccreditedFeedbackList from '../AccreditedFeedbackList.vue'
 import AccreditedCompleteness from '../AccreditedCompleteness.vue'
 import CvEntryField from '../CvEntryField.vue'
+import { slotGroupsOf } from '@/utils/accredited/evidenceRules'
 
 function render(component, props, locale = 'en') {
   const globals = createTestGlobals({ locale })
@@ -40,6 +41,7 @@ const SUB = {
     {
       id: 1001,
       code: 'M1.1.1',
+      description: { ar: 'نشر الرؤية للعاملين', en: 'Vision shared with staff' },
       attachments: [
         {
           key: 'point_1001_1',
@@ -89,7 +91,9 @@ describe('evidence components', () => {
 
   it('shows sub-criterion and guiding-point slots with required and provided states and the per-sub limit', () => {
     const wrapper = render(EvidenceSlotGroup, {
-      sub: SUB,
+      owner: { level: 'sub', id: 101 },
+      label: 'Strategic direction',
+      groups: slotGroupsOf(SUB),
       evidence: [FILE, { ...FILE, id: 'e2', attachmentKey: null, scanStatus: 'pending' }],
       editable: true,
       limits: LIMITS,
@@ -98,6 +102,9 @@ describe('evidence components', () => {
     const slots = wrapper.findAll('.evidence-slots__slot')
     expect(slots).toHaveLength(3)
     expect(slots[0].text()).toContain('Provided')
+    expect(wrapper.find('.evidence-slots__indicator').text()).toBe(
+      'Indicator attachments: Vision shared with staff',
+    )
     expect(slots[1].text()).toContain('Vision publication')
     expect(slots[1].text()).toContain('Required')
     expect(wrapper.text()).not.toContain('M1.1')
@@ -111,6 +118,37 @@ describe('evidence components', () => {
         .findAll('.evidence-upload button')
         .every((button) => button.attributes('disabled') !== undefined),
     ).toBe(true)
+  })
+
+  it('shows a main criterion attachment with its guidance, its own types and its file limit', async () => {
+    const plan = {
+      key: 'main_1_1',
+      name: { ar: 'الخطة الاستراتيجية', en: 'Strategic plan' },
+      guidance: { ar: 'الخطة المعتمدة', en: 'The approved plan' },
+      required: true,
+      allowedTypes: ['pdf'],
+      maxFiles: 1,
+    }
+    const owner = { level: 'main', id: 1 }
+    const wrapper = render(EvidenceSlotGroup, {
+      owner,
+      label: 'Leadership',
+      groups: [{ key: 'own', point: null, slots: [plan] }],
+      evidence: [{ ...FILE, level: 'main', mainCriterionId: 1, attachmentKey: 'main_1_1' }],
+      editable: true,
+      limits: { ...LIMITS, maxFilesPerSub: 10 },
+      uploads: UPLOADS,
+    })
+    const slots = wrapper.findAll('.evidence-slots__slot')
+    expect(slots).toHaveLength(1)
+    expect(wrapper.find('.evidence-slots__limits').text()).toContain('for this main criterion')
+    expect(slots[0].find('.evidence-slots__guidance').text()).toBe('The approved plan')
+    expect(slots[0].find('.evidence-slots__rule').text()).toBe(
+      'Accepted types: pdf. Files: up to 1.',
+    )
+    expect(slots[0].find('.evidence-slots__full').text()).toContain('maximum of 1')
+    expect(slots[0].find('.evidence-upload button').attributes('disabled')).toBeDefined()
+    expect(slots[0].find('.evidence-upload input').attributes('accept')).toBe('.pdf')
   })
 })
 
@@ -203,8 +241,9 @@ describe('completion, current request and result components', () => {
       missing: {
         missingCv: [{ subCriterionId: 101, code: 'M1.1' }],
         missingAttachments: [{ subCriterionId: 101, code: 'M1.1', attachmentKey: 'point_1001_1' }],
+        missingMainAttachments: [],
       },
-      criteria: { mains: [{ subs: [SUB] }] },
+      criteria: { mains: [{ id: 1, subs: [SUB] }] },
     })
     expect(wrapper.text()).toContain('2 items are missing')
     expect(wrapper.text()).toContain('Attachment: Vision publication')
@@ -215,6 +254,26 @@ describe('completion, current request and result components', () => {
     expect(wrapper.text()).not.toContain('M1.1')
     await wrapper.find('.accredited-completeness__link').trigger('click')
     expect(wrapper.emitted('reveal')[0]).toEqual([101])
+  })
+
+  it('lists a missing main criterion attachment and reveals the main criterion', async () => {
+    const plan = { key: 'main_1_1', name: { ar: 'الخطة', en: 'Strategic plan' }, required: true }
+    const wrapper = render(AccreditedCompleteness, {
+      missing: {
+        missingCv: [],
+        missingAttachments: [],
+        missingMainAttachments: [{ mainCriterionId: 1, code: 'M1', attachmentKey: 'main_1_1' }],
+      },
+      criteria: {
+        mains: [
+          { id: 1, name: { ar: 'القيادة', en: 'Leadership' }, attachments: [plan], subs: [] },
+        ],
+      },
+    })
+    expect(wrapper.text()).toContain('Main criterion attachment: Strategic plan')
+    expect(wrapper.find('.accredited-completeness__sub').text()).toBe('Leadership')
+    await wrapper.find('.accredited-completeness__link').trigger('click')
+    expect(wrapper.emitted('reveal-main')[0]).toEqual([1])
   })
 
   it('flags a missing CV entry only while the draft is empty', () => {

@@ -11,6 +11,8 @@ enum NotificationCode: string
     case AccountStatusChanged = 'USR-03';
     case PasswordResetRequested = 'USR-04';
     case SuperAdminEmailChanged = 'USR-05';
+    case IdentityChangeRequested = 'USR-06';
+    case IdentityChangeDecided = 'USR-07';
     case EntityRegistered = 'REG-01';
     case OtpCode = 'REG-02';
     case EntityProfileIncomplete = 'REG-03';
@@ -145,7 +147,8 @@ enum NotificationCode: string
             self::AdvancedInitialAssessmentCompleted, self::AdvancedReturnedForCompletion, self::CommitteeAssigned,
             self::CommitteeAllSubmitted, self::CommitteeAssessorDisabled, self::CommitteeSubstituteAssigned, self::ReturnedToCommittee,
             self::QualifiedForNational, self::NationalResultApproved, self::CommitteeDiscussionOpened,
-            self::ContactMessageReceived, self::ContactFollowUpReceived, self::ContactMessageAssigned => NotificationCategory::ActionRequired,
+            self::ContactMessageReceived, self::ContactFollowUpReceived, self::ContactMessageAssigned,
+            self::IdentityChangeRequested => NotificationCategory::ActionRequired,
             self::AccountStatusChanged, self::CriteriaMainCreated, self::CriteriaScaleChanged,
             self::CriteriaEditedWithScope, self::EntityCoreDataEdited, self::EntityReactivated, self::EntityRegistrationApproved,
             self::EntityEmailChangeDecided, self::SelfAssessmentStarted, self::SelfAssessmentDraftSaved,
@@ -159,7 +162,7 @@ enum NotificationCode: string
             self::RegionalResult, self::NationalResult, self::CommitteeSubstituteApproved, self::CommitteeDiscussionEntry,
             self::KpiAdded, self::KpiValueEdited, self::KpiPublished, self::HomepageContentEdited, self::ContentUnpublished,
             self::ContactReplySent, self::ContactMessageAcknowledged, self::PeriodMissed, self::PeriodDigest,
-            self::PeriodCorrected => NotificationCategory::Informational,
+            self::PeriodCorrected, self::IdentityChangeDecided => NotificationCategory::Informational,
             default => NotificationCategory::Alert,
         };
     }

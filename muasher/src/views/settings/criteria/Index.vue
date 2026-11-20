@@ -6,9 +6,9 @@ import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
 import CriteriaWorkspaceBar from '@/components/criteria/workspace/CriteriaWorkspaceBar.vue'
-import CriteriaTree from '@/components/criteria/workspace/CriteriaTree.vue'
-import CriteriaNodeDetails from '@/components/criteria/workspace/CriteriaNodeDetails.vue'
-import CriteriaVersionOverview from '@/components/criteria/workspace/CriteriaVersionOverview.vue'
+import CriteriaMainStrip from '@/components/criteria/workspace/CriteriaMainStrip.vue'
+import CriteriaMainBoard from '@/components/criteria/workspace/CriteriaMainBoard.vue'
+import CriteriaNodeSheet from '@/components/criteria/workspace/CriteriaNodeSheet.vue'
 import CriteriaReviewDialog from '@/components/criteria/workspace/CriteriaReviewDialog.vue'
 import CriteriaCreateDialogs from '@/components/criteria/workspace/CriteriaCreateDialogs.vue'
 import CriteriaDraftDialog from '@/components/criteria/CriteriaDraftDialog.vue'
@@ -19,6 +19,8 @@ import { useCriteriaAccess } from '@/composables/useCriteriaAccess'
 import { useDraftLifecycle } from '@/composables/useDraftLifecycle'
 import { success } from '@/composables/useSuccess'
 import { publishSummary } from '@/utils/criteriaPublishSummary'
+import { moveIndex } from '@/utils/reorder'
+import { CRITERIA_NODE_TYPES as NODE } from '@/constants/criteria'
 
 const { t } = useI18n()
 const workspace = useCriteriaWorkspace()
@@ -30,6 +32,24 @@ const { versions } = workspace
 const reviewOpen = ref(false)
 const cloneOpen = ref(false)
 const canEdit = computed(() => access.canEditTree.value)
+const sheetTab = ref('basics')
+const mains = computed(() => [...workspace.index.value.values()].filter((item) => !item.parentKey))
+const modelWeight = computed(() => workspace.tree.value?.activeWeightTotal ?? '0')
+const boardPosition = computed(() => {
+  const at = mains.value.findIndex((item) => item.key === workspace.board.value?.key)
+  return canEdit.value && mains.value.length > 1 ? { index: at, count: mains.value.length } : null
+})
+
+function openNode(key, tab = 'basics') {
+  sheetTab.value = tab
+  workspace.select(key)
+}
+
+function moveMain(step) {
+  const from = boardPosition.value.index
+  const ordered = moveIndex(mains.value, from, from + step)
+  editing.reorder({ type: NODE.MAIN, parentKey: null, ids: ordered.map((item) => item.node.id) })
+}
 
 onMounted(workspace.load)
 
@@ -109,39 +129,62 @@ async function onPublished(outcome) {
         @show-version="workspace.showVersion"
       />
 
-      <div class="criteria-workspace__layout">
-        <CriteriaTree
-          :index="workspace.index.value"
-          :selected-key="workspace.selected.value?.key ?? null"
-          :can-edit="canEdit"
-          @select="workspace.select"
-          @add="editing.startCreate"
-          @reorder="editing.reorder"
-        />
-        <CriteriaNodeDetails
-          v-if="workspace.selected.value"
-          :key="workspace.selected.value.key"
-          :item="workspace.selected.value"
-          :index="workspace.index.value"
-          :path="workspace.selectedPath.value"
-          :can-edit="canEdit"
-          :can-correct="access.canCorrectText.value"
-          :save-node="editing.saveSelected"
-          :reload="workspace.reload"
-          @select="workspace.select"
-          @add="editing.startCreate"
-          @toggle="editing.toggleSelected"
-          @remove="editing.removeSelected"
-          @correct="editing.correctSelected"
-        />
-        <CriteriaVersionOverview
-          v-else
-          :tree="workspace.tree.value"
-          :index="workspace.index.value"
-          :can-edit="canEdit"
-          @add="editing.startCreate(null)"
-        />
-      </div>
+      <p v-if="!canEdit" class="criteria-workspace__view-note" role="note">
+        {{ t('criteria.workspace.viewOnly') }}
+      </p>
+      <CriteriaMainStrip
+        :mains="mains"
+        :selected-key="workspace.board.value?.key ?? null"
+        :model-weight="modelWeight"
+        :can-edit="canEdit"
+        @select="workspace.showMain"
+        @add="editing.startCreate(null)"
+      />
+      <CriteriaMainBoard
+        v-if="workspace.board.value"
+        :key="workspace.board.value.key"
+        :item="workspace.board.value"
+        :index="workspace.index.value"
+        :model-weight="modelWeight"
+        :position="boardPosition"
+        :can-edit="canEdit"
+        :reload="workspace.reload"
+        @open="openNode"
+        @add="editing.startCreate"
+        @move="moveMain"
+        @reorder="editing.reorder"
+      />
+      <EmptyState
+        v-else
+        :title="t('criteria.workspace.tree.empty')"
+        :message="t('criteria.workspace.strip.emptyHint')"
+        icon="hierarchy"
+      >
+        <template v-if="canEdit" #action>
+          <BaseButton variant="primary" icon="plus" @click="editing.startCreate(null)">
+            {{ t('criteria.workspace.tree.addMain') }}
+          </BaseButton>
+        </template>
+      </EmptyState>
+      <CriteriaNodeSheet
+        v-if="workspace.selected.value"
+        :key="workspace.selected.value.key"
+        :item="workspace.selected.value"
+        :index="workspace.index.value"
+        :path="workspace.selectedPath.value"
+        :model-weight="modelWeight"
+        :initial-tab="sheetTab"
+        :can-edit="canEdit"
+        :can-correct="access.canCorrectText.value"
+        :save-node="editing.saveSelected"
+        :reload="workspace.reload"
+        @close="workspace.select(null)"
+        @open="openNode"
+        @add="editing.startCreate"
+        @toggle="editing.toggleSelected"
+        @remove="editing.removeSelected"
+        @correct="editing.correctSelected"
+      />
 
       <CriteriaCreateDialogs v-if="canEdit" :editing="editing" />
       <CriteriaReviewDialog

@@ -20,6 +20,21 @@ export const criteriaSeedFixture = [
     weight: '1000.00',
     distributeEqually: false,
     group: 'enablers',
+    attachments: [
+      {
+        name: {
+          ar: 'الخطة الاستراتيجية المعتمدة',
+          en: 'Approved strategic plan',
+        },
+        guidance: {
+          ar: 'ارفع الخطة الاستراتيجية السارية بعد اعتمادها من مجلس الإدارة.',
+          en: 'Upload the current strategic plan as approved by the board.',
+        },
+        required: false,
+        allowedTypes: ['pdf'],
+        maxFiles: 2,
+      },
+    ],
     subs: [
       {
         name: {

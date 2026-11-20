@@ -1,4 +1,5 @@
 <script setup>
+import { USER_STATUSES } from '@/constants/users'
 import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { object as yupObject, string as yupString, array as yupArray } from 'yup'
@@ -20,6 +21,7 @@ const { t } = useI18n()
 const { roleOptions, roleCapabilities } = useUsers()
 
 const isEdit = computed(() => Boolean(props.user))
+const nameLocked = computed(() => isEdit.value && props.user.status !== USER_STATUSES.INVITED)
 
 const schema = computed(() =>
   yupObject({
@@ -107,6 +109,8 @@ const capabilities = computed(() => {
         :label="t('users.fields.name')"
         :placeholder="t('users.fields.namePlaceholder')"
         :error="form.errors.value.name"
+        :readonly="nameLocked"
+        :hint="nameLocked ? t('nationalIdentity.correction.lockedHint') : ''"
         required
       />
       <BaseInput

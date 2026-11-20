@@ -8,7 +8,9 @@ use App\Contracts\Integrations\SmsAvailability;
 use App\Data\Settings\AuthSettingsView;
 use App\Enums\Integrations\IntegrationKind;
 use App\Enums\Integrations\SmsGatewayStatus;
+use App\Services\Identity\FileAccessRoles;
 use App\Services\Identity\MfaRequirement;
+use App\Services\Identity\NationalIdRequirement;
 use App\Services\Identity\SignInCodeChannels;
 
 final readonly class AuthSettingsReader
@@ -20,6 +22,8 @@ final readonly class AuthSettingsReader
         private GeneralEmailNotifications $generalEmail,
         private EntityRegistrationReview $registrationReview,
         private MfaRequirement $mfa,
+        private NationalIdRequirement $nationalId,
+        private FileAccessRoles $fileAccessRoles,
     ) {}
 
     public function read(): AuthSettingsView
@@ -31,6 +35,9 @@ final readonly class AuthSettingsReader
             $this->mfa->isEnabled(),
             $this->mfa->requiredRoles(),
             $this->smsStatus(),
+            $this->nationalId->isEnabled(),
+            $this->nationalId->requiredRoles(),
+            $this->fileAccessRoles->all(),
         );
     }
 

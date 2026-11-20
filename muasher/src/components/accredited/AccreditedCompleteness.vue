@@ -11,16 +11,27 @@ const props = defineProps({
   criteria: { type: Object, required: true },
 })
 
-const emit = defineEmits(['reveal'])
+const emit = defineEmits(['reveal', 'reveal-main'])
 const { t, locale } = useI18n()
 const heading = ref(null)
 
 const subs = computed(
   () => new Map(props.criteria.mains.flatMap((main) => main.subs.map((sub) => [sub.id, sub]))),
 )
-const count = computed(
-  () => props.missing.missingCv.length + props.missing.missingAttachments.length,
-)
+const mains = computed(() => new Map(props.criteria.mains.map((main) => [main.id, main])))
+
+function mainItem(item) {
+  const main = mains.value.get(item.mainCriterionId)
+  const slot = (main?.attachments ?? []).find((entry) => entry.key === item.attachmentKey)
+  return {
+    key: `main-${item.mainCriterionId}-${item.attachmentKey}`,
+    mainId: item.mainCriterionId,
+    subName: localizedText(main?.name, locale.value),
+    label: t('accredited.completeness.mainAttachment', {
+      name: slot ? localizedText(slot.name, locale.value) : item.attachmentKey,
+    }),
+  }
+}
 
 function slotName(item) {
   const slot = slotsOf(subs.value.get(item.subCriterionId) ?? {}).find(
@@ -46,7 +57,14 @@ const items = computed(() => [
     subName: subName(item),
     label: t('accredited.completeness.attachment', { name: slotName(item) }),
   })),
+  ...props.missing.missingMainAttachments.map(mainItem),
 ])
+const count = computed(() => items.value.length)
+
+function reveal(item) {
+  if (item.mainId) emit('reveal-main', item.mainId)
+  else emit('reveal', item.subId)
+}
 
 function focus() {
   heading.value?.focus()
@@ -68,11 +86,7 @@ defineExpose({ focus })
     <p class="accredited-completeness__hint">{{ t('accredited.completeness.hint') }}</p>
     <ul v-if="count" class="accredited-completeness__list">
       <li v-for="item in items" :key="item.key" class="accredited-completeness__item">
-        <button
-          type="button"
-          class="accredited-completeness__link"
-          @click="emit('reveal', item.subId)"
-        >
+        <button type="button" class="accredited-completeness__link" @click="reveal(item)">
           <span class="accredited-completeness__sub">{{ item.subName }}</span>
           {{ item.label }}
         </button>

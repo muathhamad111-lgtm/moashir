@@ -185,7 +185,7 @@ function financeOfficer(): User
 
 function bankTransferReceipt(string $name = 'bank-transfer.pdf'): UploadedFile
 {
-    return UploadedFile::fake()->createWithContent($name, "%PDF-1.4\n%Moashir bank transfer receipt\n1 0 obj << /Type /Catalog >> endobj\ntrailer << /Root 1 0 R >>\n%%EOF\n");
+    return UploadedFile::fake()->createWithContent($name, SAMPLE_PDF);
 }
 
 /**

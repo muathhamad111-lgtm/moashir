@@ -49,3 +49,23 @@
   font-size: var(--fs-xs);
   color: var(--theme-danger-text);
 }
+
+.evidence-slots__guidance {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
+  color: var(--theme-text);
+}
+
+.evidence-slots__rule {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--theme-text-muted);
+}
+
+.evidence-slots__indicator {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}

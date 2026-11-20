@@ -358,6 +358,17 @@ describe('sign-in security setting mock', () => {
         'finance_officer',
       ],
       sms_status: 'test',
+      national_id_enabled: false,
+      national_id_roles: [],
+      file_access_roles: [
+        'system_admin',
+        'request_follower',
+        'assessor',
+        'filtering_officer',
+        'award_secretary',
+        'finance_officer',
+        'entity',
+      ],
     })
     const policy = await call('PUT', '/settings/auth', {
       two_factor_enabled: false,

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Data\Assessments\AttachmentSlot;
+use App\Data\Assessments\AttachmentSlots;
 use App\Data\Assessments\BoundSub;
 use App\Data\Assessments\RemainingSub;
 use App\Data\Assessments\SubmissionCoverage;
@@ -11,7 +12,7 @@ use App\Support\ValueObjects\LocalizedText;
 
 function coveredSub(string $code, bool $hasCv, AttachmentSlot ...$slots): BoundSub
 {
-    return new BoundSub(10, $code, new LocalizedText('سياسة الحوكمة المعتمدة', 'Approved governance policy'), $hasCv, array_values($slots));
+    return new BoundSub(10, $code, new LocalizedText('سياسة الحوكمة المعتمدة', 'Approved governance policy'), $hasCv, new AttachmentSlots(array_values($slots)));
 }
 
 it('applies the submission rules to one sub-criterion', function (): void {

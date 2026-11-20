@@ -1,3 +1,6 @@
+import { nationalIdRequiredFor } from '../stores/authSettingsStore'
+import { assignNationalId } from '../stores/identityStore'
+import { isValidNationalId } from '@/utils/identity/nationalId'
 import { delay } from 'msw'
 import { http } from '../contract/http'
 import { envelope, errorResponse } from '../contract/responses'
@@ -45,6 +48,10 @@ const MESSAGES = {
   invitationInvalid: {
     ar: 'رابط الدعوة غير صالح أو استُخدم من قبل.',
     en: 'This invitation link is invalid or was already used.',
+  },
+  nationalIdInvalid: {
+    ar: 'أدخل رقم هوية وطنية أو إقامة صحيحًا من 10 أرقام.',
+    en: 'Enter a valid 10-digit national ID or Iqama number.',
   },
 }
 
@@ -107,7 +114,10 @@ export function passwordRecoveryHandlers({ continueSignIn }) {
       await delay(LATENCY_MS)
       const found = invitationUser(params.token)
       if (!found.user) return errorResponse(found.status, found.code, say(request, found.key))
-      return envelope({ usable: true })
+      return envelope({
+        usable: true,
+        nationalIdRequired: nationalIdRequiredFor(found.user.roles ?? []),
+      })
     }),
 
     http.post('/api/v1/auth/invitations/:token/accept', async ({ params, request }) => {
@@ -119,7 +129,11 @@ export function passwordRecoveryHandlers({ continueSignIn }) {
         ...passwordErrors(request, body, { withHistory: false }),
         ...termsErrors(request, body),
       }
+      if (nationalIdRequiredFor(found.user.roles ?? []) && !isValidNationalId(body.nationalId))
+        fields.nationalId = [say(request, 'nationalIdInvalid')]
       if (Object.keys(fields).length) return validationFailure(request, fields)
+      if (nationalIdRequiredFor(found.user.roles ?? []))
+        assignNationalId(found.user.id, body.nationalId)
       found.user.status = 'active'
       return continueSignIn({ kind: 'staff', record: { ...found.user, mfaEnrolled: false } })
     }),

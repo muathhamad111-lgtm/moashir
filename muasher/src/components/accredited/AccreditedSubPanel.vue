@@ -5,7 +5,7 @@ import Badge from '@/components/ui/Badge.vue'
 import CvEntryField from './CvEntryField.vue'
 import EvidenceSlotGroup from './EvidenceSlotGroup.vue'
 import { COMPLETION_ITEM_KINDS } from '@/constants/accredited'
-import { evidenceOfSub } from '@/utils/accredited/evidenceRules'
+import { evidenceOfSub, slotGroupsOf, subOwner } from '@/utils/accredited/evidenceRules'
 import { isSubComplete } from '@/utils/accredited/submissionProgress'
 import { localizedText } from '@/utils/localizedText'
 
@@ -18,11 +18,12 @@ const emit = defineEmits(['upload', 'remove', 'replace', 'download'])
 const { t, locale } = useI18n()
 
 const form = computed(() => props.workspace.formState.form.value)
+const owner = computed(() => subOwner(props.sub))
 const cvEditable = computed(() =>
-  props.workspace.formState.canEdit(props.sub.id, COMPLETION_ITEM_KINDS.CV),
+  props.workspace.formState.canEdit(owner.value, COMPLETION_ITEM_KINDS.CV),
 )
 const evidenceEditable = computed(() =>
-  props.workspace.formState.canEdit(props.sub.id, COMPLETION_ITEM_KINDS.EVIDENCE),
+  props.workspace.formState.canEdit(owner.value, COMPLETION_ITEM_KINDS.EVIDENCE),
 )
 const isRequested = computed(
   () =>
@@ -78,13 +79,14 @@ function text(content) {
       @update:model-value="workspace.cvDrafts.setDraft(sub.id, $event)"
     />
     <EvidenceSlotGroup
-      :sub="sub"
+      :owner="owner"
+      :label="text(sub.name)"
+      :groups="slotGroupsOf(sub)"
       :evidence="subEvidence"
       :editable="evidenceEditable"
       :limits="form.uploadLimits"
-      :accept="workspace.accept.value"
       :uploads="workspace.uploads"
-      @upload="emit('upload', { sub, ...$event })"
+      @upload="emit('upload', $event)"
       @remove="emit('remove', $event)"
       @replace="emit('replace', $event)"
       @download="emit('download', $event)"

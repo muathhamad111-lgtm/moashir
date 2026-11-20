@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
 import { flushPromises } from '@vue/test-utils'
 import { withSetup } from '@/test-utils/withSetup'
+import { visitStubRoute } from '@/test-utils/stubRoute'
 import { useMyMessages } from '@/composables/useMyMessages'
 import { useMessageThread } from '@/composables/useMessageThread'
 import { useMessageReply } from '@/composables/useMessageReply'
@@ -54,7 +55,8 @@ describe('useMyMessages', () => {
   })
 
   it('switches to the closed tab and merges an updated thread into the list', async () => {
-    const { api } = withSetup(() => useMyMessages())
+    const { api, globals } = withSetup(() => useMyMessages())
+    await visitStubRoute(globals.router)
     await flushPromises()
     api.tab.value = 'closed'
     await vi.waitFor(() =>

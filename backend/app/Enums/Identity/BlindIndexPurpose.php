@@ -9,4 +9,5 @@ enum BlindIndexPurpose: string
     case Phone = 'phone';
     case SignInIdentifier = 'sign_in_identifier';
     case RegistrationEmail = 'registration_email';
+    case NationalId = 'national_id';
 }

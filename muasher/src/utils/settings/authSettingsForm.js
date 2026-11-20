@@ -14,6 +14,8 @@ export function authSettingsSchema() {
     entityRegistrationReview: boolean(),
     twoFactorEnabled: boolean(),
     twoFactorRoles: array(string().oneOf(ROLE_KEYS)),
+    nationalIdEnabled: boolean(),
+    nationalIdRoles: array(string().oneOf(ROLE_KEYS)),
   })
 }
 
@@ -24,6 +26,8 @@ export function authSettingsValues(settings) {
     entityRegistrationReview: settings.entityRegistrationReview !== false,
     twoFactorEnabled: settings.twoFactorEnabled !== false,
     twoFactorRoles: orderedRoles(settings.twoFactorRoles),
+    nationalIdEnabled: settings.nationalIdEnabled === true,
+    nationalIdRoles: orderedRoles(settings.nationalIdRoles),
   }
 }
 
@@ -37,6 +41,16 @@ function changedTwoFactor(settings, values) {
   if (enabled !== (settings.twoFactorEnabled !== false)) changes.twoFactorEnabled = enabled
   const roles = orderedRoles(values.twoFactorRoles)
   if (roles.join() !== orderedRoles(settings.twoFactorRoles).join()) changes.twoFactorRoles = roles
+  return changes
+}
+
+function changedNationalId(settings, values) {
+  const changes = {}
+  const enabled = Boolean(values.nationalIdEnabled)
+  if (enabled !== (settings.nationalIdEnabled === true)) changes.nationalIdEnabled = enabled
+  const roles = orderedRoles(values.nationalIdRoles)
+  if (roles.join() !== orderedRoles(settings.nationalIdRoles).join())
+    changes.nationalIdRoles = roles
   return changes
 }
 
@@ -66,6 +80,7 @@ export function changedAuthSettings(settings, values) {
     ...changedGeneralEmail(settings, values),
     ...changedRegistrationReview(settings, values),
     ...changedTwoFactor(settings, values),
+    ...changedNationalId(settings, values),
   }
 }
 

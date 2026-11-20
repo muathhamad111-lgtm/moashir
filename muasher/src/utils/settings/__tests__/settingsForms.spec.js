@@ -157,6 +157,8 @@ describe('sign-in security form', () => {
       entityRegistrationReview: true,
       twoFactorEnabled: true,
       twoFactorRoles: [],
+      nationalIdEnabled: false,
+      nationalIdRoles: [],
     })
     expect(changedAuthSettings(EMAIL_ONLY, values)).toEqual({})
     expect(changedAuthSettings(EMAIL_ONLY, { ...values, entityRegistrationReview: false })).toEqual(

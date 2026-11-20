@@ -38,6 +38,8 @@ require_once __DIR__.'/Support/insights-helpers.php';
 require_once __DIR__.'/Support/insights-unit-helpers.php';
 require_once __DIR__.'/Support/demo-helpers.php';
 require_once __DIR__.'/Support/period-helpers.php';
+require_once __DIR__.'/Support/national-id-helpers.php';
+require_once __DIR__.'/Support/watermark-helpers.php';
 
 pest()->extend(TestCase::class)->in('Feature', 'Unit');
 

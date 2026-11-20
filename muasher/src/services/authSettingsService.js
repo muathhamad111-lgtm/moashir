@@ -18,6 +18,9 @@ function toAuthSettings(raw = {}) {
     twoFactorEnabled: raw.twoFactorEnabled !== false,
     twoFactorRoles: Array.isArray(raw.twoFactorRoles) ? [...raw.twoFactorRoles] : [],
     smsStatus: smsStatusOf(raw.smsStatus),
+    nationalIdEnabled: raw.nationalIdEnabled === true,
+    nationalIdRoles: Array.isArray(raw.nationalIdRoles) ? [...raw.nationalIdRoles] : [],
+    fileAccessRoles: Array.isArray(raw.fileAccessRoles) ? [...raw.fileAccessRoles] : [],
   }
 }
 

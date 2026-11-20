@@ -17,6 +17,8 @@ import { attachmentsPayload, cloneAttachments } from '@/utils/criteriaAttachment
 import { compareWeights, normalizeWeight, sumWeights } from '@/utils/weight'
 import { CRITERIA_DESCRIPTION_MAX_LENGTH, SCORING_TYPES } from '@/constants/criteria'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import { useFormSections } from '@/composables/useFormSections'
+import { POINT_FIELD_SECTIONS } from '@/utils/criteriaFormSections'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -25,9 +27,12 @@ const props = defineProps({
   point: { type: Object, default: null },
   sub: { type: Object, required: true },
   save: { type: Function, required: true },
+  // In the editor sheet: the tab to show (basics | evaluation | attachments). Empty = every field.
+  // The sheet edits the weight in the sub-criterion's split only, so this form neither shows nor sends it.
+  section: { type: String, default: '' },
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'section-errors', 'dirty'])
 const { t } = useI18n()
 const { locale, weight: formatted } = useCriteria()
 
@@ -39,6 +44,7 @@ const FIELD_ALIASES = {
 
 const isEdit = computed(() => Boolean(props.point))
 const distributes = computed(() => Boolean(props.sub.distributeEqually))
+const weightElsewhere = computed(() => distributes.value || Boolean(props.section))
 const attachments = ref([])
 const { options: scoringOptions } = useScoringTypeOptions()
 
@@ -49,7 +55,7 @@ const remaining = computed(() => {
 })
 
 function weightRule() {
-  if (distributes.value) return yupString()
+  if (weightElsewhere.value) return yupString()
   const capped = weightText(t, { max: remaining.value, locale: locale.value })
   if (isEdit.value) return props.point.active ? capped : weightText(t)
   return yupString().when('active', ([active]) => (active ? capped : weightText(t)))
@@ -81,7 +87,7 @@ function payloadOf(values) {
     scoringType: values.scoringType,
     attachments: attachmentsPayload(attachments.value),
   }
-  if (!distributes.value) payload.weight = normalizeWeight(values.weight)
+  if (!weightElsewhere.value) payload.weight = normalizeWeight(values.weight)
   return isEdit.value ? payload : { ...payload, active: values.active }
 }
 
@@ -120,6 +126,17 @@ const [descriptionEn] = form.defineField('descriptionEn')
 const [weight] = form.defineField('weight')
 const [scoringType] = form.defineField('scoringType')
 const [active] = form.defineField('active')
+
+const sections = useFormSections(
+  {
+    section: () => props.section,
+    fieldSections: POINT_FIELD_SECTIONS,
+    attachments,
+    record: () => props.point,
+  },
+  form,
+  emit,
+)
 </script>
 
 <template>
@@ -129,7 +146,7 @@ const [active] = form.defineField('active')
     :busy="form.submitting.value"
     :title="
       inline
-        ? t('criteria.workspace.details.dataTitle')
+        ? sections.title.value
         : isEdit
           ? t('criteria.point.editTitle')
           : t('criteria.point.createTitle')
@@ -140,6 +157,7 @@ const [active] = form.defineField('active')
   >
     <div class="criteria-form">
       <BaseTextarea
+        v-show="sections.shows('basics')"
         v-model="descriptionAr"
         dir="rtl"
         name="pointDescriptionAr"
@@ -149,6 +167,7 @@ const [active] = form.defineField('active')
         required
       />
       <BaseTextarea
+        v-show="sections.shows('basics')"
         v-model="descriptionEn"
         dir="ltr"
         name="pointDescriptionEn"
@@ -158,7 +177,7 @@ const [active] = form.defineField('active')
         required
       />
       <BaseInput
-        v-if="!distributes"
+        v-if="!weightElsewhere"
         v-model="weight"
         name="pointWeight"
         :label="t('criteria.fields.weight')"
@@ -166,12 +185,13 @@ const [active] = form.defineField('active')
         :error="form.errors.value.weight"
         required
       />
-      <p v-else class="criteria-form__note" role="note">
+      <p v-else-if="!sections.inSheet.value" class="criteria-form__note" role="note">
         <AppIcon name="scale" />
         <span>{{ t('criteria.point.equalNote') }}</span>
       </p>
 
       <BaseRadio
+        v-show="sections.shows('evaluation')"
         v-model="scoringType"
         name="pointScoringType"
         :label="t('criteria.fields.scoringType')"
@@ -179,7 +199,11 @@ const [active] = form.defineField('active')
         :error="form.errors.value.scoringType"
       />
 
-      <AttachmentsEditor v-model="attachments" :errors="form.serverErrors.value" />
+      <AttachmentsEditor
+        v-show="sections.shows('attachments')"
+        v-model="attachments"
+        :errors="form.serverErrors.value"
+      />
 
       <BaseCheckbox
         v-if="!isEdit"

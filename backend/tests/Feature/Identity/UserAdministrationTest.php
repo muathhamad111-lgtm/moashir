@@ -167,13 +167,13 @@ it('enforces SoD-8: an entity account cannot receive a staff role', function ():
         ->assertJsonPath('code', 'sod_role_combination');
 });
 
-it('updates a staff user profile and roles with a before and after audit', function (): void {
+it('updates a staff user roles with a before and after audit', function (): void {
     signIn(systemAdmin());
     $target = staffUser(RoleKey::Assessor);
 
-    $this->putJson("/api/v1/users/{$target->id}", ['name' => 'عبدالله الدوسري', 'roles' => ['assessor', 'filtering_officer']])
+    $this->putJson("/api/v1/users/{$target->id}", ['name' => $target->name, 'roles' => ['assessor', 'filtering_officer']])
         ->assertOk()
-        ->assertJsonPath('data.name', 'عبدالله الدوسري')
+        ->assertJsonPath('data.name', $target->name)
         ->assertJsonPath('data.roles', ['assessor', 'filtering_officer']);
 
     $audit = Audit::query()->where('event', AuditEvent::UserRolesChanged->value)->where('auditable_id', $target->id)->latest('id')->firstOrFail();
@@ -185,7 +185,7 @@ it('ignores attempts to set protected attributes through the update payload', fu
     signIn(systemAdmin());
     $target = staffUser(RoleKey::Assessor);
 
-    $this->putJson("/api/v1/users/{$target->id}", ['name' => 'عبدالله الدوسري', 'is_super_admin' => true, 'status' => 'active', 'mfa_required' => false])->assertOk();
+    $this->putJson("/api/v1/users/{$target->id}", ['roles' => ['assessor'], 'is_super_admin' => true, 'status' => 'active', 'mfa_required' => false])->assertOk();
 
     expect($target->refresh()->isSuperAdmin())->toBeFalse()
         ->and($target->mfa_required)->toBeTrue();

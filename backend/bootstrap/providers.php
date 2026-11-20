@@ -19,6 +19,7 @@ use App\Providers\NotificationMailServiceProvider;
 use App\Providers\NotificationTextsServiceProvider;
 use App\Providers\RateLimitServiceProvider;
 use App\Providers\SearchServiceProvider;
+use App\Providers\WatermarkServiceProvider;
 
 return [
     AppServiceProvider::class,
@@ -38,4 +39,5 @@ return [
     NotificationTextsServiceProvider::class,
     RateLimitServiceProvider::class,
     SearchServiceProvider::class,
+    WatermarkServiceProvider::class,
 ];

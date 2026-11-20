@@ -32,9 +32,10 @@ export function useAccreditedForm(assessmentId) {
       !lockedCode.value,
   )
 
-  function canEdit(subId, kind) {
+  // owner: { level: 'main' | 'sub', id } — while back for completion, only the requested items change.
+  function canEdit(owner, kind) {
     if (!isEditable.value) return false
-    return !isResubmission.value || isRequested(completionRequest.value, subId, kind)
+    return !isResubmission.value || isRequested(completionRequest.value, owner, kind)
   }
 
   async function load({ silent = false } = {}) {

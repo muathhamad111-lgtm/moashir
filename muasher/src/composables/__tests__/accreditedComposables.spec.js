@@ -73,20 +73,23 @@ beforeEach(() => {
 
 describe('useAccreditedForm', () => {
   it('lets the entity edit a draft and only the requested items during a completion request', async () => {
+    const sub = (id) => ({ level: 'sub', id })
     const draft = await formState('draft')
-    expect(draft.canEdit(101, 'cv')).toBe(true)
+    expect(draft.canEdit(sub(101), 'cv')).toBe(true)
+    expect(draft.canEdit({ level: 'main', id: 1 }, 'evidence')).toBe(true)
     const completion = await formState('needs-completion')
-    expect(completion.canEdit(202, 'cv')).toBe(true)
-    expect(completion.canEdit(202, 'evidence')).toBe(false)
-    expect(completion.canEdit(101, 'cv')).toBe(false)
+    expect(completion.canEdit(sub(202), 'cv')).toBe(true)
+    expect(completion.canEdit(sub(202), 'evidence')).toBe(false)
+    expect(completion.canEdit(sub(101), 'cv')).toBe(false)
+    expect(completion.canEdit({ level: 'main', id: 202 }, 'cv')).toBe(false)
     completion.lock('completion.deadline_passed')
-    expect(completion.canEdit(202, 'cv')).toBe(false)
+    expect(completion.canEdit(sub(202), 'cv')).toBe(false)
     const submitted = await formState('submitted')
     expect(submitted.isEditable.value).toBe(false)
     const frozen = await formState('draft', {
       assessment: { id: 9101, status: 'draft', isFrozen: true },
     })
-    expect(frozen.canEdit(101, 'cv')).toBe(false)
+    expect(frozen.canEdit(sub(101), 'cv')).toBe(false)
   })
 
   it('maps 404 to missing and 403 to blocked', async () => {
@@ -147,8 +150,9 @@ describe('useEvidenceUploads', () => {
   it('refuses a wrong type locally and uploads an allowed file into its slot', async () => {
     const state = await formState('draft')
     const { api } = withSetup(() => useEvidenceUploads({ formState: state, onRejected: vi.fn() }))
-    await api.upload(802, 'sub_802_1', new File(['x'], 'notes.txt'))
-    expect(api.errors['802:sub_802_1']).toContain('pdf')
+    const owner = { level: 'sub', id: 802 }
+    await api.upload(owner, { key: 'sub_802_1' }, new File(['x'], 'notes.txt'))
+    expect(api.errors['sub:802:sub_802_1']).toContain('pdf')
     expect(evidenceService.upload).not.toHaveBeenCalled()
     evidenceService.upload.mockResolvedValue({
       data: {
@@ -160,13 +164,35 @@ describe('useEvidenceUploads', () => {
       },
     })
     const file = new File(['%PDF'], 'impact.pdf')
-    await api.upload(802, 'sub_802_1', file)
+    await api.upload(owner, { key: 'sub_802_1' }, file)
     expect(evidenceService.upload).toHaveBeenCalledWith(9101, {
       file,
       subCriterionId: 802,
       attachmentKey: 'sub_802_1',
     })
     expect(submissionService.getForm).toHaveBeenCalledTimes(2)
+  })
+
+  it('keeps a main criterion attachment to its own file types and sends it to the main criterion', async () => {
+    const state = await formState('draft', {
+      uploadLimits: { maxFileMb: 20, allowedTypes: ['pdf', 'png'], maxFilesPerSub: 10 },
+    })
+    const { api } = withSetup(() => useEvidenceUploads({ formState: state, onRejected: vi.fn() }))
+    const owner = { level: 'main', id: 1 }
+    const plan = { key: 'main_1_1', allowedTypes: ['png'] }
+    await api.upload(owner, plan, new File(['%PDF'], 'plan.pdf'))
+    expect(api.errors['main:1:main_1_1']).toContain('png')
+    expect(evidenceService.upload).not.toHaveBeenCalled()
+    evidenceService.upload.mockResolvedValue({
+      data: { id: 'e10', fileName: 'plan.pdf', scanStatus: 'pending', level: 'main' },
+    })
+    const file = new File(['%PDF'], 'plan.pdf')
+    await api.upload(owner, { ...plan, allowedTypes: ['pdf'] }, file)
+    expect(evidenceService.upload).toHaveBeenCalledWith(9101, {
+      file,
+      mainCriterionId: 1,
+      attachmentKey: 'main_1_1',
+    })
   })
 })
 

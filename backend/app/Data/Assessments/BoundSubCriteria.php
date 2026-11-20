@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Data\Assessments;
 
+use App\Contracts\Assessments\EvidenceNode;
+use App\Support\ValueObjects\LocalizedText;
+
 final readonly class BoundSubCriteria
 {
     /**
@@ -12,28 +15,23 @@ final readonly class BoundSubCriteria
     private array $byCode;
 
     /**
-     * @param  list<BoundSub>  $subs
+     * @var array<string, BoundMain>
      */
-    public function __construct(public array $subs)
+    private array $mainsByCode;
+
+    /**
+     * @param  list<BoundSub>  $subs
+     * @param  list<BoundMain>  $mains  the active main criteria, for their own attachments
+     */
+    public function __construct(public array $subs, public array $mains = [])
     {
-        $byCode = [];
-
-        foreach ($subs as $sub) {
-            $byCode[$sub->code] = $sub;
-        }
-
-        $this->byCode = $byCode;
+        $this->byCode = array_column(array_map(static fn (BoundSub $sub): array => [$sub->code, $sub], $subs), 1, 0);
+        $this->mainsByCode = array_column(array_map(static fn (BoundMain $main): array => [$main->code, $main], $mains), 1, 0);
     }
 
     public function withId(int $id): ?BoundSub
     {
-        foreach ($this->subs as $sub) {
-            if ($sub->id === $id) {
-                return $sub;
-            }
-        }
-
-        return null;
+        return array_find($this->subs, static fn (BoundSub $sub): bool => $sub->id === $id);
     }
 
     public function withCode(string $code): ?BoundSub
@@ -44,5 +42,28 @@ final readonly class BoundSubCriteria
     public function idOf(string $code): ?int
     {
         return $this->withCode($code)?->id;
+    }
+
+    public function mainWithId(int $id): ?BoundMain
+    {
+        return array_find($this->mains, static fn (BoundMain $main): bool => $main->id === $id);
+    }
+
+    public function mainWithCode(string $code): ?BoundMain
+    {
+        return $this->mainsByCode[$code] ?? null;
+    }
+
+    /**
+     * The main criterion or sub-criterion holding the code; codes are unique across the levels of a version.
+     */
+    public function nodeWithCode(string $code): ?EvidenceNode
+    {
+        return $this->withCode($code) ?? $this->mainWithCode($code);
+    }
+
+    public function nameOf(string $code): ?LocalizedText
+    {
+        return $this->nodeWithCode($code)?->nodeName();
     }
 }

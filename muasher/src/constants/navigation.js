@@ -186,7 +186,7 @@ export const APP_NAV_ITEMS = [
     labelKey: 'nav.adminUsers',
     icon: 'users-two',
     routeName: ROUTE_NAMES.ADMIN_USERS,
-    activeOn: [ROUTE_NAMES.ADMIN_PERMISSIONS],
+    activeOn: [ROUTE_NAMES.ADMIN_PERMISSIONS, ROUTE_NAMES.ADMIN_IDENTITY_CHANGES],
   },
   {
     id: 'admin-contact-messages',

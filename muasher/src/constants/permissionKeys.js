@@ -66,6 +66,7 @@ export const PERMISSIONS = {
   USERS_VIEW: 'users.view',
   USERS_EXPORT: 'users.export',
   USERS_MANAGE: 'users.manage',
+  USERS_IDENTITY_CHANGES_REVIEW: 'users.identity_changes.review',
   ROLES_MATRIX_VIEW: 'roles.matrix.view',
   ROLES_MATRIX_MANAGE: 'roles.matrix.manage',
   AUDIT_VIEW: 'audit.view',

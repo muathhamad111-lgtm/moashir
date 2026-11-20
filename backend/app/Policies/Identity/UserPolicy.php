@@ -45,6 +45,20 @@ final class UserPolicy
         return $this->authorizeOn($actor, $target, PermissionKey::UsersManage);
     }
 
+    public function requestNameCorrection(User $actor, User $target): Response
+    {
+        if ($actor->id === $target->id) {
+            return Response::deny();
+        }
+
+        return $this->authorizeOn($actor, $target, PermissionKey::UsersManage);
+    }
+
+    public function viewIdentityHistory(User $actor, User $target): Response
+    {
+        return $this->authorizeOn($actor, $target, PermissionKey::UsersIdentityChangesReview);
+    }
+
     public function manageOwnAvatar(User $actor): bool
     {
         return ! $actor->isEntityUser();

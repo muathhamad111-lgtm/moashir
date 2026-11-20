@@ -20,6 +20,8 @@ export const useAuthStore = defineStore('auth', {
     isEntity: (state) => (state.user?.roles ?? []).includes(ROLES.ENTITY),
     profileCompleted: (state) => Boolean(state.user?.profileCompleted),
     accountStatus: (state) => state.user?.status ?? null,
+    nationalIdMissing: (state) =>
+      state.user?.nationalIdRequired === true && state.user?.hasNationalId !== true,
   },
   actions: {
     setUser(user) {
@@ -34,6 +36,12 @@ export const useAuthStore = defineStore('auth', {
     patchUser(patch) {
       if (!this.user) return
       this.user = { ...this.user, ...patch }
+    },
+    applyNationalId(masked) {
+      this.patchUser({ hasNationalId: true, nationalIdMasked: masked })
+    },
+    requireNationalId() {
+      this.patchUser({ nationalIdRequired: true, hasNationalId: false, nationalIdMasked: null })
     },
     applyAvatar(avatar) {
       this.patchUser({ avatar: avatar ?? null })

@@ -15,6 +15,8 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 import AttachmentsEditor from './AttachmentsEditor.vue'
 import { cloneAttachments } from '@/utils/criteriaAttachments'
 import { mainFormPayload, mainFormValues } from '@/utils/criteriaMainForm'
+import { useFormSections } from '@/composables/useFormSections'
+import { MAIN_FIELD_SECTIONS } from '@/utils/criteriaFormSections'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -22,9 +24,11 @@ const props = defineProps({
   readonly: { type: Boolean, default: false },
   criterion: { type: Object, default: null },
   save: { type: Function, required: true },
+  // In the editor sheet: the tab to show (basics | attachments). Empty = every field (create dialog).
+  section: { type: String, default: '' },
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'section-errors', 'dirty'])
 const { t } = useI18n()
 
 const FIELD_ALIASES = {
@@ -96,6 +100,17 @@ const [weight] = form.defineField('weight')
 const [group] = form.defineField('group')
 const [distributeEqually] = form.defineField('distributeEqually')
 const [active] = form.defineField('active')
+
+const sections = useFormSections(
+  {
+    section: () => props.section,
+    fieldSections: MAIN_FIELD_SECTIONS,
+    attachments,
+    record: () => props.criterion,
+  },
+  form,
+  emit,
+)
 </script>
 
 <template>
@@ -105,7 +120,7 @@ const [active] = form.defineField('active')
     :busy="form.submitting.value"
     :title="
       inline
-        ? t('criteria.workspace.details.dataTitle')
+        ? sections.title.value
         : isEdit
           ? t('criteria.main.editTitle')
           : t('criteria.main.createTitle')
@@ -115,7 +130,7 @@ const [active] = form.defineField('active')
     @submit="form.onSubmit"
   >
     <div class="criteria-form">
-      <div class="criteria-form__grid">
+      <div v-show="sections.shows('basics')" class="criteria-form__grid">
         <BaseInput
           v-model="nameAr"
           dir="rtl"
@@ -150,6 +165,7 @@ const [active] = form.defineField('active')
         />
       </div>
       <BaseTextarea
+        v-show="sections.shows('basics')"
         v-model="descriptionAr"
         dir="rtl"
         name="descriptionAr"
@@ -158,6 +174,7 @@ const [active] = form.defineField('active')
         :error="form.errors.value.descriptionAr"
       />
       <BaseTextarea
+        v-show="sections.shows('basics')"
         v-model="descriptionEn"
         dir="ltr"
         name="descriptionEn"
@@ -165,8 +182,12 @@ const [active] = form.defineField('active')
         :label="t('criteria.fields.descriptionEn')"
         :error="form.errors.value.descriptionEn"
       />
-      <AttachmentsEditor v-model="attachments" :errors="form.serverErrors.value" />
-      <div class="criteria-form__toggles">
+      <AttachmentsEditor
+        v-show="sections.shows('attachments')"
+        v-model="attachments"
+        :errors="form.serverErrors.value"
+      />
+      <div v-if="!sections.inSheet.value" class="criteria-form__toggles">
         <BaseCheckbox
           v-model="distributeEqually"
           name="distributeEqually"
@@ -179,7 +200,7 @@ const [active] = form.defineField('active')
           :label="t('criteria.fields.active')"
         />
       </div>
-      <p v-if="isEdit" class="criteria-form__note" role="note">
+      <p v-if="isEdit && !sections.inSheet.value" class="criteria-form__note" role="note">
         <AppIcon name="info-circle" />
         <span>{{ t('criteria.fields.orderNote') }}</span>
       </p>

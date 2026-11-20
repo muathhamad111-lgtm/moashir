@@ -18,8 +18,10 @@ final class EvidencePresenter
 
         return [
             'id' => $evidence->public_id,
-            'sub_criterion_id' => $subs->idOf($evidence->sub_code),
-            'code' => $evidence->sub_code,
+            'level' => $evidence->level()->value,
+            'main_criterion_id' => $evidence->main_code === null ? null : $subs->mainWithCode($evidence->main_code)?->id,
+            'sub_criterion_id' => $evidence->sub_code === null ? null : $subs->idOf($evidence->sub_code),
+            'code' => $evidence->ownerCode(),
             'attachment_key' => $evidence->attachment_key,
             'file_name' => $file->original_name,
             'mime_type' => $file->mime_type,

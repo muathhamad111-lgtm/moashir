@@ -7,7 +7,6 @@ import { useEvidenceUploads } from '@/composables/useEvidenceUploads'
 import { useAccreditedSubmit } from '@/composables/useAccreditedSubmit'
 import { usePassedStations } from '@/composables/usePassedStations'
 import { useConfirm } from '@/composables/useConfirm'
-import { acceptOf } from '@/utils/accredited/evidenceRules'
 
 export function useAccreditedWorkspace({ assessmentId, onSubmitted }) {
   const { t } = useI18n()
@@ -32,8 +31,7 @@ export function useAccreditedWorkspace({ assessmentId, onSubmitted }) {
   const activeMainId = ref(null)
   const refreshing = ref(false)
 
-  const accept = computed(() => acceptOf(form.value?.uploadLimits.allowedTypes ?? []))
-  const workspace = { formState, cvDrafts, uploads, accept }
+  const workspace = { formState, cvDrafts, uploads }
   const mains = computed(() => form.value?.criteria?.mains ?? [])
   const activeMain = computed(
     () => mains.value.find((main) => main.id === activeMainId.value) ?? mains.value[0] ?? null,
@@ -64,10 +62,23 @@ export function useAccreditedWorkspace({ assessmentId, onSubmitted }) {
     document.getElementById(`accredited-sub-${subId}`)?.focus()
   }
 
+  async function revealMain(mainId) {
+    activeMainId.value = mainId
+    await nextTick()
+    document.getElementById(`accredited-main-evidence-${mainId}`)?.focus()
+  }
+
+  function firstMissingSubId(missing) {
+    return (missing.missingCv[0] ?? missing.missingAttachments[0])?.subCriterionId ?? null
+  }
+
   function revealFirstMissing() {
     const missing = form.value?.missing
-    const first = missing?.missingCv?.[0] ?? missing?.missingAttachments?.[0] ?? null
-    return first?.subCriterionId ? revealSub(first.subCriterionId) : Promise.resolve()
+    if (!missing) return Promise.resolve()
+    const subId = firstMissingSubId(missing)
+    if (subId) return revealSub(subId)
+    const main = missing.missingMainAttachments[0]
+    return main ? revealMain(main.mainCriterionId) : Promise.resolve()
   }
 
   async function onRemove(row) {
@@ -109,6 +120,7 @@ export function useAccreditedWorkspace({ assessmentId, onSubmitted }) {
     refreshing,
     selectMain,
     revealSub,
+    revealMain,
     onRemove,
     refresh,
   }

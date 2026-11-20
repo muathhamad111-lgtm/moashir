@@ -4,14 +4,20 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Assessments;
 
+use App\Data\Assessments\EvidenceNodeRef;
 use App\Data\Assessments\EvidenceUpload;
 use App\Enums\Assessments\AssessmentPath;
+use App\Enums\Assessments\EvidenceLevel;
 use App\Models\Assessments\Assessment;
 use App\Services\Assessments\UploadLimitsReader;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\UploadedFile;
 use LogicException;
 
+/**
+ * An evidence upload names a sub-criterion (its attachment or its additional evidence) or a main criterion (one of
+ * its attachments, so the key is required there).
+ */
 final class UploadEvidenceRequest extends FormRequest
 {
     /**
@@ -24,8 +30,9 @@ final class UploadEvidenceRequest extends FormRequest
 
         return [
             'file' => ['required', 'file', 'max:'.app(UploadLimitsReader::class)->read($path)->maxFileKilobytes()],
-            'sub_criterion_id' => ['required', 'integer', 'min:1'],
-            'attachment_key' => ['nullable', 'string', 'max:40'],
+            'sub_criterion_id' => ['required_without:main_criterion_id', 'prohibits:main_criterion_id', 'integer', 'min:1'],
+            'main_criterion_id' => ['required_without:sub_criterion_id', 'integer', 'min:1'],
+            'attachment_key' => ['required_with:main_criterion_id', 'nullable', 'string', 'max:40'],
             'reason' => ['nullable', 'string', 'min:10', 'max:1000'],
         ];
     }
@@ -36,9 +43,16 @@ final class UploadEvidenceRequest extends FormRequest
 
         return new EvidenceUpload(
             $file instanceof UploadedFile ? $file : throw new LogicException('The validated upload is missing.'),
-            $this->integer('sub_criterion_id'),
+            $this->node(),
             $this->filled('attachment_key') ? $this->string('attachment_key')->trim()->toString() : null,
             $this->filled('reason') ? $this->string('reason')->trim()->toString() : null,
         );
+    }
+
+    private function node(): EvidenceNodeRef
+    {
+        return $this->filled('main_criterion_id')
+            ? new EvidenceNodeRef(EvidenceLevel::Main, $this->integer('main_criterion_id'))
+            : new EvidenceNodeRef(EvidenceLevel::Sub, $this->integer('sub_criterion_id'));
     }
 }

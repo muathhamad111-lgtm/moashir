@@ -12,6 +12,7 @@ use App\Models\Identity\Permission;
 use App\Models\Identity\Role;
 use App\Models\Identity\User;
 use App\Services\Identity\AccountAvatarResolver;
+use App\Services\Identity\NationalIdRequirement;
 use App\Services\Identity\SessionClock;
 use App\Services\Identity\SessionTimeouts;
 use Illuminate\Database\Eloquent\Collection;
@@ -24,6 +25,7 @@ final readonly class ResolveSessionContext
         private EntityAccounts $entityAccounts,
         private CommitteeAppointmentsReader $committeeAppointments,
         private AccountAvatarResolver $avatars,
+        private NationalIdRequirement $nationalIds,
     ) {}
 
     public function handle(User $user): SessionContext
@@ -40,6 +42,7 @@ final readonly class ResolveSessionContext
             $this->entityAccounts->sessionSummaryOf($user),
             $this->committeeAppointments->of($user),
             $this->avatars->of($user),
+            $this->nationalIds->statusOf($user),
         );
     }
 

@@ -25,6 +25,8 @@ function requestNote(key) {
 }
 
 function labelOf(option) {
+  if (!option.sub)
+    return t('review.completion.mainItem', { main: localizedText(option.main.name, locale.value) })
   return t('review.completion.itemCell', {
     sub: localizedText(option.sub.name, locale.value),
     kind: t(`accredited.completion.kinds.${option.kind}`),

@@ -174,6 +174,17 @@ pdf_is_tagged_with_embedded_fonts() {
     [[ ${unembedded} -eq 0 ]]
 }
 
+watermark_tools_present() {
+    local tool
+    for tool in qpdf pdfinfo pdftocairo soffice; do
+        command -v "${tool}" >/dev/null || return 1
+    done
+}
+
+watermark_converts_and_stamps() {
+    artisan "${ENVIRONMENT}" moashir:files:watermark-smoke
+}
+
 pdf_samples_render() {
     local output file status=0
     output="$(mktemp -d "$(environment_dir "${ENVIRONMENT}")/shared/tmp/pdf-smoke.XXXXXX")"
@@ -248,6 +259,12 @@ check_services() {
         check "PDF renderer prints the sample documents (tagged, fonts embedded)" pdf_samples_render
     else
         printf '  skip  PDF renderer (PDF_RENDERER is not chromium)\n'
+    fi
+    check "watermark tools are installed (qpdf, pdfinfo, pdftocairo, soffice)" watermark_tools_present
+    if pdf_renderer_enabled; then
+        check "watermark converts a small Word file and stamps the PDF" watermark_converts_and_stamps
+    else
+        printf '  skip  watermark conversion (PDF_RENDERER is not chromium)\n'
     fi
 }
 

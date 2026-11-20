@@ -4,7 +4,7 @@ import { withJsonErrorBody } from './mappers/blobError'
 import { fileNameFrom } from './mappers/download'
 import { serviceRequest } from './serviceRequest'
 
-const LINK_REJECTIONS = [403, 409, 410]
+const LINK_REJECTIONS = [403, 409, 410, 422, 503]
 const DOWNLOAD_PATHS = [
   /^\/files\/[0-9a-f-]{36}\/download$/i,
   /^\/assessments\/\d+\/feedback-report\/pdf$/,
@@ -29,10 +29,13 @@ function apiPathOf(url) {
 }
 
 export const filesService = {
-  fetchSignedFile(signedDownload) {
+  fetchSignedFile(signedDownload, { intent } = {}) {
     const execute = async () => {
       const response = await withJsonErrorBody(
-        apiClient.get(apiPathOf(signedDownload.url), { responseType: 'blob' }),
+        apiClient.get(apiPathOf(signedDownload.url), {
+          responseType: 'blob',
+          ...(intent ? { params: { intent } } : {}),
+        }),
       )
       return {
         data: {

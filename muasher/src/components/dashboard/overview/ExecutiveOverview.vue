@@ -2,7 +2,7 @@
 import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import Skeleton from '@/components/feedback/Skeleton.vue'
+import PageLoading from '@/components/feedback/PageLoading.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import OverviewPeriodPicker from './OverviewPeriodPicker.vue'
 import OverviewCards from './OverviewCards.vue'
@@ -79,13 +79,7 @@ onMounted(state.load)
       </div>
     </header>
 
-    <div
-      v-if="status === 'loading' && !overview"
-      class="executive-overview__loading"
-      aria-busy="true"
-    >
-      <Skeleton variant="block" :count="2" />
-    </div>
+    <PageLoading v-if="status === 'loading' && !overview" />
     <ErrorState
       v-else-if="status === 'error' && !isInvalid"
       :message="errorMessage || t('dashboard.loadError')"

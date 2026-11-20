@@ -19,7 +19,7 @@ import {
   authorizeQueue,
   authorizeViewRequest,
 } from '../stores/accredited/accreditedAccess'
-import { boundSubsOf, reviewedRecords } from '../stores/accredited/accreditedRecords'
+import { boundMainsOf, boundSubsOf, reviewedRecords } from '../stores/accredited/accreditedRecords'
 import { returnForCompletion, withdrawRequest } from '../stores/award/followerWork'
 import { authorizeFollowAdvanced } from '../stores/award/cycleAccess'
 import {
@@ -126,7 +126,7 @@ function detailResource(record, viewer) {
     record: recordResource(record, viewer),
     assignmentHistory: assignments.map((assignment) => assignmentItem(assignment, reveals)),
     completionRequests: record.completionRequests.map((completion) =>
-      completionResource(completion, boundSubsOf(record)),
+      completionResource(completion, boundSubsOf(record), boundMainsOf(record)),
     ),
   }
 }

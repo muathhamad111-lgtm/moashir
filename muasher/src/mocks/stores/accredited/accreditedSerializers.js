@@ -17,10 +17,13 @@ import {
   activeAssignment,
   boundSubsOf,
   gapsOf,
+  boundMainsOf,
   idOfCode,
   isOverdue,
+  lateAttachmentKeysOf,
   nameOfCode,
   openCompletionOf,
+  ownerCodeOf,
   presentEvidence,
 } from './accreditedRecords'
 import { findCycle } from '../award/cycleStore'
@@ -48,11 +51,13 @@ function clockOf(record) {
   }
 }
 
-export function evidenceItem(row, subs) {
+export function evidenceItem(row, subs, mains = []) {
   return {
     id: row.id,
-    subCriterionId: idOfCode(subs, row.subCode),
-    code: row.subCode,
+    level: row.mainCode ? 'main' : 'sub',
+    mainCriterionId: row.mainCode ? idOfCode(mains, row.mainCode) : null,
+    subCriterionId: row.subCode ? idOfCode(subs, row.subCode) : null,
+    code: ownerCodeOf(row),
     attachmentKey: row.attachmentKey,
     fileName: row.fileName,
     mimeType: row.mimeType,
@@ -71,22 +76,29 @@ export function visibleEvidence(record, viewer) {
 
 export function evidenceList(rows, record) {
   const subs = boundSubsOf(record)
-  return rows.map((row) => evidenceItem(row, subs))
+  const mains = boundMainsOf(record)
+  return rows.map((row) => evidenceItem(row, subs, mains))
 }
 
-export function completionResource(completion, subs) {
+function completionItemResource(item, subs, mains) {
+  const nodes = item.mainCode ? mains : subs
+  return {
+    mainCriterionId: item.mainCode && mains ? idOfCode(mains, item.mainCode) : null,
+    subCriterionId: item.subCode && subs ? idOfCode(subs, item.subCode) : null,
+    code: ownerCodeOf(item),
+    name: nodes ? nameOfCode(nodes, ownerCodeOf(item)) : null,
+    kind: item.kind,
+    note: item.note,
+  }
+}
+
+export function completionResource(completion, subs, mains = null) {
   if (!completion) return null
   return {
     id: completion.id,
     status: completion.status,
     notes: completion.notes,
-    items: completion.items.map((item) => ({
-      subCriterionId: subs ? idOfCode(subs, item.subCode) : null,
-      code: item.subCode,
-      name: subs ? nameOfCode(subs, item.subCode) : null,
-      kind: item.kind,
-      note: item.note,
-    })),
+    items: completion.items.map((item) => completionItemResource(item, subs, mains)),
     deadlineAt: completion.deadlineAt,
     expiryOutcome: completion.expiryOutcome,
     requestedAt: completion.createdAt,
@@ -131,7 +143,7 @@ export function accreditedFormResource(record, viewer) {
     cv: cvBySubId(record, subs),
     evidence: evidenceList(visibleEvidence(record, viewer), record),
     missing: gapsOf(record),
-    completionRequest: completionResource(openCompletionOf(record), subs),
+    completionRequest: completionResource(openCompletionOf(record), subs, boundMainsOf(record)),
     uploadLimits: uploadLimits(),
     criteriaUpdate: criteriaUpdateOf(record),
     passedStations: [...(record.passedStations ?? [])],
@@ -227,8 +239,9 @@ export function reviewResource(record, { mode, context }) {
       presentEvidence(record).filter((row) => row.scanStatus === 'clean'),
       record,
     ),
+    lateAttachmentKeys: lateAttachmentKeysOf(record),
     feedback: feedbackBySubId(record, subs),
-    completionRequest: completionResource(openCompletionOf(record), subs),
+    completionRequest: completionResource(openCompletionOf(record), subs, boundMainsOf(record)),
     context,
     criteriaUpdate: criteriaUpdateOf(record),
   }

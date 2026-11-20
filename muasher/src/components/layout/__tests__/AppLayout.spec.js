@@ -1,8 +1,10 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import { notificationsService } from '@/services/notificationsService'
 import { createTestGlobals } from '@/test-utils'
+import { installNavigationState } from '@/router/navigationState'
+import { MINIMUM_VISIBLE_MS, SHOW_DELAY_MS } from '@/composables/useDeferredVisibility'
 
 vi.mock('@/services/notificationsService', () => ({
   notificationsService: {
@@ -29,5 +31,39 @@ describe('AppLayout', () => {
     expect(wrapper.find('.app-layout > .navbar--app').exists()).toBe(true)
     expect(wrapper.find('.app-layout__body > .sidebar').exists()).toBe(true)
     expect(wrapper.find('main.app-layout__content .page').text()).toBe('محتوى الشاشة')
+  })
+})
+
+describe('AppLayout page loading', () => {
+  afterEach(() => vi.useRealTimers())
+
+  it('covers the content with the waiting page while the next page loads, keeping the shell', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] })
+    const globals = createTestGlobals()
+    let arrive
+    const slowPage = () => new Promise((done) => (arrive = () => done({ render: () => null })))
+    globals.router.addRoute({ path: '/slow-page', component: slowPage })
+    installNavigationState(globals.router)
+    const wrapper = mount(AppLayout, {
+      slots: { default: '<p class="page">محتوى الشاشة</p>' },
+      global: globals,
+    })
+    await flushPromises()
+
+    const navigation = globals.router.push('/slow-page')
+    await flushPromises()
+    vi.advanceTimersByTime(SHOW_DELAY_MS)
+    await flushPromises()
+    const main = wrapper.find('main.app-layout__content')
+    expect(main.find('.app-loading--overlay').exists()).toBe(true)
+    expect(main.attributes('aria-busy')).toBe('true')
+    expect(wrapper.find('.app-layout__body > .sidebar').exists()).toBe(true)
+
+    arrive()
+    await navigation
+    vi.advanceTimersByTime(MINIMUM_VISIBLE_MS)
+    await flushPromises()
+    expect(main.find('.app-loading--overlay').exists()).toBe(false)
+    expect(main.attributes('aria-busy')).toBe('false')
   })
 })

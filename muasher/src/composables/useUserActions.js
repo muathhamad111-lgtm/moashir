@@ -42,11 +42,20 @@ const ACTION_ICONS = {
   [A.RESET_MFA]: 'lock',
   [A.QUALIFICATIONS]: 'graduation-cap',
   [A.REQUEST_SCOPE]: 'route',
+  [A.NAME_CORRECTION]: 'pen-line',
+  [A.IDENTITY_HISTORY]: 'doc',
 }
 
 const DANGER = [A.SUSPEND, A.RESET_MFA, A.REVOKE_SESSIONS, A.CANCEL_INVITATION]
 
-function availableKeys(user, selfId, canViewAudit) {
+function identityKeys(user, isSelf, canReviewIdentity) {
+  const keys = []
+  if (![S.INVITED, S.EXPIRED].includes(user.status) && !isSelf) keys.push(A.NAME_CORRECTION)
+  if (canReviewIdentity) keys.push(A.IDENTITY_HISTORY)
+  return keys
+}
+
+function availableKeys(user, { selfId, canViewAudit, canReviewIdentity }) {
   const keys = [A.EDIT]
   const isSelf = user.id === selfId
   if (user.status === S.ACTIVE && !isSelf) keys.push(A.SUSPEND)
@@ -59,6 +68,7 @@ function availableKeys(user, selfId, canViewAudit) {
   if (isQualifiableUser(user) && !isSelf) keys.push(A.QUALIFICATIONS)
   if (isScopableUser(user) && !isSelf) keys.push(A.REQUEST_SCOPE)
   if (![S.INVITED, S.EXPIRED].includes(user.status) && !isSelf) keys.push(A.REVOKE_SESSIONS)
+  keys.push(...identityKeys(user, isSelf, canReviewIdentity))
   if (canViewAudit) keys.push(A.ACTIVITY)
   return keys
 }
@@ -90,7 +100,11 @@ export function useUserActions({ onChanged }) {
   })
 
   function actionsFor(user) {
-    return availableKeys(user, auth.user?.id ?? null, can(PERMISSIONS.AUDIT_VIEW)).map((key) => ({
+    return availableKeys(user, {
+      selfId: auth.user?.id ?? null,
+      canViewAudit: can(PERMISSIONS.AUDIT_VIEW),
+      canReviewIdentity: can(PERMISSIONS.USERS_IDENTITY_CHANGES_REVIEW),
+    }).map((key) => ({
       key,
       label: t(`users.actions.${key}`),
       icon: ACTION_ICONS[key],

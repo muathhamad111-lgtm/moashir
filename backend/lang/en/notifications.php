@@ -98,6 +98,24 @@ return [
             'body' => 'The sign-in email of a Super Admin account was changed.',
         ],
     ],
+    'identity' => [
+        'USR-06' => [
+            'reviewer' => [
+                'title' => 'Identity change request awaiting review',
+                'body' => 'A request to change the identity details of :user is waiting for your decision.',
+            ],
+        ],
+        'USR-07' => [
+            'approved' => [
+                'title' => 'Your identity change request was approved',
+                'body' => 'The change to your identity details was approved and is now on your account.',
+            ],
+            'rejected' => [
+                'title' => 'Your identity change request was rejected',
+                'body' => 'The change to your identity details was rejected. Open your profile to read the reviewer\'s note.',
+            ],
+        ],
+    ],
     'entities' => [
         'open_platform' => 'Open the platform',
         'REG-01' => [

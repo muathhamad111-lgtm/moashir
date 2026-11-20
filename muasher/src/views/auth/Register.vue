@@ -14,7 +14,7 @@ import { useRegistrationSteps } from '@/composables/useRegistrationSteps'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 
 const { t } = useI18n()
-const { form, status, load, regions, underReview } = useEntityRegistration()
+const { form, status, load, regions, underReview, nationalIdRequired } = useEntityRegistration()
 const wizard = useRegistrationSteps(form)
 const stepPanel = useTemplateRef('stepPanel')
 
@@ -96,7 +96,7 @@ onMounted(load)
           :region-options="regions.regionOptions.value"
           :city-options-for="regions.cityOptionsFor"
         />
-        <RegistrationAccountStep v-else />
+        <RegistrationAccountStep v-else :national-id-required="nationalIdRequired" />
       </fieldset>
 
       <div class="auth-form__actions entity-register__actions">

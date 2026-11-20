@@ -122,7 +122,7 @@ it('shows a transfer with its proof and lets reviewers and operations viewers do
         $this->get($url)->assertOk();
     }
 
-    expect(Audit::query()->where('event', AuditEvent::FileDownloaded->value)->count())->toBe(2);
+    expect(Audit::query()->where('event', AuditEvent::FileAccessed->value)->count())->toBe(2);
 });
 
 it('answers 404 for an unknown transfer or a card payment', function (): void {

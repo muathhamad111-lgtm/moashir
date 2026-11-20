@@ -13,6 +13,7 @@ use App\Enums\Identity\ThemePreference;
 use App\Enums\Identity\UserStatus;
 use App\Models\Files\StoredFile;
 use App\Models\Notifications\Notification;
+use App\Observers\Identity\UserNationalIdIndexObserver;
 use App\Observers\Identity\UserPhoneIndexObserver;
 use App\Support\Search\SearchTextNormalizer;
 use App\Support\ValueObjects\EmailAddress;
@@ -42,6 +43,8 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string|null $phone
  * @property string|null $phone_index
  * @property Carbon|null $phone_verified_at
+ * @property string|null $national_id
+ * @property string|null $national_id_index
  * @property string|null $password
  * @property int|null $entity_id
  * @property int|null $avatar_file_id
@@ -68,7 +71,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read Collection<int, UserAssessorQualification> $assessorQualifications
  * @property-read Collection<int, UserRequestPath> $requestPaths
  */
-#[ObservedBy([UserPhoneIndexObserver::class])]
+#[ObservedBy([UserPhoneIndexObserver::class, UserNationalIdIndexObserver::class])]
 final class User extends Authenticatable implements Auditable, HasLocalePreference
 {
     use AuditableTrait;
@@ -106,7 +109,7 @@ final class User extends Authenticatable implements Auditable, HasLocalePreferen
     /**
      * @var list<string>
      */
-    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'is_super_admin', 'phone_index', 'avatar_file_id'];
+    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'is_super_admin', 'phone_index', 'avatar_file_id', 'national_id', 'national_id_index'];
 
     /**
      * @var list<string>
@@ -114,6 +117,7 @@ final class User extends Authenticatable implements Auditable, HasLocalePreferen
     protected array $auditExclude = [
         'password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes',
         'failed_login_attempts', 'last_login_at', 'last_login_ip', 'phone', 'phone_index', 'avatar_file_id',
+        'national_id', 'national_id_index',
     ];
 
     /**
@@ -124,6 +128,7 @@ final class User extends Authenticatable implements Auditable, HasLocalePreferen
         return [
             'email_verified_at' => 'datetime',
             'phone' => 'encrypted',
+            'national_id' => 'encrypted',
             'phone_verified_at' => 'datetime',
             'password' => 'hashed',
             'password_change_required' => 'boolean',

@@ -116,9 +116,9 @@ watch(assessment, (value) => {
           :step="activeIndex + 1"
           :total="mains.length"
           :workspace="workspace"
-          @upload="uploads.upload($event.sub.id, $event.key, $event.file)"
+          @upload="uploads.upload($event.owner, $event.attachment, $event.file)"
           @remove="onRemove"
-          @replace="uploads.replace($event.file, $event.replacement)"
+          @replace="uploads.replace($event.file, $event.attachment, $event.replacement)"
           @download="uploads.download"
         />
         <AccreditedFormActions

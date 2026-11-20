@@ -16,6 +16,11 @@ return [
         'VOID' => 'ملغى',
     ],
 
+    'viewer_stamp' => [
+        'title' => 'ختم المطّلع',
+        'footer' => 'اطّلع عليه :viewer · :time (توقيت الرياض) · رمز التتبع :trace',
+    ],
+
     'certificate' => [
         'title' => 'شهادة التقييم المعتمد',
         'participation_title' => 'شهادة مشاركة',

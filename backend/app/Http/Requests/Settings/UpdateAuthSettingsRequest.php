@@ -24,6 +24,10 @@ final class UpdateAuthSettingsRequest extends FormRequest
 
     private const string TWO_FACTOR_ROLES = 'two_factor_roles';
 
+    private const string NATIONAL_ID = 'national_id_enabled';
+
+    private const string NATIONAL_ID_ROLES = 'national_id_roles';
+
     /**
      * @return array<string, mixed>
      */
@@ -37,6 +41,9 @@ final class UpdateAuthSettingsRequest extends FormRequest
             self::TWO_FACTOR => ['sometimes', 'required', 'boolean'],
             self::TWO_FACTOR_ROLES => ['sometimes', 'present', 'array', 'list', 'max:'.count(RoleKey::cases())],
             self::TWO_FACTOR_ROLES.'.*' => ['required', 'string', 'distinct', Rule::enum(RoleKey::class)],
+            self::NATIONAL_ID => ['sometimes', 'required', 'boolean'],
+            self::NATIONAL_ID_ROLES => ['sometimes', 'present', 'array', 'list', 'max:'.count(RoleKey::cases())],
+            self::NATIONAL_ID_ROLES.'.*' => ['required', 'string', 'distinct', Rule::enum(RoleKey::class)],
             'reason' => ['nullable', 'string', 'min:10', 'max:1000'],
         ];
     }
@@ -66,8 +73,10 @@ final class UpdateAuthSettingsRequest extends FormRequest
             $this->has(self::GENERAL_EMAIL) ? $this->boolean(self::GENERAL_EMAIL) : null,
             $this->has(self::REGISTRATION_REVIEW) ? $this->boolean(self::REGISTRATION_REVIEW) : null,
             $this->has(self::TWO_FACTOR) ? $this->boolean(self::TWO_FACTOR) : null,
-            $this->has(self::TWO_FACTOR_ROLES) ? $this->twoFactorRoles() : null,
+            $this->has(self::TWO_FACTOR_ROLES) ? $this->rolesOf(self::TWO_FACTOR_ROLES) : null,
             $this->filled('reason') ? $this->string('reason')->trim()->toString() : null,
+            $this->has(self::NATIONAL_ID) ? $this->boolean(self::NATIONAL_ID) : null,
+            $this->has(self::NATIONAL_ID_ROLES) ? $this->rolesOf(self::NATIONAL_ID_ROLES) : null,
         );
     }
 
@@ -86,9 +95,9 @@ final class UpdateAuthSettingsRequest extends FormRequest
     /**
      * @return list<RoleKey>
      */
-    private function twoFactorRoles(): array
+    private function rolesOf(string $field): array
     {
-        $submitted = $this->array(self::TWO_FACTOR_ROLES);
+        $submitted = $this->array($field);
 
         return array_values(array_filter(RoleKey::cases(), static fn (RoleKey $role): bool => in_array($role->value, $submitted, true)));
     }

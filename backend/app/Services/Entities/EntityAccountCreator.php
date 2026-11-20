@@ -13,7 +13,9 @@ use App\Events\Entities\EntityRegistered;
 use App\Models\Entities\Entity;
 use App\Models\Identity\User;
 use App\Services\Identity\MfaRequirement;
+use App\Services\Identity\NationalIdAssigner;
 use App\Services\Identity\TermsAcceptanceRecorder;
+use App\Support\ValueObjects\NationalId;
 
 final readonly class EntityAccountCreator
 {
@@ -22,6 +24,7 @@ final readonly class EntityAccountCreator
         private TermsAcceptanceRecorder $terms,
         private MarketingConsentRecorder $consent,
         private MfaRequirement $mfaRequirement,
+        private NationalIdAssigner $nationalIds,
     ) {}
 
     public function create(EntityRegistrationData $data): Entity
@@ -58,6 +61,10 @@ final readonly class EntityAccountCreator
             'mfa_required' => $mfaRequired,
         ])->save());
         $owner->assignRole(RoleKey::Entity->value);
+
+        if ($data->nationalId instanceof NationalId) {
+            $this->nationalIds->assignFirst($owner, $data->nationalId);
+        }
 
         return $owner;
     }

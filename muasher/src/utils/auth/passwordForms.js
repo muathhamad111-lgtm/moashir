@@ -1,5 +1,7 @@
 import { boolean as yupBoolean, object as yupObject, string as yupString } from 'yup'
 import { PASSWORD_LENGTH } from '@/constants/entityEnums'
+import { nationalIdRule } from '@/utils/identity/nationalIdSchema'
+import { normalizeNationalId } from '@/utils/identity/nationalId'
 
 const EMAIL_MAX = 254
 
@@ -33,9 +35,10 @@ export function resetPasswordSchema(t) {
   return yupObject({ email: emailField(t), ...newPasswordShape(t) })
 }
 
-export function invitationSchema(t, { termsRequired }) {
+export function invitationSchema(t, { termsRequired, nationalIdRequired = false }) {
   return yupObject({
     ...newPasswordShape(t),
+    ...(nationalIdRequired ? { nationalId: nationalIdRule(t) } : {}),
     termsAccepted: termsRequired
       ? yupBoolean().oneOf([true], t('entities.validation.termsRequired'))
       : yupBoolean(),
@@ -56,5 +59,6 @@ export function invitationPayload(values, terms) {
     password: values.password,
     passwordConfirmation: values.passwordConfirmation,
     termsVersionId: terms?.terms?.id ?? null,
+    ...(values.nationalId ? { nationalId: normalizeNationalId(values.nationalId) } : {}),
   }
 }
