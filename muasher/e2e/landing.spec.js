@@ -396,6 +396,31 @@ test.describe('landing — widths and themes', () => {
   }
 })
 
+const FIXED_OVERLAYS = '.lp-top, .lp-skip, .lp-assist-btn { visibility: hidden !important; }'
+
+async function pageDataReady(page) {
+  await expect(page.locator('#model .lp-model-criteria[aria-busy]')).toHaveCount(0)
+  await page.addStyleTag({ content: FIXED_OVERLAYS })
+}
+
+const SECTION_DATA_READY = {
+  paths: (page) => expect(page.locator('#paths .lp-path__vat').first()).toBeVisible(),
+  levels: (page) => expect(page.locator('#levels .lp-lv__tiers button')).toHaveCount(5),
+}
+
+async function imagesLoaded(page, id) {
+  return page
+    .locator(`#${id} img`)
+    .evaluateAll((images) => images.every((image) => image.complete && image.naturalWidth > 0))
+}
+
+async function settleSection(page, id) {
+  await revealSection(page, id)
+  await SECTION_DATA_READY[id]?.(page)
+  await expect.poll(() => imagesLoaded(page, id)).toBe(true)
+  await page.evaluate(() => document.fonts.ready)
+}
+
 test.describe('landing — screenshot baselines', () => {
   for (const [name, viewport] of Object.entries(VIEWPORTS)) {
     for (const theme of THEMES) {
@@ -405,8 +430,9 @@ test.describe('landing — screenshot baselines', () => {
         await page.evaluate(() => document.fonts.ready)
         const options = { animations: 'disabled', maxDiffPixelRatio: 0.01 }
         await expect(page).toHaveScreenshot(`landing-${name}-${theme}-top.png`, options)
+        await pageDataReady(page)
         for (const id of ['paths', 'levels', 'kit']) {
-          await revealSection(page, id)
+          await settleSection(page, id)
           await expect(page.locator(`#${id}`)).toHaveScreenshot(
             `landing-${name}-${theme}-${id}.png`,
             options,
