@@ -275,6 +275,10 @@ describe('entity bank-transfer checkout mock contract', () => {
       acceptProof(pdf('%PDF-1.4 EICAR-STANDARD-ANTIVIRUS-TEST-FILE')),
     )
     expect(infected.code).toBe('file.infected')
+    const locked = await rejectionOf(
+      acceptProof(pdf('%PDF-1.7\ntrailer << /Root 1 0 R /Encrypt 5 0 R >>')),
+    )
+    expect(locked.code).toBe('file.password_protected')
     const missing = await rejectionOf(
       Promise.resolve().then(() =>
         validatedTransfer(transferForm({ purpose: 'bag', channel: 'bank_transfer' })),

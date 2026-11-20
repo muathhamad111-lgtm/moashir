@@ -94,6 +94,16 @@ function pointsOf(page, name) {
   return page.locator('.criteria-card', { hasText: name }).first().locator('.criteria-point')
 }
 
+// The add wizards: Next validates the step's fields; the step list marks where the editor is.
+function wizardNext(dialog) {
+  return dialog.getByRole('button', { name: /^\s*(Next|التالي)\s*$/ }).click()
+}
+
+async function wizardTo(dialog, step) {
+  await wizardNext(dialog)
+  await expect(dialog.locator('[aria-current="step"]')).toContainText(step)
+}
+
 async function useTallViewport(page) {
   await page.setViewportSize({ width: 1280, height: 1500 })
 }
@@ -334,9 +344,21 @@ test('building a draft: add a main criterion and a sub-criterion, reorder, save 
 
   await page.getByRole('button', { name: /Add main criterion|إضافة معيار رئيسي/ }).click()
   const mainDialog = page.getByRole('dialog')
+  await wizardNext(mainDialog)
+  await expect(mainDialog.locator('input[name="nameAr"]')).toHaveAttribute('aria-invalid', 'true')
   await mainDialog.locator('input[name="nameAr"]').fill('تميز الحوكمة')
   await mainDialog.locator('input[name="nameEn"]').fill('Governance Excellence')
+  // Esc with entered data asks first, like the editor sheet; staying keeps what was typed.
+  await page.keyboard.press('Escape')
+  const confirm = page.getByRole('alertdialog')
+  await expect(confirm).toContainText(/Discard the changes\?|تجاهل التعديلات؟/)
+  await confirm.getByRole('button', { name: /Cancel|إلغاء/ }).click()
+  await expect(mainDialog.locator('input[name="nameEn"]')).toHaveValue('Governance Excellence')
+  await wizardTo(mainDialog, /Weight|الوزن/)
   await mainDialog.locator('input[name="weight"]').fill('500')
+  await wizardTo(mainDialog, /Evaluation|طريقة التقييم/)
+  await wizardTo(mainDialog, /Review|المراجعة/)
+  await expect(mainDialog.locator('.criteria-wizard-review')).toContainText('Governance Excellence')
   await mainDialog.getByRole('button', { name: /^\s*(Add|إضافة)\s*$/ }).click()
   const governance = nameOf(testInfo, 'governance')
   await expect(mains(page)).toHaveCount(10)
@@ -351,7 +373,11 @@ test('building a draft: add a main criterion and a sub-criterion, reorder, save 
   const subDialog = page.getByRole('dialog')
   await subDialog.locator('input[name="subNameAr"]').fill('الإفصاح والشفافية')
   await subDialog.locator('input[name="subNameEn"]').fill('Disclosure and Transparency')
+  await wizardTo(subDialog, /Weight|الوزن/)
   await subDialog.locator('input[name="subWeight"]').fill('300')
+  await wizardTo(subDialog, /Evaluation|طريقة التقييم/)
+  await wizardTo(subDialog, /Attachments|المرفقات/)
+  await wizardTo(subDialog, /Review|المراجعة/)
   await subDialog.getByRole('button', { name: /^\s*(Add|إضافة)\s*$/ }).click()
   await expect(sheetTitle(page)).toHaveText(nameOf(testInfo, 'disclosure'))
 

@@ -99,12 +99,25 @@ function pdfPageCountOf(string $pdf): int
 
 function passwordProtectedPdf(): string
 {
+    return encryptedPdf(['reader-secret', 'owner-secret', '256']);
+}
+
+function ownerRestrictedPdf(): string
+{
+    return encryptedPdf(['', 'owner-secret', '256', '--print=none', '--modify=none']);
+}
+
+/**
+ * @param  list<string>  $encryption  the `qpdf --encrypt` arguments: user password, owner password, key length, restrictions
+ */
+function encryptedPdf(array $encryption): string
+{
     $source = (string) tempnam(sys_get_temp_dir(), 'moashir-test-pdf-');
     $target = $source.'-locked.pdf';
     file_put_contents($source, multiPagePdf([new PageSize(595, 842)]));
 
     try {
-        Process::run(['qpdf', '--encrypt', 'reader-secret', 'owner-secret', '256', '--', $source, $target]);
+        Process::run(['qpdf', '--encrypt', ...$encryption, '--', $source, $target]);
 
         return (string) file_get_contents($target);
     } finally {

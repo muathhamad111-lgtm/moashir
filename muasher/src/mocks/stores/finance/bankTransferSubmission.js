@@ -6,6 +6,7 @@ import { nowIso } from './paymentLifecycle'
 import { storeFile } from './signedFiles'
 import { listedAccount } from './bankAccountsStore'
 import { isChannelAvailable } from './paymentChannelsStore'
+import { isLockedPdf } from '../lockedPdf'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const TYPES = { pdf: 'application/pdf', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png' }
@@ -85,6 +86,7 @@ export async function acceptProof(file) {
   const decoded = new TextDecoder().decode(bytes)
   if (detectedType(bytes) !== TYPES[extensionOf(file.name)])
     throw financeReject.fileRefused('file.content_mismatch', 'proof')
+  if (isLockedPdf(bytes)) throw financeReject.fileRefused('file.password_protected', 'proof')
   if (decoded.includes(INFECTED_MARKER)) throw financeReject.fileRefused('file.infected', 'proof')
   if (decoded.includes(SCAN_FAILURE_MARKER))
     throw financeReject.fileRefused('file.scan_failed', 'proof')

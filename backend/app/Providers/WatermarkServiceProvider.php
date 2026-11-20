@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Contracts\Documents\StampPrinter;
+use App\Contracts\Files\PdfPasswordDetector;
 use App\Contracts\Watermark\OfficeConverter;
 use App\Contracts\Watermark\PdfOverlay;
 use App\Contracts\Watermark\PdfPageInspector;
@@ -12,6 +13,7 @@ use App\Contracts\Watermark\StampRasterizer;
 use App\Integrations\Documents\ChromiumStampPrinter;
 use App\Integrations\Documents\UnavailableStampPrinter;
 use App\Integrations\Fakes\FakeStampPrinter;
+use App\Integrations\Files\QpdfPasswordDetector;
 use App\Integrations\Watermark\LibreOfficeConverter;
 use App\Integrations\Watermark\PdfinfoPageInspector;
 use App\Integrations\Watermark\PdftocairoRasterizer;
@@ -28,6 +30,7 @@ final class WatermarkServiceProvider extends ServiceProvider
         $this->app->bind(PdfOverlay::class, QpdfOverlay::class);
         $this->app->bind(StampRasterizer::class, PdftocairoRasterizer::class);
         $this->app->bind(OfficeConverter::class, LibreOfficeConverter::class);
+        $this->app->bind(PdfPasswordDetector::class, QpdfPasswordDetector::class);
         $this->app->singleton(FakeStampPrinter::class);
         $this->app->singleton(StampPrinter::class, fn (): StampPrinter => $this->stampPrinter());
     }

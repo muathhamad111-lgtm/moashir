@@ -14,10 +14,17 @@ import { renameFieldErrors } from '@/services/mappers/fieldErrors'
 import { pairedText, requiredText, weightText } from '@/utils/criteriaSchemas'
 import { attachmentsPayload, cloneAttachments } from '@/utils/criteriaAttachments'
 import { compareWeights, normalizeWeight } from '@/utils/weight'
-import { CRITERIA_DESCRIPTION_MAX_LENGTH, EVALUATION_TYPES } from '@/constants/criteria'
+import {
+  CRITERIA_DESCRIPTION_MAX_LENGTH,
+  EVALUATION_TYPES,
+  SCORING_TYPES,
+} from '@/constants/criteria'
 import AppIcon from '@/components/ui/AppIcon.vue'
-import { useFormSections } from '@/composables/useFormSections'
-import { SUB_FIELD_SECTIONS } from '@/utils/criteriaFormSections'
+import CriteriaWizardReview from './CriteriaWizardReview.vue'
+import { useCriteriaFormLayout } from '@/composables/useCriteriaFormLayout'
+import { useScoringTypeOptions } from '@/composables/useScoringTypeOptions'
+import { SUB_FIELD_SECTIONS, SUB_WIZARD } from '@/utils/criteriaFormSections'
+import { subReviewRows } from '@/utils/criteriaWizardReview'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -29,11 +36,14 @@ const props = defineProps({
   // In the editor sheet: the tab to show (basics | attachments | advanced). Empty = every field.
   // The sheet edits the weight in the parent's split only, so this form neither shows nor sends it.
   section: { type: String, default: '' },
+  // Create only: the fields come in short steps in a drawer (UX-A2).
+  wizard: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:modelValue', 'section-errors', 'dirty'])
 const { t } = useI18n()
 const { locale, weight: formatted } = useCriteria()
+const { options: scoringOptions, labelOf: typeLabel } = useScoringTypeOptions()
 
 const FIELD_ALIASES = {
   'name.ar': 'nameAr',
@@ -77,6 +87,7 @@ const schema = computed(() =>
     noteEn: pairedText(t, 'noteAr'),
     weight: weightRule(),
     evaluationType: yupString().required(t('validation.required')),
+    scoringType: yupString(),
     distributeEqually: yupBoolean(),
     hasCv: yupBoolean(),
     active: yupBoolean(),
@@ -93,6 +104,7 @@ function valuesOf(sub) {
     noteEn: sub?.assessorNoteLabel?.en ?? '',
     weight: sub?.weight ?? '',
     evaluationType: sub?.evaluationType ?? EVALUATION_TYPES.GUIDING_POINTS,
+    scoringType: sub?.scoringType ?? props.main.defaultScoringType ?? SCORING_TYPES.SCORE,
     distributeEqually: Boolean(sub?.distributeEqually),
     hasCv: sub?.hasCv ?? true,
     active: sub?.active ?? true,
@@ -119,6 +131,9 @@ function payloadOf(values) {
     ...payload,
     mainCriterionId: props.main.id,
     evaluationType: values.evaluationType,
+    // A direct sub-criterion is scored with this type; one on indicators gives it to new indicators.
+    [values.evaluationType === EVALUATION_TYPES.DIRECT ? 'scoringType' : 'defaultPointScoringType']:
+      values.scoringType,
     active: values.active,
   }
 }
@@ -142,15 +157,13 @@ const formShell = useFormShell(
     inline: () => props.inline,
     open: () => props.modelValue,
     record: () => props.criterion,
+    wizard: () => props.wizard,
     reset: () => {
       form.resetForm({ values: valuesOf(props.criterion) })
       attachments.value = cloneAttachments(props.criterion?.attachments)
     },
   },
   emit,
-)
-const shellProps = computed(() =>
-  props.inline ? { readonly: props.readonly } : { modelValue: props.modelValue, size: 'lg' },
 )
 
 const [nameAr] = form.defineField('nameAr')
@@ -161,21 +174,27 @@ const [noteAr] = form.defineField('noteAr')
 const [noteEn] = form.defineField('noteEn')
 const [weight] = form.defineField('weight')
 const [evaluationType] = form.defineField('evaluationType')
+const [scoringType] = form.defineField('scoringType')
 const [distributeEqually] = form.defineField('distributeEqually')
 const [hasCv] = form.defineField('hasCv')
 const [active] = form.defineField('active')
 
 const isGuidingPoints = computed(() => evaluationType.value === EVALUATION_TYPES.GUIDING_POINTS)
 
-const sections = useFormSections(
-  {
-    section: () => props.section,
-    fieldSections: SUB_FIELD_SECTIONS,
-    attachments,
-    record: () => props.criterion,
-  },
-  form,
-  emit,
+const { sections, steps, shellProps, inWizard } = useCriteriaFormLayout(props, form, emit, {
+  sheetSections: SUB_FIELD_SECTIONS,
+  wizard: SUB_WIZARD,
+  attachments,
+  record: () => props.criterion,
+})
+const reviewRows = computed(() =>
+  subReviewRows(form.values, {
+    t,
+    typeLabel,
+    weight: formatted,
+    parentDistributes: parentDistributes.value,
+    attachmentCount: attachments.value.length,
+  }),
 )
 </script>
 
@@ -194,6 +213,8 @@ const sections = useFormSections(
     :submit-label="isEdit ? t('actions.save') : t('criteria.sub.create')"
     @update:model-value="formShell.toggle"
     @submit="form.onSubmit"
+    @next="steps.next"
+    @back="steps.back"
   >
     <div class="criteria-form">
       <div v-show="sections.shows('basics')" class="criteria-form__grid">
@@ -214,21 +235,23 @@ const sections = useFormSections(
           required
         />
       </div>
-      <BaseInput
-        v-if="!weightElsewhere"
-        v-model="weight"
-        name="subWeight"
-        :label="t('criteria.fields.weight')"
-        :hint="t('criteria.fields.availableWeight', { weight: formatted(available) })"
-        :error="form.errors.value.weight"
-        required
-      />
-      <p v-else-if="!sections.inSheet.value" class="criteria-form__note" role="note">
-        <AppIcon name="scale" />
-        <span>{{ t('criteria.fields.equalWeightNote') }}</span>
-      </p>
+      <div v-show="sections.shows('weight')" class="criteria-form__group">
+        <BaseInput
+          v-if="!weightElsewhere"
+          v-model="weight"
+          name="subWeight"
+          :label="t('criteria.fields.weight')"
+          :hint="t('criteria.fields.availableWeight', { weight: formatted(available) })"
+          :error="form.errors.value.weight"
+          required
+        />
+        <p v-else-if="!sections.inSheet.value" class="criteria-form__note" role="note">
+          <AppIcon name="scale" />
+          <span>{{ t('criteria.fields.equalWeightNote') }}</span>
+        </p>
+      </div>
 
-      <template v-if="!isEdit">
+      <div v-if="!isEdit" v-show="sections.shows('evaluation')" class="criteria-form__group">
         <BaseRadio
           v-model="evaluationType"
           name="evaluationType"
@@ -244,7 +267,18 @@ const sections = useFormSections(
               : t('criteria.evaluationType.directHint')
           }}</span>
         </p>
-      </template>
+        <BaseRadio
+          v-model="scoringType"
+          name="subScoringType"
+          :label="
+            isGuidingPoints
+              ? t('criteria.workspace.scoring.label.points')
+              : t('criteria.workspace.scoring.label.direct')
+          "
+          :options="scoringOptions"
+          :error="form.errors.value.scoringType"
+        />
+      </div>
       <p v-else-if="!sections.inSheet.value" class="criteria-form__note" role="note">
         <AppIcon name="info-circle" />
         <span>{{ t('criteria.evaluationType.editNote') }}</span>
@@ -307,6 +341,7 @@ const sections = useFormSections(
           :label="t('criteria.fields.active')"
         />
       </div>
+      <CriteriaWizardReview v-if="inWizard() && sections.shows('review')" :rows="reviewRows" />
     </div>
   </component>
 </template>

@@ -28,6 +28,7 @@ const STATE_BADGES = {
   [PROOF_STATES.WRONG_TYPE]: 'danger',
   [PROOF_STATES.TOO_LARGE]: 'danger',
   [PROOF_STATES.UNSAFE]: 'danger',
+  [PROOF_STATES.PROTECTED]: 'danger',
   [PROOF_STATES.FAILED]: 'danger',
 }
 

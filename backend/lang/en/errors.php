@@ -273,6 +273,8 @@ return [
         'content_mismatch' => 'The file type is not allowed or its content does not match its extension.',
         'infected' => 'The file was rejected by the malware scan.',
         'scan_failed' => 'The file could not be scanned for malware. Please try again later.',
+        'password_protected' => 'This PDF is locked with a password. Remove the password, then upload the file again.',
+        'check_failed' => 'The file could not be checked. Please try again later.',
         'not_clean' => 'This file is not available for download.',
         'not_usable' => 'The selected image does not exist, is not clean, or belongs to other content. Upload it again.',
     ],

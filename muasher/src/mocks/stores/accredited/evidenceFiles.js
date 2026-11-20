@@ -9,6 +9,7 @@ import { visibleEvidence } from './accreditedSerializers'
 import { enterEntityGate, isRequestedItem } from './entityWorkflow'
 import { announceRefusedEvidence } from './accreditedNotices'
 import { isPositiveInteger, reasonError, throwIfErrors, trimmed } from './accreditedValidation'
+import { isLockedPdf } from '../lockedPdf'
 
 const EVIDENCE_SCAN_DELAY_MS = 2500
 const INFECTED_MARKER = 'EICAR-STANDARD-ANTIVIRUS-TEST-FILE'
@@ -140,6 +141,7 @@ export async function uploadEvidence(user, record, form) {
   const slot = assertTarget(record, node, input)
   const bytes = new Uint8Array(await input.file.arrayBuffer())
   const mimeType = sniffedType(input.file.name, bytes, slot)
+  if (isLockedPdf(bytes)) throw assessmentReject.coded(422, 'file.password_protected', 'file')
   const row = {
     id: crypto.randomUUID(),
     mainCode: input.level === 'main' ? node.code : null,

@@ -174,6 +174,7 @@ return [
         'pdftocairo_binary' => env('PDFTOCAIRO_BINARY') ?: 'pdftocairo',
         'soffice_binary' => env('SOFFICE_BINARY') ?: 'soffice',
         'tool_timeout_seconds' => 120,
+        'upload_check_timeout_seconds' => 15,
         'conversion_timeout_seconds' => 180,
         'conversion_slot_wait_seconds' => 5,
         'max_source_bytes' => (int) (env('WATERMARK_MAX_SOURCE_MB') ?: 50) * 1024 * 1024,

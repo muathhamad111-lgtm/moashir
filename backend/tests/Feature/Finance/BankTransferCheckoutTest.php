@@ -258,6 +258,7 @@ it('stores no request for an infected, disguised or unscanned receipt', function
 })->with([
     'infected' => [static fn (): UploadedFile => transferReceipt('receipt.pdf', infectedContents()), ['file.infected']],
     'image renamed as pdf' => [static fn (): UploadedFile => transferReceipt('receipt.pdf', "\x89PNG\r\n\x1a\n0000IHDR"), ['file.content_mismatch', 'validation_failed']],
+    'PDF locked with a password' => [static fn (): UploadedFile => transferReceipt('receipt.pdf', passwordProtectedPdf()), ['file.password_protected']],
 ]);
 
 it('fails closed when the malware scanner is unavailable', function (): void {

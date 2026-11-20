@@ -6,6 +6,7 @@ import { toMinor } from './financeMoney'
 import { assertTransition, nowIso, recordEvent, transition, voidReceipt } from './paymentLifecycle'
 import { storeFile } from './signedFiles'
 import { announcePaymentRefunded } from './paymentHooks'
+import { isLockedPdf } from '../lockedPdf'
 
 const AMOUNT_PATTERN = /^\d{1,10}\.\d{2}$/
 const REFERENCE_PATTERN = /^[\p{L}\p{N}\s/._-]+$/u
@@ -117,6 +118,7 @@ async function acceptEvidence(file) {
   const bytes = new Uint8Array(await file.arrayBuffer())
   if (detectedType(bytes) !== EVIDENCE_TYPES[extensionOf(file.name)])
     throw financeReject.fileRefused('file.content_mismatch', 'evidence')
+  if (isLockedPdf(bytes)) throw financeReject.fileRefused('file.password_protected', 'evidence')
   if (new TextDecoder().decode(bytes).includes(INFECTED_MARKER))
     throw financeReject.fileRefused('file.infected', 'evidence')
   return storeFile({

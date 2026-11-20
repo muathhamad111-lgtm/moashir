@@ -84,6 +84,7 @@ it('refuses anything but a PDF within the size limit', function (Closure $file):
 })->with([
     'PNG image' => [fn (): UploadedFile => UploadedFile::fake()->image('شهادة.png', 400, 400)],
     'text renamed to PDF' => [fn (): UploadedFile => vatCertificatePdf('شهادة.pdf', 'شهادة التسجيل الضريبي بصيغة نصية')],
+    'PDF locked with a password' => [fn (): UploadedFile => vatCertificatePdf('شهادة.pdf', passwordProtectedPdf())],
     'larger than the limit' => [fn (): UploadedFile => vatCertificatePdf('شهادة.pdf', SAMPLE_PDF.str_repeat('%', 5200 * 1024))],
 ]);
 

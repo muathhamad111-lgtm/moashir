@@ -5,6 +5,14 @@ import { logger } from '@/utils/logger'
 import { toast } from '@/composables/useToast'
 import { payloadShape } from '@/utils/payloadShape'
 
+const CONFLICT = 409
+
+// A rejection about the state of the record (409) or one that names no field is shown for the whole form.
+function formLevelMessage(normalized, fieldErrors) {
+  const isFormLevel = normalized?.status === CONFLICT || !Object.keys(fieldErrors).length
+  return isFormLevel ? normalized?.message || i18n.global.t('errors.unexpected') : ''
+}
+
 export function useValidatedForm({
   schema,
   initialValues = {},
@@ -15,25 +23,32 @@ export function useValidatedForm({
   const form = useForm({ validationSchema: schema, initialValues, keepValuesOnUnmount })
   const submitting = ref(false)
   const serverErrors = ref({})
+  const formError = ref('')
+
+  function showRejection(normalized) {
+    const fieldErrors = normalized?.fieldErrors ?? {}
+    serverErrors.value = Object.fromEntries(
+      Object.entries(fieldErrors).map(([field, messages]) => [
+        field,
+        Array.isArray(messages) ? messages[0] : messages,
+      ]),
+    )
+    if (Object.keys(fieldErrors).length) form.setErrors(serverErrors.value)
+    formError.value = formLevelMessage(normalized, fieldErrors)
+    toast.error(normalized?.message || i18n.global.t('errors.unexpected'))
+  }
 
   const onSubmit = form.handleSubmit(async (values) => {
     if (submitting.value) return
     submitting.value = true
     serverErrors.value = {}
+    formError.value = ''
     logger.breadcrumb('form', action, { fields: payloadShape(values) })
     try {
       await submit(values)
     } catch (error) {
       logger.error(error, { action, fields: payloadShape(values) })
-      const fieldErrors = error?.normalized?.fieldErrors ?? {}
-      serverErrors.value = Object.fromEntries(
-        Object.entries(fieldErrors).map(([field, messages]) => [
-          field,
-          Array.isArray(messages) ? messages[0] : messages,
-        ]),
-      )
-      if (Object.keys(fieldErrors).length) form.setErrors(serverErrors.value)
-      toast.error(error?.normalized?.message || i18n.global.t('errors.unexpected'))
+      showRejection(error?.normalized)
     } finally {
       submitting.value = false
     }
@@ -41,8 +56,9 @@ export function useValidatedForm({
 
   function resetForm(...args) {
     serverErrors.value = {}
+    formError.value = ''
     return form.resetForm(...args)
   }
 
-  return { ...form, resetForm, submitting, serverErrors, onSubmit }
+  return { ...form, resetForm, submitting, serverErrors, formError, onSubmit }
 }

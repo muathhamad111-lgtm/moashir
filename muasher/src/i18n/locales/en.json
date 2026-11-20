@@ -245,6 +245,11 @@
     },
     "formPanel": {
       "undo": "Undo changes"
+    },
+    "formSteps": {
+      "label": "Steps",
+      "back": "Back",
+      "next": "Next"
     }
   },
   "status": {
@@ -908,6 +913,16 @@
         "label": "Achieved / not achieved",
         "short": "✓"
       }
+    },
+    "wizard": {
+      "steps": {
+        "basics": "Details",
+        "weight": "Weight",
+        "evaluation": "Evaluation",
+        "attachments": "Attachments",
+        "review": "Review"
+      },
+      "reviewHint": "Check what will be added; you can go back to any step to change it."
     }
   },
   "routes": {
@@ -6246,6 +6261,8 @@
         "content_mismatch": "The file type is not allowed or its content does not match its extension.",
         "infected": "The file was refused by the malware scan.",
         "scan_failed": "The file could not be scanned for malware. Try again later.",
+        "password_protected": "This PDF is locked with a password. Remove the password, then upload the file again.",
+        "check_failed": "The file could not be checked. Try again later.",
         "not_clean": "This file is not available for download."
       },
       "signature": {
@@ -8407,6 +8424,7 @@
           "wrong-type": "Refused",
           "too-large": "Refused",
           "unsafe": "Refused",
+          "protected": "Refused",
           "failed": "Not completed"
         },
         "details": {
@@ -8416,6 +8434,7 @@
           "wrong-type": "Attach a PDF, JPG or PNG.",
           "too-large": "The limit is {max} MB.",
           "unsafe": "The file could not be accepted for security reasons. Attach another copy.",
+          "protected": "This PDF is locked with a password. Remove the password, then attach it again.",
           "failed": "The upload failed. Try again."
         },
         "badges": {

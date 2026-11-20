@@ -64,7 +64,13 @@ export const REFUND_RULES = {
   EVIDENCE_MAX_MB: 20,
 }
 
-export const REFUSED_FILE_CODES = ['file.content_mismatch', 'file.infected', 'file.scan_failed']
+export const REFUSED_FILE_CODES = [
+  'file.content_mismatch',
+  'file.infected',
+  'file.scan_failed',
+  'file.password_protected',
+  'file.check_failed',
+]
 
 export const MANUAL_SETTLE_RULES = {
   STATUSES: ['paid', 'failed'],

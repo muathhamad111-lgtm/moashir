@@ -7,6 +7,7 @@ use App\Enums\Audit\AuditEvent;
 use App\Enums\Files\MalwareScanStatus;
 use App\Enums\Notifications\NotificationCode;
 use App\Enums\Settings\SettingKey;
+use App\Exceptions\Files\PdfPasswordCheckUnavailable;
 use App\Jobs\Assessments\BuildEvidenceBundleJob;
 use App\Models\Assessments\EvidenceBundle;
 use App\Models\Assessments\EvidenceFile;
@@ -15,6 +16,7 @@ use App\Models\Files\StoredFile;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
@@ -86,6 +88,43 @@ it('refuses files whose type is not allowed or whose content does not match', fu
     'plain text' => ['ملاحظات.txt', 'نص عادي لا يقبل كشاهد'],
     'renamed text as pdf' => ['تقرير.pdf', 'ليس ملف PDF حقيقي'],
 ]);
+
+it('refuses a PDF locked with a password and keeps nothing of it', function (): void {
+    $version = publishedAccreditedCriteria();
+    $assessment = openedAccreditedRequest();
+
+    uploadEvidence(ownerOf($assessment->entity), $assessment, $version, 'M1.1', null, UploadedFile::fake()->createWithContent('خطة-محمية.pdf', passwordProtectedPdf()))
+        ->assertUnprocessable()
+        ->assertJsonPath('code', 'file.password_protected')
+        ->assertJsonPath('errors.file.0', __('errors.file.password_protected', [], 'ar'));
+
+    expect(StoredFile::query()->count())->toBe(0)
+        ->and(EvidenceFile::query()->count())->toBe(0)
+        ->and(Storage::disk('local')->allFiles('files'))->toBe([]);
+});
+
+it('accepts a PDF that only restricts printing or copying, since it opens without a password', function (): void {
+    $version = publishedAccreditedCriteria();
+    $assessment = openedAccreditedRequest();
+
+    uploadEvidence(ownerOf($assessment->entity), $assessment, $version, 'M1.1', null, UploadedFile::fake()->createWithContent('خطة-مقيدة.pdf', ownerRestrictedPdf()))
+        ->assertCreated()
+        ->assertJsonPath('data.mime_type', 'application/pdf');
+});
+
+it('fails closed and reports it when the PDF password check cannot run', function (): void {
+    $version = publishedAccreditedCriteria();
+    $assessment = openedAccreditedRequest();
+    Exceptions::fake();
+    Config::set('moashir.watermark.qpdf_binary', '/nonexistent/qpdf');
+
+    uploadEvidence(ownerOf($assessment->entity), $assessment, $version)
+        ->assertUnprocessable()
+        ->assertJsonPath('code', 'file.check_failed');
+
+    expect(StoredFile::query()->count())->toBe(0);
+    Exceptions::assertReported(PdfPasswordCheckUnavailable::class);
+});
 
 it('follows the allowed types and the per-sub limit from the settings', function (): void {
     $version = publishedAccreditedCriteria();

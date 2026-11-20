@@ -144,6 +144,10 @@ export const financeMessages = {
     ar: 'تعذّر فحص الملف من البرمجيات الضارة. يرجى المحاولة لاحقًا.',
     en: 'The file could not be scanned for malware. Please try again later.',
   },
+  'file.password_protected': {
+    ar: 'ملف PDF هذا مقفل بكلمة مرور. أزل كلمة المرور ثم ارفع الملف مرة أخرى.',
+    en: 'This PDF is locked with a password. Remove the password, then upload the file again.',
+  },
   'file.not_clean': {
     ar: 'هذا الملف غير متاح للتنزيل.',
     en: 'This file is not available for download.',

@@ -119,6 +119,7 @@ function evidenceUpload(string $kind): UploadedFile
         'infected' => UploadedFile::fake()->createWithContent('receipt.pdf', "%PDF-1.4\n".FakeFileScanner::TEST_SIGNATURE."\n%%EOF"),
         'renamed_image' => UploadedFile::fake()->createWithContent('receipt.pdf', "\x89PNG\r\n\x1a\n0000IHDR"),
         'text' => UploadedFile::fake()->createWithContent('receipt.txt', 'transfer done'),
+        'password_protected' => UploadedFile::fake()->createWithContent('receipt.pdf', passwordProtectedPdf()),
         default => UploadedFile::fake()->create('receipt.pdf', 21 * 1024, 'application/pdf'),
     };
 }
@@ -137,6 +138,7 @@ it('needs a clean bank-transfer receipt file', function (string $kind, string $c
 })->with([
     'infected file' => ['infected', 'file.infected'],
     'image renamed as pdf' => ['renamed_image', 'file.content_mismatch'],
+    'PDF locked with a password' => ['password_protected', 'file.password_protected'],
     'text file' => ['text', 'validation_failed'],
     'larger than the limit' => ['oversized', 'validation_failed'],
 ]);

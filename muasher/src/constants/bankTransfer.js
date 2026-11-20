@@ -36,6 +36,7 @@ export const PROOF_STATES = Object.freeze({
   WRONG_TYPE: 'wrong-type',
   TOO_LARGE: 'too-large',
   UNSAFE: 'unsafe',
+  PROTECTED: 'protected',
   FAILED: 'failed',
 })
 
@@ -43,6 +44,7 @@ export const REFUSED_PROOF_STATES = Object.freeze([
   PROOF_STATES.WRONG_TYPE,
   PROOF_STATES.TOO_LARGE,
   PROOF_STATES.UNSAFE,
+  PROOF_STATES.PROTECTED,
   PROOF_STATES.FAILED,
 ])
 
@@ -50,6 +52,8 @@ export const PROOF_FILE_CODES = Object.freeze({
   'file.content_mismatch': PROOF_STATES.WRONG_TYPE,
   'file.infected': PROOF_STATES.UNSAFE,
   'file.scan_failed': PROOF_STATES.FAILED,
+  'file.password_protected': PROOF_STATES.PROTECTED,
+  'file.check_failed': PROOF_STATES.FAILED,
 })
 
 export const REJECTION_REASONS = Object.freeze([

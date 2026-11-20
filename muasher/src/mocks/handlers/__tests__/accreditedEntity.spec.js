@@ -29,6 +29,7 @@ const FOLLOWER = { id: 8, roles: ['request_follower', 'filtering_officer'] }
 const FIXTURE_NOW = new Date('2026-11-05T09:00:00Z')
 const PDF = '%PDF-1.4\n% evidence\n%%EOF\n'
 const EICAR = '%PDF-1.4\nEICAR-STANDARD-ANTIVIRUS-TEST-FILE\n%%EOF\n'
+const LOCKED_PDF = '%PDF-1.7\ntrailer << /Root 1 0 R /Encrypt 5 0 R >>\n%%EOF\n'
 
 const ASSESSMENT_KEYS = [
   'award_cycle',
@@ -301,6 +302,9 @@ describe('accredited mock — entity writes', () => {
     expect(
       (await upload(9101, { sub_criterion_id: 802 }, 'plain text', 'notes.pdf')).body.code,
     ).toBe('file.content_mismatch')
+    expect(
+      (await upload(9101, { sub_criterion_id: 802 }, LOCKED_PDF, 'locked.pdf')).body.code,
+    ).toBe('file.password_protected')
     expect(
       (await upload(9101, { sub_criterion_id: 802, attachment_key: 'sub_101_1' })).body.code,
     ).toBe('attachment.key_invalid')

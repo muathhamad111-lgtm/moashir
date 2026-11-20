@@ -52,6 +52,15 @@ it('stamps every page of a PDF with the viewer, the national ID and a trace code
     expect(storedContentOf($evidence->storedFile))->toBe($original);
 });
 
+it('stamps a PDF that only restricts printing or copying, as uploads accept it', function (): void {
+    [$assessor, $assessment] = stampedEvidenceCase();
+    $evidence = replaceEvidenceContent($assessment, 'خطة-مقيدة.pdf', 'application/pdf', ownerRestrictedPdf());
+
+    $pdf = downloadEvidenceAs($assessor, $assessment, $evidence)->assertOk()->assertHeader('Content-Type', 'application/pdf')->streamedContent();
+
+    expect(pdfTextOf($pdf))->toContain(latestTraceCode())->toContain(fictionalNationalId(9001));
+});
+
 it('overlays JPEG and PNG images, keeping their size and format and leaving the original untouched', function (string $type, string $mime): void {
     [$assessor, $assessment] = stampedEvidenceCase();
     $original = solidImage($type);

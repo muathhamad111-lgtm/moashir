@@ -706,6 +706,12 @@ describe('finance staff mock contract', () => {
     await expect(
       attempt({ evidence: pdf('scan.pdf', '%PDF-1.4 EICAR-STANDARD-ANTIVIRUS-TEST-FILE') }),
     ).rejects.toMatchObject({ code: 'file.infected' })
+    await expect(
+      attempt({ evidence: pdf('locked.pdf', '%PDF-1.7\ntrailer << /Encrypt 5 0 R >>') }),
+    ).rejects.toMatchObject({
+      code: 'file.password_protected',
+      fields: { evidence: expect.any(Array) },
+    })
     expect(payment.status).toBe('paid')
     let invalid = null
     try {

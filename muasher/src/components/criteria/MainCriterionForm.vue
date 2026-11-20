@@ -1,7 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { object as yupObject, boolean as yupBoolean, string as yupString } from 'yup'
 import BaseInput from '@/components/form/BaseInput.vue'
 import BaseTextarea from '@/components/form/BaseTextarea.vue'
 import BaseCheckbox from '@/components/form/BaseCheckbox.vue'
@@ -9,14 +8,17 @@ import AppSelect from '@/components/form/AppSelect.vue'
 import { useValidatedForm } from '@/composables/useValidatedForm'
 import { useFormShell } from '@/composables/useFormShell'
 import { renameFieldErrors } from '@/services/mappers/fieldErrors'
-import { pairedText, requiredText, weightText } from '@/utils/criteriaSchemas'
-import { CRITERIA_DESCRIPTION_MAX_LENGTH, CRITERION_GROUP_ORDER } from '@/constants/criteria'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import AttachmentsEditor from './AttachmentsEditor.vue'
 import { cloneAttachments } from '@/utils/criteriaAttachments'
-import { mainFormPayload, mainFormValues } from '@/utils/criteriaMainForm'
-import { useFormSections } from '@/composables/useFormSections'
-import { MAIN_FIELD_SECTIONS } from '@/utils/criteriaFormSections'
+import * as mainForm from '@/utils/criteriaMainForm'
+import BaseRadio from '@/components/form/BaseRadio.vue'
+import CriteriaWizardReview from './CriteriaWizardReview.vue'
+import { useCriteria } from '@/composables/useCriteria'
+import { useCriteriaFormLayout } from '@/composables/useCriteriaFormLayout'
+import { useScoringTypeOptions } from '@/composables/useScoringTypeOptions'
+import { MAIN_FIELD_SECTIONS, MAIN_WIZARD } from '@/utils/criteriaFormSections'
+import { mainReviewRows } from '@/utils/criteriaWizardReview'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -26,52 +28,31 @@ const props = defineProps({
   save: { type: Function, required: true },
   // In the editor sheet: the tab to show (basics | attachments). Empty = every field (create dialog).
   section: { type: String, default: '' },
+  // Create only: the fields come in short steps in a drawer (UX-A2).
+  wizard: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:modelValue', 'section-errors', 'dirty'])
 const { t } = useI18n()
 
-const FIELD_ALIASES = {
-  'name.ar': 'nameAr',
-  'name.en': 'nameEn',
-  name: 'nameAr',
-  'description.ar': 'descriptionAr',
-  'description.en': 'descriptionEn',
-  description: 'descriptionAr',
-}
-
 const isEdit = computed(() => Boolean(props.criterion))
 const attachments = ref(cloneAttachments(props.criterion?.attachments))
-const groupOptions = computed(() =>
-  CRITERION_GROUP_ORDER.map((group) => ({ value: group, label: t(`criteria.groups.${group}`) })),
-)
-
-const schema = computed(() =>
-  yupObject({
-    nameAr: requiredText(t),
-    nameEn: requiredText(t),
-    descriptionAr: pairedText(t, 'descriptionEn', CRITERIA_DESCRIPTION_MAX_LENGTH),
-    descriptionEn: pairedText(t, 'descriptionAr', CRITERIA_DESCRIPTION_MAX_LENGTH),
-    weight: weightText(t),
-    group: yupString().required(t('validation.required')),
-    distributeEqually: yupBoolean(),
-    active: yupBoolean(),
-  }),
-)
+const groupOptions = computed(() => mainForm.mainGroupOptions(t))
+const schema = computed(() => mainForm.mainFormSchema(t))
 
 const form = useValidatedForm({
   schema,
-  initialValues: mainFormValues(props.criterion),
+  initialValues: mainForm.mainFormValues(props.criterion),
   action: 'criteria.mainForm.submit',
   submit: async (values) => {
     try {
       await props.save({
         id: props.criterion?.id ?? null,
-        payload: mainFormPayload(values, attachments.value, { isEdit: isEdit.value }),
+        payload: mainForm.mainFormPayload(values, attachments.value, { isEdit: isEdit.value }),
       })
       emit('update:modelValue', false)
     } catch (error) {
-      throw renameFieldErrors(error, FIELD_ALIASES)
+      throw renameFieldErrors(error, mainForm.MAIN_FIELD_ALIASES)
     }
   },
 })
@@ -81,15 +62,13 @@ const formShell = useFormShell(
     inline: () => props.inline,
     open: () => props.modelValue,
     record: () => props.criterion,
+    wizard: () => props.wizard,
     reset: () => {
-      form.resetForm({ values: mainFormValues(props.criterion) })
+      form.resetForm({ values: mainForm.mainFormValues(props.criterion) })
       attachments.value = cloneAttachments(props.criterion?.attachments)
     },
   },
   emit,
-)
-const shellProps = computed(() =>
-  props.inline ? { readonly: props.readonly } : { modelValue: props.modelValue, size: 'lg' },
 )
 
 const [nameAr] = form.defineField('nameAr')
@@ -98,19 +77,19 @@ const [descriptionAr] = form.defineField('descriptionAr')
 const [descriptionEn] = form.defineField('descriptionEn')
 const [weight] = form.defineField('weight')
 const [group] = form.defineField('group')
+const [defaultScoringType] = form.defineField('defaultScoringType')
 const [distributeEqually] = form.defineField('distributeEqually')
 const [active] = form.defineField('active')
 
-const sections = useFormSections(
-  {
-    section: () => props.section,
-    fieldSections: MAIN_FIELD_SECTIONS,
-    attachments,
-    record: () => props.criterion,
-  },
-  form,
-  emit,
-)
+const { weight: formatted } = useCriteria()
+const { options: scoringOptions, labelOf: typeLabel } = useScoringTypeOptions()
+const { sections, steps, shellProps, inWizard } = useCriteriaFormLayout(props, form, emit, {
+  sheetSections: MAIN_FIELD_SECTIONS,
+  wizard: MAIN_WIZARD,
+  attachments,
+  record: () => props.criterion,
+})
+const reviewRows = computed(() => mainReviewRows(form.values, { t, typeLabel, weight: formatted }))
 </script>
 
 <template>
@@ -128,6 +107,8 @@ const sections = useFormSections(
     :submit-label="isEdit ? t('actions.save') : t('criteria.main.create')"
     @update:model-value="formShell.toggle"
     @submit="form.onSubmit"
+    @next="steps.next"
+    @back="steps.back"
   >
     <div class="criteria-form">
       <div v-show="sections.shows('basics')" class="criteria-form__grid">
@@ -147,7 +128,10 @@ const sections = useFormSections(
           :error="form.errors.value.nameEn"
           required
         />
+      </div>
+      <div class="criteria-form__grid">
         <BaseInput
+          v-show="sections.shows(inWizard() ? 'weight' : 'basics')"
           v-model="weight"
           name="weight"
           :label="t('criteria.fields.weight')"
@@ -156,6 +140,7 @@ const sections = useFormSections(
           required
         />
         <AppSelect
+          v-show="sections.shows('basics')"
           v-model="group"
           name="group"
           :label="t('criteria.fields.group')"
@@ -187,7 +172,19 @@ const sections = useFormSections(
         v-model="attachments"
         :errors="form.serverErrors.value"
       />
-      <div v-if="!sections.inSheet.value" class="criteria-form__toggles">
+      <BaseRadio
+        v-if="!isEdit"
+        v-show="sections.shows('evaluation')"
+        v-model="defaultScoringType"
+        name="mainDefaultScoringType"
+        :label="t('criteria.workspace.scoring.label.main')"
+        :options="scoringOptions"
+      />
+      <div
+        v-if="!sections.inSheet.value"
+        v-show="sections.shows('weight')"
+        class="criteria-form__toggles"
+      >
         <BaseCheckbox
           v-model="distributeEqually"
           name="distributeEqually"
@@ -204,6 +201,7 @@ const sections = useFormSections(
         <AppIcon name="info-circle" />
         <span>{{ t('criteria.fields.orderNote') }}</span>
       </p>
+      <CriteriaWizardReview v-if="inWizard() && sections.shows('review')" :rows="reviewRows" />
     </div>
   </component>
 </template>

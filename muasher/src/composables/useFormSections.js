@@ -6,15 +6,21 @@ import { attachmentsEdited } from '@/utils/criteriaAttachments'
 // its values, so a single save covers every tab. Errors are reported per section, so the sheet can
 // point at the tab that holds them. Unsaved edits (values or attachment rows that differ from the record)
 // are reported as `dirty`, so the sheet can ask before they are dropped.
-export function useFormSections({ section, fieldSections, attachments, record }, form, emit) {
+// `section` may return one section or several (a wizard step can show a few). `inSheet` tells the
+// editor sheet apart from a wizard or a plain dialog.
+export function useFormSections(
+  { section, fieldSections, attachments, record, inSheet: sheet = null },
+  form,
+  emit,
+) {
   const { t } = useI18n()
-  const inSheet = computed(() => Boolean(section()))
+  const inSheet = computed(() => (sheet ? sheet() : Boolean(section())))
   const title = computed(() =>
     section()
       ? t(`criteria.workspace.sheet.tabs.${section()}`)
       : t('criteria.workspace.details.dataTitle'),
   )
-  const shows = (name) => !section() || section() === name
+  const shows = (name) => !section() || [section()].flat().includes(name)
 
   const errorSections = computed(() => {
     const clientKeys = Object.entries(form.errors.value)
@@ -36,5 +42,5 @@ export function useFormSections({ section, fieldSections, attachments, record },
   )
   watch(isDirty, (dirty) => emit('dirty', dirty), { immediate: true })
 
-  return { inSheet, shows, title }
+  return { inSheet, shows, title, errorSections }
 }
