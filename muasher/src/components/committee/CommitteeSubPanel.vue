@@ -28,7 +28,7 @@ const disabled = computed(
 const usesPoints = computed(() => props.sub.evaluationType === EVALUATION_TYPES.GUIDING_POINTS)
 const cv = computed(() => evaluation.value.cv[String(props.sub.id)] ?? '')
 const files = computed(() => evidenceOfSub(evaluation.value.evidence, props.sub.id))
-const maximum = computed(() => props.workspace.scoreSheet.maximum.value)
+const typeOf = (node) => props.workspace.scoreSheet.typeOf(node)
 const units = computed(() =>
   usesPoints.value
     ? props.sub.points.map((point) => unitOf(SCORE_LEVELS.POINT, point))
@@ -85,7 +85,7 @@ function text(content) {
               ? text(unit.label)
               : t('review.directScoreLabel', { name: text(unit.label) })
           "
-          :maximum="maximum"
+          :scoring-type="typeOf(unit)"
           :saved="savedScoreOf(evaluation.scores, unit)"
           :disabled="disabled"
         />

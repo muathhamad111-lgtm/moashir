@@ -254,6 +254,19 @@ const subHandlers = [
     }),
   ),
 
+  http.put(
+    `${API}/subs/:subId/points/scoring-type`,
+    criteriaRoute(async ({ request, params }) => {
+      const actor = actorWith(CAN.MANAGE)
+      const sub = tree.applyPointScoringType(
+        actor,
+        found(findSub(params.subId)),
+        await readBody(request),
+      )
+      return envelope({ sub: subResource(sub), points: pointsOf(sub.id).map(pointResource) })
+    }),
+  ),
+
   http.post(
     `${API}/subs/:subId/points/reorder`,
     criteriaRoute(async ({ request, params }) => {

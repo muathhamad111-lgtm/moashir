@@ -5,10 +5,21 @@ declare(strict_types=1);
 namespace App\Data\Assessments;
 
 use App\Enums\Assessments\ScoreLevel;
+use App\Enums\Criteria\ScaleKind;
+use App\Enums\Criteria\ScoringType;
 
 final readonly class ScorableUnit
 {
-    public function __construct(public ScoreLevel $level, public int $id, public string $code) {}
+    public function __construct(public ScoreLevel $level, public int $id, public string $code, public ScoringType $scoringType) {}
+
+    /**
+     * The type this unit is scored with in a request: a request stamped with a legacy scale keeps that scale for
+     * every unit, an unstamped request uses the unit's own type.
+     */
+    public function scoringTypeUnder(?ScaleKind $stamp): ScoringType
+    {
+        return $stamp?->scoringType() ?? $this->scoringType;
+    }
 
     public static function keyFor(ScoreLevel $level, int $id): string
     {

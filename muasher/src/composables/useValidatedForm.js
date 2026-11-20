@@ -14,31 +14,35 @@ export function useValidatedForm({
 }) {
   const form = useForm({ validationSchema: schema, initialValues, keepValuesOnUnmount })
   const submitting = ref(false)
+  const serverErrors = ref({})
 
   const onSubmit = form.handleSubmit(async (values) => {
     if (submitting.value) return
     submitting.value = true
+    serverErrors.value = {}
     logger.breadcrumb('form', action, { fields: payloadShape(values) })
     try {
       await submit(values)
     } catch (error) {
       logger.error(error, { action, fields: payloadShape(values) })
       const fieldErrors = error?.normalized?.fieldErrors ?? {}
-      if (Object.keys(fieldErrors).length) {
-        form.setErrors(
-          Object.fromEntries(
-            Object.entries(fieldErrors).map(([field, messages]) => [
-              field,
-              Array.isArray(messages) ? messages[0] : messages,
-            ]),
-          ),
-        )
-      }
+      serverErrors.value = Object.fromEntries(
+        Object.entries(fieldErrors).map(([field, messages]) => [
+          field,
+          Array.isArray(messages) ? messages[0] : messages,
+        ]),
+      )
+      if (Object.keys(fieldErrors).length) form.setErrors(serverErrors.value)
       toast.error(error?.normalized?.message || i18n.global.t('errors.unexpected'))
     } finally {
       submitting.value = false
     }
   })
 
-  return { ...form, submitting, onSubmit }
+  function resetForm(...args) {
+    serverErrors.value = {}
+    return form.resetForm(...args)
+  }
+
+  return { ...form, resetForm, submitting, serverErrors, onSubmit }
 }

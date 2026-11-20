@@ -106,7 +106,8 @@ it('opens the review in edit mode for the assignee and read only for the followe
         ->assertJsonPath('data.assessment.status', 'assigned')
         ->assertJsonPath("data.cv.{$policyId}", ACCREDITED_CV_TEXT)
         ->assertJsonPath('data.evidence.0.scan_status', 'clean')
-        ->assertJsonPath('data.scale.kind', 'of_10')
+        ->assertJsonPath('data.scale', null)
+        ->assertJsonPath('data.criteria.mains.0.subs.0.scoring_type', 'score')
         ->assertJsonPath('data.entity.id', $assessment->entity_id)
         ->assertJsonPath('data.context', []);
     switchTo(requestFollower())->getJson("/api/v1/assessments/{$assessment->id}/review")->assertOk()->assertJsonPath('data.mode', 'read_only');

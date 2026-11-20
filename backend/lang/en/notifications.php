@@ -302,6 +302,8 @@ return [
                 'entity' => [
                     'title' => 'Accredited assessment request submitted',
                     'body' => 'Your accredited assessment request :number was submitted. An assessor will be assigned to review it.',
+                    'summary' => 'Request :number will be assigned to an assessor for review.',
+                    'action' => 'Track the request',
                 ],
                 'staff' => [
                     'title' => 'New accredited assessment request',
@@ -318,6 +320,8 @@ return [
                 'assessor' => [
                     'title' => 'A request was assigned to you',
                     'body' => 'The accredited assessment request :number of :entity was assigned to you. Start the review from your assigned requests.',
+                    'summary' => 'Request :number of :entity is waiting for your review.',
+                    'action' => 'Open the request',
                 ],
                 'staff' => [
                     'title' => 'Request assigned to an assessor',
@@ -350,6 +354,8 @@ return [
                 'entity' => [
                     'title' => 'Completion of your request is required',
                     'body' => 'The assessor asked you to complete items of your accredited assessment request :number. Complete them and resubmit the request by :deadline (Riyadh time). :outcome',
+                    'summary' => 'Complete the requested items and resubmit by :deadline.',
+                    'action' => 'Complete the request',
                 ],
                 'outcomes' => [
                     'continue_as_submitted' => 'If the deadline passes, the review continues with the data already submitted.',
@@ -370,6 +376,8 @@ return [
                 'entity' => [
                     'title' => 'Your accredited certificate was issued',
                     'body' => 'The certificate :certificate of your accredited assessment request :number was issued. You can download it from the certificates page.',
+                    'summary' => 'Certificate :certificate is ready to download.',
+                    'action' => 'View certificates',
                 ],
                 'staff' => [
                     'title' => 'Accredited certificate issued',
@@ -603,6 +611,7 @@ return [
             'entity' => [
                 'title' => 'The accredited assessment period :period starts soon',
                 'body' => 'The accredited assessment period :period runs from :starts_on to :ends_on. Submit your request within the period so that your assessment counts in it.',
+                'summary' => 'The period runs from :starts_on to :ends_on.',
             ],
         ],
         'PER-02' => [
@@ -865,6 +874,8 @@ return [
             'entity' => [
                 'title' => 'Payment completed',
                 'body' => 'Your payment :reference for :purpose (:amount) was completed successfully.',
+                'summary' => 'We received your payment of :amount.',
+                'action' => 'View my payments',
             ],
             'staff' => [
                 'title' => 'Payment received',

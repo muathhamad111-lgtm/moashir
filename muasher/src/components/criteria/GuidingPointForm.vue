@@ -5,15 +5,17 @@ import { object as yupObject, boolean as yupBoolean, string as yupString } from 
 import BaseTextarea from '@/components/form/BaseTextarea.vue'
 import BaseInput from '@/components/form/BaseInput.vue'
 import BaseCheckbox from '@/components/form/BaseCheckbox.vue'
+import BaseRadio from '@/components/form/BaseRadio.vue'
 import AttachmentsEditor from './AttachmentsEditor.vue'
 import { useValidatedForm } from '@/composables/useValidatedForm'
 import { useFormShell } from '@/composables/useFormShell'
 import { useCriteria } from '@/composables/useCriteria'
+import { useScoringTypeOptions } from '@/composables/useScoringTypeOptions'
 import { renameFieldErrors } from '@/services/mappers/fieldErrors'
 import { requiredText, weightText } from '@/utils/criteriaSchemas'
 import { attachmentsPayload, cloneAttachments } from '@/utils/criteriaAttachments'
 import { compareWeights, normalizeWeight, sumWeights } from '@/utils/weight'
-import { CRITERIA_DESCRIPTION_MAX_LENGTH } from '@/constants/criteria'
+import { CRITERIA_DESCRIPTION_MAX_LENGTH, SCORING_TYPES } from '@/constants/criteria'
 import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
@@ -38,6 +40,7 @@ const FIELD_ALIASES = {
 const isEdit = computed(() => Boolean(props.point))
 const distributes = computed(() => Boolean(props.sub.distributeEqually))
 const attachments = ref([])
+const { options: scoringOptions } = useScoringTypeOptions()
 
 const remaining = computed(() => {
   const ownShare = isEdit.value && props.point.active ? props.point.weight : '0'
@@ -57,6 +60,7 @@ const schema = computed(() =>
     descriptionAr: requiredText(t, CRITERIA_DESCRIPTION_MAX_LENGTH),
     descriptionEn: requiredText(t, CRITERIA_DESCRIPTION_MAX_LENGTH),
     weight: weightRule(),
+    scoringType: yupString().required(t('validation.required')),
     active: yupBoolean(),
   }),
 )
@@ -66,6 +70,7 @@ function valuesOf(point) {
     descriptionAr: point?.description?.ar ?? '',
     descriptionEn: point?.description?.en ?? '',
     weight: point?.weight ?? (distributes.value ? '' : remaining.value),
+    scoringType: point?.scoringType ?? props.sub.defaultPointScoringType ?? SCORING_TYPES.SCORE,
     active: point?.active ?? true,
   }
 }
@@ -73,6 +78,7 @@ function valuesOf(point) {
 function payloadOf(values) {
   const payload = {
     description: { ar: values.descriptionAr.trim(), en: values.descriptionEn.trim() },
+    scoringType: values.scoringType,
     attachments: attachmentsPayload(attachments.value),
   }
   if (!distributes.value) payload.weight = normalizeWeight(values.weight)
@@ -112,6 +118,7 @@ const shellProps = computed(() =>
 const [descriptionAr] = form.defineField('descriptionAr')
 const [descriptionEn] = form.defineField('descriptionEn')
 const [weight] = form.defineField('weight')
+const [scoringType] = form.defineField('scoringType')
 const [active] = form.defineField('active')
 </script>
 
@@ -164,7 +171,15 @@ const [active] = form.defineField('active')
         <span>{{ t('criteria.point.equalNote') }}</span>
       </p>
 
-      <AttachmentsEditor v-model="attachments" />
+      <BaseRadio
+        v-model="scoringType"
+        name="pointScoringType"
+        :label="t('criteria.fields.scoringType')"
+        :options="scoringOptions"
+        :error="form.errors.value.scoringType"
+      />
+
+      <AttachmentsEditor v-model="attachments" :errors="form.serverErrors.value" />
 
       <BaseCheckbox
         v-if="!isEdit"

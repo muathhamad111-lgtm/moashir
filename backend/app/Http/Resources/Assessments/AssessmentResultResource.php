@@ -47,7 +47,7 @@ final class AssessmentResultResource extends JsonResource
             ...$identity,
             'available' => true,
             'criteria_version_id' => $view->snapshot->criteria_version_id,
-            'scale_kind' => $view->snapshot->scale_kind->value,
+            'scale_kind' => $view->snapshot->scale_kind?->value,
             'result_version' => $view->snapshot->version,
             'submitted_at' => $assessment->submitted_at?->toIso8601String(),
             'completed_at' => $assessment->completed_at?->toIso8601String(),

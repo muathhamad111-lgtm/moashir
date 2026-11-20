@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Data\Award;
 
-use App\Enums\Criteria\ScaleKind;
 use App\Support\ValueObjects\LocalizedText;
 use App\Support\ValueObjects\Money;
 use App\Support\ValueObjects\Percent;
@@ -24,7 +23,6 @@ final readonly class CycleAttributes
         public array $dates = [],
         public ?array $regionIds = null,
         public ?int $criteriaVersionId = null,
-        public ?ScaleKind $scaleKind = null,
         public ?int $minEntityAgeYears = null,
         public ?Percent $disqualificationScore = null,
         public ?int $initialReviewSlaDays = null,
@@ -41,7 +39,6 @@ final readonly class CycleAttributes
             'name' => $this->name,
             'year' => $this->year,
             'criteria_version_id' => $this->criteriaVersionId,
-            'scale_kind' => $this->scaleKind,
             'min_entity_age_years' => $this->minEntityAgeYears,
             'disqualification_score' => $this->disqualificationScore,
             'initial_review_sla_days' => $this->initialReviewSlaDays,

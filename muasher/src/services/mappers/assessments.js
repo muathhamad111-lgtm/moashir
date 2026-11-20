@@ -99,10 +99,9 @@ export function toScoreMap(scores) {
 export function toAssessmentScores(raw = {}) {
   return {
     assessment: toAssessment(raw.assessment),
-    scale: {
-      kind: fromCanonicalStatus(raw.scale?.kind ?? null),
-      maximum: raw.scale?.maximum ?? null,
-    },
+    scale: raw.scale
+      ? { kind: fromCanonicalStatus(raw.scale.kind ?? null), maximum: raw.scale.maximum ?? null }
+      : null,
     scores: { subs: toScoreMap(raw.scores?.subs), points: toScoreMap(raw.scores?.points) },
     progress: { scored: raw.progress?.scored ?? 0, required: raw.progress?.required ?? 0 },
   }

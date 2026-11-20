@@ -60,8 +60,11 @@ final readonly class UpdateAwardCycle
         $locked->fill($changes->columnValues());
 
         if ($changes->criteriaVersionId !== null) {
-            $version = CriteriaVersion::query()->published()->whereKey($changes->criteriaVersionId)->first() ?? throw AwardRejected::criteriaVersionNotPublished();
-            $locked->scale_kind = $changes->scaleKind ?? $version->scale_kind ?? $locked->scale_kind;
+            if (! CriteriaVersion::query()->published()->whereKey($changes->criteriaVersionId)->exists()) {
+                throw AwardRejected::criteriaVersionNotPublished();
+            }
+
+            $locked->scale_kind = null;
         }
 
         $locked->save();

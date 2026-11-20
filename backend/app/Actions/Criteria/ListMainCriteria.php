@@ -30,7 +30,7 @@ final class ListMainCriteria
 
         $mains = $version->mainCriteria()->getQuery()
             ->reorder()
-            ->with('subCriteria')
+            ->with(['subCriteria', 'attachmentRequirements'])
             ->when($query->search, fn (Builder $builder, SearchTerm $term): Builder => $this->matching($builder, $term))
             ->when($query->active !== null, static fn (Builder $builder): Builder => $builder->where('is_active', $query->active))
             ->orderBy($this->sortColumn($query->sort, $locale), str_starts_with($query->sort, '-') ? 'desc' : 'asc')

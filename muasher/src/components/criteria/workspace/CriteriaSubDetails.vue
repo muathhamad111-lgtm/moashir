@@ -6,6 +6,7 @@ import SubCriterionForm from '@/components/criteria/SubCriterionForm.vue'
 import CriteriaWeightsCard from '@/components/criteria/CriteriaWeightsCard.vue'
 import WeightBudget from '@/components/criteria/WeightBudget.vue'
 import CriteriaEvaluationCard from './CriteriaEvaluationCard.vue'
+import CriteriaScoringCard from './CriteriaScoringCard.vue'
 import { useCriteria } from '@/composables/useCriteria'
 import { useCriteriaAction } from '@/composables/useCriteriaAction'
 import { useEvaluationTypeSwitch } from '@/composables/useEvaluationTypeSwitch'
@@ -63,6 +64,7 @@ async function shareAndAdd() {
   />
 
   <CriteriaEvaluationCard :sub="sub" :can-edit="canEdit" @switch="toggleType(sub, reload)" />
+  <CriteriaScoringCard :item="item" :can-edit="canEdit" :reload="reload" />
 
   <template v-if="onPoints">
     <CriteriaWeightsCard

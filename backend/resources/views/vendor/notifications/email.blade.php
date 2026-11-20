@@ -1,4 +1,4 @@
-<x-mail::message :frame="$frame" :mail="$message" :heading="$title ?? $subject" :preheader="$introLines[0] ?? ''" :reason="$reason ?? null">
+<x-mail::message :frame="$frame" :mail="$message" :heading="$title ?? $subject" :preheader="$introLines[0] ?? ''" :reason="$reason ?? null" :summary="$summary ?? null" :category="$category ?? null">
 <x-mail::paragraph>{{ $greeting ?: __('mail.greeting.generic') }}</x-mail::paragraph>
 @foreach ($introLines as $line)
 <x-mail::paragraph>{{ $line }}</x-mail::paragraph>

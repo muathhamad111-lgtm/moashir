@@ -33,7 +33,6 @@ final readonly class DemoSelfResultInstaller
             'path' => AssessmentPath::SelfAssessment,
             'status' => SelfAssessmentStatus::Submitted,
             'criteria_version_id' => $version->id,
-            'scale_kind' => $version->scale_kind,
             'submitted_at' => $completedAt,
         ])->save();
 

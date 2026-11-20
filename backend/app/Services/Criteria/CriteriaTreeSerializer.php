@@ -10,6 +10,7 @@ use App\Models\Criteria\GuidingPoint;
 use App\Models\Criteria\MainCriterion;
 use App\Models\Criteria\SubCriterion;
 use App\Support\Criteria\ActiveWeights;
+use App\Support\Criteria\AttachmentRequirementShape;
 use Illuminate\Database\Eloquent\Collection;
 
 final class CriteriaTreeSerializer
@@ -44,6 +45,7 @@ final class CriteriaTreeSerializer
             'name' => $main->name->toArray(),
             'description' => $main->description?->toArray(),
             'weight' => $main->weight->toDecimal(),
+            'attachments' => $this->attachments($main->attachmentRequirements),
             'subs' => array_map($this->sub(...), $this->active($main->subCriteria)),
         ];
     }
@@ -87,15 +89,11 @@ final class CriteriaTreeSerializer
 
     /**
      * @param  Collection<int, AttachmentRequirement>  $requirements
-     * @return list<array{key: string, name: array{ar: string, en: string}, required: bool}>
+     * @return list<array<string, mixed>>
      */
     private function attachments(Collection $requirements): array
     {
-        return array_values($requirements->map(static fn (AttachmentRequirement $requirement): array => [
-            'key' => $requirement->key,
-            'name' => $requirement->name->toArray(),
-            'required' => $requirement->is_required,
-        ])->all());
+        return array_values($requirements->map(AttachmentRequirementShape::of(...))->all());
     }
 
     /**

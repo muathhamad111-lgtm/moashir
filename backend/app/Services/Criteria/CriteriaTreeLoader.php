@@ -14,6 +14,7 @@ final class CriteriaTreeLoader
     public function load(CriteriaVersion $version): CriteriaVersion
     {
         return $version->load([
+            'mainCriteria.attachmentRequirements',
             'mainCriteria.subCriteria.attachmentRequirements',
             'mainCriteria.subCriteria.guidingPoints.attachmentRequirements',
         ]);
@@ -21,7 +22,7 @@ final class CriteriaTreeLoader
 
     public function loadMain(MainCriterion $main): MainCriterion
     {
-        return $main->load(['subCriteria.attachmentRequirements', 'subCriteria.guidingPoints']);
+        return $main->load(['attachmentRequirements', 'subCriteria.attachmentRequirements', 'subCriteria.guidingPoints']);
     }
 
     public function loadSub(SubCriterion $sub): SubCriterion

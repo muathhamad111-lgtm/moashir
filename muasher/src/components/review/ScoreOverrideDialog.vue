@@ -9,15 +9,15 @@ import { assessmentOverridesService } from '@/services/assessmentOverridesServic
 import { ACCREDITED_LIMITS } from '@/constants/accredited'
 import { SCORE_LEVELS } from '@/constants/assessment'
 import {
-  isRawScore,
   normalizedRawValue,
   sameRawValue,
   savedScoreOf,
   scoreFieldName,
   sheetFieldErrors,
-  withinScale,
 } from '@/utils/assessments/scoreSheet'
 import { localizedText } from '@/utils/localizedText'
+import { allowsRawValue, maximumOf } from '@/utils/assessments/scoringTypes'
+import { compactDecimal } from '@/utils/percentText'
 import { logger } from '@/utils/logger'
 
 const props = defineProps({
@@ -25,7 +25,7 @@ const props = defineProps({
   assessmentId: { type: Number, required: true },
   units: { type: Array, required: true },
   scores: { type: Object, required: true },
-  maximum: { type: String, required: true },
+  typeOf: { type: Function, required: true },
 })
 
 const emit = defineEmits(['update:modelValue', 'done'])
@@ -35,6 +35,8 @@ const values = reactive({})
 const errors = ref({})
 const reason = ref('')
 const busy = ref(false)
+
+const maxOf = (unit) => compactDecimal(maximumOf(props.typeOf(unit)))
 
 const changed = computed(() =>
   props.units.filter(
@@ -47,8 +49,8 @@ function validate() {
   const next = {}
   changed.value.forEach((unit) => {
     const value = values[scoreFieldName(unit)]
-    if (!isRawScore(value) || !withinScale(value, props.maximum))
-      next[scoreFieldName(unit)] = t('assessment.self.validation.range', { max: props.maximum })
+    if (!allowsRawValue(value, props.typeOf(unit)))
+      next[scoreFieldName(unit)] = t('assessment.self.validation.range', { max: maxOf(unit) })
   })
   if (!changed.value.length) next.form = t('review.override.noChange')
   const text = reason.value.trim()
@@ -124,7 +126,7 @@ watch(
           :label="
             t('review.override.itemLabel', {
               name: localizedText(unit.label, locale),
-              max: maximum,
+              max: maxOf(unit),
             })
           "
           :error="errors[scoreFieldName(unit)]"

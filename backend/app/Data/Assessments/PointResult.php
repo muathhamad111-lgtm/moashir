@@ -26,6 +26,7 @@ final readonly class PointResult
             'id' => $this->point->id,
             'code' => $this->point->code,
             'weight' => $this->point->weight->toDecimal(),
+            'scoring_type' => ($this->raw->type ?? $this->point->scoringType)->value,
             'raw_value' => $this->raw?->toDecimal(),
             'percent' => $this->percent->toDecimal(),
             'earned' => $this->earned->toDecimal(),

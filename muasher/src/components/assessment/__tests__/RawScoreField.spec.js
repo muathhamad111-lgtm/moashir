@@ -14,7 +14,7 @@ function mountField({ value = '', saved = null, disabled = false } = {}) {
         h(RawScoreField, {
           name: 'point-1001',
           label: 'Score of M1.1.1',
-          maximum: '10.00',
+          scoringType: 'score',
           saved,
           disabled,
         })

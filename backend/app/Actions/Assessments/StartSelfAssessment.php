@@ -55,6 +55,10 @@ final readonly class StartSelfAssessment
         Entity::query()->whereKey($entity->id)->lockForUpdate()->first();
         $this->startGuard->assertMayStartFree($entity, PaymentPurpose::SelfAssessment, $pricing);
 
+        if ($version->scale_kind === null) {
+            throw CriteriaVersionRejected::noPublishedVersion();
+        }
+
         $path = AssessmentPath::SelfAssessment;
         $assessment = Assessment::query()->create([
             'request_number' => $this->numbers->next($path),
@@ -62,7 +66,6 @@ final readonly class StartSelfAssessment
             'path' => $path,
             'status' => $path->initialState(),
             'criteria_version_id' => $version->id,
-            'scale_kind' => $version->scale_kind ?? throw CriteriaVersionRejected::noPublishedVersion(),
         ]);
         $assessment->setRelation('entity', $entity)->setRelation('currentResult', null);
 
@@ -72,7 +75,6 @@ final readonly class StartSelfAssessment
             'path' => $path->value,
             'status' => (string) $assessment->status->value,
             'criteria_version_id' => $version->id,
-            'scale_kind' => $assessment->scale_kind->value,
         ]));
 
         SelfAssessmentStarted::dispatch($assessment);

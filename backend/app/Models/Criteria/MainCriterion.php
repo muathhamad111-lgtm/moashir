@@ -35,6 +35,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $updated_at
  * @property-read CriteriaVersion $criteriaVersion
  * @property-read Collection<int, SubCriterion> $subCriteria
+ * @property-read Collection<int, AttachmentRequirement> $attachmentRequirements
  */
 final class MainCriterion extends Model
 {
@@ -79,5 +80,13 @@ final class MainCriterion extends Model
     public function subCriteria(): HasMany
     {
         return $this->hasMany(SubCriterion::class)->orderBy('sort_order')->chaperone();
+    }
+
+    /**
+     * @return HasMany<AttachmentRequirement, $this>
+     */
+    public function attachmentRequirements(): HasMany
+    {
+        return $this->hasMany(AttachmentRequirement::class)->orderBy('sort_order');
     }
 }

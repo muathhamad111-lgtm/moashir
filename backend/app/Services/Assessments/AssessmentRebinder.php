@@ -26,7 +26,7 @@ final readonly class AssessmentRebinder
 
         $plan = $this->planner->plan($this->reader->currentRows($assessment), $rebind);
 
-        $assessment->forceFill(['criteria_version_id' => $rebind->to->versionId])->save();
+        $assessment->forceFill(['criteria_version_id' => $rebind->to->versionId, 'scale_kind' => null])->save();
         $assessment->unsetRelation('criteriaVersion');
         $this->writer->applyRebind($assessment, $plan);
 

@@ -12,6 +12,7 @@ export function workspaceTree() {
         allocatedWeight: '1000.00',
         distributeEqually: false,
         weightBalanced: true,
+        defaultScoringType: 'score',
         active: true,
         subs: [
           {
@@ -20,6 +21,8 @@ export function workspaceTree() {
             name: { ar: 'التخطيط', en: 'Planning' },
             weight: '600.00',
             evaluationType: 'guiding-points',
+            scoringType: 'score',
+            defaultPointScoringType: 'score',
             allocatedPointWeight: '500.00',
             remainingPointWeight: '100.00',
             distributeEqually: false,
@@ -31,6 +34,7 @@ export function workspaceTree() {
                 code: 'M1.1.1',
                 description: { ar: 'خطة معتمدة', en: 'Approved plan' },
                 weight: '500.00',
+                scoringType: 'achievement',
                 active: true,
                 attachments: [],
               },
@@ -42,6 +46,7 @@ export function workspaceTree() {
             name: { ar: 'الحوكمة', en: 'Governance' },
             weight: '400.00',
             evaluationType: 'direct',
+            scoringType: 'score',
             active: true,
             attachments: [],
             points: [],

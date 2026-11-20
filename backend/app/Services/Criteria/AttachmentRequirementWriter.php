@@ -6,6 +6,7 @@ namespace App\Services\Criteria;
 
 use App\Data\Criteria\AttachmentRequirementData;
 use App\Models\Criteria\GuidingPoint;
+use App\Models\Criteria\MainCriterion;
 use App\Models\Criteria\SubCriterion;
 use Illuminate\Support\Str;
 
@@ -14,7 +15,7 @@ final class AttachmentRequirementWriter
     /**
      * @param  list<AttachmentRequirementData>  $requirements
      */
-    public function replace(SubCriterion|GuidingPoint $owner, array $requirements): void
+    public function replace(MainCriterion|SubCriterion|GuidingPoint $owner, array $requirements): void
     {
         $owner->attachmentRequirements()->delete();
 
@@ -22,6 +23,9 @@ final class AttachmentRequirementWriter
             $owner->attachmentRequirements()->create([
                 'key' => $requirement->key ?? Str::lower((string) Str::ulid()),
                 'name' => $requirement->name,
+                'guidance' => $requirement->guidance,
+                'allowed_types' => $requirement->allowedTypeValues(),
+                'max_files' => $requirement->maxFiles,
                 'is_required' => $requirement->isRequired,
                 'sort_order' => $index + 1,
             ]);

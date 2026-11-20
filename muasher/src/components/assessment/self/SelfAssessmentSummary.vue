@@ -7,7 +7,7 @@ import FrozenBadge from '@/components/entities/FrozenBadge.vue'
 const props = defineProps({
   assessment: { type: Object, required: true },
   criteria: { type: Object, required: true },
-  scale: { type: Object, required: true },
+  scale: { type: Object, default: null },
   progress: { type: Object, required: true },
 })
 
@@ -32,7 +32,11 @@ const progressLabel = computed(() =>
         <p class="self-summary__meta">
           {{ t('assessment.self.versionMeta', { number: criteria.versionNumber }) }}
           <span aria-hidden="true">·</span>
-          {{ t(`assessment.self.scaleNames.${scale.kind}`) }}
+          {{
+            scale?.kind
+              ? t(`assessment.self.scaleNames.${scale.kind}`)
+              : t('assessment.self.scaleByCriterion')
+          }}
         </p>
       </div>
       <div class="self-summary__badges">

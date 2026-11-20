@@ -15,7 +15,7 @@ defineProps({
   step: { type: Number, required: true },
   total: { type: Number, required: true },
   scores: { type: Object, required: true },
-  maximum: { type: String, required: true },
+  typeOf: { type: Function, required: true },
   disabled: { type: Boolean, default: false },
 })
 
@@ -74,7 +74,7 @@ defineExpose({ focusTitle })
               <RawScoreField
                 :name="scoreFieldName(unit(SCORE_LEVELS.POINT, point))"
                 :label="t('assessment.self.pointScoreLabel', { number: index + 1 })"
-                :maximum="maximum"
+                :scoring-type="typeOf(point)"
                 :saved="savedScoreOf(scores, unit(SCORE_LEVELS.POINT, point))"
                 :disabled="disabled"
               />
@@ -86,7 +86,7 @@ defineExpose({ focusTitle })
           v-else
           :name="scoreFieldName(unit(SCORE_LEVELS.SUB, sub))"
           :label="t('assessment.self.directLabel', { name: text(sub.name) })"
-          :maximum="maximum"
+          :scoring-type="typeOf(sub)"
           :saved="savedScoreOf(scores, unit(SCORE_LEVELS.SUB, sub))"
           :disabled="disabled"
         />

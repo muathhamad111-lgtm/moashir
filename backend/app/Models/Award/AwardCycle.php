@@ -34,7 +34,7 @@ use Illuminate\Support\Carbon;
  * @property int $year
  * @property AwardCycleStatus $status
  * @property int $criteria_version_id
- * @property ScaleKind $scale_kind
+ * @property ScaleKind|null $scale_kind
  * @property Carbon $submission_start
  * @property Carbon $submission_end
  * @property Carbon $committee_start

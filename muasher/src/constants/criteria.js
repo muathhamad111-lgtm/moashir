@@ -3,6 +3,18 @@ export const EVALUATION_TYPES = {
   GUIDING_POINTS: 'guiding-points',
 }
 
+export const SCORING_TYPES = {
+  RELATIVE: 'relative',
+  SCORE: 'score',
+  ACHIEVEMENT: 'achievement',
+}
+
+export const SCORING_TYPE_ORDER = [
+  SCORING_TYPES.RELATIVE,
+  SCORING_TYPES.SCORE,
+  SCORING_TYPES.ACHIEVEMENT,
+]
+
 export const CRITERIA_VERSION_STATUSES = {
   DRAFT: 'draft',
   PUBLISHED: 'published',

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Notifications\Messages;
 
 use App\Enums\Notifications\MailReason;
+use App\Enums\Notifications\NotificationCategory;
 use App\Models\Identity\User;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -14,6 +15,10 @@ final class BrandedMailMessage extends MailMessage
     public ?string $title = null;
 
     public ?string $code = null;
+
+    public ?string $summary = null;
+
+    public ?NotificationCategory $category = null;
 
     /**
      * @var list<string>
@@ -39,6 +44,20 @@ final class BrandedMailMessage extends MailMessage
         $this->title = $subject;
 
         return parent::subject(__('mail.subject', ['subject' => $subject]));
+    }
+
+    public function summary(string $summary): static
+    {
+        $this->summary = $summary;
+
+        return $this;
+    }
+
+    public function category(NotificationCategory $category): static
+    {
+        $this->category = $category;
+
+        return $this;
     }
 
     public function code(string $code): static
@@ -80,6 +99,8 @@ final class BrandedMailMessage extends MailMessage
             ...parent::data(),
             'title' => $this->title,
             'code' => $this->code,
+            'summary' => $this->summary,
+            'category' => $this->category,
             'quotedLines' => $this->quotedLines,
             'reason' => $this->reason,
         ];

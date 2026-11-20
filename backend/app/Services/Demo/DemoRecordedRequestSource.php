@@ -53,7 +53,6 @@ final readonly class DemoRecordedRequestSource implements DemoAccreditedRequestS
             'path' => AssessmentPath::Accredited,
             'status' => self::CLOSED_UNTIL_COMPLETED,
             'criteria_version_id' => $version->id,
-            'scale_kind' => $version->scale_kind,
             'payment_id' => $payment->id,
             'submitted_at' => $plan->submittedAt(),
         ])->save();
@@ -80,7 +79,6 @@ final readonly class DemoRecordedRequestSource implements DemoAccreditedRequestS
             'status' => AccreditedAssessmentStatus::Completed->value,
             'payment_reference' => $payment->reference,
             'criteria_version_id' => $request->criteria_version_id,
-            'scale_kind' => $request->scale_kind->value,
         ]));
     }
 }

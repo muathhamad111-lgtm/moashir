@@ -7,6 +7,7 @@ namespace App\Services\Notifications;
 use App\Data\Contact\ContactSenderNotice;
 use App\Data\Entities\EntityNotice;
 use App\Data\Mail\MailSample;
+use App\Data\Notifications\NoticeText;
 use App\Enums\Identity\Locale;
 use App\Enums\Identity\OtpChannel;
 use App\Enums\Identity\UserStatus;
@@ -113,15 +114,8 @@ final readonly class MailSamples
 
     public function forText(NotificationCode $code, string $prefix, Locale $locale): MailSample
     {
-        $replacements = SampleReplacements::for($prefix);
-        $notice = new EntityNotice(
-            $code,
-            LocalizedText::fromTranslationWith($prefix.'.title', $replacements),
-            LocalizedText::fromTranslationWith($prefix.'.body', $replacements),
-            self::LINKS[$code->module()] ?? null,
-            true,
-            false,
-        );
+        $notice = EntityNotice::fromText($code, new NoticeText($prefix, SampleReplacements::for($prefix)), self::LINKS[$code->module()] ?? null)
+            ->mailOnly();
         $variant = array_values(array_diff(array_slice(explode('.', $prefix), 1), [$code->value]));
 
         return new MailSample(implode('.', [$code->value, ...$variant]), new EntityNotification($notice), $this->account($locale));

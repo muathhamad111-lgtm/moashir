@@ -32,6 +32,7 @@ final class MainCriterionResource extends JsonResource
             'distribute_equally' => $main->distribute_equally,
             'group' => $main->group->value,
             'default_scoring_type' => $main->default_scoring_type->value,
+            'attachments' => AttachmentRequirementResource::collection($main->attachmentRequirements)->resolve($request),
             'active' => $main->is_active,
             'order' => $main->sort_order,
             'sub_count' => $main->subCriteria->count(),

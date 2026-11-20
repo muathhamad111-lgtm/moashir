@@ -108,7 +108,13 @@ onMounted(load)
             </div>
             <div class="assessment-record__detail">
               <dt>{{ t('assessment.staff.scale') }}</dt>
-              <dd>{{ t(`assessment.self.scaleNames.${assessment.scaleKind}`) }}</dd>
+              <dd>
+                {{
+                  assessment.scaleKind
+                    ? t(`assessment.self.scaleNames.${assessment.scaleKind}`)
+                    : t('assessment.self.scaleByCriterion')
+                }}
+              </dd>
             </div>
             <div v-if="assessment.criteriaUpdateInProgress" class="assessment-record__detail">
               <dt>{{ t('assessment.staff.criteria') }}</dt>

@@ -587,7 +587,8 @@
       "assessorNoteAr": "Assessor note prompt (Arabic)",
       "assessorNoteEn": "Assessor note prompt (English)",
       "assessorNoteHint": "Optional prompt above the assessor's note. The assessor can always write a note.",
-      "orderNote": "The display order changes with the arrows in the list."
+      "orderNote": "The display order changes with the arrows in the list.",
+      "scoringType": "Scoring type"
     },
     "evaluationType": {
       "direct": "Evaluate on the sub-criterion directly",
@@ -608,8 +609,8 @@
       }
     },
     "scale": {
-      "of10": "Out of 10",
-      "relative": "Relative"
+      "of10": "Score out of 10",
+      "relative": "Relative (0 to 100%)"
     },
     "weights": {
       "editorTitle": "Weight distribution across sub-criteria",
@@ -676,7 +677,14 @@
       "required": "Required",
       "add": "Add attachment",
       "remove": "Remove attachment",
-      "empty": "No required attachments."
+      "empty": "No required attachments.",
+      "details": "Guidance, file types and file limit",
+      "guidanceAr": "Guidance for the entity (Arabic)",
+      "guidanceEn": "Guidance for the entity (English)",
+      "types": "Accepted file types",
+      "typesHint": "With no type chosen, every type the path settings allow is accepted; a type the path does not allow is never accepted.",
+      "maxFiles": "Most files",
+      "maxFilesHint": "Leave empty to use the path limit; it never goes above the path limit."
     },
     "validation": {
       "weightFormat": "Enter a weight greater than zero with at most two decimals, up to 100000.",
@@ -840,6 +848,40 @@
         "ready": "Nothing blocks publishing.",
         "next": "Next",
         "back": "Back"
+      },
+      "scoring": {
+        "title": {
+          "main": "Default scoring type",
+          "direct": "Scoring type",
+          "points": "Indicator scoring type"
+        },
+        "hint": {
+          "main": "Each new sub-criterion under this criterion starts with this type; you can change it per sub-criterion.",
+          "direct": "This sub-criterion is scored with this type in the self, accredited and award assessments.",
+          "points": "Each new indicator starts with this type. “Apply to all indicators” also gives it to the current ones; you can still change any indicator on its own page."
+        },
+        "label": {
+          "main": "Type for new sub-criteria",
+          "direct": "Type",
+          "points": "Type for new indicators"
+        },
+        "applyToAll": "Apply to all indicators",
+        "saved": "Scoring type saved.",
+        "applied": "Type applied to all indicators."
+      }
+    },
+    "scoringTypes": {
+      "relative": {
+        "label": "Relative (0 to 100%)",
+        "short": "%"
+      },
+      "score": {
+        "label": "Score out of 10",
+        "short": "10"
+      },
+      "achievement": {
+        "label": "Achieved / not achieved",
+        "short": "✓"
       }
     }
   },
@@ -2845,7 +2887,8 @@
       "validation": {
         "format": "Enter a number with at most two decimal places.",
         "range": "Enter a score from 0 to {max}.",
-        "required": "Score this item before submitting."
+        "required": "Score this item before submitting.",
+        "achievement": "Choose achieved or not achieved."
       },
       "score": {
         "saved": "Saved {raw} of {max}, reflected as {percent}%",
@@ -2895,7 +2938,15 @@
         "pathUnavailable": "The self assessment is not available at the moment.",
         "paymentProcessing": "Your payment went through and the self assessment is being opened. Refresh the page in a moment."
       },
-      "pointScoreLabel": "Score of item {number}"
+      "pointScoreLabel": "Score of item {number}",
+      "achievement": {
+        "achieved": "Achieved",
+        "notAchieved": "Not achieved",
+        "saved": "Saved: {state}",
+        "unsaved": "Not saved yet",
+        "empty": "Choose achieved or not achieved"
+      },
+      "scaleByCriterion": "By each criterion’s scoring type"
     },
     "result": {
       "pendingTitle": "The result is not issued yet",
@@ -3148,10 +3199,9 @@
       },
       "generalUploadsTitle": "General upload limit",
       "generalUploadsNote": "Applies to uploads other than assessment evidence, such as refund evidence. Evidence limits are set on each path.",
-      "scaleTitle": "Assessment scale",
-      "scale": "Score scale",
-      "scaleHint": "The scale applies to the criteria version published after saving; existing requests and award cycles keep their scale.",
-      "scaleHintPublished": "The published version uses the “{scale}” scale. The chosen scale applies to the criteria version published after saving; existing requests and award cycles keep their scale."
+      "scaleTitle": "Default scoring type",
+      "scale": "Type for new main criteria",
+      "scaleHint": "Each new main criterion starts with this type; each sub-criterion and indicator gets its own type in the criteria settings. Existing criteria keep their type."
     },
     "sms": {
       "broadcastTitle": "Send messages",
@@ -3323,6 +3373,7 @@
           "subject": "E-mail subject",
           "line": "Message text",
           "action": "Button text",
+          "summary": "Summary line",
           "expiry": "Validity line",
           "advice": "Advice line",
           "adminTitle": "Administrator notice title",
@@ -6642,7 +6693,6 @@
       "criteriaVersionHint": "Requests of the cycle stay on this version, even when the criteria are published again.",
       "publishedVersion": "Version {number} (published)",
       "boundVersion": "Bound version (reference {id})",
-      "scaleKind": "Assessment scale",
       "minEntityAgeYears": "Minimum entity age in years",
       "disqualificationScore": "Qualification threshold (%)",
       "disqualificationScoreHint": "Initial results below this percentage need a recorded reason to qualify. Default 60.",

@@ -27,6 +27,9 @@ const CRITERIA = {
   planning: { ar: 'التخطيط الاستراتيجي', en: 'Strategic Planning' },
   governance: { ar: 'تميز الحوكمة', en: 'Governance Excellence' },
   disclosure: { ar: 'الإفصاح والشفافية', en: 'Disclosure and Transparency' },
+  achieved: { ar: 'متحقق / غير متحقق', en: 'Achieved / not achieved' },
+  relative: { ar: 'نسبي (من 0 إلى 100%)', en: 'Relative (0 to 100%)' },
+  indicatorScoring: { ar: 'نوع تقييم المؤشرات', en: 'Indicator scoring type' },
 }
 
 function nameOf(testInfo, key) {
@@ -250,6 +253,37 @@ test('an old link to a main criterion opens it selected in the workspace', async
   await expect(detailsTitle(page)).toHaveText(nameOf(testInfo, 'leadership'))
 })
 
+test('scoring types: a sub-criterion gives one type to all its indicators and an indicator changes its own', async ({
+  page,
+}, testInfo) => {
+  await useTallViewport(page)
+  await seed(page, testInfo)
+  await openCriteria(page)
+  await startDraft(page)
+  await selectNode(page, nameOf(testInfo, 'leadership'))
+  await selectNode(page, nameOf(testInfo, 'direction'))
+  const card = page.locator('.card', { hasText: nameOf(testInfo, 'indicatorScoring') })
+  await card.getByLabel(nameOf(testInfo, 'achieved')).check()
+  await card.getByRole('button', { name: /Apply to all indicators|تطبيق على كل المؤشرات/ }).click()
+  await expect(page.locator('.toast--success').last()).toBeVisible()
+  const indicators = page
+    .locator('.criteria-tree__item', {
+      has: page.locator('.criteria-tree__select', { hasText: nameOf(testInfo, 'direction') }),
+    })
+    .last()
+    .locator('.criteria-tree__list')
+  await expect(
+    indicators.locator(`.criteria-tree__marker[title="${nameOf(testInfo, 'achieved')}"]`),
+  ).toHaveCount(3)
+
+  await indicators.locator('.criteria-tree__select').first().click()
+  await page.locator('input[name="pointScoringType"][value="relative"]').check()
+  await page.locator('.form-panel button[type="submit"]').click()
+  await expect(
+    indicators.locator(`.criteria-tree__marker[title="${nameOf(testInfo, 'relative')}"]`),
+  ).toHaveCount(1)
+})
+
 test('building a draft: add a main criterion and a sub-criterion, reorder, save the weights, then discard', async ({
   page,
 }, testInfo) => {
@@ -299,4 +333,50 @@ test('building a draft: add a main criterion and a sub-criterion, reorder, save 
     .click()
   await expect(barTitle(page)).toContainText(/Published criteria|المعايير المنشورة/)
   await expect(mains(page)).toHaveCount(9)
+})
+
+test('required attachments: a main criterion keeps its attachment with guidance, file types and a file limit', async ({
+  page,
+}, testInfo) => {
+  await useTallViewport(page)
+  await seed(page, testInfo)
+  await openCriteria(page)
+  await startDraft(page)
+  await selectNode(page, nameOf(testInfo, 'leadership'))
+
+  const editor = page.locator('.form-panel .attachments-editor')
+  await editor.getByRole('button', { name: /Add attachment|إضافة مرفق/ }).click()
+  const row = editor.locator('.attachments-editor__row').first()
+  await row.locator('input[dir="rtl"]').fill('الخطة المعتمدة')
+  await row.locator('input[dir="ltr"]').first().fill('Approved plan')
+  await row.locator('summary').click()
+  await row.locator('textarea[name="attachmentGuidanceEn0"]').fill('Upload the signed plan')
+  await row.locator('input[value="pdf"]').check()
+  await row.locator('input[name="attachmentMaxFiles0"]').fill('2')
+  await page.locator('.form-panel button[type="submit"]').click()
+  const guidanceAr = row.locator('textarea[name="attachmentGuidanceAr0"]')
+  await expect(guidanceAr).toHaveAttribute('aria-invalid', 'true')
+  await guidanceAr.fill('ارفع الخطة الموقعة')
+  const saving = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'PUT' && /\/criteria\/mains\//.test(response.url()),
+  )
+  await page.locator('.form-panel button[type="submit"]').click()
+  const response = await saving
+  expect(response.status()).toBe(200)
+  expect((await response.json()).data.attachments[0]).toMatchObject({
+    allowed_types: ['pdf'],
+    max_files: 2,
+  })
+
+  await selectNode(page, nameOf(testInfo, 'direction'))
+  await selectNode(page, nameOf(testInfo, 'leadership'))
+  const saved = page.locator('.form-panel .attachments-editor__row').first()
+  await expect(saved.locator('input[dir="ltr"]').first()).toHaveValue('Approved plan')
+  await saved.locator('summary').click()
+  await expect(saved.locator('textarea[name="attachmentGuidanceEn0"]')).toHaveValue(
+    'Upload the signed plan',
+  )
+  await expect(saved.locator('input[value="pdf"]')).toBeChecked()
+  await expect(saved.locator('input[name="attachmentMaxFiles0"]')).toHaveValue('2')
 })

@@ -31,13 +31,13 @@ it('stamps the scale chosen in the settings on the next published version only',
         ->assertJsonPath('data.published_version.scale_kind', 'of_10');
 
     expect($published->refresh()->scale_kind->value)->toBe('of_10')
-        ->and($draft->refresh()->scale_kind->value)->toBe('of_10')
+        ->and($draft->refresh()->scale_kind)->toBeNull()
         ->and(Audit::query()->where('event', AuditEvent::AssessmentSettingsUpdated->value)->count())->toBe(1);
 
     $next = republishWithNewSubWeights('new_only');
 
     expect($next->scale_kind->value)->toBe('relative')
-        ->and($draft->refresh()->scale_kind->value)->toBe('of_10');
+        ->and($draft->refresh()->scale_kind)->toBeNull();
     Notification::assertSentTo($administrator, CriteriaNotification::class, static fn (CriteriaNotification $notification): bool => $notification->notice->code === NotificationCode::CriteriaScaleChanged);
 });
 

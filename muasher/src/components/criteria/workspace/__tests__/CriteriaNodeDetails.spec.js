@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import CriteriaNodeDetails from '@/components/criteria/workspace/CriteriaNodeDetails.vue'
 import { indexTree, ancestorsOf } from '@/utils/criteriaTree'
 import { createTestGlobals } from '@/test-utils'
@@ -30,6 +30,9 @@ describe('CriteriaNodeDetails', () => {
     expect(wrapper.find('.criteria-details__title').text()).toBe('Approved plan')
     expect(wrapper.find('.criteria-details__path').text()).toContain('Leadership')
     expect(wrapper.text()).toContain('Indicator · M1.1.1')
+    expect(
+      wrapper.find('input[name="pointScoringType"][value="achievement"]').element.checked,
+    ).toBe(true)
     await wrapper.findAll('.criteria-details__path-link')[1].trigger('click')
     expect(wrapper.emitted('select')[0]).toEqual(['main-11'])
   })
@@ -40,6 +43,15 @@ describe('CriteriaNodeDetails', () => {
     expect(wrapper.find('input[name="subNameEn"]').element.value).toBe('Planning')
     expect(wrapper.text()).toContain('Evaluation method')
     expect(wrapper.text()).toContain('Weight split over the indicators')
+    expect(wrapper.text()).toContain('Indicator scoring type')
+  })
+
+  it('opens the inline form with the attachments the criterion already has, so saving keeps them', () => {
+    const wrapper = mountDetails('sub-21')
+    const names = wrapper
+      .findAll('.attachments-editor input[dir="ltr"]')
+      .map((input) => input.element.value)
+    expect(names).toContain('Plan')
   })
 
   it('offers to split the weight equally when a full main criterion gets a new sub-criterion', () => {
@@ -61,5 +73,22 @@ describe('CriteriaNodeDetails', () => {
     expect(wrapper.find('.form-panel__footer').exists()).toBe(false)
     expect(wrapper.find('.form-panel__fields').attributes('disabled')).toBeDefined()
     expect(wrapper.text()).not.toContain('Delete')
+  })
+
+  it('shows an attachment error from the server at the attachment field it belongs to', async () => {
+    const rejection = Object.assign(new Error('invalid'), {
+      normalized: {
+        message: 'Invalid input',
+        fieldErrors: { 'attachments.0.guidance.ar': ['Enter the Arabic guidance.'] },
+      },
+    })
+    const saveNode = vi.fn().mockRejectedValue(rejection)
+    const wrapper = mountDetails('sub-21', { saveNode })
+    await wrapper.find('form').trigger('submit')
+    await vi.waitFor(() => expect(saveNode).toHaveBeenCalled())
+    await flushPromises()
+    const guidance = wrapper.find('textarea[name="attachmentGuidanceAr0"]')
+    expect(guidance.attributes('aria-invalid')).toBe('true')
+    expect(wrapper.find('.attachments-editor details').attributes('open')).toBeDefined()
   })
 })

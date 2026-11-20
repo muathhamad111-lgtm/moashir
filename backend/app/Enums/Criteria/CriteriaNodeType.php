@@ -21,7 +21,7 @@ enum CriteriaNodeType: string
             self::Main => ['name', 'description'],
             self::Sub => ['name', 'description', 'assessor_note_label'],
             self::Point => ['description'],
-            self::Attachment => ['name'],
+            self::Attachment => ['name', 'guidance'],
             self::Version => ['label'],
         };
     }

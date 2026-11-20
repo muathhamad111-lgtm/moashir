@@ -37,7 +37,7 @@ it('starts a self assessment draft bound to the published criteria version', fun
         ->assertJsonPath('data.is_open', true)
         ->assertJsonPath('data.is_frozen', false)
         ->assertJsonPath('data.criteria_version_id', $version->id)
-        ->assertJsonPath('data.scale_kind', 'of_10')
+        ->assertJsonPath('data.scale_kind', null)
         ->assertJsonPath('data.entity.reference', $entity->reference())
         ->assertJsonPath('data.result', null);
 
@@ -130,8 +130,7 @@ it('saves the raw input next to the normalised percentage and versions every cha
 
     $this->putJson("/api/v1/assessments/{$draft->id}", ['scores' => selfScores($version, ['M1.1' => '7.25', 'M1.2.1' => '9'])])
         ->assertOk()
-        ->assertJsonPath('data.scale.kind', 'of_10')
-        ->assertJsonPath('data.scale.maximum', '10.00')
+        ->assertJsonPath('data.scale', null)
         ->assertJsonPath("data.scores.subs.{$direct->id}.raw_value", '7.25')
         ->assertJsonPath("data.scores.subs.{$direct->id}.percent", '72.50')
         ->assertJsonPath('data.progress.scored', 2)
@@ -315,7 +314,7 @@ it('answers "result not issued yet" before the submission', function (): void {
         ], 'meta' => [], 'errors' => null]);
 });
 
-it('serves the form with the bound criteria tree, the scale and the saved scores', function (): void {
+it('serves the form with the bound criteria tree, the type of each unit and the saved scores', function (): void {
     $version = publishedSelfCriteria(ScaleKind::Relative);
     $draft = startedSelfAssessment(ownerOf(entityWithOwner()));
     $point = pointOf($version, 'M1.2.1');
@@ -324,7 +323,8 @@ it('serves the form with the bound criteria tree, the scale and the saved scores
     $this->getJson("/api/v1/assessments/{$draft->id}/form")
         ->assertOk()
         ->assertJsonPath('data.assessment.id', $draft->id)
-        ->assertJsonPath('data.scale', ['kind' => 'relative', 'maximum' => '100.00'])
+        ->assertJsonPath('data.scale', null)
+        ->assertJsonPath('data.criteria.mains.0.subs.1.points.0.scoring_type', 'relative')
         ->assertJsonPath("data.scores.points.{$point->id}", ['raw_value' => '87.45', 'percent' => '87.45'])
         ->assertJsonPath('data.progress', ['scored' => 1, 'required' => 4])
         ->assertJsonPath('data.criteria.version_id', $version->id)

@@ -14,6 +14,7 @@ use App\Enums\Assessments\ResultSnapshotKind;
 use App\Enums\Assessments\SelfAssessmentStatus;
 use App\Enums\Audit\AuditEvent;
 use App\Enums\Criteria\ScaleKind;
+use App\Enums\Criteria\ScoringType;
 use App\Enums\Integrations\IntegrationMode;
 use App\Enums\Settings\SettingKey;
 use App\Models\Assessments\Assessment;
@@ -93,7 +94,7 @@ function recordInsightsSnapshot(Assessment $assessment, CriteriaVersion $version
 
     foreach ($percents as $code => $percent) {
         $unit = $tree->unitWithCode($code) ?? throw new LogicException("Unknown unit {$code}.");
-        $units[] = new ScoredUnit($unit, RawScore::on(ScaleKind::Relative, $percent));
+        $units[] = new ScoredUnit($unit, RawScore::on(ScoringType::Relative, $percent));
     }
 
     app(ResultSnapshotRecorder::class)->record($assessment, app(ScoringEngine::class)->compute($tree, ScoreSheet::of($units)), ResultSnapshotKind::AccreditedResult, null);

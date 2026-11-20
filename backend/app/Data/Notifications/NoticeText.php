@@ -32,13 +32,34 @@ final readonly class NoticeText
 
     public function sms(): ?LocalizedText
     {
+        return $this->optional('sms');
+    }
+
+    /**
+     * The e-mail's one-line summary under the title, when the template has one.
+     */
+    public function summary(): ?LocalizedText
+    {
+        return $this->optional('summary');
+    }
+
+    /**
+     * The e-mail button label, when the template sets its own instead of the shared «open the platform».
+     */
+    public function action(): ?LocalizedText
+    {
+        return $this->optional('action');
+    }
+
+    private function optional(string $part): ?LocalizedText
+    {
         foreach (self::LOCALES as $locale) {
-            if (! Lang::has($this->key.'.sms', $locale, false)) {
+            if (! Lang::has($this->key.'.'.$part, $locale, false)) {
                 return null;
             }
         }
 
-        return LocalizedText::fromTranslationWith($this->key.'.sms', $this->replacements);
+        return LocalizedText::fromTranslationWith($this->key.'.'.$part, $this->replacements);
     }
 
     public function templateKey(): string

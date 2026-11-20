@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\Criteria\GuidingPointActivationController;
 use App\Http\Controllers\Api\V1\Criteria\GuidingPointController;
 use App\Http\Controllers\Api\V1\Criteria\MainCriterionActivationController;
 use App\Http\Controllers\Api\V1\Criteria\MainCriterionController;
+use App\Http\Controllers\Api\V1\Criteria\PointScoringTypeController;
 use App\Http\Controllers\Api\V1\Criteria\PointWeightsController;
 use App\Http\Controllers\Api\V1\Criteria\PreviewCriteriaPublicationController;
 use App\Http\Controllers\Api\V1\Criteria\PublicModelCriteriaController;
@@ -63,6 +64,7 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
         Route::delete('subs/{sub}', [SubCriterionController::class, 'destroy'])->middleware(['can:delete,sub', 'throttle:criteria-write'])->name('subs.destroy');
         Route::post('subs/{sub}/points', [GuidingPointController::class, 'store'])->middleware(['can:update,sub', 'throttle:criteria-write'])->name('subs.points.store');
         Route::put('subs/{sub}/points/weights', PointWeightsController::class)->middleware(['can:update,sub', 'throttle:criteria-write'])->name('subs.points.weights');
+        Route::put('subs/{sub}/points/scoring-type', PointScoringTypeController::class)->middleware(['can:update,sub', 'throttle:criteria-write'])->name('subs.points.scoring-type');
         Route::post('subs/{sub}/points/reorder', ReorderGuidingPointsController::class)->middleware(['can:update,sub', 'throttle:criteria-write'])->name('subs.points.reorder');
 
         Route::put('points/{point}', [GuidingPointController::class, 'update'])->middleware(['can:update,point', 'throttle:criteria-write'])->name('points.update');

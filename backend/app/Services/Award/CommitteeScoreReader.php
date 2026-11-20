@@ -23,7 +23,7 @@ final class CommitteeScoreReader
         return CommitteeScore::query()->where('committee_assignment_id', $assignment->id)->current()->orderBy('id')->get();
     }
 
-    public function read(CommitteeAssignment $assignment, ScoringTree $tree, ScaleKind $scale): ScoreSheet
+    public function read(CommitteeAssignment $assignment, ScoringTree $tree, ?ScaleKind $stamp): ScoreSheet
     {
         $entries = [];
 
@@ -31,7 +31,7 @@ final class CommitteeScoreReader
             $unit = $tree->unit($row->level, $row->nodeId());
 
             if ($unit instanceof ScorableUnit) {
-                $entries[] = new ScoredUnit($unit, $row->rawScore($scale));
+                $entries[] = new ScoredUnit($unit, $row->rawScore($unit->scoringTypeUnder($stamp)));
             }
         }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Notifications\Cms;
 
 use App\Data\Cms\ContentNotice;
+use App\Data\Mail\MailNotice;
 use App\Data\Notifications\InAppMessage;
 use App\Enums\Integrations\SmsPurpose;
 use App\Enums\Notifications\NotificationChannel;
@@ -55,7 +56,7 @@ final class ContentNotification extends QueuedNotification implements DeliversIn
 
     public function toMail(User $notifiable): BrandedMailMessage
     {
-        return NoticeMail::of($notifiable, $this->notice->title, $this->notice->body, $this->notice->link);
+        return NoticeMail::of($notifiable, new MailNotice($this->notice->code, $this->notice->title, $this->notice->body, $this->notice->link, $this->notice->text));
     }
 
     public function toSms(User $notifiable): string

@@ -121,6 +121,22 @@ describe('criteria mock — versions and the published seed', () => {
     expect(tree.body.data.mains[0].subs[0].points.length).toBeGreaterThan(0)
   })
 
+  it('stores the scoring types and applies one to every indicator of a sub-criterion', async () => {
+    await openDraft()
+    const main = (await draftMains())[0]
+    const detail = await call('GET', `/criteria/mains/${main.id}`)
+    const guided = detail.body.data.subs.find((sub) => sub.evaluationType === 'guiding-points')
+    expect(guided).toMatchObject({ scoringType: 'score', defaultPointScoringType: 'score' })
+    const path = `/criteria/subs/${guided.id}/points/scoring-type`
+    const applied = await call('PUT', path, { scoringType: 'achievement' })
+    expect(applied.status).toBe(200)
+    expect(applied.body.data.sub.defaultPointScoringType).toBe('achievement')
+    expect(applied.body.data.points.every((point) => point.scoringType === 'achievement')).toBe(
+      true,
+    )
+    expect((await call('PUT', path, {})).status).toBe(422)
+  })
+
   it('discards a draft but never a published version', async () => {
     const draft = await openDraft()
     expect((await call('DELETE', `/criteria/versions/${draft.id}`)).status).toBe(204)

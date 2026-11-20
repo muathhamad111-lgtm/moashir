@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Notifications\Entities;
 
 use App\Data\Entities\EntityNotice;
+use App\Data\Mail\MailNotice;
 use App\Data\Notifications\InAppMessage;
 use App\Enums\Integrations\SmsPurpose;
 use App\Enums\Notifications\NotificationChannel;
@@ -54,7 +55,7 @@ final class EntityNotification extends QueuedNotification implements DeliversInA
 
     public function toMail(object $notifiable): BrandedMailMessage
     {
-        return NoticeMail::of($notifiable, $this->notice->title, $this->notice->body, $this->notice->link);
+        return NoticeMail::of($notifiable, new MailNotice($this->notice->code, $this->notice->title, $this->notice->body, $this->notice->link, $this->notice->text));
     }
 
     public function notificationCode(): NotificationCode

@@ -13,6 +13,7 @@ use App\Enums\Assessments\ScoreLevel;
 use App\Enums\Criteria\CriteriaEditKind;
 use App\Enums\Criteria\CriteriaEditScope;
 use App\Enums\Criteria\EvaluationType;
+use App\Enums\Criteria\ScoringType;
 use App\Models\Assessments\AssessmentScore;
 use App\Services\Assessments\CriteriaRebindPlanner;
 use App\Support\ValueObjects\Percent;
@@ -22,10 +23,10 @@ function rebindTree(int $offset): ScoringTree
 {
     return new ScoringTree($offset, [
         new ScoringMain($offset + 1, 'M1', Weight::of('1000.00'), [
-            new ScoringSub($offset + 11, 'M1.1', Weight::of('600.00'), EvaluationType::Direct),
-            new ScoringSub($offset + 12, 'M1.2', Weight::of('400.00'), EvaluationType::GuidingPoints, [
-                new ScoringPoint($offset + 121, 'M1.2.1', Weight::of('200.00')),
-                new ScoringPoint($offset + 122, 'M1.2.2', Weight::of('200.00')),
+            new ScoringSub($offset + 11, 'M1.1', Weight::of('600.00'), EvaluationType::Direct, ScoringType::Score),
+            new ScoringSub($offset + 12, 'M1.2', Weight::of('400.00'), EvaluationType::GuidingPoints, ScoringType::Score, [
+                new ScoringPoint($offset + 121, 'M1.2.1', Weight::of('200.00'), ScoringType::Score),
+                new ScoringPoint($offset + 122, 'M1.2.2', Weight::of('200.00'), ScoringType::Score),
             ]),
         ]),
     ]);
@@ -74,8 +75,8 @@ it('clears every score under scope reset_open', function (): void {
 it('clears items that no longer exist or changed level in the new version', function (): void {
     $next = new ScoringTree(2000, [
         new ScoringMain(2001, 'M1', Weight::of('1000.00'), [
-            new ScoringSub(2011, 'M1.1', Weight::of('600.00'), EvaluationType::Direct),
-            new ScoringSub(2013, 'M1.2.1', Weight::of('400.00'), EvaluationType::Direct),
+            new ScoringSub(2011, 'M1.1', Weight::of('600.00'), EvaluationType::Direct, ScoringType::Score),
+            new ScoringSub(2013, 'M1.2.1', Weight::of('400.00'), EvaluationType::Direct, ScoringType::Score),
         ]),
     ]);
     $rebind = new CriteriaRebind(rebindTree(1000), $next, new CriteriaEditEffect(CriteriaEditKind::Structural, CriteriaEditScope::All), []);

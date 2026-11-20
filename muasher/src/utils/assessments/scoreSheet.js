@@ -19,6 +19,7 @@ function unitOf(level, node, main, sub) {
     mainId: main.id,
     subId: sub.id,
     label: level === SCORE_LEVELS.POINT ? node.description : node.name,
+    scoringType: node.scoringType ?? null,
   }
 }
 

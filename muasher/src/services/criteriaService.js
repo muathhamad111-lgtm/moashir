@@ -78,6 +78,15 @@ export const criteriaService = {
       payload,
     )
   },
+  applyPointScoringType(subId, scoringType) {
+    const payload = { scoringType }
+    return write(
+      'applyPointScoringType',
+      () => apiClient.put(`/criteria/subs/${subId}/points/scoring-type`, payload),
+      'sub-criterion',
+      payload,
+    )
+  },
   previewPublication(versionId) {
     return send(
       'previewPublication',

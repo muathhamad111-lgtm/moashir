@@ -34,7 +34,7 @@ final class ScoreSheetReader
             $unit = $tree->unit($row->level, $row->nodeId());
 
             if ($unit instanceof ScorableUnit) {
-                $entries[] = new ScoredUnit($unit, $row->rawScore($assessment->scale_kind));
+                $entries[] = new ScoredUnit($unit, $row->rawScore($unit->scoringTypeUnder($assessment->scale_kind)));
             }
         }
 

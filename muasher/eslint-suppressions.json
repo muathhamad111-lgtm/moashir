@@ -19,11 +19,6 @@
       "count": 1
     }
   },
-  "src/components/criteria/MainCriterionForm.vue": {
-    "complexity": {
-      "count": 1
-    }
-  },
   "src/components/criteria/SubCriterionForm.vue": {
     "complexity": {
       "count": 1
@@ -729,11 +724,6 @@
   },
   "src/views/settings/Index.vue": {
     "max-lines-per-function": {
-      "count": 1
-    }
-  },
-  "src/views/settings/criteria/SubDetail.vue": {
-    "max-lines": {
       "count": 1
     }
   },

@@ -5,20 +5,23 @@ declare(strict_types=1);
 namespace App\Support\Assessments;
 
 use App\Data\Assessments\SubmittedScores;
-use App\Enums\Criteria\ScaleKind;
-use App\Models\Assessments\Assessment;
+use App\Enums\Criteria\ScoringType;
 
 final class ScoreInputRules
 {
     private const int MAX_ITEMS = 500;
 
     /**
+     * The widest scoring type; the parser then checks each value against its own unit's type.
+     */
+    private const ScoringType CEILING = ScoringType::Relative;
+
+    /**
      * @return array<string, list<string>>
      */
-    public static function for(mixed $assessment, string $presence): array
+    public static function for(string $presence): array
     {
-        $maximum = ($assessment instanceof Assessment ? $assessment->scale_kind : ScaleKind::Relative)->maximum();
-        $value = ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:'.$maximum];
+        $value = ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:'.self::CEILING->maximum()];
 
         return [
             'scores' => [$presence, 'array:subs,points'],

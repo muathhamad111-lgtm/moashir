@@ -24,7 +24,8 @@ final class CriteriaNodeLocator
             CriteriaNodeType::Point => GuidingPoint::query()->whereHas('subCriterion.mainCriterion', $belongs)->find($id),
             CriteriaNodeType::Attachment => AttachmentRequirement::query()
                 ->where(static fn (Builder $query): Builder => $query
-                    ->whereHas('subCriterion.mainCriterion', $belongs)
+                    ->whereHas('mainCriterion', $belongs)
+                    ->orWhereHas('subCriterion.mainCriterion', $belongs)
                     ->orWhereHas('guidingPoint.subCriterion.mainCriterion', $belongs))
                 ->find($id),
             CriteriaNodeType::Version => null,

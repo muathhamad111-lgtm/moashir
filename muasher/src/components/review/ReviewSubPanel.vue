@@ -26,7 +26,7 @@ const disabled = computed(
 const usesPoints = computed(() => props.sub.evaluationType === EVALUATION_TYPES.GUIDING_POINTS)
 const cv = computed(() => review.value.cv[String(props.sub.id)] ?? '')
 const files = computed(() => evidenceOfSub(review.value.evidence, props.sub.id))
-const maximum = computed(() => props.workspace.scoreSheet.maximum.value)
+const typeOf = (node) => props.workspace.scoreSheet.typeOf(node)
 
 function text(content) {
   return localizedText(content, locale.value)
@@ -66,7 +66,7 @@ function unit(level, node) {
           <RawScoreField
             :name="scoreFieldName(unit(SCORE_LEVELS.POINT, point))"
             :label="text(point.description)"
-            :maximum="maximum"
+            :scoring-type="typeOf(point)"
             :saved="savedScoreOf(review.scores, unit(SCORE_LEVELS.POINT, point))"
             :disabled="disabled"
           />
@@ -76,7 +76,7 @@ function unit(level, node) {
         v-else
         :name="scoreFieldName(unit(SCORE_LEVELS.SUB, sub))"
         :label="t('review.directScoreLabel', { name: text(sub.name) })"
-        :maximum="maximum"
+        :scoring-type="typeOf(sub)"
         :saved="savedScoreOf(review.scores, unit(SCORE_LEVELS.SUB, sub))"
         :disabled="disabled"
       />

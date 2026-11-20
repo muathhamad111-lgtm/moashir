@@ -43,7 +43,7 @@ use Illuminate\Support\Carbon;
  * @property AssessmentPath $path
  * @property AssessmentState $status
  * @property int $criteria_version_id
- * @property ScaleKind $scale_kind
+ * @property ScaleKind|null $scale_kind
  * @property int|null $current_result_snapshot_id
  * @property Carbon|null $submitted_at
  * @property Carbon|null $completed_at

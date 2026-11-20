@@ -14,6 +14,7 @@ use App\Services\Notifications\MailSamples;
 use App\Support\Mail\NotificationTexts;
 use Illuminate\Mail\Transport\ArrayTransport;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 use Symfony\Component\Mime\Email;
 
 function brandedSample(string $name, Locale $locale): RenderedMail
@@ -46,11 +47,14 @@ function assertBrandedFrame(RenderedMail $mail, Locale $locale): void
         ->and($mail->html)->toContain(e(__('mail.copyright', ['year' => now()->year], $locale->value)))
         ->and($mail->html)->toContain('href="'.$frontend.'/privacy"')
         ->and($mail->html)->toContain('href="'.$frontend.'/terms"')
+        ->and($mail->html)->toContain('href="'.$frontend.'/#contact"')
+        ->and($mail->html)->toContain(e(__('mail.no_reply', [], $locale->value)))
         ->and($mail->html)->toMatch('/<img class="mail-logo" src="cid:[^"]+"/')
         ->and($mail->subject)->toStartWith(__('mail.brand', [], $locale->value).' — ')
         ->and($mail->text)->toContain((string) __('mail.sign_off', [], $locale->value))
         ->and($mail->text)->toContain((string) __('mail.team', [], $locale->value))
         ->and($mail->text)->toContain($frontend.'/privacy')
+        ->and($mail->text)->toContain($frontend.'/#contact')
         ->and($mail->inlineImages)->toBe(1);
 
     expect($mail->html.$mail->text)->not->toContain('Hello!')
@@ -95,6 +99,38 @@ it('renders the English e-mail left to right with the English frame', function (
         ->and($mail->html)->toContain('Hello Sara Al-Abdullah,')
         ->and($mail->html)->toContain('Regards,<br>The Moashir team')
         ->and($mail->html)->toContain('© '.now()->year.' Moashir. All rights reserved.');
+});
+
+it('puts the logo and the title on the gradient band above the floating card', function (Locale $locale): void {
+    $mail = brandedSample('USR-04', $locale);
+    $band = (int) strpos($mail->html, 'class="mail-band"');
+
+    expect($mail->html)->toMatch('/<td class="mail-band" bgcolor="#0a2325"[^>]*background-image: linear-gradient\(160deg, #0a2325 0%, #145053 100%\)/')
+        ->and($mail->html)->toMatch('/<img class="mail-logo" src="cid:[^"]+" width="88" height="51" alt="'.preg_quote(__('mail.brand', [], $locale->value), '/').'"/')
+        ->and($band)->toBeGreaterThan(0)
+        ->and((int) strpos($mail->html, 'class="mail-logo"'))->toBeGreaterThan($band)
+        ->and((int) strpos($mail->html, 'class="mail-heading"'))->toBeLessThan((int) strpos($mail->html, 'class="mail-card"'))
+        ->and($mail->html)->toContain('class="mail-card-cap"')
+        ->and($mail->html)->toContain('box-shadow: 0 1px 2px rgba(10, 35, 37, 0.06)')
+        ->and($mail->html)->toMatch('/<td class="mail-button"[^>]*background-color: #98d8d3/');
+})->with(Locale::cases());
+
+it('shows the category on the band, the template summary and its own button label', function (Locale $locale): void {
+    $mail = brandedSample('ACC-07.assessments.accredited.entity', $locale);
+    preg_match('#<p class="mail-summary"[^>]*>([^<]+)</p>#', $mail->html, $summary);
+
+    expect($mail->html)->toMatch('#<td class="mail-chip"[^>]*>'.preg_quote(__('mail.categories.action_required', [], $locale->value), '#').'</td>#')
+        ->and($summary[1] ?? '')->toStartWith(Str::before(__('notifications.assessments.accredited.ACC-07.entity.summary', [], $locale->value), ':deadline'))
+        ->and($mail->html)->toMatch('#class="mail-button-link"[^>]*>'.preg_quote(__('notifications.assessments.accredited.ACC-07.entity.action', [], $locale->value), '#').'</a>#')
+        ->and($mail->text)->toContain(html_entity_decode($summary[1] ?? '', ENT_QUOTES));
+})->with(Locale::cases());
+
+it('keeps the shared button label and leaves out the summary line for a template without them', function (): void {
+    $mail = brandedSample('ACC-03.assessments.accredited.staff', Locale::Arabic);
+
+    expect($mail->html)->not->toContain('class="mail-summary"')
+        ->and($mail->html)->toMatch('#class="mail-button-link"[^>]*>'.preg_quote(__('notifications.entities.open_platform', [], 'ar'), '#').'</a>#')
+        ->and($mail->html)->toMatch('#<td class="mail-chip"[^>]*>[^<]+</td>#');
 });
 
 it('greets a recipient without an account in a generic way and explains why the e-mail was sent', function (Locale $locale, string $greeting, string $reason): void {

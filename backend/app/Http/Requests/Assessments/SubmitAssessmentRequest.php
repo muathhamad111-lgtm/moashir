@@ -15,7 +15,7 @@ final class SubmitAssessmentRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ScoreInputRules::for($this->route('assessment'), 'sometimes');
+        return ScoreInputRules::for('sometimes');
     }
 
     public function scores(): ?SubmittedScores

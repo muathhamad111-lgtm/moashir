@@ -42,7 +42,6 @@ export function cycleFormValues(cycle, { defaults, published }) {
       announcementAt: '',
       regionIds: [],
       criteriaVersionId: published?.versionId ?? null,
-      scaleKind: published?.scaleKind ?? '',
       minEntityAgeYears: String(defaults?.minEntityAgeYears ?? ''),
       disqualificationScore: defaults?.disqualificationScore ?? '',
       initialReviewSlaDays: String(defaults?.initialReviewSlaDays ?? ''),
@@ -60,7 +59,6 @@ export function cycleFormValues(cycle, { defaults, published }) {
     announcementAt: dateKeyOf(cycle.announcementAt),
     regionIds: cycle.regions.map((region) => region.id),
     criteriaVersionId: cycle.criteriaVersionId,
-    scaleKind: cycle.scaleKind ?? '',
     minEntityAgeYears: String(cycle.conditions.minEntityAgeYears ?? ''),
     disqualificationScore: cycle.conditions.disqualificationScore ?? '',
     initialReviewSlaDays: String(cycle.initialReviewSlaDays ?? ''),
@@ -128,7 +126,6 @@ export function cycleSchema(t) {
     announcementAt: dates.announcementAt,
     regionIds: array().min(AWARD_LIMITS.REGIONS_MIN, t('cycles.validation.regions')),
     criteriaVersionId: number().nullable().required(t('cycles.validation.version')),
-    scaleKind: string().required(t('validation.required')),
     minEntityAgeYears: integerField(t, AWARD_LIMITS.AGE_MIN, AWARD_LIMITS.AGE_MAX),
     disqualificationScore: string()
       .trim()

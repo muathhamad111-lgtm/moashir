@@ -15,7 +15,7 @@ final class SaveReviewScoresRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ScoreInputRules::for($this->route('assessment'), 'required');
+        return ScoreInputRules::for('required');
     }
 
     public function scores(): SubmittedScores

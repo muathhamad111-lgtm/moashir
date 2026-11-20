@@ -5,7 +5,6 @@ import FieldInput from '@/components/form/FieldInput.vue'
 import FieldSelect from '@/components/form/FieldSelect.vue'
 import FieldToggle from '@/components/form/FieldToggle.vue'
 import FieldCheckboxGroup from '@/components/form/FieldCheckboxGroup.vue'
-import { SCALE_KINDS } from '@/constants/assessment'
 import { localizedText } from '@/utils/localizedText'
 
 const props = defineProps({
@@ -41,12 +40,6 @@ const versionOptions = computed(() => {
     ? []
     : [{ value: props.versionId, label: t('cycles.form.boundVersion', { id: props.versionId }) }]
 })
-const scaleOptions = computed(() =>
-  Object.values(SCALE_KINDS).map((value) => ({
-    value,
-    label: t(`assessment.self.scaleNames.${value}`),
-  })),
-)
 </script>
 
 <template>
@@ -66,13 +59,6 @@ const scaleOptions = computed(() =>
         :hint="t('cycles.form.criteriaVersionHint')"
         required
         :disabled="locked.has('criteriaVersionId')"
-      />
-      <FieldSelect
-        name="scaleKind"
-        :label="t('cycles.form.scaleKind')"
-        :options="scaleOptions"
-        required
-        :disabled="locked.has('scaleKind')"
       />
     </div>
   </fieldset>

@@ -77,7 +77,6 @@ export function useCycleEditor(cycleId) {
         ? {
             versionId: tree.versionId,
             versionNumber: tree.versionNumber,
-            scaleKind: tree.scaleKind,
           }
         : null
       running.value = current

@@ -42,7 +42,7 @@ it('shows the entity the running cycle and its eligibility', function (): void {
     switchTo(requestFollower())->getJson('/api/v1/assessments/advanced/current')->assertForbidden();
 });
 
-it('opens one draft per entity and cycle, bound to the cycle criteria and scale', function (): void {
+it('opens one draft per entity and cycle, bound to the cycle criteria and scored by its unit types', function (): void {
     $version = publishedAccreditedCriteria();
     $cycle = openAwardCycle($version, ['scale_kind' => 'relative']);
     $entity = cycleEntity($cycle);
@@ -52,7 +52,7 @@ it('opens one draft per entity and cycle, bound to the cycle criteria and scale'
         ->assertJsonPath('data.path', 'advanced')
         ->assertJsonPath('data.status', 'draft')
         ->assertJsonPath('data.award_cycle_id', $cycle->id)
-        ->assertJsonPath('data.scale_kind', 'relative')
+        ->assertJsonPath('data.scale_kind', null)
         ->assertJsonPath('data.criteria_version_id', $version->id)
         ->json('data.id');
     applyForCycle($owner, $cycle)->assertOk()->assertJsonPath('data.id', $id);

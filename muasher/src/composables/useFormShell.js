@@ -9,9 +9,13 @@ export function useFormShell({ inline, open, record, reset }, emit) {
     if (isOpen && !inline()) reset()
   })
 
-  watch(record, () => {
-    if (inline()) reset()
-  })
+  watch(
+    record,
+    () => {
+      if (inline()) reset()
+    },
+    { immediate: true },
+  )
 
   function finish() {
     if (!inline()) emit('update:modelValue', false)

@@ -30,18 +30,18 @@ async function mountSettings(settings, locale = 'en') {
 }
 
 describe('assessment scale setting', () => {
-  it('shows the chosen scale and explains when it takes effect against the published scale', async () => {
+  it('shows the default type for new main criteria and says each criterion keeps its own type', async () => {
     const wrapper = await mountSettings(settingsWith())
     const field = wrapper.find('[name="scaleKind"]')
 
     expect(field.attributes('data-value')).toBe('relative')
-    expect(wrapper.text()).toContain('The published version uses the “Out of 10” scale.')
+    expect(wrapper.text()).toContain('Each new main criterion starts with this type')
   })
 
   it('explains the scale without a published version, in Arabic', async () => {
     const wrapper = await mountSettings(settingsWith({ publishedScaleKind: null }), 'ar')
 
-    expect(wrapper.text()).toContain('مقياس التقييم')
-    expect(wrapper.text()).toContain('يُطبَّق المقياس على إصدار المعايير الذي يُنشر بعد الحفظ')
+    expect(wrapper.text()).toContain('نوع التقييم الافتراضي')
+    expect(wrapper.text()).toContain('يبدأ كل معيار رئيسي جديد بهذا النوع')
   })
 })

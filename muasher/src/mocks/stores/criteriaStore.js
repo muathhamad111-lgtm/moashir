@@ -8,6 +8,7 @@ import {
 } from '../fixtures/criteriaSeed'
 
 export const ACTIVE_SCALE_KIND = SCALE_KINDS.OF_10
+const SEED_SCORING_TYPE = 'score'
 
 const SEED_VERSION_ID = 1
 const SUB_IDS_PER_MAIN = 100
@@ -64,6 +65,7 @@ function seedPoints(sub, points, guidingSequence) {
       code: claimCode(`${sub.code}.${index + 1}`),
       description: { ...point.description },
       weight: toHundredths(point.weight),
+      scoringType: SEED_SCORING_TYPE,
       active: true,
       order: index + 1,
     })
@@ -83,6 +85,7 @@ function seedTree() {
       weight: toHundredths(seedMain.weight),
       distributeEqually: seedMain.distributeEqually,
       group: seedMain.group,
+      defaultScoringType: SEED_SCORING_TYPE,
       active: true,
       order: mainIndex + 1,
     }
@@ -97,6 +100,8 @@ function seedTree() {
         weight: toHundredths(seedSub.weight),
         distributeEqually: seedSub.distributeEqually,
         evaluationType: seedSub.evaluationType,
+        scoringType: SEED_SCORING_TYPE,
+        defaultPointScoringType: SEED_SCORING_TYPE,
         hasCv: seedSub.hasCv,
         assessorNoteLabel: null,
         active: true,
@@ -239,7 +244,10 @@ export function replaceAttachments(ownerType, ownerId, items) {
       ownerId,
       key: item.key || `${ownerType}_${ownerId}_${nextCriteriaId()}`,
       name: { ar: item.name?.ar ?? '', en: item.name?.en ?? '' },
+      guidance: item.guidance ? { ar: item.guidance.ar ?? '', en: item.guidance.en ?? '' } : null,
       required: Boolean(item.required),
+      allowedTypes: Array.isArray(item.allowedTypes) ? [...item.allowedTypes] : null,
+      maxFiles: item.maxFiles ?? null,
       order: index + 1,
     })
   })
@@ -259,6 +267,7 @@ export function deleteSub(subId) {
 export function deleteMain(mainId) {
   subsOf(mainId).forEach((sub) => deleteSub(sub.id))
   state.mains = state.mains.filter((main) => main.id !== mainId)
+  replaceAttachments('main', mainId, [])
 }
 
 export function deleteTreeOf(versionId) {

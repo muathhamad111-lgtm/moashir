@@ -4,19 +4,44 @@
     }
 
     .mail-wrapper-cell {
-        padding: 16px 8px !important;
+        padding: 12px 8px 24px !important;
     }
 
-    .mail-header,
-    .mail-card,
+    .mail-band {
+        padding: 18px 10px 0 !important;
+    }
+
+    .mail-band-content {
+        padding: 0 10px 20px !important;
+    }
+
+    .mail-card-outer {
+        padding: 0 10px !important;
+    }
+
+    .mail-card {
+        padding: 6px 20px 26px !important;
+    }
+
     .mail-footer {
-        padding-left: 20px !important;
-        padding-right: 20px !important;
+        padding: 22px 20px 0 !important;
+    }
+
+    .mail-heading {
+        font-size: 20px !important;
+    }
+
+    .mail-button-table {
+        width: 100% !important;
+    }
+
+    .mail-button .mail-button-link {
+        display: block !important;
     }
 
     .mail-code-box .mail-code {
-        font-size: 28px !important;
-        letter-spacing: 6px !important;
+        font-size: 30px !important;
+        letter-spacing: 8px !important;
     }
 }
 
@@ -26,27 +51,21 @@
         background-color: #061819 !important;
     }
 
-    .mail-card {
+    .mail-card,
+    .mail-card-cap {
         background-color: #0a2325 !important;
     }
 
-    .mail-heading,
-    .mail-signature {
+    .mail-signature,
+    .mail-paragraph {
         color: #d9f7f7 !important;
     }
 
-    .mail-paragraph,
-    .mail-quote {
-        color: #d9f7f7 !important;
-    }
-
-    .mail-quote {
-        background-color: #145053 !important;
-    }
-
+    .mail-quote,
     .mail-code-box {
-        background-color: #145053 !important;
-        border-color: #98d8d3 !important;
+        background-color: #0f3234 !important;
+        border-color: #1f4446 !important;
+        color: #d9f7f7 !important;
     }
 
     .mail-code-box .mail-code {
@@ -62,4 +81,23 @@
     .mail-footer .mail-footer-link {
         color: #98d8d3 !important;
     }
+}
+
+[data-ogsb] .mail-body,
+[data-ogsb] .mail-wrapper {
+    background-color: #061819 !important;
+}
+
+[data-ogsb] .mail-card,
+[data-ogsb] .mail-card-cap {
+    background-color: #0a2325 !important;
+}
+
+[data-ogsc] .mail-signature,
+[data-ogsc] .mail-paragraph {
+    color: #d9f7f7 !important;
+}
+
+[data-ogsc] .mail-footer .mail-footer-text {
+    color: #b9c6c6 !important;
 }

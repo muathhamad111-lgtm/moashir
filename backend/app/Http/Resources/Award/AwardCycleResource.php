@@ -31,7 +31,7 @@ final class AwardCycleResource extends JsonResource
             'year' => $cycle->year,
             'status' => $cycle->status->value,
             'criteria_version_id' => $cycle->criteria_version_id,
-            'scale_kind' => $cycle->scale_kind->value,
+            'scale_kind' => $cycle->scale_kind?->value,
             'submission_start' => $cycle->submission_start->toIso8601String(),
             'submission_end' => $cycle->submission_end->toIso8601String(),
             'committee_start' => $cycle->committee_start->toIso8601String(),

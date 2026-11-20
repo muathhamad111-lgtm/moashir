@@ -34,6 +34,7 @@ final readonly class CriteriaNodeWriter
             'sort_order' => $this->order->nextPosition($version->mainCriteria()),
             'is_active' => $isActive,
         ])->save();
+        $this->attachments->replace($main, $attributes->attachments ?? []);
 
         return $main;
     }
@@ -110,7 +111,7 @@ final readonly class CriteriaNodeWriter
         $point->fill(array_filter(['scoring_type' => $attributes->scoringType]));
     }
 
-    public function replaceAttachments(SubCriterion|GuidingPoint $owner, SubCriterionAttributes|GuidingPointAttributes $attributes): void
+    public function replaceAttachments(MainCriterion|SubCriterion|GuidingPoint $owner, MainCriterionAttributes|SubCriterionAttributes|GuidingPointAttributes $attributes): void
     {
         if ($attributes->attachments !== null) {
             $this->attachments->replace($owner, $attributes->attachments);

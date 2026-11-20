@@ -5,6 +5,7 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import MainCriterionForm from '@/components/criteria/MainCriterionForm.vue'
 import CriteriaWeightsCard from '@/components/criteria/CriteriaWeightsCard.vue'
 import WeightBudget from '@/components/criteria/WeightBudget.vue'
+import CriteriaScoringCard from './CriteriaScoringCard.vue'
 import { useCriteria } from '@/composables/useCriteria'
 import { useCriteriaAction } from '@/composables/useCriteriaAction'
 import { criteriaService } from '@/services/criteriaService'
@@ -54,6 +55,8 @@ async function shareAndAdd() {
     :criterion="main"
     :save="saveNode"
   />
+
+  <CriteriaScoringCard :item="item" :can-edit="canEdit" :reload="reload" />
 
   <CriteriaWeightsCard
     v-if="canEdit && children.length"

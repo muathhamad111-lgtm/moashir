@@ -11,6 +11,9 @@ use App\Support\ValueObjects\Weight;
 
 final readonly class MainCriterionAttributes
 {
+    /**
+     * @param  list<AttachmentRequirementData>|null  $attachments
+     */
     public function __construct(
         public LocalizedText $name,
         public ?LocalizedText $description,
@@ -18,5 +21,6 @@ final readonly class MainCriterionAttributes
         public bool $distributeEqually,
         public CriterionGroup $group,
         public ?ScoringType $defaultScoringType = null,
+        public ?array $attachments = null,
     ) {}
 }

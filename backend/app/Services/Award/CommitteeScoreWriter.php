@@ -23,7 +23,7 @@ final readonly class CommitteeScoreWriter
 {
     public function __construct(private CommitteeScoreReader $reader, private RequestContext $context) {}
 
-    public function replace(CommitteeAssignment $assignment, ScoringTree $tree, ScoreSheet $desired, User $scorer, ScaleKind $scale): ScoreChangeSet
+    public function replace(CommitteeAssignment $assignment, ScoringTree $tree, ScoreSheet $desired, User $scorer, ?ScaleKind $stamp): ScoreChangeSet
     {
         $changes = [];
         $current = [];
@@ -33,21 +33,23 @@ final readonly class CommitteeScoreWriter
             $current[$key] = $row;
             $wanted = $desired->rawForKey($key);
 
-            if ($wanted instanceof RawScore && $wanted->equals($row->rawScore($scale))) {
+            $stored = $row->rawScore($tree->scoringTypeOf($row->level, $row->nodeId(), $stamp));
+
+            if ($wanted instanceof RawScore && $wanted->equals($stored)) {
                 continue;
             }
 
             $row->forceFill(['superseded_at' => Date::now()])->save();
 
             if (! $wanted instanceof RawScore) {
-                $changes[] = new ScoreChange($tree->unit($row->level, $row->nodeId())->code ?? $key, $row->rawScore($scale), null);
+                $changes[] = new ScoreChange($tree->unit($row->level, $row->nodeId())->code ?? $key, $stored, null);
             }
         }
 
         $versions = $this->latestVersions($assignment);
 
         foreach ($desired->entries() as $scored) {
-            $before = ($current[$scored->unit->key()] ?? null)?->rawScore($scale);
+            $before = ($current[$scored->unit->key()] ?? null)?->rawScore($scored->raw->type);
 
             if ($before instanceof RawScore && $before->equals($scored->raw)) {
                 continue;

@@ -69,7 +69,6 @@ final readonly class AdvancedRequestOpener
             'path' => $path,
             'status' => $status,
             'criteria_version_id' => $cycle->criteria_version_id,
-            'scale_kind' => $cycle->scale_kind,
             'award_cycle_id' => $cycle->id,
             'region_id' => $entity->region_id,
             'condition_failure' => $conditionFailure,
@@ -90,7 +89,6 @@ final readonly class AdvancedRequestOpener
             'status' => (string) $assessment->status->value,
             'award_cycle_id' => $assessment->award_cycle_id,
             'criteria_version_id' => $assessment->criteria_version_id,
-            'scale_kind' => $assessment->scale_kind->value,
         ];
     }
 }

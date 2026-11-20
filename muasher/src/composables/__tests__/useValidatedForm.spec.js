@@ -73,4 +73,22 @@ describe('useValidatedForm', () => {
     expect(form.errors.value.name).toBe('الاسم مستخدم مسبقًا')
     expect(form.submitting.value).toBe(false)
   })
+
+  it('keeps the server errors of fields the schema does not own until the next submit or reset', async () => {
+    const error = new Error('422')
+    error.normalized = {
+      message: 'Invalid input',
+      fieldErrors: { 'attachments.0.guidance.ar': ['Enter the Arabic guidance.'] },
+    }
+    const form = harness(vi.fn().mockRejectedValue(error))()
+    form.setFieldValue('name', 'جمعية البر')
+    await form.onSubmit()
+    await flushPromises()
+    await form.validate()
+    expect(form.serverErrors.value).toEqual({
+      'attachments.0.guidance.ar': 'Enter the Arabic guidance.',
+    })
+    form.resetForm()
+    expect(form.serverErrors.value).toEqual({})
+  })
 })

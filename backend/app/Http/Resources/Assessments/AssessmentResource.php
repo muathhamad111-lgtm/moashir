@@ -44,7 +44,7 @@ final class AssessmentResource extends JsonResource
             'is_frozen' => $assessment->isFrozen(),
             'criteria_update_in_progress' => $assessment->awaitsCriteriaUpdate(),
             'criteria_version_id' => $assessment->criteria_version_id,
-            'scale_kind' => $assessment->scale_kind->value,
+            'scale_kind' => $assessment->scale_kind?->value,
             'award_cycle_id' => $assessment->award_cycle_id,
             'award_cycle' => $assessment->award_cycle_id === null ? null : AwardCycleRefPresenter::of($assessment->awardCycle),
             'entity' => EntityPresenter::summary($assessment->entity),

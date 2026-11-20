@@ -66,7 +66,6 @@ final readonly class StartFreeAccreditedRequest
             'path' => $path,
             'status' => AccreditedAssessmentStatus::Draft,
             'criteria_version_id' => $version->id,
-            'scale_kind' => $version->scale_kind,
         ]);
         $assessment->setRelation('entity', $entity);
 
@@ -77,7 +76,6 @@ final readonly class StartFreeAccreditedRequest
             'status' => AccreditedAssessmentStatus::Draft->value,
             'payment_reference' => null,
             'criteria_version_id' => $version->id,
-            'scale_kind' => $version->scale_kind->value,
         ]));
 
         AccreditedRequestOpened::dispatch($assessment);

@@ -10,7 +10,6 @@ use App\Data\Award\CycleSchedule;
 use App\Enums\Audit\AuditEvent;
 use App\Enums\Award\AwardCycleStatus;
 use App\Enums\Award\CycleMemberRole;
-use App\Enums\Criteria\ScaleKind;
 use App\Enums\Identity\PermissionKey;
 use App\Exceptions\Award\AwardRejected;
 use App\Models\Award\AwardCycle;
@@ -57,7 +56,6 @@ final readonly class CreateAwardCycle
             'year' => $attributes->year ?? $schedule->submissionStart->setTimezone($this->config->string('app.display_timezone'))->year,
             'status' => AwardCycleStatus::Draft,
             'criteria_version_id' => $version->id,
-            'scale_kind' => $attributes->scaleKind ?? $version->scale_kind ?? ScaleKind::OutOfTen,
             'min_entity_age_years' => $attributes->minEntityAgeYears ?? $defaults->minEntityAgeYears,
             'disqualification_score' => $attributes->disqualificationScore ?? $defaults->disqualificationScore,
             'initial_review_sla_days' => $attributes->initialReviewSlaDays ?? $defaults->initialReviewSlaDays,
@@ -74,7 +72,6 @@ final readonly class CreateAwardCycle
         $this->audit->record(new AuditEntry(AuditEvent::CycleCreated, $cycle, [], [
             'status' => AwardCycleStatus::Draft->value,
             'criteria_version_id' => $version->id,
-            'scale_kind' => $cycle->scale_kind->value,
             'region_ids' => $attributes->regionIds ?? [],
             'submission_start' => $schedule->submissionStart->toIso8601String(),
             'submission_end' => $schedule->submissionEnd->toIso8601String(),

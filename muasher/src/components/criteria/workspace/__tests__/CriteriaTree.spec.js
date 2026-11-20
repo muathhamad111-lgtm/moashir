@@ -65,6 +65,14 @@ describe('CriteriaTree', () => {
     ])
   })
 
+  it('shows the scoring type of each scored unit', () => {
+    const titles = mountTree({ selectedKey: 'sub-21' })
+      .findAll('.criteria-tree__marker[title]')
+      .map((marker) => marker.attributes('title'))
+    expect(titles).toContain('Achieved / not achieved')
+    expect(titles).toContain('Score out of 10')
+  })
+
   it('offers no editing controls when the version is read only', () => {
     const wrapper = mountTree({ canEdit: false })
     expect(wrapper.text()).not.toContain('Add main criterion')

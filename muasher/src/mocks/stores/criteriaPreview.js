@@ -15,6 +15,7 @@ const NODE_FIELDS = {
     weight: 'weight',
     active: 'active',
     group: 'group',
+    default_scoring_type: 'defaultScoringType',
     order: 'order',
   },
   sub: {
@@ -23,13 +24,21 @@ const NODE_FIELDS = {
     weight: 'weight',
     active: 'active',
     evaluation_type: 'evaluationType',
+    scoring_type: 'scoringType',
+    default_point_scoring_type: 'defaultPointScoringType',
     has_cv: 'hasCv',
     order: 'order',
   },
-  point: { description: 'description', weight: 'weight', active: 'active', order: 'order' },
+  point: {
+    description: 'description',
+    weight: 'weight',
+    scoring_type: 'scoringType',
+    active: 'active',
+    order: 'order',
+  },
 }
 
-const SCORE_AFFECTING = ['weight', 'evaluation_type', 'active']
+const SCORE_AFFECTING = ['weight', 'evaluation_type', 'scoring_type', 'active']
 
 function fieldValue(node, key) {
   const value = node[key] ?? null

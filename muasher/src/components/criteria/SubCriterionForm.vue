@@ -267,7 +267,7 @@ const isGuidingPoints = computed(() => evaluationType.value === EVALUATION_TYPES
         />
       </div>
 
-      <AttachmentsEditor v-model="attachments" />
+      <AttachmentsEditor v-model="attachments" :errors="form.serverErrors.value" />
 
       <div class="criteria-form__toggles">
         <BaseCheckbox

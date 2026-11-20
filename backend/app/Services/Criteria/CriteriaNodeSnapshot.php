@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\Criteria;
 
-use App\Models\Criteria\AttachmentRequirement;
 use App\Models\Criteria\GuidingPoint;
 use App\Models\Criteria\MainCriterion;
 use App\Models\Criteria\SubCriterion;
+use App\Support\Criteria\AttachmentRequirementShape;
 
 final class CriteriaNodeSnapshot
 {
@@ -24,6 +24,7 @@ final class CriteriaNodeSnapshot
             'distribute_equally' => $main->distribute_equally,
             'group' => $main->group->value,
             'default_scoring_type' => $main->default_scoring_type->value,
+            'attachments' => $this->attachmentsOf($main),
             'active' => $main->is_active,
             'order' => $main->sort_order,
         ];
@@ -68,18 +69,14 @@ final class CriteriaNodeSnapshot
     }
 
     /**
-     * @return list<array{key: string, name: array{ar: string, en: string}, required: bool}>
+     * @return list<array<string, mixed>>
      */
-    private function attachmentsOf(SubCriterion|GuidingPoint $owner): array
+    private function attachmentsOf(MainCriterion|SubCriterion|GuidingPoint $owner): array
     {
         $requirements = $owner->relationLoaded('attachmentRequirements')
             ? $owner->attachmentRequirements
             : $owner->attachmentRequirements()->get();
 
-        return array_values($requirements->map(static fn (AttachmentRequirement $requirement): array => [
-            'key' => $requirement->key,
-            'name' => $requirement->name->toArray(),
-            'required' => $requirement->is_required,
-        ])->all());
+        return array_values($requirements->map(AttachmentRequirementShape::of(...))->all());
     }
 }

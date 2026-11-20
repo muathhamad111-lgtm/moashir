@@ -8,6 +8,7 @@ use App\Data\Assessments\ScoredUnit;
 use App\Data\Assessments\ScoreSheet;
 use App\Data\Assessments\ScoringTree;
 use App\Enums\Assessments\ResultSnapshotKind;
+use App\Enums\Criteria\ScoringType;
 use App\Models\Assessments\Assessment;
 use App\Models\Criteria\CriteriaVersion;
 use App\Services\Assessments\ResultSnapshotRecorder;
@@ -19,6 +20,8 @@ use App\Support\ValueObjects\RawScore;
 final readonly class DemoResultScorer
 {
     private const int SPREAD = 8;
+
+    private const int ACHIEVED_FROM_PERCENT = 50;
 
     public function __construct(
         private ScoringTreeBuilder $trees,
@@ -63,11 +66,20 @@ final readonly class DemoResultScorer
                 $percent = max(0, min(100, $profile[$mainIndex % count($profile)] + (($subIndex % 3) - 1) * self::SPREAD));
 
                 foreach ($sub->scorableUnits() as $unit) {
-                    $units[] = new ScoredUnit($unit, RawScore::on($assessment->scale_kind, FixedPoint::format(intdiv($percent * $assessment->scale_kind->maximumHundredths(), 100), 2)));
+                    $units[] = new ScoredUnit($unit, $this->rawFor($unit->scoringTypeUnder($assessment->scale_kind), $percent));
                 }
             }
         }
 
         return ScoreSheet::of($units);
+    }
+
+    private function rawFor(ScoringType $type, int $percent): RawScore
+    {
+        if ($type === ScoringType::Achievement) {
+            return RawScore::on($type, $percent >= self::ACHIEVED_FROM_PERCENT ? '1' : '0');
+        }
+
+        return RawScore::on($type, FixedPoint::format(intdiv($percent * $type->maximumHundredths(), 100), 2));
     }
 }

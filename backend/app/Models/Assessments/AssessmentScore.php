@@ -7,7 +7,7 @@ namespace App\Models\Assessments;
 use App\Casts\PercentCast;
 use App\Enums\Assessments\ScoreLevel;
 use App\Enums\Assessments\ScorerRole;
-use App\Enums\Criteria\ScaleKind;
+use App\Enums\Criteria\ScoringType;
 use App\Exceptions\Persistence\AppendOnlyViolation;
 use App\Support\ValueObjects\Percent;
 use App\Support\ValueObjects\RawScore;
@@ -86,8 +86,8 @@ final class AssessmentScore extends Model
         return (int) ($this->level === ScoreLevel::Sub ? $this->sub_criterion_id : $this->guiding_point_id);
     }
 
-    public function rawScore(ScaleKind $scale): RawScore
+    public function rawScore(ScoringType $type): RawScore
     {
-        return RawScore::on($scale, $this->raw_value);
+        return RawScore::on($type, $this->raw_value);
     }
 }

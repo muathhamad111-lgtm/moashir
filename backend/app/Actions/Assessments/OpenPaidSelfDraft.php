@@ -83,7 +83,6 @@ final readonly class OpenPaidSelfDraft
             'path' => $path,
             'status' => SelfAssessmentStatus::AwaitingPayment,
             'criteria_version_id' => $version->id,
-            'scale_kind' => $version->scale_kind,
             'payment_id' => $payment->id,
         ]);
 
@@ -98,7 +97,6 @@ final readonly class OpenPaidSelfDraft
             'status' => SelfAssessmentStatus::AwaitingPayment->value,
             'payment_reference' => $payment->reference,
             'criteria_version_id' => $assessment->criteria_version_id,
-            'scale_kind' => $assessment->scale_kind->value,
         ]));
         $this->audit->record(new AuditEntry(
             AuditEvent::AssessmentOpened,

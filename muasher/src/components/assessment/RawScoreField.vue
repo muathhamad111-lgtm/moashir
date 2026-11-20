@@ -7,11 +7,13 @@ import ScoreStepper from '@/components/assessment/ScoreStepper.vue'
 import { isFilled, sameRawValue } from '@/utils/assessments/scoreSheet'
 import { sanitizeScoreText, stepScore } from '@/utils/assessments/scoreStep'
 import { compactDecimal, twoDecimals } from '@/utils/percentText'
+import { isAchievement, maximumOf } from '@/utils/assessments/scoringTypes'
+import AchievementScoreField from '@/components/assessment/AchievementScoreField.vue'
 
 const props = defineProps({
   name: { type: String, required: true },
   label: { type: String, required: true },
-  maximum: { type: String, required: true },
+  scoringType: { type: String, required: true },
   saved: { type: Object, default: null },
   disabled: { type: Boolean, default: false },
 })
@@ -25,11 +27,12 @@ const isSaved = computed(
 
 const STEP_KEYS = Object.freeze({ ArrowUp: 1, ArrowDown: -1 })
 
-const max = computed(() => compactDecimal(props.maximum))
+const maximum = computed(() => maximumOf(props.scoringType))
+const max = computed(() => compactDecimal(maximum.value))
 
 function step(delta) {
   if (props.disabled) return
-  value.value = stepScore(value.value, delta, props.maximum)
+  value.value = stepScore(value.value, delta, maximum.value)
 }
 
 function onKeydown(event) {
@@ -53,7 +56,14 @@ const hint = computed(() => {
 </script>
 
 <template>
-  <div class="raw-score" :class="{ 'raw-score--saved': isSaved }" @keydown="onKeydown">
+  <AchievementScoreField
+    v-if="isAchievement(scoringType)"
+    :name="name"
+    :label="label"
+    :saved="saved"
+    :disabled="disabled"
+  />
+  <div v-else class="raw-score" :class="{ 'raw-score--saved': isSaved }" @keydown="onKeydown">
     <BaseInput
       v-model="value"
       :name="name"

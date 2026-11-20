@@ -33,14 +33,6 @@ const scaleOptions = computed(() =>
   Object.values(SCALE_KINDS).map((value) => ({ value, label: t(SCALE_LABELS[value]) })),
 )
 
-const scaleHint = computed(() =>
-  settings.value?.publishedScaleKind
-    ? t('settings.assessment.scaleHintPublished', {
-        scale: t(SCALE_LABELS[settings.value.publishedScaleKind]),
-      })
-    : t('settings.assessment.scaleHint'),
-)
-
 onMounted(load)
 </script>
 
@@ -64,7 +56,7 @@ onMounted(load)
           name="scaleKind"
           :label="t('settings.assessment.scale')"
           :options="scaleOptions"
-          :hint="scaleHint"
+          :hint="t('settings.assessment.scaleHint')"
           required
         />
       </fieldset>

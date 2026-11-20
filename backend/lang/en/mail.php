@@ -17,6 +17,14 @@ return [
     'copyright' => '© :year Moashir. All rights reserved.',
     'privacy' => 'Privacy policy',
     'terms' => 'Terms of use',
+    'contact' => 'Contact us',
+    'no_reply' => 'This is an automated e-mail. Please do not reply to it.',
+    'categories' => [
+        'action_required' => 'Action required',
+        'informational' => 'For your information',
+        'alert' => 'Alert',
+        'error' => 'Error',
+    ],
     'reasons' => [
         'account' => 'You are receiving this e-mail because you have an account on the Moashir platform.',
         'invitation' => 'You are receiving this e-mail because the System Administrator invited you to join the Moashir platform team.',

@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { object as yupObject, boolean as yupBoolean, string as yupString } from 'yup'
 import BaseInput from '@/components/form/BaseInput.vue'
@@ -10,13 +10,11 @@ import { useValidatedForm } from '@/composables/useValidatedForm'
 import { useFormShell } from '@/composables/useFormShell'
 import { renameFieldErrors } from '@/services/mappers/fieldErrors'
 import { pairedText, requiredText, weightText } from '@/utils/criteriaSchemas'
-import { normalizeWeight } from '@/utils/weight'
-import {
-  CRITERIA_DESCRIPTION_MAX_LENGTH,
-  CRITERION_GROUP_ORDER,
-  CRITERION_GROUPS,
-} from '@/constants/criteria'
+import { CRITERIA_DESCRIPTION_MAX_LENGTH, CRITERION_GROUP_ORDER } from '@/constants/criteria'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import AttachmentsEditor from './AttachmentsEditor.vue'
+import { cloneAttachments } from '@/utils/criteriaAttachments'
+import { mainFormPayload, mainFormValues } from '@/utils/criteriaMainForm'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -39,6 +37,7 @@ const FIELD_ALIASES = {
 }
 
 const isEdit = computed(() => Boolean(props.criterion))
+const attachments = ref(cloneAttachments(props.criterion?.attachments))
 const groupOptions = computed(() =>
   CRITERION_GROUP_ORDER.map((group) => ({ value: group, label: t(`criteria.groups.${group}`) })),
 )
@@ -56,40 +55,16 @@ const schema = computed(() =>
   }),
 )
 
-function valuesOf(criterion) {
-  return {
-    nameAr: criterion?.name?.ar ?? '',
-    nameEn: criterion?.name?.en ?? '',
-    descriptionAr: criterion?.description?.ar ?? '',
-    descriptionEn: criterion?.description?.en ?? '',
-    weight: criterion?.weight ?? '',
-    group: criterion?.group ?? CRITERION_GROUPS.ENABLERS,
-    distributeEqually: Boolean(criterion?.distributeEqually),
-    active: criterion?.active ?? true,
-  }
-}
-
-function payloadOf(values) {
-  const hasDescription = values.descriptionAr.trim() || values.descriptionEn.trim()
-  const payload = {
-    name: { ar: values.nameAr.trim(), en: values.nameEn.trim() },
-    description: hasDescription
-      ? { ar: values.descriptionAr.trim(), en: values.descriptionEn.trim() }
-      : null,
-    weight: normalizeWeight(values.weight),
-    group: values.group,
-    distributeEqually: values.distributeEqually,
-  }
-  return isEdit.value ? payload : { ...payload, active: values.active }
-}
-
 const form = useValidatedForm({
   schema,
-  initialValues: valuesOf(props.criterion),
+  initialValues: mainFormValues(props.criterion),
   action: 'criteria.mainForm.submit',
   submit: async (values) => {
     try {
-      await props.save({ id: props.criterion?.id ?? null, payload: payloadOf(values) })
+      await props.save({
+        id: props.criterion?.id ?? null,
+        payload: mainFormPayload(values, attachments.value, { isEdit: isEdit.value }),
+      })
       emit('update:modelValue', false)
     } catch (error) {
       throw renameFieldErrors(error, FIELD_ALIASES)
@@ -103,7 +78,8 @@ const formShell = useFormShell(
     open: () => props.modelValue,
     record: () => props.criterion,
     reset: () => {
-      form.resetForm({ values: valuesOf(props.criterion) })
+      form.resetForm({ values: mainFormValues(props.criterion) })
+      attachments.value = cloneAttachments(props.criterion?.attachments)
     },
   },
   emit,
@@ -189,6 +165,7 @@ const [active] = form.defineField('active')
         :label="t('criteria.fields.descriptionEn')"
         :error="form.errors.value.descriptionEn"
       />
+      <AttachmentsEditor v-model="attachments" :errors="form.serverErrors.value" />
       <div class="criteria-form__toggles">
         <BaseCheckbox
           v-model="distributeEqually"

@@ -34,14 +34,13 @@ const cycle = {
 }
 
 describe('cycle form values and payloads', () => {
-  it('starts a new cycle from the defaults and the published version, and edits use Riyadh date keys', () => {
+  it('starts a new cycle from the defaults and the published version, without a scale of its own, and edits use Riyadh date keys', () => {
     const fresh = cycleFormValues(null, {
       defaults: { minEntityAgeYears: 3, disqualificationScore: '60.00', initialReviewSlaDays: 14 },
-      published: { versionId: 4, scaleKind: 'of-10' },
+      published: { versionId: 4 },
     })
     expect(fresh).toMatchObject({
       criteriaVersionId: 4,
-      scaleKind: 'of-10',
       minEntityAgeYears: '3',
       disqualificationScore: '60.00',
       initialReviewSlaDays: '14',

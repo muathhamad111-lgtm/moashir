@@ -22,7 +22,7 @@ use Illuminate\Support\Carbon;
  * @property int $version
  * @property ResultSnapshotKind $kind
  * @property int $criteria_version_id
- * @property ScaleKind $scale_kind
+ * @property ScaleKind|null $scale_kind
  * @property EarnedScore $total_score
  * @property Weight $total_weight
  * @property Percent $percent

@@ -193,7 +193,7 @@ onMounted(reviewState.load)
         :assessment-id="assessment.id"
         :units="units"
         :scores="review.scores"
-        :maximum="scoreSheet.maximum.value"
+        :type-of="scoreSheet.typeOf"
         @done="reviewState.load({ silent: true })"
       />
       <ReasonDialog

@@ -97,6 +97,31 @@ it('keeps the required variables of a mandatory notification', function (): void
         ->assertJsonMissingValidationErrors(['parts.expiry.en']);
 });
 
+it('sends an edited summary line and button label in the notice e-mail and drops them on reset', function (): void {
+    $key = 'assessments.accredited.ACC-07.entity';
+    $text = collect(switchTo(systemAdmin())->getJson(NOTIFICATION_TEXTS.'/types/ACC-07')->assertOk()->json('data.texts'))->firstWhere('key', $key);
+    $parts = array_map(static fn (array $part): array => $part['current'], $text['parts']);
+    $parts['summary'] = ['ar' => 'بقيت بنود مفتوحة في الطلب :number، أعد إرساله قبل :deadline', 'en' => 'Items are still open in request :number; resubmit by :deadline'];
+    $parts['action'] = ['ar' => 'أكمل البنود الآن', 'en' => 'Complete the items now'];
+    $render = static fn (): string => app(MailPreviewRenderer::class)->render(
+        app(MailSamples::class)->forCode(NotificationCode::AccreditedCompletionRequested, Locale::Arabic)[0],
+        Locale::Arabic,
+    )->html;
+
+    expect(array_keys($text['parts']))->toContain('summary', 'action');
+
+    switchTo(systemAdmin())->putJson(NOTIFICATION_TEXTS.'/texts/'.$key, ['parts' => $parts])->assertOk();
+
+    expect($render())->toMatch('#<p class="mail-summary"[^>]*>بقيت بنود مفتوحة في الطلب [^<]+</p>#')
+        ->and($render())->toMatch('#class="mail-button-link"[^>]*>أكمل البنود الآن</a>#');
+
+    switchTo(systemAdmin())->deleteJson(NOTIFICATION_TEXTS.'/texts/'.$key)->assertNoContent();
+
+    expect($render())->not->toContain('بقيت بنود مفتوحة')
+        ->and($render())->toContain('استكمل البنود المطلوبة وأعد إرسال الطلب قبل')
+        ->and($render())->toMatch('#class="mail-button-link"[^>]*>استكمال الطلب</a>#');
+});
+
 it('resets a text to the shipped wording', function (): void {
     saveRegisteredText(registeredTexts())->assertOk();
 

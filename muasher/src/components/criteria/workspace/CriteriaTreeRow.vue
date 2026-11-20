@@ -5,6 +5,7 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import ReorderButtons from '@/components/criteria/ReorderButtons.vue'
 import { useCriteria } from '@/composables/useCriteria'
+import { useScoringTypeOptions } from '@/composables/useScoringTypeOptions'
 import { nodeLabel, scoresPoints } from '@/utils/criteriaTree'
 import { CRITERIA_NODE_TYPES as NODE } from '@/constants/criteria'
 
@@ -19,6 +20,7 @@ const props = defineProps({
 const emit = defineEmits(['select', 'toggle', 'add', 'move'])
 const { t } = useI18n()
 const { localized, weight } = useCriteria()
+const { labelOf, shortOf } = useScoringTypeOptions()
 
 const node = computed(() => props.item.node)
 const name = computed(() => localized(nodeLabel(props.item)))
@@ -28,6 +30,9 @@ const acceptsChildren = computed(
   () => props.item.type === NODE.MAIN || (props.item.type === NODE.SUB && !isDirectSub.value),
 )
 const attachmentCount = computed(() => node.value.attachments?.length ?? 0)
+const scoringType = computed(() =>
+  props.item.type === NODE.POINT || isDirectSub.value ? node.value.scoringType : null,
+)
 const addLabel = computed(() =>
   t(`criteria.workspace.tree.add.${props.item.type}`, { name: name.value }),
 )
@@ -72,6 +77,10 @@ const addLabel = computed(() =>
       <span v-if="isDirectSub" class="criteria-tree__marker">{{
         t('criteria.workspace.tree.direct')
       }}</span>
+      <span v-if="scoringType" class="criteria-tree__marker" :title="labelOf(scoringType)">
+        <span aria-hidden="true">{{ shortOf(scoringType) }}</span>
+        <span class="criteria-tree__sr">{{ labelOf(scoringType) }}</span>
+      </span>
       <span v-if="!node.active" class="criteria-tree__sr">{{ t('status.inactive') }}</span>
       <span class="criteria-tree__weight">{{ weight(node.weight) }}</span>
     </button>

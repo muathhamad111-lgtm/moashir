@@ -40,11 +40,10 @@ final readonly class CycleCriteriaVersionBindings implements CycleCriteriaBindin
         $drafts = AwardCycle::query()->where('status', AwardCycleStatus::Draft)->where('criteria_version_id', '<>', $to->id)->orderBy('id')->lockForUpdate()->get();
 
         foreach ($drafts as $draft) {
-            $before = ['criteria_version_id' => $draft->criteria_version_id, 'scale_kind' => $draft->scale_kind->value];
-            $draft->forceFill(['criteria_version_id' => $to->id, 'scale_kind' => $to->scale_kind ?? $draft->scale_kind])->save();
+            $before = ['criteria_version_id' => $draft->criteria_version_id];
+            $draft->forceFill(['criteria_version_id' => $to->id, 'scale_kind' => null])->save();
             $this->audit->record(new AuditEntry(AuditEvent::CycleCriteriaVersionMoved, $draft, $before, [
                 'criteria_version_id' => $to->id,
-                'scale_kind' => $draft->scale_kind->value,
             ]));
             $moved[] = $draft->id;
         }

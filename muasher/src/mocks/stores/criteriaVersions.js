@@ -49,6 +49,7 @@ function cloneTree(source, draft) {
       versionId: draft.id,
       name: { ...main.name },
     })
+    copyAttachments('main', main.id, mainCopy.id)
     subsOf(main.id).forEach((sub) => {
       const subCopy = insertSub({
         ...sub,

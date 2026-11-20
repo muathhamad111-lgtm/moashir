@@ -14,7 +14,9 @@ use Illuminate\Contracts\View\View;
 
 final readonly class MailFrameComposer
 {
-    private const string LOGO = 'mail/moashir-logo-on-light.png';
+    private const string LOGO = 'mail/moashir-logo-on-dark.png';
+
+    private const string CONTACT_SECTION = '#contact';
 
     public function __construct(private Application $app, private Repository $config) {}
 
@@ -32,7 +34,9 @@ final readonly class MailFrameComposer
             $locale->value,
             $isArabic ? 'rtl' : 'ltr',
             $isArabic ? 'right' : 'left',
+            $isArabic ? 'left' : 'right',
             $this->app->resourcePath(self::LOGO),
+            FrontendUrl::to(self::CONTACT_SECTION),
             FrontendUrl::to('privacy'),
             FrontendUrl::to('terms'),
             CarbonImmutable::now($this->config->string('app.display_timezone'))->year,

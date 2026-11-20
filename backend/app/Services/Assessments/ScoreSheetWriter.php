@@ -35,14 +35,16 @@ final readonly class ScoreSheetWriter
         foreach ($current as $key => $row) {
             $wanted = $desired->rawForKey($key);
 
-            if ($wanted instanceof RawScore && $wanted->equals($row->rawScore($assessment->scale_kind))) {
+            $stored = $row->rawScore($tree->scoringTypeOf($row->level, $row->nodeId(), $assessment->scale_kind));
+
+            if ($wanted instanceof RawScore && $wanted->equals($stored)) {
                 continue;
             }
 
             $superseded[] = $row;
 
             if (! $wanted instanceof RawScore) {
-                $cleared[] = new ScoreChange($tree->unit($row->level, $row->nodeId())->code ?? $key, $row->rawScore($assessment->scale_kind), null);
+                $cleared[] = new ScoreChange($tree->unit($row->level, $row->nodeId())->code ?? $key, $stored, null);
             }
         }
 
@@ -95,7 +97,7 @@ final readonly class ScoreSheetWriter
         $changes = [];
 
         foreach ($desired->entries() as $scored) {
-            $before = ($current[$scored->unit->key()] ?? null)?->rawScore($assessment->scale_kind);
+            $before = ($current[$scored->unit->key()] ?? null)?->rawScore($scored->raw->type);
 
             if ($before instanceof RawScore && $before->equals($scored->raw)) {
                 continue;

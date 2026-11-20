@@ -106,7 +106,7 @@ onMounted(load)
         :step="steps.position.value + 1"
         :total="steps.total.value"
         :scores="form.scores"
-        :maximum="scoreSheet.maximum.value"
+        :type-of="scoreSheet.typeOf"
         :disabled="fieldsDisabled"
       />
       <SelfAssessmentActions
