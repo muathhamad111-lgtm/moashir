@@ -3,11 +3,17 @@
 @foreach ($introLines as $line)
 <x-mail::paragraph>{{ $line }}</x-mail::paragraph>
 @endforeach
+@isset($seal)
+<x-mail::seal :seal="$seal" :frame="$frame" :mail="$message" />
+@endisset
 @if (! empty($details))
 <x-mail::details :rows="$details" />
 @endif
 @isset($requestedItems)
 <x-mail::requested-items :items="$requestedItems" />
+@endisset
+@isset($progress)
+<x-mail::progress :progress="$progress" />
 @endisset
 @foreach ($quotedLines ?? [] as $line)
 <x-mail::quote>{{ $line }}</x-mail::quote>

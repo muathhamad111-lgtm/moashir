@@ -124,6 +124,76 @@
         color: #98d8d3 !important;
     }
 
+    .mail-seal-bronze .mail-seal-cell {
+        background-color: #2e2117 !important;
+        border-color: #7a5634 !important;
+    }
+
+    .mail-seal-bronze .mail-seal-level,
+    .mail-seal-bronze .mail-seal-caption {
+        color: #e3bc93 !important;
+    }
+
+    .mail-seal-silver .mail-seal-cell {
+        background-color: #262c2e !important;
+        border-color: #7e8888 !important;
+    }
+
+    .mail-seal-silver .mail-seal-level,
+    .mail-seal-silver .mail-seal-caption {
+        color: #dde2e2 !important;
+    }
+
+    .mail-seal-gold .mail-seal-cell {
+        background-color: #2d2711 !important;
+        border-color: #8f7a2a !important;
+    }
+
+    .mail-seal-gold .mail-seal-level,
+    .mail-seal-gold .mail-seal-caption {
+        color: #f0d67a !important;
+    }
+
+    .mail-seal-diamond .mail-seal-cell {
+        background-color: #0f2e2f !important;
+        border-color: #2f7f7f !important;
+    }
+
+    .mail-seal-diamond .mail-seal-level,
+    .mail-seal-diamond .mail-seal-caption {
+        color: #93dcdc !important;
+    }
+
+    .mail-progress {
+        border-color: #1f4446 !important;
+    }
+
+    .mail-progress-heading,
+    .mail-step-done,
+    .mail-step-current {
+        color: #eefbfa !important;
+    }
+
+    .mail-step-next,
+    .mail-step-state-done {
+        color: #b9c6c6 !important;
+    }
+
+    .mail-step-state-current {
+        color: #98d8d3 !important;
+    }
+
+    .mail-step-dot-done {
+        background-color: #98d8d3 !important;
+        color: #0a2325 !important;
+    }
+
+    .mail-step-dot-current,
+    .mail-step-dot-next {
+        background-color: #0f3234 !important;
+        color: #98d8d3 !important;
+    }
+
     .mail-detail-warning {
         color: #f5c56b !important;
     }

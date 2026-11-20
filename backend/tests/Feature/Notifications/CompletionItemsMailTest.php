@@ -72,7 +72,7 @@ it('lists the items the assessor asked for in the ACC-07 e-mail, named from the 
 
     $notification = sentCompletionNotice($owner, NotificationCode::AccreditedCompletionRequested);
     $mail = renderedCompletionMail($notification, $owner, Locale::Arabic);
-    $items = $notification->notice->items?->items ?? [];
+    $items = $notification->notice->blocks->items->items ?? [];
 
     expect($items)->toHaveCount(2)
         ->and($items[0]->code)->toBe('M1.1')
@@ -147,6 +147,6 @@ it('keeps the items when the queued notification is serialized', function (): vo
     $restored = unserialize(serialize($notification));
     assert($restored instanceof EntityNotification);
 
-    expect($restored->notice->items?->items[0]->name?->in('en'))->toBe('Policy')
-        ->and($restored->notice->items?->items[0]->kind)->toBe(CompletionItemKind::Evidence);
+    expect($restored->notice->blocks->items?->items[0]->name?->in('en'))->toBe('Policy')
+        ->and($restored->notice->blocks->items?->items[0]->kind)->toBe(CompletionItemKind::Evidence);
 });

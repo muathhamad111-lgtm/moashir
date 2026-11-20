@@ -16,6 +16,8 @@ final readonly class MailFrameComposer
 {
     private const string LOGO = 'mail/moashir-logo-on-dark.png';
 
+    private const string SEALS = 'mail/seals';
+
     private const string CONTACT_SECTION = '#contact';
 
     public function __construct(private Application $app, private Repository $config) {}
@@ -40,6 +42,7 @@ final readonly class MailFrameComposer
             FrontendUrl::to('privacy'),
             FrontendUrl::to('terms'),
             CarbonImmutable::now($this->config->string('app.display_timezone'))->year,
+            $this->app->resourcePath(self::SEALS),
         );
     }
 }

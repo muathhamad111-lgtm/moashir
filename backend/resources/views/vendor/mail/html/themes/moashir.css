@@ -236,6 +236,155 @@
     text-align: center;
 }
 
+.mail-seal {
+    margin: 4px 0 22px;
+    border-collapse: separate;
+}
+
+.mail-seal-cell {
+    padding: 22px 16px 18px;
+    border: 1px solid #e6eded;
+    border-radius: 14px;
+    text-align: center;
+}
+
+.mail-seal-image {
+    display: block;
+    width: 76px;
+    height: 91px;
+    margin: 0 auto 10px;
+    border: 0;
+}
+
+.mail-seal-level {
+    margin: 0;
+    font-size: 20px;
+    line-height: 1.4;
+    font-weight: bold;
+    text-align: center;
+}
+
+.mail-seal-caption {
+    margin: 2px 0 0;
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.mail-seal-bronze .mail-seal-cell {
+    background-color: #f7eee5;
+    border-color: #d4b08a;
+}
+
+.mail-seal-bronze .mail-seal-level,
+.mail-seal-bronze .mail-seal-caption {
+    color: #6b4520;
+}
+
+.mail-seal-silver .mail-seal-cell {
+    background-color: #f1f3f3;
+    border-color: #b4baba;
+}
+
+.mail-seal-silver .mail-seal-level,
+.mail-seal-silver .mail-seal-caption {
+    color: #454d4d;
+}
+
+.mail-seal-gold .mail-seal-cell {
+    background-color: #fbf5de;
+    border-color: #d9c077;
+}
+
+.mail-seal-gold .mail-seal-level,
+.mail-seal-gold .mail-seal-caption {
+    color: #664f05;
+}
+
+.mail-seal-diamond .mail-seal-cell {
+    background-color: #e4f3f3;
+    border-color: #8ccaca;
+}
+
+.mail-seal-diamond .mail-seal-level,
+.mail-seal-diamond .mail-seal-caption {
+    color: #145e5e;
+}
+
+.mail-progress-heading {
+    margin: 4px 0 10px;
+    font-size: 15px;
+    line-height: 1.6;
+    font-weight: bold;
+    color: #0a2325;
+}
+
+.mail-progress {
+    margin: 0 0 22px;
+    border: 1px solid #e6eded;
+    border-radius: 12px;
+    border-collapse: separate;
+}
+
+.mail-step-marker {
+    padding: 10px 0;
+}
+
+.mail-step-dot {
+    display: inline-block;
+    width: 26px;
+    height: 26px;
+    line-height: 26px;
+    border-radius: 13px;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.mail-step-dot-done {
+    background-color: #145053;
+    color: #ffffff;
+}
+
+.mail-step-dot-current {
+    background-color: #d9f7f7;
+    color: #145053;
+}
+
+.mail-step-dot-next {
+    background-color: #f5f8f8;
+    color: #6b7c7c;
+}
+
+.mail-step {
+    padding: 12px 16px 10px;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.mail-step-done,
+.mail-step-current {
+    font-weight: bold;
+    color: #0a2325;
+}
+
+.mail-step-next {
+    color: #4a5c5c;
+}
+
+.mail-step-state {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.mail-step-state-done {
+    color: #4a5c5c;
+}
+
+.mail-step-state-current {
+    color: #145053;
+}
+
 .mail-quote {
     margin: 0 0 16px;
     padding: 14px 16px;
@@ -349,6 +498,8 @@
 .mail-rtl .mail-detail-label,
 .mail-rtl .mail-detail-value,
 .mail-rtl .mail-items-heading,
+.mail-rtl .mail-progress-heading,
+.mail-rtl .mail-step,
 .mail-rtl .mail-item,
 .mail-rtl .mail-item-title,
 .mail-rtl .mail-item-kind,
@@ -367,6 +518,8 @@
 .mail-ltr .mail-detail-label,
 .mail-ltr .mail-detail-value,
 .mail-ltr .mail-items-heading,
+.mail-ltr .mail-progress-heading,
+.mail-ltr .mail-step,
 .mail-ltr .mail-item,
 .mail-ltr .mail-item-title,
 .mail-ltr .mail-item-kind,

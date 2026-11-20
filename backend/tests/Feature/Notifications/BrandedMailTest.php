@@ -55,7 +55,7 @@ function assertBrandedFrame(RenderedMail $mail, Locale $locale): void
         ->and($mail->text)->toContain((string) __('mail.team', [], $locale->value))
         ->and($mail->text)->toContain($frontend.'/privacy')
         ->and($mail->text)->toContain($frontend.'/#contact')
-        ->and($mail->inlineImages)->toBe(1);
+        ->and($mail->inlineImages)->toBe(str_contains($mail->html, 'class="mail-seal-image"') ? 2 : 1);
 
     expect($mail->html.$mail->text)->not->toContain('Hello!')
         ->and($mail->html.$mail->text)->not->toContain($isArabic ? 'Regards' : 'مع التحية')

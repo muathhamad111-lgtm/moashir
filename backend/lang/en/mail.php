@@ -46,6 +46,22 @@ return [
         ],
         'more' => '{1} One more item is listed on the platform.|[2,*] :count more items are listed on the platform.',
     ],
+    'progress' => [
+        'heading' => 'What happens next',
+        'stages' => [
+            'submitted' => 'Request submitted',
+            'assignment' => 'Assigned to an assessor',
+            'review' => 'Review and assessment',
+            'result' => 'Result and certificate',
+        ],
+        'states' => [
+            'done' => 'Done',
+            'current' => 'Current step',
+        ],
+    ],
+    'seal' => [
+        'caption' => 'Accredited assessment certificate',
+    ],
     'reasons' => [
         'account' => 'You are receiving this e-mail because you have an account on the Moashir platform.',
         'invitation' => 'You are receiving this e-mail because the System Administrator invited you to join the Moashir platform team.',

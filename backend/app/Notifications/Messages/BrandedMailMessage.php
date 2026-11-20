@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Notifications\Messages;
 
 use App\Data\Mail\DetailRow;
-use App\Data\Mail\RequestedItems;
+use App\Data\Mail\MailBlocks;
 use App\Enums\Notifications\MailReason;
 use App\Enums\Notifications\NotificationCategory;
 use App\Models\Identity\User;
@@ -27,14 +27,17 @@ final class BrandedMailMessage extends MailMessage
      */
     public array $details = [];
 
-    public ?RequestedItems $requestedItems = null;
+    public MailBlocks $blocks;
 
     /**
      * @var list<string>
      */
     public array $quotedLines = [];
 
-    public function __construct(public readonly MailReason $reason) {}
+    public function __construct(public readonly MailReason $reason)
+    {
+        $this->blocks = new MailBlocks;
+    }
 
     public static function make(object $notifiable, MailReason $reason): self
     {
@@ -79,9 +82,9 @@ final class BrandedMailMessage extends MailMessage
         return $this;
     }
 
-    public function requestedItems(RequestedItems $items): static
+    public function blocks(MailBlocks $blocks): static
     {
-        $this->requestedItems = $items;
+        $this->blocks = $blocks;
 
         return $this;
     }
@@ -128,7 +131,9 @@ final class BrandedMailMessage extends MailMessage
             'summary' => $this->summary,
             'category' => $this->category,
             'details' => $this->details,
-            'requestedItems' => $this->requestedItems,
+            'requestedItems' => $this->blocks->listedItems(),
+            'progress' => $this->blocks->progress,
+            'seal' => $this->blocks->seal,
             'quotedLines' => $this->quotedLines,
             'reason' => $this->reason,
         ];
