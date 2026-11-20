@@ -70,11 +70,11 @@ async function expectConcise(dialog, { title, line, buttons }) {
 
 async function completeAccreditedForm(page, copy) {
   await page.goto('/assessment/accredited/form/9101')
-  await page.locator('.station-row__button').nth(3).click()
+  await page.locator('.station-row__button, .review-strip__step').nth(3).click()
   await page
     .locator('#accredited-sub-402 .evidence-file--refused .evidence-upload__input')
     .setInputFiles(pdf('audited-statements-2025-final.pdf'))
-  await page.locator('.station-row__button').nth(7).click()
+  await page.locator('.station-row__button, .review-strip__step').nth(7).click()
   const impact = page.locator('#accredited-sub-802')
   await impact
     .locator('textarea')
@@ -94,7 +94,7 @@ async function completeAccreditedForm(page, copy) {
   )
   await page.locator('[data-testid="accredited-save"]').click()
   await saved
-  await page.locator('.station-row__button').last().click()
+  await page.locator('.station-row__button, .review-strip__step').last().click()
 }
 
 test('submitting a request asks one short question, then confirms the success', async ({

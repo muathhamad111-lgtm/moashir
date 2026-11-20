@@ -55,6 +55,12 @@ function localeOf(testInfo) {
   return isEn(testInfo) ? 'en' : 'ar'
 }
 
+function settleTransitions(locator) {
+  return locator.evaluate((element) =>
+    Promise.allSettled(element.getAnimations().map((animation) => animation.finished)),
+  )
+}
+
 function suffixOf(testInfo) {
   return isEn(testInfo) ? 'en-ltr' : 'ar-rtl'
 }
@@ -133,6 +139,8 @@ test.describe('entity sign-in: password or code', () => {
       await expect(page.locator('[name="identifier"]')).toHaveValue(ALBIRR.unifiedNumber)
       await expect(page.locator('[name="password"]')).toHaveCount(0)
       const selected = '[role="tab"][aria-selected="true"]'
+      // The indicator fades in from transparent; measuring mid-transition reads a blank border.
+      await settleTransitions(page.locator(selected))
       const indicator = await contrastOf(page, selected, {
         property: 'borderTopColor',
         behind: true,

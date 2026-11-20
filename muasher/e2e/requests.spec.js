@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
 import { applyOpenListFilters, openListFilters } from './support/listFilters'
+import { chooseRequestAction, openRequestTab, requestMenuItems } from './support/requestRecord'
+import { chooseAssessor, openAssessorList, assessorOptions } from './support/assignDialog'
 
 const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d/i
 
@@ -39,7 +41,7 @@ function trackConsole(page) {
 }
 
 async function fillEmptyScores(page, value) {
-  const mains = page.locator('.station-row__button')
+  const mains = page.locator('.station-row__button, .review-strip__step')
   const count = await mains.count()
   for (let index = 0; index < count; index += 1) {
     await mains.nth(index).click()
@@ -125,7 +127,7 @@ test.describe('Requests follower', () => {
     ).toHaveText(isEn(testInfo) ? 'Reassign' : 'إعادة إسناد')
     await assign.click()
     const dialog = page.locator('.modal')
-    await dialog.locator('.assign-dialog__option').nth(1).click()
+    await chooseAssessor(page, dialog, 1)
     await dialog.locator('button[type="submit"]').click()
     await expect(row.locator('[data-testid="queue-row-assign"]')).toHaveText(
       isEn(testInfo) ? 'Reassign' : 'إعادة إسناد',
@@ -143,35 +145,37 @@ test.describe('Requests follower', () => {
   }, testInfo) => {
     await signIn(page, testInfo, STAFF.follower)
     await page.goto('/admin/requests/9105')
-    await expect(
-      page.locator('.request-detail__assign [data-testid="request-assign"]'),
-    ).toBeVisible()
-    await expect(page.locator('.request-actions [data-testid="request-assign"]')).toHaveCount(0)
+    // Admin review 2026-11-20: one assign button, at the end of the page header.
+    await expect(page.locator('.request-actions [data-testid="request-assign"]')).toBeVisible()
+    await expect(page.locator('[data-testid="request-assign"]')).toHaveCount(1)
     await expect(page.locator('.request-payment-card__facts')).toHaveCount(0)
     await expect(page.locator('.request-facts')).toContainText(isEn(testInfo) ? 'Paid' : 'مدفوعة')
-    await expect(page.locator('.request-facts')).not.toContainText('ENT-')
+    await expect(page.locator('[data-testid="request-entity"]')).toContainText('ENT-')
     await expect(page.locator('.request-certificate')).toHaveCount(0)
     await page.locator('.request-detail__heading [data-testid="request-assign"]').click()
     const dialog = page.locator('.modal')
-    await expect(dialog.locator('.assign-dialog__option').first()).toBeVisible()
+    await openAssessorList(page, dialog)
+    await expect(assessorOptions(page).first()).toBeVisible()
     await page.screenshot({
       path: `test-results/requests-assign-${suffixOf(testInfo)}.png`,
       fullPage: true,
     })
-    await dialog.locator('.assign-dialog__option').nth(1).click()
+    await assessorOptions(page).nth(1).click()
     await dialog.locator('button[type="submit"]').click()
     await expect(page.locator('.request-facts')).toContainText(
       isEn(testInfo) ? 'Assigned' : 'مُسند',
     )
+    await openRequestTab(page, isEn(testInfo) ? 'History' : 'السجل')
     await expect(page.locator('.assignment-history__item')).toHaveCount(1)
 
     await page.goto('/admin/requests/9108')
     await page.locator('.request-detail__heading [data-testid="request-assign"]').click()
-    await dialog.locator('.assign-dialog__option').first().click()
+    await chooseAssessor(page, dialog, 0)
     await dialog.locator('button[type="submit"]').click()
     await expect(dialog.locator('.field__error')).toBeVisible()
     await dialog.locator('textarea').fill(REASON)
     await dialog.locator('button[type="submit"]').click()
+    await openRequestTab(page, isEn(testInfo) ? 'History' : 'السجل')
     await expect(page.locator('.assignment-history__item')).toHaveCount(3)
     await expect(page.locator('.assignment-history')).toContainText(REASON)
     await page.screenshot({
@@ -190,7 +194,7 @@ test.describe('Requests follower', () => {
       isEn(testInfo) ? 'Read-only view' : 'عرض للقراءة فقط',
     )
     await expect(page.locator('.raw-score input').first()).toBeDisabled()
-    await expect(page.locator('.review-actions .btn--secondary')).toHaveCount(0)
+    await expect(page.locator('[data-testid="review-save"]')).toHaveCount(0)
     await expect(page.locator('[data-testid="review-complete"]')).toHaveCount(0)
     await page.locator('.review-page__title-row .btn--secondary').click()
     await expect(page).toHaveURL(/\/admin\/requests\/9108\/evidence-bundles\/[0-9a-f-]{36}$/)
@@ -278,11 +282,13 @@ test.describe('Assessor', () => {
       fullPage: true,
     })
     await fillEmptyScores(page, '8')
+    // The feedback is folded at the end of each card (UX-B1); the assessor opens it to write.
+    await page.locator('#review-sub-901 .review-feedback-fold__summary').click()
     await page
       .locator('#review-sub-901 textarea')
       .first()
       .fill('التزام واضح بمؤشرات الأداء المالية.')
-    await page.locator('.review-actions .btn--secondary').first().click()
+    await page.locator('[data-testid="review-save"]').click()
     await expect(page.locator('.review-header__progress-text')).toContainText(/26\D+26/)
     await expect(page.locator('.review-actions__status')).toContainText(
       isEn(testInfo) ? 'Everything is saved' : 'كل شيء محفوظ',
@@ -309,8 +315,14 @@ test.describe('Super Admin and settings', () => {
     await expect(dialog).toHaveCount(0)
 
     await page.goto('/admin/requests/9104')
-    await expect(page.locator('.request-actions .btn--danger')).toHaveCount(2)
-    await page.locator('.request-actions .btn--danger').first().click()
+    await page.locator('.request-actions [aria-haspopup="menu"]').click()
+    await expect(requestMenuItems(page)).toHaveText(
+      isEn(testInfo)
+        ? ['Override scores', 'Reopen the request', 'Change the status']
+        : ['تجاوز الدرجات', 'إعادة فتح الطلب', 'تغيير الحالة'],
+    )
+    await page.keyboard.press('Escape')
+    await chooseRequestAction(page, isEn(testInfo) ? 'Reopen the request' : 'إعادة فتح الطلب')
     await dialog.locator('textarea').fill('short')
     await dialog.locator('textarea').blur()
     await expect(dialog.locator('.field__error')).toBeVisible()
@@ -321,6 +333,7 @@ test.describe('Super Admin and settings', () => {
     await expect(page.locator('.request-facts')).toContainText(
       isEn(testInfo) ? 'Under review' : 'قيد المراجعة',
     )
+    await openRequestTab(page, isEn(testInfo) ? 'History' : 'السجل')
     await expect(page.locator('.assessment-timeline')).toContainText(
       isEn(testInfo) ? 'Request reopened' : 'أُعيد فتح الطلب',
     )
@@ -345,4 +358,42 @@ test.describe('Super Admin and settings', () => {
       fullPage: true,
     })
   })
+})
+
+// Admin review 2026-11-20 (R3): the general settings decide whether assigning needs a reason.
+test('the System Administrator makes the assign reason required and the dialog follows', async ({
+  page,
+}, testInfo) => {
+  const errors = trackConsole(page)
+  await signIn(page, testInfo, STAFF.systemAdmin)
+  await page.goto('/admin/settings/general')
+  const card = page.locator('[data-testid="assignment-reasons-settings"]')
+  await expect(card).toContainText(isEn(testInfo) ? 'Assignment reason' : 'سبب الإسناد')
+  await card.locator('input[role="switch"]').first().check()
+  await card.locator('button[type="submit"]').click()
+  await expect(card.locator('input[role="switch"]').first()).toBeChecked()
+  await page.screenshot({
+    path: `test-results/requests-assignment-reasons-${suffixOf(testInfo)}.png`,
+    fullPage: true,
+  })
+
+  // The mock keeps the settings in memory, so stay in the app: a client-side route change, no reload.
+  await page.evaluate(() => {
+    window.history.pushState({}, '', '/admin/requests?path=accredited')
+    window.dispatchEvent(new PopStateEvent('popstate'))
+  })
+  await page
+    .locator('.table__row', { hasText: 'ACC-2026-000005' })
+    .locator('[data-testid="queue-row-assign"]')
+    .click()
+  const dialog = page.locator('.modal')
+  await chooseAssessor(page, dialog, 0)
+  await dialog.locator('button[type="submit"]').click()
+  await expect(dialog.locator('textarea')).toHaveAttribute('required', '')
+  await expect(dialog.locator('.field__error')).toBeVisible()
+  await page.screenshot({
+    path: `test-results/requests-assign-dialog-${suffixOf(testInfo)}.png`,
+    fullPage: true,
+  })
+  expect(errors).toEqual([])
 })

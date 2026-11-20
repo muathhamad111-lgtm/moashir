@@ -717,11 +717,6 @@
       "count": 1
     }
   },
-  "src/views/requests/Detail.vue": {
-    "max-lines": {
-      "count": 1
-    }
-  },
   "src/views/settings/Index.vue": {
     "max-lines-per-function": {
       "count": 1

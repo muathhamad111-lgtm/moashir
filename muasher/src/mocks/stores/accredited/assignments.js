@@ -12,6 +12,7 @@ import { activeAssessors, isActiveAssessor } from './staffDirectory'
 import { assertNotFrozen } from './entityWorkflow'
 import { isPositiveInteger, reasonError, throwIfErrors, trimmed } from './accreditedValidation'
 import { qualificationsOf } from '../staffUsers'
+import { assignmentReasonRules } from './assignmentReasons'
 
 const QUALIFICATION_FOR = { accredited: 'accredited', advanced: 'advanced_initial' }
 
@@ -118,7 +119,9 @@ function newAssignment(user, record, { assessorId, reason }, at) {
 }
 
 export function assignAssessor(user, record, body) {
-  const input = validateAssignment(body, { reasonRequired: false })
+  const input = validateAssignment(body, {
+    reasonRequired: assignmentReasonRules().assignRequired,
+  })
   assertNotFrozen(record)
   if (user.superAdmin && !input.reason) throw assessmentReject.reasonRequired()
   const stages = stagesOf(record)
@@ -144,7 +147,9 @@ export function assignAssessor(user, record, body) {
 }
 
 export function reassignAssessor(user, record, body) {
-  const input = validateAssignment(body, { reasonRequired: true })
+  const input = validateAssignment(body, {
+    reasonRequired: assignmentReasonRules().reassignRequired,
+  })
   assertNotFrozen(record)
   if (!pathRules(record.path).hasAssessor(record.status))
     throw assessmentReject.illegalTransition(toCanonicalStatus(record.status), 'reassign')

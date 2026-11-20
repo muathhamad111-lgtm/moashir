@@ -1,3 +1,5 @@
+import { resetAssignmentReasonRules } from './assignmentReasons'
+
 export const EVIDENCE_TYPE_CATALOG = ['pdf', 'docx', 'xlsx', 'pptx', 'jpg', 'png']
 export const SLA_LIMITS = { min: 1, max: 120 }
 export const UPLOAD_LIMITS = { maxFileMb: 100, maxFilesPerSub: 50 }
@@ -22,6 +24,7 @@ let settings = { ...DEFAULTS, evidenceAllowedTypes: [...DEFAULTS.evidenceAllowed
 
 export function resetAssessmentSettings() {
   settings = { ...DEFAULTS, evidenceAllowedTypes: [...DEFAULTS.evidenceAllowedTypes] }
+  resetAssignmentReasonRules()
 }
 
 export function assessmentSettings() {

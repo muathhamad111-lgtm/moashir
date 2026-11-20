@@ -4,7 +4,6 @@ import { useI18n } from 'vue-i18n'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
-import AccreditedStations from '@/components/accredited/AccreditedStations.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import ReviewHeader from './ReviewHeader.vue'
 import ReviewEntityCard from './ReviewEntityCard.vue'
@@ -12,11 +11,12 @@ import ReviewNotices from './ReviewNotices.vue'
 import ReviewSections from './ReviewSections.vue'
 import ReviewMainPanel from './ReviewMainPanel.vue'
 import ReviewActions from './ReviewActions.vue'
-import ReviewCompletionAction from './ReviewCompletionAction.vue'
 import RequestCompletionDialog from './RequestCompletionDialog.vue'
 import ScoreOverrideDialog from './ScoreOverrideDialog.vue'
 import CompleteReviewDialog from './CompleteReviewDialog.vue'
 import ReviewSummaryCard from './ReviewSummaryCard.vue'
+import ReviewCriteriaStrip from './ReviewCriteriaStrip.vue'
+import ReviewCompletionAction from './ReviewCompletionAction.vue'
 import { useAssessorReview } from '@/composables/useAssessorReview'
 import { useCompleteMessageKey } from '@/composables/useCertificateIssuanceMode'
 import { useSelfScoreSheet } from '@/composables/useSelfScoreSheet'
@@ -27,7 +27,7 @@ import { useSignedDownload } from '@/composables/useSignedDownload'
 import { useAuthStore } from '@/stores/auth'
 import { evidenceService } from '@/services/evidenceService'
 import { useCriterionSteps } from '@/composables/useCriterionSteps'
-import { scoredStationsOf } from '@/utils/assessments/scoredStations'
+import { useReviewProgress } from '@/composables/useReviewProgress'
 
 const props = defineProps({
   assessmentId: { type: Number, required: true },
@@ -65,7 +65,7 @@ const ACCREDITED_PATH = 'accredited'
 const mains = computed(() => review.value?.criteria?.mains ?? [])
 const steps = useCriterionSteps(mains)
 const activeMain = steps.current
-const stations = computed(() => scoredStationsOf(mains.value, units.value, scoreSheet.sheet.values))
+const { stations, missing, nextName } = useReviewProgress({ mains, units, scoreSheet, steps })
 const dirty = computed(() => scoreSheet.dirty.value || feedback.dirty.value)
 const fullyScored = computed(
   () => review.value && review.value.progress.scored === review.value.progress.required,
@@ -132,8 +132,7 @@ onMounted(reviewState.load)
       />
       <ReviewSections :request-id="assessment.id">
         <template #assessment>
-          <AccreditedStations
-            compact
+          <ReviewCriteriaStrip
             :stations="stations"
             :active-id="activeMain?.id ?? null"
             @select="showStep(() => steps.goToMain($event))"
@@ -159,6 +158,8 @@ onMounted(reviewState.load)
             :can-score="canScore"
             :is-first="steps.isFirst.value"
             :is-last="steps.isLast.value"
+            :next-name="nextName"
+            :missing="missing"
             @previous="showStep(steps.previous)"
             @next="showStep(steps.next)"
             @save="actions.saveAll"

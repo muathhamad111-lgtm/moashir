@@ -62,6 +62,8 @@ enum SettingKey: string
     case AdvancedInitialReviewSlaDays = 'assessment.advanced_initial_review_sla_days';
     case CommitteeEntityDataVisibility = 'assessment.committee_entity_data_visibility';
     case AssessmentScaleKind = 'assessment.scale_kind';
+    case AssignReasonRequired = 'assessment.assign_reason_required';
+    case ReassignReasonRequired = 'assessment.reassign_reason_required';
     case CertificateLevelThresholds = 'certificates.level_thresholds';
     case AccreditedCertificateIssuanceMode = 'certificates.accredited_issuance_mode';
     case ContactRetentionMonths = 'contact.retention_months';
@@ -105,7 +107,7 @@ enum SettingKey: string
             self::PeriodicPaidDraftReminderDays => SettingType::Integer,
             self::VatRate, self::AdvancedDisqualificationScore => SettingType::Decimal,
             self::GeneralEmailNotifications, self::EntityRegistrationReview,
-            self::TwoFactorEnabled, self::NationalIdEnabled => SettingType::Boolean,
+            self::TwoFactorEnabled, self::NationalIdEnabled, self::AssignReasonRequired, self::ReassignReasonRequired => SettingType::Boolean,
             default => SettingType::Json,
         };
     }
@@ -141,7 +143,8 @@ enum SettingKey: string
             self::EntitySignInCodeChannels => [OtpChannel::Email->value],
             self::GeneralEmailNotifications, self::EntityRegistrationReview, self::TwoFactorEnabled => true,
             self::TwoFactorRoles => RoleKey::staffValues(),
-            self::NationalIdEnabled => false,
+            self::NationalIdEnabled, self::AssignReasonRequired => false,
+            self::ReassignReasonRequired => true,
             self::NationalIdRoles => [],
             self::ContactRetentionMonths => 24,
             self::InsightsGapThresholds => GapThresholds::DEFAULTS,

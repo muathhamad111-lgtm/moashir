@@ -4,7 +4,8 @@ import { setActivePinia } from 'pinia'
 import { createTestGlobals } from '@/test-utils'
 import { useAuthStore } from '@/stores/auth'
 import { sessionUserFor } from '@/test-utils/session'
-import RequestActionsCard from '../RequestActionsCard.vue'
+import RequestHeaderActions from '../RequestHeaderActions.vue'
+import AppMenu from '@/components/ui/AppMenu.vue'
 import RequestAssignButton from '../RequestAssignButton.vue'
 import AssignmentHistoryList from '../AssignmentHistoryList.vue'
 import RequestQueueFilters from '../RequestQueueFilters.vue'
@@ -17,35 +18,57 @@ function render(component, props, { roles = [], extra = {} } = {}) {
   return mount(component, { props, global: { plugins: globals.plugins } })
 }
 
-function labels(wrapper) {
-  return wrapper.findAll('button').map((button) => button.text())
+// Admin review 2026-11-20 (R2): every request action sits at the end of the page header.
+function menuLabels(wrapper) {
+  const menu = wrapper.findComponent(AppMenu)
+  return menu.exists() ? menu.props('actions').map((action) => action.label) : []
 }
 
-describe('RequestActionsCard', () => {
-  it('leaves assignment to the page buttons', () => {
+function buttonLabels(wrapper) {
+  return wrapper
+    .findAll('.request-actions > button, .request-actions > a')
+    .map((button) => button.text())
+}
+
+describe('RequestHeaderActions', () => {
+  it('puts the assignment first for a request waiting for an assessor', () => {
     const detail = { id: 9105, path: 'accredited', status: 'submitted', assignmentHistory: [] }
-    expect(labels(render(RequestActionsCard, { detail }, { roles: ['request_follower'] }))).toEqual(
-      ['Download all evidence'],
+    const wrapper = render(
+      RequestHeaderActions,
+      { detail, assignmentMode: 'assign' },
+      { roles: ['request_follower'] },
     )
+    expect(buttonLabels(wrapper)).toEqual(['Assign an assessor', 'Download all evidence'])
+    expect(wrapper.find('[data-testid="request-assign"]').classes()).toContain('btn--primary')
+  })
+
+  it('opens the review first and keeps the reassignment beside it while the review runs', () => {
+    const detail = {
+      id: 9108,
+      path: 'accredited',
+      status: 'under-review',
+      assignmentHistory: [{ id: 1, status: 'active', assessor: { id: 10 } }],
+    }
+    const wrapper = render(
+      RequestHeaderActions,
+      { detail, assignmentMode: 'reassign' },
+      { roles: ['request_follower'] },
+    )
+    expect(buttonLabels(wrapper)).toEqual(['Open the review', 'Reassign', 'Download all evidence'])
   })
 
   it('names the review button for the assignee by the stage, «Open the review» for others', () => {
     const history = (assessorId) => [{ id: 1, status: 'active', assessor: { id: assessorId } }]
     const reviewButton = (status, assessorId, roles) =>
-      labels(
-        render(
-          RequestActionsCard,
-          {
-            detail: {
-              id: 9107,
-              path: 'accredited',
-              status,
-              assignmentHistory: history(assessorId),
-            },
-          },
-          { roles },
-        ),
-      )[0]
+      render(
+        RequestHeaderActions,
+        {
+          detail: { id: 9107, path: 'accredited', status, assignmentHistory: history(assessorId) },
+        },
+        { roles },
+      )
+        .find('[data-testid="request-open-review"]')
+        .text()
     expect(reviewButton('assigned', 7001, ['assessor'])).toBe('Start the assessment')
     expect(reviewButton('under-review', 7001, ['assessor'])).toBe('Continue the assessment')
     expect(reviewButton('needs-completion', 7001, ['assessor'])).toBe('Continue the assessment')
@@ -53,7 +76,7 @@ describe('RequestActionsCard', () => {
     expect(reviewButton('under-review', 10, ['request_follower'])).toBe('Open the review')
   })
 
-  it('shows reopen and status change to the Super Admin only', () => {
+  it('keeps the Super Admin actions in the menu, after the others', () => {
     const detail = {
       id: 9102,
       path: 'accredited',
@@ -61,49 +84,61 @@ describe('RequestActionsCard', () => {
       assignmentHistory: [{ id: 1 }],
     }
     expect(
-      labels(render(RequestActionsCard, { detail }, { roles: ['system_admin'] })),
-    ).not.toContain('Reopen the request')
-    const superAdmin = labels(
-      render(
-        RequestActionsCard,
-        { detail },
-        {
-          roles: [],
-          extra: {
-            isSuperAdmin: true,
-            permissions: ['requests.assign', 'requests.review.read', 'evidence.view'],
-          },
+      menuLabels(render(RequestHeaderActions, { detail }, { roles: ['system_admin'] })),
+    ).toEqual([])
+    const superAdmin = render(
+      RequestHeaderActions,
+      { detail },
+      {
+        roles: [],
+        extra: {
+          isSuperAdmin: true,
+          permissions: ['requests.assign', 'requests.review.read', 'evidence.view'],
         },
-      ),
+      },
     )
-    expect(superAdmin).toEqual([
-      'Open the review',
-      'Download all evidence',
+    expect(buttonLabels(superAdmin)).toEqual(['Open the review', 'Download all evidence'])
+    expect(menuLabels(superAdmin)).toEqual([
+      'Override scores',
       'Reopen the request',
       'Change the status',
     ])
-    const refunded = labels(
-      render(
-        RequestActionsCard,
-        { detail: { id: 9103, path: 'accredited', status: 'refunded', assignmentHistory: [] } },
-        { roles: [], extra: { isSuperAdmin: true } },
-      ),
+    const refunded = render(
+      RequestHeaderActions,
+      { detail: { id: 9103, path: 'accredited', status: 'refunded', assignmentHistory: [] } },
+      { roles: [], extra: { isSuperAdmin: true } },
     )
-    expect(refunded).not.toContain('Change the status')
+    expect(menuLabels(refunded)).not.toContain('Change the status')
+  })
+
+  it('offers return and withdraw from the menu when the request allows them', async () => {
+    const wrapper = render(
+      RequestHeaderActions,
+      {
+        detail: {
+          id: 9203,
+          path: 'advanced',
+          status: 'awaiting-assignment',
+          assignmentHistory: [],
+        },
+        canReturn: true,
+        canWithdraw: true,
+      },
+      { roles: ['request_follower'] },
+    )
+    expect(menuLabels(wrapper)).toEqual(['Return for completion', 'Withdraw the request'])
+    wrapper.findComponent(AppMenu).vm.$emit('select', 'withdraw')
+    expect(wrapper.emitted('withdraw')).toHaveLength(1)
   })
 
   it('denies an unknown permission key', () => {
-    expect(
-      labels(
-        render(
-          RequestActionsCard,
-          {
-            detail: { id: 9105, path: 'accredited', status: 'submitted', assignmentHistory: [] },
-          },
-          { roles: [], extra: { permissions: ['requests.assign.all'] } },
-        ),
-      ),
-    ).toEqual([])
+    const wrapper = render(
+      RequestHeaderActions,
+      { detail: { id: 9105, path: 'accredited', status: 'submitted', assignmentHistory: [] } },
+      { roles: [], extra: { permissions: ['requests.assign.all'] } },
+    )
+    expect(buttonLabels(wrapper)).toEqual([])
+    expect(menuLabels(wrapper)).toEqual([])
   })
 })
 

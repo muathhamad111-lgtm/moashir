@@ -3982,6 +3982,15 @@
           "no_scheduled_version": "This path has no scheduled price any more: it was cancelled or took effect. Refresh the page."
         }
       }
+    },
+    "assignmentReasons": {
+      "title": "Assignment reason",
+      "assign": "Reason required when assigning",
+      "assignHint": "When on, a request is assigned to an assessor only with a reason kept in the assignment history.",
+      "reassign": "Reason required when reassigning",
+      "reassignHint": "When on, a request moves to another assessor only with a reason kept in the assignment history.",
+      "superAdminNote": "The Super Admin always gives a reason, whatever these settings say.",
+      "saved": "The assignment reason settings were saved."
     }
   },
   "accredited": {
@@ -4456,7 +4465,7 @@
       "title": "Assign an assessor",
       "reassignTitle": "Reassign to another assessor",
       "searchLabel": "Search assessors by name",
-      "assessorLabel": "Eligible assessors",
+      "assessorLabel": "Assessor",
       "openRequests": "No open requests | 1 open request | {count} open requests",
       "empty": "No eligible assessor matches the search.",
       "loadFailed": "The assessors could not be loaded. Close the dialog and try again.",
@@ -4524,7 +4533,7 @@
     "detail": {
       "title": "Request details",
       "back": "Back to the requests",
-      "requestInfo": "Request information",
+      "requestInfo": "Request data",
       "historyTitle": "Assignment history",
       "noHistory": "No assignment has been recorded yet.",
       "timelineTitle": "Status history",
@@ -4546,6 +4555,17 @@
         "openRecord": "Open the payment record",
         "downloadReceipt": "Download the payment receipt",
         "noReceipt": "No receipt issued yet"
+      },
+      "moreActions": "More actions for request {number}",
+      "tabs": {
+        "overview": "Overview",
+        "completion": "Completion",
+        "log": "History"
+      },
+      "result": {
+        "title": "Result",
+        "percent": "{value}%",
+        "total": "{total} of {max}"
       }
     },
     "bundle": {
@@ -4577,7 +4597,8 @@
       "reason": "Reason",
       "toasts": {
         "forced": "The status was changed."
-      }
+      },
+      "scores": "Override scores"
     },
     "toasts": {
       "assigned": "The request was assigned",
@@ -6717,7 +6738,36 @@
     "evidenceMissing": "The entity did not attach this file.",
     "mainEvidenceTitle": "Main criterion evidence",
     "evidenceIndicator": "Indicator attachments: {name}",
-    "evidenceLate": "Required attachment added after submission"
+    "evidenceLate": "Required attachment added after submission",
+    "score": {
+      "percent": "{value}%",
+      "unsaved": "Not saved"
+    },
+    "shareOfSub": "{share} of the sub-criterion",
+    "shareOfMain": "{share} of the criterion",
+    "state": {
+      "scored": "Scored",
+      "pending": "Not scored yet"
+    },
+    "indicatorsScored": "{scored} / {total} indicators scored",
+    "itemsScored": "{scored} / {total} items scored",
+    "criterionPosition": "Criterion {step} of {total} · {share} of the model",
+    "subAttachments": "Sub-criterion attachments",
+    "directEvidence": "What the entity provided for this item",
+    "indicators": "Indicators",
+    "showMore": "Show more",
+    "showLess": "Show less",
+    "feedbackWritten": "{written} of {total} written · optional",
+    "strip": {
+      "label": "Criteria of the request",
+      "states": {
+        "complete": "Complete",
+        "partial": "Partly scored",
+        "empty": "Not started"
+      }
+    },
+    "nextNamed": "Next: {name}",
+    "completeMissing": "Complete the assessment · {count}"
   },
   "cycles": {
     "statuses": {

@@ -2,9 +2,8 @@
 import { computed, ref, toRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import FormModal from '@/components/modal/FormModal.vue'
-import BaseInput from '@/components/form/BaseInput.vue'
+import AppCombobox from '@/components/form/AppCombobox.vue'
 import BaseTextarea from '@/components/form/BaseTextarea.vue'
-import Skeleton from '@/components/feedback/Skeleton.vue'
 import PathBadge from '@/components/ui/PathBadge.vue'
 import { assignmentFailureOf, useAssignAssessor } from '@/composables/useAssignAssessor'
 import { useToast } from '@/composables/useToast'
@@ -12,6 +11,12 @@ import { success } from '@/composables/useSuccess'
 import { useAuthStore } from '@/stores/auth'
 import { ACCREDITED_LIMITS } from '@/constants/accredited'
 import { logger } from '@/utils/logger'
+
+const LIST_MESSAGES = {
+  empty: 'requests.assign.empty',
+  outOfScope: 'requests.assign.outOfScope',
+  error: 'requests.assign.loadFailed',
+}
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -26,7 +31,7 @@ const emit = defineEmits(['update:modelValue', 'done'])
 const { t } = useI18n()
 const toast = useToast()
 const auth = useAuthStore()
-const { assessors, status, search, loadAssessors, submit } = useAssignAssessor({
+const { assessors, status, search, reasonRules, loadAssessors, submit } = useAssignAssessor({
   requestId: toRef(props, 'requestId'),
 })
 const chosen = ref(null)
@@ -34,7 +39,26 @@ const reason = ref('')
 const errors = ref({})
 const busy = ref(false)
 
-const reasonRequired = computed(() => props.mode === 'reassign' || auth.isSuperAdmin)
+// The general settings decide per mode; the Super Admin always gives a reason (override rule).
+const reasonRequired = computed(
+  () =>
+    auth.isSuperAdmin ||
+    (props.mode === 'reassign'
+      ? reasonRules.value.reassignRequired
+      : reasonRules.value.assignRequired),
+)
+const options = computed(() =>
+  assessors.value.map((assessor) => ({
+    value: assessor.id,
+    label: assessor.name,
+    description: t(
+      'requests.assign.openRequests',
+      { count: assessor.openRequests },
+      assessor.openRequests,
+    ),
+  })),
+)
+const listMessage = computed(() => LIST_MESSAGES[status.value] ?? '')
 const title = computed(() =>
   props.mode === 'reassign' ? t('requests.assign.reassignTitle') : t('requests.assign.title'),
 )
@@ -129,49 +153,20 @@ watch(
         <PathBadge :path="path" :label="pathLabel" />
         <span>{{ t('requests.assign.qualifiedOnly') }}</span>
       </p>
-      <BaseInput
-        v-model="search"
-        name="assessor-search"
-        :label="t('requests.assign.searchLabel')"
-        autocomplete="off"
+      <AppCombobox
+        v-model="chosen"
+        class="assign-dialog__assessor"
+        name="assessorId"
+        :options="options"
+        :loading="status === 'loading'"
+        remote
+        :label="t('requests.assign.assessorLabel')"
+        :placeholder="t('requests.assign.searchLabel')"
+        :hint="listMessage ? t(listMessage) : ''"
+        :error="errors.assessorId"
+        required
+        @search="search = $event"
       />
-      <Skeleton v-if="status === 'loading'" variant="text" :count="3" />
-      <p v-else-if="status === 'empty'" class="assign-dialog__empty">
-        {{ t('requests.assign.empty') }}
-      </p>
-      <p v-else-if="status === 'outOfScope'" class="assign-dialog__empty" role="alert">
-        {{ t('requests.assign.outOfScope') }}
-      </p>
-      <p v-else-if="status === 'error'" class="assign-dialog__empty" role="alert">
-        {{ t('requests.assign.loadFailed') }}
-      </p>
-      <fieldset
-        v-else
-        class="assign-dialog__options"
-        :aria-describedby="errors.assessorId ? 'assign-assessor-error' : undefined"
-      >
-        <legend class="assign-dialog__legend">{{ t('requests.assign.assessorLabel') }}</legend>
-        <label v-for="assessor in assessors" :key="assessor.id" class="assign-dialog__option">
-          <input
-            v-model="chosen"
-            type="radio"
-            name="assessorId"
-            :value="assessor.id"
-            class="assign-dialog__radio"
-          />
-          <span class="assign-dialog__name">{{ assessor.name }}</span>
-          <span class="assign-dialog__load">{{
-            t(
-              'requests.assign.openRequests',
-              { count: assessor.openRequests },
-              assessor.openRequests,
-            )
-          }}</span>
-        </label>
-      </fieldset>
-      <p v-if="errors.assessorId" id="assign-assessor-error" class="field__error" role="alert">
-        {{ errors.assessorId }}
-      </p>
       <BaseTextarea
         v-model="reason"
         name="reason"

@@ -6,6 +6,18 @@ export const ASSIGNMENT_CODES = Object.freeze({ NOT_QUALIFIED: 'assessor.not_qua
 
 const NOT_FOUND = 404
 
+// Today's rules until the API sends the general settings: the assign reason optional, the reassign one required.
+const DEFAULT_REASON_RULES = Object.freeze({ assignRequired: false, reassignRequired: true })
+
+function reasonRulesOf(meta) {
+  const rules = meta?.reasonRules
+  if (!rules) return DEFAULT_REASON_RULES
+  return {
+    assignRequired: rules.assignRequired === true,
+    reassignRequired: rules.reassignRequired !== false,
+  }
+}
+
 function isOutOfScope(error) {
   const normalized = error?.normalized ?? {}
   return normalized.status === NOT_FOUND || Boolean(normalized.fieldErrors?.assessmentId)
@@ -15,6 +27,7 @@ export function useAssignAssessor({ requestId }) {
   const assessors = ref([])
   const status = ref('idle')
   const search = ref('')
+  const reasonRules = ref(DEFAULT_REASON_RULES)
   let timer = null
 
   async function loadAssessors() {
@@ -24,8 +37,9 @@ export function useAssignAssessor({ requestId }) {
         assessmentId: requestId.value,
         ...(search.value.trim() ? { search: search.value.trim() } : {}),
       }
-      const { data } = await requestsService.listAssessors(params)
+      const { data, meta } = await requestsService.listAssessors(params)
       assessors.value = data
+      reasonRules.value = reasonRulesOf(meta)
       status.value = data.length ? 'ready' : 'empty'
     } catch (error) {
       assessors.value = []
@@ -46,7 +60,7 @@ export function useAssignAssessor({ requestId }) {
 
   onBeforeUnmount(() => clearTimeout(timer))
 
-  return { assessors, status, search, loadAssessors, submit }
+  return { assessors, status, search, reasonRules, loadAssessors, submit }
 }
 
 export function assignmentFailureOf(error) {

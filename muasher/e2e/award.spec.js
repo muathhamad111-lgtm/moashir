@@ -1,6 +1,7 @@
 import { Buffer } from 'node:buffer'
 import { test, expect } from '@playwright/test'
 import { seedPreferences, seedSignedIn } from './support/session'
+import { chooseRequestAction } from './support/requestRecord'
 
 const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d/i
 const PDF = Buffer.from('%PDF-1.4\n% Award evidence\n%%EOF\n')
@@ -81,7 +82,7 @@ async function shot(page, name, testInfo) {
 }
 
 async function fillEmptyScores(page, value) {
-  const mains = page.locator('.station-row__button')
+  const mains = page.locator('.station-row__button, .review-strip__step')
   const count = await mains.count()
   for (let index = 0; index < count; index += 1) {
     await mains.nth(index).click()
@@ -125,7 +126,7 @@ test.describe('Award public intro and entity path', () => {
     await expect(page).toHaveURL(/\/assessment\/advanced\/form\/\d+$/)
     await expect(page.locator('.accredited-completeness')).toBeVisible()
     await shot(page, 'award-entity-draft', testInfo)
-    await page.locator('.station-row__button').last().click()
+    await page.locator('.station-row__button, .review-strip__step').last().click()
     await page.locator('[data-testid="accredited-submit"]').click()
     await expect(page.locator('.accredited-completeness__item').first()).toBeVisible()
     await expect(page.locator('.modal')).toHaveCount(0)
@@ -174,14 +175,14 @@ test.describe('Award public intro and entity path', () => {
     await page.locator('.advanced-request__link').click()
     await expect(page.locator('.completion-card')).toBeVisible()
     await expect(page.locator('.completion-card__item')).toHaveCount(2)
-    await page.locator('.station-row__button').nth(1).click()
+    await page.locator('.station-row__button, .review-strip__step').nth(1).click()
     const cv = page.locator('#accredited-sub-201 textarea')
     await expect(cv).toBeEditable()
     await cv.fill(
       'أجرت الجهة دراسة احتياجات شملت ألف مستفيد عبر الاستبانات والمقابلات المنظمة، وبُنيت البرامج على نتائجها.',
     )
     await expect(page.locator('#accredited-sub-202 textarea')).toBeDisabled()
-    await page.locator('.station-row__button').nth(7).click()
+    await page.locator('.station-row__button, .review-strip__step').nth(7).click()
     await page
       .locator('#accredited-sub-802 .evidence-slots__slot')
       .first()
@@ -189,7 +190,7 @@ test.describe('Award public intro and entity path', () => {
       .setInputFiles({ name: 'impact-report-2026.pdf', mimeType: 'application/pdf', buffer: PDF })
     await expect(page.locator('#accredited-sub-802 .evidence-file')).toHaveCount(1)
     await shot(page, 'award-entity-completion', testInfo)
-    await page.locator('.station-row__button').last().click()
+    await page.locator('.station-row__button, .review-strip__step').last().click()
     await page.locator('[data-testid="accredited-submit"]').click()
     await page.locator('.modal .btn--primary').click()
     await expect(page).toHaveURL(/\/assessment\/advanced$/)
@@ -213,11 +214,7 @@ test.describe('Award staff screens', () => {
     await expect(page).toHaveURL(/\/admin\/requests\?path=advanced$/)
     await expect(rows.first()).toContainText('ADV-')
     await page.goto('/admin/requests/9203')
-    await page
-      .locator('.request-actions button', {
-        hasText: text(testInfo, 'Return for completion', 'إعادة للاستكمال'),
-      })
-      .click()
+    await chooseRequestAction(page, text(testInfo, 'Return for completion', 'إعادة للاستكمال'))
     const dialog = page.locator('.modal')
     await expect(dialog.locator('.completion-dialog')).toBeVisible()
     await dialog.locator('textarea[name="notes"]').fill(RETURN_NOTES)
@@ -236,11 +233,7 @@ test.describe('Award staff screens', () => {
   test('the follower withdraws a request with a mandatory reason', async ({ page }, testInfo) => {
     await signIn(page, testInfo, USERS.follower)
     await page.goto('/admin/requests/9205')
-    await page
-      .locator('.request-actions button', {
-        hasText: text(testInfo, 'Withdraw the request', 'سحب الطلب'),
-      })
-      .click()
+    await chooseRequestAction(page, text(testInfo, 'Withdraw the request', 'سحب الطلب'))
     const dialog = page.locator('.modal')
     await dialog.locator('button[type="submit"]').click()
     await expect(dialog.locator('.field__error')).toBeVisible()

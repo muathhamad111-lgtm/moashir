@@ -53,6 +53,7 @@ import { sanctumHandlers } from './sanctum'
 import { contactMessagesHandlers } from './contactMessages'
 import { contactInboxHandlers } from './contactInbox'
 import { contactSettingsHandlers } from './contactSettings'
+import { assignmentReasonsHandlers } from './assignmentReasons'
 import { certificateLevelsHandlers } from './certificateLevels'
 import { pathGuidesHandlers } from './pathGuides'
 import { legalHandlers } from './legal'
@@ -72,6 +73,7 @@ export const handlers = [
   ...pathGuidesHandlers,
   ...contactInboxHandlers,
   ...contactSettingsHandlers,
+  ...assignmentReasonsHandlers,
   ...contactMessagesHandlers,
   ...aiHandlers,
   ...knowledgeBaseHandlers,

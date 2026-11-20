@@ -53,7 +53,7 @@ function trackConsole(page) {
 }
 
 async function openMain(page, index) {
-  await page.locator('.station-row__button').nth(index).click()
+  await page.locator('.station-row__button, .review-strip__step').nth(index).click()
 }
 
 function pdf(name, content = PDF) {
@@ -153,7 +153,7 @@ test('the entity completes the form: CV, evidence with scan states, refused file
 
   await page.locator('[data-testid="accredited-save"]').click()
   await expect.poll(remaining).toBe(3)
-  await page.locator('.station-row__button').last().click()
+  await page.locator('.station-row__button, .review-strip__step').last().click()
   await page.locator('[data-testid="accredited-submit"]').click()
   await page.locator('.modal .btn--primary').click()
   await expect(page).toHaveURL(/\/paths\/accredited\/9101\?tab=request$/)
@@ -230,7 +230,7 @@ test('a completion request limits edits to the listed items and shows the deadli
     .locator('.evidence-upload__input')
     .setInputFiles(pdf('audited-statements-2025.pdf'))
   await expect(page.locator('#accredited-sub-402 .scan-status').first()).toBeVisible()
-  await page.locator('.station-row__button').last().click()
+  await page.locator('.station-row__button, .review-strip__step').last().click()
   await page.locator('[data-testid="accredited-submit"]').click()
   await page.locator('.modal .btn--primary').click()
   await expect(page).toHaveURL(/\/paths\/accredited\/9106\?tab=request$/)

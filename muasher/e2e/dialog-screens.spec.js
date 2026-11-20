@@ -42,12 +42,12 @@ function pdf(name) {
 
 async function completeAccreditedForm(page, variant) {
   await page.goto('/assessment/accredited/form/9101')
-  await page.locator('.station-row__button').nth(3).click()
+  await page.locator('.station-row__button, .review-strip__step').nth(3).click()
   const governance = page.locator('#accredited-sub-402')
   await governance
     .locator('.evidence-file--refused .evidence-upload__input')
     .setInputFiles(pdf('audited-statements-2025-final.pdf'))
-  await page.locator('.station-row__button').nth(7).click()
+  await page.locator('.station-row__button, .review-strip__step').nth(7).click()
   const impact = page.locator('#accredited-sub-802')
   await impact
     .locator('textarea')

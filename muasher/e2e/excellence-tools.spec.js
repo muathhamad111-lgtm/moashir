@@ -250,8 +250,12 @@ test.describe('excellence tools — staff and settings', () => {
     page,
   }, testInfo) => {
     await seedSignedIn(page, ASSESSOR, { locale: localeOf(testInfo), theme: 'light' })
-    await open(page, `/admin/requests/${UNDER_REVIEW}/review`, '.station-row__button')
-    await page.locator('.station-row__button').last().click()
+    await open(
+      page,
+      `/admin/requests/${UNDER_REVIEW}/review`,
+      '.station-row__button, .review-strip__step',
+    )
+    await page.locator('.station-row__button, .review-strip__step').last().click()
     await page.locator('[data-testid="review-complete"]').click()
     await expect(page.locator('.modal [data-testid="review-summary"]')).toBeVisible()
     await page.locator('textarea[name="assessor-summary"]').fill('ملخص تجريبي لنتيجة التقييم.')

@@ -86,6 +86,39 @@ describe('RequestFacts payment flag', () => {
   })
 })
 
+// Admin review 2026-11-20 (R2): the entity belongs to the request data; the assessor stays with a reassigned mark.
+describe('RequestFacts entity and assessor', () => {
+  const DETAIL = {
+    path: 'accredited',
+    status: 'completed',
+    entity: {
+      id: 6004,
+      name: { ar: 'جمعية عطاء للأيتام' },
+      reference: 'ENT-006004',
+      level: 'participation',
+    },
+    assessor: { id: 11, name: 'أ. هند الزهراني' },
+    isReassigned: true,
+    payment: { paid: true, details: null },
+  }
+
+  it('opens the entity record from the request data for staff who view entities', () => {
+    const wrapper = render(RequestFacts, { detail: DETAIL }, ['system_admin'], 'ar')
+    const entity = wrapper.find('[data-testid="request-entity"]')
+    expect(entity.find('a').attributes('href')).toBe('/admin/entities/6004')
+    expect(entity.text()).toContain('ENT-006004')
+    expect(entity.find('.level-badge').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="request-assessor"]').text()).toContain('أ. هند الزهراني')
+    expect(wrapper.find('[data-testid="request-assessor"]').text()).toContain('أُعيد الإسناد')
+  })
+
+  it('names the entity without a link for staff who cannot view entities', () => {
+    const wrapper = render(RequestFacts, { detail: { ...DETAIL, isReassigned: false } }, [])
+    expect(wrapper.find('[data-testid="request-entity"] a').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="request-assessor"]').text()).not.toContain('Reassigned')
+  })
+})
+
 describe('LinkedRequestCard', () => {
   it('shows Finance the number, status and progress with a lock note and no link', () => {
     const wrapper = render(

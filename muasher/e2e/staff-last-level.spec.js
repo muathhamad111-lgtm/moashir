@@ -310,7 +310,7 @@ test.describe('Task-84 — S3 request queue and S4 request detail', () => {
           `/admin/requests/${EHSAN.request}`,
           '[data-testid="request-entity"] .level-badge',
         )
-        const header = page.locator('.request-detail__header')
+        const header = page.locator('.request-detail__facts')
         await expect(header).toBeVisible()
         await expectLevel(
           page.locator('[data-testid="request-entity"]'),

@@ -31,7 +31,7 @@ final readonly class ReassignAssessor
         private AuditRecorder $audit,
     ) {}
 
-    public function handle(User $actor, Assessment $assessment, int $assessorId, string $reason): Assessment
+    public function handle(User $actor, Assessment $assessment, int $assessorId, ?string $reason): Assessment
     {
         return DB::transaction(function () use ($actor, $assessment, $assessorId, $reason): Assessment {
             $locked = $this->gate->enter($actor, $assessment, $assessment->status, AssessmentVerb::Reassign, $reason);

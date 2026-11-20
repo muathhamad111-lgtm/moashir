@@ -3982,6 +3982,15 @@
           "no_scheduled_version": "لا يوجد سعر مجدول لهذا المسار، فقد أُلغي أو بدأ سريانه. حدّث الصفحة."
         }
       }
+    },
+    "assignmentReasons": {
+      "title": "سبب الإسناد",
+      "assign": "السبب إلزامي عند الإسناد",
+      "assignHint": "عند تفعيله لا يُسند طلب إلى مقيّم إلا بسبب يُحفظ في سجل الإسناد.",
+      "reassign": "السبب إلزامي عند إعادة الإسناد",
+      "reassignHint": "عند تفعيله لا يُنقل طلب إلى مقيّم آخر إلا بسبب يُحفظ في سجل الإسناد.",
+      "superAdminNote": "يكتب مدير النظام الرئيسي سببًا دائمًا مهما كانت هذه الإعدادات.",
+      "saved": "حُفظت إعدادات سبب الإسناد."
     }
   },
   "accredited": {
@@ -4456,7 +4465,7 @@
       "title": "إسناد مقيّم",
       "reassignTitle": "إعادة الإسناد إلى مقيّم آخر",
       "searchLabel": "البحث عن مقيّم بالاسم",
-      "assessorLabel": "المقيّمون المتاحون",
+      "assessorLabel": "المقيّم",
       "openRequests": "لا توجد طلبات مفتوحة | طلب مفتوح واحد | {count} من الطلبات المفتوحة",
       "empty": "لا يوجد مقيّم متاح يطابق البحث.",
       "loadFailed": "تعذر تحميل المقيّمين. أغلق النافذة وحاول مرة أخرى.",
@@ -4524,7 +4533,7 @@
     "detail": {
       "title": "تفاصيل الطلب",
       "back": "العودة إلى الطلبات",
-      "requestInfo": "معلومات الطلب",
+      "requestInfo": "بيانات الطلب",
       "historyTitle": "سجل الإسناد",
       "noHistory": "لم يُسجَّل أي إسناد بعد.",
       "timelineTitle": "سجل الحالات",
@@ -4546,6 +4555,17 @@
         "openRecord": "فتح سجل الدفعة",
         "downloadReceipt": "تنزيل إيصال الدفع",
         "noReceipt": "لم يصدر إيصال بعد"
+      },
+      "moreActions": "إجراءات أخرى للطلب {number}",
+      "tabs": {
+        "overview": "نظرة عامة",
+        "completion": "الاستكمال",
+        "log": "السجل"
+      },
+      "result": {
+        "title": "النتيجة",
+        "percent": "{value}%",
+        "total": "{total} من {max}"
       }
     },
     "bundle": {
@@ -4577,7 +4597,8 @@
       "reason": "السبب",
       "toasts": {
         "forced": "تغيّرت حالة الطلب."
-      }
+      },
+      "scores": "تجاوز الدرجات"
     },
     "toasts": {
       "assigned": "أُسند الطلب",
@@ -6717,7 +6738,36 @@
     "evidenceMissing": "لم تُرفق الجهة هذا المرفق.",
     "mainEvidenceTitle": "شواهد المعيار الرئيسي",
     "evidenceIndicator": "مرفقات المؤشر: {name}",
-    "evidenceLate": "مرفق مطلوب أُضيف بعد التقديم"
+    "evidenceLate": "مرفق مطلوب أُضيف بعد التقديم",
+    "score": {
+      "percent": "{value}%",
+      "unsaved": "غير محفوظ"
+    },
+    "shareOfSub": "{share} من المعيار الفرعي",
+    "shareOfMain": "{share} من المعيار",
+    "state": {
+      "scored": "تم التقييم",
+      "pending": "بانتظار التقييم"
+    },
+    "indicatorsScored": "{scored} / {total} مؤشرات مقيّمة",
+    "itemsScored": "{scored} / {total} بنود مقيّمة",
+    "criterionPosition": "المعيار {step} من {total} · {share} من النموذج",
+    "subAttachments": "مرفقات المعيار الفرعي",
+    "directEvidence": "ما قدّمته الجهة لهذا البند",
+    "indicators": "المؤشرات",
+    "showMore": "عرض المزيد",
+    "showLess": "عرض أقل",
+    "feedbackWritten": "{written} من {total} مكتوبة · اختيارية",
+    "strip": {
+      "label": "معايير الطلب",
+      "states": {
+        "complete": "مكتمل",
+        "partial": "ناقص",
+        "empty": "لم يبدأ"
+      }
+    },
+    "nextNamed": "التالي: {name}",
+    "completeMissing": "إكمال التقييم · {count}"
   },
   "cycles": {
     "statuses": {

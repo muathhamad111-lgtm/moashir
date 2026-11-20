@@ -41,7 +41,10 @@ test('the old sign-in security address opens the general screen with the verific
   await page.goto('/admin/settings/sign-in')
   await expect(page).toHaveURL(/\/admin\/settings\/general$/)
   await retrySection(page, '.sign-in-channels')
-  await expect(page.locator('.toggle-switch')).toHaveCount(3)
+  // Three sign-in switches plus the two assignment-reason switches (admin review R3).
+  await expect(page.locator('.toggle-switch')).toHaveCount(5)
+  await expect(page.locator('input[name="assignRequired"]')).not.toBeChecked()
+  await expect(page.locator('input[name="reassignRequired"]')).toBeChecked()
   await expect(page.locator('input[name="entityRegistrationReview"]')).toBeChecked()
   await expect(page.locator('input[name="codeChannelEmail"]')).toBeChecked()
   await expect(page.locator('input[name="codeChannelEmail"]')).toBeEnabled()

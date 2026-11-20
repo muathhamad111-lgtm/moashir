@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\Finance\DeactivateBankAccountController;
 use App\Http\Controllers\Api\V1\Finance\ReorderBankAccountsController;
 use App\Http\Controllers\Api\V1\Prices\PathPricesController;
 use App\Http\Controllers\Api\V1\Settings\AssessmentSettingsController;
+use App\Http\Controllers\Api\V1\Settings\AssignmentReasonRulesController;
 use App\Http\Controllers\Api\V1\Settings\AuthSettingsController;
 use App\Http\Controllers\Api\V1\Settings\BrandingController;
 use App\Http\Controllers\Api\V1\Settings\CertificateSettingsController;
@@ -41,6 +42,8 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
     Route::put('finance', [FinanceSettingsController::class, 'update'])->middleware([$finance, 'throttle:sensitive'])->name('finance.update');
     Route::get('assessment', [AssessmentSettingsController::class, 'show'])->middleware($assessment)->name('assessment.show');
     Route::put('assessment', [AssessmentSettingsController::class, 'update'])->middleware([$assessment, 'throttle:sensitive'])->name('assessment.update');
+    Route::get('assessment/assignment-reasons', [AssignmentReasonRulesController::class, 'show'])->middleware($assessment)->name('assessment.assignment-reasons.show');
+    Route::put('assessment/assignment-reasons', [AssignmentReasonRulesController::class, 'update'])->middleware([$assessment, 'throttle:sensitive'])->name('assessment.assignment-reasons.update');
     Route::get('assessment/periodic', [PeriodicSettingsController::class, 'show'])->middleware($assessment)->name('assessment.periodic.show');
     Route::put('assessment/periodic', [PeriodicSettingsController::class, 'update'])->middleware([$assessment, 'throttle:sensitive'])->name('assessment.periodic.update');
     Route::post('assessment/periodic/preview', [PeriodicSettingsController::class, 'preview'])->middleware([$assessment, 'throttle:sensitive'])->name('assessment.periodic.preview');

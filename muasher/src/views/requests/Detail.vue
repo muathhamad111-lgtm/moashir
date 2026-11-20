@@ -4,92 +4,62 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, RouterLink } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import Card from '@/components/ui/Card.vue'
+import Tabs from '@/components/ui/Tabs.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
-import ReasonDialog from '@/components/modal/ReasonDialog.vue'
-import AssessmentTimeline from '@/components/assessment/AssessmentTimeline.vue'
 import CompletionRequestCard from '@/components/accredited/CompletionRequestCard.vue'
-import RequestFacts from '@/components/requests/RequestFacts.vue'
 import PathBadge from '@/components/ui/PathBadge.vue'
-import LevelBadge from '@/components/level/LevelBadge.vue'
-import RequestActionsCard from '@/components/requests/RequestActionsCard.vue'
-import RequestAssignButton from '@/components/requests/RequestAssignButton.vue'
-import RequestPaymentCard from '@/components/requests/RequestPaymentCard.vue'
-import RequestCertificateCard from '@/components/requests/RequestCertificateCard.vue'
-import AssignmentHistoryList from '@/components/requests/AssignmentHistoryList.vue'
-import AssignAssessorDialog from '@/components/requests/AssignAssessorDialog.vue'
-import ForceTransitionDialog from '@/components/requests/ForceTransitionDialog.vue'
-import RequestCompletionDialog from '@/components/review/RequestCompletionDialog.vue'
-import { useReturnForCompletion } from '@/composables/useReturnForCompletion'
-import { useSuperAdminReason } from '@/composables/useSuperAdminReason'
-import { requestsService } from '@/services/requestsService'
-import { AWARD_LIMITS } from '@/constants/advanced'
+import StatusBadge from '@/components/ui/StatusBadge.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
+import RequestFacts from '@/components/requests/RequestFacts.vue'
+import RequestHeaderActions from '@/components/requests/RequestHeaderActions.vue'
+import RequestOverviewTab from '@/components/requests/RequestOverviewTab.vue'
+import RequestLogTab from '@/components/requests/RequestLogTab.vue'
+import RequestRecordDialogs from '@/components/requests/RequestRecordDialogs.vue'
 import { useRequestDetail } from '@/composables/useRequestDetail'
 import { useEvidenceBundleRequest } from '@/composables/useEvidenceBundle'
 import { useSignedDownload } from '@/composables/useSignedDownload'
-import { financeService } from '@/services/financeService'
 import { usePermissions } from '@/composables/usePermissions'
-import { assessmentOverridesService } from '@/services/assessmentOverridesService'
-import { ACCREDITED_LIMITS, ACCREDITED_STATUSES, ASSIGNMENT_MODES } from '@/constants/accredited'
+import { financeService } from '@/services/financeService'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { ROUTE_NAMES } from '@/constants/routeNames'
-import { localizedText } from '@/utils/localizedText'
-import { displayTierOf } from '@/utils/levelTier'
-import AppIcon from '@/components/ui/AppIcon.vue'
 
-const { t, locale } = useI18n()
+// The request record (admin review 2026-11-20, approved design UX-B3): the number as the title with every
+// action at the header's end, the request's data, then tabs instead of one long column.
+const TABS = Object.freeze({ OVERVIEW: 'overview', COMPLETION: 'completion', LOG: 'log' })
+
+const { t } = useI18n()
 const route = useRoute()
 const { can } = usePermissions()
 const requestId = computed(() => Number(route.params.id))
 const { status, errorMessage, detail, assignmentMode, canReturn, canWithdraw, load, apply } =
   useRequestDetail(requestId)
-const returning = useReturnForCompletion()
-const { prompt: reasonPrompt, reasonExtra } = useSuperAdminReason()
-const returnOpen = ref(false)
-const withdrawOpen = ref(false)
 const bundles = useEvidenceBundleRequest(requestId)
 const receipts = useSignedDownload()
-const assignOpen = ref(false)
-const dialogMode = ref(ASSIGNMENT_MODES.ASSIGN)
-const reopenOpen = ref(false)
-const forceOpen = ref(false)
+const dialogs = ref(null)
+const tab = ref(TABS.OVERVIEW)
 
-useHead({ title: () => t('requests.detail.title') })
-
-const ACCREDITED_PATH = 'accredited'
-const isAccredited = computed(() => detail.value?.path === ACCREDITED_PATH)
-const isCompleted = computed(() => detail.value?.status === ACCREDITED_STATUSES.COMPLETED)
+useHead({ title: () => detail.value?.number || t('requests.detail.title') })
 
 const backRoute = computed(() =>
   can(PERMISSIONS.REQUESTS_QUEUE_VIEW) ? ROUTE_NAMES.REQUESTS_INDEX : ROUTE_NAMES.REQUESTS_ASSIGNED,
 )
+const completions = computed(() => [...(detail.value?.completionRequests ?? [])].reverse())
+const tabs = computed(() => [
+  { value: TABS.OVERVIEW, label: t('requests.detail.tabs.overview') },
+  ...(completions.value.length
+    ? [{ value: TABS.COMPLETION, label: t('requests.detail.tabs.completion') }]
+    : []),
+  { value: TABS.LOG, label: t('requests.detail.tabs.log') },
+])
 
 function downloadReceipt(receiptId) {
   receipts.download('receipt', () => financeService.requestReceiptDownload(receiptId))
 }
 
-function openAssign(mode) {
-  dialogMode.value = mode
-  assignOpen.value = true
-}
-
-async function askReason() {
-  const extra = await reasonExtra()
-  return extra?.reason ?? null
-}
-
-async function openReturn() {
-  if (await returning.prepare(detail.value)) returnOpen.value = true
-}
-
-async function withdraw(reason) {
-  const { data } = await requestsService.withdraw(requestId.value, { reason })
-  return data
-}
-
-function reopen(reason) {
-  return assessmentOverridesService.reopen(requestId.value, { reason })
+function openDialog(kind, mode) {
+  dialogs.value?.open(kind, mode)
 }
 
 onMounted(load)
@@ -104,25 +74,28 @@ onMounted(load)
       </RouterLink>
       <div class="request-detail__heading">
         <div class="request-detail__identity">
-          <h1 class="request-detail__title">{{ t('requests.detail.title') }}</h1>
+          <h1 class="request-detail__title">
+            <bdi v-if="detail" dir="ltr">{{ detail.number }}</bdi>
+            <template v-else>{{ t('requests.detail.title') }}</template>
+          </h1>
           <p v-if="detail" class="request-detail__number">
-            <bdi dir="ltr">{{ detail.number }}</bdi>
             <PathBadge v-if="detail.path" :path="detail.path" :label="detail.pathLabel" />
-          </p>
-          <p v-if="detail?.entity" class="request-detail__entity" data-testid="request-entity">
-            <span>{{ localizedText(detail.entity.name, locale) }}</span>
-            <bdi dir="ltr" class="request-detail__reference">{{ detail.entity.reference }}</bdi>
-            <LevelBadge
-              :tier="displayTierOf(detail.entity)"
-              size="s"
-              :certificate="detail.entity.lastLevel"
-            />
+            <StatusBadge :status="detail.status" />
           </p>
         </div>
-        <RequestAssignButton
-          v-if="status === 'ready' && assignmentMode"
-          :mode="assignmentMode"
-          @assign="openAssign"
+        <RequestHeaderActions
+          v-if="status === 'ready' && detail"
+          :detail="detail"
+          :assignment-mode="assignmentMode"
+          :bundle-requesting="bundles.requesting.value"
+          :can-return="canReturn"
+          :can-withdraw="canWithdraw"
+          @assign="openDialog('assign', $event)"
+          @bundle="bundles.requestBundle"
+          @return="openDialog('return')"
+          @withdraw="openDialog('withdraw')"
+          @reopen="openDialog('reopen')"
+          @force="openDialog('force')"
         />
       </div>
     </header>
@@ -137,113 +110,35 @@ onMounted(load)
       :title="t('requests.detail.missingTitle')"
       :message="t('requests.detail.missingMessage')"
     />
-    <div v-else-if="detail" class="request-detail__layout">
-      <div class="request-detail__main">
-        <Card>
-          <template #header
-            ><h2 class="card__title-text">{{ t('requests.detail.requestInfo') }}</h2></template
-          >
-          <RequestFacts :detail="detail" :shows-identity="false" />
-          <div v-if="assignmentMode" class="request-detail__assign">
-            <RequestAssignButton :mode="assignmentMode" @assign="openAssign" />
+    <template v-else-if="detail">
+      <Card class="request-detail__facts">
+        <template #header>
+          <h2 class="card__title-text">{{ t('requests.detail.requestInfo') }}</h2>
+        </template>
+        <RequestFacts :detail="detail" />
+      </Card>
+      <Tabs v-model="tab" :tabs="tabs" class="request-detail__tabs">
+        <template #default="{ active }">
+          <RequestOverviewTab
+            v-if="active === TABS.OVERVIEW"
+            :detail="detail"
+            :receipt-downloading="receipts.busy.receipt === true"
+            @download-receipt="downloadReceipt"
+          />
+          <div v-else-if="active === TABS.COMPLETION" class="request-detail__completions">
+            <Card v-for="completion in completions" :key="completion.id">
+              <CompletionRequestCard :request="completion" show-status />
+            </Card>
           </div>
-        </Card>
-        <Card v-for="completion in detail.completionRequests" :key="completion.id">
-          <CompletionRequestCard :request="completion" show-status />
-        </Card>
-        <Card>
-          <template #header
-            ><h2 class="card__title-text">{{ t('requests.detail.historyTitle') }}</h2></template
-          >
-          <AssignmentHistoryList :history="detail.assignmentHistory" />
-        </Card>
-        <Card>
-          <template #header
-            ><h2 class="card__title-text">{{ t('requests.detail.timelineTitle') }}</h2></template
-          >
-          <AssessmentTimeline :history="detail.record.statusHistory" />
-        </Card>
-      </div>
-      <aside class="request-detail__aside">
-        <RequestPaymentCard
-          v-if="detail.payment.details"
-          :payment="detail.payment.details"
-          :downloading="receipts.busy.receipt === true"
-          @download="downloadReceipt"
-        />
-        <RequestActionsCard
-          :detail="detail"
-          :bundle-requesting="bundles.requesting.value"
-          @bundle="bundles.requestBundle"
-          :can-return="canReturn"
-          :can-withdraw="canWithdraw"
-          @reopen="reopenOpen = true"
-          @force="forceOpen = true"
-          @return="openReturn"
-          @withdraw="withdrawOpen = true"
-        />
-        <RequestCertificateCard
-          v-if="isAccredited"
-          :key="`${detail.id}-${detail.status}`"
-          :request-id="detail.id"
-          :completed="isCompleted"
-        />
-      </aside>
-      <AssignAssessorDialog
-        v-model="assignOpen"
-        :request-id="detail.id"
-        :mode="dialogMode"
-        :entity-name="localizedText(detail.entity?.name, locale)"
-        :path="detail.path ?? ''"
-        :path-label="detail.pathLabel"
-        @done="apply"
+          <RequestLogTab v-else :detail="detail" />
+        </template>
+      </Tabs>
+      <RequestRecordDialogs
+        ref="dialogs"
+        :detail="detail"
+        @applied="apply"
+        @changed="load({ silent: true })"
       />
-      <ReasonDialog
-        v-model="reopenOpen"
-        :title="t('requests.overrides.reopenTitle')"
-        :subtitle="t('requests.overrides.reopenMessage')"
-        :submit-label="t('requests.overrides.reopen')"
-        :min-length="ACCREDITED_LIMITS.OVERRIDE_REASON_MIN"
-        :action="reopen"
-        action-name="overrides.reopen"
-        @done="load({ silent: true })"
-      />
-      <RequestCompletionDialog
-        v-if="returning.criteria.value"
-        v-model="returnOpen"
-        variant="follower"
-        :assessment-id="detail.id"
-        :criteria="returning.criteria.value"
-        :bounds="returning.bounds.value"
-        :send="requestsService.returnForCompletion"
-        :ask-reason="askReason"
-        @done="apply"
-      />
-      <ReasonDialog
-        v-model="withdrawOpen"
-        :title="t('requests.withdraw.title')"
-        :subtitle="detail.number"
-        destructive
-        :submit-label="t('requests.withdraw.confirm')"
-        :reason-label="t('requests.withdraw.reason')"
-        :min-length="AWARD_LIMITS.REASON_MIN"
-        :action="withdraw"
-        action-name="requests.withdraw"
-        @done="apply"
-      />
-      <ReasonDialog
-        v-model="reasonPrompt.open.value"
-        :title="t('review.reasonTitle')"
-        :submit-label="t('actions.confirm')"
-        :action="reasonPrompt.provide"
-        action-name="requests.superAdminReason"
-      />
-      <ForceTransitionDialog
-        v-model="forceOpen"
-        :assessment-id="detail.id"
-        :current-status="detail.status"
-        @done="load({ silent: true })"
-      />
-    </div>
+    </template>
   </section>
 </template>

@@ -141,13 +141,13 @@ test.describe('accredited flow (page 20, flow 1)', () => {
     await expect(page.locator('.request-card__title')).not.toContainText(
       say(testInfo, 'Station', 'المحطة'),
     )
-    await page.locator('.station-row__button').nth(3).click()
+    await page.locator('.station-row__button, .review-strip__step').nth(3).click()
     const governance = page.locator('#accredited-sub-402')
     await governance
       .locator('.evidence-file--refused .evidence-upload__input')
       .setInputFiles(pdf('audited-statements-2025.pdf'))
     await expect(governance.locator('.evidence-file--refused')).toHaveCount(0)
-    await page.locator('.station-row__button').nth(7).click()
+    await page.locator('.station-row__button, .review-strip__step').nth(7).click()
     const impact = page.locator('#accredited-sub-802')
     await impact
       .locator('textarea')
@@ -162,7 +162,7 @@ test.describe('accredited flow (page 20, flow 1)', () => {
       { timeout: 15000 },
     )
     await page.locator('[data-testid="accredited-save"]').click()
-    await page.locator('.station-row__button').last().click()
+    await page.locator('.station-row__button, .review-strip__step').last().click()
     await page.locator('[data-testid="accredited-submit"]').click()
     const dialog = page.locator('[role="alertdialog"]')
     await expect(dialog.locator('.modal__message')).toHaveText(

@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test'
 import { seedPreferences, seedSignedIn } from './support/session'
 import { settleFonts } from './support/screenshots'
 import { openListFilters, searchList } from './support/listFilters'
+import { assessorOptions, openAssessorList } from './support/assignDialog'
 
 const SHOTS = 'e2e/__screenshots__/37c'
 const VIEWPORTS = {
@@ -129,14 +130,11 @@ test.describe('qualified assignment', () => {
     await expect(page.locator('.request-detail__number .path-badge--accredited')).toBeVisible()
     await page.locator('.request-detail__heading [data-testid="request-assign"]').click()
     const dialog = page.locator('.modal')
-    await expect(dialog.locator('.assign-dialog__option').first()).toBeVisible()
     await expect(dialog.locator('.assign-dialog__path .path-badge--accredited')).toBeVisible()
-    await expect(dialog.locator('.assign-dialog__option', { hasText: 'David Nguyen' })).toHaveCount(
-      0,
-    )
-    await expect(dialog.locator('.assign-dialog__option', { hasText: 'عمر بن خالد' })).toHaveCount(
-      0,
-    )
+    await openAssessorList(page, dialog)
+    await expect(assessorOptions(page).first()).toBeVisible()
+    await expect(assessorOptions(page).filter({ hasText: 'David Nguyen' })).toHaveCount(0)
+    await expect(assessorOptions(page).filter({ hasText: 'عمر بن خالد' })).toHaveCount(0)
   })
 })
 
@@ -487,7 +485,8 @@ test.describe('staff paths screenshots', () => {
     await signIn(page, testInfo, USERS.follower, 'dark')
     await open(page, '/admin/requests/9105', '.request-actions')
     await page.locator('.request-detail__heading [data-testid="request-assign"]').click()
-    await expect(page.locator('.modal .assign-dialog__option').first()).toBeVisible()
+    await openAssessorList(page, page.locator('.modal'))
+    await expect(assessorOptions(page).first()).toBeVisible()
     await capture(page, `assign-dialog-dark-desktop-${suffixOf(testInfo)}`)
   })
 })

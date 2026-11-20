@@ -57,7 +57,7 @@ function rows(page) {
 }
 
 async function fillEmptyScores(page, value) {
-  const mains = page.locator('.station-row__button')
+  const mains = page.locator('.station-row__button, .review-strip__step')
   const count = await mains.count()
   for (let index = 0; index < count; index += 1) {
     await mains.nth(index).click()

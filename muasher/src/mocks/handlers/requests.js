@@ -54,6 +54,7 @@ import {
 import { staffNameOf } from '../stores/accredited/staffDirectory'
 import { runAccreditedSchedule } from '../stores/accredited/scheduler'
 import { isAssignedSort, sortAssigned } from '../stores/accredited/assignedSort'
+import { assignmentReasonRules } from '../stores/accredited/assignmentReasons'
 
 const REQUEST = '/api/v1/requests/:assessment'
 const NUMERIC_ID = /^\d+$/
@@ -221,6 +222,7 @@ export const requestsHandlers = [
       authorizeListAssessors(user)
       return envelope(
         eligibleAssessors(user, new URL(request.url).searchParams, followedPaths(user)),
+        { reasonRules: assignmentReasonRules() },
       )
     }),
   ),
