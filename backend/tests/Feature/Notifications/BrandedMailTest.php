@@ -133,6 +133,31 @@ it('keeps the shared button label and leaves out the summary line for a template
         ->and($mail->html)->toMatch('#<td class="mail-chip"[^>]*>[^<]+</td>#');
 });
 
+it('lists the values the wording uses in a details card, deadline first and reference numbers left to right', function (Locale $locale): void {
+    $mail = brandedSample('ACC-07.assessments.accredited.entity', $locale);
+    preg_match_all('#<td class="mail-detail-label[^"]*"[^>]*>([^<]+)</td>#', $mail->html, $labels);
+
+    expect($labels[1])->toBe([__('mail.details.deadline', [], $locale->value), __('mail.details.number', [], $locale->value)])
+        ->and($mail->html)->toMatch('#<td class="mail-detail-value mail-detail-warning"[^>]*color: \#8a5300[^>]*>2026-12-15 23:59</td>#')
+        ->and($mail->html)->toMatch('#<td class="mail-detail-value mail-detail-reference mail-detail-next"[^>]*><bdi dir="ltr">ACC-2026-000123</bdi></td>#')
+        ->and($mail->html)->not->toContain(e(__('mail.details.entity', [], $locale->value)).'</td>')
+        ->and($mail->text)->toContain(__('mail.details.number', [], $locale->value).': ACC-2026-000123');
+})->with(Locale::cases());
+
+it('shows the amount larger and names the entity only to staff', function (): void {
+    $payment = brandedSample('PAY-02.payments.entity', Locale::Arabic);
+    $staff = brandedSample('ACC-03.assessments.accredited.staff', Locale::Arabic);
+
+    expect($payment->html)->toMatch('#<td class="mail-detail-value mail-detail-strong"[^>]*font-size: 18px[^>]*>[^<]*1725[^<]*</td>#')
+        ->and($staff->html)->toContain('>'.__('mail.details.entity', [], 'ar').'</td>');
+});
+
+it('leaves out the details card when the wording uses no value', function (): void {
+    $mail = brandedSample('INT-06.integrations', Locale::Arabic);
+
+    expect($mail->html)->not->toContain('<table class="mail-details"');
+});
+
 it('greets a recipient without an account in a generic way and explains why the e-mail was sent', function (Locale $locale, string $greeting, string $reason): void {
     $mail = brandedSample('REG-02.address', $locale);
 

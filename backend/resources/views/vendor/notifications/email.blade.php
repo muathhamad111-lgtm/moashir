@@ -3,6 +3,12 @@
 @foreach ($introLines as $line)
 <x-mail::paragraph>{{ $line }}</x-mail::paragraph>
 @endforeach
+@if (! empty($details))
+<x-mail::details :rows="$details" />
+@endif
+@isset($requestedItems)
+<x-mail::requested-items :items="$requestedItems" />
+@endisset
 @foreach ($quotedLines ?? [] as $line)
 <x-mail::quote>{{ $line }}</x-mail::quote>
 @endforeach

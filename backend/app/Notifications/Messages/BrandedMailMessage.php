@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Notifications\Messages;
 
+use App\Data\Mail\DetailRow;
+use App\Data\Mail\RequestedItems;
 use App\Enums\Notifications\MailReason;
 use App\Enums\Notifications\NotificationCategory;
 use App\Models\Identity\User;
@@ -19,6 +21,13 @@ final class BrandedMailMessage extends MailMessage
     public ?string $summary = null;
 
     public ?NotificationCategory $category = null;
+
+    /**
+     * @var list<DetailRow>
+     */
+    public array $details = [];
+
+    public ?RequestedItems $requestedItems = null;
 
     /**
      * @var list<string>
@@ -56,6 +65,23 @@ final class BrandedMailMessage extends MailMessage
     public function category(NotificationCategory $category): static
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    /**
+     * @param  list<DetailRow>  $rows
+     */
+    public function details(array $rows): static
+    {
+        $this->details = $rows;
+
+        return $this;
+    }
+
+    public function requestedItems(RequestedItems $items): static
+    {
+        $this->requestedItems = $items;
 
         return $this;
     }
@@ -101,6 +127,8 @@ final class BrandedMailMessage extends MailMessage
             'code' => $this->code,
             'summary' => $this->summary,
             'category' => $this->category,
+            'details' => $this->details,
+            'requestedItems' => $this->requestedItems,
             'quotedLines' => $this->quotedLines,
             'reason' => $this->reason,
         ];

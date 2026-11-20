@@ -55,7 +55,7 @@ final class EntityNotification extends QueuedNotification implements DeliversInA
 
     public function toMail(object $notifiable): BrandedMailMessage
     {
-        return NoticeMail::of($notifiable, new MailNotice($this->notice->code, $this->notice->title, $this->notice->body, $this->notice->link, $this->notice->text));
+        return NoticeMail::of($notifiable, new MailNotice($this->notice->code, $this->notice->title, $this->notice->body, $this->notice->link, $this->notice->text, $this->notice->items));
     }
 
     public function notificationCode(): NotificationCode

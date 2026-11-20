@@ -10,7 +10,8 @@ use App\Support\ValueObjects\LocalizedText;
 
 /**
  * What a notice e-mail needs from any notice (entity, criteria or content): its code, wording, link and the
- * template it came from, so the optional summary line and button label can be read from it.
+ * template it came from, so the optional summary line and button label can be read from it, and the items a
+ * completion request lists.
  */
 final readonly class MailNotice
 {
@@ -20,5 +21,6 @@ final readonly class MailNotice
         public LocalizedText $body,
         public ?string $link,
         public ?NoticeText $text,
+        public ?RequestedItems $items = null,
     ) {}
 }

@@ -27,6 +27,7 @@ use App\Notifications\Identity\SuperAdminEmailChangedNotification;
 use App\Services\Identity\AuthSettings;
 use App\Support\Mail\NotificationTexts;
 use App\Support\Mail\SampleReplacements;
+use App\Support\Mail\SampleRequestedItems;
 use App\Support\ValueObjects\LocalizedText;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Notifications\AnonymousNotifiable;
@@ -115,7 +116,8 @@ final readonly class MailSamples
     public function forText(NotificationCode $code, string $prefix, Locale $locale): MailSample
     {
         $notice = EntityNotice::fromText($code, new NoticeText($prefix, SampleReplacements::for($prefix)), self::LINKS[$code->module()] ?? null)
-            ->mailOnly();
+            ->mailOnly()
+            ->withItems(SampleRequestedItems::for($code, $locale));
         $variant = array_values(array_diff(array_slice(explode('.', $prefix), 1), [$code->value]));
 
         return new MailSample(implode('.', [$code->value, ...$variant]), new EntityNotification($notice), $this->account($locale));

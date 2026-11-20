@@ -6,6 +6,7 @@ namespace App\Listeners\Assessments;
 
 use App\Enums\Notifications\NotificationCode;
 use App\Events\Assessments\CompletionRequested;
+use App\Services\Assessments\CompletionRequestItems;
 use App\Services\Entities\EntityNotifier;
 use App\Support\Assessments\AssessmentLinks;
 use App\Support\Assessments\RequestNotices;
@@ -14,7 +15,7 @@ use Illuminate\Contracts\Config\Repository;
 
 final readonly class NotifyCompletionRequested
 {
-    public function __construct(private EntityNotifier $notifier, private Repository $config) {}
+    public function __construct(private EntityNotifier $notifier, private Repository $config, private CompletionRequestItems $items) {}
 
     public function handle(CompletionRequested $event): void
     {
@@ -30,6 +31,6 @@ final readonly class NotifyCompletionRequested
                 'deadline' => $deadline,
                 'outcome' => LocalizedText::fromTranslation('notifications.assessments.accredited.ACC-07.outcomes.'.$event->completionRequest->expiry_outcome->value),
             ],
-        ));
+        )->withItems($this->items->of($assessment, $event->completionRequest)));
     }
 }

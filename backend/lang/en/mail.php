@@ -25,6 +25,27 @@ return [
         'alert' => 'Alert',
         'error' => 'Error',
     ],
+    'details' => [
+        'deadline' => 'Deadline (Riyadh time)',
+        'amount' => 'Amount',
+        'number' => 'Request number',
+        'certificate' => 'Certificate number',
+        'reference' => 'Reference',
+        'period' => 'Period',
+        'cycle' => 'Cycle',
+        'starts_on' => 'Starts on',
+        'ends_on' => 'Ends on',
+        'purpose' => 'Service',
+        'entity' => 'Entity',
+    ],
+    'requested_items' => [
+        'heading' => 'Items to complete (:count)',
+        'kinds' => [
+            'cv' => 'CV entry',
+            'evidence' => 'Attachments',
+        ],
+        'more' => '{1} One more item is listed on the platform.|[2,*] :count more items are listed on the platform.',
+    ],
     'reasons' => [
         'account' => 'You are receiving this e-mail because you have an account on the Moashir platform.',
         'invitation' => 'You are receiving this e-mail because the System Administrator invited you to join the Moashir platform team.',

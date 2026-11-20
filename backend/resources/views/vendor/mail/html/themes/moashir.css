@@ -131,6 +131,111 @@
     color: #334444;
 }
 
+.mail-details {
+    margin: 4px 0 22px;
+    border: 1px solid #e6eded;
+    border-radius: 12px;
+    border-collapse: separate;
+}
+
+.mail-detail-label {
+    padding: 12px 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #4a5c5c;
+}
+
+.mail-detail-value {
+    padding: 12px 16px;
+    font-size: 14px;
+    line-height: 1.6;
+    font-weight: bold;
+    color: #0a2325;
+}
+
+.mail-detail-next {
+    border-top: 1px solid #e6eded;
+}
+
+.mail-detail-warning {
+    color: #8a5300;
+}
+
+.mail-detail-strong {
+    font-size: 18px;
+}
+
+.mail-items-heading {
+    margin: 4px 0 10px;
+    font-size: 15px;
+    line-height: 1.6;
+    font-weight: bold;
+    color: #0a2325;
+}
+
+.mail-items {
+    margin: 0 0 22px;
+    border: 1px solid #e6eded;
+    border-radius: 12px;
+    border-collapse: separate;
+}
+
+.mail-item-index {
+    padding: 14px 0 14px;
+}
+
+.mail-item-number {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+    border-radius: 14px;
+    background-color: #e3f6f4;
+    color: #145053;
+    font-size: 13px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.mail-item {
+    padding: 14px 16px;
+}
+
+.mail-item-next {
+    border-top: 1px solid #e6eded;
+}
+
+.mail-item-title {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    font-weight: bold;
+    color: #0a2325;
+}
+
+.mail-item-kind {
+    margin: 0 0 4px;
+    font-size: 12px;
+    line-height: 1.6;
+    font-weight: bold;
+    color: #145053;
+}
+
+.mail-item-note {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.75;
+    color: #334444;
+}
+
+.mail-items-more {
+    padding: 12px 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #4a5c5c;
+    text-align: center;
+}
+
 .mail-quote {
     margin: 0 0 16px;
     padding: 14px 16px;
@@ -241,6 +346,13 @@
 .mail-rtl .mail-heading,
 .mail-rtl .mail-summary,
 .mail-rtl .mail-paragraph,
+.mail-rtl .mail-detail-label,
+.mail-rtl .mail-detail-value,
+.mail-rtl .mail-items-heading,
+.mail-rtl .mail-item,
+.mail-rtl .mail-item-title,
+.mail-rtl .mail-item-kind,
+.mail-rtl .mail-item-note,
 .mail-rtl .mail-link-hint,
 .mail-rtl .mail-link,
 .mail-rtl .mail-signature {
@@ -252,6 +364,13 @@
 .mail-ltr .mail-heading,
 .mail-ltr .mail-summary,
 .mail-ltr .mail-paragraph,
+.mail-ltr .mail-detail-label,
+.mail-ltr .mail-detail-value,
+.mail-ltr .mail-items-heading,
+.mail-ltr .mail-item,
+.mail-ltr .mail-item-title,
+.mail-ltr .mail-item-kind,
+.mail-ltr .mail-item-note,
 .mail-ltr .mail-link-hint,
 .mail-ltr .mail-link,
 .mail-ltr .mail-signature {

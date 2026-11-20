@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace App\Notifications\Messages;
 
 use App\Data\Mail\MailNotice;
+use App\Data\Mail\RequestedItems;
+use App\Data\Notifications\NoticeText;
 use App\Enums\Notifications\MailReason;
 use App\Models\Identity\User;
 use App\Support\FrontendUrl;
+use App\Support\Mail\NoticeDetails;
 use App\Support\ValueObjects\LocalizedText;
 
 /**
  * The e-mail of a notice: its title as the subject, its category on the band, the template's optional summary
- * line, its body as the line and a button when the notice links somewhere, labelled by the template's own
- * `action` text or the shared «open the platform».
+ * line, its body as the line, a details card of the values its wording uses, the items a completion request
+ * lists and a button when the notice links somewhere, labelled by the template's own `action` text or the shared
+ * «open the platform».
  */
 final class NoticeMail
 {
@@ -29,6 +33,14 @@ final class NoticeMail
 
         if ($summary instanceof LocalizedText) {
             $mail->summary($summary->in($locale));
+        }
+
+        if ($notice->text instanceof NoticeText) {
+            $mail->details(NoticeDetails::of($notice->text, $locale));
+        }
+
+        if ($notice->items instanceof RequestedItems && ! $notice->items->isEmpty()) {
+            $mail->requestedItems($notice->items);
         }
 
         if ($notice->link !== null) {
