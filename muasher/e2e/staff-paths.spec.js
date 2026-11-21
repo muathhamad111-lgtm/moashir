@@ -281,27 +281,35 @@ test.describe('password recovery and invitations', () => {
     )
   })
 
-  test('a reset link sets a new password and returns to sign in, an expired link offers a new one', async ({
+  test('a reset link asks only for the new password, sets it and returns to sign in', async ({
     page,
   }, testInfo) => {
     await seedPreferences(page, { locale: isEn(testInfo) ? 'en' : 'ar' })
-    await open(page, '/auth/reset-password/a1b2c3d4e5f6a7b8', '[name="email"]')
-    await page.locator('[name="email"]').fill('abdullah.alqahtani@moashir.example.sa')
+    await open(page, '/auth/reset-password/a1b2c3d4e5f6a7b8', '[name="password"]')
+    await expect(page.locator('[name="email"]')).toHaveCount(0)
+    await expect(page.locator('input[type="email"]')).toHaveCount(0)
     await page.locator('[name="password"]').fill(STRONG)
     await page.locator('[name="passwordConfirmation"]').fill(STRONG)
     await page.locator('form button[type="submit"]').click()
     await expect(page).toHaveURL(/\/auth\/login\?notice=password-reset$/)
     await expect(page.locator('.auth-status--success')).toBeVisible()
-    await open(page, '/auth/reset-password/expired-reset-link-2026', '[name="email"]')
-    await page.locator('[name="email"]').fill('abdullah.alqahtani@moashir.example.sa')
-    await page.locator('[name="password"]').fill(STRONG)
-    await page.locator('[name="passwordConfirmation"]').fill(STRONG)
-    await page.locator('form button[type="submit"]').click()
-    await expect(page.locator('.auth-status--danger a')).toHaveAttribute(
-      'href',
-      '/auth/forgot-password',
-    )
   })
+
+  for (const [kind, token] of [
+    ['an expired', 'expired-reset-link-2026'],
+    ['a used', 'used-reset-link-2026'],
+  ]) {
+    test(`${kind} reset link says so on open and offers a new one`, async ({ page }, testInfo) => {
+      await seedPreferences(page, { locale: isEn(testInfo) ? 'en' : 'ar' })
+      await open(page, `/auth/reset-password/${token}`, '.auth-status--danger')
+      await expect(page.locator('form [name="password"]')).toHaveCount(0)
+      await expect(page.locator('.auth-status--danger')).toContainText(
+        text(testInfo, 'already used', 'استُخدم من قبل'),
+      )
+      await page.locator('.auth-status--danger a').click()
+      await expect(page).toHaveURL(/\/auth\/forgot-password$/)
+    })
+  }
 
   test('a used invitation link shows that it is no longer valid instead of the password form', async ({
     page,
@@ -418,7 +426,7 @@ const CAPTURES = [
   {
     name: 'reset-password',
     path: '/auth/reset-password/a1b2c3d4e5f6a7b8',
-    ready: '[name="email"]',
+    ready: '[name="password"]',
   },
   {
     name: 'invitation',

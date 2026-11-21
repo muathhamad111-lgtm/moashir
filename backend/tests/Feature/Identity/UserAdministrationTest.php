@@ -73,7 +73,7 @@ it('denies the users list to every non-administrator role', function (RoleKey $r
     signIn(staffUser($role));
 
     $this->getJson('/api/v1/users')->assertForbidden()->assertJsonPath('code', 'forbidden');
-    $this->postJson('/api/v1/users', ['name' => 'سلمان المطيري', 'email' => 'x@moashir.example.sa', 'roles' => ['assessor']])->assertForbidden();
+    $this->postJson('/api/v1/users', ['name' => 'سلمان المطيري', 'gender' => 'male', 'email' => 'x@moashir.example.sa', 'roles' => ['assessor']])->assertForbidden();
 })->with('non-administrators');
 
 it('denies the users list to entity users and guests', function (): void {
@@ -91,6 +91,7 @@ it('invites a staff user with roles and audits the creation', function (): void 
         'name' => 'سلمان المطيري',
         'email' => 'Salman.Almutairi@moashir.example.sa',
         'phone' => '+966551234567',
+        'gender' => 'male',
         'roles' => ['assessor', 'content_officer'],
     ])
         ->assertCreated()
@@ -111,7 +112,7 @@ it('validates the invitation payload', function (array $payload, string $field):
     $existing = systemAdmin();
     signIn($existing);
 
-    $this->postJson('/api/v1/users', [...['name' => 'سلمان المطيري', 'email' => 'new.user@moashir.example.sa', 'roles' => ['assessor']], ...$payload])
+    $this->postJson('/api/v1/users', [...['name' => 'سلمان المطيري', 'gender' => 'male', 'email' => 'new.user@moashir.example.sa', 'roles' => ['assessor']], ...$payload])
         ->assertUnprocessable()
         ->assertJsonValidationErrors($field);
 })->with([
@@ -120,13 +121,18 @@ it('validates the invitation payload', function (array $payload, string $field):
     'invalid phone' => [['phone' => '0551234567'], 'phone'],
     'no roles' => [['roles' => []], 'roles'],
     'duplicate roles' => [['roles' => ['assessor', 'assessor']], 'roles.0'],
+    'missing gender' => [['gender' => null], 'gender'],
+    'unknown gender' => [['gender' => 'other'], 'gender'],
+    'national ID with a letter' => [['national_id' => '10000000a8'], 'national_id'],
+    'national ID with 11 digits' => [['national_id' => '10000000081'], 'national_id'],
+    'national ID starting with 3' => [['national_id' => '3000000008'], 'national_id'],
 ]);
 
 it('rejects an email that is already registered in any letter case', function (): void {
     $administrator = systemAdmin();
     signIn($administrator);
 
-    $this->postJson('/api/v1/users', ['name' => 'سلمان المطيري', 'email' => mb_strtoupper($administrator->email), 'roles' => ['assessor']])
+    $this->postJson('/api/v1/users', ['name' => 'سلمان المطيري', 'gender' => 'male', 'email' => mb_strtoupper($administrator->email), 'roles' => ['assessor']])
         ->assertUnprocessable()
         ->assertJsonValidationErrors('email');
 });
@@ -134,7 +140,7 @@ it('rejects an email that is already registered in any letter case', function ()
 it('refuses to assign the entity role from the users screen', function (): void {
     signIn(systemAdmin());
 
-    $this->postJson('/api/v1/users', ['name' => 'سلمان المطيري', 'email' => 'new.user@moashir.example.sa', 'roles' => ['entity']])
+    $this->postJson('/api/v1/users', ['name' => 'سلمان المطيري', 'gender' => 'male', 'email' => 'new.user@moashir.example.sa', 'roles' => ['entity']])
         ->assertUnprocessable()
         ->assertJsonPath('code', 'role_not_assignable');
 });
@@ -142,7 +148,7 @@ it('refuses to assign the entity role from the users screen', function (): void 
 it('enforces SoD-5: the finance officer and the system administrator roles cannot be combined', function (): void {
     signIn(systemAdmin());
 
-    $this->postJson('/api/v1/users', ['name' => 'سلمان المطيري', 'email' => 'new.user@moashir.example.sa', 'roles' => ['finance_officer', 'system_admin']])
+    $this->postJson('/api/v1/users', ['name' => 'سلمان المطيري', 'gender' => 'male', 'email' => 'new.user@moashir.example.sa', 'roles' => ['finance_officer', 'system_admin']])
         ->assertUnprocessable()
         ->assertJsonPath('code', 'sod_role_combination');
 

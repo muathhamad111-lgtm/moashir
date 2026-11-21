@@ -235,7 +235,6 @@ test('a forgotten password is reset from the e-mailed link and works at sign in'
   await expect(guest.page.locator('.auth-status--success')).toBeVisible()
   const token = await waitForResetToken(STAFF.contentOfficer, mark)
   await guest.page.goto(`/auth/reset-password/${token}`)
-  await guest.page.locator('[name="email"]').fill(STAFF.contentOfficer)
   await guest.page.locator('[name="password"]').fill(NEW_PASSWORD)
   await guest.page.locator('[name="passwordConfirmation"]').fill(NEW_PASSWORD)
   await guest.page.locator('form button[type="submit"]').click()

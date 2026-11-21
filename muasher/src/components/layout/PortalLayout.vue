@@ -12,6 +12,7 @@ import { isMobileTaskScreen, isTaskScreen } from '@/utils/portalAudience'
 import PortalSideNav from '@/components/portal/PortalSideNav.vue'
 import PortalTopBar from '@/components/portal/PortalTopBar.vue'
 import ProfileCompletionBanner from '@/components/portal/ProfileCompletionBanner.vue'
+import AccountCompletionBanner from '@/components/identity/completion/AccountCompletionBanner.vue'
 import MobileTabBar from '@/components/portal/MobileTabBar.vue'
 import PortalFooter from '@/components/portal/PortalFooter.vue'
 import LevelAchievedDialog from '@/components/level/LevelAchievedDialog.vue'
@@ -60,6 +61,7 @@ watch(
       <PortalSideNav class="portal-layout__nav" :collapsed="collapsed" />
       <div class="portal-layout__column">
         <ProfileCompletionBanner v-if="!isTask" class="portal-layout__strip" />
+        <AccountCompletionBanner class="portal-layout__strip" />
         <main id="portal-main" class="portal-layout__main" tabindex="-1" :aria-busy="isLoadingPage">
           <slot />
           <AppLoadingScreen v-if="isLoadingPage" variant="overlay" />

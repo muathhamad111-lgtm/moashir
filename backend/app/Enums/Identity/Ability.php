@@ -9,6 +9,7 @@ enum Ability: string
     case Authenticated = 'identity.authenticated';
     case SuperAdminSelfService = 'identity.super-admin.self-service';
     case EnrollMfa = 'identity.mfa.enroll';
+    case RecordOwnGender = 'identity.gender.record-own';
     case ListRoles = 'identity.roles.list';
     case GlobalSearch = 'search.global';
     case IntegrationsOverview = 'settings.integrations.view';

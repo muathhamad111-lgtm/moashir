@@ -1,11 +1,15 @@
 import { string } from 'yup'
-import { isValidNationalId, normalizeNationalId } from './nationalId'
+import { nationalIdProblem, normalizeNationalId } from './nationalId'
 
 export function nationalIdRule(t, { required = true } = {}) {
   const base = string()
     .transform((value) => normalizeNationalId(value))
-    .test('national-id', t('nationalIdentity.field.invalid'), (value) =>
-      value ? isValidNationalId(value) : !required,
-    )
+    .test('national-id', (value, context) => {
+      if (!value) return true
+      const problem = nationalIdProblem(value)
+      return problem
+        ? context.createError({ message: t(`nationalIdentity.field.rules.${problem}`) })
+        : true
+    })
   return required ? base.required(t('nationalIdentity.field.required')) : base
 }

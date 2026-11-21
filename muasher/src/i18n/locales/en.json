@@ -1289,10 +1289,7 @@
       }
     },
     "account": {
-      "title": "My account",
-      "completeIdentity": {
-        "title": "Complete your identity details"
-      }
+      "title": "My account"
     },
     "finance": {
       "overview": {
@@ -1827,6 +1824,7 @@
     },
     "actions": {
       "edit": "Edit user",
+      "details": "Details",
       "activate": "Reactivate",
       "suspend": "Suspend",
       "unlock": "Unlock",
@@ -1857,7 +1855,13 @@
       "createTitle": "Invite user",
       "editTitle": "Edit user",
       "create": "Send invitation",
-      "capabilitiesTitle": "This role can access"
+      "capabilitiesTitle": "This role can access",
+      "nationalIdLocked": "It changes only through a change request."
+    },
+    "details": {
+      "title": "User details",
+      "phone": "Mobile number",
+      "changedAtAcceptance": "The user changed the national ID entered by the administration when accepting the invitation on {date}."
     },
     "validation": {
       "roleRequired": "Select at least one role for this user"
@@ -2089,12 +2093,12 @@
     },
     "reset": {
       "title": "Set a new password",
-      "subtitle": "Enter your e-mail and the new password. Your other open sessions are closed once it is set.",
-      "email": "E-mail",
+      "subtitle": "Enter the new password for your account. Your other open sessions are closed once it is set.",
       "password": "New password",
       "passwordConfirmation": "Confirm the new password",
       "submit": "Set the password",
-      "invalidLink": "This reset link is invalid, has expired or was already used, or the e-mail does not match the link.",
+      "invalidLink": "This reset link is invalid, has expired or was already used.",
+      "loadFailed": "The link could not be checked right now. Try again.",
       "requestAgain": "Request a new link",
       "done": "The new password was set. Sign in with it now."
     },
@@ -3256,12 +3260,12 @@
         "description": "When off, an entity is activated as soon as it confirms its e-mail."
       },
       "nationalId": {
-        "title": "National ID on files",
+        "title": "National ID on assessment evidence",
         "enable": "Require the national ID for selected accounts",
-        "description": "Required accounts are asked for the number at their next action. Others are stamped with their name only. Always required for the Super Admin while this is on.",
+        "description": "Assessment evidence is stamped with the national ID of whoever opens it. Required accounts are asked for the number in a window after each sign-in until they add it, and the administration approves it before it is recorded; they open no evidence until then. Others are stamped with their name only. Always required for the Super Admin while this is on. Transfer proofs, refund evidence and VAT certificates are not stamped and need no national ID.",
         "roles": "Accounts that must provide a national ID",
-        "withFileAccess": "{role} (opens files)",
-        "uncovered": "These roles open files but are not selected: {roles}. Their files are stamped with the name only."
+        "withFileAccess": "{role} (opens assessment evidence)",
+        "uncovered": "These roles open assessment evidence but are not selected: {roles}. Their copies are stamped with the name only."
       }
     },
     "assessment": {
@@ -4339,6 +4343,7 @@
       "USR-05": "Super Admin e-mail changed",
       "USR-06": "Identity change request waiting",
       "USR-07": "Identity change request decided",
+      "USR-08": "National ID changed at invitation acceptance",
       "REG-01": "Organization account created",
       "REG-02": "Verification code",
       "REG-03": "Profile completion reminder",
@@ -10093,27 +10098,63 @@
       "label": "National ID or Iqama number",
       "purpose": "Printed on the files you open, to protect confidential documents.",
       "required": "Enter your national ID or Iqama number.",
-      "invalid": "Enter a valid 10-digit national ID or Iqama number."
+      "hint": "Starts with 1 or 2, 10 digits, digits only with no letters or symbols.",
+      "rules": {
+        "digits": "The national ID or Iqama number has digits only, no letters or symbols.",
+        "length": "The national ID or Iqama number has exactly 10 digits.",
+        "prefix": "The national ID or Iqama number starts with 1 or 2."
+      }
     },
     "fields": {
       "name": "Full name",
       "national_id": "National ID"
     },
     "complete": {
-      "title": "Complete your identity details",
-      "subtitle": "Your account must have a national ID or Iqama number before you continue. You enter it once; later changes need an approved request.",
-      "submit": "Save and continue",
-      "signOut": "Sign out"
+      "title": "Complete your account details",
+      "subtitle": "Your details are printed on the files you open, to protect confidential documents. Complete them now or later.",
+      "submit": "Save",
+      "later": "Later",
+      "approval": "The administration approves your number before it is recorded; after that it changes only through a change request.",
+      "savedDirectly": "Your number is saved directly and recorded in the audit log; after that it changes only through a change request.",
+      "saved": "Your account details were saved.",
+      "sentForApproval": "Your number was sent to the administration for approval."
+    },
+    "banner": {
+      "title": "Your account details are incomplete.",
+      "nationalId": "Your account needs a national ID or Iqama number.",
+      "gender": "Your account needs a gender.",
+      "both": "Your account needs a national ID or Iqama number and a gender.",
+      "action": "Complete now"
+    },
+    "files": {
+      "title": "National ID needed to open assessment evidence",
+      "missing": "You can open or download assessment evidence once you enter your national ID or Iqama number and the administration approves it. The rest of the platform stays available.",
+      "pending": "Your national ID is awaiting approval by the administration. Assessment evidence opens once it is approved; the rest of the platform stays available.",
+      "enter": "Enter national ID"
+    },
+    "gender": {
+      "label": "Gender",
+      "male": "Male",
+      "female": "Female",
+      "required": "Choose the gender."
     },
     "card": {
       "title": "National ID",
       "missing": "Not added yet",
+      "awaitingApproval": "Awaiting approval",
       "locked": "Your name and national ID change only through a request approved by the administration.",
       "pending": "Your change request of {date} is under review.",
+      "pendingFirstEntry": "The number you entered on {date} is awaiting approval.",
       "cancel": "Cancel request",
       "add": "Add national ID",
       "requestChange": "Request a change",
       "history": "My change requests"
+    },
+    "invitation": {
+      "title": "National ID or Iqama number",
+      "preset": "The number {number} was entered for you. Leave the next field empty to keep it, or enter a different number.",
+      "different": "Different number (optional)",
+      "optional": "Optional: enter your number now for the administration to approve, or add it later from your account."
     },
     "change": {
       "title": "Request a change to your identity details",
@@ -10142,12 +10183,21 @@
       "empty": "No identity changes yet.",
       "loadFailed": "The identity history could not be loaded.",
       "change": "From {from} to {to}",
-      "meta": "{date} · approved by {approver}"
+      "meta": "{date} · approved by {approver}",
+      "sources": {
+        "approved_request": "Through an approved request",
+        "admin_entry": "Entered by an administrator",
+        "super_admin_entry": "Entered by the Super Admin for themself",
+        "entity_registration": "At entity registration",
+        "invitation_acceptance": "Changed at invitation acceptance"
+      }
     },
     "review": {
       "title": "Identity change requests",
       "subtitle": "Requests to change a user's name or national ID. Nobody decides their own request.",
       "link": "Identity change requests",
+      "firstEntry": "First national ID entry",
+      "firstEntryReason": "First entry, no reason.",
       "statusFilter": "Status",
       "emptyTitle": "No requests",
       "emptyMessage": "No identity change request matches this filter.",

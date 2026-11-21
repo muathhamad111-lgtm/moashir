@@ -125,8 +125,20 @@ export const authService = {
     )
   },
 
-  resetPassword({ token, email, password, passwordConfirmation }) {
-    const body = { token, email, password, passwordConfirmation }
+  // Answers whether a reset link still works; checking it never uses it up.
+  checkPasswordResetLink(token) {
+    const body = { token }
+    return serviceRequest(
+      'auth.checkPasswordResetLink',
+      () => apiClient.post('/auth/password/reset/check', body, AUTH_FLOW_CONFIG),
+      { entity: 'password-reset' },
+      { expectedStatuses: AUTH_REJECTIONS },
+    )
+  },
+
+  // The API finds the account from the link token alone, so no e-mail is sent.
+  resetPassword({ token, password, passwordConfirmation }) {
+    const body = { token, password, passwordConfirmation }
     return serviceRequest(
       'auth.resetPassword',
       () => apiClient.post('/auth/password/reset', body, AUTH_FLOW_CONFIG),

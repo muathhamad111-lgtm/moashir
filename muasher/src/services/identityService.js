@@ -9,6 +9,10 @@ export const identityService = {
     const payload = { nationalId }
     return write('provideNationalId', () => apiClient.post('/me/national-id', payload), payload)
   },
+  recordGender(gender) {
+    const payload = { gender }
+    return write('recordGender', () => apiClient.patch('/me/gender', payload), payload)
+  },
   registrationOptions() {
     return read('registrationOptions', () => apiClient.get('/auth/register/options'))
   },

@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Data\Identity\NationalIdEntry;
 use App\Enums\Audit\AuditEvent;
+use App\Enums\Identity\IdentityChangeSource;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Settings\SettingKey;
 use App\Models\Identity\User;
@@ -12,15 +14,7 @@ use App\Support\ValueObjects\NationalId;
 
 function fictionalNationalId(int $serial, int $leading = 1): string
 {
-    $body = $leading.str_pad((string) $serial, 8, '0', STR_PAD_LEFT);
-
-    foreach (range(0, 9) as $check) {
-        if (NationalId::isValid($body.$check)) {
-            return $body.$check;
-        }
-    }
-
-    throw new LogicException('No check digit fits.');
+    return $leading.str_pad((string) $serial, NationalId::LENGTH - 1, '0', STR_PAD_LEFT);
 }
 
 function requireNationalIdFor(RoleKey ...$roles): void
@@ -32,7 +26,7 @@ function requireNationalIdFor(RoleKey ...$roles): void
 
 function giveNationalId(User $user, int $serial): User
 {
-    app(NationalIdAssigner::class)->assignFirst($user, new NationalId(fictionalNationalId($serial)));
+    app(NationalIdAssigner::class)->assignFirst($user, new NationalId(fictionalNationalId($serial)), new NationalIdEntry($user, IdentityChangeSource::AdminEntry));
 
     return $user->refresh();
 }

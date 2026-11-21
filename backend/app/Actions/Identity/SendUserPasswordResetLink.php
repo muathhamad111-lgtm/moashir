@@ -15,7 +15,6 @@ use App\Notifications\Identity\PasswordResetLinkNotification;
 use App\Services\Audit\AuditRecorder;
 use App\Services\Identity\AuthenticationEventRecorder;
 use App\Services\Identity\PasswordResetTokens;
-use Illuminate\Config\Repository;
 
 /**
  * An administrator e-mails an active staff user the same single-use reset link
@@ -27,14 +26,13 @@ final readonly class SendUserPasswordResetLink
         private PasswordResetTokens $tokens,
         private AuthenticationEventRecorder $events,
         private AuditRecorder $audit,
-        private Repository $config,
     ) {}
 
     public function handle(User $actor, User $target): void
     {
         $this->ensureSendable($actor, $target);
 
-        $target->notify(new PasswordResetLinkNotification($this->tokens->issue($target), $this->config->integer('auth.passwords.users.expire')));
+        $target->notify(new PasswordResetLinkNotification($this->tokens->issue($target), $this->tokens->validMinutes()));
         $this->events->forUser(AuthEventType::PasswordResetRequested, $target);
         $this->audit->record(new AuditEntry(AuditEvent::UserPasswordResetLinkSent, $target));
     }

@@ -47,6 +47,7 @@ export const IDLE_TIMEOUT_MINUTES = {
 
 export const RECOVERY_TOKENS = Object.freeze({
   EXPIRED_RESET: 'expired-reset-link-2026',
+  USED_RESET: 'used-reset-link-2026',
   INVITATIONS: {
     'invite-sarah-whitfield-2026': 4,
     'invite-expired-2026': 'expired',

@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\Identity;
 
-use App\Data\Identity\NationalIdStatus;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Settings\SettingKey;
 use App\Models\Identity\User;
 use App\Services\Settings\SettingsStore;
-use App\Support\Identity\AccountNationalId;
 use App\Support\StringList;
 
 final readonly class NationalIdRequirement
@@ -46,16 +44,6 @@ final readonly class NationalIdRequirement
     public function isRequiredForRoles(array $roles): bool
     {
         return $this->isEnabled() && $this->coversAny($roles);
-    }
-
-    public function statusOf(User $user): NationalIdStatus
-    {
-        return new NationalIdStatus($this->isRequiredFor($user), AccountNationalId::of($user)?->masked());
-    }
-
-    public function isMissingFor(User $user): bool
-    {
-        return ! AccountNationalId::isRecorded($user) && $this->isRequiredFor($user);
     }
 
     /**

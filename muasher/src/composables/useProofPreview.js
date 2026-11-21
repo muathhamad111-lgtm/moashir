@@ -6,6 +6,7 @@ import { downloadBlob } from '@/utils/download'
 import { financeErrorMessage } from '@/utils/payments/financeErrors'
 import { PROOF_ZOOM } from '@/constants/bankTransfer'
 import { FILE_INTENTS } from '@/constants/files'
+import { useAccountCompletionStore } from '@/stores/accountCompletion'
 
 export const PREVIEW_STATES = Object.freeze({
   IDLE: 'idle',
@@ -25,6 +26,7 @@ function revoke(url) {
 export function useProofPreview(requestLink) {
   const i18n = useI18n()
   const toast = useToast()
+  const completion = useAccountCompletionStore()
   const state = ref(PREVIEW_STATES.IDLE)
   const objectUrl = ref('')
   const fileName = ref('')
@@ -50,7 +52,8 @@ export function useProofPreview(requestLink) {
       revoke(objectUrl.value)
       objectUrl.value = objectUrlOf(file.blob)
       state.value = PREVIEW_STATES.READY
-    } catch {
+    } catch (error) {
+      completion.refuseFileAccess(error)
       state.value = PREVIEW_STATES.ERROR
     }
   }
@@ -64,7 +67,8 @@ export function useProofPreview(requestLink) {
         : await fetchFile(FILE_INTENTS.DOWNLOAD)
       downloadBlob(file.blob, file.fileName)
     } catch (error) {
-      toast.error(financeErrorMessage(i18n, error, 'finance.downloads.failed'))
+      if (!completion.refuseFileAccess(error))
+        toast.error(financeErrorMessage(i18n, error, 'finance.downloads.failed'))
     } finally {
       downloading.value = false
     }

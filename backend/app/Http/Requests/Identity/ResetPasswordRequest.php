@@ -4,28 +4,24 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Identity;
 
-use App\Models\Identity\User;
 use App\Services\Identity\PasswordPolicy;
-use App\Support\ValueObjects\EmailAddress;
+use App\Services\Identity\UsablePasswordResetLinkFinder;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * The account comes from the link token alone; an `email` an older client still sends is ignored.
+ */
 final class ResetPasswordRequest extends FormRequest
 {
     /**
      * @return array<string, mixed>
      */
-    public function rules(PasswordPolicy $policy): array
+    public function rules(PasswordPolicy $policy, UsablePasswordResetLinkFinder $links): array
     {
         return [
             'token' => ['required', 'string', 'max:128'],
-            'email' => ['required', 'string', 'email:filter', 'max:254'],
-            'password' => $policy->rules($this->targetUser()),
+            'password' => $policy->rules($links->tryFind($this->token())?->user),
         ];
-    }
-
-    public function email(): EmailAddress
-    {
-        return new EmailAddress($this->string('email')->toString());
     }
 
     public function token(): string
@@ -36,14 +32,5 @@ final class ResetPasswordRequest extends FormRequest
     public function password(): string
     {
         return $this->string('password')->toString();
-    }
-
-    private function targetUser(): ?User
-    {
-        $email = $this->string('email')->toString();
-
-        return filter_var($email, FILTER_VALIDATE_EMAIL) === false
-            ? null
-            : User::query()->withEmail(new EmailAddress($email))->first();
     }
 }

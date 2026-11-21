@@ -214,7 +214,7 @@ it('lists refunded transactions and shows recorded refunds to finance and lets t
 
     $download = $this->get($url)->assertOk()->assertHeader('Content-Type', 'application/pdf');
     expect($download->streamedContent())->toStartWith('%PDF-')
-        ->and(Audit::query()->where('event', AuditEvent::FileAccessed->value)->count())->toBe(1);
+        ->and(Audit::query()->where('event', AuditEvent::FileDownloaded->value)->count())->toBe(1);
 
     switchTo(systemAdmin())->get($url)->assertForbidden()->assertJsonPath('code', 'signature.invalid');
     switchTo($finance)->get($url.'x')->assertForbidden()->assertJsonPath('code', 'signature.invalid');

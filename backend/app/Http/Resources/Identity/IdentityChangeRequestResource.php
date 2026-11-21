@@ -28,6 +28,7 @@ final class IdentityChangeRequestResource extends JsonResource
         return [
             'id' => $change->public_id,
             'status' => $change->status->value,
+            'kind' => $change->kind->value,
             'fields' => array_map(static fn (IdentityField $field): string => $field->value, $change->fields()),
             'user' => $this->personOf($user),
             'submitted_by' => $this->personOf($change->submitter),

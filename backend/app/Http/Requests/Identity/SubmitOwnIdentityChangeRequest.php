@@ -18,7 +18,7 @@ final class SubmitOwnIdentityChangeRequest extends FormRequest
     {
         return [
             'new_name' => ['nullable', 'required_without:new_national_id', 'string', 'min:2', 'max:150'],
-            'new_national_id' => ['nullable', 'required_without:new_name', 'string', 'max:20', new SaudiNationalId],
+            'new_national_id' => ['nullable', 'required_without:new_name', 'string', new SaudiNationalId],
             'reason' => ['required', 'string', 'min:10', 'max:500'],
             'current_password' => ['nullable', 'required_with:new_national_id', 'string', 'current_password:web'],
         ];

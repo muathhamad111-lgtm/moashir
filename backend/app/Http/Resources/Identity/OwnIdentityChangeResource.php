@@ -25,6 +25,7 @@ final class OwnIdentityChangeResource extends JsonResource
         return [
             'id' => $change->public_id,
             'status' => $change->status->value,
+            'kind' => $change->kind->value,
             'fields' => array_map(static fn (IdentityField $field): string => $field->value, $change->fields()),
             'requested_name' => $change->new_name,
             'requested_national_id_masked' => IdentityValueMask::of(IdentityField::NationalId, $change->new_national_id),

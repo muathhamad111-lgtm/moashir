@@ -14,10 +14,6 @@ final readonly class FileAccessRoles
     private const array FILE_ACCESS_PERMISSIONS = [
         PermissionKey::EvidenceView,
         PermissionKey::EvidenceManage,
-        PermissionKey::FinanceTransfersReview,
-        PermissionKey::FinanceOperationsView,
-        PermissionKey::FinanceRefundsManage,
-        PermissionKey::PaymentsOwnView,
     ];
 
     /**

@@ -1,4 +1,4 @@
-import { delay } from 'msw'
+import { HttpResponse, delay } from 'msw'
 import { http } from '../contract/http'
 import { envelope } from '../contract/responses'
 import { paginate } from '../contract/pagination'
@@ -25,9 +25,12 @@ import {
   nationalIdOf,
   openChange,
   pendingChangeOf,
+  nationalIdProblemOf,
   rejectChange,
-  validNationalId,
+  setGender,
 } from '../stores/identityStore'
+import { GENDER_VALUES } from '@/constants/identityChanges'
+import { normalizeNationalId } from '@/utils/identity/nationalId'
 
 const REVIEW = 'users.identity_changes.review'
 const MANAGE = 'users.manage'
@@ -72,8 +75,9 @@ function boundChange(id) {
   return change
 }
 
-function assertNationalId(field, value, ownerId) {
-  if (!validNationalId(value)) throw reject.field(field, 'identity.national_id_invalid')
+export function assertNationalId(field, value, ownerId) {
+  const problem = nationalIdProblemOf(value)
+  if (problem) throw reject.field(field, `identity.national_id.${problem}`)
   if (isNationalIdTaken(value, ownerId))
     throw reject.field(field, 'identity.national_id_unavailable')
 }
@@ -82,6 +86,7 @@ function reviewResource(change, { full = false } = {}) {
   return {
     id: change.id,
     status: change.status,
+    kind: change.kind,
     fields: [change.newName ? 'name' : null, change.newNationalId ? 'national_id' : null].filter(
       Boolean,
     ),
@@ -108,6 +113,7 @@ function ownResource(change) {
   return {
     id: resource.id,
     status: resource.status,
+    kind: resource.kind,
     fields: resource.fields,
     requestedName: resource.requestedName,
     requestedNationalIdMasked: resource.requestedNationalIdMasked,
@@ -135,10 +141,29 @@ export const identityHandlers = [
     route(async ({ request }) => {
       const user = signedIn()
       if (nationalIdOf(user.id)) throw reject.status(409, 'identity.national_id_locked')
-      const value = String((await readJson(request)).nationalId ?? '')
+      const value = normalizeNationalId((await readJson(request)).nationalId ?? '')
       assertNationalId('nationalId', value, user.id)
-      assignNationalId(user.id, value)
-      return envelope({ nationalIdMasked: maskNationalId(value) }, {}, { status: 201 })
+      // The Super Admin's own number is saved directly; anyone else's waits for a reviewer.
+      if (user.superAdmin === true) {
+        assignNationalId(user.id, value, { source: 'super_admin_entry', actor: user })
+        const saved = { nationalIdStatus: 'provided', nationalIdMasked: maskNationalId(value) }
+        return envelope(saved, {}, { status: 201 })
+      }
+      if (pendingChangeOf(user.id)) throw reject.status(409, 'identity_change.already_pending')
+      openChange({ user, submitter: user, newNationalId: value, kind: 'first_entry' })
+      return envelope({ nationalIdStatus: 'pending', nationalIdMasked: null }, {}, { status: 202 })
+    }),
+  ),
+
+  http.patch(
+    '/api/v1/me/gender',
+    route(async ({ request }) => {
+      const user = signedIn()
+      if (user.roles.includes('entity')) throw reject.status(403, 'forbidden')
+      const gender = (await readJson(request)).gender
+      if (!GENDER_VALUES.includes(gender)) throw reject.field('gender', 'identity.gender_invalid')
+      setGender(user.id, gender)
+      return new HttpResponse(null, { status: 204 })
     }),
   ),
 

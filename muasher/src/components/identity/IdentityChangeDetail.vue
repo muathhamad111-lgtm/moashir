@@ -59,7 +59,7 @@ const { t } = useI18n()
         </template>
         <div class="identity-change-detail__fact">
           <dt>{{ t('nationalIdentity.change.reason') }}</dt>
-          <dd>{{ change.reason }}</dd>
+          <dd>{{ change.reason ?? t('nationalIdentity.review.firstEntryReason') }}</dd>
         </div>
       </dl>
       <p class="identity-change-detail__note">{{ t('nationalIdentity.review.viewAudited') }}</p>

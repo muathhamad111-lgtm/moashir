@@ -4,6 +4,7 @@ import { useToast } from '@/composables/useToast'
 import { filesService } from '@/services/filesService'
 import { downloadBlob } from '@/utils/download'
 import { errorCodeOf, financeErrorMessage } from '@/utils/payments/financeErrors'
+import { useAccountCompletionStore } from '@/stores/accountCompletion'
 
 const UNAVAILABLE_CODES = ['document.renderer_unavailable']
 
@@ -13,6 +14,7 @@ export function useSignedDownload({
 } = {}) {
   const i18n = useI18n()
   const toast = useToast()
+  const completion = useAccountCompletionStore()
   const busy = reactive({})
   const unavailable = reactive({})
 
@@ -26,6 +28,7 @@ export function useSignedDownload({
       downloadBlob(blob, fileName)
       return true
     } catch (error) {
+      if (completion.refuseFileAccess(error)) return false
       if (UNAVAILABLE_CODES.includes(errorCodeOf(error))) unavailable[key] = true
       toast.error(financeErrorMessage(i18n, error, fallbackKey, errorPrefix))
       return false

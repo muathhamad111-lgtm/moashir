@@ -26,7 +26,6 @@ const FILE_ACCESS_ROLES = Object.freeze([
   'assessor',
   'filtering_officer',
   'award_secretary',
-  'finance_officer',
   'entity',
 ])
 export const NATIONAL_ID_REQUIRED_SCENARIO = 'national-id-required'

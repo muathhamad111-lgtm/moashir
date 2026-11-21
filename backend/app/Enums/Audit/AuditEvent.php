@@ -23,12 +23,15 @@ enum AuditEvent: string
     case UserAvatarUploaded = 'user.avatar_uploaded';
     case UserAvatarRemoved = 'user.avatar_removed';
     case UserNationalIdRecorded = 'user.national_id_recorded';
+    case UserNationalIdChangedAtAcceptance = 'user.national_id_changed_at_acceptance';
+    case UserGenderRecorded = 'user.gender_recorded';
     case IdentityChangeRequested = 'user.identity_change_requested';
     case IdentityChangeApproved = 'user.identity_change_approved';
     case IdentityChangeRejected = 'user.identity_change_rejected';
     case IdentityChangeCancelled = 'user.identity_change_cancelled';
     case IdentityChangeViewed = 'user.identity_change_viewed';
     case FileAccessed = 'file.accessed';
+    case FileAccessRefused = 'file.access_refused';
     case RolePermissionsChanged = 'role.permissions_changed';
     case PermissionLabelUpdated = 'permission.label_updated';
     case RoleAssignmentRejected = 'security.role_assignment_rejected';

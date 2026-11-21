@@ -15,7 +15,7 @@ final class ProvideNationalIdRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['national_id' => ['required', 'string', 'max:20', new SaudiNationalId]];
+        return ['national_id' => ['required', 'string', new SaudiNationalId]];
     }
 
     public function nationalId(): NationalId

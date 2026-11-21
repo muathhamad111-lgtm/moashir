@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Identity;
 
+use App\Enums\Identity\IdentityChangeKind;
 use App\Enums\Identity\IdentityChangeStatus;
 use App\Enums\Identity\IdentityField;
 use App\Models\Concerns\HasPublicId;
@@ -18,7 +19,8 @@ use Illuminate\Support\Carbon;
  * @property int|null $submitted_by_user_id
  * @property string|null $new_name
  * @property string|null $new_national_id
- * @property string $reason
+ * @property string|null $reason
+ * @property IdentityChangeKind $kind
  * @property IdentityChangeStatus $status
  * @property int|null $reviewed_by_user_id
  * @property string|null $review_note
@@ -36,7 +38,7 @@ final class IdentityChangeRequest extends Model
     /**
      * @var list<string>
      */
-    protected $fillable = ['user_id', 'submitted_by_user_id', 'new_name', 'new_national_id', 'reason', 'status'];
+    protected $fillable = ['user_id', 'submitted_by_user_id', 'new_name', 'new_national_id', 'reason', 'status', 'kind'];
 
     /**
      * @var list<string>
@@ -59,6 +61,7 @@ final class IdentityChangeRequest extends Model
             'reviewed_by_user_id' => 'integer',
             'new_national_id' => 'encrypted',
             'status' => IdentityChangeStatus::class,
+            'kind' => IdentityChangeKind::class,
             'decided_at' => 'datetime',
         ];
     }

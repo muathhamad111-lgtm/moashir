@@ -25,6 +25,6 @@ final readonly class SessionContext
         public ?EntitySessionSummary $entity = null,
         public array $committeeAppointments = [],
         public ?AccountAvatar $avatar = null,
-        public ?NationalIdStatus $nationalId = null,
+        public ?AccountCompletion $completion = null,
     ) {}
 }

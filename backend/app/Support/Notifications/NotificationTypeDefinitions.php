@@ -22,6 +22,7 @@ final class NotificationTypeDefinitions
         'USR-05' => ['E', [A::SuperAdmin], true],
         'USR-06' => ['I', [A::SystemAdmin], true],
         'USR-07' => ['I', [A::AccountHolder], true],
+        'USR-08' => ['I', [A::SystemAdmin], true],
         'REG-01' => ['IE', [A::Entity, A::SystemAdmin], false],
         'REG-02' => ['ES', [A::AccountHolder], true],
         'REG-03' => ['IE', [A::Entity], false],

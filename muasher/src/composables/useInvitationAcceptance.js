@@ -20,7 +20,7 @@ export function useInvitationAcceptance(token) {
   const { continueAfter } = useLoginOutcome()
   const status = ref('loading')
   const terms = ref(null)
-  const nationalIdRequired = ref(false)
+  const presetNationalId = ref(null)
   const termsRequired = computed(() => Boolean(terms.value?.terms))
 
   async function load() {
@@ -30,7 +30,7 @@ export function useInvitationAcceptance(token) {
         authService.checkInvitation(token.value),
         termsService.current(),
       ])
-      nationalIdRequired.value = invitation?.data?.nationalIdRequired === true
+      presetNationalId.value = invitation?.data?.nationalIdMasked ?? null
       terms.value = data
       status.value = 'ready'
     } catch (error) {
@@ -42,7 +42,6 @@ export function useInvitationAcceptance(token) {
     schema: computed(() =>
       invitationSchema(t, {
         termsRequired: termsRequired.value,
-        nationalIdRequired: nationalIdRequired.value,
       }),
     ),
     initialValues: { password: '', passwordConfirmation: '', termsAccepted: false, nationalId: '' },
@@ -63,5 +62,5 @@ export function useInvitationAcceptance(token) {
 
   onMounted(load)
 
-  return { form, status, terms, termsRequired, nationalIdRequired, load }
+  return { form, status, terms, termsRequired, presetNationalId, load }
 }

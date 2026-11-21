@@ -62,7 +62,6 @@ export async function resetPassword(page, email, password = `Moashir-${randomUUI
   await expect(page.locator('.auth-status--success')).toBeVisible()
   const token = await waitForResetToken(email, mark)
   await page.goto(`/auth/reset-password/${token}`)
-  await page.locator('[name="email"]').fill(email)
   await page.locator('[name="password"]').fill(password)
   await page.locator('[name="passwordConfirmation"]').fill(password)
   await page.locator('form button[type="submit"]').click()

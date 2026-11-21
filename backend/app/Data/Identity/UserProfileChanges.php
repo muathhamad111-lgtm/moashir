@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Data\Identity;
 
+use App\Enums\Identity\Gender;
 use App\Support\ValueObjects\EmailAddress;
+use App\Support\ValueObjects\NationalId;
 use App\Support\ValueObjects\PhoneNumber;
 
 final readonly class UserProfileChanges
@@ -17,5 +19,7 @@ final readonly class UserProfileChanges
         public ?EmailAddress $email = null,
         public ?PhoneNumber $phone = null,
         public ?array $roles = null,
+        public ?Gender $gender = null,
+        public ?NationalId $nationalId = null,
     ) {}
 }

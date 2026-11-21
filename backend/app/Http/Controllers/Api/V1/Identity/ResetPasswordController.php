@@ -13,7 +13,7 @@ final class ResetPasswordController
 {
     public function __invoke(ResetPasswordRequest $request, ResetForgottenPassword $resetPassword): JsonResponse
     {
-        $resetPassword->handle($request->email(), $request->token(), $request->password());
+        $resetPassword->handle($request->token(), $request->password());
 
         return ApiResponse::data(['message' => __('passwords.reset')]);
     }

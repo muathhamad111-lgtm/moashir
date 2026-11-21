@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { authService, UNAUTHENTICATED_STATUS } from '@/services/authService'
 import { ROLES } from '@/constants/roles'
 import { LOGIN_STEPS } from '@/constants/loginSteps'
+import { NATIONAL_ID_STATES } from '@/constants/identityChanges'
 import { forgetRecentSearches } from '@/utils/recentSearchesStorage'
 
 let pendingSessionCheck = null
@@ -20,8 +21,7 @@ export const useAuthStore = defineStore('auth', {
     isEntity: (state) => (state.user?.roles ?? []).includes(ROLES.ENTITY),
     profileCompleted: (state) => Boolean(state.user?.profileCompleted),
     accountStatus: (state) => state.user?.status ?? null,
-    nationalIdMissing: (state) =>
-      state.user?.nationalIdRequired === true && state.user?.hasNationalId !== true,
+    nationalIdStatus: (state) => state.user?.nationalIdStatus ?? NATIONAL_ID_STATES.NOT_REQUIRED,
   },
   actions: {
     setUser(user) {
@@ -37,11 +37,24 @@ export const useAuthStore = defineStore('auth', {
       if (!this.user) return
       this.user = { ...this.user, ...patch }
     },
-    applyNationalId(masked) {
-      this.patchUser({ hasNationalId: true, nationalIdMasked: masked })
+    applyNationalIdStatus({ nationalIdStatus, nationalIdMasked = null }) {
+      this.patchUser({
+        nationalIdStatus,
+        hasNationalId: nationalIdMasked !== null,
+        nationalIdMasked,
+      })
     },
-    requireNationalId() {
-      this.patchUser({ nationalIdRequired: true, hasNationalId: false, nationalIdMasked: null })
+    // A cancelled or rejected first entry leaves the account where the setting puts it.
+    clearPendingNationalId() {
+      if (this.user?.nationalIdStatus !== NATIONAL_ID_STATES.PENDING) return
+      this.patchUser({
+        nationalIdStatus: this.user.nationalIdRequired
+          ? NATIONAL_ID_STATES.MISSING
+          : NATIONAL_ID_STATES.NOT_REQUIRED,
+      })
+    },
+    completeGender() {
+      this.patchUser({ genderMissing: false })
     },
     applyAvatar(avatar) {
       this.patchUser({ avatar: avatar ?? null })

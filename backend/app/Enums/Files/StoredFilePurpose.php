@@ -84,11 +84,23 @@ enum StoredFilePurpose: string
     }
 
     /**
+     * Only assessment evidence is stamped (operator decision, 2026-11-21): transfer proofs, refund evidence and VAT
+     * certificates sit outside the assessment and are served as uploaded.
+     *
      * @return list<self>
      */
     public static function watermarked(): array
     {
-        return [self::AssessmentEvidence, self::TransferProof, self::RefundEvidence, self::VatCertificate];
+        return [self::AssessmentEvidence];
+    }
+
+    /**
+     * Files served as a copy stamped for the viewer: the watermarked purposes and the evidence bundle, whose files
+     * are stamped for its requester.
+     */
+    public function isStampedForViewer(): bool
+    {
+        return $this->isWatermarked() || $this === self::EvidenceBundle;
     }
 
     public function isConfidential(): bool

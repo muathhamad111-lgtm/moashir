@@ -12,14 +12,12 @@ use App\Services\Identity\AuthenticationEventRecorder;
 use App\Services\Identity\PasswordResetTokens;
 use App\Support\ValueObjects\EmailAddress;
 use App\Support\ValueObjects\SignInIdentifier;
-use Illuminate\Config\Repository;
 
 final readonly class RequestPasswordReset
 {
     public function __construct(
         private PasswordResetTokens $tokens,
         private AuthenticationEventRecorder $events,
-        private Repository $config,
     ) {}
 
     public function handle(EmailAddress $email): void
@@ -36,7 +34,7 @@ final readonly class RequestPasswordReset
             return;
         }
 
-        $user->notify(new PasswordResetLinkNotification($this->tokens->issue($user), $this->config->integer('auth.passwords.users.expire')));
+        $user->notify(new PasswordResetLinkNotification($this->tokens->issue($user), $this->tokens->validMinutes()));
         $this->events->forUser(AuthEventType::PasswordResetRequested, $user);
     }
 }

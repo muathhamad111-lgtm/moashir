@@ -12,10 +12,13 @@ const USER_KEYS = [
   'created_at',
   'email',
   'entity_id',
+  'gender',
   'id',
   'last_login_at',
   'mfa_enabled',
   'name',
+  'national_id_changed_at_acceptance_at',
+  'national_id_masked',
   'phone',
   'request_scope',
   'roles',
@@ -74,12 +77,16 @@ describe('users mock — real contract', () => {
     const created = await call('POST', '/users', {
       name: 'نورة بنت سالم العنزي',
       email: 'noura.alanazi@moashir.example.sa',
+      gender: 'female',
+      national_id: '١٠٠٠٠٠٠٥٠٥',
       roles: ['award_secretary', 'system_admin'],
     })
     expect(created.status).toBe(201)
     expect(created.body.data).toMatchObject({
       status: 'invited',
       mfa_enabled: false,
+      gender: 'female',
+      national_id_masked: '••••••0505',
       roles: ['award_secretary', 'system_admin'],
     })
     const updated = await call('PUT', `/users/${created.body.data.id}`, {
@@ -89,10 +96,23 @@ describe('users mock — real contract', () => {
     const duplicate = await call('POST', '/users', {
       name: 'اسم مكرر',
       email: 'noura.alanazi@moashir.example.sa',
+      gender: 'male',
       roles: ['assessor'],
     })
     expect(duplicate.status).toBe(422)
     expect(Object.keys(duplicate.body.errors)).toEqual(['email'])
+    const invalid = await call('POST', '/users', {
+      name: 'اسم ثالث',
+      email: 'third.user@moashir.example.sa',
+      gender: 'other',
+      national_id: '3000000008',
+      roles: ['assessor'],
+    })
+    expect(Object.keys(invalid.body.errors).sort()).toEqual(['gender', 'national_id'])
+    const locked = await call('PUT', `/users/${created.body.data.id}`, {
+      national_id: '1000000506',
+    })
+    expect(locked.status).toBe(409)
   })
 
   it('suspends with a reason, reactivates, unlocks, resets MFA and resends invitations', async () => {

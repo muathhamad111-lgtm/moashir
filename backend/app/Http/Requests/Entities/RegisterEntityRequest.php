@@ -48,7 +48,7 @@ final class RegisterEntityRequest extends FormRequest
             'privacy_version_id' => [$this->currentPrivacy instanceof TermsVersion ? 'required' : 'prohibited', 'integer', $this->mustBe($this->currentPrivacy, 'privacy_version_id')],
             'terms_accepted' => ['accepted'],
             'marketing_consent' => ['sometimes', 'boolean'],
-            'national_id' => $nationalId->isRequiredForRoles([RoleKey::Entity]) ? ['required', 'string', 'max:20', new SaudiNationalId] : ['exclude'],
+            'national_id' => $nationalId->isRequiredForRoles([RoleKey::Entity]) ? ['required', 'string', new SaudiNationalId] : ['exclude'],
         ];
     }
 

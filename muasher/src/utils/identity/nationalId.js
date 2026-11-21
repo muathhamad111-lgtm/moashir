@@ -1,7 +1,16 @@
+// Operator rule (2026-11-21): 10 digits, starting with 1 or 2, digits only. No check digit.
+export const NATIONAL_ID_LENGTH = 10
+export const NATIONAL_ID_PROBLEMS = Object.freeze({
+  DIGITS: 'digits',
+  LENGTH: 'length',
+  PREFIX: 'prefix',
+})
+
 const PATTERN = /^[12]\d{9}$/
+const DIGITS_ONLY = /^\d+$/
+const NON_DIGITS = /\D/g
 const EASTERN_DIGITS = '٠١٢٣٤٥٦٧٨٩'
 const PERSIAN_DIGITS = '۰۱۲۳۴۵۶۷۸۹'
-const DOUBLED_THRESHOLD = 9
 
 function westernDigit(character) {
   const eastern = EASTERN_DIGITS.indexOf(character)
@@ -14,16 +23,18 @@ export function normalizeNationalId(value) {
   return [...String(value ?? '')].map(westernDigit).join('').replace(/\s+/g, '')
 }
 
-function checksumOf(digits) {
-  return [...digits].reduce((sum, digit, position) => {
-    const value = Number(digit)
-    if (position % 2 !== 0) return sum + value
-    const doubled = value * 2
-    return sum + (doubled > DOUBLED_THRESHOLD ? doubled - DOUBLED_THRESHOLD : doubled)
-  }, 0)
+// What the field keeps while typing: Western digits only, at most 10.
+export function nationalIdInput(value) {
+  return normalizeNationalId(value).replace(NON_DIGITS, '').slice(0, NATIONAL_ID_LENGTH)
+}
+
+export function nationalIdProblem(value) {
+  const digits = normalizeNationalId(value)
+  if (!DIGITS_ONLY.test(digits)) return NATIONAL_ID_PROBLEMS.DIGITS
+  if (digits.length !== NATIONAL_ID_LENGTH) return NATIONAL_ID_PROBLEMS.LENGTH
+  return PATTERN.test(digits) ? null : NATIONAL_ID_PROBLEMS.PREFIX
 }
 
 export function isValidNationalId(value) {
-  const digits = normalizeNationalId(value)
-  return PATTERN.test(digits) && checksumOf(digits) % 10 === 0
+  return nationalIdProblem(value) === null
 }

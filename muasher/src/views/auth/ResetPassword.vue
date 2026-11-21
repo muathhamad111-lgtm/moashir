@@ -4,6 +4,8 @@ import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
 import FieldInput from '@/components/form/FieldInput.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import Skeleton from '@/components/feedback/Skeleton.vue'
+import ErrorState from '@/components/feedback/ErrorState.vue'
 import PasswordPolicyHints from '@/components/auth/PasswordPolicyHints.vue'
 import { usePasswordReset } from '@/composables/usePasswordRecovery'
 import { ROUTE_NAMES } from '@/constants/routeNames'
@@ -14,7 +16,7 @@ const props = defineProps({
 })
 
 const { t } = useI18n()
-const { form, tokenInvalid } = usePasswordReset(toRef(props, 'token'))
+const { form, status, load } = usePasswordReset(toRef(props, 'token'))
 
 useHead({ title: () => t('auth.reset.title') })
 </script>
@@ -26,7 +28,15 @@ useHead({ title: () => t('auth.reset.title') })
       <p class="auth-form__subtitle">{{ t('auth.reset.subtitle') }}</p>
     </header>
 
-    <div v-if="tokenInvalid" class="auth-status auth-status--danger" role="alert">
+    <div v-if="status === 'loading'" class="auth-form__body" aria-busy="true">
+      <Skeleton variant="text" :count="3" />
+    </div>
+    <ErrorState
+      v-else-if="status === 'error'"
+      :message="t('auth.reset.loadFailed')"
+      @retry="load"
+    />
+    <div v-else-if="status === 'invalid'" class="auth-status auth-status--danger" role="alert">
       <AppIcon name="unlink" class="auth-status__icon" />
       <p class="auth-status__text">{{ t('auth.reset.invalidLink') }}</p>
       <router-link class="auth-form__link" :to="{ name: ROUTE_NAMES.AUTH_FORGOT_PASSWORD }">
@@ -36,14 +46,6 @@ useHead({ title: () => t('auth.reset.title') })
 
     <form v-else class="auth-form__body" novalidate @submit.prevent="form.onSubmit">
       <fieldset class="auth-form__group" :disabled="form.submitting.value">
-        <FieldInput
-          name="email"
-          type="email"
-          input-dir="ltr"
-          autocomplete="email"
-          :label="t('auth.reset.email')"
-          required
-        />
         <FieldInput
           name="password"
           type="password"

@@ -72,6 +72,7 @@ use App\Policies\Finance\PaymentReceiptPolicy;
 use App\Policies\Finance\RefundPolicy;
 use App\Policies\Identity\IdentityChangeRequestPolicy;
 use App\Policies\Identity\MfaEnrollmentPolicy;
+use App\Policies\Identity\OwnGenderPolicy;
 use App\Policies\Identity\PermissionPolicy;
 use App\Policies\Identity\RolePolicy;
 use App\Policies\Identity\UserPolicy;
@@ -146,6 +147,7 @@ final class AuthorizationServiceProvider extends ServiceProvider
             || $user->can(PermissionKey::RolesMatrixView->value));
         Gate::define(Ability::Authenticated->value, static fn (User $user): bool => true);
         Gate::define(Ability::EnrollMfa->value, [MfaEnrollmentPolicy::class, 'enroll']);
+        Gate::define(Ability::RecordOwnGender->value, [OwnGenderPolicy::class, 'record']);
         Gate::define(Ability::ViewDashboard->value, [DashboardPolicy::class, 'view']);
         Gate::define(Ability::ViewExecutiveOverview->value, [DashboardPolicy::class, 'viewOverview']);
         Gate::define(Ability::GlobalSearch->value, [GlobalSearchPolicy::class, 'search']);

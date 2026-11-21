@@ -180,7 +180,11 @@ export const authHandlers = [
         throw authReject.validation({ officialEmail: [authField('registration.email_taken')] })
       consumeEmailVerificationToken(body.emailVerificationToken)
       completeVerification(created)
-      if (nationalIdRequired) assignNationalId(created.id, body.nationalId)
+      if (nationalIdRequired)
+        assignNationalId(created.id, body.nationalId, {
+          source: 'entity_registration',
+          actor: created,
+        })
       if (standingOf(created) === ENTITY_STANDING.PENDING_REVIEW)
         return envelope({ step: SIGN_IN_STEPS.PENDING_REVIEW }, {}, { status: 201 })
       return signIn({ kind: 'entity', record: created })

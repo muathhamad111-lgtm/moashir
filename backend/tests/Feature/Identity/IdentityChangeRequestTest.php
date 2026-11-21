@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\Audit\AuditEvent;
+use App\Enums\Identity\IdentityChangeSource;
 use App\Enums\Identity\PermissionKey;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Notifications\NotificationCode;
@@ -81,7 +82,7 @@ it('refuses an empty, unchanged, invalid or duplicate request', function (): voi
 
     submitOwnChange($user, [])->assertUnprocessable()->assertJsonValidationErrors(['new_name', 'new_national_id']);
     submitOwnChange($user, ['new_name' => $user->name])->assertUnprocessable()->assertJsonPath('code', 'identity_change.nothing_to_change');
-    submitOwnChange($user, ['new_national_id' => '1000000009', 'current_password' => defaultPassword()])->assertUnprocessable()->assertJsonValidationErrors('new_national_id');
+    submitOwnChange($user, ['new_national_id' => '3000000008', 'current_password' => defaultPassword()])->assertUnprocessable()->assertJsonValidationErrors('new_national_id');
     submitOwnChange($user, ['new_national_id' => fictionalNationalId(21), 'current_password' => defaultPassword()])
         ->assertUnprocessable()
         ->assertJsonPath('code', 'identity.national_id_unavailable');
@@ -116,7 +117,7 @@ it('applies an approved change, keeps an encrypted history and notifies the requ
     $user->refresh();
     expect($user->name)->toBe('سلمان بن فهد المطيري')
         ->and($user->national_id)->toBe(fictionalNationalId(32));
-    $history = UserIdentityChange::query()->where('user_id', $user->id)->orderBy('id')->get();
+    $history = UserIdentityChange::query()->where('user_id', $user->id)->where('source', IdentityChangeSource::ApprovedRequest)->orderBy('id')->get();
     expect($history->pluck('field')->map->value->all())->toBe(['name', 'national_id'])
         ->and($history[0]->old_value)->toBe($oldName)
         ->and($history[1]->old_value)->toBe(fictionalNationalId(31))

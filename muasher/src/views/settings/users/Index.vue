@@ -11,6 +11,7 @@ import Badge from '@/components/ui/Badge.vue'
 import AppSelect from '@/components/form/AppSelect.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import UserForm from '@/components/users/UserForm.vue'
+import UserDetailsDialog from '@/components/users/UserDetailsDialog.vue'
 import UserStatusBadge from '@/components/users/UserStatusBadge.vue'
 import RowActions from '@/components/data-list/RowActions.vue'
 import UserPathAccessCell from '@/components/users/UserPathAccessCell.vue'
@@ -91,6 +92,8 @@ function lastLoginLabel(value) {
 
 const formOpen = ref(false)
 const editing = ref(null)
+const details = ref(null)
+const detailsOpen = ref(false)
 const pathAccess = useUserPathAccess({ onSaved: () => load() })
 
 function openCreate() {
@@ -109,6 +112,11 @@ function onSaved({ id }) {
 }
 
 function onAction(key, row) {
+  if (key === USER_ACTIONS.DETAILS) {
+    details.value = row
+    detailsOpen.value = true
+    return
+  }
   if (key === USER_ACTIONS.EDIT) {
     editing.value = row
     formOpen.value = true
@@ -235,6 +243,7 @@ function onAction(key, row) {
     />
 
     <UserForm v-if="canManage" v-model="formOpen" :user="editing" :save="save" @saved="onSaved" />
+    <UserDetailsDialog v-model="detailsOpen" :user="details" />
     <AssessorQualificationsDialog
       v-if="canManage"
       v-model="pathAccess.qualificationsOpen.value"

@@ -6,11 +6,13 @@ namespace App\Models\Identity;
 
 use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Identity\AssessorQualification;
+use App\Enums\Identity\Gender;
 use App\Enums\Identity\Locale;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Identity\SessionGroup;
 use App\Enums\Identity\ThemePreference;
 use App\Enums\Identity\UserStatus;
+use App\Models\Concerns\HasIdentityHistory;
 use App\Models\Files\StoredFile;
 use App\Models\Notifications\Notification;
 use App\Observers\Identity\UserNationalIdIndexObserver;
@@ -44,6 +46,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string|null $phone_index
  * @property Carbon|null $phone_verified_at
  * @property string|null $national_id
+ * @property Gender|null $gender
  * @property string|null $national_id_index
  * @property string|null $password
  * @property int|null $entity_id
@@ -70,6 +73,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read Collection<int, Role> $roles
  * @property-read Collection<int, UserAssessorQualification> $assessorQualifications
  * @property-read Collection<int, UserRequestPath> $requestPaths
+ * @property-read UserIdentityChange|null $acceptanceNationalIdChange
  */
 #[ObservedBy([UserPhoneIndexObserver::class, UserNationalIdIndexObserver::class])]
 final class User extends Authenticatable implements Auditable, HasLocalePreference
@@ -79,12 +83,13 @@ final class User extends Authenticatable implements Auditable, HasLocalePreferen
     /** @use HasFactory<UserFactory> */
     use HasFactory;
 
+    use HasIdentityHistory;
     use HasRoles;
     use RoutesNotifications;
     use SoftDeletes;
     use TwoFactorAuthenticatable;
 
-    public const array ADMINISTRATION_RELATIONS = ['roles', 'assessorQualifications', 'requestPaths'];
+    public const array ADMINISTRATION_RELATIONS = ['roles', 'assessorQualifications', 'requestPaths', 'acceptanceNationalIdChange'];
 
     protected string $guard_name = 'web';
 
@@ -104,7 +109,7 @@ final class User extends Authenticatable implements Auditable, HasLocalePreferen
     /**
      * @var list<string>
      */
-    protected $fillable = ['name', 'email', 'phone', 'locale', 'theme'];
+    protected $fillable = ['name', 'email', 'phone', 'locale', 'theme', 'gender'];
 
     /**
      * @var list<string>
@@ -115,9 +120,8 @@ final class User extends Authenticatable implements Auditable, HasLocalePreferen
      * @var list<string>
      */
     protected array $auditExclude = [
-        'password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes',
-        'failed_login_attempts', 'last_login_at', 'last_login_ip', 'phone', 'phone_index', 'avatar_file_id',
-        'national_id', 'national_id_index',
+        'password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'failed_login_attempts', 'last_login_at',
+        'last_login_ip', 'phone', 'phone_index', 'avatar_file_id', 'national_id', 'national_id_index', 'gender',
     ];
 
     /**
@@ -129,6 +133,7 @@ final class User extends Authenticatable implements Auditable, HasLocalePreferen
             'email_verified_at' => 'datetime',
             'phone' => 'encrypted',
             'national_id' => 'encrypted',
+            'gender' => Gender::class,
             'phone_verified_at' => 'datetime',
             'password' => 'hashed',
             'password_change_required' => 'boolean',

@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Support\ValueObjects;
 
+use App\Enums\Identity\NationalIdProblem;
 use InvalidArgumentException;
 
 final readonly class NationalId
 {
     public const string PATTERN = '/^[12][0-9]{9}$/';
+
+    public const int LENGTH = 10;
 
     private const int VISIBLE_DIGITS = 4;
 
@@ -27,8 +30,8 @@ final readonly class NationalId
     {
         $normalized = self::normalize($input);
 
-        if (! self::isValid($normalized)) {
-            throw new InvalidArgumentException('A national ID or Iqama number has 10 digits, starts with 1 or 2 and carries a valid check digit.');
+        if (self::problemOf($normalized) instanceof NationalIdProblem) {
+            throw new InvalidArgumentException('A national ID or Iqama number has exactly 10 digits and starts with 1 or 2.');
         }
 
         $this->value = $normalized;
@@ -46,29 +49,21 @@ final readonly class NationalId
 
     public static function isValid(string $normalized): bool
     {
-        return preg_match(self::PATTERN, $normalized) === 1 && self::checksumOf($normalized) % 10 === 0;
+        return preg_match(self::PATTERN, $normalized) === 1;
+    }
+
+    public static function problemOf(string $normalized): ?NationalIdProblem
+    {
+        return match (true) {
+            preg_match('/^[0-9]+$/', $normalized) !== 1 => NationalIdProblem::NotDigits,
+            strlen($normalized) !== self::LENGTH => NationalIdProblem::WrongLength,
+            ! self::isValid($normalized) => NationalIdProblem::WrongPrefix,
+            default => null,
+        };
     }
 
     public function masked(): string
     {
         return str_repeat(self::MASK, strlen($this->value) - self::VISIBLE_DIGITS).substr($this->value, -self::VISIBLE_DIGITS);
-    }
-
-    private static function checksumOf(string $digits): int
-    {
-        $sum = 0;
-
-        foreach (str_split($digits) as $position => $digit) {
-            $sum += $position % 2 === 0 ? self::doubledDigitOf((int) $digit) : (int) $digit;
-        }
-
-        return $sum;
-    }
-
-    private static function doubledDigitOf(int $digit): int
-    {
-        $doubled = $digit * 2;
-
-        return $doubled > 9 ? $doubled - 9 : $doubled;
     }
 }

@@ -4,6 +4,18 @@ import { grantedPermissionKeys } from './permissionsStore'
 import { ROLES } from '@/constants/roles'
 import { assessmentReject, fieldMessage } from './assessments/assessmentRejection'
 import { reasonError, throwIfErrors, trimmed } from './accredited/accreditedValidation'
+import { identityMessages } from '../fixtures/identityMessages'
+import { GENDER_VALUES } from '@/constants/identityChanges'
+import { normalizeNationalId } from '@/utils/identity/nationalId'
+import {
+  assignNationalId,
+  genderOf,
+  maskNationalId,
+  nationalIdChangedAtAcceptanceOf,
+  nationalIdOf,
+  nationalIdProblemOf,
+  setGender,
+} from './identityStore'
 
 const ASSIGNABLE_ROLES = Object.values(ROLES).filter((role) => role !== ROLES.ENTITY)
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -67,6 +79,9 @@ export function userResource(user) {
     name: user.name,
     email: user.email,
     phone: user.phone,
+    gender: genderOf(user.id, user.gender ?? null),
+    nationalIdMasked: maskNationalId(nationalIdOf(user.id)),
+    nationalIdChangedAtAcceptanceAt: nationalIdChangedAtAcceptanceOf(user.id),
     roles: [...user.roles],
     assessorQualifications: [...user.assessorQualifications],
     requestScope: requestScopeOf(user.id),
@@ -170,7 +185,27 @@ function profileErrors(body, { partial, exceptId }) {
     )
       errors.roles = [fieldMessage('validation.invalid', {}, 'roles')]
   }
+  return { ...errors, ...identityErrors(body, partial) }
+}
+
+// Gender is required for staff; the national ID is optional and follows the operator's four rules.
+function identityErrors(body, partial) {
+  const errors = {}
+  if ((!partial || 'gender' in body) && !GENDER_VALUES.includes(body.gender))
+    errors.gender = [identityMessages['identity.gender_invalid']]
+  const problem = body.nationalId ? nationalIdProblemOf(body.nationalId) : null
+  if (problem) errors.nationalId = [identityMessages[`identity.national_id.${problem}`]]
   return errors
+}
+
+function recordIdentity(user, body) {
+  if (body.gender) setGender(user.id, body.gender)
+  if (!body.nationalId) return
+  if (nationalIdOf(user.id)) throw assessmentReject.coded(409, 'identity.national_id_locked')
+  assignNationalId(user.id, normalizeNationalId(body.nationalId), {
+    source: 'admin_entry',
+    actor: null,
+  })
 }
 
 export function inviteStaffUser(body) {
@@ -181,6 +216,7 @@ export function inviteStaffUser(body) {
     name: trimmed(body.name),
     email: trimmed(body.email),
     phone: body.phone ?? null,
+    gender: body.gender,
     roles: [...body.roles],
     assessorQualifications: [],
     requestPaths: [],
@@ -191,14 +227,17 @@ export function inviteStaffUser(body) {
     createdAt: new Date().toISOString(),
   }
   users.push(user)
+  recordIdentity(user, body)
   return user
 }
 
 export function updateStaffUser(user, body) {
   throwIfErrors(profileErrors(body, { partial: true, exceptId: user.id }))
+  recordIdentity(user, body)
   if ('name' in body) user.name = trimmed(body.name)
   if ('email' in body) user.email = trimmed(body.email)
   if ('roles' in body) user.roles = [...body.roles]
+  if ('gender' in body) user.gender = body.gender
   return user
 }
 

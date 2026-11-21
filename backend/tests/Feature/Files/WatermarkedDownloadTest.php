@@ -5,18 +5,25 @@ declare(strict_types=1);
 use App\Contracts\Watermark\OfficeConverter;
 use App\Enums\Audit\AuditEvent;
 use App\Enums\Files\RenditionStatus;
+use App\Enums\Files\StoredFilePurpose;
 use App\Enums\Identity\RoleKey;
 use App\Exceptions\Watermark\WatermarkFailed;
 use App\Jobs\Files\ConvertOfficeFileJob;
+use App\Models\Assessments\Assessment;
+use App\Models\Assessments\EvidenceBundle;
+use App\Models\Assessments\EvidenceFile;
 use App\Models\Audit\Audit;
 use App\Models\Files\FileAccessTrace;
 use App\Models\Files\FileRendition;
+use App\Models\Identity\IdentityChangeRequest;
+use App\Models\Identity\User;
 use App\Support\ValueObjects\PageSize;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Testing\TestResponse;
 
 beforeEach(function (): void {
     Notification::fake();
@@ -175,16 +182,93 @@ it('stamps the name and trace code only for a viewer who is not required to hold
     expect($text)->toContain(latestTraceCode())->not->toMatch('/\b[12]\d{9}\b/');
 });
 
-it('stops a required viewer without a national ID before any file is stamped', function (): void {
+function evidenceLinkFor(User $viewer, Assessment $assessment, EvidenceFile $evidence): TestResponse
+{
+    return switchTo($viewer)->postJson("/api/v1/assessments/{$assessment->id}/evidence/{$evidence->public_id}/download");
+}
+
+function requiredViewerCase(): array
+{
     requireNationalIdFor(RoleKey::Assessor);
     $assessor = assessorUser();
     $assessment = assignedAccreditedRequest(publishedAccreditedCriteria(), $assessor);
     $evidence = replaceEvidenceContent($assessment, 'سياسة.pdf', 'application/pdf', multiPagePdf([new PageSize(595, 842)]));
 
-    switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/evidence/{$evidence->public_id}/download")
+    return [$assessor, $assessment, $evidence];
+}
+
+it('refuses every file to a required viewer whose national ID is missing or pending, and audits the refusal', function (bool $pending, string $state): void {
+    [$assessor, $assessment, $evidence] = requiredViewerCase();
+    if ($pending) {
+        switchTo($assessor)->postJson('/api/v1/me/national-id', ['national_id' => fictionalNationalId(9101)])->assertAccepted();
+    }
+
+    evidenceLinkFor($assessor, $assessment, $evidence)
         ->assertForbidden()
-        ->assertJsonPath('code', 'identity.national_id_required');
-    expect(FileAccessTrace::query()->count())->toBe(0);
+        ->assertJsonPath('code', 'national_id.required_for_files')
+        ->assertJsonPath('meta.national_id_status', $state);
+    switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/evidence/bundles")
+        ->assertForbidden()
+        ->assertJsonPath('code', 'national_id.required_for_files');
+
+    $refusal = Audit::query()->where('event', AuditEvent::FileAccessRefused->value)->latest('id')->firstOrFail();
+    expect(FileAccessTrace::query()->count())->toBe(0)
+        ->and(EvidenceBundle::query()->count())->toBe(0)
+        ->and($refusal->new_values)->toMatchArray(['reason' => 'national_id_required', 'national_id_status' => $state])
+        ->and(Audit::query()->get()->toJson())->not->toContain(fictionalNationalId(9101));
+})->with(['missing' => [false, 'missing'], 'pending approval' => [true, 'pending']]);
+
+it('opens files for a required viewer once the national ID is approved, stamped with it', function (): void {
+    [$assessor, $assessment, $evidence] = requiredViewerCase();
+    switchTo($assessor)->postJson('/api/v1/me/national-id', ['national_id' => fictionalNationalId(9102)])->assertAccepted();
+    $request = IdentityChangeRequest::query()->sole();
+    switchTo(systemAdmin())->postJson("/api/v1/identity-changes/{$request->public_id}/approve")->assertOk();
+
+    $text = pdfTextOf(downloadEvidenceAs($assessor->refresh(), $assessment, $evidence)->assertOk()->streamedContent());
+
+    expect($text)->toContain(latestTraceCode())->toContain(fictionalNationalId(9102));
+});
+
+it('opens files at once for the Super Admin who saved the own number directly', function (): void {
+    requireNationalIdFor(RoleKey::Assessor);
+    $superAdmin = superAdmin();
+    $assessment = assignedAccreditedRequest(publishedAccreditedCriteria(), assessorUser());
+    $evidence = replaceEvidenceContent($assessment, 'سياسة.pdf', 'application/pdf', multiPagePdf([new PageSize(595, 842)]));
+    evidenceLinkFor($superAdmin, $assessment, $evidence)->assertForbidden();
+
+    switchTo($superAdmin)->postJson('/api/v1/me/national-id', ['national_id' => fictionalNationalId(9103)])->assertCreated();
+
+    expect(pdfTextOf(downloadEvidenceAs($superAdmin->refresh(), $assessment, $evidence)->assertOk()->streamedContent()))->toContain(fictionalNationalId(9103));
+});
+
+it('refuses a link issued before the account became required, and an earlier bundle', function (): void {
+    $assessor = assessorUser();
+    $assessment = assignedAccreditedRequest(publishedAccreditedCriteria(), $assessor);
+    $evidence = replaceEvidenceContent($assessment, 'سياسة.pdf', 'application/pdf', multiPagePdf([new PageSize(595, 842)]));
+    $url = (string) evidenceLinkFor($assessor, $assessment, $evidence)->assertOk()->json('data.url');
+    $bundleId = switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/evidence/bundles")->assertCreated()->json('data.id');
+
+    requireNationalIdFor(RoleKey::Assessor);
+
+    test()->get($url)->assertForbidden()->assertJsonPath('code', 'national_id.required_for_files');
+    switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/evidence/bundles/{$bundleId}/download")
+        ->assertForbidden()
+        ->assertJsonPath('code', 'national_id.required_for_files');
+    expect(FileAccessTrace::query()->count())->toBe(1);
+});
+
+it('serves a bank transfer receipt as uploaded, unstamped, even to a required finance reviewer without a national ID', function (): void {
+    requireNationalIdFor(RoleKey::FinanceOfficer);
+    ['owner' => $owner, 'account' => $account] = transferPayingEntity();
+    $payment = submittedTransfer($owner, $account);
+    $reviewer = transferReviewer();
+
+    $url = (string) switchTo($reviewer)->postJson(bankTransferUrl($payment, 'proof/download'))->assertOk()->json('data.url');
+    $received = switchTo($reviewer)->get($url)->assertOk()->assertHeader('Content-Type', 'application/pdf')->streamedContent();
+
+    expect($received)->toBe(storedContentOf($payment->bankTransfer->proofFile))
+        ->and(FileAccessTrace::query()->count())->toBe(0)
+        ->and(Audit::query()->where('event', AuditEvent::FileAccessRefused->value)->count())->toBe(0);
 });
 
 it('stamps every file in an evidence bundle for its requester and keeps the bundle to that requester', function (): void {
@@ -206,15 +290,12 @@ it('stamps every file in an evidence bundle for its requester and keeps the bund
     switchTo(superAdmin())->postJson("/api/v1/assessments/{$assessment->id}/evidence/bundles/{$bundleId}/download")->assertNotFound();
 });
 
-it('stamps bank transfer receipts for the finance reviewer', function (): void {
-    ['owner' => $owner, 'account' => $account] = transferPayingEntity();
-    $payment = submittedTransfer($owner, $account);
-    $reviewer = giveNationalId(transferReviewer(), 9002);
-
-    $url = (string) switchTo($reviewer)->postJson(bankTransferUrl($payment, 'proof/download'))->assertOk()->json('data.url');
-    $pdf = switchTo($reviewer)->get($url)->assertOk()->assertHeader('Content-Type', 'application/pdf')->streamedContent();
-
-    expect(pdfTextOf($pdf))->toContain(fictionalNationalId(9002))->toContain(latestTraceCode());
+it('stamps assessment evidence only, never transfer proofs, refund evidence or VAT certificates', function (): void {
+    expect(StoredFilePurpose::watermarked())->toBe([StoredFilePurpose::AssessmentEvidence])
+        ->and(StoredFilePurpose::TransferProof->isStampedForViewer())->toBeFalse()
+        ->and(StoredFilePurpose::RefundEvidence->isStampedForViewer())->toBeFalse()
+        ->and(StoredFilePurpose::VatCertificate->isStampedForViewer())->toBeFalse()
+        ->and(StoredFilePurpose::EvidenceBundle->isStampedForViewer())->toBeTrue();
 });
 
 it('finds who received a stamped copy from its trace code', function (): void {

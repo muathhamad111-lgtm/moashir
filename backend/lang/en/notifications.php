@@ -104,6 +104,10 @@ return [
                 'title' => 'Identity change request awaiting review',
                 'body' => 'A request to change the identity details of :user is waiting for your decision.',
             ],
+            'first_entry' => [
+                'title' => 'National ID awaiting approval',
+                'body' => ':user entered their national ID or Iqama number for the first time, and it is waiting for your decision.',
+            ],
         ],
         'USR-07' => [
             'approved' => [
@@ -113,6 +117,12 @@ return [
             'rejected' => [
                 'title' => 'Your identity change request was rejected',
                 'body' => 'The change to your identity details was rejected. Open your profile to read the reviewer\'s note.',
+            ],
+        ],
+        'USR-08' => [
+            'reviewer' => [
+                'title' => 'National ID changed at invitation acceptance',
+                'body' => ':user changed the national ID entered for them when accepting the invitation, and the new number was saved. Review it in their identity history.',
             ],
         ],
     ],

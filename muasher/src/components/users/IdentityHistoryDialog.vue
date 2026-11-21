@@ -51,7 +51,10 @@ const { dateTime } = useEntityDisplay()
             })
           }}
         </span>
-        <span class="identity-change-detail__note">{{ item.reason }}</span>
+        <span class="identity-change-detail__note" data-testid="identity-history-source">{{
+          t(`nationalIdentity.history.sources.${item.source}`)
+        }}</span>
+        <span v-if="item.reason" class="identity-change-detail__note">{{ item.reason }}</span>
       </li>
     </ol>
   </BaseModal>

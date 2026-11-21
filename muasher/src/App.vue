@@ -11,6 +11,7 @@ import PublicLayout from '@/components/layout/PublicLayout.vue'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
 import PortalLayout from '@/components/layout/PortalLayout.vue'
 import AppLoadingScreen from '@/components/feedback/AppLoadingScreen.vue'
+import AccountCompletionHost from '@/components/identity/completion/AccountCompletionHost.vue'
 import { useLocale } from '@/composables/useLocale'
 import { useTheme } from '@/composables/useTheme'
 import { usePlatformIdentity } from '@/composables/usePlatformIdentity'
@@ -112,4 +113,5 @@ useHead({
   <AppToast />
   <ConfirmModal />
   <SuccessModal />
+  <AccountCompletionHost v-if="!isBooting" />
 </template>

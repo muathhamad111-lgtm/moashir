@@ -9,6 +9,7 @@ export const USER_STATUSES = {
 export const USER_STATUS_LIST = Object.values(USER_STATUSES)
 
 export const USER_ACTIONS = {
+  DETAILS: 'details',
   EDIT: 'edit',
   SUSPEND: 'suspend',
   ACTIVATE: 'activate',

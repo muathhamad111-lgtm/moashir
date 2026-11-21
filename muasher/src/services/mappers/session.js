@@ -1,3 +1,4 @@
+import { NATIONAL_ID_STATES } from '@/constants/identityChanges'
 import { toAvatar } from './avatar'
 
 function roleKeyOf(role) {
@@ -36,6 +37,8 @@ export function toSessionUser(raw = {}) {
     nationalIdRequired: raw.nationalIdRequired === true,
     hasNationalId: raw.hasNationalId === true,
     nationalIdMasked: raw.nationalIdMasked ?? null,
+    nationalIdStatus: raw.nationalIdStatus ?? NATIONAL_ID_STATES.NOT_REQUIRED,
+    genderMissing: raw.genderMissing === true,
     entityId: raw.entityId ?? entity?.id ?? null,
     entity,
     avatar: toAvatar(raw.avatar),

@@ -24,6 +24,7 @@ const props = defineProps({
   autocomplete: { type: String, default: undefined },
   inputDir: { type: String, default: undefined },
   filter: { type: Function, default: null },
+  maxlength: { type: Number, default: undefined },
 })
 
 const emit = defineEmits(['update:modelValue', 'blur'])
@@ -68,6 +69,7 @@ function onInput(event) {
         :inputmode="inputmode"
         :autocomplete="autocomplete"
         :dir="inputDir"
+        :maxlength="maxlength"
         :aria-invalid="invalid || undefined"
         :aria-describedby="describedBy"
         @input="onInput"

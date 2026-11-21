@@ -31,6 +31,7 @@ final class CancelledInviteeRemover
                 'phone' => null,
                 'phone_verified_at' => null,
                 'national_id' => null,
+                'gender' => null,
             ])->save();
             $invitee->delete();
         });

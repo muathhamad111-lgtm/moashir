@@ -1,0 +1,20 @@
+@use '../mixins' as *;
+
+.account-completion {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.account-completion__note {
+  @include flex(row, flex-start, flex-start, var(--space-2));
+  margin: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--color-info-soft);
+  color: var(--theme-text);
+  font-size: var(--fs-sm);
+}
+
+// The signed-in back office has no strip slot, so the banner keeps its own spacing above the page.
+.app-layout__content > .account-completion-banner {
+  padding-block-end: var(--space-2);
+}

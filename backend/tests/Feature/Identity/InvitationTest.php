@@ -2,12 +2,19 @@
 
 declare(strict_types=1);
 
+use App\Enums\Audit\AuditEvent;
+use App\Enums\Identity\IdentityChangeKind;
+use App\Enums\Identity\IdentityChangeSource;
 use App\Enums\Identity\InvitationStatus;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Identity\UserStatus;
+use App\Enums\Notifications\NotificationCode;
 use App\Models\Audit\Audit;
+use App\Models\Identity\IdentityChangeRequest;
 use App\Models\Identity\TermsVersion;
 use App\Models\Identity\User;
+use App\Models\Identity\UserIdentityChange;
+use App\Notifications\Entities\EntityNotification;
 use App\Notifications\Identity\StaffInvitationNotification;
 use App\Services\Identity\AuthSettings;
 use App\Services\Identity\SessionKeys;
@@ -16,14 +23,18 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Testing\TestResponse;
 
 const INVITEE_PASSWORD = 'Tuwaiq-Mountain-2026';
 
-function inviteStaff(User $administrator, string $email = 'new.assessor@moashir.example.sa'): string
+/**
+ * @param  array<string, string>  $extra
+ */
+function inviteStaff(User $administrator, string $email = 'new.assessor@moashir.example.sa', array $extra = []): string
 {
     test()->actingAs($administrator, 'web')
         ->withSession([SessionKeys::SIGNED_IN_AT => time(), SessionKeys::LAST_SEEN_AT => time()])
-        ->postJson('/api/v1/users', ['name' => 'سلمان المطيري', 'email' => $email, 'roles' => ['assessor']])
+        ->postJson('/api/v1/users', ['name' => 'سلمان المطيري', 'gender' => 'male', 'email' => $email, 'roles' => ['assessor'], ...$extra])
         ->assertCreated();
 
     $invitee = User::query()->where('email', $email)->firstOrFail();
@@ -172,7 +183,7 @@ it('tells the invitation page that a fresh link is usable without returning pers
 
     $this->getJson("/api/v1/auth/invitations/{$token}")
         ->assertOk()
-        ->assertExactJson(['data' => ['usable' => true, 'national_id_required' => false]]);
+        ->assertExactJson(['data' => ['usable' => true, 'national_id_masked' => null]]);
 });
 
 it('answers a used, revoked or unknown link with the same invalid response', function (string $case): void {
@@ -262,32 +273,79 @@ it('rejects a second acceptance that was racing the first one', function (): voi
     expect(User::query()->where('email', 'new.assessor@moashir.example.sa')->firstOrFail()->invitations()->where('status', InvitationStatus::Accepted)->count())->toBe(1);
 });
 
-it('asks an invitee for the national ID only when their role is required, and stores it', function (): void {
+function acceptInvitation(string $token, ?string $nationalId = null): TestResponse
+{
+    return test()->postJson("/api/v1/auth/invitations/{$token}/accept", array_filter([
+        'password' => INVITEE_PASSWORD,
+        'password_confirmation' => INVITEE_PASSWORD,
+        'national_id' => $nationalId,
+    ]));
+}
+
+function invitee(): User
+{
+    return User::query()->where('email', 'new.assessor@moashir.example.sa')->sole();
+}
+
+it('never blocks acceptance when the invitee\'s role requires a national ID', function (): void {
     requireNationalIdFor(RoleKey::Assessor);
     $token = inviteStaff(systemAdmin());
 
-    $this->getJson("/api/v1/auth/invitations/{$token}")->assertOk()->assertJsonPath('data.national_id_required', true);
-    $this->postJson("/api/v1/auth/invitations/{$token}/accept", ['password' => INVITEE_PASSWORD, 'password_confirmation' => INVITEE_PASSWORD])
-        ->assertUnprocessable()
-        ->assertJsonPath('code', 'identity.national_id_required');
+    acceptInvitation($token)->assertOk();
 
-    $this->postJson("/api/v1/auth/invitations/{$token}/accept", [
-        'password' => INVITEE_PASSWORD,
-        'password_confirmation' => INVITEE_PASSWORD,
-        'national_id' => fictionalNationalId(808),
-    ])->assertOk();
-
-    expect(User::query()->where('email', 'new.assessor@moashir.example.sa')->sole()->national_id)->toBe(fictionalNationalId(808));
+    expect(invitee()->national_id)->toBeNull();
 });
 
-it('ignores a national ID sent by an invitee whose role is not required', function (): void {
+it('shows the invitee the number the administrator entered, masked, and keeps it when confirmed', function (?string $confirmation): void {
+    $token = inviteStaff(systemAdmin(), extra: ['national_id' => fictionalNationalId(808)]);
+
+    $this->getJson("/api/v1/auth/invitations/{$token}")->assertOk()
+        ->assertExactJson(['data' => ['usable' => true, 'national_id_masked' => '••••••'.substr(fictionalNationalId(808), -4)]]);
+    acceptInvitation($token, $confirmation)->assertOk();
+
+    expect(invitee()->national_id)->toBe(fictionalNationalId(808))
+        ->and(UserIdentityChange::query()->where('source', IdentityChangeSource::InvitationAcceptance)->count())->toBe(0)
+        ->and(Audit::query()->where('event', AuditEvent::UserNationalIdChangedAtAcceptance->value)->count())->toBe(0);
+})->with(['left blank' => [null], 'typed again' => [fictionalNationalId(808)]]);
+
+it('saves a number the invitee changes at acceptance without approval, records it and informs the reviewers', function (): void {
+    $administrator = systemAdmin();
+    $token = inviteStaff($administrator, extra: ['national_id' => fictionalNationalId(808)]);
+
+    acceptInvitation($token, fictionalNationalId(809))->assertOk();
+
+    $invitee = invitee();
+    $change = UserIdentityChange::query()->where('source', IdentityChangeSource::InvitationAcceptance)->sole();
+    expect($invitee->national_id)->toBe(fictionalNationalId(809))
+        ->and(IdentityChangeRequest::query()->count())->toBe(0)
+        ->and($change->old_value)->toBe(fictionalNationalId(808))
+        ->and($change->new_value)->toBe(fictionalNationalId(809))
+        ->and($change->requested_by_user_id)->toBe($invitee->id)
+        ->and($change->approved_by_user_id)->toBeNull();
+    $audit = Audit::query()->where('event', AuditEvent::UserNationalIdChangedAtAcceptance->value)->sole();
+    expect(json_encode([$audit->old_values, $audit->new_values]))->not->toContain(fictionalNationalId(809));
+    Notification::assertSentTo($administrator, EntityNotification::class, fn (EntityNotification $notification): bool => $notification->notice->code === NotificationCode::NationalIdChangedAtAcceptance);
+    switchTo($administrator)->getJson("/api/v1/users/{$invitee->id}")->assertOk()
+        ->assertJsonPath('data.national_id_masked', '••••••'.substr(fictionalNationalId(809), -4))
+        ->assertJsonPath('data.national_id_changed_at_acceptance_at', fn (?string $at): bool => $at !== null);
+});
+
+it('sends a first number entered at acceptance for approval', function (): void {
     $token = inviteStaff(systemAdmin());
 
-    $this->postJson("/api/v1/auth/invitations/{$token}/accept", [
-        'password' => INVITEE_PASSWORD,
-        'password_confirmation' => INVITEE_PASSWORD,
-        'national_id' => fictionalNationalId(909),
-    ])->assertOk();
+    $this->getJson("/api/v1/auth/invitations/{$token}")->assertJsonPath('data.national_id_masked', null);
+    acceptInvitation($token, fictionalNationalId(909))->assertOk();
 
-    expect(User::query()->where('email', 'new.assessor@moashir.example.sa')->sole()->national_id)->toBeNull();
+    $request = IdentityChangeRequest::query()->sole();
+    expect(invitee()->national_id)->toBeNull()
+        ->and($request->kind)->toBe(IdentityChangeKind::FirstEntry)
+        ->and($request->new_national_id)->toBe(fictionalNationalId(909));
+});
+
+it('refuses an invalid number at acceptance and keeps the invitation usable', function (): void {
+    $token = inviteStaff(systemAdmin());
+
+    acceptInvitation($token, '3000000008')->assertUnprocessable()->assertJsonValidationErrors('national_id');
+
+    expect(invitee()->status)->toBe(UserStatus::Invited);
 });

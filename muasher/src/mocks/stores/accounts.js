@@ -15,7 +15,7 @@ import { qualificationsOf, requestScopeOf } from './staffUsers'
 import { findRole } from './permissionsStore'
 import { profileLocaleOf } from './preferencesStore'
 import { nationalIdRequiredFor } from './authSettingsStore'
-import { maskNationalId, nationalIdOf } from './identityStore'
+import { genderMissingFor, maskNationalId, nationalIdOf, nationalIdStateOf } from './identityStore'
 import { DEFAULT_LOCALE } from '@/constants/locales'
 
 const HOUR_MS = 60 * 60 * 1000
@@ -107,6 +107,11 @@ export function sessionPayload(descriptor) {
     }),
     hasNationalId: nationalIdOf(descriptor.id) !== null,
     nationalIdMasked: maskNationalId(nationalIdOf(descriptor.id)),
+    nationalIdStatus: nationalIdStateOf(
+      descriptor.id,
+      nationalIdRequiredFor(descriptor.roles, { superAdmin: descriptor.superAdmin === true }),
+    ),
+    genderMissing: genderMissingFor(descriptor),
     entityId: entity?.id ?? null,
     entity: entity ? entitySummary(entity) : null,
     avatar: avatarOf({ ...descriptor, entityId: entity?.id ?? null }),

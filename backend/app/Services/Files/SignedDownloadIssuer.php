@@ -8,6 +8,7 @@ use App\Data\Files\SignedDownload;
 use App\Exceptions\Files\FileRejected;
 use App\Models\Files\StoredFile;
 use App\Models\Identity\User;
+use App\Services\Identity\FileAccessIdentityGate;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Routing\UrlGenerator;
@@ -16,12 +17,16 @@ final readonly class SignedDownloadIssuer
 {
     public const string ROUTE = 'files.download';
 
-    public function __construct(private UrlGenerator $urls, private Repository $config) {}
+    public function __construct(private UrlGenerator $urls, private Repository $config, private FileAccessIdentityGate $identityGate) {}
 
     public function issue(StoredFile $file, User $user): SignedDownload
     {
         if (! $file->isScannedClean()) {
             throw FileRejected::notClean();
+        }
+
+        if ($file->purpose->isStampedForViewer()) {
+            $this->identityGate->assertMayOpen($user, $file->purpose);
         }
 
         $expiresAt = CarbonImmutable::now()->addMinutes($this->config->integer('moashir.finance.download_ttl_minutes'));

@@ -1,12 +1,17 @@
-import { nationalIdRequiredFor } from '../stores/authSettingsStore'
-import { assignNationalId } from '../stores/identityStore'
-import { isValidNationalId } from '@/utils/identity/nationalId'
+import {
+  maskNationalId,
+  nationalIdOf,
+  openChange,
+  replaceAtAcceptance,
+} from '../stores/identityStore'
+import { identityMessages } from '../fixtures/identityMessages'
+import { nationalIdProblem, normalizeNationalId } from '@/utils/identity/nationalId'
 import { delay } from 'msw'
 import { http } from '../contract/http'
 import { envelope, errorResponse, noContent } from '../contract/responses'
 import { requestLocale } from '../contract/locale'
 import { MOCK_PASSWORD, PASSWORD_RULES, RECOVERY_TOKENS } from '../fixtures/auth'
-import { findAccountByEmail } from '../stores/accounts'
+import { isResetLinkUsable, markResetLinkUsed } from '../stores/passwordResetLinks'
 import { currentTerms } from '../stores/termsStore'
 import { findStaffUser } from '../stores/staffUsers'
 import { readJson } from '../stores/entityRejection'
@@ -22,8 +27,8 @@ const MESSAGES = {
   },
   reset: { ar: 'تم تعيين كلمة المرور الجديدة.', en: 'The new password was set.' },
   tokenInvalid: {
-    ar: 'رابط إعادة التعيين غير صالح أو منتهي الصلاحية.',
-    en: 'This password reset link is invalid or has expired.',
+    ar: 'رابط إعادة التعيين غير صالح أو انتهت صلاحيته أو استُخدم من قبل.',
+    en: 'This password reset link is invalid, has expired or was already used.',
   },
   email: { ar: 'أدخل بريدًا إلكترونيًا صحيحًا.', en: 'Enter a valid e-mail address.' },
   min: {
@@ -54,10 +59,17 @@ const MESSAGES = {
     ar: 'رابط الدعوة غير صالح أو استُخدم من قبل.',
     en: 'This invitation link is invalid or was already used.',
   },
-  nationalIdInvalid: {
-    ar: 'أدخل رقم هوية وطنية أو إقامة صحيحًا من 10 أرقام.',
-    en: 'Enter a valid 10-digit national ID or Iqama number.',
-  },
+}
+
+// Blank keeps the administrator's entry; a different number replaces it at once; a first number waits for review.
+function recordInviteeNationalId(invitee, value) {
+  if (nationalIdOf(invitee.id)) return replaceAtAcceptance(invitee, value)
+  return openChange({
+    user: invitee,
+    submitter: invitee,
+    newNationalId: value,
+    kind: 'first_entry',
+  })
 }
 
 function say(request, key) {
@@ -71,6 +83,10 @@ function passwordErrors(request, body, { withHistory }) {
   if (password !== body.passwordConfirmation) return { password: [say(request, 'confirmed')] }
   if (withHistory && password === MOCK_PASSWORD) return { password: [say(request, 'history')] }
   return {}
+}
+
+function tokenInvalid(request) {
+  return errorResponse(422, 'token.invalid', say(request, 'tokenInvalid'))
 }
 
 function validationFailure(request, fields) {
@@ -110,15 +126,21 @@ export function passwordRecoveryHandlers({ continueSignIn }) {
       return envelope({ message: say(request, 'linkSent') })
     }),
 
+    http.post('/api/v1/auth/password/reset/check', async ({ request }) => {
+      await delay(LATENCY_MS)
+      const body = await readJson(request)
+      if (!isResetLinkUsable(body.token)) return tokenInvalid(request)
+      return envelope({ usable: true })
+    }),
+
+    // The account comes from the link alone, as in the API; an e-mail in the body is ignored.
     http.post('/api/v1/auth/password/reset', async ({ request }) => {
       await delay(LATENCY_MS)
       const body = await readJson(request)
       const fields = passwordErrors(request, body, { withHistory: true })
-      if (!EMAIL.test(String(body.email ?? '').trim())) fields.email = [say(request, 'email')]
       if (Object.keys(fields).length) return validationFailure(request, fields)
-      const account = findAccountByEmail(String(body.email).trim())
-      if (!account || body.token === RECOVERY_TOKENS.EXPIRED_RESET)
-        return errorResponse(422, 'token.invalid', say(request, 'tokenInvalid'))
+      if (!isResetLinkUsable(body.token)) return tokenInvalid(request)
+      markResetLinkUsed(body.token)
       return envelope({ message: say(request, 'reset') })
     }),
 
@@ -136,7 +158,7 @@ export function passwordRecoveryHandlers({ continueSignIn }) {
       if (!found.user) return errorResponse(found.status, found.code, say(request, found.key))
       return envelope({
         usable: true,
-        nationalIdRequired: nationalIdRequiredFor(found.user.roles ?? []),
+        nationalIdMasked: maskNationalId(nationalIdOf(found.user.id)),
       })
     }),
 
@@ -149,11 +171,13 @@ export function passwordRecoveryHandlers({ continueSignIn }) {
         ...passwordErrors(request, body, { withHistory: false }),
         ...termsErrors(request, body),
       }
-      if (nationalIdRequiredFor(found.user.roles ?? []) && !isValidNationalId(body.nationalId))
-        fields.nationalId = [say(request, 'nationalIdInvalid')]
+      const problem = body.nationalId ? nationalIdProblem(body.nationalId) : null
+      if (problem)
+        fields.nationalId = [
+          identityMessages[`identity.national_id.${problem}`][requestLocale(request)],
+        ]
       if (Object.keys(fields).length) return validationFailure(request, fields)
-      if (nationalIdRequiredFor(found.user.roles ?? []))
-        assignNationalId(found.user.id, body.nationalId)
+      if (body.nationalId) recordInviteeNationalId(found.user, normalizeNationalId(body.nationalId))
       found.user.status = 'active'
       return continueSignIn({ kind: 'staff', record: { ...found.user, mfaEnrolled: false } })
     }),

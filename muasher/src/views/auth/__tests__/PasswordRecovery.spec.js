@@ -14,6 +14,7 @@ vi.mock('@/services/authService', () => ({
   authService: {
     requestPasswordReset: vi.fn(),
     resetPassword: vi.fn(),
+    checkPasswordResetLink: vi.fn(),
     checkInvitation: vi.fn(),
     acceptInvitation: vi.fn(),
     session: vi.fn(),
@@ -57,6 +58,7 @@ function rejection(status, code, fieldErrors = {}) {
 beforeEach(() => {
   termsService.current.mockResolvedValue({ data: TERMS })
   authService.checkInvitation.mockResolvedValue({ data: { usable: true } })
+  authService.checkPasswordResetLink.mockResolvedValue({ data: { usable: true } })
 })
 
 afterEach(() => {
@@ -90,10 +92,23 @@ describe('forgot password', () => {
 })
 
 describe('reset password', () => {
+  async function openReset(token = 'a1b2c3d4e5f6') {
+    const globals = mountView(ResetPassword, { token })
+    await settle()
+    return globals
+  }
+
+  it('checks the link on open and asks only for the new password, never the e-mail', async () => {
+    await openReset()
+    expect(authService.checkPasswordResetLink).toHaveBeenCalledWith('a1b2c3d4e5f6')
+    expect(wrapper.find('[name="email"]').exists()).toBe(false)
+    expect(wrapper.find('[name="password"]').exists()).toBe(true)
+    expect(wrapper.find('[name="passwordConfirmation"]').exists()).toBe(true)
+  })
+
   it('sends the token with the new password and returns to sign in with a notice', async () => {
     authService.resetPassword.mockResolvedValue({ data: { message: 'reset' } })
-    const globals = mountView(ResetPassword, { token: 'a1b2c3d4e5f6' })
-    await fill('email', 'staff@moashir.example.sa')
+    const globals = await openReset()
     await fill('password', STRONG)
     await fill('passwordConfirmation', STRONG)
     expect(wrapper.find('.password-policy').text()).toContain('last five passwords')
@@ -101,7 +116,6 @@ describe('reset password', () => {
     await settle()
     expect(authService.resetPassword).toHaveBeenCalledWith({
       token: 'a1b2c3d4e5f6',
-      email: 'staff@moashir.example.sa',
       password: STRONG,
       passwordConfirmation: STRONG,
     })
@@ -112,8 +126,7 @@ describe('reset password', () => {
   })
 
   it('refuses a short or unmatched password on the client', async () => {
-    mountView(ResetPassword, { token: 'a1b2c3d4e5f6' })
-    await fill('email', 'staff@moashir.example.sa')
+    await openReset()
     await fill('password', 'short')
     await fill('passwordConfirmation', 'other')
     await wrapper.find('form').trigger('submit')
@@ -122,21 +135,32 @@ describe('reset password', () => {
     expect(wrapper.findAll('.field__error').length).toBeGreaterThan(0)
   })
 
-  it('explains an invalid or expired link and offers a new one', async () => {
-    authService.resetPassword.mockImplementation(
-      () =>
-        new Promise((resolve, reject) =>
-          setTimeout(() => reject(rejection(422, 'token.invalid')), 15),
-        ),
-    )
-    mountView(ResetPassword, { token: 'a1b2c3d4e5f6' })
-    await fill('email', 'staff@moashir.example.sa')
+  it('shows an invalid, expired or used link on open and offers a new one', async () => {
+    authService.checkPasswordResetLink.mockRejectedValue(rejection(422, 'token.invalid'))
+    await openReset('expired-reset-link-2026')
+    expect(wrapper.find('form').exists()).toBe(false)
+    expect(wrapper.find('.auth-status--danger').text()).toContain('already used')
+    expect(wrapper.find('.auth-status--danger a').attributes('href')).toBe('/auth/forgot-password')
+  })
+
+  it('switches to the invalid link state when the link stops working before submit', async () => {
+    authService.resetPassword.mockRejectedValue(rejection(422, 'token.invalid'))
+    await openReset()
     await fill('password', STRONG)
     await fill('passwordConfirmation', STRONG)
     await wrapper.find('form').trigger('submit')
     await settle()
     expect(wrapper.find('.auth-status--danger').text()).toContain('invalid')
-    expect(wrapper.find('.auth-status--danger a').attributes('href')).toBe('/auth/forgot-password')
+  })
+
+  it('offers a retry when the link cannot be checked', async () => {
+    authService.checkPasswordResetLink.mockRejectedValueOnce(rejection(500, 'server_error'))
+    await openReset()
+    expect(wrapper.find('form').exists()).toBe(false)
+    await wrapper.find('.error-state button').trigger('click')
+    await settle()
+    expect(authService.checkPasswordResetLink).toHaveBeenCalledTimes(2)
+    expect(wrapper.find('form').exists()).toBe(true)
   })
 })
 

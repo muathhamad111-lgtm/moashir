@@ -3298,7 +3298,7 @@ apply SRI (`crossorigin="anonymous"`) to a script loaded from that CDN — the l
 - Horizon defines a `staging` environment; `HORIZON_MAX_PROCESSES` caps the workers on a shared server.
 - `composer install --no-dev --optimize-autoloader`, `php artisan migrate --force`,
   `php artisan config:cache route:cache event:cache`, `php artisan horizon:terminate` after release.
-- The scheduler runs `moashir:expire-invitations`, `moashir:prune-otp-codes`, `auth:clear-resets`,
+- The scheduler runs `moashir:expire-invitations`, `moashir:prune-otp-codes`, `moashir:prune-password-reset-links` (hourly),
   `moashir:assessments:sweep-criteria-update-holds` and `moashir:assessments:open-paid-requests` (every 10 minutes),
   `moashir:assessments:flag-overdue` and `moashir:assessments:purge-evidence-bundles` (hourly),
   `moashir:assessments:expire-completion-requests` and `moashir:award:advance-cycles` (every minute),

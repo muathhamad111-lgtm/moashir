@@ -51,6 +51,8 @@ describe('UserForm', () => {
     await wrapper.find('input[name="name"]').setValue('Abdullah Al-Qahtani')
     await wrapper.find('input[name="email"]').setValue('abdullah@moashir.example.sa')
     await wrapper.findAll('.user-form__roles input[type="checkbox"]')[0].setValue(true)
+    await wrapper.find('input[name="gender"][value="male"]').setValue(true)
+    await wrapper.find('input[name="nationalId"]').setValue('١٠٠٠٠٠٠٥٠٥')
     await flushPromises()
     await submitForm()
     await flushPromises()
@@ -60,6 +62,8 @@ describe('UserForm', () => {
         name: 'Abdullah Al-Qahtani',
         email: 'abdullah@moashir.example.sa',
         roles: ['system_admin'],
+        gender: 'male',
+        nationalId: '1000000505',
       },
     })
     expect(wrapper.emitted('saved')).toEqual([[{ id: null }]])
@@ -80,6 +84,26 @@ describe('UserForm', () => {
     expect(document.querySelector('input[name="email"]').value).toBe('sarah@moashir.example.sa')
     const title = document.querySelector('.modal__title')
     expect(title.textContent).toContain('Edit user')
+  })
+
+  it('takes the national ID only while none is recorded, and requires the gender', async () => {
+    const user = {
+      id: 43,
+      name: 'Laura Bennett',
+      email: 'laura@moashir.example.sa',
+      roles: ['assessor'],
+      status: 'active',
+      gender: null,
+      nationalIdMasked: '••••••0008',
+    }
+    factory({ user })
+    await flushPromises()
+    expect(document.querySelector('input[name="nationalId"]')).toBeNull()
+    expect(document.querySelector('.user-form__locked-id').textContent).toContain('••••••0008')
+    await submitForm()
+    await flushPromises()
+    expect(save).not.toHaveBeenCalled()
+    expect(document.body.textContent).toContain('Choose the gender.')
   })
 
   it('shows the read-only role-capability hint once a role is chosen', async () => {

@@ -12,7 +12,6 @@ import { sessionUserFor } from '@/test-utils/session'
 
 const OPEN_TO_ANY_SIGNED_IN_USER = [
   ROUTE_NAMES.ACCOUNT_PROFILE,
-  ROUTE_NAMES.ACCOUNT_COMPLETE_IDENTITY,
   ROUTE_NAMES.MESSAGES_INDEX,
   ROUTE_NAMES.MESSAGES_THREAD,
 ]
@@ -197,21 +196,9 @@ describe('router guards — payments and finance', () => {
   })
 })
 
-describe('router guards — national ID step', () => {
-  it('sends a required account without a national ID to the identity step, keeping the target', async () => {
-    signIn([ROLES.ASSESSOR], { nationalIdRequired: true, hasNationalId: false })
-    const route = await visit('/account')
-    expect(route.name).toBe(ROUTE_NAMES.ACCOUNT_COMPLETE_IDENTITY)
-    expect(route.query.redirect).toBe('/account')
-  })
-
-  it('lets a required account in once its national ID is recorded', async () => {
-    signIn([ROLES.ASSESSOR], { nationalIdRequired: true, hasNationalId: true })
-    expect((await visit('/account')).name).toBe(ROUTE_NAMES.ACCOUNT_PROFILE)
-  })
-
-  it('never stops an account that is not required', async () => {
-    signIn([ROLES.ASSESSOR], { nationalIdRequired: false, hasNationalId: false })
+describe('router guards — national ID', () => {
+  it('never stops an account without a national ID: the completion modal asks instead', async () => {
+    signIn([ROLES.ASSESSOR], { nationalIdRequired: true, nationalIdStatus: 'missing' })
     expect((await visit('/account')).name).toBe(ROUTE_NAMES.ACCOUNT_PROFILE)
   })
 

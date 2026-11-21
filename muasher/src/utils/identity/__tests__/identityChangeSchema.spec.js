@@ -29,11 +29,11 @@ describe('identity change form', () => {
 
   it('rejects an invalid national ID and a short reason', async () => {
     const errors = await errorsOf({
-      newNationalId: '1000000009',
+      newNationalId: '3000000008',
       reason: 'قصير',
       currentPassword: 'x',
     })
-    expect(errors).toContain('nationalIdentity.field.invalid')
+    expect(errors).toContain('nationalIdentity.field.rules.prefix')
     expect(errors).toContain('nationalIdentity.change.reasonLength')
   })
 

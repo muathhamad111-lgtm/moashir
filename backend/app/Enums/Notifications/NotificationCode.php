@@ -13,6 +13,7 @@ enum NotificationCode: string
     case SuperAdminEmailChanged = 'USR-05';
     case IdentityChangeRequested = 'USR-06';
     case IdentityChangeDecided = 'USR-07';
+    case NationalIdChangedAtAcceptance = 'USR-08';
     case EntityRegistered = 'REG-01';
     case OtpCode = 'REG-02';
     case EntityProfileIncomplete = 'REG-03';

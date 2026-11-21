@@ -366,7 +366,6 @@ describe('sign-in security setting mock', () => {
         'assessor',
         'filtering_officer',
         'award_secretary',
-        'finance_officer',
         'entity',
       ],
     })

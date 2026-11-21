@@ -9,6 +9,7 @@ use App\Models\Files\StoredFile;
 use App\Models\Identity\IdentityChangeRequest;
 use App\Models\Identity\OtpCode;
 use App\Models\Identity\PasswordHistory;
+use App\Models\Identity\PasswordResetLink;
 use App\Models\Identity\User;
 use App\Models\Identity\UserIdentityChange;
 use App\Models\Notifications\Notification;
@@ -16,7 +17,6 @@ use App\Models\Notifications\NotificationPreference;
 use App\Services\Files\StoredFileRemover;
 use App\Services\Identity\UserSessionTerminator;
 use Illuminate\Support\Facades\Date;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 final readonly class ErasedOwnerAnonymizer
@@ -34,7 +34,7 @@ final readonly class ErasedOwnerAnonymizer
         IdentityChangeRequest::query()->where('user_id', $owner->id)->delete();
         Notification::query()->where('user_id', $owner->id)->delete();
         NotificationPreference::query()->where('user_id', $owner->id)->delete();
-        DB::table('password_reset_tokens')->whereRaw('lower(email) = ?', [mb_strtolower($owner->email)])->delete();
+        PasswordResetLink::query()->where('user_id', $owner->id)->delete();
         $this->removeAvatarOf($owner);
 
         User::withoutAuditing(function () use ($owner, $pseudonym): void {
@@ -46,6 +46,7 @@ final readonly class ErasedOwnerAnonymizer
                 'phone' => null,
                 'phone_verified_at' => null,
                 'national_id' => null,
+                'gender' => null,
                 'password' => null,
                 'two_factor_secret' => null,
                 'two_factor_recovery_codes' => null,

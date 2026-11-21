@@ -33,6 +33,8 @@ use App\Support\ValueObjects\Money;
 use App\Support\ValueObjects\Percent;
 use App\Support\ValueObjects\SecretValue;
 use App\Support\ValueObjects\VatRate;
+use Illuminate\Auth\Passwords\PasswordBroker;
+use Illuminate\Contracts\Auth\PasswordBrokerFactory;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 use Illuminate\Contracts\Validation\UncompromisedVerifier;
 use Illuminate\Foundation\Http\FormRequest;
@@ -43,6 +45,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Password as PasswordFacade;
 use Illuminate\Validation\NotPwnedVerifier;
 use Illuminate\Validation\Rules\Password;
 
@@ -128,6 +131,10 @@ arch('contracts are interfaces')
 arch('passwords are never sent to a remote breach service')
     ->expect('App')
     ->not->toUse([UncompromisedVerifier::class, NotPwnedVerifier::class, Password::class]);
+
+arch('reset links never go through the framework password broker')
+    ->expect('App')
+    ->not->toUse([PasswordBroker::class, PasswordBrokerFactory::class, PasswordFacade::class]);
 
 arch('the breached-password checker stays offline')
     ->expect(LocalBreachedPasswordChecker::class)

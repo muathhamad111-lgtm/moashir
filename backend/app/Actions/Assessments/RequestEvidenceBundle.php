@@ -7,6 +7,7 @@ namespace App\Actions\Assessments;
 use App\Data\Audit\AuditEntry;
 use App\Enums\Assessments\EvidenceBundleStatus;
 use App\Enums\Audit\AuditEvent;
+use App\Enums\Files\StoredFilePurpose;
 use App\Exceptions\Assessments\AssessmentRejected;
 use App\Jobs\Assessments\BuildEvidenceBundleJob;
 use App\Models\Assessments\Assessment;
@@ -16,6 +17,7 @@ use App\Models\Identity\User;
 use App\Services\Assessments\EvidenceReader;
 use App\Services\Audit\AuditRecorder;
 use App\Services\Entities\EntityFreezeGuard;
+use App\Services\Identity\FileAccessIdentityGate;
 use Illuminate\Contracts\Config\Repository;
 
 final readonly class RequestEvidenceBundle
@@ -26,11 +28,13 @@ final readonly class RequestEvidenceBundle
         private BuildEvidenceBundle $build,
         private AuditRecorder $audit,
         private Repository $config,
+        private FileAccessIdentityGate $identityGate,
     ) {}
 
     public function handle(User $actor, Assessment $assessment): EvidenceBundle
     {
         $this->freezeGuard->assertNotFrozen($assessment->entity);
+        $this->identityGate->assertMayOpen($actor, StoredFilePurpose::EvidenceBundle);
         $files = $this->evidence->cleanOnly($assessment);
 
         if ($files === []) {

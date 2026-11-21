@@ -127,7 +127,6 @@ export const ROUTE_NAMES = {
   ADMIN_CONTACT_MESSAGE: 'admin.contactMessages.thread',
   ADMIN_AUDIT_LOG: 'admin.auditLog',
   ACCOUNT_PROFILE: 'account.profile',
-  ACCOUNT_COMPLETE_IDENTITY: 'account.completeIdentity',
   ADMIN_IDENTITY_CHANGES: 'admin.identityChanges',
   PUBLIC_MAINTENANCE: 'public.maintenance',
   ERRORS_FORBIDDEN: 'errors.forbidden',

@@ -11,7 +11,7 @@ import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import IdentityChangeDetail from '@/components/identity/IdentityChangeDetail.vue'
 import { useIdentityChangeReviews } from '@/composables/useIdentityChangeReviews'
 import { useEntityDisplay } from '@/composables/useEntityDisplay'
-import { IDENTITY_CHANGE_STATUSES } from '@/constants/identityChanges'
+import { IDENTITY_CHANGE_STATUSES, IDENTITY_CHANGE_KINDS } from '@/constants/identityChanges'
 
 const { t, locale } = useI18n()
 const { dateTime } = useEntityDisplay()
@@ -60,6 +60,8 @@ function act(key, item) {
 }
 
 function fieldsLabel(item) {
+  if (item.kind === IDENTITY_CHANGE_KINDS.FIRST_ENTRY)
+    return t('nationalIdentity.review.firstEntry')
   const labels = item.fields.map((field) => t(`nationalIdentity.fields.${field}`))
   return new Intl.ListFormat(locale.value, { type: 'conjunction' }).format(labels)
 }

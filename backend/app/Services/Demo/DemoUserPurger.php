@@ -41,7 +41,6 @@ final readonly class DemoUserPurger
     {
         $user->roles()->detach();
         $user->permissions()->detach();
-        DB::table('password_reset_tokens')->whereRaw('lower(email) = ?', [mb_strtolower($user->email)])->delete();
         User::withTrashed()->whereKey($user->id)->forceDelete();
     }
 }

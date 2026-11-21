@@ -14,6 +14,8 @@ const props = defineProps({
   inputmode: { type: String, default: undefined },
   autocomplete: { type: String, default: undefined },
   inputDir: { type: String, default: undefined },
+  maxlength: { type: Number, default: undefined },
+  filter: { type: Function, default: null },
 })
 
 const { value, errorMessage, handleBlur } = useField(toRef(props, 'name'))
@@ -33,6 +35,8 @@ const { value, errorMessage, handleBlur } = useField(toRef(props, 'name'))
     :inputmode="inputmode"
     :autocomplete="autocomplete"
     :input-dir="inputDir"
+    :maxlength="maxlength"
+    :filter="filter"
     @blur="handleBlur"
   />
 </template>

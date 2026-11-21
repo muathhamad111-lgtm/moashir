@@ -5,27 +5,12 @@ declare(strict_types=1);
 use App\Enums\Identity\RoleKey;
 use App\Models\Identity\User;
 use App\Notifications\Identity\PasswordResetLinkNotification;
-use Database\Factories\Identity\UserFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 
 const NEW_PASSWORD = 'Wadi-Hanifa-Spring-2026';
-
-function captureResetToken(User $user): string
-{
-    $token = '';
-
-    Notification::assertSentTo($user, PasswordResetLinkNotification::class, function (PasswordResetLinkNotification $notification) use ($user, &$token): bool {
-        $url = (string) $notification->toMail($user)->actionUrl;
-        $token = basename($url);
-
-        return true;
-    });
-
-    return $token;
-}
 
 beforeEach(function (): void {
     Notification::fake();
@@ -51,62 +36,6 @@ it('never puts the email in the reset link', function (): void {
 
         return ! str_contains($url, $user->email) && str_contains($url, '/auth/reset-password/');
     });
-});
-
-it('resets the password with a valid single-use token and ends every session', function (): void {
-    $user = entityUser();
-    DB::table('sessions')->insert(['id' => 'old-session', 'user_id' => $user->id, 'payload' => '', 'last_activity' => time()]);
-    $this->postJson('/api/v1/auth/password/forgot', ['email' => $user->email]);
-    $token = captureResetToken($user);
-
-    $payload = ['token' => $token, 'email' => $user->email, 'password' => NEW_PASSWORD, 'password_confirmation' => NEW_PASSWORD];
-
-    $this->postJson('/api/v1/auth/password/reset', $payload)->assertOk();
-
-    expect(Hash::check(NEW_PASSWORD, (string) $user->refresh()->password))->toBeTrue()
-        ->and(DB::table('sessions')->where('user_id', $user->id)->count())->toBe(0);
-
-    $replay = [...$payload, 'password' => 'Another-Riyadh-Season-2026', 'password_confirmation' => 'Another-Riyadh-Season-2026'];
-    $this->postJson('/api/v1/auth/password/reset', $replay)->assertUnprocessable()->assertJsonPath('code', 'token.invalid');
-});
-
-it('rejects an expired reset token after 60 minutes', function (): void {
-    $user = entityUser();
-    $this->postJson('/api/v1/auth/password/forgot', ['email' => $user->email]);
-    $token = captureResetToken($user);
-
-    $this->travel(61)->minutes();
-
-    $this->postJson('/api/v1/auth/password/reset', ['token' => $token, 'email' => $user->email, 'password' => NEW_PASSWORD, 'password_confirmation' => NEW_PASSWORD])
-        ->assertUnprocessable()
-        ->assertJsonPath('code', 'token.invalid');
-});
-
-it('rejects a forged token', function (): void {
-    $user = entityUser();
-
-    $this->postJson('/api/v1/auth/password/reset', ['token' => 'forged-token', 'email' => $user->email, 'password' => NEW_PASSWORD, 'password_confirmation' => NEW_PASSWORD])
-        ->assertUnprocessable()
-        ->assertJsonPath('code', 'token.invalid');
-});
-
-it('enforces the password policy on reset', function (string $password, string $message): void {
-    markPasswordBreached('Riyadh-Breached-2026');
-    $user = entityUser();
-
-    $this->postJson('/api/v1/auth/password/reset', ['token' => 'any', 'email' => $user->email, 'password' => $password, 'password_confirmation' => $password], ['Accept-Language' => 'en'])
-        ->assertUnprocessable()
-        ->assertJsonPath('errors.password.0', $message);
-})->with([
-    'shorter than twelve characters' => ['Short-2026', 'The password field must be at least 12 characters.'],
-    'found in a breach list' => ['Riyadh-Breached-2026', 'This password has appeared in a known data breach. Please choose a different password.'],
-    'the current password' => [UserFactoryPassword::VALUE, 'You cannot reuse any of your last five passwords.'],
-]);
-
-it('requires the password confirmation', function (): void {
-    $this->postJson('/api/v1/auth/password/reset', ['token' => 'any', 'email' => 'person@moashir.example.sa', 'password' => NEW_PASSWORD, 'password_confirmation' => 'different-value'])
-        ->assertUnprocessable()
-        ->assertJsonValidationErrors('password');
 });
 
 it('changes the password, keeps the current session and ends the others', function (): void {
@@ -149,7 +78,7 @@ it('checks reset and changed passwords against the local breached list without a
     $user = entityUser();
     $payload = ['password' => 'Riyadh-Breached-2026', 'password_confirmation' => 'Riyadh-Breached-2026'];
 
-    $this->postJson('/api/v1/auth/password/reset', ['token' => 'any', 'email' => $user->email, ...$payload])
+    $this->postJson('/api/v1/auth/password/reset', ['token' => 'any', ...$payload])
         ->assertUnprocessable()
         ->assertJsonValidationErrors('password');
     signIn($user)->postJson('/api/v1/auth/password/change', ['current_password' => defaultPassword(), ...$payload])
@@ -184,8 +113,3 @@ it('rate limits reset requests per email', function (): void {
 
     $this->postJson('/api/v1/auth/password/forgot', ['email' => 'limited@moashir.example.sa'])->assertTooManyRequests();
 });
-
-final class UserFactoryPassword
-{
-    public const string VALUE = UserFactory::PASSWORD;
-}

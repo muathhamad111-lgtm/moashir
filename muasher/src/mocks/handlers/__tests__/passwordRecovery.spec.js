@@ -3,6 +3,7 @@ import { setupServer } from 'msw/node'
 import { handlers } from '@/mocks/handlers'
 import { resetStaffUsers } from '@/mocks/stores/staffUsers'
 import { resetTermsStore } from '@/mocks/stores/termsStore'
+import { resetPasswordResetLinks } from '@/mocks/stores/passwordResetLinks'
 import { MOCK_API_BASE, clearMockSession, seedMockSession, wireFetch } from '@/test-utils/mockApi'
 import { MOCK_PASSWORD } from '@/mocks/fixtures/auth'
 
@@ -23,6 +24,7 @@ beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 beforeEach(() => {
   resetStaffUsers()
   resetTermsStore()
+  resetPasswordResetLinks()
 })
 afterEach(() => {
   server.resetHandlers()
@@ -39,6 +41,29 @@ describe('password recovery mock', () => {
     expect(known.status).toBe(200)
     expect(unknown.body.data).toEqual(known.body.data)
     expect((await call('POST', '/auth/password/forgot', { email: 'x' })).status).toBe(422)
+  })
+
+  it('resets from the link alone, once, and refuses expired or used links and weak passwords', async () => {
+    const body = { token: 'a1b2c3d4e5f6', password: STRONG, password_confirmation: STRONG }
+    const check = (token) => call('POST', '/auth/password/reset/check', { token })
+    expect((await check('a1b2c3d4e5f6')).body.data).toEqual({ usable: true })
+    expect((await call('POST', '/auth/password/reset', body)).status).toBe(200)
+    expect((await call('POST', '/auth/password/reset', body)).body.code).toBe('token.invalid')
+    expect((await check('a1b2c3d4e5f6')).body.code).toBe('token.invalid')
+    for (const token of ['expired-reset-link-2026', 'used-reset-link-2026']) {
+      expect((await check(token)).body.code).toBe('token.invalid')
+      expect((await call('POST', '/auth/password/reset', { ...body, token })).body.code).toBe(
+        'token.invalid',
+      )
+    }
+    const weak = await call('POST', '/auth/password/reset', {
+      ...body,
+      token: 'b2c3d4e5f6a7',
+      password: 'short',
+      password_confirmation: 'short',
+    })
+    expect(weak.body.errors.password).toHaveLength(1)
+    expect((await check('b2c3d4e5f6a7')).body.data).toEqual({ usable: true })
   })
 
   it('resets with a valid link and refuses expired links and weak passwords', async () => {
@@ -66,7 +91,7 @@ describe('password recovery mock', () => {
     const check = (token) => call('GET', `/auth/invitations/${token}`)
     expect((await check('invite-sarah-whitfield-2026')).body.data).toEqual({
       usable: true,
-      national_id_required: false,
+      national_id_masked: null,
     })
     expect((await check('invite-expired-2026')).status).toBe(410)
     const used = await check('invite-used-2026')

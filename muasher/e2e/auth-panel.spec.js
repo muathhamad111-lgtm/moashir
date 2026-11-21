@@ -17,7 +17,7 @@ const AUTH_PAGES = [
   { path: '/auth/login', ready: '[name="identifier"]' },
   { path: '/auth/register', ready: '.auth-layout__card form' },
   { path: '/auth/forgot-password', ready: '[name="email"]' },
-  { path: '/auth/reset-password/a1b2c3d4e5f6a7b8', ready: '[name="email"]' },
+  { path: '/auth/reset-password/a1b2c3d4e5f6a7b8', ready: '[name="password"]' },
   { path: '/auth/invitations/invite-sarah-whitfield-2026', ready: '[name="password"]' },
 ]
 const SCREENS = [

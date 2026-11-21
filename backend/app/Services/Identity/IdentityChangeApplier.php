@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Identity;
 
+use App\Enums\Identity\IdentityChangeSource;
 use App\Enums\Identity\IdentityField;
 use App\Exceptions\Identity\NationalIdRejected;
 use App\Models\Identity\IdentityChangeRequest;
@@ -35,6 +36,7 @@ final readonly class IdentityChangeApplier
             'new_value' => $field === IdentityField::Name ? $request->new_name : $request->new_national_id,
             'requested_by_user_id' => $request->submitted_by_user_id,
             'approved_by_user_id' => $approver->id,
+            'source' => IdentityChangeSource::ApprovedRequest,
         ]);
     }
 

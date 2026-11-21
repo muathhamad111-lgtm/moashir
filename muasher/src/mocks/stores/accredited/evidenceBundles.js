@@ -5,6 +5,7 @@ import { findFile } from '../finance/financeState'
 import { signedDownloadOf, storeFile } from '../finance/signedFiles'
 import { DAY_MS } from './dates'
 import { nowIso, presentEvidence } from './accreditedRecords'
+import { assertMayOpenFile } from '../fileAccessGate'
 
 const BUNDLE_SYNC_MAX_BYTES = 2 * 1024 * 1024
 const BUNDLE_BUILD_DELAY_MS = 2500
@@ -38,6 +39,7 @@ function announceReady(record, bundle, requester) {
 }
 
 export function requestBundle(user, record) {
+  assertMayOpenFile(user, 'evidence_bundle')
   const files = cleanEvidence(record)
   if (!files.length) throw assessmentReject.coded(409, 'evidence.bundle_empty')
   const sizeBytes = files.reduce((total, row) => total + row.sizeBytes, 0)

@@ -2,6 +2,7 @@ export const usersFixture = [
   {
     id: 1,
     name: 'عبدالله بن سعد القحطاني',
+    gender: 'male',
     email: 'abdullah.alqahtani@moashir.example.sa',
     roles: ['system_admin'],
     status: 'active',
@@ -14,6 +15,7 @@ export const usersFixture = [
   {
     id: 2,
     name: 'منيرة بنت خالد العتيبي',
+    gender: 'female',
     email: 'munira.alotaibi@moashir.example.sa',
     roles: ['system_admin'],
     status: 'active',
@@ -26,6 +28,7 @@ export const usersFixture = [
   {
     id: 3,
     name: 'فهد بن ناصر الدوسري',
+    gender: 'male',
     email: 'fahad.aldosari@moashir.example.sa',
     roles: ['criteria_officer'],
     status: 'active',
@@ -38,6 +41,7 @@ export const usersFixture = [
   {
     id: 4,
     name: 'Sarah Whitfield',
+    gender: 'female',
     email: 'sarah.whitfield@moashir.example.sa',
     roles: ['criteria_officer'],
     status: 'invited',
@@ -50,6 +54,7 @@ export const usersFixture = [
   {
     id: 5,
     name: 'ريم بنت محمد الشهري',
+    gender: 'female',
     email: 'reem.alshehri@jamiyat.example.sa',
     roles: ['entity'],
     status: 'active',
@@ -62,6 +67,7 @@ export const usersFixture = [
   {
     id: 6,
     name: 'خالد بن عبدالعزيز الحربي',
+    gender: 'male',
     email: 'khalid.alharbi@ehsan-charity.example.sa',
     roles: ['entity'],
     status: 'active',
@@ -74,6 +80,7 @@ export const usersFixture = [
   {
     id: 7,
     name: 'نوف بنت سلطان المطيري',
+    gender: 'female',
     email: 'nouf.almutairi@waqf-alkhair.example.sa',
     roles: ['entity'],
     status: 'suspended',
@@ -86,6 +93,7 @@ export const usersFixture = [
   {
     id: 8,
     name: 'ياسر بن فهد الغامدي',
+    gender: 'male',
     email: 'yasser.alghamdi@moashir.example.sa',
     roles: ['request_follower', 'filtering_officer'],
     status: 'active',
@@ -98,6 +106,7 @@ export const usersFixture = [
   {
     id: 9,
     name: 'Laura Bennett',
+    gender: 'female',
     email: 'laura.bennett@moashir.example.sa',
     roles: ['request_follower'],
     status: 'active',
@@ -111,6 +120,7 @@ export const usersFixture = [
   {
     id: 10,
     name: 'د. سلطان بن عايض القرني',
+    gender: 'male',
     email: 'sultan.alqarni@assessors.example.sa',
     roles: ['assessor'],
     status: 'active',
@@ -123,6 +133,7 @@ export const usersFixture = [
   {
     id: 11,
     name: 'أ. هند بنت إبراهيم الزهراني',
+    gender: 'female',
     email: 'hind.alzahrani@assessors.example.sa',
     roles: ['assessor'],
     status: 'active',
@@ -135,6 +146,7 @@ export const usersFixture = [
   {
     id: 12,
     name: 'Michael Turner',
+    gender: 'male',
     email: 'michael.turner@assessors.example.sa',
     roles: ['assessor'],
     status: 'suspended',
@@ -147,6 +159,7 @@ export const usersFixture = [
   {
     id: 13,
     name: 'بدر بن راشد العنزي',
+    gender: 'male',
     email: 'bader.alanazi@moashir.example.sa',
     roles: ['filtering_officer'],
     status: 'active',
@@ -159,6 +172,7 @@ export const usersFixture = [
   {
     id: 14,
     name: 'أمل بنت عبدالرحمن السبيعي',
+    gender: 'female',
     email: 'amal.alsubaie@moashir.example.sa',
     roles: ['filtering_officer'],
     status: 'locked',
@@ -171,6 +185,7 @@ export const usersFixture = [
   {
     id: 15,
     name: 'د. طلال بن مساعد الرشيدي',
+    gender: 'male',
     email: 'talal.alrashidi@moashir.example.sa',
     roles: ['assessor'],
     status: 'active',
@@ -183,6 +198,7 @@ export const usersFixture = [
   {
     id: 16,
     name: 'د. عائشة بنت حمد المالكي',
+    gender: 'female',
     email: 'aisha.almalki@moashir.example.sa',
     roles: ['assessor'],
     status: 'active',
@@ -195,6 +211,7 @@ export const usersFixture = [
   {
     id: 17,
     name: 'Robert Hayes',
+    gender: 'male',
     email: 'robert.hayes@moashir.example.sa',
     roles: ['assessor'],
     status: 'suspended',
@@ -207,6 +224,7 @@ export const usersFixture = [
   {
     id: 18,
     name: 'ماجد بن سعود الشمري',
+    gender: 'male',
     email: 'majed.alshammari@moashir.example.sa',
     roles: ['system_admin', 'award_secretary'],
     status: 'active',
@@ -219,6 +237,7 @@ export const usersFixture = [
   {
     id: 19,
     name: 'لمياء بنت طارق الجهني',
+    gender: 'female',
     email: 'lamya.aljuhani@moashir.example.sa',
     roles: ['award_secretary'],
     status: 'suspended',
@@ -231,6 +250,7 @@ export const usersFixture = [
   {
     id: 20,
     name: 'وليد بن عبدالله البقمي',
+    gender: 'male',
     email: 'waleed.albogami@moashir.example.sa',
     roles: ['content_officer'],
     status: 'active',
@@ -243,6 +263,7 @@ export const usersFixture = [
   {
     id: 21,
     name: 'Emily Carter',
+    gender: 'female',
     email: 'emily.carter@moashir.example.sa',
     roles: ['content_officer'],
     status: 'active',
@@ -255,6 +276,7 @@ export const usersFixture = [
   {
     id: 22,
     name: 'سعود بن مبارك الدواسر',
+    gender: 'male',
     email: 'saud.aldawaser@moashir.example.sa',
     roles: ['finance_officer'],
     status: 'active',
@@ -267,6 +289,7 @@ export const usersFixture = [
   {
     id: 23,
     name: 'رنا بنت عادل الحمود',
+    gender: 'female',
     email: 'rana.alhamoud@moashir.example.sa',
     roles: ['content_officer'],
     status: 'suspended',
@@ -279,6 +302,7 @@ export const usersFixture = [
   {
     id: 24,
     name: 'عبدالرحمن بن يوسف الفيفي',
+    gender: 'male',
     email: 'abdulrahman.alfaifi@moashir.example.sa',
     roles: ['finance_officer'],
     status: 'active',
@@ -291,6 +315,7 @@ export const usersFixture = [
   {
     id: 25,
     name: 'جواهر بنت فيصل العمري',
+    gender: 'female',
     email: 'jawaher.alamri@moashir.example.sa',
     roles: ['finance_officer'],
     status: 'suspended',
@@ -303,6 +328,7 @@ export const usersFixture = [
   {
     id: 26,
     name: 'تركي بن حمود العسيري',
+    gender: 'male',
     email: 'turki.alasiri@moashir.example.sa',
     roles: ['system_admin'],
     status: 'suspended',
@@ -315,6 +341,7 @@ export const usersFixture = [
   {
     id: 27,
     name: 'David Nguyen',
+    gender: 'male',
     email: 'david.nguyen@assessors.example.sa',
     roles: ['assessor'],
     status: 'active',
@@ -327,6 +354,7 @@ export const usersFixture = [
   {
     id: 28,
     name: 'شيماء بنت ناصر البلوي',
+    gender: 'female',
     email: 'shaimaa.albalawi@moashir.example.sa',
     roles: ['request_follower'],
     status: 'expired',
@@ -339,6 +367,7 @@ export const usersFixture = [
   {
     id: 29,
     name: 'د. منال بنت سعيد الحارثي',
+    gender: 'female',
     email: 'manal.alharthi@assessors.example.sa',
     roles: ['assessor'],
     status: 'active',
@@ -351,6 +380,7 @@ export const usersFixture = [
   {
     id: 30,
     name: 'م. عمر بن خالد الزهراني',
+    gender: 'male',
     email: 'omar.alzahrani@assessors.example.sa',
     roles: ['assessor'],
     status: 'active',
@@ -363,6 +393,7 @@ export const usersFixture = [
   {
     id: 31,
     name: 'أ. ليلى بنت ماجد العتيبي',
+    gender: 'female',
     email: 'layla.alotaibi@assessors.example.sa',
     roles: ['assessor'],
     status: 'active',

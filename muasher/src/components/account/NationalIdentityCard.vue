@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Card from '@/components/ui/Card.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
@@ -7,21 +7,33 @@ import StatusBadge from '@/components/ui/StatusBadge.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import IdentityChangeDialog from './IdentityChangeDialog.vue'
 import { useAuthStore } from '@/stores/auth'
+import { useAccountCompletionStore } from '@/stores/accountCompletion'
 import { useOwnIdentityChanges } from '@/composables/useOwnIdentityChanges'
 import { useEntityDisplay } from '@/composables/useEntityDisplay'
-import { ROUTE_NAMES } from '@/constants/routeNames'
-
-const props = defineProps({
-  returnTo: { type: String, default: '/account' },
-})
+import { IDENTITY_CHANGE_KINDS, NATIONAL_ID_STATES } from '@/constants/identityChanges'
 
 const { t } = useI18n()
 const auth = useAuthStore()
+const completion = useAccountCompletionStore()
 const { dateTime } = useEntityDisplay()
 const { pending, decided, load, submit, cancel } = useOwnIdentityChanges()
 const dialogOpen = ref(false)
 
+const awaitsApproval = computed(() => auth.nationalIdStatus === NATIONAL_ID_STATES.PENDING)
+const pendingMessageKey = computed(() =>
+  pending.value?.kind === IDENTITY_CHANGE_KINDS.FIRST_ENTRY
+    ? 'nationalIdentity.card.pendingFirstEntry'
+    : 'nationalIdentity.card.pending',
+)
+
+async function cancelPending() {
+  const firstEntry = pending.value?.kind === IDENTITY_CHANGE_KINDS.FIRST_ENTRY
+  await cancel(pending.value)
+  if (firstEntry) auth.clearPendingNationalId()
+}
+
 onMounted(load)
+watch(() => auth.nationalIdStatus, load)
 </script>
 
 <template>
@@ -36,6 +48,13 @@ onMounted(load)
         >
           {{ auth.user.nationalIdMasked }}
         </dd>
+        <dd
+          v-else-if="awaitsApproval"
+          class="account-page__muted"
+          data-testid="national-id-pending"
+        >
+          {{ t('nationalIdentity.card.awaitingApproval') }}
+        </dd>
         <dd v-else class="account-page__muted">{{ t('nationalIdentity.card.missing') }}</dd>
       </div>
     </dl>
@@ -46,17 +65,18 @@ onMounted(load)
 
     <div v-if="pending" class="national-identity-card__pending" role="status">
       <AppIcon name="clock" />
-      <span>{{ t('nationalIdentity.card.pending', { date: dateTime(pending.createdAt) }) }}</span>
-      <BaseButton variant="secondary" size="sm" @click="cancel(pending)">
+      <span>{{ t(pendingMessageKey, { date: dateTime(pending.createdAt) }) }}</span>
+      <BaseButton variant="secondary" size="sm" @click="cancelPending">
         {{ t('nationalIdentity.card.cancel') }}
       </BaseButton>
     </div>
 
     <div class="national-identity-card__actions">
       <BaseButton
-        v-if="!auth.user?.hasNationalId"
+        v-if="!auth.user?.hasNationalId && !pending"
         variant="primary"
-        :to="{ name: ROUTE_NAMES.ACCOUNT_COMPLETE_IDENTITY, query: { redirect: props.returnTo } }"
+        data-testid="national-id-add"
+        @click="completion.open({ nationalId: true })"
       >
         {{ t('nationalIdentity.card.add') }}
       </BaseButton>

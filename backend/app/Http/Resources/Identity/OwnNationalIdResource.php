@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Identity;
 
-use App\Support\ValueObjects\NationalId;
+use App\Data\Identity\NationalIdStatus;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @property-read NationalId $resource
+ * @property NationalIdStatus $resource
  */
 final class OwnNationalIdResource extends JsonResource
 {
@@ -18,6 +18,6 @@ final class OwnNationalIdResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return ['national_id_masked' => $this->resource->masked()];
+        return ['national_id_status' => $this->resource->state->value, 'national_id_masked' => $this->resource->masked];
     }
 }

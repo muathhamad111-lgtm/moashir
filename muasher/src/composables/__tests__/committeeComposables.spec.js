@@ -38,6 +38,7 @@ describe('user account actions', () => {
     useAuthStore(globals.pinia).setUser(sessionUserFor(['system_admin'], { id: 1 }))
     const keys = (user) => api.actionsFor(user).map((action) => action.key)
     expect(keys({ id: 2, status: 'active', mfaEnabled: true })).toEqual([
+      'details',
       'edit',
       'suspend',
       'sendPasswordReset',
@@ -48,6 +49,7 @@ describe('user account actions', () => {
       'activity',
     ])
     expect(keys({ id: 3, status: 'suspended', mfaEnabled: false })).toEqual([
+      'details',
       'edit',
       'activate',
       'revokeSessions',
@@ -56,6 +58,7 @@ describe('user account actions', () => {
       'activity',
     ])
     expect(keys({ id: 4, status: 'locked', mfaEnabled: true })).toEqual([
+      'details',
       'edit',
       'unlock',
       'resetMfa',
@@ -65,6 +68,7 @@ describe('user account actions', () => {
       'activity',
     ])
     expect(keys({ id: 5, status: 'expired', mfaEnabled: false })).toEqual([
+      'details',
       'edit',
       'resendInvitation',
       'cancelInvitation',
@@ -72,6 +76,7 @@ describe('user account actions', () => {
       'activity',
     ])
     expect(keys({ id: 1, status: 'active', mfaEnabled: true })).toEqual([
+      'details',
       'edit',
       'identityHistory',
       'activity',
@@ -85,6 +90,7 @@ describe('user account actions', () => {
     expect(keys({ id: 10, status: 'active', roles: ['assessor'] })).toContain('qualifications')
     expect(keys({ id: 9, status: 'active', roles: ['request_follower'] })).toContain('requestScope')
     expect(keys({ id: 22, status: 'active', roles: ['finance_officer'] })).toEqual([
+      'details',
       'edit',
       'suspend',
       'sendPasswordReset',
@@ -94,6 +100,7 @@ describe('user account actions', () => {
       'activity',
     ])
     expect(keys({ id: 1, status: 'active', roles: ['system_admin'] })).toEqual([
+      'details',
       'edit',
       'identityHistory',
       'activity',

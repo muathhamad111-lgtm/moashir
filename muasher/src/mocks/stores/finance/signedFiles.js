@@ -4,6 +4,7 @@ import { financeReject } from './financeRejection'
 import { nowIso } from './paymentLifecycle'
 import { FIXTURE_ENTITY_LOGO_FILE_ID, fixtureEntityLogoBytes } from '../../fixtures/entityLogos'
 import { transferProofSample } from './proofSamples'
+import { assertMayOpenFile } from '../fileAccessGate'
 
 export const SIGNED_LINK_MINUTES = 5
 
@@ -42,6 +43,7 @@ export function storeFile({
 }
 
 export function signedDownloadOf(user, file) {
+  assertMayOpenFile(user, file?.purpose)
   const expiresAt = new Date(Date.now() + SIGNED_LINK_MINUTES * 60000)
   const expires = Math.floor(expiresAt.getTime() / 1000)
   const query = new URLSearchParams({

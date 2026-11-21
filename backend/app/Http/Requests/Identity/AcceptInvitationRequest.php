@@ -27,7 +27,7 @@ final class AcceptInvitationRequest extends FormRequest
                 'integer',
                 $this->mustBeCurrentTerms(...),
             ],
-            'national_id' => ['nullable', 'string', 'max:20', new SaudiNationalId],
+            'national_id' => ['nullable', 'string', new SaudiNationalId],
         ];
     }
 

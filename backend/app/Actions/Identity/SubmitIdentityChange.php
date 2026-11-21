@@ -7,14 +7,17 @@ namespace App\Actions\Identity;
 use App\Data\Audit\AuditEntry;
 use App\Data\Identity\IdentityChangeDraft;
 use App\Enums\Audit\AuditEvent;
+use App\Enums\Identity\IdentityChangeKind;
 use App\Enums\Identity\IdentityChangeStatus;
 use App\Enums\Identity\IdentityField;
 use App\Exceptions\Identity\IdentityChangeRejected;
+use App\Exceptions\Identity\NationalIdRejected;
 use App\Models\Identity\IdentityChangeRequest;
 use App\Models\Identity\User;
 use App\Services\Audit\AuditRecorder;
 use App\Services\Identity\IdentityChangeNotifier;
 use App\Services\Identity\NationalIdAssigner;
+use App\Support\Identity\AccountNationalId;
 use App\Support\ValueObjects\NationalId;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
@@ -43,6 +46,11 @@ final readonly class SubmitIdentityChange
     private function open(User $submitter, User $subject, IdentityChangeDraft $draft): IdentityChangeRequest
     {
         $locked = User::query()->whereKey($subject->id)->lockForUpdate()->firstOrFail();
+
+        if ($draft->kind === IdentityChangeKind::FirstEntry && AccountNationalId::isRecorded($locked)) {
+            throw NationalIdRejected::locked();
+        }
+
         $this->assertChangesSomething($locked, $draft);
 
         if (IdentityChangeRequest::query()->where('user_id', $locked->id)->where('status', IdentityChangeStatus::Pending)->exists()) {
@@ -60,6 +68,7 @@ final readonly class SubmitIdentityChange
             'new_national_id' => $draft->newNationalId?->value,
             'reason' => $draft->reason,
             'status' => IdentityChangeStatus::Pending,
+            'kind' => $draft->kind,
         ]);
         $request->setRelation('user', $locked);
 
@@ -67,6 +76,7 @@ final readonly class SubmitIdentityChange
             'request' => $request->public_id,
             'fields' => array_map(static fn (IdentityField $field): string => $field->value, $request->fields()),
             'on_behalf' => $submitter->id !== $locked->id,
+            'kind' => $request->kind->value,
         ]));
 
         return $request;

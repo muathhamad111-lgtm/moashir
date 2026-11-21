@@ -16,24 +16,24 @@ function mountFields(values, fileAccessRoles, locale = 'ar') {
 }
 
 describe('national ID policy fields', () => {
-  it('marks the roles that open files', () => {
+  it('marks the roles that open assessment evidence', () => {
     const wrapper = mountFields(
       { nationalIdEnabled: true, nationalIdRoles: [] },
       ['assessor'],
       'en',
     )
-    expect(wrapper.text()).toContain('Assessor (opens files)')
+    expect(wrapper.text()).toContain('Assessor (opens assessment evidence)')
   })
 
-  it('warns about roles that open files but are not selected', () => {
+  it('warns about roles that open assessment evidence but are not selected', () => {
     const wrapper = mountFields(
       { nationalIdEnabled: true, nationalIdRoles: ['assessor'] },
-      ['assessor', 'finance_officer'],
+      ['assessor', 'filtering_officer'],
       'en',
     )
     const warning = wrapper.find('[data-testid="national-id-uncovered"]')
     expect(warning.exists()).toBe(true)
-    expect(warning.text()).toContain('Finance Officer')
+    expect(warning.text()).toContain('Filtering Officer')
     expect(warning.text()).not.toContain('Assessor')
   })
 

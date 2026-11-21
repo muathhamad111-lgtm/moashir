@@ -1085,12 +1085,6 @@ export const appRoutes = [
     meta: { layout: 'app', titleKey: 'routes.admin.auditLog.title', requiresAuth: true },
   },
   {
-    path: '/account/complete-identity',
-    name: ROUTE_NAMES.ACCOUNT_COMPLETE_IDENTITY,
-    component: () => import('@/views/account/CompleteIdentity.vue'),
-    meta: { layout: 'auth', titleKey: 'routes.account.completeIdentity.title', requiresAuth: true },
-  },
-  {
     path: '/admin/identity-changes',
     name: ROUTE_NAMES.ADMIN_IDENTITY_CHANGES,
     component: () => import('@/views/settings/users/IdentityChanges.vue'),

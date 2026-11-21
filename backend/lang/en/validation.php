@@ -193,7 +193,9 @@ return [
             'requires_correction_request' => 'The name of an account in use changes only through a name correction request, approved by a second reviewer.',
         ],
         'national_id' => [
-            'invalid' => 'Enter a valid 10-digit national ID or Iqama number.',
+            'digits' => 'The national ID or Iqama number has digits only, no letters or symbols.',
+            'length' => 'The national ID or Iqama number has exactly 10 digits.',
+            'prefix' => 'The national ID or Iqama number starts with 1 or 2.',
         ],
         'iban' => [
             'format' => 'A Saudi IBAN has 24 characters: SA, two check digits, the bank code and 18 letters or digits.',

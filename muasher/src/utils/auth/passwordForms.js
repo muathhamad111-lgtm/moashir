@@ -32,7 +32,7 @@ export function forgotPasswordSchema(t) {
 }
 
 export function resetPasswordSchema(t) {
-  return yupObject({ email: emailField(t), ...newPasswordShape(t) })
+  return yupObject(newPasswordShape(t))
 }
 
 export function changePasswordSchema(t) {
@@ -42,10 +42,11 @@ export function changePasswordSchema(t) {
   })
 }
 
-export function invitationSchema(t, { termsRequired, nationalIdRequired = false }) {
+// The national ID is optional at acceptance: blank keeps the administrator's entry (or leaves it for later).
+export function invitationSchema(t, { termsRequired }) {
   return yupObject({
     ...newPasswordShape(t),
-    ...(nationalIdRequired ? { nationalId: nationalIdRule(t) } : {}),
+    nationalId: nationalIdRule(t, { required: false }),
     termsAccepted: termsRequired
       ? yupBoolean().oneOf([true], t('entities.validation.termsRequired'))
       : yupBoolean(),
@@ -55,7 +56,6 @@ export function invitationSchema(t, { termsRequired, nationalIdRequired = false 
 export function resetPayload(token, values) {
   return {
     token,
-    email: values.email.trim(),
     password: values.password,
     passwordConfirmation: values.passwordConfirmation,
   }

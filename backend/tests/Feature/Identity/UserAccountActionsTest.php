@@ -74,7 +74,7 @@ it('lets the same address be invited again after a cancellation', function (): v
 
     $this->deleteJson("/api/v1/users/{$invitee->id}/invitation")->assertNoContent();
 
-    $this->postJson('/api/v1/users', ['name' => 'سلمان المطيري', 'email' => 'new.assessor@moashir.example.sa', 'roles' => ['assessor']])->assertCreated();
+    $this->postJson('/api/v1/users', ['name' => 'سلمان المطيري', 'gender' => 'male', 'email' => 'new.assessor@moashir.example.sa', 'roles' => ['assessor']])->assertCreated();
 });
 
 it('makes the cancelled invitation link unusable', function (): void {

@@ -22,11 +22,6 @@ final class NationalIdRejected extends ApiException
         return self::onField('identity.national_id_unavailable');
     }
 
-    public static function missing(): self
-    {
-        return self::onField('identity.national_id_required');
-    }
-
     private static function onField(string $code): self
     {
         return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, $code, [self::FIELD => [__('errors.'.$code)]]));

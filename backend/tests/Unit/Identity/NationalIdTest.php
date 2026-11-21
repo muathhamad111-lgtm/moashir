@@ -2,26 +2,33 @@
 
 declare(strict_types=1);
 
+use App\Enums\Identity\NationalIdProblem;
 use App\Support\ValueObjects\NationalId;
 
-it('accepts citizen and resident numbers with a valid check digit', function (string $number): void {
+it('accepts any 10 digits starting with 1 or 2, without a check digit', function (string $number): void {
     expect((new NationalId($number))->value)->toBe($number);
 })->with([
-    'citizen' => fn (): string => fictionalNationalId(1234, 1),
-    'resident' => fn (): string => fictionalNationalId(5678, 2),
+    'citizen' => '1000000008',
+    'resident' => '2000000001',
+    'failed the old check digit' => '1000000009',
 ]);
 
-it('rejects numbers with the wrong shape or check digit', function (string $input): void {
-    expect(NationalId::tryFrom($input))->toBeNull()
-        ->and(fn (): NationalId => new NationalId($input))->toThrow(InvalidArgumentException::class);
+it('names the first rule a number breaks', function (string $input, ?NationalIdProblem $problem): void {
+    expect(NationalId::problemOf(NationalId::normalize($input)))->toBe($problem);
+
+    if ($problem instanceof NationalIdProblem) {
+        expect(NationalId::tryFrom($input))->toBeNull()
+            ->and(fn (): NationalId => new NationalId($input))->toThrow(InvalidArgumentException::class);
+    }
 })->with([
-    'nine digits' => '100000000',
-    'eleven digits' => '10000000080',
-    'letters' => '10000a0008',
-    'starts with 3' => '3000000001',
-    'starts with 0' => '0000000000',
-    'bad check digit' => '1000000009',
-    'empty' => '',
+    'valid' => ['1000000008', null],
+    'letters' => ['10000a0008', NationalIdProblem::NotDigits],
+    'symbols' => ['1000-00008', NationalIdProblem::NotDigits],
+    'empty' => ['', NationalIdProblem::NotDigits],
+    'nine digits' => ['100000000', NationalIdProblem::WrongLength],
+    'eleven digits' => ['10000000080', NationalIdProblem::WrongLength],
+    'starts with 3' => ['3000000001', NationalIdProblem::WrongPrefix],
+    'starts with 0' => ['0000000000', NationalIdProblem::WrongPrefix],
 ]);
 
 it('normalizes Eastern Arabic digits and spaces', function (): void {

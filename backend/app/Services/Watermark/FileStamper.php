@@ -14,6 +14,7 @@ use App\Exceptions\Watermark\WatermarkFailed;
 use App\Models\Files\StoredFile;
 use App\Models\Identity\User;
 use App\Services\Audit\AuditRecorder;
+use App\Services\Identity\FileAccessIdentityGate;
 use App\Support\Identity\AccountNationalId;
 use App\Support\ValueObjects\TraceCode;
 use Carbon\CarbonImmutable;
@@ -30,10 +31,14 @@ final readonly class FileStamper
         private AuditRecorder $audit,
         private WatermarkSlots $slots,
         private Repository $config,
+        private FileAccessIdentityGate $identityGate,
     ) {}
 
     public function stamp(User $viewer, StoredFile $file, AccessIntent $intent, WatermarkWorkspace $workspace): StampedFile
     {
+        // The links are gated when issued; this repeats the check for a link issued before the account became
+        // required and for evidence bundles built in the background.
+        $this->identityGate->assertMayOpen($viewer, $file->purpose);
         $format = WatermarkFormat::ofMimeType($file->mime_type) ?? throw WatermarkFailed::unreadable();
 
         if ($file->size_bytes > $this->config->integer('moashir.watermark.max_source_bytes')) {

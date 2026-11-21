@@ -19,7 +19,7 @@ const props = defineProps({
 })
 
 const { t } = useI18n()
-const { form, status, terms, termsRequired, nationalIdRequired, load } = useInvitationAcceptance(
+const { form, status, terms, termsRequired, presetNationalId, load } = useInvitationAcceptance(
   toRef(props, 'token'),
 )
 
@@ -63,8 +63,28 @@ useHead({ title: () => t('auth.invitation.title') })
         />
         <PasswordPolicyHints id="invitation-password-policy" />
       </fieldset>
-      <fieldset v-if="nationalIdRequired" class="auth-form__group">
-        <NationalIdField />
+      <fieldset class="auth-form__group" data-testid="invitation-national-id">
+        <legend class="auth-form__legend">{{ t('nationalIdentity.invitation.title') }}</legend>
+        <p v-if="presetNationalId" class="auth-form__hint">
+          <i18n-t keypath="nationalIdentity.invitation.preset" scope="global" tag="span">
+            <template #number>
+              <bdi dir="ltr" data-testid="invitation-national-id-preset">{{
+                presetNationalId
+              }}</bdi>
+            </template>
+          </i18n-t>
+        </p>
+        <p v-else class="auth-form__hint">{{ t('nationalIdentity.invitation.optional') }}</p>
+        <NationalIdField
+          :label="
+            t(
+              presetNationalId
+                ? 'nationalIdentity.invitation.different'
+                : 'nationalIdentity.field.label',
+            )
+          "
+          :required="false"
+        />
       </fieldset>
       <fieldset v-if="termsRequired" class="auth-form__group">
         <legend class="auth-form__legend">{{ t('auth.invitation.termsTitle') }}</legend>

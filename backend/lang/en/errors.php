@@ -73,8 +73,10 @@ return [
         'nothing_to_change' => 'The requested values match the current ones. Change at least one value.',
         'own_request' => 'You cannot decide a request that you submitted or that concerns your own account.',
     ],
+    'national_id' => [
+        'required_for_files' => 'Enter your national ID or Iqama number, and wait for the administration to approve it, before you open assessment evidence.',
+    ],
     'identity' => [
-        'national_id_required' => 'Add your national ID or Iqama number before continuing.',
         'national_id_locked' => 'Your national ID is already recorded. To change it, submit a change request for review.',
         'national_id_unavailable' => 'This number cannot be used. Contact the platform support team.',
     ],

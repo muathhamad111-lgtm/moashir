@@ -6,7 +6,9 @@ namespace App\Services\Entities;
 
 use App\Actions\Identity\ApplyNewPassword;
 use App\Data\Entities\EntityRegistrationData;
+use App\Data\Identity\NationalIdEntry;
 use App\Enums\Entities\EntityStatus;
+use App\Enums\Identity\IdentityChangeSource;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Identity\UserStatus;
 use App\Events\Entities\EntityRegistered;
@@ -63,7 +65,7 @@ final readonly class EntityAccountCreator
         $owner->assignRole(RoleKey::Entity->value);
 
         if ($data->nationalId instanceof NationalId) {
-            $this->nationalIds->assignFirst($owner, $data->nationalId);
+            $this->nationalIds->assignFirst($owner, $data->nationalId, new NationalIdEntry($owner, IdentityChangeSource::EntityRegistration));
         }
 
         return $owner;

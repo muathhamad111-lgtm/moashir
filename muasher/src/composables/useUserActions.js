@@ -30,6 +30,7 @@ const REASON_ACTIONS = {
 }
 
 const ACTION_ICONS = {
+  [A.DETAILS]: 'eye',
   [A.EDIT]: 'pen',
   [A.SUSPEND]: 'user-slash',
   [A.ACTIVATE]: 'user-check',
@@ -56,7 +57,7 @@ function identityKeys(user, isSelf, canReviewIdentity) {
 }
 
 function availableKeys(user, { selfId, canViewAudit, canReviewIdentity }) {
-  const keys = [A.EDIT]
+  const keys = [A.DETAILS, A.EDIT]
   const isSelf = user.id === selfId
   if (user.status === S.ACTIVE && !isSelf) keys.push(A.SUSPEND)
   if (user.status === S.SUSPENDED) keys.push(A.ACTIVATE)

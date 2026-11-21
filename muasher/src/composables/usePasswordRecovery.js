@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useValidatedForm } from '@/composables/useValidatedForm'
@@ -24,20 +24,36 @@ export function useForgotPassword() {
   return { form, sent }
 }
 
+function isInvalidToken(error) {
+  return error?.normalized?.code === INVALID_TOKEN
+}
+
+// The link alone names the account: the page checks it on open, then sends only the new password.
 export function usePasswordReset(token) {
   const { t } = useI18n()
   const router = useRouter()
-  const tokenInvalid = ref(false)
+  const status = ref('loading')
+
+  async function load() {
+    status.value = 'loading'
+    try {
+      await authService.checkPasswordResetLink(token.value)
+      status.value = 'ready'
+    } catch (error) {
+      status.value = isInvalidToken(error) ? 'invalid' : 'error'
+    }
+  }
+
   const form = useValidatedForm({
     schema: computed(() => resetPasswordSchema(t)),
-    initialValues: { email: '', password: '', passwordConfirmation: '' },
+    initialValues: { password: '', passwordConfirmation: '' },
     action: 'auth.resetPassword.submit',
     submit: async (values) => {
       try {
         await authService.resetPassword(resetPayload(token.value, values))
       } catch (error) {
-        if (error?.normalized?.code !== INVALID_TOKEN) throw error
-        tokenInvalid.value = true
+        if (!isInvalidToken(error)) throw error
+        status.value = 'invalid'
         return
       }
       await router.push({
@@ -46,5 +62,8 @@ export function usePasswordReset(token) {
       })
     },
   })
-  return { form, tokenInvalid }
+
+  onMounted(load)
+
+  return { form, status, load }
 }

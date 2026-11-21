@@ -17,6 +17,7 @@ const PUBLIC_API_ROUTES = [
     'auth.mfa.confirm',
     'auth.password.forgot',
     'auth.password.reset',
+    'auth.password.reset.check',
     'auth.invitations.accept',
     'auth.invitations.show',
     'content.model-criteria',

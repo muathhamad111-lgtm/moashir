@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { evidenceService } from '@/services/evidenceService'
 import { useToast } from '@/composables/useToast'
 import { useSignedDownload } from '@/composables/useSignedDownload'
+import { useAccountCompletionStore } from '@/stores/accountCompletion'
 import { BUNDLE_POLL_MS, BUNDLE_STATUSES } from '@/constants/accredited'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 
@@ -14,6 +15,7 @@ export function useEvidenceBundleRequest(assessmentId) {
   const router = useRouter()
   const toast = useToast()
   const downloads = useSignedDownload()
+  const completion = useAccountCompletionStore()
   const requesting = ref(false)
 
   async function requestBundle() {
@@ -33,7 +35,8 @@ export function useEvidenceBundleRequest(assessmentId) {
         params: { id: assessmentId.value, bundle: data.id },
       })
     } catch (error) {
-      toast.error(error?.normalized?.message || t('errors.unexpected'))
+      if (!completion.refuseFileAccess(error))
+        toast.error(error?.normalized?.message || t('errors.unexpected'))
     } finally {
       requesting.value = false
     }

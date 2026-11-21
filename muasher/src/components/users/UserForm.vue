@@ -2,13 +2,21 @@
 import { USER_STATUSES } from '@/constants/users'
 import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { object as yupObject, string as yupString, array as yupArray } from 'yup'
 import FormModal from '@/components/modal/FormModal.vue'
 import BaseInput from '@/components/form/BaseInput.vue'
 import BaseCheckbox from '@/components/form/BaseCheckbox.vue'
 import { useValidatedForm } from '@/composables/useValidatedForm'
 import { useUsers } from '@/composables/useUsers'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import BaseRadio from '@/components/form/BaseRadio.vue'
+import { GENDER_VALUES } from '@/constants/identityChanges'
+import { NATIONAL_ID_LENGTH, nationalIdInput } from '@/utils/identity/nationalId'
+import {
+  acceptsNationalId,
+  userFormPayload,
+  userFormSchema,
+  userFormValues,
+} from '@/utils/users/userFormSchema'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -23,37 +31,16 @@ const { roleOptions, roleCapabilities } = useUsers()
 const isEdit = computed(() => Boolean(props.user))
 const nameLocked = computed(() => isEdit.value && props.user.status !== USER_STATUSES.INVITED)
 
-const schema = computed(() =>
-  yupObject({
-    name: yupString()
-      .required(t('validation.required'))
-      .min(3, t('validation.minChars', { min: 3 })),
-    email: yupString().required(t('validation.required')).email(t('validation.email')),
-    roles: yupArray().of(yupString()).min(1, t('users.validation.roleRequired')),
-  }),
-)
-
-function emptyValues() {
-  return { name: '', email: '', roles: [] }
-}
-
-function fromUser(user) {
-  if (!user) return emptyValues()
-  return {
-    name: user.name ?? '',
-    email: user.email ?? '',
-    roles: Array.isArray(user.roles) ? [...user.roles] : [],
-  }
-}
+const schema = computed(() => userFormSchema(t, { user: props.user }))
+const takesNationalId = computed(() => acceptsNationalId(props.user))
 
 const form = useValidatedForm({
   schema,
-  initialValues: fromUser(props.user),
+  initialValues: userFormValues(props.user),
   action: 'users.form.submit',
   submit: async (values) => {
-    const payload = { name: values.name.trim(), email: values.email.trim(), roles: values.roles }
     const id = props.user?.id ?? null
-    await props.save({ id, payload })
+    await props.save({ id, payload: userFormPayload(values) })
     emit('update:modelValue', false)
     emit('saved', { id })
   },
@@ -62,13 +49,18 @@ const form = useValidatedForm({
 watch(
   () => props.modelValue,
   (open) => {
-    if (open) form.resetForm({ values: fromUser(props.user) })
+    if (open) form.resetForm({ values: userFormValues(props.user) })
   },
 )
 
 const [name] = form.defineField('name')
 const [email] = form.defineField('email')
 const [roles] = form.defineField('roles')
+const [gender] = form.defineField('gender')
+const [nationalId] = form.defineField('nationalId')
+const genderOptions = computed(() =>
+  GENDER_VALUES.map((value) => ({ value, label: t(`nationalIdentity.gender.${value}`) })),
+)
 
 function isRoleSelected(code) {
   return roles.value.includes(code)
@@ -122,6 +114,33 @@ const capabilities = computed(() => {
         :error="form.errors.value.email"
         required
       />
+      <BaseRadio
+        v-model="gender"
+        name="gender"
+        :label="t('nationalIdentity.gender.label')"
+        :options="genderOptions"
+        :error="form.errors.value.gender"
+        inline
+        required
+      />
+      <BaseInput
+        v-if="takesNationalId"
+        v-model="nationalId"
+        name="nationalId"
+        :label="t('nationalIdentity.field.label')"
+        :hint="t('nationalIdentity.field.hint')"
+        :error="form.errors.value.nationalId"
+        :maxlength="NATIONAL_ID_LENGTH"
+        :filter="nationalIdInput"
+        inputmode="numeric"
+        autocomplete="off"
+        input-dir="ltr"
+      />
+      <p v-else class="user-form__locked-id">
+        {{ t('nationalIdentity.field.label') }}:
+        <bdi dir="ltr" class="u-ltr">{{ user.nationalIdMasked }}</bdi>
+        <span class="user-form__locked-note">{{ t('users.form.nationalIdLocked') }}</span>
+      </p>
       <div class="user-form__field">
         <span class="user-form__label">{{ t('users.fields.role') }}</span>
         <div class="user-form__roles" role="group" :aria-label="t('users.fields.role')">

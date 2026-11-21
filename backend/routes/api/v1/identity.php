@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\Identity\AssessorQualificationsController;
 use App\Http\Controllers\Api\V1\Identity\CancelInvitationController;
 use App\Http\Controllers\Api\V1\Identity\ChangeOwnEmailController;
 use App\Http\Controllers\Api\V1\Identity\ChangePasswordController;
+use App\Http\Controllers\Api\V1\Identity\CheckPasswordResetLinkController;
 use App\Http\Controllers\Api\V1\Identity\ConfirmMfaEnrollmentController;
 use App\Http\Controllers\Api\V1\Identity\ConfirmOwnEmailChangeController;
 use App\Http\Controllers\Api\V1\Identity\CurrentSessionController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\Api\V1\Identity\LoginModesController;
 use App\Http\Controllers\Api\V1\Identity\LogoutController;
 use App\Http\Controllers\Api\V1\Identity\MfaChallengeController;
 use App\Http\Controllers\Api\V1\Identity\MyAvatarController;
+use App\Http\Controllers\Api\V1\Identity\MyGenderController;
 use App\Http\Controllers\Api\V1\Identity\MyIdentityChangeController;
 use App\Http\Controllers\Api\V1\Identity\MyNationalIdController;
 use App\Http\Controllers\Api\V1\Identity\MyPermissionsController;
@@ -65,7 +67,8 @@ Route::prefix('auth')->name('auth.')->group(function (): void {
     Route::post('mfa/enroll', StartMfaEnrollmentController::class)->middleware(['throttle:mfa', 'session.timeouts'])->name('mfa.enroll');
     Route::post('mfa/confirm', ConfirmMfaEnrollmentController::class)->middleware(['throttle:mfa', 'session.timeouts'])->name('mfa.confirm');
     Route::post('password/forgot', ForgotPasswordController::class)->middleware('throttle:password-reset')->name('password.forgot');
-    Route::post('password/reset', ResetPasswordController::class)->middleware('throttle:password-reset')->name('password.reset');
+    Route::post('password/reset', ResetPasswordController::class)->middleware('throttle:password-reset-link')->name('password.reset');
+    Route::post('password/reset/check', CheckPasswordResetLinkController::class)->middleware('throttle:password-reset-check')->name('password.reset.check');
     Route::get('invitations/{token}', ShowInvitationController::class)->middleware('throttle:invitation-check')->name('invitations.show');
     Route::post('invitations/{token}/accept', AcceptInvitationController::class)->middleware('throttle:invitation')->name('invitations.accept');
 });
@@ -75,10 +78,11 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa'])->group(function (
     Route::post('auth/logout', LogoutController::class)->middleware("can:{$authenticated}")->name('auth.logout');
     Route::post('auth/password/change', ChangePasswordController::class)->middleware(["can:{$authenticated}", 'throttle:sensitive'])->name('auth.password.change');
 
-    Route::prefix('me')->name('me.')->middleware(["can:{$authenticated}", 'password.changed'])->group(function (): void {
+    Route::prefix('me')->name('me.')->middleware(["can:{$authenticated}", 'password.current'])->group(function (): void {
         Route::get('preferences', [PreferencesController::class, 'show'])->name('preferences.show');
         Route::patch('preferences', [PreferencesController::class, 'update'])->name('preferences.update');
         Route::post('national-id', [MyNationalIdController::class, 'store'])->middleware('throttle:sensitive')->name('national-id.store');
+        Route::patch('gender', MyGenderController::class)->middleware(['can:'.Ability::RecordOwnGender->value, 'throttle:sensitive'])->name('gender.update');
     });
 
     Route::middleware('password.current')->group(function () use ($authenticated): void {

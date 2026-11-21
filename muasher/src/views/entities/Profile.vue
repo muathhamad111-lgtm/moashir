@@ -67,6 +67,6 @@ onMounted(load)
   />
   <div v-if="status === 'success'" class="entity-profile__body entity-profile__account">
     <ChangePasswordCard />
-    <NationalIdentityCard class="entity-profile__national-identity" :return-to="route.path" />
+    <NationalIdentityCard class="entity-profile__national-identity" />
   </div>
 </template>

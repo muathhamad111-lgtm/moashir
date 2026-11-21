@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Identity;
 
+use App\Data\Identity\AccountCompletion;
 use App\Data\Identity\CommitteeAppointment;
 use App\Data\Identity\NationalIdStatus;
 use App\Data\Identity\SessionContext;
@@ -38,7 +39,7 @@ final class SessionUserResource extends JsonResource
             'is_super_admin' => $user->isSuperAdmin(),
             'mfa_enabled' => $user->hasConfirmedTotp(),
             'password_change_required' => $user->password_change_required,
-            ...($this->resource->nationalId?->toArray() ?? new NationalIdStatus(false, null)->toArray()),
+            ...($this->resource->completion?->toArray() ?? new AccountCompletion(new NationalIdStatus(false, null), false)->toArray()),
             'entity_id' => $user->entity_id,
             'entity' => $this->resource->entity?->toArray(),
             'avatar' => AccountAvatarLink::of($this->resource->avatar),

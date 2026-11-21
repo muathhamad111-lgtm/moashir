@@ -50,6 +50,13 @@ final class RateLimitServiceProvider extends ServiceProvider
             Limit::perMinutes(self::TEN_MINUTES, 10)->by('password-reset-ip|'.$request->ip()),
         ]);
 
+        RateLimiter::for('password-reset-link', static fn (Request $request): array => [
+            Limit::perMinutes(self::TEN_MINUTES, 3)->by('password-reset-token|'.self::tokenFingerprint($request)),
+            Limit::perMinutes(self::TEN_MINUTES, 10)->by('password-reset-link-ip|'.$request->ip()),
+        ]);
+
+        RateLimiter::for('password-reset-check', static fn (Request $request): Limit => Limit::perMinute(10)->by('password-reset-check|'.$request->ip()));
+
         RateLimiter::for('invitation-check', static fn (Request $request): Limit => Limit::perMinute(10)->by('invitation-check|'.$request->ip()));
 
         RateLimiter::for('invitation', static fn (Request $request): Limit => Limit::perMinute(5)->by('invitation|'.$request->ip()));
@@ -111,6 +118,11 @@ final class RateLimitServiceProvider extends ServiceProvider
     private static function emailFingerprint(Request $request): string
     {
         return hash('sha256', mb_strtolower(trim($request->string('email')->toString())));
+    }
+
+    private static function tokenFingerprint(Request $request): string
+    {
+        return hash('sha256', $request->string('token')->toString());
     }
 
     private static function senderFingerprint(Request $request): string
