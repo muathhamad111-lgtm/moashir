@@ -27,6 +27,6 @@ final readonly class NotifySelfAssessmentDraftSaved
             NotificationCode::SelfAssessmentDraftSaved,
             ['number' => $assessment->request_number],
             AssessmentLinks::selfForm(),
-        )->inAppOnly());
+        )->forPath($assessment->path)->inAppOnly());
     }
 }

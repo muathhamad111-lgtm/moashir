@@ -3,14 +3,15 @@ export const LOGIN_STEPS = {
   MFA_CHALLENGE: 'mfa_challenge',
   MFA_ENROLLMENT: 'mfa_enrollment',
   OTP_REQUIRED: 'otp_required',
-}
-
-export const LOGIN_REQUEST_MODES = {
-  PASSWORD: 'password',
-  OTP: 'otp',
+  PENDING_REVIEW: 'pending_review',
 }
 
 export const AUTH_FLOW_INTENTS = {
   LOGIN: 'login',
+  CODE: 'code',
   REGISTER: 'register',
+}
+
+export const AUTH_NOTICES = {
+  PASSWORD_RESET: 'password-reset',
 }

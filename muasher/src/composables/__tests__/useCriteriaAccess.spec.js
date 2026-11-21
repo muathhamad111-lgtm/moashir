@@ -41,15 +41,16 @@ describe('useCriteriaAccess', () => {
     })
   })
 
-  it('gives the System Administrator read and publish only', () => {
+  it('gives the System Administrator full management of the criteria', () => {
     expect(accessFor(['system_admin'], 'draft')).toMatchObject({
-      canEditTree: false,
+      canManage: true,
+      canEditTree: true,
       canPublishDraft: true,
       canCorrectText: false,
     })
     expect(accessFor(['system_admin'], 'archived')).toMatchObject({
-      canCorrectText: false,
-      canManage: false,
+      canCorrectText: true,
+      canEditTree: false,
     })
   })
 

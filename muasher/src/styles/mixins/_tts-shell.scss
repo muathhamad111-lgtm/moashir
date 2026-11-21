@@ -1,0 +1,5 @@
+@mixin in-tts-shell {
+  :root[data-shell='tts'] & {
+    @content;
+  }
+}

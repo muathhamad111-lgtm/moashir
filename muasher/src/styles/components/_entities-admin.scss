@@ -18,6 +18,16 @@
   flex-wrap: wrap;
 }
 
+// Title and the list toolbar share one row; the toolbar sits at the end, level with the title.
+.entities-admin__header--toolbar {
+  align-items: center;
+
+  > .filter-toolbar {
+    flex: 1 1 auto;
+    padding-block: 0;
+  }
+}
+
 .entities-admin__title,
 .entity-record__title {
   margin: 0;
@@ -52,7 +62,7 @@
     margin: 0;
   }
 
-  .fa-solid {
+  .app-icon {
     color: var(--color-info);
     font-size: var(--fs-lg);
   }
@@ -73,9 +83,51 @@
   color: var(--theme-text);
 }
 
+// Name on top, reference underneath; wide enough that a name takes one or two lines.
+.entity-table__entity {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+  min-inline-size: var(--size-entity-name);
+}
+
 .entity-table__reference {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
   font-weight: var(--fw-medium);
   white-space: nowrap;
+}
+
+.entity-table__stack {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+}
+
+.entity-table__muted {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}
+
+.entity-table__level .level-badge__chip {
+  white-space: normal;
+}
+
+.entity-last-assessment {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+}
+
+.entity-last-assessment__percent {
+  white-space: nowrap;
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--theme-heading);
+}
+
+.entity-last-assessment__date {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}
+
+.entity-last-assessment--none {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-sm);
 }
 
 .entity-table__name {

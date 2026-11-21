@@ -15,7 +15,6 @@ use App\Exceptions\Entities\EntityRejected;
 use App\Models\Audit\Audit;
 use App\Models\Entities\Entity;
 use App\Models\Entities\EntityProfileChange;
-use App\Models\Entities\PrivacyRequest;
 use App\Models\Identity\AuthenticationEvent;
 use App\Models\Identity\EmailChangeRequest;
 use App\Models\Identity\OtpCode;
@@ -57,8 +56,9 @@ it('lists the open requests reported by the other domains', function (): void {
         ->assertOk()
         ->assertJsonPath('data.open_requests_count', 2)
         ->assertJsonPath('data.requires_confirmation', true)
-        ->assertJsonPath('data.open_requests.0', ['id' => 1, 'number' => 'ACC-2026-000014', 'path' => 'accredited', 'status' => 'under_review', 'cycle_id' => null, 'is_frozen' => false])
-        ->assertJsonPath('data.open_requests.1.path', 'bag');
+        ->assertJsonPath('data.open_requests.0', ['id' => 1, 'number' => 'ACC-2026-000014', 'path' => 'accredited', 'path_label' => ['ar' => 'التقييم المعتمد', 'en' => 'Accredited assessment'], 'status' => 'under_review', 'cycle_id' => null, 'is_frozen' => false])
+        ->assertJsonPath('data.open_requests.1.path', 'bag')
+        ->assertJsonPath('data.open_requests.1.path_label.en', 'Quick Excellence Kit');
 });
 
 it('soft deletes an entity without open requests, ends its sessions and audits it', function (): void {
@@ -149,6 +149,8 @@ it('rejects every action on a deleted entity with 409 entity.deleted', function 
 })->with([
     'deactivate' => ['POST', '/deactivate', ['reason' => 'سبب موثق للإجراء الإداري.']],
     'reactivate' => ['POST', '/reactivate', ['reason' => 'سبب موثق للإجراء الإداري.']],
+    'approve' => ['POST', '/approve', []],
+    'reject' => ['POST', '/reject', ['reason' => 'سبب موثق للإجراء الإداري.']],
     'resend verification' => ['POST', '/verification/resend', []],
     'edit on behalf' => ['PUT', '', ['profile']],
 ]);
@@ -241,7 +243,6 @@ it('permanently deletes a soft-deleted entity for the Super Admin and keeps what
     $owner->termsAcceptances()->create(['terms_version_id' => $terms->id, 'ip_address' => '10.0.0.5']);
     AuthenticationEvent::query()->create(['user_id' => $owner->id, 'type' => 'login_success']);
     EntityProfileChange::query()->create(['entity_id' => $entity->id, 'field' => 'employees_count', 'old_value' => 10, 'new_value' => 12]);
-    PrivacyRequest::query()->create(['entity_id' => $entity->id, 'kind' => 'access', 'details' => 'طلب نسخة من البيانات الشخصية.', 'created_by_user_id' => systemAdmin()->id]);
     OtpCode::query()->create(['challenge_id' => (string) Str::uuid(), 'user_id' => $owner->id, 'channel' => 'email', 'purpose' => 'login', 'code_hash' => 'x', 'destination_masked' => 'i***@example.sa', 'expires_at' => now(), 'last_sent_at' => now()]);
     $entity->delete();
     $reference = $entity->reference();
@@ -274,7 +275,6 @@ it('permanently deletes a soft-deleted entity for the Super Admin and keeps what
         ->and($owner->roles()->count())->toBe(0)
         ->and(OtpCode::query()->where('user_id', $owner->id)->count())->toBe(0)
         ->and(EntityProfileChange::query()->where('entity_id', $entity->id)->count())->toBe(0)
-        ->and(PrivacyRequest::query()->where('entity_id', $entity->id)->count())->toBe(0)
         ->and(TermsAcceptance::query()->where('user_id', $owner->id)->count())->toBe(1)
         ->and(AuthenticationEvent::query()->where('user_id', $owner->id)->count())->toBe(1)
         ->and(Audit::query()->count())->toBe($auditsBefore + 1)

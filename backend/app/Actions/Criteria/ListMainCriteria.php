@@ -8,6 +8,7 @@ use App\Data\Criteria\MainCriteriaListQuery;
 use App\Data\Criteria\MainCriteriaPage;
 use App\Models\Criteria\CriteriaVersion;
 use App\Models\Criteria\MainCriterion;
+use App\Support\Criteria\ActiveWeights;
 use App\Support\Search\SearchTextNormalizer;
 use App\Support\ValueObjects\SearchTerm;
 use Illuminate\Database\Eloquent\Builder;
@@ -29,14 +30,14 @@ final class ListMainCriteria
 
         $mains = $version->mainCriteria()->getQuery()
             ->reorder()
-            ->with('subCriteria')
+            ->with(['subCriteria', 'attachmentRequirements'])
             ->when($query->search, fn (Builder $builder, SearchTerm $term): Builder => $this->matching($builder, $term))
             ->when($query->active !== null, static fn (Builder $builder): Builder => $builder->where('is_active', $query->active))
             ->orderBy($this->sortColumn($query->sort, $locale), str_starts_with($query->sort, '-') ? 'desc' : 'asc')
             ->orderBy('sort_order')
             ->paginate($query->perPage);
 
-        return new MainCriteriaPage($version, $mains);
+        return new MainCriteriaPage($version, $mains, ActiveWeights::total($version->mainCriteria()->get()));
     }
 
     private function versionFor(?int $versionId): ?CriteriaVersion

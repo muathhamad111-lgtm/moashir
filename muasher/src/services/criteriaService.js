@@ -18,6 +18,12 @@ function write(action, execute, entity, payload) {
 }
 
 export const criteriaService = {
+  listEditEvents(params = {}) {
+    return send('listEditEvents', () => apiClient.get('/criteria/edit-events', { params }), {
+      entity: 'criteria-edit-event',
+      paramsShape: payloadShape(params),
+    })
+  },
   listVersions(params = {}) {
     return send('listVersions', () => apiClient.get('/criteria/versions', { params }), {
       entity: 'criteria-version',
@@ -26,6 +32,11 @@ export const criteriaService = {
   },
   getVersion(versionId) {
     return send('getVersion', () => apiClient.get(`/criteria/versions/${versionId}`), {
+      entity: 'criteria-version',
+    })
+  },
+  getTree(versionId) {
+    return send('getTree', () => apiClient.get(`/criteria/versions/${versionId}/tree`), {
       entity: 'criteria-version',
     })
   },
@@ -49,8 +60,43 @@ export const criteriaService = {
       entity: 'criteria-version',
     })
   },
-  publishVersion(versionId, { scope = null, reason = null } = {}) {
-    const payload = { confirm: true, scope, reason }
+  saveSubWeights(mainId, weights) {
+    const payload = { weights }
+    return write(
+      'saveSubWeights',
+      () => apiClient.put(`/criteria/mains/${mainId}/subs/weights`, payload),
+      'sub-criterion',
+      payload,
+    )
+  },
+  savePointWeights(subId, weights) {
+    const payload = { weights }
+    return write(
+      'savePointWeights',
+      () => apiClient.put(`/criteria/subs/${subId}/points/weights`, payload),
+      'guiding-point',
+      payload,
+    )
+  },
+  applyPointScoringType(subId, scoringType) {
+    const payload = { scoringType }
+    return write(
+      'applyPointScoringType',
+      () => apiClient.put(`/criteria/subs/${subId}/points/scoring-type`, payload),
+      'sub-criterion',
+      payload,
+    )
+  },
+  previewPublication(versionId) {
+    return send(
+      'previewPublication',
+      () => apiClient.get(`/criteria/versions/${versionId}/changes`),
+      { entity: 'criteria-version' },
+      { expectedStatuses: DOMAIN_REJECTION },
+    )
+  },
+  publishVersion(versionId, { scope = null, reason = null, draftCycles = null } = {}) {
+    const payload = { confirm: true, scope, reason, ...(draftCycles ? { draftCycles } : {}) }
     return write(
       'publishVersion',
       () => apiClient.post(`/criteria/versions/${versionId}/publish`, payload),

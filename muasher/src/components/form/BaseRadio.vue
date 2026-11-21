@@ -9,6 +9,7 @@ defineProps({
   inline: { type: Boolean, default: false },
   error: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
+  required: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -24,7 +25,11 @@ function optionId(option) {
 <template>
   <fieldset
     class="radio-group"
-    :class="{ 'radio-group--inline': inline, 'field--error': error }"
+    :class="{
+      'radio-group--inline': inline,
+      'radio-group--required': required,
+      'field--error': error,
+    }"
     :disabled="disabled"
     :aria-describedby="error ? errorId : undefined"
   >
@@ -45,6 +50,7 @@ function optionId(option) {
           :value="option.value"
           :checked="option.value === modelValue"
           :disabled="disabled || option.disabled"
+          :required="required"
           @change="emit('update:modelValue', option.value)"
         />
         <span class="radio__label">{{ option.label }}</span>

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Entities;
 
+use App\Enums\Entities\ProfileSection;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 final class IndexProfileChangesRequest extends FormRequest
 {
@@ -18,7 +20,13 @@ final class IndexProfileChangesRequest extends FormRequest
         return [
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'section' => ['nullable', Rule::enum(ProfileSection::class)],
         ];
+    }
+
+    public function section(): ?ProfileSection
+    {
+        return $this->enum('section', ProfileSection::class);
     }
 
     public function perPage(): int

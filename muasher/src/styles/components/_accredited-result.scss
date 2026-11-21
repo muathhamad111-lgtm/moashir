@@ -55,6 +55,10 @@
   font-variant-numeric: tabular-nums;
 }
 
+.accredited-result-summary__value--long {
+  font-size: var(--fs-sm);
+}
+
 .accredited-result-summary__detail {
   @include flex(column, flex-start, center, var(--space-1));
 }
@@ -78,4 +82,9 @@
   margin-block: var(--space-4) 0;
   font-size: var(--fs-sm);
   color: var(--theme-text-muted);
+}
+
+.accredited-result__tools {
+  @include flex(row, center, flex-start, var(--space-3));
+  flex-wrap: wrap;
 }

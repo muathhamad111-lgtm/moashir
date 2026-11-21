@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Resources\Identity;
 
 use App\Data\Identity\CommitteeAppointment;
+use App\Data\Identity\NationalIdStatus;
 use App\Data\Identity\SessionContext;
+use App\Enums\Identity\AssessorQualification;
+use App\Support\Assessments\RequestScopePresenter;
+use App\Support\Identity\AccountAvatarLink;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -29,11 +33,15 @@ final class SessionUserResource extends JsonResource
             'theme' => $user->theme->value,
             'roles' => RoleLabelResource::collection($this->resource->roles)->resolve($request),
             'permissions' => $this->resource->permissions,
+            'assessor_qualifications' => array_map(static fn (AssessorQualification $qualification): string => $qualification->value, $user->qualifications()),
+            'request_scope' => RequestScopePresenter::of($user),
             'is_super_admin' => $user->isSuperAdmin(),
             'mfa_enabled' => $user->hasConfirmedTotp(),
             'password_change_required' => $user->password_change_required,
+            ...($this->resource->nationalId?->toArray() ?? new NationalIdStatus(false, null)->toArray()),
             'entity_id' => $user->entity_id,
             'entity' => $this->resource->entity?->toArray(),
+            'avatar' => AccountAvatarLink::of($this->resource->avatar),
             'committee_appointments' => array_map(static fn (CommitteeAppointment $appointment): array => $appointment->toArray(), $this->resource->committeeAppointments),
             'session_expires_at' => $this->resource->expiresAt?->toIso8601String(),
             'idle_timeout_minutes' => $this->resource->idleTimeoutMinutes,

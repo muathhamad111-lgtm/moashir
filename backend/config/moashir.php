@@ -10,6 +10,7 @@ return [
 
     'demo' => [
         'enabled' => env('APP_DEMO_DATA', false) === true,
+        'posture' => env('MOASHIR_DEMO', false) === true,
     ],
 
     'super_admin' => [
@@ -20,20 +21,35 @@ return [
     'security' => [
         'alert_mail' => env('SECURITY_ALERT_MAIL'),
         'hsts_max_age' => (int) env('SECURITY_HSTS_MAX_AGE', 31536000),
-        'health_allowed_ips' => array_values(array_filter(explode(',', (string) env('HEALTH_ALLOWED_IPS', '')))),
+        'health_allowed_ips' => array_values(array_filter(array_map(trim(...), explode(',', (string) env('HEALTH_ALLOWED_IPS', ''))))),
+    ],
+
+    'audit' => [
+        'export_max_rows' => 10000,
+    ],
+
+    'dashboard' => [
+        // The longest custom window the overview accepts, in days (three years).
+        'overview_max_days' => 1096,
+    ],
+
+    'health' => [
+        'queue_heartbeat_max_age_seconds' => 300,
+        'min_free_disk_mb' => (int) (env('HEALTH_MIN_FREE_DISK_MB') ?: 1024),
     ],
 
     'auth' => [
-        'login_modes' => [
-            'email_password' => (bool) env('AUTH_LOGIN_EMAIL_PASSWORD', true),
-            'email_otp' => (bool) env('AUTH_LOGIN_EMAIL_OTP', true),
-            'sms_otp' => (bool) env('AUTH_LOGIN_SMS_OTP', false),
-        ],
         'otp' => [
             'length' => 6,
             'expiry_seconds' => (int) env('AUTH_OTP_EXPIRY_SECONDS', 300),
             'resend_cooldown_seconds' => (int) env('AUTH_OTP_RESEND_COOLDOWN_SECONDS', 60),
             'max_attempts' => (int) env('AUTH_OTP_MAX_ATTEMPTS', 5),
+            'per_user_per_ten_minutes' => 5,
+            'per_user_per_day' => 20,
+            'request_per_identifier_per_ten_minutes' => 3,
+            'request_per_ip_per_ten_minutes' => 10,
+            'sign_in_sms_per_hour' => 100,
+            'registration_email_token_minutes' => 30,
         ],
         'lockout' => [
             'max_attempts' => (int) env('AUTH_LOCKOUT_MAX_ATTEMPTS', 5),
@@ -44,7 +60,7 @@ return [
             'max_length' => 128,
             'history' => 5,
         ],
-        'invitation_ttl_hours' => (int) env('AUTH_INVITATION_TTL_HOURS', 72),
+        'invitation_ttl_minutes' => (int) env('AUTH_INVITATION_TTL_MINUTES', 60),
         'pending_authentication_ttl_minutes' => 10,
         'session' => [
             'idle_minutes' => [
@@ -56,6 +72,14 @@ return [
         ],
     ],
 
+    'users' => [
+        'avatar' => [
+            'max_kb' => 2048,
+            'min_side_px' => 200,
+            'max_side_px' => 2000,
+        ],
+    ],
+
     'assessment' => [
         'scale_kind' => env('ASSESSMENT_SCALE_KIND', 'of_10'),
         'draft_notice_cooldown_minutes' => 60,
@@ -63,9 +87,10 @@ return [
         'criteria_update_redispatch_alert_after' => 3,
         'cv_max_chars' => 10000,
         'feedback_max_chars' => 5000,
+        'summary_max_chars' => 2000,
         'completion_deadline_max_days' => 60,
         'evidence_bundle_sync_max_bytes' => 20 * 1024 * 1024,
-        'evidence_bundle_ttl_hours' => 24,
+        'evidence_bundle_ttl_hours' => 2,
         'sla_days_limits' => ['min' => 1, 'max' => 120],
         'open_paid_requests_after_minutes' => 10,
     ],
@@ -79,6 +104,14 @@ return [
         'email_change_policy' => env('ENTITY_EMAIL_CHANGE_POLICY') ?: 'requires_approval',
         'verification_reminder_cooldown_minutes' => (int) (env('ENTITY_VERIFICATION_REMINDER_COOLDOWN_MINUTES') ?: 15),
         'export_max_rows' => 10000,
+        'logo' => [
+            'max_kb' => 2048,
+            'min_side_px' => 200,
+            'max_side_px' => 2000,
+        ],
+        'vat_certificate' => [
+            'max_kb' => 5120,
+        ],
     ],
 
     'sms' => [
@@ -94,6 +127,14 @@ return [
         'download_ttl_minutes' => 5,
         'webhook_max_bytes' => 262144,
         'webhooks_per_minute' => 120,
+        'bank_transfer' => [
+            'max_active_accounts' => 10,
+            'bulk_decision_max' => 50,
+        ],
+        'checkout_script' => [
+            'url' => env('MOYASAR_FORM_SCRIPT_URL') ?: 'https://cdn.moyasar.com/mpf/1.15.0/moyasar.js',
+            'integrity' => env('MOYASAR_FORM_SCRIPT_INTEGRITY') ?: null,
+        ],
     ],
 
     'files' => [
@@ -107,8 +148,81 @@ return [
         ],
     ],
 
+    'insights' => [
+        'results_per_page' => 15,
+        'maturity_text_max_chars' => 600,
+        'board_report_quote_max_chars' => 200,
+        'board_report_summary_max_chars' => 600,
+        'board_report_one_page_mains' => 12,
+    ],
+
     'documents' => [
-        'pdf_renderer' => env('PDF_RENDERER') === 'fake' ? 'fake' : 'unavailable',
+        'pdf_renderer' => in_array(env('PDF_RENDERER'), ['fake', 'chromium'], true) ? env('PDF_RENDERER') : 'unavailable',
+        'chrome_binary' => env('PDF_CHROME_BINARY') ?: null,
+        'render_timeout_seconds' => (int) (env('PDF_RENDER_TIMEOUT_SECONDS') ?: 60),
+        'browser_startup_timeout_seconds' => 20,
+        'render_queue_wait_seconds' => 30,
+        'render_slot_key' => 'documents:pdf-render',
+        'download_ttl_minutes' => 5,
+    ],
+
+    'watermark' => [
+        'render_slot_key' => 'documents:stamp-render',
+        'render_slots' => (int) (env('WATERMARK_RENDER_SLOTS') ?: 1),
+        'qpdf_binary' => env('QPDF_BINARY') ?: 'qpdf',
+        'pdfinfo_binary' => env('PDFINFO_BINARY') ?: 'pdfinfo',
+        'pdftocairo_binary' => env('PDFTOCAIRO_BINARY') ?: 'pdftocairo',
+        'soffice_binary' => env('SOFFICE_BINARY') ?: 'soffice',
+        'tool_timeout_seconds' => 120,
+        'upload_check_timeout_seconds' => 15,
+        'conversion_timeout_seconds' => 180,
+        'conversion_slot_wait_seconds' => 5,
+        'max_source_bytes' => (int) (env('WATERMARK_MAX_SOURCE_MB') ?: 50) * 1024 * 1024,
+        'image_max_pixels' => 40_000_000,
+        'jpeg_quality' => 90,
+    ],
+
+    'certificates' => [
+        'verification_log_retention_days' => 365,
+        'verification_code_length' => 28,
+        'expiring_soon_days' => 30,
+    ],
+    'contact' => [
+        'submissions_per_ip_per_ten_minutes' => 5,
+        'submissions_per_ip_per_day' => 20,
+        'submissions_per_email_per_hour' => 3,
+        'follow_ups_per_user_per_ten_minutes' => 10,
+        'retention_months_min' => 1,
+        'retention_months_max' => 120,
+    ],
+
+    'cms' => [
+        'public_cache_seconds' => 3600,
+        'image_max_kb' => 5120,
+        'meta_max_bytes' => 16384,
+        'sections_per_page_max' => 40,
+        'items_per_section_max' => 60,
+    ],
+
+    'kpis' => [
+        'featured_max' => 6,
+        'featured_min' => 3,
+    ],
+
+    'branding' => [
+        'logo_max_kb' => 1024,
+        'logo_max_side_px' => 4096,
+        'minimum_contrast' => '4.5',
+        'default_colors' => [
+            'primary' => '#98d8d3',
+            'secondary' => '#0a2325',
+        ],
+        'surfaces' => [
+            'paper' => '#ffffff',
+            'ink' => '#100f10',
+            'content' => '#f8f8f8',
+        ],
+        'shade_step' => 0.05,
     ],
 
     'integrations' => [

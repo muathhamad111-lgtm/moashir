@@ -60,12 +60,24 @@ export const criteriaErrorMessages = {
     en: 'The weight :weight cannot be distributed equally over :shares items.',
   },
   'criteria.sub_evaluated_directly': {
-    ar: 'يُقيَّم هذا المعيار الفرعي مباشرة، لذا لا يمكن تقييم نقاط استرشادية عليه.',
-    en: 'This sub-criterion is evaluated directly, so guiding points cannot be scored on it.',
+    ar: 'يُقيَّم هذا المعيار الفرعي مباشرة، لذا لا يمكن تقييم مؤشرات عليه.',
+    en: 'This sub-criterion is evaluated directly, so indicators cannot be scored on it.',
   },
   'criteria.points_confirm_required': {
-    ar: 'يؤدي التحويل إلى التقييم المباشر إلى حذف :count من النقاط الاسترشادية. أكّد للمتابعة.',
-    en: 'Switching to direct evaluation deletes :count guiding points. Confirm to continue.',
+    ar: 'يؤدي التحويل إلى التقييم المباشر إلى حذف :count من المؤشرات. أكّد للمتابعة.',
+    en: 'Switching to direct evaluation deletes :count indicators. Confirm to continue.',
+  },
+  'criteria.node_not_a_child': {
+    ar: 'هذا العنصر لا يتبع المعيار الذي تُوزَّع أوزانه.',
+    en: 'This item does not belong to the criterion whose weights are being distributed.',
+  },
+  'criteria.weights_exceed_parent': {
+    ar: 'مجموع الأوزان المفعّلة :total يتجاوز وزن المعيار الأعلى البالغ :capacity.',
+    en: 'The active weights total :total, which exceeds the parent criterion weight of :capacity.',
+  },
+  'criteria.weights_distributed_equally': {
+    ar: 'يوزّع هذا المعيار وزنه بالتساوي. اختر التوزيع اليدوي قبل تعديل الأوزان.',
+    en: 'This criterion distributes its weight equally. Switch to manual distribution before editing the weights.',
   },
   'criteria.node_not_in_version': {
     ar: 'هذا العنصر لا ينتمي إلى إصدار المعايير المحدد.',
@@ -101,12 +113,16 @@ export const criteriaProblemMessages = {
     en: 'The active sub-criteria of :code total :actual, but they must equal the main criterion weight of :expected.',
   },
   no_active_point: {
-    ar: 'المعيار الفرعي :code يُقيَّم على النقاط الاسترشادية ولا توجد فيه نقطة استرشادية مفعّلة.',
-    en: 'The sub-criterion :code is evaluated on guiding points but has no active guiding point.',
+    ar: 'المعيار الفرعي :code يُقيَّم على المؤشرات ولا يوجد فيه مؤشر مفعّل.',
+    en: 'The sub-criterion :code is evaluated on indicators but has no active indicator.',
   },
   points_exceed_sub: {
-    ar: 'مجموع أوزان النقاط الاسترشادية المفعّلة في :code يساوي :actual، وهو يتجاوز وزن المعيار الفرعي البالغ :expected.',
-    en: 'The active guiding points of :code total :actual, which exceeds the sub-criterion weight of :expected.',
+    ar: 'مجموع أوزان المؤشرات المفعّلة في :code يساوي :actual، وهو يتجاوز وزن المعيار الفرعي البالغ :expected.',
+    en: 'The active indicators of :code total :actual, which exceeds the sub-criterion weight of :expected.',
+  },
+  points_below_sub: {
+    ar: 'مجموع أوزان المؤشرات المفعّلة في :code يساوي :actual، ويجب أن يساوي وزن المعيار الفرعي البالغ :expected.',
+    en: 'The active indicators of :code total :actual, but they must equal the sub-criterion weight of :expected.',
   },
 }
 
@@ -133,10 +149,10 @@ export const criteriaNoticeTexts = {
     },
   },
   'STD-04': {
-    title: { ar: 'تفعيل التقييم على النقاط الاسترشادية', en: 'Guiding-point evaluation enabled' },
+    title: { ar: 'تفعيل التقييم على المؤشرات', en: 'Indicator evaluation enabled' },
     body: {
-      ar: 'أصبح المعيار الفرعي :name_ar يُقيَّم على النقاط الاسترشادية. حدّد نقاطه الاسترشادية.',
-      en: 'The sub-criterion :name_en is now evaluated on guiding points. Define its guiding points.',
+      ar: 'أصبح المعيار الفرعي :name_ar يُقيَّم على المؤشرات. حدّد مؤشراته.',
+      en: 'The sub-criterion :name_en is now evaluated on indicators. Define its indicators.',
     },
   },
   'STD-05': {

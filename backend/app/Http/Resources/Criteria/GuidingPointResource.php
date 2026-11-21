@@ -24,6 +24,7 @@ final class GuidingPointResource extends JsonResource
             'code' => $this->resource->code,
             'description' => $this->resource->description->toArray(),
             'weight' => $this->resource->weight->toDecimal(),
+            'scoring_type' => $this->resource->scoring_type->value,
             'active' => $this->resource->is_active,
             'order' => $this->resource->sort_order,
             'attachments' => AttachmentRequirementResource::collection($this->resource->attachmentRequirements)->resolve($request),

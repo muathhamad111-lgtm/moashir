@@ -10,7 +10,9 @@ const props = defineProps({
 
 const { t, te } = useI18n()
 const variant = computed(() => PAYMENT_STATUS_VARIANTS[props.status] ?? 'muted')
-const label = computed(() => (te(`finance.status.${props.status}`) ? t(`finance.status.${props.status}`) : props.status))
+const label = computed(() =>
+  te(`finance.status.${props.status}`) ? t(`finance.status.${props.status}`) : props.status,
+)
 </script>
 
 <template>

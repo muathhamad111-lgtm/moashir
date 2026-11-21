@@ -9,18 +9,21 @@ import AdvancedIntroContent from '@/components/award/AdvancedIntroContent.vue'
 import { useAdvancedIntro } from '@/composables/useAdvancedIntro'
 import { useDraftDeletion } from '@/composables/useDraftDeletion'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 const router = useRouter()
 const intro = useAdvancedIntro()
-const { cycleStatus, status, errorMessage, cycle, current, applying, isAuthenticated, isEntity } = intro
+const { cycleStatus, status, errorMessage, cycle, current, applying, isAuthenticated, isEntity } =
+  intro
 const { deleting, deleteDraft } = useDraftDeletion()
 
 useHead({ title: () => t('advanced.title') })
 
 async function onApply() {
   const request = await intro.apply()
-  if (request) router.push({ name: ROUTE_NAMES.ASSESSMENT_ADVANCED_FORM, params: { id: request.id } })
+  if (request)
+    router.push({ name: ROUTE_NAMES.ASSESSMENT_ADVANCED_FORM, params: { id: request.id } })
 }
 
 async function onDelete(request) {
@@ -52,8 +55,11 @@ onMounted(intro.load)
       />
       <aside v-else-if="!isAuthenticated" class="advanced-intro__guest">
         <p class="advanced-intro__guest-text">{{ t('advanced.guest.message') }}</p>
-        <RouterLink class="btn btn--primary btn--md" :to="{ name: ROUTE_NAMES.AUTH_LOGIN, query: { redirect: '/assessment/advanced' } }">
-          <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
+        <RouterLink
+          class="btn btn--primary btn--md"
+          :to="{ name: ROUTE_NAMES.AUTH_LOGIN, query: { redirect: '/assessment/advanced' } }"
+        >
+          <AppIcon name="login" />
           {{ t('advanced.guest.signIn') }}
         </RouterLink>
       </aside>

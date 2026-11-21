@@ -4,7 +4,12 @@ import { smsIntegrationService } from '@/services/smsIntegrationService'
 import { useIntegrationSettings } from '@/composables/useIntegrationSettings'
 import { PROVIDER_ACTION_STATES, useProviderAction } from '@/composables/useProviderAction'
 import { smsSchema } from '@/utils/integrations/smsSchema'
-import { smsFormValues, smsPayload, smsSecretsChanged, templateErrorPath } from '@/utils/integrations/smsForm'
+import {
+  smsFormValues,
+  smsPayload,
+  smsSecretsChanged,
+  templateErrorPath,
+} from '@/utils/integrations/smsForm'
 import { checklistSteps } from '@/utils/integrations/checklist'
 import { CREDENTIAL_SOURCES, SMS_PROVIDERS, TAQNYAT_ACTIVE_SENDER } from '@/constants/integrations'
 
@@ -25,14 +30,30 @@ export function useSmsIntegration() {
   const { resource, form, refresh } = settings
 
   const senders = useProviderAction(() => smsIntegrationService.listTaqnyatSenders())
-  const msegatTemplates = useProviderAction(() => smsIntegrationService.listMsegatTemplates(), { onSettled: refresh })
+  const msegatTemplates = useProviderAction(() => smsIntegrationService.listMsegatTemplates(), {
+    onSettled: refresh,
+  })
 
-  const activeSenders = computed(() => (senders.result.value ?? []).filter((sender) => sender.status === TAQNYAT_ACTIVE_SENDER))
+  const activeSenders = computed(() =>
+    (senders.result.value ?? []).filter((sender) => sender.status === TAQNYAT_ACTIVE_SENDER),
+  )
   const msegat = computed(() => resource.value?.providers?.msegat ?? {})
-  const templatesLoaded = computed(() => msegatTemplates.state.value === PROVIDER_ACTION_STATES.SUCCESS || Boolean(msegat.value.approvedTemplatesLoadedAt))
-  const approvedTemplates = computed(() => msegatTemplates.result.value ?? msegat.value.approvedTemplates ?? [])
-  const templateRestricted = computed(() => form.values.providers?.msegat?.templateRestricted === true)
-  const approvedBodies = computed(() => (templateRestricted.value && templatesLoaded.value ? approvedTemplates.value.map((template) => template.body) : null))
+  const templatesLoaded = computed(
+    () =>
+      msegatTemplates.state.value === PROVIDER_ACTION_STATES.SUCCESS ||
+      Boolean(msegat.value.approvedTemplatesLoadedAt),
+  )
+  const approvedTemplates = computed(
+    () => msegatTemplates.result.value ?? msegat.value.approvedTemplates ?? [],
+  )
+  const templateRestricted = computed(
+    () => form.values.providers?.msegat?.templateRestricted === true,
+  )
+  const approvedBodies = computed(() =>
+    templateRestricted.value && templatesLoaded.value
+      ? approvedTemplates.value.map((template) => template.body)
+      : null,
+  )
 
   function providerStatus(provider) {
     const value = resource.value
@@ -51,12 +72,24 @@ export function useSmsIntegration() {
     const value = resource.value
     if (!value) return null
     const active = value.activeProvider ? value.providers[value.activeProvider] : null
-    const configured = active ? active.configured : Object.values(value.providers).some((config) => config.configured)
-    return { source: value.source, configured, active: Boolean(active), mode: value.mode, lastTest: active?.lastTest ?? null }
+    const configured = active
+      ? active.configured
+      : Object.values(value.providers).some((config) => config.configured)
+    return {
+      source: value.source,
+      configured,
+      active: Boolean(active),
+      mode: value.mode,
+      lastTest: active?.lastTest ?? null,
+    }
   })
 
-  const clientSteps = computed(() => checklistSteps(resource.value?.checklist, (key) => t(`integrations.sms.checklist.${key}`)))
-  const defaultTestProvider = computed(() => resource.value?.activeProvider ?? SMS_PROVIDERS.TAQNYAT)
+  const clientSteps = computed(() =>
+    checklistSteps(resource.value?.checklist, (key) => t(`integrations.sms.checklist.${key}`)),
+  )
+  const defaultTestProvider = computed(
+    () => resource.value?.activeProvider ?? SMS_PROVIDERS.TAQNYAT,
+  )
 
   return {
     ...settings,

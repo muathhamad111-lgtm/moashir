@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Identity;
 
+use App\Data\Identity\InvitationAcceptance;
 use App\Models\Identity\TermsVersion;
+use App\Rules\SaudiNationalId;
 use App\Services\Identity\PasswordPolicy;
 use App\Support\ScalarValue;
+use App\Support\ValueObjects\NationalId;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -24,17 +27,17 @@ final class AcceptInvitationRequest extends FormRequest
                 'integer',
                 $this->mustBeCurrentTerms(...),
             ],
+            'national_id' => ['nullable', 'string', 'max:20', new SaudiNationalId],
         ];
     }
 
-    public function password(): string
+    public function acceptance(): InvitationAcceptance
     {
-        return $this->string('password')->toString();
-    }
-
-    public function acceptedTerms(): ?TermsVersion
-    {
-        return $this->currentTerms();
+        return new InvitationAcceptance(
+            $this->string('password')->toString(),
+            $this->currentTerms(),
+            $this->filled('national_id') ? new NationalId($this->string('national_id')->toString()) : null,
+        );
     }
 
     /**

@@ -1,14 +1,13 @@
 <script setup>
 import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
+import { pointsText } from '@/utils/percentText'
 
 const props = defineProps({
   row: { type: Object, required: true },
   localized: { type: Function, required: true },
 })
-
-const { n } = useI18n()
 
 function pct(value) {
   const weight = Number(props.row.weight) || 0
@@ -20,10 +19,10 @@ const afterPct = computed(() => pct(props.row.after))
 
 const diffLabel = computed(() => {
   const diff = Number(props.row.diff) || 0
-  const magnitude = n(Math.abs(diff), 'default')
+  const magnitude = pointsText(Math.abs(diff))
   if (diff > 0) return `+${magnitude}`
   if (diff < 0) return `−${magnitude}`
-  return n(0, 'default')
+  return pointsText(0)
 })
 const diffClass = computed(() => {
   const diff = Number(props.row.diff) || 0
@@ -41,7 +40,9 @@ const diffClass = computed(() => {
         <h3 class="reassessment-row__sub">{{ localized(row.subName) }}</h3>
       </div>
       <div class="reassessment-row__badges">
-        <span v-if="row.inKitScope" class="reassessment-row__scope">{{ $t('bag.comparison.inKit') }}</span>
+        <span v-if="row.inKitScope" class="reassessment-row__scope">{{
+          $t('bag.comparison.inKit')
+        }}</span>
         <StatusBadge :status="row.outcome" />
       </div>
     </div>
@@ -49,12 +50,12 @@ const diffClass = computed(() => {
     <div class="reassessment-row__scores">
       <div class="reassessment-row__score">
         <span class="reassessment-row__score-label">{{ $t('bag.comparison.before') }}</span>
-        <span class="reassessment-row__score-value">{{ n(row.before, 'default') }}</span>
+        <span class="reassessment-row__score-value">{{ pointsText(row.before) }}</span>
       </div>
-      <i class="fa-solid fa-arrow-right-long reassessment-row__arrow" aria-hidden="true"></i>
+      <AppIcon name="arrow-right" class="reassessment-row__arrow" />
       <div class="reassessment-row__score">
         <span class="reassessment-row__score-label">{{ $t('bag.comparison.after') }}</span>
-        <span class="reassessment-row__score-value">{{ n(row.after, 'default') }}</span>
+        <span class="reassessment-row__score-value">{{ pointsText(row.after) }}</span>
       </div>
       <div class="reassessment-row__score reassessment-row__score--diff">
         <span class="reassessment-row__score-label">{{ $t('bag.comparison.diff') }}</span>
@@ -64,15 +65,26 @@ const diffClass = computed(() => {
 
     <div class="reassessment-row__bars">
       <div class="reassessment-row__bar" role="presentation">
-        <span class="reassessment-row__bar-fill reassessment-row__bar-fill--before" :style="{ '--bar-fill': `${beforePct}%` }"></span>
+        <span
+          class="reassessment-row__bar-fill reassessment-row__bar-fill--before"
+          :style="{ '--bar-fill': `${beforePct}%` }"
+        ></span>
       </div>
       <div class="reassessment-row__bar" role="presentation">
-        <span class="reassessment-row__bar-fill reassessment-row__bar-fill--after" :style="{ '--bar-fill': `${afterPct}%` }"></span>
+        <span
+          class="reassessment-row__bar-fill reassessment-row__bar-fill--after"
+          :style="{ '--bar-fill': `${afterPct}%` }"
+        ></span>
       </div>
     </div>
 
     <p class="reassessment-row__caption">
-      {{ $t('bag.comparison.remaining', { gap: n(row.gapAfter, 'default'), target: n(row.weight, 'default') }) }}
+      {{
+        $t('bag.comparison.remaining', {
+          gap: pointsText(row.gapAfter),
+          target: pointsText(row.weight),
+        })
+      }}
     </p>
   </div>
 </template>

@@ -1,46 +1,27 @@
-import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { onMounted, ref, unref } from 'vue'
 import { feedbackReportService } from '@/services/feedbackReportService'
 
-export function useFeedbackReport(assessmentId) {
-  const { locale } = useI18n()
+const NOT_FOUND = 404
 
+export function useFeedbackReport(assessmentId) {
   const status = ref('loading')
   const errorMessage = ref('')
   const report = ref(null)
-  const exporting = ref(false)
-
-  function localized(content) {
-    if (content === null || content === undefined) return ''
-    if (typeof content === 'string') return content
-    return content[locale.value] || content.ar || content.en || ''
-  }
-
-  const isAvailable = computed(() => report.value?.status === 'available')
 
   async function load() {
     status.value = 'loading'
     errorMessage.value = ''
     try {
-      const { data } = await feedbackReportService.get(assessmentId)
+      const { data } = await feedbackReportService.get(unref(assessmentId))
       report.value = data
       status.value = 'success'
     } catch (error) {
       errorMessage.value = error?.normalized?.message ?? ''
-      status.value = 'error'
+      status.value = error?.normalized?.status === NOT_FOUND ? 'missing' : 'error'
     }
   }
 
-  async function exportReport() {
-    if (exporting.value) return null
-    exporting.value = true
-    try {
-      const { data } = await feedbackReportService.export(assessmentId)
-      return data
-    } finally {
-      exporting.value = false
-    }
-  }
+  onMounted(load)
 
-  return { status, errorMessage, report, exporting, isAvailable, localized, load, exportReport }
+  return { status, errorMessage, report, load }
 }

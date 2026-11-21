@@ -32,7 +32,7 @@ final readonly class ReorderMainCriteria
             $before = $mains->pluck('code')->all();
 
             $this->order->apply($mains, $orderedIds);
-            $after = $draft->mainCriteria()->with(['subCriteria'])->get();
+            $after = $draft->mainCriteria()->with(['subCriteria', 'attachmentRequirements'])->get();
 
             $this->audit->record(AuditEvent::CriteriaMainsReordered, $draft, ['order' => $before], ['order' => $after->pluck('code')->all()]);
 

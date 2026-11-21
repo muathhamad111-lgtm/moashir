@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Services\Assessments;
 
 use App\Data\Entities\EntityNotice;
+use App\Data\Notifications\NoticeText;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Notifications\NotificationCode;
 use App\Models\Finance\Payment;
 use App\Services\Entities\EntityNotifier;
-use App\Support\ValueObjects\LocalizedText;
 use Illuminate\Contracts\Cache\Repository as Cache;
 use Illuminate\Contracts\Config\Repository as Config;
 
@@ -17,9 +17,21 @@ final readonly class AccreditedRequestAlerts
 {
     private const string KEY = 'notifications.assessments.accredited_opening_failed';
 
+    private const string PAID_REQUEST_KEY = 'notifications.assessments.paid_request_opening_failed';
+
     public function __construct(private EntityNotifier $notifier, private Cache $cache, private Config $config) {}
 
     public function openingFailed(Payment $payment): void
+    {
+        $this->notify($payment, self::KEY);
+    }
+
+    public function paidRequestOpeningFailed(Payment $payment): void
+    {
+        $this->notify($payment, self::PAID_REQUEST_KEY);
+    }
+
+    private function notify(Payment $payment, string $key): void
     {
         $minutes = max(1, $this->config->integer('moashir.integrations.alert_cooldown_minutes'));
 
@@ -27,13 +39,7 @@ final readonly class AccreditedRequestAlerts
             return;
         }
 
-        $this->notifier->toRole(RoleKey::SystemAdmin, new EntityNotice(
-            NotificationCode::RequestProcessingFailed,
-            LocalizedText::fromTranslation(self::KEY.'.title'),
-            LocalizedText::fromTranslationWith(self::KEY.'.body', ['reference' => $payment->reference]),
-            null,
-            false,
-            true,
-        ), null);
+        $notice = EntityNotice::fromText(NotificationCode::RequestProcessingFailed, new NoticeText($key, ['reference' => $payment->reference]), null);
+        $this->notifier->toRole(RoleKey::SystemAdmin, $notice->inAppOnly(), null);
     }
 }

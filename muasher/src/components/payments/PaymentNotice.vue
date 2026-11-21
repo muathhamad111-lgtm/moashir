@@ -1,4 +1,6 @@
 <script setup>
+import AppIcon from '@/components/ui/AppIcon.vue'
+
 defineProps({
   tone: {
     type: String,
@@ -13,8 +15,12 @@ defineProps({
 </script>
 
 <template>
-  <section class="payment-notice" :class="`payment-notice--${tone}`" :role="live ? 'status' : undefined">
-    <span class="payment-notice__icon" aria-hidden="true"><i :class="icon"></i></span>
+  <section
+    class="payment-notice"
+    :class="`payment-notice--${tone}`"
+    :role="live ? 'status' : undefined"
+  >
+    <span class="payment-notice__icon" aria-hidden="true"><AppIcon :name="icon" /></span>
     <div class="payment-notice__body">
       <h2 class="payment-notice__title">{{ title }}</h2>
       <p v-if="message" class="payment-notice__message">{{ message }}</p>

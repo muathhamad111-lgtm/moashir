@@ -1,274 +1,237 @@
-import { HttpResponse, delay } from 'msw'
 import { http } from '../contract/http'
-import { homeContentFixture, modelCriteriaFixture } from '../fixtures/content'
-import { failsRandomly } from '../contract/faults'
+import { envelope, noContent } from '../contract/responses'
+import { contentReject, contentRoute, readJson } from '../stores/content/contentRejection'
+import { CONTENT_PERMISSIONS, requireContentPermission } from '../stores/content/contentAccess'
+import { findPage, sectionsOf } from '../stores/content/cmsState'
+import {
+  pageResource,
+  pageSummary,
+  publicSiteSettings,
+  publishedPage,
+  siteSettingsResource,
+} from '../stores/content/cmsSerializers'
+import {
+  publishPage,
+  requirePage,
+  unpublishPage,
+  updatePageDetails,
+} from '../stores/content/cmsPublication'
+import {
+  createSection,
+  removeSection,
+  reorderSections,
+  toggleSection,
+  updateSection,
+} from '../stores/content/cmsSectionWrites'
+import {
+  createItem,
+  removeItem,
+  reorderItems,
+  toggleItem,
+  updateItem,
+} from '../stores/content/cmsItemWrites'
+import { updateSiteSettings } from '../stores/content/siteSettingsWrites'
+import { acceptImage } from '../stores/content/imageUploads'
+import { CMS_IMAGE_PURPOSE } from '../stores/content/cmsContentInput'
+import { cmsState } from '../stores/content/cmsState'
+import { publicFilesHandlers } from './publicFiles'
 
-const store = {
-  published: homeContentFixture.published,
-  sections: homeContentFixture.sections.map((section) => cloneSection(section)),
-  siteSettings: cloneSettings(homeContentFixture.siteSettings),
+const HOME = 'home'
+const MAINTENANCE = { published: false, maintenance: true }
+
+function canManage() {
+  return requireContentPermission(CONTENT_PERMISSIONS.HOME)
 }
 
-let itemIdSeed = 700000
-
-function nextItemId() {
-  itemIdSeed += 1
-  return `item-${itemIdSeed}`
-}
-
-function cloneItem(entry) {
-  return JSON.parse(JSON.stringify(entry))
-}
-
-function cloneSection(section) {
-  return JSON.parse(JSON.stringify(section))
-}
-
-function cloneSettings(settings) {
-  return JSON.parse(JSON.stringify(settings))
-}
-
-function byOrder(a, b) {
-  return a.order - b.order
-}
-
-function normalizeSectionOrder() {
-  store.sections.sort(byOrder).forEach((section, index) => {
-    section.order = index + 1
-  })
-}
-
-function normalizeItemOrder(section) {
-  section.items.sort(byOrder).forEach((entry, index) => {
-    entry.order = index + 1
-  })
-}
-
-function envelope(data, meta = {}) {
-  return HttpResponse.json({ data, meta, errors: null })
-}
-
-function errorResponse(message, status, fieldErrors = {}) {
-  return HttpResponse.json({ message, errors: fieldErrors, code: status }, { status })
-}
-
-const maybeFail = failsRandomly(0.08)
-
-function findSection(id) {
-  return store.sections.find((section) => section.id === id)
-}
-
-function publicSections() {
-  return store.sections.filter((section) => section.enabled).sort(byOrder).map(cloneSection)
-}
-
-function landingShim() {
-  const hero = findSection('sec-hero')
-  const paths = findSection('sec-evaluation-paths')
-  const bag = findSection('sec-fast-excellence-kit')
-  const lenses = findSection('sec-analytics-lenses')
-  const leadership = findSection('sec-leadership')
+function homePayload() {
+  const home = publishedPage(HOME)
+  if (!home) return MAINTENANCE
   return {
-    published: store.published,
-    hero: {
-      headline: hero ? hero.title : { ar: '', en: '' },
-      subtitle: hero ? hero.subtitle : { ar: '', en: '' },
-    },
-    intro: {
-      title: { ar: 'عن المنصة', en: 'About the platform' },
-      body: hero ? hero.description : { ar: '', en: '' },
-    },
-    pathCards: (paths ? paths.items : []).slice().sort(byOrder).map((entry, index) => ({
-      key: entry.id,
-      icon: entry.icon,
-      title: entry.title,
-      summary: entry.description,
-      order: index + 1,
-    })),
-    modelCriteria: modelCriteriaFixture,
-    sections: {
-      bag: bag
-        ? { title: bag.title, body: bag.description, icon: bag.icon, future: false }
-        : undefined,
-      lenses: lenses
-        ? { title: lenses.title, body: lenses.description, icon: lenses.icon, future: true }
-        : undefined,
-      leadership: leadership
-        ? {
-            title: leadership.title,
-            body: leadership.description,
-            icon: leadership.icon,
-            future: true,
-          }
-        : undefined,
-    },
+    published: true,
+    maintenance: false,
+    title: home.title,
+    seo: home.seo,
+    sections: home.sections,
+    siteSettings: publicSiteSettings(),
+    publishedAt: home.publishedAt,
   }
 }
 
-const MAINTENANCE_PAYLOAD = { published: false, maintenance: true }
-
-function setHomePublished(published) {
-  store.published = published
-  return { key: 'home', published: store.published }
-}
-
-export const contentHandlers = [
-  http.post('/api/v1/admin/content/pages/:key/publish', async ({ params }) => {
-    await delay(260)
-    if (params.key !== 'home') return errorResponse('Page not found', 404)
-    return envelope(setHomePublished(true))
-  }),
-
-  http.post('/api/v1/admin/content/pages/:key/unpublish', async ({ params }) => {
-    await delay(260)
-    if (params.key !== 'home') return errorResponse('Page not found', 404)
-    return envelope(setHomePublished(false))
-  }),
-
-  http.get('/api/v1/content/landing', async () => {
-    await delay(380)
-    if (maybeFail()) return errorResponse('Failed to load landing content', 503)
-    if (!store.published) return envelope(MAINTENANCE_PAYLOAD)
-    return envelope(landingShim())
-  }),
-
-  http.get('/api/v1/content/home', async () => {
-    await delay(400)
-    if (maybeFail()) return errorResponse('Failed to load the homepage content', 503)
-    if (!store.published) return envelope(MAINTENANCE_PAYLOAD)
-    return envelope({ sections: publicSections(), siteSettings: cloneSettings(store.siteSettings) })
-  }),
-
-  http.get('/api/v1/admin/content/home', async () => {
-    await delay(400)
-    if (maybeFail()) return errorResponse('Failed to load the homepage content', 503)
-    return envelope(
-      {
-        published: store.published,
-        sections: store.sections.slice().sort(byOrder).map(cloneSection),
-        siteSettings: cloneSettings(store.siteSettings),
-      },
-      { total: store.sections.length },
-    )
-  }),
-
-  http.patch('/api/v1/admin/content/sections/reorder', async ({ request }) => {
-    await delay(280)
-    if (maybeFail()) return errorResponse('Could not reorder the sections', 500)
-    const body = await request.json()
-    const orderedIds = Array.isArray(body.orderedIds) ? body.orderedIds : []
-    orderedIds.forEach((id, index) => {
-      const section = findSection(id)
-      if (section) section.order = index + 1
-    })
-    normalizeSectionOrder()
-    return envelope(store.sections.slice().sort(byOrder).map(cloneSection))
-  }),
-
-  http.patch('/api/v1/admin/content/sections/:sectionId/enabled', async ({ request, params }) => {
-    await delay(240)
-    if (maybeFail()) return errorResponse('Could not change the section state', 500)
-    const section = findSection(params.sectionId)
-    if (!section) return errorResponse('Section not found', 404)
-    const body = await request.json()
-    section.enabled = Boolean(body.enabled)
-    return envelope(cloneSection(section))
-  }),
-
-  http.patch('/api/v1/admin/content/sections/:sectionId', async ({ request, params }) => {
-    await delay(360)
-    if (maybeFail()) return errorResponse('Could not update the section', 500)
-    const section = findSection(params.sectionId)
-    if (!section) return errorResponse('Section not found', 404)
-    const patch = await request.json()
-    const editable = { ...patch }
-    delete editable.id
-    delete editable.key
-    delete editable.items
-    delete editable.order
-    Object.assign(section, editable)
-    return envelope(cloneSection(section))
-  }),
-
-  http.post('/api/v1/admin/content/sections/:sectionId/items', async ({ request, params }) => {
-    await delay(320)
-    if (maybeFail()) return errorResponse('Could not save the item', 500)
-    const section = findSection(params.sectionId)
-    if (!section) return errorResponse('Section not found', 404)
-    const body = await request.json()
-    if (body.id) {
-      const existing = section.items.find((entry) => entry.id === body.id)
-      if (existing) {
-        const editable = { ...body }
-        delete editable.id
-        delete editable.order
-        Object.assign(existing, editable)
-        normalizeItemOrder(section)
-        return envelope(cloneSection(section))
-      }
-    }
-    const maxOrder = section.items.reduce((max, entry) => Math.max(max, entry.order), 0)
-    const created = cloneItem({
-      icon: '',
-      image: '',
-      title: { ar: '', en: '' },
-      description: { ar: '', en: '' },
-      ctaLabel: { ar: '', en: '' },
-      ctaUrl: '',
-      meta: {},
-      ...body,
-      id: body.id || nextItemId(),
-      order: body.order ? Number(body.order) : maxOrder + 1,
-    })
-    section.items.push(created)
-    normalizeItemOrder(section)
-    return envelope(cloneSection(section))
-  }),
-
-  http.delete(
-    '/api/v1/admin/content/sections/:sectionId/items/:itemId',
-    async ({ params }) => {
-      await delay(300)
-      if (maybeFail()) return errorResponse('Could not remove the item', 500)
-      const section = findSection(params.sectionId)
-      if (!section) return errorResponse('Section not found', 404)
-      const index = section.items.findIndex((entry) => entry.id === params.itemId)
-      if (index === -1) return errorResponse('Item not found', 404)
-      section.items.splice(index, 1)
-      normalizeItemOrder(section)
-      return envelope(cloneSection(section))
-    },
+const publicHandlers = [
+  http.get(
+    '/api/v1/content/status',
+    contentRoute(() => {
+      const home = publishedPage(HOME)
+      return envelope({ maintenance: home === null, publishedAt: home?.publishedAt ?? null })
+    }),
   ),
+  http.get(
+    '/api/v1/content/home',
+    contentRoute(() => envelope(homePayload())),
+  ),
+  http.get(
+    '/api/v1/content/pages/:key',
+    contentRoute(({ params }) => {
+      if (!findPage(params.key)) throw contentReject.notFound()
+      const page = publishedPage(params.key)
+      if (!page) throw contentReject.pageNotPublished()
+      return envelope(page)
+    }),
+  ),
+]
 
+const pageHandlers = [
+  http.get(
+    '/api/v1/admin/content/home',
+    contentRoute(() => {
+      canManage()
+      return envelope(
+        { ...pageResource(findPage(HOME)), siteSettings: siteSettingsResource() },
+        { total: sectionsOf(HOME).length },
+      )
+    }),
+  ),
+  http.get(
+    '/api/v1/admin/content/pages',
+    contentRoute(() => {
+      canManage()
+      return envelope(cmsState.pages.map(pageSummary))
+    }),
+  ),
+  http.get(
+    '/api/v1/admin/content/pages/:key',
+    contentRoute(({ params }) => {
+      canManage()
+      return envelope(pageResource(requirePage(params.key)))
+    }),
+  ),
+  http.put(
+    '/api/v1/admin/content/pages/:key',
+    contentRoute(async ({ params, request }) => {
+      canManage()
+      return envelope(updatePageDetails(params.key, await readJson(request)))
+    }),
+  ),
+  http.post(
+    '/api/v1/admin/content/pages/:key/publish',
+    contentRoute(({ params }) => {
+      canManage()
+      return envelope(publishPage(params.key))
+    }),
+  ),
+  http.post(
+    '/api/v1/admin/content/pages/:key/unpublish',
+    contentRoute(({ params }) => {
+      canManage()
+      return envelope(unpublishPage(params.key))
+    }),
+  ),
+  http.post(
+    '/api/v1/admin/content/pages/:key/sections',
+    contentRoute(async ({ params, request }) => {
+      canManage()
+      return envelope(createSection(params.key, await readJson(request)), {}, { status: 201 })
+    }),
+  ),
+]
+
+const sectionHandlers = [
+  http.patch(
+    '/api/v1/admin/content/sections/reorder',
+    contentRoute(async ({ request }) => {
+      canManage()
+      return envelope(reorderSections(await readJson(request)))
+    }),
+  ),
+  http.patch(
+    '/api/v1/admin/content/sections/:sectionId/enabled',
+    contentRoute(async ({ params, request }) => {
+      canManage()
+      return envelope(toggleSection(params.sectionId, await readJson(request)))
+    }),
+  ),
   http.patch(
     '/api/v1/admin/content/sections/:sectionId/items/reorder',
-    async ({ request, params }) => {
-      await delay(260)
-      if (maybeFail()) return errorResponse('Could not reorder the items', 500)
-      const section = findSection(params.sectionId)
-      if (!section) return errorResponse('Section not found', 404)
-      const body = await request.json()
-      const orderedIds = Array.isArray(body.orderedIds) ? body.orderedIds : []
-      orderedIds.forEach((id, index) => {
-        const entry = section.items.find((candidate) => candidate.id === id)
-        if (entry) entry.order = index + 1
-      })
-      normalizeItemOrder(section)
-      return envelope(cloneSection(section))
-    },
+    contentRoute(async ({ params, request }) => {
+      canManage()
+      return envelope(reorderItems(params.sectionId, await readJson(request)))
+    }),
   ),
+  http.patch(
+    '/api/v1/admin/content/sections/:sectionId/items/:itemId/enabled',
+    contentRoute(async ({ params, request }) => {
+      canManage()
+      return envelope(toggleItem(params.sectionId, params.itemId, await readJson(request)))
+    }),
+  ),
+  http.patch(
+    '/api/v1/admin/content/sections/:sectionId',
+    contentRoute(async ({ params, request }) => {
+      canManage()
+      return envelope(updateSection(params.sectionId, await readJson(request)))
+    }),
+  ),
+  http.delete(
+    '/api/v1/admin/content/sections/:sectionId',
+    contentRoute(({ params }) => {
+      canManage()
+      removeSection(params.sectionId)
+      return noContent()
+    }),
+  ),
+  http.post(
+    '/api/v1/admin/content/sections/:sectionId/items',
+    contentRoute(async ({ params, request }) => {
+      canManage()
+      return envelope(createItem(params.sectionId, await readJson(request)), {}, { status: 201 })
+    }),
+  ),
+  http.put(
+    '/api/v1/admin/content/sections/:sectionId/items/:itemId',
+    contentRoute(async ({ params, request }) => {
+      canManage()
+      return envelope(updateItem(params.sectionId, params.itemId, await readJson(request)))
+    }),
+  ),
+  http.delete(
+    '/api/v1/admin/content/sections/:sectionId/items/:itemId',
+    contentRoute(({ params }) => {
+      canManage()
+      removeItem(params.sectionId, params.itemId)
+      return noContent()
+    }),
+  ),
+]
 
-  http.get('/api/v1/admin/content/site-settings', async () => {
-    await delay(280)
-    if (maybeFail()) return errorResponse('Failed to load the site settings', 503)
-    return envelope(cloneSettings(store.siteSettings))
-  }),
+const settingsHandlers = [
+  http.get(
+    '/api/v1/admin/content/site-settings',
+    contentRoute(() => {
+      canManage()
+      return envelope(siteSettingsResource())
+    }),
+  ),
+  http.patch(
+    '/api/v1/admin/content/site-settings',
+    contentRoute(async ({ request }) => {
+      canManage()
+      return envelope(updateSiteSettings(await readJson(request)))
+    }),
+  ),
+  http.post(
+    '/api/v1/admin/content/images',
+    contentRoute(async ({ request }) => {
+      canManage()
+      const { upload } = await acceptImage(request, CMS_IMAGE_PURPOSE)
+      return envelope(upload, {}, { status: 201 })
+    }),
+  ),
+]
 
-  http.patch('/api/v1/admin/content/site-settings', async ({ request }) => {
-    await delay(320)
-    if (maybeFail()) return errorResponse('Could not update the site settings', 500)
-    const patch = await request.json()
-    store.siteSettings = { ...store.siteSettings, ...patch }
-    return envelope(cloneSettings(store.siteSettings))
-  }),
+export const contentHandlers = [
+  ...publicHandlers,
+  ...pageHandlers,
+  ...sectionHandlers,
+  ...settingsHandlers,
+  ...publicFilesHandlers,
 ]

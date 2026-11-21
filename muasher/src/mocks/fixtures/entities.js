@@ -1,3 +1,6 @@
+import { FIXTURE_ENTITY_LOGO } from './entityLogos'
+import { billingOf } from './entityBilling'
+
 export const ENTITY_REFERENCE_PREFIX = 'ENT-'
 
 export const FIXTURE_ENTITY_ID = 5001
@@ -7,12 +10,43 @@ const AUDIT_DATES = {
   verified: '2026-06-28T06:22:00Z',
 }
 
-function owner(id, name, email) {
-  return { id, name, email, phone: null }
+const UNIFIED_NUMBER_PREFIX = '7100'
+const UNIFIED_NUMBER_DIGITS = 6
+
+export const FIXTURE_VERIFIED_PHONE = '+966500005001'
+
+function owner(id, name, email, phone = null) {
+  return { id, name, email, phone, phoneVerifiedAt: phone ? AUDIT_DATES.verified : null }
+}
+
+function unifiedNumberOf(id) {
+  return `${UNIFIED_NUMBER_PREFIX}${String(id).padStart(UNIFIED_NUMBER_DIGITS, '0')}`
+}
+
+function registryOf(fields) {
+  const complete = [
+    fields.governanceGrade,
+    fields.employeesCount,
+    fields.annualBeneficiariesCount,
+  ].every((value) => value !== null && value !== undefined)
+  return complete
+    ? {
+        unifiedNumber: unifiedNumberOf(fields.id),
+        licenseNumber: `880${fields.id}`,
+        foundedOn: `${fields.foundingYear}-03-01`,
+      }
+    : {}
 }
 
 function record(fields) {
   return {
+    unifiedNumber: null,
+    licenseNumber: null,
+    foundedOn: null,
+    websiteUrl: null,
+    logo: null,
+    ...registryOf(fields),
+    ...billingOf(fields.id),
     name: { ar: '', en: null },
     governanceGrade: null,
     employeesCount: null,
@@ -49,8 +83,15 @@ export const entitiesFixture = [
     annualBeneficiariesCount: 42000,
     hasStrategicPlan: true,
     marketingConsentAt: '2026-06-28T06:15:00Z',
-    owner: owner(5001, 'أحمد بن سالم القحطاني', 'info@albirr-riyadh.example.sa'),
-    openRequests: [{ id: 14, number: 'ACC-2026-000014', path: 'accredited', status: 'under-review' }],
+    owner: owner(
+      5001,
+      'أحمد بن سالم القحطاني',
+      'info@albirr-riyadh.example.sa',
+      FIXTURE_VERIFIED_PHONE,
+    ),
+    openRequests: [
+      { id: 14, number: 'ACC-2026-000014', path: 'accredited', status: 'under-review' },
+    ],
   }),
   record({
     id: 6001,
@@ -61,6 +102,9 @@ export const entitiesFixture = [
     foundingYear: 2015,
     regionId: 2,
     cityId: 12,
+    governanceGrade: '82.00',
+    employeesCount: 46,
+    annualBeneficiariesCount: 3200,
     hasStrategicPlan: true,
     createdAt: '2026-07-02T08:40:00Z',
     verifiedAt: '2026-07-02T08:46:00Z',
@@ -86,7 +130,12 @@ export const entitiesFixture = [
       { id: 31, number: 'ADV-2026-000031', path: 'advanced', status: 'under-initial-assessment' },
       { id: 7, number: 'BAG-2026-000007', path: 'bag', status: 'stage-active' },
     ],
-    incomingOpenRequest: { id: 52, number: 'ACC-2026-000052', path: 'accredited', status: 'submitted' },
+    incomingOpenRequest: {
+      id: 52,
+      number: 'ACC-2026-000052',
+      path: 'accredited',
+      status: 'submitted',
+    },
   }),
   record({
     id: 6003,
@@ -106,6 +155,8 @@ export const entitiesFixture = [
     deactivatedAt: '2026-09-14T07:30:00Z',
     deactivationReason: 'إيقاف مؤقت بطلب رسمي من مجلس النظارة لحين تحديث بيانات الوقف.',
     owner: owner(6003, 'خالد بن عبدالله الدوسري', 'admin@alkhair-waqf.example.sa'),
+    websiteUrl: 'https://www.alkhair-waqf.example.sa',
+    logo: { ...FIXTURE_ENTITY_LOGO },
   }),
   record({
     id: 6004,
@@ -123,7 +174,9 @@ export const entitiesFixture = [
     createdAt: '2026-04-22T10:00:00Z',
     verifiedAt: '2026-04-22T10:04:00Z',
     owner: owner(6004, 'سارة بنت محمد الحربي', 'info@ataa-madinah.example.sa'),
-    openRequests: [{ id: 19, number: 'ACC-2026-000019', path: 'accredited', status: 'awaiting-assignment' }],
+    openRequests: [
+      { id: 19, number: 'ACC-2026-000019', path: 'accredited', status: 'awaiting-assignment' },
+    ],
   }),
   record({
     id: 6005,
@@ -244,6 +297,20 @@ export const entitiesFixture = [
     verifiedAt: '2026-06-03T08:05:00Z',
     owner: owner(7005, 'منصور بن حمد العجمي', 'info@athar-taif.example.sa'),
   }),
+  record({
+    id: 7006,
+    name: { ar: 'جمعية غراس للتنمية الأسرية', en: 'Ghiras Family Development Society' },
+    entityType: 'civil_association',
+    developmentSector: 'social',
+    orgSize: 'small',
+    foundingYear: 2022,
+    regionId: 1,
+    cityId: 2,
+    status: 'pending-review',
+    createdAt: '2026-11-14T09:20:00Z',
+    verifiedAt: '2026-11-14T09:31:00Z',
+    owner: owner(7006, 'هيفاء بنت سالم القحطاني', 'info@ghiras-family.example.sa'),
+  }),
 ]
 
 export const emailChangesFixture = [
@@ -270,32 +337,5 @@ export const emailChangesFixture = [
     otpVerifiedAt: '2026-08-11T06:03:00Z',
     appliedAt: '2026-08-12T10:30:00Z',
     decisionReason: null,
-  },
-]
-
-export const privacyRequestsFixture = [
-  {
-    id: 41,
-    entityId: 6001,
-    kind: 'access',
-    status: 'open',
-    details: 'طلبت الجهة عبر خطاب رسمي نسخة من بياناتها الشخصية المسجلة في المنصة.',
-    createdBy: { id: 2, name: 'منيرة بنت خالد العتيبي' },
-    decidedBy: null,
-    decisionNote: null,
-    decidedAt: null,
-    createdAt: '2026-10-27T08:30:00Z',
-  },
-  {
-    id: 37,
-    entityId: 5001,
-    kind: 'correction',
-    status: 'fulfilled',
-    details: 'تصحيح اسم الشخص المفوض وفق خطاب التفويض المحدث.',
-    createdBy: { id: 2, name: 'منيرة بنت خالد العتيبي' },
-    decidedBy: { id: 2, name: 'منيرة بنت خالد العتيبي' },
-    decisionNote: 'تم تحديث الاسم من ملف الجهة بعد التحقق من خطاب التفويض.',
-    decidedAt: '2026-10-02T11:00:00Z',
-    createdAt: '2026-10-01T09:00:00Z',
   },
 ]

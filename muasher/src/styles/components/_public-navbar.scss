@@ -1,0 +1,249 @@
+@use '../tokens' as *;
+@use '../mixins' as *;
+
+.public-navbar {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: var(--z-sticky);
+  block-size: var(--size-header-mobile);
+  pointer-events: none;
+
+  @include respond-to('xl') {
+    block-size: var(--size-header);
+  }
+}
+
+.public-navbar__backdrop {
+  position: absolute;
+  inset: 0;
+  border-block-end: var(--border-width) solid var(--theme-border);
+  background-color: var(--theme-surface);
+  transform-origin: center top;
+  transition: transform var(--motion-header) var(--ease-brand);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: var(--shadow-header);
+    opacity: 0;
+    transition: opacity var(--motion-header) var(--ease-brand);
+  }
+}
+
+.public-navbar__inner {
+  @include flex(row, center, space-between, var(--space-3));
+  position: relative;
+  block-size: 100%;
+  max-inline-size: var(--size-container);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+  pointer-events: auto;
+  transition: transform var(--motion-header) var(--ease-brand);
+
+  @include respond-to('md') {
+    padding-inline: var(--space-8);
+  }
+
+  @include respond-to('xl') {
+    max-inline-size: none;
+    padding-inline: var(--space-6);
+  }
+
+  @include respond-to('2xl') {
+    padding-inline: var(--space-10);
+  }
+}
+
+.public-navbar__brand {
+  display: inline-flex;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.public-navbar__logo {
+  block-size: var(--size-navbar-logo);
+  transform-origin: center;
+  transition: transform var(--motion-header) var(--ease-brand);
+
+  @include respond-to('xl') {
+    block-size: var(--size-header-logo);
+  }
+}
+
+.public-navbar__menu {
+  display: none;
+
+  @include respond-to('xl') {
+    display: block;
+  }
+}
+
+.public-navbar__actions {
+  @include flex(row, center, flex-end, var(--space-2));
+  flex-shrink: 0;
+
+  @include respond-to('xl') {
+    gap: var(--space-1);
+  }
+
+  @include respond-to('2xl') {
+    gap: var(--space-2);
+  }
+
+  .btn {
+    white-space: nowrap;
+  }
+}
+
+.public-navbar__wide {
+  display: none;
+
+  @include respond-to('xl') {
+    display: inline-flex;
+  }
+}
+
+.public-navbar__login-full {
+  display: none;
+
+  @include respond-to('md') {
+    display: inline;
+  }
+}
+
+.public-navbar__login-short {
+  @include respond-to('md') {
+    display: none;
+  }
+}
+
+.public-navbar__actions .btn--icon .app-icon {
+  font-size: var(--icon-size-lg);
+}
+
+.public-navbar__toggle {
+  min-inline-size: var(--size-touch-target);
+  min-block-size: var(--size-touch-target);
+
+  @include respond-to('xl') {
+    display: none;
+  }
+}
+
+.public-nav-links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  &--bar {
+    @include flex(row, center, flex-start, var(--space-0));
+
+    @include respond-to('2xl') {
+      gap: var(--space-1);
+    }
+  }
+
+  &--drawer {
+    @include flex(column, stretch, flex-start, var(--space-1));
+  }
+}
+
+.public-nav-links__link {
+  @include flex(row, center, space-between, var(--space-2));
+  position: relative;
+  white-space: nowrap;
+  padding-block: var(--space-2);
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-md);
+  color: var(--theme-text);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+
+  @include respond-to('2xl') {
+    padding-inline: var(--space-3);
+    font-size: var(--fs-label);
+  }
+  text-decoration: none;
+  transition: color var(--motion-press) var(--ease-out);
+
+  &:hover {
+    color: var(--theme-accent-text);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &.is-active {
+    color: var(--theme-accent-text);
+    font-weight: var(--fw-semibold);
+  }
+
+  .public-nav-links--bar &::after {
+    content: '';
+    position: absolute;
+    inset-block-end: calc(var(--space-1) * -1);
+    inset-inline: var(--space-2);
+    block-size: var(--border-width-thick);
+    border-radius: var(--radius-pill);
+    background-color: currentcolor;
+    transform: scaleX(0);
+    transition: transform var(--motion-header) var(--ease-brand);
+  }
+
+  .public-nav-links--bar &.is-active::after {
+    transform: scaleX(1);
+  }
+
+  .public-nav-links--drawer & {
+    padding-block: var(--space-3);
+    padding-inline: var(--space-4);
+  }
+
+  .public-nav-links--drawer &.is-active {
+    background-color: var(--theme-accent-soft);
+  }
+}
+
+.public-nav-links__chevron {
+  font-size: var(--fs-xs);
+}
+
+.public-navbar.is-scrolled {
+  .public-navbar__backdrop {
+    @include respond-to('xl') {
+      transform: scaleY(calc(var(--size-header-compact) / var(--size-header)));
+    }
+
+    &::after {
+      opacity: 1;
+    }
+  }
+
+  .public-navbar__inner {
+    @include respond-to('xl') {
+      transform: translateY(var(--motion-header-offset));
+    }
+  }
+
+  .public-navbar__logo {
+    @include respond-to('xl') {
+      transform: scale(var(--motion-header-scale));
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-navbar__backdrop,
+  .public-navbar__backdrop::after,
+  .public-navbar__inner,
+  .public-navbar__logo,
+  .public-nav-links__link::after {
+    transition: none;
+  }
+}

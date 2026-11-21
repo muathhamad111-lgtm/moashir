@@ -1,10 +1,12 @@
 <script setup>
+import BaseButton from '@/components/ui/BaseButton.vue'
+import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
-import DropdownList from '@/components/ui/DropdownList.vue'
-import BaseButton from '@/components/ui/BaseButton.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
+import RowActions from '@/components/data-list/RowActions.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 import { useEmailChangeApprovals } from '@/composables/useEmailChangeApprovals'
@@ -14,8 +16,34 @@ import { ROUTE_NAMES } from '@/constants/routeNames'
 
 const { t } = useI18n()
 const { dateTime } = useEntityDisplay()
-const { items, status, errorMessage, load, filters, paginator, statusOptions, rejection, entityName, approve, startReject, reject, afterReject } =
-  useEmailChangeApprovals()
+const {
+  items,
+  status,
+  errorMessage,
+  load,
+  filters,
+  paginator,
+  statusOptions,
+  rejection,
+  entityName,
+  approve,
+  startReject,
+  reject,
+  afterReject,
+} = useEmailChangeApprovals()
+
+const DECISION_KEYS = ['approve', 'reject']
+
+// Icon-only decisions (✓ / ✗); the label stays in the tooltip and the accessible name.
+const decisionActions = computed(() => [
+  { key: 'approve', label: t('entities.emailChanges.approve'), icon: 'check', variant: 'success' },
+  { key: 'reject', label: t('entities.emailChanges.reject'), icon: 'x', variant: 'danger' },
+])
+
+function decide(key, item) {
+  if (key === 'approve') return approve(item)
+  return startReject(item)
+}
 
 const columns = computed(() =>
   ['entity', 'oldEmail', 'newEmail', 'requestedAt', 'status', 'actions'].map((key) => ({
@@ -32,13 +60,20 @@ const columns = computed(() =>
         <h1 class="entities-admin__title">{{ t('entities.emailChanges.title') }}</h1>
         <p class="entities-admin__subtitle">{{ t('entities.emailChanges.subtitle') }}</p>
       </div>
-      <DropdownList
-        :model-value="filters.filters.status"
-        :options="statusOptions"
-        :placeholder="t('entities.filters.status')"
-        @update:model-value="filters.setFilter('status', $event)"
-      />
+      <BaseButton variant="secondary" icon="arrow-left" :to="{ name: ROUTE_NAMES.ADMIN_ENTITIES }">
+        {{ t('entities.admin.backToEntities') }}
+      </BaseButton>
     </header>
+    <ListToolbar :searchable="false" :filter-state="filters">
+      <template #filters="{ draft }">
+        <AppSelect
+          :model-value="draft.filters.status"
+          :options="statusOptions"
+          :label="t('entities.filters.status')"
+          @update:model-value="draft.setFilter('status', $event)"
+        />
+      </template>
+    </ListToolbar>
 
     <DataTable
       :columns="columns"
@@ -50,24 +85,33 @@ const columns = computed(() =>
       @retry="load"
     >
       <template #cell-entity="{ item }">
-        <router-link v-if="item.entity" class="entity-table__name" :to="{ name: ROUTE_NAMES.ADMIN_ENTITY, params: { id: item.entity.id } }">
+        <router-link
+          v-if="item.entity"
+          class="entity-table__name"
+          :to="{ name: ROUTE_NAMES.ADMIN_ENTITY, params: { id: item.entity.id } }"
+        >
           {{ entityName(item) }}
         </router-link>
       </template>
-      <template #cell-oldEmail="{ item }"><span class="u-ltr">{{ item.oldEmail }}</span></template>
-      <template #cell-newEmail="{ item }"><span class="u-ltr">{{ item.newEmail }}</span></template>
+      <template #cell-oldEmail="{ item }"
+        ><span class="u-ltr">{{ item.oldEmail }}</span></template
+      >
+      <template #cell-newEmail="{ item }"
+        ><span class="u-ltr">{{ item.newEmail }}</span></template
+      >
       <template #cell-requestedAt="{ item }">{{ dateTime(item.requestedAt) }}</template>
       <template #cell-status="{ item }"><StatusBadge :status="item.status" /></template>
       <template #cell-actions="{ item }">
-        <span v-if="item.status === EMAIL_CHANGE_STATUSES.AWAITING_APPROVAL" class="entities-admin__row-actions">
-          <BaseButton size="sm" variant="primary" icon="fa-solid fa-check" @click="approve(item)">
-            {{ t('entities.emailChanges.approve') }}
-          </BaseButton>
-          <BaseButton size="sm" variant="danger" icon="fa-solid fa-xmark" @click="startReject(item)">
-            {{ t('entities.emailChanges.reject') }}
-          </BaseButton>
-        </span>
-        <span v-else-if="item.decisionReason" class="entities-admin__muted">{{ item.decisionReason }}</span>
+        <RowActions
+          v-if="item.status === EMAIL_CHANGE_STATUSES.AWAITING_APPROVAL"
+          :actions="decisionActions"
+          :name="entityName(item)"
+          :inline-keys="DECISION_KEYS"
+          @select="decide($event, item)"
+        />
+        <span v-else-if="item.decisionReason" class="entities-admin__muted">{{
+          item.decisionReason
+        }}</span>
       </template>
     </DataTable>
 
@@ -81,7 +125,8 @@ const columns = computed(() =>
     <ReasonDialog
       v-model="rejection.open"
       :title="t('entities.emailChanges.rejectTitle')"
-      :message="t('entities.emailChanges.rejectMessage')"
+      :subtitle="t('entities.emailChanges.rejectMessage')"
+      destructive
       :submit-label="t('entities.emailChanges.reject')"
       :action="reject"
       action-name="entities.emailChanges.reject.submit"

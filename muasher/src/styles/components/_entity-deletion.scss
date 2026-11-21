@@ -8,7 +8,6 @@
   gap: var(--space-4);
 }
 
-.reason-dialog__message,
 .entity-delete__intro,
 .entity-delete__hint,
 .entity-delete__none {
@@ -55,7 +54,7 @@
   background-color: var(--color-danger-soft);
   color: var(--theme-text);
 
-  .fa-solid {
+  .app-icon {
     color: var(--color-danger);
     font-size: var(--fs-xl);
   }

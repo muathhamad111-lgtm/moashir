@@ -6,9 +6,10 @@ import { useConfirm } from '@/composables/useConfirm'
 import { AWARD_CODES } from '@/constants/advanced'
 
 const TRANSITIONS = {
-  open: { call: 'open', variant: 'primary' },
-  closeSubmissions: { call: 'closeSubmissions', variant: 'danger' },
-  close: { call: 'close', variant: 'danger' },
+  open: { call: 'open', variant: 'confirm', line: false },
+  closeSubmissions: { call: 'closeSubmissions', variant: 'warning', line: true },
+  close: { call: 'close', variant: 'warning', line: true },
+  startCommittee: { call: 'startCommittee', variant: 'confirm', line: true },
 }
 
 export function useCycleTransitions({ editor, reasonExtra }) {
@@ -20,8 +21,10 @@ export function useCycleTransitions({ editor, reasonExtra }) {
 
   function handle(error) {
     const normalized = error?.normalized ?? {}
-    if (normalized.code === AWARD_CODES.REQUESTS_PENDING) blocked.value = { code: normalized.code, requests: normalized.meta?.openRequests ?? [] }
-    else if (normalized.code === AWARD_CODES.ANOTHER_OPEN) blocked.value = { code: normalized.code, cycleId: normalized.meta?.awardCycleId ?? null }
+    if (normalized.code === AWARD_CODES.REQUESTS_PENDING)
+      blocked.value = { code: normalized.code, requests: normalized.meta?.openRequests ?? [] }
+    else if (normalized.code === AWARD_CODES.ANOTHER_OPEN)
+      blocked.value = { code: normalized.code, cycleId: normalized.meta?.awardCycleId ?? null }
     else blocked.value = null
     toast.error(normalized.message || t('errors.unexpected'))
   }
@@ -32,7 +35,10 @@ export function useCycleTransitions({ editor, reasonExtra }) {
     try {
       const extra = await reasonExtra()
       if (extra === null) return false
-      const { data } = await awardCycleService[TRANSITIONS[action]?.call ?? action](editor.cycle.value.id, { ...extraPayload, ...extra })
+      const { data } = await awardCycleService[TRANSITIONS[action]?.call ?? action](
+        editor.cycle.value.id,
+        { ...extraPayload, ...extra },
+      )
       editor.apply(data)
       blocked.value = null
       toast.success(t(`cycles.actions.${action}.done`))
@@ -48,7 +54,7 @@ export function useCycleTransitions({ editor, reasonExtra }) {
   async function confirmAndRun(action) {
     const accepted = await confirm({
       title: t(`cycles.actions.${action}.title`),
-      message: t(`cycles.actions.${action}.message`),
+      message: TRANSITIONS[action].line ? t(`cycles.actions.${action}.message`) : '',
       variant: TRANSITIONS[action].variant,
       confirmLabel: t(`cycles.actions.${action}.confirm`),
     })
@@ -64,7 +70,11 @@ export function useCycleTransitions({ editor, reasonExtra }) {
       toast.success(t('cycles.actions.reopen.done'))
       return data
     } catch (error) {
-      if (error?.normalized?.code === AWARD_CODES.ANOTHER_OPEN) blocked.value = { code: AWARD_CODES.ANOTHER_OPEN, cycleId: error.normalized.meta?.awardCycleId ?? null }
+      if (error?.normalized?.code === AWARD_CODES.ANOTHER_OPEN)
+        blocked.value = {
+          code: AWARD_CODES.ANOTHER_OPEN,
+          cycleId: error.normalized.meta?.awardCycleId ?? null,
+        }
       throw error
     } finally {
       busy.value = ''

@@ -21,7 +21,7 @@ it('grants the Super Admin to an existing active user after the typed confirmati
     DB::table('sessions')->insert(['id' => 'before-grant', 'user_id' => $user->id, 'payload' => '', 'last_activity' => time()]);
 
     $this->artisan('moashir:super-admin', ['action' => 'grant', '--email' => $user->email])
-        ->expectsQuestion('Type the full email of the account ('.(new EmailAddress($user->email))->masked().') to confirm', $user->email)
+        ->expectsQuestion('Type the full email of the account ('.new EmailAddress($user->email)->masked().') to confirm', $user->email)
         ->assertSuccessful();
 
     $user->refresh();
@@ -36,7 +36,7 @@ it('changes nothing when the confirmation does not match', function (): void {
     $user = User::factory()->create();
 
     $this->artisan('moashir:super-admin', ['action' => 'grant', '--email' => $user->email])
-        ->expectsQuestion('Type the full email of the account ('.(new EmailAddress($user->email))->masked().') to confirm', 'someone.else@moashir.example.sa')
+        ->expectsQuestion('Type the full email of the account ('.new EmailAddress($user->email)->masked().') to confirm', 'someone.else@moashir.example.sa')
         ->assertFailed();
 
     expect($user->refresh()->isSuperAdmin())->toBeFalse();
@@ -46,7 +46,7 @@ it('refuses a user who holds other roles (SoD-8)', function (): void {
     $user = systemAdmin();
 
     $this->artisan('moashir:super-admin', ['action' => 'grant', '--email' => $user->email])
-        ->expectsQuestion('Type the full email of the account ('.(new EmailAddress($user->email))->masked().') to confirm', $user->email)
+        ->expectsQuestion('Type the full email of the account ('.new EmailAddress($user->email)->masked().') to confirm', $user->email)
         ->expectsOutputToContain('holds other roles')
         ->assertFailed();
 
@@ -57,7 +57,7 @@ it('refuses an entity account and an unknown e-mail', function (): void {
     $entity = entityUser();
 
     $this->artisan('moashir:super-admin', ['action' => 'grant', '--email' => $entity->email])
-        ->expectsQuestion('Type the full email of the account ('.(new EmailAddress($entity->email))->masked().') to confirm', $entity->email)
+        ->expectsQuestion('Type the full email of the account ('.new EmailAddress($entity->email)->masked().') to confirm', $entity->email)
         ->assertFailed();
 
     $this->artisan('moashir:super-admin', ['action' => 'grant', '--email' => 'nobody@moashir.example.sa'])
@@ -72,7 +72,7 @@ it('refuses to exceed the maximum number of Super Admin accounts', function (): 
     $third = User::factory()->create();
 
     $this->artisan('moashir:super-admin', ['action' => 'grant', '--email' => $third->email])
-        ->expectsQuestion('Type the full email of the account ('.(new EmailAddress($third->email))->masked().') to confirm', $third->email)
+        ->expectsQuestion('Type the full email of the account ('.new EmailAddress($third->email)->masked().') to confirm', $third->email)
         ->expectsOutputToContain('maximum number')
         ->assertFailed();
 });
@@ -91,7 +91,7 @@ it('creates the initial account from SUPER_ADMIN_INITIAL_EMAIL and sends a passw
 
 it('refuses to revoke the last Super Admin unless explicitly allowed', function (): void {
     $only = superAdmin();
-    $question = 'Type the full email of the account ('.(new EmailAddress($only->email))->masked().') to confirm';
+    $question = 'Type the full email of the account ('.new EmailAddress($only->email)->masked().') to confirm';
 
     $this->artisan('moashir:super-admin', ['action' => 'revoke', '--email' => $only->email])
         ->expectsQuestion($question, $only->email)
@@ -111,7 +111,7 @@ it('lists Super Admin accounts with masked e-mails only', function (): void {
     [$local] = explode('@', $superAdmin->email);
 
     $this->artisan('moashir:super-admin', ['action' => 'list'])
-        ->expectsOutputToContain((new EmailAddress($superAdmin->email))->masked())
+        ->expectsOutputToContain(new EmailAddress($superAdmin->email)->masked())
         ->doesntExpectOutputToContain($local.'@')
         ->assertSuccessful();
 });

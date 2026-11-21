@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Settings;
 
 use App\Enums\Award\CommitteeEntityVisibility;
+use App\Enums\Criteria\ScaleKind;
 use App\Enums\Files\EvidenceFileType;
 use App\Enums\Settings\SettingKey;
 
@@ -21,6 +22,8 @@ final readonly class AssessmentSettingsUpdate
         public ?string $reason = null,
         public ?AdvancedSettingsUpdate $advanced = null,
         public ?CommitteeEntityVisibility $committeeVisibility = null,
+        public ?int $generalMaxFileMegabytes = null,
+        public ?ScaleKind $scaleKind = null,
     ) {}
 
     /**
@@ -30,13 +33,15 @@ final readonly class AssessmentSettingsUpdate
     {
         return array_filter([
             SettingKey::AccreditedReviewSlaDays->value => $this->reviewSlaDays,
-            SettingKey::FilesMaxSizeMb->value => $this->maxFileMegabytes,
-            SettingKey::EvidenceAllowedTypes->value => $this->evidenceTypes === null
+            SettingKey::AccreditedUploadMaxFileMb->value => $this->maxFileMegabytes,
+            SettingKey::AccreditedEvidenceAllowedTypes->value => $this->evidenceTypes === null
                 ? null
                 : array_map(static fn (EvidenceFileType $type): string => $type->value, $this->evidenceTypes),
-            SettingKey::EvidenceMaxFilesPerSub->value => $this->maxFilesPerSub,
+            SettingKey::AccreditedEvidenceMaxFilesPerSub->value => $this->maxFilesPerSub,
+            SettingKey::FilesMaxSizeMb->value => $this->generalMaxFileMegabytes,
             ...($this->advanced?->values() ?? []),
             SettingKey::CommitteeEntityDataVisibility->value => $this->committeeVisibility?->value,
+            SettingKey::AssessmentScaleKind->value => $this->scaleKind?->value,
         ], static fn (mixed $value): bool => $value !== null);
     }
 

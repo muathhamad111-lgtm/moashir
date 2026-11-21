@@ -1,135 +1,115 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { defineComponent, h, nextTick } from 'vue'
-import { flushPromises, mount } from '@vue/test-utils'
+import { flushPromises } from '@vue/test-utils'
+import { withSetup } from '@/test-utils/withSetup'
 import { useNotificationsCenter } from '@/composables/useNotificationsCenter'
-import { useAuthStore } from '@/stores/auth'
 import { notificationsService } from '@/services/notificationsService'
-import { createTestGlobals } from '@/test-utils'
 
 vi.mock('@/services/notificationsService', () => ({
   notificationsService: {
     list: vi.fn(),
-    unreadCount: vi.fn(),
     markRead: vi.fn(),
+    archive: vi.fn(),
     markAllRead: vi.fn(),
   },
 }))
 
-const rows = [
-  { id: 1, type: 'action', read: false, recipientRole: 'entity', title: { ar: 'أ', en: 'a' }, link: '/x' },
-  { id: 2, type: 'info', read: true, recipientRole: 'entity', title: { ar: 'ب', en: 'b' }, link: '/y' },
-]
+const TODAY = new Date().toISOString()
 
-function meta(total = rows.length, lastPage = 1, page = 1) {
-  return { pagination: { page, perPage: 8, total, lastPage } }
+function notification(id, isRead) {
+  return {
+    id: `5e1f0c2a-0000-4000-8000-00000000000${id}`,
+    isRead,
+    category: 'informational',
+    createdAt: TODAY,
+  }
 }
 
-function harness(role = 'entity') {
-  let api
-  const Host = defineComponent({
-    setup() {
-      const auth = useAuthStore()
-      auth.user = { name: 'Test', roles: role ? [role] : [] }
-      api = useNotificationsCenter()
-      return () => h('div')
-    },
-  })
-  mount(Host, { global: createTestGlobals() })
-  return api
+function envelope(items, total = items.length, unreadCount = 1) {
+  return {
+    data: items,
+    meta: { unreadCount, pagination: { page: 1, perPage: 15, total, lastPage: 1 } },
+  }
 }
 
 beforeEach(() => {
   vi.clearAllMocks()
-  notificationsService.list.mockResolvedValue({ data: rows, meta: meta(), errors: null })
-  notificationsService.unreadCount.mockResolvedValue({ data: { count: 1 }, meta: {}, errors: null })
-  notificationsService.markRead.mockResolvedValue({ data: { ...rows[0], read: true } })
+  notificationsService.list.mockImplementation(() =>
+    Promise.resolve(envelope([notification(1, false), notification(2, true)], 6, 1)),
+  )
+  notificationsService.markRead.mockResolvedValue({ data: {} })
+  notificationsService.archive.mockResolvedValue({ data: {} })
   notificationsService.markAllRead.mockResolvedValue({ data: { updated: 1 } })
 })
 
 describe('useNotificationsCenter', () => {
-  it('loads the list scoped to the current role and resolves success', async () => {
-    const api = harness('entity')
+  it('loads the all tab with counts and day groups', async () => {
+    const { api } = withSetup(() => useNotificationsCenter())
     await flushPromises()
+    expect(notificationsService.list).toHaveBeenCalledWith({ page: 1, perPage: 15 })
     expect(api.status.value).toBe('success')
-    expect(api.items.value).toHaveLength(2)
-    expect(api.unreadCount.value).toBe(1)
-    expect(notificationsService.list).toHaveBeenCalledWith(
-      expect.objectContaining({ 'filter[recipientRole]': 'entity', page: 1, perPage: 8 }),
-    )
-    expect(notificationsService.unreadCount).toHaveBeenCalledWith({
-      'filter[recipientRole]': 'entity',
+    expect(api.tabs.value.map((tab) => [tab.value, tab.count])).toEqual([
+      ['all', 6],
+      ['unread', 1],
+    ])
+    expect(api.groups.value).toHaveLength(1)
+    expect(api.groups.value[0].key).toBe('today')
+  })
+
+  it('filters unread with filter[read]=false and resets the page', async () => {
+    const { api } = withSetup(() => useNotificationsCenter())
+    await flushPromises()
+    api.setTab('unread')
+    await flushPromises()
+    expect(notificationsService.list).toHaveBeenLastCalledWith({
+      page: 1,
+      perPage: 15,
+      'filter[read]': 'false',
     })
   })
 
-  it('maps the unread filter to filter[read]=false and a type filter to filter[type]', async () => {
-    const api = harness('assessor')
+  it('opens the unread tab from the initial query', async () => {
+    withSetup(() => useNotificationsCenter({ initialTab: 'unread' }))
     await flushPromises()
-
-    api.setFilter('unread')
-    await flushPromises()
-    expect(notificationsService.list).toHaveBeenLastCalledWith(
-      expect.objectContaining({ 'filter[read]': false }),
-    )
-
-    api.setFilter('alert')
-    await flushPromises()
-    expect(notificationsService.list).toHaveBeenLastCalledWith(
-      expect.objectContaining({ 'filter[type]': 'alert' }),
-    )
+    expect(notificationsService.list.mock.calls[0][0]['filter[read]']).toBe('false')
   })
 
-  it('forwards the search term and resets to page 1', async () => {
-    const api = harness('entity')
+  it('marks an unread item read once', async () => {
+    const { api } = withSetup(() => useNotificationsCenter())
     await flushPromises()
-    api.search.value = 'ACC-05'
-    await flushPromises()
-    expect(notificationsService.list).toHaveBeenLastCalledWith(
-      expect.objectContaining({ search: 'ACC-05', page: 1 }),
-    )
-  })
-
-  it('marks a single item read and decrements the unread count', async () => {
-    const api = harness('entity')
-    await flushPromises()
-    await api.markRead(1)
-    expect(notificationsService.markRead).toHaveBeenCalledWith(1)
-    expect(api.items.value[0].read).toBe(true)
+    const [unread, read] = api.items.value
+    await api.markRead(unread)
+    await api.markRead(read)
+    expect(notificationsService.markRead).toHaveBeenCalledTimes(1)
+    expect(unread.isRead).toBe(true)
     expect(api.unreadCount.value).toBe(0)
   })
 
-  it('marks all read passing the role payload and zeroes the count', async () => {
-    const api = harness('entity')
+  it('archives an item and removes it from the list', async () => {
+    const { api } = withSetup(() => useNotificationsCenter())
+    await flushPromises()
+    await api.archive(api.items.value[0])
+    expect(notificationsService.archive).toHaveBeenCalledWith(notification(1, false).id)
+    expect(api.items.value).toHaveLength(1)
+    expect(api.unreadCount.value).toBe(0)
+  })
+
+  it('marks all read only when something is unread', async () => {
+    const { api } = withSetup(() => useNotificationsCenter())
     await flushPromises()
     await api.markAllRead()
-    expect(notificationsService.markAllRead).toHaveBeenCalledWith({ recipientRole: 'entity' })
-    expect(api.items.value.every((item) => item.read)).toBe(true)
-    expect(api.unreadCount.value).toBe(0)
+    await api.markAllRead()
+    expect(notificationsService.markAllRead).toHaveBeenCalledTimes(1)
+    expect(api.items.value.every((item) => item.isRead)).toBe(true)
   })
 
-  it('reports the empty state when no notifications match', async () => {
-    notificationsService.list.mockResolvedValue({ data: [], meta: meta(0), errors: null })
-    const api = harness('entity')
+  it('reports the empty and error states', async () => {
+    notificationsService.list.mockImplementationOnce(() => Promise.resolve(envelope([], 0, 0)))
+    const empty = withSetup(() => useNotificationsCenter())
     await flushPromises()
-    expect(api.status.value).toBe('empty')
-  })
-
-  it('reports the error state when the list service fails', async () => {
-    notificationsService.list.mockRejectedValue(new Error('down'))
-    const api = harness('entity')
+    expect(empty.api.status.value).toBe('empty')
+    notificationsService.list.mockImplementationOnce(() => Promise.reject(new Error('boom')))
+    const failing = withSetup(() => useNotificationsCenter())
     await flushPromises()
-    expect(api.status.value).toBe('error')
-  })
-
-  it('exposes one filter tab per scope (all + unread + 4 types)', async () => {
-    const api = harness('entity')
-    await nextTick()
-    expect(api.filterTabs.value.map((tab) => tab.value)).toEqual([
-      'all',
-      'unread',
-      'action',
-      'info',
-      'alert',
-      'error',
-    ])
+    expect(failing.api.status.value).toBe('error')
   })
 })

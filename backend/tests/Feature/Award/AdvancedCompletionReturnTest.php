@@ -9,6 +9,7 @@ use App\Models\Assessments\AssessmentCompletionRequest;
 use App\Models\Audit\Audit;
 use App\Models\Award\AwardCycle;
 use App\Models\Criteria\CriteriaVersion;
+use App\Models\Criteria\SubCriterion;
 use App\Models\Identity\User;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Date;
@@ -57,6 +58,7 @@ it('returns an incomplete request to the entity with the items, the deadline and
         ->assertJsonPath('data.completion_requests.0.status', 'open')
         ->assertJsonPath('data.completion_requests.0.expiry_outcome', 'continue_as_submitted')
         ->assertJsonPath('data.completion_requests.0.items.0.code', 'M1.1')
+        ->assertJsonPath('data.completion_requests.0.items.0.name', SubCriterion::query()->whereRelation('mainCriterion', 'criteria_version_id', $version->id)->where('code', 'M1.1')->sole()->name->toArray())
         ->assertJsonPath('data.completion_deadline', ADVANCED_DEADLINE);
     switchTo($owner)->getJson("/api/v1/assessments/{$assessment->id}/form")->assertOk()
         ->assertJsonPath('data.assessment.status', 'needs_completion')

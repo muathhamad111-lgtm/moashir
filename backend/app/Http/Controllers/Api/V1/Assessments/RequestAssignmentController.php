@@ -16,14 +16,17 @@ use App\Http\Resources\Assessments\RequestDetailResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\Assessments\Assessment;
 use App\Models\Identity\User;
+use App\Services\Assessments\AssignmentReasonPolicy;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\JsonResponse;
 
 final class RequestAssignmentController
 {
-    public function assessors(ListEligibleAssessorsRequest $request, #[CurrentUser] User $actor, ListEligibleAssessors $list): JsonResponse
+    public function assessors(ListEligibleAssessorsRequest $request, #[CurrentUser] User $actor, ListEligibleAssessors $list, AssignmentReasonPolicy $reasons): JsonResponse
     {
-        return ApiResponse::data(EligibleAssessorResource::collection($list->handle($actor, $request->assessment(), $request->search()))->resolve($request));
+        $assessors = EligibleAssessorResource::collection($list->handle($actor, $request->assessmentPath(), $request->assessment(), $request->search()))->resolve($request);
+
+        return ApiResponse::data($assessors, meta: ['reason_rules' => $reasons->rules()->toArray()]);
     }
 
     public function assign(AssignAssessorRequest $request, Assessment $assessment, #[CurrentUser] User $actor, AssignAssessor $assign, ShowRequest $show): JsonResponse

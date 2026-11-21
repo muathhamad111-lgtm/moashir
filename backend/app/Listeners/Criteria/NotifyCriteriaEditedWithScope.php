@@ -22,7 +22,7 @@ final readonly class NotifyCriteriaEditedWithScope
             NotificationCode::CriteriaEditedWithScope,
             [
                 'scope' => LocalizedText::fromTranslation('notifications.criteria.scopes.'.$event->editEvent->scope->value),
-                'count' => (string) count($event->changes),
+                'changes' => LocalizedText::fromChoice('quantities.changes', count($event->changes)),
             ],
             CriteriaLinks::settings(),
             [RoleKey::CriteriaOfficer, RoleKey::SystemAdmin],

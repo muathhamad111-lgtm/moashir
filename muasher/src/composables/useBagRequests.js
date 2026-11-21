@@ -29,7 +29,7 @@ export function useBagRequests() {
   const localized = localizedFactory(locale)
 
   const statusFilterOptions = computed(() => [
-    { value: '', label: t('bagRequests.filters.allStatuses') },
+    { value: '', label: t('dataList.filter.all') },
     ...BAG_REQUEST_STATUSES.map((value) => ({ value, label: t(statusLabelKey(value)) })),
   ])
 

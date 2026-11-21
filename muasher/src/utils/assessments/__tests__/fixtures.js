@@ -17,8 +17,18 @@ export const criteriaTree = {
           weight: '400.00',
           evaluationType: 'guiding-points',
           points: [
-            { id: 1001, code: 'M1.1.1', description: { ar: 'وجود وثيقة رؤية معتمدة', en: 'An approved vision document' }, weight: '200.00' },
-            { id: 1002, code: 'M1.1.2', description: { ar: 'أهداف مرتبطة بالرؤية', en: 'Goals linked to the vision' }, weight: '200.00' },
+            {
+              id: 1001,
+              code: 'M1.1.1',
+              description: { ar: 'وجود وثيقة رؤية معتمدة', en: 'An approved vision document' },
+              weight: '200.00',
+            },
+            {
+              id: 1002,
+              code: 'M1.1.2',
+              description: { ar: 'أهداف مرتبطة بالرؤية', en: 'Goals linked to the vision' },
+              weight: '200.00',
+            },
           ],
         },
         {
@@ -34,9 +44,21 @@ export const criteriaTree = {
   ],
 }
 
-export function formWith({ scores = { subs: {}, points: {} }, versionId = 3, createdAt = '2026-11-01T06:00:00Z', criteria = criteriaTree } = {}) {
+export function formWith({
+  scores = { subs: {}, points: {} },
+  versionId = 3,
+  createdAt = '2026-11-01T06:00:00Z',
+  criteria = criteriaTree,
+} = {}) {
   return {
-    assessment: { id: 9002, number: 'SLF-2026-000002', criteriaVersionId: versionId, createdAt, status: 'draft', isFrozen: false },
+    assessment: {
+      id: 9002,
+      number: 'SLF-2026-000002',
+      criteriaVersionId: versionId,
+      createdAt,
+      status: 'draft',
+      isFrozen: false,
+    },
     scale: { kind: 'of-10', maximum: '10.00' },
     scores,
     progress: { scored: 0, required: 3 },

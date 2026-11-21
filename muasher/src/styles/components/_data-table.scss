@@ -1,4 +1,7 @@
+@use '../mixins' as *;
+
 .table-wrap {
+  position: relative;
   inline-size: 100%;
   overflow-x: auto;
   border: var(--border-width) solid var(--theme-border);
@@ -36,4 +39,83 @@
 .table--loading {
   opacity: var(--opacity-disabled);
   pointer-events: none;
+}
+
+// Row actions: direct icon buttons, then the "more" menu (three vertical dots).
+.row-actions {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: nowrap;
+}
+
+// Every table's "more actions" trigger reads as a clear bordered button, the same size as the row buttons.
+.table .row-actions .btn--icon,
+.table .dropdown-menu > .btn--icon {
+  @include flex-center;
+  inline-size: var(--size-toolbar-control);
+  block-size: var(--size-toolbar-control);
+  padding: 0;
+  border-color: var(--theme-border);
+  border-radius: var(--radius-md);
+  color: var(--theme-text);
+
+  .app-icon {
+    font-size: var(--icon-size-md);
+  }
+}
+
+.table .row-actions .row-actions__button--danger {
+  color: var(--theme-danger-text);
+
+  &:hover:not(:disabled) {
+    border-color: var(--theme-danger-text);
+  }
+}
+
+.table .row-actions .row-actions__button--success {
+  color: var(--theme-success-text);
+
+  &:hover:not(:disabled) {
+    border-color: var(--theme-success-text);
+  }
+}
+
+.table__cell--date {
+  white-space: nowrap;
+}
+
+.table__cell--actions {
+  inline-size: 1%;
+  white-space: nowrap;
+}
+
+// A sortable heading: the label and its direction as one button; an unsorted column shows a
+// faint arrow so the header reads as clickable.
+.table__sort {
+  @include flex(row, center, flex-start, var(--space-1));
+  min-block-size: var(--size-target-min);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--theme-heading);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.table__sort-icon {
+  flex-shrink: 0;
+  opacity: 0.35;
+
+  .table__sort.is-sorted & {
+    opacity: 1;
+  }
 }

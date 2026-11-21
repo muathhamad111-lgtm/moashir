@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   compareWeights,
   equalShares,
+  formatDisplayWeight,
   formatWeight,
   fromHundredths,
   isAcceptableWeight,
@@ -11,6 +12,8 @@ import {
   sumWeights,
   toHundredths,
   weightBudget,
+  formatShare,
+  shareOf,
 } from '@/utils/weight'
 
 describe('weight — two-decimal strings without float drift', () => {
@@ -73,5 +76,20 @@ describe('weight — two-decimal strings without float drift', () => {
     expect(formatWeight('1000', 'en')).toBe('1,000.00')
     expect(formatWeight('133.34', 'ar')).toBe('133.34')
     expect(formatWeight('133.34', 'ar')).not.toMatch(/[\u0660-\u0669]/)
+  })
+
+  it('shows whole weights without decimals for display and keeps real fractions', () => {
+    expect(formatDisplayWeight('1000.00', 'ar')).toBe('1,000')
+    expect(formatDisplayWeight('133.34', 'en')).toBe('133.34')
+    expect(formatDisplayWeight('250.50', 'ar')).toBe('250.5')
+    expect(formatDisplayWeight('700.00', 'ar')).not.toMatch(/[\u0660-\u0669]/)
+  })
+
+  it('gives a share of the parent with one decimal, for display only', () => {
+    expect(shareOf('1000.00', '8200.00')).toBe(12.2)
+    expect(shareOf('133.34', '400.00')).toBe(33.3)
+    expect(shareOf('1', '0')).toBe(0)
+    expect(formatShare(12.2, 'en')).toBe('12.2%')
+    expect(formatShare(40, 'en')).toBe('40%')
   })
 })

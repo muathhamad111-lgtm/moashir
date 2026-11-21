@@ -1,0 +1,128 @@
+@use '../mixins' as *;
+
+// The platform's waiting mark and the official waiting page around it. The landing loader
+// re-colours the mark through the three `--brand-loader-*` custom properties.
+.brand-loader {
+  overflow: visible;
+}
+
+.brand-loader__track {
+  fill: none;
+  stroke: var(--brand-loader-track, var(--theme-border));
+  stroke-width: 3;
+}
+
+.brand-loader__ring {
+  fill: none;
+  stroke: var(--brand-loader-ring, var(--theme-accent));
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  transform: scaleX(-1) rotate(-90deg);
+  transform-origin: 100px 100px;
+}
+
+.brand-loader__spin {
+  transform-origin: 100px 100px;
+}
+
+.brand-loader__star {
+  fill: var(--brand-loader-star, var(--theme-heading));
+  stroke: var(--brand-loader-star, var(--theme-heading));
+  stroke-width: 2.6;
+  stroke-linejoin: round;
+  stroke-dasharray: 100;
+}
+
+.brand-loader--indeterminate .brand-loader__ring {
+  stroke-dasharray: 28 72;
+}
+
+@include motion-safe {
+  .brand-loader__spin {
+    animation: brand-loader-turn 2.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  }
+
+  .brand-loader__star {
+    fill-opacity: 0;
+    stroke-dashoffset: 100;
+    animation: brand-loader-draw 1.1s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+  }
+
+  .brand-loader--indeterminate .brand-loader__ring {
+    animation: brand-loader-sweep 1.4s linear infinite;
+  }
+}
+
+@keyframes brand-loader-turn {
+  to {
+    rotate: 180deg;
+  }
+}
+
+@keyframes brand-loader-draw {
+  70% {
+    stroke-dashoffset: 0;
+    fill-opacity: 0;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+    fill-opacity: 1;
+  }
+}
+
+@keyframes brand-loader-sweep {
+  to {
+    stroke-dashoffset: -100;
+  }
+}
+
+.app-loading {
+  display: grid;
+  justify-items: center;
+  background-color: var(--theme-bg);
+}
+
+.app-loading--screen {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-toast);
+  align-content: center;
+}
+
+// Covers the page being left; the mark stays in view however far that page was scrolled.
+// Its host is positioned only while it is there, so the pages keep their own positioning.
+:has(> .app-loading--overlay) {
+  position: relative;
+}
+
+.app-loading--overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  align-content: start;
+  min-block-size: 60vh;
+}
+
+.app-loading--page {
+  align-content: center;
+  min-block-size: 60vh;
+}
+
+.app-loading__center {
+  .app-loading--overlay & {
+    position: sticky;
+    inset-block-start: 35vh;
+    margin-block-start: 20vh;
+  }
+}
+
+.app-loading__mark {
+  inline-size: clamp(5.75rem, 12vw, 8rem);
+  block-size: auto;
+}
+
+.app-loading__label {
+  @include visually-hidden;
+}

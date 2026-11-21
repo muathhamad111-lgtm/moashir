@@ -61,14 +61,6 @@ const PROMPTS = [
     text: `${STYLE} A premium performance-indicators dashboard: large clean number tiles, a circular progress gauge and a rising trend line, conveying data-driven excellence measurement.`,
   },
   {
-    name: 'login',
-    text: `${STYLE} A welcoming sign-in scene for a measurement platform: a secure shield with a key and a friendly dashboard, conveying safety and a warm return. Vertical portrait composition.`,
-  },
-  {
-    name: 'register',
-    text: `${STYLE} An inviting registration scene for an organization onboarding to a platform: a form with a plus badge and a building joining a network of nodes. Vertical portrait composition.`,
-  },
-  {
     name: 'error-404',
     text: `${STYLE} A gentle, non-alarming lost-page illustration: a stylized compass and a disconnected map pin pointing back to a safe path, with a subtle "not found" feeling conveyed only through shapes, no text.`,
   },

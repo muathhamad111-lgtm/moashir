@@ -7,6 +7,7 @@ use App\Enums\Audit\AuditEvent;
 use App\Enums\Files\MalwareScanStatus;
 use App\Enums\Notifications\NotificationCode;
 use App\Enums\Settings\SettingKey;
+use App\Exceptions\Files\PdfPasswordCheckUnavailable;
 use App\Jobs\Assessments\BuildEvidenceBundleJob;
 use App\Models\Assessments\EvidenceBundle;
 use App\Models\Assessments\EvidenceFile;
@@ -15,6 +16,7 @@ use App\Models\Files\StoredFile;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
@@ -87,16 +89,53 @@ it('refuses files whose type is not allowed or whose content does not match', fu
     'renamed text as pdf' => ['تقرير.pdf', 'ليس ملف PDF حقيقي'],
 ]);
 
+it('refuses a PDF locked with a password and keeps nothing of it', function (): void {
+    $version = publishedAccreditedCriteria();
+    $assessment = openedAccreditedRequest();
+
+    uploadEvidence(ownerOf($assessment->entity), $assessment, $version, 'M1.1', null, UploadedFile::fake()->createWithContent('خطة-محمية.pdf', passwordProtectedPdf()))
+        ->assertUnprocessable()
+        ->assertJsonPath('code', 'file.password_protected')
+        ->assertJsonPath('errors.file.0', __('errors.file.password_protected', [], 'ar'));
+
+    expect(StoredFile::query()->count())->toBe(0)
+        ->and(EvidenceFile::query()->count())->toBe(0)
+        ->and(Storage::disk('local')->allFiles('files'))->toBe([]);
+});
+
+it('accepts a PDF that only restricts printing or copying, since it opens without a password', function (): void {
+    $version = publishedAccreditedCriteria();
+    $assessment = openedAccreditedRequest();
+
+    uploadEvidence(ownerOf($assessment->entity), $assessment, $version, 'M1.1', null, UploadedFile::fake()->createWithContent('خطة-مقيدة.pdf', ownerRestrictedPdf()))
+        ->assertCreated()
+        ->assertJsonPath('data.mime_type', 'application/pdf');
+});
+
+it('fails closed and reports it when the PDF password check cannot run', function (): void {
+    $version = publishedAccreditedCriteria();
+    $assessment = openedAccreditedRequest();
+    Exceptions::fake();
+    Config::set('moashir.watermark.qpdf_binary', '/nonexistent/qpdf');
+
+    uploadEvidence(ownerOf($assessment->entity), $assessment, $version)
+        ->assertUnprocessable()
+        ->assertJsonPath('code', 'file.check_failed');
+
+    expect(StoredFile::query()->count())->toBe(0);
+    Exceptions::assertReported(PdfPasswordCheckUnavailable::class);
+});
+
 it('follows the allowed types and the per-sub limit from the settings', function (): void {
     $version = publishedAccreditedCriteria();
     $assessment = openedAccreditedRequest();
     $owner = ownerOf($assessment->entity);
-    setIntegrationSetting(SettingKey::EvidenceAllowedTypes, ['png']);
+    setIntegrationSetting(SettingKey::AccreditedEvidenceAllowedTypes, ['png']);
 
     uploadEvidence($owner, $assessment, $version)->assertUnprocessable()->assertJsonPath('code', 'file.content_mismatch');
 
-    setIntegrationSetting(SettingKey::EvidenceAllowedTypes, ['pdf']);
-    setIntegrationSetting(SettingKey::EvidenceMaxFilesPerSub, 1);
+    setIntegrationSetting(SettingKey::AccreditedEvidenceAllowedTypes, ['pdf']);
+    setIntegrationSetting(SettingKey::AccreditedEvidenceMaxFilesPerSub, 1);
     uploadEvidence($owner, $assessment, $version)->assertCreated();
     uploadEvidence($owner, $assessment, $version, 'M1.1', 'board_minutes')->assertUnprocessable()
         ->assertJsonPath('code', 'attachment.sub_full')
@@ -179,7 +218,7 @@ it('issues signed evidence downloads to the owner and the assigned assessor only
     $url = (string) switchTo($assessor)->postJson($endpoint)->assertOk()->assertJsonPath('data.file_name', 'سياسة-الحوكمة.pdf')->json('data.url');
 
     expect(test()->get($url)->assertOk()->streamedContent())->toStartWith('%PDF-')
-        ->and(Audit::query()->where('event', AuditEvent::FileDownloaded->value)->count())->toBe(1);
+        ->and(Audit::query()->where('event', AuditEvent::FileAccessed->value)->count())->toBe(1);
 
     switchTo(ownerOf($assessment->entity))->postJson($endpoint)->assertOk();
     switchTo(requestFollower())->postJson($endpoint)->assertOk();

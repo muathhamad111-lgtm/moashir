@@ -11,23 +11,50 @@ vi.mock('@/utils/logger', () => ({
 }))
 
 const resource = [
-    { type: 'entities', total: 7, items: [{ id: 6002, name: { ar: 'جمعية إحسان الخيرية', en: 'Ehsan Charitable Society' }, status: 'active' }] },
-    {
-      type: 'requests',
-      total: 1,
-      items: [
-        {
-          id: 9003,
-          number: 'SLF-2026-000003',
-          path: 'self',
-          status: 'result-available',
-          isFrozen: false,
-          entity: { id: 6002, reference: 'ENT-006002', name: { ar: 'جمعية إحسان الخيرية', en: 'Ehsan Charitable Society' }, status: 'active' },
+  {
+    type: 'entities',
+    total: 7,
+    items: [
+      {
+        id: 6002,
+        name: { ar: 'جمعية إحسان الخيرية', en: 'Ehsan Charitable Society' },
+        status: 'active',
+      },
+    ],
+  },
+  {
+    type: 'requests',
+    total: 1,
+    items: [
+      {
+        id: 9003,
+        number: 'SLF-2026-000003',
+        path: 'self',
+        status: 'result-available',
+        isFrozen: false,
+        entity: {
+          id: 6002,
+          reference: 'ENT-006002',
+          name: { ar: 'جمعية إحسان الخيرية', en: 'Ehsan Charitable Society' },
+          status: 'active',
         },
-      ],
-    },
-    { type: 'users', total: 1, items: [{ id: 12, name: 'هند بنت علي الزهراني', email: 'hind.alzahrani@example.sa', roles: ['request_follower', 'system_admin', 'unknown_role'], status: 'active' }] },
-    { type: 'payments', total: 1, items: [{ id: 1 }] },
+      },
+    ],
+  },
+  {
+    type: 'users',
+    total: 1,
+    items: [
+      {
+        id: 12,
+        name: 'هند بنت علي الزهراني',
+        email: 'hind.alzahrani@example.sa',
+        roles: ['request_follower', 'system_admin', 'unknown_role'],
+        status: 'active',
+      },
+    ],
+  },
+  { type: 'payments', total: 1, items: [{ id: 1 }] },
 ]
 
 beforeEach(() => {
@@ -48,7 +75,15 @@ describe('searchService', () => {
     expect(data.groups[0]).toEqual({
       type: 'entities',
       total: 7,
-      items: [{ type: 'entities', key: 'entities:6002', id: 6002, title: { ar: 'جمعية إحسان الخيرية', en: 'Ehsan Charitable Society' }, status: 'active' }],
+      items: [
+        {
+          type: 'entities',
+          key: 'entities:6002',
+          id: 6002,
+          title: { ar: 'جمعية إحسان الخيرية', en: 'Ehsan Charitable Society' },
+          status: 'active',
+        },
+      ],
     })
     expect(data.groups[1].items[0]).toEqual({
       type: 'requests',
@@ -57,6 +92,7 @@ describe('searchService', () => {
       title: { ar: 'جمعية إحسان الخيرية', en: 'Ehsan Charitable Society' },
       reference: 'SLF-2026-000003',
       path: 'self',
+      pathLabel: null,
       status: 'result-available',
       isFrozen: false,
     })
@@ -73,7 +109,17 @@ describe('searchService', () => {
 
   it('maps a user without an e-mail to an empty string', async () => {
     apiClient.get.mockResolvedValue({
-      data: { data: [{ type: 'users', total: 1, items: [{ id: 13, name: 'سارة القحطاني', roles: [], status: 'active' }] }], meta: {}, errors: null },
+      data: {
+        data: [
+          {
+            type: 'users',
+            total: 1,
+            items: [{ id: 13, name: 'سارة القحطاني', roles: [], status: 'active' }],
+          },
+        ],
+        meta: {},
+        errors: null,
+      },
     })
     const { data } = await searchService.search('سارة')
     expect(data.groups[0].items[0].email).toBe('')
@@ -91,6 +137,9 @@ describe('searchService', () => {
     const failure = new Error('rate limited')
     apiClient.get.mockRejectedValue(failure)
     await expect(searchService.search('جمعية')).rejects.toBe(failure)
-    expect(logger.error).toHaveBeenCalledWith(failure, expect.objectContaining({ action: 'search.global' }))
+    expect(logger.error).toHaveBeenCalledWith(
+      failure,
+      expect.objectContaining({ action: 'search.global' }),
+    )
   })
 })

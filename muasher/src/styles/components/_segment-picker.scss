@@ -40,7 +40,9 @@
   border-radius: var(--radius-md);
   background-color: var(--theme-surface);
   cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease);
+  transition:
+    border-color var(--t-fast) var(--ease),
+    background-color var(--t-fast) var(--ease);
 
   &:hover {
     border-color: var(--theme-accent);

@@ -22,6 +22,6 @@ final readonly class NotifySelfAssessmentResultAvailable
             NotificationCode::SelfAssessmentResultAvailable,
             ['number' => $assessment->request_number, 'percent' => $event->result->percent->toDisplay()],
             AssessmentLinks::selfResult($assessment->id),
-        )->inAppOnly());
+        )->forPath($assessment->path)->inAppOnly());
     }
 }

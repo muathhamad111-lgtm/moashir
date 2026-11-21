@@ -1,6 +1,13 @@
 import { persistFinanceState } from './financeState'
 import { fieldMessage, financeReject } from './financeRejection'
-import { OPEN_STATUSES, bindProvider, issueReceipt, nowIso, recordEvent, transition } from './paymentLifecycle'
+import {
+  OPEN_CARD_STATUSES,
+  bindProvider,
+  issueReceipt,
+  nowIso,
+  recordEvent,
+  transition,
+} from './paymentLifecycle'
 import { announcePaymentPaid } from './paymentHooks'
 
 const STATUSES = ['paid', 'failed']
@@ -21,7 +28,10 @@ function providerIdError(value) {
 export function validatedSettlement(body) {
   const settlement = {
     status: body.status,
-    providerPaymentId: typeof body.providerPaymentId === 'string' && body.providerPaymentId !== '' ? body.providerPaymentId : null,
+    providerPaymentId:
+      typeof body.providerPaymentId === 'string' && body.providerPaymentId !== ''
+        ? body.providerPaymentId
+        : null,
     reason: typeof body.reason === 'string' ? body.reason.trim() : '',
   }
   const errors = {
@@ -30,15 +40,22 @@ export function validatedSettlement(body) {
     reason: reasonError(settlement.reason),
   }
   const failed = Object.entries(errors).filter(([, message]) => message)
-  if (failed.length) throw financeReject.validation(Object.fromEntries(failed.map(([field, message]) => [field, [message]])))
+  if (failed.length)
+    throw financeReject.validation(
+      Object.fromEntries(failed.map(([field, message]) => [field, [message]])),
+    )
   return settlement
 }
 
 export function settleManually(payment, settlement) {
-  if (!OPEN_STATUSES.includes(payment.status)) throw financeReject.illegalTransition(payment.status, 'manual_settle')
+  if (payment.channel === 'bank_transfer') throw financeReject.channelNotSupported()
+  if (!OPEN_CARD_STATUSES.includes(payment.status))
+    throw financeReject.illegalTransition(payment.status, 'manual_settle')
   const providerPaymentId = settlement.providerPaymentId ?? payment.providerPaymentId
-  if (settlement.status === 'paid' && providerPaymentId === null) throw financeReject.providerIdRequired()
-  if (settlement.status === 'failed' && providerPaymentId === null) throw financeReject.illegalTransition(payment.status, 'manual_settle')
+  if (settlement.status === 'paid' && providerPaymentId === null)
+    throw financeReject.providerIdRequired()
+  if (settlement.status === 'failed' && providerPaymentId === null)
+    throw financeReject.illegalTransition(payment.status, 'manual_settle')
   bindProvider(payment, providerPaymentId)
   payment.manuallySettledAt = nowIso()
   if (settlement.status === 'paid') {

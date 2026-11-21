@@ -41,7 +41,7 @@ beforeEach(() => {
 })
 
 describe('useEvaluationTypeSwitch', () => {
-  it('warns with the guiding-point count and confirms the deletion when switching to direct', async () => {
+  it('warns with the indicator count and confirms the deletion when switching to direct', async () => {
     confirm.mockResolvedValue(true)
     await harness().switchType(
       { id: 11, pointCount: 3, evaluationType: 'guiding-points' },
@@ -50,7 +50,7 @@ describe('useEvaluationTypeSwitch', () => {
     expect(confirm).toHaveBeenCalledWith(
       expect.objectContaining({
         variant: 'danger',
-        message: expect.stringContaining('3 guiding points'),
+        message: expect.stringContaining('3 indicators'),
       }),
     )
     expect(criteriaService.switchEvaluationType).toHaveBeenCalledWith(11, 'direct', {
@@ -69,14 +69,14 @@ describe('useEvaluationTypeSwitch', () => {
     criteriaService.switchEvaluationType.mockRejectedValueOnce(pointsConfirmRequired(4))
     await harness().switchType({ id: 11, pointCount: 0 }, 'direct')
     expect(confirm).toHaveBeenLastCalledWith(
-      expect.objectContaining({ message: expect.stringContaining('4 guiding points') }),
+      expect.objectContaining({ message: expect.stringContaining('4 indicators') }),
     )
     expect(criteriaService.switchEvaluationType).toHaveBeenLastCalledWith(11, 'direct', {
       confirmDeletePoints: true,
     })
   })
 
-  it('switches to guiding points without a deletion flag', async () => {
+  it('switches to indicators without a deletion flag', async () => {
     confirm.mockResolvedValue(true)
     const reload = vi.fn()
     await harness().toggleType({ id: 12, pointCount: 0, evaluationType: 'direct' }, reload)

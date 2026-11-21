@@ -5,3 +5,9 @@ export function formatNumber(n, value, format = 'default') {
   const formatted = n(numeric, format)
   return formatted === '' ? String(numeric) : formatted
 }
+
+const PAD_DIGITS = 2
+
+export function formatPadded(n, value, digits = PAD_DIGITS) {
+  return formatNumber(n, value, 'integer').padStart(digits, '0')
+}

@@ -76,9 +76,9 @@ function subProblem(sub) {
   const points = pointsOf(sub.id)
   if (!points.some((point) => point.active)) return problem('sub', sub, PROBLEM.NO_ACTIVE_POINT)
   const allocated = activeTotal(points)
-  return allocated > sub.weight
-    ? problem('sub', sub, PROBLEM.POINTS_EXCEED_SUB, sub.weight, allocated)
-    : null
+  if (allocated === sub.weight) return null
+  const code = allocated > sub.weight ? PROBLEM.POINTS_EXCEED_SUB : PROBLEM.POINTS_BELOW_SUB
+  return problem('sub', sub, code, sub.weight, allocated)
 }
 
 function mainProblems(main) {

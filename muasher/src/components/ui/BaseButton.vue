@@ -1,5 +1,7 @@
 <script setup>
 import { computed } from 'vue'
+import { RouterLink } from 'vue-router'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   variant: {
@@ -10,7 +12,7 @@ const props = defineProps({
   size: {
     type: String,
     default: 'md',
-    validator: (value) => ['sm', 'md', 'lg'].includes(value),
+    validator: (value) => ['sm', 'md', 'lg', 'xl'].includes(value),
   },
   type: {
     type: String,
@@ -18,9 +20,11 @@ const props = defineProps({
     validator: (value) => ['button', 'submit', 'reset'].includes(value),
   },
   icon: { type: String, default: '' },
+  iconEnd: { type: String, default: '' },
   iconOnly: { type: Boolean, default: false },
   loading: { type: Boolean, default: false },
   disabled: { type: Boolean, default: false },
+  to: { type: [String, Object], default: null },
 })
 
 const emit = defineEmits(['click'])
@@ -40,7 +44,13 @@ function onClick(event) {
 </script>
 
 <template>
+  <RouterLink v-if="to" :to="to" :class="classes">
+    <AppIcon v-if="icon" :name="icon" class="btn__icon" />
+    <span v-if="!iconOnly" class="btn__label"><slot /></span>
+    <AppIcon v-if="iconEnd" :name="iconEnd" class="btn__icon btn__icon--end" />
+  </RouterLink>
   <button
+    v-else
     :type="type"
     :class="classes"
     :disabled="disabled || loading"
@@ -48,7 +58,8 @@ function onClick(event) {
     @click="onClick"
   >
     <span v-if="loading" class="btn__spinner" aria-hidden="true"></span>
-    <i v-if="icon && !loading" :class="icon" class="btn__icon" aria-hidden="true"></i>
+    <AppIcon v-if="icon && !loading" :name="icon" class="btn__icon" />
     <span v-if="!iconOnly" class="btn__label"><slot /></span>
+    <AppIcon v-if="iconEnd && !loading" :name="iconEnd" class="btn__icon btn__icon--end" />
   </button>
 </template>

@@ -63,9 +63,14 @@ export const searchHandlers = [
     const params = new URL(request.url).searchParams
     const query = params.get('q') ?? ''
     if (query.length > SEARCH_MAX_LENGTH || searchableLength(query) < SEARCH_MIN_LENGTH) {
-      return errorResponse('The search term must contain at least 2 letters or digits.', 422, 'validation_failed', {
-        q: ['The search term must contain at least 2 letters or digits.'],
-      })
+      return errorResponse(
+        'The search term must contain at least 2 letters or digits.',
+        422,
+        'validation_failed',
+        {
+          q: ['The search term must contain at least 2 letters or digits.'],
+        },
+      )
     }
     const limit = readLimit(params.get('limit'))
     if (limit === null) {

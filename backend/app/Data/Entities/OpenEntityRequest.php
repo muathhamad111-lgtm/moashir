@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Entities;
 
 use App\Enums\Entities\EntityRequestPath;
+use App\Support\Assessments\PathPresenter;
 
 final readonly class OpenEntityRequest
 {
@@ -23,14 +24,14 @@ final readonly class OpenEntityRequest
     }
 
     /**
-     * @return array{id: int, number: string, path: string, status: string, cycle_id: int|null, is_frozen: bool}
+     * @return array{id: int, number: string, path: string, path_label: array{ar: string, en: string}, status: string, cycle_id: int|null, is_frozen: bool}
      */
     public function toArray(): array
     {
         return [
             'id' => $this->id,
             'number' => $this->number,
-            'path' => $this->path->value,
+            ...PathPresenter::ofRequestPath($this->path),
             'status' => $this->status,
             'cycle_id' => $this->cycleId,
             'is_frozen' => $this->isFrozen,

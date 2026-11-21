@@ -17,7 +17,11 @@ function cleanEvidence(record) {
 
 function markReady(bundle) {
   const at = nowIso()
-  Object.assign(bundle, { status: 'ready', readyAt: at, expiresAt: new Date(Date.now() + BUNDLE_TTL_MS).toISOString() })
+  Object.assign(bundle, {
+    status: 'ready',
+    readyAt: at,
+    expiresAt: new Date(Date.now() + BUNDLE_TTL_MS).toISOString(),
+  })
 }
 
 function announceReady(record, bundle, requester) {
@@ -62,7 +66,8 @@ export function requestBundle(user, record) {
 
 export function bundleOf(record, bundleId) {
   const bundle = record.bundles.find((item) => item.id === bundleId) ?? null
-  if (bundle?.status === 'ready' && new Date(bundle.expiresAt).getTime() <= Date.now()) bundle.status = 'expired'
+  if (bundle?.status === 'ready' && new Date(bundle.expiresAt).getTime() <= Date.now())
+    bundle.status = 'expired'
   return bundle
 }
 

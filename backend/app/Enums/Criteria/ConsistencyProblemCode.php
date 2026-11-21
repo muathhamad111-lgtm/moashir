@@ -10,4 +10,5 @@ enum ConsistencyProblemCode: string
     case WeightsMismatch = 'weights_mismatch';
     case NoActivePoint = 'no_active_point';
     case PointsExceedSub = 'points_exceed_sub';
+    case PointsBelowSub = 'points_below_sub';
 }

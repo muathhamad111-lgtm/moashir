@@ -17,17 +17,38 @@ const PROVIDERS = Object.values(AI_PROVIDERS)
 
 const { t } = useI18n()
 const ai = useAiIntegration()
-const { status, errorMessage, resource, fromEnvironment, saving, reasonOpen, load, refresh, submit, confirmReason } = ai
+const {
+  status,
+  errorMessage,
+  resource,
+  fromEnvironment,
+  saving,
+  reasonOpen,
+  load,
+  refresh,
+  submit,
+  confirmReason,
+} = ai
 const { providerStatus, cardStatus, clientSteps } = ai
 
 onMounted(load)
 </script>
 
 <template>
-  <SettingsSection :title="t('integrations.ai.title')" :description="t('integrations.ai.description')" :status="status" :error-message="errorMessage" @retry="load">
+  <SettingsSection
+    :title="t('integrations.ai.title')"
+    :description="t('integrations.ai.description')"
+    :status="status"
+    :error-message="errorMessage"
+    @retry="load"
+  >
     <form id="ai-integration-form" class="integration-form" novalidate @submit.prevent="submit">
       <EnvironmentSourceNote v-if="fromEnvironment" />
-      <IntegrationCard :title="t('integrations.ai.assistantTitle')" :description="t('integrations.ai.assistantDesc')" :status="cardStatus">
+      <IntegrationCard
+        :title="t('integrations.ai.assistantTitle')"
+        :description="t('integrations.ai.assistantDesc')"
+        :status="cardStatus"
+      >
         <AiDataTransferNotice />
         <AiAssistantFields />
       </IntegrationCard>
@@ -47,14 +68,19 @@ onMounted(load)
     <ReasonDialog
       v-model="reasonOpen"
       :title="t('integrations.reason.title')"
-      :message="t('integrations.reason.message')"
       :submit-label="t('actions.save')"
       :action="confirmReason"
       action-name="aiIntegration.reason"
     />
 
     <template #actions>
-      <BaseButton type="submit" form="ai-integration-form" variant="primary" :loading="saving" icon="fa-solid fa-floppy-disk">
+      <BaseButton
+        type="submit"
+        form="ai-integration-form"
+        variant="primary"
+        :loading="saving"
+        icon="save"
+      >
         {{ t('actions.save') }}
       </BaseButton>
     </template>

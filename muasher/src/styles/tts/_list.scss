@@ -1,0 +1,173 @@
+@use '../mixins' as *;
+@use '../tokens' as *;
+
+.stats-card {
+  @include in-tts-shell {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      'icon value'
+      'icon label'
+      'icon detail';
+    column-gap: var(--space-4);
+    padding: var(--space-5) var(--space-6);
+    border-color: tts-neutral(50);
+    background-color: $tts-white;
+    container-type: inline-size;
+  }
+}
+
+.stats-card__icon {
+  @include in-tts-shell {
+    inline-size: $tts-stat-icon-solid;
+    block-size: $tts-stat-icon-solid;
+    border-radius: var(--radius-circle);
+    background-color: var(--brand-primary);
+    color: var(--brand-on-primary);
+    font-size: var(--icon-size-lg);
+  }
+}
+
+.stats-card__value {
+  @include in-tts-shell {
+    // A narrow card (a phone) shrinks a long amount instead of letting it overflow.
+    font-size: clamp(#{$tts-fs-stat-min}, #{$tts-fs-stat-fluid}, #{$tts-fs-stat});
+    font-weight: var(--fw-semibold);
+    line-height: $tts-lh-heading-lg;
+  }
+}
+
+:has(> .filter-toolbar + .table-wrap) {
+  @include in-tts-shell {
+    row-gap: var(--space-5);
+  }
+}
+
+.filter-toolbar:has(+ .table-wrap):not(.card .filter-toolbar) {
+  @include in-tts-shell {
+    padding: var(--space-4) var(--space-5);
+    border: var(--border-width) solid tts-neutral(50);
+    border-block-end: 0;
+    border-start-start-radius: var(--card-radius);
+    border-start-end-radius: var(--card-radius);
+    background-color: $tts-white;
+  }
+}
+
+.filter-toolbar + .table-wrap:not(.card .table-wrap) {
+  @include in-tts-shell {
+    margin-block-start: calc(var(--space-5) * -1);
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+  }
+}
+
+.filter-toolbar__controls {
+  @include in-tts-shell {
+    flex: 1 1 auto;
+    justify-content: flex-end;
+  }
+}
+
+.filter-toolbar__controls > .expandable-search {
+  @include in-tts-shell {
+    order: -1;
+    margin-inline-end: auto;
+  }
+}
+
+.filter-toolbar .expandable-search__field {
+  @include in-tts-shell {
+    border-color: transparent;
+    background-color: transparent;
+    padding-inline: 0;
+  }
+}
+
+.table__head {
+  @include in-tts-shell {
+    background-color: tts-neutral(25);
+  }
+}
+
+.table__head .table__cell {
+  @include in-tts-shell {
+    padding-block: var(--space-4);
+    border-block-end: var(--border-width) solid tts-neutral(50);
+  }
+}
+
+.table tbody .table__cell {
+  @include in-tts-shell {
+    padding-block: var(--space-5);
+    color: tts-neutral(600);
+    font-size: $tts-fs-sm;
+  }
+}
+
+.badge {
+  @include in-tts-shell {
+    @include flex(row, center, flex-start, var(--space-1));
+    display: inline-flex;
+    white-space: nowrap;
+    padding-block: var(--space-0);
+    padding-inline: var(--space-2);
+    border-radius: var(--radius-pill);
+    box-shadow: inset 0 0 0 var(--border-width) tts-neutral(100);
+  }
+}
+
+@each $name in ('success', 'warning', 'danger', 'info') {
+  .badge--#{$name}::before {
+    @include in-tts-shell {
+      content: '';
+      flex-shrink: 0;
+      inline-size: $tts-badge-dot;
+      block-size: $tts-badge-dot;
+      border-radius: var(--radius-circle);
+      background-color: currentcolor;
+    }
+  }
+}
+
+.app-layout__content h1,
+.portal-layout__main .portal-area__title {
+  @include in-tts-shell {
+    font-size: $tts-fs-display-xxs;
+    font-weight: var(--fw-semibold);
+    line-height: $tts-lh-display-xxs;
+  }
+}
+
+.modal--drawer .modal__panel {
+  @include in-tts-shell {
+    border-radius: 0;
+    box-shadow: $tts-modal-shadow;
+  }
+}
+
+.modal--drawer .modal__footer {
+  @include in-tts-shell {
+    margin-block-start: auto;
+    border-block-start: var(--border-width) solid tts-neutral(50);
+  }
+}
+
+.modal--drawer .modal__body {
+  @include in-tts-shell {
+    flex: 1;
+    overflow-y: auto;
+  }
+}
+
+.modal--drawer .filter-dialog__fields {
+  @include in-tts-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.modal--drawer .modal__panel {
+  @include in-tts-shell {
+    display: flex;
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,83 @@
+$insight-class-light: (
+  'strength': (
+    'surface': #e2f3ea,
+    'border': #b5dfc9,
+    'ink': #0b6542,
+  ),
+  'opportunity': (
+    'surface': #fdf1dc,
+    'border': #f0d29a,
+    'ink': #7d4a00,
+  ),
+  'critical': (
+    'surface': #fbe3e3,
+    'border': #f0b8bb,
+    'ink': #a1202a,
+  ),
+);
+$insight-class-dark: (
+  'strength': (
+    'surface': #123a30,
+    'border': #2a6b55,
+    'ink': #7fe3b8,
+  ),
+  'opportunity': (
+    'surface': #3b2f15,
+    'border': #6e5626,
+    'ink': #f5c96e,
+  ),
+  'critical': (
+    'surface': #451b20,
+    'border': #7d3940,
+    'ink': #ffa3a8,
+  ),
+);
+$insight-band-light: (
+  'emerging': (
+    'surface': #ffffff,
+    'border': #9fb2b3,
+    'ink': #34494a,
+  ),
+  'developing': (
+    'surface': #edf2f2,
+    'border': #c3d0d0,
+    'ink': #2a3c3d,
+  ),
+  'mature': (
+    'surface': #c8d4d4,
+    'border': #a9baba,
+    'ink': #172b2c,
+  ),
+  'leading': (
+    'surface': #0f2b2d,
+    'border': #0f2b2d,
+    'ink': #ffffff,
+  ),
+);
+$insight-band-dark: (
+  'emerging': (
+    'surface': #0c2426,
+    'border': #4d6869,
+    'ink': #c5d5d5,
+  ),
+  'developing': (
+    'surface': #193537,
+    'border': #3a5658,
+    'ink': #d9e5e5,
+  ),
+  'mature': (
+    'surface': #a7bcbc,
+    'border': #a7bcbc,
+    'ink': #0a2325,
+  ),
+  'leading': (
+    'surface': #e8efef,
+    'border': #e8efef,
+    'ink': #0a2325,
+  ),
+);
+$insight-glyph-empty: 30%;
+$size-glyph-bar-inline: 0.1875rem;
+$size-glyph-bar-block: 0.625rem;
+$size-insight-column: 22rem;
+$size-board-preview: 9rem;

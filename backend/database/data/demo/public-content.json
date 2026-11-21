@@ -1,0 +1,661 @@
+{
+  "pages": {
+    "accredited_intro": {
+      "title": {
+        "ar": "التقييم المعتمد",
+        "en": "Accredited assessment"
+      },
+      "sections": [
+        {
+          "key": "overview",
+          "type": "rich_text",
+          "icon": "fa-solid fa-clipboard-check",
+          "title": {
+            "ar": "التقييم المعتمد",
+            "en": "Accredited assessment"
+          },
+          "subtitle": {
+            "ar": "تقييم رسمي قائم على الشواهد يمنح جهتك درجة موثوقة.",
+            "en": "An official evidence-based assessment that gives your entity a trusted score."
+          },
+          "description": {
+            "ar": "ترفع الجهة شواهدها، ويراجعها مقيّم مختص وفق نموذج التميز المؤسسي، ثم تصدر الدرجة النهائية والتقرير التعقيبي.",
+            "en": "The entity uploads its evidence, a specialist assessor reviews it against the institutional excellence model, and the final score and feedback report are then issued."
+          }
+        },
+        {
+          "key": "benefits",
+          "type": "faq",
+          "icon": "fa-solid fa-star",
+          "title": {
+            "ar": "لماذا نوصي بالتقييم المعتمد؟",
+            "en": "Why we recommend the accredited assessment"
+          },
+          "items": [
+            {
+              "icon": "fa-solid fa-file-shield",
+              "title": {
+                "ar": "مراجعة الشواهد من مقيّم مختص",
+                "en": "Evidence review by a specialist assessor"
+              },
+              "description": {
+                "ar": "قراءة موضوعية لشواهد الجهة وفق النموذج المعتمد.",
+                "en": "An objective reading of the entity's evidence against the approved model."
+              }
+            },
+            {
+              "icon": "fa-solid fa-comments",
+              "title": {
+                "ar": "تقرير تعقيبي مفصل",
+                "en": "Detailed feedback report"
+              },
+              "description": {
+                "ar": "نقاط القوة وفرص التحسين لكل معيار فرعي.",
+                "en": "Strengths and improvement opportunities for every sub-criterion."
+              }
+            },
+            {
+              "icon": "fa-solid fa-briefcase",
+              "title": {
+                "ar": "الوصول إلى حقيبة التميز السريع",
+                "en": "Access to the Quick Excellence Kit"
+              },
+              "description": {
+                "ar": "بعد صدور النتيجة يمكن للجهة البدء برحلة التحسين.",
+                "en": "Once the result is issued the entity can start its improvement journey."
+              }
+            }
+          ]
+        },
+        {
+          "key": "pricing",
+          "type": "pricing_box",
+          "icon": "fa-solid fa-receipt",
+          "title": {
+            "ar": "أكمل الدفع",
+            "en": "Complete payment"
+          },
+          "cta_label": {
+            "ar": "ادفع وابدأ التقييم",
+            "en": "Pay and start the assessment"
+          },
+          "cta_url": "/assessment/accredited"
+        }
+      ]
+    },
+    "advanced_intro": {
+      "title": {
+        "ar": "التقييم المتقدم",
+        "en": "Advanced assessment"
+      },
+      "sections": [
+        {
+          "key": "overview",
+          "type": "rich_text",
+          "icon": "fa-solid fa-trophy",
+          "title": {
+            "ar": "التقييم المتقدم وجائزة التميز",
+            "en": "The advanced assessment and the excellence award"
+          },
+          "description": {
+            "ar": "تتنافس الجهات المؤهلة خلال دورة سنوية محددة المواعيد عبر التقييم الأولي ثم الفرز ثم مرحلة تقييم اللجنة، وتعلن النتائج بعد اعتمادها.",
+            "en": "Eligible entities compete during a time-bound annual cycle through the initial assessment, filtering and the committee assessment stage; results are announced once approved."
+          }
+        },
+        {
+          "key": "cycle",
+          "type": "cycle_box",
+          "icon": "fa-solid fa-calendar-days",
+          "title": {
+            "ar": "الدورة الحالية",
+            "en": "Current cycle"
+          },
+          "description": {
+            "ar": "تعرض مواعيد الدورة وشروط المشاركة من إعدادات الدورة المعتمدة.",
+            "en": "The cycle dates and entry conditions come from the approved cycle settings."
+          }
+        },
+        {
+          "key": "winners",
+          "type": "winners",
+          "icon": "fa-solid fa-award",
+          "title": {
+            "ar": "الفائزون في الدورة السابقة",
+            "en": "Winners of the previous cycle"
+          },
+          "items": [
+            {
+              "icon": "fa-solid fa-award",
+              "title": {
+                "ar": "جمعية الأمل الخيرية",
+                "en": "Al-Amal Charity"
+              },
+              "description": {
+                "ar": "المركز الأول",
+                "en": "First place"
+              },
+              "meta": {
+                "rank": 1
+              }
+            },
+            {
+              "icon": "fa-solid fa-medal",
+              "title": {
+                "ar": "جمعية النور للتنمية",
+                "en": "Al-Noor Development Society"
+              },
+              "description": {
+                "ar": "المركز الثاني",
+                "en": "Second place"
+              },
+              "meta": {
+                "rank": 2
+              }
+            },
+            {
+              "icon": "fa-solid fa-medal",
+              "title": {
+                "ar": "مؤسسة الغد المستدام",
+                "en": "Sustainable Tomorrow Foundation"
+              },
+              "description": {
+                "ar": "المركز الثالث",
+                "en": "Third place"
+              },
+              "meta": {
+                "rank": 3
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "bag_details": {
+      "title": {
+        "ar": "حقيبة التميز السريع",
+        "en": "Quick Excellence Kit"
+      },
+      "sections": [
+        {
+          "key": "overview",
+          "type": "rich_text",
+          "icon": "fa-solid fa-briefcase",
+          "title": {
+            "ar": "ما حقيبة التميز السريع؟",
+            "en": "What is the Quick Excellence Kit?"
+          },
+          "description": {
+            "ar": "رحلة تحسين وليست تقييمًا جديدًا؛ تبنى على آخر نتيجة معتمدة أو متقدمة للجهة، ولا تطلب منها رفع شواهد جديدة.",
+            "en": "An improvement journey, not a new assessment: it builds on the entity's latest accredited or advanced result and does not ask it to upload new evidence."
+          }
+        },
+        {
+          "key": "faq",
+          "type": "faq",
+          "icon": "fa-solid fa-circle-question",
+          "title": {
+            "ar": "الأسئلة الشائعة",
+            "en": "Frequently asked questions"
+          },
+          "items": [
+            {
+              "title": {
+                "ar": "من يمكنه شراء الحقيبة؟",
+                "en": "Who can purchase the kit?"
+              },
+              "description": {
+                "ar": "الجهات التي لديها نتيجة تقييم معتمد أو متقدم موثقة.",
+                "en": "Entities that hold a verified accredited or advanced assessment result."
+              }
+            },
+            {
+              "title": {
+                "ar": "كم تستغرق الرحلة؟",
+                "en": "How long does the journey take?"
+              },
+              "description": {
+                "ar": "تتكون الخطة من مراحل مدة كل منها أربعة أشهر افتراضيًا.",
+                "en": "The plan is made of stages that last four months each by default."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "lenses": {
+      "title": {
+        "ar": "العدسات التحليلية",
+        "en": "Analytical lenses"
+      },
+      "sections": [
+        {
+          "key": "overview",
+          "type": "rich_text",
+          "icon": "fa-solid fa-glasses",
+          "title": {
+            "ar": "العدسات التحليلية",
+            "en": "Analytical lenses"
+          },
+          "description": {
+            "ar": "تعتمد العدسات على أعلى نتيجة بين آخر تقييم معتمد وآخر تقييم متقدم للجهة، ولا تستخدم نتائج التقييم الذاتي.",
+            "en": "The lenses use the higher of the entity's latest accredited and latest advanced results and never the self-assessment results."
+          }
+        },
+        {
+          "key": "lens_cards",
+          "type": "logos",
+          "icon": "fa-solid fa-layer-group",
+          "title": {
+            "ar": "العدسات",
+            "en": "The lenses"
+          },
+          "items": [
+            {
+              "icon": "fa-solid fa-hand-holding-heart",
+              "title": {
+                "ar": "عدسة المانحين",
+                "en": "Donor lens"
+              }
+            },
+            {
+              "icon": "fa-solid fa-building-shield",
+              "title": {
+                "ar": "عدسة الجهات الإشرافية",
+                "en": "Supervisory bodies lens"
+              }
+            },
+            {
+              "icon": "fa-solid fa-people-roof",
+              "title": {
+                "ar": "عدسة المجتمع",
+                "en": "Community lens"
+              }
+            },
+            {
+              "icon": "fa-solid fa-flag",
+              "title": {
+                "ar": "عدسة برامج رؤية 2030",
+                "en": "Vision 2030 programs lens"
+              }
+            },
+            {
+              "icon": "fa-solid fa-chess",
+              "title": {
+                "ar": "العدسة الاستراتيجية",
+                "en": "Strategic lens"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "kpis": {
+      "title": {
+        "ar": "مؤشرات الأداء",
+        "en": "Performance indicators"
+      },
+      "sections": [
+        {
+          "key": "hero",
+          "type": "hero",
+          "icon": "fa-solid fa-chart-column",
+          "title": {
+            "ar": "مؤشرات التميز المؤسسي",
+            "en": "Institutional excellence indicators"
+          },
+          "description": {
+            "ar": "مؤشرات محدثة لقياس أداء القطاع غير الربحي ونضجه المؤسسي.",
+            "en": "Up-to-date indicators that measure the performance and institutional maturity of the non-profit sector."
+          }
+        }
+      ]
+    }
+  },
+  "site_settings": {
+    "social": [
+      {
+        "platform": "x",
+        "url": "https://x.com/moashir.example"
+      },
+      {
+        "platform": "linkedin",
+        "url": "https://www.linkedin.com/company/moashir-example"
+      }
+    ],
+    "contact": {
+      "email": "info@moashir.example.sa",
+      "phone": null,
+      "address": {
+        "ar": "الرياض، المملكة العربية السعودية",
+        "en": "Riyadh, Kingdom of Saudi Arabia"
+      }
+    },
+    "footer_note": {
+      "ar": "جميع الحقوق محفوظة لمنصة مؤشر.",
+      "en": "All rights reserved to the Moashir platform."
+    }
+  },
+  "kpi_categories": [
+    {
+      "key": "institutional-excellence",
+      "name": {
+        "ar": "التميز المؤسسي",
+        "en": "Institutional excellence"
+      },
+      "icon": "fa-solid fa-award"
+    },
+    {
+      "key": "performance",
+      "name": {
+        "ar": "الأداء",
+        "en": "Performance"
+      },
+      "icon": "fa-solid fa-gauge-high"
+    },
+    {
+      "key": "beneficiaries",
+      "name": {
+        "ar": "المستفيدون",
+        "en": "Beneficiaries"
+      },
+      "icon": "fa-solid fa-people-group"
+    },
+    {
+      "key": "human-resources",
+      "name": {
+        "ar": "الموارد البشرية",
+        "en": "Human resources"
+      },
+      "icon": "fa-solid fa-user-tie"
+    },
+    {
+      "key": "innovation",
+      "name": {
+        "ar": "الابتكار",
+        "en": "Innovation"
+      },
+      "icon": "fa-solid fa-lightbulb"
+    },
+    {
+      "key": "operations",
+      "name": {
+        "ar": "العمليات",
+        "en": "Operations"
+      },
+      "icon": "fa-solid fa-gears"
+    },
+    {
+      "key": "knowledge",
+      "name": {
+        "ar": "المعرفة",
+        "en": "Knowledge"
+      },
+      "icon": "fa-solid fa-book"
+    },
+    {
+      "key": "key-results",
+      "name": {
+        "ar": "النتائج الرئيسية",
+        "en": "Key results"
+      },
+      "icon": "fa-solid fa-bullseye"
+    }
+  ],
+  "kpi_types": [
+    {
+      "key": "outcome",
+      "name": {
+        "ar": "مؤشر نتائج",
+        "en": "Outcome indicator"
+      }
+    },
+    {
+      "key": "output",
+      "name": {
+        "ar": "مؤشر مخرجات",
+        "en": "Output indicator"
+      }
+    },
+    {
+      "key": "input",
+      "name": {
+        "ar": "مؤشر مدخلات",
+        "en": "Input indicator"
+      }
+    }
+  ],
+  "kpis": [
+    {
+      "slug": "participating-associations",
+      "category": "beneficiaries",
+      "type": "output",
+      "value": "486",
+      "target": "700",
+      "baseline": "320",
+      "status": "good",
+      "featured": true,
+      "icon": "fa-solid fa-people-group",
+      "card": "primary",
+      "badge": "info",
+      "name": {
+        "ar": "الجمعيات المشاركة",
+        "en": "Participating associations"
+      },
+      "unit": {
+        "ar": "جمعية",
+        "en": "associations"
+      },
+      "short_description": {
+        "ar": "عدد الجمعيات المسجلة والمشاركة في المنصة.",
+        "en": "Associations registered and taking part in the platform."
+      },
+      "owner": {
+        "ar": "إدارة تسجيل الجهات",
+        "en": "Entity Registration Department"
+      }
+    },
+    {
+      "slug": "excellence-associations",
+      "category": "institutional-excellence",
+      "type": "outcome",
+      "value": "132",
+      "target": "250",
+      "baseline": "95",
+      "status": "needs_improvement",
+      "featured": true,
+      "icon": "fa-solid fa-award",
+      "card": "success",
+      "badge": "warning",
+      "name": {
+        "ar": "الجمعيات الحاصلة على التميز المؤسسي",
+        "en": "Associations achieving institutional excellence"
+      },
+      "unit": {
+        "ar": "جمعية",
+        "en": "associations"
+      },
+      "short_description": {
+        "ar": "الجمعيات المستوفية لمعايير نموذج التميز عبر المسارين المعتمد والمتقدم.",
+        "en": "Associations meeting the excellence model criteria through the accredited and advanced paths."
+      },
+      "owner": {
+        "ar": "إدارة نموذج التميز",
+        "en": "Excellence Model Department"
+      }
+    },
+    {
+      "slug": "average-excellence-score",
+      "category": "institutional-excellence",
+      "type": "outcome",
+      "value": "71.5",
+      "target": "85",
+      "baseline": "64",
+      "status": "good",
+      "featured": true,
+      "icon": "fa-solid fa-chart-line",
+      "card": "primary",
+      "badge": "info",
+      "name": {
+        "ar": "متوسط درجة التميز المؤسسي",
+        "en": "Average institutional excellence score"
+      },
+      "unit": {
+        "ar": "%",
+        "en": "%"
+      },
+      "short_description": {
+        "ar": "متوسط نتائج الجهات المقيّمة وفق نموذج التميز المؤسسي.",
+        "en": "Average result of the assessed entities against the institutional excellence model."
+      },
+      "owner": {
+        "ar": "إدارة نموذج التميز",
+        "en": "Excellence Model Department"
+      }
+    },
+    {
+      "slug": "beneficiaries-served",
+      "category": "beneficiaries",
+      "type": "outcome",
+      "value": "1250000",
+      "target": "1500000",
+      "baseline": "900000",
+      "status": "excellent",
+      "featured": true,
+      "icon": "fa-solid fa-hand-holding-heart",
+      "card": "success",
+      "badge": "success",
+      "name": {
+        "ar": "المستفيدون من البرامج",
+        "en": "Program beneficiaries"
+      },
+      "unit": {
+        "ar": "مستفيد",
+        "en": "beneficiaries"
+      },
+      "short_description": {
+        "ar": "إجمالي المستفيدين من برامج الجهات المشاركة.",
+        "en": "Total beneficiaries of the participating entities' programs."
+      },
+      "owner": {
+        "ar": "إدارة الأثر المجتمعي",
+        "en": "Community Impact Department"
+      }
+    },
+    {
+      "slug": "volunteer-hours",
+      "category": "human-resources",
+      "type": "input",
+      "value": "384000",
+      "target": "500000",
+      "baseline": "250000",
+      "status": "good",
+      "featured": true,
+      "icon": "fa-solid fa-clock",
+      "card": "info",
+      "badge": "info",
+      "name": {
+        "ar": "إجمالي ساعات التطوع",
+        "en": "Total volunteer hours"
+      },
+      "unit": {
+        "ar": "ساعة",
+        "en": "hours"
+      },
+      "short_description": {
+        "ar": "ساعات التطوع الموثقة لدى الجهات المشاركة.",
+        "en": "Volunteer hours recorded by the participating entities."
+      },
+      "owner": {
+        "ar": "إدارة التطوع",
+        "en": "Volunteering Department"
+      }
+    },
+    {
+      "slug": "strategic-plan-adoption",
+      "category": "operations",
+      "type": "output",
+      "value": "64",
+      "target": "90",
+      "baseline": "48",
+      "status": "behind_target",
+      "featured": true,
+      "icon": "fa-solid fa-chess",
+      "card": "warning",
+      "badge": "danger",
+      "name": {
+        "ar": "نسبة الجهات التي لديها خطة استراتيجية",
+        "en": "Entities with a strategic plan"
+      },
+      "unit": {
+        "ar": "%",
+        "en": "%"
+      },
+      "short_description": {
+        "ar": "نسبة الجهات المشاركة التي اعتمدت خطة استراتيجية سارية.",
+        "en": "Share of participating entities with an approved, current strategic plan."
+      },
+      "owner": {
+        "ar": "إدارة التخطيط",
+        "en": "Planning Department"
+      }
+    },
+    {
+      "slug": "digital-transformation",
+      "category": "innovation",
+      "type": "output",
+      "value": "57",
+      "target": "80",
+      "baseline": "41",
+      "status": "needs_improvement",
+      "featured": false,
+      "icon": "fa-solid fa-laptop-code",
+      "card": "primary",
+      "badge": "warning",
+      "name": {
+        "ar": "نسبة الجهات المطبقة للتحول الرقمي",
+        "en": "Entities applying digital transformation"
+      },
+      "unit": {
+        "ar": "%",
+        "en": "%"
+      },
+      "short_description": {
+        "ar": "نسبة الجهات التي رقمنت خدماتها الأساسية.",
+        "en": "Share of entities that digitised their core services."
+      },
+      "owner": {
+        "ar": "إدارة التحول الرقمي",
+        "en": "Digital Transformation Department"
+      }
+    },
+    {
+      "slug": "knowledge-management",
+      "category": "knowledge",
+      "type": "output",
+      "value": "38",
+      "target": "70",
+      "baseline": "25",
+      "status": "behind_target",
+      "featured": false,
+      "icon": "fa-solid fa-book-open",
+      "card": "danger",
+      "badge": "danger",
+      "name": {
+        "ar": "نسبة الجهات المطبقة لإدارة المعرفة",
+        "en": "Entities applying knowledge management"
+      },
+      "unit": {
+        "ar": "%",
+        "en": "%"
+      },
+      "short_description": {
+        "ar": "نسبة الجهات التي لديها ممارسات موثقة لإدارة المعرفة.",
+        "en": "Share of entities with documented knowledge management practices."
+      },
+      "owner": {
+        "ar": "إدارة المعرفة",
+        "en": "Knowledge Department"
+      }
+    }
+  ]
+}

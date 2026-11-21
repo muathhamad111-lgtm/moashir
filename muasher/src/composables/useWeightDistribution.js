@@ -3,7 +3,7 @@ import { useI18n } from 'vue-i18n'
 import { toast } from '@/composables/useToast'
 import { weightChanges } from '@/utils/criteriaOrder'
 
-export function useWeightDistribution({ saveParentMode, saveChildWeight, reload }) {
+export function useWeightDistribution({ saveParentMode, saveChildWeights, reload }) {
   const { t } = useI18n()
   const saving = ref(false)
 
@@ -29,9 +29,7 @@ export function useWeightDistribution({ saveParentMode, saveChildWeight, reload 
 
   function saveWeights(edited, originals) {
     const changes = weightChanges(edited, originals)
-    return guarded(async () => {
-      for (const change of changes) await saveChildWeight(change.id, change.weight)
-    }, 'criteria.toasts.weightsSaved')
+    return guarded(() => saveChildWeights(changes), 'criteria.toasts.weightsSaved')
   }
 
   return { saving, changeMode, saveWeights }

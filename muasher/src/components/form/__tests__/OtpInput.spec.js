@@ -35,6 +35,21 @@ describe('OtpInput', () => {
     expect(wrapper.emitted('update:modelValue')[0]).toEqual(['7'])
   })
 
+  it('accepts a digit typed on an Arabic keyboard as its Western digit', async () => {
+    const wrapper = mountOtp({ length: 4 })
+    const boxes = wrapper.findAll('.otp-input__box')
+    boxes[0].element.value = '٧'
+    await boxes[0].trigger('input')
+    expect(wrapper.emitted('update:modelValue')[0]).toEqual(['7'])
+  })
+
+  it('fills the boxes from a pasted code written in Arabic digits', async () => {
+    const wrapper = mountOtp({ length: 6 })
+    const clipboardData = { getData: () => '٤٨٢٩١٣' }
+    await wrapper.findAll('.otp-input__box')[0].trigger('paste', { clipboardData })
+    expect(wrapper.emitted('update:modelValue').at(-1)).toEqual(['482913'])
+  })
+
   it('emits complete only when every box is filled', async () => {
     const wrapper = mountOtp({ modelValue: '123', length: 4 })
     const boxes = wrapper.findAll('.otp-input__box')

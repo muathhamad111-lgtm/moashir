@@ -1,80 +1,82 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '@/stores/auth'
 import { notificationsService } from '@/services/notificationsService'
-import { NOTIFICATION_FILTERS } from '@/constants/notifications'
+import { usePortalCountsStore } from '@/stores/portalCounts'
+import { groupNotificationsByDay } from '@/utils/notificationGroups'
+import { NOTIFICATION_TABS } from '@/constants/notifications'
 
-export function useNotificationsCenter({ perPage = 8 } = {}) {
-  const { t, locale } = useI18n()
-  const auth = useAuthStore()
+const DEFAULT_PER_PAGE = 15
 
-  const activeFilter = ref('all')
-  const search = ref('')
+function queryOf(tab, page, perPage) {
+  const params = { page, perPage }
+  if (tab === NOTIFICATION_TABS.UNREAD) params['filter[read]'] = 'false'
+  return params
+}
+
+function toPagination(meta, fallbackPage, perPage) {
+  return {
+    page: meta?.page ?? fallbackPage,
+    perPage: meta?.perPage ?? perPage,
+    total: meta?.total ?? 0,
+    lastPage: meta?.lastPage ?? 1,
+  }
+}
+
+export function useNotificationsCenter({
+  initialTab = NOTIFICATION_TABS.ALL,
+  perPage = DEFAULT_PER_PAGE,
+} = {}) {
+  const { t } = useI18n()
+  const counts = usePortalCountsStore()
+  const tab = ref(
+    Object.values(NOTIFICATION_TABS).includes(initialTab) ? initialTab : NOTIFICATION_TABS.ALL,
+  )
   const page = ref(1)
-
   const items = ref([])
   const status = ref('loading')
   const errorMessage = ref('')
-  const unreadCount = ref(0)
-  const pagination = ref({ page: 1, perPage, total: 0, lastPage: 1 })
+  const totalAll = ref(null)
+  const pagination = ref(toPagination(null, 1, perPage))
   const busyIds = ref([])
   const markingAll = ref(false)
 
-  const recipientRole = computed(() => auth.roles?.[0] ?? '')
+  const unreadCount = computed(() => counts.unreadNotifications)
+  const groups = computed(() => groupNotificationsByDay(items.value))
+  const tabs = computed(() => [
+    {
+      value: NOTIFICATION_TABS.ALL,
+      label: t('notifications.center.tabs.all'),
+      count: totalAll.value,
+    },
+    {
+      value: NOTIFICATION_TABS.UNREAD,
+      label: t('notifications.center.tabs.unread'),
+      count: unreadCount.value,
+    },
+  ])
 
-  const filterTabs = computed(() =>
-    NOTIFICATION_FILTERS.map((value) => ({
-      value,
-      label: t(`notifications.filters.${value}`),
-    })),
-  )
-
-  function localized(content) {
-    if (!content) return ''
-    return content[locale.value] || content.ar || content.en || ''
-  }
-
-  function buildParams() {
-    const params = { page: page.value, perPage }
-    if (recipientRole.value) params['filter[recipientRole]'] = recipientRole.value
-    if (activeFilter.value === 'unread') params['filter[read]'] = false
-    else if (activeFilter.value !== 'all') params['filter[type]'] = activeFilter.value
-    if (search.value.trim()) params.search = search.value.trim()
-    return params
-  }
-
-  async function refreshUnread() {
-    const params = recipientRole.value ? { 'filter[recipientRole]': recipientRole.value } : {}
-    const envelope = await notificationsService.unreadCount(params).catch(() => null)
-    if (envelope) unreadCount.value = envelope.data?.count ?? 0
+  function applyEnvelope(envelope) {
+    items.value = envelope.data
+    pagination.value = toPagination(envelope.meta?.pagination, page.value, perPage)
+    counts.setUnreadNotifications(envelope.meta?.unreadCount ?? 0)
+    if (tab.value === NOTIFICATION_TABS.ALL) totalAll.value = pagination.value.total
   }
 
   async function load() {
     status.value = 'loading'
     errorMessage.value = ''
     try {
-      const envelope = await notificationsService.list(buildParams())
-      items.value = envelope.data ?? []
-      const meta = envelope.meta?.pagination
-      if (meta) {
-        pagination.value = {
-          page: meta.page ?? page.value,
-          perPage: meta.perPage ?? perPage,
-          total: meta.total ?? 0,
-          lastPage: meta.lastPage ?? 1,
-        }
-      }
+      applyEnvelope(await notificationsService.list(queryOf(tab.value, page.value, perPage)))
       status.value = items.value.length ? 'success' : 'empty'
     } catch (error) {
       errorMessage.value = error?.normalized?.message ?? ''
       status.value = 'error'
     }
-    await refreshUnread()
   }
 
-  function setFilter(value) {
-    if (activeFilter.value === value) return
-    activeFilter.value = value
+  function setTab(value) {
+    if (tab.value === value) return
+    tab.value = value
     page.value = 1
   }
 
@@ -83,56 +85,67 @@ export function useNotificationsCenter({ perPage = 8 } = {}) {
     page.value = next
   }
 
-  async function markRead(id) {
-    const item = items.value.find((candidate) => candidate.id === id)
-    if (!item || item.read || busyIds.value.includes(id)) return
+  async function withBusy(id, action) {
+    if (busyIds.value.includes(id)) return
     busyIds.value = [...busyIds.value, id]
     try {
-      await notificationsService.markRead(id)
-      item.read = true
-      unreadCount.value = Math.max(0, unreadCount.value - 1)
-      if (activeFilter.value === 'unread') await load()
+      await action()
     } finally {
       busyIds.value = busyIds.value.filter((candidate) => candidate !== id)
     }
+  }
+
+  function markRead(item) {
+    if (item.isRead) return Promise.resolve()
+    return withBusy(item.id, async () => {
+      await notificationsService.markRead(item.id)
+      item.isRead = true
+      counts.notificationRead()
+    })
+  }
+
+  function archive(item) {
+    return withBusy(item.id, async () => {
+      await notificationsService.archive(item.id)
+      if (!item.isRead) counts.notificationRead()
+      items.value = items.value.filter((candidate) => candidate.id !== item.id)
+      if (totalAll.value) totalAll.value -= 1
+      if (!items.value.length) await load()
+    })
   }
 
   async function markAllRead() {
     if (markingAll.value || unreadCount.value === 0) return
     markingAll.value = true
     try {
-      const payload = recipientRole.value ? { recipientRole: recipientRole.value } : {}
-      await notificationsService.markAllRead(payload)
-      items.value = items.value.map((item) => ({ ...item, read: true }))
-      unreadCount.value = 0
-      if (activeFilter.value === 'unread') await load()
+      await notificationsService.markAllRead()
+      counts.setUnreadNotifications(0)
+      items.value = items.value.map((item) => ({ ...item, isRead: true }))
+      if (tab.value === NOTIFICATION_TABS.UNREAD) await load()
     } finally {
       markingAll.value = false
     }
   }
 
-  watch(search, () => {
-    page.value = 1
-  })
-  watch([activeFilter, search, page], () => load())
+  watch([tab, page], load)
   onMounted(load)
 
   return {
-    activeFilter,
-    filterTabs,
-    search,
+    tab,
+    tabs,
     items,
+    groups,
     status,
     errorMessage,
     unreadCount,
     pagination,
     busyIds,
     markingAll,
-    localized,
     load,
-    setFilter,
+    setTab,
     setPage,
     markRead,
+    archive,
     markAllRead,
   }
 }

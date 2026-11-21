@@ -11,7 +11,9 @@ export function useEntityOptions() {
   }
 
   function enumOptions(group, values) {
-    return computed(() => values.map((value) => ({ value, label: t(`entities.enums.${group}.${value}`) })))
+    return computed(() =>
+      values.map((value) => ({ value, label: t(`entities.enums.${group}.${value}`) })),
+    )
   }
 
   const strategicPlanOptions = computed(() => [

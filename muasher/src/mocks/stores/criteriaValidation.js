@@ -8,8 +8,6 @@ import {
 import { isAcceptableWeight, toHundredths } from '@/utils/weight'
 import { fieldMessage, reject } from './criteriaRejection'
 
-const ATTACHMENT_KEY = /^[a-z0-9_]{1,40}$/
-
 export class FieldCollector {
   constructor() {
     this.fields = {}
@@ -92,24 +90,6 @@ export function readEnum(errors, body, field, allowed) {
     return undefined
   }
   return value
-}
-
-function isAttachment(item) {
-  if (!item || typeof item !== 'object' || typeof item.required !== 'boolean') return false
-  const keyValid = item.key === undefined || item.key === null || ATTACHMENT_KEY.test(item.key)
-  return keyValid && isLocalizedText(item.name)
-}
-
-export function readAttachments(errors, body) {
-  if (body.attachments === undefined) return undefined
-  if (!Array.isArray(body.attachments)) {
-    errors.add('attachments', 'field.invalid')
-    return undefined
-  }
-  body.attachments.forEach((item, index) => {
-    if (!isAttachment(item)) errors.add(`attachments.${index}.name`, 'criteria.text_required')
-  })
-  return body.attachments
 }
 
 export function prohibit(errors, body, fields) {

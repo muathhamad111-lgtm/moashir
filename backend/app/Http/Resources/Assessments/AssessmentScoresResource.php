@@ -24,7 +24,7 @@ final class AssessmentScoresResource extends JsonResource
 
         return [
             'assessment' => new AssessmentResource($scores->assessment)->toArray($request),
-            'scale' => ['kind' => $scale->value, 'maximum' => $scale->maximum()],
+            'scale' => $scale === null ? null : ['kind' => $scale->value, 'maximum' => $scale->maximum()],
             'scores' => $this->scoresByLevel($scores),
             'progress' => ['scored' => $scores->scoredCount(), 'required' => $scores->requiredCount()],
         ];

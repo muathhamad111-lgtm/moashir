@@ -75,7 +75,7 @@ it('marks an open request as frozen without changing anything else', function ()
 
     expect($open->isFrozen)->toBeFalse()
         ->and($frozen->toArray())->toBe([
-            'id' => 7, 'number' => 'SLF-2026-000007', 'path' => 'self', 'status' => 'draft', 'cycle_id' => null, 'is_frozen' => true,
+            'id' => 7, 'number' => 'SLF-2026-000007', 'path' => 'self', 'path_label' => ['ar' => 'التقييم الذاتي', 'en' => 'Self assessment'], 'status' => 'draft', 'cycle_id' => null, 'is_frozen' => true,
         ]);
 });
 

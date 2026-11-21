@@ -26,7 +26,11 @@ function regionResource(region) {
     id: region.id,
     code: region.code,
     name: { ...region.name },
-    cities: citiesOfRegion(region.id).map((city) => ({ id: city.id, code: city.code, name: { ...city.name } })),
+    cities: citiesOfRegion(region.id).map((city) => ({
+      id: city.id,
+      code: city.code,
+      name: { ...city.name },
+    })),
   }
 }
 
@@ -50,7 +54,9 @@ function cityName(body) {
 }
 
 function sortOrderOf(body) {
-  return body.sortOrder === null || body.sortOrder === undefined || body.sortOrder === '' ? null : Number(body.sortOrder)
+  return body.sortOrder === null || body.sortOrder === undefined || body.sortOrder === ''
+    ? null
+    : Number(body.sortOrder)
 }
 
 function newCity(region, body) {
@@ -72,7 +78,12 @@ function cityFilters(query) {
 function matchesCity(city, filters) {
   if (filters.regionId && city.regionId !== Number(filters.regionId)) return false
   if (filters.active && city.isActive !== (filters.active === 'true')) return false
-  return !filters.search || [city.name.ar, city.name.en].some((value) => normalizeSearchText(value).includes(filters.search))
+  return (
+    !filters.search ||
+    [city.name.ar, city.name.en].some((value) =>
+      normalizeSearchText(value).includes(filters.search),
+    )
+  )
 }
 
 export const regionsHandlers = [
@@ -92,7 +103,11 @@ export const regionsHandlers = [
       actorWith(P.MANAGE)
       const query = new URL(request.url).searchParams
       const filters = cityFilters(query)
-      const { items, pagination } = paginate(allCities().filter((city) => matchesCity(city, filters)), query, 50)
+      const { items, pagination } = paginate(
+        allCities().filter((city) => matchesCity(city, filters)),
+        query,
+        50,
+      )
       return envelope(items.map(cityResource), { pagination })
     }),
   ),
@@ -113,7 +128,9 @@ export const regionsHandlers = [
       actorWith(P.MANAGE)
       const city = boundCity(params.id)
       const body = await readJson(request)
-      return envelope(cityResource(updateCity(city, { name: cityName(body), sortOrder: sortOrderOf(body) })))
+      return envelope(
+        cityResource(updateCity(city, { name: cityName(body), sortOrder: sortOrderOf(body) })),
+      )
     }),
   ),
 

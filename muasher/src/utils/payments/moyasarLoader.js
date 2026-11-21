@@ -1,6 +1,5 @@
-import { MOYASAR_FORM_ASSETS } from '@/constants/payments'
-
 const loads = new Map()
+const SCRIPT_EXTENSION = /\.js(?=$|[?#])/
 
 export class MoyasarUnavailable extends Error {
   constructor() {
@@ -9,11 +8,16 @@ export class MoyasarUnavailable extends Error {
   }
 }
 
+export function stylesheetUrlOf(scriptUrl) {
+  return SCRIPT_EXTENSION.test(scriptUrl ?? '') ? scriptUrl.replace(SCRIPT_EXTENSION, '.css') : null
+}
+
 export function moyasarAssetsOf(checkout) {
+  const scriptUrl = checkout?.script?.url || null
   return {
-    scriptUrl: checkout?.script?.url ?? MOYASAR_FORM_ASSETS.scriptUrl,
-    integrity: checkout?.script?.integrity ?? null,
-    stylesheetUrl: MOYASAR_FORM_ASSETS.stylesheetUrl,
+    scriptUrl,
+    integrity: checkout?.script?.integrity || null,
+    stylesheetUrl: stylesheetUrlOf(scriptUrl),
   }
 }
 
@@ -36,7 +40,9 @@ function injectScript({ scriptUrl, integrity }) {
       script.integrity = integrity
       script.crossOrigin = 'anonymous'
     }
-    script.addEventListener('load', () => (window.Moyasar ? resolve(window.Moyasar) : reject(new MoyasarUnavailable())))
+    script.addEventListener('load', () =>
+      window.Moyasar ? resolve(window.Moyasar) : reject(new MoyasarUnavailable()),
+    )
     script.addEventListener('error', () => reject(new MoyasarUnavailable()))
     document.head.append(script)
   })
@@ -44,8 +50,9 @@ function injectScript({ scriptUrl, integrity }) {
 
 export function loadMoyasarForm(assets) {
   if (window.Moyasar) return Promise.resolve(window.Moyasar)
+  if (!assets.scriptUrl) return Promise.reject(new MoyasarUnavailable())
   if (!loads.has(assets.scriptUrl)) {
-    attachStylesheet(assets.stylesheetUrl)
+    if (assets.stylesheetUrl) attachStylesheet(assets.stylesheetUrl)
     const load = injectScript(assets).catch((error) => {
       loads.delete(assets.scriptUrl)
       document.head.querySelector(`script[data-moyasar-form="${assets.scriptUrl}"]`)?.remove()

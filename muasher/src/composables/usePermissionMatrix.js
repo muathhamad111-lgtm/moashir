@@ -16,7 +16,10 @@ export function usePermissionMatrix() {
   )
 
   const rows = computed(() =>
-    permissions.value.map((permission) => ({ ...permission, roles: rolesHolding(matrix.value, permission.key) })),
+    permissions.value.map((permission) => ({
+      ...permission,
+      roles: rolesHolding(matrix.value, permission.key),
+    })),
   )
 
   async function load() {

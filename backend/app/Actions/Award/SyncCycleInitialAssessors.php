@@ -63,7 +63,12 @@ final readonly class SyncCycleInitialAssessors
 
     private function link(User $actor, AwardCycle $cycle, int $assessorId, string $field): void
     {
-        $this->eligibility->find(CandidateRole::InitialAssessor, $assessorId) ?? throw AwardRejected::initialAssessorInvalid($field);
+        $candidate = $this->eligibility->find(CandidateRole::InitialAssessor, $assessorId) ?? throw AwardRejected::initialAssessorInvalid($field);
+
+        if (! $this->eligibility->isQualified(CandidateRole::InitialAssessor, $candidate)) {
+            throw AwardRejected::initialAssessorNotQualified($field);
+        }
+
         $this->segregation->assertMayAssessInitially($cycle->id, $assessorId, $field);
 
         AwardCycleAssessor::query()->updateOrCreate(

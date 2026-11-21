@@ -1,12 +1,9 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { kpisService } from '@/services/kpisService'
+import { localizedText } from '@/utils/localizedText'
 
-function resolve(content, locale) {
-  if (content === null || content === undefined) return ''
-  if (typeof content === 'string') return content
-  return content[locale] || content.ar || content.en || ''
-}
+const NOT_FOUND = 404
 
 export function useKpiDetail() {
   const { locale } = useI18n()
@@ -14,7 +11,7 @@ export function useKpiDetail() {
   const status = ref('loading')
 
   function localized(content) {
-    return resolve(content, locale.value)
+    return localizedText(content, locale.value)
   }
 
   async function load(slug) {
@@ -22,15 +19,10 @@ export function useKpiDetail() {
     kpi.value = null
     try {
       const { data } = await kpisService.getBySlug(slug)
-      if (!data) {
-        status.value = 'not-found'
-        return
-      }
-      kpi.value = data
-      status.value = 'success'
+      kpi.value = data ?? null
+      status.value = data ? 'success' : 'not-found'
     } catch (error) {
-      const code = error?.response?.status ?? error?.normalized?.code
-      status.value = code === 404 ? 'not-found' : 'error'
+      status.value = error?.response?.status === NOT_FOUND ? 'not-found' : 'error'
     }
   }
 

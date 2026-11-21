@@ -9,22 +9,21 @@ import Card from '@/components/ui/Card.vue'
 import Tabs from '@/components/ui/Tabs.vue'
 import Accordion from '@/components/ui/Accordion.vue'
 import Tooltip from '@/components/ui/Tooltip.vue'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import LocaleSwitcher from '@/components/ui/LocaleSwitcher.vue'
 import ThemeToggle from '@/components/ui/ThemeToggle.vue'
 import BaseInput from '@/components/form/BaseInput.vue'
 import BaseTextarea from '@/components/form/BaseTextarea.vue'
-import BaseSelect from '@/components/form/BaseSelect.vue'
 import BaseDatePicker from '@/components/form/BaseDatePicker.vue'
 import BaseCheckbox from '@/components/form/BaseCheckbox.vue'
 import BaseRadio from '@/components/form/BaseRadio.vue'
 import BaseFileUpload from '@/components/form/BaseFileUpload.vue'
-import SearchSelect from '@/components/form/SearchSelect.vue'
+import AppCombobox from '@/components/form/AppCombobox.vue'
 import StatsCards from '@/components/data-list/StatsCards.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
-import ActionsDropdown from '@/components/data-list/ActionsDropdown.vue'
+import AppMenu from '@/components/ui/AppMenu.vue'
 import BaseModal from '@/components/modal/BaseModal.vue'
 import FormModal from '@/components/modal/FormModal.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
@@ -64,9 +63,21 @@ const tabItems = computed(() => [
 ])
 
 const accordionItems = computed(() => [
-  { id: 'leadership', title: t('gallery.demo.accordion1'), content: t('gallery.demo.accordion1Body') },
-  { id: 'strategy', title: t('gallery.demo.accordion2'), content: t('gallery.demo.accordion2Body') },
-  { id: 'beneficiaries', title: t('gallery.demo.accordion3'), content: t('gallery.demo.accordion3Body') },
+  {
+    id: 'leadership',
+    title: t('gallery.demo.accordion1'),
+    content: t('gallery.demo.accordion1Body'),
+  },
+  {
+    id: 'strategy',
+    title: t('gallery.demo.accordion2'),
+    content: t('gallery.demo.accordion2Body'),
+  },
+  {
+    id: 'beneficiaries',
+    title: t('gallery.demo.accordion3'),
+    content: t('gallery.demo.accordion3Body'),
+  },
 ])
 
 const dropdownValue = ref(null)
@@ -87,9 +98,9 @@ const singleSelectValue = ref(null)
 const multiSelectValue = ref(['riyadh', 'makkah'])
 
 const rowActions = computed(() => [
-  { key: 'view', label: t('routes.requests.detail.title'), icon: 'fa-solid fa-eye' },
-  { key: 'edit', label: t('actions.save'), icon: 'fa-solid fa-pen' },
-  { key: 'remove', label: t('actions.cancel'), icon: 'fa-solid fa-trash-can', variant: 'danger' },
+  { key: 'view', label: t('routes.requests.detail.title'), icon: 'eye' },
+  { key: 'edit', label: t('actions.save'), icon: 'pen' },
+  { key: 'remove', label: t('actions.cancel'), icon: 'trash', variant: 'danger' },
 ])
 
 const inputValue = ref('')
@@ -114,7 +125,9 @@ function removeUpload(id) {
 
 const demoSchema = computed(() =>
   yupObject({
-    entityName: yupString().required(t('validation.required')).min(3, t('validation.minChars', { min: 3 })),
+    entityName: yupString()
+      .required(t('validation.required'))
+      .min(3, t('validation.minChars', { min: 3 })),
     email: yupString().required(t('validation.required')).email(t('validation.email')),
     entityType: yupString().required(t('validation.required')),
     about: yupString().required(t('validation.required')),
@@ -183,10 +196,10 @@ const tableRows = [
 ]
 
 const galleryStats = computed(() => [
-  { id: 1, icon: 'fa-solid fa-building', label: t('gallery.demo.statLabel1'), value: '148' },
-  { id: 2, icon: 'fa-solid fa-clipboard-check', label: t('gallery.demo.statLabel2'), value: '342' },
-  { id: 3, icon: 'fa-solid fa-award', label: t('gallery.demo.statLabel3'), value: '96' },
-  { id: 4, icon: 'fa-solid fa-trophy', label: t('gallery.demo.statLabel4'), value: '1' },
+  { id: 1, icon: 'building', label: t('gallery.demo.statLabel1'), value: '148' },
+  { id: 2, icon: 'clipboard-check', label: t('gallery.demo.statLabel2'), value: '342' },
+  { id: 3, icon: 'award', label: t('gallery.demo.statLabel3'), value: '96' },
+  { id: 4, icon: 'trophy', label: t('gallery.demo.statLabel4'), value: '1' },
 ])
 
 const modalOpen = ref(false)
@@ -252,7 +265,7 @@ const notifications = useNotifications({ perPage: 3 })
         <BaseButton
           variant="secondary"
           icon-only
-          icon="fa-solid fa-plus"
+          icon="plus"
           :aria-label="t('gallery.labels.iconOnly')"
         />
       </div>
@@ -312,7 +325,7 @@ const notifications = useNotifications({ perPage: 3 })
           <BaseButton
             variant="secondary"
             icon-only
-            icon="fa-solid fa-circle-question"
+            icon="question-circle"
             :aria-label="t('gallery.labels.tooltipTrigger')"
           />
         </Tooltip>
@@ -322,46 +335,46 @@ const notifications = useNotifications({ perPage: 3 })
     <section class="gallery__section" aria-labelledby="gallery-dropdowns">
       <h2 id="gallery-dropdowns" class="gallery__heading">{{ t('gallery.sections.dropdowns') }}</h2>
       <div class="gallery__row">
-        <DropdownList
+        <AppSelect
+          variant="filter"
           v-model="dropdownValue"
           :options="dropdownOptions"
-          :placeholder="t('gallery.demo.selectStatus')"
+          :label="t('gallery.demo.columnStatus')"
         />
-        <DropdownList
+        <AppSelect
+          variant="filter"
           :model-value="null"
           :options="dropdownOptions"
-          :placeholder="t('gallery.labels.disabled')"
+          :label="t('gallery.demo.columnStatus')"
           disabled
         />
-        <ActionsDropdown :actions="rowActions" />
+        <AppMenu :actions="rowActions" />
       </div>
       <div class="gallery__grid">
-        <SearchSelect
+        <AppCombobox
           v-model="singleSelectValue"
           :options="regionOptions"
           :placeholder="t('gallery.demo.selectRegion')"
-          :label="t('gallery.demo.selectRegion')"
+          :label="t('entities.fields.region')"
         />
-        <SearchSelect
+        <AppCombobox
           v-model="multiSelectValue"
           :options="regionOptions"
           multiple
           :placeholder="t('gallery.demo.selectRegion')"
-          :label="t('gallery.demo.selectRegion')"
+          :label="t('entities.fields.region')"
         />
-        <SearchSelect
+        <AppCombobox
           :model-value="null"
           :options="[]"
           loading
-          :placeholder="t('components.searchSelect.loading')"
-          :label="t('components.searchSelect.loading')"
+          :label="t('entities.fields.region')"
         />
-        <SearchSelect
+        <AppCombobox
           :model-value="null"
           :options="regionOptions"
           disabled
-          :placeholder="t('gallery.labels.disabled')"
-          :label="t('gallery.labels.disabled')"
+          :label="t('entities.fields.region')"
         />
       </div>
     </section>
@@ -382,7 +395,7 @@ const notifications = useNotifications({ perPage: 3 })
           type="email"
           :error="t('validation.email')"
         />
-        <BaseSelect
+        <AppSelect
           v-model="selectValue"
           :label="t('gallery.form.entityType')"
           name="demoType"
@@ -435,7 +448,7 @@ const notifications = useNotifications({ perPage: 3 })
           :error="demoForm.errors.value.email"
           required
         />
-        <BaseSelect
+        <AppSelect
           v-model="entityType"
           :label="t('gallery.form.entityType')"
           name="entityType"
@@ -486,16 +499,20 @@ const notifications = useNotifications({ perPage: 3 })
           {{ candidate }}
         </BaseButton>
       </div>
-      <ListToolbar v-model:search="tableSearch" :search-placeholder="t('gallery.demo.searchEntities')">
+      <ListToolbar
+        v-model:search="tableSearch"
+        :search-placeholder="t('gallery.demo.searchEntities')"
+      >
         <template #filters>
-          <DropdownList
+          <AppSelect
+            variant="filter"
             v-model="dropdownValue"
             :options="dropdownOptions"
-            :placeholder="t('gallery.demo.selectStatus')"
+            :label="t('gallery.demo.columnStatus')"
           />
         </template>
         <template #actions>
-          <BaseButton variant="primary" size="sm" icon="fa-solid fa-plus">
+          <BaseButton variant="primary" size="sm" icon="plus">
             {{ t('gallery.labels.iconOnly') }}
           </BaseButton>
         </template>
@@ -512,7 +529,7 @@ const notifications = useNotifications({ perPage: 3 })
           <StatusBadge :status="item.status" />
         </template>
         <template #cell-actions>
-          <ActionsDropdown :actions="rowActions" />
+          <AppMenu :actions="rowActions" />
         </template>
       </DataTable>
       <Pagination v-model:page="tablePage" :last-page="7" />
@@ -563,7 +580,10 @@ const notifications = useNotifications({ perPage: 3 })
           <Skeleton variant="circle" />
           <Skeleton variant="block" />
         </div>
-        <EmptyState :title="t('common.empty')" :message="t('components.notifications.emptyMessage')">
+        <EmptyState
+          :title="t('common.empty')"
+          :message="t('components.notifications.emptyMessage')"
+        >
           <template #action>
             <BaseButton variant="primary" size="sm">{{ t('actions.reload') }}</BaseButton>
           </template>
@@ -580,10 +600,20 @@ const notifications = useNotifications({ perPage: 3 })
         @select="wizard.goTo"
       />
       <div class="gallery__row">
-        <BaseButton variant="secondary" size="sm" :disabled="wizard.isFirst.value" @click="wizard.previous">
+        <BaseButton
+          variant="secondary"
+          size="sm"
+          :disabled="wizard.isFirst.value"
+          @click="wizard.previous"
+        >
           {{ t('gallery.labels.previous') }}
         </BaseButton>
-        <BaseButton variant="primary" size="sm" :disabled="wizard.isLast.value" @click="wizard.next">
+        <BaseButton
+          variant="primary"
+          size="sm"
+          :disabled="wizard.isLast.value"
+          @click="wizard.next"
+        >
           {{ t('gallery.labels.next') }}
         </BaseButton>
       </div>
@@ -595,7 +625,10 @@ const notifications = useNotifications({ perPage: 3 })
       </h2>
       <div class="gallery__stack">
         <Skeleton v-if="notifications.status.value === 'loading'" variant="text" :count="3" />
-        <ErrorState v-else-if="notifications.status.value === 'error'" @retry="notifications.load" />
+        <ErrorState
+          v-else-if="notifications.status.value === 'error'"
+          @retry="notifications.load"
+        />
         <EmptyState
           v-else-if="notifications.status.value === 'empty'"
           :title="t('components.notifications.emptyTitle')"

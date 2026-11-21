@@ -28,7 +28,7 @@ it('lists the open self draft in the deletion impact of the entity', function ()
         ->assertOk()
         ->assertJsonPath('data.requires_confirmation', true)
         ->assertJsonPath('data.open_requests', [[
-            'id' => $draft->id, 'number' => $draft->request_number, 'path' => 'self', 'status' => 'draft', 'cycle_id' => null, 'is_frozen' => false,
+            'id' => $draft->id, 'number' => $draft->request_number, 'path' => 'self', 'path_label' => ['ar' => 'التقييم الذاتي', 'en' => 'Self assessment'], 'status' => 'draft', 'cycle_id' => null, 'is_frozen' => false,
         ]]);
 });
 

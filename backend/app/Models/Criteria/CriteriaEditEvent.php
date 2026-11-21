@@ -7,7 +7,9 @@ namespace App\Models\Criteria;
 use App\Enums\Criteria\CriteriaEditKind;
 use App\Enums\Criteria\CriteriaEditScope;
 use App\Models\Concerns\AppendOnly;
+use App\Models\Identity\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
@@ -21,6 +23,9 @@ use Illuminate\Support\Carbon;
  * @property string|null $reason
  * @property int $edited_by_user_id
  * @property Carbon $created_at
+ * @property-read CriteriaVersion $fromVersion
+ * @property-read CriteriaVersion|null $toVersion
+ * @property-read User|null $editor
  */
 final class CriteriaEditEvent extends Model
 {
@@ -44,5 +49,29 @@ final class CriteriaEditEvent extends Model
             'changes' => 'array',
             'affected_open_count' => 'integer',
         ];
+    }
+
+    /**
+     * @return BelongsTo<CriteriaVersion, $this>
+     */
+    public function fromVersion(): BelongsTo
+    {
+        return $this->belongsTo(CriteriaVersion::class, 'from_version_id')->withTrashed();
+    }
+
+    /**
+     * @return BelongsTo<CriteriaVersion, $this>
+     */
+    public function toVersion(): BelongsTo
+    {
+        return $this->belongsTo(CriteriaVersion::class, 'to_version_id')->withTrashed();
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function editor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'edited_by_user_id');
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Listeners\Entities;
 
 use App\Data\Entities\EntityNotice;
+use App\Enums\Identity\RoleKey;
 use App\Enums\Notifications\NotificationCode;
 use App\Events\Entities\EntityVerified;
 use App\Services\Entities\EntityNotifier;
@@ -16,15 +17,17 @@ final readonly class NotifyEntityVerified
 
     public function handle(EntityVerified $event): void
     {
-        if ($event->entity->hasCompleteProfile()) {
+        $entity = $event->entity;
+
+        if (! $entity->isPendingReview()) {
             return;
         }
 
-        $this->notifier->toOwner($event->entity, EntityNotice::for(
-            NotificationCode::EntityProfileIncomplete,
-            EntityNotice::FOR_ENTITY,
-            ['entity' => $event->entity->name->toLocalizedText()],
-            EntityLinks::ownProfile(),
-        ));
+        $this->notifier->toRole(RoleKey::SystemAdmin, EntityNotice::for(
+            NotificationCode::EntityAwaitingReview,
+            EntityNotice::FOR_STAFF,
+            ['entity' => $entity->name->toLocalizedText(), 'reference' => $entity->reference()],
+            EntityLinks::record($entity->id),
+        ), null);
     }
 }

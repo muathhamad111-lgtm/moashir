@@ -1,0 +1,22 @@
+@each $tier in ('bronze', 'silver', 'gold', 'diamond', 'neutral') {
+  .level-tone--#{$tier} {
+    --level-surface: var(--tier-#{$tier}-surface);
+    --level-border: var(--tier-#{$tier}-border);
+    --level-ink: var(--tier-#{$tier}-ink);
+    --level-graphic: var(--tier-#{$tier}-graphic);
+    --level-glow: var(--tier-#{$tier}-glow);
+    --level-glow-edge: var(--tier-#{$tier}-glow-edge);
+    --level-on-band: var(--tier-#{$tier}-on-band);
+    --level-graphic-on-band: var(--tier-#{$tier}-graphic-on-band);
+  }
+}
+
+@each $tier in ('bronze', 'silver', 'gold', 'diamond') {
+  .level-tone--#{$tier} {
+    --level-seal-disc: var(--tier-#{$tier}-seal-disc);
+  }
+}
+
+.level-tone--neutral {
+  --level-seal-disc: var(--tier-neutral-surface);
+}

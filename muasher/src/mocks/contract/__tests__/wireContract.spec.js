@@ -70,17 +70,26 @@ describe('MSW mocks speak the snake_case API contract on the wire', () => {
   })
 
   it('decodes snake_case bodies and query keys for the handler, and encodes the reply', async () => {
-    const response = await wireFetch(`${MOCK_API_BASE}/__contract-probe?per_page=5&filter[recipient_role]=entity&status=under_review`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ official_email: 'info@example.sa', nested_value: { is_active: true } }),
-    })
+    const response = await wireFetch(
+      `${MOCK_API_BASE}/__contract-probe?per_page=5&filter[recipient_role]=entity&status=under_review`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          official_email: 'info@example.sa',
+          nested_value: { is_active: true },
+        }),
+      },
+    )
     const body = await response.json()
     expect(body.data.handler_body_keys).toEqual(['officialEmail', 'nestedValue'])
     expect(body.data.handler_nested_keys).toEqual(['isActive'])
     expect(body.data.handler_query_keys).toEqual(['perPage', 'filter[recipientRole]', 'status'])
     expect(body.data.handler_status_token).toBe('under-review')
-    expect(body.data.echoed_body).toEqual({ official_email: 'info@example.sa', nested_value: { is_active: true } })
+    expect(body.data.echoed_body).toEqual({
+      official_email: 'info@example.sa',
+      nested_value: { is_active: true },
+    })
   })
 
   it('rejects a state-changing request without the XSRF header with 419', async () => {

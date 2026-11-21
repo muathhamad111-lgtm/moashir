@@ -4,56 +4,59 @@ import { useI18n } from 'vue-i18n'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
-import ActionsDropdown from '@/components/data-list/ActionsDropdown.vue'
-import DropdownList from '@/components/ui/DropdownList.vue'
-import BaseButton from '@/components/ui/BaseButton.vue'
-import StatusBadge from '@/components/ui/StatusBadge.vue'
-import CityForm from '@/components/entities/admin/CityForm.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
+import ToggleSwitch from '@/components/ui/ToggleSwitch.vue'
 import { useCitiesAdmin } from '@/composables/useCitiesAdmin'
 import { localizedText } from '@/utils/localizedText'
 
 const { t, locale } = useI18n()
-const { items, status, errorMessage, load, filters, paginator, regions, editor, regionFilterOptions, activeOptions, regionName, openEditor, toggle, afterSave } =
-  useCitiesAdmin()
+const {
+  items,
+  status,
+  errorMessage,
+  load,
+  filters,
+  paginator,
+  regionFilterOptions,
+  activeOptions,
+  regionName,
+  toggle,
+} = useCitiesAdmin()
 const { search } = filters
 
 const columns = computed(() =>
-  ['name', 'code', 'region', 'sortOrder', 'status', 'actions'].map((key) => ({ key, label: t(`entities.cities.columns.${key}`) })),
+  ['name', 'region', 'status'].map((key) => ({
+    key,
+    label: t(`entities.cities.columns.${key}`),
+  })),
 )
-
-function cityActions(city) {
-  return [
-    { key: 'edit', label: t('entities.cities.edit'), icon: 'fa-solid fa-pen' },
-    city.isActive
-      ? { key: 'toggle', label: t('entities.cities.deactivate'), icon: 'fa-solid fa-eye-slash', variant: 'danger' }
-      : { key: 'toggle', label: t('entities.cities.activate'), icon: 'fa-solid fa-eye' },
-  ]
-}
-
-function onAction(key, city) {
-  if (key === 'edit') return openEditor(city)
-  return toggle(city)
-}
 </script>
 
 <template>
   <section class="entities-admin">
-    <header class="entities-admin__header">
-      <div>
-        <h1 class="entities-admin__title">{{ t('entities.cities.title') }}</h1>
-        <p class="entities-admin__subtitle">{{ t('entities.cities.subtitle') }}</p>
-      </div>
+    <header class="entities-admin__header entities-admin__header--toolbar">
+      <h1 class="entities-admin__title">{{ t('entities.cities.title') }}</h1>
+      <ListToolbar
+        v-model:search="search"
+        :search-placeholder="t('entities.cities.searchPlaceholder')"
+        :filter-state="filters"
+      >
+        <template #filters="{ draft }">
+          <AppSelect
+            :model-value="draft.filters.regionId"
+            :options="regionFilterOptions"
+            :label="t('entities.filters.region')"
+            @update:model-value="draft.setFilter('regionId', $event)"
+          />
+          <AppSelect
+            :model-value="draft.filters.active"
+            :options="activeOptions"
+            :label="t('entities.filters.status')"
+            @update:model-value="draft.setFilter('active', $event)"
+          />
+        </template>
+      </ListToolbar>
     </header>
-
-    <ListToolbar v-model:search="search" :search-placeholder="t('entities.cities.searchPlaceholder')">
-      <template #filters>
-        <DropdownList :model-value="filters.filters.regionId" :options="regionFilterOptions" :placeholder="t('entities.filters.region')" @update:model-value="filters.setFilter('regionId', $event)" />
-        <DropdownList :model-value="filters.filters.active" :options="activeOptions" :placeholder="t('entities.filters.status')" @update:model-value="filters.setFilter('active', $event)" />
-      </template>
-      <template #actions>
-        <BaseButton variant="primary" size="sm" icon="fa-solid fa-plus" @click="openEditor()">{{ t('entities.cities.add') }}</BaseButton>
-      </template>
-    </ListToolbar>
 
     <DataTable
       :columns="columns"
@@ -64,11 +67,15 @@ function onAction(key, city) {
       @retry="load"
     >
       <template #cell-name="{ item }">{{ localizedText(item.name, locale) }}</template>
-      <template #cell-code="{ item }"><span class="u-ltr">{{ item.code }}</span></template>
       <template #cell-region="{ item }">{{ regionName(item.regionId) }}</template>
-      <template #cell-status="{ item }"><StatusBadge :status="item.isActive ? 'active' : 'inactive'" /></template>
-      <template #cell-actions="{ item }">
-        <ActionsDropdown :actions="cityActions(item)" @select="onAction($event, item)" />
+      <template #cell-status="{ item }">
+        <ToggleSwitch
+          :model-value="item.isActive"
+          :name="`city-${item.id}-active`"
+          :label="t('entities.cities.activeLabel', { name: localizedText(item.name, locale) })"
+          hide-label
+          @update:model-value="toggle(item)"
+        />
       </template>
     </DataTable>
 
@@ -78,7 +85,5 @@ function onAction(key, city) {
       :last-page="paginator.pagination.lastPage"
       @update:page="paginator.setPage($event)"
     />
-
-    <CityForm :key="editor.city?.id ?? 'new'" v-model="editor.open" :city="editor.city" :region-options="regions.regionOptions.value" @saved="afterSave" />
   </section>
 </template>

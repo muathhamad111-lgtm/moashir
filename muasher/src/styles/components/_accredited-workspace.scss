@@ -6,20 +6,11 @@
   @include flex(column, stretch, flex-start, var(--space-4));
 }
 
-.accredited-workspace__layout {
-  display: grid;
-  gap: var(--space-5);
-  grid-template-columns: 1fr;
+.accredited-workspace__main {
+  @include flex(column, stretch, flex-start, var(--space-5));
+  min-inline-size: 0;
 
-  @include respond-to(lg) {
-    grid-template-columns: minmax(0, var(--size-panel)) minmax(0, 1fr);
-    align-items: start;
-  }
-}
-
-.accredited-workspace__nav {
-  @include respond-to(lg) {
-    position: sticky;
-    inset-block-start: var(--space-4);
+  &:focus {
+    outline: none;
   }
 }

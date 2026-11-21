@@ -19,6 +19,7 @@ import {
 import { consistencyProblems } from './criteriaRules'
 import { criteriaNotices } from './criteriaNotices'
 import { reject } from './criteriaRejection'
+import { assessmentSettings } from './accredited/assessmentSettingsStore'
 
 function now() {
   return new Date().toISOString()
@@ -48,6 +49,7 @@ function cloneTree(source, draft) {
       versionId: draft.id,
       name: { ...main.name },
     })
+    copyAttachments('main', main.id, mainCopy.id)
     subsOf(main.id).forEach((sub) => {
       const subCopy = insertSub({
         ...sub,
@@ -133,7 +135,9 @@ function nodesByCode(versionId, fields) {
     entries.push([main.code, signature(main, fields.main)])
     subsOf(main.id).forEach((sub) => {
       entries.push([sub.code, signature(sub, fields.sub)])
-      pointsOf(sub.id).forEach((point) => entries.push([point.code, signature(point, fields.point)]))
+      pointsOf(sub.id).forEach((point) =>
+        entries.push([point.code, signature(point, fields.point)]),
+      )
     })
   })
   return new Map(entries)
@@ -177,7 +181,7 @@ export function markPublished(draft, previous) {
     })
   Object.assign(draft, {
     status: STATUS.PUBLISHED,
-    scaleKind: ACTIVE_SCALE_KIND,
+    scaleKind: assessmentSettings().scaleKind ?? ACTIVE_SCALE_KIND,
     publishedAt: timestamp,
     updatedAt: timestamp,
   })

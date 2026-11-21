@@ -1,0 +1,19 @@
+@use 'tokens' as *;
+
+.lp-state {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  min-height: 70vh;
+  padding: 160px $lp-gutter 80px;
+  text-align: center;
+
+  h1 {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+  }
+
+  p {
+    max-width: 52ch;
+    color: var(--lp-ink-2);
+  }
+}

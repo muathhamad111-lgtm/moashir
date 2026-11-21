@@ -1,0 +1,263 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Enums\Audit\AuditEvent;
+use App\Enums\Cms\CmsPageKey;
+use App\Enums\Files\FileVisibility;
+use App\Enums\Files\MalwareScanStatus;
+use App\Enums\Files\StoredFilePurpose;
+use App\Enums\Identity\RoleKey;
+use App\Integrations\Fakes\FakeFileScanner;
+use App\Models\Audit\Audit;
+use App\Models\Cms\CmsSection;
+use App\Models\Cms\SiteSettings;
+use App\Models\Files\StoredFile;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Notification;
+
+beforeEach(function (): void {
+    Notification::fake();
+});
+
+function uploadContentImage(UploadedFile $file): string
+{
+    return (string) test()->post('/api/v1/admin/content/images', ['file' => $file], ['Accept' => 'application/json'])
+        ->assertCreated()
+        ->json('data.file_id');
+}
+
+it('stores an uploaded content image as a scanned public asset with a random name', function (): void {
+    signIn(contentOfficer());
+
+    $response = $this->post('/api/v1/admin/content/images', ['file' => pngImage('شعار-الجمعية.png')], ['Accept' => 'application/json'])
+        ->assertCreated()
+        ->assertJsonPath('data.mime_type', 'image/png');
+
+    $file = StoredFile::query()->where('public_id', $response->json('data.file_id'))->sole();
+    expect($file->purpose)->toBe(StoredFilePurpose::CmsImage)
+        ->and($file->visibility)->toBe(FileVisibility::PublicAsset)
+        ->and($file->content_class)->toBe('P')
+        ->and($file->malware_scan_status)->toBe(MalwareScanStatus::Clean)
+        ->and($file->path)->not->toContain('شعار')
+        ->and($response->json('data.url'))->toBe('/api/v1/content/files/'.$file->public_id);
+});
+
+it('refuses a non-image, a disguised file and an infected image', function (): void {
+    signIn(contentOfficer());
+
+    $this->post('/api/v1/admin/content/images', ['file' => UploadedFile::fake()->createWithContent('report.pdf', SAMPLE_PDF)], ['Accept' => 'application/json'])
+        ->assertUnprocessable()->assertJsonValidationErrors(['file']);
+    $this->post('/api/v1/admin/content/images', ['file' => UploadedFile::fake()->createWithContent('photo.png', 'not an image at all')], ['Accept' => 'application/json'])
+        ->assertUnprocessable();
+    $image = pngImage();
+    $infected = UploadedFile::fake()->createWithContent('photo.png', $image->getContent().FakeFileScanner::TEST_SIGNATURE);
+    $this->post('/api/v1/admin/content/images', ['file' => $infected], ['Accept' => 'application/json'])
+        ->assertUnprocessable()->assertJsonPath('code', 'file.infected');
+
+    expect(StoredFile::query()->ofPurpose(StoredFilePurpose::CmsImage)->count())->toBe(0);
+});
+
+it('attaches an uploaded image to a section and serves it publicly without a session', function (): void {
+    $section = cmsSection();
+    signIn(contentOfficer());
+    $fileId = uploadContentImage(pngImage());
+
+    $this->patchJson('/api/v1/admin/content/sections/'.$section->id, ['image_file_id' => $fileId])
+        ->assertOk()
+        ->assertJsonPath('data.image.file_id', $fileId);
+
+    $file = StoredFile::query()->where('public_id', $fileId)->sole();
+    expect($file->attachable_type)->toBe(new CmsSection()->getMorphClass())
+        ->and($file->attachable_id)->toBe($section->id);
+
+    auth()->guard('web')->logout();
+    $this->get('/api/v1/content/files/'.$fileId, ['Accept' => 'image/png'])
+        ->assertOk()
+        ->assertHeader('Content-Type', 'image/png')
+        ->assertHeader('X-Content-Type-Options', 'nosniff')
+        ->assertHeader('Content-Disposition', 'inline; filename=image.png');
+});
+
+it('refuses an image attached to other content and an unknown image', function (): void {
+    $first = cmsSection(CmsPageKey::Home, ['key' => 'first']);
+    $second = cmsSection(CmsPageKey::Home, ['key' => 'second']);
+    signIn(contentOfficer());
+    $fileId = uploadContentImage(pngImage());
+    $this->patchJson('/api/v1/admin/content/sections/'.$first->id, ['image_file_id' => $fileId])->assertOk();
+
+    $this->patchJson('/api/v1/admin/content/sections/'.$second->id, ['image_file_id' => $fileId])
+        ->assertUnprocessable()->assertJsonPath('code', 'file.not_usable');
+    $this->patchJson('/api/v1/admin/content/sections/'.$second->id, ['image_file_id' => '7a1f5c2e-3b4d-4e5f-8a9b-0c1d2e3f4a5b'])
+        ->assertUnprocessable()->assertJsonPath('code', 'file.not_usable');
+});
+
+it('never serves private files, unknown files or images that are not clean through the public path', function (): void {
+    $evidence = storedTestFile(['malware_scan_status' => MalwareScanStatus::Clean, 'malware_scanned_at' => now()]);
+    $pending = storedTestFile(['purpose' => StoredFilePurpose::CmsImage, 'visibility' => FileVisibility::PublicAsset, 'content_class' => 'P']);
+
+    $this->get('/api/v1/content/files/'.$evidence->public_id)->assertNotFound();
+    $this->get('/api/v1/content/files/'.$pending->public_id)->assertNotFound();
+    $this->get('/api/v1/content/files/2f4c0a1e-9b8d-4c7e-a6f5-3d2c1b0a9e8f')->assertNotFound();
+});
+
+it('removes images that are no longer used when the page is published again', function (): void {
+    $section = cmsSection();
+    $editor = contentOfficer();
+    signIn($editor);
+    $old = uploadContentImage(pngImage());
+    $this->patchJson('/api/v1/admin/content/sections/'.$section->id, ['image_file_id' => $old])->assertOk();
+    publishPage(CmsPageKey::Home, $editor);
+    $new = uploadContentImage(pngImage());
+    $this->patchJson('/api/v1/admin/content/sections/'.$section->id, ['image_file_id' => $new])->assertOk();
+
+    $this->get('/api/v1/content/files/'.$old)->assertOk();
+
+    publishPage(CmsPageKey::Home, $editor);
+
+    $this->get('/api/v1/content/files/'.$old)->assertNotFound();
+    $this->get('/api/v1/content/files/'.$new)->assertOk();
+    $this->getJson('/api/v1/content/home')->assertJsonPath('data.sections.0.image.file_id', $new);
+});
+
+it('reads and partially updates the site settings, audits them and refreshes the public copy', function (): void {
+    cmsSection();
+    $editor = contentOfficer();
+    publishPage(CmsPageKey::Home, $editor);
+    $this->getJson('/api/v1/content/home')->assertJsonPath('data.site_settings.social', []);
+
+    $this->patchJson('/api/v1/admin/content/site-settings', [
+        'social' => [['platform' => 'x', 'url' => 'https://x.com/moashir.example']],
+        'contact' => ['email' => 'info@moashir.example.sa', 'phone' => '+966 11 000 0000', 'address' => ['ar' => 'الرياض', 'en' => '']],
+        'quick_links' => [['label' => ['ar' => 'مؤشرات الأداء', 'en' => 'KPIs'], 'url' => '/kpis']],
+        'featured_kpi_limit' => 4,
+    ])->assertOk()
+        ->assertJsonPath('data.contact.address', ['ar' => 'الرياض', 'en' => ''])
+        ->assertJsonPath('data.featured_kpi_limit', 4)
+        ->assertJsonPath('data.show_featured_kpis', true);
+
+    $this->getJson('/api/v1/content/home')
+        ->assertJsonPath('data.site_settings.social.0.platform', 'x')
+        ->assertJsonPath('data.site_settings.contact.address', ['ar' => 'الرياض', 'en' => 'الرياض'])
+        ->assertJsonPath('data.site_settings.featured_kpi_limit', 4);
+
+    $audit = Audit::query()->where('event', AuditEvent::CmsSiteSettingsUpdated->value)->sole();
+    expect(array_keys($audit->new_values))->toBe(['social', 'contact', 'quick_links', 'featured_kpi_limit'])
+        ->and($audit->old_values['featured_kpi_limit'])->toBe(6);
+});
+
+it('stores the platform name, description and header menu, and serves them with a fallback language', function (): void {
+    cmsSection();
+    $editor = contentOfficer();
+    publishPage(CmsPageKey::Home, $editor);
+    $this->getJson('/api/v1/content/home')
+        ->assertJsonPath('data.site_settings.platform_name', ['ar' => 'مؤشر', 'en' => 'Moashir'])
+        ->assertJsonPath('data.site_settings.platform_description.en', 'A digital platform that measures the institutional maturity of civil associations, civil foundations and endowments against the Charitable Work Excellence Model.')
+        ->assertJsonCount(6, 'data.site_settings.header_links')
+        ->assertJsonPath('data.site_settings.header_links.0', ['label' => ['ar' => 'الرئيسية', 'en' => 'Home'], 'url' => '/', 'children' => []])
+        ->assertJsonPath('data.site_settings.header_links.4.url', '/kpis');
+
+    $this->patchJson('/api/v1/admin/content/site-settings', [
+        'platform_name' => ['ar' => 'منصة مؤشر', 'en' => 'Moashir'],
+        'platform_description' => ['ar' => 'قياس التميز', 'en' => 'Measuring excellence'],
+        'header_links' => [
+            ['label' => ['ar' => 'الرئيسية', 'en' => 'Home'], 'url' => '/'],
+            ['label' => ['ar' => 'المسارات', 'en' => 'Paths'], 'url' => '/#paths'],
+        ],
+    ])->assertOk()
+        ->assertJsonPath('data.platform_name', ['ar' => 'منصة مؤشر', 'en' => 'Moashir'])
+        ->assertJsonPath('data.platform_description', ['ar' => 'قياس التميز', 'en' => 'Measuring excellence'])
+        ->assertJsonPath('data.header_links.1.url', '/#paths');
+
+    $this->getJson('/api/v1/content/home')
+        ->assertJsonPath('data.site_settings.platform_name.en', 'Moashir')
+        ->assertJsonPath('data.site_settings.platform_description', ['ar' => 'قياس التميز', 'en' => 'Measuring excellence'])
+        ->assertJsonPath('data.site_settings.header_links.0.label', ['ar' => 'الرئيسية', 'en' => 'Home']);
+
+    $audit = Audit::query()->where('event', AuditEvent::CmsSiteSettingsUpdated->value)->sole();
+    expect(array_keys($audit->new_values))->toEqualCanonicalizing(['platform_name', 'platform_description', 'header_links']);
+});
+
+it('stores a header sub-menu and hidden links, and serves only the visible ones', function (): void {
+    cmsSection();
+    $editor = contentOfficer();
+    publishPage(CmsPageKey::Home, $editor);
+    $kpis = ['label' => ['ar' => 'مؤشرات الأداء', 'en' => 'Performance indicators'], 'url' => '/kpis'];
+
+    $this->patchJson('/api/v1/admin/content/site-settings', [
+        'header_links' => [
+            ['label' => ['ar' => 'الرئيسية', 'en' => 'Home'], 'url' => '/', 'is_visible' => true],
+            ['label' => ['ar' => 'عن المنصة', 'en' => 'About'], 'url' => '/ignored', 'is_visible' => true, 'children' => [
+                [...$kpis, 'is_visible' => true],
+                ['label' => ['ar' => 'الخصوصية', 'en' => 'Privacy'], 'url' => '/privacy', 'is_visible' => false],
+            ]],
+            ['label' => ['ar' => 'مخفي', 'en' => 'Hidden'], 'url' => '/#paths', 'is_visible' => false],
+            ['label' => ['ar' => 'مجموعة مخفية الروابط', 'en' => 'Empty group'], 'is_visible' => true, 'children' => [[...$kpis, 'is_visible' => false]]],
+        ],
+        'quick_links' => [
+            [...$kpis, 'is_visible' => false],
+            ['label' => ['ar' => 'تواصل معنا', 'en' => ''], 'url' => '#contact'],
+        ],
+    ])->assertOk()
+        ->assertJsonCount(4, 'data.header_links')
+        ->assertJsonPath('data.header_links.1.url', null)
+        ->assertJsonPath('data.header_links.1.children.1', ['label' => ['ar' => 'الخصوصية', 'en' => 'Privacy'], 'is_visible' => false, 'url' => '/privacy'])
+        ->assertJsonPath('data.header_links.2.is_visible', false)
+        ->assertJsonPath('data.quick_links.0.is_visible', false)
+        ->assertJsonPath('data.quick_links.1.is_visible', true);
+
+    $this->getJson('/api/v1/content/home')
+        ->assertJsonCount(2, 'data.site_settings.header_links')
+        ->assertJsonPath('data.site_settings.header_links.1', ['label' => ['ar' => 'عن المنصة', 'en' => 'About'], 'url' => null, 'children' => [$kpis]])
+        ->assertJsonPath('data.site_settings.quick_links', [['label' => ['ar' => 'تواصل معنا', 'en' => 'تواصل معنا'], 'url' => '#contact']]);
+});
+
+it('treats links saved before the visibility switch as visible', function (): void {
+    cmsSection();
+    $editor = contentOfficer();
+    publishPage(CmsPageKey::Home, $editor);
+    SiteSettings::current()->forceFill(['quick_links' => [['label' => ['ar' => 'مؤشرات الأداء', 'en' => 'KPIs'], 'url' => '/kpis']]])->save();
+    signIn($editor);
+
+    $this->getJson('/api/v1/admin/content/site-settings')
+        ->assertJsonPath('data.quick_links.0.is_visible', true)
+        ->assertJsonPath('data.header_links.0.children', []);
+    $this->getJson('/api/v1/content/home')->assertJsonPath('data.site_settings.quick_links.0.url', '/kpis');
+});
+
+it('lets the content officer empty the header menu', function (): void {
+    signIn(contentOfficer());
+
+    $this->patchJson('/api/v1/admin/content/site-settings', ['header_links' => []])
+        ->assertOk()
+        ->assertJsonPath('data.header_links', []);
+});
+
+it('rejects unknown keys and invalid site settings values', function (array $payload, string $field): void {
+    signIn(staffUser(RoleKey::SystemAdmin));
+
+    $this->patchJson('/api/v1/admin/content/site-settings', $payload)
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors([$field]);
+})->with([
+    'unknown key' => [['primary_color' => '#ff0000'], 'primary_color'],
+    'http social link' => [['social' => [['platform' => 'x', 'url' => 'http://x.com/a']]], 'social.0.url'],
+    'unknown platform' => [['social' => [['platform' => 'myspace', 'url' => 'https://example.sa']]], 'social.0.platform'],
+    'unsafe quick link' => [['quick_links' => [['label' => ['ar' => 'رابط'], 'url' => 'javascript:void(0)']]], 'quick_links.0.url'],
+    'empty quick link label' => [['quick_links' => [['label' => ['ar' => '', 'en' => ''], 'url' => '/kpis']]], 'quick_links.0.label.ar'],
+    'unsafe header link' => [['header_links' => [['label' => ['ar' => 'رابط', 'en' => 'Link'], 'url' => 'javascript:void(0)']]], 'header_links.0.url'],
+    'header link label too long' => [['header_links' => [['label' => ['ar' => str_repeat('ر', 41), 'en' => 'Link'], 'url' => '/']]], 'header_links.0.label.ar'],
+    'too many header links' => [['header_links' => array_fill(0, 9, ['label' => ['ar' => 'رابط', 'en' => 'Link'], 'url' => '/'])], 'header_links'],
+    'header link without link or children' => [['header_links' => [['label' => ['ar' => 'رابط', 'en' => 'Link'], 'url' => null, 'children' => []]]], 'header_links.0.url'],
+    'unsafe sub-menu link' => [['header_links' => [['label' => ['ar' => 'المزيد', 'en' => 'More'], 'children' => [['label' => ['ar' => 'رابط', 'en' => 'Link'], 'url' => 'javascript:void(0)']]]]], 'header_links.0.children.0.url'],
+    'sub-menu of a sub-menu' => [['header_links' => [['label' => ['ar' => 'المزيد', 'en' => 'More'], 'children' => [['label' => ['ar' => 'رابط', 'en' => 'Link'], 'url' => '/kpis', 'children' => []]]]]], 'header_links.0.children.0'],
+    'too many sub-menu links' => [['header_links' => [['label' => ['ar' => 'المزيد', 'en' => 'More'], 'children' => array_fill(0, 9, ['label' => ['ar' => 'رابط', 'en' => 'Link'], 'url' => '/kpis'])]]], 'header_links.0.children'],
+    'non-boolean visibility' => [['quick_links' => [['label' => ['ar' => 'رابط', 'en' => 'Link'], 'url' => '/kpis', 'is_visible' => 'sometimes']]], 'quick_links.0.is_visible'],
+    'children on a footer link' => [['quick_links' => [['label' => ['ar' => 'رابط', 'en' => 'Link'], 'url' => '/kpis', 'children' => []]]], 'quick_links.0'],
+    'platform name too long' => [['platform_name' => ['ar' => str_repeat('م', 121), 'en' => 'Moashir']], 'platform_name.ar'],
+    'empty Arabic platform name' => [['platform_name' => ['ar' => '', 'en' => 'Moashir']], 'platform_name.ar'],
+    'empty English platform description' => [['platform_description' => ['ar' => 'وصف', 'en' => '  ']], 'platform_description.en'],
+    'null platform name' => [['platform_name' => null], 'platform_name'],
+    'featured limit too high' => [['featured_kpi_limit' => 9], 'featured_kpi_limit'],
+    'invalid e-mail' => [['contact' => ['email' => 'not-an-email']], 'contact.email'],
+]);

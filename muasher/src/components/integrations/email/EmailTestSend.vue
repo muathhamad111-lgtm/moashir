@@ -9,28 +9,56 @@ import ProviderActionFeedback from '@/components/integrations/ProviderActionFeed
 import { emailIntegrationService } from '@/services/emailIntegrationService'
 import { PROVIDER_ACTION_STATES, useProviderAction } from '@/composables/useProviderAction'
 import { testEmailSchema } from '@/utils/integrations/emailSchema'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 const form = useForm({ validationSchema: testEmailSchema(t), initialValues: { recipient: '' } })
 const sending = useProviderAction((payload) => emailIntegrationService.sendTest(payload))
-const sentMessage = computed(() => t(sending.result.value?.redirectedToTestMailbox ? 'integrations.email.testRedirected' : 'integrations.email.testSent'))
+const sentMessage = computed(() =>
+  t(
+    sending.result.value?.redirectedToTestMailbox
+      ? 'integrations.email.testRedirected'
+      : 'integrations.email.testSent',
+  ),
+)
 const send = form.handleSubmit((values) => sending.execute({ recipient: values.recipient.trim() }))
 </script>
 
 <template>
-  <IntegrationCard :title="t('integrations.email.testSendTitle')" :description="t('integrations.email.testSendDesc')">
+  <IntegrationCard
+    :title="t('integrations.email.testSendTitle')"
+    :description="t('integrations.email.testSendDesc')"
+  >
     <form class="integration-form__grid" novalidate @submit.prevent="send">
-      <FieldInput name="recipient" type="email" input-dir="ltr" autocomplete="off" :label="t('integrations.email.fields.recipient')" />
+      <FieldInput
+        name="recipient"
+        type="email"
+        input-dir="ltr"
+        autocomplete="off"
+        :label="t('integrations.email.fields.recipient')"
+      />
       <div class="integration-form__inline">
-        <BaseButton type="submit" variant="secondary" icon="fa-solid fa-paper-plane" :loading="sending.state.value === PROVIDER_ACTION_STATES.PENDING">
+        <BaseButton
+          type="submit"
+          variant="secondary"
+          icon="send"
+          :loading="sending.state.value === PROVIDER_ACTION_STATES.PENDING"
+        >
           {{ t('integrations.email.sendTest') }}
         </BaseButton>
       </div>
     </form>
-    <p v-if="sending.state.value === PROVIDER_ACTION_STATES.SUCCESS" class="provider-feedback provider-feedback--success" role="status">
-      <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+    <p
+      v-if="sending.state.value === PROVIDER_ACTION_STATES.SUCCESS"
+      class="provider-feedback provider-feedback--success"
+      role="status"
+    >
+      <AppIcon name="check-circle" />
       {{ sentMessage }}
     </p>
-    <ProviderActionFeedback v-if="sending.state.value === PROVIDER_ACTION_STATES.FAILED" :failure="sending.failure.value" />
+    <ProviderActionFeedback
+      v-if="sending.state.value === PROVIDER_ACTION_STATES.FAILED"
+      :failure="sending.failure.value"
+    />
   </IntegrationCard>
 </template>

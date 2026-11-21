@@ -1,0 +1,14 @@
+@use '../mixins' as *;
+
+.session-extend__countdown {
+  @include flex(row, baseline, flex-start, var(--space-2));
+  margin: var(--space-3) 0 0;
+  color: var(--theme-text-secondary);
+}
+
+.session-extend__time {
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--theme-heading);
+}

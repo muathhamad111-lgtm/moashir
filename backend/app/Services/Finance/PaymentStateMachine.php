@@ -13,7 +13,7 @@ final class PaymentStateMachine
 {
     public function assertAllows(Payment $payment, PaymentStatus $next, string $verb): void
     {
-        if (! $payment->status->allowsTransitionTo($next)) {
+        if (! $payment->channel->allowsTransition($payment->status, $next)) {
             throw IllegalStateTransition::from($payment->status->value, $verb);
         }
     }
@@ -37,9 +37,10 @@ final class PaymentStateMachine
         $column = match ($status) {
             PaymentStatus::Paid => 'paid_at',
             PaymentStatus::Failed => 'failed_at',
+            PaymentStatus::Rejected => 'rejected_at',
             PaymentStatus::Cancelled => 'cancelled_at',
             PaymentStatus::Refunded => 'refunded_at',
-            PaymentStatus::Created, PaymentStatus::Pending => null,
+            PaymentStatus::Created, PaymentStatus::Pending, PaymentStatus::UnderReview => null,
         };
 
         if ($column !== null) {

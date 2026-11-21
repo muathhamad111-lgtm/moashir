@@ -28,7 +28,15 @@ export const awardCyclesFixture = [
     name: { ar: 'دورة جائزة مؤشر للتميز المؤسسي', en: 'Moashir Institutional Excellence Award' },
     status: 'closed',
     closedFromStatus: 'announced',
-    offsets: { submissionStart: -400, submissionEnd: -330, committeeStart: -310, committeeEnd: -270, announcementAt: -250, announcedAt: -250, closedAt: -240 },
+    offsets: {
+      submissionStart: -400,
+      submissionEnd: -330,
+      committeeStart: -310,
+      committeeEnd: -270,
+      announcementAt: -250,
+      announcedAt: -250,
+      closedAt: -240,
+    },
     regionIds: [1, 2, 3, 4, 5],
     minEntityAgeYears: 3,
     disqualificationScore: '60.00',
@@ -48,7 +56,15 @@ export const awardCyclesFixture = [
     name: { ar: 'دورة جائزة مؤشر للتميز المؤسسي', en: 'Moashir Institutional Excellence Award' },
     status: 'submission-open',
     closedFromStatus: null,
-    offsets: { submissionStart: -32, submissionEnd: 43, committeeStart: 63, committeeEnd: 105, announcementAt: 120, announcedAt: null, closedAt: null },
+    offsets: {
+      submissionStart: -32,
+      submissionEnd: 43,
+      committeeStart: 63,
+      committeeEnd: 105,
+      announcementAt: 120,
+      announcedAt: null,
+      closedAt: null,
+    },
     regionIds: [1, 2, 3, 4],
     minEntityAgeYears: 3,
     disqualificationScore: '60.00',
@@ -68,21 +84,34 @@ export const awardCyclesFixture = [
   },
   {
     id: AWARD_CYCLE_IDS.next,
-    name: { ar: 'الدورة القادمة لجائزة مؤشر للتميز المؤسسي', en: 'Next Moashir Institutional Excellence Award' },
+    name: {
+      ar: 'الدورة القادمة لجائزة مؤشر للتميز المؤسسي',
+      en: 'Next Moashir Institutional Excellence Award',
+    },
     status: 'draft',
     closedFromStatus: null,
-    offsets: { submissionStart: 330, submissionEnd: 400, committeeStart: 420, committeeEnd: 460, announcementAt: 480, announcedAt: null, closedAt: null },
+    offsets: {
+      submissionStart: 330,
+      submissionEnd: 400,
+      committeeStart: 420,
+      committeeEnd: 460,
+      announcementAt: 480,
+      announcedAt: null,
+      closedAt: null,
+    },
     regionIds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
     minEntityAgeYears: 3,
     disqualificationScore: '60.00',
     initialReviewSlaDays: 14,
     participationCertificateEnabled: false,
+    entryFee: '750.00',
     members: [{ userId: AWARD_STAFF.secretary, role: 'award_secretary' }],
     initialAssessors: [],
   },
 ]
 
-const RETURN_NOTES = 'يرجى استكمال وصف دراسة احتياجات المستفيدين وإرفاق تقرير قياس الأثر لعام 2025 قبل نهاية المهلة.'
+const RETURN_NOTES =
+  'أكمل وصف دراسة احتياجات المستفيدين، وأرفق تقرير قياس الأثر لعام 2025 قبل نهاية المهلة.'
 
 const COMPLETE_EVIDENCE = evidence(FULL_EVIDENCE)
 
@@ -102,7 +131,7 @@ export const advancedRequestsFixture = [
         status: 'open',
         notes: RETURN_NOTES,
         items: [
-          { subCode: 'M2.1', kind: 'cv', note: 'أضيفوا منهجية الدراسة وعدد المستفيدين المشمولين.' },
+          { subCode: 'M2.1', kind: 'cv', note: 'أضف منهجية الدراسة وعدد المستفيدين المشمولين.' },
           { subCode: 'M8.2', kind: 'evidence', note: null },
         ],
         requestedOffset: -3,
@@ -121,7 +150,15 @@ export const advancedRequestsFixture = [
     scoring: { pattern: 'steady', count: -2 },
     cvCodes: ALL_CV,
     evidence: COMPLETE_EVIDENCE,
-    assignments: [{ assessorId: 10, status: 'active', assignedOffset: -6, startedOffset: -2, endedOffset: null }],
+    assignments: [
+      {
+        assessorId: 10,
+        status: 'active',
+        assignedOffset: -6,
+        startedOffset: -2,
+        endedOffset: null,
+      },
+    ],
     completionRequests: [],
     offsets: { createdAt: -28, submittedAt: -15 },
   },
@@ -147,7 +184,15 @@ export const advancedRequestsFixture = [
     scoring: { pattern: 'steady', count: null },
     cvCodes: ALL_CV,
     evidence: COMPLETE_EVIDENCE,
-    assignments: [{ assessorId: 10, status: 'completed', assignedOffset: -20, startedOffset: -19, endedOffset: -8 }],
+    assignments: [
+      {
+        assessorId: 10,
+        status: 'completed',
+        assignedOffset: -20,
+        startedOffset: -19,
+        endedOffset: -8,
+      },
+    ],
     completionRequests: [],
     offsets: { createdAt: -30, submittedAt: -22 },
   },
@@ -160,7 +205,15 @@ export const advancedRequestsFixture = [
     scoring: { pattern: 'developing', count: null },
     cvCodes: ALL_CV,
     evidence: COMPLETE_EVIDENCE,
-    assignments: [{ assessorId: 11, status: 'completed', assignedOffset: -18, startedOffset: -17, endedOffset: -4 }],
+    assignments: [
+      {
+        assessorId: 11,
+        status: 'completed',
+        assignedOffset: -18,
+        startedOffset: -17,
+        endedOffset: -4,
+      },
+    ],
     completionRequests: [],
     offsets: { createdAt: -29, submittedAt: -21 },
   },
@@ -170,7 +223,9 @@ export const advancedRequestsFixture = [
     cycleId: AWARD_CYCLE_IDS.running,
     entityId: 6006,
     status: 'rejected-conditions',
-    conditionFailure: { failures: [{ rule: 'region', passed: false, required: null, actual: null }] },
+    conditionFailure: {
+      failures: [{ rule: 'region', passed: false, required: null, actual: null }],
+    },
     scoring: { pattern: 'steady', count: 0 },
     cvCodes: [],
     evidence: [],
@@ -187,12 +242,21 @@ export const advancedRequestsFixture = [
     scoring: { pattern: 'developing', count: null },
     cvCodes: ALL_CV,
     evidence: COMPLETE_EVIDENCE,
-    assignments: [{ assessorId: 11, status: 'completed', assignedOffset: -325, startedOffset: -324, endedOffset: -318 }],
+    assignments: [
+      {
+        assessorId: 11,
+        status: 'completed',
+        assignedOffset: -325,
+        startedOffset: -324,
+        endedOffset: -318,
+      },
+    ],
     completionRequests: [],
     decision: {
       outcome: 'not_qualified',
       deciderId: AWARD_STAFF.filteringOfficer,
-      reason: 'جاءت نتيجة التقييم الأولي أقل من درجة الاستبعاد المعتمدة للدورة، ولم تظهر مبررات للاستثناء.',
+      reason:
+        'جاءت نتيجة التقييم الأولي أقل من درجة الاستبعاد المعتمدة للدورة، ولم تظهر مبررات للاستثناء.',
       offset: -312,
     },
     offsets: { createdAt: -390, submittedAt: -340 },
@@ -203,7 +267,10 @@ export const advancedRequestsFixture = [
     cycleId: AWARD_CYCLE_IDS.past,
     entityId: 6004,
     status: 'withdrawn',
-    withdrawal: { reason: 'سحب الطلب بناءً على طلب الجهة الرسمي لانشغالها بإعادة الهيكلة.', offset: -335 },
+    withdrawal: {
+      reason: 'سحب الطلب بناءً على طلب الجهة الرسمي لانشغالها بإعادة الهيكلة.',
+      offset: -335,
+    },
     scoring: { pattern: 'steady', count: 0 },
     cvCodes: ALL_CV,
     evidence: COMPLETE_EVIDENCE,
@@ -224,7 +291,7 @@ export const advancedRequestsFixture = [
     completionRequests: [
       {
         status: 'expired-declined',
-        notes: 'يرجى استكمال السير المطلوبة للمعايير من الثالث إلى الثامن.',
+        notes: 'أكمل السير المطلوبة للمعايير من الثالث إلى الثامن.',
         items: [{ subCode: 'M3.1', kind: 'cv', note: null }],
         requestedOffset: -345,
         deadlineOffset: -336,

@@ -14,6 +14,8 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int|null $user_id
  * @property string|null $email_attempted
+ * @property string|null $identifier_type
+ * @property string|null $identifier_hash
  * @property AuthEventType $type
  * @property string|null $ip_address
  * @property string|null $user_agent
@@ -27,7 +29,7 @@ final class AuthenticationEvent extends Model
 
     public const null UPDATED_AT = null;
 
-    protected $fillable = ['user_id', 'email_attempted', 'type', 'ip_address', 'user_agent', 'request_id', 'meta'];
+    protected $fillable = ['user_id', 'identifier_type', 'identifier_hash', 'type', 'ip_address', 'user_agent', 'request_id', 'meta'];
 
     /**
      * @return array<string, string>

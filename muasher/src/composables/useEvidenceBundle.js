@@ -22,11 +22,16 @@ export function useEvidenceBundleRequest(assessmentId) {
     try {
       const { data } = await evidenceService.requestBundle(assessmentId.value)
       if (data.status === BUNDLE_STATUSES.READY) {
-        await downloads.download(data.id, () => evidenceService.requestBundleDownload(assessmentId.value, data.id))
+        await downloads.download(data.id, () =>
+          evidenceService.requestBundleDownload(assessmentId.value, data.id),
+        )
         return
       }
       toast.info(t('requests.bundle.preparing'))
-      router.push({ name: ROUTE_NAMES.REQUESTS_EVIDENCE_BUNDLE, params: { id: assessmentId.value, bundle: data.id } })
+      router.push({
+        name: ROUTE_NAMES.REQUESTS_EVIDENCE_BUNDLE,
+        params: { id: assessmentId.value, bundle: data.id },
+      })
     } catch (error) {
       toast.error(error?.normalized?.message || t('errors.unexpected'))
     } finally {
@@ -46,7 +51,10 @@ export function useEvidenceBundleStatus(assessmentId, bundleId) {
 
   function schedule() {
     clearTimeout(timer)
-    timer = bundle.value?.status === BUNDLE_STATUSES.PREPARING ? setTimeout(() => load({ silent: true }), BUNDLE_POLL_MS) : null
+    timer =
+      bundle.value?.status === BUNDLE_STATUSES.PREPARING
+        ? setTimeout(() => load({ silent: true }), BUNDLE_POLL_MS)
+        : null
   }
 
   async function load({ silent = false } = {}) {
@@ -64,7 +72,9 @@ export function useEvidenceBundleStatus(assessmentId, bundleId) {
   }
 
   function download() {
-    return downloads.download(bundleId.value, () => evidenceService.requestBundleDownload(assessmentId.value, bundleId.value))
+    return downloads.download(bundleId.value, () =>
+      evidenceService.requestBundleDownload(assessmentId.value, bundleId.value),
+    )
   }
 
   onBeforeUnmount(() => clearTimeout(timer))

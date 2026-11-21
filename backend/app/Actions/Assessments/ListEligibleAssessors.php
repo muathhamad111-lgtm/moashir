@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Assessments;
 
 use App\Data\Assessments\EligibleAssessor;
+use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Assessments\AssignmentStatus;
 use App\Models\Assessments\Assessment;
 use App\Models\Assessments\AssessmentAssignment;
@@ -22,9 +23,9 @@ final readonly class ListEligibleAssessors
     /**
      * @return list<EligibleAssessor>
      */
-    public function handle(User $actor, ?Assessment $assessment, ?SearchTerm $search): array
+    public function handle(User $actor, AssessmentPath $path, ?Assessment $assessment, ?SearchTerm $search): array
     {
-        $query = $this->eligibility->eligibleFor($actor, $assessment)
+        $query = $this->eligibility->eligibleFor($actor, $path, $assessment?->award_cycle_id)
             ->select(['id', 'name'])
             ->selectSub(AssessmentAssignment::query()
                 ->selectRaw('count(*)')

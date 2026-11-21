@@ -12,7 +12,12 @@ function buildRouter() {
     history: createMemoryHistory(),
     routes: [
       { path: '/auth/login', name: ROUTE_NAMES.AUTH_LOGIN, component: empty },
-      { path: '/dashboard', name: ROUTE_NAMES.APP_DASHBOARD, component: empty, meta: { requiresAuth: true } },
+      {
+        path: '/dashboard',
+        name: ROUTE_NAMES.APP_DASHBOARD,
+        component: empty,
+        meta: { requiresAuth: true },
+      },
       { path: '/', name: 'home', component: empty },
     ],
   })

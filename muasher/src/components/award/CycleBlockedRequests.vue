@@ -14,10 +14,18 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <AssessmentNotice variant="danger" live :title="t('cycles.blocked.title')" :message="t('cycles.blocked.message', { count: requests.length }, requests.length)">
+  <AssessmentNotice
+    variant="danger"
+    live
+    :title="t('cycles.blocked.title')"
+    :message="t('cycles.blocked.message', { count: requests.length }, requests.length)"
+  >
     <ul class="cycle-blocked">
       <li v-for="request in requests" :key="request.id" class="cycle-blocked__item">
-        <RouterLink class="cycle-blocked__link" :to="{ name: ROUTE_NAMES.REQUESTS_DETAIL, params: { id: request.id } }">
+        <RouterLink
+          class="cycle-blocked__link"
+          :to="{ name: ROUTE_NAMES.REQUESTS_DETAIL, params: { id: request.id } }"
+        >
           <bdi dir="ltr">{{ request.number }}</bdi>
         </RouterLink>
         <StatusBadge :status="toRequestStatus(request.status)" />

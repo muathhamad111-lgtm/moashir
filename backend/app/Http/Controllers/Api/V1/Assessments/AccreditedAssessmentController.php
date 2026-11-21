@@ -6,20 +6,28 @@ namespace App\Http\Controllers\Api\V1\Assessments;
 
 use App\Actions\Assessments\GetAccreditedCurrent;
 use App\Actions\Assessments\SaveSubmissionCv;
+use App\Actions\Assessments\StartFreeAccreditedRequest;
 use App\Http\Requests\Assessments\SaveSubmissionCvRequest;
 use App\Http\Resources\Assessments\AccreditedCurrentResource;
+use App\Http\Resources\Assessments\AssessmentResource;
 use App\Http\Resources\Assessments\CvSheetResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\Assessments\Assessment;
 use App\Models\Identity\User;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 
 final class AccreditedAssessmentController
 {
     public function current(#[CurrentUser] User $actor, GetAccreditedCurrent $current): JsonResponse
     {
         return ApiResponse::resource(new AccreditedCurrentResource($current->handle($actor)));
+    }
+
+    public function start(#[CurrentUser] User $actor, StartFreeAccreditedRequest $start): JsonResponse
+    {
+        return ApiResponse::resource(new AssessmentResource($start->handle($actor)), Response::HTTP_CREATED);
     }
 
     public function saveCv(SaveSubmissionCvRequest $request, Assessment $assessment, #[CurrentUser] User $actor, SaveSubmissionCv $saveCv): JsonResponse

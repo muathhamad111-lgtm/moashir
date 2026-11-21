@@ -16,7 +16,7 @@ final class DownloadStoredFileController
 {
     public function __invoke(DownloadStoredFileRequest $request, StoredFile $file, #[CurrentUser] User $actor, DownloadStoredFile $download): StreamedResponse
     {
-        $result = $download->handle($actor, $file, $request->boundUserId());
+        $result = $download->handle($actor, $file, $request->claim());
 
         return new StreamedResponse(static function () use ($result): void {
             fpassthru($result->stream);

@@ -48,14 +48,20 @@ export function useEmailChange({ onCompleted }) {
     verifying.value = true
     logger.breadcrumb('form', VERIFY_ACTION, { fields: ['challengeId', 'code'] })
     try {
-      const { data } = await entitiesService.confirmEmailChange({ challengeId: otp.challengeId.value, code: value })
+      const { data } = await entitiesService.confirmEmailChange({
+        challengeId: otp.challengeId.value,
+        code: value,
+      })
       otp.stop()
       result.value = data
       step.value = EMAIL_CHANGE_STEPS.DONE
       onCompleted(data)
     } catch (error) {
       logger.error(error, { action: VERIFY_ACTION })
-      codeError.value = error?.normalized?.fieldErrors?.code?.[0] || error?.normalized?.message || t('auth.otp.errors.invalid')
+      codeError.value =
+        error?.normalized?.fieldErrors?.code?.[0] ||
+        error?.normalized?.message ||
+        t('auth.otp.errors.invalid')
       code.value = ''
     } finally {
       verifying.value = false

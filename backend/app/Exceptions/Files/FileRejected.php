@@ -25,6 +25,16 @@ final class FileRejected extends ApiException
         return self::fieldError('file.scan_failed', $field);
     }
 
+    public static function passwordProtected(string $field): self
+    {
+        return self::fieldError('file.password_protected', $field);
+    }
+
+    public static function checkFailed(string $field): self
+    {
+        return self::fieldError('file.check_failed', $field);
+    }
+
     public static function notClean(): self
     {
         return new self(new ApiError(Response::HTTP_CONFLICT, 'file.not_clean'));

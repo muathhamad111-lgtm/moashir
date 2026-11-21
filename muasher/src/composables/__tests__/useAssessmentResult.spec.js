@@ -24,7 +24,9 @@ describe('useAssessmentResult', () => {
   })
 
   it('ignores a handed result of another assessment and loads from the API', async () => {
-    assessmentsService.getResult.mockResolvedValue({ data: { id: 9001, available: false, status: 'draft' } })
+    assessmentsService.getResult.mockResolvedValue({
+      data: { id: 9001, available: false, status: 'draft' },
+    })
     const { api } = withSetup(() => useAssessmentResult(ref(9001)))
     useAssessmentResultHandoffStore().hand({ id: 9002, available: true })
     await api.init()
@@ -33,11 +35,15 @@ describe('useAssessmentResult', () => {
   })
 
   it('reports missing on 404 and error otherwise', async () => {
-    assessmentsService.getResult.mockRejectedValueOnce({ normalized: { status: 404, message: 'Not found' } })
+    assessmentsService.getResult.mockRejectedValueOnce({
+      normalized: { status: 404, message: 'Not found' },
+    })
     const { api } = withSetup(() => useAssessmentResult(ref(1)))
     await api.load()
     expect(api.status.value).toBe('missing')
-    assessmentsService.getResult.mockRejectedValueOnce({ normalized: { status: 503, message: 'Unavailable' } })
+    assessmentsService.getResult.mockRejectedValueOnce({
+      normalized: { status: 503, message: 'Unavailable' },
+    })
     await api.load()
     expect(api.status.value).toBe('error')
     expect(api.errorMessage.value).toBe('Unavailable')

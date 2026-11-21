@@ -21,6 +21,7 @@ final class InAppChannel
             'title' => $message->title,
             'body' => $message->body,
             'link' => $message->link,
+            'path' => $message->path,
         ]);
     }
 }

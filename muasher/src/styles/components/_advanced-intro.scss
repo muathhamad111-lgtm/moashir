@@ -149,12 +149,12 @@
   border-radius: var(--radius-md);
   background-color: var(--theme-surface-raised);
 
-  > i {
+  > .app-icon {
     color: var(--color-success);
   }
 }
 
-.eligibility-list__item--failed > i {
+.eligibility-list__item--failed > .app-icon {
   color: var(--color-danger);
 }
 
@@ -280,7 +280,7 @@
   border-radius: var(--radius-md);
   background-color: var(--theme-surface-raised);
 
-  > i {
+  > .app-icon {
     font-size: var(--fs-xl);
     color: var(--theme-accent-text);
   }

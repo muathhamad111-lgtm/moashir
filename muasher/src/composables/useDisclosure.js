@@ -1,8 +1,7 @@
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, ref, watch } from 'vue'
 
-export function useDisclosure() {
+export function useDisclosure({ rootRef, triggerRef }) {
   const isOpen = ref(false)
-  const rootRef = ref(null)
 
   function open() {
     isOpen.value = true
@@ -16,24 +15,32 @@ export function useDisclosure() {
     isOpen.value = !isOpen.value
   }
 
-  function onDocumentClick(event) {
-    if (!isOpen.value) return
-    if (rootRef.value && !rootRef.value.contains(event.target)) close()
+  function closeToTrigger() {
+    close()
+    triggerRef.value?.focus()
   }
 
-  function onDocumentKeydown(event) {
-    if (event.key === 'Escape' && isOpen.value) close()
+  function onKeydown(event) {
+    if (event.key !== 'Escape' || !isOpen.value) return
+    event.preventDefault()
+    event.stopPropagation()
+    closeToTrigger()
   }
 
-  onMounted(() => {
-    document.addEventListener('click', onDocumentClick)
-    document.addEventListener('keydown', onDocumentKeydown)
+  function onFocusOut(event) {
+    if (event.relatedTarget && !rootRef.value?.contains(event.relatedTarget)) close()
+  }
+
+  function onPointerDown(event) {
+    if (!rootRef.value?.contains(event.target)) close()
+  }
+
+  watch(isOpen, (openNow) => {
+    const method = openNow ? 'addEventListener' : 'removeEventListener'
+    document[method]('pointerdown', onPointerDown)
   })
 
-  onBeforeUnmount(() => {
-    document.removeEventListener('click', onDocumentClick)
-    document.removeEventListener('keydown', onDocumentKeydown)
-  })
+  onBeforeUnmount(() => document.removeEventListener('pointerdown', onPointerDown))
 
-  return { isOpen, rootRef, open, close, toggle }
+  return { isOpen, open, close, toggle, onKeydown, onFocusOut }
 }

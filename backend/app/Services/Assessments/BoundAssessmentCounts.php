@@ -19,7 +19,7 @@ final readonly class BoundAssessmentCounts implements BoundAssessmentCounter, Op
 
     public function countBoundTo(CriteriaVersion $version): int
     {
-        return $this->openOperational(Assessment::query()->where('criteria_version_id', $version->id))->count();
+        return $this->rebindableOpen(Assessment::query()->where('criteria_version_id', $version->id))->count();
     }
 
     public function countsFor(array $versionIds): array
@@ -29,7 +29,7 @@ final readonly class BoundAssessmentCounts implements BoundAssessmentCounter, Op
         }
 
         $totals = $this->perVersion(Assessment::query()->whereIn('criteria_version_id', $versionIds));
-        $open = $this->perVersion($this->openOperational(Assessment::query()->whereIn('criteria_version_id', $versionIds)));
+        $open = $this->perVersion($this->rebindableOpen(Assessment::query()->whereIn('criteria_version_id', $versionIds)));
         $counts = [];
 
         foreach ($versionIds as $versionId) {
@@ -43,9 +43,9 @@ final readonly class BoundAssessmentCounts implements BoundAssessmentCounter, Op
      * @param  Builder<Assessment>  $query
      * @return Builder<Assessment>
      */
-    private function openOperational(Builder $query): Builder
+    private function rebindableOpen(Builder $query): Builder
     {
-        return $this->freezeGuard->excludeFrozen($query->open());
+        return $this->freezeGuard->excludeFrozen($query->followingCriteriaEdits());
     }
 
     /**

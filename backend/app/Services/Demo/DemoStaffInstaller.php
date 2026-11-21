@@ -7,12 +7,14 @@ namespace App\Services\Demo;
 use App\Actions\Identity\ApplyNewPassword;
 use App\Data\Demo\DemoAccount;
 use App\Data\Demo\DemoUserAccount;
+use App\Enums\Identity\AssessorQualification;
 use App\Enums\Identity\Locale;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Identity\UserStatus;
 use App\Enums\Platform\DemoRecordKind;
 use App\Exceptions\Console\DemoDataRefused;
 use App\Models\Identity\User;
+use App\Models\Identity\UserAssessorQualification;
 use Illuminate\Support\Facades\Date;
 
 final readonly class DemoStaffInstaller
@@ -64,11 +66,23 @@ final readonly class DemoStaffInstaller
             'email_verified_at' => Date::now(),
         ])->save();
         $user->syncRoles([$role->value]);
+        $this->qualifyAssessor($user, $role);
 
         $password = $this->passwords->generate();
         $this->applyPassword->handle($user, $password->reveal());
         $this->records->remember(DemoRecordKind::User, $user->id);
 
         return new DemoUserAccount($user, new DemoAccount($role->value, $name, $email, $password, mfaRequired: true));
+    }
+
+    private function qualifyAssessor(User $user, RoleKey $role): void
+    {
+        if ($role !== RoleKey::Assessor) {
+            return;
+        }
+
+        foreach (AssessorQualification::cases() as $qualification) {
+            UserAssessorQualification::query()->create(['user_id' => $user->id, 'qualification' => $qualification]);
+        }
     }
 }

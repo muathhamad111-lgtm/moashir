@@ -16,6 +16,7 @@ final readonly class FinanceStats
         public Money $totalIncome,
         public Money $totalVat,
         public Money $totalRefunded,
+        public Money $transactionsValue,
     ) {}
 
     /**
@@ -31,6 +32,7 @@ final readonly class FinanceStats
             'total_income' => $this->totalIncome->amount,
             'total_vat' => $this->totalVat->amount,
             'total_refunded' => $this->totalRefunded->amount,
+            'transactions_value' => $this->transactionsValue->amount,
             'currency' => $this->totalIncome->currency,
         ];
     }

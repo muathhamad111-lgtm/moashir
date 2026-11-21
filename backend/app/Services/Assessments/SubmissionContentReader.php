@@ -11,7 +11,12 @@ use App\Models\Assessments\Assessment;
 
 final readonly class SubmissionContentReader
 {
-    public function __construct(private BoundSubCriteriaReader $subs, private CvEntryWriter $cv, private EvidenceReader $evidence) {}
+    public function __construct(
+        private BoundSubCriteriaReader $subs,
+        private CvEntryWriter $cv,
+        private EvidenceReader $evidence,
+        private LateAttachmentsReader $lateAttachments,
+    ) {}
 
     public function forOwner(Assessment $assessment): SubmissionContent
     {
@@ -24,6 +29,6 @@ final readonly class SubmissionContentReader
     {
         $subs = $this->subs->of($assessment->criteriaVersion);
 
-        return new SubmissionContent($subs, new CvSheet($assessment, $subs, $this->cv->bodiesOf($assessment)), new EvidenceListing($this->evidence->cleanOnly($assessment), $subs));
+        return new SubmissionContent($subs, new CvSheet($assessment, $subs, $this->cv->bodiesOf($assessment)), new EvidenceListing($this->evidence->cleanOnly($assessment), $subs, $this->lateAttachments->read($assessment, $subs)));
     }
 }

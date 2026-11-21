@@ -15,7 +15,6 @@ export const ENTITY_PERMISSIONS = {
   EMAIL_CHANGE_APPROVE: 'entities.email_change.approve',
   DELETE: 'entities.delete',
   EXPORT: 'entities.export',
-  PRIVACY_MANAGE: 'privacy.requests.manage',
 }
 
 const FULL_ACCESS_ROLES = [ROLES.SYSTEM_ADMIN, ROLES.REQUEST_FOLLOWER]

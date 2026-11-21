@@ -1,8 +1,7 @@
 @use '../mixins' as *;
 
 .self-main__head {
-  @include flex(row, center, space-between, var(--space-3));
-  flex-wrap: wrap;
+  @include flex(column, flex-start, flex-start, var(--space-1));
   inline-size: 100%;
 }
 
@@ -11,12 +10,10 @@
   font-size: var(--fs-lg);
   font-weight: var(--fw-semibold);
   color: var(--theme-heading);
-}
 
-.self-main__code {
-  margin-inline-end: var(--space-2);
-  color: var(--theme-accent-text);
-  font-variant-numeric: tabular-nums;
+  &:focus-visible {
+    @include focus-ring;
+  }
 }
 
 .self-main__description,

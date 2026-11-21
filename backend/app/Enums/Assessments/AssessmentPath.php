@@ -8,6 +8,7 @@ use App\Contracts\Assessments\AssessmentState;
 use App\Contracts\Assessments\ReviewedAssessmentState;
 use App\Data\Assessments\ReviewStages;
 use App\Enums\Entities\EntityRequestPath;
+use Closure;
 use LogicException;
 
 enum AssessmentPath: string
@@ -57,6 +58,22 @@ enum AssessmentPath: string
     /**
      * @return list<string>
      */
+    public function resultStateValues(): array
+    {
+        return array_values(array_map(
+            static fn (AssessmentState $state): string => (string) $state->value,
+            array_filter($this->states(), static fn (AssessmentState $state): bool => $state->exposesResult()),
+        ));
+    }
+
+    public function publishesResultsOnAnnouncement(): bool
+    {
+        return $this === self::Advanced;
+    }
+
+    /**
+     * @return list<string>
+     */
     public function stateValues(): array
     {
         return array_map(static fn (AssessmentState $state): string => (string) $state->value, $this->states());
@@ -72,6 +89,34 @@ enum AssessmentPath: string
             self::Accredited => AccreditedAssessmentStatus::valuesOf(...AccreditedAssessmentStatus::queueStates()),
             self::Advanced => AdvancedAssessmentStatus::valuesOf(...AdvancedAssessmentStatus::queueStates()),
         };
+    }
+
+    /**
+     * The request-queue states that pass a check, e.g. the open ones.
+     *
+     * @param  Closure(ReviewedAssessmentState): bool  $matches
+     * @return list<string>
+     */
+    public function queueStateValuesWhere(Closure $matches): array
+    {
+        return array_values(array_map(
+            static fn (ReviewedAssessmentState $state): string => (string) $state->value,
+            array_filter(
+                $this->states(),
+                static fn (AssessmentState $state): bool => $state instanceof ReviewedAssessmentState && $state->isInRequestQueue() && $matches($state),
+            ),
+        ));
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function preparingStateValues(): array
+    {
+        return array_values(array_map(
+            static fn (AssessmentState $state): string => (string) $state->value,
+            array_filter($this->states(), static fn (AssessmentState $state): bool => $state instanceof ReviewedAssessmentState && $state->isPreparedByEntity()),
+        ));
     }
 
     /**

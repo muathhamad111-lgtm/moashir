@@ -1,0 +1,62 @@
+@use '../mixins' as *;
+
+.area-tabs {
+  @include flex(row, flex-end, flex-start, var(--space-7));
+  overflow-x: auto;
+  border-block-end: var(--border-width) solid var(--theme-border);
+  background-color: var(--theme-surface);
+}
+
+.area-tabs__tab {
+  @include flex(row, center, center, var(--space-2));
+  position: relative;
+  flex-shrink: 0;
+  padding-block: var(--space-3);
+  padding-inline: var(--space-1);
+  border: 0;
+  background: none;
+  color: var(--theme-text-secondary);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    block-size: var(--size-tab-indicator);
+    border-radius: var(--size-tab-indicator) var(--size-tab-indicator) 0 0;
+    background-color: transparent;
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &.is-active {
+    color: var(--theme-heading);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-semibold);
+
+    &::after {
+      background-color: var(--theme-accent-text);
+    }
+  }
+}
+
+.area-tabs__count {
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-pill);
+  background-color: var(--theme-bg);
+  color: var(--theme-text-secondary);
+  font-family: var(--font-latin);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+
+  .area-tabs__tab.is-active & {
+    background-color: var(--theme-heading);
+    color: var(--theme-bg);
+  }
+}

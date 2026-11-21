@@ -18,7 +18,9 @@ use App\Enums\Entities\EntityStatus;
 use App\Enums\Entities\EntityType;
 use App\Enums\Entities\OrgSize;
 use App\Enums\Identity\Locale;
+use App\Enums\Identity\LoginStep;
 use App\Exceptions\Entities\EntityRejected;
+use App\Exceptions\Entities\RegistrationRejected;
 use App\Exceptions\IllegalStateTransition;
 use App\Models\Entities\Entity;
 use App\Models\Identity\User;
@@ -58,13 +60,15 @@ beforeEach(function (): void {
     Notification::fake();
 });
 
-it('creates the entity, its single owner and the consent records', function (): void {
-    $challenge = app(RegisterEntity::class)->handle(registrationData('contact@alnamaa.example.sa'));
+it('creates the entity, its single owner and the consent records and holds it for review', function (): void {
+    $outcome = app(RegisterEntity::class)->handle(registrationData('contact@alnamaa.example.sa'), emailVerificationTokenFor('contact@alnamaa.example.sa'));
     $owner = User::query()->where('email', 'contact@alnamaa.example.sa')->firstOrFail();
     $entity = Entity::query()->findOrFail($owner->entity_id);
 
-    expect($challenge->challengeId)->toBeString()
-        ->and($entity->status)->toBe(EntityStatus::PendingVerification)
+    expect($outcome->step)->toBe(LoginStep::PendingReview)
+        ->and($entity->status)->toBe(EntityStatus::PendingReview)
+        ->and($entity->verified_at)->not->toBeNull()
+        ->and($owner->email_verified_at)->not->toBeNull()
         ->and($entity->marketing_consent_at)->not->toBeNull()
         ->and($entity->profile_completed_at)->toBeNull()
         ->and($owner->locale)->toBe(Locale::English)
@@ -72,14 +76,23 @@ it('creates the entity, its single owner and the consent records', function (): 
         ->and(User::query()->where('entity_id', $entity->id)->count())->toBe(1);
 });
 
-it('returns a decoy challenge for an address that is already registered', function (): void {
+it('refuses an address that is already registered and creates nothing', function (): void {
     User::factory()->create(['email' => 'contact@alnamaa.example.sa']);
 
-    $challenge = app(RegisterEntity::class)->handle(registrationData('contact@alnamaa.example.sa'));
-
-    expect($challenge->challengeId)->toBeString()
+    expect(fn () => app(RegisterEntity::class)->handle(registrationData('contact@alnamaa.example.sa'), emailVerificationTokenFor('contact@alnamaa.example.sa')))
+        ->toThrow(RegistrationRejected::class)
         ->and(Entity::query()->count())->toBe(0);
 });
+
+it('refuses a registration without a token for its address and creates nothing', function (?string $token): void {
+    expect(fn () => app(RegisterEntity::class)->handle(registrationData('contact@alnamaa.example.sa'), $token))
+        ->toThrow(RegistrationRejected::class)
+        ->and(Entity::query()->count())->toBe(0);
+})->with([
+    'missing' => [null],
+    'unknown' => ['not-a-real-token'],
+    'issued for another address' => [fn (): string => emailVerificationTokenFor('other@alnamaa.example.sa')],
+]);
 
 it('verifies a pending registration once and ignores later calls', function (): void {
     $entity = entityWithOwner(static fn ($factory) => $factory->pendingVerification());
@@ -90,7 +103,7 @@ it('verifies a pending registration once and ignores later calls', function (): 
     $this->travel(5)->minutes();
     app(VerifyEntityRegistration::class)->handle($owner);
 
-    expect($entity->refresh()->status)->toBe(EntityStatus::Active)
+    expect($entity->refresh()->status)->toBe(EntityStatus::PendingReview)
         ->and($entity->verified_at?->equalTo($verifiedAt))->toBeTrue();
 });
 

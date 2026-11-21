@@ -3,14 +3,20 @@
 declare(strict_types=1);
 
 use App\Actions\Assessments\OpenPaidAccreditedRequest;
+use App\Enums\Assessments\AssessmentPath;
+use App\Enums\Assessments\ScoreLevel;
 use App\Enums\Criteria\ScaleKind;
 use App\Enums\Identity\RoleKey;
 use App\Enums\Integrations\IntegrationMode;
 use App\Models\Assessments\Assessment;
+use App\Models\Assessments\AssessmentCompletionRequest;
 use App\Models\Criteria\CriteriaVersion;
 use App\Models\Entities\Entity;
 use App\Models\Identity\User;
+use App\Models\Identity\UserRequestPath;
+use App\Services\Assessments\ScoringTreeBuilder;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Testing\TestResponse;
 
 const ACCREDITED_CV_TEXT = 'تعتمد الجمعية خطة استراتيجية للفترة 2025 - 2028 أقرها مجلس الإدارة، وتراجع مؤشراتها كل ربع سنة.';
@@ -24,6 +30,15 @@ const ASSIGNMENT_REASON = 'انتقل المقيّم السابق إلى مها�
 const SUPER_ADMIN_REASON = 'تصحيح إداري معتمد بخطاب رسمي من الجهة بعد مراجعة لجنة الجودة.';
 
 function publishedAccreditedCriteria(ScaleKind $scale = ScaleKind::OutOfTen): CriteriaVersion
+{
+    return publishVersion(draftAccreditedCriteria(), $scale);
+}
+
+/**
+ * The accredited test tree as a draft: M1 (M1.1 direct with two attachments, M1.2 on indicators M1.2.1 / M1.2.2),
+ * M2 (M2.1 direct without CV, M2.2 inactive).
+ */
+function draftAccreditedCriteria(): CriteriaVersion
 {
     $version = draftVersion();
     $leadership = mainIn($version, 'M1', '1000.00');
@@ -48,7 +63,7 @@ function publishedAccreditedCriteria(ScaleKind $scale = ScaleKind::OutOfTen): Cr
         'sort_order' => 2,
     ]);
 
-    return publishVersion($version->refresh(), $scale);
+    return $version->refresh();
 }
 
 function openedAccreditedRequest(?Entity $entity = null): Assessment
@@ -114,6 +129,17 @@ function requestFollower(): User
     return staffUser(RoleKey::RequestFollower);
 }
 
+function followerOfPaths(AssessmentPath ...$paths): User
+{
+    $follower = requestFollower();
+
+    foreach ($paths as $path) {
+        UserRequestPath::query()->create(['user_id' => $follower->id, 'path' => $path]);
+    }
+
+    return $follower->refresh();
+}
+
 function assignedAccreditedRequest(CriteriaVersion $version, User $assessor, ?User $follower = null): Assessment
 {
     $assessment = submittedAccreditedRequest($version);
@@ -167,4 +193,58 @@ function completedAccreditedRequest(CriteriaVersion $version, User $assessor): A
     switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/complete")->assertOk()->assertJsonPath('data.status', 'completed');
 
     return $assessment->refresh();
+}
+
+/**
+ * Scores every unit of the request's criteria version through the review endpoint: a completion request needs a
+ * fully scored review (operator decision UX-1). One is valid for every scoring type.
+ */
+function scoreEveryUnit(User $assessor, Assessment $assessment, string $raw = '1'): void
+{
+    $scores = ['subs' => [], 'points' => []];
+
+    foreach (app(ScoringTreeBuilder::class)->build($assessment->refresh()->criteriaVersion)->scorableUnits() as $unit) {
+        $scores[$unit->level === ScoreLevel::Sub ? 'subs' : 'points'][(string) $unit->id] = $raw;
+    }
+
+    switchTo($assessor)->putJson("/api/v1/assessments/{$assessment->id}/review/scores", ['scores' => $scores])->assertOk();
+}
+
+/**
+ * @return array<string, mixed>
+ */
+function roundCompletionPayload(CriteriaVersion $version): array
+{
+    return [
+        'notes' => 'يرجى تحديث وصف السياسة المعتمدة.',
+        'items' => [['sub_criterion_id' => subOf($version, 'M1.1')->id, 'kind' => 'cv', 'note' => 'لم تُرفق الخطة المعتمدة']],
+        'deadline_at' => Date::now()->addDays(7)->toIso8601String(),
+        'expiry_outcome' => 'decline',
+    ];
+}
+
+/**
+ * @param  array<string, string>  $marks
+ */
+function saveRoundScores(User $assessor, Assessment $assessment, CriteriaVersion $version, array $marks): void
+{
+    switchTo($assessor)->putJson("/api/v1/assessments/{$assessment->id}/review/scores", ['scores' => selfScores($version, $marks)])->assertOk();
+}
+
+/**
+ * A request scored in full (round 1), returned for completion and resubmitted by the entity: round 2 is open.
+ *
+ * @return array{0: Assessment, 1: AssessmentCompletionRequest}
+ */
+function resubmittedForRoundTwo(CriteriaVersion $version, User $assessor): array
+{
+    $assessment = reviewedAccreditedRequest($version, $assessor);
+    saveRoundScores($assessor, $assessment, $version, ACCREDITED_FULL_MARKS);
+    switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/request-completion", roundCompletionPayload($version))->assertOk();
+
+    $owner = ownerOf($assessment->entity);
+    switchTo($owner)->putJson("/api/v1/assessments/{$assessment->id}/cv", ['cv' => [(string) subOf($version, 'M1.1')->id => 'وصف محدث للسياسة المعتمدة.']])->assertOk();
+    switchTo($owner)->postJson("/api/v1/assessments/{$assessment->id}/submit")->assertOk()->assertJsonPath('data.status', 'under_review');
+
+    return [$assessment->refresh(), AssessmentCompletionRequest::query()->where('assessment_id', $assessment->id)->sole()];
 }

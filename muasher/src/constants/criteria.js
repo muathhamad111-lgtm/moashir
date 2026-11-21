@@ -3,6 +3,18 @@ export const EVALUATION_TYPES = {
   GUIDING_POINTS: 'guiding-points',
 }
 
+export const SCORING_TYPES = {
+  RELATIVE: 'relative',
+  SCORE: 'score',
+  ACHIEVEMENT: 'achievement',
+}
+
+export const SCORING_TYPE_ORDER = [
+  SCORING_TYPES.RELATIVE,
+  SCORING_TYPES.SCORE,
+  SCORING_TYPES.ACHIEVEMENT,
+]
+
 export const CRITERIA_VERSION_STATUSES = {
   DRAFT: 'draft',
   PUBLISHED: 'published',
@@ -45,6 +57,7 @@ export const CONSISTENCY_PROBLEMS = {
   WEIGHTS_MISMATCH: 'weights_mismatch',
   NO_ACTIVE_POINT: 'no_active_point',
   POINTS_EXCEED_SUB: 'points_exceed_sub',
+  POINTS_BELOW_SUB: 'points_below_sub',
 }
 
 export const CRITERIA_ERROR_CODES = {

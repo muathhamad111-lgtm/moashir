@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\Assessments\AssessorReviewController;
 use App\Http\Controllers\Api\V1\Assessments\EvidenceBundleController;
 use App\Http\Controllers\Api\V1\Assessments\EvidenceController;
 use App\Http\Controllers\Api\V1\Assessments\SelfAssessmentController;
+use App\Http\Controllers\Api\V1\Assessments\SubmissionStationController;
 use App\Http\Controllers\Api\V1\Assessments\SubmitAssessmentController;
 use App\Models\Assessments\Assessment;
 use Illuminate\Support\Facades\Route;
@@ -24,6 +25,7 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
     ->group(function () use ($assessments): void {
         Route::get('/', [AssessmentController::class, 'index'])->middleware("can:viewAny,{$assessments}")->name('index');
         Route::post('/', [SelfAssessmentController::class, 'store'])->middleware(["can:createSelf,{$assessments}", 'throttle:sensitive'])->name('store');
+        Route::post('accredited', [AccreditedAssessmentController::class, 'start'])->middleware(["can:startAccredited,{$assessments}", 'throttle:sensitive'])->name('accredited.start');
         Route::get('accredited/current', [AccreditedAssessmentController::class, 'current'])->middleware("can:viewAccreditedCurrent,{$assessments}")->name('accredited.current');
         Route::get('advanced/current', [AdvancedAssessmentController::class, 'current'])->middleware("can:viewAdvancedCurrent,{$assessments}")->name('advanced.current');
         Route::post('advanced', [AdvancedAssessmentController::class, 'apply'])->middleware(["can:applyAdvanced,{$assessments}", 'throttle:sensitive'])->name('advanced.apply');
@@ -36,6 +38,7 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
             Route::post('{assessment}/submit', SubmitAssessmentController::class)->middleware(['can:submit,assessment', 'throttle:sensitive'])->name('submit');
             Route::get('{assessment}/result', AssessmentResultController::class)->middleware('can:viewResult,assessment')->name('result');
             Route::put('{assessment}/cv', [AccreditedAssessmentController::class, 'saveCv'])->middleware(['can:saveCv,assessment', 'throttle:assessment-write'])->name('cv.update');
+            Route::put('{assessment}/stations/{mainCriterion}/passed', SubmissionStationController::class)->whereNumber('mainCriterion')->middleware(['can:saveCv,assessment', 'throttle:assessment-write'])->name('stations.pass');
 
             Route::get('{assessment}/evidence', [EvidenceController::class, 'index'])->middleware('can:viewEvidence,assessment')->name('evidence.index');
             Route::post('{assessment}/evidence', [EvidenceController::class, 'store'])->middleware(['can:manageEvidence,assessment', 'throttle:uploads'])->name('evidence.store');
@@ -46,13 +49,16 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
             Route::post('{assessment}/evidence/bundles/{bundle}/download', [EvidenceBundleController::class, 'download'])->middleware(['can:viewEvidenceBundle,assessment,bundle', 'throttle:downloads'])->name('evidence.bundles.download');
 
             Route::get('{assessment}/review', [AssessorReviewController::class, 'show'])->middleware('can:review,assessment')->name('review.show');
+            Route::get('{assessment}/review/rounds', [AssessorReviewController::class, 'rounds'])->middleware('can:reviewRounds,assessment')->name('review.rounds');
             Route::post('{assessment}/start-review', [AssessorReviewController::class, 'start'])->middleware(['can:score,assessment', 'throttle:sensitive'])->name('review.start');
             Route::put('{assessment}/review/scores', [AssessorReviewController::class, 'scores'])->middleware(['can:score,assessment', 'throttle:assessment-write'])->name('review.scores');
             Route::put('{assessment}/review/feedback', [AssessorReviewController::class, 'feedback'])->middleware(['can:score,assessment', 'throttle:assessment-write'])->name('review.feedback');
+            Route::put('{assessment}/review/summary', [AssessorReviewController::class, 'summary'])->middleware(['can:score,assessment', 'throttle:assessment-write'])->name('review.summary');
             Route::post('{assessment}/request-completion', [AssessorReviewController::class, 'requestCompletion'])->middleware(['can:score,assessment', 'throttle:sensitive'])->name('review.request-completion');
             Route::post('{assessment}/complete', [AssessorReviewController::class, 'complete'])->middleware(['can:score,assessment', 'throttle:sensitive'])->name('review.complete');
 
             Route::post('{assessment}/scores/override', [AssessmentOverrideController::class, 'scores'])->middleware(['can:override,assessment', 'throttle:sensitive'])->name('overrides.scores');
+            Route::post('{assessment}/scores/override/preview', [AssessmentOverrideController::class, 'preview'])->middleware(['can:override,assessment', 'throttle:assessment-write'])->name('overrides.preview');
             Route::post('{assessment}/reopen', [AssessmentOverrideController::class, 'reopen'])->middleware(['can:override,assessment', 'throttle:sensitive'])->name('overrides.reopen');
             Route::post('{assessment}/transition/force', [AssessmentOverrideController::class, 'force'])->middleware(['can:override,assessment', 'throttle:sensitive'])->name('overrides.force');
         });

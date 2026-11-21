@@ -10,14 +10,14 @@ use App\Data\Assessments\ScoringPoint;
 use App\Data\Assessments\ScoringSub;
 use App\Data\Assessments\ScoringTree;
 use App\Enums\Criteria\EvaluationType;
-use App\Enums\Criteria\ScaleKind;
+use App\Enums\Criteria\ScoringType;
 use App\Services\Assessments\ScoringEngine;
 use App\Support\ValueObjects\RawScore;
 use App\Support\ValueObjects\Weight;
 
 function directSub(int $id, string $code, string $weight): ScoringSub
 {
-    return new ScoringSub($id, $code, Weight::of($weight), EvaluationType::Direct);
+    return new ScoringSub($id, $code, Weight::of($weight), EvaluationType::Direct, ScoringType::Score);
 }
 
 /**
@@ -25,8 +25,8 @@ function directSub(int $id, string $code, string $weight): ScoringSub
  */
 function pointsSub(int $id, string $code, string $weight, array $points): ScoringSub
 {
-    return new ScoringSub($id, $code, Weight::of($weight), EvaluationType::GuidingPoints, array_map(
-        static fn (array $point): ScoringPoint => new ScoringPoint($point[0], $point[1], Weight::of($point[2])),
+    return new ScoringSub($id, $code, Weight::of($weight), EvaluationType::GuidingPoints, ScoringType::Score, array_map(
+        static fn (array $point): ScoringPoint => new ScoringPoint($point[0], $point[1], Weight::of($point[2]), ScoringType::Score),
         $points,
     ));
 }
@@ -45,7 +45,7 @@ function sampleScoringTree(): ScoringTree
 /**
  * @param  array<string, string>  $rawByCode
  */
-function sheetFor(ScoringTree $tree, ScaleKind $scale, array $rawByCode): ScoreSheet
+function sheetFor(ScoringTree $tree, ScoringType $scale, array $rawByCode): ScoreSheet
 {
     $entries = [];
 
@@ -60,7 +60,7 @@ function sheetFor(ScoringTree $tree, ScaleKind $scale, array $rawByCode): ScoreS
 
 it('aggregates point to sub to main to total on the out-of-ten scale', function (): void {
     $tree = sampleScoringTree();
-    $result = (new ScoringEngine)->compute($tree, sheetFor($tree, ScaleKind::OutOfTen, [
+    $result = (new ScoringEngine)->compute($tree, sheetFor($tree, ScoringType::Score, [
         'M1.1' => '7.5', 'M1.2.1' => '10', 'M1.2.2' => '5', 'M2.1' => '8',
     ]));
 
@@ -82,8 +82,8 @@ it('gives the same result for the same marks on the relative scale', function ()
     $tree = sampleScoringTree();
     $engine = new ScoringEngine;
 
-    $outOfTen = $engine->compute($tree, sheetFor($tree, ScaleKind::OutOfTen, ['M1.1' => '7.5', 'M1.2.1' => '10', 'M1.2.2' => '5', 'M2.1' => '8']));
-    $relative = $engine->compute($tree, sheetFor($tree, ScaleKind::Relative, ['M1.1' => '75', 'M1.2.1' => '100', 'M1.2.2' => '50', 'M2.1' => '80']));
+    $outOfTen = $engine->compute($tree, sheetFor($tree, ScoringType::Score, ['M1.1' => '7.5', 'M1.2.1' => '10', 'M1.2.2' => '5', 'M2.1' => '8']));
+    $relative = $engine->compute($tree, sheetFor($tree, ScoringType::Relative, ['M1.1' => '75', 'M1.2.1' => '100', 'M1.2.2' => '50', 'M2.1' => '80']));
 
     expect($relative->total->toDecimal())->toBe($outOfTen->total->toDecimal())
         ->and($relative->percent->toDecimal())->toBe($outOfTen->percent->toDecimal())
@@ -92,14 +92,16 @@ it('gives the same result for the same marks on the relative scale', function ()
         ->and($outOfTen->mains[0]->subs[0]->raw?->toDecimal())->toBe('7.50');
 });
 
-it('keeps the raw input next to the normalised percentage', function (ScaleKind $scale, string $raw, string $percent): void {
+it('keeps the raw input next to the normalised percentage', function (ScoringType $scale, string $raw, string $percent): void {
     expect(RawScore::on($scale, $raw)->percent()->toDecimal())->toBe($percent);
 })->with([
-    'out of ten, whole' => [ScaleKind::OutOfTen, '7', '70.0000'],
-    'out of ten, two decimals' => [ScaleKind::OutOfTen, '7.25', '72.5000'],
-    'out of ten, maximum' => [ScaleKind::OutOfTen, '10.00', '100.0000'],
-    'relative, two decimals' => [ScaleKind::Relative, '87.45', '87.4500'],
-    'relative, zero' => [ScaleKind::Relative, '0', '0.0000'],
+    'out of ten, whole' => [ScoringType::Score, '7', '70.0000'],
+    'out of ten, two decimals' => [ScoringType::Score, '7.25', '72.5000'],
+    'out of ten, maximum' => [ScoringType::Score, '10.00', '100.0000'],
+    'relative, two decimals' => [ScoringType::Relative, '87.45', '87.4500'],
+    'relative, zero' => [ScoringType::Relative, '0', '0.0000'],
+    'achieved' => [ScoringType::Achievement, '1', '100.0000'],
+    'not achieved' => [ScoringType::Achievement, '0.00', '0.0000'],
 ]);
 
 it('scores unscored items as zero', function (): void {
@@ -118,7 +120,7 @@ it('rounds the display half up while storing full precision', function (): void 
         ]),
     ]);
 
-    $result = (new ScoringEngine)->compute($tree, sheetFor($tree, ScaleKind::Relative, ['M1.1.1' => '87.44', 'M1.1.2' => '87.45']));
+    $result = (new ScoringEngine)->compute($tree, sheetFor($tree, ScoringType::Relative, ['M1.1.1' => '87.44', 'M1.1.2' => '87.45']));
 
     expect($result->mains[0]->subs[0]->percent->toDecimal())->toBe('87.4450')
         ->and($result->mains[0]->subs[0]->percent->toDisplay())->toBe('87.45')
@@ -136,8 +138,8 @@ it('adds weights in hundredths without drift', function (): void {
     ]);
     $engine = new ScoringEngine;
 
-    $full = $engine->compute($tree, sheetFor($tree, ScaleKind::OutOfTen, ['M1.1' => '10', 'M1.2' => '10', 'M1.3' => '10']));
-    $mixed = $engine->compute($tree, sheetFor($tree, ScaleKind::OutOfTen, ['M1.1' => '10', 'M1.2' => '5', 'M1.3' => '0']));
+    $full = $engine->compute($tree, sheetFor($tree, ScoringType::Score, ['M1.1' => '10', 'M1.2' => '10', 'M1.3' => '10']));
+    $mixed = $engine->compute($tree, sheetFor($tree, ScoringType::Score, ['M1.1' => '10', 'M1.2' => '5', 'M1.3' => '0']));
 
     expect($full->total->toDecimal())->toBe('100.00000000')
         ->and($full->percent->toDecimal())->toBe('100.0000')
@@ -154,7 +156,7 @@ it('normalises guiding points that use less than the sub-criterion weight', func
         ]),
     ]);
 
-    $result = (new ScoringEngine)->compute($tree, sheetFor($tree, ScaleKind::OutOfTen, ['M1.1.1' => '10', 'M1.1.2' => '0']));
+    $result = (new ScoringEngine)->compute($tree, sheetFor($tree, ScoringType::Score, ['M1.1.1' => '10', 'M1.1.2' => '0']));
 
     expect($result->mains[0]->subs[0]->earned->toDecimal())->toBe('266.66666667')
         ->and($result->mains[0]->subs[0]->earned->toDisplay())->toBe('266.67')
@@ -164,10 +166,10 @@ it('normalises guiding points that use less than the sub-criterion weight', func
 
 it('serialises the breakdown with full precision decimal strings', function (): void {
     $tree = sampleScoringTree();
-    $breakdown = (new ScoringEngine)->compute($tree, sheetFor($tree, ScaleKind::OutOfTen, ['M1.1' => '7.5']))->breakdown();
+    $breakdown = (new ScoringEngine)->compute($tree, sheetFor($tree, ScoringType::Score, ['M1.1' => '7.5']))->breakdown();
 
     expect($breakdown['mains'][0])->toMatchArray(['id' => 10, 'code' => 'M1', 'weight' => '1000.00', 'earned' => '450.00000000', 'percent' => '45.0000'])
-        ->and($breakdown['mains'][0]['subs'][0])->toMatchArray(['code' => 'M1.1', 'evaluation_type' => 'direct', 'raw_value' => '7.50', 'percent' => '75.0000'])
+        ->and($breakdown['mains'][0]['subs'][0])->toMatchArray(['code' => 'M1.1', 'evaluation_type' => 'direct', 'scoring_type' => 'score', 'raw_value' => '7.50', 'percent' => '75.0000'])
         ->and($breakdown['mains'][0]['subs'][1]['points'][0])->toMatchArray(['code' => 'M1.2.1', 'raw_value' => null, 'percent' => '0.0000', 'earned' => '0.00000000']);
 });
 
@@ -177,12 +179,34 @@ it('lists the scorable units: direct sub-criteria and the guiding points of the 
     expect($codes)->toBe(['M1.1', 'M1.2.1', 'M1.2.2', 'M2.1']);
 });
 
-it('refuses raw values outside the scale or with more than two decimals', function (ScaleKind $scale, string $raw): void {
+it('refuses raw values outside the scale or with more than two decimals', function (ScoringType $scale, string $raw): void {
     expect(fn (): RawScore => RawScore::on($scale, $raw))->toThrow(InvalidArgumentException::class);
 })->with([
-    'above ten' => [ScaleKind::OutOfTen, '10.01'],
-    'above one hundred' => [ScaleKind::Relative, '100.5'],
-    'three decimals' => [ScaleKind::Relative, '50.125'],
-    'negative' => [ScaleKind::OutOfTen, '-1'],
-    'not a number' => [ScaleKind::OutOfTen, 'seven'],
+    'above ten' => [ScoringType::Score, '10.01'],
+    'above one hundred' => [ScoringType::Relative, '100.5'],
+    'three decimals' => [ScoringType::Relative, '50.125'],
+    'negative' => [ScoringType::Score, '-1'],
+    'half achieved' => [ScoringType::Achievement, '0.5'],
+    'achievement above one' => [ScoringType::Achievement, '2'],
+    'not a number' => [ScoringType::Score, 'seven'],
 ]);
+
+it('scores a version that mixes the three types on one percent scale', function (): void {
+    $tree = new ScoringTree(1, [new ScoringMain(10, 'M1', Weight::of('300.00'), [
+        new ScoringSub(11, 'M1.1', Weight::of('300.00'), EvaluationType::GuidingPoints, ScoringType::Score, [
+            new ScoringPoint(111, 'M1.1.1', Weight::of('100.00'), ScoringType::Achievement),
+            new ScoringPoint(112, 'M1.1.2', Weight::of('100.00'), ScoringType::Relative),
+            new ScoringPoint(113, 'M1.1.3', Weight::of('100.00'), ScoringType::Score),
+        ]),
+    ])]);
+    $units = [];
+
+    foreach ($tree->scorableUnits() as $unit) {
+        $units[] = new ScoredUnit($unit, RawScore::on($unit->scoringType, ['M1.1.1' => '1', 'M1.1.2' => '40', 'M1.1.3' => '7'][$unit->code]));
+    }
+
+    $result = (new ScoringEngine)->compute($tree, ScoreSheet::of($units));
+
+    expect($result->percent->toDisplay())->toBe('70.00')
+        ->and($result->breakdown()['mains'][0]['subs'][0]['points'][0])->toMatchArray(['scoring_type' => 'achievement', 'raw_value' => '1.00', 'percent' => '100.0000']);
+});

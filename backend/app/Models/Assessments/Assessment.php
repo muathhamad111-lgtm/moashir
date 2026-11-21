@@ -10,12 +10,14 @@ use App\Contracts\Assessments\ReviewedAssessmentState;
 use App\Enums\Assessments\AdvancedAssessmentStatus;
 use App\Enums\Assessments\AssessmentPath;
 use App\Enums\Assessments\AssignmentStatus;
+use App\Enums\Certificates\CertificateKind;
 use App\Enums\Criteria\ScaleKind;
 use App\Models\Award\AwardCycle;
 use App\Models\Award\AwardRanking;
 use App\Models\Award\CommitteeAssignment;
 use App\Models\Award\CommitteeAverage;
 use App\Models\Award\FilteringDecision;
+use App\Models\Certificates\Certificate;
 use App\Models\Criteria\CriteriaVersion;
 use App\Models\Entities\Entity;
 use App\Models\Entities\Region;
@@ -41,7 +43,7 @@ use Illuminate\Support\Carbon;
  * @property AssessmentPath $path
  * @property AssessmentState $status
  * @property int $criteria_version_id
- * @property ScaleKind $scale_kind
+ * @property ScaleKind|null $scale_kind
  * @property int|null $current_result_snapshot_id
  * @property Carbon|null $submitted_at
  * @property Carbon|null $completed_at
@@ -57,8 +59,12 @@ use Illuminate\Support\Carbon;
  * @property array<string, mixed>|null $condition_failure
  * @property Carbon|null $withdrawn_at
  * @property int|null $committee_average_id
+ * @property int|null $period_id
+ * @property Carbon|null $period_assigned_at
+ * @property Carbon|null $paid_draft_reminded_at
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ * @property-read Carbon|null $entity_activity_at
  * @property-read Entity $entity
  * @property-read CriteriaVersion $criteriaVersion
  * @property-read AssessmentResultSnapshot|null $currentResult
@@ -66,6 +72,8 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, AssessmentStatusTransition> $transitions
  * @property-read Payment|null $payment
  * @property-read AssessmentAssignment|null $activeAssignment
+ * @property-read AssessmentAssignment|null $latestAssignment
+ * @property-read bool|null $was_reassigned
  * @property-read Collection<int, AssessmentAssignment> $assignments
  * @property-read AssessmentCompletionRequest|null $openCompletionRequest
  * @property-read AwardCycle|null $awardCycle
@@ -73,6 +81,8 @@ use Illuminate\Support\Carbon;
  * @property-read FilteringDecision|null $latestFilteringDecision
  * @property-read CommitteeAverage|null $committeeAverage
  * @property-read AwardRanking|null $ranking
+ * @property-read AssessmentPeriod|null $period
+ * @property-read Certificate|null $certificate
  */
 final class Assessment extends Model
 {
@@ -113,6 +123,10 @@ final class Assessment extends Model
             'condition_failure' => 'array',
             'withdrawn_at' => 'datetime',
             'committee_average_id' => 'integer',
+            'period_id' => 'integer',
+            'period_assigned_at' => 'datetime',
+            'paid_draft_reminded_at' => 'datetime',
+            'entity_activity_at' => 'datetime',
         ];
     }
 
@@ -130,6 +144,27 @@ final class Assessment extends Model
     public function criteriaVersion(): BelongsTo
     {
         return $this->belongsTo(CriteriaVersion::class);
+    }
+
+    /**
+     * @return BelongsTo<AssessmentPeriod, $this>
+     */
+    public function period(): BelongsTo
+    {
+        return $this->belongsTo(AssessmentPeriod::class, 'period_id');
+    }
+
+    /**
+     * @return HasOne<Certificate, $this>
+     */
+    public function certificate(): HasOne
+    {
+        return $this->hasOne(Certificate::class)->ofMany(
+            ['id' => 'max'],
+            static function (Builder $certificates): void {
+                $certificates->where('kind', CertificateKind::Accredited);
+            },
+        );
     }
 
     /**
@@ -178,6 +213,16 @@ final class Assessment extends Model
     public function activeAssignment(): HasOne
     {
         return $this->hasOne(AssessmentAssignment::class)->active();
+    }
+
+    /**
+     * The request's latest assignment in any status: its assessor stays on the request after the review ends.
+     *
+     * @return HasOne<AssessmentAssignment, $this>
+     */
+    public function latestAssignment(): HasOne
+    {
+        return $this->hasOne(AssessmentAssignment::class)->latestOfMany();
     }
 
     /**
@@ -262,6 +307,38 @@ final class Assessment extends Model
 
     /**
      * @param  Builder<self>  $query
+     * @param  list<string>  $maskedStatuses
+     */
+    #[Scope]
+    protected function openForViewer(Builder $query, array $maskedStatuses): void
+    {
+        $query->where(static fn (Builder $visible): Builder => $visible
+            ->open()
+            ->orWhere(static fn (Builder $masked): Builder => $masked
+                ->where('path', AssessmentPath::Advanced)
+                ->whereIn('status', $maskedStatuses)
+                ->whereDoesntHave('awardCycle', static fn (Builder $cycle): Builder => $cycle->whereNotNull('announced_at'))));
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function exposingResult(Builder $query): void
+    {
+        $query->whereNotNull('current_result_snapshot_id')->where(static function (Builder $byPath): void {
+            foreach (AssessmentPath::cases() as $path) {
+                $byPath->orWhere(static fn (Builder $results): Builder => $results
+                    ->where('path', $path)
+                    ->whereIn('status', $path->resultStateValues())
+                    ->when($path->publishesResultsOnAnnouncement(), static fn (Builder $announced): Builder => $announced
+                        ->whereHas('awardCycle', static fn (Builder $cycle): Builder => $cycle->whereNotNull('announced_at'))));
+            }
+        });
+    }
+
+    /**
+     * @param  Builder<self>  $query
      */
     #[Scope]
     protected function followingCriteriaEdits(Builder $query): void
@@ -311,6 +388,30 @@ final class Assessment extends Model
     }
 
     /**
+     * Adds `was_reassigned`: the request was moved from one assessor to another at least once.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withReassignment(Builder $query): void
+    {
+        $query->withExists(['assignments as was_reassigned' => static fn (Builder $reassigned): Builder => $reassigned->where('status', AssignmentStatus::Reassigned)]);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withEntityActivity(Builder $query): void
+    {
+        $query->select('assessments.*')->selectRaw(
+            'greatest(assessments.created_at, '
+            .'(select max(updated_at) from assessment_cv_entries where assessment_cv_entries.assessment_id = assessments.id), '
+            .'(select max(updated_at) from evidence_files where evidence_files.assessment_id = assessments.id)) as entity_activity_at',
+        );
+    }
+
+    /**
      * @param  Builder<self>  $query
      */
     #[Scope]
@@ -348,7 +449,7 @@ final class Assessment extends Model
 
     public function exposesResult(): bool
     {
-        return $this->hasResult() && $this->status->exposesResult() && (! $this->isAdvanced() || $this->isAnnounced());
+        return $this->hasResult() && $this->status->exposesResult() && (! $this->path->publishesResultsOnAnnouncement() || $this->isAnnounced());
     }
 
     public function isAnnounced(): bool

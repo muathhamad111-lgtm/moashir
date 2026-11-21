@@ -97,6 +97,17 @@ export const reject = {
       },
       params: { weight, shares },
     }),
+  notAChild: (index) =>
+    new CriteriaRejection(422, 'criteria.node_not_a_child', {
+      fields: { [`weights.${index}.id`]: [fieldMessage('criteria.node_not_a_child')] },
+    }),
+  childrenExceedParent: (total, capacity) =>
+    new CriteriaRejection(422, 'criteria.weights_exceed_parent', {
+      fields: { weights: [fieldMessage('criteria.weights_exceed_parent', { total, capacity })] },
+      meta: { total, capacity },
+      params: { total, capacity },
+    }),
+  distributedEqually: () => new CriteriaRejection(409, 'criteria.weights_distributed_equally'),
   subEvaluatedDirectly: () =>
     new CriteriaRejection(422, 'criteria.sub_evaluated_directly', {
       fields: { evaluationType: [fieldMessage('criteria.sub_evaluated_directly')] },

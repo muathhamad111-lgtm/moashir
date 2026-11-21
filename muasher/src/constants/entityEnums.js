@@ -4,13 +4,28 @@ export const ORG_SIZES = ['small', 'medium', 'large']
 
 export const ENTITY_STATUSES = {
   PENDING_VERIFICATION: 'pending-verification',
+  PENDING_REVIEW: 'pending-review',
   ACTIVE: 'active',
   DEACTIVATED: 'deactivated',
+  REJECTED: 'rejected',
 }
 
 export const ENTITY_REQUEST_PATHS = ['accredited', 'advanced', 'bag']
 
-export const ENTITY_SORTS = ['-created_at', 'created_at', 'name', '-name', '-governance_grade', 'governance_grade']
+export const ENTITY_SORTS = [
+  '-created_at',
+  'created_at',
+  'name',
+  '-name',
+  '-governance_grade',
+  'governance_grade',
+  '-level',
+  'level',
+  '-last_assessed_at',
+  'last_assessed_at',
+  '-last_assessment_percent',
+  'last_assessment_percent',
+]
 
 export const EMAIL_CHANGE_STATUSES = {
   AWAITING_OTP: 'awaiting-otp',
@@ -27,14 +42,6 @@ export const EMAIL_CHANGE_POLICIES = {
   IMMEDIATE_NOTIFY: 'immediate_notify',
 }
 
-export const PRIVACY_REQUEST_KINDS = ['access', 'correction', 'deletion']
-
-export const PRIVACY_REQUEST_STATUSES = {
-  OPEN: 'open',
-  FULFILLED: 'fulfilled',
-  REJECTED: 'rejected',
-}
-
 export const ERASURE_KEPT_RECORDS = [
   'payments_receipts_refunds',
   'audit_log',
@@ -44,17 +51,13 @@ export const ERASURE_KEPT_RECORDS = [
   'security_events',
 ]
 
-export const GOVERNANCE_GRADE = { MIN: 0, MAX: 100, DECIMALS: 2 }
+export const GOVERNANCE_GRADE = { MIN: 0, MAX: 100, INTEGER_DIGITS: 3, DECIMALS: 2 }
 export const FOUNDING_YEAR_MIN = 1900
+
+export const EARLIEST_FOUNDING_DATE = '1900-01-01'
 export const PASSWORD_LENGTH = { MIN: 12, MAX: 128 }
 export const REASON_LENGTH = { MIN: 10, MAX: 1000, PERMANENT_MIN: 20 }
-export const PRIVACY_DETAILS_LENGTH = { MIN: 10, MAX: 2000 }
 export const PHONE_PATTERN = /^(05\d{8}|\+9665\d{8})$/
 
-export const LOGIN_MODES = {
-  EMAIL_OTP: 'email-otp',
-  SMS_OTP: 'sms-otp',
-  EMAIL_PASSWORD: 'email-password',
-}
-
-export const OTP_CHANNELS = { EMAIL: 'email', SMS: 'sms' }
+export const UNIFIED_NUMBER_LENGTH = 10
+export const UNIFIED_NUMBER_PATTERN = /^\d{10}$/

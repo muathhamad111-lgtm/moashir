@@ -1,92 +1,118 @@
-import { HttpResponse, delay } from 'msw'
+import { delay } from 'msw'
 import { http } from '../contract/http'
-import { LOGO_RULES } from '@/constants/branding'
-import { brandingPaletteFixture } from '../fixtures/branding'
+import { envelope } from '../contract/responses'
+import { DEFAULT_BRAND_COLORS, LOGO_RULES } from '@/constants/branding'
+import { brandContrastPairs, deriveBrandScheme, normalizeHex } from '@/utils/brandingContrast'
 import {
   getBrandingTheme,
   isLogoVariant,
-  isPaletteToken,
   resetBrandingTheme,
   storeBrandingLogo,
-  updateBrandingAccent,
+  updateBrandingColors,
 } from '../stores/brandingStore'
-import { sessionCan } from '../stores/sessionPermissions'
+import { contentReject, contentRoute, readJson } from '../stores/content/contentRejection'
+import {
+  CONTENT_PERMISSIONS,
+  requireContentPermission,
+  signedInActor,
+} from '../stores/content/contentAccess'
+import { createFieldErrors } from '../stores/content/contentValidation'
+import { validateImage } from '../stores/content/imageUploads'
 
-function envelope(data, meta = {}) {
-  return HttpResponse.json({ data, meta, errors: null })
-}
-
-function errorResponse(message, status, code, fieldErrors = {}) {
-  return HttpResponse.json({ message, errors: fieldErrors, code }, { status })
-}
-
-function canManageBranding() {
-  return sessionCan('settings.branding.manage')
-}
+const REASON_MIN = 10
+const MINIMUM_CONTRAST = '4.5'
 
 function themeResource() {
   const theme = getBrandingTheme()
-  return {
-    ...theme,
-    palette: canManageBranding() ? brandingPaletteFixture : [],
+  const scheme = deriveBrandScheme({ primary: theme.primaryColor, secondary: theme.secondaryColor })
+  return { ...theme, scheme, defaultColors: { ...DEFAULT_BRAND_COLORS } }
+}
+
+function requireReason(user, reason) {
+  const text = typeof reason === 'string' ? reason.trim() : ''
+  if (text) {
+    const errors = createFieldErrors()
+    errors.check(text.length >= REASON_MIN, 'reason', 'reasonLength')
+    errors.throwIfAny()
   }
+  if (user.superAdmin && !text) throw contentReject.reasonRequired()
 }
 
-function forbidden() {
-  return errorResponse('This action is restricted to the System Administrator.', 403, 'forbidden')
+function requireColors(body) {
+  const colors = {
+    primary: normalizeHex(body.primaryColor),
+    secondary: normalizeHex(body.secondaryColor),
+  }
+  const errors = createFieldErrors()
+  errors.check(colors.primary, 'primaryColor', 'hexColor')
+  errors.check(colors.secondary, 'secondaryColor', 'hexColor')
+  errors.throwIfAny()
+  return colors
 }
 
-async function fileToDataUrl(file) {
-  const bytes = new Uint8Array(await file.arrayBuffer())
-  let binary = ''
-  bytes.forEach((byte) => {
-    binary += String.fromCharCode(byte)
-  })
-  return `data:${file.type};base64,${btoa(binary)}`
+function failingPairs(colors) {
+  return brandContrastPairs(deriveBrandScheme(colors))
+    .filter((pair) => !pair.passes)
+    .map((pair) => ({
+      pair: pair.key,
+      foreground: pair.foreground,
+      background: pair.background,
+      ratio: pair.ratio.toFixed(2),
+      minimum: MINIMUM_CONTRAST,
+    }))
+}
+
+function applyColors(colors) {
+  const failures = failingPairs(colors)
+  if (failures.length) {
+    throw contentReject.contrastFail(failures, `${failures[0].pair.split('.')[0]}Color`)
+  }
+  updateBrandingColors(colors)
 }
 
 export const brandingHandlers = [
-  http.get('/api/v1/settings/branding', async () => {
-    await delay(160)
-    return envelope(themeResource())
-  }),
+  http.get(
+    '/api/v1/settings/branding',
+    contentRoute(async () => {
+      await delay(40)
+      signedInActor()
+      return envelope(themeResource())
+    }),
+  ),
 
-  http.put('/api/v1/settings/branding', async ({ request }) => {
-    await delay(320)
-    if (!canManageBranding()) return forbidden()
-    const body = await request.json()
-    if (!isPaletteToken(body?.accentToken)) {
-      return errorResponse('The selected color is not part of the approved palette.', 422, 'token.unknown', {
-        accentToken: 'token.unknown',
-      })
-    }
-    updateBrandingAccent(body.accentToken)
-    return envelope(themeResource())
-  }),
+  http.put(
+    '/api/v1/settings/branding',
+    contentRoute(async ({ request }) => {
+      const user = requireContentPermission(CONTENT_PERMISSIONS.BRANDING)
+      const body = await readJson(request)
+      const colors = requireColors(body)
+      requireReason(user, body.reason)
+      applyColors(colors)
+      return envelope(themeResource())
+    }),
+  ),
 
-  http.post('/api/v1/settings/branding/logo', async ({ request }) => {
-    await delay(420)
-    if (!canManageBranding()) return forbidden()
-    const form = await request.formData()
-    const file = form.get('file')
-    const variant = form.get('variant')
-    if (!isLogoVariant(variant)) {
-      return errorResponse('The logo variant is invalid.', 422, 'validation_failed', { variant: ['validation.in'] })
-    }
-    if (!(file instanceof File) || !LOGO_RULES.mimeTypes.includes(file.type)) {
-      return errorResponse('Unsupported file type.', 415, 'file.type_not_allowed')
-    }
-    if (file.size > LOGO_RULES.maxBytes) {
-      return errorResponse('The file is too large.', 413, 'file.too_large')
-    }
-    const logo = storeBrandingLogo(variant, await fileToDataUrl(file))
-    return envelope(logo)
-  }),
+  http.post(
+    '/api/v1/settings/branding/logo',
+    contentRoute(async ({ request }) => {
+      const user = requireContentPermission(CONTENT_PERMISSIONS.BRANDING)
+      const form = await request.formData()
+      requireReason(user, form.get('reason'))
+      const errors = createFieldErrors()
+      errors.check(isLogoVariant(form.get('variant')), 'variant', 'required')
+      errors.throwIfAny()
+      const file = await validateImage(form.get('file'), LOGO_RULES, 'logoType')
+      return envelope(storeBrandingLogo(form.get('variant'), file))
+    }),
+  ),
 
-  http.post('/api/v1/settings/branding/reset', async () => {
-    await delay(260)
-    if (!canManageBranding()) return forbidden()
-    resetBrandingTheme()
-    return envelope(themeResource())
-  }),
+  http.post(
+    '/api/v1/settings/branding/reset',
+    contentRoute(async ({ request }) => {
+      const user = requireContentPermission(CONTENT_PERMISSIONS.BRANDING)
+      requireReason(user, (await readJson(request)).reason)
+      resetBrandingTheme()
+      return envelope(themeResource())
+    }),
+  ),
 ]

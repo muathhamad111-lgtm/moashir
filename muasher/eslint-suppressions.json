@@ -1,0 +1,730 @@
+{
+  "src/api/interceptors/errorNormalizer.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/components/award/CycleForm.vue": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/components/criteria/CriteriaTextCorrectionDialog.vue": {
+    "max-lines": {
+      "count": 1
+    }
+  },
+  "src/components/criteria/GuidingPointForm.vue": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/components/criteria/SubCriterionForm.vue": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines": {
+      "count": 1
+    }
+  },
+  "src/components/form/AppCombobox.vue": {
+    "max-lines": {
+      "count": 1
+    }
+  },
+  "src/components/permissions/PermissionForm.vue": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/components/requests/ForceTransitionDialog.vue": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/components/review/ScoreOverrideDialog.vue": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/components/search/GlobalSearch.vue": {
+    "max-lines": {
+      "count": 1
+    }
+  },
+  "src/composables/landing/useHeroDots.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/landing/useHeroStage.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/landing/useJourneyLine.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useAccreditedForm.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useAccreditedPathPage.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useAccreditedSubmit.js": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useAccreditedWorkspace.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useAdvancedIntro.js": {
+    "complexity": {
+      "count": 2
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useAiChat.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useAiIntegration.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/composables/useAnchoredPopup.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useAssessorReview.js": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useAuditLog.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useBag.js": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 2
+    }
+  },
+  "src/composables/useBankAccountsSettings.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useBankTransferQueue.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useBankTransferSubmission.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useBrandingEditor.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useCertificatesHub.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useCheckout.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useCheckoutChannels.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useCmsPageEditor.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useComboboxListbox.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useCommitteeEvaluationActions.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useContactForm.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useContactThread.js": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useCriteriaAction.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/composables/useCycleEditor.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useCycleStaff.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useCycleTransitions.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useDateSegments.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useEmailCampaign.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useEmailChange.js": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useEmailChangeApprovals.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useEntityDeletion.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useEntityDisplay.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useEntityLogo.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useEvaluationTypeSwitch.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useEvidenceBundle.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/composables/useEvidenceUploads.js": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useFinanceSettings.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useImageUpload.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/composables/useInsightsSettings.js": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useIntegrationSettings.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useIntegrationsOverview.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/composables/useKnowledgeBase.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useKpiRowActions.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useKpisCatalog.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useLegalVersions.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useLevelHeroEntrance.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useMaturityTexts.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useMenuNavigation.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useMyMessages.js": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useNotificationCatalogue.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/composables/useNotificationPreferences.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useNotificationsCenter.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useOtpChallenge.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useOtpStep.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useOverviewCharts.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/usePathPriceRow.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/usePathRequests.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/composables/usePaymentChannelsSettings.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/usePaymentCompletion.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/usePaymentIntegration.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/usePaymentReturn.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/usePhoneVerification.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useProfileSectionForm.js": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useProofPreview.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useRefundForm.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useRegistrationEmail.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useRequestCertificates.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useRequestDetail.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/composables/useRequestPathNav.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useResultsBoard.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useReviewActions.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useReviewFeedback.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useRosterActions.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useSecretaryActions.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useSecretaryRequest.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useSelectListbox.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useSelfAssessmentActions.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useSelfAssessmentEntry.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useSessionExtensionPrompt.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useSettingsEditor.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useSiteSettingsEditor.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/composables/useSmsIntegration.js": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useTransactionDetail.js": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useTransferDecisions.js": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/composables/useUserActions.js": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/services/auditLogService.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/services/legalVersionsService.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/services/mappers/accredited.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/services/mappers/assessments.js": {
+    "complexity": {
+      "count": 4
+    }
+  },
+  "src/services/mappers/award.js": {
+    "complexity": {
+      "count": 3
+    }
+  },
+  "src/services/mappers/bankTransfers.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/services/mappers/certificates.js": {
+    "complexity": {
+      "count": 2
+    }
+  },
+  "src/services/mappers/committee.js": {
+    "complexity": {
+      "count": 5
+    }
+  },
+  "src/services/mappers/contactInbox.js": {
+    "complexity": {
+      "count": 2
+    }
+  },
+  "src/services/mappers/notifications.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/services/mappers/pathSettings.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/services/mappers/paths.js": {
+    "complexity": {
+      "count": 5
+    }
+  },
+  "src/services/mappers/prices.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/services/mappers/session.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/services/mappers/users.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/utils/award/cycleForm.js": {
+    "complexity": {
+      "count": 2
+    },
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/utils/cmsPayload.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/utils/criteriaTextCorrection.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/utils/integrations/aiForm.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/utils/integrations/emailForm.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/utils/integrations/paymentForm.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/utils/integrations/providerError.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/utils/kpiCatalogSchema.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/utils/kpiPayload.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/utils/landing/qrPattern.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/utils/legal/legalDraftForm.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/utils/pathStates.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/utils/payments/financeErrors.js": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/views/assessment/accredited/Intro.vue": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/views/auth/Mfa.vue": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/views/bag/Requests.vue": {
+    "complexity": {
+      "count": 1
+    },
+    "max-lines": {
+      "count": 1
+    }
+  },
+  "src/views/dev/ComponentsGallery.vue": {
+    "max-lines": {
+      "count": 1
+    }
+  },
+  "src/views/entities/admin/Index.vue": {
+    "complexity": {
+      "count": 1
+    }
+  },
+  "src/views/payments/Checkout.vue": {
+    "max-lines": {
+      "count": 1
+    }
+  },
+  "src/views/payments/Complete.vue": {
+    "max-lines": {
+      "count": 1
+    }
+  },
+  "src/views/settings/Index.vue": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/views/settings/users/Index.vue": {
+    "max-lines": {
+      "count": 1
+    }
+  }
+}

@@ -67,7 +67,7 @@ final readonly class GenerateTransactionsExport
             throw new RuntimeException('The export buffer could not be opened.');
         }
 
-        $payments = $this->query->filtered(TransactionFilters::fromArray($export->filters)->forLiveMode())->with(ListTransactions::RELATIONS)->lazyById(self::CHUNK);
+        $payments = $this->query->filtered(TransactionFilters::fromArray($export->filters))->with(ListTransactions::RELATIONS)->lazyById(self::CHUNK);
         $this->csv->write($payments, $export->locale, $stream);
         rewind($stream);
         $contents = (string) stream_get_contents($stream);

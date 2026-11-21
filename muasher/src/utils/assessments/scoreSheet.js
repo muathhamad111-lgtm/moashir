@@ -16,10 +16,11 @@ function unitOf(level, node, main, sub) {
   return {
     level,
     id: node.id,
-    code: node.code,
     mainId: main.id,
     subId: sub.id,
+    code: node.code ?? null,
     label: level === SCORE_LEVELS.POINT ? node.description : node.name,
+    scoringType: node.scoringType ?? null,
   }
 }
 
@@ -33,12 +34,23 @@ export function scorableUnits(criteria) {
   )
 }
 
+// One item's score as the save request carries it: { subs: {}, points: { 31: '8.00' } }.
+export function unitScorePayload(unit, rawValue) {
+  return {
+    [WIRE_GROUPS[SCORE_LEVELS.SUB]]: {},
+    [WIRE_GROUPS[SCORE_LEVELS.POINT]]: {},
+    [WIRE_GROUPS[unit.level]]: { [String(unit.id)]: rawValue },
+  }
+}
+
 export function savedScoreOf(scores, unit) {
   return scores?.[WIRE_GROUPS[unit.level]]?.[String(unit.id)] ?? null
 }
 
 export function sheetValues(scores, units) {
-  return Object.fromEntries(units.map((unit) => [scoreFieldName(unit), savedScoreOf(scores, unit)?.rawValue ?? '']))
+  return Object.fromEntries(
+    units.map((unit) => [scoreFieldName(unit), savedScoreOf(scores, unit)?.rawValue ?? '']),
+  )
 }
 
 export function normalizedRawValue(value) {
@@ -61,7 +73,9 @@ export function sheetPayload(values, units) {
   const payload = { subs: {}, points: {} }
   units.forEach((unit) => {
     const value = values[scoreFieldName(unit)]
-    payload[WIRE_GROUPS[unit.level]][String(unit.id)] = isFilled(value) ? normalizedRawValue(value) : null
+    payload[WIRE_GROUPS[unit.level]][String(unit.id)] = isFilled(value)
+      ? normalizedRawValue(value)
+      : null
   })
   return payload
 }
@@ -72,7 +86,9 @@ export function changedSheetPayload(values, units, scores) {
     const value = values[scoreFieldName(unit)]
     const saved = savedScoreOf(scores, unit)?.rawValue ?? ''
     if (sameRawValue(value, saved)) return
-    payload[WIRE_GROUPS[unit.level]][String(unit.id)] = isFilled(value) ? normalizedRawValue(value) : null
+    payload[WIRE_GROUPS[unit.level]][String(unit.id)] = isFilled(value)
+      ? normalizedRawValue(value)
+      : null
   })
   return payload
 }

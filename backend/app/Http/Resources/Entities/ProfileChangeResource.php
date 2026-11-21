@@ -24,6 +24,7 @@ final class ProfileChangeResource extends JsonResource
         return [
             'id' => $entry->id,
             'field' => $entry->field->value,
+            'section' => $entry->field->section()->value,
             'field_label' => LocalizedText::fromTranslation($entry->field->labelKey())->toArray(),
             'old_value' => $entry->oldValue,
             'new_value' => $entry->newValue,

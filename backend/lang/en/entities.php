@@ -25,8 +25,10 @@ return [
 
     'statuses' => [
         'pending_verification' => 'Pending verification',
+        'pending_review' => 'Pending review',
         'active' => 'Active',
         'deactivated' => 'Deactivated',
+        'rejected' => 'Rejected',
     ],
 
     'profile_fields' => [
@@ -41,6 +43,24 @@ return [
         'employees_count' => 'Number of employees',
         'annual_beneficiaries_count' => 'Annual beneficiaries',
         'has_strategic_plan' => 'Strategic plan',
+        'license_number' => 'Licence number',
+        'unified_number' => 'Unified national number',
+        'founded_on' => 'Founding date',
+        'official_email' => 'Official e-mail',
+        'website_url' => 'Website',
+        'authorized_person_name' => 'Authorized account manager',
+        'phone' => 'Mobile number',
+        'marketing_consent' => 'Platform news and offers',
+        'address_building_number' => 'Building number',
+        'address_street' => 'Street',
+        'address_district' => 'District',
+        'address_city' => 'City (national address)',
+        'address_postal_code' => 'Postal code',
+        'address_additional_number' => 'Additional number',
+        'address_short_code' => 'Short address',
+        'vat_registered' => 'VAT registration',
+        'vat_number' => 'VAT registration number',
+        'vat_certificate' => 'VAT registration certificate',
     ],
 
     'export' => [

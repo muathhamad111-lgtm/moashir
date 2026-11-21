@@ -5,9 +5,14 @@ declare(strict_types=1);
 namespace App\Http\Requests\Criteria;
 
 use App\Data\Criteria\AttachmentRequirementData;
+use App\Enums\Criteria\ScoringType;
+use App\Enums\Files\EvidenceFileType;
+use App\Support\ScalarValue;
 use App\Support\ValueObjects\LocalizedText;
 use App\Support\ValueObjects\Weight;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Enum;
 
 abstract class CriteriaFormRequest extends FormRequest
 {
@@ -18,6 +23,10 @@ abstract class CriteriaFormRequest extends FormRequest
     protected const int DESCRIPTION_MAX = 2000;
 
     protected const int ATTACHMENTS_MAX = 20;
+
+    protected const int GUIDANCE_MAX = 500;
+
+    protected const int MAX_FILES = 50;
 
     /**
      * @return array<string, list<string>>
@@ -40,18 +49,37 @@ abstract class CriteriaFormRequest extends FormRequest
     }
 
     /**
-     * @return array<string, list<string>>
+     * @return array<string, list<string|Enum>>
+     */
+    protected function scoringTypeRules(string ...$fields): array
+    {
+        return array_fill_keys($fields, ['sometimes', Rule::enum(ScoringType::class)]);
+    }
+
+    protected function scoringType(string $field): ?ScoringType
+    {
+        return $this->enum($field, ScoringType::class);
+    }
+
+    /**
+     * @return array<string, list<string|Enum>>
      */
     protected function attachmentRules(): array
     {
         return [
             'attachments' => ['sometimes', 'array', 'max:'.self::ATTACHMENTS_MAX],
-            'attachments.*' => ['array:key,name,required'],
+            'attachments.*' => ['array:key,name,required,guidance,allowed_types,max_files'],
             'attachments.*.key' => ['nullable', 'string', 'regex:/^[a-z0-9_]{1,40}$/', 'distinct'],
             'attachments.*.name' => ['required', 'array:ar,en'],
             'attachments.*.name.ar' => ['required', 'string', 'min:2', 'max:'.self::NAME_MAX],
             'attachments.*.name.en' => ['required', 'string', 'min:2', 'max:'.self::NAME_MAX],
             'attachments.*.required' => ['required', 'boolean'],
+            'attachments.*.guidance' => ['nullable', 'array:ar,en'],
+            'attachments.*.guidance.ar' => ['required_with:attachments.*.guidance', 'string', 'min:2', 'max:'.self::GUIDANCE_MAX],
+            'attachments.*.guidance.en' => ['required_with:attachments.*.guidance', 'string', 'min:2', 'max:'.self::GUIDANCE_MAX],
+            'attachments.*.allowed_types' => ['nullable', 'array', 'min:1', 'max:'.count(EvidenceFileType::cases())],
+            'attachments.*.allowed_types.*' => ['required', 'string', 'distinct', Rule::enum(EvidenceFileType::class)],
+            'attachments.*.max_files' => ['nullable', 'integer', 'min:1', 'max:'.self::MAX_FILES],
         ];
     }
 
@@ -80,11 +108,24 @@ abstract class CriteriaFormRequest extends FormRequest
             return null;
         }
 
-        return array_values(array_map(static fn (mixed $item): AttachmentRequirementData => new AttachmentRequirementData(
-            is_array($item) && is_string($item['key'] ?? null) ? $item['key'] : null,
-            LocalizedText::fromArray(is_array($item) && is_array($item['name'] ?? null) ? $item['name'] : []),
-            is_array($item) && filter_var($item['required'] ?? false, FILTER_VALIDATE_BOOLEAN),
-        ), $items));
+        return array_values(array_map(fn (mixed $item): AttachmentRequirementData => $this->attachmentOf(is_array($item) ? $item : []), $items));
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $item
+     */
+    private function attachmentOf(array $item): AttachmentRequirementData
+    {
+        $types = is_array($item['allowed_types'] ?? null) ? $item['allowed_types'] : null;
+
+        return new AttachmentRequirementData(
+            is_string($item['key'] ?? null) ? $item['key'] : null,
+            LocalizedText::fromArray(is_array($item['name'] ?? null) ? $item['name'] : []),
+            filter_var($item['required'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            is_array($item['guidance'] ?? null) ? LocalizedText::fromArray($item['guidance']) : null,
+            $types === null ? null : array_values(array_map(static fn (mixed $type): EvidenceFileType => EvidenceFileType::from(ScalarValue::string($type)), $types)),
+            is_numeric($item['max_files'] ?? null) ? (int) $item['max_files'] : null,
+        );
     }
 
     /**

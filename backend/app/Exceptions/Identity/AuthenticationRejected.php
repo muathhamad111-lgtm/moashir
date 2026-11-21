@@ -20,6 +20,16 @@ final class AuthenticationRejected extends ApiException
         return new self(new ApiError(Response::HTTP_FORBIDDEN, 'account_deactivated'));
     }
 
+    public static function entityPendingReview(): self
+    {
+        return new self(new ApiError(Response::HTTP_FORBIDDEN, 'auth.entity_pending_review'));
+    }
+
+    public static function entityRejected(): self
+    {
+        return new self(new ApiError(Response::HTTP_FORBIDDEN, 'auth.entity_rejected'));
+    }
+
     public static function accountLocked(int $retryAfterSeconds): self
     {
         return new self(new ApiError(423, 'account_locked', [], ['Retry-After' => (string) max(1, $retryAfterSeconds)]));
@@ -30,13 +40,13 @@ final class AuthenticationRejected extends ApiException
         return new self(new ApiError(Response::HTTP_UNAUTHORIZED, 'session.expired'));
     }
 
-    public static function modeDisabled(): self
-    {
-        return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'login.mode_disabled'));
-    }
-
     public static function passwordChangeRequired(): self
     {
         return new self(new ApiError(Response::HTTP_FORBIDDEN, 'password.change_required'));
+    }
+
+    public static function nationalIdRequired(): self
+    {
+        return new self(new ApiError(Response::HTTP_FORBIDDEN, 'identity.national_id_required'));
     }
 }

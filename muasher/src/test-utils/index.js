@@ -5,9 +5,16 @@ import { createHead } from '@unhead/vue/client'
 import ar from '@/i18n/locales/ar.json'
 import en from '@/i18n/locales/en.json'
 import { routes } from '@/router/routes'
+import { PLURAL_RULES } from '@/utils/arabicPlural'
 
 export function createTestGlobals({ locale = 'ar' } = {}) {
-  const i18n = createI18n({ legacy: false, locale, fallbackLocale: 'en', messages: { ar, en } })
+  const i18n = createI18n({
+    legacy: false,
+    locale,
+    fallbackLocale: 'en',
+    messages: { ar, en },
+    pluralRules: PLURAL_RULES,
+  })
   const router = createRouter({ history: createMemoryHistory(), routes })
   const pinia = createPinia()
   const head = createHead()

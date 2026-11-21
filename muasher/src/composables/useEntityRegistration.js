@@ -1,48 +1,48 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
 import { useValidatedForm } from '@/composables/useValidatedForm'
 import { useRegions } from '@/composables/useRegions'
 import { useToast } from '@/composables/useToast'
 import { useAuthStore } from '@/stores/auth'
 import { useAuthFlowStore } from '@/stores/authFlow'
-import { termsService } from '@/services/termsService'
+import { useRegistrationTerms } from '@/composables/useRegistrationTerms'
+import { useRegistrationOptions } from '@/composables/useRegistrationOptions'
+import { nationalIdRule } from '@/utils/identity/nationalIdSchema'
+import { normalizeNationalId } from '@/utils/identity/nationalId'
 import { registrationSchema } from '@/utils/entitySchemas'
 import { emptyProfileValues, registrationPayload } from '@/utils/entityPayload'
-import { AUTH_FLOW_INTENTS } from '@/constants/loginSteps'
-import { ROUTE_NAMES } from '@/constants/routeNames'
+import { useLoginOutcome } from '@/composables/useLoginOutcome'
+import { AUTH_FLOW_INTENTS, LOGIN_STEPS } from '@/constants/loginSteps'
 
 const REGISTRATION_DEFAULTS = {
+  nationalId: '',
   officialEmail: '',
+  emailVerificationToken: '',
   password: '',
   passwordConfirmation: '',
   termsAccepted: false,
-  marketingConsent: false,
+  hasStrategicPlan: '',
+  licenseNumber: '',
+  foundedOn: '',
+}
+
+function withNationalId(payload, values, required) {
+  return required ? { ...payload, nationalId: normalizeNationalId(values.nationalId) } : payload
 }
 
 export function useEntityRegistration() {
   const { t } = useI18n()
-  const router = useRouter()
   const toast = useToast()
+  const { continueAfter } = useLoginOutcome()
   const auth = useAuthStore()
   const authFlow = useAuthFlowStore()
   const regions = useRegions()
-  const terms = ref(null)
-  const termsStatus = ref('loading')
-
-  async function loadTerms() {
-    termsStatus.value = 'loading'
-    try {
-      const { data } = await termsService.current()
-      terms.value = data
-      termsStatus.value = data?.terms ? 'success' : 'unavailable'
-    } catch {
-      termsStatus.value = 'error'
-    }
-  }
+  const { terms, termsStatus, loadTerms } = useRegistrationTerms()
+  const underReview = ref(false)
+  const { nationalIdRequired, loadOptions } = useRegistrationOptions()
 
   function load() {
-    return Promise.all([loadTerms(), regions.load()])
+    return Promise.all([loadTerms(), regions.load(), loadOptions()])
   }
 
   const status = computed(() => {
@@ -52,20 +52,32 @@ export function useEntityRegistration() {
   })
 
   const form = useValidatedForm({
-    schema: computed(() => registrationSchema(t)),
+    schema: computed(() =>
+      nationalIdRequired.value
+        ? registrationSchema(t).shape({ nationalId: nationalIdRule(t) })
+        : registrationSchema(t),
+    ),
     initialValues: { ...emptyProfileValues(), ...REGISTRATION_DEFAULTS },
     action: 'entities.register.submit',
+    keepValuesOnUnmount: true,
     submit: async (values) => {
-      const outcome = await auth.register(registrationPayload(values, terms.value))
+      const outcome = await auth.register(
+        withNationalId(registrationPayload(values, terms.value), values, nationalIdRequired.value),
+      )
+      // The e-mail is already proven: the entity is either waiting for staff review or signed in.
+      if (outcome.step === LOGIN_STEPS.PENDING_REVIEW) {
+        underReview.value = true
+        return
+      }
+      if (outcome.message) toast.info(outcome.message)
       authFlow.setChallenge({
-        challenge: outcome.otp,
+        challenge: null,
         officialEmail: values.officialEmail.trim(),
         intent: AUTH_FLOW_INTENTS.REGISTER,
       })
-      if (outcome.message) toast.info(outcome.message)
-      await router.push({ name: ROUTE_NAMES.AUTH_OTP })
+      await continueAfter(outcome)
     },
   })
 
-  return { form, terms, status, load, regions }
+  return { form, status, load, regions, underReview, nationalIdRequired }
 }

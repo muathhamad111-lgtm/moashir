@@ -1,6 +1,7 @@
 /* eslint-disable playwright/no-conditional-in-test, playwright/no-wait-for-timeout */
 import { test, expect } from '@playwright/test'
 import { seedLocale } from './support/session'
+import { searchList } from './support/listFilters'
 
 function localeSuffix(testInfo) {
   return testInfo.project.name === 'chromium-en-ltr' ? 'en-ltr' : 'ar-rtl'
@@ -16,25 +17,29 @@ async function retryFor(page, selector) {
   for (let attempt = 0; attempt < 6; attempt += 1) {
     const retry = page.locator('.error-state__retry').first()
     if (await retry.isVisible().catch(() => false)) await retry.click()
-    if (await page.locator(selector).first().isVisible().catch(() => false)) return
+    if (
+      await page
+        .locator(selector)
+        .first()
+        .isVisible()
+        .catch(() => false)
+    )
+      return
     await page.waitForTimeout(500)
-  }
-  await expect(page.locator(selector).first()).toBeVisible({ timeout: 10000 })
-}
-
-async function reloadUntil(page, url, selector) {
-  for (let attempt = 0; attempt < 6; attempt += 1) {
-    await page.goto(url)
-    await retryFor(page, '.home-hero__title')
-    if (await page.locator(selector).first().isVisible().catch(() => false)) return
-    await page.waitForTimeout(400)
   }
   await expect(page.locator(selector).first()).toBeVisible({ timeout: 10000 })
 }
 
 async function settleTurn(page, selector) {
   for (let attempt = 0; attempt < 6; attempt += 1) {
-    if (await page.locator(selector).first().isVisible().catch(() => false)) return
+    if (
+      await page
+        .locator(selector)
+        .first()
+        .isVisible()
+        .catch(() => false)
+    )
+      return
     const turnRetry = page.locator('.chat-widget__turn-error .chat-widget__inline-retry')
     if (await turnRetry.isVisible().catch(() => false)) await turnRetry.click()
     await page.waitForTimeout(600)
@@ -42,26 +47,23 @@ async function settleTurn(page, selector) {
   await expect(page.locator(selector).first()).toBeVisible({ timeout: 10000 })
 }
 
-test('landing renders hero, evaluation-path cards, the excellence-model bands and the featured-KPI promo', async ({
+test('landing renders hero, stats, path cards, the model stages, levels and journey', async ({
   page,
 }, testInfo) => {
   await page.goto('/')
-  await retryFor(page, '.home-hero__title')
-  await expect(page.locator('.home-hero__title')).not.toBeEmpty()
+  await retryFor(page, '#lp-hero-title')
+  await expect(page.locator('#lp-hero-title')).not.toBeEmpty()
 
-  await retryFor(page, '.home-path')
-  await expect(page.locator('.home-path')).toHaveCount(3)
+  await retryFor(page, '.lp-path')
+  await expect(page.locator('.lp-path')).toHaveCount(3)
+  await expect(page.locator('#model .lp-cycle__step')).toHaveCount(4)
+  await retryFor(page, '#model .lp-model-criteria .lp-tag')
+  await expect(page.locator('#model .lp-model-criteria .lp-tag')).toHaveCount(9)
+  await expect(page.locator('#model .lp-model-criteria__group')).toHaveCount(3)
+  await expect(page.locator('#journey .lp-jr')).toHaveCount(6)
 
-  await retryFor(page, '.home-model__band')
-  await expect(page.locator('.home-model__band')).toHaveCount(3)
-  await expect(page.locator('.home-model__chip')).toHaveCount(9)
-
-  await retryFor(page, '.home-kpi-promo')
-  await page.locator('.home-kpi-promo').scrollIntoViewIfNeeded()
-  await reloadUntil(page, '/', '.home-kpi-promo__grid .kpi-card')
-  await page.locator('.home-kpi-promo').scrollIntoViewIfNeeded()
-  await expect(page.locator('.home-kpi-promo__grid .kpi-card').first()).toBeVisible()
-  await expect(page.locator('.home-kpi-promo__cta .btn')).toBeVisible()
+  await retryFor(page, '#levels .lp-lv__tiers button')
+  await expect(page.locator('#levels .lp-lv__tiers button')).toHaveCount(5)
 
   await page.screenshot({
     path: `test-results/task3-landing-${localeSuffix(testInfo)}.png`,
@@ -78,13 +80,13 @@ test('public KPIs page renders the premium grid with tabs, search and show more'
 
   await expect(page.locator('.kpis-page__tabs .tabs__tab').first()).toBeVisible()
   await expect(page.locator('.kpi-card').first()).toBeVisible()
-  await expect.poll(async () => page.locator('.kpi-card').count()).toBeLessThanOrEqual(9)
+  await expect.poll(async () => page.locator('.kpi-card').count()).toBeLessThanOrEqual(12)
 
   const categoryTab = page.locator('.kpis-page__tabs .tabs__tab').nth(1)
   await categoryTab.click()
   await expect(categoryTab).toHaveAttribute('aria-selected', 'true')
   await expect(page.locator('.kpi-card').first()).toBeVisible()
-  await expect.poll(async () => page.locator('.kpi-card').count()).toBeLessThanOrEqual(9)
+  await expect.poll(async () => page.locator('.kpi-card').count()).toBeLessThanOrEqual(12)
 
   const allTab = page.locator('.kpis-page__tabs .tabs__tab').first()
   await allTab.click()
@@ -101,7 +103,7 @@ test('public KPIs page renders the premium grid with tabs, search and show more'
     fullPage: true,
   })
 
-  await page.locator('.kpis-page__toolbar input[type="search"]').fill('zzzznomatch')
+  await searchList(page, 'zzzznomatch')
   await expect(page.locator('.empty-state')).toBeVisible()
   await expect(page.locator('.kpi-card')).toHaveCount(0)
 
@@ -122,8 +124,8 @@ test('lenses page renders the analytics-lenses title and the five lens cards', a
 test('AI chat widget opens, answers a KB question and returns the KB-miss fallback', async ({
   page,
 }, testInfo) => {
-  await page.goto('/')
-  await retryFor(page, '.home-hero__title')
+  await page.goto('/kpis')
+  await retryFor(page, '.kpis-page__title')
 
   await page.locator('.chat-widget__launcher').click()
   const panel = page.locator('.chat-widget__panel')
@@ -146,4 +148,19 @@ test('AI chat widget opens, answers a KB question and returns the KB-miss fallba
   await page.locator('.chat-widget__input').fill(outOfKb)
   await page.locator('.chat-widget__send').click()
   await settleTurn(page, '.chat-message--miss')
+})
+
+test('home header links scroll to the paths and the levels', async ({ page }, testInfo) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+  await retryFor(page, '#lp-hero-title')
+  const english = testInfo.project.name === 'chromium-en-ltr'
+  const links = page.locator('.lp-top__nav .lp-top__link')
+
+  await links.filter({ hasText: english ? 'Assessment paths' : 'مسارات التقييم' }).click()
+  await expect(page.locator('#paths')).toBeInViewport()
+
+  await links.filter({ hasText: english ? 'Excellence levels' : 'مستويات التميّز' }).click()
+  await expect(page.locator('#levels')).toBeInViewport()
 })

@@ -9,6 +9,7 @@ export default mergeConfig(
       environment: 'jsdom',
       setupFiles: ['./src/test-utils/jsdomStorage.js'],
       exclude: [...configDefaults.exclude, 'e2e/**'],
+      css: { include: [/styles\/tokens\/.+\.module\.scss$/] },
       root: fileURLToPath(new URL('./', import.meta.url)),
     },
   }),

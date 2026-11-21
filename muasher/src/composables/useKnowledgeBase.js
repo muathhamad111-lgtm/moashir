@@ -35,30 +35,51 @@ export function useKnowledgeBase() {
   }
 
   const upload = () =>
-    runAndReload(() => settingsService.uploadKbFile({ name: t('settings.ai.newFileName'), sizeKb: NEW_FILE_SIZE_KB }), 'settings.ai.uploadQueued', 'settings.ai.uploadFailed')
+    runAndReload(
+      () =>
+        settingsService.uploadKbFile({
+          name: t('settings.ai.newFileName'),
+          sizeKb: NEW_FILE_SIZE_KB,
+        }),
+      'settings.ai.uploadQueued',
+      'settings.ai.uploadFailed',
+    )
 
-  const toggleApproved = (file) => runAndReload(() => settingsService.toggleKbFileApproved(file.id, !file.approved), null, 'settings.ai.approveFailed')
+  const toggleApproved = (file) =>
+    runAndReload(
+      () => settingsService.toggleKbFileApproved(file.id, !file.approved),
+      null,
+      'settings.ai.approveFailed',
+    )
 
   async function remove(file) {
     const accepted = await confirm({
       title: t('settings.ai.removeTitle'),
-      message: t('settings.ai.removeMessage', { name: file.name }),
-      confirmLabel: t('actions.confirm'),
+      message: file.name,
+      confirmLabel: t('actions.delete'),
       variant: 'danger',
     })
-    if (accepted) await runAndReload(() => settingsService.removeKbFile(file.id), 'settings.ai.removed', 'settings.ai.removeFailed')
+    if (accepted)
+      await runAndReload(
+        () => settingsService.removeKbFile(file.id),
+        'settings.ai.removed',
+        'settings.ai.removeFailed',
+      )
   }
 
   async function retrain() {
     const accepted = await confirm({
       title: t('settings.ai.retrainTitle'),
-      message: t('settings.ai.retrainMessage'),
       confirmLabel: t('settings.ai.retrain'),
-      variant: 'primary',
+      variant: 'confirm',
     })
     if (!accepted) return
     retraining.value = true
-    await runAndReload(() => settingsService.retrainKb(), 'settings.ai.retrainQueued', 'settings.ai.retrainFailed')
+    await runAndReload(
+      () => settingsService.retrainKb(),
+      'settings.ai.retrainQueued',
+      'settings.ai.retrainFailed',
+    )
     retraining.value = false
   }
 

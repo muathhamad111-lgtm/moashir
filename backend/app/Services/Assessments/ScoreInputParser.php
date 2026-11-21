@@ -11,6 +11,7 @@ use App\Data\Assessments\ScoringTree;
 use App\Data\Assessments\SubmittedScores;
 use App\Enums\Assessments\ScoreLevel;
 use App\Enums\Criteria\ScaleKind;
+use App\Enums\Criteria\ScoringType;
 use App\Exceptions\Assessments\AssessmentRejected;
 use App\Support\ValueObjects\RawScore;
 use InvalidArgumentException;
@@ -23,7 +24,7 @@ final class ScoreInputParser
 
     private const string OUT_OF_RANGE = 'score.out_of_range';
 
-    public function parse(SubmittedScores $input, ScoringTree $tree, ScaleKind $scale): ScoreSheet
+    public function parse(SubmittedScores $input, ScoringTree $tree, ?ScaleKind $stamp): ScoreSheet
     {
         $entries = [];
         $errors = [];
@@ -43,7 +44,7 @@ final class ScoreInputParser
                     continue;
                 }
 
-                $raw = $this->rawScore($scale, $value);
+                $raw = $this->rawScore($unit->scoringTypeUnder($stamp), $value);
                 $raw instanceof RawScore ? $entries[] = new ScoredUnit($unit, $raw) : $errors[$field] = self::OUT_OF_RANGE;
             }
         }
@@ -82,14 +83,14 @@ final class ScoreInputParser
             : self::NOT_IN_VERSION;
     }
 
-    private function rawScore(ScaleKind $scale, mixed $value): ?RawScore
+    private function rawScore(ScoringType $type, mixed $value): ?RawScore
     {
         if (! is_string($value) && ! is_int($value) && ! is_float($value)) {
             return null;
         }
 
         try {
-            return RawScore::on($scale, $value);
+            return RawScore::on($type, $value);
         } catch (InvalidArgumentException) {
             return null;
         }

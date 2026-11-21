@@ -1,0 +1,25 @@
+@use '../mixins' as *;
+
+.mobile-action-bar {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: var(--z-fixed);
+  padding-block: var(--space-3) var(--space-7);
+  padding-inline: var(--space-4);
+  border-block-start: var(--border-width) solid var(--theme-border);
+  background-color: var(--theme-surface);
+  box-shadow: var(--shadow-md);
+
+  @include respond-to('lg') {
+    display: none;
+  }
+}
+
+.mobile-action-bar__inner {
+  @include flex(row, center, flex-start, var(--space-3));
+
+  > :last-child {
+    flex: 1;
+  }
+}

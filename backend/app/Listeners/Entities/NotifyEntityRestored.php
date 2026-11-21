@@ -10,6 +10,7 @@ use App\Enums\Notifications\NotificationCode;
 use App\Events\Entities\EntityRestored;
 use App\Services\Entities\EntityNotifier;
 use App\Support\Entities\EntityLinks;
+use App\Support\ValueObjects\LocalizedText;
 
 final readonly class NotifyEntityRestored
 {
@@ -22,7 +23,7 @@ final readonly class NotifyEntityRestored
         $this->notifier->toRole(RoleKey::SystemAdmin, EntityNotice::for(NotificationCode::EntityDeletionChanged, 'staff_restored', [
             'entity' => $entity->name->toLocalizedText(),
             'reference' => $entity->reference(),
-            'count' => (string) count($event->unfrozenRequestNumbers),
+            'frozen_requests' => LocalizedText::fromChoice('quantities.frozen_requests', count($event->unfrozenRequestNumbers)),
         ], EntityLinks::record($entity->id)), $event->actorId);
     }
 }

@@ -13,6 +13,7 @@ use App\Models\Award\AwardCycle;
 use App\Models\Award\FilteringDecision;
 use App\Models\Criteria\CriteriaVersion;
 use App\Models\Identity\User;
+use App\Support\ValueObjects\Percent;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
@@ -155,6 +156,23 @@ it('qualifies below the disqualification score only with a recorded reason and a
         ->and(Audit::query()->where('event', AuditEvent::AwardQualifiedOverride->value)->count())->toBe(1)
         ->and(financeNoticeSent($secretary, NotificationCode::AdvancedFilteringException))->toBeTrue()
         ->and(financeNoticeSent($admin, NotificationCode::AdvancedFilteringException))->toBeTrue();
+});
+
+it('compares the initial result with the disqualification score as both are displayed', function (): void {
+    [$cycle, $version, $officer] = filteringCycle();
+    $assessment = initiallyAssessedRequest($cycle, $version, assessorUser(), LOW_MARKS);
+    $stored = $assessment->refresh()->currentResult?->percent;
+    $shown = $stored?->toDisplay() ?? '';
+    AwardCycle::query()->whereKey($cycle->id)->update(['disqualification_score' => $shown]);
+    closeCycleSubmissions($cycle);
+
+    expect($stored?->toDecimal())->not->toBe(Percent::of($shown)->toDecimal());
+
+    switchTo($officer)->getJson("/api/v1/award/cycles/{$cycle->id}/filtering")->assertOk()
+        ->assertJsonPath('data.0.meets_threshold', true)
+        ->assertJsonPath('meta.below_threshold', 0);
+    test()->postJson(filteringPath($cycle, $assessment, 'qualify'))->assertOk()
+        ->assertJsonPath('data.decision.is_override', false);
 });
 
 it('disqualifies a request with a mandatory reason and closes it', function (): void {

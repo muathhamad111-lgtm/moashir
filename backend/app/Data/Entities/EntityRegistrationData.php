@@ -6,6 +6,7 @@ namespace App\Data\Entities;
 
 use App\Enums\Identity\Locale;
 use App\Support\ValueObjects\EmailAddress;
+use App\Support\ValueObjects\NationalId;
 
 final readonly class EntityRegistrationData
 {
@@ -20,5 +21,6 @@ final readonly class EntityRegistrationData
         public array $acceptedTermsVersionIds,
         public bool $marketingConsent,
         public Locale $locale,
+        public ?NationalId $nationalId = null,
     ) {}
 }

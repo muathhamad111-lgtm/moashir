@@ -9,12 +9,6 @@
   @include respond-to('md') {
     grid-template-columns: var(--size-logo-preview) 1fr;
   }
-
-  & + & {
-    margin-block-start: var(--space-6);
-    padding-block-start: var(--space-6);
-    border-block-start: var(--border-width) solid var(--theme-border);
-  }
 }
 
 .logo-variant__tile {
@@ -25,10 +19,6 @@
 
   [data-surface='dark'] > & {
     background-color: var(--color-dark-deep);
-  }
-
-  [data-surface='light'] > & {
-    background-color: var(--color-secondary);
   }
 }
 
@@ -42,6 +32,21 @@
   @include flex(column, stretch, flex-start, var(--space-3));
 }
 
-.logo-variant__state {
+.logo-variant__warning {
+  @include flex(row, flex-start, flex-start, var(--space-2));
   margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--color-warning-soft);
+  color: var(--theme-warning-text);
+  font-size: var(--fs-sm);
+
+  .app-icon {
+    flex-shrink: 0;
+    margin-block-start: var(--space-0);
+  }
+}
+
+.logo-variant[data-surface='favicon'] .logo-variant__image {
+  inline-size: calc(var(--size-touch-target) * 2);
 }

@@ -4,6 +4,17 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Contracts\Insights\KitActivation;
+use App\Contracts\Platform\DownloadStreamOpener;
+use App\Http\Responses\PhpOutputStreamOpener;
+use App\Services\Insights\UnbuiltKitActivation;
+use App\Services\Platform\Readiness\DatabaseReadiness;
+use App\Services\Platform\Readiness\DiskSpaceReadiness;
+use App\Services\Platform\Readiness\MalwareScannerReadiness;
+use App\Services\Platform\Readiness\PdfRendererReadiness;
+use App\Services\Platform\Readiness\QueueReadiness;
+use App\Services\Platform\Readiness\ReadinessProbe;
+use App\Services\Platform\Readiness\RedisReadiness;
 use App\Support\RequestContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -13,9 +24,21 @@ use Laravel\Sanctum\Sanctum;
 
 final class AppServiceProvider extends ServiceProvider
 {
+    private const array READINESS_CHECKS = [
+        DatabaseReadiness::class,
+        RedisReadiness::class,
+        QueueReadiness::class,
+        DiskSpaceReadiness::class,
+        MalwareScannerReadiness::class,
+        PdfRendererReadiness::class,
+    ];
+
     public function register(): void
     {
         $this->app->scoped(RequestContext::class);
+        $this->app->bind(DownloadStreamOpener::class, PhpOutputStreamOpener::class);
+        $this->app->bind(KitActivation::class, UnbuiltKitActivation::class);
+        $this->app->tag(self::READINESS_CHECKS, ReadinessProbe::TAG);
         Fortify::ignoreRoutes();
     }
 

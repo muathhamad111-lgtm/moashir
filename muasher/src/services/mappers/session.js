@@ -1,3 +1,5 @@
+import { toAvatar } from './avatar'
+
 function roleKeyOf(role) {
   return typeof role === 'string' ? role : (role?.key ?? null)
 }
@@ -13,6 +15,11 @@ function toEntitySummary(entity) {
   }
 }
 
+function toRequestScope(raw) {
+  if (!raw) return null
+  return { allPaths: raw.allPaths === true, paths: [...(raw.paths ?? [])] }
+}
+
 export function toSessionUser(raw = {}) {
   const entity = toEntitySummary(raw.entity)
   return {
@@ -26,9 +33,15 @@ export function toSessionUser(raw = {}) {
     isSuperAdmin: raw.isSuperAdmin === true,
     mfaEnabled: raw.mfaEnabled === true,
     passwordChangeRequired: raw.passwordChangeRequired === true,
+    nationalIdRequired: raw.nationalIdRequired === true,
+    hasNationalId: raw.hasNationalId === true,
+    nationalIdMasked: raw.nationalIdMasked ?? null,
     entityId: raw.entityId ?? entity?.id ?? null,
     entity,
+    avatar: toAvatar(raw.avatar),
     committeeAppointments: [...(raw.committeeAppointments ?? [])],
+    assessorQualifications: [...(raw.assessorQualifications ?? [])],
+    requestScope: toRequestScope(raw.requestScope),
     sessionExpiresAt: raw.sessionExpiresAt ?? null,
     idleTimeoutMinutes: raw.idleTimeoutMinutes ?? null,
     profileCompleted: entity ? entity.profileCompleted : true,

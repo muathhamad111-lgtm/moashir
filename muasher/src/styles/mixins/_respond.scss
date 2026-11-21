@@ -10,3 +10,13 @@
     @content;
   }
 }
+
+@mixin respond-to-block($breakpoint) {
+  $size: map.get($block-breakpoints, $breakpoint);
+  @if $size == null {
+    @error 'Unknown block breakpoint: #{$breakpoint}. Known: #{map.keys($block-breakpoints)}';
+  }
+  @media (min-height: $size) {
+    @content;
+  }
+}

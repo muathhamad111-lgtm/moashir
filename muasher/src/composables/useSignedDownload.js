@@ -7,7 +7,10 @@ import { errorCodeOf, financeErrorMessage } from '@/utils/payments/financeErrors
 
 const UNAVAILABLE_CODES = ['document.renderer_unavailable']
 
-export function useSignedDownload() {
+export function useSignedDownload({
+  errorPrefix = 'finance.errors',
+  fallbackKey = 'finance.downloads.failed',
+} = {}) {
   const i18n = useI18n()
   const toast = useToast()
   const busy = reactive({})
@@ -24,7 +27,7 @@ export function useSignedDownload() {
       return true
     } catch (error) {
       if (UNAVAILABLE_CODES.includes(errorCodeOf(error))) unavailable[key] = true
-      toast.error(financeErrorMessage(i18n, error, 'finance.downloads.failed'))
+      toast.error(financeErrorMessage(i18n, error, fallbackKey, errorPrefix))
       return false
     } finally {
       busy[key] = false

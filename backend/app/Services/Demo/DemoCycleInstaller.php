@@ -25,7 +25,7 @@ final readonly class DemoCycleInstaller
         $start = CarbonImmutable::now()->addDay()->startOfHour();
 
         return $this->createCycle->handle($awardSecretary, new CycleAttributes(
-            name: new LocalizedText('الدورة التجريبية لجائزة التميز المؤسسي', 'Institutional Excellence Award - demonstration cycle'),
+            name: new LocalizedText('دورة جائزة التميز المؤسسي', 'Institutional Excellence Award cycle'),
             dates: [
                 'submission_start' => $start,
                 'submission_end' => $start->addDays(45),

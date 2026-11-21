@@ -1,68 +1,260 @@
 @use '../mixins' as *;
 
-.assign-dialog,
+// One column: the assessor select, then the reason (admin review 2026-11-20).
+.assign-dialog {
+  @include flex(column, stretch, flex-start, var(--space-5));
+}
+
 .override-dialog,
+// Two columns from lg: the item picker, then the summary with notes, deadline and outcome.
+// The completion request's steps sit in a side sheet (design §B.3.3), so each step is one column:
+// the suggestion note, the picker, then the chosen items.
 .completion-dialog {
   @include flex(column, stretch, flex-start, var(--space-4));
 }
 
-.assign-dialog__lead,
-.completion-dialog__lead,
-.assign-dialog__empty {
-  margin: 0;
-  color: var(--theme-text);
+// The message step: the notes, then the deadline beside the outcome.
+.completion-dialog__details {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+
+  @include respond-to('md') {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  > .completion-dialog__details-title,
+  > .completion-dialog__notes,
+  > .completion-dialog__outcome-hint {
+    grid-column: 1 / -1;
+  }
 }
 
-.assign-dialog__options {
-  @include flex(column, stretch, flex-start, var(--space-2));
-  max-block-size: var(--size-panel);
-  overflow-y: auto;
+.completion-dialog__details-title {
   margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.assign-dialog__legend,
-.completion-dialog__legend {
-  margin-block-end: var(--space-2);
   font-size: var(--fs-sm);
   font-weight: var(--fw-semibold);
   color: var(--theme-heading);
 }
 
-.assign-dialog__option {
-  @include flex(row, center, flex-start, var(--space-3));
-  min-block-size: var(--size-touch-target);
-  padding: var(--space-2) var(--space-3);
+.completion-picker {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  min-inline-size: 0;
+}
+
+.completion-picker__scroll {
+  max-block-size: 60vh;
+  overflow-y: auto;
   border: var(--border-width) solid var(--theme-border);
   border-radius: var(--radius-md);
-  cursor: pointer;
+}
 
-  &:has(.assign-dialog__radio:checked) {
-    border-color: var(--theme-accent);
-    background-color: var(--color-info-soft);
+// Fixed layout: the two choice columns keep their width and the sub-criterion name takes the
+// rest, so the table never grows past a phone-width dialog.
+.completion-picker__table {
+  inline-size: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+
+  th,
+  td {
+    padding-block: var(--space-2);
+    padding-inline: var(--space-3);
+    border-block-end: var(--border-width) solid var(--theme-border);
+    text-align: start;
+    vertical-align: middle;
+  }
+
+  td {
+    padding-inline: var(--space-1);
+    text-align: center;
+  }
+
+  thead th {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 1;
+    background-color: var(--theme-surface-raised);
+    color: var(--theme-text-secondary);
+    font-weight: var(--fw-semibold);
+    white-space: nowrap;
+  }
+
+  thead th + th {
+    inline-size: 4.5rem;
+    padding-inline: var(--space-1);
+    text-align: center;
+    white-space: normal;
+
+    @include respond-to('md') {
+      inline-size: 6rem;
+    }
   }
 }
 
-.assign-dialog__radio {
-  accent-color: var(--theme-accent);
+.completion-picker__group {
+  background-color: var(--theme-bg);
+
+  th {
+    padding-inline: var(--space-1);
+  }
+}
+
+.completion-picker__toggle {
+  @include flex(row, center, flex-start, var(--space-2));
+  inline-size: 100%;
+  min-block-size: var(--size-touch-target);
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-sm);
+  color: var(--theme-heading);
+  font-weight: var(--fw-semibold);
+  text-align: start;
 
   &:focus-visible {
     @include focus-ring;
   }
 }
 
-.assign-dialog__name {
-  flex: 1;
-  color: var(--theme-heading);
+.completion-picker__chevron {
+  flex-shrink: 0;
+  color: var(--theme-text-muted);
+
+  @include motion-safe {
+    transition: transform var(--t-fast) var(--ease);
+  }
+
+  [aria-expanded='false'] > & {
+    transform: rotate(-90deg);
+
+    [dir='rtl'] & {
+      transform: rotate(90deg);
+    }
+  }
 }
 
-.assign-dialog__load {
+.completion-picker__count {
+  flex-shrink: 0;
+  margin-inline-start: auto;
+  white-space: nowrap;
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-pill);
+  background-color: var(--theme-surface-raised);
+  color: var(--theme-text-secondary);
+  font-family: var(--font-latin);
   font-size: var(--fs-xs);
+}
+
+.completion-picker__row {
+  th {
+    padding-inline-start: var(--space-8);
+    font-weight: var(--fw-regular);
+    color: var(--theme-text);
+  }
+
+  &:hover {
+    background-color: var(--theme-accent-soft);
+  }
+}
+
+.completion-picker__check {
+  inline-size: 1.125rem;
+  block-size: 1.125rem;
+  accent-color: var(--theme-accent-text);
+  cursor: pointer;
+}
+
+.completion-picker__none {
   color: var(--theme-text-muted);
 }
 
-.override-dialog__warning,
+.completion-picker__empty {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--theme-text-muted);
+  text-align: center;
+}
+
+.completion-summary {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  padding: var(--space-3);
+
+  // Size containment lets the picker alone set the row height the summary stretches to.
+  @include respond-to('lg') {
+    contain: size;
+  }
+
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface-raised);
+}
+
+.completion-summary__title {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.completion-summary__empty {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.completion-summary__list {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  max-block-size: 16rem;
+  overflow-y: auto;
+
+  // Beside the table the summary is exactly as tall as it; its own list scrolls.
+  @include respond-to('lg') {
+    flex: 1;
+    min-block-size: 0;
+    max-block-size: none;
+  }
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.completion-summary__item {
+  @include flex(column, stretch, flex-start, var(--space-2));
+}
+
+.completion-summary__add-note {
+  align-self: flex-start;
+}
+
+.completion-summary__chip {
+  @include flex(row, center, space-between, var(--space-2));
+  padding-block: var(--space-1);
+  padding-inline: var(--space-3) var(--space-1);
+  border-radius: var(--radius-pill);
+  background-color: var(--theme-accent-soft);
+  color: var(--theme-accent-text);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+
+.completion-summary__remove {
+  @include flex-center;
+  flex-shrink: 0;
+  inline-size: var(--size-touch-target);
+  block-size: var(--size-touch-target);
+  margin-block: calc(var(--space-2) * -1);
+  border-radius: var(--radius-circle);
+  color: inherit;
+
+  &:hover {
+    background-color: var(--theme-surface);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
 .completion-dialog__outcome-hint {
   @include flex(row, flex-start, flex-start, var(--space-2));
   margin: 0;
@@ -73,33 +265,10 @@
   color: var(--theme-text);
 }
 
-.override-dialog__grid {
-  display: grid;
-  gap: var(--space-3);
-  grid-template-columns: repeat(auto-fill, minmax(var(--size-control-min), 1fr));
-}
-
-.completion-dialog__items {
-  @include flex(column, stretch, flex-start, var(--space-3));
-  max-block-size: var(--size-panel);
-  overflow-y: auto;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.completion-dialog__group {
-  @include flex(column, stretch, flex-start, var(--space-2));
-}
-
-.completion-dialog__main {
+.assign-dialog__path {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
   margin: 0;
   font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-  color: var(--theme-heading);
-}
-
-.completion-dialog__option {
-  @include flex(column, stretch, flex-start, var(--space-2));
-  padding-inline-start: var(--space-3);
+  color: var(--theme-text-secondary);
 }

@@ -11,9 +11,7 @@ const emit = defineEmits(['update:modelValue'])
 const baseId = useId()
 const tabRefs = ref([])
 
-const activeIndex = computed(() =>
-  props.tabs.findIndex((tab) => tab.value === props.modelValue),
-)
+const activeIndex = computed(() => props.tabs.findIndex((tab) => tab.value === props.modelValue))
 
 function tabId(tab) {
   return `${baseId}-tab-${tab.value}`
@@ -35,15 +33,19 @@ function focusTab(index) {
   select(props.tabs[next])
 }
 
+// The arrow that points along the reading direction moves forward: ← in Arabic, → in English.
+function stepOf(event) {
+  const isRtl = getComputedStyle(event.currentTarget).direction === 'rtl'
+  const forwardKey = isRtl ? 'ArrowLeft' : 'ArrowRight'
+  return event.key === forwardKey ? 1 : -1
+}
+
 function onKeydown(event, index) {
   switch (event.key) {
     case 'ArrowRight':
-      event.preventDefault()
-      focusTab(index + 1)
-      break
     case 'ArrowLeft':
       event.preventDefault()
-      focusTab(index - 1)
+      focusTab(index + stepOf(event))
       break
     case 'Home':
       event.preventDefault()
@@ -77,6 +79,9 @@ function onKeydown(event, index) {
         @keydown="onKeydown($event, index)"
       >
         {{ tab.label }}
+        <span v-if="tab.badge" class="tabs__badge" :aria-label="tab.badgeLabel || undefined">{{
+          tab.badge
+        }}</span>
       </button>
     </div>
     <div

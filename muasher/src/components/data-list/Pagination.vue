@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   page: { type: Number, required: true },
@@ -36,7 +37,7 @@ function goTo(target) {
       :aria-label="t('components.pagination.previous')"
       @click="goTo(page - 1)"
     >
-      <i class="fa-solid fa-chevron-left u-flip-in-rtl" aria-hidden="true"></i>
+      <AppIcon name="chevron-left" />
     </button>
     <button
       v-for="candidate in pages"
@@ -59,7 +60,7 @@ function goTo(target) {
       :aria-label="t('components.pagination.next')"
       @click="goTo(page + 1)"
     >
-      <i class="fa-solid fa-chevron-right u-flip-in-rtl" aria-hidden="true"></i>
+      <AppIcon name="chevron-right" />
     </button>
   </nav>
 </template>

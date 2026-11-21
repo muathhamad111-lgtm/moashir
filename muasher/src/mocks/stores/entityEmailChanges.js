@@ -24,7 +24,11 @@ export function findEmailChange(id) {
 }
 
 export function awaitingChangeOf(entityId) {
-  return changes.find((change) => change.entityId === entityId && change.status === S.AWAITING_APPROVAL) ?? null
+  return (
+    changes.find(
+      (change) => change.entityId === entityId && change.status === S.AWAITING_APPROVAL,
+    ) ?? null
+  )
 }
 
 export function listEmailChanges(status) {
@@ -38,6 +42,18 @@ function cancelUnconfirmed(entityId) {
     .forEach((change) => {
       change.status = S.CANCELLED
     })
+}
+
+const OPEN_STATUSES = [S.AWAITING_OTP, S.AWAITING_APPROVAL]
+
+export function cancelOpenChanges(entityId) {
+  const open = changes.filter(
+    (change) => change.entityId === entityId && OPEN_STATUSES.includes(change.status),
+  )
+  open.forEach((change) => {
+    change.status = S.CANCELLED
+  })
+  return open.length > 0
 }
 
 export function requestChange(entity, newEmail, challengeId) {
@@ -71,7 +87,10 @@ function apply(change) {
 
 export function confirmChange(entity, challengeId) {
   const change = changes.find(
-    (item) => item.entityId === entity.id && item.challengeId === challengeId && item.status === S.AWAITING_OTP,
+    (item) =>
+      item.entityId === entity.id &&
+      item.challengeId === challengeId &&
+      item.status === S.AWAITING_OTP,
   )
   if (!change) throw entityReject.otpInvalid()
   change.otpVerifiedAt = new Date().toISOString()

@@ -15,6 +15,11 @@
   color: var(--theme-text);
 }
 
+.radio-group--required .radio-group__legend::after {
+  content: ' *';
+  color: var(--color-danger);
+}
+
 .radio-group--inline .radio-group__options {
   flex-direction: row;
   flex-wrap: wrap;
@@ -40,7 +45,7 @@
   inline-size: var(--space-5);
   block-size: var(--space-5);
   flex-shrink: 0;
-  border: var(--border-width-thick) solid var(--theme-border);
+  border: var(--border-width-thick) solid var(--theme-input-border);
   border-radius: var(--radius-circle);
   background-color: var(--theme-surface);
   cursor: inherit;

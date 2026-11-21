@@ -10,8 +10,9 @@ import { fixtureScores } from './fixtureScores'
 import { accreditedSeedRecords } from '../accredited/accreditedSeed'
 import { isAccreditedOpen } from '../accredited/accreditedStates'
 import { advancedSeedRecords } from '../award/advancedSeed'
-import { isAdvancedOpen } from '../award/advancedStates'
-import { resetCycleStore } from '../award/cycleStore'
+import { RESULT_EXPOSING_STATES, isAdvancedOpen } from '../award/advancedStates'
+import { findCycle, resetCycleStore } from '../award/cycleStore'
+import { applyCommitteeScenario } from '../committee/committeeScenario'
 
 const REQUEST_NUMBER_DIGITS = 6
 const RIYADH_OFFSET_MS = 3 * 60 * 60 * 1000
@@ -74,6 +75,7 @@ export function resetAssessmentsStore() {
         ...advancedSeedRecords(published),
       ]
     : []
+  applyCommitteeScenario(state.records)
   state.nextId = Math.max(MIN_NEXT_ID, ...state.records.map((record) => record.id))
   state.sequences = {}
   state.records.forEach((record) => {
@@ -107,15 +109,27 @@ export function isOpen(record) {
   return record.status === SELF_STATUSES.DRAFT
 }
 
+function isAnnouncedResult(record) {
+  return (
+    Boolean(findCycle(record.awardCycleId)?.announcedAt) &&
+    RESULT_EXPOSING_STATES.includes(record.status) &&
+    record.result !== null
+  )
+}
+
 export function exposesResult(record) {
-  if (record.path === ASSESSMENT_PATHS.ADVANCED) return false
-  if (record.path === ASSESSMENT_PATHS.ACCREDITED) return record.status === 'completed' && record.result !== null
+  if (record.path === ASSESSMENT_PATHS.ADVANCED) return isAnnouncedResult(record)
+  if (record.path === ASSESSMENT_PATHS.ACCREDITED)
+    return record.status === 'completed' && record.result !== null
   return record.result !== null
 }
 
 export function openSelfDraftsOf(entityId) {
   return allAssessments().filter(
-    (record) => record.path === ASSESSMENT_PATHS.SELF && record.entityId === Number(entityId) && isOpen(record),
+    (record) =>
+      record.path === ASSESSMENT_PATHS.SELF &&
+      record.entityId === Number(entityId) &&
+      isOpen(record),
   )
 }
 

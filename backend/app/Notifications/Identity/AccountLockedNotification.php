@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace App\Notifications\Identity;
 
 use App\Data\Notifications\InAppMessage;
+use App\Enums\Notifications\MailReason;
 use App\Enums\Notifications\NotificationCode;
 use App\Models\Identity\User;
 use App\Notifications\Channels\InAppChannel;
 use App\Notifications\Contracts\DeliversInApp;
+use App\Notifications\Messages\BrandedMailMessage;
 use App\Notifications\QueuedNotification;
 use App\Support\ValueObjects\LocalizedText;
-use Illuminate\Notifications\Messages\MailMessage;
 
 final class AccountLockedNotification extends QueuedNotification implements DeliversInApp
 {
@@ -28,12 +29,11 @@ final class AccountLockedNotification extends QueuedNotification implements Deli
         return $notifiable->id === $this->lockedUserId ? ['mail'] : [InAppChannel::class];
     }
 
-    public function toMail(User $notifiable): MailMessage
+    public function toMail(User $notifiable): BrandedMailMessage
     {
-        return (new MailMessage)
+        return BrandedMailMessage::make($notifiable, MailReason::Account)
             ->subject(__('notifications.account_locked.subject'))
-            ->greeting(__('notifications.greeting', ['name' => $notifiable->name]))
-            ->line(__('notifications.account_locked.line', ['minutes' => $this->lockedMinutes]))
+            ->line(__('notifications.account_locked.line', ['duration' => trans_choice('quantities.minutes', $this->lockedMinutes)]))
             ->line(__('notifications.account_locked.advice'));
     }
 

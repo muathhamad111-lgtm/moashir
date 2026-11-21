@@ -38,4 +38,16 @@ final class CriteriaWeightRejected extends ApiException
             'weight' => [__('errors.criteria.weight_too_small_to_distribute_detail', ['weight' => $total->toDecimal(), 'shares' => (string) $shares])],
         ]));
     }
+
+    public static function childrenExceedParent(Weight $total, Weight $capacity): self
+    {
+        return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'criteria.weights_exceed_parent', [
+            'weights' => [__('errors.criteria.weights_exceed_parent_detail', ['total' => $total->toDecimal(), 'capacity' => $capacity->toDecimal()])],
+        ], meta: ['total' => $total->toDecimal(), 'capacity' => $capacity->toDecimal()]));
+    }
+
+    public static function distributedEqually(): self
+    {
+        return new self(new ApiError(Response::HTTP_CONFLICT, 'criteria.weights_distributed_equally'));
+    }
 }

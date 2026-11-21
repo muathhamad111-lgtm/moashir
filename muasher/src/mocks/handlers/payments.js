@@ -9,27 +9,77 @@ import {
   signedInActor,
 } from '../stores/finance/financeAccess'
 import { findPayment, receiptOf } from '../stores/finance/financeState'
-import { financeReject, financeRoute, readJson } from '../stores/finance/financeRejection'
-import { listFilters, ownPayments, ownStatsOf, page } from '../stores/finance/financeQueries'
+import {
+  fieldMessage,
+  financeReject,
+  financeRoute,
+  readJson,
+} from '../stores/finance/financeRejection'
+import {
+  listFilters,
+  ownPayments,
+  ownStatsOf,
+  ownStatusCountsOf,
+  page,
+} from '../stores/finance/financeQueries'
 import { ownPaymentResource, receiptResource } from '../stores/finance/financeSerializers'
 import { checkoutOf } from '../stores/finance/checkoutObject'
 import { expireDueOrders } from '../stores/finance/paymentLifecycle'
 import {
   assertLinkedPath,
+  assertOrderable,
   authorizeKnownPurpose,
   gatewayMode,
   idempotencyKeyOf,
   openOrder,
   openOrderOf,
+  orderPricingOf,
   payingEntity,
   quoteFor,
   replayOf,
+  validatedCycle,
   validatedPurpose,
 } from '../stores/finance/paymentOrders'
-import { VERIFICATION, validatedProviderId, verifyPayment } from '../stores/finance/paymentVerification'
+import {
+  VERIFICATION,
+  validatedProviderId,
+  verifyPayment,
+} from '../stores/finance/paymentVerification'
 import { receiptFileOf } from '../stores/finance/receiptOperations'
 import { fileDownloadResponse, signedDownloadOf } from '../stores/finance/signedFiles'
 import { assertMayPurchase } from '../stores/finance/paymentHooks'
+import { requestOfPayment } from '../stores/periodic/paidRequests'
+import { pathReject } from '../stores/finance/pathRejection'
+import { pathLabelOf } from '../fixtures/pathLabels'
+import { findCycle } from '../stores/award/cycleStore'
+import { findFile, transferOf } from '../stores/finance/financeState'
+import { isChannelAvailable, availableChannels } from '../stores/finance/paymentChannelsStore'
+import { payerAccountResource, selectableAccounts } from '../stores/finance/bankAccountsStore'
+import {
+  acceptProof,
+  assertTransferAvailable,
+  isTransferForm,
+  openTransfer,
+  validatedTransfer,
+} from '../stores/finance/bankTransferSubmission'
+import { cancelCardOrder } from '../stores/finance/paymentCancellation'
+import { findEntity } from '../stores/entitiesStore'
+
+function openedRequestOf(payment) {
+  const record = payment.status === 'paid' ? requestOfPayment(payment.id) : null
+  return record
+    ? {
+        id: record.id,
+        number: record.number,
+        path: record.path,
+        pathLabel: pathLabelOf(record.path),
+      }
+    : null
+}
+
+function ownPaymentWithRequest(payment) {
+  return { ...ownPaymentResource(payment), request: openedRequestOf(payment) }
+}
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -41,30 +91,119 @@ export function boundPayment(params) {
 
 function createdResponse(payment, request, { replay = false, existing = false } = {}) {
   return envelope(
-    { ...ownPaymentResource(payment), checkout: checkoutOf(payment, requestLocale(request)) },
+    {
+      ...ownPaymentResource(payment),
+      request: null,
+      checkout: checkoutOf(payment, requestLocale(request)),
+    },
     { idempotentReplay: replay, existingOrder: existing },
     { status: existing ? 200 : 201 },
   )
 }
 
-async function createPayment({ request }) {
+function assertReplayChannel(replay, channel) {
+  if (replay && (replay.channel ?? 'electronic') !== channel)
+    throw financeReject.idempotencyKeyReused()
+}
+
+async function createCardPayment({ request }) {
   const user = signedInActor()
   authorizeCreate(user)
   const key = idempotencyKeyOf(request)
   const body = await readJson(request)
   authorizeKnownPurpose(user, body)
   const purpose = validatedPurpose(body)
+  const cycle = validatedCycle(purpose, body)
   expireDueOrders()
   const replay = replayOf(user, purpose, key)
+  assertReplayChannel(replay, 'electronic')
   if (replay) return createdResponse(replay, request, { replay: true })
   const entity = payingEntity(user)
+  if (!isChannelAvailable('electronic')) throw financeReject.channelNotAvailable()
   const mode = gatewayMode()
   assertLinkedPath(purpose)
-  const quote = quoteFor(purpose)
-  const existing = openOrderOf(entity.id, purpose)
+  const pricing = assertOrderable(purpose, cycle)
+  const existing = openOrderOf(entity.id, purpose, cycle)
+  if (existing?.channel === 'bank_transfer') throw financeReject.openOrderExists(existing)
   if (existing) return createdResponse(existing, request, { existing: true })
-  assertMayPurchase(entity, purpose)
-  return createdResponse(openOrder({ user, entity, purpose, quote, mode, key }), request)
+  assertMayPurchase(entity, purpose, cycle)
+  const quote = quoteFor(purpose, pricing)
+  return createdResponse(openOrder({ user, entity, purpose, quote, mode, key, cycle }), request)
+}
+
+function transferCreated(payment, replay) {
+  return envelope(
+    { ...ownPaymentResource(payment), request: null, checkout: null },
+    { idempotentReplay: replay, existingOrder: false },
+    { status: 201 },
+  )
+}
+
+async function createTransferPayment({ request }) {
+  const user = signedInActor()
+  authorizeCreate(user)
+  const key = idempotencyKeyOf(request)
+  const form = await request.formData()
+  const purposeField = { purpose: form.get('purpose') }
+  authorizeKnownPurpose(user, purposeField)
+  const purpose = validatedPurpose(purposeField)
+  const cycle = validatedCycle(purpose, { awardCycleId: form.get('awardCycleId') })
+  const replay = replayOf(user, purpose, key)
+  assertReplayChannel(replay, 'bank_transfer')
+  if (replay) return transferCreated(replay, true)
+  const order = validatedTransfer(form)
+  const entity = payingEntity(user)
+  const account = assertTransferAvailable(order)
+  assertLinkedPath(purpose)
+  const pricing = assertOrderable(purpose, cycle)
+  expireDueOrders()
+  const existing = openOrderOf(entity.id, purpose, cycle)
+  if (existing) throw financeReject.openOrderExists(existing)
+  assertMayPurchase(entity, purpose, cycle)
+  const quote = quoteFor(purpose, pricing)
+  const proof = await acceptProof(order.proof)
+  return transferCreated(
+    openTransfer({ user, entity, purpose, quote, key, account, proof, cycle }),
+    false,
+  )
+}
+
+function createPayment(info) {
+  return isTransferForm(info.request) ? createTransferPayment(info) : createCardPayment(info)
+}
+
+const QUOTED_PURPOSES = ['self', 'accredited', 'award', 'bag']
+
+function quotedPricing(query) {
+  const purpose = query.get('purpose')
+  if (!purpose) return null
+  if (!QUOTED_PURPOSES.includes(purpose))
+    throw financeReject.validation({ purpose: [fieldMessage('choice')] })
+  if (purpose !== 'award') return orderPricingOf(purpose, null)
+  const cycle = findCycle(Number(query.get('awardCycleId')))
+  if (!query.get('awardCycleId'))
+    throw financeReject.validation({ awardCycleId: [fieldMessage('award_cycle_required')] })
+  if (!cycle) throw pathReject.cycleNotFound()
+  return orderPricingOf(purpose, cycle)
+}
+
+function checkoutOptionsOf(user, query) {
+  const channels = availableChannels()
+  const entity = user.entityId === null ? null : findEntity(user.entityId)
+  return {
+    channels,
+    bankAccounts: channels.includes('bank_transfer')
+      ? selectableAccounts().map(payerAccountResource)
+      : [],
+    transferNote: { unifiedNumber: entity?.unifiedNumber ?? null },
+    pricing: quotedPricing(query),
+  }
+}
+
+function ownProofOf(payment) {
+  const transfer = transferOf(payment.id)
+  if (!transfer) throw financeReject.notFound()
+  return findFile(transfer.proofFileId)
 }
 
 function issuedReceipt(payment) {
@@ -81,13 +220,48 @@ export const paymentsHandlers = [
       authorizeOwnList(user)
       const query = new URL(request.url).searchParams
       expireDueOrders()
-      const payments = ownPayments(user, listFilters(query, 'mine'))
+      const filters = listFilters(query, 'mine', { searchable: true })
+      const payments = ownPayments(user, filters)
+      const counted = ownPayments(user, { ...filters, status: '' })
       const { items, pagination } = page(payments, query)
-      return envelope(items.map(ownPaymentResource), { pagination, stats: ownStatsOf(payments) })
+      return envelope(items.map(ownPaymentWithRequest), {
+        pagination,
+        stats: ownStatsOf(payments),
+        statusCounts: ownStatusCountsOf(counted),
+      })
     }),
   ),
 
   http.post('/api/v1/payments', financeRoute(createPayment)),
+
+  http.get(
+    '/api/v1/payments/checkout-options',
+    financeRoute(({ request }) => {
+      const user = signedInActor()
+      authorizeCreate(user)
+      return envelope(checkoutOptionsOf(user, new URL(request.url).searchParams))
+    }),
+  ),
+
+  http.post(
+    '/api/v1/payments/:payment/cancel',
+    financeRoute(({ params }) => {
+      const user = signedInActor()
+      const payment = boundPayment(params)
+      authorizeVerify(user, payment)
+      return envelope(ownPaymentWithRequest(cancelCardOrder(payment)))
+    }),
+  ),
+
+  http.post(
+    '/api/v1/payments/:payment/bank-transfer/proof/download',
+    financeRoute(({ params }) => {
+      const user = signedInActor()
+      const payment = boundPayment(params)
+      authorizeViewOwn(user, payment)
+      return envelope(signedDownloadOf(user, ownProofOf(payment)))
+    }),
+  ),
 
   http.get(
     '/api/v1/payments/:payment',
@@ -96,7 +270,7 @@ export const paymentsHandlers = [
       const payment = boundPayment(params)
       authorizeViewOwn(user, payment)
       expireDueOrders()
-      return envelope(ownPaymentResource(payment))
+      return envelope(ownPaymentWithRequest(payment))
     }),
   ),
 

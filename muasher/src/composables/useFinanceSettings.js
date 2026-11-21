@@ -6,7 +6,12 @@ import { useAuthStore } from '@/stores/auth'
 import { financeSettingsService } from '@/services/financeSettingsService'
 import { logger } from '@/utils/logger'
 import { errorCodeOf, financeErrorMessage, firstFieldErrors } from '@/utils/payments/financeErrors'
-import { changedSettings, editableFieldsOf, financeSettingsSchema, formValuesOf } from '@/utils/finance/financeSettingsForm'
+import {
+  changedSettings,
+  editableFieldsOf,
+  financeSettingsSchema,
+  formValuesOf,
+} from '@/utils/finance/financeSettingsForm'
 
 const REASON_REQUIRED = 'reason_required'
 const DEFAULT_LIMITS = { min: 5, max: 60 }
@@ -24,7 +29,9 @@ export function useFinanceSettings() {
 
   const editable = computed(() => editableFieldsOf(settings.value))
   const limits = computed(() => settings.value?.orderValidityLimits ?? DEFAULT_LIMITS)
-  const form = useForm({ validationSchema: computed(() => financeSettingsSchema(i18n.t, limits.value, editable.value)) })
+  const form = useForm({
+    validationSchema: computed(() => financeSettingsSchema(i18n.t, limits.value, editable.value)),
+  })
 
   function apply(data) {
     settings.value = data
@@ -78,5 +85,17 @@ export function useFinanceSettings() {
     return saved
   }
 
-  return { status, errorMessage, settings, editable, limits, form, saving, reasonOpen, load, submit, confirmReason }
+  return {
+    status,
+    errorMessage,
+    settings,
+    editable,
+    limits,
+    form,
+    saving,
+    reasonOpen,
+    load,
+    submit,
+    confirmReason,
+  }
 }

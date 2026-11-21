@@ -1,13 +1,28 @@
 import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
 import { clearMockFault, forceMockFault } from './support/mockFaults'
+import { applyListFilters, searchList } from './support/listFilters'
 
-const SYSTEM_ADMIN = { id: 2, roles: ['system_admin'], name: { ar: 'منيرة بنت خالد العتيبي', en: 'Munira Al-Otaibi' } }
-const SUPER_ADMIN = { id: 1, roles: [], superAdmin: true, name: { ar: 'مدير النظام الرئيسي', en: 'Super Admin' } }
+const SYSTEM_ADMIN = {
+  id: 2,
+  roles: ['system_admin'],
+  name: { ar: 'منيرة بنت خالد العتيبي', en: 'Munira Al-Otaibi' },
+}
+const SUPER_ADMIN = {
+  id: 1,
+  roles: [],
+  superAdmin: true,
+  name: { ar: 'مدير النظام الرئيسي', en: 'Super Admin' },
+}
 const FOLLOWER = { id: 9, roles: ['request_follower'], name: 'Laura Bennett' }
-const FINANCE = { id: 31, roles: ['finance_officer'], name: { ar: 'سعاد الشمري', en: 'Suad Al-Shammari' } }
+const FINANCE = {
+  id: 31,
+  roles: ['finance_officer'],
+  name: { ar: 'سعاد الشمري', en: 'Suad Al-Shammari' },
+}
 const REASON = 'Formal request received from the board of the entity.'
-const ERASURE_REASON = 'Approved erasure request of the entity recorded by the data protection officer.'
+const ERASURE_REASON =
+  'Approved erasure request of the entity recorded by the data protection officer.'
 
 function isEn(testInfo) {
   return testInfo.project.name === 'chromium-en-ltr'
@@ -32,21 +47,37 @@ function checkbox(scope, name) {
   return scope.locator(`label.checkbox:has([name="${name}"])`)
 }
 
-async function rowAction(page, rowText, actionName) {
-  await rows(page).filter({ hasText: rowText }).first().locator('.actions-dropdown > button').click()
-  await page.getByRole('menuitem', { name: actionName }).click()
-}
+test('the entities list shows the last accredited assessment and sorts by its percent', async ({
+  page,
+}, testInfo) => {
+  await seed(page, testInfo)
+  await page.goto('/admin/entities')
+  await expect(rows(page)).toHaveCount(10)
+  await expect(
+    page
+      .locator('.table th')
+      .filter({ hasText: isEn(testInfo) ? 'Last accredited' : 'آخر تقييم معتمد' }),
+  ).toHaveCount(1)
+  await applyListFilters(page, { 'entity-sort': '-last_assessment_percent' })
+  const percents = rows(page).locator('.entity-last-assessment__percent')
+  await expect(percents.first()).toHaveText('77.15%')
+  await expect(percents.nth(1)).toHaveText('74.54%')
+  await expect(rows(page).last().locator('.entity-last-assessment--none')).toBeVisible()
+})
 
 test('the System Administrator lists, filters and exports entities', async ({ page }, testInfo) => {
   await seed(page, testInfo)
   await page.goto('/admin/entities')
   await expect(rows(page)).toHaveCount(10)
-  await expect(page.locator('.stats-card__value').first()).toHaveText('10')
-  await page.screenshot({ path: `test-results/entities-admin-list-${suffix(testInfo)}.png`, fullPage: true })
+  await expect(page.locator('.stats-card__value').first()).toHaveText('11')
+  await page.screenshot({
+    path: `test-results/entities-admin-list-${suffix(testInfo)}.png`,
+    fullPage: true,
+  })
 
-  await page.locator('.toolbar__search input').fill(isEn(testInfo) ? 'Ehsan' : 'احسان')
+  await searchList(page, isEn(testInfo) ? 'Ehsan' : 'احسان')
   await expect(rows(page)).toHaveCount(1)
-  await page.locator('.toolbar__search input').fill('')
+  await searchList(page, '')
   await expect(rows(page)).toHaveCount(10)
 
   const download = page.waitForEvent('download')
@@ -54,38 +85,58 @@ test('the System Administrator lists, filters and exports entities', async ({ pa
   expect((await download).suggestedFilename()).toMatch(/^entities-\d{8}-\d{6}\.csv$/)
 })
 
-test('deactivation needs a reason and reactivation follows the separate permission', async ({ page }, testInfo) => {
+test('deactivation needs a reason and reactivation follows the separate permission', async ({
+  page,
+}, testInfo) => {
   await seed(page, testInfo)
   await page.goto('/admin/entities')
-  await rowAction(page, isEn(testInfo) ? 'Athar' : 'أثر', /^\s*(Deactivate|إيقاف الحساب)\s*$/)
+  await rows(page)
+    .filter({ hasText: isEn(testInfo) ? 'Athar' : 'أثر' })
+    .first()
+    .locator('.row-actions [data-action="deactivate"]')
+    .click()
   await dialog(page).locator('[name="reason"]').fill('short')
   await dialog(page).locator('button[type="submit"]').click()
   await expect(dialog(page).locator('.field__error')).toBeVisible()
   await dialog(page).locator('[name="reason"]').fill(REASON)
   await dialog(page).locator('button[type="submit"]').click()
   await expect(page.locator('.toast--success')).toBeVisible()
-  await expect(rows(page).filter({ hasText: isEn(testInfo) ? 'Athar' : 'أثر' }).locator('.badge--danger')).toBeVisible()
+  await expect(
+    rows(page)
+      .filter({ hasText: isEn(testInfo) ? 'Athar' : 'أثر' })
+      .locator('.badge--danger'),
+  ).toBeVisible()
 })
 
-test('deleting an entity lists its open requests, re-shows a stale list and freezes them', async ({ page }, testInfo) => {
+test('deleting an entity lists its open requests, re-shows a stale list and freezes them', async ({
+  page,
+}, testInfo) => {
   await seed(page, testInfo)
   await useTallViewport(page)
   await page.goto('/admin/entities/6002')
   await expect(page.locator('.entity-record__title')).toBeVisible()
   await page.getByRole('button', { name: /^\s*(Delete|حذف)\s*$/ }).click()
   await expect(dialog(page).locator('.open-requests__row')).toHaveCount(2)
-  await page.screenshot({ path: `test-results/entities-delete-dialog-${suffix(testInfo)}.png`, fullPage: true })
+  await page.screenshot({
+    path: `test-results/entities-delete-dialog-${suffix(testInfo)}.png`,
+    fullPage: true,
+  })
 
   await dialog(page).locator('[name="reason"]').fill(REASON)
   await dialog(page).locator('button[type="submit"]').click()
-  await expect(checkbox(dialog(page), 'confirmed').locator('xpath=..').locator('.field__error')).toBeVisible()
+  await expect(
+    checkbox(dialog(page), 'confirmed').locator('xpath=..').locator('.field__error'),
+  ).toBeVisible()
   await checkbox(dialog(page), 'confirmed').click()
   await dialog(page).locator('button[type="submit"]').click()
 
   await expect(dialog(page).locator('.entity-delete__stale')).toBeVisible()
   await expect(dialog(page).locator('.open-requests__row')).toHaveCount(3)
   await expect(dialog(page).locator('[name="confirmed"]')).not.toBeChecked()
-  await page.screenshot({ path: `test-results/entities-delete-stale-${suffix(testInfo)}.png`, fullPage: true })
+  await page.screenshot({
+    path: `test-results/entities-delete-stale-${suffix(testInfo)}.png`,
+    fullPage: true,
+  })
   await checkbox(dialog(page), 'confirmed').click()
   await dialog(page).locator('button[type="submit"]').click()
 
@@ -93,27 +144,41 @@ test('deleting an entity lists its open requests, re-shows a stale list and free
   await expect(page.locator('.entity-record__notice')).toBeVisible()
   await expect(page.locator('.entity-record__heading .frozen-badge')).toBeVisible()
   await expect(page.locator('.open-requests__row .frozen-badge')).toHaveCount(3)
-  await page.screenshot({ path: `test-results/entities-frozen-record-${suffix(testInfo)}.png`, fullPage: true })
+  await page.screenshot({
+    path: `test-results/entities-frozen-record-${suffix(testInfo)}.png`,
+    fullPage: true,
+  })
 
   await page.locator('.entity-record__back').click()
   await expect(page).toHaveURL(/\/admin\/entities\/deleted$/)
   await expect(rows(page)).toHaveCount(3)
-  await page.screenshot({ path: `test-results/entities-deleted-${suffix(testInfo)}.png`, fullPage: true })
+  await page.screenshot({
+    path: `test-results/entities-deleted-${suffix(testInfo)}.png`,
+    fullPage: true,
+  })
 })
 
-test('a deleted entity is restored from the Deleted entities section', async ({ page }, testInfo) => {
+test('a deleted entity is restored from the Deleted entities section', async ({
+  page,
+}, testInfo) => {
   await seed(page, testInfo)
   await page.goto('/admin/entities/deleted')
   await expect(rows(page)).toHaveCount(2)
   await expect(page.locator('.entities-admin__notice')).toBeVisible()
-  await rowAction(page, isEn(testInfo) ? 'Iemar' : 'إعمار', /^\s*(Restore|استعادة)\s*$/)
+  await rows(page)
+    .filter({ hasText: isEn(testInfo) ? 'Iemar' : 'إعمار' })
+    .first()
+    .getByRole('button', { name: /^(Restore|استعادة)/ })
+    .click()
   await dialog(page).locator('[name="reason"]').fill(REASON)
   await dialog(page).locator('button[type="submit"]').click()
   await expect(page.locator('.toast--success')).toBeVisible()
   await expect(rows(page)).toHaveCount(1)
 })
 
-test('only the Super Admin deletes permanently, with disclaimer, typed reference and reason', async ({ page }, testInfo) => {
+test('only the Super Admin deletes permanently, with disclaimer, typed reference and reason', async ({
+  page,
+}, testInfo) => {
   await seed(page, testInfo)
   await page.goto('/admin/entities/7003')
   await expect(page.locator('.entity-record__notice')).toBeVisible()
@@ -130,13 +195,18 @@ test('only the Super Admin deletes permanently, with disclaimer, typed reference
   await expect(dialog(page).locator('.field--error [name="confirmation"]')).toBeVisible()
   await checkbox(dialog(page), 'disclaimerAcknowledged').click()
   await dialog(page).locator('[name="confirmation"]').fill('ent-007003')
-  await page.screenshot({ path: `test-results/entities-permanent-delete-${suffix(testInfo)}.png`, fullPage: true })
+  await page.screenshot({
+    path: `test-results/entities-permanent-delete-${suffix(testInfo)}.png`,
+    fullPage: true,
+  })
   await dialog(page).locator('button[type="submit"]').click()
   await expect(page).toHaveURL(/\/admin\/entities\/deleted$/)
   await expect(rows(page)).toHaveCount(1)
 })
 
-test('actions follow the permissions: the follower views only, finance sees contact data only', async ({ page }, testInfo) => {
+test('actions follow the permissions: the follower views only, finance sees contact data only', async ({
+  page,
+}, testInfo) => {
   await seed(page, testInfo, FOLLOWER)
   await page.goto('/admin/entities/5001')
   await expect(page.locator('.entity-record__title')).toBeVisible()
@@ -149,7 +219,9 @@ test('actions follow the permissions: the follower views only, finance sees cont
   await seed(page, testInfo, FINANCE)
   await page.reload()
   await expect(rows(page)).toHaveCount(10)
-  await expect(page.locator('.table__head')).toContainText(isEn(testInfo) ? 'Official e-mail' : 'البريد الرسمي')
+  await expect(page.locator('.table__head')).toContainText(
+    isEn(testInfo) ? 'Official e-mail' : 'البريد الرسمي',
+  )
   await expect(page.locator('.table__head')).not.toContainText(isEn(testInfo) ? 'Type' : 'النوع')
 })
 
@@ -157,49 +229,61 @@ test('the approver applies a verified official e-mail change', async ({ page }, 
   await seed(page, testInfo)
   await page.goto('/admin/entities/email-changes')
   await expect(rows(page)).toHaveCount(1)
-  await page.screenshot({ path: `test-results/entities-email-changes-${suffix(testInfo)}.png`, fullPage: true })
-  await rows(page).first().getByRole('button', { name: /Approve|اعتماد/ }).click()
-  await dialog(page).getByRole('button', { name: /Approve|اعتماد/ }).click()
+  await page.screenshot({
+    path: `test-results/entities-email-changes-${suffix(testInfo)}.png`,
+    fullPage: true,
+  })
+  await rows(page)
+    .first()
+    .getByRole('button', { name: /Approve|اعتماد/ })
+    .click()
+  await dialog(page)
+    .getByRole('button', { name: /Approve|اعتماد/ })
+    .click()
   await expect(page.locator('.toast--success')).toBeVisible()
   await expect(page.locator('.empty-state')).toBeVisible()
 })
 
-test('a data-subject request is recorded and fulfilled', async ({ page }, testInfo) => {
+test('staff approve a registration under review and reject a pending one, with ✓ / ✗ in the row', async ({
+  page,
+}, testInfo) => {
   await seed(page, testInfo)
-  await page.goto('/admin/privacy-requests')
-  await expect(rows(page)).toHaveCount(1)
-  await page.getByRole('button', { name: /New request|طلب جديد/ }).click()
-  await dialog(page).locator('.select2-search__input').click()
-  await expect(dialog(page).locator('.select2-search__badge').first()).toBeVisible()
-  await dialog(page).locator('.select2-search__input').fill('ENT-006005')
-  await page.getByRole('option', { name: /ENT-006005/ }).click()
-  await dialog(page).locator('[name="kind"]').selectOption('access')
-  await dialog(page).locator('[name="details"]').fill('Formal letter asking for a copy of the personal data held by the platform.')
+  await page.goto('/admin/entities')
+  const review = rows(page).filter({ hasText: isEn(testInfo) ? 'Ghiras' : 'غراس' })
+  await expect(review.locator('.badge')).toContainText(
+    isEn(testInfo) ? 'Pending review' : 'بانتظار المراجعة',
+  )
+  await review.locator('.row-actions [data-action="approve"]').click()
   await dialog(page).locator('button[type="submit"]').click()
   await expect(page.locator('.toast--success')).toBeVisible()
-  await expect(rows(page)).toHaveCount(2)
-  await rowAction(page, 'Formal letter', /Mark fulfilled|تمت التلبية/)
+  await expect(review.locator('.row-actions [data-action="deactivate"]')).toBeVisible()
+
+  const pending = rows(page).filter({ hasText: isEn(testInfo) ? 'Suqya' : 'سقيا' })
+  await pending.locator('.row-actions [data-action="reject"]').click()
+  await dialog(page).locator('[name="reason"]').fill(REASON)
   await dialog(page).locator('button[type="submit"]').click()
-  await expect(rows(page)).toHaveCount(1)
+  await expect(pending.locator('.badge')).toContainText(isEn(testInfo) ? 'Rejected' : 'مرفوض')
+  await expect(pending.locator('.row-actions [data-action="approve"]')).toBeVisible()
 })
 
-test('cities are added under a region and deactivated instead of deleted', async ({ page }, testInfo) => {
+test('cities are a fixed list: each row only switches the city on or off', async ({
+  page,
+}, testInfo) => {
   await seed(page, testInfo)
   await page.goto('/admin/settings/cities')
   await expect(rows(page).first()).toBeVisible()
-  await page.getByRole('button', { name: /Add city|إضافة مدينة/ }).click()
-  await dialog(page).locator('[name="regionId"]').selectOption('7')
-  await dialog(page).locator('[name="name.ar"]').fill('البدع')
-  await dialog(page).locator('[name="name.en"]').fill('Al-Bad')
-  await dialog(page).locator('button[type="submit"]').click()
+  await expect(page.getByRole('button', { name: /Add city|إضافة مدينة/ })).toHaveCount(0)
+  await expect(rows(page).first().locator('.dropdown-menu')).toHaveCount(0)
+  const toggle = rows(page).first().getByRole('switch')
+  await expect(toggle).toBeChecked()
+  await rows(page).first().locator('.toggle-switch__track').click()
   await expect(page.locator('.toast--success')).toBeVisible()
-  await page.locator('.toolbar__search input').fill(isEn(testInfo) ? 'Al-Bad' : 'البدع')
-  await expect(rows(page)).toHaveCount(1)
-  await rowAction(page, 'al_bad', /^\s*(Deactivate|إيقاف)\s*$/)
-  await expect(rows(page).first().locator('.badge--muted')).toBeVisible()
+  await expect(rows(page).first().getByRole('switch')).not.toBeChecked()
 })
 
-test('a forced list error shows the error state and the retry reloads the entities', async ({ page }, testInfo) => {
+test('a forced list error shows the error state and the retry reloads the entities', async ({
+  page,
+}, testInfo) => {
   await seed(page, testInfo)
   await forceMockFault(page, { method: 'GET', path: '/api/v1/entities', status: 503 })
   await page.goto('/admin/entities')

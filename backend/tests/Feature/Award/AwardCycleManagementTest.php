@@ -27,7 +27,7 @@ it('creates a draft cycle with the settings defaults and makes the creating secr
     $response = switchTo($secretary)->postJson('/api/v1/award/cycles', cyclePayload($version, $region))->assertCreated()
         ->assertJsonPath('data.status', 'draft')
         ->assertJsonPath('data.year', 2026)
-        ->assertJsonPath('data.scale_kind', 'of_10')
+        ->assertJsonPath('data.scale_kind', null)
         ->assertJsonPath('data.conditions.min_entity_age_years', 3)
         ->assertJsonPath('data.conditions.disqualification_score', '60.00')
         ->assertJsonPath('data.initial_review_sla_days', 14)
@@ -42,13 +42,12 @@ it('creates a draft cycle with the settings defaults and makes the creating secr
     expect(Audit::query()->where('event', AuditEvent::CycleCreated->value)->where('auditable_id', $cycle->id)->exists())->toBeTrue();
 
     switchTo(systemAdmin())->postJson('/api/v1/award/cycles', cyclePayload($version, $region, [
-        'scale_kind' => 'relative',
         'min_entity_age_years' => 5,
         'disqualification_score' => '72.5',
         'initial_review_sla_days' => 10,
         'participation_certificate_enabled' => true,
     ]))->assertCreated()
-        ->assertJsonPath('data.scale_kind', 'relative')
+        ->assertJsonPath('data.scale_kind', null)
         ->assertJsonPath('data.conditions.min_entity_age_years', 5)
         ->assertJsonPath('data.conditions.disqualification_score', '72.50')
         ->assertJsonPath('data.participation_certificate_enabled', true)
@@ -233,7 +232,7 @@ it('returns the default conditions and the staff candidates to the cycle manager
     $admin = systemAdmin();
 
     switchTo($admin)->getJson('/api/v1/award/cycles/default-conditions')->assertOk()
-        ->assertExactJson(['data' => ['min_entity_age_years' => 3, 'disqualification_score' => '60.00', 'initial_review_sla_days' => 14], 'meta' => [], 'errors' => null]);
+        ->assertExactJson(['data' => ['min_entity_age_years' => 3, 'disqualification_score' => '60.00', 'initial_review_sla_days' => 14, 'entry_fee' => '0.00'], 'meta' => [], 'errors' => null]);
     test()->getJson('/api/v1/award/cycles/candidates?role=initial_assessor')->assertOk()->assertJsonPath('data.0.id', $assessor->id)->assertJsonMissingPath('data.0.email');
     test()->getJson('/api/v1/award/cycles/candidates?role=filtering_officer')->assertOk()->assertJsonPath('data.0.id', $officer->id);
     test()->getJson('/api/v1/award/cycles/candidates?role=entity')->assertUnprocessable();

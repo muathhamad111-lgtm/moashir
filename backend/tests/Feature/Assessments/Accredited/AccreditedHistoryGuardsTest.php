@@ -47,7 +47,7 @@ it('keeps the feedback versions: a row is only superseded once', function (): vo
         ->toThrow(AppendOnlyViolation::class);
 });
 
-it('enforces one open accredited request per entity and one request per payment in the database', function (): void {
+it('enforces one open accredited request per entity in the database and allows a free request without a payment', function (): void {
     publishedAccreditedCriteria();
     $assessment = openedAccreditedRequest();
     $payment = Payment::query()->findOrFail($assessment->payment_id);
@@ -63,7 +63,6 @@ it('enforces one open accredited request per entity and one request per payment 
         'created_at' => now(),
         'updated_at' => now(),
     ])))->toThrow(QueryException::class, 'assessments_one_open_accredited')
-        ->and(fn () => DB::transaction(fn () => DB::table('assessments')->where('id', $assessment->id)->update(['payment_id' => null])))
-        ->toThrow(QueryException::class, 'assessments_payment_check')
-        ->and($payment->id)->toBe($assessment->payment_id);
+        ->and($payment->id)->toBe($assessment->payment_id)
+        ->and(DB::table('assessments')->where('id', $assessment->id)->update(['payment_id' => null]))->toBe(1);
 });

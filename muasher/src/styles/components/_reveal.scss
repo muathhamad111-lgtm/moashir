@@ -1,0 +1,36 @@
+@use '../tokens' as *;
+@use '../mixins' as *;
+
+@keyframes reveal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--motion-rise));
+  }
+}
+
+@include motion-safe {
+  .is-reveal-pending:not(.reveal-stagger),
+  .reveal-stagger.is-reveal-pending > * {
+    opacity: 0;
+  }
+
+  .is-revealed:not(.reveal-stagger),
+  .reveal-stagger.is-revealed > * {
+    animation: reveal-rise var(--motion-reveal) var(--ease-brand) backwards;
+  }
+
+  .reveal-stagger.is-revealed > * {
+    @for $index from 2 through $motion-reveal-children {
+      &:nth-child(#{$index}) {
+        animation-delay: calc(var(--reveal-step, var(--motion-stagger)) * #{$index - 1});
+      }
+    }
+  }
+}
+
+@media print {
+  .is-reveal-pending,
+  .reveal-stagger.is-reveal-pending > * {
+    opacity: 1;
+  }
+}

@@ -48,19 +48,30 @@ describe('caseMapping — the single camelCase ⇄ snake_case boundary', () => {
   })
 
   it('maps status values between internal tokens and canonical values', () => {
-    expect(toWire({ status: 'under-review', filteringStatus: 'awaiting-secretary-approval' })).toEqual({
+    expect(
+      toWire({ status: 'under-review', filteringStatus: 'awaiting-secretary-approval' }),
+    ).toEqual({
       status: 'under_review',
       filtering_status: 'awaiting_secretary_approval',
     })
-    expect(fromWire({ status: 'needs_completion', secretary_status: ['in_progress', 'approved'] })).toEqual({
+    expect(
+      fromWire({ status: 'needs_completion', secretary_status: ['in_progress', 'approved'] }),
+    ).toEqual({
       status: 'needs-completion',
       secretaryStatus: ['in-progress', 'approved'],
     })
-    expect(toWire({ 'filter[status]': 'under-review' })).toEqual({ 'filter[status]': 'under_review' })
+    expect(toWire({ 'filter[status]': 'under-review' })).toEqual({
+      'filter[status]': 'under_review',
+    })
   })
 
   it('never rewrites values of non-status keys', () => {
-    const internal = { slug: 'social-impact', code: 'csrf.token_mismatch', role: 'system_admin', token: 'brand_default' }
+    const internal = {
+      slug: 'social-impact',
+      code: 'csrf.token_mismatch',
+      role: 'system_admin',
+      token: 'brand_default',
+    }
     expect(fromWire(toWire(internal))).toEqual(internal)
     expect(toWire(internal).slug).toBe('social-impact')
   })
@@ -68,6 +79,14 @@ describe('caseMapping — the single camelCase ⇄ snake_case boundary', () => {
   it('keeps the keys of opaque maps (role matrix) verbatim', () => {
     const wire = { matrix: { system_admin: ['users.view'], request_follower: [] } }
     expect(fromWire(wire)).toEqual(wire)
+  })
+
+  it('keeps the audited old and new values verbatim', () => {
+    const wire = {
+      old_values: { governance_grade: 50, status: 'pending_verification' },
+      new_values: { governance_grade: 70, status: 'active' },
+    }
+    expect(fromWire(wire)).toEqual({ oldValues: wire.old_values, newValues: wire.new_values })
   })
 
   it('keeps the checkout metadata keys verbatim in both directions', () => {
@@ -108,8 +127,16 @@ describe('caseMapping — the single camelCase ⇄ snake_case boundary', () => {
   })
 
   it('bridges the criteria enum values (evaluation type, scale kind) like statuses', () => {
-    const internal = { evaluationType: 'guiding-points', scaleKind: 'of-10', points: [{ scaleKind: 'relative' }] }
-    const wire = { evaluation_type: 'guiding_points', scale_kind: 'of_10', points: [{ scale_kind: 'relative' }] }
+    const internal = {
+      evaluationType: 'guiding-points',
+      scaleKind: 'of-10',
+      points: [{ scaleKind: 'relative' }],
+    }
+    const wire = {
+      evaluation_type: 'guiding_points',
+      scale_kind: 'of_10',
+      points: [{ scale_kind: 'relative' }],
+    }
     expect(toWire(internal)).toEqual(wire)
     expect(fromWire(wire)).toEqual(internal)
     expect(fromWire({ evaluation_type: 'direct' })).toEqual({ evaluationType: 'direct' })
@@ -117,7 +144,11 @@ describe('caseMapping — the single camelCase ⇄ snake_case boundary', () => {
 
   it('leaves canonical values of other criteria enums untouched', () => {
     const wire = { group: 'creativity_learning', scope: 'reset_open', problem: 'weights_mismatch' }
-    expect(fromWire(wire)).toEqual({ group: 'creativity_learning', scope: 'reset_open', problem: 'weights_mismatch' })
+    expect(fromWire(wire)).toEqual({
+      group: 'creativity_learning',
+      scope: 'reset_open',
+      problem: 'weights_mismatch',
+    })
   })
 
   it('recognises the bridged enum keys', () => {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Identity;
 
+use App\Contracts\Identity\OneTimeCode;
 use App\Enums\Identity\OtpChannel;
 use App\Enums\Identity\OtpPurpose;
 use Illuminate\Database\Eloquent\Model;
@@ -26,7 +27,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $ip_address
  * @property-read User $user
  */
-final class OtpCode extends Model
+final class OtpCode extends Model implements OneTimeCode
 {
     protected $fillable = [
         'challenge_id', 'user_id', 'channel', 'purpose', 'code_hash', 'destination_masked',
@@ -67,5 +68,15 @@ final class OtpCode extends Model
     public function isExpired(): bool
     {
         return $this->expires_at->isPast();
+    }
+
+    public function failedAttempts(): int
+    {
+        return $this->attempts;
+    }
+
+    public function codeHash(): string
+    {
+        return $this->code_hash;
     }
 }

@@ -6,14 +6,18 @@ namespace App\Http\Requests\Entities;
 
 use App\Data\Entities\EntityRegistrationData;
 use App\Enums\Identity\Locale;
+use App\Enums\Identity\RoleKey;
 use App\Enums\Identity\TermsKind;
 use App\Exceptions\Entities\RegistrationRejected;
 use App\Models\Identity\TermsVersion;
+use App\Rules\SaudiNationalId;
 use App\Services\Identity\CurrentTermsVersions;
+use App\Services\Identity\NationalIdRequirement;
 use App\Services\Identity\PasswordPolicy;
 use App\Support\Entities\EntityProfileInput;
 use App\Support\ScalarValue;
 use App\Support\ValueObjects\EmailAddress;
+use App\Support\ValueObjects\NationalId;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -26,20 +30,35 @@ final class RegisterEntityRequest extends FormRequest
     /**
      * @return array<string, mixed>
      */
-    public function rules(PasswordPolicy $passwords, CurrentTermsVersions $terms): array
+    public function rules(PasswordPolicy $passwords, CurrentTermsVersions $terms, NationalIdRequirement $nationalId): array
     {
         $this->currentTerms = $terms->of(TermsKind::Terms) ?? throw RegistrationRejected::termsUnavailable();
         $this->currentPrivacy = $terms->of(TermsKind::Privacy);
 
         return [
             ...EntityProfileInput::rules($this->input('region_id')),
+            'name.en' => ['required', 'string', 'max:200'],
+            'unified_number' => EntityProfileInput::unifiedNumberRules(null),
+            'license_number' => EntityProfileInput::licenseNumberRules(null),
+            'founded_on' => EntityProfileInput::foundedOnRules(),
             'official_email' => ['required', 'string', 'email:filter', 'max:254'],
+            'email_verification_token' => ['nullable', 'string', 'max:128'],
             'password' => $passwords->rules(),
             'terms_version_id' => ['required', 'integer', $this->mustBe($this->currentTerms, 'terms_version_id')],
             'privacy_version_id' => [$this->currentPrivacy instanceof TermsVersion ? 'required' : 'prohibited', 'integer', $this->mustBe($this->currentPrivacy, 'privacy_version_id')],
             'terms_accepted' => ['accepted'],
             'marketing_consent' => ['sometimes', 'boolean'],
+            'national_id' => $nationalId->isRequiredForRoles([RoleKey::Entity]) ? ['required', 'string', 'max:20', new SaudiNationalId] : ['exclude'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $foundingYear = EntityProfileInput::foundingYearOf($this->input('founded_on'));
+
+        if ($foundingYear !== null) {
+            $this->merge(['founding_year' => $foundingYear]);
+        }
     }
 
     public function registration(): EntityRegistrationData
@@ -54,7 +73,13 @@ final class RegisterEntityRequest extends FormRequest
             $this->acceptedTermsVersionIds(),
             $this->boolean('marketing_consent'),
             Locale::tryFrom(app()->getLocale()) ?? Locale::Arabic,
+            isset($validated['national_id']) ? new NationalId(ScalarValue::string($validated['national_id'])) : null,
         );
+    }
+
+    public function emailVerificationToken(): ?string
+    {
+        return $this->filled('email_verification_token') ? $this->string('email_verification_token')->toString() : null;
     }
 
     /**

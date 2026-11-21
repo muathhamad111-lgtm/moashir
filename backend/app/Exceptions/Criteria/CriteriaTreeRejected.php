@@ -37,4 +37,11 @@ final class CriteriaTreeRejected extends ApiException
             "nodes.{$index}.id" => [__('errors.criteria.node_not_in_version')],
         ]));
     }
+
+    public static function notAChild(int $index): self
+    {
+        return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'criteria.node_not_a_child', [
+            "weights.{$index}.id" => [__('errors.criteria.node_not_a_child')],
+        ]));
+    }
 }

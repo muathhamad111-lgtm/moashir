@@ -55,4 +55,61 @@ describe('DataTable', () => {
     await wrapper.find('.error-state__retry button').trigger('click')
     expect(wrapper.emitted('retry')).toHaveLength(1)
   })
+
+  it('marks only the actions column so it takes the width of its buttons', () => {
+    const wrapper = mount(DataTable, {
+      props: {
+        columns: [
+          { key: 'name', label: 'Name' },
+          { key: 'actions', label: 'Actions' },
+        ],
+        items: [{ id: 1, name: 'A' }],
+        status: 'success',
+        emptyTitle: 'Empty',
+      },
+      global: createTestGlobals(),
+    })
+    const marked = (selector) =>
+      wrapper.findAll(selector).map((cell) => cell.classes().includes('table__cell--actions'))
+    expect(marked('th')).toEqual([false, true])
+    expect(marked('tbody td')).toEqual([false, true])
+  })
+
+  it('keeps date columns on one line', () => {
+    const wrapper = mount(DataTable, {
+      props: {
+        columns: [
+          { key: 'name', label: 'Name' },
+          { key: 'createdAt', label: 'Created' },
+        ],
+        items: [{ id: 1, name: 'A', createdAt: '2026-11-14' }],
+        status: 'success',
+        emptyTitle: 'Empty',
+      },
+      global: createTestGlobals(),
+    })
+    const marked = wrapper
+      .findAll('tbody td')
+      .map((cell) => cell.classes().includes('table__cell--date'))
+    expect(marked).toEqual([false, true])
+  })
+
+  it('makes a column with a sortKey a sort button that reports the next order', async () => {
+    const sortable = [
+      { key: 'entity', label: 'الجهة' },
+      { key: 'dueAt', label: 'الاستحقاق', sortKey: 'due_at' },
+      { key: 'assignedAt', label: 'تاريخ الإسناد', sortKey: 'assigned_at', sortFirst: 'desc' },
+    ]
+    const wrapper = factory({ columns: sortable, sort: 'due_at' })
+    const headers = wrapper.findAll('th')
+    expect(headers[0].attributes('aria-sort')).toBeUndefined()
+    expect(headers[0].find('button').exists()).toBe(false)
+    expect(headers[1].attributes('aria-sort')).toBe('ascending')
+    expect(headers[2].attributes('aria-sort')).toBe('none')
+    await headers[1].find('button').trigger('click')
+    await headers[2].find('button').trigger('click')
+    expect(wrapper.emitted('sort')).toEqual([['-due_at'], ['-assigned_at']])
+    await wrapper.setProps({ sort: '-due_at' })
+    expect(wrapper.findAll('th')[1].attributes('aria-sort')).toBe('descending')
+  })
 })

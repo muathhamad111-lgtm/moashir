@@ -119,6 +119,7 @@ function evidenceUpload(string $kind): UploadedFile
         'infected' => UploadedFile::fake()->createWithContent('receipt.pdf', "%PDF-1.4\n".FakeFileScanner::TEST_SIGNATURE."\n%%EOF"),
         'renamed_image' => UploadedFile::fake()->createWithContent('receipt.pdf', "\x89PNG\r\n\x1a\n0000IHDR"),
         'text' => UploadedFile::fake()->createWithContent('receipt.txt', 'transfer done'),
+        'password_protected' => UploadedFile::fake()->createWithContent('receipt.pdf', passwordProtectedPdf()),
         default => UploadedFile::fake()->create('receipt.pdf', 21 * 1024, 'application/pdf'),
     };
 }
@@ -137,6 +138,7 @@ it('needs a clean bank-transfer receipt file', function (string $kind, string $c
 })->with([
     'infected file' => ['infected', 'file.infected'],
     'image renamed as pdf' => ['renamed_image', 'file.content_mismatch'],
+    'PDF locked with a password' => ['password_protected', 'file.password_protected'],
     'text file' => ['text', 'validation_failed'],
     'larger than the limit' => ['oversized', 'validation_failed'],
 ]);
@@ -191,16 +193,17 @@ it('refuses payments that are not paid and a second refund', function (): void {
     expect(Refund::query()->count())->toBe(1);
 });
 
-it('lists and shows recorded refunds to finance and lets them download the evidence through a short signed link', function (): void {
+it('lists refunded transactions and shows recorded refunds to finance and lets them download the evidence through a short signed link', function (): void {
     ['payment' => $payment] = refundablePayment();
     $finance = financeOfficer();
     switchTo($finance)->post(refundEndpoint($payment), refundPayload($payment), ['Accept' => 'application/json'])->assertCreated();
     $refund = Refund::query()->sole();
 
-    switchTo($finance)->getJson('/api/v1/finance/refunds')->assertOk()
+    switchTo($finance)->getJson('/api/v1/finance/transactions?filter[mode]=test&filter[type]=refund')->assertOk()
         ->assertJsonPath('meta.pagination.total', 1)
-        ->assertJsonPath('data.0.id', $refund->public_id);
-    $this->getJson('/api/v1/finance/refunds?filter[purpose]=bag')->assertOk()->assertJsonPath('meta.pagination.total', 0);
+        ->assertJsonPath('data.0.id', $payment->public_id)
+        ->assertJsonPath('data.0.refund.id', $refund->public_id);
+    $this->getJson('/api/v1/finance/transactions?filter[mode]=test&filter[type]=refund&filter[purpose]=bag')->assertOk()->assertJsonPath('meta.pagination.total', 0);
     $this->getJson("/api/v1/finance/refunds/{$refund->public_id}")->assertOk()->assertJsonPath('data.transfer_reference', 'TRF-2026-55871');
 
     $link = $this->postJson("/api/v1/finance/refunds/{$refund->public_id}/evidence/download")->assertOk()
@@ -211,7 +214,7 @@ it('lists and shows recorded refunds to finance and lets them download the evide
 
     $download = $this->get($url)->assertOk()->assertHeader('Content-Type', 'application/pdf');
     expect($download->streamedContent())->toStartWith('%PDF-')
-        ->and(Audit::query()->where('event', AuditEvent::FileDownloaded->value)->count())->toBe(1);
+        ->and(Audit::query()->where('event', AuditEvent::FileAccessed->value)->count())->toBe(1);
 
     switchTo(systemAdmin())->get($url)->assertForbidden()->assertJsonPath('code', 'signature.invalid');
     switchTo($finance)->get($url.'x')->assertForbidden()->assertJsonPath('code', 'signature.invalid');
@@ -225,7 +228,7 @@ it('keeps refund records and evidence away from entities and other staff', funct
     $refund = Refund::query()->sole();
 
     foreach ([$owner, staffUser(RoleKey::Assessor)] as $user) {
-        switchTo($user)->getJson('/api/v1/finance/refunds')->assertForbidden();
+        switchTo($user)->getJson('/api/v1/finance/transactions?filter[mode]=test&filter[type]=refund')->assertForbidden();
         $this->getJson("/api/v1/finance/refunds/{$refund->public_id}")->assertForbidden();
         $this->postJson("/api/v1/finance/refunds/{$refund->public_id}/evidence/download")->assertForbidden();
     }

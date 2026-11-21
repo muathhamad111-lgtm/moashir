@@ -1,30 +1,45 @@
 import { apiClient } from '@/api/client'
-import { LOGO_VARIANT_BY_SURFACE } from '@/constants/branding'
+import {
+  FAVICON_SURFACE,
+  LOGO_VARIANT_BY_SURFACE,
+  SIDEBAR_LOGO_SURFACE,
+  SITE_LOGO_SURFACE,
+} from '@/constants/branding'
+import { contentImageUrl } from '@/utils/contentImage'
 import { payloadShape } from '@/utils/payloadShape'
 import { serviceRequest } from './serviceRequest'
+import { DOMAIN_REJECTIONS } from './domainRequest'
 
-function toPaletteEntry(entry) {
+function toScheme(scheme) {
+  if (!scheme) return null
   return {
-    token: entry.token,
-    hex: entry.hex,
-    textOnLightHex: entry.textOnLightHex,
-    label: entry.label ?? null,
+    primary: scheme.primary,
+    onPrimary: scheme.onPrimary,
+    primaryText: scheme.primaryText,
+    secondary: scheme.secondary,
+    onSecondary: scheme.onSecondary,
   }
+}
+
+function toColors(colors) {
+  return colors ? { primary: colors.primary, secondary: colors.secondary } : null
 }
 
 function toLogos(data) {
   return {
-    dark: data.logoLight?.url ?? null,
-    light: data.logoDark?.url ?? null,
+    [SIDEBAR_LOGO_SURFACE]: contentImageUrl(data.logoLight) || null,
+    [FAVICON_SURFACE]: contentImageUrl(data.favicon) || null,
+    [SITE_LOGO_SURFACE]: contentImageUrl(data.logoSite) || null,
   }
 }
 
 function toTheme(data) {
   if (!data) return null
   return {
-    accentToken: data.accentToken,
+    colors: { primary: data.primaryColor, secondary: data.secondaryColor },
+    scheme: toScheme(data.scheme),
+    defaultColors: toColors(data.defaultColors),
     logos: toLogos(data),
-    palette: (data.palette ?? []).map(toPaletteEntry),
     updatedAt: data.updatedAt ?? null,
   }
 }
@@ -33,8 +48,17 @@ function variantOf(surface) {
   return LOGO_VARIANT_BY_SURFACE[surface] ?? LOGO_VARIANT_BY_SURFACE.dark
 }
 
-async function themeRequest(action, execute, context) {
-  const envelope = await serviceRequest(action, execute, { entity: 'settings-branding', ...context })
+function withReason(payload, reason) {
+  return reason ? { ...payload, reason } : payload
+}
+
+async function themeRequest(action, execute, context = {}) {
+  const envelope = await serviceRequest(
+    action,
+    execute,
+    { entity: 'settings-branding', ...context },
+    { expectedStatuses: DOMAIN_REJECTIONS },
+  )
   return { ...envelope, data: toTheme(envelope.data) }
 }
 
@@ -42,25 +66,40 @@ export const brandingService = {
   get() {
     return themeRequest('branding.get', () => apiClient.get('/settings/branding'))
   },
-  update({ accentToken }) {
-    const payload = { accentToken: accentToken }
+  update({ primaryColor, secondaryColor, reason = null }) {
+    const payload = withReason({ primaryColor, secondaryColor }, reason)
     return themeRequest('branding.update', () => apiClient.put('/settings/branding', payload), {
       payloadShape: payloadShape(payload),
     })
   },
-  reset() {
-    return themeRequest('branding.reset', () => apiClient.post('/settings/branding/reset'))
+  reset({ reason = null } = {}) {
+    const payload = withReason({}, reason)
+    return themeRequest(
+      'branding.reset',
+      () => apiClient.post('/settings/branding/reset', payload),
+      {
+        payloadShape: payloadShape(payload),
+      },
+    )
   },
-  async uploadLogo(file, surface = 'dark') {
+  async uploadLogo(file, surface = 'dark', reason = null) {
     const variant = variantOf(surface)
     const form = new FormData()
     form.append('file', file)
     form.append('variant', variant)
+    if (reason) form.append('reason', reason)
     const envelope = await serviceRequest(
       'branding.uploadLogo',
       () => apiClient.post('/settings/branding/logo', form),
       { entity: 'settings-branding', variant },
+      { expectedStatuses: DOMAIN_REJECTIONS },
     )
-    return { ...envelope, data: { fileId: envelope.data?.fileId ?? null, url: envelope.data?.url ?? null } }
+    return {
+      ...envelope,
+      data: {
+        fileId: envelope.data?.fileId ?? null,
+        url: contentImageUrl(envelope.data?.url) || null,
+      },
+    }
   },
 }

@@ -1,0 +1,51 @@
+$cursor-ink: image-set(
+  url('@/assets/landing/cursor/ink.png') 1x,
+  url('@/assets/landing/cursor/ink@2x.png') 2x
+);
+$cursor-light: image-set(
+  url('@/assets/landing/cursor/light.png') 1x,
+  url('@/assets/landing/cursor/light@2x.png') 2x
+);
+$cursor-hot: image-set(
+  url('@/assets/landing/cursor/hot.png') 1x,
+  url('@/assets/landing/cursor/hot@2x.png') 2x
+);
+
+:is(.lp, .lp-auth).lp-has-cursor {
+  &,
+  *:not(input, textarea, select) {
+    cursor:
+      $cursor-ink 1 1,
+      auto;
+  }
+
+  :is(.lp-deep, .lp-final, .lp-band__box, .auth-layout__brand),
+  :is(.lp-deep, .lp-final, .lp-band__box, .auth-layout__brand) *:not(input, textarea, select) {
+    cursor:
+      $cursor-light 1 1,
+      auto;
+  }
+
+  :is(a, button, label, select, [role='switch'], .lp-lv__scale, .lp-lenses__arc),
+  :is(a, button, label, select, [role='switch'], .lp-lv__scale, .lp-lenses__arc) * {
+    cursor:
+      $cursor-hot 1 1,
+      pointer;
+  }
+}
+
+[data-theme='dark'] :is(.lp, .lp-auth).lp-has-cursor {
+  &,
+  *:not(input, textarea, select) {
+    cursor:
+      $cursor-light 1 1,
+      auto;
+  }
+
+  :is(a, button, label, select, [role='switch'], .lp-lv__scale, .lp-lenses__arc),
+  :is(a, button, label, select, [role='switch'], .lp-lv__scale, .lp-lenses__arc) * {
+    cursor:
+      $cursor-hot 1 1,
+      pointer;
+  }
+}

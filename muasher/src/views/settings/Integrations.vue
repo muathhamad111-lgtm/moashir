@@ -9,6 +9,7 @@ import IntegrationOverviewCard from '@/components/integrations/IntegrationOvervi
 import TestModeBanner from '@/components/integrations/TestModeBanner.vue'
 import { OVERVIEW_STATES, useIntegrationsOverview } from '@/composables/useIntegrationsOverview'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const { t } = useI18n()
 const { rows, status, errorMessage, paymentTestInProduction, load } = useIntegrationsOverview()
@@ -20,24 +21,37 @@ onMounted(load)
   <section class="integrations-overview">
     <header class="integrations-overview__header">
       <RouterLink :to="{ name: ROUTE_NAMES.ADMIN_SETTINGS }" class="settings-section__back">
-        <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i>
+        <AppIcon name="arrow-left" />
         {{ t('settings.hub.backToHub') }}
       </RouterLink>
       <h1 class="integrations-overview__title">{{ t('integrations.overview.title') }}</h1>
       <p class="integrations-overview__desc">{{ t('integrations.overview.description') }}</p>
     </header>
 
-    <div v-if="status === OVERVIEW_STATES.LOADING" class="integrations-overview__grid" aria-busy="true">
+    <div
+      v-if="status === OVERVIEW_STATES.LOADING"
+      class="integrations-overview__grid"
+      aria-busy="true"
+    >
       <Skeleton v-for="index in 4" :key="index" variant="block" />
     </div>
     <EmptyState
       v-else-if="status === OVERVIEW_STATES.FORBIDDEN"
-      icon="fa-solid fa-lock"
+      icon="lock"
       :title="t('integrations.forbidden.title')"
       :message="t('integrations.forbidden.message')"
     />
-    <ErrorState v-else-if="status === OVERVIEW_STATES.ERROR" :message="errorMessage" @retry="load" />
-    <EmptyState v-else-if="status === OVERVIEW_STATES.EMPTY" icon="fa-solid fa-plug" :title="t('integrations.overview.emptyTitle')" :message="t('integrations.overview.emptyMessage')" />
+    <ErrorState
+      v-else-if="status === OVERVIEW_STATES.ERROR"
+      :message="errorMessage"
+      @retry="load"
+    />
+    <EmptyState
+      v-else-if="status === OVERVIEW_STATES.EMPTY"
+      icon="link"
+      :title="t('integrations.overview.emptyTitle')"
+      :message="t('integrations.overview.emptyMessage')"
+    />
     <template v-else>
       <TestModeBanner v-if="paymentTestInProduction" />
       <div class="integrations-overview__grid">

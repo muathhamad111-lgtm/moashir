@@ -4,6 +4,10 @@ import { allAssessments } from '../assessments/assessmentsStore'
 import { ADVANCED_STATES, isInAdvancedQueue } from './advancedStates'
 import { acceptsApplications } from './cycleStore'
 import { canManage, revealsStaff } from './cycleAccess'
+import { entryFeeOf } from './awardPricing'
+import { quoteOfPrice } from '../finance/priceVersions'
+
+const FEE_EDITABLE_STATUS = 'draft'
 
 function placeOf(regionId) {
   const region = findRegion(regionId)
@@ -35,9 +39,15 @@ export function cycleResource(cycle, { withCounts = false } = {}) {
     committeeStart: cycle.committeeStart,
     committeeEnd: cycle.committeeEnd,
     announcementAt: cycle.announcementAt,
-    conditions: { minEntityAgeYears: cycle.minEntityAgeYears, disqualificationScore: cycle.disqualificationScore },
+    conditions: {
+      minEntityAgeYears: cycle.minEntityAgeYears,
+      disqualificationScore: cycle.disqualificationScore,
+    },
     initialReviewSlaDays: cycle.initialReviewSlaDays,
     participationCertificateEnabled: cycle.participationCertificateEnabled,
+    entryFee: entryFeeOf(cycle),
+    entryFeeQuote: quoteOfPrice(entryFeeOf(cycle)),
+    entryFeeEditable: cycle.status === FEE_EDITABLE_STATUS,
     regions: cycle.regionIds.map(placeOf).filter(Boolean),
     counts: withCounts ? countsOf(cycle) : null,
     openedAt: cycle.openedAt,
@@ -53,8 +63,16 @@ export function cycleDetailResource(cycle, viewer) {
   if (!revealsStaff(viewer, cycle)) return detail
   return {
     ...detail,
-    members: cycle.members.map((member) => ({ id: member.userId, name: staffNameOf(member.userId), role: member.role })),
-    initialAssessors: cycle.initialAssessors.map((link) => ({ id: link.assessorId, name: staffNameOf(link.assessorId), isActive: link.isActive })),
+    members: cycle.members.map((member) => ({
+      id: member.userId,
+      name: staffNameOf(member.userId),
+      role: member.role,
+    })),
+    initialAssessors: cycle.initialAssessors.map((link) => ({
+      id: link.assessorId,
+      name: staffNameOf(link.assessorId),
+      isActive: link.isActive,
+    })),
   }
 }
 

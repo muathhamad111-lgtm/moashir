@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Support\Security\SessionCookieName;
 use Illuminate\Support\Str;
 
 return [
@@ -24,9 +25,11 @@ return [
 
     'lottery' => [2, 100],
 
-    'cookie' => env(
-        'SESSION_COOKIE',
-        Str::slug((string) env('APP_NAME', 'moashir')).'-session'
+    'cookie' => SessionCookieName::resolve(
+        (string) env('SESSION_COOKIE', Str::slug((string) env('APP_NAME', 'moashir')).'-session'),
+        (bool) env('SESSION_SECURE_COOKIE', true),
+        is_string(env('SESSION_DOMAIN')) ? env('SESSION_DOMAIN') : null,
+        (string) env('SESSION_PATH', '/'),
     ),
 
     'path' => env('SESSION_PATH', '/'),

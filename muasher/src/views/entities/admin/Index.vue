@@ -16,12 +16,15 @@ import { usePermissions } from '@/composables/usePermissions'
 import { ENTITY_ACTIONS } from '@/composables/useEntityActions'
 import { PERMISSIONS } from '@/constants/permissionKeys'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import { accessFor } from '@/constants/routeAccess'
 
 const { t } = useI18n()
 const router = useRouter()
-const { can } = usePermissions()
+const { can, canAccess } = usePermissions()
+const canOpen = (routeName) => canAccess(accessFor(routeName))
 const regions = useRegions()
-const { items, status, errorMessage, load, filters, paginator, stats, exportParams } = useEntityList()
+const { items, status, errorMessage, load, filters, paginator, stats, exportParams } =
+  useEntityList()
 const { exporting, exportCsv } = useEntityExport()
 const actionsHost = ref(null)
 const { search } = filters
@@ -29,19 +32,41 @@ const { search } = filters
 const fullRecords = computed(() => items.value.some((item) => 'entityType' in item))
 
 const statCards = computed(() => [
-  { id: 'total', icon: 'fa-solid fa-building-ngo', value: stats.value?.total ?? 0, label: t('entities.stats.total') },
-  { id: 'active', icon: 'fa-solid fa-circle-check', value: stats.value?.active ?? 0, label: t('entities.stats.active') },
+  {
+    id: 'total',
+    icon: 'building',
+    value: stats.value?.total ?? 0,
+    label: t('entities.stats.total'),
+  },
+  {
+    id: 'active',
+    icon: 'check-circle',
+    value: stats.value?.active ?? 0,
+    label: t('entities.stats.active'),
+  },
+  {
+    id: 'pending-review',
+    icon: 'clipboard-check',
+    value: stats.value?.pendingReview ?? 0,
+    label: t('entities.stats.pendingReview'),
+  },
   {
     id: 'pending',
-    icon: 'fa-solid fa-hourglass-half',
+    icon: 'refresh-dots',
     value: stats.value?.pendingVerification ?? 0,
     label: t('entities.stats.pendingVerification'),
   },
-  { id: 'deactivated', icon: 'fa-solid fa-ban', value: stats.value?.deactivated ?? 0, label: t('entities.stats.deactivated') },
+  {
+    id: 'deactivated',
+    icon: 'ban',
+    value: stats.value?.deactivated ?? 0,
+    label: t('entities.stats.deactivated'),
+  },
 ])
 
 function onAction(key, entity) {
-  if (key === ENTITY_ACTIONS.VIEW) return router.push({ name: ROUTE_NAMES.ADMIN_ENTITY, params: { id: entity.id } })
+  if (key === ENTITY_ACTIONS.VIEW)
+    return router.push({ name: ROUTE_NAMES.ADMIN_ENTITY, params: { id: entity.id } })
   return actionsHost.value.run(key, entity)
 }
 
@@ -51,12 +76,22 @@ onMounted(regions.load)
 <template>
   <section class="entities-admin">
     <header class="entities-admin__header">
-      <div>
-        <h1 class="entities-admin__title">{{ t('entities.admin.title') }}</h1>
-        <p class="entities-admin__subtitle">{{ t('entities.admin.subtitle') }}</p>
-      </div>
+      <h1 class="entities-admin__title">{{ t('entities.admin.title') }}</h1>
       <div class="entities-admin__links">
-        <BaseButton v-if="can(PERMISSIONS.ENTITIES_DELETE)" variant="ghost" size="sm" icon="fa-solid fa-trash-can-arrow-up" @click="router.push({ name: ROUTE_NAMES.ADMIN_ENTITIES_DELETED })">
+        <BaseButton
+          v-if="canOpen(ROUTE_NAMES.ADMIN_ENTITY_EMAIL_CHANGES)"
+          variant="secondary"
+          icon="envelope"
+          :to="{ name: ROUTE_NAMES.ADMIN_ENTITY_EMAIL_CHANGES }"
+        >
+          {{ t('nav.entityEmailChanges') }}
+        </BaseButton>
+        <BaseButton
+          v-if="canOpen(ROUTE_NAMES.ADMIN_ENTITIES_DELETED)"
+          variant="secondary"
+          icon="undo"
+          :to="{ name: ROUTE_NAMES.ADMIN_ENTITIES_DELETED }"
+        >
           {{ t('nav.deletedEntities') }}
         </BaseButton>
       </div>
@@ -64,12 +99,26 @@ onMounted(regions.load)
 
     <StatsCards :stats="statCards" :loading="status === 'loading' && !stats" />
 
-    <ListToolbar v-model:search="search" :search-placeholder="t('entities.admin.searchPlaceholder')">
-      <template #filters>
-        <EntityListFilters :filters="filters" :region-options="regions.regionOptions.value" :full="fullRecords || status !== 'success'" />
+    <ListToolbar
+      v-model:search="search"
+      :search-placeholder="t('entities.admin.searchPlaceholder')"
+      :filter-state="filters"
+    >
+      <template #filters="{ draft }">
+        <EntityListFilters
+          :filters="draft"
+          :region-options="regions.regionOptions.value"
+          :full="fullRecords || status !== 'success'"
+        />
       </template>
-      <template v-if="can(PERMISSIONS.ENTITIES_EXPORT)" #actions>
-        <BaseButton variant="secondary" size="sm" icon="fa-solid fa-file-csv" :loading="exporting" @click="exportCsv(exportParams)">
+      <template v-if="can(PERMISSIONS.ENTITIES_EXPORT)" #export>
+        <BaseButton
+          variant="secondary"
+          size="sm"
+          icon="download"
+          :loading="exporting"
+          @click="exportCsv(exportParams)"
+        >
           {{ t('entities.admin.export') }}
         </BaseButton>
       </template>

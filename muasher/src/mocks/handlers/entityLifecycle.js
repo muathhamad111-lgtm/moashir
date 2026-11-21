@@ -1,28 +1,34 @@
 import { http } from '../contract/http'
 import { envelope, noContent } from '../contract/responses'
-import { actorWith, entityReject, entityRoute, readJson, signedInUser } from '../stores/entityRejection'
+import {
+  actorWith,
+  entityReject,
+  entityRoute,
+  readJson,
+  signedInUser,
+} from '../stores/entityRejection'
 import { ENTITY_PERMISSIONS as P, accessOf, boundEntity } from '../stores/entityAccess'
 import { deletionImpactResource, entityResourceFor } from '../stores/entitySerializers'
 import { ERASURE_KEPT_RECORDS } from '@/constants/entityEnums'
 import { PERMANENT_REASON_MIN, assertReason } from '../stores/entityValidation'
 import {
+  approve,
   deactivate,
   deletionImpactOf,
   permanentlyDelete,
   reactivate,
+  reject,
   resendVerification,
   restore,
   softDelete,
 } from '../stores/entityLifecycle'
 import { sessionIsSuperAdmin } from '../stores/sessionPermissions'
-import { deletePrivacyRequestsOf } from '../stores/privacyRequestsStore'
 import { isDeleted } from '../stores/entitiesStore'
-import { personalDataPackage } from '../stores/entityPersonalData'
 
 const ENTITY_PATH = '/api/v1/entities/:id'
 
 function resourceOf(user, entity) {
-  return envelope(entityResourceFor(accessOf(user))(entity))
+  return envelope(entityResourceFor(accessOf(user))(entity, user))
 }
 
 function reasonAction(permission, transition) {
@@ -41,6 +47,16 @@ function superAdmin() {
 }
 
 export const entityLifecycleHandlers = [
+  http.post(
+    `${ENTITY_PATH}/approve`,
+    entityRoute(({ params }) => {
+      const user = actorWith(P.MANAGE)
+      return resourceOf(user, approve(boundEntity(params.id)))
+    }),
+  ),
+
+  http.post(`${ENTITY_PATH}/reject`, reasonAction(P.MANAGE, reject)),
+
   http.post(`${ENTITY_PATH}/deactivate`, reasonAction(P.DEACTIVATE, deactivate)),
 
   http.post(`${ENTITY_PATH}/reactivate`, reasonAction(P.REACTIVATE, reactivate)),
@@ -52,7 +68,11 @@ export const entityLifecycleHandlers = [
     entityRoute(({ params }) => {
       actorWith(P.VERIFICATION_RESEND)
       const entity = resendVerification(boundEntity(params.id))
-      return envelope({ verificationRemindedAt: entity.verificationRemindedAt }, {}, { status: 202 })
+      return envelope(
+        { verificationRemindedAt: entity.verificationRemindedAt },
+        {},
+        { status: 202 },
+      )
     }),
   ),
 
@@ -62,7 +82,9 @@ export const entityLifecycleHandlers = [
       actorWith(P.DELETE)
       const entity = boundEntity(params.id)
       const openRequests = deletionImpactOf(entity)
-      return envelope(deletionImpactResource(openRequests, ERASURE_KEPT_RECORDS, { frozen: isDeleted(entity) }))
+      return envelope(
+        deletionImpactResource(openRequests, ERASURE_KEPT_RECORDS, { frozen: isDeleted(entity) }),
+      )
     }),
   ),
 
@@ -86,18 +108,7 @@ export const entityLifecycleHandlers = [
       const body = await readJson(request)
       assertReason(body, PERMANENT_REASON_MIN)
       const outcome = permanentlyDelete(entity, body)
-      deletePrivacyRequestsOf(entity.id)
       return envelope(outcome)
-    }),
-  ),
-
-  http.post(
-    `${ENTITY_PATH}/export`,
-    entityRoute(async ({ params, request }) => {
-      actorWith(P.PRIVACY_MANAGE)
-      const entity = boundEntity(params.id)
-      assertReason(await readJson(request))
-      return envelope(personalDataPackage(entity))
     }),
   ),
 ]

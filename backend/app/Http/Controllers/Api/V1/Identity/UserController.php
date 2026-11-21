@@ -29,16 +29,16 @@ final class UserController
 
     public function store(StoreUserRequest $request, #[CurrentUser] User $actor, InviteStaffUser $inviteUser): JsonResponse
     {
-        return ApiResponse::resource(new UserResource($inviteUser->handle($actor, $request->staffUser())), Response::HTTP_CREATED);
+        return ApiResponse::resource(new UserResource($inviteUser->handle($actor, $request->staffUser())->load(User::ADMINISTRATION_RELATIONS)), Response::HTTP_CREATED);
     }
 
     public function show(User $managedUser): JsonResponse
     {
-        return ApiResponse::resource(new UserResource($managedUser->load('roles')));
+        return ApiResponse::resource(new UserResource($managedUser->load(User::ADMINISTRATION_RELATIONS)));
     }
 
     public function update(UpdateUserRequest $request, User $managedUser, #[CurrentUser] User $actor, UpdateStaffUser $updateUser): JsonResponse
     {
-        return ApiResponse::resource(new UserResource($updateUser->handle($actor, $managedUser, $request->changes())));
+        return ApiResponse::resource(new UserResource($updateUser->handle($actor, $managedUser, $request->changes())->load(User::ADMINISTRATION_RELATIONS)));
     }
 }

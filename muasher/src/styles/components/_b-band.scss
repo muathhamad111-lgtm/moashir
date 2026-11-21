@@ -1,0 +1,33 @@
+@use '../mixins' as *;
+
+.b-band {
+  background: var(--stage-gradient);
+  color: var(--band-ink);
+}
+
+.b-band__inner {
+  @include flex(column, stretch, flex-start, var(--space-6));
+  max-inline-size: var(--size-container);
+  margin-inline: auto;
+  padding-block: var(--space-6) var(--space-8);
+  padding-inline: var(--space-4);
+
+  @include respond-to('md') {
+    padding-inline: var(--space-8);
+  }
+
+  @include respond-to('lg') {
+    padding-block: var(--space-10) var(--space-12);
+  }
+}
+
+.btn--on-band {
+  background-color: var(--color-white);
+  border-color: var(--color-white);
+  color: var(--color-teal-deep);
+
+  &:hover {
+    background-color: var(--color-secondary);
+    border-color: var(--color-secondary);
+  }
+}

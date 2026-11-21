@@ -66,7 +66,7 @@
   font-size: var(--fs-lg);
 
   .kpi-card--primary & {
-    color: var(--color-primary);
+    color: var(--theme-accent-text);
     background-color: var(--color-info-soft);
   }
   .kpi-card--success & {
@@ -145,32 +145,40 @@
 }
 
 .kpi-card__meter {
-  block-size: var(--space-2);
   inline-size: 100%;
+  block-size: var(--space-2);
+  border: 0;
   border-radius: var(--radius-pill);
   background-color: var(--theme-border);
+  appearance: none;
   overflow: hidden;
-}
 
-.kpi-card__meter-fill {
-  display: block;
-  block-size: 100%;
-  inline-size: var(--kpi-progress, 0%);
-  border-radius: var(--radius-pill);
-  background: var(--gradient-brand);
-  transition: inline-size var(--t-slow) var(--ease);
+  &::-webkit-progress-bar {
+    border-radius: var(--radius-pill);
+    background-color: var(--theme-border);
+  }
+
+  &::-webkit-progress-value {
+    border-radius: var(--radius-pill);
+    background: var(--kpi-meter-fill, var(--gradient-brand));
+  }
+
+  &::-moz-progress-bar {
+    border-radius: var(--radius-pill);
+    background: var(--kpi-meter-fill, var(--gradient-brand));
+  }
 
   .kpi-card--success & {
-    background: var(--color-success);
+    --kpi-meter-fill: var(--color-success);
   }
   .kpi-card--info & {
-    background: var(--color-info);
+    --kpi-meter-fill: var(--color-info);
   }
   .kpi-card--warning & {
-    background: var(--color-warning);
+    --kpi-meter-fill: var(--color-warning);
   }
   .kpi-card--danger & {
-    background: var(--color-danger);
+    --kpi-meter-fill: var(--color-danger);
   }
 }
 
@@ -244,8 +252,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .kpi-card,
-  .kpi-card__reveal,
-  .kpi-card__meter-fill {
+  .kpi-card__reveal {
     transition: none;
   }
 

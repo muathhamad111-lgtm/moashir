@@ -18,7 +18,7 @@ final readonly class DemoPeopleInstaller
     public function install(): DemoPeople
     {
         $staff = $this->staff->install();
-        $termsVersionIds = $this->terms->install($staff[RoleKey::SystemAdmin->value]->user);
+        $termsVersionIds = $this->terms->install($staff[RoleKey::SystemAdmin->value]->user)->currentIds;
 
         return new DemoPeople($staff, $this->entities->install($termsVersionIds));
     }

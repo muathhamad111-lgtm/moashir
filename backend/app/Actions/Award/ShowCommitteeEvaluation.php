@@ -33,7 +33,7 @@ final readonly class ShowCommitteeEvaluation
 
     public function handle(User $viewer, CommitteeAssignment $assignment): CommitteeEvaluationView
     {
-        $assignment->loadMissing(['assessment.entity.region', 'assessment.entity.city', 'assessment.region', 'assessment.criteriaVersion', 'awardCycle', 'member', 'replaces']);
+        $assignment->loadMissing(['assessment.entity.region', 'assessment.entity.city', 'assessment.entity.owner', 'assessment.region', 'assessment.criteriaVersion', 'awardCycle', 'member', 'replaces']);
         $assessment = $assignment->assessment;
         $version = $assessment->criteriaVersion;
         $tree = $this->trees->build($version);

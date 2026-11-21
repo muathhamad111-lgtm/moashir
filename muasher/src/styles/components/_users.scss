@@ -11,7 +11,7 @@
 }
 
 .users-page__header {
-  @include flex(row, flex-start, space-between, var(--space-4));
+  @include flex(row, center, space-between, var(--space-4));
   flex-wrap: wrap;
 }
 
@@ -22,10 +22,9 @@
   color: var(--theme-heading);
 }
 
-.users-page__subtitle {
-  margin-block: var(--space-2) 0;
-  color: var(--theme-text-muted);
-  max-inline-size: var(--size-prose-max);
+.users-page__identity,
+.users-page__state {
+  @include flex(column, flex-start, flex-start, var(--space-1));
 }
 
 .users-page__name {
@@ -35,6 +34,8 @@
 
 .users-page__email {
   color: var(--theme-accent-text);
+  font-size: var(--fs-sm);
+  overflow-wrap: anywhere;
   text-align: start;
 
   &:hover {
@@ -84,12 +85,7 @@
   color: var(--color-danger);
 }
 
-.users-page__roles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
-}
-
+.users-page__roles,
 .user-form__hint {
   display: flex;
   flex-direction: column;
@@ -119,10 +115,4 @@
   @include flex(row, center, flex-start, var(--space-2));
   font-size: var(--fs-sm);
   color: var(--theme-text);
-}
-
-.user-form__hint-note {
-  margin: 0;
-  font-size: var(--fs-xs);
-  color: var(--theme-text-muted);
 }

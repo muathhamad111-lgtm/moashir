@@ -187,12 +187,12 @@
 }
 
 .gap-card__file-icon {
-  color: var(--color-primary);
+  color: var(--theme-accent-text);
   flex-shrink: 0;
 }
 
 .gap-card__file-link {
-  color: var(--color-primary);
+  color: var(--theme-accent-text);
   font-weight: var(--fw-medium);
   text-decoration: underline;
 

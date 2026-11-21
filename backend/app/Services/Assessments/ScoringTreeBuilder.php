@@ -35,12 +35,12 @@ final readonly class ScoringTreeBuilder
     {
         $points = $sub->scoresGuidingPoints() ? array_map($this->point(...), $this->active($sub->guidingPoints)) : [];
 
-        return new ScoringSub($sub->id, $sub->code, $sub->weight, $sub->evaluation_type, $points);
+        return new ScoringSub($sub->id, $sub->code, $sub->weight, $sub->evaluation_type, $sub->scoring_type, $points);
     }
 
     private function point(GuidingPoint $point): ScoringPoint
     {
-        return new ScoringPoint($point->id, $point->code, $point->weight);
+        return new ScoringPoint($point->id, $point->code, $point->weight, $point->scoring_type);
     }
 
     /**

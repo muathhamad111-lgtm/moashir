@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\Criteria\CheckCriteriaVersionController;
 use App\Http\Controllers\Api\V1\Criteria\CorrectCriteriaTextController;
+use App\Http\Controllers\Api\V1\Criteria\CriteriaEditEventController;
+use App\Http\Controllers\Api\V1\Criteria\CriteriaTreeController;
 use App\Http\Controllers\Api\V1\Criteria\CriteriaVersionController;
 use App\Http\Controllers\Api\V1\Criteria\GuidingPointActivationController;
 use App\Http\Controllers\Api\V1\Criteria\GuidingPointController;
 use App\Http\Controllers\Api\V1\Criteria\MainCriterionActivationController;
 use App\Http\Controllers\Api\V1\Criteria\MainCriterionController;
+use App\Http\Controllers\Api\V1\Criteria\PointScoringTypeController;
+use App\Http\Controllers\Api\V1\Criteria\PointWeightsController;
+use App\Http\Controllers\Api\V1\Criteria\PreviewCriteriaPublicationController;
 use App\Http\Controllers\Api\V1\Criteria\PublicModelCriteriaController;
 use App\Http\Controllers\Api\V1\Criteria\PublishCriteriaVersionController;
 use App\Http\Controllers\Api\V1\Criteria\PublishedCriteriaController;
@@ -18,6 +23,7 @@ use App\Http\Controllers\Api\V1\Criteria\ReorderSubCriteriaController;
 use App\Http\Controllers\Api\V1\Criteria\SubCriterionActivationController;
 use App\Http\Controllers\Api\V1\Criteria\SubCriterionController;
 use App\Http\Controllers\Api\V1\Criteria\SubCriterionEvaluationTypeController;
+use App\Http\Controllers\Api\V1\Criteria\SubWeightsController;
 use App\Models\Criteria\CriteriaVersion;
 use Illuminate\Support\Facades\Route;
 
@@ -29,11 +35,14 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
     Route::get('assessments/criteria', PublishedCriteriaController::class)->middleware("can:viewPublished,{$versions}")->name('assessments.criteria');
 
     Route::prefix('criteria')->name('criteria.')->group(function () use ($versions): void {
+        Route::get('edit-events', CriteriaEditEventController::class)->middleware("can:viewAny,{$versions}")->name('edit-events.index');
         Route::get('versions', [CriteriaVersionController::class, 'index'])->middleware("can:viewAny,{$versions}")->name('versions.index');
         Route::post('versions', [CriteriaVersionController::class, 'store'])->middleware(["can:create,{$versions}", 'throttle:criteria-write'])->name('versions.store');
         Route::get('versions/{version}', [CriteriaVersionController::class, 'show'])->middleware('can:view,version')->name('versions.show');
         Route::delete('versions/{version}', [CriteriaVersionController::class, 'destroy'])->middleware(['can:discard,version', 'throttle:criteria-write'])->name('versions.destroy');
+        Route::get('versions/{version}/tree', CriteriaTreeController::class)->middleware('can:view,version')->name('versions.tree');
         Route::get('versions/{version}/check', CheckCriteriaVersionController::class)->middleware('can:view,version')->name('versions.check');
+        Route::get('versions/{version}/changes', PreviewCriteriaPublicationController::class)->middleware('can:view,version')->name('versions.changes');
         Route::post('versions/{version}/publish', PublishCriteriaVersionController::class)->middleware(['can:publish,version', 'throttle:sensitive'])->name('versions.publish');
         Route::patch('versions/{version}/labels', CorrectCriteriaTextController::class)->middleware(['can:correctText,version', 'throttle:sensitive'])->name('versions.labels');
 
@@ -44,6 +53,7 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
         Route::put('mains/{main}', [MainCriterionController::class, 'update'])->middleware(['can:update,main', 'throttle:criteria-write'])->name('mains.update');
         Route::patch('mains/{main}/active', MainCriterionActivationController::class)->middleware(['can:update,main', 'throttle:criteria-write'])->name('mains.active');
         Route::delete('mains/{main}', [MainCriterionController::class, 'destroy'])->middleware(['can:delete,main', 'throttle:criteria-write'])->name('mains.destroy');
+        Route::put('mains/{main}/subs/weights', SubWeightsController::class)->middleware(['can:update,main', 'throttle:criteria-write'])->name('mains.subs.weights');
         Route::post('mains/{main}/subs/reorder', ReorderSubCriteriaController::class)->middleware(['can:update,main', 'throttle:criteria-write'])->name('mains.subs.reorder');
 
         Route::post('subs', [SubCriterionController::class, 'store'])->middleware(["can:manageTree,{$versions}", 'throttle:criteria-write'])->name('subs.store');
@@ -53,6 +63,8 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
         Route::patch('subs/{sub}/evaluation-type', SubCriterionEvaluationTypeController::class)->middleware(['can:update,sub', 'throttle:criteria-write'])->name('subs.evaluation-type');
         Route::delete('subs/{sub}', [SubCriterionController::class, 'destroy'])->middleware(['can:delete,sub', 'throttle:criteria-write'])->name('subs.destroy');
         Route::post('subs/{sub}/points', [GuidingPointController::class, 'store'])->middleware(['can:update,sub', 'throttle:criteria-write'])->name('subs.points.store');
+        Route::put('subs/{sub}/points/weights', PointWeightsController::class)->middleware(['can:update,sub', 'throttle:criteria-write'])->name('subs.points.weights');
+        Route::put('subs/{sub}/points/scoring-type', PointScoringTypeController::class)->middleware(['can:update,sub', 'throttle:criteria-write'])->name('subs.points.scoring-type');
         Route::post('subs/{sub}/points/reorder', ReorderGuidingPointsController::class)->middleware(['can:update,sub', 'throttle:criteria-write'])->name('subs.points.reorder');
 
         Route::put('points/{point}', [GuidingPointController::class, 'update'])->middleware(['can:update,point', 'throttle:criteria-write'])->name('points.update');

@@ -1,0 +1,22 @@
+@use '../tokens' as *;
+
+.brand-pattern {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: var(--color-primary);
+  opacity: var(--pattern-opacity);
+  mask-repeat: repeat;
+  mask-position: center;
+}
+
+.brand-pattern--stars {
+  mask-image: $pattern-stars;
+  mask-size: var(--size-pattern-stars) auto;
+}
+
+.brand-pattern--lattice {
+  mask-image: $pattern-lattice;
+  mask-size: var(--size-pattern-lattice) auto;
+}

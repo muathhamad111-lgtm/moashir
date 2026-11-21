@@ -1,0 +1,47 @@
+@use '../mixins' as *;
+
+.level-emblem {
+  @include flex-center;
+  flex-shrink: 0;
+  inline-size: var(--level-emblem-size, var(--size-emblem-m));
+  block-size: var(--level-emblem-size, var(--size-emblem-m));
+  border-radius: var(--radius-circle);
+  background-color: var(--level-seal-disc);
+  color: var(--level-ink);
+
+  &--xl {
+    --level-emblem-size: var(--size-emblem-xl);
+  }
+
+  &--l {
+    --level-emblem-size: var(--size-emblem-l);
+  }
+
+  &--m {
+    --level-emblem-size: var(--size-emblem-m);
+  }
+
+  &--list {
+    --level-emblem-size: var(--size-emblem-list);
+  }
+
+  &--s {
+    --level-emblem-size: var(--size-emblem-s);
+  }
+
+  &--placeholder {
+    border: var(--border-width-thick) dashed var(--level-border);
+    background-color: var(--level-surface);
+  }
+}
+
+.level-emblem__seal {
+  inline-size: var(--emblem-seal-scale);
+  block-size: var(--emblem-seal-scale);
+  object-fit: contain;
+}
+
+.level-emblem__icon {
+  inline-size: var(--emblem-icon-scale);
+  block-size: var(--emblem-icon-scale);
+}

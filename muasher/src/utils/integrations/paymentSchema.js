@@ -1,5 +1,15 @@
-import { array as yupArray, boolean as yupBoolean, object as yupObject, string as yupString } from 'yup'
-import { CARD_NETWORKS, INTEGRATION_LIMITS, INTEGRATION_MODES, PAYMENT_METHODS } from '@/constants/integrations'
+import {
+  array as yupArray,
+  boolean as yupBoolean,
+  object as yupObject,
+  string as yupString,
+} from 'yup'
+import {
+  CARD_NETWORKS,
+  INTEGRATION_LIMITS,
+  INTEGRATION_MODES,
+  PAYMENT_METHODS,
+} from '@/constants/integrations'
 import { choiceOf, requiredText, secretRule, tokenRule } from './secretSchema'
 
 const KEY_LENGTH = { min: 16, max: 256 }
@@ -16,12 +26,26 @@ function keyPair(t, mode) {
 function methodsRule(t) {
   return yupArray()
     .of(yupString())
-    .test('applePay', t('integrations.payment.validation.applePayNeedsConfirmation'), function check(methods = []) {
-      return !methods.includes(PAYMENT_METHODS.APPLE_PAY) || this.parent.confirmations?.applePayDomain === true
-    })
-    .test('stcPay', t('integrations.payment.validation.stcPayNeedsConfirmation'), function check(methods = []) {
-      return !methods.includes(PAYMENT_METHODS.STC_PAY) || this.parent.confirmations?.stcpayActivation === true
-    })
+    .test(
+      'applePay',
+      t('integrations.payment.validation.applePayNeedsConfirmation'),
+      function check(methods = []) {
+        return (
+          !methods.includes(PAYMENT_METHODS.APPLE_PAY) ||
+          this.parent.confirmations?.applePayDomain === true
+        )
+      },
+    )
+    .test(
+      'stcPay',
+      t('integrations.payment.validation.stcPayNeedsConfirmation'),
+      function check(methods = []) {
+        return (
+          !methods.includes(PAYMENT_METHODS.STC_PAY) ||
+          this.parent.confirmations?.stcpayActivation === true
+        )
+      },
+    )
 }
 
 export function paymentSchema(t) {

@@ -1,0 +1,70 @@
+@use '../mixins' as *;
+
+.kpis-admin__tabs .tabs__panel {
+  padding-block-start: var(--space-5);
+}
+
+.kpis-admin__panel {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.kpis-admin__featured {
+  align-self: flex-start;
+}
+
+.kpi-catalog {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.kpi-catalog__toolbar {
+  @include flex(row, center, space-between, var(--space-3));
+  flex-wrap: wrap;
+}
+
+.kpi-catalog__hint {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.kpi-catalog__name {
+  @include flex(row, center, flex-start, var(--space-2));
+  font-weight: var(--fw-medium);
+  color: var(--theme-heading);
+}
+
+.kpi-catalog__actions {
+  @include flex(row, center, flex-end, var(--space-2));
+}
+
+.kpi-reorder {
+  @include flex(column, stretch, flex-start, var(--space-4));
+}
+
+.kpi-reorder__hint {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.kpi-reorder__row {
+  @include flex(row, center, flex-start, var(--space-3));
+}
+
+.kpi-reorder__position {
+  min-inline-size: var(--space-6);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--fw-semibold);
+  color: var(--theme-text-muted);
+}
+
+.kpi-reorder__name {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  color: var(--theme-heading);
+  overflow-wrap: anywhere;
+}
+
+.kpi-reorder__footer {
+  @include flex(row, center, flex-end, var(--space-2));
+}

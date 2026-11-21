@@ -1,105 +1,241 @@
 import { FIXTURE_ENTITY_ID } from './assessments'
+import { ACCREDITED_FIXTURE_IDS } from './accreditedRequests'
 import { computePricing } from './bagProduct'
 
 export { FIXTURE_ENTITY_ID }
 
-export const BAG_SOURCE_ASSESSMENT_ID = 9102
+// The kit is built on the main entity's (Namaa's) latest accredited result.
+export const BAG_SOURCE_ASSESSMENT_ID = ACCREDITED_FIXTURE_IDS.completedEarlier
+export const BAG_SOURCE_REQUEST_NUMBER = 'ACC-2026-000003'
 export const BAG_SUBSCRIPTION_ID = 'bag-5001'
 
 export function seedReference() {
   return {
     assessmentId: BAG_SOURCE_ASSESSMENT_ID,
+    number: BAG_SOURCE_REQUEST_NUMBER,
     version: 1,
     kind: 'accredited',
-    completedAt: '2026-06-22T11:00:00+03:00',
-    frozenAt: '2026-06-23T09:00:00+03:00',
-    scorePercent: 78,
+    completedAt: '2026-09-02T11:00:00+03:00',
+    frozenAt: '2026-10-04T09:00:00+03:00',
+    scorePercent: 74.54,
   }
 }
 
+// Mirrors the criteria version of Namaa's ACC-2026-000003 and the points it earned there,
+// so the kit's gaps match the result the entity sees in its excellence tools.
 const SUB_MIRROR = {
-  101: { weight: 400, mainCriterionId: 1, name: { ar: 'التوجه الاستراتيجي والرؤية', en: 'Strategic Direction & Vision' } },
-  102: { weight: 350, mainCriterionId: 1, name: { ar: 'الحوكمة والامتثال', en: 'Governance & Compliance' } },
-  103: { weight: 250, mainCriterionId: 1, name: { ar: 'ثقافة التميز والقيادة بالقدوة', en: 'Excellence Culture & Leading by Example' } },
-  201: { weight: 500, mainCriterionId: 2, name: { ar: 'تحليل البيئة واحتياجات المستفيدين', en: 'Environment & Beneficiary Needs Analysis' } },
-  202: { weight: 400, mainCriterionId: 2, name: { ar: 'صياغة الخطة الاستراتيجية ونشرها', en: 'Strategy Formulation & Deployment' } },
-  301: { weight: 400, mainCriterionId: 3, name: { ar: 'استقطاب الكفاءات وتنميتها', en: 'Talent Attraction & Development' } },
-  302: { weight: 400, mainCriterionId: 3, name: { ar: 'التمكين والرعاية وبيئة العمل', en: 'Empowerment, Wellbeing & Workplace' } },
-  401: { weight: 400, mainCriterionId: 4, name: { ar: 'إدارة الشراكات الاستراتيجية', en: 'Strategic Partnership Management' } },
-  402: { weight: 300, mainCriterionId: 4, name: { ar: 'الاستدامة المالية وإدارة الموارد', en: 'Financial Sustainability & Resource Management' } },
-  501: { weight: 500, mainCriterionId: 5, name: { ar: 'تصميم البرامج والخدمات', en: 'Program & Service Design' } },
-  502: { weight: 350, mainCriterionId: 5, name: { ar: 'إدارة العمليات وتحسينها', en: 'Process Management & Improvement' } },
-  503: { weight: 250, mainCriterionId: 5, name: { ar: 'التحول الرقمي وإدارة المعرفة', en: 'Digital Transformation & Knowledge Management' } },
-  601: { weight: 600, mainCriterionId: 6, name: { ar: 'رضا المستفيدين وولاؤهم', en: 'Beneficiary Satisfaction & Loyalty' } },
-  602: { weight: 500, mainCriterionId: 6, name: { ar: 'أثر البرامج على المستفيدين', en: 'Program Impact on Beneficiaries' } },
-  701: { weight: 300, mainCriterionId: 7, name: { ar: 'رضا الموظفين والمتطوعين', en: 'Employee & Volunteer Satisfaction' } },
-  702: { weight: 300, mainCriterionId: 7, name: { ar: 'نتائج التطوير المهني', en: 'Professional Development Results' } },
-  801: { weight: 600, mainCriterionId: 8, name: { ar: 'الأثر المجتمعي والإسهام في رؤية 2030', en: 'Community Impact & Vision 2030 Contribution' } },
+  101: {
+    weight: 400,
+    mainCriterionId: 1,
+    name: { ar: 'التوجه الاستراتيجي والرؤية', en: 'Strategic Direction and Vision' },
+  },
+  102: {
+    weight: 350,
+    mainCriterionId: 1,
+    name: { ar: 'الحوكمة والامتثال', en: 'Governance and Compliance' },
+  },
+  103: {
+    weight: 250,
+    mainCriterionId: 1,
+    name: { ar: 'ثقافة التميز والقيادة بالقدوة', en: 'Excellence Culture and Leading by Example' },
+  },
+  201: {
+    weight: 500,
+    mainCriterionId: 2,
+    name: {
+      ar: 'تحليل البيئة واحتياجات المستفيدين',
+      en: 'Environment and Beneficiary Needs Analysis',
+    },
+  },
+  202: {
+    weight: 400,
+    mainCriterionId: 2,
+    name: { ar: 'صياغة الخطة الاستراتيجية ونشرها', en: 'Strategy Formulation and Deployment' },
+  },
+  301: {
+    weight: 400,
+    mainCriterionId: 3,
+    name: { ar: 'استقطاب الكفاءات وتنميتها', en: 'Talent Attraction and Development' },
+  },
+  302: {
+    weight: 400,
+    mainCriterionId: 3,
+    name: { ar: 'التمكين والرعاية وبيئة العمل', en: 'Empowerment, Wellbeing and Workplace' },
+  },
+  401: {
+    weight: 400,
+    mainCriterionId: 4,
+    name: { ar: 'إدارة الشراكات الاستراتيجية', en: 'Strategic Partnership Management' },
+  },
+  402: {
+    weight: 300,
+    mainCriterionId: 4,
+    name: {
+      ar: 'الاستدامة المالية وإدارة الموارد',
+      en: 'Financial Sustainability and Resource Management',
+    },
+  },
+  501: {
+    weight: 500,
+    mainCriterionId: 5,
+    name: { ar: 'تصميم البرامج والخدمات', en: 'Programme and Service Design' },
+  },
+  502: {
+    weight: 700,
+    mainCriterionId: 5,
+    name: { ar: 'إدارة العمليات وتحسينها', en: 'Process Management and Improvement' },
+  },
+  601: {
+    weight: 300,
+    mainCriterionId: 6,
+    name: {
+      ar: 'التحول الرقمي وإدارة المعرفة',
+      en: 'Digital Transformation and Knowledge Management',
+    },
+  },
+  602: {
+    weight: 300,
+    mainCriterionId: 6,
+    name: { ar: 'الابتكار والتعلم المؤسسي', en: 'Innovation and Organisational Learning' },
+  },
+  701: {
+    weight: 350,
+    mainCriterionId: 7,
+    name: { ar: 'رضا الموظفين والمتطوعين', en: 'Employee and Volunteer Satisfaction' },
+  },
+  702: {
+    weight: 350,
+    mainCriterionId: 7,
+    name: { ar: 'نتائج التطوير المهني', en: 'Professional Development Results' },
+  },
+  801: {
+    weight: 600,
+    mainCriterionId: 8,
+    name: { ar: 'رضا المستفيدين وولاؤهم', en: 'Beneficiary Satisfaction and Loyalty' },
+  },
+  802: {
+    weight: 600,
+    mainCriterionId: 8,
+    name: { ar: 'أثر البرامج على المستفيدين', en: 'Programme Impact on Beneficiaries' },
+  },
+  901: {
+    weight: 700,
+    mainCriterionId: 9,
+    name: { ar: 'النتائج المالية والتشغيلية', en: 'Financial and Operational Results' },
+  },
+  902: {
+    weight: 400,
+    mainCriterionId: 9,
+    name: { ar: 'مؤشرات الأداء المؤسسي الرئيسية', en: 'Key Institutional Performance Indicators' },
+  },
 }
 
 export const MAIN_MIRROR = {
   1: { ar: 'القيادة الإدارية', en: 'Administrative Leadership' },
-  2: { ar: 'الاستراتيجية والتخطيط', en: 'Strategy & Planning' },
-  3: { ar: 'الموارد البشرية والمتطوعون', en: 'Human Resources & Volunteers' },
-  4: { ar: 'الشراكات والموارد', en: 'Partnerships & Resources' },
-  5: { ar: 'العمليات والبرامج والخدمات', en: 'Processes, Programs & Services' },
-  6: { ar: 'نتائج المستفيدين', en: 'Beneficiary Results' },
+  2: { ar: 'التخطيط الاستراتيجي', en: 'Strategic Planning' },
+  3: { ar: 'إدارة الموارد البشرية والمتطوعين', en: 'Human Resources and Volunteers Management' },
+  4: { ar: 'إدارة الموارد والشراكات', en: 'Resources and Partnerships Management' },
+  5: { ar: 'إدارة العمليات والخدمات', en: 'Processes and Services Management' },
+  6: { ar: 'الابتكار وإدارة المعرفة', en: 'Innovation and Knowledge Management' },
   7: { ar: 'نتائج الموارد البشرية', en: 'People Results' },
-  8: { ar: 'نتائج المجتمع', en: 'Community Results' },
+  8: { ar: 'نتائج المستفيدين', en: 'Beneficiary Results' },
+  9: { ar: 'نتائج الأداء الرئيسية', en: 'Key Performance Results' },
 }
 
-const SUB_RATIO_MIRROR = {
-  101: 0.82, 102: 0.75, 103: 0.9,
-  201: 0.78, 202: 0.8,
-  301: 0.76, 302: 0.7,
-  401: 0.72, 402: 0.68,
-  501: 0.85, 502: 0.65, 503: 0.6,
-  601: 0.88, 602: 0.82,
-  701: 0.74, 702: 0.7,
-  801: 0.8,
+const SUB_EARNED = {
+  101: 300,
+  102: 259.5,
+  103: 182.5,
+  201: 375,
+  202: 300,
+  301: 298,
+  302: 292,
+  401: 295,
+  402: 225,
+  501: 370,
+  502: 511,
+  601: 240,
+  602: 210,
+  701: 262.5,
+  702: 252,
+  801: 462,
+  802: 438,
+  901: 560,
+  902: 280,
 }
 
 const UNMET_POINTS = {
-  503: [
-    { id: 'gp-503-1', ar: 'خطة تحول رقمي معتمدة مرتبطة بأهداف الجهة التشغيلية.', en: 'An approved digital transformation plan linked to operational goals.' },
-    { id: 'gp-503-2', ar: 'رقمنة الخدمات الأساسية المقدمة للمستفيدين.', en: 'Digitizing the core services provided to beneficiaries.' },
+  802: [
+    {
+      id: 'gp-802-1',
+      ar: 'قياس أثر البرامج على المستفيدين بمؤشرات قبل التنفيذ وبعده.',
+      en: 'Measuring programme impact on beneficiaries with before-and-after indicators.',
+    },
+    {
+      id: 'gp-802-2',
+      ar: 'ربط نتائج قياس الأثر بقرارات تطوير البرامج.',
+      en: 'Linking impact-measurement results to programme-improvement decisions.',
+    },
+  ],
+  801: [
+    {
+      id: 'gp-801-1',
+      ar: 'قياس دوري لرضا المستفيدين بعينة ممثلة ومنهجية موثقة.',
+      en: 'Regular beneficiary-satisfaction measurement with a representative sample and a documented method.',
+    },
   ],
   502: [
-    { id: 'gp-502-1', ar: 'دورية موثقة للتحسين المستمر للعمليات.', en: 'A documented cadence for continuous process improvement.' },
-    { id: 'gp-502-2', ar: 'مؤشرات كفاءة أوضح على مستوى العمليات التشغيلية.', en: 'Clearer efficiency indicators at the operational-process level.' },
+    {
+      id: 'gp-502-1',
+      ar: 'دورية موثقة للتحسين المستمر للعمليات.',
+      en: 'A documented cadence for continuous process improvement.',
+    },
+    {
+      id: 'gp-502-2',
+      ar: 'مؤشرات كفاءة أوضح على مستوى العمليات التشغيلية.',
+      en: 'Clearer efficiency indicators at the operational-process level.',
+    },
   ],
   402: [
-    { id: 'gp-402-1', ar: 'تفعيل خطة معتمدة لتنويع مصادر الدخل.', en: 'Activating an approved income-source diversification plan.' },
+    {
+      id: 'gp-402-1',
+      ar: 'تفعيل خطة معتمدة لتنويع مصادر الدخل.',
+      en: 'Activating an approved income-source diversification plan.',
+    },
   ],
   302: [
-    { id: 'gp-302-1', ar: 'قياس منتظم لرضا الموظفين وربطه بخطط التحسين.', en: 'Regular employee-satisfaction measurement linked to improvement plans.' },
+    {
+      id: 'gp-302-1',
+      ar: 'قياس منتظم لرضا الموظفين وربطه بخطط التحسين.',
+      en: 'Regular employee-satisfaction measurement linked to improvement plans.',
+    },
   ],
   702: [
-    { id: 'gp-702-1', ar: 'توثيق مسارات التطور الوظيفي وربطها بالأداء.', en: 'Documenting career-development paths and linking them to performance.' },
+    {
+      id: 'gp-702-1',
+      ar: 'توثيق مسارات التطور الوظيفي وربطها بالأداء.',
+      en: 'Documenting career-development paths and linking them to performance.',
+    },
   ],
   401: [
-    { id: 'gp-401-1', ar: 'تقييم أثر كل شراكة سنويًا بمنهجية موثقة.', en: 'Assessing the impact of each partnership annually with a documented method.' },
+    {
+      id: 'gp-401-1',
+      ar: 'تقييم أثر كل شراكة سنويًا بمنهجية موثقة.',
+      en: 'Assessing the impact of each partnership annually with a documented method.',
+    },
   ],
   301: [
-    { id: 'gp-301-1', ar: 'قياس أثر التدريب على الأداء بشكل كمّي.', en: 'Quantitatively measuring the impact of training on performance.' },
+    {
+      id: 'gp-301-1',
+      ar: 'قياس أثر التدريب على الأداء بشكل كمّي.',
+      en: 'Quantitatively measuring the impact of training on performance.',
+    },
   ],
 }
 
 const GAP_GUIDANCE = {
-  'gap-503': {
-    priority: 'high',
-    status: 'approved',
-    consultantNote: {
-      ar: 'التحول الرقمي أكبر فجوة مؤثرة على بقية المعايير التشغيلية، فابدأ به أولًا.',
-      en: 'Digital transformation is the highest-leverage gap affecting the other operational criteria — start here.',
-    },
-    recommendedAction: {
-      ar: 'اعتماد خطة تحول رقمي مرتبطة بأهداف الجهة ورقمنة خدمتين أساسيتين خلال المرحلة.',
-      en: 'Approve a digital-transformation plan tied to the entity goals and digitize two core services this stage.',
-    },
-  },
   'gap-502': {
-    priority: 'medium',
+    priority: 'high',
     status: 'approved',
     consultantNote: {
       ar: 'العمليات مستقرة نسبيًا لكنها تحتاج دورية موثقة للتحسين المستمر.',
@@ -110,16 +246,28 @@ const GAP_GUIDANCE = {
       en: 'Document a quarterly improvement cycle with clear process-level efficiency indicators.',
     },
   },
-  'gap-402': {
+  'gap-802': {
     priority: 'high',
     status: 'approved',
     consultantNote: {
-      ar: 'الاستدامة المالية تعتمد على تنويع مصادر الدخل خارج التمويل التقليدي.',
-      en: 'Financial sustainability depends on diversifying income beyond traditional funding.',
+      ar: 'أثر البرامج يُذكر وصفيًا ولا يُقاس بمؤشرات قبل التنفيذ وبعده.',
+      en: 'Programme impact is described but not measured with before-and-after indicators.',
     },
     recommendedAction: {
-      ar: 'تفعيل خطة معتمدة لتنويع مصادر الدخل بثلاث قنوات جديدة على الأقل.',
-      en: 'Activate an approved income-diversification plan with at least three new channels.',
+      ar: 'اعتماد إطار لقياس الأثر وتطبيقه على برنامجين رئيسيين خلال المرحلة.',
+      en: 'Adopt an impact-measurement framework and apply it to two core programmes this stage.',
+    },
+  },
+  'gap-801': {
+    priority: 'medium',
+    status: 'approved',
+    consultantNote: {
+      ar: 'استبيانات الرضا موجودة لكنها غير منتظمة ولا تغطي جميع الخدمات.',
+      en: 'Satisfaction surveys exist but are irregular and do not cover every service.',
+    },
+    recommendedAction: {
+      ar: 'جدولة قياس ربع سنوي لرضا المستفيدين يغطي جميع الخدمات ونشر نتائجه داخليًا.',
+      en: 'Schedule a quarterly beneficiary-satisfaction measurement covering every service and share the results internally.',
     },
   },
 }
@@ -128,8 +276,7 @@ function buildGaps() {
   return Object.entries(SUB_MIRROR).map(([subId, meta]) => {
     const id = Number(subId)
     const target = meta.weight
-    const ratio = SUB_RATIO_MIRROR[id] ?? 0
-    const current = Math.round(ratio * target)
+    const current = SUB_EARNED[id] ?? 0
     const gap = target - current
     const guidance = GAP_GUIDANCE[`gap-${id}`] ?? {}
     return {
@@ -164,11 +311,11 @@ export const bagStagesFixture = [
     status: 'active',
     title: { ar: 'المرحلة الأولى — الأساسيات التشغيلية', en: 'Stage 1 — Operational fundamentals' },
     description: {
-      ar: 'معالجة الفجوات الأكثر تأثيرًا في العمليات والتحول الرقمي والاستدامة المالية.',
-      en: 'Address the highest-impact gaps in operations, digital transformation, and financial sustainability.',
+      ar: 'معالجة الفجوات الأكثر تأثيرًا في العمليات وأثر البرامج ورضا المستفيدين.',
+      en: 'Address the highest-impact gaps in operations, programme impact, and beneficiary satisfaction.',
     },
-    startedAt: '2026-06-25T09:00:00+03:00',
-    endsAt: '2026-10-25T09:00:00+03:00',
+    startedAt: '2026-10-06T09:00:00+03:00',
+    endsAt: '2027-02-06T09:00:00+03:00',
   },
   {
     id: 'stage-2',
@@ -185,32 +332,6 @@ export const bagStagesFixture = [
 ]
 
 const stage1HelperFiles = {
-  'gap-503': [
-    {
-      id: 'hf-503-1',
-      gapId: 'gap-503',
-      subCriterionId: 503,
-      guidingPointId: 'gp-503-1',
-      kind: 'template',
-      name: { ar: 'نموذج خطة التحول الرقمي', en: 'Digital transformation plan template' },
-      fileName: 'digital-transformation-plan-template.docx',
-      sizeKb: 320,
-      url: '/assets/bag/helpers/digital-transformation-plan-template.docx',
-      attachedAt: '2026-06-26T10:00:00+03:00',
-    },
-    {
-      id: 'hf-503-2',
-      gapId: 'gap-503',
-      subCriterionId: 503,
-      guidingPointId: 'gp-503-2',
-      kind: 'guide',
-      name: { ar: 'دليل رقمنة خدمات المستفيدين', en: 'Guide to digitizing beneficiary services' },
-      fileName: 'digitizing-services-guide.pdf',
-      sizeKb: 880,
-      url: '/assets/bag/helpers/digitizing-services-guide.pdf',
-      attachedAt: '2026-06-26T10:05:00+03:00',
-    },
-  ],
   'gap-502': [
     {
       id: 'hf-502-1',
@@ -218,35 +339,57 @@ const stage1HelperFiles = {
       subCriterionId: 502,
       guidingPointId: 'gp-502-1',
       kind: 'procedure',
-      name: { ar: 'إجراء التحسين المستمر للعمليات', en: 'Continuous process improvement procedure' },
+      name: {
+        ar: 'إجراء التحسين المستمر للعمليات',
+        en: 'Continuous process improvement procedure',
+      },
       fileName: 'continuous-improvement-procedure.pdf',
       sizeKb: 540,
       url: '/assets/bag/helpers/continuous-improvement-procedure.pdf',
-      attachedAt: '2026-06-26T10:10:00+03:00',
+      attachedAt: '2026-10-06T10:10:00+03:00',
     },
   ],
-  'gap-402': [
+  'gap-802': [
     {
-      id: 'hf-402-1',
-      gapId: 'gap-402',
-      subCriterionId: 402,
-      guidingPointId: 'gp-402-1',
-      kind: 'recommendation',
-      name: { ar: 'توصيات تنويع مصادر الدخل', en: 'Income diversification recommendations' },
-      fileName: 'income-diversification-recommendations.pdf',
-      sizeKb: 410,
-      url: '/assets/bag/helpers/income-diversification-recommendations.pdf',
-      attachedAt: '2026-06-26T10:15:00+03:00',
+      id: 'hf-802-1',
+      gapId: 'gap-802',
+      subCriterionId: 802,
+      guidingPointId: 'gp-802-1',
+      kind: 'template',
+      name: { ar: 'نموذج إطار قياس الأثر', en: 'Impact-measurement framework template' },
+      fileName: 'impact-measurement-framework.docx',
+      sizeKb: 320,
+      url: '/assets/bag/helpers/impact-measurement-framework.docx',
+      attachedAt: '2026-10-06T10:00:00+03:00',
+    },
+  ],
+  'gap-801': [
+    {
+      id: 'hf-801-1',
+      gapId: 'gap-801',
+      subCriterionId: 801,
+      guidingPointId: 'gp-801-1',
+      kind: 'guide',
+      name: { ar: 'دليل قياس رضا المستفيدين', en: 'Beneficiary-satisfaction measurement guide' },
+      fileName: 'beneficiary-satisfaction-guide.pdf',
+      sizeKb: 610,
+      url: '/assets/bag/helpers/beneficiary-satisfaction-guide.pdf',
+      attachedAt: '2026-10-06T10:05:00+03:00',
     },
   ],
 }
 
-export const STAGE_1_OPEN_GAP_IDS = ['gap-503', 'gap-502', 'gap-402']
+export const STAGE_1_OPEN_GAP_IDS = ['gap-502', 'gap-802', 'gap-801']
 
 export function seedGaps() {
   return buildGaps().map((g) => {
     if (STAGE_1_OPEN_GAP_IDS.includes(g.id)) {
-      return { ...g, open: true, stageId: 'stage-1', helperFiles: (stage1HelperFiles[g.id] ?? []).map((f) => ({ ...f })) }
+      return {
+        ...g,
+        open: true,
+        stageId: 'stage-1',
+        helperFiles: (stage1HelperFiles[g.id] ?? []).map((f) => ({ ...f })),
+      }
     }
     return { ...g }
   })
@@ -266,8 +409,8 @@ export function seedSubscription() {
     currency: pricing.currency,
     paymentRef: 'bag-pay-5001',
     activeStageId: 'stage-1',
-    activatedAt: '2026-06-24T09:00:00+03:00',
-    createdAt: '2026-06-23T09:00:00+03:00',
+    activatedAt: '2026-10-05T09:00:00+03:00',
+    createdAt: '2026-10-04T09:00:00+03:00',
   }
 }
 
@@ -277,8 +420,8 @@ export function seedEligibility() {
     eligible: true,
     source: 'accredited',
     sourceAssessmentId: BAG_SOURCE_ASSESSMENT_ID,
-    sourceCompletedAt: '2026-06-22T11:00:00+03:00',
-    sourceScorePercent: 78,
+    sourceCompletedAt: '2026-09-02T11:00:00+03:00',
+    sourceScorePercent: 74.54,
     referenceVersion: 1,
     pricing,
     fee: pricing.total,
@@ -286,20 +429,9 @@ export function seedEligibility() {
   }
 }
 
+// Namaa holds a single accredited result, so it has no earlier kit.
 export function seedBagHistory() {
-  return [
-    {
-      id: 'bag-6600',
-      title: { ar: 'حقيبة التميز السريع — دورة 2025', en: 'Quick Excellence Kit — 2025 cycle' },
-      status: 'reassessed',
-      referenceAssessmentId: 9105,
-      referenceScorePercent: 71,
-      reassessedScorePercent: 79,
-      improvementPoints: 8,
-      paidAt: '2026-02-16T09:00:00+03:00',
-      completedAt: '2026-05-20T09:00:00+03:00',
-    },
-  ]
+  return []
 }
 
 export function seedAssessmentContext() {
@@ -308,8 +440,8 @@ export function seedAssessmentContext() {
       kind: 'accredited',
       assessmentId: BAG_SOURCE_ASSESSMENT_ID,
       version: 1,
-      scorePercent: 78,
-      completedAt: '2026-06-22T11:00:00+03:00',
+      scorePercent: 74.54,
+      completedAt: '2026-09-02T11:00:00+03:00',
     },
     context: [
       { kind: 'self', scorePercent: 82, completedAt: '2026-05-10T11:00:00+03:00' },
@@ -318,12 +450,16 @@ export function seedAssessmentContext() {
   }
 }
 
-const SUB_RATIO_AFTER = {
-  ...SUB_RATIO_MIRROR,
-  503: 1.0,
-  502: 0.86,
-  402: 1.0,
-  302: 0.66,
+const SUB_EARNED_AFTER = {
+  ...SUB_EARNED,
+  502: 602,
+  802: 600,
+  801: 600,
+  302: 280,
+}
+
+function percentOf(points, weight) {
+  return Number(((points / weight) * 100).toFixed(2))
 }
 
 function outcomeFor(diff, gapAfter) {
@@ -337,8 +473,8 @@ export function buildReassessment() {
   const criteria = Object.entries(SUB_MIRROR).map(([subId, meta]) => {
     const id = Number(subId)
     const weight = meta.weight
-    const before = Math.round((SUB_RATIO_MIRROR[id] ?? 0) * weight)
-    const after = Math.round((SUB_RATIO_AFTER[id] ?? SUB_RATIO_MIRROR[id] ?? 0) * weight)
+    const before = SUB_EARNED[id] ?? 0
+    const after = SUB_EARNED_AFTER[id] ?? before
     const diff = after - before
     const gapAfter = weight - after
     return {
@@ -359,8 +495,8 @@ export function buildReassessment() {
   const totalWeight = criteria.reduce((s, c) => s + c.weight, 0)
   const totalBefore = criteria.reduce((s, c) => s + c.before, 0)
   const totalAfter = criteria.reduce((s, c) => s + c.after, 0)
-  const beforePercent = Math.round((totalBefore / totalWeight) * 100)
-  const afterPercent = Math.round((totalAfter / totalWeight) * 100)
+  const beforePercent = percentOf(totalBefore, totalWeight)
+  const afterPercent = percentOf(totalAfter, totalWeight)
   return {
     available: true,
     reference: seedReference(),
@@ -377,7 +513,7 @@ export function buildReassessment() {
       beforePercent,
       afterPercent,
       diff: totalAfter - totalBefore,
-      diffPercent: afterPercent - beforePercent,
+      diffPercent: Number((afterPercent - beforePercent).toFixed(2)),
       closed: criteria.filter((c) => c.outcome === 'closed').length,
       improved: criteria.filter((c) => c.outcome === 'partially-improved').length,
       stable: criteria.filter((c) => c.outcome === 'stable').length,

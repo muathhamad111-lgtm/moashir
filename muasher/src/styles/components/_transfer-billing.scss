@@ -1,0 +1,16 @@
+@use '../mixins' as *;
+
+.transfer-billing .card__header {
+  @include flex(row, center, space-between, var(--space-2));
+  flex-wrap: wrap;
+}
+
+.transfer-billing__hint {
+  margin-block: var(--space-0) var(--space-3);
+  font-size: var(--fs-sm);
+  color: var(--theme-text-secondary);
+}
+
+.transfer-billing__download {
+  margin-block-start: var(--space-3);
+}

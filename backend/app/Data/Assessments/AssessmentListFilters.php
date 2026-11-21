@@ -14,5 +14,7 @@ final readonly class AssessmentListFilters
         public ?int $entityId = null,
         public string $sort = '-created_at',
         public int $perPage = 15,
+        public ?bool $isOpen = null,
+        public ?bool $hasResult = null,
     ) {}
 }

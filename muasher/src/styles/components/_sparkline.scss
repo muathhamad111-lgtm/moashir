@@ -1,0 +1,25 @@
+.sparkline {
+  overflow: visible;
+}
+
+.sparkline__line {
+  fill: none;
+  stroke: var(--data-ink);
+  stroke-width: var(--border-width-thick);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sparkline__dot {
+  fill: var(--data-ink);
+}
+
+.sparkline--on-band {
+  .sparkline__line {
+    stroke: var(--data-on-band);
+  }
+
+  .sparkline__dot {
+    fill: var(--data-on-band);
+  }
+}

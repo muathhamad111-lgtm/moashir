@@ -1,0 +1,126 @@
+@use '../mixins' as *;
+
+.channels-card,
+.bank-accounts-card {
+  @include flex(column, stretch, flex-start, var(--space-4));
+  padding: var(--space-6);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-xl);
+  background-color: var(--theme-surface);
+}
+
+.channels-card__header,
+.bank-accounts-card__header {
+  @include flex(column, stretch, flex-start, var(--space-1));
+}
+
+.channels-card__title,
+.bank-accounts-card__title {
+  margin: 0;
+  font-size: var(--fs-xl);
+  color: var(--theme-heading);
+}
+
+.channels-card__subtitle,
+.bank-accounts-card__subtitle {
+  margin: 0;
+  color: var(--theme-text-secondary);
+  font-size: var(--fs-sm);
+}
+
+.channels-card__options {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+
+  @include respond-to('lg') {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.channels-card__alert {
+  @include flex(row, flex-start, flex-start, var(--space-3));
+  flex-wrap: wrap;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-sm);
+
+  p {
+    flex: 1;
+    min-inline-size: 0;
+    margin: 0;
+    line-height: var(--lh-relaxed);
+  }
+}
+
+.channels-card__alert--danger {
+  background-color: var(--color-danger-soft);
+  color: var(--theme-danger-text);
+}
+
+.channels-card__alert--warning {
+  background-color: var(--color-warning-soft);
+  color: var(--theme-warning-text);
+}
+
+.channels-card__link {
+  @include flex(row, center, flex-start, var(--space-1));
+  color: var(--theme-accent-text);
+  font-weight: var(--fw-semibold);
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.channels-card__note {
+  @include flex(row, flex-start, flex-start, var(--space-2));
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--color-info-soft);
+  color: var(--theme-info-text);
+  font-size: var(--fs-sm);
+}
+
+.channels-card__error {
+  margin: 0;
+  color: var(--theme-danger-text);
+  font-size: var(--fs-sm);
+}
+
+.channels-card__actions {
+  @include flex(row, center, flex-start, var(--space-3));
+}
+
+.bank-accounts-card__header {
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.bank-accounts-card__status {
+  @include visually-hidden;
+}
+
+.bank-accounts-card__example {
+  @include flex(row, center, flex-start, var(--space-2));
+  margin: 0;
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}
+
+.integration-form__not-offered {
+  @include flex(row, center, flex-start, var(--space-2));
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill);
+  background-color: var(--theme-tint);
+  color: var(--theme-text-secondary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  align-self: flex-start;
+}

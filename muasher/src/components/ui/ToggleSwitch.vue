@@ -1,5 +1,6 @@
 <script setup>
 import { computed, useId } from 'vue'
+import BrandStar from '@/components/ui/BrandStar.vue'
 
 defineProps({
   modelValue: { type: Boolean, default: false },
@@ -7,6 +8,7 @@ defineProps({
   name: { type: String, required: true },
   description: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
+  hideLabel: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -16,7 +18,7 @@ const descId = computed(() => `${controlId}-desc`)
 
 <template>
   <div class="toggle-switch" :class="{ 'is-disabled': disabled }">
-    <div class="toggle-switch__text">
+    <div class="toggle-switch__text" :class="{ 'toggle-switch__text--hidden': hideLabel }">
       <label class="toggle-switch__label" :for="controlId">{{ label }}</label>
       <p v-if="description" :id="descId" class="toggle-switch__desc">{{ description }}</p>
     </div>
@@ -33,7 +35,7 @@ const descId = computed(() => `${controlId}-desc`)
         :aria-describedby="description ? descId : undefined"
         @change="emit('update:modelValue', $event.target.checked)"
       />
-      <span class="toggle-switch__thumb" aria-hidden="true"></span>
+      <span class="toggle-switch__thumb" aria-hidden="true"><BrandStar /></span>
     </label>
   </div>
 </template>

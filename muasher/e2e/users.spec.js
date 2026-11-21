@@ -1,6 +1,7 @@
 /* eslint-disable playwright/no-conditional-in-test, playwright/no-wait-for-timeout, playwright/expect-expect */
 import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
+import { applyOpenListFilters, openListFilters } from './support/listFilters'
 
 function seed(page, locale) {
   return seedSignedIn(page, { roles: ['system_admin'], name: 'Admin' }, { locale })
@@ -38,8 +39,10 @@ test('shows the stats cards for the users summary', async ({ page }) => {
 test('filters the list by role', async ({ page }) => {
   await page.goto('/admin/settings/users')
   await retryTable(page)
-  await page.locator('.toolbar__filters .dropdown__toggle').first().click()
-  await page.locator('.toolbar__filters .dropdown__item').nth(1).click()
+  const filters = await openListFilters(page)
+  await filters.locator('.dropdown-field').first().click()
+  await page.getByRole('option').nth(1).click()
+  await applyOpenListFilters(page)
   await retryTable(page)
   await expect(page.locator('.table:not(.table--loading) tbody .table__row').first()).toBeVisible()
 })
@@ -47,7 +50,10 @@ test('filters the list by role', async ({ page }) => {
 test('opens the add-user form modal', async ({ page }) => {
   await page.goto('/admin/settings/users')
   await retryTable(page)
-  await page.getByRole('button', { name: /add user|إضافة مستخدم/i }).first().click()
+  await page
+    .getByRole('button', { name: /invite user|دعوة مستخدم/i })
+    .first()
+    .click()
   await expect(page.locator('.modal__panel')).toBeVisible()
   await expect(page.locator('input[name="name"]')).toBeVisible()
   await expect(page.locator('input[name="email"]')).toBeVisible()
@@ -61,15 +67,20 @@ test('capture users screens for the design review', async ({ page }, testInfo) =
   await page.waitForTimeout(600)
   await page.screenshot({ path: `test-results/users-index-${suffix}.png`, fullPage: true })
 
-  await page.locator('.toolbar__filters .dropdown__toggle').first().click()
-  await page.locator('.toolbar__filters .dropdown__item').nth(1).click()
+  const filters = await openListFilters(page)
+  await filters.locator('.dropdown-field').first().click()
+  await page.getByRole('option').nth(1).click()
+  await applyOpenListFilters(page)
   await retryTable(page)
   await page.waitForTimeout(600)
   await page.screenshot({ path: `test-results/users-filter-${suffix}.png`, fullPage: true })
 
   await page.reload()
   await retryTable(page)
-  await page.getByRole('button', { name: /add user|إضافة مستخدم/i }).first().click()
+  await page
+    .getByRole('button', { name: /invite user|دعوة مستخدم/i })
+    .first()
+    .click()
   await page.waitForTimeout(500)
   await page.screenshot({ path: `test-results/users-form-${suffix}.png`, fullPage: true })
 })

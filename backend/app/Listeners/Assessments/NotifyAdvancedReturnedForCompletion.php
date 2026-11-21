@@ -7,6 +7,7 @@ namespace App\Listeners\Assessments;
 use App\Enums\Notifications\NotificationCode;
 use App\Events\Assessments\AdvancedReturnedForCompletion;
 use App\Models\Assessments\AssessmentCompletionRequest;
+use App\Services\Assessments\CompletionRequestItems;
 use App\Services\Entities\EntityNotifier;
 use App\Support\Assessments\AssessmentLinks;
 use App\Support\Assessments\RequestNotices;
@@ -15,7 +16,7 @@ use App\Support\ValueObjects\LocalizedText;
 
 final readonly class NotifyAdvancedReturnedForCompletion
 {
-    public function __construct(private EntityNotifier $notifier) {}
+    public function __construct(private EntityNotifier $notifier, private CompletionRequestItems $items) {}
 
     public function handle(AdvancedReturnedForCompletion $event): void
     {
@@ -35,6 +36,6 @@ final readonly class NotifyAdvancedReturnedForCompletion
                 'deadline' => AwardNotices::moment($request->deadline_at),
                 'outcome' => LocalizedText::fromTranslation('notifications.assessments.advanced.ADV-25.outcomes.'.$request->expiry_outcome->value),
             ],
-        ));
+        )->withItems($this->items->of($assessment, $request)));
     }
 }

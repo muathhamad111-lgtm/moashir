@@ -17,9 +17,20 @@ vi.mock('@/services/filesService', () => ({
 }))
 vi.mock('@/utils/download', () => ({ downloadBlob: vi.fn() }))
 
-const PAYMENT = { id: 'p-1', reference: 'PAY-2026-000021', purpose: 'accredited', status: 'created', isTest: true, pricing: {} }
+const PAYMENT = {
+  id: 'p-1',
+  reference: 'PAY-2026-000021',
+  purpose: 'accredited',
+  status: 'created',
+  isTest: true,
+  pricing: {},
+}
 
-function checkoutAnswer({ status = 'created', expiresAt = new Date(Date.now() + 30 * 60000).toISOString(), checkout = true } = {}) {
+function checkoutAnswer({
+  status = 'created',
+  expiresAt = new Date(Date.now() + 30 * 60000).toISOString(),
+  checkout = true,
+} = {}) {
   return {
     data: { ...PAYMENT, status, checkout: checkout ? { mode: 'test', expiresAt } : null },
     meta: { idempotentReplay: false, existingOrder: false },
@@ -73,11 +84,15 @@ describe('useCheckout', () => {
 
   it('reports an order already in progress and expires the open order at its deadline', async () => {
     vi.useFakeTimers()
-    paymentsService.create.mockResolvedValueOnce(checkoutAnswer({ status: 'pending', checkout: false }))
+    paymentsService.create.mockResolvedValueOnce(
+      checkoutAnswer({ status: 'pending', checkout: false }),
+    )
     const { api } = withSetup(() => useCheckout('accredited'))
     await api.start()
     expect(api.phase.value).toBe(CHECKOUT_PHASES.IN_PROGRESS)
-    paymentsService.create.mockResolvedValueOnce(checkoutAnswer({ expiresAt: new Date(Date.now() + 5000).toISOString() }))
+    paymentsService.create.mockResolvedValueOnce(
+      checkoutAnswer({ expiresAt: new Date(Date.now() + 5000).toISOString() }),
+    )
     await api.start()
     expect(api.phase.value).toBe(CHECKOUT_PHASES.READY)
     vi.advanceTimersByTime(6000)
@@ -140,7 +155,10 @@ describe('usePaymentReturn', () => {
 
 describe('useSignedDownload', () => {
   it('follows the signed link and saves the file', async () => {
-    filesService.fetchSignedFile.mockResolvedValue({ blob: new Blob(['%PDF']), fileName: 'RCP-2026-000001.pdf' })
+    filesService.fetchSignedFile.mockResolvedValue({
+      blob: new Blob(['%PDF']),
+      fileName: 'RCP-2026-000001.pdf',
+    })
     const { api } = withSetup(() => useSignedDownload())
     const link = { url: '/api/v1/files/x/download', fileName: 'RCP-2026-000001.pdf' }
     expect(await api.download('receipt', () => Promise.resolve({ data: link }))).toBe(true)
@@ -150,7 +168,9 @@ describe('useSignedDownload', () => {
 
   it('flags a receipt that cannot be rendered right now', async () => {
     const { api } = withSetup(() => useSignedDownload())
-    const ok = await api.download('receipt', () => Promise.reject(answered(503, 'document.renderer_unavailable')))
+    const ok = await api.download('receipt', () =>
+      Promise.reject(answered(503, 'document.renderer_unavailable')),
+    )
     expect(ok).toBe(false)
     expect(api.unavailable.receipt).toBe(true)
     expect(api.busy.receipt).toBe(false)

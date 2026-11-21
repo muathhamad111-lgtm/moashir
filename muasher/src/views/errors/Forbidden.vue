@@ -6,6 +6,7 @@ import IllustrationSlot from '@/components/public/IllustrationSlot.vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -34,7 +35,7 @@ function goSafe() {
         variant="compact"
       />
       <span class="error-page__icon error-page__icon--danger" aria-hidden="true">
-        <i class="fa-solid fa-lock"></i>
+        <AppIcon name="lock" />
       </span>
       <p class="error-page__code" aria-hidden="true">{{ $t('errors.forbidden.code') }}</p>
       <h1 class="error-page__title">{{ $t('errors.forbidden.title') }}</h1>
@@ -43,7 +44,7 @@ function goSafe() {
       <div class="error-page__actions">
         <BaseButton
           variant="primary"
-          :icon="isAuthenticated ? 'fa-solid fa-gauge-high' : 'fa-solid fa-house'"
+          :icon="isAuthenticated ? 'gauge' : 'home-smile'"
           @click="goSafe"
         >
           {{ $t(actionLabelKey) }}

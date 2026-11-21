@@ -35,6 +35,6 @@ final class FilteringDecisionRecorder
 
     public function isBelow(Percent $initial, AwardCycle $cycle): bool
     {
-        return $initial->tenThousandths < $cycle->disqualification_score->tenThousandths;
+        return $initial->isDisplayedBelow($cycle->disqualification_score);
     }
 }

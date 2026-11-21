@@ -1,0 +1,138 @@
+@use '../mixins' as *;
+
+.portal-top-bar {
+  --focus-ring-color: var(--brand-on-secondary);
+  position: sticky;
+  inset-block-start: var(--tts-page-top);
+  z-index: var(--z-sticky);
+  border-radius: var(--tts-radius-header);
+  background-color: var(--navbar-bg);
+  color: var(--brand-on-secondary);
+  box-shadow: 0 calc(var(--tts-page-top) * -1) 0 0 var(--content-bg);
+}
+
+.portal-top-bar__inner {
+  @include flex(row, center, space-between, var(--space-3));
+  min-block-size: var(--tts-header-height);
+  padding-block: var(--space-2);
+  padding-inline: var(--space-3);
+
+  @include respond-to('md') {
+    padding-inline: var(--space-5);
+  }
+}
+
+.portal-top-bar__start {
+  @include flex(column, flex-start, center, var(--space-1));
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.portal-top-bar__end {
+  @include flex(row, center, flex-end, var(--space-2));
+  flex-shrink: 0;
+}
+
+.portal-top-bar__brand {
+  display: inline-flex;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  @include respond-to('lg') {
+    display: none;
+  }
+}
+
+.portal-top-bar__logo {
+  block-size: var(--size-navbar-logo);
+}
+
+.portal-top-bar__collapse {
+  display: none;
+
+  @include respond-to('lg') {
+    display: inline-flex;
+  }
+}
+
+.portal-top-bar__area {
+  display: none;
+  margin: 0;
+  color: var(--brand-on-secondary);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-tight);
+
+  @include respond-to('lg') {
+    display: block;
+  }
+}
+
+.portal-top-bar__updated {
+  display: none;
+  margin: 0;
+  color: var(--brand-on-secondary-soft);
+  font-size: var(--fs-xs);
+
+  @include respond-to('lg') {
+    display: block;
+  }
+}
+
+.portal-top-bar__account {
+  display: none;
+
+  @include respond-to('lg') {
+    display: flex;
+  }
+}
+
+.portal-top-bar__collapse,
+.portal-top-bar__tool.btn,
+.portal-bell {
+  flex-shrink: 0;
+  min-inline-size: var(--size-touch-target);
+  min-block-size: var(--size-touch-target);
+  border: 0;
+  border-radius: var(--btn-radius, var(--radius-md));
+  background-color: var(--brand-on-secondary-overlay);
+  color: var(--brand-on-secondary);
+
+  &.btn--icon {
+    font-size: var(--icon-size-lg);
+  }
+
+  &:hover:not(:disabled) {
+    box-shadow: none;
+    background-color: var(--brand-on-secondary-hover);
+    color: var(--brand-on-secondary);
+  }
+}
+
+.portal-bell {
+  @include flex-center;
+  position: relative;
+  inline-size: var(--size-touch-target);
+  block-size: var(--size-touch-target);
+  font-size: var(--icon-size-lg);
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.portal-bell__dot {
+  position: absolute;
+  inset-block-start: var(--space-2);
+  inset-inline-end: var(--space-2);
+  inline-size: var(--size-unread-dot);
+  block-size: var(--size-unread-dot);
+  border: var(--border-width-thick) solid var(--navbar-bg);
+  border-radius: var(--radius-circle);
+  background-color: var(--color-danger);
+  box-sizing: content-box;
+}

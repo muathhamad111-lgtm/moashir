@@ -1,0 +1,23 @@
+@use '../mixins' as *;
+
+.coming-soon-chip {
+  @include flex(row, center, center, var(--space-1));
+  flex-shrink: 0;
+  min-block-size: var(--size-badge-s);
+  padding-inline: var(--space-2);
+  border: var(--border-width) solid var(--tier-neutral-border);
+  border-radius: var(--radius-pill);
+  background-color: var(--tier-neutral-surface);
+  color: var(--tier-neutral-ink);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+
+  &--compact {
+    min-block-size: var(--space-5);
+  }
+}
+
+.coming-soon-chip__icon {
+  font-size: var(--icon-size-sm);
+}

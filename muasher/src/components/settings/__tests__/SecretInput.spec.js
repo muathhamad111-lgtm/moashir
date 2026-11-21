@@ -31,7 +31,10 @@ describe('SecretInput', () => {
     const wrapper = mountSecret({ meta: STORED })
     const replace = wrapper.findAll('button').find((button) => button.text() === 'Replace')
     await replace.trigger('click')
-    expect(wrapper.emitted('update:modelValue').at(-1)[0]).toEqual({ action: SECRET_ACTIONS.REPLACE, value: '' })
+    expect(wrapper.emitted('update:modelValue').at(-1)[0]).toEqual({
+      action: SECRET_ACTIONS.REPLACE,
+      value: '',
+    })
     await wrapper.setProps({ modelValue: { action: SECRET_ACTIONS.REPLACE, value: '' } })
     const input = wrapper.find('input')
     expect(input.attributes('type')).toBe('password')
@@ -39,18 +42,53 @@ describe('SecretInput', () => {
     expect(input.element.value).toBe('')
   })
 
-  it('emits the typed value as a replacement and offers no reveal toggle', async () => {
+  it('emits the typed value as a replacement', async () => {
     const wrapper = mountSecret()
     await wrapper.find('input').setValue('sk_test_fake_example_value_0001')
-    expect(wrapper.emitted('update:modelValue').at(-1)[0]).toEqual({ action: SECRET_ACTIONS.REPLACE, value: 'sk_test_fake_example_value_0001' })
-    expect(wrapper.findAll('button').some((button) => /show|reveal/i.test(button.attributes('aria-label') ?? ''))).toBe(false)
+    expect(wrapper.emitted('update:modelValue').at(-1)[0]).toEqual({
+      action: SECRET_ACTIONS.REPLACE,
+      value: 'sk_test_fake_example_value_0001',
+    })
+  })
+
+  it('reveals only the value being typed, keeping autocomplete off', async () => {
+    const wrapper = mountSecret({
+      modelValue: { action: SECRET_ACTIONS.REPLACE, value: 'sk_test_fake_example_value_0001' },
+    })
+    const input = wrapper.find('input')
+    const toggle = wrapper.find('button.password-reveal')
+    expect(toggle.attributes('type')).toBe('button')
+    expect(toggle.attributes('aria-controls')).toBe(input.attributes('id'))
+    expect(toggle.attributes('aria-label')).toBe('Show the entered value')
+    await toggle.trigger('click')
+    expect(input.attributes('type')).toBe('text')
+    expect(input.attributes('autocomplete')).toBe('off')
+    expect(toggle.attributes('aria-pressed')).toBe('true')
+    expect(toggle.attributes('aria-label')).toBe('Hide the entered value')
+    await wrapper.setProps({ modelValue: { action: SECRET_ACTIONS.KEEP, value: '' } })
+    expect(wrapper.find('button.password-reveal').exists()).toBe(true)
+    expect(wrapper.find('input').attributes('type')).toBe('password')
+  })
+
+  it('offers no reveal toggle for a stored secret, which never reaches the browser', () => {
+    const wrapper = mountSecret({ meta: STORED })
+    expect(wrapper.find('button.password-reveal').exists()).toBe(false)
   })
 
   it('marks a stored secret for clearing and can undo it', async () => {
-    const wrapper = mountSecret({ meta: STORED, modelValue: { action: SECRET_ACTIONS.CLEAR, value: '' } })
+    const wrapper = mountSecret({
+      meta: STORED,
+      modelValue: { action: SECRET_ACTIONS.CLEAR, value: '' },
+    })
     expect(wrapper.find('.secret-input__state--clearing').text()).toContain('will be removed')
-    await wrapper.findAll('button').find((button) => button.text() === 'Undo').trigger('click')
-    expect(wrapper.emitted('update:modelValue').at(-1)[0]).toEqual({ action: SECRET_ACTIONS.KEEP, value: '' })
+    await wrapper
+      .findAll('button')
+      .find((button) => button.text() === 'Undo')
+      .trigger('click')
+    expect(wrapper.emitted('update:modelValue').at(-1)[0]).toEqual({
+      action: SECRET_ACTIONS.KEEP,
+      value: '',
+    })
   })
 
   it('shows the field error and links it to the input', () => {

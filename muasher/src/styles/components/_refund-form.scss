@@ -5,17 +5,6 @@
   @include flex(column, stretch, flex-start, var(--space-4));
 }
 
-.refund-form__lead,
-.settle-form__lead {
-  @include flex(row, flex-start, flex-start, var(--space-2));
-  margin: 0;
-  padding: var(--space-3);
-  border-radius: var(--radius-md);
-  background-color: var(--color-info-soft);
-  color: var(--theme-text);
-  font-size: var(--fs-sm);
-}
-
 .refund-form__total {
   @include flex(row, baseline, space-between, var(--space-3));
   margin: 0;

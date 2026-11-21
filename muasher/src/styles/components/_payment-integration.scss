@@ -5,7 +5,8 @@
   padding: var(--space-4);
   border: var(--border-width) solid var(--theme-border);
   border-radius: var(--radius-md);
-  background-color: var(--theme-surface-raised);
+  // No fill of its own: it sits inside an integration card, so its fields' labels share the card colour.
+  background-color: transparent;
   min-inline-size: 0;
 
   &.is-selected {

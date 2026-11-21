@@ -50,7 +50,11 @@ function respondWithMatrix() {
     data: {
       permissions: PERMISSIONS_FIXTURE,
       roles: ROLES_FIXTURE,
-      matrix: { system_admin: ['users.view', 'settings.branding.manage'], request_follower: [], entity: [] },
+      matrix: {
+        system_admin: ['users.view', 'settings.branding.manage'],
+        request_follower: [],
+        entity: [],
+      },
     },
   })
 }
@@ -58,7 +62,10 @@ function respondWithMatrix() {
 async function mountPage(roles = ['system_admin']) {
   const globals = createTestGlobals({ locale: 'en' })
   useAuthStore(globals.pinia).setUser(sessionUserFor(roles))
-  const wrapper = mount(Permissions, { attachTo: document.body, global: { ...globals, stubs: { teleport: true } } })
+  const wrapper = mount(Permissions, {
+    attachTo: document.body,
+    global: { ...globals, stubs: { teleport: true } },
+  })
   await flushPromises()
   return wrapper
 }
@@ -86,7 +93,7 @@ describe('Permissions screen — matrix and labels only (C-05)', () => {
 
   it('hides the edit action from a user without roles.matrix.manage', async () => {
     const wrapper = await mountPage([])
-    expect(wrapper.find('.actions-dropdown').exists()).toBe(false)
+    expect(wrapper.find('.dropdown-menu').exists()).toBe(false)
   })
 
   it('saves labels and replaces only the changed role rows of the matrix', async () => {
@@ -103,7 +110,9 @@ describe('Permissions screen — matrix and labels only (C-05)', () => {
       description: { ar: 'وصف', en: 'Read users.' },
     })
     expect(permissionsService.updateRolePermissions).toHaveBeenCalledTimes(1)
-    expect(permissionsService.updateRolePermissions).toHaveBeenCalledWith('request_follower', ['users.view'])
+    expect(permissionsService.updateRolePermissions).toHaveBeenCalledWith('request_follower', [
+      'users.view',
+    ])
     expect(toastSuccess).toHaveBeenCalled()
   })
 
@@ -111,7 +120,11 @@ describe('Permissions screen — matrix and labels only (C-05)', () => {
     permissionsService.updateLabels.mockRejectedValueOnce(new Error('offline'))
     const wrapper = await mountPage()
     wrapper.vm.openEdit(wrapper.vm.filteredRows[0])
-    await wrapper.vm.onSaved({ label: { ar: 'س', en: 'Changed' }, description: { ar: 'وصف', en: 'Read users.' }, roles: ['system_admin'] })
+    await wrapper.vm.onSaved({
+      label: { ar: 'س', en: 'Changed' },
+      description: { ar: 'وصف', en: 'Read users.' },
+      roles: ['system_admin'],
+    })
     await flushPromises()
     expect(toastError).toHaveBeenCalled()
   })

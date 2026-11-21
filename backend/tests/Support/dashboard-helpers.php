@@ -1,0 +1,82 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Models\Identity\User;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Testing\TestResponse;
+
+const DASHBOARD = '/api/v1/dashboard/summary';
+
+function boardOf(User $user, ?string $board = null): TestResponse
+{
+    return switchTo($user)->getJson(DASHBOARD.($board === null ? '' : '?board='.$board))->assertOk();
+}
+
+/**
+ * @return Collection<string, mixed>
+ */
+function boardCards(TestResponse $response): Collection
+{
+    return collect($response->json('data.cards'))->mapWithKeys(static fn (array $card): array => [$card['key'] => $card['value']]);
+}
+
+function boardWidget(TestResponse $response, string $key): mixed
+{
+    return collect($response->json('data.widgets'))->firstWhere('key', $key)['data'] ?? null;
+}
+
+const ACTION_CENTER = '/api/v1/dashboard/action-center';
+
+/**
+ * @return Collection<string, array<string, mixed>>
+ */
+function actionItems(User $user): Collection
+{
+    return collect(switchTo($user)->getJson(ACTION_CENTER)->assertOk()->json('data'))->keyBy('key');
+}
+
+function dashboardQueryCount(User $user, string $board): int
+{
+    boardOf($user, $board);
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+    boardOf($user, $board);
+    $count = count(DB::getQueryLog());
+    DB::disableQueryLog();
+
+    return $count;
+}
+
+const DASHBOARD_OVERVIEW = '/api/v1/dashboard/overview';
+
+function overviewOf(User $user, string $query = ''): TestResponse
+{
+    return switchTo($user)->getJson(DASHBOARD_OVERVIEW.($query === '' ? '' : '?'.$query))->assertOk();
+}
+
+function overviewWidget(TestResponse $response, string $key): mixed
+{
+    return collect($response->json('data.snapshot'))->firstWhere('key', $key)['data'] ?? null;
+}
+
+/**
+ * @return Collection<string, array{value: mixed, previous: mixed}>
+ */
+function overviewCards(TestResponse $response): Collection
+{
+    return collect($response->json('data.cards'))->mapWithKeys(static fn (array $card): array => [$card['key'] => ['value' => $card['value'], 'previous' => $card['previous']]]);
+}
+
+function overviewQueryCount(User $user): int
+{
+    overviewOf($user);
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+    overviewOf($user);
+    $count = count(DB::getQueryLog());
+    DB::disableQueryLog();
+
+    return $count;
+}

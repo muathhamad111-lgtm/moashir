@@ -1,104 +1,74 @@
 <script setup>
-import { computed, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { object as yupObject, boolean as yupBoolean, string as yupString } from 'yup'
-import FormModal from '@/components/modal/FormModal.vue'
 import BaseInput from '@/components/form/BaseInput.vue'
 import BaseTextarea from '@/components/form/BaseTextarea.vue'
 import BaseCheckbox from '@/components/form/BaseCheckbox.vue'
-import BaseSelect from '@/components/form/BaseSelect.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import { useValidatedForm } from '@/composables/useValidatedForm'
+import { useFormShell } from '@/composables/useFormShell'
 import { renameFieldErrors } from '@/services/mappers/fieldErrors'
-import { pairedText, requiredText, weightText } from '@/utils/criteriaSchemas'
-import { normalizeWeight } from '@/utils/weight'
-import {
-  CRITERIA_DESCRIPTION_MAX_LENGTH,
-  CRITERION_GROUP_ORDER,
-  CRITERION_GROUPS,
-} from '@/constants/criteria'
+import AppIcon from '@/components/ui/AppIcon.vue'
+import AttachmentsEditor from './AttachmentsEditor.vue'
+import { cloneAttachments } from '@/utils/criteriaAttachments'
+import * as mainForm from '@/utils/criteriaMainForm'
+import BaseRadio from '@/components/form/BaseRadio.vue'
+import CriteriaWizardReview from './CriteriaWizardReview.vue'
+import { useCriteria } from '@/composables/useCriteria'
+import { useCriteriaFormLayout } from '@/composables/useCriteriaFormLayout'
+import { useScoringTypeOptions } from '@/composables/useScoringTypeOptions'
+import { MAIN_FIELD_SECTIONS, MAIN_WIZARD } from '@/utils/criteriaFormSections'
+import { mainReviewRows } from '@/utils/criteriaWizardReview'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
+  inline: { type: Boolean, default: false },
+  readonly: { type: Boolean, default: false },
   criterion: { type: Object, default: null },
   save: { type: Function, required: true },
+  // In the editor sheet: the tab to show (basics | attachments). Empty = every field (create dialog).
+  section: { type: String, default: '' },
+  // Create only: the fields come in short steps in a drawer (UX-A2).
+  wizard: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'section-errors', 'dirty'])
 const { t } = useI18n()
 
-const FIELD_ALIASES = {
-  'name.ar': 'nameAr',
-  'name.en': 'nameEn',
-  name: 'nameAr',
-  'description.ar': 'descriptionAr',
-  'description.en': 'descriptionEn',
-  description: 'descriptionAr',
-}
-
 const isEdit = computed(() => Boolean(props.criterion))
-const groupOptions = computed(() =>
-  CRITERION_GROUP_ORDER.map((group) => ({ value: group, label: t(`criteria.groups.${group}`) })),
-)
-
-const schema = computed(() =>
-  yupObject({
-    nameAr: requiredText(t),
-    nameEn: requiredText(t),
-    descriptionAr: pairedText(t, 'descriptionEn', CRITERIA_DESCRIPTION_MAX_LENGTH),
-    descriptionEn: pairedText(t, 'descriptionAr', CRITERIA_DESCRIPTION_MAX_LENGTH),
-    weight: weightText(t),
-    group: yupString().required(t('validation.required')),
-    distributeEqually: yupBoolean(),
-    active: yupBoolean(),
-  }),
-)
-
-function valuesOf(criterion) {
-  return {
-    nameAr: criterion?.name?.ar ?? '',
-    nameEn: criterion?.name?.en ?? '',
-    descriptionAr: criterion?.description?.ar ?? '',
-    descriptionEn: criterion?.description?.en ?? '',
-    weight: criterion?.weight ?? '',
-    group: criterion?.group ?? CRITERION_GROUPS.ENABLERS,
-    distributeEqually: Boolean(criterion?.distributeEqually),
-    active: criterion?.active ?? true,
-  }
-}
-
-function payloadOf(values) {
-  const hasDescription = values.descriptionAr.trim() || values.descriptionEn.trim()
-  const payload = {
-    name: { ar: values.nameAr.trim(), en: values.nameEn.trim() },
-    description: hasDescription
-      ? { ar: values.descriptionAr.trim(), en: values.descriptionEn.trim() }
-      : null,
-    weight: normalizeWeight(values.weight),
-    group: values.group,
-    distributeEqually: values.distributeEqually,
-  }
-  return isEdit.value ? payload : { ...payload, active: values.active }
-}
+const attachments = ref(cloneAttachments(props.criterion?.attachments))
+const groupOptions = computed(() => mainForm.mainGroupOptions(t))
+const schema = computed(() => mainForm.mainFormSchema(t))
 
 const form = useValidatedForm({
   schema,
-  initialValues: valuesOf(props.criterion),
+  initialValues: mainForm.mainFormValues(props.criterion),
   action: 'criteria.mainForm.submit',
   submit: async (values) => {
     try {
-      await props.save({ id: props.criterion?.id ?? null, payload: payloadOf(values) })
+      await props.save({
+        id: props.criterion?.id ?? null,
+        payload: mainForm.mainFormPayload(values, attachments.value, { isEdit: isEdit.value }),
+      })
       emit('update:modelValue', false)
     } catch (error) {
-      throw renameFieldErrors(error, FIELD_ALIASES)
+      throw renameFieldErrors(error, mainForm.MAIN_FIELD_ALIASES)
     }
   },
 })
 
-watch(
-  () => props.modelValue,
-  (open) => {
-    if (open) form.resetForm({ values: valuesOf(props.criterion) })
+const formShell = useFormShell(
+  {
+    inline: () => props.inline,
+    open: () => props.modelValue,
+    record: () => props.criterion,
+    wizard: () => props.wizard,
+    reset: () => {
+      form.resetForm({ values: mainForm.mainFormValues(props.criterion) })
+      attachments.value = cloneAttachments(props.criterion?.attachments)
+    },
   },
+  emit,
 )
 
 const [nameAr] = form.defineField('nameAr')
@@ -107,22 +77,41 @@ const [descriptionAr] = form.defineField('descriptionAr')
 const [descriptionEn] = form.defineField('descriptionEn')
 const [weight] = form.defineField('weight')
 const [group] = form.defineField('group')
+const [defaultScoringType] = form.defineField('defaultScoringType')
 const [distributeEqually] = form.defineField('distributeEqually')
 const [active] = form.defineField('active')
+
+const { weight: formatted } = useCriteria()
+const { options: scoringOptions, labelOf: typeLabel } = useScoringTypeOptions()
+const { sections, steps, shellProps, inWizard } = useCriteriaFormLayout(props, form, emit, {
+  sheetSections: MAIN_FIELD_SECTIONS,
+  wizard: MAIN_WIZARD,
+  attachments,
+  record: () => props.criterion,
+})
+const reviewRows = computed(() => mainReviewRows(form.values, { t, typeLabel, weight: formatted }))
 </script>
 
 <template>
-  <FormModal
-    :model-value="modelValue"
-    size="lg"
+  <component
+    :is="formShell.shell.value"
+    v-bind="shellProps"
     :busy="form.submitting.value"
-    :title="isEdit ? t('criteria.main.editTitle') : t('criteria.main.createTitle')"
+    :title="
+      inline
+        ? sections.title.value
+        : isEdit
+          ? t('criteria.main.editTitle')
+          : t('criteria.main.createTitle')
+    "
     :submit-label="isEdit ? t('actions.save') : t('criteria.main.create')"
-    @update:model-value="emit('update:modelValue', $event)"
+    @update:model-value="formShell.toggle"
     @submit="form.onSubmit"
+    @next="steps.next"
+    @back="steps.back"
   >
     <div class="criteria-form">
-      <div class="criteria-form__grid">
+      <div v-show="sections.shows('basics')" class="criteria-form__grid">
         <BaseInput
           v-model="nameAr"
           dir="rtl"
@@ -139,7 +128,10 @@ const [active] = form.defineField('active')
           :error="form.errors.value.nameEn"
           required
         />
+      </div>
+      <div class="criteria-form__grid">
         <BaseInput
+          v-show="sections.shows(inWizard() ? 'weight' : 'basics')"
           v-model="weight"
           name="weight"
           :label="t('criteria.fields.weight')"
@@ -147,7 +139,8 @@ const [active] = form.defineField('active')
           :error="form.errors.value.weight"
           required
         />
-        <BaseSelect
+        <AppSelect
+          v-show="sections.shows('basics')"
           v-model="group"
           name="group"
           :label="t('criteria.fields.group')"
@@ -157,6 +150,7 @@ const [active] = form.defineField('active')
         />
       </div>
       <BaseTextarea
+        v-show="sections.shows('basics')"
         v-model="descriptionAr"
         dir="rtl"
         name="descriptionAr"
@@ -165,6 +159,7 @@ const [active] = form.defineField('active')
         :error="form.errors.value.descriptionAr"
       />
       <BaseTextarea
+        v-show="sections.shows('basics')"
         v-model="descriptionEn"
         dir="ltr"
         name="descriptionEn"
@@ -172,7 +167,24 @@ const [active] = form.defineField('active')
         :label="t('criteria.fields.descriptionEn')"
         :error="form.errors.value.descriptionEn"
       />
-      <div class="criteria-form__toggles">
+      <AttachmentsEditor
+        v-show="sections.shows('attachments')"
+        v-model="attachments"
+        :errors="form.serverErrors.value"
+      />
+      <BaseRadio
+        v-if="!isEdit"
+        v-show="sections.shows('evaluation')"
+        v-model="defaultScoringType"
+        name="mainDefaultScoringType"
+        :label="t('criteria.workspace.scoring.label.main')"
+        :options="scoringOptions"
+      />
+      <div
+        v-if="!sections.inSheet.value"
+        v-show="sections.shows('weight')"
+        class="criteria-form__toggles"
+      >
         <BaseCheckbox
           v-model="distributeEqually"
           name="distributeEqually"
@@ -185,10 +197,11 @@ const [active] = form.defineField('active')
           :label="t('criteria.fields.active')"
         />
       </div>
-      <p v-if="isEdit" class="criteria-form__note" role="note">
-        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+      <p v-if="isEdit && !sections.inSheet.value" class="criteria-form__note" role="note">
+        <AppIcon name="info-circle" />
         <span>{{ t('criteria.fields.orderNote') }}</span>
       </p>
+      <CriteriaWizardReview v-if="inWizard() && sections.shows('review')" :rows="reviewRows" />
     </div>
-  </FormModal>
+  </component>
 </template>

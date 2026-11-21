@@ -6,10 +6,10 @@ import { useHead } from '@unhead/vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import DataTable from '@/components/data-list/DataTable.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
-import ActionsDropdown from '@/components/data-list/ActionsDropdown.vue'
+import AppMenu from '@/components/ui/AppMenu.vue'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import Badge from '@/components/ui/Badge.vue'
-import DropdownList from '@/components/ui/DropdownList.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import { useTable } from '@/composables/useTable'
 import { useFilters } from '@/composables/useFilters'
 import { usePagination } from '@/composables/usePagination'
@@ -55,16 +55,16 @@ function dateLabel(value) {
 
 function rowActions(row) {
   if (row.status === 'assigned') {
-    return [{ key: 'analyze', label: t('bagRequests.actions.startAnalysis'), icon: 'fa-solid fa-play' }]
+    return [{ key: 'analyze', label: t('bagRequests.actions.startAnalysis'), icon: 'play' }]
   }
   if (row.status !== 'completed' && row.status !== 'cancelled') {
-    return [{ key: 'open', label: t('bagRequests.actions.open'), icon: 'fa-solid fa-folder-open' }]
+    return [{ key: 'open', label: t('bagRequests.actions.open'), icon: 'folder' }]
   }
-  return [{ key: 'view', label: t('bagRequests.actions.view'), icon: 'fa-solid fa-eye' }]
+  return [{ key: 'view', label: t('bagRequests.actions.view'), icon: 'eye' }]
 }
 
 function openManage(row) {
-  router.push({ name: ROUTE_NAMES.BAG_MANAGE, query: { request: row.id } })
+  router.push({ name: ROUTE_NAMES.BAG_MANAGE, params: { request: row.id } })
 }
 </script>
 
@@ -78,13 +78,17 @@ function openManage(row) {
       </div>
     </header>
 
-    <ListToolbar v-model:search="search" :search-placeholder="t('bagRequests.evaluator.searchPlaceholder')">
-      <template #filters>
-        <DropdownList
-          :model-value="filters.filters.status"
+    <ListToolbar
+      v-model:search="search"
+      :search-placeholder="t('bagRequests.evaluator.searchPlaceholder')"
+      :filter-state="filters"
+    >
+      <template #filters="{ draft }">
+        <AppSelect
+          :model-value="draft.filters.status"
           :options="statusFilterOptions"
-          :placeholder="t('bagRequests.filters.status')"
-          @update:model-value="filters.setFilter('status', $event)"
+          :label="t('bagRequests.filters.status')"
+          @update:model-value="draft.setFilter('status', $event)"
         />
       </template>
     </ListToolbar>
@@ -104,7 +108,11 @@ function openManage(row) {
       </template>
       <template #cell-reference="{ item }">
         <span class="bag-requests__reference">
-          {{ t('bagRequests.referenceValue', { score: n(item.referenceSnapshot.scorePercent, 'default') }) }}
+          {{
+            t('bagRequests.referenceValue', {
+              score: n(item.referenceSnapshot.scorePercent, 'default'),
+            })
+          }}
         </span>
       </template>
       <template #cell-context="{ item }">
@@ -113,7 +121,9 @@ function openManage(row) {
             {{ t('bagRequests.contextSelf', { score: n(item.selfScorePercent, 'default') }) }}
           </span>
           <span v-if="item.advancedScorePercent != null" class="bag-requests__context-chip">
-            {{ t('bagRequests.contextAdvanced', { score: n(item.advancedScorePercent, 'default') }) }}
+            {{
+              t('bagRequests.contextAdvanced', { score: n(item.advancedScorePercent, 'default') })
+            }}
           </span>
           <span v-if="item.selfScorePercent == null && item.advancedScorePercent == null">—</span>
         </span>
@@ -125,7 +135,11 @@ function openManage(row) {
         <span class="bag-requests__date">{{ dateLabel(item.assignedAt) }}</span>
       </template>
       <template #cell-actions="{ item }">
-        <ActionsDropdown :actions="rowActions(item)" @select="openManage(item)" />
+        <AppMenu
+          :actions="rowActions(item)"
+          :label="t('components.actions.menuFor', { name: localized(item.entityName) })"
+          @select="openManage(item)"
+        />
       </template>
     </DataTable>
 

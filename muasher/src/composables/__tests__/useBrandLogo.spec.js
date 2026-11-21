@@ -14,7 +14,7 @@ describe('useBrandLogo', () => {
     localStorage.clear()
   })
 
-  it('serves the green lockup on the dark theme and the dark lockup on the light theme', () => {
+  it('serves the on-dark logo on the dark theme and the on-light logo on the light theme', () => {
     const ui = useUiStore()
     const { themedLogo } = useBrandLogo()
 
@@ -24,13 +24,13 @@ describe('useBrandLogo', () => {
     const onLight = themedLogo.value
 
     expect(onDark).not.toBe(onLight)
-    expect(onDark).toMatch(/logo-lockup-green/)
-    expect(onLight).toMatch(/logo-lockup-dark/)
+    expect(onDark).toMatch(/moashir-logo-on-dark/)
+    expect(onLight).toMatch(/moashir-logo-on-light/)
   })
 
   it('exposes fixed variants for always-dark and always-light surfaces', () => {
     const { logoOnDark, logoOnLight } = useBrandLogo()
-    expect(logoOnDark).toMatch(/logo-lockup-green/)
-    expect(logoOnLight).toMatch(/logo-lockup-dark/)
+    expect(logoOnDark).toMatch(/moashir-logo-on-dark/)
+    expect(logoOnLight).toMatch(/moashir-logo-on-light/)
   })
 })

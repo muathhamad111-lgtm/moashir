@@ -1,5 +1,9 @@
 import { ASSESSMENT_PATHS } from '@/constants/assessment'
-import { ACCREDITED_STATUSES, REASSIGNABLE_STATUSES } from '@/constants/accredited'
+import {
+  ACCREDITED_STATUSES,
+  ASSIGNMENT_MODES,
+  REASSIGNABLE_STATUSES,
+} from '@/constants/accredited'
 import { ADVANCED_STATUSES, ADVANCED_WITHDRAWABLE_STATUSES } from '@/constants/advanced'
 
 const STAGES = {
@@ -33,6 +37,13 @@ export function isAssignable(request) {
 
 export function isReassignable(request) {
   return stagesFor(request.path).reassignable.includes(request.status)
+}
+
+export function assignmentModeOf(request) {
+  if (request.isFrozen) return null
+  if (isAssignable(request)) return ASSIGNMENT_MODES.ASSIGN
+  if (isReassignable(request)) return ASSIGNMENT_MODES.REASSIGN
+  return null
 }
 
 export function isReturnable(request) {

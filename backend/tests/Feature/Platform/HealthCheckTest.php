@@ -12,8 +12,20 @@ it('reports a healthy service inside the standard envelope', function (): void {
         ]);
 });
 
-it('answers the framework liveness probe', function (): void {
-    $this->get('/up')->assertOk();
+it('registers no unproxied framework routes', function (): void {
+    $uris = array_map(static fn ($route): string => $route->uri(), app('router')->getRoutes()->getRoutes());
+
+    expect($uris)->not->toContain('up')
+        ->and(array_filter($uris, static fn (string $uri): bool => str_starts_with($uri, 'storage/')))->toBe([])
+        ->and(config('filesystems.disks.local.serve'))->toBeFalse();
+    $this->get('/up')->assertNotFound();
+});
+
+it('wraps the Horizon dashboard in the same session, timeout and MFA guards as the API', function (): void {
+    expect(config('horizon.middleware'))->toBe(['web', 'session.timeouts', 'mfa', 'password.current']);
+
+    $this->get('/horizon/api/stats')->assertForbidden();
+    signIn(systemAdmin())->get('/horizon/api/stats')->assertForbidden();
 });
 
 it('translates the response from the Accept-Language header', function (): void {

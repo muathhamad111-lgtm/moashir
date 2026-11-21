@@ -2,17 +2,20 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
-import { useMyPermissions } from '@/composables/useMyPermissions'
+import { useMyRoles } from '@/composables/useMyRoles'
 import Card from '@/components/ui/Card.vue'
 import Badge from '@/components/ui/Badge.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
-import EmptyState from '@/components/feedback/EmptyState.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
-import PermissionModuleCard from '@/components/account/PermissionModuleCard.vue'
+import CommitteeSeatsList from '@/components/account/CommitteeSeatsList.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
+import ProfilePhotoCard from '@/components/account/ProfilePhotoCard.vue'
+import NationalIdentityCard from '@/components/account/NationalIdentityCard.vue'
+import ChangePasswordCard from '@/components/account/ChangePasswordCard.vue'
 
 const { t, locale } = useI18n()
 const auth = useAuthStore()
-const { roles, modules, status, load, localized } = useMyPermissions()
+const { roles, status, load, localized } = useMyRoles()
 
 const displayName = computed(() => {
   const name = auth.user?.name
@@ -21,6 +24,8 @@ const displayName = computed(() => {
 })
 
 const email = computed(() => auth.user?.email ?? auth.user?.officialEmail ?? '')
+const isEntityAccount = computed(() => auth.isEntity || Boolean(auth.user?.entityId))
+const committeeSeats = computed(() => auth.committeeAppointments)
 </script>
 
 <template>
@@ -29,6 +34,12 @@ const email = computed(() => auth.user?.email ?? auth.user?.officialEmail ?? '')
       <h1 class="page-header__title">{{ t('account.title') }}</h1>
       <p class="page-header__subtitle">{{ t('account.subtitle') }}</p>
     </header>
+
+    <ProfilePhotoCard v-if="!isEntityAccount" />
+    <p v-else class="account-page__note" data-testid="profile-photo-entity-hint">
+      <AppIcon name="info-circle" />
+      {{ t('account.avatar.entityHint') }}
+    </p>
 
     <div class="account-page__grid">
       <Card :title="t('account.identity.title')" class="account-page__identity">
@@ -43,7 +54,7 @@ const email = computed(() => auth.user?.email ?? auth.user?.officialEmail ?? '')
           </div>
         </dl>
         <p class="account-page__note">
-          <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+          <AppIcon name="info-circle" />
           {{ t('account.workspace') }}
         </p>
       </Card>
@@ -63,39 +74,12 @@ const email = computed(() => auth.user?.email ?? auth.user?.officialEmail ?? '')
           </li>
         </ul>
         <p v-else class="account-page__muted">{{ t('account.roles.empty') }}</p>
+        <CommitteeSeatsList v-if="committeeSeats.length" :appointments="committeeSeats" />
       </Card>
+
+      <NationalIdentityCard class="account-page__national-identity" />
     </div>
 
-    <section class="account-page__permissions" aria-labelledby="account-permissions-title">
-      <header class="account-page__section-head">
-        <h2 id="account-permissions-title" class="account-page__section-title">
-          {{ t('account.permissions.title') }}
-        </h2>
-        <p class="account-page__muted">{{ t('account.permissions.subtitle') }}</p>
-      </header>
-
-      <div v-if="status === 'loading'" class="account-page__module-grid">
-        <Skeleton v-for="i in 3" :key="i" variant="block" />
-      </div>
-      <ErrorState
-        v-else-if="status === 'error'"
-        :message="t('account.loadError')"
-        @retry="load"
-      />
-      <EmptyState
-        v-else-if="modules.length === 0"
-        icon="fa-solid fa-shield-halved"
-        :title="t('account.permissions.empty')"
-      />
-      <div v-else class="account-page__module-grid">
-        <PermissionModuleCard
-          v-for="group in modules"
-          :key="group.module"
-          :module="group.module"
-          :items="group.items"
-          :localized="localized"
-        />
-      </div>
-    </section>
+    <ChangePasswordCard />
   </section>
 </template>

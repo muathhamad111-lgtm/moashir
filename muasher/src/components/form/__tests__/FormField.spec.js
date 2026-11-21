@@ -27,7 +27,13 @@ describe('FormField', () => {
 
   it('shows the hint only when there is no error and applies state classes', () => {
     const wrapper = mount(FormField, {
-      props: { label: 'الوزن', name: 'weight', hint: 'من 0 إلى 100', required: true, disabled: true },
+      props: {
+        label: 'الوزن',
+        name: 'weight',
+        hint: 'من 0 إلى 100',
+        required: true,
+        disabled: true,
+      },
       slots: { default: '<input />' },
     })
     expect(wrapper.find('.field__hint').text()).toBe('من 0 إلى 100')

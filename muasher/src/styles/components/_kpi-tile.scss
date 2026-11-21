@@ -1,0 +1,54 @@
+@use '../mixins' as *;
+
+.kpi-tile {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  padding: var(--space-5);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-xl);
+  background-color: var(--theme-surface);
+  box-shadow: var(--elevation-e1);
+}
+
+.kpi-tile__label {
+  @include flex(row, center, flex-start, var(--space-2));
+  margin: 0;
+  color: var(--theme-text-secondary);
+  font-size: var(--fs-sm);
+}
+
+.kpi-tile__icon {
+  color: var(--data-ink);
+}
+
+.kpi-tile__body {
+  @include flex(row, flex-end, space-between, var(--space-4));
+}
+
+.kpi-tile__figures {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+  min-inline-size: 0;
+}
+
+.kpi-tile__value {
+  color: var(--theme-heading);
+  font-family: var(--font-latin);
+  font-size: var(--fs-3xl);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-tight);
+}
+
+.kpi-tile__caption {
+  margin: 0;
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}
+
+.kpi-tile__sparkline {
+  flex-shrink: 0;
+  inline-size: var(--size-icon-tile);
+  block-size: var(--size-sparkline-block);
+
+  @include respond-to('lg') {
+    inline-size: var(--space-24);
+  }
+}

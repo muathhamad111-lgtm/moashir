@@ -10,7 +10,7 @@ use App\Models\Files\StoredFile;
 use App\Services\Files\StoredFileDisk;
 use Illuminate\Support\Facades\Date;
 
-const SAMPLE_PDF = "%PDF-1.4\n%Moashir bank transfer receipt\n1 0 obj << /Type /Catalog >> endobj\ntrailer << /Root 1 0 R >>\n%%EOF\n";
+const SAMPLE_PDF = "%PDF-1.4\n%Moashir bank transfer receipt\n1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << >> >> endobj\nxref\n0 4\n0000000000 65535 f \n0000000040 00000 n \n0000000089 00000 n \n0000000146 00000 n \ntrailer << /Size 4 /Root 1 0 R >>\nstartxref\n234\n%%EOF\n";
 
 /**
  * @param  array<string, mixed>  $attributes

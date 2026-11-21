@@ -20,7 +20,7 @@ final class RolePermissionsController
         $updated = $updatePermissions->handle($actor, $role, $request->permissionKeys());
 
         return ApiResponse::data([
-            'role' => (new RoleResource($updated))->resolve($request),
+            'role' => new RoleResource($updated)->resolve($request),
             'permission_keys' => $updated->permissionKeys(),
         ]);
     }

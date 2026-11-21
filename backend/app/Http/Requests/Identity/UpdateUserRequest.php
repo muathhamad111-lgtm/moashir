@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Requests\Identity;
 
 use App\Data\Identity\UserProfileChanges;
+use App\Enums\Identity\UserStatus;
 use App\Models\Identity\User;
 use App\Rules\UniqueUserEmail;
 use App\Support\StringList;
 use App\Support\ValueObjects\EmailAddress;
 use App\Support\ValueObjects\PhoneNumber;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class UpdateUserRequest extends FormRequest
@@ -22,12 +24,21 @@ final class UpdateUserRequest extends FormRequest
         $target = $this->route('managedUser');
 
         return [
-            'name' => ['sometimes', 'string', 'min:2', 'max:150'],
+            'name' => ['sometimes', 'string', 'min:2', 'max:150', $this->mustKeepNameOf($target)],
             'email' => ['sometimes', 'string', 'email:filter', 'max:254', new UniqueUserEmail($target instanceof User ? $target->id : null)],
             'phone' => ['sometimes', 'nullable', 'string', 'regex:'.PhoneNumber::SAUDI_MOBILE_PATTERN],
             'roles' => ['sometimes', 'array', 'min:1', 'max:10'],
             'roles.*' => ['required', 'string', 'distinct', 'max:60'],
         ];
+    }
+
+    private function mustKeepNameOf(mixed $target): Closure
+    {
+        return static function (string $attribute, mixed $value, Closure $fail) use ($target): void {
+            if ($target instanceof User && $target->status !== UserStatus::Invited && is_string($value) && trim($value) !== $target->name) {
+                $fail(__('validation.custom.name.requires_correction_request'));
+            }
+        };
     }
 
     public function changes(): UserProfileChanges

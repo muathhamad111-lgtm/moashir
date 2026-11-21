@@ -1,0 +1,22 @@
+:root {
+  --color-dark: #0a2325;
+  --color-primary: #98d8d3;
+  --color-secondary: #d9f7f7;
+  --color-teal-deep: #145053;
+  --color-accent-text: #1d7470;
+  --color-gold: #d3af37;
+  --color-gold-text: #7d6410;
+  --color-bronze: #9e6c35;
+  --color-bronze-text: #8a5c2b;
+  --color-silver: #c0c0c0;
+  --color-silver-text: #5f6a6a;
+  --color-diamond: #299191;
+  --color-muted: #607070;
+  --color-border: #c9dcdb;
+  --color-surface: #f3f9f9;
+  --color-white: #ffffff;
+  --color-watermark: rgba(158, 108, 53, 0.14);
+  --font-body: 'Moashir Latin', 'Moashir Body', sans-serif;
+  --font-heading: 'Moashir Latin', 'Moashir Heading', 'Moashir Body', sans-serif;
+  --font-latin: 'Moashir Latin', 'Moashir Body', sans-serif;
+}

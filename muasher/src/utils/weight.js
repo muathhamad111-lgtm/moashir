@@ -75,9 +75,34 @@ export function percentOf(part, whole) {
   return Math.round((toHundredths(part) * 100) / wholeHundredths)
 }
 
+// Share of a parent with one decimal (12.2), for the «% of the model» and «% of its parent» labels.
+export function shareOf(part, whole) {
+  const wholeHundredths = toHundredths(whole)
+  if (!wholeHundredths) return 0
+  return Math.round((toHundredths(part) * 1000) / wholeHundredths) / 10
+}
+
+export function formatShare(share, locale = 'en') {
+  return new Intl.NumberFormat(locale, {
+    style: 'percent',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 1,
+    numberingSystem: 'latn',
+  }).format(share / 100)
+}
+
 export function formatWeight(value, locale = 'en') {
   return new Intl.NumberFormat(locale, {
     minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    numberingSystem: 'latn',
+  }).format(toHundredths(value) / HUNDREDTHS)
+}
+
+// Read-only display: whole weights show no decimals («1,000»), fractional ones keep theirs.
+export function formatDisplayWeight(value, locale = 'en') {
+  return new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 0,
     maximumFractionDigits: 2,
     numberingSystem: 'latn',
   }).format(toHundredths(value) / HUNDREDTHS)

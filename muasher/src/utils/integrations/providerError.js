@@ -1,4 +1,9 @@
-import { INTEGRATION_ERROR_CODES, PROVIDER_ERROR_CODE, PROVIDER_ERROR_KINDS, UNKNOWN_PROVIDER_ERROR } from '@/constants/integrations'
+import {
+  INTEGRATION_ERROR_CODES,
+  PROVIDER_ERROR_CODE,
+  PROVIDER_ERROR_KINDS,
+  UNKNOWN_PROVIDER_ERROR,
+} from '@/constants/integrations'
 
 export const TEST_FAILURES = Object.freeze({
   PROVIDER: 'provider',
@@ -39,7 +44,8 @@ export function failedResultOf(error) {
 }
 
 export function retryAfterSecondsOf(error) {
-  const header = error?.response?.headers?.['retry-after'] ?? error?.response?.headers?.get?.('retry-after')
+  const header =
+    error?.response?.headers?.['retry-after'] ?? error?.response?.headers?.get?.('retry-after')
   const seconds = Number.parseInt(header, 10)
   return Number.isFinite(seconds) && seconds > 0 ? seconds : null
 }
@@ -55,7 +61,9 @@ export function testFailureOf(error) {
 }
 
 export function firstFieldMessage(error) {
-  const entries = Object.entries(error?.normalized?.fieldErrors ?? {}).filter(([field]) => field !== ERROR_KIND_FIELD)
+  const entries = Object.entries(error?.normalized?.fieldErrors ?? {}).filter(
+    ([field]) => field !== ERROR_KIND_FIELD,
+  )
   return entries.length ? (firstValue(entries[0][1]) ?? '') : ''
 }
 

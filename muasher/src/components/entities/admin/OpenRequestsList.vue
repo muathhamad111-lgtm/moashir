@@ -12,7 +12,11 @@ const { t } = useI18n()
 
 <template>
   <table class="open-requests">
-    <caption class="open-requests__caption">{{ t('entities.openRequests.caption') }}</caption>
+    <caption class="open-requests__caption">
+      {{
+        t('entities.openRequests.caption')
+      }}
+    </caption>
     <thead>
       <tr>
         <th scope="col">{{ t('entities.openRequests.number') }}</th>

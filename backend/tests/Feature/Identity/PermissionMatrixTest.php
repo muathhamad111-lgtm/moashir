@@ -29,7 +29,7 @@ it('filters the catalog by module', function (): void {
 
     $keys = collect($this->getJson('/api/v1/permissions?filter[module]=admin')->assertOk()->json('data.permissions'))->pluck('key')->all();
 
-    expect($keys)->toBe(['users.view', 'users.manage', 'roles.matrix.view', 'roles.matrix.manage', 'audit.view', 'audit.export']);
+    expect($keys)->toBe(['users.view', 'users.manage', 'users.export', 'users.identity_changes.review', 'roles.matrix.view', 'roles.matrix.manage', 'audit.view', 'audit.export']);
     $this->getJson('/api/v1/permissions?filter[module]=support')->assertUnprocessable()->assertJsonValidationErrors('filter.module');
 });
 

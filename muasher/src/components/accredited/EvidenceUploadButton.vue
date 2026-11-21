@@ -7,7 +7,7 @@ defineProps({
   accept: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
   loading: { type: Boolean, default: false },
-  icon: { type: String, default: 'fa-solid fa-cloud-arrow-up' },
+  icon: { type: String, default: 'cloud-upload' },
 })
 
 const emit = defineEmits(['select'])
@@ -22,8 +22,23 @@ function onChange(event) {
 
 <template>
   <span class="evidence-upload">
-    <input ref="input" type="file" class="evidence-upload__input" :accept="accept || undefined" :disabled="disabled" hidden @change="onChange" />
-    <BaseButton variant="secondary" size="sm" :icon="icon" :loading="loading" :disabled="disabled" @click="input?.click()">
+    <input
+      ref="input"
+      type="file"
+      class="evidence-upload__input"
+      :accept="accept || undefined"
+      :disabled="disabled"
+      hidden
+      @change="onChange"
+    />
+    <BaseButton
+      variant="secondary"
+      size="sm"
+      :icon="icon"
+      :loading="loading"
+      :disabled="disabled"
+      @click="input?.click()"
+    >
       {{ label }}
     </BaseButton>
   </span>

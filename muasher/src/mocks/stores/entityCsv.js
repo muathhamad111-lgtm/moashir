@@ -5,8 +5,26 @@ const BYTE_ORDER_MARK = '\uFEFF'
 const FORMULA_PREFIX = /^[=+\-@\t\r]/
 
 const COLUMNS = {
-  ar: ['الرقم المرجعي', 'الاسم بالعربية', 'الاسم بالإنجليزية', 'المنطقة', 'المدينة', 'الحالة', 'البريد الإلكتروني الرسمي', 'تاريخ التسجيل'],
-  en: ['Reference', 'Name in Arabic', 'Name in English', 'Region', 'City', 'Status', 'Official e-mail', 'Registered at'],
+  ar: [
+    'الرقم المرجعي',
+    'الاسم بالعربية',
+    'الاسم بالإنجليزية',
+    'المنطقة',
+    'المدينة',
+    'الحالة',
+    'البريد الإلكتروني الرسمي',
+    'تاريخ التسجيل',
+  ],
+  en: [
+    'Reference',
+    'Name in Arabic',
+    'Name in English',
+    'Region',
+    'City',
+    'Status',
+    'Official e-mail',
+    'Registered at',
+  ],
 }
 
 function cell(value) {

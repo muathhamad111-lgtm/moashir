@@ -1,15 +1,15 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
 import TopNavbar from './TopNavbar.vue'
 import Sidebar from './Sidebar.vue'
-import DemoDataNotice from '@/components/ui/DemoDataNotice.vue'
 import { useBrandingStore } from '@/stores/branding'
+import AppLoadingScreen from '@/components/feedback/AppLoadingScreen.vue'
+import { usePageLoading } from '@/composables/usePageLoading'
 
 const { t } = useI18n()
-const route = useRoute()
 const branding = useBrandingStore()
+const isLoadingPage = usePageLoading()
 
 onMounted(() => branding.ensureLoaded())
 </script>
@@ -17,12 +17,12 @@ onMounted(() => branding.ensureLoaded())
 <template>
   <div class="app-layout">
     <a class="app-layout__skip" href="#app-main">{{ t('shell.skipToContent') }}</a>
-    <Sidebar />
-    <div class="app-layout__main">
-      <TopNavbar />
-      <main id="app-main" class="app-layout__content" tabindex="-1">
-        <DemoDataNotice :modules="route.meta.demoModules" />
+    <TopNavbar />
+    <div class="app-layout__body">
+      <Sidebar />
+      <main id="app-main" class="app-layout__content" tabindex="-1" :aria-busy="isLoadingPage">
         <slot />
+        <AppLoadingScreen v-if="isLoadingPage" variant="overlay" />
       </main>
     </div>
   </div>

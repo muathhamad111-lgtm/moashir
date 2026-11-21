@@ -1,0 +1,13 @@
+@use '../mixins' as *;
+
+.entity-level {
+  @include flex(column, stretch, flex-start, var(--space-4));
+  margin-block-end: var(--space-6);
+}
+
+.entity-level__note,
+.entity-level__empty {
+  margin: 0 0 var(--space-3);
+  color: var(--theme-text-muted);
+  font-size: var(--fs-sm);
+}

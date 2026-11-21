@@ -1,0 +1,142 @@
+@use '../mixins' as *;
+@use '../tokens' as *;
+
+.b-band,
+.level-ribbon,
+.profile-header,
+.result-band,
+.portal-area__header--band .portal-area__hero {
+  @include in-tts-shell {
+    border-radius: var(--card-radius);
+    overflow: hidden;
+  }
+}
+
+.profile-banner {
+  @include in-tts-shell {
+    padding: 0;
+  }
+}
+
+.profile-banner__inner {
+  @include in-tts-shell {
+    max-inline-size: none;
+    border-color: tts-status('warning', 'border');
+    border-radius: var(--card-radius);
+    background-color: tts-status('warning', 'soft');
+  }
+}
+
+.portal-top-bar .account-menu__chip {
+  @include in-tts-shell {
+    border-color: transparent;
+    border-radius: var(--btn-radius);
+    background-color: var(--brand-on-secondary-overlay);
+    color: var(--brand-on-secondary);
+
+    &:hover {
+      background-color: var(--brand-on-secondary-hover);
+    }
+  }
+}
+
+.portal-top-bar .account-menu__user,
+.portal-top-bar .account-menu__chevron {
+  @include in-tts-shell {
+    color: var(--brand-on-secondary-soft);
+  }
+}
+
+.level-mini-card {
+  @include in-tts-shell {
+    border-color: tts-neutral(50);
+    background-color: tts-neutral(0);
+    color: tts-neutral(900);
+
+    &:hover {
+      background-color: tts-neutral(50);
+    }
+  }
+}
+
+.level-mini-card__eyebrow {
+  @include in-tts-shell {
+    color: tts-neutral(500);
+  }
+}
+
+.level-mini-card__action,
+.level-mini-card__eye {
+  @include in-tts-shell {
+    border-color: tts-neutral(100);
+    color: tts-neutral(900);
+  }
+}
+
+.portal-area__header:not(.portal-area__header--band) .portal-area__hero,
+.portal-area__tabs,
+.portal-footer__inner {
+  @include in-tts-shell {
+    padding-inline: 0;
+  }
+}
+
+.portal-layout__main h1 {
+  @include in-tts-shell {
+    letter-spacing: normal;
+  }
+}
+
+.journey-home__content,
+.portal-area__body,
+.entity-profile__loading,
+.entity-profile__body,
+.insights-page__body,
+.notifications-center__body,
+.path-page__body {
+  @include in-tts-shell {
+    max-inline-size: none;
+    padding-inline: 0;
+  }
+}
+
+.mobile-tab-bar {
+  @include in-tts-shell {
+    border-block-start-color: tts-neutral(50);
+    background: $tts-white;
+  }
+}
+
+.mobile-tab-bar__tab {
+  @include in-tts-shell {
+    color: tts-neutral(500);
+
+    &.is-active {
+      color: tts-neutral(900);
+    }
+
+    &:focus-visible {
+      outline-color: var(--brand-primary-text);
+    }
+  }
+}
+
+.mobile-tab-bar__tab.is-active .mobile-tab-bar__pill {
+  @include in-tts-shell {
+    background-color: var(--brand-primary);
+    color: var(--brand-on-primary);
+  }
+}
+
+.portal-area__header:not(.portal-area__header--band) {
+  @include in-tts-shell {
+    border-block-end: 0;
+    background-color: transparent;
+  }
+}
+
+.portal-area__header:not(.portal-area__header--band) .portal-area__hero {
+  @include in-tts-shell {
+    padding-block: 0;
+  }
+}

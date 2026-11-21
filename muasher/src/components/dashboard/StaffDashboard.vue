@@ -1,0 +1,79 @@
+<script setup>
+import { computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import PageLoading from '@/components/feedback/PageLoading.vue'
+import ErrorState from '@/components/feedback/ErrorState.vue'
+import DashboardBoardNav from './DashboardBoardNav.vue'
+import DashboardCards from './DashboardCards.vue'
+import DashboardWidget from './DashboardWidget.vue'
+import AssessorOverview from './overview/AssessorOverview.vue'
+import { useStaffDashboard } from '@/composables/useStaffDashboard'
+import { formatRiyadhDateTime } from '@/utils/datetime'
+import { ASSESSOR_BOARD } from '@/constants/dashboardBoards'
+
+const props = defineProps({
+  // Boards whose figures the overview above already covers: their section is not repeated.
+  coveredBoards: { type: Array, default: () => [] },
+})
+
+const { t, locale } = useI18n()
+const { summary, status, errorMessage, board, boards, load } = useStaffDashboard()
+
+const shownBoards = computed(() =>
+  boards.value.filter((item) => !props.coveredBoards.includes(item)),
+)
+const showsBoard = computed(
+  () => Boolean(board.value) && !props.coveredBoards.includes(board.value),
+)
+// Offered whenever another board can be opened, even while the current one is covered.
+const showsBoardNav = computed(() => shownBoards.value.some((item) => item !== board.value))
+const boardTitle = computed(() => (board.value ? t(`dashboard.boards.${board.value}`) : ''))
+
+const generatedAt = computed(() =>
+  summary.value?.generatedAt ? formatRiyadhDateTime(summary.value.generatedAt, locale.value) : '',
+)
+
+onMounted(load)
+</script>
+
+<template>
+  <div class="staff-dashboard">
+    <slot />
+    <DashboardBoardNav v-if="showsBoardNav" :boards="shownBoards" :current="board" />
+
+    <PageLoading v-if="status === 'loading' && !coveredBoards.length" />
+    <ErrorState
+      v-else-if="status === 'error'"
+      :message="errorMessage || t('dashboard.loadError')"
+      @retry="load"
+    />
+    <section
+      v-else-if="summary && showsBoard"
+      class="staff-dashboard__board"
+      aria-labelledby="dashboard-board-title"
+      :data-board="board"
+    >
+      <h2
+        id="dashboard-board-title"
+        class="staff-dashboard__board-title"
+        :class="{ 'staff-dashboard__board-title--hidden': board === ASSESSOR_BOARD }"
+      >
+        {{ boardTitle }}
+      </h2>
+      <AssessorOverview v-if="board === ASSESSOR_BOARD" :live-cards="summary.cards" />
+      <DashboardCards v-else :cards="summary.cards" />
+      <div v-if="summary.widgets.length" class="staff-dashboard__widgets">
+        <DashboardWidget
+          v-for="widget in summary.widgets"
+          :key="widget.key"
+          :board="board"
+          :widget="widget"
+        />
+      </div>
+      <p v-if="generatedAt" class="staff-dashboard__generated">
+        {{ t('dashboard.generatedAt') }}
+        <time :datetime="summary.generatedAt">{{ generatedAt }}</time>
+      </p>
+    </section>
+  </div>
+</template>

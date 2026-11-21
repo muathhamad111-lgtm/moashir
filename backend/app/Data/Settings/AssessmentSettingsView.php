@@ -7,6 +7,7 @@ namespace App\Data\Settings;
 use App\Data\Assessments\UploadLimits;
 use App\Data\Award\CycleDefaults;
 use App\Enums\Award\CommitteeEntityVisibility;
+use App\Enums\Criteria\ScaleKind;
 
 final readonly class AssessmentSettingsView
 {
@@ -17,7 +18,10 @@ final readonly class AssessmentSettingsView
         public int $reviewSlaDays,
         public array $slaLimits,
         public UploadLimits $uploadLimits,
+        public int $generalMaxFileMegabytes,
         public CycleDefaults $advancedDefaults,
         public CommitteeEntityVisibility $committeeVisibility,
+        public ScaleKind $scaleKind,
+        public ?ScaleKind $publishedScaleKind,
     ) {}
 }

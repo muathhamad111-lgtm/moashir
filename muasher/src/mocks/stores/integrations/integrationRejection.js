@@ -23,7 +23,8 @@ export const integrationReject = {
   unauthenticated: () => new MockRejection(401, 'unauthenticated'),
   forbidden: () => new MockRejection(403, 'forbidden'),
   validation: (fields) => new MockRejection(422, 'validation_failed', { fields }),
-  field: (code, field) => new MockRejection(422, code, { fields: { [field]: [fieldMessage(code)] } }),
+  field: (code, field) =>
+    new MockRejection(422, code, { fields: { [field]: [fieldMessage(code)] } }),
   notConfigured: (kind) => new MockRejection(409, 'integration.not_configured', { meta: { kind } }),
   missing: (code) => new MockRejection(404, code),
   provider: (kind, result = null) =>
@@ -43,7 +44,10 @@ export function integrationActor(kind) {
 }
 
 export function actorReference(user) {
-  return { id: user.id ?? INTEGRATION_ACTOR.id, name: actorDisplayName(user, INTEGRATION_ACTOR.name) }
+  return {
+    id: user.id ?? INTEGRATION_ACTOR.id,
+    name: actorDisplayName(user, INTEGRATION_ACTOR.name),
+  }
 }
 
 export function actorIsSuperAdmin() {
@@ -61,7 +65,8 @@ export function integrationRoute(resolve) {
     try {
       return await resolve(info)
     } catch (error) {
-      if (error instanceof MockRejection) return rejectionResponse(error, info.request, integrationMessages)
+      if (error instanceof MockRejection)
+        return rejectionResponse(error, info.request, integrationMessages)
       throw error
     }
   }

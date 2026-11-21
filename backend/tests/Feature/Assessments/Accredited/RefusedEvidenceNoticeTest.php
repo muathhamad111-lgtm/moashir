@@ -8,6 +8,7 @@ use App\Enums\Files\MalwareScanStatus;
 use App\Enums\Notifications\NotificationCode;
 use App\Jobs\Files\ScanStoredFileJob;
 use App\Models\Assessments\EvidenceFile;
+use App\Models\Criteria\SubCriterion;
 use App\Models\Identity\User;
 use App\Notifications\Entities\EntityNotification;
 use Illuminate\Support\Facades\Date;
@@ -58,13 +59,14 @@ it('tells the owning entity in-app that an infected evidence file was refused an
     uploadEvidence($owner, $assessment, $version, 'M1.2', null, evidencePdf('محضر-الاجتماع.pdf', infectedContents()))->assertCreated();
 
     $notices = refusedEvidenceNoticesOf($owner);
+    $subName = SubCriterion::query()->whereRelation('mainCriterion', 'criteria_version_id', $version->id)->where('code', 'M1.2')->sole()->name;
 
     expect($notices)->toHaveCount(1)
         ->and($notices[0]->notice->viaInApp)->toBeTrue()
         ->and($notices[0]->notice->viaMail)->toBeFalse()
         ->and($notices[0]->notice->link)->toBe('/assessment/accredited')
-        ->and($notices[0]->notice->body->en)->toContain('M1.2')->toContain($assessment->request_number)->toContain('upload a clean copy')
-        ->and($notices[0]->notice->body->ar)->toContain('M1.2')->not->toContain('محضر-الاجتماع')
+        ->and($notices[0]->notice->body->en)->toContain("“{$subName->en}”")->toContain($assessment->request_number)->toContain('upload a clean copy')->not->toContain('M1.2')
+        ->and($notices[0]->notice->body->ar)->toContain("«{$subName->ar}»")->not->toContain('M1.2')->not->toContain('محضر-الاجتماع')
         ->and($notices[0]->notice->body->en)->not->toContain('محضر-الاجتماع')
         ->and(refusedEvidenceNoticesOf($follower))->toBe([])
         ->and(refusedEvidenceNoticesOf($admin))->toBe([])

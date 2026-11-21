@@ -21,14 +21,21 @@ export function useAccreditedForm(assessmentId) {
 
   const assessment = computed(() => form.value?.assessment ?? null)
   const completionRequest = computed(() => form.value?.completionRequest ?? null)
-  const isResubmission = computed(() => assessment.value?.status === ACCREDITED_STATUSES.NEEDS_COMPLETION)
+  const isResubmission = computed(
+    () => assessment.value?.status === ACCREDITED_STATUSES.NEEDS_COMPLETION,
+  )
   const isEditable = computed(
-    () => Boolean(assessment.value) && ENTITY_EDITABLE_STATUSES.includes(assessment.value.status) && !assessment.value.isFrozen && !lockedCode.value,
+    () =>
+      Boolean(assessment.value) &&
+      ENTITY_EDITABLE_STATUSES.includes(assessment.value.status) &&
+      !assessment.value.isFrozen &&
+      !lockedCode.value,
   )
 
-  function canEdit(subId, kind) {
+  // owner: { level: 'main' | 'sub', id } — while back for completion, only the requested items change.
+  function canEdit(owner, kind) {
     if (!isEditable.value) return false
-    return !isResubmission.value || isRequested(completionRequest.value, subId, kind)
+    return !isResubmission.value || isRequested(completionRequest.value, owner, kind)
   }
 
   async function load({ silent = false } = {}) {
@@ -57,5 +64,19 @@ export function useAccreditedForm(assessmentId) {
     lockedCode.value = code
   }
 
-  return { status, errorMessage, form, assessment, completionRequest, isResubmission, isEditable, lockedCode, canEdit, load, patch, patchAssessment, lock }
+  return {
+    status,
+    errorMessage,
+    form,
+    assessment,
+    completionRequest,
+    isResubmission,
+    isEditable,
+    lockedCode,
+    canEdit,
+    load,
+    patch,
+    patchAssessment,
+    lock,
+  }
 }

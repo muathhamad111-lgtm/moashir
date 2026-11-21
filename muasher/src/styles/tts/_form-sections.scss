@@ -1,0 +1,87 @@
+@use '../mixins' as *;
+@use '../tokens' as *;
+
+// TTS form pages: on wide screens each back-office form section puts its title and
+// short description in a column beside its fields. The aside floats, so a long field
+// list never pushes the description away from its title. Dialogs are teleported out
+// of `.app-layout__content` and keep the stacked layout; so do nested sections.
+$form-sections: (
+  '.settings-form__group',
+  '.site-settings__group',
+  '.kpi-form__section',
+  '.cycle-form__section',
+  '.permission-form__section',
+  '.cms-form__group',
+  '.entity-form__group',
+  '.path-settings__card'
+);
+$form-title: 'legend, h2:first-child';
+$form-aside: ':is(#{$form-title}), :is(#{$form-title}) + p';
+
+$form-section-root: ':is(#{$form-sections}):not(:is(#{$form-sections}) *)';
+
+// The holder of the sections is the query container, so a narrow card (a form beside
+// a summary column) keeps the stacked layout even on a wide screen.
+.app-layout__content :has(> #{$form-section-root}) {
+  @include in-tts-shell {
+    container: form-sections / inline-size;
+  }
+}
+
+.app-layout__content #{$form-section-root} {
+  @include in-tts-shell {
+    @container form-sections (min-width: #{$tts-form-aside-min}) {
+      --form-aside-size: clamp(12rem, 30%, 18rem);
+      --form-aside-gap: var(--space-8);
+      display: flow-root;
+
+      > :is(#{$form-aside}) {
+        float: inline-start;
+        clear: inline-start;
+        inline-size: var(--form-aside-size);
+        margin: 0;
+        padding: 0;
+      }
+
+      > :is(#{$form-title}) + p {
+        margin-block-start: var(--space-2);
+        padding: 0;
+        background-color: transparent;
+        color: tts-neutral(500);
+        font-size: $tts-fs-sm;
+      }
+
+      > :not(#{$form-aside}) {
+        margin-inline-start: calc(var(--form-aside-size) + var(--form-aside-gap));
+      }
+
+      > :not(#{$form-aside}) ~ :not(#{$form-aside}) {
+        margin-block-start: var(--space-4);
+      }
+    }
+  }
+}
+
+// Sections drawn as boxes of their own sit inside a white card, so beside their titles
+// they become plain rows split by a divider, as in the TTS form pages.
+$boxed-form-sections: '.site-settings__group, .cycle-form__section';
+
+.app-layout__content :is(#{$boxed-form-sections}) {
+  @include in-tts-shell {
+    @container form-sections (min-width: #{$tts-form-aside-min}) {
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background-color: transparent;
+    }
+  }
+}
+
+.app-layout__content :is(#{$boxed-form-sections}) + :is(#{$boxed-form-sections}) {
+  @include in-tts-shell {
+    @container form-sections (min-width: #{$tts-form-aside-min}) {
+      padding-block-start: var(--space-5);
+      border-block-start: var(--border-width) solid tts-neutral(50);
+    }
+  }
+}

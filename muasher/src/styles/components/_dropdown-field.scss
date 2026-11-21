@@ -1,0 +1,201 @@
+@use '../mixins' as *;
+
+.dropdown-field {
+  @include flex(row, center, space-between, var(--space-2));
+  inline-size: 100%;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: var(--theme-text);
+  }
+
+  &[aria-expanded='true'] {
+    border-color: var(--theme-accent-text);
+  }
+}
+
+.dropdown-field__value {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  @include truncate;
+
+  &.is-placeholder {
+    color: var(--theme-text-muted);
+
+    .field:not(.field--floated) & {
+      visibility: hidden;
+    }
+  }
+}
+
+.dropdown-field__chevron,
+.dropdown-combobox__chevron {
+  flex-shrink: 0;
+  font-size: var(--icon-size-md);
+  color: var(--theme-text-muted);
+
+  [aria-expanded='true'] > &,
+  .dropdown-combobox.is-open > & {
+    color: var(--theme-accent-text);
+  }
+}
+
+.field--label-hidden {
+  .field__label {
+    @include visually-hidden;
+  }
+
+  .field__control {
+    padding-block: var(--space-2);
+  }
+}
+
+.dropdown-combobox {
+  @include flex(row, center, flex-start, var(--space-1));
+  flex-wrap: wrap;
+  cursor: text;
+
+  &:hover:not(.is-disabled) {
+    border-color: var(--theme-text);
+  }
+
+  &:focus-within,
+  &.is-open {
+    border-color: var(--theme-accent-text);
+  }
+
+  &:focus-within {
+    @include focus-ring;
+  }
+}
+
+.dropdown-combobox__input {
+  flex: 1 1 var(--space-16);
+  min-inline-size: var(--space-16);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--theme-text);
+  font: inherit;
+
+  &:focus {
+    outline: none;
+  }
+
+  &::placeholder {
+    color: transparent;
+  }
+
+  .field--floated &::placeholder {
+    color: var(--theme-text-muted);
+  }
+
+  &[readonly] {
+    cursor: pointer;
+  }
+}
+
+.dropdown-tag {
+  @include flex(row, center, center, var(--space-1));
+  min-block-size: var(--space-6);
+  padding-inline: var(--space-2) var(--space-0);
+  border-radius: var(--radius-pill);
+  background-color: var(--theme-accent-soft);
+  color: var(--theme-accent-text);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+}
+
+.dropdown-tag__remove {
+  @include flex-center;
+  inline-size: var(--space-6);
+  block-size: var(--space-6);
+  border-radius: var(--radius-circle);
+  color: inherit;
+  font-size: var(--icon-size-sm);
+  transition: background-color var(--t-fast) var(--ease);
+
+  &:hover {
+    background-color: var(--theme-accent-soft);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.dropdown-filter {
+  display: inline-flex;
+  min-inline-size: 0;
+}
+
+.dropdown-filter__trigger {
+  @include flex(row, center, flex-start, var(--space-1));
+  min-inline-size: var(--size-filter-min);
+  max-inline-size: var(--size-filter-max);
+  block-size: var(--space-10);
+  padding-inline: var(--space-3);
+  border: var(--border-width) solid var(--theme-input-border);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+  font: inherit;
+  font-size: var(--fs-sm);
+  text-align: start;
+  cursor: pointer;
+  transition:
+    border-color var(--t-fast) var(--ease),
+    background-color var(--t-fast) var(--ease);
+
+  &:hover:not(:disabled) {
+    border-color: var(--theme-text);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+    border-color: var(--theme-accent-text);
+  }
+
+  &[aria-expanded='true'] {
+    border-color: var(--theme-accent-text);
+  }
+
+  &:disabled {
+    opacity: var(--opacity-disabled);
+    cursor: not-allowed;
+  }
+
+  .dropdown-filter.is-applied & {
+    border-color: var(--theme-accent-text);
+    background-color: var(--theme-accent-soft);
+  }
+}
+
+.dropdown-filter__label {
+  flex-shrink: 0;
+  color: var(--theme-text-secondary);
+}
+
+.dropdown-filter__value {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  font-weight: var(--fw-medium);
+  @include truncate;
+
+  .dropdown-filter.is-applied & {
+    color: var(--theme-accent-text);
+  }
+}
+
+.dropdown-filter__chevron {
+  flex-shrink: 0;
+  margin-inline-start: var(--space-1);
+  font-size: var(--icon-size-sm);
+  color: var(--theme-text-muted);
+
+  [aria-expanded='true'] > & {
+    color: var(--theme-accent-text);
+  }
+}

@@ -1,0 +1,182 @@
+@use 'tokens' as *;
+
+.lp-about {
+  overflow: hidden;
+}
+
+.lp-manifesto {
+  max-width: 920px;
+  margin-block-end: clamp(48px, 6vw, 80px);
+  font-size: clamp(1.55rem, 3.3vw, 2.6rem);
+  font-weight: 700;
+  line-height: 1.7;
+  letter-spacing: -0.005em;
+
+  &__word {
+    opacity: 0.14;
+    transition:
+      opacity 0.35s ease,
+      color 0.35s ease;
+
+    &.is-lit {
+      opacity: 1;
+    }
+
+    &.is-key.is-lit {
+      color: var(--lp-accent);
+    }
+  }
+}
+
+.lp-serves {
+  display: grid;
+  gap: 16px;
+  margin-block-end: clamp(56px, 7vw, 96px);
+
+  &__label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--lp-ink-3);
+  }
+
+  &__row {
+    display: grid;
+    gap: 16px;
+  }
+}
+
+.lp-who {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 26px;
+  border-radius: 18px;
+  background: var(--lp-surface);
+  border: 1px solid var(--lp-line);
+  box-shadow: var(--lp-shadow);
+  transform-style: preserve-3d;
+  transition:
+    transform 0.6s $lp-ease,
+    border-color 0.3s,
+    opacity 0.8s $lp-ease;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--lp-accent) 40%, var(--lp-line));
+  }
+
+  &.is-tilting {
+    transition: transform 0.12s linear;
+    transform: perspective(800px) rotateY(var(--lp-tilt-y)) rotateX(var(--lp-tilt-x))
+      translateY(-4px);
+  }
+
+  .lp-glyph {
+    width: 50px;
+    height: 50px;
+    color: var(--lp-accent);
+    stroke-width: 1.5;
+    transform: translateZ(30px);
+  }
+
+  b {
+    font-size: 1.2rem;
+    transform: translateZ(20px);
+  }
+}
+
+.lp-goals {
+  &__title {
+    margin-block-end: 18px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--lp-ink-3);
+  }
+
+  &__grid {
+    display: grid;
+    gap: 14px;
+  }
+}
+
+.lp-goal {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  padding: 30px 26px 26px;
+  border-radius: 18px;
+  background: var(--lp-surface);
+  border: 1px solid var(--lp-line);
+  transition:
+    translate 0.45s $lp-ease,
+    border-color 0.3s,
+    box-shadow 0.45s,
+    opacity 0.8s $lp-ease,
+    transform 0.8s $lp-ease;
+
+  &:hover {
+    translate: 0 -5px;
+    border-color: color-mix(in srgb, var(--lp-accent) 35%, var(--lp-line));
+    box-shadow: var(--lp-shadow);
+  }
+
+  &__top {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .lp-glyph {
+      width: 42px;
+      height: 42px;
+      color: var(--lp-accent);
+      stroke-width: 1.6;
+    }
+
+    .lp-goal__num {
+      position: absolute;
+      top: -16px;
+      inset-inline-end: -10px;
+      font-style: normal;
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0.02em;
+      color: color-mix(in srgb, var(--lp-accent) 70%, transparent);
+      transition: color 0.4s;
+    }
+  }
+
+  &:hover &__num {
+    color: var(--lp-accent);
+  }
+
+  p {
+    color: var(--lp-ink-2);
+    line-height: 1.85;
+  }
+
+  @for $i from 2 through 6 {
+    &:nth-child(#{$i}) {
+      --dd: #{0.05s * $i};
+    }
+  }
+}
+
+@media (min-width: $lp-bp-md) {
+  .lp-serves__row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 700px) {
+  .lp-goals__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 1040px) {
+  .lp-goals__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

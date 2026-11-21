@@ -3,6 +3,7 @@ import { createHead } from '@unhead/vue/client'
 import { i18n } from '@/i18n'
 import { installSentry } from './sentry'
 import { installSessionExpiry } from './sessionExpiry'
+import { installIdentityRequirement } from './identityRequirement'
 import { installLocalePreference } from './localePreference'
 
 export function installPlugins(app, router) {
@@ -13,5 +14,6 @@ export function installPlugins(app, router) {
   app.use(router)
   installSentry(app, router)
   installSessionExpiry(router)
+  installIdentityRequirement(router)
   installLocalePreference(pinia)
 }

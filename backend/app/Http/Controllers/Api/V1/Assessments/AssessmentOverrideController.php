@@ -6,11 +6,14 @@ namespace App\Http\Controllers\Api\V1\Assessments;
 
 use App\Actions\Assessments\ForceAssessmentTransition;
 use App\Actions\Assessments\OverrideAssessmentScores;
+use App\Actions\Assessments\PreviewScoreOverride;
 use App\Actions\Assessments\ReopenAssessment;
 use App\Http\Requests\Assessments\ForceTransitionRequest;
 use App\Http\Requests\Assessments\OverrideReasonRequest;
 use App\Http\Requests\Assessments\OverrideScoresRequest;
+use App\Http\Requests\Assessments\PreviewOverrideScoresRequest;
 use App\Http\Resources\Assessments\AssessmentResource;
+use App\Http\Resources\Assessments\OverridePreviewResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\Assessments\Assessment;
 use App\Models\Identity\User;
@@ -22,6 +25,11 @@ final class AssessmentOverrideController
     public function scores(OverrideScoresRequest $request, Assessment $assessment, #[CurrentUser] User $actor, OverrideAssessmentScores $override): JsonResponse
     {
         return ApiResponse::resource(new AssessmentResource($override->handle($actor, $assessment, $request->scores(), $request->reason())));
+    }
+
+    public function preview(PreviewOverrideScoresRequest $request, Assessment $assessment, PreviewScoreOverride $preview): JsonResponse
+    {
+        return ApiResponse::resource(new OverridePreviewResource($preview->handle($assessment, $request->scores())));
     }
 
     public function reopen(OverrideReasonRequest $request, Assessment $assessment, #[CurrentUser] User $actor, ReopenAssessment $reopen): JsonResponse

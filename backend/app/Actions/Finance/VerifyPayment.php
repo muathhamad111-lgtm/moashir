@@ -28,6 +28,10 @@ final readonly class VerifyPayment
 
     public function handle(Payment $payment, string $providerPaymentId): VerificationOutcome
     {
+        if ($payment->isBankTransfer()) {
+            throw PaymentRejected::channelNotSupported();
+        }
+
         if ($payment->isBound() && $payment->provider_payment_id !== $providerPaymentId) {
             $this->rejected($payment, 'binding_mismatch');
 

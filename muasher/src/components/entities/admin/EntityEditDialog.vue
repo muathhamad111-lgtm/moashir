@@ -21,7 +21,7 @@ const emit = defineEmits(['update:modelValue', 'saved'])
 
 const { t } = useI18n()
 const regions = useRegions()
-const { form, start } = useEntityEditOnBehalf({
+const { form, start, unifiedNumberRequired } = useEntityEditOnBehalf({
   entity: toRef(props, 'entity'),
   onSaved: (data) => {
     emit('update:modelValue', false)
@@ -50,12 +50,14 @@ watch(
     @submit="form.onSubmit"
   >
     <div class="entity-form">
-      <p class="entity-form__hint">{{ t('entities.edit.intro') }}</p>
       <Skeleton v-if="regions.status.value === 'loading'" variant="text" :count="4" />
       <fieldset v-else class="entity-form__sections" :disabled="form.submitting.value">
-        <EntityIdentityFields />
+        <EntityIdentityFields :unified-number-required="unifiedNumberRequired" />
         <EntityClassificationFields />
-        <EntityLocationFields :region-options="regions.regionOptions.value" :city-options-for="regions.cityOptionsFor" />
+        <EntityLocationFields
+          :region-options="regions.regionOptions.value"
+          :city-options-for="regions.cityOptionsFor"
+        />
         <EntityMetricsFields />
         <FieldTextarea
           name="reason"

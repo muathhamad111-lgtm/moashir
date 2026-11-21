@@ -13,7 +13,7 @@ const { t } = useI18n()
 <template>
   <div class="result-pending">
     <EmptyState
-      icon="fa-regular fa-hourglass-half"
+      icon="refresh-dots"
       :title="t('assessment.result.pendingTitle')"
       :message="t('assessment.result.pendingMessage')"
     >

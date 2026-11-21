@@ -10,13 +10,16 @@ export const FINANCE_PERMISSIONS = {
   REFUNDS_MANAGE: 'finance.refunds.manage',
   RECEIPTS_MANAGE: 'finance.receipts.manage',
   EVENTS_VIEW: 'settings.payment.manage',
+  PAYMENT_SETTINGS: 'settings.payment.manage',
   CARTS_VIEW: 'messaging.campaigns.send',
   ASSESSMENT_SETTINGS: 'settings.assessment.manage',
   BAG_ADMIN: 'bag.admin.manage',
 }
 
 export const PURPOSE_PERMISSIONS = {
+  self: 'assessment.self.manage',
   accredited: 'assessment.accredited.manage',
+  award: 'assessment.advanced.manage',
   bag: 'bag.own.purchase',
 }
 
@@ -44,12 +47,14 @@ export function ownsPayment(user, payment) {
 
 export function authorizeOwnList(user) {
   if (user.superAdmin) return
-  if (user.entityId === null || !sessionCan(FINANCE_PERMISSIONS.OWN_VIEW)) throw financeReject.forbidden()
+  if (user.entityId === null || !sessionCan(FINANCE_PERMISSIONS.OWN_VIEW))
+    throw financeReject.forbidden()
 }
 
 export function authorizeCreate(user) {
   if (user.superAdmin) return
-  if (user.entityId === null || !sessionCan(FINANCE_PERMISSIONS.OWN_CREATE)) throw financeReject.forbidden()
+  if (user.entityId === null || !sessionCan(FINANCE_PERMISSIONS.OWN_CREATE))
+    throw financeReject.forbidden()
 }
 
 export function authorizePurpose(user, purpose) {
@@ -78,7 +83,10 @@ export function authorizeReceiptDownload(user, payment) {
 }
 
 export function authorizeRefundRead(user) {
-  requireAnyPermission(user, [FINANCE_PERMISSIONS.REFUNDS_MANAGE, FINANCE_PERMISSIONS.OPERATIONS_VIEW])
+  requireAnyPermission(user, [
+    FINANCE_PERMISSIONS.REFUNDS_MANAGE,
+    FINANCE_PERMISSIONS.OPERATIONS_VIEW,
+  ])
 }
 
 export function authorizeExport(user, record) {

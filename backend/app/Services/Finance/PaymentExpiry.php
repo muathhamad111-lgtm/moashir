@@ -53,9 +53,9 @@ final readonly class PaymentExpiry
             $this->applier->apply($payment, $provider, PaymentEventSource::Expiry);
         }
 
-        $graceEndsAt = $payment->expires_at->copy()->addMinutes($this->settings->pendingGraceMinutes());
+        $graceEndsAt = $payment->expires_at?->copy()->addMinutes($this->settings->pendingGraceMinutes());
 
-        if ($payment->status === PaymentStatus::Pending && Date::now()->greaterThanOrEqualTo($graceEndsAt)) {
+        if ($payment->status === PaymentStatus::Pending && $graceEndsAt !== null && Date::now()->greaterThanOrEqualTo($graceEndsAt)) {
             $this->cancelIf($payment, PaymentStatus::Pending);
         }
     }

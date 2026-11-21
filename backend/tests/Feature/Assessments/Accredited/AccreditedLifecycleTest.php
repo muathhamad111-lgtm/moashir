@@ -25,6 +25,7 @@ it('lists the open accredited request in the deletion impact and pauses its dead
     $version = publishedAccreditedCriteria();
     $assessor = assessorUser();
     $assessment = reviewedAccreditedRequest($version, $assessor);
+    scoreEveryUnit($assessor, $assessment);
     switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/request-completion", [
         'notes' => 'يرجى تحديث وصف السياسة المعتمدة.',
         'items' => [['sub_criterion_id' => subOf($version, 'M1.1')->id, 'kind' => 'cv']],
@@ -70,6 +71,9 @@ it('re-binds an accredited request under review on a reset_open edit and informs
 
     switchTo($assessor)->getJson("/api/v1/assessments/{$assessment->id}/review")->assertOk()
         ->assertJsonPath('data.criteria.version_id', $next->id)
+        ->assertJsonPath('data.criteria_update.scope', 'reset_open')
+        ->assertJsonPath('data.criteria_update.from_version_number', $version->version_number)
+        ->assertJsonPath('data.criteria_update.to_version_number', $next->version_number)
         ->assertJsonPath("data.cv.{$policyId}", ACCREDITED_CV_TEXT)
         ->assertJsonPath('data.evidence.0.sub_criterion_id', subOf($next, 'M1.1')->id)
         ->assertJsonPath("data.feedback.{$policyId}.strengths", 'وضوح السياسات المعتمدة وربطها بالأهداف الاستراتيجية.');

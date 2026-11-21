@@ -3,8 +3,8 @@ import { mount } from '@vue/test-utils'
 import StatsCards from '@/components/data-list/StatsCards.vue'
 
 const stats = [
-  { id: 1, icon: 'fa-solid fa-building', label: 'الجهات المسجلة', value: '148' },
-  { id: 2, icon: 'fa-solid fa-award', label: 'الشهادات الصادرة', value: '96' },
+  { id: 1, icon: 'building', label: 'الجهات المسجلة', value: '148' },
+  { id: 2, icon: 'award', label: 'الشهادات الصادرة', value: '96' },
 ]
 
 describe('StatsCards', () => {

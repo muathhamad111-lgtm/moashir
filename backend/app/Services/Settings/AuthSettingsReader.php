@@ -1,0 +1,50 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services\Settings;
+
+use App\Contracts\Integrations\SmsAvailability;
+use App\Data\Settings\AuthSettingsView;
+use App\Enums\Integrations\IntegrationKind;
+use App\Enums\Integrations\SmsGatewayStatus;
+use App\Services\Identity\FileAccessRoles;
+use App\Services\Identity\MfaRequirement;
+use App\Services\Identity\NationalIdRequirement;
+use App\Services\Identity\SignInCodeChannels;
+
+final readonly class AuthSettingsReader
+{
+    public function __construct(
+        private SignInCodeChannels $codeChannels,
+        private SmsAvailability $sms,
+        private IntegrationSettings $integrations,
+        private GeneralEmailNotifications $generalEmail,
+        private EntityRegistrationReview $registrationReview,
+        private MfaRequirement $mfa,
+        private NationalIdRequirement $nationalId,
+        private FileAccessRoles $fileAccessRoles,
+    ) {}
+
+    public function read(): AuthSettingsView
+    {
+        return new AuthSettingsView(
+            $this->codeChannels->allowed(),
+            $this->generalEmail->isEnabled(),
+            $this->registrationReview->isRequired(),
+            $this->mfa->isEnabled(),
+            $this->mfa->requiredRoles(),
+            $this->smsStatus(),
+            $this->nationalId->isEnabled(),
+            $this->nationalId->requiredRoles(),
+            $this->fileAccessRoles->all(),
+        );
+    }
+
+    private function smsStatus(): SmsGatewayStatus
+    {
+        return $this->sms->isAvailable()
+            ? SmsGatewayStatus::fromMode($this->integrations->mode(IntegrationKind::Sms))
+            : SmsGatewayStatus::Unavailable;
+    }
+}

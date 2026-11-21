@@ -1,0 +1,141 @@
+<script setup>
+import { computed, ref, useId } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
+import { storeToRefs } from 'pinia'
+import { useEntityLevel } from '@/composables/useEntityLevel'
+import { usePortalCountsStore } from '@/stores/portalCounts'
+import { PORTAL_SIDE_NAV_ITEMS, PORTAL_TOOL_ROUTES, PORTAL_TOOLS } from '@/constants/portal'
+import { accessFor } from '@/constants/routeAccess'
+import { usePermissions } from '@/composables/usePermissions'
+import { useHiddenPaths } from '@/composables/useHiddenPaths'
+import AppIcon from '@/components/ui/AppIcon.vue'
+import LevelMiniCard from '@/components/level/LevelMiniCard.vue'
+import SidebarIdentityCard from '@/components/layout/SidebarIdentityCard.vue'
+import PortalSideNavItem from './PortalSideNavItem.vue'
+
+defineProps({
+  collapsed: { type: Boolean, default: false },
+})
+
+const { t } = useI18n()
+const route = useRoute()
+const { tier, miniCard } = useEntityLevel()
+const counts = storeToRefs(usePortalCountsStore())
+const toolsId = useId()
+const { canAccess } = usePermissions()
+const tools = computed(() => PORTAL_TOOLS.filter((tool) => canAccess(accessFor(tool.routeName))))
+const items = computed(() =>
+  PORTAL_SIDE_NAV_ITEMS.filter((item) => item.children || canAccess(accessFor(item.routeName))),
+)
+const onToolPage = computed(() => PORTAL_TOOL_ROUTES.includes(route.name))
+const toolsOpen = ref(onToolPage.value)
+const showTools = computed(() => toolsOpen.value || onToolPage.value)
+const hiddenPaths = useHiddenPaths()
+
+function visibleChildren(item) {
+  return item.children.filter((child) => !hiddenPaths.value.has(child.key))
+}
+
+function countOf(item) {
+  return item.badge ? (counts[item.badge]?.value ?? 0) : 0
+}
+
+function isActive(item) {
+  return item.routes.includes(route.name)
+}
+</script>
+
+<template>
+  <nav
+    class="side-nav"
+    :class="{ 'side-nav--collapsed': collapsed }"
+    :aria-label="t('portal.nav.label')"
+    data-testid="portal-side-nav"
+  >
+    <SidebarIdentityCard :home-label="t('portal.brandHome')" :collapsed="collapsed" />
+
+    <ul class="side-nav__list">
+      <li v-for="item in items" :key="item.key">
+        <template v-if="item.children">
+          <p
+            class="side-nav__section"
+            :class="{ 'side-nav__section--collapsed': collapsed }"
+            :data-testid="`side-nav-${item.key}`"
+          >
+            <span class="side-nav__section-icon"><AppIcon :name="item.icon" /></span>
+            <span :class="collapsed ? 'side-nav-item__sr' : 'side-nav__section-label'">
+              {{ t(`portal.sideNav.items.${item.key}`) }}
+            </span>
+          </p>
+          <ul class="side-nav__list side-nav__list--sub">
+            <li v-for="child in visibleChildren(item)" :key="child.key">
+              <PortalSideNavItem
+                :to="{ name: child.routeName }"
+                :icon="child.icon"
+                :label="t(`portal.sideNav.paths.${child.key}`)"
+                :active="isActive(child)"
+                :collapsed="collapsed"
+              />
+            </li>
+          </ul>
+        </template>
+        <PortalSideNavItem
+          v-else
+          :to="{ name: item.routeName }"
+          :icon="item.icon"
+          :label="t(`portal.sideNav.items.${item.key}`)"
+          :active="isActive(item)"
+          :count="countOf(item)"
+          :count-label="
+            item.badge
+              ? t(`portal.sideNav.unread.${item.key}`, { count: countOf(item) }, countOf(item))
+              : ''
+          "
+          :collapsed="collapsed"
+        />
+      </li>
+    </ul>
+
+    <div class="side-nav__group">
+      <button
+        type="button"
+        class="side-nav__group-toggle"
+        :class="{ 'side-nav__group-toggle--collapsed': collapsed }"
+        :aria-expanded="showTools"
+        :aria-controls="toolsId"
+        :title="collapsed ? t('portal.tools.group') : undefined"
+        data-testid="portal-tools-toggle"
+        @click="toolsOpen = !showTools"
+      >
+        <span class="side-nav__group-icon">
+          <AppIcon name="layers" />
+        </span>
+        <span :class="collapsed ? 'side-nav-item__sr' : 'side-nav__group-label'">
+          {{ t('portal.tools.group') }}
+        </span>
+        <AppIcon
+          v-if="!collapsed"
+          class="side-nav__group-chevron"
+          :name="showTools ? 'chevron-up' : 'chevron-down'"
+        />
+      </button>
+      <ul v-show="showTools" :id="toolsId" class="side-nav__list side-nav__list--tools">
+        <li v-for="tool in tools" :key="tool.key">
+          <PortalSideNavItem
+            :to="{ name: tool.routeName }"
+            :icon="tool.icon"
+            :label="t(`portal.tools.items.${tool.key}.title`)"
+            :active="route.name === tool.routeName"
+            :collapsed="collapsed"
+            :soon="!tool.live"
+          />
+        </li>
+      </ul>
+    </div>
+
+    <div class="side-nav__footer">
+      <LevelMiniCard :tier="tier" :action="miniCard" :collapsed="collapsed" />
+    </div>
+  </nav>
+</template>

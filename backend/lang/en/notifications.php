@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 return [
 
-    'greeting' => 'Hello :name,',
+    'list_separator' => ', ',
 
     'staff_invited' => [
-        'subject' => 'Your invitation to the Moashir platform',
+        'subject' => 'Invitation to join the platform team',
         'line' => 'The System Administrator has created an account for you on the Moashir platform. Use the button below to set your password and set up two-factor authentication.',
         'action' => 'Accept the invitation',
-        'expiry' => 'This invitation is valid for :hours hours and can be used once.',
+        'expiry' => 'This invitation is valid for :duration and can be used once.',
     ],
 
     'account_locked' => [
         'subject' => 'Your account has been temporarily locked',
-        'line' => 'Your account was locked for :minutes minutes after several unsuccessful sign-in attempts.',
+        'line' => 'Your account was locked for :duration after several unsuccessful sign-in attempts.',
         'advice' => 'If these attempts were not made by you, please contact the System Administrator.',
         'admin_title' => 'A user account was locked',
         'admin_body' => 'A user account was locked after several unsuccessful sign-in attempts. You may unlock it from the users screen.',
@@ -41,14 +41,15 @@ return [
         'subject' => 'Reset your password',
         'line' => 'We received a request to reset the password of your account.',
         'action' => 'Reset the password',
-        'expiry' => 'This link is valid for :minutes minutes and can be used once.',
+        'expiry' => 'This link is valid for :duration and can be used once.',
         'ignore' => 'If you did not request a password reset, you can ignore this message.',
     ],
 
     'otp' => [
         'subject' => 'Your verification code',
-        'line' => 'Use the following code to complete your request:',
-        'expiry' => 'The code is valid for :minutes minutes.',
+        'line' => 'Use the following verification code to complete your request on the Moashir platform.',
+        'expiry' => 'The code is valid for :duration.',
+        'never_share' => 'Never share this code with anyone. The platform team will never ask you for it.',
         'ignore' => 'If you did not request this code, you can ignore this message.',
     ],
 
@@ -80,6 +81,14 @@ return [
             'title' => 'Integration secret replaced',
             'body' => 'A secret of an external integration (payment, SMS, e-mail or AI provider) was replaced or removed.',
         ],
+        'SEC-07' => [
+            'title' => 'Entity sign-in code channels changed',
+            'body' => 'The channels allowed for the one-time sign-in codes of entity accounts (e-mail, text message) were changed.',
+        ],
+        'SEC-08' => [
+            'title' => 'Two-factor policy changed',
+            'body' => 'Two-factor authentication was turned on or off, or the roles that require it were changed.',
+        ],
         'SEC-05' => [
             'title' => 'Rejected Super Admin assignment',
             'body' => 'An attempt to assign the Super Admin role through the platform was rejected.',
@@ -89,11 +98,29 @@ return [
             'body' => 'The sign-in email of a Super Admin account was changed.',
         ],
     ],
+    'identity' => [
+        'USR-06' => [
+            'reviewer' => [
+                'title' => 'Identity change request awaiting review',
+                'body' => 'A request to change the identity details of :user is waiting for your decision.',
+            ],
+        ],
+        'USR-07' => [
+            'approved' => [
+                'title' => 'Your identity change request was approved',
+                'body' => 'The change to your identity details was approved and is now on your account.',
+            ],
+            'rejected' => [
+                'title' => 'Your identity change request was rejected',
+                'body' => 'The change to your identity details was rejected. Open your profile to read the reviewer\'s note.',
+            ],
+        ],
+    ],
     'entities' => [
         'open_platform' => 'Open the platform',
         'REG-01' => [
             'entity' => [
-                'title' => 'Welcome to the Moashir platform',
+                'title' => 'Welcome to the platform',
                 'body' => 'The registration of :entity was received. Verify your e-mail, then complete the entity profile.',
             ],
             'staff' => [
@@ -104,7 +131,7 @@ return [
         'REG-03' => [
             'entity' => [
                 'title' => 'Complete your entity profile',
-                'body' => 'Your account is verified. Complete the governance grade, the number of employees and the annual beneficiaries of :entity.',
+                'body' => 'Your account is verified. To complete the profile of :entity, add: :fields.',
             ],
         ],
         'REG-04' => [
@@ -170,15 +197,33 @@ return [
         'REG-10' => [
             'staff_deleted' => [
                 'title' => 'Entity moved to Deleted entities',
-                'body' => 'The entity :entity (:reference) was deleted. :count open requests are frozen until it is restored.',
+                'body' => 'The entity :entity (:reference) was deleted, freezing :open_requests until it is restored.',
             ],
             'staff_restored' => [
                 'title' => 'Entity restored',
-                'body' => 'The entity :entity (:reference) was restored. :count frozen requests resumed in their previous status.',
+                'body' => 'The entity :entity (:reference) was restored, and work resumed on :frozen_requests from where it stopped.',
             ],
             'entity' => [
                 'title' => 'Your entity account was closed',
                 'body' => 'The account of :entity on the Moashir platform was closed by the platform administration. Contact the administration for details.',
+            ],
+        ],
+        'REG-11' => [
+            'staff' => [
+                'title' => 'Entity awaiting registration review',
+                'body' => ':entity (:reference) confirmed its e-mail, and its registration awaits approval or rejection.',
+            ],
+        ],
+        'REG-12' => [
+            'entity' => [
+                'title' => 'Entity registration approved',
+                'body' => 'The registration of :entity on the Moashir platform was approved. You can now sign in.',
+            ],
+        ],
+        'REG-13' => [
+            'entity' => [
+                'title' => 'Entity registration rejected',
+                'body' => 'The registration of :entity on the Moashir platform was rejected. You can contact the platform team for details. Reason for rejection: :reason',
             ],
         ],
     ],
@@ -201,8 +246,8 @@ return [
             'body' => 'The sub-criterion :name was added. Complete its weight and evaluation type.',
         ],
         'STD-04' => [
-            'title' => 'Guiding-point evaluation enabled',
-            'body' => 'The sub-criterion :name is now evaluated on guiding points. Define its guiding points.',
+            'title' => 'Indicator evaluation enabled',
+            'body' => 'The sub-criterion :name is now evaluated on indicators. Define its indicators.',
         ],
         'STD-05' => [
             'title' => 'Direct evaluation enabled',
@@ -214,11 +259,11 @@ return [
         ],
         'STD-07' => [
             'title' => 'Criteria weights are inconsistent',
-            'body' => 'Draft criteria version :version has :count weight distribution problems. Fix them before publishing.',
+            'body' => 'Draft criteria version :version has :weight_problems in the weight distribution. Fix the weights before publishing.',
         ],
         'STD-08' => [
             'title' => 'Published criteria edited',
-            'body' => 'The published criteria were edited with :count changes, applied to :scope.',
+            'body' => 'The published criteria were edited with :changes, applied to :scope.',
         ],
     ],
     'assessments' => [
@@ -244,11 +289,15 @@ return [
         ],
         'criteria_update_stalled' => [
             'title' => 'Criteria update of restored requests is still pending',
-            'body' => 'The criteria update of the open requests of :entity (:reference) is still pending after :count automatic retries. Submission of these drafts stays blocked. Check that the queue worker is running.',
+            'body' => 'The criteria update of the open requests of :entity (:reference) is still pending after :automatic_retries. Submission of these drafts stays blocked. Check that the queue worker is running.',
         ],
         'INT-05' => [
             'title' => 'Criteria update of restored requests failed',
             'body' => 'The criteria update of the open requests of :entity (:reference) did not complete after several attempts. The drafts stay on their current criteria version and can be submitted again (:count released). Review the technical log and retry the failed job.',
+        ],
+        'paid_request_opening_failed' => [
+            'title' => 'Paid request could not be opened',
+            'body' => 'The request of the paid payment :reference could not be opened because no criteria version is published. Publish the criteria, then record a refund or contact the entity.',
         ],
         'accredited_opening_failed' => [
             'title' => 'Accredited request could not be opened',
@@ -271,6 +320,8 @@ return [
                 'entity' => [
                     'title' => 'Accredited assessment request submitted',
                     'body' => 'Your accredited assessment request :number was submitted. An assessor will be assigned to review it.',
+                    'summary' => 'Request :number will be assigned to an assessor for review.',
+                    'action' => 'Track the request',
                 ],
                 'staff' => [
                     'title' => 'New accredited assessment request',
@@ -287,6 +338,8 @@ return [
                 'assessor' => [
                     'title' => 'A request was assigned to you',
                     'body' => 'The accredited assessment request :number of :entity was assigned to you. Start the review from your assigned requests.',
+                    'summary' => 'Request :number of :entity is waiting for your review.',
+                    'action' => 'Open the request',
                 ],
                 'staff' => [
                     'title' => 'Request assigned to an assessor',
@@ -319,6 +372,8 @@ return [
                 'entity' => [
                     'title' => 'Completion of your request is required',
                     'body' => 'The assessor asked you to complete items of your accredited assessment request :number. Complete them and resubmit the request by :deadline (Riyadh time). :outcome',
+                    'summary' => 'Complete the requested items and resubmit by :deadline.',
+                    'action' => 'Complete the request',
                 ],
                 'outcomes' => [
                     'continue_as_submitted' => 'If the deadline passes, the review continues with the data already submitted.',
@@ -335,10 +390,42 @@ return [
                     'body' => 'The assessor completed the accredited assessment request :number of :entity with a result of :percent%.',
                 ],
             ],
+            'ACC-09' => [
+                'entity' => [
+                    'title' => 'Your accredited certificate was issued',
+                    'body' => 'The certificate :certificate of your accredited assessment request :number was issued. You can download it from the certificates page.',
+                    'summary' => 'Certificate :certificate is ready to download.',
+                    'action' => 'View certificates',
+                ],
+                'staff' => [
+                    'title' => 'Accredited certificate issued',
+                    'body' => 'The certificate :certificate was issued for the accredited assessment request :number of :entity.',
+                ],
+            ],
+            'CERT-01' => [
+                'entity' => [
+                    'title' => 'Your certificate was revoked',
+                    'body' => 'The certificate :certificate of your accredited assessment request :number was revoked. Reason: :reason',
+                ],
+                'staff' => [
+                    'title' => 'Certificate revoked',
+                    'body' => 'The certificate :certificate of :entity (request :number) was revoked.',
+                ],
+            ],
+            'CERT-02' => [
+                'entity' => [
+                    'title' => 'Your certificate is under review',
+                    'body' => 'The certificate :certificate of your accredited assessment request :number is suspended while the assessment is reviewed again. Its verification page shows "under review" until the review is completed and a new certificate is issued.',
+                ],
+                'staff' => [
+                    'title' => 'Certificate suspended',
+                    'body' => 'The certificate :certificate of :entity (request :number) was suspended because the assessment was reopened.',
+                ],
+            ],
             'ACC-10' => [
                 'entity' => [
                     'title' => 'Your feedback report is available',
-                    'body' => 'The feedback of your accredited assessment request :number (strengths, improvement points and notes per sub-criterion) is available in the platform.',
+                    'body' => 'The feedback report of your accredited assessment request :number (strengths, improvement points and notes per sub-criterion) is available in the platform and can be downloaded as a PDF.',
                 ],
             ],
             'ACC-11' => [
@@ -381,6 +468,12 @@ return [
                     ],
                 ],
             ],
+            'ACC-13' => [
+                'entity' => [
+                    'title' => 'Complete your accredited assessment request',
+                    'body' => 'Accredited assessment request :number is paid and is still a draft. Complete the CVs and evidence and submit it so that it counts in its period.',
+                ],
+            ],
             'STD-08' => [
                 'entity' => [
                     'title' => 'Your accredited assessment request was updated',
@@ -394,17 +487,17 @@ return [
             'EVD-01' => [
                 'staff' => [
                     'title' => 'Evidence bundle ready',
-                    'body' => 'The evidence bundle of the accredited assessment request :number of :entity (:count files) is ready. Download it from the request before it expires.',
+                    'body' => 'The evidence bundle of the accredited assessment request :number of :entity is ready and contains :files. Download it from the request before it expires.',
                 ],
             ],
             'EVD-02' => [
                 'replace' => [
                     'title' => 'An evidence file was refused',
-                    'body' => 'An evidence file of the sub-criterion :code in your accredited assessment request :number did not pass the security check and was refused. Remove it and upload a clean copy in its place.',
+                    'body' => 'An evidence file of the sub-criterion “:name” in your accredited assessment request :number did not pass the security check and was refused. Remove it and upload a clean copy in its place.',
                 ],
                 'locked' => [
                     'title' => 'An evidence file was refused',
-                    'body' => 'An evidence file of the sub-criterion :code in your accredited assessment request :number did not pass the security check and was refused. The assessor does not see it and may ask you to provide a clean copy.',
+                    'body' => 'An evidence file of the sub-criterion “:name” in your accredited assessment request :number did not pass the security check and was refused. The assessor does not see it and may ask you to provide a clean copy.',
                 ],
             ],
         ],
@@ -516,18 +609,59 @@ return [
             'EVD-01' => [
                 'staff' => [
                     'title' => 'Evidence bundle ready',
-                    'body' => 'The evidence bundle of the award request :number of :entity (:count files) is ready. Download it from the request before it expires.',
+                    'body' => 'The evidence bundle of the award request :number of :entity is ready and contains :files. Download it from the request before it expires.',
                 ],
             ],
             'EVD-02' => [
                 'replace' => [
                     'title' => 'An evidence file was refused',
-                    'body' => 'An evidence file of the sub-criterion :code in your award request :number did not pass the security check and was refused. Remove it and upload a clean copy in its place.',
+                    'body' => 'An evidence file of the sub-criterion “:name” in your award request :number did not pass the security check and was refused. Remove it and upload a clean copy in its place.',
                 ],
                 'locked' => [
                     'title' => 'An evidence file was refused',
-                    'body' => 'An evidence file of the sub-criterion :code in your award request :number did not pass the security check and was refused. The assessor does not see it.',
+                    'body' => 'An evidence file of the sub-criterion “:name” in your award request :number did not pass the security check and was refused. The assessor does not see it.',
                 ],
+            ],
+        ],
+    ],
+    'periods' => [
+        'PER-01' => [
+            'entity' => [
+                'title' => 'The accredited assessment period :period starts soon',
+                'body' => 'The accredited assessment period :period runs from :starts_on to :ends_on. Submit your request within the period so that your assessment counts in it.',
+                'summary' => 'The period runs from :starts_on to :ends_on.',
+            ],
+        ],
+        'PER-02' => [
+            'draft' => [
+                'entity' => [
+                    'title' => 'The period :period ends in :days',
+                    'body' => 'The accredited assessment period :period ends on :ends_on and your entity has not submitted yet. Complete draft request :number and submit it before the period ends.',
+                ],
+            ],
+            'apply' => [
+                'entity' => [
+                    'title' => 'The period :period ends in :days',
+                    'body' => 'The accredited assessment period :period ends on :ends_on and your entity has not submitted a request in it. Apply before the period ends; paying early is recommended.',
+                ],
+            ],
+        ],
+        'PER-03' => [
+            'entity' => [
+                'title' => 'The period :period ended without a request',
+                'body' => 'The accredited assessment period :period ended without a request from your entity. You can apply in the current period.',
+            ],
+        ],
+        'PER-04' => [
+            'staff' => [
+                'title' => 'Accredited assessment period :period digest',
+                'body' => 'The period ends on :ends_on. Entities that have not submitted: :pending_entities. Paid requests still in draft: :paid_drafts. Transfers under review for entities whose period ends within 7 days: :pending_transfers.',
+            ],
+        ],
+        'PER-05' => [
+            'entity' => [
+                'title' => 'Corrected accredited assessment period dates',
+                'body' => 'The accredited assessment cadence changed, so the period :period you were told about no longer exists. The next period runs from :starts_on to :ends_on.',
             ],
         ],
     ],
@@ -547,7 +681,7 @@ return [
         'ADV-09' => [
             'assessor' => [
                 'title' => 'New entities assigned to you for the committee assessment',
-                'body' => ':count new entities of the award cycle :cycle are assigned to you for the committee assessment. Assess each of them independently and submit before the committee end date.',
+                'body' => 'You have been assigned the committee assessment of :entities from the award cycle :cycle. Assess each entity independently and submit before the committee end date.',
             ],
         ],
         'ADV-10' => [
@@ -571,11 +705,11 @@ return [
         'ADV-13' => [
             'assessor' => [
                 'title' => 'Committee evaluations are overdue',
-                'body' => ':count of your committee evaluations in :cycle are still open after the committee end date of :committee_end (Riyadh time). Complete and submit them.',
+                'body' => 'The committee assessment of :cycle ended on :committee_end (Riyadh time) and you still have :open_evaluations. Complete and submit what remains.',
             ],
             'staff' => [
                 'title' => 'A committee assessor is overdue',
-                'body' => ':assessor still has :count open committee evaluations in :cycle after the committee end date of :committee_end (Riyadh time).',
+                'body' => 'The committee assessment of :cycle ended on :committee_end (Riyadh time) and :assessor still has :open_evaluations.',
             ],
         ],
         'ADV-14' => [
@@ -623,13 +757,13 @@ return [
         'ADV-20' => [
             'staff' => [
                 'title' => 'Regional results approved',
-                'body' => 'The results of the region :region in :cycle were approved with :count winners and are locked.',
+                'body' => 'The results of the region :region in :cycle were approved with :winners and are locked.',
             ],
         ],
         'ADV-21' => [
             'staff' => [
                 'title' => 'Entities qualified for the national award',
-                'body' => ':count regional winners of :region in :cycle are qualified for the national award. Set the national ranks.',
+                'body' => ':winners from :region in :cycle qualified for the national award. Set the national ranks.',
             ],
         ],
         'ADV-22' => [
@@ -723,20 +857,24 @@ return [
             'body' => 'An SMS could not be sent through :provider (:error). Review the SMS settings and the provider account.',
         ],
         'INT-02' => [
-            'title' => 'SMS gateway test passed',
-            'body' => 'The connection test of the SMS provider :provider passed.',
+            'title' => 'SMS gateway check passed',
+            'body' => 'The connection check of the SMS provider :provider passed.',
         ],
         'INT-03' => [
-            'title' => 'Payment gateway test failed',
-            'body' => 'The connection test of the payment gateway failed (:error). Review the payment settings.',
+            'title' => 'Payment gateway check failed',
+            'body' => 'The connection check of the payment gateway failed (:error). Review the payment settings.',
         ],
         'INT-04' => [
             'title' => 'External service unavailable',
             'body' => 'An external service used by the platform is not configured or not reachable. Review the integration settings.',
         ],
+        'INT-06' => [
+            'title' => 'Backup check failed',
+            'body' => 'The daily backup check found a missing, outdated or failed backup. Ask the operations team to verify the backups today.',
+        ],
         'AI-04' => [
             'title' => 'AI provider settings updated',
-            'body' => 'The AI provider, model or API key was changed. Run a connection test.',
+            'body' => 'The AI provider, model or API key was changed. Run a connection check.',
         ],
         'AI-05' => [
             'title' => 'AI provider connection failed',
@@ -754,6 +892,8 @@ return [
             'entity' => [
                 'title' => 'Payment completed',
                 'body' => 'Your payment :reference for :purpose (:amount) was completed successfully.',
+                'summary' => 'We received your payment of :amount.',
+                'action' => 'View my payments',
             ],
             'staff' => [
                 'title' => 'Payment received',
@@ -801,6 +941,10 @@ return [
                 'title' => 'Payment to refund outside the platform',
                 'body' => 'The gateway confirmed :amount for the payment :reference of :entity, but the order could not be completed (it had expired or the amount did not match). Return the amount outside the platform and record the refund.',
             ],
+            'staff_transfer' => [
+                'title' => 'Bank transfer to return outside the platform',
+                'body' => 'Payment request :reference of :entity (:amount) was cancelled after the entity data was permanently erased while its bank transfer receipt was under review. Return the amount outside the platform if it reached the account.',
+            ],
         ],
         'PAY-09' => [
             'staff' => [
@@ -808,9 +952,30 @@ return [
                 'body' => 'The payment gateway reported a refund or a void of the payment :reference of :entity. Record the refund with its bank-transfer receipt.',
             ],
         ],
+        'PAY-11' => [
+            'entity' => [
+                'title' => 'Bank transfer receipt received',
+                'body' => 'We received the bank transfer receipt for payment request :reference for :purpose (:amount). The finance team is reviewing it, and you will be notified of the result.',
+            ],
+            'staff' => [
+                'title' => 'Bank transfer awaiting approval',
+                'body' => ':entity attached a bank transfer receipt for payment request :reference for :purpose (:amount). Review the receipt, then approve or reject it.',
+            ],
+        ],
+        'PAY-12' => [
+            'entity' => [
+                'title' => 'Bank transfer not approved',
+                'body' => 'The bank transfer receipt for payment request :reference for :purpose was not approved. Reason: :reason. Submit a new payment request for the service.',
+                'note' => 'Finance team note: :note',
+            ],
+        ],
         'FIN-01' => [
             'title' => 'Transactions export ready',
-            'body' => 'Your export of :count transactions is ready to download.',
+            'body' => 'Your export of :transactions is ready to download.',
+        ],
+        'FIN-03' => [
+            'title' => 'Bank transfer accounts changed',
+            'body' => 'The :bank bank account ending in :ending was :change. Check that the change is authorised.',
         ],
         'issues' => [
             'verification_rejected' => [
@@ -845,6 +1010,72 @@ return [
             'apple_pay_domain_association' => 'Apple Pay domain association file',
             'receipt_pdf' => 'payment receipt document',
             'finance_export' => 'financial transactions export',
+            'assessment_evidence' => 'assessment evidence file',
+            'evidence_bundle' => 'evidence bundle',
+            'cms_image' => 'public site image',
+            'kpi_image' => 'indicator image',
+            'branding_logo' => 'back-office logo',
+        ],
+    ],
+    'content' => [
+        'site_settings' => 'the site settings',
+        'pages' => [
+            'home' => 'the homepage',
+            'accredited_intro' => 'the accredited assessment page',
+            'advanced_intro' => 'the advanced assessment page',
+            'bag_details' => 'the Quick Excellence Kit page',
+            'lenses' => 'the analytical lenses page',
+            'kpis' => 'the KPIs page',
+            'accessibility' => 'the accessibility statement page',
+        ],
+        'CMS-01' => [
+            'title' => 'New indicator added',
+            'body' => 'The indicator :name was added to the KPIs page.',
+        ],
+        'CMS-02' => [
+            'title' => 'Indicator value updated',
+            'body' => 'The value of the indicator :name was updated.',
+        ],
+        'CMS-03' => [
+            'title' => 'Indicator published',
+            'body' => 'The indicator :name is now published on the KPIs page.',
+        ],
+        'CMS-04' => [
+            'title' => 'Public content updated',
+            'body' => 'Changes to :page are now visible on the public site.',
+        ],
+        'CMS-05' => [
+            'title' => 'Content unpublished',
+            'body' => ':content was removed from the public site.',
+        ],
+    ],
+    'contact' => [
+        'open_messages' => 'Open my messages',
+        'acknowledgement' => [
+            'subject' => 'We received your message :reference',
+            'received' => 'Thank you for contacting the Moashir platform. Your message about ":type" was received with the reference :reference.',
+            'next' => 'Our team will review it and reply to this e-mail address. Keep the reference for any follow-up.',
+        ],
+        'reply' => [
+            'subject' => 'Reply to your message :reference',
+            'intro' => 'The Moashir team replied to your message :reference:',
+            'guest_follow_up' => 'To follow up, send a new message through the contact form on the Moashir platform and mention the reference :reference.',
+        ],
+        'CNT-01' => [
+            'title' => 'New contact message',
+            'body' => 'A new message :reference about ":type" was received through the contact form.',
+        ],
+        'CNT-02' => [
+            'title' => 'Reply to your message',
+            'body' => 'The Moashir team replied to your message :reference. Open it to read the reply.',
+        ],
+        'CNT-04' => [
+            'title' => 'Sender replied to a contact message',
+            'body' => 'The sender of the message :reference about ":type" added a reply.',
+        ],
+        'CNT-05' => [
+            'title' => 'Contact message assigned to you',
+            'body' => 'The message :reference about ":type" was assigned to you.',
         ],
     ],
 ];

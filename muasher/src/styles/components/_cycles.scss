@@ -33,8 +33,7 @@
 }
 
 .cycle-filters {
-  @include flex(row, center, flex-start, var(--space-3));
-  flex-wrap: wrap;
+  display: contents;
 }
 
 .cycle-table__link {
@@ -76,7 +75,6 @@
   flex-wrap: wrap;
 }
 
-.cycle-editor__loading,
 .cycle-editor__aside {
   @include flex(column, stretch, flex-start, var(--space-4));
 }
@@ -112,6 +110,13 @@
 }
 
 .cycle-form__hint {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}
+
+.cycle-form__note {
+  @include flex(row, center, flex-start, var(--space-2));
   margin: 0;
   font-size: var(--fs-sm);
   color: var(--theme-text-muted);

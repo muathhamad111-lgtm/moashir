@@ -8,6 +8,7 @@ use App\Data\Assessments\AssessmentResultView;
 use App\Data\Assessments\CriteriaNodeNames;
 use App\Data\Assessments\FeedbackSheet;
 use App\Models\Assessments\AssessmentResultSnapshot;
+use App\Support\Assessments\PathPresenter;
 use App\Support\Assessments\ResultBreakdownPresenter;
 use App\Support\Assessments\StatusMask;
 use App\Support\Award\AwardOutcomePresenter;
@@ -30,7 +31,7 @@ final class AssessmentResultResource extends JsonResource
         $identity = [
             'id' => $assessment->id,
             'number' => $assessment->request_number,
-            'path' => $assessment->path->value,
+            ...PathPresenter::of($assessment->path),
             'status' => StatusMask::statusFor($assessment, $request->user()),
             'is_frozen' => $assessment->isFrozen(),
         ];
@@ -46,7 +47,7 @@ final class AssessmentResultResource extends JsonResource
             ...$identity,
             'available' => true,
             'criteria_version_id' => $view->snapshot->criteria_version_id,
-            'scale_kind' => $view->snapshot->scale_kind->value,
+            'scale_kind' => $view->snapshot->scale_kind?->value,
             'result_version' => $view->snapshot->version,
             'submitted_at' => $assessment->submitted_at?->toIso8601String(),
             'completed_at' => $assessment->completed_at?->toIso8601String(),

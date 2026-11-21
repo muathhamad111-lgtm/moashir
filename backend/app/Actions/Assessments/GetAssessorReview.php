@@ -13,6 +13,8 @@ use App\Models\Assessments\Assessment;
 use App\Models\Assessments\AssessmentAssignment;
 use App\Models\Identity\User;
 use App\Services\Assessments\AssessmentContextReader;
+use App\Services\Assessments\AssessmentSummaryReader;
+use App\Services\Assessments\CriteriaMoveSummaryReader;
 use App\Services\Assessments\FeedbackSheetReader;
 use App\Services\Assessments\ScoreSheetReader;
 use App\Services\Assessments\ScoringTreeBuilder;
@@ -28,11 +30,13 @@ final readonly class GetAssessorReview
         private SubmissionContentReader $content,
         private FeedbackSheetReader $feedback,
         private AssessmentContextReader $context,
+        private AssessmentSummaryReader $summaries,
+        private CriteriaMoveSummaryReader $criteriaMoves,
     ) {}
 
     public function handle(User $viewer, Assessment $assessment): AssessorReview
     {
-        $assessment->loadMissing(['entity.region', 'entity.city', 'activeAssignment', 'openCompletionRequest']);
+        $assessment->loadMissing(['entity.region', 'entity.city', 'entity.owner', 'activeAssignment', 'openCompletionRequest']);
         $version = $assessment->criteriaVersion;
         $tree = $this->trees->build($version);
         $content = $this->content->forReviewer($assessment);
@@ -46,6 +50,8 @@ final readonly class GetAssessorReview
             $this->feedback->read($assessment),
             $assessment->openCompletionRequest,
             $this->context->for($viewer, $assessment),
+            $this->summaries->currentOf($assessment),
+            $this->criteriaMoves->latestFor($assessment),
         );
     }
 

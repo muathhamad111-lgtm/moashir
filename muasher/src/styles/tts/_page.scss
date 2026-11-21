@@ -1,0 +1,88 @@
+@use '../mixins' as *;
+@use '../tokens' as *;
+
+.app-layout__content h1 {
+  @include in-tts-shell {
+    color: tts-neutral(900);
+    font-size: $tts-fs-heading-lg;
+    font-weight: $tts-fw-label;
+    line-height: $tts-lh-heading-lg;
+    letter-spacing: normal;
+  }
+}
+
+.page-header__subtitle {
+  @include in-tts-shell {
+    color: tts-neutral(500);
+    font-size: $tts-fs-sm;
+  }
+}
+
+.card__header {
+  @include in-tts-shell {
+    border-block-end-color: tts-neutral(50);
+    color: tts-neutral(900);
+    font-size: $tts-fs-heading-md;
+    font-weight: $tts-fw-label;
+  }
+}
+
+.card__footer {
+  @include in-tts-shell {
+    border-block-start-color: tts-neutral(50);
+  }
+}
+
+.settings-form__group {
+  @include in-tts-shell {
+    border-color: tts-neutral(50);
+    border-radius: var(--card-radius);
+    background-color: $tts-white;
+  }
+}
+
+.settings-form__legend {
+  @include in-tts-shell {
+    float: inline-start;
+    inline-size: 100%;
+    color: tts-neutral(900);
+    font-size: $tts-fs-heading-md;
+    font-weight: $tts-fw-label;
+  }
+}
+
+.settings-form:has(> .settings-form__group) {
+  @include in-tts-shell {
+    gap: var(--space-5);
+    padding: var(--space-5);
+    border: var(--border-width) solid tts-neutral(50);
+    border-radius: var(--card-radius);
+    background-color: $tts-white;
+  }
+}
+
+.settings-form > .settings-form__group {
+  @include in-tts-shell {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background-color: transparent;
+  }
+}
+
+.settings-form > .settings-form__group + .settings-form__group,
+.settings-form > .general-settings__actions,
+.settings-form > .path-settings__actions {
+  @include in-tts-shell {
+    padding-block-start: var(--space-5);
+    border-block-start: var(--border-width) solid tts-neutral(50);
+  }
+}
+
+.site-settings__legend {
+  @include in-tts-shell {
+    float: inline-start;
+    inline-size: 100%;
+    margin-block-end: var(--space-2);
+  }
+}

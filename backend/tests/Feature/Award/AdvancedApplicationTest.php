@@ -42,7 +42,7 @@ it('shows the entity the running cycle and its eligibility', function (): void {
     switchTo(requestFollower())->getJson('/api/v1/assessments/advanced/current')->assertForbidden();
 });
 
-it('opens one draft per entity and cycle, bound to the cycle criteria and scale', function (): void {
+it('opens one draft per entity and cycle, bound to the cycle criteria and scored by its unit types', function (): void {
     $version = publishedAccreditedCriteria();
     $cycle = openAwardCycle($version, ['scale_kind' => 'relative']);
     $entity = cycleEntity($cycle);
@@ -52,7 +52,7 @@ it('opens one draft per entity and cycle, bound to the cycle criteria and scale'
         ->assertJsonPath('data.path', 'advanced')
         ->assertJsonPath('data.status', 'draft')
         ->assertJsonPath('data.award_cycle_id', $cycle->id)
-        ->assertJsonPath('data.scale_kind', 'relative')
+        ->assertJsonPath('data.scale_kind', null)
         ->assertJsonPath('data.criteria_version_id', $version->id)
         ->json('data.id');
     applyForCycle($owner, $cycle)->assertOk()->assertJsonPath('data.id', $id);
@@ -96,7 +96,7 @@ it('records a conditions rejection once and tells the entity which condition fai
         ->assertJsonPath('data.request.status', 'rejected_conditions')
         ->assertJsonPath('data.request.condition_failure.failures.0.required', 3);
 
-    $young->forceFill(['founding_year' => 2010])->save();
+    $young->forceFill(['founding_year' => 2010, 'founded_on' => '2010-03-01'])->save();
     applyForCycle($owner, $cycle)->assertCreated()->assertJsonPath('data.status', 'draft');
 });
 
@@ -239,7 +239,7 @@ it('hides the filtering result from the entity until the results are announced',
     switchTo($owner)->getJson('/api/v1/assessments?filter[status]=not_qualified')->assertOk()->assertJsonPath('meta.pagination.total', 0);
     switchTo($assessor)->getJson('/api/v1/assessments?filter[status]=not_qualified')->assertOk()->assertJsonPath('meta.pagination.total', 0);
     switchTo($assessor)->getJson("/api/v1/assessments/{$assessment->id}")->assertOk()->assertJsonPath('data.status', 'awaiting_filtering');
-    switchTo($assessor)->getJson('/api/v1/requests/assigned?filter[tab]=completed')->assertOk()->assertJsonPath('data.0.status', 'awaiting_filtering');
+    switchTo($assessor)->getJson('/api/v1/requests/assigned?filter[tab]=completed&filter[path]=advanced')->assertOk()->assertJsonPath('data.0.status', 'awaiting_filtering');
     switchTo(requestFollower())->getJson("/api/v1/requests/{$assessment->id}")->assertOk()->assertJsonPath('data.status', 'not_qualified');
 
     expect(array_column($history, 'to'))->not->toContain('awaiting_filtering')->not->toContain('not_qualified');

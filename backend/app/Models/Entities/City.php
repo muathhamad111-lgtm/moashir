@@ -21,6 +21,8 @@ use Illuminate\Support\Carbon;
  * @property LocalizedText $name
  * @property int $sort_order
  * @property bool $is_active
+ * @property float|null $latitude
+ * @property float|null $longitude
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read Region $region
@@ -33,7 +35,7 @@ final class City extends Model
     /**
      * @var list<string>
      */
-    protected $fillable = ['region_id', 'code', 'name', 'sort_order', 'is_active'];
+    protected $fillable = ['region_id', 'code', 'name', 'sort_order', 'is_active', 'latitude', 'longitude'];
 
     /**
      * @return array<string, string>
@@ -45,6 +47,8 @@ final class City extends Model
             'name' => LocalizedTextCast::class,
             'sort_order' => 'integer',
             'is_active' => 'boolean',
+            'latitude' => 'float',
+            'longitude' => 'float',
         ];
     }
 

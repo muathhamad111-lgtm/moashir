@@ -9,22 +9,9 @@ use Illuminate\Contracts\Config\Repository;
 
 final readonly class AuthSettings
 {
+    public const int MAX_INVITATION_TTL_MINUTES = 60;
+
     public function __construct(private Repository $config) {}
-
-    public function isEmailPasswordEnabled(): bool
-    {
-        return $this->flag('login_modes.email_password');
-    }
-
-    public function isEmailOtpEnabled(): bool
-    {
-        return $this->flag('login_modes.email_otp');
-    }
-
-    public function isSmsOtpEnabled(): bool
-    {
-        return $this->flag('login_modes.sms_otp');
-    }
 
     public function otpLength(): int
     {
@@ -46,6 +33,26 @@ final readonly class AuthSettings
         return $this->number('otp.max_attempts');
     }
 
+    public function otpPerUserPerTenMinutes(): int
+    {
+        return max(1, $this->number('otp.per_user_per_ten_minutes'));
+    }
+
+    public function otpPerUserPerDay(): int
+    {
+        return max(1, $this->number('otp.per_user_per_day'));
+    }
+
+    public function registrationEmailTokenMinutes(): int
+    {
+        return max(1, $this->number('otp.registration_email_token_minutes'));
+    }
+
+    public function signInSmsPerHour(): int
+    {
+        return max(1, $this->number('otp.sign_in_sms_per_hour'));
+    }
+
     public function lockoutMaxAttempts(): int
     {
         return $this->number('lockout.max_attempts');
@@ -61,9 +68,9 @@ final readonly class AuthSettings
         return $this->number('password.history');
     }
 
-    public function invitationTtlHours(): int
+    public function invitationTtlMinutes(): int
     {
-        return $this->number('invitation_ttl_hours');
+        return min(self::MAX_INVITATION_TTL_MINUTES, max(1, $this->number('invitation_ttl_minutes')));
     }
 
     public function pendingAuthenticationTtlMinutes(): int
@@ -79,11 +86,6 @@ final readonly class AuthSettings
     public function absoluteSessionHours(): int
     {
         return $this->number('session.absolute_hours');
-    }
-
-    private function flag(string $key): bool
-    {
-        return (bool) $this->config->get('moashir.auth.'.$key);
     }
 
     private function number(string $key): int

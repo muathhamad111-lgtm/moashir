@@ -7,17 +7,18 @@ namespace App\Notifications\Identity;
 use App\Enums\Identity\OtpChannel;
 use App\Enums\Integrations\SmsPurpose;
 use App\Enums\Integrations\SmsTemplateKey;
+use App\Enums\Notifications\MailReason;
 use App\Models\Identity\User;
 use App\Notifications\Channels\SmsChannel;
 use App\Notifications\Contracts\DeliversSms;
 use App\Notifications\Contracts\FallsBackToMail;
+use App\Notifications\Messages\BrandedMailMessage;
 use App\Notifications\QueuedNotification;
 use App\Services\Integrations\SmsTemplateRenderer;
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
 use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Notifications\AnonymousNotifiable;
-use Illuminate\Notifications\Messages\MailMessage;
 
 final class OtpCodeNotification extends QueuedNotification implements DeliversSms, FallsBackToMail, ShouldBeEncrypted
 {
@@ -45,13 +46,14 @@ final class OtpCodeNotification extends QueuedNotification implements DeliversSm
         return $this->channel === OtpChannel::Sms && $notifiable instanceof User ? [SmsChannel::class] : ['mail'];
     }
 
-    public function toMail(User|AnonymousNotifiable $notifiable): MailMessage
+    public function toMail(User|AnonymousNotifiable $notifiable): BrandedMailMessage
     {
-        return (new MailMessage)
+        return BrandedMailMessage::make($notifiable, $notifiable instanceof User ? MailReason::Account : MailReason::AddressVerification)
             ->subject(__('notifications.otp.subject'))
             ->line(__('notifications.otp.line'))
-            ->line($this->code)
-            ->line(__('notifications.otp.expiry', ['minutes' => $this->validMinutes]))
+            ->code($this->code)
+            ->line(__('notifications.otp.expiry', ['duration' => $this->validity()]))
+            ->line(__('notifications.otp.never_share'))
             ->line(__('notifications.otp.ignore'));
     }
 
@@ -59,6 +61,7 @@ final class OtpCodeNotification extends QueuedNotification implements DeliversSm
     {
         return app(SmsTemplateRenderer::class)->render(SmsTemplateKey::OtpCode, app()->getLocale(), [
             'code' => $this->code,
+            'validity' => $this->validity(),
             'minutes' => (string) $this->validMinutes,
         ]);
     }
@@ -79,5 +82,10 @@ final class OtpCodeNotification extends QueuedNotification implements DeliversSm
     public function retryUntil(): DateTimeInterface
     {
         return $this->expiresAt;
+    }
+
+    private function validity(): string
+    {
+        return trans_choice('quantities.minutes', $this->validMinutes);
     }
 }

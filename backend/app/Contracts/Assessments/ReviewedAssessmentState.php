@@ -8,6 +8,8 @@ interface ReviewedAssessmentState extends AssessmentState
 {
     public function isInRequestQueue(): bool;
 
+    public function isPreparedByEntity(): bool;
+
     public function runsReviewClock(): bool;
 
     public function acceptsEntityContent(): bool;

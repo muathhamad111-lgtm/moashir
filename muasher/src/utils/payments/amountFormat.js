@@ -22,5 +22,7 @@ export function formatRate(value, locale) {
 
 export function formatFileSize(bytes, locale) {
   const kilobytes = Math.max(1, Math.round(Number(bytes ?? 0) / 1024))
-  return new Intl.NumberFormat(withLatinNumerals(locale), { maximumFractionDigits: 0 }).format(kilobytes)
+  return new Intl.NumberFormat(withLatinNumerals(locale), { maximumFractionDigits: 0 }).format(
+    kilobytes,
+  )
 }

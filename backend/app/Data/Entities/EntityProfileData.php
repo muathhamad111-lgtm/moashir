@@ -23,7 +23,8 @@ final readonly class EntityProfileData
         public ?string $governanceGrade,
         public ?int $employeesCount,
         public ?int $annualBeneficiariesCount,
-        public bool $hasStrategicPlan,
+        public ?bool $hasStrategicPlan,
+        public EntityRegistryUpdate $registry = new EntityRegistryUpdate,
     ) {}
 
     /**
@@ -43,11 +44,7 @@ final readonly class EntityProfileData
             EntityProfileField::EmployeesCount->value => $this->employeesCount,
             EntityProfileField::AnnualBeneficiariesCount->value => $this->annualBeneficiariesCount,
             EntityProfileField::HasStrategicPlan->value => $this->hasStrategicPlan,
+            ...$this->registry->toAttributes(),
         ];
-    }
-
-    public function isComplete(): bool
-    {
-        return $this->governanceGrade !== null && $this->employeesCount !== null && $this->annualBeneficiariesCount !== null;
     }
 }

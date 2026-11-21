@@ -7,6 +7,7 @@ namespace App\Models\Criteria;
 use App\Casts\LocalizedTextCast;
 use App\Casts\WeightCast;
 use App\Enums\Criteria\EvaluationType;
+use App\Enums\Criteria\ScoringType;
 use App\Support\ValueObjects\LocalizedText;
 use App\Support\ValueObjects\Weight;
 use Database\Factories\Criteria\SubCriterionFactory;
@@ -26,6 +27,8 @@ use Illuminate\Support\Carbon;
  * @property Weight $weight
  * @property bool $distribute_equally
  * @property EvaluationType $evaluation_type
+ * @property ScoringType $scoring_type
+ * @property ScoringType $default_point_scoring_type
  * @property bool $has_cv
  * @property LocalizedText|null $assessor_note_label
  * @property bool $is_active
@@ -47,7 +50,7 @@ final class SubCriterion extends Model
     /**
      * @var list<string>
      */
-    protected $fillable = ['name', 'description', 'weight', 'distribute_equally', 'evaluation_type', 'has_cv', 'assessor_note_label', 'is_active'];
+    protected $fillable = ['name', 'description', 'weight', 'distribute_equally', 'evaluation_type', 'scoring_type', 'default_point_scoring_type', 'has_cv', 'assessor_note_label', 'is_active'];
 
     /**
      * @return array<string, string>
@@ -60,6 +63,8 @@ final class SubCriterion extends Model
             'weight' => WeightCast::class,
             'distribute_equally' => 'boolean',
             'evaluation_type' => EvaluationType::class,
+            'scoring_type' => ScoringType::class,
+            'default_point_scoring_type' => ScoringType::class,
             'has_cv' => 'boolean',
             'assessor_note_label' => LocalizedTextCast::class,
             'is_active' => 'boolean',

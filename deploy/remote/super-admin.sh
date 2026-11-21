@@ -19,7 +19,7 @@ main() {
     trap 'artisan "${ENVIRONMENT}" config:cache' EXIT
 
     export SUPER_ADMIN_INITIAL_EMAIL="${email}"
-    (cd "$(environment_backend "${ENVIRONMENT}")" && sudo -u "${MOASHIR_APP_USER}" -H --preserve-env=SUPER_ADMIN_INITIAL_EMAIL -- \
+    (cd "$(environment_backend "${ENVIRONMENT}")" && sudo -u "$(environment_runtime_user "${ENVIRONMENT}")" -H --preserve-env=SUPER_ADMIN_INITIAL_EMAIL -- \
         "${MOASHIR_PHP_BIN}" artisan moashir:super-admin grant --name="${name}")
 }
 

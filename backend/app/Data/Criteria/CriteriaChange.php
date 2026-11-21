@@ -9,7 +9,7 @@ use App\Enums\Criteria\CriteriaNodeType;
 
 final readonly class CriteriaChange
 {
-    public const array SCORE_AFFECTING_FIELDS = ['weight', 'evaluation_type', 'active'];
+    public const array SCORE_AFFECTING_FIELDS = ['weight', 'evaluation_type', 'scoring_type', 'active'];
 
     /**
      * @param  list<string>  $fields

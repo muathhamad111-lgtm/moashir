@@ -31,10 +31,13 @@ final class DefaultPermissionMatrix
             RoleKey::Assessor => $this->assessor(),
             RoleKey::FilteringOfficer => $this->filteringOfficer(),
             RoleKey::AwardSecretary => $this->awardSecretary(),
-            RoleKey::ContentOfficer => [P::AssessmentCriteriaView, P::ContentHomeManage, P::ContentKpisManage, P::AiKbManage],
+            RoleKey::ContentOfficer => [
+                P::AssessmentCriteriaView, P::ContentHomeManage, P::ContentKpisManage, P::ContentInsightsManage,
+                P::ContactMessagesManage, P::AiKbManage,
+            ],
             RoleKey::FinanceOfficer => [
                 P::EntitiesView, P::BagRequestsView, P::FinanceOperationsView, P::FinanceOperationsExport,
-                P::FinanceRefundsManage, P::FinanceReceiptsManage,
+                P::FinanceRefundsManage, P::FinanceReceiptsManage, P::FinanceTransfersReview,
             ],
             RoleKey::Entity => $this->entity(),
         };
@@ -49,21 +52,20 @@ final class DefaultPermissionMatrix
             P::NotificationsAuditView, P::DashboardExecutiveView,
             P::EntitiesView, P::EntitiesManage, P::EntitiesDeactivate, P::EntitiesReactivate,
             P::EntitiesVerificationResend, P::EntitiesEmailChangeApprove, P::EntitiesDelete, P::EntitiesExport,
-            P::PrivacyRequestsManage,
             P::AssessmentCriteriaView, P::AssessmentHistoryView, P::EvidenceView,
             P::RequestsQueueView, P::RequestsAssign, P::RequestsReviewRead, P::RequestsCompletionReturn,
             P::AssessmentContextView,
             P::AwardCyclesView, P::AwardCyclesManage, P::AwardCommitteeManage, P::AwardFilteringView,
             P::AwardSecretaryReview, P::AwardResultsView, P::AwardResultsAnnounce,
-            P::ReportsFeedbackView, P::CertificatesManage,
+            P::ReportsFeedbackView, P::ReportsInsightsView, P::CertificatesManage,
             P::BagRequestsView, P::BagRequestsAssign, P::BagPlanApprove, P::BagSubscriptionActivateFree, P::BagAdminManage,
-            P::CriteriaView, P::CriteriaPublish,
-            P::ContentHomeManage, P::ContentKpisManage,
+            P::CriteriaView, P::CriteriaManage, P::CriteriaPublish,
+            P::ContentHomeManage, P::ContentKpisManage, P::ContentInsightsManage, P::ContactMessagesManage,
             P::AiKbManage, P::AiProviderManage,
-            P::UsersView, P::UsersManage, P::RolesMatrixView, P::RolesMatrixManage, P::AuditView, P::AuditExport,
+            P::UsersView, P::UsersManage, P::UsersExport, P::UsersIdentityChangesReview, P::RolesMatrixView, P::RolesMatrixManage, P::AuditView, P::AuditExport,
             P::SettingsGeneralManage, P::SettingsBrandingManage, P::SettingsAuthManage, P::SettingsAssessmentManage,
             P::SettingsCertificatesManage, P::SettingsPaymentManage, P::SettingsSmsManage, P::SettingsEmailManage,
-            P::SettingsNotificationsManage, P::MessagingCampaignsSend,
+            P::SettingsNotificationsManage, P::SettingsPricesManage, P::MessagingCampaignsSend,
             P::FinanceOperationsView, P::FinanceOperationsExport, P::FinanceRefundsManage,
         ];
     }
@@ -76,7 +78,8 @@ final class DefaultPermissionMatrix
         return [
             P::NotificationsAuditView, P::EntitiesView, P::AssessmentCriteriaView, P::AssessmentHistoryView, P::EvidenceView,
             P::RequestsQueueView, P::RequestsAssign, P::RequestsReviewRead, P::RequestsCompletionReturn,
-            P::AwardCyclesView, P::AwardCommitteeManage, P::ReportsFeedbackView, P::BagRequestsView, P::BagRequestsAssign,
+            P::AwardCyclesView, P::AwardCommitteeManage, P::ReportsFeedbackView, P::ReportsInsightsView,
+            P::BagRequestsView, P::BagRequestsAssign,
         ];
     }
 
@@ -127,7 +130,7 @@ final class DefaultPermissionMatrix
         return [
             P::EntityProfileView, P::EntityProfileEdit, P::AssessmentCriteriaView, P::AssessmentHistoryView,
             P::AssessmentSelfManage, P::AssessmentAccreditedManage, P::AssessmentAdvancedManage,
-            P::EvidenceManage, P::EvidenceView, P::AwardResultsView, P::ReportsFeedbackView,
+            P::EvidenceManage, P::EvidenceView, P::AwardResultsView, P::ReportsFeedbackView, P::ReportsInsightsOwnView,
             P::CertificatesOwnView, P::BagOwnView, P::BagOwnPurchase, P::PaymentsOwnView, P::PaymentsOwnCreate,
         ];
     }

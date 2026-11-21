@@ -1,5 +1,6 @@
 <script setup>
 import { ref, useId } from 'vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   items: { type: Array, required: true },
@@ -48,7 +49,7 @@ function panelId(item) {
           @click="toggle(item)"
         >
           <span>{{ item.title }}</span>
-          <i class="fa-solid fa-chevron-down accordion__chevron" aria-hidden="true"></i>
+          <AppIcon name="chevron-down" class="accordion__chevron" />
         </button>
       </h3>
       <div

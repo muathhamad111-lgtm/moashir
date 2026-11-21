@@ -4,49 +4,58 @@ declare(strict_types=1);
 
 namespace App\Services\Demo;
 
-use App\Actions\Identity\PublishTermsVersion;
+use App\Data\Demo\DemoLegalTexts;
 use App\Data\Identity\TermsPublication;
+use App\Enums\Cms\LegalDocument;
 use App\Enums\Identity\TermsKind;
 use App\Models\Identity\TermsVersion;
 use App\Models\Identity\User;
-use App\Support\ValueObjects\LocalizedText;
+use App\Services\Cms\LegalDocumentSource;
+use App\Services\Identity\CurrentTermsVersions;
+use App\Services\Identity\TermsVersionPublisher;
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\Config\Repository;
+use LogicException;
 
 final readonly class DemoTermsInstaller
 {
-    private const string VERSION_LABEL = 'demo-1';
+    public function __construct(
+        private LegalDocumentSource $source,
+        private CurrentTermsVersions $terms,
+        private TermsVersionPublisher $publisher,
+        private Repository $config,
+    ) {}
 
-    private const array TEXTS = [
-        'terms' => [
-            'ar' => 'شروط وأحكام تجريبية لبيئة العرض فقط، وجميع البيانات المعروضة فيها بيانات افتراضية. تنشر إدارة المنصة النص المعتمد قبل التشغيل الفعلي.',
-            'en' => 'Demonstration terms and conditions for the review environment only; every record shown here is fictional. The platform administration publishes the approved text before go-live.',
-        ],
-        'privacy' => [
-            'ar' => 'سياسة خصوصية تجريبية لبيئة العرض فقط، ولا تُجمع فيها أي بيانات شخصية حقيقية. تنشر إدارة المنصة النص المعتمد قبل التشغيل الفعلي.',
-            'en' => 'Demonstration privacy policy for the review environment only; no real personal data is collected here. The platform administration publishes the approved text before go-live.',
-        ],
-    ];
-
-    public function __construct(private PublishTermsVersion $publishTerms) {}
-
-    /**
-     * @return list<int>
-     */
-    public function install(User $publisher): array
+    public function install(User $publisher): DemoLegalTexts
     {
         $currentIds = [];
+        $published = 0;
 
         foreach (TermsKind::cases() as $kind) {
-            $current = TermsVersion::query()->current()->where('kind', $kind->value)->first()
-                ?? $this->publishTerms->handle($publisher, new TermsPublication(
-                    $kind,
-                    self::VERSION_LABEL,
-                    LocalizedText::fromArray(self::TEXTS[$kind->value]),
-                    CarbonImmutable::today(),
-                ));
+            $seed = $this->publishSeed($kind, $publisher);
+            $published += $seed instanceof TermsVersion ? 1 : 0;
+            $current = $seed ?? $this->terms->of($kind) ?? throw new LogicException('Every legal text kind has a current version after the demo installation.');
             $currentIds[] = $current->id;
         }
 
-        return $currentIds;
+        return new DemoLegalTexts($currentIds, $published);
+    }
+
+    private function publishSeed(TermsKind $kind, User $publisher): ?TermsVersion
+    {
+        $seed = TermsVersion::query()->ofKind($kind)->where('version', LegalDocumentSource::SEED_VERSION)->first();
+
+        if ($seed instanceof TermsVersion) {
+            return $seed->isDraft() ? $this->publisher->publishDraft($publisher, $seed, $this->today()) : null;
+        }
+
+        $text = $this->source->read(LegalDocument::of($kind));
+
+        return $this->publisher->publishNew($publisher, new TermsPublication($kind, LegalDocumentSource::SEED_VERSION, $text->body, $this->today(), $text->title));
+    }
+
+    private function today(): CarbonImmutable
+    {
+        return CarbonImmutable::now($this->config->string('app.display_timezone'))->startOfDay();
     }
 }

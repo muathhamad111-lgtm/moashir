@@ -1,0 +1,44 @@
+@use '../mixins' as *;
+
+.radar-chart {
+  @include flex(column, center, flex-start, var(--space-2));
+  margin: 0;
+}
+
+.radar-chart__svg {
+  inline-size: 100%;
+  max-inline-size: var(--size-radar);
+  direction: ltr;
+  overflow: visible;
+}
+
+.radar-chart__ring,
+.radar-chart__spoke {
+  fill: none;
+  stroke: var(--theme-border-strong);
+  stroke-width: var(--border-width);
+}
+
+.radar-chart__previous {
+  fill: none;
+  stroke: var(--theme-text-muted);
+  stroke-width: var(--border-width-thick);
+  stroke-dasharray: var(--dash-previous);
+}
+
+.radar-chart__current {
+  fill: color-mix(in srgb, var(--data-ink) var(--data-fill-strength), transparent);
+  stroke: var(--data-ink);
+  stroke-width: var(--border-width-thick);
+}
+
+.radar-chart__label {
+  font-family: var(--font-arabic);
+  font-size: var(--fs-xs);
+  fill: var(--theme-text-secondary);
+}
+
+.radar-chart__caption {
+  color: var(--theme-text-muted);
+  font-size: var(--fs-xs);
+}

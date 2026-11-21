@@ -38,10 +38,13 @@ export function useBagEntity() {
   })
 
   const fee = computed(() => subscription.value?.fee ?? eligibility.value?.fee ?? 0)
-  const currency = computed(() => subscription.value?.currency ?? eligibility.value?.currency ?? 'SAR')
+  const currency = computed(
+    () => subscription.value?.currency ?? eligibility.value?.currency ?? 'SAR',
+  )
 
   const pricing = computed(
-    () => subscription.value?.pricing ?? eligibility.value?.pricing ?? product.value?.pricing ?? null,
+    () =>
+      subscription.value?.pricing ?? eligibility.value?.pricing ?? product.value?.pricing ?? null,
   )
 
   async function load() {

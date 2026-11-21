@@ -2,7 +2,11 @@ import { http } from '../contract/http'
 import { envelope } from '../contract/responses'
 import { currentSessionUser } from '../stores/sessionStore'
 import { sessionCan } from '../stores/sessionPermissions'
-import { INTEGRATION_PERMISSIONS, integrationReject, integrationRoute } from '../stores/integrations/integrationRejection'
+import {
+  INTEGRATION_PERMISSIONS,
+  integrationReject,
+  integrationRoute,
+} from '../stores/integrations/integrationRejection'
 import { overviewRows } from '../stores/integrations/integrationsOverview'
 import { paymentTestModeInProduction } from '../stores/integrations/paymentIntegration'
 

@@ -33,7 +33,11 @@ export function smsFormValues(resource) {
 }
 
 function generalOf(values) {
-  return { activeProvider: activeProviderValue(values.activeProvider), mode: values.mode, testRecipients: values.testRecipients }
+  return {
+    activeProvider: activeProviderValue(values.activeProvider),
+    mode: values.mode,
+    testRecipients: values.testRecipients,
+  }
 }
 
 function taqnyatOf(taqnyat) {
@@ -41,19 +45,31 @@ function taqnyatOf(taqnyat) {
 }
 
 function msegatOf(msegat) {
-  return { username: trimmedOrNull(msegat.username), senderName: trimmedOrNull(msegat.senderName), templateRestricted: msegat.templateRestricted }
+  return {
+    username: trimmedOrNull(msegat.username),
+    senderName: trimmedOrNull(msegat.senderName),
+    templateRestricted: msegat.templateRestricted,
+  }
 }
 
 function providersPayload(values, initial, full) {
   const { taqnyat, msegat } = values.providers
   return withoutEmptyObjects({
-    taqnyat: withSecrets(changedValues(taqnyatOf(taqnyat), taqnyatOf(initial.providers.taqnyat), { full }), { bearerToken: taqnyat.bearerToken }),
-    msegat: withSecrets(changedValues(msegatOf(msegat), msegatOf(initial.providers.msegat), { full }), { apiKey: msegat.apiKey }),
+    taqnyat: withSecrets(
+      changedValues(taqnyatOf(taqnyat), taqnyatOf(initial.providers.taqnyat), { full }),
+      { bearerToken: taqnyat.bearerToken },
+    ),
+    msegat: withSecrets(
+      changedValues(msegatOf(msegat), msegatOf(initial.providers.msegat), { full }),
+      { apiKey: msegat.apiKey },
+    ),
   })
 }
 
 function templatesChanged(values, initial) {
-  return values.templates.some((template, index) => !isSameValue(template.body, initial.templates[index]?.body))
+  return values.templates.some(
+    (template, index) => !isSameValue(template.body, initial.templates[index]?.body),
+  )
 }
 
 export function smsPayload(values, resource) {
@@ -63,19 +79,27 @@ export function smsPayload(values, resource) {
   const providers = providersPayload(values, initial, full)
   if (Object.keys(providers).length) payload.providers = providers
   if (full || templatesChanged(values, initial)) {
-    payload.templates = values.templates.map((template) => ({ key: template.key, body: { ...template.body } }))
+    payload.templates = values.templates.map((template) => ({
+      key: template.key,
+      body: { ...template.body },
+    }))
   }
   return payload
 }
 
 export function smsSecretsChanged(payload) {
-  return Boolean(payload.providers?.taqnyat && 'bearerToken' in payload.providers.taqnyat) || Boolean(payload.providers?.msegat && 'apiKey' in payload.providers.msegat)
+  return (
+    Boolean(payload.providers?.taqnyat && 'bearerToken' in payload.providers.taqnyat) ||
+    Boolean(payload.providers?.msegat && 'apiKey' in payload.providers.msegat)
+  )
 }
 
 export function templateErrorPath(path, templates) {
   const match = /^templates\.([A-Za-z0-9_]+)\.body\.(ar|en)$/.exec(path)
   if (!match || /^\d+$/.test(match[1])) return path
-  const index = templates.findIndex((template) => template.key === match[1] || camelKey(template.key) === match[1])
+  const index = templates.findIndex(
+    (template) => template.key === match[1] || camelKey(template.key) === match[1],
+  )
   return index === -1 ? path : `templates.${index}.body.${match[2]}`
 }
 

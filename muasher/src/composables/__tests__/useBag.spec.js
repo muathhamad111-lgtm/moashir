@@ -14,7 +14,12 @@ vi.mock('@/services/bagService', () => ({
   },
 }))
 
-const i18n = createI18n({ legacy: false, locale: 'en', fallbackLocale: 'en', messages: { en: {}, ar: {} } })
+const i18n = createI18n({
+  legacy: false,
+  locale: 'en',
+  fallbackLocale: 'en',
+  messages: { en: {}, ar: {} },
+})
 
 function harness(composable) {
   let api
@@ -29,8 +34,26 @@ function harness(composable) {
 }
 
 const gapsFixture = [
-  { id: 'gap-101', subCriterionId: 101, priority: null, status: 'approved', consultantNote: null, recommendedAction: null, open: false, helperFiles: [] },
-  { id: 'gap-503', subCriterionId: 503, priority: 'high', status: 'approved', consultantNote: { ar: 'n', en: 'n' }, recommendedAction: null, open: true, helperFiles: [] },
+  {
+    id: 'gap-101',
+    subCriterionId: 101,
+    priority: null,
+    status: 'approved',
+    consultantNote: null,
+    recommendedAction: null,
+    open: false,
+    helperFiles: [],
+  },
+  {
+    id: 'gap-503',
+    subCriterionId: 503,
+    priority: 'high',
+    status: 'approved',
+    consultantNote: { ar: 'n', en: 'n' },
+    recommendedAction: null,
+    open: true,
+    helperFiles: [],
+  },
 ]
 
 function envelope(data) {
@@ -89,10 +112,36 @@ describe('useBagReassessment — grouping', () => {
         available: true,
         reference: { version: 1 },
         reassessment: { version: 2 },
-        overall: { beforePercent: 78, afterPercent: 82, diffPercent: 4, closed: 2, improved: 1, stable: 14, regressed: 1 },
+        overall: {
+          beforePercent: 78,
+          afterPercent: 82,
+          diffPercent: 4,
+          closed: 2,
+          improved: 1,
+          stable: 14,
+          regressed: 1,
+        },
         criteria: [
-          { subCriterionId: 503, outcome: 'closed', inKitScope: true, weight: 250, before: 150, after: 250, diff: 100, gapAfter: 0 },
-          { subCriterionId: 101, outcome: 'stable', inKitScope: false, weight: 400, before: 328, after: 328, diff: 0, gapAfter: 72 },
+          {
+            subCriterionId: 503,
+            outcome: 'closed',
+            inKitScope: true,
+            weight: 250,
+            before: 150,
+            after: 250,
+            diff: 100,
+            gapAfter: 0,
+          },
+          {
+            subCriterionId: 101,
+            outcome: 'stable',
+            inKitScope: false,
+            weight: 400,
+            before: 328,
+            after: 328,
+            diff: 0,
+            gapAfter: 72,
+          },
         ],
       }),
     )

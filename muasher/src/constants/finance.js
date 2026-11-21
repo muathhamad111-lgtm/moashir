@@ -1,4 +1,12 @@
-export const TRANSACTION_SORTS = ['-created_at', 'created_at', '-total', 'total', '-paid_at', 'paid_at', '-updated_at']
+export const TRANSACTION_SORTS = [
+  '-created_at',
+  'created_at',
+  '-total',
+  'total',
+  '-paid_at',
+  'paid_at',
+  '-updated_at',
+]
 
 export const DEFAULT_TRANSACTION_SORT = '-created_at'
 
@@ -13,13 +21,37 @@ export const EXPORT_STATUSES = {
 
 export const EXPORT_POLL_DELAYS_MS = [2000, 4000, 8000, 16000, 30000]
 
-export const PAYMENT_EVENT_SOURCES = ['checkout', 'verification', 'webhook', 'expiry', 'reconciliation', 'admin']
+export const PAYMENT_EVENT_SOURCES = [
+  'checkout',
+  'verification',
+  'webhook',
+  'expiry',
+  'reconciliation',
+  'admin',
+]
 
-export const PAYMENT_EVENT_RESULTS = ['applied', 'pending', 'ignored', 'rejected', 'unmatched', 'late_payment']
+export const PAYMENT_EVENT_RESULTS = [
+  'applied',
+  'pending',
+  'ignored',
+  'rejected',
+  'unmatched',
+  'late_payment',
+]
 
-export const SCAN_STATUSES = { PENDING: 'pending', CLEAN: 'clean', INFECTED: 'infected', FAILED: 'failed' }
+export const SCAN_STATUSES = {
+  PENDING: 'pending',
+  CLEAN: 'clean',
+  INFECTED: 'infected',
+  FAILED: 'failed',
+}
 
-export const UPLOAD_STATES = { IDLE: 'idle', PENDING: 'pending', CLEAN: 'clean', REFUSED: 'refused' }
+export const UPLOAD_STATES = {
+  IDLE: 'idle',
+  PENDING: 'pending',
+  CLEAN: 'clean',
+  REFUSED: 'refused',
+}
 
 export const REFUND_RULES = {
   REASON_MIN: 20,
@@ -32,7 +64,13 @@ export const REFUND_RULES = {
   EVIDENCE_MAX_MB: 20,
 }
 
-export const REFUSED_FILE_CODES = ['file.content_mismatch', 'file.infected', 'file.scan_failed']
+export const REFUSED_FILE_CODES = [
+  'file.content_mismatch',
+  'file.infected',
+  'file.scan_failed',
+  'file.password_protected',
+  'file.check_failed',
+]
 
 export const MANUAL_SETTLE_RULES = {
   STATUSES: ['paid', 'failed'],
@@ -51,3 +89,33 @@ export const FINANCE_SETTINGS_RULES = {
 }
 
 export const ABANDONED_CART_CONTACTED = ['true', 'false']
+
+// «العمليات المالية» filters: the operation type and the statuses an operation can be in.
+export const TRANSACTION_TYPES = Object.freeze(['electronic', 'bank_transfer', 'refund'])
+
+export const TRANSACTION_STATUS_FILTERS = Object.freeze([
+  'paid',
+  'awaiting_payment',
+  'under_review',
+  'rejected',
+  'failed',
+  'cancelled',
+  'refunded',
+])
+
+// A row's status key in the definitions (created and pending both read as «بانتظار الدفع»).
+export const STATUS_DEFINITION_KEY = Object.freeze({
+  created: 'awaiting_payment',
+  pending: 'awaiting_payment',
+  'under-review': 'under_review',
+})
+
+// Badge colour of a processed payment event's outcome.
+export const EVENT_RESULT_VARIANTS = Object.freeze({
+  applied: 'success',
+  pending: 'warning',
+  ignored: 'muted',
+  rejected: 'danger',
+  unmatched: 'warning',
+  late_payment: 'danger',
+})

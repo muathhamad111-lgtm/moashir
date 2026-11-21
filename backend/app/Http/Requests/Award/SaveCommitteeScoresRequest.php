@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Requests\Award;
 
 use App\Data\Assessments\SubmittedScores;
-use App\Models\Award\CommitteeAssignment;
 use App\Support\Assessments\ScoreInputRules;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -16,9 +15,7 @@ final class SaveCommitteeScoresRequest extends FormRequest
      */
     public function rules(): array
     {
-        $assignment = $this->route('assignment');
-
-        return ScoreInputRules::for($assignment instanceof CommitteeAssignment ? $assignment->loadMissing('assessment')->assessment : null, 'required');
+        return ScoreInputRules::for('required');
     }
 
     public function scores(): SubmittedScores

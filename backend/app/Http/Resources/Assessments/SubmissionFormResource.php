@@ -33,6 +33,7 @@ final class SubmissionFormResource extends JsonResource
             'completion_request' => CompletionRequestPresenter::present($form->completionRequest, $subs),
             'upload_limits' => $form->uploadLimits->toArray(),
             'criteria_update' => $criteriaUpdate === null ? null : new CriteriaMoveSummaryResource($criteriaUpdate)->toArray($request),
+            'passed_stations' => $form->passedStations,
         ];
     }
 }

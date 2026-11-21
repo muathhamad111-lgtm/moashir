@@ -2,11 +2,14 @@
 
 .otp-input {
   @include flex(row, center, center, var(--space-2));
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   direction: ltr;
 }
 
+// The code must read as one row: boxes shrink to fit a narrow card, never wrap.
 .otp-input__box {
+  flex: 0 1 var(--size-touch-target);
+  min-inline-size: var(--size-target-min);
   inline-size: var(--size-touch-target);
   block-size: var(--size-touch-target);
   padding: 0;
@@ -15,7 +18,7 @@
   font-weight: var(--fw-bold);
   color: var(--theme-heading);
   background-color: var(--theme-surface);
-  border: var(--border-width-thick) solid var(--theme-border);
+  border: var(--border-width-thick) solid var(--theme-input-border);
   border-radius: var(--radius-md);
   transition:
     border-color var(--t-fast) var(--ease),

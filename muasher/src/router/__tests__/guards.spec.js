@@ -10,7 +10,12 @@ import { KNOWN_PERMISSIONS } from '@/constants/permissionKeys'
 import { ROUTE_ACCESS } from '@/constants/routeAccess'
 import { sessionUserFor } from '@/test-utils/session'
 
-const OPEN_TO_ANY_SIGNED_IN_USER = [ROUTE_NAMES.ACCOUNT_PROFILE]
+const OPEN_TO_ANY_SIGNED_IN_USER = [
+  ROUTE_NAMES.ACCOUNT_PROFILE,
+  ROUTE_NAMES.ACCOUNT_COMPLETE_IDENTITY,
+  ROUTE_NAMES.MESSAGES_INDEX,
+  ROUTE_NAMES.MESSAGES_THREAD,
+]
 
 function freshRouter() {
   const router = createRouter({ history: createMemoryHistory(), routes })
@@ -32,6 +37,17 @@ function signIn(roles, extra = {}) {
 beforeEach(() => {
   setActivePinia(createPinia())
 })
+
+const APPOINTMENT = {
+  id: 7001,
+  awardCycleId: 31,
+  cycleName: { ar: 'دورة الجائزة', en: 'Award cycle' },
+  cycleStatus: 'committee-assessment',
+  status: 'active',
+  isSubstitute: false,
+  committeeStart: null,
+  committeeEnd: null,
+}
 
 describe('router guards — permission-driven, deny by default', () => {
   it('bounces a guest to login with redirect=to.fullPath', async () => {
@@ -55,7 +71,7 @@ describe('router guards — permission-driven, deny by default', () => {
     signIn([ROLES.SYSTEM_ADMIN])
     expect((await visit('/admin/settings/users')).name).toBe(ROUTE_NAMES.ADMIN_USERS)
     expect((await visit('/assessment/self')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
-    expect((await visit('/admin/award/committee')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
+    expect((await visit('/admin/committee/assignments')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
   })
 
   it('follows the permission keys, not the role names', async () => {
@@ -67,9 +83,15 @@ describe('router guards — permission-driven, deny by default', () => {
 
   it('opens the committee queue only for an assessor with an active appointment', async () => {
     signIn([ROLES.ASSESSOR])
-    expect((await visit('/admin/award/committee')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
-    signIn([ROLES.ASSESSOR], { committeeAppointments: [{ cycleId: 'cycle-1', status: 'active' }] })
-    expect((await visit('/admin/award/committee')).name).toBe(ROUTE_NAMES.AWARD_COMMITTEE)
+    expect((await visit('/admin/committee/assignments')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
+    signIn([ROLES.ASSESSOR], { committeeAppointments: [APPOINTMENT] })
+    expect((await visit('/admin/committee/assignments')).name).toBe(ROUTE_NAMES.AWARD_COMMITTEE)
+    expect((await visit('/admin/committee/assignments/7101')).name).toBe(
+      ROUTE_NAMES.AWARD_COMMITTEE_SCORE,
+    )
+    expect((await visit('/admin/committee/discussions')).name).toBe(
+      ROUTE_NAMES.AWARD_COMMITTEE_DISCUSSIONS,
+    )
   })
 
   it('declares a known permission for every protected route', () => {
@@ -88,6 +110,18 @@ describe('router guards — permission-driven, deny by default', () => {
   })
 })
 
+describe('router guards — account page', () => {
+  it('sends an entity account to the entity profile, which holds its account data', async () => {
+    signIn([ROLES.ENTITY])
+    expect((await visit('/account')).name).toBe(ROUTE_NAMES.ENTITY_PROFILE)
+  })
+
+  it('keeps the account page for staff accounts', async () => {
+    signIn([ROLES.REQUEST_FOLLOWER])
+    expect((await visit('/account')).name).toBe(ROUTE_NAMES.ACCOUNT_PROFILE)
+  })
+})
+
 describe('router guards — self assessment and staff assessment record', () => {
   it('keeps the self form and the entity result for entity accounts only', async () => {
     signIn([ROLES.REQUEST_FOLLOWER])
@@ -97,7 +131,9 @@ describe('router guards — self assessment and staff assessment record', () => 
 
   it('opens the result route to the entity and refuses the staff record without the permission', async () => {
     signIn([ROLES.ENTITY])
-    expect((await visit('/assessment/self/result/9001')).name).toBe(ROUTE_NAMES.ASSESSMENT_SELF_RESULT)
+    expect((await visit('/assessment/self/result/9001')).name).toBe(
+      ROUTE_NAMES.ASSESSMENT_SELF_RESULT,
+    )
     signIn([ROLES.CRITERIA_OFFICER])
     expect((await visit('/admin/assessments/9001')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
   })
@@ -110,38 +146,79 @@ describe('router guards — payments and finance', () => {
     signIn([ROLES.ENTITY])
     expect((await visit('/payments')).name).toBe(ROUTE_NAMES.PAYMENTS_MINE)
     expect((await visit(`/payments/${PAYMENT}`)).name).toBe(ROUTE_NAMES.PAYMENTS_DETAIL)
-    expect((await visit(`/payments/${PAYMENT}/return?id=mock_pay_1`)).name).toBe(ROUTE_NAMES.PAYMENTS_RETURN)
-    expect((await visit('/assessment/accredited/pay')).name).toBe(ROUTE_NAMES.ASSESSMENT_ACCREDITED_PAY)
+    expect((await visit(`/payments/${PAYMENT}/return?id=mock_pay_1`)).name).toBe(
+      ROUTE_NAMES.PAYMENTS_RETURN,
+    )
+    expect((await visit('/assessment/accredited/pay')).name).toBe(
+      ROUTE_NAMES.ASSESSMENT_ACCREDITED_PAY,
+    )
     expect((await visit('/bag/pay')).name).toBe(ROUTE_NAMES.BAG_PAY)
-    signIn([], { permissions: ['payments.own.view', 'payments.own.create', 'assessment.accredited.manage'] })
+    signIn([], {
+      permissions: ['payments.own.view', 'payments.own.create', 'assessment.accredited.manage'],
+    })
     expect((await visit('/payments')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
     expect((await visit('/assessment/accredited/pay')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
   })
 
   it('needs the purpose permission next to payments.own.create for each checkout', async () => {
     signIn([ROLES.ENTITY], { permissions: ['payments.own.create', 'assessment.accredited.manage'] })
-    expect((await visit('/assessment/accredited/pay')).name).toBe(ROUTE_NAMES.ASSESSMENT_ACCREDITED_PAY)
+    expect((await visit('/assessment/accredited/pay')).name).toBe(
+      ROUTE_NAMES.ASSESSMENT_ACCREDITED_PAY,
+    )
     expect((await visit('/bag/pay')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
   })
 
   it('gates the finance screens by permission key, events for settings.payment.manage only', async () => {
     signIn([ROLES.FINANCE_OFFICER])
-    expect((await visit('/finance')).name).toBe(ROUTE_NAMES.FINANCE_OVERVIEW)
-    expect((await visit(`/finance/transactions/${PAYMENT}`)).name).toBe(ROUTE_NAMES.FINANCE_TRANSACTION)
-    expect((await visit('/finance/refunds')).name).toBe(ROUTE_NAMES.FINANCE_REFUNDS)
+    expect((await visit('/finance')).name).toBe(ROUTE_NAMES.FINANCE_TRANSACTIONS)
+    expect((await visit(`/finance/transactions/${PAYMENT}`)).name).toBe(
+      ROUTE_NAMES.FINANCE_TRANSACTION,
+    )
+    expect((await visit('/finance/refunds')).name).toBe(ROUTE_NAMES.FINANCE_TRANSACTIONS)
     expect((await visit('/finance/payment-events')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
     expect((await visit('/admin/settings/finance')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
     expect((await visit('/payments')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
     signIn([ROLES.SYSTEM_ADMIN])
     expect((await visit('/finance/payment-events')).name).toBe(ROUTE_NAMES.FINANCE_PAYMENT_EVENTS)
-    expect((await visit('/admin/settings/finance')).name).toBe(ROUTE_NAMES.ADMIN_SETTINGS_FINANCE)
-    expect((await visit('/admin/operations')).name).toBe(ROUTE_NAMES.FINANCE_OVERVIEW)
+    expect((await visit('/admin/settings/finance')).name).toBe(ROUTE_NAMES.ADMIN_SETTINGS_GENERAL)
+    expect((await visit('/admin/operations')).name).toBe(ROUTE_NAMES.FINANCE_TRANSACTIONS)
   })
 
   it('denies unknown permission keys on every finance route', async () => {
     signIn([], { permissions: ['finance.anything', 'payments.any'] })
-    for (const path of ['/finance', '/finance/transactions', '/finance/refunds', '/finance/payment-events']) {
+    for (const path of [
+      '/finance',
+      '/finance/transactions',
+      '/finance/refunds',
+      '/finance/payment-events',
+    ]) {
       expect((await visit(path)).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
     }
+  })
+})
+
+describe('router guards — national ID step', () => {
+  it('sends a required account without a national ID to the identity step, keeping the target', async () => {
+    signIn([ROLES.ASSESSOR], { nationalIdRequired: true, hasNationalId: false })
+    const route = await visit('/account')
+    expect(route.name).toBe(ROUTE_NAMES.ACCOUNT_COMPLETE_IDENTITY)
+    expect(route.query.redirect).toBe('/account')
+  })
+
+  it('lets a required account in once its national ID is recorded', async () => {
+    signIn([ROLES.ASSESSOR], { nationalIdRequired: true, hasNationalId: true })
+    expect((await visit('/account')).name).toBe(ROUTE_NAMES.ACCOUNT_PROFILE)
+  })
+
+  it('never stops an account that is not required', async () => {
+    signIn([ROLES.ASSESSOR], { nationalIdRequired: false, hasNationalId: false })
+    expect((await visit('/account')).name).toBe(ROUTE_NAMES.ACCOUNT_PROFILE)
+  })
+
+  it('opens the identity review queue only with the review permission', async () => {
+    signIn([ROLES.ASSESSOR])
+    expect((await visit('/admin/identity-changes')).name).toBe(ROUTE_NAMES.ERRORS_FORBIDDEN)
+    signIn([ROLES.SYSTEM_ADMIN])
+    expect((await visit('/admin/identity-changes')).name).toBe(ROUTE_NAMES.ADMIN_IDENTITY_CHANGES)
   })
 })

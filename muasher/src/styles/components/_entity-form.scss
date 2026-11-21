@@ -50,13 +50,6 @@
   color: var(--theme-text-muted);
 }
 
-.entity-form__terms {
-  margin: 0;
-  max-inline-size: var(--size-prose-max);
-  line-height: var(--lh-relaxed);
-  color: var(--theme-text);
-}
-
 .entity-form__actions {
   @include flex(row, center, flex-end, var(--space-3));
   flex-wrap: wrap;
@@ -66,4 +59,116 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+}
+
+.entity-register__step {
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &:focus:not(:focus-visible) {
+    outline: none;
+  }
+}
+
+.entity-register__actions {
+  gap: var(--space-3);
+}
+
+.entity-form__wide {
+  grid-column: 1 / -1;
+}
+
+.email-check {
+  @include flex(column, stretch, flex-start, var(--space-3));
+}
+
+.email-check__field {
+  @include flex(row, center, flex-start, var(--space-2));
+  min-block-size: 60px;
+  padding-inline-end: var(--space-2);
+  border: var(--border-width) solid var(--theme-input-border);
+  border-radius: var(--radius-md);
+  background-color: var(--theme-surface);
+  transition: border-color var(--t-fast) var(--ease);
+
+  &:has(.field__control:focus-visible) {
+    @include focus-ring;
+    border-color: var(--theme-accent);
+  }
+
+  .field__control {
+    flex: 1 1 auto;
+    align-self: stretch;
+    min-inline-size: 0;
+    border: 0;
+    background: transparent;
+
+    &:focus-visible {
+      outline: none;
+    }
+  }
+}
+
+.field--error .email-check__field {
+  border-color: var(--color-danger);
+}
+
+.email-check__inline {
+  @include flex(row, center, flex-end, var(--space-2));
+  flex: none;
+}
+
+.email-check__send {
+  white-space: nowrap;
+}
+
+.email-check__badge {
+  @include flex(row, center, flex-start, var(--space-1));
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background-color: var(--theme-tint);
+  color: var(--theme-text-secondary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+}
+
+.email-check__badge--done {
+  background-color: var(--theme-success-soft);
+  color: var(--theme-success-text);
+}
+
+.email-check__code {
+  @include flex(column, stretch, flex-start, var(--space-3));
+  inline-size: 100%;
+}
+
+.email-check__hint {
+  margin: 0;
+  color: var(--theme-text-secondary);
+  font-size: var(--fs-sm);
+}
+
+.email-check__actions {
+  @include flex(row, center, flex-start, var(--space-3));
+  flex-wrap: wrap;
+}
+
+.email-check__link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--theme-accent-text);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+
+  &:disabled {
+    color: var(--theme-text-muted);
+    cursor: default;
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
 }

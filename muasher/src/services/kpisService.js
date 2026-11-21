@@ -1,69 +1,28 @@
 import { apiClient } from '@/api/client'
-import { payloadShape } from '@/utils/payloadShape'
+import { domainRequests } from './domainRequest'
 import { serviceRequest } from './serviceRequest'
+
+const requests = domainRequests('kpis', 'kpi')
 
 export const kpisService = {
   list(params = {}) {
-    return serviceRequest('kpis.list', () => apiClient.get('/kpis', { params }), {
-      entity: 'kpi',
-      paramsShape: payloadShape(params),
-    })
+    return requests.read('list', () => apiClient.get('/kpis', { params }), params, [422])
   },
-  getFeatured(params = {}) {
-    return serviceRequest(
-      'kpis.getFeatured',
-      () => apiClient.get('/kpis', { params: { ...params, homepage: true } }),
-      {
-        entity: 'kpi',
-        paramsShape: payloadShape(params),
-      },
-    )
-  },
-  adminList(params = {}) {
-    return serviceRequest('kpis.adminList', () => apiClient.get('/admin/kpis', { params }), {
-      entity: 'kpi',
-      paramsShape: payloadShape(params),
-    })
-  },
-  get(kpiId) {
-    return serviceRequest('kpis.get', () => apiClient.get(`/admin/kpis/${kpiId}`), {
-      entity: 'kpi',
-    })
+  getFeatured() {
+    return requests.read('getFeatured', () => apiClient.get('/kpis/featured'))
   },
   getBySlug(slug) {
-    return serviceRequest('kpis.getBySlug', () => apiClient.get(`/kpis/${slug}`), {
-      entity: 'kpi',
-    })
-  },
-  create(payload) {
-    return serviceRequest('kpis.create', () => apiClient.post('/admin/kpis', payload), {
-      entity: 'kpi',
-      payloadShape: payloadShape(payload),
-    })
-  },
-  update(kpiId, payload) {
-    return serviceRequest('kpis.update', () => apiClient.put(`/admin/kpis/${kpiId}`, payload), {
-      entity: 'kpi',
-      payloadShape: payloadShape(payload),
-    })
-  },
-  remove(kpiId) {
-    return serviceRequest('kpis.remove', () => apiClient.delete(`/admin/kpis/${kpiId}`), {
-      entity: 'kpi',
-    })
-  },
-  setPublished(kpiId, published) {
     return serviceRequest(
-      'kpis.setPublished',
-      () => apiClient.patch(`/admin/kpis/${kpiId}/published`, { published }),
+      'kpis.getBySlug',
+      () => apiClient.get(`/kpis/${slug}`),
       { entity: 'kpi' },
+      { expectedStatuses: [404] },
     )
   },
-  reorder(kpiId, direction) {
-    return serviceRequest(
-      'kpis.reorder',
-      () => apiClient.patch(`/admin/kpis/${kpiId}/reorder`, { direction }),
-      { entity: 'kpi' },
-    )
+  listCategories() {
+    return requests.read('listCategories', () => apiClient.get('/kpi-categories'))
+  },
+  listTypes() {
+    return requests.read('listTypes', () => apiClient.get('/kpi-types'))
   },
 }

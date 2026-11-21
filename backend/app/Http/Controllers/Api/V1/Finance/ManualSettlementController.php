@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Finance;
 
 use App\Actions\Finance\ManuallySettlePayment;
+use App\Actions\Finance\ShowTransaction;
 use App\Http\Requests\Finance\ManuallySettlePaymentRequest;
 use App\Http\Resources\Finance\TransactionDetailResource;
 use App\Http\Responses\ApiResponse;
@@ -15,11 +16,10 @@ use Illuminate\Http\JsonResponse;
 
 final class ManualSettlementController
 {
-    public function __invoke(ManuallySettlePaymentRequest $request, Payment $payment, #[CurrentUser] User $actor, ManuallySettlePayment $settle): JsonResponse
+    public function __invoke(ManuallySettlePaymentRequest $request, Payment $payment, #[CurrentUser] User $actor, ManuallySettlePayment $settle, ShowTransaction $show): JsonResponse
     {
         $settled = $settle->handle($actor, $payment, $request->settlement());
-        $settled->loadMissing(['refund', 'entity.owner']);
 
-        return ApiResponse::resource(new TransactionDetailResource($settled));
+        return ApiResponse::resource(new TransactionDetailResource($show->handle($settled, $actor)));
     }
 }

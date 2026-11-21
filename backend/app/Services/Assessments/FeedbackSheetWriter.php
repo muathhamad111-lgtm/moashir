@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Services\Assessments;
 
+use App\Data\Assessments\RevisionStamp;
 use App\Enums\Assessments\FeedbackKind;
 use App\Models\Assessments\Assessment;
 use App\Models\Assessments\AssessmentFeedbackItem;
 use App\Models\Identity\User;
-use App\Support\RequestContext;
 use App\Support\ScalarValue;
 use Illuminate\Support\Facades\Date;
 
 final readonly class FeedbackSheetWriter
 {
-    public function __construct(private FeedbackSheetReader $reader, private RequestContext $context) {}
+    public function __construct(private FeedbackSheetReader $reader, private RevisionStamper $stamper) {}
 
     /**
      * @param  array<string, array<string, string|null>>  $changesByCode
@@ -28,13 +28,14 @@ final readonly class FeedbackSheetWriter
             $current[$item->sub_code.'|'.$item->kind->value] = $item;
         }
 
+        $stamp = $this->stamper->stampFor($author, $locked);
         $changed = [];
 
         foreach ($changesByCode as $code => $fields) {
             foreach ($fields as $kindValue => $body) {
                 $kind = FeedbackKind::from($kindValue);
 
-                if ($this->apply($locked, $current[$code.'|'.$kind->value] ?? null, $code, $kind, trim((string) $body), $author)) {
+                if ($this->apply($locked, $current[$code.'|'.$kind->value] ?? null, $code, $kind, trim((string) $body), $stamp)) {
                     $changed[$code][] = $kind->field();
                 }
             }
@@ -43,7 +44,7 @@ final readonly class FeedbackSheetWriter
         return $changed;
     }
 
-    private function apply(Assessment $locked, ?AssessmentFeedbackItem $current, string $code, FeedbackKind $kind, string $body, User $author): bool
+    private function apply(Assessment $locked, ?AssessmentFeedbackItem $current, string $code, FeedbackKind $kind, string $body, RevisionStamp $stamp): bool
     {
         if (($current->body ?? '') === $body) {
             return false;
@@ -57,9 +58,10 @@ final readonly class FeedbackSheetWriter
                 'sub_code' => $code,
                 'kind' => $kind,
                 'body' => $body,
-                'author_user_id' => $author->id,
+                'author_user_id' => $stamp->authorId,
                 'version' => $this->nextVersion($locked, $code, $kind),
-                'change_reason' => $this->context->reason(),
+                'change_reason' => $stamp->reason,
+                'completion_request_id' => $stamp->completionRequestId,
             ]);
         }
 

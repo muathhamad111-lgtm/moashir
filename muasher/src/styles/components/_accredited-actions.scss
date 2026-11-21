@@ -11,16 +11,15 @@
   box-shadow: var(--shadow-md);
 }
 
-.accredited-actions__status,
-.review-actions__status,
-.review-actions__hint {
+.accredited-actions__status {
   margin: 0;
   font-size: var(--fs-sm);
   color: var(--theme-text-muted);
 }
 
-.review-actions__hint {
-  flex-basis: 100%;
+// The assessor's bar shows only its buttons; the save state is still announced to screen readers.
+.review-actions__status {
+  @include visually-hidden;
 }
 
 .accredited-actions__buttons,

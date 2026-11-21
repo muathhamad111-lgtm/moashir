@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Data\Assessments;
 
+use App\Data\Periods\PeriodFilter;
 use App\Enums\Assessments\AssessmentPath;
+use App\Enums\Assessments\QueueStage;
 use App\Support\ValueObjects\SearchTerm;
 
 final readonly class RequestQueueFilters
 {
     public function __construct(
-        public ?AssessmentPath $path = null,
+        public AssessmentPath $path,
         public ?string $status = null,
         public ?bool $overdue = null,
         public ?int $assessorId = null,
@@ -18,13 +20,15 @@ final readonly class RequestQueueFilters
         public ?SearchTerm $search = null,
         public string $sort = '-submitted_at',
         public int $perPage = 15,
+        public ?PeriodFilter $period = null,
+        public QueueStage $stage = QueueStage::All,
     ) {}
 
     /**
-     * @return list<AssessmentPath>
+     * The same filters over every stage: the stage counts read from it.
      */
-    public function paths(): array
+    public function acrossStages(): self
     {
-        return $this->path instanceof AssessmentPath ? [$this->path] : AssessmentPath::reviewed();
+        return new self($this->path, $this->status, $this->overdue, $this->assessorId, $this->cycleId, $this->search, $this->sort, $this->perPage, $this->period);
     }
 }

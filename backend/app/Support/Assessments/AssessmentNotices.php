@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Assessments;
 
 use App\Data\Entities\EntityNotice;
+use App\Data\Notifications\NoticeText;
 use App\Enums\Notifications\NotificationCode;
 use App\Support\ValueObjects\LocalizedText;
 
@@ -23,13 +24,6 @@ final class AssessmentNotices
      */
     public static function fromKey(NotificationCode $code, string $key, array $replacements, string $link): EntityNotice
     {
-        return new EntityNotice(
-            $code,
-            LocalizedText::fromTranslationWith($key.'.title', $replacements),
-            LocalizedText::fromTranslationWith($key.'.body', $replacements),
-            $link,
-            true,
-            true,
-        );
+        return EntityNotice::fromText($code, new NoticeText($key, $replacements), $link);
     }
 }

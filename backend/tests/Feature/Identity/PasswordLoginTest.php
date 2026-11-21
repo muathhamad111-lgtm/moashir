@@ -8,12 +8,13 @@ use App\Models\Identity\AuthenticationEvent;
 use App\Models\Identity\User;
 use App\Notifications\Identity\AccountLockedNotification;
 use App\Notifications\Identity\SecurityAlertNotification;
+use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Testing\TestResponse;
 
-function passwordLogin(string $email, string $password): TestResponse
+function passwordLogin(string $identifier, string $password): TestResponse
 {
-    return test()->postJson('/api/v1/auth/login', ['email' => $email, 'mode' => 'password', 'password' => $password]);
+    return signInWith($identifier, $password);
 }
 
 it('signs an entity user in and returns the session user', function (): void {
@@ -71,8 +72,37 @@ it('returns the same generic error for a wrong password and an unknown email', f
     $this->assertGuest('web');
 });
 
+it('still accepts the transitional email field of the previous sign-in form', function (): void {
+    $user = entityUser();
+
+    $this->postJson('/api/v1/auth/login', ['email' => $user->email, 'mode' => 'password', 'password' => defaultPassword()])
+        ->assertOk()
+        ->assertJsonPath('data.step', 'authenticated');
+});
+
+it('ignores the retired passwordless mode of the login endpoint', function (): void {
+    $user = entityUser();
+
+    $this->postJson('/api/v1/auth/login', ['email' => $user->email, 'mode' => 'otp', 'channel' => 'email'])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('password');
+    $this->assertGuest('web');
+});
+
+it('signs an entity in directly after the password without any code step', function (): void {
+    Notification::fake();
+    $user = entityUser();
+
+    passwordLogin($user->email, defaultPassword())->assertOk()->assertJsonPath('data.step', 'authenticated')->assertJsonMissingPath('data.otp');
+
+    $this->assertAuthenticatedAs($user, 'web');
+    Notification::assertNothingSentTo($user);
+    expect(AuthenticationEvent::query()->where('user_id', $user->id)->where('type', AuthEventType::LoginSucceeded)->sole()->meta)->toBe(['method' => 'password']);
+});
+
 it('locks the account for fifteen minutes after five failed attempts and alerts the administrators', function (): void {
     Notification::fake();
+    $this->freezeSecond();
     $administrator = systemAdmin();
     $user = entityUser();
 
@@ -81,19 +111,109 @@ it('locks the account for fifteen minutes after five failed attempts and alerts 
     }
 
     passwordLogin($user->email, 'Wrong-Password-2026!')
-        ->assertStatus(423)
-        ->assertJsonPath('code', 'account_locked')
-        ->assertHeader('Retry-After', '900');
+        ->assertUnprocessable()
+        ->assertJsonPath('code', 'credentials.invalid')
+        ->assertHeaderMissing('Retry-After');
 
-    expect($user->refresh()->isLocked())->toBeTrue();
+    expect($user->refresh()->isLocked())->toBeTrue()
+        ->and($user->locked_until?->toIso8601String())->toBe(now()->addMinutes(15)->toIso8601String());
     Notification::assertSentTo($user, AccountLockedNotification::class, static fn ($notification, array $channels): bool => $channels === ['mail']);
     Notification::assertSentTo($administrator, AccountLockedNotification::class);
 });
 
-it('rejects the correct password while the account is locked', function (): void {
+it('rejects the correct password while the account is locked without extending the lock', function (): void {
+    Notification::fake();
+    $user = User::factory()->withRole(RoleKey::Entity)->locked()->create();
+    $lockedUntil = $user->locked_until?->toIso8601String();
+
+    passwordLogin($user->email, defaultPassword())->assertUnprocessable()->assertJsonPath('code', 'credentials.invalid');
+
+    $this->assertGuest('web');
+    expect($user->refresh()->locked_until?->toIso8601String())->toBe($lockedUntil)
+        ->and($user->failed_login_attempts)->toBe(0)
+        ->and(AuthenticationEvent::query()->where('user_id', $user->id)->where('type', AuthEventType::LoginFailed)->sole()->meta)->toEqual(['identifier_type' => 'email', 'locked' => true]);
+    Notification::assertNothingSent();
+});
+
+it('answers a locked account exactly like an unknown one whatever password is tried', function (string $password): void {
     $user = User::factory()->withRole(RoleKey::Entity)->locked()->create();
 
-    passwordLogin($user->email, defaultPassword())->assertStatus(423)->assertJsonPath('code', 'account_locked');
+    $locked = passwordLogin($user->email, $password)->assertUnprocessable();
+    $unknown = passwordLogin('no-account@moashir.example.sa', $password)->assertUnprocessable();
+
+    expect($locked->json())->toBe($unknown->json())
+        ->and($locked->headers->get('Retry-After'))->toBe($unknown->headers->get('Retry-After'));
+})->with([
+    'the right password' => [defaultPassword()],
+    'a wrong password' => ['Wrong-Password-2026!'],
+]);
+
+it('gives an unknown and a known account the same answers across a full series of failed attempts', function (): void {
+    $user = entityUser();
+
+    foreach (range(1, 6) as $attempt) {
+        $known = passwordLogin($user->email, 'Wrong-Password-2026!');
+        $unknown = passwordLogin('no-account@moashir.example.sa', 'Wrong-Password-2026!');
+
+        expect($known->status())->toBe($unknown->status())
+            ->and($known->json())->toBe($unknown->json())
+            ->and($known->headers->get('Retry-After'))->toBe($unknown->headers->get('Retry-After'));
+    }
+
+    expect($user->refresh()->isLocked())->toBeTrue();
+});
+
+it('spends one password hash on an unknown account, as on a known one, so timing does not reveal it', function (string $identifier): void {
+    $user = entityUser();
+    $hasher = new class(app('hash')) implements Hasher
+    {
+        public int $operations = 0;
+
+        public function __construct(private readonly Hasher $inner) {}
+
+        public function info($hashedValue): array
+        {
+            return $this->inner->info($hashedValue);
+        }
+
+        public function make($value, array $options = []): string
+        {
+            $this->operations++;
+
+            return $this->inner->make($value, $options);
+        }
+
+        public function check($value, $hashedValue, array $options = []): bool
+        {
+            $this->operations++;
+
+            return $this->inner->check($value, $hashedValue, $options);
+        }
+
+        public function needsRehash($hashedValue, array $options = []): bool
+        {
+            return $this->inner->needsRehash($hashedValue, $options);
+        }
+    };
+    app()->instance(Hasher::class, $hasher);
+
+    passwordLogin($identifier === 'known' ? $user->email : 'no-account@moashir.example.sa', 'Wrong-Password-2026!')->assertUnprocessable();
+
+    expect($hasher->operations)->toBe(1);
+})->with(['known', 'unknown']);
+
+it('keeps the lock tied to the account so another address cannot sign in with the right password', function (): void {
+    $user = entityUser();
+
+    foreach (range(1, 5) as $attempt) {
+        $this->withServerVariables(['REMOTE_ADDR' => '10.3.0.1'])->postJson('/api/v1/auth/login', ['identifier' => $user->email, 'password' => 'Wrong-Password-2026!']);
+    }
+
+    $this->withServerVariables(['REMOTE_ADDR' => '10.3.0.2'])
+        ->postJson('/api/v1/auth/login', ['identifier' => $user->email, 'password' => defaultPassword()])
+        ->assertUnprocessable()
+        ->assertJsonPath('code', 'credentials.invalid');
+    $this->assertGuest('web');
 });
 
 it('lets the user sign in again once the lockout has elapsed', function (): void {
@@ -123,27 +243,24 @@ it('validates the login payload', function (array $payload, string $field): void
         ->assertJsonPath('code', 'validation_failed')
         ->assertJsonValidationErrors($field);
 })->with([
-    'missing email' => [['mode' => 'password', 'password' => 'x'], 'email'],
-    'malformed email' => [['email' => 'not-an-email', 'mode' => 'password', 'password' => 'x'], 'email'],
-    'unknown mode' => [['email' => 'person@moashir.example.sa', 'mode' => 'magic'], 'mode'],
-    'missing password' => [['email' => 'person@moashir.example.sa', 'mode' => 'password'], 'password'],
+    'missing identifier' => [['password' => 'x'], 'identifier'],
+    'malformed e-mail' => [['identifier' => 'not-an-email@', 'password' => 'x'], 'identifier'],
+    'nine digits' => [['identifier' => '011456789', 'password' => 'x'], 'identifier'],
+    'eleven digits' => [['identifier' => '60012345678', 'password' => 'x'], 'identifier'],
+    'unified number with nine digits' => [['identifier' => '700123456', 'password' => 'x'], 'identifier'],
+    'Arabic-Indic digits' => [['identifier' => '٧٠٠١٢٣٤٥٦٧', 'password' => 'x'], 'identifier'],
+    'identifier too long' => [['identifier' => str_repeat('a', 250).'@example.sa', 'password' => 'x'], 'identifier'],
+    'missing password' => [['identifier' => 'person@moashir.example.sa'], 'password'],
 ]);
 
 it('returns validation messages in the requested language', function (): void {
     $this->postJson('/api/v1/auth/login', [], ['Accept-Language' => 'en'])
         ->assertJsonPath('message', 'The submitted data is invalid.')
-        ->assertJsonPath('errors.email.0', 'The email field is required.');
+        ->assertJsonPath('errors.identifier.0', 'The e-mail, mobile number or unified national number field is required.');
 
     $this->postJson('/api/v1/auth/login', [])
         ->assertJsonPath('message', 'البيانات المرسلة غير صالحة.')
-        ->assertJsonPath('errors.email.0', 'حقل البريد الإلكتروني مطلوب.');
-});
-
-it('rejects password sign-in when the mode is disabled', function (): void {
-    config()->set('moashir.auth.login_modes.email_password', false);
-    $user = entityUser();
-
-    passwordLogin($user->email, defaultPassword())->assertUnprocessable()->assertJsonPath('code', 'login.mode_disabled');
+        ->assertJsonPath('errors.identifier.0', 'حقل البريد الإلكتروني أو رقم الجوال أو الرقم الوطني الموحد مطلوب.');
 });
 
 it('rate limits sign-in attempts per email and address', function (): void {

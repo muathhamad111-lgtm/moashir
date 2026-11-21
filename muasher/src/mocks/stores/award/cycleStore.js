@@ -2,14 +2,30 @@ import { CRITERIA_VERSION_STATUSES } from '@/constants/criteria'
 import { awardCyclesFixture } from '../../fixtures/awardCycles'
 import { versionWithStatus } from '../criteriaStore'
 import { addDays } from '../accredited/dates'
+import { scenarioAnchor, seededEntryFee } from './feeScenario'
 
 const RUNNING_EXCLUDED = ['draft', 'closed']
-const DATE_FIELDS = ['submissionStart', 'submissionEnd', 'committeeStart', 'committeeEnd', 'announcementAt', 'announcedAt', 'closedAt']
+const DATE_FIELDS = [
+  'submissionStart',
+  'submissionEnd',
+  'committeeStart',
+  'committeeEnd',
+  'announcementAt',
+  'announcedAt',
+  'closedAt',
+]
 
 const state = { cycles: [], nextId: 100 }
 
 function datesOf(offsets, anchor) {
-  return Object.fromEntries(DATE_FIELDS.map((field) => [field, offsets[field] === null || offsets[field] === undefined ? null : addDays(anchor, offsets[field])]))
+  return Object.fromEntries(
+    DATE_FIELDS.map((field) => [
+      field,
+      offsets[field] === null || offsets[field] === undefined
+        ? null
+        : addDays(anchor, offsets[field]),
+    ]),
+  )
 }
 
 function seededCycle(fixture, version, anchor) {
@@ -26,19 +42,22 @@ function seededCycle(fixture, version, anchor) {
     disqualificationScore: fixture.disqualificationScore,
     initialReviewSlaDays: fixture.initialReviewSlaDays,
     participationCertificateEnabled: fixture.participationCertificateEnabled,
+    entryFee: seededEntryFee(fixture),
     regionIds: [...fixture.regionIds],
     members: fixture.members.map((member) => ({ ...member })),
     initialAssessors: fixture.initialAssessors.map((link) => ({ ...link })),
     createdById: 1,
     openedAt: fixture.status === 'draft' ? null : dates.submissionStart,
-    submissionsClosedAt: ['draft', 'submission-open'].includes(fixture.status) ? null : dates.submissionEnd,
+    submissionsClosedAt: ['draft', 'submission-open'].includes(fixture.status)
+      ? null
+      : dates.submissionEnd,
     closedFromStatus: fixture.closedFromStatus,
     createdAt: addDays(dates.submissionStart, -20),
     updatedAt: addDays(dates.submissionStart, -20),
   }
 }
 
-export function resetCycleStore(anchor = new Date().toISOString()) {
+export function resetCycleStore(anchor = scenarioAnchor() ?? new Date().toISOString()) {
   const version = versionWithStatus(CRITERIA_VERSION_STATUSES.PUBLISHED)
   state.cycles = awardCyclesFixture.map((fixture) => seededCycle(fixture, version, anchor))
   state.nextId = Math.max(100, ...state.cycles.map((cycle) => cycle.id))

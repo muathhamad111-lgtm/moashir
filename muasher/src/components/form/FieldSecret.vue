@@ -15,5 +15,13 @@ const { value, errorMessage } = useField(toRef(props, 'name'))
 </script>
 
 <template>
-  <SecretInput v-model="value" :name="name" :label="label" :meta="meta" :hint="hint" :error="errorMessage" :disabled="disabled" />
+  <SecretInput
+    v-model="value"
+    :name="name"
+    :label="label"
+    :meta="meta"
+    :hint="hint"
+    :error="errorMessage"
+    :disabled="disabled"
+  />
 </template>

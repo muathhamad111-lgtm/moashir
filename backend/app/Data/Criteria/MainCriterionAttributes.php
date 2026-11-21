@@ -5,16 +5,22 @@ declare(strict_types=1);
 namespace App\Data\Criteria;
 
 use App\Enums\Criteria\CriterionGroup;
+use App\Enums\Criteria\ScoringType;
 use App\Support\ValueObjects\LocalizedText;
 use App\Support\ValueObjects\Weight;
 
 final readonly class MainCriterionAttributes
 {
+    /**
+     * @param  list<AttachmentRequirementData>|null  $attachments
+     */
     public function __construct(
         public LocalizedText $name,
         public ?LocalizedText $description,
         public Weight $weight,
         public bool $distributeEqually,
         public CriterionGroup $group,
+        public ?ScoringType $defaultScoringType = null,
+        public ?array $attachments = null,
     ) {}
 }

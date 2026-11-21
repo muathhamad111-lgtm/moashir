@@ -44,8 +44,10 @@ export function rawPercent(hundredths, scaleKind) {
   return Math.floor((hundredths * PERCENT_HUNDRED) / scaleMaximumHundredths(scaleKind))
 }
 
-export const displayPercent = (tenThousandths) => formatFixed(divideHalfUp(tenThousandths, PERCENT_DISPLAY_DIVISOR), 2)
-export const displayEarned = (hundredMillionths) => formatFixed(divideHalfUp(hundredMillionths, EARNED_DISPLAY_DIVISOR), 2)
+export const displayPercent = (tenThousandths) =>
+  formatFixed(divideHalfUp(tenThousandths, PERCENT_DISPLAY_DIVISOR), 2)
+export const displayEarned = (hundredMillionths) =>
+  formatFixed(divideHalfUp(hundredMillionths, EARNED_DISPLAY_DIVISOR), 2)
 export const decimalRaw = (hundredths) => formatFixed(hundredths, RAW_DECIMALS)
 export const decimalWeight = (hundredths) => formatFixed(Math.max(0, hundredths), 2)
 
@@ -76,11 +78,21 @@ function scoredUnit(level, node, sheet, scaleKind) {
   const raw = sheet.get(unitKey(level, node.id)) ?? null
   const percent = raw === null ? 0 : rawPercent(raw, scaleKind)
   const weight = toHundredths(node.weight)
-  return { id: node.id, code: node.code, weight, raw, percent, earned: percent * Math.max(0, weight) }
+  return {
+    id: node.id,
+    code: node.code,
+    weight,
+    raw,
+    percent,
+    earned: percent * Math.max(0, weight),
+  }
 }
 
 function normalizedEarned(subWeight, points) {
-  const weighted = points.reduce((total, point) => total + point.percent * Math.max(0, point.weight), 0)
+  const weighted = points.reduce(
+    (total, point) => total + point.percent * Math.max(0, point.weight),
+    0,
+  )
   const pointWeights = points.reduce((total, point) => total + Math.max(0, point.weight), 0)
   if (pointWeights === 0 || subWeight <= 0) return 0
   return multiplyDivideHalfUp(weighted, subWeight, pointWeights)
@@ -88,12 +100,25 @@ function normalizedEarned(subWeight, points) {
 
 function subResult(sub, sheet, scaleKind) {
   if (!scoresPoints(sub)) {
-    return { ...scoredUnit(SCORE_LEVELS.SUB, sub, sheet, scaleKind), evaluationType: sub.evaluationType, points: [] }
+    return {
+      ...scoredUnit(SCORE_LEVELS.SUB, sub, sheet, scaleKind),
+      evaluationType: sub.evaluationType,
+      points: [],
+    }
   }
   const points = sub.points.map((point) => scoredUnit(SCORE_LEVELS.POINT, point, sheet, scaleKind))
   const weight = toHundredths(sub.weight)
   const earned = normalizedEarned(weight, points)
-  return { id: sub.id, code: sub.code, weight, evaluationType: sub.evaluationType, raw: null, percent: percentOf(earned, weight), earned, points }
+  return {
+    id: sub.id,
+    code: sub.code,
+    weight,
+    evaluationType: sub.evaluationType,
+    raw: null,
+    percent: percentOf(earned, weight),
+    earned,
+    points,
+  }
 }
 
 function mainResult(main, sheet, scaleKind) {

@@ -4,8 +4,6 @@ import { resolve } from 'node:path'
 import process from 'node:process'
 import ar from '@/i18n/locales/ar.json'
 import en from '@/i18n/locales/en.json'
-import devAr from '@/i18n/locales/dev/ar.json'
-import devEn from '@/i18n/locales/dev/en.json'
 import { forbiddenTermsIn } from '@/i18n/forbiddenTerms'
 
 const FIXTURES_DIR = `${resolve(process.cwd(), 'src/mocks/fixtures')}/`
@@ -28,10 +26,12 @@ function fixtureStrings() {
   return readdirSync(FIXTURES_DIR)
     .filter((file) => file.endsWith('.js'))
     .flatMap((file) =>
-      [...readFileSync(`${FIXTURES_DIR}${file}`, 'utf8').matchAll(BILINGUAL_LITERAL)].map((match) => ({
-        path: file,
-        value: match[1],
-      })),
+      [...readFileSync(`${FIXTURES_DIR}${file}`, 'utf8').matchAll(BILINGUAL_LITERAL)].map(
+        (match) => ({
+          path: file,
+          value: match[1],
+        }),
+      ),
     )
 }
 
@@ -39,8 +39,6 @@ describe('forbidden terminology (04-guardrails Content)', () => {
   it.each([
     ['ar', ar],
     ['en', en],
-    ['dev/ar', devAr],
-    ['dev/en', devEn],
   ])('keeps the %s messages free of forbidden words', (name, messages) => {
     expect(violations(leaves(messages))).toEqual([])
   })
@@ -52,7 +50,9 @@ describe('forbidden terminology (04-guardrails Content)', () => {
   it('names the Kit consistently in both languages', () => {
     expect(en.nav.bag).toBe('Quick Excellence Kit')
     expect(ar.nav.bag).toBe('حقيبة التميز السريع')
-    const arabicKitMentions = leaves(ar).filter((entry) => /حقيبة التميز(?! السريع)/.test(entry.value))
+    const arabicKitMentions = leaves(ar).filter((entry) =>
+      /حقيبة التميز(?! السريع)/.test(entry.value),
+    )
     expect(arabicKitMentions).toEqual([])
   })
 

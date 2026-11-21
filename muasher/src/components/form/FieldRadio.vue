@@ -7,11 +7,20 @@ const props = defineProps({
   name: { type: String, required: true },
   label: { type: String, required: true },
   options: { type: Array, required: true },
+  required: { type: Boolean, default: false },
 })
 
 const { value, errorMessage } = useField(toRef(props, 'name'))
 </script>
 
 <template>
-  <BaseRadio v-model="value" :name="name" :label="label" :options="options" :error="errorMessage" inline />
+  <BaseRadio
+    v-model="value"
+    :name="name"
+    :label="label"
+    :options="options"
+    :error="errorMessage"
+    :required="required"
+    inline
+  />
 </template>

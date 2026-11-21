@@ -26,6 +26,7 @@ final class StoreSubCriterionRequest extends CriteriaFormRequest
             'distribute_equally' => ['sometimes', 'boolean'],
             'evaluation_type' => ['sometimes', Rule::enum(EvaluationType::class)],
             'has_cv' => ['sometimes', 'boolean'],
+            ...$this->scoringTypeRules('scoring_type', 'default_point_scoring_type'),
             'active' => ['sometimes', 'boolean'],
         ];
     }
@@ -46,6 +47,8 @@ final class StoreSubCriterionRequest extends CriteriaFormRequest
             $this->boolean('has_cv', true),
             $this->localizedText('assessor_note_label'),
             $this->attachments(),
+            $this->scoringType('scoring_type'),
+            $this->scoringType('default_point_scoring_type'),
         );
     }
 
