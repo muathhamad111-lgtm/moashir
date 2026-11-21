@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { setActivePinia } from 'pinia'
 import { createTestGlobals } from '@/test-utils'
@@ -109,6 +109,21 @@ describe('RequestHeaderActions', () => {
       { roles: [], extra: { isSuperAdmin: true } },
     )
     expect(menuLabels(refunded)).not.toContain('Change the status')
+  })
+
+  it('opens the review in the override mode from «Override scores» (design §B.3.5)', async () => {
+    const globals = createTestGlobals({ locale: 'en' })
+    setActivePinia(globals.pinia)
+    useAuthStore(globals.pinia).setUser(
+      sessionUserFor([], { isSuperAdmin: true, permissions: ['requests.review.read'] }),
+    )
+    const detail = { id: 9102, path: 'accredited', status: 'completed', assignmentHistory: [] }
+    const wrapper = mount(RequestHeaderActions, { props: { detail }, global: globals })
+    wrapper.findComponent(AppMenu).vm.$emit('select', 'override')
+    await vi.waitFor(() =>
+      expect(globals.router.currentRoute.value.query).toEqual({ override: '1' }),
+    )
+    expect(globals.router.currentRoute.value.path).toBe('/admin/requests/9102/review')
   })
 
   it('offers return and withdraw from the menu when the request allows them', async () => {

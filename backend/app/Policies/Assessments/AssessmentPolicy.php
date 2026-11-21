@@ -225,6 +225,15 @@ final readonly class AssessmentPolicy
         return $access->canRead() ? Response::deny() : Response::denyAsNotFound();
     }
 
+    /**
+     * The completion rounds of a review show each unit's earlier results, so a committee member, who evaluates
+     * blind, never reads them.
+     */
+    public function reviewRounds(User $actor, Assessment $assessment): Response
+    {
+        return $this->committee->sitsOn($actor, $assessment) ? Response::deny() : $this->review($actor, $assessment);
+    }
+
     public function score(User $actor, Assessment $assessment): Response
     {
         if (! $assessment->path->isReviewed()) {

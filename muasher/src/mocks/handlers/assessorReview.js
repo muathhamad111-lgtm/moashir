@@ -32,6 +32,8 @@ import {
   startReview,
 } from '../stores/accredited/assessorWork'
 import { forceTransition, overrideScores, reopenAssessment } from '../stores/accredited/overrides'
+import { roundsResource } from '../stores/accredited/scoreRounds'
+import { previewOverride } from '../stores/accredited/overridePreview'
 import { isAdvanced } from '../stores/assessments/reviewedPaths'
 import { runAccreditedSchedule } from '../stores/accredited/scheduler'
 import { summaryResource } from '../stores/insights/assessorSummaries'
@@ -113,6 +115,15 @@ export const assessorReviewHandlers = [
     }),
   ),
 
+  http.get(
+    `${ASSESSMENT}/review/rounds`,
+    numericRoute(({ params }) => {
+      const record = boundRecord(params)
+      authorizeReview(signedInActor(), record)
+      return envelope(roundsResource(record))
+    }),
+  ),
+
   scoringRoute('start-review', startReview),
 
   http.put(
@@ -149,6 +160,14 @@ export const assessorReviewHandlers = [
   scoringRoute('request-completion', requestCompletion),
   scoringRoute('complete', completeReview),
 
+  http.post(
+    `${ASSESSMENT}/scores/override/preview`,
+    numericRoute(async ({ params, request }) => {
+      const record = boundRecord(params)
+      authorizeOverride(signedInActor(), record)
+      return envelope(previewOverride(record, await readJson(request)))
+    }),
+  ),
   overrideRoute('scores/override', overrideScores),
   overrideRoute('reopen', reopenAssessment),
   overrideRoute('transition/force', forceTransition),

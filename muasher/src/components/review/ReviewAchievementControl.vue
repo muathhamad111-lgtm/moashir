@@ -10,6 +10,8 @@ import { toHundredths } from '@/utils/weight'
 // radio group: one choice, arrow keys move between them.
 const props = defineProps({
   name: { type: String, required: true },
+  // Replaces «غير محفوظ» for a changed value, e.g. the published value in the override mode.
+  changedLabel: { type: String, default: '' },
   label: { type: String, required: true },
   saved: { type: Object, default: null },
   disabled: { type: Boolean, default: false },
@@ -48,7 +50,9 @@ function onKeydown(event) {
 
 <template>
   <div class="review-achievement">
-    <span v-if="isUnsaved" class="review-score__unsaved">{{ t('review.score.unsaved') }}</span>
+    <span v-if="isUnsaved" class="review-score__unsaved">{{
+      changedLabel || t('review.score.unsaved')
+    }}</span>
     <div
       class="review-achievement__options"
       role="radiogroup"

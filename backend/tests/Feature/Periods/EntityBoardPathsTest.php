@@ -110,6 +110,7 @@ it('asks to complete a request returned for completion before anything else but 
     $assessor = assessorUser();
     $assessment = reviewedAccreditedRequest($version, $assessor);
     $deadline = Date::now()->addDays(7);
+    scoreEveryUnit($assessor, $assessment);
     switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/request-completion", [
         'notes' => 'يرجى تحديث وصف السياسة المعتمدة وإرفاق نسختها الموقعة.',
         'items' => [['sub_criterion_id' => subOf($version, 'M1.1')->id, 'kind' => 'cv']],

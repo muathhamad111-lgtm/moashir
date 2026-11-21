@@ -1160,12 +1160,24 @@ force_transition`; `expire_completion` has no actor, `actor = system` in the his
   improvement_points?, notes? } } }` (≤ 5,000 characters each, versioned, OPTIONAL — Session 18) · `POST
   /assessments/{id}/request-completion { notes 10..2000, items[{ sub_criterion_id, kind: cv|evidence, note? }] 1..100,
   deadline_at (future, ≤ 60 days), expiry_outcome: continue_as_submitted | decline (required) }` (`under_review →
-  needs_completion`, ACC-07 entity I+E, whose text states the outcome) · `POST /assessments/{id}/complete { reason?,
+  needs_completion`, ACC-07 entity I+E, whose text states the outcome; every unit must be scored first — operator decision
+  UX-1 — else 422 `scores.incomplete` with one `errors` entry per missing unit field and `meta.missing[]`) · `POST /assessments/{id}/complete { reason?,
   issue_certificate? (deprecated, accepted as a boolean and ignored — Task-79) }` (all items scored —
   422 `scores.incomplete`; feedback items are optional, an assessor may complete with scores only; computes the
   `accredited_result` snapshot, closes the assignment, ACC-08 entity + followers and ACC-10 entity). Scoring needs `under_review`; only the active assignee
   passes (`can:score` + a re-check under the row lock, 403 `assessment.not_assignee`). Every write: frozen 409 `entity.deleted`,
   completion blocked while the restore hold is set.
+- Completion rounds (operator decision UX-2): every new score and feedback version stores `completion_request_id`, the
+  latest completion request that closed as `resubmitted`, `expired_continued` or `expired_declined` (a `cancelled` one opens
+  no round); `null` is round 1, the evaluation before any completion. A unit the save names explicitly with its unchanged
+  value gets a new version tagged with the current round when its current version belongs to an earlier round (the assessor
+  confirms the result in the new round); otherwise unchanged values are skipped as before.
+- `GET /assessments/{id}/review/rounds` — `{ requests[{ id, round, status, notes, requested_at, resolved_at, deadline_at,
+  expiry_outcome, items[{ main_criterion_id, sub_criterion_id, code, name, kind, note }] }], units{ "point-<id>" |
+  "sub-<id>": [{ round, completion_request_id, raw_value, percent, scored_at }] } }`. `requests` lists every completion
+  request oldest first, the first one opening round 2. `units` gives, per unit with any score row, the last version written
+  in each round (superseded or not), ordered by round. Same readers as the review; 403 for a committee member seated on the
+  request (blind evaluation).
 
 ### Completion deadline expiry (Session 18 = Q-04 rule)
 - The completion request object (entity form `completion_request`, assessor review `completion_request`, request detail
@@ -1206,6 +1218,11 @@ No assessor identity is ever part of a result, the record or the form returned t
 ### Super Admin overrides (Super Admin only; reason 20..1000; SEC-04; audited)
 - `POST /assessments/{id}/scores/override { scores, reason }` — on a published result (accredited `completed`, self
   `result_available`): new score versions with the reason, a new `override_recompute` snapshot, `assessment.score_overridden`.
+- `POST /assessments/{id}/scores/override/preview { scores }` — the same `scores` rules, no reason; persists, locks and audits
+  nothing: `{ before: { percent, level }, after: { percent, level }, changes[{ code, field: "point-<id>" | "sub-<id>",
+  before, after }] }` (`level` is the certificate level reached under the configured thresholds or `null`; `changes` lists
+  only units whose raw value changes). 409 `state.transition_illegal` while no result is published; 422 on invalid scores.
+  `throttle:assessment-write`, so the override screen can call it on each edit.
 - `POST /assessments/{id}/reopen { reason }` — `completed → under_review` with a new assignment of the last assessor (or
   `submitted` when that account can no longer assess); the result is hidden again until the next completion.
 - `POST /assessments/{id}/transition/force { to_status: draft|submitted|assigned|under_review|completed, reason }` — never from
@@ -1351,9 +1368,11 @@ rollout to 2025-10-01, generates the periods and attaches them to the demo resul
 | GET | `/requests/{assessment}` | `can:viewRequest` (queue view, or the assessor of the request) |
 | POST | `/requests/{assessment}/assign`, `/reassign` | `can:assign` / `can:reassign` (`requests.assign`), `throttle:sensitive` |
 | GET | `/assessments/{assessment}/review` | `can:review` (assignee with `assessment.score.manage`, or global reader with `requests.review.read`) |
+| GET | `/assessments/{assessment}/review/rounds` | `can:reviewRounds` (`can:review`, never a committee member seated on the request) |
 | POST | `/assessments/{assessment}/start-review`, `/request-completion`, `/complete` | `can:score` (active assignee), `throttle:sensitive` |
 | PUT | `/assessments/{assessment}/review/scores`, `/review/feedback` | `can:score`, `throttle:assessment-write` |
 | POST | `/assessments/{assessment}/scores/override`, `/reopen`, `/transition/force` | `can:override` (Super Admin only), `throttle:sensitive` |
+| POST | `/assessments/{assessment}/scores/override/preview` | `can:override` (Super Admin only), `throttle:assessment-write` |
 | GET / PUT | `/settings/assessment` | `can:settings.assessment-section.manage` (`settings.assessment.manage`), PUT `throttle:sensitive` |
 | GET / PUT | `/settings/assessment/paths/{self\|accredited\|advanced}` | same ability (+ `settings.finance.edit-field` for `price`), PUT `throttle:sensitive` |
 | GET | `/content/assessment-paths` (names and descriptions of the three paths) | public, `throttle:public` |
@@ -3201,6 +3220,14 @@ apply SRI (`crossorigin="anonymous"`) to a script loaded from that CDN — the l
 (verify again before use). SPA side: Task-37d.
 
 ## Deployment notes
+
+- Migration `2026_11_21_100000_add_completion_round_to_review_versions` (UX-2): nullable `completion_request_id` (foreign
+  key to `assessment_completion_requests`, `ON DELETE SET NULL`, indexed) on `assessment_scores` and
+  `assessment_feedback_items`; existing rows stay `null` (round 1). It adds `moashir_round_unlinked_on_erasure()` and
+  rewrites `moashir_guard_assessment_scores()` and `moashir_guard_supersede_once()` so that, only inside the permanent
+  entity deletion, the foreign key may unlink a version from an erased completion request. No grant change: table-level
+  INSERT covers the new column and the `SET NULL` action runs as the table owner. Reversible (`down()` restores both guard
+  functions and drops the columns). No new permission key, package or environment variable.
 
 - Migration `2026_11_06_120000` (Task-71): the `demo_records_kind_check` CHECK accepts `insights_assessment` (marker of
   the excellence-tools demo cases). Reversible: `down()` deletes the `insights_assessment` rows and restores

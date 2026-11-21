@@ -1,5 +1,6 @@
 import { array, object, string } from 'yup'
 import { ACCREDITED_LIMITS, COMPLETION_ITEM_KINDS, EXPIRY_OUTCOMES } from '@/constants/accredited'
+import { EVALUATION_TYPES } from '@/constants/criteria'
 import { endOfRiyadhDay, riyadhDateKey } from '@/utils/datetime'
 
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -92,4 +93,35 @@ export function itemOptions(criteria) {
       },
     ]),
   ])
+}
+
+// Below this percent an item is suggested for completion; «غير متحقق» counts as 0%.
+const SUGGESTION_PERCENT = 50
+
+function isLow(score) {
+  return Boolean(score) && Number(score.percent) < SUGGESTION_PERCENT
+}
+
+function subIsLow(sub, scores) {
+  if (sub.evaluationType === EVALUATION_TYPES.GUIDING_POINTS)
+    return (sub.points ?? []).some((point) => isLow(scores.points?.[String(point.id)]))
+  return isLow(scores.subs?.[String(sub.id)])
+}
+
+// The evidence of each sub-criterion with an item not achieved or below 50%, pre-selected as
+// suggestions in the completion request (design §B.3.3).
+export function suggestedItemKeys(criteria, scores) {
+  if (!scores) return []
+  return (criteria?.mains ?? []).flatMap((main) =>
+    main.subs
+      .filter((sub) => subIsLow(sub, scores))
+      .map((sub) => itemKey(sub.id, COMPLETION_ITEM_KINDS.EVIDENCE)),
+  )
+}
+
+// Which step of the request holds a field, so an error found later brings that step back.
+const MESSAGE_FIELDS = ['notes', 'deadline', 'expiryOutcome']
+
+export function completionStepOf(field) {
+  return MESSAGE_FIELDS.includes(field.split('.')[0]) ? 'message' : 'items'
 }

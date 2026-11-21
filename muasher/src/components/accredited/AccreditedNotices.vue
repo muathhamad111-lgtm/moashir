@@ -61,6 +61,7 @@ function noticeKey(name, part) {
     <CriteriaRebindSummary
       v-if="criteriaUpdate && !isClosed"
       context="request"
+      :assessment-id="assessment.id"
       :update="criteriaUpdate"
     />
     <AssessmentNotice

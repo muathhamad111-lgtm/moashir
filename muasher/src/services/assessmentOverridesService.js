@@ -2,6 +2,7 @@ import { apiClient } from '@/api/client'
 import { domainRequests } from './domainRequest'
 import { toAssessment } from './mappers/assessments'
 import { toWireRequestStatus } from './mappers/accreditedStatus'
+import { toOverridePreview } from './mappers/review'
 
 const { write } = domainRequests('overrides', 'assessment')
 
@@ -18,6 +19,15 @@ export const assessmentOverridesService = {
         payload,
       ),
     )
+  },
+
+  // The total and level the edited scores would give, computed by the server without saving.
+  previewScores(assessmentId, payload) {
+    return write(
+      'previewScores',
+      () => apiClient.post(`/assessments/${assessmentId}/scores/override/preview`, payload),
+      payload,
+    ).then((envelope) => ({ ...envelope, data: toOverridePreview(envelope.data) }))
   },
 
   reopen(assessmentId, payload) {

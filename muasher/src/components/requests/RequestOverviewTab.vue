@@ -5,6 +5,7 @@ import Card from '@/components/ui/Card.vue'
 import CompletionRequestCard from '@/components/accredited/CompletionRequestCard.vue'
 import RequestPaymentCard from './RequestPaymentCard.vue'
 import RequestCertificateCard from './RequestCertificateCard.vue'
+import RequestResultBreakdown from './RequestResultBreakdown.vue'
 import { ACCREDITED_STATUSES, COMPLETION_STATUSES } from '@/constants/accredited'
 import { ASSESSMENT_PATHS } from '@/constants/assessment'
 import { formatNumber } from '@/utils/formatNumber'
@@ -45,6 +46,7 @@ const openCompletion = computed(() =>
         }}
       </p>
     </Card>
+    <RequestResultBreakdown v-if="result && isAccredited" :assessment-id="detail.id" />
     <Card v-if="openCompletion">
       <CompletionRequestCard :request="openCompletion" show-status />
     </Card>

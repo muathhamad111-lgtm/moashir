@@ -19,5 +19,10 @@ export function useFormSteps(form, { steps, stepFields }) {
     if (first >= 0) wizard.goTo(first)
   }
 
-  return { step, next, back: wizard.previous, showErrors }
+  // A reopened wizard starts again from its first step.
+  function reset() {
+    wizard.goTo(0)
+  }
+
+  return { step, next, back: wizard.previous, showErrors, reset }
 }

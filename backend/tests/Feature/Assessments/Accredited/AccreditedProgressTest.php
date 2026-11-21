@@ -77,6 +77,7 @@ it('counts only the requested sub-criteria while the request needs completion', 
     $owner = ownerOf($assessment->entity);
     $policy = subOf($version, 'M1.1');
 
+    scoreEveryUnit($assessor, $assessment);
     switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/request-completion", [
         'notes' => 'يرجى تحديث وصف السياسة المعتمدة وإرفاق نسختها الموقعة.',
         'items' => [['sub_criterion_id' => $policy->id, 'kind' => 'cv'], ['sub_criterion_id' => $policy->id, 'kind' => 'evidence']],

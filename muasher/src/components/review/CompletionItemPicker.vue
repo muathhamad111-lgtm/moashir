@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import BaseInput from '@/components/form/BaseInput.vue'
+import Badge from '@/components/ui/Badge.vue'
 import { COMPLETION_ITEM_KINDS } from '@/constants/accredited'
 import { localizedText } from '@/utils/localizedText'
 import { formatNumber } from '@/utils/formatNumber'
@@ -14,17 +15,28 @@ const props = defineProps({
   groups: { type: Array, required: true },
   selected: { type: Array, required: true },
   openMainId: { type: Number, default: null },
+  // Item keys suggested from the scores (design §B.3.3); their rows carry a «مقترح» tag.
+  suggested: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(['toggle', 'toggleMany'])
 const { t, n, locale } = useI18n()
 const search = ref('')
-const expanded = ref(new Set([props.openMainId ?? props.groups[0]?.main.id]))
+// The criterion the assessor is on opens first, with every criterion that holds a suggestion.
+const expanded = ref(
+  new Set([
+    props.openMainId ?? props.groups[0]?.main.id,
+    ...props.groups
+      .filter((group) => group.options.some((option) => props.suggested.includes(option.key)))
+      .map((group) => group.main.id),
+  ]),
+)
 
 const name = (value) => localizedText(value, locale.value)
 const kindLabel = (kind) => t(`accredited.completion.kinds.${kind}`)
 const optionOf = (row, kind) => row.options.find((option) => option.kind === kind) ?? null
 const isSelected = (option) => props.selected.includes(option.key)
+const isSuggested = (row) => row.options.some((option) => props.suggested.includes(option.key))
 
 // Rows per main criterion, narrowed by the search; a search shows every matching group open. The
 // main criterion's own attachments come first, as one evidence-only row.
@@ -138,7 +150,12 @@ function columnChecked(group, kind) {
               </td>
             </tr>
             <tr v-for="row in group.subs" :key="row.sub.id" class="completion-picker__row">
-              <th scope="row">{{ name(row.sub.name) }}</th>
+              <th scope="row">
+                {{ name(row.sub.name) }}
+                <Badge v-if="isSuggested(row)" variant="warning">{{
+                  t('review.completion.suggestedTag')
+                }}</Badge>
+              </th>
               <td v-for="kind in KINDS" :key="kind" class="completion-dialog__option">
                 <input
                   v-if="optionOf(row, kind)"

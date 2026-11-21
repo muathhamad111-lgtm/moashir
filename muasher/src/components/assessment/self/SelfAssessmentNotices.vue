@@ -69,6 +69,10 @@ const showConflict = computed(() => props.conflictCode === CODES.TRANSITION_ILLE
         </BaseButton>
       </template>
     </AssessmentNotice>
-    <CriteriaRebindSummary v-if="criteriaUpdate" :update="criteriaUpdate" />
+    <CriteriaRebindSummary
+      v-if="criteriaUpdate"
+      :assessment-id="assessment.id"
+      :update="criteriaUpdate"
+    />
   </div>
 </template>

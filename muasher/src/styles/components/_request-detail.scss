@@ -165,6 +165,13 @@
   }
 }
 
+// The per-criterion bars (design §B.3.4) and the self result's summary take the full width.
+.request-overview > .self-breakdown,
+.request-overview > .result-pending,
+.request-overview > .self-result__summary {
+  grid-column: 1 / -1;
+}
+
 .request-detail__completions {
   @include flex(column, stretch, flex-start, var(--space-4));
   padding-block-start: var(--space-4);

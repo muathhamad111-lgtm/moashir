@@ -7,6 +7,7 @@ import AppMenu from '@/components/ui/AppMenu.vue'
 import RequestAssignButton from './RequestAssignButton.vue'
 import { REQUEST_MENU_ACTIONS, useRequestActions } from '@/composables/useRequestActions'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import { REVIEW_OVERRIDE_QUERY } from '@/constants/review'
 
 // The request page's actions, always at the end of its header: the state's main action first.
 const props = defineProps({
@@ -29,12 +30,18 @@ const { mayReview, reviewLabel, assignsFirst, mayBundle, menuActions } = useRequ
   },
 )
 
-function openReview() {
-  router.push({ name: ROUTE_NAMES.REQUESTS_REVIEW, params: { id: props.detail.id } })
+// The score override is an edit mode of the review (design §B.3.5): the menu opens the review in
+// that mode; the review still checks that the viewer may override.
+function openOverride() {
+  router.push({
+    name: ROUTE_NAMES.REQUESTS_REVIEW,
+    params: { id: props.detail.id },
+    query: { [REVIEW_OVERRIDE_QUERY]: '1' },
+  })
 }
 
 function onMenu(key) {
-  if (key === REQUEST_MENU_ACTIONS.OVERRIDE) openReview()
+  if (key === REQUEST_MENU_ACTIONS.OVERRIDE) openOverride()
   else emit(key)
 }
 </script>

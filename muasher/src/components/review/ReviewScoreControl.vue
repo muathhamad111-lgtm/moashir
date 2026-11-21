@@ -23,6 +23,8 @@ const props = defineProps({
   scoringType: { type: String, required: true },
   saved: { type: Object, default: null },
   disabled: { type: Boolean, default: false },
+  // Replaces «غير محفوظ» for a changed value, e.g. the published value in the override mode.
+  changedLabel: { type: String, default: '' },
 })
 
 // «نسبي» moves in steps of 5; a typed value can still be anything on the scale.
@@ -68,12 +70,15 @@ function onKeydown(event) {
     :label="label"
     :saved="saved"
     :disabled="disabled"
+    :changed-label="changedLabel"
   />
   <div v-else class="review-score raw-score" :class="{ 'raw-score--saved': isSaved }">
     <span v-if="isSaved" class="review-score__percent">
       <bdi>{{ t('review.score.percent', { value: twoDecimals(saved.percent) }) }}</bdi>
     </span>
-    <span v-else-if="isUnsaved" class="review-score__unsaved">{{ t('review.score.unsaved') }}</span>
+    <span v-else-if="isUnsaved" class="review-score__unsaved">{{
+      changedLabel || t('review.score.unsaved')
+    }}</span>
     <div class="review-score__box" :class="{ 'has-error': errorMessage }">
       <button
         type="button"

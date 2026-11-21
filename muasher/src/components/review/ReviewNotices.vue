@@ -13,6 +13,8 @@ const props = defineProps({
   conflictCode: { type: String, default: '' },
   canStart: { type: Boolean, default: false },
   starting: { type: Boolean, default: false },
+  // The override mode has its own band, so the notice that opens it steps aside.
+  overriding: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['refresh', 'override', 'start'])
@@ -31,7 +33,7 @@ const showsCriteriaUpdate = computed(
   () => Boolean(props.review.criteriaUpdate) && !CLOSED_STATUSES.includes(status.value),
 )
 const mayOverride = computed(
-  () => auth.isSuperAdmin && status.value === ACCREDITED_STATUSES.COMPLETED,
+  () => auth.isSuperAdmin && status.value === ACCREDITED_STATUSES.COMPLETED && !props.overriding,
 )
 </script>
 
@@ -83,6 +85,7 @@ const mayOverride = computed(
     <CriteriaRebindSummary
       v-if="showsCriteriaUpdate"
       context="review"
+      :assessment-id="review.assessment.id"
       :update="review.criteriaUpdate"
     />
     <AssessmentNotice

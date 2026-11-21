@@ -18,6 +18,7 @@ function unitOf(level, node, main, sub) {
     id: node.id,
     mainId: main.id,
     subId: sub.id,
+    code: node.code ?? null,
     label: level === SCORE_LEVELS.POINT ? node.description : node.name,
     scoringType: node.scoringType ?? null,
   }
@@ -31,6 +32,15 @@ export function scorableUnits(criteria) {
         : [unitOf(SCORE_LEVELS.SUB, sub, main, sub)],
     ),
   )
+}
+
+// One item's score as the save request carries it: { subs: {}, points: { 31: '8.00' } }.
+export function unitScorePayload(unit, rawValue) {
+  return {
+    [WIRE_GROUPS[SCORE_LEVELS.SUB]]: {},
+    [WIRE_GROUPS[SCORE_LEVELS.POINT]]: {},
+    [WIRE_GROUPS[unit.level]]: { [String(unit.id)]: rawValue },
+  }
 }
 
 export function savedScoreOf(scores, unit) {

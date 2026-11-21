@@ -25,7 +25,7 @@ describe('scorable units of the bound tree', () => {
       ['point', 1002],
       ['sub', 102],
     ])
-    expect(units[0]).not.toHaveProperty('code')
+    expect(units[0]).toHaveProperty('code')
     expect(units[0]).toMatchObject({
       mainId: 1,
       subId: 101,

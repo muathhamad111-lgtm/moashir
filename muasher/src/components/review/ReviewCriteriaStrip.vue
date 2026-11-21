@@ -8,7 +8,7 @@ import { STATION_STATES } from '@/utils/accredited/submissionProgress'
 // in pale green, partial in amber, not started neutral; the open one is outlined. It replaces the
 // numbered dots and stays under the top bar while the page scrolls.
 defineProps({
-  // [{ id, name, scored, scorable, state }] from scoredStationsOf
+  // [{ id, name, scored, scorable, state, awaiting }] from useReviewProgress
   stations: { type: Array, required: true },
   activeId: { type: Number, default: null },
 })
@@ -37,6 +37,9 @@ const { t, locale } = useI18n()
             <span class="review-strip__meta">
               <bdi>{{ station.scored }} / {{ station.scorable }}</bdi>
               · {{ t(`review.strip.states.${station.state}`) }}
+            </span>
+            <span v-if="station.awaiting" class="review-strip__rounds">
+              {{ t('review.strip.afterCompletion', { count: station.awaiting }) }}
             </span>
           </span>
         </button>

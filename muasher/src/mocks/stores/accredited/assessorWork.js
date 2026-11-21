@@ -12,6 +12,7 @@ import { announceInitialCompleted } from '../award/awardNotices'
 import { recordSnapshot } from './resultSnapshots'
 import { writeSummary } from '../insights/assessorSummaries'
 import { issueOnCompletion } from '../requestCertificates'
+import { recordScoreVersions } from './scoreRounds'
 import {
   isPlainObject,
   isPositiveInteger,
@@ -86,6 +87,7 @@ export function saveReviewScores(user, record, body) {
     states: [stagesOf(record).reviewing],
   })
   const changes = parseScoreSheet(input.scores, boundTree(record), record.scaleKind)
+  recordScoreVersions(record, [...changes], nowIso())
   const merged = { ...record.scores, ...Object.fromEntries(changes) }
   clearedKeys(input.scores).forEach((key) => delete merged[key])
   record.scores = merged
@@ -261,6 +263,7 @@ export function requestCompletion(user, record, body) {
     reason: trimmed(body.reason) || null,
     states,
   })
+  assertFullyScored(record)
   const items = body.items.map((item, index) => completionItem(record, item, index))
   const at = nowIso()
   completionSequence += 1
@@ -287,6 +290,14 @@ export function requestCompletion(user, record, body) {
   )
   touch(record)
   return record
+}
+
+// Every item is scored before the entity is asked to complete anything (design §B.3.3, UX-1).
+// The follower's return of an advanced request is not a scored review, so it is exempt.
+function assertFullyScored(record) {
+  if (isAdvanced(record)) return
+  const missing = missingUnits(record)
+  if (missing.length) throw assessmentReject.scoresIncomplete(missing)
 }
 
 function missingUnits(record) {

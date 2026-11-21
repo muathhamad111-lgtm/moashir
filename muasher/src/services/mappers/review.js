@@ -62,3 +62,46 @@ export function toAssessorReview(raw = {}) {
 export function toFeedbackSaved(raw = {}) {
   return { assessment: toAssessment(raw.assessment), feedback: toFeedbackSheet(raw.feedback) }
 }
+
+function toRoundScore(raw) {
+  return {
+    round: raw.round ?? 1,
+    completionRequestId: raw.completionRequestId ?? null,
+    rawValue: raw.rawValue ?? null,
+    percent: raw.percent ?? null,
+    scoredAt: raw.scoredAt ?? null,
+  }
+}
+
+// The completion rounds of a review (design §B.3.3): every completion request, and each item's
+// last score per round, keyed by its field name (point-31, sub-12).
+export function toReviewRounds(raw) {
+  return {
+    requests: (raw?.requests ?? []).map((request) => ({
+      ...toCompletionRequest(request),
+      round: request.round ?? null,
+    })),
+    units: Object.fromEntries(
+      Object.entries(raw?.units ?? {}).map(([field, rounds]) => [field, rounds.map(toRoundScore)]),
+    ),
+  }
+}
+
+function toResultLevel(raw) {
+  return { percent: raw?.percent ?? null, level: raw?.level ?? null }
+}
+
+// An override preview (design §B.3.5): the published total and level, the new ones, and the items
+// whose value changes.
+export function toOverridePreview(raw) {
+  return {
+    before: toResultLevel(raw?.before),
+    after: toResultLevel(raw?.after),
+    changes: (raw?.changes ?? []).map((change) => ({
+      code: change.code ?? null,
+      field: change.field ?? null,
+      before: change.before ?? null,
+      after: change.after ?? null,
+    })),
+  }
+}

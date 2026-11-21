@@ -25,6 +25,7 @@ it('lists the open accredited request in the deletion impact and pauses its dead
     $version = publishedAccreditedCriteria();
     $assessor = assessorUser();
     $assessment = reviewedAccreditedRequest($version, $assessor);
+    scoreEveryUnit($assessor, $assessment);
     switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/request-completion", [
         'notes' => 'يرجى تحديث وصف السياسة المعتمدة.',
         'items' => [['sub_criterion_id' => subOf($version, 'M1.1')->id, 'kind' => 'cv']],

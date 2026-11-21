@@ -17,16 +17,14 @@ use App\Services\Audit\AuditRecorder;
 final readonly class ScoreChangesRecorder
 {
     public function __construct(
-        private ScoreInputParser $parser,
-        private ScoreSheetReader $reader,
+        private DesiredScoreSheet $desiredSheets,
         private ScoreSheetWriter $writer,
         private AuditRecorder $audit,
     ) {}
 
     public function record(User $scorer, Assessment $assessment, ScoringTree $tree, SubmittedScores $changes, AuditEvent $event): RecordedScores
     {
-        $given = $this->parser->parse($changes, $tree, $assessment->scale_kind);
-        $desired = $this->reader->read($assessment, $tree)->merge($given, $this->parser->clearedKeys($changes, $tree));
+        $desired = $this->desiredSheets->build($assessment, $tree, $changes);
         $recorded = $this->writer->replace($assessment, $tree, $desired, $scorer, $this->roleFor($assessment));
 
         if (! $recorded->isEmpty()) {
@@ -34,7 +32,7 @@ final readonly class ScoreChangesRecorder
             $this->audit->record(new AuditEntry($event, $assessment, $recorded->before(), $recorded->after()));
         }
 
-        return new RecordedScores($desired, $recorded);
+        return new RecordedScores($desired->sheet, $recorded);
     }
 
     private function roleFor(Assessment $assessment): ScorerRole

@@ -72,16 +72,18 @@ describe('staff assessment record', () => {
       data: { id: 9004, status: 'draft', available: false, isFrozen: true },
     })
     const wrapper = await mountAs(StaffRecord, ['system_admin'], { id: '9004' })
-    expect(wrapper.find('.assessment-timeline__actor').text()).toBe(
-      'منيرة بنت خالد العتيبي — System Administrator',
-    )
-    expect(wrapper.find('.assessment-record__title').text()).toContain('SLF-2026-000004')
+    // The record has the request record's shape (design §B.3.4): the number as the title, then tabs.
+    expect(wrapper.find('.request-detail__title').text()).toContain('SLF-2026-000004')
     expect(wrapper.find('.assessment-record__badges .frozen-badge').exists()).toBe(true)
     expect(wrapper.find('.assessment-notice--frozen').exists()).toBe(true)
     expect(wrapper.find('.assessment-record__details').text()).toContain('ENT-007002')
     expect(wrapper.find('.result-pending').exists()).toBe(true)
     expect(wrapper.find('a[href="/admin/entities/7002"]').exists()).toBe(true)
     expect(wrapper.find('input').exists()).toBe(false)
+    await wrapper.findAll('.tabs__tab')[1].trigger('click')
+    expect(wrapper.find('.assessment-timeline__actor').text()).toBe(
+      'منيرة بنت خالد العتيبي — System Administrator',
+    )
   })
 
   it('hides the entity link from a reader without entities.view and shows the missing state on 404', async () => {

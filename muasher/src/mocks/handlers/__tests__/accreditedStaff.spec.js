@@ -388,6 +388,18 @@ describe('accredited mock — assessor review', () => {
       deadline_at: inDays(7),
     })
     expect(missingOutcome.body.errors).toHaveProperty('expiry_outcome')
+    const incomplete = await call('POST', '/assessments/9108/complete', {})
+    expect([incomplete.status, incomplete.body.code]).toEqual([422, 'scores.incomplete'])
+    // Every item is scored before a completion request (design §B.3.3, UX-1).
+    const unscored = await call('POST', '/assessments/9108/request-completion', {
+      notes: 'يرجى استكمال الشواهد.',
+      items: [{ sub_criterion_id: 103, kind: 'evidence' }],
+      deadline_at: inDays(7),
+      expiry_outcome: 'decline',
+    })
+    expect([unscored.status, unscored.body.code]).toEqual([422, 'scores.incomplete'])
+    const review = (await call('GET', '/assessments/9108/review')).body.data
+    await call('PUT', '/assessments/9108/review/scores', { scores: allUnits(review.criteria) })
     expect(
       (
         await call('POST', '/assessments/9108/request-completion', {
@@ -408,10 +420,6 @@ describe('accredited mock — assessor review', () => {
         })
       ).body.errors,
     ).toHaveProperty('deadline_at')
-    const incomplete = await call('POST', '/assessments/9108/complete', {})
-    expect([incomplete.status, incomplete.body.code]).toEqual([422, 'scores.incomplete'])
-    const review = (await call('GET', '/assessments/9108/review')).body.data
-    await call('PUT', '/assessments/9108/review/scores', { scores: allUnits(review.criteria) })
     const completed = await call('POST', '/assessments/9108/complete', {})
     expect(completed.body.data).toMatchObject({ status: 'completed', is_open: false })
     expect(completed.body.data.result.percent).toBe('80.00')
@@ -421,6 +429,8 @@ describe('accredited mock — assessor review', () => {
   it('applies the expiry outcome at the deadline: continue keeps the review, decline closes the request', async () => {
     seedMockSession(SULTAN)
     await call('POST', '/assessments/9107/start-review', {})
+    const review = (await call('GET', '/assessments/9107/review')).body.data
+    await call('PUT', '/assessments/9107/review/scores', { scores: allUnits(review.criteria) })
     await call('POST', '/assessments/9107/request-completion', {
       notes: 'يرجى استكمال الشواهد.',
       items: [{ sub_criterion_id: 103, kind: 'evidence' }],

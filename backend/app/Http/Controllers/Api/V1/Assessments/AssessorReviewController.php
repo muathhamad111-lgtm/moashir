@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1\Assessments;
 use App\Actions\Assessments\CompleteAccreditedAssessment;
 use App\Actions\Assessments\CompleteInitialAssessment;
 use App\Actions\Assessments\GetAssessorReview;
+use App\Actions\Assessments\GetReviewRounds;
 use App\Actions\Assessments\RequestCompletion;
 use App\Actions\Assessments\SaveAssessmentSummary;
 use App\Actions\Assessments\SaveFeedbackItems;
@@ -23,6 +24,7 @@ use App\Http\Resources\Assessments\AssessmentScoresResource;
 use App\Http\Resources\Assessments\AssessmentSummaryResource;
 use App\Http\Resources\Assessments\AssessorReviewResource;
 use App\Http\Resources\Assessments\FeedbackViewResource;
+use App\Http\Resources\Assessments\ReviewRoundsResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\Assessments\Assessment;
 use App\Models\Identity\User;
@@ -34,6 +36,11 @@ final class AssessorReviewController
     public function show(Assessment $assessment, #[CurrentUser] User $viewer, GetAssessorReview $review): JsonResponse
     {
         return ApiResponse::resource(new AssessorReviewResource($review->handle($viewer, $assessment)));
+    }
+
+    public function rounds(Assessment $assessment, GetReviewRounds $rounds): JsonResponse
+    {
+        return ApiResponse::resource(new ReviewRoundsResource($rounds->handle($assessment)));
     }
 
     public function start(AssessmentActionRequest $request, Assessment $assessment, #[CurrentUser] User $actor, StartReview $start): JsonResponse

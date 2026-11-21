@@ -26,6 +26,19 @@ final readonly class ScorableUnit
         return $level->value.':'.$id;
     }
 
+    /**
+     * The name the review form gives the unit's input (`point-31`, `sub-12`).
+     */
+    public static function inputNameFor(ScoreLevel $level, int $id): string
+    {
+        return $level->value.'-'.$id;
+    }
+
+    public function inputName(): string
+    {
+        return self::inputNameFor($this->level, $this->id);
+    }
+
     public function key(): string
     {
         return self::keyFor($this->level, $this->id);

@@ -85,6 +85,8 @@ function requestThatGainedAttachments(User $assessor): array
 
 function requestCompletionOf(User $assessor, Assessment $assessment, array $items): TestResponse
 {
+    scoreEveryUnit($assessor, $assessment);
+
     return switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/request-completion", [
         'notes' => 'يرجى استكمال المرفقات المطلوبة المضافة بعد التقديم.',
         'items' => $items,

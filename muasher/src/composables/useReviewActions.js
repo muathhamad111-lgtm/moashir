@@ -4,7 +4,12 @@ import { assessorReviewService } from '@/services/assessorReviewService'
 import { useToast } from '@/composables/useToast'
 import { success } from '@/composables/useSuccess'
 import { useAuthStore } from '@/stores/auth'
-import { changedSheetPayload, isEmptyPayload } from '@/utils/assessments/scoreSheet'
+import {
+  changedSheetPayload,
+  isEmptyPayload,
+  savedScoreOf,
+  unitScorePayload,
+} from '@/utils/assessments/scoreSheet'
 import { ACCREDITED_CODES as CODES } from '@/constants/accredited'
 
 const CONFLICT_CODES = [
@@ -112,9 +117,38 @@ export function useReviewActions({ reviewState, scoreSheet, feedback, askReason 
     )
   }
 
+  // Keeps an item's result unchanged after a completion, recorded as the current round's result
+  // (design §B.3.3): the server stores it as a new version tagged with the round.
+  function confirmScore(unit) {
+    const saved = savedScoreOf(reviewState.review.value.scores, unit)
+    if (!saved) return Promise.resolve(false)
+    return perform(
+      'confirm',
+      async (extra) => {
+        const { data } = await assessorReviewService.saveScores(reviewState.assessment.value.id, {
+          scores: unitScorePayload(unit, saved.rawValue),
+          ...extra,
+        })
+        reviewState.patch(data)
+        if (!scoreSheet.dirty.value) scoreSheet.resetFrom(data.scores)
+        return true
+      },
+      () => toast.success(t('review.rounds.confirmed')),
+    )
+  }
+
   function clearConflict() {
     conflictCode.value = ''
   }
 
-  return { busy, conflictCode, saveAll, startReview, complete, handle, clearConflict }
+  return {
+    busy,
+    conflictCode,
+    saveAll,
+    startReview,
+    complete,
+    confirmScore,
+    handle,
+    clearConflict,
+  }
 }

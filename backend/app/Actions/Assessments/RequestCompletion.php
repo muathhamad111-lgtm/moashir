@@ -19,6 +19,7 @@ use App\Services\Assessments\AssessmentStateMachine;
 use App\Services\Assessments\AssigneeGuard;
 use App\Services\Assessments\BoundSubCriteriaReader;
 use App\Services\Assessments\CompletionItemsResolver;
+use App\Services\Assessments\ReviewCompletenessCheck;
 use App\Services\Assessments\ReviewWriteGate;
 use App\Services\Audit\AuditRecorder;
 use Illuminate\Support\Facades\DB;
@@ -32,6 +33,7 @@ final readonly class RequestCompletion
         private CompletionItemsResolver $items,
         private AssessmentStateMachine $stateMachine,
         private AuditRecorder $audit,
+        private ReviewCompletenessCheck $completeness,
     ) {}
 
     public function handle(User $actor, Assessment $assessment, CompletionInstruction $instruction): Assessment
@@ -43,6 +45,8 @@ final readonly class RequestCompletion
             if ($locked->status !== AccreditedAssessmentStatus::UnderReview) {
                 throw IllegalStateTransition::from((string) $locked->status->value, AssessmentVerb::RequestCompletion->value);
             }
+
+            $this->completeness->assertComplete($locked);
 
             $request = AssessmentCompletionRequest::query()->create([
                 'assessment_id' => $locked->id,

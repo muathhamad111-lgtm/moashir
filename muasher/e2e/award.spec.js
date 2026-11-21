@@ -2,6 +2,7 @@ import { Buffer } from 'node:buffer'
 import { test, expect } from '@playwright/test'
 import { seedPreferences, seedSignedIn } from './support/session'
 import { chooseRequestAction } from './support/requestRecord'
+import { completionSheet, nextCompletionStep } from './support/reviewWork'
 
 const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d/i
 const PDF = Buffer.from('%PDF-1.4\n% Award evidence\n%%EOF\n')
@@ -215,12 +216,15 @@ test.describe('Award staff screens', () => {
     await expect(rows.first()).toContainText('ADV-')
     await page.goto('/admin/requests/9203')
     await chooseRequestAction(page, text(testInfo, 'Return for completion', 'إعادة للاستكمال'))
-    const dialog = page.locator('.modal')
+    // The request is a side sheet in three steps (design §B.3.3): items, message and deadline, review.
+    const dialog = completionSheet(page)
     await expect(dialog.locator('.completion-dialog')).toBeVisible()
-    await dialog.locator('textarea[name="notes"]').fill(RETURN_NOTES)
     await dialog.locator('.completion-dialog__option input[type="checkbox"]').first().check()
+    await nextCompletionStep(page)
+    await dialog.locator('textarea[name="notes"]').fill(RETURN_NOTES)
     const deadline = dialog.locator('input[type="date"]')
     await deadline.fill(await deadline.getAttribute('min'))
+    await nextCompletionStep(page)
     await shot(page, 'award-follower-return', testInfo)
     await dialog.locator('button[type="submit"]').click()
     await expect(page.locator('.request-facts')).toContainText(

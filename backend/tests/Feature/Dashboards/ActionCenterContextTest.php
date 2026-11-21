@@ -48,6 +48,7 @@ it('gives the returned accredited request its reference', function (): void {
     $version = publishedAccreditedCriteria();
     $assessor = assessorUser();
     $assessment = reviewedAccreditedRequest($version, $assessor);
+    scoreEveryUnit($assessor, $assessment);
     switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/request-completion", [
         'notes' => 'يرجى رفع وثيقة السياسة المعتمدة الموقعة.',
         'items' => [['sub_criterion_id' => subOf($version, 'M1.1')->id, 'kind' => 'evidence']],

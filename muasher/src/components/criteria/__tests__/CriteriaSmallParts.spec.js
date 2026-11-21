@@ -74,8 +74,10 @@ describe('CriteriaRebindSummary', () => {
     added: [],
   }
 
-  it('lists the kept, reset and added items of a move between criteria versions', () => {
-    const text = mountWith(CriteriaRebindSummary, { update: UPDATE }).text()
+  it('lists the kept, reset and added items of a move between criteria versions', async () => {
+    const wrapper = mountWith(CriteriaRebindSummary, { update: UPDATE })
+    await wrapper.find('[aria-expanded]').trigger('click')
+    const text = wrapper.text()
 
     expect(text).toContain('Your draft moved from criteria version 1 to version 2')
     expect(text).toContain('1 item kept its score')

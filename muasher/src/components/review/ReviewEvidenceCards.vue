@@ -1,11 +1,14 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import Badge from '@/components/ui/Badge.vue'
 import { formatFileSize } from '@/utils/payments/amountFormat'
 
 defineProps({
   files: { type: Array, required: true },
   downloading: { type: Object, required: true },
+  // Files the entity added in the current completion round (design §B.3.3).
+  newIds: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(['download'])
@@ -26,6 +29,9 @@ function extensionOf(fileName) {
         <span class="review-evidence__size">{{
           t('accredited.evidence.sizeKb', { size: formatFileSize(file.sizeBytes, locale) })
         }}</span>
+        <Badge v-if="newIds.includes(file.id)" variant="info">{{
+          t('review.rounds.newFile')
+        }}</Badge>
       </span>
       <BaseButton
         variant="secondary"

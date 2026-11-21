@@ -137,7 +137,7 @@ describe('ReviewFeedbackFields', () => {
 })
 
 describe('criteria change banners', () => {
-  it('tells the assessor that an open request moved to a new criteria version', () => {
+  it('tells the assessor that an open request moved to a new criteria version', async () => {
     const wrapper = mountWith(ReviewNotices, {
       review: {
         mode: 'edit',
@@ -147,6 +147,7 @@ describe('criteria change banners', () => {
     })
 
     expect(wrapper.text()).toContain('This request moved from criteria version 1 to version 2')
+    await wrapper.find('.rebind-notice [aria-expanded]').trigger('click')
     expect(wrapper.text()).toContain('applied to open requests')
     expect(wrapper.text()).toContain('Policies')
   })

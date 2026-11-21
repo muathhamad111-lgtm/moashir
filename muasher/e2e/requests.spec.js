@@ -1,4 +1,10 @@
 import { test, expect } from '@playwright/test'
+import {
+  completionSheet,
+  fillCompletionMessage,
+  nextCompletionStep,
+  scoreAndSaveEveryItem,
+} from './support/reviewWork'
 import { seedSignedIn } from './support/session'
 import { applyOpenListFilters, openListFilters } from './support/listFilters'
 import { chooseRequestAction, openRequestTab, requestMenuItems } from './support/requestRecord'
@@ -232,17 +238,19 @@ test.describe('Assessor', () => {
     await expect(page.locator('.review-header')).toContainText(
       isEn(testInfo) ? 'Under review' : 'قيد المراجعة',
     )
+    // Every item is scored before a completion request (design §B.3.3, UX-1).
+    await expect(page.locator('[data-testid="review-request-completion"]')).toBeDisabled()
+    await scoreAndSaveEveryItem(page)
     await page.locator('[data-testid="review-request-completion"]').click()
-    const dialog = page.locator('.modal')
-    await dialog
-      .locator('textarea')
-      .first()
-      .fill('يرجى إرفاق القوائم المالية المدققة للعام الأخير وتحديث وصف الخطة الاستراتيجية.')
+    const dialog = completionSheet(page)
     await dialog.locator('.completion-dialog__option input').nth(1).check()
-    await dialog
-      .locator('input[type="date"]')
-      .fill(new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10))
-    await dialog.locator('.radio-group input').nth(1).check()
+    await nextCompletionStep(page)
+    await fillCompletionMessage(
+      page,
+      'يرجى إرفاق القوائم المالية المدققة للعام الأخير وتحديث وصف الخطة الاستراتيجية.',
+      { outcome: 1 },
+    )
+    await nextCompletionStep(page)
     await page.screenshot({
       path: `test-results/requests-completion-assessor-${suffixOf(testInfo)}.png`,
       fullPage: true,
@@ -307,12 +315,18 @@ test.describe('Super Admin and settings', () => {
   }, testInfo) => {
     await signIn(page, testInfo, STAFF.superAdmin)
     await page.goto('/admin/requests/9104/review')
+    // The override is an edit mode of the review with a live total (design §B.3.5).
     await page.locator('.review-notices .btn--danger').click()
+    await expect(page.locator('.override-band')).toBeVisible()
+    await page.locator('.review-main .raw-score input').first().fill('9.5')
+    await expect(page.locator('.override-band__summary')).toContainText('%')
+    await page.locator('[data-testid="override-review"]').click()
     const dialog = page.locator('.modal')
-    await dialog.locator('.override-dialog__grid input').first().fill('9.5')
+    await expect(dialog.locator('.override-review__table tbody tr')).toHaveCount(1)
     await dialog.locator('textarea').fill(OVERRIDE_REASON)
     await dialog.locator('button[type="submit"]').click()
     await expect(dialog).toHaveCount(0)
+    await expect(page.locator('.override-band')).toHaveCount(0)
 
     await page.goto('/admin/requests/9104')
     await page.locator('.request-actions [aria-haspopup="menu"]').click()

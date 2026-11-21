@@ -7,27 +7,19 @@
 
 .override-dialog,
 // Two columns from lg: the item picker, then the summary with notes, deadline and outcome.
+// The completion request's steps sit in a side sheet (design §B.3.3), so each step is one column:
+// the suggestion note, the picker, then the chosen items.
 .completion-dialog {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-5);
-
-  @include respond-to('lg') {
-    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-    align-items: stretch;
-  }
+  @include flex(column, stretch, flex-start, var(--space-4));
 }
 
-// Request-wide details under both columns: the notes, then the deadline beside the outcome.
+// The message step: the notes, then the deadline beside the outcome.
 .completion-dialog__details {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
-  padding-block-start: var(--space-4);
-  border-block-start: var(--border-width) solid var(--theme-border);
 
-  @include respond-to('lg') {
-    grid-column: 1 / -1;
+  @include respond-to('md') {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -271,12 +263,6 @@
   background-color: var(--color-warning-soft);
   font-size: var(--fs-sm);
   color: var(--theme-text);
-}
-
-.override-dialog__grid {
-  display: grid;
-  gap: var(--space-3);
-  grid-template-columns: repeat(auto-fill, minmax(var(--size-control-min), 1fr));
 }
 
 .assign-dialog__path {

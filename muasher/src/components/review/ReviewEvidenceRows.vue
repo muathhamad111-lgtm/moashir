@@ -11,6 +11,7 @@ defineProps({
   // [{ key, name, required, late, files }] from evidenceRowsOf
   rows: { type: Array, required: true },
   downloading: { type: Object, required: true },
+  newIds: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(['download'])
@@ -31,6 +32,7 @@ const { t, locale } = useI18n()
         class="review-rows__files"
         :files="row.files"
         :downloading="downloading"
+        :new-ids="newIds"
         @download="emit('download', $event)"
       />
       <p v-else class="review-rows__missing">

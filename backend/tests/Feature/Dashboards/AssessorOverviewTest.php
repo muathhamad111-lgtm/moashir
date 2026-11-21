@@ -27,6 +27,7 @@ function returnedToEntity(Assessment $assessment, User $assessor): void
 {
     $version = $assessment->criteriaVersion;
 
+    scoreEveryUnit($assessor, $assessment);
     switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/request-completion", [
         'notes' => 'يرجى إرفاق محضر اعتماد مجلس الإدارة للسياسة وتحديث وصفها.',
         'items' => [['sub_criterion_id' => subOf($version, 'M1.1')->id, 'kind' => 'cv']],

@@ -197,6 +197,7 @@ it('returns the request to the entity for completion and accepts only the reques
     $version = publishedAccreditedCriteria();
     $assessor = assessorUser();
     $assessment = reviewedAccreditedRequest($version, $assessor);
+    scoreEveryUnit($assessor, $assessment);
     $owner = ownerOf($assessment->entity);
     $policy = subOf($version, 'M1.1');
     $strategy = subOf($version, 'M1.2');
@@ -233,6 +234,7 @@ it('validates a completion request', function (): void {
     $version = publishedAccreditedCriteria();
     $assessor = assessorUser();
     $assessment = reviewedAccreditedRequest($version, $assessor);
+    scoreEveryUnit($assessor, $assessment);
 
     switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/request-completion", [])->assertUnprocessable()->assertJsonValidationErrors(['notes', 'items', 'deadline_at', 'expiry_outcome']);
     test()->postJson("/api/v1/assessments/{$assessment->id}/request-completion", [
@@ -268,6 +270,7 @@ it('accepts a short completion note because the notes have no minimum length', f
     $version = publishedAccreditedCriteria();
     $assessor = assessorUser();
     $assessment = reviewedAccreditedRequest($version, $assessor);
+    scoreEveryUnit($assessor, $assessment);
 
     switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/request-completion", [
         'notes' => 'أرفق السيرة',

@@ -63,6 +63,7 @@ it('lists the items the assessor asked for in the ACC-07 e-mail, named from the 
     $owner = ownerOf($assessment->entity);
     $policy = subOf($version, 'M1.1');
 
+    scoreEveryUnit($assessor, $assessment);
     switchTo($assessor)->postJson("/api/v1/assessments/{$assessment->id}/request-completion", [
         'notes' => 'يرجى إرفاق محضر اعتماد مجلس الإدارة للسياسة وتحديث وصفها.',
         'items' => [['sub_criterion_id' => $policy->id, 'kind' => 'cv'], ['sub_criterion_id' => $policy->id, 'kind' => 'evidence', 'note' => 'محضر <b>الاعتماد</b>']],

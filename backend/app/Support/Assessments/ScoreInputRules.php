@@ -34,6 +34,23 @@ final class ScoreInputRules
     }
 
     /**
+     * A Super Admin override names a value for every unit it lists: an override never clears a score.
+     *
+     * @return array<string, list<string>>
+     */
+    public static function forOverride(): array
+    {
+        $rules = self::for('required');
+        unset($rules['reason']);
+
+        foreach (['scores.subs.*', 'scores.points.*'] as $values) {
+            $rules[$values] = ['required', ...array_values(array_diff($rules[$values], ['nullable']))];
+        }
+
+        return $rules;
+    }
+
+    /**
      * @param  array<array-key, mixed>  $scores
      */
     public static function submitted(array $scores): SubmittedScores

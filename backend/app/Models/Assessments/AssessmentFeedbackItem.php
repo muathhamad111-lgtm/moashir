@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
  * @property int $author_user_id
  * @property int $version
  * @property string|null $change_reason
+ * @property int|null $completion_request_id
  * @property Carbon|null $superseded_at
  * @property Carbon $created_at
  */
@@ -30,7 +31,7 @@ final class AssessmentFeedbackItem extends Model
     /**
      * @var list<string>
      */
-    protected $fillable = ['assessment_id', 'sub_code', 'kind', 'body', 'author_user_id', 'version', 'change_reason'];
+    protected $fillable = ['assessment_id', 'sub_code', 'kind', 'body', 'author_user_id', 'version', 'change_reason', 'completion_request_id'];
 
     protected static function booted(): void
     {
@@ -53,6 +54,7 @@ final class AssessmentFeedbackItem extends Model
             'kind' => FeedbackKind::class,
             'author_user_id' => 'integer',
             'version' => 'integer',
+            'completion_request_id' => 'integer',
             'superseded_at' => 'datetime',
         ];
     }

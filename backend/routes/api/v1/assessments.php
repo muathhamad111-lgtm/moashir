@@ -49,6 +49,7 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
             Route::post('{assessment}/evidence/bundles/{bundle}/download', [EvidenceBundleController::class, 'download'])->middleware(['can:viewEvidenceBundle,assessment,bundle', 'throttle:downloads'])->name('evidence.bundles.download');
 
             Route::get('{assessment}/review', [AssessorReviewController::class, 'show'])->middleware('can:review,assessment')->name('review.show');
+            Route::get('{assessment}/review/rounds', [AssessorReviewController::class, 'rounds'])->middleware('can:reviewRounds,assessment')->name('review.rounds');
             Route::post('{assessment}/start-review', [AssessorReviewController::class, 'start'])->middleware(['can:score,assessment', 'throttle:sensitive'])->name('review.start');
             Route::put('{assessment}/review/scores', [AssessorReviewController::class, 'scores'])->middleware(['can:score,assessment', 'throttle:assessment-write'])->name('review.scores');
             Route::put('{assessment}/review/feedback', [AssessorReviewController::class, 'feedback'])->middleware(['can:score,assessment', 'throttle:assessment-write'])->name('review.feedback');
@@ -57,6 +58,7 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
             Route::post('{assessment}/complete', [AssessorReviewController::class, 'complete'])->middleware(['can:score,assessment', 'throttle:sensitive'])->name('review.complete');
 
             Route::post('{assessment}/scores/override', [AssessmentOverrideController::class, 'scores'])->middleware(['can:override,assessment', 'throttle:sensitive'])->name('overrides.scores');
+            Route::post('{assessment}/scores/override/preview', [AssessmentOverrideController::class, 'preview'])->middleware(['can:override,assessment', 'throttle:assessment-write'])->name('overrides.preview');
             Route::post('{assessment}/reopen', [AssessmentOverrideController::class, 'reopen'])->middleware(['can:override,assessment', 'throttle:sensitive'])->name('overrides.reopen');
             Route::post('{assessment}/transition/force', [AssessmentOverrideController::class, 'force'])->middleware(['can:override,assessment', 'throttle:sensitive'])->name('overrides.force');
         });

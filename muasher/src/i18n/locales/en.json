@@ -3016,7 +3016,13 @@
         "triggersRequest": {
           "criteria_edit": "The criteria were updated on {date} and applied to open requests ({scope}).",
           "entity_restore": "The entity account was restored on {date} and the request moved to the published criteria ({scope})."
-        }
+        },
+        "chip": "Criteria: version {to} · {count} need a new score",
+        "showAgain": "Show the criteria update alert",
+        "showUpdates": "Show the updates",
+        "hideUpdates": "Hide the updates",
+        "whatChanged": "What changed",
+        "dismiss": "Hide the alert"
       },
       "missing": {
         "title": "Assessment not found",
@@ -6689,18 +6695,43 @@
       "addNote": "Add a note",
       "addNoteFor": "Add a note on {name}",
       "mainRow": "Main criterion evidence",
-      "mainItem": "Main criterion evidence: {main}"
+      "mainItem": "Main criterion evidence: {main}",
+      "scoreFirst": "Score every item first | Score every item first (1 left) | Score every item first ({count} left)",
+      "steps": {
+        "items": "Items",
+        "message": "Message and deadline",
+        "review": "Review and send"
+      },
+      "suggested": "No suggestions | We suggested 1 item that is not achieved or below 50%; you can change the selection. | We suggested {count} items that are not achieved or below 50%; you can change the selection.",
+      "suggestedTag": "Suggested"
     },
     "override": {
       "noticeTitle": "Published result",
       "noticeMessage": "As Super Admin you can override scores. The platform recomputes and republishes the result.",
       "open": "Override scores",
-      "title": "Override the published scores",
       "warning": "Only the changed items are sent.",
-      "itemLabel": "{name} (out of {max})",
-      "noChange": "Change at least one score.",
-      "submit": "Override the scores",
-      "done": "The scores were overridden and the result recomputed."
+      "submit": "Confirm the override",
+      "done": "The scores were overridden and the result recomputed.",
+      "confirmTitle": "Review the override",
+      "changesCaption": "Changed items",
+      "item": "Item",
+      "published": "Published",
+      "newValue": "New",
+      "delta": "Change",
+      "publishedValue": "Published: {value}",
+      "noPublished": "no score",
+      "mode": {
+        "title": "Score override mode: every change is recorded",
+        "changed": "No item changed | 1 item changed | {count} items changed",
+        "total": "Total {before} → {after}",
+        "percent": "{value}%",
+        "levelSame": "{level} (unchanged)",
+        "levelChanged": "{before} → {after}",
+        "computing": "Computing…",
+        "invalid": "Fix the invalid values to see the effect.",
+        "cancel": "Cancel the override",
+        "review": "Review the override"
+      }
     },
     "toasts": {
       "fixErrors": "Correct the highlighted scores first.",
@@ -6747,7 +6778,8 @@
     "shareOfMain": "{share} of the criterion",
     "state": {
       "scored": "Scored",
-      "pending": "Not scored yet"
+      "pending": "Not scored yet",
+      "awaiting": "Waiting for a new result"
     },
     "indicatorsScored": "{scored} / {total} indicators scored",
     "itemsScored": "{scored} / {total} items scored",
@@ -6764,10 +6796,28 @@
         "complete": "Complete",
         "partial": "Partly scored",
         "empty": "Not started"
-      }
+      },
+      "afterCompletion": "No item after completion | 1 item after completion | {count} items after completion"
     },
     "nextNamed": "Next: {name}",
-    "completeMissing": "Complete the assessment · {count}"
+    "completeMissing": "Complete the assessment · {count}",
+    "rounds": {
+      "caption": "Completion rounds: {name}",
+      "round": "Round",
+      "date": "Date",
+      "result": "Result",
+      "note": "Request note",
+      "before": "Round 1 (before completion)",
+      "after": "Round {round} (after completion)",
+      "achieved": "Achieved",
+      "notAchieved": "Not achieved",
+      "score": "{value} of {max}",
+      "relative": "{value}%",
+      "awaiting": "Waiting for a new result",
+      "keep": "Keep the same result",
+      "confirmed": "The result is kept for this round.",
+      "newFile": "New"
+    }
   },
   "cycles": {
     "statuses": {

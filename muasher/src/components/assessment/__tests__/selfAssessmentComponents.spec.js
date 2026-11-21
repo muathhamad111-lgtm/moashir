@@ -79,7 +79,7 @@ describe('SelfAssessmentNotices', () => {
     expect(frozenConflict.find('.assessment-notice--danger').exists()).toBe(false)
   })
 
-  it('lists the kept, reset and added items of the latest move returned by the server', () => {
+  it('shows the latest move as one line and unfolds its kept, reset and added items', async () => {
     const criteriaUpdate = {
       fromVersionId: 3,
       fromVersionNumber: 1,
@@ -93,8 +93,11 @@ describe('SelfAssessmentNotices', () => {
       added: [{ level: 'point', code: 'M1.1.3', label: null }],
     }
     const wrapper = mountWith(SelfAssessmentNotices, { assessment: DRAFT, criteriaUpdate })
-    expect(wrapper.findAll('.rebind-summary__group')).toHaveLength(3)
     expect(wrapper.text()).toContain('moved from criteria version 1 to version 2')
+    expect(wrapper.find('.assessment-notice__message').text()).toBe('1 item needs a new score')
+    expect(wrapper.find('.rebind-summary').exists()).toBe(false)
+    await wrapper.find('.rebind-notice [aria-expanded]').trigger('click')
+    expect(wrapper.findAll('.rebind-summary__group')).toHaveLength(3)
     expect(wrapper.text()).toContain('1 item kept its score')
     expect(wrapper.text()).toContain('1 item needs a new score')
     expect(wrapper.text()).toContain('1 new item')
@@ -104,7 +107,7 @@ describe('SelfAssessmentNotices', () => {
     expect(none.find('.rebind-summary').exists()).toBe(false)
   })
 
-  it('names the entity restore as the cause of a move', () => {
+  it('names the entity restore as the cause of a move', async () => {
     const criteriaUpdate = {
       fromVersionNumber: 1,
       toVersionNumber: 3,
@@ -120,6 +123,7 @@ describe('SelfAssessmentNotices', () => {
       { assessment: DRAFT, criteriaUpdate },
       { locale: 'ar' },
     )
+    await wrapper.find('.rebind-notice [aria-expanded]').trigger('click')
     expect(wrapper.text()).toContain('استُعيد حساب الجهة')
     expect(wrapper.text()).not.toMatch(/[\u0660-\u0669]/)
   })
