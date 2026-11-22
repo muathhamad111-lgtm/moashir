@@ -2,56 +2,29 @@ import { useI18n } from 'vue-i18n'
 import { useConfirm } from '@/composables/useConfirm'
 import { toast } from '@/composables/useToast'
 import { criteriaService } from '@/services/criteriaService'
-import { CRITERIA_ERROR_CODES, EVALUATION_TYPES } from '@/constants/criteria'
+import { EVALUATION_TYPES } from '@/constants/criteria'
 
+// Switching keeps the indicators either way: evaluated directly they become descriptive and lose
+// their weights; scored on indicators again they share the sub-criterion's weight equally.
 export function useEvaluationTypeSwitch() {
   const { t } = useI18n()
   const { confirm } = useConfirm()
 
-  function warningFor(nextType, pointCount) {
-    if (nextType === EVALUATION_TYPES.GUIDING_POINTS) {
-      return {
-        message: t('criteria.evaluationType.toPointsMessage'),
-        confirmLabel: t('criteria.evaluationType.switchConfirm'),
-        variant: 'confirm',
-      }
-    }
-    if (!pointCount) {
-      return {
-        confirmLabel: t('criteria.evaluationType.switchConfirm'),
-        variant: 'confirm',
-      }
-    }
-    return {
-      message: t('criteria.evaluationType.toDirectMessage', { count: pointCount }, pointCount),
-      confirmLabel: t('criteria.evaluationType.switchConfirmDelete'),
-      variant: 'danger',
-    }
-  }
-
-  function confirmSwitch(nextType, pointCount) {
+  function confirmSwitch(nextType) {
     return confirm({
       title: t('criteria.evaluationType.switchTitle'),
-      ...warningFor(nextType, pointCount),
+      message:
+        nextType === EVALUATION_TYPES.GUIDING_POINTS
+          ? t('criteria.evaluationType.toPointsMessage')
+          : t('criteria.evaluationType.toDirectMessage'),
+      confirmLabel: t('criteria.evaluationType.switchConfirm'),
+      variant: 'confirm',
     })
   }
 
-  async function sendSwitch(sub, nextType, confirmDeletePoints) {
-    try {
-      return await criteriaService.switchEvaluationType(sub.id, nextType, { confirmDeletePoints })
-    } catch (error) {
-      if (error?.normalized?.code !== CRITERIA_ERROR_CODES.POINTS_CONFIRM_REQUIRED) throw error
-      const serverCount = error.normalized.meta?.impact?.pointCount ?? 0
-      if (!(await confirmSwitch(nextType, serverCount))) return null
-      return criteriaService.switchEvaluationType(sub.id, nextType, { confirmDeletePoints: true })
-    }
-  }
-
   async function switchType(sub, nextType) {
-    const pointCount = sub.pointCount ?? 0
-    if (!(await confirmSwitch(nextType, pointCount))) return null
-    const deletesPoints = nextType === EVALUATION_TYPES.DIRECT && pointCount > 0
-    return sendSwitch(sub, nextType, deletesPoints)
+    if (!(await confirmSwitch(nextType))) return null
+    return criteriaService.switchEvaluationType(sub.id, nextType)
   }
 
   function nextTypeOf(sub) {

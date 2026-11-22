@@ -49,7 +49,20 @@ export function workspaceTree() {
             scoringType: 'score',
             active: true,
             attachments: [],
-            points: [],
+            // A descriptive indicator: the sub-criterion is judged once, the indicator has no weight.
+            points: [
+              {
+                id: 32,
+                code: 'M1.2.1',
+                description: { ar: 'سياسة معتمدة', en: 'Approved policy' },
+                weight: null,
+                scoringType: 'score',
+                active: true,
+                attachments: [
+                  { key: 'minutes', name: { ar: 'المحضر', en: 'Minutes' }, required: true },
+                ],
+              },
+            ],
           },
         ],
       },

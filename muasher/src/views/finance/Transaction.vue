@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useHead } from '@unhead/vue'
 import Card from '@/components/ui/Card.vue'
@@ -54,11 +55,25 @@ const settleOpen = ref(false)
 
 useHead({ title: () => t('finance.transaction.title') })
 
+// The receipt modal's "more actions" menu lands here with the chosen action already open.
+const route = useRoute()
+const ACTION_DIALOGS = {
+  refund: { open: refundOpen, allowed: canRecordRefund },
+  settle: { open: settleOpen, allowed: canSettle },
+  reissue: { open: reissueOpen, allowed: canReissue },
+}
+
+async function loadAndOpenAction() {
+  await load()
+  const dialog = ACTION_DIALOGS[route.query.action]
+  if (dialog?.allowed.value) dialog.open.value = true
+}
+
 function onReissued() {
   toast.success(t('finance.receipt.reissuedToast'))
 }
 
-onMounted(load)
+onMounted(loadAndOpenAction)
 </script>
 
 <template>

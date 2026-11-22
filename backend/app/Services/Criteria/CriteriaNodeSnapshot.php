@@ -60,7 +60,7 @@ final class CriteriaNodeSnapshot
         return [
             'code' => $point->code,
             'description' => $point->description->toArray(),
-            'weight' => $point->weight->toDecimal(),
+            'weight' => $point->weight?->toDecimal(),
             'scoring_type' => $point->scoring_type->value,
             'active' => $point->is_active,
             'order' => $point->sort_order,

@@ -39,7 +39,6 @@ final class TransactionResource extends JsonResource
                 'id' => $payment->entity_id,
                 'reference' => $payment->entity->reference(),
                 'name' => $payment->entity_name->toArray(),
-                'email' => $payment->entity->owner?->email,
             ],
             'method' => $payment->method?->value,
             'card_last4' => $payment->card_last4,

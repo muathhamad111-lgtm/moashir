@@ -15,6 +15,11 @@ final class FileRejected extends ApiException
         return self::fieldError('file.content_mismatch', $field);
     }
 
+    public static function unsafeSvg(string $field): self
+    {
+        return self::fieldError('file.unsafe_svg', $field);
+    }
+
     public static function infected(string $field): self
     {
         return self::fieldError('file.infected', $field);

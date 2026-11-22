@@ -42,6 +42,11 @@ final readonly class CmsContentWriter
             return null;
         }
 
-        return $this->assets->resolve($change->fileId, StoredFilePurpose::CmsImage, $owner, self::IMAGE_FIELD);
+        return $this->assets->resolve($change->fileId, $this->purposeFor($owner), $owner, self::IMAGE_FIELD);
+    }
+
+    private function purposeFor(CmsSection|CmsSectionItem $owner): StoredFilePurpose
+    {
+        return $owner instanceof CmsSectionItem ? $owner->section->type->itemImagePurpose() : StoredFilePurpose::CmsImage;
     }
 }

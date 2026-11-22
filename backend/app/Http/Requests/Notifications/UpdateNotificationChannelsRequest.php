@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Notifications;
 
+use App\Enums\Notifications\NotificationAudienceKind;
 use App\Enums\Notifications\NotificationChannel;
 use App\Enums\Notifications\NotificationCode;
 use App\Services\Notifications\NotificationTypeCatalog;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 final class UpdateNotificationChannelsRequest extends FormRequest
@@ -18,6 +20,7 @@ final class UpdateNotificationChannelsRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'audience' => ['sometimes', 'string', Rule::in(NotificationAudienceKind::values())],
             'channels' => ['required', 'array:in_app,email,sms'],
             'channels.in_app' => ['sometimes', 'boolean'],
             'channels.email' => ['sometimes', 'boolean'],
@@ -31,10 +34,20 @@ final class UpdateNotificationChannelsRequest extends FormRequest
     public function after(): array
     {
         return [function (Validator $validator): void {
-            if (app(NotificationTypeCatalog::class)->of($this->code())->isMandatory) {
-                $validator->errors()->add('channels', __('validation.custom.notification_channels.mandatory'));
+            $type = app(NotificationTypeCatalog::class)->of($this->code());
+            if ($type->isCore) {
+                $validator->errors()->add('channels', __('validation.custom.notification_channels.core'));
+            }
+            $audience = $this->audience();
+            if ($audience instanceof NotificationAudienceKind && ! $type->reachesKind($audience)) {
+                $validator->errors()->add('audience', __('validation.custom.notification_channels.audience'));
             }
         }];
+    }
+
+    public function audience(): ?NotificationAudienceKind
+    {
+        return NotificationAudienceKind::tryFrom($this->string('audience')->toString());
     }
 
     public function code(): NotificationCode

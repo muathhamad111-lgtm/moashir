@@ -10,6 +10,7 @@ const props = defineProps({
   sections: { type: Array, required: true },
   localized: { type: Function, required: true },
   busy: { type: Boolean, default: false },
+  publishedAt: { type: String, default: null },
 })
 
 const emit = defineEmits(['reorder', 'toggle', 'edit', 'items', 'remove'])
@@ -17,6 +18,14 @@ const { t } = useI18n()
 
 function labelOf(section) {
   return sectionLabel(section, props.localized)
+}
+
+function changedSincePublish(section) {
+  if (!props.publishedAt) return false
+  const published = Date.parse(props.publishedAt)
+  return [section.updatedAt, ...section.items.map((item) => item.updatedAt)].some(
+    (updatedAt) => updatedAt && Date.parse(updatedAt) > published,
+  )
 }
 </script>
 
@@ -38,6 +47,9 @@ function labelOf(section) {
             <span v-if="item.items.length" class="cms-section-row__count">{{
               t('cms.sections.itemCount', { count: item.items.length })
             }}</span>
+            <Badge v-if="changedSincePublish(item)" variant="info">{{
+              t('cms.sections.unpublishedChanges')
+            }}</Badge>
           </span>
         </div>
         <ToggleSwitch

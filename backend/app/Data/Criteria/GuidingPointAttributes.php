@@ -20,7 +20,10 @@ final readonly class GuidingPointAttributes
         public ?ScoringType $scoringType = null,
     ) {}
 
-    public function withWeight(Weight $weight): self
+    /**
+     * @param  Weight|null  $weight  null for an indicator of a directly evaluated sub-criterion
+     */
+    public function withWeight(?Weight $weight): self
     {
         return new self($this->description, $weight, $this->attachments, $this->scoringType);
     }

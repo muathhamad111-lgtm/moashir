@@ -10,6 +10,7 @@ import {
 
 const SUB_WITH_POINTS = {
   id: 21,
+  evaluationType: 'guiding-points',
   attachments: [{ key: 'plan', name: { en: 'Plan' }, required: true }],
   points: [
     { id: 31, attachments: [{ key: 'minutes', name: { en: 'Minutes' }, required: true }] },
@@ -25,7 +26,13 @@ describe('reviewRows', () => {
       { level: 'point', id: 31 },
       { level: 'point', id: 32 },
     ])
-    expect(subUnits({ id: 22, points: [] })).toEqual([{ level: 'sub', id: 22 }])
+    expect(subUnits({ id: 22, evaluationType: 'direct', points: [] })).toEqual([
+      { level: 'sub', id: 22 },
+    ])
+    // A directly evaluated sub-criterion stays one unit even with descriptive indicators.
+    expect(subUnits({ ...SUB_WITH_POINTS, id: 23, evaluationType: 'direct' })).toEqual([
+      { level: 'sub', id: 23 },
+    ])
   })
 
   it('counts the units that hold a value, saved or not', () => {

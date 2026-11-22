@@ -43,6 +43,7 @@ final readonly class ResetBranding
             $theme->forceFill([
                 'primary_color' => $defaults->primary,
                 'secondary_color' => $defaults->secondary,
+                'color_overrides' => $defaults->overrides->toArray(),
                 ...array_fill_keys($columns, null),
                 'updated_by_user_id' => $actor->id,
             ])->save();

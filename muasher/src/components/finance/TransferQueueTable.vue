@@ -7,8 +7,7 @@ import SelectionCheckbox from '@/components/form/SelectionCheckbox.vue'
 import MoneyAmount from '@/components/payments/MoneyAmount.vue'
 import PaymentStatusBadge from '@/components/payments/PaymentStatusBadge.vue'
 import TransferFlags from './TransferFlags.vue'
-import AppIcon from '@/components/ui/AppIcon.vue'
-import { ROUTE_NAMES } from '@/constants/routeNames'
+import TransferRowActions from './TransferRowActions.vue'
 import { formatRiyadhDateTime } from '@/utils/datetime'
 import { localizedText } from '@/utils/localizedText'
 
@@ -21,17 +20,15 @@ defineProps({
   isDecidable: { type: Function, default: () => false },
   emptyTitle: { type: String, required: true },
   emptyMessage: { type: String, default: '' },
+  // Reviewers decide a row in place: approve asks for a confirmation, reject for a reason.
+  canDecide: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['retry'])
+const emit = defineEmits(['retry', 'view', 'approve', 'reject'])
 const { t, locale } = useI18n()
 
 function submittedOf(item) {
   return formatRiyadhDateTime(item.submittedAt, locale.value)
-}
-
-function reviewRoute(item) {
-  return { name: ROUTE_NAMES.FINANCE_TRANSFER, params: { id: item.id } }
 }
 </script>
 
@@ -120,12 +117,14 @@ function reviewRoute(item) {
               <td class="table__cell">{{ localizedText(item.bankAccount.bankName, locale) }}</td>
               <td class="table__cell"><PaymentStatusBadge :status="item.status" /></td>
               <td class="table__cell"><TransferFlags :transfer="item" /></td>
-              <td class="table__cell">
-                <RouterLink class="transfer-queue__link" :to="reviewRoute(item)">
-                  {{ t('finance.transfers.review') }}
-                  <span class="transfer-queue__sr">{{ item.reference }}</span>
-                  <AppIcon name="chevron-right" />
-                </RouterLink>
+              <td class="table__cell table__cell--actions">
+                <TransferRowActions
+                  :item="item"
+                  :decidable="canDecide && isDecidable(item)"
+                  @view="emit('view', $event)"
+                  @approve="emit('approve', $event)"
+                  @reject="emit('reject', $event)"
+                />
               </td>
             </tr>
           </tbody>
@@ -160,10 +159,15 @@ function reviewRoute(item) {
             <span>{{ localizedText(item.bankAccount.bankName, locale) }}</span>
             <TransferFlags :transfer="item" />
           </p>
-          <RouterLink class="btn btn--secondary transfer-card__action" :to="reviewRoute(item)">
-            {{ t('finance.transfers.review') }}
-            <span class="transfer-queue__sr">{{ item.reference }}</span>
-          </RouterLink>
+          <TransferRowActions
+            class="transfer-card__actions"
+            :item="item"
+            :decidable="canDecide && isDecidable(item)"
+            labelled
+            @view="emit('view', $event)"
+            @approve="emit('approve', $event)"
+            @reject="emit('reject', $event)"
+          />
         </li>
       </ul>
     </template>

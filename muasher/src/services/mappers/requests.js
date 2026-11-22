@@ -1,3 +1,4 @@
+import { toCamelKey } from '@/api/caseMapping'
 import { QUEUE_STAGE_LIST, QUEUE_STATUSES } from '@/constants/accredited'
 import { ADVANCED_QUEUE_STATUSES } from '@/constants/advanced'
 import { toAssessmentRecord, toEntitySummary } from './assessments'
@@ -65,8 +66,9 @@ export function toQueueListRow(raw = {}) {
   }
 }
 
+// The client camel-cases the keys (`awaiting_assignment` arrives as `awaitingAssignment`).
 function toStageCounts(raw = {}) {
-  return Object.fromEntries(QUEUE_STAGE_LIST.map((stage) => [stage, raw[stage] ?? 0]))
+  return Object.fromEntries(QUEUE_STAGE_LIST.map((stage) => [stage, raw[toCamelKey(stage)] ?? 0]))
 }
 
 export function toQueueStats(raw) {

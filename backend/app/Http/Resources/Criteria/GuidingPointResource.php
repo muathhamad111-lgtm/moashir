@@ -23,7 +23,7 @@ final class GuidingPointResource extends JsonResource
             'sub_criterion_id' => $this->resource->sub_criterion_id,
             'code' => $this->resource->code,
             'description' => $this->resource->description->toArray(),
-            'weight' => $this->resource->weight->toDecimal(),
+            'weight' => $this->resource->weight?->toDecimal(),
             'scoring_type' => $this->resource->scoring_type->value,
             'active' => $this->resource->is_active,
             'order' => $this->resource->sort_order,

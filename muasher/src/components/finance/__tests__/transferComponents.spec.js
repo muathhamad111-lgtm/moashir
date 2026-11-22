@@ -161,6 +161,40 @@ describe('TransferQueueTable', () => {
     })
     expect(readOnly.find('input[type="checkbox"]').exists()).toBe(false)
   })
+
+  it('lets a reviewer approve or reject a decidable row in place, and anyone open its review', async () => {
+    const globals = createTestGlobals({ locale: 'en' })
+    setActivePinia(globals.pinia)
+    const rows = [transfer('21'), transfer('22', { entity: { name: {}, isFrozen: true } })]
+    const reviewer = mount(TransferQueueTable, {
+      props: {
+        items: rows,
+        status: 'success',
+        emptyTitle: 'Empty',
+        canDecide: true,
+        isDecidable: (item) => !item.entity.isFrozen,
+      },
+      global: globals,
+    })
+    const tableRows = reviewer.findAll('.transfer-queue__table tbody tr')
+    expect(tableRows[0].find('.transfer-queue__approve').attributes('aria-label')).toBe(
+      'Approve transfer PAY-2026-000021',
+    )
+    expect(tableRows[1].find('.transfer-queue__approve').exists()).toBe(false)
+    await tableRows[0].find('.transfer-queue__approve').trigger('click')
+    await tableRows[0].find('.transfer-queue__reject').trigger('click')
+    await tableRows[1].find('.transfer-queue__view').trigger('click')
+    expect(reviewer.emitted('approve')[0][0].id).toBe('21')
+    expect(reviewer.emitted('reject')[0][0].id).toBe('21')
+    expect(reviewer.emitted('view')[0][0].id).toBe('22')
+
+    const viewer = mount(TransferQueueTable, {
+      props: { items: rows, status: 'success', emptyTitle: 'Empty', isDecidable: () => true },
+      global: globals,
+    })
+    expect(viewer.find('.transfer-queue__approve').exists()).toBe(false)
+    expect(viewer.findAll('.transfer-queue__table .transfer-queue__view')).toHaveLength(2)
+  })
 })
 
 describe('TransferQueueFilters', () => {

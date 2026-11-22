@@ -314,7 +314,24 @@ describe('LandingLeaders and LandingPartners', () => {
     const { wrapper } = await mounted(LandingPartners, 'partners', { section })
     const logo = wrapper.find('.lp-partners__logo img')
     expect(logo.attributes('alt')).toBe(section.items[0].title.ar)
-    expect(wrapper.find('a.lp-partners__logo').attributes('rel')).toContain('noopener')
+    expect(logo.attributes('loading')).toBe('lazy')
+    const link = wrapper.find('a.lp-partners__logo')
+    expect(link.attributes('rel')).toContain('noopener')
+    expect(link.attributes('target')).toBe('_blank')
+    expect(link.find('.lp-sr-only').text()).toContain('تبويب جديد')
+  })
+
+  it('shows a logo without a link as a plain logo, and only the partners that have one', async () => {
+    const section = landingSection('partners')
+    section.items[1].image = { fileId: 'plain', url: '/api/v1/content/files/plain' }
+    section.items[1].ctaUrl = null
+    const { wrapper } = await mounted(LandingPartners, 'partners', { section })
+    expect(wrapper.findAll('.lp-partners__item')).toHaveLength(1)
+    expect(wrapper.find('a.lp-partners__logo').exists()).toBe(false)
+    expect(wrapper.find('span.lp-partners__logo img').attributes('alt')).toBe(
+      section.items[1].title.ar,
+    )
+    expect(wrapper.find('.lp-sr-only').exists()).toBe(false)
   })
 })
 

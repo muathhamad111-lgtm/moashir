@@ -59,6 +59,10 @@ export const contentMessages = {
     ar: 'نوع الملف غير مسموح أو أن محتواه لا يطابق امتداده.',
     en: 'The file type is not allowed or its content does not match its extension.',
   },
+  'file.unsafe_svg': {
+    ar: 'ملف SVG يحتوي على عناصر غير مسموحة (نصوص برمجية أو روابط خارجية أو تعريفات). صدّره من جديد كملف SVG بسيط ثم ارفعه.',
+    en: 'The SVG file contains parts that are not allowed (scripts, external links or declarations). Export it again as a plain SVG, then upload it.',
+  },
   'file.not_usable': {
     ar: 'الصورة المختارة غير موجودة أو لم تجتز الفحص أو تخص محتوى آخر. يرجى رفعها مرة أخرى.',
     en: 'The selected image does not exist, is not clean, or belongs to other content. Upload it again.',
@@ -109,6 +113,10 @@ export const contentFieldMessages = {
   logoType: {
     ar: 'يجب أن يكون الشعار بصيغة PNG أو SVG بحجم 1 ميجابايت كحد أقصى.',
     en: 'The logo must be a PNG or SVG of at most 1 MB.',
+  },
+  partnerLogoType: {
+    ar: 'يجب أن يكون الشعار بصيغة PNG أو JPG أو SVG بحجم 1 ميجابايت كحد أقصى.',
+    en: 'The logo must be a PNG, JPG or SVG of at most 1 MB.',
   },
   prohibited: { ar: 'لا يمكن تعديل هذا الحقل من هنا.', en: 'This field cannot be changed here.' },
   metaObject: {

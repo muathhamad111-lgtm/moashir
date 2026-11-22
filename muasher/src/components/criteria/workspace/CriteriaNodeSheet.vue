@@ -36,8 +36,10 @@ const { localized } = useCriteria()
 const TABS = {
   [NODE.MAIN]: ['basics', 'weight', 'children', 'evaluation', 'attachments'],
   pointsSub: ['basics', 'weight', 'evaluation', 'attachments', 'children', 'advanced'],
-  directSub: ['basics', 'weight', 'evaluation', 'attachments', 'advanced'],
+  directSub: ['basics', 'weight', 'evaluation', 'attachments', 'children', 'advanced'],
   [NODE.POINT]: ['basics', 'weight', 'evaluation', 'attachments'],
+  // An indicator of a directly evaluated sub-criterion is descriptive: no weight, no scoring type.
+  descriptivePoint: ['basics', 'attachments'],
 }
 const FORM_TABS = {
   [NODE.MAIN]: ['basics', 'attachments'],
@@ -49,8 +51,11 @@ const node = computed(() => props.item.node)
 const title = computed(() => localized(nodeLabel(props.item)))
 const crumbs = computed(() => props.path.map((key) => props.index.get(key)))
 const tabValues = computed(() => {
-  if (props.item.type !== NODE.SUB) return TABS[props.item.type]
-  return scoresPoints(node.value) ? TABS.pointsSub : TABS.directSub
+  if (props.item.type === NODE.SUB)
+    return scoresPoints(node.value) ? TABS.pointsSub : TABS.directSub
+  if (props.item.type === NODE.POINT && !scoresPoints(props.index.get(props.item.parentKey).node))
+    return TABS.descriptivePoint
+  return TABS[props.item.type]
 })
 const tab = ref(tabValues.value.includes(props.initialTab) ? props.initialTab : 'basics')
 const errorSections = ref([])

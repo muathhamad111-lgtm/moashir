@@ -1,4 +1,4 @@
-import { computed, ref, watch } from 'vue'
+import { computed, ref, toValue, watch } from 'vue'
 import { notificationTextsService } from '@/services/notificationTextsService'
 import { useVariableInsertion } from '@/composables/useVariableInsertion'
 
@@ -6,37 +6,30 @@ const LOCALES = ['ar', 'en']
 const SMS = 'sms'
 const EMPTY = Object.freeze({ ar: '', en: '' })
 
+function editableParts(text) {
+  return Object.keys(text.parts).filter((part) => !text.parts[part].isFixed)
+}
+
 function currentOf(text, part) {
   return part === SMS ? (text.sms?.current ?? EMPTY) : text.parts[part].current
 }
 
-function draftOf(text, withSms) {
-  const parts = Object.keys(text.parts)
-  const all = withSms || text.sms?.current ? [...parts, SMS] : parts
-  return Object.fromEntries(all.map((part) => [part, { ...currentOf(text, part) }]))
+function defaultOf(text, part) {
+  return part === SMS ? EMPTY : text.parts[part].default
 }
 
-export function useNotificationTextForm(text, smsEnabled, { onSaved, onReset }) {
-  const draft = ref(draftOf(text.value, smsEnabled.value))
+function draftOf(text, withSms) {
+  const parts = withSms ? [...editableParts(text), SMS] : editableParts(text)
+  return Object.fromEntries(parts.map((part) => [part, { ...currentOf(text, part) }]))
+}
+
+function differs(a, b) {
+  return LOCALES.some((locale) => a[locale].trim() !== b[locale].trim())
+}
+
+function useSubmission() {
   const errors = ref({})
   const busy = ref(false)
-  const { remember, insertVariable } = useVariableInsertion(draft)
-
-  const isDirty = computed(() =>
-    Object.entries(draft.value).some(([part, value]) =>
-      LOCALES.some((locale) => value[locale] !== currentOf(text.value, part)[locale]),
-    ),
-  )
-
-  watch([text, smsEnabled], ([next, withSms]) => {
-    draft.value = draftOf(next, withSms)
-    errors.value = {}
-  })
-
-  function errorOf(part, locale) {
-    const messages = errors.value[`parts.${part}.${locale}`] ?? errors.value.parts
-    return Array.isArray(messages) ? messages[0] : (messages ?? '')
-  }
 
   async function run(action) {
     busy.value = true
@@ -51,11 +44,45 @@ export function useNotificationTextForm(text, smsEnabled, { onSaved, onReset }) 
     }
   }
 
-  function save() {
-    return run(async () => {
-      const { data } = await notificationTextsService.save(text.value.key, draft.value)
-      onSaved(data)
-    })
+  return { errors, busy, run }
+}
+
+/**
+ * The draft of one notification text across its channels. Saving sends only the parts that differ from the
+ * shipped wording (and the SMS once written), so an untouched channel keeps following the shipped text; a
+ * core notification never sends its fixed button or an SMS.
+ */
+export function useNotificationTextForm(text, isCore, { onSaved, onReset }) {
+  const draft = ref(draftOf(text.value, !toValue(isCore)))
+  const { errors, busy, run } = useSubmission()
+  const { remember, insertVariable } = useVariableInsertion(draft)
+
+  const isDirty = computed(() =>
+    Object.entries(draft.value).some(([part, value]) =>
+      differs(value, currentOf(text.value, part)),
+    ),
+  )
+
+  const changedParts = computed(() =>
+    Object.fromEntries(
+      Object.entries(draft.value).filter(([part, value]) =>
+        differs(value, defaultOf(text.value, part)),
+      ),
+    ),
+  )
+
+  watch(text, (next) => {
+    draft.value = draftOf(next, !toValue(isCore))
+    errors.value = {}
+  })
+
+  function errorOf(part, locale) {
+    const messages = errors.value[`parts.${part}.${locale}`] ?? errors.value[`parts.${part}`]
+    return Array.isArray(messages) ? messages[0] : (messages ?? '')
+  }
+
+  function setPart(part, locale, value) {
+    draft.value[part][locale] = value
   }
 
   function reset() {
@@ -65,5 +92,13 @@ export function useNotificationTextForm(text, smsEnabled, { onSaved, onReset }) 
     })
   }
 
-  return { draft, errors, busy, isDirty, errorOf, remember, insertVariable, save, reset }
+  function save() {
+    if (!Object.keys(changedParts.value).length) return reset()
+    return run(async () => {
+      const { data } = await notificationTextsService.save(text.value.key, changedParts.value)
+      onSaved(data)
+    })
+  }
+
+  return { draft, errors, busy, isDirty, errorOf, setPart, remember, insertVariable, save, reset }
 }

@@ -14,11 +14,12 @@ vi.mock('@/services/brandingService', () => ({
 
 const DEFAULTS = { primary: '#98d8d3', secondary: '#0a2325' }
 
-function theme(colors = DEFAULTS, logos = { dark: null }) {
+function theme(colors = DEFAULTS, logos = { dark: null }, overrides = {}) {
   return {
     data: {
       colors,
-      scheme: deriveBrandScheme(colors),
+      overrides,
+      scheme: deriveBrandScheme(colors, overrides),
       defaultColors: DEFAULTS,
       logos,
       updatedAt: null,
@@ -50,13 +51,13 @@ beforeEach(() => {
 })
 
 describe('Visual identity editor (System Administrator)', () => {
-  it('offers a primary and a secondary colour field under «Back-office colors», with no lock notice', async () => {
+  it('offers a primary and a secondary colour field under «Base brand colors», with no lock notice', async () => {
     const { wrapper } = await mountView('en')
     const fields = wrapper.findAll('.brand-color-field')
     expect(fields.map((field) => field.attributes('data-role'))).toEqual(['primary', 'secondary'])
     expect(fields[0].find('input[type="text"]').element.value).toBe('#98d8d3')
     expect(fields[1].find('input[type="text"]').element.value).toBe('#0a2325')
-    expect(wrapper.text()).toContain('Back-office colors')
+    expect(wrapper.text()).toContain('Base brand colors')
     expect(wrapper.find('.branding-page__lock').exists()).toBe(false)
     wrapper.unmount()
   })
@@ -80,6 +81,7 @@ describe('Visual identity editor (System Administrator)', () => {
     expect(brandingService.update).toHaveBeenCalledWith({
       primaryColor: '#d4088c',
       secondaryColor: '#4a2a7d',
+      colorOverrides: {},
       reason: null,
     })
     expect(useBrandingStore().scheme).toMatchObject({ primary: '#d4088c', secondary: '#4a2a7d' })
@@ -95,6 +97,90 @@ describe('Visual identity editor (System Administrator)', () => {
     await typeColor(wrapper, 'primary', '#777777')
     expect(save.attributes('disabled')).toBeDefined()
     expect(wrapper.find('.brand-contrast--blocked').text()).toContain('Cannot save')
+    wrapper.unmount()
+  })
+
+  it('lists the five derived colours on auto with their contrast, and overrides one as a draft', async () => {
+    const { wrapper } = await mountView('en')
+    const rows = wrapper.findAll('.brand-derived__row')
+    expect(rows).toHaveLength(5)
+    expect(rows.every((row) => row.text().includes('Auto'))).toBe(true)
+    const hover = rows[2]
+    expect(hover.text()).toContain('Hover & pressed')
+    expect(hover.text()).toContain('#88c0bc')
+    await hover.find('.btn').trigger('click')
+    expect(wrapper.findAll('.brand-derived__row')[2].text()).toContain('Custom')
+    await wrapper.find('.brand-derived__picker').setValue('#7cc5bf')
+    const custom = wrapper.findAll('.brand-derived__row')[2]
+    expect(custom.text()).toContain('#7cc5bf')
+    expect(custom.text()).toContain('Auto: #88c0bc')
+    expect(useBrandingStore().scheme.primaryHover).toBe('#88c0bc')
+    wrapper.unmount()
+  })
+
+  it('saves the overrides with the colours and sets a colour back to auto', async () => {
+    brandingService.update.mockImplementation(({ primaryColor, secondaryColor, colorOverrides }) =>
+      Promise.resolve(
+        theme({ primary: primaryColor, secondary: secondaryColor }, { dark: null }, colorOverrides),
+      ),
+    )
+    const { wrapper } = await mountView('en')
+    await wrapper.findAll('.brand-derived__row')[3].find('.btn').trigger('click')
+    await wrapper.find('.brand-derived__picker').setValue('#e6f4f3')
+    await wrapper.find('.branding-page__actions .btn--primary').trigger('click')
+    await flushPromises()
+    expect(brandingService.update).toHaveBeenCalledWith({
+      primaryColor: '#98d8d3',
+      secondaryColor: '#0a2325',
+      colorOverrides: { primarySoft: '#e6f4f3' },
+      reason: null,
+    })
+    expect(useBrandingStore().scheme.primarySoft).toBe('#e6f4f3')
+    const row = wrapper.findAll('.brand-derived__row')[3]
+    expect(row.text()).toContain('Custom')
+    await row.find('.btn').trigger('click')
+    expect(wrapper.findAll('.brand-derived__row')[3].text()).toContain('Auto')
+    expect(
+      wrapper.find('.branding-page__actions .btn--primary').attributes('disabled'),
+    ).toBeUndefined()
+    wrapper.unmount()
+  })
+
+  it('blocks saving while an override misses the contrast and marks its row', async () => {
+    const { wrapper } = await mountView('en')
+    const row = wrapper.findAll('.brand-derived__row')[4]
+    await row.find('.btn').trigger('click')
+    await wrapper.find('.brand-derived__picker').setValue('#6b8a8c')
+    const failing = wrapper.findAll('.brand-derived__row')[4]
+    expect(failing.classes()).toContain('brand-derived__row--failing')
+    expect(failing.text()).toContain('Misses the required contrast')
+    expect(wrapper.find('.brand-contrast--blocked').text()).toContain('Text on the secondary color')
+    expect(
+      wrapper.find('.branding-page__actions .btn--primary').attributes('disabled'),
+    ).toBeDefined()
+    wrapper.unmount()
+  })
+
+  it('warns, without blocking, when the primary colour reads as an error colour', async () => {
+    const { wrapper } = await mountView('ar')
+    await typeColor(wrapper, 'primary', '#d63031')
+    expect(wrapper.find('.brand-warning').text()).toContain('«خطأ»')
+    expect(
+      wrapper.find('.branding-page__actions .btn--primary').attributes('disabled'),
+    ).toBeUndefined()
+    wrapper.unmount()
+  })
+
+  it('shows the fixed colours read only and previews the back office and the portal', async () => {
+    const { wrapper } = await mountView('ar')
+    expect(wrapper.find('.brand-fixed').text()).toContain('للعرض فقط')
+    expect(wrapper.findAll('.brand-fixed__item')).toHaveLength(11)
+    expect(wrapper.findAll('.brand-fixed input, .brand-fixed button')).toHaveLength(0)
+    const tabs = wrapper.findAll('.brand-preview [role="tab"]')
+    expect(tabs.map((tab) => tab.text())).toEqual(['لوحة التحكم', 'بوابة الجهة'])
+    expect(wrapper.find('.brand-preview__stage').attributes('aria-label')).toContain('لوحة التحكم')
+    await tabs[1].trigger('click')
+    expect(wrapper.find('.brand-sample--portal').exists()).toBe(true)
     wrapper.unmount()
   })
 

@@ -475,25 +475,3 @@ describe('entities mock — lifecycle actions', () => {
     expect((await call('GET', '/entities/7003')).status).toBe(404)
   })
 })
-
-describe('entities mock — cities', () => {
-  it('creates, renames and deactivates a city under entities.manage', async () => {
-    as(SYSTEM_ADMIN)
-    const created = await call('POST', '/regions/7/cities', { name: { ar: 'البدع', en: 'Al-Bad' } })
-    expect(created.body.data).toMatchObject({ region_id: 7, code: 'al_bad', is_active: true })
-    const duplicate = await call('POST', '/regions/7/cities', {
-      name: { ar: 'ضباء الجديدة', en: 'Duba' },
-    })
-    expect(duplicate.body.data.code).toBe('duba_2')
-    const renamed = await call('PUT', `/cities/${created.body.data.id}`, {
-      name: { ar: 'البدع', en: 'Al Bad' },
-    })
-    expect(renamed.body.data.name.en).toBe('Al Bad')
-    const toggled = await call('PATCH', `/cities/${created.body.data.id}/active`, { active: false })
-    expect(toggled.body.data.is_active).toBe(false)
-    const listed = await call('GET', '/cities?filter[region_id]=7&filter[active]=false')
-    expect(listed.body.data.map((city) => city.code)).toEqual(['al_bad'])
-    as(FINANCE)
-    expect((await call('GET', '/cities')).status).toBe(403)
-  })
-})

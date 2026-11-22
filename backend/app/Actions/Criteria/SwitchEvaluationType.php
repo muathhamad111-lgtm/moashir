@@ -7,55 +7,71 @@ namespace App\Actions\Criteria;
 use App\Enums\Audit\AuditEvent;
 use App\Enums\Criteria\EvaluationType;
 use App\Events\Criteria\EvaluationTypeSwitched;
-use App\Exceptions\Criteria\CriteriaTreeRejected;
 use App\Models\Criteria\SubCriterion;
 use App\Models\Identity\User;
 use App\Services\Criteria\CriteriaAuditTrail;
 use App\Services\Criteria\DraftCriteriaTransaction;
-use App\Support\StringList;
+use App\Services\Criteria\IndicatorWeights;
 
+/**
+ * Switches how a sub-criterion is evaluated. Its indicators always stay (operator, 2026-11-22): evaluated directly
+ * they are descriptive and unweighted; scored on indicators again they share the sub-criterion's weight equally.
+ */
 final readonly class SwitchEvaluationType
 {
-    public function __construct(private DraftCriteriaTransaction $transaction, private CriteriaAuditTrail $audit) {}
+    public function __construct(
+        private DraftCriteriaTransaction $transaction,
+        private IndicatorWeights $indicatorWeights,
+        private CriteriaAuditTrail $audit,
+    ) {}
 
-    public function handle(User $actor, SubCriterion $sub, EvaluationType $type, bool $confirmDeletePoints): SubCriterion
+    public function handle(User $actor, SubCriterion $sub, EvaluationType $type): SubCriterion
     {
-        return $this->transaction->run($sub->mainCriterion->criteria_version_id, $actor, function () use ($actor, $sub, $type, $confirmDeletePoints): SubCriterion {
+        return $this->transaction->run($sub->mainCriterion->criteria_version_id, $actor, function () use ($actor, $sub, $type): SubCriterion {
             $sub->refresh();
 
             if ($sub->evaluation_type === $type) {
                 return $sub;
             }
 
-            $previous = $sub->evaluation_type;
-            $removedCodes = $type === EvaluationType::Direct ? $this->removePoints($sub, $confirmDeletePoints) : [];
-
+            $before = $this->stateOf($sub);
             $sub->evaluation_type = $type;
             $sub->save();
+            $this->applyIndicatorWeights($sub);
 
-            $this->audit->record(AuditEvent::CriteriaSubTypeSwitched, $sub, ['evaluation_type' => $previous->value], [
-                'evaluation_type' => $type->value,
-                'removed_point_codes' => $removedCodes,
-            ]);
-            EvaluationTypeSwitched::dispatch($sub, $removedCodes, $actor->id);
+            $this->audit->record(AuditEvent::CriteriaSubTypeSwitched, $sub, $before, $this->stateOf($sub->refresh()));
+            EvaluationTypeSwitched::dispatch($sub, $actor->id);
 
             return $sub;
         });
     }
 
-    /**
-     * @return list<string>
-     */
-    private function removePoints(SubCriterion $sub, bool $confirmed): array
+    private function applyIndicatorWeights(SubCriterion $sub): void
     {
-        $codes = StringList::from($sub->guidingPoints()->pluck('code')->all());
+        if ($sub->scoresGuidingPoints()) {
+            $this->indicatorWeights->distributeEqually($sub);
 
-        if ($codes !== [] && ! $confirmed) {
-            throw CriteriaTreeRejected::pointsConfirmationRequired(count($codes));
+            return;
         }
 
-        $sub->guidingPoints()->delete();
+        $this->indicatorWeights->clear($sub);
+    }
 
-        return $codes;
+    /**
+     * @return array{evaluation_type: string, distribute_equally: bool, indicator_weights: array<string, string|null>}
+     */
+    private function stateOf(SubCriterion $sub): array
+    {
+        $weights = [];
+
+        foreach ($sub->guidingPoints()->get() as $point) {
+            $weights[$point->code] = $point->weight?->toDecimal();
+        }
+
+        return [
+            'evaluation_type' => $sub->evaluation_type->value,
+            'distribute_equally' => $sub->distribute_equally,
+            'indicator_weights' => $weights,
+        ];
     }
 }

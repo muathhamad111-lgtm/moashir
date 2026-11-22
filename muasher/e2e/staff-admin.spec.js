@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 import { seedSignedIn, seedScenario } from './support/session'
 import { settleFonts } from './support/screenshots'
 import { chooseNamed } from './support/dropdown'
-import { applyOpenListFilters, openListFilters, searchList } from './support/listFilters'
+import { searchList } from './support/listFilters'
 
 const SHOTS = 'e2e/__screenshots__/37d'
 const VIEWPORTS = {
@@ -156,19 +156,53 @@ test.describe('staff dashboards on the board contract', () => {
   })
 })
 
+const GROUPS = '.notification-groups'
+
+function switchTrack(page, name) {
+  return page.locator(`.toggle-switch:has(input[name="${name}"]) .toggle-switch__track`)
+}
+
+async function openGroup(page, testInfo, en, ar) {
+  await page.locator('.accordion__trigger', { hasText: text(testInfo, en, ar) }).click()
+}
+
+async function confirmModal(page) {
+  await page.locator('.modal__panel .btn--primary, .modal__panel .btn--danger').last().click()
+}
+
 test.describe('notification types catalogue', () => {
-  test('lists every type and filters by module', async ({ page }, testInfo) => {
+  test('groups every type by module and finds one by code', async ({ page }, testInfo) => {
     await signIn(page, testInfo, USERS.systemAdmin)
-    await open(page, '/admin/settings/notifications', ROWS)
+    await open(page, '/admin/settings/notifications', GROUPS)
+    await expect(page.locator('.notification-groups__title').first()).toBeVisible()
+    await searchList(page, 'CNT-01')
+    await expect(page.locator('.notification-matrix__row')).toHaveCount(1)
+    await expect(page.locator('.notification-matrix__row')).toContainText('CNT-01')
+  })
+
+  test('a whole group is switched off after confirmation and its core type stays on', async ({
+    page,
+  }, testInfo) => {
+    await signIn(page, testInfo, USERS.systemAdmin)
+    await open(page, '/admin/settings/notifications', GROUPS)
+    await openGroup(page, testInfo, 'Registration and organization profile', 'التسجيل وملف الجهة')
+    await page
+      .locator('.notification-matrix__head .notification-group-actions button')
+      .nth(1)
+      .click()
+    await confirmModal(page)
+    await expect(page.locator('input[name="REG-01-beneficiary-in_app"]')).not.toBeChecked()
+    await expect(page.locator('input[name="REG-02-beneficiary-email"]')).toBeChecked()
+    await expect(page.locator('input[name="REG-02-beneficiary-email"]')).toBeDisabled()
+  })
+
+  test('the by-channel view counts the types each channel sends', async ({ page }, testInfo) => {
+    await signIn(page, testInfo, USERS.systemAdmin)
+    await open(page, '/admin/settings/notifications?view=byChannel', GROUPS)
+    await expect(page.locator('.notification-catalogue__channels [role="tab"]')).toHaveCount(3)
     await expect(
-      page.locator(`${ROWS} a[href^="/admin/settings/notifications/"]`).first(),
-    ).toBeVisible()
-    const filters = await openListFilters(page)
-    await filters.locator('.dropdown-field').first().click()
-    await page.getByRole('option', { name: text(testInfo, 'Contact us', 'تواصل معنا') }).click()
-    await applyOpenListFilters(page)
-    await expect(page.locator(ROWS).first()).toContainText('CNT-')
-    await expect(page.locator(`${ROWS}:not(:has-text("CNT-"))`)).toHaveCount(0)
+      page.locator('.notification-catalogue__channels [role="tab"]').first(),
+    ).toContainText('/')
   })
 })
 
@@ -201,80 +235,83 @@ test.describe('notification texts', () => {
     page,
   }, testInfo) => {
     await signIn(page, testInfo, USERS.systemAdmin)
-    await open(page, '/admin/settings/notifications', ROWS)
-    await page.locator(`${ROWS} a[href="/admin/settings/notifications/REG-01"]`).click()
+    await open(page, '/admin/settings/notifications', GROUPS)
+    await openGroup(page, testInfo, 'Registration and organization profile', 'التسجيل وملف الجهة')
+    await page.locator('a[href="/admin/settings/notifications/REG-01"]').click()
     await expect(page).toHaveURL(/\/admin\/settings\/notifications\/REG-01$/)
-    const tabs = page.getByRole('tab')
-    await expect(tabs).toHaveCount(2)
+    await expect(
+      page.locator('.notification-texts__audiences > .tabs__list [role="tab"]'),
+    ).toHaveCount(2)
     const title = page.locator('textarea[name="entities.REG-01.entity-title-ar"]')
     await title.fill('مرحبًا')
     await page.locator('.notification-variables__chip').first().click()
     await expect(title).toHaveValue('مرحبًا :entity')
     await page.locator('.notification-text button[type="submit"]').click()
-    await expect(page.locator('.notification-text__status')).toContainText(
-      text(testInfo, 'Edited text', 'نص معدّل'),
+    await expect(page.locator('.notification-text__bar')).toContainText(
+      text(testInfo, 'Edited', 'معدّل'),
     )
     await page
       .getByRole('button', {
         name: text(testInfo, 'Restore the original text', 'استعادة النص الأصلي'),
       })
       .click()
-    await page.locator('.modal__panel .btn--primary, .modal__panel .btn--danger').last().click()
-    await expect(page.locator('.notification-text__status')).toContainText(
-      text(testInfo, 'Original text', 'النص الأصلي'),
+    await confirmModal(page)
+    await expect(page.locator('.notification-text__bar')).not.toContainText(
+      text(testInfo, 'Edited', 'معدّل'),
     )
     await expect(title).not.toHaveValue('مرحبًا :entity')
   })
 
-  test('the System Administrator switches a channel off and the catalogue shows it', async ({
+  test('e-mail is switched off for management only and stays on for the beneficiary', async ({
     page,
   }, testInfo) => {
     await signIn(page, testInfo, USERS.systemAdmin)
-    await open(page, '/admin/settings/notifications/REG-01', '.notification-channels')
-    const email = page.locator('input[name="channel-email"]')
-    await expect(email).toBeChecked()
-    await page
-      .locator('.toggle-switch:has(input[name="channel-email"]) .toggle-switch__track')
-      .click()
-    await expect(email).not.toBeChecked()
-    await page
-      .getByRole('link', {
-        name: text(testInfo, 'Back to notification types', 'العودة إلى أنواع الإشعارات'),
-      })
-      .click()
-    const row = page.locator(`${ROWS}:has-text("REG-01")`)
-    await expect(row.locator('.notification-catalogue__chips').first().locator('li')).toHaveCount(1)
+    await open(page, '/admin/settings/notifications', GROUPS)
+    await openGroup(page, testInfo, 'Registration and organization profile', 'التسجيل وملف الجهة')
+    await expect(page.locator('input[name="REG-01-management-email"]')).toBeChecked()
+    await switchTrack(page, 'REG-01-management-email').click()
+    await expect(page.locator('input[name="REG-01-management-email"]')).not.toBeChecked()
+    await expect(page.locator('input[name="REG-01-beneficiary-email"]')).toBeChecked()
+    // In-app navigation: a reload would restart the mock API and forget the choice just made.
+    await page.locator('a.notification-edit-link[href*="/notifications/REG-01"]').first().click()
+    await page.locator('.notification-text__channels [role="tab"]').nth(1).click()
+    await expect(page.locator('input[name="entities.REG-01.entity-email"]')).toBeChecked()
+    await page.locator('.notification-texts__audiences > .tabs__list [role="tab"]').nth(1).click()
+    await page.locator('.notification-text__channels [role="tab"]').nth(1).click()
+    await expect(page.locator('input[name="entities.REG-01.staff-email"]')).not.toBeChecked()
   })
 
   test('the System Administrator switches SMS on and writes the text message', async ({
     page,
   }, testInfo) => {
     await signIn(page, testInfo, USERS.systemAdmin)
-    await open(page, '/admin/settings/notifications/REG-01', '.notification-channels')
-    await page
-      .locator('.toggle-switch:has(input[name="channel-sms"]) .toggle-switch__track')
-      .click()
-    await expect(page.locator('input[name="channel-sms"]')).toBeChecked()
+    await open(page, '/admin/settings/notifications/REG-01?channel=sms', '.notification-text')
+    await switchTrack(page, 'entities.REG-01.entity-sms').click()
+    await expect(page.locator('input[name="entities.REG-01.entity-sms"]')).toBeChecked()
     const arabic = page.locator('textarea[name="entities.REG-01.entity-sms-ar"]')
     await arabic.fill('سجّلت')
     await page.locator('.notification-variables__chip').first().click()
+    await expect(page.locator('.notification-sms-counter')).toContainText('/70')
+    await page.locator('.notification-view-switch__option').nth(1).click()
     await page.locator('textarea[name="entities.REG-01.entity-sms-en"]').fill('Registered')
     await page.locator('.notification-text button[type="submit"]').click()
     await expect(page.locator('.notification-text__sms-approval')).toContainText(
       text(testInfo, 'No approval needed', 'لا يتطلب اعتمادًا'),
     )
+    await page.locator('.notification-view-switch__option').first().click()
     await expect(arabic).toHaveValue('سجّلت :entity')
   })
 
-  test('a mandatory notification locks its channels', async ({ page }, testInfo) => {
+  test('a core notification is always sent and keeps its button', async ({ page }, testInfo) => {
     await signIn(page, testInfo, USERS.systemAdmin)
-    await open(page, '/admin/settings/notifications/USR-01', '.notification-channels')
-    await expect(
-      page.locator('.notification-channels input[role="switch"]:not([disabled])'),
-    ).toHaveCount(0)
+    await open(page, '/admin/settings/notifications/USR-01', '.notification-text')
+    await expect(page.locator('.notification-texts__core-banner')).toBeVisible()
+    await expect(page.locator('.notification-text input[role="switch"]')).toBeDisabled()
+    await expect(page.locator('textarea[name="staff_invited-action-ar"]')).toHaveCount(0)
+    await expect(page.locator('.notification-channel-fields__fixed')).toBeVisible()
   })
 
-  test('a mandatory notification keeps its required variables', async ({ page }, testInfo) => {
+  test('a core notification keeps its required variables', async ({ page }, testInfo) => {
     await signIn(page, testInfo, USERS.systemAdmin)
     await open(page, '/admin/settings/notifications/USR-01', '.notification-text')
     await expect(page.locator('.notification-variables__chip.is-required')).toHaveCount(1)
@@ -471,7 +508,12 @@ test.describe('audit log', () => {
 const CAPTURES = [
   ['dashboard', '/dashboard', '[data-testid="executive-overview"]', USERS.systemAdmin],
   ['dashboard-follower', '/dashboard', '[data-board="request_follower"]', USERS.multiRole],
-  ['notification-types', '/admin/settings/notifications', ROWS, USERS.systemAdmin],
+  [
+    'notification-types',
+    '/admin/settings/notifications',
+    '.notification-groups',
+    USERS.systemAdmin,
+  ],
   ['contact-inbox', '/admin/contact-messages', ROWS, USERS.systemAdmin],
   [
     'contact-thread',

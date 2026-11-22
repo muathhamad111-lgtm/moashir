@@ -19,7 +19,11 @@ final readonly class BrandingAuditTrail
      */
     public function snapshotOf(BrandingTheme $theme): array
     {
-        $snapshot = ['primary_color' => $theme->primary_color, 'secondary_color' => $theme->secondary_color];
+        $snapshot = [
+            'primary_color' => $theme->primary_color,
+            'secondary_color' => $theme->secondary_color,
+            'color_overrides' => $theme->colors()->overrides->toArray(),
+        ];
 
         foreach (LogoVariant::columns() as $column) {
             $snapshot[$column] = $theme->getAttribute($column);

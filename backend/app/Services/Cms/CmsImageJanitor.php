@@ -22,7 +22,7 @@ final readonly class CmsImageJanitor
         $itemIds = CmsSectionItem::withTrashed()->whereIn('cms_section_id', $sectionIds)->pluck('id')->all();
 
         $unreferenced = StoredFile::query()
-            ->ofPurpose(StoredFilePurpose::CmsImage)
+            ->whereIn('purpose', [StoredFilePurpose::CmsImage, StoredFilePurpose::CmsLogo])
             ->where(static fn (Builder $owner): Builder => $owner
                 ->where(static fn (Builder $section): Builder => $section->where('attachable_type', new CmsSection()->getMorphClass())->whereIn('attachable_id', $sectionIds))
                 ->orWhere(static fn (Builder $item): Builder => $item->where('attachable_type', new CmsSectionItem()->getMorphClass())->whereIn('attachable_id', $itemIds)))

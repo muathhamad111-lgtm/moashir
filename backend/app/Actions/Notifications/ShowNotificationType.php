@@ -6,6 +6,7 @@ namespace App\Actions\Notifications;
 
 use App\Data\Notifications\NotificationChannelState;
 use App\Data\Notifications\NotificationTextView;
+use App\Data\Notifications\NotificationType;
 use App\Data\Notifications\NotificationTypeTexts;
 use App\Enums\Notifications\NotificationChannel;
 use App\Enums\Notifications\NotificationCode;
@@ -32,18 +33,32 @@ final readonly class ShowNotificationType
             static fn (NotificationTextTemplate $template): NotificationTextView => new NotificationTextView(
                 $template,
                 $overrides->get($template->key),
-                $type->isMandatory ? $template->placeholders : [],
+                $type->isCore ? $template->placeholders : [],
             ),
             $this->templates->catalog()->of($code),
         );
 
-        $channels = array_map(fn (NotificationChannel $channel): NotificationChannelState => new NotificationChannelState(
-            $channel,
-            $this->channels->isEnabled($type, $channel),
-            in_array($channel, $type->channels, true),
-            $this->channels->isSwitchable($type, $channel),
-        ), NotificationChannel::cases());
+        return new NotificationTypeTexts($type, $texts, $this->channelStates($type));
+    }
 
-        return new NotificationTypeTexts($type, $texts, $channels);
+    /**
+     * @return list<NotificationChannelState>
+     */
+    private function channelStates(NotificationType $type): array
+    {
+        $states = [];
+        foreach ($type->audienceKinds() as $audience) {
+            foreach (NotificationChannel::cases() as $channel) {
+                $states[] = new NotificationChannelState(
+                    $channel,
+                    $audience,
+                    $this->channels->isEnabled($type, $channel, $audience),
+                    in_array($channel, $type->channels, true),
+                    $this->channels->isSwitchable($type, $channel),
+                );
+            }
+        }
+
+        return $states;
     }
 }

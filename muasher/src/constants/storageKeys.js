@@ -4,4 +4,5 @@ export const STORAGE_KEYS = {
   sideNavCollapsed: 'muasher.portal.nav.collapsed',
   levelAcknowledged: 'muasher.level.acknowledged',
   levelHeroEntrance: 'muasher.level.heroEntrance',
+  notificationsLayout: 'muasher.settings.notifications.layout',
 }

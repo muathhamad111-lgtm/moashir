@@ -110,7 +110,8 @@ test('the staff dashboards and the notification catalogue come from the backend'
   await sessions.follower.page.goto('/dashboard')
   await expect(sessions.follower.page.locator('[data-board="request_follower"]')).toBeVisible()
   await page.goto('/admin/settings/notifications')
-  await expect(page.locator(ROWS, { hasText: 'CNT-01' })).toHaveCount(1)
+  await page.locator('.accordion__trigger').last().click()
+  await expect(page.locator('.notification-matrix__row', { hasText: 'CNT-01' })).toHaveCount(1)
   backendOnly('admin', /^\/api\/v1\/settings\/notifications\/types$/)
 })
 

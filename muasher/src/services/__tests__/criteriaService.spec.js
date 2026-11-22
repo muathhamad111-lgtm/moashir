@@ -114,16 +114,10 @@ describe('criteriaService — tree', () => {
     expect(apiClient.patch).toHaveBeenCalledWith('/criteria/points/511/active', { active: false })
   })
 
-  it('switches the evaluation type with the point-deletion confirmation flag', async () => {
-    await criteriaService.switchEvaluationType(7, 'direct', { confirmDeletePoints: true })
+  it('switches the evaluation type with the type alone (the indicators always stay)', async () => {
+    await criteriaService.switchEvaluationType(7, 'direct')
     expect(apiClient.patch).toHaveBeenCalledWith('/criteria/subs/7/evaluation-type', {
       evaluationType: 'direct',
-      confirmDeletePoints: true,
-    })
-    await criteriaService.switchEvaluationType(7, 'guiding-points')
-    expect(apiClient.patch).toHaveBeenLastCalledWith('/criteria/subs/7/evaluation-type', {
-      evaluationType: 'guiding-points',
-      confirmDeletePoints: false,
     })
   })
 

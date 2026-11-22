@@ -13,11 +13,15 @@ const props = defineProps({
   label: { type: String, required: true },
   name: { type: String, required: true },
   disabled: { type: Boolean, default: false },
+  rules: { type: Object, default: () => CMS_IMAGE_RULES },
+  hint: { type: String, default: '' },
+  fieldError: { type: String, default: '' },
+  required: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:modelValue'])
 const { t } = useI18n()
-const { uploading, error, send } = useImageUpload(props.upload)
+const { uploading, error, send } = useImageUpload(props.upload, props.rules)
 
 const preview = computed(() => contentImageUrl(props.modelValue))
 const files = computed(() =>
@@ -52,9 +56,10 @@ async function onSelect(selected) {
       :files="files"
       :label="label"
       :name="name"
-      :accept="CMS_IMAGE_RULES.accept"
-      :hint="t('cms.image.hint')"
-      :error="error"
+      :accept="rules.accept"
+      :hint="hint || t('cms.image.hint')"
+      :error="error || fieldError"
+      :required="required"
       :disabled="disabled || uploading"
       @select="onSelect"
     />

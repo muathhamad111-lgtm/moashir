@@ -3,22 +3,26 @@ import { storeToRefs } from 'pinia'
 import { useBrandingStore } from '@/stores/branding'
 import { isBrandScheme } from '@/utils/brandingContrast'
 
-const SHELL_SELECTOR = "html:root[data-shell='tts']"
+export const SHELL_SELECTOR = "html:root[data-shell='tts']"
 
 const PROPERTY_BY_KEY = Object.freeze({
-  primary: '--brand-primary',
-  onPrimary: '--brand-on-primary',
-  primaryText: '--brand-primary-text',
-  secondary: '--brand-secondary',
-  onSecondary: '--brand-on-secondary',
+  primary: 'primary',
+  onPrimary: 'on-primary',
+  primaryText: 'primary-text',
+  primaryHover: 'primary-hover',
+  primarySoft: 'primary-tint',
+  secondary: 'secondary',
+  onSecondary: 'on-secondary',
 })
 
-export function brandSchemeCss(scheme) {
+// `--brand-*` drives the shell; the visual-identity screen writes its unsaved draft as
+// `--draft-*` on its own container so the rest of the page keeps the saved colours.
+export function brandSchemeCss(scheme, { selector = SHELL_SELECTOR, prefix = 'brand' } = {}) {
   if (!isBrandScheme(scheme)) return ''
   const declarations = Object.entries(PROPERTY_BY_KEY)
-    .map(([key, property]) => `${property}:${scheme[key]}`)
+    .map(([key, property]) => `--${prefix}-${property}:${scheme[key]}`)
     .join(';')
-  return `${SHELL_SELECTOR}{${declarations}}`
+  return `${selector}{${declarations}}`
 }
 
 export function useBrandSchemeStyle() {

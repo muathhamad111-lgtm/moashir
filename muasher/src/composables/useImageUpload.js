@@ -4,8 +4,8 @@ import { CMS_IMAGE_RULES } from '@/constants/cms'
 
 function imageErrorKey(file, rules = CMS_IMAGE_RULES) {
   if (!file) return ''
-  if (!rules.mimeTypes.includes(file.type)) return 'cms.image.invalidType'
-  if (file.size > rules.maxBytes) return 'cms.image.tooLarge'
+  if (!rules.mimeTypes.includes(file.type)) return rules.typeErrorKey
+  if (file.size > rules.maxBytes) return rules.sizeErrorKey
   return ''
 }
 

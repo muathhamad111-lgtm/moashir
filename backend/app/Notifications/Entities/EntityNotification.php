@@ -8,6 +8,7 @@ use App\Data\Entities\EntityNotice;
 use App\Data\Mail\MailNotice;
 use App\Data\Notifications\InAppMessage;
 use App\Enums\Integrations\SmsPurpose;
+use App\Enums\Notifications\NotificationAudienceKind;
 use App\Enums\Notifications\NotificationChannel;
 use App\Enums\Notifications\NotificationCode;
 use App\Models\Identity\User;
@@ -38,11 +39,11 @@ final class EntityNotification extends QueuedNotification implements DeliversInA
         $code = $this->notice->code;
         $deliveries = [];
 
-        if ($this->notice->viaMail || $channels->isSwitchedOn($code, NotificationChannel::Email)) {
+        if ($this->notice->viaMail || $channels->isSwitchedOn($code, NotificationChannel::Email, NotificationAudienceKind::of($notifiable))) {
             $deliveries[] = 'mail';
         }
 
-        if ($notifiable instanceof User && ($this->notice->viaInApp || $channels->isSwitchedOn($code, NotificationChannel::InApp))) {
+        if ($notifiable instanceof User && ($this->notice->viaInApp || $channels->isSwitchedOn($code, NotificationChannel::InApp, NotificationAudienceKind::of($notifiable)))) {
             $deliveries[] = InAppChannel::class;
         }
 

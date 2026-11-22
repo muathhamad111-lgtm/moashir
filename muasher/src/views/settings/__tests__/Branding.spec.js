@@ -24,8 +24,12 @@ async function mountView(permissions, query = {}) {
   return { wrapper, globals }
 }
 
+// The page tabs only: the visual-identity preview has its own (back office, entity portal).
 function tabLabels(wrapper) {
-  return wrapper.findAll('.tabs__tab').map((tab) => tab.text())
+  return wrapper
+    .findAll('.tabs__tab')
+    .filter((tab) => !tab.element.closest('.brand-preview'))
+    .map((tab) => tab.text())
 }
 
 beforeEach(() => {

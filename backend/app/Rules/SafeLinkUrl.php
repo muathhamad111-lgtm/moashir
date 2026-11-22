@@ -30,7 +30,7 @@ final class SafeLinkUrl implements ValidationRule
             || self::isHttps($value);
     }
 
-    private static function isHttps(string $value): bool
+    public static function isHttps(string $value): bool
     {
         return str_starts_with($value, 'https://')
             && filter_var($value, FILTER_VALIDATE_URL) !== false

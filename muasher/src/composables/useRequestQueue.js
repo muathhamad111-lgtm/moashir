@@ -13,13 +13,27 @@ function stageFilterOf(stage) {
 }
 
 // The filters a user sets in the filter dialog. The path is not one: it comes from the
-// sidebar entry, so it never counts as an applied filter.
+// sidebar entry, so it never counts as an applied filter. The stage is chosen in the dialog
+// (operator note 2026-11-22) but lives in the address, so the stat cards and links share it.
 const DIALOG_FILTER_DEFAULTS = Object.freeze({
+  stage: '',
   cycleId: '',
   status: '',
   overdue: '',
   assessorId: '',
 })
+
+// A dialog choice: the stage goes to the address (the list follows it); a link filter stops following its link.
+function filterChooser({ list, stage, dropLinkFilter }) {
+  return (key, value) => {
+    if (key === 'stage') {
+      stage.value = value || QUEUE_STAGES.ALL
+      return
+    }
+    if (LINK_FILTERS.includes(key)) dropLinkFilter(key)
+    list.setFilter(key, value)
+  }
+}
 
 // stage: the list's stage filter (a computed ref from useQueueStage); «all» sends no stage.
 export function useRequestQueue(paths, stage = ref(QUEUE_STAGES.ALL)) {
@@ -60,17 +74,12 @@ export function useRequestQueue(paths, stage = ref(QUEUE_STAGES.ALL)) {
     (next) => next && counts.applyQueue(next),
   )
 
-  function chooseFilter(key, value) {
-    if (LINK_FILTERS.includes(key)) dropLinkFilter(key)
-    list.setFilter(key, value)
-  }
-
   return {
     ...list,
     path,
     stats,
     pathCounts,
-    chooseFilter,
+    chooseFilter: filterChooser({ list, stage, dropLinkFilter }),
     filterDefaults: DIALOG_FILTER_DEFAULTS,
   }
 }

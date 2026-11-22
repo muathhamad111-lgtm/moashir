@@ -5,6 +5,7 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 import Badge from '@/components/ui/Badge.vue'
 import ReviewScoreControl from './ReviewScoreControl.vue'
 import ReviewIndicatorRow from './ReviewIndicatorRow.vue'
+import ReviewDescriptiveIndicators from './ReviewDescriptiveIndicators.vue'
 import ReviewEvidenceRows from './ReviewEvidenceRows.vue'
 import ReviewRoundRows from './ReviewRoundRows.vue'
 import ReviewFoldedText from './ReviewFoldedText.vue'
@@ -186,6 +187,14 @@ const confirm = (unit) => props.workspace.actions.confirmScore(unit)
           />
         </ul>
       </section>
+      <ReviewDescriptiveIndicators
+        v-if="!usesPoints && sub.points.length"
+        :points="sub.points"
+        :evidence-by-point="evidence.byPoint"
+        :downloading="workspace.downloads.busy"
+        :new-ids="newIds"
+        @download="emit('download', $event)"
+      />
       <ReviewFeedbackFold
         :sub-id="sub.id"
         :fields="workspace.feedback.fieldsOf(sub.id)"

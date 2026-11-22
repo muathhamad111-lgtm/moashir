@@ -8,6 +8,7 @@ import ReorderButtons from '@/components/criteria/ReorderButtons.vue'
 import CriteriaShare from './CriteriaShare.vue'
 import { useCriteria } from '@/composables/useCriteria'
 import { useScoringTypeOptions } from '@/composables/useScoringTypeOptions'
+import { scoresPoints } from '@/utils/criteriaTree'
 
 const props = defineProps({
   item: { type: Object, required: true },
@@ -24,6 +25,8 @@ const { labelOf } = useScoringTypeOptions()
 const point = computed(() => props.item.node)
 const text = computed(() => localized(point.value.description))
 const attachments = computed(() => point.value.attachments ?? [])
+// Under a directly evaluated sub-criterion the indicator is descriptive: no type, no share.
+const scored = computed(() => scoresPoints(props.sub))
 </script>
 
 <template>
@@ -33,7 +36,8 @@ const attachments = computed(() => point.value.attachments ?? [])
       <div class="criteria-point__text">
         <p class="criteria-point__name">{{ text }}</p>
         <p class="criteria-card__meta">
-          <Badge variant="muted">{{ labelOf(point.scoringType) }}</Badge>
+          <Badge v-if="scored" variant="muted">{{ labelOf(point.scoringType) }}</Badge>
+          <Badge v-else variant="muted">{{ t('criteria.workspace.board.descriptive') }}</Badge>
           <span v-for="attachment in attachments" :key="attachment.key" class="criteria-card__fact">
             <AppIcon name="attachment" />{{ localized(attachment.name) }}
           </span>
@@ -42,7 +46,7 @@ const attachments = computed(() => point.value.attachments ?? [])
       </div>
     </div>
     <div class="criteria-point__side">
-      <CriteriaShare :weight="point.weight" :parent-weight="sub.weight" compact />
+      <CriteriaShare v-if="scored" :weight="point.weight" :parent-weight="sub.weight" compact />
       <ReorderButtons
         v-if="position"
         :index="position.index"

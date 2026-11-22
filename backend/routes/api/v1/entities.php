@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\Entities\ApproveEntityController;
 use App\Http\Controllers\Api\V1\Entities\CancelMyEmailChangeController;
-use App\Http\Controllers\Api\V1\Entities\CityController;
 use App\Http\Controllers\Api\V1\Entities\ConfirmMyEmailChangeController;
 use App\Http\Controllers\Api\V1\Entities\CurrentTermsController;
 use App\Http\Controllers\Api\V1\Entities\DeactivateEntityController;
@@ -31,13 +30,11 @@ use App\Http\Controllers\Api\V1\Entities\ResendRegistrationEmailCodeController;
 use App\Http\Controllers\Api\V1\Entities\RestoreEntityController;
 use App\Http\Controllers\Api\V1\Entities\SoftDeleteEntityController;
 use App\Http\Controllers\Api\V1\Entities\VerifyRegistrationEmailCodeController;
-use App\Models\Entities\City;
 use App\Models\Entities\Entity;
 use App\Models\Identity\EmailChangeRequest;
 use Illuminate\Support\Facades\Route;
 
 $entities = Entity::class;
-$cities = City::class;
 $emailChanges = EmailChangeRequest::class;
 
 Route::get('regions', [RegionController::class, 'index'])->middleware('throttle:public')->name('regions.index');
@@ -48,7 +45,7 @@ Route::post('auth/register/email-code', RegistrationEmailCodeController::class)-
 Route::post('auth/register/email-code/verify', VerifyRegistrationEmailCodeController::class)->middleware('throttle:otp-verify')->name('auth.register.email-code.verify');
 Route::post('auth/register/email-code/resend', ResendRegistrationEmailCodeController::class)->middleware('throttle:otp-resend')->name('auth.register.email-code.resend');
 
-Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'])->group(function () use ($entities, $cities, $emailChanges): void {
+Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'])->group(function () use ($entities, $emailChanges): void {
     Route::prefix('entities/me')->name('entities.me.')->group(function () use ($entities): void {
         Route::get('/', [MyEntityController::class, 'show'])->middleware("can:viewOwn,{$entities}")->name('show');
         Route::prefix('profile')->name('profile.')->middleware(["can:updateOwn,{$entities}", 'throttle:sensitive'])->group(function (): void {
@@ -94,7 +91,4 @@ Route::middleware(['auth:sanctum', 'session.timeouts', 'mfa', 'password.current'
         Route::post('{emailChange}/approve', [EntityEmailChangeController::class, 'approve'])->whereNumber('emailChange')->middleware(["can:decide,{$emailChanges}", 'throttle:sensitive'])->name('approve');
         Route::post('{emailChange}/reject', [EntityEmailChangeController::class, 'reject'])->whereNumber('emailChange')->middleware(["can:decide,{$emailChanges}", 'throttle:sensitive'])->name('reject');
     });
-
-    Route::get('cities', [CityController::class, 'index'])->middleware("can:viewAny,{$cities}")->name('cities.index');
-    Route::patch('cities/{city}/active', [CityController::class, 'toggle'])->whereNumber('city')->middleware(["can:update,{$cities}", 'throttle:sensitive'])->name('cities.active');
 });

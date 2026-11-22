@@ -251,6 +251,7 @@ return [
         ],
         'link' => [
             'safe' => 'The :attribute must be a site path starting with /, an anchor starting with #, a mailto: address or an https:// link.',
+            'https' => 'The :attribute must be a full link starting with https://.',
         ],
         'icon' => [
             'font_awesome' => 'The :attribute must be a Font Awesome class such as fa-solid fa-chart-line.',
@@ -287,11 +288,14 @@ return [
             'not_current' => 'You must accept the current version of the terms and conditions.',
         ],
         'notification_channels' => [
-            'mandatory' => 'The channels of a mandatory notification cannot be switched off or on.',
+            'core' => 'A core notification is always sent; its channels cannot be switched off.',
+            'audience' => 'This notification does not reach that audience.',
         ],
         'notification_text' => [
             'unknown_variable' => 'The variable :variable is not available for this notification.',
-            'required_variable' => 'Keep the variable :variable; this notification is mandatory and needs it.',
+            'required_variable' => 'Keep the variable :variable; this core notification needs it.',
+            'fixed_part' => 'The button of a core notification cannot be changed.',
+            'sms_too_long' => 'The text message is too long: keep it within :count messages.',
         ],
         'q' => [
             'searchable' => 'The search term must contain at least :min letters or digits.',

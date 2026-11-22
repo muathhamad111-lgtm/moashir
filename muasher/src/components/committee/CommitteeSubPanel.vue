@@ -6,6 +6,7 @@ import BaseTextarea from '@/components/form/BaseTextarea.vue'
 import RawScoreField from '@/components/assessment/RawScoreField.vue'
 import ReviewEvidenceList from '@/components/review/ReviewEvidenceList.vue'
 import CommitteePriorScores from './CommitteePriorScores.vue'
+import IndicatorGuidance from '@/components/assessment/IndicatorGuidance.vue'
 import { EVALUATION_TYPES } from '@/constants/criteria'
 import { SCORE_LEVELS } from '@/constants/assessment'
 import { COMMITTEE_LIMITS } from '@/constants/committee'
@@ -76,6 +77,11 @@ function text(content) {
       :groups="slotGroupsOf(sub)"
       :downloading="workspace.downloads.busy"
       @download="emit('download', $event)"
+    />
+    <IndicatorGuidance
+      v-if="!usesPoints && sub.points.length"
+      :points="sub.points"
+      :title="t('review.directIndicatorsHint')"
     />
     <div class="review-sub__scores">
       <div v-for="unit in units" :key="scoreFieldName(unit)" class="review-sub__point">

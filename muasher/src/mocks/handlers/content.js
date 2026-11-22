@@ -33,6 +33,8 @@ import {
 import { updateSiteSettings } from '../stores/content/siteSettingsWrites'
 import { acceptImage } from '../stores/content/imageUploads'
 import { CMS_IMAGE_PURPOSE } from '../stores/content/cmsContentInput'
+import { CMS_LOGO_PURPOSE } from '../stores/content/partnerItems'
+import { CMS_LOGO_RULES } from '@/constants/cms'
 import { cmsState } from '../stores/content/cmsState'
 import { publicFilesHandlers } from './publicFiles'
 
@@ -223,6 +225,17 @@ const settingsHandlers = [
     contentRoute(async ({ request }) => {
       canManage()
       const { upload } = await acceptImage(request, CMS_IMAGE_PURPOSE)
+      return envelope(upload, {}, { status: 201 })
+    }),
+  ),
+  http.post(
+    '/api/v1/admin/content/logos',
+    contentRoute(async ({ request }) => {
+      canManage()
+      const { upload } = await acceptImage(request, CMS_LOGO_PURPOSE, {
+        rules: CMS_LOGO_RULES,
+        messageKey: 'partnerLogoType',
+      })
       return envelope(upload, {}, { status: 201 })
     }),
   ),

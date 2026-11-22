@@ -13,6 +13,7 @@ use App\Models\Criteria\GuidingPoint;
 use App\Models\Criteria\MainCriterion;
 use App\Models\Criteria\SubCriterion;
 use App\Services\Criteria\CriteriaTreeLoader;
+use App\Support\ValueObjects\Weight;
 use Illuminate\Database\Eloquent\Collection;
 
 final readonly class ScoringTreeBuilder
@@ -40,7 +41,7 @@ final readonly class ScoringTreeBuilder
 
     private function point(GuidingPoint $point): ScoringPoint
     {
-        return new ScoringPoint($point->id, $point->code, $point->weight, $point->scoring_type);
+        return new ScoringPoint($point->id, $point->code, $point->weight ?? Weight::zero(), $point->scoring_type);
     }
 
     /**

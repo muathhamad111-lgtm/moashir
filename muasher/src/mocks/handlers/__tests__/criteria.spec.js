@@ -221,22 +221,30 @@ describe('criteria mock — weight guards', () => {
     expect(foreign.body.code).toBe('criteria.weights_distributed_equally')
   })
 
-  it('needs a confirmation with the point count before switching to direct evaluation', async () => {
+  it('keeps the indicators without weights on direct evaluation and splits them equally back', async () => {
     await openDraft()
     const [main] = await draftMains()
     const sub = (await call('GET', `/criteria/mains/${main.id}`)).body.data.subs[0]
-    const warned = await call('PATCH', `/criteria/subs/${sub.id}/evaluation-type`, {
+    const direct = await call('PATCH', `/criteria/subs/${sub.id}/evaluation-type`, {
       evaluationType: 'direct',
     })
-    expect(warned.body).toMatchObject({
-      code: 'criteria.points_confirm_required',
-      meta: { impact: { pointCount: 3 } },
+    expect(direct.body.data).toMatchObject({ evaluationType: 'direct', pointCount: 3 })
+    const unweighted = (await call('GET', `/criteria/subs/${sub.id}`)).body.data.points
+    expect(unweighted.map((point) => point.weight)).toEqual([null, null, null])
+
+    const added = await call('POST', `/criteria/subs/${sub.id}/points`, {
+      description: { ar: 'مؤشر وصفي', en: 'Descriptive indicator' },
+      weight: '50.00',
     })
-    const switched = await call('PATCH', `/criteria/subs/${sub.id}/evaluation-type`, {
-      evaluationType: 'direct',
-      confirmDeletePoints: true,
+    expect(added.status).toBe(201)
+    expect(added.body.data.point.weight).toBeNull()
+
+    const back = await call('PATCH', `/criteria/subs/${sub.id}/evaluation-type`, {
+      evaluationType: 'guiding-points',
     })
-    expect(switched.body.data).toMatchObject({ evaluationType: 'direct', pointCount: 0 })
+    expect(back.body.data).toMatchObject({ distributeEqually: true, pointCount: 4 })
+    const shared = (await call('GET', `/criteria/subs/${sub.id}`)).body.data.points
+    expect(shared.every((point) => point.weight !== null)).toBe(true)
   })
 
   it('rejects an incomplete reorder', async () => {

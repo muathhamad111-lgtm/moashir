@@ -98,7 +98,17 @@ describe('CriteriaMainBoard', () => {
     expect(cards[0].text()).toContain('60%')
     expect(cards[0].text()).toContain('Approved plan')
     expect(cards[0].text()).toContain('Plan')
-    expect(cards[1].text()).toContain('Scored directly with one value')
+    expect(cards[1].text()).toContain('Scored directly with one judgment')
+  })
+
+  it('lists the descriptive indicators of a direct sub-criterion without a type or a share', () => {
+    const direct = mountBoard().findAll('.criteria-card')[1]
+    const row = direct.find('.criteria-point')
+    expect(row.text()).toContain('Approved policy')
+    expect(row.text()).toContain('Descriptive')
+    expect(row.text()).toContain('Minutes')
+    expect(row.find('.criteria-share').exists()).toBe(false)
+    expect(direct.text()).toContain('Add indicator')
   })
 
   it('opens the editor of the item a button belongs to', async () => {

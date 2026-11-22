@@ -13,34 +13,46 @@ vi.mock('@/services/notificationTextsService', () => ({
   },
 }))
 
-function textOf(key, variant) {
+function textOf(key, variant, audience) {
+  const title = { ar: 'عنوان :entity', en: 'Title :entity' }
   return {
     key,
     variant,
+    audience,
     variables: ['entity'],
     requiredVariables: [],
     isCustomized: false,
     updatedAt: null,
-    parts: {
-      title: {
-        default: { ar: 'عنوان :entity', en: 'Title :entity' },
-        current: { ar: 'عنوان :entity', en: 'Title :entity' },
-      },
-    },
+    parts: { title: { default: title, current: title, channel: 'in_app', isFixed: false } },
+    sms: { current: null, approval: null },
   }
+}
+
+function settingsOf(enabled = true) {
+  return ['beneficiary', 'management'].flatMap((audience) =>
+    ['in_app', 'email', 'sms'].map((channel) => ({
+      channel,
+      audience,
+      isEnabled: channel === 'in_app' && enabled,
+      isShipped: channel !== 'sms',
+      isSwitchable: true,
+    })),
+  )
 }
 
 const TYPE = {
   code: 'REG-01',
   category: 'info',
   isMandatory: false,
+  isCore: false,
+  audiences: ['entity', 'system_admin'],
+  audienceKinds: ['beneficiary', 'management'],
   channels: ['in_app', 'email'],
-  channelSettings: [
-    { channel: 'in_app', isEnabled: true, isShipped: true, isSwitchable: true },
-    { channel: 'email', isEnabled: true, isShipped: true, isSwitchable: true },
-    { channel: 'sms', isEnabled: false, isShipped: false, isSwitchable: false },
+  channelSettings: settingsOf(),
+  texts: [
+    textOf('entities.REG-01.entity', 'entity', 'beneficiary'),
+    textOf('entities.REG-01.staff', 'staff', 'management'),
   ],
-  texts: [textOf('entities.REG-01.entity', 'entity'), textOf('entities.REG-01.staff', 'staff')],
 }
 
 let wrapper
@@ -55,6 +67,10 @@ async function mountPage(code = 'REG-01') {
   return wrapper
 }
 
+function audienceTabs() {
+  return wrapper.findAll('.notification-texts__audiences > .tabs__list [role="tab"]')
+}
+
 afterEach(() => {
   wrapper?.unmount()
   document.body.innerHTML = ''
@@ -62,43 +78,59 @@ afterEach(() => {
 })
 
 describe('NotificationTypeTexts page', () => {
-  it('shows the type, its channels and a tab per text variant', async () => {
+  it('shows the read-only recipients and a tab per audience text', async () => {
     notificationTextsService.show.mockResolvedValue({ data: TYPE })
     await mountPage()
     expect(notificationTextsService.show).toHaveBeenCalledWith('REG-01')
-    expect(wrapper.find('.notification-texts__meta').text()).toContain('REG-01')
-    expect(wrapper.findAll('[role="tab"]').map((tab) => tab.text())).toEqual([
-      'To the entity',
-      'To the platform team',
-    ])
-    expect(wrapper.find('textarea[name="entities.REG-01.entity-title-en"]').exists()).toBe(true)
-    await wrapper.findAll('[role="tab"]')[1].trigger('click')
-    expect(wrapper.find('textarea[name="entities.REG-01.staff-title-en"]').exists()).toBe(true)
-    expect(wrapper.find('.settings-section__back').text()).toContain('Back to notification types')
+    expect(wrapper.find('.notification-recipients').text()).toContain('Beneficiary')
+    expect(wrapper.find('.notification-recipients').text()).toContain('System Administrator')
+    expect(audienceTabs().map((tab) => tab.text())).toEqual(['To the beneficiary', 'To management'])
+    expect(wrapper.find('textarea[name="entities.REG-01.entity-title-ar"]').exists()).toBe(true)
+    await audienceTabs()[1].trigger('click')
+    expect(wrapper.find('textarea[name="entities.REG-01.staff-title-ar"]').exists()).toBe(true)
   })
 
-  it('shows one editor without tabs when the type has one text', async () => {
-    notificationTextsService.show.mockResolvedValue({ data: { ...TYPE, texts: [TYPE.texts[0]] } })
-    await mountPage()
-    expect(wrapper.find('[role="tab"]').exists()).toBe(false)
-    expect(wrapper.find('.notification-text').exists()).toBe(true)
-  })
-
-  it('switches a channel off and shows the saved state', async () => {
+  it('switches a channel off for the open audience and shows the saved state', async () => {
     notificationTextsService.show.mockResolvedValue({ data: TYPE })
     notificationTextsService.updateChannels.mockResolvedValue({
-      data: {
-        ...TYPE,
-        channelSettings: TYPE.channelSettings.map((row) =>
-          row.channel === 'email' ? { ...row, isEnabled: false } : row,
-        ),
-      },
+      data: { ...TYPE, channelSettings: settingsOf(false) },
     })
     await mountPage()
-    await wrapper.find('input[name="channel-email"]').setValue(false)
+    await wrapper.find('input[role="switch"]').setValue(false)
     await flushPromises()
-    expect(notificationTextsService.updateChannels).toHaveBeenCalledWith('REG-01', { email: false })
-    expect(wrapper.find('input[name="channel-email"]').element.checked).toBe(false)
+    expect(notificationTextsService.updateChannels).toHaveBeenCalledWith(
+      'REG-01',
+      { in_app: false },
+      'beneficiary',
+    )
+    expect(wrapper.find('input[role="switch"]').element.checked).toBe(false)
+  })
+
+  it('marks a core notification and locks its switches', async () => {
+    notificationTextsService.show.mockResolvedValue({
+      data: { ...TYPE, isCore: true, texts: [TYPE.texts[0]] },
+    })
+    await mountPage()
+    expect(wrapper.find('.notification-texts__core-banner').text()).toContain(
+      'cannot be turned off',
+    )
+    expect(wrapper.find('input[role="switch"]').attributes('disabled')).toBeDefined()
+  })
+
+  it('points the verification code to the SMS settings for its text message', async () => {
+    notificationTextsService.show.mockResolvedValue({
+      data: { ...TYPE, code: 'REG-02', isCore: true, texts: [TYPE.texts[0]] },
+    })
+    await mountPage('REG-02')
+    const pointer = wrapper.find('.notification-texts__pointer a')
+    expect(pointer.text()).toBe('The verification code text message is edited in the SMS settings')
+    expect(pointer.attributes('href')).toBe('/admin/settings/sms')
+  })
+
+  it('shows no SMS pointer for other notifications', async () => {
+    notificationTextsService.show.mockResolvedValue({ data: TYPE })
+    await mountPage()
+    expect(wrapper.find('.notification-texts__pointer').exists()).toBe(false)
   })
 
   it('explains an unknown type', async () => {
@@ -106,6 +138,6 @@ describe('NotificationTypeTexts page', () => {
       Object.assign(new Error('missing'), { normalized: { status: 404 } }),
     )
     await mountPage('XYZ-99')
-    expect(wrapper.text()).toContain('Notification type not found')
+    expect(wrapper.text()).toContain('Notification not found')
   })
 })

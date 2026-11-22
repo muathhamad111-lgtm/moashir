@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useAuthFlowStore } from '@/stores/authFlow'
 import { useRegistrationTerms } from '@/composables/useRegistrationTerms'
 import { useRegistrationOptions } from '@/composables/useRegistrationOptions'
+import { takeRegistrationRead } from '@/composables/registration/registrationReads'
 import { nationalIdRule } from '@/utils/identity/nationalIdSchema'
 import { normalizeNationalId } from '@/utils/identity/nationalId'
 import { registrationSchema } from '@/utils/entitySchemas'
@@ -42,7 +43,11 @@ export function useEntityRegistration() {
   const { nationalIdRequired, loadOptions } = useRegistrationOptions()
 
   function load() {
-    return Promise.all([loadTerms(), regions.load(), loadOptions()])
+    return Promise.all([
+      loadTerms(),
+      regions.load(() => takeRegistrationRead('regions')),
+      loadOptions(),
+    ])
   }
 
   const status = computed(() => {

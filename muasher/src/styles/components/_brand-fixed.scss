@@ -1,0 +1,71 @@
+@use '../mixins' as *;
+@use '../tokens' as *;
+
+.brand-fixed__header {
+  @include flex(row, baseline, space-between, var(--space-3));
+  inline-size: 100%;
+}
+
+.brand-fixed__lock {
+  @include flex(row, center, flex-start, var(--space-1));
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-regular);
+  color: var(--theme-text-muted);
+}
+
+.brand-fixed__groups {
+  display: grid;
+  gap: var(--space-4);
+
+  @include respond-to('md') {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.brand-fixed__group-title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--theme-heading);
+}
+
+.brand-fixed__list {
+  @include flex(row, center, flex-start, var(--space-2));
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.brand-fixed__item {
+  @include flex(row, center, flex-start, var(--space-1));
+  padding-block: var(--space-1);
+  padding-inline: var(--space-1) var(--space-2);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-xs);
+}
+
+.brand-fixed__dot {
+  inline-size: 1rem;
+  block-size: 1rem;
+  border-radius: var(--radius-circle);
+
+  @each $state in ('success', 'warning', 'danger', 'info') {
+    &[data-color='#{$state}'] {
+      background-color: tts-status($state, 'solid');
+    }
+  }
+
+  @each $level in ('diamond', 'gold', 'silver', 'bronze') {
+    &[data-color='#{$level}'] {
+      background-color: var(--color-#{$level});
+    }
+  }
+
+  @for $index from 1 through 3 {
+    &[data-color='series#{$index}'] {
+      background-color: var(--chart-series-#{$index});
+    }
+  }
+}

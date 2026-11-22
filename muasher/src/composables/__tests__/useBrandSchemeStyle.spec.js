@@ -7,12 +7,23 @@ import { deriveBrandScheme } from '@/utils/brandingContrast'
 beforeEach(() => setActivePinia(createPinia()))
 
 describe('useBrandSchemeStyle', () => {
-  it('writes the five brand custom properties for the back-office shell', () => {
+  it('writes the seven brand custom properties for the back-office shell', () => {
     const css = brandSchemeCss(deriveBrandScheme({ primary: '#d4088c', secondary: '#4a2a7d' }))
     expect(css).toBe(
       "html:root[data-shell='tts']{--brand-primary:#d4088c;--brand-on-primary:#ffffff;" +
-        '--brand-primary-text:#d4088c;--brand-secondary:#4a2a7d;--brand-on-secondary:#ffffff}',
+        '--brand-primary-text:#c90885;--brand-primary-hover:#bc097d;--brand-primary-tint:#fbe6f4;' +
+        '--brand-secondary:#4a2a7d;--brand-on-secondary:#ffffff}',
     )
+  })
+
+  it('writes an unsaved draft under its own prefix on the given container', () => {
+    const css = brandSchemeCss(deriveBrandScheme({ primary: '#98d8d3', secondary: '#0a2325' }), {
+      selector: '.branding-editor',
+      prefix: 'draft',
+    })
+    expect(css.startsWith('.branding-editor{--draft-primary:#98d8d3;')).toBe(true)
+    expect(css).toContain('--draft-primary-hover:#88c0bc')
+    expect(css).not.toContain('--brand-')
   })
 
   it('writes nothing for an unsafe or incomplete scheme', () => {

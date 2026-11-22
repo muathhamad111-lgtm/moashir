@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Data\Settings\BrandColorOverrides;
 use App\Data\Settings\BrandColors;
 use App\Data\Settings\BrandColorScheme;
 use App\Data\Settings\ContrastCheck;
@@ -39,7 +40,9 @@ it('picks the readable text colour on each fill and a readable text shade of the
     expect(app(ContrastValidator::class)->failures($scheme))->toBe([])
         ->and(ContrastRatio::between($scheme->onPrimary, $scheme->primary))->toBeGreaterThanOrEqual(4.5)
         ->and(ContrastRatio::between($scheme->primaryText, '#f8f8f8'))->toBeGreaterThanOrEqual(4.5)
-        ->and(ContrastRatio::between($scheme->onSecondary, $scheme->secondary))->toBeGreaterThanOrEqual(4.5);
+        ->and(ContrastRatio::between($scheme->onSecondary, $scheme->secondary))->toBeGreaterThanOrEqual(4.5)
+        ->and(ContrastRatio::between($scheme->onPrimary, $scheme->primaryHover))->toBeGreaterThanOrEqual(4.5)
+        ->and(ContrastRatio::between($scheme->primaryText, $scheme->primarySoft))->toBeGreaterThanOrEqual(4.5);
 })->with([
     'brand default' => ['#98d8d3', '#0a2325'],
     'TTS default' => ['#d4088c', '#4a2a7d'],
@@ -54,12 +57,55 @@ it('keeps the shipped default colours at AA contrast', function (): void {
 });
 
 it('reports each failing pair with its field, ratio and the required minimum', function (): void {
-    $failures = app(ContrastValidator::class)->failures(new BrandColorScheme('#777777', '#ffffff', '#eeeeee', '#777777', '#100f10'));
+    $failures = app(ContrastValidator::class)->failures(new BrandColorScheme('#777777', '#ffffff', '#eeeeee', '#777777', '#ffffff', '#777777', '#100f10'));
 
     expect(array_map(static fn (ContrastCheck $check): string => $check->pair, $failures))->toBe([
-        'primary.text_on_fill', 'primary.text_on_content', 'secondary.text_on_fill',
+        'primary.text_on_fill', 'primary.text_on_content', 'primary.text_on_hover', 'primary.text_on_soft', 'secondary.text_on_fill',
     ])->and(array_map(static fn (ContrastCheck $check): string => $check->field(), $failures))->toBe([
-        'primary_color', 'primary_color', 'secondary_color',
+        'primary_color', 'primary_color', 'primary_color', 'primary_color', 'secondary_color',
     ])->and($failures[0]->minimum)->toBe('4.5')
         ->and((float) $failures[0]->ratio)->toBeLessThan(4.5);
+});
+
+it('mixes two colours in sRGB like CSS color-mix', function (): void {
+    expect(ColorShade::mix('#98d8d3', '#100f10', 0.88))->toBe('#88c0bc')
+        ->and(ColorShade::mix('#98d8d3', '#ffffff', 0.1))->toBe('#f5fbfb')
+        ->and(ColorShade::mix('#000000', '#ffffff', 1.0))->toBe('#000000');
+});
+
+it('derives the same schemes as the shared test vectors the SPA preview is checked against', function (array $vector): void {
+    $colors = new BrandColors($vector['primary'], $vector['secondary'], new BrandColorOverrides($vector['overrides']));
+
+    expect(app(BrandColorDeriver::class)->scheme($colors)->toArray())->toBe($vector['scheme']);
+})->with(function (): array {
+    $fixture = json_decode((string) file_get_contents(dirname(__DIR__, 2).'/Fixtures/branding/scheme-vectors.json'), true, 8, JSON_THROW_ON_ERROR);
+
+    return array_combine(
+        array_column($fixture['vectors'], 'label'),
+        array_map(static fn (array $vector): array => [$vector], $fixture['vectors']),
+    );
+});
+
+it('lets an override replace only its own derived colour', function (): void {
+    $scheme = app(BrandColorDeriver::class)->scheme(new BrandColors('#98d8d3', '#0a2325', new BrandColorOverrides(['on_secondary' => '#D9F7F7'])));
+
+    expect($scheme->onSecondary)->toBe('#d9f7f7')
+        ->and($scheme->onPrimary)->toBe('#100f10')
+        ->and($scheme->primaryText)->toBe('#547774');
+});
+
+it('refuses an override with an unknown key or a value that is not a hex colour', function (array $overrides): void {
+    new BrandColorOverrides($overrides);
+})->throws(InvalidArgumentException::class)->with([
+    'unknown key' => [['navbar' => '#ffffff']],
+    'named colour' => [['on_primary' => 'white']],
+    'not a string' => [['on_primary' => 255]],
+]);
+
+it('compares overrides regardless of key order or letter case', function (): void {
+    $first = new BrandColors('#98d8d3', '#0a2325', new BrandColorOverrides(['primary_soft' => '#E6F4F3', 'on_primary' => '#100f10']));
+    $second = new BrandColors('#98d8d3', '#0a2325', new BrandColorOverrides(['on_primary' => '#100f10', 'primary_soft' => '#e6f4f3']));
+
+    expect($first->equals($second))->toBeTrue()
+        ->and($first->equals(new BrandColors('#98d8d3', '#0a2325')))->toBeFalse();
 });

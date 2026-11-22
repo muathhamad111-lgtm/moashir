@@ -1,6 +1,7 @@
 import { isFilled, scoreFieldName } from './scoreSheet'
 import { slotGroupsOf } from '@/utils/accredited/evidenceRules'
 import { SCORE_LEVELS } from '@/constants/assessment'
+import { EVALUATION_TYPES } from '@/constants/criteria'
 
 // The review workspace (design/admin-ux §B.3.1): each item's evidence sits under it, and each
 // row shows whether it is scored.
@@ -9,8 +10,10 @@ export function unitOf(level, node) {
   return { level, id: node.id }
 }
 
+// A directly evaluated sub-criterion is one unit even when it lists descriptive indicators.
 export function subUnits(sub) {
-  if (sub.points?.length) return sub.points.map((point) => unitOf(SCORE_LEVELS.POINT, point))
+  if (sub.evaluationType === EVALUATION_TYPES.GUIDING_POINTS && sub.points?.length)
+    return sub.points.map((point) => unitOf(SCORE_LEVELS.POINT, point))
   return [unitOf(SCORE_LEVELS.SUB, sub)]
 }
 

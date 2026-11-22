@@ -4,6 +4,13 @@ import { contentReject } from './contentRejection'
 import { readContentChanges } from './cmsContentInput'
 import { sectionResource } from './cmsSerializers'
 import { applyOrder, requireSection } from './cmsSectionWrites'
+import { CMS_LOGO_PURPOSE, checkPartnerItem, isPartnerSection } from './partnerItems'
+
+function itemChanges(section, body, { creating = false, allow = [] } = {}) {
+  if (!isPartnerSection(section)) return readContentChanges(body, { allow })
+  checkPartnerItem(body, { creating })
+  return readContentChanges(body, { allow, imagePurpose: CMS_LOGO_PURPOSE })
+}
 
 function requireItem(section, itemId) {
   const item = findItem(section, itemId)
@@ -21,7 +28,7 @@ export function createItem(sectionId, body) {
   const section = requireSection(sectionId)
   if (section.items.length >= CMS_LIMITS.itemsPerSection)
     throw contentReject.limitReached(CMS_LIMITS.itemsPerSection)
-  const changes = readContentChanges(body, { allow: ['enabled'] })
+  const changes = itemChanges(section, body, { creating: true, allow: ['enabled'] })
   section.items.push(
     stamp({
       id: nextId('item'),
@@ -45,7 +52,7 @@ export function createItem(sectionId, body) {
 export function updateItem(sectionId, itemId, body) {
   const section = requireSection(sectionId)
   const item = requireItem(section, itemId)
-  Object.assign(item, readContentChanges(body))
+  Object.assign(item, itemChanges(section, body))
   stamp(item)
   return changed(section)
 }

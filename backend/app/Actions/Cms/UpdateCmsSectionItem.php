@@ -26,6 +26,7 @@ final readonly class UpdateCmsSectionItem
         $this->scope->run($section->cms_page_id, $actor, function () use ($actor, $section, $item, $changes): void {
             $current = CmsSectionItem::query()->whereBelongsTo($section, 'section')->lockForUpdate()->findOrFail($item->id);
             $before = $this->audit->snapshotOf($current);
+            $current->setRelation('section', $section);
             $this->writer->write($current, $changes, $actor);
             $this->audit->changed(AuditEvent::CmsItemUpdated, $current, $before);
         });

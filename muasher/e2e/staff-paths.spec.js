@@ -93,7 +93,7 @@ test.describe('per-path queues', () => {
       ROWS,
     )
     const filters = await openListFilters(page)
-    await expect(filters.locator('.dropdown-field').first()).toContainText(
+    await expect(filters.locator('[data-testid="request-status-filter"]')).toContainText(
       text(testInfo, 'Awaiting assignment', 'بانتظار'),
     )
     await page.keyboard.press('Escape')

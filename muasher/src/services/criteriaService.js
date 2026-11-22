@@ -184,8 +184,8 @@ export const criteriaService = {
       payload,
     )
   },
-  switchEvaluationType(subId, evaluationType, { confirmDeletePoints = false } = {}) {
-    const payload = { evaluationType, confirmDeletePoints }
+  switchEvaluationType(subId, evaluationType) {
+    const payload = { evaluationType }
     return write(
       'switchEvaluationType',
       () => apiClient.patch(`/criteria/subs/${subId}/evaluation-type`, payload),

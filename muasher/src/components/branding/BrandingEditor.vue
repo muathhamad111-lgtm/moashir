@@ -1,7 +1,10 @@
 <script setup>
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { BRAND_COLOR_ROLES, DEFAULT_BRAND_COLORS, LOGO_SURFACES } from '@/constants/branding'
 import { useBrandingEditor } from '@/composables/useBrandingEditor'
+import { useAdoptedStyleSheet } from '@/composables/useAdoptedStyleSheet'
+import { brandSchemeCss } from '@/composables/useBrandSchemeStyle'
 import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
 import Card from '@/components/ui/Card.vue'
@@ -10,8 +13,11 @@ import LogoVariantField from '@/components/branding/LogoVariantField.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import BrandColorField from '@/components/branding/BrandColorField.vue'
-import BrandContrastNotice from '@/components/branding/BrandContrastNotice.vue'
 import ContrastFailNotice from '@/components/branding/ContrastFailNotice.vue'
+import BrandWarningNotice from '@/components/branding/BrandWarningNotice.vue'
+import BrandDerivedColors from '@/components/branding/BrandDerivedColors.vue'
+import BrandFixedColors from '@/components/branding/BrandFixedColors.vue'
+import BrandPreview from '@/components/branding/BrandPreview.vue'
 import ReasonDialog from '@/components/modal/ReasonDialog.vue'
 
 const { t } = useI18n()
@@ -20,10 +26,16 @@ const { confirm } = useConfirm()
 
 const {
   draftColors,
+  draftOverrides,
   draftScheme,
+  autoColors,
+  colorChecks,
+  warnings,
   isDefault,
   contrastPairs,
   setColor,
+  overrideColor,
+  restoreAutoColor,
   fillDefaultColors,
   rejectedPairs,
   reasonPrompt,
@@ -38,6 +50,13 @@ const {
   save,
   reset,
 } = useBrandingEditor()
+
+// The unsaved colours, as `--draft-*` on this editor only: its swatches and preview use them.
+useAdoptedStyleSheet(
+  computed(() =>
+    brandSchemeCss(draftScheme.value, { selector: '.branding-editor', prefix: 'draft' }),
+  ),
+)
 
 async function onSave() {
   try {
@@ -76,6 +95,7 @@ async function onReset() {
         <Card :title="t('branding.colors.title')">
           <p class="brand-colors__hint">{{ t('branding.colors.hint') }}</p>
           <ContrastFailNotice :pairs="rejectedPairs" />
+          <BrandWarningNotice :warnings="warnings" />
           <div class="brand-colors__fields">
             <BrandColorField
               v-for="role in BRAND_COLOR_ROLES"
@@ -98,8 +118,20 @@ async function onReset() {
           >
             {{ t('branding.colors.restoreDefault') }}
           </BaseButton>
-          <BrandContrastNotice :pairs="contrastPairs" :scheme="draftScheme" />
         </Card>
+
+        <BrandDerivedColors
+          :scheme="draftScheme"
+          :auto-colors="autoColors"
+          :overrides="draftOverrides"
+          :checks="colorChecks"
+          :pairs="contrastPairs"
+          :disabled="busy"
+          @override="overrideColor"
+          @restore-auto="restoreAutoColor"
+        />
+
+        <BrandFixedColors />
 
         <Card :title="t('branding.logo.title')">
           <LogoVariantField
@@ -137,6 +169,7 @@ async function onReset() {
           </BaseButton>
         </div>
       </div>
+      <BrandPreview class="branding-page__preview" />
     </div>
     <ReasonDialog
       v-model="reasonPrompt.open.value"

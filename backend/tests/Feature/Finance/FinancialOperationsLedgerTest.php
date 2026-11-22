@@ -48,6 +48,15 @@ function operationsLedger(): array
 }
 
 /**
+ * @param  array<string, int>  $counts
+ * @return array<string, int>
+ */
+function ledgerStatusCounts(array $counts): array
+{
+    return [...array_fill_keys(['paid', 'under_review', 'awaiting_payment', 'rejected', 'failed', 'cancelled', 'refunded'], 0), ...$counts];
+}
+
+/**
  * @return list<string>
  */
 function ledgerIds(TestResponse $response): array
@@ -183,6 +192,35 @@ it('filters by the creation date range in the display time zone, refunds include
     $this->getJson(LEDGER.'?filter[from]=2026-02-01&filter[to]=2026-01-01')->assertUnprocessable()->assertJsonValidationErrors(['filter.to']);
 });
 
+it('lists operations without the entity owner e-mail', function (): void {
+    operationsLedger();
+    switchTo(financeOfficer());
+
+    $this->getJson(LEDGER)->assertOk()
+        ->assertJsonMissingPath('data.0.entity.email')
+        ->assertJsonPath('data.0.entity.reference', fn (mixed $reference): bool => is_string($reference) && $reference !== '');
+    $this->getJson('/api/v1/finance/bank-transfers')->assertOk()->assertJsonMissingPath('data.0.entity.email');
+});
+
+it('splits the operations by status and by payment channel, following the list filters', function (): void {
+    $ledger = operationsLedger();
+    $ledger['review']->forceFill(['status' => PaymentStatus::Rejected, 'rejected_at' => now()])->save();
+    switchTo(financeOfficer());
+
+    $this->getJson(LEDGER.'?filter[type]=bank_transfer')->assertOk()
+        ->assertJsonPath('meta.stats.status_counts', ledgerStatusCounts(['paid' => 1, 'rejected' => 1]))
+        ->assertJsonPath('meta.stats.channels.bank_transfer.count', 2)
+        ->assertJsonPath('meta.stats.channels.bank_transfer.paid_total', '1150.00')
+        ->assertJsonPath('meta.stats.channels.electronic', ['count' => 0, 'paid_total' => '0.00', 'status_counts' => ledgerStatusCounts([])]);
+    $this->getJson(LEDGER.'?filter[status]=awaiting_payment')->assertOk()
+        ->assertJsonPath('meta.stats.status_counts.awaiting_payment', 2)
+        ->assertJsonPath('meta.stats.channels.electronic.count', 2)
+        ->assertJsonPath('meta.stats.channels.electronic.paid_total', '0.00');
+    $this->getJson(LEDGER.'?filter[mode]=test')->assertOk()
+        ->assertJsonPath('meta.stats.status_counts', ledgerStatusCounts([]))
+        ->assertJsonPath('meta.stats.channels.bank_transfer.count', 0);
+});
+
 it('computes the stats cards from every filter of the list', function (): void {
     $ledger = operationsLedger();
     switchTo(financeOfficer());
@@ -197,6 +235,11 @@ it('computes the stats cards from every filter of the list', function (): void {
         'total_refunded' => '1150.00',
         'transactions_value' => '6900.00',
         'currency' => 'SAR',
+        'status_counts' => ledgerStatusCounts(['paid' => 2, 'under_review' => 1, 'awaiting_payment' => 2, 'refunded' => 1]),
+        'channels' => [
+            'electronic' => ['count' => 4, 'paid_total' => '1150.00', 'status_counts' => ledgerStatusCounts(['paid' => 1, 'awaiting_payment' => 2, 'refunded' => 1])],
+            'bank_transfer' => ['count' => 2, 'paid_total' => '1150.00', 'status_counts' => ledgerStatusCounts(['paid' => 1, 'under_review' => 1])],
+        ],
     ]);
 
     $this->getJson(LEDGER.'?filter[type]=bank_transfer')->assertOk()

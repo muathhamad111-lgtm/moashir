@@ -65,10 +65,10 @@ function movePoint(from, step) {
                 ? t('criteria.evaluationType.guidingPoints')
                 : t('criteria.evaluationType.direct')
             }}</Badge>
-            <Badge v-if="onPoints" variant="muted">{{
+            <Badge variant="muted">{{
               t('criteria.workspace.board.pointsCount', { count: points.length }, points.length)
             }}</Badge>
-            <Badge v-else variant="muted">{{ labelOf(sub.scoringType) }}</Badge>
+            <Badge v-if="!onPoints" variant="muted">{{ labelOf(sub.scoringType) }}</Badge>
             <span v-if="attachments.length" class="criteria-card__fact">
               <AppIcon name="attachment" />{{ attachments.length }}
             </span>
@@ -112,7 +112,11 @@ function movePoint(from, step) {
         :attachments="attachments"
         :label="t('criteria.attachments.title')"
       />
-      <div v-if="onPoints" class="criteria-card__points">
+      <p v-if="!onPoints" class="criteria-card__note">
+        <AppIcon name="info-circle" />
+        {{ t('criteria.workspace.board.directNote', { type: labelOf(sub.scoringType) }) }}
+      </p>
+      <div class="criteria-card__points">
         <span class="criteria-card__label">{{ t('criteria.workspace.board.pointsTitle') }}</span>
         <ul v-if="points.length" class="criteria-card__point-list">
           <CriteriaPointRow
@@ -136,10 +140,6 @@ function movePoint(from, step) {
           <AppIcon name="plus" />{{ t('criteria.workspace.details.addPoint') }}
         </button>
       </div>
-      <p v-else class="criteria-card__note">
-        <AppIcon name="info-circle" />
-        {{ t('criteria.workspace.board.directNote', { type: labelOf(sub.scoringType) }) }}
-      </p>
     </div>
   </section>
 </template>

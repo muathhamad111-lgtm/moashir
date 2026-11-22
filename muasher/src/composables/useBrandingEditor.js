@@ -1,14 +1,9 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { brandingService } from '@/services/brandingService'
 import { useBrandingStore } from '@/stores/branding'
-import { DEFAULT_BRAND_COLORS, LOGO_DIMENSIONS, LOGO_SURFACES } from '@/constants/branding'
-import {
-  brandContrastPairs,
-  deriveBrandScheme,
-  normalizeHex,
-  passesAllContrast,
-  serverContrastPairs,
-} from '@/utils/brandingContrast'
+import { LOGO_DIMENSIONS, LOGO_SURFACES } from '@/constants/branding'
+import { serverContrastPairs } from '@/utils/brandingContrast'
+import { useBrandColorDraft } from './useBrandColorDraft'
 import { logoForSurface } from './useBackOfficeLogo'
 import { useLogoSelection } from './useLogoSelection'
 import { useSuperAdminReason } from './useSuperAdminReason'
@@ -19,21 +14,12 @@ function bySurface(build) {
   return Object.fromEntries(LOGO_SURFACES.map((surface) => [surface, build(surface)]))
 }
 
-function sameColors(first, second) {
-  return (
-    normalizeHex(first.primary) === normalizeHex(second.primary) &&
-    normalizeHex(first.secondary) === normalizeHex(second.secondary)
-  )
-}
-
 export function useBrandingEditor({ auto = true } = {}) {
   const branding = useBrandingStore()
   const logos = bySurface((surface) => useLogoSelection(LOGO_DIMENSIONS[surface]))
   const { prompt: reasonPrompt, reasonExtra } = useSuperAdminReason()
 
-  const savedColors = ref({ ...DEFAULT_BRAND_COLORS })
-  const draftColors = ref({ ...DEFAULT_BRAND_COLORS })
-  const defaultColors = ref({ ...DEFAULT_BRAND_COLORS })
+  const draft = useBrandColorDraft()
   const savedLogos = ref(bySurface(() => null))
   const status = ref('loading')
   const saving = ref(false)
@@ -41,40 +27,21 @@ export function useBrandingEditor({ auto = true } = {}) {
   const rejectedPairs = ref([])
 
   const busy = computed(() => saving.value || resetting.value)
-  const draftScheme = computed(() => deriveBrandScheme(draftColors.value))
-  const contrastPairs = computed(() => brandContrastPairs(draftScheme.value))
-  const contrastOk = computed(() => passesAllContrast(contrastPairs.value))
-  const colorsChanged = computed(() => !sameColors(draftColors.value, savedColors.value))
-  const isDefault = computed(() => sameColors(draftColors.value, defaultColors.value))
   const hasPendingLogo = computed(() => LOGO_SURFACES.some((surface) => logos[surface].file.value))
-  const isDirty = computed(() => colorsChanged.value || hasPendingLogo.value)
-  const canSave = computed(() => isDirty.value && contrastOk.value && !busy.value)
+  const isDirty = computed(() => draft.isChanged.value || hasPendingLogo.value)
+  const canSave = computed(() => isDirty.value && draft.contrastOk.value && !busy.value)
   const previewLogos = computed(() =>
     bySurface(
       (surface) => logos[surface].previewUrl.value || logoForSurface(savedLogos.value, surface),
     ),
   )
 
-  watch(
-    draftColors,
-    () => {
-      rejectedPairs.value = []
-    },
-    { deep: true },
-  )
-
-  function setColor(role, value) {
-    draftColors.value = { ...draftColors.value, [role]: value }
-  }
-
-  function fillDefaultColors() {
-    draftColors.value = { ...defaultColors.value }
-  }
+  watch([draft.draftColors, draft.draftOverrides], () => {
+    rejectedPairs.value = []
+  })
 
   function applyTheme(theme) {
-    savedColors.value = { ...theme.colors }
-    draftColors.value = { ...theme.colors }
-    defaultColors.value = { ...(theme.defaultColors ?? DEFAULT_BRAND_COLORS) }
+    draft.applySaved(theme)
     savedLogos.value = bySurface((surface) => theme.logos?.[surface] ?? null)
     branding.apply(theme)
   }
@@ -123,11 +90,7 @@ export function useBrandingEditor({ auto = true } = {}) {
     if (!canSave.value) return Promise.resolve(false)
     return withReason(saving, async (reason) => {
       await uploadPendingLogos(reason)
-      return brandingService.update({
-        primaryColor: normalizeHex(draftColors.value.primary),
-        secondaryColor: normalizeHex(draftColors.value.secondary),
-        reason,
-      })
+      return brandingService.update({ ...draft.payload(), reason })
     })
   }
 
@@ -138,13 +101,7 @@ export function useBrandingEditor({ auto = true } = {}) {
   if (auto) onMounted(load)
 
   return {
-    draftColors,
-    draftScheme,
-    isDefault,
-    setColor,
-    fillDefaultColors,
-    contrastPairs,
-    contrastOk,
+    ...draft,
     rejectedPairs,
     isDirty,
     canSave,

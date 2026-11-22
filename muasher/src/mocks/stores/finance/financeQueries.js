@@ -287,6 +287,41 @@ export function statsOf(payments) {
       payments.reduce((sum, payment) => sum + toMinor(payment.total), 0),
     ),
     currency: 'SAR',
+    statusCounts: statusCountsOf(payments),
+    channels: {
+      electronic: channelStatsOf(payments, 'electronic'),
+      bankTransfer: channelStatsOf(payments, 'bank_transfer'),
+    },
+  }
+}
+
+// The ledger statuses the overview cards split by (created and pending read as awaiting payment).
+const LEDGER_KEYS = {
+  paid: 'paid',
+  'under-review': 'underReview',
+  created: 'awaitingPayment',
+  pending: 'awaitingPayment',
+  rejected: 'rejected',
+  failed: 'failed',
+  cancelled: 'cancelled',
+  refunded: 'refunded',
+}
+
+function statusCountsOf(payments) {
+  const counts = Object.fromEntries([...new Set(Object.values(LEDGER_KEYS))].map((key) => [key, 0]))
+  payments.forEach((payment) => {
+    const key = LEDGER_KEYS[payment.status]
+    if (key) counts[key] += 1
+  })
+  return counts
+}
+
+function channelStatsOf(payments, channel) {
+  const own = payments.filter((payment) => (payment.channel ?? 'electronic') === channel)
+  return {
+    count: own.length,
+    paidTotal: sumWhere(own, 'paid', 'total'),
+    statusCounts: statusCountsOf(own),
   }
 }
 

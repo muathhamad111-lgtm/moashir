@@ -83,6 +83,34 @@ describe('branding mock (settings.branding.manage — hard-locked)', () => {
     expect(reset.body.data.primaryColor).toBe('#98d8d3')
   })
 
+  it('saves readable overrides, refuses unknown or unreadable ones and clears them on reset', async () => {
+    signInAs(['system_admin'])
+    const unknown = await call('PUT', '/settings/branding', {
+      primaryColor: '#98d8d3',
+      secondaryColor: '#0a2325',
+      colorOverrides: { navbar: '#ffffff' },
+    })
+    expect(unknown.status).toBe(422)
+    expect(unknown.body.errors).toHaveProperty('colorOverrides')
+    const unreadable = await call('PUT', '/settings/branding', {
+      primaryColor: '#98d8d3',
+      secondaryColor: '#0a2325',
+      colorOverrides: { onSecondary: '#6b8a8c' },
+    })
+    expect(unreadable.body.code).toBe('contrast_fail')
+    expect(unreadable.body.meta.pairs.map((pair) => pair.pair)).toEqual(['secondary.text_on_fill'])
+    const saved = await call('PUT', '/settings/branding', {
+      primaryColor: '#98d8d3',
+      secondaryColor: '#0a2325',
+      colorOverrides: { primarySoft: '#E6F4F3' },
+    })
+    expect(saved.body.data.colorOverrides).toEqual({ primarySoft: '#e6f4f3' })
+    expect(saved.body.data.scheme.primarySoft).toBe('#e6f4f3')
+    const reset = await call('POST', '/settings/branding/reset')
+    expect(reset.body.data.colorOverrides).toEqual({})
+    expect(reset.body.data.scheme.primarySoft).toBe('#f5fbfb')
+  })
+
   it('stores one logo per background variant; only the global reset returns both to the brand default', async () => {
     signInAs(['system_admin'])
     storeBrandingLogo('dark', new File(['<svg/>'], 'dark.svg', { type: 'image/svg+xml' }))

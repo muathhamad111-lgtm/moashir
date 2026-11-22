@@ -24,6 +24,18 @@
 .branding-page__layout {
   display: grid;
   gap: var(--space-6);
+  align-items: start;
+
+  @include respond-to('xl') {
+    grid-template-columns: minmax(0, 1fr) 24rem;
+  }
+}
+
+.branding-page__preview {
+  @include respond-to('xl') {
+    position: sticky;
+    inset-block-start: var(--space-6);
+  }
 }
 
 .branding-page__form {

@@ -1,0 +1,147 @@
+{
+  "note": "Shared brand-scheme test vectors: BrandColorDeriver (Pest) and deriveBrandScheme (Vitest) must both produce these schemes.",
+  "vectors": [
+    {
+      "label": "brand default",
+      "primary": "#98d8d3",
+      "secondary": "#0a2325",
+      "overrides": {},
+      "scheme": {
+        "primary": "#98d8d3",
+        "on_primary": "#100f10",
+        "primary_text": "#547774",
+        "primary_hover": "#88c0bc",
+        "primary_soft": "#f5fbfb",
+        "secondary": "#0a2325",
+        "on_secondary": "#ffffff"
+      }
+    },
+    {
+      "label": "TTS default",
+      "primary": "#d4088c",
+      "secondary": "#4a2a7d",
+      "overrides": {},
+      "scheme": {
+        "primary": "#d4088c",
+        "on_primary": "#ffffff",
+        "primary_text": "#c90885",
+        "primary_hover": "#bc097d",
+        "primary_soft": "#fbe6f4",
+        "secondary": "#4a2a7d",
+        "on_secondary": "#ffffff"
+      }
+    },
+    {
+      "label": "light yellow",
+      "primary": "#ffe066",
+      "secondary": "#0a2325",
+      "overrides": {},
+      "scheme": {
+        "primary": "#ffe066",
+        "on_primary": "#100f10",
+        "primary_text": "#807033",
+        "primary_hover": "#e2c75c",
+        "primary_soft": "#fffcf0",
+        "secondary": "#0a2325",
+        "on_secondary": "#ffffff"
+      }
+    },
+    {
+      "label": "very light",
+      "primary": "#fff8e1",
+      "secondary": "#f0f0f0",
+      "overrides": {},
+      "scheme": {
+        "primary": "#fff8e1",
+        "on_primary": "#100f10",
+        "primary_text": "#737065",
+        "primary_hover": "#e2dcc8",
+        "primary_soft": "#fffefc",
+        "secondary": "#f0f0f0",
+        "on_secondary": "#100f10"
+      }
+    },
+    {
+      "label": "very dark",
+      "primary": "#050505",
+      "secondary": "#101010",
+      "overrides": {},
+      "scheme": {
+        "primary": "#050505",
+        "on_primary": "#ffffff",
+        "primary_text": "#050505",
+        "primary_hover": "#060606",
+        "primary_soft": "#e6e6e6",
+        "secondary": "#101010",
+        "on_secondary": "#ffffff"
+      }
+    },
+    {
+      "label": "mid tone",
+      "primary": "#777777",
+      "secondary": "#0a2325",
+      "overrides": {},
+      "scheme": {
+        "primary": "#777777",
+        "on_primary": "#ffffff",
+        "primary_text": "#6b6b6b",
+        "primary_hover": "#6b6b6b",
+        "primary_soft": "#f1f1f1",
+        "secondary": "#0a2325",
+        "on_secondary": "#ffffff"
+      }
+    },
+    {
+      "label": "blue",
+      "primary": "#1c5f9a",
+      "secondary": "#12263a",
+      "overrides": {},
+      "scheme": {
+        "primary": "#1c5f9a",
+        "on_primary": "#ffffff",
+        "primary_text": "#1c5f9a",
+        "primary_hover": "#1b5589",
+        "primary_soft": "#e8eff5",
+        "secondary": "#12263a",
+        "on_secondary": "#ffffff"
+      }
+    },
+    {
+      "label": "overridden hover and soft",
+      "primary": "#98d8d3",
+      "secondary": "#0a2325",
+      "overrides": {
+        "primary_hover": "#7cc5bf",
+        "primary_soft": "#e6f4f3"
+      },
+      "scheme": {
+        "primary": "#98d8d3",
+        "on_primary": "#100f10",
+        "primary_text": "#4c6c6a",
+        "primary_hover": "#7cc5bf",
+        "primary_soft": "#e6f4f3",
+        "secondary": "#0a2325",
+        "on_secondary": "#ffffff"
+      }
+    },
+    {
+      "label": "overridden text colours",
+      "primary": "#1c5f9a",
+      "secondary": "#12263a",
+      "overrides": {
+        "on_primary": "#fffbe6",
+        "primary_text": "#0f3a60",
+        "on_secondary": "#d9f7f7"
+      },
+      "scheme": {
+        "primary": "#1c5f9a",
+        "on_primary": "#fffbe6",
+        "primary_text": "#0f3a60",
+        "primary_hover": "#1b5589",
+        "primary_soft": "#e8eff5",
+        "secondary": "#12263a",
+        "on_secondary": "#d9f7f7"
+      }
+    }
+  ]
+}

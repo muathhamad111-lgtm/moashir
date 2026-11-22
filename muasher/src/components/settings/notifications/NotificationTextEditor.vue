@@ -1,34 +1,67 @@
 <script setup>
-import { toRef } from 'vue'
+import { computed, ref, toRef } from 'vue'
 import { useI18n } from 'vue-i18n'
-import BaseTextarea from '@/components/form/BaseTextarea.vue'
+import Tabs from '@/components/ui/Tabs.vue'
+import ToggleSwitch from '@/components/ui/ToggleSwitch.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import Badge from '@/components/ui/Badge.vue'
+import NotificationChannelFields from './NotificationChannelFields.vue'
 import NotificationVariableChips from './NotificationVariableChips.vue'
 import NotificationSmsApproval from './NotificationSmsApproval.vue'
+import NotificationLanguageSwitch from './NotificationLanguageSwitch.vue'
+import NotificationTextPreview from './NotificationTextPreview.vue'
 import { useNotificationTextForm } from '@/composables/useNotificationTextForm'
 import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
+import { NOTIFICATION_CHANNELS } from '@/constants/notificationCatalogue'
+import { channelPartsOf } from '@/utils/notificationTextParts'
 
 const props = defineProps({
   text: { type: Object, required: true },
-  smsEnabled: { type: Boolean, default: false },
+  channelSettings: { type: Array, required: true },
+  isCore: { type: Boolean, default: false },
+  initialChannel: { type: String, default: '' },
+  switching: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['saved', 'reset'])
-
-const { t, te } = useI18n()
+const emit = defineEmits(['saved', 'reset', 'switch'])
+const { t } = useI18n()
 const toast = useToast()
 const { confirm } = useConfirm()
-const form = useNotificationTextForm(toRef(props, 'text'), toRef(props, 'smsEnabled'), {
+const form = useNotificationTextForm(toRef(props, 'text'), toRef(props, 'isCore'), {
   onSaved: (data) => emit('saved', data),
   onReset: () => emit('reset'),
 })
 
-function partLabel(part) {
-  const key = `settings.notifications.texts.parts.${part}`
-  return te(key) ? t(key) : part
+const locale = ref('ar')
+const channels = computed(() =>
+  NOTIFICATION_CHANNELS.filter(
+    (channel) => channelPartsOf(props.text, channel, props.isCore).length,
+  ),
+)
+const channel = ref(
+  channels.value.includes(props.initialChannel) ? props.initialChannel : channels.value[0],
+)
+const parts = computed(() => channelPartsOf(props.text, channel.value, props.isCore))
+
+function isOn(value) {
+  return props.channelSettings.some(
+    (row) =>
+      row.channel === value &&
+      row.isEnabled &&
+      (!props.text.audience || row.audience === props.text.audience),
+  )
 }
+
+const tabs = computed(() =>
+  channels.value.map((value) => ({
+    value,
+    label: t(`settings.notifications.catalogue.channels.${value}`),
+    badge: isOn(value)
+      ? t('settings.notifications.texts.channelOn')
+      : t('settings.notifications.texts.channelOff'),
+  })),
+)
 
 async function save() {
   try {
@@ -57,60 +90,45 @@ async function reset() {
 
 <template>
   <form class="notification-text" novalidate @submit.prevent="save">
-    <div class="notification-text__status">
-      <Badge v-if="text.isCustomized" variant="info">
-        {{ t('settings.notifications.texts.customized') }}
-      </Badge>
-      <Badge v-else variant="muted">{{ t('settings.notifications.texts.shipped') }}</Badge>
-    </div>
-    <fieldset
-      v-for="(value, part) in form.draft.value"
-      :key="part"
-      class="notification-text__part"
-      :disabled="form.busy.value"
-    >
-      <legend class="notification-text__legend">{{ partLabel(part) }}</legend>
-      <div class="notification-text__fields">
-        <div @focusin="form.remember(part, 'ar', $event)">
-          <BaseTextarea
-            v-model="value.ar"
-            :name="`${text.key}-${part}-ar`"
-            :label="t('settings.notifications.texts.arabic')"
-            :rows="part === 'body' || part === 'line' ? 4 : 2"
-            :error="form.errorOf(part, 'ar')"
-            input-dir="rtl"
-            required
-          />
-        </div>
-        <div @focusin="form.remember(part, 'en', $event)">
-          <BaseTextarea
-            v-model="value.en"
-            :name="`${text.key}-${part}-en`"
-            :label="t('settings.notifications.texts.english')"
-            :rows="part === 'body' || part === 'line' ? 4 : 2"
-            :error="form.errorOf(part, 'en')"
-            input-dir="ltr"
-            required
-          />
-        </div>
+    <Tabs v-model="channel" class="notification-text__channels" :tabs="tabs">
+      <div class="notification-text__bar">
+        <ToggleSwitch
+          :model-value="isOn(channel)"
+          :name="`${text.key}-${channel}`"
+          :label="t('settings.notifications.texts.channelSwitch')"
+          :disabled="isCore || switching"
+          @update:model-value="
+            emit('switch', { channel, enabled: $event, audience: text.audience })
+          "
+        />
+        <Badge v-if="text.isCustomized" variant="info">{{
+          t('settings.notifications.texts.customized')
+        }}</Badge>
+        <NotificationLanguageSwitch v-model="locale" />
       </div>
-      <NotificationSmsApproval v-if="part === 'sms'" :approval="text.sms?.approval ?? null" />
-    </fieldset>
-    <NotificationVariableChips
-      :variables="text.variables"
-      :required="text.requiredVariables"
-      :disabled="form.busy.value"
-      @insert="form.insertVariable"
-    />
+      <div class="notification-text__grid">
+        <div class="notification-text__fields">
+          <NotificationChannelFields :parts="parts" :form="form" :text="text" :locale="locale" />
+          <NotificationSmsApproval
+            v-if="channel === 'sms'"
+            :approval="text.sms?.approval ?? null"
+          />
+          <NotificationVariableChips
+            :variables="text.variables"
+            :required="text.requiredVariables"
+            :disabled="form.busy.value"
+            @insert="form.insertVariable"
+          />
+        </div>
+        <NotificationTextPreview
+          :channel="channel"
+          :draft="form.draft.value"
+          :text="text"
+          :locale="locale"
+        />
+      </div>
+    </Tabs>
     <div class="notification-text__actions">
-      <BaseButton
-        type="submit"
-        variant="primary"
-        :loading="form.busy.value"
-        :disabled="!form.isDirty.value"
-      >
-        {{ t('settings.notifications.texts.save') }}
-      </BaseButton>
       <BaseButton
         v-if="text.isCustomized"
         variant="ghost"
@@ -119,6 +137,14 @@ async function reset() {
         @click="reset"
       >
         {{ t('settings.notifications.texts.reset') }}
+      </BaseButton>
+      <BaseButton
+        type="submit"
+        variant="primary"
+        :loading="form.busy.value"
+        :disabled="!form.isDirty.value"
+      >
+        {{ t('settings.notifications.texts.save') }}
       </BaseButton>
     </div>
   </form>

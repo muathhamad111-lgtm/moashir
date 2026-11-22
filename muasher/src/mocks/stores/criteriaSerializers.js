@@ -8,7 +8,7 @@ import {
   subsOf,
   versionWithStatus,
 } from './criteriaStore'
-import { activeTotal, scoresGuidingPoints } from './criteriaRules'
+import { activeTotal } from './criteriaRules'
 
 const PUBLIC_MODEL_FIELDS = ['id', 'code', 'order', 'group', 'name', 'description']
 
@@ -120,7 +120,7 @@ export function pointResource(point) {
     subCriterionId: point.subId,
     code: point.code,
     description: { ...point.description },
-    weight: fromHundredths(point.weight),
+    weight: point.weight === null ? null : fromHundredths(point.weight),
     scoringType: point.scoringType,
     active: point.active,
     order: point.order,
@@ -134,7 +134,7 @@ function treePoint(point) {
     code: point.code,
     order: point.order,
     description: { ...point.description },
-    weight: fromHundredths(point.weight),
+    weight: point.weight === null ? null : fromHundredths(point.weight),
     scoringType: point.scoringType,
     attachments: attachmentsOf('point', point.id).map(treeAttachment),
   }
@@ -153,11 +153,9 @@ function treeSub(sub) {
     hasCv: sub.hasCv,
     assessorNoteLabel: sub.assessorNoteLabel ? { ...sub.assessorNoteLabel } : null,
     attachments: attachmentsOf('sub', sub.id).map(treeAttachment),
-    points: scoresGuidingPoints(sub)
-      ? pointsOf(sub.id)
-          .filter((point) => point.active)
-          .map(treePoint)
-      : [],
+    points: pointsOf(sub.id)
+      .filter((point) => point.active)
+      .map(treePoint),
   }
 }
 

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { PRELOAD_ERROR_EVENT, installChunkErrorRecovery } from '@/router/chunkErrorRecovery'
+import { warmRouteChunks } from '@/router/routeChunks'
 import { createReloadGuard } from '@/utils/reloadGuard'
 import { ROUTE_NAMES } from '@/constants/routeNames'
 
@@ -135,6 +136,15 @@ describe('installChunkErrorRecovery', () => {
     const { router, browser } = await pageLife()
     await expect(router.push('/reports')).rejects.toThrow(/dynamically imported/)
     expect(browser.location.reload).not.toHaveBeenCalled()
+    expect(browser.location.assign).toHaveBeenCalledExactlyOnceWith('/reports')
+  })
+
+  it('leaves a chunk that fails while warming to the navigation that needs it', async () => {
+    const { router, browser } = await pageLife()
+    warmRouteChunks(router, '/reports')
+    await new Promise((resolve) => setTimeout(resolve))
+    expect(browser.location.reload).not.toHaveBeenCalled()
+    await expect(router.push('/reports')).rejects.toThrow(/dynamically imported/)
     expect(browser.location.assign).toHaveBeenCalledExactlyOnceWith('/reports')
   })
 

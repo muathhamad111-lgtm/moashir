@@ -32,8 +32,8 @@ final readonly class ToggleGuidingPoint
                 return $point;
             }
 
-            if ($isActive) {
-                $this->allocation->forPoint($sub->refresh(), $point, $point->weight, true);
+            if ($isActive && $sub->refresh()->scoresGuidingPoints()) {
+                $this->allocation->forPoint($sub, $point, $point->weight, true);
             }
 
             $point->is_active = $isActive;

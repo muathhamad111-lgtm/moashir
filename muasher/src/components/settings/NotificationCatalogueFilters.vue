@@ -3,65 +3,42 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppSelect from '@/components/form/AppSelect.vue'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
-import {
-  NOTIFICATION_AUDIENCES,
-  NOTIFICATION_CATEGORIES,
-  NOTIFICATION_MODULES,
-} from '@/constants/notificationCatalogue'
+import { NOTIFICATION_AUDIENCE_KINDS } from '@/constants/notificationCatalogue'
 
 const props = defineProps({
-  modelValue: { type: Object, required: true },
+  filters: { type: Object, required: true },
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['change'])
 const { t } = useI18n()
 
-function optionsOf(values, labelOf) {
-  return [
-    { value: '', label: t('dataList.filter.all') },
-    ...values.map((value) => ({ value, label: labelOf(value) })),
-  ]
-}
+const audienceOptions = computed(() => [
+  { value: '', label: t('dataList.filter.all') },
+  ...NOTIFICATION_AUDIENCE_KINDS.map((value) => ({
+    value,
+    label: t(`settings.notifications.catalogue.audienceKinds.${value}`),
+  })),
+])
 
-const moduleOptions = computed(() =>
-  optionsOf(NOTIFICATION_MODULES, (value) => t(`notifications.modules.${value}`)),
-)
-const categoryOptions = computed(() =>
-  optionsOf(NOTIFICATION_CATEGORIES, (value) =>
-    t(`settings.notifications.catalogue.categories.${value}`),
-  ),
-)
-const audienceOptions = computed(() =>
-  optionsOf(NOTIFICATION_AUDIENCES, (value) =>
-    t(`settings.notifications.catalogue.audiences.${value}`),
-  ),
-)
 function update(key, value) {
-  emit('update:modelValue', { ...props.modelValue, [key]: value })
+  emit('change', { [key]: value })
 }
 
-const filterState = { filters: props.modelValue, setFilter: update }
+const filterState = { filters: props.filters, defaults: { audience: '' }, setFilter: update }
 </script>
 
 <template>
   <ListToolbar
-    class="notification-catalogue__filters"
-    :searchable="false"
+    class="notification-catalogue__toolbar"
+    :search="filters.search"
+    :search-placeholder="t('settings.notifications.catalogue.search')"
     :filter-state="filterState"
+    @update:search="update('search', $event)"
   >
+    <template #actions>
+      <slot name="actions" />
+    </template>
     <template #filters="{ draft }">
-      <AppSelect
-        :label="t('settings.notifications.catalogue.columns.module')"
-        :model-value="draft.filters.module"
-        :options="moduleOptions"
-        @update:model-value="draft.setFilter('module', $event)"
-      />
-      <AppSelect
-        :label="t('settings.notifications.catalogue.columns.category')"
-        :model-value="draft.filters.category"
-        :options="categoryOptions"
-        @update:model-value="draft.setFilter('category', $event)"
-      />
       <AppSelect
         :label="t('settings.notifications.catalogue.audienceFilter')"
         :model-value="draft.filters.audience"

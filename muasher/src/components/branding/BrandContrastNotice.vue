@@ -6,15 +6,11 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 
 const props = defineProps({
   pairs: { type: Array, required: true },
-  scheme: { type: Object, default: null },
 })
 
 const { t, n } = useI18n()
 
 const failing = computed(() => props.pairs.filter((pair) => !pair.passes))
-const isShaded = computed(
-  () => Boolean(props.scheme) && props.scheme.primaryText !== props.scheme.primary,
-)
 </script>
 
 <template>
@@ -32,9 +28,4 @@ const isShaded = computed(
       </li>
     </ul>
   </div>
-  <p v-else-if="isShaded" class="brand-contrast brand-contrast--note" role="status">
-    <AppIcon name="info-circle" />
-    <span>{{ t('branding.contrast.shadeNote') }}</span>
-    <bdi class="brand-contrast__hex u-ltr">{{ scheme.primaryText }}</bdi>
-  </p>
 </template>

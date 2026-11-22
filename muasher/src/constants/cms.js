@@ -81,18 +81,32 @@ export const CMS_SECTION_KEY_PATTERN = /^[a-z][a-z0-9_-]*$/
 
 export const CMS_BACKGROUND_PATTERN = /^[a-z][a-z0-9-]*$/
 
+export const HTTPS_LINK_PATTERN = /^https:\/\/[^\s<>"]+$/
+
 export const SAFE_LINK_PATTERNS = Object.freeze([
   /^\/(?!\/)[A-Za-z0-9\-._~/?=&%#]*$/,
   /^#[A-Za-z][A-Za-z0-9_-]*$/,
   /^mailto:[^\s@<>"]+@[^\s@<>"]+$/,
-  /^https:\/\/[^\s<>"]+$/,
+  HTTPS_LINK_PATTERN,
 ])
 
 export const CMS_IMAGE_RULES = Object.freeze({
   maxBytes: 5 * 1024 * 1024,
   mimeTypes: ['image/png', 'image/jpeg'],
   accept: '.png,.jpg,.jpeg,image/png,image/jpeg',
+  typeErrorKey: 'cms.image.invalidType',
+  sizeErrorKey: 'cms.image.tooLarge',
 })
+
+export const CMS_LOGO_RULES = Object.freeze({
+  maxBytes: 1024 * 1024,
+  mimeTypes: ['image/png', 'image/jpeg', 'image/svg+xml'],
+  accept: '.png,.jpg,.jpeg,.svg,image/png,image/jpeg,image/svg+xml',
+  typeErrorKey: 'cms.partners.logoInvalidType',
+  sizeErrorKey: 'cms.partners.logoTooLarge',
+})
+
+export const CMS_LOGO_SECTION_TYPES = Object.freeze(['partners'])
 
 export const SITE_SETTINGS_LIMITS = Object.freeze({
   featuredMin: 3,

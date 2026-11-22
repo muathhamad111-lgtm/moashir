@@ -200,6 +200,9 @@ it('shows the System Administrator the notification type catalogue with the enab
         'channels' => ['in_app', 'email'],
         'audiences' => ['super_admin'],
         'is_mandatory' => true,
+        'is_core' => true,
+        'audience_kinds' => ['management'],
+        'channel_states' => ['management' => ['in_app' => true, 'email' => true, 'sms' => false]],
         'user_configurable_channels' => [],
         'enabled_channels' => ['in_app', 'email'],
     ])

@@ -123,6 +123,20 @@ describe('ReviewSubPanel', () => {
     expect(wrapper.find('.review-folded').exists()).toBe(false)
   })
 
+  it('judges a direct sub-criterion once and lists its indicators with their evidence', async () => {
+    const wrapper = mountSub({ ...POINTS_SUB, evaluationType: 'direct' })
+    await flushPromises()
+    expect(wrapper.find('.review-card__head input').attributes('name')).toBe('sub-21')
+    expect(wrapper.find('.review-card__count').exists()).toBe(false)
+    const rows = wrapper.findAll('.review-item--descriptive')
+    expect(rows).toHaveLength(2)
+    expect(rows[0].text()).toContain('Published vision')
+    expect(rows[0].find('input').exists()).toBe(false)
+    expect(rows[0].find('.review-evidence__name').text()).toBe('page.pdf')
+    expect(rows[1].find('.review-rows__missing').exists()).toBe(true)
+    expect(wrapper.text()).toContain('the indicators and their evidence are there to verify it')
+  })
+
   it('folds the CV and the feedback, and locks the scores before the review starts', () => {
     const wrapper = mountSub(POINTS_SUB, { canScore: false })
     expect(wrapper.find('.review-folded__text').text()).toBe(

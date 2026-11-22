@@ -21,6 +21,8 @@ final readonly class ContrastValidator
         return [
             $this->pair('primary.text_on_fill', $scheme->onPrimary, $scheme->primary),
             $this->pair('primary.text_on_content', $scheme->primaryText, $this->surface('content')),
+            $this->pair('primary.text_on_hover', $scheme->onPrimary, $scheme->primaryHover),
+            $this->pair('primary.text_on_soft', $scheme->primaryText, $scheme->primarySoft),
             $this->pair('secondary.text_on_fill', $scheme->onSecondary, $scheme->secondary),
         ];
     }

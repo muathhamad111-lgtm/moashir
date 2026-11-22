@@ -60,12 +60,8 @@ export const criteriaErrorMessages = {
     en: 'The weight :weight cannot be distributed equally over :shares items.',
   },
   'criteria.sub_evaluated_directly': {
-    ar: 'يُقيَّم هذا المعيار الفرعي مباشرة، لذا لا يمكن تقييم مؤشرات عليه.',
-    en: 'This sub-criterion is evaluated directly, so indicators cannot be scored on it.',
-  },
-  'criteria.points_confirm_required': {
-    ar: 'يؤدي التحويل إلى التقييم المباشر إلى حذف :count من المؤشرات. أكّد للمتابعة.',
-    en: 'Switching to direct evaluation deletes :count indicators. Confirm to continue.',
+    ar: 'يُقيَّم هذا المعيار الفرعي مباشرة، لذا لا تحمل مؤشراته أوزانًا ولا أنواع تقييم.',
+    en: 'This sub-criterion is evaluated directly, so its indicators carry no weights or scoring types.',
   },
   'criteria.node_not_a_child': {
     ar: 'هذا العنصر لا يتبع المعيار الذي تُوزَّع أوزانه.',

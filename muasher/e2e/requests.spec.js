@@ -98,6 +98,11 @@ test.describe('Requests follower', () => {
     const rows = page.locator('.table:not(.table--loading) tbody .table__row')
     await expect(rows.first()).toBeVisible()
     await expect(page.locator('.stats-card')).toHaveCount(4)
+    // Regression 2026-11-22: the stage counts arrive camel-cased; these two cards showed 0.
+    const card = (label) =>
+      page.locator('.stats-card', { hasText: label }).locator('.stats-card__value')
+    await expect(card(isEn(testInfo) ? 'Awaiting assignment' : 'بانتظار الإسناد')).toHaveText('1')
+    await expect(card(isEn(testInfo) ? 'In progress' : 'قيد العمل')).toHaveText('3')
     const overdue = page.locator('.overdue-badge.badge--danger').first()
     await expect(overdue).toBeVisible()
     await expect(overdue.locator('svg.app-icon')).toHaveCount(1)
@@ -106,14 +111,20 @@ test.describe('Requests follower', () => {
       fullPage: true,
     })
     const filters = await openListFilters(page)
-    await filters.locator('.dropdown-field').first().click()
+    await expect(filters.locator('[data-testid="request-stage-filter"]')).toContainText('(9)')
+    await page.screenshot({
+      path: `test-results/requests-queue-filter-panel-${suffixOf(testInfo)}.png`,
+    })
+    await filters.locator('[data-testid="request-status-filter"] [role="combobox"]').click()
     await page
       .getByRole('option', { name: isEn(testInfo) ? 'Submitted' : 'مُرسل', exact: true })
       .click()
     await applyOpenListFilters(page)
     await expect(rows).toHaveCount(1)
     await expect(rows.first()).toContainText('ACC-2026-000005')
-    await expect(page.locator('.queue-stages__chip[aria-pressed="true"]')).toContainText('(1)')
+    const reopened = await openListFilters(page)
+    await expect(reopened.locator('[data-testid="request-stage-filter"]')).toContainText('(1)')
+    await page.keyboard.press('Escape')
     expect(errors).toEqual([])
   })
 

@@ -1,4 +1,5 @@
 import { SCORE_LEVELS } from '@/constants/assessment'
+import { EVALUATION_TYPES } from '@/constants/criteria'
 import { assessmentReject, fieldMessage } from './assessmentRejection'
 import {
   decimalRaw,
@@ -78,7 +79,9 @@ export function validateScoreRequest(body, record, presence) {
 function subsScoredThroughPoints(tree) {
   return new Set(
     tree.mains.flatMap((main) =>
-      main.subs.filter((sub) => sub.points.length).map((sub) => String(sub.id)),
+      main.subs
+        .filter((sub) => sub.evaluationType === EVALUATION_TYPES.GUIDING_POINTS)
+        .map((sub) => String(sub.id)),
     ),
   )
 }

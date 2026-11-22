@@ -119,3 +119,36 @@ export const EVENT_RESULT_VARIANTS = Object.freeze({
   unmatched: 'warning',
   late_payment: 'danger',
 })
+
+// The finance page's tabs: operations, the bank-transfer approval queue and the gateway events log.
+export const FINANCE_TABS = Object.freeze({
+  OPERATIONS: 'operations',
+  TRANSFERS: 'transfers',
+  EVENTS: 'events',
+})
+
+// Badge colour of a ledger status (the statuses the operations filter and the overview cards use).
+export const LEDGER_STATUS_VARIANTS = Object.freeze({
+  paid: 'success',
+  under_review: 'info',
+  awaiting_payment: 'warning',
+  rejected: 'danger',
+  failed: 'danger',
+  cancelled: 'muted',
+  refunded: 'warning',
+})
+
+// The statuses each overview card splits its operations into.
+export const OVERVIEW_STATUSES = Object.freeze({
+  all: ['paid', 'under_review', 'awaiting_payment', 'rejected', 'failed'],
+  electronic: ['paid', 'awaiting_payment', 'failed'],
+  bank_transfer: ['paid', 'under_review', 'awaiting_payment', 'rejected'],
+})
+
+// The operations table's columns; the optional ones are off until a viewer turns them on.
+export const TRANSACTION_COLUMNS = Object.freeze({
+  FIXED: ['operation', 'actions'],
+  TOGGLEABLE: ['entity', 'total', 'payment', 'status', 'createdAt', 'receipt', 'beforeVat'],
+  HIDDEN_BY_DEFAULT: ['receipt', 'beforeVat'],
+  STORAGE_KEY: 'muasher.finance.columns',
+})

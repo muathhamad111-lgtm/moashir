@@ -35,6 +35,7 @@ const itemsOpen = ref(false)
 const itemsSectionId = ref(null)
 const detailsOpen = ref(false)
 const upload = (file) => cmsService.uploadImage(file)
+const uploadLogo = (file) => cmsService.uploadLogo(file)
 
 const itemsSection = () =>
   sections.value.find((section) => section.id === itemsSectionId.value) ?? null
@@ -115,6 +116,7 @@ onMounted(editor.load)
         :sections="sections"
         :localized="localized"
         :busy="busy"
+        :published-at="page.published ? page.publishedAt : null"
         @reorder="
           (ids) => attempt(() => editor.reorderSections(ids), 'cms.sections.toasts.reordered')
         "
@@ -148,6 +150,7 @@ onMounted(editor.load)
       :section="itemsSection()"
       :editor="editor"
       :upload="upload"
+      :upload-logo="uploadLogo"
     />
     <PageDetailsDialog v-model="detailsOpen" :page="page" :save="saveDetails" />
   </div>

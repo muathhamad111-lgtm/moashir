@@ -6,7 +6,7 @@ import { reject } from './criteriaRejection'
 export function activeTotal(nodes, excludingId = null) {
   return nodes
     .filter((node) => node.active && node.id !== excludingId)
-    .reduce((total, node) => total + node.weight, 0)
+    .reduce((total, node) => total + (node.weight ?? 0), 0)
 }
 
 export function scoresGuidingPoints(sub) {
@@ -46,6 +46,21 @@ function assignShares(nodes, total) {
   active.forEach((node, index) => {
     node.weight = base + (index < remainder ? 1 : 0)
   })
+}
+
+// Scored on indicators again: the sub's weight is split equally over all its indicators (an inactive one
+// keeps an even share of the whole set) and the split stays equal until switched to manual.
+export function distributeIndicatorsEqually(sub) {
+  const points = pointsOf(sub.id)
+  if (!points.length) return
+  if (sub.weight < points.length)
+    throw reject.tooSmallToDistribute(fromHundredths(sub.weight), points.length)
+  const base = Math.floor(sub.weight / points.length)
+  points.forEach((point, index) => {
+    point.weight = base + (index < sub.weight - base * points.length ? 1 : 0)
+  })
+  sub.distributeEqually = true
+  rebalancePointsOf(sub)
 }
 
 export function rebalancePointsOf(sub) {

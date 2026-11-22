@@ -17,10 +17,7 @@ const TONES = {
 </script>
 
 <template>
-  <p v-if="!approval" class="notification-text__sms-note">
-    {{ t('settings.notifications.texts.sms.unsaved') }}
-  </p>
-  <ul v-else class="notification-text__sms-approval">
+  <ul v-if="approval" class="notification-text__sms-approval">
     <li v-for="locale in ['ar', 'en']" :key="locale">
       <Badge :variant="TONES[approval[locale]] ?? 'muted'">
         {{ t(`settings.notifications.texts.sms.locales.${locale}`) }} —

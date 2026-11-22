@@ -290,7 +290,7 @@ test('capture the criteria workspace and the review page', async ({ page }, test
   })
 })
 
-test('switching a sub-criterion with indicators to direct evaluation warns with the indicator count', async ({
+test('switching a sub-criterion to direct evaluation keeps its indicators as descriptive items', async ({
   page,
 }, testInfo) => {
   await seed(page, testInfo)
@@ -302,11 +302,28 @@ test('switching a sub-criterion with indicators to direct evaluation warns with 
     .getByRole('button', { name: /Switch to direct evaluation|التحويل إلى التقييم المباشر/ })
     .click()
   const confirm = page.getByRole('alertdialog')
-  await expect(confirm).toContainText('3')
+  await expect(confirm).toContainText(
+    /indicators and their attachments stay|تبقى المؤشرات ومرفقاتها/,
+  )
   await page.screenshot({ path: `test-results/criteria-switch-warning-${suffixOf(testInfo)}.png` })
-  await confirm.getByRole('button', { name: /Cancel|إلغاء/ }).click()
+  await confirm.getByRole('button', { name: /^(Switch|تحويل)$/ }).click()
+  await expect(page.locator('.toast--success').last()).toBeVisible()
   await closeSheet(page)
-  await expect(pointsOf(page, nameOf(testInfo, 'direction'))).toHaveCount(3)
+
+  const indicators = pointsOf(page, nameOf(testInfo, 'direction'))
+  await expect(indicators).toHaveCount(3)
+  await expect(indicators.first()).toContainText(/Descriptive|وصفي/)
+  await expect(indicators.first().locator('.criteria-share')).toHaveCount(0)
+  await page.screenshot({
+    path: `test-results/criteria-direct-indicators-${suffixOf(testInfo)}.png`,
+    fullPage: true,
+  })
+
+  await indicators.first().getByRole('button', { name: OPEN_NODE }).click()
+  await expect(sheet(page).getByRole('tab')).toHaveText([
+    /Basics|الأساسيات/,
+    /Attachments|المرفقات/,
+  ])
 })
 
 test('a text correction on the published version changes the name in place', async ({

@@ -1,7 +1,7 @@
 import { delay } from 'msw'
 import { http } from '../contract/http'
 import { envelope } from '../contract/responses'
-import { DEFAULT_BRAND_COLORS, LOGO_RULES } from '@/constants/branding'
+import { DEFAULT_BRAND_COLORS, DERIVED_BRAND_COLORS, LOGO_RULES } from '@/constants/branding'
 import { brandContrastPairs, deriveBrandScheme, normalizeHex } from '@/utils/brandingContrast'
 import {
   getBrandingTheme,
@@ -24,7 +24,10 @@ const MINIMUM_CONTRAST = '4.5'
 
 function themeResource() {
   const theme = getBrandingTheme()
-  const scheme = deriveBrandScheme({ primary: theme.primaryColor, secondary: theme.secondaryColor })
+  const scheme = deriveBrandScheme(
+    { primary: theme.primaryColor, secondary: theme.secondaryColor },
+    theme.colorOverrides,
+  )
   return { ...theme, scheme, defaultColors: { ...DEFAULT_BRAND_COLORS } }
 }
 
@@ -38,12 +41,26 @@ function requireReason(user, reason) {
   if (user.superAdmin && !text) throw contentReject.reasonRequired()
 }
 
+function requireOverrides(raw, errors) {
+  const entries = Object.entries(raw ?? {})
+  errors.check(
+    entries.every(([key]) => DERIVED_BRAND_COLORS.includes(key)),
+    'colorOverrides',
+    'unknownKey',
+  )
+  entries.forEach(([key, value]) =>
+    errors.check(normalizeHex(value), `colorOverrides.${key}`, 'hexColor'),
+  )
+  return Object.fromEntries(entries.map(([key, value]) => [key, normalizeHex(value)]))
+}
+
 function requireColors(body) {
+  const errors = createFieldErrors()
   const colors = {
     primary: normalizeHex(body.primaryColor),
     secondary: normalizeHex(body.secondaryColor),
+    overrides: requireOverrides(body.colorOverrides, errors),
   }
-  const errors = createFieldErrors()
   errors.check(colors.primary, 'primaryColor', 'hexColor')
   errors.check(colors.secondary, 'secondaryColor', 'hexColor')
   errors.throwIfAny()
@@ -51,7 +68,7 @@ function requireColors(body) {
 }
 
 function failingPairs(colors) {
-  return brandContrastPairs(deriveBrandScheme(colors))
+  return brandContrastPairs(deriveBrandScheme(colors, colors.overrides))
     .filter((pair) => !pair.passes)
     .map((pair) => ({
       pair: pair.key,

@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { termsService } from '@/services/termsService'
+import { takeRegistrationRead } from '@/composables/registration/registrationReads'
 
 export function useRegistrationTerms() {
   const terms = ref(null)
@@ -8,7 +8,7 @@ export function useRegistrationTerms() {
   async function loadTerms() {
     termsStatus.value = 'loading'
     try {
-      const { data } = await termsService.current()
+      const { data } = await takeRegistrationRead('terms')
       terms.value = data
       termsStatus.value = data?.terms ? 'success' : 'unavailable'
     } catch {

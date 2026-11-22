@@ -17,13 +17,6 @@ final class CriteriaTreeRejected extends ApiException
         ]));
     }
 
-    public static function pointsConfirmationRequired(int $pointCount): self
-    {
-        return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'criteria.points_confirm_required', [
-            'confirm_delete_points' => [__('errors.criteria.points_confirm_required_detail', ['count' => (string) $pointCount])],
-        ], [], ['impact' => ['point_count' => $pointCount]]));
-    }
-
     public static function orderIncomplete(): self
     {
         return new self(new ApiError(Response::HTTP_UNPROCESSABLE_ENTITY, 'order.incomplete', [

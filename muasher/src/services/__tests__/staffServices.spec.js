@@ -31,6 +31,20 @@ describe('staff services on the real contracts', () => {
     expect(data[0]).toMatchObject({ code: 'CNT-01', audiences: [], userConfigurableChannels: [] })
   })
 
+  it('switches channels in bulk and reads the channel states back by channel name', async () => {
+    respond('patch', [
+      {
+        code: 'REG-01',
+        isCore: false,
+        channelStates: { management: { inApp: false, email: true } },
+      },
+    ])
+    const change = { scope: 'codes', codes: ['REG-01'], channels: ['in_app'], enabled: false }
+    const { data } = await notificationTypesService.bulkUpdate(change)
+    expect(apiClient.patch).toHaveBeenCalledWith('/settings/notifications/channels', change)
+    expect(data[0].channelStates).toEqual({ management: { in_app: false, email: true } })
+  })
+
   it('lists the certificates of a request and calls the staff actions', async () => {
     respond('get', [
       { id: 'c1', number: 'CRT-1', status: 'issued', issuedBy: { id: 10, name: 'A' } },

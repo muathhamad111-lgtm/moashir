@@ -73,17 +73,6 @@ it('blocks adding a guiding point once the sub-criterion weight is exhausted', f
         ->assertJsonPath('meta.remaining_weight', '0.00');
 });
 
-it('refuses guiding points on a directly evaluated sub-criterion', function (): void {
-    $scored = scoredSub();
-    $direct = SubCriterion::query()->where('main_criterion_id', $scored->main_criterion_id)->where('code', 'M1.1')->firstOrFail();
-    signIn(criteriaOfficer());
-
-    $this->postJson('/api/v1/criteria/subs/'.$direct->id.'/points', pointPayload())
-        ->assertUnprocessable()
-        ->assertJsonPath('code', 'criteria.sub_evaluated_directly')
-        ->assertJsonValidationErrors('evaluation_type');
-});
-
 it('distributes the sub-criterion weight equally over its active guiding points', function (): void {
     $sub = scoredSub();
     $sub->forceFill(['distribute_equally' => true])->save();

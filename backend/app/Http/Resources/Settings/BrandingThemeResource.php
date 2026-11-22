@@ -31,6 +31,7 @@ final class BrandingThemeResource extends JsonResource
         return [
             'primary_color' => $theme->primary_color,
             'secondary_color' => $theme->secondary_color,
+            'color_overrides' => (object) $theme->colors()->overrides->toArray(),
             'scheme' => $this->scheme->toArray(),
             'default_colors' => ['primary' => $this->defaults->primary, 'secondary' => $this->defaults->secondary],
             'logo_light' => PublicAssetLink::of($theme->logoLight),

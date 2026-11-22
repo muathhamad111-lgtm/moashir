@@ -2,6 +2,7 @@ import { Buffer } from 'node:buffer'
 import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
 import { applyOpenListFilters, openListFilters, searchList } from './support/listFilters'
+import { closeSuccess, decisionAction } from './support/dialogs'
 
 const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d/i
 const PAID_ACCREDITED = '3f0c9a52-6d1e-4b7a-9c21-5a1e00000001'
@@ -58,9 +59,15 @@ test('the finance section opens on the operations with their summary cards', asy
   await seedStaff(page, testInfo, STAFF.financeOfficer)
   await page.goto('/finance')
   await expect(page).toHaveURL(/\/finance\/transactions$/)
-  await expect(page.locator('.stats-card')).toHaveCount(4)
+  await expect(page.locator('.finance-overview__card')).toHaveCount(4)
   await expect(page.locator('.finance-nav__link')).toHaveCount(0)
-  await expect(page.locator('thead th')).toHaveCount(9)
+  await expect(page.locator('.tabs__tab')).toHaveText([
+    isEn(testInfo) ? 'Operations' : 'العمليات',
+    new RegExp(isEn(testInfo) ? 'Awaiting approval' : 'بانتظار الاعتماد'),
+  ])
+  await expect(page.locator('thead th')).toHaveCount(7)
+  await expect(page.locator('.table__row').first()).toBeVisible()
+  await expect(page.locator('tbody')).not.toContainText('@')
   await page.screenshot({
     path: `test-results/finance-summary-${suffixOf(testInfo)}.png`,
     fullPage: true,
@@ -115,7 +122,7 @@ test('the default lists payments of both modes, and either mode is one filter aw
   await seedStaff(page, testInfo, STAFF.financeOfficer)
   await page.goto('/finance/transactions')
   await expect(page.locator('.table__row')).toHaveCount(10)
-  const testBadge = page.locator('.transactions-table__reference .badge--warning')
+  const testBadge = page.locator('.transactions-table__badges .badge--warning')
   await expect(testBadge.first()).toBeVisible()
 
   await chooseMode(page, testInfo, { en: 'Preview payments', ar: 'مدفوعات المعاينة' })
@@ -125,6 +132,101 @@ test('the default lists payments of both modes, and either mode is one filter aw
   await chooseMode(page, testInfo, { en: 'Live payments', ar: 'المدفوعات الفعلية' })
   await expect(page.locator('.table__row').first()).toBeVisible()
   await expect(testBadge).toHaveCount(0)
+})
+
+test('a status on the overview cards filters the operations, and the columns are the viewer’s choice', async ({
+  page,
+}, testInfo) => {
+  const errors = trackConsole(page)
+  await seedStaff(page, testInfo, STAFF.financeOfficer)
+  await page.goto('/finance/transactions')
+  await expect(page.locator('.table__row')).toHaveCount(10)
+  const failed = page
+    .locator('.finance-overview__split-card')
+    .first()
+    .locator('.finance-overview__cell')
+    .nth(4)
+  const failedCount = await failed.locator('.finance-overview__count').textContent()
+  await failed.click()
+  await expect(page.locator('.table__row')).toHaveCount(Number(failedCount))
+  await expect(page.locator('.filter-dialog__count')).toHaveText('1')
+
+  await page.locator('.column-chooser > button').click()
+  await page.getByRole('checkbox', { name: isEn(testInfo) ? 'Receipt no.' : 'رقم الإيصال' }).check()
+  await page.getByRole('checkbox', { name: isEn(testInfo) ? 'Payment' : 'الدفع' }).uncheck()
+  await page.keyboard.press('Escape')
+  const headers = page.locator('thead th')
+  await expect(headers).toHaveCount(7)
+  await expect(
+    headers.filter({ hasText: isEn(testInfo) ? 'Receipt no.' : 'رقم الإيصال' }),
+  ).toHaveCount(1)
+  await page.reload()
+  await expect(
+    page.locator('thead th').filter({ hasText: isEn(testInfo) ? 'Receipt no.' : 'رقم الإيصال' }),
+  ).toHaveCount(1)
+  expect(errors).toEqual([])
+})
+
+test('the eye opens the receipt over the list, with its PDF and the full page', async ({
+  page,
+}, testInfo) => {
+  const errors = trackConsole(page)
+  await seedStaff(page, testInfo, STAFF.financeOfficer)
+  await page.goto('/finance/transactions?status=paid')
+  await page.locator('.transactions-table__view').first().click()
+  const receipt = page.locator('.receipt-modal__body')
+  await expect(receipt).toBeVisible()
+  await expect(page.locator('.modal__title')).toContainText(isEn(testInfo) ? 'Receipt' : 'إيصال')
+  await expect(receipt.locator('.pricing-breakdown')).toBeVisible()
+  await expect(receipt).not.toContainText('@')
+  await page.screenshot({ path: `test-results/finance-receipt-modal-${suffixOf(testInfo)}.png` })
+  const download = page.waitForEvent('download')
+  await page.locator('.finance-modal__footer .btn--primary').click()
+  expect((await download).suggestedFilename()).toMatch(/\.pdf$/)
+  await page.locator('.modal__close').click()
+  await expect(receipt).toHaveCount(0)
+  await expect(page).toHaveURL(/\/finance\/transactions/)
+  expect(errors).toEqual([])
+})
+
+test('a reviewer approves a queued transfer in place and rejects one from its review window', async ({
+  page,
+}, testInfo) => {
+  const errors = trackConsole(page)
+  await seedStaff(page, testInfo, STAFF.financeOfficer)
+  await page.goto('/finance/transactions')
+  await page.locator('.tabs__tab').nth(1).click()
+  await expect(page).toHaveURL(/\/finance\/transfers$/)
+  const rows = page.locator('.transfer-queue__table tbody tr')
+  await expect(rows).toHaveCount(3)
+  await rows.first().locator('.transfer-queue__approve').click()
+  await decisionAction(page).click()
+  await closeSuccess(page)
+  await expect(rows).toHaveCount(2)
+
+  await rows.first().locator('.transfer-queue__view').click()
+  await expect(page.locator('.transfer-review-modal__layout')).toBeVisible()
+  await page.screenshot({ path: `test-results/finance-transfer-modal-${suffixOf(testInfo)}.png` })
+  await page.locator('.finance-modal__footer .btn--secondary').first().click()
+  await expect(page.locator('.transfer-review-modal__layout')).toHaveCount(0)
+  await page.locator('.modal__panel').getByRole('radio').first().check()
+  await page.locator('.modal__footer .btn--danger').click()
+  await closeSuccess(page)
+  await expect(rows).toHaveCount(1)
+  expect(errors).toEqual([])
+})
+
+test('the System Administrator sees the queue read-only and the events as a tab', async ({
+  page,
+}, testInfo) => {
+  await seedStaff(page, testInfo, STAFF.systemAdmin)
+  await page.goto('/finance/transfers')
+  await expect(page.locator('.transfers-page__read-only')).toBeVisible()
+  await expect(page.locator('.transfer-queue__approve')).toHaveCount(0)
+  await expect(page.locator('.tabs__tab')).toHaveCount(3)
+  await page.locator('.tabs__tab').nth(2).click()
+  await expect(page).toHaveURL(/\/finance\/payment-events$/)
+  await expect(page.locator('.payment-events__ref').first()).toBeVisible()
 })
 
 test('a large export is queued and downloaded once it is ready', async ({ page }, testInfo) => {
@@ -237,6 +339,9 @@ test('refunds open from the operations, and abandoned carts are listed for their
   await expect(page.locator('.table__row')).toHaveCount(1)
   await expect(page.locator('.filter-dialog__count')).toHaveText('1')
   await page.locator('.transactions-table__view').first().click()
+  await expect(page.locator('.receipt-modal__body')).toBeVisible()
+  await page.locator('.finance-modal__footer a:has([data-icon="link"])').click()
+  await expect(page).toHaveURL(/\/finance\/transactions\/[0-9a-f-]{36}$/)
   await expect(page.locator('.transaction-events')).toBeVisible()
   const download = page.waitForEvent('download')
   await page.locator('.card:has(.refund-record) .card__footer .btn').click()

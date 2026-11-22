@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\Cms\CmsPagePublicationController;
 use App\Http\Controllers\Api\V1\Cms\CmsSectionController;
 use App\Http\Controllers\Api\V1\Cms\CmsSectionItemController;
 use App\Http\Controllers\Api\V1\Cms\ContentImageController;
+use App\Http\Controllers\Api\V1\Cms\ContentLogoController;
 use App\Http\Controllers\Api\V1\Cms\LegalVersionController;
 use App\Http\Controllers\Api\V1\Cms\PublicContentController;
 use App\Http\Controllers\Api\V1\Cms\PublishLegalVersionController;
@@ -72,6 +73,7 @@ Route::middleware([...$signedIn, $manage])
         Route::get('site-settings', [SiteSettingsController::class, 'show'])->name('site-settings.show');
         Route::patch('site-settings', [SiteSettingsController::class, 'update'])->middleware('throttle:content-write')->name('site-settings.update');
         Route::post('images', ContentImageController::class)->middleware('throttle:uploads')->name('images.store');
+        Route::post('logos', ContentLogoController::class)->middleware('throttle:uploads')->name('logos.store');
     });
 
 Route::middleware([...$signedIn, $manageLegal])

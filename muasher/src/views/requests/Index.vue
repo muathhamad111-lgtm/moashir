@@ -8,7 +8,6 @@ import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import Pagination from '@/components/data-list/Pagination.vue'
 import RequestQueueFilters from '@/components/requests/RequestQueueFilters.vue'
 import RequestQueueTable from '@/components/requests/RequestQueueTable.vue'
-import QueueStageChips from '@/components/requests/QueueStageChips.vue'
 import AssignAssessorDialog from '@/components/requests/AssignAssessorDialog.vue'
 import { useRequestQueue } from '@/composables/useRequestQueue'
 import { useQueueStatCards } from '@/composables/useQueueStatCards'
@@ -87,7 +86,6 @@ const filterState = {
       @select="stage = $event"
     />
     <Card>
-      <QueueStageChips v-model="stage" :counts="stageCounts" />
       <ListToolbar
         v-model:search="searchInput"
         :search-placeholder="t('requests.index.searchPlaceholder')"
@@ -100,6 +98,7 @@ const filterState = {
             :sort="draft.sort.value"
             :assessors="assessors"
             :cycles="cycles"
+            :stage-counts="stageCounts"
             @filter="draft.setFilter"
             @sort="draft.setSort"
           />

@@ -5,8 +5,10 @@ declare(strict_types=1);
 use App\Data\Criteria\CriteriaNotice;
 use App\Data\Entities\EntityNotice;
 use App\Enums\Identity\RoleKey;
+use App\Enums\Notifications\NotificationAudienceKind;
 use App\Enums\Notifications\NotificationCode;
 use App\Listeners\Notifications\SkipDisabledDeliveryChannel;
+use App\Models\Identity\User;
 use App\Models\Notifications\NotificationChannelSetting;
 use App\Notifications\Channels\InAppChannel;
 use App\Notifications\Criteria\CriteriaNotification;
@@ -20,7 +22,9 @@ const NOTIFICATION_CHANNELS = '/api/v1/settings/notifications/types';
  */
 function channelStates(string $code): array
 {
-    return collect(switchTo(systemAdmin())->getJson(NOTIFICATION_CHANNELS.'/'.$code)->assertOk()->json('data.channel_settings'))->keyBy('channel')->all();
+    return collect(switchTo(systemAdmin())->getJson(NOTIFICATION_CHANNELS.'/'.$code)->assertOk()->json('data.channel_settings'))
+        ->keyBy(static fn (array $state): string => $state['audience'].'.'.$state['channel'])
+        ->all();
 }
 
 function registeredNotice(): EntityNotification
@@ -28,29 +32,44 @@ function registeredNotice(): EntityNotification
     return new EntityNotification(EntityNotice::for(NotificationCode::EntityRegistered, EntityNotice::FOR_STAFF, ['entity' => 'جمعية الأمل الخيرية', 'reference' => 'ENT-000001'], 'admin/entities/1'));
 }
 
-function deliveryAllowed(object $notification, string $channel): ?bool
+function deliveryAllowed(object $notification, string $channel, ?User $recipient = null): ?bool
 {
-    return app(SkipDisabledDeliveryChannel::class)->handle(new NotificationSending(systemAdmin(), $notification, $channel));
+    return app(SkipDisabledDeliveryChannel::class)->handle(new NotificationSending($recipient ?? systemAdmin(), $notification, $channel));
 }
 
-it('shows the channel switches of a type, locked for a mandatory one', function (): void {
+it('shows the channel switches of a type per audience, locked for a core one', function (): void {
     $registered = channelStates('REG-01');
     $invitation = channelStates('USR-01');
 
-    expect($registered['in_app'])->toBe(['channel' => 'in_app', 'is_enabled' => true, 'is_shipped' => true, 'is_switchable' => true])
-        ->and($registered['email']['is_enabled'])->toBeTrue()
-        ->and($registered['sms'])->toBe(['channel' => 'sms', 'is_enabled' => false, 'is_shipped' => false, 'is_switchable' => true])
+    expect(array_keys($registered))->toBe(['beneficiary.in_app', 'beneficiary.email', 'beneficiary.sms', 'management.in_app', 'management.email', 'management.sms'])
+        ->and($registered['beneficiary.in_app'])->toBe(['channel' => 'in_app', 'audience' => 'beneficiary', 'is_enabled' => true, 'is_shipped' => true, 'is_switchable' => true])
+        ->and($registered['management.email']['is_enabled'])->toBeTrue()
+        ->and($registered['management.sms'])->toBe(['channel' => 'sms', 'audience' => 'management', 'is_enabled' => false, 'is_shipped' => false, 'is_switchable' => true])
         ->and(collect($invitation)->pluck('is_switchable')->unique()->all())->toBe([false]);
 });
 
-it('switches e-mail off for a type, so it is no longer sent to anyone', function (): void {
-    switchTo(systemAdmin())->patchJson(NOTIFICATION_CHANNELS.'/REG-01/channels', ['channels' => ['email' => false]])
-        ->assertOk()
-        ->assertJsonPath('data.channel_settings.1.is_enabled', false);
+it('switches e-mail off for every audience of a type, so it is no longer sent to anyone', function (): void {
+    switchTo(systemAdmin())->patchJson(NOTIFICATION_CHANNELS.'/REG-01/channels', ['channels' => ['email' => false]])->assertOk();
 
-    expect(NotificationChannelSetting::query()->sole()->is_enabled)->toBeFalse()
+    expect(NotificationChannelSetting::query()->pluck('audience')->map->value->sort()->values()->all())->toBe(['beneficiary', 'management'])
         ->and(deliveryAllowed(registeredNotice(), 'mail'))->toBeFalse()
+        ->and(deliveryAllowed(registeredNotice(), 'mail', entityUser()))->toBeFalse()
         ->and(deliveryAllowed(registeredNotice(), InAppChannel::class))->toBeNull();
+});
+
+it('switches e-mail off for management only and keeps sending it to the beneficiary', function (): void {
+    switchTo(systemAdmin())->patchJson(NOTIFICATION_CHANNELS.'/REG-01/channels', ['audience' => 'management', 'channels' => ['email' => false]])->assertOk();
+
+    expect(channelStates('REG-01')['management.email']['is_enabled'])->toBeFalse()
+        ->and(channelStates('REG-01')['beneficiary.email']['is_enabled'])->toBeTrue()
+        ->and(deliveryAllowed(registeredNotice(), 'mail'))->toBeFalse()
+        ->and(deliveryAllowed(registeredNotice(), 'mail', entityUser()))->toBeNull();
+});
+
+it('lets the administrator switch off a type that used to be mandatory', function (): void {
+    switchTo(systemAdmin())->patchJson(NOTIFICATION_CHANNELS.'/ACC-07/channels', ['channels' => ['email' => false]])->assertOk();
+
+    expect(channelStates('ACC-07')['beneficiary.email']['is_enabled'])->toBeFalse();
 });
 
 it('switches e-mail on for an in-app only type and sends its notice by e-mail too', function (): void {
@@ -66,7 +85,7 @@ it('switches e-mail on for an in-app only type and sends its notice by e-mail to
 
 it('goes back to the shipped channels when the shipped state is chosen again', function (): void {
     switchTo(systemAdmin())->patchJson(NOTIFICATION_CHANNELS.'/REG-01/channels', ['channels' => ['email' => false, 'in_app' => true]])->assertOk();
-    expect(NotificationChannelSetting::query()->count())->toBe(1);
+    expect(NotificationChannelSetting::query()->count())->toBe(2);
 
     switchTo(systemAdmin())->patchJson(NOTIFICATION_CHANNELS.'/REG-01/channels', ['channels' => ['email' => true]])->assertOk();
 
@@ -80,20 +99,33 @@ it('reports the enabled channels in the catalogue list', function (): void {
     $row = collect(switchTo(systemAdmin())->getJson(NOTIFICATION_CHANNELS)->assertOk()->json('data'))->firstWhere('code', 'REG-01');
 
     expect($row['channels'])->toBe(['in_app', 'email'])
-        ->and($row['enabled_channels'])->toBe(['in_app']);
+        ->and($row['enabled_channels'])->toBe(['in_app'])
+        ->and($row['is_core'])->toBeFalse()
+        ->and($row['audience_kinds'])->toBe(['beneficiary', 'management'])
+        ->and($row['channel_states']['management'])->toBe(['in_app' => true, 'email' => false, 'sms' => false]);
 });
 
-it('refuses to switch the channels of a mandatory type or an unknown channel', function (string $code, array $channels, string $field): void {
-    switchTo(systemAdmin())->patchJson(NOTIFICATION_CHANNELS.'/'.$code.'/channels', ['channels' => $channels])
+it('refuses to switch the channels of a core type, an unknown channel or an audience the type never reaches', function (string $code, array $payload, string $field): void {
+    switchTo(systemAdmin())->patchJson(NOTIFICATION_CHANNELS.'/'.$code.'/channels', $payload)
         ->assertUnprocessable()
         ->assertJsonValidationErrors([$field]);
 
     expect(NotificationChannelSetting::query()->count())->toBe(0);
 })->with([
-    'mandatory' => ['USR-01', ['email' => false], 'channels'],
-    'unknown channel' => ['REG-01', ['push' => true], 'channels'],
-    'not a boolean' => ['REG-01', ['email' => 'later'], 'channels.email'],
+    'core' => ['USR-01', ['channels' => ['email' => false]], 'channels'],
+    'unknown channel' => ['REG-01', ['channels' => ['push' => true]], 'channels'],
+    'not a boolean' => ['REG-01', ['channels' => ['email' => 'later']], 'channels.email'],
+    'audience not reached' => ['STD-01', ['audience' => 'beneficiary', 'channels' => ['email' => true]], 'audience'],
+    'unknown audience' => ['REG-01', ['audience' => 'public', 'channels' => ['email' => true]], 'audience'],
 ]);
+
+it('reads a recipient loaded without its roles as staff or beneficiary without lazy loading', function (): void {
+    $staff = User::query()->findOrFail(staffUser(RoleKey::CriteriaOfficer)->id);
+    $entity = User::query()->findOrFail(entityUser()->id);
+
+    expect(NotificationAudienceKind::of($staff))->toBe(NotificationAudienceKind::Management)
+        ->and(NotificationAudienceKind::of($entity))->toBe(NotificationAudienceKind::Beneficiary);
+});
 
 it('answers 404 for an unknown type and 403 without the settings permission', function (): void {
     switchTo(systemAdmin())->patchJson(NOTIFICATION_CHANNELS.'/XYZ-99/channels', ['channels' => ['email' => false]])->assertNotFound();

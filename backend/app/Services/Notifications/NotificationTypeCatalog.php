@@ -30,6 +30,7 @@ final class NotificationTypeCatalog
             array_map(NotificationChannel::fromLetter(...), str_split($definition[Definitions::CHANNELS])),
             $definition[Definitions::AUDIENCES],
             $definition[Definitions::MANDATORY],
+            $code->isCore(),
         );
     }
 

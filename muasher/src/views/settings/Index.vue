@@ -36,12 +36,6 @@ const sections = computed(() => [
     group: 'platform',
   },
   {
-    key: 'cities',
-    to: ROUTE_NAMES.ADMIN_SETTINGS_CITIES,
-    icon: 'building',
-    group: 'platform',
-  },
-  {
     key: 'auditLog',
     to: ROUTE_NAMES.ADMIN_AUDIT_LOG,
     icon: 'shield-info',

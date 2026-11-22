@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listeners\Notifications;
 
+use App\Enums\Notifications\NotificationAudienceKind;
 use App\Enums\Notifications\NotificationChannel;
 use App\Enums\Notifications\NotificationCode;
 use App\Models\Identity\User;
@@ -33,7 +34,7 @@ final readonly class SkipDisabledDeliveryChannel
 
         $code = $event->notification->notificationCode();
 
-        if ($this->systemChannels->isSwitchedOff($code, $channel)) {
+        if ($this->systemChannels->isSwitchedOff($code, $channel, NotificationAudienceKind::of($event->notifiable))) {
             return false;
         }
 

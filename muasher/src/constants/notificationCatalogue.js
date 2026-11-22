@@ -19,6 +19,7 @@ export const NOTIFICATION_MODULES = Object.freeze([
   'STD',
   'SELF',
   'ACC',
+  'PER',
   'ADV',
   'CYC',
   'EVD',
@@ -48,3 +49,9 @@ export const NOTIFICATION_AUDIENCES = Object.freeze([
 ])
 
 export const NOTIFICATION_CHANNELS = Object.freeze(['in_app', 'email', 'sms'])
+
+// Who a notification's wording speaks to; set by the system (beneficiary = entity users and guests).
+export const NOTIFICATION_AUDIENCE_KINDS = Object.freeze(['beneficiary', 'management'])
+
+// The sign-in / verification code: its text message is the SMS settings' OTP template, not a notice text.
+export const OTP_NOTIFICATION_CODE = 'REG-02'

@@ -106,7 +106,7 @@ final readonly class CriteriaNodeWriter
     {
         $point->fill([
             'description' => $attributes->description,
-            'weight' => $this->requireWeight($attributes->weight),
+            'weight' => $attributes->weight,
         ]);
         $point->fill(array_filter(['scoring_type' => $attributes->scoringType]));
     }

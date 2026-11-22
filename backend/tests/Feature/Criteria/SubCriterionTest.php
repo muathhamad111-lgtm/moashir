@@ -159,7 +159,7 @@ it('changes the evaluation type only through the dedicated switch', function ():
     $this->putJson('/api/v1/criteria/subs/'.$sub->id, ['active' => false])->assertUnprocessable()->assertJsonValidationErrors('active');
 });
 
-it('warns about the guiding points before switching to direct evaluation', function (): void {
+it('switches the evaluation type at once and notifies the criteria managers', function (): void {
     $sub = subIn(openMain(), 'M1.2', '300.00', 2);
     pointIn($sub, 'M1.2.1', '100.00');
     pointIn($sub, 'M1.2.2', '100.00', 2);
@@ -167,25 +167,16 @@ it('warns about the guiding points before switching to direct evaluation', funct
     signIn(criteriaOfficer());
 
     $this->patchJson('/api/v1/criteria/subs/'.$sub->id.'/evaluation-type', ['evaluation_type' => 'direct'])
-        ->assertUnprocessable()
-        ->assertJsonPath('code', 'criteria.points_confirm_required')
-        ->assertJsonPath('meta.impact.point_count', 2)
-        ->assertJsonValidationErrors('confirm_delete_points');
-    expect(GuidingPoint::query()->where('sub_criterion_id', $sub->id)->count())->toBe(2);
-
-    $this->patchJson('/api/v1/criteria/subs/'.$sub->id.'/evaluation-type', ['evaluation_type' => 'direct', 'confirm_delete_points' => true])
         ->assertOk()
         ->assertJsonPath('data.evaluation_type', 'direct')
-        ->assertJsonPath('data.point_count', 0);
-
-    $audit = Audit::query()->where('event', AuditEvent::CriteriaSubTypeSwitched->value)->firstOrFail();
-    expect($audit->new_values['removed_point_codes'] ?? null)->toBe(['M1.2.1', 'M1.2.2']);
+        ->assertJsonPath('data.point_count', 2);
     Notification::assertSentTo($colleague, CriteriaNotification::class, static fn (CriteriaNotification $notification): bool => $notification->notice->code->value === 'STD-05');
 
     $this->patchJson('/api/v1/criteria/subs/'.$sub->id.'/evaluation-type', ['evaluation_type' => 'guiding_points'])
         ->assertOk()
         ->assertJsonPath('data.evaluation_type', 'guiding_points');
     Notification::assertSentTo($colleague, CriteriaNotification::class, static fn (CriteriaNotification $notification): bool => $notification->notice->code->value === 'STD-04');
+    expect(GuidingPoint::query()->where('sub_criterion_id', $sub->id)->count())->toBe(2);
 });
 
 it('treats switching to the current evaluation type as a no-op', function (): void {

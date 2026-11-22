@@ -2,6 +2,7 @@ import { isChunkLoadError } from '@/utils/chunkLoadError'
 import { createReloadGuard } from '@/utils/reloadGuard'
 import { logger } from '@/utils/logger'
 import { recoveryLocationFor } from './chunkRecoveryTarget'
+import { isWarmingRouteChunks } from './routeChunks'
 
 export const PRELOAD_ERROR_EVENT = 'vite:preloadError'
 
@@ -30,7 +31,7 @@ export function installChunkErrorRecovery(
   }
 
   function recoverPreload(event) {
-    if (navigating || !isChunkLoadError(event.payload)) return
+    if (navigating || isWarmingRouteChunks() || !isChunkLoadError(event.payload)) return
     const target = currentHref(browser.location)
     if (claimReload(target, { source: 'preload' })) browser.location.reload()
   }

@@ -168,6 +168,21 @@ enum NotificationCode: string
         };
     }
 
+    /**
+     * Core notifications give access to an account or alert on a security event (an NCA ECC monitoring
+     * control): they are always sent, and their wording may change but not their variables or button.
+     */
+    public function isCore(): bool
+    {
+        return in_array($this, [
+            self::StaffInvited, self::AccountLocked, self::PasswordResetRequested, self::SuperAdminEmailChanged,
+            self::OtpCode, self::EntityVerificationReminder, self::EntityEmailChangeRequested,
+            self::SuperAdminLogin, self::SuperAdminMfaFailed, self::SuperAdminGrantChanged, self::ReasonRequiredAction,
+            self::SuperAdminAssignmentRejected, self::IntegrationSecretReplaced, self::EntitySignInCodeChannelsChanged,
+            self::TwoFactorPolicyChanged,
+        ], true);
+    }
+
     public function module(): string
     {
         return (string) strstr($this->value, '-', true);

@@ -115,4 +115,11 @@ export const cmsService = {
       fileType: file?.type ?? '',
     })
   },
+  uploadLogo(file) {
+    const form = new FormData()
+    form.append('file', file)
+    return images.write('uploadLogo', () => apiClient.post('/admin/content/logos', form), {
+      fileType: file?.type ?? '',
+    })
+  },
 }

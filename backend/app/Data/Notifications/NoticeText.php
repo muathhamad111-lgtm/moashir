@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Notifications;
 
+use App\Support\Notifications\Templates\NotificationTextParts;
 use App\Support\ValueObjects\LocalizedText;
 use Illuminate\Support\Facades\Lang;
 
@@ -30,6 +31,31 @@ final readonly class NoticeText
         return LocalizedText::fromTranslationWith($this->key.'.body', $this->replacements);
     }
 
+    /**
+     * The e-mail's own subject when an administrator wrote one, else the notice's title.
+     */
+    public function emailSubject(): LocalizedText
+    {
+        return $this->optional(NotificationTextParts::EMAIL_SUBJECT) ?? $this->title();
+    }
+
+    /**
+     * The e-mail's own body (Markdown-lite) when an administrator wrote one, with its `:placeholders` left in place:
+     * it is parsed first and the values are filled in afterwards as literal text (see `MailMarkdown`).
+     */
+    public function emailBodyTemplate(): ?LocalizedText
+    {
+        return $this->has(NotificationTextParts::EMAIL_BODY) ? LocalizedText::fromTranslation($this->key.'.'.NotificationTextParts::EMAIL_BODY) : null;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function replacementsIn(string $locale): array
+    {
+        return array_map(static fn (LocalizedText|string $value): string => $value instanceof LocalizedText ? $value->in($locale) : $value, $this->replacements);
+    }
+
     public function sms(): ?LocalizedText
     {
         return $this->optional('sms');
@@ -53,13 +79,12 @@ final readonly class NoticeText
 
     private function optional(string $part): ?LocalizedText
     {
-        foreach (self::LOCALES as $locale) {
-            if (! Lang::has($this->key.'.'.$part, $locale, false)) {
-                return null;
-            }
-        }
+        return $this->has($part) ? LocalizedText::fromTranslationWith($this->key.'.'.$part, $this->replacements) : null;
+    }
 
-        return LocalizedText::fromTranslationWith($this->key.'.'.$part, $this->replacements);
+    private function has(string $part): bool
+    {
+        return array_all(self::LOCALES, fn (string $locale): bool => Lang::has($this->key.'.'.$part, $locale, false));
     }
 
     public function templateKey(): string

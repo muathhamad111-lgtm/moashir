@@ -38,7 +38,6 @@ final class BankTransferResource extends JsonResource
                 'id' => $payment->entity_id,
                 'reference' => $payment->entity->reference(),
                 'name' => $payment->entity_name->toArray(),
-                'email' => $payment->entity->owner?->email,
                 'is_frozen' => $payment->entity->trashed(),
             ],
             ...($transfer instanceof BankTransfer ? StaffTransferPresenter::detailsOf($transfer) : []),

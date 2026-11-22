@@ -1,10 +1,12 @@
 import { apiClient } from '@/api/client'
 import {
+  DERIVED_BRAND_COLORS,
   FAVICON_SURFACE,
   LOGO_VARIANT_BY_SURFACE,
   SIDEBAR_LOGO_SURFACE,
   SITE_LOGO_SURFACE,
 } from '@/constants/branding'
+import { BRAND_SCHEME_KEYS } from '@/utils/brandingContrast'
 import { contentImageUrl } from '@/utils/contentImage'
 import { payloadShape } from '@/utils/payloadShape'
 import { serviceRequest } from './serviceRequest'
@@ -12,13 +14,13 @@ import { DOMAIN_REJECTIONS } from './domainRequest'
 
 function toScheme(scheme) {
   if (!scheme) return null
-  return {
-    primary: scheme.primary,
-    onPrimary: scheme.onPrimary,
-    primaryText: scheme.primaryText,
-    secondary: scheme.secondary,
-    onSecondary: scheme.onSecondary,
-  }
+  return Object.fromEntries(BRAND_SCHEME_KEYS.map((key) => [key, scheme[key]]))
+}
+
+function toOverrides(overrides) {
+  return Object.fromEntries(
+    DERIVED_BRAND_COLORS.filter((key) => overrides?.[key]).map((key) => [key, overrides[key]]),
+  )
 }
 
 function toColors(colors) {
@@ -37,6 +39,7 @@ function toTheme(data) {
   if (!data) return null
   return {
     colors: { primary: data.primaryColor, secondary: data.secondaryColor },
+    overrides: toOverrides(data.colorOverrides),
     scheme: toScheme(data.scheme),
     defaultColors: toColors(data.defaultColors),
     logos: toLogos(data),
@@ -66,8 +69,8 @@ export const brandingService = {
   get() {
     return themeRequest('branding.get', () => apiClient.get('/settings/branding'))
   },
-  update({ primaryColor, secondaryColor, reason = null }) {
-    const payload = withReason({ primaryColor, secondaryColor }, reason)
+  update({ primaryColor, secondaryColor, colorOverrides = {}, reason = null }) {
+    const payload = withReason({ primaryColor, secondaryColor, colorOverrides }, reason)
     return themeRequest('branding.update', () => apiClient.put('/settings/branding', payload), {
       payloadShape: payloadShape(payload),
     })

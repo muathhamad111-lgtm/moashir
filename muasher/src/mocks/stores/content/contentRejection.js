@@ -39,6 +39,7 @@ export const contentReject = {
   orderIncomplete: () => codeOnField(422, 'order.incomplete', 'orderedIds'),
   fileNotUsable: (field) => codeOnField(422, 'file.not_usable', field),
   fileContentMismatch: () => codeOnField(422, 'file.content_mismatch', 'file'),
+  unsafeSvg: () => codeOnField(422, 'file.unsafe_svg', 'file'),
   slugTaken: () => codeOnField(422, 'slug.taken', 'slug'),
   featuredLimitReached: (limit) =>
     codeOnField(422, 'kpi.featured_limit_reached', 'showOnHomepage', {

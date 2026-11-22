@@ -11,13 +11,37 @@
 }
 
 .transactions-table__reference {
-  @include flex(row, center, flex-start, var(--space-2));
-  flex-wrap: wrap;
+  color: var(--theme-heading);
+  font-weight: var(--fw-semibold);
   font-variant-numeric: tabular-nums;
 }
 
+.transactions-table__badges {
+  @include flex(row, center, flex-start, var(--space-1));
+  flex-wrap: wrap;
+}
+
+.transactions-table__entity {
+  @include flex(row, center, flex-start, var(--space-2));
+  // On a phone the table scrolls sideways rather than breaking a name letter by letter.
+  min-inline-size: var(--size-search-min);
+}
+
+// Initials only: entities are organisations, and no personal photo is shown in finance lists.
+.transactions-table__avatar {
+  @include flex-center;
+  flex-shrink: 0;
+  inline-size: var(--size-icon-box-sm);
+  block-size: var(--size-icon-box-sm);
+  border-radius: var(--radius-circle);
+  background-color: var(--theme-accent-soft);
+  color: var(--theme-accent-text);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+}
+
 .transactions-table__nowrap,
-.transactions-table__reference bdi {
+.transactions-table__reference {
   white-space: nowrap;
 }
 

@@ -76,8 +76,17 @@ describe('CriteriaNodeSheet', () => {
       'Indicators',
       'Advanced',
     ])
-    expect(tabsOf('sub-22')).not.toContain('Indicators')
+    expect(tabsOf('sub-22')).toEqual([
+      'Basics',
+      'Weight',
+      'Evaluation',
+      'Attachments',
+      'Indicators',
+      'Advanced',
+    ])
     expect(tabsOf('point-31')).toEqual(['Basics', 'Weight', 'Evaluation', 'Attachments'])
+    // An indicator of a directly evaluated sub-criterion has no weight and no scoring type.
+    expect(tabsOf('point-32')).toEqual(['Basics', 'Attachments'])
   })
 
   it('shows where the node sits and lets the editor jump up the path', async () => {

@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace App\Data\Notifications;
 
 use App\Models\Notifications\NotificationTextOverride;
+use App\Support\Notifications\Templates\NotificationTextParts;
 use App\Support\Notifications\Templates\NotificationTextTemplate;
 
 final readonly class NotificationTextView
 {
-    public const string SMS_PART = 'sms';
-
     /**
      * @param  list<string>  $requiredVariables
      */
@@ -25,7 +24,7 @@ final readonly class NotificationTextView
      */
     public function sms(): ?array
     {
-        return $this->override?->parts[self::SMS_PART] ?? null;
+        return $this->override?->parts[NotificationTextParts::SMS] ?? null;
     }
 
     /**
@@ -33,6 +32,6 @@ final readonly class NotificationTextView
      */
     public function current(string $part): array
     {
-        return $this->override?->parts[$part] ?? $this->template->parts[$part];
+        return $this->override?->parts[$part] ?? $this->template->editableParts()[$part];
     }
 }

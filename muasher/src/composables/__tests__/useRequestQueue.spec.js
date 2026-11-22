@@ -4,6 +4,7 @@ import { computed } from 'vue'
 import { withSetup } from '@/test-utils/withSetup'
 import { useRequestQueue } from '@/composables/useRequestQueue'
 import { useFilterDraft } from '@/composables/useFilterDraft'
+import { useQueueStage } from '@/composables/useQueueStage'
 import { requestsService } from '@/services/requestsService'
 
 vi.mock('@/services/requestsService', () => ({
@@ -79,5 +80,40 @@ describe('useRequestQueue', () => {
     await globals.router.push('/admin/requests?path=advanced&overdue=true')
     await flushPromises()
     expect(draft.activeCount.value).toBe(1)
+  })
+
+  it('takes the stage chosen in the filter dialog into the address and counts it as a filter', async () => {
+    const { api, globals } = withSetup(() => {
+      const { stage } = useQueueStage()
+      return {
+        stage,
+        queue: useRequestQueue(
+          computed(() => ['accredited']),
+          stage,
+        ),
+      }
+    })
+    await globals.router.push('/admin/requests')
+    await flushPromises()
+    const draft = withSetup(() =>
+      useFilterDraft({
+        filters: api.queue.filters.filters,
+        defaults: api.queue.filterDefaults,
+        setFilter: api.queue.chooseFilter,
+      }),
+    ).api
+    draft.load()
+    draft.draft.setFilter('stage', 'overdue')
+    draft.apply()
+    await flushPromises()
+    expect(globals.router.currentRoute.value.query.stage).toBe('overdue')
+    expect(lastParams()).toMatchObject({ 'filter[stage]': 'overdue' })
+    expect(draft.activeCount.value).toBe(1)
+    draft.clear()
+    await flushPromises()
+    expect(globals.router.currentRoute.value.query.stage).toBeUndefined()
+    expect(api.stage.value).toBe('all')
+    expect(lastParams()).not.toHaveProperty('filter[stage]')
+    expect(draft.activeCount.value).toBe(0)
   })
 })

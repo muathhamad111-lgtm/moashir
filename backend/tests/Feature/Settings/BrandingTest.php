@@ -10,6 +10,8 @@ use App\Models\Audit\Audit;
 use App\Models\Files\StoredFile;
 use App\Models\Settings\BrandingTheme;
 use App\Support\Branding\ContrastRatio;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
 const BRANDING = '/api/v1/settings/branding';
@@ -29,9 +31,12 @@ it('shows the same theme with its derived readable colours to every signed-in us
             'primary' => '#98d8d3',
             'on_primary' => '#100f10',
             'primary_text' => '#547774',
+            'primary_hover' => '#88c0bc',
+            'primary_soft' => '#f5fbfb',
             'secondary' => '#0a2325',
             'on_secondary' => '#ffffff',
         ])
+        ->assertJsonPath('data.color_overrides', [])
         ->assertJsonPath('data.default_colors', ['primary' => '#98d8d3', 'secondary' => '#0a2325'])
         ->assertJsonPath('data.logo_light', null)
         ->assertJsonMissingPath('data.palette');
@@ -45,7 +50,8 @@ it('lets the System Administrator choose any primary and secondary colour and au
         ->assertJsonPath('data.primary_color', '#d4088c')
         ->assertJsonPath('data.secondary_color', '#4a2a7d')
         ->assertJsonPath('data.scheme.on_primary', '#ffffff')
-        ->assertJsonPath('data.scheme.primary_text', '#d4088c')
+        // A shade darker than the fill, so brand text also reads on the soft brand background.
+        ->assertJsonPath('data.scheme.primary_text', '#c90885')
         ->assertJsonPath('data.scheme.on_secondary', '#ffffff');
 
     $audit = Audit::query()->where('event', AuditEvent::BrandingUpdated->value)->sole();
@@ -95,6 +101,87 @@ it('refuses a mid-tone colour on which neither light nor dark text reaches AA co
     expect(BrandingTheme::current()->primary_color)->toBe('#98d8d3')
         ->and(Audit::query()->where('event', AuditEvent::BrandingUpdated->value)->count())->toBe(0);
 });
+
+it('saves the derived colours the client overrides, serves them in the scheme and audits them', function (): void {
+    $admin = systemAdmin();
+
+    signIn($admin)->putJson(BRANDING, [
+        'primary_color' => '#98d8d3',
+        'secondary_color' => '#0a2325',
+        'color_overrides' => ['primary_hover' => '#7CC5BF', 'primary_soft' => '#e6f4f3'],
+    ])
+        ->assertOk()
+        ->assertJsonPath('data.color_overrides', ['primary_hover' => '#7cc5bf', 'primary_soft' => '#e6f4f3'])
+        ->assertJsonPath('data.scheme.primary_hover', '#7cc5bf')
+        ->assertJsonPath('data.scheme.primary_soft', '#e6f4f3')
+        ->assertJsonPath('data.scheme.primary_text', fn (string $hex): bool => ContrastRatio::between($hex, '#e6f4f3') >= 4.5);
+
+    $audit = Audit::query()->where('event', AuditEvent::BrandingUpdated->value)->sole();
+    expect($audit->old_values['color_overrides'])->toBe([])
+        ->and($audit->new_values['color_overrides'])->toEqual(['primary_hover' => '#7cc5bf', 'primary_soft' => '#e6f4f3'])
+        ->and($audit->user_id)->toBe($admin->id);
+});
+
+it('refuses an unknown override or a malformed override colour', function (array $overrides, string $field): void {
+    signIn(systemAdmin())->putJson(BRANDING, ['primary_color' => '#98d8d3', 'secondary_color' => '#0a2325', 'color_overrides' => $overrides])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors([$field]);
+
+    expect(BrandingTheme::current()->color_overrides)->toBe([]);
+})->with([
+    'unknown token' => [['navbar' => '#ffffff'], 'color_overrides'],
+    'named colour' => [['on_primary' => 'white'], 'color_overrides.on_primary'],
+    'css injection' => [['primary_soft' => '#ffffff;}body{display:none'], 'color_overrides.primary_soft'],
+]);
+
+it('refuses an override whose text is not readable on its background and keeps the saved theme', function (): void {
+    signIn(systemAdmin())->putJson(BRANDING, [
+        'primary_color' => '#98d8d3',
+        'secondary_color' => '#0a2325',
+        'color_overrides' => ['on_secondary' => '#6b8a8c'],
+    ])
+        ->assertUnprocessable()
+        ->assertJsonPath('code', 'contrast_fail')
+        ->assertJsonPath('meta.pairs.0.pair', 'secondary.text_on_fill')
+        ->assertJsonPath('meta.pairs.0.foreground', '#6b8a8c')
+        ->assertJsonCount(1, 'meta.pairs');
+
+    expect(BrandingTheme::current()->color_overrides)->toBe([])
+        ->and(Audit::query()->where('event', AuditEvent::BrandingUpdated->value)->count())->toBe(0);
+});
+
+it('checks the hover and soft pairs, so an override cannot break the text on them', function (): void {
+    signIn(systemAdmin())->putJson(BRANDING, [
+        'primary_color' => '#98d8d3',
+        'secondary_color' => '#0a2325',
+        'color_overrides' => ['on_primary' => '#100f10', 'primary_hover' => '#1b3a38', 'primary_text' => '#547774', 'primary_soft' => '#9fc9c5'],
+    ])
+        ->assertUnprocessable()
+        ->assertJsonPath('meta.pairs.0.pair', 'primary.text_on_hover')
+        ->assertJsonPath('meta.pairs.1.pair', 'primary.text_on_soft');
+});
+
+it('treats the overrides as the full set, so a save without them returns every colour to auto', function (): void {
+    signIn(systemAdmin());
+    $this->putJson(BRANDING, ['primary_color' => '#98d8d3', 'secondary_color' => '#0a2325', 'color_overrides' => ['primary_soft' => '#e6f4f3']])->assertOk();
+
+    $this->putJson(BRANDING, ['primary_color' => '#98d8d3', 'secondary_color' => '#0a2325'])
+        ->assertOk()
+        ->assertJsonPath('data.color_overrides', [])
+        ->assertJsonPath('data.scheme.primary_soft', '#f5fbfb');
+
+    expect(Audit::query()->where('event', AuditEvent::BrandingUpdated->value)->count())->toBe(2);
+});
+
+it('keeps only known overrides with hex values at the database level', function (string $json): void {
+    expect(fn () => DB::table('branding_themes')->where('id', BrandingTheme::SINGLETON_ID)->update(['color_overrides' => $json]))
+        ->toThrow(QueryException::class);
+})->with([
+    'unknown key' => ['{"navbar": "#ffffff"}'],
+    'not a hex value' => ['{"on_primary": "white"}'],
+    'upper case hex' => ['{"on_primary": "#FFFFFF"}'],
+    'a list' => ['["#ffffff"]'],
+]);
 
 it('keeps branding locked to the System Administrator', function (RoleKey $role): void {
     signIn($role === RoleKey::Entity ? entityUser() : staffUser($role));
@@ -203,15 +290,17 @@ it('rejects an unknown logo variant', function (): void {
 
 it('resets the colours and the logos to the brand defaults and audits the reset', function (): void {
     signIn(systemAdmin());
-    $this->putJson(BRANDING, ['primary_color' => '#a63d1f', 'secondary_color' => '#4a2a7d'])->assertOk();
+    $this->putJson(BRANDING, ['primary_color' => '#a63d1f', 'secondary_color' => '#4a2a7d', 'color_overrides' => ['on_secondary' => '#f5f0ff']])->assertOk();
     $logo = $this->post(BRANDING.'/logo', ['file' => pngImage(), 'variant' => 'dark'], ['Accept' => 'application/json'])->json('data.file_id');
 
     $this->postJson(BRANDING.'/reset')
         ->assertOk()
         ->assertJsonPath('data.primary_color', '#98d8d3')
         ->assertJsonPath('data.secondary_color', '#0a2325')
+        ->assertJsonPath('data.color_overrides', [])
         ->assertJsonPath('data.logo_dark', null);
 
     $this->get('/api/v1/content/files/'.$logo)->assertNotFound();
-    expect(Audit::query()->where('event', AuditEvent::BrandingUpdated->value)->where('tags', 'reset')->sole()->old_values['primary_color'])->toBe('#a63d1f');
+    expect(Audit::query()->where('event', AuditEvent::BrandingUpdated->value)->where('tags', 'reset')->sole()->old_values)
+        ->toMatchArray(['primary_color' => '#a63d1f', 'color_overrides' => ['on_secondary' => '#f5f0ff']]);
 });

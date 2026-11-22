@@ -6,16 +6,20 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import ToggleSwitch from '@/components/ui/ToggleSwitch.vue'
 import SortableList from '@/components/ui/SortableList.vue'
 import EmptyState from '@/components/feedback/EmptyState.vue'
+import Badge from '@/components/ui/Badge.vue'
 import ItemFormDialog from './ItemFormDialog.vue'
 import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import { CMS_LOGO_SECTION_TYPES } from '@/constants/cms'
+import { contentImageUrl } from '@/utils/contentImage'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
   section: { type: Object, default: null },
   editor: { type: Object, required: true },
   upload: { type: Function, required: true },
+  uploadLogo: { type: Function, required: true },
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -24,6 +28,10 @@ const { confirm } = useConfirm()
 const toast = useToast()
 
 const items = computed(() => [...(props.section?.items ?? [])].sort((a, b) => a.order - b.order))
+const isLogoSection = computed(() => CMS_LOGO_SECTION_TYPES.includes(props.section?.type))
+const hasUnpublishedChanges = computed(() =>
+  Boolean(props.editor.page.value?.hasUnpublishedChanges),
+)
 const formOpen = ref(false)
 const editing = ref(null)
 
@@ -93,7 +101,16 @@ async function remove(item) {
     @update:model-value="emit('update:modelValue', $event)"
   >
     <div class="cms-items" :aria-busy="editor.busy.value || undefined">
-      <p class="cms-items__hint">{{ t('cms.items.hint') }}</p>
+      <p class="cms-items__hint">
+        {{ isLogoSection ? t('cms.partners.itemsHint') : t('cms.items.hint') }}
+      </p>
+      <div class="cms-items__draft" role="note">
+        <AppIcon name="info-circle" />
+        <span class="cms-items__draft-text">{{ t('cms.items.draftNotice') }}</span>
+        <Badge v-if="hasUnpublishedChanges" variant="info">{{
+          t('cms.items.unpublishedChanges')
+        }}</Badge>
+      </div>
       <SortableList
         v-if="items.length"
         :items="items"
@@ -104,10 +121,24 @@ async function remove(item) {
       >
         <template #item="{ item }">
           <div class="cms-items__row">
-            <span v-if="item.icon" class="cms-items__icon" aria-hidden="true"
+            <template v-if="isLogoSection">
+              <img
+                v-if="item.image"
+                class="cms-items__logo"
+                :src="contentImageUrl(item.image)"
+                alt=""
+              />
+              <span v-else class="cms-items__logo cms-items__logo--missing" aria-hidden="true"
+                ><AppIcon name="warning-triangle"
+              /></span>
+            </template>
+            <span v-else-if="item.icon" class="cms-items__icon" aria-hidden="true"
               ><AppIcon :name="item.icon"
             /></span>
             <span class="cms-items__name">{{ labelOf(item) }}</span>
+            <Badge v-if="isLogoSection && !item.image" variant="warning">{{
+              t('cms.partners.noLogo')
+            }}</Badge>
             <ToggleSwitch
               :model-value="item.enabled"
               :name="`item-enabled-${item.id}`"
@@ -150,7 +181,7 @@ async function remove(item) {
           :disabled="editor.busy.value"
           @click="openForm()"
         >
-          {{ t('cms.items.add') }}
+          {{ isLogoSection ? t('cms.partners.add') : t('cms.items.add') }}
         </BaseButton>
       </div>
     </div>
@@ -160,7 +191,7 @@ async function remove(item) {
       :item="editing"
       :section-type="section.type"
       :save="save"
-      :upload="upload"
+      :upload="isLogoSection ? uploadLogo : upload"
     />
   </BaseModal>
 </template>

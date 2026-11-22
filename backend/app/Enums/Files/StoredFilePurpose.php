@@ -13,6 +13,7 @@ enum StoredFilePurpose: string
     case AssessmentEvidence = 'assessment_evidence';
     case EvidenceBundle = 'evidence_bundle';
     case CmsImage = 'cms_image';
+    case CmsLogo = 'cms_logo';
     case KpiImage = 'kpi_image';
     case BrandingLogo = 'branding_logo';
     case CertificatePdf = 'certificate_pdf';
@@ -22,15 +23,16 @@ enum StoredFilePurpose: string
     case VatCertificate = 'vat_certificate';
     case OfficeRendition = 'office_rendition';
 
-    private const array PUBLIC_ASSETS = ['apple_pay_domain_association', 'cms_image', 'kpi_image', 'branding_logo'];
+    private const array PUBLIC_ASSETS = ['apple_pay_domain_association', 'cms_image', 'cms_logo', 'kpi_image', 'branding_logo'];
 
-    private const array SERVED_IMAGES = ['cms_image', 'kpi_image', 'branding_logo'];
+    private const array SERVED_IMAGES = ['cms_image', 'cms_logo', 'kpi_image', 'branding_logo'];
 
     private const array UPLOAD_TYPES = [
         'refund_evidence' => ['pdf' => ['application/pdf'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg'], 'png' => ['image/png']],
         'transfer_proof' => ['pdf' => ['application/pdf'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg'], 'png' => ['image/png']],
         'apple_pay_domain_association' => ['' => ['text/plain'], 'txt' => ['text/plain']],
         'cms_image' => ['png' => ['image/png'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg']],
+        'cms_logo' => ['png' => ['image/png'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg'], 'svg' => ['image/svg+xml']],
         'kpi_image' => ['png' => ['image/png'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg']],
         'branding_logo' => ['png' => ['image/png']],
         'entity_logo' => ['png' => ['image/png'], 'jpg' => ['image/jpeg'], 'jpeg' => ['image/jpeg']],
@@ -76,6 +78,11 @@ enum StoredFilePurpose: string
     public static function servedImageValues(): array
     {
         return self::SERVED_IMAGES;
+    }
+
+    public function allowsVectorImage(): bool
+    {
+        return $this === self::CmsLogo;
     }
 
     public function isWatermarked(): bool

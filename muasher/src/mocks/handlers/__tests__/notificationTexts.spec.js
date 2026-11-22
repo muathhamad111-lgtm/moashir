@@ -67,38 +67,75 @@ describe('notification texts mock', () => {
     expect(Object.keys(removed.body.errors)).toEqual(['parts.expiry.ar'])
   })
 
-  it('switches channels like the API and reports them in the catalogue', async () => {
+  it('switches channels per audience like the API and reports them in the catalogue', async () => {
     seedMockSession(ADMIN)
     const off = await call('PATCH', '/settings/notifications/types/REG-01/channels', {
+      audience: 'management',
       channels: { email: false },
     })
     expect(off.status).toBe(200)
-    expect(off.body.data.channel_settings.find((row) => row.channel === 'email').is_enabled).toBe(
-      false,
+    const email = off.body.data.channel_settings.filter((row) => row.channel === 'email')
+    expect(email.map((row) => [row.audience, row.is_enabled])).toEqual([
+      ['beneficiary', true],
+      ['management', false],
+    ])
+    const row = (await call('GET', '/settings/notifications/types')).body.data.find(
+      (type) => type.code === 'REG-01',
     )
-    const list = await call('GET', '/settings/notifications/types')
-    expect(list.body.data.find((row) => row.code === 'REG-01').enabled_channels).toEqual(['in_app'])
-    const mandatory = await call('PATCH', '/settings/notifications/types/USR-01/channels', {
+    expect(row.channel_states.management.email).toBe(false)
+    expect(row.channel_states.beneficiary.email).toBe(true)
+    expect(row.is_core).toBe(false)
+    const core = await call('PATCH', '/settings/notifications/types/USR-01/channels', {
       channels: { email: false },
     })
-    expect(mandatory.status).toBe(422)
+    expect(core.status).toBe(422)
+    const unreached = await call('PATCH', '/settings/notifications/types/STD-01/channels', {
+      audience: 'beneficiary',
+      channels: { email: true },
+    })
+    expect(Object.keys(unreached.body.errors)).toEqual(['audience'])
   })
 
-  it('accepts an SMS text and an SMS switch for a type that is not mandatory', async () => {
+  it('switches many types at once and leaves the core ones alone', async () => {
     seedMockSession(ADMIN)
-    const sms = { ar: 'سجّلت :entity', en: ':entity registered' }
-    const saved = await call('PUT', '/settings/notifications/texts/entities.REG-01.entity', {
-      parts: { ...REGISTERED.parts, sms },
+    const bulk = await call('PATCH', '/settings/notifications/channels', {
+      scope: 'codes',
+      codes: ['REG-01', 'USR-01'],
+      channels: ['email'],
+      enabled: false,
     })
-    expect(saved.body.data.texts[0].sms.current).toEqual(sms)
-    const on = await call('PATCH', '/settings/notifications/types/REG-01/channels', {
-      channels: { sms: true },
+    expect(bulk.status).toBe(200)
+    expect(bulk.body.meta.updated).toBe(1)
+    const rows = Object.fromEntries(bulk.body.data.map((type) => [type.code, type]))
+    expect(rows['REG-01'].channel_states.beneficiary.email).toBe(false)
+    expect(rows['USR-01'].channel_states.beneficiary.email).toBe(true)
+    expect((await call('PATCH', '/settings/notifications/channels', { scope: 'x' })).status).toBe(
+      422,
+    )
+  })
+
+  it('gives texts their audience and parts their channel, and locks the core button', async () => {
+    seedMockSession(ADMIN)
+    const shown = (await call('GET', '/settings/notifications/types/REG-01')).body.data
+    expect(shown.texts.map((text) => text.audience)).toEqual(['beneficiary', 'management'])
+    expect(shown.texts[0].parts.email_subject.channel).toBe('email')
+    expect(shown.texts[0].parts.title.channel).toBe('in_app')
+    const invitation = (await call('GET', '/settings/notifications/types/USR-01')).body.data
+    expect(invitation.is_core).toBe(true)
+    expect(invitation.texts[0].parts.action.is_fixed).toBe(true)
+    const button = await call('PUT', '/settings/notifications/texts/staff_invited', {
+      parts: { action: { ar: 'اضغط', en: 'Click' } },
     })
-    expect(on.body.data.channel_settings.find((row) => row.channel === 'sms').is_enabled).toBe(true)
-    const refused = await call('PUT', '/settings/notifications/texts/staff_invited', {
-      parts: { sms },
+    expect(Object.keys(button.body.errors)).toContain('parts.action')
+  })
+
+  it('refuses a text message longer than three messages', async () => {
+    seedMockSession(ADMIN)
+    const long = await call('PUT', '/settings/notifications/texts/entities.REG-01.entity', {
+      parts: { sms: { ar: 'ن'.repeat(202), en: 'Short' } },
     })
-    expect(refused.status).toBe(422)
+    expect(long.status).toBe(422)
+    expect(Object.keys(long.body.errors)).toEqual(['parts.sms.ar'])
   })
 
   it('answers 404 for unknown types or keys and 403 without the permission', async () => {

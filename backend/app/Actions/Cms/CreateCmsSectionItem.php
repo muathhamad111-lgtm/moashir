@@ -43,6 +43,7 @@ final readonly class CreateCmsSectionItem
                 'is_enabled' => $draft->isEnabled,
                 'sort_order' => $this->order->nextPosition($current->items()->max('sort_order')),
             ]);
+            $item->setRelation('section', $current);
             $this->writer->write($item, $draft->content, $actor);
             $this->audit->record(AuditEvent::CmsItemCreated, $item, [], $this->audit->snapshotOf($item));
 

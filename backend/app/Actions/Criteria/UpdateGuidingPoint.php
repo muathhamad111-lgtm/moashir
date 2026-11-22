@@ -31,7 +31,7 @@ final readonly class UpdateGuidingPoint
         return $this->transaction->run($sub->mainCriterion->criteria_version_id, $actor, function () use ($point, $sub, $attributes): GuidingPoint {
             $point->refresh();
             $before = $this->audit->snapshotOf($point);
-            $weight = $this->allocation->forPoint($sub->refresh(), $point, $attributes->weight, $point->is_active);
+            $weight = $sub->refresh()->scoresGuidingPoints() ? $this->allocation->forPoint($sub, $point, $attributes->weight, $point->is_active) : null;
 
             $this->writer->fillPoint($point, $attributes->withWeight($weight));
             $point->save();

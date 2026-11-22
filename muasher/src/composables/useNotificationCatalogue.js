@@ -1,12 +1,10 @@
-import { reactive, ref, watch } from 'vue'
+import { ref } from 'vue'
 import { notificationTypesService } from '@/services/notificationTypesService'
 
 const FORBIDDEN = 403
 
 export function useNotificationCatalogue() {
-  const filters = reactive({ module: '', category: '', audience: '' })
   const types = ref([])
-  const total = ref(0)
   const status = ref('loading')
   const errorMessage = ref('')
 
@@ -14,17 +12,18 @@ export function useNotificationCatalogue() {
     status.value = 'loading'
     errorMessage.value = ''
     try {
-      const envelope = await notificationTypesService.list({ ...filters })
+      const envelope = await notificationTypesService.list()
       types.value = envelope.data
-      total.value = envelope.meta?.total ?? envelope.data.length
-      status.value = types.value.length ? 'success' : 'empty'
+      status.value = 'success'
     } catch (error) {
       errorMessage.value = error?.normalized?.message ?? ''
       status.value = error?.normalized?.status === FORBIDDEN ? 'forbidden' : 'error'
     }
   }
 
-  watch(filters, load)
+  function replace(next) {
+    types.value = next
+  }
 
-  return { filters, types, total, status, errorMessage, load }
+  return { types, status, errorMessage, load, replace }
 }

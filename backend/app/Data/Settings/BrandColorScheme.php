@@ -10,12 +10,14 @@ final readonly class BrandColorScheme
         public string $primary,
         public string $onPrimary,
         public string $primaryText,
+        public string $primaryHover,
+        public string $primarySoft,
         public string $secondary,
         public string $onSecondary,
     ) {}
 
     /**
-     * @return array{primary: string, on_primary: string, primary_text: string, secondary: string, on_secondary: string}
+     * @return array{primary: string, on_primary: string, primary_text: string, primary_hover: string, primary_soft: string, secondary: string, on_secondary: string}
      */
     public function toArray(): array
     {
@@ -23,6 +25,8 @@ final readonly class BrandColorScheme
             'primary' => $this->primary,
             'on_primary' => $this->onPrimary,
             'primary_text' => $this->primaryText,
+            'primary_hover' => $this->primaryHover,
+            'primary_soft' => $this->primarySoft,
             'secondary' => $this->secondary,
             'on_secondary' => $this->onSecondary,
         ];

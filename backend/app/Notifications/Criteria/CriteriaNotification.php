@@ -8,6 +8,7 @@ use App\Data\Criteria\CriteriaNotice;
 use App\Data\Mail\MailNotice;
 use App\Data\Notifications\InAppMessage;
 use App\Enums\Integrations\SmsPurpose;
+use App\Enums\Notifications\NotificationAudienceKind;
 use App\Enums\Notifications\NotificationChannel;
 use App\Enums\Notifications\NotificationCode;
 use App\Models\Identity\User;
@@ -38,7 +39,7 @@ final class CriteriaNotification extends QueuedNotification implements DeliversI
     {
         $deliveries = [InAppChannel::class];
 
-        if (app(SystemNotificationChannels::class)->isSwitchedOn($this->notice->code, NotificationChannel::Email)) {
+        if (app(SystemNotificationChannels::class)->isSwitchedOn($this->notice->code, NotificationChannel::Email, NotificationAudienceKind::of($notifiable))) {
             $deliveries[] = 'mail';
         }
 

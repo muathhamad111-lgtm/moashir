@@ -23,14 +23,16 @@ export const notificationTextsService = {
     return write('save', () => apiClient.put(textPath(key), { parts }), { parts })
   },
 
-  updateChannels(code, channels) {
+  updateChannels(code, channels, audience = null) {
+    const payload = audience ? { audience, channels } : { channels }
     return write(
       'updateChannels',
       () =>
-        apiClient.patch(`/settings/notifications/types/${encodeURIComponent(code)}/channels`, {
-          channels,
-        }),
-      { channels },
+        apiClient.patch(
+          `/settings/notifications/types/${encodeURIComponent(code)}/channels`,
+          payload,
+        ),
+      payload,
     )
   },
 

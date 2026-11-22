@@ -37,7 +37,7 @@ final class NotificationTemplateController
 
     public function updateChannels(NotificationCode $code, UpdateNotificationChannelsRequest $request, #[CurrentUser] User $actor, UpdateNotificationChannels $update, ShowNotificationType $showType): JsonResponse
     {
-        $update->handle($actor, $code, $request->choices());
+        $update->handle($actor, $code, $request->audience(), $request->choices());
 
         return ApiResponse::data(NotificationTypeDetailResource::make($showType->handle($code))->resolve($request));
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Notifications;
 
 use App\Data\Notifications\NoticeText;
+use App\Enums\Notifications\NotificationAudienceKind;
 use App\Enums\Notifications\NotificationChannel;
 use App\Enums\Notifications\NotificationCode;
 use App\Models\Identity\User;
@@ -21,7 +22,7 @@ final readonly class NoticeSms
 
     public function isSendable(NotificationCode $code, ?NoticeText $text, User $recipient): bool
     {
-        if (! $text instanceof NoticeText || $recipient->routeNotificationForSms() === null || ! $this->channels->isSwitchedOn($code, NotificationChannel::Sms)) {
+        if (! $text instanceof NoticeText || $recipient->routeNotificationForSms() === null || ! $this->channels->isSwitchedOn($code, NotificationChannel::Sms, NotificationAudienceKind::of($recipient))) {
             return false;
         }
 

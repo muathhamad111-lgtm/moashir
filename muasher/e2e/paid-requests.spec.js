@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
+import { applyListFilters, openListFilters } from './support/listFilters'
 
 const IGNORED_CONSOLE = /Failed to load resource|40\d|50\d/i
 const DRAFT_NUMBER = 'ACC-2026-000004'
@@ -56,8 +57,11 @@ test('the System Administrator finds a paid draft in the request list and follow
   )
   await expect(row.locator('[role="progressbar"]')).toBeVisible()
 
-  await page.locator('.queue-stages__chip[data-stage="preparing"]').click()
+  // Operator note 2026-11-22: the stage is chosen in the filter panel, not in chips above the table.
+  await expect(page.locator('.queue-stages')).toHaveCount(0)
+  await applyListFilters(page, { 'request-stage-filter': 'preparing' })
   await expect(page).toHaveURL(/stage=preparing/)
+  await expect(page.locator('.filter-dialog__count')).toHaveText('1')
   await expect(page.locator('tbody tr')).toHaveCount(1)
   await expect(page.locator('.stats-card')).toHaveCount(4)
   await page.screenshot({
@@ -85,10 +89,12 @@ test('a deep link opens the preparing stage for the follower on mobile', async (
   await page.setViewportSize(MOBILE)
   await signIn(page, testInfo, USERS.follower)
   await page.goto('/admin/requests?path=accredited&stage=preparing')
-  await expect(page.locator('.queue-stages__chip[aria-pressed="true"]')).toContainText(
+  await expect(page.locator('tbody tr', { hasText: DRAFT_NUMBER })).toBeVisible()
+  await expect(page.locator('.filter-dialog__count')).toHaveText('1')
+  const filters = await openListFilters(page)
+  await expect(filters.locator('[data-testid="request-stage-filter"]')).toContainText(
     isEn(testInfo) ? 'Being prepared' : 'قيد الإعداد',
   )
-  await expect(page.locator('tbody tr', { hasText: DRAFT_NUMBER })).toBeVisible()
   await page.screenshot({
     path: `test-results/paid-requests-tab-mobile-${suffixOf(testInfo)}.png`,
     fullPage: true,

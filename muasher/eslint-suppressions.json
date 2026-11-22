@@ -14,11 +14,6 @@
       "count": 1
     }
   },
-  "src/components/criteria/GuidingPointForm.vue": {
-    "complexity": {
-      "count": 1
-    }
-  },
   "src/components/criteria/SubCriterionForm.vue": {
     "complexity": {
       "count": 1
@@ -255,11 +250,6 @@
       "count": 1
     }
   },
-  "src/composables/useEvaluationTypeSwitch.js": {
-    "max-lines-per-function": {
-      "count": 1
-    }
-  },
   "src/composables/useEvidenceBundle.js": {
     "complexity": {
       "count": 1
@@ -341,11 +331,6 @@
       "count": 1
     },
     "max-lines-per-function": {
-      "count": 1
-    }
-  },
-  "src/composables/useNotificationCatalogue.js": {
-    "complexity": {
       "count": 1
     }
   },

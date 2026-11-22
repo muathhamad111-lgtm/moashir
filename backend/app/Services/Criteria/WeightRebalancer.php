@@ -45,7 +45,7 @@ final readonly class WeightRebalancer
         $shares = $this->distributor->shares($total, $nodes->count());
 
         foreach ($nodes->values() as $index => $node) {
-            if (! $node->weight->equals($shares[$index])) {
+            if (! $node->weight?->equals($shares[$index])) {
                 $node->weight = $shares[$index];
                 $node->save();
             }

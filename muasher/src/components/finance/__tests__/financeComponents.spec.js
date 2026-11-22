@@ -165,28 +165,64 @@ describe('TransactionsTable', () => {
     reference: 'PAY-2026-000009',
     receiptNumber: 'RCP-2026-000009',
     purpose: 'accredited',
-    entity: { name: { ar: 'جمعية تجريبية', en: 'Sample Association' }, email: 'info@example.org' },
+    entity: { reference: 'ENT-00042', name: { ar: 'جمعية النماء الخيرية', en: 'Namaa Charity' } },
     channel: 'electronic',
     method: 'mada',
     status: 'paid',
     pricing: { priceBeforeVat: '1000.00', vatAmount: '150.00', total: '1150.00', currency: 'SAR' },
-    updatedAt: '2026-11-10T09:00:00Z',
+    createdAt: '2026-11-10T09:00:00Z',
   }
 
-  it('groups the service with its references and the channel with its method', () => {
+  it('shows the operation, the entity, the amount with its VAT, the payment, the status and the date', () => {
     const wrapper = mountWith(TransactionsTable, { items: [ROW], status: 'success' })
     const headers = wrapper.findAll('th').map((header) => header.text())
-    expect(headers.slice(0, 3)).toEqual(['Operation', 'Entity', 'Payment'])
-    expect(headers).not.toContain('Payment reference')
-    expect(headers).not.toContain('Payment method')
+    expect(headers).toEqual([
+      'Operation',
+      'Entity',
+      'Amount',
+      'Payment',
+      'Status',
+      'Date',
+      'Receipt no.',
+      'Before VAT',
+      expect.any(String),
+    ])
     const cells = wrapper.findAll('tbody td')
     expect(cells[0].text()).toContain('PAY-2026-000009')
-    expect(cells[0].text()).toContain('Receipt RCP-2026-000009')
-    const payment = cells[2].findAll('.transactions-table__stack > *')
+    expect(cells[0].text()).toContain('Accredited')
+    expect(cells[2].text()).toContain('1,150.00')
+    expect(cells[2].text()).toContain('150.00')
+    const payment = cells[3].findAll('.transactions-table__stack > *')
     expect(payment).toHaveLength(2)
     expect(payment[1].text()).toBe('mada')
-    const updated = wrapper.find('time.transactions-table__date').findAll('span')
-    expect(updated.map((line) => line.text())).toEqual(['2026-11-10', '12:00 PM'])
+    const created = wrapper.find('time.transactions-table__date').findAll('span')
+    expect(created.map((line) => line.text())).toEqual(['2026-11-10', '12:00 PM'])
+  })
+
+  it('identifies the entity by its initials and number, never by an e-mail', () => {
+    const wrapper = mountWith(TransactionsTable, {
+      items: [{ ...ROW, entity: { ...ROW.entity, email: 'owner@namaa.sa' } }],
+      status: 'success',
+    })
+    const entity = wrapper.findAll('tbody td')[1]
+    expect(entity.find('.transactions-table__avatar').text()).toBe('NC')
+    expect(entity.text()).toContain('ENT-00042')
+    expect(wrapper.text()).not.toContain('owner@namaa.sa')
+  })
+
+  it('hides the columns the viewer turned off and sorts by amount and date', async () => {
+    const wrapper = mountWith(TransactionsTable, {
+      items: [ROW],
+      status: 'success',
+      sort: '-created_at',
+      isVisible: (key) => !['receipt', 'beforeVat', 'payment'].includes(key),
+    })
+    const headers = wrapper.findAll('th').map((header) => header.text())
+    expect(headers).not.toContain('Receipt no.')
+    expect(headers).not.toContain('Payment')
+    expect(wrapper.find('th[aria-sort="descending"]').text()).toBe('Date')
+    await wrapper.findAll('.table__sort')[0].trigger('click')
+    expect(wrapper.emitted('sort')).toEqual([['-total']])
   })
 
   it('explains the status when the pointer rests on it', async () => {
@@ -199,13 +235,14 @@ describe('TransactionsTable', () => {
     expect(wrapper.find('[role="tooltip"]').text()).toContain('declined the operation')
   })
 
-  it('opens the operation from an eye icon instead of a details word', () => {
+  it('opens the receipt from an eye icon', async () => {
     const wrapper = mountWith(TransactionsTable, { items: [ROW], status: 'success' })
     const view = wrapper.find('.transactions-table__view')
-    expect(view.element.tagName).toBe('A')
-    expect(view.attributes('href')).toContain('p-9')
+    expect(view.element.tagName).toBe('BUTTON')
     expect(view.attributes('aria-label')).toBe('View details — PAY-2026-000009')
     expect(view.find('.btn__label').exists()).toBe(false)
+    await view.trigger('click')
+    expect(wrapper.emitted('view')[0][0].id).toBe('p-9')
   })
 })
 

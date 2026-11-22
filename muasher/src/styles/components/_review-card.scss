@@ -607,3 +607,14 @@
   white-space: nowrap;
   vertical-align: bottom;
 }
+
+// An indicator of a directly evaluated sub-criterion: text and evidence, no score of its own.
+.review-item--descriptive {
+  gap: var(--space-2);
+}
+
+.review-card__hint {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-text-muted);
+}

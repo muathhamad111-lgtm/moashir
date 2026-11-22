@@ -47,6 +47,7 @@ final readonly class UpdateBrandingColors
             $theme->forceFill([
                 'primary_color' => $colors->primary,
                 'secondary_color' => $colors->secondary,
+                'color_overrides' => $colors->overrides->toArray(),
                 'updated_by_user_id' => $actor->id,
             ])->save();
             $this->audit->record($theme, $before, 'colors');

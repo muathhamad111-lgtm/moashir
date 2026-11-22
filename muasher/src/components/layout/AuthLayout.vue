@@ -1,11 +1,14 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, useTemplateRef } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { useBrandLogo } from '@/composables/useBrandLogo'
 import { useLocale } from '@/composables/useLocale'
-import { usePlatformIdentity } from '@/composables/usePlatformIdentity'
+import { useMediaQuery } from '@/composables/useMediaQuery'
+import { useAuthPageTransition, AUTH_SWITCH_STEPS } from '@/composables/auth/useAuthPageTransition'
+import { useIdleRouteWarmup, useRouteIntentPrefetch } from '@/composables/useRoutePrefetch'
+import { DESKTOP_QUERY } from '@/constants/breakpoints'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import AuthBrandPanel from '@/components/layout/AuthBrandPanel.vue'
 import LandingSprite from '@/components/landing/LandingSprite.vue'
 import LandingThemeSwitch from '@/components/landing/LandingThemeSwitch.vue'
 import { hasFinePointer } from '@/utils/landing/pointer'
@@ -13,15 +16,22 @@ import { hasFinePointer } from '@/utils/landing/pointer'
 const { t } = useI18n()
 const route = useRoute()
 const { toggleLocale } = useLocale()
-const { platformName } = usePlatformIdentity()
-const { logoOnDark } = useBrandLogo()
+const isSplit = useMediaQuery(DESKTOP_QUERY)
+
+const rootRef = useTemplateRef('root')
+const viewportRef = useTemplateRef('viewport')
+const contentRef = useTemplateRef('content')
+const { onBeforeLeave, onLeave, onEnter } = useAuthPageTransition({ viewportRef, contentRef })
+
+useIdleRouteWarmup(Object.keys(AUTH_SWITCH_STEPS))
+useRouteIntentPrefetch(rootRef)
 
 const isMaintenance = computed(() => route.name === ROUTE_NAMES.PUBLIC_MAINTENANCE)
 const customCursor = hasFinePointer()
 </script>
 
 <template>
-  <div class="auth-layout lp-auth" :class="{ 'lp-has-cursor': customCursor }">
+  <div ref="root" class="auth-layout lp-auth" :class="{ 'lp-has-cursor': customCursor }">
     <LandingSprite />
     <main class="auth-layout__content">
       <div class="auth-layout__meta">
@@ -48,19 +58,21 @@ const customCursor = hasFinePointer()
         </div>
       </div>
       <div class="auth-layout__card">
-        <slot />
-      </div>
-    </main>
-    <aside class="auth-layout__brand" :aria-label="t('auth.panel.label')">
-      <div class="auth-layout__pattern" aria-hidden="true"></div>
-      <div class="auth-layout__brand-inner">
-        <div class="auth-layout__emblem">
-          <span class="auth-layout__halo" aria-hidden="true"></span>
-          <span class="auth-layout__orbit" aria-hidden="true"></span>
-          <img class="auth-layout__logo" :src="logoOnDark" :alt="platformName" />
-          <span class="auth-layout__sheen" aria-hidden="true"></span>
+        <div ref="viewport" class="auth-layout__viewport">
+          <div ref="content" class="auth-layout__page">
+            <Transition
+              mode="out-in"
+              :css="false"
+              @before-leave="onBeforeLeave"
+              @leave="onLeave"
+              @enter="onEnter"
+            >
+              <slot />
+            </Transition>
+          </div>
         </div>
       </div>
-    </aside>
+    </main>
+    <AuthBrandPanel :key="isSplit ? 'split' : 'stacked'" :interactive="isSplit" />
   </div>
 </template>

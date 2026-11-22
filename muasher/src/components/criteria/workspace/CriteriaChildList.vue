@@ -41,7 +41,12 @@ const addLabel = computed(() =>
           <p class="criteria-point__name">{{ localized(nodeLabel(child)) }}</p>
         </div>
         <div class="criteria-point__side">
-          <CriteriaShare :weight="child.node.weight" :parent-weight="item.node.weight" compact />
+          <CriteriaShare
+            v-if="child.node.weight !== null"
+            :weight="child.node.weight"
+            :parent-weight="item.node.weight"
+            compact
+          />
           <BaseButton
             variant="ghost"
             size="sm"

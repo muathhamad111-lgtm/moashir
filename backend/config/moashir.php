@@ -199,6 +199,7 @@ return [
     'cms' => [
         'public_cache_seconds' => 3600,
         'image_max_kb' => 5120,
+        'logo_max_kb' => 1024,
         'meta_max_bytes' => 16384,
         'sections_per_page_max' => 40,
         'items_per_section_max' => 60,
@@ -223,6 +224,9 @@ return [
             'content' => '#f8f8f8',
         ],
         'shade_step' => 0.05,
+        // Hover = this share of the primary mixed with ink; soft = this share of the primary on paper.
+        'hover_share' => 0.88,
+        'soft_share' => 0.10,
     ],
 
     'integrations' => [

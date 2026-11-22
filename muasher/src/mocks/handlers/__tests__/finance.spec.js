@@ -151,15 +151,27 @@ const REFUND_KEYS = [
   'transfer_reference',
 ]
 const STATS_KEYS = [
+  'channels',
   'completed_count',
   'currency',
   'incomplete_count',
   'refunded_count',
+  'status_counts',
   'total_income',
   'total_refunded',
   'total_vat',
   'transactions_count',
   'transactions_value',
+]
+
+const LEDGER_STATUS_KEYS = [
+  'awaiting_payment',
+  'cancelled',
+  'failed',
+  'paid',
+  'refunded',
+  'rejected',
+  'under_review',
 ]
 
 function keys(value) {
@@ -488,10 +500,24 @@ describe('finance staff mock contract', () => {
     as(FINANCE_OFFICER)
     const { body } = await call('/finance/transactions?per_page=50')
     expect(keys(body.data[0])).toEqual(TRANSACTION_KEYS)
-    expect(keys(body.data[0].entity)).toEqual(['email', 'id', 'name', 'reference'])
+    expect(keys(body.data[0].entity)).toEqual(['id', 'name', 'reference'])
     expect(body.data.some((item) => item.is_test)).toBe(true)
     expect(keys(body.meta.stats)).toEqual(STATS_KEYS)
     expect(body.meta.stats).toMatchObject({ refunded_count: 1, total_refunded: '1150.00' })
+    expect(keys(body.meta.stats.status_counts)).toEqual(LEDGER_STATUS_KEYS)
+    expect(keys(body.meta.stats.channels)).toEqual(['bank_transfer', 'electronic'])
+    expect(keys(body.meta.stats.channels.electronic)).toEqual([
+      'count',
+      'paid_total',
+      'status_counts',
+    ])
+    const { channels, status_counts: counts } = body.meta.stats
+    expect(channels.electronic.count + channels.bank_transfer.count).toBe(
+      body.meta.stats.transactions_count,
+    )
+    expect(Object.values(counts).reduce((sum, count) => sum + count, 0)).toBe(
+      body.meta.stats.transactions_count,
+    )
     const detail = await call(`/finance/transactions/${SEEDED_IDS.refunded}`)
     expect(keys(detail.body.data)).toEqual([...TRANSACTION_KEYS, ...DETAIL_EXTRA_KEYS].sort())
     expect(keys(detail.body.data.refund)).toEqual([...REFUND_KEYS, 'has_evidence'].sort())

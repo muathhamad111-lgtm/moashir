@@ -12,6 +12,36 @@ export const BRAND_SHADE_STEP = 0.05
 
 export const BRAND_COLOR_ROLES = Object.freeze(['primary', 'secondary'])
 
+// The colours derived from the two base colours, in the order the screen lists them. The
+// client may override each one; the server keys are the snake_case of these names.
+export const DERIVED_BRAND_COLORS = Object.freeze([
+  'onPrimary',
+  'primaryText',
+  'primaryHover',
+  'primarySoft',
+  'onSecondary',
+])
+
+// Same shares as config('moashir.branding'): hover = primary mixed with ink, soft = primary on paper.
+export const BRAND_HOVER_SHARE = 0.88
+export const BRAND_SOFT_SHARE = 0.1
+
+// The solid status fills users read as alerts (`$tts-status` in styles/tokens/_tts.scss). A
+// primary colour this close to one of them (OKLab distance x100) reads as an alert.
+export const ALERT_STATUS_COLORS = Object.freeze({ danger: '#f83a3a', warning: '#ffa31a' })
+export const ALERT_SIMILARITY_LIMIT = 15
+// Below this OKLab distance (x100) the hover colour is hard to tell from the fill.
+export const HOVER_SIMILARITY_LIMIT = 3
+
+// Colours with a fixed meaning; the screen shows them read only (swatches come from the styles).
+export const FIXED_COLOR_GROUPS = Object.freeze([
+  Object.freeze({ key: 'states', items: Object.freeze(['success', 'warning', 'danger', 'info']) }),
+  Object.freeze({ key: 'levels', items: Object.freeze(['diamond', 'gold', 'silver', 'bronze']) }),
+  Object.freeze({ key: 'charts', items: Object.freeze(['series1', 'series2', 'series3']) }),
+])
+
+export const BRAND_PREVIEW_SURFACES = Object.freeze(['backOffice', 'portal'])
+
 export const LOGO_RULES = {
   maxBytes: 1048576,
   maxMegabytes: 1,

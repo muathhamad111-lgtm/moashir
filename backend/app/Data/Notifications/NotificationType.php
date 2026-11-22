@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Notifications;
 
 use App\Enums\Notifications\NotificationAudience;
+use App\Enums\Notifications\NotificationAudienceKind;
 use App\Enums\Notifications\NotificationChannel;
 use App\Enums\Notifications\NotificationCode;
 
@@ -19,7 +20,28 @@ final readonly class NotificationType
         public array $channels,
         public array $audiences,
         public bool $isMandatory,
+        public bool $isCore = false,
     ) {}
+
+    /**
+     * @return list<NotificationAudienceKind>
+     */
+    public function audienceKinds(): array
+    {
+        $kinds = [];
+        foreach ($this->audiences as $audience) {
+            foreach ($audience->kinds() as $kind) {
+                $kinds[$kind->value] = $kind;
+            }
+        }
+
+        return array_values(array_filter(NotificationAudienceKind::cases(), static fn (NotificationAudienceKind $kind): bool => isset($kinds[$kind->value])));
+    }
+
+    public function reachesKind(NotificationAudienceKind $kind): bool
+    {
+        return in_array($kind, $this->audienceKinds(), true);
+    }
 
     /**
      * @return list<NotificationChannel>

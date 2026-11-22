@@ -1,7 +1,7 @@
 import { brandingDefaultsFixture } from '../fixtures/branding'
 import { registerUpload } from './content/publicFiles'
 
-const theme = { ...brandingDefaultsFixture, updatedAt: null }
+const theme = { ...brandingDefaultsFixture, colorOverrides: {}, updatedAt: null }
 
 export const BRANDING_FILE_PURPOSE = 'branding'
 
@@ -9,9 +9,10 @@ export function getBrandingTheme() {
   return theme
 }
 
-export function updateBrandingColors({ primary, secondary }) {
+export function updateBrandingColors({ primary, secondary, overrides }) {
   theme.primaryColor = primary
   theme.secondaryColor = secondary
+  theme.colorOverrides = { ...overrides }
   theme.updatedAt = new Date().toISOString()
   return theme
 }
@@ -39,6 +40,9 @@ export function storeBrandingLogo(variant, file) {
 }
 
 export function resetBrandingTheme() {
-  Object.assign(theme, brandingDefaultsFixture, { updatedAt: new Date().toISOString() })
+  Object.assign(theme, brandingDefaultsFixture, {
+    colorOverrides: {},
+    updatedAt: new Date().toISOString(),
+  })
   return theme
 }

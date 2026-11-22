@@ -85,6 +85,7 @@ enum AuditEvent: string
     case EntityRestored = 'entity.restored';
     case EntityPermanentlyDeleted = 'security.entity.permanently_deleted';
     case EntitiesExported = 'entity.exported';
+    // No longer written (the city screens were removed 2026-11-15 and 2026-11-22); past audit rows still carry them.
     case CityCreated = 'city.created';
     case CityUpdated = 'city.updated';
     case CityToggled = 'city.toggled';

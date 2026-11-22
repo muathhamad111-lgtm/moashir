@@ -6,10 +6,14 @@ namespace App\Http\Resources\Notifications;
 
 use App\Data\Notifications\NotificationChannelState;
 use App\Data\Notifications\NotificationTextView;
+use App\Data\Notifications\NotificationType;
 use App\Data\Notifications\NotificationTypeTexts;
+use App\Enums\Notifications\NotificationAudience;
+use App\Enums\Notifications\NotificationAudienceKind;
 use App\Enums\Notifications\NotificationChannel;
 use App\Models\Notifications\NotificationTextOverride;
 use App\Services\Notifications\SmsTextApprovals;
+use App\Support\Notifications\Templates\NotificationTextParts;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -29,31 +33,41 @@ final class NotificationTypeDetailResource extends JsonResource
             'code' => $type->code->value,
             'category' => $type->code->category()->value,
             'is_mandatory' => $type->isMandatory,
+            'is_core' => $type->isCore,
+            'audiences' => array_map(static fn (NotificationAudience $audience): string => $audience->value, $type->audiences),
+            'audience_kinds' => array_map(static fn (NotificationAudienceKind $kind): string => $kind->value, $type->audienceKinds()),
             'channels' => array_map(static fn (NotificationChannel $channel): string => $channel->value, $type->channels),
             'channel_settings' => array_map(static fn (NotificationChannelState $state): array => [
                 'channel' => $state->channel->value,
+                'audience' => $state->audience->value,
                 'is_enabled' => $state->isEnabled,
                 'is_shipped' => $state->isShipped,
                 'is_switchable' => $state->isSwitchable,
             ], $this->resource->channels),
-            'texts' => array_map($this->text(...), $this->resource->texts),
+            'texts' => array_map(fn (NotificationTextView $view): array => $this->text($view, $type), $this->resource->texts),
         ];
     }
 
     /**
      * @return array<string, mixed>
      */
-    private function text(NotificationTextView $view): array
+    private function text(NotificationTextView $view, NotificationType $type): array
     {
         $parts = [];
 
-        foreach ($view->template->parts as $part => $default) {
-            $parts[$part] = ['default' => $default, 'current' => $view->current($part)];
+        foreach ($view->template->editableParts() as $part => $default) {
+            $parts[$part] = [
+                'default' => $default,
+                'current' => $view->current($part),
+                'channel' => NotificationTextParts::channelOf($part)->value,
+                'is_fixed' => NotificationTextParts::isFixed($part, $type->isCore),
+            ];
         }
 
         return [
             'key' => $view->template->key,
             'variant' => $view->template->variant(),
+            'audience' => $view->template->audience($type)?->value,
             'variables' => $view->template->placeholders,
             'required_variables' => $view->requiredVariables,
             'is_customized' => $view->override instanceof NotificationTextOverride,

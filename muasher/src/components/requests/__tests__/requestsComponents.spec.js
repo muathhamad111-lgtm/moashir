@@ -9,6 +9,7 @@ import AppMenu from '@/components/ui/AppMenu.vue'
 import RequestAssignButton from '../RequestAssignButton.vue'
 import AssignmentHistoryList from '../AssignmentHistoryList.vue'
 import RequestQueueFilters from '../RequestQueueFilters.vue'
+import AppSelect from '@/components/form/AppSelect.vue'
 import ReviewNotices from '@/components/review/ReviewNotices.vue'
 
 function render(component, props, { roles = [], extra = {} } = {}) {
@@ -198,7 +199,14 @@ describe('AssignmentHistoryList and filters', () => {
   })
 
   it('offers the statuses of the served path and the cycle filter on the advanced path only', () => {
-    const filters = { path: 'accredited', cycleId: '', status: '', overdue: '', assessorId: '' }
+    const filters = {
+      path: 'accredited',
+      stage: '',
+      cycleId: '',
+      status: '',
+      overdue: '',
+      assessorId: '',
+    }
     const cycles = [{ id: 31, name: { ar: 'دورة الجائزة', en: 'Award cycle' }, year: 2026 }]
     const accredited = render(RequestQueueFilters, {
       path: 'accredited',
@@ -206,14 +214,54 @@ describe('AssignmentHistoryList and filters', () => {
       sort: '-submitted_at',
       cycles,
     })
-    expect(accredited.findAll('.dropdown-field')).toHaveLength(3)
+    expect(accredited.findAll('.dropdown-field')).toHaveLength(4)
     const advanced = render(RequestQueueFilters, {
       path: 'advanced',
       filters: { ...filters, path: 'advanced' },
       sort: '-submitted_at',
       cycles,
     })
-    expect(advanced.findAll('.dropdown-field')).toHaveLength(4)
+    expect(advanced.findAll('.dropdown-field')).toHaveLength(5)
+  })
+
+  // Operator note 2026-11-22: the stage moved from chips above the table into the filter panel.
+  it('offers every stage with its count first in the filter panel', async () => {
+    const filters = {
+      path: 'accredited',
+      stage: 'overdue',
+      status: '',
+      overdue: '',
+      assessorId: '',
+    }
+    const stageCounts = {
+      all: 8,
+      preparing: 1,
+      awaiting_assignment: 1,
+      in_progress: 3,
+      overdue: 2,
+      closed: 1,
+    }
+    const wrapper = render(RequestQueueFilters, {
+      path: 'accredited',
+      filters,
+      sort: '-submitted_at',
+      stageCounts,
+    })
+    const stage = wrapper.findAllComponents(AppSelect)[0]
+    expect(stage.props('label')).toBe('Request stage')
+    expect(stage.props('modelValue')).toBe('overdue')
+    expect(stage.props('options')).toEqual([
+      { value: '', label: 'All (8)' },
+      { value: 'preparing', label: 'Being prepared (1)' },
+      { value: 'awaiting_assignment', label: 'Awaiting assignment (1)' },
+      { value: 'in_progress', label: 'In progress (3)' },
+      { value: 'overdue', label: 'Overdue (2)' },
+      { value: 'closed', label: 'Closed (1)' },
+    ])
+    stage.vm.$emit('update:modelValue', 'closed')
+    expect(wrapper.emitted('filter')).toEqual([['stage', 'closed']])
+    const bare = render(RequestQueueFilters, { path: 'accredited', filters, sort: '-submitted_at' })
+    expect(bare.findAllComponents(AppSelect)[0].props('options')[5].label).toBe('Closed')
   })
 })
 

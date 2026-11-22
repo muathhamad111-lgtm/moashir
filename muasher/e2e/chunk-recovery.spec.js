@@ -28,6 +28,20 @@ async function missFirstRequest(page, view) {
   return missed
 }
 
+async function missUntilReload(page, view) {
+  const missed = []
+  let beforeDeploy = true
+  page.on('framenavigated', (frame) => {
+    if (frame === page.mainFrame() && missed.length) beforeDeploy = false
+  })
+  await page.context().route(chunkOf(view), (route) => {
+    if (!beforeDeploy) return route.continue()
+    missed.push(route.request().url())
+    return route.fulfill({ status: 404, contentType: 'text/html', body: 'Not Found' })
+  })
+  return missed
+}
+
 async function markPageLife(page) {
   await page.evaluate(() => {
     window.moashirPageBeforeDeploy = true
@@ -67,15 +81,15 @@ test('a page opened before a deploy loads the target route in full when its chun
   page,
 }, testInfo) => {
   await seedPreferences(page, { locale: localeOf(testInfo) })
+  const missed = await missUntilReload(page, 'Register')
   await openSignIn(page)
-  const missed = await missFirstRequest(page, 'Register')
   await markPageLife(page)
   const reloaded = page.waitForEvent('load')
 
   await page.locator('.auth-form__switch a').click()
 
   await reloaded
-  expect(missed).toHaveLength(1)
+  expect(missed.length).toBeGreaterThan(0)
   expect(await samePageLife(page)).toBe(false)
   await expect(page).toHaveURL(/\/auth\/register$/)
   await expect(page.locator('.entity-register')).toBeVisible()

@@ -32,8 +32,8 @@ final readonly class CriteriaVersionDiff
     }
 
     /**
-     * @param  array<string, array{id: int, fields: array<string, mixed>}>  $before
-     * @param  array<string, array{id: int, fields: array<string, mixed>}>  $after
+     * @param  array<string, array{id: int, scored: bool, fields: array<string, mixed>}>  $before
+     * @param  array<string, array{id: int, scored: bool, fields: array<string, mixed>}>  $after
      * @return list<CriteriaChange>
      */
     private function compare(CriteriaNodeType $type, array $before, array $after): array
@@ -43,7 +43,7 @@ final readonly class CriteriaVersionDiff
         foreach ($after as $code => $node) {
             $previous = $before[$code] ?? null;
             $change = $previous === null
-                ? new CriteriaChange($type, (string) $code, CriteriaChangeType::Added, null, $node['id'])
+                ? new CriteriaChange($type, (string) $code, CriteriaChangeType::Added, null, $node['id'], scored: $node['scored'])
                 : $this->modification($type, (string) $code, $previous, $node);
 
             if ($change instanceof CriteriaChange) {
@@ -52,15 +52,15 @@ final readonly class CriteriaVersionDiff
         }
 
         foreach (array_diff_key($before, $after) as $code => $node) {
-            $changes[] = new CriteriaChange($type, (string) $code, CriteriaChangeType::Removed, $node['id'], null);
+            $changes[] = new CriteriaChange($type, (string) $code, CriteriaChangeType::Removed, $node['id'], null, scored: $node['scored']);
         }
 
         return $changes;
     }
 
     /**
-     * @param  array{id: int, fields: array<string, mixed>}  $previous
-     * @param  array{id: int, fields: array<string, mixed>}  $current
+     * @param  array{id: int, scored: bool, fields: array<string, mixed>}  $previous
+     * @param  array{id: int, scored: bool, fields: array<string, mixed>}  $current
      */
     private function modification(CriteriaNodeType $type, string $code, array $previous, array $current): ?CriteriaChange
     {
@@ -85,24 +85,25 @@ final readonly class CriteriaVersionDiff
             $fields,
             array_intersect_key($previous['fields'], array_flip($fields)),
             array_intersect_key($current['fields'], array_flip($fields)),
+            $previous['scored'] || $current['scored'],
         );
     }
 
     /**
-     * @return array<string, array<string, array{id: int, fields: array<string, mixed>}>>
+     * @return array<string, array<string, array{id: int, scored: bool, fields: array<string, mixed>}>>
      */
     private function snapshotsOf(CriteriaVersion $version): array
     {
         $snapshots = [];
 
         foreach ($version->mainCriteria as $main) {
-            $snapshots[CriteriaNodeType::Main->value][$main->code] = $this->entry($main->id, $this->snapshot->ofMain($main));
+            $snapshots[CriteriaNodeType::Main->value][$main->code] = $this->entry($main->id, $this->snapshot->ofMain($main), true);
 
             foreach ($main->subCriteria as $sub) {
-                $snapshots[CriteriaNodeType::Sub->value][$sub->code] = $this->entry($sub->id, $this->snapshot->ofSub($sub));
+                $snapshots[CriteriaNodeType::Sub->value][$sub->code] = $this->entry($sub->id, $this->snapshot->ofSub($sub), true);
 
                 foreach ($sub->guidingPoints as $point) {
-                    $snapshots[CriteriaNodeType::Point->value][$point->code] = $this->entry($point->id, $this->snapshot->ofPoint($point));
+                    $snapshots[CriteriaNodeType::Point->value][$point->code] = $this->entry($point->id, $this->snapshot->ofPoint($point), $sub->scoresGuidingPoints());
                 }
             }
         }
@@ -112,10 +113,10 @@ final readonly class CriteriaVersionDiff
 
     /**
      * @param  array<string, mixed>  $fields
-     * @return array{id: int, fields: array<string, mixed>}
+     * @return array{id: int, scored: bool, fields: array<string, mixed>}
      */
-    private function entry(int $id, array $fields): array
+    private function entry(int $id, array $fields, bool $scored): array
     {
-        return ['id' => $id, 'fields' => array_diff_key($fields, array_flip(self::IDENTITY_FIELDS))];
+        return ['id' => $id, 'scored' => $scored, 'fields' => array_diff_key($fields, array_flip(self::IDENTITY_FIELDS))];
     }
 }

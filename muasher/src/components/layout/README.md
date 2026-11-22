@@ -14,7 +14,8 @@ route keeps its path for both audiences:
   `TopNavbar` across the page (secondary brand colour), then a body row with the white `Sidebar` at the inline start
   and the `<main id="app-main">` slot. Loads the shared branding theme (`stores/branding.js`) once. For `app` routes
   `App.vue` forces `data-theme="light"` (the back office has no dark mode), sets `data-shell="tts"` and injects the
-  saved brand scheme as `--brand-*` custom properties (`composables/useBrandSchemeStyle.js`).
+  saved brand scheme as `--brand-*` custom properties (`composables/useBrandSchemeStyle.js`) through a
+  constructable stylesheet (`composables/useAdoptedStyleSheet.js`), since the production CSP refuses inline `<style>`.
 - `Sidebar` — white panel, items from `src/constants/navigation.js` filtered by role and grouped by module
   (`NAV_GROUPS`), one caption per group, dividers between groups. The active item (route name or a child route name)
   gets `aria-current="page"` and the primary brand fill. Icons-only rail below `md`; collapsible from `md` up through
@@ -30,6 +31,15 @@ route keeps its path for both audiences:
   language button, landing theme switch) and the form card, then the brand panel `<aside>` (deep band, arrow
   pattern, logo on dark and the floating trophy). The aside sits at the inline start through CSS `order`; below `lg`
   it is a compact logo band; from `lg` its inner column is sticky. Also hosts the maintenance page.
+  `App.vue` hands the routed page to the layout through the `router-view` slot, so the layout wraps it in a
+  `<Transition mode="out-in">` driven by `useAuthPageTransition`: sign-in, register and forgot password slide along
+  the reading direction (forward from sign-in, back to it), the card viewport eases its height, focus moves to the
+  new `h1` when it was in the card, and reduced motion swaps pages with no motion. The layout warms the chunks of
+  those three pages when idle and, through `useRouteIntentPrefetch`, the register data when the pointer, focus or a
+  touch lands on a link to it (`LandingLayout` does the same).
+- `AuthBrandPanel` — the brand `<aside>`. On the split layout it adds the landing hero dot field: it reuses
+  `useHeroDots` (the lens follows the cursor, the pattern drifts, the logo stays shielded); below `lg` it draws no
+  canvas.
 
 Styling: `_sidebar.scss`, `_identity-card.scss`, `_navbar.scss`,
 `_app-layout.scss`, `_portal-layout.scss`, `_portal-top-bar.scss`, `_profile-banner.scss`, `_mobile-tab-bar.scss`, `_public-layout.scss`, `_auth-layout.scss`, `_footer.scss`. No style block or

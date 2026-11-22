@@ -112,14 +112,6 @@ export const reject = {
     new CriteriaRejection(422, 'criteria.sub_evaluated_directly', {
       fields: { evaluationType: [fieldMessage('criteria.sub_evaluated_directly')] },
     }),
-  pointsConfirmRequired: (count) =>
-    new CriteriaRejection(422, 'criteria.points_confirm_required', {
-      fields: {
-        confirmDeletePoints: [fieldMessage('criteria.points_confirm_required', { count })],
-      },
-      meta: { impact: { pointCount: count } },
-      params: { count },
-    }),
   orderIncomplete: () =>
     new CriteriaRejection(422, 'order.incomplete', {
       fields: { orderedIds: [fieldMessage('order.incomplete')] },

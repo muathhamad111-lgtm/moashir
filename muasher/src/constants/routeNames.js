@@ -122,7 +122,6 @@ export const ROUTE_NAMES = {
   ADMIN_ASSESSMENT: 'admin.assessments.record',
   ADMIN_ENTITIES_DELETED: 'admin.deletedEntities',
   ADMIN_ENTITY_EMAIL_CHANGES: 'admin.entityEmailChanges',
-  ADMIN_SETTINGS_CITIES: 'admin.settings.cities',
   ADMIN_CONTACT_MESSAGES: 'admin.contactMessages',
   ADMIN_CONTACT_MESSAGE: 'admin.contactMessages.thread',
   ADMIN_AUDIT_LOG: 'admin.auditLog',

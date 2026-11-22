@@ -67,7 +67,7 @@ final class CriteriaTreeSerializer
             'has_cv' => $sub->has_cv,
             'assessor_note_label' => $sub->assessor_note_label?->toArray(),
             'attachments' => $this->attachments($sub->attachmentRequirements),
-            'points' => $sub->scoresGuidingPoints() ? array_map($this->point(...), $this->active($sub->guidingPoints)) : [],
+            'points' => array_map($this->point(...), $this->active($sub->guidingPoints)),
         ];
     }
 
@@ -81,7 +81,7 @@ final class CriteriaTreeSerializer
             'code' => $point->code,
             'order' => $point->sort_order,
             'description' => $point->description->toArray(),
-            'weight' => $point->weight->toDecimal(),
+            'weight' => $point->weight?->toDecimal(),
             'scoring_type' => $point->scoring_type->value,
             'attachments' => $this->attachments($point->attachmentRequirements),
         ];

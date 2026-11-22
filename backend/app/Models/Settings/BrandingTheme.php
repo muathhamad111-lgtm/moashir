@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\Settings;
 
+use App\Casts\JsonObjectCast;
+use App\Data\Settings\BrandColorOverrides;
 use App\Data\Settings\BrandColors;
 use App\Models\Files\StoredFile;
 use Illuminate\Database\Eloquent\Model;
@@ -14,6 +16,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property string $primary_color
  * @property string $secondary_color
+ * @property array<string, mixed> $color_overrides
  * @property int|null $logo_light_file_id
  * @property int|null $favicon_file_id
  * @property int|null $site_logo_file_id
@@ -46,7 +49,15 @@ final class BrandingTheme extends Model
 
     public function colors(): BrandColors
     {
-        return new BrandColors($this->primary_color, $this->secondary_color);
+        return new BrandColors($this->primary_color, $this->secondary_color, new BrandColorOverrides($this->color_overrides));
+    }
+
+    /**
+     * @return array<string, string|class-string>
+     */
+    protected function casts(): array
+    {
+        return ['color_overrides' => JsonObjectCast::class];
     }
 
     /**

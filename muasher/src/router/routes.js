@@ -1,5 +1,6 @@
 import { ROUTE_NAMES } from '@/constants/routeNames'
 import { PORTAL_TOOLS } from '@/constants/portal'
+import { FINANCE_TABS } from '@/constants/finance'
 import { accreditedEntryGuard } from './accreditedEntry'
 import { accountProfileEntryGuard } from './accountProfileEntry'
 import { withComingSoonScreens } from './comingSoon'
@@ -728,7 +729,8 @@ export const appRoutes = [
   {
     path: '/finance/transactions',
     name: ROUTE_NAMES.FINANCE_TRANSACTIONS,
-    component: () => import('@/views/finance/Transactions.vue'),
+    component: () => import('@/views/finance/Finance.vue'),
+    props: { tab: FINANCE_TABS.OPERATIONS },
     meta: { layout: 'app', titleKey: 'routes.finance.transactions.title', requiresAuth: true },
   },
   {
@@ -741,7 +743,8 @@ export const appRoutes = [
   {
     path: '/finance/transfers',
     name: ROUTE_NAMES.FINANCE_TRANSFERS,
-    component: () => import('@/views/finance/Transfers.vue'),
+    component: () => import('@/views/finance/Finance.vue'),
+    props: { tab: FINANCE_TABS.TRANSFERS },
     meta: { layout: 'app', titleKey: 'routes.finance.transfers.title', requiresAuth: true },
   },
   {
@@ -766,7 +769,8 @@ export const appRoutes = [
   {
     path: '/finance/payment-events',
     name: ROUTE_NAMES.FINANCE_PAYMENT_EVENTS,
-    component: () => import('@/views/finance/PaymentEvents.vue'),
+    component: () => import('@/views/finance/Finance.vue'),
+    props: { tab: FINANCE_TABS.EVENTS },
     meta: { layout: 'app', titleKey: 'routes.finance.paymentEvents.title', requiresAuth: true },
   },
   {
@@ -1055,12 +1059,6 @@ export const appRoutes = [
     component: () => import('@/views/assessment/admin/Record.vue'),
     props: true,
     meta: { layout: 'app', titleKey: 'routes.admin.assessment.title', requiresAuth: true },
-  },
-  {
-    path: '/admin/settings/cities',
-    name: ROUTE_NAMES.ADMIN_SETTINGS_CITIES,
-    component: () => import('@/views/settings/Cities.vue'),
-    meta: { layout: 'app', titleKey: 'routes.admin.settings.cities.title', requiresAuth: true },
   },
   {
     path: '/admin/contact-messages',

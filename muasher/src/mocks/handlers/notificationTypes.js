@@ -7,8 +7,11 @@ import { currentSessionUser } from '../stores/sessionStore'
 import { sessionCan } from '../stores/sessionPermissions'
 import { NOTIFICATION_TYPE_CATALOG } from '../fixtures/notificationTypes'
 import {
+  audienceKindsOf,
   channelChoiceErrors,
+  channelStatesOf,
   enabledChannelsOf,
+  isCoreType,
   findNotificationType,
   findTemplate,
   notificationTypeResource,
@@ -22,6 +25,17 @@ const LATENCY_MS = 260
 const MANAGE = 'settings.notifications.manage'
 const CHANNEL_OF_LETTER = { I: 'in_app', E: 'email', S: 'sms' }
 const OPTIONAL_CHANNELS = ['email', 'sms']
+const ALL_CHANNELS = ['in_app', 'email', 'sms']
+const BULK_SCOPES = ['codes', 'module', 'all']
+
+function bulkTargets({ scope, codes, module, enabled } = {}) {
+  if (!BULK_SCOPES.includes(scope) || typeof enabled !== 'boolean') return null
+  if (scope === 'codes')
+    return Array.isArray(codes) ? codes.map(findNotificationType).filter(Boolean) : null
+  if (scope === 'module')
+    return NOTIFICATION_TYPE_CATALOG.filter((type) => type.code.split('-')[0] === module)
+  return NOTIFICATION_TYPE_CATALOG
+}
 
 function typeRow(type) {
   const channels = [...type.channels].map((letter) => CHANNEL_OF_LETTER[letter])
@@ -32,6 +46,9 @@ function typeRow(type) {
     channels,
     audiences: [...type.audiences],
     isMandatory: type.isMandatory,
+    isCore: isCoreType(type),
+    audienceKinds: audienceKindsOf(type),
+    channelStates: channelStatesOf(type),
     enabledChannels: enabledChannelsOf(type),
     userConfigurableChannels: type.isMandatory
       ? []
@@ -82,12 +99,36 @@ export const notificationTypesHandlers = [
     if (refusal) return refusal
     const type = findNotificationType(params.code)
     if (!type) return MISSING()
-    const { channels } = await readJson(request)
-    const errors = channelChoiceErrors(type, channels, requestLocale(request))
+    const body = await readJson(request)
+    const errors = channelChoiceErrors(type, body, requestLocale(request))
     if (Object.keys(errors).length)
-      return errorResponse(422, 'validation_failed', errors.channels[0], errors)
-    switchNotificationChannels(type, channels)
+      return errorResponse(422, 'validation_failed', Object.values(errors)[0][0], errors)
+    switchNotificationChannels(type, body.channels, body.audience ? [body.audience] : undefined)
     return envelope(notificationTypeResource(type))
+  }),
+
+  http.patch('/api/v1/settings/notifications/channels', async ({ request }) => {
+    await delay(LATENCY_MS)
+    const refusal = denied()
+    if (refusal) return refusal
+    const change = await readJson(request)
+    const types = bulkTargets(change)
+    if (!types)
+      return errorResponse(422, 'validation_failed', 'The selection is not valid.', {
+        scope: ['invalid'],
+      })
+    const switched = types.filter((type) => !isCoreType(type))
+    switched.forEach((type) => {
+      const audiences = (change.audiences ?? audienceKindsOf(type)).filter((kind) =>
+        audienceKindsOf(type).includes(kind),
+      )
+      const choices = Object.fromEntries(
+        (change.channels ?? ALL_CHANNELS).map((channel) => [channel, Boolean(change.enabled)]),
+      )
+      switchNotificationChannels(type, choices, audiences)
+    })
+    const rows = notificationTypeRows()
+    return envelope(rows, { total: rows.length, updated: switched.length })
   }),
 
   http.put('/api/v1/settings/notifications/texts/:key', async ({ params, request }) => {

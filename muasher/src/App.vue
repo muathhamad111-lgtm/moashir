@@ -17,6 +17,7 @@ import { useTheme } from '@/composables/useTheme'
 import { usePlatformIdentity } from '@/composables/usePlatformIdentity'
 import { useSiteBranding } from '@/composables/useSiteBranding'
 import { useBrandSchemeStyle } from '@/composables/useBrandSchemeStyle'
+import { useAdoptedStyleSheet } from '@/composables/useAdoptedStyleSheet'
 import { useTtsShell } from '@/composables/useTtsShell'
 import { useDeferredVisibility } from '@/composables/useDeferredVisibility'
 import { BRAND_THEME_COLOR } from '@/constants/branding'
@@ -46,11 +47,7 @@ const showsBootScreen = computed(() => isBooting.value || bootMarkVisible.value)
 const layout = computed(() => LAYOUTS[layoutKey.value] ?? PublicLayout)
 const documentTheme = computed(() => (isTtsShell.value ? THEMES.light : theme.value))
 const brandSchemeCss = useBrandSchemeStyle()
-const brandStyles = computed(() =>
-  isTtsShell.value && brandSchemeCss.value
-    ? [{ key: 'brand-scheme', textContent: brandSchemeCss.value }]
-    : [],
-)
+useAdoptedStyleSheet(computed(() => (isTtsShell.value ? brandSchemeCss.value : '')))
 
 const { platformName, siteName } = usePlatformIdentity()
 const { favicon } = useSiteBranding()
@@ -84,7 +81,6 @@ useHead({
   title: () => (route.meta.titleKey ? t(route.meta.titleKey) : platformName.value),
   titleTemplate: (title) => (title ? `${title} | ${siteName.value}` : siteName.value),
   link: iconLinks,
-  style: brandStyles,
   meta: [
     { name: 'description', content: () => t('meta.description') },
     { name: 'theme-color', content: BRAND_THEME_COLOR },
@@ -106,9 +102,11 @@ useHead({
 </script>
 
 <template>
-  <component :is="layout" v-if="!isBooting">
-    <router-view />
-  </component>
+  <router-view v-if="!isBooting" v-slot="{ Component }">
+    <component :is="layout">
+      <component :is="Component" v-if="Component" />
+    </component>
+  </router-view>
   <AppLoadingScreen v-if="showsBootScreen" variant="screen" :shows-mark="bootMarkVisible" />
   <AppToast />
   <ConfirmModal />

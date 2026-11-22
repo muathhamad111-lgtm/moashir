@@ -200,14 +200,3 @@ export function emailChangeResource(change) {
 export function ownEmailChangeResource(change) {
   return { status: change.status, policy: change.policy, newEmail: maskEmail(change.newEmail) }
 }
-
-export function cityResource(city) {
-  return {
-    id: city.id,
-    regionId: city.regionId,
-    code: city.code,
-    name: { ...city.name },
-    sortOrder: city.sortOrder,
-    isActive: city.isActive,
-  }
-}

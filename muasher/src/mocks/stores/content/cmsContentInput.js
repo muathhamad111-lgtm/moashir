@@ -30,11 +30,10 @@ function checkShape(errors, body, allow, withBackground) {
     errors.check(CMS_BACKGROUND_PATTERN.test(body.background), 'background', 'background')
 }
 
-function imageChange(body) {
+function imageChange(body, purpose) {
   if (!has(body, 'imageFileId')) return {}
   if (!body.imageFileId) return { image: null }
-  if (!isUsableFile(body.imageFileId, CMS_IMAGE_PURPOSE))
-    throw contentReject.fileNotUsable('imageFileId')
+  if (!isUsableFile(body.imageFileId, purpose)) throw contentReject.fileNotUsable('imageFileId')
   return { image: imageOf(body.imageFileId) }
 }
 
@@ -42,7 +41,10 @@ function blankToNull(value) {
   return value === '' || value === undefined ? null : value
 }
 
-export function readContentChanges(body, { allow = [], withBackground = false } = {}) {
+export function readContentChanges(
+  body,
+  { allow = [], withBackground = false, imagePurpose = CMS_IMAGE_PURPOSE } = {},
+) {
   const errors = createFieldErrors()
   checkShape(errors, body, allow, withBackground)
   errors.throwIfAny()
@@ -60,7 +62,7 @@ export function readContentChanges(body, { allow = [], withBackground = false } 
     })
   if (has(body, 'meta'))
     changes.meta = body.meta && Object.keys(body.meta).length ? body.meta : null
-  return { ...changes, ...imageChange(body) }
+  return { ...changes, ...imageChange(body, imagePurpose) }
 }
 
 export { CMS_IMAGE_PURPOSE }

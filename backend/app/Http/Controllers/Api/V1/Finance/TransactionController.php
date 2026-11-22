@@ -22,7 +22,7 @@ final class TransactionController
         $filters = $request->filters();
 
         return ApiResponse::paginated($listTransactions->handle($filters), TransactionResource::class, [
-            'stats' => $listTransactions->statsOf($filters)->toArray(),
+            'stats' => [...$listTransactions->statsOf($filters)->toArray(), ...$listTransactions->breakdownOf($filters)->toArray()],
         ]);
     }
 

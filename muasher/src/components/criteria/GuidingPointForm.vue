@@ -13,12 +13,14 @@ import { useCriteria } from '@/composables/useCriteria'
 import { useScoringTypeOptions } from '@/composables/useScoringTypeOptions'
 import { renameFieldErrors } from '@/services/mappers/fieldErrors'
 import { requiredText, weightText } from '@/utils/criteriaSchemas'
-import { attachmentsPayload, cloneAttachments } from '@/utils/criteriaAttachments'
-import { compareWeights, normalizeWeight, sumWeights } from '@/utils/weight'
-import { CRITERIA_DESCRIPTION_MAX_LENGTH, SCORING_TYPES } from '@/constants/criteria'
+import { cloneAttachments } from '@/utils/criteriaAttachments'
+import { pointFormPayload, pointFormValues, POINT_FIELD_ALIASES } from '@/utils/criteriaPointForm'
+import { compareWeights, sumWeights } from '@/utils/weight'
+import { CRITERIA_DESCRIPTION_MAX_LENGTH } from '@/constants/criteria'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import { useFormSections } from '@/composables/useFormSections'
 import { POINT_FIELD_SECTIONS } from '@/utils/criteriaFormSections'
+import { scoresPoints } from '@/utils/criteriaTree'
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -36,15 +38,13 @@ const emit = defineEmits(['update:modelValue', 'section-errors', 'dirty'])
 const { t } = useI18n()
 const { locale, weight: formatted } = useCriteria()
 
-const FIELD_ALIASES = {
-  'description.ar': 'descriptionAr',
-  'description.en': 'descriptionEn',
-  description: 'descriptionAr',
-}
-
 const isEdit = computed(() => Boolean(props.point))
+// Under a directly evaluated sub-criterion the indicator is descriptive: no weight, no scoring type.
+const descriptive = computed(() => !scoresPoints(props.sub))
 const distributes = computed(() => Boolean(props.sub.distributeEqually))
-const weightElsewhere = computed(() => distributes.value || Boolean(props.section))
+const weightElsewhere = computed(
+  () => descriptive.value || distributes.value || Boolean(props.section),
+)
 const attachments = ref([])
 const { options: scoringOptions } = useScoringTypeOptions()
 
@@ -72,23 +72,17 @@ const schema = computed(() =>
 )
 
 function valuesOf(point) {
-  return {
-    descriptionAr: point?.description?.ar ?? '',
-    descriptionEn: point?.description?.en ?? '',
-    weight: point?.weight ?? (distributes.value ? '' : remaining.value),
-    scoringType: point?.scoringType ?? props.sub.defaultPointScoringType ?? SCORING_TYPES.SCORE,
-    active: point?.active ?? true,
-  }
+  const defaultWeight = distributes.value || descriptive.value ? '' : remaining.value
+  return pointFormValues(point, { sub: props.sub, defaultWeight })
 }
 
 function payloadOf(values) {
-  const payload = {
-    description: { ar: values.descriptionAr.trim(), en: values.descriptionEn.trim() },
-    scoringType: values.scoringType,
-    attachments: attachmentsPayload(attachments.value),
-  }
-  if (!weightElsewhere.value) payload.weight = normalizeWeight(values.weight)
-  return isEdit.value ? payload : { ...payload, active: values.active }
+  return pointFormPayload(values, {
+    attachments: attachments.value,
+    descriptive: descriptive.value,
+    sendsWeight: !weightElsewhere.value,
+    isEdit: isEdit.value,
+  })
 }
 
 const form = useValidatedForm({
@@ -100,7 +94,7 @@ const form = useValidatedForm({
       await props.save({ id: props.point?.id ?? null, payload: payloadOf(values) })
       emit('update:modelValue', false)
     } catch (error) {
-      throw renameFieldErrors(error, FIELD_ALIASES)
+      throw renameFieldErrors(error, POINT_FIELD_ALIASES)
     }
   },
 })
@@ -185,13 +179,21 @@ const sections = useFormSections(
         :error="form.errors.value.weight"
         required
       />
+      <p
+        v-else-if="descriptive && sections.shows('basics')"
+        class="criteria-form__note"
+        role="note"
+      >
+        <AppIcon name="info-circle" />
+        <span>{{ t('criteria.point.descriptiveNote') }}</span>
+      </p>
       <p v-else-if="!sections.inSheet.value" class="criteria-form__note" role="note">
         <AppIcon name="scale" />
         <span>{{ t('criteria.point.equalNote') }}</span>
       </p>
 
       <BaseRadio
-        v-show="sections.shows('evaluation')"
+        v-show="sections.shows('evaluation') && !descriptive"
         v-model="scoringType"
         name="pointScoringType"
         :label="t('criteria.fields.scoringType')"

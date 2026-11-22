@@ -1,7 +1,6 @@
 import { cycleRefOf } from '../award/cycleRef'
 import { linkedRequestOf } from '../accredited/requestPayments'
 import { riyadhDateKey } from '@/utils/datetime'
-import { financeEntityEmails } from '../../fixtures/finance'
 import { findEntity } from '../entitiesStore'
 import { entityBillingOf } from '../entitySerializers'
 import { hasCompleteBilling } from '../entityProfileSections'
@@ -116,7 +115,6 @@ export function staffTransferResource(payment, { detail = false } = {}) {
       id: payment.entityId,
       reference: entityReferenceOf(payment.entityId),
       name: { ...entityNameOf(payment) },
-      email: financeEntityEmails[payment.entityId] ?? null,
       isFrozen: isFrozenEntity(payment.entityId),
     },
     ...transferDetailsOf(payment),

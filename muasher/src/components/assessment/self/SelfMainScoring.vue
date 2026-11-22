@@ -5,6 +5,7 @@ import Card from '@/components/ui/Card.vue'
 import Badge from '@/components/ui/Badge.vue'
 import RawScoreField from '@/components/assessment/RawScoreField.vue'
 import CriterionStepCounter from '@/components/assessment/CriterionStepCounter.vue'
+import IndicatorGuidance from '@/components/assessment/IndicatorGuidance.vue'
 import { EVALUATION_TYPES } from '@/constants/criteria'
 import { SCORE_LEVELS } from '@/constants/assessment'
 import { savedScoreOf, scoreFieldName } from '@/utils/assessments/scoreSheet'
@@ -82,14 +83,20 @@ defineExpose({ focusTitle })
           </ul>
         </template>
 
-        <RawScoreField
-          v-else
-          :name="scoreFieldName(unit(SCORE_LEVELS.SUB, sub))"
-          :label="t('assessment.self.directLabel', { name: text(sub.name) })"
-          :scoring-type="typeOf(sub)"
-          :saved="savedScoreOf(scores, unit(SCORE_LEVELS.SUB, sub))"
-          :disabled="disabled"
-        />
+        <template v-else>
+          <IndicatorGuidance
+            v-if="sub.points.length"
+            :points="sub.points"
+            :title="t('assessment.self.directIndicatorsHint')"
+          />
+          <RawScoreField
+            :name="scoreFieldName(unit(SCORE_LEVELS.SUB, sub))"
+            :label="t('assessment.self.directLabel', { name: text(sub.name) })"
+            :scoring-type="typeOf(sub)"
+            :saved="savedScoreOf(scores, unit(SCORE_LEVELS.SUB, sub))"
+            :disabled="disabled"
+          />
+        </template>
       </li>
     </ul>
   </Card>

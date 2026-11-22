@@ -250,6 +250,11 @@
       "label": "Steps",
       "back": "Back",
       "next": "Next"
+    },
+    "columns": {
+      "title": "Visible columns",
+      "open": "Columns",
+      "reset": "Restore the default columns"
     }
   },
   "status": {
@@ -590,16 +595,15 @@
     "evaluationType": {
       "direct": "Evaluate on the sub-criterion directly",
       "guidingPoints": "Evaluate on the indicators",
-      "directHint": "Indicators are not scored independently. Guidance is written in the description, and the entity uploads evidence at the sub-criterion level.",
+      "directHint": "The whole sub-criterion gets one judgment. Its indicators stay descriptive, without weights; each can have its own attachments, and the entity and the assessor see them all.",
       "guidingHint": "Scorable indicators are added to this sub-criterion and weighted from its weight.",
-      "editNote": "The evaluation method changes with the switch action, which shows the impact on the indicators first.",
+      "editNote": "The evaluation method changes with the switch action; the indicators and their attachments stay either way.",
       "switchToDirect": "Switch to direct evaluation",
       "switchToPoints": "Switch to evaluation on indicators",
       "switchTitle": "Change the evaluation type?",
-      "toDirectMessage": "{count} indicators are deleted. | Its only indicator is deleted. | {count} indicators are deleted.",
-      "toPointsMessage": "Add the indicators before publishing.",
+      "toDirectMessage": "The indicators and their attachments stay and become descriptive, without weights; the whole sub-criterion gets one judgment.",
+      "toPointsMessage": "The sub-criterion weight is split equally over its indicators; you can change the split afterwards. Add indicators before publishing if there are none.",
       "switchConfirm": "Switch",
-      "switchConfirmDelete": "Switch and delete",
       "short": {
         "guidingPoints": "On indicators",
         "direct": "Direct"
@@ -662,7 +666,8 @@
       "createTitle": "Add indicator",
       "editTitle": "Edit indicator",
       "create": "Add",
-      "equalNote": "The weight is set automatically because this sub-criterion distributes its weight equally."
+      "equalNote": "The weight is set automatically because this sub-criterion distributes its weight equally.",
+      "descriptiveNote": "Descriptive indicator: the whole sub-criterion gets one judgment, so the indicator has no weight or scoring type."
     },
     "attachments": {
       "title": "Required attachments",
@@ -832,12 +837,13 @@
         "pointsCount": "1 indicator | 1 indicator | {count} indicators",
         "noPoints": "No indicators yet.",
         "noSubs": "No sub-criteria yet.",
-        "directNote": "Scored directly with one value ({type}); attachments are at the sub-criterion level.",
+        "directNote": "Scored directly with one judgment on the whole sub-criterion ({type}); the indicators are descriptive and carry no weight.",
         "defaultType": "Default type: {type}",
         "unbalanced": "{allocated} of {weight} is allocated; the total must equal the criterion weight before publishing.",
         "splitEqually": "Split equally",
         "splitManually": "Edit the split by hand",
-        "mainAttachments": "Main-criterion attachments"
+        "mainAttachments": "Main-criterion attachments",
+        "descriptive": "Descriptive"
       },
       "sheet": {
         "tabs": {
@@ -1203,9 +1209,6 @@
         },
         "homepage": {
           "title": "Public site content"
-        },
-        "cities": {
-          "title": "Cities"
         },
         "integrations": {
           "title": "Integrations"
@@ -2513,21 +2516,6 @@
       "emptyTitle": "No e-mail changes in this list",
       "emptyMessage": "Verified requests that need approval appear here."
     },
-    "cities": {
-      "title": "Cities",
-      "searchPlaceholder": "Search cities",
-      "emptyTitle": "No cities match these filters",
-      "columns": {
-        "name": "City",
-        "region": "Region",
-        "status": "Status"
-      },
-      "toasts": {
-        "activated": "The city was activated.",
-        "deactivated": "The city was deactivated."
-      },
-      "activeLabel": "Enable {name}"
-    },
     "history": {
       "title": "Profile change history",
       "caption": "Changes to the entity profile, newest first",
@@ -3048,7 +3036,8 @@
         "unsaved": "Not saved yet",
         "empty": "Choose achieved or not achieved"
       },
-      "scaleByCriterion": "By each criterion’s scoring type"
+      "scaleByCriterion": "By each criterion’s scoring type",
+      "directIndicatorsHint": "Indicators for guidance: give the whole sub-criterion one score."
     },
     "result": {
       "pendingTitle": "The result is not issued yet",
@@ -3178,10 +3167,6 @@
         "branding": {
           "title": "Brand identity",
           "desc": "The platform's name and description, logos, colors and header and footer menus."
-        },
-        "cities": {
-          "title": "Cities",
-          "desc": "City list of each region used in registration."
         },
         "maturityTexts": {
           "title": "Maturity texts",
@@ -3409,33 +3394,11 @@
     },
     "notifications": {
       "title": "Notification types",
-      "description": "Every notification the platform sends. Open a type to edit its texts and switch its channels on or off; mandatory notifications keep their channels.",
       "catalogue": {
-        "total": "Types: {count}",
-        "emptyTitle": "No matching types",
-        "emptyMessage": "Change the filters to see other types.",
-        "unnamed": "Notification without a defined name",
-        "mandatory": "Mandatory — cannot be turned off",
-        "inAppOnly": "In the system only",
-        "optional": "Users can turn off: {channels}",
-        "columns": {
-          "code": "Code",
-          "name": "Notification",
-          "module": "Module",
-          "category": "Category",
-          "channels": "Channels",
-          "audiences": "Sent to",
-          "preference": "User preferences",
-          "texts": "Texts"
-        },
-        "categories": {
-          "action_required": "Action required",
-          "informational": "For information",
-          "alert": "Alert",
-          "error": "Error"
-        },
+        "emptyTitle": "No matching notifications",
+        "emptyMessage": "Try another search or filter.",
         "channels": {
-          "in_app": "In the system",
+          "in_app": "In-app",
           "email": "E-mail",
           "sms": "Text message"
         },
@@ -3454,34 +3417,66 @@
           "finance_officer": "Finance Officer",
           "contact_handler": "Contact message handlers"
         },
-        "audienceFilter": "Audience"
+        "audienceFilter": "Recipient",
+        "bulk": {
+          "confirm": "Applies to {count} notifications. Core notifications are not affected.",
+          "menu": "Turn on or off in bulk",
+          "enableScope": "Turn on: {scope}",
+          "disableScope": "Turn off: {scope}",
+          "enable": "Turn all on",
+          "disable": "Turn all off"
+        },
+        "channelsShort": {
+          "in_app": "In-app",
+          "email": "E-mail",
+          "sms": "SMS"
+        },
+        "views": {
+          "label": "View",
+          "byType": "By notification",
+          "byChannel": "By channel"
+        },
+        "core": "Core",
+        "coreHint": "Cannot be turned off",
+        "audienceKinds": {
+          "beneficiary": "Beneficiary",
+          "management": "Management",
+          "account": "Account holder"
+        },
+        "edit": "Edit",
+        "editLabel": "Edit the text of {name}",
+        "switchLabel": "{channel} — {audience} — {name}",
+        "onCount": "On for {on} of {total}",
+        "channelTabs": {
+          "all": "All channels",
+          "in_app": "In-app",
+          "email": "E-mail",
+          "sms": "Text messages"
+        },
+        "search": "Search by name or code"
       },
       "texts": {
-        "description": "Edit this notification's texts in Arabic and English. The edited text is sent from now on in every channel the notification uses.",
         "back": "Back to notification types",
-        "variables": "Available variables — select one to insert it at the cursor",
+        "variables": "Variables",
         "insert": "Insert {label} ({name})",
         "insertRequired": "Insert {label} ({name}), required",
-        "requiredHint": "The highlighted variables are required because this notification is mandatory; it cannot be saved without them.",
-        "customized": "Edited text",
-        "shipped": "Original text",
-        "arabic": "In Arabic",
-        "english": "In English",
-        "save": "Save text",
+        "requiredHint": "The highlighted variables are required in this notification.",
+        "customized": "Edited",
+        "arabic": "Arabic",
+        "english": "English",
+        "save": "Save",
         "reset": "Restore the original text",
         "resetTitle": "Restore the original text?",
-        "resetMessage": "The edited text will be deleted and the notification goes back to the platform's original text.",
+        "resetMessage": "Your edit is deleted and the original text comes back.",
         "resetDone": "The original text was restored.",
-        "saved": "The text was saved and will be used in upcoming notifications.",
+        "saved": "Text saved.",
         "saveFailed": "The text could not be saved. Try again.",
-        "missingTitle": "Notification type not found",
+        "missingTitle": "Notification not found",
         "missingMessage": "Check the link or go back to the notification types.",
         "noTexts": "This notification's text is generated by the platform and cannot be edited.",
-        "edit": "Edit texts",
-        "editLabel": "Edit the texts of {name}",
         "parts": {
-          "subject": "E-mail subject",
-          "line": "Message text",
+          "subject": "Subject",
+          "line": "Body",
           "action": "Button text",
           "summary": "Summary line",
           "expiry": "Validity line",
@@ -3499,7 +3494,9 @@
           "next": "Next step line",
           "intro": "Opening line",
           "guestFollowUp": "Guest follow-up line",
-          "sms": "Text message"
+          "sms": "Text",
+          "emailBody": "Body",
+          "emailSubject": "Subject"
         },
         "variants": {
           "single": "Notification text",
@@ -3615,7 +3612,6 @@
           "winners": "Winners"
         },
         "sms": {
-          "unsaved": "Write the text message in Arabic and English, then save it to see its approval.",
           "locales": {
             "ar": "Arabic",
             "en": "English"
@@ -3625,17 +3621,42 @@
             "pending": "Awaiting Msegat approval — will not be sent",
             "not_required": "No approval needed",
             "templates_not_loaded": "Msegat templates not loaded yet — will not be sent"
-          }
+          },
+          "counter": "{length}/{limit} characters · messages: {segments}"
+        },
+        "otpSmsPointer": "The verification code text message is edited in the SMS settings",
+        "audienceTabs": {
+          "all": "Everyone",
+          "beneficiary": "To the beneficiary",
+          "management": "To management",
+          "account": "To the account holder"
+        },
+        "coreBanner": "Core notification: it cannot be turned off; its button and required variables stay.",
+        "recipients": {
+          "title": "Recipients",
+          "note": "Set by the system"
+        },
+        "channelOn": "On",
+        "channelOff": "Off",
+        "channelSwitch": "Send",
+        "language": "Text language",
+        "format": {
+          "label": "Text formatting",
+          "bold": "Bold",
+          "link": "Link",
+          "list": "List"
+        },
+        "preview": {
+          "title": "Preview",
+          "from": "From: Moashir",
+          "brand": "Moashir",
+          "sender": "Moashir",
+          "now": "Now"
         }
       },
       "channels": {
-        "title": "Delivery channels",
-        "lockedMandatory": "Mandatory notification: its channels cannot be switched off.",
-        "lockedChannel": "Mandatory notification: this channel cannot be changed.",
-        "addedHint": "Added for this notification; it does not ship with it.",
-        "saved": "The notification channels were saved.",
-        "saveFailed": "The channels could not be saved. Try again.",
-        "smsHint": "Sent only to recipients with a mobile number, and only with a text approved in Msegat when the account is restricted to templates."
+        "saved": "Channels saved.",
+        "saveFailed": "The channels could not be saved. Try again."
       }
     },
     "paths": {
@@ -4333,7 +4354,8 @@
       "FIN": "Finance",
       "CMS": "Content",
       "CERT": "Certificates",
-      "CNT": "Contact us"
+      "CNT": "Contact us",
+      "PER": "Accredited assessment periods"
     },
     "typeNames": {
       "USR-01": "Staff invitation",
@@ -4347,66 +4369,120 @@
       "REG-01": "Organization account created",
       "REG-02": "Verification code",
       "REG-03": "Profile completion reminder",
+      "REG-04": "Organization data edited",
       "REG-05": "Organization account deactivated",
       "REG-06": "Organization account reactivated",
       "REG-07": "Account verification reminder",
       "REG-08": "Official e-mail change requested",
       "REG-09": "Official e-mail change decided",
       "REG-10": "Organization account deleted or restored",
+      "REG-11": "Organization awaiting registration review",
+      "REG-12": "Organization registration approved",
+      "REG-13": "Organization registration rejected",
       "SEC-01": "Super Admin sign-in",
       "SEC-02": "Super Admin two-factor failure",
       "SEC-03": "Super Admin access changed",
       "SEC-04": "Reason-required action",
       "SEC-05": "Super Admin assignment rejected",
       "SEC-06": "Integration secret replaced",
+      "SEC-07": "Organization sign-in code channels changed",
+      "SEC-08": "Two-factor policy changed",
+      "STD-01": "Main criterion added",
+      "STD-02": "Main criterion weight changed",
+      "STD-03": "Sub-criterion added",
+      "STD-04": "Indicator evaluation turned on",
+      "STD-05": "Direct evaluation turned on",
+      "STD-06": "Assessment scale changed",
+      "STD-07": "Criteria weights inconsistent",
       "STD-08": "Criteria edited with a scope",
+      "SELF-01": "Self assessment started",
+      "SELF-02": "Self assessment draft saved",
       "SELF-03": "Self assessment submitted",
+      "SELF-04": "Self assessment result",
       "ACC-01": "Accredited form opened",
+      "ACC-02": "Accredited draft saved",
       "ACC-03": "Accredited request submitted",
+      "ACC-04": "Request awaiting assignment",
       "ACC-05": "Request assigned to an assessor",
+      "ACC-06": "Request review started",
       "ACC-07": "Completion requested by the assessor",
       "ACC-08": "Accredited assessment completed",
       "ACC-09": "Certificate issued",
       "ACC-10": "Feedback report available",
       "ACC-11": "Review overdue",
       "ACC-12": "Completion deadline passed",
+      "ACC-13": "Paid request completion reminder",
       "ADV-01": "Advanced cycle opened",
       "ADV-02": "Submission deadline approaching",
+      "ADV-03": "Entry conditions not met",
       "ADV-04": "Advanced request submitted",
       "ADV-05": "Advanced request assigned",
+      "ADV-06": "Initial assessment completed",
       "ADV-07": "Qualified for the committee assessment",
       "ADV-08": "Not qualified for the committee assessment",
       "ADV-09": "Assigned to the assessors committee",
+      "ADV-10": "Committee evaluation started",
+      "ADV-11": "Committee evaluation submitted",
       "ADV-12": "All committee assessments submitted",
       "ADV-13": "Committee assessment overdue",
+      "ADV-14": "Committee assessor disabled",
       "ADV-15": "Substitute assessor assigned",
       "ADV-16": "Returned to the assessors committee",
       "ADV-17": "Committee average approved",
       "ADV-18": "Award results announced",
+      "ADV-20": "Regional results approved",
+      "ADV-21": "Organizations qualified for the national award",
+      "ADV-22": "National result approved",
       "ADV-23": "Regional result",
       "ADV-24": "National result",
       "ADV-25": "Request returned for completion",
+      "ADV-26": "Substitute assessor result approved",
       "ADV-27": "Advanced completion deadline passed",
       "ADV-28": "Filtering exception",
       "ADV-29": "Committee discussion opened",
+      "ADV-30": "Committee discussion entry",
       "ADV-31": "Advanced request withdrawn",
       "INT-01": "SMS sending failed",
+      "INT-02": "SMS gateway check passed",
       "INT-03": "Payment gateway check failed",
       "INT-04": "External service down",
+      "INT-05": "Request processing failed",
+      "INT-06": "Backup check failed",
+      "AI-04": "AI provider settings updated",
       "AI-05": "AI provider connection failed",
+      "PAY-01": "Payment order created",
       "PAY-02": "Payment succeeded",
       "PAY-03": "Payment failed",
       "PAY-04": "Refund recorded",
       "PAY-06": "Payment receipt issued",
+      "PAY-07": "Payment order cancelled",
       "PAY-08": "Refund required",
       "PAY-09": "Refund reported by the provider",
+      "PAY-11": "Bank transfer receipt received",
+      "PAY-12": "Bank transfer not approved",
       "CERT-01": "Certificate revoked",
       "CERT-02": "Certificate suspended",
       "CNT-01": "New contact message",
       "CNT-02": "Reply to your message",
       "CNT-03": "Your message was received",
       "CNT-04": "New follow-up from the sender",
-      "CNT-05": "Contact message assigned"
+      "CNT-05": "Contact message assigned",
+      "PER-01": "Assessment period starting soon",
+      "PER-02": "Assessment period ending soon",
+      "PER-03": "Period ended without a request",
+      "PER-04": "Assessment period digest",
+      "PER-05": "Period dates corrected",
+      "CYC-01": "Award submissions closed",
+      "CYC-02": "Award cycle closed",
+      "EVD-01": "Evidence bundle ready",
+      "EVD-02": "Evidence file refused",
+      "FIN-01": "Transactions export ready",
+      "FIN-03": "Bank transfer accounts changed",
+      "CMS-01": "Indicator added",
+      "CMS-02": "Indicator value updated",
+      "CMS-03": "Indicator published",
+      "CMS-04": "Public content updated",
+      "CMS-05": "Content unpublished"
     }
   },
   "requests": {
@@ -5154,8 +5230,8 @@
     "subtitle": "The platform's name and description, the logos and colors, and the public site menus. Each user sees what their permissions allow.",
     "loadError": "Could not load the identity settings.",
     "colors": {
-      "title": "Back-office colors",
-      "hint": "The primary color shows on buttons, the active side-bar item and links; the secondary color is the top bar background.",
+      "title": "Base brand colors",
+      "hint": "Pick two colors. The platform derives the rest and makes sure every text stays readable.",
       "primary": {
         "label": "Primary color",
         "hint": "Buttons, the active side-bar item, links and the focus ring"
@@ -5188,12 +5264,13 @@
     },
     "contrast": {
       "ratio": "{ratio}:1",
-      "shadeNote": "The primary color is light on the page background, so links and text use a darker shade of it:",
-      "blocked": "Cannot save: choose a color that reaches 4.5:1 with white or dark text.",
+      "blocked": "Cannot save: some colors miss the 4.5:1 contrast. Change them or set them back to Auto.",
       "pairs": {
         "primary": {
           "text_on_fill": "Text on the primary color (buttons and the active item)",
-          "text_on_content": "Primary color as text on the page background (links)"
+          "text_on_content": "Primary color as text on the page background (links)",
+          "text_on_hover": "Text on the hover and pressed color",
+          "text_on_soft": "Brand text on the soft background (selected rows and chips)"
         },
         "secondary": {
           "text_on_fill": "Text on the secondary color (top bar)"
@@ -5221,6 +5298,112 @@
     },
     "reason": {
       "title": "Reason for the change"
+    },
+    "derived": {
+      "title": "Derived colors",
+      "hint": "Calculated from the two colors above and updated with them. You can override any of them; a color below 4.5:1 contrast (WCAG 2.1 AA) cannot be saved.",
+      "columns": {
+        "color": "Color",
+        "contrast": "Contrast",
+        "state": "State"
+      },
+      "auto": "Auto",
+      "custom": "Custom",
+      "autoValue": "Auto:",
+      "override": "Override",
+      "restoreAuto": "Back to auto",
+      "pick": "Pick the “{name}” color",
+      "passes": "Meets the required contrast",
+      "fails": "Misses the required contrast",
+      "colors": {
+        "onPrimary": {
+          "name": "Text on primary",
+          "use": "Button labels and the active side-bar item"
+        },
+        "primaryText": {
+          "name": "Brand text & links",
+          "use": "Links, the focus ring and single-color charts"
+        },
+        "primaryHover": {
+          "name": "Hover & pressed",
+          "use": "Buttons on hover or press"
+        },
+        "primarySoft": {
+          "name": "Soft background",
+          "use": "Selected rows, chips and light notices"
+        },
+        "onSecondary": {
+          "name": "Text on secondary",
+          "use": "Top-bar text and icons"
+        }
+      }
+    },
+    "fixed": {
+      "title": "Colors that never follow the brand",
+      "readOnly": "Read only",
+      "hint": "They carry a fixed meaning users already know, so they do not change with the brand colors.",
+      "groups": {
+        "states": "System states",
+        "levels": "Award levels",
+        "charts": "Chart series"
+      },
+      "colors": {
+        "success": "Success",
+        "warning": "Warning",
+        "danger": "Error",
+        "info": "Info",
+        "diamond": "Diamond",
+        "gold": "Gold",
+        "silver": "Silver",
+        "bronze": "Bronze",
+        "series1": "Series 1",
+        "series2": "Series 2",
+        "series3": "Series 3"
+      }
+    },
+    "warnings": {
+      "nearAlert": "The primary color is very close to the “{status}” color, so a normal button may read as a {status} message. Saving is allowed, but another color is recommended.",
+      "hoverIndistinct": "The hover color is very close to the primary color, so users will not notice the button change on hover. Saving is allowed, but overriding the hover color is recommended."
+    },
+    "preview": {
+      "title": "Live preview",
+      "note": "The preview shows the unsaved colors. No other user sees a change before you save.",
+      "label": "Preview of the {surface} with the unsaved colors",
+      "surfaces": {
+        "backOffice": "Back office",
+        "portal": "Entity portal"
+      },
+      "sample": {
+        "nav": {
+          "dashboard": "Dashboard",
+          "requests": "Requests",
+          "entities": "Entities",
+          "settings": "Settings"
+        },
+        "requests": "Incoming requests",
+        "newRequest": "New request",
+        "hover": "On hover",
+        "export": "Export",
+        "search": "Search requests",
+        "firstEntity": "Government entity",
+        "secondEntity": "Another entity",
+        "inReview": "In review",
+        "viewAll": "View all",
+        "chart": "Requests per week",
+        "platform": "Moashir",
+        "portalNav": {
+          "journey": "My journey",
+          "assessments": "Assessments",
+          "certificates": "Certificates",
+          "payments": "Payments"
+        },
+        "heroTitle": "Start your self-assessment",
+        "heroText": "Complete the entity profile, then start whenever you are ready.",
+        "start": "Start now",
+        "certificates": "Certificates",
+        "messages": "Messages",
+        "unread": "3 new"
+      }
     }
   },
   "maintenance": {
@@ -6109,9 +6292,11 @@
       "manuallySettled": "Settled manually",
       "columns": {
         "operation": "Operation",
-        "payment": "Payment"
+        "payment": "Payment",
+        "amount": "Amount",
+        "date": "Date",
+        "receipt": "Receipt no."
       },
-      "receiptLine": "Receipt {number}",
       "view": "View details"
     },
     "transaction": {
@@ -6219,8 +6404,6 @@
       "failed": "The payment could not be settled."
     },
     "events": {
-      "title": "Payment events",
-      "subtitle": "Every checkout, verification, webhook, expiry and admin event of the payment gateway.",
       "searchPlaceholder": "Search by payment reference or gateway reference",
       "noPayload": "Event contents are never shown. Gateway references are masked.",
       "source": "Source",
@@ -6369,24 +6552,10 @@
       "bank_transfer": "Bank transfer"
     },
     "transfers": {
-      "title": "Bank transfer review",
-      "subtitle": "Approve transfers after matching them with the bank statement, or reject them with a clear reason.",
       "readOnly": "View only: approving and rejecting belong to the transfer reviewer.",
       "searchPlaceholder": "Order number or entity name",
       "review": "Review",
       "openReview": "Open the transfer review",
-      "stats": {
-        "underReview": "Under review",
-        "approvedToday": "Approved today",
-        "rejectedToday": "Rejected today"
-      },
-      "tabs": {
-        "under-review": "Under review",
-        "underReviewCount": "Under review ({count})",
-        "paid": "Approved",
-        "rejected": "Rejected",
-        "all": "All"
-      },
       "filters": {
         "account": "Receiving account",
         "accountWithState": "{account} ({state})",
@@ -6441,10 +6610,6 @@
         "underReview": {
           "title": "No transfers under review",
           "message": "Transfer requests appear here as soon as they are sent."
-        },
-        "other": {
-          "title": "No transfers",
-          "message": "Try other filters."
         }
       },
       "conflict": {
@@ -6546,6 +6711,10 @@
         "incomplete": "Billing details incomplete",
         "incompleteHint": "The entity has not completed the billing details in its profile. Payment does not depend on them, but Finance needs them for its tax records.",
         "downloadCertificate": "Download VAT registration certificate"
+      },
+      "inline": {
+        "approve": "Approve transfer {reference}",
+        "reject": "Reject transfer {reference}"
       }
     },
     "linkedRequest": {
@@ -6602,18 +6771,49 @@
           "label": "Refunded",
           "definition": "The full amount was returned to the entity."
         }
+      }
+    },
+    "page": {
+      "title": "Finance",
+      "subtitle": "Track payments and approve bank transfers",
+      "tabs": {
+        "operations": "Operations",
+        "transfers": "Awaiting approval",
+        "events": "Payment events"
       },
       "cards": {
-        "income": "Total revenue",
-        "refunded": "Total refunded",
-        "operations": "Operations",
-        "operationsValue": "worth {value}",
-        "vat": "Total VAT"
-      },
-      "pageTitle": "Financial operations",
-      "reviewTransfers": "Review transfers",
-      "reviewTransfersCount": "Review transfers ({count})",
-      "backToTransactions": "Back to financial operations"
+        "revenue": "Total revenue",
+        "revenueDetail": "Including VAT {vat} · Refunded {refunded}",
+        "operations": "Total operations",
+        "filterBy": "Show operations with status \"{status}\" ({count})",
+        "channels": {
+          "electronic": "Electronic payment",
+          "bank_transfer": "Bank transfer"
+        },
+        "statuses": {
+          "paid": "Paid",
+          "under_review": "Awaiting approval",
+          "awaiting_payment": "Awaiting payment",
+          "rejected": "Rejected",
+          "failed": "Payment failed"
+        }
+      }
+    },
+    "receiptModal": {
+      "title": "Receipt {number}",
+      "operationTitle": "Operation {reference}",
+      "issued": "Operation {reference} · Issued {date}",
+      "loading": "Operation details",
+      "vatNumber": "Platform VAT number",
+      "transferProof": "Attached transfer receipt",
+      "downloadPdf": "Download PDF",
+      "print": "Print",
+      "fullPage": "Open as full page",
+      "moreActions": "More actions on the operation"
+    },
+    "transferModal": {
+      "subtitle": "Match the amount with the bank statement, then approve the transfer or reject it with a clear reason.",
+      "reference": "Operation no."
     }
   },
   "review": {
@@ -6822,7 +7022,9 @@
       "keep": "Keep the same result",
       "confirmed": "The result is kept for this round.",
       "newFile": "New"
-    }
+    },
+    "directIndicators": "Indicators and their evidence",
+    "directIndicatorsHint": "The whole sub-criterion gets one judgment; the indicators and their evidence are there to verify it."
   },
   "cycles": {
     "statuses": {
@@ -7624,7 +7826,8 @@
         "reordered": "Order updated.",
         "enabled": "Section shown.",
         "disabled": "Section hidden."
-      }
+      },
+      "unpublishedChanges": "Changed since last publish"
     },
     "section": {
       "createTitle": "Add section",
@@ -7654,7 +7857,9 @@
         "reordered": "Items reordered.",
         "enabled": "Item shown.",
         "disabled": "Item hidden."
-      }
+      },
+      "draftNotice": "Changes here are saved as a draft and do not appear on the site until you press “Publish” at the top of the page.",
+      "unpublishedChanges": "Unpublished changes"
     },
     "groups": {
       "identity": "Section identity",
@@ -7821,6 +8026,23 @@
         "result": "Result and certificate",
         "improvement": "Improvement plan"
       }
+    },
+    "partners": {
+      "group": "Partner details",
+      "name": "Partner name",
+      "logo": "Partner logo",
+      "logoHint": "PNG, JPG or SVG, up to 1 MB. Best: a landscape logo on a transparent background, 2:1 to 3:1, at least 400 px wide (recommended: 480×200 px). SVG or a transparent PNG is preferred; the file is checked before it is shown.",
+      "link": "Partner website (optional)",
+      "linkHint": "A full link starting with https://. When set, the logo becomes clickable and opens the site in a new tab.",
+      "linkInvalid": "The link must be a full link starting with https://.",
+      "logoRequired": "Upload the partner's logo.",
+      "logoInvalidType": "Use a PNG, JPG or SVG logo.",
+      "logoTooLarge": "The logo is larger than 1 MB.",
+      "noLogo": "No logo — not shown",
+      "itemsHint": "Add success partners with a name, a logo and an optional link. The site shows every visible partner that has a logo; the section is hidden when no partner has one.",
+      "add": "Add partner",
+      "addTitle": "Add partner",
+      "editTitle": "Edit partner"
     }
   },
   "portal": {

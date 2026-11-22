@@ -7,7 +7,8 @@ import {
   CMS_SECTION_TYPES,
 } from '@/constants/cms'
 import { PICKABLE_ICON_NAMES } from './icons/iconRegistry'
-import { isSafeLink } from './safeLink'
+import { contentImageId } from './contentImage'
+import { isHttpsLink, isSafeLink } from './safeLink'
 
 export function localizedSchema(t, max, { required = false } = {}) {
   const text = yupString().max(max, t('cms.validation.maxChars', { max }))
@@ -128,5 +129,31 @@ export function pageDetailsSchema(t) {
       title: localizedSchema(t, CMS_LIMITS.seoTitleMax),
       description: localizedSchema(t, CMS_LIMITS.seoDescriptionMax),
     }),
+  })
+}
+
+function requiredText(t, max) {
+  return yupString()
+    .trim()
+    .required(t('validation.required'))
+    .max(max, t('cms.validation.maxChars', { max }))
+}
+
+export function partnerSchema(t) {
+  return yupObject({
+    title: yupObject({
+      ar: requiredText(t, CMS_LOCALIZED_LIMITS.title),
+      en: requiredText(t, CMS_LOCALIZED_LIMITS.title),
+    }),
+    ctaUrl: yupString()
+      .max(CMS_LIMITS.ctaUrlMax, t('cms.validation.maxChars', { max: CMS_LIMITS.ctaUrlMax }))
+      .test(
+        'https',
+        t('cms.partners.linkInvalid'),
+        (value) => !value?.trim() || isHttpsLink(value.trim()),
+      ),
+    image: yupMixed()
+      .nullable()
+      .test('logo', t('cms.partners.logoRequired'), (value) => Boolean(contentImageId(value))),
   })
 }

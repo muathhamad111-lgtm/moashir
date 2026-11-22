@@ -34,6 +34,7 @@ describe('GuidingPointForm', () => {
     weight: '400.00',
     remainingPointWeight: '150.00',
     distributeEqually: false,
+    evaluationType: 'guiding-points',
   }
 
   it('starts a new point with the remaining weight of the sub-criterion', () => {
@@ -59,6 +60,25 @@ describe('GuidingPointForm', () => {
     await wrapper.find('form').trigger('submit')
     await vi.waitFor(() => expect(save).toHaveBeenCalled())
     expect(save.mock.calls[0][0].payload.weight).toBe('150.00')
+  })
+
+  it('adds a descriptive indicator to a direct sub-criterion without weight or scoring type', async () => {
+    const save = vi.fn().mockResolvedValue({})
+    const direct = { ...SUB, evaluationType: 'direct' }
+    const wrapper = mountWith(GuidingPointForm, { modelValue: true, sub: direct, save })
+
+    expect(wrapper.find('input[name="pointWeight"]').exists()).toBe(false)
+    expect(wrapper.find('input[name="pointScoringType"]').isVisible()).toBe(false)
+    expect(wrapper.text()).toContain('Descriptive indicator')
+
+    await wrapper.find('textarea[name="pointDescriptionAr"]').setValue('مراجعة سنوية موثقة')
+    await wrapper.find('textarea[name="pointDescriptionEn"]').setValue('A minuted yearly review')
+    await wrapper.find('form').trigger('submit')
+    await vi.waitFor(() => expect(save).toHaveBeenCalled())
+    const { payload } = save.mock.calls[0][0]
+    expect(payload).not.toHaveProperty('weight')
+    expect(payload).not.toHaveProperty('scoringType')
+    expect(payload.description.en).toBe('A minuted yearly review')
   })
 })
 

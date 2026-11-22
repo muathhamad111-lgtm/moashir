@@ -29,6 +29,7 @@ import {
   assertCovers,
   assertFits,
   childWeight,
+  distributeIndicatorsEqually,
   rebalancePointsOf,
   rebalanceSubsOf,
   scoresGuidingPoints,
@@ -269,18 +270,18 @@ export function toggleSub(actor, sub, active) {
   })
 }
 
-export function switchEvaluationType(actor, sub, { evaluationType, confirmDeletePoints = false }) {
+// The indicators always stay: evaluated directly they lose their weights, scored on indicators again
+// they share the sub's weight equally.
+export function switchEvaluationType(actor, sub, { evaluationType }) {
   if (!EVALUATION_VALUES.includes(evaluationType))
     throw reject.validation({ evaluationType: [fieldMessage('field.invalid')] })
   const main = mainOfSub(sub)
   return onVersion(findVersion(main.versionId), actor, () => {
     if (sub.evaluationType === evaluationType) return sub
-    const points = pointsOf(sub.id)
-    if (evaluationType === EVALUATION_TYPES.DIRECT && points.length && !confirmDeletePoints) {
-      throw reject.pointsConfirmRequired(points.length)
-    }
-    if (evaluationType === EVALUATION_TYPES.DIRECT) points.forEach((point) => deletePoint(point.id))
     sub.evaluationType = evaluationType
+    if (evaluationType === EVALUATION_TYPES.DIRECT)
+      pointsOf(sub.id).forEach((point) => Object.assign(point, { weight: null }))
+    else distributeIndicatorsEqually(sub)
     criteriaNotices.evaluationSwitched(
       actor.id,
       main,
@@ -323,13 +324,14 @@ export function createPoint(actor, sub, body) {
   const values = readPoint(body, true)
   const active = values.active ?? true
   return onVersion(versionOfSub(sub), actor, () => {
-    if (!scoresGuidingPoints(sub)) throw reject.subEvaluatedDirectly()
     const point = insertPoint({
       id: nextCriteriaId(),
       subId: sub.id,
       code: nextCode(`${sub.code}.`),
       description: values.description,
-      weight: childWeight(pointBudget(sub), values.weight, active),
+      weight: scoresGuidingPoints(sub)
+        ? childWeight(pointBudget(sub), values.weight, active)
+        : null,
       scoringType: values.scoringType ?? sub.defaultPointScoringType,
       active,
       order: nextOrder(pointsOf(sub.id)),
@@ -344,11 +346,9 @@ export function updatePoint(actor, point, body) {
   const values = readPoint(body, false)
   const sub = subOfPoint(point)
   return onVersion(versionOfSub(sub), actor, () => {
-    const weight = childWeight(
-      pointBudget(sub, point.id),
-      values.weight ?? point.weight,
-      point.active,
-    )
+    const weight = scoresGuidingPoints(sub)
+      ? childWeight(pointBudget(sub, point.id), values.weight ?? point.weight, point.active)
+      : null
     Object.assign(
       point,
       defined({ description: values.description, scoringType: values.scoringType }),
@@ -377,7 +377,7 @@ export function togglePoint(actor, point, active) {
   const sub = subOfPoint(point)
   return onVersion(versionOfSub(sub), actor, () => {
     if (point.active === active) return point
-    if (active && !sub.distributeEqually)
+    if (active && scoresGuidingPoints(sub) && !sub.distributeEqually)
       assertFits(sub.weight, activeTotal(pointsOf(sub.id), point.id), point.weight)
     point.active = active
     rebalancePointsOf(sub)

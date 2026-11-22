@@ -85,6 +85,39 @@ describe('AuthLayout', () => {
     vi.unstubAllGlobals()
   })
 
+  it.each([
+    [true, 1],
+    [false, 0],
+  ])(
+    'draws the cursor dot field in the brand panel only on the split layout (desktop: %s)',
+    (desktop, canvases) => {
+      vi.stubGlobal('matchMedia', (query) => ({
+        matches: desktop && query.includes('min-width'),
+        media: query,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+      }))
+      const wrapper = mountLayout()
+      const aside = wrapper.find('aside.auth-layout__brand')
+      const dots = aside.findAll('canvas.auth-layout__dots')
+      expect(dots).toHaveLength(canvases)
+      expect(dots.every((canvas) => canvas.attributes('aria-hidden') === 'true')).toBe(true)
+      expect(aside.find('.auth-layout__logo').exists()).toBe(true)
+      wrapper.unmount()
+      vi.unstubAllGlobals()
+    },
+  )
+
+  it('keeps the page inside the card viewport that animates its height', () => {
+    const wrapper = mountLayout()
+    expect(
+      wrapper
+        .find('.auth-layout__card .auth-layout__viewport .auth-layout__page .login-form')
+        .exists(),
+    ).toBe(true)
+    wrapper.unmount()
+  })
+
   it('drops the back-to-home link on the maintenance page', async () => {
     const globals = createTestGlobals()
     await globals.router.push({ name: ROUTE_NAMES.PUBLIC_MAINTENANCE })

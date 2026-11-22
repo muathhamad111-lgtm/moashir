@@ -27,12 +27,16 @@ async function retrySection(page, selector) {
 test('renders the settings hub with launcher cards', async ({ page }) => {
   await page.goto('/admin/settings')
   await expect(page.locator('.settings-hub__title')).toBeVisible()
-  await expect(page.locator('.settings-hub__card')).toHaveCount(17)
+  await expect(page.locator('.settings-hub__card')).toHaveCount(16)
   await expect(page.locator('a.settings-hub__card[href="/admin/settings/finance"]')).toHaveCount(0)
+  // Operator note 2026-11-22: the cities are a fixed list in code, so their card left the hub.
+  await expect(page.locator('a.settings-hub__card[href="/admin/settings/cities"]')).toHaveCount(0)
   await expect(page.locator('a.settings-hub__card[href="/admin/settings/prices"]')).toHaveCount(0)
   await expect(
     page.locator('a.settings-hub__card[href="/admin/settings/assessment"]'),
   ).toBeVisible()
+  await page.goto('/admin/settings/cities')
+  await expect(page.locator('.error-page')).toBeVisible()
 })
 
 test('the old sign-in security address opens the general screen with the verification mechanism', async ({
@@ -99,7 +103,7 @@ test('capture settings screens for the design review', async ({ page }, testInfo
   await page.screenshot({ path: `test-results/settings-assessment-${suffix}.png`, fullPage: true })
 
   await page.goto('/admin/settings/notifications')
-  await retrySection(page, '.notification-type')
+  await retrySection(page, '.notification-groups')
   await page.waitForTimeout(400)
   await page.screenshot({
     path: `test-results/settings-notifications-${suffix}.png`,

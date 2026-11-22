@@ -1,10 +1,5 @@
 @use '../mixins' as *;
 
-.transfers-page__panel {
-  @include flex(column, stretch, flex-start, var(--space-4));
-  padding-block-start: var(--space-4);
-}
-
 .transfers-page__read-only,
 .transfer-review__read-only {
   @include flex(row, center, flex-start, var(--space-2));
@@ -31,7 +26,7 @@
   display: contents;
 }
 
-.transfers-page__panel .toolbar__filters,
+.finance-tab .toolbar__filters,
 .transfer-filters,
 .transfer-filters__account {
   min-inline-size: 0;
@@ -103,15 +98,27 @@
   font-size: var(--fs-xs);
 }
 
-.transfer-queue__link {
-  @include flex(row, center, flex-start, var(--space-1));
-  color: var(--theme-accent-text);
-  font-weight: var(--fw-semibold);
-  white-space: nowrap;
+.transfer-queue__actions {
+  @include flex(row, center, flex-end, var(--space-2));
+  flex-wrap: nowrap;
+}
 
-  &:focus-visible {
-    @include focus-ring;
-  }
+.transfer-card__actions {
+  flex-wrap: wrap;
+}
+
+// Approve and reject read at a glance by colour as well as by icon and accessible name (the
+// selector outweighs the back-office shell's neutral secondary button).
+:root .transfer-queue__approve.btn.btn--secondary {
+  color: var(--theme-success-text);
+  background-color: var(--theme-success-soft);
+  border-color: transparent;
+}
+
+:root .transfer-queue__reject.btn.btn--secondary {
+  color: var(--theme-danger-text);
+  background-color: var(--theme-danger-soft);
+  border-color: transparent;
 }
 
 .transfer-queue__sr {

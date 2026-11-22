@@ -13,7 +13,7 @@ final readonly class BrandColors
 
     public string $secondary;
 
-    public function __construct(string $primary, string $secondary)
+    public function __construct(string $primary, string $secondary, public BrandColorOverrides $overrides = new BrandColorOverrides)
     {
         if (! ContrastRatio::isHex($primary) || ! ContrastRatio::isHex($secondary)) {
             throw new InvalidArgumentException('Brand colours must be six-digit hex values.');
@@ -25,6 +25,8 @@ final readonly class BrandColors
 
     public function equals(self $other): bool
     {
-        return $this->primary === $other->primary && $this->secondary === $other->secondary;
+        return $this->primary === $other->primary
+            && $this->secondary === $other->secondary
+            && $this->overrides->equals($other->overrides);
     }
 }

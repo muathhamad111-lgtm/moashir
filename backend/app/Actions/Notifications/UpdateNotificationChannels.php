@@ -4,42 +4,40 @@ declare(strict_types=1);
 
 namespace App\Actions\Notifications;
 
+use App\Data\Notifications\NotificationChannelChoice;
+use App\Enums\Notifications\NotificationAudienceKind;
 use App\Enums\Notifications\NotificationChannel;
 use App\Enums\Notifications\NotificationCode;
 use App\Models\Identity\User;
-use App\Models\Notifications\NotificationChannelSetting;
+use App\Services\Notifications\NotificationChannelChoiceWriter;
 use App\Services\Notifications\NotificationTypeCatalog;
 use App\Services\Notifications\SystemNotificationChannels;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Stores a channel choice only when it differs from how the type ships; choosing the shipped state again
- * removes the row, so the type goes back to its default.
+ * Switches channels of one type for one audience, or for every audience the type reaches.
  */
 final readonly class UpdateNotificationChannels
 {
-    public function __construct(private NotificationTypeCatalog $catalog, private SystemNotificationChannels $channels) {}
+    public function __construct(
+        private NotificationTypeCatalog $catalog,
+        private NotificationChannelChoiceWriter $writer,
+        private SystemNotificationChannels $channels,
+    ) {}
 
     /**
      * @param  array<string, bool>  $choices  channel value => enabled
      */
-    public function handle(User $editor, NotificationCode $code, array $choices): void
+    public function handle(User $editor, NotificationCode $code, ?NotificationAudienceKind $audience, array $choices): void
     {
-        $shipped = $this->catalog->of($code)->channels;
+        $type = $this->catalog->of($code);
+        $audiences = $audience instanceof NotificationAudienceKind ? [$audience] : $type->audienceKinds();
 
-        DB::transaction(static function () use ($editor, $code, $choices, $shipped): void {
+        DB::transaction(function () use ($editor, $type, $audiences, $choices): void {
             foreach ($choices as $value => $enabled) {
-                $channel = NotificationChannel::from($value);
-                $row = NotificationChannelSetting::query()->where('code', $code)->where('channel', $channel)->lockForUpdate()->first();
-
-                if ($enabled === in_array($channel, $shipped, true)) {
-                    $row?->delete();
-
-                    continue;
+                foreach ($audiences as $kind) {
+                    $this->writer->write($editor, new NotificationChannelChoice($type, NotificationChannel::from($value), $kind, $enabled));
                 }
-
-                $row ??= new NotificationChannelSetting(['code' => $code, 'channel' => $channel]);
-                $row->fill(['is_enabled' => $enabled, 'updated_by_user_id' => $editor->id])->save();
             }
         });
 

@@ -2,9 +2,10 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppSelect from '@/components/form/AppSelect.vue'
-import { QUEUE_SORTS } from '@/constants/accredited'
+import { QUEUE_SORTS, QUEUE_STAGES } from '@/constants/accredited'
 import { ASSESSMENT_PATHS } from '@/constants/assessment'
 import { statusLabelKey } from '@/utils/canonicalStatus'
+import { stageLabelKey } from '@/utils/assessments/queueStages'
 import { localizedText } from '@/utils/localizedText'
 import { queueStatusesOf } from '@/utils/requestPaths'
 
@@ -14,11 +15,24 @@ const props = defineProps({
   sort: { type: String, required: true },
   assessors: { type: Array, default: () => [] },
   cycles: { type: Array, default: () => [] },
+  stageCounts: { type: Object, default: null },
 })
 
 const emit = defineEmits(['filter', 'sort'])
 const { t, locale } = useI18n()
 
+// The request stage, each with its count once the counts are known; «all» sends no stage.
+function stageLabel(stage) {
+  const label = t(stageLabelKey(stage))
+  const count = props.stageCounts?.[stage]
+  return count === undefined ? label : t('requests.stages.withCount', { label, count })
+}
+const stageOptions = computed(() =>
+  Object.values(QUEUE_STAGES).map((stage) => ({
+    value: stage === QUEUE_STAGES.ALL ? '' : stage,
+    label: stageLabel(stage),
+  })),
+)
 const showsCycles = computed(
   () => props.path === ASSESSMENT_PATHS.ADVANCED && props.cycles.length > 0,
 )
@@ -58,9 +72,17 @@ function setCycle(value) {
 <template>
   <div class="request-filters">
     <AppSelect
+      :model-value="filters.stage"
+      :options="stageOptions"
+      :label="t('requests.stages.label')"
+      data-testid="request-stage-filter"
+      @update:model-value="emit('filter', 'stage', $event)"
+    />
+    <AppSelect
       :model-value="filters.status"
       :options="statusOptions"
       :label="t('requests.filters.status')"
+      data-testid="request-status-filter"
       @update:model-value="emit('filter', 'status', $event)"
     />
     <AppSelect

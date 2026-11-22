@@ -39,14 +39,14 @@ final readonly class BoundSubCriteriaReader
     }
 
     /**
-     * A sub-criterion's slots: its own attachments, then those of its active indicators when it is scored on them
-     * (the entity sees indicators only then).
+     * A sub-criterion's slots: its own attachments, then those of its active indicators. A directly evaluated
+     * sub-criterion keeps descriptive indicators whose attachments are required evidence too (operator, 2026-11-22).
      */
     private function slotsOf(SubCriterion $sub): AttachmentSlots
     {
         $requirements = $sub->attachmentRequirements->all();
 
-        foreach ($sub->scoresGuidingPoints() ? $this->active($sub->guidingPoints) : [] as $point) {
+        foreach ($this->active($sub->guidingPoints) as $point) {
             array_push($requirements, ...$point->attachmentRequirements->all());
         }
 

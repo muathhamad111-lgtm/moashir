@@ -266,21 +266,6 @@ test('staff approve a registration under review and reject a pending one, with �
   await expect(pending.locator('.row-actions [data-action="approve"]')).toBeVisible()
 })
 
-test('cities are a fixed list: each row only switches the city on or off', async ({
-  page,
-}, testInfo) => {
-  await seed(page, testInfo)
-  await page.goto('/admin/settings/cities')
-  await expect(rows(page).first()).toBeVisible()
-  await expect(page.getByRole('button', { name: /Add city|إضافة مدينة/ })).toHaveCount(0)
-  await expect(rows(page).first().locator('.dropdown-menu')).toHaveCount(0)
-  const toggle = rows(page).first().getByRole('switch')
-  await expect(toggle).toBeChecked()
-  await rows(page).first().locator('.toggle-switch__track').click()
-  await expect(page.locator('.toast--success')).toBeVisible()
-  await expect(rows(page).first().getByRole('switch')).not.toBeChecked()
-})
-
 test('a forced list error shows the error state and the retry reloads the entities', async ({
   page,
 }, testInfo) => {

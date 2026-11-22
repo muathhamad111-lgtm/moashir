@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Enums\Cms;
 
+use App\Enums\Files\StoredFilePurpose;
+
 enum CmsSectionType: string
 {
     case Hero = 'hero';
@@ -26,4 +28,14 @@ enum CmsSectionType: string
     case Logos = 'logos';
     case About = 'about';
     case Levels = 'levels';
+
+    public function itemImagePurpose(): StoredFilePurpose
+    {
+        return $this === self::Partners ? StoredFilePurpose::CmsLogo : StoredFilePurpose::CmsImage;
+    }
+
+    public function hasLogoItems(): bool
+    {
+        return $this === self::Partners;
+    }
 }

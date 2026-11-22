@@ -13,15 +13,18 @@ vi.mock('@/utils/logger', () => ({
 
 const scheme = {
   primary: '#d4088c',
-  onPrimary: '#ffffff',
-  primaryText: '#d4088c',
   secondary: '#4a2a7d',
+  onPrimary: '#ffffff',
+  primaryText: '#c90885',
+  primaryHover: '#bc097d',
+  primarySoft: '#fbe6f4',
   onSecondary: '#ffffff',
 }
 
 const resource = {
   primaryColor: '#d4088c',
   secondaryColor: '#4a2a7d',
+  colorOverrides: { onSecondary: '#ffffff', navbar: '#000000' },
   scheme,
   defaultColors: { primary: '#98d8d3', secondary: '#0a2325' },
   logoLight: { fileId: 6, url: 'data:image/png;base64,LIGHT' },
@@ -40,6 +43,7 @@ describe('brandingService', () => {
     expect(apiClient.get).toHaveBeenCalledWith('/settings/branding')
     expect(data).toEqual({
       colors: { primary: '#d4088c', secondary: '#4a2a7d' },
+      overrides: { onSecondary: '#ffffff' },
       scheme,
       defaultColors: { primary: '#98d8d3', secondary: '#0a2325' },
       logos: { dark: 'data:image/png;base64,LIGHT', favicon: null, site: null },
@@ -47,17 +51,24 @@ describe('brandingService', () => {
     })
   })
 
-  it('sends the primary and secondary colours only', async () => {
+  it('sends the primary and secondary colours with the full set of overrides', async () => {
     apiClient.put.mockResolvedValue({ data: { data: resource, meta: {}, errors: null } })
-    await brandingService.update({ primaryColor: '#d4088c', secondaryColor: '#4a2a7d' })
+    await brandingService.update({
+      primaryColor: '#d4088c',
+      secondaryColor: '#4a2a7d',
+      colorOverrides: { primarySoft: '#fbe6f4' },
+    })
     expect(apiClient.put).toHaveBeenCalledWith('/settings/branding', {
       primaryColor: '#d4088c',
       secondaryColor: '#4a2a7d',
+      colorOverrides: { primarySoft: '#fbe6f4' },
     })
     expect(logger.breadcrumb).toHaveBeenCalledWith(
       'service',
       'branding.update',
-      expect.objectContaining({ payloadShape: ['primaryColor', 'secondaryColor'] }),
+      expect.objectContaining({
+        payloadShape: expect.arrayContaining(['primaryColor', 'secondaryColor']),
+      }),
     )
   })
 
@@ -115,6 +126,7 @@ describe('brandingService', () => {
     expect(apiClient.put).toHaveBeenCalledWith('/settings/branding', {
       primaryColor: '#d4088c',
       secondaryColor: '#4a2a7d',
+      colorOverrides: {},
       reason,
     })
     expect(apiClient.post).toHaveBeenNthCalledWith(1, '/settings/branding/reset', { reason })

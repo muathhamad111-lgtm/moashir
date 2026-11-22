@@ -64,7 +64,6 @@ export const CRITERIA_ERROR_CODES = {
   WEIGHTS_INCONSISTENT: 'criteria.weights_inconsistent',
   SCOPE_REQUIRED: 'criteria.scope_required',
   REASON_REQUIRED: 'reason_required',
-  POINTS_CONFIRM_REQUIRED: 'criteria.points_confirm_required',
   DRAFT_EXISTS: 'criteria.draft_exists',
   NO_DRAFT: 'criteria.no_draft',
   VERSION_NOT_DRAFT: 'criteria.version_not_draft',

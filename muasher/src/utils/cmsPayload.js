@@ -108,6 +108,22 @@ export function contentPayload(
   return payload
 }
 
+export function partnerFormValues(record = null) {
+  return {
+    title: bilingual(record?.title),
+    ctaUrl: record?.ctaUrl ?? '',
+    image: record?.image ?? null,
+  }
+}
+
+export function partnerPayload(values, record = null) {
+  return {
+    title: trimmed(values.title),
+    ctaUrl: values.ctaUrl.trim() || null,
+    ...imageField(values, record),
+  }
+}
+
 export function sectionLabel(section, localized) {
   return localized(section?.title) || section?.key || ''
 }

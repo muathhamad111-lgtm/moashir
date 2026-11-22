@@ -168,8 +168,6 @@ describe('approval, regions and terms services', () => {
     })
     await regionsService.listRegions()
     expect(apiClient.get).toHaveBeenCalledWith('/regions')
-    await regionsService.setCityActive(69, false)
-    expect(apiClient.patch).toHaveBeenCalledWith('/cities/69/active', { active: false })
     await termsService.current()
     expect(apiClient.get).toHaveBeenCalledWith('/terms/current')
   })

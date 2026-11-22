@@ -43,14 +43,20 @@ describe('paid request mappers', () => {
     })
   })
 
-  it('maps the stage counts and fills the missing ones with zero', () => {
-    const stats = toQueueStats({ total: 4, byStage: { preparing: 1, closed: 2 }, overdue: 1 })
+  // The client turns `awaiting_assignment` into `awaitingAssignment`; the stage counts read those keys
+  // (regression 2026-11-22: the «awaiting assignment» and «in progress» cards always showed 0).
+  it('maps the stage counts as the client delivers them and fills the missing ones with zero', () => {
+    const stats = toQueueStats({
+      total: 7,
+      byStage: { preparing: 1, awaitingAssignment: 2, inProgress: 3, closed: 1 },
+      overdue: 1,
+    })
     expect(stats.byStage).toEqual({
       preparing: 1,
-      awaiting_assignment: 0,
-      in_progress: 0,
+      awaiting_assignment: 2,
+      in_progress: 3,
       overdue: 0,
-      closed: 2,
+      closed: 1,
     })
   })
 

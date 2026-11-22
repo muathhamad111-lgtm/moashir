@@ -126,6 +126,23 @@ $auth-two-columns: 28rem;
   }
 }
 
+.auth-layout__viewport.is-resizing {
+  overflow: clip;
+  overflow-clip-margin: 8px;
+}
+
+.lp-auth .auth-form__title[tabindex='-1'] {
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--lp-accent);
+    outline-offset: 4px;
+    border-radius: 6px;
+  }
+}
+
 .auth-layout__brand {
   @include lp-deep-band;
 
@@ -140,13 +157,24 @@ $auth-two-columns: 28rem;
 
 .auth-layout__pattern {
   position: absolute;
-  inset: 0;
+  inset: -16px;
   z-index: -1;
   pointer-events: none;
   opacity: 0.5;
   background-image: lp-pattern($lp-aqua, 0.35);
   background-size: 120px 104px;
   mask-image: radial-gradient(75% 60% at 50% 100%, #000, transparent 75%);
+  translate: calc(var(--px, 0) * 1px) calc(var(--py, 0) * 1px);
+}
+
+.auth-layout__dots {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
 }
 
 .auth-layout__brand-inner {

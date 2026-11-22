@@ -1,0 +1,166 @@
+@use '../mixins' as *;
+
+// The finance page's overview: revenue and the operations by status, then one card per channel.
+// The cards follow the width the page actually has (beside the sidebar), not the screen width.
+$overview-two-columns: 44rem;
+$overview-side-by-side: 64rem;
+$overview-cell-min: 6.5rem;
+
+.finance-overview {
+  @include flex(column, stretch, flex-start, var(--space-4));
+  container: finance-overview / inline-size;
+}
+
+.finance-overview__row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+.finance-overview__card {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  overflow: hidden;
+  background-color: var(--theme-surface);
+  border: var(--border-width) solid var(--theme-border);
+  border-radius: var(--radius-xl);
+}
+
+.finance-overview__revenue,
+.finance-overview__summary {
+  @include flex(row, center, flex-start, var(--space-3));
+  padding: var(--space-4);
+}
+
+.finance-overview__summary {
+  flex-shrink: 0;
+}
+
+.finance-overview__icon {
+  @include flex-center;
+  flex-shrink: 0;
+  inline-size: var(--size-icon-box);
+  block-size: var(--size-icon-box);
+  border-radius: var(--radius-circle);
+  background-color: var(--theme-accent-soft);
+  color: var(--theme-accent-text);
+}
+
+.finance-overview__main {
+  @include flex(column, flex-start, flex-start, var(--space-1));
+  min-inline-size: 0;
+}
+
+.finance-overview__value {
+  white-space: nowrap;
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  color: var(--theme-heading);
+  font-variant-numeric: tabular-nums;
+}
+
+.finance-overview__label {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-regular);
+  color: var(--theme-text-muted);
+}
+
+.finance-overview__detail {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--theme-text-muted);
+}
+
+.finance-overview__split {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax($overview-cell-min, 1fr));
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-block-start: var(--border-width) solid var(--theme-border);
+  background-color: var(--theme-tint);
+
+  > li {
+    box-shadow: calc(var(--border-width) * -1) 0 0 var(--theme-border);
+  }
+}
+
+@container finance-overview (min-width: #{$overview-two-columns}) {
+  .finance-overview__row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  }
+
+  .finance-overview__row--channels {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container finance-overview (min-width: #{$overview-side-by-side}) {
+  .finance-overview__card {
+    flex-direction: row;
+  }
+
+  .finance-overview__split {
+    grid-template-columns: none;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    border-block-start: 0;
+    border-inline-start: var(--border-width) solid var(--theme-border);
+  }
+}
+
+.finance-overview__cell {
+  @include flex(column, center, center, var(--space-1));
+  inline-size: 100%;
+  block-size: 100%;
+  min-block-size: var(--size-touch-target);
+  padding: var(--space-3) var(--space-2);
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: center;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--theme-accent-soft);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+// A long status name wraps inside its cell (the back-office shell keeps badges on one line).
+:root .finance-overview__split .finance-overview__cell .badge {
+  max-inline-size: 100%;
+  justify-content: center;
+  white-space: normal;
+  text-align: center;
+}
+
+.finance-overview__count {
+  font-size: var(--fs-lg);
+  color: var(--theme-heading);
+  font-variant-numeric: tabular-nums;
+}
+
+.finance-overview__amount {
+  white-space: nowrap;
+  font-size: var(--fs-xs);
+  color: var(--theme-text-muted);
+}
+
+.column-chooser__panel {
+  @include flex(column, stretch, flex-start, var(--space-2));
+  padding: var(--space-3);
+  min-inline-size: var(--size-stats-card-min);
+}
+
+.column-chooser__title {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--theme-heading);
+}

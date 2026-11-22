@@ -32,6 +32,21 @@ enum NotificationAudience: string
     }
 
     /**
+     * Who the wording speaks to: an entity user is the beneficiary, staff roles are management, and the account
+     * holder may be either.
+     *
+     * @return list<NotificationAudienceKind>
+     */
+    public function kinds(): array
+    {
+        return match ($this) {
+            self::Entity => [NotificationAudienceKind::Beneficiary],
+            self::AccountHolder => NotificationAudienceKind::cases(),
+            default => [NotificationAudienceKind::Management],
+        };
+    }
+
+    /**
      * @return list<string>
      */
     public static function values(): array

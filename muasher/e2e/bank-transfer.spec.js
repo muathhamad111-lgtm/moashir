@@ -212,17 +212,23 @@ test('the entity cancels an unbound card order to pay by transfer instead', asyn
   await expect(page.locator('.my-payments__table')).toContainText(reference)
 })
 
+// The «بانتظار الاعتماد» cell of the operations overview card.
+function underReviewCount(page) {
+  return page
+    .locator('.finance-overview__split-card')
+    .first()
+    .locator('.finance-overview__cell')
+    .nth(1)
+    .locator('.finance-overview__count')
+}
+
 test('Finance approves the selected transfers at once', async ({ page }, testInfo) => {
   const errors = trackConsole(page)
   await signIn(page, testInfo, USERS.finance)
   await page.goto('/finance/transfers')
   await expect(page.locator('.transfer-queue__table tbody tr')).toHaveCount(3)
-  await expect(page.locator('.stats-card__value')).toHaveText(['3', '0', '0'])
-  await expect(page.locator('.stats-card__label')).toHaveText(
-    isEn(testInfo)
-      ? ['Under review', 'Approved today', 'Rejected today']
-      : ['قيد المراجعة', 'اعتُمدت اليوم', 'رُفضت اليوم'],
-  )
+  await expect(page.locator('.tabs__tab.is-active .tabs__badge')).toHaveText('3')
+  await expect(underReviewCount(page)).toHaveText('3')
   const filters = await openListFilters(page)
   await filters.locator('.transfer-filters [role="combobox"]').first().click()
   await expect(page.locator('.dropdown-popup').getByRole('option')).toHaveText([
@@ -249,7 +255,8 @@ test('Finance approves the selected transfers at once', async ({ page }, testInf
     isEn(testInfo) ? 'decided: 3' : 'المنفَّذ: 3',
   )
   await expect(page.locator('.transfer-queue .empty-state')).toBeVisible()
-  await expect(page.locator('.stats-card__value')).toHaveText(['0', '3', '0'])
+  await expect(page.locator('.tabs__badge')).toHaveCount(0)
+  await expect(underReviewCount(page)).toHaveText('0')
   expect(errors).toEqual([])
 })
 

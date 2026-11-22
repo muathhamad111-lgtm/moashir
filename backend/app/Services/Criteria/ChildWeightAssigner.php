@@ -40,7 +40,7 @@ final class ChildWeightAssigner
 
         return array_values(array_filter(
             $planned,
-            static fn (WeightAssignment $assignment): bool => ! $byId->get($assignment->nodeId)?->weight->equals($assignment->weight),
+            static fn (WeightAssignment $assignment): bool => ! $byId->get($assignment->nodeId)?->weight?->equals($assignment->weight),
         ));
     }
 
@@ -54,7 +54,7 @@ final class ChildWeightAssigner
 
         foreach ($children as $child) {
             if ($child->is_active) {
-                $weights[] = isset($planned[$child->id]) ? $planned[$child->id]->weight : $child->weight;
+                $weights[] = isset($planned[$child->id]) ? $planned[$child->id]->weight : ($child->weight ?? Weight::zero());
             }
         }
 

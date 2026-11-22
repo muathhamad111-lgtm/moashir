@@ -18,7 +18,7 @@ final class SubCriterionEvaluationTypeController
 {
     public function __invoke(SwitchEvaluationTypeRequest $request, SubCriterion $sub, #[CurrentUser] User $actor, SwitchEvaluationType $switchType, CriteriaTreeLoader $loader): JsonResponse
     {
-        $switched = $switchType->handle($actor, $sub, $request->evaluationType(), $request->confirmsPointDeletion());
+        $switched = $switchType->handle($actor, $sub, $request->evaluationType());
 
         return ApiResponse::resource(new SubCriterionResource($loader->loadSub($switched)));
     }
