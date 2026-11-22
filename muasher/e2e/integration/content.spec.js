@@ -146,7 +146,7 @@ test('the Content Officer creates, values and publishes a KPI', async () => {
   const { page, api } = sessions.officer
   await page.goto('/admin/kpis')
   await expect(page.locator('.stats-card').first()).toBeVisible()
-  await page.locator('.toolbar__actions .btn--primary').click()
+  await page.locator('.kpis-admin__actions .btn--primary').click()
   const form = page.locator('.modal').last()
   await form.locator('input[name="name.ar"]').fill(KPI.nameAr)
   await form.locator('input[name="name.en"]').fill(KPI.nameEn)

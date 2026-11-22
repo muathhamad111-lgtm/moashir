@@ -1,13 +1,6 @@
 import { computed, ref } from 'vue'
 import { DEFAULT_BRAND_COLORS, DERIVED_BRAND_COLORS } from '@/constants/branding'
-import {
-  brandContrastPairs,
-  deriveBrandScheme,
-  derivedColorChecks,
-  normalizeHex,
-  passesAllContrast,
-} from '@/utils/brandingContrast'
-import { brandWarnings } from '@/utils/brandingWarnings'
+import { deriveBrandScheme, normalizeHex } from '@/utils/brandingContrast'
 
 function sameColors(first, second) {
   return (
@@ -26,8 +19,9 @@ function without(overrides, key) {
   return Object.fromEntries(Object.entries(overrides).filter(([name]) => name !== key))
 }
 
-// Everything the screen derives from the draft: the scheme, the value each colour would take
-// back on auto, the contrast checks and the non-blocking warnings.
+// Everything the screen derives from the draft: the scheme and the value each colour would take
+// back on auto. There is no contrast check: the client owns the colours it chooses; only a
+// malformed base colour (no scheme) keeps the draft from being saved.
 function useDraftScheme(draftColors, draftOverrides) {
   const draftScheme = computed(() => deriveBrandScheme(draftColors.value, draftOverrides.value))
   const autoColors = computed(() =>
@@ -38,15 +32,7 @@ function useDraftScheme(draftColors, draftOverrides) {
       ]),
     ),
   )
-  const contrastPairs = computed(() => brandContrastPairs(draftScheme.value))
-  return {
-    draftScheme,
-    autoColors,
-    contrastPairs,
-    colorChecks: computed(() => derivedColorChecks(contrastPairs.value)),
-    contrastOk: computed(() => passesAllContrast(contrastPairs.value)),
-    warnings: computed(() => brandWarnings(draftScheme.value)),
-  }
+  return { draftScheme, autoColors, hasValidColors: computed(() => draftScheme.value !== null) }
 }
 
 // The unsaved base colours and overrides of the visual-identity screen.

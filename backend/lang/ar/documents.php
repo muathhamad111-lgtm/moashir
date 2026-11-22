@@ -18,7 +18,6 @@ return [
 
     'viewer_stamp' => [
         'title' => 'ختم المطّلع',
-        'footer' => 'اطّلع عليه :viewer · :time (توقيت الرياض) · رمز التتبع :trace',
     ],
 
     'certificate' => [

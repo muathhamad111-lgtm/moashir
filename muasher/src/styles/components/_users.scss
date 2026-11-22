@@ -15,6 +15,12 @@
   flex-wrap: wrap;
 }
 
+// Every page action sits together at the inline end of the title row; the primary one is last, at the edge.
+.users-page__actions {
+  @include flex(row, center, flex-end, var(--space-2));
+  flex-wrap: wrap;
+}
+
 .users-page__title {
   margin: 0;
   font-size: var(--fs-2xl);

@@ -6,7 +6,7 @@ namespace App\Enums\Settings;
 
 /**
  * The colours the platform derives from the two base brand colours. Each one may be
- * overridden by the client; an override is kept only while its contrast pairs pass AA.
+ * overridden by the client, who is responsible for the readability of the colour they choose.
  */
 enum DerivedBrandColor: string
 {

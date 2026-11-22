@@ -18,11 +18,6 @@ final class ContrastRatio
         return (max($first, $second) + 0.05) / (min($first, $second) + 0.05);
     }
 
-    public static function format(float $ratio): string
-    {
-        return sprintf('%.2f', $ratio);
-    }
-
     public static function meets(float $ratio, string $minimum): bool
     {
         return is_numeric($minimum) && $ratio >= (float) $minimum;

@@ -37,7 +37,7 @@ it('ships with the national ID requirement off and lists the roles that open fil
         ->assertJsonPath('data.national_id_enabled', false)
         ->assertJsonPath('data.national_id_roles', [])
         ->assertJsonPath('data.file_access_roles', fn (array $roles): bool => in_array('assessor', $roles, true)
-            && in_array('entity', $roles, true)
+            && ! in_array('entity', $roles, true)
             && ! in_array('criteria_officer', $roles, true)
             && ! in_array('content_officer', $roles, true));
 });

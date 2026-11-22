@@ -213,6 +213,8 @@ return [
     'branding' => [
         'logo_max_kb' => 1024,
         'logo_max_side_px' => 4096,
+        // The contrast the derived default colours are computed to reach. Saving is never checked against it:
+        // the client is responsible for the colours they choose (operator decision 2026-11-22).
         'minimum_contrast' => '4.5',
         'default_colors' => [
             'primary' => '#98d8d3',

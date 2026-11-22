@@ -366,7 +366,6 @@ describe('sign-in security setting mock', () => {
         'assessor',
         'filtering_officer',
         'award_secretary',
-        'entity',
       ],
     })
     const policy = await call('PUT', '/settings/auth', {

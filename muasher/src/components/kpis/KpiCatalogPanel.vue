@@ -8,6 +8,7 @@ import KpiCatalogFormDialog from './KpiCatalogFormDialog.vue'
 import { useConfirm } from '@/composables/useConfirm'
 import { useToast } from '@/composables/useToast'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import { KPI_ADMIN_ACTIONS_ID } from '@/constants/kpis'
 
 const props = defineProps({
   kind: { type: String, required: true },
@@ -63,12 +64,12 @@ async function remove(entry) {
 
 <template>
   <section class="kpi-catalog" :aria-label="t(`kpis.admin.tabs.${kind}`)">
-    <div class="kpi-catalog__toolbar">
-      <p class="kpi-catalog__hint">{{ t(`kpis.admin.catalog.${kind}.hint`) }}</p>
-      <BaseButton variant="primary" size="sm" icon="plus" @click="open()">{{
+    <Teleport defer :to="`#${KPI_ADMIN_ACTIONS_ID}`">
+      <BaseButton variant="primary" icon="plus" @click="open()">{{
         t(`kpis.admin.catalog.${kind}.add`)
       }}</BaseButton>
-    </div>
+    </Teleport>
+    <p class="kpi-catalog__hint">{{ t(`kpis.admin.catalog.${kind}.hint`) }}</p>
     <DataTable
       :columns="columns"
       :items="catalog.entries.value"

@@ -2,7 +2,7 @@ import { delay } from 'msw'
 import { http } from '../contract/http'
 import { envelope } from '../contract/responses'
 import { DEFAULT_BRAND_COLORS, DERIVED_BRAND_COLORS, LOGO_RULES } from '@/constants/branding'
-import { brandContrastPairs, deriveBrandScheme, normalizeHex } from '@/utils/brandingContrast'
+import { deriveBrandScheme, normalizeHex } from '@/utils/brandingContrast'
 import {
   getBrandingTheme,
   isLogoVariant,
@@ -20,7 +20,6 @@ import { createFieldErrors } from '../stores/content/contentValidation'
 import { validateImage } from '../stores/content/imageUploads'
 
 const REASON_MIN = 10
-const MINIMUM_CONTRAST = '4.5'
 
 function themeResource() {
   const theme = getBrandingTheme()
@@ -67,26 +66,6 @@ function requireColors(body) {
   return colors
 }
 
-function failingPairs(colors) {
-  return brandContrastPairs(deriveBrandScheme(colors, colors.overrides))
-    .filter((pair) => !pair.passes)
-    .map((pair) => ({
-      pair: pair.key,
-      foreground: pair.foreground,
-      background: pair.background,
-      ratio: pair.ratio.toFixed(2),
-      minimum: MINIMUM_CONTRAST,
-    }))
-}
-
-function applyColors(colors) {
-  const failures = failingPairs(colors)
-  if (failures.length) {
-    throw contentReject.contrastFail(failures, `${failures[0].pair.split('.')[0]}Color`)
-  }
-  updateBrandingColors(colors)
-}
-
 export const brandingHandlers = [
   http.get(
     '/api/v1/settings/branding',
@@ -104,7 +83,7 @@ export const brandingHandlers = [
       const body = await readJson(request)
       const colors = requireColors(body)
       requireReason(user, body.reason)
-      applyColors(colors)
+      updateBrandingColors(colors)
       return envelope(themeResource())
     }),
   ),

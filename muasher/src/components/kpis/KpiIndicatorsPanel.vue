@@ -12,8 +12,9 @@ import { useKpisAdminList } from '@/composables/useKpisAdminList'
 import { useKpiRowActions } from '@/composables/useKpiRowActions'
 import { useToast } from '@/composables/useToast'
 import { kpisAdminService } from '@/services/kpisAdminService'
-import { KPI_DEFAULT_SORT } from '@/constants/kpis'
+import { KPI_ADMIN_ACTIONS_ID, KPI_DEFAULT_SORT } from '@/constants/kpis'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
 
 const props = defineProps({
   categories: { type: Array, default: () => [] },
@@ -75,6 +76,14 @@ const HANDLERS = {
 
 <template>
   <div class="kpis-admin__panel">
+    <Teleport defer :to="`#${KPI_ADMIN_ACTIONS_ID}`">
+      <BaseButton variant="secondary" icon="dots-vertical" @click="reorderOpen = true">{{
+        t('kpis.admin.reorder.open')
+      }}</BaseButton>
+      <BaseButton variant="primary" icon="plus" @click="open('form')">{{
+        t('kpis.admin.index.add')
+      }}</BaseButton>
+    </Teleport>
     <StatsCards :stats="statCards" :loading="status === 'loading' && !stats" />
     <KpiAdminToolbar
       v-model:search="filters.search.value"
@@ -84,8 +93,6 @@ const HANDLERS = {
       :localized="localized"
       @filter="filters.setFilter"
       @sort="filters.setSort"
-      @create="open('form')"
-      @reorder="reorderOpen = true"
     />
     <p v-if="isFiltered && status === 'success'" class="kpis-admin__reorder-note" role="note">
       <AppIcon name="info-circle" />

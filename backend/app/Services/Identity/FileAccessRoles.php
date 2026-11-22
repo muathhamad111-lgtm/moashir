@@ -9,11 +9,14 @@ use App\Enums\Identity\RoleKey;
 use App\Models\Identity\Role;
 use Illuminate\Database\Eloquent\Builder;
 
+/**
+ * The staff roles that open assessment evidence and so receive stamped copies. Entity accounts open their own
+ * evidence as uploaded (operator decision, 2026-11-22).
+ */
 final readonly class FileAccessRoles
 {
     private const array FILE_ACCESS_PERMISSIONS = [
         PermissionKey::EvidenceView,
-        PermissionKey::EvidenceManage,
     ];
 
     /**
@@ -26,7 +29,10 @@ final readonly class FileAccessRoles
             ->pluck('name')
             ->all();
 
-        return array_values(array_filter(RoleKey::cases(), static fn (RoleKey $role): bool => in_array($role->value, $names, true)));
+        return array_values(array_filter(
+            RoleKey::cases(),
+            static fn (RoleKey $role): bool => $role !== RoleKey::Entity && in_array($role->value, $names, true),
+        ));
     }
 
     /**

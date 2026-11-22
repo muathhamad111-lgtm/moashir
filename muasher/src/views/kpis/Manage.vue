@@ -6,8 +6,9 @@ import KpiIndicatorsPanel from '@/components/kpis/KpiIndicatorsPanel.vue'
 import KpiCatalogPanel from '@/components/kpis/KpiCatalogPanel.vue'
 import { useKpiCatalogAdmin } from '@/composables/useKpiCatalogAdmin'
 import { ROUTE_NAMES } from '@/constants/routeNames'
+import { KPI_ADMIN_ACTIONS_ID } from '@/constants/kpis'
 import { localizedText } from '@/utils/localizedText'
-import AppIcon from '@/components/ui/AppIcon.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
 
 const TABS = ['indicators', 'categories', 'types']
 
@@ -29,19 +30,20 @@ onMounted(() => Promise.all([catalogs.categories.load(), catalogs.types.load()])
 <template>
   <section class="kpis-admin">
     <header class="kpis-admin__header">
-      <div>
+      <div class="kpis-admin__heading">
         <h1 class="kpis-admin__title">{{ t('kpis.admin.index.title') }}</h1>
         <p class="kpis-admin__subtitle">{{ t('kpis.admin.index.subtitle') }}</p>
       </div>
-      <RouterLink
-        class="kpis-admin__public-link"
-        :to="{ name: ROUTE_NAMES.PUBLIC_KPIS }"
-        target="_blank"
-        rel="noopener"
-      >
-        <AppIcon name="link" />
-        {{ t('kpis.admin.index.viewPublic') }}
-      </RouterLink>
+      <div :id="KPI_ADMIN_ACTIONS_ID" class="kpis-admin__actions">
+        <BaseButton
+          variant="secondary"
+          icon="link"
+          :to="{ name: ROUTE_NAMES.PUBLIC_KPIS }"
+          target="_blank"
+          rel="noopener"
+          >{{ t('kpis.admin.index.viewPublic') }}</BaseButton
+        >
+      </div>
     </header>
     <Tabs v-model="activeTab" :tabs="tabs" class="kpis-admin__tabs">
       <KpiIndicatorsPanel

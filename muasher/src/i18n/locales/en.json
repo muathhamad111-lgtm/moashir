@@ -3247,7 +3247,7 @@
       "nationalId": {
         "title": "National ID on assessment evidence",
         "enable": "Require the national ID for selected accounts",
-        "description": "Assessment evidence is stamped with the national ID of whoever opens it. Required accounts are asked for the number in a window after each sign-in until they add it, and the administration approves it before it is recorded; they open no evidence until then. Others are stamped with their name only. Always required for the Super Admin while this is on. Transfer proofs, refund evidence and VAT certificates are not stamped and need no national ID.",
+        "description": "Assessment evidence is stamped once per page with the national ID of whoever opens it and the date and time. Required accounts are asked for the number in a window after each sign-in until they add it, and the administration approves it before it is recorded; they open no evidence until then. Accounts without a number are stamped with their name instead. Always required for the Super Admin while this is on. Evidence is not stamped when its own entity opens it, and transfer proofs, refund evidence and VAT certificates are not stamped and need no national ID.",
         "roles": "Accounts that must provide a national ID",
         "withFileAccess": "{role} (opens assessment evidence)",
         "uncovered": "These roles open assessment evidence but are not selected: {roles}. Their copies are stamped with the name only."
@@ -5231,7 +5231,7 @@
     "loadError": "Could not load the identity settings.",
     "colors": {
       "title": "Base brand colors",
-      "hint": "Pick two colors. The platform derives the rest and makes sure every text stays readable.",
+      "hint": "Pick two colors, and the platform derives the rest from them automatically.",
       "primary": {
         "label": "Primary color",
         "hint": "Buttons, the active side-bar item, links and the focus ring"
@@ -5262,21 +5262,6 @@
       "spec": "PNG with a transparent background — ⁦{width}×{height}⁩ px — up to {megabytes} MB",
       "dimensionsMismatch": "The image is ⁦{width}×{height}⁩ px, not the expected ⁦{expectedWidth}×{expectedHeight}⁩. You can still save it."
     },
-    "contrast": {
-      "ratio": "{ratio}:1",
-      "blocked": "Cannot save: some colors miss the 4.5:1 contrast. Change them or set them back to Auto.",
-      "pairs": {
-        "primary": {
-          "text_on_fill": "Text on the primary color (buttons and the active item)",
-          "text_on_content": "Primary color as text on the page background (links)",
-          "text_on_hover": "Text on the hover and pressed color",
-          "text_on_soft": "Brand text on the soft background (selected rows and chips)"
-        },
-        "secondary": {
-          "text_on_fill": "Text on the secondary color (top bar)"
-        }
-      }
-    },
     "actions": {
       "save": "Save identity",
       "reset": "Reset to brand defaults"
@@ -5291,30 +5276,18 @@
       "reset": "Brand defaults restored.",
       "saveError": "Could not save the identity. Please try again."
     },
-    "contrastFail": {
-      "title": "The server refused this color",
-      "message": "It does not reach the WCAG 2.1 AA contrast ratio for these pairs:",
-      "ratio": "{ratio}:1 (minimum {minimum}:1)"
-    },
     "reason": {
       "title": "Reason for the change"
     },
     "derived": {
       "title": "Derived colors",
-      "hint": "Calculated from the two colors above and updated with them. You can override any of them; a color below 4.5:1 contrast (WCAG 2.1 AA) cannot be saved.",
-      "columns": {
-        "color": "Color",
-        "contrast": "Contrast",
-        "state": "State"
-      },
+      "hint": "Calculated automatically from the two colors above, and you can override any of them. The platform owner is responsible for the readability of custom colors.",
       "auto": "Auto",
       "custom": "Custom",
       "autoValue": "Auto:",
       "override": "Override",
       "restoreAuto": "Back to auto",
       "pick": "Pick the “{name}” color",
-      "passes": "Meets the required contrast",
-      "fails": "Misses the required contrast",
       "colors": {
         "onPrimary": {
           "name": "Text on primary",
@@ -5360,10 +5333,6 @@
         "series2": "Series 2",
         "series3": "Series 3"
       }
-    },
-    "warnings": {
-      "nearAlert": "The primary color is very close to the “{status}” color, so a normal button may read as a {status} message. Saving is allowed, but another color is recommended.",
-      "hoverIndistinct": "The hover color is very close to the primary color, so users will not notice the button change on hover. Saving is allowed, but overriding the hover color is recommended."
     },
     "preview": {
       "title": "Live preview",

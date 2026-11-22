@@ -26,13 +26,6 @@ export const DERIVED_BRAND_COLORS = Object.freeze([
 export const BRAND_HOVER_SHARE = 0.88
 export const BRAND_SOFT_SHARE = 0.1
 
-// The solid status fills users read as alerts (`$tts-status` in styles/tokens/_tts.scss). A
-// primary colour this close to one of them (OKLab distance x100) reads as an alert.
-export const ALERT_STATUS_COLORS = Object.freeze({ danger: '#f83a3a', warning: '#ffa31a' })
-export const ALERT_SIMILARITY_LIMIT = 15
-// Below this OKLab distance (x100) the hover colour is hard to tell from the fill.
-export const HOVER_SIMILARITY_LIMIT = 3
-
 // Colours with a fixed meaning; the screen shows them read only (swatches come from the styles).
 export const FIXED_COLOR_GROUPS = Object.freeze([
   Object.freeze({ key: 'states', items: Object.freeze(['success', 'warning', 'danger', 'info']) }),

@@ -26,8 +26,9 @@ const FILE_ACCESS_ROLES = Object.freeze([
   'assessor',
   'filtering_officer',
   'award_secretary',
-  'entity',
 ])
+// The scenario also requires entity accounts, so the entity flow of the completion modal stays covered.
+const SCENARIO_NATIONAL_ID_ROLES = Object.freeze([...FILE_ACCESS_ROLES, 'entity'])
 export const NATIONAL_ID_REQUIRED_SCENARIO = 'national-id-required'
 
 function scenarioRequiresNationalId() {
@@ -35,7 +36,7 @@ function scenarioRequiresNationalId() {
 }
 
 let nationalIdEnabled = scenarioRequiresNationalId()
-let nationalIdRoles = scenarioRequiresNationalId() ? [...FILE_ACCESS_ROLES] : []
+let nationalIdRoles = scenarioRequiresNationalId() ? [...SCENARIO_NATIONAL_ID_ROLES] : []
 
 export function resetAuthSettings() {
   channels = [...DEFAULT_CHANNELS]
@@ -44,7 +45,7 @@ export function resetAuthSettings() {
   twoFactorEnabled = true
   twoFactorRoles = [...STAFF_ROLES]
   nationalIdEnabled = scenarioRequiresNationalId()
-  nationalIdRoles = scenarioRequiresNationalId() ? [...FILE_ACCESS_ROLES] : []
+  nationalIdRoles = scenarioRequiresNationalId() ? [...SCENARIO_NATIONAL_ID_ROLES] : []
 }
 
 export function signInCodeChannelsAllowed() {

@@ -18,7 +18,6 @@ return [
 
     'viewer_stamp' => [
         'title' => 'Viewer stamp',
-        'footer' => 'Viewed by :viewer · :time (Riyadh time) · Trace :trace',
     ],
 
     'certificate' => [

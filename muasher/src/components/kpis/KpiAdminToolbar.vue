@@ -3,7 +3,6 @@ import { computed, toRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ListToolbar from '@/components/data-list/ListToolbar.vue'
 import AppSelect from '@/components/form/AppSelect.vue'
-import BaseButton from '@/components/ui/BaseButton.vue'
 import { KPI_ADMIN_SORTS } from '@/constants/kpis'
 
 const props = defineProps({
@@ -14,7 +13,7 @@ const props = defineProps({
   localized: { type: Function, required: true },
 })
 
-const emit = defineEmits(['update:search', 'filter', 'sort', 'create', 'reorder'])
+const emit = defineEmits(['update:search', 'filter', 'sort'])
 const { t } = useI18n()
 const filterState = {
   filters: props.values,
@@ -75,14 +74,6 @@ const sortOptions = computed(() =>
         :label="t('kpis.admin.sort.label')"
         @update:model-value="draft.setSort($event)"
       />
-    </template>
-    <template #actions>
-      <BaseButton variant="secondary" size="sm" icon="dots-vertical" @click="emit('reorder')">{{
-        t('kpis.admin.reorder.open')
-      }}</BaseButton>
-      <BaseButton variant="primary" size="sm" icon="plus" @click="emit('create')">{{
-        t('kpis.admin.index.add')
-      }}</BaseButton>
     </template>
   </ListToolbar>
 </template>

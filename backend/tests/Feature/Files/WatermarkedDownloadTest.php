@@ -18,6 +18,7 @@ use App\Models\Files\FileRendition;
 use App\Models\Identity\IdentityChangeRequest;
 use App\Models\Identity\User;
 use App\Support\ValueObjects\PageSize;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
@@ -28,7 +29,16 @@ use Illuminate\Testing\TestResponse;
 beforeEach(function (): void {
     Notification::fake();
     Storage::fake('local');
+    $this->travelTo(CarbonImmutable::parse('2026-11-10 07:43:00', 'UTC'));
 });
+
+/**
+ * The single line printed on each page at the frozen test moment (10:43 in Riyadh on 10 November 2026).
+ */
+function stampLine(string $holder): string
+{
+    return $holder.' - 10/11/2026 - 10:43am';
+}
 
 function stampedEvidenceCase(): array
 {
@@ -43,7 +53,7 @@ function latestTraceCode(): string
     return FileAccessTrace::query()->latest('id')->value('trace_code');
 }
 
-it('stamps every page of a PDF with the viewer, the national ID and a trace code, and keeps the original', function (): void {
+it('stamps every page of a PDF once with the national ID, the date and the time, and keeps the original', function (): void {
     [$assessor, $assessment] = stampedEvidenceCase();
     $original = multiPagePdf([new PageSize(595, 842), new PageSize(842, 595), new PageSize(595, 842)]);
     $evidence = replaceEvidenceContent($assessment, 'سياسة-الحوكمة.pdf', 'application/pdf', $original);
@@ -51,10 +61,11 @@ it('stamps every page of a PDF with the viewer, the national ID and a trace code
     $pdf = downloadEvidenceAs($assessor, $assessment, $evidence)->assertOk()->assertHeader('Content-Type', 'application/pdf')->streamedContent();
 
     $pages = array_slice(explode("\f", pdfTextOf($pdf)), 0, 3);
-    $trace = latestTraceCode();
     expect(pdfPageCountOf($pdf))->toBe(3);
     foreach ($pages as $page) {
-        expect($page)->toContain($trace)->toContain(fictionalNationalId(9001))->toContain('ORIGINAL');
+        expect(substr_count($page, stampLine(fictionalNationalId(9001))))->toBe(1)
+            ->and($page)->toContain('ORIGINAL')
+            ->and($page)->not->toContain(latestTraceCode());
     }
     expect(storedContentOf($evidence->storedFile))->toBe($original);
 });
@@ -65,7 +76,7 @@ it('stamps a PDF that only restricts printing or copying, as uploads accept it',
 
     $pdf = downloadEvidenceAs($assessor, $assessment, $evidence)->assertOk()->assertHeader('Content-Type', 'application/pdf')->streamedContent();
 
-    expect(pdfTextOf($pdf))->toContain(latestTraceCode())->toContain(fictionalNationalId(9001));
+    expect(pdfTextOf($pdf))->toContain(stampLine(fictionalNationalId(9001)));
 });
 
 it('overlays JPEG and PNG images, keeping their size and format and leaving the original untouched', function (string $type, string $mime): void {
@@ -96,12 +107,12 @@ it('converts Word, Excel and PowerPoint files once and serves a stamped PDF ever
     expect(FileAccessTrace::query()->count())->toBe(0);
 
     $first = downloadEvidenceAs($assessor, $assessment, $evidence)->assertOk()->assertHeader('Content-Type', 'application/pdf');
-    $firstTrace = latestTraceCode();
     $second = downloadEvidenceAs($assessor, $assessment, $evidence)->assertOk();
 
     expect($first->headers->get('Content-Disposition'))->toContain('.pdf')
-        ->and(pdfTextOf($first->streamedContent()))->toContain($firstTrace)
-        ->and(pdfTextOf($second->streamedContent()))->toContain(latestTraceCode())->not->toContain($firstTrace)
+        ->and(pdfTextOf($first->streamedContent()))->toContain(stampLine(fictionalNationalId(9001)))
+        ->and(pdfTextOf($second->streamedContent()))->toContain(stampLine(fictionalNationalId(9001)))
+        ->and(FileAccessTrace::query()->count())->toBe(2)
         ->and(FileRendition::query()->sole()->status)->toBe(RenditionStatus::Ready)
         ->and(storedContentOf($evidence->storedFile))->toBe($original);
 })->with([
@@ -172,14 +183,31 @@ it('records a trace and an audit row per view or download without the national I
     Log::shouldNotHaveReceived('error', fn (...$arguments): bool => str_contains((string) json_encode($arguments), fictionalNationalId(9001)));
 });
 
-it('stamps the name and trace code only for a viewer who is not required to hold a national ID', function (): void {
+it('stamps the name in place of the national ID for a viewer who is not required to hold one', function (): void {
     $assessor = assessorUser();
+    $assessor->forceFill(['name' => 'Fahad Al-Qahtani'])->save();
     $assessment = assignedAccreditedRequest(publishedAccreditedCriteria(), $assessor);
     $evidence = replaceEvidenceContent($assessment, 'سياسة.pdf', 'application/pdf', multiPagePdf([new PageSize(595, 842)]));
 
     $text = pdfTextOf(downloadEvidenceAs($assessor, $assessment, $evidence)->assertOk()->streamedContent());
 
-    expect($text)->toContain(latestTraceCode())->not->toMatch('/\b[12]\d{9}\b/');
+    expect($text)->toContain(stampLine('Fahad Al-Qahtani'))->not->toMatch('/\b[12]\d{9}\b/')->not->toContain(latestTraceCode());
+});
+
+it('serves an entity its own evidence as uploaded, with no stamp, no trace row and no national ID asked, and still audits the download', function (): void {
+    requireNationalIdFor(RoleKey::Assessor, RoleKey::Entity);
+    $assessment = assignedAccreditedRequest(publishedAccreditedCriteria(), assessorUser());
+    $original = multiPagePdf([new PageSize(595, 842)]);
+    $evidence = replaceEvidenceContent($assessment, 'سياسة.pdf', 'application/pdf', $original);
+
+    $owner = ownerOf($assessment->entity);
+
+    expect(downloadEvidenceAs($owner, $assessment, $evidence)->assertOk()->streamedContent())->toBe($original)
+        ->and(FileAccessTrace::query()->count())->toBe(0)
+        ->and(Audit::query()->where('event', AuditEvent::FileAccessRefused->value)->count())->toBe(0);
+    $download = Audit::query()->where('event', AuditEvent::FileDownloaded->value)->sole();
+    expect($download->user_id)->toBe($owner->id)
+        ->and($download->new_values)->toMatchArray(['purpose' => 'assessment_evidence']);
 });
 
 function evidenceLinkFor(User $viewer, Assessment $assessment, EvidenceFile $evidence): TestResponse
@@ -226,7 +254,7 @@ it('opens files for a required viewer once the national ID is approved, stamped 
 
     $text = pdfTextOf(downloadEvidenceAs($assessor->refresh(), $assessment, $evidence)->assertOk()->streamedContent());
 
-    expect($text)->toContain(latestTraceCode())->toContain(fictionalNationalId(9102));
+    expect($text)->toContain(stampLine(fictionalNationalId(9102)));
 });
 
 it('opens files at once for the Super Admin who saved the own number directly', function (): void {
@@ -285,8 +313,8 @@ it('stamps every file in an evidence bundle for its requester and keeps the bund
     $zip->close();
     unlink($zipPath);
 
-    expect(pdfTextOf($entry))->toContain(FileAccessTrace::query()->where('user_id', $assessor->id)->sole()->trace_code)
-        ->and(pdfTextOf($entry))->toContain(fictionalNationalId(9001));
+    expect(FileAccessTrace::query()->where('user_id', $assessor->id)->count())->toBe(1)
+        ->and(pdfTextOf($entry))->toContain(stampLine(fictionalNationalId(9001)));
     switchTo(superAdmin())->postJson("/api/v1/assessments/{$assessment->id}/evidence/bundles/{$bundleId}/download")->assertNotFound();
 });
 
@@ -327,4 +355,30 @@ it('never starts LibreOffice while serving a download', function (): void {
 
     Queue::assertPushed(ConvertOfficeFileJob::class, fn (ConvertOfficeFileJob $job): bool => $job->storedFileId === $evidence->stored_file_id);
     expect(FileRendition::query()->count())->toBe(0);
+});
+
+it('stamps every assessment-side account with its own national ID and writes its trace row', function (Closure $viewerFor, int $serial): void {
+    $assessor = assessorUser();
+    $assessment = assignedAccreditedRequest(publishedAccreditedCriteria(), $assessor);
+    $evidence = replaceEvidenceContent($assessment, 'سياسة.pdf', 'application/pdf', multiPagePdf([new PageSize(595, 842)]));
+    $viewer = giveNationalId($viewerFor($assessor), $serial);
+
+    $text = pdfTextOf(downloadEvidenceAs($viewer, $assessment, $evidence)->assertOk()->streamedContent());
+
+    $trace = FileAccessTrace::query()->where('user_id', $viewer->id)->sole();
+    expect($text)->toContain(stampLine(fictionalNationalId($serial)))
+        ->and(Audit::query()->where('event', AuditEvent::FileAccessed->value)->sole()->new_values['trace_code'] ?? null)->toBe($trace->trace_code);
+})->with([
+    'assessor' => [fn (User $assessor): User => $assessor, 9201],
+    'request follower (reviewer)' => [requestFollower(...), 9202],
+    'super admin' => [superAdmin(...), 9203],
+]);
+
+it('keeps another entity away from the evidence it no longer gets stamped', function (): void {
+    $assessment = assignedAccreditedRequest(publishedAccreditedCriteria(), assessorUser());
+    $evidence = replaceEvidenceContent($assessment, 'سياسة.pdf', 'application/pdf', multiPagePdf([new PageSize(595, 842)]));
+
+    expect(evidenceLinkFor(entityUser(), $assessment, $evidence)->status())->toBeIn([403, 404])
+        ->and(FileAccessTrace::query()->count())->toBe(0)
+        ->and(Audit::query()->where('event', AuditEvent::FileDownloaded->value)->count())->toBe(0);
 });

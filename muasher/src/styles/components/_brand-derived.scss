@@ -1,43 +1,29 @@
 @use '../mixins' as *;
 
 // Swatches and preview read the unsaved colours as `--draft-*`, set on `.branding-editor`.
-.brand-derived__scroll {
-  overflow-x: auto;
+.brand-derived__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-sm);
 }
 
-.brand-derived__table {
-  inline-size: 100%;
-  border-collapse: collapse;
-  font-size: var(--fs-sm);
+// One derived colour: its name and swatch, then its Auto/Custom state with the action that changes it.
+.brand-derived__row {
+  @include flex(row, center, space-between, var(--space-3));
+  flex-wrap: wrap;
+  padding-block: var(--space-3);
+  border-block-end: var(--border-width) solid var(--theme-border);
 
-  th,
-  td {
-    padding: var(--space-3);
-    text-align: start;
-    vertical-align: middle;
-    border-block-end: var(--border-width) solid var(--theme-border);
-  }
-
-  thead th {
-    font-size: var(--fs-xs);
-    font-weight: var(--fw-medium);
-    color: var(--theme-text-muted);
-    border-color: var(--theme-border-strong);
-  }
-
-  tbody tr:last-child > * {
+  &:last-child {
     border-block-end: 0;
   }
 }
 
-.brand-derived__row--failing > * {
-  background-color: var(--theme-danger-soft);
-}
-
 .brand-derived__name {
   @include flex(row, center, flex-start, var(--space-3));
-  min-inline-size: 12rem;
-  font-weight: var(--fw-regular);
+  flex: 1 1 14rem;
+  min-inline-size: 0;
 }
 
 .brand-derived__label {
@@ -95,21 +81,6 @@
   color: var(--theme-text-muted);
 }
 
-.brand-derived__ratio {
-  @include flex(row, center, flex-start, var(--space-1));
-  white-space: nowrap;
-  font-weight: var(--fw-semibold);
-}
-
-.brand-derived__ratio--pass {
-  color: var(--theme-success-text);
-}
-
-.brand-derived__ratio--fail {
-  color: var(--theme-danger-text);
-}
-
-// The state cell holds the Auto/Custom badge and, under it, the action that changes it.
 .brand-derived__state {
   @include flex(column, flex-start, center, var(--space-2));
 }

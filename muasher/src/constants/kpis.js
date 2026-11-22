@@ -38,6 +38,9 @@ export const KPI_PAGE_SIZE = Object.freeze({ public: 12, admin: 15, all: 100 })
 
 export const KPI_SEARCH_MIN = 2
 
+// The page header holds the active tab's actions; each tab panel teleports its buttons here.
+export const KPI_ADMIN_ACTIONS_ID = 'kpis-admin-actions'
+
 export const KPI_SEARCH_DEBOUNCE_MS = 300
 
 export const KPI_YEAR_RANGE = Object.freeze({ min: 2000, max: 2100 })

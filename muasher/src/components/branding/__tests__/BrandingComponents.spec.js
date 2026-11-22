@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import BrandColorField from '@/components/branding/BrandColorField.vue'
-import BrandContrastNotice from '@/components/branding/BrandContrastNotice.vue'
 import BrandDerivedColorRow from '@/components/branding/BrandDerivedColorRow.vue'
-import { brandContrastPairs, deriveBrandScheme } from '@/utils/brandingContrast'
 import { createTestGlobals } from '@/test-utils'
 
 function mountField(props) {
@@ -35,55 +33,27 @@ describe('BrandColorField', () => {
   })
 })
 
-describe('BrandContrastNotice', () => {
-  function mountNotice(colors) {
-    const scheme = deriveBrandScheme(colors)
-    return mount(BrandContrastNotice, {
-      props: { pairs: brandContrastPairs(scheme) },
-      global: createTestGlobals(),
-    })
-  }
-
-  it('stays silent when every pair passes, the darker text shade included', () => {
-    expect(
-      mountNotice({ primary: '#d4088c', secondary: '#4a2a7d' }).find('.brand-contrast').exists(),
-    ).toBe(false)
-    expect(
-      mountNotice({ primary: '#98d8d3', secondary: '#0a2325' }).find('.brand-contrast').exists(),
-    ).toBe(false)
-  })
-
-  it('warns that saving is blocked and lists only the failing pairs with their ratio', () => {
-    const wrapper = mountNotice({ primary: '#777777', secondary: '#0a2325' })
-    const alert = wrapper.find('.brand-contrast--blocked')
-    expect(alert.attributes('role')).toBe('alert')
-    expect(alert.text()).toContain('لا يمكن الحفظ')
-    expect(alert.findAll('.brand-contrast__row')).toHaveLength(1)
-    expect(alert.text()).toContain('النص فوق اللون الرئيسي')
-  })
-})
-
 describe('BrandDerivedColorRow', () => {
   function mountRow(props) {
     return mount(BrandDerivedColorRow, {
       props: {
         colorKey: 'onSecondary',
         value: '#ffffff',
-        check: { ratio: 16.4, passes: true },
         ...props,
       },
       global: createTestGlobals({ locale: 'en' }),
-      attachTo: document.createElement('tbody'),
+      attachTo: document.createElement('ul'),
     })
   }
 
-  it('shows an auto colour with its use, value and passing contrast, and offers an override', async () => {
+  it('shows an auto colour with its use and value, no contrast verdict, and offers an override', async () => {
     const wrapper = mountRow()
-    expect(wrapper.find('th[scope="row"]').text()).toContain('Text on secondary')
+    expect(wrapper.element.tagName).toBe('LI')
+    expect(wrapper.find('.brand-derived__name').text()).toContain('Text on secondary')
     expect(wrapper.text()).toContain('Top-bar text and icons')
     expect(wrapper.find('.brand-derived__hex').text()).toBe('#ffffff')
-    expect(wrapper.find('.brand-derived__ratio--pass').text()).toContain('16.4:1')
-    expect(wrapper.text()).toContain('Meets the required contrast')
+    expect(wrapper.text()).toContain('Auto')
+    expect(wrapper.text()).not.toMatch(/contrast|:1/i)
     await wrapper.find('.btn').trigger('click')
     expect(wrapper.emitted('override')).toEqual([['#ffffff']])
   })
@@ -93,14 +63,12 @@ describe('BrandDerivedColorRow', () => {
       value: '#6b8a8c',
       autoValue: '#ffffff',
       isCustom: true,
-      check: { ratio: 4.4, passes: false },
     })
-    expect(wrapper.classes()).toContain('brand-derived__row--failing')
+    expect(wrapper.text()).toContain('Custom')
     expect(wrapper.find('.brand-derived__auto').text()).toContain('#ffffff')
     expect(wrapper.find('.brand-derived__picker').attributes('aria-label')).toBe(
       'Pick the “Text on secondary” color',
     )
-    expect(wrapper.text()).toContain('Misses the required contrast')
     await wrapper.find('.brand-derived__picker').setValue('#123456')
     await wrapper.find('.btn').trigger('click')
     expect(wrapper.emitted('override')).toEqual([['#123456']])

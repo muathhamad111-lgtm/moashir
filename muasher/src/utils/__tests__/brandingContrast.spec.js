@@ -3,15 +3,7 @@ import { resolve } from 'node:path'
 import process from 'node:process'
 import { describe, expect, it } from 'vitest'
 import { BRAND_SURFACES, DEFAULT_BRAND_COLORS } from '@/constants/branding'
-import {
-  brandContrastPairs,
-  deriveBrandScheme,
-  derivedColorChecks,
-  isBrandScheme,
-  normalizeHex,
-  passesAllContrast,
-  serverContrastPairs,
-} from '@/utils/brandingContrast'
+import { deriveBrandScheme, isBrandScheme, normalizeHex } from '@/utils/brandingContrast'
 import { contrastRatio } from '@/utils/contrast'
 
 // Produced by App\Services\Settings\BrandColorDeriver; the preview must derive the same schemes.
@@ -49,7 +41,8 @@ describe('brand colour scheme', () => {
     expect(scheme.onSecondary).toBe(BRAND_SURFACES.paper)
     expect(scheme.primaryText).not.toBe('#98d8d3')
     expect(contrastRatio(scheme.primaryText, BRAND_SURFACES.content)).toBeGreaterThanOrEqual(4.5)
-    expect(passesAllContrast(brandContrastPairs(scheme))).toBe(true)
+    expect(contrastRatio(scheme.onPrimary, scheme.primaryHover)).toBeGreaterThanOrEqual(4.5)
+    expect(contrastRatio(scheme.primaryText, scheme.primarySoft)).toBeGreaterThanOrEqual(4.5)
   })
 
   it('keeps a dark primary as its own text colour', () => {
@@ -83,55 +76,19 @@ describe('brand colour scheme', () => {
     expect(scheme).not.toHaveProperty('navbar')
   })
 
-  it('gives each derived colour the weakest of its contrast pairs', () => {
-    const scheme = deriveBrandScheme(DEFAULT_BRAND_COLORS, {
-      primaryHover: '#1b3a38',
-      onPrimary: '#100f10',
-    })
-    const checks = derivedColorChecks(brandContrastPairs(scheme))
-    expect(checks.primaryHover.passes).toBe(false)
-    expect(checks.onPrimary.passes).toBe(false)
-    expect(checks.onPrimary.ratio).toBeCloseTo(contrastRatio(scheme.onPrimary, '#1b3a38'))
-    expect(checks.onSecondary.passes).toBe(true)
-  })
-
-  it('flags a mid-tone on which neither white nor dark text reaches AA', () => {
-    const pairs = brandContrastPairs(
-      deriveBrandScheme({ primary: '#777777', secondary: '#777777' }),
+  it('keeps a low-contrast override exactly as chosen', () => {
+    const scheme = deriveBrandScheme(
+      { primary: '#ffe066', secondary: '#0a2325' },
+      { onPrimary: '#FFFFFF' },
     )
-    expect(pairs.filter((pair) => !pair.passes).map((pair) => pair.key)).toEqual([
-      'primary.text_on_fill',
-      'secondary.text_on_fill',
-    ])
+    expect(scheme.onPrimary).toBe('#ffffff')
+    expect(contrastRatio(scheme.onPrimary, scheme.primary)).toBeLessThan(4.5)
   })
 
   it('returns no scheme for invalid colours and validates a full scheme', () => {
     expect(deriveBrandScheme({ primary: 'red', secondary: '#0a2325' })).toBeNull()
     expect(isBrandScheme(deriveBrandScheme(DEFAULT_BRAND_COLORS))).toBe(true)
     expect(isBrandScheme({ primary: '#ffffff' })).toBe(false)
-  })
-
-  it('maps the server rejection pairs', () => {
-    expect(
-      serverContrastPairs([
-        {
-          pair: 'primary.text_on_fill',
-          foreground: '#ffffff',
-          background: '#777777',
-          ratio: '4.48',
-          minimum: '4.5',
-        },
-      ]),
-    ).toEqual([
-      {
-        key: 'primary.text_on_fill',
-        foreground: '#ffffff',
-        background: '#777777',
-        ratio: 4.48,
-        minimum: 4.5,
-        passes: false,
-      },
-    ])
   })
 
   it('keeps the SCSS default brand tokens in sync with the default scheme', () => {

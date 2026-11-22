@@ -42,6 +42,22 @@ test('renders the up/down reorder controls per row', async ({ page }) => {
   await expect(page.locator('.kpis-admin__reorder-btn')).not.toHaveCount(0)
 })
 
+test('keeps every page action together in the header, with the add as the primary', async ({
+  page,
+}) => {
+  await page.goto('/admin/kpis')
+  await retryTable(page)
+  const actions = page.locator('.kpis-admin__header .kpis-admin__actions')
+  await expect(actions.locator('> .btn')).toHaveCount(3)
+  await expect(actions.locator('> .btn').last()).toHaveClass(/btn--primary/)
+  await expect(actions.getByRole('button', { name: /add indicator|إضافة مؤشر/i })).toBeVisible()
+  await expect(actions.getByRole('button', { name: /^(reorder|إعادة الترتيب)$/i })).toBeVisible()
+  await expect(
+    actions.getByRole('link', { name: /view public page|عرض الصفحة العامة/i }),
+  ).toBeVisible()
+  await expect(page.locator('.filter-toolbar .toolbar__actions')).toHaveCount(0)
+})
+
 test('opens the add-KPI form modal with bilingual fields and color swatches', async ({ page }) => {
   await page.goto('/admin/kpis')
   await retryTable(page)

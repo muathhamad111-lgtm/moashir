@@ -88,18 +88,14 @@ it('refuses missing or malformed colours', function (array $payload, string $fie
     'css injection' => [['primary_color' => '#98d8d3', 'secondary_color' => '#000000;}body{display:none'], 'secondary_color'],
 ]);
 
-it('refuses a mid-tone colour on which neither light nor dark text reaches AA contrast', function (): void {
+it('saves a mid-tone colour without any contrast check, since the client owns its colours', function (): void {
     signIn(systemAdmin())->putJson(BRANDING, ['primary_color' => '#777777', 'secondary_color' => '#777777'])
-        ->assertUnprocessable()
-        ->assertJsonPath('code', 'contrast_fail')
-        ->assertJsonValidationErrors(['primary_color', 'secondary_color'])
-        ->assertJsonPath('meta.pairs.0.pair', 'primary.text_on_fill')
-        ->assertJsonPath('meta.pairs.0.minimum', '4.5')
-        ->assertJsonPath('meta.pairs.1.pair', 'secondary.text_on_fill')
-        ->assertJsonCount(2, 'meta.pairs');
+        ->assertOk()
+        ->assertJsonPath('data.primary_color', '#777777')
+        ->assertJsonPath('data.secondary_color', '#777777');
 
-    expect(BrandingTheme::current()->primary_color)->toBe('#98d8d3')
-        ->and(Audit::query()->where('event', AuditEvent::BrandingUpdated->value)->count())->toBe(0);
+    expect(BrandingTheme::current()->primary_color)->toBe('#777777')
+        ->and(Audit::query()->where('event', AuditEvent::BrandingUpdated->value)->count())->toBe(1);
 });
 
 it('saves the derived colours the client overrides, serves them in the scheme and audits them', function (): void {
@@ -134,31 +130,36 @@ it('refuses an unknown override or a malformed override colour', function (array
     'css injection' => [['primary_soft' => '#ffffff;}body{display:none'], 'color_overrides.primary_soft'],
 ]);
 
-it('refuses an override whose text is not readable on its background and keeps the saved theme', function (): void {
-    signIn(systemAdmin())->putJson(BRANDING, [
-        'primary_color' => '#98d8d3',
-        'secondary_color' => '#0a2325',
-        'color_overrides' => ['on_secondary' => '#6b8a8c'],
-    ])
-        ->assertUnprocessable()
-        ->assertJsonPath('code', 'contrast_fail')
-        ->assertJsonPath('meta.pairs.0.pair', 'secondary.text_on_fill')
-        ->assertJsonPath('meta.pairs.0.foreground', '#6b8a8c')
-        ->assertJsonCount(1, 'meta.pairs');
+it('saves a low-contrast override exactly as chosen and audits it', function (): void {
+    $admin = systemAdmin();
 
-    expect(BrandingTheme::current()->color_overrides)->toBe([])
-        ->and(Audit::query()->where('event', AuditEvent::BrandingUpdated->value)->count())->toBe(0);
+    signIn($admin)->putJson(BRANDING, [
+        'primary_color' => '#ffe066',
+        'secondary_color' => '#0a2325',
+        'color_overrides' => ['on_primary' => '#ffffff'],
+    ])
+        ->assertOk()
+        ->assertJsonPath('data.color_overrides', ['on_primary' => '#ffffff'])
+        ->assertJsonPath('data.scheme.on_primary', '#ffffff');
+
+    expect(ContrastRatio::between('#ffffff', '#ffe066'))->toBeLessThan(4.5)
+        ->and(BrandingTheme::current()->color_overrides)->toBe(['on_primary' => '#ffffff']);
+
+    $audit = Audit::query()->where('event', AuditEvent::BrandingUpdated->value)->sole();
+    expect($audit->new_values['color_overrides'])->toEqual(['on_primary' => '#ffffff'])
+        ->and($audit->user_id)->toBe($admin->id)
+        ->and($audit->tags)->toBe('colors');
 });
 
-it('checks the hover and soft pairs, so an override cannot break the text on them', function (): void {
+it('saves low-contrast hover and soft overrides too', function (): void {
     signIn(systemAdmin())->putJson(BRANDING, [
         'primary_color' => '#98d8d3',
         'secondary_color' => '#0a2325',
         'color_overrides' => ['on_primary' => '#100f10', 'primary_hover' => '#1b3a38', 'primary_text' => '#547774', 'primary_soft' => '#9fc9c5'],
     ])
-        ->assertUnprocessable()
-        ->assertJsonPath('meta.pairs.0.pair', 'primary.text_on_hover')
-        ->assertJsonPath('meta.pairs.1.pair', 'primary.text_on_soft');
+        ->assertOk()
+        ->assertJsonPath('data.scheme.primary_hover', '#1b3a38')
+        ->assertJsonPath('data.scheme.primary_soft', '#9fc9c5');
 });
 
 it('treats the overrides as the full set, so a save without them returns every colour to auto', function (): void {

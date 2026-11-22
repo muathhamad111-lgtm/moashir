@@ -5,21 +5,16 @@ declare(strict_types=1);
 namespace App\Actions\Settings;
 
 use App\Data\Settings\BrandColors;
-use App\Exceptions\Settings\BrandingRejected;
 use App\Models\Identity\User;
 use App\Models\Settings\BrandingTheme;
 use App\Services\Platform\TransactionLock;
-use App\Services\Settings\BrandColorDeriver;
 use App\Services\Settings\BrandingAuditTrail;
-use App\Services\Settings\ContrastValidator;
 use App\Services\Settings\SettingsChangeReason;
 use Illuminate\Support\Facades\DB;
 
 final readonly class UpdateBrandingColors
 {
     public function __construct(
-        private BrandColorDeriver $deriver,
-        private ContrastValidator $contrast,
         private SettingsChangeReason $reason,
         private TransactionLock $lock,
         private BrandingAuditTrail $audit,
@@ -27,12 +22,6 @@ final readonly class UpdateBrandingColors
 
     public function handle(User $actor, BrandColors $colors, ?string $reason): void
     {
-        $failures = $this->contrast->failures($this->deriver->scheme($colors));
-
-        if ($failures !== []) {
-            throw BrandingRejected::contrastFail($failures);
-        }
-
         $this->reason->record($actor, $reason);
 
         DB::transaction(function () use ($actor, $colors): void {

@@ -41,6 +41,32 @@ function financeLedger(): array
     ];
 }
 
+/**
+ * A key that would carry a gateway fee or a net-of-fee amount, which the ledger never exposes.
+ */
+const GATEWAY_FEE_KEY = '/fee|^net/';
+
+/**
+ * Every string key of a JSON payload at any depth. Only keys are collected, never values, because the
+ * values carry random public ids and references that may contain any hex substring.
+ *
+ * @param  array<array-key, mixed>  $payload
+ * @return list<string>
+ */
+function financePayloadKeys(array $payload): array
+{
+    $keys = [];
+    $walker = new RecursiveIteratorIterator(new RecursiveArrayIterator($payload), RecursiveIteratorIterator::SELF_FIRST);
+
+    foreach ($walker as $key => $value) {
+        if (is_string($key)) {
+            $keys[] = $key;
+        }
+    }
+
+    return $keys;
+}
+
 it('totals confirmed collections of both modes in the ledger stats without any gateway fee', function (): void {
     financeLedger();
 
@@ -55,7 +81,8 @@ it('totals confirmed collections of both modes in the ledger stats without any g
         ->assertJsonPath('meta.stats.transactions_value', '5750.00')
         ->assertJsonPath('meta.stats.currency', 'SAR');
 
-    expect((string) $response->getContent())->not->toContain('fee')->and((string) $response->getContent())->not->toContain('"net');
+    expect(financePayloadKeys((array) $response->json('meta.stats')))->not->toBeEmpty()->each->not->toMatch(GATEWAY_FEE_KEY)
+        ->and(financePayloadKeys((array) $response->json('data')))->not->toBeEmpty()->each->not->toMatch(GATEWAY_FEE_KEY);
     $this->getJson('/api/v1/finance/transactions?filter[purpose]=accredited')->assertOk()->assertJsonPath('meta.stats.completed_count', 2);
     $this->getJson('/api/v1/finance/transactions?filter[mode]=live')->assertOk()
         ->assertJsonPath('meta.stats.completed_count', 2)

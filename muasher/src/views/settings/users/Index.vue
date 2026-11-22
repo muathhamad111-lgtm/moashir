@@ -134,20 +134,25 @@ function onAction(key, row) {
   <section class="users-page">
     <header class="users-page__header">
       <h1 class="users-page__title">{{ t('users.index.title') }}</h1>
-      <BaseButton
-        v-if="canViewRoles"
-        variant="secondary"
-        icon="lock"
-        :to="{ name: ROUTE_NAMES.ADMIN_PERMISSIONS }"
-        >{{ t('users.index.rolesLink') }}</BaseButton
-      >
-      <BaseButton
-        v-if="canReviewIdentity"
-        variant="secondary"
-        icon="doc"
-        :to="{ name: ROUTE_NAMES.ADMIN_IDENTITY_CHANGES }"
-        >{{ t('nationalIdentity.review.link') }}</BaseButton
-      >
+      <div class="users-page__actions">
+        <BaseButton
+          v-if="canViewRoles"
+          variant="secondary"
+          icon="lock"
+          :to="{ name: ROUTE_NAMES.ADMIN_PERMISSIONS }"
+          >{{ t('users.index.rolesLink') }}</BaseButton
+        >
+        <BaseButton
+          v-if="canReviewIdentity"
+          variant="secondary"
+          icon="doc"
+          :to="{ name: ROUTE_NAMES.ADMIN_IDENTITY_CHANGES }"
+          >{{ t('nationalIdentity.review.link') }}</BaseButton
+        >
+        <BaseButton v-if="canManage" variant="primary" icon="user" @click="openCreate">{{
+          t('users.index.add')
+        }}</BaseButton>
+      </div>
     </header>
 
     <StatsCards :stats="statCards" :loading="status === 'loading' && !stats" />
@@ -182,11 +187,6 @@ function onAction(key, row) {
         >
           {{ t('users.index.export') }}
         </BaseButton>
-      </template>
-      <template v-if="canManage" #actions>
-        <BaseButton variant="primary" size="sm" icon="user" @click="openCreate">{{
-          t('users.index.add')
-        }}</BaseButton>
       </template>
     </ListToolbar>
 

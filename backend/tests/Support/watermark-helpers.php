@@ -77,7 +77,7 @@ function pdfTextOf(string $pdf): string
     file_put_contents($path, $pdf);
 
     try {
-        return Process::run(['pdftotext', '-layout', $path, '-'])->output();
+        return Process::run(['pdftotext', '-raw', $path, '-'])->output();
     } finally {
         unlink($path);
     }

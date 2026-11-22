@@ -206,7 +206,7 @@ test('KPI administration: create, record a value and reorder everything by drag 
     timeout: 15000,
   })
 
-  await page.locator('.toolbar__actions .btn--primary').click()
+  await page.locator('.kpis-admin__actions .btn--primary').click()
   const form = page.locator('.modal').last()
   await form.locator('input[name="name.ar"]').fill('عدد الشراكات المجتمعية')
   await form.locator('input[name="name.en"]').fill('Community partnerships')
@@ -225,7 +225,7 @@ test('KPI administration: create, record a value and reorder everything by drag 
   await expect(values.locator('.kpi-history__row').first()).toContainText('488')
   await values.locator('.modal__close').click()
 
-  await page.locator('.toolbar__actions .btn--secondary').click()
+  await page.getByRole('button', { name: /^(reorder|إعادة الترتيب)$/i }).click()
   const reorder = page.locator('.modal').last()
   await expect(reorder.locator('.sortable-list__row')).toHaveCount(32)
   const firstName = await reorder.locator('.kpi-reorder__name').first().textContent()

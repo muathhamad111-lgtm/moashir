@@ -2,8 +2,9 @@ import { readFileSync } from 'node:fs'
 import { test, expect } from '@playwright/test'
 import { seedSignedIn } from './support/session'
 
-// Brand colour control, phase 1: the derived colours with Auto/Custom overrides, the contrast
-// guard rails, the fixed colours and the live preview, in Arabic (RTL) and English (LTR).
+// Brand colour control: the derived colours with Auto/Custom overrides, the fixed colours and the
+// live preview, in Arabic (RTL) and English (LTR). There is no contrast check: the client owns the
+// colours it chooses (operator decision 2026-11-22).
 
 const SHOTS = 'e2e/__screenshots__/brand-colors'
 const ADMIN = { id: 1, roles: ['system_admin'], name: 'System Admin' }
@@ -18,8 +19,8 @@ function suffix(testInfo) {
 }
 
 const TEXT = {
-  ar: { auto: 'تلقائي', custom: 'مخصّص', soft: 'الخلفية الفاتحة', blocked: 'لا يمكن الحفظ' },
-  en: { auto: 'Auto', custom: 'Custom', soft: 'Soft background', blocked: 'Cannot save' },
+  ar: { auto: 'تلقائي', custom: 'مخصّص', soft: 'الخلفية الفاتحة', contrast: 'التباين' },
+  en: { auto: 'Auto', custom: 'Custom', soft: 'Soft background', contrast: 'contrast' },
 }
 
 async function openVisualIdentity(page, testInfo) {
@@ -68,19 +69,23 @@ test('lists the derived colours on auto, previews them and saves a readable over
   await expect(row(page, 3).locator('.badge')).toHaveText(text.custom)
 })
 
-test('blocks saving while an override misses the contrast', async ({ page }, testInfo) => {
+test('saves a low-contrast custom colour with no contrast check', async ({ page }, testInfo) => {
   const text = await openVisualIdentity(page, testInfo)
   const onSecondary = row(page, 4)
   await onSecondary.locator('.btn').click()
   await onSecondary.locator('.brand-derived__picker').fill('#6b8a8c')
-  await expect(onSecondary).toHaveClass(/brand-derived__row--failing/)
-  await expect(page.locator('.brand-contrast--blocked')).toContainText(text.blocked)
-  await expect(page.locator('.branding-page__actions .btn--primary')).toBeDisabled()
-  await page.screenshot({ path: `${SHOTS}/blocked-${suffix(testInfo)}.png`, fullPage: true })
+  await expect(onSecondary.locator('.badge')).toHaveText(text.custom)
+  await expect(page.locator('.branding-editor [role="alert"]')).toHaveCount(0)
+  await expect(page.locator('.brand-derived')).not.toContainText(text.contrast)
+  await expect(page.locator('.brand-derived')).not.toContainText(':1')
+  const save = page.locator('.branding-page__actions .btn--primary')
+  await expect(save).toBeEnabled()
+  await page.screenshot({ path: `${SHOTS}/low-contrast-${suffix(testInfo)}.png`, fullPage: true })
 
-  await onSecondary.locator('.btn').click()
-  await expect(onSecondary.locator('.badge')).toHaveText(text.auto)
-  await expect(page.locator('.brand-contrast--blocked')).toHaveCount(0)
+  await save.click()
+  await expect.poll(() => shellProperty(page, '--brand-on-secondary')).toBe('#6b8a8c')
+  await expect(row(page, 4).locator('.badge')).toHaveText(text.custom)
+  await expect(save).toBeDisabled()
 })
 
 // The production SPA policy (deploy/nginx/moashir-spa-headers.conf), minus

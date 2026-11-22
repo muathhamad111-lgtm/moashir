@@ -83,7 +83,6 @@ return [
     'token' => [
         'invalid' => 'This link is invalid or has expired.',
     ],
-    'contrast_fail' => 'The selected color does not meet the WCAG 2.1 AA contrast ratio of 4.5:1 with readable text.',
     'invitation' => [
         'expired' => 'This invitation has expired. Please ask the System Administrator for a new one.',
         'invalid' => 'This invitation is invalid.',

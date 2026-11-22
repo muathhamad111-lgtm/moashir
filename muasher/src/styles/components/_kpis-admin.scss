@@ -28,19 +28,16 @@
   max-inline-size: var(--size-prose-max);
 }
 
-.kpis-admin__public-link {
-  @include flex(row, center, flex-start, var(--space-2));
-  color: var(--theme-accent-text);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+// The heading gives up width first, so the actions stay on the title row until the screen is narrow.
+.kpis-admin__heading {
+  flex: 1 1 18rem;
+  min-inline-size: 0;
+}
 
-  &:hover {
-    text-decoration: underline;
-  }
-
-  &:focus-visible {
-    @include focus-ring;
-  }
+// Every page action sits together at the inline end of the title row; the primary one is last, at the edge.
+.kpis-admin__actions {
+  @include flex(row, center, flex-end, var(--space-2));
+  flex-wrap: wrap;
 }
 
 .kpis-admin__reorder-note {

@@ -51,10 +51,6 @@ export const contentMessages = {
     ar: 'نوع المؤشر هذا مستخدم في مؤشرات. يمكنك تعطيله بدلًا من حذفه.',
     en: 'This indicator type is used by indicators. Deactivate it instead.',
   },
-  contrast_fail: {
-    ar: 'اللون المختار لا يحقق نسبة التباين 4.5:1 مع نص مقروء وفق المستوى AA من معايير WCAG 2.1.',
-    en: 'The selected color does not meet the WCAG 2.1 AA contrast ratio of 4.5:1 with readable text.',
-  },
   'file.content_mismatch': {
     ar: 'نوع الملف غير مسموح أو أن محتواه لا يطابق امتداده.',
     en: 'The file type is not allowed or its content does not match its extension.',

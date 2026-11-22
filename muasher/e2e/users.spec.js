@@ -59,6 +59,24 @@ test('opens the add-user form modal', async ({ page }) => {
   await expect(page.locator('input[name="email"]')).toBeVisible()
 })
 
+test('keeps every page action together in the header, with the invite as the primary', async ({
+  page,
+}) => {
+  await page.goto('/admin/settings/users')
+  await retryTable(page)
+  const actions = page.locator('.users-page__header .users-page__actions')
+  await expect(
+    actions.getByRole('link', { name: /roles & permissions|الأدوار والصلاحيات/i }),
+  ).toBeVisible()
+  await expect(actions.getByRole('link', { name: /identity|الهوية/i })).toBeVisible()
+  const invite = actions.getByRole('button', { name: /invite user|دعوة مستخدم/i })
+  await expect(invite).toHaveClass(/btn--primary/)
+  await expect(actions.locator('> *').last()).toHaveClass(/btn--primary/)
+  await expect(
+    page.locator('.filter-toolbar').getByRole('button', { name: /invite user|دعوة مستخدم/i }),
+  ).toHaveCount(0)
+})
+
 test('capture users screens for the design review', async ({ page }, testInfo) => {
   const suffix = testInfo.project.name === 'chromium-en-ltr' ? 'en-ltr' : 'ar-rtl'
 

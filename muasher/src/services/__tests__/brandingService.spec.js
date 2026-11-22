@@ -133,11 +133,11 @@ describe('brandingService', () => {
     expect(apiClient.post.mock.calls[1][1].get('reason')).toBe(reason)
   })
 
-  it('treats the contrast rejection as an expected answer', async () => {
-    const rejected = Object.assign(new Error('contrast'), { response: { status: 422 } })
+  it('treats a validation rejection as an expected answer', async () => {
+    const rejected = Object.assign(new Error('validation'), { response: { status: 422 } })
     apiClient.put.mockRejectedValue(rejected)
     await expect(
-      brandingService.update({ primaryColor: '#777777', secondaryColor: '#0a2325' }),
+      brandingService.update({ primaryColor: 'purple', secondaryColor: '#0a2325' }),
     ).rejects.toBe(rejected)
     expect(logger.error).not.toHaveBeenCalled()
   })

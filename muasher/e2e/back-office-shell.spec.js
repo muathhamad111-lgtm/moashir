@@ -244,13 +244,13 @@ test('branding: System Administrator sets the primary and secondary colours, the
   await expect(secondary).toHaveValue('#0a2325')
   await expect(page.locator('.navbar--app')).toHaveCSS('background-color', SHELL_COLORS.secondary)
 
+  // No contrast check: a mid-tone the client picks can be saved (operator decision 2026-11-22).
   await primary.fill('#777777')
-  await expect(page.locator('.brand-contrast--blocked')).toBeVisible()
-  await expect(page.locator('.branding-page__actions .btn--primary')).toBeDisabled()
+  await expect(page.locator('.branding-editor [role="alert"]')).toHaveCount(0)
+  await expect(page.locator('.branding-page__actions .btn--primary')).toBeEnabled()
 
   await primary.fill('#d4088c')
   await secondary.fill('#4a2a7d')
-  await expect(page.locator('.brand-contrast--blocked')).toHaveCount(0)
   await expect(page.locator('.navbar--app')).toHaveCSS('background-color', SHELL_COLORS.secondary)
   await expect(page.locator('.logo-variant')).toHaveCount(3)
   await expect(page.locator('.logo-variant').first()).toHaveAttribute('data-surface', 'dark')

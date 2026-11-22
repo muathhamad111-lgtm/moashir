@@ -13,8 +13,6 @@ import LogoVariantField from '@/components/branding/LogoVariantField.vue'
 import Skeleton from '@/components/feedback/Skeleton.vue'
 import ErrorState from '@/components/feedback/ErrorState.vue'
 import BrandColorField from '@/components/branding/BrandColorField.vue'
-import ContrastFailNotice from '@/components/branding/ContrastFailNotice.vue'
-import BrandWarningNotice from '@/components/branding/BrandWarningNotice.vue'
 import BrandDerivedColors from '@/components/branding/BrandDerivedColors.vue'
 import BrandFixedColors from '@/components/branding/BrandFixedColors.vue'
 import BrandPreview from '@/components/branding/BrandPreview.vue'
@@ -29,15 +27,11 @@ const {
   draftOverrides,
   draftScheme,
   autoColors,
-  colorChecks,
-  warnings,
   isDefault,
-  contrastPairs,
   setColor,
   overrideColor,
   restoreAutoColor,
   fillDefaultColors,
-  rejectedPairs,
   reasonPrompt,
   canSave,
   busy,
@@ -94,8 +88,6 @@ async function onReset() {
       <div class="branding-page__form">
         <Card :title="t('branding.colors.title')">
           <p class="brand-colors__hint">{{ t('branding.colors.hint') }}</p>
-          <ContrastFailNotice :pairs="rejectedPairs" />
-          <BrandWarningNotice :warnings="warnings" />
           <div class="brand-colors__fields">
             <BrandColorField
               v-for="role in BRAND_COLOR_ROLES"
@@ -124,8 +116,6 @@ async function onReset() {
           :scheme="draftScheme"
           :auto-colors="autoColors"
           :overrides="draftOverrides"
-          :checks="colorChecks"
-          :pairs="contrastPairs"
           :disabled="busy"
           @override="overrideColor"
           @restore-auto="restoreAutoColor"

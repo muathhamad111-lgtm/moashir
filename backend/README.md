@@ -2171,12 +2171,14 @@ files, unscanned or infected files and unknown ids answer 404. Uploads (`POST /a
 uploads never attached are removed by the orphan purge after `FILES_ORPHAN_GRACE_HOURS`.
 
 ### Branding (Q-42, Q-43, Q-44b, Q-45, Q-74)
-One theme for every back-office user. The controlled palette is `AccentToken` (brand default + 8 colours) with the
-designer's colours in `config/moashir.php` (`branding.palette`, `branding.surfaces`). Every change is checked for
-WCAG 2.1 AA (4.5:1) on four pairs — accent text on the light surface, dark text on the accent (light and dark mode),
-accent on the dark surface — and refused with 422 `contrast_fail` (`meta.pairs[]`). `settings.branding.manage` is
+One theme for every user. The System Administrator picks any primary and secondary colour; `BrandColorDeriver` derives
+five default colours from them (`on_primary`, `primary_text`, `primary_hover`, `primary_soft`, `on_secondary`), computed
+readable against `branding.surfaces` up to `branding.minimum_contrast`, and the client may override any of them
+(`color_overrides`). Saving runs no contrast check: the readability of client-chosen colours is the client's
+responsibility (operator decision 2026-11-22). Colours are validated as six-digit hex on known keys only, in the Form
+Request and by the database CHECK. `settings.branding.manage` is
 hard-locked to the System Administrator (Super Admin by bypass, reason 10..1000 required, SEC-04). Audit
-`settings.branding.updated` with before / after and the tag `accent`, `logo_light`, `logo_dark` or `reset`. The public
+`settings.branding.updated` with before / after and the tag `colors`, `logo_light`, `logo_dark` or `reset`. The public
 site keeps the official identity (Q-43).
 
 Logos (SEC-22, Task-51): PNG only, up to `branding.logo_max_kb` and `branding.logo_max_side_px`. SVG is refused (422

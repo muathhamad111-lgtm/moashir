@@ -65,13 +65,21 @@ const LIST = {
   },
 }
 
-async function mountView() {
+async function mountView(locale = 'en') {
   const wrapper = mount(Manage, {
-    global: createTestGlobals({ locale: 'en' }),
+    global: createTestGlobals({ locale }),
     attachTo: document.body,
   })
   await flushPromises()
   return wrapper
+}
+
+const headerActions = (wrapper) => wrapper.find('.kpis-admin__header .kpis-admin__actions')
+
+function headerButton(wrapper, label) {
+  return headerActions(wrapper)
+    .findAll('.btn')
+    .find((button) => button.text() === label)
 }
 
 function rowActions(wrapper, index) {
@@ -156,7 +164,7 @@ describe('KPI administration (Content Officer)', () => {
   it('creates an indicator with a single-language name and no publish or order fields', async () => {
     kpisAdminService.create.mockResolvedValue({ data: kpi(9) })
     const wrapper = await mountView()
-    await wrapper.find('.toolbar__actions .btn--primary').trigger('click')
+    await headerButton(wrapper, 'Add indicator').trigger('click')
     await flushPromises()
     const dialog = wrapper.findComponent(KpiFormDialog)
     const field = (name) =>
@@ -179,7 +187,7 @@ describe('KPI administration (Content Officer)', () => {
   it('reorders every indicator in the drag-and-drop dialog and saves the full order', async () => {
     kpisAdminService.reorder.mockResolvedValue({ data: [kpi(2), kpi(1), kpi(3)] })
     const wrapper = await mountView()
-    await wrapper.find('.toolbar__actions .btn--secondary').trigger('click')
+    await headerButton(wrapper, 'Reorder').trigger('click')
     await flushPromises()
     const dialog = wrapper.findComponent(KpiReorderDialog)
     dialog.findComponent(SortableList).vm.$emit('reorder', [2, 1, 3])
@@ -208,6 +216,32 @@ describe('KPI administration (Content Officer)', () => {
     expect(useToast().toasts.at(-1).message).toBe(
       'This entry is used by 4 indicators. Deactivate it instead.',
     )
+    wrapper.unmount()
+  })
+
+  it.each([
+    ['en', ['View public page', 'Reorder', 'Add indicator']],
+    ['ar', ['عرض الصفحة العامة', 'إعادة الترتيب', 'إضافة مؤشر']],
+  ])(
+    'groups every page action in the header, the add last as the primary (%s)',
+    async (locale, labels) => {
+      const wrapper = await mountView(locale)
+      const actions = headerActions(wrapper).findAll('.btn')
+      expect(actions.map((action) => action.text())).toEqual(labels)
+      expect(actions.map((action) => action.classes('btn--primary'))).toEqual([false, false, true])
+      expect(wrapper.find('.filter-toolbar .toolbar__actions').exists()).toBe(false)
+      wrapper.unmount()
+    },
+  )
+
+  it('shows the active tab’s add action in the header and drops the indicator actions', async () => {
+    const wrapper = await mountView()
+    await wrapper.findAll('.tabs__tab')[1].trigger('click')
+    await flushPromises()
+    const actions = headerActions(wrapper).findAll('.btn')
+    expect(actions.map((action) => action.text())).toEqual(['View public page', 'Add category'])
+    expect(actions[1].classes()).toContain('btn--primary')
+    expect(wrapper.find('.kpi-catalog .btn--primary').exists()).toBe(false)
     wrapper.unmount()
   })
 })

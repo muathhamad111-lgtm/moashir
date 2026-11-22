@@ -1,14 +1,11 @@
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { brandingService } from '@/services/brandingService'
 import { useBrandingStore } from '@/stores/branding'
 import { LOGO_DIMENSIONS, LOGO_SURFACES } from '@/constants/branding'
-import { serverContrastPairs } from '@/utils/brandingContrast'
 import { useBrandColorDraft } from './useBrandColorDraft'
 import { logoForSurface } from './useBackOfficeLogo'
 import { useLogoSelection } from './useLogoSelection'
 import { useSuperAdminReason } from './useSuperAdminReason'
-
-const CONTRAST_FAIL = 'contrast_fail'
 
 function bySurface(build) {
   return Object.fromEntries(LOGO_SURFACES.map((surface) => [surface, build(surface)]))
@@ -24,21 +21,16 @@ export function useBrandingEditor({ auto = true } = {}) {
   const status = ref('loading')
   const saving = ref(false)
   const resetting = ref(false)
-  const rejectedPairs = ref([])
 
   const busy = computed(() => saving.value || resetting.value)
   const hasPendingLogo = computed(() => LOGO_SURFACES.some((surface) => logos[surface].file.value))
   const isDirty = computed(() => draft.isChanged.value || hasPendingLogo.value)
-  const canSave = computed(() => isDirty.value && draft.contrastOk.value && !busy.value)
+  const canSave = computed(() => isDirty.value && draft.hasValidColors.value && !busy.value)
   const previewLogos = computed(() =>
     bySurface(
       (surface) => logos[surface].previewUrl.value || logoForSurface(savedLogos.value, surface),
     ),
   )
-
-  watch([draft.draftColors, draft.draftOverrides], () => {
-    rejectedPairs.value = []
-  })
 
   function applyTheme(theme) {
     draft.applySaved(theme)
@@ -64,12 +56,6 @@ export function useBrandingEditor({ auto = true } = {}) {
     }
   }
 
-  function rememberRejection(error) {
-    if (error?.normalized?.code === CONTRAST_FAIL)
-      rejectedPairs.value = serverContrastPairs(error.normalized.meta?.pairs)
-    throw error
-  }
-
   async function withReason(flag, work) {
     const extra = await reasonExtra()
     if (!extra) return false
@@ -79,8 +65,6 @@ export function useBrandingEditor({ auto = true } = {}) {
       applyTheme(data)
       LOGO_SURFACES.forEach((surface) => logos[surface].clear())
       return true
-    } catch (error) {
-      return rememberRejection(error)
     } finally {
       flag.value = false
     }
@@ -102,7 +86,6 @@ export function useBrandingEditor({ auto = true } = {}) {
 
   return {
     ...draft,
-    rejectedPairs,
     isDirty,
     canSave,
     busy,

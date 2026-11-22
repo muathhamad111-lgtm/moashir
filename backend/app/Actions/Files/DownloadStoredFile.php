@@ -13,6 +13,7 @@ use App\Models\Files\StoredFile;
 use App\Models\Identity\User;
 use App\Services\Audit\AuditRecorder;
 use App\Services\Files\StoredFileDisk;
+use App\Services\Watermark\ViewerStampRule;
 use App\Services\Watermark\WatermarkedFileDelivery;
 
 final readonly class DownloadStoredFile
@@ -21,6 +22,7 @@ final readonly class DownloadStoredFile
         private StoredFileDisk $disk,
         private AuditRecorder $audit,
         private WatermarkedFileDelivery $watermarked,
+        private ViewerStampRule $stampRule,
     ) {}
 
     public function handle(User $actor, StoredFile $file, DownloadClaim $claim): FileDownload
@@ -33,7 +35,7 @@ final readonly class DownloadStoredFile
             throw FileRejected::notClean();
         }
 
-        if ($file->purpose->isWatermarked()) {
+        if ($this->stampRule->servesStampedCopy($actor, $file->purpose)) {
             return $this->watermarked->deliver($actor, $file, $claim->intent);
         }
 

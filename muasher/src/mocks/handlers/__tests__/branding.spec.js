@@ -59,7 +59,7 @@ describe('branding mock (settings.branding.manage — hard-locked)', () => {
     expect(res.status).toBe(403)
   })
 
-  it('accepts any readable hex colour and refuses malformed or unreadable ones', async () => {
+  it('accepts any hex colour, even a low-contrast one, and refuses malformed ones', async () => {
     signInAs(['system_admin'])
     const malformed = await call('PUT', '/settings/branding', {
       primaryColor: 'purple',
@@ -67,12 +67,12 @@ describe('branding mock (settings.branding.manage — hard-locked)', () => {
     })
     expect(malformed.status).toBe(422)
     expect(malformed.body.errors).toHaveProperty('primaryColor')
-    const unreadable = await call('PUT', '/settings/branding', {
+    const lowContrast = await call('PUT', '/settings/branding', {
       primaryColor: '#98d8d3',
       secondaryColor: '#777777',
     })
-    expect(unreadable.body.code).toBe('contrast_fail')
-    expect(unreadable.body.meta.pairs[0].pair).toBe('secondary.text_on_fill')
+    expect(lowContrast.status).toBe(200)
+    expect(lowContrast.body.data.secondaryColor).toBe('#777777')
     const good = await call('PUT', '/settings/branding', {
       primaryColor: '#D4088C',
       secondaryColor: '#4a2a7d',
@@ -83,7 +83,7 @@ describe('branding mock (settings.branding.manage — hard-locked)', () => {
     expect(reset.body.data.primaryColor).toBe('#98d8d3')
   })
 
-  it('saves readable overrides, refuses unknown or unreadable ones and clears them on reset', async () => {
+  it('saves any override, low-contrast ones included, refuses unknown ones and clears them on reset', async () => {
     signInAs(['system_admin'])
     const unknown = await call('PUT', '/settings/branding', {
       primaryColor: '#98d8d3',
@@ -92,13 +92,13 @@ describe('branding mock (settings.branding.manage — hard-locked)', () => {
     })
     expect(unknown.status).toBe(422)
     expect(unknown.body.errors).toHaveProperty('colorOverrides')
-    const unreadable = await call('PUT', '/settings/branding', {
+    const lowContrast = await call('PUT', '/settings/branding', {
       primaryColor: '#98d8d3',
       secondaryColor: '#0a2325',
       colorOverrides: { onSecondary: '#6b8a8c' },
     })
-    expect(unreadable.body.code).toBe('contrast_fail')
-    expect(unreadable.body.meta.pairs.map((pair) => pair.pair)).toEqual(['secondary.text_on_fill'])
+    expect(lowContrast.status).toBe(200)
+    expect(lowContrast.body.data.scheme.onSecondary).toBe('#6b8a8c')
     const saved = await call('PUT', '/settings/branding', {
       primaryColor: '#98d8d3',
       secondaryColor: '#0a2325',

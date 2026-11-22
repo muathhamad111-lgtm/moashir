@@ -4,18 +4,15 @@ declare(strict_types=1);
 
 use App\Data\Settings\BrandColorOverrides;
 use App\Data\Settings\BrandColors;
-use App\Data\Settings\BrandColorScheme;
-use App\Data\Settings\ContrastCheck;
 use App\Services\Settings\BrandColorDeriver;
-use App\Services\Settings\ContrastValidator;
 use App\Services\Settings\DefaultBrandColors;
 use App\Support\Branding\ColorShade;
 use App\Support\Branding\ContrastRatio;
 
 it('computes the WCAG contrast ratio of two colours', function (): void {
-    expect(ContrastRatio::format(ContrastRatio::between('#000000', '#ffffff')))->toBe('21.00')
-        ->and(ContrastRatio::format(ContrastRatio::between('#ffffff', '#ffffff')))->toBe('1.00')
-        ->and(ContrastRatio::format(ContrastRatio::between('#022426', '#3de9ad')))->toBe(ContrastRatio::format(ContrastRatio::between('#3de9ad', '#022426')));
+    expect(ContrastRatio::between('#000000', '#ffffff'))->toEqualWithDelta(21.0, 0.001)
+        ->and(ContrastRatio::between('#ffffff', '#ffffff'))->toEqualWithDelta(1.0, 0.001)
+        ->and(ContrastRatio::between('#022426', '#3de9ad'))->toEqualWithDelta(ContrastRatio::between('#3de9ad', '#022426'), 0.000001);
 });
 
 it('refuses colours that are not six-digit hex values', function (): void {
@@ -37,8 +34,7 @@ it('normalises brand colours to lower case and refuses invalid values', function
 it('picks the readable text colour on each fill and a readable text shade of the primary colour', function (string $primary, string $secondary): void {
     $scheme = app(BrandColorDeriver::class)->scheme(new BrandColors($primary, $secondary));
 
-    expect(app(ContrastValidator::class)->failures($scheme))->toBe([])
-        ->and(ContrastRatio::between($scheme->onPrimary, $scheme->primary))->toBeGreaterThanOrEqual(4.5)
+    expect(ContrastRatio::between($scheme->onPrimary, $scheme->primary))->toBeGreaterThanOrEqual(4.5)
         ->and(ContrastRatio::between($scheme->primaryText, '#f8f8f8'))->toBeGreaterThanOrEqual(4.5)
         ->and(ContrastRatio::between($scheme->onSecondary, $scheme->secondary))->toBeGreaterThanOrEqual(4.5)
         ->and(ContrastRatio::between($scheme->onPrimary, $scheme->primaryHover))->toBeGreaterThanOrEqual(4.5)
@@ -50,21 +46,19 @@ it('picks the readable text colour on each fill and a readable text shade of the
     'very dark' => ['#050505', '#101010'],
 ]);
 
-it('keeps the shipped default colours at AA contrast', function (): void {
+it('derives readable defaults from the shipped default colours', function (): void {
     $scheme = app(BrandColorDeriver::class)->scheme(app(DefaultBrandColors::class)->get());
 
-    expect(app(ContrastValidator::class)->failures($scheme))->toBe([]);
+    expect(ContrastRatio::between($scheme->onPrimary, $scheme->primary))->toBeGreaterThanOrEqual(4.5)
+        ->and(ContrastRatio::between($scheme->primaryText, '#f8f8f8'))->toBeGreaterThanOrEqual(4.5)
+        ->and(ContrastRatio::between($scheme->onSecondary, $scheme->secondary))->toBeGreaterThanOrEqual(4.5);
 });
 
-it('reports each failing pair with its field, ratio and the required minimum', function (): void {
-    $failures = app(ContrastValidator::class)->failures(new BrandColorScheme('#777777', '#ffffff', '#eeeeee', '#777777', '#ffffff', '#777777', '#100f10'));
+it('keeps a client override exactly as chosen, even when its contrast is low', function (): void {
+    $scheme = app(BrandColorDeriver::class)->scheme(new BrandColors('#ffe066', '#0a2325', new BrandColorOverrides(['on_primary' => '#FFFFFF'])));
 
-    expect(array_map(static fn (ContrastCheck $check): string => $check->pair, $failures))->toBe([
-        'primary.text_on_fill', 'primary.text_on_content', 'primary.text_on_hover', 'primary.text_on_soft', 'secondary.text_on_fill',
-    ])->and(array_map(static fn (ContrastCheck $check): string => $check->field(), $failures))->toBe([
-        'primary_color', 'primary_color', 'primary_color', 'primary_color', 'secondary_color',
-    ])->and($failures[0]->minimum)->toBe('4.5')
-        ->and((float) $failures[0]->ratio)->toBeLessThan(4.5);
+    expect($scheme->onPrimary)->toBe('#ffffff')
+        ->and(ContrastRatio::between($scheme->onPrimary, $scheme->primary))->toBeLessThan(4.5);
 });
 
 it('mixes two colours in sRGB like CSS color-mix', function (): void {

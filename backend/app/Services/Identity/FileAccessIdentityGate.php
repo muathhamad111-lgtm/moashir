@@ -15,7 +15,7 @@ use App\Services\Audit\AuditRecorder;
 /**
  * An account that must provide a national ID opens no stamped file (evidence, attachments, bundles) until its
  * number is approved; the rest of the platform stays usable (operator decision, 2026-11-21). Accounts that are not
- * required keep the name and trace code stamp.
+ * required are stamped with their name in place of the national ID.
  */
 final readonly class FileAccessIdentityGate
 {

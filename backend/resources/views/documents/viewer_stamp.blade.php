@@ -13,16 +13,15 @@
 html, body { margin: 0; padding: 0; background: transparent; }
 .sheet { position: relative; overflow: hidden; break-after: page; }
 .sheet:last-child { break-after: auto; }
-.tiles { position: absolute; inset: -50%; display: flex; flex-wrap: wrap; align-content: space-around; justify-content: space-around; transform: rotate(-30deg); color: rgba(10, 35, 37, 0.13); font-family: 'Moashir Body', 'Moashir Latin', sans-serif; font-size: 13pt; font-weight: 600; }
-.tiles span { padding: 26pt 20pt; white-space: nowrap; unicode-bidi: plaintext; }
-.footer { position: absolute; inset-inline: 12pt; bottom: 7pt; text-align: center; color: rgba(10, 35, 37, 0.6); font-family: 'Moashir Body', 'Moashir Latin', sans-serif; font-size: 7pt; unicode-bidi: plaintext; }
+.stamp { position: absolute; inset: 0; display: block; }
+.stamp text { fill: rgb(10, 35, 37); fill-opacity: 0.22; font-family: 'Moashir Latin', 'Moashir Body', sans-serif; font-weight: 600; }
 </style>
 </head>
 <body>
 @foreach ($sizes as $index => $size)
+@php($placement = $placements[$index])
 <div class="sheet sheet-{{ $index }}" aria-hidden="true">
-<div class="tiles">@for ($tile = 0; $tile < $tiles[$index]; $tile++)<span>{{ $identity }}</span>@endfor</div>
-<div class="footer">{{ $footer }}</div>
+<svg class="stamp" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {{ $size->width }} {{ $size->height }}" width="{{ $size->width }}pt" height="{{ $size->height }}pt"><text x="{{ $placement->centerX }}" y="{{ $placement->centerY }}" transform="rotate(-{{ $placement->angle }} {{ $placement->centerX }} {{ $placement->centerY }})" text-anchor="middle" dominant-baseline="central" font-size="{{ $placement->fontSize }}" textLength="{{ $placement->length }}" lengthAdjust="spacingAndGlyphs" direction="ltr">{{ $line }}</text></svg>
 </div>
 @endforeach
 </body>

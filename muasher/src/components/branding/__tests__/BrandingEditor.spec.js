@@ -88,19 +88,36 @@ describe('Visual identity editor (System Administrator)', () => {
     wrapper.unmount()
   })
 
-  it('blocks saving with a warning while a colour is invalid or not readable', async () => {
+  it('blocks saving only while a colour code is invalid', async () => {
     const { wrapper } = await mountView('en')
     const save = wrapper.find('.branding-page__actions .btn--primary')
     await typeColor(wrapper, 'primary', '#12')
     expect(save.attributes('disabled')).toBeDefined()
     expect(wrapper.text()).toContain('Enter the color as a six-digit code')
     await typeColor(wrapper, 'primary', '#777777')
-    expect(save.attributes('disabled')).toBeDefined()
-    expect(wrapper.find('.brand-contrast--blocked').text()).toContain('Cannot save')
+    expect(save.attributes('disabled')).toBeUndefined()
     wrapper.unmount()
   })
 
-  it('lists the five derived colours on auto with their contrast, and overrides one as a draft', async () => {
+  it('runs no contrast check: a low-contrast colour shows no banner and can be saved', async () => {
+    const { wrapper } = await mountView('ar')
+    await typeColor(wrapper, 'primary', '#777777')
+    await typeColor(wrapper, 'secondary', '#777777')
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('التباين')
+    expect(wrapper.text()).not.toContain('4.5:1')
+    expect(wrapper.text()).toContain('تقع مسؤولية وضوح الألوان المخصصة على الجهة المالكة للمنصة')
+    const save = wrapper.find('.branding-page__actions .btn--primary')
+    expect(save.attributes('disabled')).toBeUndefined()
+    await save.trigger('click')
+    await flushPromises()
+    expect(brandingService.update).toHaveBeenCalledWith(
+      expect.objectContaining({ primaryColor: '#777777', secondaryColor: '#777777' }),
+    )
+    wrapper.unmount()
+  })
+
+  it('lists the five derived colours on auto, and overrides one as a draft', async () => {
     const { wrapper } = await mountView('en')
     const rows = wrapper.findAll('.brand-derived__row')
     expect(rows).toHaveLength(5)
@@ -146,25 +163,32 @@ describe('Visual identity editor (System Administrator)', () => {
     wrapper.unmount()
   })
 
-  it('blocks saving while an override misses the contrast and marks its row', async () => {
+  it('saves a low-contrast override exactly as chosen, with no warning', async () => {
+    brandingService.update.mockImplementation(({ primaryColor, secondaryColor, colorOverrides }) =>
+      Promise.resolve(
+        theme({ primary: primaryColor, secondary: secondaryColor }, { dark: null }, colorOverrides),
+      ),
+    )
     const { wrapper } = await mountView('en')
-    const row = wrapper.findAll('.brand-derived__row')[4]
-    await row.find('.btn').trigger('click')
+    await wrapper.findAll('.brand-derived__row')[4].find('.btn').trigger('click')
     await wrapper.find('.brand-derived__picker').setValue('#6b8a8c')
-    const failing = wrapper.findAll('.brand-derived__row')[4]
-    expect(failing.classes()).toContain('brand-derived__row--failing')
-    expect(failing.text()).toContain('Misses the required contrast')
-    expect(wrapper.find('.brand-contrast--blocked').text()).toContain('Text on the secondary color')
-    expect(
-      wrapper.find('.branding-page__actions .btn--primary').attributes('disabled'),
-    ).toBeDefined()
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
+    expect(wrapper.find('[role="status"]').exists()).toBe(false)
+    expect(wrapper.find('.brand-derived').text()).not.toMatch(/contrast|:1/i)
+    await wrapper.find('.branding-page__actions .btn--primary').trigger('click')
+    await flushPromises()
+    expect(brandingService.update).toHaveBeenCalledWith(
+      expect.objectContaining({ colorOverrides: { onSecondary: '#6b8a8c' } }),
+    )
+    expect(useBrandingStore().scheme.onSecondary).toBe('#6b8a8c')
     wrapper.unmount()
   })
 
-  it('warns, without blocking, when the primary colour reads as an error colour', async () => {
+  it('gives no colour advice, even for a primary close to the error colour', async () => {
     const { wrapper } = await mountView('ar')
     await typeColor(wrapper, 'primary', '#d63031')
-    expect(wrapper.find('.brand-warning').text()).toContain('«خطأ»')
+    expect(wrapper.find('[role="status"]').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('«خطأ»')
     expect(
       wrapper.find('.branding-page__actions .btn--primary').attributes('disabled'),
     ).toBeUndefined()
@@ -334,24 +358,12 @@ describe('Visual identity editor (System Administrator)', () => {
     wrapper.unmount()
   })
 
-  it('shows the server contrast_fail pairs clearly and keeps the saved colours', async () => {
+  it('keeps the saved colours and shows the server message when a save fails', async () => {
     brandingService.update.mockRejectedValueOnce(
-      Object.assign(new Error('contrast'), {
+      Object.assign(new Error('validation'), {
         normalized: {
-          code: 'contrast_fail',
-          message:
-            'The selected color does not meet the WCAG 2.1 AA contrast ratio of 4.5:1 with readable text.',
-          meta: {
-            pairs: [
-              {
-                pair: 'secondary.text_on_fill',
-                foreground: '#ffffff',
-                background: '#7a7a7a',
-                ratio: '4.20',
-                minimum: '4.5',
-              },
-            ],
-          },
+          code: 'validation_failed',
+          message: 'The given data was invalid.',
           fieldErrors: {},
         },
       }),
@@ -360,14 +372,11 @@ describe('Visual identity editor (System Administrator)', () => {
     await typeColor(wrapper, 'secondary', '#4a2a7d')
     await wrapper.find('.branding-page__actions .btn--primary').trigger('click')
     await flushPromises()
-    const notice = wrapper.find('.contrast-fail')
-    expect(notice.attributes('role')).toBe('alert')
-    expect(notice.text()).toContain('Text on the secondary color (top bar)')
-    expect(notice.text()).toMatch(/4\.2(0)?:1/)
-    expect(notice.text()).toMatch(/4\.5(0)?:1/)
     expect(useBrandingStore().scheme.secondary).toBe('#0a2325')
-    await typeColor(wrapper, 'secondary', '#0a2325')
-    expect(wrapper.find('.contrast-fail').exists()).toBe(false)
+    expect(useToast().toasts.at(-1)).toMatchObject({
+      type: 'error',
+      message: 'The given data was invalid.',
+    })
     wrapper.unmount()
   })
 
