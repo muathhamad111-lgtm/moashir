@@ -22,8 +22,8 @@ const isSplit = useMediaQuery(DESKTOP_QUERY)
 const rootRef = useTemplateRef('root')
 const viewportRef = useTemplateRef('viewport')
 const contentRef = useTemplateRef('content')
-const viewport = useAuthViewport(viewportRef, contentRef)
-const { onBeforeLeave, onLeave, onEnter } = useAuthPageTransition(viewport)
+const authViewport = useAuthViewport(viewportRef, contentRef)
+const { onBeforeLeave, onLeave, onEnter } = useAuthPageTransition(authViewport)
 
 // Only the pages a visitor switches to by a link are warmed; the code steps follow a server reply.
 useIdleRouteWarmup([
